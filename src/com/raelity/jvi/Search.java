@@ -875,17 +875,27 @@ finished:
   
   private static int nSubMatch;
   private static int nSubLine = 0;
+  
+  private static String lastSubstituteArg;
 
   /**
-   * substitute command. first arg is /pattern/substitution/{flags}
+   * Substitute command
+   * @param cev cev's first arg is /pattern/substitution/{flags}
    */
-
   static void substitute(ColonCommands.ColonEvent cev) {
-    if(cev.getNArg() != 1) {
-      Msg.emsg("substitue takes an argument (FOR NOW)");
-      return;
+    // The substitute command doesn't parse arguments,
+    // so it has 0 or 1 argument.
+    String cmd;
+    if(cev.getNArg() == 0) {
+      cmd = lastSubstituteArg;
+      if(cmd == null) {
+	Msg.emsg("No previous substitute argument");
+	return;
+      }
+    } else {
+      cmd = cev.getArg(1);
+      lastSubstituteArg = cmd;
     }
-    String cmd = cev.getArg(1);
     String pattern = null;
     RegExp prog = null;
     char[] substitution = null;

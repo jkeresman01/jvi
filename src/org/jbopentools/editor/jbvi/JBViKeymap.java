@@ -50,7 +50,6 @@ import javax.swing.text.Element;
 import com.borland.jbuilder.*;
 import com.borland.jbuilder.debugger.DebuggerActions;
 import com.borland.jbuilder.build.BuildActionPool;
-import com.borland.jbuilder.insight.java.JavaInsightActions;
 import com.borland.primetime.ide.*;
 import com.borland.primetime.help.HelpManagerActions;
 import com.borland.primetime.insight.template.TemplateActions;
@@ -58,6 +57,13 @@ import com.borland.primetime.editor.EditorManager;
 import com.borland.primetime.editor.EditorAction;
 import com.borland.primetime.editor.EditorActions;
 import com.borland.primetime.editor.EditorPane;
+
+import com.borland.jbuilder.insight.java.JavaInsightActions;
+import com.borland.jbuilder.insight.java.MemberInsight;
+import com.borland.jbuilder.insight.java.ParameterInsight;
+import com.borland.jbuilder.insight.java.SymbolInsight;
+import com.borland.jbuilder.refactor.imports.ClassInsight;
+import com.borland.jbuilder.refactor.imports.OptimizeImportsEditorAction;
 
 import com.raelity.jvi.G;
 import com.raelity.jvi.ColonCommands;
@@ -131,10 +137,12 @@ public class JBViKeymap implements PropertyChangeListener {
                  "ViEscapeKey"));      // alternate
     */
 
+    /*
     if(JBOT.has43()) {
       // JB6 has bindable code insight keys. Set them up with the defaults.
       setupCodeInsight(bindings, actions);
     }
+    */
 
     Keymap viMap = EditorManager.createKeymap(VI_KEYMAP,
 		      (JTextComponent.KeyBinding[]) bindings.toArray(
@@ -149,6 +157,10 @@ public class JBViKeymap implements PropertyChangeListener {
     viMap.addActionForKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_J,
 						       Event.CTRL_MASK),
                                 TemplateActions.ACTION_ExpandTemplate);
+    if(JBOT.has43()) {
+      // JB6 has bindable code insight keys. Set them up with the defaults.
+      setupCodeInsight(viMap);
+    }
 
     //
     // Remove from viMap keystrokes bound in ideMap
@@ -177,6 +189,36 @@ public class JBViKeymap implements PropertyChangeListener {
   /*
    * set up the default bindings for code insight
    */
+  static private void setupCodeInsight(Keymap map) {
+    KeymapManager.KeyActionBinding[] ciBindings = {
+      new KeymapManager.KeyActionBinding(KeyStroke.getKeyStroke(
+		KeyEvent.VK_SPACE, Event.CTRL_MASK),
+		MemberInsight.ACTION_MemberInsight ),
+      new KeymapManager.KeyActionBinding(KeyStroke.getKeyStroke(
+		KeyEvent.VK_SPACE, Event.SHIFT_MASK|Event.CTRL_MASK),
+		ParameterInsight.ACTION_ParameterInsight ),
+      new KeymapManager.KeyActionBinding(KeyStroke.getKeyStroke(
+		KeyEvent.VK_H, Event.SHIFT_MASK|Event.CTRL_MASK),
+		ParameterInsight.ACTION_ParameterInsight ),
+      new KeymapManager.KeyActionBinding(KeyStroke.getKeyStroke(
+		KeyEvent.VK_SPACE, Event.ALT_MASK|Event.CTRL_MASK),
+		ClassInsight.ACTION_ClassInsight ),
+      new KeymapManager.KeyActionBinding(KeyStroke.getKeyStroke(
+		KeyEvent.VK_H, Event.ALT_MASK|Event.CTRL_MASK),
+		ClassInsight.ACTION_ClassInsight ),
+      new KeymapManager.KeyActionBinding(KeyStroke.getKeyStroke(
+		KeyEvent.VK_ENTER, Event.CTRL_MASK),
+		SymbolInsight.ACTION_SymbolInsight ),
+      new KeymapManager.KeyActionBinding(KeyStroke.getKeyStroke(
+		KeyEvent.VK_H, Event.SHIFT_MASK|Event.ALT_MASK),
+		SymbolInsight.ACTION_SymbolInsight ),
+      new KeymapManager.KeyActionBinding(KeyStroke.getKeyStroke(
+		KeyEvent.VK_I, Event.CTRL_MASK),
+		OptimizeImportsEditorAction.EDITOR_ACTION_optimizeImports )
+    };
+    KeymapManager.loadKeymap(map,ciBindings);
+  }
+/*
   static InsightMembers insightMembers = new InsightMembers();
   static InsightParameters insightParameters = new InsightParameters();
   static InsightSymbol insightSymbol = new InsightSymbol();
@@ -250,6 +292,7 @@ public class JBViKeymap implements PropertyChangeListener {
       JavaInsightActions.ACTION_InsightInvokeClass.actionPerformed(e);
     }
   }
+*/
 
   /**
    * Catch editor manager property changes.
@@ -340,8 +383,7 @@ public class JBViKeymap implements PropertyChangeListener {
     //XXX bind(KeyStroke.getKeyStroke(KeyEvent.VK_G, Event.CTRL_MASK),
 	 // JBuilderActions.ACTION_SearchGoToLine),
     bind(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, Event.CTRL_MASK),
-         JBuilderActions.ACTION_SearchBrowseSymbol),
-	 //JBuilderActions.ACTION_SearchBrowseClasses), //XXXXXXXXXXXXXXXXXXXXX
+         JBuilderActions.ACTION_SearchBrowseClasses),
 
     bind(KeyStroke.getKeyStroke(KeyEvent.VK_FIND, 0),
 	 Browser.DELEGATE_SearchFind),

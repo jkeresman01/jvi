@@ -59,7 +59,7 @@ public class JBViOptions implements PropertyChangeListener
 	 return;
     //System.err.println("Options...");
     instance = new JBViOptions();
-    establishReadOnlyOptions();
+    establishJBHackOptions();
     establishOptions();
     establishMiscOptions();
     establishDebugOptions();
@@ -87,6 +87,18 @@ public class JBViOptions implements PropertyChangeListener
     } else {
       setJBOption(name);
     }
+    listenJBOptionChange(name);
+  }
+  
+  /**
+   * Check if changed option notification needs to be propogated into
+   * JB specific stuff.
+   * @param name option that was changed
+   */
+  private static void listenJBOptionChange(String name) {
+    if(name.equals(Options.readOnlyHackOption)) {
+      JBTextView.changeReadOnlyHackOption();
+    }
   }
 
   private static void setJBOption(String name) {
@@ -97,8 +109,6 @@ public class JBViOptions implements PropertyChangeListener
       G.b_p_et = ! EditorManager.isBooleanOptionValue(EditorManager.useTabCharAttribute);
     } else if(name.equals(EditorManager.blockIndentAttribute)) {
       G.b_p_sw = EditorManager.getBlockIndent();
-    } else if(name.equals(Options.readOnlyHackOption)) {
-      JBTextView.changeReadOnlyHackOption();
     }
   }
 
@@ -152,11 +162,13 @@ public class JBViOptions implements PropertyChangeListener
 
   static EditorOptionCategory optionCategory;
   
-  static void establishReadOnlyOptions() {
-    optionCategory = new EditorOptionCategory("Vi hack read-only file option");
+  static void establishJBHackOptions() {
+    optionCategory = new EditorOptionCategory("Vi special JB options");
 
     establishBooleanOption(Options.readOnlyHackOption,
-               "cheat so command mode works with read-only files");
+               "Read-only files (hack so command mode works)");
+    establishBooleanOption(Options.classicUndoOption,
+               "Classic Undo (do not include select events)");
   }
 
   static void establishOptions() {

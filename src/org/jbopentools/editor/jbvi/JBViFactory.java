@@ -512,6 +512,7 @@ public class JBViFactory implements ViFactory,
 		return;
 	      }
             }
+	    ReadOnlyHack.checkReadOnly();
 	    ViManager.keyStroke(target, c, mod);
 	  }
 	}
@@ -565,10 +566,16 @@ public class JBViFactory implements ViFactory,
       if((key & ~VIRT) == KeyEvent.VK_ESCAPE) {
 	// your favorite debug messge goes here
       }
+      ReadOnlyHack.checkReadOnly();
       ViManager.keyStroke(target, key, mod);
     }
   }
 
+  /**
+   * This class is used for a keymap that indicates how certain
+   * keys are to be used in insert mode. The keymap never gets
+   * assigned to an editor.
+   */
   private static class InsertModeAction extends EditorAction
   				      implements ViXlateKey {
     int basekey;

@@ -125,6 +125,7 @@ public class G {
   static String p_cpo = "aABceFs"; // cpoptions
   
   public static BooleanOption readOnlyHack;
+  public static BooleanOption isClassicUndo;
 
   public static BooleanOption dbgKeyStrokes;
   public static IntegerOption dbgFlow;  // 1-switch

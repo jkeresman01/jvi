@@ -562,11 +562,29 @@ public class TextViewCache implements PropertyChangeListener,
   public void insertUpdate(DocumentEvent e) {
     if(cacheTrace.getBoolean())System.err.println("doc insert: " + e);
     invalidateData();
+    undoChange = true;
   }
 
   public void removeUpdate(DocumentEvent e) {
     if(cacheTrace.getBoolean())System.err.println("doc remove: " + e);
     invalidateData();
+    undoChange = true;
+  }
+  
+  private boolean undoChange;
+  /**
+   * This ReadClear method can be used to determine if some action(s)
+   * cause a change. The method itself has nothing to do with undo. It
+   * is called from an optimized undo.
+   * 
+   * @return true if there has be a change to the document since this method
+   * was last called.
+   */
+  public boolean isUndoChange() {
+    boolean rval;
+    rval = undoChange;
+    undoChange = false;
+    return rval;
   }
 
   // -- viewport event --

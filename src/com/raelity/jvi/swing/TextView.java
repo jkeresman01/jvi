@@ -258,6 +258,29 @@ public class TextView implements ViTextView {
     ******************************************/
     expectedCaretPosition += s.length();
     Document doc = getDoc();
+    if(offset > doc.getLength()) {
+      // Damn, trying to insert after the final magic newline.
+      // 	(the one that gets counted in elem.getEndOffset() but
+      // 	not in getLength() )
+      // Take the new line from the end of the string and put it
+      // at the beging, e.g. change "foo\n" to "\nfoo". Then set
+      // offset to length. The adjusted string is inserted before
+      // the magic newline, this gives the correct result.
+      // If there is no newline at the end of the string being inserted,
+      // then there will end up being a newline added to the file magically,
+      // but this shouldn't really matter.
+      StringBuffer new_s = new StringBuffer();
+      new_s.append('\n');
+      if(s.endsWith("\n")) {
+	if(s.length() > 1) {
+	  new_s.append(s.substring(0,s.length()-1));
+	}
+      } else {
+	new_s.append(s);
+      }
+      offset = doc.getLength();
+      s = new_s.toString();
+    }
     try {
       doc.insertString(offset, s, null);
     } catch(BadLocationException e) {

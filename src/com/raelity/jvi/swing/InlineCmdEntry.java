@@ -52,6 +52,7 @@ public class InlineCmdEntry implements ViCmdEntry, ActionListener{
 					    "\n"));
 		  return;
 		}
+		commandLine.setMode(mode);
 		commandLine.append(initText);
 
 		JPanel p = (JPanel)getRootPane().getGlassPane();

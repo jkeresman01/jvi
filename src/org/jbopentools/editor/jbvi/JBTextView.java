@@ -59,6 +59,7 @@ import com.raelity.jvi.Misc;
 import com.raelity.jvi.swing.TextView;
 import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.Util;
 
 import com.raelity.jvi.swing.TextViewCache;
 import com.raelity.jvi.swing.DefaultOutputStream;
@@ -151,11 +152,43 @@ public class JBTextView extends TextView
   }
 
   public void undo() {
-    ((EditorPane)editorPane).undo();
+    EditorPane ep = (EditorPane)editorPane;
+    if(!ep.canUndo()) {
+      Util.vim_beep();
+      return;
+    }
+    if(G.isClassicUndo.getBoolean()) {
+      // keep invoking undo until something in the document actually changes.
+      cache.isUndoChange(); // clear the change flag
+      while(ep.canUndo()) {
+	ep.undo();
+	if(cache.isUndoChange()) {
+	  break;
+	}
+      }
+    } else {
+      ep.undo();
+    }
   }
 
   public void redo() {
-    ((EditorPane)editorPane).redo();
+    EditorPane ep = (EditorPane)editorPane;
+    if(!ep.canRedo()) {
+      Util.vim_beep();
+      return;
+    }
+    if(G.isClassicUndo.getBoolean()) {
+      // keep invoking redo until something in the document actually changes.
+      cache.isUndoChange(); // clear the change flag
+      while(ep.canRedo()) {
+	ep.redo();
+	if(cache.isUndoChange()) {
+	  break;
+	}
+      }
+    } else {
+      ep.redo();
+    }
   }
 
   public void findMatch() {
@@ -341,40 +374,58 @@ public class JBTextView extends TextView
 /**
  * This class tracks the readonly state of the currently active JEditorPane.
  * While jVi is in command mode, the isEditable flag must be true so that it
- * can recieve KEY_TYPED events. These methods should only be called while
- * the currently active editor is in command mode.
+ * can recieve KEY_TYPED events.
  */
 class ReadOnlyHack
 {
-  static JEditorPane readOnlyEditor; // an editor we've switch isEditable
+  static EditorPane currentEditor; // current editor pane
+  /** If fileNode.isReadOnly or fileNode null then it is read only */
+  static FileNode fileNode; // cache file node for currentEditor
   static boolean flagReadOnly; // current editor is readonly
+  static boolean doReadOnlyHack; // use results of this mess
   
   static void switchTo(JEditorPane editorPane) {
+    changeReadOnlyHackOption(); // in case the first time
     // restore isEditable from previously active editor
     ReadOnlyHack.restoreIsEditable();
+    // get current editor and its node information
+    currentEditor = (EditorPane)editorPane;
+    Node node = NodeViewMap.getNode(currentEditor);
+    if(node instanceof FileNode) {
+      fileNode = (FileNode)node;
+    }
+    currentEditor.setEditable(true); // let all the characters through
     // set isEditable to activating editor
-    ReadOnlyHack.adjustIsEditable(editorPane);
+    ReadOnlyHack.checkReadOnly();
+  }
+  
+  /** Save fileNodes readonly state.
+   *  Expect this to be called on each keystroke.
+   */
+  static void checkReadOnly() {
+    if(fileNode != null) {
+      flagReadOnly = fileNode.isReadOnly();
+      currentEditor.setEditable(true);
+    }
   }
   
   static boolean isEditable() {
-    return readOnlyEditor != null && flagReadOnly == true ? false : true;
+    if(doReadOnlyHack) {
+      return ! flagReadOnly;
+    }
+    if(currentEditor != null) {
+      return currentEditor.isEditable();
+    }
+    return true; // hope this doesn't happen much
   }
   
   static void restoreIsEditable() {
-    if(readOnlyEditor != null) {
-      readOnlyEditor.setEditable(false);
-      readOnlyEditor = null;
-      flagReadOnly = false;
+    if(fileNode != null) {
+      currentEditor.setEditable(!fileNode.isReadOnly());
     }
-  }
-  
-  static private void adjustIsEditable(JEditorPane editorPane) {
-    if(editorPane.isEditable() == false
-       && G.readOnlyHack.getBoolean()) {
-      readOnlyEditor = editorPane;
-      flagReadOnly = true;
-      readOnlyEditor.setEditable(true);
-    }
+    currentEditor = null;
+    fileNode = null;
+    flagReadOnly = false;
   }
   
   /**
@@ -385,21 +436,14 @@ class ReadOnlyHack
    */
   static void setModify(boolean modify) {
     /*
-    if(readOnlyEditor != null) {
+    if(currentEditor != null) {
       // if entering modify, 
-      readOnlyEditor.setEditable(modify ? false : true);
+      currentEditor.setEditable(modify ? false : true);
     }
     */
   }
   
   static void changeReadOnlyHackOption() {
-    if(G.readOnlyHack.getBoolean()) {
-      // Turning on the readOnlyHack option. If the currently active
-      // editorPane has isEditable false, then adjust its state.
-      // TODO: Not in the right context, can't call following
-      // adjustIsEditable();
-    } else {
-      restoreIsEditable();
-    }
+    doReadOnlyHack = G.readOnlyHack.getBoolean();
   }
 }
