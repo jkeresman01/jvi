@@ -110,7 +110,8 @@ public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
     // use this instead so that input is grabbed. When we have a
     // cleaner and more understandable key input state machine revisit
     // this.
-    return new WindowCmdEntry(type);
+    // return new WindowCmdEntry(type);
+    return new InlineCmdEntry(type);
   }
 
   /**
