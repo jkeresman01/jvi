@@ -30,7 +30,6 @@ package com.raelity.jvi.swing;
 
 import java.awt.*;
 import java.awt.event.*;
-import com.borland.jbcl.layout.*;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.util.*;
