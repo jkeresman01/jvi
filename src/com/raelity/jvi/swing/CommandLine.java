@@ -30,11 +30,11 @@ package com.raelity.jvi.swing;
 
 import java.awt.*;
 import java.awt.event.*;
-import com.borland.jbcl.layout.*;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.util.*;
 import com.raelity.jvi.*;
+import javax.swing.border.*;
 
 /**
  * This class presents a editable combo box UI for picking up command entry
@@ -56,6 +56,7 @@ public class CommandLine extends JPanel
   private String mode;
   private java.util.List list;
   private int historySize;
+  Border border1;
 
   /** This is used to append characters to the the combo box. It is
    * needed so that characters entered before the combo box gets focus
@@ -100,6 +101,31 @@ public class CommandLine extends JPanel
             ,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
     this.add(combo, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0
             ,GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+  }
+  
+  public void setupBorder() {
+    if(border1 == null) {
+      /*
+      border1 = BorderFactory.createCompoundBorder(
+		  BorderFactory.createCompoundBorder(
+		    BorderFactory.createLineBorder(Color.gray, 5),
+		    BorderFactory.createRaisedBevelBorder()),
+		  BorderFactory.createCompoundBorder(
+		    BorderFactory.createLineBorder(Color.gray, 5),
+		    BorderFactory.createLoweredBevelBorder()));
+      border1 = BorderFactory.createBevelBorder(BevelBorder.RAISED,
+						Color.white,Color.white,
+						new Color(134, 134, 134),
+						new Color(93, 93, 93));
+      border1 = BorderFactory.createCompoundBorder(
+		    BorderFactory.createRaisedBevelBorder(),
+		  BorderFactory.createCompoundBorder(
+		    BorderFactory.createLineBorder(Color.black, 2),
+		    BorderFactory.createLoweredBevelBorder()));
+      */
+      border1 = BorderFactory.createLineBorder(Color.black, 2);
+    }
+    this.setBorder(border1);
   }
 
   /** This is used when the combo box is going to be displayed.
