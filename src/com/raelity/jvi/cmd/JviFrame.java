@@ -31,7 +31,6 @@ package com.raelity.jvi.cmd;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import com.borland.jbcl.layout.*;
 import javax.swing.border.*;
 import com.raelity.jvi.swing.*;
 import com.raelity.jvi.*;

@@ -100,6 +100,8 @@ public class G {
   static BooleanOption p_js;   // joinspaces, 2 spaces after .?!
   static BooleanOption p_to;   // tildeop
   static BooleanOption p_ws;   // wrapscan
+  
+  public static BooleanOption useFrame;	// use JFrame for command entry
 
   public static BooleanOption p_ic;   // ignorecase
 

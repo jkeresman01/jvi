@@ -94,10 +94,10 @@ public class ColonCommands implements ColonCommandFlags, Constants {
     if(cmd.charAt(0) == '\n') {
       if( ! commandLine.equals("")) {
 	lastCommand = commandLine;
+	executeCommand(parseCommand(commandLine));
       }
-      executeCommand(parseCommand(commandLine));
-      closePrint();
     }
+    closePrint();
   }
 
   static void doColonCommand(CMDARG cap) {

@@ -47,6 +47,8 @@ import com.borland.primetime.editor.SearchOptions; //HACK
  */
 
 public class Options {
+  public static final String commandEntryFrameOption =
+  						"viCommandEntryFrameOption";
   public static final String backspaceWrapPreviousOption =
                                                 "viBackspaceWrapPrevious";
   public static final String hWrapPreviousOption = "viHWrapPrevious";
@@ -107,6 +109,8 @@ public class Options {
     // for jVi options.
     //G.p_ic = new IgnoreCaseBooleanOption(); // HACK
     G.p_ic = setupBooleanOption(ignoreCaseOption, false);
+    
+    G.useFrame  = setupBooleanOption(commandEntryFrameOption , false);
 
     dbgInit();
     didInit = true;
