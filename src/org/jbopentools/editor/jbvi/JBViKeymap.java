@@ -150,7 +150,7 @@ public class JBViKeymap implements PropertyChangeListener {
     if(JBOT.has41()) {
       Keymap subMap = setupEditSubKeymap(viMap);
       EditorManager.registerKeymap(subMap);
-      ViManager.setEditModeKeymap(subMap);
+      ViManager.setInsertModeKeymap(subMap);
     }
 
     //
@@ -184,8 +184,8 @@ public class JBViKeymap implements PropertyChangeListener {
     Keymap subMap;
     subMap = EditorManager.createSubKeymap(VI_EDIT_KEYMAP,
                                            viMap,
-					   KeyBinding.getEditModeBindings(),
-					   KeyBinding.getEditModeActions());
+					   KeyBinding.getInsertModeBindings(),
+					   KeyBinding.getInsertModeActions());
     
     /*
     subMap = KeymapManager.createSubKeymap("Edit", viMap,
@@ -195,7 +195,7 @@ public class JBViKeymap implements PropertyChangeListener {
     /*
     subMap.addActionForKeyStroke(KeyStroke.getKeyStroke('.',
 							InputEvent.CTRL_MASK),
-				 new EditModeAction("indent to next paren", 0));
+				 new InsertModeAction("indent to next paren", 0));
     */
     return subMap;
   }

@@ -79,7 +79,7 @@ public interface ViFactory {
   /**
    * @return edit mode action for picking up specified key
    */
-  public Action createEditModeKeyAction(String name, int vkey, String desc);
+  public Action createInsertModeKeyAction(String name, int vkey, String desc);
   
   /**
    * @return normal mode action for picking up specified key

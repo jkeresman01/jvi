@@ -219,8 +219,8 @@ public class JBViFactory implements ViFactory,
     return new EnqueKeyAction(name, key);
   }
   
-  public Action createEditModeKeyAction(String name, int vkey, String desc) {
-    return new EditModeAction(name, vkey, desc);
+  public Action createInsertModeKeyAction(String name, int vkey, String desc) {
+    return new InsertModeAction(name, vkey, desc);
   }
   
   public Action createNormalModeKeyAction(String name, int vkey, String desc) {
@@ -518,12 +518,12 @@ public class JBViFactory implements ViFactory,
     }
   }
 
-  private static class EditModeAction extends EditorAction
+  private static class InsertModeAction extends EditorAction
   				      implements ViXlateKey {
     int basekey;
     String name;	// NEEDSWORK: debug
 
-    public EditModeAction(String name, int vkey, String desc) {
+    public InsertModeAction(String name, int vkey, String desc) {
       super(name);
       this.name = name;	// NEEDSWORK: debug
       this.basekey = vkey;

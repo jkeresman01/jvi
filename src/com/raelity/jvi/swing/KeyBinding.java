@@ -535,13 +535,13 @@ public class KeyBinding implements KeyDefs, Constants {
 	  	&& KeyBinding.ignoreCtrlChars[c];
   }
   
-  public static JTextComponent.KeyBinding[] getEditModeBindings() {
-    List l = getEditModeBindingsList();
+  public static JTextComponent.KeyBinding[] getInsertModeBindings() {
+    List l = getInsertModeBindingsList();
     return (JTextComponent.KeyBinding[]) l.toArray(
                               new JTextComponent.KeyBinding[l.size()]);
   }
 
-  public static List getEditModeBindingsList() {
+  public static List getInsertModeBindingsList() {
 
     List bindingList = new ArrayList();
 
@@ -554,32 +554,32 @@ public class KeyBinding implements KeyDefs, Constants {
     return bindingList;
   }
   
-  public static Action[] getEditModeActions() {
+  public static Action[] getInsertModeActions() {
     Action[] localActions = null;
     try {
       ViFactory factory = ViManager.getViFactory();
       localActions = new Action[] {
-	  factory.createEditModeKeyAction("ViEdit_shiftRight",
+	  factory.createInsertModeKeyAction("ViEdit_shiftRight",
 		     EM_SHIFT_RIGHT,
 		     "Insert one shiftwidth of indent at the"
 		     + " start of the current line."
 		     + " Only key press events are valid."),
-	  factory.createEditModeKeyAction("ViEdit_shiftLeft",
+	  factory.createInsertModeKeyAction("ViEdit_shiftLeft",
 		     EM_SHIFT_LEFT,
 		     "Delete one shiftwidth of indent at the"
 		     + " start of the current line."
 		     + " Only key press events are valid."),
-	  factory.createEditModeKeyAction("ViEdit_indentNextParen",
+	  factory.createInsertModeKeyAction("ViEdit_indentNextParen",
 		     EM_SHIFT_RIGHT_TO_PAREN,
 		     "Indent current line to start under next"
 		     + " parenthesis on previous line."
 		     + " Only key press events are valid."),
-	  factory.createEditModeKeyAction("ViEdit_indentPrevParen",
+	  factory.createInsertModeKeyAction("ViEdit_indentPrevParen",
 		     EM_SHIFT_LEFT_TO_PAREN,
 		     "Indent current line to start under previous"
 		     + " parenthesis on previous line."
 		     + " Only key press events are valid."),
-	  factory.createEditModeKeyAction("ViEdit_insertReplace",
+	  factory.createInsertModeKeyAction("ViEdit_insertReplace",
 		     EM_INS_REP,
 		     "Toggle between insert and replace mode")
       };

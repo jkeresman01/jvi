@@ -771,7 +771,7 @@ public class ColonCommands implements ColonCommandFlags, Constants {
     register("s", "substitute", ACTION_substitute);
     register("g", "global", ACTION_global);
     register("d", "delete", ACTION_delete);
-    // register("p", "print", ACTION_print);
+    register("p", "print", ACTION_print);
     // register("y", "yank", ACTION_yank);
     
     // register("n", "next", ACTION_next);

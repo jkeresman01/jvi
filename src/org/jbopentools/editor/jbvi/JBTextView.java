@@ -39,6 +39,7 @@ import javax.swing.SwingUtilities;
 
 import com.borland.primetime.ide.Browser;
 import com.borland.primetime.ide.NodeViewer;
+import com.borland.primetime.editor.EditorManager;
 import com.borland.primetime.editor.EditorPane;
 import com.borland.primetime.editor.EditorActionNames;
 import com.borland.primetime.editor.SearchManager;
@@ -102,8 +103,13 @@ public class JBTextView extends TextView
 	insertTab();
 	break;
       case '}':
-	ops.xact(closingCurlyBraceAction);
-	break;
+	if(JBOT.has41()) {
+	  if(EditorManager.isAlignClosingCurlyBrace()) {
+	    ops.xact(closingCurlyBraceAction);
+	    break;
+	  }
+	}
+	// FALL THROUGH
       default:
 	insertTypedChar((char)c);
 	break;

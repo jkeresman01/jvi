@@ -78,7 +78,7 @@ public class ViManager {
   private static int majorVersion = 0;
   private static int minorVersion = 6;
   private static int microVersion = 3;
-  private static String releaseTag = "";
+  private static String releaseTag = ".1";
   private static String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion
@@ -411,11 +411,11 @@ public class ViManager {
     }
   }
 
-  static public void setEditModeKeymap(Keymap newEditModeKeymap) {
-    editModeKeymap = newEditModeKeymap;
+  static public void setInsertModeKeymap(Keymap newInsertModeKeymap) {
+    editModeKeymap = newInsertModeKeymap;
   }
 
-  static public Keymap getEditModeKeymap() {
+  static public Keymap getInsertModeKeymap() {
     return editModeKeymap;
   }
 
