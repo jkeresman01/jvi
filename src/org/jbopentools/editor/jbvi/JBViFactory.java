@@ -126,7 +126,7 @@ public class JBViFactory implements ViFactory,
   private void startupJBVi() {
     if( ! RegExpFactory.initFactory()) {
       RegExpFactory.addImplementation(
-                              "com.raelity.jb.editor.RegExpJBuilder40");
+                              "org.jbopentools.editor.jbvi.RegExpJBuilder40");
       RegExpFactory.initFactory();
     }
     JBViOptions.initOptions();

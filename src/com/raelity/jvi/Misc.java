@@ -198,9 +198,15 @@ public class Misc implements Constants, ClipboardOwner {
     }
     ViFPOS fpos = G.curwin.getWCursor();
     int stopline = fpos.getLine() + nlines - 1;
-    int start = G.curwin
-	      		.getLineStartOffsetFromOffset(fpos.getOffset());
+    int start = G.curwin.getLineStartOffsetFromOffset(fpos.getOffset());
     int end = G.curwin.getLineEndOffset(stopline);
+    if(stopline >= G.curwin.getLineCount()) {
+      // deleting the last line is tricky
+      --end; // can not delete the final new line
+      if(start > 0) {
+        --start; // delete the newline before the starting line to componsate
+      }
+    }
     G.curwin.deleteChar(start, end);
   }
 
