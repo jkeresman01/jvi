@@ -103,12 +103,12 @@ public class JBViKeymap implements PropertyChangeListener {
     //
     // Set up the editor keymap
     //
-
     // first muck with the escape key
     //     - remove the existing bindings to the escape action
     //     - add our bindings and actions
 
     List bindings = KeyBinding.getBindingsList();
+
     Iterator iter = bindings.iterator();
     while(iter.hasNext()) {
       JTextComponent.KeyBinding b = (JTextComponent.KeyBinding)iter.next();

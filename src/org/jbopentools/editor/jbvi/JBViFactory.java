@@ -86,12 +86,14 @@ import com.raelity.jvi.ViFactory;
 import com.raelity.jvi.NonExistentWindowException;
 import com.raelity.jvi.ViXlateKey;
 import com.raelity.jvi.Constants;
+import com.raelity.jvi.G;
 
 import com.raelity.jvi.swing.DefaultViCaret;
 import com.raelity.jvi.swing.ViCaret;
 import com.raelity.jvi.swing.KeyBinding;
 import com.raelity.jvi.swing.CommandLine;
 import com.raelity.jvi.swing.WindowCmdEntry;
+import com.raelity.jvi.swing.InlineCmdEntry;
 import com.borland.primetime.editor.TrackingKeymap$TrackingAction;
 import com.borland.primetime.editor.EditorAction$SubKeymapAction ;
 
@@ -209,7 +211,11 @@ public class JBViFactory implements ViFactory,
    * Return an entry widget suitable for use with the indicated editorPane.
    */
   public ViCmdEntry createCmdEntry(int type) {
-    return new WindowCmdEntry(type);
+    if(G.useFrame.getBoolean()) {
+      return new WindowCmdEntry(type);
+    } else {
+      return new InlineCmdEntry(type);
+    }
   }
 
   /**

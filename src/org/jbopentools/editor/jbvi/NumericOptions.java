@@ -30,7 +30,6 @@ package org.jbopentools.editor.jbvi;
 
 import java.awt.*;
 import javax.swing.*;
-import com.borland.jbcl.layout.*;
 import javax.swing.border.*;
 import java.awt.event.*;
 

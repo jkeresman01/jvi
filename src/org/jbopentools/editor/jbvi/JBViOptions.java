@@ -166,6 +166,8 @@ public class JBViOptions implements PropertyChangeListener
 
   static void establishMiscOptions() {
     optionCategory = new EditorOptionCategory("Vi miscellaneous options");
+    establishBooleanOption(Options.commandEntryFrameOption,
+               "use modal frame for command/search entry");
     establishBooleanOption(Options.unnamedClipboardOption,
                "use clipboard for unamed yank, delete and put");
     establishBooleanOption(Options.notStartOfLineOption,
