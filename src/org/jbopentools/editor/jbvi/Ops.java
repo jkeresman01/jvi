@@ -54,32 +54,17 @@ class Ops implements TextOps, Constants {
   }
 
   public void init(JEditorPane editorPane) {
-    if(ActionsCache.actionMap.size() > 0) {
-      return;
-    }
-    ActionsCache.setupActions(EditorActions.getActions());
-    // need to put in the default action manually?
-    ActionsCache.actionMap.put(EditorActionNames.defaultKeyTypedAction,
-			       new EditorActions.DefaultKeyTypedAction());
   }
 
-  public void xact(String actionName) {
-    event.setSource(textView.getEditorComponent());
-    Action action = ActionsCache.getAction(actionName);
-    xact(action);
-  }
-
-  public void xact(String actionName, String s) {
-    //keyEvent.setSource(textView.getEditorComponent());
-    //keyEvent.setKeyChar(c);
-    event.setSource(textView.getEditorComponent());
-    event.setActionCommand(s);
-    Action action = ActionsCache.getAction(actionName);
-    action.actionPerformed(event);
-  }
 
   public void xact(Action action) {
+    event.setSource(textView.getEditorComponent());
     action.actionPerformed(event);
+  }
+
+  public void xact(Action action, String s) {
+    event.setActionCommand(s);
+    xact(action);
   }
 
   public void xop(int op, String s) {
@@ -88,26 +73,26 @@ class Ops implements TextOps, Constants {
   }
 
   public void xop(int op) {
-    String actionName;
+    Action action;
+
     switch(op) {
     case INSERT_TEXT:
-      // actionName = EditorActionNames.insertContentAction;
-      actionName = EditorActionNames.defaultKeyTypedAction;
+      action = EditorActions.ACTION_DefaultKeyTyped;
       break;
 
     case KEY_TYPED:
-      actionName = EditorActionNames.defaultKeyTypedAction;
+      action = EditorActions.ACTION_DefaultKeyTyped;
       break;
 
     case INSERT_NEW_LINE:
-      actionName = EditorActionNames.smartIndentAction;
+      action = EditorActions.ACTION_ReturnKey; /*JB7 (was SmartIndent)*/
       break;
 
     case INSERT_TAB:
       // NEEDSWORK: should be in edit module for turning tab to blanks
       if( ! EditorManager.isBooleanOptionValue(EditorManager.useTabCharAttribute)
 	 || EditorManager.isBooleanOptionValue(EditorManager.smartTabsAttribute)) {
-	actionName = EditorActionNames.tabKeyAction;
+	action = EditorActions.ACTION_TabKey;
       } else {
 	int offset = textView.getCaretPosition();
 	textView.insertText(offset, "\t");
@@ -116,18 +101,16 @@ class Ops implements TextOps, Constants {
       break;
 
     case DELETE_PREVIOUS_CHAR:
-      actionName = EditorActionNames.smartBackspaceAction;
+      action = EditorActions.ACTION_SmartBackspace;
       break;
 
     default:
       throw new RuntimeException("Unknown op: " + op);
     }
-    xact(actionName);
+    xact(action);
   }
 
   ReusableEvent event = new ReusableEvent();
-  
-  KeyEvent keyEvent = new ReusableKeyEvent();
 }
 
 class ReusableEvent extends ActionEvent {
@@ -150,36 +133,3 @@ class ReusableEvent extends ActionEvent {
   }
 }
 
-/** Make this a key typed event */
-class ReusableKeyEvent extends KeyEvent {
-  ReusableKeyEvent() {
-    super(new java.awt.Button(), KEY_TYPED, 0L, 0, VK_UNDEFINED, '}');
-  }
-
-  public void setSource(Object source) {
-    this.source = source;
-  }
-}
-
-/**
- * This is a cache of the editor actions. The actions can be looked
- * up by name. This is presumed to hold the actions as defined in
- * the {@link javax.swing.text.DefaultEditorKit}. The actions from
- * the {@link javax.swing.text.StyledEditorKit} should be considered
- * optional.
- */
-class ActionsCache {
-  static Map actionMap = new HashMap();
-
-  static void setupActions(Action[] actions) {
-    for(int i = 0; i < actions.length; i++) {
-      Action action = actions[i];
-      String name = (String)action.getValue(Action.NAME);
-      actionMap.put(name, action);
-    }
-  }
-
-  static Action getAction(String name) {
-    return (Action)actionMap.get(name);
-  }
-}

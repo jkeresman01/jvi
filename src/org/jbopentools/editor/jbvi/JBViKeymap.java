@@ -51,7 +51,7 @@ import com.borland.jbuilder.*;
 import com.borland.jbuilder.debugger.DebuggerActions;
 import com.borland.jbuilder.build.BuildActionPool;
 import com.borland.primetime.ide.*;
-import com.borland.primetime.help.HelpManagerActions;
+//JB7 import com.borland.primetime.help.HelpManagerActions;
 import com.borland.primetime.insight.template.TemplateActions;
 import com.borland.primetime.editor.EditorManager;
 import com.borland.primetime.editor.EditorAction;
@@ -169,7 +169,7 @@ public class JBViKeymap implements PropertyChangeListener {
     KeyBinding.removeBindings(viMap, ideMap);
 
     EditorManager.registerKeymap(viMap);
-    
+
     if(JBOT.has41()) {
       Keymap subMap = setupInsertSubKeymap(viMap);
       EditorManager.registerKeymap(subMap);
@@ -185,7 +185,7 @@ public class JBViKeymap implements PropertyChangeListener {
     EditorManager.addPropertyChangeListener(
 		      EditorManager.keymapAttribute, instance);
   }
-  
+
   /*
    * set up the default bindings for code insight
    */
@@ -228,11 +228,11 @@ public class JBViKeymap implements PropertyChangeListener {
     actions.add(insightParameters);
     actions.add(insightSymbol);
     actions.add(insightClass);
-    
+
     bindings.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
 		 KeyEvent.VK_SPACE, Event.CTRL_MASK),
 		 "vi-member-insight"));
-    
+
     bindings.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
 		 KeyEvent.VK_SPACE, Event.SHIFT_MASK|Event.CTRL_MASK),
 		 "vi-parameter-insight"));
@@ -389,14 +389,14 @@ public class JBViKeymap implements PropertyChangeListener {
 	 Browser.DELEGATE_SearchFind),
 
     // Build-related actions...
-    bind(KeyStroke.getKeyStroke(KeyEvent.VK_F9, Event.CTRL_MASK),
-	 com.borland.jbuilder.build.BuildActionPool.ACTION_ProjectMake),
+//JB7     bind(KeyStroke.getKeyStroke(KeyEvent.VK_F9, Event.CTRL_MASK),
+//JB7 	 com.borland.jbuilder.build.BuildActionPool.ACTION_ProjectMake),
     bind(KeyStroke.getKeyStroke(KeyEvent.VK_F9, Event.CTRL_MASK | Event.SHIFT_MASK),
 	 com.borland.jbuilder.build.BuildActionPool.ACTION_ProjectNodeMake),
     bind(KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0),
 	 com.borland.jbuilder.runtime.RuntimeActionPool.ACTION_DummyRunOrResumeProject),
-    bind(KeyStroke.getKeyStroke(KeyEvent.VK_F9, Event.SHIFT_MASK),
-	 com.borland.jbuilder.runtime.RuntimeActionPool.ACTION_ProjectDebug),
+//JB7     bind(KeyStroke.getKeyStroke(KeyEvent.VK_F9, Event.SHIFT_MASK),
+//JB7 	 com.borland.jbuilder.runtime.RuntimeActionPool.ACTION_ProjectDebug),
 
     // History-related actions...
     bind(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, Event.ALT_MASK | Event.CTRL_MASK),
@@ -437,12 +437,14 @@ public class JBViKeymap implements PropertyChangeListener {
 	 DebuggerActions.ACTION_RunToCursor),
 
     // Help-related actions...
+/* JB7
     bind(KeyStroke.getKeyStroke(KeyEvent.VK_HELP, 0),
 	 HelpManagerActions.DELEGATE_Help),
     bind(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0),
 	 HelpManagerActions.DELEGATE_Help),
     bind(KeyStroke.getKeyStroke(KeyEvent.VK_F1, Event.SHIFT_MASK),
 	 HelpManagerActions.ACTION_HelpContext),
+*/
 
     // Message-related actions...
     bind(KeyStroke.getKeyStroke(KeyEvent.VK_N, Event.CTRL_MASK | Event.SHIFT_MASK),
@@ -475,5 +477,12 @@ class JBOT {
    */
   static boolean has43() {
     return maj == 4 && min >= 3;
+  }
+
+  /**
+   * @return true if running under version 4.4 or greater, JB7
+   */
+  static boolean has44() {
+    return maj == 4 && min >= 4;
   }
 }

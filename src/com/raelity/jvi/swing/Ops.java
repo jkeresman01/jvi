@@ -56,14 +56,19 @@ class Ops implements TextOps, Constants {
     EditorActions.setupActions(editorPane.getEditorKit().getActions());
   }
 
-  public void xact(String actionName) {
-    event.setSource(textView.getEditorComponent());
+  private void xact(String actionName) {
     Action action = EditorActions.getAction(actionName);
     xact(action);
   }
 
-  public void xact(String actionName, String s) {
+  private void xact(String actionName, String s) {
+    event.setSource(textView.getEditorComponent());
     xact(actionName);
+  }
+
+  public void xact(Action action, String s) {
+    event.setActionCommand(s);
+    xact(action);
   }
 
   public void xact(Action action) {

@@ -66,11 +66,9 @@ public interface TextOps {
   /** Delete previous character */
   public static final int DELETE_PREVIOUS_CHAR = KEY_TYPED + 1;
 
-  public void xact(String actionName);
-
-  public void xact(String actionName, String keyTyped);
-
   public void xact(Action action);
+
+  public void xact(Action action, String keyTyped);
 
   public void xop(int op, String s);
 

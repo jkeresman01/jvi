@@ -41,7 +41,7 @@ import com.borland.primetime.ide.Browser;
 import com.borland.primetime.ide.NodeViewer;
 import com.borland.primetime.editor.EditorManager;
 import com.borland.primetime.editor.EditorPane;
-import com.borland.primetime.editor.EditorActionNames;
+import com.borland.primetime.editor.EditorActions;
 import com.borland.primetime.editor.SearchManager;
 import com.borland.primetime.editor.SearchOptions;
 import com.borland.primetime.viewer.NodeViewMap;
@@ -68,7 +68,7 @@ import com.raelity.jvi.swing.DefaultOutputStream;
  * Pretty much the TextView used for standard swing.
  */
 public class JBTextView extends TextView
-			implements Constants, EditorActionNames
+			implements Constants
 {
   
   JBTextView(Browser browser, EditorPane editorPane) {
@@ -141,7 +141,7 @@ public class JBTextView extends TextView
 	break;
       case '}':
 	if(JBOT.has41()) {
-	  ops.xact(closingCurlyBraceAction, "}");
+	  ops.xact(EditorActions.ACTION_ClosingCurlyBrace, "}");
 	  break;
 	}
 	// FALL THROUGH
@@ -192,7 +192,7 @@ public class JBTextView extends TextView
   }
 
   public void findMatch() {
-    ops.xact(matchBraceAction);
+    ops.xact(EditorActions.ACTION_MatchBrace);
   }
 
   /** use this for consistency checking */

@@ -76,8 +76,8 @@ public class ViManager implements Constants {
   public static ViCmdEntry activeCommandEntry;
 
   private static int majorVersion = 0;
-  private static int minorVersion = 6;
-  private static int microVersion = 6;
+  private static int minorVersion = 7;
+  private static int microVersion = 0;
   private static String releaseTag = "";
   private static String release = "jVi "
                     + ViManager.majorVersion
@@ -457,7 +457,7 @@ public class ViManager implements Constants {
   static public Keymap getNormalModeKeymap() {
     return normalModeKeymap;
   }
-  
+
   static public ActionListener xlateKeymapAction(ActionListener act) {
     return factory.xlateKeymapAction(act);
   }
