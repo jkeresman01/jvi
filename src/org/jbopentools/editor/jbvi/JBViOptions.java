@@ -42,6 +42,11 @@ import java.beans.PropertyChangeListener;
 
 /**
  * This handles the options from the
+ * <br>
+ * TODO: the readOnlyHack is a JB only option, but
+ * we have to add it to the main jVi options. I guess we
+ * need a JB option that can contain a jVi option; and
+ * a way to get the list of option names.
  */
 public class JBViOptions implements PropertyChangeListener
 {
@@ -54,6 +59,7 @@ public class JBViOptions implements PropertyChangeListener
 	 return;
     //System.err.println("Options...");
     instance = new JBViOptions();
+    establishReadOnlyOptions();
     establishOptions();
     establishMiscOptions();
     establishDebugOptions();
@@ -91,6 +97,8 @@ public class JBViOptions implements PropertyChangeListener
       G.b_p_et = ! EditorManager.isBooleanOptionValue(EditorManager.useTabCharAttribute);
     } else if(name.equals(EditorManager.blockIndentAttribute)) {
       G.b_p_sw = EditorManager.getBlockIndent();
+    } else if(name.equals(Options.readOnlyHackOption)) {
+      JBTextView.changeReadOnlyHackOption();
     }
   }
 
@@ -143,6 +151,13 @@ public class JBViOptions implements PropertyChangeListener
   }
 
   static EditorOptionCategory optionCategory;
+  
+  static void establishReadOnlyOptions() {
+    optionCategory = new EditorOptionCategory("Vi hack read-only file option");
+
+    establishBooleanOption(Options.readOnlyHackOption,
+               "cheat so command mode works with read-only files");
+  }
 
   static void establishOptions() {
     optionCategory = new EditorOptionCategory("Vi cursor wrap options");

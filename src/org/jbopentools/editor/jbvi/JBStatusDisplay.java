@@ -73,6 +73,7 @@ public class JBStatusDisplay implements ViStatusDisplay {
   }
 
   public void displayMode(String mode) {
+    JBTextView.setModify(mode == Edit.VI_MODE_COMMAND ? false : true);
     if( ! mode.equals(lastMode)) {
       lastMode = mode;
       JBViFactory.editorModeChange(mode);

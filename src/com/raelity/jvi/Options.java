@@ -72,6 +72,8 @@ public class Options {
 
   public static final String ignoreCaseOption = "viIgnoreCase";
 
+  public static final String readOnlyHackOption = "viReadOnlyHack";
+
   private static Map options = new HashMap();
   private static Set optionNames;
 
@@ -111,6 +113,8 @@ public class Options {
     G.p_ic = setupBooleanOption(ignoreCaseOption, false);
     
     G.useFrame  = setupBooleanOption(commandEntryFrameOption , false);
+    
+    G.readOnlyHack = setupBooleanOption(readOnlyHackOption, true);
 
     dbgInit();
     didInit = true;

@@ -152,6 +152,8 @@ public class JBViFactory implements ViFactory,
 
   /** @return the text view for the specified editorPane */
   public ViTextView getViTextView(JEditorPane editorPane) {
+    // TODO: This look like a BUG. Shouldn't there only be one text
+    // view per browser. A text view can share multiple JEditorPane.
     ViTextView tv01 = (ViTextView)textViews.get(editorPane);
     if(tv01 == null /* && editorPane exists (not null ptr except) */) {
       try {
@@ -558,7 +560,10 @@ public class JBViFactory implements ViFactory,
       if(KeyBinding.keyDebug.getBoolean()) {
         String virt = ((key & VIRT) != 0) ? "virt" : "";
         System.err.println("KeyAction: " + name + ": " + (key&~VIRT) + " "
-	                   + mod + " " + virt + " enbl:" + target.isEnabled());
+	                   + mod + " " + virt);
+      }
+      if((key & ~VIRT) == KeyEvent.VK_ESCAPE) {
+	// your favorite debug messge goes here
       }
       ViManager.keyStroke(target, key, mod);
     }

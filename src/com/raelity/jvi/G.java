@@ -123,6 +123,8 @@ public class G {
   static char p_sel = 'i';      // selection
   static String p_fp;           // formatprg
   static String p_cpo = "aABceFs"; // cpoptions
+  
+  public static BooleanOption readOnlyHack;
 
   public static BooleanOption dbgKeyStrokes;
   public static IntegerOption dbgFlow;  // 1-switch

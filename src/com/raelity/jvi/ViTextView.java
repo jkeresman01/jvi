@@ -117,6 +117,9 @@ public interface ViTextView {
 
   /** insert the char verbatim, no special actions */
   public void insertTypedChar(char c);
+  
+  /** Can the editor text be changed */
+  public boolean isEditable();
 
   /** undo a change */
   public void undo();

@@ -162,18 +162,33 @@ public class TextView implements ViTextView {
   public Object getFileObject() {
     return getEditorComponent().getDocument();
   }
+  
+  /**
+   * @return true if the text can be changed.
+   */
+  public boolean isEditable() {
+    return editorPane.isEditable();
+  }
 
   public void insertNewLine() {
+    if( ! isEditable()) {
+      Util.vim_beep();
+      return;
+    }
     ops.xop(TextOps.INSERT_NEW_LINE);
   }
 
   public void insertTab() {
+    if( ! isEditable()) {
+      Util.vim_beep();
+      return;
+    }
     expectedCaretPosition++;
     ops.xop(TextOps.INSERT_TAB);
   }
 
   public void replaceChar(int c, boolean advanceCursor) {
-    if( ! editorPane.isEditable()) {
+    if( ! isEditable()) {
       Util.vim_beep();
       return;
     }
@@ -196,7 +211,7 @@ public class TextView implements ViTextView {
   }
 
   public void replaceString(int start, int end, String s) {
-    if( ! editorPane.isEditable()) {
+    if( ! isEditable()) {
       Util.vim_beep();
       return;
     }
@@ -212,7 +227,7 @@ public class TextView implements ViTextView {
   }
 
   public void deleteChar(int start, int end) {
-    if( ! editorPane.isEditable()) {
+    if( ! isEditable()) {
       Util.vim_beep();
       return;
     }
@@ -225,7 +240,7 @@ public class TextView implements ViTextView {
   }
 
   public void deletePreviousChar() {
-    if( ! editorPane.isEditable()) {
+    if( ! isEditable()) {
       Util.vim_beep();
       return;
     }
@@ -233,7 +248,7 @@ public class TextView implements ViTextView {
   }
 
   public void insertText(int offset, String s) {
-    if( ! editorPane.isEditable()) {
+    if( ! isEditable()) {
       Util.vim_beep();
       return;
     }
@@ -255,6 +270,10 @@ public class TextView implements ViTextView {
    * special actions may be taken.
    */
   public void insertChar(int c) {
+    if( ! isEditable()) {
+      Util.vim_beep();
+      return;
+    }
     if(c == '\t') {
       insertTab();
       return;
@@ -266,6 +285,10 @@ public class TextView implements ViTextView {
    * Add a character verbatim to the window.
    */
   public void insertTypedChar(char c) {
+    if( ! isEditable()) {
+      Util.vim_beep();
+      return;
+    }
     oneCharArray[0] = (char)c;
     expectedCaretPosition++;
     ops.xop(TextOps.KEY_TYPED, new String(oneCharArray));

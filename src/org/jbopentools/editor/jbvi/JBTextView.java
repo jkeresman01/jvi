@@ -50,6 +50,7 @@ import com.borland.primetime.ui.Splitter;
 import com.borland.primetime.node.FileNode;
 import com.borland.primetime.node.Node;
 
+import com.raelity.jvi.G;
 import com.raelity.jvi.Window;
 import com.raelity.jvi.Msg;
 import com.raelity.jvi.Constants;
@@ -68,6 +69,7 @@ import com.raelity.jvi.swing.DefaultOutputStream;
 public class JBTextView extends TextView
 			implements Constants, EditorActionNames
 {
+  
   JBTextView(Browser browser, EditorPane editorPane) {
     cache = createTextViewCache();
     statusDisplay = new JBStatusDisplay(browser, editorPane);
@@ -80,6 +82,40 @@ public class JBTextView extends TextView
   protected void createOps(JEditorPane editorPane) {
     ops = new Ops(this);
     ops.init(editorPane);
+  }
+  
+  /**
+   * HACK: override this method so that we can turn off
+   * isEditable for readonly files.
+   * @param editorPane editor pane that is current
+   */
+  public void switchTo(JEditorPane editorPane) {
+    super.switchTo(editorPane);
+    ReadOnlyHack.switchTo(editorPane);
+  }
+  
+  /**
+   * This method assumes that it will only be called for the active editor.
+   * @return true if the text can be changed
+   */
+  public boolean isEditable() {
+    return ReadOnlyHack.isEditable();
+  }
+  
+  /**
+   * Notification of changing mode, command/modify.
+   * Job is to make sure a read only pane is not modified
+   * @param modify true if entering a modification mode
+   */
+  static void setModify(boolean modify) {
+    ReadOnlyHack.setModify(modify);
+  }
+  
+  /**
+   * State of read only option has changed. Make any adjustments.
+   */
+  static void changeReadOnlyHackOption() {
+    ReadOnlyHack.changeReadOnlyHackOption();
   }
 
   /**
@@ -299,5 +335,71 @@ public class JBTextView extends TextView
   public String getDisplayFileName() {
     FileNode node = NodeViewMap.getNode((EditorPane)editorPane);
     return node.getDisplayName();
+  }
+}
+
+/**
+ * This class tracks the readonly state of the currently active JEditorPane.
+ * While jVi is in command mode, the isEditable flag must be true so that it
+ * can recieve KEY_TYPED events. These methods should only be called while
+ * the currently active editor is in command mode.
+ */
+class ReadOnlyHack
+{
+  static JEditorPane readOnlyEditor; // an editor we've switch isEditable
+  static boolean flagReadOnly; // current editor is readonly
+  
+  static void switchTo(JEditorPane editorPane) {
+    // restore isEditable from previously active editor
+    ReadOnlyHack.restoreIsEditable();
+    // set isEditable to activating editor
+    ReadOnlyHack.adjustIsEditable(editorPane);
+  }
+  
+  static boolean isEditable() {
+    return readOnlyEditor != null && flagReadOnly == true ? false : true;
+  }
+  
+  static void restoreIsEditable() {
+    if(readOnlyEditor != null) {
+      readOnlyEditor.setEditable(false);
+      readOnlyEditor = null;
+      flagReadOnly = false;
+    }
+  }
+  
+  static private void adjustIsEditable(JEditorPane editorPane) {
+    if(editorPane.isEditable() == false
+       && G.readOnlyHack.getBoolean()) {
+      readOnlyEditor = editorPane;
+      flagReadOnly = true;
+      readOnlyEditor.setEditable(true);
+    }
+  }
+  
+  /**
+   * This method is used to signal that the active editor is entering/exiting
+   * modify mode.
+   * 
+   * @param modify true if entering modify mode
+   */
+  static void setModify(boolean modify) {
+    /*
+    if(readOnlyEditor != null) {
+      // if entering modify, 
+      readOnlyEditor.setEditable(modify ? false : true);
+    }
+    */
+  }
+  
+  static void changeReadOnlyHackOption() {
+    if(G.readOnlyHack.getBoolean()) {
+      // Turning on the readOnlyHack option. If the currently active
+      // editorPane has isEditable false, then adjust its state.
+      // TODO: Not in the right context, can't call following
+      // adjustIsEditable();
+    } else {
+      restoreIsEditable();
+    }
   }
 }
