@@ -71,7 +71,7 @@ public class JBFS implements ViFS {
 
   public void edit(ViTextView tv, int n, boolean force) {
 
-    TextFileNode node = (TextFileNode)ViManager.getTextBuffer(n);
+    FileNode node = (FileNode)ViManager.getTextBuffer(n);
     if(node == null) {
       StringBuffer s = new StringBuffer(
                         "No alternate file name to substitute for '#");

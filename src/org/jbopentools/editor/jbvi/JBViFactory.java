@@ -61,6 +61,7 @@ import com.borland.primetime.ide.Context;
 import com.borland.primetime.node.Node;
 import com.borland.primetime.node.Project;
 import com.borland.primetime.node.TextFileNode;
+import com.borland.primetime.node.FileNode;
 import com.borland.primetime.viewer.NodeViewMap;
 
 import com.borland.jbuilder.insight.java.JavaInsightSettings;
@@ -84,6 +85,7 @@ import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViFactory;
 import com.raelity.jvi.NonExistentWindowException;
 import com.raelity.jvi.ViXlateKey;
+import com.raelity.jvi.Constants;
 
 import com.raelity.jvi.swing.DefaultViCaret;
 import com.raelity.jvi.swing.ViCaret;
@@ -102,7 +104,8 @@ import com.borland.primetime.editor.EditorAction$SubKeymapAction ;
 public class JBViFactory implements ViFactory,
                                     KeyDefs,
                                     BrowserListener,
-                                    ChangeListener
+                                    ChangeListener,
+				    Constants
 {
   public static String GROUP_VI_PARSER = "vi parser";
   public static String GROUP_VI_NORMAL = "vi normal mode";
@@ -271,7 +274,7 @@ public class JBViFactory implements ViFactory,
     }
     return;
     ***************************************/
-    if( ! (node instanceof TextFileNode)) {
+    if( ! (node instanceof FileNode /*TextFileNode*/)) {
       return;
     }
     ViManager.activateFile(browser, node);
@@ -490,6 +493,10 @@ public class JBViFactory implements ViFactory,
 	  if( ! KeyBinding.ignoreChar(c)) {
             if(KeyBinding.keyDebug.getBoolean()) {
               System.err.println("CharAction: " + ": " + c + " " + mod);
+            } else {
+	      if(mod == MOD_MASK_ALT) {
+		return;
+	      }
             }
 	    ViManager.keyStroke(target, c, mod);
 	  }
