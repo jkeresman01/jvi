@@ -1,0 +1,3194 @@
+/* vi:set ts=8 sw=2
+ *
+ * VIM - Vi IMproved	by Bram Moolenaar
+ *
+ * Do ":help uganda"  in Vim to read copying and usage conditions.
+ * Do ":help credits" in Vim to see a list of people who contributed.
+ */
+/**
+ * Title:        jVi<p>
+ * Description:  A VI-VIM clone.
+ * Use VIM as a model where applicable.<p>
+ * Copyright:    Copyright (c) Ernie Rael<p>
+ * Company:      Raelity Engineering<p>
+ * @author Ernie Rael
+ * @version 1.0
+ */
+
+/*
+ * The contents of this file are subject to the Mozilla Public
+ * License Version 1.1 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of
+ * the License at http://www.mozilla.org/MPL/
+ * 
+ * Software distributed under the License is distributed on an "AS
+ * IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * rights and limitations under the License.
+ * 
+ * The Original Code is jvi - vi editor clone.
+ * 
+ * The Initial Developer of the Original Code is Ernie Rael.
+ * Portions created by Ernie Rael are
+ * Copyright (C) 2000 Ernie Rael.  All Rights Reserved.
+ * 
+ * Contributor(s): Ernie Rael <err@raelity.com>
+ */
+package com.raelity.jvi;
+
+import javax.swing.text.Segment;
+
+import com.raelity.jvi.swing.KeyBinding;
+import com.raelity.jvi.ViManager;
+import com.raelity.jvi.ViFactory;
+import com.raelity.jvi.swing.*;
+
+/**
+ * Contains the main routine for processing characters in command mode.
+ * Communicates closely with the code in ops.c to handle the operators.
+ * <p>
+ * This class started with VIM's normal.c. The idea is to work this into
+ * something that can be used in a JEditorPane framework to implement vi.
+ * So things that are handled by swing text are taken out.
+ * Here is a partial list of changes.
+ * <ul>
+ * <li>Visual mode has been commented out for now.
+ * </ul>
+ * </p>
+ *
+ * <br>nv_*(): functions called to handle Normal and Visual mode commands.
+ * <br>n_*(): functions called to handle Normal mode commands.
+ * <br>v_*(): functions called to handle Visual mode commands.
+ */
+
+public class Normal implements Constants, KeyDefs
+{
+
+  // for normal_cmd() use, stuff that was declared static in the function
+  static int	opnum = 0;		    /* count before an operator */
+  static int   restart_VIsual_select = 0;
+  static int   old_mapped_len = 0;
+
+  static int seltab[] = {
+    /* key		unshifted	shift included */
+    K_S_RIGHT,		K_RIGHT,	1,
+    K_S_LEFT,		K_LEFT,		1,
+    K_S_UP,		K_UP,		1,
+    K_S_DOWN,		K_DOWN,		1,
+    K_S_HOME,		K_HOME,		1,
+    K_S_END,		K_END,		1,
+    // K_KHOME,		K_KHOME,	0,
+    // K_XHOME,		K_XHOME,	0,
+    // K_KEND,		K_KEND,		0,
+    // K_XEND,		K_KEND,		0,
+    K_PAGEUP,		K_PAGEUP,	0,
+    // K_KPAGEUP,		K_KPAGEUP,	0,
+    K_PAGEDOWN,		K_PAGEDOWN,	0,
+    // K_KPAGEDOWN,	K_KPAGEDOWN,	0,
+  };
+
+  //
+  // These are the info for parser state between characters.
+  //
+
+  static boolean newChunk = true;
+  static boolean lookForDigit;
+  static boolean pickupExtraChar;
+  static boolean firstTimeHere01;
+  static boolean editBusy;
+
+  /*
+   * Vi comands can have up to three chunks: buffer-operator-motion.
+   * For example: "a3y4<CR> has buffer: "a
+   * and operator: 3y and motion 4<CR>.
+   * The original vim invokes normal 3 times, one for each chunk. The caller
+   * had no knowledge of how many chunks there were in a single command,
+   * it just called normal in a loop. normal kept control,
+   * calling safe_getc as needed, and returned as each chunk was completed.
+   * Accumulated information was saved in OPARG.
+   * normal detected when a complete command was ready and then executed it,
+   * often times in do_pending_op.
+   * CMDARG has per chunk information, and OPARG is cleared after each
+   * command.
+   * <p>
+   * To fit in the swing environment, we want to be able to parse one
+   * character at a time in the event loop. This means we have to return
+   * after each character. So we must maintain a bunch of "where am i" state
+   * information between each character. This is messy, but not too bad.
+   * </p><p>
+   * Operator and motion are very similar, they have <count><char>
+   * or sometimes more than one char.
+   * </p>
+   */
+
+  static public void processInputChar(int c, boolean toplevel) {
+    try {
+      if(editBusy) {
+        // NEEDSWORK: if exception from edit, turn edit off and finishupEdit
+        Edit.edit(c, false, 0);
+        if(!editBusy) {
+          finishupEdit();
+          newChunk = true;
+          willStartNewChunk();
+        }
+      } else {
+        normal_cmd(c, toplevel);
+        if(!editBusy && newChunk) {
+          willStartNewChunk();
+        }
+      }
+    } catch(Exception e) {
+      e.printStackTrace();
+      Util.beep_flush();
+      resetCommand();
+    }
+  }
+
+  static void finishupEdit() {
+    G.curwin.endUndo();
+  }
+
+  static public void resetCommand() {
+    oap.clearop();
+    newChunk = true;
+    willStartNewChunk();
+    if(editBusy) {
+      editBusy = false; // NEEDSWORK: what else
+      finishupEdit();
+    }
+    clear_showcmd();
+    Misc.showmode();
+    Misc.ui_cursor_shape();
+  }
+
+  /**
+   * This has the few things that would have exectued at the beginning
+   * of normal just before getting a character. Only the stuff with
+   * global implications needs to be put here.
+   */
+  static void willStartNewChunk() {
+    //
+    // If there is an operator pending, then the command we take this time
+    // will terminate it. Finish_op tells us to finish the operation before
+    // returning this time (unless the operation was cancelled).
+    //
+    boolean tflag = G.finish_op;
+    G.finish_op = (oap.op_type != OP_NOP);
+    if (G.finish_op != tflag) {
+      Misc.ui_cursor_shape();	/* may show different cursor shape */
+    }
+
+    G.State = NORMAL_BUSY;
+  }
+
+  /*
+   * normal
+   *
+   * Parse and execute a command in Normal mode.
+   *
+   * This is basically a big switch with the cases arranged in rough categories
+   * in the following order:
+   *
+   *    <ol>
+   *    <li> Macros (q, @)
+   *    <li> Screen positioning commands (^U, ^D, ^F, ^B, ^E, ^Y, z)
+   *    <li> Control commands (:, <help>, ^L, ^G, ^^, ZZ, *, ^], ^T)
+   *    <li> Cursor motions (G, H, M, L, l, K_RIGHT,  , h, K_LEFT, ^H, k, K_UP,
+   *	 ^P, +, CR, LF, j, K_DOWN, ^N, _, |, B, b, W, w, E, e, $, ^, 0)
+   *    <li> Searches (?, /, n, N, T, t, F, f, ,, ;, ], [, %, (, ), {, })
+   *    <li> Edits (., u, K_UNDO, ^R, U, r, J, p, P, ^A, ^S)
+   *    <li> Inserts (A, a, I, i, o, O, R)
+   *    <li> Operators (~, d, c, y, &gt;, &lt;, !, =)
+   *    <li> Abbreviations (x, X, D, C, s, S, Y, &amp;)
+   *    <li> Marks (m, ', `, ^O, ^I)
+   *   <li> Register name setting ('"')
+   *   <li> Visual (v, V, ^V)
+   *   <li> Suspend (^Z)
+   *   <li> Window commands (^W)
+   *   <li> extended commands (starting with 'g')
+   *   <li> mouse click
+   *   <li> scrollbar movement
+   *   <li> The end (ESC)
+   *   </ol>
+   */
+
+  static OPARG oap = new OPARG();
+  static CMDARG	    ca; 	   /* command arguments */
+  static boolean    ctrl_w;	   /* got CTRL-W command */
+  static boolean    need_flushbuf; /* need to call out_flush() */
+  static int	    mapped_len;
+
+  static public void normal_cmd(int c, boolean toplevel) {
+
+    Misc.update_curswant();	// in vim called just before calling normal_cmd
+
+
+    if(newChunk) {
+      newChunk = false;
+      lookForDigit = true;
+      pickupExtraChar = false;
+      firstTimeHere01 = true;
+      ca = new CMDARG();
+      // vim_memset(&ca, 0, sizeof(ca)); cleared when created
+      ca.oap = oap;
+
+      ctrl_w = false;
+      need_flushbuf = false;
+
+      // look at willStartNewChunk for code that used to be here
+      // like setting G.finish_op and G.State
+
+      // following test if this chunk starting a new command.
+      if (!G.finish_op && oap.regname == 0)
+        opnum = 0;
+
+      mapped_len = GetChar.typebuf_maplen();
+
+      // c = GetChar.safe_vgetc();
+
+      old_mapped_len = 0;
+
+      /*
+       * If a mapping was started in Visual or Select mode, remember the length
+       * ...... REMOVED, put old_mapped_len = 0 above
+       */
+
+      if (c == NUL)
+        c = K_ZERO;
+      else if (c == K_KMULTIPLY)  /* K_KMULTIPLY is same as '*' */
+        c = '*';
+      else if (c == K_KMINUS)	/* K_KMINUS is same as '-' */
+        c = '-';
+      else if (c == K_KPLUS)	/* K_KPLUS is same as '+' */
+        c = '+';
+      else if (c == K_KDIVIDE)	/* K_KDIVIDE is same as '/' */
+        c = '/';
+
+      /*
+       * In Visual/Select mode, a few keys are handled in a special way.
+       * ........ REMOVED
+       */
+
+      // Don't set need flush for the first char of a command.
+      // This will prevent single char commands from being displayed.
+      // need_flushbuf = add_to_showcmd(c);
+      if (G.finish_op || oap.regname != 0) {
+        // in the middle of some command
+        need_flushbuf = add_to_showcmd(c);
+      } else {
+        // first char of a new command
+        add_to_showcmd(c);
+      }
+    } else {
+      need_flushbuf = add_to_showcmd(c);
+    }
+
+
+    if(lookForDigit) {
+      if (!(VIsual_active && VIsual_select)) {
+        if (ctrl_w) {
+          --G.no_mapping;
+          --G.allow_keys;
+        }
+        // Pick up any leading digits and compute ca.count0
+        if (    (c >= '1' && c <= '9')
+                   || (ca.count0 != 0 && (/*c == K_DEL ||*/ c == '0'))) {
+          /* *************************************************
+             if (c == K_DEL)
+             {
+             ca.count0 /= 10;
+          // NEEDSWORK: del_from_showcmd argument is not correct i bet.
+          del_from_showcmd(4);	// delete the digit and ~@%
+          }
+          else
+           **************************************************/
+          ca.count0 = ca.count0 * 10 + (c - '0');
+          if (ca.count0 < 0)	    // got too large!
+            ca.count0 = 999999999;
+
+          if (ctrl_w) {
+            ++G.no_mapping;
+            ++G.allow_keys;		// no mapping for nchar, but keys
+          }
+          return; // go get another char
+
+        }
+
+        //
+        // If we got CTRL-W there may be a/another count
+        //
+        if (c == (0x1f & (int)('W')) && !ctrl_w && oap.op_type == OP_NOP)
+        {
+          ctrl_w = true;
+          opnum = ca.count0;		// remember first count
+          ca.count0 = 0;
+          ++G.no_mapping;
+          ++G.allow_keys;		// no mapping for nchar, but keys
+          return; // go get another char
+        }
+      }
+    }
+
+    if(firstTimeHere01) {
+
+      lookForDigit = false;
+      firstTimeHere01 = false;
+
+      ca.cmdchar = c;
+
+      //
+      // If we're in the middle of an operator (including after entering a yank
+      // buffer with '"') AND we had a count before the
+      // operator, then that count overrides the current value of ca.count0.
+      // What * this means effectively, is that commands like "3dw" get turned
+      // into "d3w" which makes things fall into place pretty neatly.
+      // If you give a count before AND after the operator, they are multiplied.
+      //
+      if (opnum != 0) {
+        if (ca.count0 != 0)
+          ca.count0 *= opnum;
+        else
+          ca.count0 = opnum;
+      }
+
+      //
+      // Always remember the count.  It will be set to zero (on the next call,
+      // above) when there is no pending operator.
+      // When called from main(), save the count for use by the "count" built-in
+      // variable.
+      //
+      opnum = ca.count0;
+      ca.count1 = (ca.count0 == 0 ? 1 : ca.count0);
+    }
+
+    //
+    // Get an additional character if we need one.
+    // For CTRL-W we already got it when looking for a count.
+    //
+    if (ctrl_w) {
+      ca.nchar = ca.cmdchar;
+      ca.cmdchar = (0x1f & (int)('W'));
+    } else {
+      if(!pickupExtraChar) {
+        // check if additional char needed
+        if (  (oap.op_type == OP_NOP
+                  && Util.vim_strchr("@zm\"", ca.cmdchar) != null)
+                 || (oap.op_type == OP_NOP
+                     && (ca.cmdchar == 'r'
+                         || (!VIsual_active && ca.cmdchar == 'Z')))
+                 || Util.vim_strchr("tTfF[]g'`", ca.cmdchar) != null
+                 || (ca.cmdchar == 'q'
+                     && oap.op_type == OP_NOP
+                     && !G.Recording
+                     && !G.Exec_reg)
+                 || ((ca.cmdchar == 'a' || ca.cmdchar == 'i')
+                     && (oap.op_type != OP_NOP || VIsual_active)))
+        {
+          ++G.no_mapping;
+          ++G.allow_keys;		/* no mapping for nchar, but allow key codes */
+          pickupExtraChar = true;
+          if (ca.cmdchar == 'r') {
+            G.State = REPLACE;	// pretend Replace mode, for cursor shape
+            Misc.ui_cursor_shape();	// show different cursor shape
+          }
+          return; // and get the extra char
+        }
+      } else {
+        // we've got the extra char
+        if (ca.cmdchar == 'g') {
+          ca.nchar = c;
+        }
+        if (ca.cmdchar == 'g' && ca.nchar == 'r') {
+          G.State = REPLACE;	// pretend Replace mode, for cursor shape
+          Misc.ui_cursor_shape();	// show different cursor shape
+        }
+        // For 'g' commands, already got next char above, "gr" still needs an
+        // extra one though.
+        //
+        if (ca.cmdchar != 'g') {
+          ca.nchar = c;
+        } else if (ca.nchar == 'r') {
+          ca.extra_char = c;
+          throw new RuntimeException("need yet another char for gr");
+        }
+        G.State = NORMAL_BUSY;
+        --G.no_mapping;
+        --G.allow_keys;
+      }
+    }
+
+    //
+    //
+    // All the characters needed for the comand have been collected
+    //
+    //
+
+    /*
+     * Flush the showcmd characters onto the screen so we can see them while
+     * the command is being executed.  Only do this when the shown command was
+     * actually displayed, otherwise this will slow down a lot when executing
+     * mappings.
+     */
+    if (need_flushbuf)
+      Misc.out_flush();
+
+    // c not used past this point
+    // ctrl_w not used past this point
+    // need_flushbuf not used past this point
+    // mapped_len not used past this point
+
+    int		    intflag = 0;
+    boolean	    flag = false;
+    boolean	    type = false;	    /* type of operation */
+    int		    dir = FORWARD;	    /* search direction */
+    CharBuf	    searchbuff = new CharBuf(); /* buffer for search string */
+    boolean	    dont_adjust_op_end = false;
+    FPOS	    old_pos;		    /* cursor position before command */
+    int		    old_col = G.curwin.getWCurswant();
+
+middle_code:
+    do {
+      G.State = NORMAL;
+      if (ca.nchar == ESC)
+      {
+	clearop(oap);
+	if (p_im != 0 && G.restart_edit == 0)
+	  G.restart_edit = 'a';
+	break middle_code;	// used to be goto normal_end
+      }
+
+      /* when 'keymodel' contains "startsel" some keys start Select/Visual mode */
+      if (!VIsual_active && Util.vim_strchr(G.p_km, 'a') != null)
+      {
+	int	i;
+
+	for (i = 0; i < seltab.length; i += 3)
+	{
+	  if (seltab[i] == ca.cmdchar
+	      && (seltab[i + 2] != 0 || (G.mod_mask & MOD_MASK_SHIFT) != 0))
+	  {
+	    ca.cmdchar = seltab[i + 1];
+	    start_selection();
+	    break;
+	  }
+	}
+      }
+
+      msg_didout = false;    /* don't scroll screen up for normal command */
+      msg_col = 0;
+      old_pos = (FPOS)G.curwin.getWCursor().copy();/* remember cursor was */
+
+      /*
+       * Generally speaking, every command below should either clear any pending
+       * operator (with *clearop*()), or set the motion type variable
+       * oap.motion_type.
+       *
+       * When a cursor motion command is made,
+       * it is marked as being a character or
+       * line oriented motion.  Then, if an operator is in effect, the operation
+       * becomes character or line oriented accordingly.
+       */
+      /*
+       * Variables available here:
+       * ca.cmdchar	command character
+       * ca.nchar	extra command character
+       * ca.count0	count before command (0 if no count given)
+       * ca.count1	count before command (1 if no count given)
+       * oap		Operator Arguments (same as ca.oap)
+       * flag		is FALSE, use as you like.
+       * dir		is FORWARD, use as you like.
+       */
+      try {
+	switch (ca.cmdchar)
+	{
+	  /*
+	   * 0: Macros
+	   */
+	  case 'q':
+	    nv_q(ca);
+	    break;
+
+	  case '@':		/* execute a named register */
+	    nv_at(ca);
+	    break;
+
+	    /*
+	     * 1: Screen positioning commands
+	     */
+	  case 0x1f & (int)('D'):	// Ctrl
+	  case 0x1f & (int)('U'):	// Ctrl
+	    nv_halfpage(ca);
+	    break;
+
+	  case 0x1f & (int)('B'):	// Ctrl
+	  case K_S_UP:
+	  case K_PAGEUP:
+	    // case K_KPAGEUP:
+	    dir = BACKWARD;
+
+	  case 0x1f & (int)('F'):	// Ctrl
+	  case K_S_DOWN:
+	  case K_PAGEDOWN:
+	  // case K_KPAGEDOWN:
+	    if (checkclearop(oap))
+	      break;
+	    Misc.onepage(dir, ca.count1);
+	    break;
+
+	  case 0x1f & (int)('E'):	// Ctrl
+	    flag = true;
+	    // FALLTHROUGH
+
+	  case 0x1f & (int)('Y'):	// Ctrl
+	    notImp("scroll_line");	// XXX
+	    nv_scroll_line(ca, flag);
+	    break;
+
+	  case 'z':
+	    if (!checkclearop(oap))
+	      nv_zet(ca);
+	    break;
+
+	    //
+	    // 2: Control commands
+	    //
+	  case ':':
+	    nv_colon(ca);
+	    break;
+
+	  case 'Q':
+	    //
+	    // Ignore 'Q' in Visual mode, just give a beep.
+	    //
+	    notSup("exmode");	// XXX
+	    if (VIsual_active)
+	      Util.vim_beep();
+	    else if (!checkclearop(oap))
+	      do_exmode();
+	    break;
+
+	  case K_HELP:
+	  case K_F1:
+	  // case K_XF1:
+	    notImp("help");
+	    if (!checkclearopq(oap))
+	      do_help(null);
+	    break;
+
+	  case 0x1f & (int)('L'):	// Ctrl
+	    notSup("update_screen");
+	    if (!checkclearop(oap))
+	    {
+	      update_screen(CLEAR);
+	    }
+	    break;
+
+	  case 0x1f & (int)('G'):	// Ctrl
+	    nv_ctrlg(ca);
+	    break;
+
+	  case K_CCIRCM:	 // CTRL-^, short for ":e #"
+	    notImp(":e #");
+	    if (!checkclearopq(oap))
+	      buflist_getfile((int)ca.count0, 0,
+			      GETF_SETMARK|GETF_ALT, false);
+	    break;
+
+	  case 'Z':
+	    notImp("close file");
+	    nv_zzet(ca);
+	    break;
+
+	  case 163:		// the pound sign, '#' for English keyboards
+	    ca.cmdchar = '#';
+	    //FALLTHROUGH
+
+	  case 0x1f & (int)(']'):   // :ta to current identifier 	// Ctrl
+	  case 'K':		    // run program for current identifier
+	  case '*':		    // / to current identifier or string
+	  case K_KMULTIPLY:	    // same as '*'
+	  case '#':		    // ? to current identifier or string
+	    if (ca.cmdchar == K_KMULTIPLY)
+	      ca.cmdchar = '*';
+	    nv_ident(ca, searchbuff);
+	    break;
+
+	  case 0x1f & (int)('T'):    // backwards in tag stack	// Ctrl
+	    if (!checkclearopq(oap))
+	      do_tag("", DT_POP, (int)ca.count1, false, true);
+	    break;
+
+	    //
+	    // Cursor motions
+	    //
+	  case 'G':
+	    // ? curbuf.b_ml.ml_line_count
+	    nv_goto(oap, ca.count0 == 0	? G.curwin.getLineCount()
+		    : ca.count0);
+	    break;
+
+	  case 'H':
+	  case 'M':
+	  case 'L':
+	    nv_scroll(ca);
+	    break;
+
+	  case K_RIGHT:
+	    if ((G.mod_mask & MOD_MASK_CTRL) != 0)
+	    {
+	      oap.inclusive = false;
+	      nv_wordcmd(ca, true);
+	      break;
+	    }
+          //case K_S_SPACE:
+            c = ' ';
+            // FALTHROUGH
+
+	  case 'l':
+	  case ' ':
+	    nv_right(ca);
+	    break;
+
+	  case K_LEFT:
+	    if ((G.mod_mask & MOD_MASK_CTRL) != 0)
+	    {
+	      nv_bck_word(ca, true);
+	      break;
+	    }
+	  case 'h':
+	    dont_adjust_op_end = nv_left(ca);
+	    break;
+
+          //case K_S_BS:
+            //c = K_BS;
+            // FALTHROUGH
+
+	  case K_BS:
+	  case 0x1f & (int)('H'):	// Ctrl
+	    if (VIsual_active && VIsual_select)
+	    {
+	      ca.cmdchar = 'x';	// BS key behaves like 'x' in Select mode
+	      v_visop(ca);
+	    }
+	    else
+	      dont_adjust_op_end = nv_left(ca);
+	    break;
+
+	  case '-':
+	  case K_KMINUS:
+	    flag = true;
+	    // FALLTHROUGH
+
+	  case 'k':
+	  case K_UP:
+	  case 0x1f & (int)('P'):	// Ctrl
+	    oap.motion_type = MLINE;
+	    if (Edit.cursor_up(ca.count1, oap.op_type == OP_NOP) == FAIL)
+	      clearopbeep(oap);
+	    else if (flag)
+	      Edit.beginline(BL_WHITE | BL_FIX);
+	    break;
+
+	  case '+':
+	  case K_KPLUS:
+	  case CR:
+	  case K_KENTER:
+	  case NL:	// CHANGE: from below cause "enter" turned to '\n' char
+	    flag = true;
+	    // FALLTHROUGH
+
+	  case 'j':
+	  case K_DOWN:
+	  case 0x1f & (int)('N'):	// Ctrl
+	    // case NL:	put above...
+	    oap.motion_type = MLINE;
+	    if (Edit.cursor_down(ca.count1, oap.op_type == OP_NOP) == FAIL)
+	      clearopbeep(oap);
+	    else if (flag)
+	      Edit.beginline(BL_WHITE | BL_FIX);
+	    break;
+
+	    //
+	    // This is a strange motion command that helps make operators more
+	    // logical. It is actually implemented, but not documented in the
+	    // real Vi. This motion command actually refers to
+	    // "the current line".
+	    // Commands like "dd" and "yy" are really an alternate form of
+	    // "d_" and "y_". It does accept a count, so "d3_" works to
+	    // delete 3 lines.
+	    //
+	  case '_':
+	    nv_lineop(ca);
+	    break;
+
+	  case K_HOME:
+	  // case K_KHOME:
+	  // case K_XHOME:
+	  case K_S_HOME:
+	    if ((G.mod_mask & MOD_MASK_CTRL) != 0) // CTRL-HOME = goto line 1
+	    {
+	      nv_goto(oap, 1);
+	      break;
+	    }
+	    ca.count0 = 1;
+	    // FALLTHROUGH
+
+	  case '|':
+	    nv_pipe(ca);
+	    break;
+
+	    //
+	    // Word Motions
+	    //
+	  case 'B':
+	    type = true;
+	    // FALLTHROUGH
+
+	  case 'b':
+	  case K_S_LEFT:
+	    nv_bck_word(ca, type);
+	    break;
+
+	  case 'E':
+	    type = true;
+	    // FALLTHROUGH
+
+	  case 'e':
+	    oap.inclusive = true;
+	    nv_wordcmd(ca, type);
+	    break;
+
+	  case 'W':
+	    type = true;
+	    // FALLTHROUGH
+
+	  case 'w':
+	  case K_S_RIGHT:
+	    oap.inclusive = false;
+	    nv_wordcmd(ca, type);
+	    break;
+
+	  case K_END:
+	  // case K_KEND:
+	  // case K_XEND:
+	  case K_S_END:
+	    if ((G.mod_mask & MOD_MASK_CTRL) != 0) {
+	      // CTRL-END = goto last line
+	      // nv_goto(oap, curbuf.b_ml.ml_line_count);
+	      nv_goto(oap, G.curwin.getLineCount());
+	    }
+	    // FALLTHROUGH
+
+	  case '$':
+	    nv_dollar(ca);
+	    break;
+
+	  case '^':
+	    intflag = BL_WHITE | BL_FIX;		// XXX
+	    // FALLTHROUGH
+
+	  case '0':
+	    oap.motion_type = MCHAR;
+	    oap.inclusive = false;
+	    Edit.beginline(intflag);
+	    break;
+
+	    /*
+	     * 4: Searches
+	     */
+	  case K_KDIVIDE:
+	    ca.cmdchar = '/';
+	    // FALLTHROUGH
+	  case '?':
+	  case '/':
+	    nv_search(ca, searchbuff, false);
+	    break;
+
+	  case 'N':
+	    intflag = SEARCH_REV;
+	    // FALLTHROUGH
+
+	  case 'n':
+	    nv_next(ca, intflag);
+	    break;
+
+	    //
+	    // Character searches
+	    //
+	  case 'T':
+	    dir = BACKWARD;
+	    // FALLTHROUGH
+
+	  case 't':
+	    nv_csearch(ca, dir, true);
+	    break;
+
+	  case 'F':
+	    dir = BACKWARD;
+	    // FALLTHROUGH
+
+	  case 'f':
+	    nv_csearch(ca, dir, false);
+	    break;
+
+	  case ',':
+	    intflag = 1;		// XXX why not dir??
+	    // FALLTHROUGH
+
+	  case ';':
+	    // ca.nchar == NUL, thus repeat previous search
+	    nv_csearch(ca, intflag, false);
+	    break;
+
+	    //
+	    // section or C function searches
+	    //
+	  case '[':
+	    dir = BACKWARD;
+	    // FALLTHROUGH
+
+	  case ']':
+	    notSup("bracket commands");
+	    nv_brackets(ca, dir);
+	    break;
+
+	  case '%':
+	    nv_percent(ca);
+	    break;
+
+	  case '(':
+	    dir = BACKWARD;
+	    // FALLTHROUGH
+
+	  case ')':
+	    notImp("brace");
+	    nv_brace(ca, dir);
+	    break;
+
+	  case '{':
+	    dir = BACKWARD;
+	    // FALLTHROUGH
+
+	  case '}':
+	    notImp("findparen");
+	    nv_findpar(ca, dir);
+	    break;
+
+	    /*
+	     * 5: Edits
+	     */
+	  case '.':    /* redo command */
+	    if (!checkclearopq(oap))
+	    {
+	      /*
+	       * if restart_edit is TRUE, the last but one command is repeated
+	       * instead of the last command (inserting text). This is used for
+	       * CTRL-O <.> in insert mode
+	       */
+	      if (GetChar.start_redo(ca.count0, G.restart_edit != 0
+			     && !arrow_used) == FAIL)
+		clearopbeep(oap);
+	    }
+	    break;
+
+	  case 'u':    /* undo */
+	    if (VIsual_active || oap.op_type == OP_LOWER)
+	    {
+	      /* translate "<Visual>u" to "<Visual>gu" and "guu" to "gugu" */
+	      ca.cmdchar = 'g';
+	      ca.nchar = 'u';
+	      nv_operator(ca);
+	      break;
+	    }
+	    /* FALLTHROUGH */
+
+	  case K_UNDO:
+	    if (!checkclearopq(oap))
+	    {
+	      Misc.u_undo((int)ca.count1);
+	      G.curwin.setWSetCurswant(true);
+	    }
+	    break;
+
+	  case 0x1f & (int)('R'):	/* undo undo */	// Ctrl
+	    if (!checkclearopq(oap))
+	    {
+	      Misc.u_redo((int)ca.count1);
+	      G.curwin.setWSetCurswant(true);
+	    }
+	    break;
+
+	  case 'U':		/* Undo line */
+	    notImp("undo line");
+	    nv_Undo(ca);
+	    break;
+
+	  case 'r':		/* replace character */
+	    nv_replace(ca);
+	    break;
+
+	  case 'J':
+	    nv_join(ca);
+	    break;
+
+	  case 'P':
+	  case 'p':
+	    nv_put(ca);
+	    break;
+
+	  case 0x1f & (int)('A'):	    /* add to number */	// Ctrl
+	  case 0x1f & (int)('X'):	    /* subtract from number */	// Ctrl
+	    notSup("add/sub");
+	    if (!checkclearopq(oap) && do_addsub((int)ca.cmdchar, ca.count1) == OK)
+	      prep_redo_cmd(ca);
+	    break;
+
+	    /*
+	     * 6: Inserts
+	     */
+	  case 'A':
+	  case 'a':
+	  case 'I':
+	  case 'i':
+	  case K_INS:
+	    nv_edit(ca);
+	    break;
+
+	  case 'o':
+	  case 'O':
+	    if (VIsual_active)  /* switch start and end of visual */
+	      v_swap_corners(ca);
+	    else
+	      n_opencmd(ca);
+	    break;
+
+	  case 'R':
+	    nv_Replace(ca);
+	    break;
+
+	    /*
+	     * 7: Operators
+	     */
+	  case '~':	    /* swap case */
+	    /*
+	     * if tilde is not an operator and Visual is off: swap case
+	     * of a single character
+	     */
+	    if (	   ! G.p_to.getBoolean()
+			   && !VIsual_active
+			   && oap.op_type != OP_TILDE)
+	    {
+	      n_swapchar(ca);
+	      break;
+	    }
+	    /*FALLTHROUGH*/
+
+	  case 'd':
+	  case 'c':
+	  case 'y':
+	  case '>':
+	  case '<':
+	  case '!':
+	  case '=':
+	    if(Util.vim_strchr("!=", ca.cmdchar) != null) {
+	      notImp("oper");
+	    }
+	    nv_operator(ca);
+	    break;
+
+	    /*
+	     * 8: Abbreviations
+	     */
+
+	  case 'S':
+	  case 's':
+	    if (VIsual_active)	/* "vs" and "vS" are the same as "vc" */
+	    {
+	      if (ca.cmdchar == 'S')
+		VIsual_mode = 'V';
+	      ca.cmdchar = 'c';
+	      nv_operator(ca);
+	      break;
+	    }
+	    /* FALLTHROUGH */
+	  case K_DEL:
+	  case 'Y':
+	  case 'D':
+	  case 'C':
+	  case 'x':
+	  case 'X':
+	    if (ca.cmdchar == K_DEL)
+	      ca.cmdchar = 'x';		/* DEL key behaves like 'x' */
+
+	    /* with Visual these commands are operators */
+	    if (VIsual_active)
+	    {
+	      v_visop(ca);
+	      break;
+	    }
+	    /* FALLTHROUGH */
+
+	  case '&':
+	    if(ca.cmdchar == '&') notSup("&");	// XXX
+	    nv_optrans(ca);
+	    opnum = 0;
+	    break;
+
+	    /*
+	     * 9: Marks
+	     */
+	  case 'm':
+	    if (!checkclearop(oap))
+	    {
+	      if (MarkOps.setmark(ca.nchar) == FAIL)
+		clearopbeep(oap);
+	    }
+	    break;
+
+	  case '\'':
+	    flag = true;
+	    /* FALLTHROUGH */
+
+	  case '`':
+	    nv_gomark(ca, flag);
+	    break;
+
+	  case 0x1f & (int)('O'):	// Ctrl
+	    /* switch from Select to Visual mode for one command */
+	    if (VIsual_active && VIsual_select)
+	    {
+	      VIsual_select = false;
+	      Misc.showmode();
+	      restart_VIsual_select = 2;
+	      break;
+	    }
+	    ca.count1 = -ca.count1;	/* goto older pcmark */
+	    /* FALLTHROUGH */
+
+	  case 0x1f & (int)('I'):		/* goto newer pcmark */	// Ctrl
+	    notSup("mark stack");
+	    nv_pcmark(ca);
+	    break;
+
+	    /*
+	     * 10. Register name setting
+	     */
+	  case '"':
+	    MutableInt mi = new MutableInt(opnum);
+	    nv_regname(ca, mi);
+	    opnum = mi.getValue();
+	    break;
+
+	    /*
+	     * 11. Visual
+	     */
+	  case 'v':
+	  case 'V':
+	  case 0x1f & (int)('V'):	// Ctrl
+	    //
+	    // if (!checkclearop(oap))
+	    // nv_visual(ca, false);
+	    //
+	    notSup("Visual Mode");
+	    break;
+
+	    /*
+	     * 12. Suspend
+	     */
+
+	  case 0x1f & (int)('Z'):	// Ctrl
+	    notSup("ctrl-z");
+	    clearop(oap);
+	    if (VIsual_active)
+	      end_visual_mode();		    /* stop Visual */
+	    GetChar.stuffReadbuff(":st\r");   /* with autowrite */
+	    break;
+
+	    /*
+	     * 13. Window commands
+	     */
+
+	  case 0x1f & (int)('W'):	// Ctrl
+	    if (!checkclearop(oap))
+	      Misc.do_window(ca.nchar, ca.count0); // everything is in window.c
+	    break;
+
+	    /*
+	     *   14. extended commands (starting with 'g')
+	     */
+	  case 'g':
+	    notSup("extended commands");
+	    nv_g_cmd(ca, searchbuff);
+	    break;
+
+	    /*
+	     * 15. mouse click
+	     * == REMOVED ==
+	     */
+
+	    //
+	    // 16. scrollbar movement
+	    // == REMOVED ==
+	    //
+
+	    //
+	    // case K_SELECT:	    /* end of Select mode mapping */
+	    //     nv_select(ca);
+	    //     break;
+
+	    /*
+	     * 17. The end
+	     */
+	    /* CTRL-\ CTRL-N goes to Normal mode: a no-op */
+	  case 0x1f & (int)('\\'):	// Ctrl
+	    notSup("normal");
+	    nv_normal(ca);
+	    break;
+
+	  case 0x1f & (int)('C'):	// Ctrl
+	    notSup("ctrl-c");
+	    G.restart_edit = 0;
+	    /*FALLTHROUGH*/
+
+	  case ESC:
+	    nv_esc(ca, opnum);
+	    break;
+
+	  default:			/* not a known command */
+	    clearopbeep(oap);
+	    break;
+
+	}	/* end of switch on command character */
+      } catch(NotSupportedException e) {
+	clearopbeep(oap);
+      }
+
+      /*
+       * if we didn't start or finish an operator, reset oap.regname, unless we
+       * need it later.
+       */
+      if (!G.finish_op && oap.op_type == 0 &&
+	  Util.vim_strchr("\"DCYSsXx.", ca.cmdchar) == null)
+	oap.regname = 0;
+
+      /*
+       * If an operation is pending, handle it...
+       */
+      do_pending_operator(ca, searchbuff,
+			  null, old_col, false, dont_adjust_op_end);
+
+      /*
+       * Wait when a message is displayed that will be overwritten by the mode
+       * ...... VISUAL MODE stuff for pause about showing message
+       */
+    } while(false);
+// normal_end: this target replace by break from do {} while(0)
+
+    /*
+     * Finish up after executing a Normal mode command.
+     */
+
+    msg_nowait = false;
+
+    boolean wasFinishOp = G.finish_op;
+    G.finish_op = false;
+    /* Redraw the cursor with another shape, if we were in Operator-pending
+     * mode or did a replace command. */
+    if (wasFinishOp || ca.cmdchar == 'r')
+      Misc.ui_cursor_shape();		/* may show different cursor shape */
+
+    if (oap.op_type == OP_NOP && oap.regname == 0)
+      clear_showcmd();
+
+    // if (modified) ....
+
+    MarkOps.checkpcmark();	/* check if we moved since setting pcmark */
+
+    // vim_free(searchbuff);
+    // SCROLLBIND stuff
+    // May restart edit() ..... VISUAL MODE STUFF DELETED
+
+    newChunk = true;
+  }
+
+  /**
+   * Handle an operator after visual mode or when the movement is finished
+   */
+  static void do_pending_operator(CMDARG cap,
+			   CharBuf searchbuff,
+			   MutableBoolean command_busy,
+			   int old_col,
+			   boolean gui_yank,
+			   boolean dont_adjust_op_end)
+  {
+    OPARG	oap = cap.oap;
+    FPOS	old_cursor;
+    boolean	empty_region_error;
+
+    // BIG VISUAL DELETE XXX
+
+    // old_cursor = G.curwin.getWCursor();
+
+    /*
+     * If an operation is pending, handle it...
+     */
+    if ((VIsual_active || G.finish_op) && oap.op_type != OP_NOP) {
+      do_xop("do_pending_operator");
+      oap.is_VIsual = VIsual_active;
+
+      old_cursor = G.curwin.getWCursor(); // this was outside the if, look above
+
+      /* only redo yank when 'y' flag is in 'cpoptions' */
+      if ((Util.vim_strchr(G.p_cpo, CPO_YANK) != null || oap.op_type != OP_YANK)
+	  && !VIsual_active)
+      {
+	prep_redo(oap.regname, cap.count0,
+		  get_op_char(oap.op_type), get_extra_op_char(oap.op_type),
+		  cap.cmdchar, cap.nchar);
+	if (cap.cmdchar == '/' || cap.cmdchar == '?') /* was a search */
+	{
+	  /*
+	   * If 'cpoptions' does not contain 'r', insert the search
+	   * pattern to really repeat the same command.
+	   */
+	  if (Util.vim_strchr(G.p_cpo, CPO_REDO) == null)
+	    { GetChar.AppendToRedobuff(searchbuff.toString()); }
+	  GetChar.AppendToRedobuff(NL_STR);
+	}
+      }
+
+      // BIG VISUAL DELETE XXX
+
+      /*
+       * Set oap.start to the first position of the operated text, oap.end
+       * to the end of the operated text.  w_cursor is equal to oap.start.
+       */
+	     // (lt(oap.start, curwin.w_cursor))
+      if (oap.start.compareTo(G.curwin.getWCursor()) < 0) {
+	oap.end = (FPOS)G.curwin.getWCursor().copy();
+	G.curwin.getWindow().setWCursor(oap.start);
+      }
+      else
+      {
+	oap.end = (FPOS)oap.start.copy();
+	oap.start = (FPOS)G.curwin.getWCursor().copy();
+      }
+      oap.line_count = oap.end.getLine() - oap.start.getLine() + 1;
+
+      // BIG VISUAL DELETE XXX
+
+      G.curwin.setWSetCurswant(true);
+
+      /*
+       * oap.empty is set when start and end are the same.  The inclusive
+       * flag affects this too, unless yanking and the end is on a NUL.
+       */
+      oap.empty = (oap.motion_type == MCHAR
+	       && (!oap.inclusive
+		   || (oap.op_type == OP_YANK
+		       && Misc.gchar_pos(oap.end) == '\n'))
+	       && oap.start.equals(oap.end));
+      /*
+       * For delete, change and yank, it's an error to operate on an
+       * empty region, when 'E' inclucded in 'cpoptions' (Vi compatible).
+       */
+      empty_region_error = (oap.empty
+			    && Util.vim_strchr(G.p_cpo, CPO_EMPTYREGION) != null);
+
+      /* Force a redraw when operating on an empty Visual region */
+//       if (oap.is_VIsual && oap.empty)
+// 	redraw_curbuf_later(NOT_VALID);
+
+      /*
+       * If the end of an operator is in column one while oap.motion_type
+       * is MCHAR and oap.inclusive is FALSE, we put op_end after the last
+       * character in the previous line. If op_start is on or before the
+       * first non-blank in the line, the operator becomes linewise
+       * (strange, but that's the way vi does it).
+       */
+      if (	   oap.motion_type == MCHAR
+		   && oap.inclusive == false
+		   && !dont_adjust_op_end
+		   && oap.end.getColumn() == 0
+		   && (!oap.is_VIsual || G.p_sel == 'o')
+		   && oap.line_count > 1)
+      {
+	oap.end_adjusted = true;	    /* remember that we did this */
+	--oap.line_count;
+	int new_line = oap.end.getLine() - 1;
+        int new_col = 0;
+	if (Misc.inindent(0))
+	  oap.motion_type = MLINE;
+	else
+	{
+          new_col = Util.lineLength(new_line);
+	  if (new_col != 0)
+	  {
+            --new_col;
+	    oap.inclusive = true;
+	  }
+	}
+        oap.end.setPosition(new_line, new_col);
+      }
+      else
+	oap.end_adjusted = false;
+
+      switch (oap.op_type)
+      {
+	case OP_LSHIFT:
+        case OP_RSHIFT:
+          G.curwin.beginUndo();
+          try {
+            Misc.op_shift(oap, true, oap.is_VIsual ? (int)cap.count1 : 1);
+          } finally {
+            G.curwin.endUndo();
+          }
+	  break;
+
+	case OP_JOIN_NS:
+	case OP_JOIN:
+	  if (oap.line_count < 2) {
+	    oap.line_count = 2;
+	  }
+	      // .... -1 > curbuf.b_ml.ml_line_count...
+	  if (G.curwin.getWCursor().getLine() + oap.line_count - 1 >
+	      G.curwin.getLineCount()) {
+	    Util.beep_flush();
+	  } else {
+            G.curwin.beginUndo();
+            try {
+              Misc.do_do_join(oap.line_count, oap.op_type == OP_JOIN, true);
+            } finally {
+              G.curwin.endUndo();
+            }
+	  }
+	  break;
+
+	case OP_DELETE:
+	  VIsual_reselect = false;	    /* don't reselect now */
+	  if (empty_region_error)
+	    Util.vim_beep();
+	  else {
+            G.curwin.beginUndo();
+            try {
+              Misc.op_delete(oap);
+            } finally {
+              G.curwin.endUndo();
+            }
+	  }
+	  break;
+
+	case OP_YANK:
+	  if (empty_region_error)
+	  {
+	    if (!gui_yank)
+	      Util.vim_beep();
+	  }
+	  else
+	    Misc.op_yank(oap, false, !gui_yank);
+	  Misc.check_cursor_col();
+	  break;
+
+	case OP_CHANGE:
+	  VIsual_reselect = false;	    /* don't reselect now */
+	  if (empty_region_error)
+	    Util.vim_beep();
+	  else
+	  {
+	    // don't restart edit after typing <Esc> in edit()
+	    G.restart_edit = 0;
+	    G.curwin.beginUndo();
+            Misc.op_change(oap); // will call edit()
+	  }
+	  break;
+
+	case OP_FILTER:
+	  if (Util.vim_strchr(G.p_cpo, CPO_FILTER) != null)
+	    GetChar.AppendToRedobuff("!\r");  /* use any last used !cmd */
+	  else
+	    bangredo = true;    /* do_bang() will put cmd in redo buffer */
+
+	case OP_INDENT:
+	case OP_COLON:
+
+	  op_colon(oap);
+	  break;
+
+	case OP_TILDE:
+	case OP_UPPER:
+	case OP_LOWER:
+	case OP_ROT13:
+	  if (empty_region_error)
+	    Util.vim_beep();
+	  else {
+            G.curwin.beginUndo();
+            try {
+              Misc.op_tilde(oap);
+              Misc.check_cursor_col();
+            } finally {
+              G.curwin.endUndo();
+            }
+          }
+	  break;
+
+	case OP_FORMAT:
+	  if (G.p_fp != null)
+	    op_colon(oap);		/* use external command */
+	  else
+	    op_format(oap);		/* use internal function */
+	  break;
+
+	case OP_INSERT:
+	case OP_APPEND:
+	  VIsual_reselect = false;	/* don't reselect now */
+	  Util.vim_beep();
+	  break;
+
+	case OP_REPLACE:
+	  VIsual_reselect = false;	/* don't reselect now */
+	  Util.vim_beep();
+	  break;
+
+	default:
+	  clearopbeep(oap);
+      }
+      if (!gui_yank)
+      {
+	/*
+	 * if 'sol' not set, go back to old column for some commands
+	 */
+	if (G.p_notsol.getBoolean() && oap.motion_type == MLINE
+            && !oap.end_adjusted
+	    && (oap.op_type == OP_LSHIFT || oap.op_type == OP_RSHIFT
+		|| oap.op_type == OP_DELETE)) {
+	  G.curwin.setWCurswant(old_col);
+	  Misc.coladvance(old_col);
+	}
+	oap.op_type = OP_NOP;
+      }
+      else {
+	G.curwin.getWindow().setWCursor(old_cursor);
+      }
+      oap.block_mode = false;
+      oap.regname = 0;
+    }
+  }
+
+  /**
+   * Find the identifier under or to the right of the cursor.  If none is
+   * found and find_type has FIND_STRING, then find any non-white string.  The
+   * length of the string is returned, or zero if no string is found.  If a
+   * string is found, a pointer to the string is put in *string, but note that
+   * the caller must use the length returned as this string may not be NUL
+   * terminated.
+   * @param mi use this to return offset of start of ident
+   */
+  static int find_ident_under_cursor(MutableInt mi, int find_type) {
+    int	    col = 0;	    // init to shut up GCC
+    int	    i;
+
+    //
+    // if i == 0: try to find an identifier
+    // if i == 1: try to find any string
+    ///
+    Segment seg = G.curwin.getLineSegment(G.curwin.getWCursor().getLine());
+
+    for (i = ((find_type & FIND_IDENT) != 0) ? 0 : 1;	i < 2; ++i)
+    {
+      //
+      // skip to start of identifier/string
+      ///
+      col = G.curwin.getWCursor().getColumn();
+      while (seg.array[col + seg.offset] != '\n'
+             && (i == 0
+                 ? !Misc.vim_iswordc(seg.array[col + seg.offset])
+                 : Misc.vim_iswhite(seg.array[col + seg.offset])))
+        ++col;
+
+      //
+      // Back up to start of identifier/string. This doesn't match the
+      // real vi but I like it a little better and it shouldn't bother
+      // anyone.
+      // When FIND_IDENT isn't defined, we backup until a blank.
+      ///
+      while (col > 0
+             && (i == 0
+                ? Misc.vim_iswordc(seg.array[col - 1 + seg.offset])
+                : (!Misc.vim_iswhite(seg.array[col - 1 + seg.offset])
+                   && (!((find_type & FIND_IDENT) != 0)
+                       || !Misc.vim_iswordc(seg.array[col - 1 + seg.offset])))))
+        --col;
+
+      //
+      // if we don't want just any old string, or we've found an identifier,
+      // stop searching.
+      ///
+      if (!((find_type & FIND_STRING) != 0)
+          || Misc.vim_iswordc(seg.array[col + seg.offset]))
+        break;
+    }
+    //
+    // didn't find an identifier or string
+    ///
+    if (seg.array[col + seg.offset] == '\n'
+        || (!Misc.vim_iswordc(seg.array[col + seg.offset]) && i == 0))
+    {
+      if ((find_type & FIND_STRING) != 0)
+        Msg.emsg("No string under cursor");
+      else
+        Msg.emsg("No identifier under cursor");
+      return 0;
+    }
+    // ptr += col;
+    // *string = ptr;
+    mi.setValue(G.curwin.getLineStartOffset(G.curwin.getWCursor().getLine())
+                + col);
+
+    int len = 0;
+    while (i == 0
+           ? Misc.vim_iswordc(seg.array[len + col + seg.offset])
+           : (seg.array[len + col + seg.offset] != '\n'
+              && !Misc.vim_iswhite(seg.array[len + col + seg.offset])))
+    {
+      ++len;
+    }
+    return len;
+  }
+
+  /**
+   * Prepare for redo of a normal command.
+   */
+  static private void prep_redo_cmd(CMDARG cap) {
+    prep_redo(cap.oap.regname, cap.count0,
+	      NUL, cap.cmdchar, NUL, cap.nchar);
+  }
+
+  /**
+   * Prepare for redo of any command.
+   */
+  static private void prep_redo(int regname, int num,
+			 int cmd1, int cmd2, int cmd3, int cmd4) {
+    GetChar.ResetRedobuff();
+    if (regname != 0) {	/* yank from specified buffer */
+      GetChar.AppendCharToRedobuff('"');
+      GetChar.AppendCharToRedobuff(regname);
+    }
+    if (num != 0) {
+      GetChar.AppendNumberToRedobuff(num);
+    }
+
+    if (cmd1 != NUL) { GetChar.AppendCharToRedobuff(cmd1); }
+    if (cmd2 != NUL) { GetChar.AppendCharToRedobuff(cmd2); }
+    if (cmd3 != NUL) { GetChar.AppendCharToRedobuff(cmd3); }
+    if (cmd4 != NUL) { GetChar.AppendCharToRedobuff(cmd4); }
+  }
+
+  /**
+   * check for operator active and clear it
+   *
+   * @return TRUE if operator was active
+   */
+  static private  boolean checkclearop(OPARG oap) {
+    do_xop("checkclearop");
+    if (oap.op_type == OP_NOP)
+      return false;
+    clearopbeep(oap);
+    return true;
+  }
+
+  /**
+   * check for operator or Visual active and clear it
+   *
+   * @return TRUE if operator was active
+   */
+  static private boolean checkclearopq(OPARG oap) {
+    do_xop("checkclearopq");
+    if (oap.op_type == OP_NOP && !VIsual_active)
+      return false;
+    clearopbeep(oap);
+    return true;
+  }
+
+  static private void clearop(OPARG oap) {
+    do_xop("clearop");
+    oap.clearop();
+  }
+
+  /* *******************************
+  static void clearopInstance() {
+    oap.clearop();
+  }
+  ********************************/
+
+  static private void clearopbeep(OPARG oap) {
+    do_xop("clearopbeep");
+    clearop(oap);
+    Util.beep_flush();
+  }
+
+  //
+  // Routines for displaying a partly typed command
+  //
+
+  static StringBuffer showcmd_buf = new StringBuffer();
+  static StringBuffer old_showcmd_buf = new StringBuffer();
+  static boolean showcmd_is_clear = true;
+  // static char_u old_showcmd_buf[SHOWCMD_COLS + 1];  /* For push_showcmd() */
+
+  static void clear_showcmd() {
+    do_xop("clear_showcmd");
+
+    if (!G.p_sc)
+      return;
+
+    showcmd_buf.setLength(0);
+
+    /*
+     * Don't actually display something if there is nothing to clear.
+     */
+    if (showcmd_is_clear)
+      return;
+
+    display_showcmd();
+  }
+
+  /**
+   * Add 'c' to string of shown command chars.
+   * Return TRUE if output has been written (and setcursor() has been called).
+   */
+  static boolean add_to_showcmd(int c) {
+
+    do_xop("add_to_showcmd");
+
+    if (!G.p_sc)
+      return false;
+
+    add_one_to_showcmd_buffer(c);
+
+    if (GetChar.char_avail())
+      return false;
+
+    display_showcmd();
+
+    return true;
+  }
+
+  /** Add char to show commmand buffer. */
+  static private void add_one_to_showcmd_buffer(int c) {
+    String  p;
+    int	    old_len;
+    int	    extra_len;
+    int	    overflow;
+
+    p = Misc.transchar(c);
+    old_len = showcmd_buf.length();
+    extra_len = p.length();
+    overflow = old_len + extra_len - SHOWCMD_COLS;
+    if(overflow > 0) {
+      showcmd_buf.delete(0, overflow);
+    }
+    showcmd_buf.append(p);
+  }
+
+  static void add_to_showcmd_c(int c) {
+    // if (!add_to_showcmd(c))
+	// setcursor();
+    add_to_showcmd(c);
+  }
+
+  /**
+   * Delete 'len' characters from the end of the shown command.
+   */
+  static private void del_from_showcmd(int len) {
+    int	    old_len;
+
+    if (!G.p_sc)
+      return;
+
+    old_len = showcmd_buf.length();
+    if (len > old_len)
+      len = old_len;
+    showcmd_buf.delete(old_len - len, SHOWCMD_COLS);
+
+    if (!GetChar.char_avail())
+      display_showcmd();
+  }
+
+  static void push_showcmd() {
+    if (!G.p_sc)
+      return;
+
+    old_showcmd_buf.setLength(0);
+    old_showcmd_buf.append(showcmd_buf.toString());
+  }
+
+  static void pop_showcmd() {
+    if (!G.p_sc)
+      return;
+
+    showcmd_buf.setLength(0);
+    showcmd_buf.append(old_showcmd_buf.toString());
+
+    display_showcmd();
+  }
+
+  static private void display_showcmd() {
+    int	    len;
+
+    // cursor_off();
+
+    len = showcmd_buf.length();
+    if (len == 0)
+      showcmd_is_clear = true;
+    else
+    {
+      showcmd_is_clear = false;
+    }
+
+    //G.curwin.getStatusDisplay()
+	      //.displayCommand(showcmd_buf.toString());
+    Misc.setCommandCharacters(showcmd_buf.toString());
+
+    //
+    // clear the rest of an old message by outputing up to SHOWCMD_COLS spaces
+    //
+    // screen_puts((char_u *)"          " + len, (int)Rows - 1, sc_col + len, 0)
+
+    // setcursor();	    /* put cursor back where it belongs */
+  }
+
+  /** nv_zet is simplified a bunch, only do vi compat */
+  static private  void	nv_zet (CMDARG cap) {
+    do_xop("nv_zet");
+
+    int nchar = cap.nchar;
+    int target = G.curwin.getWCursor().getLine();
+    boolean change_line = false;
+    int top = 0;
+
+    if(cap.count0 != 0 && cap.count0 != target) {
+      MarkOps.setpcmark();
+      if(cap.count0 > G.curwin.getLineCount()) {
+	target = G.curwin.getLineCount();
+      } else {
+	target = cap.count0;
+      }
+    }
+
+    switch(nchar) {
+      case NL:		    // put curwin->w_cursor at top of screen
+      case CR:
+	top = target;
+	break;
+
+      case '.':		// put curwin->w_cursor in middle of screen
+	top = target - G.curwin.getViewLines() / 2 - 1;
+	break;
+
+      case '-':		// put curwin->w_cursor at bottom of screen
+	top = target - G.curwin.getViewLines() + 1;
+	break;
+
+      default:
+	clearopbeep(cap.oap);
+	return;
+    }
+    // adjust top so there are no blank lines on the screen
+    top = Misc.adjustTopLine(top);
+
+    // Keep getlineSegment before setViewTopLine,
+    // don't want to fetch segment changing during rendering
+    Segment seg = G.curwin.getLineSegment(target);
+    int col = Edit.beginlineColumnIndex(BL_WHITE | BL_FIX, seg);
+    G.curwin.setViewTopLine(top);
+    G.curwin.setCaretPosition(target, col);
+  }
+
+  static private void nv_colon (CMDARG cap) {
+    do_xop("nv_colon");
+    if( ! checkclearop(cap.oap)) {
+      ColonCommands.doColonCommand(cap);
+    }
+  }
+
+  static private  void	nv_ctrlg (CMDARG cap) {
+    do_xop("nv_ctrlg");
+    G.curwin.displayFileInfo();
+  }
+
+  /**
+   * Handle the commands that use the word under the cursor.
+   *
+   * @return TRUE for "*" and "#" commands, indicating that the next search
+   * should not set the pcmark.
+   */
+  static private void nv_ident (CMDARG cap, CharBuf searchp)
+                               throws NotSupportedException
+  {
+    do_xop("nv_ident");
+    boolean	g_cmd;		// "g" command
+    int         offset = 0;
+    MutableInt  mi = new MutableInt(0);
+    int		n = 0;		// init for GCC
+    int		cmdchar;
+
+    /*
+    char_u	*aux_offset;
+    int		isman;
+    int		isman_s;
+    */
+
+    if (cap.cmdchar == 'g')	// "g*", "g#", "g]" and "gCTRL-]"
+    {
+      cmdchar = cap.nchar;
+      g_cmd = true;
+    }
+    else
+    {
+      cmdchar = cap.cmdchar;
+      g_cmd = false;
+    }
+
+    //
+    // The "]", "CTRL-]" and "K" commands accept an argument in Visual mode.
+    //
+    if (cmdchar == ']' || cmdchar == Util.ctrl(']') || cmdchar == 'K')
+    {
+      notImp("nv_ident subset");
+      /*
+      if (VIsual_active)	// :ta to visual highlighted text
+      {
+        if (VIsual_mode != 'V')
+          unadjust_for_sel();
+        if (VIsual.lnum != curwin.w_cursor.lnum)
+        {
+          clearopbeep(cap.oap);
+          return;
+        }
+        if (lt(curwin.w_cursor, VIsual))
+        {
+          ptr = ml_get_pos(&curwin.w_cursor);
+          n = VIsual.col - curwin.w_cursor.col + 1;
+        }
+        else
+        {
+          ptr = ml_get_pos(&VIsual);
+          n = curwin.w_cursor.col - VIsual.col + 1;
+        }
+        end_visual_mode();
+        VIsual_reselect = FALSE;
+        redraw_curbuf_later(NOT_VALID);    // update the inversion later
+      }
+      if (checkclearopq(cap.oap))
+        return;
+        */
+    }
+
+    if (/*ptr == NULL &&*/ (n = find_ident_under_cursor(mi,
+                              (cmdchar == '*' || cmdchar == '#')
+                              ? FIND_IDENT|FIND_STRING : FIND_IDENT)) == 0)
+    {
+      clearop(cap.oap);
+      return;
+    }
+    offset = mi.getValue();
+
+    /*
+    isman = (STRCMP(p_kp, "man") == 0);
+    isman_s = (STRCMP(p_kp, "man -s") == 0);
+    if (cap.count0 && !(cmdchar == 'K' && (isman || isman_s))
+        && !(cmdchar == '*' || cmdchar == '#'))
+      stuffnumReadbuff(cap.count0);
+    */
+    switch (cmdchar)
+    {
+      case '*':
+      case '#':
+        //
+        // Put cursor at start of word, makes search skip the word
+        // under the cursor.
+        // Call setpcmark() first, so "*``" puts the cursor back where
+        // it was.
+        ///
+        MarkOps.setpcmark();
+        G.curwin.setCaretPosition(offset);
+
+        if (!g_cmd && Misc.vim_iswordc(Util.getCharAt(offset)))
+          GetChar.stuffReadbuff("\\<");
+        // no_smartcase = TRUE;	// don't use 'smartcase' now
+        break;
+
+      /*
+      case 'K':
+        if (*p_kp == NUL)
+          stuffReadbuff((char_u *)":he ");
+        else
+        {
+          stuffReadbuff((char_u *)":! ");
+          if (!cap.count0 && isman_s)
+            stuffReadbuff((char_u *)"man");
+          else
+            stuffReadbuff(p_kp);
+          stuffReadbuff((char_u *)" ");
+          if (cap.count0 && (isman || isman_s))
+          {
+            stuffnumReadbuff(cap.count0);
+            stuffReadbuff((char_u *)" ");
+          }
+        }
+        break;
+
+      case ']':
+        stuffReadbuff((char_u *)":ts ");
+        break;
+
+      default:
+        if (curbuf.b_help)
+          stuffReadbuff((char_u *)":he ");
+        else if (g_cmd)
+          stuffReadbuff((char_u *)":tj ");
+        else
+          stuffReadbuff((char_u *)":ta ");
+      */
+      default:
+        notImp("nv_ident subset");
+    }
+
+    //
+    // Now grab the chars in the identifier
+    ///
+    /*
+    if (cmdchar == '*' || cmdchar == '#')
+      aux_offset = (char_u *)(p_magic ? "/?.*~[^$\\" : "/?^$\\");
+    else
+      aux_offset = escape_chars;
+    while (n--)
+    {
+      // put a backslash before \ and some others
+      if (vim_strchr(aux_offset, *offset) != NULL)
+        stuffcharReadbuff('\\');
+      // don't interpret the characters as edit commands
+      else if (*offset < ' ' || *offset > '~')
+        stuffcharReadbuff(Ctrl('V'));
+      stuffcharReadbuff(*offset++);
+    }
+    */
+    String escapeMe = "/?.*~[^$\\";
+    while(n-- != 0) {
+      int c = Util.getCharAt(offset);
+      if(Util.vim_strchr(escapeMe, c) != null) {
+        GetChar.stuffcharReadbuff('\\');
+      }
+      // don't quote control characters, shouldn't be any....
+      GetChar.stuffcharReadbuff(c);
+      ++offset;
+    }
+
+    if (       !g_cmd
+               && (cmdchar == '*' || cmdchar == '#')
+               && Misc.vim_iswordc(Util.getCharAt(offset - 1)))
+      GetChar.stuffReadbuff("\\>");
+    GetChar.stuffReadbuff("\n");
+
+    //
+    // The search commands may be given after an operator.  Therefore they
+    // must be executed right now.
+    ///
+    if (cmdchar == '*' || cmdchar == '#')
+    {
+      if (cmdchar == '*')
+        cap.cmdchar = '/';
+      else
+        cap.cmdchar = '?';
+      nv_search(cap, searchp, true);
+    }
+  }
+
+  /**
+   * Handle scrolling command 'H', 'L' and 'M'.
+   */
+  static private void nv_scroll(CMDARG cap) {
+    do_xop("nv_scroll");
+    int	    used = 0;
+    int    n;
+
+    cap.oap.motion_type = MLINE;
+    MarkOps.setpcmark();
+    int newcursorline = -1;
+
+    if (cap.cmdchar == 'L') {
+      Misc.validate_botline();	    // make sure curwin.w_botline is valid
+      newcursorline = G.curwin.getViewBottomLine() - 1;
+      if (cap.count1 - 1 >= newcursorline) {
+	newcursorline = 1;
+      } else {
+	newcursorline -= cap.count1 - 1;
+      }
+    } else {
+      int topline = G.curwin.getViewTopLine();
+      int line_count = G.curwin.getLineCount();
+      if (cap.cmdchar == 'M') {
+	Misc.validate_botline();	    // make sure w_empty_rows is valid
+	for (n = 0; topline + n < line_count; ++n)
+	  if ((used += Misc.plines(topline + n)) >=
+	      (G.curwin.getViewLines() - G.curwin.getViewBlankLines() + 1) / 2)
+	    break;
+	if (n != 0 && used > G.curwin.getViewLines())
+	  --n;
+      } else {
+	n = cap.count1 - 1;
+      }
+      newcursorline = topline + n;
+      if (newcursorline > line_count)
+	newcursorline = line_count;
+    }
+
+    if(newcursorline > 0) {
+      G.curwin.setCaretPosition(
+		    G.curwin.getLineStartOffset(newcursorline));
+    }
+    Misc.cursor_correct();	// correct for 'so'
+    Edit.beginline(BL_SOL | BL_FIX);
+  }
+
+  /**
+   * Cursor right commands.
+   */
+  static private  void	nv_right (CMDARG cap) {
+    long	n;
+    boolean	past_line;
+
+    cap.oap.motion_type = MCHAR;
+    cap.oap.inclusive = false;
+    past_line = (VIsual_active && G.p_sel != 'o');
+    for (n = cap.count1; n > 0; --n) {
+      if ((!past_line && Edit.oneright() == FAIL)
+	    // NEEDSWORK: pastline only true if select
+	    // || (past_line && *ml_get_cursor() == '\n')
+	  )
+      {
+	// NEEDSWORK:	might want to grab info about the line  up front,
+	// 		maybe do that if oneright fails.
+	//	Segment seg = G.curwin.getLineSegment(lnum);
+	FPOS fpos = G.curwin.getWCursor();
+
+	//
+	//	  <Space> wraps to next line if 'whichwrap' bit 1 set.
+	//	      'l' wraps to next line if 'whichwrap' bit 2 set.
+	// CURS_RIGHT wraps to next line if 'whichwrap' bit 3 set
+	//
+	if (       ((cap.cmdchar == ' ' && G.p_ww_sp.getBoolean())
+		    || (cap.cmdchar == 'l' && G.p_ww_l.getBoolean())
+		    || (cap.cmdchar == K_RIGHT && G.p_ww_rarrow.getBoolean()))
+		   // && curwin.w_cursor.lnum < curbuf.b_ml.ml_line_count
+		   && fpos.getLine() < G.curwin.getLineCount())
+	{
+	  // When deleting we also count the NL as a character.
+	  // Set cap.oap.inclusive when last char in the line is
+	  // included, move to next line after that
+	  if (	   (cap.oap.op_type == OP_DELETE
+		    || cap.oap.op_type == OP_CHANGE)
+		   && !cap.oap.inclusive
+		   && !Util.lineempty(fpos.getLine())) {
+	    cap.oap.inclusive = true;
+	  } else {
+	    G.curwin.setCaretPosition(fpos.getLine() + 1, 0);
+	    G.curwin.setWSetCurswant(true);
+	    cap.oap.inclusive = false;
+	  }
+	  continue;
+	}
+	if (cap.oap.op_type == OP_NOP) {
+	  // Only beep and flush if not moved at all
+	  if (n == cap.count1)
+	    Util.beep_flush();
+	} else {
+	  if (!Util.lineempty(fpos.getLine())) {
+	    cap.oap.inclusive = true;
+	  }
+	}
+	break;
+      } else if (past_line) {
+	// NEEDSWORK: (maybe no work) pastline always false since no select
+	// curwin.w_set_curswant = TRUE;
+	// ++curwin.w_cursor.col;
+      }
+    }
+  }
+
+  /**
+   * Cursor left commands.
+   * @return TRUE when operator end should not be adjusted.
+   */
+  static private  boolean nv_left (CMDARG cap) {
+    long	n;
+    boolean	retval = false;
+
+    cap.oap.motion_type = MCHAR;
+    cap.oap.inclusive = false;
+    for (n = cap.count1; n > 0; --n) {
+      if (Edit.oneleft() == FAIL) {
+	FPOS fpos = G.curwin.getWCursor();
+	// <BS> and <Del> wrap to previous line if 'whichwrap' has 'b'.
+	//		 'h' wraps to previous line if 'whichwrap' has 'h'.
+	//	   CURS_LEFT wraps to previous line if 'whichwrap' has '<'.
+	//
+	if (       (((cap.cmdchar == K_BS
+		      || cap.cmdchar == Util.ctrl('H'))
+		     && G.p_ww_bs.getBoolean())
+		    || (cap.cmdchar == 'h'
+			&& G.p_ww_h.getBoolean())
+		    || (cap.cmdchar == K_LEFT
+			&& G.p_ww_larrow.getBoolean()))
+		   && fpos.getLine() > 1)
+	{
+	  /* **********************************
+	  int offset = G.curwin.getLineOffset(fpos.getLine() - 1);
+	  Segment seg = G.curwin.getLineSegment(fpos.getLine() - 1);
+	  int idx = Misc.coladvanceColumnIndex(MAXCOL, seg);
+	  G.curwin.setCaretPosition(offset + idx);
+	  ************************************/
+
+	  // use a different algorithm with swing document
+	  G.curwin.setCaretPosition(fpos.getOffset() - 1);
+	  Misc.check_cursor_col();
+	  G.curwin.setWSetCurswant(true);
+
+	  // When the NL before the first char has to be deleted we
+	  // put the cursor on the NUL after the previous line.
+	  // This is a very special case, be careful!
+	  // don't adjust op_end now, otherwise it won't work
+	  if (	   (cap.oap.op_type == OP_DELETE
+		    || cap.oap.op_type == OP_CHANGE)
+		   && !Util.lineempty(fpos.getLine()))
+	  {
+	    G.curwin.setCaretPosition(fpos.getOffset() + 1);
+	    retval = true;
+	  }
+	  continue;
+	}
+	// Only beep and flush if not moved at all
+	else if (cap.oap.op_type == OP_NOP && n == cap.count1) {
+	  Util.beep_flush();
+	}
+	break;
+      }
+    }
+
+    return retval;
+  }
+
+  /**
+   * Handle the "$" command.
+   */
+  static private void nv_dollar(CMDARG cap) {
+    cap.oap.motion_type = MCHAR;
+    cap.oap.inclusive = true;
+    G.curwin.setWCurswant(MAXCOL);	// so we stay at the end
+    if (Edit.cursor_down(cap.count1 - 1, cap.oap.op_type == OP_NOP) == FAIL) {
+      clearopbeep(cap.oap);
+    }
+  }
+
+  /**
+   * Implementation of '?' and '/' commands.
+   */
+  static private void nv_search(CMDARG cap, CharBuf searchp,
+				boolean dont_set_mark)
+  {
+    do_xop("nv_search");
+    OPARG oap = cap.oap;
+    int i;
+    
+    oap.motion_type = MCHAR;
+    oap.inclusive = false;
+    G.curwin.setWSetCurswant(true);
+    
+    i = Search.doSearch(cap, cap.count1,
+                        (dont_set_mark ? 0 : SEARCH_MARK)
+                        | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG);
+                        
+    if(i == 0) {
+      clearop(oap);
+    } else if(i == 2) {
+      oap.motion_type = MLINE;
+    }
+
+    /* *********************************************************
+    OPARG	*oap = cap.oap;
+    int		i;
+
+    if (cap.cmdchar == '?' && cap.oap.op_type == OP_ROT13)
+    {
+      // Translate "g??" to "g?g?"
+      cap.cmdchar = 'g';
+      cap.nchar = '?';
+      nv_operator(cap);
+      return;
+    }
+
+    if ((*searchp = getcmdline(cap.cmdchar, cap.count1, 0)) == NULL)
+    {
+      clearop(oap);
+      return;
+    }
+    oap.motion_type = MCHAR;
+    oap.inclusive = FALSE;
+    curwin.w_set_curswant = TRUE;
+
+    i = do_search(oap, cap.cmdchar, *searchp, cap.count1,
+		  (dont_set_mark ? 0 : SEARCH_MARK) |
+		  SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG);
+    if (i == 0)
+      clearop(oap);
+    else if (i == 2)
+      oap.motion_type = MLINE;
+
+    // "/$" will put the cursor after the end of the line, may need to
+    // correct that here
+    adjust_cursor();
+    ******************************************************/
+  }
+
+  /**
+   * Handle "N" and "n" commands.
+   */
+  static private  void	nv_next (CMDARG cap, int flag) {
+    do_xop("nv_next");
+    int rc = Search.doNext(cap, cap.count1,
+	      SEARCH_MARK | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG | flag);
+    if(rc == 0) {
+      clearop(cap.oap);
+    }
+    /* *******************************************************
+    cap.oap.motion_type = MCHAR;
+    cap.oap.inclusive = FALSE;
+    curwin.w_set_curswant = TRUE;
+    if (!do_search(cap.oap, 0, NULL, cap.count1,
+	       SEARCH_MARK | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG | flag))
+      clearop(cap.oap);
+
+    // "/$" will put the cursor after the end of the line, may need to
+    // correct that here
+    adjust_cursor();
+    *********************************************************/
+  }
+
+  static private void nv_csearch(CMDARG cap, int dir, boolean type) {
+    cap.oap.motion_type = MCHAR;
+    if (dir == BACKWARD)
+      cap.oap.inclusive = false;
+    else
+      cap.oap.inclusive = true;
+    if (cap.nchar >= 0x100
+		|| !Search.searchc(cap.nchar, dir, type, cap.count1)) {
+      clearopbeep(cap.oap);
+    } else {
+      G.curwin.setWSetCurswant(true);
+      // NEEDSWORK: visual mode: adjust_for_sel(cap);
+    }
+  }
+
+  /**
+   * Handle Normal mode "%" command.
+   */
+  static private void nv_percent(CMDARG cap) {
+    do_xop("nv_percent");
+
+    cap.oap.inclusive = true;
+    if (cap.count0 != 0) {	    // {cnt}% : goto {cnt} percentage in file
+      if (cap.count0 > 100) {
+	clearopbeep(cap.oap);
+      } else {
+	cap.oap.motion_type = MLINE;
+	MarkOps.setpcmark();
+	// round up, so CTRL-G will give same value
+        int line = (G.curwin.getLineCount()
+                   * cap.count0 + 99) / 100;
+        G.curwin.setCaretPosition(line, 0);
+	Edit.beginline(BL_SOL | BL_FIX);
+      }
+    } else {	    // "%" : go to matching paren
+      cap.oap.motion_type = MCHAR;
+      int startingOffset = G.curwin.getCaretPosition();
+      int firstbraceOffset = startingOffset;
+      // Try to position caret on next brace char
+      int c;
+      while(true) {
+        c = Util.getCharAt(firstbraceOffset);
+        if(Util.vim_strchr("{}[]()", c) != null || c == '\n') {
+          break;
+        }
+        firstbraceOffset++;
+      }
+      G.curwin.setCaretPosition(firstbraceOffset);
+      G.curwin.findMatch();
+      int endingOffset = G.curwin.getCaretPosition();
+      if(firstbraceOffset == endingOffset) {
+        // put back to original position
+        G.curwin.setCaretPosition(startingOffset);
+	clearopbeep(cap.oap);
+      } else {
+	MarkOps.setpcmark(startingOffset);
+        G.curwin.setWSetCurswant(true);
+	adjust_for_sel(cap);
+      }
+      /* **************************************************
+      ViFPOS fpos = Search.findmatch(cap.oap, NUL);
+      if (fpos == null) {
+	clearopbeep(cap.oap);
+      } else {
+	MarkOps.setpcmark();
+        G.curwin.setCaretPosition(fpos.getOffset());
+        G.curwin.setWSetCurswant(true);
+	adjust_for_sel(cap);
+      }
+      ****************************************************/
+    }
+  }
+
+  /**
+   * "R".
+   */
+  static private void nv_Replace(CMDARG cap)
+  {
+    if (VIsual_active)		/* "R" is replace lines */
+    {
+      cap.cmdchar = 'c';
+      VIsual_mode = 'V';
+      nv_operator(cap);
+    } else if (!checkclearopq(cap.oap)) {
+      if (u_save_cursor() == OK) {
+        G.curwin.beginUndo();
+        Edit.edit('R', false, cap.count1);
+      }
+    }
+  }
+
+  /**
+   * Handle the "r" command.
+   */
+  static private void nv_replace(CMDARG cap) {
+
+    if (checkclearop(cap.oap))
+      return;
+
+    // NEEDSWORK: be very lazy, use Edit.edit for the 'r' command
+
+    //
+    // Replacing with a TAB is done by edit(), because it is complicated when
+    // 'expandtab', 'smarttab' or 'softtabstop' is set.
+    // Other characters are done below to avoid problems with things like
+    // CTRL-V 048 (for edit() this would be R CTRL-V 0 ESC).
+    //
+
+    // if (cap.nchar == '\t' && (curbuf.b_p_et || p_sta)) ....
+    GetChar.stuffnumReadbuff(cap.count1);
+    GetChar.stuffcharReadbuff('R');
+    GetChar.stuffcharReadbuff((char)cap.nchar);
+    GetChar.stuffcharReadbuff(ESC);
+    return;
+  }
+
+  /**
+   * Swap case for "~" command, when it does not work like an operator.
+   */
+  static private  void	n_swapchar (CMDARG cap) {
+    do_op("n_swapchar");
+    int	n;
+
+    if (checkclearopq(cap.oap))
+      return;
+
+    if (Util.lineempty(G.curwin.getWCursor().getLine())
+                && G.p_ww_tilde.getBoolean()) {
+      clearopbeep(cap.oap);
+      return;
+    }
+
+    prep_redo_cmd(cap);
+
+    if (u_save_cursor() == FAIL)
+      return;
+
+    G.curwin.beginUndo();
+    try {
+      for (n = cap.count1; n > 0; --n) {
+        Misc.swapchar(cap.oap.op_type, G.curwin.getWCursor());
+        Misc.inc_cursor();
+        if (Misc.gchar_cursor() == '\n') {
+          if (G.p_ww_tilde.getBoolean()
+              && G.curwin.getWCursor().getLine() < G.curwin.getLineCount())
+          {
+            G.curwin.setCaretPosition(G.curwin.getWCursor().getLine() + 1, 0);
+            // redraw_curbuf_later(NOT_VALID);
+          }
+          else
+            break;
+        }
+      }
+
+      Misc.adjust_cursor();
+      G.curwin.setWSetCurswant(true);
+    } finally {
+      G.curwin.endUndo();
+    }
+    // changed();
+
+    /* assume that the length of the line doesn't change, so w_botline
+     * remains valid */
+    // update_screenline();
+  }
+
+  static private  void	nv_cursormark (CMDARG cap, boolean flag, ViFPOS pos) {
+    do_xop("nv_cursormark");
+    if (MarkOps.check_mark((ViMark)pos) == FAIL)
+      clearop(cap.oap);
+    else
+    {
+      if (cap.cmdchar == '\'' || cap.cmdchar == '`')
+	MarkOps.setpcmark();
+      G.curwin.setWCurswant(pos.getColumn());
+      Misc.gotoLine(pos.getLine(), flag ? BL_WHITE | BL_FIX : -1);
+    }
+    cap.oap.motion_type = flag ? MLINE : MCHAR;
+    cap.oap.inclusive = false;		/* ignored if not MCHAR */
+    G.curwin.setWSetCurswant(true);
+  }
+
+  static String[] nv_optrans_ar = new String[] { "dl", "dh", "d$", "c$",
+    					         "cl", "cc", "yy", ":s\r"};
+  /**
+   * Translate a command into another command.
+   */
+  static private  void	nv_optrans (CMDARG cap) {
+    do_xop("nv_optrans");
+
+    String str = "xXDCsSY&";
+    if (!checkclearopq(cap.oap))
+    {
+      if (cap.count0 != 0) {
+	GetChar.stuffnumReadbuff(cap.count0);
+      }
+
+      GetChar.stuffReadbuff(nv_optrans_ar[str.indexOf(cap.cmdchar)]);
+    }
+  }
+
+  /**
+   * Handle "'" and "`" commands.
+   */
+  static private void nv_gomark(CMDARG cap, boolean flag) {
+    do_xop("nv_gomark");
+    ViFPOS	pos;
+
+    pos = MarkOps.getmark(cap.nchar, (cap.oap.op_type == OP_NOP));
+    if (pos == MarkOps.otherFile) {	    /* jumped to other file */
+      if (flag) {
+	Misc.check_cursor_lnumBeginline(BL_WHITE | BL_FIX);
+	// Edit.beginline(BL_WHITE | BL_FIX);
+      } else {
+	Misc.adjust_cursor();
+      }
+    } else {
+      nv_cursormark(cap, flag, pos);
+    }
+  }
+
+  /**
+   * Handle CTRL-O and CTRL-I commands.
+   */
+  static private void nv_pcmark(CMDARG cap) throws NotSupportedException {
+    notImp("nv_pcmark NEEDSWORK: not implmented");
+//    ViFPOS	fpos;
+//
+//    if (!checkclearopq(cap.oap)) {
+//      fpos = movemark((int)cap.count1);
+//      if (fpos == MarkOps.otherFile) {      /* jump to other file */
+//	curwin.w_set_curswant = TRUE;
+//	Misc.adjust_cursor();
+//      } else if (fpos != NULL) {	    /* can jump */
+//	nv_cursormark(cap, FALSE, fpos);
+//      } else {
+//	clearopbeep(cap.oap);
+//      }
+//    }
+  }
+
+
+  /**
+   * Handle '"' command.
+   */
+  static private  void	nv_regname (CMDARG cap, MutableInt opnump) {
+    do_xop("nv_regname");
+    if (checkclearop(cap.oap))
+      return;
+    if (cap.nchar != NUL && Misc.valid_yank_reg(cap.nchar, false)) {
+      cap.oap.regname = cap.nchar;
+      opnump.setValue(cap.count0);    // remember count before '"'
+    } else {
+      clearopbeep(cap.oap);
+    }
+  }
+
+  /**
+   * Handle "o" and "O" commands.
+   */
+  static private void n_opencmd(CMDARG cap)
+  {
+    do_xop("n_opencmd");
+
+    ViFPOS fpos = G.curwin.getWCursor();
+    if (!checkclearopq(cap.oap)) {
+      // if (u_save((curwin.w_cursor.lnum - (cap.cmdchar == 'O' ? 1 : 0)) .....
+      // NEEDSWORK: would like the beginUndo only if actually making changes
+      G.curwin.beginUndo();
+      boolean flag = Misc.open_line(cap.cmdchar == 'O' ? BACKWARD : FORWARD,
+			true, false, 0);
+      if(flag) {
+	Edit.edit(cap.cmdchar, true, cap.count1);
+      } else {
+        // oops
+        G.curwin.endUndo();
+      }
+    }
+    return;
+  }
+
+  /**
+   * Handle an operator command.
+   */
+  static private void nv_operator(CMDARG cap) {
+    int	    op_type;
+    do_xop("nv_operator");
+
+    op_type = get_op_type(cap.cmdchar, cap.nchar);
+
+    if (op_type == cap.oap.op_type)	    // double operator works on lines
+      nv_lineop(cap);
+    else if (!checkclearop(cap.oap))
+    {
+      cap.oap.start = (FPOS)G.curwin.getWCursor().copy();
+      cap.oap.op_type = op_type;
+    }
+  }
+
+  /**
+   * Handle linewise operator "dd", "yy", etc.
+   */
+  static private void nv_lineop(CMDARG cap) {
+    do_xop("nv_lineop");
+    cap.oap.motion_type = MLINE;
+    if (Edit.cursor_down(cap.count1 - 1, cap.oap.op_type == OP_NOP) == FAIL)
+      clearopbeep(cap.oap);
+    else if (  cap.oap.op_type == OP_DELETE
+	       || cap.oap.op_type == OP_LSHIFT
+	       || cap.oap.op_type == OP_RSHIFT)
+      Edit.beginline(BL_SOL | BL_FIX);
+    else if (cap.oap.op_type != OP_YANK)	/* 'Y' does not move cursor */
+      Edit.beginline(BL_WHITE | BL_FIX);
+  }
+
+  /**
+   * Handle "|" command.
+   */
+  static private  void	nv_pipe (CMDARG cap) {
+    do_xop("nv_pipe");
+
+    cap.oap.motion_type = MCHAR;
+    cap.oap.inclusive = false;
+    Edit.beginline(0);
+    if (cap.count0 > 0) {
+      Misc.coladvance(cap.count0 - 1);
+      G.curwin.setWCurswant(cap.count0 - 1);
+    }
+    else
+      G.curwin.setWCurswant(0);
+    // keep curswant at the column where we wanted to go, not where
+    // we ended; differs is line is too short
+    G.curwin.setWSetCurswant(false);
+  }
+
+  static private void nv_goto (OPARG oap, int lnum) {
+    do_xop("nv_goto");
+    MarkOps.setpcmark();
+    Misc.gotoLine(lnum, BL_SOL | BL_FIX);
+  }
+
+  /**
+   * Handle back-word command "b".
+   */
+  static void nv_bck_word(CMDARG cap, boolean type) {
+    do_xop("nv_bck_word");
+    cap.oap.motion_type = MCHAR;
+    cap.oap.inclusive = false;
+    G.curwin.setWSetCurswant(true);
+    if (Search.bck_word(cap.count1, type, false) == FAIL)
+      clearopbeep(cap.oap);
+  }
+
+  /**
+   * Handle word motion commands "e", "E", "w" and "W".
+   */
+  static private void nv_wordcmd(CMDARG cap, boolean type) {
+    int	    n;
+    boolean    word_end;
+    boolean    flag = false;
+    do_xop("nv_wordcmd");
+
+    //
+    // Inclusive has been set for the "E" and "e" command.
+    //
+    word_end = cap.oap.inclusive;
+
+    //
+    // "cw" and "cW" are a special case.
+    //
+    if (!word_end && cap.oap.op_type == OP_CHANGE) {
+      n = Misc.gchar_cursor();
+      if (n != '\n') {			/* not an empty line */
+	if (Misc.vim_iswhite(n)) {
+	  //
+	  // Reproduce a funny Vi behaviour: "cw" on a blank only
+	  // changes one character, not all blanks until the start of
+	  // the next word.  Only do this when the 'w' flag is included
+	  // in 'cpoptions'.
+          //
+          // Note: the p_cpo_w flag is false for vi behavour.
+	  //
+	  if (cap.count1 == 1 && ! G.p_cpo_w.getBoolean()) {
+	    cap.oap.inclusive = true;
+	    cap.oap.motion_type = MCHAR;
+	    return;
+	  }
+	} else {
+	  //
+	  // This is a little strange. To match what the real Vi does,
+	  // we effectively map 'cw' to 'ce', and 'cW' to 'cE', provided
+	  // that we are not on a space or a TAB.  This seems impolite
+	  // at first, but it's really more what we mean when we say
+	  // 'cw'.
+	  // Another strangeness: When standing on the end of a word
+	  // "ce" will change until the end of the next wordt, but "cw"
+	  // will change only one character! This is done by setting
+	  // flag.
+	  //
+	  cap.oap.inclusive = true;
+	  word_end = true;
+	  flag = true;
+	}
+      }
+    }
+
+    cap.oap.motion_type = MCHAR;
+    G.curwin.setWSetCurswant(true);
+    if (word_end) {
+      n = Search.end_word(cap.count1, type, flag, false);
+    } else {
+      n = Search.fwd_word(cap.count1, type, cap.oap.op_type != OP_NOP);
+    }
+
+    // Don't leave the cursor on the NUL past a line
+    if (G.curwin.getWCursor().getColumn() != 0
+		&& Misc.gchar_cursor() == '\n') {
+      Misc.dec_cursor();
+      cap.oap.inclusive = true;
+    }
+
+    if (n == FAIL && cap.oap.op_type == OP_NOP) {
+      clearopbeep(cap.oap);
+    } else {
+      adjust_for_sel(cap);
+    }
+  }
+
+  /*
+   * In exclusive Visual mode, may include the last character.
+   */
+  static private void adjust_for_sel(CMDARG cap) {
+    if (VIsual_active) {
+      throw new RuntimeException("visual mode");
+    }
+    /* ***********************************
+       if (VIsual_active && cap->oap->inclusive && *p_sel == 'e'
+       && gchar_cursor() != '\n')
+       {
+       ++curwin->w_cursor.col;
+       cap->oap->inclusive = FALSE;
+       }
+     *************************************************************/
+  }
+
+  /**
+   * ESC in Normal mode: beep, but don't flush buffers.
+   * Don't even beep if we are canceling a command.
+   */
+  static private void nv_esc(CMDARG cap, int opnum) {
+    if (VIsual_active) {
+      end_visual_mode();	// stop Visual
+      Misc.check_cursor_col();	// make sure cursor is not beyond EOL
+      G.curwin.setWSetCurswant(true);
+      update_curbuf(NOT_VALID);
+    } else if (cap.oap.op_type == OP_NOP && opnum == 0
+	     && cap.count0 == 0 && cap.oap.regname == 0 && p_im == 0) {
+      Util.vim_beep();
+    }
+    clearop(cap.oap);
+    if (p_im != 0 && G.restart_edit == 0) {
+      G.restart_edit = 'a';
+    }
+  }
+
+  /**
+   * Handle "A", "a", "I", "i" and <Insert> commands.
+   */
+  static private void nv_edit (CMDARG cap)
+  {
+    do_xop("nv_edit");
+    /* in Visual mode "A" and "I" are an operator */
+    if ((cap.cmdchar == 'A' || cap.cmdchar == 'I')
+	&& VIsual_active)
+    {
+      v_visop(cap);
+    }
+    /* in Visual mode and after an operator "a" and "i" are for text objects */
+    else if ((cap.cmdchar == 'a' || cap.cmdchar == 'i')
+	     && (cap.oap.op_type != OP_NOP || VIsual_active))
+    {
+      clearopbeep(cap.oap);
+    } else if (!checkclearopq(cap.oap) && u_save_cursor() == OK) {
+      G.curwin.beginUndo();
+      nv_edit_dispatch(cap);
+      return;
+    }
+    return;
+  }
+
+  /**
+   * Enter regualar edit mode, moved here so could be invoked
+   * as an atomic operation.
+   */
+  // can't be private, if want to dispatch
+  static private void nv_edit_dispatch (CMDARG cap)
+  {
+    switch (cap.cmdchar) {
+      case 'A':	/* "A"ppend after the line */
+        G.curwin.setWSetCurswant(true);
+        Util.endLine();
+        // G.op.xop(ViOp.THIS_END_LINE, this);
+        break;
+
+      case 'I':	/* "I"nsert before the first non-blank */
+        Edit.beginline(BL_WHITE);
+        break;
+
+      case 'a':	/* "a"ppend is like "i"nsert on the next character. */
+        int offset = G.curwin.getWCursor().getOffset();
+        int c = Util.getCharAt(offset);
+        if(c != '\n') {
+          G.curwin.setCaretPosition(offset+1);
+        }
+        break;
+    }
+    Edit.edit(cap.cmdchar, false, cap.count1);
+    return;
+  }
+
+
+  /**
+   * Handle the "q" key.
+   */
+  static private void nv_q(CMDARG cap) throws NotSupportedException {
+    do_xop("nv_q");
+    if (cap.oap.op_type == OP_FORMAT) {
+      notSup("gqq");
+      /* "gqq" is the same as "gqgq": format line */
+      cap.cmdchar = 'g';
+      cap.nchar = 'q';
+      nv_operator(cap);
+    }
+    else if (!checkclearop(cap.oap))
+    {
+      /* (stop) recording into a named register */
+      /* command is ignored while executing a register */
+      if (!G.Exec_reg && Misc.do_record(cap.nchar) == FAIL)
+	clearopbeep(cap.oap);
+    }
+  }
+
+  /**
+   * Handle the "@r" command.
+   */
+  static private void nv_at(CMDARG cap) {
+    do_xop("nv_at");
+    if (checkclearop(cap.oap))
+      return;
+    while (cap.count1-- > 0)
+    {
+      if (Misc.do_execreg(cap.nchar, false, false) == FAIL)
+      {
+	clearopbeep(cap.oap);
+	break;
+      }
+    }
+  }
+
+  /**
+   * Handle the CTRL-U and CTRL-D commands.
+   */
+  static private void nv_halfpage(CMDARG cap) {
+    ViFPOS fpos = G.curwin.getWCursor();
+    if ((cap.cmdchar == Util.ctrl('U') && fpos.getLine() == 1)
+	|| (cap.cmdchar == Util.ctrl('D')
+	    && fpos.getLine() == G.curwin.getLineCount()))
+      clearopbeep(cap.oap);
+    else if (!checkclearop(cap.oap))
+      Misc.halfpage(cap.cmdchar == Util.ctrl('D'), cap.count0);
+  }
+
+  /**
+   * Handle "J" or "gJ" command.
+   */
+  static private void nv_join(CMDARG cap) {
+    if (VIsual_active)	/* join the visual lines */
+      nv_operator(cap);
+    else if (!checkclearop(cap.oap)) {
+      if (cap.count0 <= 1)
+	cap.count0 = 2;	    /* default for join is two lines! */
+      if (G.curwin.getWCursor().getLine() + cap.count0 - 1 >
+	  		G.curwin.getLineCount())
+	clearopbeep(cap.oap);  /* beyond last line */
+      else
+      {
+	prep_redo(cap.oap.regname, cap.count0,
+		  NUL, cap.cmdchar, NUL, cap.nchar);
+        G.curwin.beginUndo();
+        try {
+          Misc.do_do_join(cap.count0, cap.nchar == NUL, true);
+        } finally {
+          G.curwin.endUndo();
+        }
+      }
+    }
+  }
+
+  /**
+   * "P", "gP", "p" and "gp" commands.
+   */
+  static private void nv_put(CMDARG cap) {
+    if (cap.oap.op_type != OP_NOP || VIsual_active) {
+      clearopbeep(cap.oap);
+    } else {
+      prep_redo_cmd(cap);
+      G.curwin.beginUndo();
+      try {
+        Misc.do_put(cap.oap.regname,
+                    (cap.cmdchar == 'P'
+                     || (cap.cmdchar == 'g' && cap.nchar == 'P'))
+                    ? BACKWARD : FORWARD,
+                    cap.count1, cap.cmdchar == 'g' ? PUT_CURSEND : 0);
+      } finally {
+        G.curwin.endUndo();
+      }
+    }
+  }
+
+  //
+  //
+  //
+  //
+  //
+  //
+
+  static int u_save_cursor() {/*do_op("u_save_cursor");*/return OK; }
+
+  static void start_selection() {do_op("start_selection");}
+  // static void onepage(int dir, int count) {do_op("onepage");}
+  static void do_help(String s) {do_op("do_help");}
+  static boolean buflist_getfile(int n, int lnum, int options, boolean forceit) {
+    do_op("buflist_getfile");return true;
+  }
+  static void end_visual_mode() {do_op("end_visual_mode");}
+  static void update_curbuf(int type) {do_op("update_curbuf");}
+  static void redraw_curbuf_later(int type) {do_op("redraw_curbuf_later");}
+  static void do_tag(String tag, int type, int count,
+	      boolean forceit, boolean verbose) {do_op("do_tag");}
+  // static int start_redo(int count, boolean type) { do_op("start_redo");return OK; }
+  // static void u_undo(int count) {do_op("u_undo");}
+  // static void u_redo(int count) {do_op("u_redo");}
+  static int do_addsub(int command, int Prenum1) { do_op("do_addsub");return OK; }
+  //static void stuffReadbuff(String s) {do_op("stuffReadbuff");}
+  //static void do_window(int nchar, int Prenum) {do_op("do_window");}
+  // void do_pending_operator(CMDARG cap, CharBuf searchbuf,
+  // 			   MutableBoolean mb, int old_col,
+  // 			   boolean gui_yank, boolean dont_adjust_op_end)
+  // 			   	{do_op("do_pending_operator");}
+  static boolean typebuf_typed() { do_op("typebuf_typed");return true; }
+  static boolean msg_attr(String s, int attr) { do_op("msg_attr");return true; }
+  static void setcursor() {do_op("setcursor");}
+  static void cursor_on() {do_op("curson_on");}
+  static void ui_delay(int msec, boolean ignoreinput) {do_op("ui_delay");}
+  static void update_other_win() {do_op("update_other_win");}
+  // void checkpcmark() {do_op("checkpcmark");}
+  // boolean edit(int cmdchar, boolean startln, int count) { do_op("edit");return true; }
+  // static void stuffcharReadbuff(int c) {do_op("stuffcharReadbuff");}
+
+  //
+  //
+  //
+  //
+  //
+  //
+
+  //static boolean Recording;
+  //static boolean Exec_reg;
+  static int p_im;
+  static boolean msg_didout;
+  static int msg_col;
+  static boolean arrow_used;
+  static int VIsual_mode;
+  static int p_smd;
+  static boolean redraw_cmdline;
+  static boolean msg_didany;
+  static boolean msg_nowait;
+  static boolean KeyTyped;
+  static boolean msg_scroll;
+  static boolean emsg_on_display;
+  static boolean must_redraw;
+  static String keep_msg;
+  static int keep_msg_attr;
+  static boolean modified;
+
+  static boolean bangredo;
+
+
+
+  /**
+   * The Visual area is remembered for reselection.
+   */
+  static int	resel_VIsual_mode = NUL;	/* 'v', 'V', or Ctrl-V */
+  static int	resel_VIsual_line_count;/* number of lines */
+  static int	resel_VIsual_col;	/* nr of cols or end col */
+
+  //
+  // Other visual stuff
+  //
+  static boolean VIsual_active;
+  static boolean VIsual_select;
+  static boolean VIsual_reselect;
+
+
+  static private  void	op_colon (OPARG oap) {do_op("op_colon");}
+  // private  void	prep_redo_cmd (CMDARG cap) {do_op("prep_redo_cmd");}
+  //static private  void	prep_redo (int regname, long l,
+		  //int p0, int p1, int p2, int p3) {do_op("prep_redo");}
+  // private  boolean checkclearop (OPARG oap) { do_op("checkclearop");return true; }
+  // private  boolean checkclearopq (OPARG oap) { do_op("checkclearopq");return true; }
+  // private  void	clearop (OPARG oap) {do_op("clearop");}
+  // private  void	clearopbeep (OPARG oap) {do_op("clearopbeep");}
+  // private  void	del_from_showcmd (int arg) {do_op("del_from_showcmd");}
+
+/*
+ * nv_*(): functions called to handle Normal and Visual mode commands.
+ * n_*(): functions called to handle Normal mode commands.
+ * v_*(): functions called to handle Visual mode commands.
+ */
+  static private  void	nv_gd (OPARG oap, int nchar) {do_op("nv_gd");}
+  static private  int	nv_screengo (OPARG oap, int dir, long dist) { do_op("nv_screengo");return 0; }
+  static private  void	nv_scroll_line (CMDARG cap, boolean is_ctrl_e) {do_op("nv_scroll_line");}
+  // static private  void	nv_zet (CMDARG cap) {do_op("nv_zet");}
+  // static private  void	nv_colon (CMDARG cap) {do_op("nv_colon");}
+  // static private  void	nv_ctrlg (CMDARG cap) {do_op("nv_ctrlg");}
+  static private  void	nv_zzet (CMDARG cap) {do_op("nv_zzet");}
+  // static private  void	nv_ident (CMDARG cap, CharBuf searchp) {do_op("nv_ident");}
+  // static private  void	nv_scroll (CMDARG cap) {do_op("nv_scroll");}
+  // private  void	nv_right (CMDARG cap) {do_op("nv_right");}
+  // private  boolean nv_left (CMDARG cap) { do_op("nv_left");return true; }
+  static private  void	nv_gotofile (CMDARG cap) {do_op("nv_gotofile");}
+  // private  void	nv_dollar (CMDARG cap) {do_op("nv_dollar");}
+  //static private  void	nv_search (CMDARG cap, CharBuf searchp,
+  //			   boolean dont_set_mark) {do_op("nv_search");}
+  // static private  void	nv_next (CMDARG cap, int flag) {do_op("nv_next");}
+  // private  void	nv_csearch (CMDARG cap, int dir, boolean type) {do_op("nv_csearch");}
+  static private  void	nv_brackets (CMDARG cap, int dir) {do_op("nv_brackets");}
+  // static private  void	nv_percent (CMDARG cap) {do_op("nv_percent");}
+  static private  void	nv_brace (CMDARG cap, int dir) {do_op("nv_brace");}
+  static private  void	nv_findpar (CMDARG cap, int dir) {do_op("nv_findpar");}
+  // private  boolean nv_Replace (CMDARG cap) { do_op("nv_Replace");return true; }
+  static private  int	nv_VReplace (CMDARG cap) { do_op("nv_VReplace");return 0; }
+  static private  int	nv_vreplace (CMDARG cap) { do_op("nv_vreplace");return 0; }
+  static private  void	v_swap_corners (CMDARG cap) {do_op("v_swap_corners");}
+  // static private  boolean nv_replace (CMDARG cap) { do_op("nv_replace");return true; }
+  // static private  void	n_swapchar (CMDARG cap) {do_op("n_swapchar");}
+  // private  void	nv_cursormark (CMDARG cap, boolean flag, ViFPOS pos) {do_op("nv_cursormark");}
+  static private  void	v_visop (CMDARG cap) {do_op("v_visop");}
+  // private  void	nv_optrans (CMDARG cap) {do_op("nv_optrans");}
+  // private  void	nv_gomark (CMDARG cap, boolean flag) {do_op("nv_gomark");}
+  // private  void	nv_pcmark (CMDARG cap) {do_op("nv_pcmark");}
+  // private  void	nv_regname (CMDARG cap, MutableInt opnump) {do_op("nv_regname");}
+  static private  void	nv_visual (CMDARG cap, boolean selectmode) {do_op("nv_visual");}
+  static private  void	n_start_visual_mode (int c) {do_op("n_start_visual_mode");}
+  static private  boolean nv_g_cmd (CMDARG cap, CharBuf searchp) { do_op("nv_g_cmd");return true; }
+  // private  boolean n_opencmd (CMDARG cap) { do_op("n_opencmd");return true; }
+  static private  void	nv_Undo (CMDARG cap) {do_op("nv_Undo");}
+  // private  void	nv_operator (CMDARG cap) {do_op("nv_operator");}
+  // private  void	nv_lineop (CMDARG cap) {do_op("nv_lineop");}
+  // static private  void	nv_pipe (CMDARG cap) {do_op("nv_pipe");}
+  // static private  void	nv_bck_word (CMDARG cap, boolean type) {do_op("nv_bck_word");}
+  // static private  void	nv_wordcmd (CMDARG cap, boolean type) {do_op("nv_wordcmd");}
+  // static private  void	adjust_for_sel (CMDARG cap) {do_op("adjust_for_sel");}
+  static private  void	unadjust_for_sel () {do_op("unadjust_for_sel");}
+  // private  void	nv_goto (OPARG oap, long lnum) {do_op("nv_goto");}
+  static private  void	nv_select (CMDARG cap) {do_op("nv_select");}
+  static private  void	nv_normal (CMDARG cap) {do_op("nv_normal");}
+  // private  void	nv_esc (CMDARG oap, int opnum) {do_op("nv_esc");}
+  // private  boolean nv_edit (CMDARG cap) { do_op("nv_edit");return true; }
+  static private  void	nv_object (CMDARG cap) {do_op("nv_object");}
+  // static private  void	nv_q (CMDARG cap) {do_op("nv_q");}
+  // static private  void	nv_at (CMDARG cap) {do_op("nv_at");}
+  // static private  void	nv_halfpage (CMDARG cap) {do_op_clear("nv_halfpage", cap.oap);}
+  // static private  void	nv_join (CMDARG cap) {do_op("nv_join");}
+  // private  void	nv_put (CMDARG cap) {do_op("nv_put");}
+
+  // static void op_shift(OPARG oap, boolean curs_top, int amount) {do_op("op_shift");}
+  //static void do_do_join(int count, boolean insert_space, boolean redraw)
+    //{do_op("do_do_join");}
+  // int op_delete(OPARG oap) {do_op("op_delete"); return OK;}
+  // int op_yank(OPARG oap, boolean deleting, boolean mess) {
+    // do_op("op_yank"); return OK; }
+  // static boolean op_change(OPARG oap) {do_op("op_change"); return false;}
+  // static void op_tilde(OPARG oap) {do_op("op_tilde");}
+  static void op_format(OPARG oap) {do_op("op_format");}
+
+
+  // static int typebuf_maplen() { do_op("typebuf_maplen");return 0; }
+  static void do_exmode() {do_op("do_exmode");}
+  static void update_screen(boolean flag) {do_op("update_screen(bool)");}
+  static void update_screen(int flag) {do_op("update_screen(int)");}
+  // void AppendToRedobuff(String s) {do_op("AppendToRedobuff");}
+  static boolean inindent(int extra) { do_op("inindent");return false; }
+  // int coladvance(int wcol) { do_op("coladvance"); return OK; }
+
+
+
+  static class Opchar {
+    char c1, c2;
+    boolean lines;
+
+    Opchar(char c1, char c2, boolean lines) {
+      this.c1 = c1;
+      this.c2 = c2;
+      this.lines = lines;
+    }
+  }
+
+  /*
+   * The names of operators.  Index must correspond with defines in vim.h!!!
+   * The third field indicates whether the operator always works on lines.
+   */
+  static Opchar[] opchars = new Opchar[]
+  {
+      new Opchar('\000', '\000', false),/* OP_NOP */
+      new Opchar('d', '\000', false),	/* OP_DELETE */
+      new Opchar('y', '\000', false),	/* OP_YANK */
+      new Opchar('c', '\000', false),	/* OP_CHANGE */
+      new Opchar('<', '\000', true),	/* OP_LSHIFT */
+      new Opchar('>', '\000', true),	/* OP_RSHIFT */
+      new Opchar('!', '\000', true),	/* OP_FILTER */
+      ////////////////new Opchar('g', '~', false),	/* OP_TILDE */
+      new Opchar('~', '\000', false),	/* OP_TILDE */
+      new Opchar('=', '\000', true),	/* OP_INDENT */
+      new Opchar('g', 'q', true),	/* OP_FORMAT */
+      new Opchar(':', '\000', true),	/* OP_COLON */
+      new Opchar('g', 'U', false),	/* OP_UPPER */
+      new Opchar('g', 'u', false),	/* OP_LOWER */
+      new Opchar('J', '\000', true),	/* DO_JOIN */
+      new Opchar('g', 'J', true),	/* DO_JOIN_NS */
+      new Opchar('g', '?', false),	/* OP_ROT13 */
+      new Opchar('r', '\000', false),	/* OP_REPLACE */
+      new Opchar('I', '\000', false),	/* OP_INSERT */
+      new Opchar('A', '\000', false)	/* OP_APPEND */
+  };
+
+  /**
+   * Translate a command name into an operator type.
+   * Must only be called with a valid operator name!
+   */
+  static int get_op_type(int char1, int char2) {
+      int		i;
+
+      if (char1 == 'r')		/* ignore second character */
+	  return OP_REPLACE;
+      if (char1 == '~')		/* when tilde is an operator */
+	  return OP_TILDE;
+      for (i = 0; ; ++i)
+	  if (opchars[i].c1 == char1 && opchars[i].c2 == char2)
+	      break;
+      return i;
+  }
+
+  /**
+   * Return TRUE if operator "op" always works on whole lines.
+   */
+  static boolean op_on_lines(int op) {
+      return opchars[op].lines;
+  }
+
+  /**
+   * Get first operator command character.
+   * Returns 'g' if there is another command character.
+   */
+  static int get_op_char(int optype) {
+      return opchars[optype].c1;
+  }
+
+  /**
+   * Get second operator command character.
+   */
+  static int get_extra_op_char(int optype) {
+      return opchars[optype].c2;
+  }
+
+
+  /**
+   * An operation that is not yet implemented has been selected.
+   * Output the op and the characters that got us here.
+   */
+  static void notImp(String op) throws NotSupportedException {
+    // setGeneralStatus
+    if(KeyBinding.notImpDebug) System.err.println("Not Implemented: "
+                      + op + ": " + "\"" + getCmdChars() + "\"");
+    throw new NotSupportedException(op, getCmdChars());
+  }
+
+  /**
+   * An operation that is not planned support has been selected.
+   * Output the op and the characters that got us here.
+   */
+  static void notSup(String op) throws NotSupportedException {
+    // setGeneralStatus
+    if(KeyBinding.notImpDebug) System.err.println("Not supported: "
+                       + op + ": " + "\"" + getCmdChars() + "\"");
+    throw new NotSupportedException(op, getCmdChars());
+  }
+
+  static void do_op(String op) {
+    if(G.debugOpPrint) System.err.println("Exec: " + op);
+  }
+
+  static void do_xop(String op) {
+    if(G.debugPrint) System.err.println("Exec: ** " + op);
+  }
+
+  static void do_op_clear(String op, OPARG oap) {
+    if(G.debugPrint) System.err.println("Exec: " + op);
+    clearop(oap);
+  }
+
+  /**
+   * @return the command characters for the current command.
+   */
+  static String getCmdChars() {
+    return showcmd_buf.toString();
+  }
+}
