@@ -504,7 +504,7 @@ public class TextViewCache implements PropertyChangeListener,
 //System.err.println("TVCache: attach: " + editor);
     editor.addPropertyChangeListener("font", this);
     changeDocument(editor.getDocument());
-    editor.addPropertyChangeListener("doc", this);
+    editor.addPropertyChangeListener("document", this);
     editor.addPropertyChangeListener("ancestor", this);
     editor.addCaretListener(this);
     changeFont(editor.getFont());
@@ -518,7 +518,7 @@ public class TextViewCache implements PropertyChangeListener,
       return;
     }
     editor.removePropertyChangeListener("font", this);
-    editor.removePropertyChangeListener("doc", this);
+    editor.removePropertyChangeListener("document", this);
     editor.removePropertyChangeListener("ancestor", this);
     changeDocument(null);
     editor.removeCaretListener(this);
@@ -535,7 +535,7 @@ public class TextViewCache implements PropertyChangeListener,
     Object o = e.getNewValue();
     if("font".equals(p)) {
       changeFont((Font)o);
-    } else if("doc".equals(p)) {
+    } else if("document".equals(p)) {
       changeDocument((Document)o);
     } else if("ancestor".equals(p)) {
       changeViewport(o);

@@ -430,7 +430,10 @@ normal_char:	// break normal_char to insert a character
     // if(vim_iswordc(c) || !echeck_abbr(c))
 
     // NEEDSWORK: better filter to prevent funny chars from input
-    if(c != '\t' && (c < ' ' || c > 0x7e)) {
+    // Oh hell, caveat programmer
+    // if(c != '\t' && (c < ' ' || c == 7f)) {// WAS: c > 0x7e)) {
+    if(c == 0) {
+      // filter out most control chars and del
       // continue edit_loop;
       return;
     }

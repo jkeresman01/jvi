@@ -55,7 +55,7 @@ import com.raelity.jvi.*;
  * <li> only one text view supported for now
  * </ul>
  */
-public class DefaultViFactory implements ViFactory, KeyDefs {
+public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
 
   Window window;
   ViTextView textView;
@@ -167,6 +167,10 @@ public class DefaultViFactory implements ViFactory, KeyDefs {
 	  if( ! KeyBinding.ignoreChar(c)) {
             if(KeyBinding.keyDebug.getBoolean()) {
               System.err.println("CharAction: " + ": " + c + " " + mod);
+            } else {
+	      if(mod == MOD_MASK_ALT) {
+		return;
+	      }
             }
 	    ViManager.keyStroke(target, content.charAt(0), mod);
 	  }
