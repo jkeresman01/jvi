@@ -131,8 +131,12 @@ public class JBColonCommands {
     public void actionPerformed(ActionEvent ev) {
       ColonEvent cev = (ColonEvent)ev;
       if(cev.getNArg() == 0) {
-        /*JB7 BuildActionPool.ACTION_ProjectMake.actionPerformed(ev);*/
-        Msg.emsg("JB7");
+        if(JBOT.has44()) {
+          BuildActionPool.ACTION_ProjectFirstBuildAction.actionPerformed(ev);
+        } else {
+          /*JB7 BuildActionPool.ACTION_ProjectMake.actionPerformed(ev);*/
+          Msg.emsg("JB7");
+        }
       } else if(cev.getNArg() == 1 && cev.getArg(1).equals("%")) {
         BuildActionPool.ACTION_ProjectNodeMake.actionPerformed(ev);
       } else {
@@ -145,8 +149,14 @@ public class JBColonCommands {
     public void actionPerformed(ActionEvent ev) {
       ColonEvent cev = (ColonEvent)ev;
       if(cev.getNArg() == 0) {
-        /*JB7 BuildActionPool.ACTION_ProjectRebuild.actionPerformed(ev);*/
-        Msg.emsg("JB7");
+        if(JBOT.has44()) {
+          BuildActionPool.ACTION_ProjectSecondBuildAction.actionPerformed(ev);
+          //BuildActionPool.ACTION_ProjectSecondBuildAction
+          //                .actionPerformed(Browser.getActiveBrowser());
+        } else {
+          /*JB7 BuildActionPool.ACTION_ProjectRebuild.actionPerformed(ev);*/
+          Msg.emsg("JB7");
+        }
       } else if(cev.getNArg() == 1 && cev.getArg(1).equals("%")) {
         BuildActionPool.ACTION_ProjectNodeRebuild.actionPerformed(ev);
       } else {

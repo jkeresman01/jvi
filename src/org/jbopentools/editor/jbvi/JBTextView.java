@@ -12,18 +12,18 @@
  * License Version 1.1 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of
  * the License at http://www.mozilla.org/MPL/
- * 
+ *
  * Software distributed under the License is distributed on an "AS
  * IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
  * implied. See the License for the specific language governing
  * rights and limitations under the License.
- * 
+ *
  * The Original Code is jvi - vi editor clone.
- * 
+ *
  * The Initial Developer of the Original Code is Ernie Rael.
  * Portions created by Ernie Rael are
  * Copyright (C) 2000 Ernie Rael.  All Rights Reserved.
- * 
+ *
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 package org.jbopentools.editor.jbvi;
@@ -70,21 +70,21 @@ import com.raelity.jvi.swing.DefaultOutputStream;
 public class JBTextView extends TextView
 			implements Constants
 {
-  
+
   JBTextView(Browser browser, EditorPane editorPane) {
     cache = createTextViewCache();
     statusDisplay = new JBStatusDisplay(browser, editorPane);
   }
-  
+
   protected TextViewCache createTextViewCache() {
     return new JBTextViewCache(this);
   }
-  
+
   protected void createOps(JEditorPane editorPane) {
     ops = new Ops(this);
     ops.init(editorPane);
   }
-  
+
   /**
    * HACK: override this method so that we can turn off
    * isEditable for readonly files.
@@ -94,7 +94,7 @@ public class JBTextView extends TextView
     super.switchTo(editorPane);
     ReadOnlyHack.switchTo(editorPane);
   }
-  
+
   /**
    * This method assumes that it will only be called for the active editor.
    * @return true if the text can be changed
@@ -102,7 +102,7 @@ public class JBTextView extends TextView
   public boolean isEditable() {
     return ReadOnlyHack.isEditable();
   }
-  
+
   /**
    * Notification of changing mode, command/modify.
    * Job is to make sure a read only pane is not modified
@@ -111,7 +111,7 @@ public class JBTextView extends TextView
   static void setModify(boolean modify) {
     ReadOnlyHack.setModify(modify);
   }
-  
+
   /**
    * State of read only option has changed. Make any adjustments.
    */
@@ -192,7 +192,22 @@ public class JBTextView extends TextView
   }
 
   public void findMatch() {
-    ops.xact(EditorActions.ACTION_MatchBrace);
+    if(JBOT.has44()) {
+      // JB7 seems to have a bug with MatchBrace. It matches the character
+      // before the cursor instead of after.
+      int startingOffset = getCaretPosition();
+      setCaretPosition(startingOffset+1);
+      ops.xact(EditorActions.ACTION_MatchBrace);
+      if(getCaretPosition() != startingOffset+1) {
+        // it moved, success match, but for JB7 need to backup
+        setCaretPosition(getCaretPosition()-1);
+      } else {
+        // match failed, set caret to original position
+        setCaretPosition(startingOffset);
+      }
+    } else {
+      ops.xact(EditorActions.ACTION_MatchBrace);
+    }
   }
 
   /** use this for consistency checking */
@@ -264,7 +279,7 @@ public class JBTextView extends TextView
   public void win_close_others(boolean forceit) {
     ops.xact(com.borland.primetime.viewer.TextView.ACTION_CloseOtherViews);
   }
-  
+
   /**
    * Descend into the container hierarchy and stash
    * any discovered instances of the specified class
@@ -296,7 +311,7 @@ public class JBTextView extends TextView
     v.getViewerComponent().requestFocus();
     */
   }
-  
+
   void focusCurrentNode(boolean later) {
     if(later) {
       SwingUtilities.invokeLater(
@@ -310,7 +325,7 @@ public class JBTextView extends TextView
 	//System.err.println("foc2");
         focusCurrentNodeFinally(); }});
   }
-  
+
   void focusCurrentNodeFinally() {
     List l = new ArrayList();
     Browser b = Browser.getActiveBrowser();
@@ -383,7 +398,7 @@ class ReadOnlyHack
   static FileNode fileNode; // cache file node for currentEditor
   static boolean flagReadOnly; // current editor is readonly
   static boolean doReadOnlyHack; // use results of this mess
-  
+
   static void switchTo(JEditorPane editorPane) {
     changeReadOnlyHackOption(); // in case the first time
     // restore isEditable from previously active editor
@@ -398,7 +413,7 @@ class ReadOnlyHack
     // set isEditable to activating editor
     ReadOnlyHack.checkReadOnly();
   }
-  
+
   /** Save fileNodes readonly state.
    *  Expect this to be called on each keystroke.
    */
@@ -408,7 +423,7 @@ class ReadOnlyHack
       currentEditor.setEditable(true);
     }
   }
-  
+
   static boolean isEditable() {
     if(doReadOnlyHack) {
       return ! flagReadOnly;
@@ -418,7 +433,7 @@ class ReadOnlyHack
     }
     return true; // hope this doesn't happen much
   }
-  
+
   static void restoreIsEditable() {
     if(fileNode != null) {
       currentEditor.setEditable(!fileNode.isReadOnly());
@@ -427,22 +442,22 @@ class ReadOnlyHack
     fileNode = null;
     flagReadOnly = false;
   }
-  
+
   /**
    * This method is used to signal that the active editor is entering/exiting
    * modify mode.
-   * 
+   *
    * @param modify true if entering modify mode
    */
   static void setModify(boolean modify) {
     /*
     if(currentEditor != null) {
-      // if entering modify, 
+      // if entering modify,
       currentEditor.setEditable(modify ? false : true);
     }
     */
   }
-  
+
   static void changeReadOnlyHackOption() {
     doReadOnlyHack = G.readOnlyHack.getBoolean();
   }
