@@ -250,11 +250,22 @@ public class TextView implements ViTextView {
     }
   }
 
+  /**
+   * insert character at cursor position. For some characters
+   * special actions may be taken.
+   */
   public void insertChar(int c) {
     if(c == '\t') {
       insertTab();
       return;
     }
+    insertTypedChar((char)c);
+  }
+
+  /**
+   * Add a character verbatim to the window.
+   */
+  public void insertTypedChar(char c) {
     oneCharArray[0] = (char)c;
     expectedCaretPosition++;
     ops.xop(TextOps.KEY_TYPED, new String(oneCharArray));
@@ -406,6 +417,10 @@ public class TextView implements ViTextView {
     return mark;
   }
 
+  public ViOutputStream createOutputStream(Object type, Object info) {
+    return new DefaultOutputStream(this, type, info);
+  }
+
   public void updateCursor(ViCursor cursor) {
     if(editorPane == null) {
       return; // NEEDSWORK: was getting some null pointer stuff here
@@ -499,7 +514,7 @@ public class TextView implements ViTextView {
     return ops;
   }
 
-  String getDisplayFileName() {
+  public String getDisplayFileName() {
     return "xxx";
   }
 

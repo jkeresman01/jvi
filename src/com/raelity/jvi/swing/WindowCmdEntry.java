@@ -166,6 +166,7 @@ public class WindowCmdEntry
   public void activate(String mode, ViTextView tv,
                        String initialText, boolean passThru) {
     this.initialText = initialText;
+    lastCommand = "";
     if(passThru) {
       lastCommand = initialText;
       fireEvent(new ActionEvent(tv.getEditorComponent(),

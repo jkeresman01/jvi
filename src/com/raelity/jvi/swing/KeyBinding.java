@@ -46,7 +46,7 @@ import com.raelity.jvi.Option;
 import com.raelity.jvi.Options;
 import com.raelity.jvi.*;
 
-public class KeyBinding implements KeyDefs {
+public class KeyBinding implements KeyDefs, Constants {
 
   public static BooleanOption keyDebug
                 = (BooleanOption)Options.getOption(Options.dbgKeyStrokes);
@@ -376,6 +376,12 @@ public class KeyBinding implements KeyDefs {
     // other bindings
     //
     //
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+		 '.', InputEvent.CTRL_MASK),
+		 "ViPeriodCloseAngle")); // the ">" must be on period
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+		 ',', InputEvent.CTRL_MASK),
+		 "ViCommaOpenAngle")); // the "<" must be on comma
 
     bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                  KeyEvent.VK_SPACE, 0),
@@ -454,6 +460,9 @@ public class KeyBinding implements KeyDefs {
 	  factory.createKeyAction("ViMultiplyKey", K_KMULTIPLY),
 	  // factory.createKeyAction("ViEnterKey", K_ENTER),
 
+	  factory.createKeyAction("ViPeriodCloseAngle", K_X_PERIOD),
+	  factory.createKeyAction("ViCommaOpenAngle", K_X_COMMA),
+	  
 	  factory.createKeyAction("ViCtrl-F", 6),
 	  factory.createKeyAction("ViCtrl-G", 7),
 	  factory.createKeyAction("ViEnterKey", KeyEvent.VK_ENTER), // 13
@@ -524,5 +533,120 @@ public class KeyBinding implements KeyDefs {
   final static public boolean ignoreChar(int c) {
     return	c < KeyBinding.ignoreCtrlChars.length
 	  	&& KeyBinding.ignoreCtrlChars[c];
+  }
+  
+  public static JTextComponent.KeyBinding[] getEditModeBindings() {
+    List l = getEditModeBindingsList();
+    return (JTextComponent.KeyBinding[]) l.toArray(
+                              new JTextComponent.KeyBinding[l.size()]);
+  }
+
+  public static List getEditModeBindingsList() {
+
+    List bindingList = new ArrayList();
+
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+		   '.', InputEvent.CTRL_MASK),
+		   "ViEdit_indentNextParen"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+		   ',', InputEvent.CTRL_MASK),
+		   "ViEdit_indentPrevParen"));
+    return bindingList;
+  }
+  
+  public static Action[] getEditModeActions() {
+    Action[] localActions = null;
+    try {
+      ViFactory factory = ViManager.getViFactory();
+      localActions = new Action[] {
+	  factory.createEditModeKeyAction("ViEdit_shiftRight",
+		     EM_SHIFT_RIGHT,
+		     "Insert one shiftwidth of indent at the"
+		     + " start of the current line."
+		     + " Only key press events are valid."),
+	  factory.createEditModeKeyAction("ViEdit_shiftLeft",
+		     EM_SHIFT_LEFT,
+		     "Delete one shiftwidth of indent at the"
+		     + " start of the current line."
+		     + " Only key press events are valid."),
+	  factory.createEditModeKeyAction("ViEdit_indentNextParen",
+		     EM_SHIFT_RIGHT_TO_PAREN,
+		     "Indent current line to start under next"
+		     + " parenthesis on previous line."
+		     + " Only key press events are valid."),
+	  factory.createEditModeKeyAction("ViEdit_indentPrevParen",
+		     EM_SHIFT_LEFT_TO_PAREN,
+		     "Indent current line to start under previous"
+		     + " parenthesis on previous line."
+		     + " Only key press events are valid."),
+	  factory.createEditModeKeyAction("ViEdit_insertReplace",
+		     EM_INS_REP,
+		     "Toggle between insert and replace mode")
+      };
+    } catch(Throwable e) {
+      e.printStackTrace();
+    }
+    return localActions;
+  }
+  
+  public static int[] initJavaKeyMap() {
+    int[] jk = new int[KeyDefs.MAX_JAVA_KEY_MAP + 1];
+    
+    for(int i = 0; i < jk.length; i++) {
+      jk[i] = -1;
+    }
+    
+    jk[MAP_K_UP] = KeyEvent.VK_UP;
+    jk[MAP_K_DOWN] = KeyEvent.VK_DOWN;
+    jk[MAP_K_LEFT] = KeyEvent.VK_LEFT;
+    jk[MAP_K_RIGHT] = KeyEvent.VK_RIGHT;
+    jk[MAP_K_TAB] = KeyEvent.VK_TAB;
+    jk[MAP_K_HOME] = KeyEvent.VK_HOME;
+    jk[MAP_K_END] = KeyEvent.VK_END;
+    // jk[MAP_K_S_UP] = KeyEvent.VK_S_UP;
+    // jk[MAP_K_S_DOWN] = KeyEvent.VK_S_DOWN;
+    // jk[MAP_K_S_LEFT] = KeyEvent.VK_S_LEFT;
+    // jk[MAP_K_S_RIGHT] = KeyEvent.VK_S_RIGHT;
+    // jk[MAP_K_S_TAB] = KeyEvent.VK_S_TAB;
+    // jk[MAP_K_S_HOME] = KeyEvent.VK_S_HOME;
+    // jk[MAP_K_S_END] = KeyEvent.VK_S_END;
+    jk[MAP_K_F1] = KeyEvent.VK_F1;
+    jk[MAP_K_F2] = KeyEvent.VK_F2;
+    jk[MAP_K_F3] = KeyEvent.VK_F3;
+    jk[MAP_K_F4] = KeyEvent.VK_F4;
+    jk[MAP_K_F5] = KeyEvent.VK_F5;
+    jk[MAP_K_F6] = KeyEvent.VK_F6;
+    jk[MAP_K_F7] = KeyEvent.VK_F7;
+    jk[MAP_K_F8] = KeyEvent.VK_F8;
+    jk[MAP_K_F9] = KeyEvent.VK_F9;
+    jk[MAP_K_F10] = KeyEvent.VK_F10;
+    jk[MAP_K_F11] = KeyEvent.VK_F11;
+    jk[MAP_K_F12] = KeyEvent.VK_F12;
+    jk[MAP_K_F13] = KeyEvent.VK_F13;
+    jk[MAP_K_F14] = KeyEvent.VK_F14;
+    jk[MAP_K_F15] = KeyEvent.VK_F15;
+    jk[MAP_K_F16] = KeyEvent.VK_F16;
+    jk[MAP_K_F17] = KeyEvent.VK_F17;
+    jk[MAP_K_F18] = KeyEvent.VK_F18;
+    jk[MAP_K_F19] = KeyEvent.VK_F19;
+    jk[MAP_K_F20] = KeyEvent.VK_F20;
+    jk[MAP_K_F21] = KeyEvent.VK_F21;
+    jk[MAP_K_F22] = KeyEvent.VK_F22;
+    jk[MAP_K_F23] = KeyEvent.VK_F23;
+    jk[MAP_K_F24] = KeyEvent.VK_F24;
+    jk[MAP_K_HELP] = KeyEvent.VK_HELP;
+    jk[MAP_K_UNDO] = KeyEvent.VK_UNDO;
+    jk[MAP_K_BS] = KeyEvent.VK_BACK_SPACE;
+    jk[MAP_K_INS] = KeyEvent.VK_INSERT;
+    jk[MAP_K_DEL] = KeyEvent.VK_DELETE;
+    jk[MAP_K_PAGEUP] = KeyEvent.VK_PAGE_UP;
+    jk[MAP_K_PAGEDOWN] = KeyEvent.VK_PAGE_DOWN;
+    jk[MAP_K_KPLUS] = KeyEvent.VK_PLUS;
+    jk[MAP_K_KMINUS] = KeyEvent.VK_MINUS;
+    jk[MAP_K_KDIVIDE] = KeyEvent.VK_DIVIDE;
+    jk[MAP_K_KMULTIPLY] = KeyEvent.VK_MULTIPLY;
+    jk[MAP_K_KENTER] = KeyEvent.VK_ENTER;
+    
+    return jk;
   }
 }

@@ -114,6 +114,7 @@ public class CommandLine extends JPanel
     list.add(0, "");
     combo.insertItemAt("", 0);
     combo.setSelectedIndex(0);
+    getTextField().setText(""); // ??? prevent re-execute last command on <CR>
   }
 
   public void takeFocus(boolean flag) {

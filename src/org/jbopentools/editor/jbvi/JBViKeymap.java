@@ -38,10 +38,14 @@ import java.util.Iterator;
 
 import java.awt.Event;
 import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.ActionEvent;
 import javax.swing.Action;
+import javax.swing.JEditorPane;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Element;
 
 import com.borland.jbuilder.*;
 import com.borland.jbuilder.debugger.DebuggerActions;
@@ -50,10 +54,14 @@ import com.borland.primetime.ide.*;
 import com.borland.primetime.help.HelpManagerActions;
 import com.borland.primetime.insight.template.TemplateActions;
 import com.borland.primetime.editor.EditorManager;
+import com.borland.primetime.editor.EditorAction;
+import com.borland.primetime.editor.EditorActions;
+import com.borland.primetime.editor.EditorPane;
 
 import com.raelity.jvi.G;
 import com.raelity.jvi.ColonCommands;
 import com.raelity.jvi.ViManager;
+import com.raelity.jvi.KeyDefs;
 import com.raelity.jvi.swing.KeyBinding;
 import java.beans.PropertyChangeEvent;
 
@@ -63,6 +71,8 @@ import java.beans.PropertyChangeEvent;
  * @author Mike Timbol
  */
 public class JBViKeymap implements PropertyChangeListener {
+  final static String VI_KEYMAP = "VI";
+  final static String VI_EDIT_KEYMAP = "Edit";
   static JBViKeymap instance;
   //public static int majorVersion;
   //public static int minorVersion;
@@ -85,7 +95,7 @@ public class JBViKeymap implements PropertyChangeListener {
     // Set up the IDE keymap
     //
 
-    Keymap ideMap = KeymapManager.createKeymap("VI", bindingsVI);
+    Keymap ideMap = KeymapManager.createKeymap(VI_KEYMAP, bindingsVI);
     KeymapManager.registerKeymap(ideMap);
 
     //
@@ -137,6 +147,11 @@ public class JBViKeymap implements PropertyChangeListener {
     KeyBinding.removeBindings(viMap, ideMap);
 
     EditorManager.registerKeymap(viMap);
+    if(JBOT.has41()) {
+      Keymap subMap = setupEditSubKeymap(viMap);
+      EditorManager.registerKeymap(subMap);
+      ViManager.setEditModeKeymap(subMap);
+    }
 
     //
     // Listen for changes in current keymap
@@ -164,22 +179,26 @@ public class JBViKeymap implements PropertyChangeListener {
       }
     }
   }
+  
+  private static Keymap setupEditSubKeymap(Keymap viMap) {
+    Keymap subMap;
+    subMap = EditorManager.createSubKeymap(VI_EDIT_KEYMAP,
+                                           viMap,
+					   KeyBinding.getEditModeBindings(),
+					   KeyBinding.getEditModeActions());
+    
+    /*
+    subMap = KeymapManager.createSubKeymap("Edit", viMap,
+				  new KeymapManager$KeyActionBinding[0]);
+    */
 
-  /* ***************************************************************
-      EditorManager.addPropertyChangeListener(
-		EditorManager.keymapAttribute, this)
-
-    and then in my listener (only if 4.1 version of API)
-
-      if(oldvalue != null && ((Keymap)oldvalue).getName().equals("VI")) {
-	if(EditorManager.getCaret() == ViCaret.class) {
-	  EditorManager.setCaret(null);
-	}
-      }
-      if(newvalue != null && ((Keymap)newvalue).getName().equals("VI")) {
-	EditorManager.setCaret(ViCaret.class);
-      }
-  ******************************************************************/
+    /*
+    subMap.addActionForKeyStroke(KeyStroke.getKeyStroke('.',
+							InputEvent.CTRL_MASK),
+				 new EditModeAction("indent to next paren", 0));
+    */
+    return subMap;
+  }
 
   private static KeymapManager$KeyActionBinding bind(KeyStroke stroke,
 						     Action action) {

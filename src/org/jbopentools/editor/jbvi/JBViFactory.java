@@ -49,6 +49,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import com.borland.primetime.editor.EditorAction;
+import com.borland.primetime.editor.EditorActions;
 import com.borland.primetime.editor.EditorPane;
 import com.borland.primetime.editor.EditorManager;
 import com.borland.primetime.ide.Browser;
@@ -80,6 +81,7 @@ import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViFactory;
 import com.raelity.jvi.NonExistentWindowException;
+import com.raelity.jvi.ViXlateKey;
 
 import com.raelity.jvi.swing.DefaultViCaret;
 import com.raelity.jvi.swing.ViCaret;
@@ -98,6 +100,11 @@ public class JBViFactory implements ViFactory,
                                     BrowserListener,
                                     ChangeListener
 {
+  public static String GROUP_VI_PARSER = "vi parser";
+  public static String GROUP_VI_NORMAL = "vi normal mode";
+  public static String GROUP_VI_EDIT = "vi edit mode";
+  public static String GROUP_VI_COLON = "vi colon commands";
+  
   static boolean browserMsgAllTrace = false;
   static boolean attachTrace = false;
   static boolean debugerDebug = true;
@@ -210,6 +217,14 @@ public class JBViFactory implements ViFactory,
    */
   public Action createKeyAction(String name, int key) {
     return new EnqueKeyAction(name, key);
+  }
+  
+  public Action createEditModeKeyAction(String name, int vkey, String desc) {
+    return new EditModeAction(name, vkey, desc);
+  }
+  
+  public Action createNormalModeKeyAction(String name, int vkey, String desc) {
+    return null;
   }
 
   void activateNode(Browser browser, Node node) {
@@ -351,6 +366,9 @@ public class JBViFactory implements ViFactory,
         javaInsightSettings.AUTO_PARAMS.setBoolean(false);
         if(JBViOptions.dbgCIHack.getBoolean())System.err.println("reset paramCI");
       }
+      // treat command mode like insert mode, this fixes the problem
+      // replaceChar then openLine, e.g. "r*" followed by "o".
+      EditorManager.setInsertMode(true);
     } else {
       if(ciMembersUserEnabled) {
         javaInsightSettings.AUTO_MEMBERS.setBoolean(true);
@@ -470,9 +488,22 @@ public class JBViFactory implements ViFactory,
     String name;	// NEEDSWORK: debug
 
     public EnqueKeyAction(String name, int key) {
-	super(name);
-	this.name = name;	// NEEDSWORK: debug
-	this.basekey = key;
+      super(name);
+      this.name = name;	// NEEDSWORK: debug
+      this.basekey = key;
+      
+      if(JBOT.has41()) {
+	// if starts with Vi and ends with Key, then put out a message
+	// with the name of the key in it
+	this.putValue(Action.LONG_DESCRIPTION,
+		      "Pass the keystroke to jVi for processing."
+		      + " The action name indicates the key."
+		      + " All keystroke modifier combinations for"
+		      + " a particular key"
+		      + " go to the same action." );
+	this.putValue("ActionGroup", GROUP_VI_PARSER);
+	EditorActions.addBindableEditorAction(this, JBViKeymap.VI_KEYMAP);
+      }
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -484,6 +515,41 @@ public class JBViFactory implements ViFactory,
         System.err.println("KeyAction: " + name + ": " + (key&~VIRT) + " " + mod + " " + virt);
       }
       ViManager.keyStroke(target, key, mod);
+    }
+  }
+
+  private static class EditModeAction extends EditorAction
+  				      implements ViXlateKey {
+    int basekey;
+    String name;	// NEEDSWORK: debug
+
+    public EditModeAction(String name, int vkey, String desc) {
+      super(name);
+      this.name = name;	// NEEDSWORK: debug
+      this.basekey = vkey;
+      
+      // if starts with Vi and ends with Key, then put out a message
+      // with the name of the key in it
+      this.putValue(Action.LONG_DESCRIPTION, desc);
+      this.putValue("ActionGroup", GROUP_VI_EDIT);
+      EditorActions.addBindableEditorAction(this, JBViKeymap.VI_EDIT_KEYMAP);
+    }
+
+    public void actionPerformed(ActionEvent e) {
+      /* NOT USED for the translation keymap
+      JEditorPane target = (JEditorPane)getEditorTarget(e);
+      int mod = e.getModifiers();
+      int vkey = basekey;
+      if(KeyBinding.keyDebug.getBoolean()) {
+	String virt = ((vkey & VIRT) != 0) ? "virt" : "";
+	System.err.println("KeyAction: " + name + ": " + (vkey&~VIRT) + " " + mod + " " + virt);
+      }
+      ViManager.keyStroke(target, vkey, mod);
+      */
+    }
+    
+    public int getXlateKey() {
+      return basekey;
     }
   }
 

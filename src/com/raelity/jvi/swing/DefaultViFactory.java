@@ -124,7 +124,14 @@ public class DefaultViFactory implements ViFactory, KeyDefs {
   public Action createKeyAction(String name, int key) {
     return new EnqueKeyAction(name, key);
   }
-
+  
+  public Action createEditModeKeyAction(String name, int vkey, String desc) {
+    return null;
+  }
+  
+  public Action createNormalModeKeyAction(String name, int vkey, String desc) {
+    return null;
+  }
 
   /**
    * This is the default key action.

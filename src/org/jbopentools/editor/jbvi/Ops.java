@@ -38,6 +38,7 @@ import java.util.*;
 import com.borland.primetime.editor.EditorActionNames;
 import com.borland.primetime.editor.EditorActions;
 import com.borland.primetime.editor.EditorActions$DefaultKeyTypedAction;
+import com.borland.primetime.editor.EditorManager;
 import com.raelity.jvi.*;
 import com.raelity.jvi.swing.*;
 
@@ -94,7 +95,13 @@ class Ops implements TextOps, Constants {
       break;
 
     case INSERT_TAB:
-      actionName = EditorActionNames.tabKeyAction;
+      if(EditorManager.isSmartTabs()) {
+	actionName = EditorActionNames.tabKeyAction;
+      } else {
+	int offset = textView.getCaretPosition();
+	textView.insertText(offset, "\t");
+	return;
+      }
       break;
 
     case DELETE_PREVIOUS_CHAR:

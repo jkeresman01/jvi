@@ -56,8 +56,10 @@ import com.raelity.jvi.ViMark;
 import com.raelity.jvi.Misc;
 import com.raelity.jvi.swing.TextView;
 import com.raelity.jvi.ViManager;
+import com.raelity.jvi.ViOutputStream;
 
 import com.raelity.jvi.swing.TextViewCache;
+import com.raelity.jvi.swing.DefaultOutputStream;
 
 /**
  * Pretty much the TextView used for standard swing.
@@ -85,6 +87,27 @@ public class JBTextView extends TextView
    */
   public Object getFileObject() {
     return NodeViewMap.getNode((EditorPane)editorPane);
+  }
+
+  public ViOutputStream createOutputStream(Object type, Object info) {
+    if(type == ViOutputStream.SEARCH) {
+      return new SearchOutput(this, type.toString(), info.toString());
+    }
+    return new PrintOutput(this, type.toString(), info.toString());
+  }
+
+  public void insertChar(int c) {
+    switch (c) {
+      case '\t':
+	insertTab();
+	break;
+      case '}':
+	ops.xact(closingCurlyBraceAction);
+	break;
+      default:
+	insertTypedChar((char)c);
+	break;
+    }
   }
 
   public void undo() {
@@ -269,7 +292,7 @@ public class JBTextView extends TextView
     getStatusDisplay().displayStatusMessage(sb.toString());
   }
 
-  String getDisplayFileName() {
+  public String getDisplayFileName() {
     FileNode node = NodeViewMap.getNode((EditorPane)editorPane);
     return node.getDisplayName();
   }
