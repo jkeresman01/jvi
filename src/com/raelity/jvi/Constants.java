@@ -256,12 +256,12 @@ public interface Constants {
   static final int SHAPE_VER	= 2; 	// vertical bar cursor
   
   // edit mode operations that can be specified through a keymap
-  static final int EM = 0x40000000;
-  static final int EM_SHIFT_RIGHT = 1 + EM;
-  static final int EM_SHIFT_LEFT = 2 + EM;
-  static final int EM_SHIFT_RIGHT_TO_PAREN = 3 + EM;
-  static final int EM_SHIFT_LEFT_TO_PAREN = 4 + EM;
-  static final int EM_INS_REP = 5 + EM;
+  static final int IM = 0x40000000;
+  static final int IM_SHIFT_RIGHT = 1 + IM;
+  static final int IM_SHIFT_LEFT = 2 + IM;
+  static final int IM_SHIFT_RIGHT_TO_PAREN = 3 + IM;
+  static final int IM_SHIFT_LEFT_TO_PAREN = 4 + IM;
+  static final int IM_INS_REP = 5 + IM;
 }
 
 /*

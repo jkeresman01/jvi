@@ -42,6 +42,9 @@ import com.raelity.jvi.AbbrevLookup;
 import com.raelity.jvi.ColonCommands;
 import com.raelity.jvi.ColonCommands.ColonAction;
 import com.raelity.jvi.ColonCommands.ColonEvent;
+import java.lang.ClassNotFoundException;
+import java.lang.Throwable;
+import java.lang.reflect.Field;
 
 public class JBColonCommands {
   static private ActionListener l;
@@ -89,6 +92,20 @@ public class JBColonCommands {
     toggles.add("pro", "project", Browser.STATE_ProjectPaneVisible);
     toggles.add("str", "structure", Browser.STATE_StructurePaneVisible);
     toggles.add("sta", "statusbar", Browser.STATE_StatusPaneVisible);
+    tryCosmetics();
+  }
+  
+  /**
+   * If McGrath's open tool is available, then set up a toggle for the
+   * show/hide tabs action.
+   */
+  static private void tryCosmetics() {
+    try {
+      Class cosm = Class.forName("mcgrath.opentools.cosmetics.ContentTabs");
+      Field f = cosm.getField("STATE_ContentTabsVisible");
+      BrowserStateAction act = (BrowserStateAction)f.get(null);
+      toggles.add("tab", "tabs", act);
+    } catch(Throwable t) {}
   }
 
   /** hide/show stuff as seen in view menu */

@@ -43,6 +43,8 @@ import com.raelity.text.RegExpFactory;
 public class NumericOptions extends PropertyPage {
 
   public HelpTopic getHelpTopic() {
+    // if the file is "foo/bar.html" in the JAR, that's the path you use
+    // new ZipHelpTopic(null, "relative/path/to/the.html");
     return null;
   }
 

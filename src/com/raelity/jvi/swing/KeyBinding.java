@@ -59,12 +59,30 @@ public class KeyBinding implements KeyDefs, Constants {
 
   static final String enqueKeyAction = "enque-key";
 
+  /**
+   * Construct and return a keymap for a standard swing text component.
+   * Also, if not already existing, construct insert and normal mode
+   * keymaps only used for user
+   * defined mappings.
+   */
   public static Keymap getKeymap() {
     Keymap keymap = JTextComponent.addKeymap(null, null);
     keymap.setDefaultAction(ViManager.getViFactory()
 			    	.createCharAction(enqueKeyAction));
     JTextComponent.loadKeymap(keymap, getBindings(), getActions());
+    createSubKeymaps();
     return keymap;
+  }
+  
+  static void createSubKeymaps() {
+    Keymap insertModeKeymap = JTextComponent.addKeymap(null, null);
+    JTextComponent.KeyBinding[] bindings = getInsertModeBindings();
+    Action[] actions = getInsertModeActions();
+    JTextComponent.loadKeymap(insertModeKeymap,
+			      bindings,
+			      actions);
+    // This is here only for convenience, it may be overridden.
+    ViManager.setInsertModeKeymap(insertModeKeymap);
   }
 
   public static Action getDefaultAction() {
@@ -388,32 +406,111 @@ public class KeyBinding implements KeyDefs, Constants {
                  "ViSpaceKey"));
 
     bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_A, Event.CTRL_MASK),
+                 "ViCtrl-A"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_B, Event.CTRL_MASK),
+                 "ViCtrl-B"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_C, Event.CTRL_MASK),
+                 "ViCtrl-C"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_D, Event.CTRL_MASK),
+                 "ViCtrl-D"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_E, Event.CTRL_MASK),
+                 "ViCtrl-E"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                  KeyEvent.VK_F, Event.CTRL_MASK),
                  "ViCtrl-F"));
     bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                  KeyEvent.VK_G, Event.CTRL_MASK),
                  "ViCtrl-G"));
     bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_H, Event.CTRL_MASK),
+                 "ViCtrl-H"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                  KeyEvent.VK_BACK_SPACE, 0),
                  "ViBack_spaceKey"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_I, Event.CTRL_MASK),
+                 "ViCtrl-I"));
     bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                    KeyEvent.VK_TAB, 0),
                    "ViTabKey"));
     bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_J, Event.CTRL_MASK),
+                 "ViCtrl-J"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                  KeyEvent.VK_ENTER, 0),
                  "ViEnterKey"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_K, Event.CTRL_MASK),
+                 "ViCtrl-K"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_L, Event.CTRL_MASK),
+                 "ViCtrl-L"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_M, Event.CTRL_MASK),
+                 "ViCtrl-M"));
     bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                  KeyEvent.VK_N, Event.CTRL_MASK),
                  "ViCtrl-N"));
     bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_O, Event.CTRL_MASK),
+                 "ViCtrl-O"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                  KeyEvent.VK_P, Event.CTRL_MASK),
                  "ViCtrl-P"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_Q, Event.CTRL_MASK),
+                 "ViCtrl-Q"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_R, Event.CTRL_MASK),
+                 "ViCtrl-R"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_S, Event.CTRL_MASK),
+                 "ViCtrl-S"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_T, Event.CTRL_MASK),
+                 "ViCtrl-T"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_U, Event.CTRL_MASK),
+                 "ViCtrl-U"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_V, Event.CTRL_MASK),
+                 "ViCtrl-V"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_W, Event.CTRL_MASK),
+                 "ViCtrl-W"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_X, Event.CTRL_MASK),
+                 "ViCtrl-X"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_Y, Event.CTRL_MASK),
+                 "ViCtrl-Y"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_Z, Event.CTRL_MASK),
+                 "ViCtrl-Z"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_OPEN_BRACKET, Event.CTRL_MASK),
+                 "ViEscapeKey"));      // alternate 
     bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                  KeyEvent.VK_ESCAPE, 0),
                  "ViEscapeKey"));
     bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
-                 KeyEvent.VK_OPEN_BRACKET, Event.CTRL_MASK),
-                 "ViEscapeKey"));      // alternate 
+                 KeyEvent.VK_BACK_SLASH, Event.CTRL_MASK),
+                 "ViCtrl-BackslashKey"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_CLOSE_BRACKET, Event.CTRL_MASK),
+                 "ViCtrl-ClosebracketKey"));
+    //bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+    //             KeyEvent.VK_CIRCUMFLEX, Event.CTRL_MASK),
+    //             "ViCtrl-CircumflexKey"));
+    //bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+    //             KeyEvent.VK_UNDERSCORE, Event.CTRL_MASK),
+    //             "ViCtrl-UnderscoreKey"));
+
 
     bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                  KeyEvent.VK_SPACE, InputEvent.SHIFT_MASK),
@@ -463,12 +560,38 @@ public class KeyBinding implements KeyDefs, Constants {
 	  factory.createKeyAction("ViPeriodCloseAngle", K_X_PERIOD),
 	  factory.createKeyAction("ViCommaOpenAngle", K_X_COMMA),
 	  
+	  factory.createKeyAction("ViCtrl-A", 1),
+	  factory.createKeyAction("ViCtrl-B", 2),
+	  factory.createKeyAction("ViCtrl-C", 3),
+	  factory.createKeyAction("ViCtrl-D", 4),
+	  factory.createKeyAction("ViCtrl-E", 5),
 	  factory.createKeyAction("ViCtrl-F", 6),
 	  factory.createKeyAction("ViCtrl-G", 7),
+	  factory.createKeyAction("ViCtrl-H", 8),
+	  factory.createKeyAction("ViCtrl-I", 9),
+	  factory.createKeyAction("ViCtrl-J", 10),
+	  factory.createKeyAction("ViCtrl-K", 11),
+	  factory.createKeyAction("ViCtrl-L", 12),
+	  factory.createKeyAction("ViCtrl-M", 13),
 	  factory.createKeyAction("ViEnterKey", KeyEvent.VK_ENTER), // 13
 	  factory.createKeyAction("ViCtrl-N", 14),
+	  factory.createKeyAction("ViCtrl-O", 15),
 	  factory.createKeyAction("ViCtrl-P", 16),
+	  factory.createKeyAction("ViCtrl-Q", 17),
+	  factory.createKeyAction("ViCtrl-R", 18),
+	  factory.createKeyAction("ViCtrl-S", 19),
+	  factory.createKeyAction("ViCtrl-T", 20),
+	  factory.createKeyAction("ViCtrl-U", 21),
+	  factory.createKeyAction("ViCtrl-V", 22),
+	  factory.createKeyAction("ViCtrl-W", 23),
+	  factory.createKeyAction("ViCtrl-X", 24),
+	  factory.createKeyAction("ViCtrl-Y", 25),
+	  factory.createKeyAction("ViCtrl-Z", 26),
 	  factory.createKeyAction("ViEscapeKey", KeyEvent.VK_ESCAPE), // 27
+	  factory.createKeyAction("ViCtrl-BackslashKey", 28),
+	  factory.createKeyAction("ViCtrl-ClosebracketKey", 29),
+	  //factory.createKeyAction("ViCtrl-CircumflexKey", 30),
+	  //factory.createKeyAction("ViCtrl-UnderscoreKey", 31),
 	  factory.createKeyAction("ViSpaceKey", KeyEvent.VK_SPACE),
 
 	  factory.createKeyAction("ViF1Key", K_F1),
@@ -493,37 +616,37 @@ public class KeyBinding implements KeyDefs, Constants {
   /** Read these as keys, not chars. */
   final private static boolean ignoreCtrlChars[] = {
     	false,		// 0
-	false,
-	false,
-	false,
-	false,		// 4
-    	false,		// 5
+	true,
+	true,
+	true,
+	true,		// 4
+    	true,		// 5
 	true,		// 6	Ctrl-F
 	true,		// 7	Ctrl-G
 	true,		// 8	backspace
 	true,		// 9	tab
     	true,		// 10	return/enter
-	false,
-	false,
-	false,
+	true,
+	true,
+	true,
 	true,		// 14	Ctrl-N
-    	false,		// 15
+    	true,		// 15
 	true,		// 16	Ctrl-P
-	false,
-	false,
-	false,		// 19
-    	false,
-	false,
-	false,
-	false,
-	false,		// 24
-    	false,
-	false,
+	true,
+	true,
+	true,		// 19
+    	true,
+	true,
+	true,
+	true,
+	true,		// 24
+    	true,
+	true,
 	true,		// 27	escape
-	false,
-	false,		// 29
-	false,		// 30
-	false,		// 31
+	true,
+	true,		// 29
+	true,		// 30
+	true,		// 31
 	true		// 32	space is special case
   };
 
@@ -546,11 +669,20 @@ public class KeyBinding implements KeyDefs, Constants {
     List bindingList = new ArrayList();
 
     bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
-		   '.', InputEvent.CTRL_MASK),
-		   "ViEdit_indentNextParen"));
+		   KeyEvent.VK_PERIOD, InputEvent.CTRL_MASK),
+		   "ViInsert_indentNextParen"));
     bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
-		   ',', InputEvent.CTRL_MASK),
-		   "ViEdit_indentPrevParen"));
+		   KeyEvent.VK_COMMA, InputEvent.CTRL_MASK),
+		   "ViInsert_indentPrevParen"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+		   KeyEvent.VK_T, InputEvent.CTRL_MASK),
+		   "ViInsert_shiftRight"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+		   KeyEvent.VK_D, InputEvent.CTRL_MASK),
+		   "ViInsert_shiftLeft"));
+    bindingList.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+		   KeyEvent.VK_INSERT, 0),
+		   "ViInsert_insertReplace"));
     return bindingList;
   }
   
@@ -559,28 +691,28 @@ public class KeyBinding implements KeyDefs, Constants {
     try {
       ViFactory factory = ViManager.getViFactory();
       localActions = new Action[] {
-	  factory.createInsertModeKeyAction("ViEdit_shiftRight",
-		     EM_SHIFT_RIGHT,
+	  factory.createInsertModeKeyAction("ViInsert_shiftRight",
+		     IM_SHIFT_RIGHT,
 		     "Insert one shiftwidth of indent at the"
 		     + " start of the current line."
 		     + " Only key press events are valid."),
-	  factory.createInsertModeKeyAction("ViEdit_shiftLeft",
-		     EM_SHIFT_LEFT,
+	  factory.createInsertModeKeyAction("ViInsert_shiftLeft",
+		     IM_SHIFT_LEFT,
 		     "Delete one shiftwidth of indent at the"
 		     + " start of the current line."
 		     + " Only key press events are valid."),
-	  factory.createInsertModeKeyAction("ViEdit_indentNextParen",
-		     EM_SHIFT_RIGHT_TO_PAREN,
+	  factory.createInsertModeKeyAction("ViInsert_indentNextParen",
+		     IM_SHIFT_RIGHT_TO_PAREN,
 		     "Indent current line to start under next"
 		     + " parenthesis on previous line."
 		     + " Only key press events are valid."),
-	  factory.createInsertModeKeyAction("ViEdit_indentPrevParen",
-		     EM_SHIFT_LEFT_TO_PAREN,
+	  factory.createInsertModeKeyAction("ViInsert_indentPrevParen",
+		     IM_SHIFT_LEFT_TO_PAREN,
 		     "Indent current line to start under previous"
 		     + " parenthesis on previous line."
 		     + " Only key press events are valid."),
-	  factory.createInsertModeKeyAction("ViEdit_insertReplace",
-		     EM_INS_REP,
+	  factory.createInsertModeKeyAction("ViInsert_insertReplace",
+		     IM_INS_REP,
 		     "Toggle between insert and replace mode")
       };
     } catch(Throwable e) {
@@ -646,6 +778,8 @@ public class KeyBinding implements KeyDefs, Constants {
     jk[MAP_K_KDIVIDE] = KeyEvent.VK_DIVIDE;
     jk[MAP_K_KMULTIPLY] = KeyEvent.VK_MULTIPLY;
     jk[MAP_K_KENTER] = KeyEvent.VK_ENTER;
+    jk[MAP_K_X_PERIOD] = KeyEvent.VK_PERIOD;
+    jk[MAP_K_X_COMMA] = KeyEvent.VK_COMMA;
     
     return jk;
   }

@@ -13,18 +13,18 @@
  * License Version 1.1 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of
  * the License at http://www.mozilla.org/MPL/
- * 
+ *
  * Software distributed under the License is distributed on an "AS
  * IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
  * implied. See the License for the specific language governing
  * rights and limitations under the License.
- * 
+ *
  * The Original Code is jvi - vi editor clone.
- * 
+ *
  * The Initial Developer of the Original Code is Ernie Rael.
  * Portions created by Ernie Rael are
  * Copyright (C) 2000 Ernie Rael.  All Rights Reserved.
- * 
+ *
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 package com.raelity.jvi;
@@ -68,7 +68,7 @@ public class ViManager {
 
   static private JEditorPane currentEditorPane;
   static private ViFactory factory;
-  
+
   static private Keymap editModeKeymap;
   static private Keymap normalModeKeymap;
 
@@ -78,7 +78,7 @@ public class ViManager {
   private static int majorVersion = 0;
   private static int minorVersion = 6;
   private static int microVersion = 3;
-  private static String releaseTag = ".1";
+  private static String releaseTag = ".2";
   private static String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion
@@ -425,6 +425,10 @@ public class ViManager {
 
   static public Keymap getNormalModeKeymap() {
     return normalModeKeymap;
+  }
+  
+  static public ActionListener xlateKeymapAction(ActionListener act) {
+    return factory.xlateKeymapAction(act);
   }
 }
 

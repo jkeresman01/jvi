@@ -13,18 +13,18 @@
  * License Version 1.1 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of
  * the License at http://www.mozilla.org/MPL/
- * 
+ *
  * Software distributed under the License is distributed on an "AS
  * IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
  * implied. See the License for the specific language governing
  * rights and limitations under the License.
- * 
+ *
  * The Original Code is jvi - vi editor clone.
- * 
+ *
  * The Initial Developer of the Original Code is Ernie Rael.
  * Portions created by Ernie Rael are
  * Copyright (C) 2000 Ernie Rael.  All Rights Reserved.
- * 
+ *
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 package org.jbopentools.editor.jbvi;
@@ -69,6 +69,15 @@ class Ops implements TextOps, Constants {
     xact(action);
   }
 
+  public void xact(String actionName, String s) {
+    //keyEvent.setSource(textView.getEditorComponent());
+    //keyEvent.setKeyChar(c);
+    event.setSource(textView.getEditorComponent());
+    event.setActionCommand(s);
+    Action action = ActionsCache.getAction(actionName);
+    action.actionPerformed(event);
+  }
+
   public void xact(Action action) {
     action.actionPerformed(event);
   }
@@ -95,7 +104,9 @@ class Ops implements TextOps, Constants {
       break;
 
     case INSERT_TAB:
-      if(EditorManager.isSmartTabs()) {
+      // NEEDSWORK: should be in edit module for turning tab to blanks
+      if( ! EditorManager.isBooleanOptionValue(EditorManager.useTabCharAttribute)
+	 || EditorManager.isBooleanOptionValue(EditorManager.smartTabsAttribute)) {
 	actionName = EditorActionNames.tabKeyAction;
       } else {
 	int offset = textView.getCaretPosition();
@@ -115,6 +126,8 @@ class Ops implements TextOps, Constants {
   }
 
   ReusableEvent event = new ReusableEvent();
+  
+  KeyEvent keyEvent = new ReusableKeyEvent();
 }
 
 class ReusableEvent extends ActionEvent {
@@ -134,6 +147,17 @@ class ReusableEvent extends ActionEvent {
 
   public String getActionCommand() {
     return cmd;
+  }
+}
+
+/** Make this a key typed event */
+class ReusableKeyEvent extends KeyEvent {
+  ReusableKeyEvent() {
+    super(new java.awt.Button(), KEY_TYPED, 0L, 0, VK_UNDEFINED, '}');
+  }
+
+  public void setSource(Object source) {
+    this.source = source;
   }
 }
 

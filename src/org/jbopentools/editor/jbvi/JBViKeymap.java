@@ -16,18 +16,18 @@
  * License Version 1.1 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of
  * the License at http://www.mozilla.org/MPL/
- * 
+ *
  * Software distributed under the License is distributed on an "AS
  * IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
  * implied. See the License for the specific language governing
  * rights and limitations under the License.
- * 
+ *
  * The Original Code is jvi - vi editor clone.
- * 
+ *
  * The Initial Developer of the Original Code is Ernie Rael.
  * Portions created by Ernie Rael are
  * Copyright (C) 2000 Ernie Rael.  All Rights Reserved.
- * 
+ *
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 package org.jbopentools.editor.jbvi;
@@ -72,8 +72,10 @@ import java.beans.PropertyChangeEvent;
  */
 public class JBViKeymap implements PropertyChangeListener {
   final static String VI_KEYMAP = "VI";
-  final static String VI_EDIT_KEYMAP = "Edit";
+  final static String VI_EDIT_KEYMAP = "Insert";
   static JBViKeymap instance;
+  static Keymap insertKeymap;
+  static Keymap normalKeymap;
   //public static int majorVersion;
   //public static int minorVersion;
 
@@ -82,7 +84,7 @@ public class JBViKeymap implements PropertyChangeListener {
 	 return;
     JBOT.maj = majorVersion;
     JBOT.min = minorVersion;
-    
+
     instance = new JBViKeymap();
 
     // System.err.println("OT: " + majorVersion + "." + minorVersion);
@@ -101,11 +103,11 @@ public class JBViKeymap implements PropertyChangeListener {
     //
     // Set up the editor keymap
     //
-    
+
     // first muck with the escape key
     //     - remove the existing bindings to the escape action
     //     - add our bindings and actions
-    
+
     List bindings = KeyBinding.getBindingsList();
     Iterator iter = bindings.iterator();
     while(iter.hasNext()) {
@@ -114,7 +116,7 @@ public class JBViKeymap implements PropertyChangeListener {
 	iter.remove();
       }
     }
-    
+
     // The escape key get usurped in jdk1.3 if there is a tool tip manager
     // on the editor pane. Catch escape with KEY TYPED
     bindings.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
@@ -123,7 +125,7 @@ public class JBViKeymap implements PropertyChangeListener {
     /*
     bindings.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                  KeyEvent.VK_OPEN_BRACKET, Event.CTRL_MASK),
-                 "ViEscapeKey"));      // alternate 
+                 "ViEscapeKey"));      // alternate
     */
 
     Keymap viMap = EditorManager.createKeymap("VI",
@@ -131,7 +133,7 @@ public class JBViKeymap implements PropertyChangeListener {
 			      new JTextComponent.KeyBinding[bindings.size()]),
 		      KeyBinding.getActions());
     viMap.setDefaultAction(KeyBinding.getDefaultAction());
-    
+
     //
     // Add a few extra hooks for IDE special stuff
     //
@@ -148,9 +150,12 @@ public class JBViKeymap implements PropertyChangeListener {
 
     EditorManager.registerKeymap(viMap);
     if(JBOT.has41()) {
-      Keymap subMap = setupEditSubKeymap(viMap);
+      Keymap subMap = setupInsertSubKeymap(viMap);
       EditorManager.registerKeymap(subMap);
       ViManager.setInsertModeKeymap(subMap);
+      insertKeymap = subMap;
+    } else {
+      KeyBinding.getKeymap(); // installs default sub key maps
     }
 
     //
@@ -179,14 +184,14 @@ public class JBViKeymap implements PropertyChangeListener {
       }
     }
   }
-  
-  private static Keymap setupEditSubKeymap(Keymap viMap) {
+
+  private static Keymap setupInsertSubKeymap(Keymap viMap) {
     Keymap subMap;
     subMap = EditorManager.createSubKeymap(VI_EDIT_KEYMAP,
                                            viMap,
 					   KeyBinding.getInsertModeBindings(),
 					   KeyBinding.getInsertModeActions());
-    
+
     /*
     subMap = KeymapManager.createSubKeymap("Edit", viMap,
 				  new KeymapManager$KeyActionBinding[0]);
@@ -249,7 +254,8 @@ public class JBViKeymap implements PropertyChangeListener {
     //XXX bind(KeyStroke.getKeyStroke(KeyEvent.VK_G, Event.CTRL_MASK),
 	 // JBuilderActions.ACTION_SearchGoToLine),
     bind(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, Event.CTRL_MASK),
-	 JBuilderActions.ACTION_SearchBrowseSymbol),
+         JBuilderActions.ACTION_SearchBrowseSymbol),
+	 //JBuilderActions.ACTION_SearchBrowseClasses), //XXXXXXXXXXXXXXXXXXXXX
 
     bind(KeyStroke.getKeyStroke(KeyEvent.VK_FIND, 0),
 	 Browser.DELEGATE_SearchFind),

@@ -31,6 +31,7 @@ package org.jbopentools.editor.jbvi;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
+import java.awt.event.ActionListener;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.WeakHashMap;
@@ -43,6 +44,7 @@ import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.text.TextAction;
 import javax.swing.text.Caret;
+import javax.swing.text.Keymap;
 import javax.swing.event.CaretListener;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.ChangeEvent;
@@ -88,6 +90,8 @@ import com.raelity.jvi.swing.ViCaret;
 import com.raelity.jvi.swing.KeyBinding;
 import com.raelity.jvi.swing.CommandLine;
 import com.raelity.jvi.swing.WindowCmdEntry;
+import com.borland.primetime.editor.TrackingKeymap$TrackingAction;
+import com.borland.primetime.editor.EditorAction$SubKeymapAction ;
 
 /**
  * This provides the Vi items to interface with standard swing JEditorPane.
@@ -102,7 +106,7 @@ public class JBViFactory implements ViFactory,
 {
   public static String GROUP_VI_PARSER = "vi parser";
   public static String GROUP_VI_NORMAL = "vi normal mode";
-  public static String GROUP_VI_EDIT = "vi edit mode";
+  public static String GROUP_VI_EDIT = "vi insert mode";
   public static String GROUP_VI_COLON = "vi colon commands";
   
   static boolean browserMsgAllTrace = false;
@@ -219,12 +223,34 @@ public class JBViFactory implements ViFactory,
     return new EnqueKeyAction(name, key);
   }
   
+  /*
+  public Keymap getInsertModeKeymap() {
+    return JBViKeymap.insertKeymap;
+  }
+  
+  public Keymap getNormalModeKeymap() {
+    return JBViKeymap.normalKeymap;
+  }
+  */
+  
   public Action createInsertModeKeyAction(String name, int vkey, String desc) {
     return new InsertModeAction(name, vkey, desc);
   }
   
   public Action createNormalModeKeyAction(String name, int vkey, String desc) {
     return null;
+  }
+  
+  public ActionListener xlateKeymapAction(ActionListener act) {
+    
+    if(JBOT.has41()) {
+      TrackingKeymap$TrackingAction jbAct = (TrackingKeymap$TrackingAction )act;
+      EditorAction$SubKeymapAction jbAct2
+		  = (EditorAction$SubKeymapAction )jbAct.getAction();
+      return jbAct2.getAction();
+    } else {
+      return act;
+    }
   }
 
   void activateNode(Browser browser, Node node) {
@@ -521,31 +547,22 @@ public class JBViFactory implements ViFactory,
   private static class InsertModeAction extends EditorAction
   				      implements ViXlateKey {
     int basekey;
-    String name;	// NEEDSWORK: debug
 
     public InsertModeAction(String name, int vkey, String desc) {
-      super(name);
-      this.name = name;	// NEEDSWORK: debug
+      super(name); // ??????????????????????
       this.basekey = vkey;
       
-      // if starts with Vi and ends with Key, then put out a message
-      // with the name of the key in it
-      this.putValue(Action.LONG_DESCRIPTION, desc);
-      this.putValue("ActionGroup", GROUP_VI_EDIT);
-      EditorActions.addBindableEditorAction(this, JBViKeymap.VI_EDIT_KEYMAP);
+      if(JBOT.has41()) {
+	// if name starts with Vi and ends with Key, then put out a message
+	// with the name of the key in it
+	this.putValue(Action.LONG_DESCRIPTION, desc);
+	this.putValue("ActionGroup", GROUP_VI_EDIT);
+	EditorActions.addBindableEditorAction(this, JBViKeymap.VI_EDIT_KEYMAP);
+      }
     }
 
     public void actionPerformed(ActionEvent e) {
-      /* NOT USED for the translation keymap
-      JEditorPane target = (JEditorPane)getEditorTarget(e);
-      int mod = e.getModifiers();
-      int vkey = basekey;
-      if(KeyBinding.keyDebug.getBoolean()) {
-	String virt = ((vkey & VIRT) != 0) ? "virt" : "";
-	System.err.println("KeyAction: " + name + ": " + (vkey&~VIRT) + " " + mod + " " + virt);
-      }
-      ViManager.keyStroke(target, vkey, mod);
-      */
+      // NOT USED for the translation keymap
     }
     
     public int getXlateKey() {

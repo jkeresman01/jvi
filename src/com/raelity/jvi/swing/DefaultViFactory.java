@@ -32,11 +32,13 @@ package com.raelity.jvi.swing;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JComponent;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.text.TextAction;
 import javax.swing.text.Caret;
+import javax.swing.text.Keymap;
 
 import com.raelity.jvi.Window;
 import com.raelity.jvi.ViFS;
@@ -125,12 +127,26 @@ public class DefaultViFactory implements ViFactory, KeyDefs {
     return new EnqueKeyAction(name, key);
   }
   
+  /*
+  public Keymap getInsertModeKeymap() {
+    return KeyBinding.insertModeKeymap;
+  }
+  
+  public Keymap getNormalModeKeymap() {
+    return KeyBinding.normalModeKeymap;
+  }
+  */
+  
   public Action createInsertModeKeyAction(String name, int vkey, String desc) {
-    return null;
+    return new InsertModeAction(name, vkey, desc);
   }
   
   public Action createNormalModeKeyAction(String name, int vkey, String desc) {
     return null;
+  }
+  
+  public ActionListener xlateKeymapAction(ActionListener act) {
+    return act;
   }
 
   /**
@@ -190,6 +206,30 @@ public class DefaultViFactory implements ViFactory, KeyDefs {
                            + (key&~VIRT) + " " + mod + " " + virt);
       }
       ViManager.keyStroke(target, key, mod);
+    }
+  }
+  
+  private static class InsertModeAction extends TextAction
+  				      implements ViXlateKey {
+    int basekey;
+
+    public InsertModeAction(String name, int vkey, String desc) {
+      super(name); // ??????????????????????
+      this.basekey = vkey;
+      
+      // if name starts with Vi and ends with Key, then put out a message
+      // with the name of the key in it
+      //this.putValue(Action.LONG_DESCRIPTION, desc);
+      //this.putValue("ActionGroup", GROUP_VI_EDIT);
+      //EditorActions.addBindableEditorAction(this, JBViKeymap.VI_EDIT_KEYMAP);
+    }
+
+    public void actionPerformed(ActionEvent e) {
+      // NOT USED for the translation keymap
+    }
+    
+    public int getXlateKey() {
+      return basekey;
     }
   }
 }

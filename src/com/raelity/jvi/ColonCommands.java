@@ -189,6 +189,9 @@ public class ColonCommands implements ColonCommandFlags, Constants {
 	sidx = get_address(commandLine, sidx, skip, lnum);
 	if (sidx < 0)		    // error detected
 	    return null; // NEEDSWORK: goto doend;
+	// if(lnum.getValue() == 0) {
+	//   lnum.setValue(1);	// NEEDSWORK: is this right?
+	// }
 	if (lnum.getValue() == MAXLNUM)
 	{
 	    if (commandLine.charAt(sidx) == '%')   // '%' - all lines
@@ -251,7 +254,11 @@ public class ColonCommands implements ColonCommandFlags, Constants {
     if(sidx >= commandLine.length()) {
       // no command, but if a number was entered then goto that line
       if(cev.getAddrCount() > 0) {
-        Misc.gotoLine(cev.getLine1(), BL_SOL | BL_FIX);
+	int l = cev.getLine1();
+	if(l == 0) {
+	  l = 1;
+	}
+        Misc.gotoLine(l, BL_SOL | BL_FIX);
         return null;
       }
     }

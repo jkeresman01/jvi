@@ -188,9 +188,10 @@ normal_char:	// break normal_char to insert a character
         // skip if(has_startsel)
 
 	int dir = FORWARD;
+	c = Misc.xlateViKey(ViManager.getInsertModeKeymap(), c, G.getModMask());
         switch(c) {
-	  case EM_INS_REP:
-          case K_INS:	    // toggle insert/replace mode
+	  case IM_INS_REP:
+          //case K_INS:	    // toggle insert/replace mode
             if (G.State == REPLACE) { G.State = INSERT; }
             else { G.State = REPLACE; }
             GetChar.AppendCharToRedobuff(c);
@@ -243,32 +244,34 @@ normal_char:	// break normal_char to insert a character
 	  */
 
             // Make indent one shiftwidth smaller.
-	  case EM_SHIFT_LEFT:
-          case 0x1f & (int)('D'):	// Ctrl
+	  case IM_SHIFT_LEFT:
+          //case 0x1f & (int)('D'):	// Ctrl
 	    dir = BACKWARD;
             // FALLTHROUGH
 
             // Make indent one shiftwidth greater.
-	  case EM_SHIFT_RIGHT:
-          case 0x1f & (int)('T'):	// Ctrl
+	  case IM_SHIFT_RIGHT:
+          //case 0x1f & (int)('T'):	// Ctrl
             ins_shift(c, lastc, dir);
             // need_redraw = TRUE;
             break;
             
             // shift line to be under char after next
             // parenthesis in previous line
-	  case EM_SHIFT_RIGHT_TO_PAREN:
-          case K_X_PERIOD:
-	    if(G.getModMask() == CTRL) {
+	  case IM_SHIFT_RIGHT_TO_PAREN:
+          //case K_X_PERIOD:
+	    if( c == IM_SHIFT_RIGHT_TO_PAREN
+		|| c == K_X_PERIOD && G.getModMask() == CTRL) {
 	      ins_shift_paren(c, FORWARD);
 	    }
             break;
 	    
             // shift line to be under char after previous
             // parenthesis in previous line
-	  case EM_SHIFT_LEFT_TO_PAREN:
-          case K_X_COMMA:
-	    if(G.getModMask() == CTRL) {
+	  case IM_SHIFT_LEFT_TO_PAREN:
+          //case K_X_COMMA:
+	    if( c == IM_SHIFT_LEFT_TO_PAREN
+		|| c == K_X_COMMA && G.getModMask() == CTRL) {
 	      ins_shift_paren(c, BACKWARD);
 	    }
             break;

@@ -104,10 +104,8 @@ public class JBTextView extends TextView
 	break;
       case '}':
 	if(JBOT.has41()) {
-	  if(EditorManager.isAlignClosingCurlyBrace()) {
-	    ops.xact(closingCurlyBraceAction);
-	    break;
-	  }
+	  ops.xact(closingCurlyBraceAction, "}");
+	  break;
 	}
 	// FALL THROUGH
       default:

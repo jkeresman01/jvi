@@ -32,6 +32,7 @@ package com.raelity.jvi;
 import javax.swing.text.*;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.ClipboardOwner;
@@ -41,7 +42,10 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.Toolkit;
 
-public class Misc implements Constants, ClipboardOwner {
+import com.raelity.jvi.swing.KeyBinding;
+import java.awt.event.ActionListener;
+
+public class Misc implements Constants, ClipboardOwner, KeyDefs {
 
   static ClipboardOwner clipOwner = new Misc();
 
@@ -2557,23 +2561,82 @@ public class Misc implements Constants, ClipboardOwner {
   static int[] javaKeyMap;
   
   /**
-   * decode the encoded keypress character embedded
+   * decode the vi key character embedded
    * in a unicode character and
    * return a kestroke.
    */
-  static KeyStroke getViKeyStroke(int key) {
+  static KeyStroke getKeyStroke(int vikey, int modifiers) {
+    //int modifiers = (vikey >> MODIFIER_POSITION_SHIFT) & 0x0f;
+    int vikeyIdx = vikey & 0xff;
+    if(vikeyIdx < javaKeyMap.length) {
+      int k = javaKeyMap[vikeyIdx];
+      if(k != 0) {
+	return KeyStroke.getKeyStroke(k, modifiers);
+      }
+    }
     return null;
   }
   
-  static int xlateKey(Keymap map, int key) {
-    KeyStroke ks = getViKeyStroke(key);
+  /**
+   * Translate the vi internal key, see {@link KeyDefs}, into a swing keystroke.
+   * @param vikey 
+   */
+  static int xlateViKey(Keymap map, int vikey, int modifiers) {
+    if(map == null) {
+      return vikey;
+    }
+    if((vikey & 0xf000) != VIRT && vikey >= 0x20) {
+      return vikey;
+    }
+    KeyStroke ks;
+    if(vikey < 0x20) {
+      ks = KeyStroke.getKeyStroke(controlKey[vikey], CTRL);
+    } else {
+      ks = getKeyStroke(vikey, modifiers);
+    }
     if(ks == null) {
-      return key;
+      return vikey;
     }
-    ViXlateKey xk = (ViXlateKey)map.getAction(ks);
-    if(xk == null) {
-      return key;
+    ActionListener al = map.getAction(ks);
+    if(al == null) {
+      return vikey;
     }
+    ViXlateKey xk = (ViXlateKey)ViManager.xlateKeymapAction(al);
     return xk.getXlateKey();
   }
+  
+  final private static int[] controlKey = new int[] {
+    KeyEvent.VK_AT,
+    KeyEvent.VK_A,
+    KeyEvent.VK_B,
+    KeyEvent.VK_C,
+    KeyEvent.VK_D,
+    KeyEvent.VK_E,
+    KeyEvent.VK_F,
+    KeyEvent.VK_G,
+    KeyEvent.VK_H,
+    KeyEvent.VK_I,
+    KeyEvent.VK_J,
+    KeyEvent.VK_K,
+    KeyEvent.VK_L,
+    KeyEvent.VK_M,
+    KeyEvent.VK_N,
+    KeyEvent.VK_O,
+    KeyEvent.VK_P,
+    KeyEvent.VK_Q,
+    KeyEvent.VK_R,
+    KeyEvent.VK_S,
+    KeyEvent.VK_T,
+    KeyEvent.VK_U,
+    KeyEvent.VK_V,
+    KeyEvent.VK_W,
+    KeyEvent.VK_X,
+    KeyEvent.VK_Y,
+    KeyEvent.VK_Z,
+    KeyEvent.VK_OPEN_BRACKET,
+    KeyEvent.VK_BACK_SLASH,
+    KeyEvent.VK_CLOSE_BRACKET,
+    KeyEvent.VK_CIRCUMFLEX,
+    KeyEvent.VK_UNDERSCORE
+  };
 }

@@ -29,8 +29,10 @@
  */
 package com.raelity.jvi;
 
+import java.awt.event.ActionListener;
 import javax.swing.JEditorPane;
 import javax.swing.Action;
+import javax.swing.text.Keymap;
 
 import com.raelity.jvi.ViFS;
 import com.raelity.jvi.Window;
@@ -77,14 +79,30 @@ public interface ViFactory {
   public Action createKeyAction(String name, int key);
   
   /**
-   * @return edit mode action for picking up specified key
+   * fetch the keymap for insert mode operations
+   */
+  //public Keymap getInsertModeKeymap();
+  
+  /**
+   * fetch the keymap for normal mode operations
+   */
+  //public Keymap getNormalModeKeymap();
+  
+  /**
+   * @return edit mode action for specific operation
    */
   public Action createInsertModeKeyAction(String name, int vkey, String desc);
   
   /**
-   * @return normal mode action for picking up specified key
+   * @return normal mode action for specific operation
    */
   public Action createNormalModeKeyAction(String name, int vkey, String desc);
+  
+  /**
+   * The actions used for keymap translation may be munged by the environment
+   * so we need a way to get back the original action.
+   */
+  public ActionListener xlateKeymapAction(ActionListener act);
 
   /**
    * A command entry object will be created if needed.
