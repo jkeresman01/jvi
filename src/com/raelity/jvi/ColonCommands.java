@@ -60,6 +60,8 @@ import com.raelity.jvi.swing.*;
  */
 public class ColonCommands implements ColonCommandFlags, Constants {
   private static AbbrevLookup commands = new AbbrevLookup();
+  
+  private static String lastCommand;
 
   public ColonCommands() {
   }
@@ -90,7 +92,11 @@ public class ColonCommands implements ColonCommandFlags, Constants {
     String cmd = ev.getActionCommand();
     // if not <CR> must be an escape, just ignore it
     if(cmd.charAt(0) == '\n') {
-      executeCommand(commandLine);
+      if( ! commandLine.equals("")) {
+	lastCommand = commandLine;
+      }
+      executeCommand(parseCommand(commandLine));
+      closePrint();
     }
   }
 
@@ -108,9 +114,17 @@ public class ColonCommands implements ColonCommandFlags, Constants {
                                 ":", G.curwin,
                                 range);
   }
+  
+  static void executeCommand(ColonEvent cev) {
+    if(cev != null) {
+      ((ActionListener)cev.commandElement.getValue()).actionPerformed(cev);
+    }
+  }
 
   /**
-   * Parse (partially) and dispatch the command.
+   * Parse (partially) the command.
+   * Return null if parse failure or otherwise can't execute,
+   * otherwise return the colonEvent for the command.
    *
    * Following is the stock vim comment
    * <pre>
@@ -129,7 +143,7 @@ public class ColonCommands implements ColonCommandFlags, Constants {
    * This function may be called recursively!
    * </pre>
    */
-  static void executeCommand(String commandLine) {
+  static ColonEvent parseCommand(String commandLine) {
     int sidx = 0; // index into string
     int sidx01;
     int sidx02;
@@ -174,7 +188,7 @@ public class ColonCommands implements ColonCommandFlags, Constants {
         sidx = Misc.skipwhite(commandLine, sidx);
 	sidx = get_address(commandLine, sidx, skip, lnum);
 	if (sidx < 0)		    // error detected
-	    return; // NEEDSWORK: goto doend;
+	    return null; // NEEDSWORK: goto doend;
 	if (lnum.getValue() == MAXLNUM)
 	{
 	    if (commandLine.charAt(sidx) == '%')   // '%' - all lines
@@ -238,11 +252,11 @@ public class ColonCommands implements ColonCommandFlags, Constants {
       // no command, but if a number was entered then goto that line
       if(cev.getAddrCount() > 0) {
         Misc.gotoLine(cev.getLine1(), BL_SOL | BL_FIX);
-        return;
+        return null;
       }
     }
     
-    // if(sidx >= commandLine.length()) { return; }
+    // if(sidx >= commandLine.length()) { return null; }
     sidx01 = sidx;
     // skip alpha characters
     for(; sidx < commandLine.length(); sidx++) {
@@ -261,7 +275,7 @@ public class ColonCommands implements ColonCommandFlags, Constants {
     AbbrevLookup.CommandElement ce = commands.lookupCommand(command);
     if(ce == null) {
       Msg.emsg("Not an editor command: " + command);
-      return;
+      return null;
     }
 
     //
@@ -271,21 +285,21 @@ public class ColonCommands implements ColonCommandFlags, Constants {
     if(ce.getValue() instanceof Action) {
       if( ! ((Action)ce.getValue()).isEnabled()) {
         Msg.emsg(ce.getName() + " is not enabled");
-        return;
+        return null;
       }
     }
     if( ! (ce.getValue() instanceof ColonAction)) {
       // no arguments allowed
       if(sidx < commandLine.length()) {
         Msg.emsg(Messages.e_trailing);
-        return;
+        return null;
       }
     }
     if(bang
         && ( ! (ce.getValue() instanceof ColonAction)
              || (((ColonAction)ce.getValue()).getFlags() & BANG) == 0)) {
       Msg.emsg("No ! allowed");
-      return;
+      return null;
     }
     cev.command = ce.getName();
     cev.bang = bang;
@@ -304,7 +318,9 @@ public class ColonCommands implements ColonCommandFlags, Constants {
       }
     }
 
-    ((ActionListener)ce.getValue()).actionPerformed(cev);
+    cev.commandElement = ce;
+    return cev;
+    // ((ActionListener)ce.getValue()).actionPerformed(cev);
   }
   
   /**
@@ -460,6 +476,8 @@ public class ColonCommands implements ColonCommandFlags, Constants {
     // NEEDSWORK: ColonEvent Add stuff for getting at command arguments
     /** The expanded command word */
     String command;
+    /** The command associated with this event */
+    AbbrevLookup.CommandElement commandElement;
     /** indicates that the command word has a trailing "!" */
     boolean bang;
     /** command line as entered */
@@ -499,6 +517,10 @@ public class ColonCommands implements ColonCommandFlags, Constants {
      */
     public int getAddrCount() {
       return addr_count;
+    }
+    
+    public ActionListener getAction() {
+      return (ActionListener)commandElement.getValue();
     }
 
     /**
@@ -645,14 +667,96 @@ public class ColonCommands implements ColonCommandFlags, Constants {
     }
     
     public void actionPerformed(ActionEvent ev) {
-      G.curwin.beginUndo();
+      Misc.beginUndo();
       try {
         Search.substitute((ColonEvent)ev);
       }
       finally {
-        G.curwin.endUndo();
+        Misc.endUndo();
       }
       
+    }
+  };
+  
+  static ColonAction ACTION_global = new ColonAction() {
+    public int getFlags() {
+      return NOPARSE;
+    }
+    
+    public void actionPerformed(ActionEvent ev) {
+      Misc.beginUndo();
+      try {
+        Search.global((ColonEvent)ev);
+      }
+      finally {
+        Misc.endUndo();
+      }
+    }
+  };
+  
+  /**
+   * :print command. If not busy global then output to "print" stream.
+   * For now, its just a no-op so the word "print" can be found.
+   */
+  static ColonAction ACTION_print = new ColonAction() {
+    public void actionPerformed(ActionEvent ev) {
+    }
+  };
+  
+  /**
+   * This is used for several of the colon commands to translate arguments
+   * into OPARG.
+   */
+   
+  static OPARG setupExop(ColonEvent cev) {
+    OPARG oa = new OPARG();
+    // oa.regname = ; NEEDSWORK:
+    oa.start = new FPOS();
+    oa.start.setPosition(cev.getLine1(), 0);
+    oa.end = new FPOS();
+    oa.end.setPosition(cev.getLine2(), 0);
+    oa.line_count = cev.getLine2() - cev.getLine1() + 1;
+    oa.motion_type = MLINE;
+    if(cev.getAction() != ACTION_yank) {
+      MarkOps.setpcmark();
+      G.curwin.getWindow().setWCursor(oa.start);
+      Edit.beginline(BL_SOL|BL_FIX);
+    }
+    return oa;
+  }
+  
+  /**
+   * :delete command.
+   */
+  static ColonAction ACTION_delete = new ColonAction() {
+    public void actionPerformed(ActionEvent ev) {
+      ColonEvent cev = (ColonEvent)ev;
+      OPARG oa = setupExop(cev);
+      oa.op_type = OP_DELETE;
+      if(cev.getNArg() == 1) {
+	try {
+	  oa.line_count = Integer.parseInt(cev.getArg(1));
+	}
+	catch (Exception ex) {
+	  Msg.emsg(Messages.e_trailing);
+	  return;
+	}
+      } else if(cev.getNArg() > 1) {
+	Msg.emsg(Messages.e_trailing);
+	return;
+      }
+      
+      Misc.op_delete(oa);
+    }
+  };
+  
+  /**
+   * :yank command.
+   */
+  static ColonAction ACTION_yank = new ColonAction() {
+    public void actionPerformed(ActionEvent ev) {
+      OPARG oa = setupExop((ColonEvent)ev);
+      oa.op_type = OP_YANK;
     }
   };
 
@@ -665,11 +769,64 @@ public class ColonCommands implements ColonCommandFlags, Constants {
     register("f", "file", ACTION_file);
     register("e", "edit", ACTION_edit);
     register("s", "substitute", ACTION_substitute);
+    register("g", "global", ACTION_global);
+    register("d", "delete", ACTION_delete);
+    // register("p", "print", ACTION_print);
+    // register("y", "yank", ACTION_yank);
+    
     // register("n", "next", ACTION_next);
     // register("N", "Next", ACTION_Next);
   }
 
   static {
     registerBuiltinCommands();
+  }
+  
+  //
+  // handle the print stream
+  //
+  
+  /**
+   * The current print stream (text window) is automatically created if there
+   * is no current one.
+   *
+   * It is expected that it will be closed at the end of
+   * the current command.
+   */
+  private static ViOutputStream printStream;
+  
+  private static void makePrintStream() {
+    if(printStream != null) {
+      return;
+    }
+    printStream = G.curwin.createOutputStream(ViOutputStream.TEXT,
+                                              lastCommand);
+  }
+   
+  /**
+   * Output a string to the current text window.
+   */
+  static void outputPrint(String s) {
+    makePrintStream();
+    printStream.println(s);
+  }
+  
+  /**
+   * Output the specified document line to the current text window.
+   */
+  static void outputPrint(int line, int offset, int length) {
+    makePrintStream();
+    printStream.println(line, offset, length);
+  }
+  
+  /**
+   * Close the current print output stream.
+   */
+  static void closePrint() {
+    if(printStream == null) {
+      return;
+    }
+    printStream.close();
+    printStream = null;
   }
 }

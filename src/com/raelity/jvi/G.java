@@ -73,6 +73,10 @@ public class G {
   static int restart_edit;
   public static boolean Recording;
   static boolean Exec_reg;      // true when executing a register
+  
+  // for the global command
+  static boolean global_busy;
+  ViOutputStream global_output;
 
   static boolean clear_cmdline = false;
   static int old_indent = 0;

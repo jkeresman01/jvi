@@ -168,6 +168,9 @@ class MarkOps implements Constants, Messages {
   }
 
   static void setpcmark(int offset) {
+    if(G.global_busy) {
+      return;
+    }
     G.curwin.pushPCMark();
     G.curwin.setMarkOffset(G.curwin.getPCMark(), offset, false);
     // NEEDSWORK: pcmark and jump list stuff...

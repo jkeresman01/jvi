@@ -98,8 +98,7 @@ public class Edit implements Constants, KeyDefs {
       count = new MutableInt(count_arg);
 
       // clear any selection so a character insert doesn't do more than wanted
-      G.curwin.setCaretPosition(G.curwin
-                                                .getCaretPosition());
+      G.curwin.setCaretPosition(G.curwin.getCaretPosition());
 
       need_redraw = false; // GET RID OF
       did_restart_edit = G.restart_edit;
@@ -188,11 +187,13 @@ normal_char:	// break normal_char to insert a character
         // skip some indent stuff
         // skip if(has_startsel)
 
+	int dir = FORWARD;
         switch(c) {
+	  case EM_INS_REP:
           case K_INS:	    // toggle insert/replace mode
             if (G.State == REPLACE) { G.State = INSERT; }
             else { G.State = REPLACE; }
-            GetChar.AppendCharToRedobuff(K_INS);
+            GetChar.AppendCharToRedobuff(c);
             Misc.showmode();
             Misc.ui_cursor_shape();	// may show different cursor shape
             break;
@@ -210,7 +211,7 @@ normal_char:	// break normal_char to insert a character
             // break;
             //FALLTHROUGH
 
-          case 0x1f & (int)('C'):	// Ctrl
+          // case 0x1f & (int)('C'):	// Ctrl
             // when 'insertmode' set, and not halfway a mapping, don't leave
             // Insert mode.
             // REMOVE insertmode stuff
@@ -234,28 +235,51 @@ normal_char:	// break normal_char to insert a character
             // case NUL:
             // case Ctrl('A'):
 
-            //
+	  /*
             // insert the contents of a register
-            //
           case 0x1f & (int)('R'):	// Ctrl
             ins_reg();
             break;
+	  */
 
             // Make indent one shiftwidth smaller.
+	  case EM_SHIFT_LEFT:
           case 0x1f & (int)('D'):	// Ctrl
+	    dir = BACKWARD;
             // FALLTHROUGH
 
             // Make indent one shiftwidth greater.
+	  case EM_SHIFT_RIGHT:
           case 0x1f & (int)('T'):	// Ctrl
-            ins_shift(c, lastc);
+            ins_shift(c, lastc, dir);
             // need_redraw = TRUE;
             break;
+            
+            // shift line to be under char after next
+            // parenthesis in previous line
+	  case EM_SHIFT_RIGHT_TO_PAREN:
+          case K_X_PERIOD:
+	    if(G.getModMask() == CTRL) {
+	      ins_shift_paren(c, FORWARD);
+	    }
+            break;
+	    
+            // shift line to be under char after previous
+            // parenthesis in previous line
+	  case EM_SHIFT_LEFT_TO_PAREN:
+          case K_X_COMMA:
+	    if(G.getModMask() == CTRL) {
+	      ins_shift_paren(c, BACKWARD);
+	    }
+            break;
 
+	  /*
             // delete character under the cursor
           case K_DEL:
             ins_del();
             // need_redraw = TRUE;
             break;
+	  */
 
             // delete character before the cursor
           //case K_S_BS:
@@ -268,6 +292,7 @@ normal_char:	// break normal_char to insert a character
             // need_redraw = TRUE;
             break;
 
+	  /*
             // delete word before the cursor
           case 0x1f & (int)('W'):	// Ctrl
             did_backspace = ins_bs(c, BACKSPACE_WORD, inserted_space);
@@ -337,6 +362,7 @@ normal_char:	// break normal_char to insert a character
             // case K_KPAGEDOWN:
             ins_pagedown();
             break;
+	  */
 
             // keypad keys: When not mapped they produce a normal char
           case K_KPLUS:
@@ -1059,7 +1085,7 @@ normal_char:	// break normal_char to insert a character
    * with vi.  But vi only supports ^T and ^D after an
    * autoindent, we support it everywhere.
    */
-  private static void ins_shift(int c, int lastc) {
+  private static void ins_shift(int c, int lastc, int dir) {
     stop_arrow();
     GetChar.AppendCharToRedobuff(c);
 
@@ -1083,7 +1109,18 @@ normal_char:	// break normal_char to insert a character
     }
     else
     ************************************************************/
-      change_indent(c == Util.ctrl('D') ? INDENT_DEC : INDENT_INC, 0, true, 0);
+      change_indent(dir == BACKWARD ? INDENT_DEC : INDENT_INC, 0, true, 0);
+  }
+  
+  private static void ins_shift_paren(int c, int dir) {
+    GetChar.AppendCharToRedobuff(c);
+    int curindent = Misc.get_indent();
+    int amount = Misc.findParen(G.curwin.getWCursor().getLine()-1,
+				curindent, dir);
+    if(amount > 0) {
+      ++amount; // position after paren
+      change_indent(INDENT_SET, amount, false, 0);
+    }
   }
 
   private static void ins_del() throws NotSupportedException {

@@ -30,6 +30,7 @@
 package com.raelity.jvi;
 
 import javax.swing.text.*;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import java.io.IOException;
 import java.awt.datatransfer.StringSelection;
@@ -53,8 +54,7 @@ public class Misc implements Constants, ClipboardOwner {
    * count the size of the indent in the current line
    */
   static int get_indent() {
-      Segment seg = G.curwin.getLineSegment(
-				    G.curwin.getWCursor().getLine());
+      Segment seg = G.curwin.getLineSegment(G.curwin.getWCursor().getLine());
       return get_indent_str(seg);
   }
 
@@ -82,6 +82,72 @@ public class Misc implements Constants, ClipboardOwner {
 	      break;
       }
       return count;
+  }
+  
+  /**
+   * Return column position of parenthesis on argument line.
+   * If no paren then return -1.
+   * <br>
+   * At some point in the future may want a version that find
+   * the paren (any specified character) before/after some given
+   * column positon.
+   */
+  static int findParen(int lnum, int fromIndent, int dir) {
+    if(lnum < 1 || lnum > G.curwin.getLineCount()) {
+      return -1;
+    }
+    Segment seg = G.curwin.getLineSegment(lnum);
+    return findParen(seg, fromIndent, dir);
+  }
+  
+  /**
+   * @param seg
+   * @param fromIndent start looking from this position
+   * @param dir FORWARD or BACKWARD
+   */
+  static int findParen(Segment seg, int fromIndent, int dir) {
+    boolean found = false;
+    int	    count = 0;
+    int     prev_paren = -1;
+    
+    if(dir == BACKWARD) {
+      fromIndent -= 1;
+    }
+
+    // go forward until count is at fromIndent
+    int ptr = seg.offset;
+    for ( ; ptr < seg.offset + seg.count; ++ptr) {
+      if(count >= fromIndent) {
+	break;
+      }
+      if (seg.array[ptr] == '(') {
+	// keep track of last paren seen
+	prev_paren = count;
+      }
+      if (seg.array[ptr] == TAB) {  // count a tab for what it is worth
+	count += G.b_p_ts - (count % G.b_p_ts);
+      } else {
+	++count;
+      }
+    }
+    
+    // if looking backward, then we're done. prev_paren is position
+    if(dir == BACKWARD) {
+      return prev_paren;
+    }
+    
+    // ptr = seg.offset;
+    //ptr++;
+    for ( ; ptr < seg.offset + seg.count; ++ptr) {
+      if (seg.array[ptr] == '(') {
+	found = true;
+	break;
+      } else if (seg.array[ptr] == TAB)    // count a tab for what it is worth
+	count += G.b_p_ts - (count % G.b_p_ts);
+      else
+	++count;
+    }
+    return found ? count : -1;
   }
 
   /**
@@ -423,7 +489,10 @@ public class Misc implements Constants, ClipboardOwner {
   static void msgmore(int n) {
     int pn;
 
-    // if(...) return; // to avoid printing when .....
+    if(G.global_busy) {
+      // vim has a few more conditions for skipping this
+      return;
+    }
 
     if(n > 0) { pn = n; }
     else { pn = -n; }
@@ -2103,11 +2172,36 @@ public class Misc implements Constants, ClipboardOwner {
 
   static void update_curswant() {
     if (G.curwin.getWSetCurswant()) {
-      G.curwin.setWCurswant(G.curwin.getWCursor().getColumn());
+      int vcol = getvcol();
+      // G.curwin.setWCurswant(G.curwin.getWCursor().getColumn());
+      G.curwin.setWCurswant(vcol);
       G.curwin.setWSetCurswant(false);
     }
   }
 
+  /**
+   * For the current character offset in the current line,
+   * calculate the virtual offset. That is the offset if
+   * tabs are expanded.
+   */
+  static int getvcol() {
+    int vcol = 0;
+    int endCol = G.curwin.getWCursor().getColumn();
+    Segment seg = G.curwin.getLineSegment(G.curwin.getWCursor().getLine());
+    int ptr = seg.offset;
+    int idx = -1;
+    char c;
+    while (idx < endCol - 1
+	   && idx < seg.count - 1
+	   && (c = seg.array[ptr]) != '\n')
+    {
+      ++idx;
+      /* Count a tab for what it's worth (if list mode not on) */
+      vcol += lbr_chartabsize(c, vcol);
+      ++ptr;
+    }
+    return vcol;
+  }
 
   /**
    * show the current mode and ruler.
@@ -2445,5 +2539,41 @@ public class Misc implements Constants, ClipboardOwner {
   //
   // other stuff
   //
-
+  
+  static void beginUndo() {
+    if(G.global_busy) {
+      return;
+    }
+    G.curwin.beginUndo();
+  }
+  
+  static void endUndo() {
+    if(G.global_busy) {
+      return;
+    }
+    G.curwin.endUndo();
+  }
+  
+  static int[] javaKeyMap;
+  
+  /**
+   * decode the encoded keypress character embedded
+   * in a unicode character and
+   * return a kestroke.
+   */
+  static KeyStroke getViKeyStroke(int key) {
+    return null;
+  }
+  
+  static int xlateKey(Keymap map, int key) {
+    KeyStroke ks = getViKeyStroke(key);
+    if(ks == null) {
+      return key;
+    }
+    ViXlateKey xk = (ViXlateKey)map.getAction(ks);
+    if(xk == null) {
+      return key;
+    }
+    return xk.getXlateKey();
+  }
 }

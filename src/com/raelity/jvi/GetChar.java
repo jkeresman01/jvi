@@ -51,7 +51,7 @@ public class GetChar implements Constants, KeyDefs {
       if((modifier & KeyBinding.MOD_MASK) == SHFT
                 && key >= VIRT && key <= VIRT + 0x0f) {
         // only the shift key is pressed and its one of "those".
-        key += 0x10;
+        key += SHIFTED_VIRT_OFFSET;
       }
     }
     G.setModMask(modifier);

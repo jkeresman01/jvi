@@ -145,7 +145,7 @@ public class Normal implements Constants, KeyDefs
   }
 
   static void finishupEdit() {
-    G.curwin.endUndo();
+    Misc.endUndo();
   }
 
   static public void resetCommand() {
@@ -1337,11 +1337,11 @@ middle_code:
       {
 	case OP_LSHIFT:
         case OP_RSHIFT:
-          G.curwin.beginUndo();
+          Misc.beginUndo();
           try {
             Misc.op_shift(oap, true, oap.is_VIsual ? (int)cap.count1 : 1);
           } finally {
-            G.curwin.endUndo();
+            Misc.endUndo();
           }
 	  break;
 
@@ -1355,11 +1355,11 @@ middle_code:
 	      G.curwin.getLineCount()) {
 	    Util.beep_flush();
 	  } else {
-            G.curwin.beginUndo();
+            Misc.beginUndo();
             try {
               Misc.do_do_join(oap.line_count, oap.op_type == OP_JOIN, true);
             } finally {
-              G.curwin.endUndo();
+              Misc.endUndo();
             }
 	  }
 	  break;
@@ -1369,11 +1369,11 @@ middle_code:
 	  if (empty_region_error)
 	    Util.vim_beep();
 	  else {
-            G.curwin.beginUndo();
+            Misc.beginUndo();
             try {
               Misc.op_delete(oap);
             } finally {
-              G.curwin.endUndo();
+              Misc.endUndo();
             }
 	  }
 	  break;
@@ -1397,7 +1397,7 @@ middle_code:
 	  {
 	    // don't restart edit after typing <Esc> in edit()
 	    G.restart_edit = 0;
-	    G.curwin.beginUndo();
+	    Misc.beginUndo();
             Misc.op_change(oap); // will call edit()
 	  }
 	  break;
@@ -1421,12 +1421,12 @@ middle_code:
 	  if (empty_region_error)
 	    Util.vim_beep();
 	  else {
-            G.curwin.beginUndo();
+            Misc.beginUndo();
             try {
               Misc.op_tilde(oap);
               Misc.check_cursor_col();
             } finally {
-              G.curwin.endUndo();
+              Misc.endUndo();
             }
           }
 	  break;
@@ -2469,7 +2469,7 @@ middle_code:
       nv_operator(cap);
     } else if (!checkclearopq(cap.oap)) {
       if (u_save_cursor() == OK) {
-        G.curwin.beginUndo();
+        Misc.beginUndo();
         Edit.edit('R', false, cap.count1);
       }
     }
@@ -2521,7 +2521,7 @@ middle_code:
     if (u_save_cursor() == FAIL)
       return;
 
-    G.curwin.beginUndo();
+    Misc.beginUndo();
     try {
       for (n = cap.count1; n > 0; --n) {
         Misc.swapchar(cap.oap.op_type, G.curwin.getWCursor());
@@ -2541,7 +2541,7 @@ middle_code:
       Misc.adjust_cursor();
       G.curwin.setWSetCurswant(true);
     } finally {
-      G.curwin.endUndo();
+      Misc.endUndo();
     }
     // changed();
 
@@ -2652,14 +2652,14 @@ middle_code:
     if (!checkclearopq(cap.oap)) {
       // if (u_save((curwin.w_cursor.lnum - (cap.cmdchar == 'O' ? 1 : 0)) .....
       // NEEDSWORK: would like the beginUndo only if actually making changes
-      G.curwin.beginUndo();
+      Misc.beginUndo();
       boolean flag = Misc.open_line(cap.cmdchar == 'O' ? BACKWARD : FORWARD,
 			true, false, 0);
       if(flag) {
 	Edit.edit(cap.cmdchar, true, cap.count1);
       } else {
         // oops
-        G.curwin.endUndo();
+        Misc.endUndo();
       }
     }
     return;
@@ -2868,7 +2868,7 @@ middle_code:
     {
       clearopbeep(cap.oap);
     } else if (!checkclearopq(cap.oap) && u_save_cursor() == OK) {
-      G.curwin.beginUndo();
+      Misc.beginUndo();
       nv_edit_dispatch(cap);
       return;
     }
@@ -2973,11 +2973,11 @@ middle_code:
       {
 	prep_redo(cap.oap.regname, cap.count0,
 		  NUL, cap.cmdchar, NUL, cap.nchar);
-        G.curwin.beginUndo();
+        Misc.beginUndo();
         try {
           Misc.do_do_join(cap.count0, cap.nchar == NUL, true);
         } finally {
-          G.curwin.endUndo();
+          Misc.endUndo();
         }
       }
     }
@@ -2991,7 +2991,7 @@ middle_code:
       clearopbeep(cap.oap);
     } else {
       prep_redo_cmd(cap);
-      G.curwin.beginUndo();
+      Misc.beginUndo();
       try {
         Misc.do_put(cap.oap.regname,
                     (cap.cmdchar == 'P'
@@ -2999,7 +2999,7 @@ middle_code:
                     ? BACKWARD : FORWARD,
                     cap.count1, cap.cmdchar == 'g' ? PUT_CURSEND : 0);
       } finally {
-        G.curwin.endUndo();
+        Misc.endUndo();
       }
     }
   }
