@@ -37,7 +37,7 @@ import java.util.*;
 
 import com.borland.primetime.editor.EditorActionNames;
 import com.borland.primetime.editor.EditorActions;
-import com.borland.primetime.editor.EditorActions$DefaultKeyTypedAction;
+import com.borland.primetime.editor.EditorActions.DefaultKeyTypedAction;
 import com.borland.primetime.editor.EditorManager;
 import com.raelity.jvi.*;
 import com.raelity.jvi.swing.*;
@@ -60,7 +60,7 @@ class Ops implements TextOps, Constants {
     ActionsCache.setupActions(EditorActions.getActions());
     // need to put in the default action manually?
     ActionsCache.actionMap.put(EditorActionNames.defaultKeyTypedAction,
-			       new EditorActions$DefaultKeyTypedAction());
+			       new EditorActions.DefaultKeyTypedAction());
   }
 
   public void xact(String actionName) {

@@ -33,6 +33,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.text.Document;
 
 import com.borland.primetime.ide.Browser;
+import com.borland.primetime.ide.BrowserFile;
 import com.borland.primetime.node.FileNode;
 import com.borland.primetime.node.TextFileNode;
 import com.borland.primetime.editor.EditorPane;
@@ -58,12 +59,12 @@ public class JBFS implements ViFS {
   }
 
   public void writeAll(boolean force) {
-    Browser.ACTION_NodeSaveAll.actionPerformed(Browser.getActiveBrowser());
+    BrowserFile.ACTION_NodeSaveAll.actionPerformed(Browser.getActiveBrowser());
   }
 
   public void write(ViTextView tv, File file, boolean force) {
     if(file == null) {
-      Browser.ACTION_NodeSaveAs.actionPerformed(Browser.getActiveBrowser());
+      BrowserFile.ACTION_NodeSaveAs.actionPerformed(Browser.getActiveBrowser());
       return;
     }
     Msg.emsg("write(tv, file) not implemented");

@@ -94,8 +94,8 @@ import com.raelity.jvi.swing.KeyBinding;
 import com.raelity.jvi.swing.CommandLine;
 import com.raelity.jvi.swing.WindowCmdEntry;
 import com.raelity.jvi.swing.InlineCmdEntry;
-import com.borland.primetime.editor.TrackingKeymap$TrackingAction;
-import com.borland.primetime.editor.EditorAction$SubKeymapAction ;
+import com.borland.primetime.editor.TrackingKeymap;
+import java.awt.event.KeyEvent;
 
 /**
  * This provides the Vi items to interface with standard swing JEditorPane.
@@ -253,9 +253,9 @@ public class JBViFactory implements ViFactory,
   public ActionListener xlateKeymapAction(ActionListener act) {
     
     if(JBOT.has41()) {
-      TrackingKeymap$TrackingAction jbAct = (TrackingKeymap$TrackingAction )act;
-      EditorAction$SubKeymapAction jbAct2
-		  = (EditorAction$SubKeymapAction )jbAct.getAction();
+      TrackingKeymap.TrackingAction jbAct = (TrackingKeymap.TrackingAction )act;
+      EditorAction.SubKeymapAction jbAct2
+		  = (EditorAction.SubKeymapAction )jbAct.getAction();
       return jbAct2.getAction();
     } else {
       return act;
@@ -391,27 +391,33 @@ public class JBViFactory implements ViFactory,
     }
   }
 
+  static boolean enableCIHack = true;
+  
   static void editorModeChange(String mode) {
     if(mode.equals(Edit.VI_MODE_COMMAND)) {
-      if(ciMembersUserEnabled) {
-        javaInsightSettings.AUTO_MEMBERS.setBoolean(false);
-        if(JBViOptions.dbgCIHack.getBoolean())System.err.println("reset memberCI");
-      }
-      if(ciParamsUserEnabled) {
-        javaInsightSettings.AUTO_PARAMS.setBoolean(false);
-        if(JBViOptions.dbgCIHack.getBoolean())System.err.println("reset paramCI");
+      if(enableCIHack) {
+	if(ciMembersUserEnabled) {
+	  javaInsightSettings.AUTO_MEMBERS.setBoolean(false);
+	  if(JBViOptions.dbgCIHack.getBoolean())System.err.println("reset memberCI");
+	}
+	if(ciParamsUserEnabled) {
+	  javaInsightSettings.AUTO_PARAMS.setBoolean(false);
+	  if(JBViOptions.dbgCIHack.getBoolean())System.err.println("reset paramCI");
+	}
       }
       // treat command mode like insert mode, this fixes the problem
       // replaceChar then openLine, e.g. "r*" followed by "o".
       EditorManager.setInsertMode(true);
     } else {
-      if(ciMembersUserEnabled) {
-        javaInsightSettings.AUTO_MEMBERS.setBoolean(true);
-        if(JBViOptions.dbgCIHack.getBoolean())System.err.println("set memberCI");
-      }
-      if(ciParamsUserEnabled) {
-        javaInsightSettings.AUTO_PARAMS.setBoolean(true);
-        if(JBViOptions.dbgCIHack.getBoolean())System.err.println("set paramCI");
+      if(enableCIHack) {
+	if(ciMembersUserEnabled) {
+	  javaInsightSettings.AUTO_MEMBERS.setBoolean(true);
+	  if(JBViOptions.dbgCIHack.getBoolean())System.err.println("set memberCI");
+	}
+	if(ciParamsUserEnabled) {
+	  javaInsightSettings.AUTO_PARAMS.setBoolean(true);
+	  if(JBViOptions.dbgCIHack.getBoolean())System.err.println("set paramCI");
+	}
       }
       EditorManager.setInsertMode(mode.equals(Edit.VI_MODE_INSERT));
     }
@@ -551,7 +557,8 @@ public class JBViFactory implements ViFactory,
       int key = basekey;
       if(KeyBinding.keyDebug.getBoolean()) {
         String virt = ((key & VIRT) != 0) ? "virt" : "";
-        System.err.println("KeyAction: " + name + ": " + (key&~VIRT) + " " + mod + " " + virt);
+        System.err.println("KeyAction: " + name + ": " + (key&~VIRT) + " "
+	                   + mod + " " + virt + " enbl:" + target.isEnabled());
       }
       ViManager.keyStroke(target, key, mod);
     }

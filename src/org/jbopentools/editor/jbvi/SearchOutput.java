@@ -35,7 +35,7 @@ import javax.swing.text.Position;
 import javax.swing.text.BadLocationException;
 
 import com.borland.primetime.editor.SearchManager;
-import com.borland.primetime.editor.SearchManager$FindAllMessage;
+import com.borland.primetime.editor.SearchManager.FindAllMessage;
 import com.borland.primetime.editor.EditorPane;
 import com.borland.primetime.ide.Browser;
 import com.borland.primetime.ide.MessageView;
@@ -84,7 +84,7 @@ public class SearchOutput extends OutputStreamAdaptor {
       return;
     }
 
-    SearchManager$FindAllMessage msg = new SearchManager$FindAllMessage(
+    SearchManager.FindAllMessage msg = new SearchManager.FindAllMessage(
 		    (EditorPane)tv.getEditorComponent(),
 		    pos,
 		    line,

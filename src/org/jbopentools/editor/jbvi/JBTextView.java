@@ -169,7 +169,7 @@ public class JBTextView extends TextView
     if(is_split) {
       win_close(false);
     } else {
-      ops.xact(com.borland.primetime.ide.Browser.ACTION_NodeClose);
+      ops.xact(com.borland.primetime.ide.BrowserFile.ACTION_NodeClose);
       focusCurrentNode();
     }
   }

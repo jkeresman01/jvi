@@ -44,7 +44,7 @@ public class RegExpJBuilder40 extends RegExp {
 
   String pattern;  // The "compiled" pattern
   boolean ignoreCase;  // The "compiled" pattern
-  RegularExpression$MatchResult result;
+  RegularExpression.MatchResult result;
 
   public RegExpJBuilder40() {
   }

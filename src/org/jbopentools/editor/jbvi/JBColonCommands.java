@@ -32,6 +32,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 import com.borland.primetime.ide.Browser;
+import com.borland.primetime.ide.BrowserView;
 import com.borland.primetime.ide.BrowserStateAction;
 import com.borland.jbuilder.build.BuildActionPool;
 import com.borland.jbuilder.runtime.RuntimeActionPool;
@@ -86,8 +87,8 @@ public class JBColonCommands {
 
   private static AbbrevLookup toggles = new AbbrevLookup();
   static void initToggleCommand() {
-    toggles.add("cur", "curtain", Browser.ACTION_ToggleCurtain);
-    toggles.add("mes", "messages", Browser.STATE_MessagePaneVisible);
+    toggles.add("cur", "curtain", BrowserView.ACTION_ToggleCurtain);
+    toggles.add("mes", "messages", BrowserView.STATE_MessagePaneVisible);
     toggles.add("con", "content", Browser.STATE_ContentPaneVisible);
     toggles.add("pro", "project", Browser.STATE_ProjectPaneVisible);
     toggles.add("str", "structure", Browser.STATE_StructurePaneVisible);
