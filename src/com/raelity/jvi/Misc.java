@@ -313,6 +313,10 @@ public class Misc implements Constants, ClipboardOwner {
    * or bottom as needed, otherwise center the target line on the screen.
    */
   static void gotoLine(int line, int flag) {
+    if(G.p_so != 0) {
+      gotoLine_scrolloff(line, flag);
+      return;
+    }
     if(line > G.curwin.getLineCount()) {
       line = G.curwin.getLineCount();
     }
@@ -341,6 +345,64 @@ public class Misc implements Constants, ClipboardOwner {
     }
     // NEEDSWORK: gotoLine, respect p_so (scrolloff)
     G.curwin.setCaretPosition(line, col);
+  }
+
+  static void gotoLine_scrolloff(int line, int flag) {
+    if(line > G.curwin.getLineCount()) {
+      line = G.curwin.getLineCount();
+    }
+    Segment seg = G.curwin.getLineSegment(line);
+    int col;
+    if(flag < 0) {
+      col = coladvanceColumnIndex(seg);
+    } else {
+      // from nv_goto
+      col = Edit.beginlineColumnIndex(flag, seg);
+    }
+
+    // if target line is less than half a screen away from
+    // being visible, then just let it scroll, otherwise
+    // center the target line
+
+    int scrollMargin = G.curwin.getViewLines(); // max distance from center
+                                                // to do scroll
+    int center = G.curwin.getViewTopLine() + scrollMargin / 2 - 1;
+    int so = getScrollOff();
+    // reduce scrollMargin, the distance from center that we will scroll
+    // the screen, by amount of scrolloff.
+    scrollMargin -= so;
+    
+    int newTop = G.curwin.getViewTopLine(); // assume the top line wont change
+    if(line < center - scrollMargin - 1
+	    || line > center + scrollMargin) {
+      newTop = line - (G.curwin.getViewLines() / 2);
+      if((G.curwin.getViewLines() & 1) == 0) {
+        ++newTop; // even num lines, put target in upper half
+      }
+      // center the target line
+    } else {
+      // scroll to the line
+      if(line < G.curwin.getViewTopLine()+so) {
+	newTop = line-so;
+      } else if(line > G.curwin.getViewBottomLine()-so-1) {
+	newTop = line-G.curwin.getViewLines()+1+so;
+      }
+    }
+    G.curwin.setCaretPosition(line, col);
+    G.curwin.setViewTopLine(adjustTopLine(newTop));
+  }
+  
+  /**
+   * @return scrolloff possibly adjusted for window size
+   */
+  static int getScrollOff() {
+    int halfLines = G.curwin.getViewLines()/2; // max distance from center
+    int so = G.p_so;
+    if(so > halfLines) {
+      // adjust scrolloff so that its not bigger than usable
+      so = halfLines;
+    }
+    return so;
   }
 
   /**
@@ -1818,6 +1880,7 @@ public class Misc implements Constants, ClipboardOwner {
 
     count = 1;
 
+    int so = getScrollOff();
     for ( ; count > 0; --count) {
       validate_botline();
       //
@@ -1827,10 +1890,20 @@ public class Misc implements Constants, ClipboardOwner {
       // last line.
       //
       if (dir == FORWARD
-	      ? ((G.curwin.getViewTopLine() >= G.curwin.getLineCount() - G.p_so)
+	      ? ((G.curwin.getViewTopLine() >= G.curwin.getLineCount() - so)
 		  && G.curwin.getViewBottomLine() > G.curwin.getLineCount())
 	      : (G.curwin.getViewTopLine() == 1))
       {
+	Util.beep_flush();
+	retval = FAIL;
+	break;
+      }
+      
+      // the following test is added because with swing there can not be
+      // blank lines on the screen, so we can go no more when the cursor
+      // is positioned at the last line.
+      if (dir == FORWARD
+             && G.curwin.getWCursor().getLine() == G.curwin.getLineCount()) {
 	Util.beep_flush();
 	retval = FAIL;
 	break;
@@ -1840,12 +1913,13 @@ public class Misc implements Constants, ClipboardOwner {
 	// at end of file
 	if(G.curwin.getViewBottomLine() > G.curwin.getLineCount()) {
 	  newtopline = G.curwin.getLineCount();
+	  newcursorline = G.curwin.getLineCount();
 	  // curwin->w_valid &= ~(VALID_WROW|VALID_CROW);
 	} else {
 	  lp = G.curwin.getViewBottomLine();
 	  off = get_scroll_overlap(lp, -1);
 	  newtopline = lp - off;
-	  newcursorline = newtopline;
+	  newcursorline = newtopline + so;
 	  // curwin->w_valid &= ~(VALID_WCOL|VALID_CHEIGHT|VALID_WROW|
 			       // VALID_CROW|VALID_BOTLINE|VALID_BOTLINE_AP);
 	}
@@ -1855,7 +1929,7 @@ public class Misc implements Constants, ClipboardOwner {
 	lp += off;
 	if (lp > G.curwin.getLineCount())
 	  lp = G.curwin.getLineCount();
-	newcursorline = lp;
+	newcursorline = lp - so;
 	n = 0;
 	while (n <= G.curwin.getViewLines() && lp >= 1) {
 	  n += plines(lp);
@@ -1879,7 +1953,7 @@ public class Misc implements Constants, ClipboardOwner {
 
     // now adjust cursor locations
     if(newtopline > 0) {
-      G.curwin.setViewTopLine(newtopline);
+      G.curwin.setViewTopLine(adjustTopLine(newtopline));
     }
     if(newcursorline > 0) {
       G.curwin.setCaretPosition(
@@ -1894,7 +1968,7 @@ public class Misc implements Constants, ClipboardOwner {
      * Avoid the screen jumping up and down when 'scrolloff' is non-zero.
      */
     if (dir == FORWARD && G.curwin.getWCursor().getLine()
-				< G.curwin.getViewTopLine() + G.p_so) {
+				< G.curwin.getViewTopLine() + so) {
       // scroll_cursor_top(1, FALSE);	// NEEDSWORK: onepage ("^f") cleanup
     }
 

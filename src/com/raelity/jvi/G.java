@@ -102,13 +102,13 @@ public class G {
   public static BooleanOption p_meta_equals;  // true use '=' instead of '?'
   public static StringOption p_meta_escape;   // metacharacters escaped
 
-  public static boolean b_p_et = true;	// expandtabs, per file
+  public static boolean b_p_et = false;	// expandtabs, per file
   static boolean p_sc = true;   // showcmd
   static boolean p_smd = true;  // showmode
 
   public static int p_report = 3;
   public static int p_bs = 0;   // backspace over start of insert, and more
-  public static int p_so = 0;   // scrolloff, lines before/after current
+  public static int p_so = 2;   // scrolloff, lines before/after current
   public static int b_p_sw = 2;	// per file
   public static int b_p_ts = 8;	// per file
 

@@ -46,4 +46,8 @@ public class Msg {
     G.curwin.getStatusDisplay().displayErrorMessage(msg);
     GetChar.flush_buffers(false);
   }
+  
+  public static void clearMsg() {
+    G.curwin.getStatusDisplay().clearMessage();
+  }
 }
