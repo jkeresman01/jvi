@@ -115,7 +115,13 @@ public class ViNumericPropertyGroup implements PropertyGroup {
   }
 
   public PropertyPageFactory getPageFactory(Object topic) {
-    if(topic == null || topic.toString().equals(EditorManager.EDITOR_TOPIC)) {
+    Object editor_topic;
+    if(JBOT.is40()) {
+      editor_topic = "Editor";
+    } else {
+      editor_topic = EditorManager.EDITOR_TOPIC;
+    }
+    if(JBOT.is40() && topic == null || topic == editor_topic) {
       // System.err.println("getPageFactory: " + topic);
       return new PropertyPageFactory(PAGE_NAME,
                                "Vi numeric configuration settings") {

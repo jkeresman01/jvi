@@ -94,11 +94,13 @@ class Search implements Constants {
       pattern = lastPattern;
     }
     lastPattern = pattern;
-    Msg.smsg((lastDir == FORWARD ? "/" : "?") + pattern);
     // executeSearch(pattern, lastDir, G.p_ic.getBoolean());
     ViFPOS pos = G.curwin.getWCursor().copy();
     int rc = searchit(null, pos, lastDir, pattern,
                       searchCount, searchFlags, 0, G.p_ic.getBoolean());
+    if(rc != FAIL) {
+      Msg.smsg((lastDir == FORWARD ? "/" : "?") + pattern);
+    }
     searchResult = rc;
     /* ***************************
     if(rc == 0) {
@@ -144,11 +146,13 @@ class Search implements Constants {
     if(lastPattern == null) {
       Msg.emsg(Messages.e_noprevre);
     } else {
-      Msg.smsg((dir == FORWARD ? "/" : "?") + lastPattern);
       // executeSearch(lastPattern, dir, G.p_ic.getBoolean());
       ViFPOS pos = G.curwin.getWCursor().copy();
       rc = searchit(null, pos, dir, lastPattern,
                         count, flag, 0, G.p_ic.getBoolean());
+      if(rc != FAIL) {
+	Msg.smsg((dir == FORWARD ? "/" : "?") + lastPattern);
+      }
     }
     return rc;
   }
@@ -638,6 +642,7 @@ finished:
     int match = 0;
     int matchend = 0;
     int p;
+    String wmsg = null;
 
 
     RegExp prog = getRegExp(pattern, ignoreCase); // various arguments in vim
@@ -822,11 +827,14 @@ finished:
         if (dir == BACKWARD) {    // start second loop at the other end
           lnum = G.curwin.getLineCount();
           if ((options & SEARCH_MSG) != 0)
-            Msg.wmsg(top_bot_msg/*, true*/);
+	    // defer message until after things are positioned.
+            // Msg.wmsg(top_bot_msg/*, true*/);
+	    wmsg = top_bot_msg;
         } else {
           lnum = 1;
           if ((options & SEARCH_MSG) != 0)
-            Msg.wmsg(bot_top_msg/*, true*/);
+            // Msg.wmsg(bot_top_msg/*, true*/);
+	    wmsg = bot_top_msg;
         }
       }
       if (false/*got_int*/)
@@ -851,8 +859,12 @@ finished:
     if((options & SEARCH_MARK) != 0) {
       MarkOps.setpcmark();
     }
+    Misc.gotoLine(G.curwin.getLineNumber(pos.getOffset()), 0);
     G.curwin.setSelect(pos.getOffset(), pos.getOffset() + search_match_len);
     G.curwin.setWSetCurswant(true);
+    if(wmsg != null) {
+      Msg.wmsg(wmsg/*, true*/);
+    }
     return OK;
   }
 
@@ -860,6 +872,8 @@ finished:
   //
   // Stuff from ex_cmds.c
   //
+  
+  private static int nMatch;
 
   /**
    * substitute command. first arg is /pattern/substitution/{flags}
@@ -953,6 +967,8 @@ finished:
     int line1 = cev.getLine1();
     int line2 = cev.getLine2();
     StringBuffer sb;
+    int nLine = 0;
+    nMatch = 0;
     for(int i = line1; i <= line2; i++) {
       line = G.curwin.getLineSegment(i);
       sb = substitute_line(prog, line, doAll, substitution, hasEscape);
@@ -961,7 +977,18 @@ finished:
                                G.curwin.getLineEndOffset(i)-1,
                                sb.toString());
         cursorLine = i;  // keep track of last line changed
+	nLine++;
         // System.err.println("sub: " + sb);
+      }
+    }
+    
+    if(nMatch == 0) {
+      Msg.emsg(Messages.e_patnotf2 + pattern);
+    } else {
+      if(nMatch >= G.p_report) {
+	String msg = "" + nMatch + " substitution" + Misc.plural(nMatch)
+	             + " on " + nLine + " line" + Misc.plural(nLine);
+	G.curwin.getStatusDisplay().displayStatusMessage(msg);
       }
     }
     
@@ -1001,6 +1028,7 @@ finished:
     int lastMatch = -1;
 
     while(prog.search(line.array, lookHere, count)) {
+      nMatch++;
       if(sb == null) { // got a match, make sure there's a buffer
         sb = new StringBuffer();
       }

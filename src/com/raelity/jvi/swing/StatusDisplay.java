@@ -61,6 +61,10 @@ public class StatusDisplay implements ViStatusDisplay {
     // NEEDSWORK: make error message red or something
     setText(generalStatus, msg);
   }
+  
+  public void clearMessage() {
+    displayStatusMessage("");
+  }
 
   synchronized void setText(JLabel l00, String s00) {
     if(l00 == generalStatus && s00.equals("")) {

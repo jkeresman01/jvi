@@ -1,3 +1,4 @@
+
 /**
  * Title:        jVi<p>
  * Description:  A VI-VIM clone.
@@ -7,7 +8,6 @@
  * @author Ernie Rael
  * @version 1.0
  */
-
 /*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -27,24 +27,26 @@
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi;
 
-/**
- * Display state of the editor is sent through this interface.
- */
-public interface ViStatusDisplay {
-  /** Output the current mode: INSERT/REPLACE */
-  public void displayMode(String mode);
+package org.jbopentools.editor.jbvi;
 
-  /** Output the command characters accumulated so far */
-  public void displayCommand(String cmd);
+import javax.swing.SwingUtilities;
+import com.raelity.jvi.swing.TextViewCache;
 
-  /** Output chitchat, VV_STATUSMSG */
-  public void displayStatusMessage(String msg);
-
-  /** Output error chitchat, VV_ERRMSG; HLF_E highlight */
-  public void displayErrorMessage(String msg);
+public class JBTextViewCache extends TextViewCache {
   
-  /** Clear current status and/or error message */
-  public void clearMessage();
+  JBTextViewCache(JBTextView tv) {
+    super(tv);
+  }
+  
+  /**
+   * JBuilder does layout on the EditorPane JViewport twice for every
+   * keystroke and other events. They are different sizes to boot.
+   * This is all insane. Doing these calculations "later" prevents
+   * visuall defects (Msg.clearMsg invocations).
+   */
+  protected void fillLinePositions() {
+    SwingUtilities.invokeLater(
+      new Runnable() { public void run() { fillLinePositionsFinally(); }});
+  }
 }

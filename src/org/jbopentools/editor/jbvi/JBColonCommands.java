@@ -134,4 +134,13 @@ public class JBColonCommands {
       }
     }
   };
+  
+  /**
+   * Determines if JB's curtain is open or not.
+   */
+  boolean hasCurtain(Object o) {
+    Browser b = Browser.findBrowser(o);
+    return Browser.STATE_ProjectPaneVisible.getState(b)
+           || Browser.STATE_StructurePaneVisible.getState(b);
+  }
 }

@@ -28,11 +28,17 @@
  */
 package org.jbopentools.editor.jbvi;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.awt.Component;
+import java.awt.Container;
+
 import javax.swing.JEditorPane;
 import javax.swing.text.Caret;
+import javax.swing.SwingUtilities;
 
 import com.borland.primetime.ide.Browser;
+import com.borland.primetime.ide.NodeViewer;
 import com.borland.primetime.editor.EditorPane;
 import com.borland.primetime.editor.EditorActionNames;
 import com.borland.primetime.editor.SearchManager;
@@ -41,6 +47,7 @@ import com.borland.primetime.viewer.NodeViewMap;
 import com.borland.primetime.viewer.TextViewerComponent;
 import com.borland.primetime.ui.Splitter;
 import com.borland.primetime.node.FileNode;
+import com.borland.primetime.node.Node;
 
 import com.raelity.jvi.Window;
 import com.raelity.jvi.Msg;
@@ -49,6 +56,8 @@ import com.raelity.jvi.ViMark;
 import com.raelity.jvi.Misc;
 import com.raelity.jvi.swing.TextView;
 import com.raelity.jvi.ViManager;
+
+import com.raelity.jvi.swing.TextViewCache;
 
 /**
  * Pretty much the TextView used for standard swing.
@@ -59,6 +68,10 @@ public class JBTextView extends TextView
   JBTextView(Browser browser, EditorPane editorPane) {
     cache = createTextViewCache();
     statusDisplay = new JBStatusDisplay(browser, editorPane);
+  }
+  
+  protected TextViewCache createTextViewCache() {
+    return new JBTextViewCache(this);
   }
   
   protected void createOps(JEditorPane editorPane) {
@@ -130,6 +143,7 @@ public class JBTextView extends TextView
       win_close(false);
     } else {
       ops.xact(com.borland.primetime.ide.Browser.ACTION_NodeClose);
+      focusCurrentNode();
     }
   }
 
@@ -145,6 +159,7 @@ public class JBTextView extends TextView
    */
   public void win_close(boolean freeBuf) {
     ops.xact(com.borland.primetime.viewer.TextView.ACTION_CloseView);
+    focusCurrentNode();
   }
 
   /** Close other windows
@@ -152,6 +167,81 @@ public class JBTextView extends TextView
    */
   public void win_close_others(boolean forceit) {
     ops.xact(com.borland.primetime.viewer.TextView.ACTION_CloseOtherViews);
+  }
+  
+  /**
+   * Descend into the container hierarchy and stash
+   * any discovered instances of the specified class
+   * into the list.
+   */
+  void collectComponents(Object o, Class clazz, List l) {
+    if(o != null && clazz.isAssignableFrom(o.getClass())) {
+      l.add(o);
+    }
+    if(o == null || ! (o instanceof Container)) {
+      return;
+    }
+    Container c = (Container) o;
+    for(int i = c.getComponentCount()-1; i >= 0; i--) {
+      collectComponents(c.getComponent(i), clazz, l);
+    }
+  }
+
+  /**
+   * Bring focus to the active node in the content pane.
+   */
+  void focusCurrentNode() {
+    focusCurrentNode(false);
+    //win_cycle(1);
+    /*
+    Browser b = Browser.getActiveBrowser();
+    Node n = b.getActiveNode();
+    NodeViewer v = b.getActiveViewer(n);
+    v.getViewerComponent().requestFocus();
+    */
+  }
+  
+  void focusCurrentNode(boolean later) {
+    if(later) {
+      SwingUtilities.invokeLater(
+        new Runnable() { public void run() {
+	  //System.err.println("foc1");
+	  focusCurrentNode(false); }});
+      return;
+    }
+    SwingUtilities.invokeLater(
+      new Runnable() { public void run() {
+	//System.err.println("foc2");
+        focusCurrentNodeFinally(); }});
+  }
+  
+  void focusCurrentNodeFinally() {
+    List l = new ArrayList();
+    Browser b = Browser.getActiveBrowser();
+    Node n = b.getActiveNode();
+    NodeViewer v = b.getActiveViewer(n);
+    if(v == null) {
+      return;
+    }
+    collectComponents(v.getViewerComponent(), EditorPane.class, l);
+    if(l.size() == 0) {
+      return;
+    }
+    // take the first editor pane and give it focus
+    JEditorPane c = (JEditorPane)l.get(0);
+    c.requestFocus();
+    /*
+    try {
+      Browser b = Browser.getActiveBrowser();
+      Node n = b.getActiveNode();
+      System.err.println("foc2 " + n.getDisplayName());
+      b.setActiveNode(n, true);
+    }
+    catch (Exception ex) {
+      // Oh well, guess focus doesn't change.
+      System.err.println("Sigh!");
+    }
+    */
   }
 
   /** Goto the indicated buffer.

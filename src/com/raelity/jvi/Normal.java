@@ -1759,6 +1759,17 @@ middle_code:
 
   /** nv_zet is simplified a bunch, only do vi compat */
   static private  void	nv_zet (CMDARG cap) {
+    // the scrolloff version doesn't really change anything about how stuff
+    // is displayed, so just use it.
+    nv_zet_scrolloff(cap);
+  }
+  
+  static private  void	nv_zet_original (CMDARG cap) {
+    if(G.p_so != 0) {
+      nv_zet_scrolloff(cap);
+      return;
+    }
+    
     do_xop("nv_zet");
 
     int nchar = cap.nchar;
@@ -1793,14 +1804,57 @@ middle_code:
 	clearopbeep(cap.oap);
 	return;
     }
-    // adjust top so there are no blank lines on the screen
-    top = Misc.adjustTopLine(top);
 
     // Keep getlineSegment before setViewTopLine,
     // don't want to fetch segment changing during rendering
     Segment seg = G.curwin.getLineSegment(target);
     int col = Edit.beginlineColumnIndex(BL_WHITE | BL_FIX, seg);
-    G.curwin.setViewTopLine(top);
+    G.curwin.setViewTopLine(Misc.adjustTopLine(top));
+    G.curwin.setCaretPosition(target, col);
+  }
+
+  static private  void	nv_zet_scrolloff (CMDARG cap) {
+    do_xop("nv_zet");
+
+    int so = Misc.getScrollOff();
+    int nchar = cap.nchar;
+    int target = G.curwin.getWCursor().getLine();
+    boolean change_line = false;
+    int top = 0;
+
+    if(cap.count0 != 0 && cap.count0 != target) {
+      MarkOps.setpcmark();
+      if(cap.count0 > G.curwin.getLineCount()) {
+	target = G.curwin.getLineCount();
+      } else {
+	target = cap.count0;
+      }
+    }
+
+    switch(nchar) {
+      case NL:		    // put curwin->w_cursor at top of screen
+      case CR:
+	top = target - so;
+	break;
+
+      case '.':		// put curwin->w_cursor in middle of screen
+	top = target - G.curwin.getViewLines() / 2 - 1;
+	break;
+
+      case '-':		// put curwin->w_cursor at bottom of screen
+	top = target - G.curwin.getViewLines() + 1 + so;
+	break;
+
+      default:
+	clearopbeep(cap.oap);
+	return;
+    }
+
+    // Keep getlineSegment before setViewTopLine,
+    // don't want to fetch segment changing during rendering
+    Segment seg = G.curwin.getLineSegment(target);
+    int col = Edit.beginlineColumnIndex(BL_WHITE | BL_FIX, seg);
+    G.curwin.setViewTopLine(Misc.adjustTopLine(top));
     G.curwin.setCaretPosition(target, col);
   }
 
@@ -2008,6 +2062,10 @@ middle_code:
    * Handle scrolling command 'H', 'L' and 'M'.
    */
   static private void nv_scroll(CMDARG cap) {
+    if(G.p_so != 0) {
+      nv_scroll_scrolloff(cap);
+      return;
+    }
     do_xop("nv_scroll");
     int	    used = 0;
     int    n;
@@ -2041,6 +2099,58 @@ middle_code:
       newcursorline = topline + n;
       if (newcursorline > line_count)
 	newcursorline = line_count;
+    }
+
+    if(newcursorline > 0) {
+      G.curwin.setCaretPosition(
+		    G.curwin.getLineStartOffset(newcursorline));
+    }
+    Misc.cursor_correct();	// correct for 'so'
+    Edit.beginline(BL_SOL | BL_FIX);
+  }
+
+  static private void nv_scroll_scrolloff(CMDARG cap) {
+    do_xop("nv_scroll");
+    int	    used = 0;
+    int    n;
+
+    cap.oap.motion_type = MLINE;
+    MarkOps.setpcmark();
+    int newcursorline = -1;
+
+    if(cap.cmdchar == 'M') {
+      int topline = G.curwin.getViewTopLine();
+      int line_count = G.curwin.getLineCount();
+      Misc.validate_botline();	    // make sure w_empty_rows is valid
+      for (n = 0; topline + n < line_count; ++n)
+	if ((used += Misc.plines(topline + n)) >=
+	    (G.curwin.getViewLines() - G.curwin.getViewBlankLines() + 1) / 2)
+	  break;
+      if (n != 0 && used > G.curwin.getViewLines())
+	--n;
+      newcursorline = topline + n;
+      if (newcursorline > line_count)
+	newcursorline = line_count;
+    } else {
+      // cap.cmdchar == 'H' or 'L'
+      //Misc.validate_botline(); 'L' // make sure curwin.w_botline is valid
+      int so = Misc.getScrollOff();
+      int adjust = so;
+      if(cap.count1 -1 > so) {
+	adjust = cap.count1 -1;
+      }
+      if (cap.cmdchar == 'L') {
+	newcursorline = G.curwin.getViewBottomLine() - 1 - adjust;
+	if(newcursorline < G.curwin.getViewTopLine() + so) {
+	  newcursorline = G.curwin.getViewTopLine() + so;
+	}
+      } else {
+	// 'H'
+	newcursorline = G.curwin.getViewTopLine() + adjust;
+	if(newcursorline > G.curwin.getViewBottomLine() - 1 - so) {
+	  newcursorline = G.curwin.getViewBottomLine() - 1 - so;
+	}
+      }
     }
 
     if(newcursorline > 0) {
@@ -2611,6 +2721,7 @@ middle_code:
 
   static private void nv_goto (OPARG oap, int lnum) {
     do_xop("nv_goto");
+    oap.motion_type = MLINE;
     MarkOps.setpcmark();
     Misc.gotoLine(lnum, BL_SOL | BL_FIX);
   }

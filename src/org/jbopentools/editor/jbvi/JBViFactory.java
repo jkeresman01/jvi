@@ -77,9 +77,10 @@ import com.raelity.jvi.KeyDefs;
 import com.raelity.jvi.swing.TextOps;
 import com.raelity.jvi.Edit;
 import com.raelity.jvi.ViCmdEntry;
-
 import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViFactory;
+import com.raelity.jvi.NonExistentWindowException;
+
 import com.raelity.jvi.swing.DefaultViCaret;
 import com.raelity.jvi.swing.ViCaret;
 import com.raelity.jvi.swing.KeyBinding;
@@ -136,9 +137,17 @@ public class JBViFactory implements ViFactory,
   /** @return the text view for the specified editorPane */
   public ViTextView getViTextView(JEditorPane editorPane) {
     ViTextView tv01 = (ViTextView)textViews.get(editorPane);
-    if(tv01 == null) {
-      tv01 = new JBTextView(NodeViewMap.getBrowser((EditorPane)editorPane),
+    if(tv01 == null /* && editorPane exists (not null ptr except) */) {
+      try {
+	tv01 = new JBTextView(NodeViewMap.getBrowser((EditorPane)editorPane),
                             (EditorPane)editorPane);
+      }
+      catch (NullPointerException ex) {
+	// this is due to the "invokeLater" used to calculate information
+	// about the EditorPane's scroll region.
+	throw new NonExistentWindowException("getViTextView");
+      }
+      
       tv01.setWindow(new Window(tv01));
       textViews.put(editorPane, tv01);
     }
@@ -165,7 +174,7 @@ public class JBViFactory implements ViFactory,
       editorPane.setCaret(caret);
       caret.setDot(c.getDot());
       caret.setBlinkRate(c.getBlinkRate());
-      if(JBViKeymap.minorVersion == 0) {
+      if(JBOT.is40()) {
 	fixupCursorDisplay(editorPane, caret);
       }
       if(attachTrace)System.err.println("registerEditorPane caret: " + editorPane);

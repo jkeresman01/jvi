@@ -39,6 +39,7 @@ import java.awt.FontMetrics;
 
 import javax.swing.JEditorPane;
 import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Segment;
@@ -82,6 +83,9 @@ public class TextViewCache implements PropertyChangeListener,
 				      DocumentListener,
 				      ChangeListener
 {
+  final static int DIR_TOP = -1;
+  final static int DIR_BOT = 1;
+
   public TextViewCache(ViTextView textView) {
     this.textView = (TextView)textView;
   }
@@ -276,6 +280,9 @@ public class TextViewCache implements PropertyChangeListener,
   }
 
   public void setViewTopLine(int line) {
+    if(line == getViewTopLine()) {
+      return; // nothing to change
+    }
     int offset = textView.getLineStartOffset(line);
     Rectangle r;
     try {
@@ -307,13 +314,23 @@ public class TextViewCache implements PropertyChangeListener,
   public int getViewLines() {
     return viewLines;
   }
+  
+  protected void fillLinePositions() {
+    /*
+    SwingUtilities.invokeLater(
+      new Runnable() { public void run() { fillLinePositionsFinally(); }});
+    */
+    fillLinePositionsFinally();
+  }
 
   /** determine document indicators visible in the viewport */
-  private void fillLinePositions() {
+  protected void fillLinePositionsFinally() {
     Point newViewportPosition;
     Dimension newViewportExtent;
     Rectangle r;
     int newViewLines = -1;
+    boolean topLineChange = false;
+    
     if(viewport == null) {
       newViewportPosition = null;
       newViewportExtent = null;
@@ -326,27 +343,15 @@ public class TextViewCache implements PropertyChangeListener,
       viewBottomLine = -1;
       newViewLines = -1;
     } else {
-
       JEditorPane editor = textView.getEditorComponent();
+      int newViewTopLine = findFullLine(newViewportPosition, DIR_TOP);
+      if(viewTopLine != newViewTopLine) {
+	topLineChange = true;
+      }
+      viewTopLine = newViewTopLine;
       Point pt = new Point(newViewportPosition); // top-left
-      //
-      // translate to middle of char, do this because viewToModel
-      // would report the offset of the char just above and off screen.
-      // The first char that is rendered has y at pt 3,3.
-      //
-      int half_char = fheight / 2;
-      pt.translate(0, half_char);
-      int topLineOffset = editor.viewToModel(pt);
-      viewTopLine = textView.getLineNumber(topLineOffset);
-      //
-      // translate to bottom of screen, move point up to compensate
-      // for previus half_char, plus do an additional half_char
-      //
-      pt.translate(0, newViewportExtent.height-1 -2 * half_char); // bottom-left
-      int bottomLineOffset = editor.viewToModel(pt);
-      viewBottomLine = textView.getLineNumber(bottomLineOffset);
-      // NEEDSWORK: check bottomOffset char and see how far off it is?
-
+      pt.translate(0, newViewportExtent.height-1); // bottom-left
+      viewBottomLine = findFullLine(pt, DIR_BOT);
       //
       // Calculate number of lines on screen, some may be blank
       //
@@ -366,8 +371,54 @@ public class TextViewCache implements PropertyChangeListener,
     if(sizeChange) {
       ViManager.viewSizeChange(textView);
     }
+    if(sizeChange || topLineChange) {
+      ViManager.viewMoveChange(textView);
+    }
   }
 
+  /**
+   * Determine the line number of the text that is fully displayed
+   * (top or bottom not chopped off).
+   * @return line number of text at point
+   */
+  private int findFullLine(Point pt, int dir) {
+    Rectangle vrect = viewport.getViewRect();
+    JEditorPane editor = textView.getEditorComponent();
+    
+    int offset = editor.viewToModel(pt);
+    int line = textView.getLineNumber(offset);
+    Rectangle lrect;
+    try {
+      lrect = editor.modelToView(offset);
+    }
+    catch (BadLocationException ex) {
+      System.err.println("findFullLine: exeption 1st " + line);
+      return line; // can't happen
+    }
+    
+    if(vrect.contains(lrect)) {
+      return line;
+    }
+    int oline = line;
+    line -= dir; // move line away from top/bottom
+    if(line < 1 || line > textView.getLineCount()) {
+      //System.err.println("findFullLine: line out of bounds " + line);
+      return oline;
+    }
+    offset = textView.getLineStartOffset(line);
+    try {
+      lrect = editor.modelToView(offset);
+    }
+    catch (BadLocationException ex) {
+      System.err.println("findFullLine: exeption 2nd " + line);
+      return line; // can't happen
+    }
+    if( ! vrect.contains(lrect)) {
+      //System.err.println("findFullLine: adjusted line still out " + line);
+    }
+    return line;
+  }
+  
   private void invalidateData() {
     invalidateCursor(-1);
     invalidateLineSegment();
@@ -420,12 +471,19 @@ public class TextViewCache implements PropertyChangeListener,
     } else {
       viewport = null;
     }
-    changeView();
+    changeView(true);
   }
 
-  /** The defining rectangle of the viewport has changed */
-  private void changeView() {
-    fillLinePositions();
+  /** The defining rectangle of the viewport has changed
+   *  @param init true indicates that the position should be
+   *  checked immeadiately, not potentially defered with an invoke later.
+   */
+  private void changeView(boolean init) {
+    if(init) {
+      fillLinePositionsFinally();
+    } else {
+      fillLinePositions();
+    }
   }
 
   private void changeCaretPosition(int dot, int mark) {
@@ -514,6 +572,6 @@ public class TextViewCache implements PropertyChangeListener,
   // -- viewport event --
 
   public void stateChanged(ChangeEvent e) {
-    changeView();
+    changeView(false);
   }
 }

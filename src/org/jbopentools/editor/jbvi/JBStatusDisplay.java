@@ -46,6 +46,13 @@ import com.raelity.jvi.G;
 /**
  * Display vi status in jbuilder. The mode is put into the
  * general status area.
+ * <p>
+ * In the future when a message is posted, may want to record
+ * the cursor and line number and then use this in conjunction
+ * with the scroll request and only clear the message if there
+ * has been scrolling.... Could also listen to start/end of
+ * full commands to help in some algorithms to keep messages up correctly.
+ * </p>
  */
 public class JBStatusDisplay implements ViStatusDisplay {
   static String lastMode = null;
@@ -109,18 +116,53 @@ public class JBStatusDisplay implements ViStatusDisplay {
     dit(modeString() + msg, Color.red);
     // statusView.setText(msg, Color.red);
   }
+  
+  public void clearMessage() {
+    displayStatusMessage("");
+  }
 
-  void dit(final String msg, final Color c) {
+  // defer execution of message display in JBuidler and hope that the
+  // screen scrolling settles before it gets displayed
+  void dit(String msg, Color c) {
+    SwingUtilities.invokeLater(new ditQ(msg, c));
+  }
+  
+  class ditQ implements Runnable {
+    String msg;
+    Color c;
+    boolean doit;
+    ditQ(String msg, Color c) {
+      this.msg = msg;
+      this.c = c;
+    }
+    
+    public void run() {
+      if(doit) {
+	ditFinally(msg, c);
+      } else {
+	doit = true;
+	SwingUtilities.invokeLater(this);
+      }
+    }
+  }
+  
+  void ditFinally(String msg, Color c) {
+    if(c == null) {
+      statusView.setText(" " + msg);
+    } else {
+      statusView.setText(" " + msg, c);
+    }
+  }
+  /*
+  void ditFinally(final String msg, final Color c) {
     if(SwingUtilities.isEventDispatchThread()) {
       if(c == null) {
         statusView.setText(" " + msg);
       } else {
         statusView.setText(" " + msg, c);
       }
-      /*
-      EditorManager.showStatusMessage((EditorPane)editorPane, msg,
-                                       false, false);
-      */
+      // EditorManager.showStatusMessage((EditorPane)editorPane, msg,
+      //                                  false, false);
     } else {
       try {
 	SwingUtilities.invokeAndWait(
@@ -131,12 +173,11 @@ public class JBStatusDisplay implements ViStatusDisplay {
               } else {
                 statusView.setText(msg, c);
               }
-              /*
-              EditorManager.showStatusMessage((EditorPane)editorPane, msg,
-                                       false, false);
-              */
+              // EditorManager.showStatusMessage((EditorPane)editorPane, msg,
+              //                         false, false);
 	    }});
       } catch(Exception e) {}
     }
   }
+  */
 }

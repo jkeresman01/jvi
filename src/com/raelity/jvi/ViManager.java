@@ -73,7 +73,7 @@ public class ViManager {
 
   private static int majorVersion = 0;
   private static int minorVersion = 6;
-  private static String releaseTag = ".2b1";
+  private static String releaseTag = ".2";
   private static String release = "jVi "
                     + ViManager.majorVersion + "." + ViManager.minorVersion
                     + ViManager.releaseTag;
@@ -133,7 +133,7 @@ public class ViManager {
                                        ViTextView tv,
                                        StringBuffer initialString)
   {
-    Msg.smsg("");
+    Msg.clearMsg();
     if(initialString == null) {
       initialString = new StringBuffer();
     }
@@ -344,8 +344,22 @@ public class ViManager {
 
   /** The viewport has changed, so number of screen lines have changed */
   public static void viewSizeChange(ViTextView textView) {
-    Window window = factory.lookupWindow(textView.getEditorComponent());
-    window.viewSizeChange();
+    try {
+      Window window = factory.lookupWindow(textView.getEditorComponent());
+      window.viewSizeChange();
+    }
+    catch (NonExistentWindowException ex) {
+    }
+  }
+
+  /** The viewport has changed or scrolled, clear messages*/
+  public static void viewMoveChange(ViTextView textView) {
+    if(G.curwin == null) {
+      // this case is because switchto, does attach, does viewport init
+      // but G.curwin is not set yet. See switchTo(JEditorPane editorPane)
+      return;
+    }
+    Msg.clearMsg();
   }
 
   /** set the previous context to the indicated offset */

@@ -32,11 +32,16 @@
  */
 package org.jbopentools.editor.jbvi;
 
+import java.beans.PropertyChangeListener;
+import java.util.List;
+import java.util.Iterator;
+
 import java.awt.Event;
 import java.awt.event.KeyEvent;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
+import javax.swing.text.JTextComponent;
 
 import com.borland.jbuilder.*;
 import com.borland.jbuilder.debugger.DebuggerActions;
@@ -50,21 +55,29 @@ import com.raelity.jvi.G;
 import com.raelity.jvi.ColonCommands;
 import com.raelity.jvi.ViManager;
 import com.raelity.jvi.swing.KeyBinding;
+import java.beans.PropertyChangeEvent;
 
 /**
  * JBuilderKeymap holds the default key bindings for the JBuilder IDE.
  *
  * @author Mike Timbol
  */
-public class JBViKeymap {
-  public static int majorVersion;
-  public static int minorVersion;
+public class JBViKeymap implements PropertyChangeListener {
+  static JBViKeymap instance;
+  //public static int majorVersion;
+  //public static int minorVersion;
 
   public static void initOpenTool(byte majorVersion, byte minorVersion) {
     if (majorVersion != 4)
 	 return;
-    JBViKeymap.minorVersion = minorVersion;
-    JBViKeymap.majorVersion = majorVersion;
+    JBOT.maj = majorVersion;
+    JBOT.min = minorVersion;
+    
+    instance = new JBViKeymap();
+
+    // System.err.println("OT: " + majorVersion + "." + minorVersion);
+    //JBViKeymap.minorVersion = minorVersion;
+    //JBViKeymap.majorVersion = majorVersion;
 
     ViManager.setViFactory(new JBViFactory());
 
@@ -78,12 +91,37 @@ public class JBViKeymap {
     //
     // Set up the editor keymap
     //
+    
+    // first muck with the escape key
+    //     - remove the existing bindings to the escape action
+    //     - add our bindings and actions
+    
+    List bindings = KeyBinding.getBindingsList();
+    Iterator iter = bindings.iterator();
+    while(iter.hasNext()) {
+      JTextComponent.KeyBinding b = (JTextComponent.KeyBinding)iter.next();
+      if(b.actionName.equals("ViEscapeKey")) {
+	iter.remove();
+      }
+    }
+    
+    // The escape key get usurped in jdk1.3 if there is a tool tip manager
+    // on the editor pane. Catch escape with KEY TYPED
+    bindings.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 (char)KeyEvent.VK_ESCAPE), // KEY TYPED
+                 "ViEscapeKey"));
+    /*
+    bindings.add(new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                 KeyEvent.VK_OPEN_BRACKET, Event.CTRL_MASK),
+                 "ViEscapeKey"));      // alternate 
+    */
 
     Keymap viMap = EditorManager.createKeymap("VI",
-					      KeyBinding.getBindings(),
-					      KeyBinding.getActions());
+		      (JTextComponent.KeyBinding[]) bindings.toArray(
+			      new JTextComponent.KeyBinding[bindings.size()]),
+		      KeyBinding.getActions());
     viMap.setDefaultAction(KeyBinding.getDefaultAction());
-
+    
     //
     // Add a few extra hooks for IDE special stuff
     //
@@ -100,6 +138,31 @@ public class JBViKeymap {
 
     EditorManager.registerKeymap(viMap);
 
+    //
+    // Listen for changes in current keymap
+    //
+    EditorManager.addPropertyChangeListener(
+		      EditorManager.keymapAttribute, instance);
+  }
+
+  /**
+   * Catch editor manager property changes.
+   */
+  public void propertyChange(PropertyChangeEvent evt) {
+    Keymap oldKeymap = (Keymap)evt.getOldValue();
+    Keymap newKeymap = (Keymap)evt.getNewValue();
+    if(evt.getPropertyName().equals(EditorManager.keymapAttribute)) {
+      if(JBOT.has41()) {
+	if(oldKeymap != null && ((Keymap)oldKeymap).getName().equals("VI")) {
+	  if(EditorManager.getCaret().getClass() == JBViCaret.class) {
+	    EditorManager.setCaret(null);
+	  }
+	}
+	if(newKeymap != null && ((Keymap)newKeymap).getName().equals("VI")) {
+	  EditorManager.setCaret(JBViCaret.class);
+	}
+      }
+    }
   }
 
   /* ***************************************************************
@@ -234,4 +297,23 @@ public class JBViKeymap {
     bind(KeyStroke.getKeyStroke(KeyEvent.VK_P, Event.CTRL_MASK | Event.SHIFT_MASK),
 	 MessageView.ACTION_PriorMessage),
   };
+}
+
+class JBOT {
+  static int maj;
+  static int min;
+
+  /**
+   * @return true if running under version 4.0
+   */
+  static boolean is40() {
+    return maj == 4 && min == 0;
+  }
+
+  /**
+   * @return true if running under version 4.1 or greater
+   */
+  static boolean has41() {
+    return maj == 4 && min == 1;
+  }
 }
