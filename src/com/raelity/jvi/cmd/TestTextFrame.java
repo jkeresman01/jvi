@@ -55,7 +55,11 @@ public class TestTextFrame extends JFrame {
     contentPane.setLayout(borderLayout1);
     this.setSize(new Dimension(400, 300));
     this.setTitle("Frame Title");
-    jEditorPane1.setText("one\ntwo\nthr\nfou\nfiv");
+    jEditorPane1.setText("one\ntwo\nthr\nfou\nfiv"
+                         + "\nsix\nsev\neig\nnin\nten"
+                         + "\nele\ntwe\nthi\nfou\nfif"
+                         + "\nsix\nsev\neig\nnin\ntwe"
+			 );
     contentPane.add(jScrollPane1, BorderLayout.CENTER);
     jScrollPane1.getViewport().add(jEditorPane1, null);
   }
