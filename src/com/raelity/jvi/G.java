@@ -101,7 +101,7 @@ public class G {
   static BooleanOption p_to;   // tildeop
   static BooleanOption p_ws;   // wrapscan
 
-  static BooleanOption p_ic;   // ignorecase
+  public static BooleanOption p_ic;   // ignorecase
 
   public static BooleanOption p_meta_equals;  // true use '=' instead of '?'
   public static StringOption p_meta_escape;   // metacharacters escaped

@@ -94,9 +94,27 @@ public class JBViOptions implements PropertyChangeListener
     }
   }
 
+  // HACK, hook directly into JB stuff. Should be listening to option
+  // at the least, or using set command....
+  static class IgnoreCaseBooleanOption extends BooleanOption {
+
+    IgnoreCaseBooleanOption() {
+      super(Options.ignoreCaseOption, false);
+      // Don't need following put because should already be there
+      // since this hack overwrites an existing option. Ahrg!
+      //options.put(Options.ignoreCaseOption, this);
+    }
+
+    public boolean getBoolean() {
+      setBoolean(! SearchManager.getSavedOptions().isCaseSensitive());
+      return super.getBoolean();
+    }
+  }
+
   /** Read JB's option settings, and set them into vi.  */
   static void initOptions() {
     loadOptions();
+    G.p_ic = new IgnoreCaseBooleanOption(); // HACK
   }
 
   /**

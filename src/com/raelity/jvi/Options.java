@@ -102,7 +102,11 @@ public class Options {
     G.p_meta_equals = setupBooleanOption(metaEqualsOption, true);
     G.p_meta_escape = setupStringOption(metaEscapeOption, G.metaEscapeDefault);
 
-    G.p_ic = new IgnoreCaseBooleanOption(); // HACK
+    // HACK: p_ic may be changed to a new object by embedding environment
+    // this is only needed because there is not proper listening set up
+    // for jVi options.
+    //G.p_ic = new IgnoreCaseBooleanOption(); // HACK
+    G.p_ic = setupBooleanOption(ignoreCaseOption, false);
 
     dbgInit();
     didInit = true;
@@ -148,6 +152,7 @@ public class Options {
     setupBooleanOption(dbgCache, false);
   }
 
+  /* MOVED TO A JBUILDER CLASS
   // HACK, hook directly into JB stuff. Should be listening to option
   // at the least, or using set command....
   static class IgnoreCaseBooleanOption extends BooleanOption {
@@ -162,5 +167,6 @@ public class Options {
       return super.getBoolean();
     }
   }
+  */
 }
 

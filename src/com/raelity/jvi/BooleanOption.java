@@ -31,7 +31,7 @@ package com.raelity.jvi;
 
 public class BooleanOption extends Option {
   boolean value;
-  BooleanOption(String key, boolean defaultValue) {
+  public BooleanOption(String key, boolean defaultValue) {
     name = key;
     this.defaultValue = "" + defaultValue;
     setBoolean(defaultValue);
