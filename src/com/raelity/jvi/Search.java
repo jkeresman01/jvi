@@ -873,7 +873,8 @@ finished:
   // Stuff from ex_cmds.c
   //
   
-  private static int nMatch;
+  private static int nSubMatch;
+  private static int nSubLine = 0;
 
   /**
    * substitute command. first arg is /pattern/substitution/{flags}
@@ -889,6 +890,7 @@ finished:
     RegExp prog = null;
     char[] substitution = null;
     boolean doAll = false; // should be bit flag???
+    boolean doPrint = false; // should be bit flag???
     boolean hasEscape = false;
     char delimiter = cmd.charAt(0);
     Segment line;
@@ -945,6 +947,10 @@ finished:
           doAll = true;
           break;
         
+        case 'p':
+          doPrint = true;
+          break;
+        
         case ' ':
           // silently ignore blanks
           break;
@@ -967,8 +973,10 @@ finished:
     int line1 = cev.getLine1();
     int line2 = cev.getLine2();
     StringBuffer sb;
-    int nLine = 0;
-    nMatch = 0;
+    if(! G.global_busy) {
+      nSubLine = 0;
+      nSubMatch = 0;
+    }
     for(int i = line1; i <= line2; i++) {
       line = G.curwin.getLineSegment(i);
       sb = substitute_line(prog, line, doAll, substitution, hasEscape);
@@ -977,26 +985,40 @@ finished:
                                G.curwin.getLineEndOffset(i)-1,
                                sb.toString());
         cursorLine = i;  // keep track of last line changed
-	nLine++;
+	nSubLine++;
+	if(doPrint) {
+	  ColonCommands.outputPrint(i, 0, 0);
+	}
         // System.err.println("sub: " + sb);
       }
     }
     
-    if(nMatch == 0) {
-      Msg.emsg(Messages.e_patnotf2 + pattern);
-    } else {
-      if(nMatch >= G.p_report) {
-	String msg = "" + nMatch + " substitution" + Misc.plural(nMatch)
-	             + " on " + nLine + " line" + Misc.plural(nLine);
-	G.curwin.getStatusDisplay().displayStatusMessage(msg);
+    if(! G.global_busy) {
+      if(cursorLine > 0) {
+	Misc.gotoLine(cursorLine, BL_WHITE | BL_FIX);
+      }
+      if(nSubMatch == 0) {
+	Msg.emsg(Messages.e_patnotf2 + pattern);
+      } else {
+	do_sub_msg();
       }
     }
     
-    if(cursorLine > 0) {
-      // move cursor
-      G.curwin.setCaretPosition(cursorLine, 0);
-      Edit.beginline(BL_WHITE | BL_FIX);
+  }
+
+  /**
+   * Give message for number of substitutions.
+   * Can also be used after a ":global" command.
+   * Return TRUE if a message was given.
+   */
+  static boolean do_sub_msg() {
+    if(nSubMatch >= G.p_report) {
+      String msg = "" + nSubMatch + " substitution" + Misc.plural(nSubMatch)
+		   + " on " + nSubLine + " line" + Misc.plural(nSubLine);
+      G.curwin.getStatusDisplay().displayStatusMessage(msg);
+      return true;
     }
+    return false;
   }
 
   /**
@@ -1028,7 +1050,7 @@ finished:
     int lastMatch = -1;
 
     while(prog.search(line.array, lookHere, count)) {
-      nMatch++;
+      nSubMatch++;
       if(sb == null) { // got a match, make sure there's a buffer
         sb = new StringBuffer();
       }
@@ -1136,6 +1158,150 @@ finished:
       }
     }
   }
+
+  /**
+   * global command. first arg is /pattern/some_command_goes_here
+   * <br>
+   * Only do print for now.
+   */
+
+  static void global(ColonCommands.ColonEvent cev) {
+    G.global_busy = true;
+    try {
+      doGlobal(cev);
+    }
+    finally {
+      G.global_busy = false;
+    }
+    
+  }
+  
+  static void doGlobal(ColonCommands.ColonEvent cev) {
+    if(cev.getNArg() != 1) {
+      Msg.emsg("global takes an argument (FOR NOW)");
+      return;
+    }
+    int old_lcount = G.curwin.getLineCount();
+    nSubLine = 0;
+    nSubMatch = 0;
+    String cmd = cev.getArg(1);
+    String cmdExec;
+    String pattern = null;
+    RegExp prog = null;
+    char delimiter = cmd.charAt(0);
+    Segment line;
+    int cursorLine = 0; // set to line number of last found line
+    int sidx = 1; // after delimiter
+
+    //
+    // pick up the pattern
+    //
+
+    int sidx01 = sidx;
+    sidx = skip_regexp(cmd, sidx, delimiter, true);
+    if(sidx01 == sidx) {
+      pattern = lastPattern;
+    } else {
+      pattern = cmd.substring(sidx01, sidx);
+      lastPattern = pattern;
+    }
+    if(lastPattern == null) {
+      Msg.emsg(Messages.e_noprevre);
+      return;
+    }
+
+    //
+    // pick up the command
+    //
+
+    sidx++; // first char of command
+    if(sidx < cmd.length()) {
+      cmdExec = cmd.substring(sidx);
+    } else {
+      cmdExec = "";
+    }
+
+    //
+    // compile regex
+    //
+
+    prog = getRegExp(pattern, G.p_ic.getBoolean());
+    if(prog == null) {
+      return;
+    }
+
+    // figure out what command to execute for all the indicated lines
+    
+    ActionListener cmdAction = null;
+    ColonCommands.ColonEvent cevAction = null;
+
+    if(cmdExec.equals("")) {
+      // if no command specified then "p" command
+      cmdAction = ColonCommands.ACTION_print;
+    } else {
+      cevAction = ColonCommands.parseCommand(cmdExec);
+      if(cevAction != null) {
+	cmdAction = cevAction.getAction();
+      }
+    }
+
+    int nLine = G.curwin.getLineCount();
+      
+    // for now special case a few known commands that can be global'd
+    // NEEDSWORK: make global two pass, check vim sources. There's no nice
+    // way to keep track of the matched lines for the seconde pass. The only
+    // generalized thing that would seem to work is to catch the document
+    // events for delete and remove any lines from the global list that are
+    // deleted.
+    
+    ViOutputStream result;
+    if(cmdAction == ColonCommands.ACTION_print) {
+      result = G.curwin.createOutputStream(ViOutputStream.SEARCH, pattern);
+    } else {
+      result = G.curwin.createOutputStream(ViOutputStream.TEXT, pattern);
+    }
+    
+    for(int lnum = 1; lnum <= nLine; lnum++) {
+      line = G.curwin.getLineSegment(lnum);
+      if(prog.search(line.array, line.offset, line.count)) {
+	// if full parse each time command executed,
+	// then should move cursor (or equivilent) but.....
+	if(cevAction != null) {
+	  cevAction.line1 = lnum;
+	  cevAction.line2 = lnum;
+	}
+	if(cmdAction == ColonCommands.ACTION_print) {
+	    result.println(lnum, prog.start(0) - line.offset, prog.length(0));
+	} else if(cmdAction == ColonCommands.ACTION_substitute) {
+	  ColonCommands.executeCommand(cevAction);
+	} else if(cmdAction == ColonCommands.ACTION_delete) {
+	  OPARG oa = ColonCommands.setupExop(cevAction);
+	  oa.op_type = OP_DELETE;
+	  Misc.op_delete(oa);
+	  // The troublesome command/situation
+	  // A line has just been deleted
+	  --nLine;
+	  --lnum;
+	} else if(cmdAction == ColonCommands.ACTION_global) {
+	  Msg.emsg("Cannot do :global recursively");
+	  return;
+	} else {
+	  // no command specified, but cursorLine is getting set above
+	}
+	cursorLine = lnum;  // keep track of last line matched
+      }
+    }
+
+    if(cursorLine > 0) {
+      Misc.gotoLine(cursorLine, BL_WHITE | BL_FIX);
+    }
+    result.close();
+    
+    if( ! do_sub_msg()) {
+      Misc.msgmore(G.curwin.getLineCount() - old_lcount);
+    }
+  }
+
 
   ////////////////////////////////////////////////////////////////
   //

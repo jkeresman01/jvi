@@ -75,6 +75,16 @@ public interface ViFactory {
    * @return action for picking up specified key
    */
   public Action createKeyAction(String name, int key);
+  
+  /**
+   * @return edit mode action for picking up specified key
+   */
+  public Action createEditModeKeyAction(String name, int vkey, String desc);
+  
+  /**
+   * @return normal mode action for picking up specified key
+   */
+  public Action createNormalModeKeyAction(String name, int vkey, String desc);
 
   /**
    * A command entry object will be created if needed.

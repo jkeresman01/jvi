@@ -110,8 +110,13 @@ public interface ViTextView {
   /** insert text at specified location */
   public void insertText(int offset, String s);
 
-  /** insert text at current cursor location */
+  /** insert text at current cursor location.
+   *  For some characters special actions may be taken
+   */
   public void insertChar(int c);
+
+  /** insert the char verbatim, no special actions */
+  public void insertTypedChar(char c);
 
   /** undo a change */
   public void undo();
@@ -216,6 +221,13 @@ public interface ViTextView {
   /** @return an array of marks */
   public ViMark[] createMarks(int n_mark);
 
+  /** create an output stream for some kind of results.
+   *  @param type Should be a constant from ViOutputStream,
+   *          e.g. ViOutputStream.SEARCH.
+   *  @param info qualifier for the output stream, e.g. search pattern.
+   */
+  public ViOutputStream createOutputStream(Object type, Object info);
+
   /** Quit editing window. Can close last view.
    */
   public void win_quit();
@@ -250,4 +262,7 @@ public interface ViTextView {
 
   /** Display file info */
   public void displayFileInfo();
+
+  /** Display file info */
+  public String getDisplayFileName();
 }

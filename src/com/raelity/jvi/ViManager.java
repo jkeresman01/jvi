@@ -42,6 +42,7 @@ import javax.swing.JEditorPane;
 import javax.swing.text.JTextComponent;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
+import javax.swing.text.Keymap;
 
 import com.raelity.jvi.ViFS;
 import com.raelity.jvi.G;
@@ -67,15 +68,21 @@ public class ViManager {
 
   static private JEditorPane currentEditorPane;
   static private ViFactory factory;
+  
+  static private Keymap editModeKeymap;
+  static private Keymap normalModeKeymap;
 
   // HACK: to workaround JDK bug dealing with focus and JWindows
   public static ViCmdEntry activeCommandEntry;
 
   private static int majorVersion = 0;
   private static int minorVersion = 6;
-  private static String releaseTag = ".2";
+  private static int microVersion = 3;
+  private static String releaseTag = "";
   private static String release = "jVi "
-                    + ViManager.majorVersion + "." + ViManager.minorVersion
+                    + ViManager.majorVersion
+		    + "." + ViManager.minorVersion
+		    + "." + ViManager.microVersion
                     + ViManager.releaseTag;
 
   public static void setViFactory(ViFactory factory) {
@@ -93,12 +100,20 @@ public class ViManager {
     return release;
   }
 
-  public static int getMajorVerion() {
+  public static int getMajorVersion() {
     return majorVersion;
   }
 
-  public static int getMinorVerion() {
+  public static int getMinorVersion() {
     return minorVersion;
+  }
+
+  public static int getMicroVersion() {
+    return microVersion;
+  }
+
+  public static String getReleaseTag() {
+    return releaseTag;
   }
 
   public static ViFactory getViFactory() {
@@ -273,6 +288,7 @@ public class ViManager {
     while(iter.hasNext()) {
       ((ActionListener)iter.next()).actionPerformed(null);
     }
+    Misc.javaKeyMap = KeyBinding.initJavaKeyMap();
     inStartup = false;
     startupList = null;
   }
@@ -394,4 +410,21 @@ public class ViManager {
       ex.printStackTrace();
     }
   }
+
+  static public void setEditModeKeymap(Keymap newEditModeKeymap) {
+    editModeKeymap = newEditModeKeymap;
+  }
+
+  static public Keymap getEditModeKeymap() {
+    return editModeKeymap;
+  }
+
+  static public void setNormalModeKeymap(Keymap newNormalModeKeymap) {
+    normalModeKeymap = newNormalModeKeymap;
+  }
+
+  static public Keymap getNormalModeKeymap() {
+    return normalModeKeymap;
+  }
 }
+
