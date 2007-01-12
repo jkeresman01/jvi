@@ -35,12 +35,13 @@ import java.lang.reflect.*;
  * @see RegExp
  */
 public class RegExpFactory {
-  protected static Vector reImp = new Vector(5);
+  protected static Vector<String> reImp = new Vector<String>(5);
 
   static {
-    reImp.addElement("com.raelity.text.RegExpStevesoft");
-    reImp.addElement("com.raelity.text.RegExpOroinc");
-    reImp.addElement("com.raelity.text.RegExpGNU");
+    reImp.add("com.raelity.text.RegExpJava");
+    reImp.add("com.raelity.text.RegExpStevesoft");
+    reImp.add("com.raelity.text.RegExpOroinc");
+    reImp.add("com.raelity.text.RegExpGNU");
   };
 
   /**
@@ -269,6 +270,11 @@ public class RegExpFactory {
     RegExpFactory.reClass = cls;
     RegExpFactory.reClassName = reClassName;
     RegExpFactory.reDisplayName = bString;
+    if(true){
+      System.err.println("reAdapted = " + reAdapted );
+      System.err.println("reClassName = " + reClassName );
+      System.err.println("reDisplayName = " + reDisplayName );
+    }
 
     return;
   }
@@ -308,9 +314,10 @@ public class RegExpFactory {
       "#s(\\\\)(##)(#w+)", " \\\\#hi(*&^^%", new Character('#')
     };
 
+    test1("com.raelity.text.RegExpJava", testInput);
+    test1("com.raelity.text.RegExpGNU", testInput);
     test1("com.raelity.text.RegExpStevesoft", testInput);
     test1("com.raelity.text.RegExpOroinc", testInput);
-    test1("com.raelity.text.RegExpGNU", testInput);
 
     // NEEDSWORK: check for errors.
     return true;

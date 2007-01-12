@@ -148,6 +148,7 @@ public class TextView implements ViTextView {
 
   public void detach() {
     cache.detach(editorPane);
+    ViManager.detached(editorPane);
     editorPane = null;
     // NEEDSWORK: more to do?
   }
@@ -501,42 +502,42 @@ public class TextView implements ViTextView {
   /** Quit editing window. Can close last view.
    */
   public void win_quit() {
-    // NEEDSWORK: standalone
+    Msg.emsg("win_quit not implemented");
   }
 
   /** Split this window.
    * @param n the size of the new window.
    */
   public void win_split(int n) {
-    // NEEDSWORK: standalone
+    Msg.emsg("win_split not implemented");
   }
 
   /** Close this window
    * @param freeBuf true if the related buffer may be freed
    */
   public void win_close(boolean freeBuf) {
-    // NEEDSWORK: standalone
+    Msg.emsg("win_close not implemented");
   }
 
   /** Close other windows
    * @param forceit true if always hide all other windows
    */
   public void win_close_others(boolean forceit) {
-    // NEEDSWORK: standalone
+    Msg.emsg("win_close_others not implemented");
   }
 
   /** Goto the indicated buffer.
    * @param n the index of the window to make current
    */
   public void win_goto(int n) {
-    // NEEDSWORK: standalone
+    Msg.emsg("win_goto not implemented");
   }
 
   /** Cycle to the indicated buffer.
    * @param n the positive/negative number of windows to cycle.
    */
   public void win_cycle(int n) {
-    // NEEDSWORK: standalone
+    Msg.emsg("win_cycle not implemented");
   }
 
   public ViStatusDisplay getStatusDisplay() {
@@ -556,12 +557,21 @@ public class TextView implements ViTextView {
     getStatusDisplay().displayStatusMessage(sb.toString());
   }
 
-  public TextOps getOp() {
-    return ops;
+  public String getDisplayFileNameAndSize() {
+    StringBuffer sb = new StringBuffer();
+    sb.append("\"" + getDisplayFileName() + "\"");
+    int l = getLineCount();
+    sb.append(" " + getLineCount() + "L, ");
+    sb.append(" " + getDoc().getLength() + "C");
+    return sb.toString();
   }
 
   public String getDisplayFileName() {
     return "xxx";
+  }
+
+  public TextOps getOp() {
+    return ops;
   }
 
   protected final Document getDoc() {

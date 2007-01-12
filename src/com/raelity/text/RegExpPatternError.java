@@ -35,50 +35,22 @@ import java.io.*;
  * @see RegExp#compile(java.lang.String)
  */
 public class RegExpPatternError extends Error {
-	/**
-	 * This is the implementation dependent exception or error.
-	 */
-	public Throwable regexpImplementationDependent;
+  // Everything's handled by the new Java 1.4 throwable architeture
+  // Simply delegate the constructors.
 
-	/**
-	 * This exception can only be instantiated from another
-	 * exception.
-	 * @param e The underlying implementation's exception.
-	 */
-	RegExpPatternError(Throwable e) {
-		super(e.getMessage());
-		this.regexpImplementationDependent = e;
-	}
-	
-	/**
-	 * A pattern error detected by provider wrapper.
-	 */
-	RegExpPatternError(String msg) {
-	  super(msg);
-	  regexpImplementationDependent = this;
-	}
+  RegExpPatternError() {
+    super();
+  }
 
-	/**
-	 * Prints the stacktrace of the implementation dependant
-	 * error/exception.
-	 */
-	public void printStackTrace() {
-		regexpImplementationDependent.printStackTrace();
-	}
+  RegExpPatternError(String msg) {
+    super(msg);
+  }
 
-	/**
-	 * Prints the stacktrace of the implementation dependant
-	 * error/exception.
-	 */
-	public void printStackTrace(PrintStream s) {
-		regexpImplementationDependent.printStackTrace(s);
-	}
+  RegExpPatternError(String msg, Throwable cause) {
+    super(msg, cause);
+  }
 
-	/**
-	 * Prints the stacktrace of the implementation dependant
-	 * error/exception.
-	 */
-	public void printStackTrace(PrintWriter s) {
-		regexpImplementationDependent.printStackTrace(s);
-	}
+  RegExpPatternError(Throwable e) {
+    super(e);
+  }
 }
