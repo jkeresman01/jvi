@@ -20,6 +20,7 @@ public class FixupInputMap {
   private FixupInputMap() {
   }
 
+  // NEEDSWORK: memory leak!!!!!!!!!!!!!!!!
   static private Set panes = new HashSet();
   static private boolean firstTry = true;
   static private boolean hasInputMap = false;
