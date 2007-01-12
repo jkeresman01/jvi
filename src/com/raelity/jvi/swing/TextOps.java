@@ -69,6 +69,8 @@ public interface TextOps {
   public void xact(Action action);
 
   public void xact(Action action, String keyTyped);
+  
+  void xact(String redoAction);
 
   public void xop(int op, String s);
 
