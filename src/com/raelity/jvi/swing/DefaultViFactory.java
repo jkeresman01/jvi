@@ -30,21 +30,17 @@
 package com.raelity.jvi.swing;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JComponent;
+import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.text.TextAction;
 import javax.swing.text.Caret;
-import javax.swing.text.Keymap;
 
 import com.raelity.jvi.Window;
 import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.KeyDefs;
-import com.raelity.jvi.swing.TextOps;
 import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.DefaultViFS;
 import com.raelity.jvi.*;
@@ -150,6 +146,10 @@ public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
     return act;
   }
 
+  public Preferences getPreferences() {
+      return Preferences.userNodeForPackage(Options.class);
+  }
+
   /**
    * This is the default key action.
    */
@@ -166,7 +166,7 @@ public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
 	if(content != null && content.length() > 0) {
 	  int c = content.charAt(0);
 	  if( ! KeyBinding.ignoreChar(c)) {
-            if(KeyBinding.keyDebug.getBoolean()) {
+            if(KeyBinding.isKeyDebug()) {
               System.err.println("CharAction: " + ": " + c + " " + mod);
             } else {
 	      if(mod == MOD_MASK_ALT) {
@@ -177,7 +177,7 @@ public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
 	  }
 	}
 	else {
-          if(KeyBinding.keyDebug.getBoolean()) {
+          if(KeyBinding.isKeyDebug()) {
             System.err.println("CharAction: " + e);
           }
 	}
@@ -205,7 +205,7 @@ public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
       JEditorPane target = (JEditorPane)getTextComponent(e);
       int mod = e.getModifiers();
       int key = basekey;
-      if(KeyBinding.keyDebug.getBoolean()) {
+      if(KeyBinding.isKeyDebug()) {
         String virt = ((key & 0xF000) == VIRT) ? "virt" : "";
         System.err.println("KeyAction: " + name + ": "
                            + (key&~VIRT) + " " + mod + " " + virt);

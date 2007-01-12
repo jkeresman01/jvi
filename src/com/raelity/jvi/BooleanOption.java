@@ -32,12 +32,10 @@ package com.raelity.jvi;
 public class BooleanOption extends Option {
   boolean value;
   public BooleanOption(String key, boolean defaultValue) {
-    name = key;
-    this.defaultValue = "" + defaultValue;
-    setBoolean(defaultValue);
+    super(key, "" + defaultValue);
   }
 
-  public boolean getBoolean() {
+  public final boolean getBoolean() {
     return value;
   }
 
@@ -49,6 +47,7 @@ public class BooleanOption extends Option {
     boolean rc = newValue != value;
     value = newValue;
     stringValue = "" + value;
+    propogate();
     return rc;
   }
 

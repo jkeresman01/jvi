@@ -76,9 +76,9 @@ public class ViManager implements Constants {
   public static ViCmdEntry activeCommandEntry;
 
   private static int majorVersion = 0;
-  private static int minorVersion = 7;
-  private static int microVersion = 1;
-  private static String releaseTag = "";
+  private static int minorVersion = 8;
+  private static int microVersion = 0;
+  private static String releaseTag = "x";
   private static String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion
@@ -89,8 +89,8 @@ public class ViManager implements Constants {
     if(ViManager.factory != null) {
       throw new RuntimeException("ViFactory already set");
     }
-    Options.init();
     ViManager.factory = factory;
+    Options.init();
 
     // KeyBinding.init(); // setup the default keymap
     KeyBinding.getKeymap();  // force the class loaded before the action starts
@@ -229,7 +229,7 @@ public class ViManager implements Constants {
    * <br>NEEDSWORK: catch all exceptions comming out of here?
    */
   static public void keyStroke(JEditorPane target, int key, int modifier) {
-    if(false && KeyBinding.keyDebug.getBoolean()) { // DEBUG
+    if(false && KeyBinding.isKeyDebug()) { // DEBUG
       boolean changeIt = false;
       if(modifier == MOD_MASK_ALT) {
 	switch (key) {
@@ -261,9 +261,7 @@ public class ViManager implements Constants {
       }
     }
     if(target != currentEditorPane) {
-      if(currentEditorPane != null) {
-        Normal.resetCommand();
-      }
+      exitInputMode();
       switchTo(target);
       Normal.resetCommand(); // dont think this is needed
     }
@@ -357,6 +355,22 @@ public class ViManager implements Constants {
   }
 
   /**
+   * The arg JEditorPane is detached from its text view,
+   * forget about it.
+   */
+  public static void detached(JEditorPane ep) {
+    if(currentEditorPane == ep) {
+      currentEditorPane = null;
+    }
+  }
+
+  public static void exitInputMode() {
+    if(currentEditorPane != null) {
+      Normal.resetCommand();
+    }
+  }
+
+  /**
    * A mouse click; switch to the activated editor.
    * Pass the click on to the window and give it
    * a chance to adjust the position and whatever.
@@ -371,9 +385,7 @@ public class ViManager implements Constants {
     // NEEDSWORK: mouse click: if( ! isRegistered(editorPane)) {}
 
     GetChar.flush_buffers(true);
-    if(currentEditorPane != null) {
-      Normal.resetCommand();
-    }
+    exitInputMode();
     if(editorPane != currentEditorPane) {
       switchTo(editorPane);
     }

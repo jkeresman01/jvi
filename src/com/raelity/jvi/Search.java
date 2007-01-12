@@ -1022,7 +1022,7 @@ finished:
    * Return TRUE if a message was given.
    */
   static boolean do_sub_msg() {
-    if(nSubMatch >= G.p_report) {
+    if(nSubMatch >= G.p_report.getInteger()) {
       String msg = "" + nSubMatch + " substitution" + Misc.plural(nSubMatch)
 		   + " on " + nSubLine + " line" + Misc.plural(nSubLine);
       G.curwin.getStatusDisplay().displayStatusMessage(msg);

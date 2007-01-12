@@ -1765,7 +1765,7 @@ middle_code:
   }
   
   static private  void	nv_zet_original (CMDARG cap) {
-    if(G.p_so != 0) {
+    if(G.p_so.getInteger() != 0) {
       nv_zet_scrolloff(cap);
       return;
     }
@@ -2062,7 +2062,7 @@ middle_code:
    * Handle scrolling command 'H', 'L' and 'M'.
    */
   static private void nv_scroll(CMDARG cap) {
-    if(G.p_so != 0) {
+    if(G.p_so.getInteger() != 0) {
       nv_scroll_scrolloff(cap);
       return;
     }

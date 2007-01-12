@@ -108,15 +108,15 @@ public class G {
   public static BooleanOption p_meta_equals;  // true use '=' instead of '?'
   public static StringOption p_meta_escape;   // metacharacters escaped
 
-  public static boolean b_p_et = false;	// expandtabs, per file
+  public static BooleanOption b_p_et;	// expandtabs, per file
   static boolean p_sc = true;   // showcmd
   static boolean p_smd = true;  // showmode
 
-  public static int p_report = 3;
-  public static int p_bs = 0;   // backspace over start of insert, and more
-  public static int p_so = 2;   // scrolloff, lines before/after current
-  public static int b_p_sw = 2;	// per file
-  public static int b_p_ts = 8;	// per file
+  public static IntegerOption p_report;
+  public static IntegerOption p_bs ;   // backspace over start of insert, and more
+  public static IntegerOption p_so;   // scrolloff, lines before/after current
+  public static IntegerOption b_p_sw;	// per file
+  public static IntegerOption b_p_ts;	// per file
 
   // static String p_cb = "";      // clipboard, treat as boolean for 'unnamed'
   static String p_km = "";      // keymodel

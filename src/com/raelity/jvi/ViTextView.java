@@ -268,4 +268,6 @@ public interface ViTextView {
 
   /** Display file info */
   public String getDisplayFileName();
+
+  public String getDisplayFileNameAndSize();
 }

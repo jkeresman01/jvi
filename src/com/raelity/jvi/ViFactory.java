@@ -30,6 +30,7 @@
 package com.raelity.jvi;
 
 import java.awt.event.ActionListener;
+import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.Action;
 import javax.swing.text.Keymap;
@@ -109,5 +110,7 @@ public interface ViFactory {
    * @return a CmdEntry object to handle the specified type of user input.
    */
   public ViCmdEntry createCmdEntry(int type);
+
+  public Preferences getPreferences();
 
 }

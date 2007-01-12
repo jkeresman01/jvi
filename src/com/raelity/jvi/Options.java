@@ -29,13 +29,15 @@
  */
 package com.raelity.jvi;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Collections;
-
-import com.borland.primetime.editor.SearchManager; //HACK
-import com.borland.primetime.editor.SearchOptions; //HACK
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 
 /**
  * Option handling from external sources.
@@ -71,22 +73,52 @@ public class Options {
   public static final String metaEscapeOption = "viMetaEscape";
 
   public static final String ignoreCaseOption = "viIgnoreCase";
+  
+  public static final String expandTabs = "viExpandTabs";
+
+  public static final String report = "viReport";
+  public static final String backspace = "viBackspace";
+  public static final String scrollOff = "viScrollOff";
+  public static final String shiftWidth = "viShiftWidth";
+  public static final String tabStop = "viTabStop";
 
   public static final String readOnlyHackOption = "viReadOnlyHack";
   public static final String classicUndoOption = "viClassicUndo";
 
-  private static Map options = new HashMap();
-  private static Set optionNames;
+  
+  private static Map options = new HashMap(); //<string, Option>
+  private static List<String> optionsList = new ArrayList<String>();
+  /*private static Set optionNames; //<String>
+  private static Map optionDesc = new HashMap(); //<String,String>
+  private static Map defaults = new HashMap(); //<String,String>
+  */
+  
 
   static {
-    init();
+    // init(); invoked from ViManager.setViFactory
   }
+
+  static Preferences prefs;
 
   private static boolean didInit = false;
   public static void init() {
     if(didInit) {
       return;
     }
+
+    prefs = ViManager.getViFactory().getPreferences();
+
+    prefs.addPreferenceChangeListener(new PreferenceChangeListener() {
+      public void preferenceChange(PreferenceChangeEvent evt) {
+	Option opt = (Option)options.get(evt.getKey());
+	if(opt != null) {
+          if(evt.getNewValue() != null) {
+              opt.preferenceChange(evt.getNewValue());
+          }
+	}
+      }
+    });
+
     G.p_ww_bs = setupBooleanOption(backspaceWrapPreviousOption, true);
     G.p_ww_h = setupBooleanOption(hWrapPreviousOption, false);
     G.p_ww_larrow = setupBooleanOption(leftWrapPreviousOption, false);
@@ -107,11 +139,15 @@ public class Options {
     G.p_meta_equals = setupBooleanOption(metaEqualsOption, true);
     G.p_meta_escape = setupStringOption(metaEscapeOption, G.metaEscapeDefault);
 
-    // HACK: p_ic may be changed to a new object by embedding environment
-    // this is only needed because there is not proper listening set up
-    // for jVi options.
-    //G.p_ic = new IgnoreCaseBooleanOption(); // HACK
     G.p_ic = setupBooleanOption(ignoreCaseOption, false);
+    
+    G.b_p_et = setupBooleanOption(expandTabs, false);
+    
+    G.p_report = setupIntegerOption(report, 2);
+    G.p_bs = setupIntegerOption(backspace, 0);
+    G.p_so = setupIntegerOption(scrollOff, 2);
+    G.b_p_sw = setupIntegerOption(shiftWidth, 4);
+    G.b_p_ts = setupIntegerOption(tabStop, 8);
     
     G.useFrame  = setupBooleanOption(commandEntryFrameOption , false);
     
@@ -119,14 +155,25 @@ public class Options {
     G.isClassicUndo = setupBooleanOption(classicUndoOption, true);
 
     dbgInit();
+    setupOptionDescs();
     didInit = true;
   }
+  
+  static Preferences getPrefs() {
+      return prefs;
+  }
 
+  // NEEDSWORK: FOR NOW PROPOGATE DEFAULTS TO DATA BASE
+  static private boolean fAddDefaultToDB = true;
   static private StringOption setupStringOption(String name,
                                                 String defaultValue)
   {
     StringOption opt = new StringOption(name, defaultValue);
     options.put(name, opt);
+    optionsList.add(name);
+    if(fAddDefaultToDB) {
+      opt.setValue(defaultValue);
+    }
     return opt;
   }
 
@@ -135,6 +182,22 @@ public class Options {
   {
     BooleanOption opt = new BooleanOption(name, defaultValue);
     options.put(name, opt);
+    optionsList.add(name);
+    if(fAddDefaultToDB) {
+      opt.setBoolean(defaultValue);
+    }
+    return opt;
+  }
+
+  static private IntegerOption setupIntegerOption(String name,
+                                                  int defaultValue)
+  {
+    IntegerOption opt = new IntegerOption(name, defaultValue);
+    options.put(name, opt);
+    optionsList.add(name);
+    if(fAddDefaultToDB) {
+      opt.setInteger(defaultValue);
+    }
     return opt;
   }
 
@@ -148,35 +211,78 @@ public class Options {
   }
 
   /** @return the String key names of the options. */
-  public static Set getOptionNamesSet() {
-    if(optionNames == null) {
-      optionNames = Collections.unmodifiableSet(options.keySet());
-    }
-    return optionNames;
+  public static List<String> getOptionNamesList() {
+    return Collections.unmodifiableList(optionsList);
   }
 
-  public static final String dbgKeyStrokes = "viDbgKeyStroks";
+  public static final String dbgKeyStrokes = "viDbgKeyStrokes";
   public static final String dbgCache = "viDbgCache";
   static void dbgInit() {
     setupBooleanOption(dbgKeyStrokes, false);
     setupBooleanOption(dbgCache, false);
   }
 
-  /* MOVED TO A JBUILDER CLASS
-  // HACK, hook directly into JB stuff. Should be listening to option
-  // at the least, or using set command....
-  static class IgnoreCaseBooleanOption extends BooleanOption {
-
-    IgnoreCaseBooleanOption() {
-      super(Options.ignoreCaseOption, false);
-      options.put(ignoreCaseOption, this);
-    }
-
-    public boolean getBoolean() {
-      setBoolean(! SearchManager.getSavedOptions().isCaseSensitive());
-      return super.getBoolean();
+  private static void setupOptionDesc(String name, String desc) {
+    Option opt = (Option)options.get(name);
+    if(opt != null) {
+      opt.desc = desc;
+    } else {
+      throw new Error("Unknown option: " + name);
     }
   }
-  */
+
+  private static void setupOptionDescs() {
+    //
+    // optionCategory = new EditorOptionCategory("Vi cursor wrap options");
+    //
+    // 		boolean
+    //
+    setupOptionDesc(Options.backspaceWrapPreviousOption,
+               "<backspace> wraps to previous line");
+    setupOptionDesc(Options.hWrapPreviousOption,
+               "\"h\" wraps to previous line");
+    setupOptionDesc(Options.leftWrapPreviousOption,
+               "<left> wraps to previous line");
+    setupOptionDesc(Options.spaceWrapNextOption,
+               "<space> wraps to next line");
+    setupOptionDesc(Options.lWrapNextOption,
+               "\"l\" wraps to next line");
+    setupOptionDesc(Options.rightWrapNextOption,
+               "<right> wraps to next line");
+    setupOptionDesc(Options.tildeWrapNextOption,
+               "\"~\" wraps to next line");
+    //
+    // optionCategory = new EditorOptionCategory("Vi miscellaneous options");
+    //
+    // 		boolean
+    //
+    setupOptionDesc(Options.commandEntryFrameOption,
+               "use modal frame for command/search entry");
+    setupOptionDesc(Options.unnamedClipboardOption,
+               "use clipboard for unamed yank, delete and put");
+    setupOptionDesc(Options.notStartOfLineOption,
+               "after motion try to keep column position");
+    setupOptionDesc(Options.wrapScanOption,
+               "searches wrap around end of file");
+    setupOptionDesc(Options.searchFromEndOption,
+               "search continues at end of match");
+    setupOptionDesc(Options.tildeOperator ,
+               "tilde \"~\" acts like an operator, e.g. \"~w\" works");
+    setupOptionDesc(Options.changeWordBlanksOption,
+               "\"cw\" affects sequential white space");
+    setupOptionDesc(Options.joinSpacesOption,
+               "\"J\" inserts two spaces after a \".\", \"?\" or \"!\"");
+    setupOptionDesc(Options.shiftRoundOption,
+               "\"<\" and \">\" round indent to multiple of shiftwidth");
+    //
+    // optionCategory = new EditorOptionCategory("Vi debug options");
+    //
+    // 		boolean
+    //
+    setupOptionDesc(Options.dbgCache,
+               "Output info on text/doc cache");
+    setupOptionDesc(Options.dbgKeyStrokes,
+               "Output info for each keystroke");
+  }
 }
 

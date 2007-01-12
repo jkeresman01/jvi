@@ -1147,12 +1147,12 @@ normal_char:	// break normal_char to insert a character
 
     ViFPOS fpos = G.curwin.getWCursor();
     if(fpos.getLine() == 1 && fpos.getColumn() <= 0
-	    || (G.p_bs < 2
+	    || (G.p_bs.getInteger() < 2
 		&& (/* arrow_used || */
                         // NEEDSWORK: TRY: fpos.compareTo(Insstart) <= 0
 		       (fpos.getLine() == Insstart.getLine()
 		        && fpos.getColumn() <=Insstart.getColumn())
-		    || (fpos.getColumn() <= G.ai_col && G.p_bs == 0))))
+		    || (fpos.getColumn() <= G.ai_col && G.p_bs.getInteger() == 0))))
     {
       Util.vim_beep();
       return false;

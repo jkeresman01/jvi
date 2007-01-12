@@ -79,7 +79,7 @@ public class Misc implements Constants, ClipboardOwner, KeyDefs {
       int ptr = seg.offset;
       for ( ; ptr < seg.offset + seg.count; ++ptr) {
 	  if (seg.array[ptr] == TAB)    // count a tab for what it is worth
-	      count += G.b_p_ts - (count % G.b_p_ts);
+	      count += G.b_p_ts.getInteger() - (count % G.b_p_ts.getInteger());
 	  else if (seg.array[ptr] == ' ')
 	      ++count;		// count a space for one
 	  else
@@ -129,7 +129,7 @@ public class Misc implements Constants, ClipboardOwner, KeyDefs {
 	prev_paren = count;
       }
       if (seg.array[ptr] == TAB) {  // count a tab for what it is worth
-	count += G.b_p_ts - (count % G.b_p_ts);
+	count += G.b_p_ts.getInteger() - (count % G.b_p_ts.getInteger());
       } else {
 	++count;
       }
@@ -147,7 +147,7 @@ public class Misc implements Constants, ClipboardOwner, KeyDefs {
 	found = true;
 	break;
       } else if (seg.array[ptr] == TAB)    // count a tab for what it is worth
-	count += G.b_p_ts - (count % G.b_p_ts);
+	count += G.b_p_ts.getInteger() - (count % G.b_p_ts.getInteger());
       else
 	++count;
     }
@@ -174,11 +174,11 @@ public class Misc implements Constants, ClipboardOwner, KeyDefs {
       // col is char past last whitespace
     }
     StringBuffer sb = new StringBuffer();
-    if (!G.b_p_et) {	    // if 'expandtab' is set, don't use TABs
-      while (size >= G.b_p_ts) {
+    if (!G.b_p_et.getBoolean()) {	    // if 'expandtab' is set, don't use TABs
+      while (size >= G.b_p_ts.getInteger()) {
 	// NEEDSWORK:  how did b_p_et get set, dont expand tabs for now
 	sb.append((char)TAB);
-	size -= G.b_p_ts;
+	size -= G.b_p_ts.getInteger();
       }
     }
     while (size > 0) {
@@ -383,7 +383,7 @@ public class Misc implements Constants, ClipboardOwner, KeyDefs {
    * or bottom as needed, otherwise center the target line on the screen.
    */
   static void gotoLine(int line, int flag) {
-    if(G.p_so != 0) {
+    if(G.p_so.getInteger() != 0) {
       gotoLine_scrolloff(line, flag);
       return;
     }
@@ -467,7 +467,7 @@ public class Misc implements Constants, ClipboardOwner, KeyDefs {
    */
   static int getScrollOff() {
     int halfLines = G.curwin.getViewLines()/2; // max distance from center
-    int so = G.p_so;
+    int so = G.p_so.getInteger();
     if(so > halfLines) {
       // adjust scrolloff so that its not bigger than usable
       so = halfLines;
@@ -501,7 +501,7 @@ public class Misc implements Constants, ClipboardOwner, KeyDefs {
     if(n > 0) { pn = n; }
     else { pn = -n; }
 
-    if(pn >= G.p_report) {
+    if(pn >= G.p_report.getInteger()) {
       String msg = "" + pn + " " + (n > 0 ? "more" : "fewer")
 		+ " line" + plural(pn);
       // NEEDSWORK: msgmore: conditionally append "(interrupted)" to msg
@@ -866,7 +866,7 @@ public class Misc implements Constants, ClipboardOwner, KeyDefs {
     // update_topline();
     // update_screen(NOT_VALID);
 
-    if (oap.line_count >= G.p_report) {
+    if (oap.line_count >= G.p_report.getInteger()) {
       Msg.smsg("" + oap.line_count + " line" + plural(oap.line_count)
 	       + " " + ((oap.op_type == OP_RSHIFT) ? ">" : "<") + "ed "
 	       + amount + " time" +  plural(amount));
@@ -888,7 +888,7 @@ public class Misc implements Constants, ClipboardOwner, KeyDefs {
   static void shift_line(boolean left, boolean round, int amount) {
     int		count;
     int		i, j;
-    int		p_sw = G.b_p_sw;
+    int		p_sw = G.b_p_sw.getInteger();
 
     count = get_indent();	// get current indent
 
@@ -1469,7 +1469,7 @@ public class Misc implements Constants, ClipboardOwner, KeyDefs {
     }
     *********************************************************/
 
-    if (oap.line_count > G.p_report) {
+    if (oap.line_count > G.p_report.getInteger()) {
       Msg.smsg("" + oap.line_count + " line" + plural(oap.line_count) + " ~ed");
     }
   }
@@ -1657,7 +1657,7 @@ public class Misc implements Constants, ClipboardOwner, KeyDefs {
 	if (yanktype == MCHAR && !oap.block_mode && yanklines == 1)
 	    yanklines = 0;
 	// Some versions of Vi use ">=" here, some don't...
-	if (yanklines >= G.p_report)
+	if (yanklines >= G.p_report.getInteger())
 	{
 	    // redisplay now, so message is not deleted
 	    // NEEDSWORK: update_topline_redraw();
@@ -2382,7 +2382,7 @@ public class Misc implements Constants, ClipboardOwner, KeyDefs {
 
   final static int lbr_chartabsize(int c, int col) {
     if (c == TAB && (!G.curwin.getWPList() /*|| lcs_tab1*/)) {
-      int ts = G.b_p_ts;
+      int ts = G.b_p_ts.getInteger();
       return (int)(ts - (col % ts));
     } else {
       // return charsize(c);

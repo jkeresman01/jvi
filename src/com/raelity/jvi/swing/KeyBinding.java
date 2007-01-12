@@ -48,8 +48,19 @@ import com.raelity.jvi.*;
 
 public class KeyBinding implements KeyDefs, Constants {
 
-  public static BooleanOption keyDebug
-                = (BooleanOption)Options.getOption(Options.dbgKeyStrokes);
+  private static BooleanOption keyDebugOption;
+  public static final boolean isKeyDebug() {
+    // NEEDSWORK: clean isKeyDebug up
+    if(keyDebugOption == null) {
+       keyDebugOption = (BooleanOption)Options.getOption(Options.dbgKeyStrokes);
+    }
+    if(keyDebugOption == null) {
+      return false;
+    } else {
+      return keyDebugOption.getBoolean();
+    }
+  }
+  
   public static boolean notImpDebug = false;
 
   public static final int MOD_MASK = InputEvent.SHIFT_MASK

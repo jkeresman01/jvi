@@ -30,17 +30,69 @@
 package com.raelity.jvi;
 
 public abstract class Option {
-  protected String name;
-  protected String stringValue;
-  protected String defaultValue;
+    protected String name;
+    protected String displayName;
+    protected String stringValue;
+    protected String desc;
+    protected String defaultValue;
+    protected boolean fPropogate;
+    protected boolean isExpert;
+    
+    public Option(String key, String defaultValue) {
+	name = key;
+	this.defaultValue = defaultValue;
+	String initialValue = Options.getPrefs().get(key, defaultValue);
+	isExpert = false;
 
-  public String getValue() {
-    return stringValue;
-  }
+	fPropogate = false;
+	setValue(initialValue);
+	fPropogate = true;
+    }
 
-  public String getName() {
-    return name;
-  }
+    public abstract boolean setValue(String value);
 
-  public abstract boolean setValue(String value);
+    public String getValue() {
+	return stringValue;
+    }
+
+    public String getName() {
+	return name;
+    }
+    
+    public String getDefault() {
+	return defaultValue;
+    }
+    
+    public String getDesc() {
+	return desc;
+    }
+
+    public String getDisplayName() {
+	if(displayName != null) {
+	    return displayName;
+	} else {
+	    return name;
+	}
+    }
+
+    public boolean isExpert() {
+	return isExpert;
+    }
+
+    /**
+     * The preferences data base has changed, stay in sync.
+     * Do not propogate change back to data base.
+     */
+    void preferenceChange(String newValue) {
+	fPropogate = false;
+        System.err.println("preferenceChange " + name + ": " + newValue);
+	setValue(newValue);
+	fPropogate = true;
+    }
+
+    protected void propogate() {
+	if(fPropogate) {
+	    Options.prefs.put(name, stringValue);
+	}
+    }
 }

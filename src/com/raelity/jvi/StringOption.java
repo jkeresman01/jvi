@@ -31,12 +31,10 @@ package com.raelity.jvi;
 
 public class StringOption extends Option {
   StringOption(String key, String defaultValue) {
-    name = key;
-    this.defaultValue = defaultValue;
-    setString(defaultValue);
+    super(key, defaultValue);
   }
 
-  public String getString() {
+  public final String getString() {
     return stringValue;
   }
 
@@ -47,6 +45,7 @@ public class StringOption extends Option {
   public boolean setString(String newValue) {
     boolean rc = ! newValue.equals(stringValue);
     stringValue = newValue;
+    propogate();
     return rc;
   }
 

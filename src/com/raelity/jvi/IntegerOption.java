@@ -32,12 +32,10 @@ package com.raelity.jvi;
 public class IntegerOption extends Option {
   int value;
   IntegerOption(String key, int defaultValue) {
-    name = key;
-    this.defaultValue = "" + defaultValue;
-    setInteger(defaultValue);
+    super(key, "" + defaultValue);
   }
 
-  public int getInteger() {
+  public final int getInteger() {
     return value;
   }
 
@@ -49,6 +47,7 @@ public class IntegerOption extends Option {
     boolean rc = newValue != value;
     value = newValue;
     stringValue = "" + value;
+    propogate();
     return rc;
   }
 
