@@ -552,28 +552,45 @@ public class TextViewCache implements PropertyChangeListener,
 
   public void changedUpdate(DocumentEvent e) {
     if(cacheTrace.getBoolean()) {
-      System.err.println("doc changed: " + e);
+      System.err.println("doc changed: " +e.getOffset() + ":" + e.getLength() + " " + e);
       // System.err.println("element" + e.getChange());
     }
     // insertUpdate/removeUpdate fire as well so skip this one
     // invalidateData();
   }
+  
+  // These variables track last insert/remove to document.
+  // They are usually used for undo/redo.
+  private int undoOffset;
+  private int undoLength;
+  private boolean undoChange;
 
   public void insertUpdate(DocumentEvent e) {
-    if(cacheTrace.getBoolean())System.err.println("doc insert: " + e);
+    if(cacheTrace.getBoolean())System.err.println("doc insert: " +e.getOffset() + ":" + e.getLength() + " " + e);
     invalidateData();
+    undoOffset = e.getOffset();
+    undoLength = e.getLength();
     undoChange = true;
   }
 
   public void removeUpdate(DocumentEvent e) {
-    if(cacheTrace.getBoolean())System.err.println("doc remove: " + e);
+    if(cacheTrace.getBoolean())System.err.println("doc remove: " +e.getOffset() + ":" + e.getLength() + " " + e);
     invalidateData();
+    undoOffset = e.getOffset();
+    undoLength = e.getLength();
     undoChange = true;
   }
-  
-  private boolean undoChange;
+
+  public int getUndoOffset() {
+    return undoOffset;
+  }
+
+  public int getUndoLength() {
+    return undoLength;
+  }
+
   /**
-   * This ReadClear method can be used to determine if some action(s)
+   * This method can be used to determine if some action(s)
    * cause a change. The method itself has nothing to do with undo. It
    * is called from an optimized undo.
    * 
