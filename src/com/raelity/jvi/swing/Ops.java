@@ -29,128 +29,22 @@
  */
 package com.raelity.jvi.swing;
 
-import com.raelity.jvi.*;
 
+import com.raelity.jvi.ViTextView;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JEditorPane;
 import javax.swing.Action;
-import javax.swing.text.*;
-import java.awt.event.*;
-import java.util.*;
-import com.raelity.jvi.*;
+import javax.swing.text.DefaultEditorKit;
 
 /**
  * This provides access to swings JEditorPane actions that are
  * used by vi.
+ *
  */
-class Ops implements TextOps, Constants {
-  ViTextView textView;
+class Ops extends OpsBase {
 
-  Ops(ViTextView textView) {
-    this.textView = textView;
-  }
-
-  public void init(JEditorPane editorPane) {
-    if(EditorActions.actionMap.size() > 0) {
-      return;
+    Ops(ViTextView textView) {
+	super(textView);
     }
-    EditorActions.setupActions(editorPane.getEditorKit().getActions());
-  }
-
-  private void xact(String actionName) {
-    Action action = EditorActions.getAction(actionName);
-    xact(action);
-  }
-
-  private void xact(String actionName, String s) {
-    event.setSource(textView.getEditorComponent());
-    xact(actionName);
-  }
-
-  public void xact(Action action, String s) {
-    event.setActionCommand(s);
-    xact(action);
-  }
-
-  public void xact(Action action) {
-    action.actionPerformed(event);
-  }
-
-  public void xop(int op, String s) {
-    event.setActionCommand(s);
-    xop(op);
-  }
-
-  public void xop(int op) {
-    String actionName;
-    switch(op) {
-    case INSERT_TEXT:
-      actionName = DefaultEditorKit.insertContentAction;
-      break;
-
-    case KEY_TYPED:
-      actionName = DefaultEditorKit.defaultKeyTypedAction;
-      break;
-
-    case INSERT_NEW_LINE:
-      actionName = DefaultEditorKit.insertBreakAction;
-      break;
-
-    case INSERT_TAB:
-      actionName = DefaultEditorKit.insertTabAction;
-      break;
-
-    case DELETE_PREVIOUS_CHAR:
-      actionName = DefaultEditorKit.deletePrevCharAction;
-      break;
-
-    default:
-      throw new RuntimeException("Unknown op: " + op);
-    }
-    xact(actionName);
-  }
-
-  ReusableEvent event = new ReusableEvent();
-}
-
-class ReusableEvent extends ActionEvent {
-  private String cmd;
-
-  ReusableEvent() {
-    super("", ActionEvent.ACTION_PERFORMED, "");
-  }
-
-  void setSource(Object source) {
-    this.source = source;
-  }
-
-  void setActionCommand(String cmd) {
-    this.cmd = cmd;
-  }
-
-  public String getActionCommand() {
-    return cmd;
-  }
-}
-
-/**
- * This is a cache of the editor actions. The actions can be looked
- * up by name. This is presumed to hold the actions as defined in
- * the {@link javax.swing.text.DefaultEditorKit}. The actions from
- * the {@link javax.swing.text.StyledEditorKit} should be considered
- * optional.
- */
-class EditorActions {
-  static Map actionMap = new HashMap();
-
-  static void setupActions(Action[] actions) {
-    for(int i = 0; i < actions.length; i++) {
-      Action action = actions[i];
-      String name = (String)action.getValue(Action.NAME);
-      actionMap.put(name, action);
-    }
-  }
-
-  static Action getAction(String name) {
-    return (Action)actionMap.get(name);
-  }
 }
