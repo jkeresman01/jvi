@@ -43,19 +43,17 @@ public class IntegerOption extends Option {
    * Set the value of the parameter.
    * @return true if value actually changed.
    */
-  public boolean setInteger(int newValue) {
-    boolean rc = newValue != value;
+  public void setInteger(int newValue) {
     value = newValue;
     stringValue = "" + value;
     propogate();
-    return rc;
   }
 
   /**
    * Set the value as a string.
    */
-  public boolean setValue(String newValue) throws IllegalArgumentException {
+  public void setValue(String newValue) throws IllegalArgumentException {
     int n = Integer.parseInt(newValue);
-    return setInteger(n);
+    setInteger(n);
   }
 }

@@ -82,8 +82,10 @@ public class Options {
   public static final String shiftWidth = "viShiftWidth";
   public static final String tabStop = "viTabStop";
 
+  
   public static final String readOnlyHackOption = "viReadOnlyHack";
   public static final String classicUndoOption = "viClassicUndo";
+  public static final String dbgEditorActivation = "viDbgEditorActivation";
 
   
   private static Map options = new HashMap(); //<string, Option>
@@ -119,40 +121,41 @@ public class Options {
       }
     });
 
-    G.p_ww_bs = setupBooleanOption(backspaceWrapPreviousOption, true);
-    G.p_ww_h = setupBooleanOption(hWrapPreviousOption, false);
-    G.p_ww_larrow = setupBooleanOption(leftWrapPreviousOption, false);
-    G.p_ww_sp = setupBooleanOption(spaceWrapNextOption, true);
-    G.p_ww_l = setupBooleanOption(lWrapNextOption, false);
-    G.p_ww_rarrow = setupBooleanOption(rightWrapNextOption, false);
-    G.p_ww_tilde = setupBooleanOption(tildeWrapNextOption, false);
+    G.p_ww_bs = createBooleanOption(backspaceWrapPreviousOption, true);
+    G.p_ww_h = createBooleanOption(hWrapPreviousOption, false);
+    G.p_ww_larrow = createBooleanOption(leftWrapPreviousOption, false);
+    G.p_ww_sp = createBooleanOption(spaceWrapNextOption, true);
+    G.p_ww_l = createBooleanOption(lWrapNextOption, false);
+    G.p_ww_rarrow = createBooleanOption(rightWrapNextOption, false);
+    G.p_ww_tilde = createBooleanOption(tildeWrapNextOption, false);
 
-    G.p_cb = setupBooleanOption(unnamedClipboardOption, false);
-    G.p_js = setupBooleanOption(joinSpacesOption, true);
-    G.p_sr = setupBooleanOption(shiftRoundOption, false);
-    G.p_notsol = setupBooleanOption(notStartOfLineOption, false);
-    G.p_cpo_w = setupBooleanOption(changeWordBlanksOption, true);
-    G.p_to = setupBooleanOption(tildeOperator, false);
-    G.p_cpo_search = setupBooleanOption(searchFromEndOption, true);
-    G.p_ws = setupBooleanOption(wrapScanOption, true);
+    G.p_cb = createBooleanOption(unnamedClipboardOption, false);
+    G.p_js = createBooleanOption(joinSpacesOption, true);
+    G.p_sr = createBooleanOption(shiftRoundOption, false);
+    G.p_notsol = createBooleanOption(notStartOfLineOption, false);
+    G.p_cpo_w = createBooleanOption(changeWordBlanksOption, true);
+    G.p_to = createBooleanOption(tildeOperator, false);
+    G.p_cpo_search = createBooleanOption(searchFromEndOption, true);
+    G.p_ws = createBooleanOption(wrapScanOption, true);
 
-    G.p_meta_equals = setupBooleanOption(metaEqualsOption, true);
-    G.p_meta_escape = setupStringOption(metaEscapeOption, G.metaEscapeDefault);
+    G.p_meta_equals = createBooleanOption(metaEqualsOption, true);
+    G.p_meta_escape = createStringOption(metaEscapeOption, G.metaEscapeDefault);
 
-    G.p_ic = setupBooleanOption(ignoreCaseOption, false);
+    G.p_ic = createBooleanOption(ignoreCaseOption, false);
     
-    G.b_p_et = setupBooleanOption(expandTabs, false);
+    G.b_p_et = createBooleanOption(expandTabs, false);
     
-    G.p_report = setupIntegerOption(report, 2);
-    G.p_bs = setupIntegerOption(backspace, 0);
-    G.p_so = setupIntegerOption(scrollOff, 2);
-    G.b_p_sw = setupIntegerOption(shiftWidth, 4);
-    G.b_p_ts = setupIntegerOption(tabStop, 8);
+    G.p_report = createIntegerOption(report, 2);
+    G.p_bs = createIntegerOption(backspace, 0);
+    G.p_so = createIntegerOption(scrollOff, 2);
+    G.b_p_sw = createIntegerOption(shiftWidth, 4);
+    G.b_p_ts = createIntegerOption(tabStop, 8);
     
-    G.useFrame  = setupBooleanOption(commandEntryFrameOption , false);
+    G.useFrame  = createBooleanOption(commandEntryFrameOption , false);
     
-    G.readOnlyHack = setupBooleanOption(readOnlyHackOption, true);
-    G.isClassicUndo = setupBooleanOption(classicUndoOption, true);
+    G.readOnlyHack = createBooleanOption(readOnlyHackOption, true);
+    G.isClassicUndo = createBooleanOption(classicUndoOption, true);
+    G.dbgEditorActivation = createBooleanOption(dbgEditorActivation, false);
 
     dbgInit();
     setupOptionDescs();
@@ -164,8 +167,8 @@ public class Options {
   }
 
   // NEEDSWORK: FOR NOW PROPOGATE DEFAULTS TO DATA BASE
-  static private boolean fAddDefaultToDB = true;
-  static private StringOption setupStringOption(String name,
+  static private boolean fAddDefaultToDB = false;
+  static private StringOption createStringOption(String name,
                                                 String defaultValue)
   {
     StringOption opt = new StringOption(name, defaultValue);
@@ -177,7 +180,7 @@ public class Options {
     return opt;
   }
 
-  static private BooleanOption setupBooleanOption(String name,
+  static private BooleanOption createBooleanOption(String name,
                                                   boolean defaultValue)
   {
     BooleanOption opt = new BooleanOption(name, defaultValue);
@@ -189,7 +192,7 @@ public class Options {
     return opt;
   }
 
-  static private IntegerOption setupIntegerOption(String name,
+  static private IntegerOption createIntegerOption(String name,
                                                   int defaultValue)
   {
     IntegerOption opt = new IntegerOption(name, defaultValue);
@@ -218,8 +221,8 @@ public class Options {
   public static final String dbgKeyStrokes = "viDbgKeyStrokes";
   public static final String dbgCache = "viDbgCache";
   static void dbgInit() {
-    setupBooleanOption(dbgKeyStrokes, false);
-    setupBooleanOption(dbgCache, false);
+    createBooleanOption(dbgKeyStrokes, false);
+    createBooleanOption(dbgCache, false);
   }
 
   private static void setupOptionDesc(String name, String desc) {

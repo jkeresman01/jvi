@@ -43,28 +43,17 @@ public class BooleanOption extends Option {
    * Set the value of the parameter.
    * @return true if value actually changed.
    */
-  public boolean setBoolean(boolean newValue) {
-    boolean rc = newValue != value;
+  public void setBoolean(boolean newValue) {
     value = newValue;
     stringValue = "" + value;
     propogate();
-    return rc;
   }
 
   /**
    * Set the value as a string.
    */
-  public boolean setValue(String newValue) throws IllegalArgumentException {
-    boolean b;
-    if(newValue.equals("true") || newValue.equals("1")) {
-      b = true;
-    } else if(newValue.equals("false") || newValue.equals("0")) {
-      b = false;
-    } else {
-      throw new IllegalArgumentException(
-                      "Only 'true', '1', 'false' or '0' not '"
-                      + newValue + "'");
-    }
-    return setBoolean(b);
+  public void setValue(String newValue) throws IllegalArgumentException {
+    boolean b = Boolean.parseBoolean(newValue);
+    setBoolean(b);
   }
 }

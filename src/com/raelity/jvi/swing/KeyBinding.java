@@ -539,6 +539,14 @@ public class KeyBinding implements KeyDefs, Constants {
     return bindingList;
   }
 
+  public static List getExtraBindingsList() {
+    List bindingList = new ArrayList();
+    // NEEDSWORK: for now just stuff all the extra bindings here
+    
+    return bindingList;
+  }
+
+
   /**
    * initialize keymap.
    */
@@ -735,6 +743,10 @@ public class KeyBinding implements KeyDefs, Constants {
     return localActions;
   }
   
+  /*
+   * This method return an array which maps special vi keys, from
+   * {@link KeyDefs}, to Java KeyEventt keys, which are turned into key strokes.
+   */
   public static int[] initJavaKeyMap() {
     int[] jk = new int[KeyDefs.MAX_JAVA_KEY_MAP + 1];
     

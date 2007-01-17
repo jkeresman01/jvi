@@ -263,7 +263,7 @@ public class ViManager implements Constants {
     if(target != currentEditorPane) {
       exitInputMode();
       switchTo(target);
-      Normal.resetCommand(); // dont think this is needed
+      Normal.resetCommand(); // NEEDSWORK: dont think this is needed
     }
     if(rerouteChar(key, modifier)) {
       return;

@@ -352,6 +352,14 @@ public class TextView implements ViTextView {
     Util.vim_beep();
   }
 
+  public void jumpDefinition() {
+    Util.vim_beep();
+  }
+
+  public void foldOperation(int op) {
+    Util.vim_beep();
+  }
+
   public void computeCursorPosition(MutableInt offset,
 			       MutableInt line,
 			       MutableInt column)
@@ -479,24 +487,40 @@ public class TextView implements ViTextView {
   }
 
   private static boolean inUndo;
+  private static boolean inInsertUndo;
+  private void assertUndoState(boolean condition, String fn) {
+      if(!(condition)) {
+	  ViManager.dumpStack(fn + ": inUndo " + inUndo
+		  + ", inInsertUndo " + inInsertUndo);
+      }
+  }
+  
   public void beginUndo() {
-    if(inUndo) {
-      ViManager.dumpStack();
-    }
+    assertUndoState(!inUndo && !inInsertUndo, "beginUndo");
     inUndo = true;
-    // NEEDSWORK: standalone
   }
 
   public void endUndo() {
-    if( ! inUndo) {
-      ViManager.dumpStack();
-    }
+    assertUndoState(inUndo && !inInsertUndo, "endUndo");
     inUndo = false;
-    // NEEDSWORK: standalone
   }
 
   public boolean isInUndo() {
     return inUndo;
+  }
+
+  public void beginInsertUndo() {
+    assertUndoState(!inUndo && !inInsertUndo, "beginInsertUndo");
+    inInsertUndo = true;
+  }
+
+  public void endInsertUndo() {
+    assertUndoState(inInsertUndo && !inUndo, "endInsertUndo");
+    inInsertUndo = false;
+  }
+
+  public boolean isInInsertUndo() {
+    return inInsertUndo;
   }
 
   /** Quit editing window. Can close last view.

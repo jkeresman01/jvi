@@ -145,7 +145,7 @@ public class Normal implements Constants, KeyDefs
   }
 
   static void finishupEdit() {
-    Misc.endUndo();
+    Misc.endInsertUndo();
   }
 
   static public void resetCommand() {
@@ -226,7 +226,7 @@ public class Normal implements Constants, KeyDefs
     if(newChunk) {
       newChunk = false;
       lookForDigit = true;
-      pickupExtraChar = false;
+      pickupExtraChar = false; // NEEDSWORK: not really used?
       firstTimeHere01 = true;
       ca = new CMDARG();
       // vim_memset(&ca, 0, sizeof(ca)); cleared when created
@@ -372,7 +372,7 @@ public class Normal implements Constants, KeyDefs
       if(!pickupExtraChar) {
         // check if additional char needed
         if (  (oap.op_type == OP_NOP
-                  && Util.vim_strchr("@zm\"", ca.cmdchar) != null)
+                      && Util.vim_strchr("@zm\"", ca.cmdchar) != null)
                  || (oap.op_type == OP_NOP
                      && (ca.cmdchar == 'r'
                          || (!VIsual_active && ca.cmdchar == 'Z')))
@@ -1397,7 +1397,7 @@ middle_code:
 	  {
 	    // don't restart edit after typing <Esc> in edit()
 	    G.restart_edit = 0;
-	    Misc.beginUndo();
+	    Misc.beginInsertUndo();
             Misc.op_change(oap); // will call edit()
 	  }
 	  break;
@@ -1759,11 +1759,27 @@ middle_code:
 
   /** nv_zet is simplified a bunch, only do vi compat */
   static private  void	nv_zet (CMDARG cap) {
-    // the scrolloff version doesn't really change anything about how stuff
-    // is displayed, so just use it.
-    nv_zet_scrolloff(cap);
+    switch(cap.nchar) {
+      case NL:		    // put curwin->w_cursor at top of screen
+      case CR:
+      case '.':		// put curwin->w_cursor in middle of screen
+      case '-':		// put curwin->w_cursor at bottom of screen
+        // Scroll screen so current line at top, middle or bottom
+	// the scrolloff version doesn't really change anything about how stuff
+	// is displayed, so just use it.
+	nv_zet_scrolloff(cap);
+        return;
+          
+      default:
+        // maybe its a fold operation
+	G.curwin.foldOperation(cap.nchar);
+        // clearop(cap.oap); // NEEDSWORK: needed?
+	return;
+    }
+    
   }
   
+  /* nv_zet_original NOT USED, does compile ok in java
   static private  void	nv_zet_original (CMDARG cap) {
     if(G.p_so.getInteger() != 0) {
       nv_zet_scrolloff(cap);
@@ -1812,6 +1828,7 @@ middle_code:
     G.curwin.setViewTopLine(Misc.adjustTopLine(top));
     G.curwin.setCaretPosition(target, col);
   }
+  */
 
   static private  void	nv_zet_scrolloff (CMDARG cap) {
     do_xop("nv_zet");
@@ -1846,7 +1863,7 @@ middle_code:
 	break;
 
       default:
-	clearopbeep(cap.oap);
+        clearopbeep(cap.oap);
 	return;
     }
 
@@ -1908,6 +1925,11 @@ middle_code:
     //
     if (cmdchar == ']' || cmdchar == Util.ctrl(']') || cmdchar == 'K')
     {
+      if(cmdchar == Util.ctrl(']')) {
+        // give the environment a chance at it
+	G.curwin.jumpDefinition();
+        return;
+      }
       notImp("nv_ident subset");
       /*
       if (VIsual_active)	// :ta to visual highlighted text
@@ -2469,7 +2491,7 @@ middle_code:
       nv_operator(cap);
     } else if (!checkclearopq(cap.oap)) {
       if (u_save_cursor() == OK) {
-        Misc.beginUndo();
+        Misc.beginInsertUndo();
         Edit.edit('R', false, cap.count1);
       }
     }
@@ -2652,14 +2674,14 @@ middle_code:
     if (!checkclearopq(cap.oap)) {
       // if (u_save((curwin.w_cursor.lnum - (cap.cmdchar == 'O' ? 1 : 0)) .....
       // NEEDSWORK: would like the beginUndo only if actually making changes
-      Misc.beginUndo();
+      Misc.beginInsertUndo();
       boolean flag = Misc.open_line(cap.cmdchar == 'O' ? BACKWARD : FORWARD,
 			true, false, 0);
       if(flag) {
 	Edit.edit(cap.cmdchar, true, cap.count1);
       } else {
         // oops
-        Misc.endUndo();
+        Misc.endInsertUndo();
       }
     }
     return;
@@ -2868,7 +2890,7 @@ middle_code:
     {
       clearopbeep(cap.oap);
     } else if (!checkclearopq(cap.oap) && u_save_cursor() == OK) {
-      Misc.beginUndo();
+      Misc.beginInsertUndo();
       nv_edit_dispatch(cap);
       return;
     }

@@ -89,7 +89,7 @@ public class Edit implements Constants, KeyDefs {
    */
   static void edit(int cmdchar, boolean startln, int count_arg)
   {
-    if( ! G.curwin.isInUndo()) {
+    if( ! G.curwin.isInInsertUndo()) {
       ViManager.dumpStack("In edit with no undo pending");
     }
     if( ! Normal.editBusy) {

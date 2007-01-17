@@ -93,8 +93,8 @@ public class ViCaretDelegate
       FontMetrics fm = g.getFontMetrics();	// NEEDSWORK: should be cached
       blockWidth = fm.charWidth('.');		// assume all the same width
       try {
-	TextUI mapper = component.getUI();
-	Rectangle r = mapper.modelToView(component, dot);
+	Rectangle r = component.getUI().modelToView(
+                component, dot);
 	g.setColor(component.getCaretColor());
 	g.setXORMode(component.getBackground());
 
@@ -113,9 +113,10 @@ public class ViCaretDelegate
 	  break;
 	case ViCursor.SHAPE_VER:
 	  /* back up vertical cursors by one pixel */
+            /* NEEDSWORK: following was in 0.7.x
 	  if(r.x > 0) {
 	    r.x -= 1;
-	  }
+	  }*/
 	  r.width = percent(blockWidth + 1, cursor.getPercentage());
 	  break;
 	}
@@ -129,6 +130,7 @@ public class ViCaretDelegate
   }
 
   private int percent(int v, int percentage) {
+    // NEEDSWORK: percent use int only
     v = (int) (((v * (float)percentage) / 100) + .5);
     return v;
   }

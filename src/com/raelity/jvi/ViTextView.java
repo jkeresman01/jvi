@@ -53,6 +53,10 @@ import com.raelity.jvi.swing.*;
  */
 
 public interface ViTextView {
+  public static final int FOLDOP_CLOSE = 'c';
+  public static final int FOLDOP_OPEN = 'o';
+  public static final int FOLDOP_CLOSE_ALL = 'M';
+  public static final int FOLDOP_OPEN_ALL = 'R';
   //
   // First the methods that make this look like a window
   // (maybe implement at some point)
@@ -152,6 +156,12 @@ public interface ViTextView {
    * existing functionality in target environments.
    */
   public void findMatch();
+  
+  /** Jump to the definition of the identifier under the cursor. */
+  public void jumpDefinition();
+  
+  /** Perform the fold operation.  */
+  public void foldOperation(int op);
 
   /** @return the line number, 1 based, corresponding to the offset */
   public int getLineNumber(int offset);
@@ -217,6 +227,15 @@ public interface ViTextView {
 
   /** between a begin and an end undo? */
   public boolean isInUndo();
+  
+  /** start a insert (user typing) ungo group, must be paired */
+  public void beginInsertUndo();
+  
+  /** end a insert (user typing) ungo group, must be paired */
+  public void endInsertUndo();
+  
+  /** between a insert begin and end undo? */
+  public boolean isInInsertUndo();
 
   /** associate the indicated mark with a particular offset */
   public void setMarkOffset(ViMark mark, int offset, boolean global_mark);

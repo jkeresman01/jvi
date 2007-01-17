@@ -2558,6 +2558,20 @@ public class Misc implements Constants, ClipboardOwner, KeyDefs {
     G.curwin.endUndo();
   }
   
+  static void beginInsertUndo() {
+    if(G.global_busy) {
+      return;
+    }
+    G.curwin.beginInsertUndo();
+  }
+  
+  static void endInsertUndo() {
+    if(G.global_busy) {
+      return;
+    }
+    G.curwin.endInsertUndo();
+  }
+  
   static int[] javaKeyMap;
   
   /**

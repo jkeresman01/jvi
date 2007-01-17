@@ -32,8 +32,8 @@ package com.raelity.jvi;
 import javax.swing.JEditorPane;
 
 public class G {
-  static public String metaEscapeDefault = "()|+?{";
-  static public String metaEscapeAll = "()|+?{";
+  static public final String metaEscapeDefault = "()|+?{";
+  static public final String metaEscapeAll = "()|+?{";
 
   /**
    * Set the current editor.
@@ -126,6 +126,7 @@ public class G {
   
   public static BooleanOption readOnlyHack;
   public static BooleanOption isClassicUndo;
+  public static BooleanOption dbgEditorActivation;
 
   public static BooleanOption dbgKeyStrokes;
   public static IntegerOption dbgFlow;  // 1-switch

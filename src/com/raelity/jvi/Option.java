@@ -49,7 +49,7 @@ public abstract class Option {
 	fPropogate = true;
     }
 
-    public abstract boolean setValue(String value);
+    public abstract void setValue(String value);
 
     public String getValue() {
 	return stringValue;
@@ -85,9 +85,12 @@ public abstract class Option {
      */
     void preferenceChange(String newValue) {
 	fPropogate = false;
-        System.err.println("preferenceChange " + name + ": " + newValue);
-	setValue(newValue);
-	fPropogate = true;
+        try {
+	    //System.err.println("preferenceChange " + name + ": " + newValue);
+            setValue(newValue);
+        } finally {
+	    fPropogate = true;
+        }
     }
 
     protected void propogate() {
