@@ -28,14 +28,15 @@
  */
 package com.raelity.jvi.cmd;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.prefs.BackingStoreException;
 import javax.swing.UIManager;
 import javax.swing.SwingUtilities;
 import java.awt.*;
 import com.raelity.jvi.swing.*;
 import com.raelity.jvi.*;
-
-import javax.swing.text.Caret;
-import javax.swing.text.DefaultCaret;
 
 public class Jvi {
   boolean packFrame = true;
@@ -92,6 +93,29 @@ public class Jvi {
     new Jvi();
 
     ViManager.setViFactory(new DefaultViFactory(null/*frame.commandLine1*/));
+    ColonCommands.register("dumpOptions", "dumpOptions", new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            try {
+                ViManager.getViFactory().getPreferences().exportSubtree(System.out);
+            } catch (BackingStoreException ex) {
+                ex.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+    });
+    ColonCommands.register("deleteOptions", "deleteOptions", new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            try {
+                String keys[] = ViManager.getViFactory().getPreferences().keys();
+                for (String key : keys) {
+                    ViManager.getViFactory().getPreferences().remove(key);
+                }
+            } catch (BackingStoreException ex) {
+                ex.printStackTrace();
+            }
+        }
+    });
 
     // NEEDSWORK: editor is drawn, do rest in dispatch thread
 
@@ -126,6 +150,8 @@ public class Jvi {
 	  ViManager.installKeymap(frame.editorPane);
 	}});
     } catch(Exception e) {}
-
+    
+    // wait for frame to exit, so JUnitTest won't kill it
+    
   }
 }
