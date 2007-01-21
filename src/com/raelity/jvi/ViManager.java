@@ -56,7 +56,6 @@ import com.raelity.jvi.Options;
 import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.KeyDefs;
 import com.raelity.jvi.Msg;
-import com.raelity.tools.fixup13.*;
 import com.raelity.jvi.swing.*;
 
 /**
@@ -220,7 +219,6 @@ public class ViManager implements Constants {
    * This is a nop if already registered.
    */
   public static void registerEditorPane(JEditorPane editorPane) {
-    FixupInputMap.fixupInputMap(editorPane);
     factory.registerEditorPane(editorPane);
   }
 

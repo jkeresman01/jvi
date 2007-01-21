@@ -171,6 +171,15 @@ public class TextView implements ViTextView {
     return editorPane.isEditable();
   }
 
+  ////////////////////////////////////////////////////////////////////////
+  //
+  // Text modification methods.
+  //
+  
+  protected void processTextException(BadLocationException ex) {
+    Util.vim_beep();
+  }
+  
   public void insertNewLine() {
     if( ! isEditable()) {
       Util.vim_beep();
@@ -206,8 +215,8 @@ public class TextView implements ViTextView {
 	offset++;
       }
       setCaretPosition(offset);// also clears the selection
-    } catch(BadLocationException e) {
-      Util.vim_beep();
+    } catch(BadLocationException ex) {
+      processTextException(ex);
     }
   }
 
@@ -222,8 +231,8 @@ public class TextView implements ViTextView {
 	doc.remove(start, end - start);
       }
       doc.insertString(start, s, null);
-    } catch(BadLocationException e) {
-      Util.vim_beep();
+    } catch(BadLocationException ex) {
+      processTextException(ex);
     }
   }
 
@@ -235,8 +244,8 @@ public class TextView implements ViTextView {
     Document doc = getDoc();
     try {
       doc.remove(start, end - start);
-    } catch(BadLocationException e) {
-      Util.vim_beep();
+    } catch(BadLocationException ex) {
+      processTextException(ex);
     }
   }
 
@@ -284,8 +293,8 @@ public class TextView implements ViTextView {
     }
     try {
       doc.insertString(offset, s, null);
-    } catch(BadLocationException e) {
-      Util.vim_beep();
+    } catch(BadLocationException ex) {
+      processTextException(ex);
     }
   }
 
@@ -317,11 +326,17 @@ public class TextView implements ViTextView {
     expectedCaretPosition++;
     ops.xop(TextOps.KEY_TYPED, new String(oneCharArray));
   }
-
+  
+  
+///////////////////////////////////////////////////////////////////////
+//
+  
   public void undo(){
+    assertUndoState(!inUndo && !inInsertUndo, "undo");
   }
 
   public void redo() {
+    assertUndoState(!inUndo && !inInsertUndo, "undo");
   }
 
   public String getText(int offset, int length) throws BadLocationException {
