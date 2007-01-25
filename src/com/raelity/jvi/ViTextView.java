@@ -53,10 +53,15 @@ import com.raelity.jvi.swing.*;
  */
 
 public interface ViTextView {
+  // text fold operations
   public static final int FOLDOP_CLOSE = 'c';
   public static final int FOLDOP_OPEN = 'o';
   public static final int FOLDOP_CLOSE_ALL = 'M';
   public static final int FOLDOP_OPEN_ALL = 'R';
+  
+  // jump list operations
+  public enum JLOP { NEXT_JUMP, PREV_JUMP, NEXT_CHANGE, PREV_CHANGE }
+  
   //
   // First the methods that make this look like a window
   // (maybe implement at some point)
@@ -159,6 +164,9 @@ public interface ViTextView {
   
   /** Jump to the definition of the identifier under the cursor. */
   public void jumpDefinition();
+  
+  /** Jump list handling */
+  public void jumpList(JLOP op, int count);
   
   /** Perform the fold operation.  */
   public void foldOperation(int op);

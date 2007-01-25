@@ -146,13 +146,11 @@ class Search implements Constants {
     if(lastPattern == null) {
       Msg.emsg(Messages.e_noprevre);
     } else {
+      Msg.smsg((dir == FORWARD ? "/" : "?") + lastPattern);
       // executeSearch(lastPattern, dir, G.p_ic.getBoolean());
       ViFPOS pos = G.curwin.getWCursor().copy();
       rc = searchit(null, pos, dir, lastPattern,
                         count, flag, 0, G.p_ic.getBoolean());
-      if(rc != FAIL) {
-	Msg.smsg((dir == FORWARD ? "/" : "?") + lastPattern);
-      }
     }
     return rc;
   }

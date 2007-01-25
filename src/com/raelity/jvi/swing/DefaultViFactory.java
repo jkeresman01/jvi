@@ -152,6 +152,9 @@ public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
 
   /**
    * This is the default key action.
+   * Ignore all Ctrl characters (which includes that troublesome Ctrl-space).
+   * Control characters of interest are picked up as key-press events
+   * in {link #EnqKeyAction}.
    */
   private static class EnqueCharAction extends TextAction {
     public EnqueCharAction(String name) {
@@ -165,16 +168,16 @@ public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
 	int mod = e.getModifiers();
 	if(content != null && content.length() > 0) {
 	  int c = content.charAt(0);
-	  if( ! KeyBinding.ignoreChar(c)) {
-            if(KeyBinding.isKeyDebug()) {
-              System.err.println("CharAction: " + ": " + c + " " + mod);
-            } else {
-	      if(mod == MOD_MASK_ALT) {
-		return;
-	      }
-            }
-	    ViManager.keyStroke(target, content.charAt(0), mod);
+	  if((mod & (MOD_MASK_CTRL|MOD_MASK_ALT)) != 0
+             || c < 0x20) {
+	    // Wouldn't have thought that the 'c<0x20' was needed, but the
+            // <RETURN>,<BS> come in less than 0x20 without the Control key
+	    return;
 	  }
+          if(KeyBinding.isKeyDebug()) {
+            System.err.println("CharAction: " + ": " + c + " " + mod);
+          }
+	  ViManager.keyStroke(target, content.charAt(0), mod);
 	}
 	else {
           if(KeyBinding.isKeyDebug()) {

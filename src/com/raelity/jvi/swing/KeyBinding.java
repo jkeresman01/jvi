@@ -425,51 +425,6 @@ public class KeyBinding implements KeyDefs, Constants {
     }
     return actionsList;
   }
-
-  /** Read these as keys, not chars. */
-  final private static boolean ignoreCtrlChars[] = {
-        // NEEDSWORK:get rid of "ignoreCtrlChars[]" ?????
-    	false,		// 0
-	true,
-	true,
-	true,
-	true,		// 4
-    	true,		// 5
-	true,		// 6	Ctrl-F
-	true,		// 7	Ctrl-G
-	true,		// 8	backspace
-	true,		// 9	tab
-    	true,		// 10	return/enter
-	true,
-	true,
-	true,
-	true,		// 14	Ctrl-N
-    	true,		// 15
-	true,		// 16	Ctrl-P
-	true,
-	true,
-	true,		// 19
-    	true,
-	true,
-	true,
-	true,
-	true,		// 24
-    	true,
-	true,
-	true,		// 27	escape
-	true,
-	true,		// 29
-	true,		// 30
-	true,		// 31
-  };
-
-  /** Test if the argument char should be ignored. Note that when
-   * ignored as a char, it is generally is queued up as a key.
-   */
-  final static public boolean ignoreChar(int c) {
-    return	c < KeyBinding.ignoreCtrlChars.length
-	  	&& KeyBinding.ignoreCtrlChars[c];
-  }
   
   public static JTextComponent.KeyBinding[] getInsertModeBindings() {
     List l = getInsertModeBindingsList();

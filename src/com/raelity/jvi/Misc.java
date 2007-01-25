@@ -2299,9 +2299,13 @@ public class Misc implements Constants, ClipboardOwner, KeyDefs {
   }
 
   static void u_redo(int count) {
+    int			old_lcount = G.curwin.getLineCount();
+
     while(count-- > 0) {
       G.curwin.redo();
     }
+
+    msgmore(G.curwin.getLineCount() - old_lcount);
   }
 
   //////////////////////////////////////////////////////////////////

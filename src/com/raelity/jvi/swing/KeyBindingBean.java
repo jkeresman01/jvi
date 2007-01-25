@@ -27,12 +27,15 @@ public class KeyBindingBean  extends SimpleBeanInfo {
     // The BeanInfo is embedded in the same class
     //
     public BeanDescriptor getBeanDescriptor() {
-        return new BeanDescriptor(KeyBindingBean.class);
+        return new BeanDescriptor(KeyBindingBean.class) {
+            public String getDisplayName() {
+                return "Key Bindings";
+            }
+        };
     }
-
-    private Vector<PropertyDescriptor> vD = new Vector<PropertyDescriptor>();
     
     public PropertyDescriptor[] getPropertyDescriptors() {
+	Vector<PropertyDescriptor> vD = new Vector<PropertyDescriptor>();
 	int i = 0;
 
 	for(char c = 'A'; c <= 'Z'; c++) {
@@ -58,7 +61,6 @@ public class KeyBindingBean  extends SimpleBeanInfo {
         
 	PropertyDescriptor[] descriptors = new PropertyDescriptor[vD.size()];
         vD.toArray(descriptors);
-        vD = null;
 	return descriptors;
     }
     

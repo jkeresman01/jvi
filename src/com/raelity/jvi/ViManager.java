@@ -296,6 +296,9 @@ public class ViManager implements Constants {
       started = true;
       startup();
     }
+    if(G.dbgEditorActivation.getBoolean()) {
+      System.err.println("Activation: ViManager.switchTo: " + editorPane);
+    }
     registerEditorPane(editorPane); // make sure its registered
 
     // first do lookup, in case new window/editorPane
@@ -358,6 +361,9 @@ public class ViManager implements Constants {
    */
   public static void detached(JEditorPane ep) {
     if(currentEditorPane == ep) {
+      if(G.dbgEditorActivation.getBoolean()) {
+        System.err.println("Activation: ViManager.detached: " + ep);
+      }
       currentEditorPane = null;
     }
   }

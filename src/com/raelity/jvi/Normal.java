@@ -36,12 +36,10 @@
  */
 package com.raelity.jvi;
 
+import com.raelity.jvi.ViTextView.JLOP;
 import javax.swing.text.Segment;
 
 import com.raelity.jvi.swing.KeyBinding;
-import com.raelity.jvi.ViManager;
-import com.raelity.jvi.ViFactory;
-import com.raelity.jvi.swing.*;
 
 /**
  * Contains the main routine for processing characters in command mode.
@@ -1062,12 +1060,12 @@ middle_code:
 	      restart_VIsual_select = 2;
 	      break;
 	    }
-	    ca.count1 = -ca.count1;	/* goto older pcmark */
-	    /* FALLTHROUGH */
+	    nv_pcmark(JLOP.PREV_JUMP, ca);
+            break;
 
-	  case 0x1f & (int)('I'):		/* goto newer pcmark */	// Ctrl
-	    notSup("mark stack");
-	    nv_pcmark(ca);
+	  case 0x1f & (int)('I'):	// Ctrl	/* goto newer pcmark */
+          case K_TAB:
+	    nv_pcmark(JLOP.NEXT_JUMP, ca);
 	    break;
 
 	    /*
@@ -1117,7 +1115,6 @@ middle_code:
 	     *   14. extended commands (starting with 'g')
 	     */
 	  case 'g':
-	    notSup("extended commands");
 	    nv_g_cmd(ca, searchbuff);
 	    break;
 
@@ -2630,8 +2627,10 @@ middle_code:
   /**
    * Handle CTRL-O and CTRL-I commands.
    */
-  static private void nv_pcmark(CMDARG cap) throws NotSupportedException {
-    notImp("nv_pcmark NEEDSWORK: not implmented");
+  static private void nv_pcmark(JLOP op, CMDARG cap)
+  throws NotSupportedException {
+    do_xop("nv_g_cmd");
+    G.curwin.jumpList(op, cap.count1);
 //    ViFPOS	fpos;
 //
 //    if (!checkclearopq(cap.oap)) {
@@ -2660,6 +2659,22 @@ middle_code:
       opnump.setValue(cap.count0);    // remember count before '"'
     } else {
       clearopbeep(cap.oap);
+    }
+  }
+  
+  static private void nv_g_cmd(CMDARG cap, CharBuf searchbuff)
+  throws NotSupportedException {
+    do_xop("nv_g_cmd");
+    switch (cap.nchar) {
+      case ',':
+	nv_pcmark(JLOP.NEXT_CHANGE, cap);
+        break;
+      case ';':
+	nv_pcmark(JLOP.PREV_CHANGE, cap);
+        break;
+      default:
+        notSup("g" + new String(new char[] {(char)cap.nchar}));
+        break;
     }
   }
 
@@ -3161,7 +3176,7 @@ middle_code:
   // private  void	nv_regname (CMDARG cap, MutableInt opnump) {do_op("nv_regname");}
   static private  void	nv_visual (CMDARG cap, boolean selectmode) {do_op("nv_visual");}
   static private  void	n_start_visual_mode (int c) {do_op("n_start_visual_mode");}
-  static private  boolean nv_g_cmd (CMDARG cap, CharBuf searchp) { do_op("nv_g_cmd");return true; }
+  //  static private  boolean nv_g_cmd (CMDARG cap, CharBuf searchp) { do_op("nv_g_cmd");return true; }
   // private  boolean n_opencmd (CMDARG cap) { do_op("n_opencmd");return true; }
   static private  void	nv_Undo (CMDARG cap) {do_op("nv_Undo");}
   // private  void	nv_operator (CMDARG cap) {do_op("nv_operator");}

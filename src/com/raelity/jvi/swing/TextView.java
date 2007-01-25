@@ -32,12 +32,10 @@ import java.awt.Point;
 
 import javax.swing.text.*;
 import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 
 import com.raelity.jvi.FPOS;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.ViMark;
-import com.raelity.jvi.swing.TextOps;
 import com.raelity.jvi.ViStatusDisplay;
 import com.raelity.jvi.ViCursor;
 import com.raelity.jvi.Util;
@@ -140,6 +138,10 @@ public class TextView implements ViTextView {
     if(this.editorPane == editorPane) {
       return;
     }
+    if(G.dbgEditorActivation.getBoolean()) {
+      System.err.println("TextView.detach: " + this.editorPane);
+      System.err.println("TextView.attach: " + editorPane);
+    }
     detach();	// the old editorPane
     this.editorPane = editorPane;
     expectedCaretPosition = -1;
@@ -185,7 +187,7 @@ public class TextView implements ViTextView {
       Util.vim_beep();
       return;
     }
-    ops.xop(TextOps.INSERT_NEW_LINE);
+    ops.xop(TextOps.INSERT_NEW_LINE); // NEEDSWORK: xop throws no exception
   }
 
   public void insertTab() {
@@ -194,7 +196,7 @@ public class TextView implements ViTextView {
       return;
     }
     expectedCaretPosition++;
-    ops.xop(TextOps.INSERT_TAB);
+    ops.xop(TextOps.INSERT_TAB); // NEEDSWORK: xop throws no exception
   }
 
   public void replaceChar(int c, boolean advanceCursor) {
@@ -254,7 +256,7 @@ public class TextView implements ViTextView {
       Util.vim_beep();
       return;
     }
-    ops.xop(TextOps.DELETE_PREVIOUS_CHAR);
+    ops.xop(TextOps.DELETE_PREVIOUS_CHAR); // NEEDSWORK: xop throws no exception
   }
 
   public void insertText(int offset, String s) {
@@ -324,7 +326,7 @@ public class TextView implements ViTextView {
     }
     oneCharArray[0] = (char)c;
     expectedCaretPosition++;
-    ops.xop(TextOps.KEY_TYPED, new String(oneCharArray));
+    ops.xop(TextOps.KEY_TYPED, new String(oneCharArray)); // NEEDSWORK: xop throws no exception
   }
   
   
@@ -368,6 +370,10 @@ public class TextView implements ViTextView {
   }
 
   public void jumpDefinition() {
+    Util.vim_beep();
+  }
+
+  public void jumpList(JLOP op, int count) {
     Util.vim_beep();
   }
 

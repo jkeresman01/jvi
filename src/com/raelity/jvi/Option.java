@@ -35,14 +35,17 @@ public abstract class Option {
     protected String stringValue;
     protected String desc;
     protected String defaultValue;
-    protected boolean fPropogate;
-    protected boolean isExpert;
+    protected boolean fExpert;
+    protected boolean fHidden;
+    
+    protected boolean fPropogate; // used in logic, not part of option type
     
     public Option(String key, String defaultValue) {
 	name = key;
 	this.defaultValue = defaultValue;
 	String initialValue = Options.getPrefs().get(key, defaultValue);
-	isExpert = false;
+	fExpert = false;
+        fHidden = false;
 
 	fPropogate = false;
 	setValue(initialValue);
@@ -76,7 +79,11 @@ public abstract class Option {
     }
 
     public boolean isExpert() {
-	return isExpert;
+	return fExpert;
+    }
+
+    public boolean isHidden() {
+	return fHidden;
     }
 
     /**
