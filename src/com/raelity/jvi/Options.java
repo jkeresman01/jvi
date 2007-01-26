@@ -152,12 +152,18 @@ public class Options {
     G.useFrame  = createBooleanOption(commandEntryFrame , false);
     
     G.readOnlyHack = createBooleanOption(readOnlyHack, true);
-    G.isClassicUndo = createBooleanOption(classicUndoOption, true);
+    // Want to turn following on, but NB problems
+    G.isClassicUndo = createBooleanOption(classicUndoOption, false);
     G.dbgEditorActivation = createBooleanOption(dbgEditorActivation, false);
 
     dbgInit();
     setupOptionDescs();
     didInit = true;
+  }
+
+  static void dbgInit() {
+    createBooleanOption(dbgKeyStrokes, false);
+    createBooleanOption(dbgCache, false);
   }
   
   static Preferences getPrefs() {
@@ -219,11 +225,6 @@ public class Options {
     l.addAll(cursorWrapList);
     l.addAll(debugList);
     return Collections.unmodifiableList(l);
-  }
-
-  static void dbgInit() {
-    createBooleanOption(dbgKeyStrokes, false);
-    createBooleanOption(dbgCache, false);
   }
 
   private static void setupOptionDesc(List<String> optionsGroup, String name,
@@ -331,7 +332,7 @@ public class Options {
                "use modal frame for command/search entry");
     setExpertHidden(commandEntryFrame, true, true);
     setupOptionDesc(miscList, unnamedClipboard,
-               "'clipboard' 'cb' (unnamed only)",
+               "'clipboard' 'cb' (unnamed)",
                "use clipboard for unamed yank, delete and put");
     setupOptionDesc(miscList, notStartOfLine, "(not)'startofline' (not)'sol'",
                "After motion try to keep column position."
@@ -342,7 +343,7 @@ public class Options {
                "search continues at end of match");
     setupOptionDesc(miscList, tildeOperator , "'tildeop' 'top'",
                "tilde \"~\" acts like an operator, e.g. \"~w\" works");
-    setupOptionDesc(miscList, changeWordBlanks, "'cpoptions' 'cpo' \"c\"",
+    setupOptionDesc(miscList, changeWordBlanks, "'cpoptions' 'cpo' \"w\"",
                "\"cw\" affects sequential white space");
     setupOptionDesc(miscList, joinSpaces, "'joinspaces' 'js'",
                "\"J\" inserts two spaces after a \".\", \"?\" or \"!\"");

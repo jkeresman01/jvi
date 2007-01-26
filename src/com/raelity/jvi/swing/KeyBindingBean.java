@@ -29,7 +29,7 @@ public class KeyBindingBean  extends SimpleBeanInfo {
     public BeanDescriptor getBeanDescriptor() {
         return new BeanDescriptor(KeyBindingBean.class) {
             public String getDisplayName() {
-                return "Key Bindings";
+                return "Control Key Bindings";
             }
         };
     }

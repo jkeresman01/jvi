@@ -1896,24 +1896,23 @@ public class Misc implements Constants, ClipboardOwner, KeyDefs {
     } else {
       Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
       Transferable trans = cb.getContents(null);
-      if(trans instanceof StringSelection) {
-	StringSelection ss = (StringSelection)trans;
-	String s = "";
-	try {
-	  s = (String)ss.getTransferData(DataFlavor.stringFlavor);
-	} catch(IOException e) {
-	} catch(UnsupportedFlavorException e) {
-	}
-	// NEEDSWORK: use a string reader and transfer to StringBuffer
-	get_yank_register('*', false);
-	// y_regs[CLIPBOARD_REGISTER].y_array = new StringBuffer(s);
-	y_regs[CLIPBOARD_REGISTER].setData(s);
+      String s = "";
+      try {
+	s = (String)trans.getTransferData(DataFlavor.stringFlavor);
+      } catch(IOException e) {
+        Util.vim_beep();
+      } catch(UnsupportedFlavorException e) {
+        Util.vim_beep();
       }
+      // NEEDSWORK: use a string reader and transfer to StringBuffer
+      get_yank_register('*', false);
+      // y_regs[CLIPBOARD_REGISTER].y_array = new StringBuffer(s);
+      y_regs[CLIPBOARD_REGISTER].setData(s);
     }
   }
 
   /**
-   * Lost clipboard ownership, implmeentation of ClibboardOwner.
+   * Lost clipboard ownership, implementation of ClibboardOwner.
    */
   public void lostOwnership(Clipboard clipboard, Transferable contents) {
     synchronized(clipOwner) {
