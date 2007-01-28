@@ -66,6 +66,7 @@ import com.raelity.jvi.swing.*;
 public class ViManager implements Constants {
 
   static private JEditorPane currentEditorPane;
+  static private ViTextView currentTextView;
   static private ViFactory factory;
 
   static private Keymap editModeKeymap;
@@ -306,7 +307,14 @@ public class ViManager implements Constants {
     ViTextView textView = getViTextView(editorPane);
     textView.switchTo(editorPane);
     G.switchTo(textView);
+    
     currentEditorPane = editorPane;
+    
+    // detach listeners from last active view
+    if(currentTextView != null) {
+        //currentTextView.detach();
+    }
+    currentTextView = textView;
   }
 
   private static boolean inStartup;

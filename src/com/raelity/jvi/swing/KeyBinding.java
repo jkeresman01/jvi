@@ -51,7 +51,7 @@ import static java.awt.event.InputEvent.SHIFT_MASK;
 import static java.awt.event.InputEvent.CTRL_MASK;
 
 public class KeyBinding implements KeyDefs, Constants {
-  public static String PREF_KEYS = "KeyBindings";
+  public static final String PREF_KEYS = "KeyBindings";
   private static Preferences prefs = ViManager.getViFactory()
                                 .getPreferences().node(KeyBinding.PREF_KEYS);
 
@@ -577,6 +577,7 @@ public class KeyBinding implements KeyDefs, Constants {
           defaultKeysFalse.add("Ctrl-A");
           defaultKeysFalse.add("Ctrl-C");
           defaultKeysFalse.add("Ctrl-I");
+          defaultKeysFalse.add("Ctrl-J");
           defaultKeysFalse.add("Ctrl-K");
           defaultKeysFalse.add("Ctrl-Q");
           defaultKeysFalse.add("Ctrl-V");

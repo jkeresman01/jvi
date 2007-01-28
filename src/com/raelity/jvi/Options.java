@@ -29,6 +29,8 @@
  */
 package com.raelity.jvi;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -118,54 +120,215 @@ public class Options {
 	}
       }
     });
-
-    G.p_ww_bs = createBooleanOption(backspaceWrapPrevious, true);
-    G.p_ww_h = createBooleanOption(hWrapPrevious, false);
-    G.p_ww_larrow = createBooleanOption(leftWrapPrevious, false);
-    G.p_ww_sp = createBooleanOption(spaceWrapNext, true);
-    G.p_ww_l = createBooleanOption(lWrapNext, false);
-    G.p_ww_rarrow = createBooleanOption(rightWrapNext, false);
-    G.p_ww_tilde = createBooleanOption(tildeWrapNext, false);
-
-    G.p_cb = createBooleanOption(unnamedClipboard, false);
-    G.p_js = createBooleanOption(joinSpaces, true);
-    G.p_sr = createBooleanOption(shiftRound, false);
-    G.p_notsol = createBooleanOption(notStartOfLine, false);
-    G.p_cpo_w = createBooleanOption(changeWordBlanks, true);
-    G.p_to = createBooleanOption(tildeOperator, false);
-    G.p_cpo_search = createBooleanOption(searchFromEnd, true);
-    G.p_ws = createBooleanOption(wrapScan, true);
-
+    
+    /////////////////////////////////////////////////////////////////////
+    //
+    //
+    // General Options
+    //
+    //
     G.p_meta_equals = createBooleanOption(metaEquals, true);
-    G.p_meta_escape = createStringOption(metaEscape, G.metaEscapeDefault);
+    setupOptionDesc(generalList, metaEquals, "RE Meta Equals",
+            "In a regular expression"
+            + " use '=', not '?', to indicate an optional atom."
+            + " vim default is '='.");
+    setExpertHidden(metaEquals, true, false);
+
+    G.p_meta_escape = createStringOption(metaEscape, G.metaEscapeDefault,
+            new StringOption.Validator() {
+              public void validate(String val) throws PropertyVetoException {
+		for(int i = 0; i < val.length(); i++) {
+		  if(G.metaEscapeAll.indexOf(val.charAt(i)) < 0) {
+		     throw new PropertyVetoException(
+		         "Only characters from '" + G.metaEscapeAll
+                         + "' are RE metacharacters."
+                         + " Not '" + val.substring(i,i+1) + "'.",
+                       new PropertyChangeEvent(opt, opt.getName(),
+                                               opt.getString(), val));
+		  }
+		}
+              }
+            });
+    setupOptionDesc(generalList, metaEscape, "RE Meta Escape",
+            "Regular expression metacharacters requiring escape:"
+            + " any of: '(', ')', '|', '+', '?', '{'."
+            + " By default vim requires escape, '\\', for these characters.");
+    setExpertHidden(metaEscape, true, false);
+
+    G.p_so = createIntegerOption(scrollOff, 0);
+    setupOptionDesc(generalList, scrollOff, "'scrolloff' 'so'",
+           "visible context around cursor (scrolloff)" 
+            + "	Minimal number of screen lines to keep above and below the"
+            + " cursor. This will make some context visible around where you"
+            + " are working.  If you set it to a very large value (999) the"
+            + " cursor line will always be in the middle of the window"
+            + " (except at the start or end of the file)");
+
+    G.p_bs = createIntegerOption(backspace, 0,
+            new IntegerOption.Validator() {
+              public void validate(int val) throws PropertyVetoException {
+                  if(val < 0 || val > 2) {
+		     throw new PropertyVetoException(
+		         "Only 0, 1, or 2 are allowed."
+                         + " Not '" + val + "'.",
+                       new PropertyChangeEvent(opt, opt.getName(),
+                                               opt.getInteger(), val));
+                  }
+              }
+            });
+    setupOptionDesc(generalList, backspace, "'backspace' 'bs'",
+            "Influences the working of <BS>, <Del> during insert."
+            + "\n  0 - no special handling."
+            + "\n  1 - allow backspace over <EOL>."
+            + "\n  2 - allow backspace over start of insert.");
+
+    G.p_report = createIntegerOption(report, 2);
+    setupOptionDesc(generalList, report, "'report'",
+            "Threshold for reporting number of lines changed.  When the"
+            + " number of changed lines is more than 'report' a message will"
+            + " be given for most \":\" commands.  If you want it always, set"
+            + " 'report' to 0.  For the \":substitute\" command the number of"
+            + " substitutions is used instead of the number of lines.");
 
     G.p_ic = createBooleanOption(ignoreCase, false);
-    
+    setupOptionDesc(generalList, ignoreCase, "'ignorecase' 'ic'",
+            "Ignore case in search patterns.");
+
     G.b_p_et = createBooleanOption(expandTabs, false);
-    
-    G.p_report = createIntegerOption(report, 2);
-    G.p_bs = createIntegerOption(backspace, 0);
-    G.p_so = createIntegerOption(scrollOff, 2);
-    G.b_p_sw = createIntegerOption(shiftWidth, 4);
+    setupOptionDesc(generalList, expandTabs, "'expandtab' 'et'",
+           "In Insert mode: Use the appropriate number of spaces to"
+           + " insert a <Tab>. Spaces are used in indents with the '>' and"
+           + " '<' commands.");
+
+    G.b_p_sw = createIntegerOption(shiftWidth, 8);
+    setupOptionDesc(generalList, shiftWidth, "'shiftwidth' 'sw'",
+            "Number of spaces to use for each step of indent. Used for '>>',"
+            + " '<<', etc.");
+
     G.b_p_ts = createIntegerOption(tabStop, 8);
+    setupOptionDesc(generalList, tabStop, "'tabstop' 'ts'",
+            "Number of spaces that a <Tab> in the file counts for.");
+
+    /////////////////////////////////////////////////////////////////////
+    //
+    //
+    // Vi cursor wrap options
+    //
+    //
+    G.p_ww_bs = createBooleanOption(backspaceWrapPrevious, true);
+    setupOptionDesc(cursorWrapList, backspaceWrapPrevious,
+               "'whichwrap' 'ww'  b - <BS>",
+               "<backspace> wraps to previous line");
+
+    G.p_ww_h = createBooleanOption(hWrapPrevious, false);
+    setupOptionDesc(cursorWrapList, hWrapPrevious,
+               "'whichwrap' 'ww'  h - \"h\"",
+               "\"h\" wraps to previous line (not recommended, see vim doc)");
+
+    G.p_ww_larrow = createBooleanOption(leftWrapPrevious, false);
+    setupOptionDesc(cursorWrapList, leftWrapPrevious,
+               "'whichwrap' 'ww'  < - <Left>",
+               "<left> wraps to previous line");
+
+    G.p_ww_sp = createBooleanOption(spaceWrapNext, true);
+    setupOptionDesc(cursorWrapList, spaceWrapNext,
+               "'whichwrap' 'ww'  s - <Space>",
+               "<space> wraps to next line");
+
+    G.p_ww_l = createBooleanOption(lWrapNext, false);
+    setupOptionDesc(cursorWrapList, lWrapNext,
+               "'whichwrap' 'ww'  l - \"l\"",
+               "\"l\" wraps to next line (not recommended, see vim doc)");
+
+    G.p_ww_rarrow = createBooleanOption(rightWrapNext, false);
+    setupOptionDesc(cursorWrapList, rightWrapNext,
+               "'whichwrap' 'ww'  > - <Right>",
+               "<right> wraps to next line");
+
+    G.p_ww_tilde = createBooleanOption(tildeWrapNext, false);
+    setupOptionDesc(cursorWrapList, tildeWrapNext,
+               "'whichwrap' 'ww'  ~ - \"~\"",
+               "\"~\" wraps to next line");
+
+    /////////////////////////////////////////////////////////////////////
+    //
+    //
+    // Vi miscellaneous options
+    //
+    //
+    G.p_cb = createBooleanOption(unnamedClipboard, false);
+    setupOptionDesc(miscList, unnamedClipboard,
+               "'clipboard' 'cb' (unnamed)",
+               "use clipboard for unamed yank, delete and put");
+
+    G.p_notsol = createBooleanOption(notStartOfLine, false);
+    setupOptionDesc(miscList, notStartOfLine, "(not)'startofline' (not)'sol'",
+               "After motion try to keep column position."
+            + " NOTE: state is opposite of vim.");
+
+    G.p_ws = createBooleanOption(wrapScan, true);
+    setupOptionDesc(miscList, wrapScan, "'wrapscan' 'ws'",
+               "Searches wrap around the end of the file.");
+
+    G.p_cpo_search = createBooleanOption(searchFromEnd, true);
+    setupOptionDesc(miscList, searchFromEnd, "'cpoptions' 'cpo' \"c\"",
+               "search continues at end of match");
+
+    G.p_to = createBooleanOption(tildeOperator, false);
+    setupOptionDesc(miscList, tildeOperator , "'tildeop' 'top'",
+               "tilde \"~\" acts like an operator, e.g. \"~w\" works");
+
+    G.p_cpo_w = createBooleanOption(changeWordBlanks, true);
+    setupOptionDesc(miscList, changeWordBlanks, "'cpoptions' 'cpo' \"w\"",
+               "\"cw\" affects sequential white space");
+
+    G.p_js = createBooleanOption(joinSpaces, true);
+    setupOptionDesc(miscList, joinSpaces, "'joinspaces' 'js'",
+               "\"J\" inserts two spaces after a \".\", \"?\" or \"!\"");
+
+    G.p_sr = createBooleanOption(shiftRound, false);
+    setupOptionDesc(miscList, shiftRound, "'shiftround' 'sr'",
+               "\"<\" and \">\" round indent to multiple of shiftwidth");
     
     G.useFrame  = createBooleanOption(commandEntryFrame , false);
-    
+    setupOptionDesc(miscList, commandEntryFrame, "use modal frame",
+               "use modal frame for command/search entry");
+    setExpertHidden(commandEntryFrame, true, true);
+
+    /////////////////////////////////////////////////////////////////////
+    //
+    //
+    // Vi debug options
+    //
+    //
     G.readOnlyHack = createBooleanOption(readOnlyHack, true);
+    setupOptionDesc(debugList, readOnlyHack, "enable read only hack",
+            "A Java implementation issue, restricts the characters that jVi"
+            + " recieves for a read only file. Enabling this, changes the file"
+            + " editor mode to read/write so that the file can be viewed"
+            + " using the Normal Mode vi commands.");
+    setExpertHidden(readOnlyHack, true, false);
+
     // Want to turn following on, but NB problems
     G.isClassicUndo = createBooleanOption(classicUndoOption, false);
-    G.dbgEditorActivation = createBooleanOption(dbgEditorActivation, false);
+    setupOptionDesc(debugList, classicUndoOption, "classic undo", "yyy");
+    setExpertHidden(classicUndoOption, true, true);
 
-    dbgInit();
-    setupOptionDescs();
+    G.dbgEditorActivation = createBooleanOption(dbgEditorActivation, false);
+    setupOptionDesc(debugList, dbgEditorActivation, "debug activation",
+               "Output info about editor switching between files/windows");
+
+    createBooleanOption(dbgKeyStrokes, false);
+    setupOptionDesc(debugList, dbgKeyStrokes, "debug KeyStrokes",
+               "Output info for each keystroke");
+
+    createBooleanOption(dbgCache, false);
+    setupOptionDesc(debugList, dbgCache, "debug cache",
+               "Output info on text/doc cache");
+
     didInit = true;
   }
 
-  static void dbgInit() {
-    createBooleanOption(dbgKeyStrokes, false);
-    createBooleanOption(dbgCache, false);
-  }
-  
   static Preferences getPrefs() {
       return prefs;
   }
@@ -173,9 +336,14 @@ public class Options {
   // NEEDSWORK: FOR NOW PROPOGATE DEFAULTS TO DATA BASE
   static private boolean fAddDefaultToDB = false;
   static private StringOption createStringOption(String name,
-                                                String defaultValue)
-  {
-    StringOption opt = new StringOption(name, defaultValue);
+                                                 String defaultValue) {
+    return createStringOption(name, defaultValue, null);
+  }
+  
+  static private StringOption createStringOption(String name,
+                                                String defaultValue,
+                                                StringOption.Validator valid) {
+    StringOption opt = new StringOption(name, defaultValue, valid);
     options.put(name, opt);
     if(fAddDefaultToDB) {
       opt.setValue(defaultValue);
@@ -193,11 +361,18 @@ public class Options {
     }
     return opt;
   }
-
+  
   static private IntegerOption createIntegerOption(String name,
                                                   int defaultValue)
   {
-    IntegerOption opt = new IntegerOption(name, defaultValue);
+      return createIntegerOption(name, defaultValue, null);
+  }
+
+  static private IntegerOption createIntegerOption(String name,
+                                                  int defaultValue,
+                                                  IntegerOption.Validator valid)
+  {
+    IntegerOption opt = new IntegerOption(name, defaultValue, valid);
     options.put(name, opt);
     if(fAddDefaultToDB) {
       opt.setInteger(defaultValue);
@@ -251,123 +426,6 @@ public class Options {
       opt.fExpert = fExpert;
       opt.fHidden = fHidden;
     }
-  }
-
-  private static void setupOptionDescs() {
-      
-    // general options
-    setupOptionDesc(generalList, metaEquals, "Meta Equals",
-            "In a regular expression"
-            + " use '=', not '?', to indicate an optional atom."
-            + " vim default is '='.");
-    setExpertHidden(metaEquals, true, false);
-    setupOptionDesc(generalList, metaEscape, "Meta Escape",
-            "metacharacters requiring escape:"
-            + "any of: '(', ')', '|', '+', '?', '{'");
-    setExpertHidden(metaEscape, true, false);
-    setupOptionDesc(generalList, scrollOff, "'scrolloff' 'so'",
-           "visible context around cursor (scrolloff)" 
-            + "	Minimal number of screen lines to keep above and below the"
-            + " cursor. This will make some context visible around where you"
-            + " are working.  If you set it to a very large value (999) the"
-            + " cursor line will always be in the middle of the window"
-            + " (except at the start or end of the file)");
-    setupOptionDesc(generalList, backspace, "'backspace' 'bs'",
-            "Influences the working of <BS>, <Del> during insert."
-            + "\n  0 - no special handling."
-            + "\n  1 - allow backspace over <EOL>."
-            + "\n  2 - allow backspace over start of insert.");
-    setupOptionDesc(generalList, report, "'report'",
-            "Threshold for reporting number of lines changed.  When the"
-            + " number of changed lines is more than 'report' a message will"
-            + " be given for most \":\" commands.  If you want it always, set"
-            + " 'report' to 0.  For the \":substitute\" command the number of"
-            + " substitutions is used instead of the number of lines.");
-    setupOptionDesc(generalList, ignoreCase, "'ignorecase' 'ic'",
-            "Ignore case in search patterns.");
-    setupOptionDesc(generalList, expandTabs, "'expandtab' 'et'",
-           "In Insert mode: Use the appropriate number of spaces to"
-           + " insert a <Tab>. Spaces are used in indents with the '>' and"
-           + " '<' commands.");
-    setupOptionDesc(generalList, shiftWidth, "'shiftwidth' 'sw'",
-            "Number of spaces to use for each step of indent. Used for '>>',"
-            + " '<<', etc.");
-    setupOptionDesc(generalList, tabStop, "'tabstop' 'ts'",
-            "Number of spaces that a <Tab> in the file counts for.");
-            
-    
-    //
-    // optionCategory = new EditorOptionCategory("Vi cursor wrap options");
-    //
-    // 		boolean
-    //
-    
-    setupOptionDesc(cursorWrapList, backspaceWrapPrevious,
-               "'whichwrap' 'ww'  b - <BS>",
-               "<backspace> wraps to previous line");
-    setupOptionDesc(cursorWrapList, hWrapPrevious,
-               "'whichwrap' 'ww'  h - \"h\"",
-               "\"h\" wraps to previous line");
-    setupOptionDesc(cursorWrapList, leftWrapPrevious,
-               "'whichwrap' 'ww'  < - <Left>",
-               "<left> wraps to previous line");
-    setupOptionDesc(cursorWrapList, spaceWrapNext,
-               "'whichwrap' 'ww'  s - <Space>",
-               "<space> wraps to next line");
-    setupOptionDesc(cursorWrapList, lWrapNext,
-               "'whichwrap' 'ww'  l - \"l\"",
-               "\"l\" wraps to next line");
-    setupOptionDesc(cursorWrapList, rightWrapNext,
-               "'whichwrap' 'ww'  > - <Right>",
-               "<right> wraps to next line");
-    setupOptionDesc(cursorWrapList, tildeWrapNext,
-               "'whichwrap' 'ww'  ~ - \"~\"",
-               "\"~\" wraps to next line");
-    //
-    // optionCategory = new EditorOptionCategory("Vi miscellaneous options");
-    //
-    // 		boolean
-    //
-    setupOptionDesc(miscList, commandEntryFrame, "use modal frame",
-               "use modal frame for command/search entry");
-    setExpertHidden(commandEntryFrame, true, true);
-    setupOptionDesc(miscList, unnamedClipboard,
-               "'clipboard' 'cb' (unnamed)",
-               "use clipboard for unamed yank, delete and put");
-    setupOptionDesc(miscList, notStartOfLine, "(not)'startofline' (not)'sol'",
-               "After motion try to keep column position."
-            + " NOTE: state is oppisite of vim.");
-    setupOptionDesc(miscList, wrapScan, "'wrapscan' 'ws'",
-               "Searches wrap around the end of the file.");
-    setupOptionDesc(miscList, searchFromEnd, "'cpoptions' 'cpo' \"c\"",
-               "search continues at end of match");
-    setupOptionDesc(miscList, tildeOperator , "'tildeop' 'top'",
-               "tilde \"~\" acts like an operator, e.g. \"~w\" works");
-    setupOptionDesc(miscList, changeWordBlanks, "'cpoptions' 'cpo' \"w\"",
-               "\"cw\" affects sequential white space");
-    setupOptionDesc(miscList, joinSpaces, "'joinspaces' 'js'",
-               "\"J\" inserts two spaces after a \".\", \"?\" or \"!\"");
-    setupOptionDesc(miscList, shiftRound, "'shiftround' 'sr'",
-               "\"<\" and \">\" round indent to multiple of shiftwidth");
-    //
-    // optionCategory = new EditorOptionCategory("Vi debug options");
-    //
-    // 		boolean
-    //
-    setupOptionDesc(debugList, dbgCache, "debug cache",
-               "Output info on text/doc cache");
-    setupOptionDesc(debugList, dbgKeyStrokes, "debug KeyStrokes",
-               "Output info for each keystroke");
-    setupOptionDesc(debugList, dbgEditorActivation, "debug activation",
-               "Output info about editor switching between files/windows");
-    setupOptionDesc(debugList, readOnlyHack, "enable read only hack",
-            "A Java implementation issue, restricts the characters that jVi"
-            + " recieves for a read only file. Enabling this, changes the file"
-            + " editor mode to read/write so that the file can be viewed"
-            + " using the Normal Mode vi commands.");
-    setExpertHidden(readOnlyHack, true, true);
-    setupOptionDesc(debugList, classicUndoOption, "classic undo", "yyy");
-    setExpertHidden(classicUndoOption, true, true);
   }
 }
 

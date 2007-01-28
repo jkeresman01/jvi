@@ -29,10 +29,23 @@
  */
 package com.raelity.jvi;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+
 public class IntegerOption extends Option {
-  int value;
-  IntegerOption(String key, int defaultValue) {
+  private Validator validator;
+  protected int value;
+  
+  public IntegerOption(String key, int defaultValue) {
     super(key, "" + defaultValue);
+  }
+  
+  public IntegerOption(String key, int defaultValue, Validator validator) {
+    this(key, defaultValue);
+    if(validator != null) {
+	validator.opt = this;
+	this.validator = validator;
+    }
   }
 
   public final int getInteger() {
@@ -55,5 +68,25 @@ public class IntegerOption extends Option {
   public void setValue(String newValue) throws IllegalArgumentException {
     int n = Integer.parseInt(newValue);
     setInteger(n);
+  }
+  
+  /**
+   * Validate the setting value. The default is that the value must
+   * be >= zero.
+   */
+  public void validate(int val) throws PropertyVetoException {
+      if(validator != null) {
+          validator.validate(val);
+      } else if(val < 0) {
+          throw new PropertyVetoException(
+                    "Value must be positive: " + val,
+                    new PropertyChangeEvent(this, name, value, val));
+      }
+  }
+  
+  public static abstract class Validator {
+      IntegerOption opt;
+      
+      public abstract void validate(int val) throws PropertyVetoException;
   }
 }

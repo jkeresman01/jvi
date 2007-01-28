@@ -11,16 +11,23 @@ package com.raelity.jvi;
 
 import java.beans.BeanDescriptor;
 import java.beans.IntrospectionException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.beans.PropertyDescriptor;
+import java.beans.PropertyVetoException;
 import java.beans.SimpleBeanInfo;
+import java.beans.VetoableChangeListener;
+import java.beans.VetoableChangeSupport;
 import java.util.List;
 import java.util.prefs.Preferences;
+import org.openide.ErrorManager;
 
 /**
  * Base class for jVi options beans. This method contains the read/write methods
  * for all options. Which options are made visible is controlled by the
- * optionsList given to the contstructor. So this class is used to partition
- * the options into different beans.
+ * optionsList given to the contstructor. Using this class, options are
+ * grouped into different beans.
  *
  * @author erra
  */
@@ -28,6 +35,9 @@ public class OptionsBeanBase extends SimpleBeanInfo {
     private Class clazz;
     private List<String> optionsList;
     private String displayName;
+    
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport( this );
+    private final VetoableChangeSupport vcs = new VetoableChangeSupport( this ); 
     
     /** Creates a new instance of OptionsBeanBase */
     public OptionsBeanBase(Class clazz, String displayName,
@@ -59,6 +69,11 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	    d.setExpert(opt.isExpert());
 	    d.setHidden(opt.isHidden());
 	    d.setShortDescription(opt.getDesc());
+            if(opt instanceof IntegerOption
+               || opt instanceof StringOption) {
+                d.setBound(true);
+                d.setConstrained(true);
+            }
 	    descriptors[i++] = d;
 	}
 	return descriptors;
@@ -75,20 +90,54 @@ public class OptionsBeanBase extends SimpleBeanInfo {
     }
     
     //
+    // Look like a good bean
+    //
+    
+    public void addPropertyChangeListener( PropertyChangeListener listener )
+    {
+        this.pcs.addPropertyChangeListener( listener );
+    }
+
+    public void removePropertyChangeListener( PropertyChangeListener listener )
+    {
+        this.pcs.removePropertyChangeListener( listener );
+    }
+    
+    public void addVetoableChangeListener( VetoableChangeListener listener )
+    {
+        this.vcs.addVetoableChangeListener( listener );
+    }
+
+    public void removeVetoableChangeListener( VetoableChangeListener listener )
+    {
+        this.vcs.addVetoableChangeListener( listener );
+    } 
+    
+    //
     // All the known options
-    //      The bean getter/setter, interface to preferences.
+    //      The interface to preferences.
     //
     private Preferences prefs = ViManager.getViFactory().getPreferences();
 
-    private void put(String name, String val) {
+    protected void put(String name, String val) throws PropertyVetoException {
+        String old = getString(name);
+	Option opt = Options.getOption(name);
+        ((StringOption)opt).validate(val);
+        this.vcs.fireVetoableChange( name, old, val );
 	prefs.put(name, val);
+        this.pcs.firePropertyChange( name, old, val );
     }
 
-    private void put(String name, int val) {
+    protected void put(String name, int val) throws PropertyVetoException {
+        int old = getint(name);
+	Option opt = Options.getOption(name);
+        ((IntegerOption)opt).validate(val);
+        this.vcs.fireVetoableChange( name, old, val );
 	prefs.putInt(name, val);
+        this.pcs.firePropertyChange( name, old, val );
     }
 
-    private void put(String name, boolean val) {
+    protected void put(String name, boolean val) {
 	prefs.putBoolean(name, val);
     }
 
@@ -106,6 +155,11 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	Option opt = Options.getOption(name);
 	return prefs.getBoolean(name, Boolean.parseBoolean(opt.getDefault()));
     }
+    
+    //
+    // All the known options
+    //      The bean getter/setter
+    //
 
     public void setViCommandEntryFrameOption(boolean arg) {
         put("viCommandEntryFrameOption", arg);
@@ -243,7 +297,7 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	return getboolean("viMetaEquals");
     }
 
-    public void setViMetaEscape(String arg) {
+    public void setViMetaEscape(String arg) throws PropertyVetoException {
         put("viMetaEscape", arg);
     }
 
@@ -267,7 +321,7 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	return getboolean("viExpandTabs");
     }
 
-    public void setViReport(int arg) {
+    public void setViReport(int arg) throws PropertyVetoException {
         put("viReport", arg);
     }
 
@@ -275,7 +329,7 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	return getint("viReport");
     }
 
-    public void setViBackspace(int arg) {
+    public void setViBackspace(int arg) throws PropertyVetoException {
         put("viBackspace", arg);
     }
 
@@ -283,7 +337,7 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	return getint("viBackspace");
     }
 
-    public void setViScrollOff(int arg) {
+    public void setViScrollOff(int arg) throws PropertyVetoException {
         put("viScrollOff", arg);
     }
 
@@ -291,7 +345,7 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	return getint("viScrollOff");
     }
 
-    public void setViShiftWidth(int arg) {
+    public void setViShiftWidth(int arg) throws PropertyVetoException {
         put("viShiftWidth", arg);
     }
 
@@ -299,7 +353,7 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	return getint("viShiftWidth");
     }
 
-    public void setViTabStop(int arg) {
+    public void setViTabStop(int arg) throws PropertyVetoException {
         put("viTabStop", arg);
     }
 

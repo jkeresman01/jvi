@@ -29,9 +29,21 @@
  */
 package com.raelity.jvi;
 
+import java.beans.PropertyVetoException;
+
 public class StringOption extends Option {
+  private Validator validator;
+  
   StringOption(String key, String defaultValue) {
     super(key, defaultValue);
+  }
+  
+  StringOption(String key, String defaultValue, Validator validator) {
+    this(key, defaultValue);
+    if(validator != null) {
+	validator.opt = this;
+	this.validator = validator;
+    }
   }
 
   public final String getString() {
@@ -51,5 +63,20 @@ public class StringOption extends Option {
    */
   public void setValue(String newValue) {
     setString(newValue);
+  }
+  
+  /**
+   * Validate the setting value. By default, everything is ok.
+   */
+  public void validate(String val) throws PropertyVetoException {
+      if(validator != null) {
+          validator.validate(val);
+      }
+  }
+  
+  public static abstract class Validator {
+      StringOption opt;
+      
+      public abstract void validate(String val) throws PropertyVetoException;
   }
 }

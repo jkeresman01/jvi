@@ -119,9 +119,6 @@ public class TextView implements ViTextView {
   }
 
   public void switchTo(JEditorPane editorPane) {
-    if(ops == null) {
-      createOps(editorPane);
-    }
     attach(editorPane);
   }
   
@@ -138,11 +135,16 @@ public class TextView implements ViTextView {
     if(this.editorPane == editorPane) {
       return;
     }
-    if(G.dbgEditorActivation.getBoolean()) {
-      System.err.println("TextView.detach: " + this.editorPane);
-      System.err.println("TextView.attach: " + editorPane);
+    if(ops == null) {
+      createOps(editorPane);
     }
-    detach();	// the old editorPane
+    if(G.dbgEditorActivation.getBoolean()) {
+      System.err.println("TV.detach: "
+              + (this.editorPane == null ? null : this.editorPane.hashCode()));
+      System.err.println("TV.attach: "
+              + (editorPane == null ? null : editorPane.hashCode()));
+    }
+    if(this.editorPane != null) detach();	// the old editorPane
     this.editorPane = editorPane;
     expectedCaretPosition = -1;
     cache.attach(editorPane);

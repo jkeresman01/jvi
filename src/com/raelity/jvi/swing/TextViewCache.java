@@ -467,7 +467,6 @@ public class TextViewCache implements PropertyChangeListener,
     if (component instanceof JViewport) {
       viewport = (JViewport)component;
       viewport.addChangeListener(this);
-      viewport.putClientProperty("EnableWindowBlit", new Boolean(true));
     } else {
       viewport = null;
     }
@@ -501,7 +500,10 @@ public class TextViewCache implements PropertyChangeListener,
    * listen to things that affect the cache.
    */
   public void attach(JEditorPane editor) {
-//System.err.println("TVCache: attach: " + editor);
+    if(G.dbgEditorActivation.getBoolean()) {
+      System.err.println("TVCache: attach: "
+              + (editor == null ? 0 : editor.hashCode()));
+    }
     editor.addPropertyChangeListener("font", this);
     changeDocument(editor.getDocument());
     editor.addPropertyChangeListener("document", this);
@@ -513,7 +515,10 @@ public class TextViewCache implements PropertyChangeListener,
 
   /** Dissassociate from the observed components. */
   public void detach(JEditorPane editor) {
-//System.err.println("TVCache: detach: " + editor);
+    if(G.dbgEditorActivation.getBoolean()) {
+      System.err.println("TVCache: detach: "
+              + (editor == null ? "" : editor.hashCode()));
+    }
     if(editor == null) {
       return;
     }
@@ -522,6 +527,7 @@ public class TextViewCache implements PropertyChangeListener,
     editor.removePropertyChangeListener("ancestor", this);
     changeDocument(null);
     editor.removeCaretListener(this);
+    changeViewport(null);
   }
 
   //
@@ -531,6 +537,7 @@ public class TextViewCache implements PropertyChangeListener,
   // -- property change events --
 
   public void propertyChange(PropertyChangeEvent e) {
+    if(false) System.err.println("PC: source: " + e.getSource().hashCode());
     String p = e.getPropertyName();
     Object o = e.getNewValue();
     if("font".equals(p)) {
@@ -545,12 +552,17 @@ public class TextViewCache implements PropertyChangeListener,
   // -- caret event --
 
   public void caretUpdate(CaretEvent e) {
+    if(false) {
+      System.err.println("CU: source: " + e.getSource().hashCode());
+      //System.err.println("    curwin: " + ViManager.getCurrentEditorPaneXXX().hashCode());
+    }
     changeCaretPosition(e.getDot(), e.getMark());
   }
 
   // -- document events --
 
   public void changedUpdate(DocumentEvent e) {
+    if(false)System.err.println("CHU: " + e.getDocument().hashCode());
     if(cacheTrace.getBoolean()) {
       System.err.println("doc changed: " +e.getOffset() + ":" + e.getLength() + " " + e);
       // System.err.println("element" + e.getChange());
@@ -566,6 +578,7 @@ public class TextViewCache implements PropertyChangeListener,
   private boolean undoChange;
 
   public void insertUpdate(DocumentEvent e) {
+    if(false)System.err.println("IU: " + e.getDocument().hashCode());
     if(cacheTrace.getBoolean())System.err.println("doc insert: " +e.getOffset() + ":" + e.getLength() + " " + e);
     invalidateData();
     undoOffset = e.getOffset();
@@ -574,6 +587,7 @@ public class TextViewCache implements PropertyChangeListener,
   }
 
   public void removeUpdate(DocumentEvent e) {
+    if(false)System.err.println("RU: " + e.getDocument().hashCode());
     if(cacheTrace.getBoolean())System.err.println("doc remove: " +e.getOffset() + ":" + e.getLength() + " " + e);
     invalidateData();
     undoOffset = e.getOffset();
@@ -607,6 +621,8 @@ public class TextViewCache implements PropertyChangeListener,
   // -- viewport event --
 
   public void stateChanged(ChangeEvent e) {
+    int HASH_CODE = e.getSource().hashCode();
+    if(false)System.err.println("SC: " + e.getSource().hashCode());
     changeView(false);
   }
 }
