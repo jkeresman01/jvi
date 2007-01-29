@@ -85,6 +85,14 @@ public abstract class Option {
     public boolean isHidden() {
 	return fHidden;
     }
+    
+    public void setHidden(boolean f) {
+        fHidden = f;
+    }
+    
+    public void setExpert(boolean f) {
+        fExpert = f;
+    }
 
     /**
      * The preferences data base has changed, stay in sync.
