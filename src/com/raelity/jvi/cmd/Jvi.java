@@ -39,12 +39,16 @@ import com.raelity.jvi.swing.*;
 import com.raelity.jvi.*;
 
 public class Jvi {
-  boolean packFrame = true;
-  static JviFrame frame;
+  static boolean packFrame = true;
+  static boolean make2 = false;
+  static int nFrame = 0;
+  static JviFrame frame1;
+  static JviFrame frame2; // to test two jVi on same document
 
   //Construct the application
-  public Jvi() {
-    frame = new JviFrame();
+  public static JviFrame makeFrame() {
+    JviFrame frame = new JviFrame();
+    nFrame++;
 
     Font font = frame.editorPane.getFont();
     frame.editorPane.setFont(new Font("Monospaced",
@@ -77,8 +81,40 @@ public class Jvi {
     if (frameSize.width > screenSize.width) {
       frameSize.width = screenSize.width;
     }
-    frame.setLocation((screenSize.width - frameSize.width) / 2, (screenSize.height - frameSize.height) / 2);
+    int offset = (nFrame -1) * 50;
+    frame.setLocation((screenSize.width - frameSize.width) / 2 + offset,
+                     (screenSize.height - frameSize.height) / 2 + offset);
     frame.setVisible(true);
+    return frame;
+  }
+  
+  private static void setupFrame(JviFrame f) {
+
+    // NEEDSWORK: editor is drawn, do rest in dispatch thread
+
+    f.editorPane.setCaretColor(Color.black);
+
+    ViManager.registerEditorPane(f.editorPane);
+    ((BooleanOption)Options.getOption(Options.dbgKeyStrokes)).setBoolean(true);
+
+    /*
+    Font font = f.editorPane.getFont();
+    f.editorPane.setFont(new Font("Monospaced",
+				      font.getStyle(),
+				      font.getSize()));
+    font = f.editorPane.getFont();
+    FontMetrics fm = f.editorPane.getFontMetrics(font);
+    int width = fm.charWidth(' ') * 81;
+    int height = fm.getHeight() * 40;
+    f.editorPane.setSize(width, height);
+    */
+
+    TextView tv = (TextView)ViManager.getViTextView(f.editorPane);
+    StatusDisplay sd = (StatusDisplay)tv.getStatusDisplay();
+    sd.generalStatus = f.generalStatusBar;
+    sd.strokeStatus = f.strokeStatusBar;
+    sd.modeStatus = f.modeStatusBar;
+    // G.setEditor(new TextView(f.editorPane, sd));
   }
 
   //Main method
@@ -89,10 +125,13 @@ public class Jvi {
     catch(Exception e) {
       e.printStackTrace();
     }
-
-    new Jvi();
-
+    
+    if(args.length > 0) {
+        make2 = true;
+    }
+    
     ViManager.setViFactory(new DefaultViFactory(null/*frame.commandLine1*/));
+
     ColonCommands.register("dumpOptions", "dumpOptions", new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             try {
@@ -117,37 +156,27 @@ public class Jvi {
         }
     });
 
-    // NEEDSWORK: editor is drawn, do rest in dispatch thread
-
-    frame.editorPane.setCaretColor(Color.black);
-
-    ViManager.registerEditorPane(frame.editorPane);
-    ((BooleanOption)Options.getOption(Options.dbgKeyStrokes)).setBoolean(true);
-
-    /*
-    Font font = frame.editorPane.getFont();
-    frame.editorPane.setFont(new Font("Monospaced",
-				      font.getStyle(),
-				      font.getSize()));
-    font = frame.editorPane.getFont();
-    FontMetrics fm = frame.editorPane.getFontMetrics(font);
-    int width = fm.charWidth(' ') * 81;
-    int height = fm.getHeight() * 40;
-    frame.editorPane.setSize(width, height);
-    */
-
-    TextView tv = (TextView)ViManager.getViTextView(frame.editorPane);
-    StatusDisplay sd = (StatusDisplay)tv.getStatusDisplay();
-    sd.generalStatus = frame.generalStatusBar;
-    sd.strokeStatus = frame.strokeStatusBar;
-    sd.modeStatus = frame.modeStatusBar;
-    // G.setEditor(new TextView(frame.editorPane, sd));
+    try {
+      SwingUtilities.invokeAndWait(new Runnable() {
+	public void run() {
+            frame1 = makeFrame();
+            setupFrame(frame1);
+            if(make2) {
+                frame2 = makeFrame();
+                frame2.editorPane.setDocument(frame1.editorPane.getDocument());
+                setupFrame(frame2);
+            }
+	}});
+    } catch(Exception e) {}
 
     // invoke and wait to make sure widget is fully drawn.
     try {
       SwingUtilities.invokeAndWait(new Runnable() {
 	public void run() {
-	  ViManager.installKeymap(frame.editorPane);
+	  ViManager.installKeymap(frame1.editorPane);
+          if(make2) {
+              ViManager.installKeymap(frame2.editorPane);
+          }
 	}});
     } catch(Exception e) {}
     
