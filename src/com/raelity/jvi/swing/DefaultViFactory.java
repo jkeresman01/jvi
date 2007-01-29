@@ -52,9 +52,9 @@ import com.raelity.jvi.*;
  * </ul>
  */
 public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
+  private static final String PROP_VITV = "ViTextView";
 
   Window window;
-  ViTextView textView;
   CommandLine cmdLine;
   ViFS fs;
 
@@ -63,12 +63,13 @@ public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
   }
 
   public ViTextView getViTextView(JEditorPane editorPane) {
-    if(textView == null) {
-      textView = new TextView();
-      Window window = new Window(textView);
-      textView.setWindow(window);
+    ViTextView tv01 = (ViTextView)editorPane.getClientProperty(PROP_VITV);
+    if(tv01 == null) {
+        tv01 = new TextView();
+        tv01.setWindow(new Window(tv01));
+        editorPane.putClientProperty(PROP_VITV, tv01);
     }
-    return textView;
+    return tv01;
   }
 
   public ViFS getFS() {
