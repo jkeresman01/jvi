@@ -386,6 +386,7 @@ normal_char:	// break normal_char to insert a character
 
             // TAB or Complete patterns along path
           case TAB:
+            // NEEDSWORK: no ins_tab, so noexpandtab doesn't work.
             // Just handle it as a normal character
             break normal_char;
 

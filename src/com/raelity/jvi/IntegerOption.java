@@ -57,9 +57,11 @@ public class IntegerOption extends Option {
    * @return true if value actually changed.
    */
   public void setInteger(int newValue) {
+    int oldValue = value;
     value = newValue;
     stringValue = "" + value;
     propogate();
+    Options.getOptions().pcs.firePropertyChange(name, oldValue, newValue);
   }
 
   /**

@@ -44,10 +44,8 @@ import com.raelity.jvi.Window;
 import com.raelity.jvi.*;
 
 /**
- * Presents a swing editor interface for use with vi. There should be
- * one of these for each visual editor display area, so multiple tabs
- * in the same pane editing different files would have one TextView;
- * there is typically one status display for each text view.
+ * Presents a swing editor interface for use with vi. There is
+ * one of these for each JEditorPane;
  * <p>Notice the listeners for caret changes. If the caret changes
  * to a location that is unexpected, i.e. it came from some external
  * source, then an externalChange message is sent to vi.
@@ -69,7 +67,8 @@ public class TextView implements ViTextView {
 
   protected int expectedCaretPosition = -1;
 
-  public TextView() {
+  public TextView(JEditorPane editorPane) {
+    this.editorPane = editorPane;
     cache = createTextViewCache();
     statusDisplay = createStatusDisplay();
   }
@@ -118,43 +117,30 @@ public class TextView implements ViTextView {
     return new TextViewCache(this);
   }
 
-  public void switchTo(JEditorPane editorPane) {
-    attach(editorPane);
-  }
-  
-  /**
-   * Create methods to invoke and interact with editor pane actions.
-   * Override for custom editor panes.
-   */
-  protected void createOps(JEditorPane editorPane) {
-    ops = new Ops(this);
-    ops.init(editorPane);
-  }
-
-  public void attach(JEditorPane editorPane) {
-    if(this.editorPane == editorPane) {
-      return;
-    }
+  public void attach() {
     if(ops == null) {
       createOps(editorPane);
     }
     if(G.dbgEditorActivation.getBoolean()) {
-      System.err.println("TV.detach: "
-              + (this.editorPane == null ? null : this.editorPane.hashCode()));
-      System.err.println("TV.attach: "
-              + (editorPane == null ? null : editorPane.hashCode()));
+      System.err.println("TV.attach: " + editorPane.hashCode());
     }
-    if(this.editorPane != null) detach();	// the old editorPane
-    this.editorPane = editorPane;
     expectedCaretPosition = -1;
     cache.attach(editorPane);
   }
 
   public void detach() {
     cache.detach(editorPane);
+    
     ViManager.detached(editorPane);
-    editorPane = null;
-    // NEEDSWORK: more to do?
+  }
+  
+  /**
+   * Create methods to invoke and interact with editor pane actions.
+   * May override for custom editor panes.
+   */
+  protected void createOps(JEditorPane editorPane) {
+    ops = new Ops(this);
+    ops.init(editorPane);
   }
 
   public JEditorPane getEditorComponent() {

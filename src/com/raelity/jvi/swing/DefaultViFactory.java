@@ -52,11 +52,11 @@ import com.raelity.jvi.*;
  * </ul>
  */
 public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
-  private static final String PROP_VITV = "ViTextView";
+  protected static final String PROP_VITV = "ViTextView";
 
   Window window;
   CommandLine cmdLine;
-  ViFS fs;
+  ViFS fs = new DefaultViFS();
 
   public DefaultViFactory(CommandLine cmdLine) {
     this.cmdLine = cmdLine;
@@ -65,7 +65,7 @@ public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
   public ViTextView getViTextView(JEditorPane editorPane) {
     ViTextView tv01 = (ViTextView)editorPane.getClientProperty(PROP_VITV);
     if(tv01 == null) {
-        tv01 = new TextView();
+        tv01 = new TextView(editorPane);
         tv01.setWindow(new Window(tv01));
         editorPane.putClientProperty(PROP_VITV, tv01);
     }
@@ -73,9 +73,6 @@ public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
   }
 
   public ViFS getFS() {
-    if(fs == null) {
-      fs = new DefaultViFS();
-    }
     return fs;
   }
 
@@ -96,6 +93,8 @@ public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
   }
 
   public Window lookupWindow(JEditorPane editorPane) {
+      // NEEDSWORK: get rid of lookupWindow, should always be currentEdPane
+      //            maybe can get rid of it entirely
     ViTextView tv = ViManager.getViTextView(editorPane);
     return tv.getWindow();
   }

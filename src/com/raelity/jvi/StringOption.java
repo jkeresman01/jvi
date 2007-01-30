@@ -54,8 +54,10 @@ public class StringOption extends Option {
    * Set the value of the parameter.
    */
   public void setString(String newValue) {
+    String oldValue = stringValue;
     stringValue = newValue;
     propogate();
+    Options.getOptions().pcs.firePropertyChange(name, oldValue, newValue);
   }
 
   /**

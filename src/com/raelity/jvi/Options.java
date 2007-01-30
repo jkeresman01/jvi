@@ -30,12 +30,15 @@
 package com.raelity.jvi;
 
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.beans.VetoableChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Set;
 import java.util.Collections;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -51,6 +54,18 @@ import java.util.prefs.Preferences;
  */
 
 public class Options {
+  private Options() {
+  }
+  private static Options options;
+  PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+  
+  public static Options getOptions() {
+      if(options == null) {
+          options = new Options();
+      }
+      return options;
+  }
+  
   public static final String commandEntryFrame =
   						"viCommandEntryFrameOption";
   public static final String backspaceWrapPrevious =
@@ -93,7 +108,7 @@ public class Options {
   public static final String dbgEditorActivation = "viDbgEditorActivation";
 
   
-  private static Map<String,Option> options = new HashMap<String,Option>();
+  private static Map<String,Option> optionsMap = new HashMap<String,Option>();
   
   static List<String>generalList = new ArrayList<String>();
   static List<String>miscList = new ArrayList<String>();
@@ -112,7 +127,7 @@ public class Options {
 
     prefs.addPreferenceChangeListener(new PreferenceChangeListener() {
       public void preferenceChange(PreferenceChangeEvent evt) {
-	Option opt = options.get(evt.getKey());
+	Option opt = optionsMap.get(evt.getKey());
 	if(opt != null) {
           if(evt.getNewValue() != null) {
               opt.preferenceChange(evt.getNewValue());
@@ -344,7 +359,7 @@ public class Options {
                                                 String defaultValue,
                                                 StringOption.Validator valid) {
     StringOption opt = new StringOption(name, defaultValue, valid);
-    options.put(name, opt);
+    optionsMap.put(name, opt);
     if(fAddDefaultToDB) {
       opt.setValue(defaultValue);
     }
@@ -355,7 +370,7 @@ public class Options {
                                                   boolean defaultValue)
   {
     BooleanOption opt = new BooleanOption(name, defaultValue);
-    options.put(name, opt);
+    optionsMap.put(name, opt);
     if(fAddDefaultToDB) {
       opt.setBoolean(defaultValue);
     }
@@ -373,7 +388,7 @@ public class Options {
                                                   IntegerOption.Validator valid)
   {
     IntegerOption opt = new IntegerOption(name, defaultValue, valid);
-    options.put(name, opt);
+    optionsMap.put(name, opt);
     if(fAddDefaultToDB) {
       opt.setInteger(defaultValue);
     }
@@ -386,7 +401,7 @@ public class Options {
   }
 
   public static Option getOption(String name) {
-    return options.get(name);
+    return optionsMap.get(name);
   }
 
   /**
@@ -404,7 +419,7 @@ public class Options {
 
   private static void setupOptionDesc(List<String> optionsGroup, String name,
                                       String displayName, String desc) {
-    Option opt = options.get(name);
+    Option opt = optionsMap.get(name);
     if(opt != null) {
       if(optionsGroup != null) {
           optionsGroup.add(name);
@@ -421,11 +436,35 @@ public class Options {
   
   private static void setExpertHidden(String optionName,
                                       boolean fExpert, boolean fHidden) {
-    Option opt = options.get(optionName);
+    Option opt = optionsMap.get(optionName);
     if(opt != null) {
       opt.fExpert = fExpert;
       opt.fHidden = fHidden;
     }
+  }
+  
+  //
+  // Look like a good bean
+  //
+  
+  public void addPropertyChangeListener( PropertyChangeListener listener )
+  {
+    this.pcs.addPropertyChangeListener( listener );
+  }
+
+  public void removePropertyChangeListener( PropertyChangeListener listener )
+  {
+    this.pcs.removePropertyChangeListener( listener );
+  }
+  
+  public void addPropertyChangeListener(String p, PropertyChangeListener l)
+  {
+    this.pcs.addPropertyChangeListener(p, l);
+  }
+
+  public void removePropertyChangeListener(String p, PropertyChangeListener l)
+  {
+    this.pcs.removePropertyChangeListener(p, l);
   }
 }
 

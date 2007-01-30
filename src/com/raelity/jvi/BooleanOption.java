@@ -44,9 +44,11 @@ public class BooleanOption extends Option {
    * @return true if value actually changed.
    */
   public void setBoolean(boolean newValue) {
+    boolean oldValue = value;
     value = newValue;
     stringValue = "" + value;
     propogate();
+    Options.getOptions().pcs.firePropertyChange(name, oldValue, newValue);
   }
 
   /**

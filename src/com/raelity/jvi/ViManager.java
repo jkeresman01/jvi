@@ -129,6 +129,9 @@ public class ViManager implements Constants {
   }
 
   public static ViTextView getViTextView(JEditorPane editorPane) {
+    if(currentEditorPane == editorPane) {
+        return currentTextView;
+    }
     return factory.getViTextView(editorPane);
   }
 
@@ -259,11 +262,7 @@ public class ViManager implements Constants {
 	}
       }
     }
-    if(target != currentEditorPane) {
-      exitInputMode();
-      switchTo(target);
-      Normal.resetCommand(); // NEEDSWORK: dont think this is needed
-    }
+    switchTo(target);
     if(rerouteChar(key, modifier)) {
       return;
     }
@@ -292,7 +291,10 @@ public class ViManager implements Constants {
   }
 
   private static boolean started = false;
-  static void switchTo(JEditorPane editorPane) {
+  static final void switchTo(JEditorPane editorPane) {
+    if(editorPane == currentEditorPane) {
+        return;
+    }
     if( ! started) {
       started = true;
       startup();
@@ -301,18 +303,22 @@ public class ViManager implements Constants {
       System.err.println("Activation: ViManager.switchTo: " + editorPane);
     }
     registerEditorPane(editorPane); // make sure its registered
+    exitInputMode(); // if switching, make sure prev out of input mode
+    if(currentEditorPane != null) {
+      Normal.resetCommand(); // NEEDSWORK: dont think this is needed
+    }
 
     // first do lookup, in case new window/editorPane
-    Window window = factory.lookupWindow(editorPane);
+    //Window window = factory.lookupWindow(editorPane);
     ViTextView textView = getViTextView(editorPane);
-    textView.switchTo(editorPane);
+    textView.attach();
     G.switchTo(textView);
     
     currentEditorPane = editorPane;
     
-    // detach listeners from last active view
+    // detach listeners from previous active view
     if(currentTextView != null) {
-        //currentTextView.detach();
+        currentTextView.detach();
     }
     currentTextView = textView;
   }
@@ -397,10 +403,7 @@ public class ViManager implements Constants {
     // NEEDSWORK: mouse click: if( ! isRegistered(editorPane)) {}
 
     GetChar.flush_buffers(true);
-    exitInputMode();
-    if(editorPane != currentEditorPane) {
-      switchTo(editorPane);
-    }
+    switchTo(editorPane);
 
     ViTextView textView = getViTextView(editorPane);
     Window window = factory.lookupWindow(editorPane);

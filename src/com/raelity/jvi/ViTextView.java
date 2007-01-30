@@ -37,18 +37,16 @@ import com.raelity.jvi.swing.*;
 
 /**
  * The information needed by vim when running on
- * a swing text package. We abstract this, rather than using
+ * a GUI. We abstract this, rather than using
  * native swing, since different environments, e.g. JBuilder,
  * have their own abstractions. Some abstraction that presents
  * a line oriented interface is useful for vim.
- * <p>There should be
- * one of these for each visual editor display area, so multiple tabs
- * in the same pane editing different files would have one TextView;
- * there is typically one status display for each text view.
- * </p>
  * <p>This has had a few "window" methods added to it, and it is
  * now the primary class referenced by most of the vi code. This
  * allows it to be G.curwin.
+ * </p>
+ * <p>
+ * NEEDSWORK: get rid of JEditorPane reference, should not refer to swing.
  * </p>
  */
 
@@ -218,10 +216,10 @@ public interface ViTextView {
    */
   public void scroll(int n_lines);
 
-  /** change editor pane of interest */
-  public void switchTo(JEditorPane editorPane);
+  /** establish all the listeners */
+  public void attach();
 
-  /** unhook from the current editorPane */
+  /** tear down all the listeners */
   public void detach();
 
   /** Change the cursor shape */
