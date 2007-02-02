@@ -131,7 +131,13 @@ public class TextView implements ViTextView {
   public void detach() {
     cache.detach(editorPane);
     
+    ViManager.detached(editorPane); // NEEDSWORK: what's this for?
+  }
+  
+  public void shutdown() {
+    cache.shutdown(editorPane);
     ViManager.detached(editorPane);
+    editorPane = null;
   }
   
   /**

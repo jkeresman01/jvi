@@ -49,6 +49,17 @@ import com.raelity.jvi.swing.*;
 public interface ViFactory {
 
   public ViTextView getViTextView(JEditorPane editorPane);
+  
+  /** @return true this editor has a text view */
+  public boolean hasViTextView(Object editorPane);
+
+  /** For an environmental object, used for debug output */
+  public String getDisplayFilename(Object o);
+  
+  /**
+   * This editor pane is going away, forget about it.
+   */
+  public void shutdown(JEditorPane editorPane);
 
   /*
    * Register editor pane for use with vi.

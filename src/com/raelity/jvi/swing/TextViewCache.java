@@ -39,10 +39,8 @@ import java.awt.FontMetrics;
 
 import javax.swing.JEditorPane;
 import javax.swing.JViewport;
-import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Segment;
 import javax.swing.text.Element;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
@@ -52,14 +50,13 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 
 import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.FPOS;
 import com.raelity.jvi.WCursor;
 import com.raelity.jvi.Util;
 import com.raelity.jvi.BooleanOption;
-import com.raelity.jvi.Option;
 import com.raelity.jvi.Options;
 import com.raelity.jvi.*;
+import javax.swing.text.Position;
 
 
 /*
@@ -292,11 +289,6 @@ public class TextViewCache implements PropertyChangeListener,
       return;
     }
     Point p = r.getLocation();
-    /*
-    int x01 = -2, y01 = -2;
-    if(p.x <= 2) { x01 = p.x; }
-    if(p.y <= 2) { y01 = p.y; }
-    */
     p.translate(-p.x, 0); // leave a few pixels to left
     viewport.setViewPosition(p);
   }
@@ -343,7 +335,6 @@ public class TextViewCache implements PropertyChangeListener,
       viewBottomLine = -1;
       newViewLines = -1;
     } else {
-      JEditorPane editor = textView.getEditorComponent();
       int newViewTopLine = findFullLine(newViewportPosition, DIR_TOP);
       if(viewTopLine != newViewTopLine) {
 	topLineChange = true;
@@ -504,6 +495,15 @@ public class TextViewCache implements PropertyChangeListener,
       System.err.println("TVCache: attach: "
               + (editor == null ? 0 : editor.hashCode()));
     }
+    if(freezer != null) {
+        freezer.stop();
+        freezer = null;
+    }
+    
+    if(hasListeners)
+        return;
+    
+    hasListeners = true;
     editor.addPropertyChangeListener("font", this);
     changeDocument(editor.getDocument());
     editor.addPropertyChangeListener("document", this);
@@ -512,6 +512,8 @@ public class TextViewCache implements PropertyChangeListener,
     changeFont(editor.getFont());
     changeViewport(editor.getParent());
   }
+  
+  boolean hasListeners = false;
 
   /** Dissassociate from the observed components. */
   public void detach(JEditorPane editor) {
@@ -522,6 +524,22 @@ public class TextViewCache implements PropertyChangeListener,
     if(editor == null) {
       return;
     }
+    freezer = new FreezeViewport(textView.getEditorComponent());
+    
+    //removeListeners();
+  }
+  
+  public void shutdown(JEditorPane ep) {
+    if(freezer != null) {
+        freezer.stop();
+        freezer = null;
+    }
+    removeListeners();
+  }
+  
+  private void removeListeners() {
+    hasListeners = false;
+    JEditorPane editor = textView.getEditorComponent();
     editor.removePropertyChangeListener("font", this);
     editor.removePropertyChangeListener("document", this);
     editor.removePropertyChangeListener("ancestor", this);
@@ -529,6 +547,8 @@ public class TextViewCache implements PropertyChangeListener,
     editor.removeCaretListener(this);
     changeViewport(null);
   }
+  
+  private FreezeViewport freezer;
 
   //
   // Listener events
@@ -537,7 +557,6 @@ public class TextViewCache implements PropertyChangeListener,
   // -- property change events --
 
   public void propertyChange(PropertyChangeEvent e) {
-    if(false) System.err.println("PC: source: " + e.getSource().hashCode());
     String p = e.getPropertyName();
     Object o = e.getNewValue();
     if("font".equals(p)) {
@@ -552,17 +571,12 @@ public class TextViewCache implements PropertyChangeListener,
   // -- caret event --
 
   public void caretUpdate(CaretEvent e) {
-    if(false) {
-      System.err.println("CU: source: " + e.getSource().hashCode());
-      //System.err.println("    curwin: " + ViManager.getCurrentEditorPaneXXX().hashCode());
-    }
     changeCaretPosition(e.getDot(), e.getMark());
   }
 
   // -- document events --
 
   public void changedUpdate(DocumentEvent e) {
-    if(false)System.err.println("CHU: " + e.getDocument().hashCode());
     if(cacheTrace.getBoolean()) {
       System.err.println("doc changed: " +e.getOffset() + ":" + e.getLength() + " " + e);
       // System.err.println("element" + e.getChange());
@@ -578,8 +592,8 @@ public class TextViewCache implements PropertyChangeListener,
   private boolean undoChange;
 
   public void insertUpdate(DocumentEvent e) {
-    if(false)System.err.println("IU: " + e.getDocument().hashCode());
-    if(cacheTrace.getBoolean())System.err.println("doc insert: " +e.getOffset() + ":" + e.getLength() + " " + e);
+    if(cacheTrace.getBoolean())
+        System.err.println("doc insert: " +e.getOffset() + ":" + e.getLength() + " " + e);
     invalidateData();
     undoOffset = e.getOffset();
     undoLength = e.getLength();
@@ -587,8 +601,8 @@ public class TextViewCache implements PropertyChangeListener,
   }
 
   public void removeUpdate(DocumentEvent e) {
-    if(false)System.err.println("RU: " + e.getDocument().hashCode());
-    if(cacheTrace.getBoolean())System.err.println("doc remove: " +e.getOffset() + ":" + e.getLength() + " " + e);
+    if(cacheTrace.getBoolean())
+        System.err.println("doc remove: " +e.getOffset() + ":" + e.getLength() + " " + e);
     invalidateData();
     undoOffset = e.getOffset();
     undoLength = e.getLength();
@@ -621,8 +635,91 @@ public class TextViewCache implements PropertyChangeListener,
   // -- viewport event --
 
   public void stateChanged(ChangeEvent e) {
-    int HASH_CODE = e.getSource().hashCode();
-    if(false)System.err.println("SC: " + e.getSource().hashCode());
     changeView(false);
   }
+    
+    /**
+     * Stabilize (do not allow scrolling) the JViewport displaying
+     * the indicated JEditorPane.
+     * This is typically used when the underlying document may change while
+     * being edited in another view. The {@link #stop} method is used to release
+     * the listeners and so unfreeze the viewport.
+     * <p>This is a one shot class. The editor is expected to be good to go.
+     * Only document changes are listened to. The first char of the top line is
+     * pinned to the upper left corner. If needed, this could be extended
+     * to pin the horizontal position as well.
+     */
+    public static class FreezeViewport implements DocumentListener {
+        private JEditorPane ep;
+        private JViewport vp;
+        private Document doc;
+        private Position pos;
+        private int topLine;
+        private int nLine;
+        
+        public FreezeViewport(JEditorPane ep) {
+            try {
+                this.ep = ep;
+                doc = ep.getDocument();
+                if(doc == null)
+                    return;
+                vp = (JViewport)ep.getParent(); // may throw class cast, its ok
+                Element root = doc.getDefaultRootElement();
+                nLine = root.getElementCount();
+                
+                // Get the offset of the first displayed char in the top line
+                Point pt = vp.getViewPosition();
+                int offset = ep.viewToModel(pt);
+                
+                // Determine the line number of the top displayed line
+                topLine = root.getElementIndex(offset);
+                
+                // Note. offset may not be first char, due to horiz scroll
+                // make offset the first char of the line
+                offset = root.getElement(topLine).getStartOffset();
+                
+                // Get marker to offset in the document
+                pos = doc.createPosition(offset);
+                doc.addDocumentListener(this);
+            } catch (Exception ex) {
+                // Note: did not start listener
+            }
+        }
+    
+        public void stop() {
+            doc.removeDocumentListener(this);
+        }
+    
+        private void track(DocumentEvent e) {
+            // Might be able to use info from DocumentEvent to optimize
+            try {
+                Element root = doc.getDefaultRootElement();
+                int newNumLine = root.getElementCount();
+                // return if line count unchanged or changed after our mark
+                if(nLine == newNumLine || e.getOffset() > pos.getOffset())
+                    return;
+                nLine = newNumLine;
+                
+                int newTopLine = root.getElementIndex(pos.getOffset());
+                if(topLine == newTopLine)
+                    return;
+                topLine = newTopLine;
+                
+                // make a move
+                int offset = root.getElement(topLine).getStartOffset();
+                Point pt = ep.modelToView(offset).getLocation();
+                pt.translate(-pt.x, 0); // x <-- 0, leave a few pixels to left
+                vp.setViewPosition(pt);
+            } catch(Exception ex) {
+                stop();
+            }
+            return;
+        }
+
+        public void insertUpdate(DocumentEvent e) { track(e); }
+
+        public void removeUpdate(DocumentEvent e) { track(e); }
+
+        public void changedUpdate(DocumentEvent e) { }
+    }
 }

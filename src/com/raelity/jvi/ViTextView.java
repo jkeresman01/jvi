@@ -221,6 +221,9 @@ public interface ViTextView {
 
   /** tear down all the listeners */
   public void detach();
+  
+  /** going away, do any remaining cleanup */
+  public void shutdown();
 
   /** Change the cursor shape */
   public void updateCursor(ViCursor cursor);

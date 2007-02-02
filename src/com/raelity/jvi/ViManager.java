@@ -178,52 +178,83 @@ public class ViManager implements Constants {
    * the order they were activated. If the argument is negative then use
    * the MRU list to get the buffer, where -1
    * means the previous buffer. An argument of 0 will return null.
+   * Usage for n < 0 is deprecated, consider -0 is not the top of the
+   * MRU list, see {@link #getMruBuffer}.
    */
   public static Object getTextBuffer(int i) {
     if(i == 0) {
       return null;
     }
-    List list = null;
-    if(i < 0) {
-      list = textMRU;
-      i = -i;
-    } else if(i > 0) {
-      list = textBuffers;
-      i = i - 1;
-    }
-    if(i >= list.size()) {
+    if(i < 0)
+      return getMruBuffer(-i);
+      
+    i = i - 1;
+    if(i >= textBuffers.size()) {
       return null;
     }
-    return list.get(i);
+    return textBuffers.get(i);
+  }
+  
+  /**
+   * Fetch the Nth buffer, 0 to N-1, from the Mru list.
+   * @return the buffer, else null if i is out of bounds.
+   */
+  public static Object getMruBuffer(int i) {
+    if(i < 0 || i >= textMRU.size())
+        return null;
+    return textMRU.get(i);
   }
 
   /**
    * The application invokes this whenever a file becomes selected
    * in the specified container.
    */
-  public static void activateFile(Object fileContainer, Object fileObject) {
+  public static void activateFile(Object o, Object fileObject) {
+    if(G.dbgEditorActivation.getBoolean()) {
+      String tag = o instanceof String ? o.toString() + ": " : "";
+      System.err.println("Activation: ViManager.activateFile: "
+              + tag + factory.getDisplayFilename(fileObject));
+    }
     textMRU.remove(fileObject);
     textMRU.add(0, fileObject);
     if( ! textBuffers.contains(fileObject)) {
       textBuffers.add(fileObject);
     }
   }
+  
+  public static boolean isBuffer(Object fileObject) {
+      return textBuffers.contains(fileObject);
+  }
 
   /**
    * The applications invokes this method when a file is completely
    * removed from a container.
    */
-  public static void deactivateFile(Object fileContainer, Object fileObject) {
+  public static void deactivateFile(JEditorPane ep, Object fileObject) {
+    if(G.dbgEditorActivation.getBoolean()) {
+      String fname = factory.getDisplayFilename(fileObject);
+      System.err.println("Activation: ViManager.deactivateFile: "
+              + (ep == null ? "(no shutdown) " : "") + fname);
+    }
+    if(ep != null)
+        factory.shutdown(ep);
     textMRU.remove(fileObject);
     textBuffers.remove(fileObject);
   }
 
   /**
    * Set up an editor pane for use with vi.
-   * This is a nop if already registered.
    */
   public static void registerEditorPane(JEditorPane editorPane) {
     factory.registerEditorPane(editorPane);
+  }
+  
+  public static void log(Object... a) {
+      StringBuilder s = new StringBuilder();
+      for (int i = 0; i < a.length; i++) {
+          s.append(a[i]);
+      }
+      System.err.println(s);
   }
 
   /**
@@ -299,9 +330,7 @@ public class ViManager implements Constants {
       started = true;
       startup();
     }
-    if(G.dbgEditorActivation.getBoolean()) {
-      System.err.println("Activation: ViManager.switchTo: " + editorPane);
-    }
+    
     registerEditorPane(editorPane); // make sure its registered
     exitInputMode(); // if switching, make sure prev out of input mode
     if(currentEditorPane != null) {
@@ -313,6 +342,11 @@ public class ViManager implements Constants {
     ViTextView textView = getViTextView(editorPane);
     textView.attach();
     G.switchTo(textView);
+    
+    if(G.dbgEditorActivation.getBoolean()) {
+      System.err.println("Activation: ViManager.switchTo: "
+              + textView.getDisplayFileName());
+    }
     
     currentEditorPane = editorPane;
     

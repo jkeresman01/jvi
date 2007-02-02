@@ -65,11 +65,33 @@ public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
   public ViTextView getViTextView(JEditorPane editorPane) {
     ViTextView tv01 = (ViTextView)editorPane.getClientProperty(PROP_VITV);
     if(tv01 == null) {
-        tv01 = new TextView(editorPane);
+        tv01 = createViTextView(editorPane);
         tv01.setWindow(new Window(tv01));
         editorPane.putClientProperty(PROP_VITV, tv01);
     }
     return tv01;
+  }
+  
+  /** subclass probably wants to override this */
+  protected ViTextView createViTextView(JEditorPane editorPane) {
+      return new TextView(editorPane);
+  }
+
+  public boolean hasViTextView(Object o) {
+    if(o instanceof JEditorPane) {
+        return ((JEditorPane)o).getClientProperty(PROP_VITV) != null;
+    } else
+        return false;
+  }
+  
+  public String getDisplayFilename(Object o) {
+      return "";
+  }
+  
+  public void shutdown(JEditorPane ep) {
+    ViTextView tv = getViTextView(ep);
+    ep.putClientProperty(PROP_VITV, null);
+    tv.shutdown();
   }
 
   public ViFS getFS() {
