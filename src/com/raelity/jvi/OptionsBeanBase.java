@@ -21,7 +21,6 @@ import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.util.List;
 import java.util.prefs.Preferences;
-import org.openide.ErrorManager;
 
 /**
  * Base class for jVi options beans. This method contains the read/write methods
@@ -57,22 +56,33 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	int i = 0;
 
 	for(String name : optionsList) {
-	    Option opt = Options.getOption(name);
             PropertyDescriptor d;
-            try {
-                d = new PropertyDescriptor(opt.getName(), clazz);
-            } catch (IntrospectionException ex) {
-                ex.printStackTrace();
-                continue;
-            }
-	    d.setDisplayName(opt.getDisplayName());
-	    d.setExpert(opt.isExpert());
-	    d.setHidden(opt.isHidden());
-	    d.setShortDescription(opt.getDesc());
-            if(opt instanceof IntegerOption
-               || opt instanceof StringOption) {
-                d.setBound(true);
-                d.setConstrained(true);
+            if(name.equals("jViVersion")) {
+                try {
+                    d = new PropertyDescriptor(name, clazz,
+                            "getJViVersion", null);
+                } catch (IntrospectionException ex) {
+                    ex.printStackTrace();
+                    continue;
+                }
+                d.setDisplayName("jVi Version");
+            } else {
+                Option opt = Options.getOption(name);
+                try {
+                    d = new PropertyDescriptor(opt.getName(), clazz);
+                } catch (IntrospectionException ex) {
+                    ex.printStackTrace();
+                    continue;
+                }
+                d.setDisplayName(opt.getDisplayName());
+                d.setExpert(opt.isExpert());
+                d.setHidden(opt.isHidden());
+                d.setShortDescription(opt.getDesc());
+                if(opt instanceof IntegerOption
+                || opt instanceof StringOption) {
+                    d.setBound(true);
+                    d.setConstrained(true);
+                }
             }
 	    descriptors[i++] = d;
 	}
@@ -160,6 +170,11 @@ public class OptionsBeanBase extends SimpleBeanInfo {
     // All the known options
     //      The bean getter/setter
     //
+    
+    /** this read-only option is special cased */
+    public String getJViVersion() {
+        return ViManager.getReleaseString();
+    }
 
     public void setViCommandEntryFrameOption(boolean arg) {
         put("viCommandEntryFrameOption", arg);

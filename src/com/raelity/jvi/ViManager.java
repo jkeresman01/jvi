@@ -262,37 +262,6 @@ public class ViManager implements Constants {
    * <br>NEEDSWORK: catch all exceptions comming out of here?
    */
   static public void keyStroke(JEditorPane target, int key, int modifier) {
-    if(false && KeyBinding.isKeyDebug()) { // DEBUG
-      boolean changeIt = false;
-      if(modifier == MOD_MASK_ALT) {
-	switch (key) {
-	  case 0x30:
-	    changeIt = true;
-	    key = 128; // display as a box
-	    break;
-	  case 0x31:
-	    changeIt = true;
-	    key = 231;
-	    break;
-	  case 0x32:
-	    changeIt = true;
-	    key = 232;
-	    break;
-	  case 0x33:
-	    changeIt = true;
-	    key = 233;
-	    break;
-	  case 0x34:
-	    changeIt = true;
-	    key = 234;
-	    break;
-	}
-	if(changeIt) {
-	  modifier = 0;
-	  System.err.println("KeyChange '" + (char)key + "'");
-	}
-      }
-    }
     switchTo(target);
     if(rerouteChar(key, modifier)) {
       return;

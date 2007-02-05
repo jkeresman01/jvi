@@ -142,6 +142,9 @@ public class Options {
     // General Options
     //
     //
+    
+    generalList.add("jViVersion"); // May need to create an option for this
+    
     G.p_meta_equals = createBooleanOption(metaEquals, true);
     setupOptionDesc(generalList, metaEquals, "RE Meta Equals",
             "In a regular expression"

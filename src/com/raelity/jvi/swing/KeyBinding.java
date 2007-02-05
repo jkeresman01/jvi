@@ -234,6 +234,12 @@ public class KeyBinding implements KeyDefs, Constants {
 
     bl.add(createKeyBinding(KeyEvent.VK_CLOSE_BRACKET, Event.CTRL_MASK,
 			    "ViCtrl-ClosebracketKey"));
+    
+    // input mode bindings to shift line to align with paren in previous line
+    // the ">" must be on period
+    bl.add(createKeyBinding('.', CTRL_MASK, "ViPeriodCloseAngle"));
+    // the "<" must be on comma
+    bl.add(createKeyBinding(',', CTRL_MASK, "ViCommaOpenAngle"));
 
     //
     // Add the normal control characters.
@@ -261,10 +267,6 @@ public class KeyBinding implements KeyDefs, Constants {
     //
 
     // WHAT ARE THE FOLLOWING TWO FOR?
-    // the ">" must be on period
-    bl.add(createKeyBinding('.', CTRL_MASK, "ViPeriodCloseAngle"));
-    // the "<" must be on comma
-    bl.add(createKeyBinding(',', CTRL_MASK, "ViCommaOpenAngle"));
 
     //bl.add(createKeyBinding( KeyEvent.VK_CIRCUMFLEX, CTRL_MASK, "ViCtrl-CircumflexKey"));
     //bl.add(createKeyBinding( KeyEvent.VK_UNDERSCORE, CTRL_MASK, "ViCtrl-UnderscoreKey"));
@@ -369,7 +371,8 @@ public class KeyBinding implements KeyDefs, Constants {
       actionsList.add(factory.createKeyAction("ViMinusKey", K_KMINUS));
       actionsList.add(factory.createKeyAction("ViDivideKey", K_KDIVIDE));
       actionsList.add(factory.createKeyAction("ViMultiplyKey", K_KMULTIPLY));
-      // actionsList.add(factory.createKeyAction("ViEnterKey", K_ENTER));
+      // NEEDSWORK: bring in ViEnterKey as K_KENTER, not as KeyEvent.VK_ENTER
+      actionsList.add(factory.createKeyAction("ViEnterKey", K_KENTER));
 
       actionsList.add(factory.createKeyAction("ViPeriodCloseAngle", K_X_PERIOD));
       actionsList.add(factory.createKeyAction("ViCommaOpenAngle", K_X_COMMA));
@@ -387,7 +390,7 @@ public class KeyBinding implements KeyDefs, Constants {
       actionsList.add(factory.createKeyAction("ViCtrl-K", 11));
       actionsList.add(factory.createKeyAction("ViCtrl-L", 12));
       actionsList.add(factory.createKeyAction("ViCtrl-M", 13));
-      actionsList.add(factory.createKeyAction("ViEnterKey", KeyEvent.VK_ENTER)); // 13
+      //actionsList.add(factory.createKeyAction("ViEnterKey", KeyEvent.VK_ENTER)); // 13
       actionsList.add(factory.createKeyAction("ViCtrl-N", 14));
       actionsList.add(factory.createKeyAction("ViCtrl-O", 15));
       actionsList.add(factory.createKeyAction("ViCtrl-P", 16));

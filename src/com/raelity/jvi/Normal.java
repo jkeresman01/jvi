@@ -691,14 +691,13 @@ middle_code:
 	  case K_KPLUS:
 	  case CR:
 	  case K_KENTER:
-	  case NL:	// CHANGE: from below cause "enter" turned to '\n' char
 	    flag = true;
 	    // FALLTHROUGH
 
 	  case 'j':
 	  case K_DOWN:
 	  case 0x1f & (int)('N'):	// Ctrl
-	    // case NL:	put above...
+	  case NL:	// 0x1f & (int)('J')
 	    oap.motion_type = MLINE;
 	    if (Edit.cursor_down(ca.count1, oap.op_type == OP_NOP) == FAIL)
 	      clearopbeep(oap);
