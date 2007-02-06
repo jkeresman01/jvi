@@ -38,8 +38,10 @@ package com.raelity.jvi;
 public interface ViOutputStream {
   /** Indicates that the output stream is for search results */
   public static final String SEARCH = "Search";
-  /** Indicates that the output stream is random text */
+  /** Indicates that the output stream is random lines from a file */
   public static final String TEXT = "Text";
+  /** Indicates that the output stream is command state information, reuse */
+  public static final String OUTPUT = "Output";
   
   /**
    * Add a message to this output stream. This argument information 

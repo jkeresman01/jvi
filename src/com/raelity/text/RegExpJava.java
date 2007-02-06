@@ -48,7 +48,7 @@ public class RegExpJava extends RegExp
 	try {
 	    pat = Pattern.compile(patternString, flags);
 	} catch (PatternSyntaxException e) {
-            throw new RegExpPatternError(e);
+            throw new RegExpPatternError(e.getDescription(), e.getIndex(), e);
         }
     }
 

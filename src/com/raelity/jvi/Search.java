@@ -517,7 +517,8 @@ finished:
       lastRegExpIC = ignoreCase;
       lastRegExp = re;
     } catch(RegExpPatternError ex) {
-      Msg.emsg("Invalid search string: \"" + pattern + "\" " + ex.getMessage());
+      Msg.emsg(ex.getMessage() + " [" + ex.getIndex() + "]" + pattern);
+      //Msg.emsg("Invalid search string: \"" + pattern + "\" " + ex.getMessage());
       re = null;
     }
     return re;
@@ -528,24 +529,27 @@ finished:
    * Change metacharacter escaping of input pattern to match
    * the perl5 requirements. Do this because non-standard metachars
    * may be be escaped in patterns according to metaEscape option.
-   * <p> This should be a table:
-   *    'c' is escaped          'c' is not escaped
-   *         c  --> \c                c  --> c
-   *         \c --> c                 \c --> \c
-   * </p><p>The metaEquals (use '=' instead of '?') makes things a real mess.
-   *    '?' is escaped          '?' is not escaped
-   *         =  --> =                =  --> ?
-   *         \= --> ?                \= --> =
-   *         ?  --> \?               ?  --> \?
-   *         \? --> \?               \? --> \?  (nonsense)
+   * <p> (This should be an html table:)
+   * <br/>   'c' is escaped      |   'c' is not escaped
+   * <br/>        c  --> \c      |         c  --> c
+   * <br/>        \c --> c       |         \c --> \c
+   * </p><p> Previously, vim did not allow ? to indicate optional atom, so
+   * there was some very messy code. Now, since '?' is accepted by vim,
+   * just need to deal with converting '=' to '?'. Still messy, but not
+   * quite so bad.
+   * <br/>   '=' is escaped      |   '=' is not escaped
+   * <br/>        c  --> \c      |         c  --> c
+   * <br/>        \c --> c       |         \c --> \c
    *
    * </p><p>
-   * And finally, either \&lt; or \&gt; are replaced by \b.
+   * And finally, either \&lt; or \&gt; are replaced by \b. If there wasn't
+   * this last rule, then could just return if p_meta_escape was empty and
+   * p_meta_equals was false.
    * </p>
    */
   static String cleanupPattern(String s) {
-    StringBuffer sb = new StringBuffer();
     String metacharacterEscapes = G.p_meta_escape.getString();
+    StringBuffer sb = new StringBuffer();
     boolean isEscaped = false;
     for(int in = 0; in < s.length(); in++) {
       char c = s.charAt(in);
@@ -553,42 +557,32 @@ finished:
         isEscaped = true;
         continue;
       }
-      if((c == '=' || c == '?') && G.p_meta_equals.getBoolean()) {
-        int c_state = c;
-        if(isEscaped) {
-          c_state |= ESCAPED_FLAG;      // indicate escaped in pattern
+      
+      if((c == '=') && G.p_meta_equals.getBoolean()) {
+        // Have an '=' and that char is used to specify an optional atom.
+        // Set useEscape if the '=' needs to be escaped to mean optional.
+        boolean useEscape = metacharacterEscapes.indexOf("?") >= 0;
+        if(isEscaped && useEscape
+           || !isEscaped && !useEscape) {
+          // the '=' is intened to indicated an optional atom,
+          // convert it to a '?'
+          c = '?';
         }
-        boolean optionalOptionEscaped = metacharacterEscapes.indexOf("?") >= 0;
-        switch(c_state) {
-          case '=':
-            if(optionalOptionEscaped) { sb.append("="); }
-            else { sb.append("?"); }
-            break;
-          case '=' | ESCAPED_FLAG:
-            if(optionalOptionEscaped) { sb.append("?"); }
-            else { sb.append("="); }
-            break;
-          case '?':
-          case '?' | ESCAPED_FLAG:
-            sb.append("\\?");
-            break;
+      }
+      if(metacharacterEscapes.indexOf(c) >= 0) { // metachar gets escaped
+        // reverse of what was seen
+        if( ! isEscaped) {
+          sb.append("\\");
         }
+        sb.append(c);
+      } else if(isEscaped && (c == '<' || c == '>')) {
+        sb.append("\\b");
       } else {
-        if(metacharacterEscapes.indexOf(c) >= 0) { // metachar gets escaped
-          // reverse of what was seen
-          if( ! isEscaped) {
-            sb.append("\\");
-          }
-          sb.append(c);
-        } else if((c == '<' || c == '>') && isEscaped) {
-          sb.append("\\b");
-        } else {
-          // pass through what was seen
-          if(isEscaped) {
-            sb.append("\\");
-          }
-          sb.append(c);
+        // pass through what was seen
+        if(isEscaped) {
+          sb.append("\\");
         }
+        sb.append(c);
       }
       isEscaped = false;
     }

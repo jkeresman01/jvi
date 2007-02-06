@@ -77,7 +77,7 @@ public class ViManager implements Constants {
 
   private static int majorVersion = 0;
   private static int minorVersion = 8;
-  private static int microVersion = 0;
+  private static int microVersion = 2;
   private static String releaseTag = "x";
   private static String release = "jVi "
                     + ViManager.majorVersion
@@ -210,7 +210,7 @@ public class ViManager implements Constants {
    * in the specified container.
    */
   public static void activateFile(Object o, Object fileObject) {
-    if(G.dbgEditorActivation.getBoolean()) {
+    if(factory != null && G.dbgEditorActivation.getBoolean()) {
       String tag = o instanceof String ? o.toString() + ": " : "";
       System.err.println("Activation: ViManager.activateFile: "
               + tag + factory.getDisplayFilename(fileObject));
@@ -231,13 +231,16 @@ public class ViManager implements Constants {
    * removed from a container.
    */
   public static void deactivateFile(JEditorPane ep, Object fileObject) {
-    if(G.dbgEditorActivation.getBoolean()) {
+    if(factory != null && G.dbgEditorActivation.getBoolean()) {
       String fname = factory.getDisplayFilename(fileObject);
       System.err.println("Activation: ViManager.deactivateFile: "
               + (ep == null ? "(no shutdown) " : "") + fname);
     }
-    if(ep != null)
+    
+    assert(factory != null);
+    if(factory != null && ep != null) {
         factory.shutdown(ep);
+    }
     textMRU.remove(fileObject);
     textBuffers.remove(fileObject);
   }

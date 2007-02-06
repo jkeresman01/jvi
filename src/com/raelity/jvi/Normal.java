@@ -1922,7 +1922,11 @@ middle_code:
     if (cmdchar == ']' || cmdchar == Util.ctrl(']') || cmdchar == 'K')
     {
       if(cmdchar == Util.ctrl(']')) {
+        // the ^] is parsed out below, but just short circuit the rest.
         // give the environment a chance at it
+        // vim does not setpcmark, really only want to set pcmark if
+        // the definition is in the same file. But try this out.
+        // MarkOps.setpcmark(); // NEEDSWORK: ^] mark not working
 	G.curwin.jumpDefinition();
         return;
       }
