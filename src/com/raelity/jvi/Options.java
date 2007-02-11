@@ -122,6 +122,7 @@ public class Options {
     if(didInit) {
       return;
     }
+    didInit = true;
 
     prefs = ViManager.getViFactory().getPreferences();
 
@@ -342,8 +343,6 @@ public class Options {
     createBooleanOption(dbgCache, false);
     setupOptionDesc(debugList, dbgCache, "debug cache",
                "Output info on text/doc cache");
-
-    didInit = true;
   }
 
   static Preferences getPrefs() {
