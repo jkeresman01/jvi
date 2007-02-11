@@ -134,6 +134,11 @@ public class ViManager implements Constants {
     }
     return factory.getViTextView(editorPane);
   }
+  
+  public static ViOutputStream createOutputStream(ViTextView tv,
+                                           Object type, Object info) {
+    return factory.createOutputStream(tv, type, info);
+  }
 
   static public void installKeymap(JEditorPane editorPane) {
     editorPane.setKeymap(KeyBinding.getKeymap());

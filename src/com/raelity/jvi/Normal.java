@@ -882,8 +882,8 @@ middle_code:
 	       * instead of the last command (inserting text). This is used for
 	       * CTRL-O <.> in insert mode
 	       */
-	      if (GetChar.start_redo(ca.count0, G.restart_edit != 0
-			     && !arrow_used) == FAIL)
+	      if (GetChar.start_redo(ca.count0,
+                                    G.restart_edit != 0 && !arrow_used) == FAIL)
 		clearopbeep(oap);
 	    }
 	    break;

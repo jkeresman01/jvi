@@ -18,6 +18,8 @@ import java.util.Vector;
 import java.util.prefs.Preferences;
 
 /**
+ * Use this class to programatically enable/disable jVi catching particular
+ * control keys or to determine if a particular key is being caught.
  *
  * @author erra
  */
@@ -29,7 +31,7 @@ public class KeyBindingBean  extends SimpleBeanInfo {
     public BeanDescriptor getBeanDescriptor() {
         return new BeanDescriptor(KeyBindingBean.class) {
             public String getDisplayName() {
-                return "Control Key Bindings";
+                return "Control-Key Bindings";
             }
         };
     }

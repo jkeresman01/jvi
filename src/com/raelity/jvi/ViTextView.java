@@ -33,7 +33,6 @@ import javax.swing.JEditorPane;
 import javax.swing.text.Segment;
 import javax.swing.text.Element;
 import javax.swing.text.BadLocationException;
-import com.raelity.jvi.swing.*;
 
 /**
  * The information needed by vim when running on
@@ -251,13 +250,6 @@ public interface ViTextView {
 
   /** @return an array of marks */
   public ViMark[] createMarks(int n_mark);
-
-  /** create an output stream for some kind of results.
-   *  @param type Should be a constant from ViOutputStream,
-   *          e.g. ViOutputStream.SEARCH.
-   *  @param info qualifier for the output stream, e.g. search pattern.
-   */
-  public ViOutputStream createOutputStream(Object type, Object info);
 
   /** Quit editing window. Can close last view.
    */

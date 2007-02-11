@@ -98,6 +98,11 @@ public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
     return fs;
   }
 
+  public ViOutputStream createOutputStream(ViTextView tv,
+                                           Object type, Object info) {
+    return new DefaultOutputStream(tv, type, info);
+  }
+
   /**
    * Register editor pane for use with vi. Install a
    * vi cursor. This is a nop

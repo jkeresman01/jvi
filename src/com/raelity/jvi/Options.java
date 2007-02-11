@@ -147,9 +147,8 @@ public class Options {
     
     G.p_meta_equals = createBooleanOption(metaEquals, true);
     setupOptionDesc(generalList, metaEquals, "RE Meta Equals",
-            "In a regular expression"
-            + " use '=', not '?', to indicate an optional atom."
-            + " vim default is '='.");
+            "In a regular expression allow"
+            + " '=', in addition to '?', to indicate an optional atom.");
     setExpertHidden(metaEquals, true, false);
 
     G.p_meta_escape = createStringOption(metaEscape, G.metaEscapeDefault,

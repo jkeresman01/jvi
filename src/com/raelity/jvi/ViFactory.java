@@ -72,6 +72,14 @@ public interface ViFactory {
    */
   public ViFS getFS();
 
+  /** create an output stream for some kind of results.
+   *  @param type Should be a constant from ViOutputStream,
+   *          e.g. ViOutputStream.SEARCH.
+   *  @param info qualifier for the output stream, e.g. search pattern.
+   */
+  public ViOutputStream createOutputStream(ViTextView tv,
+                                           Object type, Object info);
+
   /**
    * The factory keeps track of which Window is active when there
    * is a switch. The argument may or may not be used depending on

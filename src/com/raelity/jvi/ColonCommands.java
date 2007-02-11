@@ -701,6 +701,36 @@ public class ColonCommands implements ColonCommandFlags, Constants {
     }
   };
   
+  /* This is the default buffers,files,ls command. The platform specific code
+   * may chose to register this, or implement their own, possibly using
+   * popup gui components.
+   */
+    public static ActionListener ACTION_BUFFERS = new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            ViOutputStream osa = ViManager.createOutputStream(
+                null, ViOutputStream.OUTPUT,
+                " === activation ===                 === MRU ===");
+            int i = 0;
+            while(true) {
+                Object o1 = ViManager.getTextBuffer(i+1);
+                Object o2 = ViManager.getMruBuffer(i);
+                if(o1 == null && o2 == null)
+                    break;
+                StringBuilder s = new StringBuilder();
+                String name1 = "";
+                String name2 = "";
+                if(o1 != null)
+                    name1 = ViManager.getViFactory().getDisplayFilename(o1);
+                if(o2 != null)
+                    name2 = ViManager.getViFactory().getDisplayFilename(o2);
+                osa.println(String.format("  %2d %-30s %3d %s",
+                                            i+1, name1, -i, name2));
+                i++;
+            }
+            osa.close();
+        }
+    };
+  
   /**
    * :print command. If not busy global then output to "print" stream.
    * For now, its just a no-op so the word "print" can be found.
@@ -806,8 +836,8 @@ public class ColonCommands implements ColonCommandFlags, Constants {
     if(printStream != null) {
       return;
     }
-    printStream = G.curwin.createOutputStream(ViOutputStream.TEXT,
-                                              lastCommand);
+    printStream = ViManager.createOutputStream(G.curwin, ViOutputStream.TEXT,
+                                               lastCommand);
   }
    
   /**

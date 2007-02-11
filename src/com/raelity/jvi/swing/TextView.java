@@ -487,10 +487,6 @@ public class TextView implements ViTextView {
     return mark;
   }
 
-  public ViOutputStream createOutputStream(Object type, Object info) {
-    return new DefaultOutputStream(this, type, info);
-  }
-
   public void updateCursor(ViCursor cursor) {
     if(editorPane == null) {
       return; // NEEDSWORK: was getting some null pointer stuff here

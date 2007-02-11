@@ -1258,9 +1258,11 @@ finished:
     
     ViOutputStream result;
     if(cmdAction == ColonCommands.ACTION_print) {
-      result = G.curwin.createOutputStream(ViOutputStream.SEARCH, pattern);
+      result = ViManager.createOutputStream(G.curwin,
+                                            ViOutputStream.SEARCH, pattern);
     } else {
-      result = G.curwin.createOutputStream(ViOutputStream.TEXT, pattern);
+      result = ViManager.createOutputStream(G.curwin,
+                                            ViOutputStream.TEXT, pattern);
     }
     
     for(int lnum = 1; lnum <= nLine; lnum++) {

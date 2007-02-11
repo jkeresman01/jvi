@@ -29,12 +29,11 @@
  */
 package com.raelity.jvi;
 
-import com.raelity.jvi.ViManager;
 import com.raelity.jvi.swing.KeyBinding;
-import com.raelity.jvi.swing.*;
 
 public class GetChar implements Constants, KeyDefs {
-  static boolean block_redo = false;
+  private static boolean block_redo = false;
+  private static boolean handle_redo = false;
 
   /** An input char from the user has been recieved.
    * Implement the key into 16 bit mapping defined in KeyDefs.
@@ -58,9 +57,34 @@ public class GetChar implements Constants, KeyDefs {
 
     last_recorded_len = 0;      // for the one in vgetc()
     userInput(key);
+    
+    assert(!handle_redo);
+    handle_redo = false;
+    
     Normal.processInputChar(key, true);
 
-    GetChar.pumpVi();
+    if(!handle_redo)
+        pumpVi();
+    else {
+        //
+        // Handle some type of redo command: start_redo or start_redo_ins.
+        // Execute these commands atomically, with the file locked if
+        // supported by the platform. We need these special brackets since
+        // while executing the command, other begin/endUndo's may take place.
+        // 
+        // During the above processInputChar, a redo command was setup by
+        // stuffing the buffer. pumpVi() delivers the stuffbuf, and the typebuf,
+        // to processInputChar. It is tempting to always bracket pumpVi with
+        // begin/endRedoUndo, but macro execution might end in input mode.
+        //
+        try {
+            Misc.beginRedoUndo();
+            pumpVi();
+        } finally {
+            Misc.endRedoUndo();
+            handle_redo = false;
+        }
+    }
     Misc.out_flush();   // returning from event
                         // only do this if no pending characters
                         // but can't test for pending characters, so ....
@@ -70,8 +94,9 @@ public class GetChar implements Constants, KeyDefs {
    * Pass queued up characters to vi for processing.
    * First from stuffbuf, then typebuf.
    */
-  static void pumpVi() {
+  private static void pumpVi() {
     // NEEDSWORK: pumpVi: check for interupt?
+      
     while(true) {
       while(stuffbuff.hasNext()) {
         pumpChar(stuffbuff.getNext());
@@ -89,7 +114,7 @@ public class GetChar implements Constants, KeyDefs {
    * @return a queued character from input stream.
    * @exception RuntimeException if no characters are available
    */
-  static char getOneChar() {
+  private static char getOneChar() {
     if(stuffbuff.hasNext()) {
       return (char)stuffbuff.getNext();
     }
@@ -99,7 +124,7 @@ public class GetChar implements Constants, KeyDefs {
     throw new RuntimeException("No character available");
   }
 
-  static void pumpChar(int c) {
+  private static void pumpChar(int c) {
     int modifiers = 0;
     if((c & 0xF000) == VIRT) {
       modifiers = (c >> MODIFIER_POSITION_SHIFT) & 0x0f;
@@ -153,7 +178,7 @@ public class GetChar implements Constants, KeyDefs {
    * Put the current modifies into the character if needed,
    * {@see KeyDefs} for info on character layout with modifiers.
    */
-  static void userInput(int c /*, int len*/) {
+  private static void userInput(int c /*, int len*/) {
 
     /* remember how many chars were last recorded */
     if (G.Recording) {
@@ -316,6 +341,10 @@ public class GetChar implements Constants, KeyDefs {
     no_abbr_cnt = 0;
     *********************************************************************/
   }
+  
+  //
+  // The stuff buff used from externally by the "r" and "*" (nv_ident) commands.
+  //
 
   static void stuffcharReadbuff(int n) {
     stuffbuff.append((char)n);
@@ -416,6 +445,7 @@ public class GetChar implements Constants, KeyDefs {
     // copy from the redo buffer into the stuff buffer
     stuffbuff.append((char)c);
     copy_redo(old_redo);
+    handle_redo = true;
     return OK;
   }
 
@@ -443,6 +473,7 @@ public class GetChar implements Constants, KeyDefs {
     /* copy the typed text from the redo buffer into the stuff buffer */
     copy_redo(false);
     block_redo = true;
+    handle_redo = true;
     return OK;
   }
 
@@ -516,13 +547,13 @@ public class GetChar implements Constants, KeyDefs {
   // The various character queues
   //
 
-  static BufferQueue stuffbuff = new BufferQueue();
-  static BufferQueue redobuff = new BufferQueue();
-  static BufferQueue recordbuff = new BufferQueue();
-  static BufferQueue typebuf = new BufferQueue();
+  private static BufferQueue stuffbuff = new BufferQueue();
+  private static BufferQueue redobuff = new BufferQueue();
+  private static BufferQueue recordbuff = new BufferQueue();
+  private static BufferQueue typebuf = new BufferQueue();
 
-  static int last_recorded_len = 0;  // number of last recorded chars
-  static int redobuff_idx = 0;
+  private static int last_recorded_len = 0;  // number of last recorded chars
+  private static int redobuff_idx = 0;
   // static BufferQueue old_redobuff;
 }
 
@@ -530,7 +561,7 @@ public class GetChar implements Constants, KeyDefs {
  * Small queue of characters. Can't extend StringBuffer, so delegate.
  */
 class BufferQueue {
-  private StringBuffer buf = new StringBuffer();
+  private StringBuilder buf = new StringBuilder();
 
   void setLength(int length) {
     buf.setLength(length);

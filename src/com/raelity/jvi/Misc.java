@@ -2561,18 +2561,53 @@ public class Misc implements Constants, ClipboardOwner, KeyDefs {
     G.curwin.endUndo();
   }
   
+  // There are interactions between insert and redo undo.
+  // And they they do not nest.
+  // However the last thing is always endRedoUndo.
+  //
+  // redo is atomic, it does not involve user interactions, and should
+  // allow locking the file for any modifications. So when in a "redo"
+  // trump beginInsertUndo with beginUndo.
+  //
+  
+  private static boolean inRedo = false;
+  
   static void beginInsertUndo() {
-    if(G.global_busy) {
+    if(G.global_busy || inRedo) {
       return;
     }
     G.curwin.beginInsertUndo();
   }
   
   static void endInsertUndo() {
-    if(G.global_busy) {
+    if(G.global_busy || inRedo) {
       return;
     }
     G.curwin.endInsertUndo();
+  }
+  
+  //
+  // begin/endRedoUndo indicate changes that can be treated atomically,
+  // but they might use the "Edit" command. So need to handle interactions
+  // the other begin/endUndo.
+  //
+  static void beginRedoUndo() {
+    if(G.global_busy) {
+      return;
+    }
+    if(G.curwin.isInInsertUndo()) {
+        endInsertUndo();
+    }
+    inRedo = true;
+    G.curwin.beginUndo();
+  }
+  
+  static void endRedoUndo() {
+    if(G.global_busy) {
+      return;
+    }
+    inRedo = false;
+    G.curwin.endUndo();
   }
   
   static int[] javaKeyMap;
