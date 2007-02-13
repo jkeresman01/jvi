@@ -1262,7 +1262,7 @@ finished:
                                             ViOutputStream.SEARCH, pattern);
     } else {
       result = ViManager.createOutputStream(G.curwin,
-                                            ViOutputStream.TEXT, pattern);
+                                            ViOutputStream.LINES, pattern);
     }
     
     for(int lnum = 1; lnum <= nLine; lnum++) {

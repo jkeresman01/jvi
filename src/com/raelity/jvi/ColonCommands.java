@@ -836,7 +836,7 @@ public class ColonCommands implements ColonCommandFlags, Constants {
     if(printStream != null) {
       return;
     }
-    printStream = ViManager.createOutputStream(G.curwin, ViOutputStream.TEXT,
+    printStream = ViManager.createOutputStream(G.curwin, ViOutputStream.LINES,
                                                lastCommand);
   }
    
