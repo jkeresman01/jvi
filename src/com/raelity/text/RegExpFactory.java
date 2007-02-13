@@ -270,7 +270,7 @@ public class RegExpFactory {
     RegExpFactory.reClass = cls;
     RegExpFactory.reClassName = reClassName;
     RegExpFactory.reDisplayName = bString;
-    if(true){
+    if(false){
       System.err.println("reAdapted = " + reAdapted );
       System.err.println("reClassName = " + reClassName );
       System.err.println("reDisplayName = " + reDisplayName );
