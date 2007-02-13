@@ -28,6 +28,7 @@
  */
 package com.raelity.jvi.swing;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
@@ -56,6 +57,7 @@ import com.raelity.jvi.Util;
 import com.raelity.jvi.BooleanOption;
 import com.raelity.jvi.Options;
 import com.raelity.jvi.*;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Position;
 
 
@@ -652,7 +654,7 @@ public class TextViewCache implements PropertyChangeListener,
     public static class FreezeViewport implements DocumentListener {
         private JEditorPane ep;
         private JViewport vp;
-        private Document doc;
+        private AbstractDocument doc;
         private Position pos;
         private int topLine;
         private int nLine;
@@ -660,9 +662,10 @@ public class TextViewCache implements PropertyChangeListener,
         public FreezeViewport(JEditorPane ep) {
             try {
                 this.ep = ep;
-                doc = ep.getDocument();
-                if(doc == null)
+                if(!(ep.getDocument() instanceof AbstractDocument))
                     return;
+                doc = (AbstractDocument) ep.getDocument();
+                doc.readLock();
                 vp = (JViewport)ep.getParent(); // may throw class cast, its ok
                 Element root = doc.getDefaultRootElement();
                 nLine = root.getElementCount();
@@ -683,6 +686,8 @@ public class TextViewCache implements PropertyChangeListener,
                 doc.addDocumentListener(this);
             } catch (Exception ex) {
                 // Note: did not start listener
+            } finally {
+                doc.readUnlock();
             }
         }
     
@@ -690,23 +695,9 @@ public class TextViewCache implements PropertyChangeListener,
             doc.removeDocumentListener(this);
         }
     
-        private void track(DocumentEvent e) {
+        private void adjustViewport(int offset) {
             // Might be able to use info from DocumentEvent to optimize
             try {
-                Element root = doc.getDefaultRootElement();
-                int newNumLine = root.getElementCount();
-                // return if line count unchanged or changed after our mark
-                if(nLine == newNumLine || e.getOffset() > pos.getOffset())
-                    return;
-                nLine = newNumLine;
-                
-                int newTopLine = root.getElementIndex(pos.getOffset());
-                if(topLine == newTopLine)
-                    return;
-                topLine = newTopLine;
-                
-                // make a move
-                int offset = root.getElement(topLine).getStartOffset();
                 Point pt = ep.modelToView(offset).getLocation();
                 pt.translate(-pt.x, 0); // x <-- 0, leave a few pixels to left
                 vp.setViewPosition(pt);
@@ -715,10 +706,37 @@ public class TextViewCache implements PropertyChangeListener,
             }
             return;
         }
+        
+        private void handleChange(DocumentEvent e) {
+            // Note while in listener document can't change, no read lock
+            Element root = doc.getDefaultRootElement();
+            int newNumLine = root.getElementCount();
+            // return if line count unchanged or changed after our mark
+            if(nLine == newNumLine || e.getOffset() > pos.getOffset())
+                return;
+            nLine = newNumLine;
+            
+            int newTopLine = root.getElementIndex(pos.getOffset());
+            if(topLine == newTopLine)
+                return;
+            topLine = newTopLine;
+            
+            // make a move
+            final int offset = root.getElement(topLine).getStartOffset();
+            if(EventQueue.isDispatchThread()) {
+                adjustViewport(offset);
+            } else {
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        adjustViewport(offset);
+                    }
+                });
+            }
+        }
 
-        public void insertUpdate(DocumentEvent e) { track(e); }
+        public void insertUpdate(DocumentEvent e) { handleChange(e); }
 
-        public void removeUpdate(DocumentEvent e) { track(e); }
+        public void removeUpdate(DocumentEvent e) { handleChange(e); }
 
         public void changedUpdate(DocumentEvent e) { }
     }

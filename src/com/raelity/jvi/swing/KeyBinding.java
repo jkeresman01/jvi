@@ -32,6 +32,8 @@ package com.raelity.jvi.swing;
 import java.awt.Event;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.prefs.Preferences;
@@ -150,96 +152,12 @@ public class KeyBinding implements KeyDefs, Constants {
   public static List getBindingsList() {
 
     List bl = new ArrayList();
-
-    bl.add(createKeyBinding(KeyEvent.VK_UP, 0, "ViUpKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_DOWN, 0, "ViDownKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_LEFT, 0, "ViLeftKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_RIGHT, 0, "ViRightKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_INSERT, 0, "ViInsertKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_DELETE, 0, "ViDeleteKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_HOME, 0, "ViHomeKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_END, 0, "ViEndKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_HELP, 0, "ViHelpKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_UNDO, 0, "ViUndoKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_PAGE_UP, 0, "ViPage_upKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_PAGE_DOWN, 0, "ViPage_downKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_PLUS, 0, "ViPlusKey"));
-    // bindingList.add(createKeyBinding(KeyEvent.VK_MINUS, 0, "ViMinusKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_DIVIDE, 0, "ViDivideKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_MULTIPLY, 0, "ViMultiplyKey"));
-
-    //
-    //
-    // SHIFTED KEYS
-    //
-    //
-
-    bl.add(createKeyBinding(KeyEvent.VK_UP, SHIFT_MASK, "ViUpKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_DOWN, SHIFT_MASK, "ViDownKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_LEFT, SHIFT_MASK, "ViLeftKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_RIGHT, SHIFT_MASK, "ViRightKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_INSERT, SHIFT_MASK, "ViInsertKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_DELETE, SHIFT_MASK, "ViDeleteKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_HOME, SHIFT_MASK, "ViHomeKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_END, SHIFT_MASK, "ViEndKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_HELP, SHIFT_MASK, "ViHelpKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_UNDO, SHIFT_MASK, "ViUndoKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_PAGE_UP, SHIFT_MASK, "ViPage_upKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_PAGE_DOWN, SHIFT_MASK, "ViPage_downKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_PLUS, SHIFT_MASK, "ViPlusKey"));
-    // bl.add(createKeyBinding(KeyEvent.VK_MINUS, SHIFT_MASK, "ViMinusKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_DIVIDE, SHIFT_MASK, "ViDivideKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_MULTIPLY, SHIFT_MASK, "ViMultiplyKey"));
-     
-    //
-    //
-    // CTRL KEYS
-    //
-    //
-
-    bl.add(createKeyBinding(KeyEvent.VK_UP, CTRL_MASK, "ViUpKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_DOWN, CTRL_MASK, "ViDownKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_LEFT, CTRL_MASK, "ViLeftKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_RIGHT, CTRL_MASK, "ViRightKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_INSERT, CTRL_MASK, "ViInsertKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_DELETE, CTRL_MASK, "ViDeleteKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_HOME, CTRL_MASK, "ViHomeKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_END, CTRL_MASK, "ViEndKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_HELP, CTRL_MASK, "ViHelpKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_UNDO, CTRL_MASK, "ViUndoKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_PAGE_UP, CTRL_MASK, "ViPage_upKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_PAGE_DOWN, CTRL_MASK, "ViPage_downKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_PLUS, CTRL_MASK, "ViPlusKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_MINUS, CTRL_MASK, "ViMinusKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_DIVIDE, CTRL_MASK, "ViDivideKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_MULTIPLY, CTRL_MASK, "ViMultiplyKey"));
-
-    //
-    //
-    // other bindings
-    //
-    //
-
-    //bl.add(createKeyBinding(KeyEvent.VK_SPACE, 0, "ViSpaceKey"));
-
-    bl.add(createKeyBinding(KeyEvent.VK_BACK_SPACE, 0, "ViBack_spaceKey"));
-
-    bl.add(createKeyBinding(KeyEvent.VK_TAB, 0, "ViTabKey"));
-
-    bl.add(createKeyBinding(KeyEvent.VK_ENTER, 0, "ViEnterKey"));
-
-    bl.add(createKeyBinding(KeyEvent.VK_OPEN_BRACKET, Event.CTRL_MASK,
-			    "ViEscapeKey"));      // alternate 
-    bl.add(createKeyBinding(KeyEvent.VK_ESCAPE, 0, "ViEscapeKey"));
-
-    bl.add(createKeyBinding(KeyEvent.VK_CLOSE_BRACKET, Event.CTRL_MASK,
-			    "ViCtrl-ClosebracketKey"));
     
-    // input mode bindings to shift line to align with paren in previous line
-    // the ">" must be on period
-    bl.add(createKeyBinding('.', CTRL_MASK, "ViPeriodCloseAngle"));
-    // the "<" must be on comma
-    bl.add(createKeyBinding(',', CTRL_MASK, "ViCommaOpenAngle"));
+    // Always bind these keys
+    bl.add(createKeyBinding(KeyEvent.VK_ESCAPE, 0, "ViEscapeKey"));
+    bl.add(createKeyBinding(KeyEvent.VK_BACK_SPACE, 0, "ViBack_spaceKey"));
+    bl.add(createKeyBinding(KeyEvent.VK_TAB, 0, "ViTabKey"));
+    bl.add(createKeyBinding(KeyEvent.VK_ENTER, 0, "ViEnterKey"));
 
     //
     // Add the normal control characters.
@@ -252,7 +170,55 @@ public class KeyBinding implements KeyDefs, Constants {
       }
     }
     
+    //
+    // Add the keypad characters,
+    // Check the preference for each one.
+    //
+    for (String key : keypadNameMap.keySet()) {
+        checkUseKey(bl, key, keypadNameMap.get(key), 0);
+        checkUseKey(bl, key, keypadNameMap.get(key), CTRL_MASK);
+        checkUseKey(bl, key, keypadNameMap.get(key), SHIFT_MASK);
+    }
+    
+    checkUseKey(bl, "Ctrl-[", "Escape", KeyEvent.VK_OPEN_BRACKET, CTRL_MASK);
+
+    checkUseKey(bl, "Ctrl-]", "CloseBracket",
+                KeyEvent.VK_CLOSE_BRACKET, CTRL_MASK);
+    
+    // input mode bindings to shift line to align with paren in previous line
+    // the ">" must be on period
+    checkUseKey(bl, "Ctrl->", "PeriodCloseAngle", '.', CTRL_MASK);
+    // the "<" must be on comma
+    checkUseKey(bl, "Ctrl-<", "CommaOpenAngle", ',', CTRL_MASK);
+    
     return bl;
+  }
+  
+  private static void checkUseKey(List bl,
+                                  String key,
+                                  int code,
+                                  int mod) {
+      String modTag = "";
+      switch(mod) {
+          case 0:           modTag = "";        break;
+          case CTRL_MASK:   modTag = "Ctrl-";   break;
+          case SHIFT_MASK:  modTag = "Shift-";  break;
+          default: assert(false) : "mod = " + mod + ", not used modifier.";
+      }
+      String keyName = modTag + key; // like: "Ctrl-PageUp"
+      if(prefs.getBoolean(keyName, getCatchKeyDefault(keyName))) {
+          bl.add(createKeyBinding(code, mod, "Vi"+key+"Key"));
+      }
+  }
+  
+  private static void checkUseKey(List bl,
+                                  String prefName,
+                                  String actionName,
+                                  int code,
+                                  int mod) {
+      if(prefs.getBoolean(prefName, getCatchKeyDefault(prefName))) {
+          bl.add(createKeyBinding(code, mod, "Vi"+actionName+"Key"));
+      }
   }
 
   public static List getExtraBindingsList() {
@@ -365,17 +331,16 @@ public class KeyBinding implements KeyDefs, Constants {
       actionsList.add(factory.createKeyAction("ViUndoKey", K_UNDO));
       actionsList.add(factory.createKeyAction("ViBack_spaceKey", KeyEvent.VK_BACK_SPACE));
 
-      actionsList.add(factory.createKeyAction("ViPage_upKey", K_PAGEUP));
-      actionsList.add(factory.createKeyAction("ViPage_downKey", K_PAGEDOWN));
+      actionsList.add(factory.createKeyAction("ViPageUpKey", K_PAGEUP));
+      actionsList.add(factory.createKeyAction("ViPageDownKey", K_PAGEDOWN));
       actionsList.add(factory.createKeyAction("ViPlusKey", K_KPLUS));
       actionsList.add(factory.createKeyAction("ViMinusKey", K_KMINUS));
       actionsList.add(factory.createKeyAction("ViDivideKey", K_KDIVIDE));
       actionsList.add(factory.createKeyAction("ViMultiplyKey", K_KMULTIPLY));
-      // NEEDSWORK: bring in ViEnterKey as K_KENTER, not as KeyEvent.VK_ENTER
       actionsList.add(factory.createKeyAction("ViEnterKey", K_KENTER));
 
-      actionsList.add(factory.createKeyAction("ViPeriodCloseAngle", K_X_PERIOD));
-      actionsList.add(factory.createKeyAction("ViCommaOpenAngle", K_X_COMMA));
+      actionsList.add(factory.createKeyAction("ViPeriodCloseAngleKey", K_X_PERIOD));
+      actionsList.add(factory.createKeyAction("ViCommaOpenAngleKey", K_X_COMMA));
       
       actionsList.add(factory.createKeyAction("ViCtrl-A", 1));
       actionsList.add(factory.createKeyAction("ViCtrl-B", 2));
@@ -390,7 +355,6 @@ public class KeyBinding implements KeyDefs, Constants {
       actionsList.add(factory.createKeyAction("ViCtrl-K", 11));
       actionsList.add(factory.createKeyAction("ViCtrl-L", 12));
       actionsList.add(factory.createKeyAction("ViCtrl-M", 13));
-      //actionsList.add(factory.createKeyAction("ViEnterKey", KeyEvent.VK_ENTER)); // 13
       actionsList.add(factory.createKeyAction("ViCtrl-N", 14));
       actionsList.add(factory.createKeyAction("ViCtrl-O", 15));
       actionsList.add(factory.createKeyAction("ViCtrl-P", 16));
@@ -406,7 +370,7 @@ public class KeyBinding implements KeyDefs, Constants {
       actionsList.add(factory.createKeyAction("ViCtrl-Z", 26));
       actionsList.add(factory.createKeyAction("ViEscapeKey", KeyEvent.VK_ESCAPE)); // 27
       actionsList.add(factory.createKeyAction("ViCtrl-BackslashKey", 28));
-      actionsList.add(factory.createKeyAction("ViCtrl-ClosebracketKey", 29));
+      actionsList.add(factory.createKeyAction("ViCloseBracketKey", 29));
       //actionsList.add(factory.createKeyAction("ViCtrl-CircumflexKey", 30));
       //actionsList.add(factory.createKeyAction("ViCtrl-UnderscoreKey", 31));
       actionsList.add(factory.createKeyAction("ViSpaceKey", KeyEvent.VK_SPACE));
@@ -573,20 +537,47 @@ public class KeyBinding implements KeyDefs, Constants {
       return keyBindingPrefs.getCatchKeyDefault(keyName);
   }
   
-  static private KeyBindingPrefs keyBindingPrefs = new KeyBindingPrefs();
-  static private class KeyBindingPrefs {
-      private Set<String> defaultKeysFalse = new HashSet();
-      KeyBindingPrefs() {
-          defaultKeysFalse.add("Ctrl-A");
-          defaultKeysFalse.add("Ctrl-C");
-          defaultKeysFalse.add("Ctrl-I");
-          defaultKeysFalse.add("Ctrl-J");
-          defaultKeysFalse.add("Ctrl-K");
-          defaultKeysFalse.add("Ctrl-Q");
-          defaultKeysFalse.add("Ctrl-V");
-          defaultKeysFalse.add("Ctrl-X");
-          defaultKeysFalse.add("Ctrl-Z");
-      }
+    public static Set<String> getKeypadNames() {
+        return Collections.unmodifiableSet(keypadNameMap.keySet());
+    }
+    static private HashMap<String,Integer> keypadNameMap
+            = new HashMap<String,Integer>();
+    
+    static private KeyBindingPrefs keyBindingPrefs = new KeyBindingPrefs();
+    static private class KeyBindingPrefs {
+        private Set<String> defaultKeysFalse = new HashSet();
+        KeyBindingPrefs() {
+            defaultKeysFalse.add("Ctrl-[");
+            
+            defaultKeysFalse.add("Ctrl-A");
+            defaultKeysFalse.add("Ctrl-C");
+            defaultKeysFalse.add("Ctrl-I");
+            defaultKeysFalse.add("Ctrl-J");
+            defaultKeysFalse.add("Ctrl-K");
+            defaultKeysFalse.add("Ctrl-Q");
+            defaultKeysFalse.add("Ctrl-V");
+            defaultKeysFalse.add("Ctrl-X");
+            defaultKeysFalse.add("Ctrl-Z");
+            
+            defaultKeysFalse.add("Shift-Undo");
+            defaultKeysFalse.add("Ctrl-Undo");
+            defaultKeysFalse.add("Shift-Insert");
+            defaultKeysFalse.add("Ctrl-Insert");
+            defaultKeysFalse.add("Shift-Delete");
+            defaultKeysFalse.add("Ctrl-Delete");
+            
+            keypadNameMap.put("Up", KeyEvent.VK_UP);
+            keypadNameMap.put("Down", KeyEvent.VK_DOWN);
+            keypadNameMap.put("Left", KeyEvent.VK_LEFT);
+            keypadNameMap.put("Right", KeyEvent.VK_RIGHT);
+            keypadNameMap.put("Insert", KeyEvent.VK_INSERT);
+            keypadNameMap.put("Delete", KeyEvent.VK_DELETE);
+            keypadNameMap.put("Home", KeyEvent.VK_HOME);
+            keypadNameMap.put("End", KeyEvent.VK_END);
+            keypadNameMap.put("Undo", KeyEvent.VK_UNDO);
+            keypadNameMap.put("PageUp", KeyEvent.VK_PAGE_UP);
+            keypadNameMap.put("PageDown", KeyEvent.VK_PAGE_DOWN);
+        }
       
       public Boolean getCatchKeyDefault(String keyName) {
           return ! defaultKeysFalse.contains(keyName);

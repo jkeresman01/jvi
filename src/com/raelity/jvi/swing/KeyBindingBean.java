@@ -36,34 +36,46 @@ public class KeyBindingBean  extends SimpleBeanInfo {
         };
     }
     
+    Vector<PropertyDescriptor> vD;
     public PropertyDescriptor[] getPropertyDescriptors() {
-	Vector<PropertyDescriptor> vD = new Vector<PropertyDescriptor>();
-	int i = 0;
-
+        vD = new Vector<PropertyDescriptor>();
+        
 	for(char c = 'A'; c <= 'Z'; c++) {
-            PropertyDescriptor d;
-            String displayName = "Ctrl_" + new String(new char[] {c});
-            String shortDescription =
-                      "Checked (enabled) means that jVi will process"
-                    + " this key. If clear (disabled) then the key"
-                    + " is available for other keybindings."
-                    + " MUST RESTART NetBeans FOR CHANGES TO TAKE AFFECT."
-                    + " (For now.)";
-            try {
-                d = new PropertyDescriptor(displayName, KeyBindingBean.class);
-            } catch (IntrospectionException ex) {
-                ex.printStackTrace();
-                continue;
-            }
-	    d.setDisplayName(displayName);
-	    d.setExpert(false);
-	    d.setShortDescription(shortDescription);
-	    vD.add(d);
-	}
+            String keyChar = new String(new char[] {c});
+            String propertyName = "Ctrl_" + keyChar;
+            String displayName = "Ctrl-" + keyChar;
+            addDesc(propertyName, displayName);
+        }
+        addDesc("AaOpenBracket", "Ctrl-[ is alternae <ESC>");
+        addDesc("AbCloseBracket", "Ctrl-]");
+        addDesc("AcCommaOpenAngle", "Ctrl-< or Ctrl-,");
+        addDesc("AdPeriodCloseAngle", "Ctrl-> or Ctrl-.");
         
 	PropertyDescriptor[] descriptors = new PropertyDescriptor[vD.size()];
         vD.toArray(descriptors);
+        vD = null;
 	return descriptors;
+    }
+    
+    private static final String shortDescription =
+                "Checked (enabled) means that jVi will process"
+            + " this key. If clear (disabled) then the key"
+            + " is available for other keybindings."
+            + " MUST RESTART NetBeans FOR CHANGES TO TAKE AFFECT."
+            + " (For now.)";
+    
+    private void addDesc(String propertyName, String displayName) {
+        PropertyDescriptor d;
+        try {
+            d = new PropertyDescriptor(propertyName, KeyBindingBean.class);
+        } catch (IntrospectionException ex) {
+            ex.printStackTrace();
+            return;
+        }
+        d.setDisplayName(displayName);
+        d.setExpert(false);
+        d.setShortDescription(shortDescription);
+        vD.add(d);
     }
     
     //
@@ -81,6 +93,38 @@ public class KeyBindingBean  extends SimpleBeanInfo {
         return prefs.getBoolean(name, KeyBinding.getCatchKeyDefault(name));
     }
 
+
+    public void setAaOpenBracket(boolean arg) {
+        put("Ctrl-[", arg);
+    }
+
+    public boolean getAaOpenBracket() {
+	return get("Ctrl-[");
+    }
+
+    public void setAbCloseBracket(boolean arg) {
+        put("Ctrl-]", arg);
+    }
+
+    public boolean getAbCloseBracket() {
+	return get("Ctrl-]");
+    }
+
+    public void setAcCommaOpenAngle(boolean arg) {
+        put("Ctrl-<", arg);
+    }
+
+    public boolean getAcCommaOpenAngle() {
+	return get("Ctrl-<");
+    }
+
+    public void setAdPeriodCloseAngle(boolean arg) {
+        put("Ctrl->", arg);
+    }
+
+    public boolean getAdPeriodCloseAngle() {
+	return get("Ctrl->");
+    }
 
     public void setCtrl_A(boolean arg) {
         put("Ctrl-A", arg);

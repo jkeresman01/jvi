@@ -8,7 +8,8 @@ primary editing engine. It processes all the vi commands and performs
 text manipullations. It gets access to its environment through a series
 of interfaces. The package {@link com.raelity.jvi.swing} has most of the
 substance of a port of jVi to the swing package. {@link com.raelity.jvi.cmd}
-is a port of jVi that provides a standalone editor. It can be used in a pinch
-when no better alternative, such as a native vim port, is available.
+starts up a JEditorPane with some text and jVi keybindings attached to it.
+This is useful for debugging. With any argument, a second JEditorPane is
+started that reference the same document as the first.
 </p>
 </body>
