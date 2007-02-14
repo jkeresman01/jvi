@@ -56,8 +56,11 @@ public interface ViTextView {
   public static final int FOLDOP_CLOSE_ALL = 'M';
   public static final int FOLDOP_OPEN_ALL = 'R';
   
-  // jump list operations
+  /** jump list operations */
   public enum JLOP { NEXT_JUMP, PREV_JUMP, NEXT_CHANGE, PREV_CHANGE }
+  
+  /** annonymous mark operations */
+  public enum MARKOP { TOGGLE, NEXT, PREV }
   
   //
   // First the methods that make this look like a window
@@ -164,6 +167,9 @@ public interface ViTextView {
   
   /** Jump list handling */
   public void jumpList(JLOP op, int count);
+  
+  /** Anonymous mark handling */
+  public void anonymousMark(MARKOP op);
   
   /** Perform the fold operation.  */
   public void foldOperation(int op);

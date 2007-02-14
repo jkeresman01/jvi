@@ -153,7 +153,9 @@ public class KeyBinding implements KeyDefs, Constants {
 
     List bl = new ArrayList();
     
+    //
     // Always bind these keys
+    //
     bl.add(createKeyBinding(KeyEvent.VK_ESCAPE, 0, "ViEscapeKey"));
     bl.add(createKeyBinding(KeyEvent.VK_BACK_SPACE, 0, "ViBack_spaceKey"));
     bl.add(createKeyBinding(KeyEvent.VK_TAB, 0, "ViTabKey"));
@@ -180,6 +182,9 @@ public class KeyBinding implements KeyDefs, Constants {
         checkUseKey(bl, key, keypadNameMap.get(key), SHIFT_MASK);
     }
     
+    //
+    // There's always some wierdo's
+    //
     checkUseKey(bl, "Ctrl-[", "Escape", KeyEvent.VK_OPEN_BRACKET, CTRL_MASK);
 
     checkUseKey(bl, "Ctrl-]", "CloseBracket",
@@ -194,22 +199,17 @@ public class KeyBinding implements KeyDefs, Constants {
     return bl;
   }
   
-  private static void checkUseKey(List bl,
-                                  String key,
-                                  int code,
-                                  int mod) {
+  private static void checkUseKey(List bl, String key, int code, int mod) {
       String modTag = "";
       switch(mod) {
           case 0:           modTag = "";        break;
           case CTRL_MASK:   modTag = "Ctrl-";   break;
           case SHIFT_MASK:  modTag = "Shift-";  break;
-          default: assert(false) : "mod = " + mod + ", not used modifier.";
+          default: assert(false) : "mod = " + mod + ", not jVi modifier.";
       }
-      String keyName = modTag + key; // like: "Ctrl-PageUp"
-      if(prefs.getBoolean(keyName, getCatchKeyDefault(keyName))) {
-          bl.add(createKeyBinding(code, mod, "Vi"+key+"Key"));
-      }
-  }
+      String prefName = modTag + key; // like: "Ctrl-PageUp"
+      checkUseKey(bl, prefName, key, code, mod);
+ }
   
   private static void checkUseKey(List bl,
                                   String prefName,
@@ -533,8 +533,8 @@ public class KeyBinding implements KeyDefs, Constants {
   // Handle the preferences for which keys to catch
   //
   
-  static public boolean getCatchKeyDefault(String keyName) {
-      return keyBindingPrefs.getCatchKeyDefault(keyName);
+  static public boolean getCatchKeyDefault(String prefName) {
+      return keyBindingPrefs.getCatchKeyDefault(prefName);
   }
   
     public static Set<String> getKeypadNames() {

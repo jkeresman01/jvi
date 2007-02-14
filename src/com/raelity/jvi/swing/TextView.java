@@ -370,6 +370,10 @@ public class TextView implements ViTextView {
   public void jumpList(JLOP op, int count) {
     Util.vim_beep();
   }
+  
+  public void anonymousMark(MARKOP op) {
+      Util.vim_beep();
+  }
 
   public void foldOperation(int op) {
     Util.vim_beep();
@@ -498,6 +502,7 @@ public class TextView implements ViTextView {
   }
 
   private static boolean inUndo;
+
   private static boolean inInsertUndo;
   private void assertUndoState(boolean condition, String fn) {
       if(!(condition)) {

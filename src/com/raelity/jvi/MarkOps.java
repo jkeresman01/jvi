@@ -48,8 +48,20 @@ class MarkOps implements Constants, Messages {
    * </ul>
    */
   static int setmark(int c) {
-    int		i;
     Normal.do_xop("setmark");
+    
+    {
+        ViTextView.MARKOP op = null;
+        switch(c) {
+            case '.': op = ViTextView.MARKOP.TOGGLE; break;
+            case '<': op = ViTextView.MARKOP.PREV; break;
+            case '>': op = ViTextView.MARKOP.NEXT; break;
+        }
+        if(op != null) {
+            G.curwin.anonymousMark(op);
+            return OK;
+        }
+    }
 
     if (c == '\'' || c == '`') {
       setpcmark();
@@ -59,6 +71,7 @@ class MarkOps implements Constants, Messages {
     }
 
     if (Util.islower(c)) {
+      int		i;
       i = c - 'a';
       G.curwin.setMarkOffset(getMark(G.curwin, i),
                              G.curwin.getCaretPosition(), false);

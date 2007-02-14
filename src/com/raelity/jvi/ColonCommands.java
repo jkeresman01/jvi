@@ -56,7 +56,9 @@ import com.raelity.jvi.swing.*;
  * A {@link javax.swing.Action} could be used. Only commands that subclass
  * {@link ColonCommands.ColonAction} can have arguments. These commands
  * are passed a {@link ColonCommands.ColonEvent}. Actions that subclass
- * {@link javax.swing.Action} are not invoked if they are disabled.
+ * {@link javax.swing.Action} are not invoked if they are disabled. The source
+ * of the {@link java.awt.event.ActionEvent}
+ * is a {@link javax.swing.JEditorPane}.
  */
 public class ColonCommands implements ColonCommandFlags, Constants {
   private static AbbrevLookup commands = new AbbrevLookup();
