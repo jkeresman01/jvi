@@ -1037,7 +1037,7 @@ middle_code:
 	  case 'm':
 	    if (!checkclearop(oap))
 	    {
-	      if (MarkOps.setmark(ca.nchar) == FAIL)
+	      if (MarkOps.setmark(ca.nchar, ca.count0) == FAIL)
 		clearopbeep(oap);
 	    }
 	    break;

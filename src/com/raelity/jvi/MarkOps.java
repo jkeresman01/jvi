@@ -47,7 +47,7 @@ class MarkOps implements Constants, Messages {
    * <li>Only handle lower case marks.
    * </ul>
    */
-  static int setmark(int c) {
+  static int setmark(int c, int count) {
     Normal.do_xop("setmark");
     
     {
@@ -58,7 +58,7 @@ class MarkOps implements Constants, Messages {
             case '>': op = ViTextView.MARKOP.NEXT; break;
         }
         if(op != null) {
-            G.curwin.anonymousMark(op);
+            G.curwin.anonymousMark(op, count);
             return OK;
         }
     }

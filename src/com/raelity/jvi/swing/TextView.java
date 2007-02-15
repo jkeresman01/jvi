@@ -371,7 +371,7 @@ public class TextView implements ViTextView {
     Util.vim_beep();
   }
   
-  public void anonymousMark(MARKOP op) {
+  public void anonymousMark(MARKOP op, int count) {
       Util.vim_beep();
   }
 

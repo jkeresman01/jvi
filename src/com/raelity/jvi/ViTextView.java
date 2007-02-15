@@ -168,8 +168,10 @@ public interface ViTextView {
   /** Jump list handling */
   public void jumpList(JLOP op, int count);
   
-  /** Anonymous mark handling */
-  public void anonymousMark(MARKOP op);
+  /** Anonymous mark handling.
+   * Count is the Nth mark forward, back. It is ignored by TOGGLE.
+   */
+  public void anonymousMark(MARKOP op, int count);
   
   /** Perform the fold operation.  */
   public void foldOperation(int op);
