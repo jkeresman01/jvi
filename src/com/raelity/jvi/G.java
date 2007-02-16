@@ -110,7 +110,7 @@ public class G {
 
   public static BooleanOption b_p_et;	// expandtabs, per file
   static boolean p_sc = true;   // showcmd
-  static boolean p_smd = true;  // showmode
+  public static BooleanOption p_smd; // showmode edit/command mode in display
 
   public static IntegerOption p_report;
   public static IntegerOption p_bs ;   // backspace over start of insert, and more

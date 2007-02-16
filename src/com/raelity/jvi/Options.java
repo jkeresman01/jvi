@@ -98,6 +98,7 @@ public class Options {
   public static final String scrollOff = "viScrollOff";
   public static final String shiftWidth = "viShiftWidth";
   public static final String tabStop = "viTabStop";
+  public static final String showMode = "viShowMode";
 
   
   public static final String readOnlyHack = "viReadOnlyHack";
@@ -199,6 +200,10 @@ public class Options {
             + "\n  0 - no special handling."
             + "\n  1 - allow backspace over <EOL>."
             + "\n  2 - allow backspace over start of insert.");
+    
+    G.p_smd = createBooleanOption(showMode, true);
+    setupOptionDesc(generalList, showMode, "'showmode' 'smd'",
+            "If in Insert or Replace mode display that information.");
 
     G.p_report = createIntegerOption(report, 2);
     setupOptionDesc(generalList, report, "'report'",

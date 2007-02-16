@@ -149,7 +149,7 @@ public class Edit implements Constants, KeyDefs {
       }
 
       i = 0;
-      if(G.p_smd) {
+      if(G.p_smd.getBoolean()) {
         i = Misc.showmode();
       }
 

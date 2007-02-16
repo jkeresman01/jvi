@@ -7,7 +7,9 @@
 package com.raelity.jvi.swing;
 
 import com.raelity.jvi.ViManager;
+import java.awt.Image;
 import java.beans.BeanDescriptor;
+import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
@@ -46,6 +48,21 @@ public class KeypadBindingBean extends SimpleBeanInfo {
         vD = null;
 	return descriptors;
     }
+    
+    private static Image icon, icon32;
+    public Image getIcon (int type) {
+        if (type == BeanInfo.ICON_COLOR_16x16
+                || type == BeanInfo.ICON_MONO_16x16) {
+            if (icon == null)
+                icon = loadImage("/com/raelity/jvi/resources/jViLogo.png");
+            return icon;
+        } else {
+            if (icon32 == null)
+                icon = loadImage("/com/raelity/jvi/resources/jViLogo32.png");
+            return icon32;
+        }
+    }
+    
     private static final String shortDescription =
                 "Checked (enabled) means that jVi will process"
             + " this key. If clear (disabled) then the key"

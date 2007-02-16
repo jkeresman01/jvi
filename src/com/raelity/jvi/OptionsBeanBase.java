@@ -9,9 +9,11 @@
 
 package com.raelity.jvi;
 
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.beans.BeanDescriptor;
+import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyDescriptor;
@@ -89,6 +91,37 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	return descriptors;
     }
     
+    /* This doesn't work. wonder why?
+    public static Image getJViLogo(int type) {
+        if (type == BeanInfo.ICON_COLOR_16x16
+                || type == BeanInfo.ICON_MONO_16x16) {
+            if (icon == null)
+                icon = Toolkit.getDefaultToolkit().getImage(
+                            "/com/raelity/jvi/resources/jViLogo.png");
+            return icon;
+        } else {
+            if (icon32 == null)
+                icon = Toolkit.getDefaultToolkit().createImage(
+                            "/com/raelity/jvi/resources/jViLogo32.png");
+            return icon32;
+        }
+    }
+     */
+    
+    private static Image icon, icon32;
+    public Image getIcon (int type) {
+        if (type == BeanInfo.ICON_COLOR_16x16
+                || type == BeanInfo.ICON_MONO_16x16) {
+            if (icon == null)
+                icon = loadImage("/com/raelity/jvi/resources/jViLogo.png");
+            return icon;
+        } else {
+            if (icon32 == null)
+                icon = loadImage("/com/raelity/jvi/resources/jViLogo32.png");
+            return icon32;
+        }
+    }
+    
     private class ThisBeanDescriptor extends BeanDescriptor {
         ThisBeanDescriptor() {
             super(clazz);
@@ -124,7 +157,6 @@ public class OptionsBeanBase extends SimpleBeanInfo {
     } 
     
     //
-    // All the known options
     //      The interface to preferences.
     //
     private Preferences prefs = ViManager.getViFactory().getPreferences();
@@ -174,6 +206,14 @@ public class OptionsBeanBase extends SimpleBeanInfo {
     /** this read-only option is special cased */
     public String getJViVersion() {
         return ViManager.getReleaseString();
+    }
+
+    public void setViShowMode(boolean arg) {
+        put("viShowMode", arg);
+    }
+
+    public boolean getViShowMode() {
+	return getboolean("viShowMode");
     }
 
     public void setViCommandEntryFrameOption(boolean arg) {
