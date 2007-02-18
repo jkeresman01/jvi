@@ -32,6 +32,11 @@ package com.raelity.jvi;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import static com.raelity.jvi.ViTextView.MARKOP;
+import static com.raelity.jvi.ViTextView.MARKOP.NEXT;
+import static com.raelity.jvi.ViTextView.MARKOP.PREV;
+import static com.raelity.jvi.ViTextView.MARKOP.TOGGLE;
+
 /**
  * Keep track of vi marks.
  */
@@ -51,13 +56,15 @@ class MarkOps implements Constants, Messages {
     Normal.do_xop("setmark");
     
     {
-        ViTextView.MARKOP op = null;
+        MARKOP op = null;
         switch(c) {
-            case '.': op = ViTextView.MARKOP.TOGGLE; break;
-            case '<': op = ViTextView.MARKOP.PREV; break;
-            case '>': op = ViTextView.MARKOP.NEXT; break;
+            case '.': op = TOGGLE; break;
+            case '<': op = PREV; break;
+            case '>': op = NEXT; break;
         }
         if(op != null) {
+            if(op != TOGGLE)
+                setpcmark();
             G.curwin.anonymousMark(op, count);
             return OK;
         }

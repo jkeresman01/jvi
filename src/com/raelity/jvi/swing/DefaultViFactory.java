@@ -136,6 +136,9 @@ public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
     // return new WindowCmdEntry(type);
     return new InlineCmdEntry(type);
   }
+  
+  public void updateKeymap() {
+  }
 
   /**
    * @return action suitable for default key action
