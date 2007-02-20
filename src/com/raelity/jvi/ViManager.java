@@ -212,19 +212,33 @@ public class ViManager implements Constants {
 
   /**
    * The application invokes this whenever a file becomes selected
-   * in the specified container.
+   * in the specified container. This also serves as an open.
+   * @param ep May be null, otherwise the associated editor pane
+   * @param parent Usually, but not necessarily, a container that hold the
+   *               editor.
    */
-  public static void activateFile(Object o, Object fileObject) {
+  public static void activateFile(JEditorPane ep, Object parent, String tag) {
     if(factory != null && G.dbgEditorActivation.getBoolean()) {
-      String tag = o instanceof String ? o.toString() + ": " : "";
       System.err.println("Activation: ViManager.activateFile: "
-              + tag + factory.getDisplayFilename(fileObject));
+              + tag + ": " + factory.getDisplayFilename(parent));
     }
-    textMRU.remove(fileObject);
-    textMRU.add(0, fileObject);
-    if( ! textBuffers.contains(fileObject)) {
-      textBuffers.add(fileObject);
+    if(ep != null)
+        registerEditorPane(ep);
+    assert(parent != null);
+    textMRU.remove(parent);
+    textMRU.add(0, parent);
+    if( ! textBuffers.contains(parent)) {
+      textBuffers.add(parent);
     }
+  }
+  
+  public static void deactivateCurrentFile(Object parent) {
+    if(factory != null && G.dbgEditorActivation.getBoolean()) {
+      System.err.println("Activation: ViManager.deactivateCurentFile: "
+                         + factory.getDisplayFilename(parent));
+    }
+    // For several reasons, eg. don't want to hold begin/endUndo
+    exitInputMode();
   }
   
   public static boolean isBuffer(Object fileObject) {
@@ -235,7 +249,7 @@ public class ViManager implements Constants {
    * The applications invokes this method when a file is completely
    * removed from a container.
    */
-  public static void deactivateFile(JEditorPane ep, Object fileObject) {
+  public static void closeFile(JEditorPane ep, Object fileObject) {
     if(factory != null && G.dbgEditorActivation.getBoolean()) {
       String fname = factory.getDisplayFilename(fileObject);
       System.err.println("Activation: ViManager.deactivateFile: "

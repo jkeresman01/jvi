@@ -89,9 +89,11 @@ public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
   }
   
   public void shutdown(JEditorPane ep) {
-    ViTextView tv = getViTextView(ep);
-    ep.putClientProperty(PROP_VITV, null);
-    tv.shutdown();
+    ViTextView tv = (ViTextView)ep.getClientProperty(PROP_VITV);
+    if(tv != null) {
+        ep.putClientProperty(PROP_VITV, null);
+        tv.shutdown();
+    }
   }
 
   public ViFS getFS() {
