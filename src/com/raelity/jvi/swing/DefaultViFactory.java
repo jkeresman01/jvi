@@ -186,7 +186,7 @@ public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
    * Control characters of interest are picked up as key-press events
    * in {link #EnqKeyAction}.
    */
-  private static class EnqueCharAction extends TextAction {
+  protected static class EnqueCharAction extends TextAction {
     public EnqueCharAction(String name) {
 	super(name);
     }
@@ -224,7 +224,7 @@ public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
    * the event and added to the key. Recieved characters are placed
    * on the vi input Q.
    */
-  private static class EnqueKeyAction extends TextAction {
+  protected static class EnqueKeyAction extends TextAction {
     int basekey;
     String name;
 

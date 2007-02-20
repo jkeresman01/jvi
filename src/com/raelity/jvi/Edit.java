@@ -207,6 +207,22 @@ normal_char:	// break normal_char to insert a character
             // case K_F1:
             // case K_XF1:
 
+          // Treat all these to take you out of input mode (at least for now)
+          case K_HOME:
+          case K_S_HOME:
+          case K_END:
+          case K_S_END:
+          case K_LEFT:
+          case K_S_LEFT:
+          case K_RIGHT:
+          case K_S_RIGHT:
+          case K_UP:
+          case K_S_UP:
+          case K_PAGEUP:
+          case K_DOWN:
+          case K_S_DOWN:
+          case K_PAGEDOWN:
+              
           case ESC:	    // an escape ends input mode
             // if (echeck_abbr(ESC + ABBR_OFF))
             // break;
@@ -1127,7 +1143,14 @@ normal_char:	// break normal_char to insert a character
     if(amount > 0) {
       ++amount; // position after paren
       change_indent(INDENT_SET, amount, false, 0);
+    } else {
+        amount = Misc.findFirstNonBlank(G.curwin.getWCursor().getLine()-1,
+                                        curindent, dir);
+        if(dir == BACKWARD && amount > 0
+           || dir != BACKWARD && amount > curindent)
+            change_indent(INDENT_SET, amount, false, 0);
     }
+    
   }
 
   private static void ins_del() throws NotSupportedException {

@@ -29,7 +29,6 @@
  */
 package com.raelity.jvi.swing;
 
-import java.awt.Event;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
 import java.util.Collections;
@@ -51,6 +50,7 @@ import java.util.Set;
 
 import static java.awt.event.InputEvent.SHIFT_MASK;
 import static java.awt.event.InputEvent.CTRL_MASK;
+import javax.swing.text.DefaultEditorKit;
 
 public class KeyBinding implements KeyDefs, Constants {
   public static final String PREF_KEYS = "KeyBindings";
@@ -79,26 +79,14 @@ public class KeyBinding implements KeyDefs, Constants {
 
   static final String enqueKeyAction = "enque-key";
 
-  static Keymap sharedKeymap;
   /**
-   * Return a shared keymap for a standard swing text component.
+   * Return a keymap for a standard swing text component.
    * Also, if not already existing, construct insert and normal mode
    * keymaps only used for user
    * defined mappings.
    */
-  public static Keymap getKeymap() {
-      if(true) {
-	  // NEEDSWORK: System.err.println("PRIVATE KEYMAP");
-          return getPrivateKeymap();
-      }
-      if(sharedKeymap != null) {
-          sharedKeymap = getPrivateKeymap();
-      }
-      // NEEDSWORK: System.err.println("SHARED KEYMAP");
-      return sharedKeymap;
-  }
   
-  public static Keymap getPrivateKeymap() {
+   public static Keymap getKeymap() {
     Keymap keymap = JTextComponent.addKeymap(null, null);
     keymap.setDefaultAction(ViManager.getViFactory()
 			    	.createCharAction(enqueKeyAction));
@@ -138,10 +126,8 @@ public class KeyBinding implements KeyDefs, Constants {
 
   /**
    * Bind the keys to actions of their own name. This is simpley a
-   * way to grab all the keys. Probably want to use key events
+   * way to grab all the keys. May want to use key events
    * directly at some point.
-   * <br>
-   * Only do regular and shift versiions for now.
    */
   public static JTextComponent.KeyBinding[] getBindings() {
     List l = getBindingsList();
@@ -166,10 +152,9 @@ public class KeyBinding implements KeyDefs, Constants {
     // Check the preference for each one.
     //
     for(char c = 'A'; c <= 'Z'; c++) {
-      String keyName = "Ctrl-" + new String(new char[] {c});
-      if(prefs.getBoolean(keyName, getCatchKeyDefault(keyName))) {
-          bl.add(createKeyBinding(c, Event.CTRL_MASK, "Vi"+keyName));
-      }
+        // like: "Ctrl-A"
+        String name = "Ctrl-" + new String(new char[] {c});
+        checkUseKey(bl, name, name, c, CTRL_MASK);
     }
     
     //
@@ -306,92 +291,110 @@ public class KeyBinding implements KeyDefs, Constants {
   }
 
 
-  /**
-   * initialize keymap.
-   */
-  public static Action[] getActions() {
-    List l = getActionsList();
-    return (Action[]) l.toArray(new Action[l.size()]);
-  }
-  
-  public static List getActionsList() {
-    List actionsList = new ArrayList();
-    try {
-      ViFactory factory = ViManager.getViFactory();
-      actionsList.add(factory.createKeyAction("ViUpKey", K_UP));
-      actionsList.add(factory.createKeyAction("ViDownKey", K_DOWN));
-      actionsList.add(factory.createKeyAction("ViLeftKey", K_LEFT));
-      actionsList.add(factory.createKeyAction("ViRightKey", K_RIGHT));
-      actionsList.add(factory.createKeyAction("ViInsertKey", K_INS));
-      actionsList.add(factory.createKeyAction("ViDeleteKey", K_DEL));
-      actionsList.add(factory.createKeyAction("ViTabKey", K_TAB));
-      actionsList.add(factory.createKeyAction("ViHomeKey", K_HOME));
-      actionsList.add(factory.createKeyAction("ViEndKey", K_END));
-      actionsList.add(factory.createKeyAction("ViHelpKey", K_HELP));
-      actionsList.add(factory.createKeyAction("ViUndoKey", K_UNDO));
-      actionsList.add(factory.createKeyAction("ViBack_spaceKey", KeyEvent.VK_BACK_SPACE));
-
-      actionsList.add(factory.createKeyAction("ViPageUpKey", K_PAGEUP));
-      actionsList.add(factory.createKeyAction("ViPageDownKey", K_PAGEDOWN));
-      actionsList.add(factory.createKeyAction("ViPlusKey", K_KPLUS));
-      actionsList.add(factory.createKeyAction("ViMinusKey", K_KMINUS));
-      actionsList.add(factory.createKeyAction("ViDivideKey", K_KDIVIDE));
-      actionsList.add(factory.createKeyAction("ViMultiplyKey", K_KMULTIPLY));
-      actionsList.add(factory.createKeyAction("ViEnterKey", K_KENTER));
-
-      actionsList.add(factory.createKeyAction("ViPeriodCloseAngleKey", K_X_PERIOD));
-      actionsList.add(factory.createKeyAction("ViCommaOpenAngleKey", K_X_COMMA));
-      
-      actionsList.add(factory.createKeyAction("ViCtrl-A", 1));
-      actionsList.add(factory.createKeyAction("ViCtrl-B", 2));
-      actionsList.add(factory.createKeyAction("ViCtrl-C", 3));
-      actionsList.add(factory.createKeyAction("ViCtrl-D", 4));
-      actionsList.add(factory.createKeyAction("ViCtrl-E", 5));
-      actionsList.add(factory.createKeyAction("ViCtrl-F", 6));
-      actionsList.add(factory.createKeyAction("ViCtrl-G", 7));
-      actionsList.add(factory.createKeyAction("ViCtrl-H", 8));
-      actionsList.add(factory.createKeyAction("ViCtrl-I", 9));
-      actionsList.add(factory.createKeyAction("ViCtrl-J", 10));
-      actionsList.add(factory.createKeyAction("ViCtrl-K", 11));
-      actionsList.add(factory.createKeyAction("ViCtrl-L", 12));
-      actionsList.add(factory.createKeyAction("ViCtrl-M", 13));
-      actionsList.add(factory.createKeyAction("ViCtrl-N", 14));
-      actionsList.add(factory.createKeyAction("ViCtrl-O", 15));
-      actionsList.add(factory.createKeyAction("ViCtrl-P", 16));
-      actionsList.add(factory.createKeyAction("ViCtrl-Q", 17));
-      actionsList.add(factory.createKeyAction("ViCtrl-R", 18));
-      actionsList.add(factory.createKeyAction("ViCtrl-S", 19));
-      actionsList.add(factory.createKeyAction("ViCtrl-T", 20));
-      actionsList.add(factory.createKeyAction("ViCtrl-U", 21));
-      actionsList.add(factory.createKeyAction("ViCtrl-V", 22));
-      actionsList.add(factory.createKeyAction("ViCtrl-W", 23));
-      actionsList.add(factory.createKeyAction("ViCtrl-X", 24));
-      actionsList.add(factory.createKeyAction("ViCtrl-Y", 25));
-      actionsList.add(factory.createKeyAction("ViCtrl-Z", 26));
-      actionsList.add(factory.createKeyAction("ViEscapeKey", KeyEvent.VK_ESCAPE)); // 27
-      actionsList.add(factory.createKeyAction("ViCtrl-BackslashKey", 28));
-      actionsList.add(factory.createKeyAction("ViCloseBracketKey", 29));
-      //actionsList.add(factory.createKeyAction("ViCtrl-CircumflexKey", 30));
-      //actionsList.add(factory.createKeyAction("ViCtrl-UnderscoreKey", 31));
-      actionsList.add(factory.createKeyAction("ViSpaceKey", KeyEvent.VK_SPACE));
-
-      actionsList.add(factory.createKeyAction("ViF1Key", K_F1));
-      actionsList.add(factory.createKeyAction("ViF2Key", K_F2));
-      actionsList.add(factory.createKeyAction("ViF3Key", K_F3));
-      actionsList.add(factory.createKeyAction("ViF4Key", K_F4));
-      actionsList.add(factory.createKeyAction("ViF5Key", K_F5));
-      actionsList.add(factory.createKeyAction("ViF6Key", K_F6));
-      actionsList.add(factory.createKeyAction("ViF7Key", K_F7));
-      actionsList.add(factory.createKeyAction("ViF8Key", K_F8));
-      actionsList.add(factory.createKeyAction("ViF9Key", K_F9));
-      actionsList.add(factory.createKeyAction("ViF10Key", K_F10));
-      actionsList.add(factory.createKeyAction("ViF11Key", K_F11));
-      actionsList.add(factory.createKeyAction("ViF12Key", K_F12));
-    } catch(Throwable e) {
-      e.printStackTrace();
+    /**
+     * Return the available actions.
+     */
+    public static Action[] getActions() {
+        if(actionArray == null) {
+            List<Action> l = getActionsList();
+            actionArray = (Action[]) l.toArray(new Action[l.size()]);
+        }
+        return actionArray;
     }
-    return actionsList;
-  }
+  
+    private static Action[] actionArray;
+    private static List<Action> actionList;
+  
+    public static List<Action> getActionsList() {
+        if(actionList == null)
+            actionList = createActionList();
+        return actionList;
+    }
+    
+    private static List<Action> createActionList() {
+        List<Action> actionsList = new ArrayList();
+        try {
+            ViFactory factory = ViManager.getViFactory();
+            actionsList.add(factory.createCharAction(
+                                    DefaultEditorKit.defaultKeyTypedAction));
+            actionsList.add(factory.createKeyAction("ViUpKey", K_UP));
+            actionsList.add(factory.createKeyAction("ViDownKey", K_DOWN));
+            actionsList.add(factory.createKeyAction("ViLeftKey", K_LEFT));
+            actionsList.add(factory.createKeyAction("ViRightKey", K_RIGHT));
+            actionsList.add(factory.createKeyAction("ViInsertKey", K_INS));
+            actionsList.add(factory.createKeyAction("ViDeleteKey", K_DEL));
+            actionsList.add(factory.createKeyAction("ViTabKey", K_TAB));
+            actionsList.add(factory.createKeyAction("ViHomeKey", K_HOME));
+            actionsList.add(factory.createKeyAction("ViEndKey", K_END));
+            actionsList.add(factory.createKeyAction("ViHelpKey", K_HELP));
+            actionsList.add(factory.createKeyAction("ViUndoKey", K_UNDO));
+            actionsList.add(factory.createKeyAction("ViBack_spaceKey",
+                                                    KeyEvent.VK_BACK_SPACE));
+
+            actionsList.add(factory.createKeyAction("ViPageUpKey", K_PAGEUP));
+            actionsList.add(factory.createKeyAction("ViPageDownKey", K_PAGEDOWN));
+            actionsList.add(factory.createKeyAction("ViPlusKey", K_KPLUS));
+            actionsList.add(factory.createKeyAction("ViMinusKey", K_KMINUS));
+            actionsList.add(factory.createKeyAction("ViDivideKey", K_KDIVIDE));
+            actionsList.add(factory.createKeyAction("ViMultiplyKey", K_KMULTIPLY));
+            actionsList.add(factory.createKeyAction("ViEnterKey", K_KENTER));
+
+            actionsList.add(factory.createKeyAction("ViPeriodCloseAngleKey",
+                                                    K_X_PERIOD));
+            actionsList.add(factory.createKeyAction("ViCommaOpenAngleKey",
+                                                    K_X_COMMA));
+            
+            actionsList.add(factory.createKeyAction("ViCtrl-AKey", 1));
+            actionsList.add(factory.createKeyAction("ViCtrl-BKey", 2));
+            actionsList.add(factory.createKeyAction("ViCtrl-CKey", 3));
+            actionsList.add(factory.createKeyAction("ViCtrl-DKey", 4));
+            actionsList.add(factory.createKeyAction("ViCtrl-EKey", 5));
+            actionsList.add(factory.createKeyAction("ViCtrl-FKey", 6));
+            actionsList.add(factory.createKeyAction("ViCtrl-GKey", 7));
+            actionsList.add(factory.createKeyAction("ViCtrl-HKey", 8));
+            actionsList.add(factory.createKeyAction("ViCtrl-IKey", 9));
+            actionsList.add(factory.createKeyAction("ViCtrl-JKey", 10));
+            actionsList.add(factory.createKeyAction("ViCtrl-KKey", 11));
+            actionsList.add(factory.createKeyAction("ViCtrl-LKey", 12));
+            actionsList.add(factory.createKeyAction("ViCtrl-MKey", 13));
+            actionsList.add(factory.createKeyAction("ViCtrl-NKey", 14));
+            actionsList.add(factory.createKeyAction("ViCtrl-OKey", 15));
+            actionsList.add(factory.createKeyAction("ViCtrl-PKey", 16));
+            actionsList.add(factory.createKeyAction("ViCtrl-QKey", 17));
+            actionsList.add(factory.createKeyAction("ViCtrl-RKey", 18));
+            actionsList.add(factory.createKeyAction("ViCtrl-SKey", 19));
+            actionsList.add(factory.createKeyAction("ViCtrl-TKey", 20));
+            actionsList.add(factory.createKeyAction("ViCtrl-UKey", 21));
+            actionsList.add(factory.createKeyAction("ViCtrl-VKey", 22));
+            actionsList.add(factory.createKeyAction("ViCtrl-WKey", 23));
+            actionsList.add(factory.createKeyAction("ViCtrl-XKey", 24));
+            actionsList.add(factory.createKeyAction("ViCtrl-YKey", 25));
+            actionsList.add(factory.createKeyAction("ViCtrl-ZKey", 26));
+            actionsList.add(factory.createKeyAction("ViEscapeKey",
+                                                    KeyEvent.VK_ESCAPE)); // 27
+            actionsList.add(factory.createKeyAction("ViCtrl-BackslashKey", 28));
+            actionsList.add(factory.createKeyAction("ViCloseBracketKey", 29));
+            //actionsList.add(factory.createKeyAction("ViCtrl-CircumflexKey", 30));
+            //actionsList.add(factory.createKeyAction("ViCtrl-UnderscoreKey", 31));
+            actionsList.add(factory.createKeyAction("ViSpaceKey", KeyEvent.VK_SPACE));
+
+            actionsList.add(factory.createKeyAction("ViF1Key", K_F1));
+            actionsList.add(factory.createKeyAction("ViF2Key", K_F2));
+            actionsList.add(factory.createKeyAction("ViF3Key", K_F3));
+            actionsList.add(factory.createKeyAction("ViF4Key", K_F4));
+            actionsList.add(factory.createKeyAction("ViF5Key", K_F5));
+            actionsList.add(factory.createKeyAction("ViF6Key", K_F6));
+            actionsList.add(factory.createKeyAction("ViF7Key", K_F7));
+            actionsList.add(factory.createKeyAction("ViF8Key", K_F8));
+            actionsList.add(factory.createKeyAction("ViF9Key", K_F9));
+            actionsList.add(factory.createKeyAction("ViF10Key", K_F10));
+            actionsList.add(factory.createKeyAction("ViF11Key", K_F11));
+            actionsList.add(factory.createKeyAction("ViF12Key", K_F12));
+        } catch(Throwable e) {
+            e.printStackTrace();
+        }
+        return actionsList;
+    }
   
   public static JTextComponent.KeyBinding[] getInsertModeBindings() {
     List l = getInsertModeBindingsList();

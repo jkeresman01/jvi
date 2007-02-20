@@ -66,7 +66,13 @@ public class RegExpJava extends RegExp
 
     public boolean search(char[] input, int start, int len) {
 	Segment s = new Segment(input, 0, input.length);
-        Matcher m = pat.matcher(s).region(start, start+len);
+        Matcher m;
+        if(s instanceof CharSequence)
+            m = pat.matcher(s).region(start, start+len);
+        else {
+            String str = new String(input, start, len);
+            m = pat.matcher(str).region(start, start+len); // JDK1.5
+        }
         matched = m.find();
         result = new RegExpResultJava(matched ? m : null);
         return matched;

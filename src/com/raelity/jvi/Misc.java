@@ -153,6 +153,68 @@ public class Misc implements Constants, ClipboardOwner, KeyDefs {
     }
     return found ? count : -1;
   }
+  
+  static int findFirstNonBlank(int lnum, int fromIndent, int dir) {
+    if(lnum < 1 || lnum > G.curwin.getLineCount()) {
+      return -1;
+    }
+    Segment seg = G.curwin.getLineSegment(lnum);
+    return findFirstNonBlank(seg, fromIndent, dir);
+  }
+  
+  /**
+   * @param seg
+   * @param fromIndent start looking from this position
+   * @param dir FORWARD or BACKWARD
+   */
+  static int findFirstNonBlank(Segment seg, int fromIndent, int dir) {
+    boolean found = false;
+    int	    count = 0;
+    int     non_blank = -1;
+    
+    if(dir == BACKWARD) {
+      fromIndent -= 1;
+    }
+
+    // go forward until count is at fromIndent
+    int ptr = seg.offset;
+    for ( ; ptr < seg.offset + seg.count; ++ptr) {
+      if(count >= fromIndent) {
+	break;
+      }
+      if(seg.array[ptr] != ' ' && seg.array[ptr] != TAB) {
+          non_blank = count;
+          break;
+      }
+      if (seg.array[ptr] == TAB) {  // count a tab for what it is worth
+	count += G.b_p_ts.getInteger() - (count % G.b_p_ts.getInteger());
+      } else {
+	++count;
+      }
+    }
+    
+    // if looking backward, then we're done.
+    if(dir == BACKWARD) {
+      return non_blank;
+    }
+    
+    for ( ; ptr < seg.offset + seg.count; ++ptr) {
+      if(seg.array[ptr] != ' ' && seg.array[ptr] != TAB) {
+	found = true;
+	break;
+      }
+      if (seg.array[ptr] == TAB)    // count a tab for what it is worth
+	count += G.b_p_ts.getInteger() - (count % G.b_p_ts.getInteger());
+      else
+	++count;
+    }
+    return found ? count : -1;
+    
+    /*
+    if(non_blank < fromIndent)
+        return -1;
+    return non_blank; */
+  }
 
   /**
    * set the indent of the current line

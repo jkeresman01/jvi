@@ -78,7 +78,7 @@ public class ViManager implements Constants {
   private static int majorVersion = 0;
   private static int minorVersion = 8;
   private static int microVersion = 0;
-  private static String releaseTag = "x9";
+  private static String releaseTag = "x10";
   private static String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion

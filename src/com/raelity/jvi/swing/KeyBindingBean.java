@@ -48,7 +48,7 @@ public class KeyBindingBean  extends SimpleBeanInfo {
             String displayName = "Ctrl-" + keyChar;
             addDesc(propertyName, displayName);
         }
-        addDesc("AaOpenBracket", "Ctrl-[ is alternae <ESC>");
+        addDesc("AaOpenBracket", "Ctrl-[ is alternate <ESC>");
         addDesc("AbCloseBracket", "Ctrl-]");
         addDesc("AcCommaOpenAngle", "Ctrl-< or Ctrl-,");
         addDesc("AdPeriodCloseAngle", "Ctrl-> or Ctrl-.");
