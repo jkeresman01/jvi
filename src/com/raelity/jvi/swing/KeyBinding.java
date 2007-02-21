@@ -52,7 +52,10 @@ import static java.awt.event.InputEvent.SHIFT_MASK;
 import static java.awt.event.InputEvent.CTRL_MASK;
 import javax.swing.text.DefaultEditorKit;
 
-public class KeyBinding implements KeyDefs, Constants {
+import static com.raelity.jvi.KeyDefs.*;
+import static com.raelity.jvi.Constants.*;
+
+public class KeyBinding {
   public static final String PREF_KEYS = "KeyBindings";
   private static Preferences prefs = ViManager.getViFactory()
                                 .getPreferences().node(KeyBinding.PREF_KEYS);
@@ -79,6 +82,9 @@ public class KeyBinding implements KeyDefs, Constants {
 
   static final String enqueKeyAction = "enque-key";
 
+  public static void init() {
+      createSubKeymaps();
+  }
   /**
    * Return a keymap for a standard swing text component.
    * Also, if not already existing, construct insert and normal mode
@@ -125,7 +131,7 @@ public class KeyBinding implements KeyDefs, Constants {
   }
 
   /**
-   * Bind the keys to actions of their own name. This is simpley a
+   * Bind the keys to actions of their own name. This is simply a
    * way to grab all the keys. May want to use key events
    * directly at some point.
    */
@@ -134,10 +140,18 @@ public class KeyBinding implements KeyDefs, Constants {
     return (JTextComponent.KeyBinding[]) l.toArray(
                               new JTextComponent.KeyBinding[l.size()]);
   }
+  
+  // NEEDSWORK: when bindings change, need to NULL this list
+  // catch preference change then null list, then updateKeymap
+  private static List<JTextComponent.KeyBinding> bindingList;
+            
+  public static List<JTextComponent.KeyBinding> getBindingsList() {
 
-  public static List getBindingsList() {
-
-    List bl = new ArrayList();
+    if(bindingList != null) {
+        return bindingList;
+    }
+    bindingList = new ArrayList<JTextComponent.KeyBinding>();
+    List<JTextComponent.KeyBinding> bl = bindingList;
     
     //
     // Always bind these keys

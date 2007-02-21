@@ -36,7 +36,10 @@ import javax.swing.SwingUtilities;
 
 import com.raelity.jvi.ViManager;
 
-public class Edit implements Constants, KeyDefs {
+import static com.raelity.jvi.KeyDefs.*;
+import static com.raelity.jvi.Constants.*;
+
+public class Edit {
 
   public static final String VI_MODE_COMMAND = "";
   public static final String VI_MODE_INSERT = "INSERT";
@@ -166,7 +169,7 @@ public class Edit implements Constants, KeyDefs {
     // whole lot of stuff deleted
     //	if (c == Ctrl('V') || c == Ctrl('Q'))
 
-normal_char:	// break normal_char to insert a character
+normal_char:	// do "break normal_char" to insert a character
     while(true) {
       try {
 
@@ -206,42 +209,6 @@ normal_char:	// break normal_char to insert a character
             // case K_HELP:
             // case K_F1:
             // case K_XF1:
-
-          // Treat all these to take you out of input mode (at least for now)
-          case K_HOME:
-          case K_S_HOME:
-          case K_END:
-          case K_S_END:
-          case K_LEFT:
-          case K_S_LEFT:
-          case K_RIGHT:
-          case K_S_RIGHT:
-          case K_UP:
-          case K_S_UP:
-          case K_PAGEUP:
-          case K_DOWN:
-          case K_S_DOWN:
-          case K_PAGEDOWN:
-              
-          case ESC:	    // an escape ends input mode
-            // if (echeck_abbr(ESC + ABBR_OFF))
-            // break;
-            //FALLTHROUGH
-
-          // case 0x1f & (int)('C'):	// Ctrl
-            // when 'insertmode' set, and not halfway a mapping, don't leave
-            // Insert mode.
-            // REMOVE insertmode stuff
-
-            //
-            // This is the ONLY return from edit() (WHERE editBusy SET false)
-            //
-            if (ins_esc(count, need_redraw, cmdchar)) {
-              Normal.editBusy = false;
-              // return (c == (0x1f & (int)('O')));
-            }
-            return;
-            //continue;
 
             //
             // Insert the previously inserted text.
@@ -427,9 +394,46 @@ normal_char:	// break normal_char to insert a character
 
           //case K_S_SPACE:
             //c = ' ';
-            // FALTHROUGH
+            // FALTHROUGH TO "default" ignore the ESC case....
+              
+          case ESC:	    // an escape ends input mode
+            //
+            // NOTE: FALLTHROUGH TO "default", check for escape there
+            //
+            // if (echeck_abbr(ESC + ABBR_OFF))
+            // break;
+            //FALLTHROUGH
+
+          // case 0x1f & (int)('C'):	// Ctrl
+            // when 'insertmode' set, and not halfway a mapping, don't leave
+            // Insert mode.
+            // REMOVE insertmode stuff
+
+            //
+            // This is the ONLY return from edit() (WHERE editBusy SET false)
+            //
+            /* **** this is the code moved to default case ****
+            if (ins_esc(count, need_redraw, cmdchar)) {
+              Normal.editBusy = false;
+              // return (c == (0x1f & (int)('O')));
+            }
+            return;
+            */
+            //continue;
 
           default:
+            // Virtual keys should not be put into the file.
+            // Exit input mode if they are seen
+            if(cmdchar == ESC
+               || (cmdchar & 0xF000) == VIRT
+               || cmdchar > 0xFFFF) {
+                // This is the identical code as <ESC>
+                if (ins_esc(count, need_redraw, cmdchar)) {
+                    Normal.editBusy = false;
+                    // return (c == (0x1f & (int)('O')));
+                }
+                return;
+            }
             break normal_char;
         } // switch
         // break out of switch, process another character

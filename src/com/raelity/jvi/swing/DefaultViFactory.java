@@ -201,13 +201,15 @@ public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
 	if(content != null && content.length() > 0) {
 	  int c = content.charAt(0);
 	  if((mod & (MOD_MASK_CTRL|MOD_MASK_ALT)) != 0
-             || c < 0x20) {
+             || c < 0x20
+             || c == 0x7f ) { //The delete key comes in as a virtual key.
 	    // Wouldn't have thought that the 'c<0x20' was needed, but the
             // <RETURN>,<BS> come in less than 0x20 without the Control key
 	    return;
 	  }
           if(KeyBinding.isKeyDebug()) {
-            System.err.println("CharAction: " + ": " + c + " " + mod);
+            System.err.println("CharAction: " + String.format("%x", c)
+                               + "(" + c + ") " + mod);
           }
 	  ViManager.keyStroke(target, content.charAt(0), mod);
 	}
@@ -228,12 +230,10 @@ public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
    */
   protected static class EnqueKeyAction extends TextAction {
     int basekey;
-    String name;
 
     public EnqueKeyAction(String name, int key) {
 	super(name);
 	this.basekey = key;
-        this.name = name;
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -242,8 +242,9 @@ public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
       int key = basekey;
       if(KeyBinding.isKeyDebug()) {
         String virt = ((key & 0xF000) == VIRT) ? "virt" : "";
-        System.err.println("KeyAction: " + name + ": "
-                           + (key&~VIRT) + " " + mod + " " + virt);
+        System.err.println("KeyAction: " + getValue(Action.NAME).toString()
+                           + ": " + String.format("%x", key)
+                           + "(" + (key&~VIRT) + ") " + mod + " " + virt);
       }
       ViManager.keyStroke(target, key, mod);
     }

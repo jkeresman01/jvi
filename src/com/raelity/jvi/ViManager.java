@@ -78,7 +78,7 @@ public class ViManager implements Constants {
   private static int majorVersion = 0;
   private static int minorVersion = 8;
   private static int microVersion = 0;
-  private static String releaseTag = "x10";
+  private static String releaseTag = "x12";
   private static String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion
@@ -92,8 +92,8 @@ public class ViManager implements Constants {
     ViManager.factory = factory;
     Options.init();
 
-    // KeyBinding.init(); // setup the default keymap
-    KeyBinding.getKeymap();  // force the class loaded before the action starts
+    KeyBinding.init();
+    //KeyBinding.getKeymap();  // force the class loaded before the action starts
   }
 
   public static String getReleaseString() {
