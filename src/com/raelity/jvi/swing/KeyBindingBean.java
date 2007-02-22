@@ -48,7 +48,7 @@ public class KeyBindingBean  extends SimpleBeanInfo {
             String displayName = "Ctrl-" + keyChar;
             addDesc(propertyName, displayName);
         }
-        addDesc("AaOpenBracket", "Ctrl-[ is alternate <ESC>");
+        addDesc("AaOpenBracket", "Ctrl-[    the \"real\" <ESC>");
         addDesc("AbCloseBracket", "Ctrl-]");
         addDesc("AcCommaOpenAngle", "Ctrl-< or Ctrl-,");
         addDesc("AdPeriodCloseAngle", "Ctrl-> or Ctrl-.");
@@ -76,9 +76,7 @@ public class KeyBindingBean  extends SimpleBeanInfo {
     private static final String shortDescription =
                 "Checked (enabled) means that jVi will process"
             + " this key. If clear (disabled) then the key"
-            + " is available for other keybindings."
-            + " MUST RESTART NetBeans FOR CHANGES TO TAKE AFFECT."
-            + " (For now.)";
+            + " is available for other keybindings.";
     
     private void addDesc(String propertyName, String displayName) {
         PropertyDescriptor d;
@@ -99,10 +97,10 @@ public class KeyBindingBean  extends SimpleBeanInfo {
     //      The bean getter/setter, interface to preferences.
     //
     private Preferences prefs = ViManager.getViFactory()
-                                .getPreferences().node(KeyBinding.PREF_KEYS);
+                                .getPreferences().node(ViManager.PREFS_KEYS);
     
     private void put(String name, boolean val) {
-        prefs.put(name, "" + val);
+        prefs.putBoolean(name, val);
     }
     
     private boolean get(String name) {
