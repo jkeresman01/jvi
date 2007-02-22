@@ -63,7 +63,10 @@ import com.raelity.jvi.swing.*;
  * <b>NEEDSWORK:</b><ul>
  * </ul>
  */
-public class ViManager implements Constants {
+public class ViManager {
+    
+  public static final String PREFS_ROOT = "com/raelity/jvi";
+  public static final String PREFS_KEYS = "KeyBindings";
 
   static private JEditorPane currentEditorPane;
   static private ViTextView currentTextView;
@@ -78,7 +81,7 @@ public class ViManager implements Constants {
   private static int majorVersion = 0;
   private static int minorVersion = 8;
   private static int microVersion = 0;
-  private static String releaseTag = "x12";
+  private static String releaseTag = "x15";
   private static String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion

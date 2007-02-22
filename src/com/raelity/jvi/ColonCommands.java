@@ -628,6 +628,23 @@ public class ColonCommands implements ColonCommandFlags, Constants {
       }
     }
   };
+  
+  static ColonAction ACTION_wq = new ColonAction() {
+    public int getFlags() {
+      // any "!" is ignored
+      return BANG;
+    }
+
+    public void actionPerformed(ActionEvent ev) {
+      ColonEvent cev = (ColonEvent)ev;
+      
+      if(cev.getNArg() == 0) {
+        ViManager.getFS().write(cev.getViTextView(), cev.isBang());
+        cev.getViTextView().win_close(false);
+      } else
+        Msg.emsg(Messages.e_trailing);
+    }
+  };
 
   /**
    * Edit command. Only ':e#[number]' is supported.
@@ -804,6 +821,7 @@ public class ColonCommands implements ColonCommandFlags, Constants {
     register("on", "only", ACTION_only);
     register("q", "quit", ACTION_quit);
     register("w", "write", ACTION_write);
+    register("wq", "wq", ACTION_wq);
     register("wa", "wall", ACTION_wall);
     register("f", "file", ACTION_file);
     register("e", "edit", ACTION_edit);
