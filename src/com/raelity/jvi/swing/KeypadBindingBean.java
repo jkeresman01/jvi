@@ -66,24 +66,22 @@ public class KeypadBindingBean extends SimpleBeanInfo {
     private static final String shortDescription =
                 "Checked (enabled) means that jVi will process"
             + " this key. If clear (disabled) then the key"
-            + " is available for other keybindings."
-            + " MUST RESTART NetBeans FOR CHANGES TO TAKE AFFECT."
-            + " (For now.)";
+            + " is available for other keybindings.";
     
     private void addDesc(String key, String mod) {
 	int i = 0;
 
         PropertyDescriptor d;
-        String displayName = mod.isEmpty() ? key : mod + "-" + key;
-        // want the arrow keys grouped together so change their name,
-        // use the "Ars" to insure that unmodified keys are grouped together
-        // but leave the display name together.
+        String displayName = mod.length() == 0 ? key : mod + "-" + key;
+        // Want things to display nicely ordered, unmodifed keys followed by
+        // Ctrl-, then by Shift-. And want the arrow keys to be together.
+        // So arrow keys start with Aa, the rest with Ab.
         if(key.equals("Up") || key.equals("Down")
            || key.equals("Left") || key.equals("Right"))
             key = "Aa" + key;
         else
             key = "Ab" + key;
-        String propertyName = mod.isEmpty() ? key : mod + "_" + key;
+        String propertyName = mod.length() == 0 ? key : mod + "_" + key;
         try {
             d = new PropertyDescriptor(propertyName, KeypadBindingBean.class);
         } catch (IntrospectionException ex) {
@@ -101,10 +99,10 @@ public class KeypadBindingBean extends SimpleBeanInfo {
     //      The bean getter/setter, interface to preferences.
     //
     private Preferences prefs = ViManager.getViFactory()
-                                .getPreferences().node(KeyBinding.PREF_KEYS);
+                                .getPreferences().node(ViManager.PREFS_KEYS);
     
     private void put(String name, boolean val) {
-        prefs.put(name, "" + val);
+        prefs.putBoolean(name, val);
     }
     
     private boolean get(String name) {

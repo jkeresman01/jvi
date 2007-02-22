@@ -29,12 +29,15 @@
  */
 package com.raelity.jvi.swing;
 
+import java.awt.EventQueue;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.text.JTextComponent;
@@ -56,9 +59,8 @@ import static com.raelity.jvi.KeyDefs.*;
 import static com.raelity.jvi.Constants.*;
 
 public class KeyBinding {
-  public static final String PREF_KEYS = "KeyBindings";
   private static Preferences prefs = ViManager.getViFactory()
-                                .getPreferences().node(KeyBinding.PREF_KEYS);
+                                .getPreferences().node(ViManager.PREFS_KEYS);
 
   private static BooleanOption keyDebugOption;
   public static final boolean isKeyDebug() {
@@ -84,7 +86,23 @@ public class KeyBinding {
 
   public static void init() {
       createSubKeymaps();
+      prefs.addPreferenceChangeListener(new PreferenceChangeListener() {
+          public void preferenceChange(PreferenceChangeEvent evt) {
+              if(EventQueue.isDispatchThread())
+                updateKeymap.run();
+              else
+                EventQueue.invokeLater(updateKeymap);
+          }
+      });
   }
+  
+    private static Runnable updateKeymap = new Runnable() {
+        public void run() {
+            bindingList = null; // force recalculation
+            ViManager.getViFactory().updateKeymap();
+        }
+    };
+  
   /**
    * Return a keymap for a standard swing text component.
    * Also, if not already existing, construct insert and normal mode
@@ -145,6 +163,10 @@ public class KeyBinding {
   // catch preference change then null list, then updateKeymap
   private static List<JTextComponent.KeyBinding> bindingList;
             
+  /**
+   * Return an ArrayList of bindings; it should not be modified by the user,
+   * but to allow .clone() to work, this does not return an unmodifiable list.
+   */
   public static List<JTextComponent.KeyBinding> getBindingsList() {
 
     if(bindingList != null) {
@@ -329,8 +351,6 @@ public class KeyBinding {
         List<Action> actionsList = new ArrayList();
         try {
             ViFactory factory = ViManager.getViFactory();
-            actionsList.add(factory.createCharAction(
-                                    DefaultEditorKit.defaultKeyTypedAction));
             actionsList.add(factory.createKeyAction("ViUpKey", K_UP));
             actionsList.add(factory.createKeyAction("ViDownKey", K_DOWN));
             actionsList.add(factory.createKeyAction("ViLeftKey", K_LEFT));

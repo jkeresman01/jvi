@@ -45,13 +45,16 @@ import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.DefaultViFS;
 import com.raelity.jvi.*;
 
+import static com.raelity.jvi.Constants.*;
+import static com.raelity.jvi.KeyDefs.*;
+
 /**
  * This provides the Vi items to interface with standard swing JEditorPane.
  * <b>NEEDSWORK:</b><ul>
  * <li> only one text view supported for now
  * </ul>
  */
-public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
+public class DefaultViFactory implements ViFactory {
   protected static final String PROP_VITV = "ViTextView";
 
   Window window;
@@ -179,7 +182,8 @@ public class DefaultViFactory implements ViFactory, KeyDefs, Constants {
   }
 
   public Preferences getPreferences() {
-      return Preferences.userNodeForPackage(Options.class);
+      return Preferences.userRoot().node(ViManager.PREFS_ROOT);
+      //return Preferences.userNodeForPackage(Options.class);
   }
 
   /**
