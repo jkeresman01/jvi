@@ -65,16 +65,8 @@ public class RegExpJava extends RegExp
     }
 
     public boolean search(char[] input, int start, int len) {
-	Segment s = new MySegment(input, 0, input.length);
+	MySegment s = new MySegment(input, 0, input.length);
         Matcher m = pat.matcher(s).region(start, start+len);
-        /*
-        if(s instanceof CharSequence)
-            m = pat.matcher(s).region(start, start+len);
-        else {
-            String str = new String(input, start, len);
-            m = pat.matcher(str).region(start, start+len); // JDK1.5
-        }
-         **/
         matched = m.find();
         result = new RegExpResultJava(matched ? m : null);
         return matched;
@@ -133,7 +125,7 @@ public class RegExpJava extends RegExp
             if (start > end) {
                 throw new StringIndexOutOfBoundsException(end - start);
             }
-            Segment segment = new MySegment();
+            MySegment segment = new MySegment();
             segment.array = this.array;
             segment.offset = this.offset + start;
             segment.count = end - start;
