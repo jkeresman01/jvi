@@ -728,11 +728,14 @@ public class ColonCommands implements ColonCommandFlags, Constants {
         public void actionPerformed(ActionEvent e) {
             ViOutputStream osa = ViManager.createOutputStream(
                 null, ViOutputStream.OUTPUT,
-                " === activation ===                 === MRU ===");
+                "=== MRU (:n :N :e#-<digit>) ===                "
+                + "=== activation (:e#<digit> ===");
             int i = 0;
+            Object cur = ViManager.relativeMruBuffer(0);
+            Object prev = ViManager.getMruBuffer(1);
             while(true) {
-                Object o1 = ViManager.getTextBuffer(i+1);
-                Object o2 = ViManager.getMruBuffer(i);
+                Object o1 = ViManager.getMruBuffer(i);
+                Object o2 = ViManager.getTextBuffer(i+1);
                 if(o1 == null && o2 == null)
                     break;
                 StringBuilder s = new StringBuilder();
@@ -742,8 +745,13 @@ public class ColonCommands implements ColonCommandFlags, Constants {
                     name1 = ViManager.getViFactory().getDisplayFilename(o1);
                 if(o2 != null)
                     name2 = ViManager.getViFactory().getDisplayFilename(o2);
-                osa.println(String.format("  %2d %-30s %3d %s",
-                                            i+1, name1, -i, name2));
+                osa.println(String.format(" %2d %c %-40s %3d %c %s",
+                                    i,
+                                    cur == o1 ? '%' : ' ',
+                                    name1,
+                                    i+1,
+                                    cur == o2 ? '%' : prev == o2 ? '#' : ' ',
+                                    name2));
                 i++;
             }
             osa.close();

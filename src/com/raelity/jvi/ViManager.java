@@ -81,7 +81,7 @@ public class ViManager {
   private static int majorVersion = 0;
   private static int minorVersion = 8;
   private static int microVersion = 0;
-  private static String releaseTag = "x15";
+  private static String releaseTag = "x17";
   private static String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion
@@ -175,10 +175,17 @@ public class ViManager {
   public static void stopCommandEntry() {
     activeCommandEntry = null;
   }
+  
+  //
+  // jVi maintains two lists of opened files: the order they opened, and a
+  // MostRecentlyUsed list.
+  //
 
   // NEEDSWORK: textMRU: use a weak reference to fileObject?
   private static List textBuffers = new ArrayList();
-  private static List textMRU = new LinkedList();
+  private static LinkedList textMRU = new LinkedList();
+  private static Object currentlyActive;
+  private static Object ignoreActivation;
 
   /**
    * Fetch the text buffer indicated by the argument. If the argument is
@@ -212,6 +219,44 @@ public class ViManager {
         return null;
     return textMRU.get(i);
   }
+  
+  /**
+   * Return the Ith next/previous fileObject relative to the argument 
+   * fileObject. If i < 0 then look in previously used direction.
+   */
+  public static Object relativeMruBuffer(Object fileObject, int i) {
+      if(factory != null && G.dbgEditorActivation.getBoolean()) {
+        System.err.println("Activation: ViManager.relativeMruBuffer: "
+                + factory.getDisplayFilename(fileObject));
+      }
+      if(textMRU.size() == 0)
+          return null;
+      int idx = textMRU.indexOf(fileObject);
+      if(idx < 0)
+          return null;
+      // the most recent is at index 0, so bigger numbers are backwwards in time
+      idx += -i;
+      if(idx < 0)
+          idx = 0;
+      else if(idx >= textMRU.size())
+          idx = textMRU.size() -1;
+      return textMRU.get(idx);
+  }
+  
+  public static Object relativeMruBuffer(int i) {
+      return relativeMruBuffer(currentlyActive, i);
+  }
+  
+  /**
+   * Request that the next activation does not re-order the mru list if the
+   * activated object is the argment.
+   */
+  public static void ignoreActivation(Object fileObject) {
+      if(!textBuffers.contains(fileObject)) {
+          return; // can't ignore if its not in the list
+      }
+      ignoreActivation = fileObject;
+  }
 
   /**
    * The application invokes this whenever a file becomes selected
@@ -220,18 +265,28 @@ public class ViManager {
    * @param parent Usually, but not necessarily, a container that hold the
    *               editor.
    */
-  public static void activateFile(JEditorPane ep, Object parent, String tag) {
+  public static void activateFile(JEditorPane ep, Object fileObject, String tag) {
     if(factory != null && G.dbgEditorActivation.getBoolean()) {
       System.err.println("Activation: ViManager.activateFile: "
-              + tag + ": " + factory.getDisplayFilename(parent));
+              + tag + ": " + factory.getDisplayFilename(fileObject));
     }
     if(ep != null)
         registerEditorPane(ep);
-    assert(parent != null);
-    textMRU.remove(parent);
-    textMRU.add(0, parent);
-    if( ! textBuffers.contains(parent)) {
-      textBuffers.add(parent);
+    assert(fileObject != null);
+    if(fileObject == null)
+        return;
+    
+    Object ign = ignoreActivation;
+    ignoreActivation = null;
+    currentlyActive = fileObject;
+    if(textBuffers.contains(ign) && fileObject == ign) {
+        return;
+    }
+    
+    textMRU.remove(fileObject);
+    textMRU.add(0, fileObject);
+    if( ! textBuffers.contains(fileObject)) {
+      textBuffers.add(fileObject);
     }
   }
   
@@ -242,6 +297,8 @@ public class ViManager {
     }
     // For several reasons, eg. don't want to hold begin/endUndo
     exitInputMode();
+    
+    assert(parent == currentlyActive || parent == null || currentlyActive == null);
   }
   
   public static boolean isBuffer(Object fileObject) {
@@ -266,6 +323,10 @@ public class ViManager {
     textMRU.remove(fileObject);
     textBuffers.remove(fileObject);
   }
+  
+  //
+  // END of OpenEditors list handling
+  //
 
   /**
    * Set up an editor pane for use with vi.
@@ -431,6 +492,7 @@ public class ViManager {
     // NEEDSWORK: mouse click: if( ! isRegistered(editorPane)) {}
 
     GetChar.flush_buffers(true);
+    exitInputMode();
     switchTo(editorPane);
 
     ViTextView textView = getViTextView(editorPane);
