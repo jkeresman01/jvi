@@ -68,6 +68,8 @@ public class DefaultViFactory implements ViFactory {
   public ViTextView getViTextView(JEditorPane editorPane) {
     ViTextView tv01 = (ViTextView)editorPane.getClientProperty(PROP_VITV);
     if(tv01 == null) {
+        if(G.dbgEditorActivation.getBoolean())
+            System.err.println("Activation: getViTextView: create");
         tv01 = createViTextView(editorPane);
         tv01.setWindow(new Window(tv01));
         editorPane.putClientProperty(PROP_VITV, tv01);

@@ -69,26 +69,35 @@ public class OptionsBeanBase extends SimpleBeanInfo {
                 }
                 d.setDisplayName("jVi Version");
             } else {
-                Option opt = Options.getOption(name);
                 try {
-                    d = new PropertyDescriptor(opt.getName(), clazz);
+                    d = createPropertyDescriptor(name, name, clazz);
                 } catch (IntrospectionException ex) {
                     ex.printStackTrace();
                     continue;
-                }
-                d.setDisplayName(opt.getDisplayName());
-                d.setExpert(opt.isExpert());
-                d.setHidden(opt.isHidden());
-                d.setShortDescription(opt.getDesc());
-                if(opt instanceof IntegerOption
-                || opt instanceof StringOption) {
-                    d.setBound(true);
-                    d.setConstrained(true);
                 }
             }
 	    descriptors[i++] = d;
 	}
 	return descriptors;
+    }
+    
+    protected PropertyDescriptor createPropertyDescriptor(String optName,
+                                                          String methodName,
+                                                          Class clazz)
+    throws IntrospectionException {
+        PropertyDescriptor d = null;
+        Option opt = Options.getOption(optName);
+        d = new PropertyDescriptor(methodName, clazz);
+        d.setDisplayName(opt.getDisplayName());
+        d.setExpert(opt.isExpert());
+        d.setHidden(opt.isHidden());
+        d.setShortDescription(opt.getDesc());
+        if(opt instanceof IntegerOption
+        || opt instanceof StringOption) {
+            d.setBound(true);
+            d.setConstrained(true);
+        }
+        return d;
     }
     
     /* This doesn't work. wonder why?
@@ -183,17 +192,17 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	prefs.putBoolean(name, val);
     }
 
-    private String getString(String name) {
+    protected String getString(String name) {
 	Option opt = Options.getOption(name);
 	return prefs.get(name, opt.getDefault());
     }
 
-    private int getint(String name) {
+    protected int getint(String name) {
 	Option opt = Options.getOption(name);
 	return prefs.getInt(name, Integer.parseInt(opt.getDefault()));
     }
 
-    private boolean getboolean(String name) {
+    protected boolean getboolean(String name) {
 	Option opt = Options.getOption(name);
 	return prefs.getBoolean(name, Boolean.parseBoolean(opt.getDefault()));
     }

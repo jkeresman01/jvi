@@ -81,7 +81,7 @@ public class ViManager {
   private static int majorVersion = 0;
   private static int minorVersion = 8;
   private static int microVersion = 0;
-  private static String releaseTag = "x17";
+  private static String releaseTag = "x18";
   private static String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion
@@ -307,7 +307,7 @@ public class ViManager {
 
   /**
    * The applications invokes this method when a file is completely
-   * removed from a container.
+   * removed from a container or should be forgotten by jVi.
    */
   public static void closeFile(JEditorPane ep, Object fileObject) {
     if(factory != null && G.dbgEditorActivation.getBoolean()) {

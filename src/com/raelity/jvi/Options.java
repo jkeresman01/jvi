@@ -66,6 +66,8 @@ public class Options {
       return options;
   }
   
+  public enum Category { DEBUG, MISC, GENERAL, CURSOR_WRAP }
+  
   public static final String commandEntryFrame =
   						"viCommandEntryFrameOption";
   public static final String backspaceWrapPrevious =
@@ -354,50 +356,42 @@ public class Options {
       return prefs;
   }
 
-  // NEEDSWORK: FOR NOW PROPOGATE DEFAULTS TO DATA BASE
-  static private boolean fAddDefaultToDB = false;
-  static private StringOption createStringOption(String name,
+  static public StringOption createStringOption(String name,
                                                  String defaultValue) {
     return createStringOption(name, defaultValue, null);
   }
   
-  static private StringOption createStringOption(String name,
+  static public StringOption createStringOption(String name,
                                                 String defaultValue,
                                                 StringOption.Validator valid) {
+    if(optionsMap.get(name) != null)
+        throw new IllegalArgumentException("Option " + name + "already exists");
     StringOption opt = new StringOption(name, defaultValue, valid);
     optionsMap.put(name, opt);
-    if(fAddDefaultToDB) {
-      opt.setValue(defaultValue);
-    }
     return opt;
   }
 
-  static private BooleanOption createBooleanOption(String name,
-                                                  boolean defaultValue)
-  {
+  static public BooleanOption createBooleanOption(String name,
+                                                  boolean defaultValue) {
+    if(optionsMap.get(name) != null)
+        throw new IllegalArgumentException("Option " + name + "already exists");
     BooleanOption opt = new BooleanOption(name, defaultValue);
     optionsMap.put(name, opt);
-    if(fAddDefaultToDB) {
-      opt.setBoolean(defaultValue);
-    }
     return opt;
   }
   
-  static private IntegerOption createIntegerOption(String name,
-                                                  int defaultValue)
-  {
+  static public IntegerOption createIntegerOption(String name,
+                                                  int defaultValue) {
       return createIntegerOption(name, defaultValue, null);
   }
 
-  static private IntegerOption createIntegerOption(String name,
+  static public IntegerOption createIntegerOption(String name,
                                                   int defaultValue,
-                                                  IntegerOption.Validator valid)
-  {
+                                                  IntegerOption.Validator valid) {
+    if(optionsMap.get(name) != null)
+        throw new IllegalArgumentException("Option " + name + "already exists");
     IntegerOption opt = new IntegerOption(name, defaultValue, valid);
     optionsMap.put(name, opt);
-    if(fAddDefaultToDB) {
-      opt.setInteger(defaultValue);
-    }
     return opt;
   }
 
@@ -423,6 +417,23 @@ public class Options {
     return Collections.unmodifiableList(l);
   }
 
+  public static void setupOptionDesc(Category category, String name,
+                                     String displayName, String desc) {
+      List<String> catList = null;
+      switch(category) {
+          case CURSOR_WRAP: catList = cursorWrapList; break;
+          case DEBUG:       catList = debugList; break;
+          case MISC:        catList = miscList; break;
+          case GENERAL:     catList = generalList; break;
+      }
+      setupOptionDesc(catList, name, displayName, desc);
+  }
+
+  public static void setupOptionDesc(String name,
+                                     String displayName, String desc) {
+      setupOptionDesc((List<String>)null, name, displayName, desc);
+  }
+  
   private static void setupOptionDesc(List<String> optionsGroup, String name,
                                       String displayName, String desc) {
     Option opt = optionsMap.get(name);
@@ -440,7 +451,7 @@ public class Options {
     }
   }
   
-  private static void setExpertHidden(String optionName,
+  public static void setExpertHidden(String optionName,
                                       boolean fExpert, boolean fHidden) {
     Option opt = optionsMap.get(optionName);
     if(opt != null) {
