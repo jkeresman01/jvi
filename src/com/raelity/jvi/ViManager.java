@@ -81,7 +81,7 @@ public class ViManager {
   private static int majorVersion = 0;
   private static int minorVersion = 8;
   private static int microVersion = 0;
-  private static String releaseTag = "x18";
+  private static String releaseTag = "x19";
   private static String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion
@@ -298,7 +298,7 @@ public class ViManager {
     // For several reasons, eg. don't want to hold begin/endUndo
     exitInputMode();
     
-    assert(parent == currentlyActive || parent == null || currentlyActive == null);
+    // assert(parent == currentlyActive || parent == null || currentlyActive == null);
   }
   
   public static boolean isBuffer(Object fileObject) {
@@ -465,7 +465,7 @@ public class ViManager {
   public static void detached(JEditorPane ep) {
     if(currentEditorPane == ep) {
       if(G.dbgEditorActivation.getBoolean()) {
-        System.err.println("Activation: ViManager.detached: " + ep);
+        System.err.println("Activation: ViManager.detached");
       }
       currentEditorPane = null;
     }

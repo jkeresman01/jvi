@@ -92,7 +92,7 @@ public class Edit {
    */
   static void edit(int cmdchar, boolean startln, int count_arg)
   {
-    if( ! G.curwin.isInInsertUndo()) {
+    if( ! Misc.isInInsertUndo()) {
       ViManager.dumpStack("In edit with no undo pending");
     }
     if( ! Normal.editBusy) {

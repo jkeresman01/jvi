@@ -2634,6 +2634,14 @@ public class Misc implements Constants, ClipboardOwner, KeyDefs {
   
   private static boolean inRedo = false;
   
+  /** Currently in insertUndo? Since using inRedo directly, there will be
+   * some false positives. This method is used for some consistency checking
+   * and the false positives won't cause the assert.
+   */
+  static boolean isInInsertUndo() {
+      return G.curwin.isInInsertUndo() || inRedo;
+  }
+  
   static void beginInsertUndo() {
     if(G.global_busy || inRedo) {
       return;
