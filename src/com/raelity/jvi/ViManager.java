@@ -32,6 +32,7 @@ package com.raelity.jvi;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.io.PrintStream;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
@@ -69,7 +70,6 @@ public class ViManager {
   public static final String PREFS_KEYS = "KeyBindings";
 
   static private JEditorPane currentEditorPane;
-  static private ViTextView currentTextView;
   static private ViFactory factory;
 
   static private Keymap editModeKeymap;
@@ -78,25 +78,28 @@ public class ViManager {
   // HACK: to workaround JDK bug dealing with focus and JWindows
   public static ViCmdEntry activeCommandEntry;
 
-  private static int majorVersion = 0;
-  private static int minorVersion = 8;
-  private static int microVersion = 0;
-  private static String releaseTag = "x19";
-  private static String release = "jVi "
+  private static final int majorVersion = 0;
+  private static final int minorVersion = 8;
+  private static final int microVersion = 1;
+  private static final String releaseTag = "x3";
+  private static final String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion
 		    + "." + ViManager.microVersion
                     + ViManager.releaseTag;
+  
+  private static boolean enabled;
 
   public static void setViFactory(ViFactory factory) {
     if(ViManager.factory != null) {
       throw new RuntimeException("ViFactory already set");
     }
+    
+    enabled = true;
     ViManager.factory = factory;
-    Options.init();
 
+    Options.init();
     KeyBinding.init();
-    //KeyBinding.getKeymap();  // force the class loaded before the action starts
   }
 
   public static String getReleaseString() {
@@ -132,9 +135,6 @@ public class ViManager {
   }
 
   public static ViTextView getViTextView(JEditorPane editorPane) {
-    if(currentEditorPane == editorPane) {
-        return currentTextView;
-    }
     return factory.getViTextView(editorPane);
   }
   
@@ -179,6 +179,9 @@ public class ViManager {
   //
   // jVi maintains two lists of opened files: the order they opened, and a
   // MostRecentlyUsed list.
+  //
+  // Even if jVi is disabled, these methods can be used. They only maintain
+  // the lists.
   //
 
   // NEEDSWORK: textMRU: use a weak reference to fileObject?
@@ -270,7 +273,7 @@ public class ViManager {
       System.err.println("Activation: ViManager.activateFile: "
               + tag + ": " + factory.getDisplayFilename(fileObject));
     }
-    if(ep != null)
+    if(ep != null && enabled)
         registerEditorPane(ep);
     assert(fileObject != null);
     if(fileObject == null)
@@ -296,8 +299,10 @@ public class ViManager {
                          + factory.getDisplayFilename(parent));
     }
     // For several reasons, eg. don't want to hold begin/endUndo
-    exitInputMode();
+    if(enabled)
+        exitInputMode();
     
+    currentlyActive = null;
     // assert(parent == currentlyActive || parent == null || currentlyActive == null);
   }
   
@@ -312,14 +317,16 @@ public class ViManager {
   public static void closeFile(JEditorPane ep, Object fileObject) {
     if(factory != null && G.dbgEditorActivation.getBoolean()) {
       String fname = factory.getDisplayFilename(fileObject);
-      System.err.println("Activation: ViManager.deactivateFile: "
+      System.err.println("Activation: ViManager.closeFile: "
               + (ep == null ? "(no shutdown) " : "") + fname);
     }
     
     assert(factory != null);
-    if(factory != null && ep != null) {
+    if(factory != null && ep != null && enabled) {
         factory.shutdown(ep);
     }
+    if(fileObject == currentlyActive)
+        currentlyActive = null;
     textMRU.remove(fileObject);
     textBuffers.remove(fileObject);
   }
@@ -388,8 +395,10 @@ public class ViManager {
     
     registerEditorPane(editorPane); // make sure its registered
     exitInputMode(); // if switching, make sure prev out of input mode
+    ViTextView currentTv = null;
     if(currentEditorPane != null) {
       Normal.resetCommand(); // NEEDSWORK: dont think this is needed
+      currentTv = factory.getExistingViTextView(editorPane);
     }
 
     // first do lookup, in case new window/editorPane
@@ -406,10 +415,9 @@ public class ViManager {
     currentEditorPane = editorPane;
     
     // detach listeners from previous active view
-    if(currentTextView != null) {
-        currentTextView.detach();
+    if(currentTv != null) {
+        currentTv.detach();
     }
-    currentTextView = textView;
   }
 
   private static boolean inStartup;
@@ -577,6 +585,18 @@ public class ViManager {
 
   static public ActionListener xlateKeymapAction(ActionListener act) {
     return factory.xlateKeymapAction(act);
+  }
+  
+  static public void dump(PrintStream ps) {
+    ps.println("-----------------------------------");
+    ps.println("currentEditorPane = " + currentEditorPane );
+    ps.println("factory = " + factory );
+    
+    ps.println("" + textBuffers.size() + " active");
+    ps.println("textBuffers = " + textBuffers );
+    ps.println("textMRU = " + textMRU );
+    ps.println("currentlyActive = " + currentlyActive );
+    ps.println("ignoreActivation = " + ignoreActivation );
   }
 }
 

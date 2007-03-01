@@ -518,15 +518,15 @@ public class TextViewCache implements PropertyChangeListener,
   boolean hasListeners = false;
 
   /** Dissassociate from the observed components. */
-  public void detach(JEditorPane editor) {
+  public void detach(JEditorPane ep) {
     if(G.dbgEditorActivation.getBoolean()) {
       System.err.println("TVCache: detach: "
-              + (editor == null ? "" : editor.hashCode()));
+              + (ep == null ? "" : ep.hashCode()));
     }
-    if(editor == null) {
+    if(ep == null) {
       return;
     }
-    freezer = new FreezeViewport(textView.getEditorComponent());
+    freezer = new FreezeViewport(ep);
     
     //removeListeners();
   }
@@ -660,11 +660,12 @@ public class TextViewCache implements PropertyChangeListener,
         private int nLine;
         
         public FreezeViewport(JEditorPane ep) {
+            this.ep = ep;
+            Object o = ep.getDocument();
+            if(!(o instanceof AbstractDocument))
+                return;
+            doc = (AbstractDocument)ep.getDocument();
             try {
-                this.ep = ep;
-                if(!(ep.getDocument() instanceof AbstractDocument))
-                    return;
-                doc = (AbstractDocument) ep.getDocument();
                 doc.readLock();
                 vp = (JViewport)ep.getParent(); // may throw class cast, its ok
                 Element root = doc.getDefaultRootElement();

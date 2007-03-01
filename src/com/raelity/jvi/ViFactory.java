@@ -48,7 +48,11 @@ import com.raelity.jvi.swing.*;
  */
 public interface ViFactory {
 
+  /** Return a TextView, create one if it doesn't already exist */
   public ViTextView getViTextView(JEditorPane editorPane);
+
+  /** @return null if TextView does not exist */
+  public ViTextView getExistingViTextView(JEditorPane editorPane);
   
   /** @return true this editor has a text view */
   public boolean hasViTextView(Object editorPane);

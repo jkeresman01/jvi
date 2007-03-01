@@ -64,9 +64,13 @@ public class DefaultViFactory implements ViFactory {
   public DefaultViFactory(CommandLine cmdLine) {
     this.cmdLine = cmdLine;
   }
+  
+  public ViTextView getExistingViTextView(JEditorPane editorPane) {
+    return (ViTextView)editorPane.getClientProperty(PROP_VITV);
+  }
 
   public ViTextView getViTextView(JEditorPane editorPane) {
-    ViTextView tv01 = (ViTextView)editorPane.getClientProperty(PROP_VITV);
+    ViTextView tv01 = getExistingViTextView(editorPane);
     if(tv01 == null) {
         if(G.dbgEditorActivation.getBoolean())
             System.err.println("Activation: getViTextView: create");
@@ -96,8 +100,8 @@ public class DefaultViFactory implements ViFactory {
   public void shutdown(JEditorPane ep) {
     ViTextView tv = (ViTextView)ep.getClientProperty(PROP_VITV);
     if(tv != null) {
-        ep.putClientProperty(PROP_VITV, null);
         tv.shutdown();
+        ep.putClientProperty(PROP_VITV, null);
     }
   }
 
@@ -194,7 +198,7 @@ public class DefaultViFactory implements ViFactory {
    * Control characters of interest are picked up as key-press events
    * in {link #EnqKeyAction}.
    */
-  protected static class EnqueCharAction extends TextAction {
+  public static class EnqueCharAction extends TextAction {
     public EnqueCharAction(String name) {
 	super(name);
     }
@@ -214,8 +218,8 @@ public class DefaultViFactory implements ViFactory {
 	    return;
 	  }
           if(KeyBinding.isKeyDebug()) {
-            System.err.println("CharAction: " + String.format("%x", c)
-                               + "(" + c + ") " + mod);
+            System.err.println("CharAction: " + "'" + (char)c + "' "
+                               + String.format("%x", c) + "(" + c + ") " + mod);
           }
 	  ViManager.keyStroke(target, content.charAt(0), mod);
 	}
@@ -234,7 +238,7 @@ public class DefaultViFactory implements ViFactory {
    * the event and added to the key. Recieved characters are placed
    * on the vi input Q.
    */
-  protected static class EnqueKeyAction extends TextAction {
+  public static class EnqueKeyAction extends TextAction {
     int basekey;
 
     public EnqueKeyAction(String name, int key) {
