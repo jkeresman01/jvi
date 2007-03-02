@@ -2609,18 +2609,30 @@ public class Misc implements Constants, ClipboardOwner, KeyDefs {
   // other stuff
   //
   
+  // inUndoCount is relatd to beginRedoUndo. During a redoUndo can get
+  // regular undo's. Would still like to check for proper undo state stuff,
+  // although the checking is what seems flakey.
+  private static int inUndoCount;
   static void beginUndo() {
     if(G.global_busy) {
       return;
     }
-    G.curwin.beginUndo();
+    if(inUndoCount > 0)
+        ViManager.dumpStack("inUndoCount = " + inUndoCount);
+    inUndoCount++;
+    if(!inRedo)
+        G.curwin.beginUndo();
   }
   
   static void endUndo() {
     if(G.global_busy) {
       return;
     }
-    G.curwin.endUndo();
+    inUndoCount--;
+    if(inUndoCount > 0)
+        ViManager.dumpStack("inUndoCount = " + inUndoCount);
+    if(!inRedo)
+        G.curwin.endUndo();
   }
   
   // There are interactions between insert and redo undo.

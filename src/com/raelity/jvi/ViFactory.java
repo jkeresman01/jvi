@@ -52,10 +52,7 @@ public interface ViFactory {
   public ViTextView getViTextView(JEditorPane editorPane);
 
   /** @return null if TextView does not exist */
-  public ViTextView getExistingViTextView(JEditorPane editorPane);
-  
-  /** @return true this editor has a text view */
-  public boolean hasViTextView(Object editorPane);
+  public ViTextView getExistingViTextView(Object editorPane);
 
   /** For an environmental object, used for debug output */
   public String getDisplayFilename(Object o);

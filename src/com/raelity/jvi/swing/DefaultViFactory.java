@@ -40,13 +40,13 @@ import javax.swing.text.Caret;
 import com.raelity.jvi.Window;
 import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.KeyDefs;
 import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.DefaultViFS;
 import com.raelity.jvi.*;
 
 import static com.raelity.jvi.Constants.*;
 import static com.raelity.jvi.KeyDefs.*;
+import javax.swing.JComponent;
 
 /**
  * This provides the Vi items to interface with standard swing JEditorPane.
@@ -65,12 +65,14 @@ public class DefaultViFactory implements ViFactory {
     this.cmdLine = cmdLine;
   }
   
-  public ViTextView getExistingViTextView(JEditorPane editorPane) {
-    return (ViTextView)editorPane.getClientProperty(PROP_VITV);
+  public ViTextView getExistingViTextView(Object editorPane) {
+    if(!(editorPane instanceof JComponent))
+        return null;
+    return (ViTextView)((JComponent)editorPane).getClientProperty(PROP_VITV);
   }
 
   public ViTextView getViTextView(JEditorPane editorPane) {
-    ViTextView tv01 = getExistingViTextView(editorPane);
+    ViTextView tv01 = (ViTextView)editorPane.getClientProperty(PROP_VITV);
     if(tv01 == null) {
         if(G.dbgEditorActivation.getBoolean())
             System.err.println("Activation: getViTextView: create");
@@ -85,13 +87,6 @@ public class DefaultViFactory implements ViFactory {
   protected ViTextView createViTextView(JEditorPane editorPane) {
       return new TextView(editorPane);
   }
-
-  public boolean hasViTextView(Object o) {
-    if(o instanceof JEditorPane) {
-        return ((JEditorPane)o).getClientProperty(PROP_VITV) != null;
-    } else
-        return false;
-  }
   
   public String getDisplayFilename(Object o) {
       return "";
@@ -100,6 +95,8 @@ public class DefaultViFactory implements ViFactory {
   public void shutdown(JEditorPane ep) {
     ViTextView tv = (ViTextView)ep.getClientProperty(PROP_VITV);
     if(tv != null) {
+        if(G.dbgEditorActivation.getBoolean())
+            System.err.println("Activation: shutdown TV");
         tv.shutdown();
         ep.putClientProperty(PROP_VITV, null);
     }

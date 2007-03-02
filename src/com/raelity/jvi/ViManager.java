@@ -30,34 +30,16 @@
 package com.raelity.jvi;
 
 import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.io.PrintStream;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.ArrayList;
 import javax.swing.JEditorPane;
 import javax.swing.text.JTextComponent;
-import javax.swing.JComponent;
-import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
-
-import com.raelity.jvi.ViFS;
-import com.raelity.jvi.G;
-import com.raelity.jvi.Normal;
-import com.raelity.jvi.Misc;
-import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.Window;
-import com.raelity.jvi.ViMark;
-import com.raelity.jvi.GetChar;
-import com.raelity.jvi.Options;
-import com.raelity.jvi.ViCmdEntry;
-import com.raelity.jvi.KeyDefs;
-import com.raelity.jvi.Msg;
 import com.raelity.jvi.swing.*;
+import java.util.WeakHashMap;
 
 /**
  * This class coordinates things.
@@ -81,7 +63,7 @@ public class ViManager {
   private static final int majorVersion = 0;
   private static final int minorVersion = 8;
   private static final int microVersion = 1;
-  private static final String releaseTag = "x3";
+  private static final String releaseTag = "x4";
   private static final String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion
@@ -89,6 +71,10 @@ public class ViManager {
                     + ViManager.releaseTag;
   
   private static boolean enabled;
+  
+  // This is used only when dbgEditorActivation is turned on
+  private static WeakHashMap<JEditorPane, Object> editorSet
+          = new WeakHashMap<JEditorPane, Object>();
 
   public static void setViFactory(ViFactory factory) {
     if(ViManager.factory != null) {
@@ -135,6 +121,9 @@ public class ViManager {
   }
 
   public static ViTextView getViTextView(JEditorPane editorPane) {
+    if(G.dbgEditorActivation.getBoolean()) {
+        editorSet.put(editorPane, null);
+    }
     return factory.getViTextView(editorPane);
   }
   
@@ -395,29 +384,24 @@ public class ViManager {
     
     registerEditorPane(editorPane); // make sure its registered
     exitInputMode(); // if switching, make sure prev out of input mode
-    ViTextView currentTv = null;
-    if(currentEditorPane != null) {
-      Normal.resetCommand(); // NEEDSWORK: dont think this is needed
-      currentTv = factory.getExistingViTextView(editorPane);
-    }
-
-    // first do lookup, in case new window/editorPane
-    //Window window = factory.lookupWindow(editorPane);
+    
     ViTextView textView = getViTextView(editorPane);
     textView.attach();
-    G.switchTo(textView);
-    
     if(G.dbgEditorActivation.getBoolean()) {
-      System.err.println("Activation: ViManager.switchTo: "
+      System.err.println("Activation: ViManager.SWITCHTO: "
               + textView.getDisplayFileName());
     }
     
-    currentEditorPane = editorPane;
-    
-    // detach listeners from previous active view
-    if(currentTv != null) {
-        currentTv.detach();
+    if(currentEditorPane != null) {
+      Normal.resetCommand(); // NEEDSWORK: dont think this is needed
+      ViTextView currentTv = getViTextView(currentEditorPane);
+      // Freeze and/or detach listeners from previous active view
+      currentTv.detach();
     }
+
+    // first do lookup, in case new window/editorPane
+    G.switchTo(textView);
+    currentEditorPane = editorPane;
   }
 
   private static boolean inStartup;
@@ -597,6 +581,17 @@ public class ViManager {
     ps.println("textMRU = " + textMRU );
     ps.println("currentlyActive = " + currentlyActive );
     ps.println("ignoreActivation = " + ignoreActivation );
+    
+    int n1 = 0;
+    int n2 = 0;
+    for (JEditorPane ep : editorSet.keySet()) {
+        n1++;
+        if(factory.getExistingViTextView(ep) != null)
+            n2++;
+    }
+    if(n2 != 0)
+        ps.println("" + n2 + " ACTIVE TEXT VIEWS");
+    ps.println("" + n1 + " editors with " + n2 + " text views");
   }
 }
 
