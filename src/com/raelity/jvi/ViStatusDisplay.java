@@ -47,4 +47,10 @@ public interface ViStatusDisplay {
   
   /** Clear current status and/or error message */
   public void clearMessage();
+  
+  /** Redisplay last message. May be noop depending on implementation.
+   * This is invoked when exiting a keystroke because some platforms
+   * clear the display at inoportune times.
+   */
+  public void refresh();
 }

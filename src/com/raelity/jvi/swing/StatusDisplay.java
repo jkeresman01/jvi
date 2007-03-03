@@ -82,4 +82,8 @@ public class StatusDisplay implements ViStatusDisplay {
 	  }});
     }
   }
+
+    /** don't need anything special here */
+    public void refresh() {
+    }
 }

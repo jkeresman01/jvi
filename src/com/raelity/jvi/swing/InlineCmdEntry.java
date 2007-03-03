@@ -11,6 +11,7 @@ import java.util.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.awt.*;
+import javax.swing.text.JTextComponent;
 
 public class InlineCmdEntry implements ViCmdEntry, ActionListener{
 	protected int entryType;
@@ -28,7 +29,8 @@ public class InlineCmdEntry implements ViCmdEntry, ActionListener{
 		commandLine = new CommandLine();
 		commandLine.setupBorder();
 		commandLine.addActionListener(this);
-		commandLine.setMode(entryType == ViCmdEntry.COLON_ENTRY ? ":" : "/");
+		commandLine.setMode(entryType == ViCmdEntry.COLON_ENTRY
+                                    ? ":" : "/");
 		commandLine.setList(new LinkedList());
 		commandLine.setNextFocusableComponent(commandLine);
 		mouseListener = new MouseAdapter() {
@@ -112,6 +114,10 @@ public class InlineCmdEntry implements ViCmdEntry, ActionListener{
 	public void append(String s){
 		commandLine.append(s);
 	};
+
+        public JTextComponent getTextComponent() {
+            return commandLine.getTextField();
+        }
 
 	public void actionPerformed(ActionEvent e) {
 	    lastCommand = commandLine.getCommand();
