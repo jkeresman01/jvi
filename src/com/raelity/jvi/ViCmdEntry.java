@@ -29,9 +29,8 @@
 package com.raelity.jvi;
 
 import java.awt.event.ActionListener;
-import javax.swing.JEditorPane;
 import java.util.TooManyListenersException;
-import com.raelity.jvi.ViTextView;
+import javax.swing.text.JTextComponent;
 
 /** This is used by vi to get command line input.
  * An LRU history of commands should be maintained, though this history
@@ -81,6 +80,12 @@ public interface ViCmdEntry {
    * entry field is ready to take characters.
    */
   public void append(String s);
+  
+  /**
+   * Retrieve the component used for the data entry.
+   */
+  
+  public JTextComponent getTextComponent();
 
   /** When command entry is complete, this listener is invoked.
    * The event is the key event that stopped entry, either a
