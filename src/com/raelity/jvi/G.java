@@ -109,8 +109,8 @@ public class G {
   public static StringOption p_meta_escape;   // metacharacters escaped
 
   public static BooleanOption b_p_et;	// expandtabs, per file
-  static boolean p_sc = true;   // showcmd
   public static BooleanOption p_smd; // showmode edit/command mode in display
+  public static BooleanOption p_sc; // showcmd
 
   public static IntegerOption p_report;
   public static IntegerOption p_bs ;   // backspace over start of insert, and more

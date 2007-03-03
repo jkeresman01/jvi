@@ -124,18 +124,19 @@ class Search implements Constants {
     searchFlags = flags;
     ViManager.startCommandEntry(getSearchCommandEntry(),
                                 mode, G.curwin, null);
-    // HACK
-    // Insist that command entry happens in a dialog so that
-    // for now, we get here after the command entry is complete and the
-    // search has been run. Use a few globals to communicate the result
-    // of the search. This can all be revisited when there is a more
-    // understandable input handling mechanism.
     
+    // command entry is started, when search pattern in input
+    // executes as searchEntryComplete()
+    
+    return 1;
+    
+    /* NEEDSWORK: returning from search
     if(searchResult == FAIL) {
       return 0;
     } else {
       return 1; // NEEDSWORK: not returning 2 ever, so not line mode.
     }
+    */
   }
 
   static int doNext(CMDARG cap, int count, int flag) {

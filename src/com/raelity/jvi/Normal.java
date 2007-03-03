@@ -1634,7 +1634,7 @@ middle_code:
   static void clear_showcmd() {
     do_xop("clear_showcmd");
 
-    if (!G.p_sc)
+    if (!G.p_sc.getBoolean())
       return;
 
     showcmd_buf.setLength(0);
@@ -1656,7 +1656,7 @@ middle_code:
 
     do_xop("add_to_showcmd");
 
-    if (!G.p_sc)
+    if (!G.p_sc.getBoolean())
       return false;
 
     add_one_to_showcmd_buffer(c);
@@ -1698,7 +1698,7 @@ middle_code:
   static private void del_from_showcmd(int len) {
     int	    old_len;
 
-    if (!G.p_sc)
+    if (!G.p_sc.getBoolean())
       return;
 
     old_len = showcmd_buf.length();
@@ -1711,7 +1711,7 @@ middle_code:
   }
 
   static void push_showcmd() {
-    if (!G.p_sc)
+    if (!G.p_sc.getBoolean())
       return;
 
     old_showcmd_buf.setLength(0);
@@ -1719,7 +1719,7 @@ middle_code:
   }
 
   static void pop_showcmd() {
-    if (!G.p_sc)
+    if (!G.p_sc.getBoolean())
       return;
 
     showcmd_buf.setLength(0);
@@ -2340,6 +2340,9 @@ middle_code:
                         (dont_set_mark ? 0 : SEARCH_MARK)
                         | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG);
                         
+    /* Currently, doSearch returns immeadiately.
+     * NEEDSWORK: searching, at end of search come back into
+     */
     if(i == 0) {
       clearop(oap);
     } else if(i == 2) {

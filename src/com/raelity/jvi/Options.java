@@ -101,6 +101,7 @@ public class Options {
   public static final String shiftWidth = "viShiftWidth";
   public static final String tabStop = "viTabStop";
   public static final String showMode = "viShowMode";
+  public static final String showCommand = "viShowCommand";
 
   
   public static final String readOnlyHack = "viReadOnlyHack";
@@ -206,6 +207,10 @@ public class Options {
     G.p_smd = createBooleanOption(showMode, true);
     setupOptionDesc(generalList, showMode, "'showmode' 'smd'",
             "If in Insert or Replace mode display that information.");
+    
+    G.p_sc = createBooleanOption(showCommand, true);
+    setupOptionDesc(generalList, showCommand, "'showcmd' 'sc'",
+            "Show (partial) command in status line.");
 
     G.p_report = createIntegerOption(report, 2);
     setupOptionDesc(generalList, report, "'report'",

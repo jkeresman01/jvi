@@ -217,6 +217,14 @@ public class OptionsBeanBase extends SimpleBeanInfo {
         return ViManager.getReleaseString();
     }
 
+    public void setViShowCommand(boolean arg) {
+        put("viShowCommand", arg);
+    }
+
+    public boolean getViShowCommand() {
+	return getboolean("viShowCommand");
+    }
+
     public void setViShowMode(boolean arg) {
         put("viShowMode", arg);
     }
