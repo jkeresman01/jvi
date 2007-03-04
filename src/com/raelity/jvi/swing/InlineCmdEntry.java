@@ -32,6 +32,7 @@ public class InlineCmdEntry implements ViCmdEntry, ActionListener{
 		commandLine.setMode(entryType == ViCmdEntry.COLON_ENTRY
                                     ? ":" : "/");
 		commandLine.setList(new LinkedList());
+                // NEEDSWORK: FOCUS: use FocusTraversalPolicy
 		commandLine.setNextFocusableComponent(commandLine);
 		mouseListener = new MouseAdapter() {
 		  public void mousePressed(MouseEvent evt) {

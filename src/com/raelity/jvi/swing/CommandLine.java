@@ -146,6 +146,7 @@ public class CommandLine extends JPanel
   public void takeFocus(boolean flag) {
     if(flag) {
       combo.setEnabled(true);
+      // NEEDSWORK: FOCUS: use requestFocusInWindow()
       getTextField().requestFocus();
     } else {
       combo.setEnabled(false);
