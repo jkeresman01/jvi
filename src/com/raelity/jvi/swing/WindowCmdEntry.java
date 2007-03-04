@@ -56,6 +56,7 @@ import java.awt.event.ComponentListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import com.raelity.jvi.*;
+import javax.swing.text.JTextComponent;
 
 /**
  * This class provides a floating CommandLine entry widget.
@@ -281,5 +282,9 @@ public class WindowCmdEntry
   public void windowDeactivated(WindowEvent e) {
     //TODO: Implement this java.awt.event.WindowListener method
   }
+
+    public JTextComponent getTextComponent() {
+        return commandLineWindow.getCommandLine().getTextField();
+    }
 
 }
