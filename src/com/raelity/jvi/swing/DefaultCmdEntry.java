@@ -38,6 +38,7 @@ import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.GetChar;
 import com.raelity.jvi.*;
+import javax.swing.text.JTextComponent;
 
 /**
  * This class provides shared access to a CommandLine entry widget.
@@ -148,4 +149,8 @@ public class DefaultCmdEntry implements ViCmdEntry, ActionListener {
       listener = null;
     }
   }
+
+    public JTextComponent getTextComponent() {
+        return cmdLine.getTextField();
+    }
 }
