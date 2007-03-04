@@ -45,7 +45,7 @@ public class GetChar implements Constants, KeyDefs {
    * E000-E07f range, and put the K_UP type keys in the E080 range.
    * </p>
    */
-  static public void gotc(int key, int modifier) {
+  static void gotc(int key, int modifier) {
     if((key & 0xF000) == VIRT) {
       if((modifier & KeyBinding.MOD_MASK) == SHFT
                 && key >= VIRT && key <= VIRT + 0x0f) {
@@ -88,6 +88,13 @@ public class GetChar implements Constants, KeyDefs {
     Misc.out_flush();   // returning from event
                         // only do this if no pending characters
                         // but can't test for pending characters, so ....
+  }
+  
+  /** This is a special case for the two part search */
+  static void fakeGotc(int key) {
+    G.setModMask(0);
+    Normal.processInputChar(key, true);
+    Misc.out_flush();   // returning from event
   }
 
   /**

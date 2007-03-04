@@ -38,6 +38,9 @@ import javax.swing.text.Segment;
 import com.raelity.jvi.ViManager;
 import com.raelity.text.*;
 
+import static com.raelity.jvi.KeyDefs.K_X_SEARCH_FINISH;
+import static com.raelity.jvi.KeyDefs.K_X_SEARCH_CANCEL;
+
 /**
  * Searching, regexp and substitution.
  */
@@ -76,20 +79,39 @@ class Search implements Constants {
 
   static private void searchEntryComplete(ActionEvent ev) {
     ViManager.stopCommandEntry();
-    String pattern = searchCommandEntry.getCommand();
     String cmd = ev.getActionCommand();
-    // if not <CR> must be an escape, just ignore it
     if(cmd.charAt(0) == '\n') {
-      runSearch(pattern);
+      GetChar.fakeGotc(K_X_SEARCH_FINISH);
+    } else {
+      GetChar.fakeGotc(K_X_SEARCH_CANCEL);
     }
   }
-
-  static private void runSearch(String pattern) {
+  
+  /** Start the entry dialog and stash the interesting info for later use. */
+  static void inputSearchPattern(CMDARG cap, int count, int flags) {
+    String mode = "";
+    int cmdchar = cap.cmdchar;
+    if (cmdchar == '/') {
+      mode = "/";
+      lastDir = FORWARD;
+    } else if (cmdchar == '?') {
+      mode = "?";
+      lastDir = BACKWARD;
+    }
+    searchCount = count;
+    searchFlags = flags;
+    
+    ViManager.startCommandEntry(getSearchCommandEntry(),
+                                mode, G.curwin, null);
+  }
+  
+  static int doSearch() {
+    String pattern = searchCommandEntry.getCommand();
     G.curwin.setWSetCurswant(true);
     if(pattern.equals("")) {
       if(lastPattern == null) {
         Msg.emsg(Messages.e_noprevre);
-        return;
+        return 0;
       }
       pattern = lastPattern;
     }
@@ -101,42 +123,18 @@ class Search implements Constants {
     if(rc != FAIL) {
       Msg.smsg((lastDir == FORWARD ? "/" : "?") + pattern);
     }
-    searchResult = rc;
+    
+    if(rc == FAIL) {
+      return 0;
+    } else {
+      return 1; // NEEDSWORK: not returning 2 ever, so not line mode.
+    }
+    
     /* ***************************
     if(rc == 0) {
       Normal.clearopInstance();
     }
     ******************************/
-  }
-
-  private static int searchResult;
-  
-  static int doSearch(CMDARG cap, int count, int flags) {
-    String mode = "";
-    if (cap.cmdchar == '/') {
-      lastDir = FORWARD;
-      mode = "/";
-    } else if (cap.cmdchar == '?') {
-      lastDir = BACKWARD;
-      mode = "?";
-    }
-    searchCount = count;
-    searchFlags = flags;
-    ViManager.startCommandEntry(getSearchCommandEntry(),
-                                mode, G.curwin, null);
-    
-    // command entry is started, when search pattern in input
-    // executes as searchEntryComplete()
-    
-    return 1;
-    
-    /* NEEDSWORK: returning from search
-    if(searchResult == FAIL) {
-      return 0;
-    } else {
-      return 1; // NEEDSWORK: not returning 2 ever, so not line mode.
-    }
-    */
   }
 
   static int doNext(CMDARG cap, int count, int flag) {

@@ -45,7 +45,10 @@ import java.awt.Toolkit;
 import com.raelity.jvi.swing.KeyBinding;
 import java.awt.event.ActionListener;
 
-public class Misc implements Constants, ClipboardOwner, KeyDefs {
+import static com.raelity.jvi.Constants.*;
+import static com.raelity.jvi.KeyDefs.*;
+
+public class Misc implements ClipboardOwner {
 
   static ClipboardOwner clipOwner = new Misc();
 

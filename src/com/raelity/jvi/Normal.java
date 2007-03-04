@@ -41,6 +41,9 @@ import javax.swing.text.Segment;
 
 import com.raelity.jvi.swing.KeyBinding;
 
+import static com.raelity.jvi.Constants.*;
+import static com.raelity.jvi.KeyDefs.*;
+
 /**
  * Contains the main routine for processing characters in command mode.
  * Communicates closely with the code in ops.c to handle the operators.
@@ -59,8 +62,7 @@ import com.raelity.jvi.swing.KeyBinding;
  * <br>v_*(): functions called to handle Visual mode commands.
  */
 
-public class Normal implements Constants, KeyDefs
-{
+public class Normal {
 
   // for normal_cmd() use, stuff that was declared static in the function
   static int	opnum = 0;		    /* count before an operator */
@@ -95,10 +97,14 @@ public class Normal implements Constants, KeyDefs
   static boolean firstTimeHere01;
   static boolean editBusy;
 
-  /*
+  /**
    * Vi comands can have up to three chunks: buffer-operator-motion.
-   * For example: "a3y4<CR> has buffer: "a
-   * and operator: 3y and motion 4<CR>.
+   * <br/>For example: <b>"a3y4&lt;CR&gt;</b>
+   * <ul>
+   * <li>has buffer: "a</li>
+   * <li>and operator: 3y</li>
+   * <li>and motion: 4&lt;CR&gt;</li>
+   * </ul>
    * The original vim invokes normal 3 times, one for each chunk. The caller
    * had no knowledge of how many chunks there were in a single command,
    * it just called normal in a loop. normal kept control,
@@ -110,9 +116,10 @@ public class Normal implements Constants, KeyDefs
    * command.
    * <p>
    * To fit in the swing environment, we want to be able to parse one
-   * character at a time in the event loop. This means we have to return
+   * character at a time in the event thread. This means we have to return
    * after each character. So we must maintain a bunch of "where am i" state
    * information between each character. This is messy, but not too bad.
+   * (Only breiefly considered having a separate thread.)
    * </p><p>
    * Operator and motion are very similar, they have <count><char>
    * or sometimes more than one char.
@@ -179,7 +186,13 @@ public class Normal implements Constants, KeyDefs
     G.State = NORMAL_BUSY;
   }
 
-  /*
+  static OPARG oap = new OPARG();
+  static CMDARG	    ca; 	   /* command arguments */
+  static boolean    ctrl_w;	   /* got CTRL-W command */
+  static boolean    need_flushbuf; /* need to call out_flush() */
+  static int	    mapped_len;
+
+  /**
    * normal
    *
    * Parse and execute a command in Normal mode.
@@ -210,13 +223,8 @@ public class Normal implements Constants, KeyDefs
    *   </ol>
    */
 
-  static OPARG oap = new OPARG();
-  static CMDARG	    ca; 	   /* command arguments */
-  static boolean    ctrl_w;	   /* got CTRL-W command */
-  static boolean    need_flushbuf; /* need to call out_flush() */
-  static int	    mapped_len;
-
   static public void normal_cmd(int c, boolean toplevel) {
+                                        //NEEDSWORK: toplevel NOT USED
 
     Misc.update_curswant();	// in vim called just before calling normal_cmd
 
@@ -224,7 +232,7 @@ public class Normal implements Constants, KeyDefs
     if(newChunk) {
       newChunk = false;
       lookForDigit = true;
-      pickupExtraChar = false; // NEEDSWORK: not really used?
+      pickupExtraChar = false;
       firstTimeHere01 = true;
       ca = new CMDARG();
       // vim_memset(&ca, 0, sizeof(ca)); cleared when created
@@ -608,7 +616,8 @@ middle_code:
 	  case '#':		    // ? to current identifier or string
 	    if (ca.cmdchar == K_KMULTIPLY)
 	      ca.cmdchar = '*';
-	    nv_ident(ca, searchbuff);
+	    if(nv_ident(ca, searchbuff))
+                return;
 	    break;
 
 	  case 0x1f & (int)('T'):    // backwards in tag stack	// Ctrl
@@ -798,7 +807,12 @@ middle_code:
 	    // FALLTHROUGH
 	  case '?':
 	  case '/':
-	    nv_search(ca, searchbuff, false);
+            if(ca.nchar == K_X_SEARCH_FINISH || ca.nchar == K_X_SEARCH_CANCEL)
+                nv_search_finish(ca);
+            else {
+                nv_search(ca, searchbuff, false);
+                return;
+            }
 	    break;
 
 	  case 'N':
@@ -1889,7 +1903,7 @@ middle_code:
    * @return TRUE for "*" and "#" commands, indicating that the next search
    * should not set the pcmark.
    */
-  static private void nv_ident (CMDARG cap, CharBuf searchp)
+  static private boolean nv_ident (CMDARG cap, CharBuf searchp)
                                throws NotSupportedException
   {
     do_xop("nv_ident");
@@ -1898,6 +1912,8 @@ middle_code:
     MutableInt  mi = new MutableInt(0);
     int		n = 0;		// init for GCC
     int		cmdchar;
+    
+    boolean     fDoingSearch = false;
 
     /*
     char_u	*aux_offset;
@@ -1928,7 +1944,7 @@ middle_code:
         // the definition is in the same file. But try this out.
         // MarkOps.setpcmark(); // NEEDSWORK: ^] mark not working
 	G.curwin.jumpDefinition();
-        return;
+        return fDoingSearch;
       }
       notImp("nv_ident subset");
       /*
@@ -1965,7 +1981,7 @@ middle_code:
                               ? FIND_IDENT|FIND_STRING : FIND_IDENT)) == 0)
     {
       clearop(cap.oap);
-      return;
+      return fDoingSearch;
     }
     offset = mi.getValue();
 
@@ -2076,8 +2092,11 @@ middle_code:
         cap.cmdchar = '/';
       else
         cap.cmdchar = '?';
+      
       nv_search(cap, searchp, true);
+      fDoingSearch = true;
     }
+    return fDoingSearch;
   }
 
   /**
@@ -2324,11 +2343,34 @@ middle_code:
 
   /**
    * Implementation of '?' and '/' commands.
+   * <p>
+   * This starts the search by bringing up a dialog to enter the search pattern.
+   * When the dialog finishes Normal.processInputChar to normal_cmd to
+   * nv_search_finish() which should do all the regular things that finish
+   * up a command. So any invocation of nv_search() should return from normal_cmd
+   * directly without doing the finishing steps.
    */
-  static private void nv_search(CMDARG cap, CharBuf searchp,
-				boolean dont_set_mark)
-  {
+  static private void nv_search(CMDARG cap,
+                                CharBuf searchp,
+                                boolean dont_set_mark) {
     do_xop("nv_search");
+    
+    // This flags normal_cmd to pick up the finishing up character
+    pickupExtraChar = true;
+    
+    Search.inputSearchPattern(cap,
+                              cap.count1,
+                              (dont_set_mark ? 0 : SEARCH_MARK)
+                               | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG);
+  }
+  
+  static private void nv_search_finish(CMDARG cap) {
+    do_xop("nv_search_finish");
+    if(cap.nchar == K_X_SEARCH_CANCEL) {
+      clearop(oap);
+      return;
+    }
+    
     OPARG oap = cap.oap;
     int i;
     
@@ -2336,13 +2378,8 @@ middle_code:
     oap.inclusive = false;
     G.curwin.setWSetCurswant(true);
     
-    i = Search.doSearch(cap, cap.count1,
-                        (dont_set_mark ? 0 : SEARCH_MARK)
-                        | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG);
+    i = Search.doSearch();
                         
-    /* Currently, doSearch returns immeadiately.
-     * NEEDSWORK: searching, at end of search come back into
-     */
     if(i == 0) {
       clearop(oap);
     } else if(i == 2) {

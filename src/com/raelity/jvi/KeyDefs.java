@@ -153,7 +153,10 @@ public interface KeyDefs {
   public static final int MAP_K_X_PERIOD = 0x44;
   public static final int MAP_K_X_COMMA = 0x45;
   
-  public static final int MAX_JAVA_KEY_MAP = MAP_K_X_COMMA;
+  public static final int MAP_K_X_SEARCH_FINISH = 0x46;
+  public static final int MAP_K_X_SEARCH_CANCEL = 0x47;
+  
+  public static final int MAX_JAVA_KEY_MAP = MAP_K_X_SEARCH_CANCEL;
   
   //public static final int MAP_K_S_UP	= MAP_K_UP + SHIFTED_VIRT_OFFSET;
   //public static final int MAP_K_S_DOWN = K_DOWN + SHIFTED_VIRT_OFFSET;
@@ -237,6 +240,8 @@ public interface KeyDefs {
   public static final int K_X_PERIOD    = MAP_K_X_PERIOD + VIRT;
   public static final int K_X_COMMA     = MAP_K_X_COMMA + VIRT;
   
+  public static final int K_X_SEARCH_FINISH = MAP_K_X_SEARCH_FINISH + VIRT;
+  public static final int K_X_SEARCH_CANCEL = MAP_K_X_SEARCH_CANCEL + VIRT;
 
   // public static final int K_F25		;
   // public static final int K_F26		;
