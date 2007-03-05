@@ -32,6 +32,8 @@ package com.raelity.jvi;
 import javax.swing.text.Segment;
 import com.raelity.jvi.swing.*;
 
+import static com.raelity.jvi.Constants.*;
+
 /**
  * Vim references values in a structure, but we need to present a method
  * interface, so the vim code is not preserved as we'd like.
@@ -42,7 +44,7 @@ import com.raelity.jvi.swing.*;
  * </ul>
  */
 
-public class Window implements Constants {
+public final class Window {
   private ViTextView editor;
   private FPOS w_cursor = new FPOS();
 
@@ -63,7 +65,7 @@ public class Window implements Constants {
     // return editor.getCursor()
     // w_cursor.setCursor(editor);	// make sure cursor is current
     // return w_cursor;
-    return editor.getWCursor();
+    return getEditor().getWCursor();
   }
 
   /**
@@ -133,7 +135,7 @@ public class Window implements Constants {
   }
 
   public final ViMark getMark(int i) {
-    return MarkOps.getMark(editor, i);
+    return MarkOps.getMark(getEditor(), i);
   }
 
   public void previousContextHack(ViMark mark) {

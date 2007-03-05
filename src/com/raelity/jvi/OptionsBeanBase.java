@@ -217,20 +217,36 @@ public class OptionsBeanBase extends SimpleBeanInfo {
         return ViManager.getReleaseString();
     }
 
+    public void setViIncrSearch(boolean arg) {
+        put(Options.incrSearch, arg);
+    }
+
+    public boolean getViIncrSearch() {
+	return getboolean(Options.incrSearch);
+    }
+
+    public void setViHighlightSearch(boolean arg) {
+        put(Options.highlightSearch, arg);
+    }
+
+    public boolean getViHighlightSearch() {
+	return getboolean(Options.highlightSearch);
+    }
+
     public void setViShowCommand(boolean arg) {
-        put("viShowCommand", arg);
+        put(Options.showCommand, arg);
     }
 
     public boolean getViShowCommand() {
-	return getboolean("viShowCommand");
+	return getboolean(Options.showCommand);
     }
 
     public void setViShowMode(boolean arg) {
-        put("viShowMode", arg);
+        put(Options.showMode, arg);
     }
 
     public boolean getViShowMode() {
-	return getboolean("viShowMode");
+	return getboolean(Options.showMode);
     }
 
     public void setViCommandEntryFrameOption(boolean arg) {

@@ -154,7 +154,8 @@ public interface KeyDefs {
   public static final int MAP_K_X_COMMA = 0x45;
   
   public static final int MAP_K_X_SEARCH_FINISH = 0x46;
-  public static final int MAP_K_X_SEARCH_CANCEL = 0x47;
+  public static final int MAP_K_X_INCR_SEARCH_DONE = 0x47;
+  public static final int MAP_K_X_SEARCH_CANCEL = 0x48;
   
   public static final int MAX_JAVA_KEY_MAP = MAP_K_X_SEARCH_CANCEL;
   
@@ -241,6 +242,7 @@ public interface KeyDefs {
   public static final int K_X_COMMA     = MAP_K_X_COMMA + VIRT;
   
   public static final int K_X_SEARCH_FINISH = MAP_K_X_SEARCH_FINISH + VIRT;
+  public static final int K_X_INCR_SEARCH_DONE = MAP_K_X_INCR_SEARCH_DONE + VIRT;
   public static final int K_X_SEARCH_CANCEL = MAP_K_X_SEARCH_CANCEL + VIRT;
 
   // public static final int K_F25		;

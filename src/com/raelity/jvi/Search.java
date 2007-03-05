@@ -32,32 +32,45 @@ package com.raelity.jvi;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.TooManyListenersException;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import javax.swing.text.Segment;
-
-import com.raelity.jvi.ViManager;
 import com.raelity.text.*;
 
 import static com.raelity.jvi.KeyDefs.K_X_SEARCH_FINISH;
+import static com.raelity.jvi.KeyDefs.K_X_INCR_SEARCH_DONE;
 import static com.raelity.jvi.KeyDefs.K_X_SEARCH_CANCEL;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+
+import static com.raelity.jvi.Constants.*;
 
 /**
  * Searching, regexp and substitution.
+ * Everything's static, can only do one thing at a time.
  */
-class Search implements Constants {
+class Search {
 
   ///////////////////////////////////////////////////////////////////////
   //
   // normal searching like "/" and "?"
   //
-
-  private static int lastDir = FORWARD;
   private static ViCmdEntry searchCommandEntry;
-  private static String lastPattern;
-  private static String lastSubstitution;
+  
+  // parameters for the current search, they do not change during search
   private static int searchCount;
   private static int searchFlags;
+  private static int lastDir = FORWARD;
+  
+  // state when incremental search started
+  private static ViFPOS searchPos;
+  private static int searchTopLine;
+  private static boolean didIncrSearch;
 
+  private static String lastPattern;
+  private static String lastSubstitution;
+  
   private static ViCmdEntry getSearchCommandEntry() {
     if(searchCommandEntry == null) {
       try {
@@ -76,18 +89,39 @@ class Search implements Constants {
     }
     return searchCommandEntry;
   }
+  
+  private static String fetchPattern() {
+      return getSearchCommandEntry().getCommand();
+  }
 
   static private void searchEntryComplete(ActionEvent ev) {
-    ViManager.stopCommandEntry();
     String cmd = ev.getActionCommand();
+    boolean acceptIncr = false;
+    boolean cancel = false;
+    
     if(cmd.charAt(0) == '\n') {
-      GetChar.fakeGotc(K_X_SEARCH_FINISH);
-    } else {
-      GetChar.fakeGotc(K_X_SEARCH_CANCEL);
+        if(G.p_incr_search.getBoolean()
+           && didIncrSearch
+           && ! "".equals(fetchPattern()))
+          acceptIncr = true;
+    } else
+      cancel = true;
+            
+    if(G.p_incr_search.getBoolean()) {
+        stopIncrementalSearch(acceptIncr);
     }
+    
+    ViManager.stopCommandEntry();
+    if(acceptIncr)
+      GetChar.fakeGotc(K_X_INCR_SEARCH_DONE);
+    else if(cancel)
+      GetChar.fakeGotc(K_X_SEARCH_CANCEL);
+    else
+      GetChar.fakeGotc(K_X_SEARCH_FINISH);
   }
   
-  /** Start the entry dialog and stash the interesting info for later use. */
+  /** Start the entry dialog and stash the interesting info for later use
+   *  int doSearch(). */
   static void inputSearchPattern(CMDARG cap, int count, int flags) {
     String mode = "";
     int cmdchar = cap.cmdchar;
@@ -101,12 +135,15 @@ class Search implements Constants {
     searchCount = count;
     searchFlags = flags;
     
-    ViManager.startCommandEntry(getSearchCommandEntry(),
-                                mode, G.curwin, null);
+    ViCmdEntry ce = getSearchCommandEntry();
+    if(G.p_incr_search.getBoolean())
+        startIncrementalSearch();
+    ViManager.startCommandEntry(ce, mode, G.curwin, null);
   }
   
+  /** doSearch() should only be called after inputSearchPattern() */
   static int doSearch() {
-    String pattern = searchCommandEntry.getCommand();
+    String pattern = fetchPattern();
     G.curwin.setWSetCurswant(true);
     if(pattern.equals("")) {
       if(lastPattern == null) {
@@ -135,6 +172,50 @@ class Search implements Constants {
       Normal.clearopInstance();
     }
     ******************************/
+  }
+  
+  private static DocumentListener isListener;
+  private static void startIncrementalSearch() {
+      Document doc = getSearchCommandEntry().getTextComponent().getDocument();
+      isListener = new DocumentListener() {
+          public void changedUpdate(DocumentEvent e) { }
+          public void insertUpdate(DocumentEvent e) {
+              doIncrementalSearch();
+          }
+          public void removeUpdate(DocumentEvent e) {
+              doIncrementalSearch();
+          }
+      };
+      searchPos = G.curwin.getWCursor().copy();
+      searchTopLine = G.curwin.getViewTopLine();
+      didIncrSearch = false;
+      doc.addDocumentListener(isListener);
+  }
+  
+  private static void stopIncrementalSearch(boolean accept) {
+      Document doc = getSearchCommandEntry().getTextComponent().getDocument();
+      doc.removeDocumentListener(isListener);
+      
+      if(accept) {
+          lastPattern = fetchPattern();
+      } else
+        resetViewIncrementalSearch();
+  }
+  
+  private static void resetViewIncrementalSearch() {
+    G.curwin.setViewTopLine(searchTopLine);
+    G.curwin.setCaretPosition(searchPos.getOffset());
+  }
+  
+  private static void doIncrementalSearch() {
+      String pattern = getSearchCommandEntry().getTextComponent().getText();
+      
+      ViFPOS pos = searchPos.copy();
+      int rc = searchit(null, pos, lastDir, pattern,
+                        searchCount, searchFlags, 0, G.p_ic.getBoolean());
+      didIncrSearch = true;
+      if(rc == 0)
+          resetViewIncrementalSearch();
   }
 
   static int doNext(CMDARG cap, int count, int flag) {

@@ -13,6 +13,13 @@ public class OptionsBean {
         }
     }
     
+    static public class Search extends OptionsBeanBase {
+	
+	public Search() {
+	    super(Search.class, "Search Options", Options.searchList);
+	}
+    }
+    
     static public class Misc extends OptionsBeanBase {
 	
 	public Misc() {

@@ -107,6 +107,8 @@ public class G {
 
   public static BooleanOption p_meta_equals;  // true use '=' instead of '?'
   public static StringOption p_meta_escape;   // metacharacters escaped
+  public static BooleanOption p_incr_search;
+  public static BooleanOption p_highlight_search;
 
   public static BooleanOption b_p_et;	// expandtabs, per file
   public static BooleanOption p_smd; // showmode edit/command mode in display

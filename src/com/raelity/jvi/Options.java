@@ -90,6 +90,8 @@ public class Options {
 
   public static final String metaEquals = "viMetaEquals";
   public static final String metaEscape = "viMetaEscape";
+  public static final String incrSearch = "viIncrSearch";
+  public static final String highlightSearch = "viHighlightSearch";
 
   public static final String ignoreCase = "viIgnoreCase";
   
@@ -115,6 +117,7 @@ public class Options {
   private static Map<String,Option> optionsMap = new HashMap<String,Option>();
   
   static List<String>generalList = new ArrayList<String>();
+  static List<String>searchList = new ArrayList<String>();
   static List<String>miscList = new ArrayList<String>();
   static List<String>cursorWrapList = new ArrayList<String>();
   static List<String>debugList = new ArrayList<String>();
@@ -149,33 +152,6 @@ public class Options {
     //
     
     generalList.add("jViVersion"); // May need to create an option for this
-    
-    G.p_meta_equals = createBooleanOption(metaEquals, true);
-    setupOptionDesc(generalList, metaEquals, "RE Meta Equals",
-            "In a regular expression allow"
-            + " '=', in addition to '?', to indicate an optional atom.");
-    setExpertHidden(metaEquals, true, false);
-
-    G.p_meta_escape = createStringOption(metaEscape, G.metaEscapeDefault,
-            new StringOption.Validator() {
-              public void validate(String val) throws PropertyVetoException {
-		for(int i = 0; i < val.length(); i++) {
-		  if(G.metaEscapeAll.indexOf(val.charAt(i)) < 0) {
-		     throw new PropertyVetoException(
-		         "Only characters from '" + G.metaEscapeAll
-                         + "' are RE metacharacters."
-                         + " Not '" + val.substring(i,i+1) + "'.",
-                       new PropertyChangeEvent(opt, opt.getName(),
-                                               opt.getString(), val));
-		  }
-		}
-              }
-            });
-    setupOptionDesc(generalList, metaEscape, "RE Meta Escape",
-            "Regular expression metacharacters requiring escape:"
-            + " any of: '(', ')', '|', '+', '?', '{'."
-            + " By default vim requires escape, '\\', for these characters.");
-    setExpertHidden(metaEscape, true, false);
 
     G.p_so = createIntegerOption(scrollOff, 0);
     setupOptionDesc(generalList, scrollOff, "'scrolloff' 'so'",
@@ -220,10 +196,6 @@ public class Options {
             + " 'report' to 0.  For the \":substitute\" command the number of"
             + " substitutions is used instead of the number of lines.");
 
-    G.p_ic = createBooleanOption(ignoreCase, false);
-    setupOptionDesc(generalList, ignoreCase, "'ignorecase' 'ic'",
-            "Ignore case in search patterns.");
-
     G.b_p_et = createBooleanOption(expandTabs, false);
     setupOptionDesc(generalList, expandTabs, "'expandtab' 'et'",
            "In Insert mode: Use the appropriate number of spaces to"
@@ -238,6 +210,66 @@ public class Options {
     G.b_p_ts = createIntegerOption(tabStop, 8);
     setupOptionDesc(generalList, tabStop, "'tabstop' 'ts'",
             "Number of spaces that a <Tab> in the file counts for.");
+
+    /////////////////////////////////////////////////////////////////////
+    //
+    //
+    // Vi searching options
+    //
+    //
+
+    G.p_incr_search = createBooleanOption(incrSearch, true);
+    setupOptionDesc(searchList, incrSearch, "'incsearch' 'is'",
+            "While typing a search command, show where the pattern, as it was"
+            + " typed so far, matches. If invalid pattern, no match"
+            + " or abort then the screen returns to its original location."
+            + " You still need to finish the search with"
+            + " <ENTER> or abort it with <ESC>.");
+    
+    G.p_highlight_search = createBooleanOption(highlightSearch, true);
+    setupOptionDesc(searchList, highlightSearch, "'hlsearch' 'hls'",
+                    "When there is a previous search pattern, highlight"
+                    + " all its matches");
+    setExpertHidden(highlightSearch, false, true); // NOT IMP YET
+    
+    G.p_ic = createBooleanOption(ignoreCase, false);
+    setupOptionDesc(searchList, ignoreCase, "'ignorecase' 'ic'",
+            "Ignore case in search patterns.");
+
+    G.p_ws = createBooleanOption(wrapScan, true);
+    setupOptionDesc(searchList, wrapScan, "'wrapscan' 'ws'",
+               "Searches wrap around the end of the file.");
+
+    G.p_cpo_search = createBooleanOption(searchFromEnd, true);
+    setupOptionDesc(searchList, searchFromEnd, "'cpoptions' 'cpo' \"c\"",
+               "search continues at end of match");
+    
+    G.p_meta_equals = createBooleanOption(metaEquals, true);
+    setupOptionDesc(searchList, metaEquals, "RE Meta Equals",
+            "In a regular expression allow"
+            + " '=', in addition to '?', to indicate an optional atom.");
+    setExpertHidden(metaEquals, true, false);
+
+    G.p_meta_escape = createStringOption(metaEscape, G.metaEscapeDefault,
+            new StringOption.Validator() {
+              public void validate(String val) throws PropertyVetoException {
+		for(int i = 0; i < val.length(); i++) {
+		  if(G.metaEscapeAll.indexOf(val.charAt(i)) < 0) {
+		     throw new PropertyVetoException(
+		         "Only characters from '" + G.metaEscapeAll
+                         + "' are RE metacharacters."
+                         + " Not '" + val.substring(i,i+1) + "'.",
+                       new PropertyChangeEvent(opt, opt.getName(),
+                                               opt.getString(), val));
+		  }
+		}
+              }
+            });
+    setupOptionDesc(searchList, metaEscape, "RE Meta Escape",
+            "Regular expression metacharacters requiring escape:"
+            + " any of: '(', ')', '|', '+', '?', '{'."
+            + " By default vim requires escape, '\\', for these characters.");
+    setExpertHidden(metaEscape, true, false);
 
     /////////////////////////////////////////////////////////////////////
     //
@@ -296,14 +328,6 @@ public class Options {
                "After motion try to keep column position."
             + " NOTE: state is opposite of vim.");
 
-    G.p_ws = createBooleanOption(wrapScan, true);
-    setupOptionDesc(miscList, wrapScan, "'wrapscan' 'ws'",
-               "Searches wrap around the end of the file.");
-
-    G.p_cpo_search = createBooleanOption(searchFromEnd, true);
-    setupOptionDesc(miscList, searchFromEnd, "'cpoptions' 'cpo' \"c\"",
-               "search continues at end of match");
-
     G.p_to = createBooleanOption(tildeOperator, false);
     setupOptionDesc(miscList, tildeOperator , "'tildeop' 'top'",
                "tilde \"~\" acts like an operator, e.g. \"~w\" works");
@@ -337,7 +361,7 @@ public class Options {
             + " recieves for a read only file. Enabling this, changes the file"
             + " editor mode to read/write so that the file can be viewed"
             + " using the Normal Mode vi commands.");
-    setExpertHidden(readOnlyHack, true, false);
+    setExpertHidden(readOnlyHack, true, true);
 
     // Want to turn following on, but NB problems
     G.isClassicUndo = createBooleanOption(classicUndoOption, false);

@@ -807,7 +807,7 @@ middle_code:
 	    // FALLTHROUGH
 	  case '?':
 	  case '/':
-            if(ca.nchar == K_X_SEARCH_FINISH || ca.nchar == K_X_SEARCH_CANCEL)
+            if(ca.nchar != 0)
                 nv_search_finish(ca);
             else {
                 nv_search(ca, searchbuff, false);
@@ -2355,7 +2355,9 @@ middle_code:
                                 boolean dont_set_mark) {
     do_xop("nv_search");
     
-    // This flags normal_cmd to pick up the finishing up character
+    // This flags normal_cmd to pick up another character
+    // for the search command. This othe character will be issued
+    // after the pattern is input.
     pickupExtraChar = true;
     
     Search.inputSearchPattern(cap,
@@ -2366,6 +2368,10 @@ middle_code:
   
   static private void nv_search_finish(CMDARG cap) {
     do_xop("nv_search_finish");
+    assert cap.nchar == K_X_INCR_SEARCH_DONE
+           || cap.nchar == K_X_SEARCH_CANCEL
+           || cap.nchar == K_X_SEARCH_FINISH;
+    
     if(cap.nchar == K_X_SEARCH_CANCEL) {
       clearop(oap);
       return;
@@ -2378,7 +2384,12 @@ middle_code:
     oap.inclusive = false;
     G.curwin.setWSetCurswant(true);
     
-    i = Search.doSearch();
+    if(cap.nchar == K_X_INCR_SEARCH_DONE)
+      i = 1; // NEEDSWORK: retrieve from Search.xxx (but always 1 anyway)
+    else if(cap.nchar == K_X_SEARCH_FINISH)
+      i = Search.doSearch();
+    else
+      i = 0;
                         
     if(i == 0) {
       clearop(oap);

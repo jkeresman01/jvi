@@ -30,6 +30,8 @@
 package com.raelity.jvi;
 
 import com.raelity.jvi.swing.KeyBinding;
+import javax.swing.JEditorPane;
+import javax.swing.text.AbstractDocument;
 
 public class GetChar implements Constants, KeyDefs {
   private static boolean block_redo = false;
@@ -61,29 +63,48 @@ public class GetChar implements Constants, KeyDefs {
     assert(!handle_redo);
     handle_redo = false;
     
-    Normal.processInputChar(key, true);
-
-    if(!handle_redo)
-        pumpVi();
+    // Lock document while handling a single user character
+    // EXPERIMENTAL
+    AbstractDocument doc = null;
+    if(true)
+        doc = null; // DISABLE
     else {
-        //
-        // Handle some type of redo command: start_redo or start_redo_ins.
-        // Execute these commands atomically, with the file locked if
-        // supported by the platform. We need these special brackets since
-        // while executing the command, other begin/endUndo's may take place.
-        // 
-        // During the above processInputChar, a redo command was setup by
-        // stuffing the buffer. pumpVi() delivers the stuffbuf, and the typebuf,
-        // to processInputChar. It is tempting to always bracket pumpVi with
-        // begin/endRedoUndo, but macro execution might end in input mode.
-        //
-        try {
-            Misc.beginRedoUndo();
+        JEditorPane ep = G.curwin.getEditorComponent();
+        if(ep.getDocument() instanceof AbstractDocument)
+            doc = (AbstractDocument)ep.getDocument();
+    }
+    
+    try {
+        if(doc != null)
+            doc.readLock();
+        
+        Normal.processInputChar(key, true);
+
+        if(!handle_redo)
             pumpVi();
-        } finally {
-            Misc.endRedoUndo();
-            handle_redo = false;
+        else {
+            //
+            // Handle some type of redo command: start_redo or start_redo_ins.
+            // Execute these commands atomically, with the file locked if
+            // supported by the platform. We need these special brackets since
+            // while executing the command, other begin/endUndo's may occur.
+            // 
+            // During the above processInputChar, a redo command was setup by
+            // stuffing the buffer. pumpVi() delivers stuffbuf and typebuf
+            // to processInputChar. It's tempting to always bracket pumpVi with
+            // begin/endRedoUndo, but macro execution might end in input mode.
+            //
+            try {
+                Misc.beginRedoUndo();
+                pumpVi();
+            } finally {
+                Misc.endRedoUndo();
+                handle_redo = false;
+            }
         }
+    } finally {
+        if(doc != null)
+            doc.readUnlock();
     }
     Misc.out_flush();   // returning from event
                         // only do this if no pending characters
