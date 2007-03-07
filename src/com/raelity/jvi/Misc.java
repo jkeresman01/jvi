@@ -82,7 +82,7 @@ public class Misc implements ClipboardOwner {
       int ptr = seg.offset;
       for ( ; ptr < seg.offset + seg.count; ++ptr) {
 	  if (seg.array[ptr] == TAB)    // count a tab for what it is worth
-	      count += G.b_p_ts.getInteger() - (count % G.b_p_ts.getInteger());
+	      count += G.curbuf.b_p_ts - (count % G.curbuf.b_p_ts);
 	  else if (seg.array[ptr] == ' ')
 	      ++count;		// count a space for one
 	  else
@@ -132,7 +132,7 @@ public class Misc implements ClipboardOwner {
 	prev_paren = count;
       }
       if (seg.array[ptr] == TAB) {  // count a tab for what it is worth
-	count += G.b_p_ts.getInteger() - (count % G.b_p_ts.getInteger());
+	count += G.curbuf.b_p_ts - (count % G.curbuf.b_p_ts);
       } else {
 	++count;
       }
@@ -150,7 +150,7 @@ public class Misc implements ClipboardOwner {
 	found = true;
 	break;
       } else if (seg.array[ptr] == TAB)    // count a tab for what it is worth
-	count += G.b_p_ts.getInteger() - (count % G.b_p_ts.getInteger());
+	count += G.curbuf.b_p_ts - (count % G.curbuf.b_p_ts);
       else
 	++count;
     }
@@ -190,7 +190,7 @@ public class Misc implements ClipboardOwner {
           break;
       }
       if (seg.array[ptr] == TAB) {  // count a tab for what it is worth
-	count += G.b_p_ts.getInteger() - (count % G.b_p_ts.getInteger());
+	count += G.curbuf.b_p_ts - (count % G.curbuf.b_p_ts);
       } else {
 	++count;
       }
@@ -207,7 +207,7 @@ public class Misc implements ClipboardOwner {
 	break;
       }
       if (seg.array[ptr] == TAB)    // count a tab for what it is worth
-	count += G.b_p_ts.getInteger() - (count % G.b_p_ts.getInteger());
+	count += G.curbuf.b_p_ts - (count % G.curbuf.b_p_ts);
       else
 	++count;
     }
@@ -239,11 +239,11 @@ public class Misc implements ClipboardOwner {
       // col is char past last whitespace
     }
     StringBuffer sb = new StringBuffer();
-    if (!G.b_p_et.getBoolean()) {	    // if 'expandtab' is set, don't use TABs
-      while (size >= G.b_p_ts.getInteger()) {
+    if (!G.curbuf.b_p_et) {	    // if 'expandtab' is set, don't use TABs
+      while (size >= G.curbuf.b_p_ts) {
 	// NEEDSWORK:  how did b_p_et get set, dont expand tabs for now
 	sb.append((char)TAB);
-	size -= G.b_p_ts.getInteger();
+	size -= G.curbuf.b_p_ts;
       }
     }
     while (size > 0) {
@@ -953,7 +953,7 @@ public class Misc implements ClipboardOwner {
   static void shift_line(boolean left, boolean round, int amount) {
     int		count;
     int		i, j;
-    int		p_sw = G.b_p_sw.getInteger();
+    int		p_sw = G.curbuf.b_p_sw;
 
     count = get_indent();	// get current indent
 
@@ -2450,7 +2450,7 @@ public class Misc implements ClipboardOwner {
 
   final static int lbr_chartabsize(int c, int col) {
     if (c == TAB && (!G.curwin.getWPList() /*|| lcs_tab1*/)) {
-      int ts = G.b_p_ts.getInteger();
+      int ts = G.curbuf.b_p_ts;
       return (int)(ts - (col % ts));
     } else {
       // return charsize(c);

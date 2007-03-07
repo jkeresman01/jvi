@@ -49,7 +49,7 @@ import javax.swing.text.BadLocationException;
  * </p>
  */
 
-public interface ViTextView {
+public interface ViTextView extends ViOptionBag {
   // text fold operations
   public static final int FOLDOP_CLOSE = 'c';
   public static final int FOLDOP_OPEN = 'o';

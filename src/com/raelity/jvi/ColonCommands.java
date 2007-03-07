@@ -45,6 +45,9 @@ import javax.swing.Action;
 import com.raelity.jvi.ViManager;
 import com.raelity.jvi.swing.*;
 
+import static com.raelity.jvi.Constants.*;
+import static com.raelity.jvi.ColonCommandFlags.*;
+
 /**
  * This class handles registration, command input, parsing, dispatching
  * and in some instances execution of ":" commands. Some internal vi
@@ -60,7 +63,7 @@ import com.raelity.jvi.swing.*;
  * of the {@link java.awt.event.ActionEvent}
  * is a {@link javax.swing.JEditorPane}.
  */
-public class ColonCommands implements ColonCommandFlags, Constants {
+public class ColonCommands {
   private static AbbrevLookup commands = new AbbrevLookup();
   
   private static String lastCommand;
@@ -566,6 +569,13 @@ public class ColonCommands implements ColonCommandFlags, Constants {
       }
       return (String)args.get(n-1);
     }
+    
+    /**
+     * Fetch the list of command arguments.
+     */
+    public List<String> getArgs() {
+        return args;
+    }
 
     /**
      * Fetch the command line, including commmand name
@@ -843,6 +853,7 @@ public class ColonCommands implements ColonCommandFlags, Constants {
     register("g", "global", ACTION_global);
     register("d", "delete", ACTION_delete);
     register("p", "print", ACTION_print);
+    register("se", "set", new Options.SetCommand());
     // register("y", "yank", ACTION_yank);
     
     // register("n", "next", ACTION_next);

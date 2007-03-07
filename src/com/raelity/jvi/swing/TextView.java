@@ -72,6 +72,22 @@ public class TextView implements ViTextView {
     cache = createTextViewCache();
     statusDisplay = createStatusDisplay();
   }
+  
+  //
+  // Declare the variables referenced as part of a ViOptionBag
+  //
+
+  public boolean w_p_nu;
+  
+  public void viOptionChange(ViTextView tv, String name) {
+  }
+
+  public void activateOptions(ViTextView tv) {
+  }
+  
+  //
+  //
+  //
 
   public void setWindow(Window window) {
     this.window = window;

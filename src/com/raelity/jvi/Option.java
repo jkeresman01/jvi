@@ -113,4 +113,19 @@ public abstract class Option {
 	    Options.prefs.put(name, stringValue);
 	}
     }
+    
+    public int getInteger() {
+        throw new ClassCastException(this.getClass().getSimpleName()
+                                     + " is not an IntegerOption");
+    }
+    
+    public boolean getBoolean() {
+        throw new ClassCastException(this.getClass().getSimpleName()
+                                     + " is not a BooleanOption");
+    }
+    
+    public String getString() {
+        throw new ClassCastException(this.getClass().getSimpleName()
+                                     + " is not a StringOption");
+    }
 }

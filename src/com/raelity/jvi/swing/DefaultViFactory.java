@@ -31,9 +31,11 @@ package com.raelity.jvi.swing;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.WeakHashMap;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
+import javax.swing.text.Document;
 import javax.swing.text.TextAction;
 import javax.swing.text.Caret;
 
@@ -46,6 +48,7 @@ import com.raelity.jvi.*;
 
 import static com.raelity.jvi.Constants.*;
 import static com.raelity.jvi.KeyDefs.*;
+import java.util.Map;
 import javax.swing.JComponent;
 
 /**
@@ -55,7 +58,12 @@ import javax.swing.JComponent;
  * </ul>
  */
 public class DefaultViFactory implements ViFactory {
-  protected static final String PROP_VITV = "ViTextView";
+  protected static DefaultViFactory INSTANCE;
+  public static final String PROP_VITV = "ViTextView";
+  public static final String PROP_BUF = "ViBuffer";
+  // Really a WeakSet
+  protected Map<Document, Object> docMap
+          = new WeakHashMap<Document,Object>();
 
   Window window;
   CommandLine cmdLine;
@@ -63,6 +71,9 @@ public class DefaultViFactory implements ViFactory {
 
   public DefaultViFactory(CommandLine cmdLine) {
     this.cmdLine = cmdLine;
+    if(INSTANCE != null)
+        throw new IllegalStateException("ViFactory already exists");
+    INSTANCE = this;
   }
   
   public ViTextView getExistingViTextView(Object editorPane) {
@@ -86,6 +97,25 @@ public class DefaultViFactory implements ViFactory {
   /** subclass probably wants to override this */
   protected ViTextView createViTextView(JEditorPane editorPane) {
       return new TextView(editorPane);
+  }
+  
+  public Buffer getBuffer(JEditorPane editorPane) {
+      Buffer buf = null;
+      Document doc = editorPane.getDocument();
+      if(doc != null) {
+          buf = (Buffer)doc.getProperty(PROP_BUF);
+          if(buf == null) {
+              buf = createBuffer(editorPane);
+              doc.putProperty(PROP_BUF, buf);
+              docMap.put(doc, null);
+          }
+      }
+      return buf;
+  }
+  
+  /** subclass probably wants to override this */
+  protected Buffer createBuffer(JEditorPane editorPane) {
+      return new Buffer();
   }
   
   public String getDisplayFilename(Object o) {

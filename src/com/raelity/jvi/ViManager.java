@@ -63,7 +63,7 @@ public class ViManager {
   private static final int majorVersion = 0;
   private static final int minorVersion = 8;
   private static final int microVersion = 1;
-  private static final String releaseTag = "x7";
+  private static final String releaseTag = "x9";
   private static final String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion
@@ -125,6 +125,10 @@ public class ViManager {
         editorSet.put(editorPane, null);
     }
     return factory.getViTextView(editorPane);
+  }
+
+  public static Buffer getBuffer(JEditorPane editorPane) {
+    return factory.getBuffer(editorPane);
   }
   
   public static ViOutputStream createOutputStream(ViTextView tv,
@@ -402,9 +406,11 @@ public class ViManager {
       currentTv.detach();
     }
 
-    // first do lookup, in case new window/editorPane
-    G.switchTo(textView);
     currentEditorPane = editorPane;
+    Buffer buf = getBuffer(editorPane);
+    G.switchTo(textView, buf);
+    textView.activateOptions(textView);
+    buf.activateOptions(textView);
   }
 
   private static boolean inStartup;

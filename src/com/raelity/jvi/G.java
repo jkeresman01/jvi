@@ -38,8 +38,9 @@ public class G {
   /**
    * Set the current editor.
    */
-  static public void switchTo(ViTextView textView) {
+  static void switchTo(ViTextView textView, Buffer buf) {
     G.curwin = textView;
+    G.curbuf = buf;
   }
 
   final static public void setModMask(int mod_mask) {
@@ -53,6 +54,11 @@ public class G {
   static int mod_mask;
 
   static ViTextView curwin;
+  
+  static Buffer curbuf; // per file options. as int,boolean
+        //public static BooleanOption b_p_et;	// expandtabs, per file
+        //public static IntegerOption b_p_sw;	// per file
+        //public static IntegerOption b_p_ts;	// per file
 
   /* ******************************************************************
   static boolean asyncCaretMovement = false;
@@ -110,17 +116,13 @@ public class G {
   public static BooleanOption p_incr_search;
   public static BooleanOption p_highlight_search;
 
-  public static BooleanOption b_p_et;	// expandtabs, per file
   public static BooleanOption p_smd; // showmode edit/command mode in display
   public static BooleanOption p_sc; // showcmd
 
   public static IntegerOption p_report;
   public static IntegerOption p_bs ;   // backspace over start of insert, and more
   public static IntegerOption p_so;   // scrolloff, lines before/after current
-  public static IntegerOption b_p_sw;	// per file
-  public static IntegerOption b_p_ts;	// per file
 
-  // static String p_cb = "";      // clipboard, treat as boolean for 'unnamed'
   static String p_km = "";      // keymodel
   static char p_sel = 'i';      // selection
   static String p_fp;           // formatprg
