@@ -630,8 +630,7 @@ middle_code:
 	    //
 	  case 'G':
 	    // ? curbuf.b_ml.ml_line_count
-	    nv_goto(oap, ca.count0 == 0	? G.curwin.getLineCount()
-		    : ca.count0);
+	    nv_goto(ca, G.curwin.getLineCount());
 	    break;
 
 	  case 'H':
@@ -733,7 +732,7 @@ middle_code:
 	  case K_S_HOME:
 	    if ((G.mod_mask & MOD_MASK_CTRL) != 0) // CTRL-HOME = goto line 1
 	    {
-	      nv_goto(oap, 1);
+	      nv_goto(ca, 1);
 	      break;
 	    }
 	    ca.count0 = 1;
@@ -781,7 +780,7 @@ middle_code:
 	    if ((G.mod_mask & MOD_MASK_CTRL) != 0) {
 	      // CTRL-END = goto last line
 	      // nv_goto(oap, curbuf.b_ml.ml_line_count);
-	      nv_goto(oap, G.curwin.getLineCount());
+	      nv_goto(ca, G.curwin.getLineCount());
 	    }
 	    // FALLTHROUGH
 
@@ -2726,6 +2725,9 @@ middle_code:
       case ';':
 	nv_pcmark(JLOP.PREV_CHANGE, cap);
         break;
+      case 'g':
+        nv_goto(cap, 1);
+        break;
       default:
         notSup("g" + new String(new char[] {(char)cap.nchar}));
         break;
@@ -2743,14 +2745,16 @@ middle_code:
     if (!checkclearopq(cap.oap)) {
       // if (u_save((curwin.w_cursor.lnum - (cap.cmdchar == 'O' ? 1 : 0)) .....
       // NEEDSWORK: would like the beginUndo only if actually making changes
-      Misc.beginInsertUndo();
-      boolean flag = Misc.open_line(cap.cmdchar == 'O' ? BACKWARD : FORWARD,
-			true, false, 0);
-      if(flag) {
-	Edit.edit(cap.cmdchar, true, cap.count1);
-      } else {
-        // oops
-        Misc.endInsertUndo();
+      boolean startEdit = false;  
+      try {
+        Misc.beginInsertUndo();
+        startEdit = Misc.open_line(cap.cmdchar == 'O' ? BACKWARD : FORWARD,
+                                   true, false, 0);
+        if(startEdit)
+	  Edit.edit(cap.cmdchar, true, cap.count1);
+      } finally {
+          if(!startEdit)
+            Misc.endInsertUndo();
       }
     }
     return;
@@ -2810,10 +2814,18 @@ middle_code:
     G.curwin.setWSetCurswant(false);
   }
 
-  static private void nv_goto (OPARG oap, int lnum) {
+  static private void nv_goto (CMDARG cap, int lnum) {
     do_xop("nv_goto");
-    oap.motion_type = MLINE;
+    cap.oap.motion_type = MLINE;
     MarkOps.setpcmark();
+    
+    // When a count is given, use it instead of the default lnum
+    if(cap.count0 != 0)
+        lnum = cap.count0;
+    if(lnum < 1)
+        lnum = 1;
+    else if(lnum > G.curwin.getLineCount())
+        lnum = G.curwin.getLineCount();
     Misc.gotoLine(lnum, BL_SOL | BL_FIX);
   }
 
@@ -3240,7 +3252,7 @@ middle_code:
   // static private  void	nv_wordcmd (CMDARG cap, boolean type) {do_op("nv_wordcmd");}
   // static private  void	adjust_for_sel (CMDARG cap) {do_op("adjust_for_sel");}
   static private  void	unadjust_for_sel () {do_op("unadjust_for_sel");}
-  // private  void	nv_goto (OPARG oap, long lnum) {do_op("nv_goto");}
+  // private  void	nv_goto (CMDARG cap, long lnum) {do_op("nv_goto");}
   static private  void	nv_select (CMDARG cap) {do_op("nv_select");}
   static private  void	nv_normal (CMDARG cap) {do_op("nv_normal");}
   // private  void	nv_esc (CMDARG oap, int opnum) {do_op("nv_esc");}

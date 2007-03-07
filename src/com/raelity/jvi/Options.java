@@ -43,6 +43,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -517,7 +519,7 @@ public class Options {
   }
   
     /** Implement ":se[t]", maybe migrate to own class sometime */
-    static class SetCommand extends ColonCommands.ColonAction {
+    public static class SetCommand extends ColonCommands.ColonAction {
         
         private static class SetCommandException extends Exception {}
 
@@ -544,9 +546,9 @@ public class Options {
         }
         
         private static VimOption vopts[] = new VimOption[] {
-            //new VimOption("tabstop", "ts", P_IND, "b_p_ts"),
-            //new VimOption("shiftwidth", "sw", P_IND, "b_p_sw"),
-            //new VimOption("expandtab", "et", P_IND, "b_p_et"),
+            new VimOption("tabstop", "ts", P_IND, "b_p_ts"),
+            new VimOption("shiftwidth", "sw", P_IND, "b_p_sw"),
+            new VimOption("expandtab", "et", P_IND, "b_p_et"),
             new VimOption("number", "nu", P_IND|P_WIN, "w_p_nu"),
             new VimOption("ignorecase", "ic", P_NONE, ignoreCase),
             new VimOption("incsearch", "is", P_NONE, incrSearch),
@@ -665,7 +667,7 @@ public class Options {
             else {
                 if((vopt.flags & P_IND) != 0) {
                     voptDesc.f.set(voptDesc.bag, newValue);
-                    voptDesc.bag.viOptionChange(G.curwin, vopt.ref);
+                    voptDesc.bag.viOptionSet(G.curwin, vopt.ref);
                 } else {
                     // NEEDSWORK: check validation issues
                     voptDesc.opt.setValue(newValue.toString());
@@ -721,8 +723,7 @@ public class Options {
         }
         
         //
-        // This is pretty much verbatim from parseSetOption,
-        // just need to package several things in a return value
+        // Set voptDesc with information about the argument vopt.
         //
         private static boolean determineOptionState(VimOption vopt,
                                                 VimOptionDescriptor voptDesc) {
@@ -769,6 +770,43 @@ public class Options {
                 osa.println(formatDisplayValue(vopt, voptDesc.value));
             }
             osa.close();
+        }
+        
+        /** Note the value from the current is used to set any others */
+        public static void setAllInstances(String varName) {
+            boolean error = false;
+            for (VimOption vopt : vopts) {
+                if(vopt.ref.equals(varName)) {
+                    if((vopt.flags & P_IND) != 0) {
+                        VimOptionDescriptor voptDesc = new VimOptionDescriptor();
+                        determineOptionState(vopt, voptDesc);
+                        Set<ViOptionBag> set = convertToBags(
+                            (vopt.flags & P_WIN) != 0
+                                ? ViManager.getViFactory().getViTextViewSet()
+                                : ViManager.getViFactory().getBufferSet());
+                        for (ViOptionBag bag : set) {
+                            try {
+                                voptDesc.f.set(bag, voptDesc.value);
+                            } catch (IllegalArgumentException ex) {
+                                ex.printStackTrace();
+                            } catch (IllegalAccessException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    } else
+                        ViManager.dumpStack("Not P_IND");
+                    break;
+                }
+            }
+        }
+        private static Set<ViOptionBag> convertToBags(Set in) {
+            // NEEDSWORK: convertToBags, shouldn't need, must be trick to cast.
+            Set<ViOptionBag> s = new HashSet<ViOptionBag>();
+            for (Object o : in) {
+                s.add((ViOptionBag)o);
+            }
+            
+            return s;
         }
     }
 }

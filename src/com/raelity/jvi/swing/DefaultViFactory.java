@@ -31,6 +31,9 @@ package com.raelity.jvi.swing;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
@@ -61,9 +64,13 @@ public class DefaultViFactory implements ViFactory {
   protected static DefaultViFactory INSTANCE;
   public static final String PROP_VITV = "ViTextView";
   public static final String PROP_BUF = "ViBuffer";
-  // Really a WeakSet
-  protected Map<Document, Object> docMap
+  // Really a WeakSet, all doc's that have been seen, garbage collector trims it
+  protected Map<Document, Object> docSet
           = new WeakHashMap<Document,Object>();
+  
+  // This is used only when dbgEditorActivation is turned on
+  protected WeakHashMap<JEditorPane, Object> editorSet
+          = new WeakHashMap<JEditorPane, Object>();
 
   Window window;
   CommandLine cmdLine;
@@ -90,13 +97,25 @@ public class DefaultViFactory implements ViFactory {
         tv01 = createViTextView(editorPane);
         tv01.setWindow(new Window(tv01));
         editorPane.putClientProperty(PROP_VITV, tv01);
+        editorSet.put(editorPane, null);
     }
     return tv01;
   }
   
   /** subclass probably wants to override this */
   protected ViTextView createViTextView(JEditorPane editorPane) {
-      return new TextView(editorPane);
+    return new TextView(editorPane);
+  }
+
+  public Set<ViTextView> getViTextViewSet() {
+    Set<ViTextView> s = new HashSet<ViTextView>();
+    for (JEditorPane ep : editorSet.keySet()) {
+        ViTextView tv = (ViTextView) ep.getClientProperty(PROP_VITV);
+        if(tv != null)
+            s.add(tv);
+    }
+      
+    return s;
   }
   
   public Buffer getBuffer(JEditorPane editorPane) {
@@ -107,7 +126,7 @@ public class DefaultViFactory implements ViFactory {
           if(buf == null) {
               buf = createBuffer(editorPane);
               doc.putProperty(PROP_BUF, buf);
-              docMap.put(doc, null);
+              docSet.put(doc, null);
           }
       }
       return buf;
@@ -116,6 +135,17 @@ public class DefaultViFactory implements ViFactory {
   /** subclass probably wants to override this */
   protected Buffer createBuffer(JEditorPane editorPane) {
       return new Buffer();
+  }
+
+  public Set<Buffer> getBufferSet() {
+    Set<Buffer> s = new HashSet<Buffer>();
+    for (Document doc : docSet.keySet()) {
+        Buffer buf = (Buffer) doc.getProperty(PROP_BUF);
+        if(buf != null)
+            s.add(buf);
+    }
+      
+    return s;
   }
   
   public String getDisplayFilename(Object o) {

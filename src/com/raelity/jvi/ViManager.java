@@ -39,7 +39,6 @@ import javax.swing.JEditorPane;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import com.raelity.jvi.swing.*;
-import java.util.WeakHashMap;
 
 /**
  * This class coordinates things.
@@ -63,7 +62,7 @@ public class ViManager {
   private static final int majorVersion = 0;
   private static final int minorVersion = 8;
   private static final int microVersion = 1;
-  private static final String releaseTag = "x9";
+  private static final String releaseTag = "x10";
   private static final String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion
@@ -71,10 +70,6 @@ public class ViManager {
                     + ViManager.releaseTag;
   
   private static boolean enabled;
-  
-  // This is used only when dbgEditorActivation is turned on
-  private static WeakHashMap<JEditorPane, Object> editorSet
-          = new WeakHashMap<JEditorPane, Object>();
 
   public static void setViFactory(ViFactory factory) {
     if(ViManager.factory != null) {
@@ -121,9 +116,6 @@ public class ViManager {
   }
 
   public static ViTextView getViTextView(JEditorPane editorPane) {
-    if(G.dbgEditorActivation.getBoolean()) {
-        editorSet.put(editorPane, null);
-    }
     return factory.getViTextView(editorPane);
   }
 
@@ -592,15 +584,11 @@ public class ViManager {
     ps.println("ignoreActivation = " + ignoreActivation );
     
     int n1 = 0;
-    int n2 = 0;
-    for (JEditorPane ep : editorSet.keySet()) {
+    for (ViTextView tv : factory.getViTextViewSet()) {
         n1++;
-        if(factory.getExistingViTextView(ep) != null)
-            n2++;
     }
-    if(n2 != 0)
-        ps.println("" + n2 + " ACTIVE TEXT VIEWS");
-    ps.println("" + n1 + " editors with " + n2 + " text views");
+    if(n1 != 0)
+        ps.println("" + n1 + " ACTIVE TEXT VIEWS");
   }
 }
 

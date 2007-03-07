@@ -30,17 +30,10 @@
 package com.raelity.jvi;
 
 import java.awt.event.ActionListener;
+import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.Action;
-import javax.swing.text.Keymap;
-
-import com.raelity.jvi.ViFS;
-import com.raelity.jvi.Window;
-import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.swing.TextOps;
-import com.raelity.jvi.ViCmdEntry;
-import com.raelity.jvi.swing.*;
 
 /**
  * This provides Vi the items it needs to interface with
@@ -56,6 +49,12 @@ public interface ViFactory {
 
   /** @return null if TextView does not exist */
   public ViTextView getExistingViTextView(Object editorPane);
+  
+  /** @return Set of active ViTextView, some may have retired */
+  public Set<ViTextView> getViTextViewSet();
+  
+  /** @return Set of active Buffer, some may have retired */
+  public Set<Buffer> getBufferSet();
 
   /** For an environmental object, used for debug output */
   public String getDisplayFilename(Object o);

@@ -30,7 +30,7 @@ public class Buffer implements ViOptionBag {
         b_p_et = Options.getOption(Options.expandTabs).getBoolean();
     }
 
-    public void viOptionChange(ViTextView tv, String name) {
+    public void viOptionSet(ViTextView tv, String name) {
     }
     
     /** switchto */

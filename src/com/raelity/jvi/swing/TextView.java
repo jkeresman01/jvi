@@ -77,9 +77,12 @@ public class TextView implements ViTextView {
   // Declare the variables referenced as part of a ViOptionBag
   //
 
+  /** jVi doesn't support this flag. Keep it as a per window flag like vim.
+   * The platform may do something with it.
+   */
   public boolean w_p_nu;
   
-  public void viOptionChange(ViTextView tv, String name) {
+  public void viOptionSet(ViTextView tv, String name) {
   }
 
   public void activateOptions(ViTextView tv) {
