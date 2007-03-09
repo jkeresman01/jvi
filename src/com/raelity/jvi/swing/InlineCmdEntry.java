@@ -122,6 +122,8 @@ public class InlineCmdEntry implements ViCmdEntry, ActionListener{
 
 	public void actionPerformed(ActionEvent e) {
 	    lastCommand = commandLine.getCommand();
+            if(Options.getOption(Options.dbgKeyStrokes).getBoolean())
+                System.err.println("CommandAction: '" + lastCommand + "'");
 	    shutdownEntry();
 	    fireEvent(e);
 	    commandLine.clear();

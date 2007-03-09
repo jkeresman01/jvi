@@ -811,10 +811,9 @@ public class Options {
         
         /** Note the value from the current is used to set any others */
         public static void syncAllInstances(String varName) {
-            boolean error = false;
             for (VimOption vopt : vopts) {
-                if(vopt.varName.equals(varName)) {
-                    if((vopt.flags & P_IND) != 0) {
+                if((vopt.flags & P_IND) != 0) {
+                    if(vopt.varName.equals(varName)) {
                         VimOptionDescriptor voptDesc = new VimOptionDescriptor();
                         determineOptionState(vopt, voptDesc);
                         Set<? extends ViOptionBag> set = 
@@ -830,8 +829,7 @@ public class Options {
                                 ex.printStackTrace();
                             }
                         }
-                    } else
-                        ViManager.dumpStack("Not P_IND");
+                    }
                     break;
                 }
             }
