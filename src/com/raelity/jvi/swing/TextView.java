@@ -104,7 +104,10 @@ public class TextView implements ViTextView {
   // Pretend a little to be a window
   //
 
-  /** @return the current location of the cursor in the window */
+  /** @return the current location of the cursor in the window,
+      note that this cursor is dynamic as caret moves this gets
+      updated.
+   */
   public FPOS getWCursor() { return cache.getCursor(); }
   //public FPOS getWCursor() { return window.getWCursor(); }
 
