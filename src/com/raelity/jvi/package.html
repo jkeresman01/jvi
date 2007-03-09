@@ -139,4 +139,22 @@ Operator and motion are very similar, syntacticly they are usually like
 <b>[&lt;count&gt;]&lt;char&gt;</b>
 or sometimes more than one char. A motion can also be a search.
 </p>
+
+<h3>Working with Three types of Options</h3>
+
+<p>
+<i>vim/vi</i> have three types of options: global, buffer and window.
+jVi mirrors this structure (finally in 2007 per buffer/document options
+are supported).
+Global options are static and are found in {@link G}. Per file  options
+are in {@link com.raelity.jvi.Buffer} and per window options are in
+{@link com.raelity.jvi.ViTextView}.
+Both <code>Buffer</code> and <code>ViTextView</code> implement
+{@link com.raelity.jvi.ViOptionBag}. <code>ViOptionBag</code> is the
+primary source of information about handling options.
+Multiple views/windows
+of the same document share the <code>Buffer</code> variables;
+for example, if you do ":set sw=8" on a file,
+any open windows into that file all have the same shiftwidth.
+    
 </body>
