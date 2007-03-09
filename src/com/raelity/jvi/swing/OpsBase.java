@@ -18,6 +18,8 @@ import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.text.DefaultEditorKit;
 
+import static com.raelity.jvi.Constants.*;
+
 /**
  * This provides default swings JEditorPane actions that are
  * used by vi.
@@ -34,7 +36,7 @@ import javax.swing.text.DefaultEditorKit;
  *
  * @author erra
  */
-public class OpsBase implements TextOps, Constants {
+public class OpsBase implements TextOps {
     
     /** Creates a new instance of OpsBase */
     public OpsBase(ViTextView textView) {
