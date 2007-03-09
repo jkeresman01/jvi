@@ -217,6 +217,14 @@ public class OptionsBeanBase extends SimpleBeanInfo {
         return ViManager.getReleaseString();
     }
 
+    public void setViSelection(String arg)  throws PropertyVetoException {
+        put(Options.selection, arg);
+    }
+
+    public String getViSelection() {
+	return getString(Options.selection);
+    }
+
     public void setViIncrSearch(boolean arg) {
         put(Options.incrSearch, arg);
     }

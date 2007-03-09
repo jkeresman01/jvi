@@ -639,7 +639,7 @@ public class Misc implements ClipboardOwner {
      * Also in Visual mode, when 'selection' is not "old".
      */
     if (((G.State & INSERT) != 0
-	 	|| (Normal.VIsual_active && G.p_sel != 'o'))
+	 	|| (G.VIsual_active && G.p_sel.charAt(0) != 'o'))
 	&& col <= wcol) {
       ++idx;
     }
@@ -800,7 +800,7 @@ public class Misc implements ClipboardOwner {
       // Allow cursor past end-of-line in Insert mode, restarting Insert
       // mode or when in Visual mode and 'selection' isn't "old"
       if ((G.State & INSERT) != 0 || G.restart_edit != 0
-	  	|| (Normal.VIsual_active && G.p_sel != 'o')) {
+	 	|| (G.VIsual_active && G.p_sel.charAt(0) != 'o')) {
 	col = len;
       } else {
 	col = len - 1;
@@ -837,6 +837,7 @@ public class Misc implements ClipboardOwner {
     // Set them up according to the defaults.
     Cursor block = new Cursor(SHAPE_BLOCK, 0);
     Cursor ver25 = new Cursor(SHAPE_VER, 25);
+    Cursor ver35 = new Cursor(SHAPE_VER, 35);
     Cursor hor20 = new Cursor(SHAPE_HOR, 20);
     Cursor hor50 = new Cursor(SHAPE_HOR, 50);
 
@@ -850,7 +851,7 @@ public class Misc implements ClipboardOwner {
     cursor_table[SHAPE_CR] = hor20;
     cursor_table[SHAPE_SM] = block;	// plus different blink rates
     cursor_table[SHAPE_O] = hor50;
-    cursor_table[SHAPE_VE] = null;
+    cursor_table[SHAPE_VE] = ver35;
   }
 
   /**
@@ -877,9 +878,12 @@ public class Misc implements ClipboardOwner {
 	  return SHAPE_CI;
       }
       if (G.finish_op)		{ return SHAPE_O; }
-      if (Normal.VIsual_active) {
-	  if (G.p_sel == 'e')	{ return SHAPE_VE; }
-	  else			{ return SHAPE_V; }
+      if (G.VIsual_active) {
+	  if (G.p_sel.charAt(0) == 'e') {
+              return SHAPE_VE;
+          } else {
+              return SHAPE_V;
+          }
       }
 
       return SHAPE_N;
@@ -1668,7 +1672,7 @@ public class Misc implements ClipboardOwner {
     if (       oap.motion_type == MCHAR
 	    && oap.start.getColumn() == 0
 	    && !oap.inclusive
-	    && (!oap.is_VIsual || G.p_sel == 'o')
+	    && (!oap.is_VIsual || G.p_sel.charAt(0) == 'o')
 	    && oap.end.getColumn() == 0
 	    && yanklines > 1)
     {
@@ -2284,7 +2288,7 @@ public class Misc implements ClipboardOwner {
     int length = 0;
     boolean do_mode = (true/*G.p_smd*/
 	  && ((G.State & INSERT) != 0 || G.restart_edit != 0
-	      	|| Normal.VIsual_active));
+	      	|| G.VIsual_active));
     if(do_mode /*|| Recording*/) {
       // wait a bit before overwriting an important message
       check_for_delay(false);
@@ -2297,21 +2301,26 @@ public class Misc implements ClipboardOwner {
 	else if (G.restart_edit == 'R') mode = Edit.VI_MODE_RESTART_R;
 	else if (G.restart_edit == 'V') mode = Edit.VI_MODE_RESTART_V;
 
-	// if(VIsual_active) {...}
+        if (G.VIsual_active)
+        {
+            if (G.VIsual_select) mode = Edit.VI_MODE_SELECT;
+            else mode = Edit.VI_MODE_VISUAL;
+            
+            // It may be "VISUAL BLOCK" or "VISUAl LINE"
+            if (G.VIsual_mode == (0x1f & (int)('V'))) // Ctrl('V')
+                mode += " " + Edit.VI_MODE_BLOCK;
+            else if (G.VIsual_mode == 'V')
+                mode += " " + Edit.VI_MODE_LINE;
+        }
       }
 
     }
-    // else if(G.clear_cmdline) {
-    //   mode = Edit.VI_MODE_CLEAR;
-    // }
-    // if(mode != null) {
-    //   G.curwin.getStatusDisplay().displayMode(mode);
-    // }
 
     // Any "recording" string is handled by the disply function
     // if(G.Recording) {
     //   mode += "recording";
     // }
+    
     G.curwin.getStatusDisplay().displayMode(mode);
     G.clear_cmdline = false;
     return 0;

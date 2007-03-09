@@ -124,7 +124,9 @@ public class G {
   public static IntegerOption p_so;   // scrolloff, lines before/after current
 
   static String p_km = "";      // keymodel
-  static char p_sel = 'i';      // selection
+  
+  public static StringOption p_sel; // 'selection'
+  
   static String p_fp;           // formatprg
   static String p_cpo = "aABceFs"; // cpoptions
   
@@ -142,4 +144,12 @@ public class G {
   public static boolean debugPrint = false;
   public static boolean debugOpPrint = false;
   public static boolean switchDebug = false;
+  
+  public static FPOS VIsual; // start position of active Visual selection
+  public static boolean VIsual_active; // whether Visual mode is active
+  public static boolean VIsual_select; // whether Select mode is active
+  public static boolean VIsual_reselect;
+				// whether to restart the selection after a
+				// Select mode mapping or menu
+  public static int VIsual_mode; // type of Visual mode
 }

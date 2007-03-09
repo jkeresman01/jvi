@@ -37,15 +37,26 @@ public class IntegerOption extends Option {
   protected int value;
   
   public IntegerOption(String key, int defaultValue) {
-    super(key, "" + defaultValue);
+    this(key, defaultValue, null);
   }
   
   public IntegerOption(String key, int defaultValue, Validator validator) {
-    this(key, defaultValue);
-    if(validator != null) {
-	validator.opt = this;
-	this.validator = validator;
+    super(key, "" + defaultValue);
+    if(validator == null) {
+      // The default validation is that the value must be >= zero.
+      validator = new Validator() {
+        public void validate(int val) throws PropertyVetoException {
+          if(val < 0) {
+            throw new PropertyVetoException(
+                        "Value must be positive: " + val,
+                        new PropertyChangeEvent(opt, opt.getName(),
+                                                opt.getInteger(), val));
+          }
+        }
+      };
     }
+    validator.opt = this;
+    this.validator = validator;
   }
 
   public final int getInteger() {
@@ -73,22 +84,15 @@ public class IntegerOption extends Option {
   }
   
   /**
-   * Validate the setting value. The default is that the value must
-   * be >= zero.
+   * Validate the setting value.
    */
   public void validate(int val) throws PropertyVetoException {
-      if(validator != null) {
-          validator.validate(val);
-      } else if(val < 0) {
-          throw new PropertyVetoException(
-                    "Value must be positive: " + val,
-                    new PropertyChangeEvent(this, name, value, val));
-      }
+    validator.validate(val);
   }
   
   public static abstract class Validator {
-      IntegerOption opt;
-      
-      public abstract void validate(int val) throws PropertyVetoException;
+    protected IntegerOption opt;
+    
+    public abstract void validate(int val) throws PropertyVetoException;
   }
 }

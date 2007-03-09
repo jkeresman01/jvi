@@ -105,6 +105,7 @@ public class Options {
   public static final String report = "viReport";
   public static final String backspace = "viBackspace";
   public static final String scrollOff = "viScrollOff";
+  public static final String selection = "viSelection";
   public static final String shiftWidth = "viShiftWidth";
   public static final String tabStop = "viTabStop";
   public static final String showMode = "viShowMode";
@@ -354,6 +355,26 @@ public class Options {
                "use modal frame for command/search entry");
     setExpertHidden(commandEntryFrame, true, true);
 
+    G.p_sel = createStringOption(selection, "inclusive",
+            new StringOption.Validator() {
+              public void validate(String val) throws PropertyVetoException {
+                if("old".equals(val)
+                   || "inclusive".equals(val)
+                   || "exclusive".equals(val))
+                  return;
+                throw new PropertyVetoException(
+                    "Value must be one of 'old', 'inclusive' or 'exclusive'."
+                                + " Not '" + val + "'.",
+                            new PropertyChangeEvent(opt, opt.getName(),
+                                                    opt.getString(), val));
+              }
+            });
+    setupOptionDesc(miscList, selection, "'selection' 'sel'",
+            "This option defines the behavior of the selection."
+            + " It is only used in Visual and Select mode."
+            + "Possible values: 'old', 'inclusive', 'exclusive'");
+    setExpertHidden(selection, true, false);
+
     /////////////////////////////////////////////////////////////////////
     //
     //
@@ -535,9 +556,9 @@ public class Options {
             String ref;
             
             VimOption(String fullname,
-                        String shortname,
-                        int flags,
-                        String ref) {
+                      String shortname,
+                      int flags,
+                      String ref) {
                 this.fullname = fullname;
                 this.shortname = shortname;
                 this.flags = flags;
@@ -546,12 +567,12 @@ public class Options {
         }
         
         private static VimOption vopts[] = new VimOption[] {
-            new VimOption("tabstop", "ts", P_IND, "b_p_ts"),
-            new VimOption("shiftwidth", "sw", P_IND, "b_p_sw"),
             new VimOption("expandtab", "et", P_IND, "b_p_et"),
-            new VimOption("number", "nu", P_IND|P_WIN, "w_p_nu"),
             new VimOption("ignorecase", "ic", P_NONE, ignoreCase),
             new VimOption("incsearch", "is", P_NONE, incrSearch),
+            new VimOption("number", "nu", P_IND|P_WIN, "w_p_nu"),
+            new VimOption("shiftwidth", "sw", P_IND, "b_p_sw"),
+            new VimOption("tabstop", "ts", P_IND, "b_p_ts"),
         };
         
         public void actionPerformed(ActionEvent e) {
@@ -559,17 +580,19 @@ public class Options {
             parseSetOptions(evt.getArgs());
         }
         
-        public void parseSetOptions(List<String> originalArgs) {
-            if(originalArgs == null) {
+        public void parseSetOptions(List<String> eventArgs) {
+            if(eventArgs == null
+               || eventArgs.size() == 1 && "all".equals(eventArgs.get(0))) {
                 displayAllOptions();
                 return;
             }
             Deque<String> args = new ArrayDeque<String>();
+            // copy eventArgs into args, with possible fixup
             // ":set sw =4" is allowed, so if something starts with "="
             // then append it to the previous element
             int j = 0;
-            for(int i = 0; i < originalArgs.size(); i++) {
-                String arg = originalArgs.get(i);
+            for(int i = 0; i < eventArgs.size(); i++) {
+                String arg = eventArgs.get(i);
                 if(arg.startsWith("=") && args.peekLast() != null) {
                     arg = args.removeLast() + arg;
                 }
@@ -773,17 +796,17 @@ public class Options {
         }
         
         /** Note the value from the current is used to set any others */
-        public static void setAllInstances(String varName) {
+        public static void syncAllInstances(String varName) {
             boolean error = false;
             for (VimOption vopt : vopts) {
                 if(vopt.ref.equals(varName)) {
                     if((vopt.flags & P_IND) != 0) {
                         VimOptionDescriptor voptDesc = new VimOptionDescriptor();
                         determineOptionState(vopt, voptDesc);
-                        Set<ViOptionBag> set = convertToBags(
+                        Set<? extends ViOptionBag> set = 
                             (vopt.flags & P_WIN) != 0
                                 ? ViManager.getViFactory().getViTextViewSet()
-                                : ViManager.getViFactory().getBufferSet());
+                                : ViManager.getViFactory().getBufferSet();
                         for (ViOptionBag bag : set) {
                             try {
                                 voptDesc.f.set(bag, voptDesc.value);
@@ -798,15 +821,6 @@ public class Options {
                     break;
                 }
             }
-        }
-        private static Set<ViOptionBag> convertToBags(Set in) {
-            // NEEDSWORK: convertToBags, shouldn't need, must be trick to cast.
-            Set<ViOptionBag> s = new HashSet<ViOptionBag>();
-            for (Object o : in) {
-                s.add((ViOptionBag)o);
-            }
-            
-            return s;
         }
     }
 }

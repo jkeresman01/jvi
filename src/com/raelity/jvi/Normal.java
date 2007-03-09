@@ -291,7 +291,7 @@ public class Normal {
 
 
     if(lookForDigit) {
-      if (!(VIsual_active && VIsual_select)) {
+      if (!(G.VIsual_active && G.VIsual_select)) {
         if (ctrl_w) {
           --G.no_mapping;
           --G.allow_keys;
@@ -381,14 +381,14 @@ public class Normal {
                       && Util.vim_strchr("@zm\"", ca.cmdchar) != null)
                  || (oap.op_type == OP_NOP
                      && (ca.cmdchar == 'r'
-                         || (!VIsual_active && ca.cmdchar == 'Z')))
+                         || (!G.VIsual_active && ca.cmdchar == 'Z')))
                  || Util.vim_strchr("tTfF[]g'`", ca.cmdchar) != null
                  || (ca.cmdchar == 'q'
                      && oap.op_type == OP_NOP
                      && !G.Recording
                      && !G.Exec_reg)
                  || ((ca.cmdchar == 'a' || ca.cmdchar == 'i')
-                     && (oap.op_type != OP_NOP || VIsual_active)))
+                     && (oap.op_type != OP_NOP || G.VIsual_active)))
         {
           ++G.no_mapping;
           ++G.allow_keys;		/* no mapping for nchar, but allow key codes */
@@ -464,7 +464,7 @@ middle_code:
       }
 
       /* when 'keymodel' contains "startsel" some keys start Select/Visual mode */
-      if (!VIsual_active && Util.vim_strchr(G.p_km, 'a') != null)
+      if (!G.VIsual_active && Util.vim_strchr(G.p_km, 'a') != null)
       {
 	int	i;
 
@@ -546,7 +546,6 @@ middle_code:
 	    // FALLTHROUGH
 
 	  case 0x1f & (int)('Y'):	// Ctrl
-	    notImp("scroll_line");	// XXX
 	    nv_scroll_line(ca, flag);
 	    break;
 
@@ -567,7 +566,7 @@ middle_code:
 	    // Ignore 'Q' in Visual mode, just give a beep.
 	    //
 	    notSup("exmode");	// XXX
-	    if (VIsual_active)
+	    if (G.VIsual_active)
 	      Util.vim_beep();
 	    else if (!checkclearop(oap))
 	      do_exmode();
@@ -671,7 +670,7 @@ middle_code:
 
 	  case K_BS:
 	  case 0x1f & (int)('H'):	// Ctrl
-	    if (VIsual_active && VIsual_select)
+	    if (G.VIsual_active && G.VIsual_select)
 	    {
 	      ca.cmdchar = 'x';	// BS key behaves like 'x' in Select mode
 	      v_visop(ca);
@@ -902,7 +901,7 @@ middle_code:
 	    break;
 
 	  case 'u':    /* undo */
-	    if (VIsual_active || oap.op_type == OP_LOWER)
+	    if (G.VIsual_active || oap.op_type == OP_LOWER)
 	    {
 	      /* translate "<Visual>u" to "<Visual>gu" and "guu" to "gugu" */
 	      ca.cmdchar = 'g';
@@ -966,7 +965,7 @@ middle_code:
 
 	  case 'o':
 	  case 'O':
-	    if (VIsual_active)  /* switch start and end of visual */
+	    if (G.VIsual_active)  /* switch start and end of visual */
 	      v_swap_corners(ca);
 	    else
 	      n_opencmd(ca);
@@ -985,7 +984,7 @@ middle_code:
 	     * of a single character
 	     */
 	    if (	   ! G.p_to.getBoolean()
-			   && !VIsual_active
+			   && !G.VIsual_active
 			   && oap.op_type != OP_TILDE)
 	    {
 	      n_swapchar(ca);
@@ -1012,10 +1011,10 @@ middle_code:
 
 	  case 'S':
 	  case 's':
-	    if (VIsual_active)	/* "vs" and "vS" are the same as "vc" */
+	    if (G.VIsual_active)	/* "vs" and "vS" are the same as "vc" */
 	    {
 	      if (ca.cmdchar == 'S')
-		VIsual_mode = 'V';
+		G.VIsual_mode = 'V';
 	      ca.cmdchar = 'c';
 	      nv_operator(ca);
 	      break;
@@ -1031,7 +1030,7 @@ middle_code:
 	      ca.cmdchar = 'x';		/* DEL key behaves like 'x' */
 
 	    /* with Visual these commands are operators */
-	    if (VIsual_active)
+	    if (G.VIsual_active)
 	    {
 	      v_visop(ca);
 	      break;
@@ -1065,9 +1064,9 @@ middle_code:
 
 	  case 0x1f & (int)('O'):	// Ctrl
 	    /* switch from Select to Visual mode for one command */
-	    if (VIsual_active && VIsual_select)
+	    if (G.VIsual_active && G.VIsual_select)
 	    {
-	      VIsual_select = false;
+	      G.VIsual_select = false;
 	      Misc.showmode();
 	      restart_VIsual_select = 2;
 	      break;
@@ -1109,7 +1108,7 @@ middle_code:
 	  case 0x1f & (int)('Z'):	// Ctrl
 	    notSup("ctrl-z");
 	    clearop(oap);
-	    if (VIsual_active)
+	    if (G.VIsual_active)
 	      end_visual_mode();		    /* stop Visual */
 	    GetChar.stuffReadbuff(":st\r");   /* with autowrite */
 	    break;
@@ -1241,15 +1240,15 @@ middle_code:
     /*
      * If an operation is pending, handle it...
      */
-    if ((VIsual_active || G.finish_op) && oap.op_type != OP_NOP) {
+    if ((G.VIsual_active || G.finish_op) && oap.op_type != OP_NOP) {
       do_xop("do_pending_operator");
-      oap.is_VIsual = VIsual_active;
+      oap.is_VIsual = G.VIsual_active;
 
       old_cursor = G.curwin.getWCursor(); // this was outside the if, look above
 
       /* only redo yank when 'y' flag is in 'cpoptions' */
       if ((Util.vim_strchr(G.p_cpo, CPO_YANK) != null || oap.op_type != OP_YANK)
-	  && !VIsual_active)
+	  && !G.VIsual_active)
       {
 	prep_redo(oap.regname, cap.count0,
 		  get_op_char(oap.op_type), get_extra_op_char(oap.op_type),
@@ -1319,7 +1318,7 @@ middle_code:
 		   && oap.inclusive == false
 		   && !dont_adjust_op_end
 		   && oap.end.getColumn() == 0
-		   && (!oap.is_VIsual || G.p_sel == 'o')
+		   && (!oap.is_VIsual || G.p_sel.charAt(0) == 'o')
 		   && oap.line_count > 1)
       {
 	oap.end_adjusted = true;	    /* remember that we did this */
@@ -1374,7 +1373,7 @@ middle_code:
 	  break;
 
 	case OP_DELETE:
-	  VIsual_reselect = false;	    /* don't reselect now */
+	  G.VIsual_reselect = false;	    /* don't reselect now */
 	  if (empty_region_error)
 	    Util.vim_beep();
 	  else {
@@ -1399,7 +1398,7 @@ middle_code:
 	  break;
 
 	case OP_CHANGE:
-	  VIsual_reselect = false;	    /* don't reselect now */
+	  G.VIsual_reselect = false;	    /* don't reselect now */
 	  if (empty_region_error)
 	    Util.vim_beep();
 	  else
@@ -1449,12 +1448,12 @@ middle_code:
 
 	case OP_INSERT:
 	case OP_APPEND:
-	  VIsual_reselect = false;	/* don't reselect now */
+	  G.VIsual_reselect = false;	/* don't reselect now */
 	  Util.vim_beep();
 	  break;
 
 	case OP_REPLACE:
-	  VIsual_reselect = false;	/* don't reselect now */
+	  G.VIsual_reselect = false;	/* don't reselect now */
 	  Util.vim_beep();
 	  break;
 
@@ -1612,7 +1611,7 @@ middle_code:
    */
   static private boolean checkclearopq(OPARG oap) {
     do_xop("checkclearopq");
-    if (oap.op_type == OP_NOP && !VIsual_active)
+    if (oap.op_type == OP_NOP && !G.VIsual_active)
       return false;
     clearopbeep(oap);
     return true;
@@ -1764,6 +1763,39 @@ middle_code:
     // screen_puts((char_u *)"          " + len, (int)Rows - 1, sc_col + len, 0)
 
     // setcursor();	    /* put cursor back where it belongs */
+  }
+  
+  static private void nv_scroll_line(CMDARG cap, boolean is_ctrl_e) {
+    do_xop("nv_scroll_line");
+    if(checkclearop(cap.oap))
+      return;
+    scroll_redraw(is_ctrl_e, cap.count1);
+  }
+  
+  static private void scroll_redraw(boolean up, int count) {
+    if(G.curwin.getLineCount() <= G.curwin.getViewLines())
+      return;
+    
+    int prev_topline = G.curwin.getViewTopLine();
+    int prev_lnum = G.curwin.getWCursor().getLine();
+    
+    int new_topline = prev_topline + (up ? count : -count);
+    
+    new_topline = Misc.adjustTopLine(new_topline);
+    int new_bottomline = new_topline + G.curwin.getViewLines() -1;
+    
+    int new_lnum = prev_lnum;
+    int so = Misc.getScrollOff();
+    if(new_lnum < new_topline + so)
+      new_lnum = new_topline + so;
+    else if(new_lnum > new_bottomline - so)
+      new_lnum = new_bottomline - so;
+    
+    if(new_lnum != prev_lnum) {
+      G.curwin.setCaretPosition(new_lnum, 0);
+      Misc.coladvance(G.curwin.getWCurswant());
+    }
+    G.curwin.setViewTopLine(new_topline);
   }
 
   /** nv_zet is simplified a bunch, only do vi compat */
@@ -1947,27 +1979,27 @@ middle_code:
       }
       notImp("nv_ident subset");
       /*
-      if (VIsual_active)	// :ta to visual highlighted text
+      if (G.VIsual_active)	// :ta to visual highlighted text
       {
-        if (VIsual_mode != 'V')
+        if (G.VIsual_mode != 'V')
           unadjust_for_sel();
-        if (VIsual.lnum != curwin.w_cursor.lnum)
+        if (G.VIsual.lnum != curwin.w_cursor.lnum)
         {
           clearopbeep(cap.oap);
           return;
         }
-        if (lt(curwin.w_cursor, VIsual))
+        if (lt(curwin.w_cursor, G.VIsual))
         {
           ptr = ml_get_pos(&curwin.w_cursor);
-          n = VIsual.col - curwin.w_cursor.col + 1;
+          n = G.VIsual.col - curwin.w_cursor.col + 1;
         }
         else
         {
-          ptr = ml_get_pos(&VIsual);
-          n = curwin.w_cursor.col - VIsual.col + 1;
+          ptr = ml_get_pos(&G.VIsual);
+          n = curwin.w_cursor.col - G.VIsual.col + 1;
         }
         end_visual_mode();
-        VIsual_reselect = FALSE;
+        G.VIsual_reselect = FALSE;
         redraw_curbuf_later(NOT_VALID);    // update the inversion later
       }
       if (checkclearopq(cap.oap))
@@ -2142,8 +2174,7 @@ middle_code:
     }
 
     if(newcursorline > 0) {
-      G.curwin.setCaretPosition(
-		    G.curwin.getLineStartOffset(newcursorline));
+      G.curwin.setCaretPosition(G.curwin.getLineStartOffset(newcursorline));
     }
     Misc.cursor_correct();	// correct for 'so'
     Edit.beginline(BL_SOL | BL_FIX);
@@ -2210,7 +2241,7 @@ middle_code:
 
     cap.oap.motion_type = MCHAR;
     cap.oap.inclusive = false;
-    past_line = (VIsual_active && G.p_sel != 'o');
+    past_line = (G.VIsual_active && G.p_sel.charAt(0) != 'o');
     for (n = cap.count1; n > 0; --n) {
       if ((!past_line && Edit.oneright() == FAIL)
 	    // NEEDSWORK: pastline only true if select
@@ -2534,10 +2565,10 @@ middle_code:
    */
   static private void nv_Replace(CMDARG cap)
   {
-    if (VIsual_active)		/* "R" is replace lines */
+    if (G.VIsual_active)		/* "R" is replace lines */
     {
       cap.cmdchar = 'c';
-      VIsual_mode = 'V';
+      G.VIsual_mode = 'V';
       nv_operator(cap);
     } else if (!checkclearopq(cap.oap)) {
       if (u_save_cursor() == OK) {
@@ -2920,7 +2951,7 @@ middle_code:
    * In exclusive Visual mode, may include the last character.
    */
   static private void adjust_for_sel(CMDARG cap) {
-    if (VIsual_active) {
+    if (G.VIsual_active) {
       throw new RuntimeException("visual mode");
     }
     /* ***********************************
@@ -2938,7 +2969,7 @@ middle_code:
    * Don't even beep if we are canceling a command.
    */
   static private void nv_esc(CMDARG cap, int opnum) {
-    if (VIsual_active) {
+    if (G.VIsual_active) {
       end_visual_mode();	// stop Visual
       Misc.check_cursor_col();	// make sure cursor is not beyond EOL
       G.curwin.setWSetCurswant(true);
@@ -2961,13 +2992,13 @@ middle_code:
     do_xop("nv_edit");
     /* in Visual mode "A" and "I" are an operator */
     if ((cap.cmdchar == 'A' || cap.cmdchar == 'I')
-	&& VIsual_active)
+	&& G.VIsual_active)
     {
       v_visop(cap);
     }
     /* in Visual mode and after an operator "a" and "i" are for text objects */
     else if ((cap.cmdchar == 'a' || cap.cmdchar == 'i')
-	     && (cap.oap.op_type != OP_NOP || VIsual_active))
+	     && (cap.oap.op_type != OP_NOP || G.VIsual_active))
     {
       clearopbeep(cap.oap);
     } else if (!checkclearopq(cap.oap) && u_save_cursor() == OK) {
@@ -3064,7 +3095,7 @@ middle_code:
    * Handle "J" or "gJ" command.
    */
   static private void nv_join(CMDARG cap) {
-    if (VIsual_active)	/* join the visual lines */
+    if (G.VIsual_active)	/* join the visual lines */
       nv_operator(cap);
     else if (!checkclearop(cap.oap)) {
       if (cap.count0 <= 1)
@@ -3090,7 +3121,7 @@ middle_code:
    * "P", "gP", "p" and "gp" commands.
    */
   static private void nv_put(CMDARG cap) {
-    if (cap.oap.op_type != OP_NOP || VIsual_active) {
+    if (cap.oap.op_type != OP_NOP || G.VIsual_active) {
       clearopbeep(cap.oap);
     } else {
       prep_redo_cmd(cap);
@@ -3160,8 +3191,6 @@ middle_code:
   static boolean msg_didout;
   static int msg_col;
   static boolean arrow_used;
-  static int VIsual_mode;
-  static int p_smd;
   static boolean redraw_cmdline;
   static boolean msg_didany;
   static boolean msg_nowait;
@@ -3184,14 +3213,6 @@ middle_code:
   static int	resel_VIsual_line_count;/* number of lines */
   static int	resel_VIsual_col;	/* nr of cols or end col */
 
-  //
-  // Other visual stuff
-  //
-  static boolean VIsual_active;
-  static boolean VIsual_select;
-  static boolean VIsual_reselect;
-
-
   static private  void	op_colon (OPARG oap) {do_op("op_colon");}
   // private  void	prep_redo_cmd (CMDARG cap) {do_op("prep_redo_cmd");}
   //static private  void	prep_redo (int regname, long l,
@@ -3209,7 +3230,7 @@ middle_code:
  */
   static private  void	nv_gd (OPARG oap, int nchar) {do_op("nv_gd");}
   static private  int	nv_screengo (OPARG oap, int dir, long dist) { do_op("nv_screengo");return 0; }
-  static private  void	nv_scroll_line (CMDARG cap, boolean is_ctrl_e) {do_op("nv_scroll_line");}
+  // static private  void	nv_scroll_line (CMDARG cap, boolean is_ctrl_e) {do_op("nv_scroll_line");}
   // static private  void	nv_zet (CMDARG cap) {do_op("nv_zet");}
   // static private  void	nv_colon (CMDARG cap) {do_op("nv_colon");}
   // static private  void	nv_ctrlg (CMDARG cap) {do_op("nv_ctrlg");}
