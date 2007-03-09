@@ -48,6 +48,11 @@ public class Edit {
   public static final String VI_MODE_RESTART_I = "(insert)";
   public static final String VI_MODE_RESTART_R = "(replace)";
   public static final String VI_MODE_RESTART_V = "(vreplace)";
+  
+  public static final String VI_MODE_SELECT = "SELECT";
+  public static final String VI_MODE_VISUAL = "VISUAL";
+  public static final String VI_MODE_BLOCK = "BLOCK";
+  public static final String VI_MODE_LINE = "LINE";
 
   static ViFPOS Insstart;
 

@@ -29,25 +29,41 @@
  */
 package com.raelity.jvi;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 
 public class StringOption extends Option {
   private Validator validator;
   
   StringOption(String key, String defaultValue) {
-    super(key, defaultValue);
+    this(key, defaultValue, null);
   }
   
   StringOption(String key, String defaultValue, Validator validator) {
-    this(key, defaultValue);
-    if(validator != null) {
-	validator.opt = this;
-	this.validator = validator;
+    super(key, defaultValue);
+    if(validator == null) {
+      // provide the default validator
+      validator = new Validator() {
+        public void validate(String val) throws PropertyVetoException {
+          if(val == null) {
+            throw new PropertyVetoException(
+                        "null is not a valid string option",
+                        new PropertyChangeEvent(opt, opt.getName(),
+                                                opt.getString(), val));
+          }
+        }
+      };
     }
+    validator.opt = this;
+    this.validator = validator;
   }
 
   public final String getString() {
     return stringValue;
+  }
+
+  public final char charAt(int i) {
+    return stringValue.charAt(i);
   }
 
   /**
@@ -68,17 +84,15 @@ public class StringOption extends Option {
   }
   
   /**
-   * Validate the setting value. By default, everything is ok.
+   * Validate the setting value.
    */
   public void validate(String val) throws PropertyVetoException {
-      if(validator != null) {
-          validator.validate(val);
-      }
+    validator.validate(val);
   }
   
   public static abstract class Validator {
-      StringOption opt;
-      
-      public abstract void validate(String val) throws PropertyVetoException;
+    StringOption opt;
+    
+    public abstract void validate(String val) throws PropertyVetoException;
   }
 }
