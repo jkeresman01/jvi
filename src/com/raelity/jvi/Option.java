@@ -29,6 +29,8 @@
  */
 package com.raelity.jvi;
 
+import java.beans.PropertyVetoException;
+
 public abstract class Option {
     protected String name;
     protected String displayName;
@@ -127,5 +129,32 @@ public abstract class Option {
     public String getString() {
         throw new ClassCastException(this.getClass().getSimpleName()
                                      + " is not a StringOption");
+    }
+    
+    public void validate(int val) throws PropertyVetoException {
+        throw new ClassCastException(this.getClass().getSimpleName()
+                                     + " is not an IntegerOption");
+    }
+    
+    public void validate(boolean val) throws PropertyVetoException {
+        throw new ClassCastException(this.getClass().getSimpleName()
+                                     + " is not a BooleanOption");
+    }
+    
+    public void validate(String val) throws PropertyVetoException {
+        throw new ClassCastException(this.getClass().getSimpleName()
+                                     + " is not a StringOption");
+    }
+    
+    public void validate(Object val) throws PropertyVetoException {
+        if(val instanceof String)
+            validate((String)val);
+        else if(val instanceof Boolean)
+            validate(((Boolean)val).booleanValue());
+        else if(val instanceof Integer)
+            validate(((Integer)val).intValue());
+        else 
+            throw new ClassCastException(val.getClass().getSimpleName()
+                                        + " is not int, boolean or String");
     }
 }

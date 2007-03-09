@@ -544,35 +544,39 @@ public class Options {
         
         private static class SetCommandException extends Exception {}
 
-        private static int P_NONE = 0x00;
         private static int P_IND = 0x01; // either curwin or curbuf
         private static int P_WIN = 0x02; // curwin
+        private static int P_OPT = 0x04; // global option
         
         private static class VimOption {
             String fullname;
             String shortname;
             int flags;
-            // name of option or field
-            String ref;
+            // name of field and/or option
+            String varName;
+            String optName;
             
             VimOption(String fullname,
                       String shortname,
                       int flags,
-                      String ref) {
+                      String varName,
+                      String optName) {
                 this.fullname = fullname;
                 this.shortname = shortname;
                 this.flags = flags;
-                this.ref = ref;
+                this.varName = varName;
+                this.optName = optName;
             }
         }
         
+        // MUST NOT SET both P_IND and P_OPT
         private static VimOption vopts[] = new VimOption[] {
-            new VimOption("expandtab", "et", P_IND, "b_p_et"),
-            new VimOption("ignorecase", "ic", P_NONE, ignoreCase),
-            new VimOption("incsearch", "is", P_NONE, incrSearch),
-            new VimOption("number", "nu", P_IND|P_WIN, "w_p_nu"),
-            new VimOption("shiftwidth", "sw", P_IND, "b_p_sw"),
-            new VimOption("tabstop", "ts", P_IND, "b_p_ts"),
+            new VimOption("expandtab", "et", P_IND, "b_p_et", null),
+            new VimOption("ignorecase", "ic", P_OPT, null, ignoreCase),
+            new VimOption("incsearch", "is", P_OPT, null, incrSearch),
+            new VimOption("number", "nu", P_IND|P_WIN, "w_p_nu", null),
+            new VimOption("shiftwidth", "sw", P_IND, "b_p_sw", shiftWidth),
+            new VimOption("tabstop", "ts", P_IND, "b_p_ts", tabStop),
         };
         
         public void actionPerformed(ActionEvent e) {
@@ -626,7 +630,7 @@ public class Options {
             Field f;
             ViOptionBag bag;
             
-            // used if regular option (not P_IND)
+            // used if regular option is provided
             Option opt;
             
             
@@ -683,23 +687,72 @@ public class Options {
                 throw new SetCommandException();
             }
             
-            Object newValue = handleSetOption(arg, vopt, voptDesc);
+            Object newValue = newOptionValue(arg, vopt, voptDesc);
             
             if(voptDesc.fShow)
                 Msg.smsg(formatDisplayValue(vopt, voptDesc.value));
             else {
+                if(voptDesc.opt != null) {
+                    try {
+                        voptDesc.opt.validate(newValue);
+                    } catch (PropertyVetoException ex) {
+                        Msg.emsg(ex.getMessage());
+                        throw new SetCommandException();
+                    }
+                }
+                
                 if((vopt.flags & P_IND) != 0) {
                     voptDesc.f.set(voptDesc.bag, newValue);
-                    voptDesc.bag.viOptionSet(G.curwin, vopt.ref);
+                    voptDesc.bag.viOptionSet(G.curwin, vopt.varName);
                 } else {
-                    // NEEDSWORK: check validation issues
                     voptDesc.opt.setValue(newValue.toString());
                 }
             }
         }
         
-        // Rather ugly, most of the argument are class members
-        private Object handleSetOption(String arg,
+        /**
+         * Set voptDesc with information about the argument vopt.
+         */
+        private static boolean determineOptionState(VimOption vopt,
+                                                VimOptionDescriptor voptDesc) {
+            if(vopt.optName != null)
+                voptDesc.opt = getOption(vopt.optName);
+            
+            if((vopt.flags & P_IND) != 0) {
+                voptDesc.bag = (vopt.flags & P_WIN) != 0 ? G.curwin : G.curbuf;
+                try {
+                    voptDesc.f = voptDesc.bag.getClass().getField(vopt.varName);
+                } catch (SecurityException ex) {
+                    ex.printStackTrace();
+                } catch (NoSuchFieldException ex) {
+                    ex.printStackTrace();
+                }
+                if(voptDesc.f == null) {
+                    return false;
+                }
+                voptDesc.type = voptDesc.f.getType();
+                // impossible to get exceptions
+                try {
+                    voptDesc.value = voptDesc.f.get(voptDesc.bag);
+                } catch (IllegalArgumentException ex) {
+                    ex.printStackTrace();
+                } catch (IllegalAccessException ex) {
+                    ex.printStackTrace();
+                }
+            } else if((vopt.flags & P_OPT) != 0) {
+                if(voptDesc.opt instanceof BooleanOption) {
+                    voptDesc.type = boolean.class;
+                    voptDesc.value = voptDesc.opt.getBoolean();
+                } else if(voptDesc.opt instanceof IntegerOption) {
+                    voptDesc.type = int.class;
+                    voptDesc.value = voptDesc.opt.getInteger();
+                }
+            }
+            return true;
+        }
+        
+        // Most of the argument are class members
+        private Object newOptionValue(String arg,
                                        VimOption vopt,
                                        VimOptionDescriptor voptDesc)
         throws NumberFormatException, SetCommandException {
@@ -745,45 +798,6 @@ public class Options {
             return v;
         }
         
-        //
-        // Set voptDesc with information about the argument vopt.
-        //
-        private static boolean determineOptionState(VimOption vopt,
-                                                VimOptionDescriptor voptDesc) {
-            if((vopt.flags & P_IND) != 0) {
-                voptDesc.bag = (vopt.flags & P_WIN) != 0 ? G.curwin : G.curbuf;
-                try {
-                    voptDesc.f = voptDesc.bag.getClass().getField(vopt.ref);
-                } catch (SecurityException ex) {
-                    ex.printStackTrace();
-                } catch (NoSuchFieldException ex) {
-                    ex.printStackTrace();
-                }
-                if(voptDesc.f == null) {
-                    return false;
-                }
-                voptDesc.type = voptDesc.f.getType();
-                // impossible to get exceptions
-                try {
-                    voptDesc.value = voptDesc.f.get(voptDesc.bag);
-                } catch (IllegalArgumentException ex) {
-                    ex.printStackTrace();
-                } catch (IllegalAccessException ex) {
-                    ex.printStackTrace();
-                }
-            } else {
-                voptDesc.opt = getOption(vopt.ref);
-                if(voptDesc.opt instanceof BooleanOption) {
-                    voptDesc.type = boolean.class;
-                    voptDesc.value = ((BooleanOption)voptDesc.opt).getBoolean();
-                } else if(voptDesc.opt instanceof IntegerOption) {
-                    voptDesc.type = int.class;
-                    voptDesc.value = ((IntegerOption)voptDesc.opt).getInteger();
-                }
-            }
-            return true;
-        }
-        
         private static void displayAllOptions() {
             ViOutputStream osa = ViManager.createOutputStream(
                                         null, ViOutputStream.OUTPUT, null);
@@ -799,7 +813,7 @@ public class Options {
         public static void syncAllInstances(String varName) {
             boolean error = false;
             for (VimOption vopt : vopts) {
-                if(vopt.ref.equals(varName)) {
+                if(vopt.varName.equals(varName)) {
                     if((vopt.flags & P_IND) != 0) {
                         VimOptionDescriptor voptDesc = new VimOptionDescriptor();
                         determineOptionState(vopt, voptDesc);

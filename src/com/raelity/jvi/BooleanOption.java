@@ -29,10 +29,25 @@
  */
 package com.raelity.jvi;
 
+import java.beans.PropertyVetoException;
+
 public class BooleanOption extends Option {
+  private Validator validator;
   boolean value;
+  
   public BooleanOption(String key, boolean defaultValue) {
+    this(key, defaultValue, null);
+  }
+  
+  public BooleanOption(String key, boolean defaultValue, Validator validator) {
     super(key, "" + defaultValue);
+    if(validator == null) {
+      // The default validation accepts everything
+      validator = new Validator() {
+        public void validate(boolean val) throws PropertyVetoException {
+        }
+      };
+    }
   }
 
   public final boolean getBoolean() {
@@ -57,5 +72,15 @@ public class BooleanOption extends Option {
   public void setValue(String newValue) throws IllegalArgumentException {
     boolean b = Boolean.parseBoolean(newValue);
     setBoolean(b);
+  }
+  
+  public void validate(boolean val) throws PropertyVetoException {
+    validator.validate(val);
+  }
+  
+  public static abstract class Validator {
+    protected BooleanOption opt;
+    
+    public abstract void validate(boolean val) throws PropertyVetoException;
   }
 }
