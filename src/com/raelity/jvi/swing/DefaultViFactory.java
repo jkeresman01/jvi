@@ -119,17 +119,17 @@ public class DefaultViFactory implements ViFactory {
   }
   
   public Buffer getBuffer(JEditorPane editorPane) {
-      Buffer buf = null;
-      Document doc = editorPane.getDocument();
-      if(doc != null) {
-          buf = (Buffer)doc.getProperty(PROP_BUF);
-          if(buf == null) {
-              buf = createBuffer(editorPane);
-              doc.putProperty(PROP_BUF, buf);
-              docSet.put(doc, null);
-          }
+    Buffer buf = null;
+    Document doc = editorPane.getDocument();
+    if(doc != null) {
+      buf = (Buffer)doc.getProperty(PROP_BUF);
+      if(buf == null) {
+        buf = createBuffer(editorPane);
+        doc.putProperty(PROP_BUF, buf);
+        docSet.put(doc, null);
       }
-      return buf;
+    }
+    return buf;
   }
   
   /** subclass probably wants to override this */
@@ -140,9 +140,9 @@ public class DefaultViFactory implements ViFactory {
   public Set<Buffer> getBufferSet() {
     Set<Buffer> s = new HashSet<Buffer>();
     for (Document doc : docSet.keySet()) {
-        Buffer buf = (Buffer) doc.getProperty(PROP_BUF);
-        if(buf != null)
-            s.add(buf);
+      Buffer buf = (Buffer) doc.getProperty(PROP_BUF);
+      if(buf != null)
+        s.add(buf);
     }
       
     return s;
@@ -155,10 +155,10 @@ public class DefaultViFactory implements ViFactory {
   public void shutdown(JEditorPane ep) {
     ViTextView tv = (ViTextView)ep.getClientProperty(PROP_VITV);
     if(tv != null) {
-        if(G.dbgEditorActivation.getBoolean())
-            System.err.println("Activation: shutdown TV");
-        tv.shutdown();
-        ep.putClientProperty(PROP_VITV, null);
+      if(G.dbgEditorActivation.getBoolean())
+        System.err.println("Activation: shutdown TV");
+      tv.shutdown();
+      ep.putClientProperty(PROP_VITV, null);
     }
   }
 
