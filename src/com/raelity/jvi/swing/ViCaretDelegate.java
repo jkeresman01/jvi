@@ -153,7 +153,7 @@ public class ViCaretDelegate
                        .viewToModel(caret.getTextComponent(), pt, biasRet);
     if(biasRet[0] == null)
       biasRet[0] = Position.Bias.Forward;
-    pos = ViManager.mouseClickedPosition(pos, caret.getTextComponent());
+    pos = ViManager.mouseSetDot(pos, caret.getTextComponent());
     if (pos >= 0) {
       // setDot(pos, biasRet[0]);
       caret.setDot(pos);

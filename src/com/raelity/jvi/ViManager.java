@@ -61,8 +61,8 @@ public class ViManager {
 
   private static final int majorVersion = 0;
   private static final int minorVersion = 8;
-  private static final int microVersion = 3;
-  private static final String releaseTag = "";
+  private static final int microVersion = 4;
+  private static final String releaseTag = "x1";
   private static final String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion
@@ -475,7 +475,7 @@ public class ViManager {
    * Pass the click on to the window and give it
    * a chance to adjust the position and whatever.
    */
-  public static int mouseClickedPosition(int pos, JTextComponent c) {
+  public static int mouseSetDot(int pos, JTextComponent c) {
     if( ! (c instanceof JEditorPane)) {
       return pos;
     }
@@ -487,10 +487,19 @@ public class ViManager {
     GetChar.flush_buffers(true);
     exitInputMode();
     switchTo(editorPane);
-
-    ViTextView textView = getViTextView(editorPane);
+    
+    //System.err.println("mouseSetDot(" + pos + ")");
     Window window = factory.lookupWindow(editorPane);
     pos = window.mouseClickedPosition(pos);
+    
+    return pos;
+  }
+  
+  public static int mouseMoveDot(int pos, JTextComponent c) {
+    if(c != G.curwin.getEditorComponent()) {
+      return pos;
+    }
+    //System.err.println("mouseMoveDot(" + pos + ")");
     return pos;
   }
 
