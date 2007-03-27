@@ -37,6 +37,8 @@ import javax.swing.SwingUtilities;
 import java.awt.*;
 import com.raelity.jvi.swing.*;
 import com.raelity.jvi.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 
 public class Jvi {
   static boolean packFrame = true;
@@ -88,7 +90,7 @@ public class Jvi {
     return frame;
   }
   
-  private static void setupFrame(JviFrame f) {
+  private static void setupFrame(final JviFrame f) {
 
     // NEEDSWORK: editor is drawn, do rest in dispatch thread
 
@@ -115,6 +117,14 @@ public class Jvi {
     sd.strokeStatus = f.strokeStatusBar;
     sd.modeStatus = f.modeStatusBar;
     // G.setEditor(new TextView(f.editorPane, sd));
+  
+    // add a mouse listener so that selection by mouse events is treated as visual mode as well
+    f.editorPane.addMouseMotionListener(new MouseMotionListener() {
+            public void mouseMoved(MouseEvent e) {}
+            public void mouseDragged(MouseEvent e) {
+                ViManager.mouseMoveDot(f.editorPane.getCaret().getDot(), f.editorPane);
+            }
+    });
   }
 
   //Main method

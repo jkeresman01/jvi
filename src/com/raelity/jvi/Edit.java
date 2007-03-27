@@ -872,7 +872,8 @@ normal_char:	// do "break normal_char" to insert a character
 
 
   /**
-   * When TRUE: update topline.
+   * @param n the number of lines to move 
+   * @param upd_topline When TRUE: update topline.
    */
   public static int cursor_down(int n, boolean upd_topline) {
     Normal.do_xop("cursor_down");

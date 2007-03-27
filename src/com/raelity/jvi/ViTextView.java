@@ -298,4 +298,9 @@ public interface ViTextView extends ViOptionBag {
   public String getDisplayFileName();
 
   public String getDisplayFileNameAndSize();
+
+  /**
+   * Update the visual state (selection) of the window.
+   */
+  public void updateVisualState();
 }

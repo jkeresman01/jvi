@@ -2283,7 +2283,7 @@ public class Misc implements ClipboardOwner {
    * cleared only if a mode is shown.
    * @return the length of the message (0 if no message).
    */
-  static int showmode()       {
+  public static int showmode()       {
     String mode = Edit.VI_MODE_COMMAND;
     int length = 0;
     boolean do_mode = (true/*G.p_smd*/
@@ -2508,6 +2508,19 @@ public class Misc implements ClipboardOwner {
     }
     return idx;
   }
+/*
+ * skipwhite: skip over ' ' and '\t'.
+ */
+static String skipwhite(String p)
+{
+    int index = 0;
+    while (index < p.length() && vim_iswhite(p.charAt(index))) /* skip to next non-white */
+        ++index;
+    if (index >= p.length()) {
+        return null;
+    }
+    return p.substring(index);
+}
 
   /**
    * Getdigits: Get a number from a string and skip over it.

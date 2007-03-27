@@ -491,7 +491,11 @@ public class ViManager {
     //System.err.println("mouseSetDot(" + pos + ")");
     Window window = factory.lookupWindow(editorPane);
     pos = window.mouseClickedPosition(pos);
-    
+    if (G.VIsual_active) {
+        // Cancel visual mode
+        G.VIsual_active = false;
+        Misc.showmode();
+    }
     return pos;
   }
   
@@ -500,6 +504,10 @@ public class ViManager {
       return pos;
     }
     //System.err.println("mouseMoveDot(" + pos + ")");
+    G.VIsual_mode ='v';
+    G.VIsual_active = true;
+    G.VIsual = (FPOS) G.curwin.getWCursor().copy();
+    Misc.showmode();
     return pos;
   }
 

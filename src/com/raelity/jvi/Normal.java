@@ -37,6 +37,7 @@
 package com.raelity.jvi;
 
 import com.raelity.jvi.ViTextView.JLOP;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Segment;
 
 import com.raelity.jvi.swing.KeyBinding;
@@ -68,6 +69,13 @@ public class Normal {
   static int	opnum = 0;		    /* count before an operator */
   static int   restart_VIsual_select = 0;
   static int   old_mapped_len = 0;
+
+  
+  
+  static int redo_VIsual_mode = NUL; /* 'v', 'V', or Ctrl-V */
+  static int /*linenr_t*/ redo_VIsual_line_count; /* number of lines */
+  static int /*colnr_t*/  redo_VIsual_col;/* number of cols or end column */
+  static int /*long*/ redo_VIsual_count;/* count for Visual operator */
 
   static int seltab[] = {
     /* key		unshifted	shift included */
@@ -706,6 +714,7 @@ middle_code:
 	  case 0x1f & (int)('N'):	// Ctrl
 	  case NL:	// 0x1f & (int)('J')
 	    oap.motion_type = MLINE;
+	    //if (G.curwin.cursor_down(ca.count1, oap.op_type == OP_NOP) == FAIL)
 	    if (Edit.cursor_down(ca.count1, oap.op_type == OP_NOP) == FAIL)
 	      clearopbeep(oap);
 	    else if (flag)
@@ -928,7 +937,6 @@ middle_code:
 	    break;
 
 	  case 'U':		/* Undo line */
-	    notImp("undo line");
 	    nv_Undo(ca);
 	    break;
 
@@ -1095,10 +1103,9 @@ middle_code:
 	  case 'V':
 	  case 0x1f & (int)('V'):	// Ctrl
 	    //
-	    // if (!checkclearop(oap))
-	    // nv_visual(ca, false);
+	    if (!checkclearop(oap))
+                nv_visual(ca, false);
 	    //
-	    notSup("Visual Mode");
 	    break;
 
 	    /*
@@ -1233,8 +1240,28 @@ middle_code:
     FPOS	old_cursor;
     boolean	empty_region_error;
 
-    // BIG VISUAL DELETE XXX
 
+//#if defined(USE_CLIPBOARD) && !defined(MSWIN)
+    /*
+     * Yank the visual area into the GUI selection register before we operate
+     * on it and lose it forever.  This could call do_pending_operator()
+     * recursively, but that's OK because gui_yank will be TRUE for the
+     * nested call.  Note also that we call clip_copy_selection() and not
+     * clip_auto_select().  This is because even when 'autoselect' is not set,
+     * if we operate on the text, eg by deleting it, then this is considered to
+     * be an explicit request for it to be put in the global cut buffer, so we
+     * always want to do it here. -- webb
+     */
+    /* MSWINDOWS: don't do this, there is no automatic copy to the clipboard */
+    /* Don't do it if a specific register was specified, so that ""x"*P works */
+//    if (clipboard.available
+//    && oap->op_type != OP_NOP
+//    && !gui_yank
+//    && VIsual_active
+//    && oap->regname == 0
+//    && !redo_VIsual_busy)
+//clip_copy_selection();
+//#endif
     // old_cursor = G.curwin.getWCursor();
 
     /*
@@ -1244,7 +1271,7 @@ middle_code:
       do_xop("do_pending_operator");
       oap.is_VIsual = G.VIsual_active;
 
-      old_cursor = G.curwin.getWCursor(); // this was outside the if, look above
+      old_cursor = (FPOS)G.curwin.getWCursor().copy(); // this was outside the if, look above
 
       /* only redo yank when 'y' flag is in 'cpoptions' */
       if ((Util.vim_strchr(G.p_cpo, CPO_YANK) != null || oap.op_type != OP_YANK)
@@ -1265,7 +1292,58 @@ middle_code:
 	}
       }
 
-      // BIG VISUAL DELETE XXX
+      if (G.redo_VIsual_busy)
+      {
+          oap.start = (FPOS)G.curwin.getWCursor().copy();
+          G.curwin.setCaretPosition(oap.start.getLine()+ redo_VIsual_line_count - 1, oap.start.getColumn());
+//          if (G.curwin.getWCursor().getLine() > G.curbuf.b_ml.ml_line_count)
+//              G.curwin.getWCursor().getLine() = G.curbuf.b_ml.ml_line_count;
+          G.VIsual_mode = redo_VIsual_mode;
+          if (G.VIsual_mode == 'v')
+          {
+              if (redo_VIsual_line_count <= 1)
+                  G.curwin.setCaretPosition(oap.start.getLine(), oap.start.getColumn() + redo_VIsual_col - 1);
+              else
+                  G.curwin.setCaretPosition(oap.start.getLine(), redo_VIsual_col);
+          }
+          if (redo_VIsual_col == MAXCOL)
+          {
+              G.curwin.setWCurswant(MAXCOL);
+//              coladvance(MAXCOL);
+          }
+          cap.count0 = redo_VIsual_count;
+          if (redo_VIsual_count != 0)
+              cap.count1 = redo_VIsual_count;
+          else
+              cap.count1 = 1;
+      } else if (G.VIsual_active) {
+            /* In Select mode, a linewise selection is operated upon like a
+             * characterwise selection. */
+          /*if (G.VIsual_select && G.VIsual_mode == 'V') {
+              if (lt(VIsual, curwin->w_cursor)) {
+                  VIsual.col = 0;
+                  curwin->w_cursor.col =
+                          STRLEN(ml_get(curwin->w_cursor.lnum));
+              } else {
+                  curwin->w_cursor.col = 0;
+                  VIsual.col = STRLEN(ml_get(VIsual.lnum));
+              }
+              VIsual_mode = 'v';
+          }*/
+          /* If 'selection' is "exclusive", backup one character for
+          * charwise selections. */
+          if (!G.VIsual_select && G.VIsual_mode == 'v')
+              unadjust_for_sel();
+
+          /* Save the current VIsual area for '< and '> marks, and "gv" */
+          G.curbuf.b_visual_start = G.VIsual;
+          G.curbuf.b_visual_end = (FPOS)G.curwin.getWCursor().copy();
+          G.curbuf.b_visual_mode = G.VIsual_mode;
+
+          oap.start = G.VIsual;
+          if (G.VIsual_mode == 'V')
+              oap.start.setPosition(oap.start.getLine(), 0);
+      }
 
       /*
        * Set oap.start to the first position of the operated text, oap.end
@@ -1283,7 +1361,129 @@ middle_code:
       }
       oap.line_count = oap.end.getLine() - oap.start.getLine() + 1;
 
-      // BIG VISUAL DELETE XXX
+      if (G.VIsual_active || G.redo_VIsual_busy) {
+          if (G.VIsual_mode == Util.ctrl('V'))  /* block mode */
+          {
+              //colnr_t start, end;
+
+              oap.block_mode = true;
+//            getvcol(curwin, &(oap->start),
+//                    &oap->start_vcol, NULL, &oap->end_vcol);
+//            if (!redo_VIsual_busy)
+//            {
+//                getvcol(curwin, &(oap->end), &start, NULL, &end);
+//                if (start < oap->start_vcol)
+//                    oap->start_vcol = start;
+//                if (end > oap->end_vcol)
+//                {
+//                    if (*p_sel == 'e' && start - 1 >= oap->end_vcol)
+//                        oap->end_vcol = start - 1;
+//                    else
+//                        oap->end_vcol = end;
+//                }
+//            }
+//
+//            /* if '$' was used, get oap->end_vcol from longest line */
+//            if (curwin->w_curswant == MAXCOL)
+//            {
+//                curwin->w_cursor.col = MAXCOL;
+//                oap->end_vcol = 0;
+//                for (curwin->w_cursor.lnum = oap->start.lnum;
+//                        curwin->w_cursor.lnum <= oap->end.lnum;
+//                        ++curwin->w_cursor.lnum)
+//                {
+//                    getvcol(curwin, &curwin->w_cursor, NULL, NULL, &end);
+//                    if (end > oap->end_vcol)
+//                        oap->end_vcol = end;
+//                }
+//            }
+//            else if (redo_VIsual_busy)
+//                oap->end_vcol = oap->start_vcol + redo_VIsual_col - 1;
+//            /*
+//             * Correct oap->end.col and oap->start.col to be the
+//             * upper-left and lower-right corner of the block area.
+//             */
+//            curwin->w_cursor.lnum = oap->end.lnum;
+//            coladvance(oap->end_vcol);
+//            oap->end = curwin->w_cursor;
+//            curwin->w_cursor = oap->start;
+//            coladvance(oap->start_vcol);
+//            oap->start = curwin->w_cursor;
+          }
+          if (!G.redo_VIsual_busy && !gui_yank)
+          {
+              /*
+               * Prepare to reselect and redo Visual: this is based on the
+               * size of the Visual text
+               */
+              resel_VIsual_mode = G.VIsual_mode;
+              if (G.curwin.getWCurswant() == MAXCOL)
+                  resel_VIsual_col = MAXCOL;
+              else if (G.VIsual_mode == Util.ctrl('V'))
+                  resel_VIsual_col = oap.end_vcol - oap.start_vcol + 1;
+              else if (oap.line_count > 1)
+                  resel_VIsual_col = oap.end.getColumn();
+              else
+                  resel_VIsual_col = oap.end.getColumn() - oap.start.getColumn() + 1;
+              resel_VIsual_line_count = oap.line_count;
+          }
+
+          /* can't redo yank (unless 'y' is in 'cpoptions') and ":" */
+          if ((Util.vim_strchr(G.p_cpo, CPO_YANK) != null || oap.op_type != OP_YANK)
+                  && oap.op_type != OP_COLON)
+          {
+              prep_redo(oap.regname, 0, NUL, 'v', get_op_char(oap.op_type),
+                      get_extra_op_char(oap.op_type));
+              redo_VIsual_mode = resel_VIsual_mode;
+              redo_VIsual_col = resel_VIsual_col;
+              redo_VIsual_line_count = resel_VIsual_line_count;
+              redo_VIsual_count = cap.count0;
+          }
+
+/*
+ * oap->inclusive defaults to TRUE.
+ * If oap->end is on a NUL (empty line) oap->inclusive becomes
+ * FALSE.  This makes "d}P" and "v}dP" work the same.
+ */
+          oap.inclusive = true;
+          if (G.VIsual_mode == 'V')
+              oap.motion_type = MLINE;
+          else {
+              oap.motion_type = MCHAR;
+              if (G.VIsual_mode != Util.ctrl('V') && oap.end.getColumn() > MAXCOL) {
+                  oap.inclusive = false;
+/* Try to include the newline, unless it's an operator
+ * that works on lines only */
+/*                  if (G.p_sel != 'o' && !op_on_lines(oap.op_type)
+                  && oap.end.getLine() < G.curbuf.b_ml.ml_line_count) {
+
+                      ++oap->end.lnum;
+                      oap->end.col = 0;
+                      ++oap->line_count;
+
+                  }
+ */
+              }
+          }
+	  G.redo_VIsual_busy = false;
+            /*
+            * Switch Visual off now, so screen updating does
+            * not show inverted text when the screen is redrawn.
+            * With OP_YANK and sometimes with OP_COLON and OP_FILTER there is
+            * no screen redraw, so it is done here to remove the inverted
+            * part.
+            */
+          if (!gui_yank) {
+              G.VIsual_active = false;
+              G.curwin.updateVisualState();
+              if (G.p_smd.value)
+                  G.clear_cmdline = true;   /* unshow visual mode later */
+              if (oap.op_type == OP_YANK || oap.op_type == OP_COLON ||
+                      oap.op_type == OP_FILTER)
+                  update_curbuf(NOT_VALID);
+            }
+      }
+
 
       G.curwin.setWSetCurswant(true);
 
@@ -2243,15 +2443,12 @@ middle_code:
     cap.oap.inclusive = false;
     past_line = (G.VIsual_active && G.p_sel.charAt(0) != 'o');
     for (n = cap.count1; n > 0; --n) {
+      FPOS fpos = G.curwin.getWCursor();
+      Segment seg = G.curwin.getLineSegment(fpos.getLine());
       if ((!past_line && Edit.oneright() == FAIL)
-	    // NEEDSWORK: pastline only true if select
-	    // || (past_line && *ml_get_cursor() == '\n')
+	    || (past_line && seg.array[fpos.getColumn()+seg.offset] == '\n')
 	  )
       {
-	// NEEDSWORK:	might want to grab info about the line  up front,
-	// 		maybe do that if oneright fails.
-	//	Segment seg = G.curwin.getLineSegment(lnum);
-	FPOS fpos = G.curwin.getWCursor();
 
 	//
 	//	  <Space> wraps to next line if 'whichwrap' bit 1 set.
@@ -2291,8 +2488,8 @@ middle_code:
 	break;
       } else if (past_line) {
 	// NEEDSWORK: (maybe no work) pastline always false since no select
-	// curwin.w_set_curswant = TRUE;
-	// ++curwin.w_cursor.col;
+	 G.curwin.setWSetCurswant(true);
+         G.curwin.setCaretPosition(fpos.getOffset()+1);
       }
     }
   }
@@ -2749,6 +2946,8 @@ middle_code:
   static private void nv_g_cmd(CMDARG cap, CharBuf searchbuff)
   throws NotSupportedException {
     do_xop("nv_g_cmd");
+    int i;
+    FPOS tpos;
     switch (cap.nchar) {
       case ',':
 	nv_pcmark(JLOP.NEXT_CHANGE, cap);
@@ -2758,6 +2957,68 @@ middle_code:
         break;
       case 'g':
         nv_goto(cap, 1);
+        break;
+        /*
+         * "gv": Reselect the previous Visual area.  If Visual already active,
+         * exchange previous and current Visual area.
+         */
+      case 'v':
+        if (checkclearop(oap))
+            break;
+        if (G.curbuf.b_visual_start.getLine() == 0
+                //|| G.curbuf.b_visual_start.getLine() > G.curbuf.b_ml.ml_line_count
+                || G.curbuf.b_visual_end.getLine() == 0)
+            Util.beep_flush();
+        else
+        {
+            /* set w_cursor to the start of the Visual area, tpos to the end */
+            if (G.VIsual_active)
+            {
+                i = G.VIsual_mode;
+                G.VIsual_mode = G.curbuf.b_visual_mode;
+                G.curbuf.b_visual_mode = i;
+                tpos = G.curbuf.b_visual_end;
+                G.curbuf.b_visual_end = (FPOS)G.curwin.getWCursor().copy();
+                G.curwin.setCaretPosition(G.curbuf.b_visual_start.getOffset());
+                G.curbuf.b_visual_start = G.VIsual;
+            }
+            else
+            {
+                G.VIsual_mode = G.curbuf.b_visual_mode;
+                tpos = G.curbuf.b_visual_end;
+                G.curwin.setCaretPosition(G.curbuf.b_visual_start.getOffset());
+            }
+
+            G.VIsual_active = true;
+            G.VIsual_reselect = true;
+
+            /* Set Visual to the start and w_cursor to the end of the Visual
+             * area.  Make sure they are on an existing character. */
+            Misc.adjust_cursor();
+            G.VIsual = (FPOS) G.curwin.getWCursor().copy();
+            G.curwin.setCaretPosition(tpos.getOffset());
+            Misc.adjust_cursor();
+            //update_topline();
+            /*
+             * When called from normal "g" command: start Select mode when
+             * 'selectmode' contains "cmd".  When called for K_SELECT, always
+             * start Select mode
+             */
+            //if (searchp == null)
+            //    G.VIsual_select = true;
+            //else
+            //    may_start_select('c');
+            //#ifdef USE_MOUSE
+            //setmouse();
+            //#endif
+            //#ifdef USE_CLIPBOARD
+            ///* Make sure the clipboard gets updated.  Needed because start and
+            //* end are still the same, and the selection needs to be owned */
+            //clipboard.vmode = NUL;
+            //#endif
+            update_curbuf(NOT_VALID);
+            //showmode();
+        }
         break;
       default:
         notSup("g" + new String(new char[] {(char)cap.nchar}));
@@ -2951,17 +3212,13 @@ middle_code:
    * In exclusive Visual mode, may include the last character.
    */
   static private void adjust_for_sel(CMDARG cap) {
-    if (G.VIsual_active) {
-      throw new RuntimeException("visual mode");
-    }
-    /* ***********************************
-       if (VIsual_active && cap->oap->inclusive && *p_sel == 'e'
-       && gchar_cursor() != '\n')
+      if (G.VIsual_active && cap.oap.inclusive && G.p_sel.charAt(0) == 'e'
+              && Misc.gchar_cursor() != '\n')
        {
-       ++curwin->w_cursor.col;
-       cap->oap->inclusive = FALSE;
+//TODO: FIXME_VISUAL          
+//          ++curwin->w_cursor.col;
+          cap.oap.inclusive = false;
        }
-     *************************************************************/
   }
 
   /**
@@ -3000,7 +3257,8 @@ middle_code:
     else if ((cap.cmdchar == 'a' || cap.cmdchar == 'i')
 	     && (cap.oap.op_type != OP_NOP || G.VIsual_active))
     {
-      clearopbeep(cap.oap);
+        nv_object(cap);
+      //clearopbeep(cap.oap);
     } else if (!checkclearopq(cap.oap) && u_save_cursor() == OK) {
       Misc.beginInsertUndo();
       nv_edit_dispatch(cap);
@@ -3153,7 +3411,40 @@ middle_code:
   static boolean buflist_getfile(int n, int lnum, int options, boolean forceit) {
     do_op("buflist_getfile");return true;
   }
-  static void end_visual_mode() {do_op("end_visual_mode");}
+  static void end_visual_mode() {
+      do_op("end_visual_mode");
+// #ifdef USE_CLIPBOARD
+    /*
+     * If we are using the clipboard, then remember what was selected in case
+     * we need to paste it somewhere while we still own the selection.
+     * Only do this when the clipboard is already owned.  Don't want to grab
+     * the selection when hitting ESC.
+     */
+//    if (clipboard.available && clipboard.owned)
+//        clip_auto_select();
+//#endif
+
+    G.VIsual_active = false;
+//#ifdef USE_MOUSE
+//    setmouse();
+//    mouse_dragging = 0;
+//#endif
+
+    /* Save the current VIsual area for '< and '> marks, and "gv" */
+    G.curbuf.b_visual_start = G.VIsual;
+    G.curbuf.b_visual_end = (FPOS)G.curwin.getWCursor().copy();
+    G.curbuf.b_visual_mode = G.VIsual_mode;
+
+    if (G.p_smd.value)
+        G.clear_cmdline = true;/* unshow visual mode later */
+    G.curwin.updateVisualState();
+
+    /* Don't leave the cursor past the end of the line */
+//    if (G.curwin.getWCursor().getColumn() > 0 && *ml_get_cursor() == NUL)
+//        --curwin->w_cursor.col;
+ 
+  
+  }
   static void update_curbuf(int type) {do_op("update_curbuf");}
   static void redraw_curbuf_later(int type) {do_op("redraw_curbuf_later");}
   static void do_tag(String tag, int type, int count,
@@ -3252,20 +3543,179 @@ middle_code:
   // private  boolean nv_Replace (CMDARG cap) { do_op("nv_Replace");return true; }
   static private  int	nv_VReplace (CMDARG cap) { do_op("nv_VReplace");return 0; }
   static private  int	nv_vreplace (CMDARG cap) { do_op("nv_vreplace");return 0; }
-  static private  void	v_swap_corners (CMDARG cap) {do_op("v_swap_corners");}
+  static private  void	v_swap_corners (CMDARG cap) {
+    do_op("v_swap_corners");
+    FPOS old_cursor;
+    int /*colnr_t*/ left, right;
+
+    if ((cap.cmdchar == 'O') && G.VIsual_mode == Util.ctrl('V'))
+    {
+//       old_cursor = (FPOS)G.curwin.getWCursor().copy();
+//       //getvcols(&old_cursor, &VIsual, &left, &right);
+//       curwin.w_cursor.lnum = VIsual.lnum;
+//       coladvance(left);
+//       G.VIsual = G.curwin.w_cursor;
+//       G.curwin.w_cursor.lnum = old_cursor.lnum;
+//       coladvance(right);
+//       G.curwin.w_curswant = right;
+//       if (G.curwin.w_cursor.col == old_cursor.col)
+//       {
+//           G.curwin->w_cursor.lnum = VIsual.lnum;
+//           coladvance(right);
+//           G.VIsual = G.curwin.w_cursor;
+//           curwin->w_cursor.lnum = old_cursor.lnum;
+//           coladvance(left);
+//           curwin->w_curswant = left;
+//       }
+    }
+    if (cap.cmdchar != 'O' || G.VIsual_mode != Util.ctrl('V'))
+    {
+        old_cursor = (FPOS)G.curwin.getWCursor().copy();
+        G.curwin.setCaretPosition(G.VIsual.getOffset());
+        G.VIsual = old_cursor;
+        G.curwin.updateVisualState();
+    }
+  }
   // static private  boolean nv_replace (CMDARG cap) { do_op("nv_replace");return true; }
   // static private  void	n_swapchar (CMDARG cap) {do_op("n_swapchar");}
   // private  void	nv_cursormark (CMDARG cap, boolean flag, ViFPOS pos) {do_op("nv_cursormark");}
-  static private  void	v_visop (CMDARG cap) {do_op("v_visop");}
+  static private  void	v_visop (CMDARG cap) {
+      do_op("v_visop");
+      String trans = "YyDdCcxdXdAAIIrr";
+
+    /* Uppercase means linewise, except in block mode, then "D" deletes till
+     * the end of the line, and "C" replaces til EOL */
+    if (Character.isUpperCase(cap.cmdchar))
+    {
+       if (G.VIsual_mode != Util.ctrl('V'))
+           G.VIsual_mode = 'V';
+       else if (cap.cmdchar == 'C' || cap.cmdchar == 'D')
+           G.curwin.setWCurswant(MAXCOL);
+    }
+      System.out.println("Transchar: "+ ((char)cap.cmdchar) +" -->'"+Util.vim_strchr(trans, cap.cmdchar)+"'");
+    cap.cmdchar = Util.vim_strchr(trans, cap.cmdchar).charAt(1);
+    nv_operator(cap);
+  }
   // private  void	nv_optrans (CMDARG cap) {do_op("nv_optrans");}
   // private  void	nv_gomark (CMDARG cap, boolean flag) {do_op("nv_gomark");}
   // private  void	nv_pcmark (CMDARG cap) {do_op("nv_pcmark");}
   // private  void	nv_regname (CMDARG cap, MutableInt opnump) {do_op("nv_regname");}
-  static private  void	nv_visual (CMDARG cap, boolean selectmode) {do_op("nv_visual");}
-  static private  void	n_start_visual_mode (int c) {do_op("n_start_visual_mode");}
+  static private  void	nv_visual(CMDARG cap, boolean selectmode) {
+      do_op("nv_visual");
+      if (G.VIsual_active) {/* change Visual mode */
+          if (G.VIsual_mode == cap.cmdchar) {    /* stop visual mode */
+              end_visual_mode();
+          } else {/* toggle char/block mode */
+              /*or char/line mode */
+              G.VIsual_mode = cap.cmdchar;
+              Misc.showmode();
+              /* update the screen cursor position */
+              G.curwin.updateVisualState();
+              //G.curwin.setWCurswant(G.curwin.getCaretPosition());
+          }
+          update_curbuf(NOT_VALID);/* update the inversion */
+      } else { /* start Visual mode */
+          if (cap.count0 > 0) { /*use previously selected part */
+              if (resel_VIsual_mode == NUL)   /* there is none */
+              {
+                  Util.beep_flush();
+                  return;
+              }
+              G.VIsual = (FPOS)G.curwin.getWCursor().copy();
+              G.VIsual_active = true;
+              G.VIsual_reselect = true;
+              if (!selectmode)
+              /* start Select mode when 'selectmode' contains "cmd" */
+                  may_start_select('c');
+              if (G.p_smd.value)
+                  redraw_cmdline = true;  /* show visual mode later */
+              /*
+               * For V and ^V, we multiply the number of lines even if there
+               * was only one -- webb
+               */
+              if (resel_VIsual_mode != 'v' || resel_VIsual_line_count > 1)
+              {
+                  G.curwin.setCaretPosition(G.curwin.getWCursor().getLine() + 
+                      resel_VIsual_line_count * cap.count0 - 1, G.curwin.getWCursor().getColumn());
+                  //if (G.curwin.getWC.lnum > curbuf->b_ml.ml_line_count)
+                  //    curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
+              }
+              G.VIsual_mode = resel_VIsual_mode;
+              if (G.VIsual_mode == 'v')
+              {
+                  if (resel_VIsual_line_count <= 1)
+                      G.curwin.setCaretPosition(G.curwin.getWCursor().getLine(),
+                              G.curwin.getWCursor().getColumn() + resel_VIsual_col * cap.count0 - 1);
+                  else
+                      G.curwin.setCaretPosition(G.curwin.getWCursor().getLine(),
+                              resel_VIsual_col);
+              }
+              if (resel_VIsual_col == MAXCOL)
+              {
+                  G.curwin.setWCurswant(MAXCOL);
+                  Misc.coladvance(MAXCOL);
+              }
+              else if (G.VIsual_mode == Util.ctrl('V'))
+              {
+                  //validate_virtcol();
+                  //G.curwin.setWCurswant(G.curwin.w_virtcol + resel_VIsual_col * cap.count0 - 1);
+                  //coladvance(G.curwin.getWCurswant());
+              }
+              else
+                  G.curwin.setWSetCurswant(true);
+              update_curbuf(NOT_VALID); /* show the inversion */
+          } else {
+              if (!selectmode)
+/* start Select mode when 'selectmode' contains "cmd" */
+                  may_start_select('c');
+              n_start_visual_mode(cap.cmdchar);
+              /* update the screen cursor position */
+              G.curwin.updateVisualState();
+          }
+      }
+  }
+
+  /*
+  * Start Select mode, if "c" is in 'selectmode' and not in a mapping or menu.
+  */
+  static void may_start_select(int c) {
+      G.VIsual_select = (GetChar.stuff_empty() && typebuf_typed()
+        && (Util.vim_strchr(G.p_slm.getString(), c) != null));
+  }
+
+  static private  void	n_start_visual_mode(int c) {
+      do_op("n_start_visual_mode");
+      G.VIsual = (FPOS) G.curwin.getWCursor().copy();
+      G.VIsual_mode = c;
+      G.VIsual_active = true;
+      G.VIsual_reselect = true;
+      if (G.p_smd.value)
+          redraw_cmdline = true; /* show visual mode later */
+//#ifdef USE_CLIPBOARD
+    /* Make sure the clipboard gets updated.  Needed because start and
+     * end may still be the same, and the selection needs to be owned */
+//    clipboard.vmode = NUL;
+//#endif
+      //update_screenline();/* start the inversion */
+  }
   //  static private  boolean nv_g_cmd (CMDARG cap, CharBuf searchp) { do_op("nv_g_cmd");return true; }
   // private  boolean n_opencmd (CMDARG cap) { do_op("n_opencmd");return true; }
-  static private  void	nv_Undo (CMDARG cap) {do_op("nv_Undo");}
+  static private  void	nv_Undo (CMDARG cap) throws NotSupportedException {
+      do_op("nv_Undo");
+         /* In Visual mode and typing "gUU" triggers an operator */
+    if (G.VIsual_active || cap.oap.op_type == OP_UPPER)
+    {
+/* translate "gUU" to "gUgU" */
+          cap.cmdchar = 'g';
+          cap.nchar = 'U';
+          nv_operator(cap);
+    } else if (!checkclearopq(cap.oap)) {
+          //u_undoline();
+          notSup("nv_Undo");
+          G.curwin.setWSetCurswant(true);
+    }
+
+  }
   // private  void	nv_operator (CMDARG cap) {do_op("nv_operator");}
   // private  void	nv_lineop (CMDARG cap) {do_op("nv_lineop");}
   // static private  void	nv_pipe (CMDARG cap) {do_op("nv_pipe");}
@@ -3278,7 +3728,71 @@ middle_code:
   static private  void	nv_normal (CMDARG cap) {do_op("nv_normal");}
   // private  void	nv_esc (CMDARG oap, int opnum) {do_op("nv_esc");}
   // private  boolean nv_edit (CMDARG cap) { do_op("nv_edit");return true; }
-  static private  void	nv_object (CMDARG cap) {do_op("nv_object");}
+  static private  void	nv_object (CMDARG cap) {
+      do_op("nv_object");
+      int flag;
+      boolean include;
+      //char_u *mps_save;
+      String mps_save;
+
+      if (cap.cmdchar == 'i')
+          include = false;    /* "ix" = inner object: exclude white space */
+      else
+          include = true;    /* "ax" = an object: include white space */
+
+      /* Make sure (), [], {} and <> are in 'matchpairs' */
+      mps_save = G.curbuf.b_p_mps;
+      G.curbuf.b_p_mps = "(:),{:},[:],<:>";
+
+      switch (cap.nchar)
+      {
+//         case 'w': /* "aw" = a word */
+//             flag = current_word(cap.oap, cap.count1, include, false);
+//             break;
+//         case 'W': /* "aW" = a WORD */
+//             flag = current_word(cap.oap, cap.count1, include, true);
+//             break;
+//         case 'b': /* "ab" = a braces block */
+//         case '(':
+//         case ')':
+//             flag = current_block(cap.oap, cap.count1, include, '(', ')');
+//             break;
+//         case 'B': /* "aB" = a Brackets block */
+//         case '{':
+//         case '}':
+//             flag = current_block(cap.oap, cap.count1, include, '{', '}');
+//             break;
+//         case '[': /* "a[" = a [] block */
+//         case ']':
+//             flag = current_block(cap.oap, cap.count1, include, '[', ']');
+//             break;
+//         case '<': /* "a<" = a <> block */
+//         case '>':
+//             flag = current_block(cap.oap, cap.count1, include, '<', '>');
+//             break;
+         case 'p': /* "ap" = a paragraph */
+             flag = Search.current_par(cap.oap, cap.count1, include, 'p');
+             break;
+//         case 's': /* "as" = a sentence */
+//             flag = current_sent(cap.oap, cap.count1, include);
+//             break;
+//             //#if 0­  /* TODO */
+//             //­       case 'S': /* "aS" = a section */
+//             //­       case 'f': /* "af" = a filename */
+//             //­       case 'u': /* "au" = a URL */
+//             //#endif
+          default:
+              flag = FAIL;
+              break;
+      }
+
+      G.curbuf.b_p_mps = mps_save;
+      if (flag == FAIL)
+          clearopbeep(cap.oap);
+      //adjust_cursor_col();
+      G.curwin.setWSetCurswant(true);
+
+  }
   // static private  void	nv_q (CMDARG cap) {do_op("nv_q");}
   // static private  void	nv_at (CMDARG cap) {do_op("nv_at");}
   // static private  void	nv_halfpage (CMDARG cap) {do_op_clear("nv_halfpage", cap.oap);}

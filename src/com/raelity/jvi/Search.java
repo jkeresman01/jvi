@@ -1570,4 +1570,189 @@ finished:
     return NULL;
     *********************************************************************/
   }
+
+    /* include: TRUE == include white space */
+    /* type:  'p' for paragraph, 'S' for section */
+  static int current_par(OPARG oap, int count, boolean include, int type) {
+    int /*linenr_t*/ start_lnum;
+    int /*linenr_t*/ end_lnum;
+    int white_in_front;
+    int dir;
+    int start_is_white;
+    int prev_start_is_white;
+    int retval = OK;
+    boolean do_white = false;
+    int t;
+    int i;
+
+    if (type == 'S')	    /* not implemented yet */
+        return FAIL;
+
+    start_lnum = G.curwin.getWCursor().getLine();
+
+    /*
+     * When visual area is more than one line: extend it.
+     */
+    if (G.VIsual_active && start_lnum != G.VIsual.getLine())
+    {
+extend:
+        if (start_lnum < G.VIsual.getLine())
+            dir = BACKWARD;
+        else
+            dir = FORWARD;
+        for (i = count; --i >= 0; )
+        {
+            if (start_lnum ==
+                    (dir == BACKWARD ? 1 : G.curwin.getLineCount()/*G.curbuf.b_ml.ml_line_count*/))
+            {
+                retval = FAIL;
+                break;
+            }
+
+            prev_start_is_white = -1;
+            for (t = 0; t < 2; ++t)
+            {
+                start_lnum += dir;
+                start_is_white = linewhite(start_lnum) ? 1 : 0;
+                if (prev_start_is_white == start_is_white)
+                {
+                    start_lnum -= dir;
+                    break;
+                }
+                for (;;)
+                {
+                    if (start_lnum == (dir == BACKWARD
+                                ? 1 : G.curwin.getLineCount() /*G.curbuf.b_ml.ml_line_count*/))
+                        break;
+                    if (start_is_white != (linewhite(start_lnum + dir) ? 1 : 0)
+                            || (start_is_white <= 0
+                                && startPS(start_lnum + (dir > 0
+                                        ? 1 : 0), 0, false)))
+                        break;
+                    start_lnum += dir;
+                }
+                if (!include)
+                    break;
+                if (start_lnum == (dir == BACKWARD
+                            ? 1 : G.curwin.getLineCount() /*G.curbuf.b_ml.ml_line_count*/))
+                    break;
+                prev_start_is_white = start_is_white;
+            }
+        }
+        G.curwin.setCaretPosition(start_lnum, 0);
+        return retval;
+    }
+
+    /*
+     * First move back to the start_lnum of the paragraph or white lines
+     */
+    white_in_front = linewhite(start_lnum) ? 1 : 0;
+    while (start_lnum > 1)
+    {
+        if (white_in_front > 0)	    /* stop at first white line */
+        {
+            if (!linewhite(start_lnum - 1))
+                break;
+        }
+        else		/* stop at first non-white line of start of paragraph */
+        {
+            if (linewhite(start_lnum - 1) || startPS(start_lnum, 0, false))
+                break;
+        }
+        --start_lnum;
+    }
+
+    /*
+     * Move past the end of any white lines.
+     */
+    end_lnum = start_lnum;
+    while (linewhite(end_lnum) && end_lnum < G.curwin.getLineCount() /*curbuf.b_ml.ml_line_count*/)
+        ++end_lnum;
+
+    --end_lnum;
+    i = count;
+    if (!include && white_in_front > 0)
+        --i;
+    while (i-- > 0)
+    {
+        if (end_lnum == G.curwin.getLineCount()/*curbuf.b_ml.ml_line_count*/)
+            return FAIL;
+
+        if (!include)
+            do_white = linewhite(end_lnum + 1);
+
+        if (include || !do_white)
+        {
+            ++end_lnum;
+            /*
+             * skip to end of paragraph
+             */
+            while (end_lnum < G.curwin.getLineCount()//curbuf.b_ml.ml_line_count
+                    && !linewhite(end_lnum + 1)
+                    && !startPS(end_lnum + 1, 0, false))
+                ++end_lnum;
+        }
+
+        if (i == 0 && white_in_front > 0)
+            break;
+
+        /*
+         * skip to end of white lines after paragraph
+         */
+        if (include || do_white)
+            while (end_lnum < G.curwin.getLineCount()//curbuf.b_ml.ml_line_count
+                    && linewhite(end_lnum + 1))
+                ++end_lnum;
+    }
+
+    /*
+     * If there are no empty lines at the end, try to find some empty lines at
+     * the start (unless that has been done already).
+     */
+    if (white_in_front <= 0 && !linewhite(end_lnum) && include)
+        while (start_lnum > 1 && linewhite(start_lnum - 1))
+            --start_lnum;
+
+    if (G.VIsual_active)
+    {
+        /* Problem: when doing "Vipipip" nothing happens in a single white
+         * line, we get stuck there.  Trap this here. */
+//        if (VIsual_mode == 'V' && start_lnum == curwin.w_cursor.lnum)
+//            goto extend;
+        G.VIsual.setPosition(start_lnum, 0); //G.VIsual.lnum = start_lnum;
+        G.VIsual_mode = 'V';
+        Normal.update_curbuf(NOT_VALID);	/* update the inversion */
+        Misc.showmode();
+    }
+    else
+    {
+        oap.start.setPosition(start_lnum, 0); //was: oap.start.lnum = start_lnum;
+        oap.motion_type = MLINE;
+    }
+    G.curwin.setCaretPosition(end_lnum, 0);
+
+    return OK;
+}
+    static boolean linewhite(int /*linenr_t*/ lnum) {
+        String p = Misc.skipwhite(Util.ml_get(lnum));
+        return (p == null);
+    }
+/*
+ * startPS: return TRUE if line 'lnum' is the start of a section or paragraph.
+ * If 'para' is '{' or '}' only check for sections.
+ * If 'both' is TRUE also stop at '}'
+ */
+    static boolean startPS(int /*linenr_t*/lnum, int para, boolean both) {
+    String string = Util.ml_get(lnum);
+    if (string == null) { // '\f' --> what is this???
+        return false;
+    }
+    char s = string.charAt(0);
+    if (s == para || s == '\f' || (both && s == '}'))
+    return true;
+//    if (s == '.' && (inmacro(p_sections, s + 1) ||
+//            (!para && inmacro(p_para, s + 1))))
+//        return true;
+    return false;
+}
 }

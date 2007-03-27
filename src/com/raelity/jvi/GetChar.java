@@ -452,15 +452,15 @@ public class GetChar implements Constants, KeyDefs {
       c = read_redo(false, old_redo);
     }
 
-    /* *******************************************************
+    /* ********************************************************/
     if (c == 'v') {   // redo Visual	// VISUAL
-      VIsual = curwin.w_cursor;
-      VIsual_active = TRUE;
-      VIsual_reselect = TRUE;
-      redo_VIsual_busy = TRUE;
-      c = read_redo(FALSE, old_redo);
+      G.VIsual = (FPOS) G.curwin.getWCursor().copy();
+      G.VIsual_active = true;
+      G.VIsual_reselect = true;
+      G.redo_VIsual_busy = true;
+      c = read_redo(false, old_redo);
     }
-    *******************************************************/
+    /*******************************************************/
 
     // try to enter the count (in place of a previous count)
     if (count != 0) {

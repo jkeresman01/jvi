@@ -369,6 +369,20 @@ public class Options {
                                                     opt.getString(), val));
               }
             });
+    G.p_slm = createStringOption("selectmode", "",
+            new StringOption.Validator() {
+              public void validate(String val) throws PropertyVetoException {
+                  if ("mouse".equals(val)
+                      || "key".equals(val)
+                      || "cmd".equals(val))
+                  return;
+                throw new PropertyVetoException(
+                    "Value must be one of 'mouse', 'key' or 'cmd'."
+                                + " Not '" + val + "'.",
+                            new PropertyChangeEvent(opt, opt.getName(),
+                                                    opt.getString(), val));
+              }
+            });
     setupOptionDesc(miscList, selection, "'selection' 'sel'",
             "This option defines the behavior of the selection."
             + " It is only used in Visual and Select mode."

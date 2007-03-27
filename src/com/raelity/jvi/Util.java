@@ -56,13 +56,18 @@ public class Util {
     Toolkit.getDefaultToolkit().beep();
   }
 
-  /** ptr to found char */
+  /** 
+   * Returns the substring of c in s or null if c not part of s.
+   * @param s the string to search in
+   * @param c the character to search for
+   * @return the substring of c in s or null if c not part of s.
+   */
   public static String vim_strchr(String s, int c) {
     int index = s.indexOf(c);
     if(index < 0) {
       return null;
     }
-    return s.substring(index, index);
+    return s.substring(index);
   }
 
   public static final boolean isalnum(int regname) {

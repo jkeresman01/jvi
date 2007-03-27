@@ -67,7 +67,7 @@ public class TextView implements ViTextView {
 
   protected int expectedCaretPosition = -1;
 
-  public TextView(JEditorPane editorPane) {
+  public TextView(final JEditorPane editorPane) {
     this.editorPane = editorPane;
     cache = createTextViewCache();
     statusDisplay = createStatusDisplay();
@@ -367,7 +367,38 @@ public class TextView implements ViTextView {
 
   public void setCaretPosition(int offset) {
     expectedCaretPosition = offset;
+    if (G.VIsual_active) { // if in selection mode
+        if (G.VIsual_mode == 'V') { // line selection mode
+            // make sure the entire lines are selected
+            if (offset < G.VIsual.getOffset()) {
+                int start = getLineEndOffsetFromOffset(G.VIsual.getOffset());
+                if (editorPane.getSelectionStart() != start) {
+                    editorPane.setSelectionStart(start);
+                }
+                editorPane.moveCaretPosition(getLineStartOffsetFromOffset(offset));
+            } else {
+                int start = getLineStartOffsetFromOffset(G.VIsual.getOffset());
+                if (editorPane.getSelectionStart() != start) {
+                    editorPane.setSelectionStart(start);
+                }
+                editorPane.moveCaretPosition(getLineEndOffsetFromOffset(offset)-1); // end of a line
+            }
+
+        } else {
+            int start;
+            if (offset < G.VIsual.getOffset()) {
+                start = G.VIsual.getOffset()+1;
+            } else {
+                start = G.VIsual.getOffset();
+            }
+            if (editorPane.getSelectionStart() != start) {
+                editorPane.setSelectionStart(start);
+            }
+            editorPane.moveCaretPosition(offset);
+        }
+    } else {
     editorPane.setCaretPosition(offset);
+  }
   }
 
   public void setCaretPosition(int lnum, int col) {
@@ -657,5 +688,18 @@ public class TextView implements ViTextView {
     }
     Element root = getDoc().getDefaultRootElement();
     return root.getElement(root.getElementIndex(offset));
+  }
+ 
+  /**
+   * Update the selection highlight.
+   */
+  public void updateVisualState() {
+      if (G.VIsual_active) {
+        if (G.VIsual_mode == 'V') { // line selection mode
+          setCaretPosition(getCaretPosition());
+        }
+      } else if (editorPane.getSelectedText() != null && editorPane.getSelectedText().length() > 0) {
+          setCaretPosition(getCaretPosition());
+      }
   }
 }

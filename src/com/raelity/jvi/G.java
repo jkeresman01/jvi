@@ -126,6 +126,7 @@ public class G {
   static String p_km = "";      // keymodel
   
   public static StringOption p_sel; // 'selection'
+  public static StringOption p_slm; // 'selectionmode'
   
   static String p_fp;           // formatprg
   static String p_cpo = "aABceFs"; // cpoptions
@@ -152,4 +153,7 @@ public class G {
 				// whether to restart the selection after a
 				// Select mode mapping or menu
   public static int VIsual_mode; // type of Visual mode
+  
+  public static boolean redo_VIsual_busy = false;
+      /* The visual area is remembered for redo */
 }
