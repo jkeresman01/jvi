@@ -1717,6 +1717,7 @@ extend:
     {
         /* Problem: when doing "Vipipip" nothing happens in a single white
          * line, we get stuck there.  Trap this here. */
+//TODO: FIXME_VISUAL goto extend
 //        if (VIsual_mode == 'V' && start_lnum == curwin.w_cursor.lnum)
 //            goto extend;
         G.VIsual.setPosition(start_lnum, 0); //G.VIsual.lnum = start_lnum;
@@ -1734,25 +1735,25 @@ extend:
     return OK;
 }
     static boolean linewhite(int /*linenr_t*/ lnum) {
-        String p = Misc.skipwhite(Util.ml_get(lnum));
-        return (p == null);
+        Segment seg = Util.ml_get(lnum);
+        int idx = Misc.skipwhite(seg);
+        return seg.array[seg.offset + idx] == '\n';
     }
 /*
  * startPS: return TRUE if line 'lnum' is the start of a section or paragraph.
  * If 'para' is '{' or '}' only check for sections.
  * If 'both' is TRUE also stop at '}'
  */
-    static boolean startPS(int /*linenr_t*/lnum, int para, boolean both) {
-    String string = Util.ml_get(lnum);
-    if (string == null) { // '\f' --> what is this???
-        return false;
-    }
-    char s = string.charAt(0);
+  static boolean startPS(int /*linenr_t*/lnum, int para, boolean both) {
+    Segment seg = Util.ml_get(lnum);
+    // if seg.count == 1, then only a \n, ie empty line
+    char s = seg.count > 1 ? seg.array[seg.offset] : 0;
+    // '\f' --> what is this???
     if (s == para || s == '\f' || (both && s == '}'))
-    return true;
+      return true;
 //    if (s == '.' && (inmacro(p_sections, s + 1) ||
 //            (!para && inmacro(p_para, s + 1))))
 //        return true;
     return false;
-}
+  }
 }

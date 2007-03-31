@@ -369,6 +369,12 @@ public class Options {
                                                     opt.getString(), val));
               }
             });
+    setupOptionDesc(miscList, selection, "'selection' 'sel'",
+            "This option defines the behavior of the selection."
+            + " It is only used in Visual and Select mode."
+            + "Possible values: 'old', 'inclusive', 'exclusive'");
+    setExpertHidden(selection, true, false);
+    
     G.p_slm = createStringOption("selectmode", "",
             new StringOption.Validator() {
               public void validate(String val) throws PropertyVetoException {
@@ -383,11 +389,6 @@ public class Options {
                                                     opt.getString(), val));
               }
             });
-    setupOptionDesc(miscList, selection, "'selection' 'sel'",
-            "This option defines the behavior of the selection."
-            + " It is only used in Visual and Select mode."
-            + "Possible values: 'old', 'inclusive', 'exclusive'");
-    setExpertHidden(selection, true, false);
 
     /////////////////////////////////////////////////////////////////////
     //

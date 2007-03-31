@@ -1901,7 +1901,7 @@ public class Misc implements ClipboardOwner {
       int offset01 = offset00 - 1; // points to the '\n' of current line
 
       Segment seg = G.curwin.getLineSegment(nextline);
-      int offset02 = offset00 + skipwhite(seg, 0);
+      int offset02 = offset00 + skipwhite(seg);
       int nextc = Util.getCharAt(offset02);
 
       if(insert_space) {
@@ -2283,7 +2283,7 @@ public class Misc implements ClipboardOwner {
    * cleared only if a mode is shown.
    * @return the length of the message (0 if no message).
    */
-  public static int showmode()       {
+  static int showmode()       {
     String mode = Edit.VI_MODE_COMMAND;
     int length = 0;
     boolean do_mode = (true/*G.p_smd*/
@@ -2472,14 +2472,16 @@ public class Misc implements ClipboardOwner {
   }
 
   /**
-   * Skip over ' ' and '\t', return index next non-white.
+   * Skip over ' ' and '\t', return index, relative to
+   * seg.offset, of next non-white.
    */
+  static int skipwhite(Segment seg) {
+      return skipwhite(seg, 0);
+  }
   static int skipwhite(Segment seg, int idx) {
     for(; idx < seg.count; idx++) {
-      char c = seg.array[seg.offset + idx];
-      if(c != ' ' && c != '\t') {
-	return idx;
-      }
+      if(!vim_iswhite(seg.array[seg.offset + idx]))
+        return idx;
     }
     /*NOTREACHED*/
     throw new RuntimeException("no newline?");
@@ -2487,6 +2489,7 @@ public class Misc implements ClipboardOwner {
 
   /**
    * Skip over ' ' and '\t', return index next non-white.
+   * This is only used for specialized parsing, not part of main vi engine.
    */
   static int skipwhite(String str, int idx) {
     for(; idx < str.length(); idx++) {
@@ -2508,19 +2511,6 @@ public class Misc implements ClipboardOwner {
     }
     return idx;
   }
-/*
- * skipwhite: skip over ' ' and '\t'.
- */
-static String skipwhite(String p)
-{
-    int index = 0;
-    while (index < p.length() && vim_iswhite(p.charAt(index))) /* skip to next non-white */
-        ++index;
-    if (index >= p.length()) {
-        return null;
-    }
-    return p.substring(index);
-}
 
   /**
    * Getdigits: Get a number from a string and skip over it.

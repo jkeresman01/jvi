@@ -37,7 +37,6 @@
 package com.raelity.jvi;
 
 import com.raelity.jvi.ViTextView.JLOP;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Segment;
 
 import com.raelity.jvi.swing.KeyBinding;
@@ -1295,21 +1294,24 @@ middle_code:
       if (G.redo_VIsual_busy)
       {
           oap.start = (FPOS)G.curwin.getWCursor().copy();
-          G.curwin.setCaretPosition(oap.start.getLine()+ redo_VIsual_line_count - 1, oap.start.getColumn());
+          G.curwin.setCaretPosition(oap.start.getLine()+ redo_VIsual_line_count - 1,
+                                    oap.start.getColumn());
+//TODO: FIXME_VISUAL
 //          if (G.curwin.getWCursor().getLine() > G.curbuf.b_ml.ml_line_count)
 //              G.curwin.getWCursor().getLine() = G.curbuf.b_ml.ml_line_count;
           G.VIsual_mode = redo_VIsual_mode;
           if (G.VIsual_mode == 'v')
           {
               if (redo_VIsual_line_count <= 1)
-                  G.curwin.setCaretPosition(oap.start.getLine(), oap.start.getColumn() + redo_VIsual_col - 1);
+                  G.curwin.setCaretPosition(oap.start.getLine(),
+                                            oap.start.getColumn() + redo_VIsual_col - 1);
               else
                   G.curwin.setCaretPosition(oap.start.getLine(), redo_VIsual_col);
           }
           if (redo_VIsual_col == MAXCOL)
           {
               G.curwin.setWCurswant(MAXCOL);
-//              coladvance(MAXCOL);
+              Misc.coladvance(MAXCOL);
           }
           cap.count0 = redo_VIsual_count;
           if (redo_VIsual_count != 0)
@@ -1440,11 +1442,11 @@ middle_code:
               redo_VIsual_count = cap.count0;
           }
 
-/*
- * oap->inclusive defaults to TRUE.
- * If oap->end is on a NUL (empty line) oap->inclusive becomes
- * FALSE.  This makes "d}P" and "v}dP" work the same.
- */
+          /*
+           * oap->inclusive defaults to TRUE.
+           * If oap->end is on a NUL (empty line) oap->inclusive becomes
+           * FALSE.  This makes "d}P" and "v}dP" work the same.
+           */
           oap.inclusive = true;
           if (G.VIsual_mode == 'V')
               oap.motion_type = MLINE;
@@ -1452,17 +1454,15 @@ middle_code:
               oap.motion_type = MCHAR;
               if (G.VIsual_mode != Util.ctrl('V') && oap.end.getColumn() > MAXCOL) {
                   oap.inclusive = false;
-/* Try to include the newline, unless it's an operator
- * that works on lines only */
-/*                  if (G.p_sel != 'o' && !op_on_lines(oap.op_type)
-                  && oap.end.getLine() < G.curbuf.b_ml.ml_line_count) {
-
-                      ++oap->end.lnum;
-                      oap->end.col = 0;
-                      ++oap->line_count;
-
+                  /* Try to include the newline, unless it's an operator
+                  * that works on lines only */
+                  if (G.p_sel.charAt(0) != 'o'
+                            && !op_on_lines(oap.op_type)
+                            && oap.end.getLine() < G.curwin.getLineCount())
+                  {
+                      oap.end.setPosition(oap.end.getLine()+1, 0);
+                      oap.line_count++;
                   }
- */
               }
           }
 	  G.redo_VIsual_busy = false;
@@ -2966,7 +2966,7 @@ middle_code:
         if (checkclearop(oap))
             break;
         if (G.curbuf.b_visual_start.getLine() == 0
-                //|| G.curbuf.b_visual_start.getLine() > G.curbuf.b_ml.ml_line_count
+                || G.curbuf.b_visual_start.getLine() > G.curwin.getLineCount()
                 || G.curbuf.b_visual_end.getLine() == 0)
             Util.beep_flush();
         else
@@ -3004,6 +3004,7 @@ middle_code:
              * 'selectmode' contains "cmd".  When called for K_SELECT, always
              * start Select mode
              */
+//TODO: FIXME_VISUAL SELECT MODE
             //if (searchp == null)
             //    G.VIsual_select = true;
             //else
@@ -3017,7 +3018,7 @@ middle_code:
             //clipboard.vmode = NUL;
             //#endif
             update_curbuf(NOT_VALID);
-            //showmode();
+            Misc.showmode();
         }
         break;
       default:
@@ -3440,10 +3441,8 @@ middle_code:
     G.curwin.updateVisualState();
 
     /* Don't leave the cursor past the end of the line */
-//    if (G.curwin.getWCursor().getColumn() > 0 && *ml_get_cursor() == NUL)
-//        --curwin->w_cursor.col;
- 
-  
+    if (G.curwin.getWCursor().getColumn() > 0 && Util.getChar() == '\n')
+        G.curwin.setCaretPosition(G.curwin.getCaretPosition() -1);
   }
   static void update_curbuf(int type) {do_op("update_curbuf");}
   static void redraw_curbuf_later(int type) {do_op("redraw_curbuf_later");}
@@ -3550,6 +3549,7 @@ middle_code:
 
     if ((cap.cmdchar == 'O') && G.VIsual_mode == Util.ctrl('V'))
     {
+//TODO: FIXME_VISUAL BLOCK MODE
 //       old_cursor = (FPOS)G.curwin.getWCursor().copy();
 //       //getvcols(&old_cursor, &VIsual, &left, &right);
 //       curwin.w_cursor.lnum = VIsual.lnum;
@@ -3635,17 +3635,24 @@ middle_code:
                */
               if (resel_VIsual_mode != 'v' || resel_VIsual_line_count > 1)
               {
-                  G.curwin.setCaretPosition(G.curwin.getWCursor().getLine() + 
-                      resel_VIsual_line_count * cap.count0 - 1, G.curwin.getWCursor().getColumn());
-                  //if (G.curwin.getWC.lnum > curbuf->b_ml.ml_line_count)
-                  //    curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
+                  int line = G.curwin.getWCursor().getLine()
+                                    + resel_VIsual_line_count * cap.count0 - 1;
+                  if(line > G.curwin.getLineCount())
+                      line = G.curwin.getLineCount();
+                  // Not sure about how column should be set, but at least
+                  // make sure it stays in the correct line
+                  int col = Misc.check_cursor_col(line,
+                                            G.curwin.getWCursor().getColumn());
+                  G.curwin.setCaretPosition(line, col);
               }
               G.VIsual_mode = resel_VIsual_mode;
               if (G.VIsual_mode == 'v')
               {
                   if (resel_VIsual_line_count <= 1)
+                      // NEEDSWORK: ? can column overflow here?
                       G.curwin.setCaretPosition(G.curwin.getWCursor().getLine(),
-                              G.curwin.getWCursor().getColumn() + resel_VIsual_col * cap.count0 - 1);
+                              G.curwin.getWCursor().getColumn()
+                                + resel_VIsual_col * cap.count0 - 1);
                   else
                       G.curwin.setCaretPosition(G.curwin.getWCursor().getLine(),
                               resel_VIsual_col);
@@ -3657,6 +3664,7 @@ middle_code:
               }
               else if (G.VIsual_mode == Util.ctrl('V'))
               {
+                  //TODO: FIXME_VISUAL BLOCK MODE
                   //validate_virtcol();
                   //G.curwin.setWCurswant(G.curwin.w_virtcol + resel_VIsual_col * cap.count0 - 1);
                   //coladvance(G.curwin.getWCurswant());

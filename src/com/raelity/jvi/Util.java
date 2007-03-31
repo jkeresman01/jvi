@@ -115,10 +115,9 @@ public class Util {
    * On failure an error message is given and IObuff is returned (to avoid
    * having to check for error everywhere).
    */
-  static String ml_get(int lnum) {
+  static Segment ml_get(int lnum) {
     // return ml_get_buf(curbuf, lnum, FALSE);
-    Segment seg = G.curwin.getLineSegment(lnum);
-    return new String(seg.array, seg.offset, seg.count - 1);
+    return G.curwin.getLineSegment(lnum);
   }
 
   /**
