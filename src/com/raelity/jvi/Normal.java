@@ -1338,8 +1338,10 @@ middle_code:
               unadjust_for_sel();
 
           /* Save the current VIsual area for '< and '> marks, and "gv" */
-          G.curbuf.b_visual_start = G.VIsual;
-          G.curbuf.b_visual_end = (FPOS)G.curwin.getWCursor().copy();
+          G.curwin.setMarkOffset((ViMark)G.curbuf.b_visual_start,
+                                 G.VIsual.getOffset(), false);
+          G.curwin.setMarkOffset((ViMark)G.curbuf.b_visual_end,
+                                 G.curwin.getWCursor().getOffset(), false);
           G.curbuf.b_visual_mode = G.VIsual_mode;
 
           oap.start = G.VIsual;
@@ -2947,7 +2949,7 @@ middle_code:
   throws NotSupportedException {
     do_xop("nv_g_cmd");
     int i;
-    FPOS tpos;
+    ViFPOS tpos;
     switch (cap.nchar) {
       case ',':
 	nv_pcmark(JLOP.NEXT_CHANGE, cap);
@@ -2978,9 +2980,11 @@ middle_code:
                 G.VIsual_mode = G.curbuf.b_visual_mode;
                 G.curbuf.b_visual_mode = i;
                 tpos = G.curbuf.b_visual_end;
-                G.curbuf.b_visual_end = (FPOS)G.curwin.getWCursor().copy();
+                G.curwin.setMarkOffset((ViMark)G.curbuf.b_visual_end,
+                                       G.curwin.getWCursor().getOffset(), false);
                 G.curwin.setCaretPosition(G.curbuf.b_visual_start.getOffset());
-                G.curbuf.b_visual_start = G.VIsual;
+                G.curwin.setMarkOffset((ViMark)G.curbuf.b_visual_start,
+                                       G.VIsual.getOffset(), false);
             }
             else
             {
@@ -3432,8 +3436,10 @@ middle_code:
 //#endif
 
     /* Save the current VIsual area for '< and '> marks, and "gv" */
-    G.curbuf.b_visual_start = G.VIsual;
-    G.curbuf.b_visual_end = (FPOS)G.curwin.getWCursor().copy();
+    G.curwin.setMarkOffset((ViMark)G.curbuf.b_visual_start,
+                           G.VIsual.getOffset(), false);
+    G.curwin.setMarkOffset((ViMark)G.curbuf.b_visual_end,
+                           G.curwin.getWCursor().getOffset(), false);
     G.curbuf.b_visual_mode = G.VIsual_mode;
 
     if (G.p_smd.value)

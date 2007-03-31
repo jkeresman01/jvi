@@ -47,7 +47,8 @@ class MarkOps implements Constants, Messages {
   /** This constant indicates mark is in other file. */
   final static FPOS otherFile = new FPOS();
 
-  /** Set the indicated mark to the current cursor position.
+  /** Set the indicated mark to the current cursor position;
+   * if anonymous mark characters, then handle that.
    * <b>NEEDSWORK:</b><ul>
    * <li>Only handle lower case marks.
    * </ul>
@@ -56,16 +57,19 @@ class MarkOps implements Constants, Messages {
     Normal.do_xop("setmark");
     
     {
+        // Handle anonymous mark operations here
+      
         MARKOP op = null;
         switch(c) {
             case '.': op = TOGGLE; break;
-            case '<': op = PREV; break;
-            case '>': op = NEXT; break;
+            case '<': op = PREV; break; // Nothing to do with visual mode
+            case '>': op = NEXT; break; // Nothing to do with visual mode
         }
         if(op != null) {
             if(op != TOGGLE)
                 setpcmark();
             G.curwin.anonymousMark(op, count);
+            
             return OK;
         }
     }
@@ -102,13 +106,35 @@ class MarkOps implements Constants, Messages {
    *	  NULL if there is no mark called 'c'.
    *	  -1 if mark is in other file (only if changefile is TRUE)
    */
-  static ViFPOS getmark(int c, boolean changefile) {
-    ViMark m = null;
+  static ViMark getmark(int c, boolean changefile) {
+    ViMark m = null; // usally a ViMark, except when visual line mode.
     if(c == '\'' || c == '`') {
       // make a copy since it might change soon
-      m = (ViMark)G.curwin.getPCMark().copy();
-    } else
-    if (Util.islower(c)) {
+      m = (ViMark) G.curwin.getPCMark().copy();
+    } else if(c == '<' || c == '>') {
+      ViMark startp = G.curbuf.b_visual_start;
+      ViMark endp = G.curbuf.b_visual_end;
+      // If either mark's no good, return it and let error handling report it
+      if(check_mark(startp, false) == FAIL)
+        return startp;
+      if(check_mark(endp, false) == FAIL)
+        return endp;
+      boolean isLtName = c == '<' ? true : false;
+      boolean isLtValue = startp.compareTo(endp) < 0 ? true : false;
+      m = isLtName == isLtValue ? startp : endp;
+      /*
+       * For Visual line mode, set mark at begin or end of line
+       */
+      if(G.curbuf.b_visual_mode == 'V') {
+        // the questions is whether column 0 or last column
+        int col = 0;
+        if(c == '>')
+          col = Misc.check_cursor_col(m.getLine(), MAXCOL);
+        int lineoff = G.curwin.getLineStartOffsetFromOffset(m.getOffset());
+        m = (ViMark)m.copy();
+        G.curwin.setMarkOffset(m, lineoff + col, false);
+      }
+    } else if (Util.islower(c)) {
       int i = c - 'a';
       m = getMark(G.curwin, i);
     }

@@ -60,8 +60,8 @@ public class ViManager {
   public static ViCmdEntry activeCommandEntry;
 
   private static final int majorVersion = 0;
-  private static final int minorVersion = 8;
-  private static final int microVersion = 4;
+  private static final int minorVersion = 9;
+  private static final int microVersion = 0;
   private static final String releaseTag = "x1";
   private static final String release = "jVi "
                     + ViManager.majorVersion

@@ -44,9 +44,14 @@ public class Buffer implements ViOptionBag {
     public int b_p_ts;     // tab stop
     public int b_p_sw;     // shiftw width
     public boolean b_p_et;     // expand tabs
+    
+    //
+    // Other per buffer variables
+    //
+    
     /* Save the current VIsual area for '< and '> marks, and "gv" */
-    public FPOS b_visual_start;
-    public FPOS b_visual_end;
+    public ViMark b_visual_start;
+    public ViMark b_visual_end;
     public int b_visual_mode;
     public String b_p_mps; // used in nv_object
 }
