@@ -1739,11 +1739,12 @@ extend:
         int idx = Misc.skipwhite(seg);
         return seg.array[seg.offset + idx] == '\n';
     }
-/*
- * startPS: return TRUE if line 'lnum' is the start of a section or paragraph.
- * If 'para' is '{' or '}' only check for sections.
- * If 'both' is TRUE also stop at '}'
- */
+    
+  /*
+   * startPS: return TRUE if line 'lnum' is the start of a section or paragraph.
+   * If 'para' is '{' or '}' only check for sections.
+   * If 'both' is TRUE also stop at '}'
+   */
   static boolean startPS(int /*linenr_t*/lnum, int para, boolean both) {
     Segment seg = Util.ml_get(lnum);
     // if seg.count == 1, then only a \n, ie empty line

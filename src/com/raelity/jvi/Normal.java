@@ -1101,10 +1101,8 @@ middle_code:
 	  case 'v':
 	  case 'V':
 	  case 0x1f & (int)('V'):	// Ctrl
-	    //
 	    if (!checkclearop(oap))
                 nv_visual(ca, false);
-	    //
 	    break;
 
 	    /*
@@ -1211,6 +1209,14 @@ middle_code:
     if (wasFinishOp || ca.cmdchar == 'r')
       Misc.ui_cursor_shape();		/* may show different cursor shape */
 
+    // NEEDSWORK: The following is kind of like what vim does in screen.c
+    // (not a jVi file). Maybe make redraw_cmdline global and put this stuff
+    // in the exit from keystroke area in getchar
+    if(G.clear_cmdline || redraw_cmdline) {
+        G.clear_cmdline = false;
+        redraw_cmdline = false;
+        Misc.showmode();
+    }
     if (oap.op_type == OP_NOP && oap.regname == 0)
       clear_showcmd();
 
@@ -1294,11 +1300,11 @@ middle_code:
       if (G.redo_VIsual_busy)
       {
           oap.start = (FPOS)G.curwin.getWCursor().copy();
-          G.curwin.setCaretPosition(oap.start.getLine()+ redo_VIsual_line_count - 1,
-                                    oap.start.getColumn());
-//TODO: FIXME_VISUAL
-//          if (G.curwin.getWCursor().getLine() > G.curbuf.b_ml.ml_line_count)
-//              G.curwin.getWCursor().getLine() = G.curbuf.b_ml.ml_line_count;
+          int line = oap.start.getLine()+ redo_VIsual_line_count - 1;
+          if(line > G.curwin.getLineCount())
+              line = G.curwin.getLineCount();
+          G.curwin.setCaretPosition(
+                    line, Misc.check_cursor_col(line, oap.start.getColumn()));
           G.VIsual_mode = redo_VIsual_mode;
           if (G.VIsual_mode == 'v')
           {
@@ -2120,6 +2126,33 @@ middle_code:
 
   static private void nv_colon (CMDARG cap) {
     do_xop("nv_colon");
+//    if (G.VIsual_active) {
+//       nv_operator(cap);
+//    } else if( ! checkclearop(cap.oap)) {
+    // normally we should call nv_operator when visual active
+    // in this hack set the mark offset and continue normally
+    // this makes sure the visual marks are updated
+    //
+    // Since this is here does ACTION_substitute need to do end_visual_mode?
+    // Wonder what nv_operator does in vim?
+    //
+    // VISUAL HACK
+    if (G.VIsual_active) {
+          if (!G.VIsual_select && G.VIsual_mode == 'v')
+              unadjust_for_sel();
+          /* Save the current VIsual area for '< and '> marks, and "gv" */
+          G.curwin.setMarkOffset(G.curbuf.b_visual_start,
+                                 G.VIsual.getOffset(), false);
+          G.curwin.setMarkOffset(G.curbuf.b_visual_end,
+                                 G.curwin.getWCursor().getOffset(), false);
+          G.curbuf.b_visual_mode = G.VIsual_mode;
+
+          oap.start = G.VIsual;
+          if (G.VIsual_mode == 'V')
+              oap.start.setPosition(oap.start.getLine(), 0);
+    }
+    // END VISUAL HACK
+    
     if( ! checkclearop(cap.oap)) {
       ColonCommands.doColonCommand(cap);
     }

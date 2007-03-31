@@ -107,7 +107,9 @@ public class ColonCommands {
 
   static void doColonCommand(CMDARG cap) {
     StringBuffer range = new StringBuffer();
-    if(cap.count0 != 0) {
+    if(G.VIsual_active) {
+        range.append("'<,'>");
+    } else if(cap.count0 != 0) {
       range.append(".");
       if(cap.count0 > 1) {
         range.append(",.+");
@@ -705,6 +707,15 @@ public class ColonCommands {
     public void actionPerformed(ActionEvent ev) {
       Misc.beginUndo();
       try {
+        // VISUAL HACK
+        if (G.VIsual_active) {
+          //TODO: FIXME_VISUAL This should be done for *any* colon command,
+          // not just substitute. I guess calling end_visual_mode records
+          // the '<,'> marks. So probably put this somewhere that gets
+          // the completion event from colon command entry.
+          Normal.end_visual_mode();
+        }
+        // END VISUAL HACK
         Search.substitute((ColonEvent)ev);
       }
       finally {

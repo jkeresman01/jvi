@@ -107,7 +107,7 @@ class MarkOps implements Constants, Messages {
    *	  -1 if mark is in other file (only if changefile is TRUE)
    */
   static ViMark getmark(int c, boolean changefile) {
-    ViMark m = null; // usally a ViMark, except when visual line mode.
+    ViMark m = null;
     if(c == '\'' || c == '`') {
       // make a copy since it might change soon
       m = (ViMark) G.curwin.getPCMark().copy();
