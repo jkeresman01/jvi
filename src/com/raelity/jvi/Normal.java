@@ -2191,10 +2191,13 @@ middle_code:
     } else if( ! checkclearop(cap.oap)) {
       // translate "count:" into ":.,.+(count - 1)"
       StringBuffer range = new StringBuffer();
-      range.append(".");
-      if(cap.count0 > 1) {
-        range.append(",.+");
-        range.append(cap.count0-1);
+      if(cap.count0 != 0) {
+        range.append(".");
+        // since count1 != 0, then probably > 0. Oh well, just like vim
+        if(cap.count0 > 1) {
+          range.append(",.+");
+          range.append(cap.count0-1);
+        }
       }
       ColonCommands.doColonCommand(range);
     }
