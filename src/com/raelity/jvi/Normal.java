@@ -2011,7 +2011,8 @@ middle_code:
     switch(cap.nchar) {
       case NL:		    // put curwin->w_cursor at top of screen
       case CR:
-      case '.':		// put curwin->w_cursor in middle of screen
+      case '.':		// put curwin->w_cursor in middle of screen and set cursor at the first character of that line
+      case 'z':		// put curwin->w_cursor in middle of screen
       case '-':		// put curwin->w_cursor at bottom of screen
         // Scroll screen so current line at top, middle or bottom
 	// the scrolloff version doesn't really change anything about how stuff
@@ -2104,7 +2105,8 @@ middle_code:
 	break;
 
       case '.':		// put curwin->w_cursor in middle of screen
-	top = target - G.curwin.getViewLines() / 2 - 1;
+      case 'z':		// put curwin->w_cursor in middle of screen
+        top = target - G.curwin.getViewLines() / 2 - 1;
 	break;
 
       case '-':		// put curwin->w_cursor at bottom of screen
@@ -2119,7 +2121,7 @@ middle_code:
     // Keep getlineSegment before setViewTopLine,
     // don't want to fetch segment changing during rendering
     Segment seg = G.curwin.getLineSegment(target);
-    int col = Edit.beginlineColumnIndex(BL_WHITE | BL_FIX, seg);
+    int col = nchar == 'z' ? G.curwin.getWCursor().getColumn() : Edit.beginlineColumnIndex(BL_WHITE | BL_FIX, seg);
     G.curwin.setViewTopLine(Misc.adjustTopLine(top));
     G.curwin.setCaretPosition(target, col);
   }
