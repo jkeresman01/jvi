@@ -1171,23 +1171,23 @@ middle_code:
 	    break;
 
 	}	/* end of switch on command character */
+
+        /*
+        * if we didn't start or finish an operator, reset oap.regname, unless we
+        * need it later.
+        */
+        if (!G.finish_op && oap.op_type == 0 &&
+            Util.vim_strchr("\"DCYSsXx.", ca.cmdchar) == null)
+          oap.regname = 0;
+
+        /*
+        * If an operation is pending, handle it...
+        */
+        do_pending_operator(ca, searchbuff,
+                            null, old_col, false, dont_adjust_op_end);
       } catch(NotSupportedException e) {
 	clearopbeep(oap);
       }
-
-      /*
-       * if we didn't start or finish an operator, reset oap.regname, unless we
-       * need it later.
-       */
-      if (!G.finish_op && oap.op_type == 0 &&
-	  Util.vim_strchr("\"DCYSsXx.", ca.cmdchar) == null)
-	oap.regname = 0;
-
-      /*
-       * If an operation is pending, handle it...
-       */
-      do_pending_operator(ca, searchbuff,
-			  null, old_col, false, dont_adjust_op_end);
 
       /*
        * Wait when a message is displayed that will be overwritten by the mode
@@ -1240,6 +1240,7 @@ middle_code:
 			   int old_col,
 			   boolean gui_yank,
 			   boolean dont_adjust_op_end)
+  throws NotSupportedException
   {
     OPARG	oap = cap.oap;
     FPOS	old_cursor;
@@ -1689,6 +1690,63 @@ middle_code:
       oap.regname = 0;
     }
   }
+  
+  static private  void	op_colon (OPARG oap) throws NotSupportedException {
+      do_op("op_colon");
+      StringBuffer range = new StringBuffer();
+      if(oap.is_VIsual) {
+        range.append("'<,'>");
+      } else {
+	//
+	// Make the range look nice, so it can be repeated.
+	//
+	if (oap.start.getLine() == G.curwin.getWCursor().getLine())
+          range.append('.');
+	else
+          range.append(oap.start.getLine());
+	if (oap.end.getLine() != oap.start.getLine())
+	{
+          range.append(',');
+          if (oap.end.getLine() == G.curwin.getWCursor().getLine())
+            range.append('.');
+          else if (oap.end.getLine() == G.curwin.getLineCount())
+            range.append('$');
+          else if (oap.start.getLine() == G.curwin.getWCursor().getLine())
+          {
+            range.append(".+");
+            range.append(oap.line_count - 1);
+          }
+          else
+            range.append(oap.end.getLine());
+      }
+    }
+    if (oap.op_type != OP_COLON) {
+      notImp("op_colon '!'");
+      range.append("!");
+    }
+    if (oap.op_type == OP_INDENT)
+    {
+      notImp("op_colon OP_INDENT");
+//#ifndef CINDENT
+//	if (*p_ep == NUL)
+//	    stuffReadbuff((char_u *)"indent");
+//	else
+//#endif
+//	    stuffReadbuff(p_ep);
+//	stuffReadbuff((char_u *)"\n");
+    }
+    else if (oap.op_type == OP_FORMAT)
+    {
+      notImp("op_colon OP_FORMAT");
+//	if (*p_fp == NUL)
+//	    stuffReadbuff((char_u *)"fmt");
+//	else
+//	    stuffReadbuff(p_fp);
+//	stuffReadbuff((char_u *)"\n");
+    }
+      
+    ColonCommands.doColonCommand(range);
+  }
 
   /**
    * Find the identifier under or to the right of the cursor.  If none is
@@ -2128,35 +2186,17 @@ middle_code:
 
   static private void nv_colon (CMDARG cap) {
     do_xop("nv_colon");
-//    if (G.VIsual_active) {
-//       nv_operator(cap);
-//    } else if( ! checkclearop(cap.oap)) {
-    // normally we should call nv_operator when visual active
-    // in this hack set the mark offset and continue normally
-    // this makes sure the visual marks are updated
-    //
-    // Since this is here does ACTION_substitute need to do end_visual_mode?
-    // Wonder what nv_operator does in vim?
-    //
-    // VISUAL HACK
     if (G.VIsual_active) {
-          if (!G.VIsual_select && G.VIsual_mode == 'v')
-              unadjust_for_sel();
-          /* Save the current VIsual area for '< and '> marks, and "gv" */
-          G.curwin.setMarkOffset(G.curbuf.b_visual_start,
-                                 G.VIsual.getOffset(), false);
-          G.curwin.setMarkOffset(G.curbuf.b_visual_end,
-                                 G.curwin.getWCursor().getOffset(), false);
-          G.curbuf.b_visual_mode = G.VIsual_mode;
-
-          oap.start = G.VIsual;
-          if (G.VIsual_mode == 'V')
-              oap.start.setPosition(oap.start.getLine(), 0);
-    }
-    // END VISUAL HACK
-    
-    if( ! checkclearop(cap.oap)) {
-      ColonCommands.doColonCommand(cap);
+       nv_operator(cap);
+    } else if( ! checkclearop(cap.oap)) {
+      // translate "count:" into ":.,.+(count - 1)"
+      StringBuffer range = new StringBuffer();
+      range.append(".");
+      if(cap.count0 > 1) {
+        range.append(",.+");
+        range.append(cap.count0-1);
+      }
+      ColonCommands.doColonCommand(range);
     }
   }
 
@@ -3544,7 +3584,7 @@ middle_code:
   static int	resel_VIsual_line_count;/* number of lines */
   static int	resel_VIsual_col;	/* nr of cols or end col */
 
-  static private  void	op_colon (OPARG oap) {do_op("op_colon");}
+  // static private  void	op_colon (OPARG oap) {do_op("op_colon");}
   // private  void	prep_redo_cmd (CMDARG cap) {do_op("prep_redo_cmd");}
   //static private  void	prep_redo (int regname, long l,
 		  //int p0, int p1, int p2, int p3) {do_op("prep_redo");}
