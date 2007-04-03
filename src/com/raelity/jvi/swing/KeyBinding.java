@@ -174,14 +174,6 @@ public class KeyBinding {
     }
     bindingList = new ArrayList<JTextComponent.KeyBinding>();
     List<JTextComponent.KeyBinding> bl = bindingList;
-    
-    //
-    // Always bind these keys
-    //
-    bl.add(createKeyBinding(KeyEvent.VK_ESCAPE, 0, "ViEscapeKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_BACK_SPACE, 0, "ViBack_spaceKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_TAB, 0, "ViTabKey"));
-    bl.add(createKeyBinding(KeyEvent.VK_ENTER, 0, "ViEnterKey"));
 
     //
     // Add the normal control characters.
@@ -596,6 +588,15 @@ public class KeyBinding {
             defaultKeysFalse.add("Ctrl-X");
             defaultKeysFalse.add("Ctrl-Z");
             
+            defaultKeysFalse.add("Shift-Enter");
+            defaultKeysFalse.add("Ctrl-Enter");
+            defaultKeysFalse.add("Shift-Escape");
+            defaultKeysFalse.add("Ctrl-Escape");
+            defaultKeysFalse.add("Shift-Back_space");
+            defaultKeysFalse.add("Ctrl-Back_space");
+            defaultKeysFalse.add("Shift-Tab");
+            defaultKeysFalse.add("Ctrl-Tab");
+            
             defaultKeysFalse.add("Shift-Undo");
             defaultKeysFalse.add("Ctrl-Undo");
             defaultKeysFalse.add("Shift-Insert");
@@ -603,10 +604,21 @@ public class KeyBinding {
             defaultKeysFalse.add("Shift-Delete");
             defaultKeysFalse.add("Ctrl-Delete");
             
+            //
+            // Set up the names of the special/keypad keys.
+            // This list is used to set up plain/Shift/Ctrl versions
+            // of the indicated keys, as constrained by "defaultKeysFalse"
+            //
+            keypadNameMap.put("Enter", KeyEvent.VK_ENTER);
+            keypadNameMap.put("Escape", KeyEvent.VK_ESCAPE);
+            keypadNameMap.put("Back_space", KeyEvent.VK_BACK_SPACE);
+            keypadNameMap.put("Tab", KeyEvent.VK_TAB);
+            
             keypadNameMap.put("Up", KeyEvent.VK_UP);
             keypadNameMap.put("Down", KeyEvent.VK_DOWN);
             keypadNameMap.put("Left", KeyEvent.VK_LEFT);
             keypadNameMap.put("Right", KeyEvent.VK_RIGHT);
+            
             keypadNameMap.put("Insert", KeyEvent.VK_INSERT);
             keypadNameMap.put("Delete", KeyEvent.VK_DELETE);
             keypadNameMap.put("Home", KeyEvent.VK_HOME);
