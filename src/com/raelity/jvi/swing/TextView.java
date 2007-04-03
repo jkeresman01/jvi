@@ -416,7 +416,7 @@ public class TextView implements ViTextView {
     Util.vim_beep();
   }
 
-  public void jumpDefinition() {
+  public void jumpDefinition(String ident) {
     Util.vim_beep();
   }
 
@@ -524,6 +524,16 @@ public class TextView implements ViTextView {
 
   final public Element getLineElement(int lnum) {
     return cache.getLineElement(lnum);
+  }
+  
+  final public void getSegment(int offset, int length, Segment seg) {
+    try {
+      getDoc().getText(offset, length, seg);
+    } catch (BadLocationException ex) {
+      seg.count = 0;
+      // NEEDSWORK: how to report exception?
+      ex.printStackTrace();
+    }
   }
 
   /**
