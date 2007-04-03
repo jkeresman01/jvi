@@ -62,7 +62,7 @@ public class ViManager {
   private static final int majorVersion = 0;
   private static final int minorVersion = 9;
   private static final int microVersion = 0;
-  private static final String releaseTag = "x2";
+  private static final String releaseTag = "x5";
   private static final String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion
@@ -344,6 +344,7 @@ public class ViManager {
     if(rerouteChar(key, modifier)) {
       return;
     }
+    factory.finishTagPush(G.curwin);
     GetChar.gotc(key, modifier);
     
     if(G.curwin != null)
@@ -537,10 +538,12 @@ public class ViManager {
   }
 
   /** set the previous context to the indicated offset */
+  /*
   public static void previousContextHack(ViTextView textView, ViMark mark) {
     Window window = factory.lookupWindow(textView.getEditorComponent());
     window.previousContextHack(mark);
   }
+  */
 
   /**
    * Listen to carets events for newly registered JEditorPanes.
@@ -608,4 +611,3 @@ public class ViManager {
         ps.println("" + n1 + " ACTIVE TEXT VIEWS");
   }
 }
-

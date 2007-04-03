@@ -62,6 +62,9 @@ public interface ViTextView extends ViOptionBag {
   /** annonymous mark operations */
   public enum MARKOP { TOGGLE, NEXT, PREV }
   
+  /** tags and tagstack operations */
+  public enum TAGOP { OLDER, NEWER }
+  
   //
   // First the methods that make this look like a window
   // (maybe implement at some point)
@@ -163,7 +166,7 @@ public interface ViTextView extends ViOptionBag {
   public void findMatch();
   
   /** Jump to the definition of the identifier under the cursor. */
-  public void jumpDefinition();
+  public void jumpDefinition(String ident);
   
   /** Jump list handling */
   public void jumpList(JLOP op, int count);
@@ -199,6 +202,9 @@ public interface ViTextView extends ViOptionBag {
 
   /** @return the segment for the line */
   public Segment getLineSegment(int line);
+
+  /** @return a segment for the requested text */
+  public void getSegment(int offset, int length, Segment segment);
 
   /** @return the element for the line */
   public Element getLineElement(int line);

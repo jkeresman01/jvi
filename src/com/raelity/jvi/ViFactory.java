@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.Action;
+import com.raelity.jvi.ViTextView.TAGOP;
 
 /**
  * This provides Vi the items it needs to interface with
@@ -139,5 +140,16 @@ public interface ViFactory {
   public ViCmdEntry createCmdEntry(int type);
 
   public Preferences getPreferences();
+  
+  //
+  // Just stuff all the tag stuff here for now
+  //
 
+  public void startTagPush(ViTextView tv, String ident);
+
+  public void finishTagPush(ViTextView tv);
+  
+  public void tagStack(TAGOP op, int count);
+  
+  public void displayTags();
 }

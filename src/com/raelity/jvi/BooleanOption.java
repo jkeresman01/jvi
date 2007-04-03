@@ -48,6 +48,7 @@ public class BooleanOption extends Option {
         }
       };
     }
+    this.validator = validator;
   }
 
   public final boolean getBoolean() {

@@ -210,11 +210,14 @@ class Search {
   private static void doIncrementalSearch() {
       String pattern = getSearchCommandEntry().getTextComponent().getText();
       
+      if("".equals(pattern))
+          return;
       ViFPOS pos = searchPos.copy();
       int rc = searchit(null, pos, lastDir, pattern,
-                        searchCount, searchFlags, 0, G.p_ic.getBoolean());
+                        searchCount, searchFlags /*& ~SEARCH_MSG*/,
+                        0, G.p_ic.getBoolean());
       didIncrSearch = true;
-      if(rc == 0)
+      if(rc == FAIL)
           resetViewIncrementalSearch();
   }
 

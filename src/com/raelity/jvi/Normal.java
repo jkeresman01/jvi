@@ -37,6 +37,7 @@
 package com.raelity.jvi;
 
 import com.raelity.jvi.ViTextView.JLOP;
+import com.raelity.jvi.ViTextView.TAGOP;
 import javax.swing.text.Segment;
 
 import com.raelity.jvi.swing.KeyBinding;
@@ -627,8 +628,10 @@ middle_code:
 	    break;
 
 	  case 0x1f & (int)('T'):    // backwards in tag stack	// Ctrl
-	    if (!checkclearopq(oap))
-	      do_tag("", DT_POP, (int)ca.count1, false, true);
+	    if (!checkclearopq(oap)) {
+              // do_tag((char_u *)"", DT_POP, (int)ca.count1, FALSE, TRUE);
+              ViManager.getViFactory().tagStack(TAGOP.OLDER, ca.count1);
+            }
 	    break;
 
 	    //
@@ -1747,24 +1750,30 @@ middle_code:
   }
 
   /**
+   * 
+   * <p>
+   * This is the vim comment.
    * Find the identifier under or to the right of the cursor.  If none is
    * found and find_type has FIND_STRING, then find any non-white string.  The
    * length of the string is returned, or zero if no string is found.  If a
    * string is found, a pointer to the string is put in *string, but note that
    * the caller must use the length returned as this string may not be NUL
    * terminated.
-   * @param mi use this to return offset of start of ident
+   * <p>
+   * @param mi use this to return the length of the match, 0 if none
+   * @param find_type mask of FIND_IDENT, FIND_STRING
+   * @return a segment with its CharacterIterator initialized to found string,
+   * or null if no match.
    */
-  static int find_ident_under_cursor(MutableInt mi, int find_type) {
+  static Segment find_ident_under_cursor(MutableInt mi, int find_type) {
     int	    col = 0;	    // init to shut up GCC
     int	    i;
 
     //
     // if i == 0: try to find an identifier
     // if i == 1: try to find any string
-    ///
-    Segment seg = G.curwin.getLineSegment(G.curwin.getWCursor().getLine());
-
+    //
+    Segment seg = Util.ml_get_curline();
     for (i = ((find_type & FIND_IDENT) != 0) ? 0 : 1;	i < 2; ++i)
     {
       //
@@ -1809,12 +1818,13 @@ middle_code:
         Msg.emsg("No string under cursor");
       else
         Msg.emsg("No identifier under cursor");
-      return 0;
+      mi.setValue(0); // length of match
+      return null;
     }
     // ptr += col;
     // *string = ptr;
-    mi.setValue(G.curwin.getLineStartOffset(G.curwin.getWCursor().getLine())
-                + col);
+    //mi.setValue(G.curwin.getLineStartOffset(G.curwin.getWCursor().getLine()) + col);
+    seg.setIndex(seg.offset + col);
 
     int len = 0;
     while (i == 0
@@ -1824,7 +1834,8 @@ middle_code:
     {
       ++len;
     }
-    return len;
+    mi.setValue(len);
+    return seg;
   }
 
   /**
@@ -1934,6 +1945,8 @@ middle_code:
 
     if (!G.p_sc.getBoolean())
       return false;
+    if((c & 0xf000) == VIRT)
+        return false;
 
     add_one_to_showcmd_buffer(c);
 
@@ -2066,6 +2079,7 @@ middle_code:
   static private  void	nv_zet (CMDARG cap) {
     switch(cap.nchar) {
       case NL:		    // put curwin->w_cursor at top of screen
+      case K_KENTER:
       case CR:
       case '.':		// put curwin->w_cursor in middle of screen and set cursor at the first character of that line
       case 'z':		// put curwin->w_cursor in middle of screen
@@ -2156,6 +2170,7 @@ middle_code:
 
     switch(nchar) {
       case NL:		    // put curwin->w_cursor at top of screen
+      case K_KENTER:
       case CR:
 	top = target - so;
 	break;
@@ -2177,7 +2192,8 @@ middle_code:
     // Keep getlineSegment before setViewTopLine,
     // don't want to fetch segment changing during rendering
     Segment seg = G.curwin.getLineSegment(target);
-    int col = nchar == 'z' ? G.curwin.getWCursor().getColumn() : Edit.beginlineColumnIndex(BL_WHITE | BL_FIX, seg);
+    int col = nchar == 'z' ? G.curwin.getWCursor().getColumn()
+                           : Edit.beginlineColumnIndex(BL_WHITE | BL_FIX, seg);
     G.curwin.setViewTopLine(Misc.adjustTopLine(top));
     G.curwin.setCaretPosition(target, col);
   }
@@ -2216,19 +2232,17 @@ middle_code:
                                throws NotSupportedException
   {
     do_xop("nv_ident");
-    boolean	g_cmd;		// "g" command
-    int         offset = 0;
-    MutableInt  mi = new MutableInt(0);
+    Segment     ptrSeg = null;
     int		n = 0;		// init for GCC
     int		cmdchar;
+    boolean	g_cmd;		// "g" command
+    //char_u	*aux_offset;
+    //int	isman;
+    //int	isman_s;
     
+    MutableInt  mi = new MutableInt(0);
     boolean     fDoingSearch = false;
 
-    /*
-    char_u	*aux_offset;
-    int		isman;
-    int		isman_s;
-    */
 
     if (cap.cmdchar == 'g')	// "g*", "g#", "g]" and "gCTRL-]"
     {
@@ -2246,53 +2260,44 @@ middle_code:
     //
     if (cmdchar == ']' || cmdchar == Util.ctrl(']') || cmdchar == 'K')
     {
-      if(cmdchar == Util.ctrl(']')) {
-        // the ^] is parsed out below, but just short circuit the rest.
-        // give the environment a chance at it
-        // vim does not setpcmark, really only want to set pcmark if
-        // the definition is in the same file. But try this out.
-        // MarkOps.setpcmark(); // NEEDSWORK: ^] mark not working
-	G.curwin.jumpDefinition();
-        return fDoingSearch;
-      }
-      notImp("nv_ident subset");
-      /*
+      // ################ notImp("nv_ident subset");  
       if (G.VIsual_active)	// :ta to visual highlighted text
       {
         if (G.VIsual_mode != 'V')
           unadjust_for_sel();
-        if (G.VIsual.lnum != curwin.w_cursor.lnum)
+        if (G.VIsual.getLine() != G.curwin.getWCursor().getLine())
         {
           clearopbeep(cap.oap);
-          return;
+          return fDoingSearch;
         }
-        if (lt(curwin.w_cursor, G.VIsual))
+        if(G.curwin.getWCursor().compareTo(G.VIsual) < 0)
         {
-          ptr = ml_get_pos(&curwin.w_cursor);
-          n = G.VIsual.col - curwin.w_cursor.col + 1;
+          ptrSeg = Util.ml_get_pos(G.curwin.getWCursor());
+          n = G.VIsual.getColumn() - G.curwin.getWCursor().getColumn() + 1;
         }
         else
         {
-          ptr = ml_get_pos(&G.VIsual);
-          n = curwin.w_cursor.col - G.VIsual.col + 1;
+          ptrSeg = Util.ml_get_pos(G.VIsual);
+          n = G.curwin.getWCursor().getColumn() - G.VIsual.getColumn() + 1;
         }
         end_visual_mode();
-        G.VIsual_reselect = FALSE;
+        G.VIsual_reselect = false;
         redraw_curbuf_later(NOT_VALID);    // update the inversion later
       }
       if (checkclearopq(cap.oap))
-        return;
-        */
+        return fDoingSearch;
     }
 
-    if (/*ptr == NULL &&*/ (n = find_ident_under_cursor(mi,
+    if (ptrSeg == null) {
+      if((ptrSeg = find_ident_under_cursor(mi,
                               (cmdchar == '*' || cmdchar == '#')
-                              ? FIND_IDENT|FIND_STRING : FIND_IDENT)) == 0)
-    {
-      clearop(cap.oap);
-      return fDoingSearch;
+                              ? FIND_IDENT|FIND_STRING : FIND_IDENT)) == null) {
+        clearop(cap.oap);
+        return fDoingSearch;
+      }
+      // found something, get the length
+      n = mi.getValue();
     }
-    offset = mi.getValue();
 
     /*
     isman = (STRCMP(p_kp, "man") == 0);
@@ -2312,12 +2317,22 @@ middle_code:
         // it was.
         ///
         MarkOps.setpcmark();
-        G.curwin.setCaretPosition(offset);
+        G.curwin.setCaretPosition(G.curwin.getWCursor().getLine(),
+                                  ptrSeg.getIndex() - ptrSeg.getBeginIndex());
 
-        if (!g_cmd && Misc.vim_iswordc(Util.getCharAt(offset)))
+        if (!g_cmd && Misc.vim_iswordc(ptrSeg.current()))
           GetChar.stuffReadbuff("\\<");
         // no_smartcase = TRUE;	// don't use 'smartcase' now
         break;
+        
+      case 0x1f & (int)(']'):   // Ctrl-]
+        // give the environment a chance at it
+        // pass in the extracted identifier,
+        // though system probably looks under cursor
+        G.curwin.setCaretPosition(G.curwin.getWCursor().getLine(),
+                                  ptrSeg.getIndex() - ptrSeg.getBeginIndex());
+	G.curwin.jumpDefinition(new String(ptrSeg.array, ptrSeg.getIndex(), n));
+        return fDoingSearch;
 
       /*
       case 'K':
@@ -2376,18 +2391,18 @@ middle_code:
     */
     String escapeMe = "/?.*~[^$\\";
     while(n-- != 0) {
-      int c = Util.getCharAt(offset);
+      int c = ptrSeg.current();
       if(Util.vim_strchr(escapeMe, c) != null) {
         GetChar.stuffcharReadbuff('\\');
       }
       // don't quote control characters, shouldn't be any....
       GetChar.stuffcharReadbuff(c);
-      ++offset;
+      ptrSeg.next();
     }
 
     if (       !g_cmd
-               && (cmdchar == '*' || cmdchar == '#')
-               && Misc.vim_iswordc(Util.getCharAt(offset - 1)))
+            && (cmdchar == '*' || cmdchar == '#')
+            && Misc.vim_iswordc(ptrSeg.previous()))
       GetChar.stuffReadbuff("\\>");
     GetChar.stuffReadbuff("\n");
 
@@ -2802,6 +2817,7 @@ middle_code:
       int firstbraceOffset = startingOffset;
       // Try to position caret on next brace char
       int c;
+      // NEEDSWORK: use getLineSegment for performance
       while(true) {
         c = Util.getCharAt(firstbraceOffset);
         if(Util.vim_strchr("{}[]()", c) != null || c == '\n') {
@@ -3327,11 +3343,13 @@ static private void nv_findpar(CMDARG cap, int dir)
    * In exclusive Visual mode, may include the last character.
    */
   static private void adjust_for_sel(CMDARG cap) {
-      if (G.VIsual_active && cap.oap.inclusive && G.p_sel.charAt(0) == 'e'
-              && Misc.gchar_cursor() != '\n')
+      if (G.VIsual_active
+          && cap.oap.inclusive
+          && G.p_sel.charAt(0) == 'e'
+          && Misc.gchar_cursor() != '\n')
        {
-//TODO: FIXME_VISUAL          
-//          ++curwin->w_cursor.col;
+          //++curwin->w_cursor.col;
+          G.curwin.setCaretPosition(G.curwin.getCaretPosition()+1);
           cap.oap.inclusive = false;
        }
   }

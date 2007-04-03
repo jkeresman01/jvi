@@ -119,6 +119,22 @@ public class Util {
     // return ml_get_buf(curbuf, lnum, FALSE);
     return G.curwin.getLineSegment(lnum);
   }
+  
+  /** get pointer to positin 'pos', the returned Segment's CharacterIterator
+   * is initialized to the character at pos.
+   * @return Segment for the line.
+   */
+  static Segment ml_get_pos(ViFPOS pos) {
+    //return (ml_get_buf(curbuf, pos->lnum, FALSE) + pos->col);
+    Segment seg = G.curwin.getLineSegment(pos.getLine());
+    seg.setIndex(pos.getOffset());
+    return seg;
+  }
+  
+  static Segment ml_get_curline() {
+    //return ml_get_buf(curbuf, curwin->w_cursor.lnum, FALSE);
+    return ml_get(G.curwin.getWCursor().getLine());
+  }
 
   /**
    * Get the length of a line, not incuding the newline
@@ -131,8 +147,7 @@ public class Util {
   /** is the indicated line empty? */
   static boolean lineempty(int lnum) {
     Segment seg = G.curwin.getLineSegment(lnum);
-    return seg.count == 0
-	      || seg.count == 1 && seg.array[seg.offset] == '\n';
+    return seg.count == 0 || seg.array[seg.offset] == '\n';
   }
 
   static int getChar() {
@@ -140,13 +155,9 @@ public class Util {
   }
 
   static int getCharAt(int offset) {
-    int c;
-    try {
-      c = G.curwin.getText(offset, 1).charAt(0);
-    } catch(BadLocationException e) {
-      c = 0;
-    }
-    return c;
+    Segment seg = new Segment();
+    G.curwin.getSegment(offset, 1, seg);
+    return seg.count > 0 ? seg.array[seg.offset] : 0;
   }
 
   /** flush map and typeahead buffers and vige a warning for an error */

@@ -44,6 +44,7 @@ import javax.swing.Action;
 
 import com.raelity.jvi.ViManager;
 import com.raelity.jvi.swing.*;
+import com.raelity.jvi.ViTextView.TAGOP;
 
 import static com.raelity.jvi.Constants.*;
 import static com.raelity.jvi.ColonCommandFlags.*;
@@ -775,6 +776,29 @@ public class ColonCommands {
   };
   
   /**
+   * :tag command. Simple for now, take no args
+   */
+  static ColonAction ACTION_tag = new ColonAction() {
+    public void actionPerformed(ActionEvent ev) {
+        ColonEvent evt = (ColonEvent)ev;
+        if(evt.getNArg() != 0) {
+            Msg.emsg(Messages.e_trailing);
+            return;
+        }
+        int count = 1;
+        if(evt.getAddrCount() == 1)
+            count = evt.getLine2();
+        ViManager.getViFactory().tagStack(TAGOP.NEWER, count);
+    }
+  };
+
+  static ActionListener ACTION_tags = new ActionListener() {
+    public void actionPerformed(ActionEvent ev) {
+      ViManager.getViFactory().displayTags();
+    }
+  };
+  
+  /**
    * This is used for several of the colon commands to translate arguments
    * into OPARG.
    */
@@ -834,17 +858,24 @@ public class ColonCommands {
   static void registerBuiltinCommands() {
     register("clo", "close", ACTION_close);
     register("on", "only", ACTION_only);
+    
     register("q", "quit", ACTION_quit);
     register("w", "write", ACTION_write);
     register("wq", "wq", ACTION_wq);
     register("wa", "wall", ACTION_wall);
+    
     register("f", "file", ACTION_file);
     register("e", "edit", ACTION_edit);
     register("s", "substitute", ACTION_substitute);
     register("g", "global", ACTION_global);
     register("d", "delete", ACTION_delete);
     register("p", "print", ACTION_print);
+    
     register("se", "set", new Options.SetCommand());
+    
+    register("ta", "tag", ACTION_tag);
+    register("tags", "tags", ACTION_tags);
+    
     // register("y", "yank", ACTION_yank);
     
     // register("n", "next", ACTION_next);

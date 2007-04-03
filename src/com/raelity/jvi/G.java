@@ -53,7 +53,7 @@ public class G {
 
   static int mod_mask;
 
-  static ViTextView curwin;
+  public static ViTextView curwin;
   
   static Buffer curbuf; // per file options. as int,boolean
         //public static BooleanOption b_p_et;	// expandtabs, per file
