@@ -75,12 +75,19 @@ public class KeypadBindingBean extends SimpleBeanInfo {
         String displayName = mod.length() == 0 ? key : mod + "-" + key;
         // Want things to display nicely ordered, unmodifed keys followed by
         // Ctrl-, then by Shift-. And want the arrow keys to be together.
-        // So arrow keys start with Aa, the rest with Ab.
-        if(key.equals("Up") || key.equals("Down")
-           || key.equals("Left") || key.equals("Right"))
-            key = "Aa" + key;
+        // So preface names with something to control sorting
+        if(   key.equals("Up")
+           || key.equals("Down")
+           || key.equals("Left")
+           || key.equals("Right"))
+            key = "AAf" + key;
+        else if(   key.equals("Enter")
+                || key.equals("Escape")
+                || key.equals("Back_space")
+                || key.equals("Tab"))
+            key = "AAb" + key;
         else
-            key = "Ab" + key;
+            key = "AAj" + key;
         String propertyName = mod.length() == 0 ? key : mod + "_" + key;
         try {
             d = new PropertyDescriptor(propertyName, KeypadBindingBean.class);
@@ -109,267 +116,367 @@ public class KeypadBindingBean extends SimpleBeanInfo {
         return prefs.getBoolean(name, KeyBinding.getCatchKeyDefault(name));
     }
 
-    public void setAaUp(boolean arg) {
+    public void setAAfUp(boolean arg) {
         put("Up", arg);
     }
 
-    public boolean getAaUp() {
+    public boolean getAAfUp() {
 	return get("Up");
     }
 
-    public void setCtrl_AaUp(boolean arg) {
+    public void setCtrl_AAfUp(boolean arg) {
         put("Ctrl-Up", arg);
     }
 
-    public boolean getCtrl_AaUp() {
+    public boolean getCtrl_AAfUp() {
 	return get("Ctrl-Up");
     }
 
-    public void setShift_AaUp(boolean arg) {
+    public void setShift_AAfUp(boolean arg) {
         put("Shift-Up", arg);
     }
 
-    public boolean getShift_AaUp() {
+    public boolean getShift_AAfUp() {
 	return get("Shift-Up");
     }
 
-    public void setAaDown(boolean arg) {
+    public void setAAfDown(boolean arg) {
         put("Down", arg);
     }
 
-    public boolean getAaDown() {
+    public boolean getAAfDown() {
 	return get("Down");
     }
 
-    public void setCtrl_AaDown(boolean arg) {
+    public void setCtrl_AAfDown(boolean arg) {
         put("Ctrl-Down", arg);
     }
 
-    public boolean getCtrl_AaDown() {
+    public boolean getCtrl_AAfDown() {
 	return get("Ctrl-Down");
     }
 
-    public void setShift_AaDown(boolean arg) {
+    public void setShift_AAfDown(boolean arg) {
         put("Shift-Down", arg);
     }
 
-    public boolean getShift_AaDown() {
+    public boolean getShift_AAfDown() {
 	return get("Shift-Down");
     }
 
-    public void setAaLeft(boolean arg) {
+    public void setAAfLeft(boolean arg) {
         put("Left", arg);
     }
 
-    public boolean getAaLeft() {
+    public boolean getAAfLeft() {
 	return get("Left");
     }
 
-    public void setCtrl_AaLeft(boolean arg) {
+    public void setCtrl_AAfLeft(boolean arg) {
         put("Ctrl-Left", arg);
     }
 
-    public boolean getCtrl_AaLeft() {
+    public boolean getCtrl_AAfLeft() {
 	return get("Ctrl-Left");
     }
 
-    public void setShift_AaLeft(boolean arg) {
+    public void setShift_AAfLeft(boolean arg) {
         put("Shift-Left", arg);
     }
 
-    public boolean getShift_AaLeft() {
+    public boolean getShift_AAfLeft() {
 	return get("Shift-Left");
     }
 
-    public void setAaRight(boolean arg) {
+    public void setAAfRight(boolean arg) {
         put("Right", arg);
     }
 
-    public boolean getAaRight() {
+    public boolean getAAfRight() {
 	return get("Right");
     }
 
-    public void setCtrl_AaRight(boolean arg) {
+    public void setCtrl_AAfRight(boolean arg) {
         put("Ctrl-Right", arg);
     }
 
-    public boolean getCtrl_AaRight() {
+    public boolean getCtrl_AAfRight() {
 	return get("Ctrl-Right");
     }
 
-    public void setShift_AaRight(boolean arg) {
+    public void setShift_AAfRight(boolean arg) {
         put("Shift-Right", arg);
     }
 
-    public boolean getShift_AaRight() {
+    public boolean getShift_AAfRight() {
 	return get("Shift-Right");
     }
 
-    public void setAbInsert(boolean arg) {
+    public void setAAjInsert(boolean arg) {
         put("Insert", arg);
     }
 
-    public boolean getAbInsert() {
+    public boolean getAAjInsert() {
 	return get("Insert");
     }
 
-    public void setCtrl_AbInsert(boolean arg) {
+    public void setCtrl_AAjInsert(boolean arg) {
         put("Ctrl-Insert", arg);
     }
 
-    public boolean getCtrl_AbInsert() {
+    public boolean getCtrl_AAjInsert() {
 	return get("Ctrl-Insert");
     }
 
-    public void setShift_AbInsert(boolean arg) {
+    public void setShift_AAjInsert(boolean arg) {
         put("Shift-Insert", arg);
     }
 
-    public boolean getShift_AbInsert() {
+    public boolean getShift_AAjInsert() {
 	return get("Shift-Insert");
     }
 
-    public void setAbDelete(boolean arg) {
+    public void setAAjDelete(boolean arg) {
         put("Delete", arg);
     }
 
-    public boolean getAbDelete() {
+    public boolean getAAjDelete() {
 	return get("Delete");
     }
 
-    public void setCtrl_AbDelete(boolean arg) {
+    public void setCtrl_AAjDelete(boolean arg) {
         put("Ctrl-Delete", arg);
     }
 
-    public boolean getCtrl_AbDelete() {
+    public boolean getCtrl_AAjDelete() {
 	return get("Ctrl-Delete");
     }
 
-    public void setShift_AbDelete(boolean arg) {
+    public void setShift_AAjDelete(boolean arg) {
         put("Shift-Delete", arg);
     }
 
-    public boolean getShift_AbDelete() {
+    public boolean getShift_AAjDelete() {
 	return get("Shift-Delete");
     }
 
-    public void setAbHome(boolean arg) {
+    public void setAAjHome(boolean arg) {
         put("Home", arg);
     }
 
-    public boolean getAbHome() {
+    public boolean getAAjHome() {
 	return get("Home");
     }
 
-    public void setCtrl_AbHome(boolean arg) {
+    public void setCtrl_AAjHome(boolean arg) {
         put("Ctrl-Home", arg);
     }
 
-    public boolean getCtrl_AbHome() {
+    public boolean getCtrl_AAjHome() {
 	return get("Ctrl-Home");
     }
 
-    public void setShift_AbHome(boolean arg) {
+    public void setShift_AAjHome(boolean arg) {
         put("Shift-Home", arg);
     }
 
-    public boolean getShift_AbHome() {
+    public boolean getShift_AAjHome() {
 	return get("Shift-Home");
     }
 
-    public void setAbEnd(boolean arg) {
+    public void setAAjEnd(boolean arg) {
         put("End", arg);
     }
 
-    public boolean getAbEnd() {
+    public boolean getAAjEnd() {
 	return get("End");
     }
 
-    public void setCtrl_AbEnd(boolean arg) {
+    public void setCtrl_AAjEnd(boolean arg) {
         put("Ctrl-End", arg);
     }
 
-    public boolean getCtrl_AbEnd() {
+    public boolean getCtrl_AAjEnd() {
 	return get("Ctrl-End");
     }
 
-    public void setShift_AbEnd(boolean arg) {
+    public void setShift_AAjEnd(boolean arg) {
         put("Shift-End", arg);
     }
 
-    public boolean getShift_AbEnd() {
+    public boolean getShift_AAjEnd() {
 	return get("Shift-End");
     }
 
-    public void setAbUndo(boolean arg) {
+    public void setAAjUndo(boolean arg) {
         put("Undo", arg);
     }
 
-    public boolean getAbUndo() {
+    public boolean getAAjUndo() {
 	return get("Undo");
     }
 
-    public void setCtrl_AbUndo(boolean arg) {
+    public void setCtrl_AAjUndo(boolean arg) {
         put("Ctrl-Undo", arg);
     }
 
-    public boolean getCtrl_AbUndo() {
+    public boolean getCtrl_AAjUndo() {
 	return get("Ctrl-Undo");
     }
 
-    public void setShift_AbUndo(boolean arg) {
+    public void setShift_AAjUndo(boolean arg) {
         put("Shift-Undo", arg);
     }
 
-    public boolean getShift_AbUndo() {
+    public boolean getShift_AAjUndo() {
 	return get("Shift-Undo");
     }
 
-    public void setAbPageUp(boolean arg) {
+    // Enter
+    public void setAAbEnter(boolean arg) {
+        put("Enter", arg);
+    }
+
+    public boolean getAAbEnter() {
+	return get("Enter");
+    }
+
+    public void setCtrl_AAbEnter(boolean arg) {
+        put("Ctrl-Enter", arg);
+    }
+
+    public boolean getCtrl_AAbEnter() {
+	return get("Ctrl-Enter");
+    }
+
+    public void setShift_AAbEnter(boolean arg) {
+        put("Shift-Enter", arg);
+    }
+
+    public boolean getShift_AAbEnter() {
+	return get("Shift-Enter");
+    }
+
+    // Escape
+    public void setAAbEscape(boolean arg) {
+        put("Escape", arg);
+    }
+
+    public boolean getAAbEscape() {
+	return get("Escape");
+    }
+
+    public void setCtrl_AAbEscape(boolean arg) {
+        put("Ctrl-Escape", arg);
+    }
+
+    public boolean getCtrl_AAbEscape() {
+	return get("Ctrl-Escape");
+    }
+
+    public void setShift_AAbEscape(boolean arg) {
+        put("Shift-Escape", arg);
+    }
+
+    public boolean getShift_AAbEscape() {
+	return get("Shift-Escape");
+    }
+
+    // Back_space
+    public void setAAbBack_space(boolean arg) {
+        put("Back_space", arg);
+    }
+
+    public boolean getAAbBack_space() {
+	return get("Back_space");
+    }
+
+    public void setCtrl_AAbBack_space(boolean arg) {
+        put("Ctrl-Back_space", arg);
+    }
+
+    public boolean getCtrl_AAbBack_space() {
+	return get("Ctrl-Back_space");
+    }
+
+    public void setShift_AAbBack_space(boolean arg) {
+        put("Shift-Back_space", arg);
+    }
+
+    public boolean getShift_AAbBack_space() {
+	return get("Shift-Back_space");
+    }
+
+    // Tab
+    public void setAAbTab(boolean arg) {
+        put("Tab", arg);
+    }
+
+    public boolean getAAbTab() {
+	return get("Tab");
+    }
+
+    public void setCtrl_AAbTab(boolean arg) {
+        put("Ctrl-Tab", arg);
+    }
+
+    public boolean getCtrl_AAbTab() {
+	return get("Ctrl-Tab");
+    }
+
+    public void setShift_AAbTab(boolean arg) {
+        put("Shift-Tab", arg);
+    }
+
+    public boolean getShift_AAbTab() {
+	return get("Shift-Tab");
+    }
+
+    public void setAAjPageUp(boolean arg) {
         put("PageUp", arg);
     }
 
-    public boolean getAbPageUp() {
+    public boolean getAAjPageUp() {
 	return get("PageUp");
     }
 
-    public void setCtrl_AbPageUp(boolean arg) {
+    public void setCtrl_AAjPageUp(boolean arg) {
         put("Ctrl-PageUp", arg);
     }
 
-    public boolean getCtrl_AbPageUp() {
+    public boolean getCtrl_AAjPageUp() {
 	return get("Ctrl-PageUp");
     }
 
-    public void setShift_AbPageUp(boolean arg) {
+    public void setShift_AAjPageUp(boolean arg) {
         put("Shift-PageUp", arg);
     }
 
-    public boolean getShift_AbPageUp() {
+    public boolean getShift_AAjPageUp() {
 	return get("Shift-PageUp");
     }
 
-    public void setAbPageDown(boolean arg) {
+    public void setAAjPageDown(boolean arg) {
         put("PageDown", arg);
     }
 
-    public boolean getAbPageDown() {
+    public boolean getAAjPageDown() {
 	return get("PageDown");
     }
 
-    public void setCtrl_AbPageDown(boolean arg) {
+    public void setCtrl_AAjPageDown(boolean arg) {
         put("Ctrl-PageDown", arg);
     }
 
-    public boolean getCtrl_AbPageDown() {
+    public boolean getCtrl_AAjPageDown() {
 	return get("Ctrl-PageDown");
     }
 
-    public void setShift_AbPageDown(boolean arg) {
+    public void setShift_AAjPageDown(boolean arg) {
         put("Shift-PageDown", arg);
     }
 
-    public boolean getShift_AbPageDown() {
+    public boolean getShift_AAjPageDown() {
 	return get("Shift-PageDown");
     }
 }
