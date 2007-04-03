@@ -1500,6 +1500,148 @@ finished:
     return sidx;
   }
 
+  static boolean findsent(int dir, int count) {
+    FPOS pos, tpos;
+    int c;
+    int startlnum;
+    boolean noskip = false;
+    boolean cpo_J;
+    boolean found_dot;
+
+    pos = (FPOS) G.curwin.getWCursor().copy();
+
+    while (count-- > 0) {
+
+found:
+      do {
+        if (Misc.gchar_pos(pos) == '\n') {
+          do {
+            if (Misc.inclDeclV7(pos, dir) == -1)
+              break;
+          } while (Misc.gchar_pos(pos) == '\n');
+
+          if (dir == FORWARD)
+            break found;
+        }
+        else if (dir == FORWARD && pos.getColumn() == 0 &&
+          startPS(pos.getLine(), NUL, false)) {
+          if (pos.getLine() == G.curwin.getLineCount())
+            return false;
+          pos.setPosition(pos.getLine() + 1, 0);
+          break found;
+        }
+        else if (dir == BACKWARD)
+          Misc.decl(pos);
+
+        // go back to previous non-blank character
+        found_dot = false;
+        while ((c = Misc.gchar_pos(pos)) == ' ' || c == '\t' ||
+          (dir == BACKWARD && Util.vim_strchr(".!?)]\"'", c) != null)) {
+          if (Util.vim_strchr(".!?", c) != null) {
+            // Only skip over a '.', '!' and '?' once.
+            if (found_dot)
+              break;
+            found_dot = true;
+          }
+          if (Misc.decl(pos) == -1)
+            break;
+          // when going forward: Stop in front of empty line
+          if (Util.lineempty(pos.getLine()) && dir == FORWARD) {
+            Misc.inclV7(pos);
+            break found;
+          }
+        }
+
+        // remember the line where the search started
+        startlnum = pos.getLine();
+        cpo_J = (Util.vim_strchr(G.p_cpo, CPO_ENDOFSENT) != null);
+
+        for (;;) {
+          c = Misc.gchar_pos(pos);
+          if (c == '\n' ||
+            (pos.getColumn() == 0 && startPS(pos.getLine(), NUL, false))) {
+            if (dir == BACKWARD && pos.getLine() != startlnum)
+              pos.setPosition(pos.getLine() + 1, 0);
+            break;
+          }
+          if (c == '.' || c == '!' || c == '?') {
+            tpos = (FPOS) pos.copy();
+            do
+              if ((c = Misc.inc(tpos)) == -1)
+                break;
+            while (Util.vim_strchr(")]\"'", c = Misc.gchar_pos(tpos)) != null);
+
+            if (c == -1 || (!cpo_J && (c == ' ' || c == '\t')) || c == '\n'
+              || (cpo_J && (c == ' ' && Misc.inc(tpos) >= 0
+              && Misc.gchar_pos(tpos) == ' '))) {
+              pos = tpos;
+              if (Misc.gchar_pos(pos) == '\n') // skip '\n' at EOL
+                Misc.inc(pos);
+              break;
+            }
+          }
+          if (Misc.inclDeclV7(pos, dir) == -1) {
+            if (count > 0)
+              return false;
+            noskip = true;
+            break;
+          }
+        }
+      } while (false);
+
+      while (!noskip && ((c = Misc.gchar_pos(pos)) == ' ' || c== '\t'))
+        if (Misc.inclV7(pos) == -1) break;
+    }
+    MarkOps.setpcmark();
+    G.curwin.setCaretPosition(pos.getOffset());
+    return true;
+  }
+
+  static boolean findpar(CMDARG oap, int dir, int count, int what,
+    boolean both) {
+
+    int curr = G.curwin.getWCursor().getLine();
+
+    while (count-- > 0) {
+      boolean did_skip = false; //TRUE after separating lines have been skipped 
+      boolean first = true;     // TRUE on first line 
+      do {
+        if (!Util.lineempty(curr))
+          did_skip = true;
+
+        if (!first && did_skip && startPS(curr, what, both))
+          break;
+
+        if ((curr += dir) < 1 || curr > G.curwin.getLineCount()) {
+          if (count > 0)
+            return false;
+          curr -= dir;
+          break;
+        }
+        first = false;
+      } while (true);
+    }
+
+    MarkOps.setpcmark();
+
+    if (both && !Util.lineempty(curr) && Util.ml_get(curr).charAt(0) == '}')
+      ++curr;
+
+    int offset = 0;
+
+    if (curr == G.curwin.getLineCount()) {
+      offset = Util.lineLength(curr);
+      if (offset > 0) {
+        offset--;
+        oap.oap.inclusive = true;
+      }
+    }
+
+    G.curwin.setCaretPosition(curr, offset);
+
+    return true;
+  }
+
   //
   // Character class stuff from vim's regexp.c
   //
@@ -1749,7 +1891,7 @@ extend:
     Segment seg = Util.ml_get(lnum);
     // if seg.count == 1, then only a \n, ie empty line
     char s = seg.count > 1 ? seg.array[seg.offset] : 0;
-    // '\f' --> what is this???
+    // '\f' is formfeed, oh well, it doesn't hurt to be here
     if (s == para || s == '\f' || (both && s == '}'))
       return true;
 //    if (s == '.' && (inmacro(p_sections, s + 1) ||

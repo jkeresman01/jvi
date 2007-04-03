@@ -673,72 +673,180 @@ public class Misc implements ClipboardOwner {
   }
 
   /**
-   * inc(p)
-   *<br>
-   * Increment the line pointer 'p' crossing line boundaries as necessary.
-   * Return 1 when crossing a line, -1 when at end of file, 0 otherwise.
+   * inc_cursor()
+   *<p>
+   * Increment the current window's cursor position crossing line boundaries
+   * as necessary.  Return 1 when crossing a line, -1 when at end of file, 0
+   * otherwise.
+   * </p>
    */
   static int inc_cursor() {
-    ViFPOS fpos = G.curwin.getWCursor();
-    int rc = incCalc(fpos);
-    if(rc != -1) {
-      G.curwin.setCaretPosition(fpos.getOffset() + 1);
-    }
+    ViFPOS fpos = G.curwin.getWCursor().copy();
+    int rc = inc(fpos);
+    G.curwin.setCaretPosition(fpos.getOffset());
     return rc;
-  }
-
-  static int incCalc(ViFPOS lp) {
-      int c = gchar_pos(lp);
-      if(c != '\n') {
-	// still within line, move to next char (may be NUL)
-	c = Util.getCharAt(lp.getOffset() + 1);
-	return c != '\n' ? 0 : 1;
-      }
-      if(lp.getLine() != G.curwin.getLineCount()) {
-	// there is a next line;
-	return 1;
-      }
-      return -1;
   }
 
   /**
-   * dec(p)
+   * inc(lp)
    *<p>
-   * Decrement the line pointer 'p' crossing line boundaries as necessary.
-   * Return 1 when crossing a line, -1 when at start of file, 0 otherwise.
+   * Increment the line pointer 'lp' crossing line boundaries as necessary.
+   * Return 1 when crossing a line, -1 when at end of file, 0 otherwise.
+   * </p>
+   */
+   static int inc(ViFPOS lp) {
+    int rc = incV7(lp);
+    return rc != 2 ? rc : 1;
+  }
+
+  /**
+   * incV7(lp)
+   *<p>
+   * Increment the line pointer 'lp' crossing line boundaries as necessary.
+   * Return 1 when going to the next line.
+   * Return 2 when moving forward onto a newline at the end of the line).
+   * Return -1 when at the end of file.
+   * Return 0 otherwise.
+   * </p>
+   */
+  static int incV7(ViFPOS lp) {
+    int currLine = lp.getLine();
+    int c0 = Misc.gchar_pos(lp);
+
+    if(c0 != '\n')    // still within line, move to next char (may be newline)
+    {
+      /* #ifdef FEAT_MBYTE
+             if (has_mbyte)
+             {
+       	       int l = (*mb_ptr2len)(p);
+
+	           lp->col += l;
+	           return ((p[l] != NUL) ? 0 : 2);
+             }
+         #endif */
+
+      lp.setPosition(currLine, lp.getColumn() + 1);
+
+      /* #ifdef FEAT_VIRTUALEDIT
+	         lp->coladd = 0;
+         #endif */
+
+      return Misc.gchar_pos(lp) != '\n' ? 0 : 2;
+    }
+    if(currLine != G.curwin.getLineCount())  // there is a next line
+    {
+      lp.setPosition(currLine + 1, 0);
+
+      /* #ifdef FEAT_VIRTUALEDIT
+	         lp->coladd = 0;
+         #endif */
+
+      return 1;
+    }
+    return -1;
+  }
+
+  /**
+   * inclV7(fpos)
+   *<p>
+   * Same as incV7(), but skip the newline at the end of non-empty lines.
+   * </p>
+   */
+  static int inclV7(ViFPOS fpos) {
+    int rc = incV7(fpos);
+    if (rc >= 1 && fpos.getColumn() > 0) {
+      rc = incV7(fpos);
+    }
+    return rc;
+  }
+  
+  /**
+   * dec_cursor()
+   *<p>
+   * Decrement the current window's cursor position crossing line boundaries
+   * as necessary.  Return 1 when crossing a line, -1 when at start of file, 0
+   * otherwise.
    * </p>
    */
   static int dec_cursor() {
-    ViFPOS fpos = G.curwin.getWCursor();
-    int rc = decCalc(fpos);
-    if(rc != -1) {
-      G.curwin.setCaretPosition(fpos.getOffset() - 1);
-    }
+    ViFPOS fpos = G.curwin.getWCursor().copy();
+    int rc = dec(fpos);
+    G.curwin.setCaretPosition(fpos.getOffset());
     return rc;
   }
 
-  static int dec(ViFPOS fpos) {
-    int rc = decCalc(fpos);
-    if(rc == 0) {
-      fpos.setPosition(fpos.getLine(), fpos.getColumn() - 1);
-    } else if(rc > 0) {
-      int newline = fpos.getLine() - 1;
-      fpos.setPosition(newline, Util.lineLength(newline));
-    }
-    return rc;
-  }
-
-  /** Like "dec" but the semantics are different, the original "dec"
-   * modified its argument to produce a change, so use a different name.
+  /**
+   * dec(lp)
+   *<p>
+   * Decrement the line pointer 'lp' crossing line boundaries as necessary.
+   * Return 1 when crossing a line, -1 when at start of file, 0 otherwise.
+   * Code is taken from vim 7.0 (but also behaves as 5.6)
+   * </p>
    */
-  static private int decCalc(ViFPOS lp) {
-      if (lp.getColumn() > 0) {		/* still within line */
-	  return 0;
-      }
-      if (lp.getLine() > 1) {		/* there is a prior line */
-	  return 1;
-      }
-      return -1;			/* at start of file */
+  static int dec(ViFPOS lp) {
+    int currLine = lp.getLine();
+    int currCol = lp.getColumn();
+
+    /* #ifdef FEAT_VIRTUALEDIT
+           lp->coladd = 0;
+       #endif */
+
+    if (currCol > 0) {                               // still within line
+      lp.setPosition(currLine, currCol - 1);
+
+      /* #ifdef FEAT_MBYTE
+	         if (has_mbyte)
+	           {
+	               p = ml_get(lp->lnum);
+	               lp->col -= (*mb_head_off)(p, p + lp->col);
+	           }
+         #endif */
+
+      return 0;
+    }
+    if (currLine > 1) {                              // there is a prior line
+      int newLine = currLine - 1;
+      lp.setPosition(newLine, Util.lineLength(newLine));
+
+      /* #ifdef FEAT_MBYTE
+	         if (has_mbyte)
+	             lp->col -= (*mb_head_off)(p, p + lp->col);
+         #endif */
+
+      return 1;
+    }
+    return -1;                                      // at start of file
+  }
+
+  /**
+   * decl(lp)
+   *<p>
+   * Same as dec(), but skip the newline at the end of non-empty lines.
+   * Code is taken from vim 7.0 (but also behaves a 5.6)
+   * </p>
+   */
+  static int decl(ViFPOS lp) {
+    int rc = dec(lp);
+    if (rc == 1 && lp.getColumn() > 0) {
+      rc = dec(lp);
+    }
+    return rc;
+  }
+
+  /**
+   * inclDeclV7(lp,dir)
+   *<p>
+   * Increment or decrement the line pointer 'lp' base on direction 'dir'
+   * crossing line boundaries as necessary and skipping over newline char
+   * ('\n').  Return 1 when crossing a line, -1 when at end or start of file,
+   * 0 otherwise.  Code is vim7.0 biased.
+   * </p>
+   */
+  static int inclDeclV7(ViFPOS lp, int dir) {
+    if (dir == BACKWARD)
+      return decl(lp);
+    else
+      return inclV7(lp);
   }
 
   /**

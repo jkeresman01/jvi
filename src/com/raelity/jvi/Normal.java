@@ -878,7 +878,6 @@ middle_code:
 	    // FALLTHROUGH
 
 	  case ')':
-	    notImp("brace");
 	    nv_brace(ca, dir);
 	    break;
 
@@ -887,7 +886,6 @@ middle_code:
 	    // FALLTHROUGH
 
 	  case '}':
-	    notImp("findparen");
 	    nv_findpar(ca, dir);
 	    break;
 
@@ -2837,6 +2835,40 @@ middle_code:
     }
   }
 
+  
+  /*
+ * Handle "(" and ")" commands.
+ */
+ 
+  static private void nv_brace(CMDARG cap, int dir) {
+    do_xop("nv_brace");
+
+    cap.oap.motion_type = MCHAR;
+
+    if (cap.cmdchar == ')')
+      cap.oap.inclusive = false;
+    else
+      cap.oap.inclusive = true;
+
+    G.curwin.setWSetCurswant(true);
+
+    if (!Search.findsent(dir, cap.count1))
+      clearopbeep(cap.oap);
+  }
+  
+/*
+ * Handle the "{" and "}" commands.
+ */
+
+static private void nv_findpar(CMDARG cap, int dir)
+{
+  cap.oap.motion_type = MCHAR;
+  cap.oap.inclusive = false;
+  G.curwin.setWSetCurswant(true);
+  if (!Search.findpar(cap, dir, cap.count1, NUL, false))
+    clearopbeep(cap.oap);
+}
+
   /**
    * "R".
    */
@@ -3621,8 +3653,8 @@ middle_code:
   // private  void	nv_csearch (CMDARG cap, int dir, boolean type) {do_op("nv_csearch");}
   static private  void	nv_brackets (CMDARG cap, int dir) {do_op("nv_brackets");}
   // static private  void	nv_percent (CMDARG cap) {do_op("nv_percent");}
-  static private  void	nv_brace (CMDARG cap, int dir) {do_op("nv_brace");}
-  static private  void	nv_findpar (CMDARG cap, int dir) {do_op("nv_findpar");}
+  // static private  void	nv_brace (CMDARG cap, int dir) {do_op("nv_brace");}
+  //  static private  void	nv_findpar (CMDARG cap, int dir) {do_op("nv_findpar");}
   // private  boolean nv_Replace (CMDARG cap) { do_op("nv_Replace");return true; }
   static private  int	nv_VReplace (CMDARG cap) { do_op("nv_VReplace");return 0; }
   static private  int	nv_vreplace (CMDARG cap) { do_op("nv_vreplace");return 0; }
