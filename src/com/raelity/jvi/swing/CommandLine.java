@@ -58,6 +58,29 @@ public class CommandLine extends JPanel
   private int historySize;
   Border border1;
 
+  /** This is used to initialize the text of the combo box,
+   * needed so that characters entered before the combo box gets focus
+   * are not lost.
+   */
+  public void init(String s) {
+    if(s.length() == 0) {
+      JTextComponent tc = getTextField();
+      int len = tc.getText().length();
+      if(len > 0) {
+        tc.setCaretPosition(0);
+        tc.moveCaretPosition(len);
+        //System.err.println("Selection length = " + len);
+      }
+      return;
+    }
+    try {
+      Document doc = getTextField().getDocument();
+      doc.remove(0,doc.getLength());
+      doc.insertString(0, s, null);
+    }
+    catch (BadLocationException ex) { }
+  }
+
   /** This is used to append characters to the the combo box. It is
    * needed so that characters entered before the combo box gets focus
    * are not lost.
@@ -306,11 +329,11 @@ public class CommandLine extends JPanel
   /**
    * Take the argument event and create an action event copy with
    * this as its source. Then deliver it as needed.
+   * Do some maintenance on the LRU history.
    */
   protected void fireActionPerformed(ActionEvent e) {
     String command = getTextField().getText();
-    makeTop(command);
-    combo.hidePopup();
+    
     // Guaranteed to return a non-null array
     Object[] listeners = listenerList.getListenerList();
 
@@ -321,6 +344,11 @@ public class CommandLine extends JPanel
         ((ActionListener)listeners[i+1]).actionPerformed(e);
       }
     }
+    
+    // Maintain the LRU history, do this after the notifying completion
+    // to avoid document events relating to the following actions
+    makeTop(command);
+    combo.hidePopup();
   }
 
   /**

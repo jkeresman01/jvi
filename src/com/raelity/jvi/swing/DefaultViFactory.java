@@ -42,12 +42,8 @@ import javax.swing.text.Document;
 import javax.swing.text.TextAction;
 import javax.swing.text.Caret;
 
-import com.raelity.jvi.Window;
-import com.raelity.jvi.ViFS;
-import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.ViCmdEntry;
-import com.raelity.jvi.DefaultViFS;
 import com.raelity.jvi.*;
+import com.raelity.jvi.ViTextView.TAGOP;
 
 import static com.raelity.jvi.Constants.*;
 import static com.raelity.jvi.KeyDefs.*;
@@ -342,4 +338,12 @@ public class DefaultViFactory implements ViFactory {
       return basekey;
     }
   }
+
+  public void startTagPush(ViTextView tv, String ident){}
+
+  public void finishTagPush(ViTextView tv){}
+  
+  public void tagStack(TAGOP op, int count) {}
+  
+  public void displayTags(){}
 }
