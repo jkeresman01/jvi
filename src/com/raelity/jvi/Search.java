@@ -1557,7 +1557,7 @@ found:
 
         // remember the line where the search started
         startlnum = pos.getLine();
-        cpo_J = (Util.vim_strchr(G.p_cpo, CPO_ENDOFSENT) != null);
+        cpo_J = G.p_cpo_j.value;
 
         for (;;) {
           c = Misc.gchar_pos(pos);

@@ -103,6 +103,7 @@ public class G {
   static BooleanOption p_notsol;  // startofline
   static BooleanOption p_cpo_w; // change word blanks
   static BooleanOption p_cpo_search; // continue search from end of match
+  static BooleanOption p_cpo_j; // sentence search two spaces
   static BooleanOption p_js;   // joinspaces, 2 spaces after .?!
   static BooleanOption p_to;   // tildeop
   static BooleanOption p_ws;   // wrapscan

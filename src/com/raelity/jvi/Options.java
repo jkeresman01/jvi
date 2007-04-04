@@ -91,6 +91,7 @@ public class Options {
   public static final String changeWordBlanks = "viChangeWordBlanks";
   public static final String tildeOperator = "viTildeOperator";
   public static final String searchFromEnd = "viSearchFromEnd";
+  public static final String endOfSentence = "viEndOfSentence";
   public static final String wrapScan = "viWrapScan";
 
   public static final String metaEquals = "viMetaEquals";
@@ -106,6 +107,7 @@ public class Options {
   public static final String backspace = "viBackspace";
   public static final String scrollOff = "viScrollOff";
   public static final String selection = "viSelection";
+  public static final String selectMode = "viSelectMode";
   public static final String shiftWidth = "viShiftWidth";
   public static final String tabStop = "viTabStop";
   public static final String showMode = "viShowMode";
@@ -249,6 +251,12 @@ public class Options {
     G.p_cpo_search = createBooleanOption(searchFromEnd, true);
     setupOptionDesc(searchList, searchFromEnd, "'cpoptions' 'cpo' \"c\"",
                "search continues at end of match");
+
+    G.p_cpo_j = createBooleanOption(endOfSentence, false);
+    setupOptionDesc(searchList, endOfSentence, "'cpoptions' 'cpo' \"j\"",
+		  "A sentence has to be followed by two spaces after"
+                + " the '.', '!' or '?'.  A <Tab> is not recognized as"
+                + " white space.");
     
     G.p_meta_equals = createBooleanOption(metaEquals, true);
     setupOptionDesc(searchList, metaEquals, "RE Meta Equals",
@@ -375,7 +383,7 @@ public class Options {
             + "Possible values: 'old', 'inclusive', 'exclusive'");
     setExpertHidden(selection, true, false);
     
-    G.p_slm = createStringOption("selectmode", "",
+    G.p_slm = createStringOption(selectMode, "",
             new StringOption.Validator() {
               public void validate(String val) throws PropertyVetoException {
                   if ("mouse".equals(val)
@@ -389,6 +397,11 @@ public class Options {
                                                     opt.getString(), val));
               }
             });
+    setupOptionDesc(miscList, selectMode, "'selectmode' 'slm'",
+            "This is a comma separated list of words, which specifies when to"
+            + " start Select mode instead of Visual mode, when a selection is"
+            + " started. Possible values: 'mouse', key' or 'cmd'");
+    setExpertHidden(selection, true, true);
 
     /////////////////////////////////////////////////////////////////////
     //

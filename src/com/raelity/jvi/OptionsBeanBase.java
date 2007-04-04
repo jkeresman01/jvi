@@ -233,6 +233,22 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	return getboolean(Options.incrSearch);
     }
 
+    public void setViSelectMode(boolean arg) {
+        put(Options.selectMode, arg);
+    }
+
+    public boolean getViSelectMode() {
+	return getboolean(Options.selectMode);
+    }
+
+    public void setViEndOfSentence(boolean arg) {
+        put(Options.endOfSentence, arg);
+    }
+
+    public boolean getViEndOfSentence() {
+	return getboolean(Options.endOfSentence);
+    }
+
     public void setViHighlightSearch(boolean arg) {
         put(Options.highlightSearch, arg);
     }
