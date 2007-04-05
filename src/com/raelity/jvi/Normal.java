@@ -3093,9 +3093,11 @@ static private void nv_findpar(CMDARG cap, int dir)
       case 'v':
         if (checkclearop(oap))
             break;
-        if (G.curbuf.b_visual_start.getLine() == 0
-                || G.curbuf.b_visual_start.getLine() > G.curwin.getLineCount()
-                || G.curbuf.b_visual_end.getLine() == 0)
+        if (     MarkOps.check_mark(G.curbuf.b_visual_start, true) == FAIL
+              || MarkOps.check_mark(G.curbuf.b_visual_end, true) == FAIL
+              || G.curbuf.b_visual_start.getLine() == 0
+              || G.curbuf.b_visual_start.getLine() > G.curwin.getLineCount()
+              || G.curbuf.b_visual_end.getLine() == 0)
             Util.beep_flush();
         else
         {
@@ -3371,6 +3373,20 @@ static private void nv_findpar(CMDARG cap, int dir)
     clearop(cap.oap);
     if (p_im != 0 && G.restart_edit == 0) {
       G.restart_edit = 'a';
+    }
+  }
+  
+  /** force exit from visual mode.
+   * Used by ViManager when switching out and EditorPane
+   * This is taken from nv_esc above, except that end_visual_mode
+   * has a comment that says it checks EOL so took that out.
+   */
+  static void abortVisualMode() {
+    if (G.VIsual_active) {
+      end_visual_mode();	// stop Visual
+      G.curwin.setWSetCurswant(true);
+      update_curbuf(NOT_VALID);
+      Misc.showmode();
     }
   }
 

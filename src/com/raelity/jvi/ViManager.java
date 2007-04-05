@@ -62,7 +62,7 @@ public class ViManager {
   private static final int majorVersion = 0;
   private static final int minorVersion = 9;
   private static final int microVersion = 0;
-  private static final String releaseTag = "x6";
+  private static final String releaseTag = "x7";
   private static final String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion
@@ -394,6 +394,7 @@ public class ViManager {
     
     if(currentEditorPane != null) {
       Normal.resetCommand(); // NEEDSWORK: dont think this is needed
+      Normal.abortVisualMode();
       ViTextView currentTv = getViTextView(currentEditorPane);
       // Freeze and/or detach listeners from previous active view
       currentTv.detach();
