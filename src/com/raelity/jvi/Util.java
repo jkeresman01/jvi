@@ -149,6 +149,11 @@ public class Util {
     Segment seg = G.curwin.getLineSegment(lnum);
     return seg.count == 0 || seg.array[seg.offset] == '\n';
   }
+  
+  static boolean bufempty() {
+      return G.curwin.getLineCount() == 1
+             && lineempty(1);
+  }
 
   static int getChar() {
     return getCharAt(G.curwin.getCaretPosition());

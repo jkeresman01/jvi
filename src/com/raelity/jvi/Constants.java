@@ -237,6 +237,10 @@ public interface Constants {
   static final int CPO_SPECI	= '<';	/* don't recognize <> in mappings */
   static final String CPO_DEFAULT = "aABceFs";
   static final String CPO_ALL	= "aAbBcdeEfFjJkKlLmoOprsStuwWxy$!%*<";
+  
+  static final char BS_INDENT   = 'i';
+  static final char BS_EOL      = 'o';
+  static final char BS_START    = 's';
 
   // struct to store values from 'guicursor'
   static final int SHAPE_N	= 0; 	// Normal mode

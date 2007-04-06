@@ -152,4 +152,6 @@ public interface ViFactory {
   public void tagStack(TAGOP op, int count);
   
   public void displayTags();
+  
+  public void tagDialog(ColonCommands.ColonEvent e);
 }

@@ -298,6 +298,10 @@ public class ColonCommands {
         Msg.emsg(Messages.e_trailing);
         return null;
       }
+      if(cev.getAddrCount() > 0) {
+        Msg.emsg(Messages.e_norange);
+        return null;
+      }
     }
     if(bang
         && ( ! (ce.getValue() instanceof ColonAction)
@@ -776,19 +780,54 @@ public class ColonCommands {
   };
   
   /**
-   * :tag command. Simple for now, take no args
+   * :tag command.
    */
   static ColonAction ACTION_tag = new ColonAction() {
     public void actionPerformed(ActionEvent ev) {
         ColonEvent evt = (ColonEvent)ev;
-        if(evt.getNArg() != 0) {
+        if(evt.getNArg() > 1) {
+            Msg.emsg(Messages.e_trailing);
+            return;
+        }
+        if(evt.getNArg() == 1) {
+            ViManager.getViFactory().tagDialog(evt);
+        } else {
+          int count = 1;
+          if(evt.getAddrCount() == 1)
+              count = evt.getLine2();
+          ViManager.getViFactory().tagStack(TAGOP.NEWER, count);
+        }
+    }
+  };
+  
+  /**
+   * :pop command.
+   */
+  static ColonAction ACTION_pop = new ColonAction() {
+    public void actionPerformed(ActionEvent ev) {
+        ColonEvent evt = (ColonEvent)ev;
+        if(evt.getNArg() > 0) {
             Msg.emsg(Messages.e_trailing);
             return;
         }
         int count = 1;
         if(evt.getAddrCount() == 1)
             count = evt.getLine2();
-        ViManager.getViFactory().tagStack(TAGOP.NEWER, count);
+        ViManager.getViFactory().tagStack(TAGOP.OLDER, count);
+    }
+  };
+  
+  static ColonAction ACTION_tselect = new ColonAction() {
+    public void actionPerformed(ActionEvent ev) {
+        ColonEvent ce = (ColonEvent)ev;
+        if(ce.getNArg() > 1) {
+            Msg.emsg(Messages.e_trailing);
+            return;
+        }
+        int count = 1;
+        if(ce.getAddrCount() == 1)
+            count = ce.getLine2();
+        ViManager.getViFactory().tagDialog(ce);
     }
   };
 
@@ -875,6 +914,8 @@ public class ColonCommands {
     
     register("ta", "tag", ACTION_tag);
     register("tags", "tags", ACTION_tags);
+    register("ts", "tselect", ACTION_tselect);
+    register("po", "pop", ACTION_pop);
     
     // register("y", "yank", ACTION_yank);
     

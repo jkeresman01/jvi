@@ -2565,7 +2565,7 @@ public class Misc implements ClipboardOwner {
    * Also see getvcol() below.
    */
 
-  final static int lbr_chartabsize(int c, int col) {
+  static int lbr_chartabsize(int c, int col) {
     if (c == TAB && (!G.curwin.getWPList() /*|| lcs_tab1*/)) {
       int ts = G.curbuf.b_p_ts;
       return (int)(ts - (col % ts));
@@ -2573,6 +2573,24 @@ public class Misc implements ClipboardOwner {
       // return charsize(c);
       return 1;
     }
+  }
+
+/*
+ * return the number of characters the string 's' will take on the screen,
+ * taking into account the size of a tab
+ */
+  static int linetabsize(Segment seg)
+  {
+    int col = 0;
+    char ch;
+    
+    ch = seg.first();
+    while(ch != seg.DONE) {
+      col += lbr_chartabsize(ch, col);
+      ch = seg.next();
+    }
+
+    return col;
   }
 
   public static boolean vim_iswhite(int c) {

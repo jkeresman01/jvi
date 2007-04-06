@@ -49,6 +49,8 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
+import static com.raelity.jvi.Constants.*;
+
 /**
  * Option handling from external sources.
  * <br>
@@ -862,6 +864,16 @@ public class Options {
                 }
             }
         }
+    }
+    
+    static boolean can_bs(int what) {
+        switch(G.p_bs.value) {
+            case 2:     return true;
+            case 1:     return what != BS_START;
+            case 0:     return false;
+        }
+        assert(false) : "can_bs: ; p_bs bad value";
+        return false;
     }
 }
 
