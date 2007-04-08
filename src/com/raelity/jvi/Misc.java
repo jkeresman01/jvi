@@ -279,10 +279,11 @@ public class Misc implements ClipboardOwner {
     if(G.State != INSERT && G.State != REPLACE) {
       insert_mode = false;
       if(dir == BACKWARD && fpos.getLine() == 1) {
-	// Special case if BACKWARD and at position zero of document.
-	G.curwin.insertNewLine();
+        // first set the caret position to 0 so that insert line on first line works as well
 	// set position just before new line of first line
 	G.curwin.setCaretPosition(0);
+	// Special case if BACKWARD and at position zero of document.
+	G.curwin.insertNewLine();
 	Segment seg = G.curwin.getLineSegment(1);
 	G.curwin.setCaretPosition(
 		      0 + coladvanceColumnIndex(MAXCOL, seg));
