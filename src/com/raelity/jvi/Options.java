@@ -30,6 +30,7 @@
 package com.raelity.jvi;
 
 import com.raelity.jvi.ColonCommands.ColonEvent;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -108,12 +109,14 @@ public class Options {
   public static final String report = "viReport";
   public static final String backspace = "viBackspace";
   public static final String scrollOff = "viScrollOff";
-  public static final String selection = "viSelection";
-  public static final String selectMode = "viSelectMode";
   public static final String shiftWidth = "viShiftWidth";
   public static final String tabStop = "viTabStop";
   public static final String showMode = "viShowMode";
   public static final String showCommand = "viShowCommand";
+  
+  public static final String selection = "viSelection";
+  public static final String selectMode = "viSelectMode";
+  public static final String selectColor = "viSelectColor";
 
   
   public static final String readOnlyHack = "viReadOnlyHack";
@@ -404,6 +407,24 @@ public class Options {
             + " start Select mode instead of Visual mode, when a selection is"
             + " started. Possible values: 'mouse', key' or 'cmd'");
     setExpertHidden(selection, true, true);
+    
+    createStringOption(selectColor, "0xffe588", // a light (via HSB) orange
+            new StringOption.Validator() {
+              public void validate(String val) throws PropertyVetoException {
+                try {
+                  Color.decode(val);
+                } catch (NumberFormatException ex) {
+                  throw new PropertyVetoException(
+                      "Value must be a color."
+                                  + " Not '" + val + "'.",
+                              new PropertyChangeEvent(opt, opt.getName(),
+                                                      opt.getString(), val));
+                }
+              }
+            });
+    setupOptionDesc(miscList, selectColor, "'hl-visual' color",
+            "The color used for a visual mode selection.");
+    setExpertHidden(selection, true, false);
 
     /////////////////////////////////////////////////////////////////////
     //
@@ -874,6 +895,12 @@ public class Options {
         }
         assert(false) : "can_bs: ; p_bs bad value";
         return false;
+    }
+    
+    // put this here since things may change
+    public Color getSelectColor() {
+      Option opt = getOption(selectColor);
+      return Color.decode(opt.getString());
     }
 }
 

@@ -9,6 +9,7 @@
 
 package com.raelity.jvi;
 
+import java.awt.Color;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.beans.BeanDescriptor;
@@ -215,6 +216,24 @@ public class OptionsBeanBase extends SimpleBeanInfo {
     /** this read-only option is special cased */
     public String getJViVersion() {
         return ViManager.getReleaseString();
+    }
+
+    public void setViSelectColor(Color arg)  throws PropertyVetoException {
+        String s = String.format("0x%x", arg.getRGB() & 0xffffff);
+        //System.err.println("setViSelectColor: " + s);
+        put(Options.selectColor, s);
+    }
+
+    public Color getViSelectColor() {
+        String s = getString(Options.selectColor);
+        //System.err.println("getViSelectColor: " + s);
+        Color c = Color.orange;
+        try {
+            c = Color.decode(s);
+        } catch (NumberFormatException ex) {
+            //System.err.println("getViSelectColor: EXCEPTION: " + s);
+        }
+	return c;
     }
 
     public void setViSelection(String arg)  throws PropertyVetoException {
