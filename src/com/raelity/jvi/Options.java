@@ -898,7 +898,7 @@ public class Options {
     }
     
     // put this here since things may change
-    public Color getSelectColor() {
+    static public Color getSelectColor() {
       Option opt = getOption(selectColor);
       return Color.decode(opt.getString());
     }
