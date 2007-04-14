@@ -32,8 +32,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
-import com.raelity.jvi.swing.*;
-import com.raelity.jvi.*;
+import javax.swing.text.DefaultStyledDocument;
 
 public class JviFrame extends JFrame {
   JPanel contentPane;
@@ -62,7 +61,7 @@ public class JviFrame extends JFrame {
   Border border3;
   Border border4;
   GridBagLayout gridBagLayout1 = new GridBagLayout();
-  JEditorPane editorPane = new JEditorPane();
+  JEditorPane editorPane = new JTextPane();
 
   //Construct the frame
   public JviFrame() {

@@ -35,6 +35,8 @@ public class G {
   static public final String metaEscapeDefault = "()|+?{";
   static public final String metaEscapeAll = "()|+?{";
 
+
+
   /**
    * Set the current editor.
    */
@@ -151,6 +153,10 @@ public class G {
   public static boolean VIsual_active; // whether Visual mode is active
   public static boolean VIsual_select; // whether Select mode is active
   public static boolean VIsual_reselect;
+  // VISUAL repaint hack when in colon command from visual mode
+  public static boolean drawSavedVisualBounds = false;
+  // end VISUAL repaint hack when in colon command from visual mode
+
 				// whether to restart the selection after a
 				// Select mode mapping or menu
   public static int VIsual_mode; // type of Visual mode

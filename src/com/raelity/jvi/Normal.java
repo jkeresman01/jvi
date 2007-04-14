@@ -236,7 +236,6 @@ public class Normal {
 
     Misc.update_curswant();	// in vim called just before calling normal_cmd
 
-
     if(newChunk) {
       newChunk = false;
       lookForDigit = true;
@@ -1101,7 +1100,7 @@ middle_code:
 	     */
 	  case 'v':
 	  case 'V':
-	  case 0x1f & (int)('V'):	// Ctrl
+	  case 0x1f & (int)('V'):	// Ctrl // DISABLE ON RELEASE
 	    if (!checkclearop(oap))
                 nv_visual(ca, false);
 	    break;
@@ -1749,6 +1748,40 @@ middle_code:
     ColonCommands.doColonCommand(range);
   }
 
+  static void end_visual_mode() {
+      do_op("end_visual_mode");
+// #ifdef USE_CLIPBOARD
+    /*
+     * If we are using the clipboard, then remember what was selected in case
+     * we need to paste it somewhere while we still own the selection.
+     * Only do this when the clipboard is already owned.  Don't want to grab
+     * the selection when hitting ESC.
+     */
+//    if (clipboard.available && clipboard.owned)
+//        clip_auto_select();
+//#endif
+
+    G.VIsual_active = false;
+//#ifdef USE_MOUSE
+//    setmouse();
+//    mouse_dragging = 0;
+//#endif
+
+    /* Save the current VIsual area for '< and '> marks, and "gv" */
+    G.curwin.setMarkOffset((ViMark)G.curbuf.b_visual_start,
+                           G.VIsual.getOffset(), false);
+    G.curwin.setMarkOffset((ViMark)G.curbuf.b_visual_end,
+                           G.curwin.getWCursor().getOffset(), false);
+    G.curbuf.b_visual_mode = G.VIsual_mode;
+
+    if (G.p_smd.value)
+        G.clear_cmdline = true;/* unshow visual mode later */
+    G.curwin.updateVisualState();
+
+    /* Don't leave the cursor past the end of the line */
+    if (G.curwin.getWCursor().getColumn() > 0 && Util.getChar() == '\n')
+        G.curwin.setCaretPosition(G.curwin.getCaretPosition() -1);
+  }
   /**
    * 
    * <p>
@@ -2201,6 +2234,9 @@ middle_code:
   static private void nv_colon (CMDARG cap) {
     do_xop("nv_colon");
     if (G.VIsual_active) {
+       // VISUAL REPAINT HACK
+       G.drawSavedVisualBounds = true;
+       // END VISUAL REPAINT HACK
        nv_operator(cap);
     } else if( ! checkclearop(cap.oap)) {
       // translate "count:" into ":.,.+(count - 1)"
@@ -3071,6 +3107,33 @@ static private void nv_findpar(CMDARG cap, int dir)
     }
   }
   
+  /*
+  * Start Select mode, if "c" is in 'selectmode' and not in a mapping or menu.
+  */
+  static void may_start_select(int c) {
+      G.VIsual_select = (GetChar.stuff_empty() && typebuf_typed()
+        && (Util.vim_strchr(G.p_slm.getString(), c) != null));
+  }
+  
+  /*
+   * Start Visual mode "c".
+   * Should set VIsual_select before calling this.
+   */
+  static private  void	n_start_visual_mode(int c) {
+      do_op("n_start_visual_mode");
+      G.VIsual = (FPOS) G.curwin.getWCursor().copy();
+      G.VIsual_mode = c;
+      G.VIsual_active = true;
+      G.VIsual_reselect = true;
+      if (G.p_smd.value)
+          redraw_cmdline = true; /* show visual mode later */
+//#ifdef USE_CLIPBOARD
+    /* Make sure the clipboard gets updated.  Needed because start and
+     * end may still be the same, and the selection needs to be owned */
+//    clipboard.vmode = NUL;
+//#endif
+      //update_screenline();/* start the inversion */
+  }
   static private void nv_g_cmd(CMDARG cap, CharBuf searchbuff)
   throws NotSupportedException {
     do_xop("nv_g_cmd");
@@ -3137,10 +3200,10 @@ static private void nv_findpar(CMDARG cap, int dir)
              * start Select mode
              */
 //TODO: FIXME_VISUAL SELECT MODE
-            //if (searchp == null)
-            //    G.VIsual_select = true;
-            //else
-            //    may_start_select('c');
+            if (searchbuff == null)
+                G.VIsual_select = true;
+            else
+                may_start_select('c');
             //#ifdef USE_MOUSE
             //setmouse();
             //#endif
@@ -3560,40 +3623,6 @@ static private void nv_findpar(CMDARG cap, int dir)
   static boolean buflist_getfile(int n, int lnum, int options, boolean forceit) {
     do_op("buflist_getfile");return true;
   }
-  static void end_visual_mode() {
-      do_op("end_visual_mode");
-// #ifdef USE_CLIPBOARD
-    /*
-     * If we are using the clipboard, then remember what was selected in case
-     * we need to paste it somewhere while we still own the selection.
-     * Only do this when the clipboard is already owned.  Don't want to grab
-     * the selection when hitting ESC.
-     */
-//    if (clipboard.available && clipboard.owned)
-//        clip_auto_select();
-//#endif
-
-    G.VIsual_active = false;
-//#ifdef USE_MOUSE
-//    setmouse();
-//    mouse_dragging = 0;
-//#endif
-
-    /* Save the current VIsual area for '< and '> marks, and "gv" */
-    G.curwin.setMarkOffset((ViMark)G.curbuf.b_visual_start,
-                           G.VIsual.getOffset(), false);
-    G.curwin.setMarkOffset((ViMark)G.curbuf.b_visual_end,
-                           G.curwin.getWCursor().getOffset(), false);
-    G.curbuf.b_visual_mode = G.VIsual_mode;
-
-    if (G.p_smd.value)
-        G.clear_cmdline = true;/* unshow visual mode later */
-    G.curwin.updateVisualState();
-
-    /* Don't leave the cursor past the end of the line */
-    if (G.curwin.getWCursor().getColumn() > 0 && Util.getChar() == '\n')
-        G.curwin.setCaretPosition(G.curwin.getCaretPosition() -1);
-  }
   static void update_curbuf(int type) {do_op("update_curbuf");}
   static void redraw_curbuf_later(int type) {do_op("redraw_curbuf_later");}
   static void do_tag(String tag, int type, int count,
@@ -3742,7 +3771,6 @@ static private void nv_findpar(CMDARG cap, int dir)
        else if (cap.cmdchar == 'C' || cap.cmdchar == 'D')
            G.curwin.setWCurswant(MAXCOL);
     }
-      System.out.println("Transchar: "+ ((char)cap.cmdchar) +" -->'"+Util.vim_strchr(trans, cap.cmdchar)+"'");
     cap.cmdchar = Util.vim_strchr(trans, cap.cmdchar).charAt(1);
     nv_operator(cap);
   }
@@ -3816,12 +3844,14 @@ static private void nv_findpar(CMDARG cap, int dir)
               {
                   //TODO: FIXME_VISUAL BLOCK MODE
                   //validate_virtcol();
-                  //G.curwin.setWCurswant(G.curwin.w_virtcol + resel_VIsual_col * cap.count0 - 1);
-                  //coladvance(G.curwin.getWCurswant());
+                  G.curwin.setWCurswant(G.curwin.getWCursor().getColumn()/*G.curwin.w_virtcol*/ + resel_VIsual_col * cap.count0 - 1);
+                  Misc.coladvance(G.curwin.getWCurswant());
               }
               else
                   G.curwin.setWSetCurswant(true);
               update_curbuf(NOT_VALID); /* show the inversion */
+              /* update the screen cursor position */
+              G.curwin.updateVisualState();
           } else {
               if (!selectmode)
 /* start Select mode when 'selectmode' contains "cmd" */
@@ -3833,29 +3863,6 @@ static private void nv_findpar(CMDARG cap, int dir)
       }
   }
 
-  /*
-  * Start Select mode, if "c" is in 'selectmode' and not in a mapping or menu.
-  */
-  static void may_start_select(int c) {
-      G.VIsual_select = (GetChar.stuff_empty() && typebuf_typed()
-        && (Util.vim_strchr(G.p_slm.getString(), c) != null));
-  }
-
-  static private  void	n_start_visual_mode(int c) {
-      do_op("n_start_visual_mode");
-      G.VIsual = (FPOS) G.curwin.getWCursor().copy();
-      G.VIsual_mode = c;
-      G.VIsual_active = true;
-      G.VIsual_reselect = true;
-      if (G.p_smd.value)
-          redraw_cmdline = true; /* show visual mode later */
-//#ifdef USE_CLIPBOARD
-    /* Make sure the clipboard gets updated.  Needed because start and
-     * end may still be the same, and the selection needs to be owned */
-//    clipboard.vmode = NUL;
-//#endif
-      //update_screenline();/* start the inversion */
-  }
   //  static private  boolean nv_g_cmd (CMDARG cap, CharBuf searchp) { do_op("nv_g_cmd");return true; }
   // private  boolean n_opencmd (CMDARG cap) { do_op("n_opencmd");return true; }
   static private  void	nv_Undo (CMDARG cap) throws NotSupportedException {

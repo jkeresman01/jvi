@@ -121,6 +121,13 @@ public class InlineCmdEntry implements ViCmdEntry, ActionListener{
         }
 
 	public void actionPerformed(ActionEvent e) {
+            // VISUAL REPAINT HACK
+            // Repaint before executing commands.. 
+            // so that I can be sure the visual area didn't change yet
+            // and all has been repainted
+            G.drawSavedVisualBounds = false;
+            G.curwin.updateVisualState();
+            // END VISUAL REPAINT HACK
 	    lastCommand = commandLine.getCommand();
             if(Options.getOption(Options.dbgKeyStrokes).getBoolean())
                 System.err.println("CommandAction: '" + lastCommand + "'");

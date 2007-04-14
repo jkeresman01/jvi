@@ -29,6 +29,7 @@
 package com.raelity.jvi.swing;
 
 import java.awt.Point;
+import java.util.Arrays;
 
 import javax.swing.text.*;
 import javax.swing.JEditorPane;
@@ -42,6 +43,7 @@ import com.raelity.jvi.Util;
 import com.raelity.jvi.MutableInt;
 import com.raelity.jvi.Window;
 import com.raelity.jvi.*;
+import java.awt.Color;
 
 /**
  * Presents a swing editor interface for use with vi. There is
@@ -57,6 +59,14 @@ import com.raelity.jvi.*;
  * </p>
  */
 public class TextView implements ViTextView {
+
+  private static MutableAttributeSet HIGHLIGHT = new SimpleAttributeSet();
+  private static MutableAttributeSet UNHIGHLIGHT = new SimpleAttributeSet();
+  static {
+      StyleConstants.setBackground(HIGHLIGHT, Color.LIGHT_GRAY);
+      StyleConstants.setBackground(UNHIGHLIGHT, Color.WHITE);
+  }
+
   protected JEditorPane editorPane;
   protected TextOps ops;
   protected static char[] oneCharArray = new char[1];
@@ -367,37 +377,9 @@ public class TextView implements ViTextView {
 
   public void setCaretPosition(int offset) {
     expectedCaretPosition = offset;
-    if (G.VIsual_active) { // if in selection mode
-        if (G.VIsual_mode == 'V') { // line selection mode
-            // make sure the entire lines are selected
-            if (offset < G.VIsual.getOffset()) {
-                int start = getLineEndOffsetFromOffset(G.VIsual.getOffset());
-                if (editorPane.getSelectionStart() != start) {
-                    editorPane.setSelectionStart(start);
-                }
-                editorPane.moveCaretPosition(getLineStartOffsetFromOffset(offset));
-            } else {
-                int start = getLineStartOffsetFromOffset(G.VIsual.getOffset());
-                if (editorPane.getSelectionStart() != start) {
-                    editorPane.setSelectionStart(start);
-                }
-                editorPane.moveCaretPosition(getLineEndOffsetFromOffset(offset)-1); // end of a line
-            }
-
-        } else {
-            int start;
-            if (offset < G.VIsual.getOffset()) {
-                start = G.VIsual.getOffset()+1;
-            } else {
-                start = G.VIsual.getOffset();
-            }
-            if (editorPane.getSelectionStart() != start) {
-                editorPane.setSelectionStart(start);
-            }
-            editorPane.moveCaretPosition(offset);
-        }
-    } else {
     editorPane.setCaretPosition(offset);
+    if (G.VIsual_active) {
+        updateVisualState();
   }
   }
 
@@ -703,13 +685,122 @@ public class TextView implements ViTextView {
   /**
    * Update the selection highlight.
    */
+  protected int[] previousHighlight = null;
+
   public void updateVisualState() {
-      if (G.VIsual_active) {
+      if (!G.VIsual_active) {
+          try {
+            unhighlight(new int[]{getMark('<').getOffset(), getMark('>').getOffset()});
+          } catch(Exception e) {}
+      }
+      highlight(getVisualSelectBlocks(0, Integer.MAX_VALUE));
+  }
+
+  /**
+   * Returns an array of blocks that are visual or an empty array when visual active is false.
+   * the array is a an even set of points which are set like:<br>
+   * {offset1start, offset1end, offset2start, offset2end, ..}
+   * @return an array of blocks that are visual.
+   * @throws an IllegalStateException when the visual mode is not understand
+   */
+  private int calcMode, calcStart, calcEnd;
+  public int[] getVisualSelectBlocks(int startOffset, int endOffset) {
+    if (G.drawSavedVisualBounds) {
+        return previousHighlight;
+    }
+    // some caching so that visual blocks aren't recalculated everytime
+    if (G.VIsual_active && calcMode == G.VIsual_mode && calcStart == getCaretPosition() && calcEnd == G.VIsual.getOffset()) {
+        return previousHighlight;
+    }
+    calcMode = G.VIsual_mode;
+    calcStart = getCaretPosition();
+    calcEnd = G.VIsual.getOffset();
+    previousHighlight = calculateVisualBlocks();
+    return previousHighlight;
+  }
+
+  /**
+   * Calculate the visual blocks depending on the visual mode.
+   * The visual block array ends with -1,-1
+   * If visual mode is not active.. it returns an array containing {-1, -1}
+   * @returns te visual blocks
+   */
+  private int[] calculateVisualBlocks() {
+    if (G.VIsual_active) { // if in selection mode
+        int start, offset;
+        int tmpstart = G.VIsual.getOffset();
+        int tmpoffset = getCaretPosition();
+        start = tmpstart < tmpoffset ? tmpstart : tmpoffset;
+        offset = tmpstart > tmpoffset ? tmpstart : tmpoffset;
+        int[] newHighlight;
         if (G.VIsual_mode == 'V') { // line selection mode
-          setCaretPosition(getCaretPosition());
+            // make sure the entire lines are selected
+            if (offset < start) {
+                start = getLineEndOffsetFromOffset(start);
+                offset = getLineStartOffsetFromOffset(offset);
+            } else {
+                start = getLineStartOffsetFromOffset(start);
+                offset = getLineEndOffsetFromOffset(offset)-1; // end of a line
+            }
+            newHighlight = new int[]{start, offset, -1, -1};
+        } else if (G.VIsual_mode == 'v') {
+            if (getCaretPosition() < G.VIsual.getOffset()) {
+                offset = offset+1;
+            }
+            newHighlight = new int[]{start, offset, -1, -1};
+        } else if (G.VIsual_mode == (0x1f & (int)('V'))) { // visual block mode
+            if (offset < start) {
+                start = start+1;
+            }
+            int startLine = offset > start ? getLineNumber(start) : getLineNumber(offset);
+            int endLine = offset < start ? getLineNumber(start) : getLineNumber(offset);
+            int colStart = getColumnNumber(start);
+            int colEnd = getColumnNumber(offset);
+            newHighlight = new int[(((endLine - startLine)+1)*2) + 2];
+            for (int i = startLine; i <= endLine; i++) {
+                tmpstart = getLineEndOffset(i) < getLineStartOffset(i) + colStart ? getLineEndOffset(i) : getLineStartOffset(i) + colStart;
+                int tmpend = getLineEndOffset(i) < getLineStartOffset(i) + colEnd + 1 ? getLineEndOffset(i) : getLineStartOffset(i) + colEnd + 1;
+                newHighlight[(i-startLine)*2] = tmpstart;
+                newHighlight[((i-startLine)*2)+1] = tmpend;
+            }
+            newHighlight[newHighlight.length-2] = -1;
+            newHighlight[newHighlight.length-1] = -1;
+        } else {
+            throw new IllegalStateException("Visual mode: "+ G.VIsual_mode +" is not supported");
         }
-      } else if (editorPane.getSelectedText() != null && editorPane.getSelectedText().length() > 0) {
-          setCaretPosition(getCaretPosition());
+        return newHighlight;
+    } else {
+        return new int[] { -1, -1};
+    }
+  }
+
+  private void unhighlight(int[] blocks) {
+      applyBackground(blocks, UNHIGHLIGHT);
+  }
+
+  private int[] previousAppliedHighlight = null;
+  private void highlight(int[] blocks) {
+      if (previousAppliedHighlight != null && !Arrays.equals(previousAppliedHighlight, blocks)) {
+          unhighlight(previousAppliedHighlight);
+      }
+      applyBackground(blocks, HIGHLIGHT);
+      previousAppliedHighlight = blocks;
+  }
+
+  protected void applyBackground(int[] blocks, MutableAttributeSet mas) {
+      StyledDocument document  = (StyledDocument) editorPane.getDocument();
+      for (int i = 0; i < blocks.length; i+=2) {
+          int start = blocks[i];
+          int end = blocks[i+1];
+          if (start == -1 && end == -1) { // break
+              return;
+          }
+          if (start > end) {
+              int tmp = start;
+              start = end;
+              end = tmp;
+        }
+        document.setCharacterAttributes(start, end - start, mas, false);
       }
   }
 }
