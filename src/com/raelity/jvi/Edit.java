@@ -1351,7 +1351,7 @@ public class Edit {
     }
     /* if 'whichwrap' set for cursor in insert mode, may move the
      * cursor to the next line */
-    // NEEDSWORK: implement p_ww ']': next line ok in insert mode
+    // NEEDSWORK: implement p_ww ']': ins_right: next line ok in insert mode
     /*else if (vim_strchr(p_ww, ']') != NULL
              && curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count)
     {

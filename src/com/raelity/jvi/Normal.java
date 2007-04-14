@@ -2729,6 +2729,7 @@ middle_code:
            || cap.nchar == K_X_SEARCH_FINISH;
     
     if(cap.nchar == K_X_SEARCH_CANCEL) {
+      Msg.clearMsg();
       clearop(oap);
       return;
     }

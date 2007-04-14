@@ -50,6 +50,8 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
+import com.raelity.jvi.Option.ColorOption;
+
 import static com.raelity.jvi.Constants.*;
 
 /**
@@ -408,20 +410,7 @@ public class Options {
             + " started. Possible values: 'mouse', key' or 'cmd'");
     setExpertHidden(selection, true, true);
     
-    createStringOption(selectColor, "0xffe588", // a light (via HSB) orange
-            new StringOption.Validator() {
-              public void validate(String val) throws PropertyVetoException {
-                try {
-                  Color.decode(val);
-                } catch (NumberFormatException ex) {
-                  throw new PropertyVetoException(
-                      "Value must be a color."
-                                  + " Not '" + val + "'.",
-                              new PropertyChangeEvent(opt, opt.getName(),
-                                                      opt.getString(), val));
-                }
-              }
-            });
+    createColorOption(selectColor, new Color(0xffe588)); // a light (HSB) orange
     setupOptionDesc(miscList, selectColor, "'hl-visual' color",
             "The color used for a visual mode selection.");
     setExpertHidden(selection, true, false);
@@ -497,6 +486,21 @@ public class Options {
     if(optionsMap.get(name) != null)
         throw new IllegalArgumentException("Option " + name + "already exists");
     IntegerOption opt = new IntegerOption(name, defaultValue, valid);
+    optionsMap.put(name, opt);
+    return opt;
+  }
+  
+  static public ColorOption createColorOption(String name,
+                                              Color defaultValue) {
+      return createColorOption(name, defaultValue, null);
+  }
+
+  static public ColorOption createColorOption(String name,
+                                              Color defaultValue,
+                                              ColorOption.Validator valid) {
+    if(optionsMap.get(name) != null)
+        throw new IllegalArgumentException("Option " + name + "already exists");
+    ColorOption opt = new ColorOption(name, defaultValue, valid);
     optionsMap.put(name, opt);
     return opt;
   }
@@ -895,12 +899,6 @@ public class Options {
         }
         assert(false) : "can_bs: ; p_bs bad value";
         return false;
-    }
-    
-    // put this here since things may change
-    static public Color getSelectColor() {
-      Option opt = getOption(selectColor);
-      return Color.decode(opt.getString());
     }
 }
 

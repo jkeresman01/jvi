@@ -25,6 +25,8 @@ import java.beans.VetoableChangeSupport;
 import java.util.List;
 import java.util.prefs.Preferences;
 
+import com.raelity.jvi.Option.ColorOption;
+
 /**
  * Base class for jVi options beans. This method contains the read/write methods
  * for all options. Which options are made visible is controlled by the
@@ -189,6 +191,15 @@ public class OptionsBeanBase extends SimpleBeanInfo {
         this.pcs.firePropertyChange( name, old, val );
     }
 
+    protected void put(String name, Color val) throws PropertyVetoException {
+        Color old = getColor(name);
+	ColorOption opt = (ColorOption)Options.getOption(name);
+        opt.validate(val);
+        this.vcs.fireVetoableChange( name, old, val );
+	prefs.put(name, opt.xformToString(val));
+        this.pcs.firePropertyChange( name, old, val );
+    }
+
     protected void put(String name, boolean val) {
 	prefs.putBoolean(name, val);
     }
@@ -201,6 +212,12 @@ public class OptionsBeanBase extends SimpleBeanInfo {
     protected int getint(String name) {
 	Option opt = Options.getOption(name);
 	return prefs.getInt(name, Integer.parseInt(opt.getDefault()));
+    }
+
+    protected Color getColor(String name) {
+	Option opt = Options.getOption(name);
+        String s = prefs.get(name, opt.getDefault());
+	return Color.decode(s);
     }
 
     protected boolean getboolean(String name) {
@@ -219,21 +236,11 @@ public class OptionsBeanBase extends SimpleBeanInfo {
     }
 
     public void setViSelectColor(Color arg)  throws PropertyVetoException {
-        String s = String.format("0x%x", arg.getRGB() & 0xffffff);
-        //System.err.println("setViSelectColor: " + s);
-        put(Options.selectColor, s);
+        put(Options.selectColor, arg);
     }
 
     public Color getViSelectColor() {
-        String s = getString(Options.selectColor);
-        //System.err.println("getViSelectColor: " + s);
-        Color c = Color.orange;
-        try {
-            c = Color.decode(s);
-        } catch (NumberFormatException ex) {
-            //System.err.println("getViSelectColor: EXCEPTION: " + s);
-        }
-	return c;
+        return getColor(Options.selectColor);
     }
 
     public void setViSelection(String arg)  throws PropertyVetoException {

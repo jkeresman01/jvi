@@ -29,6 +29,7 @@
  */
 package com.raelity.jvi;
 
+import java.awt.Color;
 import java.beans.PropertyVetoException;
 
 public abstract class Option {
@@ -131,6 +132,11 @@ public abstract class Option {
                                      + " is not a StringOption");
     }
     
+    public Color getColor() {
+        throw new ClassCastException(this.getClass().getSimpleName()
+                                     + " is not a ColorOption");
+    }
+    
     public void validate(int val) throws PropertyVetoException {
         throw new ClassCastException(this.getClass().getSimpleName()
                                      + " is not an IntegerOption");
@@ -146,15 +152,84 @@ public abstract class Option {
                                      + " is not a StringOption");
     }
     
+    public void validate(Color val) throws PropertyVetoException {
+        throw new ClassCastException(this.getClass().getSimpleName()
+                                     + " is not a ColorOption");
+    }
+    
     public void validate(Object val) throws PropertyVetoException {
         if(val instanceof String)
             validate((String)val);
+        else if(val instanceof Color)
+            validate((Color)val);
         else if(val instanceof Boolean)
             validate(((Boolean)val).booleanValue());
         else if(val instanceof Integer)
             validate(((Integer)val).intValue());
         else 
             throw new ClassCastException(val.getClass().getSimpleName()
-                                        + " is not int, boolean or String");
+                                    + " is not int, boolean, Color or String");
+    }
+    
+    //////////////////////////////////////////////////////////////////////
+    //
+    // ColorOption
+    //
+    
+    public static class ColorOption extends Option {
+        private Validator validator;
+        Color value;
+        
+        public ColorOption(String key, Color defaultValue) {
+            this(key, defaultValue, null);
+        }
+        
+        public ColorOption(String key, Color defaultValue, Validator validator) {
+            super(key, xformToString(defaultValue));
+            if(validator == null) {
+                // The default validation accepts everything
+                validator = new Validator() {
+                    public void validate(Color val) throws PropertyVetoException {
+                    }
+                };
+            }
+            this.validator = validator;
+        }
+
+        public final Color getColor() {
+            return value;
+        }
+        
+        public static String xformToString(Color c) {
+            return String.format("0x%x", c.getRGB() & 0xffffff);
+        }
+
+        /**
+        * Set the value of the parameter.
+        */
+        public void setColor(Color newValue) {
+            Color oldValue = value;
+            value = newValue;
+            stringValue = xformToString(value);
+            propogate();
+            Options.getOptions().pcs.firePropertyChange(name, oldValue, newValue);
+        }
+
+        /**
+        * Set the value as a string.
+        */
+        public void setValue(String newValue) throws IllegalArgumentException {
+            setColor(Color.decode(newValue));
+        }
+        
+        public void validate(Color val) throws PropertyVetoException {
+            validator.validate(val);
+        }
+        
+        public static abstract class Validator {
+            protected ColorOption opt;
+            
+            public abstract void validate(Color val) throws PropertyVetoException;
+        }
     }
 }
