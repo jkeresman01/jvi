@@ -2923,24 +2923,6 @@ static private void nv_findpar(CMDARG cap, int dir)
 }
 
   /**
-   * "R".
-   */
-  static private void nv_Replace(CMDARG cap)
-  {
-    if (G.VIsual_active)		/* "R" is replace lines */
-    {
-      cap.cmdchar = 'c';
-      G.VIsual_mode = 'V';
-      nv_operator(cap);
-    } else if (!checkclearopq(cap.oap)) {
-      if (u_save_cursor() == OK) {
-        Misc.beginInsertUndo();
-        Edit.edit('R', false, cap.count1);
-      }
-    }
-  }
-
-  /**
    * Handle the "r" command.
    */
   static private void nv_replace(CMDARG cap) {
@@ -2963,6 +2945,63 @@ static private void nv_findpar(CMDARG cap, int dir)
     GetChar.stuffcharReadbuff((char)cap.nchar);
     GetChar.stuffcharReadbuff(ESC);
     return;
+  }
+  
+  /**
+   * 'o': Exchange start and end of Visual area.
+   * 'O': same, but in block mode exchange left and right corners.
+   */
+  static private  void	v_swap_corners (CMDARG cap) {
+    do_op("v_swap_corners");
+    FPOS old_cursor;
+    int /*colnr_t*/ left, right;
+
+    if ((cap.cmdchar == 'O') && G.VIsual_mode == Util.ctrl('V'))
+    {
+//TODO: FIXME_VISUAL BLOCK MODE
+//       old_cursor = (FPOS)G.curwin.getWCursor().copy();
+//       //getvcols(&old_cursor, &VIsual, &left, &right);
+//       curwin.w_cursor.lnum = VIsual.lnum;
+//       coladvance(left);
+//       G.VIsual = G.curwin.w_cursor;
+//       G.curwin.w_cursor.lnum = old_cursor.lnum;
+//       coladvance(right);
+//       G.curwin.w_curswant = right;
+//       if (G.curwin.w_cursor.col == old_cursor.col)
+//       {
+//           G.curwin->w_cursor.lnum = VIsual.lnum;
+//           coladvance(right);
+//           G.VIsual = G.curwin.w_cursor;
+//           curwin->w_cursor.lnum = old_cursor.lnum;
+//           coladvance(left);
+//           curwin->w_curswant = left;
+//       }
+    }
+    if (cap.cmdchar != 'O' || G.VIsual_mode != Util.ctrl('V'))
+    {
+        old_cursor = (FPOS)G.curwin.getWCursor().copy();
+        G.curwin.setCaretPosition(G.VIsual.getOffset());
+        G.VIsual = old_cursor;
+        G.curwin.updateVisualState();
+    }
+  }
+
+  /**
+   * "R".
+   */
+  static private void nv_Replace(CMDARG cap)
+  {
+    if (G.VIsual_active)		/* "R" is replace lines */
+    {
+      cap.cmdchar = 'c';
+      G.VIsual_mode = 'V';
+      nv_operator(cap);
+    } else if (!checkclearopq(cap.oap)) {
+      if (u_save_cursor() == OK) {
+        Misc.beginInsertUndo();
+        Edit.edit('R', false, cap.count1);
+      }
+    }
   }
 
   /**
@@ -3029,6 +3068,26 @@ static private void nv_findpar(CMDARG cap, int dir)
     cap.oap.motion_type = flag ? MLINE : MCHAR;
     cap.oap.inclusive = false;		/* ignored if not MCHAR */
     G.curwin.setWSetCurswant(true);
+  }
+  
+  /**
+   * Handle commands that are operators in Visual mode.
+   */
+  static private  void	v_visop (CMDARG cap) {
+      do_op("v_visop");
+      String trans = "YyDdCcxdXdAAIIrr";
+
+    /* Uppercase means linewise, except in block mode, then "D" deletes till
+     * the end of the line, and "C" replaces til EOL */
+    if (Character.isUpperCase(cap.cmdchar))
+    {
+       if (G.VIsual_mode != Util.ctrl('V'))
+           G.VIsual_mode = 'V';
+       else if (cap.cmdchar == 'C' || cap.cmdchar == 'D')
+           G.curwin.setWCurswant(MAXCOL);
+    }
+    cap.cmdchar = Util.vim_strchr(trans, cap.cmdchar).charAt(1);
+    nv_operator(cap);
   }
 
   static String[] nv_optrans_ar = new String[] { "dl", "dh", "d$", "c$",
@@ -3106,6 +3165,96 @@ static private void nv_findpar(CMDARG cap, int dir)
     } else {
       clearopbeep(cap.oap);
     }
+  }
+  
+  /**
+   * Handle "v", "V" and "CTRL-V" commands.
+   * Also for "gh", "gH" and "g^H" commands.
+   */
+  
+  static private  void	nv_visual(CMDARG cap, boolean selectmode) {
+      do_op("nv_visual");
+      if (G.VIsual_active) {/* change Visual mode */
+          if (G.VIsual_mode == cap.cmdchar) {    /* stop visual mode */
+              end_visual_mode();
+          } else {/* toggle char/block mode */
+              /*or char/line mode */
+              G.VIsual_mode = cap.cmdchar;
+              Misc.showmode();
+              /* update the screen cursor position */
+              G.curwin.updateVisualState();
+              //G.curwin.setWCurswant(G.curwin.getCaretPosition());
+          }
+          update_curbuf(NOT_VALID);/* update the inversion */
+      } else { /* start Visual mode */
+          if (cap.count0 > 0) { /*use previously selected part */
+              if (resel_VIsual_mode == NUL)   /* there is none */
+              {
+                  Util.beep_flush();
+                  return;
+              }
+              G.VIsual = (FPOS)G.curwin.getWCursor().copy();
+              G.VIsual_active = true;
+              G.VIsual_reselect = true;
+              if (!selectmode)
+              /* start Select mode when 'selectmode' contains "cmd" */
+                  may_start_select('c');
+              if (G.p_smd.value)
+                  redraw_cmdline = true;  /* show visual mode later */
+              /*
+               * For V and ^V, we multiply the number of lines even if there
+               * was only one -- webb
+               */
+              if (resel_VIsual_mode != 'v' || resel_VIsual_line_count > 1)
+              {
+                  int line = G.curwin.getWCursor().getLine()
+                                    + resel_VIsual_line_count * cap.count0 - 1;
+                  if(line > G.curwin.getLineCount())
+                      line = G.curwin.getLineCount();
+                  // Not sure about how column should be set, but at least
+                  // make sure it stays in the correct line
+                  int col = Misc.check_cursor_col(line,
+                                            G.curwin.getWCursor().getColumn());
+                  G.curwin.setCaretPosition(line, col);
+              }
+              G.VIsual_mode = resel_VIsual_mode;
+              if (G.VIsual_mode == 'v')
+              {
+                  if (resel_VIsual_line_count <= 1)
+                      // NEEDSWORK: ? can column overflow here?
+                      G.curwin.setCaretPosition(G.curwin.getWCursor().getLine(),
+                              G.curwin.getWCursor().getColumn()
+                                + resel_VIsual_col * cap.count0 - 1);
+                  else
+                      G.curwin.setCaretPosition(G.curwin.getWCursor().getLine(),
+                              resel_VIsual_col);
+              }
+              if (resel_VIsual_col == MAXCOL)
+              {
+                  G.curwin.setWCurswant(MAXCOL);
+                  Misc.coladvance(MAXCOL);
+              }
+              else if (G.VIsual_mode == Util.ctrl('V'))
+              {
+                  //TODO: FIXME_VISUAL BLOCK MODE
+                  //validate_virtcol();
+                  G.curwin.setWCurswant(G.curwin.getWCursor().getColumn()/*G.curwin.w_virtcol*/ + resel_VIsual_col * cap.count0 - 1);
+                  Misc.coladvance(G.curwin.getWCurswant());
+              }
+              else
+                  G.curwin.setWSetCurswant(true);
+              update_curbuf(NOT_VALID); /* show the inversion */
+              /* update the screen cursor position */
+              G.curwin.updateVisualState();
+          } else {
+              if (!selectmode)
+/* start Select mode when 'selectmode' contains "cmd" */
+                  may_start_select('c');
+              n_start_visual_mode(cap.cmdchar);
+              /* update the screen cursor position */
+              G.curwin.updateVisualState();
+          }
+      }
   }
   
   /*
@@ -3247,6 +3396,26 @@ static private void nv_findpar(CMDARG cap, int dir)
       }
     }
     return;
+  }
+  
+  /*
+   * Handle "U" command.
+   */
+  static private  void	nv_Undo (CMDARG cap) throws NotSupportedException {
+      do_op("nv_Undo");
+         // In Visual mode and typing "gUU" triggers an operator
+    if (G.VIsual_active || cap.oap.op_type == OP_UPPER)
+    {
+         // translate "gUU" to "gUgU"
+          cap.cmdchar = 'g';
+          cap.nchar = 'U';
+          nv_operator(cap);
+    } else if (!checkclearopq(cap.oap)) {
+          //u_undoline();
+          notSup("nv_Undo");
+          G.curwin.setWSetCurswant(true);
+    }
+
   }
 
   /**
@@ -3510,6 +3679,71 @@ static private void nv_findpar(CMDARG cap, int dir)
     return;
   }
 
+  static private  void	nv_object (CMDARG cap) {
+      do_op("nv_object");
+      int flag;
+      boolean include;
+      //char_u *mps_save;
+      String mps_save;
+
+      if (cap.cmdchar == 'i')
+          include = false;    /* "ix" = inner object: exclude white space */
+      else
+          include = true;    /* "ax" = an object: include white space */
+
+      /* Make sure (), [], {} and <> are in 'matchpairs' */
+      mps_save = G.curbuf.b_p_mps;
+      G.curbuf.b_p_mps = "(:),{:},[:],<:>";
+
+      switch (cap.nchar)
+      {
+//         case 'w': /* "aw" = a word */
+//             flag = current_word(cap.oap, cap.count1, include, false);
+//             break;
+//         case 'W': /* "aW" = a WORD */
+//             flag = current_word(cap.oap, cap.count1, include, true);
+//             break;
+//         case 'b': /* "ab" = a braces block */
+//         case '(':
+//         case ')':
+//             flag = current_block(cap.oap, cap.count1, include, '(', ')');
+//             break;
+//         case 'B': /* "aB" = a Brackets block */
+//         case '{':
+//         case '}':
+//             flag = current_block(cap.oap, cap.count1, include, '{', '}');
+//             break;
+//         case '[': /* "a[" = a [] block */
+//         case ']':
+//             flag = current_block(cap.oap, cap.count1, include, '[', ']');
+//             break;
+//         case '<': /* "a<" = a <> block */
+//         case '>':
+//             flag = current_block(cap.oap, cap.count1, include, '<', '>');
+//             break;
+         case 'p': /* "ap" = a paragraph */
+             flag = Search.current_par(cap.oap, cap.count1, include, 'p');
+             break;
+//         case 's': /* "as" = a sentence */
+//             flag = current_sent(cap.oap, cap.count1, include);
+//             break;
+//             //#if 0­  /* TODO */
+//             //­       case 'S': /* "aS" = a section */
+//             //­       case 'f': /* "af" = a filename */
+//             //­       case 'u': /* "au" = a URL */
+//             //#endif
+          default:
+              flag = FAIL;
+              break;
+      }
+
+      G.curbuf.b_p_mps = mps_save;
+      if (flag == FAIL)
+          clearopbeep(cap.oap);
+      //adjust_cursor_col();
+      G.curwin.setWSetCurswant(true);
+
+  }
 
   /**
    * Handle the "q" key.
@@ -3722,166 +3956,19 @@ static private void nv_findpar(CMDARG cap, int dir)
   // private  boolean nv_Replace (CMDARG cap) { do_op("nv_Replace");return true; }
   static private  int	nv_VReplace (CMDARG cap) { do_op("nv_VReplace");return 0; }
   static private  int	nv_vreplace (CMDARG cap) { do_op("nv_vreplace");return 0; }
-  static private  void	v_swap_corners (CMDARG cap) {
-    do_op("v_swap_corners");
-    FPOS old_cursor;
-    int /*colnr_t*/ left, right;
-
-    if ((cap.cmdchar == 'O') && G.VIsual_mode == Util.ctrl('V'))
-    {
-//TODO: FIXME_VISUAL BLOCK MODE
-//       old_cursor = (FPOS)G.curwin.getWCursor().copy();
-//       //getvcols(&old_cursor, &VIsual, &left, &right);
-//       curwin.w_cursor.lnum = VIsual.lnum;
-//       coladvance(left);
-//       G.VIsual = G.curwin.w_cursor;
-//       G.curwin.w_cursor.lnum = old_cursor.lnum;
-//       coladvance(right);
-//       G.curwin.w_curswant = right;
-//       if (G.curwin.w_cursor.col == old_cursor.col)
-//       {
-//           G.curwin->w_cursor.lnum = VIsual.lnum;
-//           coladvance(right);
-//           G.VIsual = G.curwin.w_cursor;
-//           curwin->w_cursor.lnum = old_cursor.lnum;
-//           coladvance(left);
-//           curwin->w_curswant = left;
-//       }
-    }
-    if (cap.cmdchar != 'O' || G.VIsual_mode != Util.ctrl('V'))
-    {
-        old_cursor = (FPOS)G.curwin.getWCursor().copy();
-        G.curwin.setCaretPosition(G.VIsual.getOffset());
-        G.VIsual = old_cursor;
-        G.curwin.updateVisualState();
-    }
-  }
+  //static private  void	v_swap_corners (CMDARG cap) {
   // static private  boolean nv_replace (CMDARG cap) { do_op("nv_replace");return true; }
   // static private  void	n_swapchar (CMDARG cap) {do_op("n_swapchar");}
   // private  void	nv_cursormark (CMDARG cap, boolean flag, ViFPOS pos) {do_op("nv_cursormark");}
-  static private  void	v_visop (CMDARG cap) {
-      do_op("v_visop");
-      String trans = "YyDdCcxdXdAAIIrr";
-
-    /* Uppercase means linewise, except in block mode, then "D" deletes till
-     * the end of the line, and "C" replaces til EOL */
-    if (Character.isUpperCase(cap.cmdchar))
-    {
-       if (G.VIsual_mode != Util.ctrl('V'))
-           G.VIsual_mode = 'V';
-       else if (cap.cmdchar == 'C' || cap.cmdchar == 'D')
-           G.curwin.setWCurswant(MAXCOL);
-    }
-    cap.cmdchar = Util.vim_strchr(trans, cap.cmdchar).charAt(1);
-    nv_operator(cap);
-  }
+  // static private  void	v_visop (CMDARG cap) {
   // private  void	nv_optrans (CMDARG cap) {do_op("nv_optrans");}
   // private  void	nv_gomark (CMDARG cap, boolean flag) {do_op("nv_gomark");}
   // private  void	nv_pcmark (CMDARG cap) {do_op("nv_pcmark");}
   // private  void	nv_regname (CMDARG cap, MutableInt opnump) {do_op("nv_regname");}
-  static private  void	nv_visual(CMDARG cap, boolean selectmode) {
-      do_op("nv_visual");
-      if (G.VIsual_active) {/* change Visual mode */
-          if (G.VIsual_mode == cap.cmdchar) {    /* stop visual mode */
-              end_visual_mode();
-          } else {/* toggle char/block mode */
-              /*or char/line mode */
-              G.VIsual_mode = cap.cmdchar;
-              Misc.showmode();
-              /* update the screen cursor position */
-              G.curwin.updateVisualState();
-              //G.curwin.setWCurswant(G.curwin.getCaretPosition());
-          }
-          update_curbuf(NOT_VALID);/* update the inversion */
-      } else { /* start Visual mode */
-          if (cap.count0 > 0) { /*use previously selected part */
-              if (resel_VIsual_mode == NUL)   /* there is none */
-              {
-                  Util.beep_flush();
-                  return;
-              }
-              G.VIsual = (FPOS)G.curwin.getWCursor().copy();
-              G.VIsual_active = true;
-              G.VIsual_reselect = true;
-              if (!selectmode)
-              /* start Select mode when 'selectmode' contains "cmd" */
-                  may_start_select('c');
-              if (G.p_smd.value)
-                  redraw_cmdline = true;  /* show visual mode later */
-              /*
-               * For V and ^V, we multiply the number of lines even if there
-               * was only one -- webb
-               */
-              if (resel_VIsual_mode != 'v' || resel_VIsual_line_count > 1)
-              {
-                  int line = G.curwin.getWCursor().getLine()
-                                    + resel_VIsual_line_count * cap.count0 - 1;
-                  if(line > G.curwin.getLineCount())
-                      line = G.curwin.getLineCount();
-                  // Not sure about how column should be set, but at least
-                  // make sure it stays in the correct line
-                  int col = Misc.check_cursor_col(line,
-                                            G.curwin.getWCursor().getColumn());
-                  G.curwin.setCaretPosition(line, col);
-              }
-              G.VIsual_mode = resel_VIsual_mode;
-              if (G.VIsual_mode == 'v')
-              {
-                  if (resel_VIsual_line_count <= 1)
-                      // NEEDSWORK: ? can column overflow here?
-                      G.curwin.setCaretPosition(G.curwin.getWCursor().getLine(),
-                              G.curwin.getWCursor().getColumn()
-                                + resel_VIsual_col * cap.count0 - 1);
-                  else
-                      G.curwin.setCaretPosition(G.curwin.getWCursor().getLine(),
-                              resel_VIsual_col);
-              }
-              if (resel_VIsual_col == MAXCOL)
-              {
-                  G.curwin.setWCurswant(MAXCOL);
-                  Misc.coladvance(MAXCOL);
-              }
-              else if (G.VIsual_mode == Util.ctrl('V'))
-              {
-                  //TODO: FIXME_VISUAL BLOCK MODE
-                  //validate_virtcol();
-                  G.curwin.setWCurswant(G.curwin.getWCursor().getColumn()/*G.curwin.w_virtcol*/ + resel_VIsual_col * cap.count0 - 1);
-                  Misc.coladvance(G.curwin.getWCurswant());
-              }
-              else
-                  G.curwin.setWSetCurswant(true);
-              update_curbuf(NOT_VALID); /* show the inversion */
-              /* update the screen cursor position */
-              G.curwin.updateVisualState();
-          } else {
-              if (!selectmode)
-/* start Select mode when 'selectmode' contains "cmd" */
-                  may_start_select('c');
-              n_start_visual_mode(cap.cmdchar);
-              /* update the screen cursor position */
-              G.curwin.updateVisualState();
-          }
-      }
-  }
-
+  // static private  void	nv_visual(CMDARG cap, boolean selectmode) {
   //  static private  boolean nv_g_cmd (CMDARG cap, CharBuf searchp) { do_op("nv_g_cmd");return true; }
   // private  boolean n_opencmd (CMDARG cap) { do_op("n_opencmd");return true; }
-  static private  void	nv_Undo (CMDARG cap) throws NotSupportedException {
-      do_op("nv_Undo");
-         /* In Visual mode and typing "gUU" triggers an operator */
-    if (G.VIsual_active || cap.oap.op_type == OP_UPPER)
-    {
-/* translate "gUU" to "gUgU" */
-          cap.cmdchar = 'g';
-          cap.nchar = 'U';
-          nv_operator(cap);
-    } else if (!checkclearopq(cap.oap)) {
-          //u_undoline();
-          notSup("nv_Undo");
-          G.curwin.setWSetCurswant(true);
-    }
-
-  }
+  // static private  void	nv_Undo (CMDARG cap)
   // private  void	nv_operator (CMDARG cap) {do_op("nv_operator");}
   // private  void	nv_lineop (CMDARG cap) {do_op("nv_lineop");}
   // static private  void	nv_pipe (CMDARG cap) {do_op("nv_pipe");}
@@ -3894,71 +3981,7 @@ static private void nv_findpar(CMDARG cap, int dir)
   static private  void	nv_normal (CMDARG cap) {do_op("nv_normal");}
   // private  void	nv_esc (CMDARG oap, int opnum) {do_op("nv_esc");}
   // private  boolean nv_edit (CMDARG cap) { do_op("nv_edit");return true; }
-  static private  void	nv_object (CMDARG cap) {
-      do_op("nv_object");
-      int flag;
-      boolean include;
-      //char_u *mps_save;
-      String mps_save;
-
-      if (cap.cmdchar == 'i')
-          include = false;    /* "ix" = inner object: exclude white space */
-      else
-          include = true;    /* "ax" = an object: include white space */
-
-      /* Make sure (), [], {} and <> are in 'matchpairs' */
-      mps_save = G.curbuf.b_p_mps;
-      G.curbuf.b_p_mps = "(:),{:},[:],<:>";
-
-      switch (cap.nchar)
-      {
-//         case 'w': /* "aw" = a word */
-//             flag = current_word(cap.oap, cap.count1, include, false);
-//             break;
-//         case 'W': /* "aW" = a WORD */
-//             flag = current_word(cap.oap, cap.count1, include, true);
-//             break;
-//         case 'b': /* "ab" = a braces block */
-//         case '(':
-//         case ')':
-//             flag = current_block(cap.oap, cap.count1, include, '(', ')');
-//             break;
-//         case 'B': /* "aB" = a Brackets block */
-//         case '{':
-//         case '}':
-//             flag = current_block(cap.oap, cap.count1, include, '{', '}');
-//             break;
-//         case '[': /* "a[" = a [] block */
-//         case ']':
-//             flag = current_block(cap.oap, cap.count1, include, '[', ']');
-//             break;
-//         case '<': /* "a<" = a <> block */
-//         case '>':
-//             flag = current_block(cap.oap, cap.count1, include, '<', '>');
-//             break;
-         case 'p': /* "ap" = a paragraph */
-             flag = Search.current_par(cap.oap, cap.count1, include, 'p');
-             break;
-//         case 's': /* "as" = a sentence */
-//             flag = current_sent(cap.oap, cap.count1, include);
-//             break;
-//             //#if 0­  /* TODO */
-//             //­       case 'S': /* "aS" = a section */
-//             //­       case 'f': /* "af" = a filename */
-//             //­       case 'u': /* "au" = a URL */
-//             //#endif
-          default:
-              flag = FAIL;
-              break;
-      }
-
-      G.curbuf.b_p_mps = mps_save;
-      if (flag == FAIL)
-          clearopbeep(cap.oap);
-      //adjust_cursor_col();
-      G.curwin.setWSetCurswant(true);
-
-  }
+  // static private  void	nv_object (CMDARG cap);
   // static private  void	nv_q (CMDARG cap) {do_op("nv_q");}
   // static private  void	nv_at (CMDARG cap) {do_op("nv_at");}
   // static private  void	nv_halfpage (CMDARG cap) {do_op_clear("nv_halfpage", cap.oap);}
