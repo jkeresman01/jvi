@@ -39,12 +39,14 @@ public class DefaultOutputStream extends OutputStreamAdaptor {
   String info;
   ViTextView tv;
 
-  public DefaultOutputStream(ViTextView tv, Object type, Object info) {
-    this.type = type.toString();
-    this.info = info.toString();
+  public DefaultOutputStream(ViTextView tv, String type, String info) {
+    this.type = type;
+    this.info = info;
     this.tv = tv;
-    System.err.println("ViOutputStream: " + type + ", " + info + ": "
-                       + tv.getDisplayFileName());
+    
+    String fName = tv != null ? tv.getDisplayFileName() : "no-file";
+    System.err.println("ViOutputStream: type: " + type
+                       + ", info: " + info + ", " + fName);
   }
 
   public void println(int line, int offset, int length) {
@@ -56,7 +58,7 @@ public class DefaultOutputStream extends OutputStreamAdaptor {
   }
 
   public void println(String s) {
-    System.err.println("ViOutputStream: " + type + ", " + info + ": " + s);
+    System.err.println("ViOutputStream: " + s);
   }
 
   public void close() {
