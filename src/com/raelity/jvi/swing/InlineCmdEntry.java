@@ -125,8 +125,10 @@ public class InlineCmdEntry implements ViCmdEntry, ActionListener{
             // Repaint before executing commands.. 
             // so that I can be sure the visual area didn't change yet
             // and all has been repainted
-            G.drawSavedVisualBounds = false;
-            G.curwin.updateVisualState();
+            if(G.drawSavedVisualBounds) {
+                G.drawSavedVisualBounds = false;
+                G.curwin.updateVisualState();
+            }
             // END VISUAL REPAINT HACK
 	    lastCommand = commandLine.getCommand();
             if(Options.getOption(Options.dbgKeyStrokes).getBoolean())
