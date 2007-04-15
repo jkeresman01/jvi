@@ -166,7 +166,8 @@ public class DefaultViFactory implements ViFactory {
 
   public ViOutputStream createOutputStream(ViTextView tv,
                                            Object type, Object info) {
-    return new DefaultOutputStream(tv, type, info);
+    return new DefaultOutputStream(tv, type.toString(),
+                                   info == null ? null : info.toString());
   }
 
   /**
