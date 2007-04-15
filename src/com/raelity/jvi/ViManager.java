@@ -496,6 +496,7 @@ public class ViManager {
     if (G.VIsual_active) {
         // Cancel visual mode
         G.VIsual_active = false;
+        G.curwin.updateVisualState();
         Misc.showmode();
     }
     return pos;
