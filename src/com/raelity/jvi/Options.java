@@ -127,6 +127,7 @@ public class Options {
   public static final String dbgKeyStrokes = "viDbgKeyStrokes";
   public static final String dbgCache = "viDbgCache";
   public static final String dbgEditorActivation = "viDbgEditorActivation";
+  public static final String dbgBang = "viDbgBang";
 
   
   private static Map<String,Option> optionsMap = new HashMap<String,Option>();
@@ -445,6 +446,10 @@ public class Options {
     createBooleanOption(dbgCache, false);
     setupOptionDesc(debugList, dbgCache, "debug cache",
                "Output info on text/doc cache");
+
+    createBooleanOption(dbgBang, false);
+    setupOptionDesc(debugList, dbgBang, "debug \"!\" cmds",
+               "Output info about external processes");
   }
 
   static Preferences getPrefs() {
