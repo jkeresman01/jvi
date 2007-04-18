@@ -1100,7 +1100,7 @@ middle_code:
 	     */
 	  case 'v':
 	  case 'V':
-	  case 0x1f & (int)('V'):	// Ctrl // DISABLE ON RELEASE
+	  //case 0x1f & (int)('V'):	// Ctrl // DISABLE ON RELEASE
 	    if (!checkclearop(oap))
                 nv_visual(ca, false);
 	    break;
