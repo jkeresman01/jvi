@@ -61,8 +61,8 @@ public class ViManager {
 
   private static final int majorVersion = 0;
   private static final int minorVersion = 9;
-  private static final int microVersion = 1;
-  private static final String releaseTag = "";
+  private static final int microVersion = 2;
+  private static final String releaseTag = "x1";
   private static final String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion
@@ -382,10 +382,10 @@ public class ViManager {
       startup();
     }
     
-    registerEditorPane(editorPane); // make sure its registered
     exitInputMode(); // if switching, make sure prev out of input mode
     
     ViTextView textView = getViTextView(editorPane);
+    registerEditorPane(editorPane); // make sure it has the right caret
     textView.attach();
     if(G.dbgEditorActivation.getBoolean()) {
       System.err.println("Activation: ViManager.SWITCHTO: "

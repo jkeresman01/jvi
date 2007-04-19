@@ -709,7 +709,10 @@ public class TextView implements ViTextView {
         return previousHighlight;
     }
     // some caching so that visual blocks aren't recalculated everytime
-    if (G.VIsual_active && calcMode == G.VIsual_mode && calcStart == getCaretPosition() && calcEnd == G.VIsual.getOffset()) {
+    if (G.VIsual_active
+        && calcMode == G.VIsual_mode
+        && calcStart == getCaretPosition()
+        && calcEnd == G.VIsual.getOffset()) {
         return previousHighlight;
     }
     calcMode = G.VIsual_mode;
