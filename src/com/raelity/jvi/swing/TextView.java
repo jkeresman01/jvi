@@ -28,8 +28,13 @@
  */
 package com.raelity.jvi.swing;
 
+import com.raelity.text.RegExp;
+import com.raelity.text.RegExpJava;
 import java.awt.Point;
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.naming.directory.SearchControls;
 
 import javax.swing.text.*;
 import javax.swing.JEditorPane;
@@ -681,6 +686,11 @@ public class TextView implements ViTextView {
     Element root = getDoc().getDefaultRootElement();
     return root.getElement(root.getElementIndex(offset));
   }
+  
+  //////////////////////////////////////////////////////////////////////
+  //
+  // Visual Select
+  //
  
   /**
    * Update the selection highlight.
@@ -776,6 +786,60 @@ public class TextView implements ViTextView {
         return new int[] { -1, -1};
     }
   }
+  
+  //////////////////////////////////////////////////////////////////////
+  //
+  // Highlight Search
+  //
+  
+  public void updateHighlightSearchState() {
+    // NEEDSWORK: use the StyledDocument highlight/unhighlight methods
+  }
+  
+  public int[] getHighlightSearchBlocks(int startOffset, int endOffset) {
+    int[] blocks = null;
+    MutableInt idx = new MutableInt(0);
+      
+    RegExp re = Search.getLastRegExp();
+    if(re instanceof RegExpJava) {
+      Pattern pat = ((RegExpJava)re).getPattern();
+      // Use MySegment for 1.5 compatibility
+      RegExpJava.MySegment seg = new RegExpJava.MySegment();
+      getSegment(startOffset, endOffset - startOffset, seg);
+      Matcher m = pat.matcher(seg);
+      while(m.find()) {
+        blocks = addBlock(idx, blocks,
+                          m.start() + startOffset,
+                          m.end() + startOffset);
+      }
+    }
+    return addBlock(idx, blocks, -1, -1);
+  }
+  
+  protected final int[] addBlock(MutableInt idx, int[] blocks,
+                                 int start, int end) {
+    if(blocks == null) {
+      assert(idx.getValue() == 0);
+      blocks = new int[20];
+    }
+    if(idx.getValue() + 2 > blocks.length) {
+      // Arrays.copyOf introduced in 1.6
+      // blocks = Arrays.copyOf(blocks, blocks.length +20);
+      int[] t = new int[blocks.length + 20];
+      System.arraycopy(blocks, 0, t, 0, blocks.length);
+      blocks = t;
+    }
+    int i = idx.getValue();
+    blocks[i] = start;
+    blocks[i+1] = end;
+    idx.setValue(i + 2);
+    return blocks;
+  }
+  
+  //////////////////////////////////////////////////////////////////////
+  //
+  // StyledDocument highlight methods
+  //
 
   private void unhighlight(int[] blocks) {
       applyBackground(blocks, UNHIGHLIGHT);

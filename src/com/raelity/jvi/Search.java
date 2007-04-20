@@ -50,7 +50,7 @@ import static com.raelity.jvi.Constants.*;
  * Searching, regexp and substitution.
  * Everything's static, can only do one thing at a time.
  */
-class Search {
+public class Search {
 
   ///////////////////////////////////////////////////////////////////////
   //
@@ -575,6 +575,11 @@ finished:
   // regualr expression handling stuff
   //
 
+  static public RegExp getLastRegExp() {
+    if(lastPattern == null)
+      return null;
+    return getRegExp(lastPattern, G.p_ic.value);
+  }
 
   // simple cache. Helps "n" and "N" commands
   static RegExp lastRegExp;

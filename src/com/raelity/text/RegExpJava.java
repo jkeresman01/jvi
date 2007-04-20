@@ -21,6 +21,11 @@ public class RegExpJava extends RegExp
     public static String getAdaptedName() {
         return "java.util.regex.Pattern";
     }
+    
+    /** Pick up the underlying java.util.regex.Pattern */
+    public Pattern getPattern() {
+        return pat;
+    }
 
 
     /**
@@ -94,7 +99,7 @@ public class RegExpJava extends RegExp
     private Pattern pat;
     
     /** To support jdk1.5, need a segment that isa CharSequence */
-    private class MySegment extends Segment implements CharSequence {
+    public static class MySegment extends Segment implements CharSequence {
         public MySegment() {
             super();
         }

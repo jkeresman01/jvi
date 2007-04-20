@@ -309,4 +309,9 @@ public interface ViTextView extends ViOptionBag {
    * Update the visual state (selection) of the window.
    */
   public void updateVisualState();
+  
+  /**
+   * Update the hightlight search state
+   */
+  public void updateHighlightSearchState();
 }
