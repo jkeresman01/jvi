@@ -235,6 +235,9 @@ public interface ViTextView extends ViOptionBag {
   /** tear down all the listeners */
   public void detach();
   
+  /** called after TV and Buffer are constructed */
+  public void startup();
+  
   /** going away, do any remaining cleanup */
   public void shutdown();
 

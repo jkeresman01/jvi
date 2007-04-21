@@ -693,7 +693,8 @@ public class TextViewCache implements PropertyChangeListener,
         }
     
         public void stop() {
-            doc.removeDocumentListener(this);
+            if(doc != null)
+                doc.removeDocumentListener(this);
         }
     
         private void adjustViewport(int offset) {

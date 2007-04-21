@@ -246,7 +246,6 @@ public class Options {
     setupOptionDesc(searchList, highlightSearch, "'hlsearch' 'hls'",
                     "When there is a previous search pattern, highlight"
                     + " all its matches");
-    setExpertHidden(highlightSearch, false, true); // NOT IMP YET
     
     G.p_ic = createBooleanOption(ignoreCase, false);
     setupOptionDesc(searchList, ignoreCase, "'ignorecase' 'ic'",
@@ -634,6 +633,7 @@ public class Options {
             new VimOption("expandtab", "et", P_IND, "b_p_et", null),
             new VimOption("ignorecase", "ic", P_OPT, null, ignoreCase),
             new VimOption("incsearch", "is", P_OPT, null, incrSearch),
+            new VimOption("hlsearch", "hls", P_OPT, null, highlightSearch),
             new VimOption("number", "nu", P_IND|P_WIN, "w_p_nu", null),
             new VimOption("shiftwidth", "sw", P_IND, "b_p_sw", shiftWidth),
             new VimOption("tabstop", "ts", P_IND, "b_p_ts", tabStop),
@@ -904,6 +904,46 @@ public class Options {
         }
         assert(false) : "can_bs: ; p_bs bad value";
         return false;
+    }
+    
+    // Whether or not to highlight depends on a mix of things.
+    // Handle the logic here.
+    
+    static boolean nohDisableHighlight;
+    
+    static {
+        getOptions().addPropertyChangeListener(highlightSearch,
+                                               new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(G.curwin != null) {
+                    nohDisableHighlight = false;
+                    ViManager.updateHighlightSearchState();
+                }
+            }
+        });
+        
+        getOptions().addPropertyChangeListener(ignoreCase,
+                                               new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(G.curwin != null) {
+                    ViManager.updateHighlightSearchState();
+                }
+            }
+        });
+    }
+    
+    public static boolean doHighlightSearch() {
+        return G.p_highlight_search.value && !nohDisableHighlight;
+    }
+    
+    static void nohCommand() {
+        nohDisableHighlight = true;
+        ViManager.updateHighlightSearchState();
+    }
+    
+    static void newSearch() {
+        nohDisableHighlight = false;
+        ViManager.updateHighlightSearchState();
     }
 }
 

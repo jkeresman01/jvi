@@ -88,12 +88,27 @@ public class DefaultViFactory implements ViFactory {
   public ViTextView getViTextView(JEditorPane editorPane) {
     ViTextView tv01 = (ViTextView)editorPane.getClientProperty(PROP_VITV);
     if(tv01 == null) {
-        if(G.dbgEditorActivation.getBoolean())
-            System.err.println("Activation: getViTextView: create");
-        tv01 = createViTextView(editorPane);
-        tv01.setWindow(new Window(tv01));
-        editorPane.putClientProperty(PROP_VITV, tv01);
-        editorSet.put(editorPane, null);
+      if(G.dbgEditorActivation.getBoolean())
+          System.err.println("Activation: getViTextView: create");
+      tv01 = createViTextView(editorPane);
+      
+      Document doc = editorPane.getDocument();
+      if(doc != null) {
+        Buffer buf = (Buffer)doc.getProperty(PROP_BUF);
+        if(buf == null) {
+          buf = createBuffer(editorPane);
+          buf.b_visual_start = new Mark();
+          buf.b_visual_end = new Mark();
+          doc.putProperty(PROP_BUF, buf);
+          docSet.put(doc, null);
+        }
+        buf.addShare();
+      }
+      
+      tv01.startup();
+      tv01.setWindow(new Window(tv01));
+      editorPane.putClientProperty(PROP_VITV, tv01);
+      editorSet.put(editorPane, null);
     }
     return tv01;
   }
@@ -114,18 +129,16 @@ public class DefaultViFactory implements ViFactory {
     return s;
   }
   
+  public boolean isVisible(ViTextView tv) {
+    // wonder if this works
+    return tv.getEditorComponent().isVisible();
+  }
+  
   public Buffer getBuffer(JEditorPane editorPane) {
     Buffer buf = null;
     Document doc = editorPane.getDocument();
     if(doc != null) {
       buf = (Buffer)doc.getProperty(PROP_BUF);
-      if(buf == null) {
-        buf = createBuffer(editorPane);
-        buf.b_visual_start = new Mark();
-        buf.b_visual_end = new Mark();
-        doc.putProperty(PROP_BUF, buf);
-        docSet.put(doc, null);
-      }
     }
     return buf;
   }
@@ -157,6 +170,9 @@ public class DefaultViFactory implements ViFactory {
         System.err.println("Activation: shutdown TV");
       tv.shutdown();
       ep.putClientProperty(PROP_VITV, null);
+      Buffer buf = getBuffer(ep);
+      if(buf != null)
+        buf.removeShare();
     }
   }
 

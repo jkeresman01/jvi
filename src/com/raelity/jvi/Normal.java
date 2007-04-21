@@ -2753,6 +2753,8 @@ middle_code:
     } else if(i == 2) {
       oap.motion_type = MLINE;
     }
+    
+    Options.newSearch();
 
     /* *********************************************************
     OPARG	*oap = cap.oap;
@@ -2800,6 +2802,9 @@ middle_code:
     if(rc == 0) {
       clearop(cap.oap);
     }
+    
+    Options.newSearch();
+    
     /* *******************************************************
     cap.oap.motion_type = MCHAR;
     cap.oap.inclusive = FALSE;

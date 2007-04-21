@@ -84,8 +84,25 @@ public class TextView implements ViTextView {
 
   public TextView(final JEditorPane editorPane) {
     this.editorPane = editorPane;
-    cache = createTextViewCache();
-    statusDisplay = createStatusDisplay();
+  }
+  
+  public void startup() {
+    if(cache == null)
+      cache = createTextViewCache();
+    if(statusDisplay == null)
+      statusDisplay = createStatusDisplay();
+  }
+  
+  public void shutdown() {
+    if(G.dbgEditorActivation.getBoolean()) {
+      Buffer buf = ViManager.getBuffer(getEditorComponent());
+      if(buf.getShare() == 1) {
+        System.err.println("TV.shutdown: LAST CLOSE");
+      }
+    }
+    cache.shutdown(editorPane);
+    ViManager.detached(editorPane);
+    editorPane = null;
   }
   
   //
@@ -101,6 +118,7 @@ public class TextView implements ViTextView {
   }
 
   public void activateOptions(ViTextView tv) {
+    updateHighlightSearchState();
   }
   
   //
@@ -169,12 +187,6 @@ public class TextView implements ViTextView {
     cache.detach(editorPane);
     
     ViManager.detached(editorPane); // NEEDSWORK: what's this for?
-  }
-  
-  public void shutdown() {
-    cache.shutdown(editorPane);
-    ViManager.detached(editorPane);
-    editorPane = null;
   }
   
   /**
@@ -793,43 +805,57 @@ public class TextView implements ViTextView {
   //
   
   public void updateHighlightSearchState() {
-    // NEEDSWORK: use the StyledDocument highlight/unhighlight methods
+    updateHighlightSearchCommonState();
+    
+    applyBackground(new int[] {0, getDoc().getLength(), -1, -1},
+                    UNHIGHLIGHT);
+    
+    if(!Options.doHighlightSearch())
+      return;
+    
+    int[] b = getHighlightSearchBlocks(0, getDoc().getLength());
+    applyBackground(b, HIGHLIGHT);
+  }
+  
+  Pattern highlightSearchPattern;
+  // Use MySegment for 1.5 compatibility
+  RegExpJava.MySegment highlightSearchSegment = new RegExpJava.MySegment();
+  int[] highlightSearchBlocks = new int[2];
+  MutableInt highlightSearchIndex = new MutableInt(0);
+  
+  protected void updateHighlightSearchCommonState() {
+    highlightSearchBlocks = new int[20];
+    RegExp re = Search.getLastRegExp();
+    if(re instanceof RegExpJava) {
+      highlightSearchPattern = ((RegExpJava)re).getPattern();
+    }
   }
   
   public int[] getHighlightSearchBlocks(int startOffset, int endOffset) {
-    int[] blocks = null;
-    MutableInt idx = new MutableInt(0);
-      
-    RegExp re = Search.getLastRegExp();
-    if(re instanceof RegExpJava) {
-      Pattern pat = ((RegExpJava)re).getPattern();
-      // Use MySegment for 1.5 compatibility
-      RegExpJava.MySegment seg = new RegExpJava.MySegment();
-      getSegment(startOffset, endOffset - startOffset, seg);
-      Matcher m = pat.matcher(seg);
+    highlightSearchIndex.setValue(0);
+    if(highlightSearchPattern != null) {
+      getSegment(startOffset, endOffset - startOffset, highlightSearchSegment);
+      Matcher m = highlightSearchPattern.matcher(highlightSearchSegment);
       while(m.find()) {
-        blocks = addBlock(idx, blocks,
-                          m.start() + startOffset,
-                          m.end() + startOffset);
+        highlightSearchBlocks = addBlock(highlightSearchIndex,
+                                         highlightSearchBlocks,
+                                         m.start() + startOffset,
+                                         m.end() + startOffset);
       }
     }
-    return addBlock(idx, blocks, -1, -1);
+    return addBlock(highlightSearchIndex, highlightSearchBlocks, -1, -1);
   }
   
   protected final int[] addBlock(MutableInt idx, int[] blocks,
                                  int start, int end) {
-    if(blocks == null) {
-      assert(idx.getValue() == 0);
-      blocks = new int[20];
-    }
-    if(idx.getValue() + 2 > blocks.length) {
+    int i = idx.getValue();
+    if(i + 2 > blocks.length) {
       // Arrays.copyOf introduced in 1.6
       // blocks = Arrays.copyOf(blocks, blocks.length +20);
       int[] t = new int[blocks.length + 20];
       System.arraycopy(blocks, 0, t, 0, blocks.length);
       blocks = t;
     }
-    int i = idx.getValue();
     blocks[i] = start;
     blocks[i+1] = end;
     idx.setValue(i + 2);

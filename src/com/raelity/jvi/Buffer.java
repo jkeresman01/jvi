@@ -19,6 +19,11 @@ package com.raelity.jvi;
  */
 public class Buffer implements ViOptionBag {
     
+    private int share; // the number of text views sharing this buffer
+    public int getShare() { return share; }
+    public void addShare() { share++; }
+    public void removeShare() { share--; }
+    
     /** Creates a new instance of Buffer, initialize values from Options. */
     public Buffer() {
         initOptions();

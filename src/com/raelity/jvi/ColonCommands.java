@@ -836,6 +836,12 @@ public class ColonCommands {
       ViManager.getViFactory().displayTags();
     }
   };
+
+  static ActionListener ACTION_nohlsearch = new ActionListener() {
+    public void actionPerformed(ActionEvent ev) {
+      Options.nohCommand();
+    }
+  };
   
   /**
    * This is used for several of the colon commands to translate arguments
@@ -916,6 +922,8 @@ public class ColonCommands {
     register("tags", "tags", ACTION_tags);
     register("ts", "tselect", ACTION_tselect);
     register("po", "pop", ACTION_pop);
+    
+    register("noh", "nohlsearch", ACTION_nohlsearch);
     
     // register("y", "yank", ACTION_yank);
     

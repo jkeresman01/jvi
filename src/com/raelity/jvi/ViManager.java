@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.ArrayList;
+import java.util.Set;
 import javax.swing.JEditorPane;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
@@ -62,7 +63,7 @@ public class ViManager {
   private static final int majorVersion = 0;
   private static final int minorVersion = 9;
   private static final int microVersion = 2;
-  private static final String releaseTag = "x1";
+  private static final String releaseTag = "x4";
   private static final String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion
@@ -159,6 +160,16 @@ public class ViManager {
 
   public static void stopCommandEntry() {
     activeCommandEntry = null;
+  }
+  
+  /** update visible textviews */
+  public static void updateHighlightSearchState() {
+    Set<ViTextView> s = factory.getViTextViewSet();
+    for (ViTextView tv : s) {
+      if(factory.isVisible(tv)) {
+        tv.updateHighlightSearchState();
+      }
+    }
   }
   
   //
