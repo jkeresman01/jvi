@@ -173,7 +173,7 @@ public class Edit {
     //	if (c == Ctrl('V') || c == Ctrl('Q'))
     
     normal_char:	// do "break normal_char" to insert a character
-            while(true) {
+    while(true) {
       try {
         
         G.curwin.setWSetCurswant(true);
@@ -309,6 +309,7 @@ public class Edit {
           case K_S_END:
             ins_end();
             break;
+          */
            
           case K_LEFT:
             if ((G.mod_mask & MOD_MASK_CTRL) != 0)
@@ -336,22 +337,25 @@ public class Edit {
             ins_up();
             break;
              
+          /*
           case K_S_UP:
           case K_PAGEUP:
             // case K_KPAGEUP:
             ins_pageup();
             break;
+          */
              
           case K_DOWN:
             ins_down();
             break;
              
+          /*
           case K_S_DOWN:
           case K_PAGEDOWN:
             // case K_KPAGEDOWN:
             ins_pagedown();
             break;
-             */
+          */
             
             // keypad keys: When not mapped they produce a normal char
           case K_KPLUS:
@@ -450,7 +454,7 @@ public class Edit {
         return; // ignore the character
       }
       
-            } //  normal_char: while(true), so a "break normal_char" goes to next line
+    } //  normal_char: while(true), so a "break normal_char" goes to next line
     
     // just do something simple for now
     // if(vim_iswordc(c) || !echeck_abbr(c))
@@ -1315,42 +1319,95 @@ public class Edit {
     G.old_indent = 0;
   }
   
+  private static void ins_left() throws NotSupportedException {
+    Normal.notImp("ins_left");
+    /*
+    FPOS	tpos;
+
+    undisplay_dollar();
+    tpos = curwin->w_cursor;
+    if (oneleft() == OK)
+    {
+	start_arrow(&tpos);
+              //#ifdef RIGHTLEFT............#endif
+    }
+
+    //
+    // if 'whichwrap' set for cursor in insert mode may go to
+    // previous line
+    //
+    else if (vim_strchr(p_ww, '[') != NULL && curwin->w_cursor.lnum > 1)
+    {
+	start_arrow(&tpos);
+	--(curwin->w_cursor.lnum);
+	coladvance(MAXCOL);
+	curwin->w_set_curswant = TRUE;	// so we stay at the end
+    }
+    else
+	vim_beep();
+    */
+  }
+  
   private static void ins_home() throws NotSupportedException {
     Normal.notImp("ins_home");
+    /*
+    FPOS	tpos;
+
+    undisplay_dollar();
+    tpos = curwin->w_cursor;
+    if ((mod_mask & MOD_MASK_CTRL))
+	curwin->w_cursor.lnum = 1;
+    curwin->w_cursor.col = 0;
+    curwin->w_curswant = 0;
+    start_arrow(&tpos);
+    */
   }
   
   private static void ins_end() throws NotSupportedException {
     Normal.notImp("ins_end");
+    /*
+    FPOS	tpos;
+
+    undisplay_dollar();
+    tpos = curwin->w_cursor;
+    if ((mod_mask & MOD_MASK_CTRL))
+	curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
+    coladvance(MAXCOL);
+    curwin->w_curswant = MAXCOL;
+    start_arrow(&tpos);
+    */
   }
   
   private static void ins_s_left() throws NotSupportedException {
     Normal.notImp("ins_s_left");
-  }
-  
-  private static void ins_left() throws NotSupportedException {
-    Normal.notImp("ins_left");
-  }
-  
-  private static void ins_s_right() throws NotSupportedException {
-    Normal.notImp("ins_s_right");
+    /*
+    undisplay_dollar();
+    if (curwin->w_cursor.lnum > 1 || curwin->w_cursor.col > 0)
+    {
+	start_arrow(&curwin->w_cursor);
+	(void)bck_word(1L, 0, FALSE);
+	curwin->w_set_curswant = TRUE;
+    }
+    else
+	vim_beep();
+    */
   }
   
   private static void ins_right() throws NotSupportedException {
     //Normal.notImp("ins_right");
-    System.err.println("ins_right");
     undisplay_dollar();
     if (Misc.gchar_cursor() != '\n') {
       //start_arrow(&curwin->w_cursor);
       start_arrow(G.curwin.getWCursor());
-              //#ifdef MULTI_BYTE............
+              //#ifdef MULTI_BYTE............#endif
       //curwin->w_set_curswant = TRUE;
       //++curwin->w_cursor.col;
       G.curwin.setWSetCurswant(true);
       G.curwin.setCaretPosition(G.curwin.getWCursor().getOffset() +1);
-              //#ifdef RIGHTLEFT............
+              //#ifdef RIGHTLEFT............#endif
     }
-    /* if 'whichwrap' set for cursor in insert mode, may move the
-     * cursor to the next line */
+    // if 'whichwrap' set for cursor in insert mode, may move the
+    // cursor to the next line
     // NEEDSWORK: implement p_ww ']': ins_right: next line ok in insert mode
     /*else if (vim_strchr(p_ww, ']') != NULL
              && curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count)
@@ -1364,19 +1421,94 @@ public class Edit {
       Util.vim_beep();
   }
   
-  private static void ins_up() throws NotSupportedException {
-    Normal.notImp("ins_up");
+  private static void ins_s_right() throws NotSupportedException {
+    Normal.notImp("ins_s_right");
+    /*
+    undisplay_dollar();
+    if (curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count
+	    || gchar_cursor() != NUL)
+    {
+	start_arrow(&curwin->w_cursor);
+	(void)fwd_word(1L, 0, 0);
+	curwin->w_set_curswant = TRUE;
+    }
+    else
+	vim_beep();
+    */
   }
   
-  private static void ins_down() throws NotSupportedException {
-    Normal.notImp("ins_down");
+  private static void ins_up() throws NotSupportedException {
+    Normal.notImp("ins_up");
+    /*
+    FPOS	tpos;
+    linenr_t	old_topline;
+
+    undisplay_dollar();
+    tpos = curwin->w_cursor;
+    old_topline = curwin->w_topline;
+    if (cursor_up(1L, TRUE) == OK)
+    {
+	if (old_topline != curwin->w_topline)
+	    update_screen(VALID);
+	start_arrow(&tpos);
+                //#ifdef CINDENT............#endif
+    }
+    else
+	vim_beep();
+    */
   }
   
   private static void ins_pageup() throws NotSupportedException {
     Normal.notImp("ins_pageup");
+    /*
+    FPOS	tpos;
+
+    undisplay_dollar();
+    tpos = curwin->w_cursor;
+    if (onepage(BACKWARD, 1L) == OK)
+    {
+	start_arrow(&tpos);
+                //#ifdef CINDENT............#endif
+    }
+    else
+	vim_beep();
+    */
+  }
+  
+  private static void ins_down() throws NotSupportedException {
+    Normal.notImp("ins_down");
+    /*
+    FPOS	tpos;
+    linenr_t	old_topline = curwin->w_topline;
+
+    undisplay_dollar();
+    tpos = curwin->w_cursor;
+    if (cursor_down(1L, TRUE) == OK)
+    {
+	if (old_topline != curwin->w_topline)
+	    update_screen(VALID);
+	start_arrow(&tpos);
+                //#ifdef CINDENT............#endif
+    }
+    else
+	vim_beep();
+    */
   }
   
   private static void ins_pagedown() throws NotSupportedException {
     Normal.notImp("ins_pagedown");
+    /*
+    FPOS	tpos;
+
+    undisplay_dollar();
+    tpos = curwin->w_cursor;
+    if (onepage(FORWARD, 1L) == OK)
+    {
+	start_arrow(&tpos);
+              //#ifdef CINDENT...........#endif
+    }
+    else
+	vim_beep();
+    */
   }
 }

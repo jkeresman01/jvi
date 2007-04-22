@@ -29,8 +29,14 @@
  */
 package com.raelity.jvi.swing;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -38,6 +44,9 @@ import java.util.WeakHashMap;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
+import javax.swing.JRootPane;
+import javax.swing.SwingUtilities;
+import javax.swing.event.MouseInputAdapter;
 import javax.swing.text.Document;
 import javax.swing.text.TextAction;
 import javax.swing.text.Caret;
@@ -184,6 +193,87 @@ public class DefaultViFactory implements ViFactory {
                                            Object type, Object info) {
     return new DefaultOutputStream(tv, type.toString(),
                                    info == null ? null : info.toString());
+  }
+  
+  private MouseInputAdapter mouseAdapter;
+  private KeyListener keyListener;
+  
+  /** Get the glass pane for the given component, if it doesn't have an
+   * associated mouseAdapter create one and add it. */
+  private Container getModalGlassPane(final Component c){
+    Container glass = null;
+    if(c != null) {
+      JRootPane rp = SwingUtilities.getRootPane(c);
+      if(rp != null) {
+        glass = (Container) rp.getGlassPane();
+        if(mouseAdapter == null) {
+          mouseAdapter = new MouseInputAdapter() {
+            public void mousePressed(MouseEvent evt) {
+              c.getToolkit().beep();
+            }
+          };
+          glass.addMouseListener(mouseAdapter);
+          glass.addMouseMotionListener(mouseAdapter);
+        }
+      }
+    }
+    return glass;
+  }
+  
+  public void startModalKeyCatch(KeyListener kl) {
+    if(mouseAdapter != null)
+      throw new IllegalStateException("Already in modal state");
+    
+    Container glass = getModalGlassPane(G.curwin.getEditorComponent());
+    keyListener = kl;
+    glass.addKeyListener(kl);
+    glass.setVisible(true);
+    
+    // disable all focus traversal
+    glass.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
+                                Collections.EMPTY_SET);
+    glass.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
+                                Collections.EMPTY_SET);
+    glass.setFocusTraversalKeys(KeyboardFocusManager.DOWN_CYCLE_TRAVERSAL_KEYS,
+                                Collections.EMPTY_SET);
+    glass.setFocusTraversalKeys(KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS,
+                                Collections.EMPTY_SET);
+    glass.setFocusCycleRoot(true);
+    
+    glass.requestFocusInWindow();
+  }
+  
+  /*
+  public void startModalButton(String text, Color color) {
+    if(mouseAdapter != null)
+      throw new IllegalStateException("Already in modal state");
+    Container glass = getModalGlassPane(G.curwin.getEditorComponent());
+  }
+  */
+  
+  public void stopModal() {
+    if(mouseAdapter == null)
+      throw new IllegalStateException("Not in modal state");
+    Container glass = getModalGlassPane(G.curwin.getEditorComponent());
+    glass.setVisible(false);
+    glass.removeMouseListener(mouseAdapter);
+    glass.removeMouseMotionListener(mouseAdapter);
+    glass.removeKeyListener(keyListener);
+    mouseAdapter = null;
+    keyListener = null;
+    
+    // Back to default bahavior
+    glass.setFocusCycleRoot(false);
+    glass.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
+                                null);
+    glass.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
+                                null);
+    glass.setFocusTraversalKeys(KeyboardFocusManager.DOWN_CYCLE_TRAVERSAL_KEYS,
+                                null);
+    glass.setFocusTraversalKeys(KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS,
+                                null);
+    
+    G.curwin.getEditorComponent().requestFocusInWindow();
   }
 
   /**

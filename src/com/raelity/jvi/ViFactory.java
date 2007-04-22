@@ -29,7 +29,9 @@
  */
 package com.raelity.jvi;
 
+import java.awt.Color;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyListener;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
@@ -86,6 +88,12 @@ public interface ViFactory {
    */
   public ViOutputStream createOutputStream(ViTextView tv,
                                            Object type, Object info);
+  
+  public void startModalKeyCatch(KeyListener kl);
+  
+  //public void startModalButton(String text, Color color);
+  
+  public void stopModal();
 
   /**
    * The factory keeps track of which Window is active when there

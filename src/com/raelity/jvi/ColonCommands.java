@@ -28,22 +28,17 @@
  */
 package com.raelity.jvi;
 
-import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-
-import java.util.Collections;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.TooManyListenersException;
 import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-
-import com.raelity.jvi.ViManager;
-import com.raelity.jvi.swing.*;
 import com.raelity.jvi.ViTextView.TAGOP;
 
 import static com.raelity.jvi.Constants.*;
@@ -899,6 +894,22 @@ public class ColonCommands {
       oa.op_type = OP_YANK;
     }
   };
+  
+  static ActionListener ACTION_testKeys = new ActionListener() {
+    public void actionPerformed(ActionEvent ev) {
+      ViManager.getViFactory().startModalKeyCatch(new KeyAdapter() {
+        public void keyPressed(KeyEvent e) {
+          e.consume();
+          if(e.getKeyCode() == KeyEvent.VK_Y) {
+            ViManager.getViFactory().stopModal();
+            Msg.clearMsg();
+          } else 
+            Util.vim_beep();
+        }
+      });
+      Msg.smsg("Enter 'y' to proceed");
+    }
+  };
 
   static void registerBuiltinCommands() {
     register("clo", "close", ACTION_close);
@@ -924,6 +935,8 @@ public class ColonCommands {
     register("po", "pop", ACTION_pop);
     
     register("noh", "nohlsearch", ACTION_nohlsearch);
+    
+    register("testKeys", "testKeys", ACTION_testKeys);
     
     // register("y", "yank", ACTION_yank);
     
