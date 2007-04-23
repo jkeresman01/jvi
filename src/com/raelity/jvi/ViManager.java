@@ -63,7 +63,7 @@ public class ViManager {
   private static final int majorVersion = 0;
   private static final int minorVersion = 9;
   private static final int microVersion = 2;
-  private static final String releaseTag = "x7";
+  private static final String releaseTag = "x8";
   private static final String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion
@@ -398,6 +398,10 @@ public class ViManager {
     }
     // System.err.println("rerouteChar " + (char)c);
     return true;
+  }
+  
+  public static void requestSwitch(JEditorPane ep) {
+      switchTo(ep);
   }
 
   private static boolean started = false;
