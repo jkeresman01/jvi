@@ -295,6 +295,7 @@ public class Edit {
             Normal.notImp("backspace_line");
             // need_redraw = TRUE;
             break;
+          */
            
           case K_HOME:
             // case K_KHOME:
@@ -309,7 +310,6 @@ public class Edit {
           case K_S_END:
             ins_end();
             break;
-          */
            
           case K_LEFT:
             if ((G.mod_mask & MOD_MASK_CTRL) != 0)
@@ -1320,142 +1320,129 @@ public class Edit {
   }
   
   private static void ins_left() throws NotSupportedException {
-    Normal.notImp("ins_left");
-    /*
-    FPOS	tpos;
+    ViFPOS	tpos;
 
     undisplay_dollar();
-    tpos = curwin->w_cursor;
+    ViFPOS cursor = G.curwin.getWCursor();
+    tpos = cursor.copy();
     if (oneleft() == OK)
     {
-	start_arrow(&tpos);
-              //#ifdef RIGHTLEFT............#endif
+	start_arrow(tpos);
+                              //#ifdef RIGHTLEFT............#endif
     }
 
     //
     // if 'whichwrap' set for cursor in insert mode may go to
     // previous line
     //
-    else if (vim_strchr(p_ww, '[') != NULL && curwin->w_cursor.lnum > 1)
+    //else if (vim_strchr(p_ww, '[') != NULL && curwin->w_cursor.lnum > 1)
+    else if (G.p_ww_i_left.value && cursor.getLine() > 1)
     {
-	start_arrow(&tpos);
-	--(curwin->w_cursor.lnum);
-	coladvance(MAXCOL);
-	curwin->w_set_curswant = TRUE;	// so we stay at the end
+	start_arrow(tpos);
+        G.curwin.setCaretPosition(cursor.getLine() - 1, 0);
+	Misc.coladvance(MAXCOL);
+        G.curwin.setWSetCurswant(true);	// so we stay at the end
     }
     else
-	vim_beep();
-    */
+	Util.vim_beep();
   }
   
   private static void ins_home() throws NotSupportedException {
-    Normal.notImp("ins_home");
-    /*
-    FPOS	tpos;
+    ViFPOS	tpos;
 
     undisplay_dollar();
-    tpos = curwin->w_cursor;
-    if ((mod_mask & MOD_MASK_CTRL))
-	curwin->w_cursor.lnum = 1;
-    curwin->w_cursor.col = 0;
-    curwin->w_curswant = 0;
-    start_arrow(&tpos);
-    */
+    tpos = G.curwin.getWCursor().copy();
+    
+    int line = G.curwin.getWCursor().getLine();
+    if ((G.mod_mask & MOD_MASK_CTRL) != 0)
+      line = 1;
+    int col = 0;
+    G.curwin.setCaretPosition(line, col);
+    G.curwin.setWCurswant(col);
+    start_arrow(tpos);
   }
   
   private static void ins_end() throws NotSupportedException {
-    Normal.notImp("ins_end");
-    /*
-    FPOS	tpos;
+    ViFPOS	tpos;
 
     undisplay_dollar();
-    tpos = curwin->w_cursor;
-    if ((mod_mask & MOD_MASK_CTRL))
-	curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
-    coladvance(MAXCOL);
-    curwin->w_curswant = MAXCOL;
-    start_arrow(&tpos);
-    */
+    tpos = G.curwin.getWCursor().copy();
+    if ((G.mod_mask & MOD_MASK_CTRL) != 0) {
+      G.curwin.setCaretPosition(G.curwin.getLineCount(), 0);
+    }
+    Misc.coladvance(MAXCOL);
+    G.curwin.setWCurswant(MAXCOL);
+    start_arrow(tpos);
   }
   
   private static void ins_s_left() throws NotSupportedException {
-    Normal.notImp("ins_s_left");
-    /*
     undisplay_dollar();
-    if (curwin->w_cursor.lnum > 1 || curwin->w_cursor.col > 0)
+    
+    ViFPOS cursor = G.curwin.getWCursor();
+    if(cursor.getLine() > 1 || cursor.getColumn() > 0)
     {
-	start_arrow(&curwin->w_cursor);
-	(void)bck_word(1L, 0, FALSE);
-	curwin->w_set_curswant = TRUE;
+        start_arrow(cursor);
+	Search.bck_word(1, false, false);
+        G.curwin.setWSetCurswant(true);
     }
     else
-	vim_beep();
-    */
+	Util.vim_beep();
   }
   
   private static void ins_right() throws NotSupportedException {
-    //Normal.notImp("ins_right");
     undisplay_dollar();
+    ViFPOS cursor = G.curwin.getWCursor();
     if (Misc.gchar_cursor() != '\n') {
-      //start_arrow(&curwin->w_cursor);
-      start_arrow(G.curwin.getWCursor());
-              //#ifdef MULTI_BYTE............#endif
-      //curwin->w_set_curswant = TRUE;
-      //++curwin->w_cursor.col;
+      start_arrow(cursor);
+                              //#ifdef MULTI_BYTE............#endif
       G.curwin.setWSetCurswant(true);
-      G.curwin.setCaretPosition(G.curwin.getWCursor().getOffset() +1);
-              //#ifdef RIGHTLEFT............#endif
+      //++curwin->w_cursor.col;
+      G.curwin.setCaretPosition(cursor.getOffset() +1);
+                              //#ifdef RIGHTLEFT............#endif
     }
     // if 'whichwrap' set for cursor in insert mode, may move the
     // cursor to the next line
-    // NEEDSWORK: implement p_ww ']': ins_right: next line ok in insert mode
-    /*else if (vim_strchr(p_ww, ']') != NULL
-             && curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count)
+    else if (G.p_ww_i_right.value
+             && cursor.getLine() < G.curwin.getLineCount())
     {
-      start_arrow(&curwin->w_cursor);
-      curwin->w_set_curswant = TRUE;
-      ++curwin->w_cursor.lnum;
-      curwin->w_cursor.col = 0;
-    }*/
+      start_arrow(cursor);
+      G.curwin.setWSetCurswant(true);
+      G.curwin.setCaretPosition(cursor.getLine() +1, 0);
+    }
     else
       Util.vim_beep();
   }
   
   private static void ins_s_right() throws NotSupportedException {
-    Normal.notImp("ins_s_right");
-    /*
     undisplay_dollar();
-    if (curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count
-	    || gchar_cursor() != NUL)
+    ViFPOS cursor = G.curwin.getWCursor();
+    if (cursor.getLine() < G.curwin.getLineCount()
+        || Misc.gchar_cursor() != '\n')
     {
-	start_arrow(&curwin->w_cursor);
-	(void)fwd_word(1L, 0, 0);
-	curwin->w_set_curswant = TRUE;
+	start_arrow(cursor);
+	Search.fwd_word(1, false, false);
+        G.curwin.setWSetCurswant(true);
     }
     else
-	vim_beep();
-    */
+	Util.vim_beep();
   }
   
   private static void ins_up() throws NotSupportedException {
-    Normal.notImp("ins_up");
-    /*
-    FPOS	tpos;
-    linenr_t	old_topline;
+    ViFPOS tpos;
+                                    //int old_topline;
 
     undisplay_dollar();
-    tpos = curwin->w_cursor;
-    old_topline = curwin->w_topline;
-    if (cursor_up(1L, TRUE) == OK)
+    tpos = G.curwin.getWCursor().copy();
+                                    //old_topline = curwin->w_topline;
+    if (cursor_up(1, true) == OK)
     {
-	if (old_topline != curwin->w_topline)
-	    update_screen(VALID);
-	start_arrow(&tpos);
-                //#ifdef CINDENT............#endif
+                                        //if (old_topline != curwin->w_topline)
+                                            //update_screen(VALID);
+	start_arrow(tpos);
+                                //#ifdef CINDENT............#endif
     }
     else
-	vim_beep();
-    */
+	Util.vim_beep();
   }
   
   private static void ins_pageup() throws NotSupportedException {
@@ -1476,23 +1463,20 @@ public class Edit {
   }
   
   private static void ins_down() throws NotSupportedException {
-    Normal.notImp("ins_down");
-    /*
-    FPOS	tpos;
-    linenr_t	old_topline = curwin->w_topline;
+    ViFPOS tpos;
+                                      //int old_topline = curwin->w_topline;
 
     undisplay_dollar();
-    tpos = curwin->w_cursor;
-    if (cursor_down(1L, TRUE) == OK)
+    tpos = G.curwin.getWCursor().copy();
+    if (cursor_down(1, true) == OK)
     {
-	if (old_topline != curwin->w_topline)
-	    update_screen(VALID);
-	start_arrow(&tpos);
-                //#ifdef CINDENT............#endif
+                                          //if (old_topline != curwin->w_topline)
+                                              //update_screen(VALID);
+	start_arrow(tpos);
+                                //#ifdef CINDENT............#endif
     }
     else
-	vim_beep();
-    */
+	Util.vim_beep();
   }
   
   private static void ins_pagedown() throws NotSupportedException {

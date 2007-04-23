@@ -73,6 +73,7 @@ public class TextView implements ViTextView {
   }
 
   protected JEditorPane editorPane;
+  protected Buffer buf;
   protected TextOps ops;
   protected static char[] oneCharArray = new char[1];
   protected TextViewCache cache;
@@ -86,7 +87,8 @@ public class TextView implements ViTextView {
     this.editorPane = editorPane;
   }
   
-  public void startup() {
+  public void startup(Buffer buf) {
+    this.buf = buf;
     if(cache == null)
       cache = createTextViewCache();
     if(statusDisplay == null)

@@ -9,6 +9,8 @@
 
 package com.raelity.jvi;
 
+import javax.swing.text.Document;
+
 /**
  * Buffer: structure that holds information about one file, primarily
  * per file options.
@@ -18,14 +20,22 @@ package com.raelity.jvi;
  * @author erra
  */
 public class Buffer implements ViOptionBag {
+    Document doc;
     
     private int share; // the number of text views sharing this buffer
     public int getShare() { return share; }
     public void addShare() { share++; }
-    public void removeShare() { share--; }
+    public void removeShare() {
+        share--;
+        if(share == 0) {
+            doc = null;
+        }
+    }
+    public Document getDoc() { return doc; }
     
     /** Creates a new instance of Buffer, initialize values from Options. */
-    public Buffer() {
+    public Buffer(Document doc) {
+        this.doc = doc;
         initOptions();
     }
     

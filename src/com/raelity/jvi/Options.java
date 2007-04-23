@@ -88,6 +88,8 @@ public class Options {
   public static final String lWrapNext = "viLWrapNext";
   public static final String rightWrapNext = "viRightWrapNext";
   public static final String tildeWrapNext = "viTildeWrapNext";
+  public static final String insertLeftWrapPrevious = "viInsertLeftWrapPrevious";
+  public static final String insertRightWrapNext = "viInsertRightWrapNext";
 
   public static final String unnamedClipboard = "viUnnamedClipboard";
   public static final String joinSpaces = "viJoinSpaces";
@@ -332,6 +334,16 @@ public class Options {
     setupOptionDesc(cursorWrapList, tildeWrapNext,
                "'whichwrap' 'ww'  ~ - \"~\"",
                "\"~\" wraps to next line");
+
+    G.p_ww_i_left = createBooleanOption(insertLeftWrapPrevious, false);
+    setupOptionDesc(cursorWrapList, insertLeftWrapPrevious,
+               "'whichwrap' 'ww'  [ - <Left>",
+               "in Insert Mode <Left> wraps to previous line");
+
+    G.p_ww_i_right = createBooleanOption(insertRightWrapNext, false);
+    setupOptionDesc(cursorWrapList, insertRightWrapNext,
+               "'whichwrap' 'ww'  ] - <Right>",
+               "in Insert Mode <Right> wraps to next line");
 
     /////////////////////////////////////////////////////////////////////
     //

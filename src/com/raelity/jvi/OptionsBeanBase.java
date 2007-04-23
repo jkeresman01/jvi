@@ -235,6 +235,24 @@ public class OptionsBeanBase extends SimpleBeanInfo {
         return ViManager.getReleaseString();
     }
 
+    public void setViInsertLeftWrapPrevious(boolean arg)
+    throws PropertyVetoException {
+        put(Options.insertLeftWrapPrevious, arg);
+    }
+
+    public boolean getViInsertLeftWrapPrevious() {
+	return getboolean(Options.insertLeftWrapPrevious);
+    }
+
+    public void setViInsertRightWrapNext(boolean arg)
+    throws PropertyVetoException {
+        put(Options.insertRightWrapNext, arg);
+    }
+
+    public boolean getViInsertRightWrapNext() {
+	return getboolean(Options.insertRightWrapNext);
+    }
+
     public void setViSelectColor(Color arg)  throws PropertyVetoException {
         put(Options.selectColor, arg);
     }

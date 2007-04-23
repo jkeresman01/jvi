@@ -63,7 +63,7 @@ public class ViManager {
   private static final int majorVersion = 0;
   private static final int minorVersion = 9;
   private static final int microVersion = 2;
-  private static final String releaseTag = "x5";
+  private static final String releaseTag = "x6";
   private static final String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion
@@ -118,6 +118,23 @@ public class ViManager {
 
   public static ViTextView getViTextView(JEditorPane editorPane) {
     return factory.getViTextView(editorPane);
+  }
+  
+  /** get any text view, other than tv, which has buf KLUDGE HACK */
+  public static ViTextView getAlternateTextView(ViTextView tv, Buffer buf) {
+    ViTextView tv01 = null;
+    Set<ViTextView> tvSet = factory.getViTextViewSet();
+    for (ViTextView tv02 : tvSet) {
+      if(tv == tv02)
+        continue;
+      JEditorPane ep = tv02.getEditorComponent();
+      if(ep != null) {
+        if(factory.getBuffer(ep) == buf) {
+          tv01 = tv02;
+        }
+      }
+    }
+    return tv01;
   }
 
   public static Buffer getBuffer(JEditorPane editorPane) {
@@ -607,6 +624,7 @@ public class ViManager {
   
   static public void dump(PrintStream ps) {
     ps.println("-----------------------------------");
+    /*
     ps.println("currentEditorPane = " + currentEditorPane );
     ps.println("factory = " + factory );
     
@@ -615,12 +633,38 @@ public class ViManager {
     ps.println("textMRU = " + textMRU );
     ps.println("currentlyActive = " + currentlyActive );
     ps.println("ignoreActivation = " + ignoreActivation );
+    */
+    ps.println("currentEditorPane = " + G.curwin.getDisplayFileName());
+    ps.println("factory = " + factory );
     
-    int n1 = 0;
-    for (ViTextView tv : factory.getViTextViewSet()) {
-        n1++;
+    ps.println("textBuffers: " + textBuffers.size());
+    for (Object o : textBuffers) {
+        ps.println("\t" + factory.getDisplayFilename(o)
+                   + ", " + o.getClass().getSimpleName());
     }
-    if(n1 != 0)
-        ps.println("" + n1 + " ACTIVE TEXT VIEWS");
+    ps.println("textMRU: " + textMRU.size());
+    for (Object o : textMRU) {
+        ps.println("\t" + factory.getDisplayFilename(o)
+                   + ", " + o.getClass().getSimpleName());
+    }
+    ps.println("currentlyActive: " + (currentlyActive == null ? "none"
+               : "" + factory.getDisplayFilename(currentlyActive)
+                 + ", " + currentlyActive.getClass().getSimpleName()));
+    ps.println("ignoreActivation: " + (ignoreActivation == null ? "none"
+               : "" + factory.getDisplayFilename(ignoreActivation)
+                 + ", " + ignoreActivation.getClass().getSimpleName()));
+    
+    Set<ViTextView> tvSet = factory.getViTextViewSet();
+    ps.println("TextViewSet: " + tvSet.size());
+    for (ViTextView tv : tvSet) {
+        ps.println("\t" + tv.getDisplayFileName());
+    }
+    
+    Set<Buffer> bufSet = factory.getBufferSet();
+    ps.println("BufferSet: " + bufSet.size());
+    for (Buffer buf : bufSet) {
+        ps.println("\t" + factory.getDisplayFilename(buf.doc)
+                   + ", share: " + buf.getShare());
+    }
   }
 }

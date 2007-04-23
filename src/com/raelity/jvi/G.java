@@ -99,6 +99,8 @@ public class G {
   static BooleanOption p_ww_larrow;
   static BooleanOption p_ww_rarrow;
   static BooleanOption p_ww_tilde;
+  static BooleanOption p_ww_i_left;
+  static BooleanOption p_ww_i_right;
 
   static BooleanOption p_cb;  // clipboard, treat as boolean for 'unnamed'
   static BooleanOption p_sr;   // shiftround

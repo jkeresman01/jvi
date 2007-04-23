@@ -102,8 +102,9 @@ public class DefaultViFactory implements ViFactory {
       tv01 = createViTextView(editorPane);
       
       Document doc = editorPane.getDocument();
+      Buffer buf = null;
       if(doc != null) {
-        Buffer buf = (Buffer)doc.getProperty(PROP_BUF);
+        buf = (Buffer)doc.getProperty(PROP_BUF);
         if(buf == null) {
           buf = createBuffer(editorPane);
           buf.b_visual_start = new Mark();
@@ -114,7 +115,7 @@ public class DefaultViFactory implements ViFactory {
         buf.addShare();
       }
       
-      tv01.startup();
+      tv01.startup(buf);
       tv01.setWindow(new Window(tv01));
       editorPane.putClientProperty(PROP_VITV, tv01);
       editorSet.put(editorPane, null);
@@ -154,7 +155,7 @@ public class DefaultViFactory implements ViFactory {
   
   /** subclass probably wants to override this */
   protected Buffer createBuffer(JEditorPane editorPane) {
-      return new Buffer();
+      return new Buffer(editorPane.getDocument());
   }
 
   public Set<Buffer> getBufferSet() {
@@ -180,10 +181,19 @@ public class DefaultViFactory implements ViFactory {
       tv.shutdown();
       ep.putClientProperty(PROP_VITV, null);
       Buffer buf = getBuffer(ep);
-      if(buf != null)
+      if(buf != null) {
+        Document doc = buf.getDoc();
         buf.removeShare();
+        if(buf.getShare() == 0) {
+          if(doc != null)
+            doc.putProperty(PROP_BUF, null);
+          else
+            ViManager.dumpStack("SHUTDOWN NULL DOC");
+        }
+      }
     }
   }
+  
 
   public ViFS getFS() {
     return fs;

@@ -938,6 +938,12 @@ public class ColonCommands {
     
     register("testKeys", "testKeys", ACTION_testKeys);
     
+    ColonCommands.register("jviDump", "jviDump", new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        ViManager.dump(System.err);
+      }
+    });
+    
     // register("y", "yank", ACTION_yank);
     
     // register("n", "next", ACTION_next);
