@@ -62,18 +62,36 @@ public class RegExpJava extends RegExp
     }
 
     public boolean search(String input, int start) {
-	// NEEDSWORK: check anchoring issues (like GNU)
         Matcher m = pat.matcher(input);
+        m.useAnchoringBounds(false); //so /^ only matches beginning of line
         matched = m.find();
         result = new RegExpResultJava(matched ? m : null);
+        if(start(0) >= start + len) {
+            matched = false; // see comment in next method
+        }
         return matched;
     }
 
     public boolean search(char[] input, int start, int len) {
 	MySegment s = new MySegment(input, 0, input.length);
+        //System.err.print("\tstart: " + start + ", len: " + len);
         Matcher m = pat.matcher(s).region(start, start+len);
+        m.useAnchoringBounds(false); //so /^ only matches beginning of line
+        //m.useTransparentBounds(true);
         matched = m.find();
         result = new RegExpResultJava(matched ? m : null);
+        //System.err.println(matched ? " FOUND: " + start(0) + "," + stop(0):"");
+        if(start(0) >= start + len) {
+            //System.err.println("OUCH");
+            // Given a line 'xy\n', with start: 1, len: 3
+            // search the entire line
+            //     search(input, 1, 3) returns true with start(0) == 1 (CORRECT)
+            // search after the previous match, starting at the 'y'
+            //     search(input, 2, 2) return true with start(0) == 4 (WRONG)
+            // note that the start of the match is after the end of the input
+            // pattern (end is "exclusive")
+            matched = false;
+        }
         return matched;
     }
 

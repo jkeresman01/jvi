@@ -768,6 +768,7 @@ finished:
           //////////ptr = ml_get_buf(buf, lnum, FALSE);
           Segment seg = G.curwin.getLineSegment(lnum);
                                                 // NEEDSWORK: AT_BOL == TRUE
+          //System.err.println("line: " + lnum);
           if(prog.search(seg.array, seg.offset, seg.count)) {
             match = prog.start(0) - seg.offset; // column index
             matchend = prog.stop(0) - seg.offset;
@@ -829,16 +830,16 @@ finished:
               match_ok = false;
               for (;;)
               {
-                int match01 = prog.start(0) - seg.offset; // column index
+                int colIdx = prog.start(0) - seg.offset;
                 int matchend01 = prog.stop(0) - seg.offset;
                 if (!at_first_line
                     || (((options & SEARCH_END) != 0)
                         ? (matchend01 - 1 + extra_col
                                                <= start_pos.getColumn())
-                        : (match01 + extra_col <= start_pos.getColumn())))
+                        : (colIdx + extra_col <= start_pos.getColumn())))
                 {
                   match_ok = true;
-                  match = match01;
+                  match = colIdx;
                   matchend = matchend01;
                 }
                 else
