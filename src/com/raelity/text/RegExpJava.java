@@ -63,12 +63,8 @@ public class RegExpJava extends RegExp
 
     public boolean search(String input, int start) {
         Matcher m = pat.matcher(input);
-        m.useAnchoringBounds(false); //so /^ only matches beginning of line
         matched = m.find();
         result = new RegExpResultJava(matched ? m : null);
-        if(start(0) >= start + len) {
-            matched = false; // see comment in next method
-        }
         return matched;
     }
 
