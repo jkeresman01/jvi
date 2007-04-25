@@ -941,7 +941,12 @@ finished:
       MarkOps.setpcmark();
     }
     Misc.gotoLine(G.curwin.getLineNumber(pos.getOffset()), 0);
-    G.curwin.setSelect(pos.getOffset(), pos.getOffset() + search_match_len);
+    int new_pos = pos.getOffset();
+    if(search_match_len == 0) {
+        // search /$ puts cursor on end of line
+        new_pos = ViManager.setDot(new_pos, G.curwin.getEditorComponent());
+    }
+    G.curwin.setSelect(new_pos, new_pos + search_match_len);
     G.curwin.setWSetCurswant(true);
     if(wmsg != null) {
       Msg.wmsg(wmsg/*, true*/);
@@ -1140,7 +1145,7 @@ finished:
     int endOffset = offset + count;
     int lastMatch = -1;
 
-    while(prog.search(line.array, lookHere, count)) {
+    while(prog.search(line.array, lookHere, count+1)) {
       nSubMatch++;
       if(sb == null) { // got a match, make sure there's a buffer
         sb = new StringBuffer();

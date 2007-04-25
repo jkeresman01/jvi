@@ -40,6 +40,7 @@ import javax.swing.JEditorPane;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import com.raelity.jvi.swing.*;
+import javax.swing.text.Segment;
 
 /**
  * This class coordinates things.
@@ -530,6 +531,26 @@ public class ViManager {
         G.VIsual_active = false;
         G.curwin.updateVisualState();
         Misc.showmode();
+    }
+    return pos;
+  }
+  
+  /** not mouse involved, keep caret off of new line;
+   * see window.mouseClickedPosition(pos) */
+  public static int setDot(int pos, JTextComponent c) {
+    ViTextView tv = factory.getExistingViTextView(c);
+    if(tv != null) {
+      Segment seg = new Segment();
+      tv.getSegment(pos, 1, seg);
+      if (seg.count > 0
+          && seg.array[seg.offset] == '\n'
+          && (G.State & Constants.INSERT) == 0) {
+        if(pos > 0) {
+          tv.getSegment(pos -1, 1, seg);
+          if(seg.count > 0 && seg.array[seg.offset] != '\n')
+            --pos;
+        }
+      }
     }
     return pos;
   }

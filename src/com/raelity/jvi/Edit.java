@@ -431,9 +431,7 @@ public class Edit {
           default:
             // Virtual keys should not be put into the file.
             // Exit input mode if they are seen
-            if(cmdchar == ESC
-                    || (cmdchar & 0xF000) == VIRT
-                    || cmdchar > 0xFFFF) {
+            if(isExitInputMode(cmdchar)) {
               // This is the identical code as <ESC>
               if (ins_esc(count, need_redraw, cmdchar)) {
                 Normal.editBusy = false;
@@ -470,6 +468,23 @@ public class Edit {
     insert_special(c, false, false);
     //continue edit_loop;
     return;
+  }
+  
+  private static boolean isExitInputMode(int c) {
+    if((c & 0xF000) == VIRT
+        || c > 0xFFFF)
+      return true;
+            
+    switch(c) {
+      case ESC:
+      case 0x1f & (int)('O'):	// Ctrl
+      case 0x1f & (int)('L'):	// Ctrl
+      case 0x1f & (int)('Q'):	// Ctrl
+      case 0x1f & (int)(']'):	// Ctrl
+        return true;
+      default:
+        return false;
+    }
   }
   
   /**
