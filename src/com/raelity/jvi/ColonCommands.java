@@ -28,14 +28,19 @@
  */
 package com.raelity.jvi;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.text.CharacterIterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.TooManyListenersException;
 import java.util.StringTokenizer;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -43,6 +48,9 @@ import com.raelity.jvi.ViTextView.TAGOP;
 
 import static com.raelity.jvi.Constants.*;
 import static com.raelity.jvi.ColonCommandFlags.*;
+
+import java.io.*;
+import java.lang.Thread.UncaughtExceptionHandler;
 
 /**
  * This class handles registration, command input, parsing, dispatching
@@ -63,6 +71,7 @@ public class ColonCommands {
   private static AbbrevLookup commands = new AbbrevLookup();
   
   private static String lastCommand;
+  private static String lastBangCommand = null;
 
   public ColonCommands() {
   }
@@ -265,7 +274,8 @@ public class ColonCommands {
     }
     sidx02 = sidx;
     if(sidx < commandLine.length() && commandLine.charAt(sidx) == '!') {
-      bang = true;
+      if (sidx > sidx01) bang = true;
+      else ++sidx02;
       ++sidx;
     }
     sidx = Misc.skipwhite(commandLine, sidx);
@@ -576,6 +586,837 @@ public class ColonCommands {
     }
   }
 
+  public static class BangAction extends ColonAction {
+    FilterThreadCoordinator coord = null;
+    BooleanOption dbg = (BooleanOption)Options.getOption(Options.dbgBang); 
+    String origCommandString;
+
+    public static String getShell() {
+      return "sh";
+    }
+
+    public static String getShellcmdflags() {
+      return "-c";
+    }
+
+    public void actionPerformed(ActionEvent ev) {
+      if(coord != null) {
+        Msg.emsg("Only one command at a time.");
+        return;
+      }
+      ColonEvent evt = (ColonEvent)ev;
+      int nArgs = evt.getNArg();
+      List<String> commandLineCopy = new ArrayList<String>();
+      boolean isFilter = (evt.getAddrCount() > 0);
+
+      try {
+        if (dbg.value)
+          System.err.println("!: Getting command line arguments");
+        if (nArgs > 0)
+          commandLineCopy.addAll(evt.getArgs());
+        if (dbg.value)
+          System.err.println("!: Converting original command line and saving" +
+            " it as a string");
+        origCommandString = commandLineToString(commandLineCopy);
+        if (dbg.value)
+          System.err.println("!: Original command line string is '" +
+            origCommandString + "'");
+
+        for (int i = 1; i <= nArgs; i++) {
+          StringBuilder arg = new StringBuilder(commandLineCopy.get(i - 1));
+          if (dbg.value)
+            System.err.println("!: Parsing bangs in argument #" + i + ": '" +
+              arg + "'");
+          if (parseBang(arg) == null) {
+            Msg.emsg("No previous command");
+            return;
+          }
+          if (dbg.value)
+            System.err.println("!: Parsing backslashes in argument #" + i +
+              ": '" + arg + "'");
+          parseBackslash(arg);
+          if (dbg.value)
+            System.err.println("!: Replacing command line argument #" + i +
+              ": '" + commandLineCopy.get(i - 1) + "' with '" + arg + "'");
+          commandLineCopy.set(i - 1, arg.toString());
+        }
+
+        if (nArgs >= 1) {
+          if (dbg.value)
+            System.err.println("!: Converting parsed command line to single" +
+              " string");
+          String commandLineString = commandLineToString(commandLineCopy);
+          if (dbg.value)
+            System.err.println("!: Parsed command line string is '" +
+              commandLineString + "'");
+          if (dbg.value)
+            System.err.println("!: Executing parsed command line:");
+          
+          doBangCommand(evt, commandLineString);
+          if(coord == null) {
+            if (dbg.value)
+              System.err.println("!: Event thread experienced error " +
+                "executing command.");
+            return;
+          }
+
+          // NEEDSWORK: put this where it can be repeated
+          coord.statusMessage = "Enter 'Ctrl-C' to ABORT";
+          Msg.smsg(coord.statusMessage);
+          
+          ViManager.getViFactory().startModalKeyCatch(new KeyAdapter() {
+            public void keyTyped(KeyEvent e) {
+              e.consume();
+              if(e.getKeyChar() == (KeyEvent.VK_C & 0x1f)
+                 && (e.getModifiers() & KeyEvent.CTRL_MASK) != 0) {
+                finishBangCommand(false);
+              } else 
+                Util.vim_beep();
+            }
+          });
+
+          if(true)
+            return;
+      
+      
+        }
+        else {
+          lastBangCommand = new String(""); 
+          if (dbg.value)
+            System.err.println("!: Last bang command is saved as '" +
+              lastBangCommand + "'");
+        }
+      }
+      finally {
+      }
+    }
+    
+    private void joinThread(Thread t) {
+      if(t.isAlive()) {
+        t.interrupt();
+        try {
+          t.join(50);
+        } catch (InterruptedException ex) {
+        }
+        if(t.isAlive()) {
+          System.err.println("Thread " + t.getName() + " won't die");
+        }
+      }
+    }
+    
+    void finishBangCommand(boolean fOK) {
+      assert(EventQueue.isDispatchThread());
+      if(coord == null)
+        return;
+      System.err.println("!: DONE :!" + (!fOK ? " ABORT" : ""));
+      ViManager.getViFactory().stopModal();
+      Msg.clearMsg();
+      
+      if(!fOK) {
+          // NEEDSWORK: set write to process thread to not bother cleaning up
+          // set flag in coord so we get a rollback undo
+        try {
+          int exit = coord.process.exitValue();
+        } catch(IllegalThreadStateException ex) {
+          if(dbg.value)
+            System.err.println("!: destroying process");
+          coord.process.destroy();
+        }
+        if(coord.simpleExecuteThread != null) {
+          coord.simpleExecuteThread.interrupt();
+        } else {
+          coord.documentThread.interrupt();
+          coord.readFromProcessThread.interrupt();
+          coord.writeToProcessThread.interrupt();
+        }
+      }
+      
+      if(coord.simpleExecuteThread != null) {
+        joinThread(coord.simpleExecuteThread);
+      } else {
+        joinThread(coord.documentThread);
+        joinThread(coord.readFromProcessThread);
+        joinThread(coord.writeToProcessThread);
+      }
+      
+      /* THESE CALLS WILL PROBABLY DEADLOCK.
+       * IN ONE EXAMPLE, WE ARE IN A STUCK IN BUFFERED READER
+       * READ, CALLING CANCEL ATTEMPTS TO CLOSE THE READER (FROM A 
+       * DIFFERENT THREAD NOLESS) THE CLOSE HANGS.
+       *
+       * WE'VE DONE LOTS TO TRY AND KILL THE THREAD CLEANLY, 
+       * IF IT WONT DIE, THEN TOO BAD. 
+        // These calls to cleanup don't make much sense,
+        // we're in the wrong thread context.
+        // But then again, they should be no-ops
+        if(coord.simpleExecuteThread != null) {
+          coord.simpleExecuteThread.cleanup();
+        } else {
+          coord.documentThread.cleanup();
+          coord.readFromProcessThread.cleanup();
+          coord.writeToProcessThread.cleanup();
+        }
+      */
+      
+      coord = null;
+      if(!fOK)
+        return;
+      
+      
+      //
+      // Following taken from actionPerformed
+      //
+      if (dbg.value)
+        System.err.println("!: Done executing parsed command line");
+      if (dbg.value)
+        System.err.println("!: Parsing bangs in original command line again" +
+          " to save as last bang command");
+      origCommandString =
+          parseBang(new StringBuilder(origCommandString)).toString();
+      lastBangCommand = origCommandString;
+      if (dbg.value)
+        System.err.println("!: Last bang command is saved as '" +
+          lastBangCommand + "'");
+      
+    }
+
+    private StringBuilder parseBang(StringBuilder sb) {
+      int index = sb.indexOf("!");
+
+      for ( ; index >= 0; index = sb.indexOf("!", index)) {
+        if (index == 0 || sb.charAt(index - 1) != '\\') {
+          if (lastBangCommand != null) {
+            sb.replace(index, index + 1, lastBangCommand);
+            index += (lastBangCommand.length() - 1);
+          } else {
+            return null;
+          }
+        }
+        index++;
+      }
+      return sb;
+    }
+
+    private void parseBackslash(StringBuilder sb) {
+      int index = sb.indexOf("\\");
+
+      for ( ; index >= 0; index = sb.indexOf("\\", index)) {
+        sb.deleteCharAt(index);
+        int argLength = sb.length();
+        while (index < argLength && sb.charAt(index) == '\\')
+            index++;
+      }
+    }
+
+    private String commandLineToString(List<String> cl) {
+      int nArgs = cl.size();
+      StringBuilder result = new StringBuilder();
+
+      if (nArgs > 0)
+        result.append(cl.get(0));
+
+      for (int i = 1; i < nArgs; i++) {
+        result.append(' ' + cl.get(i));
+      }
+
+      return result.toString();
+    }
+
+    private boolean doBangCommand(ColonEvent evt, String commandLine) {
+      BooleanOption dbg = (BooleanOption)Options.getOption(Options.dbgBang); 
+      boolean isFilter = (evt.getAddrCount() > 0);
+
+      if (dbg.value)
+        System.err.println("!: Constructing ArrayList for ProcessBuilder");
+
+      ArrayList<String> shellCommandLine = new ArrayList<String>(3);
+      shellCommandLine.add(getShell());
+      shellCommandLine.add(getShellcmdflags());
+      shellCommandLine.add(commandLine);
+
+      if (dbg.value)
+        System.err.println("!: Creating ProcessBuilder class with ArrayList '" +
+          shellCommandLine + "'");
+
+      if (dbg.value)
+        System.err.println("!: Redirecting ProcessBuilder Process error " +
+          "stream to stdout");
+
+      ProcessBuilder pb = new ProcessBuilder(shellCommandLine);
+      pb.redirectErrorStream(true);
+
+      if (dbg.value)
+        System.err.println("!: Starting ProcessBuilder Process");
+      Process p;
+      try {
+        p = pb.start();
+      } catch (IOException ex) {
+        String s = ex.getMessage();
+        Msg.emsg(s != null  || s.equals("")? s : "exec failed");
+        return false;
+      }
+
+      if (isFilter) {
+        outputFromProcessToFile(evt, p); 
+      }
+      else {
+        outputToViOutputStream(evt, p);
+      }
+      return true;
+    }
+
+    private void outputToViOutputStream(ColonEvent evt,
+                                        Process p) {
+      OPARG oa = setupExop(evt);
+
+      coord = new FilterThreadCoordinator(this, oa, p);
+      
+      BufferedReader br;
+      ViOutputStream vos;
+      br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+      vos = ViManager.createOutputStream(null, ViOutputStream.OUTPUT, null);
+      
+      coord.simpleExecuteThread = new SimpleExecuteThread(coord, vos, br);
+      
+      coord.simpleExecuteThread.start();
+    }
+
+    private void outputFromProcessToFile(ColonEvent evt,
+                                         Process p) {
+      OPARG oa = setupExop(evt);
+
+      coord = new FilterThreadCoordinator(this, oa, p);
+      
+      // NEEDSWORK: set up a thread group???
+      
+      BufferedReader br;
+      BufferedWriter bw;
+      br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+      bw = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
+
+      coord.writeToProcessThread = new ProcessWriterThread(coord, bw);
+      coord.readFromProcessThread = new ProcessReaderThread(coord, br);
+      coord.documentThread = new DocumentThread(coord, evt.getViTextView());
+
+      coord.documentThread.start();
+      coord.writeToProcessThread.start();
+      coord.readFromProcessThread.start();
+    }
+  }
+  
+  /** This is used for both filtered bang commands and to execute a command.
+   * There should really be two coordinator, one for each, but I'm feeling
+   * lazy right now. Any of the Thread variables, eg simpleExecuteThread, can
+   * be used to test for how this is being used.
+   */
+  static private class FilterThreadCoordinator {
+    int startLine;
+    int lastLine;
+    
+    BlockingQueue<String> fromDoc;
+    BlockingQueue<String> toDoc;
+    
+    DocumentThread documentThread;
+    ProcessWriterThread writeToProcessThread;
+    ProcessReaderThread readFromProcessThread;
+    SimpleExecuteThread simpleExecuteThread;
+    
+    OPARG oa;
+    Process process;
+    final BangAction ba;
+    
+    String statusMessage = "";
+    
+    public FilterThreadCoordinator(BangAction ba, OPARG oa, Process p) {
+      this.oa = oa;
+      this.process = p;
+      this.ba = ba;
+      
+      startLine = oa.start.getLine();
+      lastLine = oa.end.getLine();
+      
+     fromDoc = new ArrayBlockingQueue<String>(50);
+     toDoc = new ArrayBlockingQueue<String>(50);
+    }     
+    
+    void finish(final boolean fOK) {
+      if(EventQueue.isDispatchThread())
+        ba.finishBangCommand(fOK);
+      else
+        EventQueue.invokeLater(new Runnable() {
+          public void run() {
+            ba.finishBangCommand(fOK);
+          }
+        });
+    }
+    
+    public void dumpState() {
+      System.err.println("startLine " + startLine
+                         + ", lastLine = " + lastLine );
+    }
+  }
+  
+  static private class SimpleExecuteThread extends FilterThread {
+    ViOutputStream vos;
+    BufferedReader reader;
+    boolean didCleanup;
+    
+    SimpleExecuteThread(FilterThreadCoordinator coord,
+                        ViOutputStream vos,
+                        BufferedReader reader) {
+      super(SIMPLE_EXECUTE, coord);
+      this.vos = vos;
+      this.reader = reader;
+    }
+      
+    public void run() {
+      super.run();
+      coord.finish(true);
+    }
+    
+    public void dumpState() {
+      super.dumpState();
+    }
+    
+    void cleanup() {
+      if(didCleanup)
+        return;
+      didCleanup = true;
+      if (dbg.value) {
+        dumpState();
+      }
+      if(vos != null) {
+        vos.close();
+        vos = null;
+      }
+      if(reader != null) {
+        try {
+          reader.close();
+        } catch (IOException ex) {
+          ex.printStackTrace();
+        }
+        reader = null;
+      }
+    }
+    
+    void doTask() {
+      String line;
+      try {
+        while(!isProblem()) {
+          line = reader.readLine();
+          if(line == null)
+            break;
+          if (dbg.value)
+            System.err.println("!: Writing '" + line + "' to ViOutputStream");
+          vos.println(line);
+        }
+        reader.close();
+        reader = null;
+        vos.close();
+        vos = null;
+      } catch (IOException ex) {
+        ex.printStackTrace();
+        exception = ex;
+      }
+    }
+  }
+  
+  static private class ProcessWriterThread extends FilterThread {
+    BufferedWriter writer;
+    int currWriterLine;
+    boolean wroteFirstLineToProcess;
+    boolean reachedEndOfLines;
+    boolean didCleanup;
+    
+    ProcessWriterThread(FilterThreadCoordinator coord,
+                        BufferedWriter writer) {
+      super(WRITE_PROCESS, coord);
+      this.writer = writer;
+    }
+    
+    public void dumpState() {
+      System.err.println("currWriterLine " + currWriterLine
+                         + ", wroteFirstLineToProcess " + wroteFirstLineToProcess
+                         + ", reachedEndOfLines " + reachedEndOfLines );
+      super.dumpState();
+    }
+    
+    void cleanup() {
+      if(didCleanup)
+        return;
+      didCleanup = true;
+      if (dbg.value) {
+        dumpState();
+      }
+      if(writer != null) {
+        try {
+          writer.close();
+        } catch (IOException ex) {
+          ex.printStackTrace();
+        }
+        writer = null;
+      }
+    }
+    
+    void doTask() {
+      writeToProcess();
+    }
+
+    public void writeToProcess() {
+      currWriterLine = coord.startLine;
+      String data = null;
+      try {
+        while(!isProblem()) {
+            data = coord.fromDoc.take();
+            if(DONE.equals(data))
+              break;
+            writer.write(data);
+            if (dbg.value) // NEEDSWORK: why trim(), use Text.formDebugDString
+              System.err.println("!: Writer #" + currWriterLine + ": '"
+                                + data.trim() + "'");
+            currWriterLine++;
+            wroteFirstLineToProcess = true;
+        }
+        writer.close();
+        writer = null;
+      } catch (InterruptedException ex) {
+        exception = ex;
+        ex.printStackTrace();
+      } catch (IOException ex) {
+        exception = ex;
+        ex.printStackTrace();
+      }
+      if (dbg.value)
+        System.err.println("!: Wrote all lines needed to process");
+      if(!isProblem())
+        reachedEndOfLines = true;
+    }
+  }
+  
+  static private class ProcessReaderThread extends FilterThread {
+    BufferedReader reader;
+    int currReaderLine;
+    boolean wroteFirstLineToFile;
+    boolean reachedEndOfProcessOutput;
+    boolean didCleanup;
+    
+    ProcessReaderThread(FilterThreadCoordinator coord,
+                        BufferedReader reader) {
+      super(READ_PROCESS, coord);
+      this.reader = reader;
+    }
+    public void dumpState() {
+      System.err.println("currReaderLine " + currReaderLine
+                         + ", wroteFirstLineToFile " + wroteFirstLineToFile
+                         + ", reachedEndOfProcessOutput "
+                         + reachedEndOfProcessOutput );
+      super.dumpState();
+    }
+    
+    void cleanup() {
+      if(didCleanup)
+        return;
+      didCleanup = true;
+      if (dbg.value) {
+        dumpState();
+      }
+      if(reader != null) {
+        try {
+          reader.close();
+        } catch (IOException ex) {
+          ex.printStackTrace();
+        }
+        reader = null;
+      }
+    }
+    
+    void doTask() {
+      readFromProcess();
+    }
+
+    private void readFromProcess() {
+      currReaderLine = coord.startLine;
+      String data = null;
+      try {
+        while(!isProblem()) {
+          data = reader.readLine();
+          if (data == null) {
+            if (wroteFirstLineToFile && !isInterrupted())
+              reachedEndOfProcessOutput = true;
+            if (dbg.value)
+              System.err.println("!: end of process read data");
+            break;
+          }
+          if (dbg.value) // NEEDSWORK: why trim(), use Text.formDebugString
+            System.err.println("!: Reader #" + currReaderLine + ": '"
+                              + data.trim() + "'");
+          
+          coord.toDoc.put(data);
+        }
+        coord.toDoc.put(DONE);
+        reader.close();
+        reader = null;
+      } catch (InterruptedException ex) {
+        exception = ex;
+        ex.printStackTrace();
+      } catch (IOException ex) {
+        exception = ex;
+        ex.printStackTrace();
+      }
+    }
+  }
+  
+  static private class DocumentThread extends FilterThread {
+    int docReadLine;
+    boolean docReadDone;
+    
+    int docWriteLine;
+    boolean docWriteDone;
+    
+    int linesDelta;
+    ViTextView tv;
+    
+    protected boolean didCleanup;
+    
+    DocumentThread(FilterThreadCoordinator coord, ViTextView tv) {
+      super(RW_DOC, coord);
+      this.tv = tv;
+    }
+      
+    public void run() {
+      super.run();
+      coord.finish(true);
+    }
+    
+    void doTask() {
+      doFilterDocument();
+    }
+    
+    private void doFilterDocument() {
+      
+      Misc.beginUndo();
+      
+      try {
+        
+        readWriteDocument();
+        
+      } catch(Throwable t) {
+        exception = t;
+      } finally {
+        if(exception != null || error) {
+          cleanup();
+          //NEEDSWORK: rollback change, DO NOT DO END UNDO
+          //Misc.forgetUndo();
+          Misc.endUndo();
+        } else {
+          if (dbg.value)
+            System.err.println("!: Ending Undo recording for command ");
+          Misc.endUndo();
+        }
+      
+      }
+    }
+    
+    private void deleteLine(int line) {
+      int startOffset = tv.getLineStartOffset(line);
+      int endOffset = tv.getLineEndOffset(line);
+      int docLength = tv.getEditorComponent().getDocument().getLength();
+      if(endOffset > docLength)
+        endOffset = docLength;
+      tv.deleteChar(startOffset, endOffset);
+    }
+    
+    public void readWriteDocument() {
+      docReadLine = coord.startLine;
+      docWriteLine = coord.startLine;
+      
+      do {
+        try {
+          String data = null;
+          if(docReadLine <= coord.lastLine) {
+            if (dbg.value)
+              System.err.println("!: rwDoc: try read doc");
+            while(!isInterrupted() && docReadLine <= coord.lastLine) {
+              int docLine = docReadLine + linesDelta;
+              data = tv.getLineSegment(docLine).toString();
+              deleteLine(docLine);
+              if(!coord.fromDoc.offer(data, 50, TimeUnit.MILLISECONDS))
+                break;
+              if (dbg.value) // NEEDSWORK: why trim(), use Text.formDebugDString
+                System.err.println("!: fromDoc #" + docReadLine + "," + docLine
+                                   + ": '" + data.trim() + "'");
+              docReadLine++;
+              linesDelta--;
+            }
+          } else {
+            if(!docReadDone
+               && coord.fromDoc.offer(DONE, 50, TimeUnit.MILLISECONDS)) {
+              docReadDone = true;
+              if (dbg.value)
+                System.err.println("!: rwDoc: docReadDONE");
+            }
+          }
+          
+          if(!docWriteDone) {
+            if (dbg.value)
+              System.err.println("!: rwDoc: try write doc");
+            while(!isInterrupted()) {
+              data = coord.toDoc.poll(50, TimeUnit.MILLISECONDS);
+              if(data == null)
+                break;
+              if(DONE.equals(data)) {
+                docWriteDone = true;
+                if (dbg.value)
+                  System.err.println("!: rwDoc: docWriteDONE");
+                break;
+              }
+              int offset = tv.getLineStartOffset(docWriteLine);
+              tv.insertText(offset, data);
+              offset += data.length();
+              tv.insertText(offset, "\n");
+              if (dbg.value) // NEEDSWORK: why trim(), use Text.formDebugDString
+                System.err.println("!: toDoc #" + docWriteLine + ": '"
+                                  + data.trim() + "'");
+              docWriteLine++;
+              linesDelta++;
+            }
+          }
+        } catch (InterruptedException ex) {
+          exception = ex;
+          ex.printStackTrace();
+        }
+      } while(!isProblem() && !docWriteDone);
+      if(!docReadDone)
+        cleanup(); // like "10000!!date"
+    }
+    
+    public void dumpState() {
+      System.err.println("docReadDone " + docReadDone
+                          + ", docReadLine " + docReadLine
+                          + ", docWriteDone " + docWriteDone
+                          + ", docWriteLine " + docWriteLine
+                          + ", linesDelta " + linesDelta);
+      super.dumpState();
+    }
+    
+    void cleanup() {
+      if(didCleanup)
+        return;
+      didCleanup = true;
+      if (dbg.value) {
+        dumpState();
+      }
+      
+      if(docReadDone && docReadLine <= coord.lastLine)
+        throw new IllegalStateException();
+      if (dbg.value)
+        System.err.println("!: checking doc CLEANUP");
+      while(docReadLine <= coord.lastLine) {
+        int docLine = docReadLine + linesDelta;
+        deleteLine(docLine);
+        if (dbg.value)
+          System.err.println("!: CLEANUP: fromDoc #"
+                              + docReadLine + "," + docLine);
+        docReadLine++;
+        linesDelta--;
+      }
+    }
+  }
+
+  /** Base class for Bang command threads.
+   * <p>
+   * The thread that signals completion
+   * of the task should override run() and signal success if there was no
+   * problem. If an problem occurs, failure will be signaled automatically,
+   * see coord.finish()
+   */
+  static private abstract class FilterThread extends Thread {
+    public static final String READ_PROCESS = "FilterReadProcess";
+    public static final String WRITE_PROCESS = "FilterWriteProcess";
+    public static final String RW_DOC = "FilterDocument";
+    public static final String SIMPLE_EXECUTE = "SimpleCommandExecute";
+    
+    public static final String DONE
+            = new String(new char[] {CharacterIterator.DONE});
+    
+    protected FilterThreadCoordinator coord;
+    
+    protected Throwable uncaughtException;
+    protected Throwable exception;
+    protected boolean error;
+    protected boolean interrupted;
+    
+    protected BooleanOption dbg
+                    = (BooleanOption)Options.getOption(Options.dbgBang); 
+
+    public FilterThread(String filterType,
+                        FilterThreadCoordinator coord) {
+      super(filterType);
+      this.coord = coord;
+    }
+    
+    protected void dumpState() {
+      if(exception != null)
+        System.err.println("exception: " + exception.getMessage());
+      if(uncaughtException != null)
+        System.err.println("uncaughtException: " + uncaughtException.getMessage());
+      if(error)
+        System.err.println("error: " + error);
+      if(interrupted)
+        System.err.println("interrupted: " + interrupted);
+      coord.dumpState();
+    }
+    
+    /** Its possible that cleanup is called multiple times */
+    abstract void cleanup();
+    
+    abstract void doTask();
+    
+    boolean isProblem() {
+      return isInterrupted() || error || exception != null;
+    }
+
+    public void run() {
+      setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+        public void uncaughtException(Thread t, Throwable e) {
+          FilterThread thisThread = (FilterThread) t;
+          if(thisThread.uncaughtException != null)
+            return;
+          thisThread.uncaughtException = e;
+          e.printStackTrace();
+          cleanup();
+        }
+      });
+      
+      doTask();
+      
+      if(exception != null) {
+        if (dbg.value) {
+          System.err.println("!: Exception in " + getName());
+          exception.printStackTrace();
+        }
+        cleanup();
+      }
+      
+      if(error) {
+        if (dbg.value)
+          System.err.println("!: error in " + getName());
+        cleanup();
+      }
+      
+      if(isInterrupted()) {
+        interrupted = true;
+        if (dbg.value)
+          System.err.println("!: cleanup in " + getName());
+        cleanup();
+      }
+      
+      if(isProblem()) {
+        coord.finish(false);
+      }
+    }
+  }
+
   static ActionListener ACTION_quit = new ActionListener() {
     public void actionPerformed(ActionEvent ev) {
       ColonEvent cev = (ColonEvent)ev;
@@ -837,7 +1678,9 @@ public class ColonCommands {
       Options.nohCommand();
     }
   };
-  
+
+  static ColonAction ACTION_bang = new BangAction();
+
   /**
    * This is used for several of the colon commands to translate arguments
    * into OPARG.
@@ -914,21 +1757,21 @@ public class ColonCommands {
   static void registerBuiltinCommands() {
     register("clo", "close", ACTION_close);
     register("on", "only", ACTION_only);
-    
+
     register("q", "quit", ACTION_quit);
     register("w", "write", ACTION_write);
     register("wq", "wq", ACTION_wq);
     register("wa", "wall", ACTION_wall);
-    
+
     register("f", "file", ACTION_file);
     register("e", "edit", ACTION_edit);
     register("s", "substitute", ACTION_substitute);
     register("g", "global", ACTION_global);
     register("d", "delete", ACTION_delete);
     register("p", "print", ACTION_print);
-    
+
     register("se", "set", new Options.SetCommand());
-    
+
     register("ta", "tag", ACTION_tag);
     register("tags", "tags", ACTION_tags);
     register("ts", "tselect", ACTION_tselect);
@@ -948,6 +1791,8 @@ public class ColonCommands {
     
     // register("n", "next", ACTION_next);
     // register("N", "Next", ACTION_Next);
+
+    register("!", "!", ACTION_bang);
   }
 
   static {

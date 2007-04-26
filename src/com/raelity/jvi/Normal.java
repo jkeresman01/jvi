@@ -1006,7 +1006,7 @@ middle_code:
 	  case '<':
 	  case '!':
 	  case '=':
-	    if(Util.vim_strchr("!=", ca.cmdchar) != null) {
+	    if(Util.vim_strchr("=", ca.cmdchar) != null) {
 	      notImp("oper");
 	    }
 	    nv_operator(ca);
@@ -1721,7 +1721,6 @@ middle_code:
       }
     }
     if (oap.op_type != OP_COLON) {
-      notImp("op_colon '!'");
       range.append("!");
     }
     if (oap.op_type == OP_INDENT)
@@ -3394,7 +3393,7 @@ static private void nv_findpar(CMDARG cap, int dir)
         startEdit = Misc.open_line(cap.cmdchar == 'O' ? BACKWARD : FORWARD,
                                    true, false, 0);
         if(startEdit)
-	  Edit.edit(cap.cmdchar, true, cap.count1);
+	      Edit.edit(cap.cmdchar, true, cap.count1);
       } finally {
           if(!startEdit)
             Misc.endInsertUndo();
