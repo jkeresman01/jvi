@@ -30,6 +30,7 @@
 package com.raelity.jvi;
 
 import java.awt.Toolkit;
+import java.text.CharacterIterator;
 import javax.swing.text.Segment;
 import javax.swing.text.BadLocationException;
 
@@ -124,7 +125,7 @@ public class Util {
    * is initialized to the character at pos.
    * @return Segment for the line.
    */
-  static Segment ml_get_pos(ViFPOS pos) {
+  static CharacterIterator ml_get_pos(ViFPOS pos) {
     //return (ml_get_buf(curbuf, pos->lnum, FALSE) + pos->col);
     Segment seg = G.curwin.getLineSegment(pos.getLine());
     seg.setIndex(pos.getOffset());

@@ -944,11 +944,11 @@ public class Misc implements ClipboardOwner {
    */
   static void parse_guicursor() {
     // Set them up according to the defaults.
-    Cursor block = new Cursor(SHAPE_BLOCK, 0);
-    Cursor ver25 = new Cursor(SHAPE_VER, 25);
-    Cursor ver35 = new Cursor(SHAPE_VER, 35);
-    Cursor hor20 = new Cursor(SHAPE_HOR, 20);
-    Cursor hor50 = new Cursor(SHAPE_HOR, 50);
+    Cursor block = new Cursor(SHAPE_BLOCK, 0, 0);
+    Cursor ver25 = new Cursor(SHAPE_VER, 25, -1);
+    Cursor ver35 = new Cursor(SHAPE_VER, 35, -1);
+    Cursor hor20 = new Cursor(SHAPE_HOR, 20, 0);
+    Cursor hor50 = new Cursor(SHAPE_HOR, 50, 0);
 
     cursor_table = new ViCursor[SHAPE_COUNT];
     cursor_table[SHAPE_N] = block;

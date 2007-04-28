@@ -38,6 +38,8 @@ package com.raelity.jvi;
 
 import com.raelity.jvi.ViTextView.JLOP;
 import com.raelity.jvi.ViTextView.TAGOP;
+import com.raelity.text.TextUtil;
+import java.text.CharacterIterator;
 import javax.swing.text.Segment;
 
 import com.raelity.jvi.swing.KeyBinding;
@@ -1797,7 +1799,7 @@ middle_code:
    * @return a segment with its CharacterIterator initialized to found string,
    * or null if no match.
    */
-  static Segment find_ident_under_cursor(MutableInt mi, int find_type) {
+  static CharacterIterator find_ident_under_cursor(MutableInt mi, int find_type) {
     int	    col = 0;	    // init to shut up GCC
     int	    i;
 
@@ -2267,7 +2269,7 @@ middle_code:
                                throws NotSupportedException
   {
     do_xop("nv_ident");
-    Segment     ptrSeg = null;
+    CharacterIterator     ptrSeg = null;
     int		n = 0;		// init for GCC
     int		cmdchar;
     boolean	g_cmd;		// "g" command
@@ -2366,7 +2368,7 @@ middle_code:
         // though system probably looks under cursor
         G.curwin.setCaretPosition(G.curwin.getWCursor().getLine(),
                                   ptrSeg.getIndex() - ptrSeg.getBeginIndex());
-	G.curwin.jumpDefinition(new String(ptrSeg.array, ptrSeg.getIndex(), n));
+	G.curwin.jumpDefinition(TextUtil.toString(ptrSeg, ptrSeg.getIndex(), n));
         return fDoingSearch;
 
       /*
