@@ -36,17 +36,19 @@ class Cursor implements ViCursor {
   int blinkon;
   int blinkoff;
   int highlightId;
+  int matchBraceOffset;
 
-  Cursor(int shape, int percentage) {
+  Cursor(int shape, int percentage, int matchBraceOffset) {
     // this(shape, percentage, 700, 400, 250, 0);
-    this(shape, percentage, 700, 500, 500, 0);
+    this(shape, percentage, matchBraceOffset, 700, 500, 500, 0);
   }
 
-  Cursor(int shape, int percentage,
-	 int blinkwait, int blinkon, int blinkoff, int highlightId)
+  private Cursor(int shape, int percentage, int matchBraceOffset,
+                 int blinkwait, int blinkon, int blinkoff, int highlightId)
   {
     this.shape = shape;
     this.percentage = percentage;
+    this.matchBraceOffset = matchBraceOffset;
     this.blinkwait = blinkwait;
     this.blinkon = blinkon;
     this.blinkoff = blinkoff;
@@ -61,6 +63,11 @@ class Cursor implements ViCursor {
   /** percentage of cell for bar */
   public int getPercentage() {
     return percentage;
+  }
+  
+  /** match brace offset */
+  public int getMatchBraceOffset() {
+      return matchBraceOffset;
   }
 
   /** blinking, wait time before blinking starts */
