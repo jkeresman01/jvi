@@ -40,6 +40,9 @@ public interface ViCursor {
 
   /** percentage of cell for bar */
   public int getPercentage();
+  
+  /** match brace offset */
+  public int getMatchBraceOffset();
 
   /** blinking, wait time before blinking starts */
   public int getBlinkwait();
