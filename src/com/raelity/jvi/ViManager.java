@@ -64,7 +64,7 @@ public class ViManager {
   private static final int majorVersion = 0;
   private static final int minorVersion = 9;
   private static final int microVersion = 2;
-  private static final String releaseTag = "x9";
+  private static final String releaseTag = "x10";
   private static final String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion
@@ -438,6 +438,7 @@ public class ViManager {
     G.switchTo(textView, buf);
     textView.activateOptions(textView);
     buf.activateOptions(textView);
+    Normal.resetCommand(); // Means something first time window is switched to
   }
 
   private static boolean inStartup;
