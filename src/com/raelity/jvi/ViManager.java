@@ -29,6 +29,7 @@
  */
 package com.raelity.jvi;
 
+import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionListener;
 import java.io.PrintStream;
 import java.util.List;
@@ -40,6 +41,9 @@ import javax.swing.JEditorPane;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import com.raelity.jvi.swing.*;
+import java.awt.datatransfer.FlavorMap;
+import java.awt.datatransfer.SystemFlavorMap;
+import java.nio.ByteBuffer;
 import javax.swing.text.Segment;
 
 /**
@@ -51,6 +55,10 @@ public class ViManager {
     
   public static final String PREFS_ROOT = "com/raelity/jvi";
   public static final String PREFS_KEYS = "KeyBindings";
+  
+  public static final String VIM_CLIPBOARD = "VimClipboard";
+  public static final String VIM_CLIPBOARD2 = "VimClipboard2";
+  public static final String VIM_CLIPBOARD_RAW = "VimRawBytes";
 
   static private JEditorPane currentEditorPane;
   static private ViFactory factory;
@@ -64,7 +72,7 @@ public class ViManager {
   private static final int majorVersion = 0;
   private static final int minorVersion = 9;
   private static final int microVersion = 2;
-  private static final String releaseTag = "x10";
+  private static final String releaseTag = "x11";
   private static final String release = "jVi "
                     + ViManager.majorVersion
 		    + "." + ViManager.minorVersion
@@ -83,6 +91,33 @@ public class ViManager {
 
     Options.init();
     KeyBinding.init();
+    
+    // Add the vim clipboards
+  }
+  
+  public static final DataFlavor VimClipboard = addVimClipboard(VIM_CLIPBOARD);
+  public static final DataFlavor VimClipboard2 = addVimClipboard(VIM_CLIPBOARD2);
+  public static final DataFlavor VimRawBytes = addVimClipboard(VIM_CLIPBOARD_RAW);
+  // public static final DataFlavor VimClipboard;
+  // public static final DataFlavor VimClipboard2;
+  // public static final DataFlavor VimRawBytes;
+  
+  private static DataFlavor addVimClipboard(String cbName) {
+    DataFlavor df = null;
+    FlavorMap fm = SystemFlavorMap.getDefaultFlavorMap();
+    if(fm instanceof SystemFlavorMap) {
+      SystemFlavorMap sfm = (SystemFlavorMap) fm;
+      try {
+        df = new DataFlavor("application/" + cbName + "; class=java.nio.ByteBuffer");
+      } catch (ClassNotFoundException ex) {
+        ex.printStackTrace();
+      }
+      System.err.println(cbName + " " + df.getMimeType());
+      
+      sfm.addFlavorForUnencodedNative(cbName, df);
+      sfm.addUnencodedNativeForFlavor(df, cbName);
+    }
+    return df;
   }
 
   public static String getReleaseString() {
@@ -439,6 +474,7 @@ public class ViManager {
     textView.activateOptions(textView);
     buf.activateOptions(textView);
     Normal.resetCommand(); // Means something first time window is switched to
+    buf.checkModeline();
   }
 
   private static boolean inStartup;
@@ -689,7 +725,7 @@ public class ViManager {
     Set<Buffer> bufSet = factory.getBufferSet();
     ps.println("BufferSet: " + bufSet.size());
     for (Buffer buf : bufSet) {
-        ps.println("\t" + factory.getDisplayFilename(buf.doc)
+        ps.println("\t" + factory.getDisplayFilename(buf.getDoc())
                    + ", share: " + buf.getShare());
     }
   }

@@ -30,6 +30,7 @@ package com.raelity.jvi.swing;
 
 import com.raelity.text.RegExp;
 import com.raelity.text.RegExpJava;
+import com.raelity.text.TextUtil.MySegment;
 import java.awt.Point;
 import java.util.Arrays;
 import java.util.regex.Matcher;
@@ -821,7 +822,7 @@ public class TextView implements ViTextView {
   
   Pattern highlightSearchPattern;
   // Use MySegment for 1.5 compatibility
-  RegExpJava.MySegment highlightSearchSegment = new RegExpJava.MySegment();
+  MySegment highlightSearchSegment = new MySegment();
   int[] highlightSearchBlocks = new int[2];
   MutableInt highlightSearchIndex = new MutableInt(0);
   
