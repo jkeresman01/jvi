@@ -212,7 +212,7 @@ public abstract class Option {
             value = newValue;
             stringValue = xformToString(value);
             propogate();
-            Options.getOptions().pcs.firePropertyChange(name, oldValue, newValue);
+            Options.firePropertyChange(name, oldValue, newValue);
         }
 
         /**

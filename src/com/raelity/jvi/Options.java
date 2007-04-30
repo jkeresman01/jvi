@@ -30,6 +30,7 @@
 package com.raelity.jvi;
 
 import com.raelity.jvi.ColonCommands.ColonEvent;
+import com.raelity.text.TextUtil;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -50,9 +51,12 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
+import com.raelity.text.TextUtil.MySegment;
 import com.raelity.jvi.Option.ColorOption;
 
 import static com.raelity.jvi.Constants.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Option handling from external sources.
@@ -63,13 +67,14 @@ import static com.raelity.jvi.Constants.*;
  *
  */
 
-public class Options {
+public final class Options {
   private Options() {
   }
   private static Options options;
-  PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+  private static PropertyChangeSupport pcs
+                        = new PropertyChangeSupport(getOptions());
   
-  public static Options getOptions() {
+  static Options getOptions() {
       if(options == null) {
           options = new Options();
       }
@@ -117,6 +122,9 @@ public class Options {
   public static final String tabStop = "viTabStop";
   public static final String showMode = "viShowMode";
   public static final String showCommand = "viShowCommand";
+  
+  public static final String modeline = "viModeline";
+  public static final String modelines = "viModelines";
   
   public static final String selection = "viSelection";
   public static final String selectMode = "viSelectMode";
@@ -213,7 +221,23 @@ public class Options {
             + " be given for most \":\" commands.  If you want it always, set"
             + " 'report' to 0.  For the \":substitute\" command the number of"
             + " substitutions is used instead of the number of lines.");
+    
+    G.p_ml = createBooleanOption(modeline, true);
+    setupOptionDesc(generalList, modeline, "'modeline' 'ml'",
+            "Enable/disable modelines option");
+    
+    G.p_mls = createIntegerOption(modelines, 5);
+    setupOptionDesc(generalList, modelines, "'modelines' 'mls'",
+	    " If 'modeline' is on 'modelines' gives the number of lines"
+            + " that is checked for set commands.  If 'modeline' is off"
+            + " or 'modelines' is zero no lines are checked.");
 
+    
+    /////////////////////////
+    //
+    // per buffer options are accessed through curbuf.
+    //
+    
     /*G.b_p_et = */createBooleanOption(expandTabs, false);
     setupOptionDesc(generalList, expandTabs, "'expandtab' 'et'",
            "In Insert mode: Use the appropriate number of spaces to"
@@ -588,374 +612,488 @@ public class Options {
   
   //
   // Look like a good bean
+  // But they're static!
   //
   
-  public void addPropertyChangeListener( PropertyChangeListener listener )
+  public static void addPropertyChangeListener( PropertyChangeListener listener )
   {
-    this.pcs.addPropertyChangeListener( listener );
+    pcs.addPropertyChangeListener( listener );
   }
 
-  public void removePropertyChangeListener( PropertyChangeListener listener )
+  public static void removePropertyChangeListener( PropertyChangeListener listener )
   {
-    this.pcs.removePropertyChangeListener( listener );
+    pcs.removePropertyChangeListener( listener );
   }
   
-  public void addPropertyChangeListener(String p, PropertyChangeListener l)
+  public static void addPropertyChangeListener(String p,
+                                               PropertyChangeListener l)
   {
-    this.pcs.addPropertyChangeListener(p, l);
+    pcs.addPropertyChangeListener(p, l);
   }
 
-  public void removePropertyChangeListener(String p, PropertyChangeListener l)
+  public static void removePropertyChangeListener(String p,
+                                                  PropertyChangeListener l)
   {
-    this.pcs.removePropertyChangeListener(p, l);
+    pcs.removePropertyChangeListener(p, l);
   }
   
-    /** Implement ":se[t]", maybe migrate to own class sometime */
-    public static class SetCommand extends ColonCommands.ColonAction {
-        
-        private static class SetCommandException extends Exception {}
-
-        private static int P_IND = 0x01; // either curwin or curbuf
-        private static int P_WIN = 0x02; // curwin
-        private static int P_OPT = 0x04; // global option
-        
-        private static class VimOption {
-            String fullname;
-            String shortname;
-            int flags;
-            // name of field and/or option
-            String varName;
-            String optName;
-            
-            VimOption(String fullname,
-                      String shortname,
-                      int flags,
-                      String varName,
-                      String optName) {
-                this.fullname = fullname;
-                this.shortname = shortname;
-                this.flags = flags;
-                this.varName = varName;
-                this.optName = optName;
-            }
+  /** This should only be used from Option and its subclasses */
+  static void firePropertyChange(String name, Object oldValue, Object newValue) {
+    pcs.firePropertyChange(name, oldValue, newValue);
+  }
+  
+  //////////////////////////////////////////////////////////////////////
+  //
+  // set command including modelines processing
+  //
+  
+  /** Implement ":se[t]".
+   *
+   * Options are either global or indirect, see the P_ XXX below An option
+   * must be one or the other. Global options are static, an indirect option
+   * is an instance variable in either G.curwin or G.curbuf. When a P_IND
+   * variable is set, introspection is used to do the set.
+   * <p>
+   * In some cases, due to platform limitation, the same variable must be
+   * set in all the instances, syncAllInstances(var) does that.
+   */
+  public static class SetCommand extends ColonCommands.ColonAction {
+    
+    private static class SetCommandException extends Exception {
+      SetCommandException(String msg) {
+        super(msg);
+      }
+    }
+    
+    private static int P_IND = 0x01; // indirect: either curwin or curbuf
+    private static int P_WIN = 0x02; // curwin
+    private static int P_OPT = 0x04; // global option
+    
+    private static class VimOption {
+      String fullname;    // option name
+      String shortname;   // option name
+      int flags;          // P_* above
+      // name of field and/or option
+      String varName;     // java variable name in curbuf or curwin
+      String optName;     // the jVi Option name.
+      
+      VimOption(String fullname,
+                String shortname,
+                int flags,
+                String varName,
+                String optName) {
+        this.fullname = fullname;
+        this.shortname = shortname;
+        this.flags = flags;
+        this.varName = varName;
+        this.optName = optName;
+      }
+    }
+    
+    // MUST NOT SET both P_IND and P_OPT
+    private static VimOption vopts[] = new VimOption[] {
+      new VimOption("expandtab", "et", P_IND, "b_p_et", null),
+      new VimOption("ignorecase", "ic", P_OPT, null, ignoreCase),
+      new VimOption("incsearch", "is", P_OPT, null, incrSearch),
+      new VimOption("hlsearch", "hls", P_OPT, null, highlightSearch),
+      new VimOption("number", "nu", P_IND|P_WIN, "w_p_nu", null),
+      new VimOption("shiftwidth", "sw", P_IND, "b_p_sw", shiftWidth),
+      new VimOption("tabstop", "ts", P_IND, "b_p_ts", tabStop),
+    };
+    
+    public void actionPerformed(ActionEvent e) {
+      ColonEvent evt = (ColonEvent) e;
+      parseSetOptions(evt.getArgs());
+    }
+    
+    public void parseSetOptions(List<String> eventArgs) {
+      if(eventArgs == null
+         || eventArgs.size() == 1 && "all".equals(eventArgs.get(0))) {
+        displayAllOptions();
+        return;
+      }
+      Deque<String> args = new ArrayDeque<String>();
+      // copy eventArgs into args, with possible fixup
+      // ":set sw =4" is allowed, so if something starts with "="
+      // then append it to the previous element
+      int j = 0;
+      for(int i = 0; i < eventArgs.size(); i++) {
+        String arg = eventArgs.get(i);
+        if(arg.startsWith("=") && args.peekLast() != null) {
+          arg = args.removeLast() + arg;
+        }
+        args.addLast(arg);
+      }
+      for (String arg : args) {
+        try {
+          parseSetOption(arg);
+        } catch (SetCommandException ex) {
+          // error message given
+          return;
+        } catch (IllegalAccessException ex) {
+          ex.printStackTrace();
+          return;
+        } catch (IllegalArgumentException ex) {
+          ex.printStackTrace();
+          return;
+        }
+      }
+    }
+    
+    private static class VimOptionDescriptor {
+      
+      Class type;
+      Object value;
+      
+      // used if P_IND
+      Field f;
+      ViOptionBag bag;
+      
+      // used if regular option is provided
+      Option opt;
+      
+      
+      // Following not really option state, they are the
+      // parse results when settigns options
+      boolean fInv;
+      boolean fNo;
+      boolean fShow;
+      boolean fValue;
+      
+      String split[];
+    }
+    
+    // This is train of thought
+    public static void parseSetOption(String arg)
+    throws IllegalAccessException, SetCommandException {
+      VimOptionDescriptor voptDesc = new VimOptionDescriptor();
+      
+      voptDesc.split = arg.split("[:=]");
+      
+      String voptName = voptDesc.split[0];
+      if(voptDesc.split.length > 1) {
+        voptDesc.fValue = true;
+      }
+      
+      if(voptName.startsWith("no")) {
+        voptDesc.fNo = true;
+        voptName = voptName.substring(2);
+      } else if(voptName.startsWith("inv")) {
+        voptDesc.fInv = true;
+        voptName = voptName.substring(3);
+      } else if(voptName.endsWith("!")) {
+        voptDesc.fInv = true;
+        voptName = voptName.substring(0, voptName.length() -1);
+      } else if(voptName.endsWith("?")) {
+        voptDesc.fShow = true;
+        voptName = voptName.substring(0, voptName.length() -1);
+      }
+      VimOption vopt = null;
+      for (VimOption v : vopts) {
+        if(voptName.equals(v.fullname) || voptName.equals(v.shortname)) {
+          vopt = v;
+          break;
+        }
+      }
+      if(vopt == null) {
+        String msg = "Unknown option: " + voptName;
+        Msg.emsg(msg);
+        throw new SetCommandException(msg);
+      }
+      
+      if(!determineOptionState(vopt, voptDesc)) {
+        String msg = "Internal error: " + arg;
+        Msg.emsg(msg);
+        throw new SetCommandException(msg);
+      }
+      
+      Object newValue = newOptionValue(arg, vopt, voptDesc);
+      
+      if(voptDesc.fShow)
+        Msg.smsg(formatDisplayValue(vopt, voptDesc.value));
+      else {
+        if(voptDesc.opt != null) {
+          try {
+            voptDesc.opt.validate(newValue);
+          } catch (PropertyVetoException ex) {
+            Msg.emsg(ex.getMessage());
+            throw new SetCommandException(ex.getMessage());
+          }
         }
         
-        // MUST NOT SET both P_IND and P_OPT
-        private static VimOption vopts[] = new VimOption[] {
-            new VimOption("expandtab", "et", P_IND, "b_p_et", null),
-            new VimOption("ignorecase", "ic", P_OPT, null, ignoreCase),
-            new VimOption("incsearch", "is", P_OPT, null, incrSearch),
-            new VimOption("hlsearch", "hls", P_OPT, null, highlightSearch),
-            new VimOption("number", "nu", P_IND|P_WIN, "w_p_nu", null),
-            new VimOption("shiftwidth", "sw", P_IND, "b_p_sw", shiftWidth),
-            new VimOption("tabstop", "ts", P_IND, "b_p_ts", tabStop),
-        };
-        
-        public void actionPerformed(ActionEvent e) {
-            ColonEvent evt = (ColonEvent) e;
-            parseSetOptions(evt.getArgs());
+        if((vopt.flags & P_IND) != 0) {
+          voptDesc.f.set(voptDesc.bag, newValue);
+          voptDesc.bag.viOptionSet(G.curwin, vopt.varName);
+        } else {
+          voptDesc.opt.setValue(newValue.toString());
         }
-        
-        public void parseSetOptions(List<String> eventArgs) {
-            if(eventArgs == null
-               || eventArgs.size() == 1 && "all".equals(eventArgs.get(0))) {
-                displayAllOptions();
-                return;
-            }
-            Deque<String> args = new ArrayDeque<String>();
-            // copy eventArgs into args, with possible fixup
-            // ":set sw =4" is allowed, so if something starts with "="
-            // then append it to the previous element
-            int j = 0;
-            for(int i = 0; i < eventArgs.size(); i++) {
-                String arg = eventArgs.get(i);
-                if(arg.startsWith("=") && args.peekLast() != null) {
-                    arg = args.removeLast() + arg;
-                }
-                args.addLast(arg);
-            }
-            for (String arg : args) {
-                try {
-                    parseSetOption(arg);
-                } catch (SetCommandException ex) {
-                    // error message given
-                    return;
-                } catch (NumberFormatException ex) {
-                    Msg.emsg("Number required after =: " + arg);
-                    return;
-                } catch (IllegalAccessException ex) {
-                    ex.printStackTrace();
-                    return;
-                } catch (IllegalArgumentException ex) {
-                    ex.printStackTrace();
-                    return;
-                }
-            }
-        }
-        
-        private static class VimOptionDescriptor {
-            
-            Class type;
-            Object value;
-            
-            // used if P_IND
-            Field f;
-            ViOptionBag bag;
-            
-            // used if regular option is provided
-            Option opt;
-            
-            
-            // Following not really option state, they are the
-            // parse results when settigns options
-            boolean fInv;
-            boolean fNo;
-            boolean fShow;
-            boolean fValue;
-            
-            String split[];
-        }
-        
-        // This is train of thought, could clean it up
-        public void parseSetOption(String arg)
-        throws IllegalAccessException, SetCommandException {
-            VimOptionDescriptor voptDesc = new VimOptionDescriptor();
-            
-            voptDesc.split = arg.split("[:=]");
-            
-            String voptName = voptDesc.split[0];
-            if(voptDesc.split.length > 1) {
-                voptDesc.fValue = true;
-            }
-            
-            if(voptName.startsWith("no")) {
-                voptDesc.fNo = true;
-                voptName = voptName.substring(2);
-            } else if(voptName.startsWith("inv")) {
-                voptDesc.fInv = true;
-                voptName = voptName.substring(3);
-            } else if(voptName.endsWith("!")) {
-                voptDesc.fInv = true;
-                voptName = voptName.substring(0, voptName.length() -1);
-            } else if(voptName.endsWith("?")) {
-                voptDesc.fShow = true;
-                voptName = voptName.substring(0, voptName.length() -1);
-            }
-            VimOption vopt = null;
-            for (VimOption v : vopts) {
-                if(voptName.equals(v.fullname)
-                    || voptName.equals(v.shortname)) {
-                    vopt = v;
-                    break;
-                }
-            }
-            if(vopt == null) {
-                Msg.emsg("Unknown option: " + voptName);
-                throw new SetCommandException();
-            }
-            
-            if(!determineOptionState(vopt, voptDesc)) {
-                Msg.emsg("Internal error: " + arg);
-                throw new SetCommandException();
-            }
-            
-            Object newValue = newOptionValue(arg, vopt, voptDesc);
-            
-            if(voptDesc.fShow)
-                Msg.smsg(formatDisplayValue(vopt, voptDesc.value));
-            else {
-                if(voptDesc.opt != null) {
-                    try {
-                        voptDesc.opt.validate(newValue);
-                    } catch (PropertyVetoException ex) {
-                        Msg.emsg(ex.getMessage());
-                        throw new SetCommandException();
-                    }
-                }
-                
-                if((vopt.flags & P_IND) != 0) {
-                    voptDesc.f.set(voptDesc.bag, newValue);
-                    voptDesc.bag.viOptionSet(G.curwin, vopt.varName);
-                } else {
-                    voptDesc.opt.setValue(newValue.toString());
-                }
-            }
-        }
-        
-        /**
-         * Set voptDesc with information about the argument vopt.
-         */
-        private static boolean determineOptionState(VimOption vopt,
+      }
+    }
+    
+    /**
+     * Set voptDesc with information about the argument vopt.
+     */
+    private static boolean determineOptionState(VimOption vopt,
                                                 VimOptionDescriptor voptDesc) {
-            if(vopt.optName != null)
-                voptDesc.opt = getOption(vopt.optName);
-            
-            if((vopt.flags & P_IND) != 0) {
-                voptDesc.bag = (vopt.flags & P_WIN) != 0 ? G.curwin : G.curbuf;
-                try {
-                    voptDesc.f = voptDesc.bag.getClass().getField(vopt.varName);
-                } catch (SecurityException ex) {
-                    ex.printStackTrace();
-                } catch (NoSuchFieldException ex) {
-                    ex.printStackTrace();
-                }
-                if(voptDesc.f == null) {
-                    return false;
-                }
-                voptDesc.type = voptDesc.f.getType();
-                // impossible to get exceptions
-                try {
-                    voptDesc.value = voptDesc.f.get(voptDesc.bag);
-                } catch (IllegalArgumentException ex) {
-                    ex.printStackTrace();
-                } catch (IllegalAccessException ex) {
-                    ex.printStackTrace();
-                }
-            } else if((vopt.flags & P_OPT) != 0) {
-                if(voptDesc.opt instanceof BooleanOption) {
-                    voptDesc.type = boolean.class;
-                    voptDesc.value = voptDesc.opt.getBoolean();
-                } else if(voptDesc.opt instanceof IntegerOption) {
-                    voptDesc.type = int.class;
-                    voptDesc.value = voptDesc.opt.getInteger();
-                }
-            }
-            return true;
+      if(vopt.optName != null)
+        voptDesc.opt = getOption(vopt.optName);
+      
+      if((vopt.flags & P_IND) != 0) {
+        voptDesc.bag = (vopt.flags & P_WIN) != 0 ? G.curwin : G.curbuf;
+        try {
+          voptDesc.f = voptDesc.bag.getClass().getField(vopt.varName);
+        } catch (SecurityException ex) {
+          ex.printStackTrace();
+        } catch (NoSuchFieldException ex) {
+          ex.printStackTrace();
         }
-        
-        // Most of the argument are class members
-        private Object newOptionValue(String arg,
-                                       VimOption vopt,
-                                       VimOptionDescriptor voptDesc)
-        throws NumberFormatException, SetCommandException {
-            Object newValue = null;
-                
-            if(voptDesc.type == boolean.class) {
-                if(voptDesc.fValue) {
-                    // like: ":set ic=val"
-                    Msg.emsg("Unknown argument: " + arg);
-                    throw new SetCommandException();
-                }
-                if(!voptDesc.fShow) {
-                    if(voptDesc.fInv)
-                        newValue = ! ((Boolean)voptDesc.value).booleanValue();
-                    else if(voptDesc.fNo)
-                        newValue = false;
-                    else
-                        newValue = true;
-                }
-            } else if(voptDesc.type == int.class) {
-                if(!voptDesc.fValue)
-                    voptDesc.fShow = true;
-                if(!voptDesc.fShow) {
-                    newValue = Integer.parseInt(voptDesc.split[1]);
-                }
-            } else
-                assert false : "Type " + voptDesc.type.getSimpleName()
-                                    + " not handled";
-            return newValue;
+        if(voptDesc.f == null) {
+          return false;
         }
-        
-        private static String formatDisplayValue(VimOption vopt,
-                                                 Object value) {
-            String v = "";
-            if(value instanceof Boolean) {
-                v = (((Boolean)value).booleanValue()
-                            ? "  " : "no") + vopt.fullname;
-            } else if(value instanceof Integer) {
-                v = vopt.fullname + "=" + value;
-            } else
-                assert false : value.getClass().getSimpleName() + " not handled";
-            
-            return v;
+        voptDesc.type = voptDesc.f.getType();
+        // impossible to get exceptions
+        try {
+          voptDesc.value = voptDesc.f.get(voptDesc.bag);
+        } catch (IllegalArgumentException ex) {
+          ex.printStackTrace();
+        } catch (IllegalAccessException ex) {
+          ex.printStackTrace();
         }
-        
-        private static void displayAllOptions() {
-            ViOutputStream osa = ViManager.createOutputStream(
-                                        null, ViOutputStream.OUTPUT, null);
-            for (VimOption vopt : vopts) {
-                VimOptionDescriptor voptDesc = new VimOptionDescriptor();
-                determineOptionState(vopt, voptDesc);
-                osa.println(formatDisplayValue(vopt, voptDesc.value));
-            }
-            osa.close();
+      } else if((vopt.flags & P_OPT) != 0) {
+        if(voptDesc.opt instanceof BooleanOption) {
+          voptDesc.type = boolean.class;
+          voptDesc.value = voptDesc.opt.getBoolean();
+        } else if(voptDesc.opt instanceof IntegerOption) {
+          voptDesc.type = int.class;
+          voptDesc.value = voptDesc.opt.getInteger();
         }
-        
-        /** Note the value from the current is used to set any others */
-        public static void syncAllInstances(String varName) {
-            for (VimOption vopt : vopts) {
-                if((vopt.flags & P_IND) != 0) {
-                    if(vopt.varName.equals(varName)) {
-                        VimOptionDescriptor voptDesc = new VimOptionDescriptor();
-                        determineOptionState(vopt, voptDesc);
-                        Set<? extends ViOptionBag> set = 
-                            (vopt.flags & P_WIN) != 0
-                                ? ViManager.getViFactory().getViTextViewSet()
-                                : ViManager.getViFactory().getBufferSet();
-                        for (ViOptionBag bag : set) {
-                            try {
-                                voptDesc.f.set(bag, voptDesc.value);
-                            } catch (IllegalArgumentException ex) {
-                                ex.printStackTrace();
-                            } catch (IllegalAccessException ex) {
-                                ex.printStackTrace();
-                            }
-                        }
-                    }
-                    break;
-                }
+      }
+      return true;
+    }
+    
+    // Most of the argument are class members
+    private static Object newOptionValue(String arg,
+                                         VimOption vopt,
+                                         VimOptionDescriptor voptDesc)
+    throws NumberFormatException, SetCommandException {
+      Object newValue = null;
+      
+      if(voptDesc.type == boolean.class) {
+        if(voptDesc.fValue) {
+          // like: ":set ic=val"
+          String msg = "Unknown argument: " + arg;
+          Msg.emsg(msg);
+          throw new SetCommandException(msg);
+        }
+        if(!voptDesc.fShow) {
+          if(voptDesc.fInv)
+            newValue = ! ((Boolean)voptDesc.value).booleanValue();
+          else if(voptDesc.fNo)
+            newValue = false;
+          else
+            newValue = true;
+        }
+      } else if(voptDesc.type == int.class) {
+        if(!voptDesc.fValue)
+          voptDesc.fShow = true;
+        if(!voptDesc.fShow) {
+            try {
+              newValue = Integer.parseInt(voptDesc.split[1]);
+            } catch (NumberFormatException ex) {
+              String msg = "Number required after =: " + arg;
+              Msg.emsg(msg);
+              throw new SetCommandException(msg);
             }
         }
+      } else
+        assert false : "Type " + voptDesc.type.getSimpleName()
+                        + " not handled";
+      return newValue;
     }
     
-    static boolean can_bs(int what) {
-        switch(G.p_bs.value) {
-            case 2:     return true;
-            case 1:     return what != BS_START;
-            case 0:     return false;
+    private static String formatDisplayValue(VimOption vopt,
+                                             Object value) {
+      String v = "";
+      if(value instanceof Boolean) {
+        v = (((Boolean)value).booleanValue()
+        ? "  " : "no") + vopt.fullname;
+      } else if(value instanceof Integer) {
+        v = vopt.fullname + "=" + value;
+      } else
+        assert false : value.getClass().getSimpleName() + " not handled";
+      
+      return v;
+    }
+    
+    private static void displayAllOptions() {
+      ViOutputStream osa = ViManager.createOutputStream(
+              null, ViOutputStream.OUTPUT, null);
+      for (VimOption vopt : vopts) {
+        VimOptionDescriptor voptDesc = new VimOptionDescriptor();
+        determineOptionState(vopt, voptDesc);
+        osa.println(formatDisplayValue(vopt, voptDesc.value));
+      }
+      osa.close();
+    }
+    
+    /** Note the value from the current is used to set any others */
+    public static void syncAllInstances(String varName) {
+      for (VimOption vopt : vopts) {
+        if((vopt.flags & P_IND) != 0) {
+          
+          if(vopt.varName.equals(varName)) {
+            VimOptionDescriptor voptDesc = new VimOptionDescriptor();
+            determineOptionState(vopt, voptDesc);
+            Set<? extends ViOptionBag> set =
+                    (vopt.flags & P_WIN) != 0
+                      ? ViManager.getViFactory().getViTextViewSet()
+                      : ViManager.getViFactory().getBufferSet();
+            for (ViOptionBag bag : set) {
+              try {
+                voptDesc.f.set(bag, voptDesc.value);
+              } catch (IllegalArgumentException ex) {
+                ex.printStackTrace();
+              } catch (IllegalAccessException ex) {
+                ex.printStackTrace();
+              }
+            }
+            break;
+          }
+          
         }
-        assert(false) : "can_bs: ; p_bs bad value";
-        return false;
+      }
     }
     
-    // Whether or not to highlight depends on a mix of things.
-    // Handle the logic here.
-    
-    static boolean nohDisableHighlight;
-    
-    static {
-        getOptions().addPropertyChangeListener(highlightSearch,
-                                               new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if(G.curwin != null) {
-                    nohDisableHighlight = false;
-                    ViManager.updateHighlightSearchState();
-                }
-            }
-        });
-        
-        getOptions().addPropertyChangeListener(ignoreCase,
-                                               new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if(G.curwin != null) {
-                    ViManager.updateHighlightSearchState();
-                }
-            }
-        });
+  }
+  
+  private static Pattern mlPat1;
+  private static Pattern mlPat2;
+  public static void processModelines() {
+    if(mlPat1 == null) {
+      // vim modelines has two patterns
+      mlPat1 = Pattern.compile("\\s+(?:vi:|vim:|ex:)\\s*(.*)");
+      mlPat2 = Pattern.compile("\\s+(?:vi:|vim:|ex:)\\s*set? ([^:]*):");
+    }
+    int mls;
+    if(!G.p_ml.value || (mls = G.p_mls.value) == 0)
+      return;
+    int lnum;
+    int lcount = G.curwin.getLineCount();
+    for(lnum = 1; lnum < lcount && lnum <= mls; lnum++) {
+      if(checkModeline(lnum))
+        mls = 0;
     }
     
-    public static boolean doHighlightSearch() {
-        return G.p_highlight_search.value && !nohDisableHighlight;
+    for(lnum = lcount; lnum > 0 && lnum > mls && lnum > lcount - mls; lnum--) {
+      if(checkModeline(lnum))
+        mls = 0;
     }
+  }
+  
+  /** @return true if parsed a modeline, there may have been errors */
+  private static boolean checkModeline(int lnum) {
+    // use MySegment for jdk1.5 compatibility
+    MySegment seg = new MySegment(Util.ml_get(lnum));
     
-    static void nohCommand() {
-        nohDisableHighlight = true;
-        ViManager.updateHighlightSearchState();
-    }
+    // must check pattern 2 first, since lines that match pattern 2
+    // will also match pattern 1
     
-    static void newSearch() {
-        nohDisableHighlight = false;
-        ViManager.updateHighlightSearchState();
+    if(parseModeline(mlPat2, seg))
+      return true;
+    if(parseModeline(mlPat1, seg))
+      return true;
+    return false;
+  }
+  
+  /** @return true if found and parsed a modeline, there may have been errors */
+  private static boolean parseModeline(Pattern p, CharSequence cs) {
+    Matcher m = p.matcher(cs);
+    if(m.find()) {
+      ViOutputStream vos = null;
+      try {
+        String s = m.group(1);
+        vos = ViManager.createOutputStream(G.curwin,
+                                           ViOutputStream.OUTPUT,
+                                           "Process modeline: " + s);
+        String[] args = s.split("[:\\s]");
+        for (String arg : args) {
+          String msg = "";
+          try {
+            SetCommand.parseSetOption(arg);
+          } catch (SetCommand.SetCommandException ex) {
+            msg = ex.getMessage();
+          } catch (IllegalAccessException ex) {
+            ex.printStackTrace();
+          }
+          if(!msg.equals(""))
+            vos.println("Error: " + msg);
+          else
+            vos.println("   OK: " + arg);
+        }
+      } finally {
+        if(vos != null)
+          vos.close();
+      }
+      return true;
     }
+    return false;
+  }
+  
+  //////////////////////////////////////////////////////////////////////
+  //
+  // can_bs is in option in vim
+  //
+  
+  static boolean can_bs(int what) {
+    switch(G.p_bs.value) {
+      case 2:     return true;
+      case 1:     return what != BS_START;
+      case 0:     return false;
+    }
+    assert(false) : "can_bs: ; p_bs bad value";
+    return false;
+  }
+  
+  
+  //////////////////////////////////////////////////////////////////////
+  //
+  // Whether or not to highlight depends on a mix of things.
+  // Handle the logic here.
+  
+  static boolean nohDisableHighlight;
+  
+  static {
+    addPropertyChangeListener(highlightSearch, new PropertyChangeListener() {
+      public void propertyChange(PropertyChangeEvent evt) {
+        if(G.curwin != null) {
+          nohDisableHighlight = false;
+          ViManager.updateHighlightSearchState();
+        }
+      }
+    });
+    
+    addPropertyChangeListener(ignoreCase, new PropertyChangeListener() {
+      public void propertyChange(PropertyChangeEvent evt) {
+        if(G.curwin != null) {
+          ViManager.updateHighlightSearchState();
+        }
+      }
+    });
+  }
+  
+  public static boolean doHighlightSearch() {
+    return G.p_highlight_search.value && !nohDisableHighlight;
+  }
+  
+  static void nohCommand() {
+    nohDisableHighlight = true;
+    ViManager.updateHighlightSearchState();
+  }
+  
+  static void newSearch() {
+    nohDisableHighlight = false;
+    ViManager.updateHighlightSearchState();
+  }
 }
 
+// vi:sw=2 et
