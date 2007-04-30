@@ -3,7 +3,7 @@ package com.raelity.text;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import javax.swing.text.Segment;
+import com.raelity.text.TextUtil.MySegment;
 
 public class RegExpJava extends RegExp
 {
@@ -111,44 +111,4 @@ public class RegExpJava extends RegExp
     }
     private RegExpResultJava result;
     private Pattern pat;
-    
-    /** To support jdk1.5, need a segment that isa CharSequence */
-    public static class MySegment extends Segment implements CharSequence {
-        public MySegment() {
-            super();
-        }
-        
-        public MySegment(char[] array, int offset, int count) {
-            super(array, offset, count);
-        }
-        
-        public char charAt(int index) {
-            if (index < 0 
-                || index >= count) {
-                throw new StringIndexOutOfBoundsException(index);
-            }
-            return array[offset + index];
-        }
-
-        public int length() {
-            return count;
-        }
-
-        public CharSequence subSequence(int start, int end) {
-            if (start < 0) {
-                throw new StringIndexOutOfBoundsException(start);
-            }
-            if (end > count) {
-                throw new StringIndexOutOfBoundsException(end);
-            }
-            if (start > end) {
-                throw new StringIndexOutOfBoundsException(end - start);
-            }
-            MySegment segment = new MySegment();
-            segment.array = this.array;
-            segment.offset = this.offset + start;
-            segment.count = end - start;
-            return segment;
-        }
-    }
 }
