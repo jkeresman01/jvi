@@ -168,4 +168,12 @@ public class G {
   
   public static boolean redo_VIsual_busy = false;
       /* The visual area is remembered for redo */
+
+/*
+ * This flag is used to make auto-indent work right on lines where only a
+ * <RETURN> or <ESC> is typed. It is set when an auto-indent is done, and
+ * reset when any other editing is done on the line. If an <ESC> or <RETURN>
+ * is received, and did_ai is TRUE, the line is truncated.
+ */
+  public static boolean did_ai = false;
 }

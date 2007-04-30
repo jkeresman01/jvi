@@ -287,6 +287,7 @@ public class Misc implements ClipboardOwner {
 	Segment seg = G.curwin.getLineSegment(1);
 	G.curwin.setCaretPosition(
 		      0 + coladvanceColumnIndex(MAXCOL, seg));
+    G.did_ai = true;
 	return true;
       }
       // position cursor according to dir, probably an 'O' or 'o' command
@@ -302,6 +303,7 @@ public class Misc implements ClipboardOwner {
       G.curwin.setCaretPosition(offset);
     }
     G.curwin.insertNewLine();
+    G.did_ai = true;
     return true;
   }
 

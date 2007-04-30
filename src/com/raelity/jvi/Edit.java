@@ -74,7 +74,7 @@ public class Edit {
   static boolean did_backspace;
   static MutableInt count;
   static MutableBoolean inserted_space;
-  
+
   /**
    * edit(): Start inserting text.
    *<ul>
@@ -116,6 +116,9 @@ public class Edit {
       
       Insstart = G.curwin.getWCursor().copy();
       Insstart_textlen = Misc.linetabsize(Util.ml_get_curline());
+
+      if (!G.did_ai)
+        G.ai_col = 0;
       
       if (cmdchar != NUL && G.restart_edit == 0) {
         GetChar.ResetRedobuff();
@@ -486,7 +489,16 @@ public class Edit {
         return false;
     }
   }
-  
+
+  private static void removeUnusedWhiteSpace() {
+    if (Util.ml_get_curline().toString().trim().equals("")) {
+      int startOffset =
+        G.curwin.getLineStartOffset(G.curwin.getWCursor().getLine());
+      int endOffset = G.curwin.getLineEndOffsetFromOffset(startOffset) - 1;
+      G.curwin.deleteChar(startOffset, endOffset);
+    }
+  }
+
   /**
    * Call this function before moving the cursor from the normal insert position
    * in insert mode.
@@ -788,6 +800,7 @@ public class Edit {
     stop_arrow();
     Misc.ins_char(c);
     GetChar.AppendCharToRedobuff(c);
+    G.did_ai = false;
   }
   
   static boolean arrow_used;
@@ -815,7 +828,7 @@ public class Edit {
         Normal.u_save_cursor();    // errors are ignored!
         Insstart = G.curwin.getWCursor().copy();    // new insertion starts here
         Insstart_textlen = Misc.linetabsize(Util.ml_get_curline());
-        //ai_col = 0;
+       //ai_col = 0;
         assert(G.State != VREPLACE);
         if (G.State == VREPLACE) {
           // orig_line_count = curbuf->b_ml.ml_line_count;
@@ -834,6 +847,9 @@ public class Edit {
   private static void stop_insert(ViFPOS end_insert_pos) {
     GetChar.stop_redo_ins();
     replace_flush();		// abandon replace stack
+    if (G.did_ai && !arrow_used)
+      removeUnusedWhiteSpace();
+    G.did_ai = false;
   }
   
   /**
@@ -1211,6 +1227,7 @@ public class Edit {
     else
      ************************************************************/
     change_indent(dir == BACKWARD ? INDENT_DEC : INDENT_INC, 0, true, 0);
+    G.did_ai = false;
   }
   
   private static void ins_shift_paren(int c, int dir) {
@@ -1233,6 +1250,7 @@ public class Edit {
   
   private static void ins_del() throws NotSupportedException {
     Normal.notImp("ins_del");
+    G.did_ai = false;
   }
   
   
@@ -1265,8 +1283,7 @@ public class Edit {
       Util.vim_beep();
       return false;
     }
-    
-    
+
     stop_arrow();
     // ....
     
@@ -1303,7 +1320,9 @@ public class Edit {
     && cursor.getColumn() < Insstart.getColumn()) {
       Insstart = cursor.copy();
     }
-    
+
+    G.did_ai = false;
+
     return true;
   }
   
@@ -1330,6 +1349,9 @@ public class Edit {
     
     GetChar.AppendToRedobuff(NL_STR);
     
+    if (G.did_ai && !arrow_used)
+      removeUnusedWhiteSpace();
+
     Misc.open_line(FORWARD, true, false, G.old_indent);
     G.old_indent = 0;
   }
