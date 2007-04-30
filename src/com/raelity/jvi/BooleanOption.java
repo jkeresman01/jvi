@@ -64,7 +64,7 @@ public class BooleanOption extends Option {
     value = newValue;
     stringValue = "" + value;
     propogate();
-    Options.getOptions().pcs.firePropertyChange(name, oldValue, newValue);
+    Options.firePropertyChange(name, oldValue, newValue);
   }
 
   /**
