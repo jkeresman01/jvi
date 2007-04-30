@@ -20,7 +20,8 @@ import javax.swing.text.Document;
  * @author erra
  */
 public class Buffer implements ViOptionBag {
-    Document doc;
+    private Document doc;
+    private boolean didCheckModelines;
     
     private int share; // the number of text views sharing this buffer
     public int getShare() { return share; }
@@ -48,10 +49,19 @@ public class Buffer implements ViOptionBag {
     public void viOptionSet(ViTextView tv, String name) {
     }
     
-    /** switchto */
+    /** from switchto */
     public void activateOptions(ViTextView tv) {
     }
     
+    /** from switchto, everything else has been setup */
+    public void checkModeline() {
+        if(didCheckModelines)
+            return;
+        didCheckModelines = true;
+        Options.processModelines();
+    }
+    
+    //////////////////////////////////////////////////////////////////////
     //
     // Declare the variables referenced as part of a ViOptionBag
     //
@@ -60,6 +70,7 @@ public class Buffer implements ViOptionBag {
     public int b_p_sw;     // shiftw width
     public boolean b_p_et;     // expand tabs
     
+    //////////////////////////////////////////////////////////////////////
     //
     // Other per buffer variables
     //

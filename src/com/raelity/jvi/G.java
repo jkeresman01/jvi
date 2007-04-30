@@ -136,6 +136,9 @@ public class G {
   static String p_fp;           // formatprg
   static String p_cpo = "aABceFs"; // cpoptions
   
+  public static BooleanOption p_ml;     // modeline
+  public static IntegerOption p_mls;    // modelines
+  
   public static BooleanOption readOnlyHack;
   public static BooleanOption isClassicUndo;
   public static BooleanOption dbgEditorActivation;
