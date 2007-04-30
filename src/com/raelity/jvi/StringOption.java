@@ -73,7 +73,7 @@ public class StringOption extends Option {
     String oldValue = stringValue;
     stringValue = newValue;
     propogate();
-    Options.getOptions().pcs.firePropertyChange(name, oldValue, newValue);
+    Options.firePropertyChange(name, oldValue, newValue);
   }
 
   /**
