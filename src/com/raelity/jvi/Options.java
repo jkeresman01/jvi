@@ -998,45 +998,44 @@ public final class Options {
     // must check pattern 2 first, since lines that match pattern 2
     // will also match pattern 1
     
-    if(parseModeline(mlPat2, seg))
+    if(parseModeline(mlPat2, seg, lnum))
       return true;
-    if(parseModeline(mlPat1, seg))
+    if(parseModeline(mlPat1, seg, lnum))
       return true;
     return false;
   }
   
   /** @return true if found and parsed a modeline, there may have been errors */
-  private static boolean parseModeline(Pattern p, CharSequence cs) {
+  private static boolean parseModeline(Pattern p, CharSequence cs, int lnum) {
     Matcher m = p.matcher(cs);
-    if(m.find()) {
-      ViOutputStream vos = null;
-      try {
-        String s = m.group(1);
-        vos = ViManager.createOutputStream(G.curwin,
-                                           ViOutputStream.OUTPUT,
-                                           "Process modeline: " + s);
-        String[] args = s.split("[:\\s]");
-        for (String arg : args) {
-          String msg = "";
-          try {
-            SetCommand.parseSetOption(arg);
-          } catch (SetCommand.SetCommandException ex) {
-            msg = ex.getMessage();
-          } catch (IllegalAccessException ex) {
-            ex.printStackTrace();
-          }
-          if(!msg.equals(""))
-            vos.println("Error: " + msg);
-          else
-            vos.println("   OK: " + arg);
+    if(!m.find())
+      return false;
+    ViOutputStream vos = null;
+    try {
+      String s = m.group(1);
+      vos = ViManager.createOutputStream(G.curwin, ViOutputStream.OUTPUT,
+                                         "In " + G.curwin.getDisplayFileName()
+                                       + ":" + lnum + " process modeline: " + s);
+      String[] args = s.split("[:\\s]");
+      for (String arg : args) {
+        String msg = "";
+        try {
+          SetCommand.parseSetOption(arg);
+        } catch (SetCommand.SetCommandException ex) {
+          msg = ex.getMessage();
+        } catch (IllegalAccessException ex) {
+          ex.printStackTrace();
         }
-      } finally {
-        if(vos != null)
-          vos.close();
+        if(!msg.equals(""))
+          vos.println("Error: " + msg);
+        else
+          vos.println("   OK: " + arg);
       }
-      return true;
+    } finally {
+      if(vos != null)
+        vos.close();
     }
-    return false;
+    return true;
   }
   
   //////////////////////////////////////////////////////////////////////

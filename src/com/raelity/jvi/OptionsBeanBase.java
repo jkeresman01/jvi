@@ -235,6 +235,22 @@ public class OptionsBeanBase extends SimpleBeanInfo {
         return ViManager.getReleaseString();
     }
 
+    public void setViModeline(boolean arg)  throws PropertyVetoException {
+        put(Options.modeline, arg);
+    }
+
+    public boolean getViModeline() {
+	return getboolean(Options.modeline);
+    }
+
+    public void setViModelines(int arg)  throws PropertyVetoException {
+        put(Options.modelines, arg);
+    }
+
+    public int getViModelines() {
+	return getint(Options.modelines);
+    }
+
     public void setViInsertLeftWrapPrevious(boolean arg)
     throws PropertyVetoException {
         put(Options.insertLeftWrapPrevious, arg);
