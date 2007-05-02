@@ -332,14 +332,18 @@ public class TextViewCache implements PropertyChangeListener,
       newViewportPosition = viewport.getViewPosition();
       newViewportExtent = viewport.getExtentSize();
     }
-    if(newViewportPosition == null || newViewportExtent == null) {
+    
+    int newViewTopLine;
+    if(newViewportPosition == null
+       || newViewportExtent == null
+       || (newViewTopLine = findFullLine(newViewportPosition, DIR_TOP)) <= 0)
+    {
       viewTopLine = -1;
       viewBottomLine = -1;
       newViewLines = -1;
     } else {
-      int newViewTopLine = findFullLine(newViewportPosition, DIR_TOP);
       if(viewTopLine != newViewTopLine) {
-	topLineChange = true;
+          topLineChange = true;
       }
       viewTopLine = newViewTopLine;
       Point pt = new Point(newViewportPosition); // top-left
@@ -372,13 +376,16 @@ public class TextViewCache implements PropertyChangeListener,
   /**
    * Determine the line number of the text that is fully displayed
    * (top or bottom not chopped off).
-   * @return line number of text at point
+   * @return line number of text at point, -1 if can not be determined
    */
   private int findFullLine(Point pt, int dir) {
     Rectangle vrect = viewport.getViewRect();
     JEditorPane editor = textView.getEditorComponent();
     
     int offset = editor.viewToModel(pt);
+    if(offset < 0) {
+        return -1;
+    }
     int line = textView.getLineNumber(offset);
     Rectangle lrect;
     try {
@@ -386,7 +393,7 @@ public class TextViewCache implements PropertyChangeListener,
     }
     catch (BadLocationException ex) {
       System.err.println("findFullLine: exeption 1st " + line);
-      return line; // can't happen
+      return -1; // can't happen
     }
     
     if(vrect.contains(lrect)) {
@@ -404,7 +411,7 @@ public class TextViewCache implements PropertyChangeListener,
     }
     catch (BadLocationException ex) {
       System.err.println("findFullLine: exeption 2nd " + line);
-      return line; // can't happen
+      return -1; // can't happen
     }
     if( ! vrect.contains(lrect)) {
       //System.err.println("findFullLine: adjusted line still out " + line);
@@ -743,3 +750,5 @@ public class TextViewCache implements PropertyChangeListener,
         public void changedUpdate(DocumentEvent e) { }
     }
 }
+
+// vi: sw=2 ts=8
