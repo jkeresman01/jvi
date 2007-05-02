@@ -1245,7 +1245,7 @@ middle_code:
   throws NotSupportedException
   {
     OPARG	oap = cap.oap;
-    FPOS	old_cursor;
+    ViFPOS	old_cursor;
     boolean	empty_region_error;
 
 
@@ -1270,7 +1270,7 @@ middle_code:
 //    && !redo_VIsual_busy)
 //clip_copy_selection();
 //#endif
-    // old_cursor = G.curwin.getWCursor();
+    old_cursor = G.curwin.getWCursor();
 
     /*
      * If an operation is pending, handle it...
@@ -1278,8 +1278,6 @@ middle_code:
     if ((G.VIsual_active || G.finish_op) && oap.op_type != OP_NOP) {
       do_xop("do_pending_operator");
       oap.is_VIsual = G.VIsual_active;
-
-      old_cursor = (FPOS)G.curwin.getWCursor().copy(); // this was outside the if, look above
 
       /* only redo yank when 'y' flag is in 'cpoptions' */
       if ((Util.vim_strchr(G.p_cpo, CPO_YANK) != null || oap.op_type != OP_YANK)
