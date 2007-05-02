@@ -233,3 +233,5 @@ public abstract class Option {
         }
     }
 }
+
+// vi: sw=4 et
