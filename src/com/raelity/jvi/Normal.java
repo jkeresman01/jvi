@@ -1,4 +1,4 @@
-/* vi:set ts=8 sw=2
+/* vi:set ts=8 sw=2:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *

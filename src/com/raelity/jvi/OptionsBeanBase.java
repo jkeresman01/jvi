@@ -96,7 +96,7 @@ public class OptionsBeanBase extends SimpleBeanInfo {
         d.setHidden(opt.isHidden());
         d.setShortDescription(opt.getDesc());
         if(opt instanceof IntegerOption
-        || opt instanceof StringOption) {
+           || opt instanceof StringOption) {
             d.setBound(true);
             d.setConstrained(true);
         }
@@ -581,3 +581,5 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	return getboolean("viDbgEditorActivation");
     }
 }
+
+// vi: sw=4 et

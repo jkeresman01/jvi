@@ -29,9 +29,10 @@
  */
 package com.raelity.jvi;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import javax.swing.text.*;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.awt.datatransfer.StringSelection;
@@ -41,8 +42,6 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.Toolkit;
-
-import com.raelity.jvi.swing.KeyBinding;
 import java.awt.event.ActionListener;
 
 import static com.raelity.jvi.Constants.*;
@@ -2068,6 +2067,7 @@ public class Misc implements ClipboardOwner {
     }
   }
 
+  private static boolean debugClip = false;
   static void clip_get_selection() {
     if(clipboard_owned) {
       // whatever is in the clipboard, we put there. So just return.
@@ -2075,7 +2075,25 @@ public class Misc implements ClipboardOwner {
       return;
     } else {
       Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
+      if(debugClip) {
+        if(cb.isDataFlavorAvailable(ViManager.VimClipboard2))
+            System.err.println("VimClip available");
+        DataFlavor dfa[] = cb.getAvailableDataFlavors();
+        Arrays.sort(dfa, new Comparator<DataFlavor>() {
+            public int compare(DataFlavor df1, DataFlavor df2) {
+              return df1.getMimeType().compareTo(df2.getMimeType());
+            }
+          }
+        );
+        for (DataFlavor df : dfa) {
+          System.err.println(df.getMimeType());
+        }
+      }
+      
       Transferable trans = cb.getContents(null);
+      if(debugClip && trans.isDataFlavorSupported(ViManager.VimClipboard2)) {
+        System.err.println("VimClip supported");
+      }
       String s = "";
       try {
 	s = (String)trans.getTransferData(DataFlavor.stringFlavor);
@@ -2918,3 +2936,5 @@ public class Misc implements ClipboardOwner {
     KeyEvent.VK_UNDERSCORE
   };
 }
+
+// vi: sw=2 ts=8
