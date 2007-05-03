@@ -693,7 +693,7 @@ public class ColonCommands {
         return;
       System.err.println("!: DONE :!" + (!fOK ? " ABORT" : ""));
       ViManager.getViFactory().stopModal();
-      Msg.clearMsg();
+      Msg.wmsg("");
       
       if(!fOK) {
           // NEEDSWORK: set write to process thread to not bother cleaning up
@@ -845,7 +845,7 @@ public class ColonCommands {
 
       // NEEDSWORK: put this where it can be repeated
       coord.statusMessage = "Enter 'Ctrl-C' to ABORT";
-      Msg.smsg(coord.statusMessage);
+      Msg.fmsg(coord.statusMessage);
       
       ViManager.getViFactory().startModalKeyCatch(new KeyAdapter() {
         public void keyTyped(KeyEvent e) {

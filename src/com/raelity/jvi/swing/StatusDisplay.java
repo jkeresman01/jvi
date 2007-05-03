@@ -40,6 +40,7 @@ public class StatusDisplay implements ViStatusDisplay {
   public JLabel generalStatus;
   public JLabel strokeStatus;
   public JLabel modeStatus;
+  private boolean fFrozen;
 
   public void displayMode(String mode) {
     String s = mode + (G.Recording ? "recording" : "");
@@ -54,16 +55,25 @@ public class StatusDisplay implements ViStatusDisplay {
   }
 
   public void displayStatusMessage(String msg) {
+    fFrozen = false;
     setText(generalStatus, msg);
   }
 
   public void displayErrorMessage(String msg) {
+    fFrozen = false;
     // NEEDSWORK: make error message red or something
+    setText(generalStatus, msg);
+  }
+
+  public void displayFrozenMessage(String msg) {
+    fFrozen = true;
     setText(generalStatus, msg);
   }
   
   public void clearMessage() {
-    displayStatusMessage("");
+    if(fFrozen)
+      return;
+    setText(generalStatus, "");
   }
 
   synchronized void setText(JLabel l00, String s00) {
@@ -87,3 +97,5 @@ public class StatusDisplay implements ViStatusDisplay {
     public void refresh() {
     }
 }
+
+// vi: ts=8 sw=2

@@ -44,6 +44,11 @@ public interface ViStatusDisplay {
 
   /** Output error chitchat, VV_ERRMSG; HLF_E highlight */
   public void displayErrorMessage(String msg);
+
+  /** Output a message that can not be cleared with clearMessge.
+   * Outputing any message thaws the message display.
+   */
+  public void displayFrozenMessage(String msg);
   
   /** Clear current status and/or error message */
   public void clearMessage();
