@@ -51,6 +51,7 @@ import static com.raelity.jvi.ColonCommandFlags.*;
 
 import java.io.*;
 import java.lang.Thread.UncaughtExceptionHandler;
+import javax.swing.Timer;
 
 /**
  * This class handles registration, command input, parsing, dispatching
@@ -659,26 +660,6 @@ public class ColonCommands {
                 "executing command.");
             return;
           }
-
-          // NEEDSWORK: put this where it can be repeated
-          coord.statusMessage = "Enter 'Ctrl-C' to ABORT";
-          Msg.smsg(coord.statusMessage);
-          
-          ViManager.getViFactory().startModalKeyCatch(new KeyAdapter() {
-            public void keyTyped(KeyEvent e) {
-              e.consume();
-              if(e.getKeyChar() == (KeyEvent.VK_C & 0x1f)
-                 && (e.getModifiers() & KeyEvent.CTRL_MASK) != 0) {
-                finishBangCommand(false);
-              } else 
-                Util.vim_beep();
-            }
-          });
-
-          if(true)
-            return;
-      
-      
         }
         else {
           lastBangCommand = new String(""); 
@@ -692,6 +673,8 @@ public class ColonCommands {
     }
     
     private void joinThread(Thread t) {
+      if(dbg.value)
+        System.err.println("!: joining thread " + t.getName());
       if(t.isAlive()) {
         t.interrupt();
         try {
@@ -856,20 +839,42 @@ public class ColonCommands {
         return false;
       }
 
+      // Got a process, setup coord, start modal operation
+
+      coord = new FilterThreadCoordinator(this, setupExop(evt), p);
+
+      // NEEDSWORK: put this where it can be repeated
+      coord.statusMessage = "Enter 'Ctrl-C' to ABORT";
+      Msg.smsg(coord.statusMessage);
+      
+      ViManager.getViFactory().startModalKeyCatch(new KeyAdapter() {
+        public void keyTyped(KeyEvent e) {
+          e.consume();
+          if(e.getKeyChar() == (KeyEvent.VK_C & 0x1f)
+              && (e.getModifiers() & KeyEvent.CTRL_MASK) != 0) {
+            finishBangCommand(false);
+          } else 
+            Util.vim_beep();
+        }
+      });
+
+      // start the thread(s)
+
+      if (dbg.value)
+        System.err.println("!: starting threads");
+
       if (isFilter) {
         outputFromProcessToFile(evt, p); 
       }
       else {
         outputToViOutputStream(evt, p);
       }
+
       return true;
     }
 
     private void outputToViOutputStream(ColonEvent evt,
                                         Process p) {
-      OPARG oa = setupExop(evt);
-
-      coord = new FilterThreadCoordinator(this, oa, p);
       
       BufferedReader br;
       ViOutputStream vos;
@@ -881,12 +886,29 @@ public class ColonCommands {
       coord.simpleExecuteThread.start();
     }
 
+    /**
+     * Set up the threads for a filter command, there are three threads.
+     * <ul>
+     *   <li>read/write from document</li>
+     *   <li>write to process</li>
+     *   <li>read from process</li>
+     * </ul>
+     * There are two BlockingQueue. 
+     * The document thread puts data from document to fromDoc BlockingQueue and
+     * takes data from toDoc BlockingQueue and puts it into the document. Each
+     * of the other threads passes data between a BlockingQueue and
+     * the process.
+     * <p>
+     * This could be done with a single thread if the process streams had a
+     * timeout interface.
+     *<p/><p>
+     * NEEDSWORK: work with larger chunks at a time.
+     * In particular, insert/delete large chunks to/from document;
+     * this might descrease the memory requirements for undo/redo.
+     */
     private void outputFromProcessToFile(ColonEvent evt,
                                          Process p) {
-      OPARG oa = setupExop(evt);
 
-      coord = new FilterThreadCoordinator(this, oa, p);
-      
       // NEEDSWORK: set up a thread group???
       
       BufferedReader br;
@@ -898,7 +920,8 @@ public class ColonCommands {
       coord.readFromProcessThread = new ProcessReaderThread(coord, br);
       coord.documentThread = new DocumentThread(coord, evt.getViTextView());
 
-      coord.documentThread.start();
+      //coord.documentThread.start();
+      coord.documentThread.runUnderTimer();
       coord.writeToProcessThread.start();
       coord.readFromProcessThread.start();
     }
@@ -910,6 +933,8 @@ public class ColonCommands {
    * be used to test for how this is being used.
    */
   static private class FilterThreadCoordinator {
+    public static final int WAIT = 50; // milliseconds to wait for q data.
+    public static final int QLEN = 100; // size of to/from doc q's'
     int startLine;
     int lastLine;
     
@@ -935,8 +960,8 @@ public class ColonCommands {
       startLine = oa.start.getLine();
       lastLine = oa.end.getLine();
       
-     fromDoc = new ArrayBlockingQueue<String>(50);
-     toDoc = new ArrayBlockingQueue<String>(50);
+      fromDoc = new ArrayBlockingQueue<String>(QLEN);
+      toDoc = new ArrayBlockingQueue<String>(QLEN);
     }     
     
     void finish(final boolean fOK) {
@@ -1015,7 +1040,6 @@ public class ColonCommands {
         vos.close();
         vos = null;
       } catch (IOException ex) {
-        ex.printStackTrace();
         exception = ex;
       }
     }
@@ -1081,10 +1105,8 @@ public class ColonCommands {
         writer = null;
       } catch (InterruptedException ex) {
         exception = ex;
-        ex.printStackTrace();
       } catch (IOException ex) {
         exception = ex;
-        ex.printStackTrace();
       }
       if (dbg.value)
         System.err.println("!: Wrote all lines needed to process");
@@ -1152,20 +1174,26 @@ public class ColonCommands {
                               + data.trim() + "'");
           
           coord.toDoc.put(data);
+          currReaderLine++;
         }
         coord.toDoc.put(DONE);
         reader.close();
         reader = null;
       } catch (InterruptedException ex) {
         exception = ex;
-        ex.printStackTrace();
       } catch (IOException ex) {
         exception = ex;
-        ex.printStackTrace();
       }
     }
   }
   
+  /**
+   * This thread both reads and writes to the document.
+   * EXCEPT, IT IS NOT REALLY A THREAD anymore. It extends FilterThread
+   * because it is interfaced to like one. But now it runs under a timer as
+   * part of the event dispatch thread, this avoid locking issues
+   * between read/write the document and display.
+   */
   static private class DocumentThread extends FilterThread {
     int docReadLine;
     boolean docReadDone;
@@ -1175,6 +1203,14 @@ public class ColonCommands {
     
     int linesDelta;
     ViTextView tv;
+
+    int debugCounter;
+
+    // timer is used as a flag, when null work is done
+    Timer timer;
+    boolean isThread;
+    boolean interruptFlag;
+    boolean inUndo;
     
     protected boolean didCleanup;
     
@@ -1184,110 +1220,144 @@ public class ColonCommands {
     }
       
     public void run() {
-      super.run();
+      assert(false);
+    }
+
+    public void interrupt() {
+      interruptFlag = true;
+    }
+
+    public boolean isInterrupted() {
+      return interruptFlag;
+    }
+
+    public void runUnderTimer() {
+      assert(!isThread);
+      timer = new Timer(coord.WAIT, new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          assert(EventQueue.isDispatchThread());
+          if(timer != null)
+            doServiceUnderTimer();
+        }
+      });
+      timer.setRepeats(false);
+
+      docReadLine = coord.startLine;
+      docWriteLine = coord.startLine;
+
+      inUndo = true;
+      Misc.beginUndo();
+
+      doServiceUnderTimer();
+
+      return;
+    }
+
+    void finishUnderTimer() {
+      if(!docReadDone)
+        cleanup(); // like "10000!!date"
+
+      doTaskCleanup();
+
+      if(inUndo)
+        Misc.endUndo();
+
       coord.finish(true);
+    }
+
+    void doServiceUnderTimer() {
+      boolean didSomething;
+
+      try {
+        do {
+          didSomething = readDocument();
+          didSomething |= writeDocument();
+        } while(didSomething && !isProblem() && !docWriteDone);
+      } catch(Throwable t) {
+        exception = t;
+      }
+
+      if(!isProblem() && !docWriteDone)
+        timer.start();
+      else
+        finishUnderTimer();
     }
     
     void doTask() {
-      doFilterDocument();
-    }
-    
-    private void doFilterDocument() {
-      
-      Misc.beginUndo();
-      
-      try {
-        
-        readWriteDocument();
-        
-      } catch(Throwable t) {
-        exception = t;
-      } finally {
-        if(exception != null || error) {
-          cleanup();
-          //NEEDSWORK: rollback change, DO NOT DO END UNDO
-          //Misc.forgetUndo();
-          Misc.endUndo();
-        } else {
-          if (dbg.value)
-            System.err.println("!: Ending Undo recording for command ");
-          Misc.endUndo();
-        }
-      
-      }
     }
     
     private void deleteLine(int line) {
-      int startOffset = tv.getLineStartOffset(line);
-      int endOffset = tv.getLineEndOffset(line);
+      deleteLines(line, line);
+    }
+
+    private void deleteLines(int startLine, int endLine) {
+      int startOffset = tv.getLineStartOffset(startLine);
+      int endOffset = tv.getLineEndOffset(endLine);
       int docLength = tv.getEditorComponent().getDocument().getLength();
       if(endOffset > docLength)
         endOffset = docLength;
       tv.deleteChar(startOffset, endOffset);
     }
-    
-    public void readWriteDocument() {
-      docReadLine = coord.startLine;
-      docWriteLine = coord.startLine;
-      
-      do {
-        try {
-          String data = null;
-          if(docReadLine <= coord.lastLine) {
-            if (dbg.value)
-              System.err.println("!: rwDoc: try read doc");
-            while(!isInterrupted() && docReadLine <= coord.lastLine) {
-              int docLine = docReadLine + linesDelta;
-              data = tv.getLineSegment(docLine).toString();
-              deleteLine(docLine);
-              if(!coord.fromDoc.offer(data, 50, TimeUnit.MILLISECONDS))
-                break;
-              if (dbg.value) // NEEDSWORK: why trim(), use Text.formDebugDString
-                System.err.println("!: fromDoc #" + docReadLine + "," + docLine
-                                   + ": '" + data.trim() + "'");
-              docReadLine++;
-              linesDelta--;
-            }
-          } else {
-            if(!docReadDone
-               && coord.fromDoc.offer(DONE, 50, TimeUnit.MILLISECONDS)) {
-              docReadDone = true;
-              if (dbg.value)
-                System.err.println("!: rwDoc: docReadDONE");
-            }
-          }
-          
-          if(!docWriteDone) {
-            if (dbg.value)
-              System.err.println("!: rwDoc: try write doc");
-            while(!isInterrupted()) {
-              data = coord.toDoc.poll(50, TimeUnit.MILLISECONDS);
-              if(data == null)
-                break;
-              if(DONE.equals(data)) {
-                docWriteDone = true;
-                if (dbg.value)
-                  System.err.println("!: rwDoc: docWriteDONE");
-                break;
-              }
-              int offset = tv.getLineStartOffset(docWriteLine);
-              tv.insertText(offset, data);
-              offset += data.length();
-              tv.insertText(offset, "\n");
-              if (dbg.value) // NEEDSWORK: why trim(), use Text.formDebugDString
-                System.err.println("!: toDoc #" + docWriteLine + ": '"
-                                  + data.trim() + "'");
-              docWriteLine++;
-              linesDelta++;
-            }
-          }
-        } catch (InterruptedException ex) {
-          exception = ex;
-          ex.printStackTrace();
+
+    public boolean readDocument() {
+      boolean didSomething = false;
+      String data = null;
+      if(docReadLine <= coord.lastLine) {
+        if (dbg.value)
+          System.err.println("!: rwDoc: try read doc");
+        while(!isProblem() && docReadLine <= coord.lastLine) {
+          int docLine = docReadLine + linesDelta;
+          data = tv.getLineSegment(docLine).toString();
+          if(!coord.fromDoc.offer(data))
+            break;
+          deleteLine(docLine);
+          if (dbg.value)
+            System.err.println("!: fromDoc #" + docReadLine + "," + docLine
+                                + ": '" + data.trim() + "'");
+          docReadLine++;
+          linesDelta--;
+          didSomething = true;
         }
-      } while(!isProblem() && !docWriteDone);
-      if(!docReadDone)
-        cleanup(); // like "10000!!date"
+      } else {
+        if(!docReadDone
+            && coord.fromDoc.offer(DONE)) {
+          docReadDone = true;
+          if (dbg.value)
+            System.err.println("!: rwDoc: docReadDONE");
+        }
+      }
+      return didSomething;
+    }
+
+    public boolean writeDocument() {
+      boolean didSomething = false;
+      String data = null;
+      if(!docWriteDone) {
+        if (dbg.value)
+          System.err.println("!: rwDoc: try write doc " + debugCounter++);
+        while(!isProblem()) {
+          data = coord.toDoc.poll();
+          if(data == null)
+            break;
+          if(DONE.equals(data)) {
+            docWriteDone = true;
+            if (dbg.value)
+              System.err.println("!: rwDoc: docWriteDONE");
+            break;
+          }
+          int offset = tv.getLineStartOffset(docWriteLine);
+          tv.insertText(offset, data);
+          offset += data.length();
+          tv.insertText(offset, "\n");
+          if (dbg.value)
+            System.err.println("!: toDoc #" + docWriteLine + ": '"
+                              + data.trim() + "'");
+          docWriteLine++;
+          linesDelta++;
+          didSomething = true;
+        }
+      }
+      return didSomething;
     }
     
     public void dumpState() {
@@ -1311,15 +1381,19 @@ public class ColonCommands {
         throw new IllegalStateException();
       if (dbg.value)
         System.err.println("!: checking doc CLEANUP");
-      while(docReadLine <= coord.lastLine) {
-        int docLine = docReadLine + linesDelta;
-        deleteLine(docLine);
-        if (dbg.value)
-          System.err.println("!: CLEANUP: fromDoc #"
-                              + docReadLine + "," + docLine);
-        docReadLine++;
-        linesDelta--;
-      }
+      // don't run the document cleanup if there are issues
+      if(isProblem())
+        return;
+
+      // do one big delete
+      int line1, line2;
+      line1 = docReadLine + linesDelta;
+      line2 = coord.lastLine + linesDelta;
+      if (dbg.value)
+        System.err.println("!: CLEANUP: fromDoc #"
+                            + docReadLine + ":" + coord.lastLine
+                            + ", " + line1 + ":" + line2);
+      deleteLines(line1, line2);
     }
   }
 
@@ -1353,6 +1427,13 @@ public class ColonCommands {
                         FilterThreadCoordinator coord) {
       super(filterType);
       this.coord = coord;
+      if(false) {
+        // low priority a bit
+        int pri = getPriority() -1;
+        if(pri >= MIN_PRIORITY) {
+          setPriority(pri);
+        }
+      }
     }
     
     protected void dumpState() {
@@ -1389,7 +1470,10 @@ public class ColonCommands {
       });
       
       doTask();
-      
+      doTaskCleanup();
+    }
+
+    public void doTaskCleanup() {
       if(exception != null) {
         if (dbg.value) {
           System.err.println("!: Exception in " + getName());
