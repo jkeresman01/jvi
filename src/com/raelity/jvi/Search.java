@@ -98,6 +98,8 @@ public class Search {
     String cmd = ev.getActionCommand();
     boolean acceptIncr = false;
     boolean cancel = false;
+
+    ViManager.stopCommandEntry();
     
     if(cmd.charAt(0) == '\n') {
         if(G.p_incr_search.getBoolean()
@@ -111,7 +113,6 @@ public class Search {
         stopIncrementalSearch(acceptIncr);
     }
     
-    ViManager.stopCommandEntry();
     if(acceptIncr)
       GetChar.fakeGotc(K_X_INCR_SEARCH_DONE);
     else if(cancel)

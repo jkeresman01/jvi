@@ -232,6 +232,12 @@ public final class Options {
             + " that is checked for set commands.  If 'modeline' is off"
             + " or 'modelines' is zero no lines are checked.");
 
+    G.isClassicUndo = createBooleanOption(classicUndoOption, true);
+    setupOptionDesc(generalList, classicUndoOption, "classic undo",
+                    "When false, undo is done according to the"
+                    + " underlying platform; usually small chunks.");
+    setExpertHidden(classicUndoOption, true, false);
+
     
     /////////////////////////
     //
@@ -464,11 +470,6 @@ public final class Options {
             + " editor mode to read/write so that the file can be viewed"
             + " using the Normal Mode vi commands.");
     setExpertHidden(readOnlyHack, true, true);
-
-    // Want to turn following on, but NB problems
-    G.isClassicUndo = createBooleanOption(classicUndoOption, false);
-    setupOptionDesc(debugList, classicUndoOption, "classic undo", "yyy");
-    setExpertHidden(classicUndoOption, true, true);
 
     G.dbgEditorActivation = createBooleanOption(dbgEditorActivation, false);
     setupOptionDesc(debugList, dbgEditorActivation, "debug activation",
