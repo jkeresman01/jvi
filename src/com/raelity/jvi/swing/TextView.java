@@ -99,6 +99,7 @@ public class TextView implements ViTextView {
   public void shutdown() {
     if(G.dbgEditorActivation.getBoolean()) {
       Buffer buf = ViManager.getBuffer(getEditorComponent());
+      assert buf == this.buf;
       if(buf.getShare() == 1) {
         System.err.println("TV.shutdown: LAST CLOSE");
       }
@@ -161,6 +162,10 @@ public class TextView implements ViTextView {
   public void setWPScroll(int n) { window.setWPScroll(n); }
   public boolean getWPList() { return window.getWPList(); }
   public void setWPList(boolean f) { window.setWPList(f); }
+
+  public Buffer getBuffer() {
+      return buf;
+  }
 
   /**
    * Override this class to provide a different implementations

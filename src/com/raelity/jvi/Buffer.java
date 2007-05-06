@@ -60,6 +60,12 @@ public class Buffer implements ViOptionBag {
         didCheckModelines = true;
         Options.processModelines();
     }
+
+    public void beginInsertUndo() {
+    }
+
+    public void endInsertUndo() {
+    }
     
     //////////////////////////////////////////////////////////////////////
     //

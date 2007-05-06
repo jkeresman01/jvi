@@ -95,6 +95,9 @@ public interface ViTextView extends ViOptionBag {
   // and now the text view proper
   //
 
+  /** @return the associated Buffer */
+  public Buffer getBuffer();
+
   /** @return the underlying text component */
   public JEditorPane getEditorComponent();
 
