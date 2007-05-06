@@ -386,10 +386,12 @@ public class TextView implements ViTextView {
   
   public void undo(){
     assertUndoState(!inUndo && !inInsertUndo, "undo");
+    buf.undo();
   }
 
   public void redo() {
     assertUndoState(!inUndo && !inInsertUndo, "undo");
+    buf.redo();
   }
 
   public String getText(int offset, int length) throws BadLocationException {
@@ -584,9 +586,11 @@ public class TextView implements ViTextView {
   public void beginUndo() {
     assertUndoState(!inUndo && !inInsertUndo, "beginUndo");
     inUndo = true;
+    buf.beginUndo();
   }
 
   public void endUndo() {
+    buf.endUndo();
     assertUndoState(inUndo && !inInsertUndo, "endUndo");
     inUndo = false;
   }
@@ -598,9 +602,11 @@ public class TextView implements ViTextView {
   public void beginInsertUndo() {
     assertUndoState(!inUndo && !inInsertUndo, "beginInsertUndo");
     inInsertUndo = true;
+    buf.beginInsertUndo();
   }
 
   public void endInsertUndo() {
+    buf.endInsertUndo();
     assertUndoState(inInsertUndo && !inUndo, "endInsertUndo");
     inInsertUndo = false;
   }

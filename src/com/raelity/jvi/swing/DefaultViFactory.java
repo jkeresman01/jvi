@@ -159,7 +159,9 @@ public class DefaultViFactory implements ViFactory {
   
   /** subclass probably wants to override this */
   protected Buffer createBuffer(JEditorPane editorPane) {
-      return new Buffer(editorPane.getDocument());
+      Buffer buf = new Buffer(editorPane.getDocument());
+      buf.standAlone();
+      return buf;
   }
 
   public Set<Buffer> getBufferSet() {
