@@ -123,24 +123,27 @@ public class Buffer implements ViOptionBag {
     public int b_visual_mode;
     public String b_p_mps; // used in nv_object
 
-    /** An UndoManager that allows explicit control of how
+    /** <code>UndoGroupManager</code> is an <code>UndoManager</code>
+     * that allows explicit control of how
      * <code>UndoableEdit</code>s are coalesced into compound edits,
      * rather than using the rules defined by the edits themselves.
      * Other than the default usage, special handling is initiated by doing
-     * <code>beginUndoGroup</code>.
+     * <code>beginUndoGroup()</code>.
+     * <p>
      * Three use cases are supported.
+     * </p>
      * <ol>
      * <li> Default behavior is defined by {@link javax.swing.undo.UndoManager}.</li>
-     * <li> <code>UnddoableEdit</code>s issued between <code>beginUndoGroup</code>
-     * and <code>endUndoGroup</code> are placed into a single <code>CompoundEdit</code>.
-     * Thus <code>undo</code> and <code>redo</code> treat them atomically.</li>
-     * <li> Use <code>commitUndoGroup</code> to place any accumulated
-     * <code>UndoableEdit</code>s into a <code>CompoundEdit</code>.
-     * The application does this at strategic points, such as EndOfLine
+     * <li> <code>UnddoableEdit</code>s issued between <code>beginUndoGroup()</code>
+     * and <code>endUndoGroup()</code> are placed into a single <code>CompoundEdit</code>.
+     * Thus <code>undo()</code> and <code>redo()</code> treat them atomically.</li>
+     * <li> Use <code>commitUndoGroup()</code> to place any accumulated
+     * <code>UndoableEdit</code>s into a <code>CompoundEdit</code>;
+     * the application does this at strategic points, such as EndOfLine
      * entry or cursor movement.</li>
      * </ol>
-     * Note that certain methods, such as <code>undo</code>, automatically issue
-     * <code>commitUndoGroup</code>.
+     * Note that certain methods, such as <code>undo()</code>, automatically issue
+     * <code>commitUndoGroup()</code>.
      */
     public static class UndoGroupManager extends UndoManager {
         /** signals that edits should be accumulated */
