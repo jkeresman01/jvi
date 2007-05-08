@@ -441,6 +441,10 @@ public class TextView implements ViTextView {
     Util.vim_beep();
   }
 
+  public void reindent(int line, int count) {
+      Util.vim_beep();
+  }
+
   public void computeCursorPosition(MutableInt offset,
 			       MutableInt line,
 			       MutableInt column)

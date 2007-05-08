@@ -182,6 +182,9 @@ public interface ViTextView extends ViOptionBag {
   /** Perform the fold operation.  */
   public void foldOperation(int op);
 
+  /** platform indent algorithm */
+  public void reindent(int line, int count);
+
   /** @return the line number, 1 based, corresponding to the offset */
   public int getLineNumber(int offset);
 

@@ -133,6 +133,7 @@ public class G {
   public static StringOption p_sel; // 'selection'
   public static StringOption p_slm; // 'selectionmode'
   
+  public static StringOption p_ep; // 'equalprg'
   static String p_fp;           // formatprg
   static String p_cpo = "aABceFs"; // cpoptions
   

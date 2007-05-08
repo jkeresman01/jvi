@@ -1008,9 +1008,6 @@ middle_code:
 	  case '<':
 	  case '!':
 	  case '=':
-	    if(Util.vim_strchr("=", ca.cmdchar) != null) {
-	      notImp("oper");
-	    }
 	    nv_operator(ca);
 	    break;
 
@@ -1628,6 +1625,17 @@ middle_code:
 	case OP_INDENT:
 	case OP_COLON:
 
+          // If 'equalprg' is empty, do the indenting internally.
+          if(oap.op_type == OP_INDENT && G.p_ep.getString().equals("")) {
+            Misc.beginUndo();
+            try {
+              G.curwin.reindent(G.curwin.getWCursor().getLine(),
+                                oap.line_count);
+            } finally {
+              Misc.endUndo();
+            }
+            break;
+          }
 	  op_colon(oap);
 	  break;
 

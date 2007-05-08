@@ -130,6 +130,8 @@ public final class Options {
   public static final String selectMode = "viSelectMode";
   public static final String selectColor = "viSelectColor";
 
+  public static final String equalProgram = "viEqualProgram";
+
   
   public static final String readOnlyHack = "viReadOnlyHack";
   public static final String classicUndoOption = "viClassicUndo";
@@ -238,6 +240,8 @@ public final class Options {
                     + " underlying platform; usually small chunks.");
     setExpertHidden(classicUndoOption, true, false);
 
+    // NEEDSWORK: this gets put with the "!" options
+    G.p_ep = createStringOption(equalProgram, "");
     
     /////////////////////////
     //
