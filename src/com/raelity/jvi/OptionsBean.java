@@ -35,6 +35,14 @@ public class OptionsBean {
 	}
     }
     
+    static public class BangOptions extends OptionsBeanBase {
+	
+	public BangOptions() {
+	    super(BangOptions.class, "Bang (!) Command Options",
+          Options.bangOptionsList);
+	}
+    }
+
     static public class Debug extends OptionsBeanBase {
 	
 	public Debug() {

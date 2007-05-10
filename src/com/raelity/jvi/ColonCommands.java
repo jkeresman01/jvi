@@ -592,14 +592,6 @@ public class ColonCommands {
     BooleanOption dbg = (BooleanOption)Options.getOption(Options.dbgBang); 
     String origCommandString;
 
-    public static String getShell() {
-      return "sh";
-    }
-
-    public static String getShellcmdflags() {
-      return "-c";
-    }
-
     public void actionPerformed(ActionEvent ev) {
       if(coord != null) {
         Msg.emsg("Only one command at a time.");
@@ -813,8 +805,8 @@ public class ColonCommands {
         System.err.println("!: Constructing ArrayList for ProcessBuilder");
 
       ArrayList<String> shellCommandLine = new ArrayList<String>(3);
-      shellCommandLine.add(getShell());
-      shellCommandLine.add(getShellcmdflags());
+      shellCommandLine.add(G.p_sh.getString());
+      shellCommandLine.add(G.p_shcf.getString());
       shellCommandLine.add(commandLine);
 
       if (dbg.value)

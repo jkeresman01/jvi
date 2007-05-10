@@ -235,6 +235,22 @@ public class OptionsBeanBase extends SimpleBeanInfo {
         return ViManager.getReleaseString();
     }
 
+    public void setViShell(String arg)  throws PropertyVetoException {
+        put(Options.shell, arg);
+    }
+
+    public String getViShell() {
+	return getString(Options.shell);
+    }
+
+    public void setViShellCmdFlag(String arg)  throws PropertyVetoException {
+        put(Options.shellCmdFlag, arg);
+    }
+
+    public String getViShellCmdFlag() {
+	return getString(Options.shellCmdFlag);
+    }
+
     public void setViModeline(boolean arg)  throws PropertyVetoException {
         put(Options.modeline, arg);
     }

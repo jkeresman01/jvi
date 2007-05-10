@@ -132,6 +132,8 @@ public final class Options {
 
   public static final String equalProgram = "viEqualProgram";
 
+  public static final String shell = "viShell";
+  public static final String shellCmdFlag = "viShellCmdFlag";
   
   public static final String readOnlyHack = "viReadOnlyHack";
   public static final String classicUndoOption = "viClassicUndo";
@@ -148,6 +150,7 @@ public final class Options {
   static List<String>searchList = new ArrayList<String>();
   static List<String>miscList = new ArrayList<String>();
   static List<String>cursorWrapList = new ArrayList<String>();
+  static List<String>bangOptionsList = new ArrayList<String>();
   static List<String>debugList = new ArrayList<String>();
 
   static Preferences prefs;
@@ -378,6 +381,41 @@ public final class Options {
     setupOptionDesc(cursorWrapList, insertRightWrapNext,
                "'whichwrap' 'ww'  ] - <Right>",
                "in Insert Mode <Right> wraps to next line");
+
+    /////////////////////////////////////////////////////////////////////
+    //
+    //
+    // Vi bang command options
+    //
+    //
+    String osName = System.getProperty("os.name");
+    String defaultShell = System.getenv("SHELL");
+    String defaultFlag = null;
+
+    if (defaultShell == null) {
+      if (osName.startsWith("Windows"))
+        defaultShell = "cmd.exe";
+      else
+        defaultShell = "sh";
+    }
+
+    if (defaultShell.contains("sh")) 
+      defaultFlag = "-c";
+    else
+      defaultFlag = "/c";
+
+    G.p_sh = createStringOption(shell, defaultShell);
+    setupOptionDesc(bangOptionsList, shell, "'shell' 'sh'",
+            "Name of shell to use for ! and :! commands.  (default $SHELL " +
+            "or \"sh\", MS-DOS and Win32: \"command.com\" or \"cmd.exe\").  " +
+            "When changing also check 'shellcmndflag'.");
+
+    G.p_shcf = createStringOption(shellCmdFlag, defaultFlag);
+    setupOptionDesc(bangOptionsList, shellCmdFlag, "'shellcmdflag' 'shcf'",
+            "Flag passed to shell to execute \"!\" and \":!\" commands; " +
+            "e.g., \"bash.exe -c ls\" or \"command.com /c dir\" (default: " +
+            "\"-c\", MS-DOS and Win32, when 'shell' does not contain \"sh\" " +
+            "somewhere: \"/c\").");
 
     /////////////////////////////////////////////////////////////////////
     //
@@ -1075,7 +1113,7 @@ public final class Options {
         }
       }
     });
-    
+
     addPropertyChangeListener(ignoreCase, new PropertyChangeListener() {
       public void propertyChange(PropertyChangeEvent evt) {
         if(G.curwin != null) {
