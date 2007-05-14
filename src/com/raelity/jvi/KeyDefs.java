@@ -157,7 +157,11 @@ public interface KeyDefs {
   public static final int MAP_K_X_INCR_SEARCH_DONE = 0x47;
   public static final int MAP_K_X_SEARCH_CANCEL = 0x48;
   
-  public static final int MAX_JAVA_KEY_MAP = MAP_K_X_SEARCH_CANCEL;
+  public static final int MAP_K_X_IM_SHIFT_RIGHT = 0x49;
+  public static final int MAP_K_X_IM_SHIFT_LEFT = 0x4a;
+  public static final int MAP_K_X_IM_INS_REP = 0x4b;
+  
+  public static final int MAX_JAVA_KEY_MAP = 0x4b;
   
   //public static final int MAP_K_S_UP	= MAP_K_UP + SHIFTED_VIRT_OFFSET;
   //public static final int MAP_K_S_DOWN = K_DOWN + SHIFTED_VIRT_OFFSET;
@@ -244,6 +248,10 @@ public interface KeyDefs {
   public static final int K_X_SEARCH_FINISH = MAP_K_X_SEARCH_FINISH + VIRT;
   public static final int K_X_INCR_SEARCH_DONE = MAP_K_X_INCR_SEARCH_DONE + VIRT;
   public static final int K_X_SEARCH_CANCEL = MAP_K_X_SEARCH_CANCEL + VIRT;
+
+  public static final int K_X_IM_SHIFT_RIGHT = MAP_K_X_IM_SHIFT_RIGHT + VIRT;
+  public static final int K_X_IM_SHIFT_LEFT = MAP_K_X_IM_SHIFT_LEFT + VIRT;
+  public static final int K_X_IM_INS_REP = MAP_K_X_IM_INS_REP + VIRT;
 
   // public static final int K_F25		;
   // public static final int K_F26		;
