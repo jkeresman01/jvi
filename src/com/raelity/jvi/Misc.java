@@ -884,7 +884,7 @@ public class Misc implements ClipboardOwner {
    * <p>Kind of screwy, using swing component cursor is always valid,
    * but this may backup the cursor off of a newline.
    */
-  static void check_cursor_col() {
+  public static void check_cursor_col() {
     // just call adjust cursor, lnum must be valid.
     adjust_cursor();
   }
