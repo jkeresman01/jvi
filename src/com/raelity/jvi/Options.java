@@ -134,10 +134,11 @@ public final class Options {
 
   public static final String shell = "viShell";
   public static final String shellCmdFlag = "viShellCmdFlag";
-  
+  public static final String shellXQuote = "viShellXQuote";
+
   public static final String readOnlyHack = "viReadOnlyHack";
   public static final String classicUndoOption = "viClassicUndo";
-  
+
   public static final String dbgKeyStrokes = "viDbgKeyStrokes";
   public static final String dbgCache = "viDbgCache";
   public static final String dbgEditorActivation = "viDbgEditorActivation";
@@ -150,7 +151,7 @@ public final class Options {
   static List<String>searchList = new ArrayList<String>();
   static List<String>miscList = new ArrayList<String>();
   static List<String>cursorWrapList = new ArrayList<String>();
-  static List<String>bangOptionsList = new ArrayList<String>();
+  static List<String>externalProcessList = new ArrayList<String>();
   static List<String>debugList = new ArrayList<String>();
 
   static Preferences prefs;
@@ -243,9 +244,6 @@ public final class Options {
                     + " underlying platform; usually small chunks.");
     setExpertHidden(classicUndoOption, true, false);
 
-    // NEEDSWORK: this gets put with the "!" options
-    G.p_ep = createStringOption(equalProgram, "");
-    
     /////////////////////////
     //
     // per buffer options are accessed through curbuf.
@@ -385,37 +383,53 @@ public final class Options {
     /////////////////////////////////////////////////////////////////////
     //
     //
-    // Vi bang command options
+    // Vi external process options
     //
     //
-    String osName = System.getProperty("os.name");
+    boolean inWindows = System.getProperty("os.name").startsWith("Windows");
     String defaultShell = System.getenv("SHELL");
+    String defaultXQuote = "";
     String defaultFlag = null;
 
     if (defaultShell == null) {
-      if (osName.startsWith("Windows"))
+      if (inWindows)
         defaultShell = "cmd.exe";
       else
         defaultShell = "sh";
     }
 
-    if (defaultShell.contains("sh")) 
+    if (defaultShell.contains("sh")) {
       defaultFlag = "-c";
+      if (inWindows)
+        defaultXQuote = "\"";
+    }
     else
       defaultFlag = "/c";
 
     G.p_sh = createStringOption(shell, defaultShell);
-    setupOptionDesc(bangOptionsList, shell, "'shell' 'sh'",
+    setupOptionDesc(externalProcessList, shell, "'shell' 'sh'",
             "Name of shell to use for ! and :! commands.  (default $SHELL " +
             "or \"sh\", MS-DOS and Win32: \"command.com\" or \"cmd.exe\").  " +
             "When changing also check 'shellcmndflag'.");
 
     G.p_shcf = createStringOption(shellCmdFlag, defaultFlag);
-    setupOptionDesc(bangOptionsList, shellCmdFlag, "'shellcmdflag' 'shcf'",
+    setupOptionDesc(externalProcessList, shellCmdFlag, "'shellcmdflag' 'shcf'",
             "Flag passed to shell to execute \"!\" and \":!\" commands; " +
             "e.g., \"bash.exe -c ls\" or \"command.com /c dir\" (default: " +
             "\"-c\", MS-DOS and Win32, when 'shell' does not contain \"sh\" " +
             "somewhere: \"/c\").");
+
+    G.p_sxq = createStringOption(shellXQuote, defaultXQuote);
+    setupOptionDesc(externalProcessList, shellXQuote, "'shellxquote' 'sxq'",
+            "Quoting character(s), put around the commands passed to the " +
+            "shell, for the \"!\" and \":!\" commands (default: \"\"; for " +
+            "Win32, when 'shell' contains \"sh\" somewhere: \"\\\"\").");
+
+    G.p_ep = createStringOption(equalProgram, "");
+    setupOptionDesc(externalProcessList, equalProgram, "'equalprg' 'ep'",
+            "External program to use for \"=\" command (default \"\").  " +
+            "When this option is empty the internal formatting functions " +
+            "are used.");
 
     /////////////////////////////////////////////////////////////////////
     //

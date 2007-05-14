@@ -1733,14 +1733,13 @@ middle_code:
     }
     if (oap.op_type == OP_INDENT)
     {
-      notImp("op_colon OP_INDENT");
 //#ifndef CINDENT
 //	if (*p_ep == NUL)
 //	    stuffReadbuff((char_u *)"indent");
 //	else
 //#endif
-//	    stuffReadbuff(p_ep);
-//	stuffReadbuff((char_u *)"\n");
+        range.append(G.p_ep.getString());
+      range.append("\n");
     }
     else if (oap.op_type == OP_FORMAT)
     {

@@ -805,9 +805,11 @@ public class ColonCommands {
         System.err.println("!: Constructing ArrayList for ProcessBuilder");
 
       ArrayList<String> shellCommandLine = new ArrayList<String>(3);
+      String shellXQuote = G.p_sxq.getString();
+
       shellCommandLine.add(G.p_sh.getString());
       shellCommandLine.add(G.p_shcf.getString());
-      shellCommandLine.add(commandLine);
+      shellCommandLine.add(shellXQuote + commandLine + shellXQuote);
 
       if (dbg.value)
         System.err.println("!: Creating ProcessBuilder class with ArrayList '" +

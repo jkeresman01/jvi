@@ -140,8 +140,9 @@ public class G {
   public static BooleanOption p_ml;     // modeline
   public static IntegerOption p_mls;    // modelines
   
-  public static StringOption p_sh;     // shell - used for ! commands
+  public static StringOption p_sh;     // shell - used for external commands
   public static StringOption p_shcf;   // shellcmdflag - flag for shell
+  public static StringOption p_sxq;    // shellXQuote - flag for shell
 
   public static BooleanOption readOnlyHack;
   public static BooleanOption isClassicUndo;

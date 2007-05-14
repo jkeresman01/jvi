@@ -240,7 +240,7 @@ public class OptionsBeanBase extends SimpleBeanInfo {
     }
 
     public String getViShell() {
-	return getString(Options.shell);
+	    return getString(Options.shell);
     }
 
     public void setViShellCmdFlag(String arg)  throws PropertyVetoException {
@@ -248,7 +248,23 @@ public class OptionsBeanBase extends SimpleBeanInfo {
     }
 
     public String getViShellCmdFlag() {
-	return getString(Options.shellCmdFlag);
+	    return getString(Options.shellCmdFlag);
+    }
+
+    public void setViShellXQuote(String arg)  throws PropertyVetoException {
+        put(Options.shellXQuote, arg);
+    }
+
+    public String getViShellXQuote() {
+	    return getString(Options.shellXQuote);
+    }
+
+    public void setViEqualProgram(String arg)  throws PropertyVetoException {
+        put(Options.equalProgram, arg);
+    }
+
+    public String getViEqualProgram() {
+	    return getString(Options.equalProgram);
     }
 
     public void setViModeline(boolean arg)  throws PropertyVetoException {

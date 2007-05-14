@@ -35,11 +35,11 @@ public class OptionsBean {
 	}
     }
     
-    static public class BangOptions extends OptionsBeanBase {
+    static public class ExternalProcess extends OptionsBeanBase {
 	
-	public BangOptions() {
-	    super(BangOptions.class, "Bang (!) Command Options",
-          Options.bangOptionsList);
+	public ExternalProcess() {
+	    super(ExternalProcess.class, "External Process Options",
+          Options.externalProcessList);
 	}
     }
 

@@ -207,7 +207,13 @@ public class ViManager {
     }
 
     activeCommandEntry = commandEntry;
-    boolean passThru = GetChar.getRecordedLine(initialString);
+    boolean passThru;
+    if (initialString.indexOf("\n") >= 0) {
+      passThru = true;
+    }
+    else {
+      passThru = GetChar.getRecordedLine(initialString);
+    }
     commandEntry.activate(mode, tv, new String(initialString), passThru);
   }
 
