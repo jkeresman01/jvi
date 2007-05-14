@@ -283,6 +283,22 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	return getint(Options.modelines);
     }
 
+    public void setViRedoTrack(boolean arg)  throws PropertyVetoException {
+        put(Options.redoTrack, arg);
+    }
+
+    public boolean getViRedoTrack() {
+	return getboolean(Options.redoTrack);
+    }
+
+    public void setViDbgRedo(boolean arg)  throws PropertyVetoException {
+        put(Options.dbgRedo, arg);
+    }
+
+    public boolean getViDbgRedo() {
+	return getboolean(Options.dbgRedo);
+    }
+
     public void setViInsertLeftWrapPrevious(boolean arg)
     throws PropertyVetoException {
         put(Options.insertLeftWrapPrevious, arg);

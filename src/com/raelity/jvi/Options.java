@@ -83,10 +83,10 @@ public final class Options {
   
   public enum Category { DEBUG, MISC, GENERAL, CURSOR_WRAP }
   
-  public static final String commandEntryFrame =
-  						"viCommandEntryFrameOption";
-  public static final String backspaceWrapPrevious =
-                                                "viBackspaceWrapPrevious";
+  public static final String commandEntryFrame = "viCommandEntryFrameOption";
+  public static final String redoTrack = "viRedoTrack";
+
+  public static final String backspaceWrapPrevious = "viBackspaceWrapPrevious";
   public static final String hWrapPrevious = "viHWrapPrevious";
   public static final String leftWrapPrevious = "viLeftWrapPrevious";
   public static final String spaceWrapNext = "viSpaceWrapNext";
@@ -138,7 +138,8 @@ public final class Options {
 
   public static final String readOnlyHack = "viReadOnlyHack";
   public static final String classicUndoOption = "viClassicUndo";
-
+  
+  public static final String dbgRedo = "viDbgRedo";
   public static final String dbgKeyStrokes = "viDbgKeyStrokes";
   public static final String dbgCache = "viDbgCache";
   public static final String dbgEditorActivation = "viDbgEditorActivation";
@@ -237,6 +238,12 @@ public final class Options {
 	    " If 'modeline' is on 'modelines' gives the number of lines"
             + " that is checked for set commands.  If 'modeline' is off"
             + " or 'modelines' is zero no lines are checked.");
+
+    G.redoTrack = createBooleanOption(redoTrack, true);
+    setupOptionDesc(generalList, redoTrack, "'.' magic redo tracking",
+                    "Include \"magic\" document changes during"
+                    + " input mode in the redo buffer. These"
+                    + " changes are often the result of IDE code completion");
 
     G.isClassicUndo = createBooleanOption(classicUndoOption, true);
     setupOptionDesc(generalList, classicUndoOption, "classic undo",
@@ -534,6 +541,10 @@ public final class Options {
     createBooleanOption(dbgKeyStrokes, false);
     setupOptionDesc(debugList, dbgKeyStrokes, "debug KeyStrokes",
                "Output info for each keystroke");
+
+    G.dbgRedo = createBooleanOption(dbgRedo, false);
+    setupOptionDesc(debugList, dbgRedo, "debug redo buffer",
+               "Output info on magic/tracking changes to redo buffer");
 
     createBooleanOption(dbgCache, false);
     setupOptionDesc(debugList, dbgCache, "debug cache",
