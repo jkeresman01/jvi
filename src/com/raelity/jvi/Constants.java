@@ -91,6 +91,8 @@ public interface Constants {
   // The upper byte is used to distinguish between other states.
   //
 
+  static final int BASE_STATE_MASK = 0xff;
+
   static final int  NORMAL	= 0x01;	// Normal mode, command expected
   static final int  VISUAL	= 0x02;	// Visual mode - use get_real_state()
   static final int  OP_PENDING	= 0x04;	// Normal mode, operator is pending - use
@@ -130,17 +132,17 @@ public interface Constants {
   // Definitions of various common control characters
   //
 
-  static final int  NUL	= '\000';
-  static final int  BS	= '\010';
-  static final int  TAB	= '\011';
-  static final int  NL	= '\012';
+  static final char  NUL	= '\000';
+  static final char  BS	= '\010';
+  static final char  TAB	= '\011';
+  static final char  NL	= '\012';
   static final String  NL_STR	= "\012";
-  static final int  FF	= '\014';
-  static final int  CR	= '\015';
-  static final int  ESC	= '\033';
+  static final char  FF	= '\014';
+  static final char  CR	= '\015';
+  static final char  ESC	= '\033';
   static final String ESC_STR	= "\033";
-  static final int  DEL	= 0x7f;
-  static final int  CSI	= 0x9b;
+  static final char  DEL	= 0x7f;
+  static final char  CSI	= 0x9b;
 
   // Bits for modifier mask
   // WAS: 0x01 cannot be used, because the modifier must be 0x02 or higher
@@ -260,12 +262,11 @@ public interface Constants {
   static final int SHAPE_VER	= 2; 	// vertical bar cursor
   
   // edit mode operations that can be specified through a keymap
-  static final int IM = 0x40000000;
-  static final int IM_SHIFT_RIGHT = 1 + IM;
-  static final int IM_SHIFT_LEFT = 2 + IM;
-  static final int IM_SHIFT_RIGHT_TO_PAREN = 3 + IM;
-  static final int IM_SHIFT_LEFT_TO_PAREN = 4 + IM;
-  static final int IM_INS_REP = 5 + IM;
+  static final int IM_SHIFT_RIGHT = KeyDefs.K_X_IM_SHIFT_RIGHT;
+  static final int IM_SHIFT_LEFT = KeyDefs.K_X_IM_SHIFT_LEFT;
+  static final int IM_SHIFT_RIGHT_TO_PAREN = KeyDefs.K_X_PERIOD;
+  static final int IM_SHIFT_LEFT_TO_PAREN = KeyDefs.K_X_COMMA;
+  static final int IM_INS_REP = KeyDefs.K_X_IM_INS_REP;
 }
 
 /*

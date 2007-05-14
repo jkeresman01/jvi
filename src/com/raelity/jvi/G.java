@@ -154,6 +154,8 @@ public class G {
                                         // 5-not supported
                                         // 7-not implemented
                                         // 9-xop
+  static BooleanOption redoTrack; // track redo for magic/code-completion
+  static BooleanOption dbgRedo;
 
   public static boolean debugPrint = false;
   public static boolean debugOpPrint = false;

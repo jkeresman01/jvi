@@ -68,10 +68,6 @@ public class Edit {
   
   static boolean need_redraw; // GET RID OF
   static int did_restart_edit;
-  static int i;
-  static int c;
-  static int lastc;
-  static boolean did_backspace;
   static MutableInt count;
   static MutableBoolean inserted_space;
 
@@ -97,6 +93,10 @@ public class Edit {
    * @return true if a CTRL-O command caused the return (insert mode pending).
    */
   static void edit(int cmdchar, boolean startln, int count_arg) {
+    int c;
+    boolean did_backspace;
+
+    assert(cmdchar == (char)cmdchar);
     if( ! Misc.isInInsertUndo()) {
       ViManager.dumpStack("In edit with no undo pending");
     }
@@ -157,7 +157,7 @@ public class Edit {
         // o_eol = FALSE;
       }
       
-      i = 0;
+      int i = 0;
       if(G.p_smd.getBoolean()) {
         i = Misc.showmode();
       }
@@ -188,7 +188,7 @@ public class Edit {
         Misc.update_curswant();
         // .....
         
-        lastc = c; // NEEDSWORK: use of lastc not supported
+        int lastc = c; // NEEDSWORK: use of lastc not supported
         // c = GetChar.safe_vgetc();
         
         // skip ctrl-\ ctrlN to normal mode
@@ -798,8 +798,8 @@ public class Edit {
     //
     
     stop_arrow();
-    Misc.ins_char(c);
     GetChar.AppendCharToRedobuff(c);
+    Misc.ins_char(c);
     G.did_ai = false;
   }
   
@@ -1287,6 +1287,11 @@ public class Edit {
     stop_arrow();
     // ....
     
+    // It's a little strange to put backspaces into the redo
+    // buffer, but it makes auto-indent a lot easier to deal
+    // with.
+    GetChar.AppendCharToRedobuff(c);
+    
     //
     // delete newline!
     //
@@ -1308,11 +1313,6 @@ public class Edit {
       // Just a single backspace?:
       // if (mode == BACKSPACE_CHAR) break;
     }
-    
-    // It's a little strange to put backspaces into the redo
-    // buffer, but it makes auto-indent a lot easier to deal
-    // with.
-    GetChar.AppendCharToRedobuff(c);
     
     
     // If deleted before the insertion point, adjust it
@@ -1533,3 +1533,5 @@ public class Edit {
     */
   }
 }
+
+// vi:set sw=2 ts=8:

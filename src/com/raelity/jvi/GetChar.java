@@ -30,10 +30,14 @@
 package com.raelity.jvi;
 
 import com.raelity.jvi.swing.KeyBinding;
+import com.raelity.text.TextUtil;
 import javax.swing.JEditorPane;
 import javax.swing.text.AbstractDocument;
 
-public class GetChar implements Constants, KeyDefs {
+import static com.raelity.jvi.Constants.*;
+import static com.raelity.jvi.KeyDefs.*;
+
+public class GetChar {
   private static boolean block_redo = false;
   private static boolean handle_redo = false;
 
@@ -314,30 +318,147 @@ public class GetChar implements Constants, KeyDefs {
    * This is used for the CTRL-O <.> command in insert mode.
    */
   static void ResetRedobuff() {
-    if (!block_redo) {
+    markRedoTrackPosition(NUL);
+    if (!handle_redo && !block_redo) {
       // old_redobuff = redobuff;
       redobuff = new BufferQueue();
     }
   }
 
   static void AppendToRedobuff(String s) {
-    if (!block_redo) {
+    if(s.length() == 1) {
+      AppendCharToRedobuff(s.charAt(0));
+      return;
+    }
+    markRedoTrackPosition(NUL);
+    if (!handle_redo && !block_redo) {
       redobuff.append(s);
     }
   }
 
-  static void AppendCharToRedobuff(int c) {
-    if (!block_redo) {
-      redobuff.append((char)c);
-    }
+  static void AppendCharToRedobuff(int c_) {
+    char c = (char)c_;
+    if (!handle_redo && !block_redo) {
+      markRedoTrackPosition(c);
+      redobuff.append(c);
+    } else
+      markRedoTrackPosition(NUL);
   }
 
   static void AppendNumberToRedobuff(int n) {
-    if (!block_redo) {
+    markRedoTrackPosition(NUL);
+    if (!handle_redo && !block_redo) {
       redobuff.append(n);
     }
   }
 
+  //
+  // In input mode, want to track some platform changes to the document
+  // and make them part of the redo buffer. This is used for code completion
+  // cases. Want to KISS the problem.
+  //
+  // After "normal" characters are added to the redo buffer we expect the
+  // character to show up in the document, additional changes are
+  // incorporated into the redo buffer. BackSpace is considered a normal
+  // character, because the case is so common it has to be handled.
+  // 
+  // The NOT normal characters include newline. After a newline do not want
+  // to track the autoindent
+  //
+  // Unfortunately there are times when "random" changes are made somewhere
+  // else in the document. For example, an import may be added. This should
+  // not be put into the redo buffer. So we have to keep track of where
+  // user input is done and look only for local changes.
+  //
+
+  static int redoTrackPosition = -1;
+  static boolean expectChar;
+
+  private static void markRedoTrackPosition(char c) {
+    if(expectChar)
+      System.err.println("markRedoTrackPosition ERROR: expectChar");
+    if((G.State & BASE_STATE_MASK) != INSERT
+       || c < 0x20 && (c != BS
+                    && c != TAB)
+       || c == DEL
+       || (c & 0xF000) == VIRT) {
+      if(G.dbgRedo.value)
+        System.err.println("markRedoPosition OFF");
+      redoTrackPosition = -1;
+      expectChar = false;
+      return;
+    }
+    redoTrackPosition = G.curwin.getCaretPosition();
+    expectChar = true;
+    if(G.dbgRedo.value)
+      System.err.println(String.format("markRedoPosition %d '%c' '%s'",
+                                       redoTrackPosition, c, redobuff));
+      //System.err.println("markRedoPosition " + redoTrackPosition + " '" + c + "'");
+  }
+
+  static void docInsert(int pos, String s) {
+    if(G.dbgRedo.value)
+      System.err.println(String.format("docInsert: pos %d, %d, '%s'",
+                                     pos, s.length(), TextUtil.debugString(s)));
+    if(redoTrackPosition < 0 || !G.redoTrack.value)
+      return;
+    if(expectChar) {
+      if(pos == redoTrackPosition) {
+        if(G.dbgRedo.value)
+          System.err.println("docInsert MATCH expected " + pos);
+        redoTrackPosition += 1;
+      } else if(pos != redoTrackPosition)
+        System.err.println(String.format(
+                      "docInsert ERROR: redoPosition %d, pos %d, '%s'",
+                      redoTrackPosition, pos, s));
+      else if(s.length() != 1)
+        System.err.println(String.format("docInsert ERROR: length %d, pos %d",
+                                         redoTrackPosition, pos));
+    } else {
+      if(pos == redoTrackPosition) {
+        if(G.dbgRedo.value)
+          System.err.println(String.format("docInsert MATCH other: %d %d '%s'",
+                                         pos, redoTrackPosition, s));
+        //
+        // Add the mystery string to the redo buffer
+        //
+        redobuff.append(s);
+        redoTrackPosition += s.length();
+      } else {
+        if(G.dbgRedo.value)
+          System.err.println("docInsert: NO MATCH");
+      }
+    }
+    expectChar = false;
+  }
+
+  static void docRemove(int pos, int len) {
+    if(G.dbgRedo.value)
+      System.err.println("docRemove: pos " + pos + ", " + len);
+    if(redoTrackPosition < 0 || !G.redoTrack.value)
+      return;
+    if(pos + len == redoTrackPosition) {
+      if(G.dbgRedo.value)
+        System.err.println(String.format(
+                  "docRemove MATCH: redoPosition %d, pos %d, length %d",
+                  redoTrackPosition, pos+len, len));
+      //
+      // Delete the string from the redo buffer
+      //
+      if(expectChar && len != 1) {
+        System.err.println("docRemove ERROR: expectChar len = " + len);
+      }
+      // when expectChar, the BS is already in redobuff
+      if(!expectChar)
+        for(int i = len; i > 0; i--)
+          redobuff.append(BS);
+      redoTrackPosition -= len;
+    } else {
+      if(G.dbgRedo.value)
+        System.err.println("docRemove NO MATCH");
+    }
+    expectChar = false;
+  }
 
   /**
    * Remove the contents of the stuff buffer and the mapped characters in the
@@ -474,6 +595,8 @@ public class GetChar implements Constants, KeyDefs {
     stuffbuff.append((char)c);
     copy_redo(old_redo);
     handle_redo = true;
+    if(G.dbgRedo.value)
+      System.err.println("stuffbuff = '" + stuffbuff + "'");
     return OK;
   }
 
@@ -645,3 +768,5 @@ class BufferQueue {
     return buf.toString();
   }
 }
+
+// vi:set sw=2 ts=8:

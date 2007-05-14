@@ -9,12 +9,17 @@
 
 package com.raelity.jvi;
 
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
+
+import static com.raelity.jvi.Constants.*;
 
 /**
  * Buffer: structure that holds information about one file, primarily
@@ -28,6 +33,8 @@ public class Buffer implements ViOptionBag {
     private Document doc;
     private boolean didCheckModelines;
     private UndoGroupManager undoMan;
+    //private UndoManager undoMan;
+    //private CompoundEdit compoundEdit;
     
     private int share; // the number of text views sharing this buffer
     public int getShare() { return share; }
@@ -36,6 +43,7 @@ public class Buffer implements ViOptionBag {
         share--;
         if(share == 0) {
             doc.removeUndoableEditListener(undoMan);
+            stopDocumentEvents();
             doc = null;
         }
     }
@@ -45,6 +53,7 @@ public class Buffer implements ViOptionBag {
     public Buffer(Document doc) {
         this.doc = doc;
         initOptions();
+        correlateDocumentEvents();
     }
     
     protected void initOptions() {
@@ -70,23 +79,28 @@ public class Buffer implements ViOptionBag {
 
     public void standAlone() {
         undoMan = new UndoGroupManager();
+        //undoMan = new UndoManager();
         doc.addUndoableEditListener(undoMan);
     }
 
     public void beginUndo() {
-        undoMan.beginUndoGroup();
+        beginInsertUndo();
     }
 
     public void endUndo() {
-        undoMan.endUndoGroup();
+        endInsertUndo();
     }
 
     public void beginInsertUndo() {
         undoMan.beginUndoGroup();
+        //compoundEdit = new CompoundEdit();
+        //undoMan.addEdit(compoundEdit);
     }
 
     public void endInsertUndo() {
         undoMan.endUndoGroup();
+        //compoundEdit.end();
+        //compoundEdit = null;
     }
 
     public void undo() {
@@ -122,6 +136,45 @@ public class Buffer implements ViOptionBag {
     public ViMark b_visual_end;
     public int b_visual_mode;
     public String b_p_mps; // used in nv_object
+
+    //////////////////////////////////////////////////////////////////////
+    //
+    // Track changes in document for possible inclusion into redo buf
+    //
+
+    private DocumentListener documentListener;
+
+    private void stopDocumentEvents() {
+        doc.removeDocumentListener(documentListener);
+    }
+    
+    private void correlateDocumentEvents() {
+        documentListener = new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+            }
+            public void insertUpdate(DocumentEvent e) {
+                // HACK, should be listening to G.State to disable
+                // enable this functionality, or better pass on event
+                // and some method call on event will get the insert data
+                if((G.State & BASE_STATE_MASK) != INSERT)
+                    return;
+                String s = "";
+                try {
+                    s = doc.getText(e.getOffset(), e.getLength());
+                    GetChar.docInsert(e.getOffset(), s);
+                } catch (BadLocationException ex) {
+                    ex.printStackTrace();
+                }
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                if((G.State & BASE_STATE_MASK) != INSERT)
+                    return;
+                GetChar.docRemove(e.getOffset(), e.getLength());
+            }
+        };
+        doc.addDocumentListener(documentListener);
+    }
 
     /** <code>UndoGroupManager</code> is an <code>UndoManager</code>
      * that allows explicit control of how
