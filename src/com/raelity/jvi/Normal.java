@@ -1657,7 +1657,7 @@ middle_code:
 	  break;
 
 	case OP_FORMAT:
-	  if (G.p_fp != null)
+	  if (! G.p_fp.getString().equals(""))
 	    op_colon(oap);		/* use external command */
 	  else
 	    op_format(oap);		/* use internal function */
@@ -1743,12 +1743,11 @@ middle_code:
     }
     else if (oap.op_type == OP_FORMAT)
     {
-      notImp("op_colon OP_FORMAT");
 //	if (*p_fp == NUL)
 //	    stuffReadbuff((char_u *)"fmt");
 //	else
-//	    stuffReadbuff(p_fp);
-//	stuffReadbuff((char_u *)"\n");
+          range.append(G.p_fp.getString());
+        range.append("\n");
     }
       
     ColonCommands.doColonCommand(range);
@@ -3391,6 +3390,9 @@ static private void nv_findpar(CMDARG cap, int dir)
             Misc.showmode();
         }
         break;
+      case 'q':
+        nv_operator(cap);
+        break;
       default:
         notSup("g" + new String(new char[] {(char)cap.nchar}));
         break;
@@ -3776,7 +3778,6 @@ static private void nv_findpar(CMDARG cap, int dir)
   static private void nv_q(CMDARG cap) throws NotSupportedException {
     do_xop("nv_q");
     if (cap.oap.op_type == OP_FORMAT) {
-      notSup("gqq");
       /* "gqq" is the same as "gqgq": format line */
       cap.cmdchar = 'g';
       cap.nchar = 'q';

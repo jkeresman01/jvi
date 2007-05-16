@@ -131,6 +131,7 @@ public final class Options {
   public static final String selectColor = "viSelectColor";
 
   public static final String equalProgram = "viEqualProgram";
+  public static final String formatProgram = "viFormatProgram";
 
   public static final String shell = "viShell";
   public static final String shellCmdFlag = "viShellCmdFlag";
@@ -437,6 +438,13 @@ public final class Options {
             "External program to use for \"=\" command (default \"\").  " +
             "When this option is empty the internal formatting functions " +
             "are used.");
+
+    G.p_fp = createStringOption(formatProgram, "fmt");
+    setupOptionDesc(externalProcessList, formatProgram, "'formatprg' 'fp'",
+            "The name of an external program used to format lines selected " +
+            "with 'gq' operator (default \"fmt\").  The program must take " +
+            "input on stdin and produce output to stdout.  In Unix, " +
+            "\"fmt\" is such a program.");
 
     /////////////////////////////////////////////////////////////////////
     //

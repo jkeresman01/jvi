@@ -267,6 +267,14 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	    return getString(Options.equalProgram);
     }
 
+    public void setViFormatProgram(String arg)  throws PropertyVetoException {
+        put(Options.formatProgram, arg);
+    }
+
+    public String getViFormatProgram() {
+	    return getString(Options.formatProgram);
+    }
+
     public void setViModeline(boolean arg)  throws PropertyVetoException {
         put(Options.modeline, arg);
     }
