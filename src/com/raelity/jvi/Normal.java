@@ -574,11 +574,19 @@ middle_code:
 	    //
 	    // Ignore 'Q' in Visual mode, just give a beep.
 	    //
-	    notSup("exmode");	// XXX
+	    /*notSup("exmode");	// XXX
 	    if (G.VIsual_active)
 	      Util.vim_beep();
 	    else if (!checkclearop(oap))
-	      do_exmode();
+	      do_exmode();*/
+            // If ever want to support exmode, then better support
+            // map so that 'Q' can be mapped
+	    if (G.VIsual_active)
+	      Util.vim_beep();
+            else {
+              nv_optrans(ca);
+              opnum = 0;
+            }
 	    break;
 
 	  case K_HELP:
@@ -3115,14 +3123,15 @@ static private void nv_findpar(CMDARG cap, int dir)
   }
 
   static String[] nv_optrans_ar = new String[] { "dl", "dh", "d$", "c$",
-    					         "cl", "cc", "yy", ":s\r"};
+    					         "cl", "cc", "yy", ":s\r",
+                                                 "gq"};
   /**
    * Translate a command into another command.
    */
   static private  void	nv_optrans (CMDARG cap) {
     do_xop("nv_optrans");
 
-    String str = "xXDCsSY&";
+    String str = "xXDCsSY&Q";
     if (!checkclearopq(cap.oap))
     {
       if (cap.count0 != 0) {
