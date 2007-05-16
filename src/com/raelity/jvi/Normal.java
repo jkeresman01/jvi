@@ -1951,10 +1951,12 @@ middle_code:
   //
   // Routines for displaying a partly typed command
   //
+  // Also used to display visual select limits
+  //
 
   static StringBuffer showcmd_buf = new StringBuffer();
   static StringBuffer old_showcmd_buf = new StringBuffer();
-  static boolean showcmd_is_clear = true;
+  //static boolean showcmd_is_clear = true;
   // static char_u old_showcmd_buf[SHOWCMD_COLS + 1];  /* For push_showcmd() */
 
   static void clear_showcmd() {
@@ -1968,8 +1970,7 @@ middle_code:
     /*
      * Don't actually display something if there is nothing to clear.
      */
-    if (showcmd_is_clear)
-      return;
+    //if (showcmd_is_clear) return;
 
     display_showcmd();
   }
@@ -1987,7 +1988,9 @@ middle_code:
     if((c & 0xf000) == VIRT)
         return false;
 
-    add_one_to_showcmd_buffer(c);
+    //add_one_to_showcmd_buffer(c);
+    String p = Misc.transchar(c);
+    showcmd_buf.append(p);
 
     if (GetChar.char_avail())
       return false;
@@ -1997,66 +2000,18 @@ middle_code:
     return true;
   }
 
-  /** Add char to show commmand buffer. */
-  static private void add_one_to_showcmd_buffer(int c) {
-    String  p;
-    int	    old_len;
-    int	    extra_len;
-    int	    overflow;
-
-    p = Misc.transchar(c);
-    old_len = showcmd_buf.length();
-    extra_len = p.length();
-    overflow = old_len + extra_len - SHOWCMD_COLS;
-    if(overflow > 0) {
-      showcmd_buf.delete(0, overflow);
-    }
-    showcmd_buf.append(p);
-  }
-
-  static void add_to_showcmd_c(int c) {
-    // if (!add_to_showcmd(c))
-	// setcursor();
-    add_to_showcmd(c);
-  }
-
-  /**
-   * Delete 'len' characters from the end of the shown command.
-   */
-  static private void del_from_showcmd(int len) {
-    int	    old_len;
-
-    if (!G.p_sc.getBoolean())
-      return;
-
-    old_len = showcmd_buf.length();
-    if (len > old_len)
-      len = old_len;
-    showcmd_buf.delete(old_len - len, SHOWCMD_COLS);
-
-    if (!GetChar.char_avail())
-      display_showcmd();
-  }
-
-  static void push_showcmd() {
-    if (!G.p_sc.getBoolean())
-      return;
-
-    old_showcmd_buf.setLength(0);
-    old_showcmd_buf.append(showcmd_buf.toString());
-  }
-
-  static void pop_showcmd() {
-    if (!G.p_sc.getBoolean())
-      return;
-
-    showcmd_buf.setLength(0);
-    showcmd_buf.append(old_showcmd_buf.toString());
-
-    display_showcmd();
-  }
-
   static private void display_showcmd() {
+    Misc.setCommandCharacters(showcmd_buf.toString());
+  }
+
+  public static void displaySelectState(String s) {
+    showcmd_buf.setLength(0);
+    showcmd_buf.append(s);
+    Misc.setCommandCharacters(showcmd_buf.toString());
+    Misc.out_flush();
+  }
+
+  /*static private void display_showcmd() {
     int	    len;
 
     // cursor_off();
@@ -2078,8 +2033,67 @@ middle_code:
     //
     // screen_puts((char_u *)"          " + len, (int)Rows - 1, sc_col + len, 0)
 
-    // setcursor();	    /* put cursor back where it belongs */
-  }
+    // setcursor();	    // put cursor back where it belongs
+  }*/
+
+  /** Add char to show commmand buffer. */
+  /*static private void add_one_to_showcmd_buffer(int c) {
+    String  p;
+    int	    old_len;
+    int	    extra_len;
+    int	    overflow;
+
+    p = Misc.transchar(c);
+    old_len = showcmd_buf.length();
+    extra_len = p.length();
+    overflow = old_len + extra_len - SHOWCMD_COLS;
+    if(overflow > 0) {
+      showcmd_buf.delete(0, overflow);
+    }
+    showcmd_buf.append(p);
+  }*/
+
+  /*static void add_to_showcmd_c(int c) {
+    // if (!add_to_showcmd(c))
+	// setcursor();
+    add_to_showcmd(c);
+  }*/
+
+  /**
+   * Delete 'len' characters from the end of the shown command.
+   */
+  /*static private void del_from_showcmd(int len) {
+    int	    old_len;
+
+    if (!G.p_sc.getBoolean())
+      return;
+
+    old_len = showcmd_buf.length();
+    if (len > old_len)
+      len = old_len;
+    showcmd_buf.delete(old_len - len, SHOWCMD_COLS);
+
+    if (!GetChar.char_avail())
+      display_showcmd();
+  }*/
+
+  /*static void push_showcmd() {
+    if (!G.p_sc.getBoolean())
+      return;
+
+    old_showcmd_buf.setLength(0);
+    old_showcmd_buf.append(showcmd_buf.toString());
+  }*/
+
+  /*static void pop_showcmd() {
+    if (!G.p_sc.getBoolean())
+      return;
+
+    showcmd_buf.setLength(0);
+    showcmd_buf.append(old_showcmd_buf.toString());
+
+    display_showcmd();
+  }*/
   
   static private void nv_scroll_line(CMDARG cap, boolean is_ctrl_e) {
     do_xop("nv_scroll_line");
