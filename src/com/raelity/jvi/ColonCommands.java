@@ -1751,6 +1751,12 @@ public class ColonCommands {
     }
   };
 
+  static ActionListener ACTION_version = new ActionListener() {
+    public void actionPerformed(ActionEvent ev) {
+      ViManager.motd.output();
+    }
+  };
+
   static ActionListener ACTION_nohlsearch = new ActionListener() {
     public void actionPerformed(ActionEvent ev) {
       Options.nohCommand();
@@ -1833,6 +1839,8 @@ public class ColonCommands {
   };
 
   static void registerBuiltinCommands() {
+    register("ve", "version", ACTION_version);
+
     register("clo", "close", ACTION_close);
     register("on", "only", ACTION_only);
 
@@ -1925,3 +1933,5 @@ public class ColonCommands {
     printStream = null;
   }
 }
+
+// vi:set sw=2 ts=8 et:

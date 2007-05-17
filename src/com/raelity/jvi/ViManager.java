@@ -31,19 +31,31 @@ package com.raelity.jvi;
 
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URLConnection;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import com.raelity.jvi.swing.*;
 import java.awt.datatransfer.FlavorMap;
 import java.awt.datatransfer.SystemFlavorMap;
-import java.nio.ByteBuffer;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URL;
 import javax.swing.text.Segment;
 
 /**
@@ -69,15 +81,7 @@ public class ViManager {
   // HACK: to workaround JDK bug dealing with focus and JWindows
   public static ViCmdEntry activeCommandEntry;
 
-  private static final int majorVersion = 0;
-  private static final int minorVersion = 9;
-  private static final int microVersion = 2;
-  private static final String releaseTag = "x20";
-  private static final String release = "jVi "
-                    + ViManager.majorVersion
-		    + "." + ViManager.minorVersion
-		    + "." + ViManager.microVersion
-                    + ViManager.releaseTag;
+  public static final jViVersion version = new jViVersion("0.9.5.beta1");
   
   private static boolean enabled;
 
@@ -93,6 +97,18 @@ public class ViManager {
     KeyBinding.init();
     
     // Add the vim clipboards
+
+    new GetMotd().start();
+
+    /*jViVersion v1 = new jViVersion("1.2.3.x4");
+    jViVersion v2 = new jViVersion("1.2.3.alpha4");
+    jViVersion v3 = new jViVersion("1.2.3.beta4");
+    jViVersion v4 = new jViVersion("1.2.3.rc4");
+    jViVersion v5 = new jViVersion("1.2.3.rc");
+    jViVersion v6 = new jViVersion("1.2.3.beta5");
+    jViVersion v7 = new jViVersion("1.2.3");
+    jViVersion v8 = new jViVersion("1.2.4");
+    jViVersion v9 = new jViVersion("1.3.0");*/
   }
   
   public static final DataFlavor VimClipboard = addVimClipboard(VIM_CLIPBOARD);
@@ -121,23 +137,7 @@ public class ViManager {
   }
 
   public static String getReleaseString() {
-    return release;
-  }
-
-  public static int getMajorVersion() {
-    return majorVersion;
-  }
-
-  public static int getMinorVersion() {
-    return minorVersion;
-  }
-
-  public static int getMicroVersion() {
-    return microVersion;
-  }
-
-  public static String getReleaseTag() {
-    return releaseTag;
+    return "jVi " + version;
   }
 
   public static ViFactory getViFactory() {
@@ -447,6 +447,7 @@ public class ViManager {
   }
 
   private static boolean started = false;
+  private static boolean didMotd;
   static final void switchTo(JEditorPane editorPane) {
     if(editorPane == currentEditorPane) {
         return;
@@ -454,6 +455,10 @@ public class ViManager {
     if( ! started) {
       started = true;
       startup();
+    }
+    if(!didMotd && motd != null) {
+      motd.output();
+      didMotd = true;
     }
     
     exitInputMode(); // if switching, make sure prev out of input mode
@@ -735,4 +740,254 @@ public class ViManager {
                    + ", share: " + buf.getShare());
     }
   }
+
+  /** version is of the form #.#.# or #.#.#.[x|alpha|beta|rc]#,
+   * examples 0.9.1, 0.9.1.beta1
+   * also, 0.9.1.beta1.3 for tweaking between exposed releases
+   */
+  public static final class jViVersion implements Comparable<jViVersion> {
+    // in order
+    public static final String X = "x";
+    public static final String ALPHA = "alpha";
+    public static final String BETA = "beta";
+    public static final String RC = "rc";
+    // following is map in order of suspected quality, these map to values
+    // 0, 1, 2, 3
+    // a release has none of these tags and compares greater than any of them
+    // since it is set to value qualityMap.length, value == 4
+    String[] qualityMap = new String[] { X, ALPHA, BETA, RC };
+
+    // Each component of the version is an element of the array.
+    // major.minor.micro
+    // major.minor.micro.<quality>which
+    // If no a|alpha.... then this is the 
+    private int[] version = new int[6];
+
+    private boolean valid;
+
+    public jViVersion(String s) {
+      String rev[] = s.split("\\.");
+      if(rev.length < 3 || rev.length > 5) {
+        init(0, 0, 0, 0, 0);
+        return;
+      }
+      for(int i = 0; i < 3; i++)  {
+        try {
+          version[i] = Integer.parseInt(rev[i]);
+        } catch (NumberFormatException ex) {
+          ex.printStackTrace();
+          init(0, 0, 0, 0, 0);
+          return;
+        }
+      }
+      valid = true;
+      if(rev.length == 3) {
+        // A release version, no quality tag or tweak, it is "better" than those
+        version[3] = qualityMap.length;
+      } else {
+        // so this is something between releases
+        // version[0:2] has 1.2.3 stored in it
+        // rev[3] has string like beta3, rev[4] may have a tweak; beta3.7
+        // into rev[0:2] put strings for beta,3,7
+        Pattern p = Pattern.compile("(x|alpha|beta|rc)(\\d+)");
+        Matcher m = p.matcher(rev[3]);
+        // Note, if doesn't match, then version number looks like 1.2.3.x0
+        // since version[3:5] left at zero
+        if(m.matches()) {
+          String q = m.group(1);
+          for(int i = 0; i < qualityMap.length; i++) {
+            if(q.equals(qualityMap[i])) {
+              rev[0] = "" + i;
+              break;
+            }
+          }
+          rev[1] = m.group(2);
+          // if there's a tweak on beta1, then copy it, else set to zero
+          rev[2] = rev.length == 5 ? rev[4] : "0";
+          try {
+            for(int i = 0; i <= 2; i++)
+              version[i+3] = Integer.parseInt(rev[i]);
+          } catch (NumberFormatException ex) {
+            ex.printStackTrace();
+          }
+        }
+      }
+      //System.err.println("input: " + s + ", version: " + this);
+    }
+
+    private void init(int major, int minor, int micro, int qTag, int qVer) {
+      version[0] = major;
+      version[1] = minor;
+      version[2] = micro;
+      version[3] = qTag;
+      version[4] = qVer;
+    }
+
+    public boolean isValid() {
+      return valid;
+    }
+
+    public boolean isRelease() {
+      return version[3] == qualityMap.length;
+    }
+
+    public boolean isDevelopment() {
+      // development releases are x, alpha or any tweaks
+      // beta and rc are not (unless tweaked)
+      int qTag = version[3];
+      return qTag == 0 || qTag == 1 || getTweak() != 0;
+    }
+
+    public String toString() {
+      String s =   "" + version[0]
+		+ "." + version[1]
+                + "." + version[2];
+      if(version[3] != qualityMap.length)
+        s += "." + qualityMap[version[3]] + version[4];
+      if(version[5] != 0)
+        s += "." + version[5];
+      return s;
+    }
+    
+    public int getMajor() {
+      return version[0];
+    }
+    
+    public int getMinor() {
+      return version[1];
+    }
+    
+    public int getMicro() {
+      return version[2];
+    }
+
+    public int getTweak() {
+      return version[5];
+    }
+    
+    public String getTag() {
+      if(isRelease())
+        return "";
+      return qualityMap[version[3]] + version[4]
+              + (getTweak() == 0 ? "" : getTweak());
+    }
+
+    public int compareTo(ViManager.jViVersion v2) {
+      for(int i = 0; i < version.length; i++) {
+        if(version[i] != v2.version[i])
+          return version[i] - v2.version[i];
+      }
+      return 0;
+    }
+  }
+  
+  static Motd motd;
+  static class Motd {
+    jViVersion latestRelease;
+    jViVersion latestBeta;
+    int messageNumber;
+    String message;
+
+    Motd(String s) {
+      //String lines[] = motd.split("\n");
+      Pattern p = Pattern.compile("^jVi-release: (\\S+)", Pattern.MULTILINE);
+      Matcher m = p.matcher(s);
+      if(m.find()) {
+        latestRelease = new jViVersion(m.group(1));
+      }
+      p = Pattern.compile("^jVi-beta: (\\S+)", Pattern.MULTILINE);
+      m = p.matcher(s);
+      if(m.find()) {
+        latestBeta = new jViVersion(m.group(1));
+      }
+      p = Pattern.compile("^jVi-message: (\\d+).*$", Pattern.MULTILINE);
+      m = p.matcher(s);
+      int loc = 0;
+      if(m.find()) {
+        try {
+          messageNumber = Integer.parseInt(m.group(1));
+          message = s.substring(m.end(0)+1); // +1 to skip the newline
+        } catch (NumberFormatException ex) {
+          ex.printStackTrace();
+        }
+      }
+    }
+
+    void output() {
+      ViOutputStream vios = ViManager.createOutputStream(
+              null, ViOutputStream.OUTPUT, "jVi Version Information");
+
+      String tagCurrent = "";
+      String hasNewer = null;
+      if(latestRelease != null && latestRelease.isValid()) {
+        if(latestRelease.compareTo(version) > 0) {
+          hasNewer = "Newer release available: " + latestRelease;
+        } else if(latestRelease.compareTo(version) == 0)
+          tagCurrent = " (This is the latest release)";
+        else {
+          // In this else, should be able to assert that !isRelease()
+          if(version.isDevelopment())
+            tagCurrent = " (development release)";
+        }
+      }
+      vios.println("Running: " + getReleaseString() + tagCurrent);
+      if(hasNewer != null)
+        vios.println(hasNewer);
+      if(latestBeta != null && latestBeta.isValid()) {
+        if(latestBeta.compareTo(version) > 0) {
+          vios.println("Beta or release candidate available: " + latestBeta);
+        }
+      }
+      if(message != null)
+        vios.println(message);
+    }
+  }
+
+  private static class GetMotd extends Thread {
+    private static final int BUF_LEN = 1024;
+    private static final int MAX_MSG = 8 * 1024;
+    public void run() {
+      URL url = null;
+      try {
+        URI uri = new URI("http://jvi.sourceforge.net/motd");
+        url = uri.toURL();
+      } catch (MalformedURLException ex) {
+        ex.printStackTrace();
+      } catch (URISyntaxException ex) {
+        ex.printStackTrace();
+      }
+      if(url == null)
+        return;
+      
+      // Read the remote file into a string
+      // We *know* that the decoder will never have unprocessed
+      // bytes in it, US-ASCII ==> 1 byte per char.
+      // So use a simple algorithm.
+      try {
+        URLConnection c = url.openConnection();
+        InputStream in = c.getInputStream();
+        byte b[] = new byte[BUF_LEN];
+        ByteBuffer bb = ByteBuffer.wrap(b);
+        StringBuilder sb = new StringBuilder();
+        Charset cset = Charset.forName("US-ASCII");
+        int n;
+        int total = 0;
+        while((n = in.read(b)) > 0 && total < MAX_MSG) {
+          bb.position(0);
+          bb.limit(n);
+          CharBuffer cb = cset.decode(bb);
+          sb.append(cb.toString());
+          total += n;
+        }
+        in.close();
+        
+        motd = new Motd(sb.toString());
+        System.err.print(motd);
+      } catch (IOException ex) {
+        //ex.printStackTrace();
+      }
+    }
+  }
 }
+
+// vi:set sw=2 ts=8:
