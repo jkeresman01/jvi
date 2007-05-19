@@ -34,6 +34,8 @@ import java.text.CharacterIterator;
 import javax.swing.text.Segment;
 import javax.swing.text.BadLocationException;
 
+import com.raelity.text.TextUtil.MySegment;
+
 public class Util {
   // static final int TERMCAP2KEY(int a, int b) { return a + (b << 8); }
   static final int ctrl(int x) { return x & 0x1f; }
@@ -116,23 +118,23 @@ public class Util {
    * On failure an error message is given and IObuff is returned (to avoid
    * having to check for error everywhere).
    */
-  static Segment ml_get(int lnum) {
+  static MySegment ml_get(int lnum) {
     // return ml_get_buf(curbuf, lnum, FALSE);
-    return G.curwin.getLineSegment(lnum);
+    return new MySegment(G.curwin.getLineSegment(lnum));
   }
   
-  /** get pointer to positin 'pos', the returned Segment's CharacterIterator
+  /** get pointer to positin 'pos', the returned MySegment's CharacterIterator
    * is initialized to the character at pos.
-   * @return Segment for the line.
+   * @return MySegment for the line.
    */
   static CharacterIterator ml_get_pos(ViFPOS pos) {
     //return (ml_get_buf(curbuf, pos->lnum, FALSE) + pos->col);
-    Segment seg = G.curwin.getLineSegment(pos.getLine());
+    MySegment seg = new MySegment(G.curwin.getLineSegment(pos.getLine()));
     seg.setIndex(pos.getOffset());
     return seg;
   }
   
-  static Segment ml_get_curline() {
+  static MySegment ml_get_curline() {
     //return ml_get_buf(curbuf, curwin->w_cursor.lnum, FALSE);
     return ml_get(G.curwin.getWCursor().getLine());
   }
@@ -141,8 +143,8 @@ public class Util {
    * Get the length of a line, not incuding the newline
    */
   static int lineLength(int line) {
-    return G.curwin.getLineEndOffset(line)
-                     - G.curwin.getLineStartOffset(line) - 1;
+    Segment seg = G.curwin.getLineSegment(line);
+    return seg.count < 1 ? 0 : seg.count - 1;
   }
 
   /** is the indicated line empty? */
@@ -172,3 +174,5 @@ public class Util {
     vim_beep();
   }
 }
+
+// vi:set sw=2 ts=8:

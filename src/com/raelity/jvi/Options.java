@@ -1069,7 +1069,7 @@ public final class Options {
   /** @return true if parsed a modeline, there may have been errors */
   private static boolean checkModeline(int lnum) {
     // use MySegment for jdk1.5 compatibility
-    MySegment seg = new MySegment(Util.ml_get(lnum));
+    MySegment seg = Util.ml_get(lnum);
     
     // must check pattern 2 first, since lines that match pattern 2
     // will also match pattern 1
