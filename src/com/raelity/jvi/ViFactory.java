@@ -50,6 +50,9 @@ public interface ViFactory {
   /** Return a Buffer, create one if it doesn't already exist */
   public Buffer getBuffer(JEditorPane editorPane);
 
+  /** @return true if standalone (debug), else false */
+  public boolean isStandalone();
+
   /** @return null if TextView does not exist */
   public ViTextView getExistingViTextView(Object editorPane);
   

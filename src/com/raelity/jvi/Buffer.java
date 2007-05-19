@@ -54,6 +54,11 @@ public class Buffer implements ViOptionBag {
         this.doc = doc;
         initOptions();
         correlateDocumentEvents();
+        if(ViManager.getViFactory().isStandalone()) {
+            undoMan = new UndoGroupManager();
+            //undoMan = new UndoManager();
+            doc.addUndoableEditListener(undoMan);
+        }
     }
     
     protected void initOptions() {
@@ -75,12 +80,6 @@ public class Buffer implements ViOptionBag {
             return;
         didCheckModelines = true;
         Options.processModelines();
-    }
-
-    public void standAlone() {
-        undoMan = new UndoGroupManager();
-        //undoMan = new UndoManager();
-        doc.addUndoableEditListener(undoMan);
     }
 
     public void beginUndo() {

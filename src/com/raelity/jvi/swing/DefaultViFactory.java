@@ -91,6 +91,10 @@ public class DefaultViFactory implements ViFactory {
     // Add VimClipboard DataFlavor if not already there
     //FlavorMap fm = SystemFlavorMap.getDefaultFlavorMap();
   }
+
+  public boolean isStandalone() {
+      return true;
+  }
   
   public ViTextView getExistingViTextView(Object editorPane) {
     if(!(editorPane instanceof JComponent))
@@ -160,7 +164,6 @@ public class DefaultViFactory implements ViFactory {
   /** subclass probably wants to override this */
   protected Buffer createBuffer(JEditorPane editorPane) {
       Buffer buf = new Buffer(editorPane.getDocument());
-      buf.standAlone();
       return buf;
   }
 

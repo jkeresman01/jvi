@@ -81,7 +81,7 @@ public class ViManager {
   // HACK: to workaround JDK bug dealing with focus and JWindows
   public static ViCmdEntry activeCommandEntry;
 
-  public static final jViVersion version = new jViVersion("0.9.5.beta1.1");
+  public static final jViVersion version = new jViVersion("0.9.5.beta1.2");
   
   private static boolean enabled;
 
@@ -98,6 +98,7 @@ public class ViManager {
     
     // Add the vim clipboards
 
+    // Spawn to get current release info
     new GetMotd().start();
 
     /*jViVersion v1 = new jViVersion("1.2.3.x4");
@@ -447,7 +448,6 @@ public class ViManager {
   }
 
   private static boolean started = false;
-  private static boolean didMotd;
   static final void switchTo(JEditorPane editorPane) {
     if(editorPane == currentEditorPane) {
         return;
@@ -456,10 +456,7 @@ public class ViManager {
       started = true;
       startup();
     }
-    if(!didMotd && motd != null) {
-      motd.output();
-      didMotd = true;
-    }
+    motd.outputOnce();
     
     exitInputMode(); // if switching, make sure prev out of input mode
     
@@ -881,12 +878,23 @@ public class ViManager {
     }
   }
   
-  static Motd motd;
+  static Motd motd = new Motd();
+
   static class Motd {
-    jViVersion latestRelease;
-    jViVersion latestBeta;
-    int messageNumber;
-    String message;
+    private jViVersion latestRelease;
+    private jViVersion latestBeta;
+    private int messageNumber;
+    private String message;
+    private boolean valid;
+    private boolean output;
+
+    Motd() {
+      // not valid
+    }
+
+    boolean getValid() {
+      return valid;
+    }
 
     Motd(String s) {
       //String lines[] = motd.split("\n");
@@ -911,9 +919,20 @@ public class ViManager {
           ex.printStackTrace();
         }
       }
+      valid = true;
+    }
+
+    void outputOnce() {
+      if(output)
+        return;
+      output();
     }
 
     void output() {
+      if(!valid)
+        return;
+      output = true;
+
       ViOutputStream vios = ViManager.createOutputStream(
               null, ViOutputStream.OUTPUT, "jVi Version Information");
 
