@@ -29,8 +29,6 @@
  */
 package com.raelity.jvi;
 
-import javax.swing.JEditorPane;
-
 public class G {
   static public final String metaEscapeDefault = "()|+?{";
   static public final String metaEscapeAll = "()|+?{";
