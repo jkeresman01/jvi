@@ -55,6 +55,31 @@ public class OPARG
       regname = 0;
     }
 
+    /**
+     * Create a copy of OPARG.
+     * @return a copy of this OPARG object
+     */
+    public OPARG copy() {
+        OPARG dest = new OPARG();
+        dest.op_type = op_type;
+        dest.regname = regname;
+        dest.motion_type = motion_type;
+        dest.end_adjusted = end_adjusted;
+        dest.start = (FPOS) (start == null ? null : start.copy());
+        dest.end = (FPOS) (end == null ? null : end.copy());
+        dest.line_count = line_count;
+        dest.empty = empty;
+        dest.is_VIsual = is_VIsual;
+        dest.block_mode = block_mode;
+        dest.start_vcol = start_vcol;
+        dest.end_vcol = end_vcol;
+        return dest;
+    }
+
+    /**
+     * Return a readable string representation of the OPARG object.
+     * @return a readable string representation of the OPARG object.
+     */
     public String toString() {
 
       return                "op_type: " + op_type
