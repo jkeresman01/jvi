@@ -730,8 +730,8 @@ public class TextView implements ViTextView {
   public void updateVisualState() {
       if (!G.VIsual_active) {
           try {
-            unhighlight(new int[]{getMark('<').getOffset(), getMark('>').getOffset()});
-          } catch(Exception e) {}
+            unhighlight(new int[]{getMark('<').getOffset(), getMark('>').getOffset(), -1, -1});
+          } catch(Exception e) {unhighlight(new int[]{0, editorPane.getText().length(), -1, -1});}
       }
       highlight(getVisualSelectBlocks(0, Integer.MAX_VALUE));
   }
@@ -912,6 +912,10 @@ public class TextView implements ViTextView {
               end = tmp;
         }
         document.setCharacterAttributes(start, end - start, mas, false);
+          // update styled editor kit with new attributes to overcome paint errors
+          StyledEditorKit k = (StyledEditorKit) editorPane.getEditorKit();
+          MutableAttributeSet inputAttrs = k.getInputAttributes();
+          inputAttrs.addAttributes(mas);
       }
   }
 }
