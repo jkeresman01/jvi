@@ -605,10 +605,12 @@ public class ViManager {
       return pos;
     }
     //System.err.println("mouseMoveDot(" + pos + ")");
+    if(pos != G.curwin.getCaretPosition()) {
     G.VIsual_mode ='v';
     G.VIsual_active = true;
     G.VIsual = (FPOS) G.curwin.getWCursor().copy();
     Misc.showmode();
+    }
     return pos;
   }
 
