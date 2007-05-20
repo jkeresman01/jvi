@@ -106,6 +106,7 @@ public class Normal {
   static boolean pickupExtraChar;
   static boolean firstTimeHere01;
   static boolean editBusy;
+  static boolean opInsertBusy;
 
   /**
    * Vi comands can have up to three chunks: buffer-operator-motion.
@@ -142,6 +143,10 @@ public class Normal {
         // NEEDSWORK: if exception from edit, turn edit off and finishupEdit
         Edit.edit(c, false, 0);
         if(!editBusy) {
+            if (opInsertBusy) {
+                Misc.finishOpInsert();
+                opInsertBusy = false;
+            } else
           finishupEdit();
           newChunk = true;
           willStartNewChunk();
@@ -1107,7 +1112,7 @@ middle_code:
 	     */
 	  case 'v':
 	  case 'V':
-	  //case 0x1f & (int)('V'):	// Ctrl // DISABLE ON RELEASE
+	  case 0x1f & (int)('V'):	// Ctrl // DISABLE ON RELEASE
 	    if (!checkclearop(oap))
                 nv_visual(ca, false);
 	    break;
@@ -1333,17 +1338,16 @@ middle_code:
       } else if (G.VIsual_active) {
             /* In Select mode, a linewise selection is operated upon like a
              * characterwise selection. */
-          /*if (G.VIsual_select && G.VIsual_mode == 'V') {
-              if (lt(VIsual, curwin->w_cursor)) {
-                  VIsual.col = 0;
-                  curwin->w_cursor.col =
-                          STRLEN(ml_get(curwin->w_cursor.lnum));
+          if (G.VIsual_select && G.VIsual_mode == 'V') {
+              if (G.VIsual.compareTo(G.curwin.getWCursor()) < 0) { //if (lt(VIsual, curwin->w_cursor))
+                  G.VIsual.setPosition(G.VIsual.getLine(), 0);
+                  G.curwin.setCaretPosition(G.curwin.getWCursor().getLine(), Util.lineLength(G.curwin.getWCursor().getLine())/*Util.ml_get(G.curwin.getWCursor().getLine()).length()*/);
               } else {
-                  curwin->w_cursor.col = 0;
-                  VIsual.col = STRLEN(ml_get(VIsual.lnum));
+                  G.curwin.setCaretPosition(1, Util.lineLength(G.curwin.getWCursor().getLine()));//Util.ml_get(G.curwin.getWCursor().getLine()).length());
+                  G.VIsual.setPosition(G.VIsual.getLine(), Util.lineLength(G.VIsual.getLine()));//Util.ml_get(G.VIsual.getLine()).length());
               }
-              VIsual_mode = 'v';
-          }*/
+              G.VIsual_mode = 'v';
+              }
           /* If 'selection' is "exclusive", backup one character for
           * charwise selections. */
           if (!G.VIsual_select && G.VIsual_mode == 'v')
@@ -1380,24 +1384,25 @@ middle_code:
       if (G.VIsual_active || G.redo_VIsual_busy) {
           if (G.VIsual_mode == Util.ctrl('V'))  /* block mode */
           {
-              //colnr_t start, end;
+              int start, end;
 
               oap.block_mode = true;
-//            getvcol(curwin, &(oap->start),
-//                    &oap->start_vcol, NULL, &oap->end_vcol);
-//            if (!redo_VIsual_busy)
-//            {
-//                getvcol(curwin, &(oap->end), &start, NULL, &end);
-//                if (start < oap->start_vcol)
-//                    oap->start_vcol = start;
-//                if (end > oap->end_vcol)
-//                {
-//                    if (*p_sel == 'e' && start - 1 >= oap->end_vcol)
-//                        oap->end_vcol = start - 1;
-//                    else
-//                        oap->end_vcol = end;
-//                }
-//            }
+              oap.start_vcol = Misc.getvcol(oap.start.getColumn());//getvcol(curwin, &(oap->start), &oap->start_vcol, NULL, &oap->end_vcol);
+              oap.end_vcol = Misc.getvcol(oap.end.getColumn());//getvcol(curwin, &(oap->start), &oap->start_vcol, NULL, &oap->end_vcol);
+            if (!G.redo_VIsual_busy)
+            {
+                start = Misc.getvcol(oap.end.getColumn()); //getvcol(curwin, &(oap->end), &start, NULL, &end);
+                end = Misc.getvcol(oap.start.getColumn()); //getvcol(curwin, &(oap->end), &start, NULL, &end);
+                if (start < oap.start_vcol)
+                    oap.start_vcol = start;
+                if (end > oap.end_vcol)
+                {
+                    if (G.p_sel.charAt(0) == 'e' && start - 1 >= oap.end_vcol)
+                        oap.end_vcol = start - 1;
+                    else
+                        oap.end_vcol = end;
+                }
+            }
 //
 //            /* if '$' was used, get oap->end_vcol from longest line */
 //            if (curwin->w_curswant == MAXCOL)
@@ -1419,12 +1424,13 @@ middle_code:
 //             * Correct oap->end.col and oap->start.col to be the
 //             * upper-left and lower-right corner of the block area.
 //             */
-//            curwin->w_cursor.lnum = oap->end.lnum;
-//            coladvance(oap->end_vcol);
-//            oap->end = curwin->w_cursor;
-//            curwin->w_cursor = oap->start;
-//            coladvance(oap->start_vcol);
-//            oap->start = curwin->w_cursor;
+//            G.curwin.w_cursor.lnum = oap.end.lnum;
+            //Misc.coladvance(oap.end_vcol);
+            G.curwin.setCaretPosition(oap.end.getOffset()); //HACK
+            oap.end = (FPOS)G.curwin.getWCursor().copy();
+            G.curwin.setCaretPosition(oap.start.getOffset()); //curwin.w_cursor = oap.start;
+            Misc.coladvance(oap.start_vcol);
+            oap.start = (FPOS)G.curwin.getWCursor().copy();
           }
           if (!G.redo_VIsual_busy && !gui_yank)
           {
@@ -1621,6 +1627,7 @@ middle_code:
 	    G.restart_edit = 0;
 	    Misc.beginInsertUndo();
             Misc.op_change(oap); // will call edit()
+            opInsertBusy = true;
 	  }
 	  break;
 
@@ -1673,13 +1680,34 @@ middle_code:
 
 	case OP_INSERT:
 	case OP_APPEND:
+//	  G.VIsual_reselect = false;	/* don't reselect now */
+//	  Util.vim_beep();
+
+
 	  G.VIsual_reselect = false;	/* don't reselect now */
+          if (empty_region_error)
 	  Util.vim_beep();
+          else {
+            /* This is a new edit command, not a restart.  We don't edit
+             * recursively. */
+            G.restart_edit = 0;
+            Misc.op_insert(oap, cap.count1);/* handles insert & append
+                                         * will call edit() */
+            opInsertBusy = true;
+          }
+
+
+
+
+
 	  break;
 
 	case OP_REPLACE:
 	  G.VIsual_reselect = false;	/* don't reselect now */
+          if (empty_region_error)
 	  Util.vim_beep();
+          else 
+            Misc.op_replace(oap, cap.nchar);
 	  break;
 
 	default:
@@ -2961,6 +2989,11 @@ static private void nv_findpar(CMDARG cap, int dir)
 
     if (checkclearop(cap.oap))
       return;
+
+    if (G.VIsual_active) {
+      nv_operator(cap);
+      return;
+    }
 
     // NEEDSWORK: be very lazy, use Edit.edit for the 'r' command
 
