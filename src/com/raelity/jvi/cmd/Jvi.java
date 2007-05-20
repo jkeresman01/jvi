@@ -38,11 +38,8 @@ import javax.swing.SwingUtilities;
 import java.awt.*;
 import com.raelity.jvi.swing.*;
 import com.raelity.jvi.*;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
-import javax.swing.Action;
-import javax.swing.text.DefaultEditorKit.PasteAction;
 
 public class Jvi {
   static boolean packFrame = true;
@@ -128,26 +125,6 @@ public class Jvi {
             public void mouseDragged(MouseEvent e) {
                 ViManager.mouseMoveDot(f.editorPane.getCaret().getDot(), f.editorPane);
             }
-    });
-    Action[] actions = f.editorPane.getActions();
-    for (int i = 0; i < actions.length; i++) {
-        if (actions[i] instanceof PasteAction) {
-            actions[i].setEnabled(false);
-        }
-    }
-    f.editorPane.addKeyListener(new KeyListener() {
-            public void keyTyped(KeyEvent e) {
-                if (e.getKeyChar() == 'v' && e.getModifiers() == KeyEvent.CTRL_MASK) {
-                    Normal.normal_cmd(0x1f & e.getKeyChar(), true);
-                }
-            }
-
-            public void keyPressed(KeyEvent e) {
-            }
-
-            public void keyReleased(KeyEvent e) {
-            }
-        
     });
   }
 
