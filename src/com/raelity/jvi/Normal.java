@@ -3396,17 +3396,17 @@ static private void nv_findpar(CMDARG cap, int dir)
                 i = G.VIsual_mode;
                 G.VIsual_mode = G.curbuf.b_visual_mode;
                 G.curbuf.b_visual_mode = i;
-                tpos = G.curbuf.b_visual_end;
-                G.curwin.setMarkOffset((ViMark)G.curbuf.b_visual_end,
+                tpos = G.curbuf.b_visual_end.copy();
+                G.curwin.setMarkOffset(G.curbuf.b_visual_end,
                                        G.curwin.getWCursor().getOffset(), false);
                 G.curwin.setCaretPosition(G.curbuf.b_visual_start.getOffset());
-                G.curwin.setMarkOffset((ViMark)G.curbuf.b_visual_start,
+                G.curwin.setMarkOffset(G.curbuf.b_visual_start,
                                        G.VIsual.getOffset(), false);
             }
             else
             {
                 G.VIsual_mode = G.curbuf.b_visual_mode;
-                tpos = G.curbuf.b_visual_end;
+                tpos = G.curbuf.b_visual_end.copy();
                 G.curwin.setCaretPosition(G.curbuf.b_visual_start.getOffset());
             }
 
