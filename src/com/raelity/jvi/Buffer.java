@@ -20,6 +20,7 @@ import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 
 import static com.raelity.jvi.Constants.*;
+import javax.swing.text.AbstractDocument;
 
 /**
  * Buffer: structure that holds information about one file, primarily
@@ -83,11 +84,13 @@ public class Buffer implements ViOptionBag {
     }
 
     public void beginUndo() {
+        // NEEDSWORK: standalone like: ((AbstractDocument)doc).writeLock();
         beginInsertUndo();
     }
 
     public void endUndo() {
         endInsertUndo();
+        // NEEDSWORK: standalone like: ((AbstractDocument)doc).writeUnlock();
     }
 
     public void beginInsertUndo() {

@@ -31,7 +31,6 @@ package com.raelity.jvi;
 
 import java.awt.Toolkit;
 import java.text.CharacterIterator;
-import javax.swing.text.Segment;
 import javax.swing.text.BadLocationException;
 
 import com.raelity.text.TextUtil.MySegment;
@@ -143,13 +142,13 @@ public class Util {
    * Get the length of a line, not incuding the newline
    */
   static int lineLength(int line) {
-    Segment seg = G.curwin.getLineSegment(line);
+    MySegment seg = G.curwin.getLineSegment(line);
     return seg.count < 1 ? 0 : seg.count - 1;
   }
 
   /** is the indicated line empty? */
   static boolean lineempty(int lnum) {
-    Segment seg = G.curwin.getLineSegment(lnum);
+    MySegment seg = G.curwin.getLineSegment(lnum);
     return seg.count == 0 || seg.array[seg.offset] == '\n';
   }
   
@@ -163,7 +162,7 @@ public class Util {
   }
 
   static int getCharAt(int offset) {
-    Segment seg = new Segment();
+    MySegment seg = new MySegment();
     G.curwin.getSegment(offset, 1, seg);
     return seg.count > 0 ? seg.array[seg.offset] : 0;
   }

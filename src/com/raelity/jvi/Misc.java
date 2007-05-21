@@ -29,12 +29,7 @@
  */
 package com.raelity.jvi;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import javax.swing.text.*;
-import javax.swing.KeyStroke;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Clipboard;
@@ -44,8 +39,18 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Comparator;
+
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Keymap;
+import javax.swing.KeyStroke;
+
 import static com.raelity.jvi.Constants.*;
 import static com.raelity.jvi.KeyDefs.*;
+
+import com.raelity.text.TextUtil.MySegment;
 
 public class Misc implements ClipboardOwner {
 
@@ -60,7 +65,7 @@ public class Misc implements ClipboardOwner {
    * count the size of the indent in the current line
    */
   static int get_indent() {
-      Segment seg = G.curwin.getLineSegment(G.curwin.getWCursor().getLine());
+      MySegment seg = G.curwin.getLineSegment(G.curwin.getWCursor().getLine());
       return get_indent_str(seg);
   }
 
@@ -68,14 +73,14 @@ public class Misc implements ClipboardOwner {
    * count the size of the indent in line "lnum"
    */
   static int get_indent_lnum(int lnum) {
-      Segment seg = G.curwin.getLineSegment(lnum);
+      MySegment seg = G.curwin.getLineSegment(lnum);
       return get_indent_str(seg);
   }
 
   /**
    * count the size of the indent in line "ptr"
    */
-  private static int get_indent_str(Segment seg) {
+  private static int get_indent_str(MySegment seg) {
       int	    count = 0;
 
       int ptr = seg.offset;
@@ -102,7 +107,7 @@ public class Misc implements ClipboardOwner {
     if(lnum < 1 || lnum > G.curwin.getLineCount()) {
       return -1;
     }
-    Segment seg = G.curwin.getLineSegment(lnum);
+    MySegment seg = G.curwin.getLineSegment(lnum);
     return findParen(seg, fromIndent, dir);
   }
   
@@ -111,7 +116,7 @@ public class Misc implements ClipboardOwner {
    * @param fromIndent start looking from this position
    * @param dir FORWARD or BACKWARD
    */
-  static int findParen(Segment seg, int fromIndent, int dir) {
+  static int findParen(MySegment seg, int fromIndent, int dir) {
     boolean found = false;
     int	    count = 0;
     int     prev_paren = -1;
@@ -160,7 +165,7 @@ public class Misc implements ClipboardOwner {
     if(lnum < 1 || lnum > G.curwin.getLineCount()) {
       return -1;
     }
-    Segment seg = G.curwin.getLineSegment(lnum);
+    MySegment seg = G.curwin.getLineSegment(lnum);
     return findFirstNonBlank(seg, fromIndent, dir);
   }
   
@@ -169,7 +174,7 @@ public class Misc implements ClipboardOwner {
    * @param fromIndent start looking from this position
    * @param dir FORWARD or BACKWARD
    */
-  static int findFirstNonBlank(Segment seg, int fromIndent, int dir) {
+  static int findFirstNonBlank(MySegment seg, int fromIndent, int dir) {
     boolean found = false;
     int	    count = 0;
     int     non_blank = -1;
@@ -228,7 +233,7 @@ public class Misc implements ClipboardOwner {
 
     G.State = INSERT;		    // don't want REPLACE for State
     int col = 0;
-    Segment seg = G.curwin.getLineSegment(
+    MySegment seg = G.curwin.getLineSegment(
 				    G.curwin.getWCursor().getLine());
     if (del_first) {		    // delete old indent
       // vim_iswhite() is a define!
@@ -283,7 +288,7 @@ public class Misc implements ClipboardOwner {
 	G.curwin.setCaretPosition(0);
 	// Special case if BACKWARD and at position zero of document.
 	G.curwin.insertNewLine();
-	Segment seg = G.curwin.getLineSegment(1);
+	MySegment seg = G.curwin.getLineSegment(1);
 	G.curwin.setCaretPosition(
 		      0 + coladvanceColumnIndex(MAXCOL, seg));
     G.did_ai = true;
@@ -387,7 +392,7 @@ public class Misc implements ClipboardOwner {
   static boolean inindent(int extra) {
       int	col;
 
-      Segment seg = G.curwin.getLineSegment(G.curwin.getWCursor().getLine());
+      MySegment seg = G.curwin.getLineSegment(G.curwin.getWCursor().getLine());
       for(col = 0; vim_iswhite(seg.array[seg.offset + col]); ++col);
 
       if (col >= G.curwin.getWCursor().getColumn() + extra)
@@ -457,7 +462,7 @@ public class Misc implements ClipboardOwner {
     if(line > G.curwin.getLineCount()) {
       line = G.curwin.getLineCount();
     }
-    Segment seg = G.curwin.getLineSegment(line);
+    MySegment seg = G.curwin.getLineSegment(line);
     int col;
     if(flag < 0) {
       col = coladvanceColumnIndex(seg);
@@ -488,7 +493,7 @@ public class Misc implements ClipboardOwner {
     if(line > G.curwin.getLineCount()) {
       line = G.curwin.getLineCount();
     }
-    Segment seg = G.curwin.getLineSegment(line);
+    MySegment seg = G.curwin.getLineSegment(line);
     int col;
     if(flag < 0) {
       col = coladvanceColumnIndex(seg);
@@ -617,7 +622,7 @@ public class Misc implements ClipboardOwner {
    * @return the index of where to set the cursor on the line
    */
   public static int coladvanceColumnIndex(int wcol,
-					  Segment txt,
+					  MySegment txt,
 					  MutableBoolean reached) {
     int		idx = -1;
     int		col = 0;
@@ -656,17 +661,17 @@ public class Misc implements ClipboardOwner {
     return idx;
   }
 
-  public static int coladvanceColumnIndex(int wcol, Segment txt) {
+  public static int coladvanceColumnIndex(int wcol, MySegment txt) {
     return coladvanceColumnIndex(wcol, txt, null);
   }
 
-  public static int coladvanceColumnIndex(Segment txt) {
+  public static int coladvanceColumnIndex(MySegment txt) {
     return coladvanceColumnIndex(G.curwin.getWCurswant(), txt, null);
   }
 
   public static boolean coladvance(int wcol) {
     int line = G.curwin.getWCursor().getLine();
-    Segment txt = G.curwin.getLineSegment(line);
+    MySegment txt = G.curwin.getLineSegment(line);
     int idx = coladvanceColumnIndex(wcol, txt, null);
 
     int offset = G.curwin.getLineStartOffset(G.curwin.getWCursor().getLine());
@@ -898,7 +903,7 @@ public class Misc implements ClipboardOwner {
   static int check_cursor_col(int lnum, int col) {
     Normal.do_xop("check_cursor_col");
     int len;
-    Segment seg = G.curwin.getLineSegment(lnum);
+    MySegment seg = G.curwin.getLineSegment(lnum);
     len = seg.count - 1; // don't count trailing newline
 
     if (len == 0) {
@@ -1773,8 +1778,9 @@ public class Misc implements ClipboardOwner {
 	inc_cursor();
 
     // HACK so that finishOpInsert can be recalled
-        Segment s = Util.ml_get(oap.start.getLine());
-        String firstline = s.subSequence(op_insert_bd.textcol, s.length()).toString();
+        MySegment s = Util.ml_get(oap.start.getLine());
+        String firstline = s.subSequence(op_insert_bd.textcol,
+                                         s.length()).toString();
         if (oap.op_type == OP_APPEND)
             firstline += op_insert_bd.textlen;
         op_insert_pre_textlen = firstline.length();
@@ -2229,7 +2235,7 @@ public class Misc implements ClipboardOwner {
       int offset00 = G.curwin.getLineStartOffset(nextline);
       int offset01 = offset00 - 1; // points to the '\n' of current line
 
-      Segment seg = G.curwin.getLineSegment(nextline);
+      MySegment seg = G.curwin.getLineSegment(nextline);
       int offset02 = offset00 + skipwhite(seg);
       int nextc = Util.getCharAt(offset02);
 
@@ -2609,7 +2615,7 @@ public class Misc implements ClipboardOwner {
   }
   static int getvcol(int endCol) {
     int vcol = 0;
-    Segment seg = G.curwin.getLineSegment(G.curwin.getWCursor().getLine());
+    MySegment seg = G.curwin.getLineSegment(G.curwin.getWCursor().getLine());
     int ptr = seg.offset;
     int idx = -1;
     char c;
@@ -2821,7 +2827,7 @@ public class Misc implements ClipboardOwner {
  * return the number of characters the string 's' will take on the screen,
  * taking into account the size of a tab
  */
-  static int linetabsize(Segment seg)
+  static int linetabsize(MySegment seg)
   {
     int col = 0;
     char ch;
@@ -2843,10 +2849,10 @@ public class Misc implements ClipboardOwner {
    * Skip over ' ' and '\t', return index, relative to
    * seg.offset, of next non-white.
    */
-  static int skipwhite(Segment seg) {
+  static int skipwhite(MySegment seg) {
       return skipwhite(seg, 0);
   }
-  static int skipwhite(Segment seg, int idx) {
+  static int skipwhite(MySegment seg, int idx) {
     for(; idx < seg.count; idx++) {
       if(!vim_iswhite(seg.array[seg.offset + idx]))
         return idx;
@@ -3342,7 +3348,7 @@ public class Misc implements ClipboardOwner {
     if (oap.block_mode) {
         /* Get the info about the block before entering the text */
         block_prep(oap, op_insert_bd, oap.start.getLine(), true);
-        Segment s = Util.ml_get(oap.start.getLine());
+        MySegment s = Util.ml_get(oap.start.getLine());
         firstline = s.subSequence(op_insert_bd.textcol, s.length()).toString();//Util.ml_get(oap.start.getLine()).subSequence(bd.textcol, );// + bd.textcol;
         if (oap.op_type == OP_APPEND)
             firstline += op_insert_bd.textlen;
@@ -3419,7 +3425,7 @@ public class Misc implements ClipboardOwner {
          * copy of the required string.
          */
         //firstline = Util.ml_get(oap.start.lnum) + bd.textcol;
-        Segment s = Util.ml_get(op_insert_oap.start.getLine());
+        MySegment s = Util.ml_get(op_insert_oap.start.getLine());
         String firstline = s.subSequence(op_insert_bd.textcol, s.length()).toString();//Util.ml_get(oap.start.getLine()).subSequence(bd.textcol, );// + bd.textcol;
         if (op_insert_oap.op_type == OP_APPEND)
             firstline += op_insert_bd.textlen;
@@ -3431,8 +3437,6 @@ public class Misc implements ClipboardOwner {
             block_insert(op_insert_oap, ins_text, (op_insert_oap.op_type == OP_INSERT) , bd2);
         }
     }
-    Misc.endInsertUndo();
-    
   }
     private static void mch_memmove(StringBuffer pnew, int lnum, int textstart, int textlen) {
         try {

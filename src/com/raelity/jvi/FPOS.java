@@ -60,6 +60,14 @@ public class FPOS implements ViFPOS, Comparable, Cloneable
     }
   }
 
+  /** create an FPOS at the given offset */
+  public FPOS(ViTextView tv, int offset) {
+    this(0, 0, 0);
+    this.offset.setValue(offset);
+    lnum.setValue(tv.getLineNumber(offset));
+    col.setValue(tv.getColumnNumber(offset));
+  }
+
   /** Used to complete constructin or to make a copy. */
   private FPOS(int o, int l, int c) {
     offset = new MutableInt(o);

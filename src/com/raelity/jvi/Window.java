@@ -29,7 +29,6 @@
  */
 package com.raelity.jvi;
 
-import javax.swing.text.Segment;
 import com.raelity.jvi.swing.*;
 
 import static com.raelity.jvi.Constants.*;

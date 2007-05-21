@@ -36,11 +36,12 @@
  */
 package com.raelity.jvi;
 
+import java.text.CharacterIterator;
+
 import com.raelity.jvi.ViTextView.JLOP;
 import com.raelity.jvi.ViTextView.TAGOP;
 import com.raelity.text.TextUtil;
-import java.text.CharacterIterator;
-import javax.swing.text.Segment;
+import com.raelity.text.TextUtil.MySegment;
 
 import com.raelity.jvi.swing.KeyBinding;
 
@@ -143,13 +144,16 @@ public class Normal {
         // NEEDSWORK: if exception from edit, turn edit off and finishupEdit
         Edit.edit(c, false, 0);
         if(!editBusy) {
+          try {
             if (opInsertBusy) {
-                Misc.finishOpInsert();
-                opInsertBusy = false;
-            } else
-          finishupEdit();
-          newChunk = true;
-          willStartNewChunk();
+              Misc.finishOpInsert();
+            }
+          } finally {
+            opInsertBusy = false;
+            finishupEdit();
+            newChunk = true;
+            willStartNewChunk();
+          }
         }
       } else {
         normal_cmd(c, toplevel);
@@ -1809,9 +1813,9 @@ middle_code:
 //#endif
 
     /* Save the current VIsual area for '< and '> marks, and "gv" */
-    G.curwin.setMarkOffset((ViMark)G.curbuf.b_visual_start,
+    G.curwin.setMarkOffset(G.curbuf.b_visual_start,
                            G.VIsual.getOffset(), false);
-    G.curwin.setMarkOffset((ViMark)G.curbuf.b_visual_end,
+    G.curwin.setMarkOffset(G.curbuf.b_visual_end,
                            G.curwin.getWCursor().getOffset(), false);
     G.curbuf.b_visual_mode = G.VIsual_mode;
 
@@ -1822,6 +1826,7 @@ middle_code:
     /* Don't leave the cursor past the end of the line */
     if (G.curwin.getWCursor().getColumn() > 0 && Util.getChar() == '\n')
         G.curwin.setCaretPosition(G.curwin.getCaretPosition() -1);
+    Misc.ui_cursor_shape();
   }
   /**
    * 
@@ -1847,7 +1852,7 @@ middle_code:
     // if i == 0: try to find an identifier
     // if i == 1: try to find any string
     //
-    Segment seg = Util.ml_get_curline();
+    MySegment seg = Util.ml_get_curline();
     for (i = ((find_type & FIND_IDENT) != 0) ? 0 : 1;	i < 2; ++i)
     {
       //
@@ -1988,6 +1993,8 @@ middle_code:
   //
   // Also used to display visual select limits
   //
+  // Kind of messy.
+  //
 
   static StringBuffer showcmd_buf = new StringBuffer();
   static StringBuffer old_showcmd_buf = new StringBuffer();
@@ -1998,6 +2005,8 @@ middle_code:
     do_xop("clear_showcmd");
 
     if (!G.p_sc.getBoolean())
+      return;
+    if(G.VIsual_active)
       return;
 
     showcmd_buf.setLength(0);
@@ -2279,7 +2288,7 @@ middle_code:
 
     // Keep getlineSegment before setViewTopLine,
     // don't want to fetch segment changing during rendering
-    Segment seg = G.curwin.getLineSegment(target);
+    MySegment seg = G.curwin.getLineSegment(target);
     int col = nchar == 'z' ? G.curwin.getWCursor().getColumn()
                            : Edit.beginlineColumnIndex(BL_WHITE | BL_FIX, seg);
     G.curwin.setViewTopLine(Misc.adjustTopLine(top));
@@ -2628,7 +2637,7 @@ middle_code:
     past_line = (G.VIsual_active && G.p_sel.charAt(0) != 'o');
     for (n = cap.count1; n > 0; --n) {
       FPOS fpos = G.curwin.getWCursor();
-      Segment seg = G.curwin.getLineSegment(fpos.getLine());
+      MySegment seg = G.curwin.getLineSegment(fpos.getLine());
       if ((!past_line && Edit.oneright() == FAIL)
 	    || (past_line && seg.array[fpos.getColumn()+seg.offset] == '\n')
 	  )
@@ -3321,6 +3330,7 @@ static private void nv_findpar(CMDARG cap, int dir)
               G.curwin.updateVisualState();
           }
       }
+      Misc.ui_cursor_shape();
   }
   
   /*
@@ -3430,6 +3440,7 @@ static private void nv_findpar(CMDARG cap, int dir)
             //#endif
             update_curbuf(NOT_VALID);
             Misc.showmode();
+            Misc.ui_cursor_shape();
         }
         break;
       case 'q':

@@ -35,9 +35,7 @@ import java.awt.Point;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.naming.directory.SearchControls;
 
-import javax.swing.text.*;
 import javax.swing.JEditorPane;
 
 import com.raelity.jvi.FPOS;
@@ -50,6 +48,18 @@ import com.raelity.jvi.MutableInt;
 import com.raelity.jvi.Window;
 import com.raelity.jvi.*;
 import java.awt.Color;
+
+import static com.raelity.jvi.Constants.*;
+
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
+import javax.swing.text.Document;
+import javax.swing.text.Element;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+import javax.swing.text.StyledEditorKit;
 
 /**
  * Presents a swing editor interface for use with vi. There is
@@ -531,7 +541,7 @@ public class TextView implements ViTextView {
     cache.getViewport().setViewPosition(pt);
   }
 
-  final public Segment getLineSegment(int lnum) {
+  final public MySegment getLineSegment(int lnum) {
     return cache.getLineSegment(lnum);
   }
 
@@ -539,7 +549,7 @@ public class TextView implements ViTextView {
     return cache.getLineElement(lnum);
   }
   
-  final public void getSegment(int offset, int length, Segment seg) {
+  final public void getSegment(int offset, int length, MySegment seg) {
     try {
       getDoc().getText(offset, length, seg);
     } catch (BadLocationException ex) {
@@ -724,8 +734,8 @@ public class TextView implements ViTextView {
  
   /**
    * Update the selection highlight.
+   * Subclasses that override this should call updateVisualSelectState().
    */
-  protected int[] previousHighlight = null;
 
   public void updateVisualState() {
       if (!G.VIsual_active) {
@@ -733,9 +743,182 @@ public class TextView implements ViTextView {
             unhighlight(new int[]{getMark('<').getOffset(), getMark('>').getOffset(), -1, -1});
           } catch(Exception e) {unhighlight(new int[]{0, editorPane.getText().length(), -1, -1});}
       }
-      highlight(getVisualSelectBlocks(0, Integer.MAX_VALUE));
+      updateVisualSelectDisplay();
+      int[] b = getVisualSelectBlocks(0, Integer.MAX_VALUE);
+      //dumpBlocks("blocks", b);
+      highlight(b);
+  }
+  
+  /** Calculate the boundary point for visual selection.
+   * NEEDSWORK: cache this by listening to all document/caret changes.
+   * <p>
+   * NOTE: in block mode, startOffset or endOffset may be off by one,
+   *       but they should not be used, left/right are correct.
+   *
+   * NEEDSWORK: revisit to include TAB logic (screen.c:768 wish found sooner)
+   */
+  protected class VisualBounds {
+    public int mode;
+    public int startOffset, endOffset;
+    // following are line and column information
+    public int startLine, endLine;
+    public int left, right;
+    public int wantRight; // either MAXCOL or same as right
+    boolean valid; // the class may not hold valid info
+    
+    VisualBounds() {
+      if(G.VIsual_active) {
+        init(G.VIsual_mode, G.VIsual, getWCursor().copy());
+      }
+    }
+    
+    VisualBounds(int mode, ViFPOS startPos, ViFPOS cursorPos) {
+      init(mode, startPos, cursorPos);
+    }
+    
+    private void init(int mode, ViFPOS startPos, ViFPOS cursorPos) {
+      ViFPOS start, end; // start.offset less than end.offset
+      
+      this.mode = mode;
+      
+      if(startPos.compareTo(cursorPos) < 0) {
+        start = startPos;
+        end = cursorPos;
+      } else {
+        start = cursorPos;
+        end = startPos;
+      }
+      startOffset = start.getOffset();
+      endOffset = end.getOffset();
+      
+      startLine = start.getLine();
+      endLine = end.getLine();
+      
+      //
+      // set left/right columns
+      //
+      if(mode == (0x1f & (int)('V'))) { // block mode
+        // comparing this to screen.c,
+        // this.start is from1,to1
+        // this.end   is from2,to2
+        // this is pretty much verbatim from screen.c:782
+
+        int from1,to1,from2,to2;
+        // NEEDSWORK: set up from/to for TAB AWARE
+        from1 = start.getColumn(); to1 = from1;
+        from2 = end.getColumn(); to2 = from2;
+        
+        if(from2 < from1)
+          from1 = from2;
+        if(to2 > to1) {
+          if(G.p_sel.charAt(0) == 'e' && from2 - 1 >= to1)
+            to1 = from2 - 1;
+          else
+            to1 = to2;
+        }
+        to1++;
+        left = from1;
+        right = to1;
+        wantRight = right;
+        if(getWCurswant() == MAXCOL)
+          wantRight = MAXCOL;
+      } else {
+        left = start.getColumn();
+        right = end.getColumn();
+        if(left > right) {
+          int t = left;
+          left = right;
+          right = t;
+        }
+        
+        // if inclusive, then include the end
+        if(G.p_sel.charAt(0) == 'i') {
+          endOffset++;
+          right++;
+        }
+        wantRight = right;
+      }
+      
+      valid = true;
+    }
   }
 
+  /** Output the selection range as defined in the 'sm' vim doc.
+   * Subclasses should invoke this from updateVisualState().
+   */
+  protected void updateVisualSelectDisplay() {
+    VisualBounds vb = new VisualBounds();
+    if(!vb.valid)
+      return;
+    int nLine = vb.endLine - vb.startLine + 1;
+    int nCol = vb.right - vb.left;
+    String s = null;
+    if (vb.mode == 'v') { // char mode
+      s = "" + (nLine == 1 ? nCol : nLine);
+    } else if (vb.mode == 'V') { // line mode
+      s = "" + nLine;
+    } else if (vb.mode == (0x1f & (int)('V'))) { // block mode
+      s = "" + nLine + "x" + nCol;
+    }
+    Normal.displaySelectState(s);
+  }
+
+  public int[] getVisualSelectBlocks(int startOffset, int endOffset) {
+    VisualBounds vb;
+    if (G.drawSavedVisualBounds) {
+      vb = new VisualBounds(buf.b_visual_mode,
+              buf.b_visual_start,
+              buf.b_visual_end);
+    } else {
+      vb = new VisualBounds();
+    }
+    return calculateVisualBlocks(vb, startOffset, endOffset);
+  }
+
+  private int[] calculateVisualBlocks(VisualBounds vb,
+                                      int startOffset,
+                                      int endOffset) {
+    if(!vb.valid)
+      return new int[] { -1, -1};
+    
+    int[] newHighlight = null;
+    if (vb.mode == 'V') { // line selection mode
+      // make sure the entire lines are selected
+      newHighlight = new int[] { getLineStartOffset(vb.startLine),
+                                 getLineEndOffset(vb.endLine),
+                                 -1, -1};
+    } else if (vb.mode == 'v') {
+      newHighlight = new int[] { vb.startOffset,
+                                 vb.endOffset,
+                                 -1, -1};
+    } else if (vb.mode == (0x1f & (int)('V'))) { // visual block mode
+      int startLine = getLineNumber(startOffset);
+      int endLine = getLineNumber(endOffset -1);
+      
+      if(vb.startLine > endLine || vb.endLine < startLine)
+        newHighlight = new int[] { -1, -1};
+      else {
+        startLine = Math.max(startLine, vb.startLine);
+        endLine = Math.min(endLine, vb.endLine);
+        newHighlight = new int[(((endLine - startLine)+1)*2) + 2];
+        
+        int i = 0;
+        for (int line = startLine; line <= endLine; line++) {
+          int offset = getLineStartOffset(line);
+          int len = getLineEndOffset(line) - offset;
+          newHighlight[i++] = offset + Math.min(len, vb.left);
+          newHighlight[i++] = offset + Math.min(len, vb.wantRight);
+        }
+        newHighlight[i++] = -1;
+        newHighlight[i++] = -1;
+      }
+    } else {
+      throw new IllegalStateException("Visual mode: "+ G.VIsual_mode +" is not supported");
+    }
+    return newHighlight;
+  }
+
+  //protected int[] previousHighlight = null;
   /**
    * Returns an array of blocks that are visual or an empty array when visual active is false.
    * the array is a an even set of points which are set like:<br>
@@ -743,8 +926,8 @@ public class TextView implements ViTextView {
    * @return an array of blocks that are visual.
    * @throws an IllegalStateException when the visual mode is not understand
    */
-  private int calcMode, calcStart, calcEnd;
-  public int[] getVisualSelectBlocks(int startOffset, int endOffset) {
+  /*private int calcMode, calcStart, calcEnd;
+  public int[] getVisualSelectBlocksOrig(int startOffset, int endOffset) {
     if (G.drawSavedVisualBounds) {
         return previousHighlight;
     }
@@ -760,7 +943,7 @@ public class TextView implements ViTextView {
     calcEnd = G.VIsual.getOffset();
     previousHighlight = calculateVisualBlocks();
     return previousHighlight;
-  }
+  }*/
 
   /**
    * Calculate the visual blocks depending on the visual mode.
@@ -768,7 +951,7 @@ public class TextView implements ViTextView {
    * If visual mode is not active.. it returns an array containing {-1, -1}
    * @returns te visual blocks
    */
-  private int[] calculateVisualBlocks() {
+  /*private int[] calculateVisualBlocks() {
     if (G.VIsual_active) { // if in selection mode
         int start, offset;
         int tmpstart = G.VIsual.getOffset();
@@ -815,7 +998,7 @@ public class TextView implements ViTextView {
     } else {
         return new int[] { -1, -1};
     }
-  }
+  }*/
   
   //////////////////////////////////////////////////////////////////////
   //
@@ -878,6 +1061,13 @@ public class TextView implements ViTextView {
     blocks[i+1] = end;
     idx.setValue(i + 2);
     return blocks;
+  }
+  
+  public static void dumpBlocks(String tag, int[] b) {
+    System.err.print(tag + ":");
+    for(int i = 0; i < b.length; i += 2)
+      System.err.print(String.format(" {%d,%d}", b[i], b[i+1]));
+    System.err.println("");
   }
   
   //////////////////////////////////////////////////////////////////////

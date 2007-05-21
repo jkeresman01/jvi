@@ -30,11 +30,11 @@
 package com.raelity.jvi;
 
 import java.util.Stack;
-import javax.swing.text.Segment;
 import javax.swing.text.Element;
 import javax.swing.SwingUtilities;
 
 import com.raelity.jvi.ViManager;
+import com.raelity.text.TextUtil.MySegment;
 
 import static com.raelity.jvi.KeyDefs.*;
 import static com.raelity.jvi.Constants.*;
@@ -865,7 +865,7 @@ public class Edit {
    * hence the segment can not be accessed publicly, only protected.
    * </ul>
    */
-  public static final int beginlineColumnIndex(int flags, Segment txt) {
+  public static final int beginlineColumnIndex(int flags, MySegment txt) {
     int index;
     if ((flags & BL_SOL) != 0 && G.p_notsol.getBoolean()) {
       index = Misc.coladvanceColumnIndex(G.curwin.getWCurswant(), txt);
@@ -894,7 +894,7 @@ public class Edit {
     Normal.do_xop("beginline");
     int line = G.curwin.getWCursor().getLine();
     Element elem = G.curwin.getLineElement(line);
-    Segment seg = G.curwin.getLineSegment(line);
+    MySegment seg = G.curwin.getLineSegment(line);
     int offset = elem.getStartOffset() + beginlineColumnIndex(flags, seg);
     G.curwin.setCaretPosition(offset);
   }
@@ -911,7 +911,7 @@ public class Edit {
     FPOS fpos = G.curwin.getWCursor();
     int lnum = fpos.getLine();
     int col = fpos.getColumn();
-    Segment seg = G.curwin.getLineSegment(lnum);
+    MySegment seg = G.curwin.getLineSegment(lnum);
     if(seg.array[seg.offset + col++] == '\n'	// not possible, maybe if input?
             || seg.array[seg.offset + col] == '\n'
             || col >= seg.count - 1) {

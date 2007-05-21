@@ -30,9 +30,10 @@
 package com.raelity.jvi;
 
 import javax.swing.JEditorPane;
-import javax.swing.text.Segment;
 import javax.swing.text.Element;
 import javax.swing.text.BadLocationException;
+
+import com.raelity.text.TextUtil.MySegment;
 
 /**
  * The information needed by vim when running on
@@ -207,10 +208,10 @@ public interface ViTextView extends ViOptionBag {
   public int getLineCount();
 
   /** @return the segment for the line */
-  public Segment getLineSegment(int line);
+  public MySegment getLineSegment(int line);
 
   /** @return a segment for the requested text */
-  public void getSegment(int offset, int length, Segment segment);
+  public void getSegment(int offset, int length, MySegment segment);
 
   /** @return the element for the line */
   public Element getLineElement(int line);

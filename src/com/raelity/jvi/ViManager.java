@@ -39,7 +39,6 @@ import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
@@ -50,13 +49,15 @@ import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
-import com.raelity.jvi.swing.*;
+
 import java.awt.datatransfer.FlavorMap;
 import java.awt.datatransfer.SystemFlavorMap;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
-import javax.swing.text.Segment;
+
+import com.raelity.jvi.swing.KeyBinding;
+import com.raelity.text.TextUtil.MySegment;
 
 /**
  * This class coordinates things.
@@ -585,7 +586,7 @@ public class ViManager {
   public static int setDot(int pos, JTextComponent c) {
     ViTextView tv = factory.getExistingViTextView(c);
     if(tv != null) {
-      Segment seg = new Segment();
+      MySegment seg = new MySegment();
       tv.getSegment(pos, 1, seg);
       if (seg.count > 0
           && seg.array[seg.offset] == '\n'

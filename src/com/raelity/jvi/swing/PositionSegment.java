@@ -28,14 +28,14 @@
  */
 package com.raelity.jvi.swing;
 
-import javax.swing.text.Segment;
+import com.raelity.text.TextUtil.MySegment;
 
 /**
  * An extension of Segment that includes additional information,
  * including the postion of the
  * segment within the document.
  */
-public class PositionSegment extends Segment {
+public class PositionSegment extends MySegment {
   /** The offset of the start of the segment in the document. 
    * Note that offset is already a field name.
    */

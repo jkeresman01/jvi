@@ -35,8 +35,8 @@ import java.util.TooManyListenersException;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import javax.swing.text.Segment;
 import com.raelity.text.*;
+import com.raelity.text.TextUtil.MySegment;
 
 import static com.raelity.jvi.KeyDefs.K_X_SEARCH_FINISH;
 import static com.raelity.jvi.KeyDefs.K_X_INCR_SEARCH_DONE;
@@ -282,7 +282,7 @@ public class Search {
     }
 
     ViFPOS fpos = G.curwin.getWCursor();
-    Segment seg = G.curwin.getLineSegment(fpos.getLine());
+    MySegment seg = G.curwin.getLineSegment(fpos.getLine());
     col = fpos.getColumn();
     len = seg.count - 1; // don't count the newline, MUST_HAVE_NL
 
@@ -767,7 +767,7 @@ finished:
           // Look for a match somewhere in the line.
           //
           //////////ptr = ml_get_buf(buf, lnum, FALSE);
-          Segment seg = G.curwin.getLineSegment(lnum);
+          MySegment seg = G.curwin.getLineSegment(lnum);
                                                 // NEEDSWORK: AT_BOL == TRUE
           //System.err.println("line: " + lnum);
           if(prog.search(seg.array, seg.offset, seg.count)) {
@@ -990,7 +990,7 @@ finished:
     boolean doPrint = false; // should be bit flag???
     boolean hasEscape = false;
     char delimiter = cmd.charAt(0);
-    Segment line;
+    MySegment line;
     int cursorLine = 0; // set to line number of last change
     int sidx = 1; // after delimiter
     
@@ -1134,7 +1134,7 @@ finished:
    * returned if there was no match on the line.
    */
   static StringBuffer substitute_line(RegExp prog,
-                                      Segment line,
+                                      MySegment line,
                                       boolean doAll,
                                       char[] subs,
                                       boolean hasEscape)
@@ -1200,7 +1200,7 @@ finished:
    * @param subs substitution string, contains escape characters
    */
   static void translateSubstitution(RegExp prog,
-                                   Segment line,
+                                   MySegment line,
                                    StringBuffer sb,
                                    char[] subs)
   {
@@ -1286,7 +1286,7 @@ finished:
     String pattern = null;
     RegExp prog = null;
     char delimiter = cmd.charAt(0);
-    Segment line;
+    MySegment line;
     int cursorLine = 0; // set to line number of last found line
     int sidx = 1; // after delimiter
 
@@ -1892,7 +1892,7 @@ extend:
     return OK;
 }
     static boolean linewhite(int /*linenr_t*/ lnum) {
-        Segment seg = Util.ml_get(lnum);
+        MySegment seg = Util.ml_get(lnum);
         int idx = Misc.skipwhite(seg);
         return seg.array[seg.offset + idx] == '\n';
     }
@@ -1903,7 +1903,7 @@ extend:
    * If 'both' is TRUE also stop at '}'
    */
   static boolean startPS(int /*linenr_t*/lnum, int para, boolean both) {
-    Segment seg = Util.ml_get(lnum);
+    MySegment seg = Util.ml_get(lnum);
     // if seg.count == 1, then only a \n, ie empty line
     char s = seg.count > 1 ? seg.array[seg.offset] : 0;
     // '\f' is formfeed, oh well, it doesn't hurt to be here
