@@ -963,8 +963,8 @@ public class TextView implements ViTextView {
       vcol += incr;
       if(c1 < 0 && vcol1 < vcol)
         c1 = col;
-      if(c2 < 0 && vcol2 < vcol)
-        c2 = col + (incr > 1 ? 1 : 0);
+      if(c2 < 0 && (vcol2 -1) < vcol)
+        c2 = col + 1;
       if(c1 >= 0 && c2 >= 0 || c == '\n')
         break;
     }
