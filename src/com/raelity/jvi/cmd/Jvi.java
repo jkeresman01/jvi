@@ -33,6 +33,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.prefs.BackingStoreException;
+import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.swing.SwingUtilities;
 import java.awt.*;
@@ -40,6 +41,10 @@ import com.raelity.jvi.swing.*;
 import com.raelity.jvi.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.TabSet;
+import javax.swing.text.TabStop;
 
 public class Jvi {
   static boolean packFrame = true;
@@ -59,6 +64,10 @@ public class Jvi {
 				      font.getSize()));
     font = frame.editorPane.getFont();
     FontMetrics fm = frame.editorPane.getFontMetrics(font);
+
+    // Program the tabs, 8 chars per tab stop
+    setTabs((JTextPane) frame.editorPane, 8);
+
     int width = fm.charWidth(' ') * 81;
     int height = fm.getHeight() * 30;
     //frame.editorPane.setSize(new Dimension(width, height));
@@ -90,6 +99,24 @@ public class Jvi {
     frame.setVisible(true);
     return frame;
   }
+
+  private static void setTabs(JTextPane tp, int ts) {
+      FontMetrics fm = tp.getFontMetrics( tp.getFont() );
+      int charWidth = fm.charWidth( 'w' );
+      int tabWidth = charWidth * ts;
+      
+      TabStop[] tabs = new TabStop[10];
+      
+      for (int j = 0; j < tabs.length; j++) {
+          int tab = j + 1;
+          tabs[j] = new TabStop( tab * tabWidth );
+      }
+      
+      TabSet tabSet = new TabSet(tabs);
+      SimpleAttributeSet attributes = new SimpleAttributeSet();
+      StyleConstants.setTabSet(attributes, tabSet);
+      int length = tp.getDocument().getLength();
+      tp.getStyledDocument().setParagraphAttributes(0, length, attributes, false);  }
   
   private static void setupFrame(final JviFrame f) {
 
