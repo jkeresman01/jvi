@@ -2631,6 +2631,70 @@ public class Misc implements ClipboardOwner {
     return vcol;
   }
 
+  void getvcol(ViFPOS fpos, MutableInt start, MutableInt end) {
+    getvcol(G.curwin, fpos, start, end);
+  }
+  
+  /** Determine the virtual column positions of the begin and end
+   * of the character at the given position. The begin and end may
+   * be different when the character is a TAB. The values are returned
+   * through the start, end parameters.
+   */
+  public static void getvcol(ViTextView tv,
+                             ViFPOS fpos,
+                             MutableInt start,
+                             MutableInt end) {
+    int incr = 0;
+    int vcol = 0;
+    
+    int ts = tv.getBuffer().b_p_ts;
+    MySegment seg = tv.getLineSegment(fpos.getLine());
+    for (int col = fpos.getColumn(), ptr = seg.offset; ; --col, ++ptr) {
+      char c = seg.array[ptr];
+      // make sure we don't go past the end of the line
+      if (c == '\n') {
+        incr = 1;	// NUL at end of line only takes one column
+        break;
+      }
+      // A tab gets expanded, depending on the current column
+      if (c == TAB)
+        incr = ts - (vcol % ts);
+      else {
+        //incr = CHARSIZE(c);
+        incr = 1; // assuming all chars take up one space.
+      }
+// #ifdef MULTI_BYTE ... #endif
+      
+      if (col == 0)	// character at pos.col
+        break;
+      
+      vcol += incr;
+    }
+    if(start != null)
+      start.setValue(vcol);
+    if(end != null)
+      end.setValue(vcol + incr - 1);
+  }
+
+  private static MutableInt l1 = new MutableInt();
+  private static MutableInt l2 = new MutableInt();
+  private static MutableInt r1 = new MutableInt();
+  private static MutableInt r2 = new MutableInt();
+  /**
+   * Get the most left and most right virtual column of pos1 and pos2.
+   * Used for Visual block mode.
+   */
+  static void getvcols(ViFPOS pos1,
+                       ViFPOS pos2,
+                       MutableInt left,
+                       MutableInt right) {
+    getvcol(G.curwin, pos1, l1, r1);
+    getvcol(G.curwin, pos2, l2, r2);
+
+    left.setValue(l1.compareTo(l2) < 0 ? l1.getValue() : l2.getValue());
+    right.setValue(r1.compareTo(r2) > 0 ? r1.getValue() : r2.getValue());
+  }
+  
   /**
    * show the current mode and ruler.
    * <br>

@@ -29,11 +29,18 @@
  */
 package com.raelity.jvi;
 
-public class MutableInt {
+// NEEDSWORK: could allow comparable to Integer as well
+
+public class MutableInt implements Comparable<MutableInt> {
   private int value;
 
+  public MutableInt() { setValue(0); }
   public MutableInt(int value) { setValue(value); }
 
   final public int getValue() { return value; }
   final public void setValue(int value) { this.value = value; }
+
+  public int compareTo(MutableInt o) {
+    return value - o.value;
+  }
 }

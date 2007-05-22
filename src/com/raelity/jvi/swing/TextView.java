@@ -456,8 +456,8 @@ public class TextView implements ViTextView {
   }
 
   public void computeCursorPosition(MutableInt offset,
-			       MutableInt line,
-			       MutableInt column)
+                                    MutableInt line,
+                                    MutableInt column)
   {
     int o = getCaretPosition();
     computeCursorPosition(o, line, column);
@@ -465,8 +465,8 @@ public class TextView implements ViTextView {
   }
 
   public void computeCursorPosition(int offset,
-			       MutableInt line,
-			       MutableInt column)
+                                    MutableInt line,
+                                    MutableInt column)
   {
     // NEEDSWORK: computeCursorPosition use the cache
 
@@ -762,12 +762,17 @@ public class TextView implements ViTextView {
     public int startOffset, endOffset;
     // following are line and column information
     public int startLine, endLine;
-    public int left, right;
+    public int left, right; // column numbers (not line offset, consider TAB)
     public int wantRight; // either MAXCOL or same as right
     boolean valid; // the class may not hold valid info
+
+    private MutableInt from1 = new MutableInt();
+    private MutableInt to1 = new MutableInt();
+    private MutableInt from2 = new MutableInt();
+    private MutableInt to2 = new MutableInt();
     
-    VisualBounds() {
-      if(G.VIsual_active) {
+    VisualBounds(boolean init) {
+      if(init && G.VIsual_active) {
         init(G.VIsual_mode, G.VIsual, getWCursor().copy());
       }
     }
@@ -776,7 +781,13 @@ public class TextView implements ViTextView {
       init(mode, startPos, cursorPos);
     }
     
-    private void init(int mode, ViFPOS startPos, ViFPOS cursorPos) {
+    void init() {
+      valid = false;
+      if(G.VIsual_active) {
+        init(G.VIsual_mode, G.VIsual, getWCursor().copy());
+      }
+    }
+    void init(int mode, ViFPOS startPos, ViFPOS cursorPos) {
       ViFPOS start, end; // start.offset less than end.offset
       
       this.mode = mode;
@@ -804,9 +815,12 @@ public class TextView implements ViTextView {
         // this is pretty much verbatim from screen.c:782
 
         int from1,to1,from2,to2;
-        // NEEDSWORK: set up from/to for TAB AWARE
-        from1 = start.getColumn(); to1 = from1;
-        from2 = end.getColumn(); to2 = from2;
+        Misc.getvcol(TextView.this, start, this.from1, this.to1);
+        from1 = this.from1.getValue();
+        to1 = this.to1.getValue();
+        Misc.getvcol(TextView.this, end, this.from2, this.to2);
+        from2 = this.from2.getValue();
+        to2 = this.to2.getValue();
         
         if(from2 < from1)
           from1 = from2;
@@ -819,9 +833,7 @@ public class TextView implements ViTextView {
         to1++;
         left = from1;
         right = to1;
-        wantRight = right;
-        if(getWCurswant() == MAXCOL)
-          wantRight = MAXCOL;
+        wantRight = getWCurswant() == MAXCOL ? MAXCOL : right;
       } else {
         left = start.getColumn();
         right = end.getColumn();
@@ -843,11 +855,12 @@ public class TextView implements ViTextView {
     }
   }
 
+  private VisualBounds vb = new VisualBounds(false);
   /** Output the selection range as defined in the 'sm' vim doc.
    * Subclasses should invoke this from updateVisualState().
    */
   protected void updateVisualSelectDisplay() {
-    VisualBounds vb = new VisualBounds();
+    vb.init();
     if(!vb.valid)
       return;
     int nLine = vb.endLine - vb.startLine + 1;
@@ -864,13 +877,10 @@ public class TextView implements ViTextView {
   }
 
   public int[] getVisualSelectBlocks(int startOffset, int endOffset) {
-    VisualBounds vb;
     if (G.drawSavedVisualBounds) {
-      vb = new VisualBounds(buf.b_visual_mode,
-              buf.b_visual_start,
-              buf.b_visual_end);
+      vb.init(buf.b_visual_mode, buf.b_visual_start, buf.b_visual_end);
     } else {
-      vb = new VisualBounds();
+      vb.init();
     }
     return calculateVisualBlocks(vb, startOffset, endOffset);
   }
@@ -902,12 +912,19 @@ public class TextView implements ViTextView {
         endLine = Math.min(endLine, vb.endLine);
         newHighlight = new int[(((endLine - startLine)+1)*2) + 2];
         
+        MutableInt left = new MutableInt();
+        MutableInt right = new MutableInt();
         int i = 0;
         for (int line = startLine; line <= endLine; line++) {
           int offset = getLineStartOffset(line);
           int len = getLineEndOffset(line) - offset;
-          newHighlight[i++] = offset + Math.min(len, vb.left);
-          newHighlight[i++] = offset + Math.min(len, vb.wantRight);
+          if(getcols(line, vb.left, vb.wantRight, left, right)) {
+            newHighlight[i++] = offset + Math.min(len, left.getValue());
+            newHighlight[i++] = offset + Math.min(len, right.getValue());
+          } else {
+            newHighlight[i++] = offset + Math.min(len, vb.left);
+            newHighlight[i++] = offset + Math.min(len, vb.wantRight);
+          }
         }
         newHighlight[i++] = -1;
         newHighlight[i++] = -1;
@@ -916,6 +933,46 @@ public class TextView implements ViTextView {
       throw new IllegalStateException("Visual mode: "+ G.VIsual_mode +" is not supported");
     }
     return newHighlight;
+  }
+
+  /** This is the inverse of getvcols, given startVCol, endVCol determine
+   * the cols of the corresponding chars so they can be highlighted. This means
+   * that things can look screwy when there are tabs in lines between the first
+   *and last lines, but that's the way it is in swing.
+   * NEEDSWORK: come up with some fancy painting for half tab highlights.
+   */
+  private boolean getcols(int lnum,
+                          int vcol1, int vcol2,
+                          MutableInt start, MutableInt end) {
+    int incr = 0;
+    int vcol = 0;
+    int c1 = -1, c2 = -1;
+    
+    int ts = buf.b_p_ts;
+    MySegment seg = getLineSegment(lnum);
+    int col = 0;
+    for (int ptr = seg.offset; ; ++ptr, ++col) {
+      char c = seg.array[ptr];
+      // A tab gets expanded, depending on the current column
+      if (c == TAB)
+        incr = ts - (vcol % ts);
+      else {
+        //incr = CHARSIZE(c);
+        incr = 1; // assuming all chars take up one space except tab
+      }
+      vcol += incr;
+      if(c1 < 0 && vcol1 < vcol)
+        c1 = col;
+      if(c2 < 0 && vcol2 < vcol)
+        c2 = col + (incr > 1 ? 1 : 0);
+      if(c1 >= 0 && c2 >= 0 || c == '\n')
+        break;
+    }
+    if(start != null)
+      start.setValue(c1 >= 0 ? c1 : col);
+    if(end != null)
+      end.setValue(c2 >= 0 ? c2 : col);
+    return true;
   }
 
   //protected int[] previousHighlight = null;
@@ -1022,7 +1079,7 @@ public class TextView implements ViTextView {
   // Use MySegment for 1.5 compatibility
   MySegment highlightSearchSegment = new MySegment();
   int[] highlightSearchBlocks = new int[2];
-  MutableInt highlightSearchIndex = new MutableInt(0);
+  MutableInt highlightSearchIndex = new MutableInt();
   
   protected void updateHighlightSearchCommonState() {
     highlightSearchBlocks = new int[20];
