@@ -549,7 +549,9 @@ public class TextView implements ViTextView {
     return cache.getLineElement(lnum);
   }
   
-  final public void getSegment(int offset, int length, MySegment seg) {
+  final public MySegment getSegment(int offset, int length, MySegment seg) {
+    if(seg == null)
+      seg = new MySegment();
     try {
       getDoc().getText(offset, length, seg);
     } catch (BadLocationException ex) {
@@ -557,6 +559,7 @@ public class TextView implements ViTextView {
       // NEEDSWORK: how to report exception?
       ex.printStackTrace();
     }
+    return seg;
   }
 
   /**
@@ -815,10 +818,10 @@ public class TextView implements ViTextView {
         // this is pretty much verbatim from screen.c:782
 
         int from1,to1,from2,to2;
-        Misc.getvcol(TextView.this, start, this.from1, this.to1);
+        Misc.getvcol(TextView.this, start, this.from1, null, this.to1);
         from1 = this.from1.getValue();
         to1 = this.to1.getValue();
-        Misc.getvcol(TextView.this, end, this.from2, this.to2);
+        Misc.getvcol(TextView.this, end, this.from2, null, this.to2);
         from2 = this.from2.getValue();
         to2 = this.to2.getValue();
         

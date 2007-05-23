@@ -397,8 +397,12 @@ public class Edit {
             // case Ctrl('L'): // Whole line completion after ^X
             // case Ctrl('P'): // Do previous pattern completion
             // case Ctrl('N'): // Do next pattern completion
-            // case Ctrl('Y'): // copy from previous line or scroll down
-            // case Ctrl('E'): // copy from next line	   or scroll up
+
+          case 0x1f & (int)'Y': // copy from previous line or scroll down
+          case 0x1f & (int)'E': // copy from next line	   or scroll up
+            c = ins_copychar(G.curwin.getWCursor().getLine()
+                             + (c == (0x1f & (int)'Y') ? -1 : 1));
+            break normal_char;
             
             //case K_S_SPACE:
             //c = ' ';
@@ -1546,6 +1550,41 @@ public class Edit {
     else
 	vim_beep();
     */
+  }
+
+  /**
+   * Handle CTRL-E and CTRL-Y in Insert mode: copy char from other line.
+   * Returns the char to be inserted, or NUL if none found.
+   */
+  private static char ins_copychar(int lnum) {
+    char    c;
+    int	    temp;
+    MySegment  seg;
+    int ptr;
+    
+    if (lnum < 1 || lnum > G.curwin.getLineCount()) {
+      Util.vim_beep();
+      return NUL;
+    }
+    
+    /* try to advance to the cursor column */
+    temp = 0;
+    seg = Util.ml_get(lnum);
+    ptr = seg.offset;
+    //validate_virtcol();
+    MutableInt mi = new MutableInt();
+    Misc.getvcol(G.curwin.getWCursor(), null, mi, null);
+    int virtcol = mi.getValue();
+    while (temp < virtcol && seg.array[ptr] != '\n')
+      temp += Misc.lbr_chartabsize(seg.array[ptr++], temp);
+    
+    if (temp > virtcol)
+      --ptr;
+    if ((c = seg.array[ptr]) == '\n') {
+      Util.vim_beep();
+      c = 0;
+    }
+    return c;
   }
 }
 

@@ -210,8 +210,11 @@ public interface ViTextView extends ViOptionBag {
   /** @return the segment for the line */
   public MySegment getLineSegment(int line);
 
-  /** @return a segment for the requested text */
-  public void getSegment(int offset, int length, MySegment segment);
+  /** Fill the argument segment with the requested text. If the setgment
+   * is null, then create a segment.
+   * @return a segment for the requested text.
+   */
+  public MySegment getSegment(int offset, int length, MySegment segment);
 
   /** @return the element for the line */
   public Element getLineElement(int line);

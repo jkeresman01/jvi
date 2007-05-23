@@ -1936,33 +1936,31 @@ public class Misc implements ClipboardOwner {
           //pnew = null;
       }
     } else {
-      // NEEDSWORK: op_yank: append from segments avoids a copy
-      try {
-	int start = oap.start.getOffset();
-	int end = oap.end.getOffset();
-	if(yanktype == MLINE) {
-	  start = G.curwin.getLineStartOffsetFromOffset(start);
-	  end = G.curwin.getLineEndOffsetFromOffset(end);
-	} else {
-	  // NEEDSWORK: op_yank: handle oap.inclusive
-	  // NEEDSWORK: inclusive: instead of decrementing, increment
-	  if(oap.inclusive) {
-	    // System.err.println("*****\n***** yank oap.inclusive\n*****");
-	    end++;
-	  }
-	}
-	int length = end - start;
-	StringBuffer reg = y_current.y_array[0];
-	reg.append(G.curwin.getText(start, length));
-	if(yanktype == MCHAR && length > 0
-	   	&& reg.charAt(reg.length()-1) == '\n') {
-	  reg.deleteCharAt(reg.length()-1);
-	}
-      } catch(BadLocationException e) {
-	e.printStackTrace();
-	// should be no change to the yank buffer
+      int start;
+      int end;
+      if(yanktype == MLINE) {
+        start = G.curwin.getLineStartOffset(lnum);
+        end = G.curwin.getLineEndOffset(yankendlnum);
+      } else {
+        start = oap.start.getOffset();
+        end = oap.end.getOffset() + (oap.inclusive ? 1 : 0);
       }
+      int length = end - start;
+      StringBuffer reg = y_current.y_array[0];
+      MySegment seg = G.curwin.getSegment(start, length, null);
+      reg.append(seg.array, seg.offset, seg.count);
+      // bug #1724053 visual mode not capture \n after '$'
+      // I guess the oap.inclusive should be trusted.
+      // if(yanktype == MCHAR && length > 0
+      //    	&& reg.charAt(reg.length()-1) == '\n') {
+      //   reg.deleteCharAt(reg.length()-1);
+      // }
     }
+
+    // NEEDSWORK: if lines are made an array in the yank buffer
+    //            then in some cases must append the current
+    //            yank to the previous contents of yank buffer
+
     if (mess)			// Display message about yank?
     {
 	if (yanktype == MCHAR && !oap.block_mode && yanklines == 1)
@@ -2668,11 +2666,22 @@ public class Misc implements ClipboardOwner {
     return vcol;
   }
 
-  void getvcol(ViFPOS fpos, MutableInt start, MutableInt end) {
-    getvcol(G.curwin, fpos, start, end);
+  static void getvcol(ViFPOS fpos,
+                      MutableInt start,
+                      MutableInt cursor,
+                      MutableInt end) {
+    getvcol(G.curwin, fpos, start, cursor, end);
   }
   
-  /** Determine the virtual column positions of the begin and end
+  /**
+   * Get virtual column number of pos.
+   *  start: on the first position of this character (TAB, ctrl)
+   * cursor: where the cursor is on this character (first char, except for TAB)
+   *    end: on the last position of this character (TAB, ctrl)
+   *
+   * This is used very often, keep it fast!
+   *
+   * Determine the virtual column positions of the begin and end
    * of the character at the given position. The begin and end may
    * be different when the character is a TAB. The values are returned
    * through the start, end parameters.
@@ -2680,14 +2689,16 @@ public class Misc implements ClipboardOwner {
   public static void getvcol(ViTextView tv,
                              ViFPOS fpos,
                              MutableInt start,
+                             MutableInt cursor,
                              MutableInt end) {
     int incr = 0;
     int vcol = 0;
+    char c = 0;
     
     int ts = tv.getBuffer().b_p_ts;
     MySegment seg = tv.getLineSegment(fpos.getLine());
     for (int col = fpos.getColumn(), ptr = seg.offset; ; --col, ++ptr) {
-      char c = seg.array[ptr];
+      c = seg.array[ptr];
       // make sure we don't go past the end of the line
       if (c == '\n') {
         incr = 1;	// NUL at end of line only takes one column
@@ -2711,6 +2722,13 @@ public class Misc implements ClipboardOwner {
       start.setValue(vcol);
     if(end != null)
       end.setValue(vcol + incr - 1);
+    if (cursor != null) {
+      if (c == TAB && ((G.State & NORMAL) != 0) // && !wp->w_p_list
+              && !(G.VIsual_active && G.p_sel.charAt(0) == 'e'))
+        cursor.setValue(vcol + incr - 1);	    // cursor at end
+      else
+        cursor.setValue(vcol);	    // cursor at start
+    }
   }
 
   private static MutableInt l1 = new MutableInt();
@@ -2725,8 +2743,8 @@ public class Misc implements ClipboardOwner {
                        ViFPOS pos2,
                        MutableInt left,
                        MutableInt right) {
-    getvcol(G.curwin, pos1, l1, r1);
-    getvcol(G.curwin, pos2, l2, r2);
+    getvcol(pos1, l1, null, r1);
+    getvcol(pos2, l2, null, r2);
 
     left.setValue(l1.compareTo(l2) < 0 ? l1.getValue() : l2.getValue());
     right.setValue(r1.compareTo(r2) > 0 ? r1.getValue() : r2.getValue());
