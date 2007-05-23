@@ -30,6 +30,7 @@ package com.raelity.jvi.swing;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeListener;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.util.*;
@@ -111,6 +112,11 @@ public class CommandLine extends JPanel
     setHistorySize(DEFAULT_HISTORY_SIZE);
     setMode(" ");
     setKeymap();
+    // allow tabs to be entered into text field
+    Component c = getTextField();
+    Set<AWTKeyStroke> set = Collections.emptySet();
+    c.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, set);
+    c.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, set);
 
     //getTextField().setNextFocusableComponent(null);
     //takeFocus(false);
@@ -307,7 +313,10 @@ public class CommandLine extends JPanel
 		       "enter"),
 	new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
 		       KeyEvent.VK_ESCAPE, 0),
-		       "escape")
+		       "escape"),
+	new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+		       '\t'),
+		       "tab"),
     };
     return bindings;
   }
@@ -318,7 +327,12 @@ public class CommandLine extends JPanel
       ViFactory factory = ViManager.getViFactory();
       localActions = new Action[] {
 	  createSimpleEvent("enter"),
-	  createSimpleEvent("escape")
+	  createSimpleEvent("escape"),
+          new TextAction("tab") {
+              public void actionPerformed(ActionEvent e) {
+                  ((JTextField)e.getSource()).replaceSelection("\t");
+              }
+          }
       };
     } catch(Throwable e) {
       e.printStackTrace();
