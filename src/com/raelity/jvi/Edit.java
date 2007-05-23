@@ -265,13 +265,11 @@ public class Edit {
             }
             break;
             
-          /*
             // delete character under the cursor
           case K_DEL:
             ins_del();
             // need_redraw = TRUE;
             break;
-           */
             
             // delete character before the cursor
             //case K_S_BS:
@@ -1249,8 +1247,25 @@ public class Edit {
   }
   
   private static void ins_del() throws NotSupportedException {
-    Normal.notImp("ins_del");
+    Normal.do_xop("ins_del");
+    int	    temp;
+
+    stop_arrow();
+    if (Misc.gchar_cursor() == '\n')	// delete newline
+    {
+      temp = G.curwin.getWCursor().getOffset();
+      if (!Options.can_bs(BS_EOL)		// only if "eol" included
+              || Misc.do_join(false, true) == FAIL) {
+        Util.vim_beep();
+      } else {
+        G.curwin.setCaretPosition(temp);
+      }
+    }
+    else if (Misc.del_char(false) == FAIL)// delete char under cursor
+	Util.vim_beep();
     G.did_ai = false;
+    // #ifdef SMARTINDENT ... #endif
+    GetChar.AppendCharToRedobuff(K_DEL);
   }
   
   

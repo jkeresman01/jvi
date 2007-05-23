@@ -448,6 +448,36 @@ public class Misc implements ClipboardOwner {
     return OK;
   }
 
+  static int del_chars(int count, boolean fixpos) {
+    ViFPOS cursor = G.curwin.getWCursor();
+    int col = cursor.getColumn();
+    MySegment oldp = Util.ml_get(cursor.getLine());
+    int oldlen = oldp.count -1; // exclude the newline
+
+    // Can't do anything when the cursor is on the NUL after the line.
+    if(col >= oldlen)
+      return FAIL;
+
+    int oldOffset = cursor.getOffset();
+
+    // When count is too big, reduce it.
+    int movelen = oldlen - col - count + 1; // includes trailing NUL
+    if (movelen <= 1) {
+      //
+      // If we just took off the last character of a non-blank line, and
+      // fixpos is TRUE, we don't want to end up positioned at the NUL.
+      //
+      //if (col > 0 && fixpos)
+        //--curwin->w_cursor.col;
+      G.curwin.setCaretPosition(oldOffset -1);
+      count = oldlen - col;
+      //movelen = 1;
+    }
+    G.curwin.deleteChar(oldOffset, oldOffset + count);
+
+    return OK;
+  }
+
   /** This method not in vim,
    * but we cant just set a line number in the window struct.
    * If the target line is within one half screen of being visible
@@ -1593,7 +1623,15 @@ public class Misc implements ClipboardOwner {
 	Edit.beginline(BL_WHITE | BL_FIX);
       }
       // u_clearline();	// "U" command should not be possible after "dd"
-    } else {
+    }
+    else if(oap.line_count == 1) {
+      // delete characters within one line
+      int start = oap.start.getOffset();
+      int end = oap.end.getOffset();
+      int n = end - start + 1 - (oap.inclusive ? 0 : 1);
+      del_chars(n, G.restart_edit == 0);
+    }
+    else {
       // delete characters between lines
       if (Normal.u_save_cursor() == FAIL)	// save first line for undo
 	return FAIL;

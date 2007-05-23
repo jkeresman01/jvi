@@ -82,7 +82,7 @@ public class ViManager {
   // HACK: to workaround JDK bug dealing with focus and JWindows
   public static ViCmdEntry activeCommandEntry;
 
-  public static final jViVersion version = new jViVersion("0.9.5.beta1.4");
+  public static final jViVersion version = new jViVersion("0.9.5.beta1.5");
   
   private static boolean enabled;
 
@@ -602,10 +602,10 @@ public class ViManager {
     }
     //System.err.println("mouseMoveDot(" + pos + ")");
     if(pos != G.curwin.getCaretPosition()) {
-    G.VIsual_mode ='v';
-    G.VIsual_active = true;
-    G.VIsual = (FPOS) G.curwin.getWCursor().copy();
-    Misc.showmode();
+      G.VIsual_mode ='v';
+      G.VIsual_active = true;
+      G.VIsual = (FPOS) G.curwin.getWCursor().copy();
+      Misc.showmode();
     }
     return pos;
   }
