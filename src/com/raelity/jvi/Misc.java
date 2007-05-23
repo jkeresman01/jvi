@@ -467,9 +467,8 @@ public class Misc implements ClipboardOwner {
       // If we just took off the last character of a non-blank line, and
       // fixpos is TRUE, we don't want to end up positioned at the NUL.
       //
-      //if (col > 0 && fixpos)
-        //--curwin->w_cursor.col;
-      G.curwin.setCaretPosition(oldOffset -1);
+      if (col > 0 && fixpos)
+        G.curwin.setCaretPosition(oldOffset -1); //--curwin->w_cursor.col;
       count = oldlen - col;
       //movelen = 1;
     }
