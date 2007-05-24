@@ -279,7 +279,7 @@ public final class Options {
     //
     //
 
-    G.p_incr_search = createBooleanOption(incrSearch, true);
+    G.p_is = createBooleanOption(incrSearch, true);
     setupOptionDesc(searchList, incrSearch, "'incsearch' 'is'",
             "While typing a search command, show where the pattern, as it was"
             + " typed so far, matches. If invalid pattern, no match"
@@ -287,7 +287,7 @@ public final class Options {
             + " You still need to finish the search with"
             + " <ENTER> or abort it with <ESC>.");
     
-    G.p_highlight_search = createBooleanOption(highlightSearch, true);
+    G.p_hls = createBooleanOption(highlightSearch, true);
     setupOptionDesc(searchList, highlightSearch, "'hlsearch' 'hls'",
                     "When there is a previous search pattern, highlight"
                     + " all its matches");
@@ -1157,7 +1157,7 @@ public final class Options {
   }
   
   public static boolean doHighlightSearch() {
-    return G.p_highlight_search.value && !nohDisableHighlight;
+    return G.p_hls.value && !nohDisableHighlight;
   }
   
   static void nohCommand() {

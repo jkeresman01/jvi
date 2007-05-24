@@ -67,7 +67,10 @@ public class Search {
   private static ViFPOS searchPos;
   private static int searchTopLine;
   private static boolean didIncrSearch;
+  private static boolean setPCMarkAfterIncrSearch;
+  private static boolean incrSearchSucceed;
 
+  // for next command and such
   private static String lastPattern;
   private static String lastSubstitution;
   
@@ -102,14 +105,14 @@ public class Search {
     ViManager.stopCommandEntry();
     
     if(cmd.charAt(0) == '\n') {
-        if(G.p_incr_search.getBoolean()
+        if(G.p_is.getBoolean()
            && didIncrSearch
            && ! "".equals(fetchPattern()))
           acceptIncr = true;
     } else
       cancel = true;
             
-    if(G.p_incr_search.getBoolean()) {
+    if(G.p_is.getBoolean()) {
         stopIncrementalSearch(acceptIncr);
     }
     
@@ -137,9 +140,13 @@ public class Search {
     searchFlags = flags;
     
     ViCmdEntry ce = getSearchCommandEntry();
-    if(G.p_incr_search.getBoolean())
+    if(G.p_is.getBoolean())
         startIncrementalSearch();
     ViManager.startCommandEntry(ce, mode, G.curwin, null);
+  }
+
+  static int getIncrSearchResultCode() {
+      return incrSearchSucceed ? OK : FAIL;
   }
   
   /** doSearch() should only be called after inputSearchPattern() */
@@ -189,7 +196,10 @@ public class Search {
       };
       searchPos = G.curwin.getWCursor().copy();
       searchTopLine = G.curwin.getViewTopLine();
+      setPCMarkAfterIncrSearch = (searchFlags & SEARCH_MARK) != 0;
+      searchFlags &= ~SEARCH_MARK;
       didIncrSearch = false;
+      incrSearchSucceed = false;
       doc.addDocumentListener(isListener);
   }
   
@@ -201,6 +211,10 @@ public class Search {
           lastPattern = fetchPattern();
       } else
         resetViewIncrementalSearch();
+
+      if(setPCMarkAfterIncrSearch && incrSearchSucceed) {
+        MarkOps.setpcmark(searchPos.getOffset());
+      }
   }
   
   private static void resetViewIncrementalSearch() {
@@ -214,12 +228,15 @@ public class Search {
       if("".equals(pattern))
           return;
       ViFPOS pos = searchPos.copy();
+      incrSearchSucceed = false;
       int rc = searchit(null, pos, lastDir, pattern,
                         searchCount, searchFlags /*& ~SEARCH_MSG*/,
                         0, G.p_ic.getBoolean());
       didIncrSearch = true;
       if(rc == FAIL)
           resetViewIncrementalSearch();
+      else
+          incrSearchSucceed = true;
   }
 
   static int doNext(CMDARG cap, int count, int flag) {

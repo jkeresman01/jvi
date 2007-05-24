@@ -2806,7 +2806,7 @@ middle_code:
     G.curwin.setWSetCurswant(true);
     
     if(cap.nchar == K_X_INCR_SEARCH_DONE)
-      i = 1; // NEEDSWORK: retrieve from Search.xxx (but always 1 anyway)
+      i = Search.getIncrSearchResultCode();
     else if(cap.nchar == K_X_SEARCH_FINISH)
       i = Search.doSearch();
     else
