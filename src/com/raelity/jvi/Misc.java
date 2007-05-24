@@ -1161,6 +1161,16 @@ public class Misc implements ClipboardOwner {
 
       y_array[0] = new StringBuffer(s);
     }
+
+    StringSelection getStringSelection() {
+      StringBuffer sb = new StringBuffer();
+      for (int i = 0; i < y_array.length; i++) {
+        sb.append(y_array[i]);
+        if(y_type == MBLOCK)
+          sb.append('\n');
+      }
+      return new StringSelection(sb.toString());
+    }
   }
 
   //
@@ -2318,8 +2328,7 @@ public class Misc implements ClipboardOwner {
   static boolean clipboard_owned = false;
 
   static void clip_gen_set_selection() {
-    StringSelection ss = new StringSelection(y_regs[CLIPBOARD_REGISTER]
-					     	.y_array.toString());
+    StringSelection ss = y_regs[CLIPBOARD_REGISTER].getStringSelection();
     Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
     synchronized(clipOwner) {
       clipboard_owned = true;
