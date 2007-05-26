@@ -1407,30 +1407,30 @@ middle_code:
                         oap.end_vcol = end;
                 }
             }
-//
-//            /* if '$' was used, get oap->end_vcol from longest line */
-//            if (curwin->w_curswant == MAXCOL)
-//            {
-//                curwin->w_cursor.col = MAXCOL;
-//                oap->end_vcol = 0;
-//                for (curwin->w_cursor.lnum = oap->start.lnum;
-//                        curwin->w_cursor.lnum <= oap->end.lnum;
-//                        ++curwin->w_cursor.lnum)
-//                {
-//                    getvcol(curwin, &curwin->w_cursor, NULL, NULL, &end);
-//                    if (end > oap->end_vcol)
-//                        oap->end_vcol = end;
-//                }
-//            }
-//            else if (redo_VIsual_busy)
-//                oap->end_vcol = oap->start_vcol + redo_VIsual_col - 1;
-//            /*
-//             * Correct oap->end.col and oap->start.col to be the
-//             * upper-left and lower-right corner of the block area.
-//             */
-//            G.curwin.w_cursor.lnum = oap.end.lnum;
+
+            /* if '$' was used, get oap->end_vcol from longest line */
+            if (G.curwin.getWCurswant() == MAXCOL)
+            {
+                //G.curwin.w_cursor.col = MAXCOL;
+                oap.end_vcol = 0;
+                for (G.curwin.setCaretPosition(oap.start.getLine(), 0);
+                        G.curwin.getWCursor().getLine() <= oap.end.getLine();
+                        G.curwin.setCaretPosition(G.curwin.getWCursor().getLine()+1, 0))
+                {
+                    end = Misc.getvcol(oap.end.getColumn());//getvcol(curwin, &curwin->w_cursor, NULL, NULL, &end);
+                    if (end > oap.end_vcol)
+                        oap.end_vcol = end;
+                }
+            }
+            else if (G.redo_VIsual_busy)
+                oap.end_vcol = oap.start_vcol + redo_VIsual_col - 1;
+            /*
+             * Correct oap->end.col and oap->start.col to be the
+             * upper-left and lower-right corner of the block area.
+             */
+            G.curwin.setCaretPosition(oap.end.getLine(), oap.end.getColumn());//G.curwin.w_cursor.lnum = oap.end.lnum;
             //Misc.coladvance(oap.end_vcol);
-            G.curwin.setCaretPosition(oap.end.getOffset()); //HACK
+            //G.curwin.setCaretPosition(oap.end.getOffset()); //HACK
             oap.end = (FPOS)G.curwin.getWCursor().copy();
             G.curwin.setCaretPosition(oap.start.getOffset()); //curwin.w_cursor = oap.start;
             Misc.coladvance(oap.start_vcol);

@@ -3294,11 +3294,10 @@ public class Misc implements ClipboardOwner {
     /* may insert some spaces before the new text */
     private static void copy_spaces(StringBuffer ptr, int startspaces) {
         //System.out.println("Copy spaces: "+ startspaces +" / "+ ptr.length());
-        if (startspaces > ptr.length()) {
-            //System.out.println("startspaces > ptr.length()");
+      while(startspaces-- > 0) {
+        ptr.append(' ');
         }
-    //    throw new UnsupportedOperationException("Not yet implemented");
-        //System.out.println("->Copy spaces: "+ startspaces +" / "+ ptr.length());
+      //System.out.println("-->copy_spaces:'"+ptr+"'");
     }
   
   static class block_def
@@ -3335,6 +3334,7 @@ public class Misc implements ClipboardOwner {
  *   that are to be yanked.
  */
     static void block_prep(OPARG oap, block_def bdp, int lnum, boolean is_del) {
+      System.out.println("block prep: "+ oap.end_vcol +" -> "+ (G.curwin.getLineEndOffset(lnum) - G.curwin.getLineStartOffset(lnum)));
     int   incr = 0;
     StringBuffer pend;
     StringBuffer pstart;
@@ -3429,7 +3429,7 @@ public class Misc implements ClipboardOwner {
                 if (oap.op_type == OP_APPEND)
                     bdp.endspaces = oap.end_vcol - bdp.end_vcol;
                 else
-                    bdp.endspaces = 0;
+                    bdp.endspaces = oap.end_vcol+1 - (G.curwin.getLineEndOffset(lnum) - G.curwin.getLineStartOffset(lnum)); // was 0
             }
             else if (bdp.end_vcol > oap.end_vcol)
             {
@@ -3446,7 +3446,6 @@ public class Misc implements ClipboardOwner {
             --pstart_idx;//--pstart;
             --bdp.textcol;
         }
-        //System.out.println("Text len: " + pend_idx +" - " + pstart_idx +" " + pend +" / "+ pstart);
         bdp.textlen = pend_idx;// - pstart_idx;//(int)(pend - pstart);
     }
     bdp.textstart = pstart_idx;
@@ -3569,7 +3568,12 @@ public class Misc implements ClipboardOwner {
     private static void mch_memmove(StringBuffer pnew, int lnum, int textstart, int textlen) {
         try {
             int linestart = G.curwin.getLineStartOffset(lnum);
-            pnew.append(G.curwin.getText(linestart + textstart, textlen));
+            String tmp = G.curwin.getText(linestart + textstart, textlen);
+            if (tmp.indexOf('\n') >=0) {
+              tmp = tmp.substring(0, tmp.indexOf('\n'));
+            }
+            pnew.append(tmp);
+            //pnew.append(G.curwin.getText(linestart + textstart, textlen));
         } catch(Exception e) {
         }
     }
