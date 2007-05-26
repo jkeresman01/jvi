@@ -3027,37 +3027,39 @@ static private void nv_findpar(CMDARG cap, int dir)
    */
   static private  void	v_swap_corners (CMDARG cap) {
     do_op("v_swap_corners");
-    FPOS old_cursor;
-    int /*colnr_t*/ left, right;
 
     if ((cap.cmdchar == 'O') && G.VIsual_mode == Util.ctrl('V'))
     {
-//TODO: FIXME_VISUAL BLOCK MODE
-//       old_cursor = (FPOS)G.curwin.getWCursor().copy();
-//       //getvcols(&old_cursor, &VIsual, &left, &right);
-//       curwin.w_cursor.lnum = VIsual.lnum;
-//       coladvance(left);
-//       G.VIsual = G.curwin.w_cursor;
-//       G.curwin.w_cursor.lnum = old_cursor.lnum;
-//       coladvance(right);
-//       G.curwin.w_curswant = right;
-//       if (G.curwin.w_cursor.col == old_cursor.col)
-//       {
-//           G.curwin->w_cursor.lnum = VIsual.lnum;
-//           coladvance(right);
-//           G.VIsual = G.curwin.w_cursor;
-//           curwin->w_cursor.lnum = old_cursor.lnum;
-//           coladvance(left);
-//           curwin->w_curswant = left;
-//       }
+        MutableInt left = new MutableInt();
+        MutableInt right = new MutableInt();
+        ViFPOS old_cursor = G.curwin.getWCursor().copy();
+        ViFPOS cursor = G.curwin.getWCursor();
+
+        Misc.getvcols(old_cursor, G.VIsual, left, right);
+        G.curwin.setCaretPosition(G.VIsual.getLine(), 0);
+        Misc.coladvance(left.getValue());
+        G.VIsual.setPosition(cursor.getLine(), cursor.getColumn());
+        G.curwin.setCaretPosition(old_cursor.getLine(), 0);
+        Misc.coladvance(right.getValue());
+        G.curwin.setWCurswant(right.getValue());
+        if (cursor.getColumn() == old_cursor.getColumn())
+        {
+            G.curwin.setCaretPosition(G.VIsual.getLine(), 0);
+            Misc.coladvance(right.getValue());
+            G.VIsual.setPosition(cursor.getLine(), cursor.getColumn());
+            G.curwin.setCaretPosition(old_cursor.getLine(), 0);
+            Misc.coladvance(left.getValue());
+            G.curwin.setWCurswant(left.getValue());
+        }
     }
     if (cap.cmdchar != 'O' || G.VIsual_mode != Util.ctrl('V'))
     {
-        old_cursor = (FPOS)G.curwin.getWCursor().copy();
+        ViFPOS old_cursor = G.curwin.getWCursor().copy();
         G.curwin.setCaretPosition(G.VIsual.getOffset());
-        G.VIsual = old_cursor;
-        G.curwin.updateVisualState();
+        G.VIsual = (FPOS) old_cursor;
+        G.curwin.setWSetCurswant(true);
     }
+    G.curwin.updateVisualState();
   }
 
   /**
