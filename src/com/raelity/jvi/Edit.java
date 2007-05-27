@@ -1573,7 +1573,7 @@ public class Edit {
     ptr = seg.offset;
     //validate_virtcol();
     MutableInt mi = new MutableInt();
-    Misc.getvcol(G.curwin.getWCursor(), null, mi, null);
+    Misc.getvcol(G.curwin, G.curwin.getWCursor(), null, mi, null);
     int virtcol = mi.getValue();
     while (temp < virtcol && seg.array[ptr] != '\n')
       temp += Misc.lbr_chartabsize(seg.array[ptr++], temp);

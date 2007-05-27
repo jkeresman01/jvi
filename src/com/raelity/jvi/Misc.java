@@ -2642,9 +2642,11 @@ public class Misc implements ClipboardOwner {
 
   static void update_curswant() {
     if (G.curwin.getWSetCurswant()) {
-      int vcol = getvcol();
+      //int vcol = getvcol();
       // G.curwin.setWCurswant(G.curwin.getWCursor().getColumn());
-      G.curwin.setWCurswant(vcol);
+      MutableInt mi = new MutableInt();
+      getvcol(G.curwin, G.curwin.getWCursor(), null, mi, null);
+      G.curwin.setWCurswant(mi.getValue());
       G.curwin.setWSetCurswant(false);
     }
   }
@@ -2652,11 +2654,20 @@ public class Misc implements ClipboardOwner {
   /**
    * For the current character offset in the current line,
    * calculate the virtual offset. That is the offset if
-   * tabs are expanded.
+   * tabs are expanded. I *think* this is equivelent to getvcolStart(int).
+   *
+   * @deprecated
+   * use getvcol(ViTextView, ViFPOS, MutableInt, MutableInt, MutableInt)
    */
   static int getvcol() {
     return getvcol(G.curwin.getWCursor().getColumn());
   }
+
+  /**
+   * This method returns the start vcol of param for current line
+   * @deprecated
+   * use getvcol(ViTextView, ViFPOS, MutableInt, MutableInt, MutableInt)
+   */
   static int getvcol(int endCol) {
     int vcol = 0;
     MySegment seg = G.curwin.getLineSegment(G.curwin.getWCursor().getLine());
@@ -2675,12 +2686,12 @@ public class Misc implements ClipboardOwner {
     return vcol;
   }
 
-  static void getvcol(ViFPOS fpos,
+  /*static void getvcol(ViFPOS fpos,
                       MutableInt start,
                       MutableInt cursor,
                       MutableInt end) {
     getvcol(G.curwin, fpos, start, cursor, end);
-  }
+  }*/
   
   /**
    * Get virtual column number of pos.
@@ -2690,10 +2701,18 @@ public class Misc implements ClipboardOwner {
    *
    * This is used very often, keep it fast!
    *
+   * I think cursor is wrong for swing.
+   *
    * Determine the virtual column positions of the begin and end
    * of the character at the given position. The begin and end may
    * be different when the character is a TAB. The values are returned
    * through the start, end parameters.
+   *
+   * @param tv the textview to use for fpos.
+   * @param fpos the row and column/index of char to determin vcol for
+   * @param start store the start vcol here, may be null
+   * @param cursor store the cursor vcol here, may be null
+   * @param end store the end vcol here, may be null
    */
   public static void getvcol(ViTextView tv,
                              ViFPOS fpos,
@@ -2752,8 +2771,8 @@ public class Misc implements ClipboardOwner {
                        ViFPOS pos2,
                        MutableInt left,
                        MutableInt right) {
-    getvcol(pos1, l1, null, r1);
-    getvcol(pos2, l2, null, r2);
+    getvcol(G.curwin, pos1, l1, null, r1);
+    getvcol(G.curwin, pos2, l2, null, r2);
 
     left.setValue(l1.compareTo(l2) < 0 ? l1.getValue() : l2.getValue());
     right.setValue(r1.compareTo(r2) > 0 ? r1.getValue() : r2.getValue());
@@ -3428,8 +3447,12 @@ public class Misc implements ClipboardOwner {
 //#endif
                 if (oap.op_type == OP_APPEND)
                     bdp.endspaces = oap.end_vcol - bdp.end_vcol;
-                else
-                    bdp.endspaces = oap.end_vcol+1 - (G.curwin.getLineEndOffset(lnum) - G.curwin.getLineStartOffset(lnum)); // was 0
+                else {
+                    // TODO_VIS vim is bdp.endspaces = 0
+                    bdp.endspaces = oap.end_vcol+1
+                            - (G.curwin.getLineEndOffset(lnum) 
+                               - G.curwin.getLineStartOffset(lnum)); // was 0
+                }
             }
             else if (bdp.end_vcol > oap.end_vcol)
             {
@@ -3576,6 +3599,25 @@ public class Misc implements ClipboardOwner {
             //pnew.append(G.curwin.getText(linestart + textstart, textlen));
         } catch(Exception e) {
         }
+    }
+
+    private static void mch_memmove(StringBuffer dst, int dstIndex,
+                                    CharSequence src, int srcIndex,
+                                    int len) {
+                           // overlap, copy backwards
+      if(src == dst && dstIndex > srcIndex && dstIndex < srcIndex + len) {
+        dstIndex += len;
+        srcIndex += len;
+        while(len-- > 0)
+          dst.setCharAt(--dstIndex, src.charAt(--srcIndex));
+      } else                // copy forwards
+        while(len-- > 0)
+          dst.setCharAt(dstIndex++, src.charAt(srcIndex++));
+    }
+
+    private static void copy_spaces(StringBuffer dst, int index, int len) {
+      while(len-- > 0)
+        dst.setCharAt(index++, ' ');
     }
 
     private static void setLineNum(int line) {
