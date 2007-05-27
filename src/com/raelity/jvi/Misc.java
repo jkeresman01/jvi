@@ -3328,15 +3328,13 @@ public class Misc implements ClipboardOwner {
     int    textcol;       /* cols of chars (at least part.) in block */
     int    start_vcol;    /* start col of 1st char wholly inside block */
     int    end_vcol;      /* start col of 1st char wholly after block */
-//#ifdef VISUALEXTRA
-//    int       is_short;      /* TRUE if line is too short to fit in block */
+    boolean       is_short;      /* TRUE if line is too short to fit in block */
     boolean       is_MAX;       /* TRUE if curswant==MAXCOL when starting */
     boolean       is_EOL;       /* TRUE if cursor is on NUL when starting */
-//    int       is_oneChar;    /* TRUE if block within one character */
-//    int       pre_whitesp;   /* screen cols of ws before block */
-//    int       pre_whitesp_c; /* chars of ws before block */
-//    int    end_char_vcols;/* number of vcols of post-block char */
-//#endif
+    boolean       is_oneChar;    /* TRUE if block within one character */
+    int       pre_whitesp;   /* screen cols of ws before block */
+    int       pre_whitesp_c; /* chars of ws before block */
+    int    end_char_vcols;/* number of vcols of post-block char */
     int    start_char_vcols; /* number of vcols of pre-block char */
 };
 
@@ -3364,13 +3362,12 @@ public class Misc implements ClipboardOwner {
     bdp.textcol = 0;
     bdp.start_vcol = 0;
     bdp.end_vcol = 0;
-//#ifdef VISUALEXTRA
-//    bdp->is_short = FALSE;
-//    bdp->is_oneChar = FALSE;
-//    bdp->pre_whitesp = 0;
-//    bdp->pre_whitesp_c = 0;
-//#endif
-    pstart = new StringBuffer(Util.ml_get(lnum).toString());
+    bdp.is_short = false;
+    bdp.is_oneChar = false;
+    bdp.pre_whitesp = 0;
+    bdp.pre_whitesp_c = 0;
+
+    pstart = new StringBuffer(Util.ml_get(lnum).toString().substring(0, Util.lineLength(lnum)));//Util.ml_get(lnum).toString());
     int pstart_idx = 0;
     int pend_idx = 0;
     while (bdp.start_vcol < oap.start_vcol && pstart_idx < pstart.length())
@@ -3379,26 +3376,22 @@ public class Misc implements ClipboardOwner {
         incr = lbr_chartabsize(pstart.charAt(pstart_idx), bdp.start_vcol);
         bdp.start_vcol += incr;
         ++bdp.textcol;
-//#ifdef VISUALEXTRA
-//        if (vim_iswhite(*pstart))
-//        {
-//            bdp->pre_whitesp += incr;
-//            bdp->pre_whitesp_c++;
-//        }
-//        else
-//        {
-//            bdp->pre_whitesp = 0;
-//            bdp->pre_whitesp_c = 0;
-//        }
-//#endif
+        if (vim_iswhite(pstart.charAt(pstart_idx)))
+        {
+            bdp.pre_whitesp += incr;
+            bdp.pre_whitesp_c++;
+        }
+        else
+        {
+            bdp.pre_whitesp = 0;
+            bdp.pre_whitesp_c = 0;
+        }
         pstart_idx++;//++pstart;
     }
     bdp.start_char_vcols = incr;
     if (bdp.start_vcol < oap.start_vcol) /* line too short */
     {
-//#ifdef VISUALEXTRA
-//        bdp->is_short = TRUE;
-//#endif
+        bdp.is_short = true;
         if (!is_del || oap.op_type == OP_APPEND)
             bdp.endspaces = oap.end_vcol - oap.start_vcol + 1;
     }
@@ -3411,9 +3404,7 @@ public class Misc implements ClipboardOwner {
         bdp.end_vcol = bdp.start_vcol;
         if (bdp.end_vcol > oap.end_vcol) /* it's all in one character */
         {
-//#ifdef VISUALEXTRA
-//            bdp->is_oneChar = TRUE;
-//#endif
+            bdp.is_oneChar = true;
             if (oap.op_type == OP_INSERT)
                 bdp.endspaces = bdp.start_char_vcols - bdp.startspaces;
             else if (oap.op_type == OP_APPEND)
@@ -3442,9 +3433,7 @@ public class Misc implements ClipboardOwner {
                         || oap.op_type == OP_APPEND
                         || oap.op_type == OP_REPLACE)) /* line too short */
             {
-//#ifdef VISUALEXTRA
-//                bdp->is_short = TRUE;
-//#endif
+                bdp.is_short = true;
                 if (oap.op_type == OP_APPEND)
                     bdp.endspaces = oap.end_vcol - bdp.end_vcol;
                 else {
@@ -3592,9 +3581,6 @@ public class Misc implements ClipboardOwner {
         try {
             int linestart = G.curwin.getLineStartOffset(lnum);
             String tmp = G.curwin.getText(linestart + textstart, textlen);
-            if (tmp.indexOf('\n') >=0) {
-              tmp = tmp.substring(0, tmp.indexOf('\n'));
-            }
             pnew.append(tmp);
             //pnew.append(G.curwin.getText(linestart + textstart, textlen));
         } catch(Exception e) {
