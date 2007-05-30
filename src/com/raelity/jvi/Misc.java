@@ -3452,7 +3452,7 @@ public class Misc implements ClipboardOwner {
                 bdp.end_vcol += incr;
                 pend_idx++;
             }
-            if (bdp.end_vcol < oap.end_vcol
+            if (bdp.end_vcol <= oap.end_vcol
                     && (!is_del
                         || oap.op_type == OP_APPEND
                         || oap.op_type == OP_REPLACE)) // line too short
@@ -3734,28 +3734,22 @@ public class Misc implements ClipboardOwner {
         // too much sometimes gets allocated with the setLength,
         // but the correct number of chars gets copied, keep track of that.
         // BTW, a few extra nulls at the end wouldn't hurt vim
-                                                    //int totalChars = 0;
 
         // copy up to deleted part
         mch_memmove(newBuf, 0, oldBuf, oldp, bd.textcol);
         oldp += bd.textcol + bd.textlen;
-                                                    //totalChars += bd.textcol;
         // insert pre-spaces
         copy_spaces(newBuf, bd.textcol, bd.startspaces);
-                                                    //totalChars += bd.startspaces;
         /* insert replacement chars CHECK FOR ALLOCATED SPACE */
         copy_chars(newBuf, STRLEN(newBuf), numc, c);
-                                                    //totalChars += numc;
         if (!bd.is_short) {
           // insert post-spaces
           copy_spaces(newBuf, STRLEN(newBuf), bd.endspaces);
-                                                      //totalChars += bd.endspaces;
           // copy the part after the changed part, -1 to exclude \n
           int tCount = (oldBuf.length() - 1) - oldp; // STRLEN(oldp) +1 
           mch_memmove(newBuf, STRLEN(newBuf), oldBuf, oldp, tCount);
-                                                      //totalChars += tCount;
         }
-        // tweak deletes trailing nulls
+        // delete trailing nulls, vim alloc extra when tabs (seen with gdb)
         newBuf.setLength(STRLEN(newBuf));
         // replace the line
         //ml_replace(curwin.w_cursor.lnum, newp, FALSE);
