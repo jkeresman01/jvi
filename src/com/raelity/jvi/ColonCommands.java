@@ -1774,9 +1774,9 @@ public class ColonCommands {
     OPARG oa = new OPARG();
     // oa.regname = ; NEEDSWORK:
     oa.start = new FPOS();
-    oa.start.setPosition(cev.getLine1(), 0);
+    oa.start.set(cev.getLine1(), 0);
     oa.end = new FPOS();
-    oa.end.setPosition(cev.getLine2(), 0);
+    oa.end.set(cev.getLine2(), 0);
     oa.line_count = cev.getLine2() - cev.getLine1() + 1;
     oa.motion_type = MLINE;
     if(cev.getAction() != ACTION_yank) {

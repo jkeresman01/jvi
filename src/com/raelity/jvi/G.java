@@ -159,7 +159,7 @@ public class G {
   public static boolean debugOpPrint = false;
   public static boolean switchDebug = false;
   
-  public static FPOS VIsual; // start position of active Visual selection
+  public static ViFPOS VIsual; // start position of active Visual selection
   public static boolean VIsual_active; // whether Visual mode is active
   public static boolean VIsual_select; // whether Select mode is active
   public static boolean VIsual_reselect;

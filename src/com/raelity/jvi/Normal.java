@@ -467,7 +467,7 @@ public class Normal {
     int		    dir = FORWARD;	    /* search direction */
     CharBuf	    searchbuff = new CharBuf(); /* buffer for search string */
     boolean	    dont_adjust_op_end = false;
-    FPOS	    old_pos;		    /* cursor position before command */
+    ViFPOS	    old_pos;		    /* cursor position before command */
     int		    old_col = G.curwin.getWCurswant();
 
 middle_code:
@@ -500,7 +500,7 @@ middle_code:
 
       msg_didout = false;    /* don't scroll screen up for normal command */
       msg_col = 0;
-      old_pos = (FPOS)G.curwin.getWCursor().copy();/* remember cursor was */
+      old_pos = G.curwin.getWCursor().copy();/* remember cursor was */
 
       /*
        * Generally speaking, every command below should either clear any pending
@@ -1261,6 +1261,7 @@ middle_code:
     OPARG	oap = cap.oap;
     ViFPOS	old_cursor;
     boolean	empty_region_error;
+    final ViFPOS cursor = G.curwin.getWCursor();
 
 
 //#if defined(USE_CLIPBOARD) && !defined(MSWIN)
@@ -1284,7 +1285,7 @@ middle_code:
 //    && !redo_VIsual_busy)
 //clip_copy_selection();
 //#endif
-    old_cursor = G.curwin.getWCursor();
+    old_cursor = cursor.copy();
 
     /*
      * If an operation is pending, handle it...
@@ -1314,21 +1315,24 @@ middle_code:
 
       if (G.redo_VIsual_busy)
       {
-          oap.start = (FPOS)G.curwin.getWCursor().copy();
+          oap.start = cursor.copy();
           int line = oap.start.getLine()+ redo_VIsual_line_count - 1;
           if(line > G.curwin.getLineCount())
               line = G.curwin.getLineCount();
-          G.curwin.setCaretPosition(
-                    line, Misc.check_cursor_col(line, oap.start.getColumn()));
           G.VIsual_mode = redo_VIsual_mode;
+          // TODO_VIS change this, but NEEDSWORK to step through it, REVIEW
+          //        Is redo visual busy ever true?
+          // take a shot at it
+          int col = oap.start.getColumn();
           if (G.VIsual_mode == 'v')
           {
               if (redo_VIsual_line_count <= 1)
-                  G.curwin.setCaretPosition(oap.start.getLine(),
-                                            oap.start.getColumn() + redo_VIsual_col - 1);
+                  col += redo_VIsual_col - 1;
               else
-                  G.curwin.setCaretPosition(oap.start.getLine(), redo_VIsual_col);
+                  col = redo_VIsual_col;
           }
+          cursor.set(line, col);
+
           if (redo_VIsual_col == MAXCOL)
           {
               G.curwin.setWCurswant(MAXCOL);
@@ -1343,15 +1347,15 @@ middle_code:
             /* In Select mode, a linewise selection is operated upon like a
              * characterwise selection. */
           if (G.VIsual_select && G.VIsual_mode == 'V') {
-              if (G.VIsual.compareTo(G.curwin.getWCursor()) < 0) { //if (lt(VIsual, curwin->w_cursor))
-                  G.VIsual.setPosition(G.VIsual.getLine(), 0);
-                  G.curwin.setCaretPosition(G.curwin.getWCursor().getLine(), Util.lineLength(G.curwin.getWCursor().getLine())/*Util.ml_get(G.curwin.getWCursor().getLine()).length()*/);
+              if (G.VIsual.compareTo(cursor) < 0) {
+                  G.VIsual.setColumn(0);
+                  cursor.setColumn(Util.lineLength(cursor.getLine()));
               } else {
-                  G.curwin.setCaretPosition(1, Util.lineLength(G.curwin.getWCursor().getLine()));//Util.ml_get(G.curwin.getWCursor().getLine()).length());
-                  G.VIsual.setPosition(G.VIsual.getLine(), Util.lineLength(G.VIsual.getLine()));//Util.ml_get(G.VIsual.getLine()).length());
+                  cursor.setColumn(0);
+                  G.VIsual.setColumn(Util.lineLength(G.VIsual.getLine()));
               }
               G.VIsual_mode = 'v';
-              }
+          }
           /* If 'selection' is "exclusive", backup one character for
           * charwise selections. */
           if (!G.VIsual_select && G.VIsual_mode == 'v')
@@ -1361,27 +1365,26 @@ middle_code:
           G.curwin.setMarkOffset((ViMark)G.curbuf.b_visual_start,
                                  G.VIsual.getOffset(), false);
           G.curwin.setMarkOffset((ViMark)G.curbuf.b_visual_end,
-                                 G.curwin.getWCursor().getOffset(), false);
+                                 cursor.getOffset(), false);
           G.curbuf.b_visual_mode = G.VIsual_mode;
 
           oap.start = G.VIsual;
           if (G.VIsual_mode == 'V')
-              oap.start.setPosition(oap.start.getLine(), 0);
+              oap.start.setColumn(0);
       }
 
-      /*
-       * Set oap.start to the first position of the operated text, oap.end
-       * to the end of the operated text.  w_cursor is equal to oap.start.
-       */
-	     // (lt(oap.start, curwin.w_cursor))
-      if (oap.start.compareTo(G.curwin.getWCursor()) < 0) {
-	oap.end = (FPOS)G.curwin.getWCursor().copy();
-	G.curwin.getWindow().setWCursor(oap.start);
+      //
+      // Set oap.start to the first position of the operated text, oap.end
+      // to the end of the operated text.  w_cursor is equal to oap.start.
+      //
+      if (oap.start.compareTo(cursor) < 0) {
+	oap.end = cursor.copy();
+	cursor.set(oap.start);
       }
       else
       {
-	oap.end = (FPOS)oap.start.copy();
-	oap.start = (FPOS)G.curwin.getWCursor().copy();
+	oap.end = oap.start.copy();
+	oap.start = cursor.copy();
       }
       oap.line_count = oap.end.getLine() - oap.start.getLine() + 1;
 
@@ -1389,14 +1392,17 @@ middle_code:
           if (G.VIsual_mode == Util.ctrl('V'))  /* block mode */
           {
               int start, end;
+              MutableInt miStart = new MutableInt(), miEnd = new MutableInt();
 
               oap.block_mode = true;
-              oap.start_vcol = Misc.getvcol(oap.start.getColumn());//getvcol(curwin, &(oap->start), &oap->start_vcol, NULL, &oap->end_vcol);
-              oap.end_vcol = Misc.getvcol(oap.end.getColumn());//getvcol(curwin, &(oap->start), &oap->start_vcol, NULL, &oap->end_vcol);
+              Misc.getvcol(G.curwin, oap.start, miStart, null, miEnd);
+              oap.start_vcol = miStart.getValue();
+              oap.end_vcol = miEnd.getValue();
             if (!G.redo_VIsual_busy)
             {
-                start = Misc.getvcol(oap.end.getColumn()); //getvcol(curwin, &(oap->end), &start, NULL, &end);
-                end = Misc.getvcol(oap.start.getColumn()); //getvcol(curwin, &(oap->end), &start, NULL, &end);
+                Misc.getvcol(G.curwin, oap.end, miStart, null, miEnd);
+                start = miStart.getValue();
+                end = miEnd.getValue();
                 if (start < oap.start_vcol)
                     oap.start_vcol = start;
                 if (end > oap.end_vcol)
@@ -1411,30 +1417,33 @@ middle_code:
             /* if '$' was used, get oap->end_vcol from longest line */
             if (G.curwin.getWCurswant() == MAXCOL)
             {
-                //G.curwin.w_cursor.col = MAXCOL;
+                //curwin.w_cursor.col = MAXCOL;
+                // Can't set the cursor to MAXCOL (well you can, but...)
+                // Use an fpos and set it to the \n for the each iteration
+                ViFPOS fpos = cursor.copy();
                 oap.end_vcol = 0;
-                for (G.curwin.setCaretPosition(oap.start.getLine(), 0);
-                        G.curwin.getWCursor().getLine() <= oap.end.getLine();
-                        G.curwin.setCaretPosition(G.curwin.getWCursor().getLine()+1, 0))
+                for (fpos.set(oap.start.getLine(), 0);
+                     fpos.getLine() <= oap.end.getLine();
+                     fpos.set(fpos.getLine() +1, 0))
                 {
-                    end = Misc.getvcol(oap.end.getColumn());//getvcol(curwin, &curwin->w_cursor, NULL, NULL, &end);
+                    fpos.setColumn(Util.lineLength(fpos.getLine()));
+                    Misc.getvcol(G.curwin, fpos, null, null, miEnd);
+                    end = miEnd.getValue();
                     if (end > oap.end_vcol)
                         oap.end_vcol = end;
                 }
             }
             else if (G.redo_VIsual_busy)
                 oap.end_vcol = oap.start_vcol + redo_VIsual_col - 1;
-            /*
-             * Correct oap->end.col and oap->start.col to be the
-             * upper-left and lower-right corner of the block area.
-             */
-            G.curwin.setCaretPosition(oap.end.getLine(), oap.end.getColumn());//G.curwin.w_cursor.lnum = oap.end.lnum;
-            //Misc.coladvance(oap.end_vcol);
-            //G.curwin.setCaretPosition(oap.end.getOffset()); //HACK
-            oap.end = (FPOS)G.curwin.getWCursor().copy();
-            G.curwin.setCaretPosition(oap.start.getOffset()); //curwin.w_cursor = oap.start;
-            Misc.coladvance(oap.start_vcol);
-            oap.start = (FPOS)G.curwin.getWCursor().copy();
+            //
+            // Correct oap->end.col and oap->start.col to be the
+            // upper-left and lower-right corner of the block area.
+            //
+            // simpler than vim since jvi has coladvance on an fpos
+            Misc.coladvance(oap.end, oap.end_vcol);
+            Misc.coladvance(oap.start, oap.start_vcol);
+            // the vim code leaves cursor on the start, so do that
+            cursor.set(oap.start);
           }
           if (!G.redo_VIsual_busy && !gui_yank)
           {
@@ -1476,15 +1485,16 @@ middle_code:
               oap.motion_type = MLINE;
           else {
               oap.motion_type = MCHAR;
-              if (G.VIsual_mode != Util.ctrl('V') && oap.end.getColumn() > MAXCOL) {
+              if (G.VIsual_mode != Util.ctrl('V')
+                        && Util.ml_get_pos(oap.end).current() == '\n') {
                   oap.inclusive = false;
-                  /* Try to include the newline, unless it's an operator
-                  * that works on lines only */
+                  // Try to include the newline, unless it's an operator
+                  // that works on lines only
                   if (G.p_sel.charAt(0) != 'o'
                             && !op_on_lines(oap.op_type)
                             && oap.end.getLine() < G.curwin.getLineCount())
                   {
-                      oap.end.setPosition(oap.end.getLine()+1, 0);
+                      oap.end.set(oap.end.getLine()+1, 0);
                       oap.line_count++;
                   }
               }
@@ -1560,7 +1570,7 @@ middle_code:
 	    oap.inclusive = true;
 	  }
 	}
-        oap.end.setPosition(new_line, new_col);
+        oap.end.set(new_line, new_col);
       }
       else
 	oap.end_adjusted = false;
@@ -1732,7 +1742,7 @@ middle_code:
 	oap.op_type = OP_NOP;
       }
       else {
-	G.curwin.getWindow().setWCursor(old_cursor);
+        cursor.set(old_cursor);
       }
       oap.block_mode = false;
       oap.regname = 0;
@@ -2636,10 +2646,10 @@ middle_code:
     cap.oap.inclusive = false;
     past_line = (G.VIsual_active && G.p_sel.charAt(0) != 'o');
     for (n = cap.count1; n > 0; --n) {
-      FPOS fpos = G.curwin.getWCursor();
-      MySegment seg = G.curwin.getLineSegment(fpos.getLine());
+      final ViFPOS cursor = G.curwin.getWCursor();
+      MySegment seg = G.curwin.getLineSegment(cursor.getLine());
       if ((!past_line && Edit.oneright() == FAIL)
-	    || (past_line && seg.array[fpos.getColumn()+seg.offset] == '\n')
+	    || (past_line && seg.array[cursor.getColumn()+seg.offset] == '\n')
 	  )
       {
 
@@ -2652,7 +2662,7 @@ middle_code:
 		    || (cap.cmdchar == 'l' && G.p_ww_l.getBoolean())
 		    || (cap.cmdchar == K_RIGHT && G.p_ww_rarrow.getBoolean()))
 		   // && curwin.w_cursor.lnum < curbuf.b_ml.ml_line_count
-		   && fpos.getLine() < G.curwin.getLineCount())
+		   && cursor.getLine() < G.curwin.getLineCount())
 	{
 	  // When deleting we also count the NL as a character.
 	  // Set cap.oap.inclusive when last char in the line is
@@ -2660,10 +2670,10 @@ middle_code:
 	  if (	   (cap.oap.op_type == OP_DELETE
 		    || cap.oap.op_type == OP_CHANGE)
 		   && !cap.oap.inclusive
-		   && !Util.lineempty(fpos.getLine())) {
+		   && !Util.lineempty(cursor.getLine())) {
 	    cap.oap.inclusive = true;
 	  } else {
-	    G.curwin.setCaretPosition(fpos.getLine() + 1, 0);
+	    G.curwin.setCaretPosition(cursor.getLine() + 1, 0);
 	    G.curwin.setWSetCurswant(true);
 	    cap.oap.inclusive = false;
 	  }
@@ -2674,7 +2684,7 @@ middle_code:
 	  if (n == cap.count1)
 	    Util.beep_flush();
 	} else {
-	  if (!Util.lineempty(fpos.getLine())) {
+	  if (!Util.lineempty(cursor.getLine())) {
 	    cap.oap.inclusive = true;
 	  }
 	}
@@ -2682,7 +2692,7 @@ middle_code:
       } else if (past_line) {
 	// NEEDSWORK: (maybe no work) pastline always false since no select
 	 G.curwin.setWSetCurswant(true);
-         G.curwin.setCaretPosition(fpos.getOffset()+1);
+         G.curwin.setCaretPosition(cursor.getOffset()+1);
       }
     }
   }
@@ -2699,7 +2709,7 @@ middle_code:
     cap.oap.inclusive = false;
     for (n = cap.count1; n > 0; --n) {
       if (Edit.oneleft() == FAIL) {
-	FPOS fpos = G.curwin.getWCursor();
+	final ViFPOS cursor = G.curwin.getWCursor();
 	// <BS> and <Del> wrap to previous line if 'whichwrap' has 'b'.
 	//		 'h' wraps to previous line if 'whichwrap' has 'h'.
 	//	   CURS_LEFT wraps to previous line if 'whichwrap' has '<'.
@@ -2711,17 +2721,17 @@ middle_code:
 			&& G.p_ww_h.getBoolean())
 		    || (cap.cmdchar == K_LEFT
 			&& G.p_ww_larrow.getBoolean()))
-		   && fpos.getLine() > 1)
+		   && cursor.getLine() > 1)
 	{
 	  /* **********************************
-	  int offset = G.curwin.getLineOffset(fpos.getLine() - 1);
-	  Segment seg = G.curwin.getLineSegment(fpos.getLine() - 1);
+	  int offset = G.curwin.getLineOffset(cursor.getLine() - 1);
+	  Segment seg = G.curwin.getLineSegment(cursor.getLine() - 1);
 	  int idx = Misc.coladvanceColumnIndex(MAXCOL, seg);
 	  G.curwin.setCaretPosition(offset + idx);
 	  ************************************/
 
 	  // use a different algorithm with swing document
-	  G.curwin.setCaretPosition(fpos.getOffset() - 1);
+	  G.curwin.setCaretPosition(cursor.getOffset() - 1);
 	  Misc.check_cursor_col();
 	  G.curwin.setWSetCurswant(true);
 
@@ -2731,9 +2741,9 @@ middle_code:
 	  // don't adjust op_end now, otherwise it won't work
 	  if (	   (cap.oap.op_type == OP_DELETE
 		    || cap.oap.op_type == OP_CHANGE)
-		   && !Util.lineempty(fpos.getLine()))
+		   && !Util.lineempty(cursor.getLine()))
 	  {
-	    G.curwin.setCaretPosition(fpos.getOffset() + 1);
+	    G.curwin.setCaretPosition(cursor.getOffset() + 1);
 	    retval = true;
 	  }
 	  continue;
@@ -3028,35 +3038,35 @@ static private void nv_findpar(CMDARG cap, int dir)
   static private  void	v_swap_corners (CMDARG cap) {
     do_op("v_swap_corners");
 
+    final ViFPOS cursor = G.curwin.getWCursor();
     if ((cap.cmdchar == 'O') && G.VIsual_mode == Util.ctrl('V'))
     {
         MutableInt left = new MutableInt();
         MutableInt right = new MutableInt();
-        ViFPOS old_cursor = G.curwin.getWCursor().copy();
-        ViFPOS cursor = G.curwin.getWCursor();
+        ViFPOS old_cursor = cursor.copy();
 
         Misc.getvcols(old_cursor, G.VIsual, left, right);
-        G.curwin.setCaretPosition(G.VIsual.getLine(), 0);
+        cursor.set(G.VIsual.getLine(), 0);
         Misc.coladvance(left.getValue());
-        G.VIsual.setPosition(cursor.getLine(), cursor.getColumn());
-        G.curwin.setCaretPosition(old_cursor.getLine(), 0);
+        G.VIsual.set(cursor);
+        cursor.set(old_cursor.getLine(), 0);
         Misc.coladvance(right.getValue());
         G.curwin.setWCurswant(right.getValue());
         if (cursor.getColumn() == old_cursor.getColumn())
         {
-            G.curwin.setCaretPosition(G.VIsual.getLine(), 0);
+            cursor.set(G.VIsual.getLine(), 0);
             Misc.coladvance(right.getValue());
-            G.VIsual.setPosition(cursor.getLine(), cursor.getColumn());
-            G.curwin.setCaretPosition(old_cursor.getLine(), 0);
+            G.VIsual.set(cursor);
+            cursor.set(old_cursor.getLine(), 0);
             Misc.coladvance(left.getValue());
             G.curwin.setWCurswant(left.getValue());
         }
     }
     if (cap.cmdchar != 'O' || G.VIsual_mode != Util.ctrl('V'))
     {
-        ViFPOS old_cursor = G.curwin.getWCursor().copy();
-        G.curwin.setCaretPosition(G.VIsual.getOffset());
-        G.VIsual = (FPOS) old_cursor;
+        ViFPOS old_cursor = cursor.copy();
+        cursor.set(G.VIsual);
+        G.VIsual =  old_cursor;
         G.curwin.setWSetCurswant(true);
     }
     G.curwin.updateVisualState();
@@ -3270,7 +3280,7 @@ static private void nv_findpar(CMDARG cap, int dir)
                   Util.beep_flush();
                   return;
               }
-              G.VIsual = (FPOS)G.curwin.getWCursor().copy();
+              G.VIsual = G.curwin.getWCursor().copy();
               G.VIsual_active = true;
               G.VIsual_reselect = true;
               if (!selectmode)
@@ -3349,7 +3359,7 @@ static private void nv_findpar(CMDARG cap, int dir)
    */
   static private  void	n_start_visual_mode(int c) {
       do_op("n_start_visual_mode");
-      G.VIsual = (FPOS) G.curwin.getWCursor().copy();
+      G.VIsual =  G.curwin.getWCursor().copy();
       G.VIsual_mode = c;
       G.VIsual_active = true;
       G.VIsual_reselect = true;
@@ -3418,7 +3428,7 @@ static private void nv_findpar(CMDARG cap, int dir)
             /* Set Visual to the start and w_cursor to the end of the Visual
              * area.  Make sure they are on an existing character. */
             Misc.adjust_cursor();
-            G.VIsual = (FPOS) G.curwin.getWCursor().copy();
+            G.VIsual =  G.curwin.getWCursor().copy();
             G.curwin.setCaretPosition(tpos.getOffset());
             Misc.adjust_cursor();
             //update_topline();
@@ -3513,7 +3523,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       nv_lineop(cap);
     else if (!checkclearop(cap.oap))
     {
-      cap.oap.start = (FPOS)G.curwin.getWCursor().copy();
+      cap.oap.start = G.curwin.getWCursor().copy();
       cap.oap.op_type = op_type;
     }
   }
@@ -3656,7 +3666,7 @@ static private void nv_findpar(CMDARG cap, int dir)
     }
   }
 
-  /*
+  /**
    * In exclusive Visual mode, may include the last character.
    */
   static private void adjust_for_sel(CMDARG cap) {
@@ -3669,6 +3679,32 @@ static private void nv_findpar(CMDARG cap, int dir)
           G.curwin.setCaretPosition(G.curwin.getCaretPosition()+1);
           cap.oap.inclusive = false;
        }
+  }
+
+  /**
+   * Exclude last character at end of Visual area for 'selection' == "exclusive".
+   * Should check VIsual_mode before calling this.
+   */
+  static private void unadjust_for_sel()
+  {
+      ViFPOS	pp;
+      final ViFPOS cursor = G.curwin.getWCursor();
+
+      if (G.p_sel.charAt(0) == 'e' && G.VIsual.compareTo(cursor) != 0)
+      {
+          if(G.VIsual.compareTo(cursor) < 0)
+              pp = cursor;
+          else
+              pp = G.VIsual;
+
+          if(pp.getColumn() > 0)
+              pp.setColumn(pp.getColumn() - 1);
+          else if(pp.getLine() > 1)
+          {
+            int line = pp.getLine() - 1;
+            pp.set(line, Util.lineLength(line));
+          }
+      }
   }
 
   /**
@@ -3868,10 +3904,10 @@ static private void nv_findpar(CMDARG cap, int dir)
    * Handle the CTRL-U and CTRL-D commands.
    */
   static private void nv_halfpage(CMDARG cap) {
-    ViFPOS fpos = G.curwin.getWCursor();
-    if ((cap.cmdchar == Util.ctrl('U') && fpos.getLine() == 1)
+    final ViFPOS cursor = G.curwin.getWCursor();
+    if ((cap.cmdchar == Util.ctrl('U') && cursor.getLine() == 1)
 	|| (cap.cmdchar == Util.ctrl('D')
-	    && fpos.getLine() == G.curwin.getLineCount()))
+	    && cursor.getLine() == G.curwin.getLineCount()))
       clearopbeep(cap.oap);
     else if (!checkclearop(cap.oap))
       Misc.halfpage(cap.cmdchar == Util.ctrl('D'), cap.count0);
@@ -4056,7 +4092,7 @@ static private void nv_findpar(CMDARG cap, int dir)
   // static private  void	nv_bck_word (CMDARG cap, boolean type) {do_op("nv_bck_word");}
   // static private  void	nv_wordcmd (CMDARG cap, boolean type) {do_op("nv_wordcmd");}
   // static private  void	adjust_for_sel (CMDARG cap) {do_op("adjust_for_sel");}
-  static private  void	unadjust_for_sel () {do_op("unadjust_for_sel");}
+  //static private  void	unadjust_for_sel () {do_op("unadjust_for_sel");}
   // private  void	nv_goto (CMDARG cap, long lnum) {do_op("nv_goto");}
   static private  void	nv_select (CMDARG cap) {do_op("nv_select");}
   static private  void	nv_normal (CMDARG cap) {do_op("nv_normal");}

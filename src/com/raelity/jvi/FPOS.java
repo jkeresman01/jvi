@@ -29,57 +29,31 @@
 package com.raelity.jvi;
 
 /**
- * File position, accessable as line number and column (both 1 based).
+ * File position, accessable as line number, 1 based, and column, 0 based.
  * <p>
  * Any changes or additions here must be considered for WCursor.
  * </p>
- * <br><b>NEEDSWORK:</b><ul>
- * <li>Put lnum and col together in a class, and have them set with single
- * method call. Can also defer initializing them.
- * <li>Currently accesses jbuilder editor for line/col. Make this an
- * interface?
- * </ul>
+ * NOTE: line and column here do not change as the document changes. See Mark
+ * for that type of behavior. <br/>
+ * NEEDSWORK: This should have a weak reference to Buffer.
  */
 
 public class FPOS implements ViFPOS, Comparable, Cloneable
 {
-  private MutableInt offset;
-  private MutableInt lnum;
-  private MutableInt col;
+  private MutableInt offset = new MutableInt();
+  private MutableInt lnum = new MutableInt();
+  private MutableInt col = new MutableInt();
 
-  /** An empty cursor position */
-  public FPOS() {
-    this(0, 0, 0);
+  /** Used to make a copy. */
+  private void initFPOS(int o, int l, int c) {
+    offset.setValue(o);
+    lnum.setValue(l);
+    col.setValue(c);
   }
 
-  /** Record the current cursor position in the related document. */
-  public FPOS(ViTextView editor) {
-    this(0, 0, 0);
-    if(editor != null) {
-      setCursor(editor);
-    }
-  }
-
-  /** create an FPOS at the given offset */
-  public FPOS(ViTextView tv, int offset) {
-    this(0, 0, 0);
-    this.offset.setValue(offset);
-    lnum.setValue(tv.getLineNumber(offset));
-    col.setValue(tv.getColumnNumber(offset));
-  }
-
-  /** Used to complete constructin or to make a copy. */
-  private FPOS(int o, int l, int c) {
-    offset = new MutableInt(o);
-    lnum = new MutableInt(l);
-    col = new MutableInt(c);
-  }
-
-  public void setCursor(ViTextView editor) {
-    editor.computeCursorPosition(offset, lnum, col);
-    // offset = editor.getCaretPosition();
-    // lnum = editor.getLineNumber(offset);
-    // col = editor.getColumnNumber(offset);
+  /** use the current caret location to set the offset,line,col */
+  protected void setCursor(ViTextView tv) {
+    tv.computeCursorPosition(offset, lnum, col);
   }
 
   public int getLine() {
@@ -91,55 +65,34 @@ public class FPOS implements ViFPOS, Comparable, Cloneable
   }
 
   public int getOffset() {
-    if(offset.getValue() < 0) {
-      throw new RuntimeException("negative offset");
-    }
     return offset.getValue();
   }
 
-  public void setPosition(int line, int column) {
-    offset.setValue(G.curwin.getLineStartOffset(line) + column);
+  public void set(int line, int column) {
+    int startOffset = G.curwin.getLineStartOffset(line);
+    int endOffset = G.curwin.getLineEndOffset(line);
+    if(column < 0) {
+      ViManager.dumpStack("line " + line + ", column " + column
+              + ", length " + (endOffset - startOffset));
+      column = 0;
+    } else if(column >= endOffset - startOffset) {
+      ViManager.dumpStack("line " + line + ", column " + column
+              + ", length " + (endOffset - startOffset));
+      column = endOffset - startOffset - 1;
+    }
+    
+    offset.setValue(startOffset + column);
     lnum.setValue(line);
     col.setValue(column);
   }
 
-//  /**
-//   * Set the line number of this. Attempts to access offset
-//   * after this method will throw a runtime error.
-//   */
-//  public void setLine(int line) {
-//    lnum.setValue(line);
-//    offset.setValue(-1);
-//  }
-//
-//  /**
-//   * Set the column number of this. Attempts to access offset
-//   * after this method will throw a runtime error.
-//   */
-//  public void setColumn(int col) {
-//    this.col.setValue(col);
-//    offset.setValue(-1);
-//  }
-//
-//  /**
-//   * Add argument to the line number of this. Attempts to access offset
-//   * after this method will throw a runtime error.
-//   *
-//   */
-//  public void adjustLine(int line) {
-//    lnum.setValue(lnum.getValue() + line);
-//    offset.setValue(-1);
-//  }
-//
-//  /**
-//   * Add argument to the column number of this. Attempts to access offset
-//   * after this method will throw a runtime error.
-//   */
-//  public void adjustCol(int i) {
-//    col.setValue(col.getValue() + i);
-//    offset.setValue(-1);
-//  }
+  public void set(ViFPOS fpos) {
+    set(fpos.getLine(), fpos.getColumn());
+  }
 
+  public void setColumn(int column) {
+    set(lnum.getValue(), column);
+  }
 
   final public boolean equals(Object o) {
     // NEEDSWORK: equals FPOS, should doc be checked as same?
@@ -162,7 +115,8 @@ public class FPOS implements ViFPOS, Comparable, Cloneable
   }
 
   final public ViFPOS copy() {
-    FPOS fpos = new FPOS(offset.getValue(), lnum.getValue(), col.getValue());
+    FPOS fpos = new FPOS();
+    fpos.initFPOS(offset.getValue(), lnum.getValue(), col.getValue());
     return fpos;
   }
 
@@ -173,3 +127,5 @@ public class FPOS implements ViFPOS, Comparable, Cloneable
 		;
   }
 }
+
+// vi:set sw=2 ts=8:
