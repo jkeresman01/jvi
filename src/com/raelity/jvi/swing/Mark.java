@@ -149,7 +149,18 @@ class Mark implements ViMark {
   }
 
   /** This is optional, may throw an UnsupportedOperationException */
-  public void setPosition(int line, int col) {
+  public void set(int line, int col) {
+    throw new UnsupportedOperationException();
+  }
+
+  /** This is optional, may throw an UnsupportedOperationException */
+  public void setColumn(int col) {
+    throw new UnsupportedOperationException();
+  }
+
+  public void set(ViFPOS fpos) {
     throw new UnsupportedOperationException();
   }
 }
+
+// vi:set sw=2 ts=8:

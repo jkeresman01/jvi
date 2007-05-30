@@ -896,7 +896,7 @@ finished:
               tcol = matchend - 1;
             else
               tcol = match;
-            pos.setPosition(lnum, tcol);
+            pos.set(lnum, tcol);
             found = true;
             break;
           }
@@ -1559,7 +1559,7 @@ found:
           startPS(pos.getLine(), NUL, false)) {
           if (pos.getLine() == G.curwin.getLineCount())
             return false;
-          pos.setPosition(pos.getLine() + 1, 0);
+          pos.set(pos.getLine() + 1, 0);
           break found;
         }
         else if (dir == BACKWARD)
@@ -1593,7 +1593,7 @@ found:
           if (c == '\n' ||
             (pos.getColumn() == 0 && startPS(pos.getLine(), NUL, false))) {
             if (dir == BACKWARD && pos.getLine() != startlnum)
-              pos.setPosition(pos.getLine() + 1, 0);
+              pos.set(pos.getLine() + 1, 0);
             break;
           }
           if (c == '.' || c == '!' || c == '?') {
@@ -1894,14 +1894,14 @@ extend:
 //TODO: FIXME_VISUAL goto extend
 //        if (VIsual_mode == 'V' && start_lnum == curwin.w_cursor.lnum)
 //            goto extend;
-        G.VIsual.setPosition(start_lnum, 0); //G.VIsual.lnum = start_lnum;
+        G.VIsual.set(start_lnum, 0); //G.VIsual.lnum = start_lnum;
         G.VIsual_mode = 'V';
         Normal.update_curbuf(NOT_VALID);	/* update the inversion */
         Misc.showmode();
     }
     else
     {
-        oap.start.setPosition(start_lnum, 0); //was: oap.start.lnum = start_lnum;
+        oap.start.set(start_lnum, 0); //was: oap.start.lnum = start_lnum;
         oap.motion_type = MLINE;
     }
     G.curwin.setCaretPosition(end_lnum, 0);

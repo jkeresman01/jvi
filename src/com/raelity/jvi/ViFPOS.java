@@ -37,8 +37,23 @@ public interface ViFPOS extends Comparable {
   public int getLine();
   public int getColumn();
   public int getOffset();
-  /** This is optional, may throw an UnsupportedOperationException */
-  public void setPosition(int line, int col);
+  /**
+   * Set the position. This will set the postition on the new line.
+   * If the column is less than zero, or past the new line, then it will
+   * be restricted.
+   * This is optional, may throw an UnsupportedOperationException
+   */
+  public void set(int line, int column);
+  /**
+   * This is a convenience for set(fpos.getLine(), fpos.getColumn());
+   */
+  public void set(ViFPOS fpos);
+  /**
+   * Set the column, leave the line unchanged.
+   * <br/>
+   * This is optional, may throw an UnsupportedOperationException
+   */
+  public void setColumn(int col);
 
   /** Make a copy */
   public ViFPOS copy();

@@ -129,7 +129,7 @@ public class Util {
   static CharacterIterator ml_get_pos(ViFPOS pos) {
     //return (ml_get_buf(curbuf, pos->lnum, FALSE) + pos->col);
     MySegment seg = new MySegment(G.curwin.getLineSegment(pos.getLine()));
-    seg.setIndex(pos.getOffset());
+    seg.setIndex(seg.offset + pos.getColumn());
     return seg;
   }
   

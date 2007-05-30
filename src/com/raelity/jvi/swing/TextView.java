@@ -417,7 +417,7 @@ public class TextView implements ViTextView {
     editorPane.setCaretPosition(offset);
     if (G.VIsual_active) {
         updateVisualState();
-  }
+    }
   }
 
   public void setCaretPosition(int lnum, int col) {

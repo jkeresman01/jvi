@@ -45,9 +45,6 @@ import static com.raelity.jvi.Constants.*;
 
 public final class Window {
   private ViTextView editor;
-  private FPOS w_cursor = new FPOS();
-
-  // private ViMark[] marks;
 
   public Window(ViTextView editor) {
     this.editor = editor;
@@ -61,9 +58,6 @@ public final class Window {
    * The current location of the cursor in this window.
    */
   public FPOS XXXgetWCursor() {
-    // return editor.getCursor()
-    // w_cursor.setCursor(editor);	// make sure cursor is current
-    // return w_cursor;
     return getEditor().getWCursor();
   }
 

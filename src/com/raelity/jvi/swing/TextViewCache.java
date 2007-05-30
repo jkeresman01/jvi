@@ -52,11 +52,12 @@ import javax.swing.event.ChangeEvent;
 
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.FPOS;
-import com.raelity.jvi.WCursor;
 import com.raelity.jvi.Util;
 import com.raelity.jvi.BooleanOption;
+import com.raelity.jvi.G;
 import com.raelity.jvi.Options;
-import com.raelity.jvi.*;
+import com.raelity.jvi.ViManager;
+
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Position;
 
@@ -109,7 +110,9 @@ public class TextViewCache implements PropertyChangeListener,
   //
 
   private int dot = -1;
-  private FPOS cursor = new WCursor() {
+  private WCursor cursor = new WCursor();
+
+  private class WCursor extends FPOS {
     public int getLine() {
       if(invalidCursor) {
         fillCursor();
@@ -127,6 +130,32 @@ public class TextViewCache implements PropertyChangeListener,
         fillCursor();
       }
       return super.getOffset();
+    }
+    
+    public void set(int line, int column) {
+      //System.err.println("setPosition("+line+","+column+")");
+      int startOffset = textView.getLineStartOffset(line);
+      int endOffset = textView.getLineEndOffset(line);
+      if(column < 0) {
+        ViManager.dumpStack("line " + line + ", column " + column
+                            + ", length " + (endOffset - startOffset));
+        column = 0;
+      } else if(column >= endOffset - startOffset) {
+        ViManager.dumpStack("line " + line + ", column " + column
+                            + ", length " + (endOffset - startOffset));
+        column = endOffset - startOffset - 1;
+      }
+      // NOTE: setting the caret, will invalidate the cursor,
+      // which in turn will cause a fillCursor, which set's the offset/line/col
+      textView.setCaretPosition(startOffset + column);
+    }
+
+    public void setColumn(int column) {
+      set(getLine(), column);
+    }
+    
+    private void setCursor() {
+      super.setCursor(textView);
     }
   };
   private boolean invalidCursor = true;
@@ -149,7 +178,7 @@ public class TextViewCache implements PropertyChangeListener,
       cursor = new WCursor();
       System.err.println("CURSOR should never be null");
     }
-    cursor.setCursor(textView);
+    cursor.setCursor();
     invalidCursor = false;
   }
 
