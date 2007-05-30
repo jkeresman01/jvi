@@ -39,8 +39,8 @@ public class OPARG
 				   valid when motion_type is MCHAR */
     boolean end_adjusted;	/* backuped b_op_end one char (only used by
 				   do_format()) */
-    FPOS    start;		/* start of the operator */
-    FPOS    end;		/* end of the operator */
+    ViFPOS  start;		/* start of the operator */
+    ViFPOS  end;		/* end of the operator */
     int     line_count;		/* number of lines from op_start to op_end
 				   (inclusive) */
     boolean empty;		/* op_start and op_end the same (only used by
@@ -65,8 +65,8 @@ public class OPARG
         dest.regname = regname;
         dest.motion_type = motion_type;
         dest.end_adjusted = end_adjusted;
-        dest.start = (FPOS) (start == null ? null : start.copy());
-        dest.end = (FPOS) (end == null ? null : end.copy());
+        dest.start = (start == null ? null : start.copy());
+        dest.end = (end == null ? null : end.copy());
         dest.line_count = line_count;
         dest.empty = empty;
         dest.is_VIsual = is_VIsual;
