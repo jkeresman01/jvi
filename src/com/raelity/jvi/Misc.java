@@ -3734,30 +3734,29 @@ public class Misc implements ClipboardOwner {
         // too much sometimes gets allocated with the setLength,
         // but the correct number of chars gets copied, keep track of that.
         // BTW, a few extra nulls at the end wouldn't hurt vim
-        // This may actuall not be needed, doesn't seem to happen anymore
-        //int totalChars = 0;
+                                                    //int totalChars = 0;
 
         // copy up to deleted part
         mch_memmove(newBuf, 0, oldBuf, oldp, bd.textcol);
         oldp += bd.textcol + bd.textlen;
-                                              //totalChars += bd.textcol;
+                                                    //totalChars += bd.textcol;
         // insert pre-spaces
         copy_spaces(newBuf, bd.textcol, bd.startspaces);
-                                              //totalChars += bd.startspaces;
+                                                    //totalChars += bd.startspaces;
         /* insert replacement chars CHECK FOR ALLOCATED SPACE */
         copy_chars(newBuf, STRLEN(newBuf), numc, c);
-                                              //totalChars += numc;
+                                                    //totalChars += numc;
         if (!bd.is_short) {
           // insert post-spaces
           copy_spaces(newBuf, STRLEN(newBuf), bd.endspaces);
-                                                //totalChars += bd.endspaces;
+                                                      //totalChars += bd.endspaces;
           // copy the part after the changed part, -1 to exclude \n
           int tCount = (oldBuf.length() - 1) - oldp; // STRLEN(oldp) +1 
           mch_memmove(newBuf, STRLEN(newBuf), oldBuf, oldp, tCount);
-                                                //totalChars += tCount;
+                                                      //totalChars += tCount;
         }
-                                                // tweak deletes trailing nulls
-                                                //newBuf.setLength(totalChars);
+        // tweak deletes trailing nulls
+        newBuf.setLength(STRLEN(newBuf));
         // replace the line
         //ml_replace(curwin.w_cursor.lnum, newp, FALSE);
         G.curwin.replaceString(G.curwin.getLineStartOffset(lnum),
@@ -3766,8 +3765,7 @@ public class Misc implements ClipboardOwner {
       }
     }
     
-    G.curwin.getWCursor().set(oap.start.getLine(),
-                                      oap.start.getColumn());
+    G.curwin.getWCursor().set(oap.start);
     adjust_cursor();
     
     oap.line_count = 0;	    /* no lines deleted */
