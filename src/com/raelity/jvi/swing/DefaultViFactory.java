@@ -31,7 +31,11 @@ package com.raelity.jvi.swing;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.KeyboardFocusManager;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
@@ -42,6 +46,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
+import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
@@ -238,7 +243,12 @@ public class DefaultViFactory implements ViFactory {
     return glass;
   }
   
-  public void startModalKeyCatch(KeyListener kl) {
+  /** Method to establish a glass pane with the param key listener and all
+   * mouse events are blocked.
+   * This is not modal, in particular the event thread is still running, but
+   * it blocks the current window.
+   */
+  public void startGlassKeyCatch(KeyListener kl) {
     if(mouseAdapter != null)
       throw new IllegalStateException("Already in modal state");
     
@@ -261,15 +271,7 @@ public class DefaultViFactory implements ViFactory {
     glass.requestFocusInWindow();
   }
   
-  /*
-  public void startModalButton(String text, Color color) {
-    if(mouseAdapter != null)
-      throw new IllegalStateException("Already in modal state");
-    Container glass = getModalGlassPane(G.curwin.getEditorComponent());
-  }
-  */
-  
-  public void stopModal() {
+  public void stopGlassKeyCatch() {
     if(mouseAdapter == null)
       throw new IllegalStateException("Not in modal state");
     Container glass = getModalGlassPane(G.curwin.getEditorComponent());
@@ -292,6 +294,45 @@ public class DefaultViFactory implements ViFactory {
                                 null);
     
     G.curwin.getEditorComponent().requestFocusInWindow();
+  }
+
+  JDialog dialog;
+  public void startModalKeyCatch(KeyListener kl) {
+    JEditorPane ep = G.curwin.getEditorComponent();
+    java.awt.Window wep = SwingUtilities.getWindowAncestor(ep);
+    dialog = new JDialog((Frame)wep, "jVi", true);
+    dialog.setUndecorated(true); // on windows see nothing, perfect
+    dialog.pack();
+    // place dialog in lower left of editor
+    Container jc = SwingUtilities.getAncestorOfClass(
+            javax.swing.JScrollPane.class,
+            G.curwin.getEditorComponent());
+    if(jc == null) {
+      jc = G.curwin.getEditorComponent();
+    }
+    // put the dialog just below the editor pane, on the right
+    //Dimension d00 = d.getPreferredSize();
+    Dimension d00 = dialog.getSize();
+    Point p00 = jc.getLocation();
+    p00.translate(jc.getWidth() - (int)d00.getWidth(), jc.getHeight());
+    //p00 = SwingUtilities.convertPoint(jc.getParent(),  p00, wep);
+    SwingUtilities.convertPointToScreen(p00, jc.getParent());
+    dialog.setLocation(p00);
+    
+    Component glass = dialog.getGlassPane();
+    glass.addKeyListener(kl);
+    glass.setVisible(true);
+    glass.requestFocusInWindow();
+    
+    dialog.setVisible(true);
+  }
+
+  public void stopModalKeyCatch() {
+    if(dialog == null)
+      throw new IllegalStateException("Not in modal state");
+    dialog.setVisible(false);
+    dialog.dispose();
+    dialog = null;
   }
 
   /**

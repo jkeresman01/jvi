@@ -82,7 +82,7 @@ public class ViManager {
   // HACK: to workaround JDK bug dealing with focus and JWindows
   public static ViCmdEntry activeCommandEntry;
 
-  public static final jViVersion version = new jViVersion("0.9.5.beta1.6");
+  public static final jViVersion version = new jViVersion("0.9.5.beta1.7");
   
   private static boolean enabled;
 
@@ -692,17 +692,8 @@ public class ViManager {
   
   static public void dump(PrintStream ps) {
     ps.println("-----------------------------------");
-    /*
-    ps.println("currentEditorPane = " + currentEditorPane );
-    ps.println("factory = " + factory );
-    
-    ps.println("" + textBuffers.size() + " active");
-    ps.println("textBuffers = " + textBuffers );
-    ps.println("textMRU = " + textMRU );
-    ps.println("currentlyActive = " + currentlyActive );
-    ps.println("ignoreActivation = " + ignoreActivation );
-    */
-    ps.println("currentEditorPane = " + G.curwin.getDisplayFileName());
+    ps.println("currentEditorPane = "
+               + (G.curwin == null ? "null" : G.curwin.getDisplayFileName()));
     ps.println("factory = " + factory );
     
     ps.println("textBuffers: " + textBuffers.size());

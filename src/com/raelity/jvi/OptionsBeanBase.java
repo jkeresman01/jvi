@@ -275,6 +275,14 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	    return getString(Options.formatProgram);
     }
 
+    public void setViTextWidth(int arg)  throws PropertyVetoException {
+        put(Options.textWidth, arg);
+    }
+
+    public int getViTextWidth() {
+	    return getint(Options.textWidth);
+    }
+
     public void setViModeline(boolean arg)  throws PropertyVetoException {
         put(Options.modeline, arg);
     }

@@ -92,11 +92,11 @@ public interface ViFactory {
   public ViOutputStream createOutputStream(ViTextView tv,
                                            Object type, Object info);
   
+  public void startGlassKeyCatch(KeyListener kl);
+  public void stopGlassKeyCatch();
+
   public void startModalKeyCatch(KeyListener kl);
-  
-  //public void startModalButton(String text, Color color);
-  
-  public void stopModal();
+  public void stopModalKeyCatch();
 
   /**
    * The factory keeps track of which Window is active when there
