@@ -66,6 +66,7 @@ public class Buffer implements ViOptionBag {
         b_p_ts = Options.getOption(Options.tabStop).getInteger();
         b_p_sw = Options.getOption(Options.shiftWidth).getInteger();
         b_p_et = Options.getOption(Options.expandTabs).getBoolean();
+        b_p_tw = Options.getOption(Options.textWidth).getInteger();
     }
 
     public void viOptionSet(ViTextView tv, String name) {
@@ -127,6 +128,7 @@ public class Buffer implements ViOptionBag {
     public int b_p_ts;     // tab stop
     public int b_p_sw;     // shiftw width
     public boolean b_p_et;     // expand tabs
+    public int b_p_tw;     // text width
     
     //////////////////////////////////////////////////////////////////////
     //

@@ -28,6 +28,7 @@
  */
 package com.raelity.jvi;
 
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -51,6 +52,7 @@ import static com.raelity.jvi.ColonCommandFlags.*;
 
 import java.io.*;
 import java.lang.Thread.UncaughtExceptionHandler;
+import javax.swing.JOptionPane;
 import javax.swing.Timer;
 
 /**
@@ -154,6 +156,7 @@ public class ColonCommands {
     boolean bang = false;
     MutableInt lnum = new MutableInt(0);
     boolean skip = false; // NEEDSWORK: executCommmand how else is this set
+    cev.commandLine = commandLine;
 
     //
     // 3. parse a range specifier of the form: addr [,addr] [;addr] ..
@@ -250,6 +253,27 @@ public class ColonCommands {
 	    cev.addr_count = 0;
     }
 
+    if(cev.addr_count > 1) {
+      if(cev.line1 > cev.line2) {
+        //
+        // NEEDSWORK: Quick hack for swap range. Want something like
+        // factory.startModalKeyCatch, but that hangs the event thread.
+        // Could then replace factory.startModalKeyCatch.
+        //
+        int rc = JOptionPane.showConfirmDialog(null,
+                                              "Backwards range given,"
+                                              + "OK to swap (y/n)?",
+                                              "Command Execution",
+                                              JOptionPane.YES_NO_OPTION);
+        if(rc != JOptionPane.YES_OPTION)
+          return null;
+        int t = cev.line1;
+        cev.line1 = cev.line2;
+        cev.line2 = t;
+
+      }
+    }
+
     // Find the command
 
     sidx = Misc.skipwhite(commandLine, sidx);
@@ -282,6 +306,7 @@ public class ColonCommands {
     sidx = Misc.skipwhite(commandLine, sidx);
 
     String command = commandLine.substring(sidx01, sidx02);
+    cev.iArgString = sidx02;
     AbbrevLookup.CommandElement ce = commands.lookupCommand(command);
     if(ce == null) {
       Msg.emsg("Not an editor command: " + command);
@@ -496,6 +521,8 @@ public class ColonCommands {
     boolean bang;
     /** command line as entered */
     String commandLine;
+    /** index of the command args in the original string */
+    private int iArgString;
     /** the command arguments */
     List args;
     /** the text view for this event */
@@ -580,6 +607,20 @@ public class ColonCommands {
     }
 
     /**
+     * @return the expanded commandName
+     */
+    public String getComandName() {
+      return command;
+    }
+
+    /**
+     * @return the unparsed string of arguments
+     */
+    public String getArgString() {
+      return commandLine.substring(iArgString);
+    }
+
+    /**
      * Fetch the command line, including commmand name
      */
     public String XXXgetCommandLine() {
@@ -590,7 +631,6 @@ public class ColonCommands {
   public static class BangAction extends ColonAction {
     FilterThreadCoordinator coord = null;
     BooleanOption dbg = (BooleanOption)Options.getOption(Options.dbgBang); 
-    String origCommandString;
 
     public void actionPerformed(ActionEvent ev) {
       if(coord != null) {
@@ -599,69 +639,29 @@ public class ColonCommands {
       }
       ColonEvent evt = (ColonEvent)ev;
       int nArgs = evt.getNArg();
-      List<String> commandLineCopy = new ArrayList<String>();
       boolean isFilter = (evt.getAddrCount() > 0);
-
-      try {
-        if (dbg.value)
-          System.err.println("!: Getting command line arguments");
-        if (nArgs > 0)
-          commandLineCopy.addAll(evt.getArgs());
-        if (dbg.value)
-          System.err.println("!: Converting original command line and saving" +
-            " it as a string");
-        origCommandString = commandLineToString(commandLineCopy);
-        if (dbg.value)
-          System.err.println("!: Original command line string is '" +
-            origCommandString + "'");
-
-        for (int i = 1; i <= nArgs; i++) {
-          StringBuilder arg = new StringBuilder(commandLineCopy.get(i - 1));
-          if (dbg.value)
-            System.err.println("!: Parsing bangs in argument #" + i + ": '" +
-              arg + "'");
-          if (parseBang(arg) == null) {
-            Msg.emsg("No previous command");
-            return;
-          }
-          if (dbg.value)
-            System.err.println("!: Parsing backslashes in argument #" + i +
-              ": '" + arg + "'");
-          parseBackslash(arg);
-          if (dbg.value)
-            System.err.println("!: Replacing command line argument #" + i +
-              ": '" + commandLineCopy.get(i - 1) + "' with '" + arg + "'");
-          commandLineCopy.set(i - 1, arg.toString());
-        }
-
-        if (nArgs >= 1) {
-          if (dbg.value)
-            System.err.println("!: Converting parsed command line to single" +
-              " string");
-          String commandLineString = commandLineToString(commandLineCopy);
-          if (dbg.value)
-            System.err.println("!: Parsed command line string is '" +
-              commandLineString + "'");
-          if (dbg.value)
-            System.err.println("!: Executing parsed command line:");
-          
-          doBangCommand(evt, commandLineString);
-          if(coord == null) {
-            if (dbg.value)
-              System.err.println("!: Event thread experienced error " +
-                "executing command.");
-            return;
-          }
-        }
-        else {
-          lastBangCommand = new String(""); 
-          if (dbg.value)
-            System.err.println("!: Last bang command is saved as '" +
-              lastBangCommand + "'");
-        }
+      
+      if (dbg.value)
+        System.err.println("!: Original command: '" + evt.getArgString() + "'");
+      StringBuilder arg = new StringBuilder(evt.getArgString());
+      if (parseBang(arg) == null) {
+        Msg.emsg("No previous command");
+        return;
       }
-      finally {
+      if (dbg.value) System.err.println("!: Substitution '" + arg + "'");
+      
+      if (nArgs >= 1) {
+        String cmd = arg.toString();
+        doBangCommand(evt, cmd);
+        if(coord == null) {
+          return;
+        }
+        lastBangCommand = cmd;
+      } else {
+        lastBangCommand = "";
       }
+      if (dbg.value)
+        System.err.println("!: Last command saved '" + lastBangCommand + "'");
     }
     
     private void joinThread(Thread t) {
@@ -684,7 +684,7 @@ public class ColonCommands {
       if(coord == null)
         return;
       System.err.println("!: DONE :!" + (!fOK ? " ABORT" : ""));
-      ViManager.getViFactory().stopModal();
+      ViManager.getViFactory().stopGlassKeyCatch();
       Msg.wmsg("");
       
       if(!fOK) {
@@ -736,23 +736,6 @@ public class ColonCommands {
       coord = null;
       if(!fOK)
         return;
-      
-      
-      //
-      // Following taken from actionPerformed
-      //
-      if (dbg.value)
-        System.err.println("!: Done executing parsed command line");
-      if (dbg.value)
-        System.err.println("!: Parsing bangs in original command line again" +
-          " to save as last bang command");
-      origCommandString =
-          parseBang(new StringBuilder(origCommandString)).toString();
-      lastBangCommand = origCommandString;
-      if (dbg.value)
-        System.err.println("!: Last bang command is saved as '" +
-          lastBangCommand + "'");
-      
     }
 
     private StringBuilder parseBang(StringBuilder sb) {
@@ -766,6 +749,9 @@ public class ColonCommands {
           } else {
             return null;
           }
+        } else {
+          // looking at "!" following a "\"
+          sb.deleteCharAt(--index);
         }
         index++;
       }
@@ -801,9 +787,6 @@ public class ColonCommands {
       BooleanOption dbg = (BooleanOption)Options.getOption(Options.dbgBang); 
       boolean isFilter = (evt.getAddrCount() > 0);
 
-      if (dbg.value)
-        System.err.println("!: Constructing ArrayList for ProcessBuilder");
-
       ArrayList<String> shellCommandLine = new ArrayList<String>(3);
       String shellXQuote = G.p_sxq.getString();
 
@@ -812,24 +795,17 @@ public class ColonCommands {
       shellCommandLine.add(shellXQuote + commandLine + shellXQuote);
 
       if (dbg.value)
-        System.err.println("!: Creating ProcessBuilder class with ArrayList '" +
-          shellCommandLine + "'");
-
-      if (dbg.value)
-        System.err.println("!: Redirecting ProcessBuilder Process error " +
-          "stream to stdout");
+        System.err.println("!: ProcessBuilder: '" + shellCommandLine + "'");
 
       ProcessBuilder pb = new ProcessBuilder(shellCommandLine);
       pb.redirectErrorStream(true);
 
-      if (dbg.value)
-        System.err.println("!: Starting ProcessBuilder Process");
       Process p;
       try {
         p = pb.start();
       } catch (IOException ex) {
         String s = ex.getMessage();
-        Msg.emsg(s != null  || s.equals("")? s : "exec failed");
+        Msg.emsg(s == null || s.equals("") ? "exec failed" : s);
         return false;
       }
 
@@ -841,7 +817,7 @@ public class ColonCommands {
       coord.statusMessage = "Enter 'Ctrl-C' to ABORT";
       Msg.fmsg(coord.statusMessage);
       
-      ViManager.getViFactory().startModalKeyCatch(new KeyAdapter() {
+      ViManager.getViFactory().startGlassKeyCatch(new KeyAdapter() {
         public void keyTyped(KeyEvent e) {
           e.consume();
           if(e.getKeyChar() == (KeyEvent.VK_C & 0x1f)
@@ -857,23 +833,25 @@ public class ColonCommands {
       if (dbg.value)
         System.err.println("!: starting threads");
 
+      String fullCommand = commandLineToString(shellCommandLine);
       if (isFilter) {
-        outputFromProcessToFile(evt, p); 
+        outputFromProcessToFile(evt, p, fullCommand); 
       }
       else {
-        outputToViOutputStream(evt, p);
+        outputToViOutputStream(evt, p, fullCommand);
       }
 
       return true;
     }
 
     private void outputToViOutputStream(ColonEvent evt,
-                                        Process p) {
+                                        Process p,
+                                        String cmd) {
       
       BufferedReader br;
       ViOutputStream vos;
       br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-      vos = ViManager.createOutputStream(null, ViOutputStream.OUTPUT, null);
+      vos = ViManager.createOutputStream(null, ViOutputStream.OUTPUT, cmd);
       
       coord.simpleExecuteThread = new SimpleExecuteThread(coord, vos, br);
       
@@ -901,7 +879,8 @@ public class ColonCommands {
      * this might descrease the memory requirements for undo/redo.
      */
     private void outputFromProcessToFile(ColonEvent evt,
-                                         Process p) {
+                                         Process p,
+                                         String cmd) {
 
       // NEEDSWORK: set up a thread group???
       
@@ -1822,19 +1801,35 @@ public class ColonCommands {
     }
   };
   
-  static ActionListener ACTION_testKeys = new ActionListener() {
+  static ActionListener ACTION_testGlassKeys = new ActionListener() {
     public void actionPerformed(ActionEvent ev) {
-      ViManager.getViFactory().startModalKeyCatch(new KeyAdapter() {
+      ViManager.getViFactory().startGlassKeyCatch(new KeyAdapter() {
         public void keyPressed(KeyEvent e) {
           e.consume();
           if(e.getKeyCode() == KeyEvent.VK_Y) {
-            ViManager.getViFactory().stopModal();
+            ViManager.getViFactory().stopGlassKeyCatch();
             Msg.clearMsg();
           } else 
             Util.vim_beep();
         }
       });
       Msg.smsg("Enter 'y' to proceed");
+    }
+  };
+  
+  static ActionListener ACTION_testModalKeys = new ActionListener() {
+    public void actionPerformed(ActionEvent ev) {
+      Msg.smsg("Enter 'y' to proceed");
+      ViManager.getViFactory().startModalKeyCatch(new KeyAdapter() {
+        public void keyPressed(KeyEvent e) {
+          e.consume();
+          if(e.getKeyCode() == KeyEvent.VK_Y) {
+            ViManager.getViFactory().stopModalKeyCatch();
+          } else 
+            Util.vim_beep();
+        }
+      });
+      Msg.clearMsg();
     }
   };
 
@@ -1865,7 +1860,8 @@ public class ColonCommands {
     
     register("noh", "nohlsearch", ACTION_nohlsearch);
     
-    register("testKeys", "testKeys", ACTION_testKeys);
+    register("testGlassKeys", "testGlassKeys", ACTION_testGlassKeys);
+    register("testModalKeys", "testModalKeys", ACTION_testModalKeys);
     
     ColonCommands.register("jviDump", "jviDump", new ActionListener() {
       public void actionPerformed(ActionEvent e) {

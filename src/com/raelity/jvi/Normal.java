@@ -1748,8 +1748,13 @@ middle_code:
       oap.regname = 0;
     }
   }
+
+  static void op_format(OPARG oap)  {
+    do_op("op_format");
+    op_colon(oap);
+  }
   
-  static private  void	op_colon (OPARG oap) throws NotSupportedException {
+  static private  void	op_colon (OPARG oap) {
       do_op("op_colon");
       StringBuffer range = new StringBuffer();
       if(oap.is_VIsual) {
@@ -1783,21 +1788,23 @@ middle_code:
     }
     if (oap.op_type == OP_INDENT)
     {
-//#ifndef CINDENT
-//	if (*p_ep == NUL)
-//	    stuffReadbuff((char_u *)"indent");
-//	else
-//#endif
-        range.append(G.p_ep.getString());
-      range.append("\n");
+      String indent;
+      if (G.p_ep.equals(""))
+        indent = "indent";
+      else
+        indent = G.p_ep.getString();
+      range.append(indent).append("\n");
     }
     else if (oap.op_type == OP_FORMAT)
     {
-//	if (*p_fp == NUL)
-//	    stuffReadbuff((char_u *)"fmt");
-//	else
-          range.append(G.p_fp.getString());
-        range.append("\n");
+        String fmt;
+	if (G.p_fp.equals("")) {
+          fmt = "fmt";
+        } else {
+          fmt = G.p_fp.getString().replace(
+                  Options.twMagic, "" + G.curbuf.b_p_tw);
+        }
+        range.append(fmt).append("\n");
     }
       
     ColonCommands.doColonCommand(range);
@@ -2060,7 +2067,7 @@ middle_code:
 
   public static void displaySelectState(String s) {
     showcmd_buf.setLength(0);
-    showcmd_buf.append(s);
+    showcmd_buf.append(s + " ");
     Misc.setCommandCharacters(showcmd_buf.toString());
     Misc.out_flush();
   }
@@ -4113,7 +4120,7 @@ static private void nv_findpar(CMDARG cap, int dir)
     // do_op("op_yank"); return OK; }
   // static boolean op_change(OPARG oap) {do_op("op_change"); return false;}
   // static void op_tilde(OPARG oap) {do_op("op_tilde");}
-  static void op_format(OPARG oap) {do_op("op_format");}
+  // static void op_format(OPARG oap) {do_op("op_format");}
 
 
   // static int typebuf_maplen() { do_op("typebuf_maplen");return 0; }

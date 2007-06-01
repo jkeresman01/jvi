@@ -81,7 +81,7 @@ public final class Options {
       return options;
   }
   
-  public enum Category { DEBUG, MISC, GENERAL, CURSOR_WRAP }
+  public enum Category { DEBUG, MODIFY, GENERAL, CURSOR_WRAP }
   
   public static final String commandEntryFrame = "viCommandEntryFrameOption";
   public static final String redoTrack = "viRedoTrack";
@@ -120,6 +120,7 @@ public final class Options {
   public static final String scrollOff = "viScrollOff";
   public static final String shiftWidth = "viShiftWidth";
   public static final String tabStop = "viTabStop";
+  public static final String textWidth = "viTextWidth";
   public static final String showMode = "viShowMode";
   public static final String showCommand = "viShowCommand";
   
@@ -146,12 +147,14 @@ public final class Options {
   public static final String dbgEditorActivation = "viDbgEditorActivation";
   public static final String dbgBang = "viDbgBang";
 
+  public static final String twMagic = "#TEXT-WIDTH#";
+
   
   private static Map<String,Option> optionsMap = new HashMap<String,Option>();
   
   static List<String>generalList = new ArrayList<String>();
+  static List<String>modifyList = new ArrayList<String>();
   static List<String>searchList = new ArrayList<String>();
-  static List<String>miscList = new ArrayList<String>();
   static List<String>cursorWrapList = new ArrayList<String>();
   static List<String>externalProcessList = new ArrayList<String>();
   static List<String>debugList = new ArrayList<String>();
@@ -249,8 +252,91 @@ public final class Options {
     G.isClassicUndo = createBooleanOption(classicUndoOption, true);
     setupOptionDesc(generalList, classicUndoOption, "classic undo",
                     "When false, undo is done according to the"
-                    + " underlying platform; usually small chunks.");
+                    + " underlying platform; usually tiny chunks.");
     setExpertHidden(classicUndoOption, true, false);
+
+    G.p_cb = createBooleanOption(unnamedClipboard, false);
+    setupOptionDesc(generalList, unnamedClipboard,
+               "'clipboard' 'cb' (unnamed)",
+               "use clipboard for unamed yank, delete and put");
+
+    G.p_notsol = createBooleanOption(notStartOfLine, false);
+    setupOptionDesc(generalList, notStartOfLine, "(not)'startofline' (not)'sol'",
+               "After motion try to keep column position."
+            + " NOTE: state is opposite of vim.");
+    
+    createColorOption(selectColor, new Color(0xffe588)); // a light (HSB) orange
+    setupOptionDesc(generalList, selectColor, "'hl-visual' color",
+            "The color used for a visual mode selection.");
+    setExpertHidden(selectColor, true, false);
+
+    G.p_sel = createStringOption(selection, "inclusive",
+            new StringOption.Validator() {
+              public void validate(String val) throws PropertyVetoException {
+                if("old".equals(val)
+                   || "inclusive".equals(val)
+                   || "exclusive".equals(val))
+                  return;
+                throw new PropertyVetoException(
+                    "Value must be one of 'old', 'inclusive' or 'exclusive'."
+                                + " Not '" + val + "'.",
+                            new PropertyChangeEvent(opt, opt.getName(),
+                                                    opt.getString(), val));
+              }
+            });
+    setupOptionDesc(generalList, selection, "'selection' 'sel'",
+            "This option defines the behavior of the selection."
+            + " It is only used in Visual and Select mode."
+            + "Possible values: 'old', 'inclusive', 'exclusive'");
+    setExpertHidden(selection, true, false);
+    
+    G.p_slm = createStringOption(selectMode, "",
+            new StringOption.Validator() {
+              public void validate(String val) throws PropertyVetoException {
+                  if ("mouse".equals(val)
+                      || "key".equals(val)
+                      || "cmd".equals(val))
+                  return;
+                throw new PropertyVetoException(
+                    "Value must be one of 'mouse', 'key' or 'cmd'."
+                                + " Not '" + val + "'.",
+                            new PropertyChangeEvent(opt, opt.getName(),
+                                                    opt.getString(), val));
+              }
+            });
+    setupOptionDesc(generalList, selectMode, "'selectmode' 'slm'",
+            "This is a comma separated list of words, which specifies when to"
+            + " start Select mode instead of Visual mode, when a selection is"
+            + " started. Possible values: 'mouse', key' or 'cmd'");
+    setExpertHidden(selectMode, true, true);
+    
+    G.useFrame  = createBooleanOption(commandEntryFrame , false);
+    setupOptionDesc(generalList, commandEntryFrame, "use modal frame",
+               "use modal frame for command/search entry");
+    setExpertHidden(commandEntryFrame, true, true);
+
+    /////////////////////////////////////////////////////////////////////
+    //
+    //
+    // Vi Options that affect modifications to the document
+    //
+    //
+
+    G.p_to = createBooleanOption(tildeOperator, false);
+    setupOptionDesc(modifyList, tildeOperator , "'tildeop' 'top'",
+               "tilde \"~\" acts like an operator, e.g. \"~w\" works");
+
+    G.p_cpo_w = createBooleanOption(changeWordBlanks, true);
+    setupOptionDesc(modifyList, changeWordBlanks, "'cpoptions' 'cpo' \"w\"",
+               "\"cw\" affects sequential white space");
+
+    G.p_js = createBooleanOption(joinSpaces, true);
+    setupOptionDesc(modifyList, joinSpaces, "'joinspaces' 'js'",
+               "\"J\" inserts two spaces after a \".\", \"?\" or \"!\"");
+
+    G.p_sr = createBooleanOption(shiftRound, false);
+    setupOptionDesc(modifyList, shiftRound, "'shiftround' 'sr'",
+               "\"<\" and \">\" round indent to multiple of shiftwidth");
 
     /////////////////////////
     //
@@ -258,20 +344,26 @@ public final class Options {
     //
     
     /*G.b_p_et = */createBooleanOption(expandTabs, false);
-    setupOptionDesc(generalList, expandTabs, "'expandtab' 'et'",
+    setupOptionDesc(modifyList, expandTabs, "'expandtab' 'et'",
            "In Insert mode: Use the appropriate number of spaces to"
            + " insert a <Tab>. Spaces are used in indents with the '>' and"
            + " '<' commands.");
 
     /*G.b_p_sw = */createIntegerOption(shiftWidth, 8);
-    setupOptionDesc(generalList, shiftWidth, "'shiftwidth' 'sw'",
+    setupOptionDesc(modifyList, shiftWidth, "'shiftwidth' 'sw'",
             "Number of spaces to use for each step of indent. Used for '>>',"
             + " '<<', etc.");
 
     /*G.b_p_ts = */createIntegerOption(tabStop, 8);
-    setupOptionDesc(generalList, tabStop, "'tabstop' 'ts'",
+    setupOptionDesc(modifyList, tabStop, "'tabstop' 'ts'",
             "Number of spaces that a <Tab> in the file counts for.");
 
+    /*G.b_p_ts = */createIntegerOption(textWidth, 79);
+    setupOptionDesc(modifyList, textWidth, "'textwidth' 'tw'",
+            "This option currently only used in conjunction with the"
+            + " 'gq' and 'Q' format command. This value is substituted"
+            + " for " + twMagic + " in formatprg option string.");
+    
     /////////////////////////////////////////////////////////////////////
     //
     //
@@ -439,94 +531,13 @@ public final class Options {
             "When this option is empty the internal formatting functions " +
             "are used.");
 
-    G.p_fp = createStringOption(formatProgram, "fmt");
+    G.p_fp = createStringOption(formatProgram, "fmt -w " + twMagic);
     setupOptionDesc(externalProcessList, formatProgram, "'formatprg' 'fp'",
             "The name of an external program used to format lines selected " +
             "with 'gq' operator (default \"fmt\").  The program must take " +
             "input on stdin and produce output to stdout.  In Unix, " +
-            "\"fmt\" is such a program.");
-
-    /////////////////////////////////////////////////////////////////////
-    //
-    //
-    // Vi miscellaneous options
-    //
-    //
-    G.p_cb = createBooleanOption(unnamedClipboard, false);
-    setupOptionDesc(miscList, unnamedClipboard,
-               "'clipboard' 'cb' (unnamed)",
-               "use clipboard for unamed yank, delete and put");
-
-    G.p_notsol = createBooleanOption(notStartOfLine, false);
-    setupOptionDesc(miscList, notStartOfLine, "(not)'startofline' (not)'sol'",
-               "After motion try to keep column position."
-            + " NOTE: state is opposite of vim.");
-
-    G.p_to = createBooleanOption(tildeOperator, false);
-    setupOptionDesc(miscList, tildeOperator , "'tildeop' 'top'",
-               "tilde \"~\" acts like an operator, e.g. \"~w\" works");
-
-    G.p_cpo_w = createBooleanOption(changeWordBlanks, true);
-    setupOptionDesc(miscList, changeWordBlanks, "'cpoptions' 'cpo' \"w\"",
-               "\"cw\" affects sequential white space");
-
-    G.p_js = createBooleanOption(joinSpaces, true);
-    setupOptionDesc(miscList, joinSpaces, "'joinspaces' 'js'",
-               "\"J\" inserts two spaces after a \".\", \"?\" or \"!\"");
-
-    G.p_sr = createBooleanOption(shiftRound, false);
-    setupOptionDesc(miscList, shiftRound, "'shiftround' 'sr'",
-               "\"<\" and \">\" round indent to multiple of shiftwidth");
-    
-    G.useFrame  = createBooleanOption(commandEntryFrame , false);
-    setupOptionDesc(miscList, commandEntryFrame, "use modal frame",
-               "use modal frame for command/search entry");
-    setExpertHidden(commandEntryFrame, true, true);
-
-    G.p_sel = createStringOption(selection, "inclusive",
-            new StringOption.Validator() {
-              public void validate(String val) throws PropertyVetoException {
-                if("old".equals(val)
-                   || "inclusive".equals(val)
-                   || "exclusive".equals(val))
-                  return;
-                throw new PropertyVetoException(
-                    "Value must be one of 'old', 'inclusive' or 'exclusive'."
-                                + " Not '" + val + "'.",
-                            new PropertyChangeEvent(opt, opt.getName(),
-                                                    opt.getString(), val));
-              }
-            });
-    setupOptionDesc(miscList, selection, "'selection' 'sel'",
-            "This option defines the behavior of the selection."
-            + " It is only used in Visual and Select mode."
-            + "Possible values: 'old', 'inclusive', 'exclusive'");
-    setExpertHidden(selection, true, false);
-    
-    G.p_slm = createStringOption(selectMode, "",
-            new StringOption.Validator() {
-              public void validate(String val) throws PropertyVetoException {
-                  if ("mouse".equals(val)
-                      || "key".equals(val)
-                      || "cmd".equals(val))
-                  return;
-                throw new PropertyVetoException(
-                    "Value must be one of 'mouse', 'key' or 'cmd'."
-                                + " Not '" + val + "'.",
-                            new PropertyChangeEvent(opt, opt.getName(),
-                                                    opt.getString(), val));
-              }
-            });
-    setupOptionDesc(miscList, selectMode, "'selectmode' 'slm'",
-            "This is a comma separated list of words, which specifies when to"
-            + " start Select mode instead of Visual mode, when a selection is"
-            + " started. Possible values: 'mouse', key' or 'cmd'");
-    setExpertHidden(selection, true, true);
-    
-    createColorOption(selectColor, new Color(0xffe588)); // a light (HSB) orange
-    setupOptionDesc(miscList, selectColor, "'hl-visual' color",
-            "The color used for a visual mode selection.");
-    setExpertHidden(selection, true, false);
+            "\"fmt\" is such a program. " + twMagic + " in the string is " +
+            "substituted by the value of textwidth option. ");
 
     /////////////////////////////////////////////////////////////////////
     //
@@ -637,7 +648,7 @@ public final class Options {
   public static List<String> getOptionNamesList() {
     List<String> l = new ArrayList();
     l.addAll(generalList);
-    l.addAll(miscList);
+    l.addAll(modifyList);
     l.addAll(cursorWrapList);
     l.addAll(debugList);
     return Collections.unmodifiableList(l);
@@ -649,7 +660,7 @@ public final class Options {
       switch(category) {
           case CURSOR_WRAP: catList = cursorWrapList; break;
           case DEBUG:       catList = debugList; break;
-          case MISC:        catList = miscList; break;
+          case MODIFY:        catList = modifyList; break;
           case GENERAL:     catList = generalList; break;
       }
       setupOptionDesc(catList, name, displayName, desc);
@@ -775,6 +786,7 @@ public final class Options {
       new VimOption("number", "nu", P_IND|P_WIN, "w_p_nu", null),
       new VimOption("shiftwidth", "sw", P_IND, "b_p_sw", shiftWidth),
       new VimOption("tabstop", "ts", P_IND, "b_p_ts", tabStop),
+      new VimOption("textwidth", "tw", P_IND, "b_p_tw", textWidth),
     };
     
     public void actionPerformed(ActionEvent e) {
