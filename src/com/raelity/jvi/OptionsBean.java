@@ -20,10 +20,11 @@ public class OptionsBean {
 	}
     }
     
-    static public class Misc extends OptionsBeanBase {
+    static public class Modify extends OptionsBeanBase {
 	
-	public Misc() {
-	    super(Misc.class, "Miscelaneous Options", Options.miscList);
+	public Modify() {
+	    super(Modify.class, "File Modifications Options",
+                  Options.modifyList);
 	}
     }
     
@@ -38,8 +39,8 @@ public class OptionsBean {
     static public class ExternalProcess extends OptionsBeanBase {
 	
 	public ExternalProcess() {
-	    super(ExternalProcess.class, "External Process Options",
-          Options.externalProcessList);
+	  super(ExternalProcess.class, "External Process Options",
+                Options.externalProcessList);
 	}
     }
 
