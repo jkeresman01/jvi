@@ -3213,6 +3213,20 @@ public class Misc implements ClipboardOwner {
   // but they might use the "Edit" command. So need to handle interactions
   // the other begin/endUndo.
   //
+  // These begin/endRedoUndo are called by the '.' command.
+  //
+  // NOTE: there is a problem with interaction between the '.' command and
+  // operations that may not finish right away. In particular, the '!' commands.
+  // In redo, the bang command can not return early and then finish under
+  // "interrupt" control, because when it returns early endRedoUndo is called
+  // and then the endUndo that is called under interrupt is a problem.
+  // So the "!" command must be modal! If that's a big problem at some point
+  // then the logic can be adjusted (made even messier) for how to end the undo.
+  //
+  // FIX:
+  // If endRedoUndo is called and inUndoCount is non-zero, then there *will*
+  // be an endUndo comming along, so use that....
+  //
   static void beginRedoUndo() {
     if(G.global_busy) {
       return;
@@ -3229,7 +3243,8 @@ public class Misc implements ClipboardOwner {
       return;
     }
     inRedo = false;
-    G.curwin.endUndo();
+    if(inUndoCount == 0)
+      G.curwin.endUndo();
   }
   
   static int[] javaKeyMap;
