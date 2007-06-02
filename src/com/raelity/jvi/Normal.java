@@ -593,8 +593,7 @@ middle_code:
 	    if (G.VIsual_active)
 	      Util.vim_beep();
             else {
-              nv_optrans(ca);
-              opnum = 0;
+              nv_operator(ca); // so both 'gq' and 'Q' map to same operator
             }
 	    break;
 
@@ -3185,14 +3184,14 @@ static private void nv_findpar(CMDARG cap, int dir)
 
   static String[] nv_optrans_ar = new String[] { "dl", "dh", "d$", "c$",
     					         "cl", "cc", "yy", ":s\r",
-                                                 "gq"};
+                                                 };
   /**
    * Translate a command into another command.
    */
   static private  void	nv_optrans (CMDARG cap) {
     do_xop("nv_optrans");
 
-    String str = "xXDCsSY&Q";
+    String str = "xXDCsSY&";
     if (!checkclearopq(cap.oap))
     {
       if (cap.count0 != 0) {
@@ -4183,6 +4182,8 @@ static private void nv_findpar(CMDARG cap, int dir)
 	  return OP_REPLACE;
       if (char1 == '~')		/* when tilde is an operator */
 	  return OP_TILDE;
+      if (char1 == 'Q')		/* also in map as 'g', 'q' */
+          return OP_FORMAT;
       for (i = 0; ; ++i)
 	  if (opchars[i].c1 == char1 && opchars[i].c2 == char2)
 	      break;
