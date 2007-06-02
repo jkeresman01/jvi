@@ -637,6 +637,14 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	return getboolean("viDbgBang");
     }
 
+    public void setViDbgBangData(boolean arg) {
+        put("viDbgBangData", arg);
+    }
+
+    public boolean getViDbgBangData() {
+	return getboolean("viDbgBangData");
+    }
+
     public void setViDbgEditorActivation(boolean arg) {
         put("viDbgEditorActivation", arg);
     }

@@ -1068,7 +1068,7 @@ public class ColonCommands {
             if(DONE.equals(data))
               break;
             writer.write(data);
-            if (dbg.value) // NEEDSWORK: why trim(), use Text.formDebugDString
+            if (dbgData.value) // NEEDSWORK: why trim(), use Text.formDebugDString
               System.err.println("!: Writer #" + currWriterLine + ": '"
                                 + data.trim() + "'");
             currWriterLine++;
@@ -1142,7 +1142,7 @@ public class ColonCommands {
               System.err.println("!: end of process read data");
             break;
           }
-          if (dbg.value) // NEEDSWORK: why trim(), use Text.formDebugString
+          if (dbgData.value) // NEEDSWORK: why trim(), use Text.formDebugString
             System.err.println("!: Reader #" + currReaderLine + ": '"
                               + data.trim() + "'");
           
@@ -1284,7 +1284,7 @@ public class ColonCommands {
           if(!coord.fromDoc.offer(data))
             break;
           deleteLine(docLine);
-          if (dbg.value)
+          if (dbgData.value)
             System.err.println("!: fromDoc #" + docReadLine + "," + docLine
                                 + ": '" + data.trim() + "'");
           docReadLine++;
@@ -1322,7 +1322,7 @@ public class ColonCommands {
           tv.insertText(offset, data);
           offset += data.length();
           tv.insertText(offset, "\n");
-          if (dbg.value)
+          if (dbgData.value)
             System.err.println("!: toDoc #" + docWriteLine + ": '"
                               + data.trim() + "'");
           docWriteLine++;
@@ -1395,6 +1395,8 @@ public class ColonCommands {
     
     protected BooleanOption dbg
                     = (BooleanOption)Options.getOption(Options.dbgBang); 
+    protected BooleanOption dbgData
+                    = (BooleanOption)Options.getOption(Options.dbgBangData); 
 
     public FilterThread(String filterType,
                         FilterThreadCoordinator coord) {

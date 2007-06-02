@@ -146,6 +146,7 @@ public final class Options {
   public static final String dbgCache = "viDbgCache";
   public static final String dbgEditorActivation = "viDbgEditorActivation";
   public static final String dbgBang = "viDbgBang";
+  public static final String dbgBangData = "viDbgBangData";
 
   public static final String twMagic = "#TEXT-WIDTH#";
 
@@ -572,6 +573,10 @@ public final class Options {
     createBooleanOption(dbgBang, false);
     setupOptionDesc(debugList, dbgBang, "debug \"!\" cmds",
                "Output info about external processes");
+
+    createBooleanOption(dbgBangData, false);
+    setupOptionDesc(debugList, dbgBangData, "debug \"!\" cmds data",
+               "Output data tranfers external processes");
   }
 
   static Preferences getPrefs() {
