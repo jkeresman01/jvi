@@ -37,6 +37,7 @@ import com.raelity.text.TextUtil.MySegment;
 
 public class Util {
   // static final int TERMCAP2KEY(int a, int b) { return a + (b << 8); }
+  // NEEDSWORK: CHAR
   static final int ctrl(int x) { return x & 0x1f; }
   // static final int shift(int c) { return c | (0x1 << 24); }
   // static void stuffcharReadbuff(int c) {}
@@ -157,11 +158,11 @@ public class Util {
              && lineempty(1);
   }
 
-  static int getChar() {
+  static char getChar() {
     return getCharAt(G.curwin.getCaretPosition());
   }
 
-  static int getCharAt(int offset) {
+  static char getCharAt(int offset) {
     MySegment seg = new MySegment();
     G.curwin.getSegment(offset, 1, seg);
     return seg.count > 0 ? seg.array[seg.offset] : 0;

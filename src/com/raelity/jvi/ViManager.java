@@ -31,6 +31,7 @@ package com.raelity.jvi;
 
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.MalformedURLException;
@@ -460,6 +461,7 @@ public class ViManager {
     motd.outputOnce();
     
     exitInputMode(); // if switching, make sure prev out of input mode
+    draggingBlockMode = false;
     
     ViTextView textView = getViTextView(editorPane);
     registerEditorPane(editorPane); // make sure it has the right caret
@@ -470,7 +472,6 @@ public class ViManager {
     }
     
     if(currentEditorPane != null) {
-      Normal.resetCommand(); // NEEDSWORK: dont think this is needed
       Normal.abortVisualMode();
       ViTextView currentTv = getViTextView(currentEditorPane);
       // Freeze and/or detach listeners from previous active view
@@ -551,15 +552,19 @@ public class ViManager {
     }
   }
 
+  private static boolean draggingBlockMode;
+
   /**
    * A mouse click; switch to the activated editor.
    * Pass the click on to the window and give it
    * a chance to adjust the position and whatever.
    */
-  public static int mouseSetDot(int pos, JTextComponent c) {
-    if( ! (c instanceof JEditorPane)) {
+  public static int mouseSetDot(int pos, JTextComponent c, MouseEvent mev) {
+    if(!(c instanceof JEditorPane)) {
       return pos;
     }
+    //System.err.println(mev.getMouseModifiersExText(mev.getModifiersEx()));
+    System.err.println(mev.getModifiersExText(mev.getModifiersEx()));
 
     JEditorPane editorPane = (JEditorPane)c;
 
@@ -568,12 +573,25 @@ public class ViManager {
     GetChar.flush_buffers(true);
     exitInputMode();
     switchTo(editorPane);
+    /*int lookFor = mev.ALT_DOWN_MASK | mev.BUTTON1_DOWN_MASK;
+    int mods = mev.getModifiersEx();
+    if((mev.getModifiersEx() & lookFor) == lookFor) {
+      draggingBlockMode = true;
+      System.err.println("START_DRAG");
+    }*/
     
     //System.err.println("mouseSetDot(" + pos + ")");
     Window window = factory.lookupWindow(editorPane);
     pos = window.mouseClickedPosition(pos);
     Normal.abortVisualMode();
     return pos;
+  }
+
+  public static void mouseRelease(MouseEvent mev) {
+    /*if(draggingBlockMode && (mev.getModifiersEx() & mev.BUTTON1_DOWN_MASK) == 0) {
+      draggingBlockMode = false;
+      System.err.println("END_DRAG");
+    }*/
   }
   
   /** not mouse involved, keep caret off of new line;
@@ -596,12 +614,12 @@ public class ViManager {
     return pos;
   }
   
-  public static int mouseMoveDot(int pos, JTextComponent c) {
+  public static int mouseMoveDot(int pos, JTextComponent c, MouseEvent mev) {
     if(c != G.curwin.getEditorComponent()) {
       return pos;
     }
     //System.err.println("mouseMoveDot(" + pos + ")");
-    if(pos != G.curwin.getCaretPosition()) {
+    if(pos != G.curwin.getCaretPosition() && !G.VIsual_active) {
       G.VIsual_mode ='v';
       G.VIsual_active = true;
       G.VIsual = (FPOS) G.curwin.getWCursor().copy();

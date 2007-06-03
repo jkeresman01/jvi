@@ -737,7 +737,7 @@ public class TextView implements ViTextView {
  
   /**
    * Update the selection highlight.
-   * Subclasses that override this should call updateVisualSelectState().
+   * Subclasses that override this should call updateVisualSelectDisplay().
    */
 
   public void updateVisualState() {
@@ -863,6 +863,17 @@ public class TextView implements ViTextView {
    * Subclasses should invoke this from updateVisualState().
    */
   protected void updateVisualSelectDisplay() {
+    if (G.VIsual_active
+        && editorPane.getCaret().getDot() != editorPane.getCaret().getMark() ) {
+      // convert a selection into a visual mode thing,
+      // set G.VIsual to the mark
+      ViFPOS fpos = getWCursor().copy();
+      int offset = editorPane.getCaret().getMark();
+      setCaretPosition(fpos.getOffset()); // clear the selection
+      fpos.set(getLineNumber(offset), getColumnNumber(offset));
+      G.VIsual = fpos;
+    }
+
     vb.init();
     if(!vb.valid)
       return;

@@ -1115,7 +1115,7 @@ middle_code:
 	     */
 	  case 'v':
 	  case 'V':
-	  case 0x1f & (int)('V'):	// Ctrl // DISABLE ON RELEASE
+	  case 0x1f & (int)('V'):	// Ctrl
 	    if (!checkclearop(oap))
                 nv_visual(ca, false);
 	    break;
@@ -1421,15 +1421,12 @@ middle_code:
                 // Use an fpos and set it to the \n for the each iteration
                 ViFPOS fpos = cursor.copy();
                 oap.end_vcol = 0;
-                for (fpos.set(oap.start.getLine(), 0);
-                     fpos.getLine() <= oap.end.getLine();
-                     fpos.set(fpos.getLine() +1, 0))
-                {
-                    fpos.setColumn(Util.lineLength(fpos.getLine()));
-                    Misc.getvcol(G.curwin, fpos, null, null, miEnd);
-                    end = miEnd.getValue();
-                    if (end > oap.end_vcol)
-                        oap.end_vcol = end;
+                for (int l = oap.start.getLine(); l <= oap.end.getLine(); l++) {
+                  fpos.set(l, Util.lineLength(l));
+                  Misc.getvcol(G.curwin, fpos, null, null, miEnd);
+                  end = miEnd.getValue();
+                  if (end > oap.end_vcol)
+                    oap.end_vcol = end;
                 }
             }
             else if (G.redo_VIsual_busy)

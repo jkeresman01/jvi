@@ -98,8 +98,80 @@ public class DefaultViCaret extends DefaultCaret implements ViCaret {
    *
    * @param e the mouse event
    */
-  protected void positionCaret(MouseEvent e) {
+  /*protected void positionCaret(MouseEvent e) {
     viDelegate.positionCaret(e);
-  }
+  }*/
+
+    /* IN SWING, THIS CALLS THE FOLLOWING SET DOT
+    public void setDot(int dot) {
+        if(isMouseAction || mouseButtonDown)
+            dot = ViManager.mouseSetDot(dot, mouseComponent);
+        super.setDot(dot);
+    }*/
+    public void setDot(int dot, Position.Bias dotBias) {
+        if(isMouseAction || mouseButtonDown)
+            dot = ViManager.mouseSetDot(dot, mouseComponent, mouseEvent);
+        super.setDot(dot, dotBias);
+    }
+    
+    /* IN SWING, THIS CALLS THE FOLLOWING MOVE DOT
+    public void moveDot(int dot) {
+        if(mouseButtonDown)
+            dot = ViManager.mouseMoveDot(dot, mouseComponent);
+        super.moveDot(dot);
+    }*/
+
+    public void moveDot(int dot, Position.Bias dotBias) {
+        if(mouseButtonDown)
+            dot = ViManager.mouseMoveDot(dot, mouseComponent, mouseEvent);
+        super.moveDot(dot, dotBias);
+    }
+
+  //
+  // Following copied from NbCaret, all have to do with mouse action
+  //
+
+    boolean mouseButtonDown;
+
+    public void mousePressed(MouseEvent mouseEvent) {
+        mouseButtonDown = true;
+        beginClickHack(mouseEvent);
+        super.mousePressed(mouseEvent);
+        endClickHack();
+    }
+    
+    public void mouseReleased(MouseEvent mouseEvent) {
+        beginClickHack(mouseEvent);
+        super.mouseReleased(mouseEvent);
+        ViManager.mouseRelease(mouseEvent);
+        endClickHack();
+        mouseButtonDown = false;
+    }
+
+    public void mouseClicked(MouseEvent mouseEvent) {
+        beginClickHack(mouseEvent);
+        super.mouseClicked(mouseEvent);
+        endClickHack();
+    }
+    public void mouseDragged(MouseEvent mouseEvent) {
+        beginClickHack(mouseEvent);
+        super.mouseDragged(mouseEvent);
+        endClickHack();
+    }
+
+    boolean isMouseAction = false;
+    JTextComponent mouseComponent;
+    MouseEvent mouseEvent;
+    
+    private void beginClickHack(MouseEvent mouseEvent) {
+        isMouseAction = true;
+        this.mouseEvent = mouseEvent;
+        mouseComponent = (JTextComponent)mouseEvent.getComponent();
+    }
+    
+    private void endClickHack() {
+        isMouseAction = false;
+    }
+
 }
 
