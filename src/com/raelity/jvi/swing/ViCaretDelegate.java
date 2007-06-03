@@ -146,14 +146,14 @@ public class ViCaretDelegate
    *
    * @param e the mouse event
    */
-  public void positionCaret(MouseEvent e) {
+  /*public void positionCaret(MouseEvent e) {
     Point pt = new Point(e.getX(), e.getY());
     Position.Bias[] biasRet = new Position.Bias[1];
     int pos = caret.getTextComponent().getUI()
                        .viewToModel(caret.getTextComponent(), pt, biasRet);
     if(biasRet[0] == null)
       biasRet[0] = Position.Bias.Forward;
-    pos = ViManager.mouseSetDot(pos, caret.getTextComponent());
+    pos = ViManager.mouseSetDot(pos, caret.getTextComponent(), e);
     if (pos >= 0) {
       // setDot(pos, biasRet[0]);
       caret.setDot(pos);
@@ -162,6 +162,6 @@ public class ViCaretDelegate
       // see: JCaret's UpAction/DownAction
       caret.setMagicCaretPosition(null);
     }
-  }
+  }*/
 }
 

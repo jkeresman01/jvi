@@ -145,14 +145,6 @@ public class Jvi {
     sd.strokeStatus = f.strokeStatusBar;
     sd.modeStatus = f.modeStatusBar;
     // G.setEditor(new TextView(f.editorPane, sd));
-  
-    // add a mouse listener so that selection by mouse events is treated as visual mode as well
-    f.editorPane.addMouseMotionListener(new MouseMotionListener() {
-            public void mouseMoved(MouseEvent e) {}
-            public void mouseDragged(MouseEvent e) {
-                ViManager.mouseMoveDot(f.editorPane.getCaret().getDot(), f.editorPane);
-            }
-    });
   }
 
   //Main method
@@ -204,6 +196,7 @@ public class Jvi {
                 frame2.editorPane.setDocument(frame1.editorPane.getDocument());
                 setupFrame(frame2);
             }
+            frame1.editorPane.requestFocusInWindow();
 	}});
     } catch(Exception e) {}
 
