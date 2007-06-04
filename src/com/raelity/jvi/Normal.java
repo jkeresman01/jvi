@@ -146,7 +146,7 @@ public class Normal {
         if(!editBusy) {
           try {
             if (opInsertBusy) {
-              Misc.finishOpInsert();
+              Misc.finishOpSplit();
             }
           } finally {
             opInsertBusy = false;

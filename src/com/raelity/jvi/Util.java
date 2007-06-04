@@ -139,6 +139,17 @@ public class Util {
     return ml_get(G.curwin.getWCursor().getLine());
   }
 
+  static void ml_replace(int lnum, CharSequence line) {
+    G.curwin.replaceString(G.curwin.getLineStartOffset(lnum),
+            G.curwin.getLineEndOffset(lnum) -1,
+            line.toString());
+  }
+
+  public static MySegment truncateNewline(MySegment seg) {
+      assert(seg.array[seg.count - 1] == '\n');
+      return new MySegment(seg.array, seg.offset, seg.count - 1);
+  }
+
   /**
    * Get the length of a line, not incuding the newline
    */
