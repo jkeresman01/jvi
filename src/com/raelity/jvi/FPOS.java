@@ -94,6 +94,10 @@ public class FPOS implements ViFPOS, Comparable, Cloneable
     set(lnum.getValue(), column);
   }
 
+  public void setLine(int line) {
+    set(line, col.getValue());
+  }
+
   final public boolean equals(Object o) {
     // NEEDSWORK: equals FPOS, should doc be checked as same?
     if(o instanceof ViFPOS) {

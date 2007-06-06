@@ -138,7 +138,10 @@ public class Util {
     //return ml_get_buf(curbuf, curwin->w_cursor.lnum, FALSE);
     return ml_get(G.curwin.getWCursor().getLine());
   }
-
+  static MySegment ml_get_cursor() {
+    MySegment segment = ml_get(G.curwin.getWCursor().getLine());
+    return (MySegment) segment.subSequence(G.curwin.getWCursor().getColumn(), segment.length());
+  }
   static void ml_replace(int lnum, CharSequence line) {
     G.curwin.replaceString(G.curwin.getLineStartOffset(lnum),
             G.curwin.getLineEndOffset(lnum) -1,

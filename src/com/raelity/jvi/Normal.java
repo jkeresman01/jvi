@@ -1702,6 +1702,7 @@ middle_code:
             /* This is a new edit command, not a restart.  We don't edit
              * recursively. */
             G.restart_edit = 0;
+	    Misc.beginInsertUndo();
             Misc.op_insert(oap, cap.count1);/* handles insert & append
                                          * will call edit() */
             opInsertBusy = true;
