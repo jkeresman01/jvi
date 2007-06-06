@@ -114,28 +114,21 @@ public class ViManager {
     jViVersion v9 = new jViVersion("1.3.0");*/
   }
   
-  public static final DataFlavor VimClipboard = addVimClipboard(VIM_CLIPBOARD);
+  //public static final DataFlavor VimClipboard = addVimClipboard(VIM_CLIPBOARD);
   public static final DataFlavor VimClipboard2 = addVimClipboard(VIM_CLIPBOARD2);
-  public static final DataFlavor VimRawBytes = addVimClipboard(VIM_CLIPBOARD_RAW);
-  // public static final DataFlavor VimClipboard;
-  // public static final DataFlavor VimClipboard2;
-  // public static final DataFlavor VimRawBytes;
+  //public static final DataFlavor VimRawBytes = addVimClipboard(VIM_CLIPBOARD_RAW);
   
   private static DataFlavor addVimClipboard(String cbName) {
     DataFlavor df = null;
-    FlavorMap fm = SystemFlavorMap.getDefaultFlavorMap();
-    if(fm instanceof SystemFlavorMap) {
-      SystemFlavorMap sfm = (SystemFlavorMap) fm;
-      try {
-        df = new DataFlavor("application/" + cbName + "; class=java.nio.ByteBuffer");
-      } catch (ClassNotFoundException ex) {
-        ex.printStackTrace();
-      }
-      System.err.println(cbName + " " + df.getMimeType());
-      
-      sfm.addFlavorForUnencodedNative(cbName, df);
-      sfm.addUnencodedNativeForFlavor(df, cbName);
-    }
+    SystemFlavorMap sfm = (SystemFlavorMap)SystemFlavorMap.getDefaultFlavorMap();
+    try {
+      df = new DataFlavor("application/"
+                          + cbName
+                          + "; class=java.io.InputStream");
+    } catch (ClassNotFoundException ex) { ex.printStackTrace(); }
+    
+    sfm.addFlavorForUnencodedNative(cbName, df);
+    sfm.addUnencodedNativeForFlavor(df, cbName);
     return df;
   }
 
