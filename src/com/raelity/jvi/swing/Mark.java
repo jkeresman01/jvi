@@ -157,6 +157,10 @@ class Mark implements ViMark {
   public void setColumn(int col) {
     throw new UnsupportedOperationException();
   }
+  /** This is optional, may throw an UnsupportedOperationException */
+  public void setLine(int line) {
+    throw new UnsupportedOperationException();
+  }
 
   public void set(ViFPOS fpos) {
     throw new UnsupportedOperationException();
