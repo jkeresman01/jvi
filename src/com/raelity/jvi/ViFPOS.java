@@ -54,6 +54,12 @@ public interface ViFPOS extends Comparable {
    * This is optional, may throw an UnsupportedOperationException
    */
   public void setColumn(int col);
+  /**
+   * Set the line, leave the column unchanged.
+   * <br/>
+   * This is optional, may throw an UnsupportedOperationException
+   */
+  public void setLine(int line);
 
   /** Make a copy */
   public ViFPOS copy();
