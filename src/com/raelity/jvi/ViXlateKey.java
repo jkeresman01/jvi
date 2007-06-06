@@ -24,5 +24,5 @@ package com.raelity.jvi;
  */
 public interface ViXlateKey {
   /** return the virtual key associated with the action */
-  public int getXlateKey();
+  public char getXlateKey();
 }
