@@ -3778,7 +3778,8 @@ public class Misc implements ClipboardOwner {
       long ins_len = 0;
     /* if user has moved off this line, we don't know what to do, so do
      * nothing */
-      if (G.curwin.getWCursor().getLine() != op_insert_oap.start.getLine())
+      if (op_insert_oap == null
+            || G.curwin.getWCursor().getLine() != op_insert_oap.start.getLine())
         return;
       
       
