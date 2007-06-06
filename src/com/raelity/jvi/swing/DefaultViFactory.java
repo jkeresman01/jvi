@@ -396,7 +396,7 @@ public class DefaultViFactory implements ViFactory {
   }
   */
   
-  public Action createInsertModeKeyAction(String name, int vkey, String desc) {
+  public Action createInsertModeKeyAction(String name, char vkey, String desc) {
     return new InsertModeAction(name, vkey, desc);
   }
   
@@ -483,9 +483,9 @@ public class DefaultViFactory implements ViFactory {
   
   private static class InsertModeAction extends TextAction
   				      implements ViXlateKey {
-    int basekey;
+    char basekey;
 
-    public InsertModeAction(String name, int vkey, String desc) {
+    public InsertModeAction(String name, char vkey, String desc) {
       super(name); // ??????????????????????
       this.basekey = vkey;
       
@@ -500,7 +500,7 @@ public class DefaultViFactory implements ViFactory {
       // NOT USED for the translation keymap
     }
     
-    public int getXlateKey() {
+    public char getXlateKey() {
       return basekey;
     }
   }
