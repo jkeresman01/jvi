@@ -3686,8 +3686,11 @@ public class Misc implements ClipboardOwner {
       stateOpSplit = new StateOpSplit(StateSplitOwner.OP_IN);
       stateOpSplit.oap = oap.copy();
       stateOpSplit.bd = new block_def();
+      block_prep(oap, stateOpSplit.bd, oap.start.getLine(), true);
                                     //(long)STRLEN(ml_get(oap.start.lnum));
-      stateOpSplit.pre_textlen = Util.lineLength(oap.start.getLine());
+      stateOpSplit.pre_textlen = Util.lineLength(oap.start.getLine()) - stateOpSplit.bd.textcol;
+      if (oap.op_type == OP_APPEND)
+          stateOpSplit.pre_textlen -= stateOpSplit.bd.textlen;
       stateOpSplit.bd.textcol = G.curwin.getWCursor().getColumn();
     }
 
@@ -3727,7 +3730,72 @@ public class Misc implements ClipboardOwner {
   }
 
   static void finishOpInsert() {
-    finishOpChange();
+    OPARG       oap = stateOpSplit.oap;
+    block_def   bd = stateOpSplit.bd;
+    int         pre_textlen = stateOpSplit.pre_textlen;
+    stateOpSplit = null;
+
+    int		offset;
+    int		linenr;
+    int		ins_len;
+    CharSequence	firstline;
+    String      ins_text;
+    StringBuffer newp;
+    MySegment   oldp;
+
+
+  /* if user has moved off this line, we don't know what to do, so do
+  nothing */
+  if (G.curwin.getWCursor().getLine() != oap.start.getLine())
+    return;
+
+  if (oap.block_mode)
+  {
+    block_def bd2 = new block_def();
+
+    /*
+     * Spaces and tabs in the indent may have changed to other spaces and
+     * tabs.  Get the starting column again and correct the lenght.
+     * Don't do this when "$" used, end-of-line will have changed.
+     */
+    block_prep(oap, bd2, oap.start.getLine(), true);
+    if (!bd.is_MAX || bd2.textlen < bd.textlen)
+    {
+      if (oap.op_type == OP_APPEND)
+      {
+        pre_textlen += bd2.textlen - bd.textlen;
+        if (bd2.endspaces != 0)
+          --bd2.textlen;
+      }
+      bd.textcol = bd2.textcol;
+      bd.textlen = bd2.textlen;
+    }
+
+    /*
+     * Subsequent calls to ml_get() flush the firstline data - take a
+     * copy of the required string.
+     */
+    firstline = Util.ml_get(oap.start.getLine()).subSequence(bd.textcol, Util.ml_get(oap.start.getLine()).length());
+
+    if (oap.op_type == OP_APPEND)
+      firstline = firstline.subSequence(bd.textlen, firstline.length());
+    if ((ins_len = (firstline.length()-1) - pre_textlen) > 0)
+    {
+      ins_text = firstline.subSequence(0, ins_len).toString();//vim_strnsave(firstline, (int)ins_len);
+      if (ins_text != null)
+      {
+        /* block handled here */
+        //if (u_save(oap.start.getLine(), (oap.end.getLine() + 1)) == OK)
+        block_insert(oap, ins_text, (oap.op_type == OP_INSERT), bd);
+
+        G.curwin.getWCursor().setColumn(oap.start.getColumn());
+        //check_cursor();
+        //vim_free(ins_text);
+      }
+    }
+  }
+
+
   }
     /** @deprecated use mch_memmove(StringBuffer dst, int dstIndex, ... */
     private static void mch_memmove(StringBuffer pnew, int lnum, int textstart, int textlen) {
