@@ -203,6 +203,7 @@ public interface Constants {
   //
   // characters for the p_cpo option:
   //
+  // NEEDSWORK: CHAR
   static final int CPO_ALTREAD	= 'a';	/* ":read" sets alternate file name */
   static final int CPO_ALTWRITE	= 'A';	/* ":write" sets alternate file name */
   static final int CPO_BAR	= 'b';	/* "\|" ends a mapping */
@@ -262,11 +263,11 @@ public interface Constants {
   static final int SHAPE_VER	= 2; 	// vertical bar cursor
   
   // edit mode operations that can be specified through a keymap
-  static final int IM_SHIFT_RIGHT = KeyDefs.K_X_IM_SHIFT_RIGHT;
-  static final int IM_SHIFT_LEFT = KeyDefs.K_X_IM_SHIFT_LEFT;
-  static final int IM_SHIFT_RIGHT_TO_PAREN = KeyDefs.K_X_PERIOD;
-  static final int IM_SHIFT_LEFT_TO_PAREN = KeyDefs.K_X_COMMA;
-  static final int IM_INS_REP = KeyDefs.K_X_IM_INS_REP;
+  static final char IM_SHIFT_RIGHT = KeyDefs.K_X_IM_SHIFT_RIGHT;
+  static final char IM_SHIFT_LEFT = KeyDefs.K_X_IM_SHIFT_LEFT;
+  static final char IM_SHIFT_RIGHT_TO_PAREN = KeyDefs.K_X_PERIOD;
+  static final char IM_SHIFT_LEFT_TO_PAREN = KeyDefs.K_X_COMMA;
+  static final char IM_INS_REP = KeyDefs.K_X_IM_INS_REP;
 }
 
 /*

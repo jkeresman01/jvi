@@ -92,11 +92,14 @@ public class Edit {
    *
    * @return true if a CTRL-O command caused the return (insert mode pending).
    */
-  static void edit(int cmdchar, boolean startln, int count_arg) {
-    int c;
+  static void edit(int cmdchar_, boolean startln, int count_arg) {
+    char c;
     boolean did_backspace;
 
-    assert(cmdchar == (char)cmdchar);
+    // NEEDSWORK: CHAR
+    char cmdchar = (char)cmdchar_;
+    assert(cmdchar_ == cmdchar);
+
     if( ! Misc.isInInsertUndo()) {
       ViManager.dumpStack("In edit with no undo pending");
     }
@@ -188,7 +191,7 @@ public class Edit {
         Misc.update_curswant();
         // .....
         
-        int lastc = c; // NEEDSWORK: use of lastc not supported
+        char lastc = c; // NEEDSWORK: use of lastc not supported
         // c = GetChar.safe_vgetc();
         
         // skip ctrl-\ ctrlN to normal mode
@@ -1109,16 +1112,17 @@ public class Edit {
    */
   private static boolean ins_esc(MutableInt count,
                                  boolean need_redraw,
-                                 int cmdchar) {
+                                 char cmdchar) {
     // .......
     
     if( ! arrow_used) {
       //
       // Don't append the ESC for "r<CR>".
       //
-      if (cmdchar != 'r' && cmdchar != 'v')
+      if (cmdchar != 'r' && cmdchar != 'v') {
         GetChar.AppendToRedobuff(ESC_STR);
-      
+        GetChar.editComplete();
+      }
       
       // NEEDSWORK: handle count on an insert
       

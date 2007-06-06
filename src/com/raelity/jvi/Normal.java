@@ -341,7 +341,7 @@ public class Normal {
         //
         // If we got CTRL-W there may be a/another count
         //
-        if (c == (0x1f & (int)('W')) && !ctrl_w && oap.op_type == OP_NOP)
+        if (c == Util.ctrl('W') && !ctrl_w && oap.op_type == OP_NOP)
         {
           ctrl_w = true;
           opnum = ca.count0;		// remember first count
@@ -391,7 +391,7 @@ public class Normal {
     //
     if (ctrl_w) {
       ca.nchar = ca.cmdchar;
-      ca.cmdchar = (0x1f & (int)('W'));
+      ca.cmdchar = Util.ctrl('W');
     } else {
       if(!pickupExtraChar) {
         // check if additional char needed
@@ -523,6 +523,7 @@ middle_code:
        * dir		is FORWARD, use as you like.
        */
       try {
+        notImpV((char)ca.cmdchar);
 	switch (ca.cmdchar)
 	{
 	  /*
@@ -3031,6 +3032,7 @@ static private void nv_findpar(CMDARG cap, int dir)
     GetChar.stuffcharReadbuff('R');
     GetChar.stuffcharReadbuff((char)cap.nchar);
     GetChar.stuffcharReadbuff(ESC);
+    GetChar.disableRedoTrackingOneEdit();
     return;
   }
   
@@ -4219,6 +4221,24 @@ static private void nv_findpar(CMDARG cap, int dir)
     if(KeyBinding.notImpDebug) System.err.println("Not Implemented: "
                       + op + ": " + "\"" + getCmdChars() + "\"");
     throw new NotSupportedException(op, getCmdChars());
+  }
+
+  static void notImpV(char op) throws NotSupportedException {
+    final boolean debug = true;
+    if(!debug) {
+      if(G.VIsual_active) {
+        String category = null;
+        if(G.VIsual_mode == Util.ctrl('V')
+          && Util.vim_strchr("AIRSC<>", op) != null) {
+          category = "block";
+        }
+        if(category != null) {
+          String s = new String(new char[] {(char)ca.cmdchar});
+          Msg.smsg("Visual " + category + " Mode: '" + s + "' not implemented");
+          throw new NotSupportedException(s, getCmdChars());
+        }
+      }
+    }
   }
 
   /**

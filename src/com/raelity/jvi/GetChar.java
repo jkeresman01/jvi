@@ -371,8 +371,17 @@ public class GetChar {
   // user input is done and look only for local changes.
   //
 
-  static int redoTrackPosition = -1;
-  static boolean expectChar;
+  private static int redoTrackPosition = -1;
+  private static boolean expectChar;
+  private static boolean disableTrackingOneEdit;
+
+  static void disableRedoTrackingOneEdit() {
+    disableTrackingOneEdit = true;
+  }
+
+  static void editComplete() {
+    disableTrackingOneEdit = false;
+  }
 
   private static void markRedoTrackPosition(char c) {
     if(expectChar)
@@ -400,7 +409,7 @@ public class GetChar {
     if(G.dbgRedo.value)
       System.err.println(String.format("docInsert: pos %d, %d, '%s'",
                                      pos, s.length(), TextUtil.debugString(s)));
-    if(redoTrackPosition < 0 || !G.redoTrack.value)
+    if(redoTrackPosition < 0 || !G.redoTrack.value || disableTrackingOneEdit)
       return;
     if(expectChar) {
       if(pos == redoTrackPosition) {
@@ -435,7 +444,7 @@ public class GetChar {
   static void docRemove(int pos, int len) {
     if(G.dbgRedo.value)
       System.err.println("docRemove: pos " + pos + ", " + len);
-    if(redoTrackPosition < 0 || !G.redoTrack.value)
+    if(redoTrackPosition < 0 || !G.redoTrack.value || disableTrackingOneEdit)
       return;
     if(pos + len == redoTrackPosition) {
       if(G.dbgRedo.value)
