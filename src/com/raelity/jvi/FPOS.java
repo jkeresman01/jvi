@@ -32,6 +32,9 @@ package com.raelity.jvi;
  * File position, accessable as line number, 1 based, and column, 0 based.
  * <p>
  * Any changes or additions here must be considered for WCursor.
+ * </p><p>
+ * NOTE: Methods should not reference offset,lnum,col directly. Must use the
+ * accessor to insure that the data is valid.
  * </p>
  * NOTE: line and column here do not change as the document changes. See Mark
  * for that type of behavior. <br/>
@@ -71,14 +74,18 @@ public class FPOS implements ViFPOS, Comparable, Cloneable
   public void set(int line, int column) {
     int startOffset = G.curwin.getLineStartOffset(line);
     int endOffset = G.curwin.getLineEndOffset(line);
+    int adjustedColumn = -1;
+
     if(column < 0) {
-      ViManager.dumpStack("line " + line + ", column " + column
-              + ", length " + (endOffset - startOffset));
-      column = 0;
+      adjustedColumn = 0;
     } else if(column >= endOffset - startOffset) {
+      adjustedColumn = endOffset - startOffset - 1;
+    }
+
+    if(adjustedColumn >= 0) {
       ViManager.dumpStack("line " + line + ", column " + column
               + ", length " + (endOffset - startOffset));
-      column = endOffset - startOffset - 1;
+      column = adjustedColumn;
     }
     
     offset.setValue(startOffset + column);
@@ -90,12 +97,18 @@ public class FPOS implements ViFPOS, Comparable, Cloneable
     set(fpos.getLine(), fpos.getColumn());
   }
 
+  // Should not reference instance variables lnum or col directly,
+  // must use accessor functions since subclasses, in particular
+  // WCursor, must validate values
   public void setColumn(int column) {
-    set(lnum.getValue(), column);
+    set(getLine(), column);
   }
 
+  // Should not reference instance variables lnum or col directly,
+  // must use accessor functions since subclasses, in particular
+  // WCursor, must validate values
   public void setLine(int line) {
-    set(line, col.getValue());
+    set(line, getColumn());
   }
 
   final public boolean equals(Object o) {
@@ -120,14 +133,14 @@ public class FPOS implements ViFPOS, Comparable, Cloneable
 
   final public ViFPOS copy() {
     FPOS fpos = new FPOS();
-    fpos.initFPOS(offset.getValue(), lnum.getValue(), col.getValue());
+    fpos.initFPOS(getOffset(), getLine(), getColumn());
     return fpos;
   }
 
   public String toString() {
-    return	  "offset: " + offset.getValue()
-	      	+ " lnum: " + lnum.getValue()
-	      	+ " col: " + col.getValue()
+    return	  "offset: " + getOffset()
+	      	+ " lnum: " + getLine()
+	      	+ " col: " + getColumn()
 		;
   }
 }
