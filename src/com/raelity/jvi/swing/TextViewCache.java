@@ -136,22 +136,23 @@ public class TextViewCache implements PropertyChangeListener,
       //System.err.println("setPosition("+line+","+column+")");
       int startOffset = textView.getLineStartOffset(line);
       int endOffset = textView.getLineEndOffset(line);
+      int adjustedColumn = -1;
+
       if(column < 0) {
-        ViManager.dumpStack("line " + line + ", column " + column
-                            + ", length " + (endOffset - startOffset));
-        column = 0;
+        adjustedColumn = 0;
       } else if(column >= endOffset - startOffset) {
-        ViManager.dumpStack("line " + line + ", column " + column
-                            + ", length " + (endOffset - startOffset));
         column = endOffset - startOffset - 1;
       }
+
+      if(adjustedColumn >= 0) {
+        ViManager.dumpStack("line " + line + ", column " + column
+                + ", length " + (endOffset - startOffset));
+        column = adjustedColumn;
+      }
+
       // NOTE: setting the caret, will invalidate the cursor,
       // which in turn will cause a fillCursor, which set's the offset/line/col
       textView.setCaretPosition(startOffset + column);
-    }
-
-    public void setColumn(int column) {
-      set(getLine(), column);
     }
     
     private void setCursor() {
