@@ -163,6 +163,7 @@ public class ViManager {
       if(ep != null) {
         if(factory.getBuffer(ep) == buf) {
           tv01 = tv02;
+          break;
         }
       }
     }
@@ -225,6 +226,18 @@ public class ViManager {
         tv.updateHighlightSearchState();
       }
     }
+  }
+
+  private static  boolean platformFindMatch;
+  /**
+   * Specify if the platform can be used for brace matching. 
+   * @param f true if platform can perform all find match functions.
+   */
+  public static  void setPlatformFindMatch(boolean f) {
+      platformFindMatch = f;
+  }
+  public static  boolean getPlatformFindMatch() {
+      return platformFindMatch;
   }
   
   //

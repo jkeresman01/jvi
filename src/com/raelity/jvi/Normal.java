@@ -2935,23 +2935,37 @@ middle_code:
     } else {	    // "%" : go to matching paren
       cap.oap.motion_type = MCHAR;
       int startingOffset = G.curwin.getCaretPosition();
-      int firstbraceOffset = startingOffset;
-      // Try to position caret on next brace char
-      int c;
-      // NEEDSWORK: use getLineSegment for performance
-      while(true) {
-        c = Util.getCharAt(firstbraceOffset);
-        if(Util.vim_strchr("{}[]()", c) != null || c == '\n') {
-          break;
+      int endingOffset = startingOffset; // this assumes failture
+      boolean usePlatform = G.p_pbm.value & ViManager.getPlatformFindMatch();
+      if(usePlatform) {
+        G.curwin.findMatch();
+        endingOffset = G.curwin.getCaretPosition();
+      } else {
+        int firstbraceOffset = startingOffset;
+        int c;
+        // NEEDSWORK: use getLineSegment for performance
+        
+        // move forward to the next brace character
+        while(true) {
+          c = Util.getCharAt(firstbraceOffset);
+          if(Util.vim_strchr("{}[]()", c) != null || c == '\n') {
+            break;
+          }
+          firstbraceOffset++;
         }
-        firstbraceOffset++;
+        if(c != '\n') {
+          G.curwin.setCaretPosition(firstbraceOffset);
+          G.curwin.findMatch();
+          endingOffset = G.curwin.getCaretPosition();
+        } else
+          endingOffset = firstbraceOffset;
+        if(firstbraceOffset == endingOffset) {
+          // failed
+          G.curwin.setCaretPosition(startingOffset);
+          endingOffset = startingOffset;
+        }
       }
-      G.curwin.setCaretPosition(firstbraceOffset);
-      G.curwin.findMatch();
-      int endingOffset = G.curwin.getCaretPosition();
-      if(firstbraceOffset == endingOffset) {
-        // put back to original position
-        G.curwin.setCaretPosition(startingOffset);
+      if(endingOffset == startingOffset) {
 	clearopbeep(cap.oap);
       } else {
 	MarkOps.setpcmark(startingOffset);

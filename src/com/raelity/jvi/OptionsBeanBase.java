@@ -235,6 +235,14 @@ public class OptionsBeanBase extends SimpleBeanInfo {
         return ViManager.getReleaseString();
     }
 
+    public void setViPlatformBraceMatch(boolean arg)  throws PropertyVetoException {
+        put(Options.platformBraceMatch, arg);
+    }
+
+    public boolean getViPlatformBraceMatch() {
+	return getboolean(Options.platformBraceMatch);
+    }
+
     public void setViShell(String arg)  throws PropertyVetoException {
         put(Options.shell, arg);
     }

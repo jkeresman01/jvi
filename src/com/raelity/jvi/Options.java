@@ -112,6 +112,7 @@ public final class Options {
   public static final String highlightSearch = "viHighlightSearch";
 
   public static final String ignoreCase = "viIgnoreCase";
+  public static final String platformBraceMatch = "viPlatformBraceMatch";
   
   public static final String expandTabs = "viExpandTabs";
 
@@ -402,6 +403,12 @@ public final class Options {
 		  "A sentence has to be followed by two spaces after"
                 + " the '.', '!' or '?'.  A <Tab> is not recognized as"
                 + " white space.");
+
+    G.p_pbm = createBooleanOption(platformBraceMatch, true);
+    setupOptionDesc(searchList, platformBraceMatch, "Platform Brace Matching",
+		  "Use the platform/IDE for brace matching"
+                  + " and match highlighting. This may enable additional"
+                  + " match characters, words and features.");
     
     G.p_meta_equals = createBooleanOption(metaEquals, true);
     setupOptionDesc(searchList, metaEquals, "RE Meta Equals",

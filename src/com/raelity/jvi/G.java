@@ -113,6 +113,7 @@ public class G {
   public static BooleanOption useFrame;	// use JFrame for command entry
 
   public static BooleanOption p_ic;   // ignorecase
+  public static BooleanOption p_pbm;  // use PlatformBraceMatch
 
   public static BooleanOption p_meta_equals;  // true use '=' instead of '?'
   public static StringOption p_meta_escape;   // metacharacters escaped
