@@ -123,8 +123,17 @@ public class Util {
     return new MySegment(G.curwin.getLineSegment(lnum));
   }
   
+  static MySegment ml_get_curline() {
+    //return ml_get_buf(curbuf, curwin->w_cursor.lnum, FALSE);
+    return ml_get(G.curwin.getWCursor().getLine());
+  }
+  
   /** get pointer to positin 'pos', the returned MySegment's CharacterIterator
    * is initialized to the character at pos.
+   * <p>
+   * NEEDSWORK: this and following could alternately return a Segment
+   *            whose first character is at the fpos/cursor.
+   *
    * @return MySegment for the line.
    */
   static CharacterIterator ml_get_pos(ViFPOS pos) {
@@ -133,14 +142,11 @@ public class Util {
     seg.setIndex(seg.offset + pos.getColumn());
     return seg;
   }
-  
-  static MySegment ml_get_curline() {
-    //return ml_get_buf(curbuf, curwin->w_cursor.lnum, FALSE);
-    return ml_get(G.curwin.getWCursor().getLine());
-  }
-  static MySegment ml_get_cursor() {
-    MySegment segment = ml_get(G.curwin.getWCursor().getLine());
-    return (MySegment) segment.subSequence(G.curwin.getWCursor().getColumn(), segment.length());
+
+  static CharacterIterator ml_get_cursor() {
+    return ml_get_pos(G.curwin.getWCursor());
+    //MySegment segment = ml_get(G.curwin.getWCursor().getLine());
+    //return (MySegment) segment.subSequence(G.curwin.getWCursor().getColumn(), segment.length());
   }
   static void ml_replace(int lnum, CharSequence line) {
     G.curwin.replaceString(G.curwin.getLineStartOffset(lnum),
