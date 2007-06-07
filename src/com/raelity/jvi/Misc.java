@@ -1825,33 +1825,38 @@ public class Misc implements ClipboardOwner {
 
   /** op_change is "split", save state across calls here. */
   private static class StateOpSplit {
-    StateSplitOwner owner;
+    private StateSplitOwner owner;
     OPARG       oap;
     block_def	bd;
     int         pre_textlen;
 
-    StateOpSplit(StateSplitOwner owner) {
+    /** Do not use directly, use acquire/release */
+    private StateOpSplit(StateSplitOwner owner) {
       StateOpSplit prev = stateOpSplit;
       stateOpSplit = null;
       assert(prev == null);  // not asserting on stateOpSplit so it will clear
 
       this.owner = owner;
-      stateOpSplit = this;
+    }
+
+    static void acquire(StateSplitOwner owner) {
+      stateOpSplit = new StateOpSplit(owner);
+    }
+
+    static void release() {
+      stateOpSplit = null;
     }
   }
-  private enum StateSplitOwner {OP_CH, OP_IN }
+  private enum StateSplitOwner {SPLIT_CHANGE, SPLIT_INSERT }
 
   private static StateOpSplit stateOpSplit;
 
   static void finishOpSplit() {
     if(stateOpSplit != null) {
       switch(stateOpSplit.owner) {
-        case OP_CH: finishOpChange(); return;
-        case OP_IN: finishOpInsert(); return;
+        case SPLIT_CHANGE: finishOpChange(); return;
+        case SPLIT_INSERT: finishOpInsert(); return;
       }
-    } else {
-      // TRANSITION
-      finishOpInsert();
     }
   }
 
@@ -1877,7 +1882,7 @@ public class Misc implements ClipboardOwner {
     // check for still on same line (<CR> in inserted text meaningless)
     ///skip blank lines too
     if (oap.block_mode) {
-      stateOpSplit = new StateOpSplit(StateSplitOwner.OP_CH);
+      StateOpSplit.acquire(StateSplitOwner.SPLIT_CHANGE);
       stateOpSplit.oap = oap.copy();
       stateOpSplit.bd = new block_def();
                                     //(long)STRLEN(ml_get(oap.start.lnum));
@@ -1892,7 +1897,7 @@ public class Misc implements ClipboardOwner {
     OPARG       oap = stateOpSplit.oap;
     block_def	bd = stateOpSplit.bd;
     int         pre_textlen = stateOpSplit.pre_textlen;
-    stateOpSplit = null;
+    StateOpSplit.release();
 
     int		offset;
     int		linenr;
@@ -3683,7 +3688,7 @@ public class Misc implements ClipboardOwner {
     if (oap.block_mode)
     {
        /* Get the info about the block before entering the text */
-      stateOpSplit = new StateOpSplit(StateSplitOwner.OP_IN);
+      StateOpSplit.acquire(StateSplitOwner.SPLIT_INSERT);
       stateOpSplit.oap = oap.copy();
       stateOpSplit.bd = new block_def();
       block_prep(oap, stateOpSplit.bd, oap.start.getLine(), true);
@@ -3733,7 +3738,7 @@ public class Misc implements ClipboardOwner {
     OPARG       oap = stateOpSplit.oap;
     block_def   bd = stateOpSplit.bd;
     int         pre_textlen = stateOpSplit.pre_textlen;
-    stateOpSplit = null;
+    StateOpSplit.release();
 
     int		offset;
     int		linenr;
@@ -3843,125 +3848,207 @@ public class Misc implements ClipboardOwner {
       //G.curwin.setCaretPosition(G.curwin.getLineStartOffset(line)+col);
       G.curwin.getWCursor().set(line, col);
     }
+
+/**
+ * Insert string "s" (b_insert ? before : after) block :AKelly
+ * Caller must prepare for undo.
+ */
+  static void block_insert(OPARG oap, String s, boolean b_insert, block_def bdp) {
+    int		p_ts;
+    int		count = 0;	// extra spaces to replace a cut TAB
+    int		spaces = 0;	// non-zero if cutting a TAB
+    int 	offset;		// pointer along new line
+    int 	s_len;		// STRLEN(s)
+    MySegment   oldp;           // new, old lines
+    StringBuffer newp;
+    int 	lnum;		// loop var
+    int		oldstate = G.State;
     
-    static void block_insert(OPARG oap, String s, boolean b_insert, block_def bdp) {
-      //int­­       p_ts;
-      //int­­       count = 0;­     /* extra spaces to replace a cut TAB */
-      //int­­       spaces = 0;­    /* non-zero if cutting a TAB */
-      //colnr_t­    offset;­­       /* pointer along new line */
-      int   s_len;    /* STRLEN(s) */
-      //char_u­     *newp, *oldp;­  /* new, old lines */
-      int   lnum;/* loop var */
-      //int­­       oldstate = State;
-      
-      //State = INSERT;/* don't want REPLACE for State */
-      s_len = s.length();
-      //System.out.println("Block insert: "+ oap.start.getLine() +" .. "+ oap.end.getLine());
-      for (lnum = oap.start.getLine() + 1; lnum <= oap.end.getLine(); lnum++) {
-        int offset = G.curwin.getLineStartOffset(lnum) + bdp.start_vcol; // TODO plus column
-        G.curwin.insertText(offset, s);
-      }
-    }
+    G.State = INSERT;		// don't want REPLACE for State
+    s_len = s.length();
     
-    public static int op_replace(OPARG oap, int c) {
-      try {
-        beginUndo();
-        return op_replace7(oap, c); // from vim7
-      } finally {
-        endUndo();
-      }
-    }
-    
-    public static int op_replace7(OPARG oap, int c_) {
-      int		n;
-      int         numc;
-      int		lnum;
-      StringBuffer newBuf;
-      MySegment   oldBuf;
-      int         oldlen;
-      block_def bd = new block_def();
+    for (lnum = oap.start.getLine() + 1; lnum <= oap.end.getLine(); lnum++) {
+      block_prep(oap, bdp, lnum, true);
+      if (bdp.is_short && b_insert)
+        continue;	// OP_INSERT, line ends before block start
       
-      char c = (char)c_;
+      oldp = Util.ml_get(lnum);
       
-      // Note use an fpos instead of the cursor,
-      // This should avoid jitter on the screen
-      ViFPOS fpos = G.curwin.getWCursor().copy();
-      
-      int oldp;
-      
-      if(/* (curbuf.b_ml.ml_flags & ML_EMPTY ) || */ oap.empty)
-        return OK;	    // nothing to do
-      
-      //#ifdef MULTI_BYTE ... #endif
-      
-      //
-      // block mode replace
-      //
-      if (oap.block_mode) {
-        bd.is_MAX = G.curwin.getWCurswant() == MAXCOL;
-        for (lnum = fpos.getLine(); lnum <= oap.end.getLine(); lnum++) {
-          fpos.set(lnum, 0);
-          block_prep(oap, bd, lnum, true);
-          if (bd.textlen == 0 /* && (!virtual_op || bd.is_MAX)*/)
-            continue;                     // nothing to replace
-          
-          // n == number of extra chars required
-          // If we split a TAB, it may be replaced by several characters.
-          // Thus the number of characters may increase!
-          //
-          // allow for pre spaces
-          n = (bd.startspaces != 0 ? bd.start_char_vcols - 1 : 0 );
-          // allow for post spp
-          n += (bd.endspaces != 0 && !bd.is_oneChar && bd.end_char_vcols > 0
-                  ? bd.end_char_vcols - 1 : 0 );
-          numc = oap.end_vcol - oap.start_vcol + 1;
-          if (bd.is_short /*&& (!virtual_op || bd.is_MAX)*/)
-            numc -= (oap.end_vcol - bd.end_vcol) + 1;
-          // oldlen includes textlen, so don't double count
-          n += numc - bd.textlen;
-          
-          //oldp = ml_get_curline();
-          oldBuf = Util.ml_get(fpos.getLine());
-          oldp = 0;
-          oldlen = oldBuf.length() - 1; //excluce the \n
-          //newp = alloc_check((unsigned)STRLEN(oldp) + 1 + n);
-          // -1 in setlength to ignore \n, don't need +1 since no null at end
-          newBuf = new StringBuffer();
-          newBuf.setLength(oldlen + n);
-          
-          // too much sometimes gets allocated with the setLength,
-          // but the correct number of chars gets copied, keep track of that.
-          // BTW, a few extra nulls at the end wouldn't hurt vim
-          
-          // copy up to deleted part
-          mch_memmove(newBuf, 0, oldBuf, oldp, bd.textcol);
-          oldp += bd.textcol + bd.textlen;
-          // insert pre-spaces
-          copy_spaces(newBuf, bd.textcol, bd.startspaces);
-          /* insert replacement chars CHECK FOR ALLOCATED SPACE */
-          copy_chars(newBuf, STRLEN(newBuf), numc, c);
-          if (!bd.is_short) {
-            // insert post-spaces
-            copy_spaces(newBuf, STRLEN(newBuf), bd.endspaces);
-            // copy the part after the changed part, -1 to exclude \n
-            int tCount = (oldBuf.length() - 1) - oldp; // STRLEN(oldp) +1
-            mch_memmove(newBuf, STRLEN(newBuf), oldBuf, oldp, tCount);
-          }
-          // delete trailing nulls, vim alloc extra when tabs (seen with gdb)
-          newBuf.setLength(STRLEN(newBuf));
-          // replace the line
-          Util.ml_replace(lnum, newBuf);
+      count = 0;
+      if (b_insert) {
+        p_ts = bdp.start_char_vcols;
+        spaces = bdp.startspaces;
+        if (spaces != 0)
+          count = p_ts - 1; // we're cutting a TAB
+        offset = bdp.textcol;
+      } else // append
+      {
+        p_ts = bdp.end_char_vcols;
+        if (!bdp.is_short) // spaces = padding after block
+        {
+          spaces = (bdp.endspaces != 0 ? p_ts - bdp.endspaces : 0);
+          if (spaces != 0)
+            count = p_ts - 1; // we're cutting a TAB
+          offset = bdp.textcol + bdp.textlen - (spaces != 0 ? 1 : 0);
+        } else // spaces = padding to block edge
+        {
+          // if $ used, just append to EOL (ie spaces==0)
+          if (!bdp.is_MAX)
+            spaces = (oap.end_vcol - bdp.end_vcol) + 1;
+          count = spaces;
+          offset = bdp.textcol + bdp.textlen;
         }
       }
       
-      G.curwin.getWCursor().set(oap.start);
-      adjust_cursor();
+      newp = new StringBuffer();
+      //newp = alloc_check((unsigned)(STRLEN(oldp)) + s_len + count + 1);
+      newp.setLength(oldp.length() - 1 + s_len + count);
       
-      oap.line_count = 0;	    /* no lines deleted */
+      /* copy up to shifted part */
+      mch_memmove(newp, 0, oldp, 0, offset);
+      //oldp += offset;
+      int oldp_idx = 0;
+      oldp_idx += offset;
+
+      //int newp_idx = 0;
+      //newp_idx += offset;
       
-      //
-      // Set "'[" and "']" marks.
-      //
+      // insert pre-padding
+      copy_spaces(newp, offset, spaces);
+      
+      // copy the new text
+      mch_memmove(newp, offset + spaces, s, 0, s_len);
+      offset += s_len;
+      
+      if (spaces != 0 && !bdp.is_short) {
+        // insert post-padding
+        copy_spaces(newp, offset + spaces, p_ts - spaces);
+        // We're splitting a TAB, don't copy it.
+        oldp_idx++;
+        // We allowed for that TAB, remember this now
+        count++;
+      }
+      
+      if (spaces > 0)
+        offset += count;
+      mch_memmove(newp, offset, oldp, oldp_idx, (oldp.length() - 1) - oldp_idx);
+      
+      newp.setLength(STRLEN(newp));
+      Util.ml_replace(lnum, newp);
+      
+      //if (lnum == oap.end.lnum)
+      //{
+      //    /* Set "']" mark to the end of the block instead of the end of
+      //     * the insert in the first line.  */
+      //    curbuf.b_op_end.lnum = oap.end.lnum;
+      //    curbuf.b_op_end.col = offset;
+      //}
+    } // for all lnum
+    
+    // changed_lines(oap.start.lnum + 1, 0, oap.end.lnum + 1, 0L);
+    
+    G.State = oldstate;
+  }
+    
+  public static int op_replace(OPARG oap, int c) {
+    try {
+      beginUndo();
+      return op_replace7(oap, c); // from vim7
+    } finally {
+      endUndo();
+    }
+  }
+    
+  public static int op_replace7(OPARG oap, int c_) {
+    int		n;
+    int         numc;
+    int		lnum;
+    StringBuffer newBuf;
+    MySegment   oldBuf;
+    int         oldlen;
+    block_def bd = new block_def();
+    
+    char c = (char)c_;
+    
+    // Note use an fpos instead of the cursor,
+    // This should avoid jitter on the screen
+    ViFPOS fpos = G.curwin.getWCursor().copy();
+    
+    int oldp;
+    
+    if(/* (curbuf.b_ml.ml_flags & ML_EMPTY ) || */ oap.empty)
+      return OK;	    // nothing to do
+    
+    //#ifdef MULTI_BYTE ... #endif
+    
+    //
+    // block mode replace
+    //
+    if (oap.block_mode) {
+      bd.is_MAX = G.curwin.getWCurswant() == MAXCOL;
+      for (lnum = fpos.getLine(); lnum <= oap.end.getLine(); lnum++) {
+        fpos.set(lnum, 0);
+        block_prep(oap, bd, lnum, true);
+        if (bd.textlen == 0 /* && (!virtual_op || bd.is_MAX)*/)
+          continue;                     // nothing to replace
+        
+        // n == number of extra chars required
+        // If we split a TAB, it may be replaced by several characters.
+        // Thus the number of characters may increase!
+        //
+        // allow for pre spaces
+        n = (bd.startspaces != 0 ? bd.start_char_vcols - 1 : 0 );
+        // allow for post spp
+        n += (bd.endspaces != 0 && !bd.is_oneChar && bd.end_char_vcols > 0
+                ? bd.end_char_vcols - 1 : 0 );
+        numc = oap.end_vcol - oap.start_vcol + 1;
+        if (bd.is_short /*&& (!virtual_op || bd.is_MAX)*/)
+          numc -= (oap.end_vcol - bd.end_vcol) + 1;
+        // oldlen includes textlen, so don't double count
+        n += numc - bd.textlen;
+        
+        //oldp = ml_get_curline();
+        oldBuf = Util.ml_get(fpos.getLine());
+        oldp = 0;
+        oldlen = oldBuf.length() - 1; //excluce the \n
+        //newp = alloc_check((unsigned)STRLEN(oldp) + 1 + n);
+        // -1 in setlength to ignore \n, don't need +1 since no null at end
+        newBuf = new StringBuffer();
+        newBuf.setLength(oldlen + n);
+        
+        // too much sometimes gets allocated with the setLength,
+        // but the correct number of chars gets copied, keep track of that.
+        // BTW, a few extra nulls at the end wouldn't hurt vim
+        
+        // copy up to deleted part
+        mch_memmove(newBuf, 0, oldBuf, oldp, bd.textcol);
+        oldp += bd.textcol + bd.textlen;
+        // insert pre-spaces
+        copy_spaces(newBuf, bd.textcol, bd.startspaces);
+        /* insert replacement chars CHECK FOR ALLOCATED SPACE */
+        copy_chars(newBuf, STRLEN(newBuf), numc, c);
+        if (!bd.is_short) {
+          // insert post-spaces
+          copy_spaces(newBuf, STRLEN(newBuf), bd.endspaces);
+          // copy the part after the changed part, -1 to exclude \n
+          int tCount = (oldBuf.length() - 1) - oldp; // STRLEN(oldp) +1
+          mch_memmove(newBuf, STRLEN(newBuf), oldBuf, oldp, tCount);
+        }
+        // delete trailing nulls, vim alloc extra when tabs (seen with gdb)
+        newBuf.setLength(STRLEN(newBuf));
+        // replace the line
+        Util.ml_replace(lnum, newBuf);
+      }
+    }
+    
+    G.curwin.getWCursor().set(oap.start);
+    adjust_cursor();
+    
+    oap.line_count = 0;	    /* no lines deleted */
+    
+    //
+    // Set "'[" and "']" marks.
+    //
 //    curbuf->b_op_start = oap->start;
 //    if (oap->block_mode)
 //    {
@@ -3970,9 +4057,9 @@ public class Misc implements ClipboardOwner {
 //    }
 //    else
 //	curbuf->b_op_end = oap->start;
-      
-      return OK;
-    }
+    
+    return OK;
   }
+}
 
 // vi: sw=2 ts=8
