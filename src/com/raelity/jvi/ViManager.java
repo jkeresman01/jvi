@@ -74,6 +74,16 @@ public class ViManager {
   public static final String VIM_CLIPBOARD2 = "VimClipboard2";
   public static final String VIM_CLIPBOARD_RAW = "VimRawBytes";
 
+  public enum OsVersion {
+    UNIX,
+    MAC,
+    WINDOWS;
+
+    public boolean isWindows() {
+      return this.equals(WINDOWS);
+    }
+  }
+
   static private JEditorPane currentEditorPane;
   static private ViFactory factory;
 
@@ -83,7 +93,7 @@ public class ViManager {
   // HACK: to workaround JDK bug dealing with focus and JWindows
   public static ViCmdEntry activeCommandEntry;
 
-  public static final jViVersion version = new jViVersion("0.9.5.beta1.11");
+  public static final jViVersion version = new jViVersion("1.0.0.beta1.13");
   
   private static boolean enabled;
 
@@ -130,6 +140,20 @@ public class ViManager {
     sfm.addFlavorForUnencodedNative(cbName, df);
     sfm.addUnencodedNativeForFlavor(df, cbName);
     return df;
+  }
+
+  private static OsVersion osVersion;
+  public static OsVersion getOsVersion() {
+    String s = System.getProperty("os.name");
+    if(osVersion == null) {
+      if(s.startsWith("Windows"))
+        osVersion = OsVersion.WINDOWS;
+      else if(s.startsWith("Mac"))
+        osVersion = OsVersion.MAC;
+      else
+        osVersion = OsVersion.UNIX;
+    }
+    return osVersion;
   }
 
   public static String getReleaseString() {
@@ -570,7 +594,7 @@ public class ViManager {
       return pos;
     }
     //System.err.println(mev.getMouseModifiersExText(mev.getModifiersEx()));
-    System.err.println(mev.getModifiersExText(mev.getModifiersEx()));
+    //System.err.println(mev.getModifiersExText(mev.getModifiersEx()));
 
     JEditorPane editorPane = (JEditorPane)c;
 

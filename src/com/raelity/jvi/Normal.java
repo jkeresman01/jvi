@@ -4244,7 +4244,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       if(G.VIsual_active) {
         String category = null;
         if(G.VIsual_mode == Util.ctrl('V')
-          && Util.vim_strchr("AIRSC<>", op) != null) {
+          && Util.vim_strchr("RSC<>", op) != null) {
           category = "block";
         }
         if(category != null) {

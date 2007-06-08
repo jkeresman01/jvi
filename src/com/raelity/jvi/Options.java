@@ -494,7 +494,7 @@ public final class Options {
     // Vi external process options
     //
     //
-    boolean inWindows = System.getProperty("os.name").startsWith("Windows");
+    boolean inWindows = ViManager.getOsVersion().isWindows();
     String defaultShell = System.getenv("SHELL");
     String defaultXQuote = "";
     String defaultFlag = null;

@@ -1004,7 +1004,7 @@ public class ColonCommands {
           line = reader.readLine();
           if(line == null)
             break;
-          if (dbg.value)
+          if (dbgData.value)
             System.err.println("!: Writing '" + line + "' to ViOutputStream");
           vos.println(line);
         }
