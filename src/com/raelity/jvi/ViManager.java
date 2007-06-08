@@ -51,7 +51,6 @@ import javax.swing.JEditorPane;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 
-import java.awt.datatransfer.FlavorMap;
 import java.awt.datatransfer.SystemFlavorMap;
 import java.io.InputStream;
 import java.net.URI;
@@ -93,7 +92,7 @@ public class ViManager {
   // HACK: to workaround JDK bug dealing with focus and JWindows
   public static ViCmdEntry activeCommandEntry;
 
-  public static final jViVersion version = new jViVersion("1.0.0.beta1.13");
+  public static final jViVersion version = new jViVersion("1.0.0.beta1.17");
   
   private static boolean enabled;
 
@@ -112,16 +111,6 @@ public class ViManager {
 
     // Spawn to get current release info
     new GetMotd().start();
-
-    /*jViVersion v1 = new jViVersion("1.2.3.x4");
-    jViVersion v2 = new jViVersion("1.2.3.alpha4");
-    jViVersion v3 = new jViVersion("1.2.3.beta4");
-    jViVersion v4 = new jViVersion("1.2.3.rc4");
-    jViVersion v5 = new jViVersion("1.2.3.rc");
-    jViVersion v6 = new jViVersion("1.2.3.beta5");
-    jViVersion v7 = new jViVersion("1.2.3");
-    jViVersion v8 = new jViVersion("1.2.4");
-    jViVersion v9 = new jViVersion("1.3.0");*/
   }
   
   //public static final DataFlavor VimClipboard = addVimClipboard(VIM_CLIPBOARD);
@@ -966,8 +955,12 @@ public class ViManager {
     }
 
     void output() {
-      if(!valid)
+      if(!valid) {
+        ViOutputStream vios = ViManager.createOutputStream(
+                null, ViOutputStream.OUTPUT, getReleaseString());
+        vios.close();
         return;
+      }
       output = true;
 
       ViOutputStream vios = ViManager.createOutputStream(
