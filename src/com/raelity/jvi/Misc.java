@@ -1478,10 +1478,8 @@ public class Misc implements ClipboardOwner {
 
   /**
    * op_delete - handle a delete operation
-   *
-   * @return FAIL if undo failed, OK otherwise.
    */
-  static int op_delete(OPARG oap) {
+  static void op_delete(OPARG oap) {
     Normal.do_xop("op_delete");
 
     boolean		did_yank = true;
@@ -1495,7 +1493,8 @@ public class Misc implements ClipboardOwner {
     // Nothing to delete, return here.	Do prepare undo, for op_change().
     if (oap.empty)
     {
-      return Normal.u_save_cursor();
+      Normal.u_save_cursor();
+      return;
     }
 
     // If no register specified, and "unnamed" in 'clipboard', use * register
@@ -1541,7 +1540,7 @@ public class Misc implements ClipboardOwner {
       //
       if (Util.vim_strchr(G.p_cpo, CPO_EMPTYREGION) != null)
 	Util.beep_flush();
-      return OK;
+      return;
     }
 
     //
@@ -1554,7 +1553,7 @@ public class Misc implements ClipboardOwner {
 	// check for read-only register
 	if (!valid_yank_reg(oap.regname, true)) {
 	  Util.beep_flush();
-	  return OK;
+	  return;
 	}
 	get_yank_register(oap.regname, true); // yank into specif'd reg.
 	if (op_yank(oap, true, false) == OK)   // yank without message
@@ -1676,8 +1675,8 @@ public class Misc implements ClipboardOwner {
     }
     else {
       // delete characters between lines
-      if (Normal.u_save_cursor() == FAIL)	// save first line for undo
-	return FAIL;
+      //if (Normal.u_save_cursor() == FAIL)	// save first line for undo
+      //  return FAIL;
 
       int start = oap.start.getOffset();
       int end = oap.end.getOffset();
@@ -1701,8 +1700,6 @@ public class Misc implements ClipboardOwner {
     //
     // NEEDSWORK: op_delete: set "'[" and "']" marks.
     //
-
-    return OK;
   }
 
   /**
@@ -1863,8 +1860,6 @@ public class Misc implements ClipboardOwner {
 
   /**
    * op_change - handle a change operation
-   *
-   * @return TRUE if edit() returns because of a CTRL-O command
    */
   static void op_change(OPARG oap) {
     int		l;
@@ -1873,8 +1868,9 @@ public class Misc implements ClipboardOwner {
     if (oap.motion_type == MLINE) {
       l = 0;
     }
-    if (op_delete(oap) == FAIL)
-      return;
+    // if (op_delete(oap) == FAIL)
+    //   return;
+    op_delete(oap);
     
     final ViFPOS cursor = G.curwin.getWCursor();
     if ((l > cursor.getColumn()) && !Util.lineempty(cursor.getLine())) //&& !virtual_op

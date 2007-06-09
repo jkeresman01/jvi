@@ -1639,6 +1639,7 @@ middle_code:
 	    Misc.beginInsertUndo();
             Misc.op_change(oap); // will call edit()
             opInsertBusy = true;
+            assert editBusy;
 	  }
 	  break;
 
@@ -1691,13 +1692,9 @@ middle_code:
 
 	case OP_INSERT:
 	case OP_APPEND:
-//	  G.VIsual_reselect = false;	/* don't reselect now */
-//	  Util.vim_beep();
-
-
 	  G.VIsual_reselect = false;	/* don't reselect now */
           if (empty_region_error)
-	  Util.vim_beep();
+            Util.vim_beep();
           else {
             /* This is a new edit command, not a restart.  We don't edit
              * recursively. */
@@ -1706,18 +1703,14 @@ middle_code:
             Misc.op_insert(oap, cap.count1);/* handles insert & append
                                          * will call edit() */
             opInsertBusy = true;
+            assert editBusy;
           }
-
-
-
-
-
 	  break;
 
 	case OP_REPLACE:
 	  G.VIsual_reselect = false;	/* don't reselect now */
           if (empty_region_error)
-	  Util.vim_beep();
+            Util.vim_beep();
           else 
             Misc.op_replace(oap, cap.nchar);
 	  break;
