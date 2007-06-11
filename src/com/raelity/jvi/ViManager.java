@@ -92,7 +92,8 @@ public class ViManager {
   // HACK: to workaround JDK bug dealing with focus and JWindows
   public static ViCmdEntry activeCommandEntry;
 
-  public static final jViVersion version = new jViVersion("1.0.0.beta1.17");
+  // 1.0.0.beta2 is NB vers 0.9.6.4
+  public static final jViVersion version = new jViVersion("1.0.0.beta2");
   
   private static boolean enabled;
 
