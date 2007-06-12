@@ -38,13 +38,14 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Field;
-import java.util.ArrayDeque;
+//import java.util.ArrayDeque; JDK1.6
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
-import java.util.Deque;
+//import java.util.Deque; JDK1.6
 import java.util.HashSet;
 import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
@@ -812,14 +813,16 @@ public final class Options {
         displayAllOptions();
         return;
       }
-      Deque<String> args = new ArrayDeque<String>();
+      //Deque<String> args = new ArrayDeque<String>(); JDK1.6
+      LinkedList<String> args = new LinkedList<String>();
       // copy eventArgs into args, with possible fixup
       // ":set sw =4" is allowed, so if something starts with "="
       // then append it to the previous element
       int j = 0;
       for(int i = 0; i < eventArgs.size(); i++) {
         String arg = eventArgs.get(i);
-        if(arg.startsWith("=") && args.peekLast() != null) {
+        if(arg.startsWith("=") && args.size() > 0)
+        {
           arg = args.removeLast() + arg;
         }
         args.addLast(arg);

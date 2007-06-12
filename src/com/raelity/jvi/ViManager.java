@@ -93,7 +93,7 @@ public class ViManager {
   public static ViCmdEntry activeCommandEntry;
 
   // 1.0.0.beta2 is NB vers 0.9.6.4
-  public static final jViVersion version = new jViVersion("1.0.0.beta2");
+  public static final jViVersion version = new jViVersion("1.0.0.beta3");
   
   private static boolean enabled;
 
@@ -101,7 +101,8 @@ public class ViManager {
     if(ViManager.factory != null) {
       throw new RuntimeException("ViFactory already set");
     }
-    
+
+
     enabled = true;
     ViManager.factory = factory;
 
@@ -112,6 +113,26 @@ public class ViManager {
 
     // Spawn to get current release info
     new GetMotd().start();
+  }
+
+  private static boolean jdk15;
+  private static boolean jdk16;
+
+  static {
+    try {
+      jdk15 = true;
+      jdk16 = false;
+      Class.forName("java.util.ArrayDeque");
+      jdk15 = false;
+      jdk16 = true;
+    } catch (ClassNotFoundException ex) { }
+  }
+
+  public static boolean isJdk15() {
+    return jdk15;
+  }
+  public static boolean isJdk16() {
+    return jdk16;
   }
   
   //public static final DataFlavor VimClipboard = addVimClipboard(VIM_CLIPBOARD);

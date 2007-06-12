@@ -102,29 +102,38 @@ public class DefaultViCaret extends DefaultCaret implements ViCaret {
     viDelegate.positionCaret(e);
   }*/
 
-    /* IN SWING, THIS CALLS THE FOLLOWING SET DOT
+    // IN SWING, THIS CALLS THE FOLLOWING SET DOT
     public void setDot(int dot) {
-        if(isMouseAction || mouseButtonDown)
-            dot = ViManager.mouseSetDot(dot, mouseComponent);
+        if(ViManager.isJdk15()) {
+            if(isMouseAction || mouseButtonDown)
+                dot = ViManager.mouseSetDot(dot, mouseComponent, mouseEvent);
+        }
         super.setDot(dot);
-    }*/
+    }
+
+    // Only after jdk16 the following is public in super class
+    // in jdk15 the following is never called
     public void setDot(int dot, Position.Bias dotBias) {
         if(isMouseAction || mouseButtonDown)
             dot = ViManager.mouseSetDot(dot, mouseComponent, mouseEvent);
-        super.setDot(dot, dotBias);
+        super.setDot(dot, dotBias); // not accessible in jdk1.5
     }
     
-    /* IN SWING, THIS CALLS THE FOLLOWING MOVE DOT
+    // IN SWING, THIS CALLS THE FOLLOWING MOVE DOT
     public void moveDot(int dot) {
-        if(mouseButtonDown)
-            dot = ViManager.mouseMoveDot(dot, mouseComponent);
+        if(ViManager.isJdk15()) {
+            if(mouseButtonDown)
+                dot = ViManager.mouseMoveDot(dot, mouseComponent, mouseEvent);
+        }
         super.moveDot(dot);
-    }*/
+    }
 
+    // Only after jdk16 the following is public in super class
+    // in jdk15 the following is never called
     public void moveDot(int dot, Position.Bias dotBias) {
         if(mouseButtonDown)
             dot = ViManager.mouseMoveDot(dot, mouseComponent, mouseEvent);
-        super.moveDot(dot, dotBias);
+        super.moveDot(dot, dotBias); // not accessible in jdk1.5
     }
 
   //
