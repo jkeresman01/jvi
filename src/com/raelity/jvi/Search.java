@@ -31,6 +31,9 @@ package com.raelity.jvi;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.TooManyListenersException;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -978,9 +981,16 @@ finished:
   //
   
   private static int nSubMatch;
+  private static int nSubChanges;
   private static int nSubLine = 0;
   
   private static String lastSubstituteArg;
+
+  private static final int SUBST_ALL      = 0x01;
+  private static final int SUBST_PRINT    = 0x02;
+  private static final int SUBST_CONFIRM  = 0x04;
+  private static final int SUBST_ESCAPE   = 0x08;
+  private static final int SUBST_QUIT     = 0x10;
 
   /**
    * Substitute command
@@ -1002,10 +1012,8 @@ finished:
     }
     String pattern = null;
     RegExp prog = null;
-    char[] substitution = null;
-    boolean doAll = false; // should be bit flag???
-    boolean doPrint = false; // should be bit flag???
-    boolean hasEscape = false;
+    CharSequence substitution;
+    MutableInt flags = new MutableInt();
     char delimiter = cmd.charAt(0);
     MySegment line;
     int cursorLine = 0; // set to line number of last change
@@ -1023,6 +1031,7 @@ finished:
       pattern = cmd.substring(sidx01, sidx);
       lastPattern = pattern;
     }
+    Options.newSearch();
     
     //
     // pick up the substitution string
@@ -1044,10 +1053,11 @@ finished:
     } else {
       lastSubstitution = cmd.substring(sidx01, sidx);
     }
-    substitution = lastSubstitution.toCharArray();
-    hasEscape = lastSubstitution.indexOf('\\') != -1
-                || lastSubstitution.indexOf('&') != -1;
+    substitution = lastSubstitution;
                 // NEEDSWORK: || lastSubstitution.indexOf('~', sidx01) != -1;
+    if(lastSubstitution.indexOf('\\') != -1
+                || lastSubstitution.indexOf('&') != -1)
+      flags.setBits(SUBST_ESCAPE);
     
     //
     // pick up the flags
@@ -1058,11 +1068,15 @@ finished:
       char c = cmd.charAt(sidx);
       switch(c) {
         case 'g':
-          doAll = true;
+          flags.setBits(SUBST_ALL);
           break;
         
         case 'p':
-          doPrint = true;
+          flags.setBits(SUBST_PRINT);
+          break;
+        
+        case 'c':
+          flags.setBits(SUBST_CONFIRM);
           break;
         
         case ' ':
@@ -1090,20 +1104,18 @@ finished:
     if(! G.global_busy) {
       nSubLine = 0;
       nSubMatch = 0;
+      nSubChanges = 0;
     }
-    for(int i = line1; i <= line2; i++) {
-      line = G.curwin.getLineSegment(i);
-      sb = substitute_line(prog, line, doAll, substitution, hasEscape);
-      if(sb != null) {
-        G.curwin.replaceString(G.curwin.getLineStartOffset(i),
-                               G.curwin.getLineEndOffset(i)-1,
-                               sb.toString());
+
+    for(int i = line1; i <= line2 && !flags.testAnyBits(SUBST_QUIT); i++) {
+      int nChange = substitute_line(prog, i, flags, substitution);
+      if(nChange > 0) {
+        nSubChanges += nChange;
         cursorLine = i;  // keep track of last line changed
 	nSubLine++;
-	if(doPrint) {
+	if(flags.testAnyBits(SUBST_PRINT)) {
 	  ColonCommands.outputPrint(i, 0, 0);
 	}
-        // System.err.println("sub: " + sb);
       }
     }
     
@@ -1125,9 +1137,9 @@ finished:
    * Can also be used after a ":global" command.
    * Return TRUE if a message was given.
    */
-  static boolean do_sub_msg() {
-    if(nSubMatch >= G.p_report.getInteger()) {
-      String msg = "" + nSubMatch + " substitution" + Misc.plural(nSubMatch)
+  private static boolean do_sub_msg() {
+    if(nSubChanges >= G.p_report.getInteger()) {
+      String msg = "" + nSubChanges + " substitution" + Misc.plural(nSubChanges)
 		   + " on " + nSubLine + " line" + Misc.plural(nSubLine);
       G.curwin.getStatusDisplay().displayStatusMessage(msg);
       return true;
@@ -1135,9 +1147,9 @@ finished:
     return false;
   }
 
+  private static char modalResponse;
   /**
    * This method preforms the substitution within one line of text.
-   * null is returned if there was no match on the line.
    * This is not adapted vim code.
    * <br><b>NEEDSWORK:</b><ul>
    * <li>Handle more flags, not just doAll.
@@ -1147,61 +1159,110 @@ finished:
    * @param doAll if true, substitute all occurences within the line
    * @param subs the substitution string
    * @param hasEscape if true, then escape processing is needed on <i>subs</i>.
-   * @return a string buffer with the new line, null is
-   * returned if there was no match on the line.
+   * @return number of changes on the line
    */
-  static StringBuffer substitute_line(RegExp prog,
-                                      MySegment line,
-                                      boolean doAll,
-                                      char[] subs,
-                                      boolean hasEscape)
+  static int substitute_line(RegExp prog,
+                                      int lnum,
+                                      MutableInt flags,
+                                      CharSequence subs)
   {
-    StringBuffer sb = null;
-    int offset = line.offset;
-    int lookHere = offset;
-    int count = line.count -1; // don't count trailing newline
-    int endOffset = offset + count;
-    int lastMatch = -1;
+    MySegment seg = G.curwin.getLineSegment(lnum);
 
-    while(prog.search(line.array, lookHere, count+1)) {
-      nSubMatch++;
-      if(sb == null) { // got a match, make sure there's a buffer
-        sb = new StringBuffer();
-      }
-      // copy characters skipped finding match from input string to output.
-      // If no match, then copy to end of line.
-      int matchOffset = prog.start(0);
-      if(lastMatch == matchOffset) {
+    StringBuffer sb = null;
+    int lookColumnOffset = 0;
+    int lastMatchColumn = -1;
+    int countChanges = 0;
+
+    while(true) {
+      if(!prog.search(seg.array,
+                      seg.offset + lookColumnOffset,
+                      seg.count - lookColumnOffset))
+        break;
+
+      int matchOffsetColumn = prog.start(0) - seg.offset;
+      if(lastMatchColumn == matchOffsetColumn) {
         // prevent infinite loops, can happen with match of zero characters
-        ++lookHere;
-        count = endOffset - offset;
-        if(count <= 0) {
+        ++lookColumnOffset;
+        // The following statement is true if the lookColumn is on or after
+        // the newline. Note that there has already been a successful match.
+        // So get out of the loop when looking at newline and have had a match
+        if(lookColumnOffset >= seg.count - 1)
           break;
-        }
         continue;
       }
-      lastMatch = matchOffset;
-      sb.append(line.array, offset, matchOffset - offset);
-      // copy substitution string, do escaping if needed
-      if(hasEscape) {
-        translateSubstitution(prog, line, sb, subs);
-      } else {
-        sb.append(subs);
+      lastMatchColumn = matchOffsetColumn;
+
+      nSubMatch++;
+      int segOffsetToDoc = G.curwin.getLineStartOffset(lnum) - seg.offset;
+
+      modalResponse = 0;
+      if(flags.testAnyBits(SUBST_CONFIRM)) {
+        G.curwin.setSelect(segOffsetToDoc + prog.start(0),
+                           segOffsetToDoc + prog.stop(0)
+                            + (prog.length(0) == 0 ? 1 : 0));
+
+        Msg.smsg("replace with " + subs + "(y/n/a/q/l)");
+        ViManager.getViFactory().startModalKeyCatch(new KeyAdapter() {
+          public void keyPressed(KeyEvent e) {
+            e.consume();
+            char c = e.getKeyChar();
+            switch(c) {
+              case 'y': case 'n': case 'a': case 'q': case 'l':
+                modalResponse = c;
+                break;
+              case KeyEvent.VK_ESCAPE:
+                modalResponse = 'q';
+                break;
+              default:
+                Util.vim_beep();
+                break;
+            }
+            if(modalResponse != 0) {
+              ViManager.getViFactory().stopModalKeyCatch();
+            }
+          }
+        });
+        Msg.clearMsg();
       }
+
       // advance past matched characters
-      offset = prog.stop(0);
-      lookHere = offset;
-      count = endOffset - offset;
-      if( ! doAll) {
-        // only do one substitute
+      lookColumnOffset = prog.stop(0) - seg.offset;
+      if(modalResponse != 'n' && modalResponse != 'q') {
+        if(sb == null) { // match and do substitute, make sure there's a buffer
+          sb = new StringBuffer();
+        }
+        CharSequence changedData = flags.testAnyBits(SUBST_ESCAPE)
+                                ? translateSubstitution(prog, seg, sb, subs)
+                                : subs;
+
+        int sizeDelta = changedData.length() - prog.length(0);
+        // the column may shifted, adjust by size diff of substitution
+        lookColumnOffset += sizeDelta;
+        if(prog.length(0) == 0)
+          lastMatchColumn += sizeDelta;
+
+        // apply the change to the document
+        countChanges++;
+        G.curwin.replaceString(segOffsetToDoc + prog.start(0),
+                               segOffsetToDoc + prog.stop(0),
+                               changedData.toString());
+
+        // the line has changed, fetch changed line
+        seg = G.curwin.getLineSegment(lnum);
+      }
+
+      if(modalResponse == 'q' || modalResponse == 'l') {
+        flags.setBits(SUBST_QUIT);
+        break;
+      } else if(modalResponse == 'a')
+        flags.clearBits(SUBST_CONFIRM); // just do it
+
+      if( ! flags.testAnyBits(SUBST_ALL)) {
+        // only do one substitute per line
         break;
       }
     }
-    if(sb != null && endOffset > offset) {
-      // if there was any substitution, copy chars after last match
-      sb.append(line.array, offset, endOffset - offset);
-    }
-    return sb;
+    return countChanges;
   }
 
   /**
@@ -1216,16 +1277,17 @@ finished:
    * @param sb append substitution to here
    * @param subs substitution string, contains escape characters
    */
-  static void translateSubstitution(RegExp prog,
+  static CharSequence translateSubstitution(RegExp prog,
                                    MySegment line,
                                    StringBuffer sb,
-                                   char[] subs)
+                                   CharSequence subs)
   {
     int i = 0;
     char c;
+    sb.setLength(0);
 
-    for( ; i < subs.length; i++) {
-      c = subs[i];
+    for( ; i < subs.length(); i++) {
+      c = subs.charAt(i);
       switch(c) {
         case '&':
           // copy chars that matched
@@ -1233,9 +1295,9 @@ finished:
           break;
 
         case '\\':
-          if(i+1 < subs.length) {
+          if(i+1 < subs.length()) {
             i++;
-            c = subs[i];
+            c = subs.charAt(i);
             switch(c) {
               case '&':
                 sb.append('&');
@@ -1271,6 +1333,7 @@ finished:
           break;
       }
     }
+    return sb;
   }
 
   /**
@@ -1298,6 +1361,7 @@ finished:
     int old_lcount = G.curwin.getLineCount();
     nSubLine = 0;
     nSubMatch = 0;
+    nSubChanges = 0;
     String cmd = cev.getArg(1);
     String cmdExec;
     String pattern = null;
@@ -1932,3 +1996,5 @@ extend:
     return false;
   }
 }
+
+// vi:set sw=2 ts=8:
