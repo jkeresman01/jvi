@@ -120,7 +120,6 @@ public class Util {
    */
   static MySegment ml_get(int lnum) {
     MySegment seg = new MySegment(G.curwin.getLineSegment(lnum));
-    seg.first(); // init the CharacterIterator
     return seg;
   }
   
