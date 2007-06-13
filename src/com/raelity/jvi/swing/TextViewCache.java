@@ -57,6 +57,7 @@ import com.raelity.jvi.BooleanOption;
 import com.raelity.jvi.G;
 import com.raelity.jvi.Options;
 import com.raelity.jvi.ViManager;
+import com.raelity.text.TextUtil.MySegment;
 
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Position;
@@ -190,12 +191,25 @@ public class TextViewCache implements PropertyChangeListener,
     invalidCursor = true;
   }
 
+  private class PositionSegment extends MySegment {
+    /** The offset of the start of the segment in the document. 
+    * Note that offset is already a field name.
+    */
+    public int position;
+
+    /** The line number of the segment. The first line is numbered at 1.
+    * This is negative if the
+    * segment does not correspond to a single line.
+    */
+    public int line;
+  }
+
   /** the segment cache */
   private PositionSegment segment = new PositionSegment();
   // private Segment tempSegment = new Segment();
 
   /** @return the positionsegment for the indicated line */
-  final public PositionSegment getLineSegment(int line) {
+  final public MySegment getLineSegment(int line) {
     if(cacheDisabled || segment.count == 0 || segment.line != line) {
       if(cacheTrace.getBoolean())System.err.println("Miss seg: " + line);
       try {
@@ -224,19 +238,15 @@ public class TextViewCache implements PropertyChangeListener,
     else {
       if(cacheTrace.getBoolean())System.err.println("Hit seg: " + line);
     }
-    return segment;
-  }
-
-  final public PositionSegment getCurrentLineSegment() {
-    return segment;
+    //return segment;
+    MySegment s = new MySegment(segment.array, segment.offset, segment.count);
+    s.first();
+    return s;
   }
 
   final private void invalidateLineSegment() {
     if(cacheTrace.getBoolean())System.err.println("Inval seg:");
     segment.count = 0;
-  }
-
-  protected void fillLineSegment(int line) {
   }
 
   /** the element cache */

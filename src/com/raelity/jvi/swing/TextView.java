@@ -559,6 +559,7 @@ public class TextView implements ViTextView {
       // NEEDSWORK: how to report exception?
       ex.printStackTrace();
     }
+    seg.first();
     return seg;
   }
 

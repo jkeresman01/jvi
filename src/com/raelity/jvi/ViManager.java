@@ -93,7 +93,7 @@ public class ViManager {
   public static ViCmdEntry activeCommandEntry;
 
   // 1.0.0.beta2 is NB vers 0.9.6.4
-  public static final jViVersion version = new jViVersion("1.0.0.beta3");
+  public static final jViVersion version = new jViVersion("1.0.0.beta3.1");
   
   private static boolean enabled;
 

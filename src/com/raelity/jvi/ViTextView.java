@@ -207,11 +207,15 @@ public interface ViTextView extends ViOptionBag {
   /** @return the number of lines in the associated file */
   public int getLineCount();
 
-  /** @return the segment for the line */
+  /**
+   * The associated character iterator is initialized with first().
+   * @return the segment for the line.
+   */
   public MySegment getLineSegment(int line);
 
-  /** Fill the argument segment with the requested text. If the setgment
+  /** Fill the argument segment with the requested text. If the segment
    * is null, then create a segment.
+   * The associated character iterator is initialized with first().
    * @return a segment for the requested text.
    */
   public MySegment getSegment(int offset, int length, MySegment segment);
