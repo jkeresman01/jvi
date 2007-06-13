@@ -40,6 +40,11 @@ public class MutableInt implements Comparable<MutableInt> {
   final public int getValue() { return value; }
   final public void setValue(int value) { this.value = value; }
 
+  final public void setBits(int mask) { value |= mask; }
+  final public void clearBits(int mask) { value &= ~mask; }
+  final public boolean testAnyBits(int mask) { return (value & mask) != 0; }
+  final public boolean testAllBits(int mask) { return (value & mask) == mask; }
+
   public int compareTo(MutableInt o) {
     return value - o.value;
   }
