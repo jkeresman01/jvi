@@ -65,6 +65,12 @@ public class StatusDisplay implements ViStatusDisplay {
     setText(generalStatus, msg);
   }
 
+  public void displayWarningMessage(String msg) {
+    fFrozen = false;
+    // NEEDSWORK: make error message red or something
+    setText(generalStatus, msg);
+  }
+
   public void displayFrozenMessage(String msg) {
     fFrozen = true;
     setText(generalStatus, msg);
