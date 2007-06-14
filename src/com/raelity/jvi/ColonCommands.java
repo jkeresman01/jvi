@@ -125,6 +125,7 @@ public class ColonCommands {
     }
   }
 
+  private static char modalResponse;
   /**
    * Parse (partially) the command.
    * Return null if parse failure or otherwise can't execute,
@@ -255,17 +256,30 @@ public class ColonCommands {
 
     if(cev.addr_count > 1) {
       if(cev.line1 > cev.line2) {
-        //
-        // NEEDSWORK: Quick hack for swap range. Want something like
-        // factory.startModalKeyCatch, but that hangs the event thread.
-        // Could then replace factory.startModalKeyCatch.
-        //
-        int rc = JOptionPane.showConfirmDialog(null,
-                                              "Backwards range given,"
-                                              + "OK to swap (y/n)?",
-                                              "Command Execution",
-                                              JOptionPane.YES_NO_OPTION);
-        if(rc != JOptionPane.YES_OPTION)
+        modalResponse = 0;
+        Msg.wmsg("Backwards range given, OK to swap (y/n)?");
+        ViManager.getViFactory().startModalKeyCatch(new KeyAdapter() {
+          public void keyPressed(KeyEvent e) {
+            e.consume();
+            char c = e.getKeyChar();
+            switch(c) {
+              case 'y': case 'n':
+                modalResponse = c;
+                break;
+              case KeyEvent.VK_ESCAPE:
+                modalResponse = 'n';
+                break;
+              default:
+                Util.vim_beep();
+                break;
+            }
+            if(modalResponse != 0) {
+              ViManager.getViFactory().stopModalKeyCatch();
+            }
+          }
+        });
+        Msg.wmsg("Backwards range given, OK to swap (y/n)? " + modalResponse);
+        if(modalResponse != 'y')
           return null;
         int t = cev.line1;
         cev.line1 = cev.line2;

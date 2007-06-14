@@ -31,6 +31,7 @@ package com.raelity.jvi;
 
 import com.raelity.jvi.swing.KeyBinding;
 import com.raelity.text.TextUtil;
+import java.util.LinkedList;
 import javax.swing.JEditorPane;
 import javax.swing.text.AbstractDocument;
 
@@ -131,10 +132,10 @@ public class GetChar {
       
     while(true) {
       while(stuffbuff.hasNext()) {
-        pumpChar(stuffbuff.getNext());
+        pumpChar(stuffbuff.removeFirst());
       }
       if(typebuf.hasNext()) {
-        pumpChar(typebuf.getNext());
+        pumpChar(typebuf.removeFirst());
       } else {
         break;
       }
@@ -148,10 +149,10 @@ public class GetChar {
    */
   private static char getOneChar() {
     if(stuffbuff.hasNext()) {
-      return (char)stuffbuff.getNext();
+      return (char)stuffbuff.removeFirst();
     }
     if(typebuf.hasNext()) {
-      return (char)typebuf.getNext();
+      return (char)typebuf.removeFirst();
     }
     throw new RuntimeException("No character available");
   }
@@ -370,10 +371,24 @@ public class GetChar {
   // not be put into the redo buffer. So we have to keep track of where
   // user input is done and look only for local changes.
   //
+  // These algorithms fail if things "go out of bounds". Eg, on NB, start with
+  //      |)))
+  // then enter ((, you see
+  //      ((|)))))
+  // then enter ';', you see
+  //      (()))));|
+  // this has gone out of bounds, from input mode.
+  //
+  // NOTES:
+  //    - expectChar could be the actual char expected, else NUL
+  //    - if this needs more tweaking, should probably go to a state machine.
+  //
 
   private static int redoTrackPosition = -1;
   private static boolean expectChar;
   private static boolean disableTrackingOneEdit;
+  // afterBuff, characters added after the current insert position
+  private static BufferQueue afterBuff = new BufferQueue();
 
   static void disableRedoTrackingOneEdit() {
     disableTrackingOneEdit = true;
@@ -384,8 +399,10 @@ public class GetChar {
   }
 
   private static void markRedoTrackPosition(char c) {
+    if(!G.redoTrack.value)
+      return;
     if(expectChar)
-      System.err.println("markRedoTrackPosition ERROR: expectChar");
+      System.err.println("markRedoPosition ERROR: expectChar");
     if((G.State & BASE_STATE_MASK) != INSERT
        || c < 0x20 && (c != BS
                     && c != TAB)
@@ -395,13 +412,60 @@ public class GetChar {
         System.err.println("markRedoPosition OFF");
       redoTrackPosition = -1;
       expectChar = false;
+      // dump any leftover chars onto redo buff
+      if(afterBuff.length() > 0) {
+        if(G.dbgRedo.value)
+          System.err.println("markRedoPosition leftovers: " + afterBuff);
+        redobuff.append(afterBuff.toString());
+        afterBuff.setLength(0);
+      }
       return;
     }
-    redoTrackPosition = G.curwin.getCaretPosition();
     expectChar = true;
+    int prevRedoTrackPosition = redoTrackPosition;
+    redoTrackPosition = G.curwin.getCaretPosition();
+    if(prevRedoTrackPosition >= 0) {
+      int skip = redoTrackPosition - prevRedoTrackPosition;
+      if(skip != 0) {
+        String before = null; // debug
+        String skipString = null; // debug
+        if(G.dbgRedo.value)
+          before = afterBuff.toString();
+        if(skip < 0) {
+          // One or more chars skipped back before the end position,
+          // take them out of redobuff and save them.
+          // Typically entered something like '[' and '[|]' put into document
+          // with insertion point as indicated by '|'.
+          // Assuming will leave at least one character in redobuff.
+          if(redobuff.length() + skip > 0) { // recall skip is negative
+            int i = skip;
+            while(i++ < 0)
+              afterBuff.addFirst(redobuff.removeLast());
+          }
+        } else if(skip > 0) {
+          // One or more characters skipped forward,
+          // move chars from afterBuff to redoBuff.
+          // Don't move if further than all of afterBuff
+          if(afterBuff.length() - skip >= 0) {
+            int i = skip;
+            while(i-- > 0)
+              redobuff.append(afterBuff.removeFirst());
+          }
+        }
+        if(G.dbgRedo.value)
+          System.err.println(String.format(
+                        "markRedoPosition SKIP[%d]: %s[%d] --> %s[%d]",
+                        skip,
+                        before, before.length(),
+                        afterBuff, afterBuff.length()));
+      }
+    }
     if(G.dbgRedo.value)
-      System.err.println(String.format("markRedoPosition %d '%c' '%s'",
-                                       redoTrackPosition, c, redobuff));
+      System.err.println(String.format("markRedoPosition %d --> %d '%c' '%s'",
+                                       prevRedoTrackPosition,
+                                       redoTrackPosition,
+                                       c,
+                                       TextUtil.debugString(redobuff.toString())));
       //System.err.println("markRedoPosition " + redoTrackPosition + " '" + c + "'");
   }
 
@@ -413,21 +477,27 @@ public class GetChar {
       return;
     if(expectChar) {
       if(pos == redoTrackPosition) {
-        if(G.dbgRedo.value)
-          System.err.println("docInsert MATCH expected " + pos);
+        if(G.dbgRedo.value) {
+          System.err.println("docInsert MATCH expected " + pos
+                             + (s.length() > 1 ? " LENGTH: " + s.length() : ""));
+        }
         redoTrackPosition += 1;
       } else if(pos != redoTrackPosition)
         System.err.println(String.format(
-                      "docInsert ERROR: redoPosition %d, pos %d, '%s'",
-                      redoTrackPosition, pos, s));
-      else if(s.length() != 1)
-        System.err.println(String.format("docInsert ERROR: length %d, pos %d",
-                                         redoTrackPosition, pos));
+                      "docInsert ERROR: pos %d, redoPosition %d, '%s'",
+                      pos, redoTrackPosition, s));
+      if(s.length() != 1) {
+        System.err.println(String.format("docInsert LONG: %d, length %d",
+                                          pos, s.length()));
+        // add in the extra
+        redobuff.append(s.substring(1));
+        redoTrackPosition += s.length() - 1;
+      }
     } else {
       if(pos == redoTrackPosition) {
         if(G.dbgRedo.value)
-          System.err.println(String.format("docInsert MATCH other: %d %d '%s'",
-                                         pos, redoTrackPosition, s));
+          System.err.println(String.format("docInsert MATCH EXTRA: %d '%s'",
+                                         pos, TextUtil.debugString(s)));
         //
         // Add the mystery string to the redo buffer
         //
@@ -435,7 +505,45 @@ public class GetChar {
         redoTrackPosition += s.length();
       } else {
         if(G.dbgRedo.value)
-          System.err.println("docInsert: NO MATCH");
+          System.err.println(String.format(
+                      "docInsert: NO MATCH redoPosition %d, redobuff %s[%d]"
+                      + " afterBuff %s[%d]",
+                      redoTrackPosition,
+                      redobuff, redobuff.length(),
+                      afterBuff, afterBuff.length()));
+        // Handle character warp, like for ';' on NB. Given
+        //       (((|)))
+        // enter ';', and you get
+        //       ((()));|
+        // At this point, there is ";\b" in redobuff, they must be removed
+        // (which breaks vim's "rule" about leaving in the \b), otherwise
+        // during a redo the ';' causes problems.
+        //
+        // Be very strict (at least for now)
+
+        // Is there enough chars to cover the warp
+        int warpDistance = pos - redoTrackPosition;
+        if(s.length() == 1
+                && warpDistance > 0 && warpDistance <= afterBuff.length()) {
+          // get rid of ';\b' if its there
+          if(redobuff.length() >= 2
+                  && redobuff.getLast(0) == BS
+                  && redobuff.getLast(1) == s.charAt(0)) {
+            redobuff.removeLast();
+            redobuff.removeLast();
+          }
+          int i = warpDistance;
+          while(i-- > 0)
+            redobuff.append(afterBuff.removeFirst());
+          redobuff.append(s);
+          if(G.dbgRedo.value)
+            System.err.println(String.format(
+                        "docInsert: WARP %d, redobuff %s[%d]"
+                        + " afterBuff %s[%d]",
+                        warpDistance,
+                        redobuff, redobuff.length(),
+                        afterBuff, afterBuff.length()));
+        }
       }
     }
     expectChar = false;
@@ -449,18 +557,20 @@ public class GetChar {
     if(pos + len == redoTrackPosition) {
       if(G.dbgRedo.value)
         System.err.println(String.format(
-                  "docRemove MATCH: redoPosition %d, pos %d, length %d",
-                  redoTrackPosition, pos+len, len));
+                  "docRemove MATCH%s: redoPosition %d --> %d, length %d",
+                  (expectChar ? "-expect" : ""),
+                  redoTrackPosition, pos, len));
       //
-      // Delete the string from the redo buffer
+      // Delete the string from the redo buffer, using BS
       //
       if(expectChar && len != 1) {
         System.err.println("docRemove ERROR: expectChar len = " + len);
       }
       // when expectChar, the BS is already in redobuff
-      if(!expectChar)
+      if(!expectChar) {
         for(int i = len; i > 0; i--)
           redobuff.append(BS);
+      }
       redoTrackPosition -= len;
     } else {
       if(G.dbgRedo.value)
@@ -715,67 +825,94 @@ public class GetChar {
   private static int last_recorded_len = 0;  // number of last recorded chars
   private static int redobuff_idx = 0;
   // static BufferQueue old_redobuff;
-}
 
-/**
- * Small queue of characters. Can't extend StringBuffer, so delegate.
- */
-class BufferQueue {
-  private StringBuilder buf = new StringBuilder();
+  /**
+  * Small queue of characters. Can't extend StringBuffer, so delegate.
+  */
+  static class BufferQueue {
+    private StringBuilder buf = new StringBuilder();
 
-  void setLength(int length) {
-    buf.setLength(length);
+    void setLength(int length) {
+      buf.setLength(length);
+    }
+
+    int length() {
+      return buf.length();
+    }
+
+    boolean hasNext() {
+      return buf.length() > 0;
+    }
+
+    /** @deprecated in favor of getFirst */
+    char getNext() {
+      char c = buf.charAt(0);
+      buf.deleteCharAt(0);
+      return c;
+    }
+
+    char removeFirst() {
+      char c = buf.charAt(0);
+      buf.deleteCharAt(0);
+      return c;
+    }
+
+    BufferQueue addFirst(char c) {
+      buf.insert(0, c);
+      return this;
+    }
+
+    char removeLast() {
+      int newLength = buf.length() - 1;
+      char c = buf.charAt(newLength);
+      buf.setLength(newLength);
+      return c;
+    }
+
+    char getLast() {
+      return getLast(0);
+    }
+
+    char getLast(int i) {
+      return buf.charAt(buf.length() - 1 - i);
+    }
+
+    BufferQueue insert(int ix, String s) {
+      buf.insert(ix, s);
+      return this;
+    }
+
+    boolean hasCharAt(int idx) {
+      return buf.length() > idx;
+    }
+
+    char getCharAt(int idx) {
+      return buf.charAt(idx);
+    }
+
+    String substring(int idx) {
+      return buf.substring(idx);
+    }
+
+    BufferQueue append(char c) {
+      buf.append(c);
+      return this;
+    }
+
+    BufferQueue append(int n) {
+      buf.append(n);
+      return this;
+    }
+
+    BufferQueue append(String s) {
+      buf.append(s);
+      return this;
+    }
+
+    public String toString() {
+      return buf.toString();
+    }
   }
-
-  int length() {
-    return buf.length();
   }
-
-  boolean hasNext() {
-    return buf.length() > 0;
-  }
-
-  int getNext() {
-    int c = buf.charAt(0);
-    buf.deleteCharAt(0);
-    return c;
-  }
-
-  BufferQueue insert(int ix, String s) {
-    buf.insert(ix, s);
-    return this;
-  }
-
-  boolean hasCharAt(int idx) {
-    return buf.length() > idx;
-  }
-
-  int getCharAt(int idx) {
-    return buf.charAt(idx);
-  }
-
-  String substring(int idx) {
-    return buf.substring(idx);
-  }
-
-  BufferQueue append(char c) {
-    buf.append(c);
-    return this;
-  }
-
-  BufferQueue append(int n) {
-    buf.append(n);
-    return this;
-  }
-
-  BufferQueue append(String s) {
-    buf.append(s);
-    return this;
-  }
-
-  public String toString() {
-    return buf.toString();
-  }
-}
 
 // vi:set sw=2 ts=8:
