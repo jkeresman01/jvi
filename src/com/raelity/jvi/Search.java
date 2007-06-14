@@ -992,6 +992,8 @@ finished:
   private static final int SUBST_ESCAPE   = 0x08;
   private static final int SUBST_QUIT     = 0x10;
 
+  private static MutableInt substFlags;
+
   /**
    * Substitute command
    * @param cev cev's first arg is /pattern/substitution/{flags}
@@ -1013,11 +1015,16 @@ finished:
     String pattern = null;
     RegExp prog = null;
     CharSequence substitution;
-    MutableInt flags = new MutableInt();
     char delimiter = cmd.charAt(0);
     MySegment line;
     int cursorLine = 0; // set to line number of last change
     int sidx = 1; // after delimiter
+
+    boolean newFlags = false;
+    if(!G.global_busy || substFlags == null) {
+      substFlags = new MutableInt();
+      newFlags = true;
+    }
     
     //
     // pick up the pattern
@@ -1054,38 +1061,41 @@ finished:
       lastSubstitution = cmd.substring(sidx01, sidx);
     }
     substitution = lastSubstitution;
+
+    if(newFlags) {
+      //
+      // pick up the flags
+      //
                 // NEEDSWORK: || lastSubstitution.indexOf('~', sidx01) != -1;
-    if(lastSubstitution.indexOf('\\') != -1
-                || lastSubstitution.indexOf('&') != -1)
-      flags.setBits(SUBST_ESCAPE);
+      if(lastSubstitution.indexOf('\\') != -1
+                  || lastSubstitution.indexOf('&') != -1)
+        substFlags.setBits(SUBST_ESCAPE);
     
-    //
-    // pick up the flags
-    //
-    
-    ++sidx; // move past the delimiter
-    for( ; sidx < cmd.length(); sidx++) {
-      char c = cmd.charAt(sidx);
-      switch(c) {
-        case 'g':
-          flags.setBits(SUBST_ALL);
-          break;
-        
-        case 'p':
-          flags.setBits(SUBST_PRINT);
-          break;
-        
-        case 'c':
-          flags.setBits(SUBST_CONFIRM);
-          break;
-        
-        case ' ':
-          // silently ignore blanks
-          break;
+      
+      ++sidx; // move past the delimiter
+      for( ; sidx < cmd.length(); sidx++) {
+        char c = cmd.charAt(sidx);
+        switch(c) {
+          case 'g':
+            substFlags.setBits(SUBST_ALL);
+            break;
           
-        default:
-          Msg.emsg("ignoring flag: '" + c + "'");
-          break;
+          case 'p':
+            substFlags.setBits(SUBST_PRINT);
+            break;
+          
+          case 'c':
+            substFlags.setBits(SUBST_CONFIRM);
+            break;
+          
+          case ' ':
+            // silently ignore blanks
+            break;
+            
+          default:
+            Msg.emsg("ignoring flag: '" + c + "'");
+            break;
+        }
       }
     }
     
@@ -1107,13 +1117,13 @@ finished:
       nSubChanges = 0;
     }
 
-    for(int i = line1; i <= line2 && !flags.testAnyBits(SUBST_QUIT); i++) {
-      int nChange = substitute_line(prog, i, flags, substitution);
+    for(int i = line1; i <= line2 && !substFlags.testAnyBits(SUBST_QUIT); i++) {
+      int nChange = substitute_line(prog, i, substFlags, substitution);
       if(nChange > 0) {
         nSubChanges += nChange;
         cursorLine = i;  // keep track of last line changed
 	nSubLine++;
-	if(flags.testAnyBits(SUBST_PRINT)) {
+	if(substFlags.testAnyBits(SUBST_PRINT)) {
 	  ColonCommands.outputPrint(i, 0, 0);
 	}
       }
@@ -1173,12 +1183,9 @@ finished:
     int lastMatchColumn = -1;
     int countChanges = 0;
 
-    while(true) {
-      if(!prog.search(seg.array,
+    while(prog.search(seg.array,
                       seg.offset + lookColumnOffset,
-                      seg.count - lookColumnOffset))
-        break;
-
+                      seg.count - lookColumnOffset)) {
       int matchOffsetColumn = prog.start(0) - seg.offset;
       if(lastMatchColumn == matchOffsetColumn) {
         // prevent infinite loops, can happen with match of zero characters
@@ -1201,7 +1208,7 @@ finished:
                            segOffsetToDoc + prog.stop(0)
                             + (prog.length(0) == 0 ? 1 : 0));
 
-        Msg.smsg("replace with " + subs + "(y/n/a/q/l)");
+        Msg.wmsg("replace with '" + subs + "' (y/n/a/q/l)");
         ViManager.getViFactory().startModalKeyCatch(new KeyAdapter() {
           public void keyPressed(KeyEvent e) {
             e.consume();
@@ -1441,6 +1448,8 @@ finished:
                                             ViOutputStream.LINES, pattern);
     }
     
+    substFlags = null;
+
     for(int lnum = 1; lnum <= nLine; lnum++) {
       line = G.curwin.getLineSegment(lnum);
       if(prog.search(line.array, line.offset, line.count)) {
@@ -1454,6 +1463,8 @@ finished:
 	    result.println(lnum, prog.start(0) - line.offset, prog.length(0));
 	} else if(cmdAction == ColonCommands.ACTION_substitute) {
 	  ColonCommands.executeCommand(cevAction);
+          if(substFlags != null && substFlags.testAnyBits(SUBST_QUIT))
+            break;
 	} else if(cmdAction == ColonCommands.ACTION_delete) {
 	  OPARG oa = ColonCommands.setupExop(cevAction);
 	  oa.op_type = OP_DELETE;
