@@ -37,8 +37,7 @@ public class Msg {
 
   public static void wmsg(String msg) {
     // VV_STATUSMSG
-    // NEEDSWORK: wmsg: implement a warning display method
-    G.curwin.getStatusDisplay().displayErrorMessage(msg);
+    G.curwin.getStatusDisplay().displayWarningMessage(msg);
   }
 
   public static void emsg(String msg) {
