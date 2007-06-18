@@ -37,6 +37,10 @@ public class DefaultViFS implements ViFS {
   public DefaultViFS() {
   }
 
+  public boolean isModified(ViTextView tv) {
+      return true;
+  }
+
   public void write(ViTextView tv, boolean force) {
     Msg.emsg("write(tv) not implemented");
   }
