@@ -118,9 +118,7 @@ public class DefaultViFactory implements ViFactory {
       if(doc != null) {
         buf = (Buffer)doc.getProperty(PROP_BUF);
         if(buf == null) {
-          buf = createBuffer(editorPane);
-          buf.b_visual_start = new Mark();
-          buf.b_visual_end = new Mark();
+          buf = createBuffer(tv01);
           doc.putProperty(PROP_BUF, buf);
           docSet.put(doc, null);
         }
@@ -169,8 +167,8 @@ public class DefaultViFactory implements ViFactory {
   }
   
   /** subclass probably wants to override this */
-  protected Buffer createBuffer(JEditorPane editorPane) {
-      Buffer buf = new Buffer(editorPane.getDocument());
+  protected Buffer createBuffer(ViTextView tv) {
+      Buffer buf = new Buffer(tv);
       return buf;
   }
 

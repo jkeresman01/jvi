@@ -40,7 +40,6 @@ import java.awt.Toolkit;
 import java.awt.event.ActionListener;
 
 import java.io.IOException;
-import java.text.CharacterIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -1786,8 +1785,16 @@ public class Misc implements ClipboardOwner {
 
     msgmore(G.curwin.getLineCount() - old_lcount);
     //
-    // NEEDSWORK: op_delete: set "'[" and "']" marks.
+    // set "'[" and "']" marks.
     //
+    ViFPOS tpos;
+    if(oap.block_mode) {
+      tpos = oap.end.copy();
+      tpos.setColumn(oap.start.getColumn());
+    } else
+      tpos = oap.start;
+    G.curbuf.b_op_end.setMark(tpos, G.curwin);
+    G.curbuf.b_op_start.setMark(oap.start, G.curwin);
   }
 
   /**
@@ -1801,12 +1808,6 @@ public class Misc implements ClipboardOwner {
        if (u_save((linenr_t)(oap->start.lnum - 1),
        (linenr_t)(oap->end.lnum + 1)) == FAIL)
        return;
-
-    //
-    // Set '[ and '] marks.
-    //
-    curbuf->b_op_start = oap->start;
-    curbuf->b_op_end = oap->end;
      *************************************************************/
 
     pos = oap.start.copy();
@@ -1855,6 +1856,12 @@ public class Misc implements ClipboardOwner {
       update_screen(NOT_VALID);
     }
     *********************************************************/
+
+    //
+    // Set '[ and '] marks.
+    //
+    G.curbuf.b_op_start.setMark(oap.start, G.curwin);
+    G.curbuf.b_op_end.setMark(oap.end, G.curwin);
 
     if (oap.line_count > G.p_report.getInteger()) {
       Msg.smsg("" + oap.line_count + " line" + plural(oap.line_count) + " ~ed");

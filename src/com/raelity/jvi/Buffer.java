@@ -50,9 +50,16 @@ public class Buffer implements ViOptionBag {
     }
     public Document getDoc() { return doc; }
     
-    /** Creates a new instance of Buffer, initialize values from Options. */
-    public Buffer(Document doc) {
-        this.doc = doc;
+    /** Creates a new instance of Buffer, initialize values from Options.
+     * NOTE: tv is not completely "constructed".
+     */
+    public Buffer(ViTextView tv) {
+        this.doc = tv.getEditorComponent().getDocument();
+        b_visual_start = tv.createMark();
+        b_visual_end = tv.createMark();
+        b_op_start = tv.createMark();
+        b_op_end = tv.createMark();
+
         initOptions();
         correlateDocumentEvents();
         if(ViManager.getViFactory().isStandalone()) {
@@ -136,10 +143,14 @@ public class Buffer implements ViOptionBag {
     //
     
     /* Save the current VIsual area for '< and '> marks, and "gv" */
-    public ViMark b_visual_start;
-    public ViMark b_visual_end;
+    public final ViMark b_visual_start;
+    public final ViMark b_visual_end;
     public int b_visual_mode;
     public String b_p_mps; // used in nv_object
+
+    // start and end of an operator, also used for '[ and ']
+    public final ViMark b_op_start;
+    public final ViMark b_op_end;
 
     //////////////////////////////////////////////////////////////////////
     //

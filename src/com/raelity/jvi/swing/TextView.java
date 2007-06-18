@@ -585,6 +585,10 @@ public class TextView implements ViTextView {
     return mark;
   }
 
+  public ViMark createMark() {
+      return new Mark();
+  }
+
   public void updateCursor(ViCursor cursor) {
     if(editorPane == null) {
       return; // NEEDSWORK: was getting some null pointer stuff here

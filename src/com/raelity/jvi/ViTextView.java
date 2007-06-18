@@ -284,6 +284,10 @@ public interface ViTextView extends ViOptionBag {
   /** @return an array of marks */
   public ViMark[] createMarks(int n_mark);
 
+  /** NEEDSWORK: createMark: attached to this text view, should be in ViBuffer
+   * @return a null Mark */
+  public ViMark createMark();
+
   /** Quit editing window. Can close last view.
    */
   public void win_quit();

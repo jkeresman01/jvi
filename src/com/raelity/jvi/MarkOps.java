@@ -110,6 +110,10 @@ class MarkOps implements Constants, Messages {
     if(c == '\'' || c == '`') {
       // make a copy since it might change soon
       m = (ViMark) G.curwin.getPCMark().copy();
+    } else if(c == '[') {
+      m = G.curbuf.b_op_start;
+    } else if(c == ']') {
+      m = G.curbuf.b_op_end;
     } else if(c == '<' || c == '>') {
       ViMark startp = G.curbuf.b_visual_start;
       ViMark endp = G.curbuf.b_visual_end;
@@ -235,3 +239,5 @@ class MarkOps implements Constants, Messages {
     setpcmark(G.curwin.getWCursor());
   }
 }
+
+// vi:set sw=2:
