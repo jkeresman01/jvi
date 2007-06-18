@@ -1151,11 +1151,73 @@ public class Misc implements ClipboardOwner {
   // YANK STUFF
   //
 
-  static class Yankreg {
+  static class Yankreg implements Cloneable {
     StringBuffer[] y_array = new StringBuffer[1];
+    // NOTE: if a field is added, make sure to fixup this.set(Yankreg)
     int y_size;
     int y_type;
     int y_width;
+
+    /** @return the indexed line, index starts at 0 */
+    String get(int i) {
+      return y_array[i].toString();
+    }
+
+    /** @deprectated
+     * @return all the contents as a single string
+     */
+    String getAll() {
+      assert false; // NEEDSWORK: figure this out
+      assert y_type != MBLOCK;
+      assert y_size == 1 && y_size == y_array.length;
+      return y_array[0].toString();
+    }
+
+    void clear() {
+      y_array = null;
+    }
+
+    /**
+     * Return a yankreg with the same contents as this yankreg. If fCopy is
+     * set then create a copy of the string data; if clear then move the data
+     * and clear the data in the original.
+     */
+    Yankreg copy(boolean fCopy) {
+      Yankreg reg = null;
+      if(fCopy) {
+        try {
+          reg = (Yankreg)this.clone();
+        } catch (CloneNotSupportedException ex) {
+          ex.printStackTrace();
+        }
+      } else {
+        reg = new Yankreg();
+        reg.set(this);
+      }
+      return reg;
+    }
+
+    /**
+     * Move the contents of the argument Yankreg into this and clear the
+     * argument reg's data.
+     */
+    void set(Yankreg reg) {
+      y_size = reg.y_size;
+      y_type = reg.y_type;
+      y_width = reg.y_width;
+      y_array = reg.y_array;
+      reg.y_array = null;
+    }
+
+    public Object clone() throws CloneNotSupportedException {
+      Yankreg reg = null;
+      reg = (Yankreg) super.clone();
+      if(y_array != null)
+        for(int i = 0; i < y_array.length; i++)
+          reg.y_array[i] = new StringBuffer(y_array[i]);
+      return reg;
+    }
+
     void setData(String s, Integer type) {
       if(type != null && type == MBLOCK) {
         y_width = 0;
@@ -1283,6 +1345,27 @@ public class Misc implements ClipboardOwner {
     }
     if (writing)	/* remember the register we write into for do_put() */
       y_previous = y_current;
+  }
+
+/**
+ * Obtain the contents of a "normal" register. The register is made empty.
+ * The returned pointer has allocated memory, use put_register() later.
+ * @param name the register of which to make a copy
+ * @param copy make a copy, if FALSE make register empty.
+ * @return the register copy
+ */
+  static Yankreg get_register(int name, boolean copy) {
+    get_yank_register(name, false);
+    Yankreg reg = y_current.copy(copy);
+    return reg;
+  }
+
+/**
+ * Put "reg" into register "name".  Free any previous contents.
+ */
+  void put_register(int name, Yankreg reg) {
+    get_yank_register(name, false);
+    y_current.set(reg);
   }
 
   static int	do_record_regname;
