@@ -216,7 +216,7 @@ public class Search {
         resetViewIncrementalSearch();
 
       if(setPCMarkAfterIncrSearch && incrSearchSucceed) {
-        MarkOps.setpcmark(searchPos.getOffset());
+        MarkOps.setpcmark(searchPos);
       }
   }
   
@@ -228,8 +228,10 @@ public class Search {
   private static void doIncrementalSearch() {
       String pattern = getSearchCommandEntry().getTextComponent().getText();
       
-      if("".equals(pattern))
+      if("".equals(pattern)) {
+          resetViewIncrementalSearch();
           return;
+      }
       ViFPOS pos = searchPos.copy();
       incrSearchSucceed = false;
       int rc = searchit(null, pos, lastDir, pattern,

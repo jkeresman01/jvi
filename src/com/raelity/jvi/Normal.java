@@ -1362,10 +1362,8 @@ middle_code:
               unadjust_for_sel();
 
           /* Save the current VIsual area for '< and '> marks, and "gv" */
-          G.curwin.setMarkOffset((ViMark)G.curbuf.b_visual_start,
-                                 G.VIsual.getOffset(), false);
-          G.curwin.setMarkOffset((ViMark)G.curbuf.b_visual_end,
-                                 cursor.getOffset(), false);
+          G.curbuf.b_visual_start.setMark(G.VIsual, G.curwin);
+          G.curbuf.b_visual_end.setMark(cursor, G.curwin);
           G.curbuf.b_visual_mode = G.VIsual_mode;
 
           oap.start = G.VIsual;
@@ -1821,10 +1819,8 @@ middle_code:
 //#endif
 
     /* Save the current VIsual area for '< and '> marks, and "gv" */
-    G.curwin.setMarkOffset(G.curbuf.b_visual_start,
-                           G.VIsual.getOffset(), false);
-    G.curwin.setMarkOffset(G.curbuf.b_visual_end,
-                           G.curwin.getWCursor().getOffset(), false);
+    G.curbuf.b_visual_start.setMark(G.VIsual, G.curwin);
+    G.curbuf.b_visual_end.setMark(G.curwin.getWCursor(), G.curwin);
     G.curbuf.b_visual_mode = G.VIsual_mode;
 
     if (G.p_smd.value)
@@ -2927,14 +2923,14 @@ middle_code:
       }
     } else {	    // "%" : go to matching paren
       cap.oap.motion_type = MCHAR;
-      int startingOffset = G.curwin.getCaretPosition();
-      int endingOffset = startingOffset; // this assumes failture
+      ViFPOS fpos = G.curwin.getWCursor().copy();
+      int endingOffset = fpos.getOffset(); // this assumes failture
       boolean usePlatform = G.p_pbm.value & ViManager.getPlatformFindMatch();
       if(usePlatform) {
         G.curwin.findMatch();
         endingOffset = G.curwin.getCaretPosition();
       } else {
-        int firstbraceOffset = startingOffset;
+        int firstbraceOffset = fpos.getOffset();
         int c;
         // NEEDSWORK: use getLineSegment for performance
         
@@ -2954,14 +2950,14 @@ middle_code:
           endingOffset = firstbraceOffset;
         if(firstbraceOffset == endingOffset) {
           // failed
-          G.curwin.setCaretPosition(startingOffset);
-          endingOffset = startingOffset;
+          G.curwin.setCaretPosition(fpos.getOffset());
+          endingOffset = fpos.getOffset();
         }
       }
-      if(endingOffset == startingOffset) {
+      if(endingOffset == fpos.getOffset()) {
 	clearopbeep(cap.oap);
       } else {
-	MarkOps.setpcmark(startingOffset);
+	MarkOps.setpcmark(fpos);
         G.curwin.setWSetCurswant(true);
 	adjust_for_sel(cap);
       }
@@ -3338,7 +3334,8 @@ static private void nv_findpar(CMDARG cap, int dir)
               {
                   //TODO: FIXME_VISUAL BLOCK MODE
                   //validate_virtcol();
-                  G.curwin.setWCurswant(G.curwin.getWCursor().getColumn()/*G.curwin.w_virtcol*/ + resel_VIsual_col * cap.count0 - 1);
+                  G.curwin.setWCurswant(G.curwin.getWCursor().getColumn()/*G.curwin.w_virtcol*/
+                                        + resel_VIsual_col * cap.count0 - 1);
                   Misc.coladvance(G.curwin.getWCurswant());
               }
               else
@@ -3415,6 +3412,7 @@ static private void nv_findpar(CMDARG cap, int dir)
             Util.beep_flush();
         else
         {
+            final ViFPOS cursor = G.curwin.getWCursor();
             /* set w_cursor to the start of the Visual area, tpos to the end */
             if (G.VIsual_active)
             {
@@ -3422,17 +3420,15 @@ static private void nv_findpar(CMDARG cap, int dir)
                 G.VIsual_mode = G.curbuf.b_visual_mode;
                 G.curbuf.b_visual_mode = i;
                 tpos = G.curbuf.b_visual_end.copy();
-                G.curwin.setMarkOffset(G.curbuf.b_visual_end,
-                                       G.curwin.getWCursor().getOffset(), false);
-                G.curwin.setCaretPosition(G.curbuf.b_visual_start.getOffset());
-                G.curwin.setMarkOffset(G.curbuf.b_visual_start,
-                                       G.VIsual.getOffset(), false);
+                G.curbuf.b_visual_end.setMark(cursor, G.curwin);
+                cursor.set(G.curbuf.b_visual_start);
+                G.curbuf.b_visual_start.setMark(G.VIsual, G.curwin);
             }
             else
             {
                 G.VIsual_mode = G.curbuf.b_visual_mode;
                 tpos = G.curbuf.b_visual_end.copy();
-                G.curwin.setCaretPosition(G.curbuf.b_visual_start.getOffset());
+                cursor.set(G.curbuf.b_visual_start);
             }
 
             G.VIsual_active = true;
@@ -3441,8 +3437,8 @@ static private void nv_findpar(CMDARG cap, int dir)
             /* Set Visual to the start and w_cursor to the end of the Visual
              * area.  Make sure they are on an existing character. */
             Misc.adjust_cursor();
-            G.VIsual =  G.curwin.getWCursor().copy();
-            G.curwin.setCaretPosition(tpos.getOffset());
+            G.VIsual =  cursor.copy();
+            cursor.set(tpos);
             Misc.adjust_cursor();
             //update_topline();
             /*

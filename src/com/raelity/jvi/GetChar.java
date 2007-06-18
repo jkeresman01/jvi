@@ -382,6 +382,10 @@ public class GetChar {
   // NOTES:
   //    - expectChar could be the actual char expected, else NUL
   //    - if this needs more tweaking, should probably go to a state machine.
+  //    - these algorithms are probably not really general. They work for
+  //      "extra" characters added for a single character at the same
+  //      insertion point. They work when a character in entered, then moved
+  //      to a point after the insertion stream.
   //
 
   private static int redoTrackPosition = -1;

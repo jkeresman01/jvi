@@ -84,8 +84,7 @@ class MarkOps implements Constants, Messages {
     if (Util.islower(c)) {
       int		i;
       i = c - 'a';
-      G.curwin.setMarkOffset(getMark(G.curwin, i),
-                             G.curwin.getCaretPosition(), false);
+      getMark(G.curwin, i).setMark(G.curwin.getWCursor(), G.curwin);
       // curbuf.b_namedm[i] = curwin.w_cursor;
       return OK;
     }
@@ -213,6 +212,16 @@ class MarkOps implements Constants, Messages {
     }
   }
 
+  static void setpcmark(ViFPOS fpos) {
+    if(G.global_busy) {
+      return;
+    }
+    G.curwin.pushPCMark();
+    G.curwin.getPCMark().setMark(fpos, G.curwin);
+    // NEEDSWORK: pcmark and jump list stuff...
+  }
+
+  /** @deprecated */
   static void setpcmark(int offset) {
     if(G.global_busy) {
       return;
@@ -223,6 +232,6 @@ class MarkOps implements Constants, Messages {
   }
 
   static void setpcmark() {
-    setpcmark(G.curwin.getCaretPosition());
+    setpcmark(G.curwin.getWCursor());
   }
 }

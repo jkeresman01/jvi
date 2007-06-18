@@ -375,6 +375,11 @@ public class Misc implements ClipboardOwner {
     G.curwin.replaceChar(c, false);
   }
 
+  static void pchar(ViFPOS fpos, int c) {
+    G.curwin.replaceString(fpos.getOffset(), fpos.getOffset()+1,
+                           new String(new char[] {(char)c}));
+  }
+
   /**
    * If the file is readonly, give a warning message with the first change.
    * Don't do this for autocommands.
@@ -1707,6 +1712,7 @@ public class Misc implements ClipboardOwner {
    */
   static void op_tilde(OPARG oap) {
     ViFPOS		pos;
+    ViFPOS		finalPosition;
 
     /* ***********************************************
        if (u_save((linenr_t)(oap->start.lnum - 1),
@@ -1720,54 +1726,42 @@ public class Misc implements ClipboardOwner {
     curbuf->b_op_end = oap->end;
      *************************************************************/
 
-    //
-    // Be very lazy. Just set the real cursor to oap.start
-    // where its actually used,
-    // then this can use the swap code that requires that
-    // the cursor be used. The performance of this can be
-    // improved considerable by not using the cursor, but
-    // there are better things to do (like profiling).
-    //
-
-    pos = oap.start;
+    pos = oap.start.copy();
 
     if (oap.block_mode)		    // Visual block mode
     {
-        for (; pos.getLine() <= oap.end.getLine(); pos.set(pos.getLine()+1, pos.getColumn()))
-         {
-            block_def bd = new block_def();
-            block_prep(oap, bd, pos.getLine(), false);
-            G.curwin.setCaretPosition(pos.getLine(), bd.textcol);
-            while (--bd.textlen >= 0) {
-                ViFPOS tmppos = G.curwin.getWCursor(); // as stated above, don't need to do this
-                swapchar(oap.op_type, tmppos);
-                if (inc_cursor() == -1) // at end of file
-         break;
-         }
-         }
-
+      finalPosition = pos.copy();
+      block_def bd = new block_def();
+      for (; pos.getLine() <= oap.end.getLine(); pos.set(pos.getLine()+1, 0)) {
+        block_prep(oap, bd, pos.getLine(), false);
+        pos.setColumn(bd.textcol);
+        while (--bd.textlen >= 0) {
+          swapchar(oap.op_type, pos);
+          if (inc(pos) == -1) // at end of file
+            break;
+        }
+      }
+      
     } else {				    // not block mode
       if (oap.motion_type == MLINE) {
-        pos.set(pos.getLine(), 0);      // this is start
+        pos.setColumn(0);      // this is start
         int col = Util.lineLength(oap.end.getLine());
         if (col != 0) {
           --col;
         }
-        oap.end.set(oap.end.getLine(), col);
+        oap.end.setColumn(col);
       } else if (!oap.inclusive) {
         dec(oap.end);
       }
 
-      G.curwin.getWindow().setWCursor(oap.start);
-      pos = G.curwin.getWCursor(); // as stated above, don't need to do this
-      int startCursor = pos.getOffset();
+      finalPosition = pos.copy();
       while (pos.compareTo(oap.end) <= 0) {
         swapchar(oap.op_type, pos);
-        if (inc_cursor() == -1)    // at end of file // was inc(pos)
+        if (inc(pos) == -1)    // at end of file
           break;
       }
-      G.curwin.setCaretPosition(startCursor);
     }
+    G.curwin.getWCursor().set(finalPosition);
 
     /* **********************************************************
     if (oap.motion_type == MCHAR && oap.line_count == 1 && !oap.block_mode)
@@ -1796,11 +1790,7 @@ public class Misc implements ClipboardOwner {
     c = gchar_pos(fpos);
     nc = swapchar(op_type, c);
     if(c != nc) {
-      if(fpos == G.curwin.getWCursor()) {
-        pchar_cursor(nc);
-      } else {
-        throw new RuntimeException("swapchar called with WCursor");
-      }
+      pchar(fpos, nc);
     }
   }
 
