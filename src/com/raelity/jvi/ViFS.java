@@ -39,6 +39,11 @@ import com.raelity.jvi.ViTextView;
 public interface ViFS {
 
   /**
+   * Is the associtated document modified?
+   */
+  public boolean isModified(ViTextView tv);
+
+  /**
    * Write the specified "file object".
    */
   public void write(ViTextView tv, boolean force);
