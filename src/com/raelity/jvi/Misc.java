@@ -1151,7 +1151,9 @@ public class Misc implements ClipboardOwner {
   //
 
   static class Yankreg implements Cloneable {
+    // NEEDSWORK: init to null when private
     StringBuffer[] y_array = new StringBuffer[1];
+
     // NOTE: if a field is added, make sure to fixup this.set(Yankreg)
     int y_size;
     int y_type;
@@ -1205,15 +1207,18 @@ public class Misc implements ClipboardOwner {
       y_type = reg.y_type;
       y_width = reg.y_width;
       y_array = reg.y_array;
-      reg.y_array = null;
+      reg.y_array = new StringBuffer[1]; // NEEDSWORK: init to null when private
     }
 
-    public Object clone() throws CloneNotSupportedException {
+    protected Object clone() throws CloneNotSupportedException {
       Yankreg reg = null;
       reg = (Yankreg) super.clone();
-      if(y_array != null)
+      if(y_array != null) {
+        reg.y_array = y_array.clone();
         for(int i = 0; i < y_array.length; i++)
-          reg.y_array[i] = new StringBuffer(y_array[i]);
+          reg.y_array[i] = y_array[i] == null
+                            ? null : new StringBuffer(y_array[i]);
+      }
       return reg;
     }
 

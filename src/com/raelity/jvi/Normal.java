@@ -3382,12 +3382,21 @@ static private void nv_findpar(CMDARG cap, int dir)
 //#endif
       //update_screenline();/* start the inversion */
   }
+
   static private void nv_g_cmd(CMDARG cap, CharBuf searchbuff)
   throws NotSupportedException {
     do_xop("nv_g_cmd");
     int i;
     ViFPOS tpos;
     switch (cap.nchar) {
+      /*case 'x':
+        Misc.Yankreg r1 = Misc.get_register('a', true);
+        Misc.Yankreg r2 = Misc.get_register('a', false);
+        Misc.Yankreg r3 = Misc.get_register('a', false);
+        Misc.get_yank_register('z', false);
+        Misc.y_current.set(r2);
+        break;*/
+
       case ',':
 	nv_pcmark(JLOP.NEXT_CHANGE, cap);
         break;
