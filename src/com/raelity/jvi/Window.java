@@ -131,10 +131,10 @@ public final class Window {
     return MarkOps.getMark(getEditor(), i);
   }
 
-  public void previousContextHack(ViMark mark) {
+  /*public void previousContextHack(ViMark mark) {
     pushPCMark();
     w_pcmark.setData(mark);
-  }
+  }*/
 
   /**
    * Like win_new_height....

@@ -131,6 +131,9 @@ public class DefaultViFactory implements ViFactory {
       tv01.setWindow(new Window(tv01));
       editorPane.putClientProperty(PROP_VITV, tv01);
       editorSet.put(editorPane, null);
+
+      // First time initialization
+      tv01.setWSetCurswant(true);
     }
     return tv01;
   }

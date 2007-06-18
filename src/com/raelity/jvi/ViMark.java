@@ -35,6 +35,8 @@ import com.raelity.jvi.swing.*;
  * by the document.
  */
 public interface ViMark extends ViFPOS {
+  /** Set the mark to fpos in the specified textview */
+  public void setMark(ViFPOS fpos, ViTextView tv);
 
   /** Set a mark's data to be the same as the argument mark */
   public void setData(ViMark mark);

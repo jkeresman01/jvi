@@ -565,8 +565,12 @@ public class TextView implements ViTextView {
 
   /**
    * Set a mark at the specified offset.
+   * <p>
+   * Should use ViMark.set(ViFPOS, ViTextView)
+   * </p>
    * @param global_mark if false then it is a mark within a file, otherwise
    * it is a file mark and is valid between files.
+   * @deprecated
    */
   public void setMarkOffset(ViMark mark_arg, int offset, boolean global_mark) {
     Mark mark = (Mark) mark_arg;
@@ -681,6 +685,8 @@ public class TextView implements ViTextView {
   public void displayFileInfo() {
     StringBuffer sb = new StringBuffer();
     sb.append("\"" + getDisplayFileName() + "\"");
+    if(ViManager.getViFactory().getFS().isModified(this))
+        sb.append(" [Modified]");
     int l = getLineCount();
     //sb.append(" " + l + " line" + Misc.plural(l));
     sb.append(" line " + cache.getCursor().getLine());
@@ -900,6 +906,7 @@ public class TextView implements ViTextView {
     return calculateVisualBlocks(vb, startOffset, endOffset);
   }
 
+  // NEEDSWORK: OPTIMIZE: re-use blocks array
   private int[] calculateVisualBlocks(VisualBounds vb,
                                       int startOffset,
                                       int endOffset) {
@@ -990,88 +997,6 @@ public class TextView implements ViTextView {
     return true;
   }
 
-  //protected int[] previousHighlight = null;
-  /**
-   * Returns an array of blocks that are visual or an empty array when visual active is false.
-   * the array is a an even set of points which are set like:<br>
-   * {offset1start, offset1end, offset2start, offset2end, ..}
-   * @return an array of blocks that are visual.
-   * @throws an IllegalStateException when the visual mode is not understand
-   */
-  /*private int calcMode, calcStart, calcEnd;
-  public int[] getVisualSelectBlocksOrig(int startOffset, int endOffset) {
-    if (G.drawSavedVisualBounds) {
-        return previousHighlight;
-    }
-    // some caching so that visual blocks aren't recalculated everytime
-    if (G.VIsual_active
-        && calcMode == G.VIsual_mode
-        && calcStart == getCaretPosition()
-        && calcEnd == G.VIsual.getOffset()) {
-        return previousHighlight;
-    }
-    calcMode = G.VIsual_mode;
-    calcStart = getCaretPosition();
-    calcEnd = G.VIsual.getOffset();
-    previousHighlight = calculateVisualBlocks();
-    return previousHighlight;
-  }*/
-
-  /**
-   * Calculate the visual blocks depending on the visual mode.
-   * The visual block array ends with -1,-1
-   * If visual mode is not active.. it returns an array containing {-1, -1}
-   * @returns te visual blocks
-   */
-  /*private int[] calculateVisualBlocks() {
-    if (G.VIsual_active) { // if in selection mode
-        int start, offset;
-        int tmpstart = G.VIsual.getOffset();
-        int tmpoffset = getCaretPosition();
-        start = tmpstart < tmpoffset ? tmpstart : tmpoffset;
-        offset = tmpstart > tmpoffset ? tmpstart : tmpoffset;
-        int[] newHighlight;
-        if (G.VIsual_mode == 'V') { // line selection mode
-            // make sure the entire lines are selected
-            if (offset < start) {
-                start = getLineEndOffsetFromOffset(start);
-                offset = getLineStartOffsetFromOffset(offset);
-            } else {
-                start = getLineStartOffsetFromOffset(start);
-                offset = getLineEndOffsetFromOffset(offset)-1; // end of a line
-            }
-            newHighlight = new int[]{start, offset, -1, -1};
-        } else if (G.VIsual_mode == 'v') {
-            if (getCaretPosition() < G.VIsual.getOffset()) {
-                offset = offset+1;
-            }
-            newHighlight = new int[]{start, offset, -1, -1};
-        } else if (G.VIsual_mode == (0x1f & (int)('V'))) { // visual block mode
-            if (offset < start) {
-                start = start+1;
-            }
-            int startLine = offset > start ? getLineNumber(start) : getLineNumber(offset);
-            int endLine = offset < start ? getLineNumber(start) : getLineNumber(offset);
-            int colStart = getColumnNumber(start);
-            int colEnd = getColumnNumber(offset);
-            newHighlight = new int[(((endLine - startLine)+1)*2) + 2];
-            for (int i = startLine; i <= endLine; i++) {
-                tmpstart = getLineEndOffset(i) < getLineStartOffset(i) + colStart ? getLineEndOffset(i) : getLineStartOffset(i) + colStart;
-                int tmpend = getLineEndOffset(i) < getLineStartOffset(i) + colEnd + 1 ? getLineEndOffset(i) : getLineStartOffset(i) + colEnd + 1;
-                newHighlight[(i-startLine)*2] = tmpstart;
-                newHighlight[((i-startLine)*2)+1] = tmpend;
-            }
-            newHighlight[newHighlight.length-2] = -1;
-            newHighlight[newHighlight.length-1] = -1;
-        } else {
-            throw new IllegalStateException("Visual mode: "+ G.VIsual_mode +" is not supported");
-        }
-        return newHighlight;
-    } else {
-        return new int[] { -1, -1};
-    }
-  }*/
-  
   //////////////////////////////////////////////////////////////////////
   //
   // Highlight Search

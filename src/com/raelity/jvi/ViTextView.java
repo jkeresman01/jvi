@@ -276,7 +276,9 @@ public interface ViTextView extends ViOptionBag {
   /** between a insert begin and end undo? */
   public boolean isInInsertUndo();
 
-  /** associate the indicated mark with a particular offset */
+  /** associate the indicated mark with a particular offset
+   * @deprecated use setMarkPos
+   */
   public void setMarkOffset(ViMark mark, int offset, boolean global_mark);
 
   /** @return an array of marks */

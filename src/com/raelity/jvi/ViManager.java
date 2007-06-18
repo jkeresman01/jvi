@@ -96,7 +96,7 @@ public class ViManager {
   // 1.0.0.beta2 is NB vers 0.9.6.4
   // 1.0.0.beta3 is NB vers 0.9.7.5
   //
-  public static final jViVersion version = new jViVersion("1.0.0.beta3.3");
+  public static final jViVersion version = new jViVersion("1.0.0.beta3.7");
   
   private static boolean enabled;
 
@@ -717,19 +717,11 @@ public class ViManager {
   }
 
   static public void dumpStack(String msg) {
-    try {
-      throw new IllegalStateException(msg);
-    } catch(IllegalStateException ex) {
-      ex.printStackTrace();
-    }
+    new IllegalStateException(msg).printStackTrace();
   }
 
   static public void dumpStack() {
-    try {
-      throw new IllegalStateException();
-    } catch(IllegalStateException ex) {
-      ex.printStackTrace();
-    }
+    new IllegalStateException().printStackTrace();
   }
 
   static public void setInsertModeKeymap(Keymap newInsertModeKeymap) {
@@ -1057,7 +1049,6 @@ public class ViManager {
         in.close();
         
         motd = new Motd(sb.toString());
-        System.err.print(motd);
       } catch (IOException ex) {
         //ex.printStackTrace();
       }

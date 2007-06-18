@@ -36,19 +36,26 @@ import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.MarkException;
 import com.raelity.jvi.MarkOrphanException;
 import com.raelity.jvi.*;
+import com.raelity.text.TextUtil.MySegment;
 
 /**
- * <b>NEEDSWORK:</b><ul>
+ * A Mark in vi specifies a row and column. The row "floats" as lines are
+ * inserted and deleted earlier in the file. However the column is set when the
+ * mark is created and does not change if characters are added on the same
+ * line before the column.
+ * <b>NEEDSWORK:</b> CLEAN UP Mark
+ * <ul>
  * <li>A Mark should really only have the document, not the TextView.
  * Can do this when there is handling of doc to/from view.
  * <li>Consider garbage collection issues, this is holding ref to
  * both doc and editor.
  * <li>Add file name as class member?
  * <li>Before throwing OrphanMark, search for document in known editors.
- * <ul>
+ * </ul>
  */
 class Mark implements ViMark {
-  private Position pos;
+  private Position pos;         // This tracks the line number
+  private int col;
   private Document doc;
   private TextView editor;	// This is a ViPane, NEEDSWORK: remove
 
@@ -57,17 +64,40 @@ class Mark implements ViMark {
    * a null mark.
    */
   void setOffset(int offset, ViTextView editor) {
-    Position aPos;
 
     setEditor((TextView)editor);
     try {
-      aPos = doc.createPosition(offset);
+      Position aPos = doc.createPosition(offset);
       setPos(aPos);
     } catch(BadLocationException ex) {
       pos = null;
       doc = null;
       editor = null;
       return;
+    }
+  }
+
+  /**
+   * If the mark offset is not valid then this mark is converted into
+   * a null mark.
+   */
+  public void setMark(ViFPOS fpos, ViTextView editor) {
+    if(fpos instanceof ViMark) {
+      Mark m = (Mark)fpos;
+      assert m.editor == this.editor && m.editor == editor;
+      setData(m);
+    } else {
+      // adapted from FPOS.set
+      int column = fpos.getColumn();
+      int startOffset = G.curwin.getLineStartOffset(fpos.getLine());
+      int endOffset = G.curwin.getLineEndOffset(fpos.getLine());
+      
+      if(column >= endOffset - startOffset) {
+        ViManager.dumpStack("column " + column
+                            + ", limit " + (endOffset - startOffset - 1));
+        column = endOffset - startOffset - 1;
+      }
+      setOffset(startOffset + column, editor);
     }
   }
 
@@ -84,6 +114,13 @@ class Mark implements ViMark {
   private void setPos(Position pos) {
     checkMark();
     this.pos = pos;
+    this.col = editor.getColumnNumber(pos.getOffset());
+  }
+
+  private void setPos(Position pos, int col) {
+    checkMark();
+    this.pos = pos;
+    this.col = col;
   }
 
   private Position getPos() {
@@ -93,23 +130,32 @@ class Mark implements ViMark {
 
   public int getLine() {
     // NEEDSWORK: should use doc, not editor
-    return editor.getLineNumber(getOffset());
+    checkMark();
+    return editor.getLineNumber(pos.getOffset());
   }
 
+  /**
+   * NOTE: may return column position of newline
+   */
   public int getColumn() {
     // NEEDSWORK: should use doc, not editor
-    return editor.getColumnNumber(getOffset());
+    MySegment seg = editor.getLineSegment(getLine());
+    int len = seg.length() - 1;
+    return seg.length() <= 0 ? 0 : Math.min(col, len);
   }
 
+  // NEEDSWORK: Mark.getOffset(): get rid of this, bad usage
   public int getOffset() {
     checkMark();
-    return pos.getOffset();
+    return editor.getLineStartOffsetFromOffset(pos.getOffset()) + getColumn();
   }
+
   public void setData(ViMark mark_arg) {
     Mark mark = (Mark)mark_arg;
-    this.pos = mark.pos;
     this.doc = mark.doc;
     this.editor = mark.editor;
+    this.pos = mark.pos;
+    this.col = mark.col;
   }
 
   public void invalidate() {
@@ -164,6 +210,13 @@ class Mark implements ViMark {
 
   public void set(ViFPOS fpos) {
     throw new UnsupportedOperationException();
+  }
+
+  public String toString() {
+    return	  "offset: " + getOffset()
+	      	+ " lnum: " + getLine()
+	      	+ " col: " + getColumn()
+		;
   }
 }
 
