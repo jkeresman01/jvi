@@ -101,30 +101,35 @@ public class Search {
   }
 
   static private void searchEntryComplete(ActionEvent ev) {
-    String cmd = ev.getActionCommand();
-    boolean acceptIncr = false;
-    boolean cancel = false;
-
-    ViManager.stopCommandEntry();
-    
-    if(cmd.charAt(0) == '\n') {
+    try {
+      ViManager.setJViBusy(true);
+      String cmd = ev.getActionCommand();
+      boolean acceptIncr = false;
+      boolean cancel = false;
+      
+      ViManager.stopCommandEntry();
+      
+      if(cmd.charAt(0) == '\n') {
         if(G.p_is.getBoolean()
            && didIncrSearch
            && ! "".equals(fetchPattern()))
           acceptIncr = true;
-    } else
-      cancel = true;
-            
-    if(G.p_is.getBoolean()) {
+      } else
+        cancel = true;
+      
+      if(G.p_is.getBoolean()) {
         stopIncrementalSearch(acceptIncr);
+      }
+      
+      if(acceptIncr)
+        GetChar.fakeGotc(K_X_INCR_SEARCH_DONE);
+      else if(cancel)
+        GetChar.fakeGotc(K_X_SEARCH_CANCEL);
+      else
+        GetChar.fakeGotc(K_X_SEARCH_FINISH);
+    } finally {
+      ViManager.setJViBusy(false);
     }
-    
-    if(acceptIncr)
-      GetChar.fakeGotc(K_X_INCR_SEARCH_DONE);
-    else if(cancel)
-      GetChar.fakeGotc(K_X_SEARCH_CANCEL);
-    else
-      GetChar.fakeGotc(K_X_SEARCH_FINISH);
   }
   
   /** Start the entry dialog and stash the interesting info for later use
@@ -226,11 +231,13 @@ public class Search {
   }
   
   private static void doIncrementalSearch() {
+    try {
+      ViManager.setJViBusy(true);
       String pattern = getSearchCommandEntry().getTextComponent().getText();
       
       if("".equals(pattern)) {
-          resetViewIncrementalSearch();
-          return;
+        resetViewIncrementalSearch();
+        return;
       }
       ViFPOS pos = searchPos.copy();
       incrSearchSucceed = false;
@@ -239,9 +246,12 @@ public class Search {
                         0, G.p_ic.getBoolean());
       didIncrSearch = true;
       if(rc == FAIL)
-          resetViewIncrementalSearch();
+        resetViewIncrementalSearch();
       else
-          incrSearchSucceed = true;
+        incrSearchSucceed = true;
+    } finally {
+      ViManager.setJViBusy(false);
+    }
   }
 
   static int doNext(CMDARG cap, int count, int flag) {
