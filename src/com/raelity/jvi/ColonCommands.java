@@ -100,17 +100,23 @@ public class ColonCommands {
   }
 
   static private void colonEntryComplete(ActionEvent ev) {
-    ViManager.stopCommandEntry();
-    String commandLine = colonCommandEntry.getCommand();
-    String cmd = ev.getActionCommand();
-    // if not <CR> must be an escape, just ignore it
-    if(cmd.charAt(0) == '\n') {
-      if( ! commandLine.equals("")) {
-	lastCommand = commandLine;
-	executeCommand(parseCommand(commandLine));
+    try {
+      ViManager.setJViBusy(true);
+
+      ViManager.stopCommandEntry();
+      String commandLine = colonCommandEntry.getCommand();
+      String cmd = ev.getActionCommand();
+      // if not <CR> must be an escape, just ignore it
+      if(cmd.charAt(0) == '\n') {
+        if( ! commandLine.equals("")) {
+          lastCommand = commandLine;
+          executeCommand(parseCommand(commandLine));
+        }
       }
+      closePrint();
+    } finally {
+      ViManager.setJViBusy(false);
     }
-    closePrint();
   }
 
   static void doColonCommand(StringBuffer range) {
