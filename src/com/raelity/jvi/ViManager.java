@@ -83,11 +83,11 @@ public class ViManager {
     }
   }
 
-  static private JEditorPane currentEditorPane;
-  static private ViFactory factory;
-
-  static private Keymap editModeKeymap;
-  static private Keymap normalModeKeymap;
+  private static JEditorPane currentEditorPane;
+  private static ViFactory factory;
+                 
+  private static Keymap editModeKeymap;
+  private static Keymap normalModeKeymap;
 
   // HACK: to workaround JDK bug dealing with focus and JWindows
   public static ViCmdEntry activeCommandEntry;
@@ -154,6 +154,18 @@ public class ViManager {
     sfm.addFlavorForUnencodedNative(cbName, df);
     sfm.addUnencodedNativeForFlavor(df, cbName);
     return df;
+  }
+
+  private static int jViBusy;
+  public static boolean jViBusy() {
+    return jViBusy != 0;
+  }
+
+  static void setJViBusy(boolean f) {
+    if(f)
+      jViBusy++;
+    else
+      jViBusy--;
   }
 
   private static OsVersion osVersion;
@@ -457,15 +469,21 @@ public class ViManager {
    * <br>NEEDSWORK: catch all exceptions comming out of here?
    */
   static public void keyStroke(JEditorPane target, int key, int modifier) {
-    switchTo(target);
-    if(rerouteChar(key, modifier)) {
-      return;
+    try {
+      setJViBusy(true);
+
+      switchTo(target);
+      if(rerouteChar(key, modifier)) {
+        return;
+      }
+      factory.finishTagPush(G.curwin);
+      GetChar.gotc(key, modifier);
+      
+      if(G.curwin != null)
+          G.curwin.getStatusDisplay().refresh();
+    } finally {
+      setJViBusy(false);
     }
-    factory.finishTagPush(G.curwin);
-    GetChar.gotc(key, modifier);
-    
-    if(G.curwin != null)
-        G.curwin.getStatusDisplay().refresh();
   }
 
   /** If chars came in between the time a dialog was initiated and
@@ -489,6 +507,10 @@ public class ViManager {
     return true;
   }
   
+  /** requestSwitch can be used from IDE code for situation where an editor
+   * is activated. It allows things to be initialized, some with visual
+   * implications, before a key is entered.
+   */
   public static void requestSwitch(JEditorPane ep) {
       switchTo(ep);
   }
@@ -604,38 +626,50 @@ public class ViManager {
    * a chance to adjust the position and whatever.
    */
   public static int mouseSetDot(int pos, JTextComponent c, MouseEvent mev) {
-    if(!(c instanceof JEditorPane)) {
+    try {
+      setJViBusy(true);
+
+      if(!(c instanceof JEditorPane)) {
+        return pos;
+      }
+      //System.err.println(mev.getMouseModifiersExText(mev.getModifiersEx()));
+      //System.err.println(mev.getModifiersExText(mev.getModifiersEx()));
+
+      JEditorPane editorPane = (JEditorPane)c;
+
+      // NEEDSWORK: mouse click: if( ! isRegistered(editorPane)) {}
+
+      GetChar.flush_buffers(true);
+      exitInputMode();
+      switchTo(editorPane);
+      /*int lookFor = mev.ALT_DOWN_MASK | mev.BUTTON1_DOWN_MASK;
+      int mods = mev.getModifiersEx();
+      if((mev.getModifiersEx() & lookFor) == lookFor) {
+        draggingBlockMode = true;
+        System.err.println("START_DRAG");
+      }*/
+      
+      //System.err.println("mouseSetDot(" + pos + ")");
+      Window window = factory.lookupWindow(editorPane);
+      pos = window.mouseClickedPosition(pos);
+      Normal.abortVisualMode();
       return pos;
+    } finally {
+      setJViBusy(false);
     }
-    //System.err.println(mev.getMouseModifiersExText(mev.getModifiersEx()));
-    //System.err.println(mev.getModifiersExText(mev.getModifiersEx()));
-
-    JEditorPane editorPane = (JEditorPane)c;
-
-    // NEEDSWORK: mouse click: if( ! isRegistered(editorPane)) {}
-
-    GetChar.flush_buffers(true);
-    exitInputMode();
-    switchTo(editorPane);
-    /*int lookFor = mev.ALT_DOWN_MASK | mev.BUTTON1_DOWN_MASK;
-    int mods = mev.getModifiersEx();
-    if((mev.getModifiersEx() & lookFor) == lookFor) {
-      draggingBlockMode = true;
-      System.err.println("START_DRAG");
-    }*/
-    
-    //System.err.println("mouseSetDot(" + pos + ")");
-    Window window = factory.lookupWindow(editorPane);
-    pos = window.mouseClickedPosition(pos);
-    Normal.abortVisualMode();
-    return pos;
   }
 
   public static void mouseRelease(MouseEvent mev) {
-    /*if(draggingBlockMode && (mev.getModifiersEx() & mev.BUTTON1_DOWN_MASK) == 0) {
-      draggingBlockMode = false;
-      System.err.println("END_DRAG");
-    }*/
+    try {
+      setJViBusy(true);
+
+      /*if(draggingBlockMode && (mev.getModifiersEx() & mev.BUTTON1_DOWN_MASK) == 0) {
+        draggingBlockMode = false;
+        System.err.println("END_DRAG");
+      }*/
+    } finally {
+      setJViBusy(false);
+    }
   }
   
   /** not mouse involved, keep caret off of new line;
@@ -659,17 +693,23 @@ public class ViManager {
   }
   
   public static int mouseMoveDot(int pos, JTextComponent c, MouseEvent mev) {
-    if(c != G.curwin.getEditorComponent()) {
+    try {
+      setJViBusy(true);
+
+      if(c != G.curwin.getEditorComponent()) {
+        return pos;
+      }
+      //System.err.println("mouseMoveDot(" + pos + ")");
+      if(pos != G.curwin.getCaretPosition() && !G.VIsual_active) {
+        G.VIsual_mode ='v';
+        G.VIsual_active = true;
+        G.VIsual = (FPOS) G.curwin.getWCursor().copy();
+        Misc.showmode();
+      }
       return pos;
+    } finally {
+      setJViBusy(false);
     }
-    //System.err.println("mouseMoveDot(" + pos + ")");
-    if(pos != G.curwin.getCaretPosition() && !G.VIsual_active) {
-      G.VIsual_mode ='v';
-      G.VIsual_active = true;
-      G.VIsual = (FPOS) G.curwin.getWCursor().copy();
-      Misc.showmode();
-    }
-    return pos;
   }
 
   /** A mouse click may have moved the caret. */
