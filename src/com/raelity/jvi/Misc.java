@@ -1098,10 +1098,11 @@ public class Misc implements ClipboardOwner {
     /*
      * Set "'[" and "']" marks.
      */
-    /* ****************************************************************
-       curbuf.b_op_start = oap.start;
-       curbuf.b_op_end = oap.end;
-     *******************************************************************/
+    G.curbuf.b_op_start.setMark(oap.start, G.curwin);
+    ViFPOS op_end = oap.end.copy();
+    int col = Util.lineLength(op_end.getLine());
+    op_end.setColumn(col == 0 ? 0 : col - 1);
+    G.curbuf.b_op_end.setMark(op_end, G.curwin);
   }
 
   /**
@@ -2174,10 +2175,18 @@ public class Misc implements ClipboardOwner {
     }
 
     //
-    // NEEDSWORK: op_yank: set "'[" and "']" marks.
+    //  set "'[" and "']" marks.
     //
-    // curbuf.b_op_start = oap.start;
-    // curbuf.b_op_end = oap.end;
+    ViFPOS op_start = oap.start.copy();
+    ViFPOS op_end = oap.end.copy();
+    if(yanktype == MLINE && !oap.block_mode) {
+      op_start.setColumn(0);
+      // op_end.setColumn(MAXCOL); NEEDSWORK: need way to set ViMark to MAXCOL
+      // put it on the newline
+      op_end.setColumn(Util.lineLength(op_end.getLine()));
+    }
+    G.curbuf.b_op_start.setMark(op_start, G.curwin);
+    G.curbuf.b_op_end.setMark(op_end, G.curwin);
 
     //
     // If we were yanking to the clipboard register, send result to clipboard.
@@ -2401,6 +2410,7 @@ public class Misc implements ClipboardOwner {
           finishPositionColumn += bd.startspaces;
       }
       
+      // NEEDSWORK: Mark
       /* Set '[ mark. */
       //curbuf->b_op_start = curwin->w_cursor;
       //curbuf->b_op_start.lnum = lnum;
@@ -3997,13 +4007,13 @@ public class Misc implements ClipboardOwner {
       newp.setLength(STRLEN(newp));
       Util.ml_replace(lnum, newp);
       
-      //if (lnum == oap.end.lnum)
-      //{
-      //    /* Set "']" mark to the end of the block instead of the end of
-      //     * the insert in the first line.  */
-      //    curbuf.b_op_end.lnum = oap.end.lnum;
-      //    curbuf.b_op_end.col = offset;
-      //}
+      if (lnum == oap.end.getLine()) {
+          // Set "']" mark to the end of the block instead of the end of
+          // the insert in the first line.
+        ViFPOS op_end = oap.end.copy();
+        op_end.setColumn(offset);
+        G.curbuf.b_op_end.setMark(op_end, G.curwin);
+      }
     } // for all lnum
     
     // changed_lines(oap.start.lnum + 1, 0, oap.end.lnum + 1, 0L);
@@ -4107,17 +4117,9 @@ public class Misc implements ClipboardOwner {
     
     oap.line_count = 0;	    /* no lines deleted */
     
-    //
     // Set "'[" and "']" marks.
-    //
-//    curbuf->b_op_start = oap->start;
-//    if (oap->block_mode)
-//    {
-//	curbuf->b_op_end.lnum = oap->end.lnum;
-//	curbuf->b_op_end.col = oap->start.col;
-//    }
-//    else
-//	curbuf->b_op_end = oap->start;
+    G.curbuf.b_op_start.setMark(oap.start, G.curwin);
+    G.curbuf.b_op_end.setMark(oap.end, G.curwin);
     
     return OK;
   }
