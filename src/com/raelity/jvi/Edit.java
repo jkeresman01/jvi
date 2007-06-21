@@ -913,7 +913,7 @@ public class Edit {
    */
   
   public static int oneright() {
-    FPOS fpos = G.curwin.getWCursor();
+    ViFPOS fpos = G.curwin.getWCursor();
     int lnum = fpos.getLine();
     int col = fpos.getColumn();
     MySegment seg = G.curwin.getLineSegment(lnum);
@@ -929,7 +929,7 @@ public class Edit {
   }
   
   public static int oneleft() {
-    FPOS fpos = G.curwin.getWCursor();
+    ViFPOS fpos = G.curwin.getWCursor();
     int col = fpos.getColumn();
     if(col == 0) {
       return FAIL;
