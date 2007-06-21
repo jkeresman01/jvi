@@ -75,7 +75,7 @@ public interface ViTextView extends ViOptionBag {
   public void setWindow(Window window);
 
   /** @return the current location of the cursor in the window */
-  public FPOS getWCursor();
+  public ViFPOS getWCursor();
 
   public int getWCurswant();
   public void setWCurswant(int c);
