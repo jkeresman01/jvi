@@ -617,60 +617,6 @@ public class ViManager {
       Normal.resetCommand();
     }
   }
-
-  private static boolean draggingBlockMode;
-
-  /**
-   * A mouse click; switch to the activated editor.
-   * Pass the click on to the window and give it
-   * a chance to adjust the position and whatever.
-   */
-  public static int mouseSetDot(int pos, JTextComponent c, MouseEvent mev) {
-    try {
-      setJViBusy(true);
-
-      if(!(c instanceof JEditorPane)) {
-        return pos;
-      }
-      //System.err.println(mev.getMouseModifiersExText(mev.getModifiersEx()));
-      //System.err.println(mev.getModifiersExText(mev.getModifiersEx()));
-
-      JEditorPane editorPane = (JEditorPane)c;
-
-      // NEEDSWORK: mouse click: if( ! isRegistered(editorPane)) {}
-
-      GetChar.flush_buffers(true);
-      exitInputMode();
-      switchTo(editorPane);
-      /*int lookFor = mev.ALT_DOWN_MASK | mev.BUTTON1_DOWN_MASK;
-      int mods = mev.getModifiersEx();
-      if((mev.getModifiersEx() & lookFor) == lookFor) {
-        draggingBlockMode = true;
-        System.err.println("START_DRAG");
-      }*/
-      
-      //System.err.println("mouseSetDot(" + pos + ")");
-      Window window = factory.lookupWindow(editorPane);
-      pos = window.mouseClickedPosition(pos);
-      Normal.abortVisualMode();
-      return pos;
-    } finally {
-      setJViBusy(false);
-    }
-  }
-
-  public static void mouseRelease(MouseEvent mev) {
-    try {
-      setJViBusy(true);
-
-      /*if(draggingBlockMode && (mev.getModifiersEx() & mev.BUTTON1_DOWN_MASK) == 0) {
-        draggingBlockMode = false;
-        System.err.println("END_DRAG");
-      }*/
-    } finally {
-      setJViBusy(false);
-    }
-  }
   
   /** not mouse involved, keep caret off of new line;
    * see window.mouseClickedPosition(pos) */
@@ -691,6 +637,69 @@ public class ViManager {
     }
     return pos;
   }
+
+  private static boolean draggingBlockMode;
+  private static boolean dbgMouse = true;
+
+  /**
+   * A mouse click; switch to the activated editor.
+   * Pass the click on to the window and give it
+   * a chance to adjust the position and whatever.
+   */
+  public static int mouseSetDot(int pos, JTextComponent c, MouseEvent mev) {
+    try {
+      setJViBusy(true);
+      if(!(c instanceof JEditorPane)) {
+        return pos;
+      }
+
+      JEditorPane editorPane = (JEditorPane)c;
+
+      // NEEDSWORK: mouse click: if( ! isRegistered(editorPane)) {}
+
+      GetChar.flush_buffers(true);
+      exitInputMode();
+      switchTo(editorPane);
+      /*int lookFor = mev.ALT_DOWN_MASK | mev.BUTTON1_DOWN_MASK;
+      int mods = mev.getModifiersEx();
+      if((mev.getModifiersEx() & lookFor) == lookFor) {
+        draggingBlockMode = true;
+        System.err.println("START_DRAG");
+      }*/
+      
+      Window window = factory.lookupWindow(editorPane);
+      pos = window.mouseClickedPosition(pos);
+      Normal.abortVisualMode();
+
+      if(dbgMouse) {
+        System.err.println("mouseSetDot(" + pos + ") "
+                           + mev.getModifiersExText(mev.getModifiersEx()));
+        //System.err.println(mev.getMouseModifiersText(mev.getModifiers()));
+      }
+      return pos;
+    } finally {
+      setJViBusy(false);
+    }
+  }
+
+  public static void mouseRelease(MouseEvent mev) {
+    try {
+      setJViBusy(true);
+
+      /*if(draggingBlockMode && (mev.getModifiersEx() & mev.BUTTON1_DOWN_MASK) == 0) {
+        draggingBlockMode = false;
+        System.err.println("END_DRAG");
+      }*/
+
+      if(dbgMouse) {
+        System.err.println("mouseRelease: "
+                           + mev.getModifiersExText(mev.getModifiersEx()));
+        //System.err.println(mev.getMouseModifiersText(mev.getModifiers()));
+      }
+    } finally {
+      setJViBusy(false);
+    }
+  }
   
   public static int mouseMoveDot(int pos, JTextComponent c, MouseEvent mev) {
     try {
@@ -699,13 +708,20 @@ public class ViManager {
       if(c != G.curwin.getEditorComponent()) {
         return pos;
       }
-      //System.err.println("mouseMoveDot(" + pos + ")");
+
       if(pos != G.curwin.getCaretPosition() && !G.VIsual_active) {
         G.VIsual_mode ='v';
         G.VIsual_active = true;
         G.VIsual = (FPOS) G.curwin.getWCursor().copy();
         Misc.showmode();
       }
+
+      if(dbgMouse) {
+        System.err.println("mouseMoveDot(" + pos + ") "
+                           + mev.getModifiersExText(mev.getModifiersEx()));
+        //System.err.println(mev.getMouseModifiersText(mev.getModifiers()));
+      }
+
       return pos;
     } finally {
       setJViBusy(false);
