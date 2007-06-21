@@ -57,7 +57,7 @@ public final class Window {
   /**
    * The current location of the cursor in this window.
    */
-  public FPOS XXXgetWCursor() {
+  public ViFPOS XXXgetWCursor() {
     return getEditor().getWCursor();
   }
 
