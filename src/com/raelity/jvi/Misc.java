@@ -2283,9 +2283,6 @@ public class Misc implements ClipboardOwner {
       } else {
 	offset = G.curwin.getLineStartOffsetFromOffset(offset);
       }
-    } else {
-      // block mode not supported
-      //return;
     }
 
     lnum = cursor.getLine();
@@ -2410,21 +2407,19 @@ public class Misc implements ClipboardOwner {
           finishPositionColumn += bd.startspaces;
       }
       
-      // NEEDSWORK: Mark
-      /* Set '[ mark. */
+      // Set '[ mark.
       //curbuf->b_op_start = curwin->w_cursor;
       //curbuf->b_op_start.lnum = lnum;
+      ViFPOS op_start = cursor.copy(); // to get something to work with
+      op_start.set(lnum, finishPositionColumn);
+      G.curbuf.b_op_start.setMark(op_start, G.curwin);
       
-      /* adjust '] mark */
+      // adjust '] mark
       //curbuf->b_op_end.lnum = curwin->w_cursor.lnum - 1;
       //curbuf->b_op_end.col = bd.textcol + totlen - 1;
-      
-      if ((flags & PUT_CURSEND) != 0) {
+      ViFPOS op_end = cursor.copy(); // to get something to work with
+      {
         int len;
-        // don't have b_op_end, but it was set just above
-        
-        //curwin.w_cursor = curbuf.b_op_end;
-        //curwin.w_cursor.col++;
         int li = line - 1;
         int co = bd.textcol + totlen - 1;
         
@@ -2435,7 +2430,13 @@ public class Misc implements ClipboardOwner {
         len = Util.ml_get(li).length() - 1;
         if(co > len)
           co = len;
-        cursor.set(li, co);
+        op_end.set(li, co);
+      }
+      G.curbuf.b_op_end.setMark(op_end, G.curwin);
+      
+      if ((flags & PUT_CURSEND) != 0) {
+        cursor.set(G.curbuf.b_op_end.getLine(),
+                   G.curbuf.b_op_end.getColumn() + 1);
       } else {
         //curwin.w_cursor.lnum = lnum;
         cursor.set(lnum, finishPositionColumn);
@@ -2452,6 +2453,14 @@ public class Misc implements ClipboardOwner {
       String s = y_array[0].toString();
       length = s.length();
       G.curwin.insertText(offset, s);
+
+      ViFPOS t = cursor.copy();
+      t.set(G.curwin.getLineNumber(offset),
+            G.curwin.getColumnNumber(offset));
+      G.curbuf.b_op_start.setMark(t, G.curwin);
+      t.set(G.curwin.getLineNumber(offset + length - 1),
+            G.curwin.getColumnNumber(offset + length - 1));
+      G.curbuf.b_op_end.setMark(t, G.curwin);
       
       // now figure out cursor position
       if(y_type == MCHAR && y_size == 1) {
