@@ -70,8 +70,12 @@ public interface Constants {
   //
   // Flags for do_put
   //
-  static final int PUT_FIXINDENT = 1;	// make indent look nice
-  static final int PUT_CURSEND = 1;	// leave cursor after end of new text
+  static final int PUT_FIXINDENT=  1;      /* make indent look nice */
+  static final int PUT_CURSEND=    2;      /* leave cursor after end of new text */
+  static final int PUT_CURSLINE=   4;      /* leave cursor on last line of new text */
+  static final int PUT_LINE=       8;      /* put register as lines */
+  static final int PUT_LINE_SPLIT= 16;     /* split line for linewise register */
+  static final int PUT_LINE_FORWARD=32;    /* put linewise register below Visual sel. */
 
   //
   // Motion types, used for operators and for yank/delete registers.
