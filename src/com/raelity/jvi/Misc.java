@@ -1368,7 +1368,7 @@ public class Misc implements ClipboardOwner {
 /**
  * Put "reg" into register "name".  Free any previous contents.
  */
-  void put_register(int name, Yankreg reg) {
+  static void put_register(int name, Yankreg reg) {
     get_yank_register(name, false);
     y_current.set(reg);
   }
@@ -3432,10 +3432,10 @@ public class Misc implements ClipboardOwner {
       if(G.global_busy) {
         return;
       }
-      if(inUndoCount > 0)
-        ViManager.dumpStack("inUndoCount = " + inUndoCount);
+      //if(inUndoCount > 0)
+      //  ViManager.dumpStack("inUndoCount = " + inUndoCount);
       inUndoCount++;
-      if(!inRedo)
+      if(!inRedo && inUndoCount == 1)
         G.curwin.beginUndo();
     }
     
@@ -3444,9 +3444,9 @@ public class Misc implements ClipboardOwner {
         return;
       }
       inUndoCount--;
-      if(inUndoCount > 0)
-        ViManager.dumpStack("inUndoCount = " + inUndoCount);
-      if(!inRedo)
+      //if(inUndoCount > 0)
+      //  ViManager.dumpStack("inUndoCount = " + inUndoCount);
+      if(!inRedo && inUndoCount == 0)
         G.curwin.endUndo();
     }
     
