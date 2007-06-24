@@ -1247,6 +1247,10 @@ middle_code:
     newChunk = true;
   }
 
+  static void do_pending_operator(CMDARG cap, int old_col, boolean gui_yank)
+        throws NotSupportedException {
+    do_pending_operator(cap, null, null, old_col, gui_yank, true);
+  }
   /**
    * Handle an operator after visual mode or when the movement is finished
    */
@@ -3961,20 +3965,140 @@ static private void nv_findpar(CMDARG cap, int dir)
    * "P", "gP", "p" and "gp" commands.
    */
   static private void nv_put(CMDARG cap) {
-    if (cap.oap.op_type != OP_NOP || G.VIsual_active) {
+//#ifdef FEAT_VISUAL
+    int regname = 0;
+    Misc.Yankreg/*void*/ reg1 = null, reg2 = null;
+    boolean empty = false;
+    boolean was_visual = false;
+//#endif
+    int dir;
+    int flags = 0;
+
+    if (cap.oap.op_type != OP_NOP)
+    {
+//#ifdef FEAT_DIFF
+//	/* "dp" is ":diffput" */
+//	if (cap->oap->op_type == OP_DELETE && cap->cmdchar == 'p')
+//	{
+//	    clearop(cap->oap);
+//	    nv_diffgetput(true);
+//	}
+//	else
+//#endif
       clearopbeep(cap.oap);
-    } else {
+    }
+    else
+    {
+        Misc.beginUndo();
+        try {
+          dir = (cap.cmdchar == 'P'
+                  || (cap.cmdchar == 'g' && cap.nchar == 'P'))
+                                                           ? BACKWARD : FORWARD;
       prep_redo_cmd(cap);
-      Misc.beginUndo();
+          if (cap.cmdchar == 'g')
+              flags |= PUT_CURSEND;
+
+  //#ifdef FEAT_VISUAL
+          if (G.VIsual_active)
+          {
+              /* Putting in Visual mode: The put text replaces the selected
+               * text.  First delete the selected text, then put the new text.
+               * Need to save and restore the registers that the delete
+               * overwrites if the old contents is being put.
+               */
+              was_visual = true;
+              regname = cap.oap.regname;
+  //# ifdef FEAT_CLIPBOARD
+  //	    adjust_clip_reg(&regname);
+  //# endif
+              if (regname == 0 || Util.isdigit(regname)
+  //# ifdef FEAT_CLIPBOARD
+  //		    || (clip_unnamed && (regname == '*' || regname == '+'))
+  //# endif
+
+                      )
+              {
+                  /* the delete is going to overwrite the register we want to
+                   * put, save it first. */
+                  reg1 = Misc.get_register(regname, true);
+              }
+
+              /* Now delete the selected text. */
+              cap.cmdchar = 'd';
+              cap.nchar = NUL;
+              cap.oap.regname = NUL;
+              nv_operator(cap);
       try {
-        Misc.do_put(cap.oap.regname,
-                    (cap.cmdchar == 'P'
-                     || (cap.cmdchar == 'g' && cap.nchar == 'P'))
-                    ? BACKWARD : FORWARD,
-                    cap.count1, cap.cmdchar == 'g' ? PUT_CURSEND : 0);
-      } finally {
-        Misc.endUndo();
+                  do_pending_operator(cap, 0, false);
+              } catch(Exception e) {
+                e.printStackTrace();
       }
+              //empty = (G.curbuf.b_ml.ml_flags.empty);
+
+              /* delete PUT_LINE_BACKWARD; */
+              cap.oap.regname = regname;
+
+              if (reg1 != null)
+              {
+                  /* Delete probably changed the register we want to put, save
+                   * it first. Then put back what was there before the delete. */
+                  reg2 = Misc.get_register(regname, false);
+                  Misc.put_register(regname, reg1);
+              }
+
+              /* When deleted a linewise Visual area, put the register as
+               * lines to avoid it joined with the next line.  When deletion was
+               * characterwise, split a line when putting lines. */
+              if (G.VIsual_mode == 'V')
+                  flags |= PUT_LINE;
+              else if (G.VIsual_mode == 'v')
+                  flags |= PUT_LINE_SPLIT;
+              if (G.VIsual_mode == Util.ctrl('V') && dir == FORWARD)
+                  flags |= PUT_LINE_FORWARD;
+              dir = BACKWARD;
+  //	    if ((G.VIsual_mode != 'V'
+  //			&& G.curwin.getWCursor().getColumn() < G.curbuf.b_op_start.getColumn())
+  //		    || (G.VIsual_mode == 'V'
+  //			&& G.curwin.getWCursor().getLine() < G.curbuf.b_op_start.getLine()))
+  //		/* cursor is at the end of the line or end of file, put
+  //		 * forward. */
+  //		dir = FORWARD;
+          }
+  //#endif
+          Misc.do_put(cap.oap.regname, dir, cap.count1, flags);
+
+  //#ifdef FEAT_VISUAL
+          /* If a register was saved, put it back now. */
+          if (reg2 != null)
+              Misc.put_register(regname, reg2);
+
+          /* What to reselect with "gv"?  Selecting the just put text seems to
+           * be the most useful, since the original text was removed. */
+          if (was_visual)
+          {
+  //	    G.curbuf.b_visual.vi_start = G.curbuf.b_op_start;
+  //	    G.curbuf.b_visual.vi_end = G.curbuf.b_op_end;
+          }
+
+          /* When all lines were selected and deleted do_put() leaves an empty
+           * line that needs to be deleted now. */
+  //	if (empty && Util.ml_get(G.curbuf.b_ml.ml_line_count).charAt(0) == NUL)
+  //	{
+  //	    ml_delete(G.curbuf.b_ml.ml_line_count, true);
+  //
+  //	    /* If the cursor was in that line, move it to the end of the last
+  //	     * line. */
+  //	    if (G.curwin.getWCursor().getLine() > G.curbuf.b_ml.ml_line_count)
+  //	    {
+  //		G.curwin.getWCursor().setLine(G.curbuf.b_ml.ml_line_count);
+  //		Misc.coladvance(MAXCOL);
+  //	    }
+  //	}
+  //#endif
+          //auto_format(false, true);
+        } finally {
+            Misc.endUndo();
+        }
     }
   }
 
