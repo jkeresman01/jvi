@@ -33,8 +33,6 @@ import javax.swing.text.*;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViFPOS;
-import com.raelity.jvi.MarkException;
-import com.raelity.jvi.MarkOrphanException;
 import com.raelity.jvi.*;
 import com.raelity.text.TextUtil.MySegment;
 
@@ -48,7 +46,7 @@ import com.raelity.text.TextUtil.MySegment;
  * <li>A Mark should really only have the document, not the TextView.
  * Can do this when there is handling of doc to/from view.
  * <li>Consider garbage collection issues, this is holding ref to
- * both doc and editor.
+ * both doc and textView.
  * <li>Add file name as class member?
  * <li>Before throwing OrphanMark, search for document in known editors.
  * </ul>
@@ -57,22 +55,27 @@ class Mark implements ViMark {
   private Position pos;         // This tracks the line number
   private int col;
   private Document doc;
-  private TextView editor;	// This is a ViPane, NEEDSWORK: remove
+  private TextView tv;	// This is a ViPane, NEEDSWORK: remove
+
+  private static final Position INVALID_LINE = new Position() {
+    public int getOffset() {
+      return 0;
+    }
+  };
 
   /**
    * If the mark offset is not valid then this mark is converted into
    * a null mark.
    */
-  void setOffset(int offset, ViTextView editor) {
-
-    setEditor((TextView)editor);
+  void setOffset(int offset, ViTextView tv) {
+    setEditor((TextView)tv);
     try {
       Position aPos = doc.createPosition(offset);
       setPos(aPos);
     } catch(BadLocationException ex) {
       pos = null;
       doc = null;
-      editor = null;
+      tv = null;
       return;
     }
   }
@@ -81,79 +84,91 @@ class Mark implements ViMark {
    * If the mark offset is not valid then this mark is converted into
    * a null mark.
    */
-  public void setMark(ViFPOS fpos, ViTextView editor) {
+  public void setMark(ViFPOS fpos, ViTextView tv) {
     if(fpos instanceof ViMark) {
       Mark m = (Mark)fpos;
-      assert m.editor == this.editor && m.editor == editor;
+      assert m.tv == this.tv && m.tv == tv;
       setData(m);
     } else {
+      assert this.tv == null || tv == this.tv;
       // adapted from FPOS.set
-      int column = fpos.getColumn();
-      int startOffset = G.curwin.getLineStartOffset(fpos.getLine());
-      int endOffset = G.curwin.getLineEndOffset(fpos.getLine());
-      
-      if(column >= endOffset - startOffset) {
-        ViManager.dumpStack("column " + column
-                            + ", limit " + (endOffset - startOffset - 1));
-        column = endOffset - startOffset - 1;
+      if(fpos.getLine() > G.curwin.getLineCount()) {
+        this.pos = INVALID_LINE;
+      } else {
+        int column = fpos.getColumn();
+        int startOffset = G.curwin.getLineStartOffset(fpos.getLine());
+        int endOffset = G.curwin.getLineEndOffset(fpos.getLine());
+        
+        // NEEDSWORK: if the column is past the end of the line,
+        //            should it be preserved?
+        if(column >= endOffset - startOffset) {
+          ViManager.dumpStack("column " + column
+                              + ", limit " + (endOffset - startOffset - 1));
+          column = endOffset - startOffset - 1;
+        }
+        setOffset(startOffset + column, tv);
       }
-      setOffset(startOffset + column, editor);
     }
   }
 
-  private void setEditor(TextView editor) {
-    this.editor = editor;
-    doc = editor.getEditorComponent().getDocument();
+  private void setEditor(TextView tv) {
+    this.tv = tv;
+    doc = tv.getEditorComponent().getDocument();
   }
 
-  Document getDoc() {
-    checkMark();
+  // NOTE: following not used
+  private Document getDoc() {
+    checkMarkUsable();
     return doc;
   }
 
   private void setPos(Position pos) {
-    checkMark();
-    this.pos = pos;
-    this.col = editor.getColumnNumber(pos.getOffset());
+    checkMarkUsable();
+    setPos(pos, tv.getColumnNumber(pos.getOffset()));
   }
 
   private void setPos(Position pos, int col) {
-    checkMark();
+    checkMarkUsable();
     this.pos = pos;
     this.col = col;
   }
 
-  private Position getPos() {
-    checkMark();
-    return pos;
-  }
-
   public int getLine() {
-    // NEEDSWORK: should use doc, not editor
-    checkMark();
-    return editor.getLineNumber(pos.getOffset());
+    // NEEDSWORK: should use doc, not tv
+    checkMarkUsable();
+    // checkMarkValid();
+    if (this.pos == INVALID_LINE)
+      return tv.getLineCount() + 1;
+    return tv.getLineNumber(pos.getOffset());
   }
 
   /**
    * NOTE: may return column position of newline
    */
   public int getColumn() {
-    // NEEDSWORK: should use doc, not editor
-    MySegment seg = editor.getLineSegment(getLine());
+    checkMarkUsable();
+    // checkMarkValid();
+    if (this.pos == INVALID_LINE)
+      return 0;
+    // NEEDSWORK: should use doc, not tv
+    MySegment seg = tv.getLineSegment(getLine());
     int len = seg.length() - 1;
     return seg.length() <= 0 ? 0 : Math.min(col, len);
   }
 
   // NEEDSWORK: Mark.getOffset(): get rid of this, bad usage
   public int getOffset() {
-    checkMark();
-    return editor.getLineStartOffsetFromOffset(pos.getOffset()) + getColumn();
+    checkMarkUsable();
+    //checkMarkValid();
+    if (this.pos == INVALID_LINE)
+      return Integer.MAX_VALUE;
+    return tv.getLineStartOffsetFromOffset(pos.getOffset()) + getColumn();
   }
 
   public void setData(ViMark mark_arg) {
     Mark mark = (Mark)mark_arg;
     this.doc = mark.doc;
-    this.editor = mark.editor;
+    this.tv = mark.tv;
     this.pos = mark.pos;
     this.col = mark.col;
   }
@@ -168,9 +183,9 @@ class Mark implements ViMark {
     return m;
   }
 
-  final void checkMark() {
+  final void checkMarkUsable() {
     if(doc == null) throw new MarkException("Uninitialized Mark");
-    if(doc != editor.getEditorComponent().getDocument()) {
+    if(doc != tv.getEditorComponent().getDocument()) {
       throw new MarkOrphanException("Mark Document Change");
     }
   }
