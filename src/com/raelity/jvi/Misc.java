@@ -1570,6 +1570,22 @@ public class Misc implements ClipboardOwner {
    */
 
   /**
+   * Adjust the register name pointed to with "rp" for the clipboard being
+   * used always and the clipboard being available.
+   */
+  static char adjust_clip_reg(char rp)
+  {
+    // If no reg. specified, and "unnamed" is in 'clipboard', use '*' reg.
+    if (rp == 0 && G.p_cb.value)
+      rp = '*';
+    if(rp == '+')
+      rp = '*';
+    if (!clipboard_available && rp == '*')
+      rp = 0;
+    return rp;
+  }
+
+  /**
    * op_delete - handle a delete operation
    */
   static void op_delete(OPARG oap) {
@@ -2208,7 +2224,7 @@ public class Misc implements ClipboardOwner {
    *
    * FIX_INDENT not supported, used by mouse and bracket print, [p
    */
-  public static void do_put(int regname, int dir, int count, int flags) {
+  public static void do_put(int regname_, int dir, int count, int flags) {
 
     //StringBuffer        ptr;
     int                 ptr_idx;
@@ -2229,6 +2245,8 @@ public class Misc implements ClipboardOwner {
     int                 j;
     block_def           bd;
 
+    char regname = (char)regname_;
+
     StringBuffer[] y_array = null;
 
     final ViFPOS cursor = G.curwin.getWCursor();
@@ -2236,15 +2254,10 @@ public class Misc implements ClipboardOwner {
     // extra ?
     int			old_lcount = G.curwin.getLineCount();
 
-    /* If no register specified, and "unnamed" in 'clipboard', use * register */
-    if (regname == 0 && G.p_cb.getBoolean())
-        regname = '*';
-    if (regname == '*') {
-	if (!clipboard_available)
-	    regname = 0;
-	else
-	    clip_get_selection();
-    }
+    // Adjust register name for "unnamed" in 'clipboard'.
+    adjust_clip_reg(regname);
+    if (regname == '*')
+      clip_get_selection();
 
     // NEEDSWORK: do_put: there are special registers like: '%', '#', ':',...
     // if (get_spec_reg(regname, &insert_string, &allocated, TRUE))
@@ -2260,10 +2273,37 @@ public class Misc implements ClipboardOwner {
 	y_array = y_current.y_array;
     }
 
+    if (y_type == MLINE) {
+      if ((flags & PUT_LINE_SPLIT) != 0) {
+        // "p" or "P" in Visual mode: split the lines to put the text in
+        // between.
+        // Lots of code was replaced by the following.
+        // G.curwin.insertChar('\n');
+        int currOffset = cursor.getOffset();
+        G.curwin.insertNewLine();
+        //G.curwin.insertText(cursor.getOffset(), "\n");
+        // back up the cursor so it is on the newline
+        //cursor.set(tpos);
+        G.curwin.setCaretPosition(currOffset);
+        dir = FORWARD;
+      }
+      if ((flags & PUT_LINE_FORWARD) != 0) {
+        /* Must be "p" for a Visual block, put lines below the block. */
+        cursor.set(G.curbuf.b_visual_end);
+        dir = FORWARD;
+      }
+      // b_op_start/end handle later
+      //curbuf->b_op_start = curwin->w_cursor;  /* default for '[ mark */
+      //curbuf->b_op_end = curwin->w_cursor;	/* default for '] mark */
+    }
+    
+    if ((flags & PUT_LINE) != 0) // :put command or "p" in Visual line mode.
+      y_type = MLINE;
+    
     if (y_size == 0 || y_array == null) {
-	Msg.emsg("Nothing in register "
-		  + (regname == 0 ? "\"" : transchar(regname)));
-	return;
+      Msg.emsg("Nothing in register "
+              + (regname == 0 ? "\"" : transchar(regname)));
+      return;
     }
 
 
@@ -2451,6 +2491,11 @@ public class Misc implements ClipboardOwner {
       
     } else { // not block mode
       String s = y_array[0].toString();
+      // NEEDSWORK: HACK for PUT_LINE flag, NOTE: should not need to do
+      // (flags&PUT_LINE)!=0 since all MLINE should be terminated by \n
+      if(y_type == MLINE // && (flags & PUT_LINE) != 0
+         && s.length() != 0 && s.charAt(s.length()-1) != '\n')
+        s += '\n';
       length = s.length();
       G.curwin.insertText(offset, s);
 
@@ -3501,6 +3546,9 @@ public class Misc implements ClipboardOwner {
     // FIX:
     // If endRedoUndo is called and inUndoCount is non-zero, then there *will*
     // be an endUndo comming along, so use that....
+    //
+    // Make sure '!' is modal, now that begin/endUndo can nest simplify
+    // and get rid of inRedo boolean.
     //
     static void beginRedoUndo() {
       if(G.global_busy) {

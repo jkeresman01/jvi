@@ -37,10 +37,13 @@ import static com.raelity.jvi.ViTextView.MARKOP.NEXT;
 import static com.raelity.jvi.ViTextView.MARKOP.PREV;
 import static com.raelity.jvi.ViTextView.MARKOP.TOGGLE;
 
+import static com.raelity.jvi.Constants.*;
+import static com.raelity.jvi.Messages.*;
+
 /**
  * Keep track of vi marks.
  */
-class MarkOps implements Constants, Messages {
+class MarkOps {
 
   static Map marks = new WeakHashMap(5);
 
@@ -182,9 +185,9 @@ class MarkOps implements Constants, Messages {
 	if(mark.getLine() > G.curwin.getLineCount()) {
 	  msg = e_markinval;
 	}
-      } catch(MarkOrphanException e) {
+      } catch(ViMark.MarkOrphanException e) {
 	msg = e_marknotset;
-      } catch(MarkException e) {
+      } catch(ViMark.MarkException e) {
 	msg = e_marknotset;
       }
     }
