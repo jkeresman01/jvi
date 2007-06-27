@@ -43,4 +43,16 @@ public interface ViMark extends ViFPOS {
 
   /** Invalidate the mark. */
   public void invalidate();
+
+  public class MarkException extends RuntimeException {
+      public MarkException(String msg) {
+          super(msg);
+      }
+  }
+
+  public class MarkOrphanException extends MarkException {
+      public MarkOrphanException(String msg) {
+          super(msg);
+      }
+  }
 }
