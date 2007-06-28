@@ -714,6 +714,10 @@ public class TextView implements ViTextView {
     return "xxx";
   }
 
+  public String getFileName(char option) {
+      return "xxx";
+  }
+  
   public TextOps getOp() {
     return ops;
   }
