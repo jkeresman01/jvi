@@ -142,7 +142,8 @@ public class G {
   public static StringOption p_sh;     // shell - used for external commands
   public static StringOption p_shcf;   // shellcmdflag - flag for shell
   public static StringOption p_sxq;    // shellXQuote - flag for shell
-
+  public static BooleanOption p_ssl;   // shellSlash - flag for filename expansion
+  
   public static BooleanOption readOnlyHack;
   public static BooleanOption isClassicUndo;
   public static BooleanOption dbgEditorActivation;

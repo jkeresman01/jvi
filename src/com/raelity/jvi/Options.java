@@ -139,7 +139,8 @@ public final class Options {
   public static final String shell = "viShell";
   public static final String shellCmdFlag = "viShellCmdFlag";
   public static final String shellXQuote = "viShellXQuote";
-
+  public static final String shellSlash = "viShellSlash";
+  
   public static final String readOnlyHack = "viReadOnlyHack";
   public static final String classicUndoOption = "viClassicUndo";
   
@@ -533,7 +534,13 @@ public final class Options {
             "Quoting character(s), put around the commands passed to the " +
             "shell, for the \"!\" and \":!\" commands (default: \"\"; for " +
             "Win32, when 'shell' contains \"sh\" somewhere: \"\\\"\").");
-
+    
+    G.p_ssl = createBooleanOption(shellSlash, false);
+    setupOptionDesc(externalProcessList, shellSlash, "'shellslash' 'ssl'",
+            "When set, a forward slash is used when expanding file names." +
+            "This is useful when a Unix-like shell is used instead of " +
+            "command.com or cmd.exe.");
+    
     G.p_ep = createStringOption(equalProgram, "");
     setupOptionDesc(externalProcessList, equalProgram, "'equalprg' 'ep'",
             "External program to use for \"=\" command (default \"\").  " +

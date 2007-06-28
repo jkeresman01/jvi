@@ -664,7 +664,8 @@ public class ColonCommands {
       if (dbg.value)
         System.err.println("!: Original command: '" + evt.getArgString() + "'");
       StringBuilder arg = new StringBuilder(evt.getArgString());
-      if (parseBang(arg) == null) {
+      arg = parseBang(arg);
+      if (arg == null) {
         Msg.emsg("No previous command");
         return;
       }
@@ -758,34 +759,71 @@ public class ColonCommands {
         return;
     }
 
-    private StringBuilder parseBang(StringBuilder sb) {
-      int index = sb.indexOf("!");
-
-      for ( ; index >= 0; index = sb.indexOf("!", index)) {
-        if (index == 0 || sb.charAt(index - 1) != '\\') {
-          if (lastBangCommand != null) {
-            sb.replace(index, index + 1, lastBangCommand);
-            index += (lastBangCommand.length() - 1);
-          } else {
-            return null;
-          }
-        } else {
-          // looking at "!" following a "\"
-          sb.deleteCharAt(--index);
-        }
-        index++;
-      }
-      return sb;
-    }
-
-    private void parseBackslash(StringBuilder sb) {
-      int index = sb.indexOf("\\");
-
-      for ( ; index >= 0; index = sb.indexOf("\\", index)) {
-        sb.deleteCharAt(index);
-        int argLength = sb.length();
-        while (index < argLength && sb.charAt(index) == '\\')
+    private StringBuilder parseBang(StringBuilder sb){
+      StringBuilder newsb = new StringBuilder();
+      int index = 0;
+      while(index < sb.length()){
+        char c = sb.charAt(index);
+        switch(c) {
+          
+          case '!':
+            if (escaped(index, sb)) {
+              // looking at "!" following a "\"
+              // means we already appended a \ to newsb
+              // so we replace it by !
+              newsb.setCharAt(newsb.length() - 1, '!');
+            } else {
+              // replace this ! by last command, if it exists
+              if (lastBangCommand != null) {
+                newsb.append(lastBangCommand);
+              } else {
+                return null; // Error, no last command
+              }
+            }
             index++;
+            break;
+            
+          case '%':
+            if(escaped(index, sb)){
+              // Again, replace the last \ with %
+              newsb.setCharAt(newsb.length() - 1, '%');
+              index++;
+            } else {
+              // replace % by the filename
+              // watch for the filename modifiers ':x'
+              //
+              // NEESDWORK: filename-modifiers not handled in vim compatible way
+              // Not all file modifiers are supported and only one is allowed,
+              // allowing multiple will require rework here and getFileName.
+              //
+              if(index+2 < sb.length() && sb.charAt(index+1) == ':'){
+                if(escaped(index, sb)) {
+                  newsb.setCharAt(newsb.length() - 1, ':');
+                  index++;
+                } else {
+                  newsb.append(G.curwin.getFileName(sb.charAt(index+2)));
+                  index += 3;
+                }
+              } else {
+                newsb.append(G.curwin.getFileName(' '));
+                index++;
+              }
+            }
+            break;
+            
+          default:
+            newsb.append(c);
+            index++;
+        }
+      }
+      return newsb;
+    }
+    
+    private boolean escaped(int index, StringBuilder sb){
+      if (index == 0 || sb.charAt(index - 1) != '\\') {
+        return false;
+      } else {
+        return true;
       }
     }
 

@@ -267,6 +267,14 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	    return getString(Options.shellXQuote);
     }
 
+    public void setViShellSlash(boolean arg) throws PropertyVetoException {
+        put(Options.shellSlash, arg);
+    }
+
+    public boolean getViShellSlash() {
+        return getboolean(Options.shellSlash);
+    }
+    
     public void setViEqualProgram(String arg)  throws PropertyVetoException {
         put(Options.equalProgram, arg);
     }
