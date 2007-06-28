@@ -797,13 +797,8 @@ public class ColonCommands {
               // allowing multiple will require rework here and getFileName.
               //
               if(index+2 < sb.length() && sb.charAt(index+1) == ':'){
-                if(escaped(index, sb)) {
-                  newsb.setCharAt(newsb.length() - 1, ':');
-                  index++;
-                } else {
-                  newsb.append(G.curwin.getFileName(sb.charAt(index+2)));
-                  index += 3;
-                }
+                newsb.append(G.curwin.getFileName(sb.charAt(index+2)));
+                index += 3;
               } else {
                 newsb.append(G.curwin.getFileName(' '));
                 index++;
