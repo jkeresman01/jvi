@@ -250,15 +250,17 @@ public final class Options {
             + " or 'modelines' is zero no lines are checked.");
 
     G.redoTrack = createBooleanOption(redoTrack, true);
-    setupOptionDesc(generalList, redoTrack, "'.' magic redo tracking",
-                    "Include \"magic\" document changes during"
-                    + " input mode in the redo buffer. These"
+    setupOptionDesc(generalList, redoTrack, "\".\" magic redo tracking",
+                    "Track magic document changes during input"
+                    + " mode for the \".\" commnad. These"
                     + " changes are often the result of IDE code completion");
 
     G.pcmarkTrack = createBooleanOption(pcmarkTrack, true);
     setupOptionDesc(generalList, pcmarkTrack,
-                    "'`' magic pcmark tracking", "Track cursor "
-                    + "movments by NB IDE with the '`' mark.");
+                    "\"``\" magic pcmark tracking", "Track magic cursor "
+                    + " movments for the \"``\" command. These movement are"
+                    + " often the result of IDE actions invoked external"
+                    + " to jVi.");
 
     G.isClassicUndo = createBooleanOption(classicUndoOption, true);
     setupOptionDesc(generalList, classicUndoOption, "classic undo",
