@@ -86,6 +86,7 @@ public final class Options {
   
   public static final String commandEntryFrame = "viCommandEntryFrameOption";
   public static final String redoTrack = "viRedoTrack";
+  public static final String pcmarkTrack = "viPCMarkTrack";
 
   public static final String backspaceWrapPrevious = "viBackspaceWrapPrevious";
   public static final String hWrapPrevious = "viHWrapPrevious";
@@ -150,6 +151,7 @@ public final class Options {
   public static final String dbgEditorActivation = "viDbgEditorActivation";
   public static final String dbgBang = "viDbgBang";
   public static final String dbgBangData = "viDbgBangData";
+  public static final String dbgMouse = "viDbgMouse";
 
   public static final String twMagic = "#TEXT-WIDTH#";
 
@@ -252,6 +254,11 @@ public final class Options {
                     "Include \"magic\" document changes during"
                     + " input mode in the redo buffer. These"
                     + " changes are often the result of IDE code completion");
+
+    G.pcmarkTrack = createBooleanOption(pcmarkTrack, true);
+    setupOptionDesc(generalList, pcmarkTrack,
+                    "'`' magic pcmark tracking", "Track cursor "
+                    + "movments by NB IDE with the '`' mark.");
 
     G.isClassicUndo = createBooleanOption(classicUndoOption, true);
     setupOptionDesc(generalList, classicUndoOption, "classic undo",
@@ -592,6 +599,10 @@ public final class Options {
     createBooleanOption(dbgBangData, false);
     setupOptionDesc(debugList, dbgBangData, "debug \"!\" cmds data",
                "Output data tranfers external processes");
+
+    G.dbgMouse = createBooleanOption(dbgMouse, false);
+    setupOptionDesc(debugList, dbgMouse, "debug mouse events",
+               "Output info about mouse events");
   }
 
   static Preferences getPrefs() {
