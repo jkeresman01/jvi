@@ -230,11 +230,16 @@ class MarkOps {
 
   /** @deprecated */
   static void setpcmark(int offset) {
+    setpcmark(G.curwin, offset);
+  }
+
+  /** @deprecated */
+  static void setpcmark(ViTextView tv, int offset) {
     if(G.global_busy) {
       return;
     }
-    G.curwin.pushPCMark();
-    G.curwin.setMarkOffset(G.curwin.getPCMark(), offset, false);
+    tv.pushPCMark();
+    tv.setMarkOffset(tv.getPCMark(), offset, false);
     // NEEDSWORK: pcmark and jump list stuff...
   }
 

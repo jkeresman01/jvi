@@ -156,6 +156,8 @@ public class G {
                                         // 9-xop
   static BooleanOption redoTrack; // track redo for magic/code-completion
   static BooleanOption dbgRedo;
+  static BooleanOption dbgMouse;
+  static BooleanOption pcmarkTrack; // track NB caret motions for pcmark
 
   public static boolean debugPrint = false;
   public static boolean debugOpPrint = false;

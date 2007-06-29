@@ -50,6 +50,8 @@ import com.raelity.jvi.*;
 import java.awt.Color;
 
 import static com.raelity.jvi.Constants.*;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -94,19 +96,42 @@ public class TextView implements ViTextView {
 
   protected int expectedCaretPosition = -1;
 
+  private CaretListener cursorSaveListener;
+
+  private int lastDot;
+
   public TextView(final JEditorPane editorPane) {
     this.editorPane = editorPane;
+
+    cursorSaveListener = new CaretListener() {
+      public void caretUpdate(CaretEvent ce) {
+        ViManager.caretUpdate(TextView.this, lastDot, ce);
+        lastDot = ce.getDot();
+      }
+    };
   }
   
+  private void enableCursorSave() {
+    lastDot = editorPane.getCaret().getDot();
+    editorPane.removeCaretListener(cursorSaveListener);
+    editorPane.addCaretListener(cursorSaveListener);
+  }
+
+  private void disableCursorSave() {
+    editorPane.removeCaretListener(cursorSaveListener);
+  }
+
   public void startup(Buffer buf) {
     this.buf = buf;
     if(cache == null)
       cache = createTextViewCache();
     if(statusDisplay == null)
       statusDisplay = createStatusDisplay();
+    enableCursorSave();
   }
   
   public void shutdown() {
+    disableCursorSave();
     if(G.dbgEditorActivation.getBoolean()) {
       Buffer buf = ViManager.getBuffer(getEditorComponent());
       assert buf == this.buf;
