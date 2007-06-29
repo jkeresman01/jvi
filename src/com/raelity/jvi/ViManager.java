@@ -29,7 +29,6 @@
  */
 package com.raelity.jvi;
 
-import com.raelity.jvi.swing.TextView;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -98,7 +97,7 @@ public class ViManager {
   // 1.0.0.beta2 is NB vers 0.9.6.4
   // 1.0.0.beta3 is NB vers 0.9.7.5
   //
-  public static final jViVersion version = new jViVersion("1.0.0.beta3.7");
+  public static final jViVersion version = new jViVersion("1.0.0.beta3.11");
   
   private static boolean enabled;
 
@@ -745,10 +744,13 @@ public class ViManager {
       System.err.println("CaretMark: " + lastDot + " --> " + currDot +
         " " + tv.getDisplayFileName());
     if (!jViBusy() && !mouseDown) {
-      int diff =
-        Math.abs(tv.getLineNumber(currDot) - tv.getLineNumber(lastDot));
-      if (diff > 0)
+      int diff
+            = Math.abs(tv.getLineNumber(currDot) - tv.getLineNumber(lastDot));
+      if (diff > 0) {
+        if (G.dbgMouse.getBoolean())
+          System.err.println("caretUpdate: setPCMark");
         MarkOps.setpcmark(tv, lastDot);
+      }
     }
   }
 
