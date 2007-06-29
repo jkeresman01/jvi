@@ -323,6 +323,14 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	return getboolean(Options.redoTrack);
     }
 
+    public void setViPCMarkTrack(boolean arg)  throws PropertyVetoException {
+        put(Options.pcmarkTrack, arg);
+    }
+
+    public boolean getViPCMarkTrack() {
+	return getboolean(Options.pcmarkTrack);
+    }
+
     public void setViDbgRedo(boolean arg)  throws PropertyVetoException {
         put(Options.dbgRedo, arg);
     }
@@ -627,6 +635,14 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 
     public boolean getViClassicUndo() {
 	return getboolean("viClassicUndo");
+    }
+
+    public void setViDbgMouse(boolean arg) {
+        put("viDbgMouse", arg);
+    }
+
+    public boolean getViDbgMouse() {
+	return getboolean("viDbgMouse");
     }
 
     public void setViDbgKeyStrokes(boolean arg) {
