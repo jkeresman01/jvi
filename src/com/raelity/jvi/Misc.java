@@ -375,8 +375,11 @@ public class Misc implements ClipboardOwner {
   }
 
   static void pchar(ViFPOS fpos, int c) {
-    G.curwin.replaceString(fpos.getOffset(), fpos.getOffset()+1,
+    int offset = fpos.getOffset();
+    G.curwin.replaceString(offset, offset+1,
                            new String(new char[] {(char)c}));
+    // do not change cursor position
+    G.curwin.setCaretPosition(offset);
   }
 
   /**
