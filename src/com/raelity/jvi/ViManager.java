@@ -29,6 +29,7 @@
  */
 package com.raelity.jvi;
 
+import com.raelity.jvi.swing.TextView;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -48,6 +49,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
+import javax.swing.event.CaretEvent;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 
@@ -639,7 +641,7 @@ public class ViManager {
   }
 
   private static boolean draggingBlockMode;
-  private static boolean dbgMouse = true;
+  private static boolean mouseDown;
 
   /**
    * A mouse click; switch to the activated editor.
@@ -649,6 +651,8 @@ public class ViManager {
   public static int mouseSetDot(int pos, JTextComponent c, MouseEvent mev) {
     try {
       setJViBusy(true);
+      mouseDown = true;
+
       if(!(c instanceof JEditorPane)) {
         return pos;
       }
@@ -671,7 +675,7 @@ public class ViManager {
       pos = window.mouseClickedPosition(pos);
       Normal.abortVisualMode();
 
-      if(dbgMouse) {
+      if(G.dbgMouse.getBoolean()) {
         System.err.println("mouseSetDot(" + pos + ") "
                            + mev.getModifiersExText(mev.getModifiersEx()));
         //System.err.println(mev.getMouseModifiersText(mev.getModifiers()));
@@ -686,12 +690,18 @@ public class ViManager {
     try {
       setJViBusy(true);
 
+      int mask = MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.BUTTON2_DOWN_MASK |
+        MouseEvent.BUTTON3_DOWN_MASK;
+
+      if ((mev.getModifiersEx() & mask) == 0)
+        mouseDown = false;
+
       /*if(draggingBlockMode && (mev.getModifiersEx() & mev.BUTTON1_DOWN_MASK) == 0) {
         draggingBlockMode = false;
         System.err.println("END_DRAG");
       }*/
 
-      if(dbgMouse) {
+      if(G.dbgMouse.getBoolean()) {
         System.err.println("mouseRelease: "
                            + mev.getModifiersExText(mev.getModifiersEx()));
         //System.err.println(mev.getMouseModifiersText(mev.getModifiers()));
@@ -716,7 +726,7 @@ public class ViManager {
         Misc.showmode();
       }
 
-      if(dbgMouse) {
+      if(G.dbgMouse.getBoolean()) {
         System.err.println("mouseMoveDot(" + pos + ") "
                            + mev.getModifiersExText(mev.getModifiersEx()));
         //System.err.println(mev.getMouseModifiersText(mev.getModifiers()));
@@ -725,6 +735,20 @@ public class ViManager {
       return pos;
     } finally {
       setJViBusy(false);
+    }
+  }
+
+  public static void caretUpdate(ViTextView tv, int lastDot, CaretEvent ce) {
+    if (!G.pcmarkTrack.getBoolean()) return;
+    int currDot = ce.getDot();
+    if (G.dbgMouse.getBoolean())
+      System.err.println("CaretMark: " + lastDot + " --> " + currDot +
+        " " + tv.getDisplayFileName());
+    if (!jViBusy() && !mouseDown) {
+      int diff =
+        Math.abs(tv.getLineNumber(currDot) - tv.getLineNumber(lastDot));
+      if (diff > 0)
+        MarkOps.setpcmark(tv, lastDot);
     }
   }
 
