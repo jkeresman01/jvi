@@ -116,6 +116,7 @@ public class DefaultViCaret extends DefaultCaret implements ViCaret {
     public void setDot(int dot, Position.Bias dotBias) {
         if(isMouseAction || mouseButtonDown)
             dot = ViManager.mouseSetDot(dot, mouseComponent, mouseEvent);
+        // assert false : "for jdk1.6 uncomment following line";
         super.setDot(dot, dotBias); // not accessible in jdk1.5
     }
     
@@ -133,6 +134,7 @@ public class DefaultViCaret extends DefaultCaret implements ViCaret {
     public void moveDot(int dot, Position.Bias dotBias) {
         if(mouseButtonDown)
             dot = ViManager.mouseMoveDot(dot, mouseComponent, mouseEvent);
+        // assert false : "for jdk1.6 uncomment following line";
         super.moveDot(dot, dotBias); // not accessible in jdk1.5
     }
 
