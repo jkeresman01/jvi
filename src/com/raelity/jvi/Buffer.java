@@ -162,6 +162,10 @@ public class Buffer implements ViOptionBag {
     private void stopDocumentEvents() {
         doc.removeDocumentListener(documentListener);
     }
+
+    protected String getRemovedText(DocumentEvent e) {
+        return null;
+    }
     
     private void correlateDocumentEvents() {
         documentListener = new DocumentListener() {
@@ -185,7 +189,8 @@ public class Buffer implements ViOptionBag {
             public void removeUpdate(DocumentEvent e) {
                 if((G.State & BASE_STATE_MASK) != INSERT)
                     return;
-                GetChar.docRemove(e.getOffset(), e.getLength());
+                GetChar.docRemove(e.getOffset(), e.getLength(),
+                                  getRemovedText(e));
             }
         };
         doc.addDocumentListener(documentListener);

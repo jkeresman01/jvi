@@ -381,7 +381,8 @@ public class GetChar {
   //
   // NOTES:
   //    - expectChar could be the actual char expected, else NUL
-  //    - if this needs more tweaking, should probably go to a state machine.
+  //    - too complicated, if this needs much more tweaking,
+  //      should probably go to a state machine.
   //    - these algorithms are probably not really general. They work for
   //      "extra" characters added for a single character at the same
   //      insertion point. They work when a character in entered, then moved
@@ -394,6 +395,12 @@ public class GetChar {
   // afterBuff, characters added after the current insert position
   private static BufferQueue afterBuff = new BufferQueue();
 
+  // See docRemove() method for details of the removeDocXxx variables
+  // The variable remvoeDocAfterString also acts as a flag. It is non-null
+  // very briefly, only for one operation, insert or remove.
+  private static String removeDocAfterString; // check when non-null
+  private static int removeDocBeforeLength;
+
   static void disableRedoTrackingOneEdit() {
     disableTrackingOneEdit = true;
   }
@@ -405,6 +412,7 @@ public class GetChar {
   private static void markRedoTrackPosition(char c) {
     if(!G.redoTrack.value)
       return;
+    removeDocAfterString = null;
     if(expectChar)
       System.err.println("markRedoPosition ERROR: expectChar");
     if((G.State & BASE_STATE_MASK) != INSERT
@@ -515,20 +523,26 @@ public class GetChar {
                       redoTrackPosition,
                       redobuff, redobuff.length(),
                       afterBuff, afterBuff.length()));
-        // Handle character warp, like for ';' on NB. Given
-        //       (((|)))
-        // enter ';', and you get
-        //       ((()));|
-        // At this point, there is ";\b" in redobuff, they must be removed
-        // (which breaks vim's "rule" about leaving in the \b), otherwise
-        // during a redo the ';' causes problems.
-        //
-        // Be very strict (at least for now)
 
-        // Is there enough chars to cover the warp
+        // Is there enough chars, stashed from the insert,
+        // in afterBuff to cover the warp
         int warpDistance = pos - redoTrackPosition;
         if(s.length() == 1
-                && warpDistance > 0 && warpDistance <= afterBuff.length()) {
+                && warpDistance > 0
+                && warpDistance <= afterBuff.length()) {
+
+          // Handle character warp, like for ';' on NB. Given
+          //       (((|)))
+          // enter ';', and you get
+          //       ((()));|
+          // NetBeans add the ';' at the cursor, then removes it;
+          // so at this point, there is ";\b" in redobuff, they must be removed
+          // (which breaks vim's "rule" about leaving in the \b), otherwise
+          // during a redo the ';' causes problems.
+          //
+          // Be very strict (at least for now)
+
+
           // get rid of ';\b' if its there
           if(redobuff.length() >= 2
                   && redobuff.getLast(0) == BS
@@ -547,13 +561,42 @@ public class GetChar {
                         warpDistance,
                         redobuff, redobuff.length(),
                         afterBuff, afterBuff.length()));
+        } else if(removeDocAfterString != null
+                  && redoTrackPosition - removeDocBeforeLength == pos
+                  && s.endsWith(removeDocAfterString)
+                ) {
+          // This is part of the "Delete char *after* the insertion point".
+          // See comments in docRemoveInternal
+          docRemoveInternal(pos, removeDocBeforeLength, null); // MATCH
+
+          int count = s.length() - removeDocAfterString.length();
+          String t = s.substring(0, count);
+          redobuff.append(t);
+          // NOTE: not adjusting redoTrackPosition, so no more stuff gets put
+          // in the redo buffer. For that to work would have to actually do
+          // the delete in the document. (there are ways..., put a virt char
+          // in the document that means delete, may also need forward backward
+          // commands, too messy)
+          if(G.dbgRedo.value)
+            System.err.println(String.format("docInsert MATCH REMOVE/EXTRA:"
+                               + " %d, beforeLen %d, '%s'/'%s'",
+                               pos,
+                               removeDocBeforeLength,
+                               TextUtil.debugString(removeDocAfterString),
+                               TextUtil.debugString(t)));
         }
       }
     }
+    removeDocAfterString = null;
     expectChar = false;
   }
 
-  static void docRemove(int pos, int len) {
+  static void docRemove(int pos, int len, String removedText) {
+    removeDocAfterString = null;
+    docRemoveInternal(pos, len, removedText);
+  }
+
+  private static void docRemoveInternal(int pos, int len, String removedText) {
     if(G.dbgRedo.value)
       System.err.println("docRemove: pos " + pos + ", " + len);
     if(redoTrackPosition < 0 || !G.redoTrack.value || disableTrackingOneEdit)
@@ -576,6 +619,31 @@ public class GetChar {
           redobuff.append(BS);
       }
       redoTrackPosition -= len;
+    } else if(pos + len > redoTrackPosition  // goes past insertion point
+              && (removeDocBeforeLength = redoTrackPosition - pos)
+                            <= redobuff.length()  // enought to remove
+              && removedText != null  // there's something to work with
+              && afterBuff.length() == 0  // don't deal with it if this not empty
+            ) {
+      // Deleting chars *after* the insertion point; they were in the document
+      // before the insert started. If this docRemove is immeadiately followed
+      // by a docInsert whose last characters are the same as the ones being
+      // removed, then we'll handle it by stripping the chars from the end of
+      // the insert. For example given,
+      //    foo.ch|()
+      // and code complete to method with no args, then the "ch()" are deleted
+      // and then "charValue()" is inserted. In docInsert set up the
+      // redo buffer to remove the "ch" snd insert "charValue". Thus we avoid
+      // modifying non-inserted text.
+
+      // stash the characters after insertion point that are deleted
+
+      removeDocAfterString = removedText.substring(removeDocBeforeLength);
+
+      if(G.dbgRedo.value)
+        System.err.println("docRemove NO MATCH,"
+                           + " BeforeLen: " + removeDocBeforeLength
+                           + " AfterString: '" + removeDocAfterString + "'");
     } else {
       if(G.dbgRedo.value)
         System.err.println("docRemove NO MATCH");
