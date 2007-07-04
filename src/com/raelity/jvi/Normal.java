@@ -2933,6 +2933,9 @@ middle_code:
       if(usePlatform) {
         G.curwin.findMatch();
         endingOffset = G.curwin.getCaretPosition();
+        // NEEDSWORK: NB6M10 is firing the caretUpdate async
+        // The following will do the trick...
+        G.curwin.setCaretPosition(endingOffset);
       } else {
         int firstbraceOffset = fpos.getOffset();
         int c;

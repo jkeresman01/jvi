@@ -185,7 +185,7 @@ public class TextViewCache implements PropertyChangeListener,
   }
 
   final private void invalidateCursor(int dot) {
-    if(cacheTrace.getBoolean())System.err.println("Inval cursor:");
+    if(cacheTrace.getBoolean())System.err.println("Inval cursor: " + dot);
     // cursor = null;
     this.dot = dot;
     invalidCursor = true;
