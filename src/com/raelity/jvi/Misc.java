@@ -1736,22 +1736,29 @@ public class Misc implements ClipboardOwner {
         // Thus the number of characters may increase!
         //
         int n = bd.textlen - bd.startspaces - bd.endspaces;
-        oldp = Util.ml_get(lnum);
-        newp = new StringBuffer();
-        //newp = alloc_check((unsigned)STRLEN(oldp) + 1 - n);
-        newp.setLength(oldp.length() - 1 - n); // -1 '\n', no +1 for '\n'
-        // copy up to deleted part
-        mch_memmove(newp, 0, oldp, 0, bd.textcol);
-        // insert spaces
-        copy_spaces(newp, bd.textcol, (bd.startspaces + bd.endspaces));
-        // copy the part after the deleted part
-        int oldp_idx = bd.textcol + bd.textlen;
-        mch_memmove(newp, bd.textcol + bd.startspaces + bd.endspaces,
-                oldp, oldp_idx,
-                (oldp.length()-1) - oldp_idx); // STRLEN(oldp) + 1)
-        // replace the line
-        newp.setLength(STRLEN(newp));
-        Util.ml_replace(lnum, newp);
+        if(bd.startspaces + bd.endspaces == 0) {
+          // No TAB is split, simplify
+          int lineStart = G.curwin.getLineStartOffset(lnum);
+          G.curwin.deleteChar(lineStart + bd.textcol,
+                              lineStart + bd.textcol + bd.textlen);
+        } else {
+          oldp = Util.ml_get(lnum);
+          newp = new StringBuffer();
+          //newp = alloc_check((unsigned)STRLEN(oldp) + 1 - n);
+          newp.setLength(oldp.length() - 1 - n); // -1 '\n', no +1 for '\n'
+          // copy up to deleted part
+          mch_memmove(newp, 0, oldp, 0, bd.textcol);
+          // insert spaces
+          copy_spaces(newp, bd.textcol, (bd.startspaces + bd.endspaces));
+          // copy the part after the deleted part
+          int oldp_idx = bd.textcol + bd.textlen;
+          mch_memmove(newp, bd.textcol + bd.startspaces + bd.endspaces,
+                      oldp, oldp_idx,
+                      (oldp.length()-1) - oldp_idx); // STRLEN(oldp) + 1)
+          // replace the line
+          newp.setLength(STRLEN(newp));
+          Util.ml_replace(lnum, newp);
+        }
       }
 
       G.curwin.getWCursor().set(fpos.getLine(), finishPositionColumn);
@@ -4031,41 +4038,51 @@ public class Misc implements ClipboardOwner {
         }
       }
       
-      newp = new StringBuffer();
-      //newp = alloc_check((unsigned)(STRLEN(oldp)) + s_len + count + 1);
-      newp.setLength(oldp.length() - 1 + s_len + count);
-      
-      /* copy up to shifted part */
-      mch_memmove(newp, 0, oldp, 0, offset);
-      //oldp += offset;
-      int oldp_idx = 0;
-      oldp_idx += offset;
-
-      //int newp_idx = 0;
-      //newp_idx += offset;
-      
-      // insert pre-padding
-      copy_spaces(newp, offset, spaces);
-      
-      // copy the new text
-      mch_memmove(newp, offset + spaces, s, 0, s_len);
-      offset += s_len;
-      
-      if (spaces != 0 && !bdp.is_short) {
-        // insert post-padding
-        copy_spaces(newp, offset + spaces, p_ts - spaces);
-        // We're splitting a TAB, don't copy it.
-        oldp_idx++;
-        // We allowed for that TAB, remember this now
-        count++;
+      if(spaces == 0) {
+        // No splitting or padding going on, can simply insert the string.
+        // Profiling shows that 45% of time spent in Document.remove
+        // and 50% in Document.insertString, with this case don't need remove
+        // Should almost double the performance
+        G.curwin.insertText(G.curwin.getLineStartOffset(lnum) + offset, s);
+      } else {
+        newp = new StringBuffer();
+        //newp = alloc_check((unsigned)(STRLEN(oldp)) + s_len + count + 1);
+        newp.setLength(oldp.length() - 1 + s_len + count);
+        
+        /* copy up to shifted part */
+        mch_memmove(newp, 0, oldp, 0, offset);
+        //oldp += offset;
+        int oldp_idx = 0;
+        oldp_idx += offset;
+        
+        //int newp_idx = 0;
+        //newp_idx += offset;
+        
+        // insert pre-padding
+        copy_spaces(newp, offset, spaces);
+        
+        // copy the new text
+        mch_memmove(newp, offset + spaces, s, 0, s_len);
+        offset += s_len;
+        
+        if (spaces != 0 && !bdp.is_short) {
+          // insert post-padding
+          copy_spaces(newp, offset + spaces, p_ts - spaces);
+          // We're splitting a TAB, don't copy it.
+          oldp_idx++;
+          // We allowed for that TAB, remember this now
+          count++;
+        }
+        
+        if (spaces > 0)
+          offset += count;
+        mch_memmove(newp, offset,
+                    oldp, oldp_idx,
+                    (oldp.length() - 1) - oldp_idx);
+        
+        newp.setLength(STRLEN(newp));
+        Util.ml_replace(lnum, newp);
       }
-      
-      if (spaces > 0)
-        offset += count;
-      mch_memmove(newp, offset, oldp, oldp_idx, (oldp.length() - 1) - oldp_idx);
-      
-      newp.setLength(STRLEN(newp));
-      Util.ml_replace(lnum, newp);
       
       if (lnum == oap.end.getLine()) {
           // Set "']" mark to the end of the block instead of the end of
