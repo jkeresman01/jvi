@@ -82,6 +82,10 @@ public class ViManager {
     public boolean isWindows() {
       return this.equals(WINDOWS);
     }
+
+    public boolean isMac() {
+      return this.equals(MAC);
+    }
   }
 
   private static JEditorPane currentEditorPane;
@@ -97,7 +101,7 @@ public class ViManager {
   // 1.0.0.beta2 is NB vers 0.9.6.4
   // 1.0.0.beta3 is NB vers 0.9.7.5
   //
-  public static final jViVersion version = new jViVersion("1.0.1");
+  public static final jViVersion version = new jViVersion("1.0.2");
   
   private static boolean enabled;
 

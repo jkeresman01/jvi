@@ -414,6 +414,8 @@ public class DefaultViFactory implements ViFactory {
       //return Preferences.userNodeForPackage(Options.class);
   }
 
+  //private static final boolean isMac = System.getProperty("mrj.version") != null; //NOI18N
+  private static final boolean isMac = ViManager.getOsVersion().isMac();
   /**
    * This is the default key action.
    * Ignore all Ctrl characters (which includes that troublesome Ctrl-space).
@@ -429,21 +431,36 @@ public class DefaultViFactory implements ViFactory {
       JEditorPane target = (JEditorPane)getTextComponent(e);
       if(target != null && e != null) {
 	String content = e.getActionCommand();
-	int mod = e.getModifiers();
 	if(content != null && content.length() > 0) {
-	  int c = content.charAt(0);
-	  if((mod & (MOD_MASK_CTRL|MOD_MASK_ALT)) != 0
-             || c < 0x20
-             || c == 0x7f ) { //The delete key comes in as a virtual key.
+
+          // Check whether the modifiers are OK
+          int mod = e.getModifiers();
+          boolean ctrl = ((mod & ActionEvent.CTRL_MASK) != 0);
+          // On the mac, norwegian and french keyboards use Alt to do bracket characters.
+          // This replicates Apple's modification DefaultEditorKit.DefaultKeyTypedAction
+          boolean alt = isMac ? ((mod & ActionEvent.META_MASK) != 0) :
+              ((mod & ActionEvent.ALT_MASK) != 0);
+          
+	  char c = content.charAt(0);
+          boolean keep = true;
+          if (alt || ctrl
+              || content.length() != 1
+              || c < 0x20
+              || c == 0x7f ) {
+            //The delete key comes in as a virtual key.
 	    // Wouldn't have thought that the 'c<0x20' was needed, but the
             // <RETURN>,<BS> come in less than 0x20 without the Control key
-	    return;
-	  }
-          if(KeyBinding.isKeyDebug()) {
-            System.err.println("CharAction: " + "'" + (char)c + "' "
-                               + String.format("%x", c) + "(" + c + ") " + mod);
+            keep = false;
           }
-	  ViManager.keyStroke(target, content.charAt(0), mod);
+
+          if(KeyBinding.isKeyDebug() && c >= 0x20) {
+            System.err.println("CharAction: " + (keep ? "" : "REJECT: ")
+                                + "'" + content + "' "
+                                + String.format("%x", (int)c)
+                                + "(" + (int)c + ") " + mod);
+          }
+          if(keep)
+            ViManager.keyStroke(target, c, mod);
 	}
 	else {
           if(KeyBinding.isKeyDebug()) {
