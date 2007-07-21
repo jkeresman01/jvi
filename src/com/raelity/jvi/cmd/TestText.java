@@ -28,17 +28,15 @@
  */
 package com.raelity.jvi.cmd;
 
+import com.raelity.jvi.ViCmdEntry;
 import javax.swing.UIManager;
-import javax.swing.SwingUtilities;
-import javax.swing.text.Document;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
 //import com.raelity.jvi.swing.*;
-import com.raelity.jvi.swing.NewWindowCmdEntry;
+import com.raelity.jvi.swing.WindowCmdEntry;
 
 public class TestText {
   boolean packFrame = false;
@@ -92,7 +90,8 @@ public class TestText {
     */
   }
 
-  static NewWindowCmdEntry commandDialog = new NewWindowCmdEntry("Command");
+  static WindowCmdEntry commandDialog
+          = new WindowCmdEntry(ViCmdEntry.COLON_ENTRY);
 
   /** Bounce the event, modified, to this class's user. */
   static class SimpleEvent extends TextAction {
@@ -100,7 +99,7 @@ public class TestText {
       super(name);
     }
     public void actionPerformed(ActionEvent e) {
-      commandDialog.activate(":", frame.jEditorPane1);
+      commandDialog.activate(":", null/*frame.jEditorPane1*/);
     }
   };
 
