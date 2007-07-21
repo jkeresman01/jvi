@@ -60,7 +60,6 @@ import com.raelity.jvi.ViTextView.TAGOP;
 
 import static com.raelity.jvi.Constants.*;
 import static com.raelity.jvi.KeyDefs.*;
-import java.awt.datatransfer.FlavorMap;
 import java.util.Map;
 import javax.swing.JComponent;
 
@@ -366,8 +365,11 @@ public class DefaultViFactory implements ViFactory {
     // use this instead so that input is grabbed. When we have a
     // cleaner and more understandable key input state machine revisit
     // this.
-    // return new WindowCmdEntry(type);
-    return new InlineCmdEntry(type);
+
+    if(G.useFrame.getBoolean())
+      return new WindowCmdEntry(type);
+    else
+      return new InlineCmdEntry(type);
   }
   
   public void updateKeymap() {
@@ -532,4 +534,6 @@ public class DefaultViFactory implements ViFactory {
   public void displayTags(){}
   
   public void tagDialog(ColonCommands.ColonEvent e) {}
+
+  public void commandEntryAssist(ViCmdEntry cmdEntry) {}
 }

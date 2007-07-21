@@ -331,14 +331,6 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	return getboolean(Options.pcmarkTrack);
     }
 
-    public void setViDbgRedo(boolean arg)  throws PropertyVetoException {
-        put(Options.dbgRedo, arg);
-    }
-
-    public boolean getViDbgRedo() {
-	return getboolean(Options.dbgRedo);
-    }
-
     public void setViInsertLeftWrapPrevious(boolean arg)
     throws PropertyVetoException {
         put(Options.insertLeftWrapPrevious, arg);
@@ -683,6 +675,22 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 
     public boolean getViDbgEditorActivation() {
 	return getboolean("viDbgEditorActivation");
+    }
+
+    public void setViDbgCompletion(boolean arg)  throws PropertyVetoException {
+        put(Options.dbgCompletion, arg);
+    }
+
+    public boolean getViDbgCompletion() {
+	return getboolean(Options.dbgCompletion);
+    }
+
+    public void setViDbgRedo(boolean arg)  throws PropertyVetoException {
+        put(Options.dbgRedo, arg);
+    }
+
+    public boolean getViDbgRedo() {
+	return getboolean(Options.dbgRedo);
     }
 }
 

@@ -152,6 +152,7 @@ public final class Options {
   public static final String dbgBang = "viDbgBang";
   public static final String dbgBangData = "viDbgBangData";
   public static final String dbgMouse = "viDbgMouse";
+  public static final String dbgCompletion = "viDbgCompletion";
 
   public static final String twMagic = "#TEXT-WIDTH#";
 
@@ -323,10 +324,11 @@ public final class Options {
             + " started. Possible values: 'mouse', key' or 'cmd'");
     setExpertHidden(selectMode, true, true);
     
-    G.useFrame  = createBooleanOption(commandEntryFrame , false);
+    G.useFrame  = createBooleanOption(commandEntryFrame , true);
     setupOptionDesc(generalList, commandEntryFrame, "use modal frame",
-               "use modal frame for command/search entry");
-    setExpertHidden(commandEntryFrame, true, true);
+               "Use modal frame for command/search entry."
+               + " Change takes affect after restart.");
+    setExpertHidden(commandEntryFrame, true, false);
 
     /////////////////////////////////////////////////////////////////////
     //
@@ -601,6 +603,10 @@ public final class Options {
     createBooleanOption(dbgBangData, false);
     setupOptionDesc(debugList, dbgBangData, "debug \"!\" cmds data",
                "Output data tranfers external processes");
+
+    createBooleanOption(dbgCompletion, false);
+    setupOptionDesc(debugList, dbgCompletion, "debug Completion",
+               "Output info on completion, eg FileName.");
 
     G.dbgMouse = createBooleanOption(dbgMouse, false);
     setupOptionDesc(debugList, dbgMouse, "debug mouse events",

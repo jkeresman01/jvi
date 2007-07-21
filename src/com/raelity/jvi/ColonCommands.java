@@ -103,6 +103,7 @@ public class ColonCommands {
     try {
       ViManager.setJViBusy(true);
 
+      ViManager.getViFactory().commandEntryAssist(null);
       ViManager.stopCommandEntry();
       String commandLine = colonCommandEntry.getCommand();
       String cmd = ev.getActionCommand();
@@ -120,7 +121,9 @@ public class ColonCommands {
   }
 
   static void doColonCommand(StringBuffer range) {
-    ViManager.startCommandEntry(getColonCommandEntry(),
+    ViCmdEntry cmdEntry = getColonCommandEntry();
+    ViManager.getViFactory().commandEntryAssist(cmdEntry);
+    ViManager.startCommandEntry(cmdEntry,
                                 ":", G.curwin,
                                 range);
   }

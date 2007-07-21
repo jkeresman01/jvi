@@ -168,4 +168,6 @@ public interface ViFactory {
   public void displayTags();
   
   public void tagDialog(ColonCommands.ColonEvent e);
+
+  public void commandEntryAssist(ViCmdEntry cmdEntry);
 }

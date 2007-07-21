@@ -84,7 +84,6 @@ public interface ViCmdEntry {
   /**
    * Retrieve the component used for the data entry.
    */
-  
   public JTextComponent getTextComponent();
 
   /** When command entry is complete, this listener is invoked.
