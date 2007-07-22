@@ -51,10 +51,12 @@ public class OptionsBeanBase extends SimpleBeanInfo {
         this.optionsList = optionsList;
     }
     
+    @Override
     public BeanDescriptor getBeanDescriptor() {
         return new ThisBeanDescriptor();
     }
 
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
 	PropertyDescriptor[] descriptors
                     = new PropertyDescriptor[optionsList.size()];
@@ -121,6 +123,7 @@ public class OptionsBeanBase extends SimpleBeanInfo {
      */
     
     private static Image icon, icon32;
+    @Override
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16
                 || type == BeanInfo.ICON_MONO_16x16) {
@@ -139,6 +142,7 @@ public class OptionsBeanBase extends SimpleBeanInfo {
             super(clazz);
         }
         
+        @Override
         public String getDisplayName() {
 	    return displayName;
         }
@@ -233,6 +237,14 @@ public class OptionsBeanBase extends SimpleBeanInfo {
     /** this read-only option is special cased */
     public String getJViVersion() {
         return ViManager.getReleaseString();
+    }
+
+    public void setViAutoPopupFN(boolean arg)  throws PropertyVetoException {
+        put(Options.autoPopupFN, arg);
+    }
+
+    public boolean getViAutoPopupFN() {
+	return getboolean(Options.autoPopupFN);
     }
 
     public void setViPlatformBraceMatch(boolean arg)  throws PropertyVetoException {

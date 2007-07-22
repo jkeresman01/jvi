@@ -30,7 +30,6 @@
 package com.raelity.jvi;
 
 import com.raelity.jvi.ColonCommands.ColonEvent;
-import com.raelity.text.TextUtil;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -46,7 +45,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 //import java.util.Deque; JDK1.6
-import java.util.HashSet;
 import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -87,6 +85,7 @@ public final class Options {
   public static final String commandEntryFrame = "viCommandEntryFrameOption";
   public static final String redoTrack = "viRedoTrack";
   public static final String pcmarkTrack = "viPCMarkTrack";
+  public static final String autoPopupFN = "viAutoPopupFN";
 
   public static final String backspaceWrapPrevious = "viBackspaceWrapPrevious";
   public static final String hWrapPrevious = "viHWrapPrevious";
@@ -329,6 +328,13 @@ public final class Options {
                "Use modal frame for command/search entry."
                + " Change takes affect after restart.");
     setExpertHidden(commandEntryFrame, true, false);
+    
+    createBooleanOption(autoPopupFN, true);
+    setupOptionDesc(generalList, autoPopupFN, "\":e#\" Auto Popup",
+               "When doing \":\" command line entry, if \"e#\" is"
+               + " entered then automatically popup a file"
+               + " name completion window.");
+    setExpertHidden(autoPopupFN, true, false);
 
     /////////////////////////////////////////////////////////////////////
     //
