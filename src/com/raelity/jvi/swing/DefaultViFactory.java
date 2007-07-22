@@ -535,5 +535,5 @@ public class DefaultViFactory implements ViFactory {
   
   public void tagDialog(ColonCommands.ColonEvent e) {}
 
-  public void commandEntryAssist(ViCmdEntry cmdEntry) {}
+  public void commandEntryAssist(ViCmdEntry cmdEntry, boolean enable) {}
 }
