@@ -329,11 +329,11 @@ public final class Options {
                + " Change takes affect after restart.");
     setExpertHidden(commandEntryFrame, true, false);
     
-    createBooleanOption(autoPopupFN, true);
+    createBooleanOption(autoPopupFN, false);
     setupOptionDesc(generalList, autoPopupFN, "\":e#\" Auto Popup",
                "When doing \":\" command line entry, if \"e#\" is"
                + " entered then automatically popup a file"
-               + " name completion window.");
+               + " name completion window. NB6 only; post 07/07/22");
     setExpertHidden(autoPopupFN, true, false);
 
     /////////////////////////////////////////////////////////////////////
