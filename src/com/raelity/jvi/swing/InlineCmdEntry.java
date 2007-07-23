@@ -12,12 +12,6 @@ import javax.swing.*;
 import java.awt.*;
 
 public class InlineCmdEntry extends CommandLine.CommandLineEntry {
-    //protected int entryType;
-    //protected ActionListener listener;
-    //protected CommandLine commandLine;
-    //protected String lastCommand;
-    //protected ViTextView parentTV;
-    //private String initialText;
     private MouseListener mouseListener;
     public InlineCmdEntry(){
         this(ViCmdEntry.COLON_ENTRY);
