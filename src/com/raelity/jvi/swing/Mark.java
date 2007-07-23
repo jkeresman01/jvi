@@ -87,10 +87,11 @@ class Mark implements ViMark {
   public void setMark(ViFPOS fpos, ViTextView tv) {
     if(fpos instanceof ViMark) {
       Mark m = (Mark)fpos;
-      assert m.tv == this.tv && m.tv == tv;
+      //assert m.tv == this.tv && m.tv == tv;
       setData(m);
     } else {
-      assert this.tv == null || tv == this.tv;
+      // CAN NOT ASSERT. tv.getDocument == this.tv.getDocument MIGHT WORK
+      //assert this.tv == null || tv == this.tv;
       // adapted from FPOS.set
       if(fpos.getLine() > G.curwin.getLineCount()) {
         this.pos = INVALID_LINE;
