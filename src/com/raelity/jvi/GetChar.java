@@ -52,7 +52,7 @@ public class GetChar {
    * E000-E07f range, and put the K_UP type keys in the E080 range.
    * </p>
    */
-  static void gotc(int key, int modifier) {
+  static void gotc(char key, int modifier) {
     if((key & 0xF000) == VIRT) {
       if((modifier & KeyBinding.MOD_MASK) == SHFT
                 && key >= VIRT && key <= VIRT + 0x0f) {
@@ -117,7 +117,7 @@ public class GetChar {
   }
   
   /** This is a special case for the two part search */
-  static void fakeGotc(int key) {
+  static void fakeGotc(char key) {
     G.setModMask(0);
     Normal.processInputChar(key, true);
     Misc.out_flush();   // returning from event
@@ -157,7 +157,7 @@ public class GetChar {
     throw new RuntimeException("No character available");
   }
 
-  private static void pumpChar(int c) {
+  private static void pumpChar(char c) {
     int modifiers = 0;
     if((c & 0xF000) == VIRT) {
       modifiers = (c >> MODIFIER_POSITION_SHIFT) & 0x0f;
@@ -211,7 +211,7 @@ public class GetChar {
    * Put the current modifies into the character if needed,
    * {@see KeyDefs} for info on character layout with modifiers.
    */
-  private static void userInput(int c /*, int len*/) {
+  private static void userInput(char c /*, int len*/) {
 
     /* remember how many chars were last recorded */
     if (G.Recording) {
@@ -219,7 +219,7 @@ public class GetChar {
       if((c & 0xF000) == VIRT) {
         c |= (G.getModMask() << MODIFIER_POSITION_SHIFT);
       }
-      recordbuff.append((char)c);
+      recordbuff.append(c);
     }
 
     /* ******************************************************************
@@ -706,7 +706,7 @@ public class GetChar {
    * otherwise
    * @param old_redo if TRUE, use old_redobuff instead of redobuff
    */
-  static private int read_redo(boolean init, boolean old_redo) {
+  static private char read_redo(boolean init, boolean old_redo) {
     if(init) {
       if(redobuff.hasNext() == false) {
 	return FAIL;
@@ -715,7 +715,7 @@ public class GetChar {
 	return OK;
       }
     }
-    int c = NUL; // assume none left
+    char c = NUL; // assume none left
     if(redobuff.hasCharAt(redobuff_idx)) {
       c = redobuff.getCharAt(redobuff_idx);
       redobuff_idx++;
@@ -750,7 +750,7 @@ public class GetChar {
       return FAIL;
     }
 
-    int c = read_redo(false, old_redo);
+    char c = read_redo(false, old_redo);
 
     // copy the buffer name if present
     if (c == '"') {
@@ -766,7 +766,7 @@ public class GetChar {
 
     /* ********************************************************/
     if (c == 'v') {   // redo Visual	// VISUAL
-      G.VIsual = (FPOS) G.curwin.getWCursor().copy();
+      G.VIsual = G.curwin.getWCursor().copy();
       G.VIsual_active = true;
       G.VIsual_reselect = true;
       G.redo_VIsual_busy = true;
@@ -797,7 +797,7 @@ public class GetChar {
    * return FAIL for failure, OK otherwise
    */
   static int start_redo_ins() {
-    int	    c;
+    char    c;
 
     if (read_redo(true, false) == FAIL)
       return FAIL;
@@ -981,6 +981,7 @@ public class GetChar {
       return this;
     }
 
+        @Override
     public String toString() {
       return buf.toString();
     }

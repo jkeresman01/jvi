@@ -173,7 +173,7 @@ public class G {
 
 				// whether to restart the selection after a
 				// Select mode mapping or menu
-  public static int VIsual_mode; // type of Visual mode
+  public static char VIsual_mode; // type of Visual mode
   
   public static boolean redo_VIsual_busy = false;
       /* The visual area is remembered for redo */
