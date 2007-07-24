@@ -33,7 +33,7 @@ package com.raelity.jvi;
 public class OPARG
 {
     int	    op_type;		/* current pending operator type */
-    int	    regname;		/* register to use for the operator */
+    char    regname;		/* register to use for the operator */
     int	    motion_type;	/* type of the current cursor motion */
     boolean inclusive;		/* TRUE if char motion is inclusive (only
 				   valid when motion_type is MCHAR */
@@ -80,6 +80,7 @@ public class OPARG
      * Return a readable string representation of the OPARG object.
      * @return a readable string representation of the OPARG object.
      */
+    @Override
     public String toString() {
 
       return                "op_type: " + op_type
