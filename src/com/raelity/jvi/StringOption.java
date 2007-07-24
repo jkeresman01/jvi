@@ -44,6 +44,7 @@ public class StringOption extends Option {
     if(validator == null) {
       // provide the default validator
       validator = new Validator() {
+                @Override
         public void validate(String val) throws PropertyVetoException {
           if(val == null) {
             throw new PropertyVetoException(
@@ -58,6 +59,7 @@ public class StringOption extends Option {
     this.validator = validator;
   }
 
+    @Override
   public final String getString() {
     return stringValue;
   }
@@ -79,6 +81,7 @@ public class StringOption extends Option {
   /**
    * Set the value as a string.
    */
+    @Override
   public void setValue(String newValue) {
     setString(newValue);
   }
@@ -86,6 +89,7 @@ public class StringOption extends Option {
   /**
    * Validate the setting value.
    */
+    @Override
   public void validate(String val) throws PropertyVetoException {
     validator.validate(val);
   }
