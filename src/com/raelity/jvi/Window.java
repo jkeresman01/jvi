@@ -49,8 +49,8 @@ public final class Window {
   public Window(ViTextView editor) {
     this.editor = editor;
     // marks = editor.createMarks(26);	// only lowercase for now.
-    w_pcmark = editor.createMarks(1)[0];
-    w_prev_pcmark = editor.createMarks(1)[0];
+    w_pcmark = editor.getBuffer().createMark();
+    w_prev_pcmark = editor.getBuffer().createMark();
     viewSizeChange();
   }
 
@@ -128,7 +128,8 @@ public final class Window {
   }
 
   public final ViMark getMark(int i) {
-    return MarkOps.getMark(getEditor(), i);
+    //return MarkOps.getMark(getEditor(), i);
+    return getEditor().getBuffer().getMark(i);
   }
 
   /*public void previousContextHack(ViMark mark) {
