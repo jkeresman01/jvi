@@ -53,7 +53,6 @@ import java.util.Set;
 
 import static java.awt.event.InputEvent.SHIFT_MASK;
 import static java.awt.event.InputEvent.CTRL_MASK;
-import javax.swing.text.DefaultEditorKit;
 
 import static com.raelity.jvi.KeyDefs.*;
 import static com.raelity.jvi.Constants.*;
@@ -154,9 +153,8 @@ public class KeyBinding {
    * directly at some point.
    */
   public static JTextComponent.KeyBinding[] getBindings() {
-    List l = getBindingsList();
-    return (JTextComponent.KeyBinding[]) l.toArray(
-                              new JTextComponent.KeyBinding[l.size()]);
+    List<JTextComponent.KeyBinding> l = getBindingsList();
+    return l.toArray(new JTextComponent.KeyBinding[l.size()]);
   }
   
   // NEEDSWORK: when bindings change, need to NULL this list
@@ -212,7 +210,8 @@ public class KeyBinding {
     return bl;
   }
   
-  private static void checkUseKey(List bl, String key, int code, int mod) {
+  private static void checkUseKey(List<JTextComponent.KeyBinding> bl,
+                                  String key, int code, int mod) {
       String modTag = "";
       switch(mod) {
           case 0:           modTag = "";        break;
@@ -224,7 +223,7 @@ public class KeyBinding {
       checkUseKey(bl, prefName, key, code, mod);
  }
   
-  private static void checkUseKey(List bl,
+  private static void checkUseKey(List<JTextComponent.KeyBinding> bl,
                                   String prefName,
                                   String actionName,
                                   int code,
@@ -235,7 +234,8 @@ public class KeyBinding {
   }
 
   public static List getExtraBindingsList() {
-    List bl = new ArrayList();
+    List<JTextComponent.KeyBinding> bl
+            = new ArrayList<JTextComponent.KeyBinding>();
     // NEEDSWORK: for now just stuff all the extra bindings here
 
 
@@ -261,8 +261,9 @@ public class KeyBinding {
     return bl;
   }
 
-  public static List getFunctionKeyBindingsList() {
-    List bl = new ArrayList();
+  public static List<JTextComponent.KeyBinding> getFunctionKeyBindingsList() {
+    List<JTextComponent.KeyBinding> bl
+            = new ArrayList<JTextComponent.KeyBinding>();
 
     //
     // Function keys
@@ -325,7 +326,7 @@ public class KeyBinding {
     public static Action[] getActions() {
         if(actionArray == null) {
             List<Action> l = getActionsList();
-            actionArray = (Action[]) l.toArray(new Action[l.size()]);
+            actionArray = l.toArray(new Action[l.size()]);
         }
         return actionArray;
     }
@@ -340,7 +341,7 @@ public class KeyBinding {
     }
     
     private static List<Action> createActionList() {
-        List<Action> actionsList = new ArrayList();
+        List<Action> actionsList = new ArrayList<Action>();
         try {
             ViFactory factory = ViManager.getViFactory();
             actionsList.add(factory.createKeyAction("ViUpKey", K_UP));
@@ -355,7 +356,7 @@ public class KeyBinding {
             actionsList.add(factory.createKeyAction("ViHelpKey", K_HELP));
             actionsList.add(factory.createKeyAction("ViUndoKey", K_UNDO));
             actionsList.add(factory.createKeyAction("ViBack_spaceKey",
-                                                    KeyEvent.VK_BACK_SPACE));
+                                                    (char)KeyEvent.VK_BACK_SPACE));
 
             actionsList.add(factory.createKeyAction("ViPageUpKey", K_PAGEUP));
             actionsList.add(factory.createKeyAction("ViPageDownKey", K_PAGEDOWN));
@@ -370,39 +371,40 @@ public class KeyBinding {
             actionsList.add(factory.createKeyAction("ViCommaOpenAngleKey",
                                                     K_X_COMMA));
             
-            actionsList.add(factory.createKeyAction("ViCtrl-AKey", 1));
-            actionsList.add(factory.createKeyAction("ViCtrl-BKey", 2));
-            actionsList.add(factory.createKeyAction("ViCtrl-CKey", 3));
-            actionsList.add(factory.createKeyAction("ViCtrl-DKey", 4));
-            actionsList.add(factory.createKeyAction("ViCtrl-EKey", 5));
-            actionsList.add(factory.createKeyAction("ViCtrl-FKey", 6));
-            actionsList.add(factory.createKeyAction("ViCtrl-GKey", 7));
-            actionsList.add(factory.createKeyAction("ViCtrl-HKey", 8));
-            actionsList.add(factory.createKeyAction("ViCtrl-IKey", 9));
-            actionsList.add(factory.createKeyAction("ViCtrl-JKey", 10));
-            actionsList.add(factory.createKeyAction("ViCtrl-KKey", 11));
-            actionsList.add(factory.createKeyAction("ViCtrl-LKey", 12));
-            actionsList.add(factory.createKeyAction("ViCtrl-MKey", 13));
-            actionsList.add(factory.createKeyAction("ViCtrl-NKey", 14));
-            actionsList.add(factory.createKeyAction("ViCtrl-OKey", 15));
-            actionsList.add(factory.createKeyAction("ViCtrl-PKey", 16));
-            actionsList.add(factory.createKeyAction("ViCtrl-QKey", 17));
-            actionsList.add(factory.createKeyAction("ViCtrl-RKey", 18));
-            actionsList.add(factory.createKeyAction("ViCtrl-SKey", 19));
-            actionsList.add(factory.createKeyAction("ViCtrl-TKey", 20));
-            actionsList.add(factory.createKeyAction("ViCtrl-UKey", 21));
-            actionsList.add(factory.createKeyAction("ViCtrl-VKey", 22));
-            actionsList.add(factory.createKeyAction("ViCtrl-WKey", 23));
-            actionsList.add(factory.createKeyAction("ViCtrl-XKey", 24));
-            actionsList.add(factory.createKeyAction("ViCtrl-YKey", 25));
-            actionsList.add(factory.createKeyAction("ViCtrl-ZKey", 26));
+            actionsList.add(factory.createKeyAction("ViCtrl-AKey", (char)1));
+            actionsList.add(factory.createKeyAction("ViCtrl-BKey", (char)2));
+            actionsList.add(factory.createKeyAction("ViCtrl-CKey", (char)3));
+            actionsList.add(factory.createKeyAction("ViCtrl-DKey", (char)4));
+            actionsList.add(factory.createKeyAction("ViCtrl-EKey", (char)5));
+            actionsList.add(factory.createKeyAction("ViCtrl-FKey", (char)6));
+            actionsList.add(factory.createKeyAction("ViCtrl-GKey", (char)7));
+            actionsList.add(factory.createKeyAction("ViCtrl-HKey", (char)8));
+            actionsList.add(factory.createKeyAction("ViCtrl-IKey", (char)9));
+            actionsList.add(factory.createKeyAction("ViCtrl-JKey", (char)10));
+            actionsList.add(factory.createKeyAction("ViCtrl-KKey", (char)11));
+            actionsList.add(factory.createKeyAction("ViCtrl-LKey", (char)12));
+            actionsList.add(factory.createKeyAction("ViCtrl-MKey", (char)13));
+            actionsList.add(factory.createKeyAction("ViCtrl-NKey", (char)14));
+            actionsList.add(factory.createKeyAction("ViCtrl-OKey", (char)15));
+            actionsList.add(factory.createKeyAction("ViCtrl-PKey", (char)16));
+            actionsList.add(factory.createKeyAction("ViCtrl-QKey", (char)17));
+            actionsList.add(factory.createKeyAction("ViCtrl-RKey", (char)18));
+            actionsList.add(factory.createKeyAction("ViCtrl-SKey", (char)19));
+            actionsList.add(factory.createKeyAction("ViCtrl-TKey", (char)20));
+            actionsList.add(factory.createKeyAction("ViCtrl-UKey", (char)21));
+            actionsList.add(factory.createKeyAction("ViCtrl-VKey", (char)22));
+            actionsList.add(factory.createKeyAction("ViCtrl-WKey", (char)23));
+            actionsList.add(factory.createKeyAction("ViCtrl-XKey", (char)24));
+            actionsList.add(factory.createKeyAction("ViCtrl-YKey", (char)25));
+            actionsList.add(factory.createKeyAction("ViCtrl-ZKey", (char)26));
             actionsList.add(factory.createKeyAction("ViEscapeKey",
-                                                    KeyEvent.VK_ESCAPE)); // 27
-            actionsList.add(factory.createKeyAction("ViCtrl-BackslashKey", 28));
-            actionsList.add(factory.createKeyAction("ViCloseBracketKey", 29));
-            //actionsList.add(factory.createKeyAction("ViCtrl-CircumflexKey", 30));
-            //actionsList.add(factory.createKeyAction("ViCtrl-UnderscoreKey", 31));
-            actionsList.add(factory.createKeyAction("ViSpaceKey", KeyEvent.VK_SPACE));
+                                                    (char)KeyEvent.VK_ESCAPE)); // 27
+            actionsList.add(factory.createKeyAction("ViCtrl-BackslashKey", (char)28));
+            actionsList.add(factory.createKeyAction("ViCloseBracketKey", (char)29));
+            //actionsList.add(factory.createKeyAction("ViCtrl-CircumflexKey", (char)30));
+            //actionsList.add(factory.createKeyAction("ViCtrl-UnderscoreKey", (char)31));
+            actionsList.add(factory.createKeyAction("ViSpaceKey",
+                                                    (char)KeyEvent.VK_SPACE));
 
             actionsList.add(factory.createKeyAction("ViF1Key", K_F1));
             actionsList.add(factory.createKeyAction("ViF2Key", K_F2));
@@ -423,31 +425,31 @@ public class KeyBinding {
     }
   
   public static JTextComponent.KeyBinding[] getInsertModeBindings() {
-    List l = getInsertModeBindingsList();
-    return (JTextComponent.KeyBinding[]) l.toArray(
-                              new JTextComponent.KeyBinding[l.size()]);
+    List<JTextComponent.KeyBinding> l = getInsertModeBindingsList();
+    return l.toArray(new JTextComponent.KeyBinding[l.size()]);
   }
 
-  public static List getInsertModeBindingsList() {
+  public static List<JTextComponent.KeyBinding> getInsertModeBindingsList() {
 
-    List bindingList = new ArrayList();
+    List<JTextComponent.KeyBinding> bl
+            = new ArrayList<JTextComponent.KeyBinding>();
 
-    bindingList.add(createKeyBinding(
+    bl.add(createKeyBinding(
 		   KeyEvent.VK_PERIOD, CTRL_MASK,
 		   "ViInsert_indentNextParen"));
-    bindingList.add(createKeyBinding(
+    bl.add(createKeyBinding(
 		   KeyEvent.VK_COMMA, CTRL_MASK,
 		   "ViInsert_indentPrevParen"));
-    bindingList.add(createKeyBinding(
+    bl.add(createKeyBinding(
 		   KeyEvent.VK_T, CTRL_MASK,
 		   "ViInsert_shiftRight"));
-    bindingList.add(createKeyBinding(
+    bl.add(createKeyBinding(
 		   KeyEvent.VK_D, CTRL_MASK,
 		   "ViInsert_shiftLeft"));
-    bindingList.add(createKeyBinding(
+    bl.add(createKeyBinding(
 		   KeyEvent.VK_INSERT, 0,
 		   "ViInsert_insertReplace"));
-    return bindingList;
+    return bl;
   }
   
   public static Action[] getInsertModeActions() {
@@ -574,7 +576,7 @@ public class KeyBinding {
     
     static private KeyBindingPrefs keyBindingPrefs = new KeyBindingPrefs();
     static private class KeyBindingPrefs {
-        private Set<String> defaultKeysFalse = new HashSet();
+        private Set<String> defaultKeysFalse = new HashSet<String>();
         KeyBindingPrefs() {
             defaultKeysFalse.add("Ctrl-[");
             

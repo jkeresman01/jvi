@@ -57,6 +57,7 @@ import javax.swing.text.Caret;
 
 import com.raelity.jvi.*;
 import com.raelity.jvi.ViTextView.TAGOP;
+import java.awt.AWTKeyStroke;
 
 import static com.raelity.jvi.Constants.*;
 import static com.raelity.jvi.KeyDefs.*;
@@ -167,7 +168,7 @@ public class DefaultViFactory implements ViFactory {
   
   /** subclass probably wants to override this */
   protected Buffer createBuffer(ViTextView tv) {
-      Buffer buf = new Buffer(tv);
+      Buffer buf = new DefaultBuffer(tv);
       return buf;
   }
 
@@ -195,7 +196,7 @@ public class DefaultViFactory implements ViFactory {
       ep.putClientProperty(PROP_VITV, null);
       Buffer buf = getBuffer(ep);
       if(buf != null) {
-        Document doc = buf.getDoc();
+        Document doc = (Document)buf.getDocument();
         buf.removeShare();
         if(buf.getShare() == 0) {
           if(doc != null)
@@ -231,6 +232,7 @@ public class DefaultViFactory implements ViFactory {
         glass = (Container) rp.getGlassPane();
         if(mouseAdapter == null) {
           mouseAdapter = new MouseInputAdapter() {
+                        @Override
             public void mousePressed(MouseEvent evt) {
               c.getToolkit().beep();
             }
@@ -258,14 +260,15 @@ public class DefaultViFactory implements ViFactory {
     glass.setVisible(true);
     
     // disable all focus traversal
+    Set<AWTKeyStroke>noKeyStroke = Collections.emptySet();
     glass.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
-                                Collections.EMPTY_SET);
+                                noKeyStroke);
     glass.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
-                                Collections.EMPTY_SET);
+                                noKeyStroke);
     glass.setFocusTraversalKeys(KeyboardFocusManager.DOWN_CYCLE_TRAVERSAL_KEYS,
-                                Collections.EMPTY_SET);
+                                noKeyStroke);
     glass.setFocusTraversalKeys(KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS,
-                                Collections.EMPTY_SET);
+                                noKeyStroke);
     glass.setFocusCycleRoot(true);
     
     glass.requestFocusInWindow();
@@ -385,7 +388,7 @@ public class DefaultViFactory implements ViFactory {
   /**
    * @return action for picking up specified key
    */
-  public Action createKeyAction(String name, int key) {
+  public Action createKeyAction(String name, char key) {
     return new EnqueKeyAction(name, key);
   }
   
@@ -434,7 +437,6 @@ public class DefaultViFactory implements ViFactory {
       if(target != null && e != null) {
 	String content = e.getActionCommand();
 	if(content != null && content.length() > 0) {
-
           // Check whether the modifiers are OK
           int mod = e.getModifiers();
           boolean ctrl = ((mod & ActionEvent.CTRL_MASK) != 0);
@@ -480,9 +482,9 @@ public class DefaultViFactory implements ViFactory {
    * on the vi input Q.
    */
   public static class EnqueKeyAction extends TextAction {
-    int basekey;
+    char basekey;
 
-    public EnqueKeyAction(String name, int key) {
+    public EnqueKeyAction(String name, char key) {
 	super(name);
 	this.basekey = key;
     }
@@ -490,12 +492,12 @@ public class DefaultViFactory implements ViFactory {
     public void actionPerformed(ActionEvent e) {
       JEditorPane target = (JEditorPane)getTextComponent(e);
       int mod = e.getModifiers();
-      int key = basekey;
+      char key = basekey;
       if(KeyBinding.isKeyDebug()) {
         String virt = ((key & 0xF000) == VIRT) ? "virt" : "";
         System.err.println("KeyAction: " + getValue(Action.NAME).toString()
-                           + ": " + String.format("%x", key)
-                           + "(" + (key&~VIRT) + ") " + mod + " " + virt);
+                           + ": " + String.format("%x", (int)key)
+                           + "(" + ((int)key&~VIRT) + ") " + mod + " " + virt);
       }
       ViManager.keyStroke(target, key, mod);
     }

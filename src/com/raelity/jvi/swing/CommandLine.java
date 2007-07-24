@@ -30,12 +30,12 @@ package com.raelity.jvi.swing;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.PropertyChangeListener;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.util.*;
 import com.raelity.jvi.*;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
 import javax.swing.border.*;
 

@@ -49,6 +49,7 @@ public class DefaultOutputStream extends OutputStreamAdaptor {
                        + ", info: " + info + ", " + fName);
   }
 
+    @Override
   public void println(int line, int offset, int length) {
     System.err.println("ViOutputStream: " + type + ", " + info + ": "
                        + "line: " + line + ", "
@@ -57,10 +58,12 @@ public class DefaultOutputStream extends OutputStreamAdaptor {
 		       );
   }
 
+    @Override
   public void println(String s) {
     System.err.println("ViOutputStream: " + s);
   }
 
+    @Override
   public void close() {
   }
 }

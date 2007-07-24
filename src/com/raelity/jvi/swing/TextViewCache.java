@@ -45,8 +45,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.CaretListener;
-import javax.swing.event.CaretEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 
@@ -54,10 +52,12 @@ import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.FPOS;
 import com.raelity.jvi.Util;
 import com.raelity.jvi.BooleanOption;
+import com.raelity.jvi.Buffer;
 import com.raelity.jvi.G;
 import com.raelity.jvi.Options;
+import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViManager;
-import com.raelity.text.TextUtil.MySegment;
+import com.raelity.jvi.swing.DefaultBuffer.ElemCache;
 
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Position;
@@ -80,63 +80,45 @@ import javax.swing.text.Position;
  * keep the cache up to date. All info is derived through a JEditorPane.
  */
 public class TextViewCache implements PropertyChangeListener,
-                                      CaretListener,
-				      DocumentListener,
 				      ChangeListener
 {
   final static int DIR_TOP = -1;
   final static int DIR_BOT = 1;
 
-  public TextViewCache(ViTextView textView) {
+  public TextViewCache(ViTextView textView, Buffer buf) {
     this.textView = (TextView)textView;
+    this.buf = (DefaultBuffer)buf;
   }
 
-  // NEEDSWORK: can do some minor optimization by keeping some info
-  // when cursor is moved within the same line.
-  //
-  // for methods like "getLineXXX(int line)" only refill cache if
-  // line is the same line as the cursor, otherwise just fetch it
-  //
-
   private TextView textView;
-
-  final static private boolean cacheDisabled = false;
+  private DefaultBuffer buf;
 
   public static BooleanOption cacheTrace
                 = (BooleanOption)Options.getOption(Options.dbgCache);
 
   //
-  // When caret moves, update cursor, segment and elemement
-  // NEEDSWORK: would be nice to optimize this.....
+  // The cursor is a magic FPOS. It reads the current caret positon
+  // and writes move the caret.
   //
-
-  private int dot = -1;
   private WCursor cursor = new WCursor();
 
-  private class WCursor extends FPOS {
-    public int getLine() {
-      if(invalidCursor) {
-        fillCursor();
-      }
-      return super.getLine();
+  private class WCursor extends ViFPOS.abstractFPOS {
+    final public int getLine() {
+      return buf.getElemCache(textView.getCaretPosition()).line;
     }
-    public int getColumn() {
-      if(invalidCursor) {
-        fillCursor();
-      }
-      return super.getColumn();
+    final public int getColumn() {
+      int offset = textView.getCaretPosition();
+      return offset - buf.getElemCache(offset).elem.getStartOffset();
     }
-    public int getOffset() {
-      if(invalidCursor) {
-        fillCursor();
-      }
-      return super.getOffset();
+    final public int getOffset() {
+      return textView.getCaretPosition();
     }
     
-    public void set(int line, int column) {
+    final public void set(int line, int column) {
       //System.err.println("setPosition("+line+","+column+")");
-      int startOffset = textView.getLineStartOffset(line);
-      int endOffset = textView.getLineEndOffset(line);
+      Element elem = buf.getLineElement(line);
+      int startOffset = elem.getStartOffset();
+      int endOffset = elem.getEndOffset();
       int adjustedColumn = -1;
 
       if(column < 0) {
@@ -151,138 +133,20 @@ public class TextViewCache implements PropertyChangeListener,
         column = adjustedColumn;
       }
 
-      // NOTE: setting the caret, will invalidate the cursor,
-      // which in turn will cause a fillCursor, which set's the offset/line/col
       textView.setCaretPosition(startOffset + column);
     }
-    
-    private void setCursor() {
-      super.setCursor(textView);
+
+    final public ViFPOS copy() {
+      int offset = textView.getCaretPosition();
+      ElemCache ec = buf.getElemCache(offset);
+      FPOS fpos = new FPOS(offset, ec.line, offset - ec.elem.getStartOffset());
+      //fpos.initFPOS(getOffset(), getLine(), getColumn());
+      return fpos;
     }
   };
-  private boolean invalidCursor = true;
-  // NEEDSWORK: keep caret offset from event to help performance
-  // re-assign to FPOS, dont keep creating a new one
-  final public FPOS getCursor() {
-    if(cacheDisabled || cursor == null || invalidCursor) {
-      if(cacheTrace.getBoolean())System.err.println("Miss cursor:");
-      fillCursor();
-    }
-    else {
-      if(cacheTrace.getBoolean())System.err.println("Hit cursor:");
-    }
+
+  final public ViFPOS getCursor() {
     return cursor;
-  }
-
-  protected void fillCursor() {
-    // NEEDSWORK: use dot?
-    if(cursor == null) {
-      cursor = new WCursor();
-      System.err.println("CURSOR should never be null");
-    }
-    cursor.setCursor();
-    invalidCursor = false;
-  }
-
-  final private void invalidateCursor(int dot) {
-    if(cacheTrace.getBoolean())System.err.println("Inval cursor: " + dot);
-    // cursor = null;
-    this.dot = dot;
-    invalidCursor = true;
-  }
-
-  private class PositionSegment extends MySegment {
-    /** The offset of the start of the segment in the document. 
-    * Note that offset is already a field name.
-    */
-    public int position;
-
-    /** The line number of the segment. The first line is numbered at 1.
-    * This is negative if the
-    * segment does not correspond to a single line.
-    */
-    public int line;
-  }
-
-  /** the segment cache */
-  private PositionSegment segment = new PositionSegment();
-  // private Segment tempSegment = new Segment();
-
-  /** @return the positionsegment for the indicated line */
-  final public MySegment getLineSegment(int line) {
-    if(cacheDisabled || segment.count == 0 || segment.line != line) {
-      if(cacheTrace.getBoolean())System.err.println("Miss seg: " + line);
-      try {
-	Element elem = getLineElement(line);
-	segment.position = elem.getStartOffset();
-	getDoc().getText(elem.getStartOffset(),
-		    elem.getEndOffset() - elem.getStartOffset(),
-		    segment);
-	segment.line = line;
-        /* **************************************************
-        int len = Math.max(80, tempSegment.count + 10);
-        if(segment.array == null || segment.array.length < len) {
-          segment.array = new char[len];
-        }
-        System.arraycopy(tempSegment.array, tempSegment.offset,
-                         segment.array, 0, tempSegment.count);
-        segment.count = tempSegment.count;
-        **************************************************/
-        // segment.offset is always zero
-      } catch(BadLocationException ex) {
-	segment.count = 0;
-	// NEEDSWORK: how to report exception?
-	ex.printStackTrace();
-      }
-    }
-    else {
-      if(cacheTrace.getBoolean())System.err.println("Hit seg: " + line);
-    }
-    //return segment;
-    MySegment s = new MySegment(segment.array, segment.offset, segment.count);
-    s.first();
-    return s;
-  }
-
-  final private void invalidateLineSegment() {
-    if(cacheTrace.getBoolean())System.err.println("Inval seg:");
-    segment.count = 0;
-  }
-
-  /** the element cache */
-  private Element element;
-  /** the line number corresponding to the element cache (0 based). */
-  private int elementLine;
-  /** @return the element for the indicated line */
-  final public Element getLineElement(int line) {
-    line--;
-    if(cacheDisabled || element == null || elementLine != line) {
-      if(cacheTrace.getBoolean())System.err.println("Miss elem: " + (line+1));
-      element = getDoc().getDefaultRootElement().getElement(line);
-      elementLine = line;
-    }
-    else {
-      if(cacheTrace.getBoolean())System.err.println("Hit elem: " + (line+1));
-    }
-    return element;
-  }
-
-  final public Element getCurrentLineElement() {
-    return element;
-  }
-
-  final private void invalidateElement() {
-    if(cacheTrace.getBoolean())System.err.println("Inval elem:");
-    element = null;
-  }
-
-  protected void fillLineElement(int line) {
-  }
-
-  /** the document */
-  private Document doc;
-  final public Document getDoc() {
-    return doc;
   }
 
   final public JViewport getViewport() {
@@ -300,8 +164,6 @@ public class TextViewCache implements PropertyChangeListener,
 
   // The visible part of the document, negative means not valid.
   // These values are updated whenever the viewport changes.
-  // NEEDSWORK: update view sizes with certain document changes.
-  // 		in particular bottomline, blankline
 
   private JViewport viewport;
   private Point viewportPosition;
@@ -322,7 +184,7 @@ public class TextViewCache implements PropertyChangeListener,
     if(line == getViewTopLine()) {
       return; // nothing to change
     }
-    int offset = textView.getLineStartOffset(line);
+    int offset = buf.getLineStartOffset(line);
     Rectangle r;
     try {
       r = textView.getEditorComponent().modelToView(offset);
@@ -426,7 +288,7 @@ public class TextViewCache implements PropertyChangeListener,
     if(offset < 0) {
         return -1;
     }
-    int line = textView.getLineNumber(offset);
+    int line = buf.getLineNumber(offset);
     Rectangle lrect;
     try {
       lrect = editor.modelToView(offset);
@@ -441,11 +303,11 @@ public class TextViewCache implements PropertyChangeListener,
     }
     int oline = line;
     line -= dir; // move line away from top/bottom
-    if(line < 1 || line > textView.getLineCount()) {
+    if(line < 1 || line > buf.getLineCount()) {
       //System.err.println("findFullLine: line out of bounds " + line);
       return oline;
     }
-    offset = textView.getLineStartOffset(line);
+    offset = buf.getLineStartOffset(line);
     try {
       lrect = editor.modelToView(offset);
     }
@@ -457,12 +319,6 @@ public class TextViewCache implements PropertyChangeListener,
       //System.err.println("findFullLine: adjusted line still out " + line);
     }
     return line;
-  }
-  
-  private void invalidateData() {
-    invalidateCursor(-1);
-    invalidateLineSegment();
-    invalidateElement();
   }
 
   //
@@ -478,14 +334,7 @@ public class TextViewCache implements PropertyChangeListener,
 
   private void changeDocument(Document doc) {
     if(cacheTrace.getBoolean())System.err.println("doc switch: ");
-    if(this.doc != null) {
-      this.doc.removeDocumentListener(this);
-    }
-    this.doc = doc;
-    if(doc != null) {
-      doc.addDocumentListener(this);
-    }
-    invalidateData();
+    assert false;
   }
 
   private void changeFont(Font f) {
@@ -525,17 +374,6 @@ public class TextViewCache implements PropertyChangeListener,
     }
   }
 
-  private void changeCaretPosition(int dot, int mark) {
-    if(textView.expectedCaretPosition != dot) {
-      //System.err.println("changeCaretPosition: "
-			 //+ textView.expectedCaretPosition + " " + dot);
-      ViManager.unexpectedCaretChange(dot);
-    }
-    invalidateCursor(dot);
-    //cursor = null;
-    // NEEDSWORK: update the FPOS right now!
-  }
-
   /** This is called from the managing textview,
    * listen to things that affect the cache.
    */
@@ -554,10 +392,8 @@ public class TextViewCache implements PropertyChangeListener,
     
     hasListeners = true;
     editor.addPropertyChangeListener("font", this);
-    changeDocument(editor.getDocument());
     editor.addPropertyChangeListener("document", this);
     editor.addPropertyChangeListener("ancestor", this);
-    editor.addCaretListener(this);
     changeFont(editor.getFont());
     changeViewport(editor.getParent());
   }
@@ -592,8 +428,6 @@ public class TextViewCache implements PropertyChangeListener,
     editor.removePropertyChangeListener("font", this);
     editor.removePropertyChangeListener("document", this);
     editor.removePropertyChangeListener("ancestor", this);
-    changeDocument(null);
-    editor.removeCaretListener(this);
     changeViewport(null);
   }
   
@@ -611,75 +445,12 @@ public class TextViewCache implements PropertyChangeListener,
     if("font".equals(p)) {
       changeFont((Font)o);
     } else if("document".equals(p)) {
-      changeDocument((Document)o);
+      changeDocument((Document)o); // this assert
     } else if("ancestor".equals(p)) {
       changeViewport(o);
     }
   }
 
-  // -- caret event --
-
-  public void caretUpdate(CaretEvent e) {
-    changeCaretPosition(e.getDot(), e.getMark());
-  }
-
-  // -- document events --
-
-  public void changedUpdate(DocumentEvent e) {
-    if(cacheTrace.getBoolean()) {
-      System.err.println("doc changed: " +e.getOffset() + ":" + e.getLength() + " " + e);
-      // System.err.println("element" + e.getChange());
-    }
-    // insertUpdate/removeUpdate fire as well so skip this one
-    // invalidateData();
-  }
-  
-  // These variables track last insert/remove to document.
-  // They are usually used for undo/redo.
-  private int undoOffset;
-  private int undoLength;
-  private boolean undoChange;
-
-  public void insertUpdate(DocumentEvent e) {
-    if(cacheTrace.getBoolean())
-        System.err.println("doc insert: " +e.getOffset() + ":" + e.getLength() + " " + e);
-    invalidateData();
-    undoOffset = e.getOffset();
-    undoLength = e.getLength();
-    undoChange = true;
-  }
-
-  public void removeUpdate(DocumentEvent e) {
-    if(cacheTrace.getBoolean())
-        System.err.println("doc remove: " +e.getOffset() + ":" + e.getLength() + " " + e);
-    invalidateData();
-    undoOffset = e.getOffset();
-    undoLength = e.getLength();
-    undoChange = true;
-  }
-
-  public int getUndoOffset() {
-    return undoOffset;
-  }
-
-  public int getUndoLength() {
-    return undoLength;
-  }
-
-  /**
-   * This method can be used to determine if some action(s)
-   * cause a change. The method itself has nothing to do with undo. It
-   * is called from an optimized undo.
-   * 
-   * @return true if there has be a change to the document since this method
-   * was last called.
-   */
-  public boolean isUndoChange() {
-    boolean rval;
-    rval = undoChange;
-    undoChange = false;
-    return rval;
-  }
 
   // -- viewport event --
 
