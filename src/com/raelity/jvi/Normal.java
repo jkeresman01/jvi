@@ -75,12 +75,12 @@ public class Normal {
 
   
   
-  static int redo_VIsual_mode = NUL; /* 'v', 'V', or Ctrl-V */
+  static char redo_VIsual_mode = NUL; /* 'v', 'V', or Ctrl-V */
   static int /*linenr_t*/ redo_VIsual_line_count; /* number of lines */
   static int /*colnr_t*/  redo_VIsual_col;/* number of cols or end column */
   static int /*long*/ redo_VIsual_count;/* count for Visual operator */
 
-  static int seltab[] = {
+  static char seltab[] = {
     /* key		unshifted	shift included */
     K_S_RIGHT,		K_RIGHT,	1,
     K_S_LEFT,		K_LEFT,		1,
@@ -138,7 +138,7 @@ public class Normal {
    * </p>
    */
 
-  static public void processInputChar(int c, boolean toplevel) {
+  static public void processInputChar(char c, boolean toplevel) {
     try {
       if(editBusy) {
         // NEEDSWORK: if exception from edit, turn edit off and finishupEdit
@@ -242,7 +242,7 @@ public class Normal {
    *   </ol>
    */
 
-  static public void normal_cmd(int c, boolean toplevel) {
+  static public void normal_cmd(char c, boolean toplevel) {
                                         //NEEDSWORK: toplevel NOT USED
 
     Misc.update_curswant();	// in vim called just before calling normal_cmd
@@ -657,7 +657,7 @@ middle_code:
 	    //
 	  case 'G':
 	    // ? curbuf.b_ml.ml_line_count
-	    nv_goto(ca, G.curwin.getLineCount());
+	    nv_goto(ca, G.curbuf.getLineCount());
 	    break;
 
 	  case 'H':
@@ -808,7 +808,7 @@ middle_code:
 	    if ((G.mod_mask & MOD_MASK_CTRL) != 0) {
 	      // CTRL-END = goto last line
 	      // nv_goto(oap, curbuf.b_ml.ml_line_count);
-	      nv_goto(ca, G.curwin.getLineCount());
+	      nv_goto(ca, G.curbuf.getLineCount());
 	    }
 	    // FALLTHROUGH
 
@@ -1321,8 +1321,8 @@ middle_code:
       {
           oap.start = cursor.copy();
           int line = oap.start.getLine()+ redo_VIsual_line_count - 1;
-          if(line > G.curwin.getLineCount())
-              line = G.curwin.getLineCount();
+          if(line > G.curbuf.getLineCount())
+              line = G.curbuf.getLineCount();
           G.VIsual_mode = redo_VIsual_mode;
           // TODO_VIS change this, but NEEDSWORK to step through it, REVIEW
           //        Is redo visual busy ever true?
@@ -1366,8 +1366,8 @@ middle_code:
               unadjust_for_sel();
 
           /* Save the current VIsual area for '< and '> marks, and "gv" */
-          G.curbuf.b_visual_start.setMark(G.VIsual, G.curwin);
-          G.curbuf.b_visual_end.setMark(cursor, G.curwin);
+          G.curbuf.b_visual_start.setMark(G.VIsual);
+          G.curbuf.b_visual_end.setMark(cursor);
           G.curbuf.b_visual_mode = G.VIsual_mode;
 
           oap.start = G.VIsual;
@@ -1491,7 +1491,7 @@ middle_code:
                   // that works on lines only
                   if (G.p_sel.charAt(0) != 'o'
                             && !op_on_lines(oap.op_type)
-                            && oap.end.getLine() < G.curwin.getLineCount())
+                            && oap.end.getLine() < G.curbuf.getLineCount())
                   {
                       oap.end.set(oap.end.getLine()+1, 0);
                       oap.line_count++;
@@ -1593,7 +1593,7 @@ middle_code:
 	  }
 	      // .... -1 > curbuf.b_ml.ml_line_count...
 	  if (G.curwin.getWCursor().getLine() + oap.line_count - 1 >
-	      G.curwin.getLineCount()) {
+	      G.curbuf.getLineCount()) {
 	    Util.beep_flush();
 	  } else {
             Misc.beginUndo();
@@ -1765,7 +1765,7 @@ middle_code:
           range.append(',');
           if (oap.end.getLine() == G.curwin.getWCursor().getLine())
             range.append('.');
-          else if (oap.end.getLine() == G.curwin.getLineCount())
+          else if (oap.end.getLine() == G.curbuf.getLineCount())
             range.append('$');
           else if (oap.start.getLine() == G.curwin.getWCursor().getLine())
           {
@@ -1823,8 +1823,8 @@ middle_code:
 //#endif
 
     /* Save the current VIsual area for '< and '> marks, and "gv" */
-    G.curbuf.b_visual_start.setMark(G.VIsual, G.curwin);
-    G.curbuf.b_visual_end.setMark(G.curwin.getWCursor(), G.curwin);
+    G.curbuf.b_visual_start.setMark(G.VIsual);
+    G.curbuf.b_visual_end.setMark(G.curwin.getWCursor());
     G.curbuf.b_visual_mode = G.VIsual_mode;
 
     if (G.p_smd.value)
@@ -2031,7 +2031,7 @@ middle_code:
    * Add 'c' to string of shown command chars.
    * Return TRUE if output has been written (and setcursor() has been called).
    */
-  static boolean add_to_showcmd(int c) {
+  static boolean add_to_showcmd(char c) {
 
     do_xop("add_to_showcmd");
 
@@ -2155,7 +2155,7 @@ middle_code:
   }
   
   static private void scroll_redraw(boolean up, int count) {
-    if(G.curwin.getLineCount() <= G.curwin.getViewLines())
+    if(G.curbuf.getLineCount() <= G.curwin.getViewLines())
       return;
     
     int prev_topline = G.curwin.getViewTopLine();
@@ -2266,8 +2266,8 @@ middle_code:
 
     if(cap.count0 != 0 && cap.count0 != target) {
       MarkOps.setpcmark();
-      if(cap.count0 > G.curwin.getLineCount()) {
-	target = G.curwin.getLineCount();
+      if(cap.count0 > G.curbuf.getLineCount()) {
+	target = G.curbuf.getLineCount();
       } else {
 	target = cap.count0;
       }
@@ -2296,7 +2296,7 @@ middle_code:
 
     // Keep getlineSegment before setViewTopLine,
     // don't want to fetch segment changing during rendering
-    MySegment seg = G.curwin.getLineSegment(target);
+    MySegment seg = G.curbuf.getLineSegment(target);
     int col = nchar == 'z' ? G.curwin.getWCursor().getColumn()
                            : Edit.beginlineColumnIndex(BL_WHITE | BL_FIX, seg);
     G.curwin.setViewTopLine(Misc.adjustTopLine(top));
@@ -2499,7 +2499,7 @@ middle_code:
     */
     String escapeMe = "/?.*~[^$\\";
     while(n-- != 0) {
-      int c = ptrSeg.current();
+      char c = ptrSeg.current();
       if(Util.vim_strchr(escapeMe, c) != null) {
         GetChar.stuffcharReadbuff('\\');
       }
@@ -2557,7 +2557,7 @@ middle_code:
       }
     } else {
       int topline = G.curwin.getViewTopLine();
-      int line_count = G.curwin.getLineCount();
+      int line_count = G.curbuf.getLineCount();
       if (cap.cmdchar == 'M') {
 	Misc.validate_botline();	    // make sure w_empty_rows is valid
 	for (n = 0; topline + n < line_count; ++n)
@@ -2575,7 +2575,7 @@ middle_code:
     }
 
     if(newcursorline > 0) {
-      G.curwin.setCaretPosition(G.curwin.getLineStartOffset(newcursorline));
+      G.curwin.setCaretPosition(G.curbuf.getLineStartOffset(newcursorline));
     }
     Misc.cursor_correct();	// correct for 'so'
     Edit.beginline(BL_SOL | BL_FIX);
@@ -2592,7 +2592,7 @@ middle_code:
 
     if(cap.cmdchar == 'M') {
       int topline = G.curwin.getViewTopLine();
-      int line_count = G.curwin.getLineCount();
+      int line_count = G.curbuf.getLineCount();
       Misc.validate_botline();	    // make sure w_empty_rows is valid
       for (n = 0; topline + n < line_count; ++n)
 	if ((used += Misc.plines(topline + n)) >=
@@ -2627,7 +2627,7 @@ middle_code:
 
     if(newcursorline > 0) {
       G.curwin.setCaretPosition(
-		    G.curwin.getLineStartOffset(newcursorline));
+		    G.curbuf.getLineStartOffset(newcursorline));
     }
     Misc.cursor_correct();	// correct for 'so'
     Edit.beginline(BL_SOL | BL_FIX);
@@ -2645,7 +2645,7 @@ middle_code:
     past_line = (G.VIsual_active && G.p_sel.charAt(0) != 'o');
     for (n = cap.count1; n > 0; --n) {
       final ViFPOS cursor = G.curwin.getWCursor();
-      MySegment seg = G.curwin.getLineSegment(cursor.getLine());
+      MySegment seg = G.curbuf.getLineSegment(cursor.getLine());
       if ((!past_line && Edit.oneright() == FAIL)
 	    || (past_line && seg.array[cursor.getColumn()+seg.offset] == '\n')
 	  )
@@ -2660,7 +2660,7 @@ middle_code:
 		    || (cap.cmdchar == 'l' && G.p_ww_l.getBoolean())
 		    || (cap.cmdchar == K_RIGHT && G.p_ww_rarrow.getBoolean()))
 		   // && curwin.w_cursor.lnum < curbuf.b_ml.ml_line_count
-		   && cursor.getLine() < G.curwin.getLineCount())
+		   && cursor.getLine() < G.curbuf.getLineCount())
 	{
 	  // When deleting we also count the NL as a character.
 	  // Set cap.oap.inclusive when last char in the line is
@@ -2920,7 +2920,7 @@ middle_code:
 	cap.oap.motion_type = MLINE;
 	MarkOps.setpcmark();
 	// round up, so CTRL-G will give same value
-        int line = (G.curwin.getLineCount()
+        int line = (G.curbuf.getLineCount()
                    * cap.count0 + 99) / 100;
         G.curwin.setCaretPosition(line, 0);
 	Edit.beginline(BL_SOL | BL_FIX);
@@ -2933,12 +2933,9 @@ middle_code:
       if(usePlatform) {
         G.curwin.findMatch();
         endingOffset = G.curwin.getCaretPosition();
-        // NEEDSWORK: NB6M10 is firing the caretUpdate async
-        // The following will do the trick...
-        G.curwin.setCaretPosition(endingOffset);
       } else {
         int firstbraceOffset = fpos.getOffset();
-        int c;
+        char c;
         // NEEDSWORK: use getLineSegment for performance
         
         // move forward to the next brace character
@@ -3134,7 +3131,7 @@ static private void nv_findpar(CMDARG cap, int dir)
         Misc.inc_cursor();
         if (Misc.gchar_cursor() == '\n') {
           if (G.p_ww_tilde.getBoolean()
-              && G.curwin.getWCursor().getLine() < G.curwin.getLineCount())
+              && G.curwin.getWCursor().getLine() < G.curbuf.getLineCount())
           {
             G.curwin.setCaretPosition(G.curwin.getWCursor().getLine() + 1, 0);
             // redraw_curbuf_later(NOT_VALID);
@@ -3312,8 +3309,8 @@ static private void nv_findpar(CMDARG cap, int dir)
               {
                   int line = G.curwin.getWCursor().getLine()
                                     + resel_VIsual_line_count * cap.count0 - 1;
-                  if(line > G.curwin.getLineCount())
-                      line = G.curwin.getLineCount();
+                  if(line > G.curbuf.getLineCount())
+                      line = G.curbuf.getLineCount();
                   // Not sure about how column should be set, but at least
                   // make sure it stays in the correct line
                   int col = Misc.check_cursor_col(line,
@@ -3365,7 +3362,7 @@ static private void nv_findpar(CMDARG cap, int dir)
   /*
   * Start Select mode, if "c" is in 'selectmode' and not in a mapping or menu.
   */
-  static void may_start_select(int c) {
+  static void may_start_select(char c) {
       G.VIsual_select = (GetChar.stuff_empty() && typebuf_typed()
         && (Util.vim_strchr(G.p_slm.getString(), c) != null));
   }
@@ -3374,7 +3371,7 @@ static private void nv_findpar(CMDARG cap, int dir)
    * Start Visual mode "c".
    * Should set VIsual_select before calling this.
    */
-  static private  void	n_start_visual_mode(int c) {
+  static private  void	n_start_visual_mode(char c) {
       do_op("n_start_visual_mode");
       G.VIsual =  G.curwin.getWCursor().copy();
       G.VIsual_mode = c;
@@ -3393,7 +3390,6 @@ static private void nv_findpar(CMDARG cap, int dir)
   static private void nv_g_cmd(CMDARG cap, CharBuf searchbuff)
   throws NotSupportedException {
     do_xop("nv_g_cmd");
-    int i;
     ViFPOS tpos;
     switch (cap.nchar) {
       /*case 'x':
@@ -3423,7 +3419,7 @@ static private void nv_findpar(CMDARG cap, int dir)
         if (     MarkOps.check_mark(G.curbuf.b_visual_start, true) == FAIL
               || MarkOps.check_mark(G.curbuf.b_visual_end, true) == FAIL
               || G.curbuf.b_visual_start.getLine() == 0
-              || G.curbuf.b_visual_start.getLine() > G.curwin.getLineCount()
+              || G.curbuf.b_visual_start.getLine() > G.curbuf.getLineCount()
               || G.curbuf.b_visual_end.getLine() == 0)
             Util.beep_flush();
         else
@@ -3432,13 +3428,13 @@ static private void nv_findpar(CMDARG cap, int dir)
             /* set w_cursor to the start of the Visual area, tpos to the end */
             if (G.VIsual_active)
             {
-                i = G.VIsual_mode;
+                char c = G.VIsual_mode;
                 G.VIsual_mode = G.curbuf.b_visual_mode;
-                G.curbuf.b_visual_mode = i;
+                G.curbuf.b_visual_mode = c;
                 tpos = G.curbuf.b_visual_end.copy();
-                G.curbuf.b_visual_end.setMark(cursor, G.curwin);
+                G.curbuf.b_visual_end.setMark(cursor);
                 cursor.set(G.curbuf.b_visual_start);
-                G.curbuf.b_visual_start.setMark(G.VIsual, G.curwin);
+                G.curbuf.b_visual_start.setMark(G.VIsual);
             }
             else
             {
@@ -3607,8 +3603,8 @@ static private void nv_findpar(CMDARG cap, int dir)
         lnum = cap.count0;
     if(lnum < 1)
         lnum = 1;
-    else if(lnum > G.curwin.getLineCount())
-        lnum = G.curwin.getLineCount();
+    else if(lnum > G.curbuf.getLineCount())
+        lnum = G.curbuf.getLineCount();
     Misc.gotoLine(lnum, BL_SOL | BL_FIX);
   }
 
@@ -3628,7 +3624,7 @@ static private void nv_findpar(CMDARG cap, int dir)
    * Handle word motion commands "e", "E", "w" and "W".
    */
   static private void nv_wordcmd(CMDARG cap, boolean type) {
-    int	    n;
+    char       c;
     boolean    word_end;
     boolean    flag = false;
     do_xop("nv_wordcmd");
@@ -3642,9 +3638,9 @@ static private void nv_findpar(CMDARG cap, int dir)
     // "cw" and "cW" are a special case.
     //
     if (!word_end && cap.oap.op_type == OP_CHANGE) {
-      n = Misc.gchar_cursor();
-      if (n != '\n') {			/* not an empty line */
-	if (Misc.vim_iswhite(n)) {
+      c = Misc.gchar_cursor();
+      if (c != '\n') {			/* not an empty line */
+	if (Misc.vim_iswhite(c)) {
 	  //
 	  // Reproduce a funny Vi behaviour: "cw" on a blank only
 	  // changes one character, not all blanks until the start of
@@ -3679,10 +3675,11 @@ static private void nv_findpar(CMDARG cap, int dir)
 
     cap.oap.motion_type = MCHAR;
     G.curwin.setWSetCurswant(true);
+    int rc;
     if (word_end) {
-      n = Search.end_word(cap.count1, type, flag, false);
+      rc = Search.end_word(cap.count1, type, flag, false);
     } else {
-      n = Search.fwd_word(cap.count1, type, cap.oap.op_type != OP_NOP);
+      rc = Search.fwd_word(cap.count1, type, cap.oap.op_type != OP_NOP);
     }
 
     // Don't leave the cursor on the NUL past a line
@@ -3692,7 +3689,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       cap.oap.inclusive = true;
     }
 
-    if (n == FAIL && cap.oap.op_type == OP_NOP) {
+    if (rc == FAIL && cap.oap.op_type == OP_NOP) {
       clearopbeep(cap.oap);
     } else {
       adjust_for_sel(cap);
@@ -3940,7 +3937,7 @@ static private void nv_findpar(CMDARG cap, int dir)
     final ViFPOS cursor = G.curwin.getWCursor();
     if ((cap.cmdchar == Util.ctrl('U') && cursor.getLine() == 1)
 	|| (cap.cmdchar == Util.ctrl('D')
-	    && cursor.getLine() == G.curwin.getLineCount()))
+	    && cursor.getLine() == G.curbuf.getLineCount()))
       clearopbeep(cap.oap);
     else if (!checkclearop(cap.oap))
       Misc.halfpage(cap.cmdchar == Util.ctrl('D'), cap.count0);
@@ -3956,7 +3953,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       if (cap.count0 <= 1)
 	cap.count0 = 2;	    /* default for join is two lines! */
       if (G.curwin.getWCursor().getLine() + cap.count0 - 1 >
-	  		G.curwin.getLineCount())
+	  		G.curbuf.getLineCount())
 	clearopbeep(cap.oap);  /* beyond last line */
       else
       {
@@ -4064,8 +4061,8 @@ static private void nv_findpar(CMDARG cap, int dir)
         // What to reselect with "gv"?  Selecting the just put text seems to
         // be the most useful, since the original text was removed.
         if (was_visual) {
-          G.curbuf.b_visual_start.setMark(G.curbuf.b_op_start, G.curwin);
-          G.curbuf.b_visual_end.setMark(G.curbuf.b_op_end, G.curwin);
+          G.curbuf.b_visual_start.setMark(G.curbuf.b_op_start);
+          G.curbuf.b_visual_end.setMark(G.curbuf.b_op_end);
         }
         
         // When all lines were selected and deleted do_put() leaves an empty
@@ -4152,7 +4149,7 @@ static private void nv_findpar(CMDARG cap, int dir)
   /**
    * The Visual area is remembered for reselection.
    */
-  static int	resel_VIsual_mode = NUL;	/* 'v', 'V', or Ctrl-V */
+  static char	resel_VIsual_mode = NUL;	/* 'v', 'V', or Ctrl-V */
   static int	resel_VIsual_line_count;/* number of lines */
   static int	resel_VIsual_col;	/* nr of cols or end col */
 
