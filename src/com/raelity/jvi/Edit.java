@@ -31,9 +31,7 @@ package com.raelity.jvi;
 
 import java.util.Stack;
 import javax.swing.text.Element;
-import javax.swing.SwingUtilities;
 
-import com.raelity.jvi.ViManager;
 import com.raelity.text.TextUtil.MySegment;
 
 import static com.raelity.jvi.KeyDefs.*;
@@ -74,17 +72,17 @@ public class Edit {
   /**
    * edit(): Start inserting text.
    *<ul>
-   *<li> "cmdchar" can be:
-   *<li> 'i'	normal insert command
-   *<li> 'a'	normal append command
-   *<li> 'R'	replace command
+   *<li> "cmdchar" can be:</li>
+   *<li> 'i'	normal insert command</li>
+   *<li> 'a'	normal append command</li>
+   *<li> 'R'	replace command</li>
    *<li> 'r'	"r<CR>" command: insert one <CR>.
    *		Note: count can be > 1, for redo,
    *		but still only one <CR> is inserted.
-   *		The <Esc> is not used for redo.
-   *<li> 'g'	"gI" command.
-   *<li> 'V'	"gR" command for Virtual Replace mode.
-   *<li> 'v'	"gr" command for single character Virtual Replace mode.
+   *		The <Esc> is not used for redo.</li>
+   *<li> 'g'	"gI" command.</li>
+   *<li> 'V'	"gR" command for Virtual Replace mode.</li>
+   *<li> 'v'	"gr" command for single character Virtual Replace mode.</li>
    *</ul>
    *
    * This function is not called recursively.  For CTRL-O commands, it returns
@@ -92,13 +90,9 @@ public class Edit {
    *
    * @return true if a CTRL-O command caused the return (insert mode pending).
    */
-  static void edit(int cmdchar_, boolean startln, int count_arg) {
+  static void edit(char cmdchar, boolean startln, int count_arg) {
     char c;
     boolean did_backspace;
-
-    // NEEDSWORK: CHAR
-    char cmdchar = (char)cmdchar_;
-    assert(cmdchar_ == cmdchar);
 
     if( ! Misc.isInInsertUndo()) {
       ViManager.dumpStack("In edit with no undo pending");
@@ -401,8 +395,8 @@ public class Edit {
             // case Ctrl('P'): // Do previous pattern completion
             // case Ctrl('N'): // Do next pattern completion
 
-          case 0x1f & (int)'Y': // copy from previous line or scroll down
-          case 0x1f & (int)'E': // copy from next line	   or scroll up
+          case 0x1f & 'Y': // copy from previous line or scroll down
+          case 0x1f & 'E': // copy from next line	   or scroll up
             c = ins_copychar(G.curwin.getWCursor().getLine()
                              + (c == (0x1f & (int)'Y') ? -1 : 1));
             break normal_char;
@@ -498,8 +492,8 @@ public class Edit {
   private static void removeUnusedWhiteSpace() {
     if (Util.ml_get_curline().toString().trim().equals("")) {
       int startOffset =
-        G.curwin.getLineStartOffset(G.curwin.getWCursor().getLine());
-      int endOffset = G.curwin.getLineEndOffsetFromOffset(startOffset) - 1;
+        G.curbuf.getLineStartOffset(G.curwin.getWCursor().getLine());
+      int endOffset = G.curbuf.getLineEndOffsetFromOffset(startOffset) - 1;
       G.curwin.deleteChar(startOffset, endOffset);
     }
   }
@@ -764,10 +758,10 @@ public class Edit {
    * Insert character, taking care of special keys and mod_mask.
    */
   
-  private static void insert_special(int c,
+  private static void insert_special(char c,
                                      boolean allow_modmask,
                                      boolean ctrlv) {
-    Normal.do_xop("insert_special: " + (char)c);
+    Normal.do_xop("insert_special: " + c);
     
     // NEEDSWORK: edit: insert_special
     // Special function key, translate into "<Key>". Up to the last '>' is
@@ -792,8 +786,8 @@ public class Edit {
     insertchar(c, false, -1, ctrlv);
   }
   
-  static void insertchar(int c, boolean force_formatting,
-          int second_indent, boolean ctrlv) {
+  static void insertchar(char c, boolean force_formatting,
+                         int second_indent, boolean ctrlv) {
     
     // NEEDSWORK: edit: insertchar
     // If there's any pending input, grab up to INPUT_BUFLEN at once.
@@ -898,9 +892,9 @@ public class Edit {
   public static final void beginline(int flags) {
     Normal.do_xop("beginline");
     int line = G.curwin.getWCursor().getLine();
-    Element elem = G.curwin.getLineElement(line);
-    MySegment seg = G.curwin.getLineSegment(line);
-    int offset = elem.getStartOffset() + beginlineColumnIndex(flags, seg);
+    MySegment seg = G.curbuf.getLineSegment(line);
+    int offset = G.curbuf.getLineStartOffset(line)
+                  + beginlineColumnIndex(flags, seg);
     G.curwin.setCaretPosition(offset);
   }
   
@@ -916,7 +910,7 @@ public class Edit {
     ViFPOS fpos = G.curwin.getWCursor();
     int lnum = fpos.getLine();
     int col = fpos.getColumn();
-    MySegment seg = G.curwin.getLineSegment(lnum);
+    MySegment seg = G.curbuf.getLineSegment(lnum);
     if(seg.array[seg.offset + col++] == '\n'	// not possible, maybe if input?
             || seg.array[seg.offset + col] == '\n'
             || col >= seg.count - 1) {
@@ -969,7 +963,7 @@ public class Edit {
     Normal.do_xop("cursor_down");
     int lnum = G.curwin.getWCursor().getLine();
     if (n != 0) {
-      int nline = G.curwin.getLineCount();
+      int nline = G.curbuf.getLineCount();
       if (lnum >= nline) { return FAIL; }
       lnum += n;
       if (lnum > nline) { lnum = nline; }
@@ -1004,28 +998,29 @@ public class Edit {
    * @parm c character that is replaced (NUL is none)
    */
   
-  static Stack replace_stack = new Stack();
+  static Stack<Character> replace_stack = new Stack<Character>();
   static int replace_offset = 0;
   
-  static void replace_push(int c) {
+  static void replace_push(char c) {
     if (replace_stack.size() < replace_offset)	/* nothing to do */
       return;
     // NEEDSWORK: maintain stack as an array of chars,
     // if (replace_stack_len <= replace_stack_nr).... extend stack..
     int idx = replace_stack.size() - replace_offset;
-    replace_stack.add(idx, new Integer((int)c));
+    replace_stack.add(idx, new Character(c));
   }
   
   /**
    * call replace_push(c) with replace_offset set to the first NUL.
    */
-  private static void replace_push_off(int c) {
+  private static void replace_push_off(char c) {
     int idx = replace_stack.size();
-    for (replace_offset = 1; replace_offset < replace_stack.size();
-    ++replace_offset) {
+    for (replace_offset = 1;
+         replace_offset < replace_stack.size();
+         ++replace_offset) {
       
       --idx;
-      int item = ((Integer)replace_stack.get(idx)).intValue();
+      char item = replace_stack.get(idx).charValue();
       if(item == NUL) {
         break;
       }
@@ -1039,12 +1034,12 @@ public class Edit {
    * return -1 if stack empty
    * return replaced character or NUL otherwise
    */
-  private static int replace_pop() {
+  private static char replace_pop() {
     // vr_virtcol = MAXCOL;
     if(replace_stack.size() == 0) {
-      return -1;
+      return '\uffff';
     }
-    return ((Integer)replace_stack.pop()).intValue();
+    return replace_stack.pop().charValue();
   }
   
   /**
@@ -1056,7 +1051,7 @@ public class Edit {
     int	    i;
     
     for (i = replace_stack.size(); --i >= 0; ) {
-      if (((Integer)replace_stack.get(i)).intValue() == NUL && off-- <= 0) {
+      if (replace_stack.get(i).charValue() == NUL && off-- <= 0) {
         replace_stack.remove(i);
         return;
       }
@@ -1068,11 +1063,11 @@ public class Edit {
    * before the cursor.  Can only be used in REPLACE or VREPLACE mode.
    */
   private static void replace_pop_ins() {
-    int	    cc;
+    char    cc;
     int	    oldState = G.State;
     
     G.State = NORMAL;		/* don't want REPLACE here */
-    while ((cc = replace_pop()) > 0) {
+    while ((cc = replace_pop()) != '\uffff') {
       Misc.ins_char(cc);
       Misc.dec_cursor();
     }
@@ -1094,10 +1089,10 @@ public class Edit {
    * cc &gt; 0: character was replace, put original back
    */
   private static void replace_do_bs() {
-    int	    cc;
+    char    cc;
     
     cc = replace_pop();
-    if (cc > 0) {
+    if (cc != '\uffff') {
       Misc.pchar_cursor(cc);
       replace_pop_ins();
     } else if (cc == 0) {
@@ -1428,7 +1423,7 @@ public class Edit {
     undisplay_dollar();
     tpos = G.curwin.getWCursor().copy();
     if ((G.mod_mask & MOD_MASK_CTRL) != 0) {
-      G.curwin.setCaretPosition(G.curwin.getLineCount(), 0);
+      G.curwin.setCaretPosition(G.curbuf.getLineCount(), 0);
     }
     Misc.coladvance(MAXCOL);
     G.curwin.setWCurswant(MAXCOL);
@@ -1463,7 +1458,7 @@ public class Edit {
     // if 'whichwrap' set for cursor in insert mode, may move the
     // cursor to the next line
     else if (G.p_ww_i_right.value
-             && cursor.getLine() < G.curwin.getLineCount())
+             && cursor.getLine() < G.curbuf.getLineCount())
     {
       start_arrow(cursor);
       G.curwin.setWSetCurswant(true);
@@ -1476,7 +1471,7 @@ public class Edit {
   private static void ins_s_right() throws NotSupportedException {
     undisplay_dollar();
     ViFPOS cursor = G.curwin.getWCursor();
-    if (cursor.getLine() < G.curwin.getLineCount()
+    if (cursor.getLine() < G.curbuf.getLineCount()
         || Misc.gchar_cursor() != '\n')
     {
 	start_arrow(cursor);
@@ -1566,7 +1561,7 @@ public class Edit {
     MySegment  seg;
     int ptr;
     
-    if (lnum < 1 || lnum > G.curwin.getLineCount()) {
+    if (lnum < 1 || lnum > G.curbuf.getLineCount()) {
       Util.vim_beep();
       return NUL;
     }
