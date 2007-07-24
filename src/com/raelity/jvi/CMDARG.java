@@ -35,13 +35,14 @@ package com.raelity.jvi;
 class CMDARG
 {
   OPARG  oap;		/* Operator arguments */
-  int    prechar;	/* prefix character (optional, always 'g') */
-  int    cmdchar;	/* command character */
-  int    nchar;		/* next character (optional) */
-  int    extra_char;	/* yet another character (optional) */
+  char   prechar;	/* prefix character (optional, always 'g') */
+  char   cmdchar;	/* command character */
+  char   nchar;		/* next character (optional) */
+  char   extra_char;	/* yet another character (optional) */
   int    count0;	/* count, default 0 */
   int    count1;	/* count, default 1 */
 
+    @Override
   public String toString() {
     return	"prechar: " + prechar
 	      + " cmdchar: " + cmdchar
