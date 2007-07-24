@@ -38,7 +38,6 @@ import java.util.regex.Pattern;
 
 import javax.swing.JEditorPane;
 
-import com.raelity.jvi.FPOS;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViStatusDisplay;
@@ -55,7 +54,6 @@ import javax.swing.event.CaretListener;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
-import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
@@ -94,6 +92,7 @@ public class TextView implements ViTextView {
 
   protected ViStatusDisplay statusDisplay;
 
+  // NEEDSWORK: either get rid of this, or get it working.
   protected int expectedCaretPosition = -1;
 
   private CaretListener cursorSaveListener;
@@ -133,8 +132,7 @@ public class TextView implements ViTextView {
   public void shutdown() {
     disableCursorSave();
     if(G.dbgEditorActivation.getBoolean()) {
-      Buffer buf = ViManager.getBuffer(getEditorComponent());
-      assert buf == this.buf;
+      assert buf == ViManager.getBuffer(getEditorComponent());
       if(buf.getShare() == 1) {
         System.err.println("TV.shutdown: LAST CLOSE");
       }
@@ -198,7 +196,7 @@ public class TextView implements ViTextView {
   public boolean getWPList() { return window.getWPList(); }
   public void setWPList(boolean f) { window.setWPList(f); }
 
-  public Buffer getBuffer() {
+  public final Buffer getBuffer() {
       return buf;
   }
 
@@ -212,7 +210,7 @@ public class TextView implements ViTextView {
 
   /** Override this method to provide different cache implementation */
   protected TextViewCache createTextViewCache() {
-    return new TextViewCache(this);
+    return new TextViewCache(this, buf);
   }
 
   public void attach() {
@@ -244,13 +242,6 @@ public class TextView implements ViTextView {
   public JEditorPane getEditorComponent() {
     return editorPane;
   }
-
-  /**
-   * Use the document in default implementation.
-   * @return opaque FileObject backing this EditorPane */
-  public Object getFileObject() {
-    return getEditorComponent().getDocument();
-  }
   
   /**
    * @return true if the text can be changed.
@@ -263,10 +254,15 @@ public class TextView implements ViTextView {
   //
   // Text modification methods.
   //
-  
-  protected void processTextException(BadLocationException ex) {
-    Util.vim_beep();
-  }
+  // The text modifications are a bit jumbled. Some use actions and some go
+  // to the buffer. Some use the cursor position and some use offsets.
+  // All check isEditable.
+  //
+  // NEEDSWORK: consistent text modification methods.
+  //            It will be difficult to clean this up paricularly because of the
+  //            because of the dependency on actions, for example insertNewline
+  //            must be used to get proper autoindent handling.
+  //
   
   public void insertNewLine() {
     if( ! isEditable()) {
@@ -285,56 +281,17 @@ public class TextView implements ViTextView {
     ops.xop(TextOps.INSERT_TAB); // NEEDSWORK: xop throws no exception
   }
 
-  public void replaceChar(int c, boolean advanceCursor) {
-    if( ! isEditable()) {
-      Util.vim_beep();
-      return;
-    }
-    oneCharArray[0] = (char)c;
-    String s = new String(oneCharArray);
-    int offset = editorPane.getCaretPosition();
-
-    Document doc = getDoc();
-    try {
-      doc.remove(offset, 1);
-      expectedCaretPosition++;
-      doc.insertString(offset, s, null);
+  public void replaceChar(char c, boolean advanceCursor) {
+      if( ! isEditable()) {
+          Util.vim_beep();
+          return;
+      }
+      int offset = editorPane.getCaretPosition();
+      getBuffer().replaceChar(offset, c);
       if(advanceCursor) {
-	offset++;
+          offset++;
       }
       setCaretPosition(offset);// also clears the selection
-    } catch(BadLocationException ex) {
-      processTextException(ex);
-    }
-  }
-
-  public void replaceString(int start, int end, String s) {
-    if( ! isEditable()) {
-      Util.vim_beep();
-      return;
-    }
-    Document doc = getDoc();
-    try {
-      if(start != end) {
-	doc.remove(start, end - start);
-      }
-      doc.insertString(start, s, null);
-    } catch(BadLocationException ex) {
-      processTextException(ex);
-    }
-  }
-
-  public void deleteChar(int start, int end) {
-    if( ! isEditable()) {
-      Util.vim_beep();
-      return;
-    }
-    Document doc = getDoc();
-    try {
-      doc.remove(start, end - start);
-    } catch(BadLocationException ex) {
-      processTextException(ex);
-    }
   }
 
   public void deletePreviousChar() {
@@ -345,52 +302,11 @@ public class TextView implements ViTextView {
     ops.xop(TextOps.DELETE_PREVIOUS_CHAR); // NEEDSWORK: xop throws no exception
   }
 
-  public void insertText(int offset, String s) {
-    if( ! isEditable()) {
-      Util.vim_beep();
-      return;
-    }
-    /* ******************************************
-    setCaretPosition(offset);
-    ops.xop(TextOps.INSERT_TEXT, s);
-    ******************************************/
-    expectedCaretPosition += s.length();
-    Document doc = getDoc();
-    if(offset > doc.getLength()) {
-      // Damn, trying to insert after the final magic newline.
-      // 	(the one that gets counted in elem.getEndOffset() but
-      // 	not in getLength() )
-      // Take the new line from the end of the string and put it
-      // at the beging, e.g. change "foo\n" to "\nfoo". Then set
-      // offset to length. The adjusted string is inserted before
-      // the magic newline, this gives the correct result.
-      // If there is no newline at the end of the string being inserted,
-      // then there will end up being a newline added to the file magically,
-      // but this shouldn't really matter.
-      StringBuffer new_s = new StringBuffer();
-      new_s.append('\n');
-      if(s.endsWith("\n")) {
-	if(s.length() > 1) {
-	  new_s.append(s.substring(0,s.length()-1));
-	}
-      } else {
-	new_s.append(s);
-      }
-      offset = doc.getLength();
-      s = new_s.toString();
-    }
-    try {
-      doc.insertString(offset, s, null);
-    } catch(BadLocationException ex) {
-      processTextException(ex);
-    }
-  }
-
   /**
    * insert character at cursor position. For some characters
    * special actions may be taken.
    */
-  public void insertChar(int c) {
+  public void insertChar(char c) {
     if( ! isEditable()) {
       Util.vim_beep();
       return;
@@ -399,7 +315,7 @@ public class TextView implements ViTextView {
       insertTab();
       return;
     }
-    insertTypedChar((char)c);
+    insertTypedChar(c);
   }
 
   /**
@@ -410,28 +326,78 @@ public class TextView implements ViTextView {
       Util.vim_beep();
       return;
     }
-    oneCharArray[0] = (char)c;
+    oneCharArray[0] = c;
     expectedCaretPosition++;
     ops.xop(TextOps.KEY_TYPED, new String(oneCharArray)); // NEEDSWORK: xop throws no exception
   }
+
+  //
+  // NEEDSWORK: These three text modification methods take document offsets
+  // unlike the rest of the modification methods which use the caret.
+  // They should probably not be here. Currently they wrap some methods
+  // in Buffer.
+  //
+
+  public void replaceString(int start, int end, String s) {
+      if( ! isEditable()) {
+          Util.vim_beep();
+          return;
+      }
+      getBuffer().replaceString(start, end, s);
+  }
+
+  public void deleteChar(int start, int end) {
+      if( ! isEditable()) {
+          Util.vim_beep();
+          return;
+      }
+      getBuffer().deleteChar(start, end);
+  }
+
+  public void insertText(int offset, String s) {
+      if( ! isEditable()) {
+          Util.vim_beep();
+          return;
+      }
+      getBuffer().insertText(offset, s);
+  }
+
+  //
+  // START BUFFER
+  //
+
+  /**
+   * Use the document in default implementation.
+   * @return opaque FileObject backing this EditorPane */
+  public Object getFileObject() {
+      return getBuffer().getDocument();
+    //return getEditorComponent().getDocument();
+  }
+  //
+  // END BUFFER
+  //
   
   
 ///////////////////////////////////////////////////////////////////////
 //
   
-  public void undo(){
-    assertUndoState(!inUndo && !inInsertUndo, "undo");
-    buf.undo();
+  //
+  // START BUFFER
+  //
+public void undo(){
+      getBuffer().undo();
   }
 
   public void redo() {
-    assertUndoState(!inUndo && !inInsertUndo, "undo");
-    buf.redo();
+      getBuffer().redo();
   }
 
   public String getText(int offset, int length) throws BadLocationException {
-    return cache.getDoc().getText(offset, length);
+    return getBuffer().getText(offset, length);
   }
+  //
+  // END BUFFER
+  //
 
   public int getCaretPosition() {
     return editorPane.getCaretPosition();
@@ -446,7 +412,7 @@ public class TextView implements ViTextView {
   }
 
   public void setCaretPosition(int lnum, int col) {
-    Element elem = cache.getLineElement(lnum);
+    Element elem = getLineElement(lnum);
     setCaretPosition(elem.getStartOffset() + col);
   }
 
@@ -467,18 +433,20 @@ public class TextView implements ViTextView {
   public void jumpList(JLOP op, int count) {
     Util.vim_beep();
   }
-  
-  public void anonymousMark(MARKOP op, int count) {
-      Util.vim_beep();
-  }
 
   public void foldOperation(int op) {
     Util.vim_beep();
   }
 
-  public void reindent(int line, int count) {
-      Util.vim_beep();
+  //
+  // START BUFFER
+  //
+public void reindent(int line, int count) {
+      getBuffer().reindent(line, count);
   }
+  //
+  // END BUFFER
+  //
 
   public void computeCursorPosition(MutableInt offset,
                                     MutableInt line,
@@ -495,46 +463,17 @@ public class TextView implements ViTextView {
   {
     // NEEDSWORK: computeCursorPosition use the cache
 
-    Document doc = getDoc();
+    /*Document doc = getDoc();
     Element root = doc.getDefaultRootElement();
     int idx =  root.getElementIndex(offset);
-    Element elem =  root.getElement(idx);
+    Element elem =  root.getElement(idx);*/
 
-    line.setValue(idx + 1);
-    column.setValue(offset - elem.getStartOffset());
-  }
+    //line.setValue(idx + 1);
+    //column.setValue(offset - elem.getStartOffset());
 
-  public int getLineNumber(int offset) {
-    return getElemIndex(offset) + 1;
-  }
-
-  public int getColumnNumber(int offset) {
-    Element elem = getElem(offset);
-    return offset - elem.getStartOffset();
-  }
-
-  /** @return the starting offset of the line */
-  public int getLineStartOffset(int line) {
-    return getLineElement(line).getStartOffset();
-  }
-
-  /** @return the starting offset of the line */
-  public int getLineEndOffset(int line) {
-    return getLineElement(line).getEndOffset();
-  }
-
-  public int getLineStartOffsetFromOffset(int offset) {
-    Element elem = getElem(offset);
-    return elem.getStartOffset();
-  }
-
-  public int getLineEndOffsetFromOffset(int offset) {
-    Element elem = getElem(offset);
-    return elem.getEndOffset();
-  }
-
-  public int getLineCount() {
-    return getDoc().getDefaultRootElement().getElementCount();
+    int lnum = getBuffer().getLineNumber(offset);
+    line.setValue(lnum);
+    column.setValue(offset - getBuffer().getLineStartOffset(lnum));
   }
 
   public int getViewTopLine() {
@@ -566,52 +505,8 @@ public class TextView implements ViTextView {
     cache.getViewport().setViewPosition(pt);
   }
 
-  final public MySegment getLineSegment(int lnum) {
-    return cache.getLineSegment(lnum);
-  }
-
-  final public Element getLineElement(int lnum) {
-    return cache.getLineElement(lnum);
-  }
-  
-  final public MySegment getSegment(int offset, int length, MySegment seg) {
-    if(seg == null)
-      seg = new MySegment();
-    try {
-      getDoc().getText(offset, length, seg);
-    } catch (BadLocationException ex) {
-      seg.count = 0;
-      // NEEDSWORK: how to report exception?
-      ex.printStackTrace();
-    }
-    seg.first();
-    return seg;
-  }
-
-  /**
-   * Set a mark at the specified offset.
-   * <p>
-   * Should use ViMark.set(ViFPOS, ViTextView)
-   * </p>
-   * @param global_mark if false then it is a mark within a file, otherwise
-   * it is a file mark and is valid between files.
-   * @deprecated
-   */
-  public void setMarkOffset(ViMark mark_arg, int offset, boolean global_mark) {
-    Mark mark = (Mark) mark_arg;
-    mark.setOffset(offset, this);
-  }
-
-  public ViMark[] createMarks(int n_mark) {
-    ViMark[] mark = new ViMark[n_mark];
-    for(int i = 0; i < n_mark; i++) {
-      mark[i] = new Mark();
-    }
-    return mark;
-  }
-
-  public ViMark createMark() {
-      return new Mark();
+  private Element getLineElement(int lnum) {
+    return ((DefaultBuffer)getBuffer()).getLineElement(lnum);
   }
 
   public void updateCursor(ViCursor cursor) {
@@ -624,47 +519,36 @@ public class TextView implements ViTextView {
     }
   }
 
-  private static boolean inUndo;
-
-  private static boolean inInsertUndo;
-  private void assertUndoState(boolean condition, String fn) {
-      if(!(condition)) {
-	  ViManager.dumpStack(fn + ": inUndo " + inUndo
-		  + ", inInsertUndo " + inInsertUndo);
-      }
-  }
+  //
+  // START BUFFER
+  //
   
   public void beginUndo() {
-    assertUndoState(!inUndo && !inInsertUndo, "beginUndo");
-    inUndo = true;
-    buf.beginUndo();
+      getBuffer().beginUndo();
   }
 
   public void endUndo() {
-    buf.endUndo();
-    assertUndoState(inUndo && !inInsertUndo, "endUndo");
-    inUndo = false;
+      getBuffer().endUndo();
   }
 
   public boolean isInUndo() {
-    return inUndo;
+      return getBuffer().isInUndo();
   }
 
   public void beginInsertUndo() {
-    assertUndoState(!inUndo && !inInsertUndo, "beginInsertUndo");
-    inInsertUndo = true;
-    buf.beginInsertUndo();
+      getBuffer().beginInsertUndo();
   }
 
   public void endInsertUndo() {
-    buf.endInsertUndo();
-    assertUndoState(inInsertUndo && !inUndo, "endInsertUndo");
-    inInsertUndo = false;
+      getBuffer().endInsertUndo();
   }
 
   public boolean isInInsertUndo() {
-    return inInsertUndo;
+      return getBuffer().isInInsertUndo();
   }
+  //
+  // END BUFFER
+  //
 
   /** Quit editing window. Can close last view.
    */
@@ -716,12 +600,12 @@ public class TextView implements ViTextView {
     sb.append("\"" + getDisplayFileName() + "\"");
     if(ViManager.getViFactory().getFS().isModified(this))
         sb.append(" [Modified]");
-    int l = getLineCount();
+    int l = getBuffer().getLineCount();
     //sb.append(" " + l + " line" + Misc.plural(l));
     sb.append(" line " + cache.getCursor().getLine());
-    sb.append(" of " + getLineCount());
-    sb.append(" --" + (int)((cache.getCursor().getLine() * 100)
-			      / getLineCount()) + "%--");
+    sb.append(" of " + getBuffer().getLineCount());
+    sb.append(" --" + ((cache.getCursor().getLine() * 100)
+			      / getBuffer().getLineCount()) + "%--");
     sb.append(" col " + cache.getCursor().getColumn());
     getStatusDisplay().displayStatusMessage(sb.toString());
   }
@@ -729,9 +613,9 @@ public class TextView implements ViTextView {
   public String getDisplayFileNameAndSize() {
     StringBuffer sb = new StringBuffer();
     sb.append("\"" + getDisplayFileName() + "\"");
-    int l = getLineCount();
-    sb.append(" " + getLineCount() + "L, ");
-    sb.append(" " + getDoc().getLength() + "C");
+    int l = getBuffer().getLineCount();
+    sb.append(" " + getBuffer().getLineCount() + "L, ");
+    sb.append(" " + getBuffer().getLength() + "C");
     return sb.toString();
   }
 
@@ -743,31 +627,8 @@ public class TextView implements ViTextView {
       return "xxx";
   }
   
-  public TextOps getOp() {
+  public TextOps getOps() {
     return ops;
-  }
-
-  protected final Document getDoc() {
-    // return editorPane.getDocument();
-    return cache.getDoc();
-  }
-
-  /** @return the element index from root which contains the offset */
-  protected int getElemIndex(int offset) {
-    Document doc = getDoc();
-    Element root = doc.getDefaultRootElement();
-    return root.getElementIndex(offset);
-  }
-
-  /** @return the element which contains the offset */
-  protected Element getElem(int offset) {
-    Element elem = cache.getCurrentLineElement();
-    if(elem != null
-       	&& elem.getStartOffset() <= offset && offset < elem.getEndOffset()) {
-      return elem;
-    }
-    Element root = getDoc().getDefaultRootElement();
-    return root.getElement(root.getElementIndex(offset));
   }
   
   //////////////////////////////////////////////////////////////////////
@@ -910,7 +771,8 @@ public class TextView implements ViTextView {
       ViFPOS fpos = getWCursor().copy();
       int offset = editorPane.getCaret().getMark();
       setCaretPosition(fpos.getOffset()); // clear the selection
-      fpos.set(getLineNumber(offset), getColumnNumber(offset));
+      fpos.set(getBuffer().getLineNumber(offset),
+               getBuffer().getColumnNumber(offset));
       G.VIsual = fpos;
     }
 
@@ -949,16 +811,16 @@ public class TextView implements ViTextView {
     int[] newHighlight = null;
     if (vb.mode == 'V') { // line selection mode
       // make sure the entire lines are selected
-      newHighlight = new int[] { getLineStartOffset(vb.startLine),
-                                 getLineEndOffset(vb.endLine),
+      newHighlight = new int[] { getBuffer().getLineStartOffset(vb.startLine),
+                                 getBuffer().getLineEndOffset(vb.endLine),
                                  -1, -1};
     } else if (vb.mode == 'v') {
       newHighlight = new int[] { vb.startOffset,
                                  vb.endOffset,
                                  -1, -1};
     } else if (vb.mode == (0x1f & (int)('V'))) { // visual block mode
-      int startLine = getLineNumber(startOffset);
-      int endLine = getLineNumber(endOffset -1);
+      int startLine = getBuffer().getLineNumber(startOffset);
+      int endLine = getBuffer().getLineNumber(endOffset -1);
       
       if(vb.startLine > endLine || vb.endLine < startLine)
         newHighlight = new int[] { -1, -1};
@@ -971,8 +833,8 @@ public class TextView implements ViTextView {
         MutableInt right = new MutableInt();
         int i = 0;
         for (int line = startLine; line <= endLine; line++) {
-          int offset = getLineStartOffset(line);
-          int len = getLineEndOffset(line) - offset;
+          int offset = getBuffer().getLineStartOffset(line);
+          int len = getBuffer().getLineEndOffset(line) - offset;
           if(getcols(line, vb.left, vb.wantRight, left, right)) {
             newHighlight[i++] = offset + Math.min(len, left.getValue());
             newHighlight[i++] = offset + Math.min(len, right.getValue());
@@ -1004,7 +866,7 @@ public class TextView implements ViTextView {
     int c1 = -1, c2 = -1;
     
     int ts = buf.b_p_ts;
-    MySegment seg = getLineSegment(lnum);
+    MySegment seg = getBuffer().getLineSegment(lnum);
     int col = 0;
     for (int ptr = seg.offset; ; ++ptr, ++col) {
       char c = seg.array[ptr];
@@ -1038,13 +900,13 @@ public class TextView implements ViTextView {
   public void updateHighlightSearchState() {
     updateHighlightSearchCommonState();
     
-    applyBackground(new int[] {0, getDoc().getLength(), -1, -1},
+    applyBackground(new int[] {0, getBuffer().getLength(), -1, -1},
                     UNHIGHLIGHT);
     
     if(!Options.doHighlightSearch())
       return;
     
-    int[] b = getHighlightSearchBlocks(0, getDoc().getLength());
+    int[] b = getHighlightSearchBlocks(0, getBuffer().getLength());
     applyBackground(b, HIGHLIGHT);
   }
   
@@ -1065,7 +927,7 @@ public class TextView implements ViTextView {
   public int[] getHighlightSearchBlocks(int startOffset, int endOffset) {
     highlightSearchIndex.setValue(0);
     if(highlightSearchPattern != null) {
-      getSegment(startOffset, endOffset - startOffset, highlightSearchSegment);
+      getBuffer().getSegment(startOffset, endOffset - startOffset, highlightSearchSegment);
       Matcher m = highlightSearchPattern.matcher(highlightSearchSegment);
       while(m.find()) {
         highlightSearchBlocks = addBlock(highlightSearchIndex,

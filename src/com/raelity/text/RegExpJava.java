@@ -33,6 +33,7 @@ public class RegExpJava extends RegExp
      * for matching. The string can begin with "(e?=x)" to
      * specify an escape character.
      */
+    @Override
     public void compile(String patternString, int compileFlags) 
     throws RegExpPatternError {
 
@@ -57,10 +58,12 @@ public class RegExpJava extends RegExp
         }
     }
 
+    @Override
     public boolean search(String input) {
         return search(input, 0);
     }
 
+    @Override
     public boolean search(String input, int start) {
         Matcher m = pat.matcher(input);
         matched = m.find();
@@ -68,6 +71,7 @@ public class RegExpJava extends RegExp
         return matched;
     }
 
+    @Override
     public boolean search(char[] input, int start, int len) {
 	MySegment s = new MySegment(input, 0, input.length);
         //System.err.print("\tstart: " + start + ", len: " + len);
@@ -91,21 +95,27 @@ public class RegExpJava extends RegExp
         return matched;
     }
 
+    @Override
     public RegExpResult getResult() {
         return result;
     }
+    @Override
     public int nGroup() {
         return result.nGroup();
     }
+    @Override
     public String group(int i) {
         return result.group(i);
     }
+    @Override
     public int length(int i) {
         return result.length(i);
     }
+    @Override
     public int start(int i) {
         return result.start(i);
     }
+    @Override
     public int stop(int i) {
         return result.stop(i);
     }
