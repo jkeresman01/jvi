@@ -30,8 +30,10 @@ public class KeyBindingBean  extends SimpleBeanInfo {
     //
     // The BeanInfo is embedded in the same class
     //
-    public BeanDescriptor getBeanDescriptor() {
+    @Override
+public BeanDescriptor getBeanDescriptor() {
         return new BeanDescriptor(KeyBindingBean.class) {
+            @Override
             public String getDisplayName() {
                 return "Control-Key Bindings";
             }
@@ -39,6 +41,7 @@ public class KeyBindingBean  extends SimpleBeanInfo {
     }
     
     Vector<PropertyDescriptor> vD;
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
         vD = new Vector<PropertyDescriptor>();
         
@@ -60,6 +63,7 @@ public class KeyBindingBean  extends SimpleBeanInfo {
     }
     
     private static Image icon, icon32;
+    @Override
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16
                 || type == BeanInfo.ICON_MONO_16x16) {
