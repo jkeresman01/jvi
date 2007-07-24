@@ -197,7 +197,7 @@ public class Jvi {
                 setupFrame(frame2);
             }
             frame1.editorPane.requestFocusInWindow();
-	}});
+	}   });
     } catch(Exception e) {}
 
     // invoke and wait to make sure widget is fully drawn.
@@ -208,7 +208,7 @@ public class Jvi {
           if(make2) {
               ViManager.installKeymap(frame2.editorPane);
           }
-	}});
+	}   });
     } catch(Exception e) {}
     
     // wait for frame to exit, so JUnitTest won't kill it
