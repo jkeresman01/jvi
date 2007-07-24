@@ -45,6 +45,7 @@ public class IntegerOption extends Option {
     if(validator == null) {
       // The default validation is that the value must be >= zero.
       validator = new Validator() {
+                @Override
         public void validate(int val) throws PropertyVetoException {
           if(val < 0) {
             throw new PropertyVetoException(
@@ -59,6 +60,7 @@ public class IntegerOption extends Option {
     this.validator = validator;
   }
 
+    @Override
   public final int getInteger() {
     return value;
   }
@@ -78,6 +80,7 @@ public class IntegerOption extends Option {
   /**
    * Set the value as a string.
    */
+    @Override
   public void setValue(String newValue) throws IllegalArgumentException {
     int n = Integer.parseInt(newValue);
     setInteger(n);
@@ -86,6 +89,7 @@ public class IntegerOption extends Option {
   /**
    * Validate the setting value.
    */
+    @Override
   public void validate(int val) throws PropertyVetoException {
     validator.validate(val);
   }
