@@ -90,6 +90,7 @@ class Cursor implements ViCursor {
     return highlightId;
   }
 
+    @Override
   public boolean equals(Object o) {
     if( ! (o instanceof Cursor)) {
       return false;
