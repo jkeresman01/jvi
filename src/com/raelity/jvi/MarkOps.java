@@ -32,10 +32,10 @@ package com.raelity.jvi;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import static com.raelity.jvi.ViTextView.MARKOP;
-import static com.raelity.jvi.ViTextView.MARKOP.NEXT;
-import static com.raelity.jvi.ViTextView.MARKOP.PREV;
-import static com.raelity.jvi.ViTextView.MARKOP.TOGGLE;
+import static com.raelity.jvi.ViBuffer.MARKOP;
+import static com.raelity.jvi.ViBuffer.MARKOP.NEXT;
+import static com.raelity.jvi.ViBuffer.MARKOP.PREV;
+import static com.raelity.jvi.ViBuffer.MARKOP.TOGGLE;
 
 import static com.raelity.jvi.Constants.*;
 import static com.raelity.jvi.Messages.*;
@@ -45,7 +45,8 @@ import static com.raelity.jvi.Messages.*;
  */
 class MarkOps {
 
-  static Map marks = new WeakHashMap(5);
+  // NEEDSWORK: put each markset in Buffer
+  //static Map<Object,ViMark[]> marks = new WeakHashMap<Object,ViMark[]>(5);
 
   /** This constant indicates mark is in other file. */
   final static FPOS otherFile = new FPOS();
@@ -56,7 +57,7 @@ class MarkOps {
    * <li>Only handle lower case marks.
    * </ul>
    */
-  static int setmark(int c, int count) {
+  static int setmark(char c, int count) {
     Normal.do_xop("setmark");
     
     {
@@ -71,7 +72,7 @@ class MarkOps {
         if(op != null) {
             if(op != TOGGLE)
                 setpcmark();
-            G.curwin.anonymousMark(op, count);
+            G.curbuf.anonymousMark(op, count);
             
             return OK;
         }
@@ -87,7 +88,7 @@ class MarkOps {
     if (Util.islower(c)) {
       int		i;
       i = c - 'a';
-      getMark(G.curwin, i).setMark(G.curwin.getWCursor(), G.curwin);
+      G.curbuf.getMark(i).setMark(G.curwin.getWCursor());
       // curbuf.b_namedm[i] = curwin.w_cursor;
       return OK;
     }
@@ -108,7 +109,7 @@ class MarkOps {
    *	  NULL if there is no mark called 'c'.
    *	  -1 if mark is in other file (only if changefile is TRUE)
    */
-  static ViMark getmark(int c, boolean changefile) {
+  static ViMark getmark(char c, boolean changefile) {
     ViMark m = null;
     if(c == '\'' || c == '`') {
       // make a copy since it might change soon
@@ -136,36 +137,15 @@ class MarkOps {
         int col = 0;
         if(c == '>')
           col = Misc.check_cursor_col(m.getLine(), MAXCOL);
-        int lineoff = G.curwin.getLineStartOffsetFromOffset(m.getOffset());
+        int lineoff = G.curbuf.getLineStartOffsetFromOffset(m.getOffset());
         m = (ViMark)m.copy();
-        G.curwin.setMarkOffset(m, lineoff + col, false);
+        G.curbuf.setMarkOffset(m, lineoff + col, false);
       }
     } else if (Util.islower(c)) {
       int i = c - 'a';
-      m = getMark(G.curwin, i);
+      m = G.curbuf.getMark(i);
     }
     return m;
-  }
-
-  /** Get the indicated mark (a reference). */
-  static ViMark getMark(ViTextView tv, int i) {
-    ViMark[] ms = getMarks(tv);
-    return ms[i];
-  }
-
-  /** Get the indicated mark (a reference). */
-  static ViMark XXXgetMark(int i) {
-    ViMark[] ms = getMarks(G.curwin);
-    return ms[i];
-  }
-
-  static private ViMark[] getMarks(ViTextView tv) {
-    ViMark[] ms = (ViMark[])marks.get(tv.getFileObject());
-    if(ms == null) {
-      ms = tv.createMarks(26);
-      marks.put(tv.getFileObject(), ms);
-    }
-    return ms;
   }
 
   /**
@@ -182,7 +162,7 @@ class MarkOps {
       msg = e_umark;
     } else {
       try {
-	if(mark.getLine() > G.curwin.getLineCount()) {
+	if(mark.getLine() > G.curbuf.getLineCount()) {
 	  msg = e_markinval;
 	}
       } catch(ViMark.MarkOrphanException e) {
@@ -224,7 +204,7 @@ class MarkOps {
       return;
     }
     G.curwin.pushPCMark();
-    G.curwin.getPCMark().setMark(fpos, G.curwin);
+    G.curwin.getPCMark().setMark(fpos);
     // NEEDSWORK: pcmark and jump list stuff...
   }
 
@@ -239,7 +219,7 @@ class MarkOps {
       return;
     }
     tv.pushPCMark();
-    tv.setMarkOffset(tv.getPCMark(), offset, false);
+    tv.getBuffer().setMarkOffset(tv.getPCMark(), offset, false);
     // NEEDSWORK: pcmark and jump list stuff...
   }
 
