@@ -41,14 +41,22 @@ package com.raelity.jvi;
  * NEEDSWORK: This should have a weak reference to Buffer.
  */
 
-public class FPOS implements ViFPOS, Comparable, Cloneable
+public class FPOS extends ViFPOS.abstractFPOS
 {
   private MutableInt offset = new MutableInt();
   private MutableInt lnum = new MutableInt();
   private MutableInt col = new MutableInt();
 
+  public FPOS() {
+  }
+
+  /** the values are slammed, no validity checking. */
+  public FPOS(int offset, int line, int column) {
+    initFPOS(offset, line, column);
+  }
+
   /** Used to make a copy. */
-  private void initFPOS(int o, int l, int c) {
+  protected void initFPOS(int o, int l, int c) {
     offset.setValue(o);
     lnum.setValue(l);
     col.setValue(c);
@@ -72,8 +80,8 @@ public class FPOS implements ViFPOS, Comparable, Cloneable
   }
 
   public void set(int line, int column) {
-    int startOffset = G.curwin.getLineStartOffset(line);
-    int endOffset = G.curwin.getLineEndOffset(line);
+    int startOffset = G.curbuf.getLineStartOffset(line);
+    int endOffset = G.curbuf.getLineEndOffset(line);
     int adjustedColumn = -1;
 
     if(column < 0) {
@@ -88,60 +96,13 @@ public class FPOS implements ViFPOS, Comparable, Cloneable
       column = adjustedColumn;
     }
     
-    offset.setValue(startOffset + column);
-    lnum.setValue(line);
-    col.setValue(column);
-  }
-
-  public void set(ViFPOS fpos) {
-    set(fpos.getLine(), fpos.getColumn());
-  }
-
-  // Should not reference instance variables lnum or col directly,
-  // must use accessor functions since subclasses, in particular
-  // WCursor, must validate values
-  public void setColumn(int column) {
-    set(getLine(), column);
-  }
-
-  // Should not reference instance variables lnum or col directly,
-  // must use accessor functions since subclasses, in particular
-  // WCursor, must validate values
-  public void setLine(int line) {
-    set(line, getColumn());
-  }
-
-  final public boolean equals(Object o) {
-    // NEEDSWORK: equals FPOS, should doc be checked as same?
-    if(o instanceof ViFPOS) {
-      ViFPOS fpos = (ViFPOS)o;
-      return this.getOffset() == fpos.getOffset();
-    }
-    return false;
-  }
-
-  final public int compareTo(Object o) {
-    ViFPOS p = (ViFPOS)o;
-    if(this.getOffset() < p.getOffset()) {
-      return -1;
-    } else if(this.getOffset() > p.getOffset()) {
-      return 1;
-    } else {
-      return 0;
-    }
+    initFPOS(startOffset + column, line, column);
   }
 
   final public ViFPOS copy() {
     FPOS fpos = new FPOS();
     fpos.initFPOS(getOffset(), getLine(), getColumn());
     return fpos;
-  }
-
-  public String toString() {
-    return	  "offset: " + getOffset()
-	      	+ " lnum: " + getLine()
-	      	+ " col: " + getColumn()
-		;
   }
 }
 
