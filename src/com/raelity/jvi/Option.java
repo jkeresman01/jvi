@@ -189,6 +189,7 @@ public abstract class Option {
             if(validator == null) {
                 // The default validation accepts everything
                 validator = new Validator() {
+                    @Override
                     public void validate(Color val) throws PropertyVetoException {
                     }
                 };
@@ -196,6 +197,7 @@ public abstract class Option {
             this.validator = validator;
         }
 
+        @Override
         public final Color getColor() {
             return value;
         }
@@ -218,10 +220,12 @@ public abstract class Option {
         /**
         * Set the value as a string.
         */
+        @Override
         public void setValue(String newValue) throws IllegalArgumentException {
             setColor(Color.decode(newValue));
         }
         
+        @Override
         public void validate(Color val) throws PropertyVetoException {
             validator.validate(val);
         }

@@ -207,6 +207,7 @@ public final class Options {
 
     G.p_bs = createIntegerOption(backspace, 0,
             new IntegerOption.Validator() {
+            @Override
               public void validate(int val) throws PropertyVetoException {
                   if(val < 0 || val > 2) {
 		     throw new PropertyVetoException(
@@ -285,6 +286,7 @@ public final class Options {
 
     G.p_sel = createStringOption(selection, "inclusive",
             new StringOption.Validator() {
+            @Override
               public void validate(String val) throws PropertyVetoException {
                 if("old".equals(val)
                    || "inclusive".equals(val)
@@ -305,6 +307,7 @@ public final class Options {
     
     G.p_slm = createStringOption(selectMode, "",
             new StringOption.Validator() {
+            @Override
               public void validate(String val) throws PropertyVetoException {
                   if ("mouse".equals(val)
                       || "key".equals(val)
@@ -437,6 +440,7 @@ public final class Options {
 
     G.p_meta_escape = createStringOption(metaEscape, G.metaEscapeDefault,
             new StringOption.Validator() {
+            @Override
               public void validate(String val) throws PropertyVetoException {
 		for(int i = 0; i < val.length(); i++) {
 		  if(G.metaEscapeAll.indexOf(val.charAt(i)) < 0) {
@@ -691,7 +695,7 @@ public final class Options {
    * @return the String key names of the options.
    */
   public static List<String> getOptionNamesList() {
-    List<String> l = new ArrayList();
+    List<String> l = new ArrayList<String>();
     l.addAll(generalList);
     l.addAll(modifyList);
     l.addAll(cursorWrapList);
@@ -1113,7 +1117,7 @@ public final class Options {
     if(!G.p_ml.value || (mls = G.p_mls.value) == 0)
       return;
     int lnum;
-    int lcount = G.curwin.getLineCount();
+    int lcount = G.curbuf.getLineCount();
     for(lnum = 1; lnum < lcount && lnum <= mls; lnum++) {
       if(checkModeline(lnum))
         mls = 0;

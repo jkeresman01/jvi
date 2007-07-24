@@ -86,7 +86,7 @@ public class Search {
           new ActionListener() {
             public void actionPerformed(ActionEvent ev) {
               searchEntryComplete(ev);
-            }});
+            }   });
       }
       catch (TooManyListenersException ex) {
         ex.printStackTrace();
@@ -314,7 +314,7 @@ public class Search {
     }
 
     ViFPOS fpos = G.curwin.getWCursor();
-    MySegment seg = G.curwin.getLineSegment(fpos.getLine());
+    MySegment seg = G.curbuf.getLineSegment(fpos.getLine());
     col = fpos.getColumn();
     len = seg.count - 1; // don't count the newline, MUST_HAVE_NL
 
@@ -333,7 +333,7 @@ public class Search {
     }
     // curwin->w_cursor.col = col;
     G.curwin.setCaretPosition(
-		  col + G.curwin
+		  col + G.curbuf
 			  .getLineStartOffsetFromOffset(fpos.getOffset()));
     return true;
   }
@@ -368,7 +368,7 @@ public class Search {
    * are reported as class 1 since only white space boundaries are of interest.
    */
   private static int cls() {
-    int	    c;
+    char    c;
 
     c = Misc.gchar_cursor();
     if (c == ' ' || c == '\t' || c == '\n')
@@ -404,7 +404,7 @@ public class Search {
       // in the buffer.
       //
       last_line = (G.curwin.getWCursor().getLine()
-		   	== G.curwin.getLineCount());
+		   	== G.curbuf.getLineCount());
       i = Misc.inc_cursor();
       if (i == -1 || (i == 1 && last_line)) // started at last char in file
 	return FAIL;
@@ -792,21 +792,21 @@ finished:
       }
 
       for (int loop = 0; loop <= 1; ++loop) {   // loop twice if 'wrapscan' set
-        for ( ; lnum > 0 && lnum <= G.curwin.getLineCount();
+        for ( ; lnum > 0 && lnum <= G.curbuf.getLineCount();
               lnum += dir, at_first_line = false)
         {
           //
           // Look for a match somewhere in the line.
           //
           //////////ptr = ml_get_buf(buf, lnum, FALSE);
-          MySegment seg = G.curwin.getLineSegment(lnum);
+          MySegment seg = G.curbuf.getLineSegment(lnum);
                                                 // NEEDSWORK: AT_BOL == TRUE
           //System.err.println("line: " + lnum);
           if(prog.search(seg.array, seg.offset, seg.count)) {
             match = prog.start(0) - seg.offset; // column index
             matchend = prog.stop(0) - seg.offset;
-            int eolColumn = G.curwin.getLineEndOffset(lnum) -
-                             G.curwin.getLineStartOffset(lnum) - 1;
+            int eolColumn = G.curbuf.getLineEndOffset(lnum) -
+                             G.curbuf.getLineStartOffset(lnum) - 1;
             //
             // Forward search in the first line: match should be after
             // the start position. If not, continue at the end of the
@@ -939,7 +939,7 @@ finished:
         // written.
         //
         if (dir == BACKWARD) {    // start second loop at the other end
-          lnum = G.curwin.getLineCount();
+          lnum = G.curbuf.getLineCount();
           if ((options & SEARCH_MSG) != 0)
 	    // defer message until after things are positioned.
             // Msg.wmsg(top_bot_msg/*, true*/);
@@ -973,7 +973,7 @@ finished:
     if((options & SEARCH_MARK) != 0) {
       MarkOps.setpcmark();
     }
-    Misc.gotoLine(G.curwin.getLineNumber(pos.getOffset()), 0);
+    Misc.gotoLine(G.curbuf.getLineNumber(pos.getOffset()), 0);
     int new_pos = pos.getOffset();
     if(search_match_len == 0) {
         // search /$ puts cursor on end of line
@@ -1188,7 +1188,7 @@ finished:
                                       MutableInt flags,
                                       CharSequence subs)
   {
-    MySegment seg = G.curwin.getLineSegment(lnum);
+    MySegment seg = G.curbuf.getLineSegment(lnum);
 
     StringBuffer sb = null;
     int lookColumnOffset = 0;
@@ -1212,7 +1212,7 @@ finished:
       lastMatchColumn = matchOffsetColumn;
 
       nSubMatch++;
-      int segOffsetToDoc = G.curwin.getLineStartOffset(lnum) - seg.offset;
+      int segOffsetToDoc = G.curbuf.getLineStartOffset(lnum) - seg.offset;
 
       modalResponse = 0;
       if(flags.testAnyBits(SUBST_CONFIRM)) {
@@ -1222,6 +1222,7 @@ finished:
 
         Msg.wmsg("replace with '" + subs + "' (y/n/a/q/l)");
         ViManager.getViFactory().startModalKeyCatch(new KeyAdapter() {
+                    @Override
           public void keyPressed(KeyEvent e) {
             e.consume();
             char c = e.getKeyChar();
@@ -1267,7 +1268,7 @@ finished:
                                changedData.toString());
 
         // the line has changed, fetch changed line
-        seg = G.curwin.getLineSegment(lnum);
+        seg = G.curbuf.getLineSegment(lnum);
       }
 
       if(modalResponse == 'q' || modalResponse == 'l') {
@@ -1377,7 +1378,7 @@ finished:
       Msg.emsg("global takes an argument (FOR NOW)");
       return;
     }
-    int old_lcount = G.curwin.getLineCount();
+    int old_lcount = G.curbuf.getLineCount();
     nSubLine = 0;
     nSubMatch = 0;
     nSubChanges = 0;
@@ -1442,7 +1443,7 @@ finished:
       }
     }
 
-    int nLine = G.curwin.getLineCount();
+    int nLine = G.curbuf.getLineCount();
       
     // for now special case a few known commands that can be global'd
     // NEEDSWORK: make global two pass, check vim sources. There's no nice
@@ -1463,7 +1464,7 @@ finished:
     substFlags = null;
 
     for(int lnum = 1; lnum <= nLine; lnum++) {
-      line = G.curwin.getLineSegment(lnum);
+      line = G.curbuf.getLineSegment(lnum);
       if(prog.search(line.array, line.offset, line.count)) {
 	// if full parse each time command executed,
 	// then should move cursor (or equivilent) but.....
@@ -1501,7 +1502,7 @@ finished:
     result.close();
     
     if( ! do_sub_msg()) {
-      Misc.msgmore(G.curwin.getLineCount() - old_lcount);
+      Misc.msgmore(G.curbuf.getLineCount() - old_lcount);
     }
   }
 
@@ -1620,14 +1621,15 @@ finished:
   }
 
   static boolean findsent(int dir, int count) {
-    FPOS pos, tpos;
-    int c;
+    ViFPOS pos, tpos;
+    char c;
+    int i;
     int startlnum;
     boolean noskip = false;
     boolean cpo_J;
     boolean found_dot;
 
-    pos = (FPOS) G.curwin.getWCursor().copy();
+    pos = G.curwin.getWCursor().copy();
 
     while (count-- > 0) {
 
@@ -1644,7 +1646,7 @@ found:
         }
         else if (dir == FORWARD && pos.getColumn() == 0 &&
           startPS(pos.getLine(), NUL, false)) {
-          if (pos.getLine() == G.curwin.getLineCount())
+          if (pos.getLine() == G.curbuf.getLineCount())
             return false;
           pos.set(pos.getLine() + 1, 0);
           break found;
@@ -1684,15 +1686,15 @@ found:
             break;
           }
           if (c == '.' || c == '!' || c == '?') {
-            tpos = (FPOS) pos.copy();
+            tpos = pos.copy();
             do
-              if ((c = Misc.inc(tpos)) == -1)
+              if ((i = Misc.inc(tpos)) == -1)
                 break;
             while (Util.vim_strchr(")]\"'", c = Misc.gchar_pos(tpos)) != null);
 
-            if (c == -1 || (!cpo_J && (c == ' ' || c == '\t')) || c == '\n'
-              || (cpo_J && (c == ' ' && Misc.inc(tpos) >= 0
-              && Misc.gchar_pos(tpos) == ' '))) {
+            if (i == -1 || (!cpo_J && (c == ' ' || c == '\t')) || c == '\n'
+                || (cpo_J && (c == ' ' && Misc.inc(tpos) >= 0
+                    && Misc.gchar_pos(tpos) == ' '))) {
               pos = tpos;
               if (Misc.gchar_pos(pos) == '\n') // skip '\n' at EOL
                 Misc.inc(pos);
@@ -1731,7 +1733,7 @@ found:
         if (!first && did_skip && startPS(curr, what, both))
           break;
 
-        if ((curr += dir) < 1 || curr > G.curwin.getLineCount()) {
+        if ((curr += dir) < 1 || curr > G.curbuf.getLineCount()) {
           if (count > 0)
             return false;
           curr -= dir;
@@ -1748,7 +1750,7 @@ found:
 
     int offset = 0;
 
-    if (curr == G.curwin.getLineCount()) {
+    if (curr == G.curbuf.getLineCount()) {
       offset = Util.lineLength(curr);
       if (offset > 0) {
         offset--;
@@ -1864,7 +1866,7 @@ extend:
         for (i = count; --i >= 0; )
         {
             if (start_lnum ==
-                    (dir == BACKWARD ? 1 : G.curwin.getLineCount()/*G.curbuf.b_ml.ml_line_count*/))
+                    (dir == BACKWARD ? 1 : G.curbuf.getLineCount()/*G.curbuf.b_ml.ml_line_count*/))
             {
                 retval = FAIL;
                 break;
@@ -1883,7 +1885,7 @@ extend:
                 for (;;)
                 {
                     if (start_lnum == (dir == BACKWARD
-                                ? 1 : G.curwin.getLineCount() /*G.curbuf.b_ml.ml_line_count*/))
+                                ? 1 : G.curbuf.getLineCount() /*G.curbuf.b_ml.ml_line_count*/))
                         break;
                     if (start_is_white != (linewhite(start_lnum + dir) ? 1 : 0)
                             || (start_is_white <= 0
@@ -1895,7 +1897,7 @@ extend:
                 if (!include)
                     break;
                 if (start_lnum == (dir == BACKWARD
-                            ? 1 : G.curwin.getLineCount() /*G.curbuf.b_ml.ml_line_count*/))
+                            ? 1 : G.curbuf.getLineCount() /*G.curbuf.b_ml.ml_line_count*/))
                     break;
                 prev_start_is_white = start_is_white;
             }
@@ -1927,7 +1929,7 @@ extend:
      * Move past the end of any white lines.
      */
     end_lnum = start_lnum;
-    while (linewhite(end_lnum) && end_lnum < G.curwin.getLineCount() /*curbuf.b_ml.ml_line_count*/)
+    while (linewhite(end_lnum) && end_lnum < G.curbuf.getLineCount() /*curbuf.b_ml.ml_line_count*/)
         ++end_lnum;
 
     --end_lnum;
@@ -1936,7 +1938,7 @@ extend:
         --i;
     while (i-- > 0)
     {
-        if (end_lnum == G.curwin.getLineCount()/*curbuf.b_ml.ml_line_count*/)
+        if (end_lnum == G.curbuf.getLineCount()/*curbuf.b_ml.ml_line_count*/)
             return FAIL;
 
         if (!include)
@@ -1948,7 +1950,7 @@ extend:
             /*
              * skip to end of paragraph
              */
-            while (end_lnum < G.curwin.getLineCount()//curbuf.b_ml.ml_line_count
+            while (end_lnum < G.curbuf.getLineCount()//curbuf.b_ml.ml_line_count
                     && !linewhite(end_lnum + 1)
                     && !startPS(end_lnum + 1, 0, false))
                 ++end_lnum;
@@ -1961,7 +1963,7 @@ extend:
          * skip to end of white lines after paragraph
          */
         if (include || do_white)
-            while (end_lnum < G.curwin.getLineCount()//curbuf.b_ml.ml_line_count
+            while (end_lnum < G.curbuf.getLineCount()//curbuf.b_ml.ml_line_count
                     && linewhite(end_lnum + 1))
                 ++end_lnum;
     }
