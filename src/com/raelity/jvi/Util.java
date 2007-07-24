@@ -31,21 +31,20 @@ package com.raelity.jvi;
 
 import java.awt.Toolkit;
 import java.text.CharacterIterator;
-import javax.swing.text.BadLocationException;
 
 import com.raelity.text.TextUtil.MySegment;
 
 public class Util {
   // static final int TERMCAP2KEY(int a, int b) { return a + (b << 8); }
   // NEEDSWORK: CHAR
-  static final int ctrl(int x) { return x & 0x1f; }
+  static final char ctrl(char x) { return (char)(x & 0x1f); }
   // static final int shift(int c) { return c | (0x1 << 24); }
   // static void stuffcharReadbuff(int c) {}
 
   /** position to end of line. */
   static void endLine() {
     ViFPOS fpos = G.curwin.getWCursor();
-    int offset = G.curwin
+    int offset = G.curbuf
 	      		.getLineEndOffsetFromOffset(fpos.getOffset());
     // assumes there is at least one char in line, could be a '\n'
     offset--;	// point at last char of line
@@ -65,7 +64,7 @@ public class Util {
    * @param c the character to search for
    * @return the substring of c in s or null if c not part of s.
    */
-  public static String vim_strchr(String s, int c) {
+  public static String vim_strchr(String s, char c) {
     int index = s.indexOf(c);
     if(index < 0) {
       return null;
@@ -79,38 +78,38 @@ public class Util {
     		|| regname >= 'A' && regname <= 'Z';
   }
 
-  public static final boolean isalpha(int c) {
+  public static final boolean isalpha(char c) {
     return	   c >= 'a' && c <= 'z'
     		|| c >= 'A' && c <= 'Z';
   }
 
-  public static boolean islower(int c) {
+  public static boolean islower(char c) {
     return 'a' <= c && c <= 'z';
   }
 
- public static int tolower(int c) {
+ public static char tolower(char c) {
    if(isupper(c)) {
      c |= 0x20;
    }
    return c;
  }
 
-  static boolean isupper(int c) {
+  static boolean isupper(char c) {
     return 'A' <= c && c <= 'Z';
   }
 
- static int toupper(int c) {
+ static char toupper(char c) {
    if(islower(c)) {
      c &= ~0x20;
    }
    return c;
  }
 
-  public static boolean isdigit(int c) {
+  public static boolean isdigit(char c) {
     return '0' <= c && c <= '9';
   }
 
-  static boolean vim_isprintc(int c) { return false; }
+  static boolean vim_isprintc(char c) { return false; }
 
   /**
    * get a pointer to a (read-only copy of a) line.
@@ -119,7 +118,7 @@ public class Util {
    * having to check for error everywhere).
    */
   static MySegment ml_get(int lnum) {
-    MySegment seg = new MySegment(G.curwin.getLineSegment(lnum));
+    MySegment seg = new MySegment(G.curbuf.getLineSegment(lnum));
     return seg;
   }
   
@@ -137,7 +136,7 @@ public class Util {
    * @return MySegment for the line.
    */
   static CharacterIterator ml_get_pos(ViFPOS pos) {
-    MySegment seg = G.curwin.getLineSegment(pos.getLine());
+    MySegment seg = G.curbuf.getLineSegment(pos.getLine());
     seg.setIndex(seg.offset + pos.getColumn());
     return seg;
   }
@@ -147,8 +146,8 @@ public class Util {
   }
 
   static void ml_replace(int lnum, CharSequence line) {
-    G.curwin.replaceString(G.curwin.getLineStartOffset(lnum),
-            G.curwin.getLineEndOffset(lnum) -1,
+    G.curwin.replaceString(G.curbuf.getLineStartOffset(lnum),
+            G.curbuf.getLineEndOffset(lnum) -1,
             line.toString());
   }
 
@@ -161,18 +160,18 @@ public class Util {
    * Get the length of a line, not incuding the newline
    */
   static int lineLength(int line) {
-    MySegment seg = G.curwin.getLineSegment(line);
+    MySegment seg = G.curbuf.getLineSegment(line);
     return seg.count < 1 ? 0 : seg.count - 1;
   }
 
   /** is the indicated line empty? */
   static boolean lineempty(int lnum) {
-    MySegment seg = G.curwin.getLineSegment(lnum);
+    MySegment seg = G.curbuf.getLineSegment(lnum);
     return seg.count == 0 || seg.array[seg.offset] == '\n';
   }
   
   static boolean bufempty() {
-      return G.curwin.getLineCount() == 1
+      return G.curbuf.getLineCount() == 1
              && lineempty(1);
   }
 
@@ -182,7 +181,7 @@ public class Util {
 
   static char getCharAt(int offset) {
     MySegment seg = new MySegment();
-    G.curwin.getSegment(offset, 1, seg);
+    G.curbuf.getSegment(offset, 1, seg);
     return seg.count > 0 ? seg.array[seg.offset] : 0;
   }
 
