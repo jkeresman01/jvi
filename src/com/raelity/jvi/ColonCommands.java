@@ -28,7 +28,6 @@
  */
 package com.raelity.jvi;
 
-import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -41,7 +40,6 @@ import java.util.TooManyListenersException;
 import java.util.StringTokenizer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -52,7 +50,6 @@ import static com.raelity.jvi.ColonCommandFlags.*;
 
 import java.io.*;
 import java.lang.Thread.UncaughtExceptionHandler;
-import javax.swing.JOptionPane;
 import javax.swing.Timer;
 
 /**
@@ -89,7 +86,7 @@ public class ColonCommands {
           new ActionListener() {
             public void actionPerformed(ActionEvent ev) {
               colonEntryComplete(ev);
-            }});
+            }   });
       }
       catch (TooManyListenersException ex) {
         ex.printStackTrace();
@@ -213,7 +210,7 @@ public class ColonCommands {
 	    {
                 ++sidx;
 		cev.line1 = 1;
-                cev.line2 = G.curwin.getLineCount();
+                cev.line2 = G.curbuf.getLineCount();
 		++cev.addr_count;
 	    }
             /* ************************************************************
@@ -268,6 +265,7 @@ public class ColonCommands {
         modalResponse = 0;
         Msg.wmsg("Backwards range given, OK to swap (y/n)?");
         ViManager.getViFactory().startModalKeyCatch(new KeyAdapter() {
+                    @Override
           public void keyPressed(KeyEvent e) {
             e.consume();
             char c = e.getKeyChar();
@@ -367,7 +365,7 @@ public class ColonCommands {
     cev.bang = bang;
              
     if(sidx < commandLine.length()) {
-      cev.args = new ArrayList();
+      cev.args = new ArrayList<String>();
       if((((ColonAction)ce.getValue()).getFlags() & NOPARSE) != 0) {
         // put the line (without command name) as the argument
         cev.args.add(commandLine.substring(sidx));
@@ -406,13 +404,13 @@ public class ColonCommands {
     do {
       char c = s.charAt(sidx);
       switch(c) {
-        case '.':         // '.' - Cursor position
+                case '.':         // '.' - Cursor position
           ++sidx;
           lnum.setValue(G.curwin.getWCursor().getLine());
           break;
         case '$':         // '$' - last line
           ++sidx;
-          lnum.setValue(G.curwin.getLineCount());
+          lnum.setValue(G.curbuf.getLineCount());
           break;
         case '\'':        // ''' - mark
           ++sidx;
@@ -423,7 +421,7 @@ public class ColonCommands {
           if(skip) {
             ++sidx;
           } else {
-            ViMark fp = (ViMark)MarkOps.getmark(c, false);
+            ViMark fp = MarkOps.getmark(c, false);
             ++sidx;
             if(MarkOps.check_mark(fp) == FAIL) {
               return -1;
@@ -547,7 +545,7 @@ public class ColonCommands {
     /** index of the command args in the original string */
     private int iArgString;
     /** the command arguments */
-    List args;
+    List<String> args;
     /** the text view for this event */
     ViTextView viTextView;
     /** the first line number */
@@ -874,6 +872,7 @@ public class ColonCommands {
       Msg.fmsg(coord.statusMessage);
       
       ViManager.getViFactory().startGlassKeyCatch(new KeyAdapter() {
+                @Override
         public void keyTyped(KeyEvent e) {
           e.consume();
           if(e.getKeyChar() == (KeyEvent.VK_C & 0x1f)
@@ -1023,15 +1022,18 @@ public class ColonCommands {
       this.reader = reader;
     }
       
+        @Override
     public void run() {
       super.run();
       coord.finish(true);
     }
     
+        @Override
     public void dumpState() {
       super.dumpState();
     }
     
+        @Override
     void cleanup() {
       if(didCleanup)
         return;
@@ -1053,6 +1055,7 @@ public class ColonCommands {
       }
     }
     
+        @Override
     void doTask() {
       String line;
       try {
@@ -1087,6 +1090,7 @@ public class ColonCommands {
       this.writer = writer;
     }
     
+        @Override
     public void dumpState() {
       System.err.println("currWriterLine " + currWriterLine
                          + ", wroteFirstLineToProcess " + wroteFirstLineToProcess
@@ -1094,6 +1098,7 @@ public class ColonCommands {
       super.dumpState();
     }
     
+        @Override
     void cleanup() {
       if(didCleanup)
         return;
@@ -1111,6 +1116,7 @@ public class ColonCommands {
       }
     }
     
+        @Override
     void doTask() {
       writeToProcess();
     }
@@ -1156,6 +1162,7 @@ public class ColonCommands {
       super(READ_PROCESS, coord);
       this.reader = reader;
     }
+        @Override
     public void dumpState() {
       System.err.println("currReaderLine " + currReaderLine
                          + ", wroteFirstLineToFile " + wroteFirstLineToFile
@@ -1164,6 +1171,7 @@ public class ColonCommands {
       super.dumpState();
     }
     
+        @Override
     void cleanup() {
       if(didCleanup)
         return;
@@ -1181,6 +1189,7 @@ public class ColonCommands {
       }
     }
     
+        @Override
     void doTask() {
       readFromProcess();
     }
@@ -1248,14 +1257,17 @@ public class ColonCommands {
       this.tv = tv;
     }
       
+        @Override
     public void run() {
       assert(false);
     }
 
+        @Override
     public void interrupt() {
       interruptFlag = true;
     }
 
+        @Override
     public boolean isInterrupted() {
       return interruptFlag;
     }
@@ -1312,6 +1324,7 @@ public class ColonCommands {
         finishUnderTimer();
     }
     
+        @Override
     void doTask() {
     }
     
@@ -1320,8 +1333,8 @@ public class ColonCommands {
     }
 
     private void deleteLines(int startLine, int endLine) {
-      int startOffset = tv.getLineStartOffset(startLine);
-      int endOffset = tv.getLineEndOffset(endLine);
+      int startOffset = tv.getBuffer().getLineStartOffset(startLine);
+      int endOffset = tv.getBuffer().getLineEndOffset(endLine);
       int docLength = tv.getEditorComponent().getDocument().getLength();
       if(endOffset > docLength)
         endOffset = docLength;
@@ -1336,7 +1349,7 @@ public class ColonCommands {
           System.err.println("!: rwDoc: try read doc");
         while(!isProblem() && docReadLine <= coord.lastLine) {
           int docLine = docReadLine + linesDelta;
-          data = tv.getLineSegment(docLine).toString();
+          data =    tv.getBuffer().getLineSegment(docLine).toString();
           if(!coord.fromDoc.offer(data))
             break;
           deleteLine(docLine);
@@ -1374,7 +1387,7 @@ public class ColonCommands {
               System.err.println("!: rwDoc: docWriteDONE");
             break;
           }
-          int offset = tv.getLineStartOffset(docWriteLine);
+          int offset = tv.getBuffer().getLineStartOffset(docWriteLine);
           tv.insertText(offset, data);
           offset += data.length();
           tv.insertText(offset, "\n");
@@ -1389,6 +1402,7 @@ public class ColonCommands {
       return didSomething;
     }
     
+        @Override
     public void dumpState() {
       System.err.println("docReadDone " + docReadDone
                           + ", docReadLine " + docReadLine
@@ -1398,6 +1412,7 @@ public class ColonCommands {
       super.dumpState();
     }
     
+        @Override
     void cleanup() {
       if(didCleanup)
         return;
@@ -1488,6 +1503,7 @@ public class ColonCommands {
       return isInterrupted() || error || exception != null;
     }
 
+        @Override
     public void run() {
       setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
         public void uncaughtException(Thread t, Throwable e) {
@@ -1570,6 +1586,7 @@ public class ColonCommands {
    * a save as dialog.
    */
   static ColonAction ACTION_write = new ColonAction() {
+        @Override
     public int getFlags() {
       return BANG;
     }
@@ -1587,6 +1604,7 @@ public class ColonCommands {
   };
   
   static ColonAction ACTION_wq = new ColonAction() {
+        @Override
     public int getFlags() {
       // any "!" is ignored
       return BANG;
@@ -1607,6 +1625,7 @@ public class ColonCommands {
    * Edit command. Only ':e#[number]' is supported.
    */
   static ColonAction ACTION_edit = new ColonAction() {
+        @Override
     public int getFlags() {
       return BANG;
     }
@@ -1645,6 +1664,7 @@ public class ColonCommands {
   };
   
   static ColonAction ACTION_substitute = new ColonAction() {
+        @Override
     public int getFlags() {
       return NOPARSE;
     }
@@ -1662,6 +1682,7 @@ public class ColonCommands {
   };
   
   static ColonAction ACTION_global = new ColonAction() {
+        @Override
     public int getFlags() {
       return NOPARSE;
     }
@@ -1818,7 +1839,7 @@ public class ColonCommands {
     oa.motion_type = MLINE;
     if(cev.getAction() != ACTION_yank) {
       MarkOps.setpcmark();
-      G.curwin.getWindow().setWCursor(oa.start);
+      G.curwin.getWCursor().set(oa.start);
       Edit.beginline(BL_SOL|BL_FIX);
     }
     return oa;
@@ -1862,6 +1883,7 @@ public class ColonCommands {
   static ActionListener ACTION_testGlassKeys = new ActionListener() {
     public void actionPerformed(ActionEvent ev) {
       ViManager.getViFactory().startGlassKeyCatch(new KeyAdapter() {
+                @Override
         public void keyPressed(KeyEvent e) {
           e.consume();
           if(e.getKeyCode() == KeyEvent.VK_Y) {
@@ -1879,6 +1901,7 @@ public class ColonCommands {
     public void actionPerformed(ActionEvent ev) {
       Msg.smsg("Enter 'y' to proceed");
       ViManager.getViFactory().startModalKeyCatch(new KeyAdapter() {
+                @Override
         public void keyPressed(KeyEvent e) {
           e.consume();
           if(e.getKeyCode() == KeyEvent.VK_Y) {
