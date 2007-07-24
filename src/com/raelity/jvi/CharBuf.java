@@ -33,6 +33,7 @@ class CharBuf {
   char data[];
   // StringBuffer?
 
+    @Override
   public String toString() {
     return "";
   }

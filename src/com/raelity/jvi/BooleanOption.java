@@ -44,6 +44,7 @@ public class BooleanOption extends Option {
     if(validator == null) {
       // The default validation accepts everything
       validator = new Validator() {
+                @Override
         public void validate(boolean val) throws PropertyVetoException {
         }
       };
@@ -51,6 +52,7 @@ public class BooleanOption extends Option {
     this.validator = validator;
   }
 
+    @Override
   public final boolean getBoolean() {
     return value;
   }
@@ -70,11 +72,13 @@ public class BooleanOption extends Option {
   /**
    * Set the value as a string.
    */
+    @Override
   public void setValue(String newValue) throws IllegalArgumentException {
     boolean b = Boolean.parseBoolean(newValue);
     setBoolean(b);
   }
   
+    @Override
   public void validate(boolean val) throws PropertyVetoException {
     validator.validate(val);
   }
