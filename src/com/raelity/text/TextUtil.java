@@ -33,10 +33,10 @@ public class TextUtil {
    * for the delimeters, " \t\n\r".
    */
   public static Vector split(String s) {
-    Vector word = new Vector();
+    Vector<String> word = new Vector<String>();
     StringTokenizer parse = new StringTokenizer(s);
     while(parse.hasMoreElements()) {
-      word.addElement(parse.nextElement());
+      word.addElement(parse.nextToken());
     }
     return word;
   }
@@ -45,10 +45,10 @@ public class TextUtil {
    * to delineate the words.
    */
   public static Vector split(String s, String separators) {
-    Vector word = new Vector();
+    Vector<String> word = new Vector<String>();
     StringTokenizer parse = new StringTokenizer(s, separators);
     while(parse.hasMoreElements()) {
-      word.addElement(parse.nextElement());
+      word.addElement(parse.nextToken());
     }
     return word;
   }
