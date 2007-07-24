@@ -9,7 +9,6 @@
 
 package com.raelity.jvi.swing;
 
-import com.raelity.jvi.Constants;
 import com.raelity.jvi.ViTextView;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
@@ -99,7 +98,7 @@ public class OpsBase implements TextOps {
     }
 
     protected Action findAction(String actionName) {
-        Action action = (Action)actionMap.get(actionName);
+        Action action = actionMap.get(actionName);
         if (action == null) {
             Action[] actions
 		  = textView.getEditorComponent().getEditorKit().getActions();
@@ -125,6 +124,7 @@ public class OpsBase implements TextOps {
             super("", ActionEvent.ACTION_PERFORMED, "");
         }
 
+        @Override
         public void setSource(Object source) {
           this.source = source;
         }
@@ -133,6 +133,7 @@ public class OpsBase implements TextOps {
           this.cmd = cmd;
         }
 
+        @Override
         public String getActionCommand() {
           return cmd;
         }
@@ -142,5 +143,6 @@ public class OpsBase implements TextOps {
 
     protected OpsBase.ReusableEvent event = new ReusableEvent();
 
-    protected static Map actionMap = new HashMap();
+    protected static Map<String,Action> actionMap
+            = new HashMap<String,Action>();
 }

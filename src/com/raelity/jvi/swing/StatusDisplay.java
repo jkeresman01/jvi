@@ -95,7 +95,7 @@ public class StatusDisplay implements ViStatusDisplay {
 	new Runnable() {
 	  public void run() {
 	    l01.setText(s01);
-	  }});
+	  } });
     }
   }
 
