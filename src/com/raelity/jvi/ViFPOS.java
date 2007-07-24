@@ -33,7 +33,7 @@ package com.raelity.jvi;
  * A position in a file/document.
  */
 
-public interface ViFPOS extends Comparable {
+public interface ViFPOS extends Comparable<ViFPOS> {
   public int getLine();
   public int getColumn();
   public int getOffset();
@@ -63,4 +63,53 @@ public interface ViFPOS extends Comparable {
 
   /** Make a copy */
   public ViFPOS copy();
+
+  public static abstract class abstractFPOS implements ViFPOS {
+      
+      public void set(ViFPOS fpos) {
+          set(fpos.getLine(), fpos.getColumn());
+      }
+      
+      // Should not reference instance variables lnum or col directly,
+      // must use accessor functions since subclasses, in particular
+      // WCursor, must validate values
+      public void setColumn(int column) {
+          set(getLine(), column);
+      }
+      
+      // Should not reference instance variables lnum or col directly,
+      // must use accessor functions since subclasses, in particular
+      // WCursor, must validate values
+      public void setLine(int line) {
+          set(line, getColumn());
+      }
+      
+        @Override
+      final public boolean equals(Object o) {
+          // NEEDSWORK: equals FPOS, should doc be checked as same?
+          if(o instanceof ViFPOS) {
+              ViFPOS fpos = (ViFPOS)o;
+              return this.getOffset() == fpos.getOffset();
+          }
+          return false;
+      }
+      
+      final public int compareTo(ViFPOS p) {
+          if(this.getOffset() < p.getOffset()) {
+              return -1;
+          } else if(this.getOffset() > p.getOffset()) {
+              return 1;
+          } else {
+              return 0;
+          }
+      }
+      
+        @Override
+      public String toString() {
+          return	  "offset: " + getOffset()
+          + " lnum: " + getLine()
+          + " col: " + getColumn()
+          ;
+      }
+  }
 }
