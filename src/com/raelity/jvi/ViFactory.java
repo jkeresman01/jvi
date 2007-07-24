@@ -119,7 +119,7 @@ public interface ViFactory {
   /**
    * @return action for picking up specified key
    */
-  public Action createKeyAction(String name, int key);
+  public Action createKeyAction(String name, char key);
   
   /**
    * fetch the keymap for insert mode operations

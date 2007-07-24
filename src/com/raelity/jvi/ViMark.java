@@ -35,24 +35,25 @@ import com.raelity.jvi.swing.*;
  * by the document.
  */
 public interface ViMark extends ViFPOS {
-  /** Set the mark to fpos in the specified textview */
-  public void setMark(ViFPOS fpos, ViTextView tv);
-
-  /** Set a mark's data to be the same as the argument mark */
-  public void setData(ViMark mark);
-
-  /** Invalidate the mark. */
-  public void invalidate();
-
-  public class MarkException extends RuntimeException {
-      public MarkException(String msg) {
-          super(msg);
-      }
-  }
-
-  public class MarkOrphanException extends MarkException {
-      public MarkOrphanException(String msg) {
-          super(msg);
-      }
-  }
+    
+    /** Set mark to position */
+    public void setMark(ViFPOS fpos);
+    
+    /** Set a mark's data to be the same as the argument mark */
+    public void setData(ViMark mark);
+    
+    /** Invalidate the mark. */
+    public void invalidate();
+    
+    public class MarkException extends RuntimeException {
+        public MarkException(String msg) {
+            super(msg);
+        }
+    }
+    
+    public class MarkOrphanException extends MarkException {
+        public MarkOrphanException(String msg) {
+            super(msg);
+        }
+    }
 }

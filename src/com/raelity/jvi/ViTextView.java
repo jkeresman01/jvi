@@ -30,10 +30,7 @@
 package com.raelity.jvi;
 
 import javax.swing.JEditorPane;
-import javax.swing.text.Element;
-import javax.swing.text.BadLocationException;
 
-import com.raelity.text.TextUtil.MySegment;
 
 /**
  * The information needed by vim when running on
@@ -59,9 +56,6 @@ public interface ViTextView extends ViOptionBag {
   
   /** jump list operations */
   public enum JLOP { NEXT_JUMP, PREV_JUMP, NEXT_CHANGE, PREV_CHANGE }
-  
-  /** annonymous mark operations */
-  public enum MARKOP { TOGGLE, NEXT, PREV }
   
   /** tags and tagstack operations */
   public enum TAGOP { OLDER, NEWER }
@@ -102,8 +96,14 @@ public interface ViTextView extends ViOptionBag {
   /** @return the underlying text component */
   public JEditorPane getEditorComponent();
 
-  /** @return opaque FileObject backing this EditorPane */
-  public Object getFileObject();
+  //////////////////////////////////////////////////////////////////////
+  //
+  // Text Modification methods
+  // They all fail if !isEditable
+  //
+  
+  /** Can the editor text be changed */
+  public boolean isEditable();
 
   /** Insert new line at current position */
   public void insertNewLine();
@@ -112,7 +112,20 @@ public interface ViTextView extends ViOptionBag {
   public void insertTab();
 
   /** Replace character at current cursor location with argument character */
-  public void replaceChar(int c, boolean advanceCursor);
+  public void replaceChar(char c, boolean advanceCursor);
+
+  /** Delete previous character (backspace). */
+  public void deletePreviousChar();
+
+  /** insert text at current cursor location.
+   *  For some characters special actions may be taken
+   */
+  public void insertChar(char c);
+
+  /** insert the char verbatim, no special actions */
+  public void insertTypedChar(char c);
+
+  // NEEDSWORK: get rid of the following three, if offset this must be Buffer.
 
   /** Replace indicated region with string */
   public void replaceString(int start, int end, String s);
@@ -120,31 +133,11 @@ public interface ViTextView extends ViOptionBag {
   /** Delete a bunch of characters */
   public void deleteChar(int start, int end);
 
-  /** Delete previous character (backspace). */
-  public void deletePreviousChar();
-
   /** insert text at specified location */
   public void insertText(int offset, String s);
 
-  /** insert text at current cursor location.
-   *  For some characters special actions may be taken
-   */
-  public void insertChar(int c);
-
-  /** insert the char verbatim, no special actions */
-  public void insertTypedChar(char c);
-  
-  /** Can the editor text be changed */
-  public boolean isEditable();
-
-  /** undo a change */
-  public void undo();
-
-  /** redo a change */
-  public void redo();
-
-  /** get some text from the document */
-  public String getText(int offset, int length) throws BadLocationException;
+  //
+  //
 
   /** @return the offset of the text insertion caret */
   public int getCaretPosition();
@@ -163,6 +156,23 @@ public interface ViTextView extends ViOptionBag {
   /** select a region of the screen */
   public void setSelect(int dot, int mark);
 
+  //
+  // START BUFFER
+  //
+
+  /** @return opaque FileObject backing this EditorPane */
+  public Object getFileObject();
+
+  //
+  // END BUFFER
+  //
+
+  /** undo a change */
+  public void undo();
+
+  /** redo a change */
+  public void redo();
+
   /** find matching character for character under the cursor.
    * This is the '%' command. It is here to take advantage of
    * existing functionality in target environments.
@@ -175,53 +185,18 @@ public interface ViTextView extends ViOptionBag {
   /** Jump list handling */
   public void jumpList(JLOP op, int count);
   
-  /** Anonymous mark handling.
-   * Count is the Nth mark forward, back. It is ignored by TOGGLE.
-   */
-  public void anonymousMark(MARKOP op, int count);
-  
   /** Perform the fold operation.  */
   public void foldOperation(int op);
-
+  
+  //
+  // START BUFFER
+  //
   /** platform indent algorithm */
   public void reindent(int line, int count);
 
-  /** @return the line number, 1 based, corresponding to the offset */
-  public int getLineNumber(int offset);
-
-  /** @return the column number, 1 based, corresponding to the offset */
-  public int getColumnNumber(int offset);
-
-  /** @return the starting offset of the line */
-  public int getLineStartOffset(int line);
-
-  /** @return the starting offset of the line */
-  public int getLineEndOffset(int line);
-
-  /** @return the starting offset of the line */
-  public int getLineStartOffsetFromOffset(int offset);
-
-  /** @return the end offset of the line, char past newline */
-  public int getLineEndOffsetFromOffset(int offset);
-
-  /** @return the number of lines in the associated file */
-  public int getLineCount();
-
-  /**
-   * The associated character iterator is initialized with first().
-   * @return the segment for the line.
-   */
-  public MySegment getLineSegment(int line);
-
-  /** Fill the argument segment with the requested text. If the segment
-   * is null, then create a segment.
-   * The associated character iterator is initialized with first().
-   * @return a segment for the requested text.
-   */
-  public MySegment getSegment(int offset, int length, MySegment segment);
-
-  /** @return the element for the line */
-  public Element getLineElement(int line);
+  //
+  // END BUFFER
+  //
 
   /** @return the line number of first visible line in window */
   public int getViewTopLine();
@@ -258,6 +233,9 @@ public interface ViTextView extends ViOptionBag {
   /** Change the cursor shape */
   public void updateCursor(ViCursor cursor);
 
+  //
+  // START BUFFER
+  //
   /** start an undo group, must be paired */
   public void beginUndo();
 
@@ -275,18 +253,9 @@ public interface ViTextView extends ViOptionBag {
   
   /** between a insert begin and end undo? */
   public boolean isInInsertUndo();
-
-  /** associate the indicated mark with a particular offset
-   * @deprecated use setMarkPos
-   */
-  public void setMarkOffset(ViMark mark, int offset, boolean global_mark);
-
-  /** @return an array of marks */
-  public ViMark[] createMarks(int n_mark);
-
-  /** NEEDSWORK: createMark: attached to this text view, should be in ViBuffer
-   * @return a null Mark */
-  public ViMark createMark();
+  //
+  // END BUFFER
+  //
 
   /** Quit editing window. Can close last view.
    */
@@ -320,6 +289,9 @@ public interface ViTextView extends ViOptionBag {
   /** Handle displayable editor state changes */
   public ViStatusDisplay getStatusDisplay();
 
+  //
+  // START FS
+  //
   /** Display file info */
   public void displayFileInfo();
 
@@ -329,6 +301,9 @@ public interface ViTextView extends ViOptionBag {
   public String getDisplayFileNameAndSize();
 
   public String getFileName(char option);
+  //
+  // END FS
+  //
 
   /**
    * Update the visual state (selection) of the window.

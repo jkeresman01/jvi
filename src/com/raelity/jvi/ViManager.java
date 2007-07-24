@@ -304,8 +304,8 @@ public class ViManager {
   //
 
   // NEEDSWORK: textMRU: use a weak reference to fileObject?
-  private static List textBuffers = new ArrayList();
-  private static LinkedList textMRU = new LinkedList();
+  private static List<Object> textBuffers = new ArrayList<Object>();
+  private static LinkedList<Object> textMRU = new LinkedList<Object>();
   private static Object currentlyActive;
   private static Object ignoreActivation;
 
@@ -473,7 +473,7 @@ public class ViManager {
    * A key was typed. Handle the event.
    * <br>NEEDSWORK: catch all exceptions comming out of here?
    */
-  static public void keyStroke(JEditorPane target, int key, int modifier) {
+  static public void keyStroke(JEditorPane target, char key, int modifier) {
     try {
       setJViBusy(true);
 
@@ -503,7 +503,7 @@ public class ViManager {
     }
     if((c & 0xF000) != KeyDefs.VIRT
               && modifiers == 0) {
-      if(c >= 0x20 && c < 0x7f) {
+      if(c >= 0x20 && c != 0x7f) {
         String content = new String(new char[] {(char)c});
         activeCommandEntry.append(content);
       }
@@ -521,7 +521,7 @@ public class ViManager {
   }
 
   private static boolean started = false;
-  static final void switchTo(JEditorPane editorPane) {
+  static void switchTo(JEditorPane editorPane) {
     if(editorPane == currentEditorPane) {
         return;
     }
@@ -558,6 +558,10 @@ public class ViManager {
     buf.checkModeline();
   }
 
+  public static ViTextView getCurrentTextView() {
+    return factory.getExistingViTextView(currentEditorPane);
+  }
+
   private static boolean inStartup;
   /** invoked once when vi is first used */
   private static void startup() {
@@ -572,10 +576,10 @@ public class ViManager {
     startupList = null;
   }
 
-  static List startupList;
+  static List<ActionListener> startupList;
   static void setupStartupList() {
     if(startupList == null) {
-      startupList = new ArrayList();
+      startupList = new ArrayList<ActionListener>();
     }
   }
 
@@ -629,12 +633,12 @@ public class ViManager {
     ViTextView tv = factory.getExistingViTextView(c);
     if(tv != null) {
       MySegment seg = new MySegment();
-      tv.getSegment(pos, 1, seg);
+            tv.getBuffer().getSegment(pos, 1, seg);
       if (seg.count > 0
           && seg.array[seg.offset] == '\n'
           && (G.State & Constants.INSERT) == 0) {
         if(pos > 0) {
-          tv.getSegment(pos -1, 1, seg);
+                    tv.getBuffer().getSegment(pos -1, 1, seg);
           if(seg.count > 0 && seg.array[seg.offset] != '\n')
             --pos;
         }
@@ -749,7 +753,8 @@ public class ViManager {
         " " + tv.getDisplayFileName());
     if (!jViBusy() && !mouseDown) {
       int diff
-            = Math.abs(tv.getLineNumber(currDot) - tv.getLineNumber(lastDot));
+            = Math.abs(tv.getBuffer().getLineNumber(currDot)
+                         - tv.getBuffer().getLineNumber(lastDot));
       if (diff > 0) {
         if (G.dbgMouse.getBoolean())
           System.err.println("caretUpdate: setPCMark");
@@ -862,7 +867,7 @@ public class ViManager {
     Set<Buffer> bufSet = factory.getBufferSet();
     ps.println("BufferSet: " + bufSet.size());
     for (Buffer buf : bufSet) {
-        ps.println("\t" + factory.getDisplayFilename(buf.getDoc())
+        ps.println("\t" + factory.getDisplayFilename(buf.getDocument())
                    + ", share: " + buf.getShare());
     }
   }
@@ -964,6 +969,7 @@ public class ViManager {
       return qTag == 0 || qTag == 1 || getTweak() != 0;
     }
 
+        @Override
     public String toString() {
       String s =   "" + version[0]
 		+ "." + version[1]
@@ -1099,6 +1105,7 @@ public class ViManager {
   private static class GetMotd extends Thread {
     private static final int BUF_LEN = 1024;
     private static final int MAX_MSG = 8 * 1024;
+        @Override
     public void run() {
       URL url = null;
       try {
