@@ -39,7 +39,7 @@ import java.util.Iterator;
  * for words that are entered by users.
  */
 public class AbbrevLookup {
-  List list = new ArrayList();
+  List<CommandElement> list = new ArrayList<CommandElement>();
 
   public AbbrevLookup() {
   }
@@ -132,7 +132,7 @@ public class AbbrevLookup {
    * Comparison and equality is based on the command abbreviation.
    */
   static public class CommandElement
-                      implements Comparable
+                      implements Comparable<CommandElement>
   {
     private String abbrev;
     private String name;
@@ -176,10 +176,11 @@ public class AbbrevLookup {
              && this.name.startsWith(tryName);
     }
 
-    public int compareTo(Object o1) {
-      return abbrev.compareTo(((CommandElement)o1).abbrev);
+    public int compareTo(CommandElement o1) {
+      return abbrev.compareTo(o1.abbrev);
     }
 
+        @Override
     public boolean equals(Object o1) {
       if( ! (o1 instanceof CommandElement)) {
         return false;
