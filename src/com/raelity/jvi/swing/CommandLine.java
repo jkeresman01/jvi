@@ -415,7 +415,7 @@ public class CommandLine extends JPanel {
                 return;
             }
             commandLine.setMode(mode);
-            commandLine.append(initialText);
+            commandLine.init(initialText);
 
             finishActivate();
         }
