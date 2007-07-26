@@ -3019,6 +3019,8 @@ public class Misc implements ClipboardOwner {
      *    end: on the last position of this character (TAB, ctrl)
      *
      * This is used very often, keep it fast!
+     * 
+     * From vim's charset.c
      *
      * I think cursor is wrong for swing.
      *
@@ -3038,12 +3040,20 @@ public class Misc implements ClipboardOwner {
             MutableInt start,
             MutableInt cursor,
             MutableInt end) {
+      getvcol(tv.getBuffer(), fpos, start, cursor, end);
+    }
+
+    public static void getvcol(Buffer buf,
+            ViFPOS fpos,
+            MutableInt start,
+            MutableInt cursor,
+            MutableInt end) {
       int incr = 0;
       int vcol = 0;
       char c = 0;
       
-      int ts = tv.getBuffer().b_p_ts;
-      MySegment seg = tv.getBuffer().getLineSegment(fpos.getLine());
+      int ts = buf.b_p_ts;
+      MySegment seg = buf.getLineSegment(fpos.getLine());
       for (int col = fpos.getColumn(), ptr = seg.offset; ; --col, ++ptr) {
         c = seg.array[ptr];
         // make sure we don't go past the end of the line
@@ -3281,7 +3291,7 @@ public class Misc implements ClipboardOwner {
     static int lbr_chartabsize(char c, int col) {
       if (c == TAB && (!G.curwin.getWPList() /*|| lcs_tab1*/)) {
         int ts = G.curbuf.b_p_ts;
-        return (int)(ts - (col % ts));
+        return (ts - (col % ts));
       } else {
         // return charsize(c);
         return 1;

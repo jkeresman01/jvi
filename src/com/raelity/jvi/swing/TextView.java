@@ -84,7 +84,7 @@ public class TextView implements ViTextView {
   }
 
   protected JEditorPane editorPane;
-  protected Buffer buf;
+  protected DefaultBuffer buf;
   protected TextOps ops;
   protected static char[] oneCharArray = new char[1];
   protected TextViewCache cache;
@@ -121,7 +121,7 @@ public class TextView implements ViTextView {
   }
 
   public void startup(Buffer buf) {
-    this.buf = buf;
+    this.buf = (DefaultBuffer)buf;
     if(cache == null)
       cache = createTextViewCache();
     if(statusDisplay == null)
@@ -196,7 +196,7 @@ public class TextView implements ViTextView {
   public boolean getWPList() { return window.getWPList(); }
   public void setWPList(boolean f) { window.setWPList(f); }
 
-  public final Buffer getBuffer() {
+  public final DefaultBuffer getBuffer() {
       return buf;
   }
 
@@ -506,7 +506,7 @@ public void reindent(int line, int count) {
   }
 
   private Element getLineElement(int lnum) {
-    return ((DefaultBuffer)getBuffer()).getLineElement(lnum);
+    return getBuffer().getLineElement(lnum);
   }
 
   public void updateCursor(ViCursor cursor) {
@@ -652,120 +652,18 @@ public void reindent(int line, int count) {
       //dumpBlocks("blocks", b);
       highlight(b);
   }
-  
-  /** Calculate the boundary point for visual selection.
-   * NEEDSWORK: cache this by listening to all document/caret changes.
-   * <p>
-   * NOTE: in block mode, startOffset or endOffset may be off by one,
-   *       but they should not be used, left/right are correct.
-   *
-   * NEEDSWORK: revisit to include TAB logic (screen.c:768 wish found sooner)
-   */
-  protected class VisualBounds {
-    public int mode;
-    public int startOffset, endOffset;
-    // following are line and column information
-    public int startLine, endLine;
-    public int left, right; // column numbers (not line offset, consider TAB)
-    public int wantRight; // either MAXCOL or same as right
-    boolean valid; // the class may not hold valid info
 
-    private MutableInt from1 = new MutableInt();
-    private MutableInt to1 = new MutableInt();
-    private MutableInt from2 = new MutableInt();
-    private MutableInt to2 = new MutableInt();
-    
-    VisualBounds(boolean init) {
-      if(init && G.VIsual_active) {
-        init(G.VIsual_mode, G.VIsual, getWCursor().copy());
-      }
-    }
-    
-    VisualBounds(int mode, ViFPOS startPos, ViFPOS cursorPos) {
-      init(mode, startPos, cursorPos);
-    }
-    
-    void init() {
-      valid = false;
-      if(G.VIsual_active) {
-        init(G.VIsual_mode, G.VIsual, getWCursor().copy());
-      }
-    }
-    void init(int mode, ViFPOS startPos, ViFPOS cursorPos) {
-      ViFPOS start, end; // start.offset less than end.offset
-      
-      this.mode = mode;
-      
-      if(startPos.compareTo(cursorPos) < 0) {
-        start = startPos;
-        end = cursorPos;
-      } else {
-        start = cursorPos;
-        end = startPos;
-      }
-      startOffset = start.getOffset();
-      endOffset = end.getOffset();
-      
-      startLine = start.getLine();
-      endLine = end.getLine();
-      
-      //
-      // set left/right columns
-      //
-      if(mode == (0x1f & (int)('V'))) { // block mode
-        // comparing this to screen.c,
-        // this.start is from1,to1
-        // this.end   is from2,to2
-        // this is pretty much verbatim from screen.c:782
-
-        int from1,to1,from2,to2;
-        Misc.getvcol(TextView.this, start, this.from1, null, this.to1);
-        from1 = this.from1.getValue();
-        to1 = this.to1.getValue();
-        Misc.getvcol(TextView.this, end, this.from2, null, this.to2);
-        from2 = this.from2.getValue();
-        to2 = this.to2.getValue();
-        
-        if(from2 < from1)
-          from1 = from2;
-        if(to2 > to1) {
-          if(G.p_sel.charAt(0) == 'e' && from2 - 1 >= to1)
-            to1 = from2 - 1;
-          else
-            to1 = to2;
-        }
-        to1++;
-        left = from1;
-        right = to1;
-        wantRight = getWCurswant() == MAXCOL ? MAXCOL : right;
-      } else {
-        left = start.getColumn();
-        right = end.getColumn();
-        if(left > right) {
-          int t = left;
-          left = right;
-          right = t;
-        }
-        
-        // if inclusive, then include the end
-        if(G.p_sel.charAt(0) == 'i') {
-          endOffset++;
-          right++;
-        }
-        wantRight = right;
-      }
-      
-      valid = true;
-    }
-  }
-
-  private VisualBounds vb = new VisualBounds(false);
   /** Output the selection range as defined in the 'sm' vim doc.
    * Subclasses should invoke this from updateVisualState().
    */
   protected void updateVisualSelectDisplay() {
-    if (G.VIsual_active
-        && editorPane.getCaret().getDot() != editorPane.getCaret().getMark() ) {
+    Buffer.VisualBounds vb = getBuffer().getVisualBounds();
+    if(!G.VIsual_active) {
+        vb.clear();
+        return;
+    }
+
+    if (editorPane.getCaret().getDot() != editorPane.getCaret().getMark() ) {
       // convert a selection into a visual mode thing,
       // set G.VIsual to the mark
       ViFPOS fpos = getWCursor().copy();
@@ -775,121 +673,36 @@ public void reindent(int line, int count) {
                getBuffer().getColumnNumber(offset));
       G.VIsual = fpos;
     }
+    
+    vb.init(G.VIsual_mode, G.VIsual, getWCursor().copy(),
+            getWCurswant() == MAXCOL);
 
-    vb.init();
-    if(!vb.valid)
-      return;
-    int nLine = vb.endLine - vb.startLine + 1;
-    int nCol = vb.right - vb.left;
+    int nLine = vb.getEndLine() - vb.getStartLine() + 1;
+    int nCol = vb.getRight() - vb.getLeft();
     String s = null;
-    if (vb.mode == 'v') { // char mode
+    char visMode = vb.getVisMode();
+    if (visMode == 'v') { // char mode
       s = "" + (nLine == 1 ? nCol : nLine);
-    } else if (vb.mode == 'V') { // line mode
+    } else if (visMode == 'V') { // line mode
       s = "" + nLine;
-    } else if (vb.mode == (0x1f & (int)('V'))) { // block mode
+    } else if (visMode == (0x1f & (int)('V'))) { // block mode
       s = "" + nLine + "x" + nCol;
     }
     Normal.displaySelectState(s);
   }
 
   public int[] getVisualSelectBlocks(int startOffset, int endOffset) {
+    Buffer.VisualBounds vb = getBuffer().getVisualBounds();
     if (G.drawSavedVisualBounds) {
-      vb.init(buf.b_visual_mode, buf.b_visual_start, buf.b_visual_end);
+      vb.init(buf.b_visual_mode, buf.b_visual_start, buf.b_visual_end,
+              false);
+    } else if(G.VIsual_active) {
+      vb.init(G.VIsual_mode, G.VIsual, getWCursor().copy(),
+              getWCurswant() == MAXCOL);
     } else {
-      vb.init();
+        vb.clear();
     }
-    return calculateVisualBlocks(vb, startOffset, endOffset);
-  }
-
-  // NEEDSWORK: OPTIMIZE: re-use blocks array
-  private int[] calculateVisualBlocks(VisualBounds vb,
-                                      int startOffset,
-                                      int endOffset) {
-    if(!vb.valid)
-      return new int[] { -1, -1};
-    
-    int[] newHighlight = null;
-    if (vb.mode == 'V') { // line selection mode
-      // make sure the entire lines are selected
-      newHighlight = new int[] { getBuffer().getLineStartOffset(vb.startLine),
-                                 getBuffer().getLineEndOffset(vb.endLine),
-                                 -1, -1};
-    } else if (vb.mode == 'v') {
-      newHighlight = new int[] { vb.startOffset,
-                                 vb.endOffset,
-                                 -1, -1};
-    } else if (vb.mode == (0x1f & (int)('V'))) { // visual block mode
-      int startLine = getBuffer().getLineNumber(startOffset);
-      int endLine = getBuffer().getLineNumber(endOffset -1);
-      
-      if(vb.startLine > endLine || vb.endLine < startLine)
-        newHighlight = new int[] { -1, -1};
-      else {
-        startLine = Math.max(startLine, vb.startLine);
-        endLine = Math.min(endLine, vb.endLine);
-        newHighlight = new int[(((endLine - startLine)+1)*2) + 2];
-        
-        MutableInt left = new MutableInt();
-        MutableInt right = new MutableInt();
-        int i = 0;
-        for (int line = startLine; line <= endLine; line++) {
-          int offset = getBuffer().getLineStartOffset(line);
-          int len = getBuffer().getLineEndOffset(line) - offset;
-          if(getcols(line, vb.left, vb.wantRight, left, right)) {
-            newHighlight[i++] = offset + Math.min(len, left.getValue());
-            newHighlight[i++] = offset + Math.min(len, right.getValue());
-          } else {
-            newHighlight[i++] = offset + Math.min(len, vb.left);
-            newHighlight[i++] = offset + Math.min(len, vb.wantRight);
-          }
-        }
-        newHighlight[i++] = -1;
-        newHighlight[i++] = -1;
-      }
-    } else {
-      throw new IllegalStateException("Visual mode: "+ G.VIsual_mode +" is not supported");
-    }
-    return newHighlight;
-  }
-
-  /** This is the inverse of getvcols, given startVCol, endVCol determine
-   * the cols of the corresponding chars so they can be highlighted. This means
-   * that things can look screwy when there are tabs in lines between the first
-   *and last lines, but that's the way it is in swing.
-   * NEEDSWORK: come up with some fancy painting for half tab highlights.
-   */
-  private boolean getcols(int lnum,
-                          int vcol1, int vcol2,
-                          MutableInt start, MutableInt end) {
-    int incr = 0;
-    int vcol = 0;
-    int c1 = -1, c2 = -1;
-    
-    int ts = buf.b_p_ts;
-    MySegment seg = getBuffer().getLineSegment(lnum);
-    int col = 0;
-    for (int ptr = seg.offset; ; ++ptr, ++col) {
-      char c = seg.array[ptr];
-      // A tab gets expanded, depending on the current column
-      if (c == TAB)
-        incr = ts - (vcol % ts);
-      else {
-        //incr = CHARSIZE(c);
-        incr = 1; // assuming all chars take up one space except tab
-      }
-      vcol += incr;
-      if(c1 < 0 && vcol1 < vcol)
-        c1 = col;
-      if(c2 < 0 && (vcol2 -1) < vcol)
-        c2 = col + 1;
-      if(c1 >= 0 && c2 >= 0 || c == '\n')
-        break;
-    }
-    if(start != null)
-      start.setValue(c1 >= 0 ? c1 : col);
-    if(end != null)
-      end.setValue(c2 >= 0 ? c2 : col);
-    return true;
+    return getBuffer().calculateVisualBlocks(vb, startOffset, endOffset);
   }
 
   //////////////////////////////////////////////////////////////////////
@@ -898,7 +711,7 @@ public void reindent(int line, int count) {
   //
   
   public void updateHighlightSearchState() {
-    updateHighlightSearchCommonState();
+    getBuffer().updateHighlightSearchCommonState();
     
     applyBackground(new int[] {0, getBuffer().getLength(), -1, -1},
                     UNHIGHLIGHT);
@@ -906,60 +719,8 @@ public void reindent(int line, int count) {
     if(!Options.doHighlightSearch())
       return;
     
-    int[] b = getHighlightSearchBlocks(0, getBuffer().getLength());
+    int[] b = getBuffer().getHighlightSearchBlocks(0, getBuffer().getLength());
     applyBackground(b, HIGHLIGHT);
-  }
-  
-  Pattern highlightSearchPattern;
-  // Use MySegment for 1.5 compatibility
-  MySegment highlightSearchSegment = new MySegment();
-  int[] highlightSearchBlocks = new int[2];
-  MutableInt highlightSearchIndex = new MutableInt();
-  
-  protected void updateHighlightSearchCommonState() {
-    highlightSearchBlocks = new int[20];
-    RegExp re = Search.getLastRegExp();
-    if(re instanceof RegExpJava) {
-      highlightSearchPattern = ((RegExpJava)re).getPattern();
-    }
-  }
-  
-  public int[] getHighlightSearchBlocks(int startOffset, int endOffset) {
-    highlightSearchIndex.setValue(0);
-    if(highlightSearchPattern != null) {
-      getBuffer().getSegment(startOffset, endOffset - startOffset, highlightSearchSegment);
-      Matcher m = highlightSearchPattern.matcher(highlightSearchSegment);
-      while(m.find()) {
-        highlightSearchBlocks = addBlock(highlightSearchIndex,
-                                         highlightSearchBlocks,
-                                         m.start() + startOffset,
-                                         m.end() + startOffset);
-      }
-    }
-    return addBlock(highlightSearchIndex, highlightSearchBlocks, -1, -1);
-  }
-  
-  protected final int[] addBlock(MutableInt idx, int[] blocks,
-                                 int start, int end) {
-    int i = idx.getValue();
-    if(i + 2 > blocks.length) {
-      // Arrays.copyOf introduced in 1.6
-      // blocks = Arrays.copyOf(blocks, blocks.length +20);
-      int[] t = new int[blocks.length + 20];
-      System.arraycopy(blocks, 0, t, 0, blocks.length);
-      blocks = t;
-    }
-    blocks[i] = start;
-    blocks[i+1] = end;
-    idx.setValue(i + 2);
-    return blocks;
-  }
-  
-  public static void dumpBlocks(String tag, int[] b) {
-    System.err.print(tag + ":");
-    for(int i = 0; i < b.length; i += 2)
-      System.err.print(String.format(" {%d,%d}", b[i], b[i+1]));
-    System.err.println("");
   }
   
   //////////////////////////////////////////////////////////////////////
