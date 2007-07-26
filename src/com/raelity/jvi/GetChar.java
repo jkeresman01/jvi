@@ -31,7 +31,6 @@ package com.raelity.jvi;
 
 import com.raelity.jvi.swing.KeyBinding;
 import com.raelity.text.TextUtil;
-import java.util.LinkedList;
 import javax.swing.JEditorPane;
 import javax.swing.text.AbstractDocument;
 
@@ -149,10 +148,10 @@ public class GetChar {
    */
   private static char getOneChar() {
     if(stuffbuff.hasNext()) {
-      return (char)stuffbuff.removeFirst();
+      return stuffbuff.removeFirst();
     }
     if(typebuf.hasNext()) {
-      return (char)typebuf.removeFirst();
+      return typebuf.removeFirst();
     }
     throw new RuntimeException("No character available");
   }
