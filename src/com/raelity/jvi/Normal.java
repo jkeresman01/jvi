@@ -1658,7 +1658,7 @@ middle_code:
           if(oap.op_type == OP_INDENT && G.p_ep.getString().equals("")) {
             Misc.beginUndo();
             try {
-              G.curwin.reindent(G.curwin.getWCursor().getLine(),
+              G.curbuf.reindent(G.curwin.getWCursor().getLine(),
                                 oap.line_count);
             } finally {
               Misc.endUndo();

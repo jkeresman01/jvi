@@ -187,16 +187,6 @@ public interface ViTextView extends ViOptionBag {
   
   /** Perform the fold operation.  */
   public void foldOperation(int op);
-  
-  //
-  // START BUFFER
-  //
-  /** platform indent algorithm */
-  public void reindent(int line, int count);
-
-  //
-  // END BUFFER
-  //
 
   /** @return the line number of first visible line in window */
   public int getViewTopLine();

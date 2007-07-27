@@ -137,7 +137,7 @@ public class DefaultBuffer extends Buffer {
     /**
      * Use the document in default implementation.
      * @return opaque FileObject backing this EditorPane */
-    public Object getDocument() {
+    public Document getDocument() {
         return getDoc();
     }
 

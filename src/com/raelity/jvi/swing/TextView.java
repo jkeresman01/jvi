@@ -438,16 +438,6 @@ public void undo(){
     Util.vim_beep();
   }
 
-  //
-  // START BUFFER
-  //
-public void reindent(int line, int count) {
-      getBuffer().reindent(line, count);
-  }
-  //
-  // END BUFFER
-  //
-
   public void computeCursorPosition(MutableInt offset,
                                     MutableInt line,
                                     MutableInt column)
