@@ -48,11 +48,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 
-import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.FPOS;
 import com.raelity.jvi.Util;
 import com.raelity.jvi.BooleanOption;
-import com.raelity.jvi.Buffer;
 import com.raelity.jvi.G;
 import com.raelity.jvi.Options;
 import com.raelity.jvi.ViFPOS;
@@ -85,13 +83,11 @@ public class TextViewCache implements PropertyChangeListener,
   final static int DIR_TOP = -1;
   final static int DIR_BOT = 1;
 
-  public TextViewCache(ViTextView textView, Buffer buf) {
-    this.textView = (TextView)textView;
-    this.buf = (DefaultBuffer)buf;
-  }
+  private TextView tv;
 
-  private TextView textView;
-  private DefaultBuffer buf;
+  public TextViewCache(TextView textView) {
+    this.tv = textView;
+  }
 
   public static BooleanOption cacheTrace
                 = (BooleanOption)Options.getOption(Options.dbgCache);
@@ -102,21 +98,25 @@ public class TextViewCache implements PropertyChangeListener,
   //
   private WCursor cursor = new WCursor();
 
+  //
+  // NEEDSWORK: move WCursor up to TextView, doesn't depend on cache any more
+  //
+
   private class WCursor extends ViFPOS.abstractFPOS {
     final public int getLine() {
-      return buf.getElemCache(textView.getCaretPosition()).line;
+      return tv.getBuffer().getElemCache(tv.getCaretPosition()).line;
     }
     final public int getColumn() {
-      int offset = textView.getCaretPosition();
-      return offset - buf.getElemCache(offset).elem.getStartOffset();
+      int offset = tv.getCaretPosition();
+      return offset - tv.getBuffer().getElemCache(offset).elem.getStartOffset();
     }
     final public int getOffset() {
-      return textView.getCaretPosition();
+      return tv.getCaretPosition();
     }
     
     final public void set(int line, int column) {
       //System.err.println("setPosition("+line+","+column+")");
-      Element elem = buf.getLineElement(line);
+      Element elem = tv.getBuffer().getLineElement(line);
       int startOffset = elem.getStartOffset();
       int endOffset = elem.getEndOffset();
       int adjustedColumn = -1;
@@ -133,12 +133,12 @@ public class TextViewCache implements PropertyChangeListener,
         column = adjustedColumn;
       }
 
-      textView.setCaretPosition(startOffset + column);
+      tv.setCaretPosition(startOffset + column);
     }
 
     final public ViFPOS copy() {
-      int offset = textView.getCaretPosition();
-      ElemCache ec = buf.getElemCache(offset);
+      int offset = tv.getCaretPosition();
+      ElemCache ec = tv.getBuffer().getElemCache(offset);
       FPOS fpos = new FPOS(offset, ec.line, offset - ec.elem.getStartOffset());
       //fpos.initFPOS(getOffset(), getLine(), getColumn());
       return fpos;
@@ -184,10 +184,10 @@ public class TextViewCache implements PropertyChangeListener,
     if(line == getViewTopLine()) {
       return; // nothing to change
     }
-    int offset = buf.getLineStartOffset(line);
+    int offset = tv.getBuffer().getLineStartOffset(line);
     Rectangle r;
     try {
-      r = textView.getEditorComponent().modelToView(offset);
+      r = tv.getEditorComponent().modelToView(offset);
     } catch(BadLocationException e) {
       Util.vim_beep();
       return;
@@ -268,10 +268,10 @@ public class TextViewCache implements PropertyChangeListener,
     viewportExtent = newViewportExtent;
 
     if(sizeChange) {
-      ViManager.viewSizeChange(textView);
+      ViManager.viewSizeChange(tv);
     }
     if(sizeChange || topLineChange) {
-      ViManager.viewMoveChange(textView);
+      ViManager.viewMoveChange(tv);
     }
   }
 
@@ -282,13 +282,13 @@ public class TextViewCache implements PropertyChangeListener,
    */
   private int findFullLine(Point pt, int dir) {
     Rectangle vrect = viewport.getViewRect();
-    JEditorPane editor = textView.getEditorComponent();
+    JEditorPane editor = tv.getEditorComponent();
     
     int offset = editor.viewToModel(pt);
     if(offset < 0) {
         return -1;
     }
-    int line = buf.getLineNumber(offset);
+    int line = tv.getBuffer().getLineNumber(offset);
     Rectangle lrect;
     try {
       lrect = editor.modelToView(offset);
@@ -303,11 +303,11 @@ public class TextViewCache implements PropertyChangeListener,
     }
     int oline = line;
     line -= dir; // move line away from top/bottom
-    if(line < 1 || line > buf.getLineCount()) {
+    if(line < 1 || line > tv.getBuffer().getLineCount()) {
       //System.err.println("findFullLine: line out of bounds " + line);
       return oline;
     }
-    offset = buf.getLineStartOffset(line);
+    offset = tv.getBuffer().getLineStartOffset(line);
     try {
       lrect = editor.modelToView(offset);
     }
@@ -342,7 +342,7 @@ public class TextViewCache implements PropertyChangeListener,
     if(f == null) {
       fm = null;
     } else {
-      fm = textView.getEditorComponent().getFontMetrics(f);
+      fm = tv.getEditorComponent().getFontMetrics(f);
       fheight = fm.getHeight();
       fillLinePositions();
     }
@@ -424,7 +424,7 @@ public class TextViewCache implements PropertyChangeListener,
   
   private void removeListeners() {
     hasListeners = false;
-    JEditorPane editor = textView.getEditorComponent();
+    JEditorPane editor = tv.getEditorComponent();
     editor.removePropertyChangeListener("font", this);
     editor.removePropertyChangeListener("document", this);
     editor.removePropertyChangeListener("ancestor", this);

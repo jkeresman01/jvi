@@ -28,13 +28,8 @@
  */
 package com.raelity.jvi.swing;
 
-import com.raelity.text.RegExp;
-import com.raelity.text.RegExpJava;
-import com.raelity.text.TextUtil.MySegment;
 import java.awt.Point;
 import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.JEditorPane;
 
@@ -210,7 +205,7 @@ public class TextView implements ViTextView {
 
   /** Override this method to provide different cache implementation */
   protected TextViewCache createTextViewCache() {
-    return new TextViewCache(this, buf);
+    return new TextViewCache(this);
   }
 
   public void attach() {
