@@ -136,6 +136,10 @@ public class TextView implements ViTextView {
     ViManager.detached(editorPane);
     editorPane = null;
   }
+
+  public boolean isShutdown() {
+      return editorPane == null;
+  }
   
   //
   // Declare the variables referenced as part of a ViOptionBag
@@ -495,7 +499,7 @@ public void undo(){
   }
 
   public void updateCursor(ViCursor cursor) {
-    if(editorPane == null) {
+    if(isShutdown()) {
       return; // NEEDSWORK: was getting some null pointer stuff here
     }
     Caret caret = editorPane.getCaret();

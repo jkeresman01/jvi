@@ -161,7 +161,7 @@ public class Normal {
           willStartNewChunk();
         }
       }
-    } catch(Exception e) {
+    } catch(Throwable e) {
       e.printStackTrace();
       Util.beep_flush();
       resetCommand();
@@ -1196,10 +1196,12 @@ middle_code:
             Util.vim_strchr("\"DCYSsXx.", ca.cmdchar) == null)
           oap.regname = 0;
 
-        /*
-        * If an operation is pending, handle it...
-        */
-        do_pending_operator(ca, searchbuff,
+        //
+        // If an operation is pending, handle it...
+        // A modal ':' command may have quit/shutdown the text view.
+        //
+        if(!G.curwin.isShutdown())
+          do_pending_operator(ca, searchbuff,
                             null, old_col, false, dont_adjust_op_end);
       } catch(NotSupportedException e) {
 	clearopbeep(oap);

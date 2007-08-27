@@ -220,6 +220,9 @@ public interface ViTextView extends ViOptionBag {
   /** going away, do any remaining cleanup */
   public void shutdown();
 
+  /** @return true if this text view is shutdown */
+  public boolean isShutdown();
+
   /** Change the cursor shape */
   public void updateCursor(ViCursor cursor);
 
