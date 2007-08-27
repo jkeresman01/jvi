@@ -65,7 +65,8 @@ public class ViCaretDelegate
     }
     this.cursor = cursor;
     // caret only has one value, compromise on blink rate
-    caret.setBlinkRate((cursor.getBlinkon() + cursor.getBlinkoff()) / 2);
+    // NEEDSWORK: keep existing until this is user programable
+    //caret.setBlinkRate((cursor.getBlinkon() + cursor.getBlinkoff()) / 2);
     caret.setVisible(true);
   }
 
