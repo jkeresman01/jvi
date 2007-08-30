@@ -1174,7 +1174,6 @@ middle_code:
 	    break;
 
 	  case 0x1f & (int)('C'):	// Ctrl
-	    notSup("ctrl-c");
 	    G.restart_edit = 0;
 	    /*FALLTHROUGH*/
 
@@ -2185,12 +2184,17 @@ middle_code:
   /** nv_zet is simplified a bunch, only do vi compat */
   static private  void	nv_zet (CMDARG cap) {
     switch(cap.nchar) {
-      case NL:		    // put curwin->w_cursor at top of screen
+      case NL:		// put curwin->w_cursor at top of screen
+                        // and set cursor at the first character of that line
+      case 't':		// put curwin->w_cursor at top of screen
       case K_KENTER:
       case CR:
-      case '.':		// put curwin->w_cursor in middle of screen and set cursor at the first character of that line
+      case '.':		// put curwin->w_cursor in middle of screen
+                        // and set cursor at the first character of that line
       case 'z':		// put curwin->w_cursor in middle of screen
       case '-':		// put curwin->w_cursor at bottom of screen
+                        // and set cursor at the first character of that line
+      case 'b':		// put curwin->w_cursor at bottom of screen
         // Scroll screen so current line at top, middle or bottom
 	// the scrolloff version doesn't really change anything about how stuff
 	// is displayed, so just use it.
@@ -2279,6 +2283,7 @@ middle_code:
       case NL:		    // put curwin->w_cursor at top of screen
       case K_KENTER:
       case CR:
+      case 't':
 	top = target - so;
 	break;
 
@@ -2288,6 +2293,7 @@ middle_code:
 	break;
 
       case '-':		// put curwin->w_cursor at bottom of screen
+      case 'b':
 	top = target - G.curwin.getViewLines() + 1 + so;
 	break;
 
@@ -2299,7 +2305,8 @@ middle_code:
     // Keep getlineSegment before setViewTopLine,
     // don't want to fetch segment changing during rendering
     MySegment seg = G.curbuf.getLineSegment(target);
-    int col = nchar == 'z' ? G.curwin.getWCursor().getColumn()
+    boolean keepColumn = (nchar == 't') || (nchar == 'z') || (nchar == 'b');
+    int col = (keepColumn) ? G.curwin.getWCursor().getColumn()
                            : Edit.beginlineColumnIndex(BL_WHITE | BL_FIX, seg);
     G.curwin.setViewTopLine(Misc.adjustTopLine(top));
     G.curwin.setCaretPosition(target, col);

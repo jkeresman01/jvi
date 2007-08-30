@@ -479,6 +479,7 @@ public class Edit {
             
     switch(c) {
       case ESC:
+      case 0x1f & (int)('C'):	// Ctrl
       case 0x1f & (int)('O'):	// Ctrl
       case 0x1f & (int)('L'):	// Ctrl
       case 0x1f & (int)('Q'):	// Ctrl
