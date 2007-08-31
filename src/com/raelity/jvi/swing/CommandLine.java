@@ -85,13 +85,24 @@ public class CommandLine extends JPanel {
     /** This is used to append characters to the the combo box. It is
      * needed so that characters entered before the combo box gets focus
      * are not lost.
+     * 
+     * If there is a selection, then clear the selection. Do this because
+     * typically typed chararacters replace the selection.
      */
-    public void append(String s) {
-        int offset = getTextComponent().getDocument().getLength();
-        try {
-            getTextComponent().getDocument().insertString(offset, s, null);
-        } catch (BadLocationException ex) { }
+    public void append(char c) {
+        String s = String.valueOf(c);
+        JTextComponent tc = getTextComponent();
+        if(tc.getSelectionStart() != tc.getSelectionEnd()) {
+            // replace the selection
+            tc.setText(s);
+        } else {
+            int offset = tc.getDocument().getLength();
+            try {
+                getTextComponent().getDocument().insertString(offset, s, null);
+            } catch (BadLocationException ex) { }
+        }
     }
+
     public CommandLine() {
         try {
             jbInit();
@@ -420,6 +431,15 @@ public class CommandLine extends JPanel {
             finishActivate();
         }
 
+        public void append(char c){
+            if (c == '\n') {
+                fireEvent(new ActionEvent(tv.getEditorComponent(),
+                        ActionEvent.ACTION_PERFORMED,
+                        "\n"));
+            } else
+                commandLine.append(c);
+        };
+
         protected abstract void finishActivate();
 
         private void shutdownEntry() {
@@ -468,12 +488,10 @@ public class CommandLine extends JPanel {
         public String getCommand(){
             return lastCommand;
         };
+
         public void cancel(){
             lastCommand = "";
             shutdownEntry();
-        };
-        public void append(String s){
-            commandLine.append(s);
         };
         
         public JTextComponent getTextComponent() {

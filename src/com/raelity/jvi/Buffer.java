@@ -392,14 +392,19 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     
     public int[] getHighlightSearchBlocks(int startOffset, int endOffset) {
         highlightSearchIndex.setValue(0);
+        int len = getLength();
+        if(startOffset > len)
+            startOffset = len;
+        if(endOffset > len)
+            endOffset = len;
         if(highlightSearchPattern != null) {
             getSegment(startOffset, endOffset - startOffset, highlightSearchSegment);
             Matcher m = highlightSearchPattern.matcher(highlightSearchSegment);
             while(m.find()) {
                 highlightSearchBlocks = addBlock(highlightSearchIndex,
-                        highlightSearchBlocks,
-                        m.start() + startOffset,
-                        m.end() + startOffset);
+                                                 highlightSearchBlocks,
+                                                 m.start() + startOffset,
+                                                 m.end() + startOffset);
             }
         }
         return addBlock(highlightSearchIndex, highlightSearchBlocks, -1, -1);

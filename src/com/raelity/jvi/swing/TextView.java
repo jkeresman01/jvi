@@ -360,21 +360,6 @@ public class TextView implements ViTextView {
       }
       getBuffer().insertText(offset, s);
   }
-
-  //
-  // START BUFFER
-  //
-
-  /**
-   * Use the document in default implementation.
-   * @return opaque FileObject backing this EditorPane */
-  public Object getFileObject() {
-      return getBuffer().getDocument();
-    //return getEditorComponent().getDocument();
-  }
-  //
-  // END BUFFER
-  //
   
   
 ///////////////////////////////////////////////////////////////////////
