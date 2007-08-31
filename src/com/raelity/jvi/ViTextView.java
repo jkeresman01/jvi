@@ -156,17 +156,6 @@ public interface ViTextView extends ViOptionBag {
   /** select a region of the screen */
   public void setSelect(int dot, int mark);
 
-  //
-  // START BUFFER
-  //
-
-  /** @return opaque FileObject backing this EditorPane */
-  public Object getFileObject();
-
-  //
-  // END BUFFER
-  //
-
   /** undo a change */
   public void undo();
 

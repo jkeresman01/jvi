@@ -101,7 +101,7 @@ public class ViManager {
   // 1.0.0.beta2 is NB vers 0.9.6.4
   // 1.0.0.beta3 is NB vers 0.9.7.5
   //
-  public static final jViVersion version = new jViVersion("1.1.0.x2");
+  public static final jViVersion version = new jViVersion("1.1.0.x7");
   
   private static boolean enabled;
 
@@ -497,15 +497,17 @@ public class ViManager {
    * <p>Special characters are discarded.
    * </p>
    */
-  static boolean rerouteChar(int c, int modifiers) {
+  static boolean rerouteChar(char c, int modifiers) {
     if(activeCommandEntry == null) {
       return false;
     }
     if((c & 0xF000) != KeyDefs.VIRT
               && modifiers == 0) {
       if(c >= 0x20 && c != 0x7f) {
-        String content = new String(new char[] {(char)c});
-        activeCommandEntry.append(content);
+        if(KeyBinding.isKeyDebug()) {
+          System.err.println("rerouteChar");
+        }
+        activeCommandEntry.append(c);
       }
     }
     // System.err.println("rerouteChar " + (char)c);
