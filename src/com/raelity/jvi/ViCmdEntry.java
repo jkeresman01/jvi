@@ -79,7 +79,7 @@ public interface ViCmdEntry {
    * the character that initiates command entry and the time the
    * entry field is ready to take characters.
    */
-  public void append(String s);
+  public void append(char c);
   
   /**
    * Retrieve the component used for the data entry.
