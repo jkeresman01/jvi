@@ -12,6 +12,7 @@ package com.raelity.jvi;
 import com.raelity.text.RegExp;
 import com.raelity.text.RegExpJava;
 import com.raelity.text.TextUtil.MySegment;
+import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.event.DocumentEvent;
@@ -106,11 +107,122 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     //////////////////////////////////////////////////////////////////////
     //
     //
+    
+    public void displayFileInfo(ViTextView tv) {
+        StringBuffer sb = new StringBuffer();
+        ViFS fs = ViManager.getViFactory().getFS();
+        sb.append("\"" + getDisplayFileName() + "\"");
+        if(fs.isModified(this))
+            sb.append(" [Modified]");
+        if(fs.isReadOnly(this))
+            sb.append(" [readonly]");
+        int l = getLineCount();
+        int percent = (tv.getWCursor().getLine() * 100) / l;
+        if(true) {
+            sb.append(" " + l + " line" + Misc.plural(l));
+            sb.append(" --" + percent + "%--");
+        } else {
+            sb.append(" line " + tv.getWCursor().getLine());
+            sb.append(" of " + getLineCount());
+            sb.append(" --" + percent + "%--");
+            sb.append(" col " + tv.getWCursor().getColumn());
+        }
+        Msg.smsg(sb.toString());
+    }
+    
+    public String getDisplayFileNameAndSize() {
+        StringBuffer sb = new StringBuffer();
+        ViFS fs = ViManager.getViFactory().getFS();
+        sb.append("\"" + getDisplayFileName() + "\"");
+        int l = getLineCount();
+        sb.append(" " + getLineCount() + "L, ");
+        sb.append(" " + getLength() + "C");
+        return sb.toString();
+  }
 
+    public String getDisplayFileName() {
+        return ViManager.getViFactory().getFS().getDisplayFileName(this);
+    }
+
+    public File getJavaFile() {
+        return new File("/tmp/test.file");
+    }
+
+    
+    /**
+     * In the future, to support multiple file modifiers, could take a File
+     * as an argument, and return a File. Or take a String which is the list
+     * of options.
+     *
+     * VIM: ":help filename-modifiers"
+     * 
+     * NEEDSWORK: missing options, only one option handled
+     */
+    @SuppressWarnings("fallthrough")
+    public String modifyFilename(char option) {
+        File fi = getJavaFile();
+        String filename = "";
+        if(fi != null) {
+            switch (option) {
+            case 'p':
+                filename = fi.getAbsolutePath();
+                break;
+            case 'e':
+            {
+                String s = fi.getName(); // last component of name
+                int idx = s.lastIndexOf('.');
+                filename = idx > 0 && idx != s.length() - 1
+                            ? s.substring(idx + 1)
+                            : s;
+                break;
+            }
+            case 'r':
+            {
+                String parent = fi.getParent();
+                String s = fi.getName(); // last component of name
+                int idx = s.lastIndexOf('.');
+                // if has a '.' and its not the first character
+                if(idx > 0)
+                    s = s.substring(0,idx);
+                filename = parent == null
+                            ? s
+                            : parent + fi.separator + s;
+                break;
+            }
+            case 't':
+                filename = fi.getName();
+                break;
+            case 'h':
+                if(fi.isAbsolute()) {
+                    filename = fi.getParent();
+                    break;
+                }
+                // FALLTHROUGH
+            case ' ':
+                filename = fi.getPath();
+                break;
+            default:
+                filename = fi.getPath()
+                        + ":" + new String(new char[] {option});
+                break;
+            }
+            
+            if(G.p_ssl.getBoolean()){
+                // Shellslash is on, replace \ with /
+                filename = filename.replace('\\','/');
+            }
+        }
+        return filename;
+    }
+    
+    //////////////////////////////////////////////////////////////////////
+    //
+    //
+    
     protected String getRemovedText(DocumentEvent e) {
         return null;
     }
-
+    
     protected boolean isInsertMode() {
         return (G.State & BASE_STATE_MASK) == INSERT;
     }

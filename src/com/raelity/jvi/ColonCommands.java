@@ -798,10 +798,10 @@ public class ColonCommands {
               // allowing multiple will require rework here and getFileName.
               //
               if(index+2 < sb.length() && sb.charAt(index+1) == ':'){
-                newsb.append(G.curwin.getFileName(sb.charAt(index+2)));
+                newsb.append(G.curbuf.modifyFilename(sb.charAt(index+2)));
                 index += 3;
               } else {
-                newsb.append(G.curwin.getFileName(' '));
+                newsb.append(G.curbuf.modifyFilename(' '));
                 index++;
               }
             }
@@ -1576,7 +1576,7 @@ public class ColonCommands {
   static ActionListener ACTION_file = new ActionListener() {
     public void actionPerformed(ActionEvent ev) {
       ColonEvent cev = (ColonEvent)ev;
-      cev.getViTextView().displayFileInfo();
+      cev.getViTextView().getBuffer().displayFileInfo(cev.getViTextView());
     }};
 
   /**
