@@ -568,38 +568,6 @@ public void undo(){
   public ViStatusDisplay getStatusDisplay() {
     return statusDisplay;
   }
-
-  public void displayFileInfo() {
-    StringBuffer sb = new StringBuffer();
-    sb.append("\"" + getDisplayFileName() + "\"");
-    if(ViManager.getViFactory().getFS().isModified(this))
-        sb.append(" [Modified]");
-    int l = getBuffer().getLineCount();
-    //sb.append(" " + l + " line" + Misc.plural(l));
-    sb.append(" line " + cache.getCursor().getLine());
-    sb.append(" of " + getBuffer().getLineCount());
-    sb.append(" --" + ((cache.getCursor().getLine() * 100)
-			      / getBuffer().getLineCount()) + "%--");
-    sb.append(" col " + cache.getCursor().getColumn());
-    getStatusDisplay().displayStatusMessage(sb.toString());
-  }
-
-  public String getDisplayFileNameAndSize() {
-    StringBuffer sb = new StringBuffer();
-    sb.append("\"" + getDisplayFileName() + "\"");
-    int l = getBuffer().getLineCount();
-    sb.append(" " + getBuffer().getLineCount() + "L, ");
-    sb.append(" " + getBuffer().getLength() + "C");
-    return sb.toString();
-  }
-
-  public String getDisplayFileName() {
-    return "xxx";
-  }
-
-  public String getFileName(char option) {
-      return "xxx";
-  }
   
   public TextOps getOps() {
     return ops;

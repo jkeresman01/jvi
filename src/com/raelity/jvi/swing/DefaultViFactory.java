@@ -183,10 +183,6 @@ public class DefaultViFactory implements ViFactory {
     return s;
   }
   
-  public String getDisplayFilename(Object o) {
-      return "";
-  }
-  
   public void shutdown(JEditorPane ep) {
     ViTextView tv = (ViTextView)ep.getClientProperty(PROP_VITV);
     if(tv != null) {
@@ -526,6 +522,10 @@ public class DefaultViFactory implements ViFactory {
       return basekey;
     }
   }
+
+    public String getDisplayFilename(Object o) {
+        return "xxx";
+    }
 
   public void startTagPush(ViTextView tv, String ident){}
 
