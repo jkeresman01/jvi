@@ -29,38 +29,42 @@
 package com.raelity.jvi;
 
 import java.io.File;
-import javax.swing.text.Document;
-
-import com.raelity.jvi.ViTextView;
 
 /**
  * jVi's interactions with files are funnelled through this interface.
  */
 public interface ViFS {
-
-  /**
-   * Is the associtated document modified?
-   */
-  public boolean isModified(ViTextView tv);
-
-  /**
-   * Write the specified "file object".
-   */
-  public void write(ViTextView tv, boolean force);
-
-  /**
-   * Write all open stuff.
-   */
-  public void writeAll(boolean force);
-
-  /**
-   * Write the specified text to the specified file.
-   * If file is null, use a dialog to get the file name.
-   */
-  public void write(ViTextView tv, File file, boolean force);
-
-  /**
-   * Edit the nth file. If n &lt; 0 then n is MRU; n == -1 is most recent.
+    
+    public String getDisplayFileName(ViBuffer buf);
+    
+    /**
+     * Is the associtated document modified?
+     */
+    public boolean isModified(ViBuffer buf);
+    
+    /**
+     * Is the associtated document read only?
+     */
+    public boolean isReadOnly(ViBuffer buf);
+    
+    /**
+     * Write the specified "file object".
+     */
+    public void write(ViTextView tv, boolean force);
+    
+    /**
+     * Write all open stuff.
+     */
+    public void writeAll(boolean force);
+    
+    /**
+     * Write the specified text to the specified file.
+     * If file is null, use a dialog to get the file name.
+     */
+    public void write(ViTextView tv, File file, boolean force);
+    
+    /**
+     * Edit the nth file. If n &lt; 0 then n is MRU; n == -1 is most recent.
    */
   public void edit(ViTextView tv, int n, boolean force);
 }
