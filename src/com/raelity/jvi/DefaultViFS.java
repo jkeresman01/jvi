@@ -30,30 +30,36 @@ package com.raelity.jvi;
 
 import java.io.File;
 
-import com.raelity.jvi.ViTextView;
-
 public class DefaultViFS implements ViFS {
+    
+    public DefaultViFS() {
+    }
+    
+    public String getDisplayFileName(ViBuffer buf) {
+        return "xxx";
+    }
 
-  public DefaultViFS() {
-  }
-
-  public boolean isModified(ViTextView tv) {
-      return true;
-  }
-
-  public void write(ViTextView tv, boolean force) {
-    Msg.emsg("write(tv) not implemented");
-  }
-
-  public void writeAll(boolean force) {
-    Msg.emsg("writAll() not implemented");
-  }
-
-  public void write(ViTextView tv, File file, boolean force) {
-    Msg.emsg("write(tv, file) not implemented");
-  }
-
-  public void edit(ViTextView tv, int n, boolean force) {
-    Msg.emsg("edit(tv, int{" + n + "}, force) not implemented");
+    public boolean isReadOnly(ViBuffer buf) {
+        return false;
+    }
+    
+    public boolean isModified(ViBuffer buf) {
+        return true;
+    }
+    
+    public void write(ViTextView tv, boolean force) {
+        Msg.emsg("write(tv) not implemented");
+    }
+    
+    public void writeAll(boolean force) {
+        Msg.emsg("writAll() not implemented");
+    }
+    
+    public void write(ViTextView tv, File file, boolean force) {
+        Msg.emsg("write(tv, file) not implemented");
+    }
+    
+    public void edit(ViTextView tv, int n, boolean force) {
+        Msg.emsg("edit(tv, int{" + n + "}, force) not implemented");
   }
 }
