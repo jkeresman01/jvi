@@ -537,11 +537,12 @@ public class ViManager {
     draggingBlockMode = false;
     
     ViTextView textView = getViTextView(editorPane);
+    Buffer buf = getBuffer(editorPane);
     registerEditorPane(editorPane); // make sure it has the right caret
     textView.attach();
     if(G.dbgEditorActivation.getBoolean()) {
       System.err.println("Activation: ViManager.SWITCHTO: "
-              + textView.getDisplayFileName());
+              + buf.getDisplayFileName());
     }
     
     if(currentEditorPane != null) {
@@ -552,7 +553,6 @@ public class ViManager {
     }
 
     currentEditorPane = editorPane;
-    Buffer buf = getBuffer(editorPane);
     G.switchTo(textView, buf);
     textView.activateOptions(textView);
     buf.activateOptions(textView);
@@ -752,7 +752,7 @@ public class ViManager {
     int currDot = ce.getDot();
     if (G.dbgMouse.getBoolean())
       System.err.println("CaretMark: " + lastDot + " --> " + currDot +
-        " " + tv.getDisplayFileName());
+        " " + tv.getBuffer().getDisplayFileName());
     if (!jViBusy() && !mouseDown) {
       int diff
             = Math.abs(tv.getBuffer().getLineNumber(currDot)
@@ -840,7 +840,8 @@ public class ViManager {
   static public void dump(PrintStream ps) {
     ps.println("-----------------------------------");
     ps.println("currentEditorPane = "
-               + (G.curwin == null ? "null" : G.curwin.getDisplayFileName()));
+               + (G.curwin == null ? "null" : G.curbuf.getDisplayFileName()));
+    
     ps.println("factory = " + factory );
     
     ps.println("textBuffers: " + textBuffers.size());
@@ -863,7 +864,7 @@ public class ViManager {
     Set<ViTextView> tvSet = factory.getViTextViewSet();
     ps.println("TextViewSet: " + tvSet.size());
     for (ViTextView tv : tvSet) {
-        ps.println("\t" + tv.getDisplayFileName());
+        ps.println("\t" + tv.getBuffer().getDisplayFileName());
     }
     
     Set<Buffer> bufSet = factory.getBufferSet();

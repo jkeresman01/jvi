@@ -271,22 +271,6 @@ public interface ViTextView extends ViOptionBag {
   /** Handle displayable editor state changes */
   public ViStatusDisplay getStatusDisplay();
 
-  //
-  // START FS
-  //
-  /** Display file info */
-  public void displayFileInfo();
-
-  /** Display file info */
-  public String getDisplayFileName();
-
-  public String getDisplayFileNameAndSize();
-
-  public String getFileName(char option);
-  //
-  // END FS
-  //
-
   /**
    * Update the visual state (selection) of the window.
    */
