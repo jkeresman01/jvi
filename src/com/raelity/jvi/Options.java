@@ -1152,8 +1152,9 @@ public final class Options {
     ViOutputStream vos = null;
     try {
       String s = m.group(1);
+      String fn = G.curbuf.getDisplayFileName();
       vos = ViManager.createOutputStream(G.curwin, ViOutputStream.OUTPUT,
-                                         "In " + G.curwin.getDisplayFileName()
+                                         "In " + fn
                                        + ":" + lnum + " process modeline: " + s);
       String[] args = s.split("[:\\s]");
       for (String arg : args) {

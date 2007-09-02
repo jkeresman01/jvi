@@ -2336,7 +2336,7 @@ middle_code:
 
   static private  void	nv_ctrlg (CMDARG cap) {
     do_xop("nv_ctrlg");
-    G.curwin.displayFileInfo();
+    G.curbuf.displayFileInfo(G.curwin);
   }
 
   /**
