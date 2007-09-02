@@ -44,7 +44,7 @@ public class DefaultOutputStream extends OutputStreamAdaptor {
     this.info = info;
     this.tv = tv;
     
-    String fName = tv != null ? tv.getDisplayFileName() : "no-file";
+    String fName = tv != null ? tv.getBuffer().getDisplayFileName() : "no-file";
     System.err.println("ViOutputStream: type: " + type
                        + ", info: " + info + ", " + fName);
   }
