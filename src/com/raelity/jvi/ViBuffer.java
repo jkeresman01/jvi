@@ -94,6 +94,11 @@ public interface ViBuffer {
      * @return a segment for the requested text.
      */
     public MySegment getSegment(int offset, int length, MySegment segment);
+
+
+
+    public int[] getVisualSelectBlocks(ViTextView tv,
+                                       int startOffset, int endOffset);
     
     
     
@@ -121,12 +126,12 @@ public interface ViBuffer {
     
     /** associate the indicated mark with a particular offset
      * @deprecated use setMarkPos
-   */
-  public void setMarkOffset(ViMark mark, int offset, boolean global_mark);
+     */
+    public void setMarkOffset(ViMark mark, int offset, boolean global_mark);
 
-  /** NEEDSWORK: createMark: attached to this text view, should be in ViBuffer
-   * @return a null Mark */
-  public ViMark createMark();
+    /** NEEDSWORK: createMark: attached to this text view, should be in ViBuffer
+     * @return a null Mark */
+    public ViMark createMark();
 
 
 

@@ -142,6 +142,9 @@ public interface ViTextView extends ViOptionBag {
   /** @return the offset of the text insertion caret */
   public int getCaretPosition();
 
+  /** @return the offset of the text insertion caret */
+  public int getMarkPosition();
+
   /** Determine cursor position, all args get set (call by reference). */
   public void computeCursorPosition(MutableInt offset,
 				    MutableInt line,
@@ -155,6 +158,9 @@ public interface ViTextView extends ViOptionBag {
 
   /** select a region of the screen */
   public void setSelect(int dot, int mark);
+
+  /** clear the select, if any, on the screen, don't move the caret */
+  public void clearSelect();
 
   /** undo a change */
   public void undo();

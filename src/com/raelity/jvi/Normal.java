@@ -1509,7 +1509,7 @@ middle_code:
             */
           if (!gui_yank) {
               G.VIsual_active = false;
-              G.curwin.updateVisualState();
+              v_updateVisualState();
               if (G.p_smd.value)
                   G.clear_cmdline = true;   /* unshow visual mode later */
               if (oap.op_type == OP_YANK || oap.op_type == OP_COLON ||
@@ -1830,7 +1830,7 @@ middle_code:
 
     if (G.p_smd.value)
         G.clear_cmdline = true;/* unshow visual mode later */
-    G.curwin.updateVisualState();
+    v_updateVisualState();
 
     /* Don't leave the cursor past the end of the line */
     if (G.curwin.getWCursor().getColumn() > 0 && Util.getChar() == '\n')
@@ -2006,7 +2006,7 @@ middle_code:
   //
 
   static StringBuffer showcmd_buf = new StringBuffer();
-  static StringBuffer old_showcmd_buf = new StringBuffer();
+  //static StringBuffer old_showcmd_buf = new StringBuffer();
   //static boolean showcmd_is_clear = true;
   // static char_u old_showcmd_buf[SHOWCMD_COLS + 1];  /* For push_showcmd() */
 
@@ -3047,7 +3047,7 @@ static private void nv_findpar(CMDARG cap, int dir)
     // if (cap.nchar == '\t' && (curbuf.b_p_et || p_sta)) ....
     GetChar.stuffnumReadbuff(cap.count1);
     GetChar.stuffcharReadbuff('R');
-    GetChar.stuffcharReadbuff((char)cap.nchar);
+    GetChar.stuffcharReadbuff(cap.nchar);
     GetChar.stuffcharReadbuff(ESC);
     GetChar.disableRedoTrackingOneEdit();
     return;
@@ -3091,9 +3091,42 @@ static private void nv_findpar(CMDARG cap, int dir)
         G.VIsual =  old_cursor;
         G.curwin.setWSetCurswant(true);
     }
+    v_updateVisualState();
+  }
+ 
+  static public void v_updateVisualState(ViTextView tv) {
+    assert G.curwin == tv;
+    v_updateVisualState();
+  }
+  static void v_updateVisualState() {
+    if(!G.VIsual_active) {
+      G.curbuf.clearVisualState();
+    }
+    
+    if(G.VIsual_active
+            && G.curwin.getCaretPosition() != G.curwin.getMarkPosition()) {
+      // convert a selection into a visual mode thing,
+      // set visual start, G.VIsual, to the offset
+      int offset = G.curwin.getMarkPosition();
+      
+      //if(!G.curbuf.updateVisualSelectState(offset)) return;
+      
+      // convert a selection into a visual mode thing,
+      // set visual start, G.VIsual, to the offset
+      ViFPOS fpos = G.curwin.getWCursor().copy();
+      fpos.set(G.curbuf.getLineNumber(offset),
+              G.curbuf.getColumnNumber(offset));
+      G.VIsual = fpos;
+      
+      // converting a selection into visual mode, clear the selection
+      G.curwin.clearSelect();
+    }
+    
+    displaySelectState(G.curbuf.getVisualSelectStateString());
+    
     G.curwin.updateVisualState();
   }
-
+  
   /**
    * "R".
    */
@@ -3291,7 +3324,7 @@ static private void nv_findpar(CMDARG cap, int dir)
               G.VIsual_mode = cap.cmdchar;
               Misc.showmode();
               /* update the screen cursor position */
-              G.curwin.updateVisualState();
+              v_updateVisualState();
               //G.curwin.setWCurswant(G.curwin.getCaretPosition());
           }
           update_curbuf(NOT_VALID);/* update the inversion */
@@ -3355,14 +3388,14 @@ static private void nv_findpar(CMDARG cap, int dir)
                   G.curwin.setWSetCurswant(true);
               update_curbuf(NOT_VALID); /* show the inversion */
               /* update the screen cursor position */
-              G.curwin.updateVisualState();
+              v_updateVisualState();
           } else {
               if (!selectmode)
 /* start Select mode when 'selectmode' contains "cmd" */
                   may_start_select('c');
               n_start_visual_mode(cap.cmdchar);
               /* update the screen cursor position */
-              G.curwin.updateVisualState();
+              v_updateVisualState();
           }
       }
       Misc.ui_cursor_shape();

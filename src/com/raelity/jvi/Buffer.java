@@ -247,10 +247,10 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     //
 
 
-    private VisualBounds vb = new VisualBounds();
+    private final VisualBounds visualBounds = new VisualBounds();
 
-    public VisualBounds getVisualBounds() {
-        return vb;
+    private VisualBounds getVisualBounds() {
+        return visualBounds;
     }
     
     /** Calculate the 4 boundary points for a visual selection.
@@ -387,6 +387,51 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
             this.valid = true;
         }
     }
+
+    void clearVisualState() {
+        getVisualBounds().clear();
+    }
+
+    String getVisualSelectStateString() {
+        assert this == G.curbuf;
+        VisualBounds vb = getVisualBounds();
+        if(!G.VIsual_active) {
+            vb.clear();
+            return "";
+        }
+        
+        vb.init(G.VIsual_mode, G.VIsual, G.curwin.getWCursor().copy(),
+                G.curwin.getWCurswant() == MAXCOL);
+        
+        int nLine = vb.getEndLine() - vb.getStartLine() + 1;
+        int nCol = vb.getRight() - vb.getLeft();
+        String s = null;
+        char visMode = vb.getVisMode();
+        if (visMode == 'v') { // char mode
+            s = "" + (nLine == 1 ? nCol : nLine);
+        } else if (visMode == 'V') { // line mode
+            s = "" + nLine;
+        } else if (visMode == (0x1f & (int)('V'))) { // block mode
+            s = "" + nLine + "x" + nCol;
+        }
+
+        return s;
+    }
+
+    public int[] getVisualSelectBlocks(ViTextView tv,
+                                       int startOffset, int endOffset) {
+        VisualBounds vb = getVisualBounds();
+        if (G.drawSavedVisualBounds) {
+            vb.init(b_visual_mode, b_visual_start, b_visual_end,
+                    false);
+        } else if(G.VIsual_active) {
+            vb.init(G.VIsual_mode, G.VIsual, tv.getWCursor().copy(),
+                    tv.getWCurswant() == MAXCOL);
+        } else {
+            vb.clear();
+        }
+        return calculateVisualBlocks(vb, startOffset, endOffset);
+  }
     
     // NEEDSWORK: OPTIMIZE: re-use blocks array
     public int[] calculateVisualBlocks(VisualBounds vb,

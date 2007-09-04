@@ -387,11 +387,16 @@ public void undo(){
     return editorPane.getCaretPosition();
   }
 
+  public int getMarkPosition() {
+    return editorPane.getCaret().getMark();
+  }
+
   public void setCaretPosition(int offset) {
     expectedCaretPosition = offset;
     editorPane.setCaretPosition(offset);
-    if (G.VIsual_active) {
-        updateVisualState();
+    // NEEDSWORK: this does not belong here
+    if (G.VIsual_active && this == G.curwin) {
+        Normal.v_updateVisualState(this);
     }
   }
 
@@ -404,6 +409,11 @@ public void undo(){
     Caret c = editorPane.getCaret();
     c.setDot(mark);
     c.moveDot(dot);
+  }
+
+  public void clearSelect() {
+    Caret c = editorPane.getCaret();
+    c.setDot(c.getDot());
   }
 
   public void findMatch() {
@@ -580,71 +590,25 @@ public void undo(){
  
   /**
    * Update the selection highlight.
-   * Subclasses that override this should call updateVisualSelectDisplay().
    */
 
   public void updateVisualState() {
+    // Following stuff standalone, only for debugging
+    // (should really be a seperate method)
+    if(ViManager.getViFactory().isStandalone()) {
       if (!G.VIsual_active) {
-          try {
-            unhighlight(new int[]{getMark('<').getOffset(), getMark('>').getOffset(), -1, -1});
-          } catch(Exception e) {unhighlight(new int[]{0, editorPane.getText().length(), -1, -1});}
+        try {
+          unhighlight(new int[]{getMark('<').getOffset(),
+                                getMark('>').getOffset(), -1, -1});
+        } catch(Exception e) {
+          unhighlight(new int[]{0, editorPane.getText().length(),
+                                -1, -1});
+        }
       }
-      updateVisualSelectDisplay();
-      int[] b = getVisualSelectBlocks(0, Integer.MAX_VALUE);
+      int[] b = getBuffer().getVisualSelectBlocks(this, 0, Integer.MAX_VALUE);
       //dumpBlocks("blocks", b);
       highlight(b);
-  }
-
-  /** Output the selection range as defined in the 'sm' vim doc.
-   * Subclasses should invoke this from updateVisualState().
-   */
-  protected void updateVisualSelectDisplay() {
-    Buffer.VisualBounds vb = getBuffer().getVisualBounds();
-    if(!G.VIsual_active) {
-        vb.clear();
-        return;
     }
-
-    if (editorPane.getCaret().getDot() != editorPane.getCaret().getMark() ) {
-      // convert a selection into a visual mode thing,
-      // set G.VIsual to the mark
-      ViFPOS fpos = getWCursor().copy();
-      int offset = editorPane.getCaret().getMark();
-      setCaretPosition(fpos.getOffset()); // clear the selection
-      fpos.set(getBuffer().getLineNumber(offset),
-               getBuffer().getColumnNumber(offset));
-      G.VIsual = fpos;
-    }
-    
-    vb.init(G.VIsual_mode, G.VIsual, getWCursor().copy(),
-            getWCurswant() == MAXCOL);
-
-    int nLine = vb.getEndLine() - vb.getStartLine() + 1;
-    int nCol = vb.getRight() - vb.getLeft();
-    String s = null;
-    char visMode = vb.getVisMode();
-    if (visMode == 'v') { // char mode
-      s = "" + (nLine == 1 ? nCol : nLine);
-    } else if (visMode == 'V') { // line mode
-      s = "" + nLine;
-    } else if (visMode == (0x1f & (int)('V'))) { // block mode
-      s = "" + nLine + "x" + nCol;
-    }
-    Normal.displaySelectState(s);
-  }
-
-  public int[] getVisualSelectBlocks(int startOffset, int endOffset) {
-    Buffer.VisualBounds vb = getBuffer().getVisualBounds();
-    if (G.drawSavedVisualBounds) {
-      vb.init(buf.b_visual_mode, buf.b_visual_start, buf.b_visual_end,
-              false);
-    } else if(G.VIsual_active) {
-      vb.init(G.VIsual_mode, G.VIsual, getWCursor().copy(),
-              getWCurswant() == MAXCOL);
-    } else {
-        vb.clear();
-    }
-    return getBuffer().calculateVisualBlocks(vb, startOffset, endOffset);
   }
 
   //////////////////////////////////////////////////////////////////////

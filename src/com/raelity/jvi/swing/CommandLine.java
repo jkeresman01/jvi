@@ -505,7 +505,7 @@ public class CommandLine extends JPanel {
             // and all has been repainted
             if(G.drawSavedVisualBounds) {
                 G.drawSavedVisualBounds = false;
-                G.curwin.updateVisualState();
+                Normal.v_updateVisualState(tv);
             }
             // END VISUAL REPAINT HACK
             lastCommand = commandLine.getCommand();
