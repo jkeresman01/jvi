@@ -529,25 +529,19 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     // Highlight Search
     //
     
-    Pattern highlightSearchPattern;
-    // Use MySegment for 1.5 compatibility
     MySegment highlightSearchSegment = new MySegment();
     int[] highlightSearchBlocks = new int[2];
     MutableInt highlightSearchIndex = new MutableInt();
     
-    //
-    // NEEDSWORK: should/could hide following, eg in getHighlightSearchBlocks
-    //            was protected when in TextView
-    //
-    public void updateHighlightSearchCommonState() {
+    public int[] getHighlightSearchBlocks(int startOffset, int endOffset) {
+        Pattern highlightSearchPattern = null;
         highlightSearchBlocks = new int[20];
         RegExp re = Search.getLastRegExp();
         if(re instanceof RegExpJava) {
+            // NEEDSWORK: speed the following up
             highlightSearchPattern = ((RegExpJava)re).getPattern();
         }
-    }
-    
-    public int[] getHighlightSearchBlocks(int startOffset, int endOffset) {
+
         highlightSearchIndex.setValue(0);
         if(highlightSearchPattern != null && Options.doHighlightSearch()) {
             int len = getLength();
