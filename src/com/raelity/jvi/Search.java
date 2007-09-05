@@ -630,6 +630,7 @@ finished:
     try {
       int flags = ignoreCase ? RegExp.IGNORE_CASE : 0;
       re = RegExpFactory.create();
+      // NEEDSWORK: compilePattern vs cleanPattern
       String compilePattern = re.patternType() == RegExp.PATTERN_SIMPLE
                                 ? pattern : cleanPattern;
       re.compile(cleanPattern, flags);

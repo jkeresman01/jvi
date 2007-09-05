@@ -617,8 +617,6 @@ public void undo(){
   //
   
   public void updateHighlightSearchState() {
-    getBuffer().updateHighlightSearchCommonState();
-    
     applyBackground(new int[] {0, getBuffer().getLength(), -1, -1},
                     UNHIGHLIGHT);
     
