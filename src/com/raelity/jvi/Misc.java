@@ -1578,6 +1578,8 @@ public class Misc implements ClipboardOwner {
 
     boolean		did_yank = true;
     int			old_lcount = G.curbuf.getLineCount();
+    ViFPOS              opStartPos = null;
+    ViFPOS              opEndPos = null;
 
     /*
     if (curbuf.b_ml.ml_flags & ML_EMPTY)	    // nothing to do
@@ -1765,6 +1767,9 @@ public class Misc implements ClipboardOwner {
 	del_lines(oap.line_count, true, true);
 	Edit.beginline(BL_WHITE | BL_FIX);
       }
+      // full lines are deleted, set op end/start to current pos.
+      opStartPos = G.curwin.getWCursor().copy();
+      opEndPos = opStartPos;
       // u_clearline();	// "U" command should not be possible after "dd"
     }
     else if(oap.line_count == 1) {
@@ -1801,14 +1806,19 @@ public class Misc implements ClipboardOwner {
     //
     // set "'[" and "']" marks.
     //
-    ViFPOS tpos;
-    if(oap.block_mode) {
-      tpos = oap.end.copy();
-      tpos.setColumn(oap.start.getColumn());
-    } else
-      tpos = oap.start;
-    G.curbuf.b_op_end.setMark(tpos);
-    G.curbuf.b_op_start.setMark(oap.start);
+    if(opEndPos == null) {
+      if(oap.block_mode) {
+        opEndPos = oap.end.copy();
+        opEndPos.setColumn(oap.start.getColumn());
+      } else
+        opEndPos = oap.start;
+    }
+
+    if(opStartPos == null)
+      opStartPos = oap.start;
+              
+    G.curbuf.b_op_end.setMark(opEndPos);
+    G.curbuf.b_op_start.setMark(opStartPos);
   }
 
   /**
