@@ -153,7 +153,7 @@ public class KeyBinding {
    * directly at some point.
    */
   public static JTextComponent.KeyBinding[] getBindings() {
-    List<JTextComponent.KeyBinding> l = getBindingsList();
+    List<JTextComponent.KeyBinding> l = getBindingsListInternal();
     return l.toArray(new JTextComponent.KeyBinding[l.size()]);
   }
   
@@ -161,11 +161,17 @@ public class KeyBinding {
   // catch preference change then null list, then updateKeymap
   private static List<JTextComponent.KeyBinding> bindingList;
             
+
   /**
-   * Return an ArrayList of bindings; it should not be modified by the user,
-   * but to allow .clone() to work, this does not return an unmodifiable list.
+   * Return an ArrayList of bindings. This can be modified without
+   * affecting the backing list.
    */
+  @SuppressWarnings("unchecked")
   public static List<JTextComponent.KeyBinding> getBindingsList() {
+      return (List)((ArrayList)getBindingsListInternal()).clone();
+  }
+
+  private static List<JTextComponent.KeyBinding> getBindingsListInternal() {
 
     if(bindingList != null) {
         return bindingList;
@@ -324,17 +330,18 @@ public class KeyBinding {
      * Return the available actions.
      */
     public static Action[] getActions() {
-        if(actionArray == null) {
-            List<Action> l = getActionsList();
-            actionArray = l.toArray(new Action[l.size()]);
-        }
-        return actionArray;
+      List<Action> l = getActionsListInternal();
+      return l.toArray(new Action[l.size()]);
     }
   
-    private static Action[] actionArray;
     private static List<Action> actionList;
   
+    @SuppressWarnings("unchecked")
     public static List<Action> getActionsList() {
+      return (List)((ArrayList)KeyBinding.getActionsListInternal()).clone();
+    }
+
+    private static List<Action> getActionsListInternal() {
         if(actionList == null)
             actionList = createActionList();
         return actionList;
