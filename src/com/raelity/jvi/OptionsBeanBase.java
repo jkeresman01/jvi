@@ -11,10 +11,10 @@ package com.raelity.jvi;
 
 import java.awt.Color;
 import java.awt.Image;
-import java.awt.Toolkit;
 import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyDescriptor;
@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.prefs.Preferences;
 
 import com.raelity.jvi.Option.ColorOption;
+import com.raelity.org.openide.util.WeakListeners;
 
 /**
  * Base class for jVi options beans. This method contains the read/write methods
@@ -49,6 +50,21 @@ public class OptionsBeanBase extends SimpleBeanInfo {
         this.clazz = clazz;
         this.displayName = displayName;
         this.optionsList = optionsList;
+
+        optionsListener = new OptionsListener();
+        //Options.addPropertyChangeListener(new OptionsListener());
+        Options.addPropertyChangeListener(
+                WeakListeners.propertyChange(optionsListener, Options.class));
+    }
+
+    private OptionsListener optionsListener;
+    private class OptionsListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(optionsList.contains(evt.getPropertyName())) {
+                // System.err.println("Fire: " + evt.getPropertyName());
+                OptionsBeanBase.this.pcs.firePropertyChange(evt);
+            }
+        }
     }
     
     @Override
