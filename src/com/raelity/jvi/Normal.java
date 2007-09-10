@@ -40,6 +40,7 @@ import java.text.CharacterIterator;
 
 import com.raelity.jvi.ViTextView.JLOP;
 import com.raelity.jvi.ViTextView.TAGOP;
+import com.raelity.jvi.ViTextView.TABOP;
 import com.raelity.text.TextUtil;
 import com.raelity.text.TextUtil.MySegment;
 
@@ -3529,8 +3530,16 @@ static private void nv_findpar(CMDARG cap, int dir)
         nv_operator(cap);
         break;
 
+    case 't':
+        G.curwin.tabOperation(TABOP.NEXT_TAB, 0);
+        break;
+
+    case 'T':
+        G.curwin.tabOperation(TABOP.PREV_TAB, 0);
+        break;
+
       default:
-        notSup("g" + new String(new char[] {(char)cap.nchar}));
+        notSup("g" + String.valueOf(cap.nchar));
         break;
     }
   }

@@ -432,6 +432,10 @@ public void undo(){
     Util.vim_beep();
   }
 
+  public void tabOperation(TABOP op, int count) {
+      Util.vim_beep();
+  }
+
   public void computeCursorPosition(MutableInt offset,
                                     MutableInt line,
                                     MutableInt column)

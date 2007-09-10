@@ -59,6 +59,9 @@ public interface ViTextView extends ViOptionBag {
   
   /** tags and tagstack operations */
   public enum TAGOP { OLDER, NEWER }
+
+  /** move to other tab */
+  public enum TABOP { NEXT_TAB, PREV_TAB }
   
   //
   // First the methods that make this look like a window
@@ -168,6 +171,8 @@ public interface ViTextView extends ViOptionBag {
   /** redo a change */
   public void redo();
 
+
+
   /** find matching character for character under the cursor.
    * This is the '%' command. It is here to take advantage of
    * existing functionality in target environments.
@@ -182,6 +187,14 @@ public interface ViTextView extends ViOptionBag {
   
   /** Perform the fold operation.  */
   public void foldOperation(int op);
+
+  /** move to other file tab.<br/>
+   * For NEXT,PREV if count == 0 then neighboring tab;
+   * if count != 0 then countTh tab, where first is one
+   */
+  public void tabOperation(TABOP op, int count);
+
+
 
   /** @return the line number of first visible line in window */
   public int getViewTopLine();

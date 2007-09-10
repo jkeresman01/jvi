@@ -43,6 +43,7 @@ public class OptionsBeanBase extends SimpleBeanInfo {
     
     private final PropertyChangeSupport pcs = new PropertyChangeSupport( this );
     private final VetoableChangeSupport vcs = new VetoableChangeSupport( this ); 
+    //private static String checkme = "Search Options";
     
     /** Creates a new instance of OptionsBeanBase */
     public OptionsBeanBase(Class clazz, String displayName,
@@ -55,13 +56,15 @@ public class OptionsBeanBase extends SimpleBeanInfo {
         //Options.addPropertyChangeListener(new OptionsListener());
         Options.addPropertyChangeListener(
                 WeakListeners.propertyChange(optionsListener, Options.class));
+        //if(checkme.equals(displayName))
+        //    System.err.println("CONSTRUCT: " + displayName);
     }
 
     private OptionsListener optionsListener;
     private class OptionsListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             if(optionsList.contains(evt.getPropertyName())) {
-                // System.err.println("Fire: " + evt.getPropertyName());
+                //System.err.println("Fire: " + evt.getPropertyName());
                 OptionsBeanBase.this.pcs.firePropertyChange(evt);
             }
         }
