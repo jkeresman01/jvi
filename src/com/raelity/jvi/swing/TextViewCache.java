@@ -334,6 +334,7 @@ public class TextViewCache implements PropertyChangeListener,
 
   private void changeDocument(Document doc) {
     if(cacheTrace.getBoolean())System.err.println("doc switch: ");
+    // NEEDSWORK:
     assert false;
   }
 

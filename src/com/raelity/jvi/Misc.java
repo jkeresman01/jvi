@@ -248,7 +248,7 @@ public class Misc implements ClipboardOwner {
     if (!G.curbuf.b_p_et) {	    // if 'expandtab' is set, don't use TABs
       while (size >= G.curbuf.b_p_ts) {
 	// NEEDSWORK:  how did b_p_et get set, dont expand tabs for now
-	sb.append((char)TAB);
+	sb.append(TAB);
 	size -= G.curbuf.b_p_ts;
       }
     }
@@ -376,8 +376,7 @@ public class Misc implements ClipboardOwner {
 
   static void pchar(ViFPOS fpos, char c) {
     int offset = fpos.getOffset();
-    G.curwin.replaceString(offset, offset+1,
-                           new String(new char[] {(char)c}));
+    G.curwin.replaceString(offset, offset+1, String.valueOf(c));
     // do not change cursor position
     G.curwin.setCaretPosition(offset);
   }
@@ -488,6 +487,11 @@ public class Misc implements ClipboardOwner {
     return OK;
   }
 
+  static boolean newSkip = false;
+  static void skipDisplayLines(int n) {
+    G.curwin.skipDisplayLines(n);
+  }
+
   /** This method not in vim,
    * but we cant just set a line number in the window struct.
    * If the target line is within one half screen of being visible
@@ -502,6 +506,39 @@ public class Misc implements ClipboardOwner {
     if(line > G.curbuf.getLineCount()) {
       line = G.curbuf.getLineCount();
     }
+
+    // if target is not visible then some special handling
+    if(line < G.curwin.getViewTopLine()
+            || line > G.curwin.getViewBottomLine()) {
+      // if target line is less than half a screen away from
+      // being visible, then just let it scroll, otherwise
+      // center the target line
+      int center = G.curwin.getViewTopLine()
+              + G.curwin.getViewLines() / 2 - 1;
+      if(line < center - G.curwin.getViewLines() - 1
+              || line > center + G.curwin.getViewLines()) {
+        int top = line - (G.curwin.getViewLines() / 2);
+        if((G.curwin.getViewLines() & 1) == 0) {
+          ++top; // even num lines, put target in upper half
+        }
+        G.curwin.setViewTopLine(adjustTopLine(top));
+      } else {
+        // Within half a screen, want to scroll to line.
+        // on some platforms simpley setting the cursor positon isn't enough
+        // to get it to scroll, so we calculate the top/botton to get the target
+        // line at the edge of visible range
+        int top;
+        if(line < G.curwin.getViewTopLine()) {
+          top = line;
+        } else {
+          top = line - G.curwin.getViewLines();
+        }
+        G.curwin.setViewTopLine(adjustTopLine(top));
+
+      }
+    }
+
+    // Now set column as needed
     MySegment seg = G.curbuf.getLineSegment(line);
     int col;
     if(flag < 0) {
@@ -510,22 +547,6 @@ public class Misc implements ClipboardOwner {
       // from nv_goto
       col = Edit.beginlineColumnIndex(flag, seg);
     }
-
-    // if target line is less than half a screen away from
-    // being visible, then just let it scroll, otherwise
-    // center the target line
-
-    int center = G.curwin.getViewTopLine()
-	      	   + G.curwin.getViewLines() / 2 - 1;
-    if(line < center - G.curwin.getViewLines() - 1
-	    || line > center + G.curwin.getViewLines()) {
-      int top = line - (G.curwin.getViewLines() / 2);
-      if((G.curwin.getViewLines() & 1) == 0) {
-        ++top; // even num lines, put target in upper half
-      }
-      G.curwin.setViewTopLine(adjustTopLine(top));
-    }
-    // NEEDSWORK: gotoLine, respect p_so (scrolloff)
     G.curwin.setCaretPosition(line, col);
   }
 
@@ -2059,7 +2080,7 @@ public class Misc implements ClipboardOwner {
    * @return FAIL for failure, OK otherwise
    */
   public static int op_yank(OPARG oap, boolean deleting, boolean mess) {
-    int		y_idx = 0;;		// index in y_array[]
+    int		y_idx = 0;		// index in y_array[]
     Yankreg		curr;		// copy of y_current
     // char_u		**new_ptr;
     int			lnum;		// current line number
@@ -3317,7 +3338,7 @@ public class Misc implements ClipboardOwner {
       char ch;
       
       ch = seg.first();
-      while(ch != seg.DONE) {
+      while(ch != MySegment.DONE) {
         col += lbr_chartabsize(ch, col);
         ch = seg.next();
       }
@@ -3494,7 +3515,7 @@ public class Misc implements ClipboardOwner {
       //  ViManager.dumpStack("inUndoCount = " + inUndoCount);
       inUndoCount++;
       if(!inRedo && inUndoCount == 1)
-        G.curwin.beginUndo();
+        G.curbuf.beginUndo();
     }
     
     static void endUndo() {
@@ -3505,7 +3526,7 @@ public class Misc implements ClipboardOwner {
       //if(inUndoCount > 0)
       //  ViManager.dumpStack("inUndoCount = " + inUndoCount);
       if(!inRedo && inUndoCount == 0)
-        G.curwin.endUndo();
+        G.curbuf.endUndo();
     }
     
     // There are interactions between insert and redo undo.
@@ -3524,21 +3545,21 @@ public class Misc implements ClipboardOwner {
      * and the false positives won't cause the assert.
      */
     static boolean isInInsertUndo() {
-      return G.curwin.isInInsertUndo() || inRedo;
+      return G.curbuf.isInInsertUndo() || inRedo;
     }
     
     static void beginInsertUndo() {
       if(G.global_busy || inRedo) {
         return;
       }
-      G.curwin.beginInsertUndo();
+      G.curbuf.beginInsertUndo();
     }
     
     static void endInsertUndo() {
       if(G.global_busy || inRedo) {
         return;
       }
-      G.curwin.endInsertUndo();
+      G.curbuf.endInsertUndo();
     }
     
     //
@@ -3567,11 +3588,11 @@ public class Misc implements ClipboardOwner {
       if(G.global_busy) {
         return;
       }
-      if(G.curwin.isInInsertUndo()) {
+      if(G.curbuf.isInInsertUndo()) {
         endInsertUndo();
       }
       inRedo = true;
-      G.curwin.beginUndo();
+      G.curbuf.beginUndo();
     }
     
     static void endRedoUndo() {
@@ -3580,7 +3601,7 @@ public class Misc implements ClipboardOwner {
       }
       inRedo = false;
       if(inUndoCount == 0)
-        G.curwin.endUndo();
+        G.curbuf.endUndo();
     }
     
     static int[] javaKeyMap;

@@ -940,6 +940,15 @@ public class Edit {
    */
   public static int cursor_up(int n, boolean upd_topline) {
     Normal.do_xop("cursor_up");
+    if(Misc.newSkip) {
+      /*int lnum = G.curwin.getWCursor().getLine();
+      if (n != 0) {
+        if (lnum <= 1)
+          return FAIL;
+      }*/
+      Misc.skipDisplayLines(-n);
+      return OK;
+    }
     int lnum = G.curwin.getWCursor().getLine();
     if (n != 0) {
       if (lnum <= 1)
@@ -954,14 +963,17 @@ public class Edit {
     
     return OK;
   }
-  
-  
+
   /**
    * @param n the number of lines to move
    * @param upd_topline When TRUE: update topline.
    */
   public static int cursor_down(int n, boolean upd_topline) {
     Normal.do_xop("cursor_down");
+    if(Misc.newSkip) {
+      Misc.skipDisplayLines(n);
+      return OK;
+    }
     int lnum = G.curwin.getWCursor().getLine();
     if (n != 0) {
       int nline = G.curbuf.getLineCount();

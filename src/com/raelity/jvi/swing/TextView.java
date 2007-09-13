@@ -30,6 +30,8 @@ package com.raelity.jvi.swing;
 
 import java.awt.Point;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JEditorPane;
 
@@ -42,6 +44,7 @@ import com.raelity.jvi.MutableInt;
 import com.raelity.jvi.Window;
 import com.raelity.jvi.*;
 import java.awt.Color;
+import java.awt.Rectangle;
 
 import static com.raelity.jvi.Constants.*;
 import javax.swing.event.CaretEvent;
@@ -484,6 +487,26 @@ public void undo(){
     return cache.getViewLines();
   }
 
+  public boolean skipDisplayLines(int n) {
+    boolean skipped = false;
+    try {
+      int offset = getCaretPosition();
+      Point vpPoint = cache.getViewport().getViewPosition();
+      System.err.println("VP point: " + vpPoint);
+      Rectangle vRect = getEditorComponent().modelToView(offset);
+      System.err.println("MtoV: " + offset + " --> " + vRect);
+      vRect.translate(0, n * cache.getFheight());
+      int newOffset = getEditorComponent().viewToModel(vRect.getLocation());
+      System.err.println("newOffset: " + n + " --> " + newOffset);
+      setCaretPosition(newOffset);
+      skipped = offset != newOffset;
+    } catch (BadLocationException ex) {
+      //Logger.getLogger(TextView.class.getName()).log(Level.SEVERE, null, ex);
+    }
+    return skipped;
+  }
+
+
   /** Scroll down (n_lines positive) or up (n_lines negative) the
    * specified number of lines.
    */
@@ -506,37 +529,6 @@ public void undo(){
       ((ViCaret)caret).setCursor(cursor);
     }
   }
-
-  //
-  // START BUFFER
-  //
-  
-  public void beginUndo() {
-      getBuffer().beginUndo();
-  }
-
-  public void endUndo() {
-      getBuffer().endUndo();
-  }
-
-  public boolean isInUndo() {
-      return getBuffer().isInUndo();
-  }
-
-  public void beginInsertUndo() {
-      getBuffer().beginInsertUndo();
-  }
-
-  public void endInsertUndo() {
-      getBuffer().endInsertUndo();
-  }
-
-  public boolean isInInsertUndo() {
-      return getBuffer().isInInsertUndo();
-  }
-  //
-  // END BUFFER
-  //
 
   /** Quit editing window. Can close last view.
    */

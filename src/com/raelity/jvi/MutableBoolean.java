@@ -29,7 +29,7 @@
  */
 package com.raelity.jvi;
 
-class MutableBoolean {
+public class MutableBoolean {
   private boolean value;
 
   MutableBoolean(boolean value) { setValue(value); }

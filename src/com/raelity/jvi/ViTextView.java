@@ -165,6 +165,8 @@ public interface ViTextView extends ViOptionBag {
   /** clear the select, if any, on the screen, don't move the caret */
   public void clearSelect();
 
+
+
   /** undo a change */
   public void undo();
 
@@ -211,6 +213,11 @@ public interface ViTextView extends ViOptionBag {
   /** @return the number of lines in window */
   public int getViewLines();
 
+  /** skip cursor number of display lines, takes folding into account.
+   * @return true if some vertical movement took place.
+   */
+  public boolean skipDisplayLines(int n);
+
   /** Scroll down (n_lines positive) or up (n_lines negative) the
    * specified number of lines.
    */
@@ -233,30 +240,6 @@ public interface ViTextView extends ViOptionBag {
 
   /** Change the cursor shape */
   public void updateCursor(ViCursor cursor);
-
-  //
-  // START BUFFER
-  //
-  /** start an undo group, must be paired */
-  public void beginUndo();
-
-  /** end an undo group, must be paired */
-  public void endUndo();
-
-  /** between a begin and an end undo? */
-  public boolean isInUndo();
-  
-  /** start a insert (user typing) ungo group, must be paired */
-  public void beginInsertUndo();
-  
-  /** end a insert (user typing) ungo group, must be paired */
-  public void endInsertUndo();
-  
-  /** between a insert begin and end undo? */
-  public boolean isInInsertUndo();
-  //
-  // END BUFFER
-  //
 
   /** Quit editing window. Can close last view.
    */
