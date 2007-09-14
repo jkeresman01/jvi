@@ -556,9 +556,17 @@ middle_code:
 	  case K_S_DOWN:
 	  case K_PAGEDOWN:
 	  // case K_KPAGEDOWN:
-	    if (checkclearop(oap))
-	      break;
-	    Misc.onepage(dir, ca.count1);
+            if((G.getModMask() & CTRL) != 0
+                    && (ca.cmdchar == K_PAGEUP
+                        || ca.cmdchar == K_PAGEDOWN)) {
+              // editor tab forward/backward
+              ca.nchar = dir == BACKWARD ? 'T' : 't';
+              nv_g_cmd(ca, searchbuff);
+            } else {
+              if (checkclearop(oap))
+                break;
+              Misc.onepage(dir, ca.count1);
+            }
 	    break;
 
 	  case 0x1f & (int)('E'):	// Ctrl
@@ -1582,7 +1590,7 @@ middle_code:
         case OP_RSHIFT:
           Misc.beginUndo();
           try {
-            Misc.op_shift(oap, true, oap.is_VIsual ? (int)cap.count1 : 1);
+            Misc.op_shift(oap, true, oap.is_VIsual ? cap.count1 : 1);
           } finally {
             Misc.endUndo();
           }

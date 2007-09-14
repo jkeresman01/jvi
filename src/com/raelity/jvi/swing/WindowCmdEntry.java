@@ -81,6 +81,7 @@ public class WindowCmdEntry extends CommandLine.CommandLineEntry {
         SwingUtilities.convertPointToScreen(p, root);
         commandLineWindow.setLocation(p.x, p.y);
 
+        commandLine.takeFocus(true);
         commandLineWindow.setVisible(true);
     }
     
