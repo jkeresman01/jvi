@@ -32,8 +32,9 @@ package com.raelity.jvi;
 public class MutableBoolean {
   private boolean value;
 
-  MutableBoolean(boolean value) { setValue(value); }
+  public MutableBoolean() { }
+  public MutableBoolean(boolean value) { setValue(value); }
 
-  final boolean getValue() { return value; }
-  final void setValue(boolean value) { this.value = value; }
+  public final boolean getValue() { return value; }
+  public final void setValue(boolean value) { this.value = value; }
 }
