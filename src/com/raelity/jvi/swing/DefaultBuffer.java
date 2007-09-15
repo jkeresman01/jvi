@@ -244,10 +244,6 @@ public class DefaultBuffer extends Buffer {
     public void reindent(int line, int count) {
         Util.vim_beep();
     }
-    
-    public void anonymousMark(MARKOP op, int count) {
-        Util.vim_beep();
-    }
 
 
     

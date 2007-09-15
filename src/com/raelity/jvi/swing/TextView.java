@@ -426,6 +426,10 @@ public void undo(){
   public void jumpDefinition(String ident) {
     Util.vim_beep();
   }
+  
+  public void anonymousMark(MARKOP op, int count) {
+    Util.vim_beep();
+  }
 
   public void jumpList(JLOP op, int count) {
     Util.vim_beep();

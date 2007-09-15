@@ -18,11 +18,6 @@ import javax.swing.text.BadLocationException;
  * @author erra
  */
 public interface ViBuffer {
-    /** annonymous mark operations */
-    public enum MARKOP { TOGGLE, NEXT, PREV }
-    
-    
-    
     
     /** @return opaque FileObject backing this Buffer */
     public Object getDocument();
@@ -49,11 +44,6 @@ public interface ViBuffer {
     
     
     
-    
-    /** Anonymous mark handling.
-     * Count is the Nth mark forward, back. It is ignored by TOGGLE.
-     */
-    public void anonymousMark(MARKOP op, int count);
     
     /** platform indent algorithm */
     public void reindent(int line, int count);

@@ -54,6 +54,9 @@ public interface ViTextView extends ViOptionBag {
   public static final int FOLDOP_CLOSE_ALL = 'M';
   public static final int FOLDOP_OPEN_ALL = 'R';
   
+  /** annonymous mark operations */
+  public enum MARKOP { TOGGLE, NEXT, PREV }
+  
   /** jump list operations */
   public enum JLOP { NEXT_JUMP, PREV_JUMP, NEXT_CHANGE, PREV_CHANGE }
   
@@ -174,7 +177,12 @@ public interface ViTextView extends ViOptionBag {
   public void redo();
 
 
-
+  
+  /** Anonymous mark handling.
+   * Count is the Nth mark forward, back. It is ignored by TOGGLE.
+   */
+  public void anonymousMark(MARKOP op, int count);
+  
   /** find matching character for character under the cursor.
    * This is the '%' command. It is here to take advantage of
    * existing functionality in target environments.
