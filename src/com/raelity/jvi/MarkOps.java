@@ -32,10 +32,10 @@ package com.raelity.jvi;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import static com.raelity.jvi.ViBuffer.MARKOP;
-import static com.raelity.jvi.ViBuffer.MARKOP.NEXT;
-import static com.raelity.jvi.ViBuffer.MARKOP.PREV;
-import static com.raelity.jvi.ViBuffer.MARKOP.TOGGLE;
+import static com.raelity.jvi.ViTextView.MARKOP;
+import static com.raelity.jvi.ViTextView.MARKOP.NEXT;
+import static com.raelity.jvi.ViTextView.MARKOP.PREV;
+import static com.raelity.jvi.ViTextView.MARKOP.TOGGLE;
 
 import static com.raelity.jvi.Constants.*;
 import static com.raelity.jvi.Messages.*;
@@ -72,7 +72,7 @@ class MarkOps {
         if(op != null) {
             if(op != TOGGLE)
                 setpcmark();
-            G.curbuf.anonymousMark(op, count);
+            G.curwin.anonymousMark(op, count);
             
             return OK;
         }
