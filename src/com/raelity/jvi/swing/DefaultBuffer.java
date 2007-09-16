@@ -212,18 +212,16 @@ public class DefaultBuffer extends Buffer {
             Util.vim_beep();
             return;
         }
-        oneCharArray[0] = c;
-        String s = new String(oneCharArray);
+        String s = String.valueOf(c);
         
         try {
-            getDoc().remove(offset, 1);
+            // This order works better with the do-again, '.', buffer
             getDoc().insertString(offset, s, null);
+            getDoc().remove(offset + 1, 1);
         } catch(BadLocationException ex) {
             processTextException(ex);
         }
     }
-
-    protected static char[] oneCharArray = new char[1];
 
     public String getText(int offset, int length) throws BadLocationException {
         return getDoc().getText(offset, length);
