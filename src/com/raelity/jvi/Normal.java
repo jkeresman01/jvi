@@ -2360,7 +2360,7 @@ middle_code:
     do_xop("nv_ident");
     CharacterIterator     ptrSeg = null;
     int		n = 0;		// init for GCC
-    int		cmdchar;
+    char	cmdchar;
     boolean	g_cmd;		// "g" command
     //char_u	*aux_offset;
     //int	isman;
