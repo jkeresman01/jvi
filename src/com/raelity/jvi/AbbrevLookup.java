@@ -98,7 +98,7 @@ public class AbbrevLookup {
       return ce;
     }
     String firstChar = command.substring(0, 1);
-    String nextChar = new String( new char[] { (char)(command.charAt(0) + 1) });
+    String nextChar = String.valueOf((char)(command.charAt(0) + 1));
     int cidx = Collections.binarySearch(list, getKey(firstChar));
     if(cidx < 0) {
       cidx = -cidx - 1;
