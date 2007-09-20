@@ -243,6 +243,7 @@ public class Normal {
    *   </ol>
    */
 
+  @SuppressWarnings("fallthrough")
   static public void normal_cmd(char c, boolean toplevel) {
                                         //NEEDSWORK: toplevel NOT USED
 
@@ -551,6 +552,7 @@ middle_code:
 	  case K_PAGEUP:
 	    // case K_KPAGEUP:
 	    dir = BACKWARD;
+	    // FALLTHROUGH
 
 	  case 0x1f & (int)('F'):	// Ctrl
 	  case K_S_DOWN:
@@ -630,7 +632,7 @@ middle_code:
 	  case K_CCIRCM:	 // CTRL-^, short for ":e #"
 	    notImp(":e #");
 	    if (!checkclearopq(oap))
-	      buflist_getfile((int)ca.count0, 0,
+	      buflist_getfile(ca.count0, 0,
 			      GETF_SETMARK|GETF_ALT, false);
 	    break;
 
@@ -697,6 +699,8 @@ middle_code:
 	      nv_bck_word(ca, true);
 	      break;
 	    }
+            // FALLTHROUGH
+
 	  case 'h':
 	    dont_adjust_op_end = nv_left(ca);
 	    break;
@@ -841,6 +845,7 @@ middle_code:
 	  case K_KDIVIDE:
 	    ca.cmdchar = '/';
 	    // FALLTHROUGH
+
 	  case '?':
 	  case '/':
             if(ca.nchar != 0)
@@ -950,7 +955,7 @@ middle_code:
 	  case K_UNDO:
 	    if (!checkclearopq(oap))
 	    {
-	      Misc.u_undo((int)ca.count1);
+	      Misc.u_undo(ca.count1);
 	      G.curwin.setWSetCurswant(true);
 	    }
 	    break;
@@ -958,7 +963,7 @@ middle_code:
 	  case 0x1f & (int)('R'):	/* undo undo */	// Ctrl
 	    if (!checkclearopq(oap))
 	    {
-	      Misc.u_redo((int)ca.count1);
+	      Misc.u_redo(ca.count1);
 	      G.curwin.setWSetCurswant(true);
 	    }
 	    break;
@@ -1025,7 +1030,7 @@ middle_code:
 	      n_swapchar(ca);
 	      break;
 	    }
-	    /*FALLTHROUGH*/
+	    // FALLTHROUGH
 
 	  case 'd':
 	  case 'c':
@@ -1033,6 +1038,8 @@ middle_code:
 	  case '>':
 	  case '<':
 	  case '!':
+	    // FALLTHROUGH
+
 	  case '=':
 	    nv_operator(ca);
 	    break;
