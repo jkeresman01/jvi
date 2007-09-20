@@ -524,7 +524,7 @@ middle_code:
        * dir		is FORWARD, use as you like.
        */
       try {
-        notImpV((char)ca.cmdchar);
+        notImpV(ca.cmdchar);
 	switch (ca.cmdchar)
 	{
 	  /*
@@ -4406,7 +4406,7 @@ static private void nv_findpar(CMDARG cap, int dir)
           category = "block";
         }
         if(category != null) {
-          String s = new String(new char[] {(char)ca.cmdchar});
+          String s = String.valueOf(op);
           Msg.smsg("Visual " + category + " Mode: '" + s + "' not implemented");
           throw new NotSupportedException(s, getCmdChars());
         }

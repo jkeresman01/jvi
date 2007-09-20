@@ -84,7 +84,6 @@ public class TextView implements ViTextView {
   protected JEditorPane editorPane;
   protected DefaultBuffer buf;
   protected TextOps ops;
-  protected static char[] oneCharArray = new char[1];
   protected TextViewCache cache;
   protected Window window;
 
@@ -328,9 +327,8 @@ public class TextView implements ViTextView {
       Util.vim_beep();
       return;
     }
-    oneCharArray[0] = c;
     expectedCaretPosition++;
-    ops.xop(TextOps.KEY_TYPED, new String(oneCharArray)); // NEEDSWORK: xop throws no exception
+    ops.xop(TextOps.KEY_TYPED, String.valueOf(c)); // NEEDSWORK: xop throws no exception
   }
 
   //
