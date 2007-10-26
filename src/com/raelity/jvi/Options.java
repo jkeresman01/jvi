@@ -132,6 +132,7 @@ public final class Options {
   public static final String selection = "viSelection";
   public static final String selectMode = "viSelectMode";
   public static final String selectColor = "viSelectColor";
+  public static final String selectFgColor = "viSelectFgColor";
 
   public static final String equalProgram = "viEqualProgram";
   public static final String formatProgram = "viFormatProgram";
@@ -279,10 +280,15 @@ public final class Options {
                "After motion try to keep column position."
             + " NOTE: state is opposite of vim.");
     
-    createColorOption(selectColor, new Color(0xffe588)); // a light (HSB) orange
+    createColorOption(selectColor, new Color(0xffe588)); // a light orange
     setupOptionDesc(generalList, selectColor, "'hl-visual' color",
             "The color used for a visual mode selection.");
     setExpertHidden(selectColor, true, false);
+    
+    createColorOption(selectFgColor, new Color(0x000000)); // black
+    setupOptionDesc(generalList, selectFgColor, "'hl-visual' foreground color",
+            "The color used for a visual mode selection foreground.");
+    setExpertHidden(selectFgColor, true, true);
 
     G.p_sel = createStringOption(selection, "inclusive",
             new StringOption.Validator() {

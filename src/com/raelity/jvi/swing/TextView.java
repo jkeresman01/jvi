@@ -71,6 +71,8 @@ import javax.swing.text.StyledEditorKit;
  * </p>
  */
 public class TextView implements ViTextView {
+  private static int gen;
+  protected int mygen;
 
   private static MutableAttributeSet HIGHLIGHT = new SimpleAttributeSet();
   private static MutableAttributeSet UNHIGHLIGHT = new SimpleAttributeSet();
@@ -96,6 +98,7 @@ public class TextView implements ViTextView {
 
   public TextView(final JEditorPane editorPane) {
     this.editorPane = editorPane;
+    mygen = ++gen;
 
     cursorSaveListener = new CaretListener() {
       public void caretUpdate(CaretEvent ce) {

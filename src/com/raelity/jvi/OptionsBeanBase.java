@@ -388,6 +388,14 @@ public class OptionsBeanBase extends SimpleBeanInfo {
         return getColor(Options.selectColor);
     }
 
+    public void setViSelectFgColor(Color arg)  throws PropertyVetoException {
+        put(Options.selectFgColor, arg);
+    }
+
+    public Color getViSelectFgColor() {
+        return getColor(Options.selectFgColor);
+    }
+
     public void setViSelection(String arg)  throws PropertyVetoException {
         put(Options.selection, arg);
     }

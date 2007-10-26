@@ -1024,7 +1024,8 @@ public class ViManager {
     private int messageNumber;
     private String message;
     private boolean valid;
-    private boolean output;
+    private boolean outputNetworkInfo;
+    private boolean outputBasicInfo;
 
     Motd() {
       // not valid
@@ -1061,7 +1062,9 @@ public class ViManager {
     }
 
     void outputOnce() {
-      if(output)
+      if(outputNetworkInfo)
+        return;
+      if(outputBasicInfo && !valid)
         return;
       output();
     }
@@ -1071,9 +1074,10 @@ public class ViManager {
         ViOutputStream vios = ViManager.createOutputStream(
                 null, ViOutputStream.OUTPUT, getReleaseString());
         vios.close();
+        outputBasicInfo = true;
         return;
       }
-      output = true;
+      outputNetworkInfo = true;
 
       ViOutputStream vios = ViManager.createOutputStream(
               null, ViOutputStream.OUTPUT, "jVi Version Information");
