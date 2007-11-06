@@ -42,6 +42,10 @@ public interface ViOutputStream {
   public static final String LINES = "Text";
   /** Indicates that the output stream is command state information, reuse */
   public static final String OUTPUT = "Output";
+
+  public static final int PRI_LOW = 2;
+  public static final int PRI_NORMAL = 5;
+  public static final int PRI_HIGH = 7;
   
   /**
    * Add a message to this output stream. This argument information 
