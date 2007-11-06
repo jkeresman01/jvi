@@ -88,9 +88,13 @@ public interface ViFactory {
    *  @param type Should be a constant from ViOutputStream,
    *          e.g. ViOutputStream.SEARCH.
    *  @param info qualifier for the output stream, e.g. search pattern.
+   * @param priority 0 - 10 where 0 is lowest priority, 5 is normal,
+   *        0-2 is low, don't raise window.
    */
   public ViOutputStream createOutputStream(ViTextView tv,
-                                           Object type, Object info);
+                                           Object type,
+                                           Object info,
+                                           int priority);
   
   public void startGlassKeyCatch(KeyListener kl);
   public void stopGlassKeyCatch();

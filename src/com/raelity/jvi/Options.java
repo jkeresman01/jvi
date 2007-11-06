@@ -1155,14 +1155,11 @@ public final class Options {
     Matcher m = p.matcher(cs);
     if(!m.find())
       return false;
-    ViOutputStream vos = null;
+    boolean parseError = false;
+    String mline = m.group(1);
+    StringBuilder sb = new StringBuilder();
     try {
-      String s = m.group(1);
-      String fn = G.curbuf.getDisplayFileName();
-      vos = ViManager.createOutputStream(G.curwin, ViOutputStream.OUTPUT,
-                                         "In " + fn
-                                       + ":" + lnum + " process modeline: " + s);
-      String[] args = s.split("[:\\s]");
+      String[] args = mline.split("[:\\s]");
       for (String arg : args) {
         String msg = "";
         try {
@@ -1172,12 +1169,22 @@ public final class Options {
         } catch (IllegalAccessException ex) {
           ex.printStackTrace();
         }
-        if(!msg.equals(""))
-          vos.println("Error: " + msg);
-        else
-          vos.println("   OK: " + arg);
+        if(sb.length() != 0)
+          sb.append('\n');
+        if(!msg.equals("")) {
+          sb.append("Error: ").append(msg);
+          parseError = true;
+        } else
+          sb.append("   OK: ").append(arg);
       }
     } finally {
+      String fn = G.curbuf.getDisplayFileName();
+      ViOutputStream vos = ViManager.createOutputStream(G.curwin,
+                    ViOutputStream.OUTPUT,
+                    "In " + fn + ":" + lnum + " process modeline: " + mline,
+                    parseError ? ViOutputStream.PRI_HIGH
+                               : ViOutputStream.PRI_LOW);
+      vos.println(sb.toString());
       if(vos != null)
         vos.close();
     }
