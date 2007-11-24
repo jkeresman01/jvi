@@ -68,7 +68,9 @@ public class WindowCmdEntry extends CommandLine.CommandLineEntry {
                 commandLineWindow.remove(commandLine);
                 commandLineWindow.dispose();
             }
+            //JDialog.setDefaultLookAndFeelDecorated(false);
             commandLineWindow = new CommandLineWindow(commandLine, root, title);
+            //JDialog.setDefaultLookAndFeelDecorated(true);
         }
 
         Rectangle bounds = positionCommandEntry(root, commandLineWindow);

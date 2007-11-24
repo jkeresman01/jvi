@@ -150,7 +150,9 @@ public class Jvi {
   //Main method
   public static void main(String[] args) {
     try {
-      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+      //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+      //System.err.println("SETTING LOOK AND FEEL");
+      //UIManager.setLookAndFeel("org.jvnet.substance.SubstanceLookAndFeel");
     }
     catch(Exception e) {
       e.printStackTrace();

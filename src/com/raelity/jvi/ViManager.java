@@ -95,13 +95,13 @@ public class ViManager {
   private static Keymap normalModeKeymap;
 
   // HACK: to workaround JDK bug dealing with focus and JWindows
-  public static ViCmdEntry activeCommandEntry;
+  private static ViCmdEntry activeCommandEntry;
 
   //
   // 1.0.0.beta2 is NB vers 0.9.6.4
   // 1.0.0.beta3 is NB vers 0.9.7.5
   //
-  public static final jViVersion version = new jViVersion("1.1.2.x5");
+  public static final jViVersion version = new jViVersion("1.1.2.x6");
   
   private static boolean enabled;
 

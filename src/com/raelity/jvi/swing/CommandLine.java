@@ -38,6 +38,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
 import javax.swing.border.*;
+import javax.swing.plaf.basic.BasicComboBoxEditor;
 
 /**
  * This class presents a editable combo box UI for picking up command entry
@@ -59,6 +60,7 @@ public class CommandLine extends JPanel {
     private java.util.List<String> list;
     private int historySize;
     Border border1;
+    boolean setKeymapActive;
     
     /** This is used to initialize the text of the combo box,
      * needed so that characters entered before the combo box gets focus
@@ -104,6 +106,25 @@ public class CommandLine extends JPanel {
     }
 
     public CommandLine() {
+        //combo.putClientProperty("lafwidgets.comboboxNoAutoCompletion", true);
+        combo.setEditor(new BasicComboBoxEditor());
+        JTextComponent text = (JTextComponent) combo.getEditor().getEditorComponent();
+        text.addPropertyChangeListener("keymap", new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(setKeymapActive)
+                    return;
+                Object newO = evt.getNewValue();
+                Object oldO = evt.getOldValue();
+                if(newO != null) {
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            setKeymap();
+                        }
+                    });
+                }
+            }
+        });
+
         try {
             jbInit();
         } catch(Exception ex) {
@@ -119,6 +140,7 @@ public class CommandLine extends JPanel {
                 font.getSize()));
         setHistorySize(DEFAULT_HISTORY_SIZE);
         setMode(" ");
+        setComboDoneListener();
         setKeymap();
         // allow tabs to be entered into text field
         Component c = getTextComponent();
@@ -285,26 +307,43 @@ public class CommandLine extends JPanel {
     protected Action createSimpleEvent(String name) {
         return new SimpleEvent(name);
     }
+
+    private void setComboDoneListener() {
+        combo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(e.getActionCommand().equals("comboBoxEdited")) {
+                    ActionEvent e01 = new ActionEvent(CommandLine.this,
+                            e.getID(), "\n", e.getModifiers());
+                    fireActionPerformed(e01);
+                }
+            }
+        });
+
+    }
     
     /**
      * Return and <ESC> fire events and update the history list.
      */
     private void setKeymap() {
+        if(setKeymapActive)
+            return;
+        setKeymapActive = true;
         Keymap keymap = JTextComponent.addKeymap("CommandLine",
                 getTextComponent().getKeymap());
         JTextComponent.loadKeymap(keymap, getBindings(), getActions());
         getTextComponent().setKeymap(keymap);
+        setKeymapActive = false;
     }
     
     protected JTextComponent.KeyBinding[] getBindings() {
         JTextComponent.KeyBinding[] bindings = {
-            new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+            /*new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                     KeyEvent.VK_ENTER, 0),
-                    "enter"),
-                    new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                    "enter"),*/
+            new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                     KeyEvent.VK_ESCAPE, 0),
                     "escape"),
-                    new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+            new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                     '\t'),
                     "tab"),
         };
@@ -314,9 +353,8 @@ public class CommandLine extends JPanel {
     protected Action[] getActions() {
         Action[] localActions = null;
         try {
-            ViFactory factory = ViManager.getViFactory();
             localActions = new Action[] {
-                createSimpleEvent("enter"),
+                /*createSimpleEvent("enter"),*/
                 createSimpleEvent("escape"),
                 new TextAction("tab") {
                     public void actionPerformed(ActionEvent e) {
