@@ -940,13 +940,13 @@ public class Edit {
    */
   public static int cursor_up(int n, boolean upd_topline) {
     Normal.do_xop("cursor_up");
-    if(Misc.newSkip) {
+    if(G.isCoordSkip.getBoolean()) {
       /*int lnum = G.curwin.getWCursor().getLine();
       if (n != 0) {
         if (lnum <= 1)
           return FAIL;
       }*/
-      Misc.skipDisplayLines(-n);
+      Misc.skipCoordLines(-n);
       return OK;
     }
     int lnum = G.curwin.getWCursor().getLine();
@@ -970,8 +970,8 @@ public class Edit {
    */
   public static int cursor_down(int n, boolean upd_topline) {
     Normal.do_xop("cursor_down");
-    if(Misc.newSkip) {
-      Misc.skipDisplayLines(n);
+    if(G.isCoordSkip.getBoolean()) {
+      Misc.skipCoordLines(n);
       return OK;
     }
     int lnum = G.curwin.getWCursor().getLine();
