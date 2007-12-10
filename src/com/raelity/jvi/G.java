@@ -147,6 +147,8 @@ public class G {
   public static BooleanOption readOnlyHack;
   public static BooleanOption isClassicUndo;
   public static BooleanOption dbgEditorActivation;
+  public static BooleanOption isCoordSkip;
+  public static BooleanOption dbgCoordSkip;
 
   public static BooleanOption dbgKeyStrokes;
   public static IntegerOption dbgFlow;  // 1-switch
