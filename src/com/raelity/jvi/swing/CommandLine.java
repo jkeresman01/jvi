@@ -106,8 +106,11 @@ public class CommandLine extends JPanel {
     }
 
     public CommandLine() {
-        //combo.putClientProperty("lafwidgets.comboboxNoAutoCompletion", true);
+        // see https://substance.dev.java.net/issues/show_bug.cgi?id=285
+        //combo.putClientProperty(LafWidget.COMBO_BOX_NO_AUTOCOMPLETION, true);
+        combo.putClientProperty("lafwidgets.comboboxNoAutoCompletion", true);
         combo.setEditor(new BasicComboBoxEditor());
+        combo.setEditable(true);
         JTextComponent text = (JTextComponent) combo.getEditor().getEditorComponent();
         text.addPropertyChangeListener("keymap", new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -155,7 +158,6 @@ public class CommandLine extends JPanel {
     void jbInit() throws Exception {
         modeLabel.setText("");
         this.setLayout(gridBagLayout1);
-        combo.setEditable(true);
         this.add(modeLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0
                 ,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
         this.add(combo, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0

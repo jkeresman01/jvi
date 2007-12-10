@@ -487,11 +487,6 @@ public class Misc implements ClipboardOwner {
     return OK;
   }
 
-  static boolean newSkip = false;
-  static void skipDisplayLines(int n) {
-    G.curwin.skipDisplayLines(n);
-  }
-
   /** This method not in vim,
    * but we cant just set a line number in the window struct.
    * If the target line is within one half screen of being visible
@@ -2898,6 +2893,10 @@ public class Misc implements ClipboardOwner {
     
     static void halfpage(boolean go_down, int Prenum) {
       Normal.do_xop("halfpage");
+      if(G.isCoordSkip.getBoolean()) {
+        coordHalfpage(go_down, Prenum);
+        return;
+      }
       
       int		scrolled = 0;
       int		i;
@@ -2909,7 +2908,7 @@ public class Misc implements ClipboardOwner {
       int newcursorline = -1;
       
       final ViFPOS cursor = G.curwin.getWCursor();
-      
+
       if (Prenum != 0)
         G.curwin.setWPScroll((Prenum > G.curwin.getViewLines())
         ?  G.curwin.getViewLines() : Prenum);
@@ -3001,6 +3000,151 @@ public class Misc implements ClipboardOwner {
         G.curwin.setWSetCurswant(false);
       }
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    //
+    // Coordinate Skipping
+    //
+    // This is all about handling code folding
+    //
+    // When doing relative navigation thoughout the file, eg up/downarrow ^D ^F,
+    // the move needs to be relative to the Document/JViewport coordinate
+    // system. Compution are about screen lines , not file lines.
+    //
+    // One approach is to compute number of lines to scroll up/down and the
+    // number of lines from the top to put the cursor, or something like that;
+    // give those numbers to the text view and let it figure out what to do.
+    // Another approach is to work more in coordinate, but not sure what that
+    // would look like.
+    //
+    // Another approach is to keep the algorithms identical to what they are
+    // now, tweaked so that the the line numbers being used are coord/display
+    // line numbers rather than file line numbers. So adjust methods like
+    // GetLineCount and GetViewTopLine so they return values based on what's
+    // displayed.
+    //
+    // Another approach is to do things in terms coordinates. For example,
+    // ^D is half a screen down; do it all in coords.
+    //
+    // Some issues.
+    //   - magic caret position in vim is char offset in line. May
+    //     need to *also* keep x-coord position. Translation of char positon
+    //     to Point is tricky, because char at offset 0 doesn't start at x-coord
+    //     0. But the offset is probably fixed, like "2", for a given session
+    //     so using "2 + charoffset * char-width" is a shortcut for monospace
+    //     fonts.
+    //   - scroll off option might be tricky
+    //   - variable height fonts offer problems.
+    //
+    
+    static void skipCoordLines(int n) {
+      G.curwin.skipCoordLines(n);
+      // NEEDSWORK: coladvance not right for Coord-operations
+      // Take a look in NB's BaseKit up/down left/right operations
+      Misc.coladvance(G.curwin.getWCurswant());
+    }
+    
+    // This is identical to halfpage, except that the methods called in
+    // curwin are the 'coord' variety, plus a little cursor fiddling.
+    static void coordHalfpage(boolean go_down, int Prenum) {
+      Normal.do_xop("halfpage");
+      
+      int		scrolled = 0;
+      int		i;
+      int		n;
+      int		room;
+      
+      int newtopline = -1;
+      int newbotline = -1;
+      int newcursorline = -1;
+      
+      final ViFPOS cursor = G.curwin.getWCursor();
+      
+      if (Prenum != 0)
+        G.curwin.setWPScroll((Prenum > G.curwin.getViewLines())
+        ?  G.curwin.getViewLines() : Prenum);
+      n = (G.curwin.getWPScroll() <= G.curwin.getViewLines())
+      ?  G.curwin.getWPScroll() : G.curwin.getViewLines();
+      
+      validate_botline();
+      room = G.curwin.getViewBlankLines();
+      newtopline = G.curwin.getViewCoordTopLine();
+      newbotline = G.curwin.getViewCoordBottomLine();
+      //newcursorline = cursor.getLine();
+      newcursorline = G.curwin.getCoordLine(cursor.getLine());
+      if (go_down) {	    // scroll down
+        while (n > 0 && newbotline <= G.curwin.getCoordLineCount()) {
+          i = plines(newtopline);
+          n -= i;
+          if (n < 0 && scrolled != 0)
+            break;
+          ++newtopline;
+          // curwin->w_valid &= ~(VALID_CROW|VALID_WROW);
+          scrolled += i;
+          
+          //
+          // Correct w_botline for changed w_topline.
+          //
+          room += i;
+          do {
+            i = plines(newbotline);
+            if (i > room)
+              break;
+            ++newbotline;
+            room -= i;
+          } while (newbotline <= G.curwin.getCoordLineCount());
+          
+          if (newcursorline < G.curwin.getCoordLineCount()) {
+            ++newcursorline;
+            // curwin->w_valid &= ~(VALID_VIRTCOL|VALID_CHEIGHT|VALID_WCOL);
+          }
+        }
+        
+        //
+        // When hit bottom of the file: move cursor down.
+        //
+        if (n > 0) {
+          newcursorline += n;
+          if(newcursorline > G.curwin.getCoordLineCount()) {
+            newcursorline = G.curwin.getCoordLineCount();
+          }
+        }
+      } else {	    // scroll up
+        while (n > 0 && newtopline > 1) {
+          i = plines(newtopline - 1);
+          n -= i;
+          if (n < 0 && scrolled != 0)
+            break;
+          scrolled += i;
+          --newtopline;
+          // curwin->w_valid &= ~(VALID_CROW|VALID_WROW|
+          // VALID_BOTLINE|VALID_BOTLINE_AP);
+          if (newcursorline > 1) {
+            --newcursorline;
+            // curwin->w_valid &= ~(VALID_VIRTCOL|VALID_CHEIGHT|VALID_WCOL);
+          }
+        }
+        //
+        // When hit top of the file: move cursor up.
+        //
+        if (n > 0) {
+          if (newcursorline > n)
+            newcursorline -= n;
+          else
+            newcursorline = 1;
+        }
+      }
+      G.curwin.setViewCoordTopLine(newtopline);
+      //cursor.set(newcursorline, 0);
+      G.curwin.setCursorCoordLine(newcursorline, 0);
+      cursor_correct();
+      Edit.beginline(BL_SOL | BL_FIX);
+      update_screen(VALID);
+      
+    }
+
+  ////////////////////////////////////////////////////////////////////////////
+  //
     
     /**
      * For the current character offset in the current line,

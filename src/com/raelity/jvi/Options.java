@@ -86,6 +86,7 @@ public final class Options {
   public static final String redoTrack = "viRedoTrack";
   public static final String pcmarkTrack = "viPCMarkTrack";
   public static final String autoPopupFN = "viAutoPopupFN";
+  public static final String coordSkip = "viCoordSkip";
 
   public static final String backspaceWrapPrevious = "viBackspaceWrapPrevious";
   public static final String hWrapPrevious = "viHWrapPrevious";
@@ -153,12 +154,14 @@ public final class Options {
   public static final String dbgBangData = "viDbgBangData";
   public static final String dbgMouse = "viDbgMouse";
   public static final String dbgCompletion = "viDbgCompletion";
+  public static final String dbgCoordSkip = "viDbgCoordSkip";
 
   public static final String twMagic = "#TEXT-WIDTH#";
 
   
   private static Map<String,Option> optionsMap = new HashMap<String,Option>();
   
+  static List<String>platformList = new ArrayList<String>();
   static List<String>generalList = new ArrayList<String>();
   static List<String>modifyList = new ArrayList<String>();
   static List<String>searchList = new ArrayList<String>();
@@ -191,12 +194,65 @@ public final class Options {
     /////////////////////////////////////////////////////////////////////
     //
     //
+    // Platform Options
+    //
+    //
+    
+    platformList.add("jViVersion");
+
+    G.redoTrack = createBooleanOption(redoTrack, true);
+    setupOptionDesc(platformList, redoTrack, "\".\" magic redo tracking",
+                    "Track magic document changes during input"
+                    + " mode for the \".\" commnad. These"
+                    + " changes are often the result of IDE code completion");
+
+    G.pcmarkTrack = createBooleanOption(pcmarkTrack, true);
+    setupOptionDesc(platformList, pcmarkTrack,
+                    "\"``\" magic pcmark tracking", "Track magic cursor "
+                    + " movments for the \"``\" command. These movement are"
+                    + " often the result of IDE actions invoked external"
+                    + " to jVi.");
+    
+    createColorOption(selectColor, new Color(0xffe588)); // a light orange
+    setupOptionDesc(platformList, selectColor, "'hl-visual' color",
+            "The color used for a visual mode selection.");
+    
+    createColorOption(selectFgColor, new Color(0x000000)); // black
+    setupOptionDesc(platformList, selectFgColor, "'hl-visual' foreground color",
+            "The color used for a visual mode selection foreground.");
+    // Hide this until there's a way to specify "default"
+    setExpertHidden(selectFgColor, false, true);
+
+    G.isClassicUndo = createBooleanOption(classicUndoOption, true);
+    setupOptionDesc(platformList, classicUndoOption, "classic undo",
+                    "When false, undo is done according to the"
+                    + " underlying platform; usually tiny chunks.");
+    setExpertHidden(classicUndoOption, true, false);
+    
+    G.useFrame  = createBooleanOption(commandEntryFrame , true);
+    setupOptionDesc(platformList, commandEntryFrame, "use modal frame",
+               "Use modal frame for command/search entry."
+               + " Change takes affect after restart.");
+    setExpertHidden(commandEntryFrame, true, false);
+    
+    createBooleanOption(autoPopupFN, false);
+    setupOptionDesc(platformList, autoPopupFN, "\":e#\" Auto Popup",
+               "When doing \":\" command line entry, if \"e#\" is"
+               + " entered then automatically popup a file"
+               + " name completion window. NB6 only; post 07/07/22");
+
+    G.isCoordSkip = createBooleanOption(coordSkip, false);
+    setupOptionDesc(platformList, coordSkip, "coordinate skip",
+            "");
+    setExpertHidden(coordSkip, true, false);
+
+    /////////////////////////////////////////////////////////////////////
+    //
+    //
     // General Options
     //
     //
     
-    generalList.add("jViVersion"); // May need to create an option for this
-
     G.p_so = createIntegerOption(scrollOff, 0);
     setupOptionDesc(generalList, scrollOff, "'scrolloff' 'so'",
            "visible context around cursor (scrolloff)" 
@@ -251,25 +307,6 @@ public final class Options {
             + " that is checked for set commands.  If 'modeline' is off"
             + " or 'modelines' is zero no lines are checked.");
 
-    G.redoTrack = createBooleanOption(redoTrack, true);
-    setupOptionDesc(generalList, redoTrack, "\".\" magic redo tracking",
-                    "Track magic document changes during input"
-                    + " mode for the \".\" commnad. These"
-                    + " changes are often the result of IDE code completion");
-
-    G.pcmarkTrack = createBooleanOption(pcmarkTrack, true);
-    setupOptionDesc(generalList, pcmarkTrack,
-                    "\"``\" magic pcmark tracking", "Track magic cursor "
-                    + " movments for the \"``\" command. These movement are"
-                    + " often the result of IDE actions invoked external"
-                    + " to jVi.");
-
-    G.isClassicUndo = createBooleanOption(classicUndoOption, true);
-    setupOptionDesc(generalList, classicUndoOption, "classic undo",
-                    "When false, undo is done according to the"
-                    + " underlying platform; usually tiny chunks.");
-    setExpertHidden(classicUndoOption, true, false);
-
     G.p_cb = createBooleanOption(unnamedClipboard, false);
     setupOptionDesc(generalList, unnamedClipboard,
                "'clipboard' 'cb' (unnamed)",
@@ -279,16 +316,6 @@ public final class Options {
     setupOptionDesc(generalList, notStartOfLine, "(not)'startofline' (not)'sol'",
                "After motion try to keep column position."
             + " NOTE: state is opposite of vim.");
-    
-    createColorOption(selectColor, new Color(0xffe588)); // a light orange
-    setupOptionDesc(generalList, selectColor, "'hl-visual' color",
-            "The color used for a visual mode selection.");
-    setExpertHidden(selectColor, true, false);
-    
-    createColorOption(selectFgColor, new Color(0x000000)); // black
-    setupOptionDesc(generalList, selectFgColor, "'hl-visual' foreground color",
-            "The color used for a visual mode selection foreground.");
-    setExpertHidden(selectFgColor, true, true);
 
     G.p_sel = createStringOption(selection, "inclusive",
             new StringOption.Validator() {
@@ -331,19 +358,6 @@ public final class Options {
             + " start Select mode instead of Visual mode, when a selection is"
             + " started. Possible values: 'mouse', key' or 'cmd'");
     setExpertHidden(selectMode, true, true);
-    
-    G.useFrame  = createBooleanOption(commandEntryFrame , true);
-    setupOptionDesc(generalList, commandEntryFrame, "use modal frame",
-               "Use modal frame for command/search entry."
-               + " Change takes affect after restart.");
-    setExpertHidden(commandEntryFrame, true, false);
-    
-    createBooleanOption(autoPopupFN, false);
-    setupOptionDesc(generalList, autoPopupFN, "\":e#\" Auto Popup",
-               "When doing \":\" command line entry, if \"e#\" is"
-               + " entered then automatically popup a file"
-               + " name completion window. NB6 only; post 07/07/22");
-    setExpertHidden(autoPopupFN, true, false);
 
     /////////////////////////////////////////////////////////////////////
     //
@@ -627,6 +641,10 @@ public final class Options {
     G.dbgMouse = createBooleanOption(dbgMouse, false);
     setupOptionDesc(debugList, dbgMouse, "debug mouse events",
                "Output info about mouse events");
+
+    G.dbgCoordSkip = createBooleanOption(dbgCoordSkip, false);
+    setupOptionDesc(debugList, dbgCoordSkip, "debug coordinate skip",
+               "");
   }
 
   static Preferences getPrefs() {

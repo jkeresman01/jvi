@@ -4005,8 +4005,9 @@ static private void nv_findpar(CMDARG cap, int dir)
 	|| (cap.cmdchar == Util.ctrl('D')
 	    && cursor.getLine() == G.curbuf.getLineCount()))
       clearopbeep(cap.oap);
-    else if (!checkclearop(cap.oap))
+    else if (!checkclearop(cap.oap)) {
       Misc.halfpage(cap.cmdchar == Util.ctrl('D'), cap.count0);
+    }
   }
 
   /**

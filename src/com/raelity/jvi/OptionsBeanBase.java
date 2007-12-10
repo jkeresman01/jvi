@@ -258,6 +258,22 @@ public class OptionsBeanBase extends SimpleBeanInfo {
         return ViManager.getReleaseString();
     }
 
+    public void setViCoordSkip(boolean arg)  throws PropertyVetoException {
+        put(Options.coordSkip, arg);
+    }
+
+    public boolean getViCoordSkip() {
+	return getboolean(Options.coordSkip);
+    }
+
+    public void setViDbgCoordSkip(boolean arg)  throws PropertyVetoException {
+        put(Options.dbgCoordSkip, arg);
+    }
+
+    public boolean getViDbgCoordSkip() {
+	return getboolean(Options.dbgCoordSkip);
+    }
+
     public void setViAutoPopupFN(boolean arg)  throws PropertyVetoException {
         put(Options.autoPopupFN, arg);
     }

@@ -221,15 +221,35 @@ public interface ViTextView extends ViOptionBag {
   /** @return the number of lines in window */
   public int getViewLines();
 
-  /** skip cursor number of display lines, takes folding into account.
-   * @return true if some vertical movement took place.
-   */
-  public boolean skipDisplayLines(int n);
-
   /** Scroll down (n_lines positive) or up (n_lines negative) the
    * specified number of lines.
    */
   public void scroll(int n_lines);
+
+  /** skip cursor number of display lines, takes folding into account.
+   * @return true if some vertical movement took place.
+   */
+  public boolean skipCoordLines(int n);
+
+  /** @return the line number of first visible line in window */
+  public int getViewCoordTopLine();
+
+  /** cause the idndicated line to be displayed as top line in view. */
+  public void setViewCoordTopLine(int line);
+
+  /** @return the line number of line *after* end of window */
+  public int getViewCoordBottomLine();
+
+  /** */
+  public int getCoordLineCount();
+
+  /** */
+  public int getCoordLine(int line);
+
+  /** */
+  public void setCursorCoordLine(int line, int col);
+
+
 
   /** establish all the listeners */
   public void attach();

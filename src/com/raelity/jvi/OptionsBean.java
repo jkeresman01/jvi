@@ -6,9 +6,16 @@ package com.raelity.jvi;
  */
 public class OptionsBean {
     
+    static public class Platform extends OptionsBeanBase {
+	public Platform() {
+	    super(Platform.class, "jVi Options and Configuration",
+		  Options.platformList);
+        }
+    }
+    
     static public class General extends OptionsBeanBase {
 	public General() {
-	    super(General.class, "jVi Options and Configuration",
+	    super(General.class, "General Options",
 		  Options.generalList);
         }
     }

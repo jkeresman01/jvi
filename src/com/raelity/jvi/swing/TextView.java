@@ -490,26 +490,6 @@ public void undo(){
     return cache.getViewLines();
   }
 
-  public boolean skipDisplayLines(int n) {
-    boolean skipped = false;
-    try {
-      int offset = getCaretPosition();
-      Point vpPoint = cache.getViewport().getViewPosition();
-      System.err.println("VP point: " + vpPoint);
-      Rectangle vRect = getEditorComponent().modelToView(offset);
-      System.err.println("MtoV: " + offset + " --> " + vRect);
-      vRect.translate(0, n * cache.getFheight());
-      int newOffset = getEditorComponent().viewToModel(vRect.getLocation());
-      System.err.println("newOffset: " + n + " --> " + newOffset);
-      setCaretPosition(newOffset);
-      skipped = offset != newOffset;
-    } catch (BadLocationException ex) {
-      //Logger.getLogger(TextView.class.getName()).log(Level.SEVERE, null, ex);
-    }
-    return skipped;
-  }
-
-
   /** Scroll down (n_lines positive) or up (n_lines negative) the
    * specified number of lines.
    */
@@ -518,6 +498,113 @@ public void undo(){
     pt.translate(0, n_lines * cache.getFheight());
     cache.getViewport().setViewPosition(pt);
   }
+
+  public int getViewCoordTopLine() {
+    if(!G.isCoordSkip.getBoolean())
+      return getViewTopLine();
+    int coordLine = getInternalCoordLine(getViewTopLine());
+    if(G.dbgCoordSkip.getBoolean())
+      System.err.println("getViewCoordTopLine: " + coordLine);
+    return coordLine;
+  }
+  
+  //
+  // ARE THESE "UNIVERSAL" CONSTANTS?
+  //
+  private int VIEW_XOFF = 2;
+  private Point LINE1_POINT = new Point(VIEW_XOFF, 0);
+
+  public void setViewCoordTopLine(int coordLine) {
+    if(!G.isCoordSkip.getBoolean()) {
+      setViewTopLine(coordLine);
+      return;
+    }
+    
+    Point p = new Point(LINE1_POINT);
+    p.translate(0, (coordLine - 1) * cache.getFheight());
+    cache.getViewport().setViewPosition(p);
+  }
+  
+  public int getViewCoordBottomLine() {
+    if(!G.isCoordSkip.getBoolean())
+      return getViewBottomLine();
+    int coordLine = getInternalCoordLine(getViewTopLine()) + getViewLines();
+    if(G.dbgCoordSkip.getBoolean())
+      System.err.println("getViewCoordBottomLine: " + coordLine);
+    return coordLine;
+  }
+
+  public int getCoordLineCount() {
+    if(!G.isCoordSkip.getBoolean())
+      return getBuffer().getLineCount();
+    int coordLine = 1;
+    coordLine = getInternalCoordLine(getBuffer().getLineCount());
+    if(G.dbgCoordSkip.getBoolean())
+      System.err.println("getCoordLineCount: " + coordLine);
+    return coordLine;
+  }
+
+  public int getCoordLine(int line) {
+    if (!G.isCoordSkip.getBoolean())
+      return line;
+    int coordLine = getInternalCoordLine(line);
+    if(G.dbgCoordSkip.getBoolean())
+      System.err.println("getCoordLine: " + coordLine);
+    return coordLine;
+  }
+
+  private int getInternalCoordLine(int line) {
+    int coordLine = 1;
+    try {
+      int offset = getBuffer().getLineStartOffset(line);
+      Rectangle lineRect = getEditorComponent().modelToView(offset);
+      int yDiff = lineRect.y - LINE1_POINT.y;
+      coordLine = yDiff / cache.getFheight() + 1;
+      if(G.dbgCoordSkip.getBoolean())
+        System.err.println(String.format(
+                "\tgetInternalCoordLine: %d, line1: %d:%d, line %d:%d",
+                coordLine, 1, LINE1_POINT.y, line, lineRect.y));;
+    } catch (BadLocationException ex) {
+      //Logger.getLogger(TextView.class.getName()).log(Level.SEVERE, null, ex);
+    }
+    return coordLine;
+  }
+
+  public boolean skipCoordLines(int n) {
+    boolean skipped = false;
+    try {
+      int offset = getCaretPosition();
+      Point vpPoint = cache.getViewport().getViewPosition();
+      if(G.dbgCoordSkip.getBoolean())
+          System.err.println("VP point: " + vpPoint);
+      Rectangle vRect = getEditorComponent().modelToView(offset);
+      if(G.dbgCoordSkip.getBoolean())
+          System.err.println("MtoV: " + offset + " --> " + vRect);
+      vRect.translate(0, n * cache.getFheight());
+      int newOffset = getEditorComponent().viewToModel(vRect.getLocation());
+      if(G.dbgCoordSkip.getBoolean())
+          System.err.println("newOffset: " + n + " --> " + newOffset);
+      setCaretPosition(newOffset);
+      skipped = offset != newOffset;
+    } catch (BadLocationException ex) {
+      //Logger.getLogger(TextView.class.getName()).log(Level.SEVERE, null, ex);
+    }
+    return skipped;
+  }
+
+  public void setCursorCoordLine(int coordLine, int col) {
+    if (!G.isCoordSkip.getBoolean()) {
+      setCaretPosition(coordLine, col);
+      return;
+    }
+    Point p = new Point(LINE1_POINT);
+    p.translate(0, (coordLine - 1) * cache.getFheight());
+    int newOffset = getEditorComponent().viewToModel(p);
+    assert col == 0;
+    setCaretPosition(newOffset);
+  }
+
+
 
   private Element getLineElement(int lnum) {
     return getBuffer().getLineElement(lnum);
