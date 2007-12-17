@@ -33,6 +33,7 @@ import javax.swing.SwingUtilities;
 
 import com.raelity.jvi.ViCmdEntry;
 import java.awt.BorderLayout;
+import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -67,9 +68,10 @@ public class WindowCmdEntry extends CommandLine.CommandLineEntry {
             if(commandLineWindow != null) {
                 commandLineWindow.remove(commandLine);
                 commandLineWindow.dispose();
+                commandLineWindow = null;
             }
             //JDialog.setDefaultLookAndFeelDecorated(false);
-            commandLineWindow = new CommandLineWindow(commandLine, root, title);
+            commandLineWindow = CommandLineWindow.get(commandLine, root, title);
             //JDialog.setDefaultLookAndFeelDecorated(true);
         }
 
@@ -94,16 +96,27 @@ public class WindowCmdEntry extends CommandLine.CommandLineEntry {
     /**
      * A Dialog that holds a CommandLine, no decoration.
      */
-    public static class CommandLineWindow extends JDialog {
+    private static class CommandLineWindow extends JDialog {
 
-        public CommandLineWindow(CommandLine commandLine,
-                                 Window owner,
-                                 String title) {
-            super((Frame)owner, true);
-            setUndecorated(true);
-            add(commandLine, BorderLayout.NORTH);
-            pack();
-            setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        static private CommandLineWindow get(CommandLine commandLine,
+                                   Window owner,
+                                   String title) {
+            // NEEDSWORK: create (Dialog)owner, when want to allow searching
+            //            in nomadic editors.
+            CommandLineWindow d = new CommandLineWindow((Frame)owner);
+            d.setUndecorated(true);
+            d.add(commandLine, BorderLayout.NORTH);
+            d.pack();
+            d.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+            return d;
+        }
+
+        private CommandLineWindow(Frame owner) {
+            super(owner, true);
+        }
+
+        private CommandLineWindow(Dialog owner) {
+            super(owner, true);
         }
     }
 }
