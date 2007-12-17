@@ -41,6 +41,7 @@ import javax.swing.event.DocumentListener;
 import com.raelity.text.*;
 import com.raelity.text.TextUtil.MySegment;
 
+import javax.swing.text.AbstractDocument;
 import static com.raelity.jvi.KeyDefs.K_X_SEARCH_FINISH;
 import static com.raelity.jvi.KeyDefs.K_X_INCR_SEARCH_DONE;
 import static com.raelity.jvi.KeyDefs.K_X_SEARCH_CANCEL;
@@ -190,18 +191,30 @@ public class Search {
     ******************************/
   }
   
-  private static DocumentListener isListener;
+  private static class SearchListener implements DocumentListener {
+    public void changedUpdate(DocumentEvent e) { }
+    public void insertUpdate(DocumentEvent e) {
+      doIncrementalSearch();
+    }
+    public void removeUpdate(DocumentEvent e) {
+      doIncrementalSearch();
+    }
+  }
+
+  private static SearchListener isListener;
+
   private static void startIncrementalSearch() {
       Document doc = getSearchCommandEntry().getTextComponent().getDocument();
-      isListener = new DocumentListener() {
-          public void changedUpdate(DocumentEvent e) { }
-          public void insertUpdate(DocumentEvent e) {
-              doIncrementalSearch();
-          }
-          public void removeUpdate(DocumentEvent e) {
-              doIncrementalSearch();
-          }
-      };
+      // funny aborts might leave one... Might want to use a weak listen as well
+      if(doc instanceof AbstractDocument) {
+        AbstractDocument ad = (AbstractDocument) doc;
+        for (DocumentListener documentListener : ad.getDocumentListeners()) {
+          if(documentListener instanceof SearchListener)
+            doc.removeDocumentListener(documentListener);
+        }
+      } else
+        doc.removeDocumentListener(isListener);
+      isListener = new SearchListener();
       searchPos = G.curwin.getWCursor().copy();
       searchTopLine = G.curwin.getViewTopLine();
       setPCMarkAfterIncrSearch = (searchFlags & SEARCH_MARK) != 0;
@@ -214,12 +227,14 @@ public class Search {
   private static void stopIncrementalSearch(boolean accept) {
       Document doc = getSearchCommandEntry().getTextComponent().getDocument();
       doc.removeDocumentListener(isListener);
+      isListener = null;
       
       if(accept) {
           lastPattern = fetchPattern();
       } else
         resetViewIncrementalSearch();
 
+      // NEEDSWORK: setpcmark if accept == false ????????
       if(setPCMarkAfterIncrSearch && incrSearchSucceed) {
         MarkOps.setpcmark(searchPos);
       }

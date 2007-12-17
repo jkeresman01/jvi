@@ -102,6 +102,14 @@ public interface ViTextView extends ViOptionBag {
   /** @return the underlying text component */
   public JEditorPane getEditorComponent();
 
+  /** A text view is nomadic if it not attached to a main window.
+   * It is commonly in a dialog. The editor has restricted capabilities.
+   * For example, ":w" is not allowed.
+   * 
+   * This is a simple approach.
+   */
+  //public boolean isNomadic();
+
   //////////////////////////////////////////////////////////////////////
   //
   // Text Modification methods

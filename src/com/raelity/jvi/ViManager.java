@@ -267,7 +267,7 @@ public class ViManager {
       throw new RuntimeException("activeCommandEntry not null");
     }
 
-    activeCommandEntry = commandEntry;
+      activeCommandEntry = commandEntry;
     boolean passThru;
     if (initialString.indexOf("\n") >= 0) {
       passThru = true;
@@ -275,7 +275,19 @@ public class ViManager {
     else {
       passThru = GetChar.getRecordedLine(initialString);
     }
-    commandEntry.activate(mode, tv, new String(initialString), passThru);
+    try {
+      commandEntry.activate(mode, tv, new String(initialString), passThru);
+    } catch(Throwable ex) {
+      // NOTE: do not set the flag until the activate completes.
+      // There have been cases of NPE. Particularly in relationship to nomands.
+      //
+      // If modal, and everything went well, then activeCommandEntry is already
+      // NULL. But not modal, then it isn't null.
+      Util.vim_beep();
+      ex.printStackTrace();
+      activeCommandEntry = null;
+      Normal.resetCommand();
+    }
   }
 
   public static void stopCommandEntry() {
