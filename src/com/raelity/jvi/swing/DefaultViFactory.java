@@ -35,7 +35,6 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
@@ -94,6 +93,12 @@ public class DefaultViFactory implements ViFactory {
     
     // Add VimClipboard DataFlavor if not already there
     //FlavorMap fm = SystemFlavorMap.getDefaultFlavorMap();
+  }
+
+  public Class loadClass(String name) throws ClassNotFoundException {
+    // NEEDSWORK: should this be systemclassloader or this's class loader???
+    Class c = ClassLoader.getSystemClassLoader().loadClass(name);
+    return c;
   }
 
   public boolean isStandalone() {
@@ -312,11 +317,9 @@ public class DefaultViFactory implements ViFactory {
       jc = G.curwin.getEditorComponent();
     }
     // put the dialog just below the editor pane, on the right
-    //Dimension d00 = d.getPreferredSize();
     Dimension d00 = dialog.getSize();
     Point p00 = jc.getLocation();
     p00.translate(jc.getWidth() - (int)d00.getWidth(), jc.getHeight());
-    //p00 = SwingUtilities.convertPoint(jc.getParent(),  p00, wep);
     SwingUtilities.convertPointToScreen(p00, jc.getParent());
     dialog.setLocation(p00);
     

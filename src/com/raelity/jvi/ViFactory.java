@@ -44,6 +44,8 @@ import com.raelity.jvi.ViTextView.TAGOP;
  */
 public interface ViFactory {
 
+  public Class loadClass(String name) throws ClassNotFoundException;
+
   /** Return a TextView, create one if it doesn't already exist */
   public ViTextView getViTextView(JEditorPane editorPane);
 

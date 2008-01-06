@@ -33,7 +33,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.TooManyListenersException;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -41,12 +40,13 @@ import javax.swing.event.DocumentListener;
 import com.raelity.text.*;
 import com.raelity.text.TextUtil.MySegment;
 
+import java.lang.reflect.Field;
+import javax.swing.Timer;
 import javax.swing.text.AbstractDocument;
 import static com.raelity.jvi.KeyDefs.K_X_SEARCH_FINISH;
 import static com.raelity.jvi.KeyDefs.K_X_INCR_SEARCH_DONE;
 import static com.raelity.jvi.KeyDefs.K_X_SEARCH_CANCEL;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 
 import static com.raelity.jvi.Constants.*;
 
@@ -73,6 +73,7 @@ public class Search {
   private static boolean didIncrSearch;
   private static boolean setPCMarkAfterIncrSearch;
   private static boolean incrSearchSucceed;
+  private static Timer surroundsWithTimer;
 
   // for next command and such
   private static String lastPattern;
@@ -1019,6 +1020,9 @@ finished:
   private static final int SUBST_CONFIRM  = 0x04;
   private static final int SUBST_ESCAPE   = 0x08;
   private static final int SUBST_QUIT     = 0x10;
+  private static final int SUBST_DID_ACK  = 0x20;
+  private static final int SUBST_HACK1    = 0x40;
+  private static final int SUBST_HACK2    = 0x80;
 
   private static MutableInt substFlags;
 
@@ -1144,16 +1148,39 @@ finished:
       nSubMatch = 0;
       nSubChanges = 0;
     }
+    try {
+      if(substFlags.testAnyBits(SUBST_CONFIRM)) {
+        if(!substFlags.testAnyBits(SUBST_HACK1)) {
+          substFlags.setBits(SUBST_HACK1);
+          if(
+              forceTimerHack(new Timer(200, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                }
+              }))
+          ) {
+            substFlags.setBits(SUBST_HACK2);
+          }
+        }
+      }
 
-    for(int i = line1; i <= line2 && !substFlags.testAnyBits(SUBST_QUIT); i++) {
-      int nChange = substitute_line(prog, i, substFlags, substitution);
-      if(nChange > 0) {
-        nSubChanges += nChange;
-        cursorLine = i;  // keep track of last line changed
-	nSubLine++;
-	if(substFlags.testAnyBits(SUBST_PRINT)) {
-	  ColonCommands.outputPrint(i, 0, 0);
-	}
+      for(int i = line1;
+            i <= line2 && !substFlags.testAnyBits(SUBST_QUIT);
+            i++) {
+        int nChange = substitute_line(prog, i, substFlags, substitution);
+        if(nChange > 0) {
+          nSubChanges += nChange;
+          cursorLine = i;  // keep track of last line changed
+          nSubLine++;
+          if(substFlags.testAnyBits(SUBST_PRINT)) {
+            ColonCommands.outputPrint(i, 0, 0);
+          }
+        }
+      }
+    } finally {
+      if(! G.global_busy && substFlags.testAnyBits(SUBST_HACK2)) {
+        forceTimerHack(surroundsWithTimer);
+        surroundsWithTimer = null;
+        substFlags.clearBits(SUBST_HACK2);
       }
     }
     
@@ -1231,7 +1258,8 @@ finished:
       int segOffsetToDoc = G.curbuf.getLineStartOffset(lnum) - seg.offset;
 
       modalResponse = 0;
-      if(flags.testAnyBits(SUBST_CONFIRM)) {
+      if(flags.testAnyBits(SUBST_CONFIRM)
+              && ! flags.testAnyBits(SUBST_DID_ACK)) {
         G.curwin.setSelect(segOffsetToDoc + prog.start(0),
                            segOffsetToDoc + prog.stop(0)
                             + (prog.length(0) == 0 ? 1 : 0));
@@ -1290,8 +1318,9 @@ finished:
       if(modalResponse == 'q' || modalResponse == 'l') {
         flags.setBits(SUBST_QUIT);
         break;
-      } else if(modalResponse == 'a')
-        flags.clearBits(SUBST_CONFIRM); // just do it
+      } else if(modalResponse == 'a') {
+        flags.setBits(SUBST_DID_ACK);
+      }
 
       if( ! flags.testAnyBits(SUBST_ALL)) {
         // only do one substitute per line
@@ -1299,6 +1328,25 @@ finished:
       }
     }
     return countChanges;
+  }
+
+  private static boolean forceTimerHack(Timer timer) {
+    try {
+      Class c = ViManager.getViFactory().loadClass(
+              "org.netbeans.lib.editor.codetemplates.AbbrevDetection");
+      Object o = G.curwin.getEditorComponent().getClientProperty(c);
+      Field f = c.getDeclaredField("surroundsWithTimer");
+      f.setAccessible(true);
+      surroundsWithTimer = (Timer) f.get(o);
+      f.set(o, timer);
+      return true;
+    } catch (IllegalArgumentException ex) {
+    } catch (IllegalAccessException ex) {
+    } catch (ClassNotFoundException ex) {
+    } catch (NoSuchFieldException ex) {
+    } catch (SecurityException ex) {
+    }
+    return false;
   }
 
   /**
@@ -1385,6 +1433,11 @@ finished:
     }
     finally {
       G.global_busy = false;
+      if(substFlags != null && substFlags.testAnyBits(SUBST_HACK2)) {
+        forceTimerHack(surroundsWithTimer);
+        surroundsWithTimer = null;
+        substFlags.clearBits(SUBST_HACK2);
+      }
     }
     
   }
