@@ -153,7 +153,7 @@ public class Util {
 
   public static MySegment truncateNewline(MySegment seg) {
       assert(seg.array[seg.offset + seg.count - 1] == '\n');
-      return new MySegment(seg.array, seg.offset, seg.count - 1);
+      return new MySegment(seg.array, seg.offset, seg.count - 1, seg.docOffset);
   }
 
   /**
