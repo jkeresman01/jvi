@@ -257,6 +257,9 @@ public interface ViTextView extends ViOptionBag {
   /** */
   public void setCursorCoordLine(int line, int col);
 
+  /** */
+  public int coladvanceCoord(int lineOffset, int col);
+
 
 
   /** establish all the listeners */

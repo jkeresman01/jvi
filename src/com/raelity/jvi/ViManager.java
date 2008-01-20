@@ -59,6 +59,8 @@ import java.net.URL;
 
 import com.raelity.jvi.swing.KeyBinding;
 import com.raelity.text.TextUtil.MySegment;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class coordinates things.
@@ -94,6 +96,8 @@ public class ViManager {
   private static Keymap editModeKeymap;
   private static Keymap normalModeKeymap;
 
+  public static Map HackMap = new HashMap();
+
   // HACK: to workaround JDK bug dealing with focus and JWindows
   private static ViCmdEntry activeCommandEntry;
 
@@ -101,7 +105,7 @@ public class ViManager {
   // 1.0.0.beta2 is NB vers 0.9.6.4
   // 1.0.0.beta3 is NB vers 0.9.7.5
   //
-  public static final jViVersion version = new jViVersion("1.1.2.x8");
+  public static final jViVersion version = new jViVersion("1.1.2.x9");
   
   private static boolean enabled;
 
