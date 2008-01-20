@@ -1015,14 +1015,15 @@ finished:
   
   private static String lastSubstituteArg;
 
-  private static final int SUBST_ALL      = 0x01;
-  private static final int SUBST_PRINT    = 0x02;
-  private static final int SUBST_CONFIRM  = 0x04;
-  private static final int SUBST_ESCAPE   = 0x08;
-  private static final int SUBST_QUIT     = 0x10;
-  private static final int SUBST_DID_ACK  = 0x20;
-  private static final int SUBST_HACK1    = 0x40;
-  private static final int SUBST_HACK2    = 0x80;
+  private static final int SUBST_ALL      = 0x0001;
+  private static final int SUBST_PRINT    = 0x0002;
+  private static final int SUBST_CONFIRM  = 0x0004;
+  private static final int SUBST_ESCAPE   = 0x0008;
+  private static final int SUBST_QUIT     = 0x0010;
+  private static final int SUBST_DID_ACK  = 0x0020;
+
+  private static final int SUBST_HACK1    = 0x8000;
+  private static final int SUBST_HACK2    = 0x4000;
 
   private static MutableInt substFlags;
 
@@ -1149,7 +1150,11 @@ finished:
       nSubChanges = 0;
     }
     try {
-      if(substFlags.testAnyBits(SUBST_CONFIRM)) {
+      Boolean f;
+      if(substFlags.testAnyBits(SUBST_CONFIRM)
+              && (f = (Boolean) ViManager.HackMap
+                          .get("NB-codetemplatesHang")) != null
+              && f.booleanValue()) {
         if(!substFlags.testAnyBits(SUBST_HACK1)) {
           substFlags.setBits(SUBST_HACK1);
           if(
@@ -1331,6 +1336,8 @@ finished:
   }
 
   private static boolean forceTimerHack(Timer timer) {
+    if(timer == null)
+      return false;
     try {
       Class c = ViManager.getViFactory().loadClass(
               "org.netbeans.lib.editor.codetemplates.AbbrevDetection");

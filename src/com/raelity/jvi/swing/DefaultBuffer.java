@@ -125,6 +125,7 @@ public class DefaultBuffer extends Buffer {
             // NEEDSWORK: how to report exception?
             ex.printStackTrace();
         }
+        seg.docOffset = offset;
         seg.first();
         return seg;
     }
@@ -568,11 +569,6 @@ public class DefaultBuffer extends Buffer {
     }
     
     private class PositionSegment extends MySegment {
-        /** The offset of the start of the segment in the document.
-         * Note that offset is already a field name.
-         */
-        public int position;
-        
         /** The line number of the segment. The first line is numbered at 1.
          * This is negative if the
          * segment does not correspond to a single line.
@@ -590,10 +586,10 @@ public class DefaultBuffer extends Buffer {
             if(cacheTrace.getBoolean())System.err.println("Miss seg: " + line);
             try {
                 Element elem = getLineElement(line);
-                segment.position = elem.getStartOffset();
                 getDoc().getText(elem.getStartOffset(),
                         elem.getEndOffset() - elem.getStartOffset(),
                         segment);
+                segment.docOffset = elem.getStartOffset();
                 segment.line = line;
         /* **************************************************
         int len = Math.max(80, tempSegment.count + 10);
@@ -614,7 +610,7 @@ public class DefaultBuffer extends Buffer {
             if(cacheTrace.getBoolean())System.err.println("Hit seg: " + line);
         }
         //return segment;
-        MySegment s = new MySegment(segment.array, segment.offset, segment.count);
+        MySegment s = new MySegment(segment);
         s.first();
         return s;
     }

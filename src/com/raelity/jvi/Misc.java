@@ -707,6 +707,10 @@ public class Misc implements ClipboardOwner {
       ++idx;
     }
 
+    if(G.isCoordSkip.getBoolean()) {
+      idx = G.curwin.coladvanceCoord(txt.docOffset, idx);
+    }
+
     if(reached != null) {
       // indicate if the column was reached or not
       if (col <= wcol) { reached.setValue(false); } /* Couldn't reach column */

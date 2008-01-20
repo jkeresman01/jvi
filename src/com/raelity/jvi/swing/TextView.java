@@ -604,6 +604,38 @@ public void undo(){
     setCaretPosition(newOffset);
   }
 
+  public int coladvanceCoord(int lineOffset, int colIdx) {
+    if (lineOffset < 0) {
+      ViManager.dumpStack("invalid lineOffset");
+      return 0;
+    }
+
+    // insure col is displayable (e.g. visual position not in fold)
+    // check 'visual position after prev position is position we want'
+    // in other words, getNextVisualPositionFrom(here - 1) == here
+    // if not, we're in nether regions, return here - 1
+    try {
+      JEditorPane c = getEditorComponent();
+      for (int i = 1; i <= colIdx; i++) {
+        int thisVisualPosition = lineOffset + i;
+        int nextVisualPosition = c.getUI().getNextVisualPositionFrom(
+                c,
+                thisVisualPosition - 1,
+                javax.swing.text.Position.Bias.Forward,
+                javax.swing.SwingConstants.EAST,
+                null);
+        if(thisVisualPosition != nextVisualPosition) {
+          colIdx = i - 1;
+          break;
+        }
+      }
+    } catch (BadLocationException ex) {
+      //Logger.getLogger(TextView.class.getName()).log(Level.SEVERE, null, ex);
+      ex.printStackTrace();
+    }
+    return colIdx;
+  }
+
 
 
   private Element getLineElement(int lnum) {
