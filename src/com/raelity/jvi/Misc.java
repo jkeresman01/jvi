@@ -609,8 +609,21 @@ public class Misc implements ClipboardOwner {
    * it so that there is no attempt to put blanks on the screen
    */
   static int adjustTopLine(int top) {
+    if(G.isCoordSkip.getBoolean()) {
+      return adjustCoordTopLine(top);
+    }
     if(top + G.curwin.getViewLines() > G.curbuf.getLineCount()) {
       top = G.curbuf.getLineCount() - G.curwin.getViewLines() + 1;
+    }
+    if(top < 1) {
+      top = 1;
+    }
+    return top;
+  }
+
+  static int adjustCoordTopLine(int top) {
+    if(top + G.curwin.getViewLines() > G.curwin.getCoordLineCount()) {
+      top = G.curwin.getCoordLineCount() - G.curwin.getViewLines() + 1;
     }
     if(top < 1) {
       top = 1;
@@ -2744,10 +2757,13 @@ public class Misc implements ClipboardOwner {
     
     /**
      * Move screen 'count' pages up or down and update screen.
-     *<br>
+     *<br/>
      * return FAIL for failure, OK otherwise
      */
     static int onepage(int dir, int count) {
+      if(G.isCoordSkip.getBoolean()) {
+        return coordOnepage(dir, count);
+      }
       Normal.do_xop("onepage");
       int	    lp;
       int	    n;
@@ -3048,6 +3064,140 @@ public class Misc implements ClipboardOwner {
       Misc.coladvance(G.curwin.getWCurswant());
     }
     
+    /**
+     * Move screen 'count' pages up or down and update screen.
+     *<br/>
+     * return FAIL for failure, OK otherwise
+     */
+    static int coordOnepage(int dir, int count) {
+      Normal.do_xop("onepage");
+      int	    lp;
+      int	    n;
+      int	    off;
+      int	    retval = OK;
+      int newtopline = -1;
+      int newcursorline = -1;
+      
+      
+      if (G.curwin.getCoordLineCount() == 1) { // nothing to do
+        Util.beep_flush();
+        return FAIL;
+      }
+      
+      // NEEDSWORK: disable count for onepage (^F, ^B)
+      // 		need to only use variables, not real position
+      // 		inside for loop. Don't want to actually move
+      // 		the viewport each time through the loop.
+      
+      count = 1;
+      
+      int so = getScrollOff();
+      for ( ; count > 0; --count) {
+        validate_botline();
+        //
+        // It's an error to move a page up when the first line is already on
+        // the screen. It's an error to move a page down when the last line
+        // is on the screen and the topline is 'scrolloff' lines from the
+        // last line.
+        //
+        if (dir == FORWARD
+                ? ((G.curwin.getViewCoordTopLine()
+                                   >= G.curwin.getCoordLineCount() - so)
+                    && G.curwin.getViewCoordBottomLine()
+                                   > G.curwin.getCoordLineCount())
+                : (G.curwin.getViewCoordTopLine() == 1)) {
+          Util.beep_flush();
+          retval = FAIL;
+          break;
+        }
+        
+        // the following test is added because with swing there can not be
+        // blank lines on the screen, so we can go no more when the cursor
+        // is positioned at the last line.
+        if (dir == FORWARD
+                && G.curwin.getCoordLine(G.curwin.getWCursor().getLine())
+                      == G.curwin.getCoordLineCount()) {
+          Util.beep_flush();
+          retval = FAIL;
+          break;
+        }
+        
+        if (dir == FORWARD) {
+          // at end of file
+          if(G.curwin.getViewCoordBottomLine() > G.curwin.getCoordLineCount()) {
+            newtopline = G.curwin.getCoordLineCount();
+            newcursorline = G.curwin.getCoordLineCount();
+            // curwin->w_valid &= ~(VALID_WROW|VALID_CROW);
+          } else {
+            lp = G.curwin.getViewCoordBottomLine();
+            off = get_scroll_overlap(lp, -1);
+            newtopline = lp - off;
+            newcursorline = newtopline + so;
+            // curwin->w_valid &= ~(VALID_WCOL|VALID_CHEIGHT|VALID_WROW|
+            // VALID_CROW|VALID_BOTLINE|VALID_BOTLINE_AP);
+          }
+        } else {	// dir == BACKWARDS
+          lp = G.curwin.getViewCoordTopLine() - 1;
+          off = get_scroll_overlap(lp, 1);
+          lp += off;
+          if (lp > G.curwin.getCoordLineCount())
+            lp = G.curwin.getCoordLineCount();
+          newcursorline = lp - so;
+          n = 0;
+          while (n <= G.curwin.getViewLines() && lp >= 1) {
+            n += plines(lp);
+            --lp;
+          }
+          if (n <= G.curwin.getViewLines()) {	    // at begin of file
+            newtopline = 1;
+            // curwin->w_valid &= ~(VALID_WROW|VALID_CROW|VALID_BOTLINE);
+          } else if (lp >= G.curwin.getViewCoordTopLine() - 2) {
+            // very long lines
+            newtopline = G.curwin.getViewCoordTopLine() - 1;
+            comp_botline();
+            newcursorline = G.curwin.getViewCoordBottomLine() - 1;
+            // curwin->w_valid &= ~(VALID_WCOL|VALID_CHEIGHT|
+            // VALID_WROW|VALID_CROW);
+          } else {
+            newtopline = lp + 2;
+            // curwin->w_valid &= ~(VALID_WROW|VALID_CROW|VALID_BOTLINE);
+          }
+        }
+      }
+      
+      // now adjust cursor locations
+      if(newtopline > 0) {
+        G.curwin.setViewCoordTopLine(adjustCoordTopLine(newtopline));
+      }
+      if(newcursorline > 0) {
+        //COORD CHANGE:
+        //G.curwin.setCaretPosition(
+        //        G.curbuf.getLineStartOffset(newcursorline));
+        G.curwin.setCursorCoordLine(newcursorline, 0);
+      }
+      
+      cursor_correct();	// NEEDSWORK: implement
+      Edit.beginline(BL_SOL | BL_FIX);
+      // curwin->w_valid &= ~(VALID_WCOL|VALID_WROW|VALID_VIRTCOL);
+      
+    /*
+     * Avoid the screen jumping up and down when 'scrolloff' is non-zero.
+     */
+      //if (dir == FORWARD && G.curwin.getWCursor().getLine()
+      //                            < G.curwin.getViewTopLine() + so) {
+      //  // scroll_cursor_top(1, FALSE);	// NEEDSWORK: onepage ("^f") cleanup
+      //}
+      if (dir == FORWARD
+          && G.curwin.getCoordLine(G.curwin.getWCursor().getLine())
+                                  < G.curwin.getViewCoordTopLine() + so) {
+        // scroll_cursor_top(1, FALSE);	// NEEDSWORK: onepage ("^f") cleanup
+      }
+                
+      
+      update_screen(VALID);
+      return retval;
+    }
+    
     // This is identical to halfpage, except that the methods called in
     // curwin are the 'coord' variety, plus a little cursor fiddling.
     static void coordHalfpage(boolean go_down, int Prenum) {
@@ -3071,10 +3221,10 @@ public class Misc implements ClipboardOwner {
       ?  G.curwin.getWPScroll() : G.curwin.getViewLines();
       
       validate_botline();
-      room = G.curwin.getViewBlankLines();
+      room = G.curwin.getViewCoordBlankLines();
       newtopline = G.curwin.getViewCoordTopLine();
       newbotline = G.curwin.getViewCoordBottomLine();
-      //newcursorline = cursor.getLine();
+      //COORD CHANGED: newcursorline = cursor.getLine();
       newcursorline = G.curwin.getCoordLine(cursor.getLine());
       if (go_down) {	    // scroll down
         while (n > 0 && newbotline <= G.curwin.getCoordLineCount()) {
@@ -3139,7 +3289,7 @@ public class Misc implements ClipboardOwner {
         }
       }
       G.curwin.setViewCoordTopLine(newtopline);
-      //cursor.set(newcursorline, 0);
+      //COORD CHANGED: cursor.set(newcursorline, 0);
       G.curwin.setCursorCoordLine(newcursorline, 0);
       cursor_correct();
       Edit.beginline(BL_SOL | BL_FIX);

@@ -105,7 +105,7 @@ public class ViManager {
   // 1.0.0.beta2 is NB vers 0.9.6.4
   // 1.0.0.beta3 is NB vers 0.9.7.5
   //
-  public static final jViVersion version = new jViVersion("1.1.2.x9");
+  public static final jViVersion version = new jViVersion("1.1.2.x11");
   
   private static boolean enabled;
 

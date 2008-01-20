@@ -241,9 +241,11 @@ public final class Options {
                + " entered then automatically popup a file"
                + " name completion window. NB6 only; post 07/07/22");
 
-    G.isCoordSkip = createBooleanOption(coordSkip, false);
-    setupOptionDesc(platformList, coordSkip, "coordinate skip",
-            "");
+    G.isCoordSkip = createBooleanOption(coordSkip, true);
+    setupOptionDesc(platformList, coordSkip, "Code Folding Compatible",
+            "When false revert some navigation algorithms, e.g. ^F,"
+            + " to pre code folding behavior. A just in case option;"
+            + " if needed, please file a bug report.");
     setExpertHidden(coordSkip, true, false);
 
     /////////////////////////////////////////////////////////////////////

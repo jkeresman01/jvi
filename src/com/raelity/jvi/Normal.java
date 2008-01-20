@@ -2172,15 +2172,15 @@ middle_code:
   }
   
   static private void scroll_redraw(boolean up, int count) {
-    if(G.curbuf.getLineCount() <= G.curwin.getViewLines())
+    if(G.curwin.getCoordLineCount() <= G.curwin.getViewLines())
       return;
     
-    int prev_topline = G.curwin.getViewTopLine();
-    int prev_lnum = G.curwin.getWCursor().getLine();
+    int prev_topline = G.curwin.getViewCoordTopLine();
+    int prev_lnum = G.curwin.getCoordLine(G.curwin.getWCursor().getLine());
     
     int new_topline = prev_topline + (up ? count : -count);
     
-    new_topline = Misc.adjustTopLine(new_topline);
+    new_topline = Misc.adjustCoordTopLine(new_topline);
     int new_bottomline = new_topline + G.curwin.getViewLines() -1;
     
     int new_lnum = prev_lnum;
@@ -2191,10 +2191,10 @@ middle_code:
       new_lnum = new_bottomline - so;
     
     if(new_lnum != prev_lnum) {
-      G.curwin.setCaretPosition(new_lnum, 0);
+      G.curwin.setCursorCoordLine(new_lnum, 0);
       Misc.coladvance(G.curwin.getWCurswant());
     }
-    G.curwin.setViewTopLine(new_topline);
+    G.curwin.setViewCoordTopLine(new_topline);
   }
 
   /** nv_zet is simplified a bunch, only do vi compat */
@@ -2282,18 +2282,19 @@ middle_code:
 
     int so = Misc.getScrollOff();
     int nchar = cap.nchar;
-    int target = G.curwin.getWCursor().getLine();
+    int target_doc_line = G.curwin.getWCursor().getLine();
     boolean change_line = false;
     int top = 0;
 
-    if(cap.count0 != 0 && cap.count0 != target) {
+    if(cap.count0 != 0 && cap.count0 != target_doc_line) {
       MarkOps.setpcmark();
       if(cap.count0 > G.curbuf.getLineCount()) {
-	target = G.curbuf.getLineCount();
+	target_doc_line = G.curbuf.getLineCount();
       } else {
-	target = cap.count0;
+	target_doc_line = cap.count0;
       }
     }
+    int target = G.curwin.getCoordLine(target_doc_line);
 
     switch(nchar) {
       case NL:		    // put curwin->w_cursor at top of screen
@@ -2320,12 +2321,26 @@ middle_code:
 
     // Keep getlineSegment before setViewTopLine,
     // don't want to fetch segment changing during rendering
-    MySegment seg = G.curbuf.getLineSegment(target);
+    //MySegment seg = G.curbuf.getLineSegment(target); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //boolean keepColumn = (nchar == 't') || (nchar == 'z') || (nchar == 'b');
+    //int col = (keepColumn) ? G.curwin.getWCursor().getColumn()
+    //                       : Edit.beginlineColumnIndex(BL_WHITE | BL_FIX, seg);
+    //G.curwin.setViewTopLine(Misc.adjustTopLine(top));
+    //G.curwin.setCaretPosition(target, col);
+
+    G.curwin.setViewCoordTopLine(Misc.adjustTopLine(top));
+    G.curwin.setCursorCoordLine(target, 0);
+    int target_column;
     boolean keepColumn = (nchar == 't') || (nchar == 'z') || (nchar == 'b');
-    int col = (keepColumn) ? G.curwin.getWCursor().getColumn()
-                           : Edit.beginlineColumnIndex(BL_WHITE | BL_FIX, seg);
-    G.curwin.setViewTopLine(Misc.adjustTopLine(top));
-    G.curwin.setCaretPosition(target, col);
+    if(keepColumn)
+      target_column = G.curwin.getWCurswant();
+    else {
+      // The cursor is set a few lines above, so the segment is for the line
+      // that is the fold.
+      MySegment seg = G.curbuf.getLineSegment(G.curwin.getWCursor().getLine());
+      target_column = Edit.beginlineColumnIndex(BL_WHITE | BL_FIX, seg);
+    }
+    Misc.coladvance(target_column);
   }
 
   static private void nv_colon (CMDARG cap) {
@@ -2560,6 +2575,10 @@ middle_code:
    * Handle scrolling command 'H', 'L' and 'M'.
    */
   static private void nv_scroll(CMDARG cap) {
+    // NOTE: always using nv_scroll_scrolloff
+    nv_scroll_scrolloff(cap);
+    return;
+    /*
     if(G.p_so.getInteger() != 0) {
       nv_scroll_scrolloff(cap);
       return;
@@ -2604,6 +2623,7 @@ middle_code:
     }
     Misc.cursor_correct();	// correct for 'so'
     Edit.beginline(BL_SOL | BL_FIX);
+     */
   }
 
   static private void nv_scroll_scrolloff(CMDARG cap) {
@@ -2616,12 +2636,12 @@ middle_code:
     int newcursorline = -1;
 
     if(cap.cmdchar == 'M') {
-      int topline = G.curwin.getViewTopLine();
-      int line_count = G.curbuf.getLineCount();
+      int topline = G.curwin.getViewCoordTopLine();
+      int line_count = G.curwin.getCoordLineCount();
       Misc.validate_botline();	    // make sure w_empty_rows is valid
       for (n = 0; topline + n < line_count; ++n)
 	if ((used += Misc.plines(topline + n)) >=
-	    (G.curwin.getViewLines() - G.curwin.getViewBlankLines() + 1) / 2)
+	    (G.curwin.getViewLines() - G.curwin.getViewCoordBlankLines() + 1) / 2)
 	  break;
       if (n != 0 && used > G.curwin.getViewLines())
 	--n;
@@ -2637,22 +2657,22 @@ middle_code:
 	adjust = cap.count1 -1;
       }
       if (cap.cmdchar == 'L') {
-	newcursorline = G.curwin.getViewBottomLine() - 1 - adjust;
-	if(newcursorline < G.curwin.getViewTopLine() + so) {
-	  newcursorline = G.curwin.getViewTopLine() + so;
+	newcursorline = G.curwin.getViewCoordBottomLine() - 1 - adjust;
+	if(newcursorline < G.curwin.getViewCoordTopLine() + so) {
+	  newcursorline = G.curwin.getViewCoordTopLine() + so;
 	}
       } else {
 	// 'H'
-	newcursorline = G.curwin.getViewTopLine() + adjust;
-	if(newcursorline > G.curwin.getViewBottomLine() - 1 - so) {
-	  newcursorline = G.curwin.getViewBottomLine() - 1 - so;
+	newcursorline = G.curwin.getViewCoordTopLine() + adjust;
+	if(newcursorline > G.curwin.getViewCoordBottomLine() - 1 - so) {
+	  newcursorline = G.curwin.getViewCoordBottomLine() - 1 - so;
 	}
       }
     }
 
     if(newcursorline > 0) {
-      G.curwin.setCaretPosition(
-		    G.curbuf.getLineStartOffset(newcursorline));
+      //G.curwin.setCaretPosition(G.curbuf.getLineStartOffset(newcursorline));
+      G.curwin.setCursorCoordLine(newcursorline, 0);
     }
     Misc.cursor_correct();	// correct for 'so'
     Edit.beginline(BL_SOL | BL_FIX);

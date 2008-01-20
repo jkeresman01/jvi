@@ -248,6 +248,9 @@ public interface ViTextView extends ViOptionBag {
   /** @return the line number of line *after* end of window */
   public int getViewCoordBottomLine();
 
+  /** @return the number of unused lines on the display */
+  public int getViewCoordBlankLines();
+
   /** */
   public int getCoordLineCount();
 

@@ -520,9 +520,17 @@ public void undo(){
       return;
     }
     
-    Point p = new Point(LINE1_POINT);
-    p.translate(0, (coordLine - 1) * cache.getFheight());
+    //Point p = new Point(LINE1_POINT);
+    //p.translate(0, (coordLine - 1) * cache.getFheight());
+    Point p = new Point(0, (coordLine - 1) * cache.getFheight());
     cache.getViewport().setViewPosition(p);
+  }
+
+  public int getViewCoordBlankLines() {
+    if(!G.isCoordSkip.getBoolean()) {
+        return getViewBlankLines();
+    }
+    return getViewLines() - (getViewCoordBottomLine() - getViewCoordTopLine() +1);
   }
   
   public int getViewCoordBottomLine() {
@@ -600,8 +608,8 @@ public void undo(){
     Point p = new Point(LINE1_POINT);
     p.translate(0, (coordLine - 1) * cache.getFheight());
     int newOffset = getEditorComponent().viewToModel(p);
-    assert col == 0;
-    setCaretPosition(newOffset);
+    //assert col == 0;
+    setCaretPosition(newOffset + col);
   }
 
   public int coladvanceCoord(int lineOffset, int colIdx) {
