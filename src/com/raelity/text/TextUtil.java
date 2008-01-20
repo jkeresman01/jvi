@@ -97,18 +97,26 @@ public class TextUtil {
     return sb.toString();
   }
     
-  /** To support jdk1.5, need a segment that isa CharSequence */
+  /** To support jdk1.5, need a segment that isa CharSequence.
+   * Also keep "docOffset" which is the offset in the document
+   * of the start of the segment; -1 implies not known.
+   */
   public static class MySegment extends Segment implements CharSequence {
+    public int docOffset;
+
     public MySegment() {
       super();
+      docOffset = -1;
     }
     
-    public MySegment(Segment seg) {
+    public MySegment(MySegment seg) {
       super(seg.array, seg.offset, seg.count);
+      docOffset =  seg.docOffset;
     }
     
-    public MySegment(char[] array, int offset, int count) {
+    public MySegment(char[] array, int offset, int count, int docOffset) {
       super(array, offset, count);
+      this.docOffset = docOffset;
     }
     
     public char charAt(int index) {
@@ -136,6 +144,7 @@ public class TextUtil {
       segment.array = this.array;
       segment.offset = this.offset + start;
       segment.count = end - start;
+      segment.docOffset = this.docOffset + start;
       return segment;
     }
   }

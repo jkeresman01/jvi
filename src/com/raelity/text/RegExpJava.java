@@ -73,7 +73,7 @@ public class RegExpJava extends RegExp
 
     @Override
     public boolean search(char[] input, int start, int len) {
-	MySegment s = new MySegment(input, 0, input.length);
+	MySegment s = new MySegment(input, 0, input.length, -1);
         //System.err.print("\tstart: " + start + ", len: " + len);
         Matcher m = pat.matcher(s).region(start, start+len);
         m.useAnchoringBounds(false); //so /^ only matches beginning of line
