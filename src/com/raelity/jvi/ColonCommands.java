@@ -50,6 +50,9 @@ import static com.raelity.jvi.ColonCommandFlags.*;
 
 import java.io.*;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.Set;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import javax.swing.Timer;
 
 /**
@@ -1957,9 +1960,66 @@ public class ColonCommands {
 
     register("!", "!", ACTION_bang);
   }
+    
+  private static void addDebugColonCommands() {
+    
+    //
+    // Some debug commands
+    //
+    ColonCommands.register("optionsDump", "optionsDump", new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        try {
+          ByteArrayOutputStream os = new ByteArrayOutputStream();
+          ViManager.getViFactory().getPreferences().exportSubtree(os);
+          ViOutputStream vios = ViManager.createOutputStream(
+                  null, ViOutputStream.OUTPUT, "Preferences");
+          vios.println(os.toString());
+          vios.close();
+          
+        } catch (BackingStoreException ex) {
+          ex.printStackTrace();
+        } catch (IOException ex) {
+          ex.printStackTrace();
+        }
+      }
+    });
+    ColonCommands.register("optionsDelete", "optionsDelete", new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        try {
+          Preferences prefs = ViManager.getViFactory().getPreferences();
+          String keys[] = prefs.keys();
+          for (String key : keys) {
+            prefs.remove(key);
+          }
+          prefs = prefs.node(ViManager.PREFS_KEYS);
+          keys = prefs.keys();
+          for (String key : keys) {
+            prefs.remove(key);
+          }
+        } catch (BackingStoreException ex) {
+          ex.printStackTrace();
+        }
+      }
+    });
+    ColonCommands.register("optionDelete", "optionDelete",
+            new ColonCommands.ColonAction() {
+      
+      public void actionPerformed(ActionEvent ev) {
+        ColonEvent cev = (ColonEvent) ev;
+        
+        if(cev.getNArg() == 1) {
+          String key = cev.getArg(1);
+          Preferences prefs = ViManager.getViFactory().getPreferences();
+          prefs.remove(key);
+        } else
+          Msg.emsg("optionDelete takes exactly one argument");
+      }
+    });
+  }
 
   static {
     registerBuiltinCommands();
+    addDebugColonCommands();
   }
   
   //
