@@ -31,17 +31,14 @@ package com.raelity.jvi.swing;
 
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.awt.FontMetrics;
 import java.awt.event.MouseEvent;
-import java.awt.Point;
 import javax.swing.text.Position;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.DefaultCaret;
-import javax.swing.text.BadLocationException;
-import javax.swing.plaf.TextUI;
 
 import com.raelity.jvi.ViCursor;
 import com.raelity.jvi.*;
+import java.lang.reflect.Method;
 
 /**
  * This extension of {@link javax.swing.text.DefaultCaret} draws the
@@ -51,9 +48,20 @@ import com.raelity.jvi.*;
 public class DefaultViCaret extends DefaultCaret implements ViCaret {
   ViCaretDelegate viDelegate;
 
+  static Method super_setDot;
+  static Method super_moveDot;
+
   public DefaultViCaret() {
     super();
     viDelegate = new ViCaretDelegate(this);
+    /*if(super_setDot == null && ViManager.isJdk16()) {
+      try {
+        super_setDot = getClass().getSuperclass()
+                .getMethod("setDot", int.class, Position.Bias.class);
+        super_moveDot = getClass().getSuperclass()
+                .getMethod("moveDot", int.class, Position.Bias.class);
+      } catch(java.lang.NoSuchMethodException ex) { }
+    }*/
   }
 
   public void setCursor(ViCursor cursor) {
@@ -116,8 +124,13 @@ public class DefaultViCaret extends DefaultCaret implements ViCaret {
     public void setDot(int dot, Position.Bias dotBias) {
         if(isMouseAction || mouseButtonDown)
             dot = ViManager.mouseSetDot(dot, mouseComponent, mouseEvent);
-        // assert false : "for jdk1.6 uncomment following line";
-        super.setDot(dot, dotBias); // not accessible in jdk1.5
+        if(ViManager.isJdk15()) {
+          assert false : "this setDot not called on jdk1.5";
+        } else {
+          // COMMENT THIS OUT ON JDK1.5
+          //super.setDot(dot, dotBias); // not accessible in jdk1.5
+          //invokeSuper(super_setDot, dot, dotBias);
+        }
     }
     
     // IN SWING, THIS CALLS THE FOLLOWING MOVE DOT
@@ -134,9 +147,31 @@ public class DefaultViCaret extends DefaultCaret implements ViCaret {
     public void moveDot(int dot, Position.Bias dotBias) {
         if(mouseButtonDown)
             dot = ViManager.mouseMoveDot(dot, mouseComponent, mouseEvent);
-        // assert false : "for jdk1.6 uncomment following line";
-        super.moveDot(dot, dotBias); // not accessible in jdk1.5
+        if(ViManager.isJdk15()) {
+          assert false : "this moveDot not called on jdk1.5";
+        } else {
+          // COMMENT THIS OUT ON JDK1.5
+          //super.moveDot(dot, dotBias); // not accessible in jdk1.5
+          //invokeSuper(super_moveDot, dot, dotBias);
+        }
     }
+
+    /* CANT CALL SUPERCLASS METHOD WITH REFLECTION ACC'D TO SPEC
+    void invokeSuper(Method method, int dot, Position.Bias dotBias) {
+      Exception e = null;
+      try {
+        DefaultCaret mySuper = this;
+        method.invoke(mySuper, dot, dotBias);
+      } catch (IllegalAccessException ex) {
+        e = ex;
+      } catch (IllegalArgumentException ex) {
+        e = ex;
+      } catch (InvocationTargetException ex) {
+        e = ex;
+      }
+      if(e != null)
+        e.printStackTrace();
+    }*/
 
   //
   // Following copied from NbCaret, all have to do with mouse action
