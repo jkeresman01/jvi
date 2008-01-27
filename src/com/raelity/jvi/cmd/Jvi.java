@@ -30,17 +30,14 @@ package com.raelity.jvi.cmd;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.prefs.BackingStoreException;
 import javax.swing.JTextPane;
-import javax.swing.UIManager;
 import javax.swing.SwingUtilities;
 import java.awt.*;
 import com.raelity.jvi.swing.*;
 import com.raelity.jvi.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
+import java.lang.reflect.Method;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.TabSet;
@@ -192,6 +189,28 @@ public class Jvi {
       SwingUtilities.invokeAndWait(new Runnable() {
 	public void run() {
             frame1 = makeFrame();
+            {
+                // If the Options dialog is available then set it up.
+                try {
+                    final Class clazz;
+                    clazz = Class.forName("com.raelity.jvi.cmd.OptionsDialog");
+                    if(clazz != null) {
+                        frame1.optionsButton
+                        .addActionListener(new ActionListener() {
+                            Method showDialog = clazz.getMethod("show",
+                                                        java.awt.Frame.class);
+                            public void actionPerformed(ActionEvent e) {
+                                try {
+                                    showDialog.invoke(null, frame1);
+                                } catch (Exception ex) {
+                                    ex.printStackTrace();
+                                }
+                            }
+                        });
+                    }
+                } catch (Exception ex) {
+                }
+            }
             setupFrame(frame1);
             if(make2) {
                 frame2 = makeFrame();

@@ -44,7 +44,8 @@ public class JviFrame extends JFrame {
   JToolBar toolBar = new JToolBar();
   JButton jButton1 = new JButton();
   JButton jButton2 = new JButton();
-  JButton jButton3 = new JButton();
+  JButton helpButton = new JButton();
+  JButton optionsButton = new JButton();
   ImageIcon image1;
   ImageIcon image2;
   ImageIcon image3;
@@ -106,8 +107,11 @@ public class JviFrame extends JFrame {
     jButton1.setIcon(image1);
     jButton1.setToolTipText("Open File");
     jButton2.setIcon(image2);
-    jButton2.setToolTipText("Close File"); jButton3.setIcon(image3);
-    jButton3.setToolTipText("Help");
+    jButton2.setToolTipText("Close File");
+    helpButton.setIcon(image3);
+    helpButton.setToolTipText("Help");
+    optionsButton.setText("Options");
+    optionsButton.setToolTipText("Options");
     jPanel1.setLayout(borderLayout2);
     statusPanel.setLayout(gridBagLayout1);
     generalStatusBar.setBorder(border1);
@@ -123,7 +127,8 @@ public class JviFrame extends JFrame {
     editorPane.setText(SampleText.txt02);
     toolBar.add(jButton1);
     toolBar.add(jButton2);
-    toolBar.add(jButton3);
+    toolBar.add(optionsButton);
+    toolBar.add(helpButton);
     menuFile.add(menuFileExit);
     menuHelp.add(menuHelpAbout);
     menuBar1.add(menuFile);
