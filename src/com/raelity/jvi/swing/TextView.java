@@ -631,7 +631,8 @@ public void undo(){
                 thisVisualPosition - 1,
                 javax.swing.text.Position.Bias.Forward,
                 javax.swing.SwingConstants.EAST,
-                null);
+                new javax.swing.text.Position.Bias[1]); // used in jdk1.5
+                //null); // may be null in jdk1.6
         if(thisVisualPosition != nextVisualPosition) {
           colIdx = i - 1;
           break;
