@@ -3056,12 +3056,62 @@ public class Misc implements ClipboardOwner {
     //   - scroll off option might be tricky
     //   - variable height fonts offer problems.
     //
-    
-    static void skipCoordLines(int n) {
-      G.curwin.skipCoordLines(n);
-      // NEEDSWORK: coladvance not right for Coord-operations
-      // Take a look in NB's BaseKit up/down left/right operations
-      Misc.coladvance(G.curwin.getWCurswant());
+
+    /**
+     * based on gotoLine_scrolloff
+     * This method not in vim,
+     * but we cant just set a line number in the window struct.
+     * If the target line is within one half screen of being visible
+     * then scroll to the line and the line will be near the top
+     * or bottom as needed, otherwise center the target line on the screen.
+     */
+    static void gotoCoordLine(int coordLine, int flag) {
+      if(coordLine < 1)
+        coordLine = 1;
+      if(coordLine > G.curwin.getCoordLineCount())
+        coordLine = G.curwin.getCoordLineCount();
+      
+      // if target line is less than half a screen away from
+      // being visible, then just let it scroll, otherwise
+      // center the target line
+      
+      int scrollMargin = G.curwin.getViewLines(); // max distance from center
+      // to do scroll
+      int center = G.curwin.getViewCoordTopLine() + scrollMargin / 2 - 1;
+      int so = getScrollOff();
+      // reduce scrollMargin, the distance from center that we will scroll
+      // the screen, by amount of scrolloff.
+      scrollMargin -= so;
+      
+      // assume the top line wont change
+      int newTop = G.curwin.getViewCoordTopLine();
+      if(coordLine < center - scrollMargin - 1
+              || coordLine > center + scrollMargin) {
+        newTop = coordLine - (G.curwin.getViewLines() / 2);
+        if((G.curwin.getViewLines() & 1) == 0) {
+          ++newTop; // even num lines, put target in upper half
+        }
+        // center the target line
+      } else {
+        // scroll to the line
+        if(coordLine < G.curwin.getViewCoordTopLine()+so) {
+          newTop = coordLine-so;
+        } else if(coordLine > G.curwin.getViewCoordBottomLine()-so-1) {
+          newTop = coordLine-G.curwin.getViewLines()+1+so;
+        }
+      }
+      G.curwin.setViewTopLine(adjustTopLine(newTop));
+      G.curwin.setCursorCoordLine(coordLine, 0);
+      //MySegment seg = G.curbuf.getLineSegment(coordLine);
+      //int col;
+      if(flag < 0) {
+        //col = coladvanceColumnIndex(seg);
+        coladvance(G.curwin.getWCurswant());
+      } else {
+        // from nv_goto
+        //col = Edit.beginlineColumnIndex(flag, seg);
+        Edit.beginline(flag);
+      }
     }
     
     /**
@@ -3218,7 +3268,7 @@ public class Misc implements ClipboardOwner {
         G.curwin.setWPScroll((Prenum > G.curwin.getViewLines())
         ?  G.curwin.getViewLines() : Prenum);
       n = (G.curwin.getWPScroll() <= G.curwin.getViewLines())
-      ?  G.curwin.getWPScroll() : G.curwin.getViewLines();
+          ?  G.curwin.getWPScroll() : G.curwin.getViewLines();
       
       validate_botline();
       room = G.curwin.getViewCoordBlankLines();

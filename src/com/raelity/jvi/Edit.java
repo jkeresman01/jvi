@@ -941,12 +941,16 @@ public class Edit {
   public static int cursor_up(int n, boolean upd_topline) {
     Normal.do_xop("cursor_up");
     if(G.isCoordSkip.getBoolean()) {
-      /*int lnum = G.curwin.getWCursor().getLine();
+      int coordLine = G.curwin.getCoordLine(G.curwin.getWCursor().getLine());
       if (n != 0) {
-        if (lnum <= 1)
+        if (coordLine <= 1)
           return FAIL;
-      }*/
-      Misc.skipCoordLines(-n);
+        if (n >= coordLine)
+          coordLine = 1;
+        else
+          coordLine -= n;
+      }
+      Misc.gotoCoordLine(coordLine, -1);
       return OK;
     }
     int lnum = G.curwin.getWCursor().getLine();
@@ -971,7 +975,14 @@ public class Edit {
   public static int cursor_down(int n, boolean upd_topline) {
     Normal.do_xop("cursor_down");
     if(G.isCoordSkip.getBoolean()) {
-      Misc.skipCoordLines(n);
+      int coordLine = G.curwin.getCoordLine(G.curwin.getWCursor().getLine());
+      if (n != 0) {
+        int nline = G.curwin.getCoordLineCount();
+        if (coordLine >= nline) { return FAIL; }
+        coordLine += n;
+        if (coordLine > nline) { coordLine = nline; }
+    }
+      Misc.gotoCoordLine(coordLine, -1);
       return OK;
     }
     int lnum = G.curwin.getWCursor().getLine();

@@ -2639,9 +2639,10 @@ middle_code:
       int topline = G.curwin.getViewCoordTopLine();
       int line_count = G.curwin.getCoordLineCount();
       Misc.validate_botline();	    // make sure w_empty_rows is valid
+      int halfway = (G.curwin.getViewLines()
+                      - G.curwin.getViewCoordBlankLines() + 1) / 2;
       for (n = 0; topline + n < line_count; ++n)
-	if ((used += Misc.plines(topline + n)) >=
-	    (G.curwin.getViewLines() - G.curwin.getViewCoordBlankLines() + 1) / 2)
+	if ((used += Misc.plines(topline + n)) >= halfway)
 	  break;
       if (n != 0 && used > G.curwin.getViewLines())
 	--n;
