@@ -198,7 +198,7 @@ public class TextViewCache implements PropertyChangeListener,
   }
 
   public int getViewBottomLine() {
-    return viewBottomLine + 1;	// NEEDSWORK:
+    return viewBottomLine + 1;	// NEEDSWORK: returning line past full line
   }
 
   public int getViewBlankLines() {
@@ -275,29 +275,40 @@ public class TextViewCache implements PropertyChangeListener,
     }
   }
 
+  public Rectangle modelToView(int offset) throws BadLocationException {
+    Rectangle r = tv.getEditorComponent().modelToView(offset);
+    // (0,3,300,300).contains(3,3,0,17) because of the 0 width (jdk1.5 at least)
+    // so...
+    if(r.width == 0)
+      r.width = 1;
+    return r;
+  }
+
   /**
    * Determine the line number of the text that is fully displayed
    * (top or bottom not chopped off).
    * @return line number of text at point, -1 if can not be determined
    */
   private int findFullLine(Point pt, int dir) {
+    try {
+      return findFullLineThrow(pt, dir);
+    } catch (BadLocationException ex) {
+      // Logger.getLogger(TextViewCache.class.getName()).log(Level.SEVERE, null, ex);
+      System.err.println("findFullLine: ");
+      return -1;
+    }
+  }
+
+  private int findFullLineThrow(Point pt, int dir) throws BadLocationException {
     Rectangle vrect = viewport.getViewRect();
-    JEditorPane editor = tv.getEditorComponent();
     
-    int offset = editor.viewToModel(pt);
+    int offset = tv.getEditorComponent().viewToModel(pt);
     if(offset < 0) {
         return -1;
     }
+
     int line = tv.getBuffer().getLineNumber(offset);
-    Rectangle lrect;
-    try {
-      lrect = editor.modelToView(offset);
-    }
-    catch (BadLocationException ex) {
-      System.err.println("findFullLine: exeption 1st " + line);
-      return -1; // can't happen
-    }
-    
+    Rectangle lrect = modelToView(offset);
     if(vrect.contains(lrect)) {
       return line;
     }
@@ -307,14 +318,9 @@ public class TextViewCache implements PropertyChangeListener,
       //System.err.println("findFullLine: line out of bounds " + line);
       return oline;
     }
+
     offset = tv.getBuffer().getLineStartOffset(line);
-    try {
-      lrect = editor.modelToView(offset);
-    }
-    catch (BadLocationException ex) {
-      System.err.println("findFullLine: exeption 2nd " + line);
-      return -1; // can't happen
-    }
+    lrect = modelToView(offset);
     if( ! vrect.contains(lrect)) {
       //System.err.println("findFullLine: adjusted line still out " + line);
     }
