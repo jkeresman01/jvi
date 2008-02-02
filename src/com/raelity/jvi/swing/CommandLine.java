@@ -463,6 +463,7 @@ public class CommandLine extends JPanel {
                 fireEvent(new ActionEvent(tv.getEditorComponent(),
                         ActionEvent.ACTION_PERFORMED,
                         "\n"));
+                commandLine.makeTop(initialText);
                 return;
             }
             commandLine.setMode(mode);
