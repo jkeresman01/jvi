@@ -3100,7 +3100,7 @@ public class Misc implements ClipboardOwner {
           newTop = coordLine-G.curwin.getViewLines()+1+so;
         }
       }
-      G.curwin.setViewTopLine(adjustTopLine(newTop));
+      G.curwin.setViewCoordTopLine(adjustTopLine(newTop));
       G.curwin.setCursorCoordLine(coordLine, 0);
       //MySegment seg = G.curbuf.getLineSegment(coordLine);
       //int col;
