@@ -61,6 +61,18 @@ public class CommandLine extends JPanel {
     private int historySize;
     Border border1;
     boolean setKeymapActive;
+
+    // This is not intended to match an actual keystroke, it is used
+    // to register an action that can be used externally.
+    public static final KeyStroke EXECUTE_KEY
+            = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 
+                                     InputEvent.SHIFT_DOWN_MASK
+                                     | InputEvent.ALT_DOWN_MASK
+                                     | InputEvent.META_DOWN_MASK
+                                     | InputEvent.CTRL_DOWN_MASK
+                                     | InputEvent.BUTTON1_DOWN_MASK
+                                     | InputEvent.BUTTON2_DOWN_MASK
+                                     | InputEvent.BUTTON3_DOWN_MASK);
     
     /** This is used to initialize the text of the combo box,
      * needed so that characters entered before the combo box gets focus
@@ -339,15 +351,14 @@ public class CommandLine extends JPanel {
     
     protected JTextComponent.KeyBinding[] getBindings() {
         JTextComponent.KeyBinding[] bindings = {
-            /*new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
-                    KeyEvent.VK_ENTER, 0),
-                    "enter"),*/
+            new JTextComponent.KeyBinding(EXECUTE_KEY,
+                    "vi-command-execute"),
             new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                     KeyEvent.VK_ESCAPE, 0),
-                    "escape"),
+                    "vi-command-escape"),
             new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                     '\t'),
-                    "tab"),
+                    "vi-command-tab"),
         };
         return bindings;
     }
@@ -356,9 +367,9 @@ public class CommandLine extends JPanel {
         Action[] localActions = null;
         try {
             localActions = new Action[] {
-                /*createSimpleEvent("enter"),*/
-                createSimpleEvent("escape"),
-                new TextAction("tab") {
+                createSimpleEvent("vi-command-execute"),
+                createSimpleEvent("vi-command-escape"),
+                new TextAction("vi-command-tab") {
                     public void actionPerformed(ActionEvent e) {
                         ((JTextField)e.getSource()).replaceSelection("\t");
                     }
@@ -594,6 +605,11 @@ public class CommandLine extends JPanel {
 
 
 
+    //////////////////////////////////////////////////////////////////////
+    //                                                                  //
+    //                    NOT USED BELOW THIS LINE                      //
+    //                                                                  //
+    //////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////
     //
