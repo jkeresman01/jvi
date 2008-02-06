@@ -93,6 +93,8 @@ public class KeyBinding {
                 EventQueue.invokeLater(updateKeymap);
           }
       });
+      // make sure "knownKeys" is filled in
+      getBindingsListInternal();
   }
   
     private static Runnable updateKeymap = new Runnable() {
@@ -234,6 +236,7 @@ public class KeyBinding {
                                   String actionName,
                                   int code,
                                   int mod) {
+      keyBindingPrefs.addKnownKey(prefName);
       if(prefs.getBoolean(prefName, getCatchKeyDefault(prefName))) {
           bl.add(createKeyBinding(code, mod, "Vi"+actionName+"Key"));
       }
@@ -575,6 +578,10 @@ public class KeyBinding {
       return keyBindingPrefs.getCatchKeyDefault(prefName);
   }
   
+  static public boolean isKnownKey(String prefName) {
+      return keyBindingPrefs.isKnownKey(prefName);
+  }
+  
     public static Set<String> getKeypadNames() {
         return Collections.unmodifiableSet(keypadNameMap.keySet());
     }
@@ -584,6 +591,7 @@ public class KeyBinding {
     static private KeyBindingPrefs keyBindingPrefs = new KeyBindingPrefs();
     static private class KeyBindingPrefs {
         private Set<String> defaultKeysFalse = new HashSet<String>();
+        private Set<String> knownKeys = new HashSet<String>();
         KeyBindingPrefs() {
             defaultKeysFalse.add("Ctrl-[");
             
@@ -635,6 +643,14 @@ public class KeyBinding {
             keypadNameMap.put("Undo", KeyEvent.VK_UNDO);
             keypadNameMap.put("PageUp", KeyEvent.VK_PAGE_UP);
             keypadNameMap.put("PageDown", KeyEvent.VK_PAGE_DOWN);
+        }
+
+        public void addKnownKey(String key) {
+            knownKeys.add(key);
+        }
+
+        public Boolean isKnownKey(String key) {
+            return knownKeys.contains(key);
         }
       
       public Boolean getCatchKeyDefault(String keyName) {
