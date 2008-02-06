@@ -266,6 +266,14 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	return getboolean(Options.coordSkip);
     }
 
+    public void setViPlatformPreferences(boolean arg)  throws PropertyVetoException {
+        put(Options.platformPreferences, arg);
+    }
+
+    public boolean getViPlatformPreferences() {
+	return getboolean(Options.platformPreferences);
+    }
+
     public void setViDbgCoordSkip(boolean arg)  throws PropertyVetoException {
         put(Options.dbgCoordSkip, arg);
     }

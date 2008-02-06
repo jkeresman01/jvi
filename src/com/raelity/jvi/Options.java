@@ -87,6 +87,7 @@ public final class Options {
   public static final String pcmarkTrack = "viPCMarkTrack";
   public static final String autoPopupFN = "viAutoPopupFN";
   public static final String coordSkip = "viCoordSkip";
+  public static final String platformPreferences = "viPlatformPreferences";
 
   public static final String backspaceWrapPrevious = "viBackspaceWrapPrevious";
   public static final String hWrapPrevious = "viHWrapPrevious";
@@ -247,6 +248,17 @@ public final class Options {
             + " to pre code folding behavior. A just in case option;"
             + " if needed, please file a bug report.");
     setExpertHidden(coordSkip, true, false);
+
+    createBooleanOption(platformPreferences, false);
+    setupOptionDesc(platformList, platformPreferences,
+                    "Store init (\"vimrc\") with Platform",
+                    "Store user preferences/options in platform location."
+                    + " Change occurs after next application startup."
+                    + " For example, on NetBeans store in userdir."
+                    + " NOTE: except for the first switch to platform,"
+                    + " changes made in one area"
+                    + " are not propogated to the other.");
+    setExpertHidden(platformPreferences, true, false);
 
     /////////////////////////////////////////////////////////////////////
     //
