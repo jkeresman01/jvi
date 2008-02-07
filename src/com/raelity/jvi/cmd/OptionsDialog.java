@@ -11,6 +11,7 @@ import com.l2fprod.common.propertysheet.Property;
 import com.l2fprod.common.propertysheet.PropertySheet;
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
 import com.l2fprod.common.propertysheet.PropertySheetTableModel;
+import com.l2fprod.common.propertysheet.PropertySheetTableModel.NaturalOrderStringComparator;
 import com.l2fprod.common.swing.LookAndFeelTweaks;
 import com.raelity.jvi.OptionsBean;
 import com.raelity.jvi.swing.KeyBindingBean;
@@ -91,7 +92,7 @@ public class OptionsDialog {
                 //int h = sp.getHeight();
                 int h = sp.getPreferredSize().height;
                 //int loc = sp.getDividerLocation();
-                int newLoc = h - 100;
+                int newLoc = h - 120;
                 sp.setDividerLocation(newLoc);
                 double d = sp.getResizeWeight();
                 //sp.setResizeWeight(.5);
@@ -127,14 +128,23 @@ public class OptionsDialog {
             sheet = new PropertySheetPanel();
 
             // Convert Properties to L2F properties so categories display
-            setupSheetAndBeanProperties(sheet, bean); //sheet.setBeanInfo(bean);
+            setupSheetAndBeanProperties(sheet, bean);
             sheet.readFromObject(bean);
+
+            // compare reverse order so that Prop is before Expert
+            ((PropertySheetTableModel)sheet.getTable().getModel())
+                    .setCategorySortingComparator(reverseStringCompare);
+
+            // compare properties by property name rather than display name
+            ((PropertySheetTableModel)sheet.getTable().getModel())
+                    .setPropertySortingComparator(propertyNameCompare);
 
             sheet.setMode(PropertySheet.VIEW_AS_CATEGORIES);
             sheet.setDescriptionVisible(true);
             sheet.setSortingCategories(true);
-            sheet.setSortingProperties(false);
-            sheet.setRestoreToggleStates(true);
+            sheet.setSortingProperties(true);
+            sheet.setRestoreToggleStates(false);
+            sheet.setToolBarVisible(false);
             add(sheet, "*");
             
             // everytime a property change, update the sheet with it
@@ -207,26 +217,39 @@ public class OptionsDialog {
                 }
             }
             sheet.setProperties(properties);
-
-            // compare reverse order so that Prop is before Expert
-            // compare method from PropSheetTableModel::NaturalOrderStringCo...
-            ((PropertySheetTableModel)sheet.getTable().getModel())
-                    .setCategorySortingComparator(new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    String s1 = (String) o1;
-                    String s2 = (String) o2;
-                    if (s1 == null) {
-                        return s2==null?0:-1;
-                    } else {
-                        if (s2 == null) {
-                            return 1;
-                        } else {
-                            return -s1.compareTo(s2);
-                        }
-                    }
-                }
-            });
         }
+        
+        private static final Comparator STRING_COMPARATOR =
+                new NaturalOrderStringComparator();
+
+        static Comparator reverseStringCompare = new Comparator() {
+            public int compare(Object o1, Object o2) {
+                return - STRING_COMPARATOR.compare(o1, o2);
+            }
+        };
+
+        static Comparator propertyNameCompare = new Comparator() {
+            public int compare(Object o1, Object o2) {
+                if (o1 instanceof Property && o2 instanceof Property) {
+                    Property prop1 = (Property) o1;
+                    Property prop2 = (Property) o2;
+                    if (prop1 == null) {
+                        return prop2==null?0:-1;
+                    } else {
+                        return STRING_COMPARATOR.compare(
+                                prop1.getName(), prop2.getName());
+                                // prop1.getDisplayName()==null
+                                //     ? null
+                                //     : prop1.getDisplayName().toLowerCase(),
+                                // prop2.getDisplayName() == null
+                                //     ? null
+                                //     : prop2.getDisplayName().toLowerCase());
+                    }
+                } else {
+                    return 0;
+                }
+            }
+        };
 
         /**
          * Use our own copy of the L2F property
