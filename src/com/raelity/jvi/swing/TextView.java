@@ -109,7 +109,8 @@ public class TextView implements ViTextView {
 
     cursorSaveListener = new CaretListener() {
       public void caretUpdate(CaretEvent ce) {
-        ViManager.caretUpdate(TextView.this, lastDot, ce);
+        ViManager.caretUpdate(TextView.this, lastDot,
+                              ce.getDot(), ce.getMark());
         lastDot = ce.getDot();
       }
     };
@@ -403,10 +404,6 @@ public void undo(){
   public void setCaretPosition(int offset) {
     expectedCaretPosition = offset;
     editorPane.setCaretPosition(offset);
-    // NEEDSWORK: this does not belong here
-    if (G.VIsual_active && this == G.curwin) {
-        Normal.v_updateVisualState(this);
-    }
   }
 
   public void setCaretPosition(int lnum, int col) {

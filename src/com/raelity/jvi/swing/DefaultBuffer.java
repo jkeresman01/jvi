@@ -411,10 +411,8 @@ public class DefaultBuffer extends Buffer {
             }
         }
         
-        
-        // NOTE: following not used
         private Document getDoc() {
-            return (Document)getDocument();
+            return getDocument();
         }
         
         private void setPos(Position pos) {
@@ -476,9 +474,9 @@ public class DefaultBuffer extends Buffer {
         
         final void checkMarkUsable() { // NEEDSWORK: ?????
             if(pos == null) throw new MarkException("Uninitialized Mark");
-            /*if(doc != buf.getDocument()) {
-                throw new MarkOrphanException("Mark Document Change");
-            }*/
+            if(getDoc() == null) {
+                throw new MarkOrphanException("Mark Document null");
+            }
         }
         
         final public int compareTo(ViFPOS p) {
