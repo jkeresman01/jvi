@@ -49,7 +49,6 @@ import java.util.prefs.BackingStoreException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
-import javax.swing.event.CaretEvent;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 
@@ -107,7 +106,7 @@ public class ViManager {
   // 1.0.0.beta2 is NB vers 0.9.6.4
   // 1.0.0.beta3 is NB vers 0.9.7.5
   //
-  public static final jViVersion version = new jViVersion("1.1.2.x14");
+  public static final jViVersion version = new jViVersion("1.1.2.x15");
   
   private static boolean enabled;
 
@@ -774,13 +773,21 @@ public class ViManager {
     }
   }
 
-  public static void caretUpdate(ViTextView tv, int lastDot, CaretEvent ce) {
-    if (!G.pcmarkTrack.getBoolean()) return;
-    int currDot = ce.getDot();
+  public static void caretUpdate(ViTextView tv, int lastDot,
+                                 int dot, int mark) {
+    if (G.VIsual_active && tv == G.curwin)
+      Normal.v_updateVisualState(tv);
+
+    if (!G.pcmarkTrack.getBoolean())
+      return;
+
+    int currDot = dot;
     if (G.dbgMouse.getBoolean())
       System.err.println("CaretMark: " + lastDot + " --> " + currDot +
         " " + tv.getBuffer().getDisplayFileName());
     if (!jViBusy() && !mouseDown) {
+      // The cursor was magcally moved (probably by the IDE or some such).
+      // Record the previous location so that '' works (thanks Jose).
       int diff
             = Math.abs(tv.getBuffer().getLineNumber(currDot)
                          - tv.getBuffer().getLineNumber(lastDot));
