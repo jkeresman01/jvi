@@ -162,7 +162,7 @@ class MarkOps {
       msg = e_umark;
     } else {
       try {
-	if(mark.getLine() > G.curbuf.getLineCount()) {
+        if(mark.getLine() > G.curbuf.getLineCount()) {
 	  msg = e_markinval;
 	}
       } catch(ViMark.MarkOrphanException e) {
