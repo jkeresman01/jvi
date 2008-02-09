@@ -517,10 +517,16 @@ public void undo(){
       setViewTopLine(coordLine);
       return;
     }
+    //cache.setViewCoordTopLine(coordLine);
     
     //Point p = new Point(point0);
     //p.translate(0, (coordLine - 1) * cache.getFheight());
     Point p = new Point(0, (coordLine - 1) * cache.getFheight());
+    // If point is after viewport top && within one char of top
+    // then just return, to avoid wiggle
+    int topDiff = p.y - cache.getViewport().getViewPosition().y;
+    if(topDiff > 0 && topDiff < cache.getFheight())
+        return;
     cache.getViewport().setViewPosition(p);
   }
 
