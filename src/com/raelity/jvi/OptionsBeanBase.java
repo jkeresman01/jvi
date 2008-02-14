@@ -10,7 +10,10 @@
 package com.raelity.jvi;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -18,15 +21,19 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyDescriptor;
+import java.beans.PropertyEditor;
 import java.beans.PropertyVetoException;
 import java.beans.SimpleBeanInfo;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.prefs.Preferences;
 
 import com.raelity.jvi.Option.ColorOption;
 import com.raelity.org.openide.util.WeakListeners;
+import java.beans.PropertyEditorManager;
+import java.beans.PropertyEditorSupport;
 
 /**
  * Base class for jVi options beans. This method contains the read/write methods
@@ -75,6 +82,38 @@ public class OptionsBeanBase extends SimpleBeanInfo {
         return new ThisBeanDescriptor();
     }
 
+    /*
+    private class MyPropertyDescriptor extends PropertyDescriptor {
+        public MyPropertyDescriptor(String propertyName, Method readMethod, Method writeMethod)
+                throws IntrospectionException {
+            super(propertyName, readMethod, writeMethod);
+        }
+
+        public MyPropertyDescriptor(String propertyName, Class<?> beanClass, String readMethodName, String writeMethodName)
+                throws IntrospectionException {
+            super(propertyName, beanClass, readMethodName, writeMethodName);
+        }
+
+        public MyPropertyDescriptor(String propertyName, Class<?> beanClass)
+                throws IntrospectionException {
+            super(propertyName, beanClass);
+        }
+
+        @Override
+        public PropertyEditor createPropertyEditor(Object bean) {
+            //return new PropertyEditorWithDefaultButton(getPropertyType());
+            return super.createPropertyEditor(bean);
+        }
+
+        @Override
+        public Class<?> getPropertyEditorClass() {
+            if(getPropertyType().equals(boolean.class))
+                return BooleanPropertyEditorWithDefaultButton.class;
+            return super.getPropertyEditorClass();
+        }
+    }
+    */
+
     @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
 	PropertyDescriptor[] descriptors
@@ -85,6 +124,8 @@ public class OptionsBeanBase extends SimpleBeanInfo {
             PropertyDescriptor d;
             if(name.equals("jViVersion")) {
                 try {
+                    // d = new MyPropertyDescriptor(name, clazz,
+                    //         "getJViVersion", null);
                     d = new PropertyDescriptor(name, clazz,
                             "getJViVersion", null);
                 } catch (IntrospectionException ex) {
@@ -111,6 +152,7 @@ public class OptionsBeanBase extends SimpleBeanInfo {
     throws IntrospectionException {
         PropertyDescriptor d = null;
         Option opt = Options.getOption(optName);
+        // d = new MyPropertyDescriptor(methodName, clazz);
         d = new PropertyDescriptor(methodName, clazz);
         d.setDisplayName(opt.getDisplayName());
         d.setExpert(opt.isExpert());
@@ -238,9 +280,9 @@ public class OptionsBeanBase extends SimpleBeanInfo {
     }
 
     protected Color getColor(String name) {
-	Option opt = Options.getOption(name);
+	ColorOption opt = (ColorOption) Options.getOption(name);
         String s = prefs.get(name, opt.getDefault());
-	return Color.decode(s);
+	return opt.decode(s);
     }
 
     protected boolean getboolean(String name) {
@@ -755,6 +797,90 @@ public class OptionsBeanBase extends SimpleBeanInfo {
     public boolean getViDbgRedo() {
 	return getboolean(Options.dbgRedo);
     }
+
+    /*
+    //
+    // PropertyEditors
+    //
+
+    public static class BooleanPropertyEditorWithDefaultButton
+    extends PropertyEditorWithDefaultButton {
+
+        public BooleanPropertyEditorWithDefaultButton() {
+            super(boolean.class);
+        }
+
+    }
+
+    public static class PropertyEditorWithDefaultButton
+    extends PropertyEditorSupport
+    implements PropertyChangeListener {
+        PropertyEditor delegateEditor;
+
+        public PropertyEditorWithDefaultButton(Class propertyType) {
+            super();
+            // get the editor for the specified class
+            delegateEditor = PropertyEditorManager.findEditor(propertyType);
+            delegateEditor.addPropertyChangeListener(this);
+        }
+
+        public void paintValue(Graphics gfx, Rectangle box) {
+            delegateEditor.paintValue(gfx, box);
+        }
+
+        public boolean isPaintable() {
+            return delegateEditor.isPaintable();
+        }
+
+        //
+        // pass on property changes from delegate
+        //
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            firePropertyChange();
+        }
+
+        //
+        // delegate most real work
+        //
+
+        // public void setSource(Object source) {
+        //     pes.setSource(source);
+        // }
+
+        // public Object getSource() {
+        //     return pes.getSource();
+        // }
+
+        public void setValue(Object value) {
+            delegateEditor.setValue(value);
+        }
+
+        public void setAsText(String text) throws IllegalArgumentException {
+            delegateEditor.setAsText(text);
+        }
+
+        public Object getValue() {
+            return delegateEditor.getValue();
+        }
+
+        public String[] getTags() {
+            return delegateEditor.getTags();
+        }
+
+        public String getAsText() {
+            return delegateEditor.getAsText();
+        }
+
+        public boolean supportsCustomEditor() {
+            return delegateEditor.supportsCustomEditor();
+        }
+
+        public Component getCustomEditor() {
+            return delegateEditor.getCustomEditor();
+        }
+    }
+    */
 }
 
 // vi: sw=4 et

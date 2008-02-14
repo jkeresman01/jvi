@@ -630,14 +630,33 @@ finished:
     return getRegExp(lastPattern, G.p_ic.value);
   }
 
+  //
+  // NEEDSWORK: need to build a structure out of a pattern that
+  // tracks things like lastRegExp* and forceCase
+  //
   // simple cache. Helps "n" and "N" commands
   static RegExp lastRegExp;
   static String lastRegExpPattern = "";
   static boolean lastRegExpIC;
 
+  static int forceCase_CleanupPatternHack; // for \c and \C
+  static final int FORCE_CASE_IGNORE = 1;
+  static final int FORCE_CASE_EXACT = -1;
+  static final int FORCE_CASE_NONE = 0;
+
   /** Get a compiled regular expression. Clean up the escaping as needed. */
   static RegExp getRegExp(String pattern, boolean ignoreCase) {
     String cleanPattern = cleanupPattern(pattern);
+
+    // If the pattern has an 'ignoreCase' flag built in,
+    // then apply the override
+    if(forceCase_CleanupPatternHack == FORCE_CASE_EXACT) {
+      ignoreCase = false;
+    } else if(forceCase_CleanupPatternHack == FORCE_CASE_IGNORE) {
+      ignoreCase = true;
+    } // else FORCE_CASE_NONE
+
+    // can the last re be reused?
     // NEEDSWORK: getRegExp: cache re's, LRU?
     if(cleanPattern.equals(lastRegExpPattern) && lastRegExpIC == ignoreCase) {
       return lastRegExp;
@@ -686,6 +705,7 @@ finished:
    * </p>
    */
   static String cleanupPattern(String s) {
+    forceCase_CleanupPatternHack = FORCE_CASE_NONE;
     String metacharacterEscapes = G.p_meta_escape.getString();
     StringBuffer sb = new StringBuffer();
     boolean isEscaped = false;
@@ -715,6 +735,10 @@ finished:
         sb.append(c);
       } else if(isEscaped && (c == '<' || c == '>')) {
         sb.append("\\b");
+      } else if(isEscaped && c == 'c') {
+        forceCase_CleanupPatternHack = FORCE_CASE_IGNORE;
+      } else if(isEscaped && c == 'C') {
+        forceCase_CleanupPatternHack = FORCE_CASE_EXACT;
       } else {
         // pass through what was seen
         if(isEscaped) {
