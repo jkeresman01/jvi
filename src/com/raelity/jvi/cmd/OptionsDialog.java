@@ -6,29 +6,47 @@
 package com.raelity.jvi.cmd;
 
 import com.l2fprod.common.beans.ExtendedPropertyDescriptor;
+import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
+import com.l2fprod.common.beans.editor.FilePropertyEditor;
 import com.l2fprod.common.propertysheet.AbstractProperty;
 import com.l2fprod.common.propertysheet.Property;
+import com.l2fprod.common.propertysheet.PropertyEditorFactory;
+import com.l2fprod.common.propertysheet.PropertyEditorRegistry;
 import com.l2fprod.common.propertysheet.PropertySheet;
+import com.l2fprod.common.propertysheet.PropertySheetDialog;
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
 import com.l2fprod.common.propertysheet.PropertySheetTableModel;
 import com.l2fprod.common.propertysheet.PropertySheetTableModel.NaturalOrderStringComparator;
+import com.l2fprod.common.swing.ComponentFactory;
 import com.l2fprod.common.swing.LookAndFeelTweaks;
+import com.l2fprod.common.swing.PercentLayout;
+import com.l2fprod.common.swing.renderer.ColorCellRenderer;
+import com.l2fprod.common.util.ResourceManager;
+import com.raelity.jvi.Option.ColorOption;
+import com.raelity.jvi.Options;
 import com.raelity.jvi.OptionsBean;
 import com.raelity.jvi.swing.KeyBindingBean;
 import com.raelity.jvi.swing.KeypadBindingBean;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyDescriptor;
+import java.beans.PropertyEditorManager;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Comparator;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -45,18 +63,32 @@ import javax.swing.JTextArea;
  * @author erra
  */
 public class OptionsDialog {
-    static private JDialog dialog;
+    static private PropertySheetDialog dialog;
+    static private PropertyEditorFactory propertyEditors;
 
+    @SuppressWarnings("static-access")
     public static void show(Frame owner) {
+        // if(dialog == null) {
+        //     dialog = new JDialog(owner, "jVi Options");
+        //     dialog.add("Center", getOptionsPanel());
+        //     dialog.pack();
+        // }
+        // dialog.setVisible(true);
         if(dialog == null) {
-            dialog = new JDialog(owner, "jVi Options");
-            dialog.add("Center", getOptionsPanel());
+            dialog = new PropertySheetDialog(owner, "jVi Options");
+            dialog.getBanner().setVisible(false);
+            dialog.getContentPane().add("Center", getOptionsPanel());
+            // dialog.getButtonPane().add(new JButton("Default ALL"));
+            // dialog.getButtonPane().add(new JButton("Set Default"));
+            dialog.setDialogMode(dialog.CLOSE_DIALOG);
             dialog.pack();
+            dialog.centerOnScreen();
         }
         dialog.setVisible(true);
     }
 
     public static JComponent getOptionsPanel() {
+        createPropertyEditors();
         JTabbedPane tabs = new JTabbedPane();
         tabs.add("Platform", new OptionSheet(new OptionsBean.Platform()));
         tabs.add("General", new OptionSheet(new OptionsBean.General()));
@@ -102,11 +134,12 @@ public class OptionsDialog {
             sheet.setDescriptionVisible(false);
             sheet.setDescriptionVisible(true);
         }
+        propertyEditors = null;
         return tabs;
     }
 
-    // NEEDSWORK:   convert string to xml for property descriptions
-    //              net.sourceforge.groboutils.util.xml.v1.XMLUtil
+    static PropertyChangeListener sharedPropertyChangeListener;
+
     private static class OptionSheet extends JPanel {
         BeanInfo bean; // keep a reference, NOTE: bean/beanInfo are same class
         PropertySheetPanel sheet;
@@ -168,14 +201,26 @@ public class OptionsDialog {
             
             // everytime a property change, update the bean
             // (which will update the Preference which updates the option)
-            PropertyChangeListener listener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    Property prop = (Property)evt.getSource();
-                    prop.writeToObject(bean);
-                    //bean.repaint();
-                }
-            };
-            sheet.addPropertySheetChangeListener(listener);
+            if(sharedPropertyChangeListener == null) {
+                sharedPropertyChangeListener = new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        Property prop = (Property)evt.getSource();
+                        try {
+                            prop.writeToObject(bean);
+                        } catch(RuntimeException ex) {
+                            if(!(ex.getCause() instanceof PropertyVetoException))
+                                throw ex;
+                            JOptionPane.showMessageDialog(dialog,
+                                    ex.getCause().getMessage(),
+                                    "jVi Option Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                            prop.setValue(Options.getOption(prop.getName())
+                                                                .getString());
+                        }
+                    }
+                };
+            }
+            sheet.addPropertySheetChangeListener(sharedPropertyChangeListener);
         }
 
         //
@@ -189,6 +234,8 @@ public class OptionsDialog {
             { "&lt;", "&gt;", "&quot;", /*"&apos;",*/ "&amp;", "<br>" };
         private void setupSheetAndBeanProperties(PropertySheetPanel sheet,
                                                  BeanInfo bean) {
+            sheet.setEditorFactory(propertyEditors);
+
             PropertyDescriptor[] descriptors = bean.getPropertyDescriptors();
 
             // count the hidden properties
@@ -213,7 +260,14 @@ public class OptionsDialog {
                                                   IN_RANGE_VALID_CR);
                     s = sb.toString();
                     d.setShortDescription(s);
-                    properties[i2++] = new MyPropAdapt(d);
+                    Property prop = new MyPropAdapt(d);
+                    // wish PropertyDescriptor.createPropertyEditor was used
+                    if(prop.getType().equals(Color.class)) {
+                        ((PropertyEditorRegistry)propertyEditors)
+                                .registerEditor(prop,
+                                                new ColorPropertyEditor(prop));
+                    }
+                    properties[i2++] = prop;
                 }
             }
             sheet.setProperties(properties);
@@ -367,6 +421,160 @@ public class OptionsDialog {
             
         }
     }
+    
+    private static void createPropertyEditors() {
+        if(propertyEditors == null) {
+            PropertyEditorRegistry pe = new PropertyEditorRegistry();
+            // Add our custom editors
+            pe.registerEditor(boolean.class,
+                              MyBooleanAsCheckBoxPropertyEditor.class);
+            pe.registerEditor(Color.class,
+                              ColorPropertyEditor.class);
+            propertyEditors = pe;
+        }
+    }
+
+    public static class ColorPropertyEditor
+    extends AbstractPropertyEditor {
+        public static final int SHOW_NULL = 0x01;
+        public static final int SHOW_DFLT = 0x02;
+        
+        private ColorCellRenderer label;
+        private JButton button;
+        private Color color;
+        private Property property;
+        
+        public ColorPropertyEditor() {
+            this(SHOW_NULL, null);
+        }
+        
+        public ColorPropertyEditor(Property property) {
+            this(SHOW_DFLT | 
+                 (((ColorOption)Options.getOption(property.getName()))
+                        .isPermitNull() ? SHOW_NULL : 0),
+                 property);
+        }
+
+        /**
+         * @param flags of SHOW_NULL, SHOW_DFLT controls extra editing buttons
+         * @param property used to determine default value
+         */
+        public ColorPropertyEditor(int flags, Property property) {
+            this.property = property;
+
+            editor = new JPanel(new PercentLayout(PercentLayout.HORIZONTAL, 0));
+            ((JPanel)editor).add("*", label = new ColorCellRenderer());
+            label.setOpaque(false);
+
+            ((JPanel)editor).add(button = ComponentFactory.Helper.getFactory()
+                    .createMiniButton());
+            button.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    selectColor();
+                }
+            });
+
+            if((flags & SHOW_NULL) != 0) {
+                ((JPanel)editor).add(button = ComponentFactory.Helper
+                        .getFactory().createMiniButton());
+                button.setText("X");
+                button.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        selectNull();
+                    }
+                });
+            }
+
+            if((flags & SHOW_DFLT) != 0 && property != null) {
+                ((JPanel)editor).add(button = ComponentFactory.Helper.getFactory()
+                        .createMiniButton());
+                button.setText("DFLT");
+                button.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        selectDefault();
+                    }
+                });
+            }
+
+            ((JPanel)editor).setOpaque(false);
+        }
+        
+        public Object getValue() {
+            return color;
+        }
+        
+        public void setValue(Object value) {
+            color = (Color)value;
+            label.setValue(color);
+        }
+        
+        protected void selectColor() {
+            // ResourceManager rm = ResourceManager.all(FilePropertyEditor.class);
+            // String title = rm.getString("ColorPropertyEditor.title");
+            String title = "Color section";
+            Color selectedColor = JColorChooser.showDialog(editor, title, color);
+            
+            if (selectedColor != null) {
+                Color oldColor = color;
+                Color newColor = selectedColor;
+                label.setValue(newColor);
+                color = newColor;
+                firePropertyChange(oldColor, newColor);
+            }
+        }
+
+        protected void selectDefault() {
+            Color oldColor = color;
+            ColorOption opt = (ColorOption)Options.getOption(
+                    property.getName());
+            Color newColor = opt.decode(opt.getDefault());
+            label.setValue(newColor);
+            color = newColor;
+            firePropertyChange(oldColor, newColor);
+        }
+        
+        protected void selectNull() {
+            Color oldColor = color;
+            Color newColor = null;
+            if(property != null) {
+                ColorOption opt = (ColorOption)Options.getOption(
+                        property.getName());
+                newColor = opt.decode("");
+            }
+            label.setValue(newColor);
+            color = newColor;
+            firePropertyChange(oldColor, newColor);
+        }
+    }
+
+    public static class MyBooleanAsCheckBoxPropertyEditor
+    extends AbstractPropertyEditor {
+        
+        public MyBooleanAsCheckBoxPropertyEditor() {
+            editor = new JCheckBox();
+            ((JCheckBox)editor).setOpaque(false);
+            ((JCheckBox)editor).addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    firePropertyChange(
+                            ((JCheckBox)editor).isSelected()
+                                ? Boolean.FALSE : Boolean.TRUE,
+                            ((JCheckBox)editor).isSelected()
+                                ? Boolean.TRUE : Boolean.FALSE);
+                    ((JCheckBox)editor).transferFocus();
+                }
+            });
+        }
+        
+        public Object getValue() {
+            return ((JCheckBox)editor).isSelected() ? Boolean.TRUE : Boolean.FALSE;
+        }
+        
+        public void setValue(Object value) {
+            ((JCheckBox)editor).setSelected(Boolean.TRUE.equals(value));
+        }
+        
+    }
+
     /*
     * @(#)XmlUtil.java
     *
