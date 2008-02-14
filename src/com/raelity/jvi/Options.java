@@ -214,15 +214,15 @@ public final class Options {
                     + " often the result of IDE actions invoked external"
                     + " to jVi.");
     
-    createColorOption(selectColor, new Color(0xffe588)); // a light orange
+    createColorOption(selectColor, new Color(0xffe588), false); //a light orange
     setupOptionDesc(platformList, selectColor, "'hl-visual' color",
             "The color used for a visual mode selection.");
     
-    createColorOption(selectFgColor, new Color(0x000000)); // black
+    //createColorOption(selectFgColor, new Color(0x000000)); // black
+    createColorOption(selectFgColor, null, true); // default is no color
     setupOptionDesc(platformList, selectFgColor, "'hl-visual' foreground color",
             "The color used for a visual mode selection foreground.");
-    // Hide this until there's a way to specify "default"
-    setExpertHidden(selectFgColor, false, true);
+    setExpertHidden(selectFgColor, false, false);
 
     G.isClassicUndo = createBooleanOption(classicUndoOption, true);
     setupOptionDesc(platformList, classicUndoOption, "classic undo",
@@ -293,7 +293,8 @@ public final class Options {
             "Influences the working of <BS>, <Del> during insert."
             + "\n  0 - no special handling."
             + "\n  1 - allow backspace over <EOL>."
-            + "\n  2 - allow backspace over start of insert.");
+            + "\n  2 - allow backspace over start of insert.",
+            new String[] { "0", "1", "2"});
     
     G.p_smd = createBooleanOption(showMode, true);
     setupOptionDesc(generalList, showMode, "'showmode' 'smd'",
@@ -349,7 +350,8 @@ public final class Options {
     setupOptionDesc(generalList, selection, "'selection' 'sel'",
             "This option defines the behavior of the selection."
             + " It is only used in Visual and Select mode."
-            + "Possible values: 'old', 'inclusive', 'exclusive'");
+            + "Possible values: 'old', 'inclusive', 'exclusive'",
+            new String[] {"old", "inclusive", "exclusive"});
     setExpertHidden(selection, true, false);
     
     G.p_slm = createStringOption(selectMode, "",
@@ -370,7 +372,8 @@ public final class Options {
     setupOptionDesc(generalList, selectMode, "'selectmode' 'slm'",
             "This is a comma separated list of words, which specifies when to"
             + " start Select mode instead of Visual mode, when a selection is"
-            + " started. Possible values: 'mouse', key' or 'cmd'");
+            + " started. Possible values: 'mouse', key' or 'cmd'",
+            new String[] {"mouse", "key", "cmd"});
     setExpertHidden(selectMode, true, true);
 
     /////////////////////////////////////////////////////////////////////
@@ -705,16 +708,18 @@ public final class Options {
   }
   
   static public ColorOption createColorOption(String name,
-                                              Color defaultValue) {
-      return createColorOption(name, defaultValue, null);
+                                              Color defaultValue,
+                                              boolean permitNull) {
+      return createColorOption(name, defaultValue, permitNull, null);
   }
 
   static public ColorOption createColorOption(String name,
                                               Color defaultValue,
+                                              boolean permitNull,
                                               ColorOption.Validator valid) {
     if(optionsMap.get(name) != null)
         throw new IllegalArgumentException("Option " + name + "already exists");
-    ColorOption opt = new ColorOption(name, defaultValue, valid);
+    ColorOption opt = new ColorOption(name, defaultValue, permitNull, valid);
     optionsMap.put(name, opt);
     return opt;
   }
@@ -760,6 +765,12 @@ public final class Options {
   
   private static void setupOptionDesc(List<String> optionsGroup, String name,
                                       String displayName, String desc) {
+    setupOptionDesc(optionsGroup, name, displayName, desc, null);
+  }
+  
+  private static void setupOptionDesc(List<String> optionsGroup, String name,
+                                      String displayName, String desc,
+                                      String[] tags) {
     Option opt = optionsMap.get(name);
     if(opt != null) {
       if(optionsGroup != null) {
@@ -770,6 +781,7 @@ public final class Options {
       }
       opt.desc = desc;
       opt.displayName = displayName;
+      opt.tags = tags;
     } else {
       throw new Error("Unknown option: " + name);
     }
