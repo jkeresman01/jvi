@@ -40,19 +40,29 @@ public abstract class Option {
     protected String defaultValue;
     protected boolean fExpert;
     protected boolean fHidden;
+    protected String[] tags; // see PropertyEditor.getTags
     
     protected boolean fPropogate; // used in logic, not part of option type
     
     public Option(String key, String defaultValue) {
+        this(key, defaultValue, true);
+    }
+
+    public Option(String key, String defaultValue, boolean doInit) {
 	name = key;
 	this.defaultValue = defaultValue;
-	String initialValue = Options.getPrefs().get(key, defaultValue);
 	fExpert = false;
         fHidden = false;
+        if(doInit)
+            initialize();
+    }
 
+    protected void initialize() {
 	fPropogate = false;
+	String initialValue = Options.getPrefs().get(name, defaultValue);
 	setValue(initialValue);
 	fPropogate = true;
+
     }
 
     public abstract void setValue(String value);
@@ -95,6 +105,10 @@ public abstract class Option {
     
     public void setExpert(boolean f) {
         fExpert = f;
+    }
+
+    public String[] getTags() {
+        return tags;
     }
 
     /**
@@ -179,13 +193,19 @@ public abstract class Option {
     public static class ColorOption extends Option {
         private Validator validator;
         Color value;
+        private boolean permitNull;
         
         public ColorOption(String key, Color defaultValue) {
-            this(key, defaultValue, null);
+            this(key, defaultValue, false, null);
         }
         
-        public ColorOption(String key, Color defaultValue, Validator validator) {
-            super(key, xformToString(defaultValue));
+        public ColorOption(String key,
+                           Color defaultValue,
+                           boolean permitNull,
+                           Validator validator) {
+            super(key, xformToString(defaultValue), false); // don't initialize
+            this.permitNull = permitNull;
+            initialize(); // ok, initialize now that permitNull is set
             if(validator == null) {
                 // The default validation accepts everything
                 validator = new Validator() {
@@ -201,8 +221,26 @@ public abstract class Option {
         public final Color getColor() {
             return value;
         }
+
+        public boolean isPermitNull() {
+            return permitNull;
+        }
+
+        public final Color decode(String s) {
+            Color color;
+            if(s.equals("")) {
+               if(permitNull)
+                   color = null;
+               else
+                   color = Color.decode(defaultValue);
+            } else
+                color = Color.decode(s);
+            return color;
+        }
         
         public static String xformToString(Color c) {
+            if(c == null)
+                return "";
             return String.format("0x%x", c.getRGB() & 0xffffff);
         }
 
@@ -222,9 +260,9 @@ public abstract class Option {
         */
         @Override
         public void setValue(String newValue) throws IllegalArgumentException {
-            setColor(Color.decode(newValue));
+            setColor(decode(newValue));
         }
-        
+
         @Override
         public void validate(Color val) throws PropertyVetoException {
             validator.validate(val);
