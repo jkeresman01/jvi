@@ -392,8 +392,11 @@ public class Edit {
             // case Ctrl(']'): // Tag name completion after ^X
             // case Ctrl('F'): // File name completion after ^X
             // case Ctrl('L'): // Whole line completion after ^X
-            // case Ctrl('P'): // Do previous pattern completion
-            // case Ctrl('N'): // Do next pattern completion
+
+          case 0x1f & 'P': // Do previous pattern completion
+          case 0x1f & 'N': // Do next pattern completion
+            ins_complete(c);
+            break normal_char;
 
           case 0x1f & 'Y': // copy from previous line or scroll down
           case 0x1f & 'E': // copy from next line	   or scroll up
@@ -753,6 +756,20 @@ public class Edit {
       vim_free(new_line);
     }
      ************************************************************/
+  }
+
+  /**
+   * Ctrl-N, Ctrl-P handling
+   * @param c which one.
+   */
+  private static void ins_complete(char c) {
+    ViTextView.WMOP op = null;
+    if(c == (0x1f & 'N'))
+      op = ViTextView.WMOP.NEXT_WORD_MATCH;
+    else if(c == (0x1f & 'P'))
+      op = ViTextView.WMOP.PREV_WORD_MATCH;
+    if(op != null)
+      G.curwin.wordMatchOperation(op);
   }
   
   /**

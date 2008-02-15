@@ -222,7 +222,7 @@ public final class Options {
     createColorOption(selectFgColor, null, true); // default is no color
     setupOptionDesc(platformList, selectFgColor, "'hl-visual' foreground color",
             "The color used for a visual mode selection foreground.");
-    setExpertHidden(selectFgColor, false, false);
+    setExpertHidden(selectFgColor, false, true);
 
     G.isClassicUndo = createBooleanOption(classicUndoOption, true);
     setupOptionDesc(platformList, classicUndoOption, "classic undo",

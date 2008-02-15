@@ -441,6 +441,10 @@ public void undo(){
   public void foldOperation(int op) {
     Util.vim_beep();
   }
+  
+  public void wordMatchOperation(WMOP op) {
+    Util.vim_beep();
+  }
 
   public void tabOperation(TABOP op, int count) {
       Util.vim_beep();

@@ -65,6 +65,8 @@ public interface ViTextView extends ViOptionBag {
 
   /** move to other tab */
   public enum TABOP { NEXT_TAB, PREV_TAB }
+
+  public enum WMOP { NEXT_WORD_MATCH, PREV_WORD_MATCH }
   
   //
   // First the methods that make this look like a window
@@ -205,6 +207,8 @@ public interface ViTextView extends ViOptionBag {
   
   /** Perform the fold operation.  */
   public void foldOperation(int op);
+
+  public void wordMatchOperation(WMOP op);
 
   /** move to other file tab.<br/>
    * For NEXT,PREV if count == 0 then neighboring tab;
