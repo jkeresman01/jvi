@@ -58,6 +58,9 @@ import com.raelity.jvi.*;
 import com.raelity.jvi.ViTextView.TAGOP;
 import java.awt.AWTKeyStroke;
 
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
+import java.util.List;
 import static com.raelity.jvi.Constants.*;
 import static com.raelity.jvi.KeyDefs.*;
 import java.util.Map;
@@ -361,6 +364,15 @@ public class DefaultViFactory implements ViFactory {
     ViTextView tv = ViManager.getViTextView(editorPane);
     return tv.getWindow();
   }
+
+    
+    public PropertyDescriptor createPropertyDescriptor(String optName,
+                                                          String methodName,
+                                                          Class clazz)
+    throws IntrospectionException {
+        return OptionsBeanBase.createPropertyDescriptor(
+                optName, methodName, clazz);
+    }
 
   public ViCmdEntry createCmdEntry(int type) {
     // ViCmdEntry cmdEntry = new DefaultCmdEntry(cmdLine);
