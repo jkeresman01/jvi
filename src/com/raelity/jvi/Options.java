@@ -80,7 +80,8 @@ public final class Options {
       return options;
   }
   
-  public enum Category { DEBUG, MODIFY, GENERAL, CURSOR_WRAP }
+  public enum Category { PLATFORM, GENERAL, MODIFY, SEARCH, CURSOR_WRAP,
+                         PROCESS, DEBUG }
   
   public static final String commandEntryFrame = "viCommandEntryFrameOption";
   public static final String redoTrack = "viRedoTrack";
@@ -167,7 +168,7 @@ public final class Options {
   static List<String>modifyList = new ArrayList<String>();
   static List<String>searchList = new ArrayList<String>();
   static List<String>cursorWrapList = new ArrayList<String>();
-  static List<String>externalProcessList = new ArrayList<String>();
+  static List<String>processList = new ArrayList<String>();
   static List<String>debugList = new ArrayList<String>();
 
   static Preferences prefs;
@@ -222,7 +223,7 @@ public final class Options {
     createColorOption(selectFgColor, null, true); // default is no color
     setupOptionDesc(platformList, selectFgColor, "'hl-visual' foreground color",
             "The color used for a visual mode selection foreground.");
-    setExpertHidden(selectFgColor, false, true);
+    setExpertHidden(selectFgColor, false, false);
 
     G.isClassicUndo = createBooleanOption(classicUndoOption, true);
     setupOptionDesc(platformList, classicUndoOption, "classic undo",
@@ -575,38 +576,38 @@ public final class Options {
       defaultFlag = "/c";
 
     G.p_sh = createStringOption(shell, defaultShell);
-    setupOptionDesc(externalProcessList, shell, "'shell' 'sh'",
+    setupOptionDesc(processList, shell, "'shell' 'sh'",
             "Name of shell to use for ! and :! commands.  (default $SHELL " +
             "or \"sh\", MS-DOS and Win32: \"command.com\" or \"cmd.exe\").  " +
             "When changing also check 'shellcmndflag'.");
 
     G.p_shcf = createStringOption(shellCmdFlag, defaultFlag);
-    setupOptionDesc(externalProcessList, shellCmdFlag, "'shellcmdflag' 'shcf'",
+    setupOptionDesc(processList, shellCmdFlag, "'shellcmdflag' 'shcf'",
             "Flag passed to shell to execute \"!\" and \":!\" commands; " +
             "e.g., \"bash.exe -c ls\" or \"command.com /c dir\" (default: " +
             "\"-c\", MS-DOS and Win32, when 'shell' does not contain \"sh\" " +
             "somewhere: \"/c\").");
 
     G.p_sxq = createStringOption(shellXQuote, defaultXQuote);
-    setupOptionDesc(externalProcessList, shellXQuote, "'shellxquote' 'sxq'",
+    setupOptionDesc(processList, shellXQuote, "'shellxquote' 'sxq'",
             "Quoting character(s), put around the commands passed to the " +
             "shell, for the \"!\" and \":!\" commands (default: \"\"; for " +
             "Win32, when 'shell' contains \"sh\" somewhere: \"\\\"\").");
     
     G.p_ssl = createBooleanOption(shellSlash, false);
-    setupOptionDesc(externalProcessList, shellSlash, "'shellslash' 'ssl'",
+    setupOptionDesc(processList, shellSlash, "'shellslash' 'ssl'",
             "When set, a forward slash is used when expanding file names." +
             "This is useful when a Unix-like shell is used instead of " +
             "command.com or cmd.exe.");
     
     G.p_ep = createStringOption(equalProgram, "");
-    setupOptionDesc(externalProcessList, equalProgram, "'equalprg' 'ep'",
+    setupOptionDesc(processList, equalProgram, "'equalprg' 'ep'",
             "External program to use for \"=\" command (default \"\").  " +
             "When this option is empty the internal formatting functions " +
             "are used.");
 
     G.p_fp = createStringOption(formatProgram, "fmt -w " + twMagic);
-    setupOptionDesc(externalProcessList, formatProgram, "'formatprg' 'fp'",
+    setupOptionDesc(processList, formatProgram, "'formatprg' 'fp'",
             "The name of an external program used to format lines selected " +
             "with 'gq' operator (default \"fmt\").  The program must take " +
             "input on stdin and produce output to stdout.  In Unix, " +
@@ -746,15 +747,23 @@ public final class Options {
     return Collections.unmodifiableList(l);
   }
 
+  public static List<String> getOptionList(Category category) {
+    List<String> catList = null;
+    switch(category) {
+      case PLATFORM:    catList = platformList; break;
+      case GENERAL:     catList = generalList; break;
+      case MODIFY:      catList = modifyList; break;
+      case SEARCH:      catList = searchList; break;
+      case CURSOR_WRAP: catList = cursorWrapList; break;
+      case PROCESS:     catList = processList; break;
+      case DEBUG:       catList = debugList; break;
+    }
+    return Collections.unmodifiableList(catList);
+  }
+
   public static void setupOptionDesc(Category category, String name,
                                      String displayName, String desc) {
-      List<String> catList = null;
-      switch(category) {
-          case CURSOR_WRAP: catList = cursorWrapList; break;
-          case DEBUG:       catList = debugList; break;
-          case MODIFY:        catList = modifyList; break;
-          case GENERAL:     catList = generalList; break;
-      }
+      List<String> catList = getOptionList(category);
       setupOptionDesc(catList, name, displayName, desc);
   }
 
