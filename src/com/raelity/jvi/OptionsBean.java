@@ -9,21 +9,21 @@ public class OptionsBean {
     static public class Platform extends OptionsBeanBase {
 	public Platform() {
 	    super(Platform.class, "jVi Options and Configuration",
-		  Options.platformList);
+		  Options.Category.PLATFORM);
         }
     }
     
     static public class General extends OptionsBeanBase {
 	public General() {
 	    super(General.class, "General Options",
-		  Options.generalList);
+		  Options.Category.GENERAL);
         }
     }
     
     static public class Search extends OptionsBeanBase {
 	
 	public Search() {
-	    super(Search.class, "Search Options", Options.searchList);
+	    super(Search.class, "Search Options", Options.Category.SEARCH);
 	}
     }
     
@@ -31,7 +31,7 @@ public class OptionsBean {
 	
 	public Modify() {
 	    super(Modify.class, "File Modifications Options",
-                  Options.modifyList);
+                  Options.Category.MODIFY);
 	}
     }
     
@@ -39,7 +39,7 @@ public class OptionsBean {
 	
 	public CursorWrap() {
 	    super(CursorWrap.class, "Cursor Wrap Options",
-                  Options.cursorWrapList);
+                  Options.Category.CURSOR_WRAP);
 	}
     }
     
@@ -47,14 +47,14 @@ public class OptionsBean {
 	
 	public ExternalProcess() {
 	  super(ExternalProcess.class, "External Process Options",
-                Options.externalProcessList);
+                Options.Category.PROCESS);
 	}
     }
 
     static public class Debug extends OptionsBeanBase {
 	
 	public Debug() {
-	    super(Debug.class, "Debug Output", Options.debugList);
+	    super(Debug.class, "Debug Output", Options.Category.DEBUG);
 	}
     }
 }

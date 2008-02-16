@@ -29,7 +29,6 @@
  */
 package com.raelity.jvi;
 
-import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
 import java.util.Set;
@@ -37,6 +36,9 @@ import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.Action;
 import com.raelity.jvi.ViTextView.TAGOP;
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
+import java.util.List;
 
 /**
  * This provides Vi the items it needs to interface with
@@ -152,6 +154,19 @@ public interface ViFactory {
    * so we need a way to get back the original action.
    */
   public ActionListener xlateKeymapAction(ActionListener act);
+
+  /**
+   * Create a property descriptor. Typically for an option bean.
+   * @param optName
+   * @param methodName
+   * @param clazz
+   * @return 
+   * @throws java.beans.IntrospectionException
+   */
+  public PropertyDescriptor createPropertyDescriptor(String optName,
+                                                     String methodName,
+                                                     Class clazz)
+  throws IntrospectionException;
 
   /**
    * A command entry object will be created if needed.

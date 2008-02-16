@@ -45,6 +45,7 @@ import java.beans.PropertyEditorSupport;
  */
 public class OptionsBeanBase extends SimpleBeanInfo {
     private Class clazz;
+    private Options.Category category;
     private List<String> optionsList;
     private String displayName;
     
@@ -54,10 +55,11 @@ public class OptionsBeanBase extends SimpleBeanInfo {
     
     /** Creates a new instance of OptionsBeanBase */
     public OptionsBeanBase(Class clazz, String displayName,
-                           List<String> optionsList) {
+                           Options.Category category) {
         this.clazz = clazz;
         this.displayName = displayName;
-        this.optionsList = optionsList;
+        this.category = category;
+        this.optionsList = Options.getOptionList(category);
 
         optionsListener = new OptionsListener();
         //Options.addPropertyChangeListener(new OptionsListener());
@@ -135,7 +137,8 @@ public class OptionsBeanBase extends SimpleBeanInfo {
                 d.setDisplayName("jVi Version");
             } else {
                 try {
-                    d = createPropertyDescriptor(name, name, clazz);
+                    d = ViManager.getViFactory()
+                            .createPropertyDescriptor(name, name, clazz);
                 } catch (IntrospectionException ex) {
                     ex.printStackTrace();
                     continue;
@@ -145,10 +148,10 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	}
 	return descriptors;
     }
-    
-    protected PropertyDescriptor createPropertyDescriptor(String optName,
-                                                          String methodName,
-                                                          Class clazz)
+
+    public static  PropertyDescriptor createPropertyDescriptor(String optName,
+                                                               String methodName,
+                                                               Class clazz)
     throws IntrospectionException {
         PropertyDescriptor d = null;
         Option opt = Options.getOption(optName);
