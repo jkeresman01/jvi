@@ -266,6 +266,7 @@ public class Search {
       else
         incrSearchSucceed = true;
     } finally {
+      Normal.v_updateVisualState();
       ViManager.setJViBusy(false);
     }
   }

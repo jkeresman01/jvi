@@ -1298,6 +1298,7 @@ public final class Options {
   static void newSearch() {
     nohDisableHighlight = false;
     ViManager.updateHighlightSearchState();
+    Normal.v_updateVisualState();
   }
 }
 
