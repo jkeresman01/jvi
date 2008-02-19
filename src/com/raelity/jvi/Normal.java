@@ -2874,6 +2874,8 @@ middle_code:
     
     Options.newSearch();
 
+    return;
+
     /* *********************************************************
     OPARG	*oap = cap.oap;
     int		i;
@@ -3138,25 +3140,6 @@ static private void nv_findpar(CMDARG cap, int dir)
   static void v_updateVisualState() {
     if(!G.VIsual_active) {
       G.curbuf.clearVisualState();
-    }
-    
-    if(G.VIsual_active
-            && G.curwin.getCaretPosition() != G.curwin.getMarkPosition()) {
-      // convert a selection into a visual mode thing,
-      // set visual start, G.VIsual, to the offset
-      int offset = G.curwin.getMarkPosition();
-      
-      //if(!G.curbuf.updateVisualSelectState(offset)) return;
-      
-      // convert a selection into a visual mode thing,
-      // set visual start, G.VIsual, to the offset
-      ViFPOS fpos = G.curwin.getWCursor().copy();
-      fpos.set(G.curbuf.getLineNumber(offset),
-              G.curbuf.getColumnNumber(offset));
-      G.VIsual = fpos;
-      
-      // converting a selection into visual mode, clear the selection
-      G.curwin.clearSelect();
     }
     
     displaySelectState(G.curbuf.getVisualSelectStateString());
@@ -3432,10 +3415,34 @@ static private void nv_findpar(CMDARG cap, int dir)
                   may_start_select('c');
               n_start_visual_mode(cap.cmdchar);
               /* update the screen cursor position */
+              convertSelectionToVisual();
               v_updateVisualState();
           }
       }
       Misc.ui_cursor_shape();
+  }
+
+  /**
+   * This is used when initiating visual mode. If there is a
+   * selection then use it to set the visual mode boundaries.
+   */
+  static private void convertSelectionToVisual() {
+    if(G.VIsual_active
+            && G.curwin.getCaretPosition() != G.curwin.getMarkPosition()) {
+      // convert a selection into a visual mode thing,
+      // set visual start, G.VIsual, to the offset
+      int offset = G.curwin.getMarkPosition();
+      
+      // convert a selection into a visual mode thing,
+      // set visual start, G.VIsual, to the offset
+      ViFPOS fpos = G.curwin.getWCursor().copy();
+      fpos.set(G.curbuf.getLineNumber(offset),
+              G.curbuf.getColumnNumber(offset));
+      G.VIsual = fpos;
+      
+      // converting a selection into visual mode, clear the selection
+      G.curwin.clearSelect();
+    }
   }
   
   /*
