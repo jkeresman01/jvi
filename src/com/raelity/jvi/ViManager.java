@@ -106,7 +106,7 @@ public class ViManager {
   // 1.0.0.beta2 is NB vers 0.9.6.4
   // 1.0.0.beta3 is NB vers 0.9.7.5
   //
-  public static final jViVersion version = new jViVersion("1.1.3.beta3");
+  public static final jViVersion version = new jViVersion("1.1.4.x1");
   
   private static boolean enabled;
 
@@ -754,12 +754,18 @@ public class ViManager {
         return pos;
       }
 
-      if(pos != G.curwin.getCaretPosition() && !G.VIsual_active) {
-        G.VIsual_mode ='v';
-        G.VIsual_active = true;
-        G.VIsual = (FPOS) G.curwin.getWCursor().copy();
-        Misc.showmode();
-      }
+      //
+      // Don't automatically go into visual mode on a drag,
+      // vim does "SELECT" mode.
+      // But when in select mode would like to extend selection on arrow keys,
+      // which is also like vim.
+      //
+      // if(pos != G.curwin.getCaretPosition() && !G.VIsual_active) {
+      //   G.VIsual_mode ='v';
+      //   G.VIsual_active = true;
+      //   G.VIsual = (FPOS) G.curwin.getWCursor().copy();
+      //   Misc.showmode();
+      // }
 
       if(G.dbgMouse.getBoolean()) {
         System.err.println("mouseMoveDot(" + pos + ") "
