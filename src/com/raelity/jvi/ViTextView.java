@@ -66,7 +66,11 @@ public interface ViTextView extends ViOptionBag {
   /** move to other tab */
   public enum TABOP { NEXT_TAB, PREV_TAB }
 
+  /** word match opertations */
   public enum WMOP { NEXT_WORD_MATCH, PREV_WORD_MATCH }
+
+  /** open new line forward/backward */
+  public enum NLOP { NL_FORWARD, NL_BACKWARD }
   
   //
   // First the methods that make this look like a window
@@ -123,6 +127,9 @@ public interface ViTextView extends ViOptionBag {
 
   /** Insert new line at current position */
   public void insertNewLine();
+
+  /** Open line is like insertNewLine, but is does autoindent dance */
+  public void openNewLine(NLOP op);
 
   /** Insert tab at current position */
   public void insertTab();
@@ -261,6 +268,9 @@ public interface ViTextView extends ViOptionBag {
 
   /** */
   public int coladvanceCoord(int lineOffset, int col);
+
+  /** Reverse of getCoordLine, convert coord line to document line */
+  public int getBufferLineOffset(int line);
 
 
 

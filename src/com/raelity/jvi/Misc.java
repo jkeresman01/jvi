@@ -29,6 +29,7 @@
  */
 package com.raelity.jvi;
 
+import com.raelity.jvi.ViTextView.NLOP;
 import java.awt.event.KeyEvent;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.ClipboardOwner;
@@ -263,16 +264,13 @@ public class Misc implements ClipboardOwner {
   }
 
   /**
-   * open_line: Add a new line below or above the current line.
-   *<br>
-   * For VREPLACE mode, we only add a new line when we get to the end of the
-   * file, otherwise we just start replacing the next line.
-   *<p>
-   * Caller must take care of undo.  Since VREPLACE may affect any number of
-   * lines however, it may call u_save_cursor() again when starting to change a
-   * new line.
+   * open_line: Add a new line within, below or above the current line.
+   * <p>
+   * VREPLACE mode not supported.
    * </p><p>
-   * NOTE: for jVI position the cursor if needed and invoke insertNewLine
+   * For insert/replace put the newline wherever the cursor is. Otherwise,
+   * create an empty line either before or after the current line, according
+   * to dir.
    * </p>
    *
    * @return TRUE for success, FALSE for failure
@@ -280,36 +278,13 @@ public class Misc implements ClipboardOwner {
   static boolean open_line(int dir, boolean redraw, boolean del_spaces,
 		    int old_indent)
   {
-    boolean insert_mode = true;
-    final ViFPOS cursor = G.curwin.getWCursor();
-    if(G.State != INSERT && G.State != REPLACE) {
-      insert_mode = false;
-      if(dir == BACKWARD && cursor.getLine() == 1) {
-        // first set the caret position to 0 so that insert line on first line works as well
-	// set position just before new line of first line
-	G.curwin.setCaretPosition(0);
-        //cursor.setPosition(1, 0);
-	// Special case if BACKWARD and at position zero of document.
-	G.curwin.insertNewLine();
-	MySegment seg = G.curbuf.getLineSegment(1);
-	G.curwin.setCaretPosition(0 + coladvanceColumnIndex(MAXCOL, seg));
-        //cursor.setPosition(1, coladvanceColumnIndex(MAXCOL, seg));
-        G.did_ai = true;
-	return true;
-      }
-      // position cursor according to dir, probably an 'O' or 'o' command
-      int offset;
-      if(dir == FORWARD) {
-	offset = G.curbuf.getLineEndOffsetFromOffset(cursor.getOffset());
-      } else {
-	offset = G.curbuf.getLineStartOffsetFromOffset(cursor.getOffset());
-      }
-      // offset is after the newline where insert happens, backup the caret.
-      // After the insert newline, caret is ready for input on blank line
-      offset--;
-      G.curwin.setCaretPosition(offset);
+    if(G.State == INSERT || G.State == REPLACE) {
+      // in input/insert mode, put the new line wherever we are
+      G.curwin.insertNewLine();
+      G.did_ai = true;
+      return true;
     }
-    G.curwin.insertNewLine();
+    G.curwin.openNewLine(dir == FORWARD ? NLOP.NL_FORWARD : NLOP.NL_BACKWARD);
     G.did_ai = true;
     return true;
   }

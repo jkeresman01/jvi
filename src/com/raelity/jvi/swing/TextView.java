@@ -41,6 +41,7 @@ import com.raelity.jvi.Util;
 import com.raelity.jvi.MutableInt;
 import com.raelity.jvi.Window;
 import com.raelity.jvi.*;
+import com.raelity.text.TextUtil.MySegment;
 import java.awt.Color;
 import java.awt.Rectangle;
 
@@ -371,6 +372,57 @@ public class TextView implements ViTextView {
       getBuffer().insertText(offset, s);
   }
   
+  /**
+   * <p>
+   * Create an empty line, autoindented, either before or after current line.
+   * This is simple algorithm; but it ignores guarded text issues
+   * and code folding subtlties.
+   * </p>
+   * In this example, either the cursor was on line1 and do a NL_FORWARD,
+   * or cursor on line2 and NL_BACKWARD.
+   * The cursor is shown as '|' positioned where the newLine action will
+   * open up a clean line with proper autoindent.
+   * <pre>
+   *     line1|\n
+   *     line2\n
+   * </pre>
+   * This has problems if line1 is guarded text (write protected), since
+   * it modifies that line. And issues with folding in that it will open
+   * the fold since a folded line is modified.
+   */
+  public void openNewLine(NLOP op) {
+      final ViFPOS cursor = getWCursor();
+      if(op == NLOP.NL_BACKWARD && cursor.getLine() == 1) {
+	// Special case if BACKWARD and at position zero of document.
+        // set the caret position to 0 so that insert line on first line
+        // works as well, set position just before new line of first line
+	setCaretPosition(0);
+        insertNewLine();
+
+	MySegment seg = getBuffer().getLineSegment(1);
+	setCaretPosition(0 + Misc.coladvanceColumnIndex(MAXCOL, seg));
+        return;
+      }
+
+      int offset;
+      if(op == NLOP.NL_FORWARD) {
+          // after the current line,
+          // handle current line might be a fold
+          // int cmpOffset = getBuffer()
+          //                   .getLineEndOffsetFromOffset(cursor.getOffset());
+          offset = G.curwin.getBufferLineOffset(
+                  G.curwin.getCoordLine(cursor.getLine()) + 1);
+      } else {
+          // before the current line
+          offset = getBuffer().getLineStartOffsetFromOffset(cursor.getOffset());
+      }
+      // offset is after the newline where insert happens, backup the caret.
+      // After the insert newline, caret is ready for input on blank line
+      offset--;
+      setCaretPosition(offset);
+      insertNewLine();
+  }
+  
   
 ///////////////////////////////////////////////////////////////////////
 //
@@ -579,6 +631,31 @@ public void undo(){
     if(G.dbgCoordSkip.getBoolean())
       System.err.println("getCoordLine: " + coordLine);
     return coordLine;
+  }
+  
+  public int getBufferLineOffset(int coordLine) {
+      if (!G.isCoordSkip.getBoolean()) {
+          if(coordLine > getBuffer().getLineCount()) {
+            return getBuffer().getLength() + 1;
+          }
+          return getBuffer().getLineStartOffset(coordLine);
+      }
+      Point p = new Point(point0);
+      p.translate(0, (coordLine - 1) * cache.getFheight());
+      int offset = getEditorComponent().viewToModel(p);
+      Rectangle r1 = null;
+      try {
+          r1 = getEditorComponent().modelToView(offset);
+      } catch (BadLocationException ex) {
+          // should be impossible since viewtomodel return should be valid
+          ex.printStackTrace();
+      }
+      if(p.y > r1.y) {
+          // past end of file
+          // System.err.println("past EOF: p " + p + ", r1 " + r1);
+          offset = getBuffer().getLength() + 1;
+      }
+      return offset;
   }
 
   private int getInternalCoordLine(int line) {
