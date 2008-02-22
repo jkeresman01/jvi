@@ -278,15 +278,17 @@ public class Misc implements ClipboardOwner {
   static boolean open_line(int dir, boolean redraw, boolean del_spaces,
 		    int old_indent)
   {
+    boolean ok = true;
     if(G.State == INSERT || G.State == REPLACE) {
       // in input/insert mode, put the new line wherever we are
       G.curwin.insertNewLine();
-      G.did_ai = true;
-      return true;
+    } else {
+      ok = G.curwin.openNewLine(dir == FORWARD
+                                ? NLOP.NL_FORWARD : NLOP.NL_BACKWARD);
     }
-    G.curwin.openNewLine(dir == FORWARD ? NLOP.NL_FORWARD : NLOP.NL_BACKWARD);
-    G.did_ai = true;
-    return true;
+    if(ok)
+      G.did_ai = true;
+    return ok;
   }
 
   /**
@@ -1581,7 +1583,7 @@ public class Misc implements ClipboardOwner {
   /**
    * op_delete - handle a delete operation
    */
-  static void op_delete(OPARG oap) {
+  static boolean op_delete(OPARG oap) {
     Normal.do_xop("op_delete");
 
     boolean		did_yank = true;
@@ -1598,7 +1600,7 @@ public class Misc implements ClipboardOwner {
     if (oap.empty)
     {
       Normal.u_save_cursor();
-      return;
+      return true;
     }
 
     // If no register specified, and "unnamed" in 'clipboard', use * register
@@ -1642,10 +1644,15 @@ public class Misc implements ClipboardOwner {
       // It's an error to operate on an empty region, when 'E' inclucded in
       // 'cpoptions' (Vi compatible).
       //
-      if (Util.vim_strchr(G.p_cpo, CPO_EMPTYREGION) != null)
+      if (Util.vim_strchr(G.p_cpo, CPO_EMPTYREGION) != null) {
 	Util.beep_flush();
-      return;
+        return false;
+      }
+      return true;
     }
+
+    if(!valid_op_range(oap))
+      return false;
 
     //
     // Do a yank of whatever we're about to delete.
@@ -1657,7 +1664,7 @@ public class Misc implements ClipboardOwner {
 	// check for read-only register
 	if (!valid_yank_reg(oap.regname, true)) {
 	  Util.beep_flush();
-	  return;
+	  return false;
 	}
 	get_yank_register(oap.regname, true); // yank into specif'd reg.
 	if (op_yank(oap, true, false) == OK)   // yank without message
@@ -1827,6 +1834,41 @@ public class Misc implements ClipboardOwner {
               
     G.curbuf.b_op_end.setMark(opEndPos);
     G.curbuf.b_op_start.setMark(opStartPos);
+    return true;
+  }
+
+  /**
+   * Verify the delete can be performed. In particular,
+   * check for guarded areas.
+   * @param oap specifies the region to delete
+   * @return true if the everything can be deleted
+   */
+  static boolean valid_op_range(OPARG oap) {
+    ViFPOS start = oap.start;
+    ViFPOS end = oap.end;
+    boolean isValid = true;
+
+    if(start.getOffset() >= end.getOffset()) {
+      // don't believe this is needed
+      start = oap.end;
+      end = oap.start;
+      System.err.println("SWITCH END<-->START");
+    }
+
+    // check for guarded regions,
+    // just check the first char position of each line
+    for(int line = start.getLine(), endLine = Math.min(end.getLine(),
+                                                       G.curbuf.getLineCount());
+            line <= endLine; line++) {
+      //System.err.println("CHECK LINE: " + line);
+      if(!Edit.canEdit(G.curwin, G.curbuf, G.curbuf.getLineStartOffset(line))) {
+        isValid = false;
+        //System.err.println("INVLID LINE: " + line);
+        break;
+      }
+    }
+
+    return isValid;
   }
 
   /**
@@ -1980,9 +2022,8 @@ public class Misc implements ClipboardOwner {
     if (oap.motion_type == MLINE) {
       l = 0;
     }
-    // if (op_delete(oap) == FAIL)
-    //   return;
-    op_delete(oap);
+    if (!op_delete(oap))
+      return;
     
     final ViFPOS cursor = G.curwin.getWCursor();
     if ((l > cursor.getColumn()) && !Util.lineempty(cursor.getLine())) //&& !virtual_op
@@ -2000,6 +2041,8 @@ public class Misc implements ClipboardOwner {
     }
     
     Edit.edit(NUL, false, 1);
+    if(!Normal.editBusy)
+      StateOpSplit.release();
   }
 
   static void finishOpChange() {
@@ -4161,142 +4204,135 @@ public class Misc implements ClipboardOwner {
     }
     
     static void op_insert(OPARG oap, int count1) {
-        int pre_textlen = 0;
-        block_def   bd = new block_def();
-        final ViFPOS cursor = G.curwin.getWCursor();
-        int i;
-        
-        /* edit() changes this - record it for OP_APPEND */
-        bd.is_MAX = (G.curwin.getWCurswant() == MAXCOL);
-        
-        /* vis block is still marked. Get rid of it now. */
-        cursor.setLine(oap.start.getLine());
-        update_screen(INVERTED);
-        
-        if (oap.block_mode)
-        {
-            /* Get the info about the block before entering the text */
-            block_prep(oap, bd, oap.start.getLine(), true);
-            //(long)STRLEN(ml_get(oap.start.lnum));
-            CharSequence firstline = Util.ml_get(oap.start.getLine())
+      if(!valid_op_range(oap))
+        return;
+      int pre_textlen = 0;
+      block_def   bd = new block_def();
+      final ViFPOS cursor = G.curwin.getWCursor();
+      int i;
+      
+      /* edit() changes this - record it for OP_APPEND */
+      bd.is_MAX = (G.curwin.getWCurswant() == MAXCOL);
+      
+      /* vis block is still marked. Get rid of it now. */
+      cursor.setLine(oap.start.getLine());
+      update_screen(INVERTED);
+      
+      if (oap.block_mode) {
+        /* Get the info about the block before entering the text */
+        block_prep(oap, bd, oap.start.getLine(), true);
+        //(long)STRLEN(ml_get(oap.start.lnum));
+        CharSequence firstline = Util.ml_get(oap.start.getLine())
                 .subSequence(bd.textcol, Util.lineLength(oap.start.getLine()));
-            
-            if (oap.op_type == OP_APPEND)
-                firstline = firstline.subSequence(bd.textlen, firstline.length());
-            pre_textlen = firstline.length();
-            
-            StateOpSplit.acquire(StateSplitOwner.SPLIT_INSERT);
-            stateOpSplit.oap = oap.copy();
-            stateOpSplit.bd = bd;
-            stateOpSplit.pre_textlen = pre_textlen;
-        }
         
         if (oap.op_type == OP_APPEND)
-        {
-            if (oap.block_mode)
-            {
-                /* Move the cursor to the character right of the block. */
-                G.curwin.setWSetCurswant(true);
-                int tcol = cursor.getColumn();
-                MySegment seg = Util.ml_get_curline();
-                while (seg.array[seg.offset + tcol] != '\n'
-                        && (tcol < bd.textcol + bd.textlen))
-                    tcol++;
-                cursor.setColumn(tcol);
-                if (bd.is_short && !bd.is_MAX) {
+          firstline = firstline.subSequence(bd.textlen, firstline.length());
+        pre_textlen = firstline.length();
+        
+        StateOpSplit.acquire(StateSplitOwner.SPLIT_INSERT);
+        stateOpSplit.oap = oap.copy();
+        stateOpSplit.bd = bd;
+        stateOpSplit.pre_textlen = pre_textlen;
+      }
+      
+      if (oap.op_type == OP_APPEND) {
+        if (oap.block_mode) {
+          /* Move the cursor to the character right of the block. */
+          G.curwin.setWSetCurswant(true);
+          int tcol = cursor.getColumn();
+          MySegment seg = Util.ml_get_curline();
+          while (seg.array[seg.offset + tcol] != '\n'
+                  && (tcol < bd.textcol + bd.textlen))
+            tcol++;
+          cursor.setColumn(tcol);
+          if (bd.is_short && !bd.is_MAX) {
                     /* First line was too short, make it longer and adjust the
                      * values in "bd". */
-                    if (Normal.u_save_cursor() == FAIL)
-                        return;
-                    for (i = 0; i < bd.endspaces; ++i)
-                        ins_char(' ');
-                    bd.textlen += bd.endspaces;
-                }
-            }
-            else {
-                cursor.set(oap.end);//.w_cursor = oap.end;
-                check_cursor_col();
-                /* Works just like an 'i'nsert on the next character. */
-                if (!Util.lineempty(cursor.getLine())
-                        && oap.start_vcol != oap.end_vcol)
-                    inc_cursor();
-            }
+            if (Normal.u_save_cursor() == FAIL)
+              return;
+            for (i = 0; i < bd.endspaces; ++i)
+              ins_char(' ');
+            bd.textlen += bd.endspaces;
+          }
+        } else {
+          cursor.set(oap.end);//.w_cursor = oap.end;
+          check_cursor_col();
+          /* Works just like an 'i'nsert on the next character. */
+          if (!Util.lineempty(cursor.getLine())
+                  && oap.start_vcol != oap.end_vcol)
+            inc_cursor();
         }
-        
-        Edit.edit(NUL, false, count1);
+      }
+      
+      Edit.edit(NUL, false, count1);
+      if(!Normal.editBusy)
+        StateOpSplit.release();
     }
 
-  static void finishOpInsert() {
-    OPARG       oap = stateOpSplit.oap;
-    block_def   bd = stateOpSplit.bd;
-    int         pre_textlen = stateOpSplit.pre_textlen;
-    StateOpSplit.release();
-
-    int		offset;
-    int		linenr;
-    int		ins_len;
-    CharSequence	firstline;
-    String      ins_text;
-    StringBuffer newp;
-    MySegment   oldp;
-
-
+    static void finishOpInsert() {
+      OPARG       oap = stateOpSplit.oap;
+      block_def   bd = stateOpSplit.bd;
+      int         pre_textlen = stateOpSplit.pre_textlen;
+      StateOpSplit.release();
+      
+      int		offset;
+      int		linenr;
+      int		ins_len;
+      CharSequence	firstline;
+      String      ins_text;
+      StringBuffer newp;
+      MySegment   oldp;
+      
+      
   /* if user has moved off this line, we don't know what to do, so do
   nothing */
-  if (G.curwin.getWCursor().getLine() != oap.start.getLine())
-    return;
-
-  if (oap.block_mode)
-  {
-    block_def bd2 = new block_def();
-
+      if (G.curwin.getWCursor().getLine() != oap.start.getLine())
+        return;
+      
+      if (oap.block_mode) {
+        block_def bd2 = new block_def();
+        
     /*
      * Spaces and tabs in the indent may have changed to other spaces and
      * tabs.  Get the starting column again and correct the lenght.
      * Don't do this when "$" used, end-of-line will have changed.
      */
-    block_prep(oap, bd2, oap.start.getLine(), true);
-    if (!bd.is_MAX || bd2.textlen < bd.textlen)
-    {
-      if (oap.op_type == OP_APPEND)
-      {
-        pre_textlen += bd2.textlen - bd.textlen;
-        if (bd2.endspaces != 0)
-          --bd2.textlen;
-      }
-      bd.textcol = bd2.textcol;
-      bd.textlen = bd2.textlen;
-    }
-
+        block_prep(oap, bd2, oap.start.getLine(), true);
+        if (!bd.is_MAX || bd2.textlen < bd.textlen) {
+          if (oap.op_type == OP_APPEND) {
+            pre_textlen += bd2.textlen - bd.textlen;
+            if (bd2.endspaces != 0)
+              --bd2.textlen;
+          }
+          bd.textcol = bd2.textcol;
+          bd.textlen = bd2.textlen;
+        }
+        
     /*
      * Subsequent calls to ml_get() flush the firstline data - take a
      * copy of the required string.
      */
-    firstline = Util.ml_get(oap.start.getLine())
+        firstline = Util.ml_get(oap.start.getLine())
                 .subSequence(bd.textcol, Util.lineLength(oap.start.getLine()));
-
-    if (oap.op_type == OP_APPEND)
-      firstline = firstline.subSequence(bd.textlen, firstline.length());
-    if ((ins_len = firstline.length() - pre_textlen) > 0)
-    {
-      //vim_strnsave(firstline, (int)ins_len);
-      ins_text = firstline.subSequence(0, ins_len).toString();
-      if (ins_text != null)
-      {
-        /* block handled here */
-        //if (u_save(oap.start.getLine(), (oap.end.getLine() + 1)) == OK)
-        block_insert(oap, ins_text, (oap.op_type == OP_INSERT), bd);
-
-        G.curwin.getWCursor().setColumn(oap.start.getColumn());
-        adjust_cursor();
-        //check_cursor();
-        //vim_free(ins_text);
+        
+        if (oap.op_type == OP_APPEND)
+          firstline = firstline.subSequence(bd.textlen, firstline.length());
+        if ((ins_len = firstline.length() - pre_textlen) > 0) {
+          //vim_strnsave(firstline, (int)ins_len);
+          ins_text = firstline.subSequence(0, ins_len).toString();
+          if (ins_text != null) {
+            /* block handled here */
+            //if (u_save(oap.start.getLine(), (oap.end.getLine() + 1)) == OK)
+            block_insert(oap, ins_text, (oap.op_type == OP_INSERT), bd);
+            
+            G.curwin.getWCursor().setColumn(oap.start.getColumn());
+            adjust_cursor();
+            //check_cursor();
+            //vim_free(ins_text);
+          }
+        }
       }
     }
-  }
-
-
-  }
     
     static void mch_memmove(StringBuffer dst, int dstIndex,
             CharSequence src, int srcIndex,
