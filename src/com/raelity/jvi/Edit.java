@@ -34,6 +34,7 @@ import javax.swing.text.Element;
 
 import com.raelity.text.TextUtil.MySegment;
 
+import javax.swing.SwingUtilities;
 import static com.raelity.jvi.KeyDefs.*;
 import static com.raelity.jvi.Constants.*;
 
@@ -69,6 +70,24 @@ public class Edit {
   static MutableInt count;
   static MutableBoolean inserted_space;
 
+  static boolean canEdit() {
+    return canEdit(G.curwin, G.curbuf, G.curwin.getCaretPosition());
+  }
+  public static boolean canEdit(final ViTextView tv, ViBuffer buf, int offset) {
+    if(buf.isGuarded(offset)) {
+      Util.vim_beep();
+      SwingUtilities.invokeLater(new Runnable() {
+        public void run() {
+          tv.getStatusDisplay().displayErrorMessage(
+                  "Can not modify write protected area."
+                  );
+        }
+      });
+      return false;
+    }
+    return true;
+  }
+
   /**
    * edit(): Start inserting text.
    *<ul>
@@ -98,6 +117,8 @@ public class Edit {
       ViManager.dumpStack("In edit with no undo pending");
     }
     if( ! Normal.editBusy) {
+      if(!canEdit())
+        return;
       Normal.editBusy = true;
       Normal.do_xop("edit");
       count = new MutableInt(count_arg);
