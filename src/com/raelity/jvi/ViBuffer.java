@@ -41,6 +41,9 @@ public interface ViBuffer {
     
     /** redo a change */
     public void redo();
+
+    /** a portion of a document may be write protected */
+    public boolean isGuarded(int offset);
     
     
     
