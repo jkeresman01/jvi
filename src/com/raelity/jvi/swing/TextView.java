@@ -390,18 +390,20 @@ public class TextView implements ViTextView {
    * it modifies that line. And issues with folding in that it will open
    * the fold since a folded line is modified.
    */
-  public void openNewLine(NLOP op) {
+  public boolean openNewLine(NLOP op) {
       final ViFPOS cursor = getWCursor();
       if(op == NLOP.NL_BACKWARD && cursor.getLine() == 1) {
-	// Special case if BACKWARD and at position zero of document.
-        // set the caret position to 0 so that insert line on first line
-        // works as well, set position just before new line of first line
-	setCaretPosition(0);
-        insertNewLine();
-
-	MySegment seg = getBuffer().getLineSegment(1);
-	setCaretPosition(0 + Misc.coladvanceColumnIndex(MAXCOL, seg));
-        return;
+          // Special case if BACKWARD and at position zero of document.
+          // set the caret position to 0 so that insert line on first line
+          // works as well, set position just before new line of first line
+          if(!Edit.canEdit(this, getBuffer(), 0))
+              return false;
+          setCaretPosition(0);
+          insertNewLine();
+          
+          MySegment seg = getBuffer().getLineSegment(1);
+          setCaretPosition(0 + Misc.coladvanceColumnIndex(MAXCOL, seg));
+          return true;
       }
 
       int offset;
@@ -419,8 +421,11 @@ public class TextView implements ViTextView {
       // offset is after the newline where insert happens, backup the caret.
       // After the insert newline, caret is ready for input on blank line
       offset--;
+      if(!Edit.canEdit(this, getBuffer(), 0))
+          return false;
       setCaretPosition(offset);
       insertNewLine();
+      return true;
   }
   
   
