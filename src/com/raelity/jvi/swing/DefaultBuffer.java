@@ -130,6 +130,10 @@ public class DefaultBuffer extends Buffer {
         return seg;
     }
 
+    public boolean isGuarded(int offset) {
+        return false;
+    }
+
 
 
     
