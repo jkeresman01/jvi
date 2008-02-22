@@ -129,7 +129,7 @@ public interface ViTextView extends ViOptionBag {
   public void insertNewLine();
 
   /** Open line is like insertNewLine, but is does autoindent dance */
-  public void openNewLine(NLOP op);
+  public boolean openNewLine(NLOP op);
 
   /** Insert tab at current position */
   public void insertTab();
