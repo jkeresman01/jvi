@@ -49,7 +49,7 @@ import javax.swing.JEditorPane;
 
 public interface ViTextView extends ViOptionBag {
   // text fold operations
-  public enum FOLDOP { CLOSE, OPEN, CLOSE_ALL, OPEN_ALL }
+  public enum FOLDOP { CLOSE, OPEN, CLOSE_ALL, OPEN_ALL, MAKE_VISIBLE }
   
   /** annonymous mark operations */
   public enum MARKOP { TOGGLE, NEXT, PREV }
