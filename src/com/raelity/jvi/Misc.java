@@ -29,6 +29,7 @@
  */
 package com.raelity.jvi;
 
+import com.raelity.jvi.ViTextView.FOLDOP;
 import com.raelity.jvi.ViTextView.NLOP;
 import java.awt.event.KeyEvent;
 import java.awt.datatransfer.StringSelection;
@@ -471,6 +472,24 @@ public class Misc implements ClipboardOwner {
    * or bottom as needed, otherwise center the target line on the screen.
    */
   static void gotoLine(int line, int flag) {
+    if(G.isCoordSkip.getBoolean()) {
+      int coordLine = G.curwin.getCoordLine(line);
+      int offset = G.curwin.getBufferLineOffset(coordLine);
+      int bufferLine = G.curbuf.getLineNumber(offset);
+      if(bufferLine != line) {
+        // System.err.println("OOPS LINE " + line + "-->" + bufferLine);
+        G.curwin.foldOperation(FOLDOP.OPEN, offset);
+        // now that the fold is open, it should have moved on screen
+        coordLine = G.curwin.getCoordLine(line);
+      }
+      gotoCoordLine(coordLine, flag);
+    } else {
+      gotoLineAbsolute(line, flag);
+    }
+    return;
+  }
+
+  static void gotoLineAbsolute(int line, int flag) {
     if(G.p_so.getInteger() != 0) {
       gotoLine_scrolloff(line, flag);
       return;
@@ -526,6 +545,39 @@ public class Misc implements ClipboardOwner {
     if(line > G.curbuf.getLineCount()) {
       line = G.curbuf.getLineCount();
     }
+
+    // if target line is less than half a screen away from
+    // being visible, then scroll it,
+    // otherwise center the target line
+
+    int curTop = G.curwin.getViewTopLine(); // assume the top line wont change
+    int viewLines = G.curwin.getViewLines();
+    int so = getScrollOff();
+    int center = curTop + viewLines / 2 - 1;
+
+    // reduce scrollMargin, the distance from center that we will scroll
+    // the screen, by amount of scrolloff.
+    int scrollMargin = viewLines - so; // max distance from center
+                                                // to do scroll
+    
+    int newTop = curTop;
+    if(line < center - scrollMargin - 1
+	    || line > center + scrollMargin) {
+      newTop = line - (viewLines / 2);
+      if((viewLines & 1) == 0) {
+        ++newTop; // even num lines, put target in upper half
+      }
+      // center the target line
+    } else {
+      // scroll to the line
+      if(line < curTop + so) {
+	newTop = line-so;
+      } else if(line > G.curwin.getViewBottomLine()-so-1) {
+	newTop = line-viewLines+1+so;
+      }
+    }
+    G.curwin.setViewTopLine(adjustTopLine(newTop));
+
     MySegment seg = G.curbuf.getLineSegment(line);
     int col;
     if(flag < 0) {
@@ -534,37 +586,7 @@ public class Misc implements ClipboardOwner {
       // from nv_goto
       col = Edit.beginlineColumnIndex(flag, seg);
     }
-
-    // if target line is less than half a screen away from
-    // being visible, then just let it scroll, otherwise
-    // center the target line
-
-    int scrollMargin = G.curwin.getViewLines(); // max distance from center
-                                                // to do scroll
-    int center = G.curwin.getViewTopLine() + scrollMargin / 2 - 1;
-    int so = getScrollOff();
-    // reduce scrollMargin, the distance from center that we will scroll
-    // the screen, by amount of scrolloff.
-    scrollMargin -= so;
-    
-    int newTop = G.curwin.getViewTopLine(); // assume the top line wont change
-    if(line < center - scrollMargin - 1
-	    || line > center + scrollMargin) {
-      newTop = line - (G.curwin.getViewLines() / 2);
-      if((G.curwin.getViewLines() & 1) == 0) {
-        ++newTop; // even num lines, put target in upper half
-      }
-      // center the target line
-    } else {
-      // scroll to the line
-      if(line < G.curwin.getViewTopLine()+so) {
-	newTop = line-so;
-      } else if(line > G.curwin.getViewBottomLine()-so-1) {
-	newTop = line-G.curwin.getViewLines()+1+so;
-      }
-    }
     G.curwin.setCaretPosition(line, col);
-    G.curwin.setViewTopLine(adjustTopLine(newTop));
   }
   
   /**
@@ -3092,30 +3114,30 @@ public class Misc implements ClipboardOwner {
       // if target line is less than half a screen away from
       // being visible, then just let it scroll, otherwise
       // center the target line
-      
-      int scrollMargin = G.curwin.getViewLines(); // max distance from center
-      // to do scroll
-      int center = G.curwin.getViewCoordTopLine() + scrollMargin / 2 - 1;
+
+      int curTop = G.curwin.getViewCoordTopLine();
+      int viewLines = G.curwin.getViewLines();
       int so = getScrollOff();
+      int center = curTop + viewLines / 2 - 1;
+      
       // reduce scrollMargin, the distance from center that we will scroll
       // the screen, by amount of scrolloff.
-      scrollMargin -= so;
+      int scrollMargin = viewLines - so; // max distance from center to do scroll
       
-      // assume the top line wont change
-      int newTop = G.curwin.getViewCoordTopLine();
+      int newTop = curTop;
       if(coordLine < center - scrollMargin - 1
               || coordLine > center + scrollMargin) {
-        newTop = coordLine - (G.curwin.getViewLines() / 2);
-        if((G.curwin.getViewLines() & 1) == 0) {
+        newTop = coordLine - (viewLines / 2);
+        if((viewLines & 1) == 0) {
           ++newTop; // even num lines, put target in upper half
         }
         // center the target line
       } else {
         // scroll to the line
-        if(coordLine < G.curwin.getViewCoordTopLine()+so) {
+        if(coordLine < curTop+so) {
           newTop = coordLine-so;
         } else if(coordLine > G.curwin.getViewCoordBottomLine()-so-1) {
-          newTop = coordLine-G.curwin.getViewLines()+1+so;
+          newTop = coordLine-viewLines+1+so;
         }
       }
       G.curwin.setViewCoordTopLine(adjustTopLine(newTop));
@@ -3123,11 +3145,9 @@ public class Misc implements ClipboardOwner {
       //MySegment seg = G.curbuf.getLineSegment(coordLine);
       //int col;
       if(flag < 0) {
-        //col = coladvanceColumnIndex(seg);
         coladvance(G.curwin.getWCurswant());
       } else {
         // from nv_goto
-        //col = Edit.beginlineColumnIndex(flag, seg);
         Edit.beginline(flag);
       }
     }
