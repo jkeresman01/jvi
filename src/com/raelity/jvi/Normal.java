@@ -36,6 +36,7 @@
  */
 package com.raelity.jvi;
 
+import com.raelity.jvi.ViTextView.FOLDOP;
 import java.text.CharacterIterator;
 
 import com.raelity.jvi.ViTextView.JLOP;
@@ -1655,8 +1656,8 @@ middle_code:
 	  {
 	    // don't restart edit after typing <Esc> in edit()
 	    G.restart_edit = 0;
+            Misc.beginInsertUndo();
             try {
-              Misc.beginInsertUndo();
               Misc.op_change(oap); // will call edit()
             } finally {
               if(editBusy) {
@@ -1724,8 +1725,8 @@ middle_code:
             /* This is a new edit command, not a restart.  We don't edit
              * recursively. */
             G.restart_edit = 0;
+            Misc.beginInsertUndo();
             try {
-              Misc.beginInsertUndo();
               Misc.op_insert(oap, cap.count1);/* handles insert & append
                                           * will call edit() */
             } finally {
@@ -2211,6 +2212,7 @@ middle_code:
 
   /** nv_zet is simplified a bunch, only do vi compat */
   static private  void	nv_zet (CMDARG cap) {
+    FOLDOP foldop = null;
     switch(cap.nchar) {
       case NL:		// put curwin->w_cursor at top of screen
                         // and set cursor at the first character of that line
@@ -2228,14 +2230,27 @@ middle_code:
 	// is displayed, so just use it.
 	nv_zet_scrolloff(cap);
         return;
+
+      case 'c':
+        foldop = FOLDOP.CLOSE;
+        break;
+      case 'o':
+        foldop = FOLDOP.OPEN;
+        break;
+      case 'M':
+        foldop = FOLDOP.CLOSE_ALL;
+        break;
+      case 'R':
+        foldop = FOLDOP.OPEN_ALL;
+        break;
           
       default:
-        // maybe its a fold operation
-	G.curwin.foldOperation(cap.nchar);
-        // clearop(cap.oap); // NEEDSWORK: needed?
-	return;
+	break;
     }
-    
+    if(foldop != null) {
+      G.curwin.foldOperation(foldop);
+    } else {
+    }
   }
   
   /* nv_zet_original NOT USED, does compile ok in java
@@ -3611,14 +3626,14 @@ static private void nv_findpar(CMDARG cap, int dir)
       // if (u_save((curwin.w_cursor.lnum - (cap.cmdchar == 'O' ? 1 : 0)) .....
       // NEEDSWORK: would like the beginUndo only if actually making changes
       boolean startEdit = false;  
+      Misc.beginInsertUndo();
       try {
-        Misc.beginInsertUndo();
         startEdit = Misc.open_line(cap.cmdchar == 'O' ? BACKWARD : FORWARD,
                                    true, false, 0);
         if(startEdit)
 	      Edit.edit(cap.cmdchar, true, cap.count1);
       } finally {
-          if(!startEdit)
+          if(!editBusy)
             Misc.endInsertUndo();
       }
     }
