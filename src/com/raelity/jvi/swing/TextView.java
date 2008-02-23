@@ -495,7 +495,11 @@ public void undo(){
     Util.vim_beep();
   }
 
-  public void foldOperation(int op) {
+  public void foldOperation(FOLDOP op) {
+    Util.vim_beep();
+  }
+
+  public void foldOperation(FOLDOP op, int offset) {
     Util.vim_beep();
   }
   
