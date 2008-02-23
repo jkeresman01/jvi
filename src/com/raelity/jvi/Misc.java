@@ -477,8 +477,9 @@ public class Misc implements ClipboardOwner {
       int offset = G.curwin.getBufferLineOffset(coordLine);
       int bufferLine = G.curbuf.getLineNumber(offset);
       if(bufferLine != line) {
-        // System.err.println("OOPS LINE " + line + "-->" + bufferLine);
-        G.curwin.foldOperation(FOLDOP.OPEN, offset);
+        offset = G.curbuf.getLineStartOffset(line);
+        // System.err.println("LINE " + line + "-->" + bufferLine);
+        G.curwin.foldOperation(FOLDOP.MAKE_VISIBLE, offset);
         // now that the fold is open, it should have moved on screen
         coordLine = G.curwin.getCoordLine(line);
       }
