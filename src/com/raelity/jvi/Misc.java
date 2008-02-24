@@ -1893,6 +1893,131 @@ public class Misc implements ClipboardOwner {
 
     return isValid;
   }
+    
+  public static int op_replace(OPARG oap, char c) {
+    try {
+      beginUndo();
+      return op_replace7(oap, c); // from vim7
+    } finally {
+      endUndo();
+    }
+  }
+    
+  public static int op_replace7(OPARG oap, char c) {
+    int		n;
+    int         numc;
+    int		lnum;
+    StringBuffer newBuf;
+    MySegment   oldBuf;
+    int         oldlen;
+    block_def bd = new block_def();
+    
+    // Note use an fpos instead of the cursor,
+    // This should avoid jitter on the screen
+    ViFPOS fpos = G.curwin.getWCursor().copy();
+    
+    int oldp;
+    
+    if(/* (curbuf.b_ml.ml_flags & ML_EMPTY ) || */ oap.empty)
+      return OK;	    // nothing to do
+    
+    //#ifdef MULTI_BYTE ... #endif
+    
+    //
+    // block mode replace
+    //
+    if (oap.block_mode) {
+      bd.is_MAX = G.curwin.getWCurswant() == MAXCOL;
+      for (lnum = fpos.getLine(); lnum <= oap.end.getLine(); lnum++) {
+        fpos.set(lnum, 0);
+        block_prep(oap, bd, lnum, true);
+        if (bd.textlen == 0 /* && (!virtual_op || bd.is_MAX)*/)
+          continue;                     // nothing to replace
+        
+        // n == number of extra chars required
+        // If we split a TAB, it may be replaced by several characters.
+        // Thus the number of characters may increase!
+        //
+        // allow for pre spaces
+        n = (bd.startspaces != 0 ? bd.start_char_vcols - 1 : 0 );
+        // allow for post spp
+        n += (bd.endspaces != 0 && !bd.is_oneChar && bd.end_char_vcols > 0
+                ? bd.end_char_vcols - 1 : 0 );
+        numc = oap.end_vcol - oap.start_vcol + 1;
+        if (bd.is_short /*&& (!virtual_op || bd.is_MAX)*/)
+          numc -= (oap.end_vcol - bd.end_vcol) + 1;
+        // oldlen includes textlen, so don't double count
+        n += numc - bd.textlen;
+        
+        //oldp = ml_get_curline();
+        oldBuf = Util.ml_get(fpos.getLine());
+        oldp = 0;
+        oldlen = oldBuf.length() - 1; //excluce the \n
+        //newp = alloc_check((unsigned)STRLEN(oldp) + 1 + n);
+        // -1 in setlength to ignore \n, don't need +1 since no null at end
+        newBuf = new StringBuffer();
+        newBuf.setLength(oldlen + n);
+        
+        // too much sometimes gets allocated with the setLength,
+        // but the correct number of chars gets copied, keep track of that.
+        // BTW, a few extra nulls at the end wouldn't hurt vim
+        
+        // copy up to deleted part
+        mch_memmove(newBuf, 0, oldBuf, oldp, bd.textcol);
+        oldp += bd.textcol + bd.textlen;
+        // insert pre-spaces
+        copy_spaces(newBuf, bd.textcol, bd.startspaces);
+        /* insert replacement chars CHECK FOR ALLOCATED SPACE */
+        copy_chars(newBuf, STRLEN(newBuf), numc, c);
+        if (!bd.is_short) {
+          // insert post-spaces
+          copy_spaces(newBuf, STRLEN(newBuf), bd.endspaces);
+          // copy the part after the changed part, -1 to exclude \n
+          int tCount = (oldBuf.length() - 1) - oldp; // STRLEN(oldp) +1
+          mch_memmove(newBuf, STRLEN(newBuf), oldBuf, oldp, tCount);
+        }
+        // delete trailing nulls, vim alloc extra when tabs (seen with gdb)
+        newBuf.setLength(STRLEN(newBuf));
+        // replace the line
+        Util.ml_replace(lnum, newBuf);
+      }
+    } else {
+      //
+      // MCHAR and MLINE motion replace.
+      //
+      if (oap.motion_type == MLINE) {
+        oap.start.setColumn(0);
+        fpos = oap.start.copy();
+        int col = Util.lineLength(oap.end.getLine());
+        if (col != 0)
+          --col;
+        oap.end.setColumn(col);
+      } else if (!oap.inclusive)
+        dec(oap.end);
+      
+      while(fpos.compareTo(oap.end) <= 0) {
+        if (gchar_pos(fpos) != '\n') {
+          // #ifdef FEAT_MBYTE ... #endif
+          pchar(fpos, c);
+        }
+        
+        // Advance to next character, stop at the end of the file.
+        if (inc(fpos) == -1)
+          break;
+      }
+    }
+    
+    G.curwin.getWCursor().set(oap.start);
+    adjust_cursor();
+    
+    oap.line_count = 0;	    // no lines deleted
+    
+    // Set "'[" and "']" marks.
+    G.curbuf.b_op_start.setMark(oap.start);
+    G.curbuf.b_op_end.setMark(oap.end);
+    
+    return OK;
+  }
 
   /**
    * op_tilde - handle the (non-standard vi) tilde operator
@@ -4500,109 +4625,6 @@ public class Misc implements ClipboardOwner {
     // changed_lines(oap.start.lnum + 1, 0, oap.end.lnum + 1, 0L);
     
     G.State = oldstate;
-  }
-    
-  public static int op_replace(OPARG oap, int c) {
-    try {
-      beginUndo();
-      return op_replace7(oap, c); // from vim7
-    } finally {
-      endUndo();
-    }
-  }
-    
-  public static int op_replace7(OPARG oap, int c_) {
-    int		n;
-    int         numc;
-    int		lnum;
-    StringBuffer newBuf;
-    MySegment   oldBuf;
-    int         oldlen;
-    block_def bd = new block_def();
-    
-    char c = (char)c_;
-    
-    // Note use an fpos instead of the cursor,
-    // This should avoid jitter on the screen
-    ViFPOS fpos = G.curwin.getWCursor().copy();
-    
-    int oldp;
-    
-    if(/* (curbuf.b_ml.ml_flags & ML_EMPTY ) || */ oap.empty)
-      return OK;	    // nothing to do
-    
-    //#ifdef MULTI_BYTE ... #endif
-    
-    //
-    // block mode replace
-    //
-    if (oap.block_mode) {
-      bd.is_MAX = G.curwin.getWCurswant() == MAXCOL;
-      for (lnum = fpos.getLine(); lnum <= oap.end.getLine(); lnum++) {
-        fpos.set(lnum, 0);
-        block_prep(oap, bd, lnum, true);
-        if (bd.textlen == 0 /* && (!virtual_op || bd.is_MAX)*/)
-          continue;                     // nothing to replace
-        
-        // n == number of extra chars required
-        // If we split a TAB, it may be replaced by several characters.
-        // Thus the number of characters may increase!
-        //
-        // allow for pre spaces
-        n = (bd.startspaces != 0 ? bd.start_char_vcols - 1 : 0 );
-        // allow for post spp
-        n += (bd.endspaces != 0 && !bd.is_oneChar && bd.end_char_vcols > 0
-                ? bd.end_char_vcols - 1 : 0 );
-        numc = oap.end_vcol - oap.start_vcol + 1;
-        if (bd.is_short /*&& (!virtual_op || bd.is_MAX)*/)
-          numc -= (oap.end_vcol - bd.end_vcol) + 1;
-        // oldlen includes textlen, so don't double count
-        n += numc - bd.textlen;
-        
-        //oldp = ml_get_curline();
-        oldBuf = Util.ml_get(fpos.getLine());
-        oldp = 0;
-        oldlen = oldBuf.length() - 1; //excluce the \n
-        //newp = alloc_check((unsigned)STRLEN(oldp) + 1 + n);
-        // -1 in setlength to ignore \n, don't need +1 since no null at end
-        newBuf = new StringBuffer();
-        newBuf.setLength(oldlen + n);
-        
-        // too much sometimes gets allocated with the setLength,
-        // but the correct number of chars gets copied, keep track of that.
-        // BTW, a few extra nulls at the end wouldn't hurt vim
-        
-        // copy up to deleted part
-        mch_memmove(newBuf, 0, oldBuf, oldp, bd.textcol);
-        oldp += bd.textcol + bd.textlen;
-        // insert pre-spaces
-        copy_spaces(newBuf, bd.textcol, bd.startspaces);
-        /* insert replacement chars CHECK FOR ALLOCATED SPACE */
-        copy_chars(newBuf, STRLEN(newBuf), numc, c);
-        if (!bd.is_short) {
-          // insert post-spaces
-          copy_spaces(newBuf, STRLEN(newBuf), bd.endspaces);
-          // copy the part after the changed part, -1 to exclude \n
-          int tCount = (oldBuf.length() - 1) - oldp; // STRLEN(oldp) +1
-          mch_memmove(newBuf, STRLEN(newBuf), oldBuf, oldp, tCount);
-        }
-        // delete trailing nulls, vim alloc extra when tabs (seen with gdb)
-        newBuf.setLength(STRLEN(newBuf));
-        // replace the line
-        Util.ml_replace(lnum, newBuf);
-      }
-    }
-    
-    G.curwin.getWCursor().set(oap.start);
-    adjust_cursor();
-    
-    oap.line_count = 0;	    /* no lines deleted */
-    
-    // Set "'[" and "']" marks.
-    G.curbuf.b_op_start.setMark(oap.start);
-    G.curbuf.b_op_end.setMark(oap.end);
-    
-    return OK;
   }
 }
 
