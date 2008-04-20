@@ -79,23 +79,30 @@ public class CommandLine extends JPanel {
      * are not lost.
      */
     public void init(String s) {
+        dot = mark = 0;
         if(s.length() == 0) {
             JTextComponent tc = getTextComponent();
             int len = tc.getText().length();
             if(len > 0) {
                 tc.setCaretPosition(0);
                 tc.moveCaretPosition(len);
+                mark = 0;
+                dot = len;
                 //System.err.println("Selection length = " + len);
             }
-            return;
+        } else {
+            try {
+                Document doc = getTextComponent().getDocument();
+                mark = dot = s.length();
+                doc.remove(0,doc.getLength());
+                doc.insertString(0, s, null);
+            } catch (BadLocationException ex) { }
         }
-        try {
-            Document doc = getTextComponent().getDocument();
-            doc.remove(0,doc.getLength());
-            doc.insertString(0, s, null);
-        } catch (BadLocationException ex) { }
     }
-    
+
+    int dot;
+    int mark;
+
     /** This is used to append characters to the the combo box. It is
      * needed so that characters entered before the combo box gets focus
      * are not lost.
@@ -453,6 +460,26 @@ public class CommandLine extends JPanel {
 
             commandLine.setMode(entryType == ViCmdEntry.COLON_ENTRY
                     ? ":" : "/");
+
+            if(ViManager.getOsVersion().isMac()) {
+                // MAC needs a little TLC since the selection is changed
+                // in JTextComponent after adding text and before focusGained
+                //    init set: dot: 5 mark:5
+                //    init: dot: 5 mark:5
+                //    focusGained: dot: 5 mark:0
+                //    focusGained set: dot: 5 mark:5
+                // This class sets selection back as needed
+                focusSetSelection = new FocusAdapter() {
+                    @Override
+                    public void focusGained(FocusEvent e) {
+                        JTextComponent tc = (JTextComponent) e.getSource();
+                        tc.removeFocusListener(this);
+                        Caret c = tc.getCaret();
+                        tc.setCaretPosition(commandLine.mark);
+                        tc.moveCaretPosition(commandLine.dot);
+                    }
+                };
+            }
         }
         
         /** ViCmdEntry interface */
@@ -468,6 +495,7 @@ public class CommandLine extends JPanel {
                 String initialText, boolean passThru) {
             this.tv = tv;
             this.initialText = initialText;
+            commandLine.getTextComponent().removeFocusListener(focusSetSelection);
             lastCommand = "";
             if(passThru) {
                 lastCommand = initialText;
@@ -480,8 +508,16 @@ public class CommandLine extends JPanel {
             commandLine.setMode(mode);
             commandLine.init(initialText);
 
+            commandLine.getTextComponent().addFocusListener(focusSetSelection);
+
             finishActivate();
         }
+        
+        /**
+         * When the command line gets focus, there's some work to do
+         * to handle MAC bug.
+         */
+        private FocusListener focusSetSelection;
 
         public void append(char c){
             if (c == '\n') {
@@ -495,6 +531,7 @@ public class CommandLine extends JPanel {
         protected abstract void finishActivate();
 
         private void shutdownEntry() {
+            commandLine.getTextComponent().removeFocusListener(focusSetSelection);
             prepareShutdown();
 
             tv.getEditorComponent().requestFocus();
