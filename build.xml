@@ -12,6 +12,12 @@
      This build file relies on a proper installation of Java 1.4
      (or greater), and Ant 1.4 (or greater).
      The Ant jar files should be included in your $CLASSPATH.
+
+     CONFIGURATION:
+
+         - in the compile target's javac task there is an excludes
+           OptionsDialog which can be removed if the l2fprod library is
+           provided.
 -->
 
 <project name="jvi" default="usage" basedir=".">
@@ -116,6 +122,7 @@
   <path id="execute.classpath">
     <pathelement location="${jvi.jar}"/>
     <fileset dir="${build.lib.home}"><include name="*.jar"/></fileset>
+    <fileset dir="${lib.home}"><include name="*.jar"/></fileset>
     <pathelement path="${java.class.path}"/>
   </path>
 
@@ -178,6 +185,7 @@
     </copy>
     <!-- ......................................................... -->
     <!-- <echo message="copying images to build directory..."/> -->
+    <!-- excludes="com/raelity/jvi/cmd/OptionsDialog.java" -->
     <javac   srcdir="${source.home}"
             destdir="${build.home}/classes"
        classpathref="build.classpath"
