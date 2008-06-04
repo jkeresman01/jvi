@@ -68,6 +68,7 @@
        docs              -&gt;  generates all documentation (aka 'javadoc')
        javadoc           -&gt;  generates the API docs (needs Java 1.2 or higher)
 
+     Put l2fprod-common-sheet.jar into ./lib for Options Button.
      See comments inside the build.xml file for more details.
      -------------------------------------------------------------
 
@@ -99,14 +100,6 @@
   <property name="doc.home"       value="${basedir}/docs/"/>
   <!-- The name of the Jvi jar file -->
   <property name="jvi.jar"     value="${build.lib.home}/${final.name}.jar"/>
-
-  <condition property="build.excludes"
-             value="com/raelity/jvi/cmd/OptionsDialog.java">
-    <not>
-      <available classname="com.l2fprod.common.propertysheet.PropertySheet"
-                 classpathref="build.classpath"/>
-    </not>
-  </condition>
 
 
   <!-- ===================================================================== -->
@@ -144,6 +137,14 @@
     -->
     <pathelement path="${java.class.path}"/>
   </path>
+
+  <condition property="build.excludes"
+             value="com/raelity/jvi/cmd/OptionsDialog.java">
+    <not>
+      <available classname="com.l2fprod.common.propertysheet.PropertySheet"
+                 classpathref="build.classpath"/>
+    </not>
+  </condition>
 
   <!-- ===================================================================== -->
   <!-- Utility Targets                                                       -->
