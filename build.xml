@@ -30,7 +30,7 @@
 
   <property name="Name" value="Jvi"/>
   <property name="name" value="jvi"/>
-  <property name="version" value="1.1.2.x11"/>
+  <property name="version" value="0.7.1"/>
 
   <property name="final.name" value="${name}-${version}"/>
   <property name="complete.name" value="${final.name}"/>
@@ -99,6 +99,15 @@
   <property name="doc.home"       value="${basedir}/docs/"/>
   <!-- The name of the Jvi jar file -->
   <property name="jvi.jar"     value="${build.lib.home}/${final.name}.jar"/>
+
+  <condition property="build.excludes"
+             value="com/raelity/jvi/cmd/OptionsDialog.java">
+    <not>
+      <available classname="com.l2fprod.common.propertysheet.PropertySheet"
+                 classpathref="build.classpath"/>
+    </not>
+  </condition>
+
 
   <!-- ===================================================================== -->
   <!-- Classpaths and Compiler Defaults                                      -->
@@ -185,12 +194,12 @@
     </copy>
     <!-- ......................................................... -->
     <!-- <echo message="copying images to build directory..."/> -->
-    <!-- excludes="com/raelity/jvi/cmd/OptionsDialog.java" -->
     <javac   srcdir="${source.home}"
             destdir="${build.home}/classes"
        classpathref="build.classpath"
               debug="${build.debug}"
         deprecation="${build.deprecation}"
+           excludes="${build.excludes}"
            optimize="${build.optimize}">
       <!--compilerarg value="-Xlint:unchecked"/ -->
     </javac>
@@ -216,7 +225,7 @@
         description="build ${jvi.jar} file">
     <jar    jarfile="${jvi.jar}"
             basedir="${build.dest}"
-           manifest="${source.home}/meta-inf/manifest.mf"
+           manifest="${source.home}/META-INF/MANIFEST.MF"
            compress="true"
            includes="com/raelity/**"
            excludes="">
@@ -251,6 +260,8 @@
       <jvmarg value="-Djrat.factory=org.shiftone.jrat.provider.tree.TreeMethodHandlerFactory"/>
       <arg value="-dGNV"/>
       -->
+      <!-- provides TrueType text smoothing if available -->
+      <jvmarg value="-Dswing.aatext=true"/>
     </java>
   </target>
 
