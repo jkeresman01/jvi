@@ -97,15 +97,8 @@ public class TextView implements ViTextView {
 
   private int lastDot;
 
-  private Point point0; // NEEDSWORK: change if document changes
-
   public TextView(final JEditorPane editorPane) {
     this.editorPane = editorPane;
-    try {
-      point0 = editorPane.modelToView(0).getLocation();
-    } catch (BadLocationException ex) {
-      point0 = new Point(0,0);
-    }
     mygen = ++gen;
 
     cursorSaveListener = new CaretListener() {
@@ -568,6 +561,19 @@ public void undo(){
     cache.getViewport().setViewPosition(pt);
   }
 
+  private Point point0; // NEEDSWORK: change if document changes
+  private Point getPoint0() {
+    if(point0 == null) {
+      try {
+        Rectangle r = editorPane.modelToView(0);
+        if(r != null) {
+          point0 = r.getLocation();
+        }
+      } catch (BadLocationException ex) { }
+    }
+    return point0 != null ? point0 : new Point(0,0);
+  }
+
   public int getViewCoordTopLine() {
     if(!G.isCoordSkip.getBoolean())
       return getViewTopLine();
@@ -584,7 +590,7 @@ public void undo(){
     }
     //cache.setViewCoordTopLine(coordLine);
     
-    //Point p = new Point(point0);
+    //Point p = new Point(getPoint0());
     //p.translate(0, (coordLine - 1) * cache.getFheight());
     Point p = new Point(0, (coordLine - 1) * cache.getFheight());
     // If point is after viewport top && within one char of top
@@ -649,7 +655,7 @@ public void undo(){
           }
           return getBuffer().getLineStartOffset(coordLine);
       }
-      Point p = new Point(point0);
+      Point p = new Point(getPoint0());
       p.translate(0, (coordLine - 1) * cache.getFheight());
       int offset = getEditorComponent().viewToModel(p);
       Rectangle r1 = null;
@@ -672,12 +678,12 @@ public void undo(){
     try {
       int offset = getBuffer().getLineStartOffset(line);
       Rectangle lineRect = getEditorComponent().modelToView(offset);
-      int yDiff = lineRect.y - point0.y;
+      int yDiff = lineRect.y - getPoint0().y;
       coordLine = yDiff / cache.getFheight() + 1;
       if(G.dbgCoordSkip.getBoolean())
         System.err.println(String.format(
                 "\tgetInternalCoordLine: %d, line1: %d:%d, line %d:%d",
-                coordLine, 1, point0.y, line, lineRect.y));;
+                coordLine, 1, getPoint0().y, line, lineRect.y));;
     } catch (BadLocationException ex) {
       //Logger.getLogger(TextView.class.getName()).log(Level.SEVERE, null, ex);
     }
@@ -689,7 +695,7 @@ public void undo(){
       setCaretPosition(coordLine, col);
       return;
     }
-    Point p = new Point(point0);
+    Point p = new Point(getPoint0());
     p.translate(0, (coordLine - 1) * cache.getFheight());
     int newOffset = getEditorComponent().viewToModel(p);
     //assert col == 0;
