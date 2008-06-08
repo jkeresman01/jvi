@@ -85,11 +85,9 @@ public class DefaultViFactory implements ViFactory {
           = new WeakHashMap<JEditorPane, Object>();
 
   Window window;
-  CommandLine cmdLine;
   ViFS fs = new DefaultViFS();
 
-  public DefaultViFactory(CommandLine cmdLine) {
-    this.cmdLine = cmdLine;
+  public DefaultViFactory() {
     if(INSTANCE != null)
         throw new IllegalStateException("ViFactory already exists");
     INSTANCE = this;
