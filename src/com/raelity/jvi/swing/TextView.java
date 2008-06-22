@@ -563,15 +563,16 @@ public void undo(){
 
   private Point point0; // NEEDSWORK: change if document changes
   private Point getPoint0() {
-    if(point0 == null) {
-      try {
-        Rectangle r = editorPane.modelToView(0);
-        if(r != null) {
-          point0 = r.getLocation();
-        }
-      } catch (BadLocationException ex) { }
-    }
-    return point0 != null ? point0 : new Point(0,0);
+    if(point0 != null)
+        return point0;
+    try {
+      Rectangle r = editorPane.modelToView(0);
+      if(r != null) {
+        point0 = r.getLocation();
+        return point0;
+      }
+    } catch (BadLocationException ex) { }
+    return new Point(0,0);
   }
 
   public int getViewCoordTopLine() {
