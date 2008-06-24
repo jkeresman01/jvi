@@ -168,12 +168,12 @@ public class KeyBinding {
    * Return an ArrayList of bindings. This can be modified without
    * affecting the backing list.
    */
-  @SuppressWarnings("unchecked")
   public static List<JTextComponent.KeyBinding> getBindingsList() {
-      return (List)((ArrayList)getBindingsListInternal()).clone();
+      return Collections.unmodifiableList(getBindingsListInternal());
   }
 
-  private static List<JTextComponent.KeyBinding> getBindingsListInternal() {
+  private static synchronized
+  List<JTextComponent.KeyBinding> getBindingsListInternal() {
 
     if(bindingList != null) {
         return bindingList;
@@ -187,7 +187,7 @@ public class KeyBinding {
     //
     for(char c = 'A'; c <= 'Z'; c++) {
         // like: "Ctrl-A"
-        String name = "Ctrl-" + new String(new char[] {c});
+        String name = "Ctrl-" + String.valueOf(c);
         checkUseKey(bl, name, name, c, CTRL_MASK);
     }
     
@@ -339,12 +339,12 @@ public class KeyBinding {
   
     private static List<Action> actionList;
   
-    @SuppressWarnings("unchecked")
     public static List<Action> getActionsList() {
-      return (List)((ArrayList)KeyBinding.getActionsListInternal()).clone();
+      return Collections.unmodifiableList(getActionsListInternal());
     }
 
-    private static List<Action> getActionsListInternal() {
+    private static synchronized 
+    List<Action> getActionsListInternal() {
         if(actionList == null)
             actionList = createActionList();
         return actionList;
