@@ -113,11 +113,6 @@ public interface ViFactory {
    * @return the Window for the specified editor
    */
   public Window lookupWindow(JEditorPane editorPane);
-  
-  /**
-   * Something has changed in jVi's key mapping, update editor stuff as needed.
-   */
-  public void updateKeymap();
 
   /**
    * @return action suitable for default key action

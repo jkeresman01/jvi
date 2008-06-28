@@ -44,13 +44,14 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import javax.swing.KeyStroke;
 
-import com.raelity.jvi.KeyDefs;
-import com.raelity.jvi.BooleanOption;
-import com.raelity.jvi.Options;
 import com.raelity.jvi.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import javax.swing.text.TextAction;
 import static java.awt.event.InputEvent.SHIFT_MASK;
 import static java.awt.event.InputEvent.CTRL_MASK;
 
@@ -58,8 +59,21 @@ import static com.raelity.jvi.KeyDefs.*;
 import static com.raelity.jvi.Constants.*;
 
 public class KeyBinding {
+  public static final String KEY_BINDINGS = "KeyBinding";
   private static Preferences prefs = ViManager.getViFactory()
                                 .getPreferences().node(ViManager.PREFS_KEYS);
+
+  //
+  // Set up a private INSTANCE of KeyBinding for use with propertyChange
+  //
+  private static KeyBinding INSTANCE;
+  private static KeyBinding getInstance() {
+      if(INSTANCE == null)
+          INSTANCE = new KeyBinding();
+      return INSTANCE;
+  }
+  private KeyBinding() {
+  }
 
   private static BooleanOption keyDebugOption;
   public static final boolean isKeyDebug() {
@@ -100,7 +114,7 @@ public class KeyBinding {
     private static Runnable updateKeymap = new Runnable() {
         public void run() {
             bindingList = null; // force recalculation
-            ViManager.getViFactory().updateKeymap();
+            firePropertyChange(KEY_BINDINGS, null, null);
         }
     };
   
@@ -331,6 +345,8 @@ public class KeyBinding {
 
     /**
      * Return the available actions.
+     * 
+     * NEEDSWORK: only need actionsMap, use values to get all the actions.
      */
     public static Action[] getActions() {
       List<Action> l = getActionsListInternal();
@@ -338,6 +354,13 @@ public class KeyBinding {
     }
   
     private static List<Action> actionList;
+    private static Map<String, Action> actionsMap;
+
+    public static Action getAction(String key) {
+        if(actionsMap == null)
+            getActionsListInternal();
+        return actionsMap.get(key);
+    }
   
     public static List<Action> getActionsList() {
       return Collections.unmodifiableList(getActionsListInternal());
@@ -431,6 +454,13 @@ public class KeyBinding {
         } catch(Throwable e) {
             e.printStackTrace();
         }
+
+        actionsMap = new HashMap<String, Action>();
+        for(Action a : actionsList) {
+            TextAction ta = (TextAction) a;
+            actionsMap.put((String) ta.getValue(Action.NAME), a);
+        }
+
         return actionsList;
     }
   
@@ -589,6 +619,11 @@ public class KeyBinding {
             = new HashMap<String,Integer>();
     
     static private KeyBindingPrefs keyBindingPrefs = new KeyBindingPrefs();
+    //
+    // NOTE: DO NOT CHANGE THESE.
+    // Since these are the Preferences defaults,
+    // if they are changed, then they might change the user's bindings.
+    //
     static private class KeyBindingPrefs {
         private Set<String> defaultKeysFalse = new HashSet<String>();
         private Set<String> knownKeys = new HashSet<String>();
@@ -656,5 +691,40 @@ public class KeyBinding {
       public Boolean getCatchKeyDefault(String keyName) {
           return ! defaultKeysFalse.contains(keyName);
       }
+  }
+  
+  //
+  // Look like a good bean
+  // But they're static!
+  //
+
+  private static PropertyChangeSupport pcs
+                        = new PropertyChangeSupport(getInstance());
+  
+  public static void addPropertyChangeListener( PropertyChangeListener listener )
+  {
+    pcs.addPropertyChangeListener( listener );
+  }
+
+  public static void removePropertyChangeListener( PropertyChangeListener listener )
+  {
+    pcs.removePropertyChangeListener( listener );
+  }
+  
+  public static void addPropertyChangeListener(String p,
+                                               PropertyChangeListener l)
+  {
+    pcs.addPropertyChangeListener(p, l);
+  }
+
+  public static void removePropertyChangeListener(String p,
+                                                  PropertyChangeListener l)
+  {
+    pcs.removePropertyChangeListener(p, l);
+  }
+  
+  /** This should only be used from Option and its subclasses */
+  private static void firePropertyChange(String name, Object oldValue, Object newValue) {
+    pcs.firePropertyChange(name, oldValue, newValue);
   }
 }

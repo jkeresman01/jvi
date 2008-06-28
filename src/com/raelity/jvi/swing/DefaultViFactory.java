@@ -385,9 +385,6 @@ public class DefaultViFactory implements ViFactory {
     else
       return new InlineCmdEntry(type);
   }
-  
-  public void updateKeymap() {
-  }
 
   /**
    * @return action suitable for default key action
