@@ -144,7 +144,7 @@ public class Jvi
 
         editor.setCaretColor(Color.black);
 
-        ViManager.registerEditorPane(editor);
+        ViManager.activateFile(editor, null, "Jvi.setupFrame");
         ((BooleanOption)Options.getOption(Options.dbgKeyStrokes)).setBoolean(true);
 
         TextView tv = (TextView)ViManager.getViTextView(editor);

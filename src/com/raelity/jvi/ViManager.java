@@ -1,4 +1,4 @@
-/**
+/*
  * Title:        jVi<p>
  * Description:  A VI-VIM clone.
  * Use VIM as a model where applicable.<p>
@@ -64,8 +64,43 @@ import java.util.Map;
 import java.util.prefs.Preferences;
 
 /**
+ * <p>
  * This class coordinates things.
- * <b>NEEDSWORK:</b><ul>
+ * The platform (main application) notifies jVi about new editors that are
+ * opened and switches between open editors.
+ * </p>
+ * Here are several static methods used to inform jVi of major changes.
+ * The <i>appHandle</i> is opaque to jVi; it means something to the platform.
+ * It may be a logical container which tracks the editor. There is one of these
+ * for each open editor, if the same document is editted in two windows, then
+ * there are two of these.
+ * <ul>
+ * <li>activateFile(JEditorPane, appHandle)<br/>
+ * The application invokes this whenever an editor becomes selected.
+ * This also serves as an open.
+ * </li>
+ * <li>deactivateCurrentFile(appHandle)<br/>
+ * Inform jVi that the currently active editor is going quiet. Primary function
+ * is to take it out of input mode.
+ * </li>
+ * <li>closeFile(JEditorPane, appHandle)<br/>
+ * The applications invokes this method when a file is completely
+ * removed from a container or should be forgotten by jVi.
+ * </li>
+ * <li>requestSwitch(JEditorPane)<br/>
+ * This rarely needs to be invoked directly. Use activateFile.
+ * </li>
+ * </ul>
+ * <b>NEEDSWORK:</b>
+ * <ul>
+ * <li>Can switches between editors be detected automatically? Its not as
+ * simple as gaining/looses focus I think. Maybe if another editor gains
+ * focus, you can switch to that automatically. But there are situations
+ * where a new platform component may get focus, and you want to deactivate
+ * a current jVi.
+ * </li>
+ * <li>Can we get rid of appHandle?</li>
+ * <li>Get rid of requestSwitch.</li>
  * </ul>
  */
 public class ViManager {
@@ -106,7 +141,7 @@ public class ViManager {
   // 1.0.0.beta2 is NB vers 0.9.6.4
   // 1.0.0.beta3 is NB vers 0.9.7.5
   //
-  public static final jViVersion version = new jViVersion("1.2.0.x2");
+  public static final jViVersion version = new jViVersion("1.2.0.x3");
   
   private static boolean enabled;
 
@@ -419,8 +454,7 @@ public class ViManager {
               + tag + ": " + factory.getDisplayFilename(fileObject));
     }
     if(ep != null && enabled)
-        registerEditorPane(ep);
-    assert(fileObject != null);
+        factory.registerEditorPane(ep);
     if(fileObject == null)
         return;
     
@@ -470,10 +504,12 @@ public class ViManager {
     if(factory != null && ep != null && enabled) {
         factory.shutdown(ep);
     }
-    if(fileObject == currentlyActive)
-        currentlyActive = null;
-    textMRU.remove(fileObject);
-    textBuffers.remove(fileObject);
+    if(fileObject != null) { // null indicates nomad
+      if(fileObject == currentlyActive)
+          currentlyActive = null;
+      textMRU.remove(fileObject);
+      textBuffers.remove(fileObject);
+    }
   }
   
   //
@@ -482,6 +518,7 @@ public class ViManager {
 
   /**
    * Set up an editor pane for use with vi.
+   * @deprecated use activateFile
    */
   public static void registerEditorPane(JEditorPane editorPane) {
     factory.registerEditorPane(editorPane);
@@ -564,7 +601,7 @@ public class ViManager {
     
     ViTextView textView = getViTextView(editorPane);
     Buffer buf = getBuffer(editorPane);
-    registerEditorPane(editorPane); // make sure it has the right caret
+    factory.registerEditorPane(editorPane); // make sure it has the right caret
     textView.attach();
     if(G.dbgEditorActivation.getBoolean()) {
       System.err.println("Activation: ViManager.SWITCHTO: "
