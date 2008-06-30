@@ -70,7 +70,7 @@ public interface ViFactory {
   public Set<Buffer> getBufferSet();
 
   /** For an environmental object, used for debug output */
-  public String getDisplayFilename(Object o);
+  public String getDisplayFilename(Object appHandle);
   
   /**
    * This editor pane is going away, forget about it.

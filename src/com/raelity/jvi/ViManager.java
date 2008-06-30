@@ -67,40 +67,39 @@ import java.util.prefs.Preferences;
  * <p>
  * This class coordinates things.
  * The platform (main application) notifies jVi about new editors that are
- * opened and switches between open editors.
+ * opened and switches between open editors. <b>NOTE:</b> unless otherwise
+ * noted, methods in this class should only be invoked from the event dispatch
+ * thread.
  * </p>
  * Here are several static methods used to inform jVi of major changes.
  * The <i>appHandle</i> is opaque to jVi; it means something to the platform.
  * It may be a logical container which tracks the editor. There is one of these
  * for each open editor, if the same document is editted in two windows, then
- * there are two of these.
+ * there are two of these. appHandle may be nulll; this signifies that the
+ * editor is a "nomad" and is not associated directly with top level file data,
+ * for example if the editor is in a dialog and is used to edit some app
+ * configuration data. When appHandle is null, the editor is not added to the
+ * MRU list, and so it does not show up in the ":ls" command.
  * <ul>
- * <li>activateFile(JEditorPane, appHandle)<br/>
+ * <li>{@link #activateAppEditor}(ep, appHandle)<br/>
  * The application invokes this whenever an editor becomes selected.
  * This also serves as an open.
  * </li>
- * <li>deactivateCurrentFile(appHandle)<br/>
+ * <li>{@link #deactivateCurrentAppEditor}(appHandle)<br/>
  * Inform jVi that the currently active editor is going quiet. Primary function
  * is to take it out of input mode.
  * </li>
- * <li>closeFile(JEditorPane, appHandle)<br/>
+ * <li>{@link #closeAppEditor}(ep, appHandle)<br/>
  * The applications invokes this method when a file is completely
  * removed from a container or should be forgotten by jVi.
  * </li>
- * <li>requestSwitch(JEditorPane)<br/>
- * This rarely needs to be invoked directly. Use activateFile.
+ * <li>requestSwitch(ep)<br/>
+ * This rarely needs to be invoked directly. Use activateAppEditor.
  * </li>
  * </ul>
  * <b>NEEDSWORK:</b>
  * <ul>
- * <li>Can switches between editors be detected automatically? Its not as
- * simple as gaining/looses focus I think. Maybe if another editor gains
- * focus, you can switch to that automatically. But there are situations
- * where a new platform component may get focus, and you want to deactivate
- * a current jVi.
- * </li>
- * <li>Can we get rid of appHandle?</li>
- * <li>Get rid of requestSwitch.</li>
+ * <li>Get rid of requestSwitch. Do it automaticaly at end of activateAppEd</li>
  * </ul>
  */
 public class ViManager {
@@ -364,7 +363,7 @@ public class ViManager {
   // the lists.
   //
 
-  // NEEDSWORK: textMRU: use a weak reference to fileObject?
+  // NEEDSWORK: textMRU: use a weak reference to appHandle?
   private static List<Object> textBuffers = new ArrayList<Object>();
   private static LinkedList<Object> textMRU = new LinkedList<Object>();
   private static Object currentlyActive;
@@ -404,17 +403,17 @@ public class ViManager {
   }
   
   /**
-   * Return the Ith next/previous fileObject relative to the argument 
-   * fileObject. If i < 0 then look in previously used direction.
+   * Return the Ith next/previous appHandle relative to the argument
+   * appHandle. If i < 0 then look in previously used direction.
    */
-  public static Object relativeMruBuffer(Object fileObject, int i) {
+  public static Object relativeMruBuffer(Object appHandle, int i) {
       if(factory != null && G.dbgEditorActivation.getBoolean()) {
         System.err.println("Activation: ViManager.relativeMruBuffer: "
-                + factory.getDisplayFilename(fileObject));
+                + factory.getDisplayFilename(appHandle));
       }
       if(textMRU.size() == 0)
           return null;
-      int idx = textMRU.indexOf(fileObject);
+      int idx = textMRU.indexOf(appHandle);
       if(idx < 0)
           return null;
       // the most recent is at index 0, so bigger numbers are backwwards in time
@@ -434,69 +433,96 @@ public class ViManager {
    * Request that the next activation does not re-order the mru list if the
    * activated object is the argment.
    */
-  public static void ignoreActivation(Object fileObject) {
-      if(!textBuffers.contains(fileObject)) {
+  public static void ignoreActivation(Object appHandle) {
+      if(!textBuffers.contains(appHandle)) {
           return; // can't ignore if its not in the list
       }
-      ignoreActivation = fileObject;
+      ignoreActivation = appHandle;
+  }
+
+  /**
+   * @deprecated use activateAppEditor
+   * @param ep
+   * @param appHandle
+   * @param tag
+   */
+  public static void activateFile(JEditorPane ep, Object appHandle, String tag) {
+    activateAppEditor(ep, appHandle, tag);
   }
 
   /**
    * The application invokes this whenever a file becomes selected
    * in the specified container. This also serves as an open.
    * @param ep May be null, otherwise the associated editor pane
-   * @param parent Usually, but not necessarily, a container that hold the
-   *               editor.
+   * @param appHandle Usually, but not necessarily, a container that hold the
+   *               editor. May be null if nomadic editor.
+   * @param tag String used in debug messages.
    */
-  public static void activateFile(JEditorPane ep, Object fileObject, String tag) {
+  public static void activateAppEditor(
+          JEditorPane ep, Object appHandle, String tag) {
     if(factory != null && G.dbgEditorActivation.getBoolean()) {
       System.err.println("Activation: ViManager.activateFile: "
-              + tag + ": " + factory.getDisplayFilename(fileObject));
+              + tag + ": " + factory.getDisplayFilename(appHandle));
     }
     if(ep != null && enabled)
         factory.registerEditorPane(ep);
-    if(fileObject == null)
+    if(appHandle == null)
         return;
     
     Object ign = ignoreActivation;
     ignoreActivation = null;
-    currentlyActive = fileObject;
-    if(textBuffers.contains(ign) && fileObject == ign) {
+    currentlyActive = appHandle;
+    if(textBuffers.contains(ign) && appHandle == ign) {
         return;
     }
     
-    textMRU.remove(fileObject);
-    textMRU.add(0, fileObject);
-    if( ! textBuffers.contains(fileObject)) {
-      textBuffers.add(fileObject);
+    textMRU.remove(appHandle);
+    textMRU.add(0, appHandle);
+    if( ! textBuffers.contains(appHandle)) {
+      textBuffers.add(appHandle);
     }
   }
   
-  public static void deactivateCurrentFile(Object parent) {
+  /**
+   * @deprecated 
+   * @param appHandle
+   */
+  public static void deactivateCurrentFile(Object appHandle) {
+    deactivateCurrentAppEditor(appHandle);
+  }
+
+  public static void deactivateCurrentAppEditor(Object appHandle) {
     if(factory != null && G.dbgEditorActivation.getBoolean()) {
       System.err.println("Activation: ViManager.deactivateCurentFile: "
-                         + factory.getDisplayFilename(parent));
+                         + factory.getDisplayFilename(appHandle));
     }
     // For several reasons, eg. don't want to hold begin/endUndo
     if(enabled)
         exitInputMode();
     
     currentlyActive = null;
-    // assert(parent == currentlyActive || parent == null || currentlyActive == null);
   }
   
-  public static boolean isBuffer(Object fileObject) {
-      return textBuffers.contains(fileObject);
+  public static boolean isBuffer(Object appHandle) {
+      return textBuffers.contains(appHandle);
   }
 
+  /**
+   * @deprecated 
+   * @param ep
+   * @param appHandle
+   */
+  public static void closeFile(JEditorPane ep, Object appHandle) {
+    closeAppEditor(ep, appHandle);
+  }
   /**
    * The applications invokes this method when a file is completely
    * removed from a container or should be forgotten by jVi.
    */
-  public static void closeFile(JEditorPane ep, Object fileObject) {
+  public static void closeAppEditor(JEditorPane ep, Object appHandle) {
     if(factory != null && G.dbgEditorActivation.getBoolean()) {
-      String fname = factory.getDisplayFilename(fileObject);
-      System.err.println("Activation: ViManager.closeFile: "
+      String fname = factory.getDisplayFilename(appHandle);
+      System.err.println("Activation: ViManager.closeAppEditor: "
               + (ep == null ? "(no shutdown) " : "") + fname);
     }
     
@@ -504,11 +530,11 @@ public class ViManager {
     if(factory != null && ep != null && enabled) {
         factory.shutdown(ep);
     }
-    if(fileObject != null) { // null indicates nomad
-      if(fileObject == currentlyActive)
+    if(appHandle != null) { // null indicates nomad
+      if(appHandle == currentlyActive)
           currentlyActive = null;
-      textMRU.remove(fileObject);
-      textBuffers.remove(fileObject);
+      textMRU.remove(appHandle);
+      textBuffers.remove(appHandle);
     }
   }
   
@@ -922,14 +948,14 @@ public class ViManager {
     ps.println("factory = " + factory );
     
     ps.println("textBuffers: " + textBuffers.size());
-    for (Object o : textBuffers) {
-        ps.println("\t" + factory.getDisplayFilename(o)
-                   + ", " + o.getClass().getSimpleName());
+    for (Object appHandle : textBuffers) {
+        ps.println("\t" + factory.getDisplayFilename(appHandle)
+                   + ", " + appHandle.getClass().getSimpleName());
     }
     ps.println("textMRU: " + textMRU.size());
-    for (Object o : textMRU) {
-        ps.println("\t" + factory.getDisplayFilename(o)
-                   + ", " + o.getClass().getSimpleName());
+    for (Object appHandle : textMRU) {
+        ps.println("\t" + factory.getDisplayFilename(appHandle)
+                   + ", " + appHandle.getClass().getSimpleName());
     }
     ps.println("currentlyActive: " + (currentlyActive == null ? "none"
                : "" + factory.getDisplayFilename(currentlyActive)

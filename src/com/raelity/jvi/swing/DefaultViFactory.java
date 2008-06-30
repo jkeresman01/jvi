@@ -535,7 +535,7 @@ public class DefaultViFactory implements ViFactory {
     }
   }
 
-    public String getDisplayFilename(Object o) {
+    public String getDisplayFilename(Object appHandle) {
         return "xxx";
     }
 

@@ -33,13 +33,6 @@ import java.util.Arrays;
 
 import javax.swing.JEditorPane;
 
-import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.ViMark;
-import com.raelity.jvi.ViStatusDisplay;
-import com.raelity.jvi.ViCursor;
-import com.raelity.jvi.Util;
-import com.raelity.jvi.MutableInt;
-import com.raelity.jvi.Window;
 import com.raelity.jvi.*;
 import com.raelity.text.TextUtil.MySegment;
 import java.awt.Color;
