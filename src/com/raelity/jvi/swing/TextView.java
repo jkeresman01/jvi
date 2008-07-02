@@ -868,8 +868,8 @@ public void undo(){
               int tmp = start;
               start = end;
               end = tmp;
-        }
-        document.setCharacterAttributes(start, end - start, mas, false);
+          }
+          document.setCharacterAttributes(start, end - start, mas, false);
           // update styled editor kit with new attributes to overcome paint errors
           StyledEditorKit k = (StyledEditorKit) editorPane.getEditorKit();
           MutableAttributeSet inputAttrs = k.getInputAttributes();
