@@ -531,13 +531,14 @@ public class DefaultViFactory implements ViFactory
                             || c < 0x20
                             || c == 0x7f ) {
                         // the delete key comes in as a virtual key.
-                        // Wouldn't have thought that the 'c<0x20' was needed, but the
-                        // <RETURN>,<BS> come in less than 0x20 without the Control key
+                        // Wouldn't have thought that the 'c<0x20' was needed,
+                        // <RETURN>,<BS> come in < 0x20 without the Control key
                         keep = false;
                     }
 
                     if ( KeyBinding.isKeyDebug() && c >= 0x20 ) {
-                        System.err.println("CharAction: " + (keep ? "" : "REJECT: ")
+                        System.err.println("CharAction: "
+                                + (keep ? "" : "REJECT: ")
                                 + "'" + content + "' "
                                 + String.format("%x", (int)c)
                                 + "(" + (int)c + ") " + mod);
@@ -578,7 +579,8 @@ public class DefaultViFactory implements ViFactory
             char key = basekey;
             if ( KeyBinding.isKeyDebug() ) {
                 String virt = ((key & 0xF000) == VIRT) ? "virt" : "";
-                System.err.println("KeyAction: " + getValue(Action.NAME).toString()
+                System.err.println("KeyAction: "
+                        + getValue(Action.NAME).toString()
                         + ": " + String.format("%x", (int)key)
                         + "(" + ((int)key&~VIRT) + ") " + mod + " " + virt);
             }
@@ -600,7 +602,8 @@ public class DefaultViFactory implements ViFactory
             // with the name of the key in it
             //this.putValue(Action.LONG_DESCRIPTION, desc);
             //this.putValue("ActionGroup", GROUP_VI_EDIT);
-            //EditorActions.addBindableEditorAction(this, JBViKeymap.VI_EDIT_KEYMAP);
+            //EditorActions.addBindableEditorAction(this,
+            //                                      JBViKeymap.VI_EDIT_KEYMAP);
         }
 
         public void actionPerformed(ActionEvent e) {
