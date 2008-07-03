@@ -76,7 +76,7 @@ public class DefaultViFactory implements ViFactory
     JDialog dialog;
     Window window;
     ViFS fs = new DefaultViFS();
-    protected static DefaultViFactory m_instance;
+    protected static DefaultViFactory INSTANCE;
 
     private static final boolean isMac = ViManager.getOsVersion().isMac();
     private MouseInputAdapter mouseAdapter;
@@ -90,10 +90,10 @@ public class DefaultViFactory implements ViFactory
      */
     public DefaultViFactory()
     {
-        if ( m_instance != null ) {
+        if ( INSTANCE != null ) {
             throw new IllegalStateException("ViFactory already exists");
         }
-        m_instance = this;
+        INSTANCE = this;
 
         // Add VimClipboard DataFlavor if not already there
         // FlavorMap fm = SystemFlavorMap.getDefaultFlavorMap();
