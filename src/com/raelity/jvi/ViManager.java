@@ -49,6 +49,7 @@ import java.net.URL;
 
 import com.raelity.jvi.swing.KeyBinding;
 import com.raelity.text.TextUtil.MySegment;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
@@ -156,6 +157,24 @@ public class ViManager
 
         // Spawn to get current release info
         new GetMotd().start();
+    }
+
+    /**
+     * Disable the feature.
+     * @param f feature to diable
+     */
+    public static void removeFeature(ViFeature f)
+    {
+        G.f.remove(f);
+    }
+
+    /**
+     * Disable the set of features.
+     * @param f features to disable
+     */
+    public static void removeFeature(EnumSet<ViFeature> f)
+    {
+        G.f.removeAll(f);
     }
 
     private static boolean jdk15;
@@ -337,10 +356,11 @@ public class ViManager
             commandEntry.activate(mode, tv, new String(initialString), passThru);
         } catch(Throwable ex) {
             // NOTE: do not set the flag until the activate completes.
-            // There have been cases of NPE. Particularly in relationship to nomands.
+            // There have been cases of NPE.
+            // Particularly in relationship to nomands.
             //
-            // If modal, and everything went well, then activeCommandEntry is already
-            // NULL. But not modal, then it isn't null.
+            // If modal, and everything went well, then activeCommandEntry is
+            // already NULL. But not modal, then it isn't null.
             Util.vim_beep();
             ex.printStackTrace();
             activeCommandEntry = null;

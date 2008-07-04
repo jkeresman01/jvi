@@ -5,16 +5,6 @@
  * Do ":help uganda"  in Vim to read copying and usage conditions.
  * Do ":help credits" in Vim to see a list of people who contributed.
  */
-/**
- * Title:        jVi<p>
- * Description:  A VI-VIM clone.
- * Use VIM as a model where applicable.<p>
- * Copyright:    Copyright (c) Ernie Rael<p>
- * Company:      Raelity Engineering<p>
- * @author Ernie Rael
- * @version 1.0
- */
-
 /*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -1134,6 +1124,12 @@ middle_code:
 	  case 'v':
 	  case 'V':
 	  case 0x1f & (int)('V'):	// Ctrl
+            if(ca.cmdchar == 'v' && !hasF(ViFeature.VisualCharMode)
+               || ca.cmdchar == 'V' && !hasF(ViFeature.VisualLineMode)
+               || ca.cmdchar == Util.ctrl('V')
+                    && !hasF(ViFeature.VisualBlockMode)) {
+              notImp(String.valueOf(ca.cmdchar));
+            }
 	    if (!checkclearop(oap))
                 nv_visual(ca, false);
 	    break;
@@ -1263,6 +1259,11 @@ middle_code:
     // May restart edit() ..... VISUAL MODE STUFF DELETED
 
     newChunk = true;
+  }
+
+  private static boolean hasF(ViFeature f)
+  {
+    return G.f.contains(f);
   }
 
   static void do_pending_operator(CMDARG cap, int old_col, boolean gui_yank)

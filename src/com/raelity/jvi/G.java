@@ -20,6 +20,8 @@
 
 package com.raelity.jvi;
 
+import java.util.EnumSet;
+
 /**
  *  A class of globals. Most taken directly from vim code.
  */
@@ -176,7 +178,7 @@ public class G
     /* The visual area is remembered for redo */
     public static boolean redo_VIsual_busy = false;
 
-   /*
+   /**
     * This flag is used to make auto-indent work right on lines where only a
     * <RETURN> or <ESC> is typed. It is set when an auto-indent is done, and
     * reset when any other editing is done on the line. If an <ESC> or <RETURN>
@@ -184,5 +186,9 @@ public class G
     */
     public static boolean did_ai = false;
 
+    /**
+     * The supported features.
+     */
+    static EnumSet<ViFeature> f = EnumSet.allOf(ViFeature.class);
 
 } // end com.raelity.jvi.G
