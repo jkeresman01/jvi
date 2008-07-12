@@ -65,7 +65,7 @@ public class DefaultViFactory implements ViFactory
     public static final String PROP_VITV = "ViTextView";
     public static final String PROP_BUF  = "ViBuffer";
 
-    // Really a WeakSet, all doc's that have been seen. valua always null
+    // Really a WeakSet, all doc's that have been seen. value always null
     protected Map<Document, Object> docSet
             = new WeakHashMap<Document,Object>();
 
@@ -128,20 +128,9 @@ public class DefaultViFactory implements ViFactory
                 System.err.println("Activation: getViTextView: create");
             }
             tv01 = createViTextView(editorPane);
+            attachBuffer(tv01);
 
-            Document doc = editorPane.getDocument();
-            Buffer buf = null;
-            if ( doc != null ) {
-                buf = (Buffer)doc.getProperty(PROP_BUF);
-                if ( buf == null ) {
-                    buf = createBuffer(tv01);
-                    doc.putProperty(PROP_BUF, buf);
-                    docSet.put(doc, null);
-                }
-                buf.addShare();
-            }
-
-            tv01.startup(buf);
+            tv01.startup();
             tv01.setWindow(new Window(tv01));
             editorPane.putClientProperty(PROP_VITV, tv01);
             editorSet.put(editorPane, null);
@@ -227,7 +216,42 @@ public class DefaultViFactory implements ViFactory
         }
         tv.shutdown();
         ep.putClientProperty(PROP_VITV, null);
-        Buffer buf = getBuffer(ep);
+        releaseBuffer(getBuffer(ep));
+    }
+
+
+    public void changeBuffer(ViTextView tv, Object _oldDoc)
+    {
+        Document oldDoc = (Document) _oldDoc;
+        if ( G.dbgEditorActivation.getBoolean() ) {
+            System.err.println("Activation: changeBuffer");
+        }
+        attachBuffer(tv);
+        releaseBuffer((Buffer)oldDoc.getProperty(PROP_BUF));
+    }
+
+
+    private void attachBuffer(ViTextView tv)
+    {
+        Document doc = tv.getEditorComponent().getDocument();
+        Buffer buf = null;
+        if ( doc != null )
+        {
+            buf = (Buffer)doc.getProperty(PROP_BUF);
+            if ( buf == null )
+            {
+                buf = createBuffer(tv);
+                doc.putProperty(PROP_BUF, buf);
+                docSet.put(doc, null);
+            }
+            buf.addShare();
+        }
+        tv.attachBuffer(buf);
+    }
+
+
+    private void releaseBuffer(Buffer buf)
+    {
         if ( buf != null ) {
             Document doc = (Document)buf.getDocument();
             buf.removeShare();
@@ -334,14 +358,14 @@ public class DefaultViFactory implements ViFactory
 
         // Back to default bahavior
         glass.setFocusCycleRoot(false);
-        glass.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
-                                    null);
-        glass.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
-                                    null);
-        glass.setFocusTraversalKeys(KeyboardFocusManager.DOWN_CYCLE_TRAVERSAL_KEYS,
-                                    null);
-        glass.setFocusTraversalKeys(KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS,
-                                    null);
+        glass.setFocusTraversalKeys(
+                KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
+        glass.setFocusTraversalKeys(
+                KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
+        glass.setFocusTraversalKeys(
+                KeyboardFocusManager.DOWN_CYCLE_TRAVERSAL_KEYS, null);
+        glass.setFocusTraversalKeys(
+                KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS, null);
         G.curwin.getEditorComponent().requestFocusInWindow();
     }
 

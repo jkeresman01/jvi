@@ -20,6 +20,7 @@ import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViMark.MarkException;
 import com.raelity.jvi.ViTextView;
 import com.raelity.text.TextUtil.MySegment;
+
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -501,6 +502,15 @@ public class DefaultBuffer extends Buffer {
             }
             return false;
         }
+
+        @Override
+        public int hashCode()
+        {
+            int hash = 7;
+            hash = 23 * hash + (this.pos != null ? this.pos.hashCode() : 0);
+            hash = 23 * hash + this.col;
+            return hash;
+        }
         
         /** This is optional, may throw an UnsupportedOperationException */
         public void set(int line, int col) {
@@ -565,7 +575,7 @@ public class DefaultBuffer extends Buffer {
         return getLineElement(line);
     }
 
-    protected ElemCache getElemCache(int offset) {
+    ElemCache getElemCache(int offset) {
         getElem(offset);
         return elemCache;
     }
@@ -781,7 +791,7 @@ public class DefaultBuffer extends Buffer {
      * Thus <code>undo()</code> and <code>redo()</code> treat them atomically.</li>
      * <li> Use <code>commitUndoGroup()</code> to place any accumulated
      * <code>UndoableEdit</code>s into a <code>CompoundEdit</code>;
-     * the application does this at strategic points, such as EndOfLine
+     * an application may use this at strategic points, such as EndOfLine
      * entry or cursor movement.</li>
      * </ol>
      * Note that certain methods, such as <code>undo()</code>, automatically issue

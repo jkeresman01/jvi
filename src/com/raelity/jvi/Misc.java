@@ -473,6 +473,8 @@ public class Misc implements ClipboardOwner {
    */
   static void gotoLine(int line, int flag) {
     if(G.isCoordSkip.getBoolean()) {
+      if(line > G.curbuf.getLineCount())
+          line = G.curbuf.getLineCount();
       int coordLine = G.curwin.getCoordLine(line);
       int offset = G.curwin.getBufferLineOffset(coordLine);
       int bufferLine = G.curbuf.getLineNumber(offset);

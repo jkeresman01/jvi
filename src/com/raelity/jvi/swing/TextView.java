@@ -22,25 +22,39 @@ package com.raelity.jvi.swing;
 
 import  static com.raelity.jvi.Constants.*;
 
-import  com.raelity.jvi.*;
-import  com.raelity.text.TextUtil.MySegment;
 
-import  javax.swing.JEditorPane;
-import  javax.swing.event.CaretEvent;
-import  javax.swing.event.CaretListener;
-import  javax.swing.text.BadLocationException;
-import  javax.swing.text.Caret;
-import  javax.swing.text.Element;
-import  javax.swing.text.MutableAttributeSet;
-import  javax.swing.text.SimpleAttributeSet;
-import  javax.swing.text.StyleConstants;
-import  javax.swing.text.StyledDocument;
-import  javax.swing.text.StyledEditorKit;
+import com.raelity.jvi.*;
+import com.raelity.jvi.swing.DefaultBuffer.ElemCache;
+import com.raelity.text.TextUtil.MySegment;
 
-import  java.awt.Color;
-import  java.awt.Point;
-import  java.awt.Rectangle;
-import  java.util.Arrays;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Arrays;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.JEditorPane;
+import javax.swing.JViewport;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
+import javax.swing.text.Element;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.Position;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+import javax.swing.text.StyledEditorKit;
 
 /**
  *  Presents a swing editor interface for use with vi. There is
@@ -56,7 +70,8 @@ import  java.util.Arrays;
  *  this class.
  *  </p>
  */
-public class TextView implements ViTextView
+public class TextView
+        implements ViTextView, PropertyChangeListener, ChangeListener
 {
     protected int mygen;
 
@@ -64,7 +79,6 @@ public class TextView implements ViTextView
     protected JEditorPane editorPane;
     protected DefaultBuffer buf;
     protected TextOps ops;
-    protected TextViewCache cache;
     protected Window window;
 
     protected ViStatusDisplay statusDisplay;
@@ -82,12 +96,14 @@ public class TextView implements ViTextView
 
     public TextView( final JEditorPane editorPane )
     {
+        super();
         this.editorPane = editorPane;
         mygen = ++gen;
 
         cursorSaveListener = new CaretListener() {
             public void caretUpdate(CaretEvent ce) {
-                ViManager.caretUpdate(TextView.this, lastDot, ce.getDot(), ce.getMark());
+                ViManager.caretUpdate(
+                        TextView.this, lastDot, ce.getDot(), ce.getMark());
                 lastDot = ce.getDot();
             }
         };
@@ -107,16 +123,20 @@ public class TextView implements ViTextView
     }
 
 
-    public void startup( Buffer buf )
+    public void startup()
     {
-        this.buf = (DefaultBuffer)buf;
-        if ( cache == null ) {
-            cache = createTextViewCache();
-        }
         if ( statusDisplay == null ) {
             statusDisplay = createStatusDisplay();
         }
         enableCursorSave();
+    }
+
+
+    public void attachBuffer( Buffer buf )
+    {
+        if(this.buf != null)
+            ViManager.dumpStack();
+        this.buf = (DefaultBuffer)buf;
     }
 
 
@@ -129,7 +149,7 @@ public class TextView implements ViTextView
                 System.err.println("TV.shutdown: LAST CLOSE");
             }
         }
-        cache.shutdown(editorPane);
+        shutdown(editorPane); // CACHE
         ViManager.detached(editorPane);
         editorPane = null;
     }
@@ -181,19 +201,6 @@ public class TextView implements ViTextView
     // NEEDSWORK: get rid of the "Window" class, maybe make it an interface
     //
 
-
-    /**
-     * @return the current location of the cursor in the window,
-     *  note that this cursor is dynamic as caret moves this gets
-     *  updated.
-     */
-    public ViFPOS getWCursor()
-    {
-        return cache.getCursor();
-    }
-
-    //public FPOS getWCursor() { return window.getWCursor(); }
-
     public int getWCurswant()              { return window.getWCurswant(); }
     public void setWCurswant(int c)               { window.setWCurswant(c); }
     public boolean getWSetCurswant()       { return window.getWSetCurswant(); }
@@ -225,15 +232,6 @@ public class TextView implements ViTextView
     }
 
 
-    /**
-     *  Override this method to provide different cache implementation.
-     */
-    protected TextViewCache createTextViewCache()
-    {
-        return new TextViewCache(this);
-    }
-
-
     public void attach()
     {
         if ( ops == null ) {
@@ -243,15 +241,15 @@ public class TextView implements ViTextView
           System.err.println("TV.attach: " + editorPane.hashCode());
         }
         expectedCaretPosition = -1;
-        cache.attach(editorPane);
+        attach(editorPane); // CACHE
     }
 
 
     public void detach()
     {
-        cache.detach(editorPane);
+        detach(editorPane); // CACHE
 
-        ViManager.detached(editorPane); // NEEDSWORK: what's this for?
+        ViManager.detached(editorPane);
     }
 
 
@@ -617,44 +615,14 @@ public class TextView implements ViTextView
     }
 
 
-    public int getViewTopLine()
-    {
-        return cache.getViewTopLine();
-    }
-
-
-    public int getViewBottomLine()
-    {
-        return cache.getViewBottomLine();
-    }
-
-
-    public void setViewTopLine( int line )
-    {
-        cache.setViewTopLine(line);
-    }
-
-
-    public int getViewBlankLines()
-    {
-        return cache.getViewBlankLines();
-    }
-
-
-    public int getViewLines()
-    {
-        return cache.getViewLines();
-    }
-
-
     /** Scroll down (n_lines positive) or up (n_lines negative) the
      * specified number of lines.
      */
     public void scroll( int n_lines )
     {
-        Point pt = cache.getViewport().getViewPosition();
-        pt.translate(0, n_lines * cache.getFheight());
-        cache.getViewport().setViewPosition(pt);
+        Point pt = getViewport().getViewPosition();
+        pt.translate(0, n_lines * getFheight());
+        getViewport().setViewPosition(pt);
     }
 
 
@@ -695,16 +663,14 @@ public class TextView implements ViTextView
         }
         //cache.setViewCoordTopLine(coordLine);
 
-        //Point p = new Point(getPoint0());
-        //p.translate(0, (coordLine - 1) * cache.getFheight());
-        Point p = new Point(0, (coordLine - 1) * cache.getFheight());
+        Point p = new Point(0, (coordLine - 1) * getFheight());
         // If point is after viewport top && within one char of top
         // then just return, to avoid wiggle
-        int topDiff = p.y - cache.getViewport().getViewPosition().y;
-        if ( topDiff > 0 && topDiff < cache.getFheight() ) {
+        int topDiff = p.y - getViewport().getViewPosition().y;
+        if ( topDiff > 0 && topDiff < getFheight() ) {
             return;
         }
-        cache.getViewport().setViewPosition(p);
+        getViewport().setViewPosition(p);
     }
 
 
@@ -760,6 +726,11 @@ public class TextView implements ViTextView
         if ( !G.isCoordSkip.getBoolean() ) {
             return line;
         }
+        if(line > getBuffer().getLineCount()) {
+            ViManager.dumpStack("line "+line
+                                +" past "+getBuffer().getLineCount());
+            line = getBuffer().getLineCount();
+        }
         int coordLine = getInternalCoordLine(line);
         if ( G.dbgCoordSkip.getBoolean() ) {
             System.err.println("getCoordLine: " + coordLine);
@@ -777,7 +748,7 @@ public class TextView implements ViTextView
             return getBuffer().getLineStartOffset(coordLine);
         }
         Point p = new Point(getPoint0());
-        p.translate(0, (coordLine - 1) * cache.getFheight());
+        p.translate(0, (coordLine - 1) * getFheight());
         int offset = getEditorComponent().viewToModel(p);
         Rectangle r1 = null;
         try {
@@ -795,6 +766,7 @@ public class TextView implements ViTextView
     }
 
 
+    // NEEDSWORK: This gets CALLED A LOT
     private int getInternalCoordLine( int line )
     {
         int coordLine = 1;
@@ -802,11 +774,11 @@ public class TextView implements ViTextView
           int offset = getBuffer().getLineStartOffset(line);
           Rectangle lineRect = getEditorComponent().modelToView(offset);
           int yDiff = lineRect.y - getPoint0().y;
-          coordLine = yDiff / cache.getFheight() + 1;
+          coordLine = yDiff / getFheight() + 1;
           if ( G.dbgCoordSkip.getBoolean() ) {
               System.err.println(String.format(
                       "\tgetInternalCoordLine: %d, line1: %d:%d, line %d:%d",
-                      coordLine, 1, getPoint0().y, line, lineRect.y));;
+                      coordLine, 1, getPoint0().y, line, lineRect.y));
            }
         } catch (BadLocationException ex) {
             //Logger.getLogger(TextView.class.getName()).log(Level.SEVERE, null, ex);
@@ -822,7 +794,7 @@ public class TextView implements ViTextView
             return;
         }
         Point p = new Point(getPoint0());
-        p.translate(0, (coordLine - 1) * cache.getFheight());
+        p.translate(0, (coordLine - 1) * getFheight());
         int newOffset = getEditorComponent().viewToModel(p);
         //assert col == 0;
         setCaretPosition(newOffset + col);
@@ -948,7 +920,549 @@ public class TextView implements ViTextView
         return ops;
     }
 
+    //
+    // The cursor is a magic FPOS. It reads the current caret positon
+    // and writes move the caret.
+    //
+    private WCursor magicCursor = new WCursor();
 
+    private class WCursor extends ViFPOS.abstractFPOS
+    {
+        final public int getLine()
+        {
+            return getBuffer().getElemCache(getCaretPosition()).line;
+        }
+
+        final public int getColumn()
+        {
+            int offset = getCaretPosition();
+            return offset - getBuffer().getElemCache(offset)
+                                       .elem.getStartOffset();
+        }
+
+        final public int getOffset()
+        {
+            return getCaretPosition();
+        }
+
+        final public void set(int line, int column)
+        {
+            //System.err.println("setPosition("+line+","+column+")");
+            Element elem = getBuffer().getLineElement(line);
+            int startOffset = elem.getStartOffset();
+            int endOffset = elem.getEndOffset();
+            int adjustedColumn = -1;
+
+            if (column < 0) {
+                adjustedColumn = 0;
+            } else if (column >= endOffset - startOffset) {
+                column = endOffset - startOffset - 1;
+            }
+
+            if (adjustedColumn >= 0) {
+                ViManager.dumpStack("line " + line
+                        + ", column " + column
+                        + ", length " + (endOffset - startOffset));
+                column = adjustedColumn;
+            }
+
+            setCaretPosition(startOffset + column);
+        }
+
+        final public ViFPOS copy()
+        {
+            int offset = getCaretPosition();
+            ElemCache ec = getBuffer().getElemCache(offset);
+            FPOS fpos = new FPOS(offset, ec.line, offset - ec.elem.getStartOffset());
+            //fpos.initFPOS(getOffset(), getLine(), getColumn());
+            return fpos;
+        }
+    };
+
+    /**
+     * @return the current location of the cursor in the window,
+     *  note that this cursor is dynamic as caret moves this gets
+     *  updated.
+     */
+    final public ViFPOS getWCursor()
+    {
+        return magicCursor;
+    }
+
+    //////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////
+    //
+    // Following is the historical "TextViewCache"
+    //
+    // It monitors the EditorPane's Viewport
+    // along with other event changes.
+    //
+
+    protected void changeDocument(PropertyChangeEvent e) {
+        if (cacheTrace.getBoolean()) {
+            System.err.println("doc switch: ");
+        }
+        point0 = null;
+        buf = null;
+        ViManager.getViFactory().changeBuffer(this, e.getOldValue());
+    }
+
+    final static int DIR_TOP = -1;
+    final static int DIR_BOT = 1;
+
+    private static BooleanOption cacheTrace
+            = (BooleanOption) Options.getOption(Options.dbgCache);
+
+    final protected JViewport getViewport()
+    {
+        return viewport;
+    }
+
+    final protected int getFheight()
+    {
+        return fheight;
+    }
+    /** current font information. */
+    private FontMetrics fm;
+    /** height of the font */
+    private int fheight;
+
+    // The visible part of the document, negative means not valid.
+    // These values are updated whenever the viewport changes.
+    private JViewport viewport;
+    private Point viewportPosition;
+    private Dimension viewportExtent;
+    private int topLineOffset;
+    private int bottomLineOffset;
+    private int viewTopLine;
+    private int viewBottomLine;
+    private int viewLines;
+
+    /** @return the top line number */
+    public int getViewTopLine()
+    {
+        return viewTopLine;
+    }
+
+    public void setViewTopLine(int line)
+    {
+        if (line == getViewTopLine()) {
+            return; // nothing to change
+        }
+        int offset = getBuffer().getLineStartOffset(line);
+        Rectangle r;
+        try {
+            r = getEditorComponent().modelToView(offset);
+        } catch (BadLocationException e) {
+            Util.vim_beep();
+            return;
+        }
+        Point p = r.getLocation();
+        p.translate(-p.x, 0); // leave a few pixels to left
+        viewport.setViewPosition(p);
+    }
+
+    public int getViewBottomLine()
+    {
+        return viewBottomLine + 1;  // NEEDSWORK: returning line past full line
+    }
+
+    public int getViewBlankLines()
+    {
+        int blank = viewLines - (viewBottomLine - viewTopLine + 1);
+        return blank;
+    }
+
+    /** @return number of lines on viewport */
+    public int getViewLines()
+    {
+        return viewLines;
+    }
+
+    protected void fillLinePositions()
+    {
+        /*
+        SwingUtilities.invokeLater(
+        new Runnable() { public void run() { fillLinePositionsFinally(); }});
+         */
+        fillLinePositionsFinally();
+    }
+
+    /** determine document indicators visible in the viewport */
+    protected void fillLinePositionsFinally()
+    {
+        Point newViewportPosition;
+        Dimension newViewportExtent;
+        Rectangle r;
+        int newViewLines = -1;
+        boolean topLineChange = false;
+
+        if (viewport == null) {
+            newViewportPosition = null;
+            newViewportExtent = null;
+        } else {
+            newViewportPosition = viewport.getViewPosition();
+            newViewportExtent = viewport.getExtentSize();
+        }
+
+        int newViewTopLine;
+        if (newViewportPosition == null
+                || newViewportExtent == null
+                || (newViewTopLine = findFullLine(
+                                        newViewportPosition, DIR_TOP)) <= 0) {
+            viewTopLine = -1;
+            viewBottomLine = -1;
+            newViewLines = -1;
+        } else {
+            if (viewTopLine != newViewTopLine) {
+                topLineChange = true;
+            }
+            viewTopLine = newViewTopLine;
+            Point pt = new Point(newViewportPosition); // top-left
+            pt.translate(0, newViewportExtent.height - 1); // bottom-left
+            viewBottomLine = findFullLine(pt, DIR_BOT);
+            //
+            // Calculate number of lines on screen, some may be blank
+            //
+            newViewLines = newViewportExtent.height / fheight;
+        }
+
+        boolean sizeChange = false;
+        if (newViewportExtent == null || !newViewportExtent.equals(viewportExtent) || newViewLines != viewLines) {
+            sizeChange = true;
+        }
+        viewLines = newViewLines;
+        viewportPosition = newViewportPosition;
+        viewportExtent = newViewportExtent;
+
+        if (sizeChange) {
+            ViManager.viewSizeChange(this);
+        }
+        if (sizeChange || topLineChange) {
+            ViManager.viewMoveChange(this);
+        }
+    }
+
+    protected Rectangle modelToView(int offset) throws BadLocationException
+    {
+        Rectangle r = getEditorComponent().modelToView(offset);
+        // (0,3,300,300).contains(3,3,0,17) because of the 0 width (jdk1.5 at least)
+        // so...
+        if (r.width == 0) {
+            r.width = 1;
+        }
+        return r;
+    }
+
+    /**
+     * Determine the line number of the text that is fully displayed
+     * (top or bottom not chopped off).
+     * @return line number of text at point, -1 if can not be determined
+     */
+    private int findFullLine(Point pt, int dir)
+    {
+        try {
+            return findFullLineThrow(pt, dir);
+        } catch (BadLocationException ex) {
+            // Logger.getLogger(TextViewCache.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("findFullLine: ");
+            return -1;
+        }
+    }
+
+    private int findFullLineThrow(Point pt, int dir) throws BadLocationException
+    {
+        Rectangle vrect = viewport.getViewRect();
+
+        int offset = getEditorComponent().viewToModel(pt);
+        if (offset < 0) {
+            return -1;
+        }
+
+        int line = getBuffer().getLineNumber(offset);
+        Rectangle lrect = modelToView(offset);
+        if (vrect.contains(lrect)) {
+            return line;
+        }
+        int oline = line;
+        line -= dir; // move line away from top/bottom
+        if (line < 1 || line > getBuffer().getLineCount()) {
+            //System.err.println("findFullLine: line out of bounds " + line);
+            return oline;
+        }
+
+        offset = getBuffer().getLineStartOffset(line);
+        lrect = modelToView(offset);
+        if (!vrect.contains(lrect)) {
+            //System.err.println("findFullLine: adjusted line still out " + line);
+        }
+        return line;
+    }
+
+    //
+    // Track changes of interest.
+    //
+    // There are two types of cached things we're interested in,
+    //	- data from the document, especially around the cursor
+    //	  Caret movement and document changes affect this
+    //
+    //	- visible screen: top line, bottom line
+    //	  resize, viewport affects this
+    //
+
+    private void changeFont(Font f)
+    {
+        int h;
+        if (f == null) {
+            fm = null;
+        } else {
+            fm = getEditorComponent().getFontMetrics(f);
+            fheight = fm.getHeight();
+            fillLinePositions();
+        }
+    }
+
+    /** The container for the editor has changed. */
+    private void changeViewport(Object component)
+    {
+        if (viewport != null) {
+            viewport.removeChangeListener(this);
+        }
+        if (component instanceof JViewport) {
+            viewport = (JViewport) component;
+            viewport.addChangeListener(this);
+        } else {
+            viewport = null;
+        }
+        changeView(true);
+    }
+
+    /** The defining rectangle of the viewport has changed
+     *  @param init true indicates that the position should be
+     *  checked immeadiately, not potentially defered with an invoke later.
+     */
+    private void changeView(boolean init)
+    {
+        if (init) {
+            fillLinePositionsFinally();
+        } else {
+            fillLinePositions();
+        }
+    }
+
+    /** This is called from the managing textview,
+     * listen to things that affect the cache.
+     */
+    private void attach(JEditorPane editor)
+    {
+        if (G.dbgEditorActivation.getBoolean()) {
+            System.err.println("TVCache: attach: "
+                               + (editor == null ? 0 : editor.hashCode()));
+        }
+        if (freezer != null) {
+            freezer.stop();
+            freezer = null;
+        }
+
+        if (hasListeners) {
+            return;
+        }
+
+        hasListeners = true;
+        editor.addPropertyChangeListener("font", this);
+        editor.addPropertyChangeListener("document", this);
+        editor.addPropertyChangeListener("ancestor", this);
+        changeFont(editor.getFont());
+        changeViewport(editor.getParent());
+    }
+    boolean hasListeners = false;
+
+    /** Dissassociate from the observed components. */
+    private void detach(JEditorPane ep)
+    {
+        if (G.dbgEditorActivation.getBoolean()) {
+            System.err.println("TVCache: detach: "
+                               + (ep == null ? "" : ep.hashCode()));
+        }
+        if (ep == null) {
+            return;
+        }
+        freezer = new FreezeViewport(ep);
+
+    //removeListeners();
+    }
+
+    private void shutdown(JEditorPane ep)
+    {
+        if (freezer != null) {
+            freezer.stop();
+            freezer = null;
+        }
+        removeListeners();
+    }
+
+    private void removeListeners()
+    {
+        hasListeners = false;
+        JEditorPane editor = getEditorComponent();
+        editor.removePropertyChangeListener("font", this);
+        editor.removePropertyChangeListener("document", this);
+        editor.removePropertyChangeListener("ancestor", this);
+        changeViewport(null);
+    }
+    private FreezeViewport freezer;
+
+    //
+    // Listener events
+    //
+
+    // -- property change events --
+    public void propertyChange(PropertyChangeEvent e)
+    {
+        String p = e.getPropertyName();
+        Object o = e.getNewValue();
+        if ("font".equals(p)) {
+            changeFont((Font) o);
+        } else if ("document".equals(p)) {
+            changeDocument(e); // this assert
+        } else if ("ancestor".equals(p)) {
+            changeViewport(o);
+        }
+    }
+
+
+    // -- viewport event --
+    public void stateChanged(ChangeEvent e)
+    {
+        changeView(false);
+    }
+
+    /**
+     * Stabilize (do not allow scrolling) the JViewport displaying
+     * the indicated JEditorPane.
+     * This is typically used when the underlying document may change while
+     * being edited in another view. The {@link #stop} method is used to release
+     * the listeners and so unfreeze the viewport.
+     * <p>This is a one shot class. The editor is expected to be good to go.
+     * Only document changes are listened to. The first char of the top line is
+     * pinned to the upper left corner. If needed, this could be extended
+     * to pin the horizontal position as well.
+     */
+    public static class FreezeViewport implements DocumentListener
+    {
+        private JEditorPane ep;
+        private JViewport vp;
+        private AbstractDocument doc;
+        private Position pos;
+        private int topLine;
+        private int nLine;
+
+        public FreezeViewport(JEditorPane ep)
+        {
+            this.ep = ep;
+            Object o = ep.getDocument();
+            if (!(o instanceof AbstractDocument)) {
+                return;
+            }
+            doc = (AbstractDocument) ep.getDocument();
+            try {
+                doc.readLock();
+                vp = (JViewport) ep.getParent(); // may throw class cast, its ok
+                Element root = doc.getDefaultRootElement();
+                nLine = root.getElementCount();
+
+                // Get the offset of the first displayed char in the top line
+                Point pt = vp.getViewPosition();
+                int offset = ep.viewToModel(pt);
+
+                // Determine the line number of the top displayed line
+                topLine = root.getElementIndex(offset);
+
+                // Note. offset may not be first char, due to horiz scroll
+                // make offset the first char of the line
+                offset = root.getElement(topLine).getStartOffset();
+
+                // Get marker to offset in the document
+                pos = doc.createPosition(offset);
+                doc.addDocumentListener(this);
+            } catch (Exception ex) {
+                // Note: did not start listener
+            } finally {
+                doc.readUnlock();
+            }
+        }
+
+        public void stop()
+        {
+            if (doc != null) {
+                doc.removeDocumentListener(this);
+            }
+        }
+
+        private void adjustViewport(int offset)
+        {
+            // Might be able to use info from DocumentEvent to optimize
+            try {
+                Point pt = ep.modelToView(offset).getLocation();
+                pt.translate(-pt.x, 0); // x <-- 0, leave a few pixels to left
+                vp.setViewPosition(pt);
+            } catch (Exception ex) {
+                stop();
+            }
+            return;
+        }
+
+        private void handleChange(DocumentEvent e)
+        {
+            // Note while in listener document can't change, no read lock
+            Element root = doc.getDefaultRootElement();
+            int newNumLine = root.getElementCount();
+            // return if line count unchanged or changed after our mark
+            if (nLine == newNumLine || e.getOffset() > pos.getOffset()) {
+                return;
+            }
+            nLine = newNumLine;
+
+            int newTopLine = root.getElementIndex(pos.getOffset());
+            if (topLine == newTopLine) {
+                return;
+            }
+            topLine = newTopLine;
+
+            // make a move
+            final int offset = root.getElement(topLine).getStartOffset();
+            if (EventQueue.isDispatchThread()) {
+                adjustViewport(offset);
+            } else {
+                EventQueue.invokeLater(new Runnable()
+                {
+                    public void run()
+                    {
+                        adjustViewport(offset);
+                    }
+                });
+            }
+        }
+
+        public void insertUpdate(DocumentEvent e)
+        {
+            handleChange(e);
+        }
+
+        public void removeUpdate(DocumentEvent e)
+        {
+            handleChange(e);
+        }
+
+        public void changedUpdate(DocumentEvent e)
+        {
+        }
+    }
+
+
+    //////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////
     //
     // Visual Select

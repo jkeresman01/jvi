@@ -1775,6 +1775,7 @@ middle_code:
 
   static void op_format(OPARG oap)  {
     do_op("op_format");
+    // NEESDWORK: hook into platform's format (if available)
     op_colon(oap);
   }
   
@@ -1813,7 +1814,7 @@ middle_code:
     if (oap.op_type == OP_INDENT)
     {
       String indent;
-      if (G.p_ep.equals(""))
+      if (G.p_ep.getString().equals(""))
         indent = "indent";
       else
         indent = G.p_ep.getString();
@@ -1822,7 +1823,7 @@ middle_code:
     else if (oap.op_type == OP_FORMAT)
     {
         String fmt;
-	if (G.p_fp.equals("")) {
+	if (G.p_fp.getString().equals("")) {
           fmt = "fmt";
         } else {
           fmt = G.p_fp.getString().replace(

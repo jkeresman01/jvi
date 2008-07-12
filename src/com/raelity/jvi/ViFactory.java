@@ -38,152 +38,158 @@ import javax.swing.Action;
 import com.raelity.jvi.ViTextView.TAGOP;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
-import java.util.List;
 
 /**
  * This provides Vi the items it needs to interface with
  * swing UI environment.
  */
-public interface ViFactory {
+public interface ViFactory
+{
+    public Class loadClass(String name) throws ClassNotFoundException;
 
-  public Class loadClass(String name) throws ClassNotFoundException;
+    /** Return a TextView, create one if it doesn't already exist */
+    public ViTextView getViTextView(JEditorPane editorPane);
 
-  /** Return a TextView, create one if it doesn't already exist */
-  public ViTextView getViTextView(JEditorPane editorPane);
+    /** Return a Buffer, create one if it doesn't already exist */
+    public Buffer getBuffer(JEditorPane editorPane);
 
-  /** Return a Buffer, create one if it doesn't already exist */
-  public Buffer getBuffer(JEditorPane editorPane);
+    /** Handle changing document in text view.
+     * Editor in TextView should hold new document.
+     * @param tv TextView holding editor that is changing document
+     * @param oldDoc previous document (a Document for swing)
+     */
+    public void changeBuffer(ViTextView tv, Object oldDoc);
 
-  /** @return true if standalone (debug), else false */
-  public boolean isStandalone();
+    /** @return true if standalone (debug), else false */
+    public boolean isStandalone();
 
-  /** @return null if TextView does not exist */
-  public ViTextView getExistingViTextView(Object editorPane);
-  
-  /** @return Set of active ViTextView, some may have retired */
-  public Set<ViTextView> getViTextViewSet();
-  
-  /** @return true if the argument ViTextView is visible */
-  public boolean isVisible(ViTextView tv);
-  
-  /** @return Set of active Buffer, some may have retired */
-  public Set<Buffer> getBufferSet();
+    /** @return null if TextView does not exist */
+    public ViTextView getExistingViTextView(Object editorPane);
 
-  /** For an environmental object, used for debug output */
-  public String getDisplayFilename(Object appHandle);
-  
-  /**
-   * This editor pane is going away, forget about it.
-   */
-  public void shutdown(JEditorPane editorPane);
+    /** @return Set of active ViTextView, some may have retired */
+    public Set<ViTextView> getViTextViewSet();
+
+    /** @return true if the argument ViTextView is visible */
+    public boolean isVisible(ViTextView tv);
+
+    /** @return Set of active Buffer, some may have retired */
+    public Set<Buffer> getBufferSet();
+
+    /** For an environmental object, used for debug output */
+    public String getDisplayFilename(Object appHandle);
+
+    /**
+     * This editor pane is going away, forget about it.
+     */
+    public void shutdown(JEditorPane editorPane);
 
   /*
    * Register editor pane for use with vi.
    * This is a nop if already registered.
    */
-  public void registerEditorPane(JEditorPane editorPane);
+    public void registerEditorPane(JEditorPane editorPane);
 
-  /**
-   * File manipulation handled through this object.
-   */
-  public ViFS getFS();
+    /**
+     * File manipulation handled through this object.
+     */
+    public ViFS getFS();
 
-  /** create an output stream for some kind of results.
-   *  @param type Should be a constant from ViOutputStream,
-   *          e.g. ViOutputStream.SEARCH.
-   *  @param info qualifier for the output stream, e.g. search pattern.
-   * @param priority 0 - 10 where 0 is lowest priority, 5 is normal,
-   *        0-2 is low, don't raise window.
-   */
-  public ViOutputStream createOutputStream(ViTextView tv,
-                                           Object type,
-                                           Object info,
-                                           int priority);
-  
-  public void startGlassKeyCatch(KeyListener kl);
-  public void stopGlassKeyCatch();
+    /** create an output stream for some kind of results.
+     *  @param type Should be a constant from ViOutputStream,
+     *          e.g. ViOutputStream.SEARCH.
+     *  @param info qualifier for the output stream, e.g. search pattern.
+     * @param priority 0 - 10 where 0 is lowest priority, 5 is normal,
+     *        0-2 is low, don't raise window.
+     */
+    public ViOutputStream createOutputStream(ViTextView tv,
+            Object type,
+            Object info,
+            int priority);
 
-  public void startModalKeyCatch(KeyListener kl);
-  public void stopModalKeyCatch();
+    public void startGlassKeyCatch(KeyListener kl);
+    public void stopGlassKeyCatch();
 
-  /**
-   * The factory keeps track of which Window is active when there
-   * is a switch. The argument may or may not be used depending on
-   * the implementation.
-   * @return the Window for the specified editor
-   */
-  public Window lookupWindow(JEditorPane editorPane);
+    public void startModalKeyCatch(KeyListener kl);
+    public void stopModalKeyCatch();
 
-  /**
-   * @return action suitable for default key action
-   */
-  public Action createCharAction(String name);
+    /**
+     * The factory keeps track of which Window is active when there
+     * is a switch. The argument may or may not be used depending on
+     * the implementation.
+     * @return the Window for the specified editor
+     */
+    public Window lookupWindow(JEditorPane editorPane);
 
-  /**
-   * @return action for picking up specified key
-   */
-  public Action createKeyAction(String name, char key);
-  
-  /**
-   * fetch the keymap for insert mode operations
-   */
-  //public Keymap getInsertModeKeymap();
-  
-  /**
-   * fetch the keymap for normal mode operations
-   */
-  //public Keymap getNormalModeKeymap();
-  
-  /**
-   * @return edit mode action for specific operation
-   */
-  public Action createInsertModeKeyAction(String name, char vkey, String desc);
-  
-  /**
-   * @return normal mode action for specific operation
-   */
-  public Action createNormalModeKeyAction(String name, int vkey, String desc);
-  
-  /**
-   * The actions used for keymap translation may be munged by the environment
-   * so we need a way to get back the original action.
-   */
-  public ActionListener xlateKeymapAction(ActionListener act);
+    /**
+     * @return action suitable for default key action
+     */
+    public Action createCharAction(String name);
 
-  /**
-   * Create a property descriptor. Typically for an option bean.
-   * @param optName
-   * @param methodName
-   * @param clazz
-   * @return 
-   * @throws java.beans.IntrospectionException
-   */
-  public PropertyDescriptor createPropertyDescriptor(String optName,
-                                                     String methodName,
-                                                     Class clazz)
-  throws IntrospectionException;
+    /**
+     * @return action for picking up specified key
+     */
+    public Action createKeyAction(String name, char key);
 
-  /**
-   * A command entry object will be created if needed.
-   * @return a CmdEntry object to handle the specified type of user input.
-   */
-  public ViCmdEntry createCmdEntry(int type);
+    /**
+     * fetch the keymap for insert mode operations
+     */
+    //public Keymap getInsertModeKeymap();
 
-  public Preferences getPreferences();
-  
-  //
-  // Just stuff all the tag stuff here for now
-  //
+    /**
+     * fetch the keymap for normal mode operations
+     */
+    //public Keymap getNormalModeKeymap();
 
-  public void startTagPush(ViTextView tv, String ident);
+    /**
+     * @return edit mode action for specific operation
+     */
+    public Action createInsertModeKeyAction(String name, char vkey, String desc);
 
-  public void finishTagPush(ViTextView tv);
-  
-  public void tagStack(TAGOP op, int count);
-  
-  public void displayTags();
-  
-  public void tagDialog(ColonCommands.ColonEvent e);
+    /**
+     * @return normal mode action for specific operation
+     */
+    public Action createNormalModeKeyAction(String name, int vkey, String desc);
 
-  public void commandEntryAssist(ViCmdEntry cmdEntry, boolean enable);
+    /**
+     * The actions used for keymap translation may be munged by the environment
+     * so we need a way to get back the original action.
+     */
+    public ActionListener xlateKeymapAction(ActionListener act);
+
+    /**
+     * Create a property descriptor. Typically for an option bean.
+     * @param optName
+     * @param methodName
+     * @param clazz
+     * @return
+     * @throws java.beans.IntrospectionException
+     */
+    public PropertyDescriptor createPropertyDescriptor(String optName,
+            String methodName,
+            Class clazz)
+            throws IntrospectionException;
+
+    /**
+     * A command entry object will be created if needed.
+     * @return a CmdEntry object to handle the specified type of user input.
+     */
+    public ViCmdEntry createCmdEntry(int type);
+
+    public Preferences getPreferences();
+
+    //
+    // Just stuff all the tag stuff here for now
+    //
+
+    public void startTagPush(ViTextView tv, String ident);
+
+    public void finishTagPush(ViTextView tv);
+
+    public void tagStack(TAGOP op, int count);
+
+    public void displayTags();
+
+    public void tagDialog(ColonCommands.ColonEvent e);
+
+    public void commandEntryAssist(ViCmdEntry cmdEntry, boolean enable);
 }

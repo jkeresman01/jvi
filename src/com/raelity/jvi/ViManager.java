@@ -135,7 +135,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.0.x5");
+    public static final jViVersion version = new jViVersion("1.2.0.x7");
 
     private static boolean enabled;
 
@@ -669,9 +669,10 @@ public class ViManager
         return true;
     }
 
-    /** requestSwitch can be used from IDE code for situation where an editor
-     * is activated. It allows things to be initialized, some with visual
-     * implications, before a key is entered.
+    /** requestSwitch can be used from platform code for situation where an
+     * editor is activated. It allows things to be initialized,
+     * with some visual implications, before a key is entered.
+     * It should typically only be used after activateAppEditor.
      */
     public static void requestSwitch(JEditorPane ep)
     {

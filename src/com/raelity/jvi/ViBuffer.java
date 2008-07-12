@@ -130,11 +130,28 @@ public interface ViBuffer {
 
     public void displayFileInfo(ViTextView tv);
 
+    /**
+     * Uses ViFS to get the info.
+     * @return
+     */
     public String getDisplayFileName();
 
     public String getDisplayFileNameAndSize();
 
+    /**
+     * In the future, to support multiple file modifiers, could take a File
+     * as an argument, and return a File. Or take a String which is the list
+     * of options.
+     *
+     * VIM: ":help filename-modifiers"
+     *
+     * NEEDSWORK: missing options, only one option handled
+     */
     public String modifyFilename(char option);
 
+    /**
+     * This method provides a file only so that the path can be examined.
+     * @return null or the path for this file
+     */
     public File getJavaFile();
 }

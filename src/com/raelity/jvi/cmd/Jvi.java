@@ -144,14 +144,15 @@ public class Jvi
 
         editor.setCaretColor(Color.black);
 
-        //((BooleanOption)Options.getOption(Options.dbgKeyStrokes)).setBoolean(true);
-        ViManager.activateAppEditor(editor, null, "Jvi.setupFrame");
-
         TextView tv = (TextView)ViManager.getViTextView(editor);
         StatusDisplay sd = (StatusDisplay)tv.getStatusDisplay();
         sd.generalStatus = f.generalStatusBar;
         sd.strokeStatus  = f.strokeStatusBar;
         sd.modeStatus    = f.modeStatusBar;
+
+        //((BooleanOption)Options.getOption(Options.dbgKeyStrokes)).setBoolean(true);
+        ViManager.activateAppEditor(editor, null, "Jvi.setupFrame");
+        ViManager.requestSwitch(editor);
     }
 
 

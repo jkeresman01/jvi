@@ -281,7 +281,10 @@ public interface ViTextView extends ViOptionBag {
   public void detach();
   
   /** called after TV and Buffer are constructed */
-  public void startup(Buffer buf);
+  public void startup();
+
+  /** attach Buffer to the text view */
+  public void attachBuffer(Buffer buf);
   
   /** going away, do any remaining cleanup */
   public void shutdown();
