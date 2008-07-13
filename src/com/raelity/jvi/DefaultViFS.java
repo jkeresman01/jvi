@@ -20,8 +20,6 @@
 
 package com.raelity.jvi;
 
-import java.io.File;
-
 /**
  *  A default implementation of the {@link com.raelity.jvi.ViFS}
  *  (vi file system support).
@@ -55,27 +53,49 @@ public class DefaultViFS implements ViFS
     }
 
 
-    public void write( ViTextView tv, boolean force )
+    public boolean write(ViTextView tv,
+                         boolean force,
+                         String fName,
+                         Integer[] range)
     {
-        Msg.emsg("write(tv) not implemented");
+        // Compatibility method with old interface
+        //
+        // if(range.length == 0) {
+        //     if(fName == null) {
+        //         return write(tv, force);
+        //     }
+        //     return write(tv, fName, force);
+        // }
+        // assert false : "range not supported";
+        //
+
+        String r = null;
+        if(range.length > 0) {
+            r = "" + range[0] + "," + range[1];
+        }
+
+        System.err.println(String.format(
+                "write tv: %s%s, range: %s", (force?"! ":""), fName, r));
+        return true;
     }
 
 
-    public void writeAll( boolean force )
+    public boolean writeAll( boolean force )
     {
         Msg.emsg("writAll() not implemented");
+        return false;
     }
 
 
-    public void write( ViTextView tv, File file, boolean force )
-    {
-        Msg.emsg("write(tv, file) not implemented");
-    }
-
-
-    public void edit( ViTextView tv, int n, boolean force )
+    public void edit( ViTextView tv, boolean force, int n )
     {
         Msg.emsg("edit(tv, int{" + n + "}, force) not implemented");
+    }
+
+
+    public void edit( ViTextView tv, boolean force, String fName )
+    {
+        Msg.emsg("edit(tv, int{" + fName + "}, force) not implemented");
     }
 
 

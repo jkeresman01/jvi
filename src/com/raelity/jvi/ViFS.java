@@ -20,8 +20,6 @@
 
 package com.raelity.jvi;
 
-import java.io.File;
-
 /**
  * jVi's interactions with files are funnelled through this interface.
  */
@@ -44,28 +42,43 @@ public interface ViFS
 
 
     /**
-     *  Write the specified "file object".
+     * Write the specified text to the specified fileName.
+     * If file is null, use a dialog to get the file name.
+     *
+     * @param tv Editor containing data to write
+     * @param force If a '!' was used with the command, then force is true.
+     * @param fName file name to write, null if no name given
+     * @param range either empty or two elements, first/last lines
+     * @return true if successful in writing the file.
      */
-    public void write( ViTextView tv, boolean force );
+    public boolean write( ViTextView tv,
+                         boolean force,
+                         String fName,
+                         Integer[] range);
 
 
     /**
      *  Write all open stuff.
+     *
+     * @return true if successful in writing the file.
      */
-    public void writeAll( boolean force );
-
-
-    /**
-     *  Write the specified text to the specified file.
-     *  If file is null, use a dialog to get the file name.
-     */
-    public void write( ViTextView tv, File file, boolean force );
+    public boolean writeAll( boolean force );
 
 
     /**
      *  Edit the nth file. If n &lt; 0 then n is MRU; n == -1 is most recent.
      */
-    public void edit( ViTextView tv, int n, boolean force );
+    public void edit( ViTextView tv, boolean force, int n );
+
+
+    /**
+     *  Edit the named file.
+     * 
+     * @param tv Editor containing data to write
+     * @param force If a '!' was used with the command, then force is true.
+     * @param fName file name to edit, null if no name given
+     */
+    public void edit( ViTextView tv, boolean force, String fName );
 
 
 } // end com.raelity.jvi.ViFS

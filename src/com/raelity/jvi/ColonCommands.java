@@ -42,7 +42,6 @@ import static com.raelity.jvi.ColonCommandFlags.*;
 
 import java.io.*;
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.util.Set;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.Timer;
@@ -656,7 +655,7 @@ public class ColonCommands
         {
             return n == 0
                     ? command
-                    : (String)args.get(n-1) ;
+                    : args.get(n-1) ;
         }
 
         /**
@@ -900,7 +899,6 @@ public class ColonCommands
 
         private boolean doBangCommand(ColonEvent evt, String commandLine)
         {
-            BooleanOption dbg = (BooleanOption)Options.getOption(Options.dbgBang);
             boolean isFilter = (evt.getAddrCount() > 0);
 
             ArrayList<String> shellCommandLine = new ArrayList<String>(3);
@@ -911,7 +909,8 @@ public class ColonCommands
             shellCommandLine.add(shellXQuote + commandLine + shellXQuote);
 
             if (dbg.value) {
-              System.err.println("!: ProcessBuilder: '" + shellCommandLine + "'");
+              System.err.println(
+                      "!: ProcessBuilder: '" + shellCommandLine + "'");
             }
 
             ProcessBuilder pb = new ProcessBuilder(shellCommandLine);
@@ -1742,11 +1741,27 @@ public class ColonCommands
                 cev.getViTextView().getBuffer().displayFileInfo(cev.getViTextView());
             }};
 
+    private static boolean do_write(ColonEvent cev)
+    {
+        boolean ok;
+        boolean isBang = cev.isBang();
+        String fName = cev.getNArg() == 0 ? null : cev.getArg(1);
+        Integer[] range = cev.getAddrCount() > 0
+                ? new Integer[] { cev.getLine1(), cev.getLine2() }
+                : new Integer[0];
+
+        if(cev.getNArg() < 2) {
+            ok = ViManager.getFS().write(
+                    cev.getViTextView(), isBang, fName, range);
+        } else {
+            Msg.emsg(":write only accepts none or one argument");
+            ok = false;
+        }
+        return ok;
+    }
+
     /**
      * Write command.
-     * <br>
-     * If there is an argument, it must be '*'. ':w *' should invoke
-     * a save as dialog.
      */
     static ColonAction ACTION_write = new ColonAction() {
             @Override
@@ -1757,34 +1772,22 @@ public class ColonCommands
 
             public void actionPerformed(ActionEvent ev)
             {
-                ColonEvent cev = (ColonEvent)ev;
-                if(cev.getNArg() == 0) {
-                    ViManager.getFS().write(cev.getViTextView(), cev.isBang());
-                } else if(cev.getNArg() == 1 && cev.getArg(1).equals("*")) {
-                    ViManager.getFS().write(cev.getViTextView(), null, cev.isBang());
-                } else {
-                    Msg.emsg("Only single argument '*' allowed");
-                }
+                do_write((ColonEvent)ev);
             }
         };
 
     static ColonAction ACTION_wq = new ColonAction() {
             @Override
-            public int getFlags() {
-                // any "!" is ignored
+            public int getFlags()
+            {
                 return BANG;
             }
 
             public void actionPerformed(ActionEvent ev)
             {
                 ColonEvent cev = (ColonEvent)ev;
-
-                if(cev.getNArg() == 0) {
-                    ViManager.getFS().write(cev.getViTextView(), cev.isBang());
-                    cev.getViTextView().win_close(false);
-                } else {
-                    Msg.emsg(Messages.e_trailing);
-                }
+                if(do_write(cev))
+                    cev.getViTextView().win_quit();
             }
         };
 
@@ -1801,14 +1804,14 @@ public class ColonCommands
             public void actionPerformed(ActionEvent ev)
             {
                 ColonEvent cev = (ColonEvent)ev;
-                String arg;
-                boolean error = false;
                 /*
                 if(cev.getNArg() == 0) {
                     ViManager.getFS().write(cev.getViTextView(), cev.isBang());
                 } else
                 */
                 if(cev.getNArg() == 1 && cev.getArg(1).charAt(0) == '#') {
+                    boolean error = false;
+                    String arg;
                     int i = -1;
                     arg = cev.getArg(1);
                     if(arg.length() > 1) {
@@ -1818,16 +1821,20 @@ public class ColonCommands
                         } catch(NumberFormatException ex) {
                             error = true;
                         }
+                        if(error) {
+                            Msg.emsg("Only 'e#[<number>]' allowed");
+                        }
                     }
                     if( ! error) {
-                        ViManager.getFS().edit(cev.getViTextView(), i, cev.isBang());
+                        ViManager.getFS().edit(
+                                cev.getViTextView(), cev.isBang(), i);
                     }
+                } else if ( cev.getNArg() < 2) {
+                    String fName = cev.getNArg() == 0 ? null : cev.getArg(1);
+                    ViManager.getFS().edit(
+                            cev.getViTextView(), cev.isBang(), fName);
                 } else {
-                    error = true;
-                }
-
-                if(error) {
-                    Msg.emsg("Only 'e#[<number>]' allowed");
+                    Msg.emsg(":edit only accepts none or one argument");
                 }
             }
         };

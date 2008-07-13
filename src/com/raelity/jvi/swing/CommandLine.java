@@ -266,6 +266,17 @@ public class CommandLine extends JPanel
     }
 
 
+    /**
+     *  Returns the mode JLabel.
+     *  This is intended for use in setting font or color to
+     *  match a surrounding UI.
+     */
+    public JLabel getModeLabel()
+    {
+        return modeLabel;
+    }
+
+
     JTextComponent getTextComponent()
     {
         Component c = combo.getEditor().getEditorComponent();
@@ -302,7 +313,7 @@ public class CommandLine extends JPanel
      *  Make the argument command the top of the list.
      *  If is already in the list then first remove it.
      */
-    void makeTop( String command )
+    public void makeTop( String command )
     {
         if ( historySize == 0 || list == null ) {
             return;
@@ -667,6 +678,11 @@ public class CommandLine extends JPanel
             lastCommand = "";
             shutdownEntry();
         };
+
+        public JLabel getModeLabel()
+        {
+            return commandLine.getModeLabel();
+        }
 
         public JTextComponent getTextComponent()
         {
