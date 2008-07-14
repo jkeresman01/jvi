@@ -40,8 +40,6 @@ import javax.swing.event.DocumentListener;
 import com.raelity.text.*;
 import com.raelity.text.TextUtil.MySegment;
 
-import java.lang.reflect.Field;
-import javax.swing.Timer;
 import javax.swing.text.AbstractDocument;
 import static com.raelity.jvi.KeyDefs.K_X_SEARCH_FINISH;
 import static com.raelity.jvi.KeyDefs.K_X_INCR_SEARCH_DONE;
@@ -73,7 +71,6 @@ public class Search {
   private static boolean didIncrSearch;
   private static boolean setPCMarkAfterIncrSearch;
   private static boolean incrSearchSucceed;
-  private static Timer surroundsWithTimer;
 
   // for next command and such
   private static String lastPattern;
@@ -1047,9 +1044,6 @@ finished:
   private static final int SUBST_QUIT     = 0x0010;
   private static final int SUBST_DID_ACK  = 0x0020;
 
-  private static final int SUBST_HACK1    = 0x8000;
-  private static final int SUBST_HACK2    = 0x4000;
-
   private static MutableInt substFlags;
 
   /**
@@ -1174,43 +1168,17 @@ finished:
       nSubMatch = 0;
       nSubChanges = 0;
     }
-    try {
-      Boolean f;
-      if(substFlags.testAnyBits(SUBST_CONFIRM)
-              && (f = (Boolean) ViManager.HackMap
-                          .get("NB-codetemplatesHang")) != null
-              && f.booleanValue()) {
-        if(!substFlags.testAnyBits(SUBST_HACK1)) {
-          substFlags.setBits(SUBST_HACK1);
-          if(
-              forceTimerHack(new Timer(200, new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                }
-              }))
-          ) {
-            substFlags.setBits(SUBST_HACK2);
-          }
+    for(int i = line1;
+          i <= line2 && !substFlags.testAnyBits(SUBST_QUIT);
+          i++) {
+      int nChange = substitute_line(prog, i, substFlags, substitution);
+      if(nChange > 0) {
+        nSubChanges += nChange;
+        cursorLine = i;  // keep track of last line changed
+        nSubLine++;
+        if(substFlags.testAnyBits(SUBST_PRINT)) {
+          ColonCommands.outputPrint(i, 0, 0);
         }
-      }
-
-      for(int i = line1;
-            i <= line2 && !substFlags.testAnyBits(SUBST_QUIT);
-            i++) {
-        int nChange = substitute_line(prog, i, substFlags, substitution);
-        if(nChange > 0) {
-          nSubChanges += nChange;
-          cursorLine = i;  // keep track of last line changed
-          nSubLine++;
-          if(substFlags.testAnyBits(SUBST_PRINT)) {
-            ColonCommands.outputPrint(i, 0, 0);
-          }
-        }
-      }
-    } finally {
-      if(! G.global_busy && substFlags.testAnyBits(SUBST_HACK2)) {
-        forceTimerHack(surroundsWithTimer);
-        surroundsWithTimer = null;
-        substFlags.clearBits(SUBST_HACK2);
       }
     }
     
@@ -1360,27 +1328,6 @@ finished:
     return countChanges;
   }
 
-  private static boolean forceTimerHack(Timer timer) {
-    if(timer == null)
-      return false;
-    try {
-      Class c = ViManager.getViFactory().loadClass(
-              "org.netbeans.lib.editor.codetemplates.AbbrevDetection");
-      Object o = G.curwin.getEditorComponent().getClientProperty(c);
-      Field f = c.getDeclaredField("surroundsWithTimer");
-      f.setAccessible(true);
-      surroundsWithTimer = (Timer) f.get(o);
-      f.set(o, timer);
-      return true;
-    } catch (IllegalArgumentException ex) {
-    } catch (IllegalAccessException ex) {
-    } catch (ClassNotFoundException ex) {
-    } catch (NoSuchFieldException ex) {
-    } catch (SecurityException ex) {
-    }
-    return false;
-  }
-
   /**
    * Handle substitution where there is escape handling.
    * Append the substitution to string buffer argument.
@@ -1465,13 +1412,7 @@ finished:
     }
     finally {
       G.global_busy = false;
-      if(substFlags != null && substFlags.testAnyBits(SUBST_HACK2)) {
-        forceTimerHack(surroundsWithTimer);
-        surroundsWithTimer = null;
-        substFlags.clearBits(SUBST_HACK2);
-      }
     }
-    
   }
   
   static void doGlobal(ColonCommands.ColonEvent cev) {
