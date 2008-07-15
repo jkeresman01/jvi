@@ -45,6 +45,9 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.Timer;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Position;
 
 /**
  * This class handles registration, command input, parsing, dispatching
@@ -2061,8 +2064,78 @@ public class ColonCommands
           public void actionPerformed(ActionEvent ev) {
               OPARG oa = setupExop((ColonEvent)ev);
               oa.op_type = OP_YANK;
+              Misc.op_yank(oa, false, true);
           }
         };
+
+    private static class moveCopy extends ColonAction
+    {
+        private boolean doMove;
+        moveCopy(boolean doMove)
+        {
+            this.doMove = doMove;
+        }
+
+        public void actionPerformed(ActionEvent e)
+        {
+            ColonEvent cev = (ColonEvent) e;
+            ViTextView tv = cev.getViTextView();
+            Buffer buf = tv.getBuffer();
+            if(cev.getLine1() > buf.getLineCount()
+                    || cev.getLine2() > buf.getLineCount()) {
+                Msg.emsg(Messages.e_invrange);
+                return; // BAIL
+            }
+            int offset1 = buf.getLineStartOffset(cev.getLine1());
+            int offset2 = buf.getLineEndOffset(cev.getLine2());
+            // get the destination line number
+            MutableInt dst = new MutableInt();
+            if(cev.getNArg() < 1
+                    || get_address(cev.getArg(1), 0, false, dst) < 0
+                    || dst.getValue() > buf.getLineCount()) {
+                Msg.emsg(Messages.e_invaddr);
+                return; // BAIL
+            }
+            if(doMove && dst.getValue() == cev.getLine2())
+                return; // 2,4 mo 4 does nothing
+
+            int dstOffset = buf.getLineEndOffset(dst.getValue());
+            if(doMove && dstOffset >= offset1 && dstOffset < offset2) {
+                Msg.emsg("Move lines into themselves");
+                return; // BAIL
+            }
+
+            // If at the end of the file, then can't delete the final
+            // '\n' on a move, so back up the range by a character
+            int atEndAdjust = cev.getLine2() == buf.getLineCount() ? 1 : 0;
+            try {
+                Misc.beginUndo();
+                Position pos1 = null;
+                Position pos2 = null;
+                if(doMove) {
+                    // track postions for later delete
+                    pos1 = ((Document)buf.getDocument())
+                            .createPosition(offset1);
+                    pos2 = ((Document)buf.getDocument())
+                            .createPosition(offset2);
+                }
+                String s = buf.getText(offset1, offset2 - offset1);
+                buf.insertText(dstOffset, s);
+                if(doMove) {
+                    buf.deleteChar(pos1.getOffset() - atEndAdjust,
+                                   pos2.getOffset() - atEndAdjust);
+                }
+            } catch (BadLocationException ex) {
+                ex.printStackTrace();
+            } finally {
+                Misc.endUndo();
+            }
+        }
+
+    }
+
+    static ColonAction ACTION_move = new moveCopy(true);
+    static ColonAction ACTION_copy = new moveCopy(false);
 
     static ActionListener ACTION_testGlassKeys = new ActionListener() {
             public void actionPerformed(ActionEvent ev) {
@@ -2140,7 +2213,10 @@ public class ColonCommands
                 }
               });
 
-        // register("y", "yank", ACTION_yank);
+        register("y", "yank", ACTION_yank);
+        register("m", "move", ACTION_move);
+        register("co", "copy", ACTION_copy);
+        register("t", "t", ACTION_copy);
 
         // register("n", "next", ACTION_next);
         // register("N", "Next", ACTION_Next);
