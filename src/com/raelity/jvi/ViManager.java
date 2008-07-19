@@ -135,7 +135,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.0.x10");
+    public static final jViVersion version = new jViVersion("1.2.0.x11");
 
     private static boolean enabled;
 
@@ -175,6 +175,16 @@ public class ViManager
     public static void removeFeature(EnumSet<ViFeature> f)
     {
         G.f.removeAll(f);
+    }
+
+    public static String cid(Object o)
+    {
+        return o.getClass().getSimpleName() + "@" + id(o);
+    }
+
+    public static String id(Object o)
+    {
+        return Integer.toHexString(System.identityHashCode(o));
     }
 
     private static boolean jdk15;
@@ -511,8 +521,10 @@ public class ViManager
             JEditorPane ep, Object appHandle, String tag)
     {
         if(factory != null && G.dbgEditorActivation.getBoolean()) {
-            System.err.println("Activation: ViManager.activateFile: "
-                    + tag + ": " + factory.getDisplayFilename(appHandle));
+            System.err.println("Activation: ViManager.activateAppEditor: "
+                    + tag + " " + cid(ep) + " " + cid(appHandle)
+                    + " " + factory.getDisplayFilename(appHandle)
+                    );
         }
         if(ep != null && enabled)
             factory.registerEditorPane(ep);
@@ -545,7 +557,9 @@ public class ViManager
     public static void deactivateCurrentAppEditor(Object appHandle)
     {
         if(factory != null && G.dbgEditorActivation.getBoolean()) {
-            System.err.println("Activation: ViManager.deactivateCurentFile: "
+            System.err.println(
+                    "Activation: ViManager.deactivateCurentAppEditor: "
+                    + " " + cid(appHandle)
                     + factory.getDisplayFilename(appHandle));
         }
         // For several reasons, eg. don't want to hold begin/endUndo
@@ -700,7 +714,7 @@ public class ViManager
         textView.attach();
         if(G.dbgEditorActivation.getBoolean()) {
             System.err.println("Activation: ViManager.SWITCHTO: "
-                    + buf.getDisplayFileName());
+                    + cid(editorPane) + " " + buf.getDisplayFileName());
         }
 
         if(currentEditorPane != null) {
@@ -781,7 +795,7 @@ public class ViManager
     {
         if(currentEditorPane == ep) {
             if(G.dbgEditorActivation.getBoolean()) {
-                System.err.println("Activation: ViManager.detached");
+                System.err.println("Activation: ViManager.detached " + cid(ep));
             }
             currentEditorPane = null;
         }
