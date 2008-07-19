@@ -930,7 +930,8 @@ public class ColonCommands
 
             // Got a process, setup coord, start modal operation
 
-            coord = new FilterThreadCoordinator(this, setupExop(evt), p);
+            coord = new FilterThreadCoordinator(
+                    this, setupExop(evt, false), p);
 
             // NEEDSWORK: put this where it can be repeated
             coord.statusMessage = "Enter 'Ctrl-C' to ABORT";
@@ -2013,21 +2014,57 @@ public class ColonCommands
     /**
      * This is used for several of the colon commands to translate arguments
      * into OPARG.
+     * <p>
+     * If we had the very complex ":" parser from ex_docmd, then this
+     * would be part of it.
+     * </p>
      */
-    static OPARG setupExop(ColonEvent cev)
+    static OPARG setupExop(ColonEvent cev, boolean parseExtra)
     {
         OPARG oa = new OPARG();
-        // oa.regname = ; NEEDSWORK:
+        int nextArg = 1;
+        if(parseExtra && cev.getNArg() >= nextArg) {
+            // check for a named buffer
+            String r = cev.getArg(nextArg);
+            // Note a more restrictive validity test may occur later
+            if(r.length() == 1
+                    && Misc.valid_yank_reg(r.charAt(0), false)
+                    && !Util.isdigit(r.charAt(0))) {
+                oa.regname = r.charAt(0);
+                nextArg++;
+            }
+        }
         oa.start = new FPOS();
         oa.start.set(cev.getLine1(), 0);
         oa.end = new FPOS();
         oa.end.set(cev.getLine2(), 0);
         oa.line_count = cev.getLine2() - cev.getLine1() + 1;
-        oa.motion_type = MLINE;
-        if(cev.getAction() != ACTION_yank) {
-            MarkOps.setpcmark();
-            G.curwin.getWCursor().set(oa.start);
-            Edit.beginline(BL_SOL|BL_FIX);
+        if(parseExtra && cev.getNArg() == nextArg) {
+            try {
+                oa.line_count = Integer.parseInt(cev.getArg(nextArg));
+                // shuffle/recalc the range
+                oa.start = oa.end;
+                oa.end = new FPOS();
+                oa.end.set(oa.start.getLine() + oa.line_count - 1, 0);
+                nextArg++;
+            } catch (Exception ex) {
+                Msg.emsg(Messages.e_trailing);
+                oa.error = true;
+            }
+        }
+        if(!oa.error) {
+            if(parseExtra && cev.getNArg() >= nextArg) {
+                Msg.emsg(Messages.e_trailing);
+                oa.error = true;
+            }
+        }
+        if(!oa.error) {
+            oa.motion_type = MLINE;
+            if(cev.getAction() != ACTION_yank) {
+                MarkOps.setpcmark();
+                G.curwin.getWCursor().set(oa.start);
+                Edit.beginline(BL_SOL|BL_FIX);
+            }
         }
         return oa;
     }
@@ -2039,21 +2076,11 @@ public class ColonCommands
             public void actionPerformed(ActionEvent ev)
             {
                 ColonEvent cev = (ColonEvent)ev;
-                OPARG oa = setupExop(cev);
-                oa.op_type = OP_DELETE;
-                if(cev.getNArg() == 1) {
-                    try {
-                        oa.line_count = Integer.parseInt(cev.getArg(1));
-                    } catch (Exception ex) {
-                        Msg.emsg(Messages.e_trailing);
-                        return;
-                    }
-                } else if(cev.getNArg() > 1) {
-                    Msg.emsg(Messages.e_trailing);
-                    return;
+                OPARG oa = setupExop(cev, true);
+                if(!oa.error) {
+                    oa.op_type = OP_DELETE;
+                    Misc.op_delete(oa);
                 }
-
-                Misc.op_delete(oa);
             }
         };
 
@@ -2062,9 +2089,11 @@ public class ColonCommands
      */
     static ColonAction ACTION_yank = new ColonAction() {
           public void actionPerformed(ActionEvent ev) {
-              OPARG oa = setupExop((ColonEvent)ev);
-              oa.op_type = OP_YANK;
-              Misc.op_yank(oa, false, true);
+              OPARG oa = setupExop((ColonEvent)ev, true);
+              if(!oa.error) {
+                oa.op_type = OP_YANK;
+                Misc.op_yank(oa, false, true);
+              }
           }
         };
 

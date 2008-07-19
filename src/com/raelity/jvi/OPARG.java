@@ -49,6 +49,7 @@ public class OPARG
     boolean block_mode;		/* current operator is Visual block mode */
     int	    start_vcol;		/* start col for block mode operator */
     int	    end_vcol;		/* end col for block mode operator */
+    boolean error;              /* some type of error encounter (not in vim) */
 
     public void clearop() {
       op_type = Constants.OP_NOP;
@@ -73,6 +74,7 @@ public class OPARG
         dest.block_mode = block_mode;
         dest.start_vcol = start_vcol;
         dest.end_vcol = end_vcol;
+        dest.error = error;
         return dest;
     }
 

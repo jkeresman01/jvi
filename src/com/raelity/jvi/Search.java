@@ -1521,7 +1521,7 @@ finished:
           if(substFlags != null && substFlags.testAnyBits(SUBST_QUIT))
             break;
 	} else if(cmdAction == ColonCommands.ACTION_delete) {
-	  OPARG oa = ColonCommands.setupExop(cevAction);
+	  OPARG oa = ColonCommands.setupExop(cevAction, false);
 	  oa.op_type = OP_DELETE;
 	  Misc.op_delete(oa);
 	  // The troublesome command/situation
