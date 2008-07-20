@@ -55,16 +55,18 @@ public class DefaultViFS implements ViFS
 
     public boolean write(ViTextView tv,
                          boolean force,
-                         String fName,
+                         Object writeTarget,
                          Integer[] range)
     {
         // Compatibility method with old interface
         //
         // if(range.length == 0) {
-        //     if(fName == null) {
+        //     if(writeTarget == null) {
         //         return write(tv, force);
-        //     }
-        //     return write(tv, fName, force);
+        //     } else if(writeTarget instanceof String) {
+        //         return write(tv, fName, force);
+        //     } else
+        //         assert false : "unsupported writeTarget";
         // }
         // assert false : "range not supported";
         //
@@ -75,7 +77,7 @@ public class DefaultViFS implements ViFS
         }
 
         System.err.println(String.format(
-                "write tv: %s%s, range: %s", (force?"! ":""), fName, r));
+                "write tv: %s%s, range: %s", (force?"! ":""), writeTarget, r));
         return true;
     }
 

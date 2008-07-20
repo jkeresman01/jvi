@@ -691,6 +691,14 @@ public class CommandLine extends JPanel
 
         public void actionPerformed(ActionEvent e)
         {
+            if(tv == null) {
+                // There are cases where there are both
+                //    CommandLine$SimpleEvent.actionPerformed
+                // and
+                //    CommandLine$2.actionPerformed (JComboBox.fireActionEvent)
+                return;
+            }
+
             // VISUAL REPAINT HACK
             // Repaint before executing commands..
             // so that I can be sure the visual area didn't change yet

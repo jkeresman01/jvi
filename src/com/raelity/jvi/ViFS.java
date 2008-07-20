@@ -42,18 +42,22 @@ public interface ViFS
 
 
     /**
-     * Write the specified text to the specified fileName.
-     * If file is null, use a dialog to get the file name.
+     * Write the specified text to writeTarget.
+     * If writeTarget is null overwrite the original source of the TextView.
+     * writeTarget may be instanceof String, this is a file name.
+     * writeTarget may be a File.
+     * writeTarget may be extended by platforms to be an
+     * OutputStream, Buffer or whatever.
      *
      * @param tv Editor containing data to write
      * @param force If a '!' was used with the command, then force is true.
-     * @param fName file name to write, null if no name given
+     * @param writeTarget write the data to here
      * @param range either empty or two elements, first/last lines
      * @return true if successful in writing the file.
      */
     public boolean write( ViTextView tv,
                          boolean force,
-                         String fName,
+                         Object writeTarget,
                          Integer[] range);
 
 

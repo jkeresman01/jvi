@@ -1531,7 +1531,7 @@ public class TextView
         applyBackground(blocks, UNHIGHLIGHT);
     }
 
-    private int[] previousAppliedHighlight = null;
+    protected int[] previousAppliedHighlight = null;
 
     private void highlight( int[] blocks )
     {
