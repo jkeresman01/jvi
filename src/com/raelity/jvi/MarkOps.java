@@ -29,8 +29,6 @@
  */
 package com.raelity.jvi;
 
-import java.util.Map;
-import java.util.WeakHashMap;
 
 import static com.raelity.jvi.ViTextView.MARKOP;
 import static com.raelity.jvi.ViTextView.MARKOP.NEXT;
@@ -81,7 +79,7 @@ class MarkOps {
     if (c == '\'' || c == '`') {
       setpcmark();
       /* keep it even when the cursor doesn't move */
-      G.curwin.pushPCMark();
+      G.curwin.w_prev_pcmark = G.curwin.w_pcmark;
       return OK;
     }
 
@@ -113,7 +111,7 @@ class MarkOps {
     ViMark m = null;
     if(c == '\'' || c == '`') {
       // make a copy since it might change soon
-      m = (ViMark) G.curwin.getPCMark().copy();
+      m = (ViMark) G.curwin.w_pcmark.copy();
     } else if(c == '[') {
       m = G.curbuf.b_op_start;
     } else if(c == ']') {
@@ -190,12 +188,12 @@ class MarkOps {
    *		   restored.
    */
   static void checkpcmark() {
-    if(check_mark(G.curwin.getPrevPCMark(), false) == OK
-       		&& (G.curwin.getPCMark().equals(G.curwin.getWCursor())
-		    || check_mark(G.curwin.getPCMark(), false) == FAIL))
+    if(check_mark(G.curwin.w_prev_pcmark, false) == OK
+       		&& (G.curwin.w_pcmark.equals(G.curwin.getWCursor())
+		    || check_mark(G.curwin.w_pcmark, false) == FAIL))
     {
-      G.curwin.getPCMark().setData(G.curwin.getPrevPCMark());
-      G.curwin.getPrevPCMark().invalidate();
+      G.curwin.w_pcmark.setData(G.curwin.w_prev_pcmark);
+      G.curwin.w_prev_pcmark.invalidate();
     }
   }
 
@@ -203,8 +201,8 @@ class MarkOps {
     if(G.global_busy) {
       return;
     }
-    G.curwin.pushPCMark();
-    G.curwin.getPCMark().setMark(fpos);
+    G.curwin.w_prev_pcmark = G.curwin.w_pcmark;
+    G.curwin.w_pcmark.setMark(fpos);
     // NEEDSWORK: pcmark and jump list stuff...
   }
 
@@ -218,8 +216,8 @@ class MarkOps {
     if(G.global_busy) {
       return;
     }
-    tv.pushPCMark();
-    tv.getBuffer().setMarkOffset(tv.getPCMark(), offset, false);
+    ((Window)tv).w_prev_pcmark = ((Window)tv).w_pcmark;
+    tv.getBuffer().setMarkOffset(((Window)tv).w_pcmark, offset, false);
     // NEEDSWORK: pcmark and jump list stuff...
   }
 

@@ -86,26 +86,6 @@ public interface ViTextView extends ViOptionBag {
    */
   public int validateCursorPosition(int offset);
 
-  // NEEDSWORK: get rid of these
-  public int getWCurswant();
-  public void setWCurswant(int c);
-  public boolean getWSetCurswant();
-  public void setWSetCurswant(boolean f);
-
-  public ViMark getPCMark();
-  public ViMark getPrevPCMark();
-  public void pushPCMark();
-  public ViMark getMark(int i);
-
-  public int getWPScroll();
-  public void setWPScroll(int n);
-  public boolean getWPList();
-  public void setWPList(boolean f);
-
-  //
-  // and now the text view proper
-  //
-
   /** @return the associated Buffer */
   public Buffer getBuffer();
 

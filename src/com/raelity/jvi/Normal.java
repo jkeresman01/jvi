@@ -461,7 +461,7 @@ public class Normal {
     CharBuf	    searchbuff = new CharBuf(); /* buffer for search string */
     boolean	    dont_adjust_op_end = false;
     ViFPOS	    old_pos;		    /* cursor position before command */
-    int		    old_col = G.curwin.getWCurswant();
+    int		    old_col = G.curwin.w_curswant;
 
 middle_code:
     do {
@@ -947,7 +947,7 @@ middle_code:
 	    if (!checkclearopq(oap))
 	    {
 	      Misc.u_undo(ca.count1);
-	      G.curwin.setWSetCurswant(true);
+              G.curwin.w_set_curswant = true;
 	    }
 	    break;
 
@@ -955,7 +955,7 @@ middle_code:
 	    if (!checkclearopq(oap))
 	    {
 	      Misc.u_redo(ca.count1);
-	      G.curwin.setWSetCurswant(true);
+              G.curwin.w_set_curswant = true;
 	    }
 	    break;
 
@@ -1358,7 +1358,7 @@ middle_code:
 
           if (redo_VIsual_col == MAXCOL)
           {
-              G.curwin.setWCurswant(MAXCOL);
+            G.curwin.w_curswant = MAXCOL;
               Misc.coladvance(MAXCOL);
           }
           cap.count0 = redo_VIsual_count;
@@ -1436,7 +1436,7 @@ middle_code:
             }
 
             /* if '$' was used, get oap->end_vcol from longest line */
-            if (G.curwin.getWCurswant() == MAXCOL)
+            if (    G.curwin.w_curswant == MAXCOL)
             {
                 //curwin.w_cursor.col = MAXCOL;
                 // Can't set the cursor to MAXCOL (well you can, but...)
@@ -1470,7 +1470,7 @@ middle_code:
                * size of the Visual text
                */
               resel_VIsual_mode = G.VIsual_mode;
-              if (G.curwin.getWCurswant() == MAXCOL)
+              if (  G.curwin.w_curswant == MAXCOL)
                   resel_VIsual_col = MAXCOL;
               else if (G.VIsual_mode == Util.ctrl('V'))
                   resel_VIsual_col = oap.end_vcol - oap.start_vcol + 1;
@@ -1537,7 +1537,7 @@ middle_code:
       }
 
 
-      G.curwin.setWSetCurswant(true);
+      G.curwin.w_set_curswant = true;
 
       /*
        * oap.empty is set when start and end are the same.  The inclusive
@@ -1760,7 +1760,7 @@ middle_code:
             && !oap.end_adjusted
 	    && (oap.op_type == OP_LSHIFT || oap.op_type == OP_RSHIFT
 		|| oap.op_type == OP_DELETE)) {
-	  G.curwin.setWCurswant(old_col);
+          G.curwin.w_curswant = old_col;
 	  Misc.coladvance(old_col);
 	}
 	oap.op_type = OP_NOP;
@@ -2207,7 +2207,7 @@ middle_code:
     
     if(new_lnum != prev_lnum) {
       G.curwin.setCursorCoordLine(new_lnum, 0);
-      Misc.coladvance(G.curwin.getWCurswant());
+      Misc.coladvance(G.curwin.w_curswant);
     }
     G.curwin.setViewCoordTopLine(new_topline);
   }
@@ -2362,7 +2362,7 @@ middle_code:
     int target_column;
     boolean keepColumn = (nchar == 't') || (nchar == 'z') || (nchar == 'b');
     if(keepColumn)
-      target_column = G.curwin.getWCurswant();
+      target_column = G.curwin.w_curswant;
     else {
       // The cursor is set a few lines above, so the segment is for the line
       // that is the fold.
@@ -2747,7 +2747,7 @@ middle_code:
 	    cap.oap.inclusive = true;
 	  } else {
 	    G.curwin.setCaretPosition(cursor.getLine() + 1, 0);
-	    G.curwin.setWSetCurswant(true);
+            G.curwin.w_set_curswant = true;
 	    cap.oap.inclusive = false;
 	  }
 	  continue;
@@ -2764,7 +2764,7 @@ middle_code:
 	break;
       } else if (past_line) {
 	// NEEDSWORK: (maybe no work) pastline always false since no select
-	 G.curwin.setWSetCurswant(true);
+        G.curwin.w_set_curswant = true;
          G.curwin.setCaretPosition(cursor.getOffset()+1);
       }
     }
@@ -2806,7 +2806,7 @@ middle_code:
 	  // use a different algorithm with swing document
 	  G.curwin.setCaretPosition(cursor.getOffset() - 1);
 	  Misc.check_cursor_col();
-	  G.curwin.setWSetCurswant(true);
+          G.curwin.w_set_curswant = true;
 
 	  // When the NL before the first char has to be deleted we
 	  // put the cursor on the NUL after the previous line.
@@ -2838,7 +2838,7 @@ middle_code:
   static private void nv_dollar(CMDARG cap) {
     cap.oap.motion_type = MCHAR;
     cap.oap.inclusive = true;
-    G.curwin.setWCurswant(MAXCOL);	// so we stay at the end
+    G.curwin.w_curswant = MAXCOL;	// so we stay at the end
     if (Edit.cursor_down(cap.count1 - 1, cap.oap.op_type == OP_NOP) == FAIL) {
       clearopbeep(cap.oap);
     }
@@ -2886,7 +2886,7 @@ middle_code:
     
     oap.motion_type = MCHAR;
     oap.inclusive = false;
-    G.curwin.setWSetCurswant(true);
+    G.curwin.w_set_curswant = true;
     
     if(cap.nchar == K_X_INCR_SEARCH_DONE)
       i = Search.getIncrSearchResultCode();
@@ -2978,7 +2978,7 @@ middle_code:
 		|| !Search.searchc(cap.nchar, dir, type, cap.count1)) {
       clearopbeep(cap.oap);
     } else {
-      G.curwin.setWSetCurswant(true);
+      G.curwin.w_set_curswant = true;
       // NEEDSWORK: visual mode: adjust_for_sel(cap);
     }
   }
@@ -3039,7 +3039,7 @@ middle_code:
 	clearopbeep(cap.oap);
       } else {
 	MarkOps.setpcmark(fpos);
-        G.curwin.setWSetCurswant(true);
+        G.curwin.w_set_curswant = true;
 	adjust_for_sel(cap);
       }
       /* **************************************************
@@ -3071,7 +3071,7 @@ middle_code:
     else
       cap.oap.inclusive = true;
 
-    G.curwin.setWSetCurswant(true);
+    G.curwin.w_set_curswant = true;
 
     if (!Search.findsent(dir, cap.count1))
       clearopbeep(cap.oap);
@@ -3085,7 +3085,7 @@ static private void nv_findpar(CMDARG cap, int dir)
 {
   cap.oap.motion_type = MCHAR;
   cap.oap.inclusive = false;
-  G.curwin.setWSetCurswant(true);
+  G.curwin.w_set_curswant = true;
   if (!Search.findpar(cap, dir, cap.count1, NUL, false))
     clearopbeep(cap.oap);
 }
@@ -3141,7 +3141,7 @@ static private void nv_findpar(CMDARG cap, int dir)
         G.VIsual.set(cursor);
         cursor.set(old_cursor.getLine(), 0);
         Misc.coladvance(right.getValue());
-        G.curwin.setWCurswant(right.getValue());
+        G.curwin.w_curswant = right.getValue();
         if (cursor.getColumn() == old_cursor.getColumn())
         {
             cursor.set(G.VIsual.getLine(), 0);
@@ -3149,7 +3149,7 @@ static private void nv_findpar(CMDARG cap, int dir)
             G.VIsual.set(cursor);
             cursor.set(old_cursor.getLine(), 0);
             Misc.coladvance(left.getValue());
-            G.curwin.setWCurswant(left.getValue());
+            G.curwin.w_curswant = left.getValue();
         }
     }
     if (cap.cmdchar != 'O' || G.VIsual_mode != Util.ctrl('V'))
@@ -3157,7 +3157,7 @@ static private void nv_findpar(CMDARG cap, int dir)
         ViFPOS old_cursor = cursor.copy();
         cursor.set(G.VIsual);
         G.VIsual =  old_cursor;
-        G.curwin.setWSetCurswant(true);
+        G.curwin.w_set_curswant = true;
     }
     v_updateVisualState();
   }
@@ -3233,7 +3233,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       }
 
       Misc.adjust_cursor();
-      G.curwin.setWSetCurswant(true);
+      G.curwin.w_set_curswant = true;
     } finally {
       Misc.endUndo();
     }
@@ -3252,12 +3252,12 @@ static private void nv_findpar(CMDARG cap, int dir)
     {
       if (cap.cmdchar == '\'' || cap.cmdchar == '`')
 	MarkOps.setpcmark();
-      G.curwin.setWCurswant(pos.getColumn());
+      G.curwin.w_curswant = pos.getColumn();
       Misc.gotoLine(pos.getLine(), flag ? BL_WHITE | BL_FIX : -1);
     }
     cap.oap.motion_type = flag ? MLINE : MCHAR;
     cap.oap.inclusive = false;		/* ignored if not MCHAR */
-    G.curwin.setWSetCurswant(true);
+    G.curwin.w_set_curswant = true;
   }
   
   /**
@@ -3274,7 +3274,7 @@ static private void nv_findpar(CMDARG cap, int dir)
        if (G.VIsual_mode != Util.ctrl('V'))
            G.VIsual_mode = 'V';
        else if (cap.cmdchar == 'C' || cap.cmdchar == 'D')
-           G.curwin.setWCurswant(MAXCOL);
+            G.curwin.w_curswant = MAXCOL;
     }
     cap.cmdchar = Util.vim_strchr(trans, cap.cmdchar).charAt(1);
     nv_operator(cap);
@@ -3422,19 +3422,19 @@ static private void nv_findpar(CMDARG cap, int dir)
               }
               if (resel_VIsual_col == MAXCOL)
               {
-                  G.curwin.setWCurswant(MAXCOL);
+                  G.curwin.w_curswant = MAXCOL;
                   Misc.coladvance(MAXCOL);
               }
               else if (G.VIsual_mode == Util.ctrl('V'))
               {
                   //TODO: FIXME_VISUAL BLOCK MODE
                   //validate_virtcol();
-                  G.curwin.setWCurswant(G.curwin.getWCursor().getColumn()/*G.curwin.w_virtcol*/
-                                        + resel_VIsual_col * cap.count0 - 1);
-                  Misc.coladvance(G.curwin.getWCurswant());
+                  G.curwin.w_curswant = G.curwin.getWCursor().getColumn()/*G.curwin.w_virtcol*/
+                          + resel_VIsual_col * cap.count0 - 1;
+                  Misc.coladvance(G.curwin.w_curswant);
               }
               else
-                  G.curwin.setWSetCurswant(true);
+                  G.curwin.w_set_curswant = true;
               update_curbuf(NOT_VALID); /* show the inversion */
               /* update the screen cursor position */
               v_updateVisualState();
@@ -3657,7 +3657,7 @@ static private void nv_findpar(CMDARG cap, int dir)
     } else if (!checkclearopq(cap.oap)) {
           //u_undoline();
           notSup("nv_Undo");
-          G.curwin.setWSetCurswant(true);
+          G.curwin.w_set_curswant = true;
     }
 
   }
@@ -3707,13 +3707,13 @@ static private void nv_findpar(CMDARG cap, int dir)
     Edit.beginline(0);
     if (cap.count0 > 0) {
       Misc.coladvance(cap.count0 - 1);
-      G.curwin.setWCurswant(cap.count0 - 1);
+      G.curwin.w_curswant = cap.count0 - 1;
     }
     else
-      G.curwin.setWCurswant(0);
+      G.curwin.w_curswant = 0;
     // keep curswant at the column where we wanted to go, not where
     // we ended; differs is line is too short
-    G.curwin.setWSetCurswant(false);
+    G.curwin.w_set_curswant = false;
   }
 
   static private void nv_goto (CMDARG cap, int lnum) {
@@ -3738,7 +3738,7 @@ static private void nv_findpar(CMDARG cap, int dir)
     do_xop("nv_bck_word");
     cap.oap.motion_type = MCHAR;
     cap.oap.inclusive = false;
-    G.curwin.setWSetCurswant(true);
+    G.curwin.w_set_curswant = true;
     if (Search.bck_word(cap.count1, type, false) == FAIL)
       clearopbeep(cap.oap);
   }
@@ -3797,7 +3797,7 @@ static private void nv_findpar(CMDARG cap, int dir)
     }
 
     cap.oap.motion_type = MCHAR;
-    G.curwin.setWSetCurswant(true);
+    G.curwin.w_set_curswant = true;
     int rc;
     if (word_end) {
       rc = Search.end_word(cap.count1, type, flag, false);
@@ -3868,7 +3868,7 @@ static private void nv_findpar(CMDARG cap, int dir)
     if (G.VIsual_active) {
       end_visual_mode();	// stop Visual
       Misc.check_cursor_col();	// make sure cursor is not beyond EOL
-      G.curwin.setWSetCurswant(true);
+      G.curwin.w_set_curswant = true;
       update_curbuf(NOT_VALID);
     } else if (cap.oap.op_type == OP_NOP && opnum == 0
 	     && cap.count0 == 0 && cap.oap.regname == 0 && p_im == 0) {
@@ -3888,7 +3888,7 @@ static private void nv_findpar(CMDARG cap, int dir)
   static void abortVisualMode() {
     if (G.VIsual_active) {
       end_visual_mode();	// stop Visual
-      G.curwin.setWSetCurswant(true);
+      G.curwin.w_set_curswant = true;
       update_curbuf(NOT_VALID);
       Misc.showmode();
     }
@@ -3929,7 +3929,7 @@ static private void nv_findpar(CMDARG cap, int dir)
   {
     switch (cap.cmdchar) {
       case 'A':	/* "A"ppend after the line */
-        G.curwin.setWSetCurswant(true);
+        G.curwin.w_set_curswant = true;
         Util.endLine();
         // G.op.xop(ViOp.THIS_END_LINE, this);
         break;
@@ -4012,7 +4012,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       if (flag == FAIL)
           clearopbeep(cap.oap);
       //adjust_cursor_col();
-      G.curwin.setWSetCurswant(true);
+      G.curwin.w_set_curswant = true;
 
   }
 

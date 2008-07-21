@@ -37,7 +37,7 @@ public abstract class Window implements ViTextView
     //
 
     /**
-     * The column we'd like to be at.
+     * The column we'd like to be at. Used for up/down cursor motions.
      */
     protected int w_curswant;
 
@@ -55,10 +55,11 @@ public abstract class Window implements ViTextView
     protected boolean w_p_list;
 
     // NEEDSWORK: this should be comming from the cache (WHAT?)
-    private int w_p_scroll;
+    protected int w_p_scroll;
 
     public Window()
     {
+        w_set_curswant = true;
         viewSizeChange();
     }
 
@@ -91,88 +92,6 @@ public abstract class Window implements ViTextView
     }
 
     /**
-     * Get the column we'd like to be at. This is used to try to stay in the
-     * same column through up/down cursor motions.
-     */
-    public int getWCurswant()
-    {
-        return w_curswant;
-    }
-
-    /**
-     * Set the column we'd like to be at.
-     */
-    public void setWCurswant(int c)
-    {
-        w_curswant = c;
-    }
-
-    /**
-     * If set, then update w_curswant the next time through cursupdate()
-     * to the current virtual column.
-     */
-    public boolean getWSetCurswant()
-    {
-        return w_set_curswant;
-    }
-
-    public void setWSetCurswant(boolean f)
-    {
-        w_set_curswant = f;
-    }
-
-    /**
-     * list mode
-     */
-    public boolean getWPList()
-    {
-        return w_p_list;
-    }
-
-    public void setWPList(boolean f)
-    {
-        w_p_list = f;
-    }
-
-    /**
-     * scroll
-     */
-    public int getWPScroll()
-    {
-        return w_p_scroll;
-    }
-
-    public void setWPScroll(int n)
-    {
-        w_p_scroll = n;
-    }
-
-    public final ViMark getPCMark()
-    {
-        return w_pcmark;
-    }
-
-    public final ViMark getPrevPCMark()
-    {
-        return w_prev_pcmark;
-    }
-
-    public void pushPCMark()
-    {
-        w_prev_pcmark.setData(w_pcmark);
-    }
-
-    public final ViMark getMark(int i)
-    {
-        //return MarkOps.getMark(getEditor(), i);
-        return buf.getMark(i);
-    }
-
-    /*public void previousContextHack(ViMark mark) {
-    pushPCMark();
-    w_pcmark.setData(mark);
-    }*/
-    /**
      * This is invoked by a subclass to indicate that the size of the
      * view has changed.
      * Like win_new_height....
@@ -184,7 +103,7 @@ public abstract class Window implements ViTextView
         if (i <= 0) {
             i = 1;
         }
-        setWPScroll(i);
+        w_p_scroll = i;
     }
 
     /**
@@ -195,7 +114,7 @@ public abstract class Window implements ViTextView
      */
     public int validateCursorPosition(int offset)
     {
-        setWSetCurswant(true);
+        w_set_curswant = true;
         if (Util.getCharAt(offset) == '\n' && (G.State & INSERT) == 0) {
             // Sitting on a newline and not in insert mode
             // back the cursor up (unless previous char is a newline)

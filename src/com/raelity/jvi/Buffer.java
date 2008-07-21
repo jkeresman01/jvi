@@ -401,7 +401,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         }
         
         vb.init(G.VIsual_mode, G.VIsual, G.curwin.getWCursor().copy(),
-                G.curwin.getWCurswant() == MAXCOL);
+                G.curwin.w_curswant == MAXCOL);
         
         int nLine = vb.getEndLine() - vb.getStartLine() + 1;
         int nCol = vb.getRight() - vb.getLeft();
@@ -426,7 +426,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
                     false);
         } else if(G.VIsual_active) {
             vb.init(G.VIsual_mode, G.VIsual, tv.getWCursor().copy(),
-                    tv.getWCurswant() == MAXCOL);
+                    ((Window)tv).w_curswant == MAXCOL);
         } else {
             vb.clear();
         }

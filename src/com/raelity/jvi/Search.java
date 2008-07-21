@@ -159,7 +159,7 @@ public class Search {
   /** doSearch() should only be called after inputSearchPattern() */
   static int doSearch() {
     String pattern = fetchPattern();
-    G.curwin.setWSetCurswant(true);
+    G.curwin.w_set_curswant = true;
     if(pattern.equals("")) {
       if(lastPattern == null) {
         Msg.emsg(Messages.e_noprevre);
@@ -269,7 +269,7 @@ public class Search {
   }
 
   static int doNext(CMDARG cap, int count, int flag) {
-    G.curwin.setWSetCurswant(true);
+    G.curwin.w_set_curswant = true;
     int dir = ((flag & SEARCH_REV) != 0 ? - lastDir : lastDir);
     //G.curwin.repeatSearch(dir);
     int rc = FAIL;
@@ -1019,7 +1019,7 @@ finished:
         new_pos = ViManager.setDot(new_pos, G.curwin.getEditorComponent());
     }
     G.curwin.setSelect(new_pos, new_pos + search_match_len);
-    G.curwin.setWSetCurswant(true);
+    G.curwin.w_set_curswant = true;
     if(wmsg != null) {
       Msg.wmsg(wmsg/*, true*/);
     }

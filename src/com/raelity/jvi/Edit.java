@@ -30,7 +30,6 @@
 package com.raelity.jvi;
 
 import java.util.Stack;
-import javax.swing.text.Element;
 
 import com.raelity.text.TextUtil.MySegment;
 
@@ -197,7 +196,7 @@ public class Edit {
     while(true) {
       try {
         
-        G.curwin.setWSetCurswant(true);
+        G.curwin.w_set_curswant = true;
         
         // if (need_redraw && curwin.w_p_wrap && !did_backspace
         // && curwin.w_topline == old_topline)
@@ -691,7 +690,7 @@ public class Edit {
     else
       col = new_cursor_col;
     G.curwin.setCaretPosition(G.curwin.getWCursor().getLine(), col);
-    G.curwin.setWSetCurswant(true);
+    G.curwin.w_set_curswant = true;
     
     // changed_cline_bef_curs();
     
@@ -906,7 +905,7 @@ public class Edit {
   public static final int beginlineColumnIndex(int flags, MySegment txt) {
     int index;
     if ((flags & BL_SOL) != 0 && G.p_notsol.getBoolean()) {
-      index = Misc.coladvanceColumnIndex(G.curwin.getWCurswant(), txt);
+      index = Misc.coladvanceColumnIndex(G.curwin.w_curswant, txt);
     } else {
       index = 0;
       if((flags & (BL_WHITE | BL_SOL)) != 0) {
@@ -917,7 +916,7 @@ public class Edit {
           ++index;
         }
       }
-      G.curwin.setWSetCurswant(true);
+      G.curwin.w_set_curswant = true;
     }
     return index;
   }
@@ -956,7 +955,7 @@ public class Edit {
       return FAIL;
     }
     
-    G.curwin.setWSetCurswant(true);
+    G.curwin.w_set_curswant = true;
     G.curwin.setCaretPosition(fpos.getOffset() + 1);
     return OK;
   }
@@ -968,7 +967,7 @@ public class Edit {
       return FAIL;
     }
     
-    G.curwin.setWSetCurswant(true);
+    G.curwin.w_set_curswant = true;
     G.curwin.setCaretPosition(fpos.getOffset() - 1);
     return OK;
   }
@@ -1220,7 +1219,7 @@ public class Edit {
     // When an autoindent was removed, curswant stays after the indent
     // NEEDSWORK: what about autoindent in above comment?
     if (G.restart_edit == 0 /*&& (colnr_t)temp == curwin->w_cursor.col*/) {
-      G.curwin.setWSetCurswant(true);
+      G.curwin.w_set_curswant = true;
     }
     
     //
@@ -1458,7 +1457,7 @@ public class Edit {
 	start_arrow(tpos);
         G.curwin.setCaretPosition(cursor.getLine() - 1, 0);
 	Misc.coladvance(MAXCOL);
-        G.curwin.setWSetCurswant(true);	// so we stay at the end
+        G.curwin.w_set_curswant = true;	// so we stay at the end
     }
     else
 	Util.vim_beep();
@@ -1475,7 +1474,7 @@ public class Edit {
       line = 1;
     int col = 0;
     G.curwin.setCaretPosition(line, col);
-    G.curwin.setWCurswant(col);
+    G.curwin.w_curswant = col;
     start_arrow(tpos);
   }
   
@@ -1488,7 +1487,7 @@ public class Edit {
       G.curwin.setCaretPosition(G.curbuf.getLineCount(), 0);
     }
     Misc.coladvance(MAXCOL);
-    G.curwin.setWCurswant(MAXCOL);
+    G.curwin.w_curswant = MAXCOL;
     start_arrow(tpos);
   }
   
@@ -1500,7 +1499,7 @@ public class Edit {
     {
         start_arrow(cursor);
 	Search.bck_word(1, false, false);
-        G.curwin.setWSetCurswant(true);
+        G.curwin.w_set_curswant = true;
     }
     else
 	Util.vim_beep();
@@ -1512,7 +1511,8 @@ public class Edit {
     if (Misc.gchar_cursor() != '\n') {
       start_arrow(cursor);
                               //#ifdef MULTI_BYTE............#endif
-      G.curwin.setWSetCurswant(true);
+                              //#ifdef MULTI_BYTE............#endif
+      G.curwin.w_set_curswant = true;
       //++curwin->w_cursor.col;
       G.curwin.setCaretPosition(cursor.getOffset() +1);
                               //#ifdef RIGHTLEFT............#endif
@@ -1523,7 +1523,7 @@ public class Edit {
              && cursor.getLine() < G.curbuf.getLineCount())
     {
       start_arrow(cursor);
-      G.curwin.setWSetCurswant(true);
+      G.curwin.w_set_curswant = true;
       G.curwin.setCaretPosition(cursor.getLine() +1, 0);
     }
     else
@@ -1538,7 +1538,7 @@ public class Edit {
     {
 	start_arrow(cursor);
 	Search.fwd_word(1, false, false);
-        G.curwin.setWSetCurswant(true);
+        G.curwin.w_set_curswant = true;
     }
     else
 	Util.vim_beep();

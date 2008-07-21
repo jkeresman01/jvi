@@ -35,7 +35,7 @@ public class G
      */
     static void switchTo( ViTextView textView, Buffer buf )
     {
-        G.curwin = textView;
+        G.curwin = (Window)textView;
         G.curbuf = buf;
     }
 
@@ -51,7 +51,7 @@ public class G
 
     static int mod_mask;
 
-    public static ViTextView curwin;
+    public static Window curwin;
 
     static Buffer curbuf; // per file options. as int,boolean
           //public static BooleanOption b_p_et;    // expandtabs, per file

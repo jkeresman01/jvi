@@ -1412,7 +1412,8 @@ public class TextView extends Window
             if (!G.VIsual_active) {
                 try {
                     unhighlight(new int[] {
-                        getMark('<').getOffset(), getMark('>').getOffset(),
+                        getBuffer().getMark('<').getOffset(),
+                        getBuffer().getMark('>').getOffset(),
                         -1, -1});
                 } catch(Exception e) {
                     unhighlight(new int[] {

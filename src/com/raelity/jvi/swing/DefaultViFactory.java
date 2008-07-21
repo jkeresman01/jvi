@@ -132,9 +132,6 @@ public class DefaultViFactory implements ViFactory
             tv01.startup();
             editorPane.putClientProperty(PROP_VITV, tv01);
             editorSet.put(editorPane, null);
-
-            // First time initialization
-            tv01.setWSetCurswant(true);
         }
         return tv01;
     }

@@ -742,7 +742,7 @@ public class Misc implements ClipboardOwner {
   }
 
   public static int coladvanceColumnIndex(MySegment txt) {
-    return coladvanceColumnIndex(G.curwin.getWCurswant(), txt, null);
+    return coladvanceColumnIndex(G.curwin.w_curswant, txt, null);
   }
 
   public static boolean coladvance(int wcol) {
@@ -1930,7 +1930,7 @@ public class Misc implements ClipboardOwner {
     // block mode replace
     //
     if (oap.block_mode) {
-      bd.is_MAX = G.curwin.getWCurswant() == MAXCOL;
+      bd.is_MAX = G.curwin.w_curswant == MAXCOL;
       for (lnum = fpos.getLine(); lnum <= oap.end.getLine(); lnum++) {
         fpos.set(lnum, 0);
         block_prep(oap, bd, lnum, true);
@@ -2333,7 +2333,7 @@ public class Misc implements ClipboardOwner {
       y_current.y_type = MBLOCK;        /* set the yank register type */
       y_current.y_width = oap.end_vcol - oap.start_vcol;
 
-      if (G.curwin.getWCurswant() == MAXCOL && y_current.y_width > 0)
+      if (  G.curwin.w_curswant == MAXCOL && y_current.y_width > 0)
           y_current.y_width--;
       y_current.y_array = new StringBuffer[yanklines];
       bd = new block_def();
@@ -2732,7 +2732,7 @@ public class Misc implements ClipboardOwner {
     }
 
     msgmore(G.curbuf.getLineCount() - old_lcount);
-    G.curwin.setWSetCurswant(true);
+    G.curwin.w_set_curswant = true;
 
     /* NEEDSWORK: if ((flags & PUT_CURSEND)
 			&& gchar_cursor() == NUL
@@ -3099,10 +3099,10 @@ public class Misc implements ClipboardOwner {
       final ViFPOS cursor = G.curwin.getWCursor();
 
       if (Prenum != 0)
-        G.curwin.setWPScroll((Prenum > G.curwin.getViewLines())
-        ?  G.curwin.getViewLines() : Prenum);
-      n = (G.curwin.getWPScroll() <= G.curwin.getViewLines())
-      ?  G.curwin.getWPScroll() : G.curwin.getViewLines();
+        G.curwin.w_p_scroll = (Prenum > G.curwin.getViewLines())
+                               ? G.curwin.getViewLines() : Prenum;
+      n = (G.curwin.w_p_scroll <= G.curwin.getViewLines())
+      ?  G.curwin.w_p_scroll : G.curwin.getViewLines();
       
       validate_botline();
       room = G.curwin.getViewBlankLines();
@@ -3180,13 +3180,13 @@ public class Misc implements ClipboardOwner {
     }
     
     static void update_curswant() {
-      if (G.curwin.getWSetCurswant()) {
+      if (G.curwin.w_set_curswant) {
         //int vcol = getvcol();
         // G.curwin.setWCurswant(G.curwin.getWCursor().getColumn());
         MutableInt mi = new MutableInt();
         getvcol(G.curwin, G.curwin.getWCursor(), null, mi, null);
-        G.curwin.setWCurswant(mi.getValue());
-        G.curwin.setWSetCurswant(false);
+        G.curwin.w_curswant = mi.getValue();
+        G.curwin.w_set_curswant = false;
       }
     }
 
@@ -3274,7 +3274,7 @@ public class Misc implements ClipboardOwner {
       //MySegment seg = G.curbuf.getLineSegment(coordLine);
       //int col;
       if(flag < 0) {
-        coladvance(G.curwin.getWCurswant());
+        coladvance(G.curwin.w_curswant);
       } else {
         // from nv_goto
         Edit.beginline(flag);
@@ -3432,10 +3432,10 @@ public class Misc implements ClipboardOwner {
       final ViFPOS cursor = G.curwin.getWCursor();
       
       if (Prenum != 0)
-        G.curwin.setWPScroll((Prenum > G.curwin.getViewLines())
-        ?  G.curwin.getViewLines() : Prenum);
-      n = (G.curwin.getWPScroll() <= G.curwin.getViewLines())
-          ?  G.curwin.getWPScroll() : G.curwin.getViewLines();
+        G.curwin.w_p_scroll = (Prenum > G.curwin.getViewLines())
+                ? G.curwin.getViewLines() : Prenum;
+      n = (G.curwin.w_p_scroll <= G.curwin.getViewLines())
+          ?  G.curwin.w_p_scroll : G.curwin.getViewLines();
       
       validate_botline();
       room = G.curwin.getViewCoordBlankLines();
@@ -3835,7 +3835,7 @@ public class Misc implements ClipboardOwner {
      */
     
     static int lbr_chartabsize(char c, int col) {
-      if (c == TAB && (!G.curwin.getWPList() /*|| lcs_tab1*/)) {
+      if (c == TAB && (!G.curwin.w_p_list /*|| lcs_tab1*/)) {
         int ts = G.curbuf.b_p_ts;
         return (ts - (col % ts));
       } else {
@@ -4361,7 +4361,7 @@ public class Misc implements ClipboardOwner {
       int i;
       
       /* edit() changes this - record it for OP_APPEND */
-      bd.is_MAX = (G.curwin.getWCurswant() == MAXCOL);
+      bd.is_MAX = (G.curwin.w_curswant == MAXCOL);
       
       /* vis block is still marked. Get rid of it now. */
       cursor.setLine(oap.start.getLine());
@@ -4387,7 +4387,7 @@ public class Misc implements ClipboardOwner {
       if (oap.op_type == OP_APPEND) {
         if (oap.block_mode) {
           /* Move the cursor to the character right of the block. */
-          G.curwin.setWSetCurswant(true);
+          G.curwin.w_set_curswant = true;
           int tcol = cursor.getColumn();
           MySegment seg = Util.ml_get_curline();
           while (seg.array[seg.offset + tcol] != '\n'
