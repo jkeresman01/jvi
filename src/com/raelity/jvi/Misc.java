@@ -58,7 +58,7 @@ import java.nio.ByteOrder;
 
 public class Misc implements ClipboardOwner {
 
-  static ClipboardOwner clipOwner = new Misc();
+  static final ClipboardOwner clipOwner = new Misc();
 
   //////////////////////////////////////////////////////////////////
   //
@@ -377,6 +377,7 @@ public class Misc implements ClipboardOwner {
    * When extra == 1: Return TRUE if the cursor is before the first non-blank in
    *		    the line.
    */
+    @SuppressWarnings("empty-statement")
   static boolean inindent(int extra) {
       int	col;
 
@@ -3741,7 +3742,7 @@ public class Misc implements ClipboardOwner {
       int			old_lcount = G.curbuf.getLineCount();
       
       while(count-- > 0) {
-        G.curwin.undo();
+        G.curbuf.undo();
       }
       
       msgmore(G.curbuf.getLineCount() - old_lcount);
@@ -3751,7 +3752,7 @@ public class Misc implements ClipboardOwner {
       int			old_lcount = G.curbuf.getLineCount();
       
       while(count-- > 0) {
-        G.curwin.redo();
+        G.curbuf.redo();
       }
       
       msgmore(G.curbuf.getLineCount() - old_lcount);

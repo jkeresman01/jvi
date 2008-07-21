@@ -128,9 +128,6 @@ public class CommandLine extends JPanel
                 KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, set);
         c.setFocusTraversalKeys(
                 KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, set);
-
-        //getTextField().setNextFocusableComponent(null);
-        //takeFocus(false);
     }
 
 

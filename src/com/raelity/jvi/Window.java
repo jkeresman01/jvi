@@ -1,13 +1,3 @@
-/**
- * Title:        jVi<p>
- * Description:  A VI-VIM clone.
- * Use VIM as a model where applicable.<p>
- * Copyright:    Copyright (c) Ernie Rael<p>
- * Company:      Raelity Engineering<p>
- * @author Ernie Rael
- * @version 1.0
- */
-
 /*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -29,148 +19,190 @@
  */
 package com.raelity.jvi;
 
-import com.raelity.jvi.swing.*;
-
 import static com.raelity.jvi.Constants.*;
 
 /**
+ * This represents the core functionality of a vim window.
+ * <p>
  * Vim references values in a structure, but we need to present a method
  * interface, so the vim code is not preserved as we'd like.
- *
- * <br><b>NEEDSWORK:</b><ul>
- * <li>Make an interface for this. Then can have the jbuilder version and
- * the standalone version.
- * </ul>
+ * </p>
  */
+public abstract class Window implements ViTextView
+{
+    protected Buffer buf;
 
-public final class Window {
-  private ViTextView editor;
+    //
+    // Declare the variables that are a basic part of the window.
+    //
 
-  public Window(ViTextView editor) {
-    this.editor = editor;
-    // marks = editor.createMarks(26);	// only lowercase for now.
-    w_pcmark = editor.getBuffer().createMark();
-    w_prev_pcmark = editor.getBuffer().createMark();
-    viewSizeChange();
-  }
+    /**
+     * The column we'd like to be at.
+     */
+    protected int w_curswant;
 
-  /**
-   * The current location of the cursor in this window.
-   */
-  public ViFPOS XXXgetWCursor() {
-    return getEditor().getWCursor();
-  }
+    /**
+     * flag that w_curswant should be set based on current cursor position
+     */
+    protected boolean w_set_curswant;
 
-  /**
-   * Set the current location of the cursor in this window.
-   */
-  public final void setWCursor(ViFPOS p) {
-    getEditor().setCaretPosition(p.getOffset());
-  }
+    //
+    // Mark related stuff
+    //
+    protected ViMark w_pcmark;
+    protected ViMark w_prev_pcmark;
 
-  /**
-   * The column we'd like to be at.
-   */
-  private int w_curswant;
+    protected boolean w_p_list;
 
-  /**
-   * Get the column we'd like to be at. This is used to try to stay in the
-   * same column through up/down cursor motions.
-   */
+    // NEEDSWORK: this should be comming from the cache (WHAT?)
+    private int w_p_scroll;
 
-  public int getWCurswant() { return w_curswant; }
-  /**
-   * Set the column we'd like to be at.
-   */
-  public void setWCurswant(int c) { w_curswant = c; }
+    public Window()
+    {
+        viewSizeChange();
+    }
 
-  private boolean w_set_curswant;
 
-  /**
-   * If set, then update w_curswant the next time through cursupdate()
-   * to the current virtual column.
-   */
-  public boolean getWSetCurswant() { return w_set_curswant; }
-  public void setWSetCurswant(boolean f) { w_set_curswant = f; }
+    public void attachBuffer( Buffer buf )
+    {
+        if(this.buf != null)
+            ViManager.dumpStack();
+        this.buf = buf;
 
-  private boolean w_p_list;
+        w_pcmark = buf.createMark();
+        w_prev_pcmark = buf.createMark();
+    }
 
-  /**
-   * list mode
-   */
-  public boolean getWPList() { return w_p_list; }
-  public void setWPList(boolean f) { w_p_list = f; }
+    public void detachBuffer()
+    {
+        w_pcmark = null;
+        w_prev_pcmark = null;
+        buf = null;
+    }
 
-  private int w_p_scroll;
-  // NEEDSWORK: this should be comming from the cache
-  /**
-   * scroll
-   */
-  public int getWPScroll() { return w_p_scroll; }
-  public void setWPScroll(int n) { w_p_scroll = n; }
+    public void shutdown()
+    {
+        if ( G.dbgEditorActivation.getBoolean() ) {
+            assert getBuffer() == ViManager.getBuffer(getEditorComponent());
+            if(getBuffer().getShare() == 1) {
+                System.err.println("TV.shutdown: LAST CLOSE");
+            }
+        }
+    }
 
-   //
-   // Mark related stuff
-   //
-  private ViMark w_pcmark;
-  private ViMark w_prev_pcmark;
+    /**
+     * Get the column we'd like to be at. This is used to try to stay in the
+     * same column through up/down cursor motions.
+     */
+    public int getWCurswant()
+    {
+        return w_curswant;
+    }
 
-  public final ViMark getPCMark() {
-    return w_pcmark;
-  }
+    /**
+     * Set the column we'd like to be at.
+     */
+    public void setWCurswant(int c)
+    {
+        w_curswant = c;
+    }
 
-  public final ViMark getPrevPCMark() {
-    return w_prev_pcmark;
-  }
+    /**
+     * If set, then update w_curswant the next time through cursupdate()
+     * to the current virtual column.
+     */
+    public boolean getWSetCurswant()
+    {
+        return w_set_curswant;
+    }
 
-  public void pushPCMark() {
-    w_prev_pcmark.setData(w_pcmark);
-  }
+    public void setWSetCurswant(boolean f)
+    {
+        w_set_curswant = f;
+    }
 
-  public final ViMark getMark(int i) {
-    //return MarkOps.getMark(getEditor(), i);
-    return getEditor().getBuffer().getMark(i);
-  }
+    /**
+     * list mode
+     */
+    public boolean getWPList()
+    {
+        return w_p_list;
+    }
 
-  /*public void previousContextHack(ViMark mark) {
+    public void setWPList(boolean f)
+    {
+        w_p_list = f;
+    }
+
+    /**
+     * scroll
+     */
+    public int getWPScroll()
+    {
+        return w_p_scroll;
+    }
+
+    public void setWPScroll(int n)
+    {
+        w_p_scroll = n;
+    }
+
+    public final ViMark getPCMark()
+    {
+        return w_pcmark;
+    }
+
+    public final ViMark getPrevPCMark()
+    {
+        return w_prev_pcmark;
+    }
+
+    public void pushPCMark()
+    {
+        w_prev_pcmark.setData(w_pcmark);
+    }
+
+    public final ViMark getMark(int i)
+    {
+        //return MarkOps.getMark(getEditor(), i);
+        return buf.getMark(i);
+    }
+
+    /*public void previousContextHack(ViMark mark) {
     pushPCMark();
     w_pcmark.setData(mark);
-  }*/
-
-  /**
-   * Like win_new_height....
-   */
-  public void viewSizeChange() {
-    // from win_comp_scroll
-    int i = (getEditor().getViewLines() >> 1);
-    if(i <= 0) {
-      i = 1;
+    }*/
+    /**
+     * This is invoked by a subclass to indicate that the size of the
+     * view has changed.
+     * Like win_new_height....
+     */
+    public void viewSizeChange()
+    {
+        // from win_comp_scroll
+        int i = (getViewLines() >> 1);
+        if (i <= 0) {
+            i = 1;
+        }
+        setWPScroll(i);
     }
-    setWPScroll(i);
-  }
 
-  /**
-   * A mouse click has just occured in this window. Check the
-   * position so it is not on a newline (unless in input mode)
-   * <br>
-   * NEEDSWORK: "signal" a change in cursor position
-   */
-  public int mouseClickedPosition(int offset) {
-    setWSetCurswant(true);
-    if (Util.getCharAt(offset) == '\n' && (G.State & INSERT) == 0) {
-      // Sitting on a newline and not in insert mode
-      // back the cursor up (unless previous char is a newline)
-      if(offset > 0 && Util.getCharAt(offset - 1) != '\n') {
-	--offset;
-      }
+    /**
+     * A mouse click has just occured in this window. Check the
+     * position so it is not on a newline (unless in input mode)
+     * <br>
+     * NEEDSWORK: "signal" a change in cursor position
+     */
+    public int validateCursorPosition(int offset)
+    {
+        setWSetCurswant(true);
+        if (Util.getCharAt(offset) == '\n' && (G.State & INSERT) == 0) {
+            // Sitting on a newline and not in insert mode
+            // back the cursor up (unless previous char is a newline)
+            if (offset > 0 && Util.getCharAt(offset - 1) != '\n') {
+                --offset;
+            }
+        }
+        return offset;
     }
-    return offset;
-  }
-
-  /**
-   * @return the editor associated with this window
-   */
-  ViTextView getEditor() {
-    return editor;
-  }
 }

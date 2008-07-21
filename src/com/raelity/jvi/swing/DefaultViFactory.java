@@ -74,7 +74,6 @@ public class DefaultViFactory implements ViFactory
             = new WeakHashMap<JEditorPane, Object>();
 
     JDialog dialog;
-    Window window;
     ViFS fs = new DefaultViFS();
     protected static DefaultViFactory INSTANCE;
 
@@ -131,7 +130,6 @@ public class DefaultViFactory implements ViFactory
             attachBuffer(tv01);
 
             tv01.startup();
-            tv01.setWindow(new Window(tv01));
             editorPane.putClientProperty(PROP_VITV, tv01);
             editorSet.put(editorPane, null);
 
@@ -426,15 +424,6 @@ public class DefaultViFactory implements ViFactory
             caret.setDot(c.getDot());
             caret.setBlinkRate(c.getBlinkRate());
         }
-    }
-
-
-    public Window lookupWindow( JEditorPane editorPane )
-    {
-        // NEEDSWORK: get rid of lookupWindow, should always be currentEdPane
-        //            maybe can get rid of it entirely
-        ViTextView tv = ViManager.getViTextView(editorPane);
-        return tv.getWindow();
     }
 
 

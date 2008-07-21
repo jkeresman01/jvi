@@ -70,16 +70,23 @@ public interface ViTextView extends ViOptionBag {
   public enum NLOP { NL_FORWARD, NL_BACKWARD }
   
   //
-  // First the methods that make this look like a window
+  // First the methods that make this look like a vim window
   // (maybe implement at some point)
   //
-  /** @return the associated Window */
-  public Window getWindow();
-  public void setWindow(Window window);
 
   /** @return the current location of the cursor in the window */
   public ViFPOS getWCursor();
 
+  /**
+   * Something external, like a mouse click, wants to set the cursor
+   * at the specified position. It may be off the end of the line,
+   * adjust if needed to nearest last char of line.
+   * @param offset target position of the cursor.
+   * @return valid position
+   */
+  public int validateCursorPosition(int offset);
+
+  // NEEDSWORK: get rid of these
   public int getWCurswant();
   public void setWCurswant(int c);
   public boolean getWSetCurswant();
@@ -181,14 +188,6 @@ public interface ViTextView extends ViOptionBag {
 
   /** clear the select, if any, on the screen, don't move the caret */
   public void clearSelect();
-
-
-
-  /** undo a change */
-  public void undo();
-
-  /** redo a change */
-  public void redo();
 
 
   

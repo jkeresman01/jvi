@@ -135,7 +135,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.0.x12");
+    public static final jViVersion version = new jViVersion("1.2.0.x13");
 
     private static boolean enabled;
 
@@ -179,11 +179,15 @@ public class ViManager
 
     public static String cid(Object o)
     {
+        if (o == null)
+            return "(null)";
         return o.getClass().getSimpleName() + "@" + id(o);
     }
 
     public static String id(Object o)
     {
+        if (o == null)
+            return "(null)";
         return Integer.toHexString(System.identityHashCode(o));
     }
 
@@ -860,8 +864,8 @@ public class ViManager
                 System.err.println("START_DRAG");
             }*/
 
-            Window window = factory.lookupWindow(editorPane);
-            pos = window.mouseClickedPosition(pos);
+            ViTextView tv = factory.getViTextView(editorPane);
+            pos = tv.validateCursorPosition(pos);
             Normal.abortVisualMode();
 
             if(G.dbgMouse.getBoolean()) {
@@ -972,15 +976,6 @@ public class ViManager
     /** A mouse click may have moved the caret. */
     public static void unexpectedCaretChange(int dot) {
         // XXX verify mouse is at an acceptable location
-    }
-
-    /** The viewport has changed, so number of screen lines have changed */
-    public static void viewSizeChange(ViTextView textView) {
-        try {
-            Window window = factory.lookupWindow(textView.getEditorComponent());
-            window.viewSizeChange();
-        } catch (NonExistentWindowException ex) {
-        }
     }
 
     /** The viewport has changed or scrolled, clear messages*/

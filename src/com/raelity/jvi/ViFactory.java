@@ -113,14 +113,6 @@ public interface ViFactory
     public void stopModalKeyCatch();
 
     /**
-     * The factory keeps track of which Window is active when there
-     * is a switch. The argument may or may not be used depending on
-     * the implementation.
-     * @return the Window for the specified editor
-     */
-    public Window lookupWindow(JEditorPane editorPane);
-
-    /**
      * @return action suitable for default key action
      */
     public Action createCharAction(String name);

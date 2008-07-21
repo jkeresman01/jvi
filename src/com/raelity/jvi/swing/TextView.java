@@ -70,14 +70,13 @@ import javax.swing.text.StyledEditorKit;
  *  this class.
  *  </p>
  */
-public class TextView
+public class TextView extends Window
         implements ViTextView, PropertyChangeListener, ChangeListener
 {
     protected int mygen;
 
 
     protected JEditorPane editorPane;
-    protected DefaultBuffer buf;
     protected TextOps ops;
     protected Window window;
 
@@ -86,7 +85,7 @@ public class TextView
     // NEEDSWORK: either get rid of this, or get it working.
     protected int expectedCaretPosition = -1;
 
-    private Point point0; // NEEDSWORK: change if document changes
+    private Point point0;
     private CaretListener cursorSaveListener;
     private int lastDot;
     private static int gen;
@@ -132,23 +131,13 @@ public class TextView
     }
 
 
-    public void attachBuffer( Buffer buf )
-    {
-        if(this.buf != null)
-            ViManager.dumpStack();
-        this.buf = (DefaultBuffer)buf;
-    }
-
-
+    @Override
     public void shutdown()
     {
         disableCursorSave();
-        if ( G.dbgEditorActivation.getBoolean() ) {
-            assert buf == ViManager.getBuffer(getEditorComponent());
-            if(buf.getShare() == 1) {
-                System.err.println("TV.shutdown: LAST CLOSE");
-            }
-        }
+
+        super.shutdown();
+
         shutdown(editorPane); // CACHE
         ViManager.detached(editorPane);
         editorPane = null;
@@ -181,44 +170,10 @@ public class TextView
         updateHighlightSearchState();
     }
 
-    //
-    //
-    //
-
-
-    public void setWindow( Window window )
-    {
-        this.window = window;
-    }
-
-    public Window getWindow()
-    {
-        return window;
-    }
-
-    //
-    // Pretend a little to be a window
-    // NEEDSWORK: get rid of the "Window" class, maybe make it an interface
-    //
-
-    public int getWCurswant()              { return window.getWCurswant(); }
-    public void setWCurswant(int c)               { window.setWCurswant(c); }
-    public boolean getWSetCurswant()       { return window.getWSetCurswant(); }
-    public void setWSetCurswant(boolean f)        { window.setWSetCurswant(f); }
-
-    public ViMark getPCMark()              { return window.getPCMark(); }
-    public ViMark getPrevPCMark()          { return window.getPrevPCMark(); }
-    public void pushPCMark()                      { window.pushPCMark(); }
-    public ViMark getMark(int i)           { return window.getMark(i); }
-
-    public int getWPScroll()               { return window.getWPScroll(); }
-    public void setWPScroll(int n)                { window.setWPScroll(n); }
-    public boolean getWPList()             { return window.getWPList(); }
-    public void setWPList(boolean f)              { window.setWPList(f); }
 
     public final DefaultBuffer getBuffer()
     {
-        return buf;
+        return (DefaultBuffer) buf;
     }
 
 
@@ -468,30 +423,8 @@ public class TextView
     }
 
 
-  ///////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////
 
-    //
-    // START BUFFER
-    //
-    public void undo()
-    {
-        getBuffer().undo();
-    }
-
-
-    public void redo()
-    {
-        getBuffer().redo();
-    }
-
-
-    public String getText( int offset, int length ) throws BadLocationException
-    {
-        return getBuffer().getText(offset, length);
-    }
-    //
-    // END BUFFER
-    //
 
 
     public int getCaretPosition()
@@ -1004,7 +937,7 @@ public class TextView
             System.err.println("doc switch: ");
         }
         point0 = null;
-        buf = null;
+        super.detachBuffer();
         ViManager.getViFactory().changeBuffer(this, e.getOldValue());
     }
 
@@ -1137,7 +1070,7 @@ public class TextView
         viewportExtent = newViewportExtent;
 
         if (sizeChange) {
-            ViManager.viewSizeChange(this);
+            viewSizeChange();
         }
         if (sizeChange || topLineChange) {
             ViManager.viewMoveChange(this);

@@ -1,7 +1,8 @@
 /*
- * A command line entry widget that sits on the glass pane.
- * Doing this, instead of a modal dialog, avoids problems
- * with interpreter bugs, particularly on linux.
+ * A command line entry widget that sits on the glass pane,
+ * instead of a modal dialog; the modal dialog is preferred.
+ * Can avoid problems with interpreter bugs, particularly
+ * on early linux interpreters, around 2002.
  */
 
 package com.raelity.jvi.swing;
@@ -12,14 +13,22 @@ import java.awt.*;
 
 public class InlineCmdEntry extends CommandLine.CommandLineEntry {
     private MouseListener mouseListener;
+    private boolean doneWithCommandLine;
     public InlineCmdEntry(){
         this(ViCmdEntry.COLON_ENTRY);
     }
     public InlineCmdEntry(int type){
         super(type);
 
-        // NEEDSWORK: FOCUS: use FocusTraversalPolicy
-        commandLine.setNextFocusableComponent(commandLine);
+        // rather than screwing with the FocusTraversalPolicy,
+        // simply prevent the command line from giving up focus
+        // until it is ready to be dismissed.
+        commandLine.getTextComponent().setInputVerifier(new InputVerifier() {
+            @Override
+            public boolean verify(JComponent input) {
+                return doneWithCommandLine;
+            }
+        });
         mouseListener = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent evt) {
@@ -39,10 +48,12 @@ public class InlineCmdEntry extends CommandLine.CommandLineEntry {
         // by placing p.add(commandLine) after the p.setVisible
         // a blanking and redraw of the combo box is avoided.
         glass.add(commandLine);
+        doneWithCommandLine = false;
         commandLine.takeFocus(true);
     };
 
     protected void prepareShutdown(){
+        doneWithCommandLine = true;
         //commandLine.removeActionListener(this);
         JPanel glass = (JPanel)getRootPane().getGlassPane();
         glass.removeMouseListener(mouseListener);
