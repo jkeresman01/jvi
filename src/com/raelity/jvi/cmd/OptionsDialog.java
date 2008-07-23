@@ -7,7 +7,6 @@ package com.raelity.jvi.cmd;
 
 import com.l2fprod.common.beans.ExtendedPropertyDescriptor;
 import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
-import com.l2fprod.common.beans.editor.FilePropertyEditor;
 import com.l2fprod.common.propertysheet.AbstractProperty;
 import com.l2fprod.common.propertysheet.Property;
 import com.l2fprod.common.propertysheet.PropertyEditorFactory;
@@ -21,7 +20,6 @@ import com.l2fprod.common.swing.ComponentFactory;
 import com.l2fprod.common.swing.LookAndFeelTweaks;
 import com.l2fprod.common.swing.PercentLayout;
 import com.l2fprod.common.swing.renderer.ColorCellRenderer;
-import com.l2fprod.common.util.ResourceManager;
 import com.raelity.jvi.Option.ColorOption;
 import com.raelity.jvi.Options;
 import com.raelity.jvi.OptionsBean;
@@ -37,7 +35,6 @@ import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyDescriptor;
-import java.beans.PropertyEditorManager;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -138,13 +135,12 @@ public class OptionsDialog {
         return tabs;
     }
 
-    static PropertyChangeListener sharedPropertyChangeListener;
-
     private static class OptionSheet extends JPanel {
-        BeanInfo bean; // keep a reference, NOTE: bean/beanInfo are same class
+        // NOTE: bean/beanInfo are same class
+        final BeanInfo bean; // keep a reference,
         PropertySheetPanel sheet;
-        OptionSheet(final BeanInfo bean) {
-            this.bean = bean;
+        OptionSheet(BeanInfo _bean) {
+            this.bean = _bean;
 
             BeanDescriptor bdesc = bean.getBeanDescriptor();
             //bdesc.setShortDescription("A desc xxx");
@@ -201,26 +197,25 @@ public class OptionsDialog {
             
             // everytime a property change, update the bean
             // (which will update the Preference which updates the option)
-            if(sharedPropertyChangeListener == null) {
-                sharedPropertyChangeListener = new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        Property prop = (Property)evt.getSource();
-                        try {
-                            prop.writeToObject(bean);
-                        } catch(RuntimeException ex) {
-                            if(!(ex.getCause() instanceof PropertyVetoException))
-                                throw ex;
-                            JOptionPane.showMessageDialog(dialog,
-                                    ex.getCause().getMessage(),
-                                    "jVi Option Error",
-                                    JOptionPane.ERROR_MESSAGE);
-                            prop.setValue(Options.getOption(prop.getName())
-                                                                .getString());
-                        }
+            PropertyChangeListener pcl;
+            pcl = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    Property prop = (Property)evt.getSource();
+                    try {
+                        prop.writeToObject(bean);
+                    } catch(RuntimeException ex) {
+                        if(!(ex.getCause() instanceof PropertyVetoException))
+                            throw ex;
+                        JOptionPane.showMessageDialog(dialog,
+                                ex.getCause().getMessage(),
+                                "jVi Option Error",
+                                JOptionPane.ERROR_MESSAGE);
+                        prop.setValue(Options.getOption(prop.getName())
+                                                            .getString());
                     }
-                };
-            }
-            sheet.addPropertySheetChangeListener(sharedPropertyChangeListener);
+                }
+            };
+            sheet.addPropertySheetChangeListener(pcl);
         }
 
         //

@@ -68,14 +68,12 @@ public interface ViTextView extends ViOptionBag {
 
   /** open new line forward/backward */
   public enum NLOP { NL_FORWARD, NL_BACKWARD }
-  
-  //
-  // First the methods that make this look like a vim window
-  // (maybe implement at some point)
-  //
 
-  /** @return the current location of the cursor in the window */
-  public ViFPOS getWCursor();
+  /**
+   * NOTE: this works only once.
+   * @return create the ViFPOS that corresponds to the screens caret.
+   */
+  public ViFPOS createWCursor();
 
   /**
    * Something external, like a mouse click, wants to set the cursor

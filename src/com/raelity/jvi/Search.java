@@ -169,7 +169,7 @@ public class Search {
     }
     lastPattern = pattern;
     // executeSearch(pattern, lastDir, G.p_ic.getBoolean());
-    ViFPOS pos = G.curwin.getWCursor().copy();
+    ViFPOS pos = G.curwin.w_cursor.copy();
     int rc = searchit(null, pos, lastDir, pattern,
                       searchCount, searchFlags, 0, G.p_ic.getBoolean());
     if(rc != FAIL) {
@@ -213,7 +213,7 @@ public class Search {
       } else
         doc.removeDocumentListener(isListener);
       isListener = new SearchListener();
-      searchPos = G.curwin.getWCursor().copy();
+      searchPos = G.curwin.w_cursor.copy();
       searchTopLine = G.curwin.getViewTopLine();
       setPCMarkAfterIncrSearch = (searchFlags & SEARCH_MARK) != 0;
       searchFlags &= ~SEARCH_MARK;
@@ -278,7 +278,7 @@ public class Search {
     } else {
       Msg.smsg((dir == FORWARD ? "/" : "?") + lastPattern);
       // executeSearch(lastPattern, dir, G.p_ic.getBoolean());
-      ViFPOS pos = G.curwin.getWCursor().copy();
+      ViFPOS pos = G.curwin.w_cursor.copy();
       rc = searchit(null, pos, dir, lastPattern,
                         count, flag, 0, G.p_ic.getBoolean());
     }
@@ -327,7 +327,7 @@ public class Search {
       c = lastc;
     }
 
-    ViFPOS fpos = G.curwin.getWCursor();
+    ViFPOS fpos = G.curwin.w_cursor;
     MySegment seg = G.curbuf.getLineSegment(fpos.getLine());
     col = fpos.getColumn();
     len = seg.count - 1; // don't count the newline, MUST_HAVE_NL
@@ -417,8 +417,7 @@ public class Search {
       // We always move at least one character, unless on the last character
       // in the buffer.
       //
-      last_line = (G.curwin.getWCursor().getLine()
-		   	== G.curbuf.getLineCount());
+      last_line = (G.curwin.w_cursor.getLine() == G.curbuf.getLineCount());
       i = Misc.inc_cursor();
       if (i == -1 || (i == 1 && last_line)) // started at last char in file
 	return FAIL;
@@ -442,7 +441,7 @@ public class Search {
 	//
 	// We'll stop if we land on a blank line
 	//
-	if(G.curwin.getWCursor().getColumn() == 0
+	if(G.curwin.w_cursor.getColumn() == 0
 	   	&& Misc.gchar_cursor() == '\n') {
 	  break;
 	}
@@ -479,7 +478,7 @@ finished_block:
 	  // Stop on an empty line.
 	  //
 	  while (cls() == 0) {
-	    ViFPOS fpos = G.curwin.getWCursor();
+	    ViFPOS fpos = G.curwin.w_cursor;
 	    if (fpos.getColumn() == 0 && Util.lineempty(fpos.getLine()))
 	      break finished_block;
 	    if (Misc.dec_cursor() == -1)   // hit start of file, stop here
@@ -542,7 +541,7 @@ finished_block:
 	  // First skip white space, if 'empty' is TRUE, stop at empty line.
 	  //
 	  while (cls() == 0) {
-	    ViFPOS fpos = G.curwin.getWCursor();
+	    ViFPOS fpos = G.curwin.w_cursor;
 	    if (empty && fpos.getColumn() == 0
 		&& Util.lineempty(fpos.getLine()))
 	      break finished_block;
@@ -596,7 +595,7 @@ finished:
       // Move backward to end of the previous word
       //
       while (cls() == 0) {
-	ViFPOS fpos = G.curwin.getWCursor();
+	ViFPOS fpos = G.curwin.w_cursor;
 	if (fpos.getColumn() == 0 && Util.lineempty(fpos.getLine()))
 	  break;
 	if ((i = Misc.dec_cursor()) == -1 || (eol && i == 1))
@@ -1671,7 +1670,7 @@ finished:
     boolean cpo_J;
     boolean found_dot;
 
-    pos = G.curwin.getWCursor().copy();
+    pos = G.curwin.w_cursor.copy();
 
     while (count-- > 0) {
 
@@ -1763,7 +1762,7 @@ found:
   static boolean findpar(CMDARG oap, int dir, int count, int what,
     boolean both) {
 
-    int curr = G.curwin.getWCursor().getLine();
+    int curr = G.curwin.w_cursor.getLine();
 
     while (count-- > 0) {
       boolean did_skip = false; //TRUE after separating lines have been skipped 
@@ -1893,7 +1892,7 @@ found:
     if (type == 'S')	    /* not implemented yet */
         return FAIL;
 
-    start_lnum = G.curwin.getWCursor().getLine();
+    start_lnum = G.curwin.w_cursor.getLine();
 
     /*
      * When visual area is more than one line: extend it.

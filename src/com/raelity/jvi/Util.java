@@ -43,7 +43,7 @@ public class Util {
 
   /** position to end of line. */
   static void endLine() {
-    ViFPOS fpos = G.curwin.getWCursor();
+    ViFPOS fpos = G.curwin.w_cursor;
     int offset = G.curbuf
 	      		.getLineEndOffsetFromOffset(fpos.getOffset());
     // assumes there is at least one char in line, could be a '\n'
@@ -123,7 +123,7 @@ public class Util {
   }
   
   static MySegment ml_get_curline() {
-    return ml_get(G.curwin.getWCursor().getLine());
+    return ml_get(G.curwin.w_cursor.getLine());
   }
   
   /** get pointer to positin 'pos', the returned MySegment's CharacterIterator
@@ -142,7 +142,7 @@ public class Util {
   }
 
   static CharacterIterator ml_get_cursor() {
-    return ml_get_pos(G.curwin.getWCursor());
+    return ml_get_pos(G.curwin.w_cursor);
   }
 
   static void ml_replace(int lnum, CharSequence line) {

@@ -131,7 +131,7 @@ public class Edit {
       did_backspace = false;
       inserted_space = new MutableBoolean(false);
       
-      Insstart = G.curwin.getWCursor().copy();
+      Insstart = G.curwin.w_cursor.copy();
       Insstart_textlen = Misc.linetabsize(Util.ml_get_curline());
 
       if (!G.did_ai)
@@ -420,7 +420,7 @@ public class Edit {
 
           case 0x1f & 'Y': // copy from previous line or scroll down
           case 0x1f & 'E': // copy from next line	   or scroll up
-            c = ins_copychar(G.curwin.getWCursor().getLine()
+            c = ins_copychar(G.curwin.w_cursor.getLine()
                              + (c == (0x1f & (int)'Y') ? -1 : 1));
             break normal_char;
             
@@ -516,7 +516,7 @@ public class Edit {
   private static void removeUnusedWhiteSpace() {
     if (Util.ml_get_curline().toString().trim().equals("")) {
       int startOffset =
-        G.curbuf.getLineStartOffset(G.curwin.getWCursor().getLine());
+        G.curbuf.getLineStartOffset(G.curwin.w_cursor.getLine());
       int endOffset = G.curbuf.getLineEndOffsetFromOffset(startOffset) - 1;
       G.curwin.deleteChar(startOffset, endOffset);
     }
@@ -579,14 +579,14 @@ public class Edit {
     // possible when the cursor is in the indent.  Remember the number of
     // characters before the cursor if it's possible.
     //
-    start_col = G.curwin.getWCursor().getColumn();
+    start_col = G.curwin.w_cursor.getColumn();
     
     // determine offset from first non-blank
-    new_cursor_col = G.curwin.getWCursor().getColumn();
+    new_cursor_col = G.curwin.w_cursor.getColumn();
     beginline(BL_WHITE);
-    new_cursor_col -= G.curwin.getWCursor().getColumn();
+    new_cursor_col -= G.curwin.w_cursor.getColumn();
     
-    insstart_less = G.curwin.getWCursor().getColumn();
+    insstart_less = G.curwin.w_cursor.getColumn();
     
     /*
     //
@@ -607,7 +607,7 @@ public class Edit {
       Misc.set_indent(amount, true);
     else
       Misc.shift_line(type == INDENT_DEC, round, 1);
-    insstart_less -= G.curwin.getWCursor().getColumn();
+    insstart_less -= G.curwin.w_cursor.getColumn();
     
     //
     // Try to put cursor on same character.
@@ -626,9 +626,9 @@ public class Edit {
       //
       if (new_cursor_col == 0)
         insstart_less = MAXCOL;
-      new_cursor_col += G.curwin.getWCursor().getColumn();
+      new_cursor_col += G.curwin.w_cursor.getColumn();
     } else
-      new_cursor_col = G.curwin.getWCursor().getColumn();
+      new_cursor_col = G.curwin.w_cursor.getColumn();
     /* ***************************************************************
     else if (!(State & INSERT))
       new_cursor_col = G.curwin.getWCursor().getColumn();
@@ -689,7 +689,7 @@ public class Edit {
       col = 0;
     else
       col = new_cursor_col;
-    G.curwin.setCaretPosition(G.curwin.getWCursor().getLine(), col);
+    G.curwin.setCaretPosition(G.curwin.w_cursor.getLine(), col);
     G.curwin.w_set_curswant = true;
     
     // changed_cline_bef_curs();
@@ -863,7 +863,7 @@ public class Edit {
       try {
         Misc.endInsertUndo();
         Normal.u_save_cursor();    // errors are ignored!
-        Insstart = G.curwin.getWCursor().copy();    // new insertion starts here
+        Insstart = G.curwin.w_cursor.copy();    // new insertion starts here
         Insstart_textlen = Misc.linetabsize(Util.ml_get_curline());
        //ai_col = 0;
         assert(G.State != VREPLACE);
@@ -929,7 +929,7 @@ public class Edit {
    */
   public static final void beginline(int flags) {
     Normal.do_xop("beginline");
-    int line = G.curwin.getWCursor().getLine();
+    int line = G.curwin.w_cursor.getLine();
     MySegment seg = G.curbuf.getLineSegment(line);
     int offset = G.curbuf.getLineStartOffset(line)
                   + beginlineColumnIndex(flags, seg);
@@ -945,7 +945,7 @@ public class Edit {
    */
   
   public static int oneright() {
-    ViFPOS fpos = G.curwin.getWCursor();
+    ViFPOS fpos = G.curwin.w_cursor;
     int lnum = fpos.getLine();
     int col = fpos.getColumn();
     MySegment seg = G.curbuf.getLineSegment(lnum);
@@ -961,7 +961,7 @@ public class Edit {
   }
   
   public static int oneleft() {
-    ViFPOS fpos = G.curwin.getWCursor();
+    ViFPOS fpos = G.curwin.w_cursor;
     int col = fpos.getColumn();
     if(col == 0) {
       return FAIL;
@@ -978,7 +978,7 @@ public class Edit {
   public static int cursor_up(int n, boolean upd_topline) {
     Normal.do_xop("cursor_up");
     if(G.isCoordSkip.getBoolean()) {
-      int coordLine = G.curwin.getCoordLine(G.curwin.getWCursor().getLine());
+      int coordLine = G.curwin.getCoordLine(G.curwin.w_cursor.getLine());
       if (n != 0) {
         if (coordLine <= 1)
           return FAIL;
@@ -990,7 +990,7 @@ public class Edit {
       Misc.gotoCoordLine(coordLine, -1);
       return OK;
     }
-    int lnum = G.curwin.getWCursor().getLine();
+    int lnum = G.curwin.w_cursor.getLine();
     if (n != 0) {
       if (lnum <= 1)
         return FAIL;
@@ -1012,7 +1012,7 @@ public class Edit {
   public static int cursor_down(int n, boolean upd_topline) {
     Normal.do_xop("cursor_down");
     if(G.isCoordSkip.getBoolean()) {
-      int coordLine = G.curwin.getCoordLine(G.curwin.getWCursor().getLine());
+      int coordLine = G.curwin.getCoordLine(G.curwin.w_cursor.getLine());
       if (n != 0) {
         int nline = G.curwin.getCoordLineCount();
         if (coordLine >= nline) { return FAIL; }
@@ -1022,7 +1022,7 @@ public class Edit {
       Misc.gotoCoordLine(coordLine, -1);
       return OK;
     }
-    int lnum = G.curwin.getWCursor().getLine();
+    int lnum = G.curwin.w_cursor.getLine();
     if (n != 0) {
       int nline = G.curbuf.getLineCount();
       if (lnum >= nline) { return FAIL; }
@@ -1226,7 +1226,7 @@ public class Edit {
     // The cursor should end up on the last inserted character.
     //
     // NEEDSWORK: fixup cursor after insert
-    ViFPOS fpos = G.curwin.getWCursor();
+    ViFPOS fpos = G.curwin.w_cursor;
     if (fpos.getColumn() != 0
             && (G.restart_edit == 0 || Misc.gchar_pos(fpos) == '\n')) {
       G.curwin.setCaretPosition(fpos.getOffset() - 1);
@@ -1295,13 +1295,13 @@ public class Edit {
   private static void ins_shift_paren(int c, int dir) {
     GetChar.AppendCharToRedobuff(c);
     int curindent = Misc.get_indent();
-    int amount = Misc.findParen(G.curwin.getWCursor().getLine()-1,
+    int amount = Misc.findParen(G.curwin.w_cursor.getLine()-1,
             curindent, dir);
     if(amount > 0) {
       ++amount; // position after paren
       change_indent(INDENT_SET, amount, false, 0);
     } else {
-      amount = Misc.findFirstNonBlank(G.curwin.getWCursor().getLine()-1,
+      amount = Misc.findFirstNonBlank(G.curwin.w_cursor.getLine()-1,
               curindent, dir);
       if(dir == BACKWARD && amount > 0
               || dir != BACKWARD && amount > curindent)
@@ -1317,7 +1317,7 @@ public class Edit {
     stop_arrow();
     if (Misc.gchar_cursor() == '\n')	// delete newline
     {
-      temp = G.curwin.getWCursor().getOffset();
+      temp = G.curwin.w_cursor.getOffset();
       if (!Options.can_bs(BS_EOL)		// only if "eol" included
               || Misc.do_join(false, true) == FAIL) {
         Util.vim_beep();
@@ -1343,7 +1343,7 @@ public class Edit {
   throws NotSupportedException {
     Normal.do_xop("ins_bs");
     
-    ViFPOS cursor = G.curwin.getWCursor();
+    ViFPOS cursor = G.curwin.w_cursor;
     
     // can't delete anything in an empty file
     // can't backup past first character in buffer
@@ -1439,7 +1439,7 @@ public class Edit {
     ViFPOS	tpos;
 
     undisplay_dollar();
-    ViFPOS cursor = G.curwin.getWCursor();
+    ViFPOS cursor = G.curwin.w_cursor;
     tpos = cursor.copy();
     if (oneleft() == OK)
     {
@@ -1467,9 +1467,9 @@ public class Edit {
     ViFPOS	tpos;
 
     undisplay_dollar();
-    tpos = G.curwin.getWCursor().copy();
+    tpos = G.curwin.w_cursor.copy();
     
-    int line = G.curwin.getWCursor().getLine();
+    int line = G.curwin.w_cursor.getLine();
     if ((G.mod_mask & MOD_MASK_CTRL) != 0)
       line = 1;
     int col = 0;
@@ -1482,7 +1482,7 @@ public class Edit {
     ViFPOS	tpos;
 
     undisplay_dollar();
-    tpos = G.curwin.getWCursor().copy();
+    tpos = G.curwin.w_cursor.copy();
     if ((G.mod_mask & MOD_MASK_CTRL) != 0) {
       G.curwin.setCaretPosition(G.curbuf.getLineCount(), 0);
     }
@@ -1494,7 +1494,7 @@ public class Edit {
   private static void ins_s_left() throws NotSupportedException {
     undisplay_dollar();
     
-    ViFPOS cursor = G.curwin.getWCursor();
+    ViFPOS cursor = G.curwin.w_cursor;
     if(cursor.getLine() > 1 || cursor.getColumn() > 0)
     {
         start_arrow(cursor);
@@ -1507,7 +1507,7 @@ public class Edit {
   
   private static void ins_right() throws NotSupportedException {
     undisplay_dollar();
-    ViFPOS cursor = G.curwin.getWCursor();
+    ViFPOS cursor = G.curwin.w_cursor;
     if (Misc.gchar_cursor() != '\n') {
       start_arrow(cursor);
                               //#ifdef MULTI_BYTE............#endif
@@ -1532,7 +1532,7 @@ public class Edit {
   
   private static void ins_s_right() throws NotSupportedException {
     undisplay_dollar();
-    ViFPOS cursor = G.curwin.getWCursor();
+    ViFPOS cursor = G.curwin.w_cursor;
     if (cursor.getLine() < G.curbuf.getLineCount()
         || Misc.gchar_cursor() != '\n')
     {
@@ -1549,7 +1549,7 @@ public class Edit {
                                     //int old_topline;
 
     undisplay_dollar();
-    tpos = G.curwin.getWCursor().copy();
+    tpos = G.curwin.w_cursor.copy();
                                     //old_topline = curwin->w_topline;
     if (cursor_up(1, true) == OK)
     {
@@ -1584,7 +1584,7 @@ public class Edit {
                                       //int old_topline = curwin->w_topline;
 
     undisplay_dollar();
-    tpos = G.curwin.getWCursor().copy();
+    tpos = G.curwin.w_cursor.copy();
     if (cursor_down(1, true) == OK)
     {
                                           //if (old_topline != curwin->w_topline)
@@ -1634,7 +1634,7 @@ public class Edit {
     ptr = seg.offset;
     //validate_virtcol();
     MutableInt mi = new MutableInt();
-    Misc.getvcol(G.curwin, G.curwin.getWCursor(), null, mi, null);
+    Misc.getvcol(G.curwin, G.curwin.w_cursor, null, mi, null);
     int virtcol = mi.getValue();
     while (temp < virtcol && seg.array[ptr] != '\n')
       temp += Misc.lbr_chartabsize(seg.array[ptr++], temp);

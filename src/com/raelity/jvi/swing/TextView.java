@@ -82,9 +82,6 @@ public class TextView extends Window
 
     protected ViStatusDisplay statusDisplay;
 
-    // NEEDSWORK: either get rid of this, or get it working.
-    protected int expectedCaretPosition = -1;
-
     private Point point0;
     private CaretListener cursorSaveListener;
     private int lastDot;
@@ -106,6 +103,11 @@ public class TextView extends Window
                 lastDot = ce.getDot();
             }
         };
+    }
+
+    public ViFPOS createWCursor()
+    {
+        return w_cursor == null ? new WCursor() : null;
     }
 
 
@@ -173,7 +175,7 @@ public class TextView extends Window
 
     public final DefaultBuffer getBuffer()
     {
-        return (DefaultBuffer) buf;
+        return (DefaultBuffer) w_buffer;
     }
 
 
@@ -195,7 +197,6 @@ public class TextView extends Window
         if ( G.dbgEditorActivation.getBoolean() ) {
           System.err.println("TV.attach: " + editorPane.hashCode());
         }
-        expectedCaretPosition = -1;
         attach(editorPane); // CACHE
     }
 
@@ -263,7 +264,6 @@ public class TextView extends Window
             Util.vim_beep();
             return;
         }
-        expectedCaretPosition++;
         ops.xop(TextOps.INSERT_TAB); // NEEDSWORK: xop throws no exception
     }
 
@@ -319,7 +319,6 @@ public class TextView extends Window
             Util.vim_beep();
             return;
         }
-        expectedCaretPosition++;
         ops.xop(TextOps.KEY_TYPED, String.valueOf(c)); // NEEDSWORK: xop throws no exception
     }
 
@@ -385,8 +384,7 @@ public class TextView extends Window
             Util.vim_beep();
             return false;
         }
-        final ViFPOS cursor = getWCursor();
-        if ( op == NLOP.NL_BACKWARD && cursor.getLine() == 1 ) {
+        if ( op == NLOP.NL_BACKWARD && w_cursor.getLine() == 1 ) {
             // Special case if BACKWARD and at position zero of document.
             // set the caret position to 0 so that insert line on first line
             // works as well, set position just before new line of first line
@@ -405,12 +403,13 @@ public class TextView extends Window
             // after the current line,
             // handle current line might be a fold
             // int cmpOffset = getBuffer()
-            //                   .getLineEndOffsetFromOffset(cursor.getOffset());
+            //                .getLineEndOffsetFromOffset(w_cursor.getOffset());
             offset = G.curwin.getBufferLineOffset(
-                    G.curwin.getCoordLine(cursor.getLine()) + 1);
+                    G.curwin.getCoordLine(w_cursor.getLine()) + 1);
         } else {
             // before the current line
-            offset = getBuffer().getLineStartOffsetFromOffset(cursor.getOffset());
+            offset = getBuffer()
+                    .getLineStartOffsetFromOffset(w_cursor.getOffset());
         }
         // offset is after the newline where insert happens, backup the caret.
         // After the insert newline, caret is ready for input on blank line
@@ -429,7 +428,9 @@ public class TextView extends Window
 
     public int getCaretPosition()
     {
-        return editorPane.getCaretPosition();
+        // NEEDSWORK: what is using this?
+        //return editorPane.getCaretPosition();
+        return w_cursor.getOffset();
     }
 
 
@@ -441,15 +442,16 @@ public class TextView extends Window
 
     public void setCaretPosition( int offset )
     {
-        expectedCaretPosition = offset;
+        // NEEDSWORK: what is using this?
         editorPane.setCaretPosition(offset);
     }
 
 
     public void setCaretPosition( int lnum, int col )
     {
-        Element elem = getLineElement(lnum);
-        setCaretPosition(elem.getStartOffset() + col);
+        //Element elem = getLineElement(lnum);
+        //setCaretPosition(elem.getStartOffset() + col);
+        w_cursor.set(lnum, col);
     }
 
 
@@ -853,12 +855,6 @@ public class TextView extends Window
         return ops;
     }
 
-    //
-    // The cursor is a magic FPOS. It reads the current caret positon
-    // and writes move the caret.
-    //
-    private WCursor magicCursor = new WCursor();
-
     private class WCursor extends ViFPOS.abstractFPOS
     {
         final public int getLine()
@@ -868,14 +864,14 @@ public class TextView extends Window
 
         final public int getColumn()
         {
-            int offset = getCaretPosition();
+            int offset = editorPane.getCaretPosition();
             return offset - getBuffer().getElemCache(offset)
                                        .elem.getStartOffset();
         }
 
         final public int getOffset()
         {
-            return getCaretPosition();
+            return editorPane.getCaretPosition();
         }
 
         final public void set(int line, int column)
@@ -899,28 +895,18 @@ public class TextView extends Window
                 column = adjustedColumn;
             }
 
-            setCaretPosition(startOffset + column);
+            editorPane.setCaretPosition(startOffset + column);
         }
 
         final public ViFPOS copy()
         {
-            int offset = getCaretPosition();
+            int offset = editorPane.getCaretPosition();
             ElemCache ec = getBuffer().getElemCache(offset);
             FPOS fpos = new FPOS(offset, ec.line, offset - ec.elem.getStartOffset());
             //fpos.initFPOS(getOffset(), getLine(), getColumn());
             return fpos;
         }
     };
-
-    /**
-     * @return the current location of the cursor in the window,
-     *  note that this cursor is dynamic as caret moves this gets
-     *  updated.
-     */
-    final public ViFPOS getWCursor()
-    {
-        return magicCursor;
-    }
 
     //////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////

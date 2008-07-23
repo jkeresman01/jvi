@@ -209,7 +209,7 @@ public class ColonCommands
         for (;;) {
             cev.line1 = cev.line2;
                 // default is current line number
-            cev.line2 = G.curwin.getWCursor().getLine();
+            cev.line2 = G.curwin.w_cursor.getLine();
                 sidx = Misc.skipwhite(commandLine, sidx);
             sidx = get_address(commandLine, sidx, skip, lnum);
             if (sidx < 0)            // error detected
@@ -422,7 +422,7 @@ public class ColonCommands
           switch(c) {
               case '.':         // '.' - Cursor position
                   ++sidx;
-                  lnum.setValue(G.curwin.getWCursor().getLine());
+                  lnum.setValue(G.curwin.w_cursor.getLine());
                   break;
               case '$':         // '$' - last line
                   ++sidx;
@@ -472,7 +472,7 @@ public class ColonCommands
               }
               if (lnum.getValue() == MAXLNUM) {
                   // "+1" is same as ".+1"
-                  lnum.setValue(G.curwin.getWCursor().getLine());
+                  lnum.setValue(G.curwin.w_cursor.getLine());
               }
               if (Util.isdigit(c)) {
                   i = '+';        // "number" is same as "+number"
@@ -1991,6 +1991,12 @@ public class ColonCommands
           }
         };
 
+    static ActionListener ACTION_jumps = new ActionListener() {
+          public void actionPerformed(ActionEvent ev) {
+              MarkOps.do_jumps();
+          }
+        };
+
     static ActionListener ACTION_tags = new ActionListener() {
           public void actionPerformed(ActionEvent ev) {
               ViManager.getViFactory().displayTags();
@@ -2062,7 +2068,7 @@ public class ColonCommands
             oa.motion_type = MLINE;
             if(cev.getAction() != ACTION_yank) {
                 MarkOps.setpcmark();
-                G.curwin.getWCursor().set(oa.start);
+                G.curwin.w_cursor.set(oa.start);
                 Edit.beginline(BL_SOL|BL_FIX);
             }
         }
@@ -2225,6 +2231,8 @@ public class ColonCommands
         register("p", "print", ACTION_print);
 
         register("se", "set", new Options.SetCommand());
+
+        register("ju", "jumps", ACTION_jumps);
 
         register("ta", "tag", ACTION_tag);
         register("tags", "tags", ACTION_tags);

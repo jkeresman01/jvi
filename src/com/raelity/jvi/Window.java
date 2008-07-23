@@ -19,6 +19,8 @@
  */
 package com.raelity.jvi;
 
+import java.util.LinkedList;
+import java.util.List;
 import static com.raelity.jvi.Constants.*;
 
 /**
@@ -30,11 +32,17 @@ import static com.raelity.jvi.Constants.*;
  */
 public abstract class Window implements ViTextView
 {
-    protected Buffer buf;
+    protected Buffer w_buffer;
 
     //
     // Declare the variables that are a basic part of the window.
     //
+
+    /**
+     * This is a magic ViFPOS. It tracks the caret positon on the screen
+     * and modifying w_cursor moves the caret positon.
+     */
+    final protected ViFPOS w_cursor;
 
     /**
      * The column we'd like to be at. Used for up/down cursor motions.
@@ -57,18 +65,23 @@ public abstract class Window implements ViTextView
     // NEEDSWORK: this should be comming from the cache (WHAT?)
     protected int w_p_scroll;
 
+    //protected final int JUMPLISTSIZE = 50;
+    protected List<ViMark> w_jumplist = new LinkedList();
+    protected int w_jumplistidx;
+
     public Window()
     {
         w_set_curswant = true;
+        w_cursor = createWCursor();
         viewSizeChange();
     }
 
 
     public void attachBuffer( Buffer buf )
     {
-        if(this.buf != null)
+        if(this.w_buffer != null)
             ViManager.dumpStack();
-        this.buf = buf;
+        this.w_buffer = buf;
 
         w_pcmark = buf.createMark();
         w_prev_pcmark = buf.createMark();
@@ -78,7 +91,9 @@ public abstract class Window implements ViTextView
     {
         w_pcmark = null;
         w_prev_pcmark = null;
-        buf = null;
+        w_buffer = null;
+        w_jumplist = new LinkedList();
+        w_jumplistidx = 0;
     }
 
     public void shutdown()

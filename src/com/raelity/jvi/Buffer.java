@@ -109,6 +109,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     //
     
     public void displayFileInfo(ViTextView tv) {
+        Window win = (Window)tv;
         StringBuffer sb = new StringBuffer();
         ViFS fs = ViManager.getViFactory().getFS();
         sb.append("\"" + getDisplayFileName() + "\"");
@@ -117,15 +118,15 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         if(fs.isReadOnly(this))
             sb.append(" [readonly]");
         int l = getLineCount();
-        int percent = (tv.getWCursor().getLine() * 100) / l;
+        int percent = (win.w_cursor.getLine() * 100) / l;
         if(true) {
             sb.append(" " + l + " line" + Misc.plural(l));
             sb.append(" --" + percent + "%--");
         } else {
-            sb.append(" line " + tv.getWCursor().getLine());
+            sb.append(" line " + win.w_cursor.getLine());
             sb.append(" of " + getLineCount());
             sb.append(" --" + percent + "%--");
-            sb.append(" col " + tv.getWCursor().getColumn());
+            sb.append(" col " + win.w_cursor.getColumn());
         }
         Msg.smsg(sb.toString());
     }
@@ -400,7 +401,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
             return "";
         }
         
-        vb.init(G.VIsual_mode, G.VIsual, G.curwin.getWCursor().copy(),
+        vb.init(G.VIsual_mode, G.VIsual, G.curwin.w_cursor.copy(),
                 G.curwin.w_curswant == MAXCOL);
         
         int nLine = vb.getEndLine() - vb.getStartLine() + 1;
@@ -420,12 +421,13 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
 
     public int[] getVisualSelectBlocks(ViTextView tv,
                                        int startOffset, int endOffset) {
+        Window win = (Window) tv;
         VisualBounds vb = getVisualBounds();
         if (G.drawSavedVisualBounds) {
             vb.init(b_visual_mode, b_visual_start, b_visual_end,
                     false);
         } else if(G.VIsual_active) {
-            vb.init(G.VIsual_mode, G.VIsual, tv.getWCursor().copy(),
+            vb.init(G.VIsual_mode, G.VIsual, win.w_cursor.copy(),
                     ((Window)tv).w_curswant == MAXCOL);
         } else {
             vb.clear();

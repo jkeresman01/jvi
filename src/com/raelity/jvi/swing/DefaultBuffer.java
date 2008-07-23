@@ -374,6 +374,8 @@ public class DefaultBuffer extends Buffer {
         /**
          * If the mark offset is not valid then this mark is converted into
          * a null mark.
+         * NEEDSWORK: make this private
+         * @deprecated
          */
         void setOffset(int offset, ViBuffer buf) {
             try {
@@ -393,8 +395,7 @@ public class DefaultBuffer extends Buffer {
          */
         public void setMark(ViFPOS fpos) {
             if(fpos instanceof ViMark) {
-                Mark m = (Mark)fpos;
-                setData(m);
+                setData((Mark)fpos);
             } else {
                 // adapted from FPOS.set
                 if(fpos.getLine() > getLineCount()) {

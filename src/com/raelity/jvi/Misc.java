@@ -69,7 +69,7 @@ public class Misc implements ClipboardOwner {
    * count the size of the indent in the current line
    */
   static int get_indent() {
-      MySegment seg = G.curbuf.getLineSegment(G.curwin.getWCursor().getLine());
+      MySegment seg = G.curbuf.getLineSegment(G.curwin.w_cursor.getLine());
       return get_indent_str(seg);
   }
 
@@ -237,8 +237,7 @@ public class Misc implements ClipboardOwner {
 
     G.State = INSERT;		    // don't want REPLACE for State
     int col = 0;
-    MySegment seg = G.curbuf.getLineSegment(
-				    G.curwin.getWCursor().getLine());
+    MySegment seg = G.curbuf.getLineSegment(G.curwin.w_cursor.getLine());
     if (del_first) {		    // delete old indent
       // vim_iswhite() is a define!
       while(vim_iswhite(seg.array[col + seg.offset])) {
@@ -258,8 +257,7 @@ public class Misc implements ClipboardOwner {
       sb.append(' ');
       --size;
     }
-    int offset = G.curbuf.getLineStartOffset(
-				    G.curwin.getWCursor().getLine());
+    int offset = G.curbuf.getLineStartOffset(G.curwin.w_cursor.getLine());
     G.curwin.replaceString(offset, offset + col, sb.toString());
     G.State = oldstate;
   }
@@ -319,7 +317,7 @@ public class Misc implements ClipboardOwner {
     if(nlines <= 0) {
       return;
     }
-    final ViFPOS cursor = G.curwin.getWCursor();
+    final ViFPOS cursor = G.curwin.w_cursor;
     int stopline = cursor.getLine() + nlines - 1;
     int start = G.curbuf.getLineStartOffsetFromOffset(cursor.getOffset());
     int end = G.curbuf.getLineEndOffset(stopline);
@@ -340,7 +338,7 @@ public class Misc implements ClipboardOwner {
 
   /** @return character at the position */
   static char gchar_cursor() {
-    ViFPOS pos = G.curwin.getWCursor();
+    ViFPOS pos = G.curwin.w_cursor;
     return gchar_pos(pos);
   }
 
@@ -381,10 +379,10 @@ public class Misc implements ClipboardOwner {
   static boolean inindent(int extra) {
       int	col;
 
-      MySegment seg = G.curbuf.getLineSegment(G.curwin.getWCursor().getLine());
+      MySegment seg = G.curbuf.getLineSegment(G.curwin.w_cursor.getLine());
       for(col = 0; vim_iswhite(seg.array[seg.offset + col]); ++col);
 
-      if (col >= G.curwin.getWCursor().getColumn() + extra)
+      if (col >= G.curwin.w_cursor.getColumn() + extra)
           return true;
       else
           return false;
@@ -424,7 +422,7 @@ public class Misc implements ClipboardOwner {
     // return del_chars(1, fixpos);
     // just implement delete a single character
 
-    ViFPOS fpos = G.curwin.getWCursor();
+    ViFPOS fpos = G.curwin.w_cursor;
 
     // Can't do anything when the cursor is on the NUL after the line.
     if(Util.getChar() == '\n') {
@@ -438,7 +436,7 @@ public class Misc implements ClipboardOwner {
   }
 
   static int del_chars(int count, boolean fixpos) {
-    final ViFPOS cursor = G.curwin.getWCursor();
+    final ViFPOS cursor = G.curwin.w_cursor;
     int col = cursor.getColumn();
     MySegment oldp = Util.ml_get(cursor.getLine());
     int oldlen = oldp.count -1; // exclude the newline
@@ -746,7 +744,7 @@ public class Misc implements ClipboardOwner {
   }
 
   public static boolean coladvance(int wcol) {
-    return coladvance(G.curwin.getWCursor(), wcol);
+    return coladvance(G.curwin.w_cursor, wcol);
   }
 
   /** advance the fpos, note it may be the cursor */
@@ -766,7 +764,7 @@ public class Misc implements ClipboardOwner {
    * </p>
    */
   static int inc_cursor() {
-    ViFPOS fpos = G.curwin.getWCursor().copy();
+    ViFPOS fpos = G.curwin.w_cursor.copy();
     int rc = inc(fpos);
     G.curwin.setCaretPosition(fpos.getOffset());
     return rc;
@@ -846,7 +844,7 @@ public class Misc implements ClipboardOwner {
    * </p>
    */
   static int dec_cursor() {
-    ViFPOS fpos = G.curwin.getWCursor().copy();
+    ViFPOS fpos = G.curwin.w_cursor.copy();
     int rc = dec(fpos);
     G.curwin.setCaretPosition(fpos.getOffset());
     return rc;
@@ -920,7 +918,7 @@ public class Misc implements ClipboardOwner {
    * to flags.
    */
   static void check_cursor_lnumBeginline(int flags) {
-    final ViFPOS cursor = G.curwin.getWCursor();
+    final ViFPOS cursor = G.curwin.w_cursor;
     int lnum = check_cursor_lnum(cursor.getLine());
     if(lnum > 0) {
       G.curwin.setCaretPosition(lnum, 0);
@@ -990,7 +988,7 @@ public class Misc implements ClipboardOwner {
    */
   static void adjust_cursor() {
     Normal.do_xop("adjust_cursor");
-    final ViFPOS cursor = G.curwin.getWCursor();
+    final ViFPOS cursor = G.curwin.w_cursor;
     int lnum = check_cursor_lnum(cursor.getLine());
     int col = check_cursor_col(lnum, cursor.getColumn());
     if(lnum != cursor.getLine() || col != cursor.getColumn()) {
@@ -1089,7 +1087,7 @@ public class Misc implements ClipboardOwner {
     if (oap.block_mode) {
     }
 
-    line = G.curwin.getWCursor().getLine();
+    line = G.curwin.w_cursor.getLine();
     for (i = oap.line_count; --i >= 0; ) {
       G.curwin.setCaretPosition(line, 0);
       first_char = gchar_cursor();
@@ -1740,7 +1738,7 @@ public class Misc implements ClipboardOwner {
 //      if (u_save((oap.start.getLine() - 1), (oap.end.getLine() + 1)) == FAIL)
 //            return FAIL;
       
-      ViFPOS fpos = G.curwin.getWCursor().copy();
+      ViFPOS fpos = G.curwin.w_cursor.copy();
       int finishPositionColumn = fpos.getColumn();
       int lnum = fpos.getLine();
       for (; lnum <= oap.end.getLine(); lnum++) {
@@ -1786,7 +1784,7 @@ public class Misc implements ClipboardOwner {
         }
       }
 
-      G.curwin.getWCursor().set(fpos.getLine(), finishPositionColumn);
+      G.curwin.w_cursor.set(fpos.getLine(), finishPositionColumn);
       //changed_cline_bef_curs();/* recompute cursor pos. on screen */
       //approximate_botline();/* w_botline may be wrong now */
       adjust_cursor();
@@ -1798,7 +1796,7 @@ public class Misc implements ClipboardOwner {
       // OP_CHANGE stuff moved to op_change
       if(oap.op_type == OP_CHANGE) {
 	boolean delete_last = false;
-	int line = G.curwin.getWCursor().getLine();
+	int line =  G.curwin.w_cursor.getLine();
 	if(line + oap.line_count - 1 >= G.curbuf.getLineCount()) {
 	  delete_last = true;
 	}
@@ -1809,7 +1807,7 @@ public class Misc implements ClipboardOwner {
 	Edit.beginline(BL_WHITE | BL_FIX);
       }
       // full lines are deleted, set op end/start to current pos.
-      opStartPos = G.curwin.getWCursor().copy();
+      opStartPos = G.curwin.w_cursor.copy();
       opEndPos = opStartPos;
       // u_clearline();	// "U" command should not be possible after "dd"
     }
@@ -1917,7 +1915,7 @@ public class Misc implements ClipboardOwner {
     
     // Note use an fpos instead of the cursor,
     // This should avoid jitter on the screen
-    ViFPOS fpos = G.curwin.getWCursor().copy();
+    ViFPOS fpos = G.curwin.w_cursor.copy();
     
     int oldp;
     
@@ -2010,7 +2008,7 @@ public class Misc implements ClipboardOwner {
       }
     }
     
-    G.curwin.getWCursor().set(oap.start);
+    G.curwin.w_cursor.set(oap.start);
     adjust_cursor();
     
     oap.line_count = 0;	    // no lines deleted
@@ -2070,7 +2068,7 @@ public class Misc implements ClipboardOwner {
           break;
       }
     }
-    G.curwin.getWCursor().set(finalPosition);
+    G.curwin.w_cursor.set(finalPosition);
 
     /* **********************************************************
     if (oap.motion_type == MCHAR && oap.line_count == 1 && !oap.block_mode)
@@ -2176,7 +2174,7 @@ public class Misc implements ClipboardOwner {
     if (!op_delete(oap))
       return;
     
-    final ViFPOS cursor = G.curwin.getWCursor();
+    final ViFPOS cursor = G.curwin.w_cursor;
     if ((l > cursor.getColumn()) && !Util.lineempty(cursor.getLine())) //&& !virtual_op
       inc_cursor();
     
@@ -2453,7 +2451,7 @@ public class Misc implements ClipboardOwner {
 
     StringBuffer[] y_array = null;
 
-    final ViFPOS cursor = G.curwin.getWCursor();
+    final ViFPOS cursor = G.curwin.w_cursor;
 
     // extra ?
     int			old_lcount = G.curbuf.getLineCount();
@@ -2777,12 +2775,12 @@ public class Misc implements ClipboardOwner {
    */
   static int do_join(boolean insert_space, boolean redraw) {
 
-      if(G.curwin.getWCursor().getLine()
+    if(G.curwin.w_cursor.getLine()
                               == G.curbuf.getLineCount()) {
 	return FAIL;	// can't join on last line
       }
       StringBuffer spaces = new StringBuffer();
-      int nextline = G.curwin.getWCursor().getLine() + 1;
+      int nextline = G.curwin.w_cursor.getLine() + 1;
       int lastc = 0;
 
       int offset00 = G.curbuf.getLineStartOffset(nextline);
@@ -2976,7 +2974,7 @@ public class Misc implements ClipboardOwner {
         // blank lines on the screen, so we can go no more when the cursor
         // is positioned at the last line.
         if (dir == FORWARD
-                && G.curwin.getWCursor().getLine() == G.curbuf.getLineCount()) {
+                && G.curwin.w_cursor.getLine() == G.curbuf.getLineCount()) {
           Util.beep_flush();
           retval = FAIL;
           break;
@@ -3040,7 +3038,7 @@ public class Misc implements ClipboardOwner {
     /*
      * Avoid the screen jumping up and down when 'scrolloff' is non-zero.
      */
-      if (dir == FORWARD && G.curwin.getWCursor().getLine()
+      if (dir == FORWARD && G.curwin.w_cursor.getLine()
       < G.curwin.getViewTopLine() + so) {
         // scroll_cursor_top(1, FALSE);	// NEEDSWORK: onepage ("^f") cleanup
       }
@@ -3096,7 +3094,7 @@ public class Misc implements ClipboardOwner {
       int newbotline = -1;
       int newcursorline = -1;
       
-      final ViFPOS cursor = G.curwin.getWCursor();
+      final ViFPOS cursor = G.curwin.w_cursor;
 
       if (Prenum != 0)
         G.curwin.w_p_scroll = (Prenum > G.curwin.getViewLines())
@@ -3184,7 +3182,7 @@ public class Misc implements ClipboardOwner {
         //int vcol = getvcol();
         // G.curwin.setWCurswant(G.curwin.getWCursor().getColumn());
         MutableInt mi = new MutableInt();
-        getvcol(G.curwin, G.curwin.getWCursor(), null, mi, null);
+        getvcol(G.curwin, G.curwin.w_cursor, null, mi, null);
         G.curwin.w_curswant = mi.getValue();
         G.curwin.w_set_curswant = false;
       }
@@ -3332,7 +3330,7 @@ public class Misc implements ClipboardOwner {
         // blank lines on the screen, so we can go no more when the cursor
         // is positioned at the last line.
         if (dir == FORWARD
-                && G.curwin.getCoordLine(G.curwin.getWCursor().getLine())
+                && G.curwin.getCoordLine(G.curwin.w_cursor.getLine())
                       == G.curwin.getCoordLineCount()) {
           Util.beep_flush();
           retval = FAIL;
@@ -3405,7 +3403,7 @@ public class Misc implements ClipboardOwner {
       //  // scroll_cursor_top(1, FALSE);	// NEEDSWORK: onepage ("^f") cleanup
       //}
       if (dir == FORWARD
-          && G.curwin.getCoordLine(G.curwin.getWCursor().getLine())
+          && G.curwin.getCoordLine(G.curwin.w_cursor.getLine())
                                   < G.curwin.getViewCoordTopLine() + so) {
         // scroll_cursor_top(1, FALSE);	// NEEDSWORK: onepage ("^f") cleanup
       }
@@ -3429,7 +3427,7 @@ public class Misc implements ClipboardOwner {
       int newbotline = -1;
       int newcursorline = -1;
       
-      final ViFPOS cursor = G.curwin.getWCursor();
+      final ViFPOS cursor = G.curwin.w_cursor;
       
       if (Prenum != 0)
         G.curwin.w_p_scroll = (Prenum > G.curwin.getViewLines())
@@ -3526,7 +3524,7 @@ public class Misc implements ClipboardOwner {
      * use getvcol(ViTextView, ViFPOS, MutableInt, MutableInt, MutableInt)
      */
     static int getvcol() {
-      return getvcol(G.curwin.getWCursor().getColumn());
+      return getvcol(G.curwin.w_cursor.getColumn());
     }
     
     /**
@@ -3536,7 +3534,7 @@ public class Misc implements ClipboardOwner {
      */
     static int getvcol(int endCol) {
       int vcol = 0;
-      MySegment seg = G.curbuf.getLineSegment(G.curwin.getWCursor().getLine());
+      MySegment seg = G.curbuf.getLineSegment(G.curwin.w_cursor.getLine());
       int ptr = seg.offset;
       int idx = -1;
       char c;
@@ -4357,7 +4355,7 @@ public class Misc implements ClipboardOwner {
         return;
       int pre_textlen = 0;
       block_def   bd = new block_def();
-      final ViFPOS cursor = G.curwin.getWCursor();
+      final ViFPOS cursor = G.curwin.w_cursor;
       int i;
       
       /* edit() changes this - record it for OP_APPEND */
@@ -4435,7 +4433,7 @@ public class Misc implements ClipboardOwner {
       
   /* if user has moved off this line, we don't know what to do, so do
   nothing */
-      if (G.curwin.getWCursor().getLine() != oap.start.getLine())
+      if (G.curwin.w_cursor.getLine() != oap.start.getLine())
         return;
       
       if (oap.block_mode) {
@@ -4474,7 +4472,7 @@ public class Misc implements ClipboardOwner {
             //if (u_save(oap.start.getLine(), (oap.end.getLine() + 1)) == OK)
             block_insert(oap, ins_text, (oap.op_type == OP_INSERT), bd);
             
-            G.curwin.getWCursor().setColumn(oap.start.getColumn());
+            G.curwin.w_cursor.setColumn(oap.start.getColumn());
             adjust_cursor();
             //check_cursor();
             //vim_free(ins_text);
@@ -4516,7 +4514,7 @@ public class Misc implements ClipboardOwner {
       //int line = G.curwin.getLineNumber(G.curwin.getCaretPosition());
       int col = G.curbuf.getColumnNumber(G.curwin.getCaretPosition());
       //G.curwin.setCaretPosition(G.curwin.getLineStartOffset(line)+col);
-      G.curwin.getWCursor().set(line, col);
+      G.curwin.w_cursor.set(line, col);
     }
 
 /**

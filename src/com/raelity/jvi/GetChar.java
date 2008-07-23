@@ -765,7 +765,7 @@ public class GetChar {
 
     /* ********************************************************/
     if (c == 'v') {   // redo Visual	// VISUAL
-      G.VIsual = G.curwin.getWCursor().copy();
+      G.VIsual = G.curwin.w_cursor.copy();
       G.VIsual_active = true;
       G.VIsual_reselect = true;
       G.redo_VIsual_busy = true;
