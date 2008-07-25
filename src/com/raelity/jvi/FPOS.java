@@ -28,43 +28,56 @@
  */
 package com.raelity.jvi;
 
+import java.lang.ref.WeakReference;
+
 /**
- * File position, accessable as line number, 1 based, and column, 0 based.
+ * Buffer position, accessable as line number, 1 based, and column, 0 based.
+ * An fpos has a very short valid lifetime, it should not be saved.
+ * getLine() and getCol() do not change as the document changes.
+ * The FPOS does have
+ * a weak reference to a Buffer, so methods such as setLine() do the right
+ * thing.
+ * See ViMark for that type of behavior that tracks document changes.
  * <p>
- * Any changes or additions here must be considered for WCursor.
- * </p><p>
- * NOTE: Methods should not reference offset,lnum,col directly. Must use the
- * accessor to insure that the data is valid.
+ * Developer notes
+ * <ul>
+ * <li>Any changes or additions here must be considered for WCursor.</li>
+ * <li>Methods should not reference offset,lnum,col directly. Must use the
+ * accessor to insure that the data is valid.</li>
+ * </ul>
  * </p>
- * NOTE: line and column here do not change as the document changes. See Mark
- * for that type of behavior. <br/>
- * NEEDSWORK: This should have a weak reference to Buffer.
  */
 
-public class FPOS extends ViFPOS.abstractFPOS
+class FPOS extends ViFPOS.abstractFPOS
 {
   private MutableInt offset = new MutableInt();
   private MutableInt lnum = new MutableInt();
   private MutableInt col = new MutableInt();
+  WeakReference<Buffer> rBuf;
 
-  public FPOS() {
+  /**
+   *
+   */
+  FPOS() {
+    this(G.curbuf);
   }
 
-  /** the values are slammed, no validity checking. */
-  public FPOS(int offset, int line, int column) {
-    initFPOS(offset, line, column);
+  FPOS(Buffer buf)
+  {
+    rBuf = new WeakReference<Buffer>(buf);
   }
 
   /** Used to make a copy. */
-  protected void initFPOS(int o, int l, int c) {
+  private void initFPOS(int o, int l, int c) {
     offset.setValue(o);
     lnum.setValue(l);
     col.setValue(c);
   }
 
-  /** use the current caret location to set the offset,line,col */
-  protected void setCursor(ViTextView tv) {
-    tv.computeCursorPosition(offset, lnum, col);
+  void initFPOS(int offset) {
+    Buffer buf = rBuf.get();
+    int l = buf.getLineNumber(offset);
+    initFPOS(offset, l, offset - buf.getLineStartOffset(l));
   }
 
   public int getLine() {
@@ -80,6 +93,7 @@ public class FPOS extends ViFPOS.abstractFPOS
   }
 
   public void set(int line, int column) {
+    verify(G.curbuf);
     int startOffset = G.curbuf.getLineStartOffset(line);
     int endOffset = G.curbuf.getLineEndOffset(line);
     int adjustedColumn = -1;
@@ -100,9 +114,15 @@ public class FPOS extends ViFPOS.abstractFPOS
   }
 
   final public ViFPOS copy() {
-    FPOS fpos = new FPOS();
+    FPOS fpos = new FPOS(rBuf.get());
     fpos.initFPOS(getOffset(), getLine(), getColumn());
     return fpos;
+  }
+
+  public void verify(Buffer buf)
+  {
+      if(rBuf.get() != buf)
+          throw new IllegalStateException("fpos buffer mis-match");
   }
 }
 

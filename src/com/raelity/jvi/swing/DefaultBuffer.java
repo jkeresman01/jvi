@@ -13,7 +13,6 @@ import com.raelity.jvi.BooleanOption;
 import com.raelity.jvi.Buffer;
 import com.raelity.jvi.Options;
 import com.raelity.jvi.Util;
-import com.raelity.jvi.ViBuffer;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViMark;
@@ -52,6 +51,15 @@ public class DefaultBuffer extends Buffer {
             //undoMan = new UndoManager();
             doc.addUndoableEditListener(undoMan);
         }
+
+        // NEEDSWORK: this should be in the superclass
+        // NEEDSWORK: the sub class needs to finish construction
+        //              so that the createFPOS will not NPE on the doc.
+        ViFPOS fpos = createFPOS(0);
+        b_visual_start.setMark(fpos);
+        b_visual_end.setMark(fpos);
+        b_op_start.setMark(fpos);
+        b_op_end.setMark(fpos);
     }
 
     @Override
@@ -342,20 +350,6 @@ public class DefaultBuffer extends Buffer {
     //
     // Marks
     //
-
-    /**
-     * Set a mark at the specified offset.
-     * <p>
-     * Should use ViMark.set(ViFPOS, ViTextView)
-     * </p>
-     * @param global_mark if false then it is a mark within a file, otherwise
-     * it is a file mark and is valid between files.
-     * @deprecated
-     */
-    public void setMarkOffset(ViMark mark_arg, int offset, boolean global_mark) {
-        Mark mark = (Mark) mark_arg;
-        mark.setOffset(offset, this);
-    }
     
     public ViMark createMark() {
         return new Mark();
@@ -371,32 +365,30 @@ public class DefaultBuffer extends Buffer {
         private Position pos;         // This tracks the line number
         private int col;
         
-        /**
-         * If the mark offset is not valid then this mark is converted into
-         * a null mark.
-         * NEEDSWORK: make this private
-         * @deprecated
-         */
-        void setOffset(int offset, ViBuffer buf) {
-            try {
-                Position aPos = doc.createPosition(offset);
-                setPos(aPos);
-            } catch(BadLocationException ex) {
-                pos = null;
-                //doc = null;
-                //buf = null;
-                return;
-            }
-        }
+      /**
+       * If the mark offset is not valid then this mark is converted into
+       * a null mark.
+       */
+      private void setOffset(int offset) {
+          try {
+              Position aPos = doc.createPosition(offset);
+              setPos(aPos);
+          } catch(BadLocationException ex) {
+              pos = null;
+              return;
+          }
+      }
         
         /**
          * If the mark offset is not valid then this mark is converted into
          * a null mark.
+         * // NEEDSWORK: deprecate setMark, just call it set
          */
         public void setMark(ViFPOS fpos) {
             if(fpos instanceof ViMark) {
-                setData((Mark)fpos);
+                setData((Mark)fpos); // this does a verify
             } else {
+                fpos.verify(DefaultBuffer.this);
                 // adapted from FPOS.set
                 if(fpos.getLine() > getLineCount()) {
                     this.pos = INVALID_MARK_LINE;
@@ -412,7 +404,7 @@ public class DefaultBuffer extends Buffer {
                                 + ", limit " + (endOffset - startOffset - 1));
                         column = endOffset - startOffset - 1;
                     }
-                    setOffset(startOffset + column, null);
+                    setOffset(startOffset + column);
                 }
             }
         }
@@ -444,13 +436,12 @@ public class DefaultBuffer extends Buffer {
             checkMarkUsable();
             if (this.pos == INVALID_MARK_LINE)
                 return 0;
-            // NEEDSWORK: should use doc, not buf
             MySegment seg = getLineSegment(getLine());
             int len = seg.length() - 1;
             return seg.length() <= 0 ? 0 : Math.min(col, len);
         }
         
-        // NEEDSWORK: Mark.getOffset(): get rid of this, bad usage
+        // NEEDSWORK: Mark.getOffset(): get rid of this, bad usage ?????
         public int getOffset() {
             checkMarkUsable();
             if (this.pos == INVALID_MARK_LINE)
@@ -459,17 +450,19 @@ public class DefaultBuffer extends Buffer {
         }
         
         public void setData(ViMark mark_arg) {
+            mark_arg.verify(DefaultBuffer.this);
             Mark mark = (Mark)mark_arg;
-            //this.doc = mark.doc;
-            //this.buf = mark.buf;
-            assert getDoc() == mark.getDoc();
             this.pos = mark.pos;
             this.col = mark.col;
         }
         
         public void invalidate() {
-            //doc = null;
             pos = null;
+        }
+
+        public void verify(Buffer buf) {
+            if(buf != DefaultBuffer.this)
+                throw new IllegalStateException("fpos buffer mis-match");
         }
         
         public ViFPOS copy() {
@@ -478,7 +471,7 @@ public class DefaultBuffer extends Buffer {
             return m;
         }
         
-        final void checkMarkUsable() { // NEEDSWORK: ?????
+        final void checkMarkUsable() {
             if(pos == null) throw new MarkException("Uninitialized Mark");
             if(getDoc() == null) {
                 throw new MarkOrphanException("Mark Document null");

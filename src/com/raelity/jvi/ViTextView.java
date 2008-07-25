@@ -150,11 +150,6 @@ public interface ViTextView extends ViOptionBag {
   /** @return the offset of the text insertion caret */
   public int getMarkPosition();
 
-  /** Determine cursor position, all args get set (call by reference). */
-  public void computeCursorPosition(MutableInt offset,
-				    MutableInt line,
-				    MutableInt column);
-
   /** set the caret to the indicated position. */
   public void setCaretPosition(int offset);
 

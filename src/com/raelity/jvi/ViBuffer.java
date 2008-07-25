@@ -132,19 +132,19 @@ public interface ViBuffer {
     
     /** between a insert begin and end undo? */
     public boolean isInInsertUndo();
-    
-    /** Fetch the lower case mark. May not be initialized. */
-    public ViMark getMark(int i);
-    
-    /** associate the indicated mark with a particular offset
-     * @deprecated use setMarkPos
-     */
-    public void setMarkOffset(ViMark mark, int offset, boolean global_mark);
 
-    /** NEEDSWORK: createMark: attached to this text view, should be in ViBuffer
-     * @return a null Mark */
+    /**
+     * Fetch the mark. May not be initialized.
+     * Does assert if this is not G.curbuf.
+     */
+    public ViMark getMark(char c);
+    
+    /** 
+     * @return a null Mark attached to this Buffer
+     */
     public ViMark createMark();
 
+    public ViFPOS createFPOS(int offset);
 
 
     public void displayFileInfo(ViTextView tv);

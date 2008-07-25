@@ -1015,7 +1015,7 @@ finished:
     int new_pos = pos.getOffset();
     if(search_match_len == 0) {
         // search /$ puts cursor on end of line
-        new_pos = ViManager.setDot(new_pos, G.curwin.getEditorComponent());
+        new_pos = G.curwin.validateCursorPosition(new_pos);
     }
     G.curwin.setSelect(new_pos, new_pos + search_match_len);
     G.curwin.w_set_curswant = true;

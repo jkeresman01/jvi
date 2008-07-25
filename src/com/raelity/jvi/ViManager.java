@@ -48,7 +48,6 @@ import java.net.URI;
 import java.net.URL;
 
 import com.raelity.jvi.swing.KeyBinding;
-import com.raelity.text.TextUtil.MySegment;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -135,7 +134,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.0.x17");
+    public static final jViVersion version = new jViVersion("1.2.0.x18");
 
     private static boolean enabled;
 
@@ -811,27 +810,6 @@ public class ViManager
         }
     }
 
-    /** not mouse involved, keep caret off of new line;
-     * see window.mouseClickedPosition(pos) */
-    public static int setDot(int pos, JTextComponent c)
-    {
-        ViTextView tv = factory.getExistingViTextView(c);
-        if(tv != null) {
-            MySegment seg = new MySegment();
-            tv.getBuffer().getSegment(pos, 1, seg);
-            if (seg.count > 0
-                    && seg.array[seg.offset] == '\n'
-                    && (G.State & Constants.INSERT) == 0) {
-                if(pos > 0) {
-                    tv.getBuffer().getSegment(pos -1, 1, seg);
-                    if(seg.count > 0 && seg.array[seg.offset] != '\n')
-                        --pos;
-                }
-            }
-        }
-        return pos;
-    }
-
     private static boolean draggingBlockMode;
     private static boolean mouseDown;
 
@@ -943,6 +921,16 @@ public class ViManager
         }
     }
 
+    /**
+     * Notification that the caret has moved in the TextView.
+     * Do some bookkeeping and if the caret is moved by an
+     * 'external agent', e.g. an IDE, setpcmark.
+     * <br/>NEEDSWORK: put this in Window?
+     * @param tv editor where the caret moved
+     * @param lastDot previos dot position
+     * @param dot new dot position
+     * @param mark new mark position
+     */
     public static void caretUpdate(
             ViTextView tv,
             int lastDot,
@@ -960,15 +948,16 @@ public class ViManager
             System.err.println("CaretMark: " + lastDot + " --> " + currDot +
                     " " + tv.getBuffer().getDisplayFileName());
         if (!jViBusy() && !mouseDown) {
-            // The cursor was magcally moved (probably by the IDE or some such).
+            // The cursor was magcally moved (probably by an IDE or some such).
             // Record the previous location so that '' works (thanks Jose).
-            int diff
-                    = Math.abs(tv.getBuffer().getLineNumber(currDot)
-                    - tv.getBuffer().getLineNumber(lastDot));
+
+            int diff = Math.abs(tv.getBuffer().getLineNumber(currDot)
+                                - tv.getBuffer().getLineNumber(lastDot));
             if (diff > 0) {
                 if (G.dbgMouse.getBoolean())
                     System.err.println("caretUpdate: setPCMark");
-                MarkOps.setpcmark(tv, lastDot);
+                ViFPOS fpos = tv.getBuffer().createFPOS(lastDot);
+                MarkOps.setpcmark(tv, fpos);
             }
         }
     }
@@ -982,26 +971,6 @@ public class ViManager
             return;
         }
         Msg.clearMsg();
-    }
-
-    /** set the previous context to the indicated offset */
-    /*
-    public static void previousContextHack(ViTextView textView, ViMark mark) {
-        Window window = factory.lookupWindow(textView.getEditorComponent());
-        window.previousContextHack(mark);
-    }
-    */
-
-    /**
-    * Listen to carets events for newly registered JEditorPanes.
-    * If an event comes in, assign the editorPane to a TextView
-    * and give it the oportunity to re-adjust the cursor.
-    * <br/><b>NEEDSWORK:</b><ul>
-    * <li> work this out with textview, where this should be......</li>
-    * </ul>
-    */
-    static void fixupCaret()
-    {
     }
 
     static public void dumpStack(String msg)

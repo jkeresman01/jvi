@@ -64,6 +64,9 @@ public interface ViFPOS extends Comparable<ViFPOS> {
   /** Make a copy */
   public ViFPOS copy();
 
+  /** throws a run time exception if the buf is not associated with this fpos */
+  public void verify(Buffer buf);
+
   public static abstract class abstractFPOS implements ViFPOS {
       
       public void set(ViFPOS fpos) {

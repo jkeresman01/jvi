@@ -122,14 +122,12 @@ public abstract class Window implements ViTextView
     }
 
     /**
-     * A mouse click has just occured in this window. Check the
-     * position so it is not on a newline (unless in input mode)
-     * <br>
-     * NEEDSWORK: "signal" a change in cursor position
+     * A mouse click, or some other situation, has occured in this window.
+     * Check the position so it is not on a newline (unless in input mode)
      */
     public int validateCursorPosition(int offset)
     {
-        w_set_curswant = true;
+        w_set_curswant = true; // NEEDSWORK: keep this?
         if (Util.getCharAt(offset) == '\n' && (G.State & INSERT) == 0) {
             // Sitting on a newline and not in insert mode
             // back the cursor up (unless previous char is a newline)

@@ -24,7 +24,6 @@ import  static com.raelity.jvi.Constants.*;
 
 
 import com.raelity.jvi.*;
-import com.raelity.jvi.swing.DefaultBuffer.ElemCache;
 import com.raelity.text.TextUtil.MySegment;
 
 import java.awt.Color;
@@ -518,38 +517,6 @@ public class TextView extends Window
     }
 
 
-    public void computeCursorPosition(
-            MutableInt offset,
-            MutableInt line,
-            MutableInt column )
-    {
-        int o = getCaretPosition();
-        computeCursorPosition(o, line, column);
-        offset.setValue(o);
-    }
-
-
-    public void computeCursorPosition(
-            int offset,
-            MutableInt line,
-            MutableInt column )
-    {
-        // NEEDSWORK: computeCursorPosition use the cache
-
-        ///// Document doc = getDoc();
-        ///// Element root = doc.getDefaultRootElement();
-        ///// int idx =  root.getElementIndex(offset);
-        ///// Element elem =  root.getElement(idx);
-
-        //line.setValue(idx + 1);
-        //column.setValue(offset - elem.getStartOffset());
-
-        int lnum = getBuffer().getLineNumber(offset);
-        line.setValue(lnum);
-        column.setValue(offset - getBuffer().getLineStartOffset(lnum));
-    }
-
-
     /** Scroll down (n_lines positive) or up (n_lines negative) the
      * specified number of lines.
      */
@@ -900,12 +867,14 @@ public class TextView extends Window
 
         final public ViFPOS copy()
         {
-            int offset = editorPane.getCaretPosition();
-            ElemCache ec = getBuffer().getElemCache(offset);
-            FPOS fpos = new FPOS(offset, ec.line, offset - ec.elem.getStartOffset());
-            //fpos.initFPOS(getOffset(), getLine(), getColumn());
-            return fpos;
+            return w_buffer.createFPOS(getOffset());
         }
+
+        public void verify(Buffer buf) {
+            if(w_buffer != buf)
+                throw new IllegalStateException("fpos buffer mis-match");
+        }
+
     };
 
     //////////////////////////////////////////////////////////////////////

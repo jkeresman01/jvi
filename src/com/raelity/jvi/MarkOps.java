@@ -75,8 +75,7 @@ class MarkOps
         if (Util.islower(c)) {
             int i;
             i = c - 'a';
-            G.curbuf.getMark(i).setMark(G.curwin.w_cursor);
-            // curbuf.b_namedm[i] = curwin.w_cursor;
+            G.curbuf.b_namedm[i].setMark(G.curwin.w_cursor);
             return OK;
         }
 
@@ -89,21 +88,30 @@ class MarkOps
         return FAIL;
     }
 
+    private static boolean JUMPLIST_ROTATE = false;
+    private static final int JUMPLISTSIZE = 50;
+
     static void setpcmark()
     {
         setpcmark(G.curwin.w_cursor);
     }
 
-    private static boolean JUMPLIST_ROTATE = false;
-    private static final int JUMPLISTSIZE = 50;
-
     static void setpcmark(ViFPOS fpos)
+    {
+        setpcmark(G.curwin, fpos);
+    }
+
+    static void setpcmark(ViTextView tv, ViFPOS fpos)
     {
         if (G.global_busy) {
             return;
         }
-        G.curwin.w_prev_pcmark.setData(G.curwin.w_pcmark);
-        G.curwin.w_pcmark.setMark(fpos);
+
+        Window win = (Window)tv;
+        fpos.verify(win.w_buffer);
+
+        win.w_prev_pcmark.setData(win.w_pcmark);
+        win.w_pcmark.setMark(fpos);
 
         //
         // If last used entry is not at the top, put it at the top by rotating
@@ -113,48 +121,32 @@ class MarkOps
         // NOTE: the jdk1.6 Deque would be nice for this.
         //
         if(JUMPLIST_ROTATE) {
-            if (G.curwin.w_jumplistidx < G.curwin.w_jumplist.size()) {
-                ++G.curwin.w_jumplistidx;
+            if (win.w_jumplistidx < win.w_jumplist.size()) {
+                ++win.w_jumplistidx;
             }
-            while (G.curwin.w_jumplistidx < G.curwin.w_jumplist.size()) {
+            while (win.w_jumplistidx < win.w_jumplist.size()) {
                 // rotate. take the one at the end and put it at the beginning
-                ViMark tempmark = G.curwin.w_jumplist
-                                .remove(G.curwin.w_jumplist.size() - 1);
-                G.curwin.w_jumplist.add(0, tempmark);
-                ++G.curwin.w_jumplistidx;
+                ViMark tempmark = win.w_jumplist
+                                .remove(win.w_jumplist.size() - 1);
+                win.w_jumplist.add(0, tempmark);
+                ++win.w_jumplistidx;
             }
         }
 
         // Put the pcmark at the end of the list.
         // (switch around the order of things from vim, since we're working
         // with a more flexible data structure)
-        G.curwin.w_jumplist.add((ViMark)G.curwin.w_pcmark.copy());
-        if (G.curwin.w_jumplist.size() > JUMPLISTSIZE) {
-            G.curwin.w_jumplist.remove(0);
+        win.w_jumplist.add((ViMark)win.w_pcmark.copy());
+        if (win.w_jumplist.size() > JUMPLISTSIZE) {
+            win.w_jumplist.remove(0);
         }
         // The idx points past the end
-        G.curwin.w_jumplistidx = G.curwin.w_jumplist.size();
-    }
-
-    /** @deprecated */
-    static void setpcmark(int offset)
-    {
-        setpcmark(G.curwin, offset);
-    }
-
-    /** @deprecated */
-    static void setpcmark(ViTextView tv, int offset)
-    {
-        if (G.global_busy) {
-            return;
-        }
-        ((Window) tv).w_prev_pcmark.setData(((Window) tv).w_pcmark);
-        tv.getBuffer().setMarkOffset(((Window) tv).w_pcmark, offset, false);
-    // NEEDSWORK: pcmark and jump list stuff...
+        win.w_jumplistidx = win.w_jumplist.size();
     }
 
     /**
-     * checkpcmark() - To change context, call setpcmark(), then move the current
+     * checkpcmark()
+     *             To change context, call setpcmark(), then move the current
      *		   position to where ever, then call checkpcmark().  This
      *		   ensures that the previous context will only be changed if
      *		   the cursor moved to a different line. -- webb.
@@ -241,13 +233,15 @@ class MarkOps
                     col = Misc.check_cursor_col(m.getLine(), MAXCOL);
                 int lineoff = G.curbuf
                                .getLineStartOffsetFromOffset(m.getOffset());
-                m = (ViMark) m.copy();
-                G.curbuf.setMarkOffset(m, lineoff + col, false);
+                m = G.curbuf.createMark();
+                ViFPOS fpos = G.curbuf.createFPOS(lineoff + col);
+                m.setMark(fpos);
             }
         } else if (Util.islower(c)) {
             int i = c - 'a';
-            m = G.curbuf.getMark(i);
+            m = G.curbuf.b_namedm[i];
         }
+        // NEEDSWORK: else if isupper(c) || vim_isdigit(c) // named file mark
         return m;
     }
 

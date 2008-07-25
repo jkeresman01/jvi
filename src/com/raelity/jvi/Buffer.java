@@ -45,6 +45,8 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         b_visual_end = createMark();
         b_op_start = createMark();
         b_op_end = createMark();
+        for(int i = 0; i < 'z' -'a'; i++)
+            b_namedm[i] = createMark();
 
         initOptions();
     }
@@ -86,13 +88,8 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     // Other per buffer variables
     //
 
-    public ViMark getMark(int i) {
-        if(marks[i] == null)
-            marks[i] = createMark();
-        return marks[i];
-    }
     // The lower case marks
-    private ViMark marks[] = new ViMark[26];
+    ViMark b_namedm[] = new ViMark[26];
     
     // Save the current VIsual area for '< and '> marks, and "gv"
     public final ViMark b_visual_start;
@@ -107,6 +104,21 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     //////////////////////////////////////////////////////////////////////
     //
     //
+
+
+    public ViMark getMark(char c) {
+        assert this == G.curbuf; // NEEDSWORK: getMark assuming correct curwin
+        return MarkOps.getmark(c, false);
+    }
+
+
+    final public ViFPOS createFPOS(int offset)
+    {
+        FPOS fpos = new FPOS(this);
+        fpos.initFPOS(offset);
+        return fpos;
+    }
+
     
     public void displayFileInfo(ViTextView tv) {
         Window win = (Window)tv;
@@ -271,12 +283,6 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         private int left, right; // column numbers (not line offset, consider TAB)
         private int wantRight; // either MAXCOL or same as right
         private boolean valid; // the class may not hold valid info
-        
-        private MutableInt from1 = new MutableInt();
-        private MutableInt to1 = new MutableInt();
-        private MutableInt from2 = new MutableInt();
-        private MutableInt to2 = new MutableInt();
-        
 
         public char getVisMode() {
             return visMode;
@@ -347,14 +353,16 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
                 // this.start is from1,to1
                 // this.end   is from2,to2
                 // this is pretty much verbatim from screen.c:782
+                MutableInt from = new MutableInt();
+                MutableInt to = new MutableInt();
                 
                 int from1,to1,from2,to2;
-                Misc.getvcol(Buffer.this, start, this.from1, null, this.to1);
-                from1 = this.from1.getValue();
-                to1 = this.to1.getValue();
-                Misc.getvcol(Buffer.this, end, this.from2, null, this.to2);
-                from2 = this.from2.getValue();
-                to2 = this.to2.getValue();
+                Misc.getvcol(Buffer.this, start, from, null, to);
+                from1 = from.getValue();
+                to1 = to.getValue();
+                Misc.getvcol(Buffer.this, end, from, null, to);
+                from2 = from.getValue();
+                to2 = to.getValue();
                 
                 if(from2 < from1)
                     from1 = from2;
