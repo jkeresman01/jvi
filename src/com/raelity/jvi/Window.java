@@ -137,4 +137,42 @@ public abstract class Window implements ViTextView
         }
         return offset;
     }
+
+    /**
+     * Notification that the caret has moved in the TextView.
+     * Do some bookkeeping and also adjust pcmark
+     * if the caret is moved by an 'external agent' (e.g. an IDE).
+     *
+     * <br/>NEEDSWORK: put this in Window?
+     * @param lastDot previos dot position
+     * @param dot new dot position
+     * @param mark new mark position
+     */
+    protected void cursorMoveDetected(int lastDot, int dot, int mark)
+    {
+        if (G.VIsual_active && this == G.curwin)
+            Normal.v_updateVisualState(this);
+
+        if (!G.pcmarkTrack.getBoolean())
+            return;
+
+        int currDot = dot;
+        if (G.dbgMouse.getBoolean())
+            System.err.println("CaretMark: " + lastDot + " --> " + currDot +
+                    " " + getBuffer().getDisplayFileName());
+        if (!ViManager.jViBusy() && !ViManager.isMouseDown()) {
+            // The cursor was magcally moved and jVi had nothing to
+            // do with it. (probably by an IDE or some such).
+            // Record the previous location so that '' works (thanks Jose).
+
+            int diff = Math.abs(getBuffer().getLineNumber(currDot)
+                                - getBuffer().getLineNumber(lastDot));
+            if (diff > 0) {
+                if (G.dbgMouse.getBoolean())
+                    System.err.println("caretUpdate: setPCMark");
+                ViFPOS fpos = getBuffer().createFPOS(lastDot);
+                MarkOps.setpcmark(this, fpos);
+            }
+        }
+    }
 }

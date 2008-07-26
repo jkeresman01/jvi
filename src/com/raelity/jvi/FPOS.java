@@ -1,12 +1,3 @@
-/**
- * Title:        jVi<p>
- * Description:  A VI-VIM clone.
- * Use VIM as a model where applicable.<p>
- * Copyright:    Copyright (c) Ernie Rael<p>
- * Company:      Raelity Engineering<p>
- * @author Ernie Rael
- * @version 1.0
- */
 /*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -22,7 +13,7 @@
  * 
  * The Initial Developer of the Original Code is Ernie Rael.
  * Portions created by Ernie Rael are
- * Copyright (C) 2000 Ernie Rael.  All Rights Reserved.
+ * Copyright (C) 2000-2008 Ernie Rael.  All Rights Reserved.
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
@@ -47,83 +38,91 @@ import java.lang.ref.WeakReference;
  * </ul>
  * </p>
  */
-
 class FPOS extends ViFPOS.abstractFPOS
 {
-  private MutableInt offset = new MutableInt();
-  private MutableInt lnum = new MutableInt();
-  private MutableInt col = new MutableInt();
-  WeakReference<Buffer> rBuf;
+    private MutableInt offset = new MutableInt();
+    private MutableInt lnum = new MutableInt();
+    private MutableInt col = new MutableInt();
+    WeakReference<Buffer> rBuf;
 
-  /**
-   *
-   */
-  FPOS() {
-    this(G.curbuf);
-  }
-
-  FPOS(Buffer buf)
-  {
-    rBuf = new WeakReference<Buffer>(buf);
-  }
-
-  /** Used to make a copy. */
-  private void initFPOS(int o, int l, int c) {
-    offset.setValue(o);
-    lnum.setValue(l);
-    col.setValue(c);
-  }
-
-  void initFPOS(int offset) {
-    Buffer buf = rBuf.get();
-    int l = buf.getLineNumber(offset);
-    initFPOS(offset, l, offset - buf.getLineStartOffset(l));
-  }
-
-  public int getLine() {
-    return lnum.getValue();
-  }
-
-  public int getColumn() {
-    return col.getValue();
-  }
-
-  public int getOffset() {
-    return offset.getValue();
-  }
-
-  public void set(int line, int column) {
-    verify(G.curbuf);
-    int startOffset = G.curbuf.getLineStartOffset(line);
-    int endOffset = G.curbuf.getLineEndOffset(line);
-    int adjustedColumn = -1;
-
-    if(column < 0) {
-      adjustedColumn = 0;
-    } else if(column >= endOffset - startOffset) {
-      adjustedColumn = endOffset - startOffset - 1;
+    /**
+     *
+     */
+    FPOS()
+    {
+        this(G.curbuf);
     }
 
-    if(adjustedColumn >= 0) {
-      ViManager.dumpStack("line " + line + ", column " + column
-              + ", length " + (endOffset - startOffset));
-      column = adjustedColumn;
+    FPOS(Buffer buf)
+    {
+        rBuf = new WeakReference<Buffer>(buf);
     }
-    
-    initFPOS(startOffset + column, line, column);
-  }
 
-  final public ViFPOS copy() {
-    FPOS fpos = new FPOS(rBuf.get());
-    fpos.initFPOS(getOffset(), getLine(), getColumn());
-    return fpos;
-  }
+    /** Used to make a copy. */
+    private void initFPOS(int o, int l, int c)
+    {
+        offset.setValue(o);
+        lnum.setValue(l);
+        col.setValue(c);
+    }
 
-  public void verify(Buffer buf)
-  {
-      if(rBuf.get() != buf)
-          throw new IllegalStateException("fpos buffer mis-match");
-  }
+    void initFPOS(int offset)
+    {
+        Buffer buf = rBuf.get();
+        int l = buf.getLineNumber(offset);
+        initFPOS(offset, l, offset - buf.getLineStartOffset(l));
+    }
+
+    public int getLine()
+    {
+        return lnum.getValue();
+    }
+
+    public int getColumn()
+    {
+        return col.getValue();
+    }
+
+    public int getOffset()
+    {
+        return offset.getValue();
+    }
+
+    public void set(int line, int column)
+    {
+        verify(G.curbuf);
+        int startOffset = G.curbuf.getLineStartOffset(line);
+        int endOffset = G.curbuf.getLineEndOffset(line);
+        int adjustedColumn = -1;
+
+        if (column < 0) {
+            adjustedColumn = 0;
+        } else if (column >= endOffset - startOffset) {
+            adjustedColumn = endOffset - startOffset - 1;
+        }
+
+        if (adjustedColumn >= 0) {
+            ViManager.dumpStack("line " + line + ", column " + column
+                                + ", length " + (endOffset - startOffset));
+            column = adjustedColumn;
+        }
+
+        initFPOS(startOffset + column, line, column);
+    }
+
+    final public ViFPOS copy()
+    {
+        FPOS fpos = new FPOS(rBuf.get());
+        fpos.initFPOS(getOffset(), getLine(), getColumn());
+        return fpos;
+    }
+
+    public void verify(Buffer buf)
+    {
+        if (rBuf.get() != buf) {
+            throw new IllegalStateException("fpos buffer mis-match");
+        }
+    }
 }
 
-// vi:set sw=2 ts=8:
+// vi:set sw=4 ts=8:

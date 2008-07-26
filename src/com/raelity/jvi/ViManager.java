@@ -134,7 +134,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.0.x18");
+    public static final jViVersion version = new jViVersion("1.2.0.x20");
 
     private static boolean enabled;
 
@@ -813,6 +813,11 @@ public class ViManager
     private static boolean draggingBlockMode;
     private static boolean mouseDown;
 
+    public static boolean isMouseDown()
+    {
+        return mouseDown;
+    }
+
     /**
      * A mouse click; switch to the activated editor.
      * Pass the click on to the window and give it
@@ -918,47 +923,6 @@ public class ViManager
             return pos;
         } finally {
             setJViBusy(false);
-        }
-    }
-
-    /**
-     * Notification that the caret has moved in the TextView.
-     * Do some bookkeeping and if the caret is moved by an
-     * 'external agent', e.g. an IDE, setpcmark.
-     * <br/>NEEDSWORK: put this in Window?
-     * @param tv editor where the caret moved
-     * @param lastDot previos dot position
-     * @param dot new dot position
-     * @param mark new mark position
-     */
-    public static void caretUpdate(
-            ViTextView tv,
-            int lastDot,
-            int dot,
-            int mark)
-    {
-        if (G.VIsual_active && tv == G.curwin)
-            Normal.v_updateVisualState(tv);
-
-        if (!G.pcmarkTrack.getBoolean())
-            return;
-
-        int currDot = dot;
-        if (G.dbgMouse.getBoolean())
-            System.err.println("CaretMark: " + lastDot + " --> " + currDot +
-                    " " + tv.getBuffer().getDisplayFileName());
-        if (!jViBusy() && !mouseDown) {
-            // The cursor was magcally moved (probably by an IDE or some such).
-            // Record the previous location so that '' works (thanks Jose).
-
-            int diff = Math.abs(tv.getBuffer().getLineNumber(currDot)
-                                - tv.getBuffer().getLineNumber(lastDot));
-            if (diff > 0) {
-                if (G.dbgMouse.getBoolean())
-                    System.err.println("caretUpdate: setPCMark");
-                ViFPOS fpos = tv.getBuffer().createFPOS(lastDot);
-                MarkOps.setpcmark(tv, fpos);
-            }
         }
     }
 
