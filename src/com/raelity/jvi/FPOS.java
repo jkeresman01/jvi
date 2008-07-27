@@ -66,8 +66,10 @@ class FPOS extends ViFPOS.abstractFPOS
         col.setValue(c);
     }
 
-    void initFPOS(int offset)
+    @Override
+    public void set(int offset)
     {
+        //verify(G.curbuf);
         Buffer buf = rBuf.get();
         int l = buf.getLineNumber(offset);
         initFPOS(offset, l, offset - buf.getLineStartOffset(l));

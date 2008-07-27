@@ -1799,7 +1799,7 @@ found:
       }
     }
 
-    G.curwin.setCaretPosition(curr, offset);
+    G.curwin.w_cursor.set(curr, offset);
 
     return true;
   }
@@ -1943,7 +1943,7 @@ extend:
                 prev_start_is_white = start_is_white;
             }
         }
-        G.curwin.setCaretPosition(start_lnum, 0);
+        G.curwin.w_cursor.set(start_lnum, 0);
         return retval;
     }
 
@@ -2034,7 +2034,7 @@ extend:
         oap.start.set(start_lnum, 0); //was: oap.start.lnum = start_lnum;
         oap.motion_type = MLINE;
     }
-    G.curwin.setCaretPosition(end_lnum, 0);
+    G.curwin.w_cursor.set(end_lnum, 0);
 
     return OK;
 }

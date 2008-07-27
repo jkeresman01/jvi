@@ -445,14 +445,6 @@ public class TextView extends Window
     }
 
 
-    public void setCaretPosition( int lnum, int col )
-    {
-        //Element elem = getLineElement(lnum);
-        //setCaretPosition(elem.getStartOffset() + col);
-        w_cursor.set(lnum, col);
-    }
-
-
     public void setSelect( int dot, int mark )
     {
         Caret c = editorPane.getCaret();
@@ -691,7 +683,7 @@ public class TextView extends Window
     public void setCursorCoordLine( int coordLine, int col )
     {
         if ( !G.isCoordSkip.getBoolean() ) {
-            setCaretPosition(coordLine, col);
+            w_cursor.set(coordLine, col);
             return;
         }
         Point p = new Point(getPoint0());
@@ -838,6 +830,12 @@ public class TextView extends Window
         final public int getOffset()
         {
             return editorPane.getCaretPosition();
+        }
+
+        @Override
+        final public void set(int offset)
+        {
+            editorPane.setCaretPosition(offset);
         }
 
         final public void set(int line, int column)

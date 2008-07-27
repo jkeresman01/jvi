@@ -689,7 +689,7 @@ public class Edit {
       col = 0;
     else
       col = new_cursor_col;
-    G.curwin.setCaretPosition(G.curwin.w_cursor.getLine(), col);
+    G.curwin.w_cursor.set(G.curwin.w_cursor.getLine(), col);
     G.curwin.w_set_curswant = true;
     
     // changed_cline_bef_curs();
@@ -1455,7 +1455,7 @@ public class Edit {
     else if (G.p_ww_i_left.value && cursor.getLine() > 1)
     {
 	start_arrow(tpos);
-        G.curwin.setCaretPosition(cursor.getLine() - 1, 0);
+        G.curwin.w_cursor.set(cursor.getLine() - 1, 0);
 	Misc.coladvance(MAXCOL);
         G.curwin.w_set_curswant = true;	// so we stay at the end
     }
@@ -1473,7 +1473,7 @@ public class Edit {
     if ((G.mod_mask & MOD_MASK_CTRL) != 0)
       line = 1;
     int col = 0;
-    G.curwin.setCaretPosition(line, col);
+    G.curwin.w_cursor.set(line, col);
     G.curwin.w_curswant = col;
     start_arrow(tpos);
   }
@@ -1484,7 +1484,7 @@ public class Edit {
     undisplay_dollar();
     tpos = G.curwin.w_cursor.copy();
     if ((G.mod_mask & MOD_MASK_CTRL) != 0) {
-      G.curwin.setCaretPosition(G.curbuf.getLineCount(), 0);
+      G.curwin.w_cursor.set(G.curbuf.getLineCount(), 0);
     }
     Misc.coladvance(MAXCOL);
     G.curwin.w_curswant = MAXCOL;
@@ -1524,7 +1524,7 @@ public class Edit {
     {
       start_arrow(cursor);
       G.curwin.w_set_curswant = true;
-      G.curwin.setCaretPosition(cursor.getLine() +1, 0);
+      G.curwin.w_cursor.set(cursor.getLine() +1, 0);
     }
     else
       Util.vim_beep();

@@ -365,30 +365,18 @@ public class DefaultBuffer extends Buffer {
         private Position pos;         // This tracks the line number
         private int col;
         
-      /**
-       * If the mark offset is not valid then this mark is converted into
-       * a null mark.
-       */
-      private void setOffset(int offset) {
-          try {
-              Position aPos = doc.createPosition(offset);
-              setPos(aPos);
-          } catch(BadLocationException ex) {
-              pos = null;
-              return;
-          }
-      }
-        
         /**
          * If the mark offset is not valid then this mark is converted into
          * a null mark.
-         * // NEEDSWORK: deprecate setMark, just call it set
+         * // NEEDSWORK: deprecate setMark, just call it set ?????
          */
         public void setMark(ViFPOS fpos) {
+            fpos.verify(DefaultBuffer.this);
             if(fpos instanceof ViMark) {
-                setData((Mark)fpos); // this does a verify
+                Mark mark = (Mark)fpos;
+                this.pos = mark.pos;
+                this.col = mark.col;
             } else {
-                fpos.verify(DefaultBuffer.this);
                 // adapted from FPOS.set
                 if(fpos.getLine() > getLineCount()) {
                     this.pos = INVALID_MARK_LINE;
@@ -406,6 +394,20 @@ public class DefaultBuffer extends Buffer {
                     }
                     setOffset(startOffset + column);
                 }
+            }
+        }
+
+        /**
+        * If the mark offset is not valid then this mark is converted into
+        * a null mark.
+        */
+        private void setOffset(int offset) {
+            try {
+                Position aPos = doc.createPosition(offset);
+                setPos(aPos);
+            } catch(BadLocationException ex) {
+                pos = null;
+                return;
             }
         }
         
@@ -441,19 +443,11 @@ public class DefaultBuffer extends Buffer {
             return seg.length() <= 0 ? 0 : Math.min(col, len);
         }
         
-        // NEEDSWORK: Mark.getOffset(): get rid of this, bad usage ?????
         public int getOffset() {
             checkMarkUsable();
             if (this.pos == INVALID_MARK_LINE)
                 return Integer.MAX_VALUE;
             return getLineStartOffsetFromOffset(pos.getOffset()) + getColumn();
-        }
-        
-        public void setData(ViMark mark_arg) {
-            mark_arg.verify(DefaultBuffer.this);
-            Mark mark = (Mark)mark_arg;
-            this.pos = mark.pos;
-            this.col = mark.col;
         }
         
         public void invalidate() {
@@ -467,7 +461,7 @@ public class DefaultBuffer extends Buffer {
         
         public ViFPOS copy() {
             Mark m = new Mark();
-            m.setData(this);
+            m.setMark(this);
             return m;
         }
         
@@ -510,6 +504,15 @@ public class DefaultBuffer extends Buffer {
         public void set(int line, int col) {
             throw new UnsupportedOperationException();
         }
+
+        public void set(ViFPOS fpos) {
+            throw new UnsupportedOperationException();
+        }
+
+        public void set(int offset)
+        {
+            throw new UnsupportedOperationException();
+        }
         
         /** This is optional, may throw an UnsupportedOperationException */
         public void setColumn(int col) {
@@ -517,10 +520,6 @@ public class DefaultBuffer extends Buffer {
         }
         /** This is optional, may throw an UnsupportedOperationException */
         public void setLine(int line) {
-            throw new UnsupportedOperationException();
-        }
-        
-        public void set(ViFPOS fpos) {
             throw new UnsupportedOperationException();
         }
         

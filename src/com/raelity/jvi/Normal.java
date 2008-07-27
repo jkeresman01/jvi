@@ -2493,8 +2493,8 @@ middle_code:
         // it was.
         ///
         MarkOps.setpcmark();
-        G.curwin.setCaretPosition(G.curwin.w_cursor.getLine(),
-                                  ptrSeg.getIndex() - ptrSeg.getBeginIndex());
+        G.curwin.w_cursor.set(G.curwin.w_cursor.getLine(),
+                              ptrSeg.getIndex() - ptrSeg.getBeginIndex());
 
         if (!g_cmd && Misc.vim_iswordc(ptrSeg.current()))
           GetChar.stuffReadbuff("\\<");
@@ -2505,8 +2505,8 @@ middle_code:
         // give the environment a chance at it
         // pass in the extracted identifier,
         // though system probably looks under cursor
-        G.curwin.setCaretPosition(G.curwin.w_cursor.getLine(),
-                                  ptrSeg.getIndex() - ptrSeg.getBeginIndex());
+        G.curwin.w_cursor.set(G.curwin.w_cursor.getLine(),
+                              ptrSeg.getIndex() - ptrSeg.getBeginIndex());
 	G.curwin.jumpDefinition(TextUtil.toString(ptrSeg, ptrSeg.getIndex(), n));
         return fDoingSearch;
 
@@ -2745,7 +2745,7 @@ middle_code:
 		   && !Util.lineempty(cursor.getLine())) {
 	    cap.oap.inclusive = true;
 	  } else {
-	    G.curwin.setCaretPosition(cursor.getLine() + 1, 0);
+            G.curwin.w_cursor.set(cursor.getLine() + 1, 0);
             G.curwin.w_set_curswant = true;
 	    cap.oap.inclusive = false;
 	  }
@@ -2998,7 +2998,7 @@ middle_code:
 	// round up, so CTRL-G will give same value
         int line = (G.curbuf.getLineCount()
                    * cap.count0 + 99) / 100;
-        G.curwin.setCaretPosition(line, 0);
+        G.curwin.w_cursor.set(line, 0);
 	Edit.beginline(BL_SOL | BL_FIX);
       }
     } else {	    // "%" : go to matching paren
@@ -3223,7 +3223,7 @@ static private void nv_findpar(CMDARG cap, int dir)
           if (G.p_ww_tilde.getBoolean()
               && G.curwin.w_cursor.getLine() < G.curbuf.getLineCount())
           {
-            G.curwin.setCaretPosition(G.curwin.w_cursor.getLine() + 1, 0);
+            G.curwin.w_cursor.set(G.curwin.w_cursor.getLine() + 1, 0);
             // redraw_curbuf_later(NOT_VALID);
           }
           else
@@ -3406,19 +3406,19 @@ static private void nv_findpar(CMDARG cap, int dir)
                   // make sure it stays in the correct line
                   int col = Misc.check_cursor_col(line,
                                             G.curwin.w_cursor.getColumn());
-                  G.curwin.setCaretPosition(line, col);
+                  G.curwin.w_cursor.set(line, col);
               }
               G.VIsual_mode = resel_VIsual_mode;
               if (G.VIsual_mode == 'v')
               {
                   if (resel_VIsual_line_count <= 1)
                       // NEEDSWORK: ? can column overflow here?
-                      G.curwin.setCaretPosition(G.curwin.w_cursor.getLine(),
+                    G.curwin.w_cursor.set(G.curwin.w_cursor.getLine(),
                               G.curwin.w_cursor.getColumn()
                                 + resel_VIsual_col * cap.count0 - 1);
                   else
-                      G.curwin.setCaretPosition(G.curwin.w_cursor.getLine(),
-                              resel_VIsual_col);
+                    G.curwin.w_cursor.set(G.curwin.w_cursor.getLine(),
+                                          resel_VIsual_col);
               }
               if (resel_VIsual_col == MAXCOL)
               {

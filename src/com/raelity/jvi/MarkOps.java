@@ -68,7 +68,7 @@ class MarkOps
         if (c == '\'' || c == '`') {
             setpcmark();
             /* keep it even when the cursor doesn't move */
-            G.curwin.w_prev_pcmark.setData(G.curwin.w_pcmark);
+            G.curwin.w_prev_pcmark.setMark(G.curwin.w_pcmark);
             return OK;
         }
 
@@ -110,7 +110,7 @@ class MarkOps
         Window win = (Window)tv;
         fpos.verify(win.w_buffer);
 
-        win.w_prev_pcmark.setData(win.w_pcmark);
+        win.w_prev_pcmark.setMark(win.w_pcmark);
         win.w_pcmark.setMark(fpos);
 
         //
@@ -158,7 +158,7 @@ class MarkOps
         if (check_mark(G.curwin.w_prev_pcmark, false) == OK
                 && (G.curwin.w_pcmark.equals(G.curwin.w_cursor)
                     || check_mark(G.curwin.w_pcmark, false) == FAIL)) {
-            G.curwin.w_pcmark.setData(G.curwin.w_prev_pcmark);
+            G.curwin.w_pcmark.setMark(G.curwin.w_prev_pcmark);
             G.curwin.w_prev_pcmark.invalidate();
         }
     }

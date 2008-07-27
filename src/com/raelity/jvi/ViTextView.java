@@ -88,6 +88,7 @@ public interface ViTextView extends ViOptionBag {
   public Buffer getBuffer();
 
   /** @return the underlying text component */
+  // NEEDSWORK: make this an Object
   public JEditorPane getEditorComponent();
 
   /** A text view is nomadic if it not attached to a main window.
@@ -151,10 +152,9 @@ public interface ViTextView extends ViOptionBag {
   public int getMarkPosition();
 
   /** set the caret to the indicated position. */
+  // NEEDSWORK: several situations where w_cursor.set(l,c) fits/preferable.
+  //            maybe implement w_cursor.set(int).
   public void setCaretPosition(int offset);
-
-  /** set the caret to the indicated position. */
-  public void setCaretPosition(int lnum, int col);
 
   /** select a region of the screen */
   public void setSelect(int dot, int mark);

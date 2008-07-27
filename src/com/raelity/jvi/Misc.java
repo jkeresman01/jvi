@@ -1,13 +1,3 @@
-/**
- * Title:        jVi<p>
- * Description:  A VI-VIM clone.
- * Use VIM as a model where applicable.<p>
- * Copyright:    Copyright (c) Ernie Rael<p>
- * Company:      Raelity Engineering<p>
- * @author Ernie Rael
- * @version 1.0
- */
-
 /*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -540,7 +530,7 @@ public class Misc implements ClipboardOwner {
       // from nv_goto
       col = Edit.beginlineColumnIndex(flag, seg);
     }
-    G.curwin.setCaretPosition(line, col);
+    G.curwin.w_cursor.set(line, col);
   }
 
   static void gotoLine_scrolloff(int line, int flag) {
@@ -588,7 +578,7 @@ public class Misc implements ClipboardOwner {
       // from nv_goto
       col = Edit.beginlineColumnIndex(flag, seg);
     }
-    G.curwin.setCaretPosition(line, col);
+    G.curwin.w_cursor.set(line, col);
   }
   
   /**
@@ -921,7 +911,7 @@ public class Misc implements ClipboardOwner {
     final ViFPOS cursor = G.curwin.w_cursor;
     int lnum = check_cursor_lnum(cursor.getLine());
     if(lnum > 0) {
-      G.curwin.setCaretPosition(lnum, 0);
+      G.curwin.w_cursor.set(lnum, 0);
     }
     Edit.beginline(flags);
   }
@@ -1089,7 +1079,7 @@ public class Misc implements ClipboardOwner {
 
     line = G.curwin.w_cursor.getLine();
     for (i = oap.line_count; --i >= 0; ) {
-      G.curwin.setCaretPosition(line, 0);
+      G.curwin.w_cursor.set(line, 0);
       first_char = gchar_cursor();
       if (first_char != '\n') {	// empty line
 	shift_line(oap.op_type == OP_LSHIFT, G.p_sr.getBoolean(), amount);
@@ -1099,10 +1089,10 @@ public class Misc implements ClipboardOwner {
 
     if (oap.block_mode) {
     } else if (curs_top) {    /* put cursor on first line, for ">>" */
-      G.curwin.setCaretPosition(line - oap.line_count, 0);
+      G.curwin.w_cursor.set(line - oap.line_count, 0);
       Edit.beginline(BL_SOL | BL_FIX); // shift_line() may have set cursor.col
     } else {
-      G.curwin.setCaretPosition(line - 1, 0);
+      G.curwin.w_cursor.set(line - 1, 0);
     }
     // update_topline();
     // update_screen(NOT_VALID);

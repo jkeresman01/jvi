@@ -28,7 +28,6 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 package com.raelity.jvi;
-import com.raelity.jvi.swing.*;
 
 /**
  * A Mark represents a position within a document. A Mark is tracked
@@ -38,9 +37,6 @@ public interface ViMark extends ViFPOS {
     
     /** Set mark to position */
     public void setMark(ViFPOS fpos);
-
-    /** Set a mark's data to be the same as the argument mark */
-    public void setData(ViMark mark);
     
     /** Invalidate the mark. */
     public void invalidate();

@@ -47,9 +47,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.prefs.BackingStoreException;
 
-import com.raelity.jvi.BooleanOption;
 import com.raelity.jvi.ColonCommands;
-import com.raelity.jvi.Options;
 import com.raelity.jvi.ViManager;
 import com.raelity.jvi.swing.DefaultViFactory;
 import com.raelity.jvi.swing.StatusDisplay;
@@ -65,7 +63,7 @@ public class Jvi
 
     private static int nFrame = 0;              // total frame count
     private static JviFrame m_frame1 = null;
-    private static JviFrame m_frame2 = null;    // to test two jVi on same document
+    private static JviFrame m_frame2 = null;    // test two jVi on same document
 
 
     /**
@@ -94,7 +92,7 @@ public class Jvi
         scrollPane.getViewport().setPreferredSize(new Dimension(width, height));
 
         // Validate frames that have preset sizes
-        // Pack frames that have useful preferred size info, e.g. from their layout
+        // Pack frames with useful preferred size info, e.g. from their layout
         if ( packFrame ) {
             frame.pack();
         } else {
@@ -134,7 +132,8 @@ public class Jvi
         SimpleAttributeSet attributes = new SimpleAttributeSet();
         StyleConstants.setTabSet(attributes, tabSet);
         int length = tp.getDocument().getLength();
-        tp.getStyledDocument().setParagraphAttributes(0, length, attributes, false);
+        tp.getStyledDocument()
+                .setParagraphAttributes(0, length, attributes, false);
     }
 
 
@@ -196,7 +195,8 @@ public class Jvi
         ColonCommands.register("dumpOptions", "dumpOptions", new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    ViManager.getViFactory().getPreferences().exportSubtree(System.out);
+                    ViManager.getViFactory()
+                            .getPreferences().exportSubtree(System.out);
                 } catch (BackingStoreException ex) {
                     ex.printStackTrace();
                 } catch (IOException ex) {
@@ -225,12 +225,12 @@ public class Jvi
                             // If the Options dialog is available then set it up.
                             try {
                                 final Class clazz;
-                                clazz = Class.forName("com.raelity.jvi.cmd.OptionsDialog");
+                                clazz = Class.forName(
+                                        "com.raelity.jvi.cmd.OptionsDialog");
                                 if(clazz != null) {
                                     m_frame1.optionsButton
                                     .addActionListener(new ActionListener() {
-                                        Method showDialog = clazz.getMethod("show",
-                                                                    java.awt.Frame.class);
+                                        Method showDialog = clazz.getMethod("show", java.awt.Frame.class);
                                         public void actionPerformed(ActionEvent e) {
                                             try {
                                                 showDialog.invoke(null, m_frame1);
@@ -241,8 +241,10 @@ public class Jvi
                                     });
                                 }
                             } catch ( Exception ex ) {
-                                System.err.println( ex.getClass().getName() + " thrown by main() [1]:  "
-                                        + ex.getMessage() );
+                                ex.printStackTrace();
+                                //System.err.println( ex.getClass().getName()
+                                //        + " thrown by main() [1]:  "
+                                //        + ex.getMessage() );
                             }
                         }
                         setupFrame(m_frame1);
@@ -257,7 +259,9 @@ public class Jvi
                     }
                 });
         } catch( Exception e ) {
-            System.err.println( e.getClass().getName() + " thrown by main() [2]:  " + e.getMessage() );
+            e.printStackTrace();
+            //System.err.println( e.getClass().getName()
+            //        + " thrown by main() [2]:  " + e.getMessage() );
         }
 
         // invoke and wait to make sure widget is fully drawn.
@@ -271,7 +275,9 @@ public class Jvi
                     }
                 });
         } catch( Exception e ) {
-            System.err.println( e.getClass().getName() + " thrown by main() [3]:  " + e.getMessage() );
+            e.printStackTrace();
+            //System.err.println( e.getClass().getName()
+            //        + " thrown by main() [3]:  " + e.getMessage() );
         }
         // wait for frame to exit, so JUnitTest won't kill it
     }
