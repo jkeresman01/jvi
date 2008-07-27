@@ -28,7 +28,7 @@ import static com.raelity.jvi.Constants.*;
  * @author erra
  */
 public abstract class Buffer implements ViBuffer, ViOptionBag {
-    private boolean didCheckModelines;
+    private boolean didFirstInit;
     
     private int share; // the number of text views sharing this buffer
     public int getShare() { return share; }
@@ -41,36 +41,56 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
      * NOTE: tv is not completely "constructed".
      */
     public Buffer(ViTextView tv) {
+        //
+        // create the well known marks
+        //
         b_visual_start = createMark();
         b_visual_end = createMark();
         b_op_start = createMark();
         b_op_end = createMark();
         for(int i = 0; i < 'z' -'a'; i++)
             b_namedm[i] = createMark();
-
-        initOptions();
-    }
-    
-    protected void initOptions() {
-        b_p_ts = Options.getOption(Options.tabStop).getInteger();
-        b_p_sw = Options.getOption(Options.shiftWidth).getInteger();
-        b_p_et = Options.getOption(Options.expandTabs).getBoolean();
-        b_p_tw = Options.getOption(Options.textWidth).getInteger();
-    }
-
-    public void viOptionSet(ViTextView tv, String name) {
     }
     
     /** from switchto */
     public void activateOptions(ViTextView tv) {
+        if(!didFirstInit) {
+            firstGo();
+            didFirstInit = true;
+        }
     }
-    
-    /** from switchto, everything else has been setup */
-    public void checkModeline() {
-        if(didCheckModelines)
-            return;
-        didCheckModelines = true;
+
+    /**
+     * Put stuff here that should run once
+     * after after construction and every things is setup (curbuf, curwin).
+     * <br/>marks
+     * <br/>initOptions
+     * <br/>modeline
+     */
+    protected void firstGo()
+    {
+        //
+        // initialize some marks to avoid highlight cleanup
+        //
+        ViFPOS fpos = createFPOS(0);
+        b_visual_start.setMark(fpos);
+        b_visual_end.setMark(fpos);
+        b_op_start.setMark(fpos);
+        b_op_end.setMark(fpos);
+        //
+        // init options
+        //
+        b_p_ts = Options.getOption(Options.tabStop).getInteger();
+        b_p_sw = Options.getOption(Options.shiftWidth).getInteger();
+        b_p_et = Options.getOption(Options.expandTabs).getBoolean();
+        b_p_tw = Options.getOption(Options.textWidth).getInteger();
+        //
+        // modeline
+        //
         Options.processModelines();
+    }
+
+    public void viOptionSet(ViTextView tv, String name) {
     }
     
     //////////////////////////////////////////////////////////////////////

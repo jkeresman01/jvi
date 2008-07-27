@@ -31,7 +31,6 @@
 package com.raelity.jvi.swing;
 
 import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.OutputStreamAdaptor;
 
 public class DefaultOutputStream extends OutputStreamAdaptor {

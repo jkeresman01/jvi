@@ -3574,7 +3574,7 @@ public class Misc implements ClipboardOwner {
             MutableInt start,
             MutableInt cursor,
             MutableInt end) {
-      getvcol(tv.getBuffer(), fpos, start, cursor, end);
+      getvcol(((Window)tv).w_buffer, fpos, start, cursor, end);
     }
 
     public static void getvcol(Buffer buf,

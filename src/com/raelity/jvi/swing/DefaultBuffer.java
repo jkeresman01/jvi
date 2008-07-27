@@ -51,15 +51,6 @@ public class DefaultBuffer extends Buffer {
             //undoMan = new UndoManager();
             doc.addUndoableEditListener(undoMan);
         }
-
-        // NEEDSWORK: this should be in the superclass
-        // NEEDSWORK: the sub class needs to finish construction
-        //              so that the createFPOS will not NPE on the doc.
-        ViFPOS fpos = createFPOS(0);
-        b_visual_start.setMark(fpos);
-        b_visual_end.setMark(fpos);
-        b_op_start.setMark(fpos);
-        b_op_end.setMark(fpos);
     }
 
     @Override
@@ -403,16 +394,12 @@ public class DefaultBuffer extends Buffer {
         */
         private void setOffset(int offset) {
             try {
-                Position aPos = doc.createPosition(offset);
+                Position aPos = getDoc().createPosition(offset);
                 setPos(aPos);
             } catch(BadLocationException ex) {
                 pos = null;
                 return;
             }
-        }
-        
-        private Document getDoc() {
-            return getDocument();
         }
         
         private void setPos(Position pos) {

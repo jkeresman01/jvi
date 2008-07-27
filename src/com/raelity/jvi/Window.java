@@ -99,8 +99,8 @@ public abstract class Window implements ViTextView
     public void shutdown()
     {
         if ( G.dbgEditorActivation.getBoolean() ) {
-            assert getBuffer() == ViManager.getBuffer(getEditorComponent());
-            if(getBuffer().getShare() == 1) {
+            assert w_buffer == ViManager.getBuffer(getEditorComponent());
+            if(w_buffer.getShare() == 1) {
                 System.err.println("TV.shutdown: LAST CLOSE");
             }
         }
@@ -158,19 +158,19 @@ public abstract class Window implements ViTextView
 
         int currDot = dot;
         if (G.dbgMouse.getBoolean())
-            System.err.println("CaretMark: " + lastDot + " --> " + currDot +
-                    " " + getBuffer().getDisplayFileName());
+            System.err.println("CaretMark: " + lastDot + " --> " + currDot
+                    + " " + w_buffer.getDisplayFileName());
         if (!ViManager.jViBusy() && !ViManager.isMouseDown()) {
             // The cursor was magcally moved and jVi had nothing to
             // do with it. (probably by an IDE or some such).
             // Record the previous location so that '' works (thanks Jose).
 
-            int diff = Math.abs(getBuffer().getLineNumber(currDot)
-                                - getBuffer().getLineNumber(lastDot));
+            int diff = Math.abs(w_buffer.getLineNumber(currDot)
+                                - w_buffer.getLineNumber(lastDot));
             if (diff > 0) {
                 if (G.dbgMouse.getBoolean())
                     System.err.println("caretUpdate: setPCMark");
-                ViFPOS fpos = getBuffer().createFPOS(lastDot);
+                ViFPOS fpos = w_buffer.createFPOS(lastDot);
                 MarkOps.setpcmark(this, fpos);
             }
         }

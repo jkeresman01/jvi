@@ -134,7 +134,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.0.x22");
+    public static final jViVersion version = new jViVersion("1.2.0.x23");
 
     private static boolean enabled;
 
@@ -278,11 +278,6 @@ public class ViManager
     public static ViFS getFS()
     {
         return factory.getFS();
-    }
-
-    public static JEditorPane getCurrentEditorPaneXXX()
-    {
-        return currentEditorPane;
     }
 
     public static ViTextView getViTextView(JEditorPane editorPane)
@@ -729,10 +724,9 @@ public class ViManager
 
         currentEditorPane = editorPane;
         G.switchTo(textView, buf);
-        textView.activateOptions(textView);
-        buf.activateOptions(textView);
         Normal.resetCommand(); // Means something first time window switched to
-        buf.checkModeline();
+        buf.activateOptions(textView);
+        textView.activateOptions(textView);
     }
 
     public static ViTextView getCurrentTextView()
@@ -833,12 +827,17 @@ public class ViManager
                 return pos;
             }
 
-            JEditorPane editorPane = (JEditorPane)c;
-
-            // NEEDSWORK: mouse click: if( ! isRegistered(editorPane)) {}
-
             GetChar.flush_buffers(true);
             exitInputMode();
+            if(currentEditorPane != null)
+                Normal.abortVisualMode();
+
+            JEditorPane editorPane = (JEditorPane)c;
+
+            ViTextView tv = factory.getExistingViTextView(editorPane);
+            if(tv == null)
+                return pos;
+
             switchTo(editorPane);
             /*int lookFor = mev.ALT_DOWN_MASK | mev.BUTTON1_DOWN_MASK;
             int mods = mev.getModifiersEx();
@@ -846,10 +845,7 @@ public class ViManager
                 draggingBlockMode = true;
                 System.err.println("START_DRAG");
             }*/
-
-            ViTextView tv = factory.getViTextView(editorPane);
             pos = tv.validateCursorPosition(pos);
-            Normal.abortVisualMode();
 
             if(G.dbgMouse.getBoolean()) {
                 System.err.println("mouseSetDot(" + pos + ") "

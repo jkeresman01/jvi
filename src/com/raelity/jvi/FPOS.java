@@ -27,7 +27,7 @@ import java.lang.ref.WeakReference;
  * getLine() and getCol() do not change as the document changes.
  * The FPOS does have
  * a weak reference to a Buffer, so methods such as setLine() do the right
- * thing.
+ * thing and the column can not be set past the end of the line.
  * See ViMark for that type of behavior that tracks document changes.
  * <p>
  * Developer notes
@@ -40,19 +40,22 @@ import java.lang.ref.WeakReference;
  */
 class FPOS extends ViFPOS.abstractFPOS
 {
-    private MutableInt offset = new MutableInt();
-    private MutableInt lnum = new MutableInt();
-    private MutableInt col = new MutableInt();
+    private int offset;
+    private int lnum = 1;
+    private int col;
     WeakReference<Buffer> rBuf;
 
     /**
-     *
+     * after construction, referencing line 1, column 0.
      */
     FPOS()
     {
         this(G.curbuf);
     }
 
+    /**
+     * after construction, referencing line 1, column 0.
+     */
     FPOS(Buffer buf)
     {
         rBuf = new WeakReference<Buffer>(buf);
@@ -61,15 +64,15 @@ class FPOS extends ViFPOS.abstractFPOS
     /** Used to make a copy. */
     private void initFPOS(int o, int l, int c)
     {
-        offset.setValue(o);
-        lnum.setValue(l);
-        col.setValue(c);
+        offset = o;
+        lnum = l;
+        col = c;
     }
 
     @Override
     public void set(int offset)
     {
-        //verify(G.curbuf);
+        verify(G.curbuf);
         Buffer buf = rBuf.get();
         int l = buf.getLineNumber(offset);
         initFPOS(offset, l, offset - buf.getLineStartOffset(l));
@@ -77,17 +80,17 @@ class FPOS extends ViFPOS.abstractFPOS
 
     public int getLine()
     {
-        return lnum.getValue();
+        return lnum;
     }
 
     public int getColumn()
     {
-        return col.getValue();
+        return col;
     }
 
     public int getOffset()
     {
-        return offset.getValue();
+        return offset;
     }
 
     public void set(int line, int column)

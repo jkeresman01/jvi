@@ -1360,7 +1360,7 @@ public class ColonCommands
         boolean docWriteDone;
 
         int linesDelta;
-        ViTextView tv;
+        Window win;
 
         int debugCounter;
 
@@ -1375,7 +1375,7 @@ public class ColonCommands
         DocumentThread(FilterThreadCoordinator coord, ViTextView tv)
         {
             super(RW_DOC, coord);
-            this.tv = tv;
+            win = (Window)tv;
         }
 
         @Override
@@ -1467,13 +1467,13 @@ public class ColonCommands
 
         private void deleteLines(int startLine, int endLine)
         {
-            int startOffset = tv.getBuffer().getLineStartOffset(startLine);
-            int endOffset = tv.getBuffer().getLineEndOffset(endLine);
-            int docLength = tv.getEditorComponent().getDocument().getLength();
+            int startOffset = win.w_buffer.getLineStartOffset(startLine);
+            int endOffset = win.w_buffer.getLineEndOffset(endLine);
+            int docLength = win.getEditorComponent().getDocument().getLength();
             if(endOffset > docLength) {
                 endOffset = docLength;
             }
-            tv.deleteChar(startOffset, endOffset);
+            win.deleteChar(startOffset, endOffset);
         }
 
         public boolean readDocument()
@@ -1486,7 +1486,7 @@ public class ColonCommands
                 }
                 while(!isProblem() && docReadLine <= coord.lastLine) {
                     int docLine = docReadLine + linesDelta;
-                    data =    tv.getBuffer().getLineSegment(docLine).toString();
+                    data =    win.w_buffer.getLineSegment(docLine).toString();
                     if(!coord.fromDoc.offer(data)) {
                         break;
                     }
@@ -1529,10 +1529,10 @@ public class ColonCommands
                         }
                         break;
                     }
-                    int offset = tv.getBuffer().getLineStartOffset(docWriteLine);
-                    tv.insertText(offset, data);
+                    int offset = win.w_buffer.getLineStartOffset(docWriteLine);
+                    win.insertText(offset, data);
                     offset += data.length();
-                    tv.insertText(offset, "\n");
+                    win.insertText(offset, "\n");
                     if (dbgData.value) {
                         System.err.println("!: toDoc #" + docWriteLine + ": '"
                                 + data.trim() + "'");
@@ -1742,7 +1742,8 @@ public class ColonCommands
     static ActionListener ACTION_file = new ActionListener() {
             public void actionPerformed(ActionEvent ev) {
                 ColonEvent cev = (ColonEvent)ev;
-                cev.getViTextView().getBuffer().displayFileInfo(cev.getViTextView());
+                cev.getViTextView().getBuffer()
+                        .displayFileInfo(cev.getViTextView());
             }};
 
     private static boolean do_write(ColonEvent cev)
