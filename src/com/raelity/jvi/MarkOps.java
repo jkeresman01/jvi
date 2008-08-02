@@ -108,7 +108,6 @@ class MarkOps
         }
 
         Window win = (Window)tv;
-        fpos.verify(win.w_buffer);
 
         win.w_prev_pcmark.setMark(win.w_pcmark);
         win.w_pcmark.setMark(fpos);

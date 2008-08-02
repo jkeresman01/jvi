@@ -134,7 +134,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.0.x23");
+    public static final jViVersion version = new jViVersion("1.2.0.x24");
 
     private static boolean enabled;
 
@@ -890,10 +890,13 @@ public class ViManager
 
     public static int mouseMoveDot(int pos, JTextComponent c, MouseEvent mev)
     {
+        if(true) // NEEDSWORK: this method doesn't do anything anymore
+            return pos;
+
         try {
             setJViBusy(true);
 
-            if(c != G.curwin.getEditorComponent()) {
+            if(G.curwin == null || c != G.curwin.getEditorComponent()) {
                 return pos;
             }
 

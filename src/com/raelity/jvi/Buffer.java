@@ -135,7 +135,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     final public ViFPOS createFPOS(int offset)
     {
         FPOS fpos = new FPOS(this);
-        fpos.set(offset);
+        fpos.set(this, offset);
         return fpos;
     }
 
