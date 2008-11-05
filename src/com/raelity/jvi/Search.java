@@ -40,6 +40,8 @@ import javax.swing.event.DocumentListener;
 import com.raelity.text.*;
 import com.raelity.text.TextUtil.MySegment;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.AbstractDocument;
 import static com.raelity.jvi.KeyDefs.K_X_SEARCH_FINISH;
 import static com.raelity.jvi.KeyDefs.K_X_INCR_SEARCH_DONE;
@@ -53,6 +55,7 @@ import static com.raelity.jvi.Constants.*;
  * Everything's static, can only do one thing at a time.
  */
 public class Search {
+  private static Logger LOG = Logger.getLogger(Search.class.getName());
 
   ///////////////////////////////////////////////////////////////////////
   //
@@ -88,8 +91,8 @@ public class Search {
             }   });
       }
       catch (TooManyListenersException ex) {
-        ex.printStackTrace();
-        throw new RuntimeException();
+        LOG.log(Level.SEVERE, null, ex);
+        throw new RuntimeException(ex);
       }
     }
     return searchCommandEntry;

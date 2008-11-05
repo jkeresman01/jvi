@@ -36,6 +36,8 @@ import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
@@ -72,6 +74,7 @@ import javax.swing.text.StyledEditorKit;
 public class TextView extends Window
         implements ViTextView, PropertyChangeListener, ChangeListener
 {
+    private static Logger LOG = Logger.getLogger(TextView.class.getName());
     protected int mygen;
 
 
@@ -190,7 +193,7 @@ public class TextView extends Window
     public void attach()
     {
         if ( ops == null ) {
-            createOps(editorPane);
+            createOps();
         }
         if ( G.dbgEditorActivation.getBoolean() ) {
           System.err.println("TV.attach: " + editorPane.hashCode());
@@ -211,10 +214,9 @@ public class TextView extends Window
      *  Create methods to invoke and interact with editor pane actions.
      *  May override for custom editor panes.
      */
-    protected void createOps( JEditorPane editorPane )
+    protected void createOps()
     {
         ops = new Ops(this);
-        ops.init(editorPane);
     }
 
 
@@ -272,7 +274,7 @@ public class TextView extends Window
             Util.vim_beep();
             return;
         }
-        int offset = editorPane.getCaretPosition();
+        int offset = w_cursor.getOffset();
         getBuffer().replaceChar(offset, c);
         if ( advanceCursor ) {
             offset++;
@@ -402,8 +404,8 @@ public class TextView extends Window
             // handle current line might be a fold
             // int cmpOffset = getBuffer()
             //                .getLineEndOffsetFromOffset(w_cursor.getOffset());
-            offset = G.curwin.getBufferLineOffset(
-                    G.curwin.getCoordLine(w_cursor.getLine()) + 1);
+            offset = getBufferLineOffset(
+                    getCoordLine(w_cursor.getLine()) + 1);
         } else {
             // before the current line
             offset = getBuffer()
@@ -427,7 +429,6 @@ public class TextView extends Window
     public int getCaretPosition()
     {
         // NEEDSWORK: what is using this?
-        //return editorPane.getCaretPosition();
         return w_cursor.getOffset();
     }
 
@@ -648,7 +649,7 @@ public class TextView extends Window
             r1 = getEditorComponent().modelToView(offset);
         } catch ( BadLocationException ex ) {
             // should be impossible since viewtomodel return should be valid
-            ex.printStackTrace();
+            LOG.log(Level.SEVERE, null, ex);
         }
         if ( p.y > r1.y ) {
             // past end of file
@@ -722,8 +723,7 @@ public class TextView extends Window
               }
           }
       } catch ( BadLocationException ex ) {
-          //Logger.getLogger(TextView.class.getName()).log(Level.SEVERE, null, ex);
-          ex.printStackTrace();
+          LOG.log(Level.SEVERE, null, ex);
       }
       return colIdx;
     }
@@ -817,12 +817,12 @@ public class TextView extends Window
     {
         final public int getLine()
         {
-            return getBuffer().getElemCache(getCaretPosition()).line;
+            return getBuffer().getElemCache(getOffset()).line;
         }
 
         final public int getColumn()
         {
-            int offset = editorPane.getCaretPosition();
+            int offset = getOffset();
             return offset - getBuffer().getElemCache(offset)
                                        .elem.getStartOffset();
         }
@@ -883,6 +883,12 @@ public class TextView extends Window
     // It monitors the EditorPane's Viewport
     // along with other event changes.
     //
+    // NEEDSWORK: There may not be a viewport, consider a single line.
+    //            May want to represent the viewport with an interface,
+    //            and provide a "null" viewport when no real viewport,
+    //            rather than the special case code.
+    // NEEDSWORK: Without a viewport, currently assuming one line.
+    //
 
     protected void changeDocument(PropertyChangeEvent e) {
         if (cacheTrace.getBoolean()) {
@@ -899,7 +905,7 @@ public class TextView extends Window
     private static BooleanOption cacheTrace
             = (BooleanOption) Options.getOption(Options.dbgCache);
 
-    final protected JViewport getViewport()
+    final private JViewport getViewport()
     {
         return viewport;
     }
@@ -927,11 +933,15 @@ public class TextView extends Window
     /** @return the top line number */
     public int getViewTopLine()
     {
+        if(viewport == null)
+            return 1;
         return viewTopLine;
     }
 
     public void setViewTopLine(int line)
     {
+        if(viewport == null)
+            return;
         if (line == getViewTopLine()) {
             return; // nothing to change
         }
@@ -950,11 +960,15 @@ public class TextView extends Window
 
     public int getViewBottomLine()
     {
+        if(viewport == null)
+            return 1;
         return viewBottomLine + 1;  // NEEDSWORK: returning line past full line
     }
 
     public int getViewBlankLines()
     {
+        if(viewport == null)
+            return 0;
         int blank = viewLines - (viewBottomLine - viewTopLine + 1);
         return blank;
     }
@@ -962,6 +976,8 @@ public class TextView extends Window
     /** @return number of lines on viewport */
     public int getViewLines()
     {
+        if(viewport == null)
+            return 1;
         return viewLines;
     }
 

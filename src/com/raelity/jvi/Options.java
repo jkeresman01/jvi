@@ -53,6 +53,8 @@ import java.util.prefs.Preferences;
 import com.raelity.text.TextUtil.MySegment;
 import com.raelity.jvi.Option.ColorOption;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static com.raelity.jvi.Constants.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -67,6 +69,7 @@ import java.util.regex.Pattern;
  */
 
 public final class Options {
+  private static Logger LOG = Logger.getLogger(Options.class.getName());
   private Options() {
   }
   private static Options options;
@@ -929,10 +932,10 @@ public final class Options {
           // error message given
           return;
         } catch (IllegalAccessException ex) {
-          ex.printStackTrace();
+          LOG.log(Level.SEVERE, null, ex);
           return;
         } catch (IllegalArgumentException ex) {
-          ex.printStackTrace();
+          LOG.log(Level.SEVERE, null, ex);
           return;
         }
       }
@@ -1041,9 +1044,9 @@ public final class Options {
         try {
           voptDesc.f = voptDesc.bag.getClass().getField(vopt.varName);
         } catch (SecurityException ex) {
-          ex.printStackTrace();
+          LOG.log(Level.SEVERE, null, ex);
         } catch (NoSuchFieldException ex) {
-          ex.printStackTrace();
+          LOG.log(Level.SEVERE, null, ex);
         }
         if(voptDesc.f == null) {
           return false;
@@ -1053,9 +1056,9 @@ public final class Options {
         try {
           voptDesc.value = voptDesc.f.get(voptDesc.bag);
         } catch (IllegalArgumentException ex) {
-          ex.printStackTrace();
+          LOG.log(Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-          ex.printStackTrace();
+          LOG.log(Level.SEVERE, null, ex);
         }
       } else if((vopt.flags & P_OPT) != 0) {
         if(voptDesc.opt instanceof BooleanOption) {
@@ -1150,9 +1153,9 @@ public final class Options {
               try {
                 voptDesc.f.set(bag, voptDesc.value);
               } catch (IllegalArgumentException ex) {
-                ex.printStackTrace();
+                LOG.log(Level.SEVERE, null, ex);
               } catch (IllegalAccessException ex) {
-                ex.printStackTrace();
+                LOG.log(Level.SEVERE, null, ex);
               }
             }
             break;
@@ -1220,7 +1223,7 @@ public final class Options {
         } catch (SetCommand.SetCommandException ex) {
           msg = ex.getMessage();
         } catch (IllegalAccessException ex) {
-          ex.printStackTrace();
+          LOG.log(Level.SEVERE, null, ex);
         }
         if(sb.length() != 0)
           sb.append('\n');

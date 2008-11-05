@@ -10,10 +10,7 @@
 package com.raelity.jvi;
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.Rectangle;
 import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -21,19 +18,17 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyDescriptor;
-import java.beans.PropertyEditor;
 import java.beans.PropertyVetoException;
 import java.beans.SimpleBeanInfo;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.prefs.Preferences;
 
 import com.raelity.jvi.Option.ColorOption;
 import com.raelity.org.openide.util.WeakListeners;
-import java.beans.PropertyEditorManager;
-import java.beans.PropertyEditorSupport;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Base class for jVi options beans. This method contains the read/write methods
@@ -44,6 +39,7 @@ import java.beans.PropertyEditorSupport;
  * @author erra
  */
 public class OptionsBeanBase extends SimpleBeanInfo {
+    private static Logger LOG = Logger.getLogger(OptionsBeanBase.class.getName());
     private Class clazz;
     private Options.Category category;
     private List<String> optionsList;
@@ -131,7 +127,7 @@ public class OptionsBeanBase extends SimpleBeanInfo {
                     d = new PropertyDescriptor(name, clazz,
                             "getJViVersion", null);
                 } catch (IntrospectionException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.SEVERE, null, ex);
                     continue;
                 }
                 d.setDisplayName("jVi Version");
@@ -140,7 +136,7 @@ public class OptionsBeanBase extends SimpleBeanInfo {
                     d = ViManager.getViFactory()
                             .createPropertyDescriptor(name, name, clazz);
                 } catch (IntrospectionException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.SEVERE, null, ex);
                     continue;
                 }
             }

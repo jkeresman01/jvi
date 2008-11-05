@@ -20,6 +20,8 @@ import com.raelity.jvi.ViMark.MarkException;
 import com.raelity.jvi.ViTextView;
 import com.raelity.text.TextUtil.MySegment;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -37,6 +39,7 @@ import javax.swing.undo.UndoableEdit;
  * @author erra
  */
 public class DefaultBuffer extends Buffer {
+    private static Logger LOG = Logger.getLogger(DefaultBuffer.class.getName());
     private Document doc;
     private UndoGroupManager undoMan;
     //private UndoManager undoMan;
@@ -122,8 +125,7 @@ public class DefaultBuffer extends Buffer {
             getDoc().getText(offset, length, seg);
         } catch (BadLocationException ex) {
             seg.count = 0;
-            // NEEDSWORK: how to report exception?
-            ex.printStackTrace();
+            LOG.log(Level.SEVERE, null, ex);
         }
         seg.docOffset = offset;
         seg.first();
@@ -595,8 +597,7 @@ public class DefaultBuffer extends Buffer {
                 // segment.offset is always zero
             } catch(BadLocationException ex) {
                 segment.count = 0;
-                // NEEDSWORK: how to report exception?
-                ex.printStackTrace();
+                LOG.log(Level.SEVERE, null, ex);
             }
         } else {
             if(cacheTrace.getBoolean())System.err.println("Hit seg: " + line);
@@ -686,7 +687,7 @@ public class DefaultBuffer extends Buffer {
                 s = getDoc().getText(e.getOffset(), e.getLength());
                 docInsert(e.getOffset(), s);
             } catch (BadLocationException ex) {
-                ex.printStackTrace();
+                LOG.log(Level.SEVERE, null, ex);
             }
         }
         

@@ -17,6 +17,8 @@ import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 /**
@@ -26,6 +28,7 @@ import java.util.prefs.Preferences;
  * @author erra
  */
 public class KeyBindingBean  extends SimpleBeanInfo {
+  private static Logger LOG = Logger.getLogger(KeyBindingBean.class.getName());
     
     //
     // The BeanInfo is embedded in the same class
@@ -87,7 +90,7 @@ public BeanDescriptor getBeanDescriptor() {
         try {
             d = new PropertyDescriptor(propertyName, KeyBindingBean.class);
         } catch (IntrospectionException ex) {
-            ex.printStackTrace();
+            LOG.log(Level.SEVERE, null, ex);
             return;
         }
         d.setDisplayName(displayName);

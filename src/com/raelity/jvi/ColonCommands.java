@@ -42,6 +42,8 @@ import static com.raelity.jvi.ColonCommandFlags.*;
 
 import java.io.*;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.Timer;
@@ -66,6 +68,7 @@ import javax.swing.text.Position;
  */
 public class ColonCommands
 {
+    private static Logger LOG = Logger.getLogger(ColonCommands.class.getName());
     private static AbbrevLookup m_commands = new AbbrevLookup();
 
     private static String lastCommand;
@@ -97,8 +100,8 @@ public class ColonCommands
                         }
                 });
             } catch ( TooManyListenersException ex ) {
-                ex.printStackTrace();
-                throw new RuntimeException();
+                LOG.log(Level.SEVERE, null, ex);
+                throw new RuntimeException(ex);
             }
         }
         return colonCommandEntry;
@@ -430,10 +433,10 @@ public class ColonCommands
                   break;
               case '\'':        // ''' - mark
                   ++sidx;
-                  c = s.charAt(sidx);
                   if(sidx >= s.length()) {
                       return -1;
                   }
+                  c = s.charAt(sidx);
                   if(skip) {
                       ++sidx;
                   } else {
@@ -479,6 +482,9 @@ public class ColonCommands
               } else {
                   i = c;
                   ++sidx;
+                  if(sidx >= s.length()) {
+                      return -1;
+                  }
                   c = s.charAt(sidx);
               }
 
@@ -1135,7 +1141,7 @@ public class ColonCommands
                 try {
                     reader.close();
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.SEVERE, null, ex);
                 }
                 reader = null;
             }
@@ -1206,7 +1212,7 @@ public class ColonCommands
                 try {
                     writer.close();
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.SEVERE, null, ex);
                 }
                 writer = null;
             }
@@ -1295,7 +1301,7 @@ public class ColonCommands
                 try {
                     reader.close();
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.SEVERE, null, ex);
                 }
                 reader = null;
             }
@@ -1672,7 +1678,7 @@ public class ColonCommands
                             return;
                         }
                         thisThread.uncaughtException = e;
-                        e.printStackTrace();
+                        LOG.log(Level.SEVERE, null, e);
                         cleanup();
                     }
                 });
@@ -1685,8 +1691,8 @@ public class ColonCommands
         {
             if(exception != null) {
                 if (dbg.value) {
-                    System.err.println("!: Exception in " + getName());
-                    exception.printStackTrace();
+                    LOG.log(Level.SEVERE,
+                            "!: Exception in " + getName() , exception);
                 }
                 cleanup();
             }
@@ -2162,7 +2168,7 @@ public class ColonCommands
                                    pos2.getOffset() - atEndAdjust);
                 }
             } catch (BadLocationException ex) {
-                ex.printStackTrace();
+                LOG.log(Level.SEVERE, null, ex);
             } finally {
                 Misc.endUndo();
             }
@@ -2280,9 +2286,9 @@ public class ColonCommands
               vios.close();
 
             } catch (BackingStoreException ex) {
-              ex.printStackTrace();
+              LOG.log(Level.SEVERE, null, ex);
             } catch (IOException ex) {
-              ex.printStackTrace();
+              LOG.log(Level.SEVERE, null, ex);
             }
           }
         });
@@ -2300,7 +2306,7 @@ public class ColonCommands
                 prefs.remove(key);
               }
             } catch (BackingStoreException ex) {
-              ex.printStackTrace();
+              LOG.log(Level.SEVERE, null, ex);
             }
           }
         });

@@ -32,6 +32,8 @@ import  java.beans.PropertyChangeEvent;
 import  java.beans.PropertyChangeListener;
 import  java.lang.reflect.Method;
 import  java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class presents a editable combo box UI for picking up command entry
@@ -46,6 +48,7 @@ import  java.util.*;
  */
 public class CommandLine extends JPanel
 {
+    private static Logger LOG = Logger.getLogger(CommandLine.class.getName());
     static public final int DEFAULT_HISTORY_SIZE = 50;
     JLabel modeLabel = new JLabel();
     JComboBox combo = new JComboBox();
@@ -107,7 +110,7 @@ public class CommandLine extends JPanel
         try {
             jbInit();
         } catch ( Exception ex ) {
-            ex.printStackTrace();
+            LOG.log(Level.SEVERE, null, ex);
         }
         Font font = modeLabel.getFont();
         modeLabel.setFont(new Font("Monospaced",
@@ -438,7 +441,7 @@ public class CommandLine extends JPanel
                 }
             };
         } catch(Throwable e) {
-            e.printStackTrace();
+            LOG.log(Level.SEVERE, null, e);
         }
         return localActions;
     }
@@ -696,21 +699,27 @@ public class CommandLine extends JPanel
                 return;
             }
 
-            // VISUAL REPAINT HACK
-            // Repaint before executing commands..
-            // so that I can be sure the visual area didn't change yet
-            // and all has been repainted
-            if(G.drawSavedVisualBounds) {
-                G.drawSavedVisualBounds = false;
-                Normal.v_updateVisualState(tv);
+            try {
+                // VISUAL REPAINT HACK
+                // Repaint before executing commands..
+                // so that I can be sure the visual area didn't change yet
+                // and all has been repainted
+                if (G.drawSavedVisualBounds) {
+                    G.drawSavedVisualBounds = false;
+                    Normal.v_updateVisualState(tv);
+                }
+                // END VISUAL REPAINT HACK
+                lastCommand = commandLine.getCommand();
+                if (Options.getOption(Options.dbgKeyStrokes).getBoolean()) {
+                    System.err.println("CommandAction: '" + lastCommand + "'");
+                }
+                shutdownEntry();
+                fireEvent(e);
+            } catch (Exception ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            } finally {
+                commandLine.clear();
             }
-            // END VISUAL REPAINT HACK
-            lastCommand = commandLine.getCommand();
-            if(Options.getOption(Options.dbgKeyStrokes).getBoolean())
-                System.err.println("CommandAction: '" + lastCommand + "'");
-            shutdownEntry();
-            fireEvent(e);
-            commandLine.clear();
         }
 
         /** Send the event If it is a successful entry, a CR, then

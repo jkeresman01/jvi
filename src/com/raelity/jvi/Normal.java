@@ -36,6 +36,8 @@ import com.raelity.text.TextUtil.MySegment;
 
 import com.raelity.jvi.swing.KeyBinding;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static com.raelity.jvi.Constants.*;
 import static com.raelity.jvi.KeyDefs.*;
 
@@ -52,12 +54,13 @@ import static com.raelity.jvi.KeyDefs.*;
  * </ul>
  * </p>
  *
- * <br>nv_*(): functions called to handle Normal and Visual mode commands.
- * <br>n_*(): functions called to handle Normal mode commands.
- * <br>v_*(): functions called to handle Visual mode commands.
+ * <br/>nv_*(): functions called to handle Normal and Visual mode commands.
+ * <br/>n_*(): functions called to handle Normal mode commands.
+ * <br/>v_*(): functions called to handle Visual mode commands.
  */
 
 public class Normal {
+  private static Logger LOG = Logger.getLogger(Normal.class.getName());
 
   // for normal_cmd() use, stuff that was declared static in the function
   static int	opnum = 0;		    /* count before an operator */
@@ -153,7 +156,7 @@ public class Normal {
         }
       }
     } catch(Throwable e) {
-      e.printStackTrace();
+      LOG.log(Level.SEVERE, null, e);
       Util.beep_flush();
       resetCommand();
     }
@@ -4142,7 +4145,7 @@ static private void nv_findpar(CMDARG cap, int dir)
             try {
               do_pending_operator(cap, 0, false);
             } catch(Exception e) {
-              e.printStackTrace();
+              LOG.log(Level.SEVERE, "do_pending_operator", e);
             }
             //empty = (G.curbuf.b_ml.ml_flags.empty);
             

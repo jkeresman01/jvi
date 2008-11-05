@@ -1,10 +1,21 @@
 /*
- * OpsBase.java
+ * The contents of this file are subject to the Mozilla Public
+ * License Version 1.1 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of
+ * the License at http://www.mozilla.org/MPL/
  *
- * Created on January 1, 2007, 10:33 AM
+ * Software distributed under the License is distributed on an "AS
+ * IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * rights and limitations under the License.
  *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
+ * The Original Code is jvi - vi editor clone.
+ *
+ * The Initial Developer of the Original Code is Ernie Rael.
+ * Portions created by Ernie Rael are
+ * Copyright (C) 2000-2008 Ernie Rael.  All Rights Reserved.
+ *
+ * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
 package com.raelity.jvi.swing;
@@ -14,10 +25,7 @@ import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Action;
-import javax.swing.JEditorPane;
 import javax.swing.text.DefaultEditorKit;
-
-import static com.raelity.jvi.Constants.*;
 
 /**
  * This provides default swings JEditorPane actions that are
@@ -36,13 +44,17 @@ import static com.raelity.jvi.Constants.*;
  * @author erra
  */
 public class OpsBase implements TextOps {
+
+    protected ViTextView textView;
+
+    protected OpsBase.ReusableEvent event = new ReusableEvent();
+
+    protected static Map<String,Action> actionMap
+            = new HashMap<String,Action>();
     
     /** Creates a new instance of OpsBase */
     public OpsBase(ViTextView textView) {
         this.textView = textView;
-    }
-
-    public void init(JEditorPane editorPane) {
     }
 
     public void xact(Action action) {
@@ -138,11 +150,4 @@ public class OpsBase implements TextOps {
           return cmd;
         }
     }
-
-    protected ViTextView textView;
-
-    protected OpsBase.ReusableEvent event = new ReusableEvent();
-
-    protected static Map<String,Action> actionMap
-            = new HashMap<String,Action>();
 }

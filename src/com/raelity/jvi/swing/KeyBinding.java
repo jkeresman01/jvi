@@ -41,6 +41,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.TextAction;
 import static java.awt.event.InputEvent.SHIFT_MASK;
 import static java.awt.event.InputEvent.CTRL_MASK;
@@ -49,6 +51,7 @@ import static com.raelity.jvi.KeyDefs.*;
 import static com.raelity.jvi.Constants.*;
 
 public class KeyBinding {
+  private static Logger LOG = Logger.getLogger(KeyBinding.class.getName());
   public static final String KEY_BINDINGS = "KeyBinding";
   private static Preferences prefs = ViManager.getViFactory()
                                 .getPreferences().node(ViManager.PREFS_KEYS);
@@ -442,7 +445,7 @@ public class KeyBinding {
             actionsList.add(factory.createKeyAction("ViF11Key", K_F11));
             actionsList.add(factory.createKeyAction("ViF12Key", K_F12));
         } catch(Throwable e) {
-            e.printStackTrace();
+            LOG.log(Level.SEVERE, null, e);
         }
 
         actionsMap = new HashMap<String, Action>();
@@ -512,7 +515,7 @@ public class KeyBinding {
 		     "Toggle between insert and replace mode")
       };
     } catch(Throwable e) {
-      e.printStackTrace();
+      LOG.log(Level.SEVERE, null, e);
     }
     return localActions;
   }

@@ -45,9 +45,11 @@ import com.raelity.text.TextUtil.MySegment;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Misc implements ClipboardOwner {
-
+  private static Logger LOG = Logger.getLogger(Misc.class.getName());
   static final ClipboardOwner clipOwner = new Misc();
 
   //////////////////////////////////////////////////////////////////
@@ -1198,7 +1200,7 @@ public class Misc implements ClipboardOwner {
         try {
           reg = (Yankreg)this.clone();
         } catch (CloneNotSupportedException ex) {
-          ex.printStackTrace();
+          LOG.log(Level.SEVERE, null, ex);
         }
       } else {
         reg = new Yankreg();
@@ -2688,6 +2690,13 @@ public class Misc implements ClipboardOwner {
       if(y_type == MLINE // && (flags & PUT_LINE) != 0
          && s.length() != 0 && s.charAt(s.length()-1) != '\n')
         s += '\n';
+      if(count > 1) {
+        StringBuilder sb = new StringBuilder(s);
+        do {
+          sb.append(s);
+        } while(--count > 1);
+        s = sb.toString();
+      }
       length = s.length();
       G.curwin.insertText(offset, s);
 
@@ -2892,8 +2901,8 @@ public class Misc implements ClipboardOwner {
         int ucslen = bb.getInt();
         int rawlen = bb.getInt();
         return type;
-      } catch (UnsupportedFlavorException ex) { ex.printStackTrace();
-      } catch (IOException ex) { ex.printStackTrace(); }
+      } catch (UnsupportedFlavorException ex) { LOG.log(Level.SEVERE, null, ex);
+      } catch (IOException ex) { LOG.log(Level.SEVERE, null, ex); }
     }
     return null;
   }

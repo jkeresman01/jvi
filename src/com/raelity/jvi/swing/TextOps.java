@@ -1,13 +1,3 @@
-/**
- * Title:        jVi<p>
- * Description:  A VI-VIM clone.
- * Use VIM as a model where applicable.<p>
- * Copyright:    Copyright (c) Ernie Rael<p>
- * Company:      Raelity Engineering<p>
- * @author Ernie Rael
- * @version 1.0
- */
-
 /*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -23,13 +13,12 @@
  * 
  * The Initial Developer of the Original Code is Ernie Rael.
  * Portions created by Ernie Rael are
- * Copyright (C) 2000 Ernie Rael.  All Rights Reserved.
+ * Copyright (C) 2000-2008 Ernie Rael.  All Rights Reserved.
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 package com.raelity.jvi.swing;
 
-import javax.swing.JEditorPane;
 import javax.swing.Action;
 
 /**
@@ -75,6 +64,4 @@ public interface TextOps {
   public void xop(int op, String s);
 
   public void xop(int op);
-
-  public void init(JEditorPane editorPane);
 }

@@ -51,6 +51,8 @@ import com.raelity.jvi.swing.KeyBinding;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 /**
@@ -94,6 +96,7 @@ import java.util.prefs.Preferences;
  */
 public class ViManager
 {
+  private static Logger LOG = Logger.getLogger(ViManager.class.getName());
     
     public static final String PREFS_ROOT = "com/raelity/jvi";
     public static final String PREFS_KEYS = "KeyBindings";
@@ -134,7 +137,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.0.x24");
+    public static final jViVersion version = new jViVersion("1.2.0.x26");
 
     private static boolean enabled;
 
@@ -229,7 +232,9 @@ public class ViManager
             df = new DataFlavor("application/"
                     + cbName
                     + "; class=java.io.InputStream");
-        } catch (ClassNotFoundException ex) { ex.printStackTrace(); }
+        } catch (ClassNotFoundException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
 
         sfm.addFlavorForUnencodedNative(cbName, df);
         sfm.addUnencodedNativeForFlavor(df, cbName);
@@ -370,7 +375,7 @@ public class ViManager
             // If modal, and everything went well, then activeCommandEntry is
             // already NULL. But not modal, then it isn't null.
             Util.vim_beep();
-            ex.printStackTrace();
+            LOG.log(Level.SEVERE, null, ex);
             activeCommandEntry = null;
             Normal.resetCommand();
         }
@@ -938,12 +943,14 @@ public class ViManager
 
     static public void dumpStack(String msg)
     {
-        new IllegalStateException(msg).printStackTrace();
+        //new IllegalStateException(msg).printStackTrace();
+        LOG.log(Level.SEVERE, msg, new IllegalStateException());
     }
 
     static public void dumpStack()
     {
-        new IllegalStateException().printStackTrace();
+        //new IllegalStateException().printStackTrace();
+        LOG.log(Level.SEVERE, null, new IllegalStateException());
     }
 
     static public void setInsertModeKeymap(Keymap newInsertModeKeymap)
@@ -1046,7 +1053,7 @@ public class ViManager
                 try {
                     version[i] = Integer.parseInt(rev[i]);
                 } catch (NumberFormatException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.SEVERE, null, ex);
                     init(0, 0, 0, 0, 0);
                     return;
                 }
@@ -1080,7 +1087,7 @@ public class ViManager
                         for(int i = 0; i <= 2; i++)
                             version[i+3] = Integer.parseInt(rev[i]);
                     } catch (NumberFormatException ex) {
-                        ex.printStackTrace();
+                        LOG.log(Level.SEVERE, null, ex);
                     }
                 }
             }
@@ -1209,7 +1216,7 @@ public class ViManager
                     messageNumber = Integer.parseInt(m.group(1));
                     message = s.substring(m.end(0)+1); // +1 to skip the newline
                 } catch (NumberFormatException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.SEVERE, null, ex);
                 }
             }
             valid = true;
@@ -1279,9 +1286,9 @@ public class ViManager
                 URI uri = new URI("http://jvi.sourceforge.net/motd");
                 url = uri.toURL();
             } catch (MalformedURLException ex) {
-                ex.printStackTrace();
+                LOG.log(Level.SEVERE, null, ex);
             } catch (URISyntaxException ex) {
-                ex.printStackTrace();
+                LOG.log(Level.SEVERE, null, ex);
             }
             if(url == null)
                 return;
@@ -1354,9 +1361,7 @@ public class ViManager
                     copyTree(subTree);
                 }
             } catch (BackingStoreException ex) {
-                //Logger.getLogger(ViManager.class.getName())
-                //          .log(Level.SEVERE, null, ex);
-                ex.printStackTrace();
+                LOG.log(Level.SEVERE, null, ex);
             }
         }
 
@@ -1393,9 +1398,7 @@ public class ViManager
                     }
                 }
             } catch (BackingStoreException ex) {
-                //Logger.getLogger(ViManager.class.getName())
-                //              .log(Level.SEVERE, null, ex);
-                ex.printStackTrace();
+                LOG.log(Level.SEVERE, null, ex);
             }
             System.err.println("copy out");
         }
@@ -1426,9 +1429,7 @@ public class ViManager
                     }
                 }
             } catch (BackingStoreException ex) {
-                //Logger.getLogger(ViManager.class.getName())
-                //              .log(Level.SEVERE, null, ex);
-                ex.printStackTrace();
+                LOG.log(Level.SEVERE, null, ex);
             }
             System.err.println("copy out");
         }

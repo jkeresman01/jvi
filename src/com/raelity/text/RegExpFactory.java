@@ -23,6 +23,8 @@ package com.raelity.text;
 
 import java.util.Vector;
 import java.lang.reflect.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 //
 // NEEDSWORK: stevesoft fails when escape character is set
@@ -35,6 +37,7 @@ import java.lang.reflect.*;
  * @see RegExp
  */
 public class RegExpFactory {
+  private static Logger LOG = Logger.getLogger(RegExpFactory.class.getName());
   protected static Vector<String> reImp = new Vector<String>(5);
 
   static {
@@ -113,7 +116,7 @@ public class RegExpFactory {
     try {
       regexp = doCreate(true, pattern);
     } catch (RegExpPatternError e) {
-      e.printStackTrace();
+        LOG.log(Level.SEVERE, null, e);
 
       throw e;
     }
@@ -340,7 +343,7 @@ public class RegExpFactory {
     try {
       load(cls);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.log(Level.SEVERE, null, e);
 
       return;
     }
@@ -365,7 +368,7 @@ public class RegExpFactory {
       try {
 	re.compile(pattern);
       } catch (Throwable e) {
-	e.printStackTrace();
+        LOG.log(Level.SEVERE, null, e);
 
 	return;
       }
