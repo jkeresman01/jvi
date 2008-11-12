@@ -1,13 +1,3 @@
-/**
- * Title:        jVi<p>
- * Description:  A VI-VIM clone.
- * Use VIM as a model where applicable.<p>
- * Copyright:    Copyright (c) Ernie Rael<p>
- * Company:      Raelity Engineering<p>
- * @author Ernie Rael
- * @version 1.0
- */
-
 /*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -157,6 +147,11 @@ public class Search {
 
   static int getIncrSearchResultCode() {
       return incrSearchSucceed ? OK : FAIL;
+  }
+
+  // This is used to grab the pattern after search complete, for redoBuffer.
+  static String getLastPattern() {
+    return lastPattern;
   }
   
   /** doSearch() should only be called after inputSearchPattern() */
@@ -375,7 +370,7 @@ public class Search {
   /* type of the word motion being performed,
    * true implies capital motion (W, E) vs (w, e).
    */
-  private static boolean stype;
+  private static boolean funnyCharsAsWord;
 
   /**
    * cls() - returns the class of character at curwin->w_cursor
@@ -397,7 +392,7 @@ public class Search {
     //
     // If stype is non-zero, report these as class 1.
     //
-    return ( ! stype) ? 2 : 1;
+    return ( ! funnyCharsAsWord) ? 2 : 1;
   }
 
 
@@ -412,7 +407,7 @@ public class Search {
     int		i;
     boolean	last_line;
 
-    stype = type;
+    funnyCharsAsWord = type;
     while (--count >= 0) {
       sclass = cls();
 
@@ -467,7 +462,7 @@ public class Search {
   static int bck_word(int count, boolean type, boolean stop) {
     int		sclass;	    /* starting class */
 
-    stype = type;
+    funnyCharsAsWord = type;
     while (--count >= 0) {
       sclass = cls();
       if (Misc.dec_cursor() == -1)     /* started at start of file */
@@ -520,7 +515,7 @@ finished_block:
   static int end_word(int count, boolean type, boolean stop, boolean empty) {
     int		sclass;	    /* starting class */
 
-    stype = type;
+    funnyCharsAsWord = type;
     while (--count >= 0) {
       sclass = cls();
       if (Misc.inc_cursor() == -1)
@@ -577,7 +572,7 @@ finished:
     int		sclass;	    // starting class
     int		i;
 
-    stype = type;
+    funnyCharsAsWord = type;
     while (--count >= 0) {
       sclass = cls();
       if ((i = Misc.dec_cursor()) == -1)

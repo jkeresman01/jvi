@@ -84,6 +84,8 @@ public class TextUtil {
   /** replace control characters with something visible,
    * only handle \n for now. */
   public static String debugString(String s) {
+    if(s == null)
+        return "(null)";
     StringBuilder sb = new StringBuilder();
     for(int i = 0; i < s.length(); i++) {
       char c = s.charAt(i);

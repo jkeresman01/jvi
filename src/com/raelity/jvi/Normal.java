@@ -171,6 +171,14 @@ public class Normal {
     newChunk = true;
     willStartNewChunk();
     if(editBusy) {
+      if ( KeyBinding.isKeyDebug() ) {
+          System.err.println("resetCommand: EditBusy");
+      }
+      // Make sure redo buf is usable if edit interrupted
+      //    an alternative is to "GetChar.ResetRedobuff()",
+      //    instead of "App...; editCom...;", then no redo is possible
+      GetChar.AppendCharToRedobuff(ESC);
+      GetChar.editComplete();
       editBusy = false; // NEEDSWORK: what else
       finishupEdit();
     }
@@ -460,7 +468,7 @@ public class Normal {
     boolean	    flag = false;
     boolean	    type = false;	    /* type of operation */
     int		    dir = FORWARD;	    /* search direction */
-    CharBuf	    searchbuff = new CharBuf(); /* buffer for search string */
+    StringBuilder   searchbuff = new StringBuilder(); /* for search string */
     boolean	    dont_adjust_op_end = false;
     ViFPOS	    old_pos;		    /* cursor position before command */
     int		    old_col = G.curwin.w_curswant;
@@ -842,7 +850,7 @@ middle_code:
 	  case '?':
 	  case '/':
             if(ca.nchar != 0)
-                nv_search_finish(ca);
+                nv_search_finish(ca, searchbuff);
             else {
                 nv_search(ca, searchbuff, false);
                 return;
@@ -1123,6 +1131,9 @@ middle_code:
 	    /*
 	     * 11. Visual
 	     */
+	  case 0x1f & (int)('Q'):	// Ctrl
+            // Treat like Ctrl-V, so ^V is available for paste
+            ca.cmdchar = Util.ctrl('V');
 	  case 'v':
 	  case 'V':
 	  case 0x1f & (int)('V'):	// Ctrl
@@ -1276,7 +1287,7 @@ middle_code:
    * Handle an operator after visual mode or when the movement is finished
    */
   static void do_pending_operator(CMDARG cap,
-			   CharBuf searchbuff,
+			   StringBuilder searchbuff,
 			   MutableBoolean command_busy,
 			   int old_col,
 			   boolean gui_yank,
@@ -1332,8 +1343,9 @@ middle_code:
 	   * If 'cpoptions' does not contain 'r', insert the search
 	   * pattern to really repeat the same command.
 	   */
-	  if (Util.vim_strchr(G.p_cpo, CPO_REDO) == null)
-	    { GetChar.AppendToRedobuff(searchbuff.toString()); }
+	  if (Util.vim_strchr(G.p_cpo, CPO_REDO) == null) {
+            GetChar.AppendToRedobuff(searchbuff.toString());
+          }
 	  GetChar.AppendToRedobuff(NL_STR);
 	}
       }
@@ -1970,8 +1982,8 @@ middle_code:
   /**
    * Prepare for redo of any command.
    */
-  static private void prep_redo(int regname, int num,
-			 int cmd1, int cmd2, int cmd3, int cmd4) {
+  static private void prep_redo(char regname, int num,
+			 char cmd1, char cmd2, char cmd3, char cmd4) {
     GetChar.ResetRedobuff();
     if (regname != 0) {	/* yank from specified buffer */
       GetChar.AppendCharToRedobuff('"');
@@ -2407,7 +2419,7 @@ middle_code:
    * @return TRUE for "*" and "#" commands, indicating that the next search
    * should not set the pcmark.
    */
-  static private boolean nv_ident (CMDARG cap, CharBuf searchp)
+  static private boolean nv_ident (CMDARG cap, StringBuilder searchp)
                                throws NotSupportedException
   {
     do_xop("nv_ident");
@@ -2856,7 +2868,7 @@ middle_code:
    * directly without doing the finishing steps.
    */
   static private void nv_search(CMDARG cap,
-                                CharBuf searchp,
+                                StringBuilder searchp,
                                 boolean dont_set_mark) {
     do_xop("nv_search");
     
@@ -2871,7 +2883,7 @@ middle_code:
                                | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG);
   }
   
-  static private void nv_search_finish(CMDARG cap) {
+  static private void nv_search_finish(CMDARG cap, StringBuilder searchp) {
     do_xop("nv_search_finish");
     assert cap.nchar == K_X_INCR_SEARCH_DONE
            || cap.nchar == K_X_SEARCH_CANCEL
@@ -2896,6 +2908,9 @@ middle_code:
       i = Search.doSearch();
     else
       i = 0;
+
+    searchp.setLength(0);
+    searchp.append(Search.getLastPattern());
                         
     if(i == 0) {
       clearop(oap);
@@ -2904,6 +2919,9 @@ middle_code:
     }
     
     Options.newSearch();
+
+    // now that we've used/abused this field, clear it so prep_redo happy
+    cap.nchar = 0;
 
     return;
 
@@ -3191,7 +3209,12 @@ static private void nv_findpar(CMDARG cap, int dir)
     } else if (!checkclearopq(cap.oap)) {
       if (u_save_cursor() == OK) {
         Misc.beginInsertUndo();
-        Edit.edit('R', false, cap.count1);
+        try {
+          Edit.edit('R', false, cap.count1);
+        } finally {
+            if(!editBusy)
+              Misc.endInsertUndo();
+        }
       }
     }
   }
@@ -3505,7 +3528,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       //update_screenline();/* start the inversion */
   }
 
-  static private void nv_g_cmd(CMDARG cap, CharBuf searchbuff)
+  static private void nv_g_cmd(CMDARG cap, StringBuilder searchbuff)
   throws NotSupportedException {
     do_xop("nv_g_cmd");
     ViFPOS tpos;
@@ -3602,6 +3625,8 @@ static private void nv_findpar(CMDARG cap, int dir)
         break;
 
       case 'q':
+      case 'u':
+      case 'U':
         nv_operator(cap);
         break;
 
@@ -3917,7 +3942,12 @@ static private void nv_findpar(CMDARG cap, int dir)
       //clearopbeep(cap.oap);
     } else if (!checkclearopq(cap.oap) && u_save_cursor() == OK) {
       Misc.beginInsertUndo();
-      nv_edit_dispatch(cap);
+      try {
+        nv_edit_dispatch(cap);
+      } finally {
+        if(!editBusy)
+          Misc.endInsertUndo();
+      }
       return;
     }
     return;
@@ -4441,14 +4471,14 @@ static private void nv_findpar(CMDARG cap, int dir)
    * Get first operator command character.
    * Returns 'g' if there is another command character.
    */
-  static int get_op_char(int optype) {
+  static char get_op_char(int optype) {
       return opchars[optype].c1;
   }
 
   /**
    * Get second operator command character.
    */
-  static int get_extra_op_char(int optype) {
+  static char get_extra_op_char(int optype) {
       return opchars[optype].c2;
   }
 

@@ -158,6 +158,8 @@ public class Edit {
       } else {
         G.State = INSERT;
       }
+
+      GetChar.startInputModeRedobuff();
       
       Normal.clear_showcmd();
       
@@ -1176,7 +1178,7 @@ public class Edit {
       // Don't append the ESC for "r<CR>".
       //
       if (cmdchar != 'r' && cmdchar != 'v') {
-        GetChar.AppendToRedobuff(ESC_STR);
+        GetChar.AppendCharToRedobuff(ESC);
         GetChar.editComplete();
       }
       
@@ -1264,7 +1266,7 @@ public class Edit {
    * with vi.  But vi only supports ^T and ^D after an
    * autoindent, we support it everywhere.
    */
-  private static void ins_shift(int c, int lastc, int dir) {
+  private static void ins_shift(char c, int lastc, int dir) {
     stop_arrow();
     GetChar.AppendCharToRedobuff(c);
     
@@ -1292,7 +1294,7 @@ public class Edit {
     G.did_ai = false;
   }
   
-  private static void ins_shift_paren(int c, int dir) {
+  private static void ins_shift_paren(char c, int dir) {
     GetChar.AppendCharToRedobuff(c);
     int curindent = Misc.get_indent();
     int amount = Misc.findParen(G.curwin.w_cursor.getLine()-1,
@@ -1337,7 +1339,7 @@ public class Edit {
    * Handle Backspace, delete-word and delete-line in Insert mode.
    * @return TRUE when backspace was actually used.
    */
-  private static boolean ins_bs(int c,
+  private static boolean ins_bs(char c,
                                 int mode,
                                 MutableBoolean inserted_space_p)
   throws NotSupportedException {

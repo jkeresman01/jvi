@@ -1,13 +1,3 @@
-/**
- * Title:        jVi<p>
- * Description:  A VI-VIM clone.
- * Use VIM as a model where applicable.<p>
- * Copyright:    Copyright (c) Ernie Rael<p>
- * Company:      Raelity Engineering<p>
- * @author Ernie Rael
- * @version 1.0
- */
-
 /*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -275,7 +265,7 @@ public class GetChar {
     *************************************************************/
 
     String s = recordbuff.toString();
-    recordbuff = new BufferQueue();
+    recordbuff.setLength(0);
 
     return s;
   }
@@ -321,7 +311,7 @@ public class GetChar {
     markRedoTrackPosition(NUL);
     if (!handle_redo && !block_redo) {
       // old_redobuff = redobuff;
-      redobuff = new BufferQueue();
+      redobuff.setLength(0);
     }
   }
 
@@ -336,8 +326,7 @@ public class GetChar {
     }
   }
 
-  static void AppendCharToRedobuff(int c_) {
-    char c = (char)c_;
+  static void AppendCharToRedobuff(char c) {
     if (!handle_redo && !block_redo) {
       markRedoTrackPosition(c);
       redobuff.append(c);
@@ -350,6 +339,11 @@ public class GetChar {
     if (!handle_redo && !block_redo) {
       redobuff.append(n);
     }
+  }
+
+  static void startInputModeRedobuff() {
+    // NEEDSWORK: markRedoTrackPosition(START_INPUT_MODE);
+    initRedoTrackingPosition();
   }
 
   //
@@ -378,6 +372,9 @@ public class GetChar {
   //      (()))));|
   // this has gone out of bounds, from input mode.
   //
+  // out of bounds means that the span of the change contains characters that
+  // were there before editting started.
+  //
   // NOTES:
   //    - expectChar could be the actual char expected, else NUL
   //    - too complicated, if this needs much more tweaking,
@@ -387,6 +384,61 @@ public class GetChar {
   //      insertion point. They work when a character in entered, then moved
   //      to a point after the insertion stream.
   //
+  // NEEDSWORK:
+  //  - Need bug fix
+  //    If the file has
+  //        string.le()
+  //    and the caret is on the '(', and you enter input mode and enter "ng"
+  //    then code complete to
+  //        string.length()
+  //    This generates a remove of 'leng()' and an insert of length().
+  //    Want the redobuff to have '\b\bngth' or even 'th', but we end
+  //    up with '\b\b\b\blength' which backspaces over the insertion point.
+  //
+  //    Probably want to keep the '1i' separate, and only consider the
+  //    'ng'. We can see the leng in the document and the ng in the redobuf
+  //    and go from there. Need to add more structure to this process and
+  //    work with high level concepts,
+  //    e.g. substr(0,2) matches in document at pos
+  //    or substr(0,4) match doc/redo and returns position/count in redo
+  //    or somesuch...
+  //
+  //    Following shows the problem situation. BeforeLen is 4, but this goes
+  //    beyond the original insert point. Part of the problem is that the '1i'
+  //    is interpreted as part of what can be backspaced over
+  //        markRedoPosition OFF
+  //        initRedoTrackingPosition 1876 '1i'
+  //        CharAction: 'n' 6e(110) 0
+  //        markRedoPosition 1876 --> 1876 'n' '1i'
+  //        docInsert: pos 1876, 1, 'n'
+  //        docInsert MATCH expected 1876
+  //        CharAction: 'g' 67(103) 0
+  //        markRedoPosition 1877 --> 1877 'g' '1in'
+  //        docInsert: pos 1877, 1, 'g'
+  //        docInsert MATCH expected 1877
+  //        CharAction: REJECT: ' ' 20(32) 2
+  //        docRemove: pos 1874, 6, 'leng()'
+  //        docRemove NO MATCH, BeforeLen: 4 AfterString: '()'
+  //        docInsert: pos 1874, 8, 'length()'
+  //        docInsert: NO MATCH redoPosition 1878, redobuff 1ing[4] afterBuff [0]
+  //        docRemove: pos 1874, 4, '(null)'
+  //        docRemove MATCH: redoPosition 1878 --> 1874, length 4
+  //        docInsert MATCH REMOVE/EXTRA: 1874, beforeLen 4, '()'/'length'
+  //        KeyAction: ViEscapeKey: 1b(27) 0
+  //        markRedoPosition OFF
+  //        ...
+  //        CharAction: '.' 2e(46) 0
+  //        stuffbuff = '1inglength'
+  //
+  // NEEDSWORK:
+  //  - The idea behind initRedoTrackingPosition(), currently disabled,
+  //    If the file has
+  //        string.le()
+  //    and the caret is on the '(', and you enter input mode and start code
+  //    completion, this doesn't work because the redoTrackingPos is -1, but
+  //    if you enter 'n', then it works. It would probably be safe to record
+  //    the position when input mode is establish, rather than counting of the
+  //    first character input.
 
   private static int redoTrackPosition = -1;
   private static boolean expectChar;
@@ -406,6 +458,19 @@ public class GetChar {
 
   static void editComplete() {
     disableTrackingOneEdit = false;
+  }
+
+  private static void initRedoTrackingPosition() {
+    // disable this method for now, it doesn't do anything. see above
+    if(true)
+      return;
+
+    expectChar = false;
+    redoTrackPosition = G.curwin.getCaretPosition();
+    if(G.dbgRedo.value)
+      System.err.println(String.format("initRedoTrackingPosition %d '%s'",
+                                       redoTrackPosition,
+                                       TextUtil.debugString(redobuff.toString())));
   }
 
   private static void markRedoTrackPosition(char c) {
@@ -597,7 +662,8 @@ public class GetChar {
 
   private static void docRemoveInternal(int pos, int len, String removedText) {
     if(G.dbgRedo.value)
-      System.err.println("docRemove: pos " + pos + ", " + len);
+      System.err.println(String.format("docRemove: pos %d, %d, '%s'",
+                                  pos, len, TextUtil.debugString(removedText)));
     if(redoTrackPosition < 0 || !G.redoTrack.value || disableTrackingOneEdit)
       return;
     if(pos + len == redoTrackPosition) {
@@ -888,10 +954,10 @@ public class GetChar {
   // The various character queues
   //
 
-  private static BufferQueue stuffbuff = new BufferQueue();
-  private static BufferQueue redobuff = new BufferQueue();
-  private static BufferQueue recordbuff = new BufferQueue();
-  private static BufferQueue typebuf = new BufferQueue();
+  private static final BufferQueue stuffbuff = new BufferQueue();
+  private static final BufferQueue redobuff = new BufferQueue();
+  private static final BufferQueue recordbuff = new BufferQueue();
+  private static final BufferQueue typebuf = new BufferQueue();
 
   private static int last_recorded_len = 0;  // number of last recorded chars
   private static int redobuff_idx = 0;

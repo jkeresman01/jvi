@@ -683,10 +683,13 @@ public class DefaultBuffer extends Buffer {
             if(!isInsertMode())
                 return;
             String s = "";
+
+            // magic redo tracking
+            // things can get wierd in there...
             try {
                 s = getDoc().getText(e.getOffset(), e.getLength());
                 docInsert(e.getOffset(), s);
-            } catch (BadLocationException ex) {
+            } catch (Exception ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
         }
@@ -703,7 +706,14 @@ public class DefaultBuffer extends Buffer {
             // If not in insert mode, then no magic redo tracking
             if(!isInsertMode())
                 return;
-            docRemove(e.getOffset(), e.getLength(), getRemovedText(e));
+
+            // magic redo tracking
+            // things can get wierd in there...
+            try {
+                docRemove(e.getOffset(), e.getLength(), getRemovedText(e));
+            } catch (Exception ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
         }
     }
 
