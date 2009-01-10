@@ -260,6 +260,8 @@ public class Search {
         resetViewIncrementalSearch();
       else
         incrSearchSucceed = true;
+    } catch(Exception ex) {
+        LOG.log(Level.SEVERE, null, ex);
     } finally {
       Normal.v_updateVisualState();
       ViManager.setJViBusy(false);
