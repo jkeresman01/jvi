@@ -30,6 +30,7 @@ import javax.swing.event.DocumentListener;
 import com.raelity.text.*;
 import com.raelity.text.TextUtil.MySegment;
 
+import java.awt.EventQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AbstractDocument;
@@ -187,13 +188,22 @@ public class Search {
     ******************************/
   }
   
+  private static void laterDoIncrementalSearch() {
+    EventQueue.invokeLater(new Runnable() {
+      public void run()
+      {
+        doIncrementalSearch();
+      }
+    });
+  }
+
   private static class SearchListener implements DocumentListener {
     public void changedUpdate(DocumentEvent e) { }
     public void insertUpdate(DocumentEvent e) {
-      doIncrementalSearch();
+      laterDoIncrementalSearch();
     }
     public void removeUpdate(DocumentEvent e) {
-      doIncrementalSearch();
+      laterDoIncrementalSearch();
     }
   }
 
