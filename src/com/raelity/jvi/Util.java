@@ -72,6 +72,17 @@ public class Util {
     return s.substring(index);
   }
 
+  public static int vim_strchr(MySegment seg, int i, char c) {
+    int end = seg.offset + seg.count;
+    i += seg.offset;
+    for(; i < end; i++) {
+      if(seg.array[i] == c) {
+        return i - seg.offset;
+      }
+    }
+    return -1;
+  }
+
   public static final boolean isalnum(int regname) {
     return	regname >= '0' && regname <= '9'
     		|| regname >= 'a' && regname <= 'z'
@@ -189,6 +200,25 @@ public class Util {
   static void beep_flush() {
     GetChar.flush_buffers(false);
     vim_beep();
+  }
+
+  /**
+   * @param s1
+   * @param s2
+   * @param n this is ignored
+   * @return
+   */
+  static int STRNCMP(String s1, String s2, int n)
+  {
+    if(s1.length() > n)
+      s1 = s1.substring(0, n);
+    return s1.compareTo(s2);
+  }
+
+  static int STRNCMP(MySegment seg, int i, String s2, int n)
+  {
+    String s1 = seg.subSequence(i, seg.count).toString();
+    return STRNCMP(s1, s2, n);
   }
 }
 

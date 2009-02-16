@@ -115,7 +115,8 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     public final ViMark b_visual_start;
     public final ViMark b_visual_end;
     public char b_visual_mode;
-    public String b_p_mps; // used in nv_object
+    public String b_p_mps = "(:),{:},[:]"; // NEEDSWORK: make an option
+    public String b_p_qe = "\\"; // NEEDSWORK: make an option
 
     // start and end of an operator, also used for '[ and ']
     public final ViMark b_op_start;

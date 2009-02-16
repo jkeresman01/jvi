@@ -3024,55 +3024,33 @@ middle_code:
       }
     } else {	    // "%" : go to matching paren
       cap.oap.motion_type = MCHAR;
-      ViFPOS fpos = G.curwin.w_cursor.copy();
-      int endingOffset = fpos.getOffset(); // this assumes failture
       boolean usePlatform = G.p_pbm.value & ViManager.getPlatformFindMatch();
       if(usePlatform) {
+        ViFPOS fpos = G.curwin.w_cursor.copy();
+        int endingOffset = fpos.getOffset(); // this assumes failture
         G.curwin.findMatch();
         endingOffset = G.curwin.getCaretPosition();
-      } else {
-        int firstbraceOffset = fpos.getOffset();
-        char c;
-        // NEEDSWORK: use getLineSegment for performance
-        
-        // move forward to the next brace character
-        while(true) {
-          c = Util.getCharAt(firstbraceOffset);
-          if(Util.vim_strchr("{}[]()", c) != null || c == '\n') {
-            break;
-          }
-          firstbraceOffset++;
+
+        if(endingOffset == fpos.getOffset()) {
+          clearopbeep(cap.oap);
+        } else {
+          MarkOps.setpcmark(fpos);
+          G.curwin.w_set_curswant = true;
+          adjust_for_sel(cap);
         }
-        if(c != '\n') {
-          G.curwin.setCaretPosition(firstbraceOffset);
-          G.curwin.findMatch();
-          endingOffset = G.curwin.getCaretPosition();
-        } else
-          endingOffset = firstbraceOffset;
-        if(firstbraceOffset == endingOffset) {
-          // failed
-          G.curwin.setCaretPosition(fpos.getOffset());
-          endingOffset = fpos.getOffset();
+      } else {
+        // Use the internal findmatch!
+        ViFPOS fpos = Search.findmatch(cap.oap, NUL);
+        if (fpos == null) {
+          clearopbeep(cap.oap);
+        } else {
+          MarkOps.setpcmark();
+          G.curwin.w_cursor.set(fpos);
+          //G.curwin.setCaretPosition(fpos.getOffset());
+          G.curwin.w_set_curswant = true;
+          adjust_for_sel(cap);
         }
       }
-      if(endingOffset == fpos.getOffset()) {
-	clearopbeep(cap.oap);
-      } else {
-	MarkOps.setpcmark(fpos);
-        G.curwin.w_set_curswant = true;
-	adjust_for_sel(cap);
-      }
-      /* **************************************************
-      ViFPOS fpos = Search.findmatch(cap.oap, NUL);
-      if (fpos == null) {
-	clearopbeep(cap.oap);
-      } else {
-	MarkOps.setpcmark();
-        G.curwin.setCaretPosition(fpos.getOffset());
-        G.curwin.setWSetCurswant(true);
-	adjust_for_sel(cap);
-      }
-      ****************************************************/
     }
   }
 
@@ -3879,7 +3857,7 @@ static private void nv_findpar(CMDARG cap, int dir)
               pp = G.VIsual;
 
           if(pp.getColumn() > 0)
-              pp.setColumn(pp.getColumn() - 1);
+              pp.decColumn();
           else if(pp.getLine() > 1)
           {
             int line = pp.getLine() - 1;
@@ -4001,36 +3979,42 @@ static private void nv_findpar(CMDARG cap, int dir)
 
       switch (cap.nchar)
       {
-//         case 'w': /* "aw" = a word */
-//             flag = current_word(cap.oap, cap.count1, include, false);
-//             break;
-//         case 'W': /* "aW" = a WORD */
-//             flag = current_word(cap.oap, cap.count1, include, true);
-//             break;
-//         case 'b': /* "ab" = a braces block */
-//         case '(':
-//         case ')':
-//             flag = current_block(cap.oap, cap.count1, include, '(', ')');
-//             break;
-//         case 'B': /* "aB" = a Brackets block */
-//         case '{':
-//         case '}':
-//             flag = current_block(cap.oap, cap.count1, include, '{', '}');
-//             break;
-//         case '[': /* "a[" = a [] block */
-//         case ']':
-//             flag = current_block(cap.oap, cap.count1, include, '[', ']');
-//             break;
-//         case '<': /* "a<" = a <> block */
-//         case '>':
-//             flag = current_block(cap.oap, cap.count1, include, '<', '>');
-//             break;
-         case 'p': /* "ap" = a paragraph */
-             flag = Search.current_par(cap.oap, cap.count1, include, 'p');
-             break;
+        case 'w': /* "aw" = a word */
+            flag = Search.current_word(cap.oap, cap.count1, include, false);
+            break;
+        case 'W': /* "aW" = a WORD */
+            flag = Search.current_word(cap.oap, cap.count1, include, true);
+            break;
+        case 'b': /* "ab" = a braces block */
+        case '(':
+        case ')':
+            flag = Search.current_block(cap.oap, cap.count1, include, '(', ')');
+            break;
+        case 'B': /* "aB" = a Brackets block */
+        case '{':
+        case '}':
+            flag = Search.current_block(cap.oap, cap.count1, include, '{', '}');
+            break;
+        case '[': /* "a[" = a [] block */
+        case ']':
+            flag = Search.current_block(cap.oap, cap.count1, include, '[', ']');
+            break;
+        case '<': /* "a<" = a <> block */
+        case '>':
+            flag = Search.current_block(cap.oap, cap.count1, include, '<', '>');
+            break;
+        case 'p': /* "ap" = a paragraph */
+            flag = Search.current_par(cap.oap, cap.count1, include, 'p');
+            break;
 //         case 's': /* "as" = a sentence */
 //             flag = current_sent(cap.oap, cap.count1, include);
 //             break;
+	case '"': /* "a"" = a double quoted string */
+	case '\'': /* "a'" = a single quoted string */
+	case '`': /* "a`" = a backtick quoted string */
+		flag = Search.current_quote(cap.oap, cap.count1, include,
+								  cap.nchar);
+		break;
 //             //#if 0­  /* TODO */
 //             //­       case 'S': /* "aS" = a section */
 //             //­       case 'f': /* "af" = a filename */

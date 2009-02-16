@@ -31,6 +31,10 @@ package com.raelity.jvi;
 
 public interface Constants {
 
+  public static final int FALSE = 0;
+  public static final int TRUE = 1;
+  public static final int MAYBE = 2;
+
   // for <i>dir</i>
   public static final int FORWARD = 1;
   // for <i>dir</i>
@@ -198,6 +202,12 @@ public interface Constants {
   static final int SEARCH_MARK  =0x200;  // set previous context mark
   static final int SEARCH_KEEP  =0x400;  // keep previous search pattern
 
+  // Values for flags argument for findmatchlimit()
+  static final int FM_BACKWARD	= 0x01;	// search backwards
+  static final int FM_FORWARD	= 0x02;	// search forwards
+  static final int FM_BLOCKSTOP	= 0x04;	// stop at start/end of block
+  static final int FM_SKIPCOMM	= 0x08;	// skip comments
+
   //
   // Values for find_ident_under_cursor()
   //
@@ -223,18 +233,19 @@ public interface Constants {
   static final char CPO_KOFFSET	= 'K';	/* don't wait for key code in mappings */
   static final char CPO_LITERAL	= 'l';	/* take char after backslash in [] literal */
   static final char CPO_LISTWM	= 'L';	/* 'list' changes wrapmargin */
-  static final char CPO_SHOWMATCH	= 'm';
+  static final char CPO_SHOWMATCH = 'm';
+  static final char CPO_MATCHBSL  = 'M'; /* "%" ignores use of backslashes */
   static final char CPO_LINEOFF	= 'o';
   static final char CPO_OVERNEW	= 'O';	/* silently overwrite new file */
   static final char CPO_LISP	= 'p';	/* 'lisp' indenting */
   static final char CPO_REDO	= 'r';
   static final char CPO_BUFOPT	= 's';
-  static final char CPO_BUFOPTGLOB	= 'S';
+  static final char CPO_BUFOPTGLOB = 'S';
   static final char CPO_TAGPAT	= 't';
   static final char CPO_UNDO	= 'u';	/* "u" undoes itself */
-  static final char CPO_CW		= 'w';	/* "cw" only changes one blank */
+  static final char CPO_CW	= 'w';	/* "cw" only changes one blank */
   static final char CPO_FWRITE	= 'W';	/* "w!" doesn't overwrite readonly files */
-  static final char CPO_ESC		= 'x';
+  static final char CPO_ESC	= 'x';
   static final char CPO_YANK	= 'y';
   static final char CPO_DOLLAR	= '$';
   static final char CPO_FILTER	= '!';

@@ -778,9 +778,9 @@ public class Misc implements ClipboardOwner {
    * incV7(lp)
    *<p>
    * Increment the line pointer 'lp' crossing line boundaries as necessary.
-   * Return 1 when going to the next line.
-   * Return 2 when moving forward onto a newline at the end of the line).
-   * Return -1 when at the end of file.
+   * Return 1 when going to the next line.<br/>
+   * Return 2 when moving forward onto a newline at the end of the line).<br/>
+   * Return -1 when at the end of file.<br/>
    * Return 0 otherwise.
    * </p>
    */
@@ -811,6 +811,10 @@ public class Misc implements ClipboardOwner {
       return 1;
     }
     return -1;
+  }
+
+  static int inc_cursorV7() {
+    return incV7(G.curwin.w_cursor);
   }
 
   /**
@@ -2535,7 +2539,7 @@ public class Misc implements ClipboardOwner {
         getvcol(G.curwin, cursor, null, null, mi1);
         col = mi1.getValue();
 
-        cursor.setColumn(cursor.getColumn()+1);
+        cursor.incColumn();
         ++col;
       } else {
         getvcol(G.curwin, cursor, mi1, null, mi2);

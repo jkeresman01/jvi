@@ -511,6 +511,16 @@ public class DefaultBuffer extends Buffer {
         public void setLine(int line) {
             throw new UnsupportedOperationException();
         }
+
+        public void decColumn()
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        public void incColumn()
+        {
+            throw new UnsupportedOperationException();
+        }
         
         @Override
         public String toString() {

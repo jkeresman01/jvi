@@ -53,6 +53,12 @@ class FPOS extends ViFPOS.abstractFPOS
         this(G.curbuf);
     }
 
+    FPOS(int line, int col)
+    {
+        this(G.curbuf);
+        set(line, col);
+    }
+
     /**
      * after construction, referencing line 1, column 0.
      */
