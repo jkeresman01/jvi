@@ -78,11 +78,12 @@ private static int decl(ViFPOS pos) { return Misc.decl(pos); }
 private static char gchar_pos(ViFPOS pos) { return Misc.gchar_pos(pos); }
 private static char gchar_cursor() { return Misc.gchar_cursor(); }
 private static MySegment ml_get(int lnum) { return Util.ml_get(lnum); }
-private static int STRNCMP(String s1, String s2, int n) {
-  return Util.STRNCMP(s1, s2, n);
+private static MySegment ml_get_curline() { return Util.ml_get_curline(); }
+private static int strncmp(String s1, String s2, int n) {
+  return Util.strncmp(s1, s2, n);
 }
-private static int STRNCMP(MySegment seg, int i, String s2, int n) {
-  return Util.STRNCMP(seg, i, s2, n);
+private static int strncmp(MySegment seg, int i, String s2, int n) {
+  return Util.strncmp(seg, i, s2, n);
 }
 private static String vim_strchr(String s, char c) {
   return Util.vim_strchr(s, c);
@@ -2077,9 +2078,9 @@ static ViFPOS findmatchlimit(OPARG oap, char initc, int flags, int maxtravel)
                         && linep.charAt(ptr) == '#' && pos_col <= ptr)
 		{
 		    ptr = skipwhite(linep, ptr + 1);
-		    if (   STRNCMP(linep, ptr, "if", 2) == 0
-			|| STRNCMP(linep, ptr, "endif", 5) == 0
-			|| STRNCMP(linep, ptr, "el", 2) == 0)
+		    if (   strncmp(linep, ptr, "if", 2) == 0
+			|| strncmp(linep, ptr, "endif", 5) == 0
+			|| strncmp(linep, ptr, "el", 2) == 0)
 			hash_dir = 1;
 		}
 
@@ -2192,10 +2193,10 @@ static ViFPOS findmatchlimit(OPARG oap, char initc, int flags, int maxtravel)
 	    if (initc != '#')
 	    {
 		ptr = skipwhite(linep, skipwhite(linep, 0) + 1);
-		if (STRNCMP(linep, ptr, "if", 2) == 0
-                        || STRNCMP(linep, ptr, "el", 2) == 0)
+		if (strncmp(linep, ptr, "if", 2) == 0
+                        || strncmp(linep, ptr, "el", 2) == 0)
 		    hash_dir = 1;
-		else if (STRNCMP(linep, ptr, "endif", 5) == 0)
+		else if (strncmp(linep, ptr, "endif", 5) == 0)
 		    hash_dir = -1;
 		else
 		    return null;
@@ -2220,14 +2221,14 @@ static ViFPOS findmatchlimit(OPARG oap, char initc, int flags, int maxtravel)
 		ptr = skipwhite(linep, ptr + 1);
 		if (hash_dir > 0)
 		{
-		    if (STRNCMP(linep, ptr, "if", 2) == 0)
+		    if (strncmp(linep, ptr, "if", 2) == 0)
 			count++;
-		    else if (STRNCMP(linep, ptr, "el", 2) == 0)
+		    else if (strncmp(linep, ptr, "el", 2) == 0)
 		    {
 			if (count == 0)
                             return new FPOS(pos_lnum, pos_col);
 		    }
-		    else if (STRNCMP(linep, ptr, "endif", 5) == 0)
+		    else if (strncmp(linep, ptr, "endif", 5) == 0)
 		    {
 			if (count == 0)
                             return new FPOS(pos_lnum, pos_col);
@@ -2236,18 +2237,18 @@ static ViFPOS findmatchlimit(OPARG oap, char initc, int flags, int maxtravel)
 		}
 		else
 		{
-		    if (STRNCMP(linep, ptr, "if", 2) == 0)
+		    if (strncmp(linep, ptr, "if", 2) == 0)
 		    {
 			if (count == 0)
                             return new FPOS(pos_lnum, pos_col);
 			count--;
 		    }
-		    else if (initc == '#' && STRNCMP(linep, ptr, "el", 2) == 0)
+		    else if (initc == '#' && strncmp(linep, ptr, "el", 2) == 0)
 		    {
 			if (count == 0)
                             return new FPOS(pos_lnum, pos_col);
 		    }
-		    else if (STRNCMP(linep, ptr, "endif", 5) == 0)
+		    else if (strncmp(linep, ptr, "endif", 5) == 0)
 			count++;
 		}
 	    }

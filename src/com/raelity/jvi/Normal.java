@@ -988,8 +988,8 @@ middle_code:
 
 	  case 0x1f & (int)('A'):	    /* add to number */	// Ctrl
 	  case 0x1f & (int)('X'):	    /* subtract from number */	// Ctrl
-	    notSup("add/sub");
-	    if (!checkclearopq(oap) && do_addsub((int)ca.cmdchar, ca.count1) == OK)
+	    if (!checkclearopq(oap)
+                    && Misc.do_addsub(ca.cmdchar, ca.count1) == OK)
 	      prep_redo_cmd(ca);
 	    break;
 
@@ -4242,7 +4242,7 @@ static private void nv_findpar(CMDARG cap, int dir)
   // static int start_redo(int count, boolean type) { do_op("start_redo");return OK; }
   // static void u_undo(int count) {do_op("u_undo");}
   // static void u_redo(int count) {do_op("u_redo");}
-  static int do_addsub(int command, int Prenum1) { do_op("do_addsub");return OK; }
+  //static int do_addsub(int command, int Prenum1) { do_op("do_addsub");return OK; }
   //static void stuffReadbuff(String s) {do_op("stuffReadbuff");}
   //static void do_window(int nchar, int Prenum) {do_op("do_window");}
   // void do_pending_operator(CMDARG cap, CharBuf searchbuf,

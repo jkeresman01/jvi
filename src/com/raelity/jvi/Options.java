@@ -131,6 +131,10 @@ public final class Options {
   public static final String textWidth = "viTextWidth";
   public static final String showMode = "viShowMode";
   public static final String showCommand = "viShowCommand";
+
+  public static final String nrFormats = "viNrFormats";
+  public static final String matchPairs = "viMatchPairs";
+  public static final String quoteEscape = "viQuoteEscape";
   
   public static final String modeline = "viModeline";
   public static final String modelines = "viModelines";
@@ -423,11 +427,18 @@ public final class Options {
     setupOptionDesc(modifyList, tabStop, "'tabstop' 'ts'",
             "Number of spaces that a <Tab> in the file counts for.");
 
-    /*G.b_p_ts = */createIntegerOption(textWidth, 79);
+    /*G.b_p_xx = */createIntegerOption(textWidth, 79);
     setupOptionDesc(modifyList, textWidth, "'textwidth' 'tw'",
             "This option currently only used in conjunction with the"
             + " 'gq' and 'Q' format command. This value is substituted"
             + " for " + twMagic + " in formatprg option string.");
+
+    /*G.b_p_nf = */createStringOption(nrFormats, "octal,hex");
+    setupOptionDesc(modifyList, nrFormats, "'nrformats' 'nf'",
+            "Defines bases considered for numbers with the"
+            + " 'CTRL-A' and 'CTRL-X' commands for adding to and subtracting"
+            + " from a number respectively. Value is comma separated list;"
+            + " 'octal,hex,alpha' is all possible values.");
     
     /////////////////////////////////////////////////////////////////////
     //

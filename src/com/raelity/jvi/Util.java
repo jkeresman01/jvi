@@ -94,6 +94,10 @@ public class Util {
     		|| c >= 'A' && c <= 'Z';
   }
 
+  public static final boolean ascii_isalpha(char c) {
+    return	   c < 0x7f && isalpha(c);
+  }
+
   public static boolean islower(char c) {
     return 'a' <= c && c <= 'z';
   }
@@ -118,6 +122,27 @@ public class Util {
 
   public static boolean isdigit(char c) {
     return '0' <= c && c <= '9';
+  }
+
+  /**
+   * Variant of isxdigit() that can handle characters > 0x100.
+   * We don't use isxdigit() here, because on some systems it also considers
+   * superscript 1 to be a digit.
+   */
+  public static boolean
+  isxdigit(char c)
+  {
+      return (c >= '0' && c <= '9')
+  	|| (c >= 'a' && c <= 'f')
+  	|| (c >= 'A' && c <= 'F');
+  }
+
+  // #define CharOrd(x)	((x) < 'a' ? (x) - 'A' : (x) - 'a')
+  // #define CharOrdLow(x)	((x) - 'a')
+  // #define CharOrdUp(x)	((x) - 'A')
+  // #define ROT13(c, a)	(((((c) - (a)) + 13) % 26) + (a))
+  public static int CharOrd(char c) {
+    return c < 'a' ? c - 'A' : c - 'a';
   }
 
   static boolean vim_isprintc(char c) { return false; }
@@ -208,18 +233,150 @@ public class Util {
    * @param n this is ignored
    * @return
    */
-  static int STRNCMP(String s1, String s2, int n)
+  static int strncmp(String s1, String s2, int n)
   {
     if(s1.length() > n)
       s1 = s1.substring(0, n);
     return s1.compareTo(s2);
   }
 
-  static int STRNCMP(MySegment seg, int i, String s2, int n)
+  static int strncmp(MySegment seg, int i, String s2, int n)
   {
     String s1 = seg.subSequence(i, seg.count).toString();
-    return STRNCMP(s1, s2, n);
+    return strncmp(s1, s2, n);
   }
+
+/*
+ * Convert a string into a long and/or unsigned long, taking care of
+ * hexadecimal and octal numbers.  Accepts a '-' sign.
+ * If "hexp" is not null, returns a flag to indicate the type of the number:
+ *  0	    decimal
+ *  '0'	    octal
+ *  'X'	    hex
+ *  'x'	    hex
+ * If "len" is not null, the length of the number in characters is returned.
+ * If "nptr" is not null, the signed result is returned in it.
+ * If "unptr" is not null, the unsigned result is returned in it.
+ * If "unptr" is not null, the unsigned result is returned in it.
+ * If "dooct" is non-zero recognize octal numbers, when > 1 always assume
+ * octal number.
+ * If "dohex" is non-zero recognize hex numbers, when > 1 always assume
+ * hex number.
+ */
+//    void
+//vim_str2nr(start, hexp, len, dooct, dohex, nptr, unptr)
+static void
+vim_str2nr(MySegment seg, int start,
+           MutableInt hexp, MutableInt len,
+           int dooct, int dohex,
+           MutableInt nptr, MutableInt unptr)
+//    char_u		*start;
+//    int			*hexp;	    /* return: type of number 0 = decimal, 'x'
+//				       or 'X' is hex, '0' = octal */
+//    int			*len;	    /* return: detected length of number */
+//    int			dooct;	    /* recognize octal number */
+//    int			dohex;	    /* recognize hex number */
+//    long		*nptr;	    /* return: signed result */
+//    unsigned long	*unptr;	    /* return: unsigned result */
+{
+    int	    	    ptr = start;
+    int		    hex = 0;		/* default is decimal */
+    boolean	    negative = false;
+    int             un = 0;
+    int		    n;
+
+    if (seg.charAt(ptr+0) == '-')
+    {
+	negative = true;
+	++ptr;
+    }
+
+    /* Recognize hex and octal. */
+    if (seg.charAt(ptr+0) == '0' && seg.charAt(ptr+1) != '8' && seg.charAt(ptr+1) != '9')
+    {
+	hex = seg.charAt(ptr+1);
+	if (dohex != 0 && (hex == 'X' || hex == 'x') && isxdigit(seg.charAt(ptr+2)))
+	    ptr += 2;			/* hexadecimal */
+	else
+	{
+	    hex = 0;			/* default is decimal */
+	    if (dooct != 0)
+	    {
+		/* Don't interpret "0", "08" or "0129" as octal. */
+		for (n = 1; isdigit(seg.charAt(ptr+n)); ++n)
+		{
+		    if (seg.charAt(ptr+n) > '7')
+		    {
+			hex = 0;	/* can't be octal */
+			break;
+		    }
+		    if (seg.charAt(ptr+n) > '0')
+			hex = '0';	/* assume octal */
+		}
+	    }
+	}
+    }
+
+    /*
+     * Do the string-to-numeric conversion "manually" to avoid sscanf quirks.
+     */
+    if (hex == '0' || dooct > 1)
+    {
+	/* octal */
+	while ('0' <= seg.charAt(ptr) && seg.charAt(ptr) <= '7')
+	{
+	    un = 8 * un + (seg.charAt(ptr) - '0');
+	    ++ptr;
+	}
+    }
+    else if (hex != 0 || dohex > 1)
+    {
+	/* hex */
+	while (isxdigit(seg.charAt(ptr)))
+	{
+	    un = 16 * un + hex2nr(seg.charAt(ptr));
+	    ++ptr;
+	}
+    }
+    else
+    {
+	/* decimal */
+	while (isdigit(seg.charAt(ptr)))
+	{
+	    un = 10 * un + (seg.charAt(ptr) - '0');
+	    ++ptr;
+	}
+    }
+
+    if (hexp != null)
+	hexp.setValue(hex); //*hexp = hex;
+    if (len != null)
+	len.setValue(ptr - start); //*len = (int)(ptr - start);
+    if (nptr != null)
+    {
+	if (negative)   /* account for leading '-' for decimal numbers */
+	    nptr.setValue(-un); //*nptr = -(long)un;
+	else
+	    nptr.setValue(un);//*nptr = (long)un;
+    }
+    if (unptr != null)
+	unptr.setValue(un);//*unptr = un;
+}
+
+/**
+ * Return the value of a single hex character.
+ * Only valid when the argument is '0' - '9', 'A' - 'F' or 'a' - 'f'.
+ */
+public static int
+hex2nr(char c)
+{
+    if (c >= 'a' && c <= 'f')
+	return c - 'a' + 10;
+    if (c >= 'A' && c <= 'F')
+	return c - 'A' + 10;
+    return c - '0';
+}
+
 }
 
 // vi:set sw=2 ts=8:

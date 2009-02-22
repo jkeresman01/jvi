@@ -299,6 +299,14 @@ public class OptionsBeanBase extends SimpleBeanInfo {
         return ViManager.getReleaseString();
     }
 
+    public void setViNrFormats(String arg)  throws PropertyVetoException {
+        put(Options.nrFormats, arg);
+    }
+
+    public String getViNrFormats() {
+	return getString(Options.nrFormats);
+    }
+
     public void setViCoordSkip(boolean arg)  throws PropertyVetoException {
         put(Options.coordSkip, arg);
     }

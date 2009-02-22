@@ -84,6 +84,11 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         b_p_sw = Options.getOption(Options.shiftWidth).getInteger();
         b_p_et = Options.getOption(Options.expandTabs).getBoolean();
         b_p_tw = Options.getOption(Options.textWidth).getInteger();
+        b_p_nf = Options.getOption(Options.nrFormats).getString();
+
+        //b_p_mps = Options.getOption(Options.matchPairs).getString();
+        //b_p_qe = Options.getOption(Options.quoteEscape).getString();
+
         //
         // modeline
         //
@@ -115,8 +120,11 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     public final ViMark b_visual_start;
     public final ViMark b_visual_end;
     public char b_visual_mode;
-    public String b_p_mps = "(:),{:},[:]"; // NEEDSWORK: make an option
+    public String b_p_nf;
+
     public String b_p_qe = "\\"; // NEEDSWORK: make an option
+    // NOTE: Following meainingful only when internal findmatch is used.
+    public String b_p_mps = "(:),{:},[:]"; // NEEDSWORK: make an option
 
     // start and end of an operator, also used for '[ and ']
     public final ViMark b_op_start;
