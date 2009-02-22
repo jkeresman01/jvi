@@ -4006,9 +4006,9 @@ static private void nv_findpar(CMDARG cap, int dir)
         case 'p': /* "ap" = a paragraph */
             flag = Search.current_par(cap.oap, cap.count1, include, 'p');
             break;
-//         case 's': /* "as" = a sentence */
-//             flag = current_sent(cap.oap, cap.count1, include);
-//             break;
+         case 's': /* "as" = a sentence */
+             flag = Search.current_sent(cap.oap, cap.count1, include);
+             break;
 	case '"': /* "a"" = a double quoted string */
 	case '\'': /* "a'" = a single quoted string */
 	case '`': /* "a`" = a backtick quoted string */
