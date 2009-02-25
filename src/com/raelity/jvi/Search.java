@@ -71,12 +71,16 @@ public class Search {
   private static String lastSubstitution;
 
   // These bounce routines to make porting easier
-private static int inc_cursorV7() { return Misc.inc_cursorV7(); }
-private static int inclV7(ViFPOS pos) { return Misc.inclV7(pos); }
+//Misc
 private static int dec_cursor() { return Misc.dec_cursor(); }
 private static int decl(ViFPOS pos) { return Misc.decl(pos); }
 private static char gchar_pos(ViFPOS pos) { return Misc.gchar_pos(pos); }
 private static char gchar_cursor() { return Misc.gchar_cursor(); }
+private static int inc_cursorV7() { return Misc.inc_cursorV7(); }
+private static int inclV7(ViFPOS pos) { return Misc.inclV7(pos); }
+private static int skipwhite(MySegment seg, int idx) { return Misc.skipwhite(seg, idx); }
+private static boolean vim_iswhite(char c) { return Misc.vim_iswhite(c); }
+
 private static MySegment ml_get(int lnum) { return Util.ml_get(lnum); }
 private static MySegment ml_get_curline() { return Util.ml_get_curline(); }
 private static int strncmp(String s1, String s2, int n) {
@@ -87,10 +91,6 @@ private static int strncmp(MySegment seg, int i, String s2, int n) {
 }
 private static String vim_strchr(String s, char c) {
   return Util.vim_strchr(s, c);
-}
-private static boolean vim_iswhite(char c) { return Misc.vim_iswhite(c); }
-private static int skipwhite(MySegment seg, int idx) {
-    return Misc.skipwhite(seg, idx);
 }
 private static boolean equalpos(ViFPOS p1, ViFPOS p2) {
   return p1.equals(p2);

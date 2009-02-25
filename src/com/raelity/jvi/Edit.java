@@ -155,7 +155,12 @@ public class Edit {
       
       if(cmdchar == 'R') {
         G.State = REPLACE;
-      } else {
+      }
+//      NEVER ENTER VREPLACE
+//      else if (cmdchar == 'V' || cmdchar == 'v') {
+//        G.State = VREPLACE;
+//      }
+      else {
         G.State = INSERT;
       }
 
@@ -301,21 +306,17 @@ public class Edit {
             // need_redraw = TRUE;
             break;
             
-          /*
             // delete word before the cursor
           case 0x1f & (int)('W'):	// Ctrl
             did_backspace = ins_bs(c, BACKSPACE_WORD, inserted_space);
-            Normal.notImp("backspace_word");
             // need_redraw = TRUE;
             break;
            
             // delete all inserted text in current line
           case 0x1f & (int)('U'):	// Ctrl
             did_backspace = ins_bs(c, BACKSPACE_LINE, inserted_space);
-            Normal.notImp("backspace_line");
             // need_redraw = TRUE;
             break;
-          */
            
           case K_HOME:
             // case K_KHOME:
@@ -870,7 +871,7 @@ public class Edit {
        //ai_col = 0;
         assert(G.State != VREPLACE);
         if (G.State == VREPLACE) {
-          // orig_line_count = curbuf->b_ml.ml_line_count;
+          // G.orig_line_count = curbuf->b_ml.ml_line_count;
           // vr_lines_changed = 1;
           // vr_virtcol = MAXCOL;
         }
@@ -1333,79 +1334,303 @@ public class Edit {
     // #ifdef SMARTINDENT ... #endif
     GetChar.AppendCharToRedobuff(K_DEL);
   }
-  
-  
-  /**
-   * Handle Backspace, delete-word and delete-line in Insert mode.
-   * @return TRUE when backspace was actually used.
-   */
-  private static boolean ins_bs(char c,
-                                int mode,
-                                MutableBoolean inserted_space_p)
-  throws NotSupportedException {
-    Normal.do_xop("ins_bs");
-    
-    ViFPOS cursor = G.curwin.w_cursor;
-    
-    // can't delete anything in an empty file
-    // can't backup past first character in buffer
-    // can't backup past starting point unless 'backspace' > 1
-    // can backup to a previous line if 'backspace' == 0
-    if(   Util.bufempty()  // also ifdef RIGHTLEFT then next only if !revins_on
-       || cursor.getLine() == 1 && cursor.getColumn() <= 0
-       || (!Options.can_bs(BS_START)
-           && (   arrow_used
-               || (   cursor.getLine() == Insstart.getLine()
-                   && cursor.getColumn() <=Insstart.getColumn())))
-       || (!Options.can_bs(BS_INDENT) && !arrow_used && G.ai_col > 0
-                                  && cursor.getColumn() <= G.ai_col)
-       || (!Options.can_bs(BS_EOL) && cursor.getColumn() == 0)
-    ) {
-      Util.vim_beep();
-      return false;
+
+/**
+ * Handle Backspace, delete-word and delete-line in Insert mode.
+ * Return true when backspace was actually used.
+ */
+private static boolean
+ins_bs(char c, int mode, MutableBoolean inserted_space_p)
+{
+    int   	lnum;
+    char	cc;
+    int		temp = 0;	    /* init for GCC */
+    boolean     tBool = false;
+    int 	mincol;
+    boolean	did_backspace = false;
+    boolean	in_indent;
+    int		oldState;
+
+    /*
+     * can't delete anything in an empty file
+     * can't backup past first character in buffer
+     * can't backup past starting point unless 'backspace' > 1
+     * can backup to a previous line if 'backspace' == 0
+     */
+    if (   bufempty()
+        || (
+//#ifdef RIGHTLEFT...
+      ((G.curwin.w_cursor.getLine() == 1 && G.curwin.w_cursor.getColumn() <= 0)
+	|| (!can_bs(BS_START)
+	    && (arrow_used
+	        || (G.curwin.w_cursor.getLine() == Insstart.getLine()
+	    	&& G.curwin.w_cursor.getColumn() <= Insstart.getColumn())))
+	|| (!can_bs(BS_INDENT) && !arrow_used && G.ai_col > 0
+	    		 && G.curwin.w_cursor.getColumn() <= G.ai_col)
+	|| (!can_bs(BS_EOL) && G.curwin.w_cursor.getColumn() == 0))))
+    {
+	vim_beep();
+	return false;
     }
 
     stop_arrow();
-    // ....
-    
-    // It's a little strange to put backspaces into the redo
-    // buffer, but it makes auto-indent a lot easier to deal
-    // with.
-    GetChar.AppendCharToRedobuff(c);
-    
-    //
-    // delete newline!
-    //
-    if(cursor.getColumn() <= 0) {
-      G.curwin.deletePreviousChar();
-      // NEEDSWORK: backspace over newline. bunch of logic in this branch...
-    } else {
-      // NEEDSWORK: backspace complications
-      
-      Misc.dec_cursor();
-      
-      // NEEDSWORK: only handle backspace char
-      
-      if (G.State == REPLACE || G.State == VREPLACE) {
-        replace_do_bs();
-      } else  { /* State != REPLACE && State != VREPLACE */
-        Misc.del_char(false);
-      }
-      // Just a single backspace?:
-      // if (mode == BACKSPACE_CHAR) break;
-    }
-    
-    
-    // If deleted before the insertion point, adjust it
-    if(cursor.getLine() == Insstart.getLine()
-    && cursor.getColumn() < Insstart.getColumn()) {
-      Insstart = cursor.copy();
-    }
+    in_indent = false; //inindent(0); NEEDSWORK: how can this be handled
+//#ifdef CINDENT
+//    if (in_indent)
+//	can_cindent = false;
+//#endif
+//#ifdef COMMENTS
+//    end_comment_pending = NUL;	/* After BS, don't auto-end comment */
+//#endif
+//#ifdef RIGHTLEFT...
 
-    G.did_ai = false;
+    /*
+     * delete newline!
+     */
+    if (G.curwin.w_cursor.getColumn() <= 0)
+    {
+	lnum = Insstart.getLine();
+	if (G.curwin.w_cursor.getLine() == Insstart.getLine()
+//#ifdef RIGHTLEFT...
+				    )
+	{
+//	    if (u_save((linenr_t)(G.curwin.w_cursor.getLine() - 2),
+//			       (linenr_t)(G.curwin.w_cursor.getLine() + 1)) == FAIL)
+//		return false;
+	    Insstart.decLine();
+	    Insstart.setColumn(MAXCOL);
+	}
+	/*
+	 * In replace mode:
+	 * cc < 0: NL was inserted, delete it
+	 * cc >= 0: NL was replaced, put original characters back
+	 */
+	cc = '\uffff';
+	if (G.State == REPLACE || G.State == VREPLACE)
+	    cc = replace_pop();	    /* returns -1 if NL was inserted */
+	/*
+	 * In replace mode, in the line we started replacing, we only move the
+	 * cursor.
+	 */
+	if ((G.State == REPLACE || G.State == VREPLACE)
+			&& G.curwin.w_cursor.getLine() <= lnum)
+	{
+	    dec_cursor();
+	}
+	else
+	{
+	    if (G.State != VREPLACE
+                 // SINCE NEVER VREPLACE, don't need following
+		 //  || G.curwin.w_cursor.getLine() > G.orig_line_count
+            )
+	    {
+		temp = gchar_cursor();	/* remember current char */
+		G.curwin.w_cursor.decLine();
+		do_join(false, true);
+		//redraw_later(VALID_TO_CURSCHAR);
+		if (temp == NUL && gchar_cursor() != NUL)
+		    G.curwin.w_cursor.incColumn();
+	    }
+	    else
+		dec_cursor();
 
-    return true;
-  }
+	    /*
+	     * In REPLACE mode we have to put back the text that was replace
+	     * by the NL. On the replace stack is first a NUL-terminated
+	     * sequence of characters that were deleted and then the
+	     * characters that NL replaced.
+	     */
+	    if (G.State == REPLACE || G.State == VREPLACE)
+	    {
+		/*
+		 * Do the next ins_char() in NORMAL state, to
+		 * prevent ins_char() from replacing characters and
+		 * avoiding showmatch().
+		 */
+		oldState = G.State;
+		G.State = NORMAL;
+		/*
+		 * restore characters (blanks) deleted after cursor
+		 */
+		while (cc > 0 && cc != '\uffff')
+		{
+		    temp = G.curwin.w_cursor.getColumn();
+		    ins_char(cc);
+		    G.curwin.w_cursor.setColumn(temp);
+		    cc = replace_pop();
+		}
+		/* restore the characters that NL replaced */
+		replace_pop_ins();
+		G.State = oldState;
+	    }
+	}
+	G.did_ai = false;
+    }
+    else
+    {
+	/*
+	 * Delete character(s) before the cursor.
+	 */
+//#ifdef RIGHTLEFT...
+	mincol = 0;
+						/* keep indent */
+        // NEEDSWORK: for now b_p_ai is always false, so don't need following
+//	if (mode == BACKSPACE_LINE && G.curbuf.b_p_ai != 0
+////#ifdef RIGHTLEFT...
+//			    )
+//	{
+//	    temp = G.curwin.w_cursor.getColumn();
+//	    beginline(BL_WHITE);
+//	    if (G.curwin.w_cursor.getColumn() < temp)
+//		mincol = G.curwin.w_cursor.getColumn();
+//	    G.curwin.w_cursor.setColumn(temp);
+//	}
+
+//	/*
+//	 * Handle deleting one 'shiftwidth' or 'softtabstop'.
+//	 */
+//        //****** ml_get_cursor() is pointer to cursor position ********
+//	if (	   mode == BACKSPACE_CHAR
+//		&& ((p_sta && in_indent)
+//		    || (G.curbuf.b_p_sts
+//			&& (*(ml_get_cursor() - 1) == TAB
+//			    || (*(ml_get_cursor() - 1) == ' '
+//				&& (!*inserted_space_p
+//				    || arrow_used))))))
+//	{
+//	    int		ts;
+//	    int		vcol;
+//	    int		want_vcol;
+//	    int		extra = 0;
+//
+//	    *inserted_space_p = false;
+//	    if (p_sta)
+//		ts = G.curbuf.b_p_sw;
+//	    else
+//		ts = G.curbuf.b_p_sts;
+//	    /* compute the virtual column where we want to be */
+//	    getvcol(curwin, &G.curwin.w_cursor, &vcol, null, null);
+//	    want_vcol = ((vcol - 1) / ts) * ts;
+//	    /* delete characters until we are at or before want_vcol */
+//	    while ((int)vcol > want_vcol
+//		    && (cc = *(ml_get_cursor() - 1), vim_iswhite(cc)))
+//	    {
+//		dec_cursor();
+//		/* TODO: calling getvcol() each time is slow */
+//		getvcol(curwin, &G.curwin.w_cursor, &vcol, null, null);
+//		if (G.State == REPLACE || G.State == VREPLACE)
+//		{
+//		    /* Don't delete characters before the insert point when in
+//		     * Replace mode */
+//		    if (G.curwin.w_cursor.getLine() != Insstart.getLine()
+//			|| G.curwin.w_cursor.getColumn() >= Insstart.getColumn())
+//		    {
+////#IF 0	/* what was this for?  It causes problems when sw != ts. */
+////			if (G.State == REPLACE && (int)vcol < want_vcol)
+////			{
+////			    (void)del_char(false);
+////			    extra = 2;	/* don't pop too much */
+////			}
+////			else
+////#ENDIF
+//			    replace_do_bs();
+//		    }
+//		}
+//		else
+//		    del_char(false);
+//	    }
+//
+//	    /* insert extra spaces until we are at want_vcol */
+//	    while ((int)vcol < want_vcol)
+//	    {
+//		/* Remember the first char we inserted */
+//		if (G.curwin.w_cursor.getLine() == Insstart.getLine()
+//				   && G.curwin.w_cursor.getColumn() < Insstart.getColumn())
+//		    Insstart.setColumn(G.curwin.w_cursor.getColumn());
+//
+//		if (G.State == VREPLACE)
+//		    ins_char(' ');
+//		else
+//		{
+//		    //ins_str((char_u *)" ");
+//                    G.curbuf.insertText(G.curwin.w_cursor.getOffset(), " ");
+//		    if (G.State == REPLACE && extra <= 1)
+//		    {
+//			if (extra)
+//			    replace_push_off(NUL);
+//			else
+//			    replace_push(NUL);
+//		    }
+//		    if (extra == 2)
+//			extra = 1;
+//		}
+//		vcol++;
+//	    }
+//	}
+//
+	/*
+	 * Delete upto starting point, start of line or previous word.
+	 */
+//	else      // NOTE
+        do
+	{
+//#ifdef RIGHTLEFT...
+		dec_cursor();
+
+	    /* start of word? */
+	    if (mode == BACKSPACE_WORD && !vim_isspace(gchar_cursor()))
+	    {
+		mode = BACKSPACE_WORD_NOT_SPACE;
+		tBool = vim_iswordc(gchar_cursor());
+	    }
+	    /* end of word? */
+	    else if (mode == BACKSPACE_WORD_NOT_SPACE
+		    && (vim_isspace(cc = gchar_cursor())
+			    || vim_iswordc(cc) != tBool))
+	    {
+//#ifdef RIGHTLEFT...
+		    inc_cursor();
+//#ifdef RIGHTLEFT...
+		break;
+	    }
+	    if (G.State == REPLACE || G.State == VREPLACE)
+		replace_do_bs();
+	    else  /* State != REPLACE && State != VREPLACE */
+	    {
+		del_char(false);
+//#ifdef RIGHTLEFT...
+	    }
+	    /* Just a single backspace?: */
+	    if (mode == BACKSPACE_CHAR)
+		break;
+	} while (
+//#ifdef RIGHTLEFT...
+		(G.curwin.w_cursor.getColumn() > mincol
+		 && (G.curwin.w_cursor.getLine() != Insstart.getLine()
+		     || G.curwin.w_cursor.getColumn() != Insstart.getColumn())));
+	did_backspace = true;
+    }
+//#ifdef SMARTINDENT
+//    did_si = false;
+//    can_si = false;
+//    can_si_back = false;
+//#endif
+    if (G.curwin.w_cursor.getColumn() <= 1)
+	G.did_ai = false;
+    /*
+     * It's a little strange to put backspaces into the redo
+     * buffer, but it makes auto-indent a lot easier to deal
+     * with.
+     */
+    AppendCharToRedobuff(c);
+
+    /* If deleted before the insertion point, adjust it */
+    if (G.curwin.w_cursor.getLine() == Insstart.getLine()
+		   && G.curwin.w_cursor.getColumn() < Insstart.getColumn())
+	Insstart.setColumn(G.curwin.w_cursor.getColumn());
+
+    return did_backspace;
+}
   
   /**
    * Handle CR or NL in insert mode.
@@ -1649,6 +1874,63 @@ public class Edit {
     }
     return c;
   }
+
+  // These bounce routines to make porting easier
+//Misc
+private static int dec_cursor() { return Misc.dec_cursor(); }
+private static int decl(ViFPOS pos) { return Misc.decl(pos); }
+private static int del_char(boolean f) { return Misc.del_char(f); }
+private static int do_join(boolean insert_space, boolean redraw) { return Misc.do_join(insert_space, redraw); }
+private static char gchar_pos(ViFPOS pos) { return Misc.gchar_pos(pos); }
+private static char gchar_cursor() { return Misc.gchar_cursor(); }
+private static int inc_cursor() { return Misc.inc_cursor(); }
+private static int inc_cursorV7() { return Misc.inc_cursorV7(); }
+private static int inclV7(ViFPOS pos) { return Misc.inclV7(pos); }
+private static void ins_char(char c) { Misc.ins_char(c); }
+private static int skipwhite(MySegment seg, int idx) { return Misc.skipwhite(seg, idx); }
+private static boolean vim_iswhite(char c) { return Misc.vim_iswhite(c); }
+private static boolean vim_iswordc(char c) { return Misc.vim_iswordc(c); }
+
+// Util
+private static boolean ascii_isalpha(char c) { return Util.ascii_isalpha(c); }
+private static void beep_flush() { Util.beep_flush(); }
+private static boolean bufempty() { return Util.bufempty(); }
+private static int CharOrd(char c) { return Util.CharOrd(c); }
+private static boolean isalpha(char c) { return Util.isalpha(c); }
+private static boolean isdigit(char c) {return Util.isdigit(c); }
+private static boolean isupper(char c) { return Util.isupper(c); }
+private static MySegment ml_get(int lnum) { return Util.ml_get(lnum); }
+private static MySegment ml_get_curline() { return Util.ml_get_curline(); }
+private static int strncmp(String s1, String s2, int n) { return Util.strncmp(s1, s2, n); }
+private static int strncmp(MySegment seg, int i, String s2, int n) { return Util.strncmp(seg, i, s2, n); }
+private static void vim_beep() { Util.vim_beep(); }
+private static boolean vim_isdigit(char c) {return Util.isdigit(c); }
+public static boolean vim_isspace(char x) { return Util.vim_isspace(x); }
+private static boolean vim_isxdigit(char c) { return Util.isxdigit(c); }
+private static String vim_strchr(String s, char c) { return Util.vim_strchr(s, c); }
+
+private static void vim_str2nr(MySegment seg, int start,
+                               MutableInt pHex, MutableInt pLength,
+                               int dooct, int dohex,
+                               MutableInt pN, MutableInt pUn)
+{ Util.vim_str2nr(seg, start, pHex, pLength, dooct, dohex, pN, pUn); }
+
+// GetChar
+private static void AppendCharToRedobuff(char c) { GetChar.AppendCharToRedobuff(c); }
+
+// Normal
+private static int u_save_cursor() { return Normal.u_save_cursor(); }
+
+// Options
+private static boolean can_bs(int what) { return Options.can_bs(what); }
+
+// cursor compare
+private static boolean equalpos(ViFPOS p1, ViFPOS p2) {
+  return p1.equals(p2);
+}
+private static boolean lt(ViFPOS p1, ViFPOS p2) {
+  return p1.compareTo(p2) < 0;
+}
 }
 
 // vi:set sw=2 ts=8:

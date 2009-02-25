@@ -51,52 +51,6 @@ import java.util.logging.Logger;
 public class Misc implements ClipboardOwner {
   private static Logger LOG = Logger.getLogger(Misc.class.getName());
   static final ClipboardOwner clipOwner = new Misc();
-
-  // These bounce routines to make porting easier
-//Misc
-//private static int dec_cursor() { return Misc.dec_cursor(); }
-//private static int decl(ViFPOS pos) { return Misc.decl(pos); }
-//private static int inc_cursorV7() { return Misc.inc_cursorV7(); }
-//private static int inclV7(ViFPOS pos) { return Misc.inclV7(pos); }
-//private static char gchar_pos(ViFPOS pos) { return Misc.gchar_pos(pos); }
-//private static char gchar_cursor() { return Misc.gchar_cursor(); }
-//private static boolean vim_iswhite(char c) { return Misc.vim_iswhite(c); }
-//private static int skipwhite(MySegment seg, int idx) {
-//    return Misc.skipwhite(seg, idx);
-//}
-
-// Util
-private static void beep_flush() { Util.beep_flush(); }
-
-private static MySegment ml_get(int lnum) { return Util.ml_get(lnum); }
-private static MySegment ml_get_curline() { return Util.ml_get_curline(); }
-private static boolean ascii_isalpha(char c) { return Util.ascii_isalpha(c); }
-private static int CharOrd(char c) { return Util.CharOrd(c); }
-private static boolean isalpha(char c) { return Util.isalpha(c); }
-private static boolean isdigit(char c) {return Util.isdigit(c); }
-private static boolean isupper(char c) { return Util.isupper(c); }
-private static int strncmp(String s1, String s2, int n) { return Util.strncmp(s1, s2, n); }
-private static int strncmp(MySegment seg, int i, String s2, int n) { return Util.strncmp(seg, i, s2, n); }
-private static boolean vim_isdigit(char c) {return Util.isdigit(c); }
-private static boolean vim_isxdigit(char c) { return Util.isxdigit(c); }
-private static String vim_strchr(String s, char c) { return Util.vim_strchr(s, c); }
-
-private static void vim_str2nr(MySegment seg, int start,
-                               MutableInt pHex, MutableInt pLength,
-                               int dooct, int dohex,
-                               MutableInt pN, MutableInt pUn)
-{ Util.vim_str2nr(seg, start, pHex, pLength, dooct, dohex, pN, pUn); }
-
-// Normal
-private static int u_save_cursor() { return Normal.u_save_cursor(); }
-
-// cursor compare
-private static boolean equalpos(ViFPOS p1, ViFPOS p2) {
-  return p1.equals(p2);
-}
-private static boolean lt(ViFPOS p1, ViFPOS p2) {
-  return p1.compareTo(p2) < 0;
-}
   //////////////////////////////////////////////////////////////////
   //
   // "misc1.c"
@@ -4954,6 +4908,63 @@ op_do_addsub(char command, int Prenum1)
     
     G.State = oldstate;
   }
+
+  // These bounce routines to make porting easier
+//Misc
+//private static int dec_cursor() { return Misc.dec_cursor(); }
+//private static int decl(ViFPOS pos) { return Misc.decl(pos); }
+//private static int del_char(boolean f) { return Misc.del_char(f); }
+//private static int do_join(boolean insert_space, boolean redraw) { return Misc.do_join(insert_space, redraw); }
+//private static char gchar_pos(ViFPOS pos) { return Misc.gchar_pos(pos); }
+//private static char gchar_cursor() { return Misc.gchar_cursor(); }
+//private static int inc_cursor() { return Misc.inc_cursor(); }
+//private static int inc_cursorV7() { return Misc.inc_cursorV7(); }
+//private static int inclV7(ViFPOS pos) { return Misc.inclV7(pos); }
+//private static void ins_char(char c) { Misc.ins_char(c); }
+//private static int skipwhite(MySegment seg, int idx) { return Misc.skipwhite(seg, idx); }
+//private static boolean vim_iswhite(char c) { return Misc.vim_iswhite(c); }
+//private static boolean vim_iswordc(char c) { return Misc.vim_iswordc(c); }
+
+// Util
+private static boolean ascii_isalpha(char c) { return Util.ascii_isalpha(c); }
+private static void beep_flush() { Util.beep_flush(); }
+private static boolean bufempty() { return Util.bufempty(); }
+private static int CharOrd(char c) { return Util.CharOrd(c); }
+private static boolean isalpha(char c) { return Util.isalpha(c); }
+private static boolean isdigit(char c) {return Util.isdigit(c); }
+private static boolean isupper(char c) { return Util.isupper(c); }
+private static MySegment ml_get(int lnum) { return Util.ml_get(lnum); }
+private static MySegment ml_get_curline() { return Util.ml_get_curline(); }
+private static int strncmp(String s1, String s2, int n) { return Util.strncmp(s1, s2, n); }
+private static int strncmp(MySegment seg, int i, String s2, int n) { return Util.strncmp(seg, i, s2, n); }
+private static void vim_beep() { Util.vim_beep(); }
+private static boolean vim_isdigit(char c) {return Util.isdigit(c); }
+public static boolean vim_isspace(char x) { return Util.vim_isspace(x); }
+private static boolean vim_isxdigit(char c) { return Util.isxdigit(c); }
+private static String vim_strchr(String s, char c) { return Util.vim_strchr(s, c); }
+
+private static void vim_str2nr(MySegment seg, int start,
+                               MutableInt pHex, MutableInt pLength,
+                               int dooct, int dohex,
+                               MutableInt pN, MutableInt pUn)
+{ Util.vim_str2nr(seg, start, pHex, pLength, dooct, dohex, pN, pUn); }
+
+// GetChar
+private static void AppendCharToRedobuff(char c) { GetChar.AppendCharToRedobuff(c); }
+
+// Normal
+private static int u_save_cursor() { return Normal.u_save_cursor(); }
+
+// Options
+private static boolean can_bs(int what) { return Options.can_bs(what); }
+
+// cursor compare
+private static boolean equalpos(ViFPOS p1, ViFPOS p2) {
+  return p1.equals(p2);
+}
+private static boolean lt(ViFPOS p1, ViFPOS p2) {
+  return p1.compareTo(p2) < 0;
+}
 }
 
 // vi: sw=2 ts=8

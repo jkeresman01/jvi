@@ -67,9 +67,14 @@ public interface ViFPOS extends Comparable<ViFPOS>
      */
     public void setColumn(int col);
 
+
     public void incColumn();
 
     public void decColumn();
+
+    public void incLine();
+
+    public void decLine();
 
     /**
      * Set the line, leave the column unchanged.
@@ -107,6 +112,16 @@ public interface ViFPOS extends Comparable<ViFPOS>
         public void decColumn()
         {
             set(getLine(), getColumn()-1);
+        }
+
+        public void incLine()
+        {
+            set(getLine()+1, getColumn());
+        }
+
+        public void decLine()
+        {
+            set(getLine()-1, getColumn());
         }
 
         // Should not reference instance variables lnum or col directly,

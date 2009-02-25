@@ -83,6 +83,15 @@ public class Util {
     return -1;
   }
 
+  /**
+   * Vim has its own isspace() function, because on some machines isspace()
+   * can't handle characters above 128.
+   */
+  public static boolean vim_isspace(char x)
+  {
+      return ((x >= 9 && x <= 13) || x == ' ');
+  }
+
   public static final boolean isalnum(int regname) {
     return	regname >= '0' && regname <= '9'
     		|| regname >= 'a' && regname <= 'z'

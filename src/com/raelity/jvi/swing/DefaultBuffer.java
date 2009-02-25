@@ -521,6 +521,16 @@ public class DefaultBuffer extends Buffer {
         {
             throw new UnsupportedOperationException();
         }
+
+        public void decLine()
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        public void incLine()
+        {
+            throw new UnsupportedOperationException();
+        }
         
         @Override
         public String toString() {
