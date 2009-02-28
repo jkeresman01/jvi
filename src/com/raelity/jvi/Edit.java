@@ -1,13 +1,3 @@
-/**
- * Title:        jVi<p>
- * Description:  A VI-VIM clone.
- * Use VIM as a model where applicable.<p>
- * Copyright:    Copyright (c) Ernie Rael<p>
- * Company:      Raelity Engineering<p>
- * @author Ernie Rael
- * @version 1.0
- */
-
 /*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -68,6 +58,22 @@ public class Edit {
   static int did_restart_edit;
   static MutableInt count;
   static MutableBoolean inserted_space;
+
+  /**
+   * There are commands in edit mode, such as ^R, that
+   * require one or more arugment chars.
+   */
+  static interface HandleNextChar {
+    // Invoked to handle the next char of a multichar command,
+    // if zero returned then return, else
+    // do regular processing on returned char.
+    char go(char c); 
+  }
+  static HandleNextChar handleNextChar;
+  static void reset() {
+    handleNextChar = null;
+    G.editPutchar = 0;
+  }
 
   static boolean canEdit() {
     return canEdit(G.curwin, G.curbuf, G.curwin.getCaretPosition());
@@ -195,6 +201,11 @@ public class Edit {
     }
     
     c = cmdchar;        // when actually doing editting cmdchar is the input.
+    if(handleNextChar != null) {
+      c = handleNextChar.go(c);
+      if(c == NUL)
+        return;
+    }
     
     // whole lot of stuff deleted
     //	if (c == Ctrl('V') || c == Ctrl('Q'))

@@ -85,8 +85,10 @@ public class ViCaretDelegate
             try {
                 Rectangle r = component.getUI().modelToView(
                         component, dot);
-                g.setColor(component.getCaretColor());
-                g.setXORMode(component.getBackground());
+                Rectangle r00 = null;
+                char c = cursor.getEditPutchar();
+                if(c != 0)
+                    r00 = (Rectangle) r.clone();
 
                 int h02;
                 int cursorShape = ViCursor.SHAPE_BLOCK;
@@ -112,6 +114,17 @@ public class ViCaretDelegate
                         r.width = percent(blockWidth + 1, cursor.getPercentage());
                         break;
                 }
+                // only allow this if SHAPE_VER
+                if(c != 0 && cursorShape == ViCursor.SHAPE_VER) {
+                    g.setColor(component.getBackground());
+                    g.fillRect(r00.x + r.width, r00.y,
+                               blockWidth - r.width, fm.getAscent());
+                    g.setColor(component.getForeground());
+                    g.drawString(String.valueOf(c),
+                                 r00.x + r.width, r00.y + fm.getAscent());
+                }
+                g.setColor(component.getCaretColor());
+                g.setXORMode(component.getBackground());
                 g.fillRect(r.x, r.y, r.width, r.height);
                 g.setPaintMode();
 
@@ -121,7 +134,7 @@ public class ViCaretDelegate
         }
     }
 
-    private int percent(int v, int percentage)
+    private static int percent(int v, int percentage)
     {
         // NEEDSWORK: percent use int only
         v = (int) (((v * (float) percentage) / 100) + .5);

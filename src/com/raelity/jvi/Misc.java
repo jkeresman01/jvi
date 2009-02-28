@@ -992,7 +992,7 @@ public class Misc implements ClipboardOwner {
   }
 
 
-  static ViCursor[] cursor_table;
+  private static ViCursor[] cursor_table;
 
   /**
    * Parse options for cursor shapes.
@@ -1000,7 +1000,7 @@ public class Misc implements ClipboardOwner {
    * <li>actually parse something rather than hardcode shapes
    * </ul>
    */
-  static void parse_guicursor() {
+  private static void parse_guicursor() {
     // Set them up according to the defaults.
     Cursor block = new Cursor(SHAPE_BLOCK, 0, 0);
     Cursor ver25 = new Cursor(SHAPE_VER, 25, -1);

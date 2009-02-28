@@ -31,7 +31,6 @@ package com.raelity.jvi.swing;
 
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
-import com.raelity.jvi.ViCursor;
 import com.raelity.jvi.*;
 
 public interface ViCaret extends Caret {

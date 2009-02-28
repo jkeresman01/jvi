@@ -179,6 +179,7 @@ public class Normal {
       //    instead of "App...; editCom...;", then no redo is possible
       GetChar.AppendCharToRedobuff(ESC);
       GetChar.editComplete();
+      Edit.reset();
       editBusy = false; // NEEDSWORK: what else
       finishupEdit();
     }

@@ -122,8 +122,9 @@ class FPOS extends ViFPOS.abstractFPOS
         }
 
         if (adjustedColumn >= 0) {
-            ViManager.dumpStack("line " + line + ", column " + column
-                                + ", length " + (endOffset - startOffset));
+            if(column != Constants.MAXCOL)
+                ViManager.dumpStack("line " + line + ", column " + column
+                                    + ", length " + (endOffset - startOffset));
             column = adjustedColumn;
         }
 

@@ -178,6 +178,12 @@ public class G
     /* The visual area is remembered for redo */
     public static boolean redo_VIsual_busy = false;
 
+    /**
+     * editPutchar, when not zero, overwrites on screen the character
+     * at the cursor.
+     */
+    static char editPutchar;
+
    /**
     * This flag is used to make auto-indent work right on lines where only a
     * <RETURN> or <ESC> is typed. It is set when an auto-indent is done, and

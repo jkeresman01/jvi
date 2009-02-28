@@ -1,13 +1,3 @@
-/**
- * Title:        jVi<p>
- * Description:  A VI-VIM clone.
- * Use VIM as a model where applicable.<p>
- * Copyright:    Copyright (c) Ernie Rael<p>
- * Company:      Raelity Engineering<p>
- * @author Ernie Rael
- * @version 1.0
- */
-
 /*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -37,6 +27,11 @@ public interface ViCursor {
   static final int SHAPE_VER	= Constants.SHAPE_VER;// vertical bar cursor
   /** one of the SHAPE_ defined */
   public int getShape();
+
+  /** jVi may overwrite, on screen, the char at the cursor.
+   * return '\0' if no overwrite, else the char to display
+   */
+  public char getEditPutchar();
 
   /** percentage of cell for bar */
   public int getPercentage();
