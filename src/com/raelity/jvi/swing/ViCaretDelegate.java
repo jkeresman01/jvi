@@ -86,15 +86,15 @@ public class ViCaretDelegate
                 Rectangle r = component.getUI().modelToView(
                         component, dot);
                 Rectangle r00 = null;
-                char c = cursor.getEditPutchar();
-                if(c != 0)
-                    r00 = (Rectangle) r.clone();
-
-                int h02;
+                char c = 0;
                 int cursorShape = ViCursor.SHAPE_BLOCK;
                 if (cursor != null) {
                     cursorShape = cursor.getShape();
+                    c = cursor.getEditPutchar();
                 }
+                if(c != 0)
+                    r00 = (Rectangle) r.clone();
+                int h02;
                 switch (cursorShape) {
                     case ViCursor.SHAPE_BLOCK:
                         r.width = blockWidth;
