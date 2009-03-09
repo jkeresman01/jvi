@@ -9,6 +9,7 @@
 
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.Options.EditOptionsControl;
 import com.raelity.jvi.ViManager;
 import java.awt.Image;
 import java.beans.BeanDescriptor;
@@ -27,14 +28,23 @@ import java.util.prefs.Preferences;
  *
  * @author erra
  */
-public class KeyBindingBean  extends SimpleBeanInfo {
+public class KeyBindingBean  extends SimpleBeanInfo
+        implements EditOptionsControl {
   private static Logger LOG = Logger.getLogger(KeyBindingBean.class.getName());
+
+    public void cancel()
+    {
+    }
+
+    public void clear()
+    {
+    }
     
     //
     // The BeanInfo is embedded in the same class
     //
     @Override
-public BeanDescriptor getBeanDescriptor() {
+    public BeanDescriptor getBeanDescriptor() {
         return new BeanDescriptor(KeyBindingBean.class) {
             @Override
             public String getDisplayName() {

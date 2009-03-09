@@ -1,13 +1,3 @@
-/**
- * Title:        jVi<p>
- * Description:  A VI-VIM clone.
- * Use VIM as a model where applicable.<p>
- * Copyright:    Copyright (c) Ernie Rael<p>
- * Company:      Raelity Engineering<p>
- * @author Ernie Rael
- * @version 1.0
- */
-
 /*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -75,6 +65,13 @@ public final class Options {
   private static Options options;
   private static PropertyChangeSupport pcs
                         = new PropertyChangeSupport(getOptions());
+
+    public static interface EditOptionsControl {
+        // start clean
+        void clear();
+        // cancel an inprogress edit
+        void cancel();
+    }
   
   static Options getOptions() {
       if(options == null) {

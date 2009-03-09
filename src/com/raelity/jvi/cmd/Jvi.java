@@ -31,6 +31,7 @@
 
 package com.raelity.jvi.cmd;
 
+import com.l2fprod.common.propertysheet.PropertySheetDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -44,12 +45,12 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.prefs.BackingStoreException;
 
 import com.raelity.jvi.ColonCommands;
 import com.raelity.jvi.ViManager;
 import com.raelity.jvi.swing.DefaultViFactory;
+import com.raelity.jvi.swing.OptionsPanel;
 import com.raelity.jvi.swing.StatusDisplay;
 import com.raelity.jvi.swing.TextView;
 
@@ -221,32 +222,16 @@ public class Jvi
             SwingUtilities.invokeAndWait(new Runnable() {
                     public void run() {
                         m_frame1 = makeFrame();
-                        {
-                            // If the Options dialog is available then set it up.
-                            try {
-                                final Class clazz;
-                                clazz = Class.forName(
-                                        "com.raelity.jvi.cmd.OptionsDialog");
-                                if(clazz != null) {
-                                    m_frame1.optionsButton
-                                    .addActionListener(new ActionListener() {
-                                        Method showDialog = clazz.getMethod("show", java.awt.Frame.class);
-                                        public void actionPerformed(ActionEvent e) {
-                                            try {
-                                                showDialog.invoke(null, m_frame1);
-                                            } catch (Exception ex) {
-                                                ex.printStackTrace();
-                                            }
-                                        }
-                                    });
+                        m_frame1.optionsButton.addActionListener(
+                        new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                try {
+                                    showOptionsDialog(m_frame1);
+                                } catch (Exception ex) {
+                                    ex.printStackTrace();
                                 }
-                            } catch ( Exception ex ) {
-                                ex.printStackTrace();
-                                //System.err.println( ex.getClass().getName()
-                                //        + " thrown by main() [1]:  "
-                                //        + ex.getMessage() );
                             }
-                        }
+                        });
                         setupFrame(m_frame1);
                         JEditorPane editor1 = m_frame1.getEditor();
                         if ( make2Frames ) {
@@ -280,6 +265,69 @@ public class Jvi
             //        + " thrown by main() [3]:  " + e.getMessage() );
         }
         // wait for frame to exit, so JUnitTest won't kill it
+    }
+
+    static private MyPropertySheetDialog dialog;
+    static private OptionsPanel optionsPanel;
+
+    static class MyPropertySheetDialog extends PropertySheetDialog {
+        OptionsPanel op;
+
+        // NEEDSWORK: move this to Jvi command.
+        public MyPropertySheetDialog(OptionsPanel op,
+                                     Frame owner,
+                                     String title) throws HeadlessException
+        {
+            super(owner, title);
+            this.op = op;
+        }
+
+        @Override
+        public void cancel()
+        {
+            super.cancel();
+            optionsPanel.cancel();
+        }
+
+        @Override
+        public void ok()
+        {
+            super.ok();
+        }
+
+    }
+
+    @SuppressWarnings("static-access")
+    static void showOptionsDialog(Frame owner) {
+        // if(dialog == null) {
+        //     dialog = new JDialog(owner, "jVi Options");
+        //     dialog.add("Center", getTabbedOptions());
+        //     dialog.pack();
+        // }
+        // dialog.setVisible(true);
+        if(dialog == null) {
+            optionsPanel = new OptionsPanel(new OptionsPanel.ChangeNotify() {
+                public void change()
+                {
+                    System.err.println("Property Change");
+                }
+            });
+            dialog = new MyPropertySheetDialog(optionsPanel, owner, "jVi Options");
+            dialog.getBanner().setVisible(false);
+            dialog.getContentPane().add("Center", optionsPanel);
+
+            // dialog.getButtonPane().add(new JButton("Default ALL"));
+            // dialog.getButtonPane().add(new JButton("Set Default"));
+
+            //dialog.setDialogMode(dialog.CLOSE_DIALOG);
+            dialog.setDialogMode(dialog.OK_CANCEL_DIALOG);
+            dialog.pack();
+            dialog.centerOnScreen();
+        }
+        if(!dialog.isVisible()) {
+            optionsPanel.load();
+        }
+        dialog.setVisible(true);
     }
 
 } // end com.raelity.jvi.cmd.Jvi;

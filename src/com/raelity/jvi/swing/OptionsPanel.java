@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package com.raelity.jvi.cmd;
+package com.raelity.jvi.swing;
 
 import com.l2fprod.common.beans.ExtendedPropertyDescriptor;
 import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
@@ -12,7 +12,6 @@ import com.l2fprod.common.propertysheet.Property;
 import com.l2fprod.common.propertysheet.PropertyEditorFactory;
 import com.l2fprod.common.propertysheet.PropertyEditorRegistry;
 import com.l2fprod.common.propertysheet.PropertySheet;
-import com.l2fprod.common.propertysheet.PropertySheetDialog;
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
 import com.l2fprod.common.propertysheet.PropertySheetTableModel;
 import com.l2fprod.common.propertysheet.PropertySheetTableModel.NaturalOrderStringComparator;
@@ -22,12 +21,11 @@ import com.l2fprod.common.swing.PercentLayout;
 import com.l2fprod.common.swing.renderer.ColorCellRenderer;
 import com.raelity.jvi.Option.ColorOption;
 import com.raelity.jvi.Options;
+import com.raelity.jvi.Options.EditOptionsControl;
 import com.raelity.jvi.OptionsBean;
-import com.raelity.jvi.swing.KeyBindingBean;
-import com.raelity.jvi.swing.KeypadBindingBean;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanDescriptor;
@@ -38,7 +36,9 @@ import java.beans.PropertyDescriptor;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
@@ -59,44 +59,69 @@ import javax.swing.JTextArea;
  * 
  * @author erra
  */
-public class OptionsDialog {
-    static private PropertySheetDialog dialog;
-    static private PropertyEditorFactory propertyEditors;
+public class OptionsPanel extends JPanel {
+    private ChangeNotify changeNotify;
+    private List<OptionSheet> optionSheets
+            = new ArrayList<OptionSheet>();
 
-    @SuppressWarnings("static-access")
-    public static void show(Frame owner) {
-        // if(dialog == null) {
-        //     dialog = new JDialog(owner, "jVi Options");
-        //     dialog.add("Center", getOptionsPanel());
-        //     dialog.pack();
-        // }
-        // dialog.setVisible(true);
-        if(dialog == null) {
-            dialog = new PropertySheetDialog(owner, "jVi Options");
-            dialog.getBanner().setVisible(false);
-            dialog.getContentPane().add("Center", getOptionsPanel());
-            // dialog.getButtonPane().add(new JButton("Default ALL"));
-            // dialog.getButtonPane().add(new JButton("Set Default"));
-            dialog.setDialogMode(dialog.CLOSE_DIALOG);
-            dialog.pack();
-            dialog.centerOnScreen();
-        }
-        dialog.setVisible(true);
+    public OptionsPanel() {
+        this(null);
     }
 
-    public static JComponent getOptionsPanel() {
+    public OptionsPanel(ChangeNotify changeNotify) {
+        this.changeNotify = changeNotify;
+        setLayout(new BorderLayout());
+        add(getTabbedOptions(), BorderLayout.CENTER);
+    }
+
+    public void load()
+    {
+        // read property values from backing store
+        // and prepare for a new property edit op
+        for (OptionSheet optionSheet : optionSheets) {
+            optionSheet.load();
+            ((EditOptionsControl)optionSheet.bean).clear();
+        }
+    }
+
+    public void cancel()
+    {
+        // back out the changes
+        for (OptionSheet optionSheet : optionSheets) {
+            ((EditOptionsControl)optionSheet.bean).cancel();
+        }
+    }
+
+    public boolean valid() {
+        return true;
+    }
+
+    public static interface ChangeNotify {
+        public void change();
+    }
+
+    private PropertyEditorFactory propertyEditors;
+
+    // NEEDSWORK: 3rd param "OptionsControl with init, cancel methods"
+    private void addTab(JTabbedPane tabs, String name, BeanInfo bi) {
+        OptionSheet optionSheet = new OptionSheet(bi);
+        optionSheets.add(optionSheet);
+        tabs.add(name, optionSheet);
+    }
+
+    private JComponent getTabbedOptions() {
         createPropertyEditors();
         JTabbedPane tabs = new JTabbedPane();
-        tabs.add("Platform", new OptionSheet(new OptionsBean.Platform()));
-        tabs.add("General", new OptionSheet(new OptionsBean.General()));
-        tabs.add("Search", new OptionSheet(new OptionsBean.Search()));
-        tabs.add("Modify", new OptionSheet(new OptionsBean.Modify()));
-        tabs.add("CursorWrap", new OptionSheet(new OptionsBean.CursorWrap()));
-        tabs.add("External Process",
-                    new OptionSheet(new OptionsBean.ExternalProcess()));
-        tabs.add("Ctrl-Key", new OptionSheet(new KeyBindingBean()));
-        tabs.add("KeyPad", new OptionSheet(new KeypadBindingBean()));
-        tabs.add("Debug", new OptionSheet(new OptionsBean.Debug()));
+        tabs.setTabPlacement(JTabbedPane.LEFT);
+        addTab(tabs, "Platform", new OptionsBean.Platform());
+        addTab(tabs, "General", new OptionsBean.General());
+        addTab(tabs, "Search", new OptionsBean.Search());
+        addTab(tabs, "Modify", new OptionsBean.Modify());
+        addTab(tabs, "CursorWrap", new OptionsBean.CursorWrap());
+        addTab(tabs, "External Process", new OptionsBean.ExternalProcess());
+        addTab(tabs, "Ctrl-Key", new KeyBindingBean());
+        addTab(tabs, "KeyPad", new KeypadBindingBean());
+        addTab(tabs, "Debug", new OptionsBean.Debug());
 
         // lay things out to get sizes so we can adjust splitter
         //tabs.validate();
@@ -131,11 +156,11 @@ public class OptionsDialog {
             sheet.setDescriptionVisible(false);
             sheet.setDescriptionVisible(true);
         }
-        propertyEditors = null;
+        //propertyEditors = null;
         return tabs;
     }
 
-    private static class OptionSheet extends JPanel {
+    private class OptionSheet extends JPanel {
         // NOTE: bean/beanInfo are same class
         final BeanInfo bean; // keep a reference,
         PropertySheetPanel sheet;
@@ -201,32 +226,32 @@ public class OptionsDialog {
             pcl = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     Property prop = (Property)evt.getSource();
+                    boolean change = false;
                     try {
                         prop.writeToObject(bean);
+                        change = true;
                     } catch(RuntimeException ex) {
                         if(!(ex.getCause() instanceof PropertyVetoException))
                             throw ex;
-                        JOptionPane.showMessageDialog(dialog,
+                        JOptionPane.showMessageDialog(null /*dialog*/,
                                 ex.getCause().getMessage(),
                                 "jVi Option Error",
                                 JOptionPane.ERROR_MESSAGE);
                         prop.setValue(Options.getOption(prop.getName())
                                                             .getString());
                     }
+                    if(change && changeNotify != null) {
+                        changeNotify.change();
+                    }
                 }
             };
             sheet.addPropertySheetChangeListener(pcl);
         }
 
-        //
-        // Character mapping for xlate to xml.
-        // NOTE: using "<br>" instead of "<br/>"
-        // to avoid the "\n>" from the html rendering engine
-        //
-        private static final char[] IN_RANGE_INVALID_CR =
-            { '<', '>', '"', /*'\'',*/ '&', '\n' };
-        private static final String IN_RANGE_VALID_CR[] =
-            { "&lt;", "&gt;", "&quot;", /*"&apos;",*/ "&amp;", "<br>" };
+        private void load() {
+            sheet.readFromObject(bean);
+        }
+
         private void setupSheetAndBeanProperties(PropertySheetPanel sheet,
                                                  BeanInfo bean) {
             sheet.setEditorFactory(propertyEditors);
@@ -267,38 +292,6 @@ public class OptionsDialog {
             }
             sheet.setProperties(properties);
         }
-        
-        private static final Comparator STRING_COMPARATOR =
-                new NaturalOrderStringComparator();
-
-        static Comparator reverseStringCompare = new Comparator() {
-            public int compare(Object o1, Object o2) {
-                return - STRING_COMPARATOR.compare(o1, o2);
-            }
-        };
-
-        static Comparator propertyNameCompare = new Comparator() {
-            public int compare(Object o1, Object o2) {
-                if (o1 instanceof Property && o2 instanceof Property) {
-                    Property prop1 = (Property) o1;
-                    Property prop2 = (Property) o2;
-                    if (prop1 == null) {
-                        return prop2==null?0:-1;
-                    } else {
-                        return STRING_COMPARATOR.compare(
-                                prop1.getName(), prop2.getName());
-                                // prop1.getDisplayName()==null
-                                //     ? null
-                                //     : prop1.getDisplayName().toLowerCase(),
-                                // prop2.getDisplayName() == null
-                                //     ? null
-                                //     : prop2.getDisplayName().toLowerCase());
-                    }
-                } else {
-                    return 0;
-                }
-            }
-        };
 
         /**
          * Use our own copy of the L2F property
@@ -356,6 +349,7 @@ public class OptionsDialog {
                 return descriptor.getPropertyType();
             }
             
+            @Override
             public Object clone() {
                 PropertyDescriptorAdapter clone = new PropertyDescriptorAdapter(descriptor);
                 clone.setValue(getValue());
@@ -417,7 +411,7 @@ public class OptionsDialog {
         }
     }
     
-    private static void createPropertyEditors() {
+    private void createPropertyEditors() {
         if(propertyEditors == null) {
             PropertyEditorRegistry pe = new PropertyEditorRegistry();
             // Add our custom editors
@@ -494,10 +488,12 @@ public class OptionsDialog {
             ((JPanel)editor).setOpaque(false);
         }
         
+        @Override
         public Object getValue() {
             return color;
         }
         
+        @Override
         public void setValue(Object value) {
             color = (Color)value;
             label.setValue(color);
@@ -560,15 +556,58 @@ public class OptionsDialog {
             });
         }
         
+        @Override
         public Object getValue() {
             return ((JCheckBox)editor).isSelected() ? Boolean.TRUE : Boolean.FALSE;
         }
         
+        @Override
         public void setValue(Object value) {
             ((JCheckBox)editor).setSelected(Boolean.TRUE.equals(value));
         }
         
     }
+
+    //
+    // Character mapping for xlate to xml.
+    // NOTE: using "<br>" instead of "<br/>"
+    // to avoid the "\n>" from the html rendering engine
+    //
+    private static final char[] IN_RANGE_INVALID_CR =
+        { '<', '>', '"', /*'\'',*/ '&', '\n' };
+    private static final String IN_RANGE_VALID_CR[] =
+        { "&lt;", "&gt;", "&quot;", /*"&apos;",*/ "&amp;", "<br>" };
+    private static final Comparator STRING_COMPARATOR =
+            new NaturalOrderStringComparator();
+
+    static Comparator reverseStringCompare = new Comparator() {
+        public int compare(Object o1, Object o2) {
+            return - STRING_COMPARATOR.compare(o1, o2);
+        }
+    };
+
+    static Comparator propertyNameCompare = new Comparator() {
+        public int compare(Object o1, Object o2) {
+            if (o1 instanceof Property && o2 instanceof Property) {
+                Property prop1 = (Property) o1;
+                Property prop2 = (Property) o2;
+                if (prop1 == null) {
+                    return prop2==null?0:-1;
+                } else {
+                    return STRING_COMPARATOR.compare(
+                            prop1.getName(), prop2.getName());
+                            // prop1.getDisplayName()==null
+                            //     ? null
+                            //     : prop1.getDisplayName().toLowerCase(),
+                            // prop2.getDisplayName() == null
+                            //     ? null
+                            //     : prop2.getDisplayName().toLowerCase());
+                }
+            } else {
+                return 0;
+            }
+        }
+    };
 
     /*
     * @(#)XmlUtil.java

@@ -6,6 +6,7 @@
 
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.Options.EditOptionsControl;
 import com.raelity.jvi.ViManager;
 import java.awt.Image;
 import java.beans.BeanDescriptor;
@@ -24,8 +25,18 @@ import java.util.prefs.Preferences;
  *
  * @author erra
  */
-public class KeypadBindingBean extends SimpleBeanInfo {
+public class KeypadBindingBean extends SimpleBeanInfo
+        implements EditOptionsControl {
   private static Logger LOG = Logger.getLogger(KeypadBindingBean.class.getName());
+
+    public void cancel()
+    {
+    }
+
+    public void clear()
+    {
+    }
+
     //
     // The BeanInfo is embedded in the same class
     //

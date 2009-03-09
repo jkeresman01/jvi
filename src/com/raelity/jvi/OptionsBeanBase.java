@@ -26,7 +26,10 @@ import java.util.List;
 import java.util.prefs.Preferences;
 
 import com.raelity.jvi.Option.ColorOption;
+import com.raelity.jvi.Options.EditOptionsControl;
 import com.raelity.org.openide.util.WeakListeners;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,7 +41,7 @@ import java.util.logging.Logger;
  *
  * @author erra
  */
-public class OptionsBeanBase extends SimpleBeanInfo {
+public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsControl {
     private static Logger LOG = Logger.getLogger(OptionsBeanBase.class.getName());
     private Class clazz;
     private Options.Category category;
@@ -48,6 +51,8 @@ public class OptionsBeanBase extends SimpleBeanInfo {
     private final PropertyChangeSupport pcs = new PropertyChangeSupport( this );
     private final VetoableChangeSupport vcs = new VetoableChangeSupport( this ); 
     //private static String checkme = "Search Options";
+
+    private Map<String,Object> changeMap = new HashMap<String,Object>();
     
     /** Creates a new instance of OptionsBeanBase */
     public OptionsBeanBase(Class clazz, String displayName,
@@ -63,6 +68,15 @@ public class OptionsBeanBase extends SimpleBeanInfo {
                 WeakListeners.propertyChange(optionsListener, Options.class));
         //if(checkme.equals(displayName))
         //    System.err.println("CONSTRUCT: " + displayName);
+    }
+
+    public void clear() {
+        // no changes so far
+        changeMap.clear();
+    }
+
+    public void cancel() {
+        undoChanges();
     }
 
     private OptionsListener optionsListener;
@@ -237,11 +251,57 @@ public class OptionsBeanBase extends SimpleBeanInfo {
     //
     private Preferences prefs = ViManager.getViFactory().getPreferences();
 
+    // Called before a change is made,
+    // record the previous value.
+    // Do nothing if a value is already recorded for this key.
+    private void trackChange(String name, Class clazz) {
+        if(changeMap.containsKey(name))
+            return;
+
+        Object o = null;
+        if(clazz == String.class) {
+            o = getString(name);
+        } else if(clazz == Integer.class) {
+            o = new Integer(getint(name));
+        } else if(clazz == Boolean.class) {
+            o = new Boolean(getboolean(name));
+        } else if(clazz == Color.class) {
+            o = getColor(name);
+            if(o == null)
+                o = nullColor;
+        } else assert false : "unhandled type";
+        changeMap.put(name, o);
+    }
+
+    // Since color can be null, and a null object has no type
+    // use the following specific object for a null color
+    private Color nullColor = new Color(0,0,0);
+
+    private void undoChanges() {
+        for (Map.Entry<String, Object> entry : changeMap.entrySet()) {
+            String key = entry.getKey();
+            Object o = entry.getValue();
+            if(o instanceof String) {
+                prefs.put(key, (String)o);
+            } else if(o instanceof Color) {
+                String s = "";
+                if(o != nullColor)
+                    s = ColorOption.xformToString((Color)o);
+                prefs.put(key, s);
+            } else if(o instanceof Integer) {
+                prefs.putInt(key, (Integer)o);
+            } else if(o instanceof Boolean) {
+                prefs.putBoolean(key, (Boolean)o);
+            }
+        }
+    }
+
     protected void put(String name, String val) throws PropertyVetoException {
         String old = getString(name);
 	Option opt = Options.getOption(name);
         ((StringOption)opt).validate(val);
         this.vcs.fireVetoableChange( name, old, val );
+        trackChange(name, String.class);
 	prefs.put(name, val);
         this.pcs.firePropertyChange( name, old, val );
     }
@@ -251,6 +311,7 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	Option opt = Options.getOption(name);
         ((IntegerOption)opt).validate(val);
         this.vcs.fireVetoableChange( name, old, val );
+        trackChange(name, Integer.class);
 	prefs.putInt(name, val);
         this.pcs.firePropertyChange( name, old, val );
     }
@@ -260,11 +321,13 @@ public class OptionsBeanBase extends SimpleBeanInfo {
 	ColorOption opt = (ColorOption)Options.getOption(name);
         opt.validate(val);
         this.vcs.fireVetoableChange( name, old, val );
+        trackChange(name, Color.class);
 	prefs.put(name, opt.xformToString(val));
         this.pcs.firePropertyChange( name, old, val );
     }
 
     protected void put(String name, boolean val) {
+        trackChange(name, Boolean.class);
 	prefs.putBoolean(name, val);
     }
 
