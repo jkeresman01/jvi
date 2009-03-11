@@ -140,6 +140,8 @@ public final class Options {
   public static final String selectMode = "viSelectMode";
   public static final String selectColor = "viSelectColor";
   public static final String selectFgColor = "viSelectFgColor";
+  public static final String searchColor = "viSearchColor";
+  public static final String searchFgColor = "viSearchFgColor";
 
   public static final String equalProgram = "viEqualProgram";
   public static final String formatProgram = "viFormatProgram";
@@ -218,11 +220,21 @@ public final class Options {
                     + " movments for the \"``\" command. These movement are"
                     + " often the result of IDE actions invoked external"
                     + " to jVi.");
+
+    createColorOption(searchColor, new Color(0xffb442), false); //a light orange
+    setupOptionDesc(platformList, searchColor, "'hl-search' color",
+            "The color used for search highlight.");
+
+    //createColorOption(searchFgColor, new Color(0x000000)); // black
+    createColorOption(searchFgColor, new Color(0x000000), true);
+    setupOptionDesc(platformList, searchFgColor, "'hl-search' foreground color",
+            "The color used for search highlight foreground.");
+    setExpertHidden(searchFgColor, false, false);
     
     createColorOption(selectColor, new Color(0xffe588), false); //a light orange
     setupOptionDesc(platformList, selectColor, "'hl-visual' color",
             "The color used for a visual mode selection.");
-    
+
     //createColorOption(selectFgColor, new Color(0x000000)); // black
     createColorOption(selectFgColor, null, true); // default is no color
     setupOptionDesc(platformList, selectFgColor, "'hl-visual' foreground color",

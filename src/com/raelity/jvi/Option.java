@@ -30,6 +30,7 @@
 package com.raelity.jvi;
 
 import java.awt.Color;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 
 public abstract class Option {
@@ -207,10 +208,16 @@ public abstract class Option {
             this.permitNull = permitNull;
             initialize(); // ok, initialize now that permitNull is set
             if(validator == null) {
-                // The default validation accepts everything
+                // The default validation accepts everything, checks permitNull
                 validator = new Validator() {
                     @Override
                     public void validate(Color val) throws PropertyVetoException {
+                        if(val == null && !ColorOption.this.permitNull)
+                            throw new PropertyVetoException(
+                                    "null color not permitted",
+                                    new PropertyChangeEvent(opt, opt.getName(),
+                                               opt.getColor(), val));
+
                     }
                 };
             }

@@ -1,23 +1,37 @@
 /*
+ * The contents of this file are subject to the Mozilla Public
+ * License Version 1.1 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of
+ * the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS
+ * IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * rights and limitations under the License.
+ *
+ * The Original Code is jvi - vi editor clone.
+ *
+ * The Initial Developer of the Original Code is Ernie Rael.
+ * Portions created by Ernie Rael are
+ * Copyright (C) 2000 Ernie Rael.  All Rights Reserved.
+ *
+ * Contributor(s): Ernie Rael <err@raelity.com>
+ */
+/*
  * KeypadBindingBean.java
  *
  * Created on February 12, 2007, 4:47 PM
  */
 
-package com.raelity.jvi.swing;
+package com.raelity.jvi;
 
-import com.raelity.jvi.Options.EditOptionsControl;
-import com.raelity.jvi.ViManager;
-import java.awt.Image;
+import com.raelity.jvi.swing.*;
 import java.beans.BeanDescriptor;
-import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
-import java.beans.SimpleBeanInfo;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 
 /**
  * Use thsi class to programatically enable/disable jVi catching particular
@@ -25,17 +39,9 @@ import java.util.prefs.Preferences;
  *
  * @author erra
  */
-public class KeypadBindingBean extends SimpleBeanInfo
-        implements EditOptionsControl {
+public class KeypadBindingBean extends KeyOptionsBeanBase
+{
   private static Logger LOG = Logger.getLogger(KeypadBindingBean.class.getName());
-
-    public void cancel()
-    {
-    }
-
-    public void clear()
-    {
-    }
 
     //
     // The BeanInfo is embedded in the same class
@@ -65,26 +71,6 @@ public BeanDescriptor getBeanDescriptor() {
         vD = null;
 	return descriptors;
     }
-    
-    private static Image icon, icon32;
-    @Override
-    public Image getIcon (int type) {
-        if (type == BeanInfo.ICON_COLOR_16x16
-                || type == BeanInfo.ICON_MONO_16x16) {
-            if (icon == null)
-                icon = loadImage("/com/raelity/jvi/resources/jViLogo.png");
-            return icon;
-        } else {
-            if (icon32 == null)
-                icon = loadImage("/com/raelity/jvi/resources/jViLogo32.png");
-            return icon32;
-        }
-    }
-    
-    private static final String shortDescription =
-                "Checked (enabled) means that jVi will process"
-            + " this key. If clear (disabled) then the key"
-            + " is available for other keybindings.";
     
     private void addDesc(String key, String mod) {
 	int i = 0;
@@ -121,19 +107,8 @@ public BeanDescriptor getBeanDescriptor() {
     
     //
     // The bean
-    //      The bean getter/setter, interface to preferences.
+    //      The bean getter/setter
     //
-    private Preferences prefs = ViManager.getViFactory()
-                                .getPreferences().node(ViManager.PREFS_KEYS);
-    
-    private void put(String name, boolean val) {
-        prefs.putBoolean(name, val);
-    }
-    
-    private boolean get(String name) {
-        return prefs.getBoolean(name, KeyBinding.getCatchKeyDefault(name));
-    }
-
     public void setAAfUp(boolean arg) {
         put("Up", arg);
     }
