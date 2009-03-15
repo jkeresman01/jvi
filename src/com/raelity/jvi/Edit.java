@@ -60,7 +60,7 @@ public class Edit {
   static MutableBoolean inserted_space;
 
   /**
-   * There are commands in edit mode, such as ^R, that
+   * There are commands in edit mode, such as ^V and ^R, that
    * require one or more arugment chars.
    */
   static interface HandleNextChar {
@@ -69,7 +69,14 @@ public class Edit {
     // do regular processing on returned char.
     char go(char c); 
   }
+  /**
+   * Mutli char processings is contained in handleNextChar.
+   */
   static HandleNextChar handleNextChar;
+
+  /**
+   * reset is invoked when edit mode is exitted, may be abrupt.
+   */
   static void reset() {
     handleNextChar = null;
     G.editPutchar = 0;
@@ -228,6 +235,10 @@ public class Edit {
         
         // skip ctrl-\ ctrlN to normal mode
         // NEEDSWORK: ctrl-V ctrl-Q
+	if (c == ctrl('V') || c == ctrl('Q')) {
+          ins_ctrl_v();
+          return;
+        }
         // skip some indent stuff
         // skip if(has_startsel)
         
@@ -526,6 +537,45 @@ public class Edit {
         return false;
     }
   }
+/**
+ * Handle a CTRL-V or CTRL-Q typed in Insert mode.
+ */
+private static void ins_ctrl_v()
+{
+    int		c;
+
+    /* may need to redraw when no more chars available now */
+    //ins_redraw(FALSE);
+
+    if(true) //if (redrawing() && !char_avail())
+	edit_putchar('^', true);
+    //AppendToRedobuff((char_u *)CTRL_V_STR);	/* CTRL-V */
+    AppendCharToRedobuff(ctrl('V'));	/* CTRL-V */
+
+    add_to_showcmd(ctrl('V'));
+
+    //c = get_literal();
+    handleNextChar = new GetLiteral();
+
+    // GetLiteral will finish up
+    //clear_showcmd();
+    //insert_special(c, FALSE, TRUE);
+//#ifdef FEAT_RIGHTLEFT...
+}
+
+/**
+ * Put a character directly onto the screen.  It's not stored in a buffer.
+ * Used while handling CTRL-K, CTRL-V, etc. in Insert mode.
+ */
+private static void edit_putchar(char c, boolean highlight)
+{
+  G.editPutchar = c;
+}
+
+private static void edit_clearPutchar()
+{
+  G.editPutchar = NUL;
+}
 
   private static void removeUnusedWhiteSpace() {
     if (Util.ml_get_curline().toString().trim().equals("")) {
@@ -805,6 +855,165 @@ public class Edit {
     if(op != null)
       G.curwin.wordMatchOperation(op);
   }
+
+/**
+ * Next character is interpreted literally.
+ * A one, two or three digit decimal number is interpreted as its byte value.
+ * If one or two digits are entered, the next character is given to vungetc().
+ * For Unicode a character > 255 may be returned.
+ */
+private static class GetLiteral implements HandleNextChar {
+    private int		cc = 0;
+    private int		i = 0;
+    private boolean	hex = false;
+    private boolean	octal = false;
+    private int		unicode = 0;
+    private boolean	first_char = true;
+
+    public GetLiteral()
+    {
+    }
+
+    public char go(char nc)
+    {
+//    if (got_int)
+//	return Ctrl_C;
+
+//#ifdef FEAT_GUI
+//    /*
+//     * In GUI there is no point inserting the internal code for a special key.
+//     * It is more useful to insert the string "<KEY>" instead.	This would
+//     * probably be useful in a text window too, but it would not be
+//     * vi-compatible (maybe there should be an option for it?) -- webb
+//     */
+//    if (gui.in_use)
+//	++allow_keys;
+//#endif
+//#ifdef USE_ON_FLY_SCROLL
+//    dont_scroll = TRUE;		/* disallow scrolling here */
+//#endif
+//    ++no_mapping;		/* don't map the next key hits */
+      //for (;;)
+one_char: {
+//        do
+//            nc = safe_vgetc();
+//        while (nc == K_IGNORE || nc == K_VER_SCROLLBAR
+//                                                    || nc == K_HOR_SCROLLBAR);
+//        if (!(State & CMDLINE)
+//# ifdef FEAT_MBYTE
+//		&& MB_BYTE2LEN_CHECK(nc) == 1
+//# endif
+//           )
+              add_to_showcmd(nc);
+          if(first_char) {
+            first_char = false;
+            boolean firstCharIsMode = true;
+            if (nc == 'x' || nc == 'X')
+                hex = true;
+            else if (nc == 'o' || nc == 'O')
+                octal = true;
+            else if (nc == 'u' /*|| nc == 'U'*/) // at most 16 bits, no 'U'
+              unicode = nc;
+            else
+              firstCharIsMode = false;
+            if(firstCharIsMode)
+              return NUL;
+          }
+
+          //else
+          {
+              if (hex
+                      || unicode != 0
+                      )
+              {
+                  if (!vim_isxdigit(nc))
+                      break one_char;
+                  cc = cc * 16 + hex2nr(nc);
+              }
+              else if (octal)
+              {
+                  if (nc < '0' || nc > '7')
+                      break one_char;
+                  cc = cc * 8 + nc - '0';
+              }
+              else
+              {
+                  if (!vim_isdigit(nc))
+                      break one_char;
+                  cc = cc * 10 + nc - '0';
+              }
+
+              ++i;
+          }
+
+          if (cc > 255
+                  && unicode == 0
+                  )
+              cc = 255;		/* limit range to 0-255 */
+          nc = 0;
+
+          if (hex)		/* hex: up to two chars */
+          {
+              if (i >= 2)
+                  break one_char;
+          }
+          else if (unicode != 0)  /* Unicode: up to four or eight chars */
+          {
+              if ((unicode == 'u' && i >= 4) || (unicode == 'U' && i >= 8))
+                  break one_char;
+          }
+          else if (i >= 3)	/* decimal or octal: up to three chars */
+              break one_char;
+
+          // Major HACK because can't do getc inline
+          // at this point would repeat the 'for(;;)',
+          // so just return and we'll get another char
+          return NUL;
+      }
+// "break onechar" comes here
+      //
+      // Finish up, after "for(;;)" in the original code
+      //
+      if (i == 0)	    /* no number entered */
+      {
+          if (nc == K_ZERO)   /* NUL is stored as NL */
+          {
+              cc = '\n';
+              nc = 0;
+          }
+          else
+          {
+              cc = nc;
+              nc = 0;
+          }
+      }
+
+      if (cc == 0)	/* NUL is stored as NL */
+          cc = '\n';
+//#ifdef FEAT_MBYTE
+//    if (enc_dbcs && (cc & 0xff) == 0)
+//        cc = '?';	/* don't accept an illegal DBCS char, the NUL in the
+//                           second byte will cause trouble! */
+//#endif
+
+//    --no_mapping;
+//#ifdef FEAT_GUI
+//    if (gui.in_use)
+//	--allow_keys;
+//#endif
+      if (nc != NUL)
+          vungetc(nc);
+//    got_int = FALSE;	    /* CTRL-C typed after CTRL-V is not an interrupt */
+      handleNextChar = null; // all done.
+
+      clear_showcmd();
+      insert_special((char)cc, false, true);
+      edit_clearPutchar();
+
+      return NUL;
+    }
+
+}
   
   /**
    * Insert character, taking care of special keys and mod_mask.
@@ -1907,6 +2116,8 @@ private static boolean ascii_isalpha(char c) { return Util.ascii_isalpha(c); }
 private static void beep_flush() { Util.beep_flush(); }
 private static boolean bufempty() { return Util.bufempty(); }
 private static int CharOrd(char c) { return Util.CharOrd(c); }
+private static final char ctrl(char x) { return Util.ctrl(x); }
+private static int hex2nr(char c) { return Util.hex2nr(c); }
 private static boolean isalpha(char c) { return Util.isalpha(c); }
 private static boolean isdigit(char c) {return Util.isdigit(c); }
 private static boolean isupper(char c) { return Util.isupper(c); }
@@ -1928,8 +2139,11 @@ private static void vim_str2nr(MySegment seg, int start,
 
 // GetChar
 private static void AppendCharToRedobuff(char c) { GetChar.AppendCharToRedobuff(c); }
+private static void vungetc(char c) { GetChar.vungetc(c); }
 
 // Normal
+private static boolean add_to_showcmd(char c) { return Normal.add_to_showcmd(c); }
+private static void clear_showcmd() { Normal.clear_showcmd(); }
 private static int u_save_cursor() { return Normal.u_save_cursor(); }
 
 // Options

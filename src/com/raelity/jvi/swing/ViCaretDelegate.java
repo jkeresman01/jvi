@@ -26,6 +26,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
 import com.raelity.jvi.*;
+import java.awt.Color;
+import java.awt.Font;
 
 /**
  * This handles the VI behavior of a caret, drawing the caret is
@@ -117,9 +119,11 @@ public class ViCaretDelegate
                 // only allow this if SHAPE_VER
                 if(c != 0 && cursorShape == ViCursor.SHAPE_VER) {
                     g.setColor(component.getBackground());
+                    g.setFont(g.getFont().deriveFont(Font.BOLD));
                     g.fillRect(r00.x + r.width, r00.y,
                                blockWidth - r.width, fm.getAscent());
-                    g.setColor(component.getForeground());
+                    //g.setColor(component.getForeground());
+                    g.setColor(Color.red);
                     g.drawString(String.valueOf(c),
                                  r00.x + r.width, r00.y + fm.getAscent());
                 }

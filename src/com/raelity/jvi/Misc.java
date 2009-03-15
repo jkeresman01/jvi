@@ -4930,6 +4930,8 @@ private static boolean ascii_isalpha(char c) { return Util.ascii_isalpha(c); }
 private static void beep_flush() { Util.beep_flush(); }
 private static boolean bufempty() { return Util.bufempty(); }
 private static int CharOrd(char c) { return Util.CharOrd(c); }
+private static final char ctrl(char x) { return Util.ctrl(x); }
+private static int hex2nr(char c) { return Util.hex2nr(c); }
 private static boolean isalpha(char c) { return Util.isalpha(c); }
 private static boolean isdigit(char c) {return Util.isdigit(c); }
 private static boolean isupper(char c) { return Util.isupper(c); }
@@ -4951,8 +4953,11 @@ private static void vim_str2nr(MySegment seg, int start,
 
 // GetChar
 private static void AppendCharToRedobuff(char c) { GetChar.AppendCharToRedobuff(c); }
+private static void vungetc(char c) { GetChar.vungetc(c); }
 
 // Normal
+private static boolean add_to_showcmd(char c) { return Normal.add_to_showcmd(c); }
+private static void clear_showcmd() { Normal.clear_showcmd(); }
 private static int u_save_cursor() { return Normal.u_save_cursor(); }
 
 // Options

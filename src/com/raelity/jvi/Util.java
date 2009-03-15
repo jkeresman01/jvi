@@ -1,13 +1,3 @@
-/**
- * Title:        jVi<p>
- * Description:  A VI-VIM clone.
- * Use VIM as a model where applicable.<p>
- * Copyright:    Copyright (c) Ernie Rael<p>
- * Company:      Raelity Engineering<p>
- * @author Ernie Rael
- * @version 1.0
- */
-
 /*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -36,7 +26,6 @@ import com.raelity.text.TextUtil.MySegment;
 
 public class Util {
   // static final int TERMCAP2KEY(int a, int b) { return a + (b << 8); }
-  // NEEDSWORK: CHAR
   static final char ctrl(char x) { return (char)(x & 0x1f); }
   // static final int shift(int c) { return c | (0x1 << 24); }
   // static void stuffcharReadbuff(int c) {}

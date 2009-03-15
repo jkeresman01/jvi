@@ -112,6 +112,9 @@ public class GetChar {
     Misc.out_flush();   // returning from event
   }
 
+  // NEEDSWORK: old_mod_mask
+  static char old_char;
+
   /**
    * Pass queued up characters to vi for processing.
    * First from stuffbuf, then typebuf.
@@ -120,6 +123,11 @@ public class GetChar {
     // NEEDSWORK: pumpVi: check for interupt?
       
     while(true) {
+      if(old_char != NUL) {
+        char c = old_char;
+        old_char = NUL;
+        pumpChar(c);
+      }
       while(stuffbuff.hasNext()) {
         pumpChar(stuffbuff.removeFirst());
       }
@@ -192,6 +200,12 @@ public class GetChar {
 
     // return keyInput.hasChar();
 
+  }
+
+  static void vungetc(char c) /* unget one character (can only be done once!) */
+  {
+      old_char = c;
+      //old_mod_mask = mod_mask;
   }
 
   /**
