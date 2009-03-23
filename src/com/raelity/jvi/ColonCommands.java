@@ -345,6 +345,7 @@ public class ColonCommands
         AbbrevLookup.CommandElement ce = m_commands.lookupCommand(command);
         if(ce == null) {
             Msg.emsg("Not an editor command: " + command);
+            Util.vim_beep();
             return null;
         }
 
