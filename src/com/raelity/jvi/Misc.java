@@ -236,7 +236,7 @@ public class Misc implements ClipboardOwner {
       }
       // col is char past last whitespace
     }
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     if (!G.curbuf.b_p_et) {	    // if 'expandtab' is set, don't use TABs
       while (size >= G.curbuf.b_p_ts) {
 	// NEEDSWORK:  how did b_p_et get set, dont expand tabs for now
@@ -1166,7 +1166,7 @@ public class Misc implements ClipboardOwner {
 
   static class Yankreg implements Cloneable {
     // NEEDSWORK: init to null when private
-    StringBuffer[] y_array = new StringBuffer[1];
+    StringBuilder[] y_array = new StringBuilder[1];
 
     // NOTE: if a field is added, make sure to fixup this.set(Yankreg)
     int y_size;
@@ -1221,7 +1221,7 @@ public class Misc implements ClipboardOwner {
       y_type = reg.y_type;
       y_width = reg.y_width;
       y_array = reg.y_array;
-      reg.y_array = new StringBuffer[1]; // NEEDSWORK: init to null when private
+      reg.y_array = new StringBuilder[1]; // NEEDSWORK: init to null when private
     }
 
         @Override
@@ -1232,7 +1232,7 @@ public class Misc implements ClipboardOwner {
         reg.y_array = y_array.clone();
         for(int i = 0; i < y_array.length; i++)
           reg.y_array[i] = y_array[i] == null
-                            ? null : new StringBuffer(y_array[i]);
+                            ? null : new StringBuilder(y_array[i]);
       }
       return reg;
     }
@@ -1243,17 +1243,17 @@ public class Misc implements ClipboardOwner {
         int startOffset = 0;
         int endOffset;
         int lines = 0;
-        List<StringBuffer> l = new ArrayList<StringBuffer>();
+        List<StringBuilder> l = new ArrayList<StringBuilder>();
         while((endOffset = s.indexOf('\n', startOffset)) >= 0) {
-          StringBuffer sb
-                  = new StringBuffer(s.subSequence(startOffset, endOffset));
+          StringBuilder sb
+                  = new StringBuilder(s.subSequence(startOffset, endOffset));
           l.add(sb);
           if(sb.length() > y_width)
             y_width = sb.length();
           startOffset = endOffset + 1;
           lines++;
         }
-        y_array = new StringBuffer[0];
+        y_array = new StringBuilder[0];
         y_array = l.toArray(y_array);
         y_type = MBLOCK;
         y_size = lines;
@@ -1277,12 +1277,12 @@ public class Misc implements ClipboardOwner {
           y_size = 1;
         }
         
-        y_array[0] = new StringBuffer(s);
+        y_array[0] = new StringBuilder(s);
       }
     }
 
     StringSelection getStringSelection() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       for (int i = 0; i < y_array.length; i++) {
         sb.append(y_array[i]);
         if(y_type == MBLOCK)
@@ -1558,8 +1558,8 @@ public class Misc implements ClipboardOwner {
    */
   static void free_yank_all() {
     if(y_current.y_array.length != 0) {
-      y_current.y_array = new StringBuffer[1];
-      y_current.y_array[0] = new StringBuffer();
+      y_current.y_array = new StringBuilder[1];
+      y_current.y_array[0] = new StringBuilder();
     }
   }
 
@@ -1738,7 +1738,7 @@ public class Misc implements ClipboardOwner {
       int lnum = fpos.getLine();
       for (; lnum <= oap.end.getLine(); lnum++) {
         MySegment oldp;
-        StringBuffer newp;
+        StringBuilder newp;
         block_def bd = new block_def();
         block_prep(oap, bd, lnum, true);
         if (bd.textlen == 0)       /* nothing to delete */
@@ -1761,7 +1761,7 @@ public class Misc implements ClipboardOwner {
                               lineStart + bd.textcol + bd.textlen);
         } else {
           oldp = Util.ml_get(lnum);
-          newp = new StringBuffer();
+          newp = new StringBuilder();
           //newp = alloc_check((unsigned)STRLEN(oldp) + 1 - n);
           newp.setLength(oldp.length() - 1 - n); // -1 '\n', no +1 for '\n'
           // copy up to deleted part
@@ -1903,7 +1903,7 @@ public class Misc implements ClipboardOwner {
     int		n;
     int         numc;
     int		lnum;
-    StringBuffer newBuf;
+    StringBuilder newBuf;
     MySegment   oldBuf;
     int         oldlen;
     block_def bd = new block_def();
@@ -1951,7 +1951,7 @@ public class Misc implements ClipboardOwner {
         oldlen = oldBuf.length() - 1; //excluce the \n
         //newp = alloc_check((unsigned)STRLEN(oldp) + 1 + n);
         // -1 in setlength to ignore \n, don't need +1 since no null at end
-        newBuf = new StringBuffer();
+        newBuf = new StringBuilder();
         newBuf.setLength(oldlen + n);
         
         // too much sometimes gets allocated with the setLength,
@@ -2200,7 +2200,7 @@ public class Misc implements ClipboardOwner {
     int		ins_len;
     MySegment	firstline;
     String      ins_text;
-    StringBuffer newp;
+    StringBuilder newp;
     MySegment   oldp;
 
     //
@@ -2223,7 +2223,7 @@ public class Misc implements ClipboardOwner {
             oldp = Util.ml_get(linenr);
             int oldp_idx = 0;
             // newp = alloc_check((unsigned)(STRLEN(oldp) + ins_len + 1));
-            newp = new StringBuffer();
+            newp = new StringBuilder();
             newp.setLength(oldp.length() - 1 + ins_len); // -1 for '\n'
             // copy up to block start
             mch_memmove(newp, 0, oldp, oldp_idx, bd.textcol);
@@ -2264,7 +2264,7 @@ public class Misc implements ClipboardOwner {
     int			yanklines = oap.line_count;
     int			yankendlnum = oap.end.getLine();
     // char_u		*p;
-    StringBuffer        pnew;
+    StringBuilder        pnew;
     block_def		bd;
 
 				    // check for read-only register
@@ -2328,13 +2328,13 @@ public class Misc implements ClipboardOwner {
 
       if (  G.curwin.w_curswant == MAXCOL && y_current.y_width > 0)
           y_current.y_width--;
-      y_current.y_array = new StringBuffer[yanklines];
+      y_current.y_array = new StringBuilder[yanklines];
       bd = new block_def();
       for ( ; lnum <= yankendlnum; ++lnum)
       {
           block_prep(oap, bd, lnum, false);
 
-          pnew = new StringBuffer();
+          pnew = new StringBuilder();
           pnew.setLength(bd.startspaces + bd.endspaces + bd.textlen);
           int pnew_idx = 0;
           y_current.y_array[y_idx++] = pnew;
@@ -2359,7 +2359,7 @@ public class Misc implements ClipboardOwner {
         end = oap.end.getOffset() + (oap.inclusive ? 1 : 0);
       }
       int length = end - start;
-      StringBuffer reg = y_current.y_array[0];
+      StringBuilder reg = y_current.y_array[0];
       MySegment seg = G.curbuf.getSegment(start, length, null);
       reg.append(seg.array, seg.offset, seg.count);
       // bug #1724053 visual mode not capture \n after '$'
@@ -2426,7 +2426,7 @@ public class Misc implements ClipboardOwner {
     //StringBuffer        ptr;
     int                 ptr_idx;
     MySegment           oldp;
-    StringBuffer        newp;
+    StringBuilder        newp;
     int                 yanklen;
     int                 totlen = 0;
     int                 lnum;
@@ -2444,7 +2444,7 @@ public class Misc implements ClipboardOwner {
 
     char regname = (char)regname_;
 
-    StringBuffer[] y_array = null;
+    StringBuilder[] y_array = null;
 
     final ViFPOS cursor = G.curwin.w_cursor;
 
@@ -2605,7 +2605,7 @@ public class Misc implements ClipboardOwner {
         
         // insert the new text
         totlen = count * (yanklen + spaces) + bd.startspaces + bd.endspaces;
-        newp = new StringBuffer(); //newp = alloc_check(totlen + oldlen + 1);
+        newp = new StringBuilder(); //newp = alloc_check(totlen + oldlen + 1);
         newp.setLength(totlen + oldlen + 1);
 
         // copy part up to cursor to new line
@@ -2781,7 +2781,7 @@ public class Misc implements ClipboardOwner {
                               == G.curbuf.getLineCount()) {
 	return FAIL;	// can't join on last line
       }
-      StringBuffer spaces = new StringBuffer();
+      StringBuilder spaces = new StringBuilder();
       int nextline = G.curwin.w_cursor.getLine() + 1;
       int lastc = 0;
 
@@ -3787,7 +3787,7 @@ public class Misc implements ClipboardOwner {
      * NOTE: NEEDSWORK: jbvi modified to never use chartab
      */
     static String transchar(char c) {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       
     /* ***************************************************************
     i = 0;
@@ -3810,7 +3810,7 @@ public class Misc implements ClipboardOwner {
       return buf.toString();
     }
     
-    static void transchar_nonprint(StringBuffer buf, char c) {
+    static void transchar_nonprint(StringBuilder buf, char c) {
       if (c <= 0x7f) {				    // 0x00 - 0x1f and 0x7f
       /* *****************************************************************
       if (c == NL) {
@@ -4708,7 +4708,7 @@ op_do_addsub(char command, int Prenum1)
       int		ins_len;
       CharSequence	firstline;
       String      ins_text;
-      StringBuffer newp;
+      StringBuilder newp;
       MySegment   oldp;
       
       
@@ -4761,8 +4761,14 @@ op_do_addsub(char command, int Prenum1)
         }
       }
     }
+
+    static void append_spaces(StringBuilder sb, int len)
+    {
+      while(len-- > 0)
+        sb.append(' ');
+    }
     
-    static void mch_memmove(StringBuffer dst, int dstIndex,
+    static void mch_memmove(StringBuilder dst, int dstIndex,
             CharSequence src, int srcIndex,
             int len) {
       // overlap, copy backwards
@@ -4776,17 +4782,17 @@ op_do_addsub(char command, int Prenum1)
           dst.setCharAt(dstIndex++, src.charAt(srcIndex++));
     }
     
-    static void copy_spaces(StringBuffer dst, int index, int len) {
+    static void copy_spaces(StringBuilder dst, int index, int len) {
       while(len-- > 0)
         dst.setCharAt(index++, ' ');
     }
     
-    static int STRLEN(StringBuffer sb) {
+    static int STRLEN(StringBuilder sb) {
       int len = sb.indexOf("\0");
       return len >= 0 ? len : sb.length();
     }
     
-    static void copy_chars(StringBuffer dst, int index, int len, char c) {
+    static void copy_chars(StringBuilder dst, int index, int len, char c) {
       while(len-- > 0)
         dst.setCharAt(index++, c);
     }
@@ -4798,18 +4804,139 @@ op_do_addsub(char command, int Prenum1)
       G.curwin.w_cursor.set(line, col);
     }
 
+    static boolean blockOpSwapText = true;
 /**
  * Insert string "s" (b_insert ? before : after) block :AKelly
  * Caller must prepare for undo.
  */
   static void block_insert(OPARG oap, String s, boolean b_insert, block_def bdp) {
+    if(!blockOpSwapText) {
+      block_insertInplace(oap, s, b_insert, bdp);
+      return;
+    }
+
+    //
+    // Profiling shows that almost all the time is spent in Document.<op>.
+    // This modified algorithm build a new string result consisting of all
+    // the modified lines and replaces them in a single document op.
+    //
+    // This cuts the time in half (still around 90% in Document),
+    // still long but...
+    //
+
     int		p_ts;
     int		count = 0;	// extra spaces to replace a cut TAB
     int		spaces = 0;	// non-zero if cutting a TAB
     int 	offset;		// pointer along new line
     int 	s_len;		// STRLEN(s)
     MySegment   oldp;           // new, old lines
-    StringBuffer newp;
+    StringBuilder newp;
+    int 	lnum;		// loop var
+    int		oldstate = G.State;
+
+    if(oap.start.getLine() + 1 > oap.end.getLine())
+      return;
+
+    G.State = INSERT;		// don't want REPLACE for State
+    s_len = s.length();
+
+    int startOffset = G.curbuf.getLineStartOffset(oap.start.getLine() + 1);
+    int endOffset = G.curbuf.getLineEndOffset(oap.end.getLine());
+    StringBuilder sb = new StringBuilder(endOffset - startOffset
+            + s_len * (oap.end.getLine() - oap.start.getLine()));
+
+    for (lnum = oap.start.getLine() + 1; lnum <= oap.end.getLine(); lnum++) {
+      block_prep(oap, bdp, lnum, true);
+
+      oldp = Util.ml_get(lnum);
+
+      if (bdp.is_short && b_insert) {
+        sb.append(oldp);
+        continue;	// OP_INSERT, line ends before block start
+      }
+
+      count = 0;
+      if (b_insert) {
+        p_ts = bdp.start_char_vcols;
+        spaces = bdp.startspaces;
+        if (spaces != 0)
+          count = p_ts - 1; // we're cutting a TAB
+        offset = bdp.textcol;
+      } else // append
+      {
+        p_ts = bdp.end_char_vcols;
+        if (!bdp.is_short) // spaces = padding after block
+        {
+          spaces = (bdp.endspaces != 0 ? p_ts - bdp.endspaces : 0);
+          if (spaces != 0)
+            count = p_ts - 1; // we're cutting a TAB
+          offset = bdp.textcol + bdp.textlen - (spaces != 0 ? 1 : 0);
+        } else // spaces = padding to block edge
+        {
+          // if $ used, just append to EOL (ie spaces==0)
+          if (!bdp.is_MAX)
+            spaces = (oap.end_vcol - bdp.end_vcol) + 1;
+          count = spaces;
+          offset = bdp.textcol + bdp.textlen;
+        }
+      }
+
+      //if(spaces == 0) {
+      //  // No splitting or padding going on, can simply insert the string.
+      //  // Profiling shows that 45% of time spent in Document.remove
+      //  // and 50% in Document.insertString, with this case don't need remove
+      //  // Should almost double the performance
+      //  G.curwin.insertText(G.curbuf.getLineStartOffset(lnum) + offset, s);
+      //} else
+
+      /* copy up to shifted part */
+      sb.append(oldp, 0, offset);
+      int oldp_idx = offset;
+
+      // insert pre-padding
+      append_spaces(sb, spaces);
+
+      // copy the new text
+      sb.append(s);
+
+      if (spaces != 0 && !bdp.is_short) {
+        // insert post-padding
+        append_spaces(sb, p_ts - spaces);
+        // We're splitting a TAB, don't copy it.
+        oldp_idx++;
+        // We allowed for that TAB, remember this now
+      }
+
+      // Copy the rest of the line
+      sb.append(oldp, oldp_idx, oldp.length());
+
+      if (lnum == oap.end.getLine()) {
+        // All done.
+        // delete the trailing '\n'
+        sb.deleteCharAt(sb.length()-1);
+        G.curbuf.replaceString(startOffset, endOffset-1, sb.toString());
+          // Set "']" mark to the end of the block instead of the end of
+          // the insert in the first line.
+        ViFPOS op_end = oap.end.copy();
+        op_end.setColumn(offset);
+        G.curbuf.b_op_end.setMark(op_end);
+      }
+    } // for all lnum
+
+    // changed_lines(oap.start.lnum + 1, 0, oap.end.lnum + 1, 0L);
+
+    G.State = oldstate;
+  }
+
+  private static void block_insertInplace(
+          OPARG oap, String s, boolean b_insert, block_def bdp) {
+    int		p_ts;
+    int		count = 0;	// extra spaces to replace a cut TAB
+    int		spaces = 0;	// non-zero if cutting a TAB
+    int 	offset;		// pointer along new line
+    int 	s_len;		// STRLEN(s)
+    MySegment   oldp;           // new, old lines
+    StringBuilder newp;
     int 	lnum;		// loop var
     int		oldstate = G.State;
     
@@ -4856,7 +4983,7 @@ op_do_addsub(char command, int Prenum1)
         // Should almost double the performance
         G.curwin.insertText(G.curbuf.getLineStartOffset(lnum) + offset, s);
       } else {
-        newp = new StringBuffer();
+        newp = new StringBuilder();
         //newp = alloc_check((unsigned)(STRLEN(oldp)) + s_len + count + 1);
         newp.setLength(oldp.length() - 1 + s_len + count);
         
