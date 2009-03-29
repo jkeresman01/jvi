@@ -27,10 +27,11 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 package com.raelity.jvi;
+
 /**
  * Arguments for operators.
  */
-public class OPARG
+public class OPARG implements Cloneable
 {
     int	    op_type;		/* current pending operator type */
     char    regname;		/* register to use for the operator */
@@ -56,26 +57,26 @@ public class OPARG
       regname = 0;
     }
 
+    @Override
+    public Object clone() throws CloneNotSupportedException
+    {
+        OPARG dest;
+        dest = (OPARG) super.clone();
+        dest.start = (start == null ? null : start.copy());
+        dest.end = (end == null ? null : end.copy());
+        return dest;
+    }
+
     /**
      * Create a copy of OPARG.
      * @return a copy of this OPARG object
      */
     public OPARG copy() {
-        OPARG dest = new OPARG();
-        dest.op_type = op_type;
-        dest.regname = regname;
-        dest.motion_type = motion_type;
-        dest.end_adjusted = end_adjusted;
-        dest.start = (start == null ? null : start.copy());
-        dest.end = (end == null ? null : end.copy());
-        dest.line_count = line_count;
-        dest.empty = empty;
-        dest.is_VIsual = is_VIsual;
-        dest.block_mode = block_mode;
-        dest.start_vcol = start_vcol;
-        dest.end_vcol = end_vcol;
-        dest.error = error;
-        return dest;
+        try {
+            return (OPARG) clone();
+        } catch (CloneNotSupportedException ex) {
+        }
+        return null;
     }
 
     /**

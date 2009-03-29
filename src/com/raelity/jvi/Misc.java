@@ -1730,63 +1730,7 @@ public class Misc implements ClipboardOwner {
     // block mode delete
     //
     if (oap.block_mode) {
-//      if (u_save((oap.start.getLine() - 1), (oap.end.getLine() + 1)) == FAIL)
-//            return FAIL;
-      
-      ViFPOS fpos = G.curwin.w_cursor.copy();
-      int finishPositionColumn = fpos.getColumn();
-      int lnum = fpos.getLine();
-      for (; lnum <= oap.end.getLine(); lnum++) {
-        MySegment oldp;
-        StringBuilder newp;
-        block_def bd = new block_def();
-        block_prep(oap, bd, lnum, true);
-        if (bd.textlen == 0)       /* nothing to delete */
-          continue;
-        
-        /* Adjust cursor position for tab replaced by spaces and 'lbr'. */
-        if (lnum == fpos.getLine()) {
-          finishPositionColumn = bd.textcol + bd.startspaces;
-        }
-        
-        // n == number of chars deleted
-        // If we delete a TAB, it may be replaced by several characters.
-        // Thus the number of characters may increase!
-        //
-        int n = bd.textlen - bd.startspaces - bd.endspaces;
-        if(bd.startspaces + bd.endspaces == 0) {
-          // No TAB is split, simplify
-          int lineStart = G.curbuf.getLineStartOffset(lnum);
-          G.curwin.deleteChar(lineStart + bd.textcol,
-                              lineStart + bd.textcol + bd.textlen);
-        } else {
-          oldp = Util.ml_get(lnum);
-          newp = new StringBuilder();
-          //newp = alloc_check((unsigned)STRLEN(oldp) + 1 - n);
-          newp.setLength(oldp.length() - 1 - n); // -1 '\n', no +1 for '\n'
-          // copy up to deleted part
-          mch_memmove(newp, 0, oldp, 0, bd.textcol);
-          // insert spaces
-          copy_spaces(newp, bd.textcol, (bd.startspaces + bd.endspaces));
-          // copy the part after the deleted part
-          int oldp_idx = bd.textcol + bd.textlen;
-          mch_memmove(newp, bd.textcol + bd.startspaces + bd.endspaces,
-                      oldp, oldp_idx,
-                      (oldp.length()-1) - oldp_idx); // STRLEN(oldp) + 1)
-          // replace the line
-          newp.setLength(STRLEN(newp));
-          Util.ml_replace(lnum, newp);
-        }
-      }
-
-      G.curwin.w_cursor.set(fpos.getLine(), finishPositionColumn);
-      //changed_cline_bef_curs();/* recompute cursor pos. on screen */
-      //approximate_botline();/* w_botline may be wrong now */
-      adjust_cursor();
-      
-      //changed();
-      update_screen(VALID_TO_CURSCHAR);
-      oap.line_count = 0; /* no lines deleted */
+      block_delete(oap);
     } else if (oap.motion_type == MLINE) {
       // OP_CHANGE stuff moved to op_change
       if(oap.op_type == OP_CHANGE) {
@@ -1854,6 +1798,147 @@ public class Misc implements ClipboardOwner {
     G.curbuf.b_op_end.setMark(opEndPos);
     G.curbuf.b_op_start.setMark(opStartPos);
     return true;
+  }
+
+  /**
+   * block mode delete
+   * 
+   * This was inside an if block in op_delete.
+   * Pull it out to clarify swap algorithm
+   */
+  private static void block_delete(OPARG oap) {
+    if(!blockOpSwapText || oap.line_count < 5) {
+      block_deleteInplace(oap);
+      return;
+    }
+    //
+    // Use block_deleteInplace for the first line and last line
+    // so that they are separate undoable operation.
+    // Then the undo/redo pointer are better placed (I hope).
+    //
+
+    // there are at least 3 lines to do
+
+    int lnum = oap.start.getLine();
+    int finishPositionColumn = block_deleteInplace(oap, lnum, lnum);
+    ++lnum; // did the first line
+    int endLine = oap.end.getLine() - 1; // don't do last line in big chunk
+
+    // startOffset/endOffset of single multi-line chunk replaced in the document
+    int startOffset = G.curbuf.getLineStartOffset(lnum);
+    int endOffset = G.curbuf.getLineEndOffset(endLine);
+    StringBuilder sb = new StringBuilder(endOffset - startOffset);
+
+    block_def bd = new block_def();
+    for (; lnum <= endLine; lnum++) {
+      MySegment oldp;
+      block_prep(oap, bd, lnum, true);
+
+      oldp = Util.ml_get(lnum);
+      if (bd.textlen == 0) {       /* nothing to delete */
+        sb.append(oldp);
+        continue;
+      }
+
+      // If we delete a TAB, it may be replaced by several characters.
+      // Thus the number of characters may increase!
+      //
+      sb.append(oldp, 0, bd.textcol);
+      // insert spaces
+      append_spaces(sb, bd.startspaces + bd.endspaces);
+      // copy the part after the deleted part
+      int oldp_idx = bd.textcol + bd.textlen;
+      sb.append(oldp, oldp_idx, oldp.length());
+    }
+
+    // delete the trailing '\n'
+    sb.deleteCharAt(sb.length()-1);
+    G.curbuf.replaceString(startOffset, endOffset-1, sb.toString());
+
+    // do the final line
+    ++endLine;
+    block_deleteInplace(oap, endLine, endLine);
+
+    G.curwin.w_cursor.set(oap.start.getLine(), finishPositionColumn);
+    adjust_cursor();
+
+    update_screen(VALID_TO_CURSCHAR);
+    oap.line_count = 0; /* no lines deleted */
+  }
+
+  /** the original block_delete */
+  private static int block_deleteInplace(OPARG oap) {
+//      if (u_save((oap.start.getLine() - 1), (oap.end.getLine() + 1)) == FAIL)
+//            return FAIL;
+
+    ViFPOS fpos = oap.start;
+    int finishPositionColumn = block_deleteInplace(oap,
+                                                       oap.start.getLine(),
+                                                       oap.end.getLine());
+
+    G.curwin.w_cursor.set(fpos.getLine(), finishPositionColumn);
+    //changed_cline_bef_curs();/* recompute cursor pos. on screen */
+    //approximate_botline();/* w_botline may be wrong now */
+    adjust_cursor();
+
+    //changed();
+    update_screen(VALID_TO_CURSCHAR);
+    oap.line_count = 0; /* no lines deleted */
+    return finishPositionColumn;
+  }
+
+  private static int block_deleteInplace(OPARG oap,
+                                             int startLine,
+                                             int endLine) {
+    //ViFPOS fpos = G.curwin.w_cursor.copy();
+    ViFPOS fpos = oap.start;
+    int finishPositionColumn = fpos.getColumn();
+    //int lnum = fpos.getLine();
+    int lnum = startLine;
+    //for (; lnum <= oap.end.getLine(); lnum++)
+    for (; lnum <= endLine; lnum++) {
+      MySegment oldp;
+      StringBuilder newp;
+      block_def bd = new block_def();
+      block_prep(oap, bd, lnum, true);
+      if (bd.textlen == 0)       /* nothing to delete */
+        continue;
+
+      /* Adjust cursor position for tab replaced by spaces and 'lbr'. */
+      if (lnum == fpos.getLine()) {
+        finishPositionColumn = bd.textcol + bd.startspaces;
+      }
+
+      // n == number of chars deleted
+      // If we delete a TAB, it may be replaced by several characters.
+      // Thus the number of characters may increase!
+      //
+      int n = bd.textlen - bd.startspaces - bd.endspaces;
+      if(bd.startspaces + bd.endspaces == 0) {
+        // No TAB is split, simplify
+        int lineStart = G.curbuf.getLineStartOffset(lnum);
+        G.curwin.deleteChar(lineStart + bd.textcol,
+                            lineStart + bd.textcol + bd.textlen);
+      } else {
+        oldp = Util.ml_get(lnum);
+        newp = new StringBuilder();
+        //newp = alloc_check((unsigned)STRLEN(oldp) + 1 - n);
+        newp.setLength(oldp.length() - 1 - n); // -1 '\n', no +1 for '\n'
+        // copy up to deleted part
+        mch_memmove(newp, 0, oldp, 0, bd.textcol);
+        // insert spaces
+        copy_spaces(newp, bd.textcol, (bd.startspaces + bd.endspaces));
+        // copy the part after the deleted part
+        int oldp_idx = bd.textcol + bd.textlen;
+        mch_memmove(newp, bd.textcol + bd.startspaces + bd.endspaces,
+                    oldp, oldp_idx,
+                    (oldp.length()-1) - oldp_idx); // STRLEN(oldp) + 1)
+        // replace the line
+        newp.setLength(STRLEN(newp));
+        Util.ml_replace(lnum, newp);
+      }
+    }
+    return finishPositionColumn;
   }
 
   /**
@@ -4810,7 +4895,7 @@ op_do_addsub(char command, int Prenum1)
  * Caller must prepare for undo.
  */
   static void block_insert(OPARG oap, String s, boolean b_insert, block_def bdp) {
-    if(!blockOpSwapText) {
+    if(!blockOpSwapText || oap.line_count < 5) {
       block_insertInplace(oap, s, b_insert, bdp);
       return;
     }
@@ -4830,22 +4915,20 @@ op_do_addsub(char command, int Prenum1)
     int 	offset;		// pointer along new line
     int 	s_len;		// STRLEN(s)
     MySegment   oldp;           // new, old lines
-    StringBuilder newp;
-    int 	lnum;		// loop var
     int		oldstate = G.State;
 
-    if(oap.start.getLine() + 1 > oap.end.getLine())
-      return;
+    int lnum = oap.start.getLine() + 1; // frist line done by edit
+    int endLine = oap.end.getLine() - 1; // don't do last line in this loop
 
     G.State = INSERT;		// don't want REPLACE for State
     s_len = s.length();
 
-    int startOffset = G.curbuf.getLineStartOffset(oap.start.getLine() + 1);
-    int endOffset = G.curbuf.getLineEndOffset(oap.end.getLine());
+    int startOffset = G.curbuf.getLineStartOffset(lnum);
+    int endOffset = G.curbuf.getLineEndOffset(endLine);
     StringBuilder sb = new StringBuilder(endOffset - startOffset
-            + s_len * (oap.end.getLine() - oap.start.getLine()));
+            + s_len * (endLine - lnum + 1));
 
-    for (lnum = oap.start.getLine() + 1; lnum <= oap.end.getLine(); lnum++) {
+    for (; lnum <= endLine; lnum++) {
       block_prep(oap, bdp, lnum, true);
 
       oldp = Util.ml_get(lnum);
@@ -4910,18 +4993,16 @@ op_do_addsub(char command, int Prenum1)
       // Copy the rest of the line
       sb.append(oldp, oldp_idx, oldp.length());
 
-      if (lnum == oap.end.getLine()) {
-        // All done.
-        // delete the trailing '\n'
-        sb.deleteCharAt(sb.length()-1);
-        G.curbuf.replaceString(startOffset, endOffset-1, sb.toString());
-          // Set "']" mark to the end of the block instead of the end of
-          // the insert in the first line.
-        ViFPOS op_end = oap.end.copy();
-        op_end.setColumn(offset);
-        G.curbuf.b_op_end.setMark(op_end);
-      }
-    } // for all lnum
+    } // for all lnum except first and last
+
+    // All done with the big chunk.
+    // delete the trailing '\n'
+    sb.deleteCharAt(sb.length()-1);
+    G.curbuf.replaceString(startOffset, endOffset-1, sb.toString());
+
+    // do the last line
+    ++endLine;
+    block_insertInplace(oap, s, b_insert, bdp, endLine, endLine);
 
     // changed_lines(oap.start.lnum + 1, 0, oap.end.lnum + 1, 0L);
 
@@ -4930,6 +5011,14 @@ op_do_addsub(char command, int Prenum1)
 
   private static void block_insertInplace(
           OPARG oap, String s, boolean b_insert, block_def bdp) {
+    // The first line has already been handled by edit
+    block_insertInplace(oap, s, b_insert, bdp,
+                        oap.start.getLine() + 1, oap.end.getLine());
+  }
+
+  private static void block_insertInplace(
+          OPARG oap, String s, boolean b_insert, block_def bdp,
+          int startLine, int endLine) {
     int		p_ts;
     int		count = 0;	// extra spaces to replace a cut TAB
     int		spaces = 0;	// non-zero if cutting a TAB
@@ -4943,7 +5032,7 @@ op_do_addsub(char command, int Prenum1)
     G.State = INSERT;		// don't want REPLACE for State
     s_len = s.length();
     
-    for (lnum = oap.start.getLine() + 1; lnum <= oap.end.getLine(); lnum++) {
+    for (lnum = startLine; lnum <= endLine; lnum++) {
       block_prep(oap, bdp, lnum, true);
       if (bdp.is_short && b_insert)
         continue;	// OP_INSERT, line ends before block start
@@ -4982,6 +5071,7 @@ op_do_addsub(char command, int Prenum1)
         // and 50% in Document.insertString, with this case don't need remove
         // Should almost double the performance
         G.curwin.insertText(G.curbuf.getLineStartOffset(lnum) + offset, s);
+        offset += s_len;
       } else {
         newp = new StringBuilder();
         //newp = alloc_check((unsigned)(STRLEN(oldp)) + s_len + count + 1);

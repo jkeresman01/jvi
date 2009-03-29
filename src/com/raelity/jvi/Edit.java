@@ -1110,6 +1110,11 @@ one_char: {
     if (G.did_ai && !arrow_used)
       removeUnusedWhiteSpace();
     G.did_ai = false;
+
+    if(end_insert_pos != null) {
+      G.curbuf.b_op_start.setMark(Insstart);
+      G.curbuf.b_op_end.setMark(end_insert_pos);
+    }
   }
   
   /**
@@ -1422,7 +1427,7 @@ one_char: {
         // disabled_redraw = TRUE;
         return false;	// repeat the insert
       }
-      stop_insert(null);	// pass stop insert cursor position
+      stop_insert(G.curwin.w_cursor);	// pass stop insert cursor position
       
       /* ********************************************************
       if (dollar_vcol) {
