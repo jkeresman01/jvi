@@ -1984,85 +1984,21 @@ public class Misc implements ClipboardOwner {
     }
   }
     
-  public static int op_replace7(OPARG oap, char c) {
-    int		n;
-    int         numc;
-    int		lnum;
-    StringBuilder newBuf;
-    MySegment   oldBuf;
-    int         oldlen;
-    block_def bd = new block_def();
-    
+  public static int op_replace7(OPARG oap, char c)
+  {
     // Note use an fpos instead of the cursor,
     // This should avoid jitter on the screen
-    ViFPOS fpos = G.curwin.w_cursor.copy();
-    
-    int oldp;
     
     if(/* (curbuf.b_ml.ml_flags & ML_EMPTY ) || */ oap.empty)
       return OK;	    // nothing to do
     
     //#ifdef MULTI_BYTE ... #endif
     
-    //
-    // block mode replace
-    //
     if (oap.block_mode) {
-      bd.is_MAX = G.curwin.w_curswant == MAXCOL;
-      for (lnum = fpos.getLine(); lnum <= oap.end.getLine(); lnum++) {
-        fpos.set(lnum, 0);
-        block_prep(oap, bd, lnum, true);
-        if (bd.textlen == 0 /* && (!virtual_op || bd.is_MAX)*/)
-          continue;                     // nothing to replace
-        
-        // n == number of extra chars required
-        // If we split a TAB, it may be replaced by several characters.
-        // Thus the number of characters may increase!
-        //
-        // allow for pre spaces
-        n = (bd.startspaces != 0 ? bd.start_char_vcols - 1 : 0 );
-        // allow for post spp
-        n += (bd.endspaces != 0 && !bd.is_oneChar && bd.end_char_vcols > 0
-                ? bd.end_char_vcols - 1 : 0 );
-        numc = oap.end_vcol - oap.start_vcol + 1;
-        if (bd.is_short /*&& (!virtual_op || bd.is_MAX)*/)
-          numc -= (oap.end_vcol - bd.end_vcol) + 1;
-        // oldlen includes textlen, so don't double count
-        n += numc - bd.textlen;
-        
-        //oldp = ml_get_curline();
-        oldBuf = Util.ml_get(fpos.getLine());
-        oldp = 0;
-        oldlen = oldBuf.length() - 1; //excluce the \n
-        //newp = alloc_check((unsigned)STRLEN(oldp) + 1 + n);
-        // -1 in setlength to ignore \n, don't need +1 since no null at end
-        newBuf = new StringBuilder();
-        newBuf.setLength(oldlen + n);
-        
-        // too much sometimes gets allocated with the setLength,
-        // but the correct number of chars gets copied, keep track of that.
-        // BTW, a few extra nulls at the end wouldn't hurt vim
-        
-        // copy up to deleted part
-        mch_memmove(newBuf, 0, oldBuf, oldp, bd.textcol);
-        oldp += bd.textcol + bd.textlen;
-        // insert pre-spaces
-        copy_spaces(newBuf, bd.textcol, bd.startspaces);
-        /* insert replacement chars CHECK FOR ALLOCATED SPACE */
-        copy_chars(newBuf, STRLEN(newBuf), numc, c);
-        if (!bd.is_short) {
-          // insert post-spaces
-          copy_spaces(newBuf, STRLEN(newBuf), bd.endspaces);
-          // copy the part after the changed part, -1 to exclude \n
-          int tCount = (oldBuf.length() - 1) - oldp; // STRLEN(oldp) +1
-          mch_memmove(newBuf, STRLEN(newBuf), oldBuf, oldp, tCount);
-        }
-        // delete trailing nulls, vim alloc extra when tabs (seen with gdb)
-        newBuf.setLength(STRLEN(newBuf));
-        // replace the line
-        Util.ml_replace(lnum, newBuf);
-      }
+      block_replace(oap, c);
     } else {
+      ViFPOS fpos = G.curwin.w_cursor.copy();
+
       //
       // MCHAR and MLINE motion replace.
       //
@@ -2098,6 +2034,170 @@ public class Misc implements ClipboardOwner {
     G.curbuf.b_op_end.setMark(oap.end);
     
     return OK;
+  }
+
+  private static void block_replace(OPARG oap, char c)
+  {
+    if(!blockOpSwapText || oap.line_count < 5) {
+      block_replaceInplace(oap, c);
+      return;
+    }
+
+    int         numc;
+    MySegment   oldBuf;
+    block_def bd = new block_def();
+
+    bd.is_MAX = G.curwin.w_curswant == MAXCOL;
+
+    int lnum = oap.start.getLine();
+    block_replaceInplace(oap, c, lnum, lnum);
+    ++lnum; // first line done by "inplace"
+    int endLine = oap.end.getLine() - 1; // don't do last line in this loop
+
+    // startOffset/endOffset of single multi-line chunk replaced in the document
+    int startOffset = G.curbuf.getLineStartOffset(lnum);
+    int endOffset = G.curbuf.getLineEndOffset(endLine);
+    StringBuilder sb = new StringBuilder(endOffset - startOffset);
+
+    for (; lnum <= endLine; lnum++) {
+      //fpos.set(lnum, 0);
+      block_prep(oap, bd, lnum, true);
+
+      oldBuf = Util.ml_get(lnum);
+
+      if (bd.textlen == 0 /* && (!virtual_op || bd.is_MAX)*/)
+      {
+        sb.append(oldBuf);
+        continue;                     // nothing to replace
+      }
+
+      // If we split a TAB, it may be replaced by several characters.
+      // Thus the number of characters may increase!
+      //
+      // allow for pre spaces
+      // allow for post spp
+      numc = oap.end_vcol - oap.start_vcol + 1;
+      if (bd.is_short /*&& (!virtual_op || bd.is_MAX)*/)
+        numc -= (oap.end_vcol - bd.end_vcol) + 1;
+      // oldlen includes textlen, so don't double count
+
+      // copy up to deleted part
+      sb.append(oldBuf, 0, bd.textcol);
+      // insert pre-spaces
+      append_spaces(sb, bd.startspaces);
+      /* insert replacement chars CHECK FOR ALLOCATED SPACE */
+      append_chars(sb, numc, c);
+      if (!bd.is_short) {
+        // insert post-spaces
+        //copy_spaces(newBuf, STRLEN(newBuf), bd.endspaces);
+        append_spaces(sb, bd.endspaces);
+        // copy the part after the changed part
+        sb.append(oldBuf, bd.textcol + bd.textlen, oldBuf.length());
+      } else {
+        sb.append('\n');
+      }
+    }
+
+    // All done with the big chunk.
+    // delete the trailing '\n'
+    sb.deleteCharAt(sb.length()-1);
+    G.curbuf.replaceString(startOffset, endOffset-1, sb.toString());
+
+    ++endLine;
+    block_replaceInplace(oap, c, endLine, endLine);
+  }
+
+  private static void block_replaceInplace(OPARG oap, char c)
+  {
+    block_replaceInplace(oap, c, oap.start.getLine(), oap.end.getLine());
+  }
+
+  private static void block_replaceInplace(OPARG oap, char c,
+                                           int startLine, int endLine)
+  {
+    int		n;
+    int         numc;
+    MySegment   oldBuf;
+    int         oldlen;
+    int		lnum;
+    StringBuilder newBuf;
+    block_def bd = new block_def();
+    int oldp;
+
+    // Note use an fpos instead of the cursor,
+    // This should avoid jitter on the screen
+    //ViFPOS fpos = G.curwin.w_cursor.copy();
+
+    bd.is_MAX = G.curwin.w_curswant == MAXCOL;
+    String fullReplaceString = null;
+
+    for (lnum = startLine; lnum <= endLine; lnum++) {
+      //fpos.set(lnum, 0);
+      block_prep(oap, bd, lnum, true);
+      if (bd.textlen == 0 /* && (!virtual_op || bd.is_MAX)*/)
+        continue;                     // nothing to replace
+
+      // n == number of extra chars required
+      // If we split a TAB, it may be replaced by several characters.
+      // Thus the number of characters may increase!
+      //
+      // allow for pre spaces
+      n = (bd.startspaces != 0 ? bd.start_char_vcols - 1 : 0 );
+      // allow for post spp
+      n += (bd.endspaces != 0 && !bd.is_oneChar && bd.end_char_vcols > 0
+              ? bd.end_char_vcols - 1 : 0 );
+      numc = oap.end_vcol - oap.start_vcol + 1;
+      if (bd.is_short /*&& (!virtual_op || bd.is_MAX)*/)
+        numc -= (oap.end_vcol - bd.end_vcol) + 1;
+      // oldlen includes textlen, so don't double count
+      n += numc - bd.textlen;
+
+      if(bd.textlen == numc
+            && !bd.is_short && bd.startspaces == 0 && bd.endspaces == 0) {
+        // replace inplace, there may be a better test but this must work
+        if(fullReplaceString == null) {
+          StringBuilder sb = new StringBuilder();
+          for(int i = 0; i < numc; i++)
+            sb.append(c);
+          fullReplaceString = sb.toString();
+        }
+        int offset = G.curbuf.getLineStartOffset(lnum) + bd.textcol;
+        G.curbuf.replaceString(offset, offset + numc, fullReplaceString);
+      } else {
+        //oldp = ml_get_curline();
+        //oldBuf = Util.ml_get(fpos.getLine());
+        oldBuf = Util.ml_get(lnum);
+        oldp = 0;
+        oldlen = oldBuf.length() - 1; //excluce the \n
+        //newp = alloc_check((unsigned)STRLEN(oldp) + 1 + n);
+        // -1 in setlength to ignore \n, don't need +1 since no null at end
+        newBuf = new StringBuilder();
+        newBuf.setLength(oldlen + n);
+
+        // too much sometimes gets allocated with the setLength,
+        // but the correct number of chars gets copied, keep track of that.
+        // BTW, a few extra nulls at the end wouldn't hurt vim
+
+        // copy up to deleted part
+        mch_memmove(newBuf, 0, oldBuf, oldp, bd.textcol);
+        oldp += bd.textcol + bd.textlen;
+        // insert pre-spaces
+        copy_spaces(newBuf, bd.textcol, bd.startspaces);
+        /* insert replacement chars CHECK FOR ALLOCATED SPACE */
+        copy_chars(newBuf, STRLEN(newBuf), numc, c);
+        if (!bd.is_short) {
+          // insert post-spaces
+          copy_spaces(newBuf, STRLEN(newBuf), bd.endspaces);
+          // copy the part after the changed part, -1 to exclude \n
+          int tCount = (oldBuf.length() - 1) - oldp; // STRLEN(oldp) +1
+          mch_memmove(newBuf, STRLEN(newBuf), oldBuf, oldp, tCount);
+        }
+        // delete trailing nulls, vim alloc extra when tabs (seen with gdb)
+        newBuf.setLength(STRLEN(newBuf));
+        // replace the line
+        Util.ml_replace(lnum, newBuf);
+      }
+    }
   }
 
   /**
@@ -4316,126 +4416,126 @@ public class Misc implements ClipboardOwner {
  * - start/endspaces is the number of columns of the first/last yanked char
  *   that are to be yanked.
  */
-    static void block_prep(OPARG oap, block_def bdp, int lnum, boolean is_del) {
-      //System.out.println("block prep: "+ oap.end_vcol +" -> "
-      //+ (G.curwin.getLineEndOffset(lnum) - G.curwin.getLineStartOffset(lnum)));
-      int   incr = 0;
-      MySegment pend;
-      MySegment pstart;
-      int pend_idx;
-      int pstart_idx;
-      int prev_pstart_idx;
-      int prev_pend_idx;
-      
-      bdp.startspaces = 0;
-      bdp.endspaces = 0;
-      bdp.textlen = 0;
-      bdp.textcol = 0;
-      bdp.start_vcol = 0;
-      bdp.end_vcol = 0;
-      bdp.is_short = false;
-      bdp.is_oneChar = false;
+static void block_prep(OPARG oap, block_def bdp, int lnum, boolean is_del) {
+  //System.out.println("block prep: "+ oap.end_vcol +" -> "
+  //+ (G.curwin.getLineEndOffset(lnum) - G.curwin.getLineStartOffset(lnum)));
+  int   incr = 0;
+  MySegment pend;
+  MySegment pstart;
+  int pend_idx;
+  int pstart_idx;
+  int prev_pstart_idx;
+  int prev_pend_idx;
+
+  bdp.startspaces = 0;
+  bdp.endspaces = 0;
+  bdp.textlen = 0;
+  bdp.textcol = 0;
+  bdp.start_vcol = 0;
+  bdp.end_vcol = 0;
+  bdp.is_short = false;
+  bdp.is_oneChar = false;
+  bdp.pre_whitesp = 0;
+  bdp.pre_whitesp_c = 0;
+  bdp.end_char_vcols = 0;
+  bdp.start_char_vcols = 0;
+
+  pstart = Util.truncateNewline(Util.ml_get(lnum));
+
+  pstart_idx = 0;
+  prev_pstart_idx = 0;
+  pend_idx = 0;
+  prev_pend_idx = 0;
+
+  while (bdp.start_vcol < oap.start_vcol && pstart_idx < pstart.length()) {
+    /* Count a tab for what it's worth (if list mode not on) */
+    incr = lbr_chartabsize(pstart.charAt(pstart_idx), bdp.start_vcol);
+    bdp.start_vcol += incr;
+    ++bdp.textcol;
+    if (vim_iswhite(pstart.charAt(pstart_idx))) {
+      bdp.pre_whitesp += incr;
+      bdp.pre_whitesp_c++;
+    } else {
       bdp.pre_whitesp = 0;
       bdp.pre_whitesp_c = 0;
-      bdp.end_char_vcols = 0;
-      bdp.start_char_vcols = 0;
-      
-      pstart = Util.truncateNewline(Util.ml_get(lnum));
-      
-      pstart_idx = 0;
-      prev_pstart_idx = 0;
-      pend_idx = 0;
-      prev_pend_idx = 0;
-      
-      while (bdp.start_vcol < oap.start_vcol && pstart_idx < pstart.length()) {
-        /* Count a tab for what it's worth (if list mode not on) */
-        incr = lbr_chartabsize(pstart.charAt(pstart_idx), bdp.start_vcol);
-        bdp.start_vcol += incr;
-        ++bdp.textcol;
-        if (vim_iswhite(pstart.charAt(pstart_idx))) {
-          bdp.pre_whitesp += incr;
-          bdp.pre_whitesp_c++;
-        } else {
-          bdp.pre_whitesp = 0;
-          bdp.pre_whitesp_c = 0;
-        }
-        prev_pstart_idx = pstart_idx;
-        pstart_idx++;//++pstart;
-      }
-      bdp.start_char_vcols = incr;
-      if (bdp.start_vcol < oap.start_vcol) // line too short
-      {
-        bdp.end_vcol = bdp.start_vcol;
-        bdp.is_short = true;
-        if (!is_del || oap.op_type == OP_APPEND)
-          bdp.endspaces = oap.end_vcol - oap.start_vcol + 1;
-      } else {
-        bdp.startspaces = bdp.start_vcol - oap.start_vcol;
-        if (is_del && bdp.startspaces != 0)
-          bdp.startspaces = bdp.start_char_vcols - bdp.startspaces;
-        pend = pstart;
-        pend_idx = pstart_idx;
-        bdp.end_vcol = bdp.start_vcol;
-        if (bdp.end_vcol > oap.end_vcol) // it's all in one character
-        {
-          bdp.is_oneChar = true;
-          if (oap.op_type == OP_INSERT)
-            bdp.endspaces = bdp.start_char_vcols - bdp.startspaces;
-          else if (oap.op_type == OP_APPEND) {
-            bdp.startspaces += oap.end_vcol - oap.start_vcol + 1;
-            bdp.endspaces = bdp.start_char_vcols - bdp.startspaces;
-          } else {
-            bdp.startspaces = oap.end_vcol - oap.start_vcol + 1;
-            if (is_del && oap.op_type != OP_LSHIFT) {
-              // just putting the sum of those two into
-              // bdp->startspaces doesn't work for Visual replace,
-              // so we have to split the tab in two
-              bdp.startspaces = bdp.start_char_vcols
-                      - (bdp.start_vcol - oap.start_vcol);
-              bdp.endspaces = bdp.end_vcol - oap.end_vcol - 1;
-            }
-          }
-        } else {
-          prev_pend_idx = pend_idx;
-          while (bdp.end_vcol <= oap.end_vcol && pend_idx < pend.length()) {
-            /* Count a tab for what it's worth (if list mode not on) */
-            prev_pend_idx = pend_idx;
-            incr = lbr_chartabsize(pend.charAt(pend_idx), bdp.end_vcol);
-            bdp.end_vcol += incr;
-            pend_idx++;
-          }
-          if (bdp.end_vcol <= oap.end_vcol
-                  && (!is_del
-                  || oap.op_type == OP_APPEND
-                  || oap.op_type == OP_REPLACE)) // line too short
-          {
-            bdp.is_short = true;
-            // Alternative: include spaces to fill up the block.
-            // Disadvantage: can lead to trailing spaces when the line is
-            // short where the text is put */
-            // if (!is_del || oap->op_type == OP_APPEND) //
-            if (oap.op_type == OP_APPEND /*|| virtual_op*/)
-              bdp.endspaces = oap.end_vcol - bdp.end_vcol
-                      + (oap.inclusive ? 1 : 0);
-            else
-              bdp.endspaces = 0; // replace doesn't add characters
-          } else if (bdp.end_vcol > oap.end_vcol) {
-            bdp.endspaces = bdp.end_vcol - oap.end_vcol - 1;
-            if (!is_del && bdp.endspaces != 0) {
-              bdp.endspaces = incr - bdp.endspaces;
-              if (pend_idx != pstart_idx)
-                pend_idx = prev_pend_idx;
-            }
-          }
-        }
-        bdp.end_char_vcols = incr;
-        if (is_del && bdp.startspaces != 0)
-          pstart_idx = prev_pstart_idx;
-        bdp.textlen = pend_idx - pstart_idx;
-      }
-      bdp.textcol = pstart_idx;
-      bdp.textstart = pstart_idx; // TODO_VIS textstart not pointer review usage carefully
     }
+    prev_pstart_idx = pstart_idx;
+    pstart_idx++;//++pstart;
+  }
+  bdp.start_char_vcols = incr;
+  if (bdp.start_vcol < oap.start_vcol) // line too short
+  {
+    bdp.end_vcol = bdp.start_vcol;
+    bdp.is_short = true;
+    if (!is_del || oap.op_type == OP_APPEND)
+      bdp.endspaces = oap.end_vcol - oap.start_vcol + 1;
+  } else {
+    bdp.startspaces = bdp.start_vcol - oap.start_vcol;
+    if (is_del && bdp.startspaces != 0)
+      bdp.startspaces = bdp.start_char_vcols - bdp.startspaces;
+    pend = pstart;
+    pend_idx = pstart_idx;
+    bdp.end_vcol = bdp.start_vcol;
+    if (bdp.end_vcol > oap.end_vcol) // it's all in one character
+    {
+      bdp.is_oneChar = true;
+      if (oap.op_type == OP_INSERT)
+        bdp.endspaces = bdp.start_char_vcols - bdp.startspaces;
+      else if (oap.op_type == OP_APPEND) {
+        bdp.startspaces += oap.end_vcol - oap.start_vcol + 1;
+        bdp.endspaces = bdp.start_char_vcols - bdp.startspaces;
+      } else {
+        bdp.startspaces = oap.end_vcol - oap.start_vcol + 1;
+        if (is_del && oap.op_type != OP_LSHIFT) {
+          // just putting the sum of those two into
+          // bdp->startspaces doesn't work for Visual replace,
+          // so we have to split the tab in two
+          bdp.startspaces = bdp.start_char_vcols
+                  - (bdp.start_vcol - oap.start_vcol);
+          bdp.endspaces = bdp.end_vcol - oap.end_vcol - 1;
+        }
+      }
+    } else {
+      prev_pend_idx = pend_idx;
+      while (bdp.end_vcol <= oap.end_vcol && pend_idx < pend.length()) {
+        /* Count a tab for what it's worth (if list mode not on) */
+        prev_pend_idx = pend_idx;
+        incr = lbr_chartabsize(pend.charAt(pend_idx), bdp.end_vcol);
+        bdp.end_vcol += incr;
+        pend_idx++;
+      }
+      if (bdp.end_vcol <= oap.end_vcol
+              && (!is_del
+              || oap.op_type == OP_APPEND
+              || oap.op_type == OP_REPLACE)) // line too short
+      {
+        bdp.is_short = true;
+        // Alternative: include spaces to fill up the block.
+        // Disadvantage: can lead to trailing spaces when the line is
+        // short where the text is put */
+        // if (!is_del || oap->op_type == OP_APPEND) //
+        if (oap.op_type == OP_APPEND /*|| virtual_op*/)
+          bdp.endspaces = oap.end_vcol - bdp.end_vcol
+                  + (oap.inclusive ? 1 : 0);
+        else
+          bdp.endspaces = 0; // replace doesn't add characters
+      } else if (bdp.end_vcol > oap.end_vcol) {
+        bdp.endspaces = bdp.end_vcol - oap.end_vcol - 1;
+        if (!is_del && bdp.endspaces != 0) {
+          bdp.endspaces = incr - bdp.endspaces;
+          if (pend_idx != pstart_idx)
+            pend_idx = prev_pend_idx;
+        }
+      }
+    }
+    bdp.end_char_vcols = incr;
+    if (is_del && bdp.startspaces != 0)
+      pstart_idx = prev_pstart_idx;
+    bdp.textlen = pend_idx - pstart_idx;
+  }
+  bdp.textcol = pstart_idx;
+  bdp.textstart = pstart_idx; // TODO_VIS textstart not pointer review usage carefully
+}
 
 static boolean	hexupper = false;	/* 0xABC */
 /**
@@ -4851,6 +4951,11 @@ op_do_addsub(char command, int Prenum1)
     {
       while(len-- > 0)
         sb.append(' ');
+    }
+
+    static void append_chars(StringBuilder dst, int len, char c) {
+      while(len-- > 0)
+        dst.append(c);
     }
     
     static void mch_memmove(StringBuilder dst, int dstIndex,
