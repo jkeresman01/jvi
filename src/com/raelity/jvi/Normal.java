@@ -3526,13 +3526,11 @@ static private void nv_findpar(CMDARG cap, int dir)
 //    case ';':
 //      nv_pcmark(JLOP.PREV_CHANGE, cap);
 //      break;
-      case 'g':
-        nv_goto(cap, 1);
-        break;
-        /*
-         * "gv": Reselect the previous Visual area.  If Visual already active,
-         * exchange previous and current Visual area.
-         */
+
+      //
+      // "gv": Reselect the previous Visual area.  If Visual already active,
+      // exchange previous and current Visual area.
+      //
       case 'v':
         if (checkclearop(oap))
             break;
@@ -3596,17 +3594,43 @@ static private void nv_findpar(CMDARG cap, int dir)
             Misc.ui_cursor_shape();
         }
         break;
+      //
+      // "g*" and "g#", like "*" and "#" but without using "\<" and "\>"
+      //
+      case '*':
+      case '#':
+          nv_ident(cap, searchbuff);
+          break;
 
-      // "gP" and "gp": same as "P" and "p" but leave cursor just after new text
-      case 'p':
-      case 'P':
-        nv_put(cap);
+      //
+      // ge and gE: go back to end of word
+      //
+      case 'e':
+      case 'E':
+          oap.motion_type = MCHAR;
+          G.curwin.w_set_curswant = true;
+          oap.inclusive = true;
+          if (Search.bckend_word(cap.count1, cap.nchar == 'E', false) == FAIL)
+              clearopbeep(oap);
+          break;
+      //
+      // "gg": Goto the first line in file.  With a count it goes to
+      // that line number like for "G". -- webb
+      //
+      case 'g':
+        nv_goto(cap, 1);
         break;
 
       case 'q':
       case 'u':
       case 'U':
         nv_operator(cap);
+        break;
+
+      // "gP" and "gp": same as "P" and "p" but leave cursor just after new text
+      case 'p':
+      case 'P':
+        nv_put(cap);
         break;
 
     case 't':
