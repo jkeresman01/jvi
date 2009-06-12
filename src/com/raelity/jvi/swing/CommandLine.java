@@ -50,6 +50,7 @@ public class CommandLine extends JPanel
 {
     private static Logger LOG = Logger.getLogger(CommandLine.class.getName());
     static public final int DEFAULT_HISTORY_SIZE = 50;
+    static public final String COMMAND_LINE_KEYMAP = "viCommandLine";
     JLabel modeLabel = new JLabel();
     JComboBox combo = new JComboBox();
     GridBagLayout gridBagLayout1 = new GridBagLayout();
@@ -403,7 +404,7 @@ public class CommandLine extends JPanel
             return;
         }
         setKeymapActive = true;
-        Keymap keymap = JTextComponent.addKeymap("CommandLine",
+        Keymap keymap = JTextComponent.addKeymap(CommandLine.COMMAND_LINE_KEYMAP,
                 getTextComponent().getKeymap());
         JTextComponent.loadKeymap(keymap, getBindings(), getActions());
         getTextComponent().setKeymap(keymap);

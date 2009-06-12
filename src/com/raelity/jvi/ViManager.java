@@ -137,7 +137,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.5.x6");
+    public static final jViVersion version = new jViVersion("1.2.5");
 
     private static boolean enabled;
 
@@ -854,7 +854,7 @@ public class ViManager
 
             if(G.dbgMouse.getBoolean()) {
                 System.err.println("mouseSetDot(" + pos + ") "
-                        + mev.getModifiersExText(mev.getModifiersEx()));
+                        + MouseEvent.getModifiersExText(mev.getModifiersEx()));
                 //System.err.println(mev.getMouseModifiersText(
                 //                      mev.getModifiers()));
             }
@@ -884,7 +884,7 @@ public class ViManager
 
             if(G.dbgMouse.getBoolean()) {
                 System.err.println("mouseRelease: "
-                        + mev.getModifiersExText(mev.getModifiersEx()));
+                        + MouseEvent.getModifiersExText(mev.getModifiersEx()));
                 //System.err.println(mev.getMouseModifiersText(
                 //                      mev.getModifiers()));
             }
@@ -920,7 +920,7 @@ public class ViManager
 
             if(G.dbgMouse.getBoolean()) {
                 System.err.println("mouseMoveDot(" + pos + ") "
-                        + mev.getModifiersExText(mev.getModifiersEx()));
+                        + MouseEvent.getModifiersExText(mev.getModifiersEx()));
                 //System.err.println(mev.getMouseModifiersText(mev.getModifiers()));
             }
 

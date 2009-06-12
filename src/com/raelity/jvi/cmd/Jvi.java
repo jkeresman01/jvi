@@ -314,7 +314,9 @@ public class Jvi
             });
             dialog = new MyPropertySheetDialog(optionsPanel, owner, "jVi Options");
             dialog.getBanner().setVisible(false);
-            dialog.getContentPane().add("Center", optionsPanel);
+            //dialog.getContentPane().add("Center", optionsPanel);
+            //dialog.getContentPane().add(BorderLayout.CENTER, optionsPanel);
+            dialog.getContentPane().add(BorderLayout.EAST, optionsPanel);
 
             // dialog.getButtonPane().add(new JButton("Default ALL"));
             // dialog.getButtonPane().add(new JButton("Set Default"));
