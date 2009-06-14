@@ -5232,6 +5232,7 @@ op_do_addsub(char command, int Prenum1)
   }
 
   // These bounce routines to make porting easier
+  ///// Edit.java has the primary list /////
 //Misc
 //private static int dec_cursor() { return Misc.dec_cursor(); }
 //private static int decl(ViFPOS pos) { return Misc.decl(pos); }

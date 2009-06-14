@@ -125,6 +125,7 @@ public final class Options {
   public static final String scrollOff = "viScrollOff";
   public static final String shiftWidth = "viShiftWidth";
   public static final String tabStop = "viTabStop";
+  public static final String softTabStop = "viSoftTabStop";
   public static final String textWidth = "viTextWidth";
   public static final String showMode = "viShowMode";
   public static final String showCommand = "viShowCommand";
@@ -292,26 +293,6 @@ public final class Options {
             + " are working.  If you set it to a very large value (999) the"
             + " cursor line will always be in the middle of the window"
             + " (except at the start or end of the file)");
-
-    G.p_bs = createIntegerOption(backspace, 0,
-            new IntegerOption.Validator() {
-            @Override
-              public void validate(int val) throws PropertyVetoException {
-                  if(val < 0 || val > 2) {
-		     throw new PropertyVetoException(
-		         "Only 0, 1, or 2 are allowed."
-                         + " Not '" + val + "'.",
-                       new PropertyChangeEvent(opt, opt.getName(),
-                                               opt.getInteger(), val));
-                  }
-              }
-            });
-    setupOptionDesc(generalList, backspace, "'backspace' 'bs'",
-            "Influences the working of <BS>, <Del> during insert."
-            + "\n  0 - no special handling."
-            + "\n  1 - allow backspace over <EOL>."
-            + "\n  2 - allow backspace over start of insert.",
-            new String[] { "0", "1", "2"});
     
     G.p_smd = createBooleanOption(showMode, true);
     setupOptionDesc(generalList, showMode, "'showmode' 'smd'",
@@ -416,6 +397,26 @@ public final class Options {
     setupOptionDesc(modifyList, shiftRound, "'shiftround' 'sr'",
                "\"<\" and \">\" round indent to multiple of shiftwidth");
 
+    G.p_bs = createIntegerOption(backspace, 0,
+            new IntegerOption.Validator() {
+            @Override
+              public void validate(int val) throws PropertyVetoException {
+                  if(val < 0 || val > 2) {
+		     throw new PropertyVetoException(
+		         "Only 0, 1, or 2 are allowed."
+                         + " Not '" + val + "'.",
+                       new PropertyChangeEvent(opt, opt.getName(),
+                                               opt.getInteger(), val));
+                  }
+              }
+            });
+    setupOptionDesc(modifyList, backspace, "'backspace' 'bs'",
+            "Influences the working of <BS>, <Del> during insert."
+            + "\n  0 - no special handling."
+            + "\n  1 - allow backspace over <EOL>."
+            + "\n  2 - allow backspace over start of insert.",
+            new String[] { "0", "1", "2"});
+
     /////////////////////////
     //
     // per buffer options are accessed through curbuf.
@@ -435,6 +436,12 @@ public final class Options {
     /*G.b_p_ts = */createIntegerOption(tabStop, 8);
     setupOptionDesc(modifyList, tabStop, "'tabstop' 'ts'",
             "Number of spaces that a <Tab> in the file counts for.");
+
+    /*G.b_p_sts = */createIntegerOption(softTabStop, 0);
+    setupOptionDesc(modifyList, softTabStop, "'softtabstop' 'sts'",
+            "Number of spaces that a <Tab> in the file counts for"
+            + " while performing editing operations,"
+            + " like inserting a <Tab> or using <BS>.");
 
     /*G.b_p_xx = */createIntegerOption(textWidth, 79);
     setupOptionDesc(modifyList, textWidth, "'textwidth' 'tw'",
@@ -917,6 +924,7 @@ public final class Options {
       new VimOption("number", "nu", P_IND|P_WIN, "w_p_nu", null),
       new VimOption("shiftwidth", "sw", P_IND, "b_p_sw", shiftWidth),
       new VimOption("tabstop", "ts", P_IND, "b_p_ts", tabStop),
+      new VimOption("softtabstop", "sts", P_IND, "b_p_sts", softTabStop),
       new VimOption("textwidth", "tw", P_IND, "b_p_tw", textWidth),
     };
     

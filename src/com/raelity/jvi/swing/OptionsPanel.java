@@ -141,11 +141,11 @@ public class OptionsPanel extends JPanel {
         addTab(tabs, "Platform", new OptionsBean.Platform());
         addTab(tabs, "General", new OptionsBean.General());
         addTab(tabs, "Search", new OptionsBean.Search());
-        addTab(tabs, "Modify", new OptionsBean.Modify());
-        addTab(tabs, "CursorWrap", new OptionsBean.CursorWrap());
+        addTab(tabs, "Buffer Modifications", new OptionsBean.Modify());
+        addTab(tabs, "Cursor Line Wrap", new OptionsBean.CursorWrap());
         addTab(tabs, "External Process", new OptionsBean.ExternalProcess());
-        addTab(tabs, "Ctrl-Key", new KeyBindingBean());
-        addTab(tabs, "KeyPad", new KeypadBindingBean());
+        addTab(tabs, "Ctrl-Key Bindings", new KeyBindingBean());
+        addTab(tabs, "KeyPad Bindings", new KeypadBindingBean());
         addTab(tabs, "Debug", createDebugBean());
 
         // lay things out to get sizes so we can adjust splitter

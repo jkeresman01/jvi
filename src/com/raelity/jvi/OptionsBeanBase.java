@@ -824,6 +824,14 @@ public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsContro
 	return getint("viTabStop");
     }
 
+    public void setViSoftTabStop(int arg) throws PropertyVetoException {
+        put("viSoftTabStop", arg);
+    }
+
+    public int getViSoftTabStop() {
+	return getint("viSoftTabStop");
+    }
+
     public void setViReadOnlyHack(boolean arg) {
         put("viReadOnlyHack", arg);
     }

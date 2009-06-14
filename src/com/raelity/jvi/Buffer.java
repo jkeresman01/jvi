@@ -81,6 +81,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         // init options
         //
         b_p_ts = Options.getOption(Options.tabStop).getInteger();
+        b_p_sts = Options.getOption(Options.softTabStop).getInteger();
         b_p_sw = Options.getOption(Options.shiftWidth).getInteger();
         b_p_et = Options.getOption(Options.expandTabs).getBoolean();
         b_p_tw = Options.getOption(Options.textWidth).getInteger();
@@ -103,10 +104,11 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     // Declare the variables referenced as part of a ViOptionBag
     //
     
-    public int b_p_ts;     // tab stop
-    public int b_p_sw;     // shiftw width
-    public boolean b_p_et;     // expand tabs
-    public int b_p_tw;     // text width
+    public boolean b_p_et;      // expand tabs
+    public int b_p_sw;          // shiftw width
+    public int b_p_ts;          // tab stop
+    public int b_p_sts;         // soft tab stop
+    public int b_p_tw;          // text width
     
     //////////////////////////////////////////////////////////////////////
     //
@@ -228,7 +230,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
                     s = s.substring(0,idx);
                 filename = parent == null
                             ? s
-                            : parent + fi.separator + s;
+                            : parent + File.separator + s;
                 break;
             }
             case 't':

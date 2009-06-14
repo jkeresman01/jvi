@@ -23,6 +23,7 @@ import java.util.Stack;
 
 import com.raelity.text.TextUtil.MySegment;
 
+import java.text.CharacterIterator;
 import javax.swing.SwingUtilities;
 import static com.raelity.jvi.KeyDefs.*;
 import static com.raelity.jvi.Constants.*;
@@ -58,6 +59,10 @@ public class Edit {
   static int did_restart_edit;
   static MutableInt count;
   static MutableBoolean inserted_space;
+
+  static int Insstart_blank_vcol;
+
+  static final boolean p_sta = false; // At least for now...
 
   /**
    * There are commands in edit mode, such as ^V and ^R, that
@@ -146,6 +151,7 @@ public class Edit {
       
       Insstart = G.curwin.w_cursor.copy();
       Insstart_textlen = Misc.linetabsize(Util.ml_get_curline());
+      Insstart_blank_vcol = MAXCOL;
 
       if (!G.did_ai)
         G.ai_col = 0;
@@ -419,9 +425,10 @@ public class Edit {
             
             // TAB or Complete patterns along path
           case TAB:
-            // NEEDSWORK: no ins_tab, so noexpandtab doesn't work.
-            // Just handle it as a normal character
-            break normal_char;
+            inserted_space.setValue(false);
+            if(ins_tab())
+              break normal_char;
+            break;
             
           case K_KENTER:
             c = CR;
@@ -515,6 +522,14 @@ public class Edit {
       // continue edit_loop;
       return;
     }
+
+    if(c == ' ') {
+      inserted_space.setValue(true);
+      if(Insstart_blank_vcol == MAXCOL
+              && G.curwin.w_cursor.getLine() == Insstart.getLine())
+        Insstart_blank_vcol = get_nolist_virtcol();
+    }
+
     insert_special(c, false, false);
     //continue edit_loop;
     return;
@@ -1699,7 +1714,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
 //#ifdef RIGHTLEFT...
 	mincol = 0;
 						/* keep indent */
-        // NEEDSWORK: for now b_p_ai is always false, so don't need following
+//      // NEEDSWORK: for now b_p_ai is always false, so don't need following
 //	if (mode == BACKSPACE_LINE && G.curbuf.b_p_ai != 0
 ////#ifdef RIGHTLEFT...
 //			    )
@@ -1711,93 +1726,96 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
 //	    G.curwin.w_cursor.setColumn(temp);
 //	}
 
-//	/*
-//	 * Handle deleting one 'shiftwidth' or 'softtabstop'.
-//	 */
-//        //****** ml_get_cursor() is pointer to cursor position ********
-//	if (	   mode == BACKSPACE_CHAR
-//		&& ((p_sta && in_indent)
-//		    || (G.curbuf.b_p_sts
-//			&& (*(ml_get_cursor() - 1) == TAB
-//			    || (*(ml_get_cursor() - 1) == ' '
-//				&& (!*inserted_space_p
-//				    || arrow_used))))))
-//	{
-//	    int		ts;
-//	    int		vcol;
-//	    int		want_vcol;
-//	    int		extra = 0;
-//
-//	    *inserted_space_p = false;
-//	    if (p_sta)
-//		ts = G.curbuf.b_p_sw;
-//	    else
-//		ts = G.curbuf.b_p_sts;
-//	    /* compute the virtual column where we want to be */
-//	    getvcol(curwin, &G.curwin.w_cursor, &vcol, null, null);
-//	    want_vcol = ((vcol - 1) / ts) * ts;
-//	    /* delete characters until we are at or before want_vcol */
-//	    while ((int)vcol > want_vcol
-//		    && (cc = *(ml_get_cursor() - 1), vim_iswhite(cc)))
-//	    {
-//		dec_cursor();
-//		/* TODO: calling getvcol() each time is slow */
-//		getvcol(curwin, &G.curwin.w_cursor, &vcol, null, null);
-//		if (G.State == REPLACE || G.State == VREPLACE)
-//		{
-//		    /* Don't delete characters before the insert point when in
-//		     * Replace mode */
-//		    if (G.curwin.w_cursor.getLine() != Insstart.getLine()
-//			|| G.curwin.w_cursor.getColumn() >= Insstart.getColumn())
-//		    {
-////#IF 0	/* what was this for?  It causes problems when sw != ts. */
-////			if (G.State == REPLACE && (int)vcol < want_vcol)
-////			{
-////			    (void)del_char(false);
-////			    extra = 2;	/* don't pop too much */
-////			}
-////			else
-////#ENDIF
-//			    replace_do_bs();
-//		    }
-//		}
-//		else
-//		    del_char(false);
-//	    }
-//
-//	    /* insert extra spaces until we are at want_vcol */
-//	    while ((int)vcol < want_vcol)
-//	    {
-//		/* Remember the first char we inserted */
-//		if (G.curwin.w_cursor.getLine() == Insstart.getLine()
-//				   && G.curwin.w_cursor.getColumn() < Insstart.getColumn())
-//		    Insstart.setColumn(G.curwin.w_cursor.getColumn());
-//
-//		if (G.State == VREPLACE)
-//		    ins_char(' ');
-//		else
-//		{
-//		    //ins_str((char_u *)" ");
-//                    G.curbuf.insertText(G.curwin.w_cursor.getOffset(), " ");
-//		    if (G.State == REPLACE && extra <= 1)
-//		    {
-//			if (extra)
-//			    replace_push_off(NUL);
-//			else
-//			    replace_push(NUL);
-//		    }
-//		    if (extra == 2)
-//			extra = 1;
-//		}
-//		vcol++;
-//	    }
-//	}
-//
+  	/*
+  	 * Handle deleting one 'shiftwidth' or 'softtabstop'.
+  	 */
+          //****** ml_get_cursor() is pointer to cursor position ********
+  	if (	   mode == BACKSPACE_CHAR
+  		&& ((p_sta && in_indent)
+  		    || (G.curbuf.b_p_sts != 0
+  			&& (ml_get_cursor().previous() == TAB
+  			    || (ml_get_cursor().previous() == ' '
+  				&& (!inserted_space_p.getValue()
+  				    || arrow_used))))))
+  	{
+  	    int		ts;
+  	    int		vcol;
+  	    int		want_vcol;
+  	    int		extra = 0;
+
+  	    inserted_space_p.setValue(false);
+  	    if (p_sta)
+  		ts = G.curbuf.b_p_sw;
+  	    else
+  		ts = G.curbuf.b_p_sts;
+  	    /* compute the virtual column where we want to be */
+            MutableInt pVcol = new MutableInt();
+  	    getvcol(G.curwin, G.curwin.w_cursor, pVcol, null, null);
+            vcol = pVcol.getValue();
+  	    want_vcol = ((vcol - 1) / ts) * ts;
+  	    /* delete characters until we are at or before want_vcol */
+  	    while (vcol > want_vcol
+  		    && vim_iswhite(ml_get_cursor().previous()))
+  		    //&& (cc = ml_get_cursor().previous(), vim_iswhite(cc)))
+  	    {
+  		dec_cursor();
+  		/* TODO: calling getvcol() each time is slow */
+  		getvcol(G.curwin, G.curwin.w_cursor, pVcol, null, null);
+                vcol = pVcol.getValue();
+  		if (G.State == REPLACE || G.State == VREPLACE)
+  		{
+  		    /* Don't delete characters before the insert point when in
+  		     * Replace mode */
+  		    if (G.curwin.w_cursor.getLine() != Insstart.getLine()
+  			|| G.curwin.w_cursor.getColumn() >= Insstart.getColumn())
+  		    {
+  //#IF 0	/* what was this for?  It causes problems when sw != ts. */
+  //			if (G.State == REPLACE && (int)vcol < want_vcol)
+  //			{
+  //			    (void)del_char(false);
+  //			    extra = 2;	/* don't pop too much */
+  //			}
+  //			else
+  //#ENDIF
+  			    replace_do_bs();
+  		    }
+  		}
+  		else
+  		    del_char(false);
+  	    }
+
+  	    /* insert extra spaces until we are at want_vcol */
+  	    while ((int)vcol < want_vcol)
+  	    {
+  		/* Remember the first char we inserted */
+  		if (G.curwin.w_cursor.getLine() == Insstart.getLine()
+  				   && G.curwin.w_cursor.getColumn() < Insstart.getColumn())
+  		    Insstart.setColumn(G.curwin.w_cursor.getColumn());
+
+  		if (G.State == VREPLACE)
+  		    ins_char(' ');
+  		else
+  		{
+  		    //ins_str((char_u *)" ");
+                    G.curbuf.insertText(G.curwin.w_cursor.getOffset(), " ");
+  		    if (G.State == REPLACE && extra <= 1)
+  		    {
+  			if (extra != 0)
+  			    replace_push_off(NUL);
+  			else
+  			    replace_push(NUL);
+  		    }
+  		    if (extra == 2)
+  			extra = 1;
+  		}
+  		vcol++;
+  	    }
+  	}
+
 	/*
 	 * Delete upto starting point, start of line or previous word.
 	 */
-//	else      // NOTE
-        do
+  	else do
 	{
 //#ifdef RIGHTLEFT...
 		dec_cursor();
@@ -1856,6 +1874,201 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
 
     return did_backspace;
 }
+
+  /*
+   * Handle TAB in Insert or Replace mode.
+   * Return TRUE when the TAB needs to be inserted like a normal character.
+   */
+  static boolean ins_tab()
+  {
+    boolean	ind;
+    int		i;
+    int		temp;
+
+    if (Insstart_blank_vcol == MAXCOL && G.curwin.w_cursor.getLine() == Insstart.getLine())
+	Insstart_blank_vcol = get_nolist_virtcol();
+//    if (echeck_abbr(TAB + ABBR_OFF))
+//	return false;
+
+    ind = Misc.inindent(0);
+//#ifdef CINDENT ...
+
+    /*
+     * When nothing special, insert TAB like a normal character
+     */
+    if (!G.curbuf.b_p_et
+	    && !(p_sta && ind && G.curbuf.b_p_ts != G.curbuf.b_p_sw)
+	    && G.curbuf.b_p_sts == 0)
+	return true;
+
+    stop_arrow();
+    G.did_ai = false;
+//#ifdef SMARTINDENT ...
+    AppendCharToRedobuff('\t');
+
+    if (p_sta && ind)		/* insert tab in indent, use 'shiftwidth' */
+	temp = G.curbuf.b_p_sw;
+    else if (G.curbuf.b_p_sts != 0)	/* use 'softtabstop' when set */
+	temp = G.curbuf.b_p_sts;
+    else			/* otherwise use 'tabstop' */
+	temp = G.curbuf.b_p_ts;
+    temp -= get_nolist_virtcol() % temp;
+
+    /*
+     * Insert the first space with ins_char().	It will delete one char in
+     * replace mode.  Insert the rest with ins_str(); it will not delete any
+     * chars.  For VREPLACE mode, we use ins_char() for all characters.
+     */
+    ins_char(' ');
+    while (--temp > 0)
+    {
+	if (G.State == VREPLACE)
+	    ins_char(' ');
+	else
+	{
+	    //ins_str((char_u *)" ");
+            G.curbuf.insertText(G.curwin.w_cursor.getOffset(), " ");
+	    if (G.State == REPLACE)	    /* no char replaced */
+		replace_push(NUL);
+	}
+    }
+
+    /*
+     * When 'expandtab' not set: Replace spaces by TABs where possible.
+     */
+    if (!G.curbuf.b_p_et && (G.curbuf.b_p_sts != 0 || (p_sta && ind)))
+    {
+	//char_u		seg.charAt(ptr), *saved_line = null;
+        MySegment       seg;
+        int             ptr = 0;
+        //int             saved_line = 0;
+	ViFPOS		fpos;
+	ViFPOS		cursor;
+	int		want_vcol, vcol, tab_vcol;
+	int		change_col = -1;
+	int		ts = G.curbuf.b_p_ts;
+
+	/*
+	 * Get the current line.  For VREPLACE mode, don't make real changes
+	 * yet, just work on a copy of the line.
+	 */
+        // MUST USE COPY, SINCE MAY MODIFY DATA IN PLACE
+        boolean useTempCopy = true;
+	if (useTempCopy || G.State == VREPLACE)
+	{
+	    // pos = curwin->w_cursor;
+	    // cursor = &pos;
+	    cursor = G.curwin.w_cursor.copy();
+
+	    //saved_line = vim_strsave(ml_get_curline());
+	    //if (saved_line == null)
+	    //    return false;
+
+            // Copy line data to a new segment
+
+	    //ptr = saved_line + pos.getColumn();
+            char[] data = ml_get_curline().toString().toCharArray();
+            seg = new MySegment(data, 0, data.length, -1);
+            ptr = cursor.getColumn();
+	}
+	else
+	{
+	    //ptr = ml_get_cursor();
+            seg = ml_get_curline();
+            ptr = G.curwin.w_cursor.getColumn();
+	    cursor = G.curwin.w_cursor;
+	}
+
+	/* Find first white before the cursor */
+	fpos = G.curwin.w_cursor.copy();
+	while (fpos.getColumn() > 0 && vim_iswhite(seg.charAt(ptr+-1)))
+	{
+	    fpos.decColumn();
+	    --ptr;
+	}
+
+	/* In Replace mode, don't change characters before the insert point. */
+	if ((G.State == REPLACE || G.State == VREPLACE)
+		&& fpos.getLine() == Insstart.getLine()
+		&& fpos.getColumn() < Insstart.getColumn())
+	{
+	    ptr += Insstart.getColumn() - fpos.getColumn();
+	    fpos.setColumn(Insstart.getColumn());
+	}
+
+	/* compute virtual column numbers of first white and cursor */
+        MutableInt pInt = new MutableInt();
+	getvcol(G.curwin, fpos, pInt, null, null);
+        vcol = pInt.getValue();
+	getvcol(G.curwin, cursor, pInt, null, null);
+        want_vcol = pInt.getValue();
+
+	/* use as many TABs as possible */
+	tab_vcol = (want_vcol / ts) * ts;
+	while (vcol < tab_vcol)
+	{
+	    if (seg.charAt(ptr) != TAB)
+	    {
+		//seg.charAt(ptr) = TAB;
+                seg.array[ptr] = TAB; // know seg is zero based
+		if (change_col < 0)
+		{
+		    change_col = fpos.getColumn();  /* Column of first change */
+		    /* May have to adjust Insstart */
+		    if (fpos.getLine() == Insstart.getLine()
+                            && fpos.getColumn() < Insstart.getColumn())
+			Insstart.setColumn(fpos.getColumn());
+		}
+	    }
+	    fpos.incColumn();
+	    ++ptr;
+	    vcol = ((vcol + ts) / ts) * ts;
+	}
+
+	if (change_col >= 0)
+	{
+	    /* may need to delete a number of the following spaces */
+	    i = want_vcol - vcol;
+	    ptr += i;
+	    fpos.setColumn(fpos.getColumn() + i);
+	    i = cursor.getColumn() - fpos.getColumn();
+	    if (i > 0)
+	    {
+		//mch_memmove(ptr, ptr + i, STRLEN(ptr + i) + 1);
+                for(int j = 0; ptr + i + j < seg.count; j++) {
+                    seg.array[ptr + j] = seg.array[ptr + i + j];
+                }
+		/* correct replace stack. */
+		if (G.State == REPLACE)
+		    for (temp = i; --temp >= 0; )
+			replace_join(want_vcol - vcol);
+	    }
+	    //cursor.getColumn() -= i;
+	    cursor.setColumn(cursor.getColumn() - i);
+
+	    /*
+	     * In VREPLACE mode, we haven't changed anything yet.  Do it now by
+	     * backspacing over the changed spacing and then inserting the new
+	     * spacing.
+	     */
+	    if (useTempCopy || G.State == VREPLACE)
+	    {
+		/* Backspace from real cursor to change_col */
+		backspace_until_column(change_col);
+
+		/* Insert each char in saved_line from changed_col to
+		 * ptr-cursor */
+		while (change_col < cursor.getColumn())
+		    ins_char(seg.array[change_col++]);
+	    }
+	}
+
+	// if (G.State == VREPLACE)
+	//     vim_free(saved_line);
+    }
+
+    return false;
+  }
   
   /**
    * Handle CR or NL in insert mode.
@@ -2086,7 +2299,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
     ptr = seg.offset;
     //validate_virtcol();
     MutableInt mi = new MutableInt();
-    Misc.getvcol(G.curwin, G.curwin.w_cursor, null, mi, null);
+    getvcol(G.curwin, G.curwin.w_cursor, null, mi, null);
     int virtcol = mi.getValue();
     while (temp < virtcol && seg.array[ptr] != '\n')
       temp += Misc.lbr_chartabsize(seg.array[ptr++], temp);
@@ -2100,6 +2313,33 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
     return c;
   }
 
+    /*
+     * Backspace the cursor until the given column.  Handles REPLACE and VREPLACE
+     * modes correctly.  May also be used when not in insert mode at all.
+     */
+    static void backspace_until_column(int col)
+    {
+        while (G.curwin.w_cursor.getColumn() > col)
+        {
+            G.curwin.w_cursor.decColumn();
+            if (G.State == REPLACE || G.State == VREPLACE)
+                replace_do_bs();
+            else
+                del_char(false);
+        }
+    }
+
+    /**
+     * Get the value that w_virtcol would have when 'list' is off.
+     * Unless 'cpo' contains the 'L' flag.
+     */
+    private static int get_nolist_virtcol() {
+        // THIS IS A BIG SIMPLIFICATION FROM STOCK
+        MutableInt	virtcol = new MutableInt();
+        getvcol(G.curwin, G.curwin.w_cursor, null, virtcol, null);
+        return virtcol.getValue();
+    }
+
   // These bounce routines to make porting easier
 //Misc
 private static int dec_cursor() { return Misc.dec_cursor(); }
@@ -2108,6 +2348,9 @@ private static int del_char(boolean f) { return Misc.del_char(f); }
 private static int do_join(boolean insert_space, boolean redraw) { return Misc.do_join(insert_space, redraw); }
 private static char gchar_pos(ViFPOS pos) { return Misc.gchar_pos(pos); }
 private static char gchar_cursor() { return Misc.gchar_cursor(); }
+private static void getvcol(ViTextView tv, ViFPOS fpos, MutableInt start,
+                            MutableInt cursor, MutableInt end)
+                    { Misc.getvcol(tv, fpos, start, cursor, end); }
 private static int inc_cursor() { return Misc.inc_cursor(); }
 private static int inc_cursorV7() { return Misc.inc_cursorV7(); }
 private static int inclV7(ViFPOS pos) { return Misc.inclV7(pos); }
@@ -2128,6 +2371,7 @@ private static boolean isdigit(char c) {return Util.isdigit(c); }
 private static boolean isupper(char c) { return Util.isupper(c); }
 private static MySegment ml_get(int lnum) { return Util.ml_get(lnum); }
 private static MySegment ml_get_curline() { return Util.ml_get_curline(); }
+private static CharacterIterator ml_get_cursor() { return Util.ml_get_cursor();}
 private static int strncmp(String s1, String s2, int n) { return Util.strncmp(s1, s2, n); }
 private static int strncmp(MySegment seg, int i, String s2, int n) { return Util.strncmp(seg, i, s2, n); }
 private static void vim_beep() { Util.vim_beep(); }
