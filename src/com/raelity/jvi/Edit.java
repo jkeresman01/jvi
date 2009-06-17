@@ -58,7 +58,7 @@ public class Edit {
   static boolean need_redraw; // GET RID OF
   static int did_restart_edit;
   static MutableInt count;
-  static MutableBoolean inserted_space;
+  static MutableBoolean inserted_space = new MutableBoolean(false);
 
   static int Insstart_blank_vcol;
 
@@ -147,7 +147,7 @@ public class Edit {
       did_restart_edit = G.restart_edit;
       c = 0;
       did_backspace = false;
-      inserted_space = new MutableBoolean(false);
+      inserted_space.setValue(false);
       
       Insstart = G.curwin.w_cursor.copy();
       Insstart_textlen = Misc.linetabsize(Util.ml_get_curline());
@@ -295,6 +295,7 @@ public class Edit {
             //case 0x1f & (int)('T'):	// Ctrl
             ins_shift(c, lastc, dir);
             // need_redraw = TRUE;
+            inserted_space.setValue(false);
             break;
             
             // shift line to be under char after next
@@ -304,6 +305,7 @@ public class Edit {
             if( c == IM_SHIFT_RIGHT_TO_PAREN
                     || c == K_X_PERIOD && G.getModMask() == CTRL) {
               ins_shift_paren(c, FORWARD);
+              inserted_space.setValue(false);
             }
             break;
             
@@ -314,6 +316,7 @@ public class Edit {
             if( c == IM_SHIFT_LEFT_TO_PAREN
                     || c == K_X_COMMA && G.getModMask() == CTRL) {
               ins_shift_paren(c, BACKWARD);
+              inserted_space.setValue(false);
             }
             break;
             
@@ -344,6 +347,7 @@ public class Edit {
           case 0x1f & (int)('U'):	// Ctrl
             did_backspace = ins_bs(c, BACKSPACE_LINE, inserted_space);
             // need_redraw = TRUE;
+            inserted_space.setValue(false);
             break;
            
           case K_HOME:
@@ -438,6 +442,7 @@ public class Edit {
             //  p_im! wow. Out of memory should be a throw...
             // if (ins_eol(c) && !p_im) goto doESCkey;    // out of memory
             ins_eol(c);
+            inserted_space.setValue(false);
             break;
             
             // case Ctrl('K'): // Enter digraph
@@ -531,6 +536,10 @@ public class Edit {
     }
 
     insert_special(c, false, false);
+
+    if(arrow_used)
+      inserted_space.setValue(false);
+
     //continue edit_loop;
     return;
   }
