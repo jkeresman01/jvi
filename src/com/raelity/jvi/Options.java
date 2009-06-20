@@ -441,7 +441,14 @@ public final class Options {
     setupOptionDesc(modifyList, softTabStop, "'softtabstop' 'sts'",
             "Number of spaces that a <Tab> in the file counts for"
             + " while performing editing operations,"
-            + " like inserting a <Tab> or using <BS>.");
+            + " like inserting a <Tab> or using <BS>."
+            + "It \"feels\" like <Tab>s are being inserted, while in fact"
+            + "a mix of spaces and <Tab>s is used (<Tabs>s only if"
+            + "'expandtabs' is false).  When 'sts' is zero, this feature"
+            + "is off. If 'softtabstop' is non-zero, a <BS> will try to"
+            + "delete as much white space to move to the previous"
+            + "'softtabstop' position."
+            );
 
     /*G.b_p_xx = */createIntegerOption(textWidth, 79);
     setupOptionDesc(modifyList, textWidth, "'textwidth' 'tw'",
