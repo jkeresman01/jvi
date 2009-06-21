@@ -150,6 +150,8 @@ public class Edit {
       inserted_space.setValue(false);
       
       Insstart = G.curwin.w_cursor.copy();
+      if(startln)
+        Insstart.setColumn(0);
       Insstart_textlen = Misc.linetabsize(Util.ml_get_curline());
       Insstart_blank_vcol = MAXCOL;
 
@@ -281,6 +283,7 @@ public class Edit {
             // insert the contents of a register
           case 0x1f & (int)('R'):	// Ctrl
             ins_reg();
+            inserted_space.setValue(false);
             break;
            */
             
@@ -1412,6 +1415,16 @@ one_char: {
       Misc.del_char(false);
     }
   }
+
+
+  /**
+   * Insert the contents of a named buf into the text.
+   * <br/>vim returns boolean whether to redraw or not.
+   */
+  private static void ins_reg()
+  {
+    //handleNextChar = new doInsReg();
+  }
   
   /**
    * Handle ESC in insert mode.
@@ -1499,14 +1512,6 @@ one_char: {
     // always use showmode, since it communicates mode to environment
     Misc.showmode();
     return true;
-  }
-  
-  /**
-   * Insert the contents of a named buf into the text.
-   * <br>vim returns boolean whether to redraw or not.
-   */
-  private static void ins_reg() throws NotSupportedException {
-    Normal.notImp("ins_reg");
   }
   
   /**
