@@ -89,6 +89,7 @@ public final class Options {
   public static final String autoPopupFN = "viAutoPopupFN";
   public static final String coordSkip = "viCoordSkip";
   public static final String platformPreferences = "viPlatformPreferences";
+  public static final String platformTab = "viPlatformTab";
 
   public static final String backspaceWrapPrevious = "viBackspaceWrapPrevious";
   public static final String hWrapPrevious = "viHWrapPrevious";
@@ -276,7 +277,17 @@ public final class Options {
                     + " NOTE: except for the first switch to platform,"
                     + " changes made in one area"
                     + " are not propogated to the other.");
-    setExpertHidden(platformPreferences, true, false);
+    setExpertHidden(platformPreferences, true, true);
+
+    G.usePlatformInsertTab = createBooleanOption(platformTab, false);
+    setupOptionDesc(platformList, platformTab,
+            "Use the platform's TAB handling",
+            "When false, jVi processes the TAB character according"
+            + " to the expandtab and softtabstop options. Otherwise"
+            + " the TAB is passed to the platform, e.g. IDE, for handling."
+            + " The only reason to set this true is if a bug is discovered"
+            + " in the jVi tab handling.");
+    setExpertHidden(platformTab, true, false);
 
     /////////////////////////////////////////////////////////////////////
     //

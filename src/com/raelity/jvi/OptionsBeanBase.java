@@ -382,6 +382,14 @@ public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsContro
         return ViManager.getReleaseString();
     }
 
+    public void setViPlatformTab(boolean arg)  throws PropertyVetoException {
+        put(Options.platformTab, arg);
+    }
+
+    public boolean getViPlatformTab() {
+	return getboolean(Options.platformTab);
+    }
+
     public void setViNrFormats(String arg)  throws PropertyVetoException {
         put(Options.nrFormats, arg);
     }

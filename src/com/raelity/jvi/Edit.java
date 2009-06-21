@@ -433,7 +433,8 @@ public class Edit {
             // TAB or Complete patterns along path
           case TAB:
             inserted_space.setValue(false);
-            if(ins_tab())
+            // bypass the ins_tab method if always use the platform tab handling
+            if(G.usePlatformInsertTab.getBoolean() || ins_tab())
               break normal_char;
             break;
             
@@ -1899,7 +1900,8 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
     int		i;
     int		temp;
 
-    if (Insstart_blank_vcol == MAXCOL && G.curwin.w_cursor.getLine() == Insstart.getLine())
+    if (Insstart_blank_vcol == MAXCOL
+            && G.curwin.w_cursor.getLine() == Insstart.getLine())
 	Insstart_blank_vcol = get_nolist_virtcol();
 //    if (echeck_abbr(TAB + ABBR_OFF))
 //	return false;
