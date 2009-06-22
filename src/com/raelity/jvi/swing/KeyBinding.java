@@ -192,7 +192,8 @@ public class KeyBinding {
     // Add the normal control characters.
     // Check the preference for each one.
     //
-    for(char c = 'A'; c <= 'Z'; c++) {
+    for(char c = 'A'; c <= 'Z'; c++)
+    {
         // like: "Ctrl-A"
         String name = "Ctrl-" + String.valueOf(c);
         checkUseKey(bl, name, name, c, CTRL_MASK);
@@ -221,6 +222,9 @@ public class KeyBinding {
     checkUseKey(bl, "Ctrl->", "PeriodCloseAngle", '.', CTRL_MASK);
     // the "<" must be on comma
     checkUseKey(bl, "Ctrl-<", "CommaOpenAngle", ',', CTRL_MASK);
+
+    checkUseKey(bl, "Ctrl-@",  "Ctrl-@", KeyEvent.VK_2, CTRL_MASK);
+    checkUseKey(bl, "Ctrl-@",  "Ctrl-@", KeyEvent.VK_2, CTRL_MASK|SHIFT_MASK);
     
     return bl;
   }
@@ -397,6 +401,7 @@ public class KeyBinding {
             actionsList.add(factory.createKeyAction("ViCommaOpenAngleKey",
                                                     K_X_COMMA));
             
+            actionsList.add(factory.createKeyAction("ViCtrl-@Key", (char)0));
             actionsList.add(factory.createKeyAction("ViCtrl-AKey", (char)1));
             actionsList.add(factory.createKeyAction("ViCtrl-BKey", (char)2));
             actionsList.add(factory.createKeyAction("ViCtrl-CKey", (char)3));
@@ -589,9 +594,11 @@ public class KeyBinding {
   
   private static JTextComponent.KeyBinding createKeyBinding(
                         int c, int modifiers, String bindKeyName) {
-    return new JTextComponent.KeyBinding(
+    JTextComponent.KeyBinding kb
+            = new JTextComponent.KeyBinding(
 		   KeyStroke.getKeyStroke(c, modifiers),
 		   bindKeyName);
+    return kb;
   }
   //
   // Handle the preferences for which keys to catch
@@ -623,6 +630,7 @@ public class KeyBinding {
         KeyBindingPrefs() {
             defaultKeysFalse.add("Ctrl-[");
             
+            defaultKeysFalse.add("Ctrl-@");
             defaultKeysFalse.add("Ctrl-A");
             defaultKeysFalse.add("Ctrl-C");
             defaultKeysFalse.add("Ctrl-I");

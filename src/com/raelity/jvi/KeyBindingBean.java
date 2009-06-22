@@ -63,7 +63,7 @@ public class KeyBindingBean  extends KeyOptionsBeanBase {
         vD = new Vector<PropertyDescriptor>();
         
 	for(char c = 'A'; c <= 'Z'; c++) {
-            String keyChar = new String(new char[] {c});
+            String keyChar = String.valueOf(c);
             String propertyName = "Ctrl_" + keyChar;
             String displayName = "Ctrl-" + keyChar;
             addDesc(propertyName, displayName);
@@ -72,6 +72,7 @@ public class KeyBindingBean  extends KeyOptionsBeanBase {
         addDesc("AbCloseBracket", "Ctrl-]");
         addDesc("AcCommaOpenAngle", "Ctrl-< or Ctrl-,");
         addDesc("AdPeriodCloseAngle", "Ctrl-> or Ctrl-.");
+        addDesc("AeCtrl_AT", "Ctrl-@");
         
 	PropertyDescriptor[] descriptors = new PropertyDescriptor[vD.size()];
         vD.toArray(descriptors);
@@ -128,6 +129,14 @@ public class KeyBindingBean  extends KeyOptionsBeanBase {
 
     public boolean getAdPeriodCloseAngle() {
 	return get("Ctrl->");
+    }
+
+    public void setAeCtrl_AT(boolean arg) {
+        put("Ctrl-@", arg);
+    }
+
+    public boolean getAeCtrl_AT() {
+	return get("Ctrl-@");
     }
 
     public void setCtrl_A(boolean arg) {

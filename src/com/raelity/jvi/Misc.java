@@ -4610,7 +4610,7 @@ op_do_addsub(char command, int Prenum1)
 	 */
 	col = G.curwin.w_cursor.getColumn();
 
-	while (ptr.charAt(col) != NUL
+	while (ptr.charAt(col) != '\n'
 		&& !vim_isdigit(ptr.charAt(col))
 		&& !(doalp && ascii_isalpha(ptr.charAt(col))))
 	    ++col;

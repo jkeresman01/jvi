@@ -254,6 +254,16 @@ public class GetChar {
     }
   }
 
+  /*
+   * return the contents of a buffer as a single string
+   */
+  static String get_bufcont(BufferQueue buffer, boolean dozero)
+  {
+    if(buffer.length() == 0 && !dozero)
+      return null;
+    return buffer.toString();
+  }
+
   /**
    * Return the contents of the record buffer as a single string
    *  and clear the record buffer.
@@ -282,6 +292,11 @@ public class GetChar {
     recordbuff.setLength(0);
 
     return s;
+  }
+
+  static String get_inserted()
+  {
+    return get_bufcont(redobuff, false);
   }
 
   /**
@@ -765,7 +780,7 @@ public class GetChar {
   // The stuff buff used from externally by the "r" and "*" (nv_ident) commands.
   //
 
-  static void stuffcharReadbuff(int n) {
+  static void stuffcharReadbuff(char n) {
     stuffbuff.append((char)n);
   }
 

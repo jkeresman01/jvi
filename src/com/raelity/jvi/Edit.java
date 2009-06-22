@@ -58,7 +58,13 @@ public class Edit {
   static boolean need_redraw; // GET RID OF
   static int did_restart_edit;
   static MutableInt count;
-  static MutableBoolean inserted_space = new MutableBoolean(false);
+  private static MutableBoolean inserted_space = new MutableBoolean(false);
+
+  private static String last_insert;
+  private static int last_insert_skip;
+  private static int new_insert_skip;
+  private static int old_indent;
+  private static boolean doESCkey;
 
   static int Insstart_blank_vcol;
 
@@ -212,9 +218,26 @@ public class Edit {
       }
       
       Misc.ui_cursor_shape();
+
+      //
+      // Get the current length of the redo buffer, those characters have to be
+      // skipped if we want to get to the inserted characters.
+      //
+      String ptr = GetChar.get_inserted();
+      if (ptr == null)
+        new_insert_skip = 0;
+      else
+      {
+        new_insert_skip = ptr.length();
+      }
+
+      old_indent = 0;
+
       return;
     }
     
+    doESCkey = false;
+
     c = cmdchar;        // when actually doing editting cmdchar is the input.
     if(handleNextChar != null) {
       c = handleNextChar.go(c);
@@ -279,7 +302,18 @@ public class Edit {
             // case NUL:
             // case Ctrl('A'):
             
-          /*
+          case NUL:                     // Ctrl-@
+          case 0x1f & (int)('A'):	// Ctrl
+	    if (stuff_inserted(NUL, 1, (c == Util.ctrl('A'))) == FAIL
+                    && c != Util.ctrl('A') /*&& !G.p_im*/ )
+            {
+              doESCkey = true; //goto doESCkey;		/* quit insert mode */
+              break;
+            }
+            inserted_space.setValue(false);
+            break;
+
+            /*
             // insert the contents of a register
           case 0x1f & (int)('R'):	// Ctrl
             ins_reg();
@@ -498,16 +532,23 @@ public class Edit {
             // Virtual keys should not be put into the file.
             // Exit input mode if they are seen
             if(isExitInputMode(cmdchar)) {
-              // This is the identical code as <ESC>
-              if (ins_esc(count, need_redraw, cmdchar)) {
-                Normal.editBusy = false;
-                // return (c == (0x1f & (int)('O')));
-              }
-              return;
+              //  // This is the identical code as <ESC>
+              //  if (ins_esc(count, need_redraw, cmdchar)) {
+              //    Normal.editBusy = false;
+              //    // return (c == (0x1f & (int)('O')));
+              //  }
+              //  return;
+              doESCkey = true;
+              break;
             }
             break normal_char;
         } // switch
-        // break out of switch, process another character
+        if(doESCkey) {
+          if (ins_esc(count, need_redraw, cmdchar)) {
+            Normal.editBusy = false;
+          }
+        }
+        // break out of switch, process another character (unless doESCkey)
         // continue edit_loop;
         return;
         
@@ -1125,6 +1166,7 @@ one_char: {
         }
         GetChar.ResetRedobuff();
         GetChar.AppendToRedobuff("1i");   // pretend we start an insertion
+        new_insert_skip = 2;
         arrow_used = false;
       } finally {
         Misc.beginInsertUndo();
@@ -1135,6 +1177,13 @@ one_char: {
   private static void stop_insert(ViFPOS end_insert_pos) {
     GetChar.stop_redo_ins();
     replace_flush();		// abandon replace stack
+
+    //
+    // save the inserted text for later redo with ^@
+    //
+    last_insert = GetChar.get_inserted();
+    last_insert_skip = new_insert_skip;
+
     if (G.did_ai && !arrow_used)
       removeUnusedWhiteSpace();
     G.did_ai = false;
@@ -1148,14 +1197,14 @@ one_char: {
   /**
    * Move cursor to start of line.
    *<ul>
-   *<li> if flags & BL_WHITE	move to first non-white
+   *<li> if flags & BL_WHITE	move to first non-white</li>
    *<li> if flags & BL_SOL	move to first non-white if startofline is set,
-   *			        otherwise keep "curswant" column
-   *<li> if flags & BL_FIX	don't leave the cursor on a NUL.
+   *			        otherwise keep "curswant" column</li>
+   *<li> if flags & BL_FIX	don't leave the cursor on a NUL.</li>
    *</ul>
-   * <br><b>NEEDSWORK:</b><ul>
+   * <br/><b>NEEDSWORK:</b><ul>
    * <li>This belongs as part of the document since the Content and
-   * hence the segment can not be accessed publicly, only protected.
+   * hence the segment can not be accessed publicly, only protected.</li>
    * </ul>
    */
   public static final int beginlineColumnIndex(int flags, MySegment txt) {
@@ -1289,6 +1338,67 @@ one_char: {
     Misc.gotoLine(lnum, -1);
     
     return OK;
+  }
+
+  /**
+   * Stuff the last inserted text in the read buffer.
+   * Last_insert actually is a copy of the redo buffer, so we
+   * first have to remove the command.
+   */
+  private static int stuff_inserted(char c, int count, boolean no_esc)
+  {
+    String ptr = get_last_insert();
+    if(ptr == null)
+    {
+      Msg.emsg(Messages.e_noinstext);
+      return FAIL;
+    }
+    if(c != NUL)
+      GetChar.stuffcharReadbuff(c);
+    int esc_ptr = ptr.indexOf(ESC);
+    if(esc_ptr != 0)
+      ptr = ptr.substring(0, esc_ptr); // remove the ESC
+
+/*  WONDER WHAT THIS IS?
+    // when the last char is either "0" or "^" it will be quoted if no ESC
+    // comes after it OR if it will inserted more than once and "ptr"
+    // starts with ^D.	-- Acevedo
+    //
+    last_ptr = (esc_ptr ? esc_ptr : ptr + STRLEN(ptr)) - 1;
+    if (last_ptr >= ptr && (*last_ptr == '0' || *last_ptr == '^')
+	    && (no_esc || (*ptr == Ctrl('D') && count > 1)))
+    {
+	last = *last_ptr;
+	*last_ptr = NUL;
+    }
+*/
+
+    do
+    {
+	GetChar.stuffReadbuff(ptr);
+	///// // a trailing "0" is inserted as "<C-V>048", "^" as "<C-V>^"
+	///// if (last)
+	/////     stuffReadbuff((char_u *)(last == '0' ? "\026048" : "\026^"));
+    }
+    while (--count > 0);
+
+    ///// if (last)
+    /////     *last_ptr = last;
+
+    // following not needed since working with copy
+    ///// if (esc_ptr != NULL)
+    /////     *esc_ptr = ESC;	    /* put the ESC back */
+
+    // may want to stuff a trailing ESC, to get out of Insert mode
+    if(!no_esc)
+      GetChar.stuffcharReadbuff(ESC);
+
+    return OK;
+  }
+
+  private static String get_last_insert()
+  {
+    return last_insert.substring(last_insert_skip);
   }
   
   /**
