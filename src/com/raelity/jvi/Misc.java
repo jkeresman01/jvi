@@ -45,6 +45,7 @@ import com.raelity.text.TextUtil.MySegment;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.text.CharacterIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -60,7 +61,10 @@ public class Misc implements ClipboardOwner {
    * count the size of the indent in the current line
    */
   static int get_indent() {
-      MySegment seg = G.curbuf.getLineSegment(G.curwin.w_cursor.getLine());
+    return get_indent(G.curwin.w_cursor);
+  }
+  static int get_indent(ViFPOS fpos) {
+      MySegment seg = G.curbuf.getLineSegment(fpos.getLine());
       return get_indent_str(seg);
   }
 
@@ -223,12 +227,18 @@ public class Misc implements ClipboardOwner {
    * leaves the cursor on the first non-blank in the line
    */
   static void set_indent(int size, boolean del_first) {
+    set_indent(size, del_first, G.curwin.w_cursor);
+  }
+  /** NOTE: fpos must be in curwin */
+  static void set_indent(int size, boolean del_first, ViFPOS fpos) {
     int		oldstate = G.State;
     int		c;
 
+    fpos.verify(G.curbuf);
     G.State = INSERT;		    // don't want REPLACE for State
     int col = 0;
-    MySegment seg = G.curbuf.getLineSegment(G.curwin.w_cursor.getLine());
+    // NEEDSWORK: note use of curbuf. but fpos not curwin
+    MySegment seg = G.curbuf.getLineSegment(fpos.getLine());
     if (del_first) {		    // delete old indent
       // vim_iswhite() is a define!
       while(vim_iswhite(seg.array[col + seg.offset])) {
@@ -248,8 +258,8 @@ public class Misc implements ClipboardOwner {
       sb.append(' ');
       --size;
     }
-    int offset = G.curbuf.getLineStartOffset(G.curwin.w_cursor.getLine());
-    G.curwin.replaceString(offset, offset + col, sb.toString());
+    int offset = G.curbuf.getLineStartOffset(fpos.getLine());
+    G.curbuf.replaceString(offset, offset + col, sb.toString());
     G.State = oldstate;
   }
 
@@ -1083,11 +1093,14 @@ public class Misc implements ClipboardOwner {
     }
 
     line = G.curwin.w_cursor.getLine();
+    // NOTE: the optimization of using copy() is around 12%
+    //       need to do single insert to get a big win
+    ViFPOS fpos = G.curwin.w_cursor.copy();
     for (i = oap.line_count; --i >= 0; ) {
-      G.curwin.w_cursor.set(line, 0);
-      first_char = gchar_cursor();
+      fpos.set(line, 0);
+      first_char = gchar_pos(fpos);
       if (first_char != '\n') {	// empty line
-	shift_line(oap.op_type == OP_LSHIFT, G.p_sr.getBoolean(), amount);
+	shift_line(oap.op_type == OP_LSHIFT, G.p_sr.getBoolean(), amount, fpos);
       }
       line++;
     }
@@ -1123,11 +1136,14 @@ public class Misc implements ClipboardOwner {
    * leaves cursor on first blank in the line
    */
   static void shift_line(boolean left, boolean round, int amount) {
+    shift_line(left, round, amount, G.curwin.w_cursor);
+  }
+  static void shift_line(boolean left, boolean round, int amount, ViFPOS fpos) {
     int		count;
     int		i, j;
     int		p_sw = G.curbuf.b_p_sw;
 
-    count = get_indent();	// get current indent
+    count = get_indent(fpos);	// get current indent
 
     if (round) {		// round off indent
       i = count / p_sw;	// number of p_sw rounded down
@@ -1156,7 +1172,7 @@ public class Misc implements ClipboardOwner {
     if (G.State == VREPLACE) {
       // change_indent(INDENT_SET, count, false, NUL);
     } else {
-      set_indent(count, true);
+      set_indent(count, true, fpos);
     }
   }
 
@@ -1164,6 +1180,18 @@ public class Misc implements ClipboardOwner {
   // YANK STUFF
   //
 
+  /**
+   * Sadly the yankbuf's are not code compatible
+   * except for MBLOCK.
+   * <br/>For MLINE and MCHAR there is a single
+   * string, even if multiple lines, and the string
+   * has embedded '\n'. The y_size is the number of
+   * lines, but y_array is only one element. The
+   * difference between MLINE and MCHAR is the
+   * terminating '\n'.
+   * <br/> Although not code compatible, the code for
+   * put operations is pretty simple.
+   */
   static class Yankreg implements Cloneable {
     // NEEDSWORK: init to null when private
     StringBuilder[] y_array = new StringBuilder[1];
@@ -1484,6 +1512,7 @@ public class Misc implements ClipboardOwner {
     {
       return FAIL; // NEEDSWORK: do_execreg ':'
       /* ****************************************************************
+      !!! s = ColonCommands.lastCommand; // s = last_cmdline;
       if (last_cmdline == NULL)
       {
         EMSG(e_nolastcmd);
@@ -1496,17 +1525,13 @@ public class Misc implements ClipboardOwner {
     }
     else if (regname == '.')		// use last inserted text
     {
-      /* ****************************************************************
-      return FAIL; // NEEDSWORK: do_execreg '.'
-      p = get_last_insert_save();
-      if (p == NULL)
+      String s = get_last_insert_save();
+      if (s == null || s.length() == 0)
       {
-        EMSG(e_noinstext);
+        Msg.emsg(Messages.e_noinstext);
         return FAIL;
       }
-      retval = put_in_typebuf(p, colon);
-      vim_free(p);
-      ****************************************************************/
+      retval = put_in_typebuf(s, colon);
     }
     else
     {
@@ -1545,13 +1570,26 @@ public class Misc implements ClipboardOwner {
           s += "\n";
         }
       }
-      if(GetChar.ins_typebuf(s, remap, 0, true) == FAIL) {
+      if(ins_typebuf(s, remap, 0, true) == FAIL) {
         return FAIL;
       }
       G.Exec_reg = true;	// disable the 'q' command
     }
     return retval;
   }
+
+private static int put_in_typebuf(String s, boolean colon)
+{
+    int		retval = OK;
+
+    if (colon)
+	retval = ins_typebuf("\n", FALSE, 0, true);
+    if (retval == OK)
+	retval = ins_typebuf(s, FALSE, 0, true);
+    if (colon && retval == OK)
+	retval = ins_typebuf(":", FALSE, 0, true);
+    return retval;
+}
 
   /**
    * Free up storage associated with current yank buffer.
@@ -1597,6 +1635,183 @@ public class Misc implements ClipboardOwner {
     if (!clipboard_available && rp == '*')
       rp = 0;
     return rp;
+  }
+
+  /**
+   * Insert a yank register: copy it into the Read buffer.
+   * Used by CTRL-R command and middle mouse button in insert mode.
+   *
+   * return FAIL for failure, OK otherwise
+   */
+  static int insert_reg(char regname, boolean literally)
+  throws NotSupportedException
+  {
+    int         i;
+    int		retval = OK;
+
+/////    /*
+/////     * It is possible to get into an endless loop by having CTRL-R a in
+/////     * register a and then, in insert mode, doing CTRL-R a.
+/////     * If you hit CTRL-C, the loop will be broken here.
+/////     */
+/////    ui_breakcheck();
+/////    if (got_int)
+/////	return FAIL;
+
+    /* check for valid regname */
+    if (regname != NUL && !valid_yank_reg(regname, false))
+	return FAIL;
+
+    MutableString pArg = new MutableString();
+    if (regname == '*')
+    {
+	if (!clipboard_available)
+	    regname = 0;
+	else
+	    clip_get_selection();	/* may fill * register */
+    }
+
+    if (regname == '.')			/* insert last inserted text */
+	retval = stuff_inserted(NUL, 1, true);
+    else if (get_spec_reg(regname, pArg, true))
+    {
+        String arg = pArg.getValue();
+	if (arg == null)
+	    return FAIL;
+	if (literally)
+	    stuffescaped(arg);
+	else
+	    stuffReadbuff(arg);
+    }
+    else				/* name or number register */
+    {
+	get_yank_register(regname, false);
+	//if (y_current->y_array == NULL)
+        if (y_current.y_array.length == 0
+                || y_current.y_array[0] == null
+                || y_current.y_array[0].length() == 0)
+	    retval = FAIL;
+	else
+	{
+            // Sadly the yankbuf's are not code compatible
+            // except for MBLOCK
+            if(y_current.y_type == MBLOCK) {
+              // THIS LOOP IS THE ORIGINAL CODE
+              for (i = 0; i < y_current.y_size; ++i)
+              {
+                  if (literally)
+                      stuffescaped(y_current.get(i));
+                  else
+                      stuffReadbuff(y_current.get(i));
+                  //
+                  // Insert a newline between lines and after last line if
+                  // y_type is MLINE.
+                  //
+                  if (y_current.y_type == MLINE || i < y_current.y_size - 1)
+                      stuffcharReadbuff('\n');
+              }
+            } else {
+              if (literally)
+                  stuffescaped(y_current.get(0));
+              else
+                  stuffReadbuff(y_current.get(0));
+            }
+	}
+    }
+
+    return retval;
+  }
+
+  /*
+   * Stuff a string into the typeahead buffer, such that edit() will insert it
+   * literally.
+   */
+  static void stuffescaped(String arg)
+  {
+      int offset = 0;
+      while (offset < arg.length())
+      {
+          char c = arg.charAt(offset);
+          if ((c < ' ' && c != TAB) /* || c > '~' */) // 16 bit chars in java
+              stuffcharReadbuff(ctrl('V'));
+          stuffcharReadbuff(c);
+          offset++;
+      }
+  }
+
+  static int check_fname()
+  {
+    String s = G.curbuf.getFilename();
+    if(s == null || s.length() == 0) {
+      Msg.emsg(Messages.e_noname);
+      return FAIL;
+    }
+    return OK;
+  }
+
+  /*
+   * If "regname" is a special register, return a pointer to its value.
+   */
+  static boolean get_spec_reg(char regname, MutableString argp, boolean errmsg)
+  {
+      int		cnt;
+      String            s;
+
+      argp.setValue(null);
+      switch (regname)
+      {
+          case '%':		// file name
+              if (errmsg)
+                  check_fname();	// will give emsg if not set
+              argp.setValue(G.curbuf.getFilename());
+              return true;
+
+//          case '#':		/* alternate file name */
+//              argp.setValue(getaltfname(errmsg));	/* may give emsg if not set */
+//              return true;
+
+//  #ifdef WANT_EVAL...
+
+          case ':':		/* last command line */
+              s = ColonCommands.lastCommand; // s = last_cmdline;
+              if (s == null && errmsg)
+                  Msg.emsg(Messages.e_nolastcmd);
+              argp.setValue(s);
+              return true;
+
+          case '/':		/* last search-pattern */
+              s = last_search_pat();
+              if (s == null && errmsg)
+                  Msg.emsg(Messages.e_noprevre);
+              argp.setValue(s);
+              return true;
+
+          case '.':		/* last inserted text */
+              argp.setValue(get_last_insert_save());
+              if (argp.getValue() == null && errmsg)
+                  Msg.emsg(Messages.e_noinstext);
+              return true;
+
+//  #ifdef FILE_IN_PATH...
+
+          case 0x1f & 'W':  // ctrl      // word under cursor
+          case 0x1f & 'A':  // ctrl      // WORD (mnemonic All) under cursor
+              if (!errmsg)
+                  return false;
+              MutableInt mi = new MutableInt();
+              CharacterIterator ci
+                      = find_ident_under_cursor(mi, regname == ctrl('W')
+                                     ?  (FIND_IDENT|FIND_STRING) : FIND_STRING);
+              cnt = mi.getValue();
+              argp.setValue(cnt > 0 ? ci.toString() : null);
+              return true;
+
+          case '_':		/* black hole: always empty */
+              argp.setValue("");
+              return true;
+      }
+
+      return false;
   }
 
   /**
@@ -5277,15 +5492,27 @@ private static void vim_str2nr(MySegment seg, int start,
 
 // GetChar
 private static void AppendCharToRedobuff(char c) { GetChar.AppendCharToRedobuff(c); }
+private static int ins_typebuf(String str, int noremap, int offset, boolean nottyped)
+    {return GetChar.ins_typebuf(str, noremap, offset, nottyped); }
+private static void stuffReadbuff(String s) { GetChar.stuffReadbuff(s); }
+private static void stuffcharReadbuff(char c) { GetChar.stuffcharReadbuff(c); }
 private static void vungetc(char c) { GetChar.vungetc(c); }
 
 // Normal
 private static boolean add_to_showcmd(char c) { return Normal.add_to_showcmd(c); }
 private static void clear_showcmd() { Normal.clear_showcmd(); }
+private static CharacterIterator find_ident_under_cursor(MutableInt mi, int find_type)
+    {return Normal.find_ident_under_cursor(mi, find_type);}
 private static int u_save_cursor() { return Normal.u_save_cursor(); }
 
 // Options
 private static boolean can_bs(int what) { return Options.can_bs(what); }
+
+// Edit
+private static int stuff_inserted(char c, int count, boolean no_esc)
+    throws NotSupportedException { return Edit.stuff_inserted(c, count, no_esc); }
+private static String get_last_insert_save() {return Edit.get_last_insert_save();}
+private static String last_search_pat() {return Search.getLastPattern();}
 
 // cursor compare
 private static boolean equalpos(ViFPOS p1, ViFPOS p2) {

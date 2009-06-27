@@ -78,7 +78,7 @@ public class Edit {
     // Invoked to handle the next char of a multichar command,
     // if zero returned then return, else
     // do regular processing on returned char.
-    char go(char c); 
+    char go(char c) throws NotSupportedException;
   }
   /**
    * Mutli char processings is contained in handleNextChar.
@@ -240,9 +240,14 @@ public class Edit {
 
     c = cmdchar;        // when actually doing editting cmdchar is the input.
     if(handleNextChar != null) {
-      c = handleNextChar.go(c);
-      if(c == NUL)
+      try {
+        c = handleNextChar.go(c);
+      } catch (NotSupportedException ex) {
+        c = NUL;
+      }
+      if (c == NUL) {
         return;
+      }
     }
     
     // whole lot of stuff deleted
@@ -313,13 +318,11 @@ public class Edit {
             inserted_space.setValue(false);
             break;
 
-            /*
             // insert the contents of a register
           case 0x1f & (int)('R'):	// Ctrl
             ins_reg();
             inserted_space.setValue(false);
             break;
-           */
             
             // Make indent one shiftwidth smaller.
           case IM_SHIFT_LEFT:
@@ -1127,7 +1130,10 @@ one_char: {
     //
     
     stop_arrow();
+    //if(ctrlv)
+    //  redo_literal
     GetChar.AppendCharToRedobuff(c);
+    // should do doc.insert rather than keytyped...
     Misc.ins_char(c);
     G.did_ai = false;
   }
@@ -1345,8 +1351,8 @@ one_char: {
    * Last_insert actually is a copy of the redo buffer, so we
    * first have to remove the command.
    */
-  private static int stuff_inserted(char c, int count, boolean no_esc)
-  {
+  static int stuff_inserted(char c, int count, boolean no_esc)
+  throws NotSupportedException {
     String ptr = get_last_insert();
     if(ptr == null)
     {
@@ -1375,7 +1381,8 @@ one_char: {
 
     do
     {
-	GetChar.stuffReadbuff(ptr);
+	ptr = cleanupForStuff(ptr, "i_CTRL-A or i_CTRL-@");
+	stuffReadbuff(ptr);
 	///// // a trailing "0" is inserted as "<C-V>048", "^" as "<C-V>^"
 	///// if (last)
 	/////     stuffReadbuff((char_u *)(last == '0' ? "\026048" : "\026^"));
@@ -1396,9 +1403,50 @@ one_char: {
     return OK;
   }
 
+  /**
+   * Check for characters that might cause recursion if added to Radbuff,
+   * like ^R, ^A, ^@.
+   * Throws an error if problem character found.
+   * @param s string to check.
+   * @return the original string
+   */
+  private static String cleanupForStuff(String s, String op)
+  throws NotSupportedException {
+    String msg = null;
+    String pat = String.format("%c|%c|%c", 0x1f&'R', 0x1f&'A', 0);
+    if(s.matches(pat)) {
+      msg = "Potentially recursive operation";
+    }
+    if(msg != null)
+      throw new NotSupportedException(op, msg);
+    return s;
+  }
+
   private static String get_last_insert()
   {
+    if(last_insert == null)
+      return null;
     return last_insert.substring(last_insert_skip);
+  }
+
+  /**
+   * Get last inserted string, and remove trailing <Esc>.
+   * Returns pointer to allocated memory (must be freed) or NULL.
+   */
+  static String get_last_insert_save()
+  {
+      int		len;
+
+      if (last_insert == null)
+          return null;
+      len = last_insert.length();
+      if(len > last_insert_skip + 1
+              && last_insert.charAt(len-1) == ESC) { // remove trailing ESC
+        --len;
+      }
+      if(last_insert_skip > len)
+        return null;
+      return last_insert.substring(last_insert_skip, len);
   }
   
   /**
@@ -1534,7 +1582,82 @@ one_char: {
    */
   private static void ins_reg()
   {
-    //handleNextChar = new doInsReg();
+
+      /*
+       * If we are going to wait for a character, show a '"'.
+       */
+      if(true) // if (redrawing() && !char_avail())
+      {
+          edit_putchar('"', true);
+          //add_to_showcmd_c(ctrl('R'));
+          add_to_showcmd(ctrl('R'));
+      }
+
+  //#ifdef USE_ON_FLY_SCROLL...
+      // CallbackInsReg will finish up...
+      handleNextChar = new CallbackInsReg();
+  }
+
+  private static class CallbackInsReg implements HandleNextChar
+  {
+    char literally = NUL;
+
+    public char go(char nc)
+    throws NotSupportedException
+    {
+      //int	    need_redraw = FALSE;
+
+      char	    regname = nc;
+
+      //
+      // Don't map the register name. This also prevents the mode message to be
+      // deleted when ESC is hit.
+      //
+
+      ++G.no_mapping;
+      if (literally == NUL
+              && (regname == ctrl('R')
+                  || regname == ctrl('O')
+                  || regname == ctrl('P')))
+      {
+          /* Get a third key for literal register insertion */
+          literally = regname;
+          add_to_showcmd(literally);
+          return NUL;
+      }
+      --G.no_mapping;
+
+//  #ifdef HAVE_LANGMAP.....
+
+//  #ifdef WANT_EVAL.....
+
+     if (literally == ctrl('O') || literally == ctrl('P'))
+     {
+         /* Append the command to the redo buffer. */
+         AppendCharToRedobuff(ctrl('R'));
+         AppendCharToRedobuff(literally);
+         AppendCharToRedobuff(regname);
+
+         do_put(regname, BACKWARD, 1,
+              (literally == ctrl('P') ? PUT_FIXINDENT : 0) | PUT_CURSEND);
+     }
+     else if (Misc.insert_reg(regname, literally != 0) == FAIL) {
+        vim_beep();
+        //need_redraw = TRUE;	/* remove the '"' */
+      }
+//  #ifdef WANT_EVAL
+
+      clear_showcmd();
+
+      // If the inserted register is empty, we need to remove the '"'
+/////      if (stuff_empty())
+/////          need_redraw = TRUE;
+      edit_clearPutchar();
+
+      //return need_redraw;
+      handleNextChar = null; // all done.
+      return NUL;
+    }
   }
   
   /**
@@ -2472,6 +2595,7 @@ private static int dec_cursor() { return Misc.dec_cursor(); }
 private static int decl(ViFPOS pos) { return Misc.decl(pos); }
 private static int del_char(boolean f) { return Misc.del_char(f); }
 private static int do_join(boolean insert_space, boolean redraw) { return Misc.do_join(insert_space, redraw); }
+private static void do_put(int regname_, int dir, int count, int flags) { Misc.do_put(regname_, dir, count, flags);}
 private static char gchar_pos(ViFPOS pos) { return Misc.gchar_pos(pos); }
 private static char gchar_cursor() { return Misc.gchar_cursor(); }
 private static void getvcol(ViTextView tv, ViFPOS fpos, MutableInt start,
@@ -2514,11 +2638,15 @@ private static void vim_str2nr(MySegment seg, int start,
 
 // GetChar
 private static void AppendCharToRedobuff(char c) { GetChar.AppendCharToRedobuff(c); }
+private static void stuffReadbuff(String s) { GetChar.stuffReadbuff(s); }
+private static void stuffcharReadbuff(char c) { GetChar.stuffcharReadbuff(c); }
 private static void vungetc(char c) { GetChar.vungetc(c); }
 
 // Normal
 private static boolean add_to_showcmd(char c) { return Normal.add_to_showcmd(c); }
 private static void clear_showcmd() { Normal.clear_showcmd(); }
+private static CharacterIterator find_ident_under_cursor(MutableInt mi, int find_type)
+    {return Normal.find_ident_under_cursor(mi, find_type);}
 private static int u_save_cursor() { return Normal.u_save_cursor(); }
 
 // Options

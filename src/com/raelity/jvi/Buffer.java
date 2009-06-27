@@ -192,6 +192,12 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         return new File("/tmp/test.file");
     }
 
+    public String getFilename()
+    {
+        File fi = G.curbuf.getJavaFile();
+        return fi == null ? null : fi.getPath();
+    }
+
     
     /**
      * In the future, to support multiple file modifiers, could take a File

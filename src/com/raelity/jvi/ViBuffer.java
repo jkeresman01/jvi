@@ -168,6 +168,8 @@ public interface ViBuffer {
      */
     public String modifyFilename(char option);
 
+    public String getFilename();
+
     /**
      * This method provides a file only so that the path can be examined.
      * @return null or the path for this file
