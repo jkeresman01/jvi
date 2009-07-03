@@ -394,6 +394,9 @@ public class Misc implements ClipboardOwner {
   }
 
   static void ins_char(char c) {
+    ins_char(c, false);
+  }
+  static void ins_char(char c, boolean ctrlv) {
     int extra;
     char curChar = 0;
 
@@ -414,8 +417,29 @@ public class Misc implements ClipboardOwner {
       // overwrite current character, no extra chars put into line
       G.curwin.replaceChar(c, true);
     } else {
-      G.curwin.insertChar(c);
+      if(ctrlv) {
+        String s = mapCtrlv(c);
+        // following does doc.insert
+        G.curwin.insertText(G.curwin.w_cursor.getOffset(), s);
+      } else
+        // following goes through key typed event
+        G.curwin.insertChar(c);
     }
+  }
+
+  private static String mapCtrlv(char c)
+  {
+    // should also do stuff like
+    // change an input F1 key to "<F1>"
+    // Doesn't look like you can put a '\r' into a document?
+    if(c == K_TAB || c == K_S_TAB)
+      c = '\t';
+    else if(c == K_KENTER || c == CR)
+      c = 13;  // carriage return
+    else if(c == NL)
+      c = 10; // newline
+
+    return String.valueOf(c);
   }
 
   static int del_char(boolean fixpos) {
@@ -1671,8 +1695,9 @@ private static int put_in_typebuf(String s, boolean colon)
 	    clip_get_selection();	/* may fill * register */
     }
 
-    if (regname == '.')			/* insert last inserted text */
+    if (regname == '.')	{	// insert last inserted text
 	retval = stuff_inserted(NUL, 1, true);
+    }
     else if (get_spec_reg(regname, pArg, true))
     {
         String arg = pArg.getValue();
@@ -1680,8 +1705,10 @@ private static int put_in_typebuf(String s, boolean colon)
 	    return FAIL;
 	if (literally)
 	    stuffescaped(arg);
-	else
+	else {
+            Edit.checkForStuffReadbuf(arg, "i_CTRL-R");
 	    stuffReadbuff(arg);
+        }
     }
     else				/* name or number register */
     {
@@ -1699,10 +1726,13 @@ private static int put_in_typebuf(String s, boolean colon)
               // THIS LOOP IS THE ORIGINAL CODE
               for (i = 0; i < y_current.y_size; ++i)
               {
+                  String s = y_current.get(i);
                   if (literally)
-                      stuffescaped(y_current.get(i));
-                  else
-                      stuffReadbuff(y_current.get(i));
+                      stuffescaped(s);
+                  else {
+                      Edit.checkForStuffReadbuf(s, "i_CTRL-R");
+                      stuffReadbuff(s);
+                  }
                   //
                   // Insert a newline between lines and after last line if
                   // y_type is MLINE.
@@ -1711,10 +1741,13 @@ private static int put_in_typebuf(String s, boolean colon)
                       stuffcharReadbuff('\n');
               }
             } else {
+              String s = y_current.get(0);
               if (literally)
-                  stuffescaped(y_current.get(0));
-              else
-                  stuffReadbuff(y_current.get(0));
+                  stuffescaped(s);
+              else {
+                  Edit.checkForStuffReadbuf(s, "i_CTRL-R");
+                  stuffReadbuff(s);
+              }
             }
 	}
     }

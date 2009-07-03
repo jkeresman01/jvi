@@ -29,9 +29,6 @@
  */
 package com.raelity.jvi;
 
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
-
 /**
  * The vim code uses character constants and key constants.
  * Characters are unicode characters. Keys are keystrokes that

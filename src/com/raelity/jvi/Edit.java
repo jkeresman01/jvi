@@ -1134,7 +1134,7 @@ one_char: {
     //  redo_literal
     GetChar.AppendCharToRedobuff(c);
     // should do doc.insert rather than keytyped...
-    Misc.ins_char(c);
+    Misc.ins_char(c,ctrlv);
     G.did_ai = false;
   }
   
@@ -1381,7 +1381,7 @@ one_char: {
 
     do
     {
-	ptr = cleanupForStuff(ptr, "i_CTRL-A or i_CTRL-@");
+	checkForStuffReadbuf(ptr, "i_CTRL-A or i_CTRL-@");
 	stuffReadbuff(ptr);
 	///// // a trailing "0" is inserted as "<C-V>048", "^" as "<C-V>^"
 	///// if (last)
@@ -1410,16 +1410,26 @@ one_char: {
    * @param s string to check.
    * @return the original string
    */
-  private static String cleanupForStuff(String s, String op)
+  static void checkForStuffReadbuf(String s, String op)
   throws NotSupportedException {
     String msg = null;
-    String pat = String.format("%c|%c|%c", 0x1f&'R', 0x1f&'A', 0);
-    if(s.matches(pat)) {
-      msg = "Potentially recursive operation";
+    if(false) {
+      String pat = String.format(".*[\\x%02d\\x%02d\\x%02d].*",
+                                 0x1f&'R', 0x1f&'A', 0);
+      if(s.matches(pat)) {
+        msg = "Potentially recursive operation";
+      }
+    } else {
+      if(s.indexOf(0x1f&'R') >= 0
+              || s.indexOf(0x1f&'A') >= 0
+              || s.indexOf(0) >= 0)
+        msg = op + ": potentially recursive operation";
     }
-    if(msg != null)
+    if(msg != null) {
+      Msg.emsg(msg);
+      vim_beep();
       throw new NotSupportedException(op, msg);
-    return s;
+    }
   }
 
   private static String get_last_insert()
