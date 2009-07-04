@@ -212,6 +212,15 @@ public interface ViTextView extends ViOptionBag {
   /** @return the number of lines in window */
   public int getViewLines();
 
+  /**
+   * When this returns the same value as getViewLines() then no non-existent
+   * lines can be displayed. If this returns getViewLines()/2 then the last
+   * line of the file can be scrolled to the center of the screen.
+   * 
+   * @return the number of lines that must be displayed in the window.
+   */
+  public int getRequiredDisplayLines();
+
   /** Scroll down (n_lines positive) or up (n_lines negative) the
    * specified number of lines.
    */

@@ -648,9 +648,18 @@ public class Misc implements ClipboardOwner {
   }
 
   static int adjustCoordTopLine(int top) {
-    if(top + G.curwin.getViewLines() > G.curwin.getCoordLineCount()) {
-      top = G.curwin.getCoordLineCount() - G.curwin.getViewLines() + 1;
-    }
+    int nLinesRequiredOnScreen = G.curwin.getRequiredDisplayLines();
+    // nLinesAfterTop includes the top line
+    // NOTE: the '+1' in the compare is not there in the previous
+    //       so the case for ViewLines == RequireddisplayLines is different.
+    //       top + VL > LC  vs RL > LC - top + 1
+    //                         top + RL > LC + 1
+    int nLinesAfterTop = G.curwin.getCoordLineCount() - top + 1;
+    if(nLinesAfterTop < nLinesRequiredOnScreen)
+      top = G.curwin.getCoordLineCount() - nLinesRequiredOnScreen + 1;
+    //if(top + G.curwin.getViewLines() > G.curwin.getCoordLineCount()) {
+    //  top = G.curwin.getCoordLineCount() - G.curwin.getViewLines() + 1;
+    //}
     if(top < 1) {
       top = 1;
     }

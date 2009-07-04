@@ -981,6 +981,11 @@ public class TextView extends Window
         return viewLines;
     }
 
+    public int getRequiredDisplayLines()
+    {
+        return getViewLines();
+    }
+
     protected void fillLinePositions()
     {
         /*
