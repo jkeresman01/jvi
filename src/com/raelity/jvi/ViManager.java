@@ -137,7 +137,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.6.beta1.2");
+    public static final jViVersion version = new jViVersion("1.2.6.beta1.3");
 
     private static boolean enabled;
 
@@ -1283,7 +1283,12 @@ public class ViManager
         {
             URL url = null;
             try {
-                URI uri = new URI("http://jvi.sourceforge.net/motd");
+                String s = System.getProperty("com.raelity.jvi.motd");
+                if(s != null)
+                    System.err.println("DEBUG MOTD: " + s);
+                if(s == null)
+                    s = "http://jvi.sourceforge.net/motd";
+                URI uri = new URI(s);
                 url = uri.toURL();
             } catch (MalformedURLException ex) {
                 LOG.log(Level.SEVERE, null, ex);
