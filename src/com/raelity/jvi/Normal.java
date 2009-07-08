@@ -2411,7 +2411,24 @@ middle_code:
 
   static private  void	nv_ctrlg (CMDARG cap) {
     do_xop("nv_ctrlg");
-    G.curbuf.displayFileInfo(G.curwin);
+    if (G.VIsual_active)	// toggle Selection/Visual mode
+    {
+      // Convert the visual mode bounds to a java text selection.
+      // This is kind of the idea of the command.
+      // VIM: G.VIsual_select = !G.VIsual_select;
+      int textMark = G.VIsual.getOffset();
+      end_visual_mode();	// stop Visual
+      Misc.check_cursor_col();	// make sure cursor is not beyond EOL
+      int textDot = G.curwin.w_cursor.getOffset();
+      G.curwin.w_set_curswant = true;
+      update_curbuf(NOT_VALID);
+      Misc.showmode();
+      //if(textDot < textMark)
+      //  textMark++;
+      G.curwin.setSelect(textDot, textMark);
+    }
+    else if (!checkclearop(cap.oap))
+      G.curbuf.displayFileInfo(G.curwin);
   }
 
   /**

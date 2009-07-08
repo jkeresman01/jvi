@@ -4425,7 +4425,7 @@ private static int put_in_typebuf(String s, boolean colon)
     // window.c
     //
     
-    static void do_window(int nchar, int Prenum) {
+    static void do_window(char nchar, int Prenum) {
       Normal.do_xop("do_window");
       switch(nchar) {
         // split current window in two parts
