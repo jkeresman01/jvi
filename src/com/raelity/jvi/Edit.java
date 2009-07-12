@@ -43,7 +43,7 @@ public class Edit {
   public static final String VI_MODE_BLOCK = "BLOCK";
   public static final String VI_MODE_LINE = "LINE";
   
-  static ViFPOS Insstart;
+  private static ViFPOS Insstart;
   static int Insstart_textlen;	// length of line when insert started
   
   static final int BACKSPACE_CHAR		= 1;
@@ -58,6 +58,7 @@ public class Edit {
   static boolean need_redraw; // GET RID OF
   static int did_restart_edit;
   static MutableInt count;
+  static boolean doingBackspace; // HACK to assist magic redo
   private static MutableBoolean inserted_space = new MutableBoolean(false);
 
   private static String last_insert;
@@ -91,6 +92,13 @@ public class Edit {
   static void reset() {
     handleNextChar = null;
     G.editPutchar = 0;
+  }
+
+  /**
+   * @return copy of the current start of insertion
+   */
+  static ViFPOS getInsstart() {
+    return Insstart.copy();
   }
 
   static boolean canEdit() {
@@ -1176,6 +1184,7 @@ one_char: {
         arrow_used = false;
       } finally {
         Misc.beginInsertUndo();
+        GetChar.startInputModeRedobuff();
       }
     }
   }
@@ -1871,6 +1880,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
 	return false;
     }
 
+    doingBackspace = true; // Beware of adding an early return;
     stop_arrow();
     in_indent = false; //inindent(0); NEEDSWORK: how can this be handled
 //#ifdef CINDENT
@@ -2047,7 +2057,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
   	    {
   		/* Remember the first char we inserted */
   		if (G.curwin.w_cursor.getLine() == Insstart.getLine()
-  				   && G.curwin.w_cursor.getColumn() < Insstart.getColumn())
+                       && G.curwin.w_cursor.getColumn() < Insstart.getColumn())
   		    Insstart.setColumn(G.curwin.w_cursor.getColumn());
 
   		if (G.State == VREPLACE)
@@ -2118,12 +2128,14 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
 //#endif
     if (G.curwin.w_cursor.getColumn() <= 1)
 	G.did_ai = false;
+
     /*
      * It's a little strange to put backspaces into the redo
      * buffer, but it makes auto-indent a lot easier to deal
      * with.
      */
-    AppendCharToRedobuff(c);
+    doingBackspace = false;
+    GetChar.appendBackspaceToRedobuff(); //AppendCharToRedobuff(c);
 
     /* If deleted before the insertion point, adjust it */
     if (G.curwin.w_cursor.getLine() == Insstart.getLine()

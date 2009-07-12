@@ -141,12 +141,12 @@ public interface Constants {
   //
 
   static final char  NUL	= '\000';
-  static final char  BS	= '\010';
+  static final char  BS         = '\010';
   static final char  TAB	= '\011';
-  static final char  NL	= '\012';
+  static final char  NL         = '\012';
   static final String  NL_STR	= "\012";
-  static final char  FF	= '\014';
-  static final char  CR	= '\015';
+  static final char  FF         = '\014';
+  static final char  CR         = '\015';
   static final char  ESC	= '\033';
   static final String ESC_STR	= "\033";
   static final char  DEL	= 0x7f;

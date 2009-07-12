@@ -3918,6 +3918,8 @@ static private void nv_findpar(CMDARG cap, int dir)
       Misc.check_cursor_col();	// make sure cursor is not beyond EOL
       G.curwin.w_set_curswant = true;
       update_curbuf(NOT_VALID);
+    } else if (G.curwin.w_cursor.getOffset() != G.curwin.getMarkPosition()) {
+      G.curwin.clearSelect();
     } else if (cap.oap.op_type == OP_NOP && opnum == 0
 	     && cap.count0 == 0 && cap.oap.regname == 0 && p_im == 0) {
       Util.vim_beep();
