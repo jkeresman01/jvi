@@ -1,13 +1,3 @@
-
-/**
- * Title:        jVi<p>
- * Description:  A VI-VIM clone.
- * Use VIM as a model where applicable.<p>
- * Copyright:    Copyright (c) Ernie Rael<p>
- * Company:      Raelity Engineering<p>
- * @author Ernie Rael
- * @version 1.0
- */
 /*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -61,6 +51,11 @@ public interface ViOutputStream {
    * Add a text line to the output stream.
    */
   public void println(String s);
+
+  /**
+   *  a "link" to the output stream
+   */
+  public void printlnLink(String link, String text);
   
   /**
    * Done with the stream.

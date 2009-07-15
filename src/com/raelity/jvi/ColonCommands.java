@@ -2017,6 +2017,12 @@ static ActionListener ACTION_version = new ActionListener() {
         }
     };
 
+static ActionListener ACTION_debugMotd = new ActionListener() {
+        public void actionPerformed(ActionEvent ev) {
+            ViManager.debugMotd();
+        }
+    };
+
 static ActionListener ACTION_nohlsearch = new ActionListener() {
         public void actionPerformed(ActionEvent ev) {
             Options.nohCommand();
@@ -2222,6 +2228,7 @@ static ActionListener ACTION_testModalKeys = new ActionListener() {
 static void registerBuiltinCommands()
 {
     register("ve", "version", ACTION_version);
+    register("debugMotd", "debugMotd", ACTION_debugMotd);
 
     register("clo", "close", ACTION_close);
     register("on", "only", ACTION_only);

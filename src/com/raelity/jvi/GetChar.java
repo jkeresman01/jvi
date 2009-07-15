@@ -489,9 +489,9 @@ public class GetChar {
       expectChar = false;
       redoTrackPosition = G.curwin.getCaretPosition();
       if(G.dbgRedo.value)
-        System.err.println(String.format("initRedoTrackingPosition %d '%s'",
-                                         redoTrackPosition,
-                                         TextUtil.debugString(redobuff.toString())));
+        System.err.format("initRedoTrackingPosition %d '%s'\n",
+                          redoTrackPosition,
+                          TextUtil.debugString(redobuff.toString()));
     }
 
     private static boolean notTracking() {
@@ -577,20 +577,20 @@ public class GetChar {
     // assist for markRedoTrackPosition
     private static void debugMarkRedoTrackPositionSKIP(int skip, String before) {
       if(G.dbgRedo.value)
-        System.err.println(String.format(
-                      "markRedoPosition SKIP[%d]: %s[%d] --> %s[%d]",
-                      skip,
-                      before, before.length(),
-                      afterBuff, afterBuff.length()));
+        System.err.format("markRedoPosition SKIP[%d]: %s[%d] --> %s[%d]\n",
+                          skip,
+                          before, before.length(),
+                          afterBuff, afterBuff.length());
     }
     // assist for markRedoTrackPosition
-    private static void debugMarkRedoTrackPosition(int prevRedoTrackPosition, char c) {
+    private static void
+    debugMarkRedoTrackPosition(int prevRedoTrackPosition, char c) {
       if(G.dbgRedo.value)
-        System.err.println(String.format("markRedoPosition %d --> %d '%c' '%s'",
-                                         prevRedoTrackPosition,
-                                         redoTrackPosition,
-                                         c,
-                                         TextUtil.debugString(redobuff.toString())));
+        System.err.format("markRedoPosition %d --> %d '%c' '%s'\n",
+                          prevRedoTrackPosition,
+                          redoTrackPosition,
+                          c,
+                          TextUtil.debugString(redobuff.toString()));
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -705,8 +705,8 @@ public class GetChar {
       return false;
     }
     private static void debugDocInsert(int pos, String s) {
-      System.err.println(String.format("docInsert: pos %d, %d, '%s'",
-                                     pos, s.length(), TextUtil.debugString(s)));
+      System.err.format("docInsert: pos %d, %d, '%s'\n",
+                        pos, s.length(), TextUtil.debugString(s));
     }
     private static void debugDocInsertMATCH_BEFORE() {
       if(G.dbgRedo.value)
@@ -721,43 +721,40 @@ public class GetChar {
     }
     private static void debugDocInsertERROR(int pos, String s) {
       // NOTE: error condition, not based on dbgRedo
-      System.err.println(String.format(
-                    "docInsert ERROR: pos %d, redoPosition %d, '%s'",
-                    pos, redoTrackPosition, s));
+      System.err.format("docInsert ERROR: pos %d, redoPosition %d, '%s'\n",
+                        pos, redoTrackPosition, s);
     }
     private static void debugDocInsertLONG(int pos, String s) {
       // NOTE: error condition, not based on dbgRedo
-      System.err.println(String.format("docInsert LONG: %d, length %d",
-                                       pos, s.length()));
+      System.err.format("docInsert LONG: %d, length %d\n",
+                        pos, s.length());
     }
     private static void debugDocInsertMATCH_EXTRA(int pos, String s) {
       if(G.dbgRedo.value)
-        System.err.println(String.format("docInsert MATCH EXTRA: %d '%s'",
-                                       pos, TextUtil.debugString(s)));
+        System.err.format("docInsert MATCH EXTRA: %d '%s'\n",
+                          pos, TextUtil.debugString(s));
     }
     private static void debugDocInsertNO_MATCH() {
       if(G.dbgRedo.value)
-        System.err.println(String.format(
-                    "docInsert: NO MATCH redoPosition %d, redobuff %s[%d]"
-                    + " afterBuff %s[%d]",
-                    redoTrackPosition,
-                    redobuff, redobuff.length(),
-                    afterBuff, afterBuff.length()));
+        System.err.format("docInsert: NO MATCH redoPosition %d, redobuff %s[%d]"
+                          + " afterBuff %s[%d]\n",
+                          redoTrackPosition,
+                          redobuff, redobuff.length(),
+                          afterBuff, afterBuff.length());
     }
     private static void debugDocInsertWARP(int warpDistance) {
-      System.err.println(String.format(
-                  "docInsert: WARP %d, redobuff %s[%d]"
-                  + " afterBuff %s[%d]",
-                  warpDistance,
-                  redobuff, redobuff.length(),
-                  afterBuff, afterBuff.length()));
+      System.err.format("docInsert: WARP %d, redobuff %s[%d]"
+                        + " afterBuff %s[%d]\n",
+                        warpDistance,
+                        redobuff, redobuff.length(),
+                        afterBuff, afterBuff.length());
     }
     private static void debugDocInsertMATCH_REMOVE_EXTRA(int pos, String t) {
-      System.err.println(String.format("docInsert MATCH REMOVE/EXTRA:"
-                         + " %d, '%s' / '%s'",
+      System.err.format("docInsert MATCH REMOVE/EXTRA:"
+                         + " %d, '%s' / '%s'\n",
                          pos,
                          TextUtil.debugString(removeDocAfterString),
-                         TextUtil.debugString(t)));
+                         TextUtil.debugString(t));
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -869,14 +866,14 @@ public class GetChar {
     }
     private static void debugDocRemoveBEFORE_INSSTART_NO_MATCH() {
       if(G.dbgRedo.value)
-        System.err.format("docRemove BEFORE INSSTART NO MATCH");
+        System.err.format("docRemove BEFORE INSSTART NO MATCH\n");
     }
     private static void debugDocRemoveMATCH(int pos, int len) {
       if(G.dbgRedo.value)
-        System.err.println(String.format(
-                  "docRemove MATCH%s: redoPosition %d --> %d, length %d",
+        System.err.format(
+                  "docRemove MATCH%s: redoPosition %d --> %d, length %d\n",
                   (expectChar ? "-expect" : ""),
-                  redoTrackPosition, pos, len));
+                  redoTrackPosition, pos, len);
     }
     private static void debugDocRemoveREMOVE_AFTER(int nBefore) {
       if(G.dbgRedo.value)
@@ -911,7 +908,7 @@ public class GetChar {
 
     private static boolean doingBackspace() {
       if(Edit.doingBackspace) {
-        System.err.println("doing BACKSPACE");
+        if(G.dbgRedo.value) System.err.println("doing BACKSPACE");
         return true;
       }
       return false;
@@ -924,379 +921,6 @@ public class GetChar {
     }
 
     private static void nop() {}
-  }
-
-  /***************************************************************************/
-  private static class OrigtMagicRedo {
-    //
-    // In input mode, want to track some platform changes to the document
-    // and make them part of the redo buffer. This is used for code completion
-    // cases. Want to KISS the problem.
-    //
-    // After "normal" characters are added to the redo buffer we expect the
-    // character to show up in the document, additional changes are
-    // incorporated into the redo buffer. BackSpace is considered a normal
-    // character, because the case is so common it has to be handled.
-    //
-    // The NOT normal characters include newline. After a newline do not want
-    // to track the autoindent
-    //
-    // Unfortunately there are times when "random" changes are made somewhere
-    // else in the document. For example, an import may be added. This should
-    // not be put into the redo buffer. So we have to keep track of where
-    // user input is done and look only for local changes.
-    //
-    // These algorithms fail if things "go out of bounds". Eg, on NB, start with
-    //      |)))
-    // then enter ((, you see
-    //      ((|)))))
-    // then enter ';', you see
-    //      (()))));|
-    // this has gone out of bounds, from input mode.
-    //
-    // out of bounds means that the span of the change contains characters that
-    // were there before editting started.
-    //
-    // NOTES:
-    //    - expectChar could be the actual char expected, else NUL
-    //    - too complicated, if this needs much more tweaking,
-    //      should probably go to a state machine.
-    //    - these algorithms are probably not really general. They work for
-    //      "extra" characters added for a single character at the same
-    //      insertion point. They work when a character in entered, then moved
-    //      to a point after the insertion stream.
-    //
-    // NEEDSWORK:
-    //  - Need bug fix
-    //    If the file has
-    //        string.le()
-    //    and the caret is on the '(', and you enter input mode and enter "ng"
-    //    then code complete to
-    //        string.length()
-    //    This generates a remove of 'le()' and an insert of length().
-    //    Want the redobuff to have '\b\bngth' or even 'th', but we end
-    //    up with '\b\b\b\blength' which backspaces over the insertion point.
-    //
-    //    Probably want to keep the '1i' separate, and only consider the
-    //    'ng'. We can see the leng in the document and the ng in the redobuf
-    //    and go from there. Need to add more structure to this process and
-    //    work with high level concepts,
-    //    e.g. substr(0,2) matches in document at pos
-    //    or substr(0,4) match doc/redo and returns position/count in redo
-    //    or somesuch...
-    //
-    //    Following shows the problem situation. BeforeLen is 4, but this goes
-    //    beyond the original insert point. Part of the problem is that the '1i'
-    //    is interpreted as part of what can be backspaced over
-    //        markRedoPosition OFF
-    //        initRedoTrackingPosition 1876 '1i'
-    //        CharAction: 'n' 6e(110) 0
-    //        markRedoPosition 1876 --> 1876 'n' '1i'
-    //        docInsert: pos 1876, 1, 'n'
-    //        docInsert MATCH expected 1876
-    //        CharAction: 'g' 67(103) 0
-    //        markRedoPosition 1877 --> 1877 'g' '1in'
-    //        docInsert: pos 1877, 1, 'g'
-    //        docInsert MATCH expected 1877
-    //        CharAction: REJECT: ' ' 20(32) 2
-    //        docRemove: pos 1874, 6, 'leng()'
-    //        docRemove NO MATCH, BeforeLen: 4 AfterString: '()'
-    //        docInsert: pos 1874, 8, 'length()'
-    //        docInsert: NO MATCH redoPosition 1878, redobuff 1ing[4] afterBuff [0]
-    //        docRemove: pos 1874, 4, '(null)'
-    //        docRemove MATCH: redoPosition 1878 --> 1874, length 4
-    //        docInsert MATCH REMOVE/EXTRA: 1874, beforeLen 4, '()'/'length'
-    //        KeyAction: ViEscapeKey: 1b(27) 0
-    //        markRedoPosition OFF
-    //        ...
-    //        CharAction: '.' 2e(46) 0
-    //        stuffbuff = '1inglength'
-    //
-    // NEEDSWORK:
-    //  - The idea behind initRedoTrackingPosition(), currently disabled,
-    //    If the file has
-    //        string.le()
-    //    and the caret is on the '(', and you enter input mode and start code
-    //    completion, this doesn't work because the redoTrackingPos is -1, but
-    //    if you enter 'n', then it works. It would probably be safe to record
-    //    the position when input mode is establish, rather than counting of the
-    //    first character input.
-
-    private static int redoTrackPosition = -1;
-    private static boolean expectChar;
-    private static boolean disableTrackingOneEdit;
-    // afterBuff, characters added after the current insert position
-    private static BufferQueue afterBuff = new BufferQueue();
-
-    // See docRemove() method for details of the removeDocXxx variables
-    // The variable remvoeDocAfterString also acts as a flag. It is non-null
-    // very briefly, only for one operation, insert or remove.
-    private static String removeDocAfterString; // check when non-null
-    private static int removeDocBeforeLength;
-
-    static void disableRedoTrackingOneEdit() {
-      disableTrackingOneEdit = true;
-    }
-
-    static void editComplete() {
-      disableTrackingOneEdit = false;
-    }
-
-    private static void initRedoTrackingPosition() {
-      // disable this method for now, it doesn't do anything. see above
-    if(true)
-      return;
-
-      expectChar = false;
-      redoTrackPosition = G.curwin.getCaretPosition();
-      if(G.dbgRedo.value)
-        System.err.println(String.format("initRedoTrackingPosition %d '%s'",
-                                         redoTrackPosition,
-                                         TextUtil.debugString(redobuff.toString())));
-    }
-
-    private static void markRedoTrackPosition(char c) {
-      if(!G.redoTrack.value)
-        return;
-      removeDocAfterString = null;
-      if(expectChar)
-        System.err.println("markRedoPosition ERROR: expectChar");
-      if((G.State & BASE_STATE_MASK) != INSERT
-         || c < 0x20 && (c != BS
-                      && c != TAB)
-         || c == DEL
-         || (c & 0xF000) == VIRT) {
-      if(G.dbgRedo.value)
-        System.err.println("markRedoPosition OFF");
-        redoTrackPosition = -1;
-        expectChar = false;
-        // dump any leftover chars onto redo buff
-        if(afterBuff.length() > 0) {
-        if(G.dbgRedo.value)
-          System.err.println("markRedoPosition leftovers: " + afterBuff);
-          redobuff.append(afterBuff.toString());
-          afterBuff.setLength(0);
-        }
-        return;
-      }
-      expectChar = true;
-      int prevRedoTrackPosition = redoTrackPosition;
-      redoTrackPosition = G.curwin.getCaretPosition();
-      if(prevRedoTrackPosition >= 0) {
-        int skip = redoTrackPosition - prevRedoTrackPosition;
-        if(skip != 0) {
-          String before = null; // debug
-          String skipString = null; // debug
-          if(G.dbgRedo.value)
-            before = afterBuff.toString();
-          if(skip < 0) {
-            // One or more chars skipped back before the end position,
-            // take them out of redobuff and save them.
-            // Typically entered something like '[' and '[|]' put into document
-            // with insertion point as indicated by '|'.
-            // Assuming will leave at least one character in redobuff.
-            if(redobuff.length() + skip > 0) { // recall skip is negative
-              int i = skip;
-              while(i++ < 0)
-                afterBuff.addFirst(redobuff.removeLast());
-            }
-          } else if(skip > 0) {
-            // One or more characters skipped forward,
-            // move chars from afterBuff to redoBuff.
-            // Don't move if further than all of afterBuff
-            if(afterBuff.length() - skip >= 0) {
-              int i = skip;
-              while(i-- > 0)
-                redobuff.append(afterBuff.removeFirst());
-            }
-          }
-          if(G.dbgRedo.value)
-            System.err.println(String.format(
-                          "markRedoPosition SKIP[%d]: %s[%d] --> %s[%d]",
-                          skip,
-                          before, before.length(),
-                          afterBuff, afterBuff.length()));
-        }
-      }
-      if(G.dbgRedo.value)
-        System.err.println(String.format("markRedoPosition %d --> %d '%c' '%s'",
-                                         prevRedoTrackPosition,
-                                         redoTrackPosition,
-                                         c,
-                                         TextUtil.debugString(redobuff.toString())));
-        //System.err.println("markRedoPosition " + redoTrackPosition + " '" + c + "'");
-    }
-
-    static void docInsert(int pos, String s) {
-      if(G.dbgRedo.value)
-        System.err.println(String.format("docInsert: pos %d, %d, '%s'",
-                                       pos, s.length(), TextUtil.debugString(s)));
-      if(redoTrackPosition < 0 || !G.redoTrack.value || disableTrackingOneEdit)
-        return;
-      if(expectChar) {
-        if(pos == redoTrackPosition) {
-          if(G.dbgRedo.value) {
-            System.err.println("docInsert MATCH expected " + pos
-                               + (s.length() > 1 ? " LENGTH: " + s.length() : ""));
-          }
-          redoTrackPosition += 1;
-        } else if(pos != redoTrackPosition)
-          System.err.println(String.format(
-                        "docInsert ERROR: pos %d, redoPosition %d, '%s'",
-                        pos, redoTrackPosition, s));
-        if(s.length() != 1) {
-          System.err.println(String.format("docInsert LONG: %d, length %d",
-                                            pos, s.length()));
-          // add in the extra
-          redobuff.append(s.substring(1));
-          redoTrackPosition += s.length() - 1;
-        }
-      } else {
-        if(pos == redoTrackPosition) {
-          if(G.dbgRedo.value)
-            System.err.println(String.format("docInsert MATCH EXTRA: %d '%s'",
-                                           pos, TextUtil.debugString(s)));
-          //
-          // Add the mystery string to the redo buffer
-          //
-          redobuff.append(s);
-          redoTrackPosition += s.length();
-        } else {
-          if(G.dbgRedo.value)
-            System.err.println(String.format(
-                        "docInsert: NO MATCH redoPosition %d, redobuff %s[%d]"
-                        + " afterBuff %s[%d]",
-                        redoTrackPosition,
-                        redobuff, redobuff.length(),
-                        afterBuff, afterBuff.length()));
-
-          // Is there enough chars, stashed from the insert,
-          // in afterBuff to cover the warp
-          int warpDistance = pos - redoTrackPosition;
-          if(s.length() == 1
-                  && warpDistance > 0
-                  && warpDistance <= afterBuff.length()) {
-
-            // Handle character warp, like for ';' on NB. Given
-            //       (((|)))
-            // enter ';', and you get
-            //       ((()));|
-            // NetBeans add the ';' at the cursor, then removes it;
-            // so at this point, there is ";\b" in redobuff, they must be removed
-            // (which breaks vim's "rule" about leaving in the \b), otherwise
-            // during a redo the ';' causes problems.
-            //
-            // Be very strict (at least for now)
-
-
-            // get rid of ';\b' if its there
-            if(redobuff.length() >= 2
-                    && redobuff.getLast(0) == BS
-                    && redobuff.getLast(1) == s.charAt(0)) {
-              redobuff.removeLast();
-              redobuff.removeLast();
-            }
-            int i = warpDistance;
-            while(i-- > 0)
-              redobuff.append(afterBuff.removeFirst());
-            redobuff.append(s);
-            if(G.dbgRedo.value)
-              System.err.println(String.format(
-                          "docInsert: WARP %d, redobuff %s[%d]"
-                          + " afterBuff %s[%d]",
-                          warpDistance,
-                          redobuff, redobuff.length(),
-                          afterBuff, afterBuff.length()));
-          } else if(removeDocAfterString != null
-                    && redoTrackPosition - removeDocBeforeLength == pos
-                    && s.endsWith(removeDocAfterString)
-                  ) {
-            // This is part of the "Delete char *after* the insertion point".
-            // See comments in docRemoveInternal
-            docRemoveInternal(pos, removeDocBeforeLength, null); // MATCH
-
-            int count = s.length() - removeDocAfterString.length();
-            String t = s.substring(0, count);
-            redobuff.append(t);
-            // NOTE: not adjusting redoTrackPosition, so no more stuff gets put
-            // in the redo buffer. For that to work would have to actually do
-            // the delete in the document. (there are ways..., put a virt char
-            // in the document that means delete, may also need forward backward
-            // commands, too messy)
-            if(G.dbgRedo.value)
-              System.err.println(String.format("docInsert MATCH REMOVE/EXTRA:"
-                                 + " %d, beforeLen %d, '%s'/'%s'",
-                                 pos,
-                                 removeDocBeforeLength,
-                                 TextUtil.debugString(removeDocAfterString),
-                                 TextUtil.debugString(t)));
-          }
-        }
-      }
-      removeDocAfterString = null;
-      expectChar = false;
-    }
-
-    static void docRemove(int pos, int len, String removedText) {
-      removeDocAfterString = null;
-      docRemoveInternal(pos, len, removedText);
-    }
-
-    private static void docRemoveInternal(int pos, int len, String removedText) {
-      if(G.dbgRedo.value)
-        System.err.println(String.format("docRemove: pos %d, %d, '%s'",
-                                    pos, len, TextUtil.debugString(removedText)));
-      if(redoTrackPosition < 0 || !G.redoTrack.value || disableTrackingOneEdit)
-        return;
-      if(pos + len == redoTrackPosition) {
-        if(G.dbgRedo.value)
-          System.err.println(String.format(
-                    "docRemove MATCH%s: redoPosition %d --> %d, length %d",
-                    (expectChar ? "-expect" : ""),
-                    redoTrackPosition, pos, len));
-        //
-        // Delete the string from the redo buffer, using BS
-        //
-        if(expectChar && len != 1) {
-          System.err.println("docRemove ERROR: expectChar len = " + len);
-        }
-        // when expectChar, the BS is already in redobuff
-        if(!expectChar) {
-          for(int i = len; i > 0; i--)
-            redobuff.append(BS);
-        }
-        redoTrackPosition -= len;
-      } else if(pos + len > redoTrackPosition  // goes past insertion point
-                && (removeDocBeforeLength = redoTrackPosition - pos)
-                              <= redobuff.length()  // enought to remove
-                && removedText != null  // there's something to work with
-                && afterBuff.length() == 0  // don't deal with it if this not empty
-              ) {
-        // Deleting chars *after* the insertion point; they were in the document
-        // before the insert started. If this docRemove is immeadiately followed
-        // by a docInsert whose last characters are the same as the ones being
-        // removed, then we'll handle it by stripping the chars from the end of
-        // the insert. For example given,
-        //    foo.ch|()
-        // and code complete to method with no args, then the "ch()" are deleted
-        // and then "charValue()" is inserted. In docInsert set up the
-        // redo buffer to remove the "ch" snd insert "charValue". Thus we avoid
-        // modifying non-inserted text.
-
-        // stash the characters after insertion point that are deleted
-
-        removeDocAfterString = removedText.substring(removeDocBeforeLength);
-
-        if(G.dbgRedo.value)
-        System.err.println("docRemove NO MATCH,"
-                             + " BeforeLen: " + removeDocBeforeLength
-                             + " AfterString: '" + removeDocAfterString + "'");
-      } else {
-        if(G.dbgRedo.value)
-          System.err.println("docRemove NO MATCH");
-      }
-      expectChar = false;
-    }
   }
 
   /**

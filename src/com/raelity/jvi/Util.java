@@ -26,7 +26,7 @@ import com.raelity.text.TextUtil.MySegment;
 
 public class Util {
   // static final int TERMCAP2KEY(int a, int b) { return a + (b << 8); }
-  static final char ctrl(char x) { return (char)(x & 0x1f); }
+  public static final char ctrl(char x) { return (char)(x & 0x1f); }
   // static final int shift(int c) { return c | (0x1 << 24); }
   // static void stuffcharReadbuff(int c) {}
 

@@ -45,6 +45,9 @@ public class OutputStreamAdaptor implements ViOutputStream {
   public void println(String s) {
   }
 
+  public void printlnLink(String link, String text) {
+  }
+
   public void close() {
   }
 }

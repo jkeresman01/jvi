@@ -137,7 +137,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.6.beta2");
+    public static final jViVersion version = new jViVersion("1.2.6.beta2.2");
 
     private static boolean enabled;
 
@@ -1174,15 +1174,67 @@ public class ViManager
   
     static Motd motd = new Motd();
 
+    /**
+     * Parse and output the jVi motd data.
+     * The fields are:
+     * <br/>    motd-version: version-number
+     * <br/>    jVi-release: release-number
+     * <br/>    jVi-beta: release-number
+     * <br/>    jVi-download-target: where to download new jvi stuff
+     * <br/>    motd-link: link-with-no-spaces       display text for link
+     * <br/>    motd-message:
+     *          The message, followed by a line starting with &ltEOT&gt
+     * <p/>
+     *
+     */
     static class Motd
     {
+        private interface  OutputHandler {
+            public void output(ViOutputStream vios);
+        }
+        private class OutputString implements OutputHandler {
+            String msg;
+
+            public OutputString(String msg) {
+                this.msg = msg;
+            }
+
+            public void output(ViOutputStream vios) {
+                vios.println(msg);
+            }
+
+            public String toString() {
+                return msg;
+            }
+        }
+        private class OutputLink implements OutputHandler {
+            String link, text;
+
+            public OutputLink(String link, String text) {
+                this.link = link;
+                this.text = text;
+            }
+
+            public void output(ViOutputStream vios) {
+                vios.printlnLink(link, text);
+            }
+
+            public String toString() {
+                return link + " : " + text;
+            }
+        }
         private jViVersion latestRelease;
         private jViVersion latestBeta;
+        private String motdVersion;
+        private String downloadTarget;
+
         private int messageNumber;
         private String message;
         private boolean valid;
         private boolean outputNetworkInfo;
         private boolean outputBasicInfo;
+        // following could be a list of pairs of link:text
+        List<OutputHandler> outputList = new ArrayList<OutputHandler>(5);
 
         Motd()
         {
@@ -1197,28 +1249,61 @@ public class ViManager
         Motd(String s)
         {
             //String lines[] = motd.split("\n");
-            Pattern p = Pattern.compile("^jVi-release: (\\S+)",
-                                        Pattern.MULTILINE);
-            Matcher m = p.matcher(s);
+            Pattern p;
+            Matcher m;
+
+            p = Pattern.compile("^motd-version:\\s*(\\S+)", Pattern.MULTILINE);
+            m = p.matcher(s);
+            if(m.find()) {
+                motdVersion = m.group(1);
+            }
+
+            p = Pattern.compile("^jVi-release:\\s*(\\S+)", Pattern.MULTILINE);
+            m = p.matcher(s);
             if(m.find()) {
                 latestRelease = new jViVersion(m.group(1));
             }
-            p = Pattern.compile("^jVi-beta: (\\S+)", Pattern.MULTILINE);
+
+            p = Pattern.compile("^jVi-beta:\\s*(\\S+)", Pattern.MULTILINE);
             m = p.matcher(s);
             if(m.find()) {
                 latestBeta = new jViVersion(m.group(1));
             }
-            p = Pattern.compile("^jVi-message: (\\d+).*$", Pattern.MULTILINE);
+
+            p = Pattern.compile("^jVi-download-target:\\s*(\\S+)",
+                                Pattern.MULTILINE);
             m = p.matcher(s);
-            int loc = 0;
             if(m.find()) {
-                try {
-                    messageNumber = Integer.parseInt(m.group(1));
-                    message = s.substring(m.end(0)+1); // +1 to skip the newline
-                } catch (NumberFormatException ex) {
-                    LOG.log(Level.SEVERE, null, ex);
-                }
+                downloadTarget = m.group(1);
             }
+
+            p = Pattern.compile("^motd-link:\\s*(\\S+)\\s*\\n"
+                                + "(.*?)\\s*\\n<EOT>",
+                                Pattern.MULTILINE);
+            m = p.matcher(s);
+            while(m.find()) {
+                outputList.add(new OutputLink(m.group(1), m.group(2)));
+            }
+
+            p = Pattern.compile("^motd-message:\\s*\\n"
+                                + "(.*?)\\s*\\n<EOT>",
+                                Pattern.MULTILINE|Pattern.DOTALL);
+            m = p.matcher(s);
+            while(m.find()) {
+                outputList.add(new OutputString(m.group(1)));
+            }
+
+            //p = Pattern.compile("^jVi-message: (\\d+).*$", Pattern.MULTILINE);
+            //m = p.matcher(s);
+            //if(m.find()) {
+            //    try {
+            //        messageNumber = Integer.parseInt(m.group(1));
+            //        message = s.substring(m.end(0)+1); // +1 to skip the newline
+            //    } catch (NumberFormatException ex) {
+            //        LOG.log(Level.SEVERE, null, ex);
+            //    }
+            //}
+
             valid = true;
         }
 
@@ -1260,23 +1345,40 @@ public class ViManager
             }
             vios.println("Running: " + getReleaseString() + tagCurrent);
             if(hasNewer != null)
-                vios.println(hasNewer);
+                vios.printlnLink(downloadTarget, hasNewer);
             if(latestBeta != null && latestBeta.isValid()) {
                 if(latestBeta.compareTo(version) > 0) {
-                    vios.println("Beta or release candidate available: "
-                            + latestBeta);
+                    vios.printlnLink(downloadTarget,
+                                   "Beta or release candidate available: "
+                                   + latestBeta);
                 }
             }
-            if(message != null)
-                vios.println(message);
+            for (int i = 0; i < outputList.size(); i++) {
+                OutputHandler outputHandler = outputList.get(i);
+                outputHandler.output(vios);
+            }
+            //if(message != null)
+            //    vios.println(message);
             vios.close();
         }
+    }
+
+    static void debugMotd() {
+        new GetMotd(true).start();
     }
 
     private static class GetMotd extends Thread
     {
         private static final int BUF_LEN = 1024;
         private static final int MAX_MSG = 8 * 1024;
+        private boolean outputOnly;
+
+        public GetMotd() {
+        }
+
+        public GetMotd(boolean outputOnly) {
+            this.outputOnly = outputOnly;
+        }
 
         @Override
         public void run()
@@ -1320,7 +1422,10 @@ public class ViManager
                 }
                 in.close();
 
-                motd = new Motd(sb.toString());
+                if(!outputOnly)
+                    motd = new Motd(sb.toString());
+                else
+                    new Motd(sb.toString()).output();
             } catch (IOException ex) {
                 //ex.printStackTrace();
             }

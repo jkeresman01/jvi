@@ -1,13 +1,3 @@
-
-/**
- * Title:        jVi<p>
- * Description:  A VI-VIM clone.
- * Use VIM as a model where applicable.<p>
- * Copyright:    Copyright (c) Ernie Rael<p>
- * Company:      Raelity Engineering<p>
- * @author Ernie Rael
- * @version 1.0
- */
 /*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -62,7 +52,15 @@ public class DefaultOutputStream extends OutputStreamAdaptor {
     System.err.println("ViOutputStream: " + s);
   }
 
+  @Override
+  public void printlnLink(String link, String text) {
+    System.err.format("ViOutputStream: %s, %s: link: %s, text: %s",
+                      type, info, link, text);
+  }
+
     @Override
   public void close() {
   }
 }
+
+// vi:set sw=2 ts=8:

@@ -1,12 +1,3 @@
-/**
- * Title:        jVi<p>
- * Description:  A VI-VIM clone.
- * Use VIM as a model where applicable.<p>
- * Copyright:    Copyright (c) Ernie Rael<p>
- * Company:      Raelity Engineering<p>
- * @author Ernie Rael
- * @version 1.0
- */
 /*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -103,7 +94,10 @@ public class WindowCmdEntry extends CommandLine.CommandLineEntry {
                                    String title) {
             // NEEDSWORK: create (Dialog)owner, when want to allow searching
             //            in nomadic editors.
-            CommandLineWindow d = new CommandLineWindow((Frame)owner);
+            // NOTE: in JDK 1.6 can pass a window to JDialog constructor
+            CommandLineWindow d = owner instanceof Frame
+                    ? new CommandLineWindow((Frame)owner)
+                    : new CommandLineWindow((Dialog)owner);
             d.setUndecorated(true);
             d.add(commandLine, BorderLayout.NORTH);
             d.pack();
