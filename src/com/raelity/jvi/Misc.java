@@ -4446,11 +4446,21 @@ private static int put_in_typebuf(String s, boolean colon)
         case 'o':
           GetChar.stuffReadbuff(":only\n");
           break;
-          
+
           // cursor to next window with wrap around
         case 'W' & 0x1f:
         case 'w':
           G.curwin.win_cycle(Prenum);
+          break;
+          
+          // cursor to next nomadic editor with wrap around
+        case 'E' & 0x1f:
+        case 'e':
+          G.curwin.win_cycle_nomad(Prenum);
+          break;
+
+        default:
+          Util.vim_beep();
           break;
       }
     }

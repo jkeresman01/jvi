@@ -53,6 +53,11 @@ public interface ViFactory
     /** Return a Buffer, create one if it doesn't already exist */
     public Buffer getBuffer(JEditorPane editorPane);
 
+    /** Make a best guess as to whether or not the 'ep' is a nomad.
+     * Should default to false.
+     */
+    public boolean isNomadic(JEditorPane ep, Object appHandle);
+
     /** Handle changing document in text view.
      * Editor in TextView should hold new document.
      * @param tv TextView holding editor that is changing document

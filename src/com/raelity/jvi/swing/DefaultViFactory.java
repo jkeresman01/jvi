@@ -156,6 +156,10 @@ public class DefaultViFactory implements ViFactory
         return s;
     }
 
+    public boolean isNomadic(JEditorPane ep, Object appHandle) {
+        return false;
+    }
+
 
     public boolean isVisible( ViTextView tv )
     {

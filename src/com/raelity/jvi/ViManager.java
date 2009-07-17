@@ -31,7 +31,6 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.List;
-import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Set;
@@ -48,9 +47,12 @@ import java.net.URI;
 import java.net.URL;
 
 import com.raelity.jvi.swing.KeyBinding;
+import java.lang.ref.WeakReference;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -137,7 +139,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.6.beta2.2");
+    public static final jViVersion version = new jViVersion("1.2.6.beta2.3");
 
     private static boolean enabled;
 
@@ -419,33 +421,78 @@ public class ViManager
     //
 
     // NEEDSWORK: textMRU: use a weak reference to appHandle?
+    static class WeakObject extends WeakReference<Object> {
+
+        public WeakObject(Object referent) {
+            super(referent);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if(!(obj instanceof WeakObject))
+                return false;
+            Object o = get();
+            Object other = ((WeakObject)obj).get();
+            return o == null ? o == obj : o.equals(other);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            Object o = get();
+            if(o != null)
+                hash = o.hashCode();
+            return hash;
+        }
+    }
+    private static class BuffersList {
+        List<WeakReference> l = new ArrayList();
+    }
     private static List<Object> textBuffers = new ArrayList<Object>();
-    private static LinkedList<Object> textMRU = new LinkedList<Object>();
+    private static List<Object> textMRU = new ArrayList<Object>();
+    private static Set<WeakObject> textNomads = new LinkedHashSet<WeakObject>();
     private static Object currentlyActive;
     private static Object ignoreActivation;
 
+    private static void setCurrentAppHandle(Object appHandle, boolean isNomad)
+    {
+        if(!isNomad) {
+            // this used to be the default case
+            textMRU.remove(appHandle);
+            textMRU.add(0, appHandle);
+            if( ! textBuffers.contains(appHandle)) {
+                textBuffers.add(appHandle);
+            }
+            // Following for the bizare case where it was ...?
+            textNomads.remove(new WeakObject(appHandle));
+        } else {
+            // insure nomads not in these lists
+            textMRU.remove(appHandle);
+            textBuffers.remove(appHandle);
+            // and make sure it is in the nomad list
+            // Don't need to check contained, since working with a Set.
+            textNomads.add(new WeakObject(appHandle));
+        }
+    }
+
     /**
-     * Fetch the text buffer indicated by the argument. If the argument is
-     * positive, then fetch the Nth buffer, numbered 1 to N, according to
-     * the order they were activated. If the argument is negative then use
-     * the MRU list to get the buffer, where -1
-     * means the previous buffer. An argument of 0 will return null.
-     * Usage for n < 0 is deprecated, consider -0 is not the top of the
-     * MRU list, see {@link #getMruBuffer}.
+     * Fetch the text buffer indicated by the argument. The argument is
+     * positive, fetch the Nth buffer, numbered 1 to N, according to
+     * the order they were activated.
+     * See {@link #getMruBuffer}.
+     * @return the buffer or null if i does not specify an active buffer.
      */
     public static Object getTextBuffer(int i)
     {
-        if(i == 0) {
+        i = i - 1; // put in range 0 - (N-1)
+        if(i < 0 || i >= textBuffers.size())
             return null;
-        }
-        if(i < 0)
-            return getMruBuffer(-i);
 
-        i = i - 1;
-        if(i >= textBuffers.size()) {
-            return null;
-        }
         return textBuffers.get(i);
+    }
+    public static Iterator getTextBufferIterator()
+    {
+        return textBuffers.iterator();
     }
 
     /**
@@ -459,9 +506,55 @@ public class ViManager
         return textMRU.get(i);
     }
 
+    public static Iterator getNomadBufferIterator()
+    {
+        //return textNomads.iterator();
+        // While this is iterated, null elements are tossed out.
+        // remove is not implemented.
+        final Iterator<WeakObject> iter = textNomads.iterator();
+        return new Iterator() {
+            Object nextObject;
+
+            // Find the next non-null object, removing nulls
+            private void findNextObject() {
+                if(nextObject != null)
+                    return;
+                WeakObject wo;
+                while(iter.hasNext()) {
+                    wo = iter.next();
+                    nextObject = wo.get();
+                    if(nextObject != null)
+                        break;
+                    iter.remove();
+                }
+            }
+
+            public boolean hasNext() {
+                if(nextObject != null)
+                    return true;
+                findNextObject();
+                return nextObject != null;
+            }
+
+            public Object next() {
+                findNextObject();
+                if(nextObject == null)
+                    throw new NoSuchElementException();
+                Object o = nextObject;
+                nextObject = null;
+                return o;
+            }
+
+            public void remove() {
+                // iter.remove() here probably works fine
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
     /**
      * Return the Ith next/previous appHandle relative to the argument
-     * appHandle. If i < 0 then look in previously used direction.
+     * appHandle. If i &lt 0 then look in previously used direction.
      */
     public static Object relativeMruBuffer(Object appHandle, int i)
     {
@@ -501,18 +594,6 @@ public class ViManager
     }
 
     /**
-      * @deprecated use activateAppEditor
-      * @param ep
-      * @param appHandle
-      * @param tag
-      */
-    public static void activateFile(
-            JEditorPane ep, Object appHandle, String tag)
-    {
-        activateAppEditor(ep, appHandle, tag);
-    }
-
-    /**
      * The application invokes this whenever a file becomes selected
      * in the specified container. This also serves as an open.
      * @param ep May be null, otherwise the associated editor pane
@@ -541,20 +622,7 @@ public class ViManager
             return;
         }
 
-        textMRU.remove(appHandle);
-        textMRU.add(0, appHandle);
-        if( ! textBuffers.contains(appHandle)) {
-            textBuffers.add(appHandle);
-        }
-    }
-
-    /**
-     * @deprecated
-     * @param appHandle
-     */
-    public static void deactivateCurrentFile(Object appHandle)
-    {
-        deactivateCurrentAppEditor(appHandle);
+        setCurrentAppHandle(appHandle, factory.isNomadic(ep, appHandle));
     }
 
     public static void deactivateCurrentAppEditor(Object appHandle)
@@ -572,25 +640,9 @@ public class ViManager
         currentlyActive = null;
     }
 
-    /** @deprecated use isKnownAppHandle */
-    public static boolean isBuffer(Object o)
-    {
-        return isKnownAppHandle(o);
-    }
-
     public static boolean isKnownAppHandle(Object o)
     {
         return textBuffers.contains(o);
-    }
-
-    /**
-     * @deprecated
-     * @param ep
-     * @param appHandle
-     */
-    public static void closeFile(JEditorPane ep, Object appHandle)
-    {
-        closeAppEditor(ep, appHandle);
     }
 
     /**
@@ -620,15 +672,6 @@ public class ViManager
     //
     // END of OpenEditors list handling
     //
-
-    /**
-     * Set up an editor pane for use with vi.
-     * @deprecated use activateFile
-     */
-    public static void registerEditorPane(JEditorPane editorPane)
-    {
-        factory.registerEditorPane(editorPane);
-    }
 
     public static void log(Object... a)
     {
@@ -1012,8 +1055,11 @@ public class ViManager
         Set<Buffer> bufSet = factory.getBufferSet();
         ps.println("BufferSet: " + bufSet.size());
         for (Buffer buf : bufSet) {
-            ps.println("\t" + factory.getDisplayFilename(buf.getDocument())
-                    + ", share: " + buf.getShare());
+            if(buf == null)
+                ps.println("null-buf");
+            else
+                ps.println("\t" + factory.getDisplayFilename(buf.getDocument())
+                           + ", share: " + buf.getShare());
         }
     }
 
@@ -1203,6 +1249,7 @@ public class ViManager
                 vios.println(msg);
             }
 
+            @Override
             public String toString() {
                 return msg;
             }
@@ -1219,6 +1266,7 @@ public class ViManager
                 vios.printlnLink(link, text);
             }
 
+            @Override
             public String toString() {
                 return link + " : " + text;
             }

@@ -802,6 +802,14 @@ public class TextView extends Window
         Msg.emsg("win_cycle not implemented");
     }
 
+    /** Cycle to the indicated buffer.
+     * @param n the positive/negative number of windows to cycle.
+     */
+    public void win_cycle_nomad( int n )
+    {
+        Msg.emsg("win_cycle_nomad not implemented");
+    }
+
 
     public ViStatusDisplay getStatusDisplay()
     {
