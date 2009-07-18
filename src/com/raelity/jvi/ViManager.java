@@ -130,7 +130,17 @@ public class ViManager
     private static Keymap editModeKeymap;
     private static Keymap normalModeKeymap;
 
-    public static Map HackMap = new HashMap();
+    private static Map hackMap = new HashMap();
+    public static void putHackMap(Object key, Object val) {
+        hackMap.put(key, val);
+    }
+    public static Object getHackMap(Object key) {
+        return hackMap.get(key);
+    }
+    public static boolean getHackFlag(Object key) {
+        Boolean b = (Boolean) hackMap.get(key);
+        return b == null || !b ? false : true;
+    }
 
     // HACK: to workaround JDK bug dealing with focus and JWindows
     private static ViCmdEntry activeCommandEntry;
@@ -139,7 +149,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.6.beta2.3");
+    public static final jViVersion version = new jViVersion("1.2.6.beta3");
 
     private static boolean enabled;
 
@@ -1021,6 +1031,7 @@ public class ViManager
         return factory.xlateKeymapAction(act);
     }
   
+    // ":jviDump"
     static public void dump(PrintStream ps)
     {
         ps.println("-----------------------------------");
@@ -1060,6 +1071,14 @@ public class ViManager
             else
                 ps.println("\t" + factory.getDisplayFilename(buf.getDocument())
                            + ", share: " + buf.getShare());
+        }
+
+        ps.println("textNomads: " + textNomads.size());
+        Iterator iter = getNomadBufferIterator();
+        while(iter.hasNext()) {
+            Object appHandle = iter.next();
+            ps.println("\t" + factory.getDisplayFilename(appHandle)
+                    + ", " + appHandle.getClass().getSimpleName());
         }
     }
 
@@ -1227,10 +1246,14 @@ public class ViManager
      * <br/>    jVi-release: release-number
      * <br/>    jVi-beta: release-number
      * <br/>    jVi-download-target: where to download new jvi stuff
-     * <br/>    motd-link: link-with-no-spaces       display text for link
+     * <br/>    motd-link: link-with-no-spaces
+     * <br/>    display text for link
+     * <br/>    &lt;EOT&gt;
      * <br/>    motd-message:
-     *          The message, followed by a line starting with &ltEOT&gt
+     *          The message, followed by a line starting with &lt;EOT&gt;
      * <p/>
+     * Note:    there can be any number of motd-link and motd-message and
+     *          they are output in the order encounter
      *
      */
     static class Motd
@@ -1325,32 +1348,19 @@ public class ViManager
                 downloadTarget = m.group(1);
             }
 
-            p = Pattern.compile("^motd-link:\\s*(\\S+)\\s*\\n"
-                                + "(.*?)\\s*\\n<EOT>",
-                                Pattern.MULTILINE);
-            m = p.matcher(s);
-            while(m.find()) {
-                outputList.add(new OutputLink(m.group(1), m.group(2)));
-            }
-
-            p = Pattern.compile("^motd-message:\\s*\\n"
+            p = Pattern.compile(  "^(?:motd-link:\\s*(\\S+)"
+                                +   "|motd-message:)"
+                                +                       "\\s*\\n"
                                 + "(.*?)\\s*\\n<EOT>",
                                 Pattern.MULTILINE|Pattern.DOTALL);
             m = p.matcher(s);
             while(m.find()) {
-                outputList.add(new OutputString(m.group(1)));
+                if(m.start(1) >= 0) {
+                    outputList.add(new OutputLink(m.group(1), m.group(2)));
+                } else {
+                    outputList.add(new OutputString(m.group(2)));
+                }
             }
-
-            //p = Pattern.compile("^jVi-message: (\\d+).*$", Pattern.MULTILINE);
-            //m = p.matcher(s);
-            //if(m.find()) {
-            //    try {
-            //        messageNumber = Integer.parseInt(m.group(1));
-            //        message = s.substring(m.end(0)+1); // +1 to skip the newline
-            //    } catch (NumberFormatException ex) {
-            //        LOG.log(Level.SEVERE, null, ex);
-            //    }
-            //}
 
             valid = true;
         }

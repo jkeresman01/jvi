@@ -1142,7 +1142,7 @@ one_char: {
     //  redo_literal
     GetChar.AppendCharToRedobuff(c);
     // should do doc.insert rather than keytyped...
-    Misc.ins_char(c,ctrlv);
+    Misc.ins_char(c, ctrlv);
     G.did_ai = false;
   }
   
