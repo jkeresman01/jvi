@@ -1532,13 +1532,14 @@ finished:
     // events for delete and remove any lines from the global list that are
     // deleted.
     
-    ViOutputStream result;
+    ViOutputStream result = null;
     if(cmdAction == ColonCommands.ACTION_print) {
       result = ViManager.createOutputStream(G.curwin,
                                             ViOutputStream.SEARCH, pattern);
     } else {
-      result = ViManager.createOutputStream(G.curwin,
-                                            ViOutputStream.LINES, pattern);
+      // Assume it will be handled by the command
+      //result = ViManager.createOutputStream(G.curwin,
+      //                                      ViOutputStream.LINES, pattern);
     }
     
     substFlags = null;
@@ -1579,7 +1580,8 @@ finished:
     if(cursorLine > 0) {
       Misc.gotoLine(cursorLine, BL_WHITE | BL_FIX);
     }
-    result.close();
+    if(result != null)
+      result.close();
     
     if( ! do_sub_msg()) {
       Misc.msgmore(G.curbuf.getLineCount() - old_lcount);
@@ -2388,7 +2390,7 @@ static ViFPOS findmatchlimit(OPARG oap, char initc, int flags, int maxtravel)
 			pos_lnum = match_pos_lnum;
 			pos_col = match_pos_col;
                     }else if (pos_col > 1 && linep.charAt(pos_col - 2) == '/'
-					       && (int)pos_col <= comment_col)
+					       && pos_col <= comment_col)
 			pos_col -= 2;
 		    else if (ignore_cend)
 			continue;

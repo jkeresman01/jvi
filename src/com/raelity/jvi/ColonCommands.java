@@ -520,15 +520,15 @@ static public List getCommandList()
 
 
 /**
-    * Register a command; the abbrev must be unique.  The abbrev is the "key"
-    * for the command, for example since "s" is the abbreviation for "substitue"
-    * and "se" is the abbreviation for "set" then "substitute" sorts earlier
-    * than "set" because "s" sorts earlier than "se". Consider this when
-    * adding commands, since unique prefix has nothing to do with how commands
-    * are recognized.
-    * @exception IllegalArgumentException this is thrown if the abbreviation
-    * and/or the name already exist in the list or there's a null argument.
-    */
+ * Register a command; the abbrev must be unique.  The abbrev is the "key"
+ * for the command, for example since "s" is the abbreviation for "substitue"
+ * and "se" is the abbreviation for "set" then "substitute" sorts earlier
+ * than "set" because "s" sorts earlier than "se". Consider this when
+ * adding commands, since unique prefix has nothing to do with how commands
+ * are recognized.
+ * @exception IllegalArgumentException this is thrown if the abbreviation
+ * and/or the name already exist in the list or there's a null argument.
+ */
 public static void register( String abbrev, String name, ActionListener l )
 {
     m_commands.add(abbrev, name, l);

@@ -183,6 +183,7 @@ public class TextView extends Window
     /**
      *  Override this class to provide a different implementations
      *  of status display.
+     * @return
      */
     protected ViStatusDisplay createStatusDisplay()
     {
@@ -295,6 +296,7 @@ public class TextView extends Window
     /**
      *  Insert character at cursor position. For some characters
      *  special actions may be taken.
+     * @param c
      */
     public void insertChar( char c )
     {
@@ -312,6 +314,7 @@ public class TextView extends Window
 
     /**
      *  Add a character verbatim to the window.
+     * @param c
      */
     public void insertTypedChar( char c )
     {
@@ -377,6 +380,8 @@ public class TextView extends Window
      *  it modifies that line. And issues with folding in that it will open
      *  the fold since a folded line is modified.
      *  </p>
+     * @param op
+     * @return
      */
     public boolean openNewLine( NLOP op )
     {
@@ -511,6 +516,7 @@ public class TextView extends Window
 
     /** Scroll down (n_lines positive) or up (n_lines negative) the
      * specified number of lines.
+     * @param n_lines
      */
     public void scroll( int n_lines )
     {
@@ -575,7 +581,8 @@ public class TextView extends Window
             n = getViewBlankLines();
         } else {
           n = getViewLines()
-                  - ((getViewCoordBottomLine()-1) - getViewCoordTopLine());
+                  - (viewBottomLine - getViewCoordTopLine() + 1);
+               // - ((getViewCoordBottomLine()-1) - getViewCoordTopLine());
         }
         return n;
     }
@@ -593,6 +600,7 @@ public class TextView extends Window
         } else {
             // NEEDSWORK: COORD consider blank lines on screen, coordLine past EOF
             coordLine = getInternalCoordLine(getViewTopLine()) + getViewLines();
+            coordLine = viewBottomLine + 1;
             if(G.dbgCoordSkip.getBoolean()) {
                 System.err.println("getViewCoordBottomLine: " + coordLine);
             }

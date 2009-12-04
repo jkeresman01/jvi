@@ -39,7 +39,7 @@ public class OutputStreamAdaptor implements ViOutputStream {
   public OutputStreamAdaptor() {
   }
 
-  public void println(int line, int offset, int length) {
+  public void println(int line, int col, int length) {
   }
 
   public void println(String s) {

@@ -42,10 +42,10 @@ public interface ViOutputStream {
    * could be used
    * to identify a match within a line.
    * @param line line number corresponding to this message
-   * @param offset offset within line
-   * @param length length, from offset, in the line
+   * @param col column within line
+   * @param length length, from col, in the line
    */
-  public void println(int line, int offset, int length);
+  public void println(int line, int col, int length);
   
   /**
    * Add a text line to the output stream.
