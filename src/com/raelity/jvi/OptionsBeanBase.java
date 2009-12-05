@@ -855,6 +855,14 @@ public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsContro
     public boolean getViClassicUndo() {
 	return getboolean("viClassicUndo");
     }
+    
+    public void setViHideVersion(boolean arg) {
+        put(Options.hideVersionOption, arg);
+    }
+
+    public boolean getViHideVersion() {
+	return getboolean(Options.hideVersionOption);
+    }
 
     public void setViDbgMouse(boolean arg) {
         put("viDbgMouse", arg);

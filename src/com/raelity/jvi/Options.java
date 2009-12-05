@@ -155,6 +155,7 @@ public final class Options {
   
   public static final String readOnlyHack = "viReadOnlyHack";
   public static final String classicUndoOption = "viClassicUndo";
+  public static final String hideVersionOption = "viHideVersion";
   
   public static final String dbgRedo = "viDbgRedo";
   public static final String dbgKeyStrokes = "viDbgKeyStrokes";
@@ -248,6 +249,12 @@ public final class Options {
                     "When false, undo is done according to the"
                     + " underlying platform; usually tiny chunks.");
     setExpertHidden(classicUndoOption, true, false);
+    
+    G.isHideVersion = createBooleanOption(hideVersionOption, false);
+    setupOptionDesc(platformList, hideVersionOption, "hide version",
+                    "When true, display of initial version information"
+                    + " does not bring up output window.");
+    setExpertHidden(hideVersionOption, true, false);
     
     G.useFrame  = createBooleanOption(commandEntryFrame , true);
     setupOptionDesc(platformList, commandEntryFrame, "use modal frame",

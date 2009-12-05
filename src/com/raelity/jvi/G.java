@@ -144,6 +144,7 @@ public class G
 
     public static BooleanOption readOnlyHack;
     public static BooleanOption isClassicUndo;
+    public static BooleanOption isHideVersion;
     public static BooleanOption dbgEditorActivation;
     public static BooleanOption isCoordSkip;
     public static BooleanOption dbgCoordSkip;

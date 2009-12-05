@@ -149,7 +149,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.7.x1");
+    public static final jViVersion version = new jViVersion("1.2.7.x2");
 
     private static boolean enabled;
 
@@ -1371,14 +1371,21 @@ public class ViManager
                 return;
             if(outputBasicInfo && !valid)
                 return;
-            output();
+            output(G.isHideVersion.value
+                    ? ViOutputStream.PRI_LOW
+                    : ViOutputStream.PRI_NORMAL);
         }
 
         void output()
         {
+            output(ViOutputStream.PRI_NORMAL);
+        }
+
+        void output(int priority)
+        {
             if(!valid) {
                 ViOutputStream vios = ViManager.createOutputStream(
-                        null, ViOutputStream.OUTPUT, getReleaseString());
+                    null, ViOutputStream.OUTPUT, getReleaseString(), priority);
                 vios.close();
                 outputBasicInfo = true;
                 return;
@@ -1386,7 +1393,7 @@ public class ViManager
             outputNetworkInfo = true;
 
             ViOutputStream vios = ViManager.createOutputStream(
-                    null, ViOutputStream.OUTPUT, "jVi Version Information");
+                null, ViOutputStream.OUTPUT, "jVi Version Information", priority);
 
             String tagCurrent = "";
             String hasNewer = null;
