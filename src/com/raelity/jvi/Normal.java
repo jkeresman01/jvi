@@ -902,7 +902,6 @@ middle_code:
 	    // FALLTHROUGH
 
 	  case ']':
-	    notSup("bracket commands");
 	    nv_brackets(ca, dir);
 	    break;
 
@@ -2986,7 +2985,7 @@ middle_code:
     do_xop("nv_next");
     int rc = Search.doNext(cap, cap.count1,
 	      SEARCH_MARK | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG | flag);
-    if(rc == 0) {
+    if(rc == FAIL) {
       clearop(cap.oap);
     }
     
@@ -3072,6 +3071,329 @@ middle_code:
     }
   }
 
+/**
+ * "[" and "]" commands.
+ * cap.arg is BACKWARD for "[" and FORWARD for "]".
+ */
+    static void
+nv_brackets(CMDARG cap, int dir)
+{
+    ViFPOS	new_pos;
+    ViFPOS	prev_pos;
+    ViFPOS	pos = null;	    /* init for GCC */
+    ViFPOS	old_pos;	    /* cursor position before command */
+    int		flag;
+    long	n;
+    char	findc;
+    int		c;
+
+    cap.oap.motion_type = MCHAR;
+    cap.oap.inclusive = false;
+    old_pos = G.curwin.w_cursor.copy();
+//#ifdef FEAT_VIRTUALEDIT ...
+
+// #ifdef FEAT_SEARCHPATH
+//     /*
+//      * "[f" or "]f" : Edit file under the cursor (same as "gf")
+//      */
+//     if (cap.nchar == 'f')
+// 	nv_gotofile(cap);
+//     else
+// #endif
+//
+// #ifdef FEAT_FIND_ID
+//     /*
+//      * Find the occurence(s) of the identifier or define under cursor
+//      * in current and included files or jump to the first occurence.
+//      *
+//      *			search	     list	    jump
+//      *		      fwd   bwd    fwd	 bwd	 fwd	bwd
+//      * identifier     "]i"  "[i"   "]I"  "[I"	"]^I"  "[^I"
+//      * define	      "]d"  "[d"   "]D"  "[D"	"]^D"  "[^D"
+//      */
+//     if (vim_strchr((char_u *)
+// #ifdef EBCDIC
+// 		"iI\005dD\067",
+// #else
+// 		"iI\011dD\004",
+// #endif
+// 		cap.nchar) != null)
+//     {
+// 	char_u	*ptr;
+// 	int	len;
+//
+// 	if ((len = find_ident_under_cursor(&ptr, FIND_IDENT)) == 0)
+// 	    clearop(cap.oap);
+// 	else
+// 	{
+// 	    find_pattern_in_path(ptr, 0, len, true,
+// 		cap.count0 == 0 ? !isupper(cap.nchar) : false,
+// 		((cap.nchar & 0xf) == ('d' & 0xf)) ?  FIND_DEFINE : FIND_ANY,
+// 		cap.count1,
+// 		isupper(cap.nchar) ? ACTION_SHOW_ALL :
+// 			    islower(cap.nchar) ? ACTION_SHOW : ACTION_GOTO,
+// 		cap.cmdchar == ']' ? G.curwin.w_cursor.getLine() + 1 : 1,
+// 		MAXLNUM);
+// 	    G.curwin.w_set_curswant = true;
+// 	}
+//     }
+//     else
+// #endif
+
+    /*
+     * "[{", "[(", "]}" or "])": go to Nth unclosed '{', '(', '}' or ')'
+     * "[#", "]#": go to start/end of Nth innermost #if..#endif construct.
+     * "[/", "[*", "]/", "]*": go to Nth comment start/end.
+     * "[m" or "]m" search for prev/next start of (Java) method.
+     * "[M" or "]M" search for prev/next end of (Java) method.
+     */
+    if (  (cap.cmdchar == '['
+		&& vim_strchr("{(*/#mM", cap.nchar) != null)
+	    || (cap.cmdchar == ']'
+		&& vim_strchr("})*/#mM", cap.nchar) != null))
+    {
+	if (cap.nchar == '*')
+	    cap.nchar = '/';
+	new_pos = null; // new_pos.setLine(0);
+	prev_pos = null; // prev_pos.setLine(0);
+	if (cap.nchar == 'm' || cap.nchar == 'M')
+	{
+	    if (cap.cmdchar == '[')
+		findc = '{';
+	    else
+		findc = '}';
+	    n = 9999;
+	}
+	else
+	{
+	    findc = cap.nchar;
+	    n = cap.count1;
+	}
+	for ( ; n > 0; --n)
+	{
+	    if ((pos = Search.findmatchlimit(cap.oap, findc,
+		(cap.cmdchar == '[') ? FM_BACKWARD : FM_FORWARD, 0)) == null)
+	    {
+		if (new_pos == null)	/* nothing found */
+		{
+		    if (cap.nchar != 'm' && cap.nchar != 'M')
+			clearopbeep(cap.oap);
+		}
+		else
+		    pos = new_pos;	/* use last one found */
+		break;
+	    }
+            prev_pos = new_pos == null ? null : new_pos.copy();
+	    G.curwin.w_cursor.set(pos);// G.curwin.w_cursor = *pos;
+	    new_pos = pos;
+	}
+	G.curwin.w_cursor.set(old_pos);
+
+	/*
+	 * Handle "[m", "]m", "[M" and "[M".  The findmatchlimit() only
+	 * brought us to the match for "[m" and "]M" when inside a method.
+	 * Try finding the '{' or '}' we want to be at.
+	 * Also repeat for the given count.
+	 */
+	if (cap.nchar == 'm' || cap.nchar == 'M')
+	{
+	    /* norm is true for "]M" and "[m" */
+	    boolean norm = ((findc == '{') == (cap.nchar == 'm'));
+
+	    n = cap.count1;
+	    /* found a match: we were inside a method */
+	    if (prev_pos == null)
+	    {
+		pos = prev_pos;
+		G.curwin.w_cursor.set(prev_pos);
+		if (norm)
+		    --n;
+	    }
+	    else
+		pos = null;
+	    while (n > 0)
+	    {
+		for (;;)
+		{
+		    if ((findc == '{' ? dec_cursor() : inc_cursorV7()) < 0)
+		    {
+			/* if not found anything, that's an error */
+			if (pos == null)
+			    clearopbeep(cap.oap);
+			n = 0;
+			break;
+		    }
+		    c = gchar_cursor();
+		    if (c == '{' || c == '}')
+		    {
+			/* Must have found end/start of class: use it.
+			 * Or found the place to be at. */
+			if ((c == findc && norm) || (n == 1 && !norm))
+			{
+			    new_pos = G.curwin.w_cursor.copy();
+			    pos = new_pos;
+			    n = 0;
+			}
+			/* if no match found at all, we started outside of the
+			 * class and we're inside now.  Just go on. */
+			else if (new_pos == null)
+			{
+			    new_pos = G.curwin.w_cursor.copy();
+			    pos = new_pos;
+			}
+			/* found start/end of other method: go to match */
+			else if ((pos = Search.findmatchlimit(cap.oap, findc,
+			    (cap.cmdchar == '[') ? FM_BACKWARD : FM_FORWARD,
+								  0)) == null)
+			    n = 0;
+			else
+			    G.curwin.w_cursor.set(pos); // G.curwin.w_cursor = *pos;
+			break;
+		    }
+		}
+		--n;
+	    }
+	    G.curwin.w_cursor.set(old_pos);
+	    if (pos == null && new_pos == null)
+		clearopbeep(cap.oap);
+	}
+	if (pos != null)
+	{
+	    setpcmark();
+	    G.curwin.w_cursor.set(pos); // G.curwin.w_cursor = *pos;
+	    G.curwin.w_set_curswant = true;
+// #ifdef FEAT_FOLDING
+// 	    if ((fdo_flags & FDO_BLOCK) && KeyTyped
+// 					       && cap.oap.op_type == OP_NOP)
+// 		foldOpenCursor();
+// #endif
+	}
+    }
+
+    /*
+     * "[[", "[]", "]]" and "][": move to start or end of function
+     */
+    else if (cap.nchar == '[' || cap.nchar == ']')
+    {
+	if (cap.nchar == cap.cmdchar)		    /* "]]" or "[[" */
+	    flag = '{';
+	else
+	    flag = '}';		    /* "][" or "[]" */
+
+	G.curwin.w_set_curswant = true;
+	/*
+	 * Imitate strange Vi behaviour: When using "]]" with an operator
+	 * we also stop at '}'.
+	 */
+	if (!Search.findpar(cap, dir, cap.count1, flag,
+	      (cap.oap.op_type != OP_NOP && dir == FORWARD && flag == '{')))
+	    clearopbeep(cap.oap);
+	else
+	{
+	    if (cap.oap.op_type == OP_NOP)
+		Edit.beginline(BL_WHITE | BL_FIX);
+// #ifdef FEAT_FOLDING
+// 	    if ((fdo_flags & FDO_BLOCK) && KeyTyped && cap.oap.op_type == OP_NOP)
+// 		foldOpenCursor();
+// #endif
+	}
+    }
+
+//    /*
+//     * "[p", "[P", "]P" and "]p": put with indent adjustment
+//     */
+//    else if (cap.nchar == 'p' || cap.nchar == 'P')
+//    {
+//	if (!checkclearopq(cap.oap))
+//	{
+//	    prep_redo_cmd(cap);
+//	    do_put(cap.oap.regname,
+//	      (cap.cmdchar == ']' && cap.nchar == 'p') ? FORWARD : BACKWARD,
+//						  cap.count1, PUT_FIXINDENT);
+//	}
+//    }
+//
+//    /*
+//     * "['", "[`", "]'" and "]`": jump to next mark
+//     */
+//    else if (cap.nchar == '\'' || cap.nchar == '`')
+//    {
+//	pos = &G.curwin.w_cursor;
+//	for (n = cap.count1; n > 0; --n)
+//	{
+//	    prev_pos = *pos;
+//	    pos = getnextmark(pos, cap.cmdchar == '[' ? BACKWARD : FORWARD,
+//							  cap.nchar == '\'');
+//	    if (pos == null)
+//		break;
+//	}
+//	if (pos == null)
+//	    pos = &prev_pos;
+//	nv_cursormark(cap, cap.nchar == '\'', pos);
+//    }
+//
+//#ifdef FEAT_MOUSE
+//    /*
+//     * [ or ] followed by a middle mouse click: put selected text with
+//     * indent adjustment.  Any other button just does as usual.
+//     */
+//    else if (cap.nchar >= K_LEFTMOUSE && cap.nchar <= K_RIGHTRELEASE)
+//    {
+//	(void)do_mouse(cap.oap, cap.nchar,
+//		       (cap.cmdchar == ']') ? FORWARD : BACKWARD,
+//		       cap.count1, PUT_FIXINDENT);
+//    }
+//#endif /* FEAT_MOUSE */
+//
+//#ifdef FEAT_FOLDING
+//    /*
+//     * "[z" and "]z": move to start or end of open fold.
+//     */
+//    else if (cap.nchar == 'z')
+//    {
+//	if (foldMoveTo(false, cap.cmdchar == ']' ? FORWARD : BACKWARD,
+//							 cap.count1) == FAIL)
+//	    clearopbeep(cap.oap);
+//    }
+//#endif
+//
+//#ifdef FEAT_DIFF
+//    /*
+//     * "[c" and "]c": move to next or previous diff-change.
+//     */
+//    else if (cap.nchar == 'c')
+//    {
+//	if (diff_move_to(cap.cmdchar == ']' ? FORWARD : BACKWARD,
+//							 cap.count1) == FAIL)
+//	    clearopbeep(cap.oap);
+//    }
+//#endif
+//
+//#ifdef FEAT_SPELL
+//    /*
+//     * "[s", "[S", "]s" and "]S": move to next spell error.
+//     */
+//    else if (cap.nchar == 's' || cap.nchar == 'S')
+//    {
+//	setpcmark();
+//	for (n = 0; n < cap.count1; ++n)
+//	    if (spell_move_to(curwin, cap.cmdchar == ']' ? FORWARD : BACKWARD,
+//			  cap.nchar == 's' ? true : false, false, null) == 0)
+//	    {
+//		clearopbeep(cap.oap);
+//		break;
+//	    }
+//# ifdef FEAT_FOLDING
+//	if (cap.oap.op_type == OP_NOP && (fdo_flags & FDO_SEARCH) && KeyTyped)
+//	    foldOpenCursor();
+//# endif
+//    }
+//#endif
+
+    /* Not a valid cap.nchar. */
+    else
+	clearopbeep(cap.oap);
+}
   
   /*
  * Handle "(" and ")" commands.
@@ -4047,6 +4369,9 @@ static private void nv_findpar(CMDARG cap, int dir)
         case '>':
             flag = Search.current_block(cap.oap, cap.count1, include, '<', '>');
             break;
+	case 't': /* "at" = a tag block (xml and html) */
+		flag = Search.current_tagblock(cap.oap, cap.count1, include);
+		break;
         case 'p': /* "ap" = a paragraph */
             flag = Search.current_par(cap.oap, cap.count1, include, 'p');
             break;
@@ -4370,7 +4695,7 @@ static private void nv_findpar(CMDARG cap, int dir)
   //			   boolean dont_set_mark) {do_op("nv_search");}
   // static private  void	nv_next (CMDARG cap, int flag) {do_op("nv_next");}
   // private  void	nv_csearch (CMDARG cap, int dir, boolean type) {do_op("nv_csearch");}
-  static private  void	nv_brackets (CMDARG cap, int dir) {do_op("nv_brackets");}
+  // static private  void	nv_brackets (CMDARG cap, int dir) {do_op("nv_brackets");}
   // static private  void	nv_percent (CMDARG cap) {do_op("nv_percent");}
   // static private  void	nv_brace (CMDARG cap, int dir) {do_op("nv_brace");}
   //  static private  void	nv_findpar (CMDARG cap, int dir) {do_op("nv_findpar");}
@@ -4425,7 +4750,7 @@ static private void nv_findpar(CMDARG cap, int dir)
   static void update_screen(boolean flag) {do_op("update_screen(bool)");}
   static void update_screen(int flag) {do_op("update_screen(int)");}
   // void AppendToRedobuff(String s) {do_op("AppendToRedobuff");}
-  static boolean inindent(int extra) { do_op("inindent");return false; }
+  // static boolean inindent(int extra) { do_op("inindent");return false; }
   // int coladvance(int wcol) { do_op("coladvance"); return OK; }
 
 
@@ -4570,4 +4895,80 @@ static private void nv_findpar(CMDARG cap, int dir)
   static String getCmdChars() {
     return showcmd_buf.toString();
   }
+
+  //
+  // These bounce routines to make porting easier
+  //
+//Misc
+private static int dec_cursor() { return Misc.dec_cursor(); }
+private static int decl(ViFPOS pos) { return Misc.decl(pos); }
+private static int del_char(boolean f) { return Misc.del_char(f); }
+private static int do_join(boolean insert_space, boolean redraw) { return Misc.do_join(insert_space, redraw); }
+private static void do_put(int regname_, int dir, int count, int flags) { Misc.do_put(regname_, dir, count, flags);}
+private static char gchar_pos(ViFPOS pos) { return Misc.gchar_pos(pos); }
+private static char gchar_cursor() { return Misc.gchar_cursor(); }
+private static void getvcol(ViTextView tv, ViFPOS fpos, MutableInt start,
+                            MutableInt cursor, MutableInt end)
+                    { Misc.getvcol(tv, fpos, start, cursor, end); }
+private static int inc_cursor() { return Misc.inc_cursor(); }
+private static int inc_cursorV7() { return Misc.inc_cursorV7(); }
+private static int inclV7(ViFPOS pos) { return Misc.inclV7(pos); }
+private static int incV7(ViFPOS pos) { return Misc.incV7(pos); }
+private static boolean inindent(int i) { return Misc.inindent(i); }
+private static void ins_char(char c) { Misc.ins_char(c); }
+private static int skipwhite(MySegment seg, int idx) { return Misc.skipwhite(seg, idx); }
+private static boolean vim_iswhite(char c) { return Misc.vim_iswhite(c); }
+private static boolean vim_iswordc(char c) { return Misc.vim_iswordc(c); }
+
+// Util
+private static boolean ascii_isalpha(char c) { return Util.ascii_isalpha(c); }
+private static void beep_flush() { Util.beep_flush(); }
+private static boolean bufempty() { return Util.bufempty(); }
+private static int CharOrd(char c) { return Util.CharOrd(c); }
+private static final char ctrl(char x) { return Util.ctrl(x); }
+private static int hex2nr(char c) { return Util.hex2nr(c); }
+private static boolean isalpha(char c) { return Util.isalpha(c); }
+private static boolean isdigit(char c) {return Util.isdigit(c); }
+private static boolean isupper(char c) { return Util.isupper(c); }
+private static MySegment ml_get(int lnum) { return Util.ml_get(lnum); }
+private static MySegment ml_get_curline() { return Util.ml_get_curline(); }
+private static CharacterIterator ml_get_cursor() { return Util.ml_get_cursor();}
+private static CharacterIterator ml_get_pos(ViFPOS pos) { return Util.ml_get_pos(pos);}
+private static int strncmp(String s1, String s2, int n) { return Util.strncmp(s1, s2, n); }
+private static int strncmp(MySegment seg, int i, String s2, int n) { return Util.strncmp(seg, i, s2, n); }
+private static void vim_beep() { Util.vim_beep(); }
+private static boolean vim_isdigit(char c) {return Util.isdigit(c); }
+public static boolean vim_isspace(char x) { return Util.vim_isspace(x); }
+private static boolean vim_isxdigit(char c) { return Util.isxdigit(c); }
+private static String vim_strchr(String s, char c) { return Util.vim_strchr(s, c); }
+
+private static void vim_str2nr(MySegment seg, int start,
+                               MutableInt pHex, MutableInt pLength,
+                               int dooct, int dohex,
+                               MutableInt pN, MutableInt pUn)
+{ Util.vim_str2nr(seg, start, pHex, pLength, dooct, dohex, pN, pUn); }
+
+// GetChar
+private static void AppendCharToRedobuff(char c) { GetChar.AppendCharToRedobuff(c); }
+private static void stuffReadbuff(String s) { GetChar.stuffReadbuff(s); }
+private static void stuffcharReadbuff(char c) { GetChar.stuffcharReadbuff(c); }
+private static void vungetc(char c) { GetChar.vungetc(c); }
+
+// // Normal
+// private static boolean add_to_showcmd(char c) { return Normal.add_to_showcmd(c); }
+// private static void clear_showcmd() { Normal.clear_showcmd(); }
+// private static CharacterIterator find_ident_under_cursor(MutableInt mi, int find_type)
+//     {return Normal.find_ident_under_cursor(mi, find_type);}
+// private static int u_save_cursor() { return Normal.u_save_cursor(); }
+
+// Options
+private static boolean can_bs(int what) { return Options.can_bs(what); }
+
+// MarkOps
+private static void setpcmark() {MarkOps.setpcmark();}
+private static void setpcmark(ViFPOS pos) {MarkOps.setpcmark(pos);}
+
+// cursor compare
+private static boolean equalpos(ViFPOS p1, ViFPOS p2) { return Util.equalpos(p1, p2); }
+private static boolean lt(ViFPOS p1, ViFPOS p2) { return Util.lt(p1, p2); }
 }

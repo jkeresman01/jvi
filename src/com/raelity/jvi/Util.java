@@ -375,6 +375,22 @@ hex2nr(char c)
     return c - '0';
 }
 
+// cursor compare
+static String cur() {
+  String s = G.curwin.w_cursor.toString();
+  // put the virtual position in their
+  return s;
+}
+
+static boolean equalpos(ViFPOS p1, ViFPOS p2) {
+  return p1 == null
+          ? p2 == null
+          : p1.equals(p2);
+}
+static boolean lt(ViFPOS p1, ViFPOS p2) {
+  return p1.compareTo(p2) < 0;
+}
+
 }
 
 // vi:set sw=2 ts=8:

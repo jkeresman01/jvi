@@ -2611,7 +2611,9 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
         return virtcol.getValue();
     }
 
+  //
   // These bounce routines to make porting easier
+  //
 //Misc
 private static int dec_cursor() { return Misc.dec_cursor(); }
 private static int decl(ViFPOS pos) { return Misc.decl(pos); }
@@ -2626,6 +2628,8 @@ private static void getvcol(ViTextView tv, ViFPOS fpos, MutableInt start,
 private static int inc_cursor() { return Misc.inc_cursor(); }
 private static int inc_cursorV7() { return Misc.inc_cursorV7(); }
 private static int inclV7(ViFPOS pos) { return Misc.inclV7(pos); }
+private static int incV7(ViFPOS pos) { return Misc.incV7(pos); }
+private static boolean inindent(int i) { return Misc.inindent(i); }
 private static void ins_char(char c) { Misc.ins_char(c); }
 private static int skipwhite(MySegment seg, int idx) { return Misc.skipwhite(seg, idx); }
 private static boolean vim_iswhite(char c) { return Misc.vim_iswhite(c); }
@@ -2644,6 +2648,7 @@ private static boolean isupper(char c) { return Util.isupper(c); }
 private static MySegment ml_get(int lnum) { return Util.ml_get(lnum); }
 private static MySegment ml_get_curline() { return Util.ml_get_curline(); }
 private static CharacterIterator ml_get_cursor() { return Util.ml_get_cursor();}
+private static CharacterIterator ml_get_pos(ViFPOS pos) { return Util.ml_get_pos(pos);}
 private static int strncmp(String s1, String s2, int n) { return Util.strncmp(s1, s2, n); }
 private static int strncmp(MySegment seg, int i, String s2, int n) { return Util.strncmp(seg, i, s2, n); }
 private static void vim_beep() { Util.vim_beep(); }
@@ -2674,13 +2679,13 @@ private static int u_save_cursor() { return Normal.u_save_cursor(); }
 // Options
 private static boolean can_bs(int what) { return Options.can_bs(what); }
 
+// MarkOps
+private static void setpcmark() {MarkOps.setpcmark();}
+private static void setpcmark(ViFPOS pos) {MarkOps.setpcmark(pos);}
+
 // cursor compare
-private static boolean equalpos(ViFPOS p1, ViFPOS p2) {
-  return p1.equals(p2);
-}
-private static boolean lt(ViFPOS p1, ViFPOS p2) {
-  return p1.compareTo(p2) < 0;
-}
+private static boolean equalpos(ViFPOS p1, ViFPOS p2) { return Util.equalpos(p1, p2); }
+private static boolean lt(ViFPOS p1, ViFPOS p2) { return Util.lt(p1, p2); }
 }
 
 // vi:set sw=2 ts=8:

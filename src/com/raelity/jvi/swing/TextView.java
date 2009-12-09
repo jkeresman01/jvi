@@ -1271,7 +1271,8 @@ public class TextView extends Window
      * pinned to the upper left corner. If needed, this could be extended
      * to pin the horizontal position as well.
      */
-    public static class FreezeViewport implements DocumentListener
+    public static class FreezeViewport
+    implements DocumentListener, ChangeListener
     {
         private JEditorPane ep;
         private JViewport vp;
@@ -1300,6 +1301,7 @@ public class TextView extends Window
 
                 // Determine the line number of the top displayed line
                 topLine = root.getElementIndex(offset);
+                //System.err.format("FreezeViewport: top %d\n", topLine);
 
                 // Note. offset may not be first char, due to horiz scroll
                 // make offset the first char of the line
@@ -1308,6 +1310,7 @@ public class TextView extends Window
                 // Get marker to offset in the document
                 pos = doc.createPosition(offset);
                 doc.addDocumentListener(this);
+                //vp.addChangeListener(this); // debug info
             } catch (Exception ex) {
                 // Note: did not start listener
             } finally {
@@ -1319,6 +1322,9 @@ public class TextView extends Window
         {
             if (doc != null) {
                 doc.removeDocumentListener(this);
+            }
+            if(vp != null) {
+                vp.removeChangeListener(this);
             }
         }
 
@@ -1347,6 +1353,7 @@ public class TextView extends Window
             nLine = newNumLine;
 
             int newTopLine = root.getElementIndex(pos.getOffset());
+            //System.err.format("handleChange: old %d new %d\n", topLine, newTopLine);
             if (topLine == newTopLine) {
                 return;
             }
@@ -1354,16 +1361,18 @@ public class TextView extends Window
 
             // make a move
             final int offset = root.getElement(topLine).getStartOffset();
-            if (EventQueue.isDispatchThread()) {
+            if (false && EventQueue.isDispatchThread()) { // false needed NB6.8
                 adjustViewport(offset);
+                //System.err.println("handleChange: adjust in dispatch");
             } else {
                 EventQueue.invokeLater(new Runnable()
-                {
-                    public void run()
-                    {
-                        adjustViewport(offset);
-                    }
-                });
+                        {
+                            public void run()
+                            {
+                                adjustViewport(offset);
+                                //System.err.println("handleChange: adjust later");
+                            }
+                        });
             }
         }
 
@@ -1380,6 +1389,15 @@ public class TextView extends Window
         public void changedUpdate(DocumentEvent e)
         {
         }
+
+        public void stateChanged(ChangeEvent e) {
+            Point pt = vp.getViewPosition();
+            int offset = ep.viewToModel(pt);
+            Element root = doc.getDefaultRootElement();
+            int topl = root.getElementIndex(offset);
+            System.err.println("Viewport stateChanged: top line " + topl);
+        }
+
     }
 
 

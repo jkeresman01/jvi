@@ -202,6 +202,14 @@ public interface Constants {
   static final int SEARCH_MARK  =0x200;  // set previous context mark
   static final int SEARCH_KEEP  =0x400;  // keep previous search pattern
 
+  static final int SP_NOMOVE	= 0x01; /* don't move cursor */
+  static final int SP_REPEAT	= 0x02; /* repeat to find outer pair */
+  static final int SP_RETCOUNT	= 0x04; /* return matchcount */
+  static final int SP_SETPCMARK	= 0x08; /* set previous context mark */
+  static final int SP_START	= 0x10; /* accept match at start position */
+  static final int SP_SUBPAT	= 0x20; /* return nr of matching sub-pattern */
+  static final int SP_END	= 0x40; /* leave cursor at end of match */
+
   // Values for flags argument for findmatchlimit()
   static final int FM_BACKWARD	= 0x01;	// search backwards
   static final int FM_FORWARD	= 0x02;	// search forwards

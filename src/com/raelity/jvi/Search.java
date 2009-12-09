@@ -31,6 +31,7 @@ import com.raelity.text.*;
 import com.raelity.text.TextUtil.MySegment;
 
 import java.awt.EventQueue;
+import java.text.CharacterIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AbstractDocument;
@@ -78,11 +79,16 @@ private static char gchar_pos(ViFPOS pos) { return Misc.gchar_pos(pos); }
 private static char gchar_cursor() { return Misc.gchar_cursor(); }
 private static int inc_cursorV7() { return Misc.inc_cursorV7(); }
 private static int inclV7(ViFPOS pos) { return Misc.inclV7(pos); }
+private static int incV7(ViFPOS pos) { return Misc.incV7(pos); }
+private static boolean inindent(int i) { return Misc.inindent(i); }
 private static int skipwhite(MySegment seg, int idx) { return Misc.skipwhite(seg, idx); }
 private static boolean vim_iswhite(char c) { return Misc.vim_iswhite(c); }
 
+// Util
 private static MySegment ml_get(int lnum) { return Util.ml_get(lnum); }
 private static MySegment ml_get_curline() { return Util.ml_get_curline(); }
+private static CharacterIterator ml_get_cursor() { return Util.ml_get_cursor();}
+private static CharacterIterator ml_get_pos(ViFPOS pos) { return Util.ml_get_pos(pos);}
 private static int strncmp(String s1, String s2, int n) {
   return Util.strncmp(s1, s2, n);
 }
@@ -92,12 +98,14 @@ private static int strncmp(MySegment seg, int i, String s2, int n) {
 private static String vim_strchr(String s, char c) {
   return Util.vim_strchr(s, c);
 }
-private static boolean equalpos(ViFPOS p1, ViFPOS p2) {
-  return p1.equals(p2);
-}
-private static boolean lt(ViFPOS p1, ViFPOS p2) {
-  return p1.compareTo(p2) < 0;
-}
+
+// MarkOps
+private static void setpcmark() {MarkOps.setpcmark();}
+private static void setpcmark(ViFPOS pos) {MarkOps.setpcmark(pos);}
+
+// cursor compare
+private static boolean equalpos(ViFPOS p1, ViFPOS p2) { return Util.equalpos(p1, p2); }
+private static boolean lt(ViFPOS p1, ViFPOS p2) { return Util.lt(p1, p2); }
   
   private static ViCmdEntry getSearchCommandEntry() {
     if(searchCommandEntry == null) {
@@ -211,7 +219,7 @@ private static boolean lt(ViFPOS p1, ViFPOS p2) {
     }
     
     /* ***************************
-    if(rc == 0) {
+    if(rc == FAIL) {
       Normal.clearopInstance();
     }
     ******************************/
@@ -805,8 +813,12 @@ finished:
    * <br>if (options & SEARCH_END) return position at end of match
    * <br>if (options & SEARCH_START) accept match at pos itself
    * <br>if (options & SEARCH_KEEP) keep previous search pattern
-   *
-   * @return OK for success, FAIL for failure.
+   * <p>
+   * Return FAIL (zero) for failure, non-zero for success.
+   * When FEAT_EVAL is defined, returns the index of the first matching
+   * subpattern plus one; one if there was none.
+   * </p>
+   * @return FAIL (zero) for failure. 1 no subpattern else subpattern + 1
    */
    //
    // Somehow anchoring at the beginning of the line seems to work fine.
@@ -831,6 +843,7 @@ finished:
     int lnum;
     int match = 0;
     int matchend = 0;
+    int submatch = 0;
     int p;
     String wmsg = null;
 
@@ -882,6 +895,7 @@ finished:
           if(prog.search(seg.array, seg.offset, seg.count)) {
             match = prog.start(0) - seg.offset; // column index
             matchend = prog.stop(0) - seg.offset;
+            submatch = first_submatch(prog);
             int eolColumn = G.curbuf.getLineEndOffset(lnum) -
                              G.curbuf.getLineStartOffset(lnum) - 1;
             //
@@ -920,6 +934,7 @@ finished:
                     && prog.search(seg.array, seg.offset + p, seg.count - p)) {
                   match = prog.start(0) - seg.offset; // column index
                   matchend = prog.stop(0) - seg.offset;
+                  submatch = first_submatch(prog);
                 } else {
                   match_ok = false;
                   break;
@@ -951,6 +966,7 @@ finished:
                   match_ok = true;
                   match = colIdx;
                   matchend = matchend01;
+                  submatch = first_submatch(prog);
                 }
                 else
                   break;
@@ -1061,8 +1077,30 @@ finished:
     if(wmsg != null) {
       Msg.wmsg(wmsg/*, true*/);
     }
-    return OK;
+    return submatch + 1;
   }
+
+/**
+ * Return the number of the first subpat that matched.
+ */
+    static int
+first_submatch(RegExp rp)
+{
+    int		submatch;
+    int         n = rp.nGroup();
+
+    for (submatch = 1; ; ++submatch)
+    {
+        if(submatch > n || submatch > 9)
+        {
+	    submatch = 0;
+	    break;
+	}
+	if (rp.start(submatch) >= 0)
+	    break;
+    }
+    return submatch;
+}
 
   ////////////////////////////////////////////////////////////////
   //
@@ -3193,275 +3231,281 @@ current_block(OPARG oap, int count, boolean include, char what, char other)
     return OK;
 }
 
-//static int in_html_tag __ARGS((int));
+/**
+ * Return true if the cursor is on a "<aaa>" tag.  Ignore "<aaa/>".
+ * When "end_tag" is true return true if the cursor is on "</aaa>".
+ */
+static boolean
+in_html_tag(boolean end_tag)
+{
+    MySegment	line = ml_get_curline();
+    int		p;
+    char	c;
+    int		lc = NUL;
+    ViFPOS	pos;
+
+// #ifdef FEAT_MBYTE
+//     if (enc_dbcs)
+//     {
+// 	char_u	*lp = null;
 //
-///*
-// * Return TRUE if the cursor is on a "<aaa>" tag.  Ignore "<aaa/>".
-// * When "end_tag" is TRUE return TRUE if the cursor is on "</aaa>".
-// */
-//    static int
-//in_html_tag(end_tag)
-//    int		end_tag;
-//{
-//    char_u	*line = ml_get_curline();
-//    char_u	*p;
-//    int		c;
-//    int		lc = NUL;
-//    pos_T	pos;
-//
-//#ifdef FEAT_MBYTE
-//    if (enc_dbcs)
-//    {
-//	char_u	*lp = NULL;
-//
-//	/* We search forward until the cursor, because searching backwards is
-//	 * very slow for DBCS encodings. */
-//	for (p = line; p < line + curwin->w_cursor.col; mb_ptr_adv(p))
-//	    if (*p == '>' || *p == '<')
-//	    {
-//		lc = *p;
-//		lp = p;
-//	    }
-//	if (*p != '<')	    /* check for '<' under cursor */
-//	{
-//	    if (lc != '<')
-//		return FALSE;
-//	    p = lp;
-//	}
-//    }
-//    else
-//#endif
-//    {
-//	for (p = line + curwin->w_cursor.col; p > line; )
-//	{
-//	    if (*p == '<')	/* find '<' under/before cursor */
-//		break;
-//	    mb_ptr_back(line, p);
-//	    if (*p == '>')	/* find '>' before cursor */
-//		break;
-//	}
-//	if (*p != '<')
-//	    return FALSE;
-//    }
-//
-//    pos.lnum = curwin->w_cursor.lnum;
-//    pos.col = (colnr_T)(p - line);
-//
-//    mb_ptr_adv(p);
-//    if (end_tag)
-//	/* check that there is a '/' after the '<' */
-//	return *p == '/';
-//
-//    /* check that there is no '/' after the '<' */
-//    if (*p == '/')
-//	return FALSE;
-//
-//    /* check that the matching '>' is not preceded by '/' */
-//    for (;;)
-//    {
-//	if (inc(&pos) < 0)
-//	    return FALSE;
-//	c = *ml_get_pos(&pos);
-//	if (c == '>')
-//	    break;
-//	lc = c;
-//    }
-//    return lc != '/';
-//}
-//
-///*
-// * Find tag block under the cursor, cursor at end.
-// */
-//    int
-//current_tagblock(oap, count_arg, include)
-//    oparg_T	*oap;
-//    long	count_arg;
-//    int		include;	/* TRUE == include white space */
-//{
-//    long	count = count_arg;
-//    long	n;
-//    pos_T	old_pos;
-//    pos_T	start_pos;
-//    pos_T	end_pos;
-//    pos_T	old_start, old_end;
-//    char_u	*spat, *epat;
-//    char_u	*p;
-//    char_u	*cp;
-//    int		len;
-//    int		r;
-//    int		do_include = include;
-//    int		save_p_ws = p_ws;
-//    int		retval = FAIL;
-//
-//    p_ws = FALSE;
-//
-//    old_pos = curwin->w_cursor;
-//    old_end = curwin->w_cursor;		    /* remember where we started */
-//    old_start = old_end;
-//
-//    /*
-//     * If we start on "<aaa>" select that block.
-//     */
-//#ifdef FEAT_VISUAL
-//    if (!VIsual_active || equalpos(VIsual, curwin->w_cursor))
-//#endif
-//    {
-//	setpcmark();
-//
-//	/* ignore indent */
-//	while (inindent(1))
-//	    if (inc_cursorV7() != 0)
-//		break;
-//
-//	if (in_html_tag(FALSE))
-//	{
-//	    /* cursor on start tag, move to just after it */
-//	    while (*ml_get_cursor() != '>')
-//		if (inc_cursorV7() < 0)
-//		    break;
-//	}
-//	else if (in_html_tag(TRUE))
-//	{
-//	    /* cursor on end tag, move to just before it */
-//	    while (*ml_get_cursor() != '<')
-//		if (dec_cursor() < 0)
-//		    break;
-//	    dec_cursor();
-//	    old_end = curwin->w_cursor;
-//	}
-//    }
-//#ifdef FEAT_VISUAL
-//    else if (lt(VIsual, curwin->w_cursor))
-//    {
-//	old_start = VIsual;
-//	curwin->w_cursor = VIsual;	    /* cursor at low end of Visual */
-//    }
-//    else
-//	old_end = VIsual;
-//#endif
-//
-//again:
-//    /*
-//     * Search backwards for unclosed "<aaa>".
-//     * Put this position in start_pos.
-//     */
-//    for (n = 0; n < count; ++n)
-//    {
-//	if (do_searchpair((char_u *)"<[^ \t>/!]\\+\\%(\\_s\\_[^>]\\{-}[^/]>\\|$\\|\\_s\\=>\\)",
-//		    (char_u *)"",
-//		    (char_u *)"</[^>]*>", BACKWARD, (char_u *)"", 0,
-//						      NULL, (linenr_T)0) <= 0)
-//	{
-//	    curwin->w_cursor = old_pos;
-//	    goto theend;
-//	}
-//    }
-//    start_pos = curwin->w_cursor;
-//
-//    /*
-//     * Search for matching "</aaa>".  First isolate the "aaa".
-//     */
-//    inc_cursorV7();
-//    p = ml_get_cursor();
-//    for (cp = p; *cp != NUL && *cp != '>' && !vim_iswhite(*cp); mb_ptr_adv(cp))
-//	;
-//    len = (int)(cp - p);
-//    if (len == 0)
-//    {
-//	curwin->w_cursor = old_pos;
-//	goto theend;
-//    }
-//    spat = alloc(len + 29);
-//    epat = alloc(len + 9);
-//    if (spat == NULL || epat == NULL)
-//    {
-//	vim_free(spat);
-//	vim_free(epat);
-//	curwin->w_cursor = old_pos;
-//	goto theend;
-//    }
-//    sprintf((char *)spat, "<%.*s\\%%(\\_[^>]\\{-}[^/]>\\|>\\)\\c", len, p);
-//    sprintf((char *)epat, "</%.*s>\\c", len, p);
-//
-//    r = do_searchpair(spat, (char_u *)"", epat, FORWARD, (char_u *)"",
-//						       0, NULL, (linenr_T)0);
-//
-//    vim_free(spat);
-//    vim_free(epat);
-//
-//    if (r < 1 || lt(curwin->w_cursor, old_end))
-//    {
-//	/* Can't find other end or it's before the previous end.  Could be a
-//	 * HTML tag that doesn't have a matching end.  Search backwards for
-//	 * another starting tag. */
-//	count = 1;
-//	curwin->w_cursor = start_pos;
-//	goto again;
-//    }
-//
-//    if (do_include || r < 1)
-//    {
-//	/* Include up to the '>'. */
-//	while (*ml_get_cursor() != '>')
-//	    if (inc_cursorV7() < 0)
-//		break;
-//    }
-//    else
-//    {
-//	/* Exclude the '<' of the end tag. */
-//	if (*ml_get_cursor() == '<')
-//	    dec_cursor();
-//    }
-//    end_pos = curwin->w_cursor;
-//
-//    if (!do_include)
-//    {
-//	/* Exclude the start tag. */
-//	curwin->w_cursor = start_pos;
-//	while (inc_cursorV7() >= 0)
-//	    if (*ml_get_cursor() == '>' && lt(curwin->w_cursor, end_pos))
-//	    {
-//		inc_cursorV7();
-//		start_pos = curwin->w_cursor;
-//		break;
-//	    }
-//	curwin->w_cursor = end_pos;
-//
-//	/* If we now have the same text as before reset "do_include" and try
-//	 * again. */
-//	if (equalpos(start_pos, old_start) && equalpos(end_pos, old_end))
-//	{
-//	    do_include = TRUE;
-//	    curwin->w_cursor = old_start;
-//	    count = count_arg;
-//	    goto again;
-//	}
-//    }
-//
-//#ifdef FEAT_VISUAL
-//    if (VIsual_active)
-//    {
-//	if (*p_sel == 'e')
-//	    ++curwin->w_cursor.col;
-//	VIsual = start_pos;
-//	VIsual_mode = 'v';
-//	redraw_curbuf_later(INVERTED);	/* update the inversion */
-//	showmode();
-//    }
-//    else
-//#endif
-//    {
-//	oap->start = start_pos;
-//	oap->motion_type = MCHAR;
-//	oap->inclusive = TRUE;
-//    }
-//    retval = OK;
-//
-//theend:
-//    p_ws = save_p_ws;
-//    return retval;
-//}
-//
+// 	/* We search forward until the cursor, because searching backwards is
+// 	 * very slow for DBCS encodings. */
+// 	for (p = line; p < line + G.curwin.w_cursor.getColumn(); mb_ptr_adv(p))
+// 	    if (line.charAt(p) == '>' || line.charAt(p) == '<')
+// 	    {
+// 		lc = line.charAt(p);
+// 		lp = p;
+// 	    }
+// 	if (line.charAt(p) != '<')	    /* check for '<' under cursor */
+// 	{
+// 	    if (lc != '<')
+// 		return false;
+// 	    p = lp;
+// 	}
+//     }
+//     else
+// #endif
+    {
+	//for (p = line + G.curwin.w_cursor.getColumn(); p > line; )
+	for (p =  G.curwin.w_cursor.getColumn(); p > 0; )
+	{
+	    if (line.charAt(p) == '<')	/* find '<' under/before cursor */
+		break;
+	    --p; //mb_ptr_back(line, p);
+	    if (line.charAt(p) == '>')	/* find '>' before cursor */
+		break;
+	}
+	if (line.charAt(p) != '<')
+	    return false;
+    }
+
+    pos = G.curwin.w_cursor.copy();
+    pos.set(G.curwin.w_cursor.getLine(), p); // (..., p - line)
+
+    p++; //mb_ptr_adv(p);
+    if (end_tag)
+	/* check that there is a '/' after the '<' */
+	return line.charAt(p) == '/';
+
+    /* check that there is no '/' after the '<' */
+    if (line.charAt(p) == '/')
+	return false;
+
+    /* check that the matching '>' is not preceded by '/' */
+    for (;;)
+    {
+	if (incV7(pos) < 0)
+	    return false;
+	c = ml_get_pos(pos).current();
+	if (c == '>')
+	    break;
+	lc = c;
+    }
+    return lc != '/';
+}
+
+/**
+ * Find tag block under the cursor, cursor at end.
+ * @param include true == include white space
+ */
+static int
+current_tagblock(OPARG oap, int count_arg, boolean include)
+    /* true == include white space */
+{
+    int		count = count_arg;
+    int		n;
+    ViFPOS	old_pos;
+    ViFPOS	start_pos;
+    ViFPOS	end_pos;
+    ViFPOS	old_start, old_end;
+    String	spat = null, epat = null;
+    MySegment   line;
+    int		p;
+    int		cp;
+    int		len;
+    int		r;
+    boolean	do_include = include;
+    boolean	save_p_ws = G.p_ws.getBoolean();
+    int		retval = FAIL;
+
+    G.p_ws.setBoolean(false);
+
+    old_pos = G.curwin.w_cursor.copy();
+    old_end = G.curwin.w_cursor.copy();		    /* remember where we started */
+    old_start = old_end.copy();
+    //System.err.println("html: init cursor " + old_pos);
+
+    /*
+     * If we start on "<aaa>" select that block.
+     */
+    if (!G.VIsual_active || equalpos(G.VIsual, G.curwin.w_cursor))
+    {
+	setpcmark();
+
+	/* ignore indent */
+	while (inindent(1))
+	    if (inc_cursorV7() != 0)
+		break;
+
+	if (in_html_tag(false))
+	{
+	    /* cursor on start tag, move to just after it */
+	    while (ml_get_cursor().current() != '>')
+		if (inc_cursorV7() < 0)
+		    break;
+            //System.err.println("html: in start tag " + G.curwin.w_cursor);
+	}
+	else if (in_html_tag(true))
+	{
+	    /* cursor on end tag, move to just before it */
+	    while (ml_get_cursor().current() != '<')
+		if (dec_cursor() < 0)
+		    break;
+	    dec_cursor();
+	    old_end = G.curwin.w_cursor.copy();
+            //System.err.println("html: in end tag " + G.curwin.w_cursor);
+	}
+    }
+    else if (lt(G.VIsual, G.curwin.w_cursor))
+    {
+	old_start = G.VIsual.copy();
+	G.curwin.w_cursor.set(G.VIsual);	    /* cursor at low end of Visual */
+    }
+    else
+	old_end = G.VIsual.copy();
+
+    /*
+     * Search backwards for unclosed "<aaa>".
+     * Put this position in start_pos.
+     */
+again:
+do {
+    for (n = 0; n < count; ++n)
+    {
+                  //"<[^ \t>/!]\\+\\%(\\_s\\_[^>]\\{-}[^/]>\\|$\\|\\_s\\=>\\)",
+                  //"<[^ \t>/!]+(?:[\\n\\s][\\n[^>]]*?[^/]>|$|[\\n\\s]?>)",
+                  //"<[^ \t>/!]+(?:\\s[^>]*?[^/]>|$|\\s?>)",
+	if (Eval.do_searchpair(
+                    "<[^ \t>/!]+(?:[\\n\\s][\\n[^>]]*?[^/]>|$|[\\n\\s]?>)",
+                    "",
+		    "</[^>]*>", BACKWARD, "", 0, null, 0) <= 0)
+	{
+	    G.curwin.w_cursor.set(old_pos);
+	    break again; //break theend;
+	}
+    }
+    start_pos = G.curwin.w_cursor.copy();
+    //System.err.println("html: find count " + G.curwin.w_cursor);
+
+    /*
+     * Search for matching "</aaa>".  First isolate the "aaa".
+     */
+    inc_cursorV7();
+    line = (MySegment)ml_get_cursor(); // p = ml_get_cursor();
+    p = line.getIndex() - line.getBeginIndex();
+    //for (cp = p; *cp != NUL && *cp != '>' && !vim_iswhite(*cp); mb_ptr_adv(cp))
+    for (cp = p;
+         line.charAt(cp) != '\n'
+              && cp < line.length() // this is defensive, not needed
+              && line.charAt(cp) != '>'
+              && !vim_iswhite(line.charAt(cp));
+         //mb_ptr_adv(cp)
+    )
+	++cp;
+    len = (cp - p);
+    if (len == 0)
+    {
+	G.curwin.w_cursor.set(old_pos);
+	break again; //break theend;
+    }
+    // NOTE: IGNORE CASE
+    //sprintf((char *)spat, "<%.*s\\%%(\\_[^>]\\{-}[^/]>\\|>\\)\\c", len, p);
+    //                "<%s(?:[\\n[^>]]*?[^/]>|>)\\c",
+    //                   "<%s(?:[^>]*?[^/]>|>)\\c",
+    spat = String.format(
+                         "<%s(?:[^>]*?[^/]>|>)\\c",
+                         line.subSequence(p, cp).toString());
+    //sprintf((char *)epat, "</%.*s>\\c", len, p);
+    epat = String.format("</%s>\\c",
+                         line.subSequence(p, cp).toString());
+
+    r = Eval.do_searchpair(spat, "", epat, FORWARD, "", 0, null, 0);
+    //System.err.format("html: after searchpair r: %d\n    spat '%s' epat '%s'\n", r, spat, epat);
+
+    if (r < 1 || lt(G.curwin.w_cursor, old_end))
+    {
+	/* Can't find other end or it's before the previous end.  Could be a
+	 * HTML tag that doesn't have a matching end.  Search backwards for
+	 * another starting tag. */
+	count = 1;
+	G.curwin.w_cursor.set(start_pos);
+	continue again;
+    }
+
+    if (do_include || r < 1)
+    {
+	/* Include up to the '>'. */
+	while (ml_get_cursor().current() != '>')
+	    if (inc_cursorV7() < 0)
+		break;
+    }
+    else
+    {
+	/* Exclude the '<' of the end tag. */
+	if (ml_get_cursor().current() == '<')
+	    dec_cursor();
+    }
+    end_pos = G.curwin.w_cursor.copy();
+
+    if (!do_include)
+    {
+	/* Exclude the start tag. */
+	G.curwin.w_cursor.set(start_pos);
+	while (inc_cursorV7() >= 0)
+	    if (ml_get_cursor().current() == '>'
+                  && lt(G.curwin.w_cursor, end_pos))
+	    {
+		inc_cursorV7();
+		start_pos = G.curwin.w_cursor.copy();
+		break;
+	    }
+	G.curwin.w_cursor.set(end_pos);
+
+	/* If we now have the same text as before reset "do_include" and try
+	 * again. */
+	if (equalpos(start_pos, old_start) && equalpos(end_pos, old_end))
+	{
+	    do_include = true;
+	    G.curwin.w_cursor.set(old_start);
+	    count = count_arg;
+	    continue again;
+	}
+    }
+
+    if (G.VIsual_active)
+    {
+	if (G.p_sel.charAt(0) == 'e')
+	    G.curwin.w_cursor.incColumn();
+	G.VIsual = start_pos.copy();
+	G.VIsual_mode = 'v';
+	// redraw_curbuf_later(INVERTED);	/* update the inversion */
+        Normal.v_updateVisualState();
+	// showmode();
+    }
+    else
+    {
+	oap.start = start_pos;
+	oap.motion_type = MCHAR;
+	oap.inclusive = true;
+    }
+    retval = OK;
+} while(false); // theend:
+
+    G.p_ws.setBoolean(save_p_ws);
+    return retval;
+}
+
 static int
 current_par(OPARG oap, int count, boolean include, char type)
     // int		include;	/* TRUE == include white space */
