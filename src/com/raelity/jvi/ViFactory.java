@@ -99,6 +99,8 @@ public interface ViFactory
      */
     public ViFS getFS();
 
+    public void setShutdownHook(Runnable hook);
+
     /** create an output stream for some kind of results.
      *  @param type Should be a constant from ViOutputStream,
      *          e.g. ViOutputStream.SEARCH.

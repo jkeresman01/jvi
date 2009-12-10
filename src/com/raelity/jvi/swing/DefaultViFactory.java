@@ -270,6 +270,10 @@ public class DefaultViFactory implements ViFactory
         return fs;
     }
 
+    public void setShutdownHook(Runnable hook) {
+        Runtime.getRuntime().addShutdownHook(new Thread(hook));
+    }
+
     public ViOutputStream createOutputStream(
             ViTextView tv,
             Object type,

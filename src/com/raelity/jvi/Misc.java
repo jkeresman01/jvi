@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.prefs.BackingStoreException;
 import javax.swing.text.Keymap;
 import javax.swing.KeyStroke;
 
@@ -48,10 +49,12 @@ import java.nio.ByteOrder;
 import java.text.CharacterIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 
 public class Misc implements ClipboardOwner {
   private static Logger LOG = Logger.getLogger(Misc.class.getName());
   static final ClipboardOwner clipOwner = new Misc();
+  private static final String PREF_REGISTERS = "registers";
   //////////////////////////////////////////////////////////////////
   //
   // "misc1.c"
@@ -1214,6 +1217,68 @@ public class Misc implements ClipboardOwner {
   //
 
   /**
+   * Map yankreg index to regname string, this is like an inverse mapping
+   * @param i yankreg index
+   * @return the regname as a string
+   */
+  private static String getPersistableYankreg(int i) {
+    if(i <= 9)
+      return String.valueOf((char)('0'+i));
+    else if(i <= 35)
+      return String.valueOf((char)('a' + i - 10));
+    else if(i == DELETION_REGISTER)
+      return "-";
+    else if(i == CLIPBOARD_REGISTER)
+      return "*";
+    else
+      return null;
+  }
+
+  static void read_viminfo_registers() {
+    Preferences prefs = ViManager.getViFactory()
+            .getPreferences().node(PREF_REGISTERS);
+    for(int i = 0; i < y_regs.length; i++) {
+      String regname = getPersistableYankreg(i);
+      String regval = prefs.get(regname, null);
+      if(regval != null) {
+        int type = prefs.getInt(regname + "-type", MCHAR);
+        get_yank_register(regname.charAt(0), false);
+        Yankreg reg = y_current;
+        reg.setData(regval, type);
+        //System.err.println("REGVAL: " + regname +": '" + regval + "'");
+        //System.err.println("\t" + type);
+      }
+    }
+  }
+
+  static void write_viminfo_registers() {
+    Preferences prefs = ViManager.getViFactory()
+            .getPreferences().node(PREF_REGISTERS);
+    for(int i = 0; i < y_regs.length; i++) {
+      String regname = getPersistableYankreg(i);
+      if(regname.equals("-") || regname.equals("*"))
+        continue;
+      Yankreg reg = y_regs[i];
+      String regval = null;
+      if(reg != null) {
+        regval = reg.getAll();
+      }
+      if(regval == null || regval.length() == 0 || regval.length() > 200) {
+        prefs.remove(regname);
+        prefs.remove(regname + "-type");
+      } else {
+        prefs.put(regname, regval);
+        prefs.putInt(regname + "-type", reg.y_type);
+      }
+    }
+    try {
+      prefs.flush();
+    } catch (BackingStoreException ex) {
+      //Logger.getLogger(Misc.class.getName()).log(Level.SEVERE, null, ex);
+    }
+  }
+
+  /**
    * Sadly the yankbuf's are not code compatible
    * except for MBLOCK.
    * <br/>For MLINE and MCHAR there is a single
@@ -1243,10 +1308,18 @@ public class Misc implements ClipboardOwner {
      * @return all the contents as a single string
      */
     String getAll() {
-      assert false; // NEEDSWORK: figure this out
-      assert y_type != MBLOCK;
-      assert y_size == 1 && y_size == y_array.length;
-      return y_array[0].toString();
+      //assert false;
+      //assert y_type != MBLOCK;
+      //assert y_size == 1 && y_size == y_array.length;
+      if(y_type == MBLOCK) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < y_array.length; i++) {
+          sb.append(y_array[i]);
+          sb.append('\n');
+        }
+        return sb.toString();
+      }
+      else return y_array[0].toString();
     }
 
     void clear() {

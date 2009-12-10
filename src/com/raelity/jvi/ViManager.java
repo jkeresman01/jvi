@@ -149,7 +149,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.7.x4");
+    public static final jViVersion version = new jViVersion("1.2.7.x5");
 
     private static boolean enabled;
 
@@ -166,11 +166,18 @@ public class ViManager
 
         Options.init();
         KeyBinding.init();
+        Misc.read_viminfo_registers();
 
         // Add the vim clipboards
 
         // Spawn to get current release info
         new GetMotd().start();
+
+        getViFactory().setShutdownHook(new Runnable() {
+            public void run() {
+                Misc.write_viminfo_registers();
+            }
+        });
     }
 
     /**
