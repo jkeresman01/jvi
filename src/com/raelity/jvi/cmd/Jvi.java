@@ -221,6 +221,7 @@ public class Jvi
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
                     public void run() {
+                        Toolkit.getDefaultToolkit().setDynamicLayout(true);
                         m_frame1 = makeFrame();
                         m_frame1.optionsButton.addActionListener(
                         new ActionListener() {
@@ -314,8 +315,8 @@ public class Jvi
             });
             dialog = new MyPropertySheetDialog(optionsPanel, owner, "jVi Options");
             dialog.getBanner().setVisible(false);
-            //dialog.getContentPane().add(optionsPanel, BorderLayout.EAST);
-            dialog.getContentPane().add(optionsPanel, BorderLayout.CENTER);
+            dialog.getContentPane().add(optionsPanel, BorderLayout.EAST);
+            //dialog.getContentPane().add(optionsPanel, BorderLayout.CENTER);
 
             // dialog.getButtonPane().add(new JButton("Default ALL"));
             // dialog.getButtonPane().add(new JButton("Set Default"));

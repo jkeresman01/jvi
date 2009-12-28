@@ -144,7 +144,7 @@ public class Edit {
     char c;
     boolean did_backspace;
 
-    if( ! Misc.isInInsertUndo()) {
+    if( ! Misc.isInAnyUndo()) {
       ViManager.dumpStack("In edit with no undo pending");
     }
     if( ! Normal.editBusy) {
@@ -2053,7 +2053,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
   	    }
 
   	    /* insert extra spaces until we are at want_vcol */
-  	    while ((int)vcol < want_vcol)
+  	    while (vcol < want_vcol)
   	    {
   		/* Remember the first char we inserted */
   		if (G.curwin.w_cursor.getLine() == Insstart.getLine()

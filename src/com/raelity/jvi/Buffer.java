@@ -13,6 +13,7 @@ import com.raelity.text.RegExp;
 import com.raelity.text.RegExpJava;
 import com.raelity.text.TextUtil.MySegment;
 import java.io.File;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.event.DocumentEvent;
@@ -28,6 +29,8 @@ import static com.raelity.jvi.Constants.*;
  * @author erra
  */
 public abstract class Buffer implements ViBuffer, ViOptionBag {
+    private static Logger LOG = Logger.getLogger(Buffer.class.getName());
+
     private boolean didFirstInit;
     
     private int share; // the number of text views sharing this buffer
@@ -284,6 +287,14 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     protected void docRemove(int offset, int length, String s) {
         GetChar.docRemove(offset, length, s);
 
+    }
+
+    //////////////////////////////////////////////////////////////////////
+    //
+    // undo/redo
+    //
+    protected void do_runUndoable(Runnable r) {
+        r.run();
     }
 
     //////////////////////////////////////////////////////////////////////

@@ -768,7 +768,7 @@ public static class BangAction extends ColonAction
         assert(EventQueue.isDispatchThread());
         if(coord == null)
             return;
-        System.err.println("!: DONE :!" + (!fOK ? " ABORT" : ""));
+        //System.err.println("!: DONE :!" + (!fOK ? " ABORT" : ""));
         ViManager.getViFactory().stopGlassKeyCatch();
         Msg.wmsg("");
 
@@ -1352,12 +1352,23 @@ private static class ProcessReaderThread extends FilterThread
 
 
 /**
-    *  This thread both reads and writes to the document.
-    *  EXCEPT, IT IS NOT REALLY A THREAD anymore. It extends FilterThread
-    *  because it is interfaced to like one. But now it runs under a timer as
-    *  part of the event dispatch thread, this avoid locking issues
-    *  between read/write the document and display.
-    */
+ *  This thread both reads and writes to the document.
+ *  EXCEPT, IT IS NOT REALLY A THREAD anymore. It extends FilterThread
+ *  because it is interfaced to like one. But now it runs under a timer as
+ *  part of the event dispatch thread, this avoid locking issues
+ *  between read/write the document and display.
+ * <p>
+ * Read one line at a time from the document and write it to a Queue for the
+ * write to process q. Read a line at a time from the read from process q and
+ * build up a large string with the process output. When the process completes
+ * and all the data is gathered do a single op to the document.
+ * </p><p>
+ * Note that OriginalDocumentThread below does a line at a time into or out
+ * of the document. But to allow all document mods to be done in a single
+ * Runnable that strategy has problems with the current threading model,
+ * where all mods are done in the event dispatch thread.
+ * </p>
+ */
 private static class DocumentThread extends FilterThread
 {
     int docReadLine;
@@ -1365,8 +1376,8 @@ private static class DocumentThread extends FilterThread
 
     int docWriteLine;
     boolean docWriteDone;
+    StringBuilder sb = new StringBuilder();
 
-    int linesDelta;
     Window win;
 
     int debugCounter;
@@ -1375,7 +1386,6 @@ private static class DocumentThread extends FilterThread
     Timer timer;
     boolean isThread;
     boolean interruptFlag;
-    boolean inUndo;
 
     protected boolean didCleanup;
 
@@ -1419,15 +1429,12 @@ private static class DocumentThread extends FilterThread
         docReadLine = coord.startLine;
         docWriteLine = coord.startLine;
 
-        inUndo = true;
-        Misc.beginUndo();
-
         doServiceUnderTimer();
 
         return;
     }
 
-    void finishUnderTimer()
+    private void finishUnderTimer()
     {
         if(!docReadDone) {
             cleanup(); // like "10000!!date"
@@ -1435,14 +1442,10 @@ private static class DocumentThread extends FilterThread
 
         doTaskCleanup();
 
-        if(inUndo) {
-            Misc.endUndo();
-        }
-
         coord.finish(true);
     }
 
-    void doServiceUnderTimer()
+    private void doServiceUnderTimer()
     {
         boolean didSomething;
 
@@ -1459,28 +1462,13 @@ private static class DocumentThread extends FilterThread
             timer.start();
         } else {
             finishUnderTimer();
+            cleanup(); // write to the file
         }
     }
 
     @Override
     void doTask()
     {
-    }
-
-    private void deleteLine(int line)
-    {
-        deleteLines(line, line);
-    }
-
-    private void deleteLines(int startLine, int endLine)
-    {
-        int startOffset = win.w_buffer.getLineStartOffset(startLine);
-        int endOffset = win.w_buffer.getLineEndOffset(endLine);
-        int docLength = win.getEditorComponent().getDocument().getLength();
-        if(endOffset > docLength) {
-            endOffset = docLength;
-        }
-        win.deleteChar(startOffset, endOffset);
     }
 
     public boolean readDocument()
@@ -1492,18 +1480,16 @@ private static class DocumentThread extends FilterThread
                 System.err.println("!: rwDoc: try read doc");
             }
             while(!isProblem() && docReadLine <= coord.lastLine) {
-                int docLine = docReadLine + linesDelta;
+                int docLine = docReadLine;
                 data =    win.w_buffer.getLineSegment(docLine).toString();
                 if(!coord.fromDoc.offer(data)) {
                     break;
                 }
-                deleteLine(docLine);
                 if (dbgData.value) {
                     System.err.println("!: fromDoc #" + docReadLine + "," + docLine
                             + ": '" + data.trim() + "'");
                 }
                 docReadLine++;
-                linesDelta--;
                 didSomething = true;
             }
         } else {
@@ -1536,16 +1522,12 @@ private static class DocumentThread extends FilterThread
                     }
                     break;
                 }
-                int offset = win.w_buffer.getLineStartOffset(docWriteLine);
-                win.insertText(offset, data);
-                offset += data.length();
-                win.insertText(offset, "\n");
+                sb.append(data);
+                sb.append('\n');
                 if (dbgData.value) {
                     System.err.println("!: toDoc #" + docWriteLine + ": '"
                             + data.trim() + "'");
                 }
-                docWriteLine++;
-                linesDelta++;
                 didSomething = true;
             }
         }
@@ -1558,8 +1540,7 @@ private static class DocumentThread extends FilterThread
         System.err.println("docReadDone " + docReadDone
                 + ", docReadLine " + docReadLine
                 + ", docWriteDone " + docWriteDone
-                + ", docWriteLine " + docWriteLine
-                + ", linesDelta " + linesDelta);
+                + ", docWriteLine " + docWriteLine);
         super.dumpState();
     }
 
@@ -1585,19 +1566,270 @@ private static class DocumentThread extends FilterThread
             return;
         }
 
-        // do one big delete
-        int line1, line2;
-        line1 = docReadLine + linesDelta;
-        line2 = coord.lastLine + linesDelta;
-        if (dbg.value) {
-            System.err.println("!: CLEANUP: fromDoc #"
-                    + docReadLine + ":" + coord.lastLine
-                    + ", " + line1 + ":" + line2);
-        }
-        deleteLines(line1, line2);
+        Misc.runUndoable(new Runnable() {
+            public void run() {
+                Buffer buf = win.w_buffer;
+                int startOffset = buf.getLineStartOffset(coord.startLine);
+                int endOffset = buf.getLineEndOffset(coord.lastLine);
+                if(endOffset > buf.getLength()) {
+                    // replacing last line, but the '\n' is not part of file
+                    endOffset = buf.getLength();
+                    // if replacement text end in '\n', then strip it.
+                    if(sb.length() > 0 && sb.charAt(sb.length() - 1) == '\n')
+                        sb.setLength(sb.length()-1);
+                }
+                buf.replaceString(startOffset, endOffset, sb.toString());
+            }
+        });
+
     }
 
 } // end
+
+/////////////////////////////
+//
+// non-string builder version
+//
+//private static class OriginalDocumentThread extends FilterThread
+//{
+//    int docReadLine;
+//    boolean docReadDone;
+//
+//    int docWriteLine;
+//    boolean docWriteDone;
+//
+//    int linesDelta;
+//    Window win;
+//
+//    int debugCounter;
+//
+//    // timer is used as a flag, when null work is done
+//    Timer timer;
+//    boolean isThread;
+//    boolean interruptFlag;
+//    boolean inUndo;
+//
+//    protected boolean didCleanup;
+//
+//    OriginalDocumentThread(FilterThreadCoordinator coord, ViTextView tv)
+//    {
+//        super(RW_DOC, coord);
+//        win = (Window)tv;
+//    }
+//
+//    @Override
+//    public void run()
+//    {
+//        assert(false);
+//    }
+//
+//    @Override
+//    public void interrupt()
+//    {
+//        interruptFlag = true;
+//    }
+//
+//    @Override
+//    public boolean isInterrupted()
+//    {
+//        return interruptFlag;
+//    }
+//
+//    public void runUnderTimer()
+//    {
+//        assert(!isThread);
+//        timer = new Timer(coord.WAIT, new ActionListener() {
+//                public void actionPerformed(ActionEvent e) {
+//                    assert(EventQueue.isDispatchThread());
+//                    if(timer != null) {
+//                        doServiceUnderTimer();
+//                    }
+//                }
+//        });
+//        timer.setRepeats(false);
+//
+//        docReadLine = coord.startLine;
+//        docWriteLine = coord.startLine;
+//
+//        inUndo = true;
+//        Misc.beginUndo();
+//
+//        doServiceUnderTimer();
+//
+//        return;
+//    }
+//
+//    private void finishUnderTimer()
+//    {
+//        if(!docReadDone) {
+//            cleanup(); // like "10000!!date"
+//        }
+//
+//        doTaskCleanup();
+//
+//        if(inUndo) {
+//            Misc.endUndo();
+//        }
+//
+//        coord.finish(true);
+//    }
+//
+//    private void doServiceUnderTimer()
+//    {
+//        boolean didSomething;
+//
+//        try {
+//            do {
+//                didSomething = readDocument();
+//                didSomething |= writeDocument();
+//            } while(didSomething && !isProblem() && !docWriteDone);
+//        } catch(Throwable t) {
+//            exception = t;
+//        }
+//
+//        if(!isProblem() && !docWriteDone) {
+//            timer.start();
+//        } else {
+//            finishUnderTimer();
+//        }
+//    }
+//
+//    @Override
+//    void doTask()
+//    {
+//    }
+//
+//    private void deleteLine(int line)
+//    {
+//        deleteLines(line, line);
+//    }
+//
+//    private void deleteLines(int startLine, int endLine)
+//    {
+//        int startOffset = win.w_buffer.getLineStartOffset(startLine);
+//        int endOffset = win.w_buffer.getLineEndOffset(endLine);
+//        int docLength = win.getEditorComponent().getDocument().getLength();
+//        if(endOffset > docLength) {
+//            endOffset = docLength;
+//        }
+//        win.deleteChar(startOffset, endOffset);
+//    }
+//
+//    public boolean readDocument()
+//    {
+//        boolean didSomething = false;
+//        String data = null;
+//        if(docReadLine <= coord.lastLine) {
+//            if (dbg.value) {
+//                System.err.println("!: rwDoc: try read doc");
+//            }
+//            while(!isProblem() && docReadLine <= coord.lastLine) {
+//                int docLine = docReadLine + linesDelta;
+//                data =    win.w_buffer.getLineSegment(docLine).toString();
+//                if(!coord.fromDoc.offer(data)) {
+//                    break;
+//                }
+//                deleteLine(docLine);
+//                if (dbgData.value) {
+//                    System.err.println("!: fromDoc #" + docReadLine + "," + docLine
+//                            + ": '" + data.trim() + "'");
+//                }
+//                docReadLine++;
+//                linesDelta--;
+//                didSomething = true;
+//            }
+//        } else {
+//            if(!docReadDone && coord.fromDoc.offer(DONE)) {
+//                docReadDone = true;
+//                if (dbg.value) {
+//                    System.err.println("!: rwDoc: docReadDONE");
+//                }
+//            }
+//        }
+//        return didSomething;
+//    }
+//
+//    public boolean writeDocument()
+//    {
+//        boolean didSomething = false;
+//        String data = null;
+//        if(!docWriteDone) {
+//            if (dbg.value)
+//                System.err.println("!: rwDoc: try write doc " + debugCounter++);
+//            while(!isProblem()) {
+//                data = coord.toDoc.poll();
+//                if(data == null) {
+//                    break;
+//                }
+//                if(DONE.equals(data)) {
+//                    docWriteDone = true;
+//                    if (dbg.value) {
+//                        System.err.println("!: rwDoc: docWriteDONE");
+//                    }
+//                    break;
+//                }
+//                int offset = win.w_buffer.getLineStartOffset(docWriteLine);
+//                win.insertText(offset, data);
+//                offset += data.length();
+//                win.insertText(offset, "\n");
+//                if (dbgData.value) {
+//                    System.err.println("!: toDoc #" + docWriteLine + ": '"
+//                            + data.trim() + "'");
+//                }
+//                docWriteLine++;
+//                linesDelta++;
+//                didSomething = true;
+//            }
+//        }
+//        return didSomething;
+//    }
+//
+//    @Override
+//    public void dumpState()
+//    {
+//        System.err.println("docReadDone " + docReadDone
+//                + ", docReadLine " + docReadLine
+//                + ", docWriteDone " + docWriteDone
+//                + ", docWriteLine " + docWriteLine
+//                + ", linesDelta " + linesDelta);
+//        super.dumpState();
+//    }
+//
+//    @Override
+//    void cleanup()
+//    {
+//        if(didCleanup) {
+//            return;
+//        }
+//        didCleanup = true;
+//        if (dbg.value) {
+//            dumpState();
+//        }
+//
+//        if(docReadDone && docReadLine <= coord.lastLine) {
+//            throw new IllegalStateException();
+//        }
+//        if (dbg.value) {
+//            System.err.println("!: checking doc CLEANUP");
+//        }
+//        // don't run the document cleanup if there are issues
+//        if(isProblem()) {
+//            return;
+//        }
+//
+//        // do one big delete
+//        int line1, line2;
+//        line1 = docReadLine + linesDelta;
+//        line2 = coord.lastLine + linesDelta;
+//        if (dbg.value) {
+//            System.err.println("!: CLEANUP: fromDoc #"
+//                    + docReadLine + ":" + coord.lastLine
+//                    + ", " + line1 + ":" + line2);
+//        }
+//        deleteLines(line1, line2);
+//    }
+//
+//} // end
 
 
 /** Base class for Bang command threads.
@@ -1858,14 +2090,13 @@ static ColonAction ACTION_substitute = new ColonAction() {
             return NOPARSE;
         }
 
-        public void actionPerformed(ActionEvent ev)
+        public void actionPerformed(final ActionEvent ev)
         {
-            Misc.beginUndo();
-            try {
-                Search.substitute((ColonEvent)ev);
-            } finally {
-                Misc.endUndo();
-            }
+            Misc.runUndoable(new Runnable() {
+                public void run() {
+                    Search.substitute((ColonEvent)ev);
+                }
+            });
         }
     };
 
@@ -1876,13 +2107,12 @@ static ColonAction ACTION_global = new ColonAction() {
             return NOPARSE;
         }
 
-        public void actionPerformed(ActionEvent ev) {
-            Misc.beginUndo();
-            try {
-                Search.global((ColonEvent)ev);
-            } finally {
-                Misc.endUndo();
-            }
+        public void actionPerformed(final ActionEvent ev) {
+            Misc.runUndoable(new Runnable() {
+                public void run() {
+                    Search.global((ColonEvent)ev);
+                }
+            });
         }
     };
 
@@ -2129,14 +2359,14 @@ private static class moveCopy extends ColonAction
     {
         ColonEvent cev = (ColonEvent) e;
         ViTextView tv = cev.getViTextView();
-        Buffer buf = tv.getBuffer();
+        final Buffer buf = tv.getBuffer();
         if(cev.getLine1() > buf.getLineCount()
                 || cev.getLine2() > buf.getLineCount()) {
             Msg.emsg(Messages.e_invrange);
             return; // BAIL
         }
-        int offset1 = buf.getLineStartOffset(cev.getLine1());
-        int offset2 = buf.getLineEndOffset(cev.getLine2());
+        final int offset1 = buf.getLineStartOffset(cev.getLine1());
+        final int offset2 = buf.getLineEndOffset(cev.getLine2());
         // get the destination line number
         MutableInt dst = new MutableInt();
         if(cev.getNArg() < 1
@@ -2148,7 +2378,7 @@ private static class moveCopy extends ColonAction
         if(doMove && dst.getValue() == cev.getLine2())
             return; // 2,4 mo 4 does nothing
 
-        int dstOffset = buf.getLineEndOffset(dst.getValue());
+        final int dstOffset = buf.getLineEndOffset(dst.getValue());
         if(doMove && dstOffset >= offset1 && dstOffset < offset2) {
             Msg.emsg("Move lines into themselves");
             return; // BAIL
@@ -2156,29 +2386,31 @@ private static class moveCopy extends ColonAction
 
         // If at the end of the file, then can't delete the final
         // '\n' on a move, so back up the range by a character
-        int atEndAdjust = cev.getLine2() == buf.getLineCount() ? 1 : 0;
-        try {
-            Misc.beginUndo();
-            Position pos1 = null;
-            Position pos2 = null;
-            if(doMove) {
-                // track postions for later delete
-                pos1 = ((Document)buf.getDocument())
-                        .createPosition(offset1);
-                pos2 = ((Document)buf.getDocument())
-                        .createPosition(offset2);
+        final int atEndAdjust = cev.getLine2() == buf.getLineCount() ? 1 : 0;
+
+        // track postions for later delete
+        Misc.runUndoable(new Runnable() {
+            public void run() {
+                try {
+                    Position pos1 = doMove
+                            ? ((Document)buf.getDocument())
+                                        .createPosition(offset1)
+                            : null;
+                    Position pos2 = doMove
+                            ? ((Document)buf.getDocument())
+                                        .createPosition(offset2)
+                            : null;
+                    String s = buf.getText(offset1, offset2 - offset1);
+                    buf.insertText(dstOffset, s);
+                    if(doMove) {
+                        buf.deleteChar(pos1.getOffset() - atEndAdjust,
+                                        pos2.getOffset() - atEndAdjust);
+                    }
+                } catch (BadLocationException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
             }
-            String s = buf.getText(offset1, offset2 - offset1);
-            buf.insertText(dstOffset, s);
-            if(doMove) {
-                buf.deleteChar(pos1.getOffset() - atEndAdjust,
-                                pos2.getOffset() - atEndAdjust);
-            }
-        } catch (BadLocationException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        } finally {
-            Misc.endUndo();
-        }
+        });
     }
 
 }

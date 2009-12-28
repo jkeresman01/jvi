@@ -2305,13 +2305,14 @@ private static int put_in_typebuf(String s, boolean colon)
     return isValid;
   }
     
-  public static int op_replace(OPARG oap, char c) {
-    try {
-      beginUndo();
-      return op_replace7(oap, c); // from vim7
-    } finally {
-      endUndo();
-    }
+  public static int op_replace(final OPARG oap, final char c) {
+    final MutableInt rval = new MutableInt();
+    Misc.runUndoable(new Runnable() {
+        public void run() {
+          rval.setValue(op_replace7(oap, c)); // from vim7
+        }
+    });
+    return rval.getValue();
   }
     
   public static int op_replace7(OPARG oap, char c)
@@ -4546,109 +4547,80 @@ private static int put_in_typebuf(String s, boolean colon)
     
     //////////////////////////////////////////////////////////////////
     //
-    // other stuff
+    // undo/redo stuff
     //
-    
-    // inUndoCount is relatd to beginRedoUndo. During a redoUndo can get
-    // regular undo's. Would still like to check for proper undo state stuff,
-    // although the checking is what seems flakey.
-    private static int inUndoCount;
-    static void beginUndo() {
-      if(G.global_busy) {
-        return;
-      }
-      //if(inUndoCount > 0)
-      //  ViManager.dumpStack("inUndoCount = " + inUndoCount);
-      inUndoCount++;
-      if(!inRedo && inUndoCount == 1)
-        G.curbuf.beginUndo();
+
+    private static int undoNesting;
+    private static boolean inInsertUndo;
+
+    public static boolean isInUndo() {
+        return undoNesting != 0;
     }
-    
-    static void endUndo() {
-      if(G.global_busy) {
-        return;
-      }
-      inUndoCount--;
-      //if(inUndoCount > 0)
-      //  ViManager.dumpStack("inUndoCount = " + inUndoCount);
-      if(!inRedo && inUndoCount == 0)
-        G.curbuf.endUndo();
+
+    public static boolean isInInsertUndo() {
+      return inInsertUndo;
     }
-    
-    // There are interactions between insert and redo undo.
-    // And they they do not nest.
-    // However the last thing is always endRedoUndo.
-    //
-    // redo is atomic, it does not involve user interactions, and should
-    // allow locking the file for any modifications. So when in a "redo"
-    // trump beginInsertUndo with beginUndo.
-    //
-    
-    private static boolean inRedo = false;
-    
-    /** Currently in insertUndo? Since using inRedo directly, there will be
-     * some false positives. This method is used for some consistency checking
-     * and the false positives won't cause the assert.
-     */
-    static boolean isInInsertUndo() {
-      return G.curbuf.isInInsertUndo() || inRedo;
+
+    public static boolean isInAnyUndo() {
+      return inInsertUndo || isInUndo();
     }
-    
+
+    public static void runUndoable(Runnable r) {
+        if(isInAnyUndo()) {
+          endInsertUndo();
+        }
+        checkUndoThreading();
+        if(undoNesting == 0) {
+            G.curbuf.do_beginUndo();
+        }
+        undoNesting++;
+
+        try {
+
+            G.curbuf.do_runUndoable(r);
+
+        } finally {
+            undoNesting--;
+            if(undoNesting == 0) {
+                try {
+                  G.curbuf.do_endUndo();
+                } finally {
+                  clearUndoThreading();
+                }
+            }
+        }
+    }
+
     static void beginInsertUndo() {
-      if(G.global_busy || inRedo) {
+      if(isInAnyUndo()) {
         return;
       }
-      G.curbuf.beginInsertUndo();
+      inInsertUndo = true;
+      G.curbuf.do_beginInsertUndo();
     }
-    
+
+    /** Note: no guarentee that this is not called without a begin */
     static void endInsertUndo() {
-      if(G.global_busy || inRedo) {
-        return;
-      }
-      G.curbuf.endInsertUndo();
+      inInsertUndo = false;
+      G.curbuf.do_endInsertUndo();
     }
-    
-    //
-    // begin/endRedoUndo indicate changes that can be treated atomically,
-    // but they might use the "Edit" command. So need to handle interactions
-    // the other begin/endUndo.
-    //
-    // These begin/endRedoUndo are called by the '.' command.
-    //
-    // NOTE: there is a problem with interaction between the '.' command and
-    // operations that may not finish right away. In particular, the '!' commands.
-    // In redo, the bang command can not return early and then finish under
-    // "interrupt" control, because when it returns early endRedoUndo is called
-    // and then the endUndo that is called under interrupt is a problem.
-    // So the "!" command must be modal! If that's a big problem at some point
-    // then the logic can be adjusted (made even messier) for how to end the undo.
-    //
-    // FIX:
-    // If endRedoUndo is called and inUndoCount is non-zero, then there *will*
-    // be an endUndo comming along, so use that....
-    //
-    // Make sure '!' is modal, now that begin/endUndo can nest simplify
-    // and get rid of inRedo boolean.
-    //
-    static void beginRedoUndo() {
-      if(G.global_busy) {
-        return;
+
+    private static Thread undoThread;
+    private static synchronized void checkUndoThreading() {
+      // NEEDSWORK: runUndoable check same thread and/or doc
+      if(undoThread == null) {
+        undoThread = Thread.currentThread();
+      } else if(undoThread != Thread.currentThread()) {
+        throw new IllegalStateException("undoThread is " + undoThread.getName());
       }
-      if(G.curbuf.isInInsertUndo()) {
-        endInsertUndo();
-      }
-      inRedo = true;
-      G.curbuf.beginUndo();
     }
-    
-    static void endRedoUndo() {
-      if(G.global_busy) {
-        return;
-      }
-      inRedo = false;
-      if(inUndoCount == 0)
-        G.curbuf.endUndo();
+
+    private static synchronized void clearUndoThreading() {
+      // NEEDSWORK: clearUndoThreading verify in control thread?
+      undoThread = null;
     }
+
+
     
     static int[] javaKeyMap;
     
@@ -4893,14 +4865,15 @@ static boolean	hexupper = false;	/* 0xABC */
  * from vim7 ops.c
  */
 static int
-do_addsub(char command, int Prenum1)
+do_addsub(final char command, final int Prenum1)
 {
-    try {
-      beginUndo();
-      return op_do_addsub(command, Prenum1);
-    } finally {
-      endUndo();
-    }
+    final MutableInt rval = new MutableInt();
+    Misc.runUndoable(new Runnable() {
+        public void run() {
+          rval.setValue(op_do_addsub(command, Prenum1));
+        }
+    });
+    return rval.getValue();
 }
 
 private static int

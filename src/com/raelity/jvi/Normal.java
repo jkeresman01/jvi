@@ -1286,7 +1286,7 @@ middle_code:
   /**
    * Handle an operator after visual mode or when the movement is finished
    */
-  static void do_pending_operator(CMDARG cap,
+  static void do_pending_operator(final CMDARG cap,
 			   StringBuilder searchbuff,
 			   MutableBoolean command_busy,
 			   int old_col,
@@ -1294,7 +1294,7 @@ middle_code:
 			   boolean dont_adjust_op_end)
   throws NotSupportedException
   {
-    OPARG	oap = cap.oap;
+    final OPARG	oap = cap.oap;
     ViFPOS	old_cursor;
     boolean	empty_region_error;
     final ViFPOS cursor = G.curwin.w_cursor;
@@ -1611,12 +1611,11 @@ middle_code:
       {
 	case OP_LSHIFT:
         case OP_RSHIFT:
-          Misc.beginUndo();
-          try {
-            Misc.op_shift(oap, true, oap.is_VIsual ? cap.count1 : 1);
-          } finally {
-            Misc.endUndo();
-          }
+          Misc.runUndoable(new Runnable() {
+              public void run() {
+                Misc.op_shift(oap, true, oap.is_VIsual ? cap.count1 : 1);
+              }
+          });
 	  break;
 
 	case OP_JOIN_NS:
@@ -1629,12 +1628,11 @@ middle_code:
 	      G.curbuf.getLineCount()) {
 	    Util.beep_flush();
 	  } else {
-            Misc.beginUndo();
-            try {
-              Misc.do_do_join(oap.line_count, oap.op_type == OP_JOIN, true);
-            } finally {
-              Misc.endUndo();
-            }
+            Misc.runUndoable(new Runnable() {
+                public void run() {
+                  Misc.do_do_join(oap.line_count, oap.op_type == OP_JOIN, true);
+                }
+            });
 	  }
 	  break;
 
@@ -1643,12 +1641,11 @@ middle_code:
 	  if (empty_region_error)
 	    Util.vim_beep();
 	  else {
-            Misc.beginUndo();
-            try {
-              Misc.op_delete(oap);
-            } finally {
-              Misc.endUndo();
-            }
+            Misc.runUndoable(new Runnable() {
+                public void run() {
+                  Misc.op_delete(oap);
+                }
+            });
 	  }
 	  break;
 
@@ -1695,13 +1692,12 @@ middle_code:
 
           // If 'equalprg' is empty, do the indenting internally.
           if(oap.op_type == OP_INDENT && G.p_ep.getString().equals("")) {
-            Misc.beginUndo();
-            try {
-              G.curbuf.reindent(G.curwin.w_cursor.getLine(),
-                                oap.line_count);
-            } finally {
-              Misc.endUndo();
-            }
+            Misc.runUndoable(new Runnable() {
+                public void run() {
+                  G.curbuf.reindent(G.curwin.w_cursor.getLine(),
+                                    oap.line_count);
+                }
+            });
             break;
           }
 	  op_colon(oap);
@@ -1714,13 +1710,12 @@ middle_code:
 	  if (empty_region_error)
 	    Util.vim_beep();
 	  else {
-            Misc.beginUndo();
-            try {
-              Misc.op_tilde(oap);
-              Misc.check_cursor_col();
-            } finally {
-              Misc.endUndo();
-            }
+            Misc.runUndoable(new Runnable() {
+                public void run() {
+                  Misc.op_tilde(oap);
+                  Misc.check_cursor_col();
+                }
+            });
           }
 	  break;
 
@@ -3540,9 +3535,8 @@ static private void nv_findpar(CMDARG cap, int dir)
   /**
    * Swap case for "~" command, when it does not work like an operator.
    */
-  static private  void	n_swapchar (CMDARG cap) {
+  static private  void	n_swapchar (final CMDARG cap) {
     do_op("n_swapchar");
-    int	n;
 
     if (checkclearopq(cap.oap))
       return;
@@ -3558,28 +3552,27 @@ static private void nv_findpar(CMDARG cap, int dir)
     if (u_save_cursor() == FAIL)
       return;
 
-    Misc.beginUndo();
-    try {
-      for (n = cap.count1; n > 0; --n) {
-        Misc.swapchar(cap.oap.op_type,G.curwin.w_cursor);
-        Misc.inc_cursor();
-        if (Misc.gchar_cursor() == '\n') {
-          if (G.p_ww_tilde.getBoolean()
-              && G.curwin.w_cursor.getLine() < G.curbuf.getLineCount())
-          {
-            G.curwin.w_cursor.set(G.curwin.w_cursor.getLine() + 1, 0);
-            // redraw_curbuf_later(NOT_VALID);
+    Misc.runUndoable(new Runnable() {
+        public void run() {
+          for (int n = cap.count1; n > 0; --n) {
+            Misc.swapchar(cap.oap.op_type,G.curwin.w_cursor);
+            Misc.inc_cursor();
+            if (Misc.gchar_cursor() == '\n') {
+              if (G.p_ww_tilde.getBoolean()
+                  && G.curwin.w_cursor.getLine() < G.curbuf.getLineCount())
+              {
+                G.curwin.w_cursor.set(G.curwin.w_cursor.getLine() + 1, 0);
+                // redraw_curbuf_later(NOT_VALID);
+              }
+              else
+                break;
+            }
           }
-          else
-            break;
-        }
-      }
 
-      Misc.adjust_cursor();
-      G.curwin.w_set_curswant = true;
-    } finally {
-      Misc.endUndo();
-    }
+          Misc.adjust_cursor();
+          G.curwin.w_set_curswant = true;
+        }
+    });
     // changed();
 
     /* assume that the length of the line doesn't change, so w_botline
@@ -4456,7 +4449,7 @@ static private void nv_findpar(CMDARG cap, int dir)
   /**
    * Handle "J" or "gJ" command.
    */
-  static private void nv_join(CMDARG cap) {
+  static private void nv_join(final CMDARG cap) {
     if (G.VIsual_active)	/* join the visual lines */
       nv_operator(cap);
     else if (!checkclearop(cap.oap)) {
@@ -4469,12 +4462,11 @@ static private void nv_findpar(CMDARG cap, int dir)
       {
 	prep_redo(cap.oap.regname, cap.count0,
 		  NUL, cap.cmdchar, NUL, cap.nchar);
-        Misc.beginUndo();
-        try {
-          Misc.do_do_join(cap.count0, cap.nchar == NUL, true);
-        } finally {
-          Misc.endUndo();
-        }
+        Misc.runUndoable(new Runnable() {
+            public void run() {
+              Misc.do_do_join(cap.count0, cap.nchar == NUL, true);
+            }
+        });
       }
     }
   }
@@ -4482,117 +4474,117 @@ static private void nv_findpar(CMDARG cap, int dir)
   /**
    * "P", "gP", "p" and "gp" commands.
    */
-  static private void nv_put(CMDARG cap) {
-    char regname = 0;
-    Misc.Yankreg reg1 = null, reg2 = null;
-    boolean empty = false;
-    boolean was_visual = false;
-    int dir;
-    int flags = 0;
-    final ViFPOS cursor = G.curwin.w_cursor;
+  static private void nv_put(final CMDARG cap) {
     
     if (cap.oap.op_type != OP_NOP) {
       //#ifdef FEAT_DIFF ... #endif
       clearopbeep(cap.oap);
     } else {
-      Misc.beginUndo();
-      try {
-        dir = (cap.cmdchar == 'P'
-                || (cap.cmdchar == 'g' && cap.nchar == 'P'))
-                ? BACKWARD : FORWARD;
-        prep_redo_cmd(cap);
-        if (cap.cmdchar == 'g')
-          flags |= PUT_CURSEND;
-        
-        try { // this is so that yank regsiter is lost
-          if (G.VIsual_active) {
-            // Putting in Visual mode: The put text replaces the selected
-            // text.  First delete the selected text, then put the new text.
-            // Need to save and restore the registers that the delete
-            // overwrites if the old contents is being put.
-            was_visual = true;
-            regname = cap.oap.regname;
-            regname = Misc.adjust_clip_reg(regname);
-            if (regname == 0 || Util.isdigit(regname)
-                || (G.p_cb.value && (regname == '*' || regname == '+'))) {
-              // the delete is going to overwrite the register we want to
-              // put, save it first.
-              reg1 = Misc.get_register(regname, true);
+      Misc.runUndoable(new Runnable() {
+          public void run() {
+            char regname = 0;
+            Misc.Yankreg reg1 = null, reg2 = null;
+            boolean empty = false;
+            boolean was_visual = false;
+            int dir;
+            int flags = 0;
+            final ViFPOS cursor = G.curwin.w_cursor;
+
+            dir = (cap.cmdchar == 'P'
+                    || (cap.cmdchar == 'g' && cap.nchar == 'P'))
+                    ? BACKWARD : FORWARD;
+            prep_redo_cmd(cap);
+            if (cap.cmdchar == 'g')
+              flags |= PUT_CURSEND;
+
+            try { // this is so that yank regsiter is lost
+              if (G.VIsual_active) {
+                // Putting in Visual mode: The put text replaces the selected
+                // text.  First delete the selected text, then put the new text.
+                // Need to save and restore the registers that the delete
+                // overwrites if the old contents is being put.
+                was_visual = true;
+                regname = cap.oap.regname;
+                regname = Misc.adjust_clip_reg(regname);
+                if (regname == 0 || Util.isdigit(regname)
+                    || (G.p_cb.value && (regname == '*' || regname == '+'))) {
+                  // the delete is going to overwrite the register we want to
+                  // put, save it first.
+                  reg1 = Misc.get_register(regname, true);
+                }
+
+                /* Now delete the selected text. */
+                cap.cmdchar = 'd';
+                cap.nchar = NUL;
+                cap.oap.regname = NUL;
+                nv_operator(cap);
+                try {
+                  do_pending_operator(cap, 0, false);
+                } catch(Exception e) {
+                  LOG.log(Level.SEVERE, "do_pending_operator", e);
+                }
+                //empty = (G.curbuf.b_ml.ml_flags.empty);
+
+                /* delete PUT_LINE_BACKWARD; */
+                cap.oap.regname = regname;
+
+                if (reg1 != null) {
+                  // Delete probably changed the register we want to put, save
+                  // it first. Then put back what was there before the delete.
+                  reg2 = Misc.get_register(regname, false);
+                  Misc.put_register(regname, reg1);
+                }
+
+                // When deleted a linewise Visual area, put the register as
+                // lines to avoid it joined with the next line.  When deletion
+                // was characterwise, split a line when putting lines. */
+                if (G.VIsual_mode == 'V')
+                  flags |= PUT_LINE;
+                else if (G.VIsual_mode == 'v')
+                  flags |= PUT_LINE_SPLIT;
+                if (G.VIsual_mode == Util.ctrl('V') && dir == FORWARD)
+                  flags |= PUT_LINE_FORWARD;
+                dir = BACKWARD;
+                if (   (G.VIsual_mode != 'V'
+                        && cursor.getColumn() < G.curbuf.b_op_start.getColumn())
+                    || (G.VIsual_mode == 'V'
+                        && cursor.getLine() < G.curbuf.b_op_start.getLine()))
+                  // cursor is at the end of the line or end of file, put
+                  // forward.
+                  dir = FORWARD;
+              }
+              Misc.do_put(cap.oap.regname, dir, cap.count1, flags);
+
+            } finally {
+              // If a register was saved, put it back now.
+              if (reg2 != null)
+                Misc.put_register(regname, reg2);
             }
-            
-            /* Now delete the selected text. */
-            cap.cmdchar = 'd';
-            cap.nchar = NUL;
-            cap.oap.regname = NUL;
-            nv_operator(cap);
-            try {
-              do_pending_operator(cap, 0, false);
-            } catch(Exception e) {
-              LOG.log(Level.SEVERE, "do_pending_operator", e);
+
+            // What to reselect with "gv"?  Selecting the just put text seems to
+            // be the most useful, since the original text was removed.
+            if (was_visual) {
+              G.curbuf.b_visual_start.setMark(G.curbuf.b_op_start);
+              G.curbuf.b_visual_end.setMark(G.curbuf.b_op_end);
             }
-            //empty = (G.curbuf.b_ml.ml_flags.empty);
-            
-            /* delete PUT_LINE_BACKWARD; */
-            cap.oap.regname = regname;
-            
-            if (reg1 != null) {
-              // Delete probably changed the register we want to put, save
-              // it first. Then put back what was there before the delete.
-              reg2 = Misc.get_register(regname, false);
-              Misc.put_register(regname, reg1);
-            }
-            
-            // When deleted a linewise Visual area, put the register as
-            // lines to avoid it joined with the next line.  When deletion was
-            // characterwise, split a line when putting lines. */
-            if (G.VIsual_mode == 'V')
-              flags |= PUT_LINE;
-            else if (G.VIsual_mode == 'v')
-              flags |= PUT_LINE_SPLIT;
-            if (G.VIsual_mode == Util.ctrl('V') && dir == FORWARD)
-              flags |= PUT_LINE_FORWARD;
-            dir = BACKWARD;
-            if (   (G.VIsual_mode != 'V'
-                    && cursor.getColumn() < G.curbuf.b_op_start.getColumn())
-                || (G.VIsual_mode == 'V'
-                    && cursor.getLine() < G.curbuf.b_op_start.getLine()))
-              // cursor is at the end of the line or end of file, put
-              // forward.
-              dir = FORWARD;
+
+            // When all lines were selected and deleted do_put() leaves an empty
+            // line that needs to be deleted now.
+    //	if (empty && Util.ml_get(G.curbuf.b_ml.ml_line_count).charAt(0) == NUL)
+    //	{
+    //	    ml_delete(G.curbuf.b_ml.ml_line_count, true);
+    //
+    //	    /* If the cursor was in that line, move it to the end of the last
+    //	     * line. */
+    //	    if (G.curwin.getWCursor().getLine() > G.curbuf.b_ml.ml_line_count)
+    //	    {
+    //		G.curwin.getWCursor().setLine(G.curbuf.b_ml.ml_line_count);
+    //		Misc.coladvance(MAXCOL);
+    //	    }
+    //	}
+            //auto_format(false, true);
           }
-          Misc.do_put(cap.oap.regname, dir, cap.count1, flags);
-          
-        } finally {
-          // If a register was saved, put it back now.
-          if (reg2 != null)
-            Misc.put_register(regname, reg2);
-        }
-        
-        // What to reselect with "gv"?  Selecting the just put text seems to
-        // be the most useful, since the original text was removed.
-        if (was_visual) {
-          G.curbuf.b_visual_start.setMark(G.curbuf.b_op_start);
-          G.curbuf.b_visual_end.setMark(G.curbuf.b_op_end);
-        }
-        
-        // When all lines were selected and deleted do_put() leaves an empty
-        // line that needs to be deleted now.
-//	if (empty && Util.ml_get(G.curbuf.b_ml.ml_line_count).charAt(0) == NUL)
-//	{
-//	    ml_delete(G.curbuf.b_ml.ml_line_count, true);
-//
-//	    /* If the cursor was in that line, move it to the end of the last
-//	     * line. */
-//	    if (G.curwin.getWCursor().getLine() > G.curbuf.b_ml.ml_line_count)
-//	    {
-//		G.curwin.getWCursor().setLine(G.curbuf.b_ml.ml_line_count);
-//		Misc.coladvance(MAXCOL);
-//	    }
-//	}
-        //auto_format(false, true);
-      } finally {
-        Misc.endUndo();
-      }
+      });
     }
   }
 

@@ -47,6 +47,7 @@ import com.raelity.jvi.OptionsBean;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanDescriptor;
@@ -176,6 +177,14 @@ public class OptionsPanel extends JPanel {
                 double d = sp.getResizeWeight();
                 //sp.setResizeWeight(.5);
                 //sp.invalidate();
+
+                // There is layout problem with long lines in the description.
+                // it tries to widen the property sheet to contain the
+                // description in a single line. Give it a small prefered size
+                // and the other sizing algorithms work ok.
+                Component comp = sp.getBottomComponent();
+                if(comp != null)
+                    comp.setPreferredSize(new Dimension(10,50));
             }
             // Need to set false, so the setDividerLocation is remembered
             sheet.setDescriptionVisible(false);

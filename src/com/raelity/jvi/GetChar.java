@@ -88,11 +88,14 @@ public class GetChar {
             // to processInputChar. It's tempting to always bracket pumpVi with
             // begin/endRedoUndo, but macro execution might end in input mode.
             //
+            // NEEDSWORK: INPUT MODE FROM MACRO ????????
             try {
-                Misc.beginRedoUndo();
-                pumpVi();
+              Misc.runUndoable(new Runnable() {
+                public void run() {
+                  pumpVi();
+                }
+              });
             } finally {
-                Misc.endRedoUndo();
                 handle_redo = false;
             }
         }
@@ -959,7 +962,7 @@ public class GetChar {
   //
 
   static void stuffcharReadbuff(char n) {
-    stuffbuff.append((char)n);
+    stuffbuff.append(n);
   }
 
   static void stuffnumReadbuff(int n) {
@@ -1026,13 +1029,13 @@ public class GetChar {
 
     // copy the buffer name if present
     if (c == '"') {
-      stuffbuff.append((char)c);
+      stuffbuff.append(c);
       c = read_redo(false, old_redo);
 
       // if a numbered buffer is used, increment the number
       if (c >= '1' && c < '9')
 	++c;
-      stuffbuff.append((char)c);
+      stuffbuff.append(c);
       c = read_redo(false, old_redo);
     }
 
@@ -1055,7 +1058,7 @@ public class GetChar {
     }
 
     // copy from the redo buffer into the stuff buffer
-    stuffbuff.append((char)c);
+    stuffbuff.append(c);
     copy_redo(old_redo);
     handle_redo = true;
     if(G.dbgRedo.value)

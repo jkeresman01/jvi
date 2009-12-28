@@ -253,76 +253,11 @@ public class DefaultBuffer extends Buffer {
 
     
     final public void undo(){
-        assertUndoState(!inUndo && !inInsertUndo, "undo");
         undoOperation();
     }
     
     final public void redo() {
-        assertUndoState(!inUndo && !inInsertUndo, "undo");
         redoOperation();
-    }
-    
-    private static boolean inUndo;
-    
-    private static boolean inInsertUndo;
-    private void assertUndoState(boolean condition, String fn) {
-        if(!(condition)) {
-            ViManager.dumpStack(fn + ": inUndo " + inUndo
-                    + ", inInsertUndo " + inInsertUndo);
-        }
-    }
-    
-    final public void beginUndo() {
-        assertUndoState(!inUndo && !inInsertUndo, "beginUndo");
-        inUndo = true;
-        beginUndoOperation();
-    }
-    
-    final public void endUndo() {
-        endUndoOperation();
-        assertUndoState(inUndo && !inInsertUndo, "endUndo");
-        inUndo = false;
-    }
-    
-    final public boolean isInUndo() {
-        return inUndo;
-    }
-    
-    final public void beginInsertUndo() {
-        assertUndoState(!inUndo && !inInsertUndo, "beginInsertUndo");
-        inInsertUndo = true;
-        beginInsertUndoOperation();
-    }
-    
-    final public void endInsertUndo() {
-        endInsertUndoOperation();
-        assertUndoState(inInsertUndo && !inUndo, "endInsertUndo");
-        inInsertUndo = false;
-    }
-    
-    final public boolean isInInsertUndo() {
-        return inInsertUndo;
-    }
-    
-    
-
-
-    protected void beginUndoOperation() {
-        // NEEDSWORK: standalone like: ((AbstractDocument)doc).writeLock();
-        beginInsertUndoOperation();
-    }
-
-    protected void endUndoOperation() {
-        endInsertUndoOperation();
-        // NEEDSWORK: standalone like: ((AbstractDocument)doc).writeUnlock();
-    }
-
-    protected void beginInsertUndoOperation() {
-        undoMan.beginUndoGroup();
-    }
-
-    protected void endInsertUndoOperation() {
-        undoMan.endUndoGroup();
     }
 
     protected void undoOperation() {
@@ -337,6 +272,24 @@ public class DefaultBuffer extends Buffer {
             undoMan.redo();
         else
             Util.vim_beep();
+    }
+
+    public void do_beginUndo() {
+        // NEEDSWORK: standalone like: ((AbstractDocument)doc).writeLock();
+        do_beginInsertUndo();
+    }
+
+    public void do_endUndo() {
+        do_endInsertUndo();
+        // NEEDSWORK: standalone like: ((AbstractDocument)doc).writeUnlock();
+    }
+
+    public void do_beginInsertUndo() {
+        undoMan.beginUndoGroup();
+    }
+
+    public void do_endInsertUndo() {
+        undoMan.endUndoGroup();
     }
     
     //////////////////////////////////////////////////////////////////////

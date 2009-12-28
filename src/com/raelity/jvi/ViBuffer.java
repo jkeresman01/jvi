@@ -113,25 +113,19 @@ public interface ViBuffer {
                                        int startOffset, int endOffset);
     
     
-    
-    
+
+
     /** start an undo group, must be paired */
-    public void beginUndo();
+    public void do_beginUndo();
     
     /** end an undo group, must be paired */
-    public void endUndo();
-    
-    /** between a begin and an end undo? */
-    public boolean isInUndo();
+    public void do_endUndo();
     
     /** start a insert (user typing) ungo group, must be paired */
-    public void beginInsertUndo();
+    public void do_beginInsertUndo();
     
     /** end a insert (user typing) ungo group, must be paired */
-    public void endInsertUndo();
-    
-    /** between a insert begin and end undo? */
-    public boolean isInInsertUndo();
+    public void do_endInsertUndo();
 
     /**
      * Fetch the mark. May not be initialized.
