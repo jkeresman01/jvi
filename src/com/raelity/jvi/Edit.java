@@ -90,6 +90,7 @@ public class Edit {
    * reset is invoked when edit mode is exitted, may be abrupt.
    */
   static void reset() {
+    Insstart = null;
     handleNextChar = null;
     G.editPutchar = 0;
   }
@@ -98,7 +99,8 @@ public class Edit {
    * @return copy of the current start of insertion
    */
   static ViFPOS getInsstart() {
-    return Insstart.copy();
+    //return Insstart.copy();
+    return G.curbuf.createFPOS(Insstart.getOffset());
   }
 
   static boolean canEdit() {
@@ -163,9 +165,11 @@ public class Edit {
       did_backspace = false;
       inserted_space.setValue(false);
       
-      Insstart = G.curwin.w_cursor.copy();
+      //Insstart = G.curwin.w_cursor.copy();
+      Insstart = new DynamicMark(G.curbuf, G.curwin.w_cursor);
       if(startln)
         Insstart.setColumn(0);
+
       Insstart_textlen = Misc.linetabsize(Util.ml_get_curline());
       Insstart_blank_vcol = MAXCOL;
 
@@ -1169,7 +1173,8 @@ one_char: {
       try {
         Misc.endInsertUndo();
         Normal.u_save_cursor();    // errors are ignored!
-        Insstart = G.curwin.w_cursor.copy();    // new insertion starts here
+        //Insstart = G.curwin.w_cursor.copy();    // new insertion starts here
+        Insstart.set(G.curwin.w_cursor);
         Insstart_textlen = Misc.linetabsize(Util.ml_get_curline());
        //ai_col = 0;
         assert(G.State != VREPLACE);
@@ -1207,6 +1212,7 @@ one_char: {
       G.curbuf.b_op_start.setMark(Insstart);
       G.curbuf.b_op_end.setMark(end_insert_pos);
     }
+    //NEEDSWORK: Insstart = null; do it elsewhere
   }
   
   /**
@@ -1715,6 +1721,7 @@ one_char: {
         GetChar.start_redo_ins();
         // ++RedrawingDisabled;
         // disabled_redraw = TRUE;
+        Insstart = null;
         return false;	// repeat the insert
       }
       stop_insert(G.curwin.w_cursor);	// pass stop insert cursor position
@@ -1764,6 +1771,7 @@ one_char: {
     // }
     // always use showmode, since it communicates mode to environment
     Misc.showmode();
+    Insstart = null;
     return true;
   }
   
@@ -2611,6 +2619,109 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
         return virtcol.getValue();
     }
 
+  /**
+   * Add some behavior, rather than op not supported exception, to mark.
+   * Initially used for Insstart.
+   */
+  private static class DynamicMark implements ViFPOS {
+    ViMark mark;
+
+    public DynamicMark(ViBuffer buf, ViFPOS fpos) {
+      mark = buf.createMark();
+      mark.setMark(fpos);
+    }
+
+    public void set(ViFPOS fpos) {
+      mark.setMark(fpos);
+    }
+
+    public void setColumn(int col) {
+      ViFPOS fpos = mark.getBuffer().createFPOS(mark.getOffset());
+      fpos.setColumn(col);
+      mark.setMark(fpos);
+    }
+
+    public void decLine() {
+      ViFPOS fpos = mark.getBuffer().createFPOS(mark.getOffset());
+      fpos.decLine();
+      mark.setMark(fpos);
+    }
+
+    ///////////////////////////////////////////////////////////////////////
+    //
+    // DELEGATE below this line
+    //
+
+    @Override
+    public String toString() {
+      return mark.toString();
+    }
+
+    @Override
+    public int hashCode() {
+      return mark.hashCode();
+    }
+
+    @Override
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+    public boolean equals(Object obj) {
+      return mark.equals(obj);
+    }
+
+    public int compareTo(ViFPOS o) {
+      return mark.compareTo(o);
+    }
+
+    public void verify(Buffer buf) {
+      mark.verify(buf);
+    }
+
+    public void setLine(int line) {
+      mark.setLine(line);
+    }
+
+    public void set(int offset) {
+      mark.set(offset);
+    }
+
+    public void set(int line, int column) {
+      mark.set(line, column);
+    }
+
+    public void incLine() {
+      mark.incLine();
+    }
+
+    public void incColumn() {
+      mark.incColumn();
+    }
+
+    public int getOffset() {
+      return mark.getOffset();
+    }
+
+    public int getLine() {
+      return mark.getLine();
+    }
+
+    public int getColumn() {
+      return mark.getColumn();
+    }
+
+    public void decColumn() {
+      mark.decColumn();
+    }
+
+    public ViFPOS copy() {
+      return mark.copy();
+    }
+
+    public Buffer getBuffer() {
+      return mark.getBuffer();
+    }
+
+  }
+
   //
   // These bounce routines to make porting easier
   //
@@ -2677,7 +2788,7 @@ private static CharacterIterator find_ident_under_cursor(MutableInt mi, int find
 private static int u_save_cursor() { return Normal.u_save_cursor(); }
 
 // Options
-private static boolean can_bs(int what) { return Options.can_bs(what); }
+private static boolean can_bs(char what) { return Options.can_bs(what); }
 
 // MarkOps
 private static void setpcmark() {MarkOps.setpcmark();}

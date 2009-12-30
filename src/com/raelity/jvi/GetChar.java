@@ -847,12 +847,16 @@ public class GetChar {
           // stash the characters after insertion point that are deleted
 
           // check out removeDocAfterString != null in docInsert...
-          removeDocAfterString = removedText.substring(nBefore);
-          docRemoveExtendedWithRedobuf(nBefore);
-          redoTrackPosition -= nBefore;
+          try {
+            removeDocAfterString = removedText.substring(nBefore);
+            docRemoveExtendedWithRedobuf(nBefore);
+            redoTrackPosition -= nBefore;
 
-          if(G.dbgRedo.value) debugDocRemoveREMOVE_AFTER(nBefore);
-          return true;
+            if(G.dbgRedo.value) debugDocRemoveREMOVE_AFTER(nBefore);
+            return true;
+          } catch(Exception ex) {
+            ViManager.dumpStack("redo tracking: remove after");
+          }
         }
       }
       return false;

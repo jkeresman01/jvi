@@ -138,6 +138,10 @@ class FPOS extends ViFPOS.abstractFPOS
         return fpos;
     }
 
+    public Buffer getBuffer() {
+        return rBuf.get();
+    }
+
     public void verify(Buffer buf)
     {
         if (rBuf.get() != buf) {

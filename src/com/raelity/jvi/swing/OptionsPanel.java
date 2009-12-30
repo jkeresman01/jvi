@@ -65,8 +65,10 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
@@ -175,16 +177,25 @@ public class OptionsPanel extends JPanel {
                 int newLoc = h - 120;
                 sp.setDividerLocation(newLoc);
                 double d = sp.getResizeWeight();
-                //sp.setResizeWeight(.5);
+                sp.setResizeWeight(.65);
                 //sp.invalidate();
 
                 // There is layout problem with long lines in the description.
                 // it tries to widen the property sheet to contain the
                 // description in a single line. Give it a small prefered size
-                // and the other sizing algorithms work ok.
+                // and the other sizing algorithms work better.
                 Component comp = sp.getBottomComponent();
+                if(comp != null) {
+                    comp.setPreferredSize(new Dimension(100,100));
+                    System.err.println("PREF-PREF-PREF");
+                }
+                if(false && comp instanceof JScrollPane) {
+                    comp = ((JScrollPane)comp).getViewport().getView();
+                    if(comp instanceof JEditorPane) 
+                        LookAndFeelTweaks.makeMultilineLabel((JEditorPane)comp);
+                }
                 if(comp != null)
-                    comp.setPreferredSize(new Dimension(10,50));
+                    comp.invalidate();
             }
             // Need to set false, so the setDividerLocation is remembered
             sheet.setDescriptionVisible(false);

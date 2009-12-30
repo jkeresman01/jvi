@@ -303,13 +303,18 @@ public class DefaultBuffer extends Buffer {
     
     /**
      * A Mark in vi specifies a row and column. The row "floats" as lines are
-     * inserted and deleted earlier in the file. However the column is set when
+     * inserted and deleted earlier in the file.
+     * <b>However</b> the column is set when
      * the mark is created and does not change if characters are added on the
      * same line before the column.
      */
     class Mark implements ViMark {
-        private Position pos;         // This tracks the line number
+        // The pos tracks the line number,
+        // note that it's offset is one less that the actual offset
+        // since there is no way to specify a left-bias for position
+        private Position pos;
         private int col;
+        private boolean atZero;
         
         /**
          * If the mark offset is not valid then this mark is converted into
@@ -322,6 +327,7 @@ public class DefaultBuffer extends Buffer {
                 Mark mark = (Mark)fpos;
                 this.pos = mark.pos;
                 this.col = mark.col;
+                this.atZero = mark.atZero;
             } else {
                 // adapted from FPOS.set
                 if(fpos.getLine() > getLineCount()) {
@@ -338,7 +344,7 @@ public class DefaultBuffer extends Buffer {
                                 + ", limit " + (endOffset - startOffset - 1));
                         column = endOffset - startOffset - 1;
                     }
-                    setOffset(startOffset + column);
+                    setDocOffset(startOffset + column);
                 }
             }
         }
@@ -347,30 +353,31 @@ public class DefaultBuffer extends Buffer {
         * If the mark offset is not valid then this mark is converted into
         * a null mark.
         */
-        private void setOffset(int offset) {
+        private void setDocOffset(int offset) {
             try {
-                Position aPos = getDoc().createPosition(offset);
-                setPos(aPos);
+                col = getColumnNumber(offset);
+                if(offset == 0)
+                    atZero = true;
+                else {
+                    atZero = false;
+                    --offset;
+                }
+                pos = getDoc().createPosition(offset);
             } catch(BadLocationException ex) {
                 pos = null;
                 return;
             }
         }
-        
-        private void setPos(Position pos) {
-            setPos(pos, getColumnNumber(pos.getOffset()));
-        }
-        
-        private void setPos(Position pos, int col) {
-            this.pos = pos;
-            this.col = col;
+
+        private int getDocOffset() {
+            return atZero ? 0 : pos.getOffset() + 1;
         }
         
         public int getLine() {
             checkMarkUsable();
             if (this.pos == INVALID_MARK_LINE)
                 return getLineCount() + 1;
-            return getLineNumber(pos.getOffset());
+            return getLineNumber(getDocOffset());
         }
         
         /**
@@ -389,15 +396,19 @@ public class DefaultBuffer extends Buffer {
             checkMarkUsable();
             if (this.pos == INVALID_MARK_LINE)
                 return Integer.MAX_VALUE;
-            return getLineStartOffsetFromOffset(pos.getOffset()) + getColumn();
+            return getLineStartOffsetFromOffset(getDocOffset()) + getColumn();
         }
         
         public void invalidate() {
             pos = null;
         }
 
+        public Buffer getBuffer() {
+            return DefaultBuffer.this;
+        }
+
         public void verify(Buffer buf) {
-            if(buf != DefaultBuffer.this)
+            if(buf != getBuffer())
                 throw new IllegalStateException("fpos buffer mis-match");
         }
         
@@ -492,7 +503,7 @@ public class DefaultBuffer extends Buffer {
             + " col: " + getColumn()
             ;
         }
-    }
+    } // class Mark
     
     private static final Position INVALID_MARK_LINE = new Position() {
         public int getOffset() {

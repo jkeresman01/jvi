@@ -89,6 +89,9 @@ public interface ViFPOS extends Comparable<ViFPOS>
     /** throws a run time exception if the buf not associated with this fpos */
     public void verify(Buffer buf);
 
+    /** the associated buffer */
+    public Buffer getBuffer();
+
     public static abstract class abstractFPOS implements ViFPOS
     {
         public void set(ViFPOS fpos)

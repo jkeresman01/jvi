@@ -1305,7 +1305,7 @@ public final class Options {
   // can_bs is in option in vim
   //
   
-  static boolean can_bs(int what) {
+  static boolean can_bs(char what) {
     switch(G.p_bs.value) {
       case 2:     return true;
       case 1:     return what != BS_START;

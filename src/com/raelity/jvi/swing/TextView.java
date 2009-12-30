@@ -883,6 +883,10 @@ public class TextView extends Window
             return w_buffer.createFPOS(getOffset());
         }
 
+        final public DefaultBuffer getBuffer() {
+            return (DefaultBuffer)w_buffer;
+        }
+
         public void verify(Buffer buf) {
             if(w_buffer != buf)
                 throw new IllegalStateException("fpos buffer mis-match");

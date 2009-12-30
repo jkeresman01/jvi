@@ -265,7 +265,7 @@ private static CharacterIterator find_ident_under_cursor(MutableInt mi, int find
 private static int u_save_cursor() { return Normal.u_save_cursor(); }
 
 // Options
-private static boolean can_bs(int what) { return Options.can_bs(what); }
+private static boolean can_bs(char what) { return Options.can_bs(what); }
 
 // MarkOps
 private static void setpcmark() {MarkOps.setpcmark();}
