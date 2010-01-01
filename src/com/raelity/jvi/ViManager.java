@@ -47,6 +47,7 @@ import java.net.URI;
 import java.net.URL;
 
 import com.raelity.jvi.swing.KeyBinding;
+import java.awt.EventQueue;
 import java.lang.ref.WeakReference;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -149,7 +150,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.7.x7");
+    public static final jViVersion version = new jViVersion("1.2.7.x8");
 
     private static boolean enabled;
 
@@ -261,17 +262,31 @@ public class ViManager
     }
 
     private static int jViBusy;
+    private static boolean jViSettling;
     public static boolean jViBusy()
     {
-        return jViBusy != 0;
+        return jViBusy != 0 || jViSettling;
     }
 
     static void setJViBusy(boolean f)
     {
         if(f)
             jViBusy++;
-        else
+        else {
             jViBusy--;
+            if(jViBusy == 0) {
+                // Some events may have been queued up due to jVi processing.
+                // Let the events get handled before considering jVi idle.
+                // In particular, caret updates on multi-core CPUs seem to
+                // be async.
+                jViSettling = true;
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        jViSettling = false;
+                    }
+                });
+            }
+        }
     }
 
     private static OsVersion osVersion;
@@ -705,6 +720,10 @@ public class ViManager
      */
     static public void keyStroke(JEditorPane target, char key, int modifier)
     {
+        if(jViBusy()) {
+            ViManager.dumpStack();
+            jViBusy = 0; // force it
+        }
         try {
             setJViBusy(true);
 

@@ -187,7 +187,6 @@ public class OptionsPanel extends JPanel {
                 Component comp = sp.getBottomComponent();
                 if(comp != null) {
                     comp.setPreferredSize(new Dimension(100,100));
-                    System.err.println("PREF-PREF-PREF");
                 }
                 if(false && comp instanceof JScrollPane) {
                     comp = ((JScrollPane)comp).getViewport().getView();

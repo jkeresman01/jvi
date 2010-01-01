@@ -103,9 +103,13 @@ public class GetChar {
         if(doc != null)
             doc.readUnlock();
     }
-    Misc.out_flush();   // returning from event
-                        // only do this if no pending characters
-                        // but can't test for pending characters, so ....
+
+
+    // returning from event
+    // only do this if no pending characters
+    // but can't test for pending characters, so ....
+
+    Misc.out_flush();
   }
   
   /** This is a special case for the two part search */

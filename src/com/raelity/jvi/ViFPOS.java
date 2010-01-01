@@ -96,7 +96,10 @@ public interface ViFPOS extends Comparable<ViFPOS>
     {
         public void set(ViFPOS fpos)
         {
-            set(fpos.getLine(), fpos.getColumn());
+            if(fpos instanceof ViMark)
+                set(fpos.getOffset());
+            else
+                set(fpos.getLine(), fpos.getColumn());
         }
 
         // Should not reference instance variables lnum or col directly,

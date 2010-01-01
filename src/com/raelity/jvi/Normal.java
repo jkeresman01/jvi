@@ -3580,16 +3580,19 @@ static private void nv_findpar(CMDARG cap, int dir)
     // update_screenline();
   }
 
-  static private  void	nv_cursormark (CMDARG cap, boolean flag, ViFPOS pos) {
+  static private  void	nv_cursormark (CMDARG cap, boolean flag, ViMark mark) {
     do_xop("nv_cursormark");
-    if (MarkOps.check_mark((ViMark)pos) == FAIL)
+    if (MarkOps.check_mark(mark) == FAIL)
       clearop(cap.oap);
     else
     {
       if (cap.cmdchar == '\'' || cap.cmdchar == '`')
 	MarkOps.setpcmark();
-      G.curwin.w_curswant = pos.getColumn();
-      Misc.gotoLine(pos.getLine(), flag ? BL_WHITE | BL_FIX : -1);
+      G.curwin.w_cursor.set(mark);
+      if(flag)
+        Edit.beginline(BL_WHITE | BL_FIX);
+      else
+        Misc.adjust_cursor();
     }
     cap.oap.motion_type = flag ? MLINE : MCHAR;
     cap.oap.inclusive = false;		/* ignored if not MCHAR */
@@ -3641,7 +3644,7 @@ static private void nv_findpar(CMDARG cap, int dir)
    */
   static private void nv_gomark(CMDARG cap, boolean flag) {
     do_xop("nv_gomark");
-    ViFPOS	pos;
+    ViMark	pos;
 
     pos = MarkOps.getmark(cap.nchar, (cap.oap.op_type == OP_NOP));
     if (pos == MarkOps.otherFile) {	    /* jumped to other file */
@@ -3663,7 +3666,7 @@ static private void nv_findpar(CMDARG cap, int dir)
   throws NotSupportedException {
     do_xop("nv_pcmark");
     //G.curwin.jumpList(op, cap.count1);
-    ViFPOS	fpos;
+    ViMark	fpos;
 
     if (!checkclearopq(cap.oap)) {
       fpos = MarkOps.movemark(cap.count1);
@@ -4591,7 +4594,6 @@ static private void nv_findpar(CMDARG cap, int dir)
   static int u_save_cursor() {/*do_op("u_save_cursor");*/return OK; }
 
   static void start_selection() {do_op("start_selection");}
-  // static void onepage(int dir, int count) {do_op("onepage");}
   static void do_help(String s) {do_op("do_help");}
   static boolean buflist_getfile(int n, int lnum, int options, boolean forceit) {
     do_op("buflist_getfile");return true;
@@ -4600,25 +4602,12 @@ static private void nv_findpar(CMDARG cap, int dir)
   static void redraw_curbuf_later(int type) {do_op("redraw_curbuf_later");}
   static void do_tag(String tag, int type, int count,
 	      boolean forceit, boolean verbose) {do_op("do_tag");}
-  // static int start_redo(int count, boolean type) { do_op("start_redo");return OK; }
-  // static void u_undo(int count) {do_op("u_undo");}
-  // static void u_redo(int count) {do_op("u_redo");}
-  //static int do_addsub(int command, int Prenum1) { do_op("do_addsub");return OK; }
-  //static void stuffReadbuff(String s) {do_op("stuffReadbuff");}
-  //static void do_window(int nchar, int Prenum) {do_op("do_window");}
-  // void do_pending_operator(CMDARG cap, CharBuf searchbuf,
-  // 			   MutableBoolean mb, int old_col,
-  // 			   boolean gui_yank, boolean dont_adjust_op_end)
-  // 			   	{do_op("do_pending_operator");}
   static boolean typebuf_typed() { do_op("typebuf_typed");return true; }
   static boolean msg_attr(String s, int attr) { do_op("msg_attr");return true; }
   static void setcursor() {do_op("setcursor");}
   static void cursor_on() {do_op("curson_on");}
   static void ui_delay(int msec, boolean ignoreinput) {do_op("ui_delay");}
   static void update_other_win() {do_op("update_other_win");}
-  // void checkpcmark() {do_op("checkpcmark");}
-  // boolean edit(int cmdchar, boolean startln, int count) { do_op("edit");return true; }
-  // static void stuffcharReadbuff(int c) {do_op("stuffcharReadbuff");}
 
   //
   //
@@ -4655,15 +4644,6 @@ static private void nv_findpar(CMDARG cap, int dir)
   static int	resel_VIsual_line_count;/* number of lines */
   static int	resel_VIsual_col;	/* nr of cols or end col */
 
-  // static private  void	op_colon (OPARG oap) {do_op("op_colon");}
-  // private  void	prep_redo_cmd (CMDARG cap) {do_op("prep_redo_cmd");}
-  //static private  void	prep_redo (int regname, long l,
-		  //int p0, int p1, int p2, int p3) {do_op("prep_redo");}
-  // private  boolean checkclearop (OPARG oap) { do_op("checkclearop");return true; }
-  // private  boolean checkclearopq (OPARG oap) { do_op("checkclearopq");return true; }
-  // private  void	clearop (OPARG oap) {do_op("clearop");}
-  // private  void	clearopbeep (OPARG oap) {do_op("clearopbeep");}
-  // private  void	del_from_showcmd (int arg) {do_op("del_from_showcmd");}
 
 /*
  * nv_*(): functions called to handle Normal and Visual mode commands.
@@ -4672,78 +4652,17 @@ static private void nv_findpar(CMDARG cap, int dir)
  */
   static private  void	nv_gd (OPARG oap, int nchar) {do_op("nv_gd");}
   static private  int	nv_screengo (OPARG oap, int dir, long dist) { do_op("nv_screengo");return 0; }
-  // static private  void	nv_scroll_line (CMDARG cap, boolean is_ctrl_e) {do_op("nv_scroll_line");}
-  // static private  void	nv_zet (CMDARG cap) {do_op("nv_zet");}
-  // static private  void	nv_colon (CMDARG cap) {do_op("nv_colon");}
-  // static private  void	nv_ctrlg (CMDARG cap) {do_op("nv_ctrlg");}
   static private  void	nv_zzet (CMDARG cap) {do_op("nv_zzet");}
-  // static private  void	nv_ident (CMDARG cap, CharBuf searchp) {do_op("nv_ident");}
-  // static private  void	nv_scroll (CMDARG cap) {do_op("nv_scroll");}
-  // private  void	nv_right (CMDARG cap) {do_op("nv_right");}
-  // private  boolean nv_left (CMDARG cap) { do_op("nv_left");return true; }
   static private  void	nv_gotofile (CMDARG cap) {do_op("nv_gotofile");}
-  // private  void	nv_dollar (CMDARG cap) {do_op("nv_dollar");}
-  //static private  void	nv_search (CMDARG cap, CharBuf searchp,
-  //			   boolean dont_set_mark) {do_op("nv_search");}
-  // static private  void	nv_next (CMDARG cap, int flag) {do_op("nv_next");}
-  // private  void	nv_csearch (CMDARG cap, int dir, boolean type) {do_op("nv_csearch");}
-  // static private  void	nv_brackets (CMDARG cap, int dir) {do_op("nv_brackets");}
-  // static private  void	nv_percent (CMDARG cap) {do_op("nv_percent");}
-  // static private  void	nv_brace (CMDARG cap, int dir) {do_op("nv_brace");}
-  //  static private  void	nv_findpar (CMDARG cap, int dir) {do_op("nv_findpar");}
-  // private  boolean nv_Replace (CMDARG cap) { do_op("nv_Replace");return true; }
   static private  int	nv_VReplace (CMDARG cap) { do_op("nv_VReplace");return 0; }
   static private  int	nv_vreplace (CMDARG cap) { do_op("nv_vreplace");return 0; }
-  //static private  void	v_swap_corners (CMDARG cap) {
-  // static private  boolean nv_replace (CMDARG cap) { do_op("nv_replace");return true; }
-  // static private  void	n_swapchar (CMDARG cap) {do_op("n_swapchar");}
-  // private  void	nv_cursormark (CMDARG cap, boolean flag, ViFPOS pos) {do_op("nv_cursormark");}
-  // static private  void	v_visop (CMDARG cap) {
-  // private  void	nv_optrans (CMDARG cap) {do_op("nv_optrans");}
-  // private  void	nv_gomark (CMDARG cap, boolean flag) {do_op("nv_gomark");}
-  // private  void	nv_pcmark (CMDARG cap) {do_op("nv_pcmark");}
-  // private  void	nv_regname (CMDARG cap, MutableInt opnump) {do_op("nv_regname");}
-  // static private  void	nv_visual(CMDARG cap, boolean selectmode) {
-  //  static private  boolean nv_g_cmd (CMDARG cap, CharBuf searchp) { do_op("nv_g_cmd");return true; }
-  // private  boolean n_opencmd (CMDARG cap) { do_op("n_opencmd");return true; }
-  // static private  void	nv_Undo (CMDARG cap)
-  // private  void	nv_operator (CMDARG cap) {do_op("nv_operator");}
-  // private  void	nv_lineop (CMDARG cap) {do_op("nv_lineop");}
-  // static private  void	nv_pipe (CMDARG cap) {do_op("nv_pipe");}
-  // static private  void	nv_bck_word (CMDARG cap, boolean type) {do_op("nv_bck_word");}
-  // static private  void	nv_wordcmd (CMDARG cap, boolean type) {do_op("nv_wordcmd");}
-  // static private  void	adjust_for_sel (CMDARG cap) {do_op("adjust_for_sel");}
-  //static private  void	unadjust_for_sel () {do_op("unadjust_for_sel");}
-  // private  void	nv_goto (CMDARG cap, long lnum) {do_op("nv_goto");}
   static private  void	nv_select (CMDARG cap) {do_op("nv_select");}
   static private  void	nv_normal (CMDARG cap) {do_op("nv_normal");}
-  // private  void	nv_esc (CMDARG oap, int opnum) {do_op("nv_esc");}
-  // private  boolean nv_edit (CMDARG cap) { do_op("nv_edit");return true; }
-  // static private  void	nv_object (CMDARG cap);
-  // static private  void	nv_q (CMDARG cap) {do_op("nv_q");}
-  // static private  void	nv_at (CMDARG cap) {do_op("nv_at");}
-  // static private  void	nv_halfpage (CMDARG cap) {do_op_clear("nv_halfpage", cap.oap);}
-  // static private  void	nv_join (CMDARG cap) {do_op("nv_join");}
-  // private  void	nv_put (CMDARG cap) {do_op("nv_put");}
-
-  // static void op_shift(OPARG oap, boolean curs_top, int amount) {do_op("op_shift");}
-  //static void do_do_join(int count, boolean insert_space, boolean redraw)
-    //{do_op("do_do_join");}
-  // int op_delete(OPARG oap) {do_op("op_delete"); return OK;}
-  // int op_yank(OPARG oap, boolean deleting, boolean mess) {
-    // do_op("op_yank"); return OK; }
-  // static boolean op_change(OPARG oap) {do_op("op_change"); return false;}
-  // static void op_tilde(OPARG oap) {do_op("op_tilde");}
-  // static void op_format(OPARG oap) {do_op("op_format");}
 
 
-  // static int typebuf_maplen() { do_op("typebuf_maplen");return 0; }
   static void do_exmode() {do_op("do_exmode");}
   static void update_screen(boolean flag) {do_op("update_screen(bool)");}
   static void update_screen(int flag) {do_op("update_screen(int)");}
-  // void AppendToRedobuff(String s) {do_op("AppendToRedobuff");}
-  // static boolean inindent(int extra) { do_op("inindent");return false; }
-  // int coladvance(int wcol) { do_op("coladvance"); return OK; }
 
 
 

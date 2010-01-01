@@ -165,7 +165,7 @@ class MarkOps
     /**
      * move "count" positions in the jump list (count may be negative)
      */
-    static ViFPOS movemark(int count)
+    static ViMark movemark(int count)
     {
         cleanup_jumplist();
         // NOTE: return otherFile if...
@@ -188,7 +188,7 @@ class MarkOps
             ViMark mark = G.curwin.w_jumplist.get(G.curwin.w_jumplistidx);
             if(false /*mark.isSomeOtherFile()*/) {
                 // ...
-                return otherFile;
+                return null; // return otherFile;
             }
             return mark;
         }

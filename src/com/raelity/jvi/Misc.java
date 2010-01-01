@@ -425,7 +425,7 @@ public class Misc implements ClipboardOwner {
         // following does doc.insert
         G.curwin.insertText(G.curwin.w_cursor.getOffset(), s);
       } else
-        // following goes through key typed event
+        // following goes through key typed event, but some special tab handling
         G.curwin.insertChar(c);
     }
   }

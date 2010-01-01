@@ -305,7 +305,10 @@ public class TextView extends Window
             return;
         }
         if ( c == '\t' ) {
-            insertTab();
+            if(G.usePlatformInsertTab.getBoolean())
+                insertTab();
+            else
+                insertText(w_cursor.getOffset(), "\t");
             return;
         }
         insertTypedChar(c);
