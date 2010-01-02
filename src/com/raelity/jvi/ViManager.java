@@ -150,7 +150,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.7.x8");
+    public static final jViVersion version = new jViVersion("1.2.7.x10");
 
     private static boolean enabled;
 
@@ -274,18 +274,20 @@ public class ViManager
             jViBusy++;
         else {
             jViBusy--;
-            if(jViBusy == 0) {
-                // Some events may have been queued up due to jVi processing.
-                // Let the events get handled before considering jVi idle.
-                // In particular, caret updates on multi-core CPUs seem to
-                // be async.
-                jViSettling = true;
-                EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        jViSettling = false;
-                    }
-                });
-            }
+            // if(jViBusy == 0) {
+            //     // Some events may have been queued up due to jVi processing.
+            //     // Let the events get handled before considering jVi idle.
+            //     // In particular, caret updates on multi-core CPUs seem to
+            //     // be async.
+            //     // Could "peek" at the event Q and wait for it to be empty,
+            //     // but that seems extreme.
+            //     jViSettling = true;
+            //     EventQueue.invokeLater(new Runnable() {
+            //         public void run() {
+            //             jViSettling = false;
+            //         }
+            //     });
+            // }
         }
     }
 
@@ -720,9 +722,8 @@ public class ViManager
      */
     static public void keyStroke(JEditorPane target, char key, int modifier)
     {
-        if(jViBusy()) {
+        if(jViBusy != 0) {
             ViManager.dumpStack();
-            jViBusy = 0; // force it
         }
         try {
             setJViBusy(true);
@@ -1020,16 +1021,21 @@ public class ViManager
         Msg.clearMsg();
     }
 
+    static public void dumpStack(String msg, boolean supressIfNotBusy)
+    {
+        if(supressIfNotBusy && !jViBusy())
+            return;
+        LOG.log(Level.SEVERE, msg, new IllegalStateException());
+    }
+
     static public void dumpStack(String msg)
     {
-        //new IllegalStateException(msg).printStackTrace();
-        LOG.log(Level.SEVERE, msg, new IllegalStateException());
+        dumpStack(null, false);
     }
 
     static public void dumpStack()
     {
-        //new IllegalStateException().printStackTrace();
-        LOG.log(Level.SEVERE, null, new IllegalStateException());
+        dumpStack(null);
     }
 
     static public void setInsertModeKeymap(Keymap newInsertModeKeymap)

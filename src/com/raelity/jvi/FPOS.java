@@ -84,6 +84,8 @@ class FPOS extends ViFPOS.abstractFPOS
     public void set(Buffer buf, int offset)
     {
         verify(buf);
+        if(offset > buf.getLength())
+            offset = buf.getLength();
         int l = buf.getLineNumber(offset);
         initFPOS(offset, l, offset - buf.getLineStartOffset(l));
     }
