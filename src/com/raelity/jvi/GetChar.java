@@ -859,7 +859,21 @@ public class GetChar {
             if(G.dbgRedo.value) debugDocRemoveREMOVE_AFTER(nBefore);
             return true;
           } catch(Exception ex) {
-            ViManager.dumpStack("redo tracking: remove after");
+
+            // HACK ALERT
+            StackTraceElement[] stack = ex.getStackTrace();
+            boolean skip = false;
+            for (int i = 0; i < stack.length; i++) {
+              String e = stack[i].toString();
+              if(stack[i].toString().contains("form.JavaCodeGenerator")) {
+                skip = true;
+                break;
+              }
+
+            } // END HACK ALERT
+
+            if(!skip)
+              ViManager.dumpStack("redo tracking: remove after");
           }
         }
       }
