@@ -1721,7 +1721,7 @@ one_char: {
         GetChar.start_redo_ins();
         // ++RedrawingDisabled;
         // disabled_redraw = TRUE;
-        Insstart = null;
+        //Insstart = null;
         return false;	// repeat the insert
       }
       stop_insert(G.curwin.w_cursor);	// pass stop insert cursor position
