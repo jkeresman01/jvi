@@ -31,6 +31,9 @@ import static com.raelity.jvi.Constants.*;
 public abstract class Buffer implements ViBuffer, ViOptionBag {
     private static Logger LOG = Logger.getLogger(Buffer.class.getName());
 
+    /** Each buffer gets a unique and invariant number */
+    private static int fnum;
+
     private boolean didFirstInit;
     
     private int share; // the number of text views sharing this buffer
@@ -53,6 +56,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         b_op_end = createMark();
         for(int i = 0; i < b_namedm.length; i++)
             b_namedm[i] = createMark();
+        b_fnum = ++fnum;
     }
     
     /** from switchto */
@@ -117,6 +121,8 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     //
     // Other per buffer variables
     //
+
+    public int b_fnum;
 
     // The lower case marks
     ViMark b_namedm[] = new ViMark[26];

@@ -149,7 +149,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.7.x12");
+    public static final jViVersion version = new jViVersion("1.2.7.x13");
 
     private static boolean enabled;
 
@@ -322,7 +322,7 @@ public class ViManager
 
     public static ViTextView getViTextView(JEditorPane editorPane)
     {
-        return factory.getViTextView(editorPane);
+        return factory.createTextView(editorPane);
     }
 
     /** get any text view, other than tv, which has buf KLUDGE HACK */
@@ -335,18 +335,13 @@ public class ViManager
                 continue;
             JEditorPane ep = tv02.getEditorComponent();
             if(ep != null) {
-                if(factory.getBuffer(ep) == buf) {
+                if(tv02.getBuffer() == buf) {
                     tv01 = tv02;
                     break;
                 }
             }
         }
         return tv01;
-    }
-
-    public static Buffer getBuffer(JEditorPane editorPane)
-    {
-        return factory.getBuffer(editorPane);
     }
 
     public static ViOutputStream createOutputStream(
@@ -791,7 +786,7 @@ public class ViManager
         draggingBlockMode = false;
 
         ViTextView textView = getViTextView(editorPane);
-        Buffer buf = getBuffer(editorPane);
+        Buffer buf = textView.getBuffer();
         factory.registerEditorPane(editorPane); // make sure has the right caret
         textView.attach();
         if(G.dbgEditorActivation.getBoolean()) {
@@ -815,7 +810,7 @@ public class ViManager
 
     public static ViTextView getCurrentTextView()
     {
-        return factory.getExistingViTextView(currentEditorPane);
+        return factory.getTextView(currentEditorPane);
     }
 
     private static boolean inStartup;
@@ -918,7 +913,7 @@ public class ViManager
 
             JEditorPane editorPane = (JEditorPane)c;
 
-            ViTextView tv = factory.getExistingViTextView(editorPane);
+            ViTextView tv = factory.getTextView(editorPane);
             if(tv == null)
                 return pos;
 

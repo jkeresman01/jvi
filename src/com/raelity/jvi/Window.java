@@ -99,7 +99,6 @@ public abstract class Window implements ViTextView
     public void shutdown()
     {
         if ( G.dbgEditorActivation.getBoolean() ) {
-            assert w_buffer == ViManager.getBuffer(getEditorComponent());
             if(w_buffer.getShare() == 1) {
                 System.err.println("TV.shutdown: LAST CLOSE");
             }

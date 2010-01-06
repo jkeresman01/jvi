@@ -38,15 +38,19 @@ public interface ViFactory
     public Class loadClass(String name) throws ClassNotFoundException;
 
     /** Return a TextView, create one if it doesn't already exist */
-    public ViTextView getViTextView(JEditorPane editorPane);
+    public ViTextView createTextView(JEditorPane editorPane);
 
-    /** Return a Buffer, create one if it doesn't already exist */
-    public Buffer getBuffer(JEditorPane editorPane);
+    /** @return null if TextView does not exist */
+    public ViTextView getTextView(JEditorPane editorPane);
+
+    public ViTextView getTextView(Object appHandle);
 
     /** Make a best guess as to whether or not the 'ep' is a nomad.
      * Should default to false.
      */
     public boolean isNomadic(JEditorPane ep, Object appHandle);
+
+    public int getWNum(Object appHandle);
 
     /** Handle changing document in text view.
      * Editor in TextView should hold new document.
@@ -57,9 +61,6 @@ public interface ViFactory
 
     /** @return true if standalone (debug), else false */
     public boolean isStandalone();
-
-    /** @return null if TextView does not exist */
-    public ViTextView getExistingViTextView(Object editorPane);
 
     /** @return Set of active ViTextView, some may have retired */
     public Set<ViTextView> getViTextViewSet();

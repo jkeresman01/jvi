@@ -75,7 +75,9 @@ public class TextView extends Window
         implements ViTextView, PropertyChangeListener, ChangeListener
 {
     private static Logger LOG = Logger.getLogger(TextView.class.getName());
-    protected int mygen;
+    private static int genNum; // unique/invariant window id;
+
+    protected int w_num;
 
 
     protected JEditorPane editorPane;
@@ -96,7 +98,7 @@ public class TextView extends Window
     {
         super();
         this.editorPane = editorPane;
-        mygen = ++gen;
+        w_num = ++genNum;
 
         cursorSaveListener = new CaretListener() {
             public void caretUpdate(CaretEvent ce) {
@@ -106,9 +108,15 @@ public class TextView extends Window
         };
     }
 
+
     public ViFPOS createWCursor()
     {
         return w_cursor == null ? new WCursor() : null;
+    }
+
+
+    public int getNum() {
+        return w_num;
     }
 
 

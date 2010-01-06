@@ -2111,12 +2111,13 @@ static ColonAction ACTION_global = new ColonAction() {
             Misc.runUndoable(new Runnable() {
                 public void run() {
                     Search.global((ColonEvent)ev);
+                    Options.newSearch();
                 }
             });
         }
     };
 
-/* This is the default buffers,files,ls command. The platform specific code
+/** This is the default buffers,files,ls command. The platform specific code
     * may chose to register this, or implement their own, possibly using
     * popup gui components.
     */
@@ -2132,29 +2133,22 @@ public static ActionListener ACTION_BUFFERS = new ActionListener() {
             Object prev = ViManager.getMruBuffer(1);
 
             List<String> l = new ArrayList<String>();
+            ViFactory factory = ViManager.getViFactory();
             while(true) {
                 Object o1 = ViManager.getMruBuffer(i);
                 Object o2 = ViManager.getTextBuffer(i+1);
                 if(o1 == null && o2 == null) {
                     break;
                 }
-                StringBuilder s = new StringBuilder();
-                String name1 = "";
-                String name2 = "";
-                if(o1 != null) {
-                    name1 = ViManager.getViFactory().getDisplayFilename(o1);
-                }
-                if(o2 != null) {
-                    name2 = ViManager.getViFactory().getDisplayFilename(o2);
-                }
+                int w2 = ViManager.getViFactory().getWNum(o2);
                 l.add(String.format(
                         " %2d %c %-40s %3d %c %s",
                         i,
                         cur == o1 ? '%' : prev == o1 ? '#' : ' ',
-                        name1,
-                        i+1,
+                        o1 != null ? factory.getDisplayFilename(o1) : "",
+                        w2,
                         cur == o2 ? '%' : prev == o2 ? '#' : ' ',
-                        name2));
+                        o2 != null ? factory.getDisplayFilename(o2) : ""));
                 i++;
             }
             // print in reverse order, MRU visible if scrolling

@@ -1263,7 +1263,7 @@ public class Misc implements ClipboardOwner {
       if(reg != null) {
         regval = reg.getAll();
       }
-      if(regval == null || regval.length() == 0 || regval.length() > 200) {
+      if(regval == null || regval.length() == 0 || regval.length() > 1024) {
         prefs.remove(regname);
         prefs.remove(regname + "-type");
       } else {

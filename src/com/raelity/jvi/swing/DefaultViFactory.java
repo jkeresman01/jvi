@@ -111,22 +111,27 @@ public class DefaultViFactory implements ViFactory
         return true;
     }
 
-    public ViTextView getExistingViTextView(Object editorPane)
+    public ViTextView getTextView(JEditorPane editorPane)
     {
-        if(!(editorPane instanceof JComponent)) {
-            return null;
-        }
-        return (ViTextView)((JComponent)editorPane).getClientProperty(PROP_VITV);
+        return (ViTextView)editorPane.getClientProperty(PROP_VITV);
     }
 
-    public ViTextView getViTextView(JEditorPane editorPane)
+    public ViTextView getTextView(Object appHandle) {
+        return null;
+    }
+
+    public int getWNum(Object appHandle) {
+        return -9;
+    }
+
+    public ViTextView createTextView(JEditorPane editorPane)
     {
         ViTextView tv01 = (ViTextView)editorPane.getClientProperty(PROP_VITV);
         if ( tv01 == null ) {
             if ( G.dbgEditorActivation.getBoolean() ) {
                 System.err.println("Activation: getViTextView: create");
             }
-            tv01 = createViTextView(editorPane);
+            tv01 = newTextView(editorPane);
             attachBuffer(tv01);
 
             tv01.startup();
@@ -138,7 +143,7 @@ public class DefaultViFactory implements ViFactory
 
 
     /** subclass probably wants to override this */
-    protected ViTextView createViTextView( JEditorPane editorPane )
+    protected ViTextView newTextView( JEditorPane editorPane )
     {
         return new TextView(editorPane);
     }
@@ -165,17 +170,6 @@ public class DefaultViFactory implements ViFactory
     {
         // wonder if this works
         return tv.getEditorComponent().isVisible();
-    }
-
-
-    public Buffer getBuffer( JEditorPane editorPane )
-    {
-        Buffer buf = null;
-        Document doc = editorPane.getDocument();
-        if ( doc != null ) {
-            buf = (Buffer)doc.getProperty(PROP_BUF);
-        }
-        return buf;
     }
 
 
@@ -213,9 +207,10 @@ public class DefaultViFactory implements ViFactory
         if ( G.dbgEditorActivation.getBoolean() ) {
             System.err.println("Activation: shutdown TV");
         }
+        Buffer buf = tv.getBuffer();
         tv.shutdown();
         ep.putClientProperty(PROP_VITV, null);
-        releaseBuffer(getBuffer(ep));
+        releaseBuffer(buf);
     }
 
 
