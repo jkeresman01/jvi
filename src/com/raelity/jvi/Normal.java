@@ -3647,7 +3647,9 @@ static private void nv_findpar(CMDARG cap, int dir)
     ViMark	pos;
 
     pos = MarkOps.getmark(cap.nchar, (cap.oap.op_type == OP_NOP));
-    if (pos == MarkOps.otherFile) {	    /* jumped to other file */
+    //if (pos == MarkOps.otherFile)
+    if (pos instanceof Filemark)
+    {	    /* jumped to other file */
       if (flag) {
 	Misc.check_cursor_lnumBeginline(BL_WHITE | BL_FIX);
 	// Edit.beginline(BL_WHITE | BL_FIX);
@@ -3871,9 +3873,10 @@ static private void nv_findpar(CMDARG cap, int dir)
             break;
         if (     MarkOps.check_mark(G.curbuf.b_visual_start, true) == FAIL
               || MarkOps.check_mark(G.curbuf.b_visual_end, true) == FAIL
-              || G.curbuf.b_visual_start.getLine() == 0
+              // || ! G.curbuf.b_visual_start.isValid()
               || G.curbuf.b_visual_start.getLine() > G.curbuf.getLineCount()
-              || G.curbuf.b_visual_end.getLine() == 0)
+              // || ! G.curbuf.b_visual_end.isValid()
+            )
             Util.beep_flush();
         else
         {

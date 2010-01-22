@@ -39,9 +39,8 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     private int share; // the number of text views sharing this buffer
     public int getShare() { return share; }
     public void addShare() { share++; }
-    public void removeShare() {
-        share--;
-    }
+    public void removeShare() { share--; }
+    public boolean singleShare() { return share == 1; }
     
     /** Creates a new instance of Buffer, initialize values from Options.
      * NOTE: tv is not completely "constructed".
@@ -54,6 +53,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         b_visual_end = createMark();
         b_op_start = createMark();
         b_op_end = createMark();
+        b_last_insert = createMark();
         for(int i = 0; i < b_namedm.length; i++)
             b_namedm[i] = createMark();
         b_fnum = ++fnum;
@@ -76,14 +76,6 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
      */
     protected void firstGo()
     {
-        //
-        // initialize some marks to avoid highlight cleanup
-        //
-        ViFPOS fpos = createFPOS(0);
-        b_visual_start.setMark(fpos);
-        b_visual_end.setMark(fpos);
-        b_op_start.setMark(fpos);
-        b_op_end.setMark(fpos);
         //
         // init options
         //
@@ -130,6 +122,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     // Save the current VIsual area for '< and '> marks, and "gv"
     public final ViMark b_visual_start;
     public final ViMark b_visual_end;
+    public final ViMark b_last_insert;
     public char b_visual_mode;
     public String b_p_nf;
 
@@ -147,7 +140,16 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
 
 
     public ViMark getMark(char c) {
-        assert this == G.curbuf; // NEEDSWORK: getMark assuming correct curwin
+        // NEEDSWORK: buf.getMark, handle all per buf marks
+        if (Util.islower(c)) {
+            int i = c - 'a';
+            return b_namedm[i];
+        }
+        //assert this == G.curbuf; // NEEDSWORK: getMark assuming correct curwin
+        if(this != G.curbuf) {
+            ViManager.dumpStack("this != curbuf");
+            return null;
+        }
         return MarkOps.getmark(c, false);
     }
 
@@ -197,13 +199,13 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         return ViManager.getViFactory().getFS().getDisplayFileName(this);
     }
 
-    public File getJavaFile() {
+    public File getFile() {
         return new File("/tmp/test.file");
     }
 
     public String getFilename()
     {
-        File fi = G.curbuf.getJavaFile();
+        File fi = G.curbuf.getFile();
         return fi == null ? null : fi.getPath();
     }
 
@@ -219,7 +221,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
      */
     @SuppressWarnings("fallthrough")
     public String modifyFilename(char option) {
-        File fi = getJavaFile();
+        File fi = getFile();
         String filename = "";
         if(fi != null) {
             switch (option) {

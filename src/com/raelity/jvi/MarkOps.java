@@ -19,8 +19,26 @@
  */
 package com.raelity.jvi;
 
+import com.raelity.jvi.ColonCommands.ColonAction;
+import com.raelity.jvi.ColonCommands.ColonEvent;
 import com.raelity.text.TextUtil.MySegment;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import static com.raelity.jvi.ViTextView.MARKOP;
 import static com.raelity.jvi.ViTextView.MARKOP.NEXT;
 import static com.raelity.jvi.ViTextView.MARKOP.PREV;
@@ -34,8 +52,49 @@ import static com.raelity.jvi.Messages.*;
  */
 class MarkOps
 {
+    private static Logger LOG = Logger.getLogger(MarkOps.class.getName());
+
+    private static final String PREF_MARKS = "marks";
+    private static final String PREF_FILEMARKS = PREF_MARKS + "/" + "filemarks";
+
+    private static Filemark namedfm[] = new Filemark[26];
+
+    private static List<String> oldPersistedBufferMarks = new ArrayList<String>();
+
     /** This constant indicates mark is in other file. */
     final static FPOS otherFile = new FPOS();
+
+    static void init() {
+        PropertyChangeListener pcl = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                String pname = evt.getPropertyName();
+                if(pname.equals(ViManager.P_OPEN_WIN)) {
+                    openWin((ViTextView)evt.getNewValue());
+                } else if(pname.equals(ViManager.P_CLOSE_WIN)) {
+                    closeWin((ViTextView)evt.getOldValue());
+                } else if(pname.equals(ViManager.P_OPEN_BUF)) {
+                    BufferMarksPersist.restore((Buffer)evt.getNewValue());
+                } else if(pname.equals(ViManager.P_CLOSE_BUF)) {
+                    BufferMarksPersist.persist((Buffer)evt.getOldValue());
+                } else if(pname.equals(ViManager.P_BOOT)) {
+                    BufferMarksPersist.read_viminfo();
+                    read_viminfo_filemarks();
+                } else if(pname.equals(ViManager.P_SHUTDOWN)) {
+                    write_viminfo_filemarks();
+                    BufferMarksPersist.write_viminfo();
+                }
+            }
+        };
+        ViManager.addPropertyChangeListener(ViManager.P_BOOT, pcl);
+        ViManager.addPropertyChangeListener(ViManager.P_SHUTDOWN, pcl);
+        ViManager.addPropertyChangeListener(ViManager.P_OPEN_WIN, pcl);
+        ViManager.addPropertyChangeListener(ViManager.P_CLOSE_WIN, pcl);
+        ViManager.addPropertyChangeListener(ViManager.P_OPEN_BUF, pcl);
+        ViManager.addPropertyChangeListener(ViManager.P_CLOSE_BUF, pcl);
+
+        if(System.getProperty("jVi_DEBUG") != null)
+            LOG.setLevel(Level.FINE);
+    }
 
     /** Set the indicated mark to the current cursor position;
      * if anonymous mark characters, then handle that.
@@ -79,11 +138,17 @@ class MarkOps
             return OK;
         }
 
-        if (false && Util.isupper(c)) {	// NEEDSWORK: upper case marks
-            // i = c - 'A';
-            // namedfm[i].mark = curwin.w_cursor;
-            // namedfm[i].fnum = curbuf.b_fnum;
-            // return OK;
+        if (Util.isupper(c)) {	// NEEDSWORK: upper case marks
+            if(ViManager.getViFactory().isNomadic(G.curwin.getEditorComponent(),
+                                                  null)) {
+                Msg.emsg("Can not 'mark' a nomadic editor");
+                return FAIL;
+            }
+            int i = c - 'A';
+            ViMark mark = G.curbuf.createMark();
+            mark.setMark(G.curwin.w_cursor);
+            namedfm[i] = new Filemark(mark, G.curwin);
+            return OK;
         }
         return FAIL;
     }
@@ -239,8 +304,17 @@ class MarkOps
         } else if (Util.islower(c)) {
             int i = c - 'a';
             m = G.curbuf.b_namedm[i];
+        } else if(Util.isupper(c) /* || Util.isdigit(c) */) { // named file mark
+            Filemark fm = namedfm[c - 'A'];
+            if(fm != null) {
+                if(changefile || G.curbuf.getFile().equals(fm.getFile()))
+                    // set force to true so non exist files are opened (as vim)
+                    ViManager.getViFactory().getFS().edit(G.curwin, true, fm);
+                else
+                    fm = null;
+            }
+            m = fm;
         }
-        // NEEDSWORK: else if isupper(c) || vim_isdigit(c) // named file mark
         return m;
     }
 
@@ -255,10 +329,13 @@ class MarkOps
 
     static int check_mark(ViMark mark, boolean messageOK)
     {
+        //  if(!mesasgeOK) return mark.isValid() ? OK : FAIL;
         String msg = null;
         if (mark == null) {
             msg = e_umark;
-        } else {
+        } else if(!mark.isValid()) {
+            msg = e_marknotset;
+        }else {
             try {
                 if (mark.getLine() > G.curbuf.getLineCount()) {
                     msg = e_markinval;
@@ -352,6 +429,615 @@ class MarkOps
         win.w_jumplistidx = indexedMark == null
                 ? win.w_jumplist.size()
                 : win.w_jumplist.indexOf(indexedMark);
+    }
+
+    static ColonAction ACTION_do_marks = new DoMarks();
+    static ColonAction ACTION_ex_delmarks = new ExDelmarks();
+
+    /**
+     * print the marks
+     */
+    private static class DoMarks extends ColonAction {
+
+        public void actionPerformed(ActionEvent ev) {
+            ColonEvent cev = (ColonEvent)ev;
+
+            if(cev.getAddrCount() > 0) {
+                Msg.emsg(Messages.e_norange);
+                return;
+            }
+
+            String arg = null;
+            if(cev.getNArg() > 0)
+                arg = cev.getArgString();
+            show_one_mark('\'', arg, G.curwin.w_pcmark, null, true);
+            for(int i = 0; i < G.curbuf.b_namedm.length; i++)
+                show_one_mark((char)(i+'a'), arg, G.curbuf.b_namedm[i],
+                              null, true);
+            for (int i = 0; i < namedfm.length; i++) {
+                Filemark fm = namedfm[i];
+                String name;
+                if(fm == null) {
+                    name = null;
+                } else if(fm.getBuffer() != null)
+                    name = fm_getname(fm, 15);
+                else
+                    name = fm.getFile().getPath();
+                if(name != null)
+                    show_one_mark((char)(i+'A'), arg, fm, name,
+                            fm.getBuffer() == G.curbuf);
+            }
+            //show_one_mark('"', arg, G.curbuf.b_last_cursor, null, true);
+            show_one_mark('[', arg, G.curbuf.b_op_start, null, true);
+            show_one_mark(']', arg, G.curbuf.b_op_end, null, true);
+            show_one_mark('^', arg, G.curbuf.b_last_insert, null, true);
+            //show_one_mark('.', arg, G.curbuf.b_last_change, null, true);
+            show_one_mark('<', arg, G.curbuf.b_visual_start, null, true);
+            show_one_mark('>', arg, G.curbuf.b_visual_end, null, true);
+            show_one_mark(MySegment.DONE, arg, null, null, false);
+        }
+    }
+
+    /**
+     * Get name of file from a filemark.
+     * When it's in the current buffer, return the text at the mark.
+     * Returns an allocated string.
+     */
+    private static String fm_getname(Filemark fm, int lead_len) {
+        if(fm.getBuffer() == G.curbuf)
+            return mark_line(fm, lead_len);
+        return fm.getFile().getPath();
+    }
+
+    /**
+     * Return the line at mark "mp".  Truncate to fit in window.
+     * The returned string has been allocated.
+     */
+    private static String mark_line(ViFPOS mp, int lead_len) {
+        String s;
+        if(mp instanceof Filemark && mp.getBuffer() == null
+                || mp.getOffset() > mp.getBuffer().getLength())
+            return "-invalid-";
+
+        // Forget the truncate and lead_len stuff
+
+        s = mp.getBuffer().getLineSegment(mp.getLine()).toString();
+        s = s.substring(Misc.skipwhite(s, 0));
+        // get rid of the newline
+        if(s.length() > 0)
+            s = s.substring(0, s.length() -1);
+        return s;
+    }
+    private static boolean did_title;
+    private static ViOutputStream svios;
+    private static void show_one_mark(
+            char c, String arg, ViMark p, String name, boolean current) {
+        if(c == MySegment.DONE) {
+            if(did_title) {
+                did_title = false;
+                svios.close();
+                svios = null;
+            } else {
+                if(arg == null)
+                    Msg.smsg("No marks set");
+                else
+                    Msg.emsg("No marks mastching \"" + arg + "\"");
+            }
+        }
+        else if((arg == null || Util.vim_strchr(arg, c) != null)
+                && p != null
+                        // filemark always usable for this simple case
+                && (p instanceof Filemark || p.isValid())) {
+            if(!did_title) {
+                /* Highlight title */
+                String heading = "\nmark line  col file/text";
+                svios = ViManager.createOutputStream(
+                        null, ViOutputStream.OUTPUT, heading);
+                did_title = true;
+            }
+            if (true /*!got_int*/)
+            {
+                String s = String.format(" %c %6d %4d ",
+                        c, p.getLine(), p.getColumn());
+                if (name == null && current)
+                {
+                    name = mark_line(p, 15);
+                }
+                if (name != null)
+                {
+                    s += name;
+                }
+                svios.println(s);
+            }
+        }
+    }
+
+    /**
+     * clrallmarks() - clear all marks in the buffer 'buf'
+     *
+     * Used mainly when trashing the entire buffer during ":e" type commands
+     */
+    static void clrallmarks(Buffer buf) {
+        for (int i = 0; i < buf.b_namedm.length; i++) {
+            buf.b_namedm[i].invalidate();
+        }
+        buf.b_op_start.invalidate();		/* start/end op mark cleared */
+        buf.b_op_end.invalidate();
+        // buf.b_last_cursor.lnum = 1;	/* '" mark cleared */
+        // buf.b_last_cursor.col = 0;
+        buf.b_last_insert.invalidate();	/* '^ mark cleared */
+        // buf.b_last_change.lnum = 0;	/* '. mark cleared */
+    // #ifdef FEAT_JUMPLIST
+    //     buf->b_changelistlen = 0;
+    // #endif
+    }
+
+    private static class ExDelmarks extends ColonAction {
+
+        @Override
+        public int getFlags() {
+            return ColonCommandFlags.BANG;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            ex_delmarks((ColonEvent)e);
+        }
+    }
+
+    /**
+     * ":delmarks[!] [marks]"
+     */
+    private static void ex_delmarks(ColonEvent cev) {
+
+        if (cev.getNArg() == 0 && cev.isBang())
+            // clear all marks
+            clrallmarks(G.curbuf);
+        else if (cev.isBang())
+            Msg.emsg(e_invarg);
+        else if (cev.getNArg() == 0)
+            Msg.emsg(e_argreq);
+        else
+        {
+            // clear specified marks only
+            String arg = cev.getArgString();
+            for (int p = 0; p < arg.length(); p++) {
+                boolean lower = Util.islower(arg.charAt(p));
+                boolean digit = Util.isdigit(arg.charAt(p));
+                if (lower || digit || Util.isupper(arg.charAt(p)))
+                {
+                    char from = 0, to = 0;
+                    if (p + 1 < arg.length() && arg.charAt(p+1) == '-')
+                    {
+                        // clear range of marks
+                        from = arg.charAt(p);
+                        if(p + 2 < arg.length())
+                            to = arg.charAt(p + 2);
+                        if (!(lower ? Util.islower(to)
+                                    : (digit ? Util.isdigit(to)
+                                        : Util.isupper(to)))
+                                || to < from)
+                        {
+                            Msg.emsg(e_invarg2 + arg.substring(p));
+                            return;
+                        }
+                        p += 2;
+                    }
+                    else
+                        // clear one lower case mark
+                        from = to = arg.charAt(p);
+
+                    for (int i = from; i <= to; ++i)
+                    {
+                        if (lower)
+                            G.curbuf.b_namedm[i - 'a'].invalidate();
+                        else
+                        {
+                            int n;
+                            //if (digit)
+                            //    n = i - '0' + NMARKS;
+                            //else
+                                n = i - 'A';
+                            namedfm[n] = null;
+                        }
+                    }
+                }
+                else
+                    switch (arg.charAt(p))
+                    {
+                        //case '"': G.curbuf.b_last_cursor.invalidate(); break;
+                        case '^': G.curbuf.b_last_insert.invalidate(); break;
+                        //case '.': G.curbuf.b_last_change.invalidate(); break;
+                        case '[': G.curbuf.b_op_start.invalidate(); break;
+                        case ']': G.curbuf.b_op_end.invalidate(); break;
+                        case '<': G.curbuf.b_visual_start.invalidate(); break;
+                        case '>': G.curbuf.b_visual_end.invalidate(); break;
+                        case ' ': break;
+                        default:  Msg.emsg(e_invarg2 + arg.substring(p));
+                                  return;
+                    }
+            }
+        }
+    }
+
+    private static void openWin(ViTextView tv) {
+        File f = tv.getBuffer().getFile();
+
+        // create a real mark for the file (if there was a file mark
+        for (int i = 0; i < namedfm.length; i++) {
+            Filemark fm = namedfm[i];
+            if(fm != null)
+                fm.startup(f, tv);
+        }
+    }
+
+    private static void closeWin(ViTextView tv) {
+        // capture line/col type info for a filemark
+        for (int i = 0; i < namedfm.length; i++) {
+            Filemark fm = namedfm[i];
+            if(fm != null)
+                fm.shutdown(tv);
+        }
+    }
+
+    private static String markName(int i) {
+        return String.valueOf((char)('A'+i));
+    }
+
+    static final String FNAME = "fName";
+    //static final String BUFTAG = "buftag";
+    static final String BUF = "buf";
+    static final String OFFSET = "offset";
+    static final String LINE = "line";
+    static final String COL = "col";
+
+    private static void read_viminfo_filemarks()
+    {
+        Preferences prefs = ViManager.getViFactory()
+                .getPreferences().node(PREF_FILEMARKS);
+        for (int i = 0; i < namedfm.length; i++) {
+            Filemark fm = Filemark.read_viminfo_filemark(prefs, markName(i));
+            if(fm != null)
+                namedfm[i] = fm;
+        }
+    }
+
+    private static void write_viminfo_filemarks()
+    {
+        Preferences prefs = ViManager.getViFactory()
+                .getPreferences().node(PREF_FILEMARKS);
+        for (int i = 0; i < namedfm.length; i++) {
+            Filemark.write_viminfo_filemark(prefs, markName(i), namedfm[i]);
+        }
+        try {
+            prefs.flush();
+        } catch (BackingStoreException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * The named marks, a-z plus a few, for a buffer are persisted between
+     * sessions. There is an option for how many buffers to perist, but in
+     * all cases any buffers open in a session are persisted, so there may
+     * be more than specified by the option. When the number of buffers
+     * in a session is less that the option, then marks from previous sessions
+     * are persisted in an MRU fashion.
+     */
+    private static class BufferMarksPersist {
+        // NEEDSWORK: BufferMarksPersist easier using google collections
+        // Data structure, on/off disk, notes
+        // The pref node for a buffer is an arbitrary name starting with "BUF"
+        // and the MRU index is a property of that node.
+
+        private static final String INDEX = "index";
+
+        /** All the BufferMarks being tracked. Key'd by file name. */
+        static Map<String, BufferMarks> all = new HashMap<String, BufferMarks>();
+        /** The BufferMarks read during startup in MRU order */
+        static List<String> prev = new LinkedList<String>();
+        /** The BufferMarks persisted from this session in MRU order */
+        static List<String> next = new LinkedList<String>();
+        static List<String> cleanup = new ArrayList<String>();
+
+        static Preferences prefs
+                = ViManager.getViFactory().getPreferences().node(PREF_MARKS);
+
+        static Random random = new Random();
+
+        static class MarkInfo {
+            int offset, line, col;
+
+            MarkInfo(int offset, int line, int col) {
+                this.offset = offset;
+                this.line = line;
+                this.col = col;
+            }
+        }
+
+        /** info about each buffer with persisted marks */
+        static class BufferMarks {
+            /** file name */
+            private String name;
+            /** index, starting at 1, for MRU list. 0 means none assigned */
+            private int index;
+            /** the random name of the persisted set of marks */
+            private String tag;
+
+            public BufferMarks(String tag, String name, int index) {
+                this.tag = tag;
+                this.name = name;
+                this.index = index;
+            }
+
+            public BufferMarks(String tag, String name) {
+                this(tag, name, 0);
+            }
+
+            public String getName() {
+                return name;
+            }
+
+            public void setIndex(int index) {
+                this.index = index;
+            }
+
+            public int getIndex() {
+                return index;
+            }
+
+            public String getBufTag() {
+                return tag;
+            }
+        }
+
+        /** persist the marks for the buffer */
+        static void persist(Buffer buf)
+        {
+            LOG.fine("persist " + buf.getFile().getAbsolutePath());
+            try {
+                String name = buf.getFile().getAbsolutePath();
+                BufferMarks bm;
+                hasMarks: {
+                    for(char c = 'a'; c <= 'z'; c++) {
+                        if(buf.getMark(c).isValid())
+                            break hasMarks;
+                    }
+                    // no marks to persist
+                    bm = all.get(name);
+                    if(bm != null) {
+                        Preferences bufData = prefs.node(bm.getBufTag());
+                        bufData.removeNode();
+                    }
+                    return;
+                } // hasMarks
+                bm = all.get(name);
+                if(bm == null) {
+                    String bt = createBufTag();
+                    bm = new BufferMarks(bt, name);
+                    all.put(name, bm);
+                }
+                // make this buf the most recently used
+                next.remove(name);
+                next.add(0, name);
+                prev.remove(name); // shouldn't be in prev list anymore
+                writeBufferMarks(bm, buf);
+            } catch(BackingStoreException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+
+        /** put the previously saved marks into the buffer */
+        static void restore(Buffer buf)
+        {
+            try {
+                String name = buf.getFile().getAbsolutePath();
+                BufferMarks bm = all.get(name);
+                LOG.fine("restore " + (bm == null ? "NOT " : "")
+                        + buf.getFile().getAbsolutePath());
+                if (bm == null) {
+                    return;
+                }
+                Preferences bufData = prefs.node(bm.getBufTag());
+                String[] marks = bufData.childrenNames();
+                for (int j = 0; j < marks.length; j++) {
+                    String mName = marks[j];
+                    MarkInfo mi = readMark(bufData.node(mName));
+                    if (mi == null) {
+                        LOG.warning(String.format("restore: "
+                                + "bad mark: %s, name: %s", mName, name));
+                        continue;
+                    }
+                    char c = mName.charAt(0);
+                    if (!Util.islower(c)) {
+                        continue;
+                    }
+                    // NEEDSWORK: use line/col for persisted marks?
+                    ViFPOS fpos = buf.createFPOS(mi.offset);
+                    buf.getMark(c).setMark(fpos);
+                }
+            } catch (BackingStoreException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+
+        /** read all the buffer mark stuff */
+        static void read_viminfo()
+        {
+            if(prev.size() > 0)
+                return; // only do it once
+            // If all is correct, then the indexes for the bm are in the
+            // range 1-n. If not then MRU info is lost.
+            // Simply toss out any bufs that cause issues.
+            try {
+                String[] bufTags = prefs.childrenNames(); // existing bufs
+                Set<String> names = new HashSet<String>();
+                // following holds bufs in MRU order
+                BufferMarks[] bms = new BufferMarks[bufTags.length];
+                for (int i = 0; i < bufTags.length; i++) {
+                    String bt = bufTags[i];
+                    if(!bt.startsWith(BUF)) {
+                        LOG.warning("read_viminfo: "
+                                + "invalid buffer tag '" + bt + "'");
+                        cleanup.add(bt);
+                        continue;
+                    }
+                    Preferences bufData = prefs.node(bt);
+                    String name = bufData.get(FNAME, null);
+                    int index = bufData.getInt(INDEX, -1);
+
+                    if(name == null || !names.add(name)) {
+                        // duplicate, get rid of it
+                        bufData.removeNode();
+                        LOG.warning("read_viminfo: "
+                                + "ignoring duplicate '" + name + "'");
+                        cleanup.add(bt);
+                        continue;
+                    }
+                    if(index <= 0) {
+                        LOG.warning(String.format(
+                                "read_viminfo: "
+                                + "bad index: %d, name: %s", index, name));
+                        cleanup.add(bt);
+                        continue;
+                    }
+                    if(bms[index-1] != null) {
+                        LOG.warning(String.format(
+                                "read_viminfo: "
+                                + "duplicate index: %d, name: %s", index, name));
+                        cleanup.add(bt);
+                        continue;
+                    }
+                    BufferMarks bm = new BufferMarks(bt, name, index);
+                    bms[index-1] = bm;
+                    all.put(name, bm);
+                }
+                // create the prev list, note that the bms list may have holes
+                for (int i = 0; i < bms.length; i++) {
+                    BufferMarks bm = bms[i];
+                    if(bm == null)
+                        continue;
+                    prev.add(bm.getName());
+                }
+            } catch (BackingStoreException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+
+        /**
+         * Update all the indexes for any buffers that have been persisted.
+         * First persist buffers that are still be open.
+         */
+        static void write_viminfo()
+        {
+            try {
+                for (Buffer buf : ViManager.getViFactory().getBufferSet()) {
+                    LOG.fine("write_viminfo persist "
+                            + buf.getFile().getAbsolutePath());
+                    persist(buf);
+                }
+                int max = G.viminfoMaxBuf.value;
+                int index = 1;
+                // first handle all buffers that were open this session.
+                LOG.fine("write_viminfo next count " + next.size());
+                for (String name : next) {
+                    writeIndex(name, index);
+                    index++;
+                }
+                // now put out buffers from previous sessions
+                LOG.fine("write_viminfo prev count " + prev.size());
+                for (String name : prev) {
+                    // 2nd arg of 0 will cause removal
+                    writeIndex(name, index <= max ? index : 0);
+                    index++;
+                }
+                for (String x : cleanup) {
+                    Preferences p = prefs.node(x);
+                    p.removeNode();
+                    LOG.fine("cleanup " + x);
+                }
+
+                prefs.flush();
+            } catch(BackingStoreException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+
+        // NOTE: index <= 0 means remove the associated data.
+        private static void writeIndex(String name, int index)
+                throws BackingStoreException
+        {
+                LOG.fine("write next " + name + " index " + index);
+                BufferMarks bm = all.get(name);
+                if(bm == null) {
+                    LOG.warning(String.format(
+                            "writeIndex: "
+                            + "prev name: %s but no Buffermarks", index, name));
+                } else {
+                    Preferences bufData = prefs.node(bm.getBufTag());
+                    if(index > 0) {
+                        bufData.putInt(INDEX, index);
+                    } else {
+                        bufData.removeNode();
+                    }
+                }
+        }
+
+        private static MarkInfo readMark(Preferences p)
+        {
+            int o, l, c;
+            o = p.getInt(OFFSET, -1);
+            l = p.getInt(LINE, -1);
+            c = p.getInt(COL, -1);
+            if(o < 0 || l < 0 || c < 0)
+                return null;
+
+            return new MarkInfo(o, l, c);
+        }
+
+        private static void writeMark(Preferences p, ViMark m) {
+            if(!m.isValid())
+                return;
+            p.putInt(OFFSET, m.getOffset());
+            p.putInt(LINE, m.getLine());
+            p.putInt(COL, m.getColumn());
+        }
+
+        private static void writeBufferMarks(BufferMarks bm, Buffer buf)
+                throws BackingStoreException
+        {
+            String bt = bm.getBufTag();
+            // clear out any existing node
+            if(prefs.nodeExists(bt))
+                prefs.node(bt).removeNode();
+            Preferences bufData = prefs.node(bt);
+            bufData.put(FNAME, bm.getName());
+            bufData.putInt(INDEX, bm.getIndex());
+            for(char c = 'a'; c <= 'z'; c++) {
+                ViMark m = buf.getMark(c);
+                writeMark(bufData.node(String.valueOf(c)), m);
+            }
+        }
+
+        /** Create a buf name that does not currently exist. */
+        private static String createBufTag() {
+
+            // So I guess 400 is the max persistable files
+            // assuming tryId does not repeat (which is not the case)
+            for(int i = 0; i < 400; i++) {
+                int tryId = random.nextInt(1000000);
+                String tag = BUF + tryId;
+                try {
+                    if (!prefs.nodeExists(tag)) {
+                        return tag;
+                    }
+                } catch (BackingStoreException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                    break;
+                }
+            }
+
+            return null;
+        }
     }
 
 }

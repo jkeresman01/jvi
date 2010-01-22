@@ -2501,6 +2501,9 @@ static void registerBuiltinCommands()
 
     register("!", "!", ACTION_bang);
 
+    register("marks", "marks", MarkOps.ACTION_do_marks);
+    register("delm", "delmarks", MarkOps.ACTION_ex_delmarks);
+
 } // end registerBuiltinCommands
 
 

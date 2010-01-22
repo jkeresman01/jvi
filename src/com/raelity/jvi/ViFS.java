@@ -82,7 +82,7 @@ public interface ViFS
      * @param force If a '!' was used with the command, then force is true.
      * @param fName file name to edit, null if no name given
      */
-    public void edit( ViTextView tv, boolean force, String fName );
+    public abstract void edit( ViTextView tv, boolean force, Object fileThing);
 
 
 } // end com.raelity.jvi.ViFS

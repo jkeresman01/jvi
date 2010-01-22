@@ -382,6 +382,14 @@ public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsContro
         return ViManager.getReleaseString();
     }
 
+    public void setViPersistedBufMarks(int arg)  throws PropertyVetoException {
+        put(Options.persistedBufMarks, arg);
+    }
+
+    public int getViPersistedBufMarks() {
+	    return getint(Options.persistedBufMarks);
+    }
+
     public void setViPlatformTab(boolean arg)  throws PropertyVetoException {
         put(Options.platformTab, arg);
     }

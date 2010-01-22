@@ -24,7 +24,6 @@ import  static com.raelity.jvi.KeyDefs.*;
 import  com.raelity.jvi.*;
 import  com.raelity.jvi.ViTextView.TAGOP;
 
-import  javax.swing.JComponent;
 import  javax.swing.Action;
 import  javax.swing.JDialog;
 import  javax.swing.JEditorPane;
@@ -111,7 +110,7 @@ public class DefaultViFactory implements ViFactory
         return true;
     }
 
-    public ViTextView getTextView(JEditorPane editorPane)
+    public final ViTextView getTextView(JEditorPane editorPane)
     {
         return (ViTextView)editorPane.getClientProperty(PROP_VITV);
     }
@@ -124,7 +123,7 @@ public class DefaultViFactory implements ViFactory
         return -9;
     }
 
-    public ViTextView createTextView(JEditorPane editorPane)
+    public final ViTextView createTextView(JEditorPane editorPane)
     {
         ViTextView tv01 = (ViTextView)editorPane.getClientProperty(PROP_VITV);
         if ( tv01 == null ) {
@@ -149,7 +148,7 @@ public class DefaultViFactory implements ViFactory
     }
 
 
-    public Set<ViTextView> getViTextViewSet()
+    public final Set<ViTextView> getViTextViewSet()
     {
         Set<ViTextView> s = new HashSet<ViTextView>();
         for (JEditorPane ep : editorSet.keySet()) {
@@ -166,10 +165,10 @@ public class DefaultViFactory implements ViFactory
     }
 
 
-    public boolean isVisible( ViTextView tv )
+    public boolean isShowing( ViTextView tv ) // NEEDSWORK: tv.isShowing
     {
         // wonder if this works
-        return tv.getEditorComponent().isVisible();
+        return tv.getEditorComponent().isShowing();
     }
 
 
@@ -183,7 +182,7 @@ public class DefaultViFactory implements ViFactory
     }
 
 
-    public Set<Buffer> getBufferSet()
+    public Set<Buffer> getBufferSet() // NEEDSWORK: collection, list MRU?
     {
         Set<Buffer> s = new HashSet<Buffer>();
         for (Document doc : docSet.keySet()) {
@@ -567,6 +566,11 @@ public class DefaultViFactory implements ViFactory
             }
         }
 
+        @Override
+        public String toString() {
+            return "jVi[DKTA]";
+        }
+
     } // end inner class EnqueCharAction
 
 
@@ -598,6 +602,11 @@ public class DefaultViFactory implements ViFactory
                         + "(" + ((int)key&~VIRT) + ") " + mod + " " + virt);
             }
             ViManager.keyStroke(target, key, mod);
+        }
+
+        @Override
+        public String toString() {
+            return getValue(Action.NAME).toString();
         }
     }
 

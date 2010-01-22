@@ -66,7 +66,7 @@ public interface ViFactory
     public Set<ViTextView> getViTextViewSet();
 
     /** @return true if the argument ViTextView is visible */
-    public boolean isVisible(ViTextView tv);
+    public boolean isShowing(ViTextView tv);
 
     /** @return Set of active Buffer, some may have retired */
     public Set<Buffer> getBufferSet();

@@ -406,11 +406,11 @@ public class TextView extends Window
             // works as well, set position just before new line of first line
             if(!Edit.canEdit(this, getBuffer(), 0))
                 return false;
-            setCaretPosition(0);
+            w_cursor.set(0);
             insertNewLine();
 
             MySegment seg = getBuffer().getLineSegment(1);
-            setCaretPosition(0 + Misc.coladvanceColumnIndex(MAXCOL, seg));
+            w_cursor.set(0 + Misc.coladvanceColumnIndex(MAXCOL, seg));
             return true;
         }
 
@@ -432,7 +432,7 @@ public class TextView extends Window
         offset--;
         if(!Edit.canEdit(this, getBuffer(), 0))
             return false;
-        setCaretPosition(offset);
+        w_cursor.set(offset);
         insertNewLine();
         return true;
     }
@@ -842,6 +842,11 @@ public class TextView extends Window
 
     private class WCursor extends ViFPOS.abstractFPOS
     {
+
+        public boolean isValid() {
+            return true;
+        }
+
         final public int getLine()
         {
             return getBuffer().getElemCache(getOffset()).line;

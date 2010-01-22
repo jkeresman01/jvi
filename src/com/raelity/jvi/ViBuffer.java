@@ -168,5 +168,5 @@ public interface ViBuffer {
      * This method provides a file only so that the path can be examined.
      * @return null or the path for this file
      */
-    public File getJavaFile();
+    public File getFile();
 }

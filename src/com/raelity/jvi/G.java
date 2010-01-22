@@ -161,6 +161,9 @@ public class G
     static BooleanOption dbgMouse;
     static BooleanOption pcmarkTrack; // track NB caret motions for pcmark
 
+    static IntegerOption viminfoMaxBuf;
+    //static int viminfoMaxPersistedBuffersWithMarks = 25;
+
     public static boolean debugPrint = false;
     public static boolean debugOpPrint = false;
     public static boolean switchDebug = false;

@@ -1746,6 +1746,9 @@ one_char: {
     if (G.restart_edit == 0 /*&& (colnr_t)temp == curwin->w_cursor.col*/) {
       G.curwin.w_set_curswant = true;
     }
+
+    //if (!cmdmod.keepjumps)
+        G.curbuf.b_last_insert.setMark(G.curwin.w_cursor);
     
     //
     // The cursor should end up on the last inserted character.
@@ -2670,6 +2673,10 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
 
     public int compareTo(ViFPOS o) {
       return mark.compareTo(o);
+    }
+
+    public boolean isValid() {
+      return mark.isValid();
     }
 
     public void verify(Buffer buf) {

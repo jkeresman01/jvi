@@ -47,6 +47,8 @@ import java.net.URI;
 import java.net.URL;
 
 import com.raelity.jvi.swing.KeyBinding;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.lang.ref.WeakReference;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -98,7 +100,13 @@ import java.util.prefs.Preferences;
  */
 public class ViManager
 {
-  private static Logger LOG = Logger.getLogger(ViManager.class.getName());
+    private static Logger LOG = Logger.getLogger(ViManager.class.getName());
+
+    //
+    // 1.0.0.beta2 is NB vers 0.9.6.4
+    // 1.0.0.beta3 is NB vers 0.9.7.5
+    //
+    public static final jViVersion version = new jViVersion("1.2.7.x15");
     
     public static final String PREFS_ROOT = "com/raelity/jvi";
     public static final String PREFS_KEYS = "KeyBindings";
@@ -139,17 +147,55 @@ public class ViManager
     }
     public static boolean getHackFlag(Object key) {
         Boolean b = (Boolean) hackMap.get(key);
-        return b == null || !b ? false : true;
+        //return b == null || !b ? false : true;
+        // null is treated as true !?
+        return b == null || b;
+    }
+
+    private ViManager() {}
+    private static ViManager viMan;
+    /**
+     * jVi is initialized and ready to go. old/new are null */
+    public static final String P_BOOT = "jViBoot";
+    /**
+     * jVi is closing up shop for the day. old/new are null */
+    public static final String P_SHUTDOWN = "jViShutdown";
+    /**
+     * A new Buffer to work with.
+     * new/old are Buffer, old may be null (first window) */
+    public static final String P_OPEN_BUF = "jViOpenBuf";
+    /**
+     * closing a Buffer. old is Buffer, new is null */
+    public static final String P_CLOSE_BUF = "jViCloseBuf";
+    /**
+     * A new window/editor pane to work with.
+     * new/old are ViTextView, old may be null (first window) */
+    public static final String P_OPEN_WIN = "jViOpenWin";
+    /**
+     * closing a TextView. old is ViTextView, new is null */
+    public static final String P_CLOSE_WIN = "jViCloseWin";
+    /**
+     * about to switch away from "old", new is null. */
+    public static final String P_SWITCH_FROM_WIN = "jViSwitchingWin";
+    /**
+     * change the current TextView. new/old are TextView. This event happens
+     * after the switch, so the old tv is not really usable.
+     * This property is the last to change when related P_OPEN_WIN, P_CLOSE_WIN */
+    public static final String P_SWITCH_TO_WIN = "jViSwitchWin";
+
+    // NEEDSWRK: is a property needed for switch_from, to pick up active tv?
+    // NEEDSWORK: property for AppWindow open/close?
+
+    private static PropertyChangeSupport pcs
+            = new PropertyChangeSupport(getViMan());
+    static ViManager getViMan() {
+        if(viMan == null)
+            viMan = new ViManager();
+        return viMan;
     }
 
     // HACK: to workaround JDK bug dealing with focus and JWindows
     private static ViCmdEntry activeCommandEntry;
-
-    //
-    // 1.0.0.beta2 is NB vers 0.9.6.4
-    // 1.0.0.beta3 is NB vers 0.9.7.5
-    //
-    public static final jViVersion version = new jViVersion("1.2.7.x13");
 
     private static boolean enabled;
 
@@ -166,7 +212,11 @@ public class ViManager
 
         Options.init();
         KeyBinding.init();
-        Misc.read_viminfo_registers();
+        MarkOps.init();
+        Misc.init();
+
+
+        firePropertyChange(P_BOOT, null, null);
 
         // Add the vim clipboards
 
@@ -175,7 +225,7 @@ public class ViManager
 
         getViFactory().setShutdownHook(new Runnable() {
             public void run() {
-                Misc.write_viminfo_registers();
+                firePropertyChange(P_SHUTDOWN, null, null);
             }
         });
     }
@@ -421,7 +471,7 @@ public class ViManager
     {
         Set<ViTextView> s = factory.getViTextViewSet();
         for (ViTextView tv : s) {
-            if(factory.isVisible(tv)) {
+            if(factory.isShowing(tv)) {
                 tv.updateHighlightSearchState();
             }
         }
@@ -685,6 +735,14 @@ public class ViManager
                     + (ep == null ? "(no shutdown) " : "") + fname);
         }
 
+        ViTextView tv = getViFactory().getTextView(ep);
+        if(tv != null) {
+            firePropertyChange(P_CLOSE_WIN, tv, null);
+        }
+
+        if(tv.getBuffer().singleShare())
+            firePropertyChange(P_CLOSE_BUF, tv.getBuffer(), null);
+
         assert(factory != null);
         if(factory != null && ep != null && enabled) {
             factory.shutdown(ep);
@@ -785,18 +843,26 @@ public class ViManager
         exitInputMode(); // if switching, make sure prev out of input mode
         draggingBlockMode = false;
 
+        ViTextView currentTv = null;
+        if(currentEditorPane != null) {
+            currentTv = getViTextView(currentEditorPane);
+            firePropertyChange(P_SWITCH_FROM_WIN, currentTv, null);
+        }
+
+        boolean newTextView = factory.getTextView(editorPane) == null;
         ViTextView textView = getViTextView(editorPane);
         Buffer buf = textView.getBuffer();
         factory.registerEditorPane(editorPane); // make sure has the right caret
         textView.attach();
         if(G.dbgEditorActivation.getBoolean()) {
-            System.err.println("Activation: ViManager.SWITCHTO: "
+            String newStr = newTextView ? "NEW: " : "";
+            System.err.println("Activation: ViManager.SWITCHTO: " + newStr
                     + cid(editorPane) + " " + buf.getDisplayFileName());
         }
 
         if(currentEditorPane != null) {
             Normal.abortVisualMode();
-            ViTextView currentTv = getViTextView(currentEditorPane);
+            // MOVED ABOVE: currentTv = getViTextView(currentEditorPane);
             // Freeze and/or detach listeners from previous active view
             currentTv.detach();
         }
@@ -806,6 +872,12 @@ public class ViManager
         Normal.resetCommand(); // Means something first time window switched to
         buf.activateOptions(textView);
         textView.activateOptions(textView);
+        if(newTextView)
+            firePropertyChange(P_OPEN_WIN, currentTv, textView);
+        if(textView.getBuffer().singleShare())
+            firePropertyChange(P_OPEN_BUF, currentTv == null ? null : currentTv.getBuffer(),
+                    textView.getBuffer());
+        firePropertyChange(P_SWITCH_TO_WIN, currentTv, textView);
     }
 
     public static ViTextView getCurrentTextView()
@@ -1522,6 +1594,41 @@ public class ViManager
             }
         }
     }
+
+      //
+      // Look like a good bean
+      // But they're static!
+      //
+
+      public static void addPropertyChangeListener(
+              PropertyChangeListener listener )
+      {
+        pcs.addPropertyChangeListener( listener );
+      }
+
+      public static void removePropertyChangeListener(
+              PropertyChangeListener listener )
+      {
+        pcs.removePropertyChangeListener( listener );
+      }
+
+      public static void addPropertyChangeListener(String p,
+                                                   PropertyChangeListener l)
+      {
+        pcs.addPropertyChangeListener(p, l);
+      }
+
+      public static void removePropertyChangeListener(String p,
+                                                      PropertyChangeListener l)
+      {
+        pcs.removePropertyChangeListener(p, l);
+      }
+
+      /** This should only be used from Option and its subclasses */
+      private static void firePropertyChange(
+              String name, Object oldValue, Object newValue) {
+        pcs.firePropertyChange(name, oldValue, newValue);
+      }
 
     /**
     * Copy preferences tree.

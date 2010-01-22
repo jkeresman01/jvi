@@ -30,6 +30,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,6 +44,7 @@ import javax.swing.KeyStroke;
 import static com.raelity.jvi.Constants.*;
 import static com.raelity.jvi.KeyDefs.*;
 import com.raelity.text.TextUtil.MySegment;
+import java.beans.PropertyChangeListener;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -59,6 +61,21 @@ public class Misc implements ClipboardOwner {
   //
   // "misc1.c"
   //
+
+  static void init() {
+    PropertyChangeListener pcl = new PropertyChangeListener() {
+      public void propertyChange(PropertyChangeEvent evt) {
+        String pname = evt.getPropertyName();
+        if(pname.equals(ViManager.P_BOOT)) {
+          read_viminfo_registers();
+        } else if(pname.equals(ViManager.P_SHUTDOWN)) {
+          write_viminfo_registers();
+        }
+      }
+    };
+    ViManager.addPropertyChangeListener(ViManager.P_BOOT, pcl);
+    ViManager.addPropertyChangeListener(ViManager.P_SHUTDOWN, pcl);
+  }
 
   /**
    * count the size of the indent in the current line
@@ -1234,25 +1251,35 @@ public class Misc implements ClipboardOwner {
       return null;
   }
 
-  static void read_viminfo_registers() {
-    Preferences prefs = ViManager.getViFactory()
+  private static final String DATA = "data";
+  private static final String TYPE = "type";
+
+  private static void read_viminfo_registers() {
+    Preferences prefsRegs = ViManager.getViFactory()
             .getPreferences().node(PREF_REGISTERS);
     for(int i = 0; i < y_regs.length; i++) {
-      String regname = getPersistableYankreg(i);
-      String regval = prefs.get(regname, null);
-      if(regval != null) {
-        int type = prefs.getInt(regname + "-type", MCHAR);
-        get_yank_register(regname.charAt(0), false);
-        Yankreg reg = y_current;
-        reg.setData(regval, type);
-        //System.err.println("REGVAL: " + regname +": '" + regval + "'");
-        //System.err.println("\t" + type);
+      try {
+        String regname = getPersistableYankreg(i);
+        if (prefsRegs.nodeExists(regname)) {
+          Preferences prefs = prefsRegs.node(regname);
+          String regval = prefs.get(DATA, null);
+          if (regval != null) {
+            int type = prefs.getInt(TYPE, MCHAR);
+            get_yank_register(regname.charAt(0), false);
+            Yankreg reg = y_current;
+            reg.setData(regval, type);
+            //System.err.println("\t" + type);
+            //System.err.println("\t" + type);
+          }
+        }
+      } catch (BackingStoreException ex) {
+        //Logger.getLogger(Misc.class.getName()).log(Level.SEVERE, null, ex);
       }
     }
   }
 
-  static void write_viminfo_registers() {
-    Preferences prefs = ViManager.getViFactory()
+  private static void write_viminfo_registers() {
+    Preferences prefsRegs = ViManager.getViFactory()
             .getPreferences().node(PREF_REGISTERS);
     for(int i = 0; i < y_regs.length; i++) {
       String regname = getPersistableYankreg(i);
@@ -1263,18 +1290,20 @@ public class Misc implements ClipboardOwner {
       if(reg != null) {
         regval = reg.getAll();
       }
-      if(regval == null || regval.length() == 0 || regval.length() > 1024) {
-        prefs.remove(regname);
-        prefs.remove(regname + "-type");
-      } else {
-        prefs.put(regname, regval);
-        prefs.putInt(regname + "-type", reg.y_type);
+      try {
+        if(regval == null || regval.length() == 0 || regval.length() > 1024) {
+            if (prefsRegs.nodeExists(regname)) {
+              prefsRegs.node(regname).removeNode();
+            }
+        } else {
+          Preferences prefs = prefsRegs.node(regname);
+          prefs.put(DATA, regval);
+          prefs.putInt(TYPE, reg.y_type);
+        }
+        prefsRegs.flush();
+      } catch (BackingStoreException ex) {
+        //Logger.getLogger(Misc.class.getName()).log(Level.SEVERE, null, ex);
       }
-    }
-    try {
-      prefs.flush();
-    } catch (BackingStoreException ex) {
-      //Logger.getLogger(Misc.class.getName()).log(Level.SEVERE, null, ex);
     }
   }
 

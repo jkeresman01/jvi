@@ -34,6 +34,8 @@ package com.raelity.jvi;
  */
 public interface ViFPOS extends Comparable<ViFPOS>
 {
+    public boolean isValid();
+
     public int getLine();
 
     public int getColumn();

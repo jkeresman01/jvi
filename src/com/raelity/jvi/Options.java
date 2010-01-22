@@ -152,6 +152,8 @@ public final class Options {
   public static final String shellCmdFlag = "viShellCmdFlag";
   public static final String shellXQuote = "viShellXQuote";
   public static final String shellSlash = "viShellSlash";
+
+  public static final String persistedBufMarks = "viPersistedBufMarks";
   
   public static final String readOnlyHack = "viReadOnlyHack";
   public static final String classicUndoOption = "viClassicUndo";
@@ -347,6 +349,23 @@ public final class Options {
     setupOptionDesc(generalList, notStartOfLine, "(not)'startofline' (not)'sol'",
                "After motion try to keep column position."
             + " NOTE: state is opposite of vim.");
+
+    G.viminfoMaxBuf = createIntegerOption(
+            persistedBufMarks, 25, new IntegerOption.Validator() {
+              @Override
+              public void validate(int val) throws PropertyVetoException {
+                  if(val < 0 || val > 100) {
+		     throw new PropertyVetoException(
+		         "Only 0 - 100 allowed."
+                         + " Not '" + val + "'.",
+                       new PropertyChangeEvent(opt, opt.getName(),
+                                               opt.getInteger(), val));
+                  }
+              }
+            });
+    setupOptionDesc(generalList, persistedBufMarks, "max persisted buf-marks",
+            "Maximum number of previously edited files for which the marks"
+	  + " are remembered. Set to 0 and no marks are persisted.");
 
     G.p_sel = createStringOption(selection, "inclusive",
             new StringOption.Validator() {

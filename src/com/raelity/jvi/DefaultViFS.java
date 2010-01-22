@@ -95,9 +95,9 @@ public class DefaultViFS implements ViFS
     }
 
 
-    public void edit( ViTextView tv, boolean force, String fName )
+    public void edit( ViTextView tv, boolean force, Object fileThing )
     {
-        Msg.emsg("edit(tv, int{" + fName + "}, force) not implemented");
+        Msg.emsg("edit(tv, int{" + fileThing + "}, force) not implemented");
     }
 
 

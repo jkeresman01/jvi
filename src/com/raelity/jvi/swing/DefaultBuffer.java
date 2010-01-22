@@ -419,10 +419,16 @@ public class DefaultBuffer extends Buffer {
         }
         
         final void checkMarkUsable() {
+            // same as isValid
             if(pos == null) throw new MarkException("Uninitialized Mark");
             if(getDoc() == null) {
                 throw new MarkOrphanException("Mark Document null");
             }
+        }
+
+        final public boolean isValid() {
+            // same as checkMarkUsable
+            return pos != null && getDoc() != null;
         }
         
         final public int compareTo(ViFPOS p) {
