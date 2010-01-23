@@ -92,7 +92,7 @@ class MarkOps
         ViManager.addPropertyChangeListener(ViManager.P_OPEN_BUF, pcl);
         ViManager.addPropertyChangeListener(ViManager.P_CLOSE_BUF, pcl);
 
-        if(System.getProperty("jVi_DEBUG") != null)
+        if(ViManager.isDebugAtHome())
             LOG.setLevel(Level.FINE);
     }
 
@@ -793,6 +793,8 @@ class MarkOps
         /** persist the marks for the buffer */
         static void persist(Buffer buf)
         {
+            if(buf.getFile() == null)
+                return;
             LOG.fine("persist " + buf.getFile().getAbsolutePath());
             try {
                 String name = buf.getFile().getAbsolutePath();
@@ -829,6 +831,8 @@ class MarkOps
         /** put the previously saved marks into the buffer */
         static void restore(Buffer buf)
         {
+            if(buf.getFile() == null)
+                return;
             try {
                 String name = buf.getFile().getAbsolutePath();
                 BufferMarks bm = all.get(name);
@@ -930,9 +934,8 @@ class MarkOps
         static void write_viminfo()
         {
             try {
+                LOG.fine("write_viminfo entry");
                 for (Buffer buf : ViManager.getViFactory().getBufferSet()) {
-                    LOG.fine("write_viminfo persist "
-                            + buf.getFile().getAbsolutePath());
                     persist(buf);
                 }
                 int max = G.viminfoMaxBuf.value;

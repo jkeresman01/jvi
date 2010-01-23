@@ -106,7 +106,9 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.7.x15");
+    public static final jViVersion version = new jViVersion("1.2.7.x17");
+
+    public static final String DEBUG_AT_HOME = "com.raelity.jvi.DEBUG";
     
     public static final String PREFS_ROOT = "com/raelity/jvi";
     public static final String PREFS_KEYS = "KeyBindings";
@@ -150,6 +152,13 @@ public class ViManager
         //return b == null || !b ? false : true;
         // null is treated as true !?
         return b == null || b;
+    }
+
+    public static boolean isDebugAtHome() {
+        boolean f = false;
+        if(System.getProperty(DEBUG_AT_HOME) != null)
+            f = true;
+        return f;
     }
 
     private ViManager() {}
@@ -738,10 +747,9 @@ public class ViManager
         ViTextView tv = getViFactory().getTextView(ep);
         if(tv != null) {
             firePropertyChange(P_CLOSE_WIN, tv, null);
+            if(tv.getBuffer().singleShare())
+                firePropertyChange(P_CLOSE_BUF, tv.getBuffer(), null);
         }
-
-        if(tv.getBuffer().singleShare())
-            firePropertyChange(P_CLOSE_BUF, tv.getBuffer(), null);
 
         assert(factory != null);
         if(factory != null && ep != null && enabled) {
