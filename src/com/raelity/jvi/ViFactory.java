@@ -37,6 +37,14 @@ public interface ViFactory
 {
     public Class loadClass(String name) throws ClassNotFoundException;
 
+    /** jVi can be disabled. This means that its keymap and cursor should
+     * not be installed, which is mostly platform dependent.
+     *
+     * In addition, there are some listeners attached and they can check
+     * this to see if there is anything for them to do.
+     */
+    public boolean isEnabled();
+
     /** Return a TextView, create one if it doesn't already exist */
     public ViTextView createTextView(JEditorPane editorPane);
 
@@ -80,10 +88,10 @@ public interface ViFactory
     public void shutdown(JEditorPane editorPane);
 
   /*
-   * Register editor pane for use with vi.
-   * This is a nop if already registered.
+   * Setup editor pane caret for use with vi.
+   * This is a nop if already handled.
    */
-    public void registerEditorPane(JEditorPane editorPane);
+    public void setupCaret(JEditorPane editorPane);
 
     /**
      * File manipulation handled through this object.

@@ -102,6 +102,8 @@ public class TextView extends Window
 
         cursorSaveListener = new CaretListener() {
             public void caretUpdate(CaretEvent ce) {
+                if(!ViManager.getViFactory().isEnabled())
+                    return;
                 cursorMoveDetected(lastDot, ce.getDot(), ce.getMark());
                 lastDot = ce.getDot();
             }

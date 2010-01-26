@@ -55,7 +55,7 @@ class MarkOps
     private static Logger LOG = Logger.getLogger(MarkOps.class.getName());
 
     private static final String PREF_MARKS = "marks";
-    private static final String PREF_FILEMARKS = PREF_MARKS + "/" + "filemarks";
+    private static final String PREF_FILEMARKS = "filemarks";
 
     private static Filemark namedfm[] = new Filemark[26];
 
@@ -307,7 +307,8 @@ class MarkOps
         } else if(Util.isupper(c) /* || Util.isdigit(c) */) { // named file mark
             Filemark fm = namedfm[c - 'A'];
             if(fm != null) {
-                if(changefile || G.curbuf.getFile().equals(fm.getFile()))
+                File f = G.curbuf.getFile();
+                if(changefile || f != null && f.equals(fm.getFile()))
                     // set force to true so non exist files are opened (as vim)
                     ViManager.getViFactory().getFS().edit(G.curwin, true, fm);
                 else
@@ -662,7 +663,8 @@ class MarkOps
     private static void openWin(ViTextView tv) {
         File f = tv.getBuffer().getFile();
 
-        // create a real mark for the file (if there was a file mark
+        // Check if any filemarks match the file and/or window being opened.
+        // Create a real mark for the file.
         for (int i = 0; i < namedfm.length; i++) {
             Filemark fm = namedfm[i];
             if(fm != null)

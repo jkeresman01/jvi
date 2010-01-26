@@ -674,13 +674,15 @@ public class DefaultBuffer extends Buffer {
                 return;
             String s = "";
 
-            // magic redo tracking
-            // things can get wierd in there...
-            try {
-                s = getDoc().getText(e.getOffset(), e.getLength());
-                docInsert(e.getOffset(), s);
-            } catch (Exception ex) {
-                LOG.log(Level.SEVERE, null, ex);
+            if(ViManager.getViFactory().isEnabled()) {
+                // magic redo tracking
+                // things can get wierd in there...
+                try {
+                    s = getDoc().getText(e.getOffset(), e.getLength());
+                    docInsert(e.getOffset(), s);
+                } catch (Exception ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
             }
         }
         
@@ -697,12 +699,14 @@ public class DefaultBuffer extends Buffer {
             if(!isInsertMode())
                 return;
 
-            // magic redo tracking
-            // things can get wierd in there...
-            try {
-                docRemove(e.getOffset(), e.getLength(), getRemovedText(e));
-            } catch (Exception ex) {
-                LOG.log(Level.SEVERE, null, ex);
+            if(ViManager.getViFactory().isEnabled()) {
+                // magic redo tracking
+                // things can get wierd in there...
+                try {
+                    docRemove(e.getOffset(), e.getLength(), getRemovedText(e));
+                } catch (Exception ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
             }
         }
     }

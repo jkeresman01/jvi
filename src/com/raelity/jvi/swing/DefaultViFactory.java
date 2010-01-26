@@ -97,6 +97,9 @@ public class DefaultViFactory implements ViFactory
         // FlavorMap fm = SystemFlavorMap.getDefaultFlavorMap();
     }
 
+    public boolean isEnabled() {
+        return true;
+    }
 
     public Class loadClass( String name ) throws ClassNotFoundException
     {
@@ -167,7 +170,6 @@ public class DefaultViFactory implements ViFactory
 
     public boolean isShowing( ViTextView tv ) // NEEDSWORK: tv.isShowing
     {
-        // wonder if this works
         return tv.getEditorComponent().isShowing();
     }
 
@@ -413,7 +415,7 @@ public class DefaultViFactory implements ViFactory
      * vi cursor. This is a nop
      * if already registered.
      */
-    public void registerEditorPane( JEditorPane editorPane )
+    public void setupCaret( JEditorPane editorPane )
     {
         // install cursor if neeeded
         Caret c = editorPane.getCaret();

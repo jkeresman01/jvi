@@ -73,9 +73,10 @@ public class Filemark implements ViMark {
         return isValidFilemark() ? wnum : 0;
     }
 
-    /** set the mark */
+    /** If this filemark corresponds to file and the mark is not hooked
+     * into the file then create a real mark */
     void startup(File f, ViTextView tv) {
-        if(!isValidFilemark() && f.equals(this.f)) {
+        if(!isValidFilemark() && this.f.equals(f)) {
             mark = tv.getBuffer().createMark();
             mark.setMark(tv.getBuffer().createFPOS(offset));
             initStuff(tv);

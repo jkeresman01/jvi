@@ -106,9 +106,9 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.7.x17");
+    public static final jViVersion version = new jViVersion("1.2.7.x20");
 
-    public static final String DEBUG_AT_HOME = "com.raelity.jvi.DEBUG";
+    private static final String DEBUG_AT_HOME = "com.raelity.jvi.DEBUG";
     
     public static final String PREFS_ROOT = "com/raelity/jvi";
     public static final String PREFS_KEYS = "KeyBindings";
@@ -698,7 +698,7 @@ public class ViManager
                     );
         }
         if(ep != null && enabled)
-            factory.registerEditorPane(ep);
+            factory.setupCaret(ep);
         if(appHandle == null)
             return;
 
@@ -860,7 +860,7 @@ public class ViManager
         boolean newTextView = factory.getTextView(editorPane) == null;
         ViTextView textView = getViTextView(editorPane);
         Buffer buf = textView.getBuffer();
-        factory.registerEditorPane(editorPane); // make sure has the right caret
+        factory.setupCaret(editorPane); // make sure has the right caret
         textView.attach();
         if(G.dbgEditorActivation.getBoolean()) {
             String newStr = newTextView ? "NEW: " : "";
