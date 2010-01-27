@@ -106,7 +106,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.7.x20");
+    public static final jViVersion version = new jViVersion("1.2.7.x21");
 
     private static final String DEBUG_AT_HOME = "com.raelity.jvi.DEBUG";
     

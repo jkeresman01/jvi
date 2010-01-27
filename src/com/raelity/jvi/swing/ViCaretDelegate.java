@@ -48,14 +48,14 @@ public class ViCaretDelegate
 
     public void setCursor(ViCursor cursor)
     {
-        if (cursor == null || cursor.equals(this.cursor)) {
+        if (cursor == null) {
             return;
         }
         this.cursor = cursor;
-        // caret only has one value, compromise on blink rate
+
+        // java's caret only has one value, compromise on blink rate
         // NEEDSWORK: keep existing until this is user programable
         //caret.setBlinkRate((cursor.getBlinkon() + cursor.getBlinkoff()) / 2);
-        caret.setVisible(true);
     }
 
     public ViCursor getCursor()
