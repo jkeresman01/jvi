@@ -367,48 +367,49 @@ public final class Options {
             "Maximum number of previously edited files for which the marks"
 	  + " are remembered. Set to 0 and no marks are persisted.");
 
-    G.p_sel = createStringOption(selection, "inclusive",
-            new StringOption.Validator() {
-            @Override
-              public void validate(String val) throws PropertyVetoException {
-                if("old".equals(val)
-                   || "inclusive".equals(val)
-                   || "exclusive".equals(val))
-                  return;
-                throw new PropertyVetoException(
-                    "Value must be one of 'old', 'inclusive' or 'exclusive'."
-                                + " Not '" + val + "'.",
-                            new PropertyChangeEvent(opt, opt.getName(),
-                                                    opt.getString(), val));
-              }
-            });
+    G.p_sel = createEnumStringOption(selection, "inclusive",
+            new String[] {"old", "inclusive", "exclusive"});
+            // not needed with enum option
+            // new StringOption.Validator() {
+            // @Override
+            //   public void validate(String val) throws PropertyVetoException {
+            //     if("old".equals(val)
+            //        || "inclusive".equals(val)
+            //        || "exclusive".equals(val))
+            //       return;
+            //     throw new PropertyVetoException(
+            //         "Value must be one of 'old', 'inclusive' or 'exclusive'."
+            //                     + " Not '" + val + "'.",
+            //                 new PropertyChangeEvent(opt, opt.getName(),
+            //                                         opt.getString(), val));
+            //   }
+            // }
     setupOptionDesc(generalList, selection, "'selection' 'sel'",
             "This option defines the behavior of the selection."
             + " It is only used in Visual and Select mode."
-            + "Possible values: 'old', 'inclusive', 'exclusive'",
-            new String[] {"old", "inclusive", "exclusive"});
-    setExpertHidden(selection, true, false);
+            + "Possible values: 'old', 'inclusive', 'exclusive'");
+    setExpertHidden(selection, false, false);
     
-    G.p_slm = createStringOption(selectMode, "",
-            new StringOption.Validator() {
-            @Override
-              public void validate(String val) throws PropertyVetoException {
-                  if ("mouse".equals(val)
-                      || "key".equals(val)
-                      || "cmd".equals(val))
-                  return;
-                throw new PropertyVetoException(
-                    "Value must be one of 'mouse', 'key' or 'cmd'."
-                                + " Not '" + val + "'.",
-                            new PropertyChangeEvent(opt, opt.getName(),
-                                                    opt.getString(), val));
-              }
-            });
+    G.p_slm = createEnumStringOption(selectMode, "",
+            new String[] {"mouse", "key", "cmd"});
+            // new StringOption.Validator() {
+            // @Override
+            //   public void validate(String val) throws PropertyVetoException {
+            //       if ("mouse".equals(val)
+            //           || "key".equals(val)
+            //           || "cmd".equals(val))
+            //       return;
+            //     throw new PropertyVetoException(
+            //         "Value must be one of 'mouse', 'key' or 'cmd'."
+            //                     + " Not '" + val + "'.",
+            //                 new PropertyChangeEvent(opt, opt.getName(),
+            //                                         opt.getString(), val));
+            //   }
+            // }
     setupOptionDesc(generalList, selectMode, "'selectmode' 'slm'",
             "This is a comma separated list of words, which specifies when to"
             + " start Select mode instead of Visual mode, when a selection is"
-            + " started. Possible values: 'mouse', key' or 'cmd'",
-            new String[] {"mouse", "key", "cmd"});
+            + " started. Possible values: 'mouse', key' or 'cmd'");
     setExpertHidden(selectMode, true, true);
 
     /////////////////////////////////////////////////////////////////////
@@ -434,25 +435,24 @@ public final class Options {
     setupOptionDesc(modifyList, shiftRound, "'shiftround' 'sr'",
                "\"<\" and \">\" round indent to multiple of shiftwidth");
 
-    G.p_bs = createIntegerOption(backspace, 0,
-            new IntegerOption.Validator() {
-            @Override
-              public void validate(int val) throws PropertyVetoException {
-                  if(val < 0 || val > 2) {
-		     throw new PropertyVetoException(
-		         "Only 0, 1, or 2 are allowed."
-                         + " Not '" + val + "'.",
-                       new PropertyChangeEvent(opt, opt.getName(),
-                                               opt.getInteger(), val));
-                  }
-              }
-            });
+    G.p_bs = createEnumIntegerOption(backspace, 0, new Integer[] { 0, 1, 2});
+            //new IntegerOption.Validator() {
+            //@Override
+            //  public void validate(int val) throws PropertyVetoException {
+            //      if(val < 0 || val > 2) {
+	    //         throw new PropertyVetoException(
+	    //             "Only 0, 1, or 2 are allowed."
+            //             + " Not '" + val + "'.",
+            //           new PropertyChangeEvent(opt, opt.getName(),
+            //                                   opt.getInteger(), val));
+            //      }
+            //  }
+            //}
     setupOptionDesc(modifyList, backspace, "'backspace' 'bs'",
             "Influences the working of <BS>, <Del> during insert."
             + "\n  0 - no special handling."
             + "\n  1 - allow backspace over <EOL>."
-            + "\n  2 - allow backspace over start of insert.",
-            new String[] { "0", "1", "2"});
+            + "\n  2 - allow backspace over start of insert.");
 
     /////////////////////////
     //
@@ -747,13 +747,31 @@ public final class Options {
                                                  String defaultValue) {
     return createStringOption(name, defaultValue, null);
   }
-  
+
   static public StringOption createStringOption(String name,
                                                 String defaultValue,
                                                 StringOption.Validator valid) {
     if(optionsMap.get(name) != null)
         throw new IllegalArgumentException("Option " + name + "already exists");
     StringOption opt = new StringOption(name, defaultValue, valid);
+    optionsMap.put(name, opt);
+    return opt;
+  }
+
+  static public EnumStringOption createEnumStringOption(String name,
+                                                 String defaultValue,
+                                                 String [] availableValues) {
+    return createEnumStringOption(name, defaultValue, null, availableValues);
+  }
+  
+  static public EnumStringOption createEnumStringOption(String name,
+                                                String defaultValue,
+                                                StringOption.Validator valid,
+                                                String [] availableValues) {
+    if(optionsMap.get(name) != null)
+        throw new IllegalArgumentException("Option " + name + "already exists");
+    EnumStringOption opt = new EnumStringOption(name, defaultValue,
+            valid, availableValues);
     optionsMap.put(name, opt);
     return opt;
   }
@@ -778,6 +796,24 @@ public final class Options {
     if(optionsMap.get(name) != null)
         throw new IllegalArgumentException("Option " + name + "already exists");
     IntegerOption opt = new IntegerOption(name, defaultValue, valid);
+    optionsMap.put(name, opt);
+    return opt;
+  }
+
+  static public EnumIntegerOption createEnumIntegerOption(String name,
+                                                 int defaultValue,
+                                                 Integer [] availableValues) {
+    return createEnumIntegerOption(name, defaultValue, null, availableValues);
+  }
+
+  static public EnumIntegerOption createEnumIntegerOption(String name,
+                                                int defaultValue,
+                                                IntegerOption.Validator valid,
+                                                Integer [] availableValues) {
+    if(optionsMap.get(name) != null)
+        throw new IllegalArgumentException("Option " + name + "already exists");
+    EnumIntegerOption opt = new EnumIntegerOption(name, defaultValue,
+            valid, availableValues);
     optionsMap.put(name, opt);
     return opt;
   }
@@ -848,12 +884,6 @@ public final class Options {
   
   private static void setupOptionDesc(List<String> optionsGroup, String name,
                                       String displayName, String desc) {
-    setupOptionDesc(optionsGroup, name, displayName, desc, null);
-  }
-  
-  private static void setupOptionDesc(List<String> optionsGroup, String name,
-                                      String displayName, String desc,
-                                      String[] tags) {
     Option opt = optionsMap.get(name);
     if(opt != null) {
       if(optionsGroup != null) {
@@ -864,7 +894,6 @@ public final class Options {
       }
       opt.desc = desc;
       opt.displayName = displayName;
-      opt.tags = tags;
     } else {
       throw new Error("Unknown option: " + name);
     }

@@ -28,6 +28,7 @@ import com.raelity.jvi.KeypadBindingBean;
 import com.raelity.jvi.KeyBindingBean;
 import com.l2fprod.common.beans.ExtendedPropertyDescriptor;
 import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
+import com.l2fprod.common.beans.editor.ComboBoxPropertyEditor;
 import com.l2fprod.common.propertysheet.AbstractProperty;
 import com.l2fprod.common.propertysheet.Property;
 import com.l2fprod.common.propertysheet.PropertyEditorFactory;
@@ -40,6 +41,8 @@ import com.l2fprod.common.swing.ComponentFactory;
 import com.l2fprod.common.swing.LookAndFeelTweaks;
 import com.l2fprod.common.swing.PercentLayout;
 import com.l2fprod.common.swing.renderer.ColorCellRenderer;
+import com.raelity.jvi.EnumOption;
+import com.raelity.jvi.Option;
 import com.raelity.jvi.Option.ColorOption;
 import com.raelity.jvi.Options;
 import com.raelity.jvi.Options.EditOptionsControl;
@@ -330,6 +333,14 @@ public class OptionsPanel extends JPanel {
                         ((PropertyEditorRegistry)propertyEditors)
                                 .registerEditor(prop,
                                                 new ColorPropertyEditor(prop));
+                    }
+                    Option opt = Options.getOption(prop.getName());
+                    if(opt instanceof EnumOption) {
+                        ComboBoxPropertyEditor pe = new ComboBoxPropertyEditor();
+                        pe.setAvailableValues(
+                                ((EnumOption)opt).getAvailableValues());
+                        ((PropertyEditorRegistry)propertyEditors)
+                                .registerEditor(prop, pe);
                     }
                     properties[i2++] = prop;
                 }

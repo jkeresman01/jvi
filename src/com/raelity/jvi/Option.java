@@ -41,7 +41,6 @@ public abstract class Option {
     protected String defaultValue;
     protected boolean fExpert;
     protected boolean fHidden;
-    protected String[] tags; // see PropertyEditor.getTags
     
     protected boolean fPropogate; // used in logic, not part of option type
     
@@ -106,10 +105,6 @@ public abstract class Option {
     
     public void setExpert(boolean f) {
         fExpert = f;
-    }
-
-    public String[] getTags() {
-        return tags;
     }
 
     /**

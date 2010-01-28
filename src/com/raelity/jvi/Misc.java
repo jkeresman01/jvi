@@ -1066,22 +1066,22 @@ public class Misc implements ClipboardOwner {
   private static void parse_guicursor() {
     // Set them up according to the defaults.
     Cursor block = new Cursor(SHAPE_BLOCK, 0, 0);
-    Cursor ver25 = new Cursor(SHAPE_VER, 25, -1);
-    Cursor ver35 = new Cursor(SHAPE_VER, 35, -1);
+    Cursor ver25_input = new Cursor(SHAPE_VER, 25, -1);
+    Cursor ver35_visual = new Cursor(SHAPE_VER, 35, 0);
     Cursor hor20 = new Cursor(SHAPE_HOR, 20, 0);
     Cursor hor50 = new Cursor(SHAPE_HOR, 50, 0);
 
     cursor_table = new ViCursor[SHAPE_COUNT];
     cursor_table[SHAPE_N] = block;
     cursor_table[SHAPE_V] = block;
-    cursor_table[SHAPE_I] = ver25;
+    cursor_table[SHAPE_I] = ver25_input;
     cursor_table[SHAPE_R] = hor20;
     cursor_table[SHAPE_C] = block;
-    cursor_table[SHAPE_CI] = ver25;
+    cursor_table[SHAPE_CI] = ver25_input;
     cursor_table[SHAPE_CR] = hor20;
     cursor_table[SHAPE_SM] = block;	// plus different blink rates
     cursor_table[SHAPE_O] = hor50;
-    cursor_table[SHAPE_VE] = ver35;
+    cursor_table[SHAPE_VE] = ver35_visual;
   }
 
   /**

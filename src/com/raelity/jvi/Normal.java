@@ -67,6 +67,7 @@ public class Normal {
   static int   restart_VIsual_select = 0;
   static int   old_mapped_len = 0;
 
+  static boolean cursorShapeHACK;
   
   
   static char redo_VIsual_mode = NUL; /* 'v', 'V', or Ctrl-V */
@@ -1249,8 +1250,13 @@ middle_code:
     G.finish_op = false;
     /* Redraw the cursor with another shape, if we were in Operator-pending
      * mode or did a replace command. */
-    if (wasFinishOp || ca.cmdchar == 'r')
+    if (wasFinishOp || ca.cmdchar == 'r' || cursorShapeHACK) {
       Misc.ui_cursor_shape();		/* may show different cursor shape */
+      // Without cursorShapeHACK in 'v' mode after a 'y', or a variety
+      // of other operators, the cursor never get back as required,
+      // need sel == exclusive to see it.
+      cursorShapeHACK = false;
+    }
 
     // NEEDSWORK: The following is kind of like what vim does in screen.c
     // (not a jVi file). Maybe make redraw_cmdline global and put this stuff
@@ -1779,6 +1785,7 @@ middle_code:
       }
       oap.block_mode = false;
       oap.regname = 0;
+      cursorShapeHACK = true;
     }
   }
 
@@ -4197,8 +4204,7 @@ static private void nv_findpar(CMDARG cap, int dir)
           && G.p_sel.charAt(0) == 'e'
           && Misc.gchar_cursor() != '\n')
        {
-          //++curwin->w_cursor.col;
-          G.curwin.setCaretPosition(G.curwin.getCaretPosition()+1);
+          G.curwin.w_cursor.incColumn();
           cap.oap.inclusive = false;
        }
   }
