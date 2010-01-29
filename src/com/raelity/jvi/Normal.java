@@ -605,11 +605,8 @@ middle_code:
 	      do_exmode();*/
             // If ever want to support exmode, then better support
             // map so that 'Q' can be mapped
-	    if (G.VIsual_active)
-	      Util.vim_beep();
-            else {
-              nv_operator(ca); // so both 'gq' and 'Q' map to same operator
-            }
+
+            nv_operator(ca); // so both 'gq' and 'Q' map to same operator
 	    break;
 
 	  case K_HELP:
@@ -1789,10 +1786,15 @@ middle_code:
     }
   }
 
-  static void op_format(OPARG oap)  {
+  static void op_format(final OPARG oap)  {
     do_op("op_format");
     // NEESDWORK: hook into platform's format (if available)
-    op_colon(oap);
+    Misc.runUndoable(new Runnable() {
+        public void run() {
+          G.curbuf.reformat(G.curwin.w_cursor.getLine(),
+                            oap.line_count);
+        }
+    });
   }
   
   static private  void	op_colon (OPARG oap) {
@@ -3089,9 +3091,10 @@ nv_brackets(CMDARG cap, int dir)
     char	findc;
     int		c;
 
+    final ViFPOS cursor = G.curwin.w_cursor.copy();
     cap.oap.motion_type = MCHAR;
     cap.oap.inclusive = false;
-    old_pos = G.curwin.w_cursor.copy();
+    old_pos = cursor.copy();
 //#ifdef FEAT_VIRTUALEDIT ...
 
 // #ifdef FEAT_SEARCHPATH
@@ -3173,7 +3176,7 @@ nv_brackets(CMDARG cap, int dir)
 	}
 	for ( ; n > 0; --n)
 	{
-	    if ((pos = Search.findmatchlimit(cap.oap, findc,
+	    if ((pos = Search.findmatchlimit(cursor, cap.oap, findc,
 		(cap.cmdchar == '[') ? FM_BACKWARD : FM_FORWARD, 0)) == null)
 	    {
 		if (new_pos == null)	/* nothing found */
@@ -3186,10 +3189,11 @@ nv_brackets(CMDARG cap, int dir)
 		break;
 	    }
             prev_pos = new_pos == null ? null : new_pos.copy();
-	    G.curwin.w_cursor.set(pos);// G.curwin.w_cursor = *pos;
+	    cursor.set(pos);// G.curwin.w_cursor = *pos;
 	    new_pos = pos;
+            //LOG.log(FINER, "prev {0}, new {1}", new Object[] {prev_pos, new_pos});
 	}
-	G.curwin.w_cursor.set(old_pos);
+	cursor.set(old_pos);
 
 	/*
 	 * Handle "[m", "]m", "[M" and "[M".  The findmatchlimit() only
@@ -3204,10 +3208,10 @@ nv_brackets(CMDARG cap, int dir)
 
 	    n = cap.count1;
 	    /* found a match: we were inside a method */
-	    if (prev_pos == null)
+	    if (prev_pos != null)
 	    {
 		pos = prev_pos;
-		G.curwin.w_cursor.set(prev_pos);
+		cursor.set(prev_pos);
 		if (norm)
 		    --n;
 	    }
@@ -3217,7 +3221,7 @@ nv_brackets(CMDARG cap, int dir)
 	    {
 		for (;;)
 		{
-		    if ((findc == '{' ? dec_cursor() : inc_cursorV7()) < 0)
+		    if ((findc == '{' ? dec(cursor) : incV7(cursor)) < 0)
 		    {
 			/* if not found anything, that's an error */
 			if (pos == null)
@@ -3225,14 +3229,14 @@ nv_brackets(CMDARG cap, int dir)
 			n = 0;
 			break;
 		    }
-		    c = gchar_cursor();
+		    c = gchar_pos(cursor);
 		    if (c == '{' || c == '}')
 		    {
 			/* Must have found end/start of class: use it.
 			 * Or found the place to be at. */
 			if ((c == findc && norm) || (n == 1 && !norm))
 			{
-			    new_pos = G.curwin.w_cursor.copy();
+			    new_pos = cursor.copy();
 			    pos = new_pos;
 			    n = 0;
 			}
@@ -3240,27 +3244,29 @@ nv_brackets(CMDARG cap, int dir)
 			 * class and we're inside now.  Just go on. */
 			else if (new_pos == null)
 			{
-			    new_pos = G.curwin.w_cursor.copy();
+			    new_pos = cursor.copy();
 			    pos = new_pos;
 			}
 			/* found start/end of other method: go to match */
-			else if ((pos = Search.findmatchlimit(cap.oap, findc,
+			else if ((pos = Search.findmatchlimit(cursor,
+                                cap.oap, findc,
 			    (cap.cmdchar == '[') ? FM_BACKWARD : FM_FORWARD,
 								  0)) == null)
 			    n = 0;
 			else
-			    G.curwin.w_cursor.set(pos); // G.curwin.w_cursor = *pos;
+			    cursor.set(pos); // G.curwin.w_cursor = *pos;
 			break;
 		    }
 		}
 		--n;
 	    }
-	    G.curwin.w_cursor.set(old_pos);
-	    if (pos == null && new_pos == null)
+	    cursor.set(old_pos);
+	    if (pos == null && new_pos != null)
 		clearopbeep(cap.oap);
 	}
 	if (pos != null)
 	{
+            // up to this point, w_cursor should no have been changed.
 	    setpcmark();
 	    G.curwin.w_cursor.set(pos); // G.curwin.w_cursor = *pos;
 	    G.curwin.w_set_curswant = true;
@@ -4820,6 +4826,7 @@ static private void nv_findpar(CMDARG cap, int dir)
   // These bounce routines to make porting easier
   //
 //Misc
+private static int dec(ViFPOS fpos) { return Misc.dec(fpos); }
 private static int dec_cursor() { return Misc.dec_cursor(); }
 private static int decl(ViFPOS pos) { return Misc.decl(pos); }
 private static int del_char(boolean f) { return Misc.del_char(f); }

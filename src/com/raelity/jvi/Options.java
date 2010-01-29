@@ -680,13 +680,17 @@ public final class Options {
             "When this option is empty the internal formatting functions " +
             "are used.");
 
-    G.p_fp = createStringOption(formatProgram, "fmt -w " + twMagic);
+    G.p_fp = createStringOption(formatProgram, "");
     setupOptionDesc(processList, formatProgram, "'formatprg' 'fp'",
-            "The name of an external program used to format lines selected " +
-            "with 'gq' operator (default \"fmt\").  The program must take " +
-            "input on stdin and produce output to stdout.  In Unix, " +
-            "\"fmt\" is such a program. " + twMagic + " in the string is " +
-            "substituted by the value of textwidth option. ");
+            "External program to use for \"qq\" or \"Q\" command (default \"\")."
+          + " When this option is empty the internal formatting functions"
+          + " are used."
+          + "\n\n When specified, the program must take input on stdin and"
+          + " send output to stdout. In Unix, \"fmt\" is such a program."
+          +  twMagic + " in the string is"
+          + " substituted by the value of textwidth option. "
+          + "\n\nTypically set to \"fmt -w #TEXT-WIDTH#\" to use external program."
+            );
 
     /////////////////////////////////////////////////////////////////////
     //

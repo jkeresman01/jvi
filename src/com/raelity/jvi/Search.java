@@ -2008,7 +2008,11 @@ static boolean check_prevcol(MySegment linep, int col, char ch,
 
 static ViFPOS findmatchlimit(OPARG oap, char initc, int flags, int maxtravel)
 {
-    //ViFPOS    pos; 			// current search position
+  return findmatchlimit(G.curwin.w_cursor.copy(), oap, initc, flags, maxtravel);
+}
+static ViFPOS findmatchlimit(ViFPOS cursor,
+        OPARG oap, char initc, int flags, int maxtravel)
+{
     int         pos_lnum;
     int         pos_col;
     char	findc = 0;		// matching brace
@@ -2037,9 +2041,10 @@ static ViFPOS findmatchlimit(OPARG oap, char initc, int flags, int maxtravel)
 
     assert initc != 0;
 
-    //pos = G.curwin.w_cursor.copy();
-    pos_lnum = G.curwin.w_cursor.getLine();
-    pos_col = G.curwin.w_cursor.getColumn();
+    // pos_lnum = G.curwin.w_cursor.getLine();
+    // pos_col = G.curwin.w_cursor.getColumn();
+    pos_lnum = cursor.getLine();
+    pos_col = cursor.getColumn();
     linep = Util.ml_get(pos_lnum);
 
     cpo_match = (Util.vim_strchr(G.p_cpo, CPO_MATCH) != null);

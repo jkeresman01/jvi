@@ -247,6 +247,12 @@ public class DefaultBuffer extends Buffer {
 
 
     public void reindent(int line, int count) {
+        System.err.format("reindent line %d, count %d", line, count);
+        Util.vim_beep();
+    }
+
+    public void reformat(int line, int count) {
+        System.err.format("reformat line %d, count %d", line, count);
         Util.vim_beep();
     }
 

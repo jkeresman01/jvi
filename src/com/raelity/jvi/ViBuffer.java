@@ -66,9 +66,12 @@ public interface ViBuffer {
     
     
     
-    
+
     /** platform indent algorithm */
     public void reindent(int line, int count);
+    
+    /** platform indent algorithm */
+    public void reformat(int line, int count);
     
     /** @return the line number, 1 based, corresponding to the offset */
     public int getLineNumber(int offset);
