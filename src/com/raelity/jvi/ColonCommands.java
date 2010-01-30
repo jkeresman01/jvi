@@ -326,9 +326,15 @@ static ColonEvent parseCommand( String commandLine )
 
     // if(sidx >= commandLine.length()) { return null; }
     sidx01 = sidx;
-    // skip alpha characters
+    // skip command name characters // NEEDSWORK: not just alpha
     for(; sidx < commandLine.length(); sidx++) {
-        if( ! Util.isalpha(commandLine.charAt(sidx))) {
+        // NEEDSWORK: commands can be more than just alpha chars
+        //            for now just hack in the two non-alpha commands we've got
+        //if( ! Util.isalpha(commandLine.charAt(sidx)))
+        if( ! (Util.isalpha(commandLine.charAt(sidx))
+                || "<".equals(String.valueOf(commandLine.charAt(sidx)))
+                || ">".equals(String.valueOf(commandLine.charAt(sidx)))))
+        {
             break;
         }
     }
@@ -341,6 +347,7 @@ static ColonEvent parseCommand( String commandLine )
     sidx = Misc.skipwhite(commandLine, sidx);
 
     String command = commandLine.substring(sidx01, sidx02);
+    cev.inputCommand = command;
     cev.iArgString = sidx02;
     AbbrevLookup.CommandElement ce = m_commands.lookupCommand(command);
     if(ce == null) {
@@ -576,6 +583,8 @@ static public class ColonEvent extends ActionEvent
     // NEEDSWORK: ColonEvent Add stuff for getting at command arguments
     /** The expanded command word */
     String command;
+    /** The command word as input */
+    String inputCommand;
     /** The command associated with this event */
     AbbrevLookup.CommandElement commandElement;
     /** indicates that the command word has a trailing "!" */
@@ -682,6 +691,14 @@ static public class ColonEvent extends ActionEvent
     public String getComandName()
     {
         return command;
+    }
+
+    /**
+     * @return the command as it was input. May be a partial command name
+     */
+    public String getInputCommandName()
+    {
+        return inputCommand;
     }
 
     /**
@@ -2314,8 +2331,8 @@ static OPARG setupExop(ColonEvent cev, boolean parseExtra)
 }
 
 /**
-    * :delete command.
-    */
+ * :delete command.
+ */
 static ColonAction ACTION_delete = new ColonAction() {
         public void actionPerformed(ActionEvent ev)
         {
@@ -2329,17 +2346,46 @@ static ColonAction ACTION_delete = new ColonAction() {
     };
 
 /**
-    * :yank command.
-    */
+ * :yank command.
+ */
 static ColonAction ACTION_yank = new ColonAction() {
         public void actionPerformed(ActionEvent ev) {
             OPARG oa = setupExop((ColonEvent)ev, true);
             if(!oa.error) {
-            oa.op_type = OP_YANK;
-            Misc.op_yank(oa, false, true);
+                oa.op_type = OP_YANK;
+                Misc.op_yank(oa, false, true);
             }
         }
     };
+
+private static ColonAction ACTION_lshift = new ShiftAction(OP_LSHIFT);
+private static ColonAction ACTION_rshift = new ShiftAction(OP_RSHIFT);
+
+private static class ShiftAction extends ColonAction
+{
+    final int op;
+
+    public ShiftAction(int op)
+    {
+        this.op = op;
+    }
+
+    public void actionPerformed(ActionEvent ev)
+    {
+        ColonEvent cev = (ColonEvent)ev;
+        final OPARG oa = setupExop(cev, true);
+        final int amount = cev.getInputCommandName().length();
+        if(!oa.error) {
+            oa.op_type = op;
+            Misc.runUndoable(new Runnable() {
+                    public void run()
+                    {
+                        Misc.op_shift(oa, false, amount);
+                    }
+                });
+        }
+    }
+}
 
 private static class moveCopy extends ColonAction
 {
@@ -2492,6 +2538,10 @@ static void registerBuiltinCommands()
             });
 
     register("y", "yank", ACTION_yank);
+    // not pretty, limit the number of shifts...
+    register(">", ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", ACTION_rshift);
+    register("<", "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", ACTION_lshift);
+
     register("m", "move", ACTION_move);
     register("co", "copy", ACTION_copy);
     register("t", "t", ACTION_copy);
