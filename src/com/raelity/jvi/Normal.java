@@ -1384,6 +1384,11 @@ middle_code:
           else
               cap.count1 = 1;
       } else if (G.VIsual_active) {
+          /* Save the current VIsual area for '< and '> marks, and "gv" */
+          G.curbuf.b_visual_start.setMark(G.VIsual);
+          G.curbuf.b_visual_end.setMark(cursor);
+          G.curbuf.b_visual_mode = G.VIsual_mode;
+
             /* In Select mode, a linewise selection is operated upon like a
              * characterwise selection. */
           if (G.VIsual_select && G.VIsual_mode == 'V') {
@@ -1396,15 +1401,12 @@ middle_code:
               }
               G.VIsual_mode = 'v';
           }
-          /* If 'selection' is "exclusive", backup one character for
-          * charwise selections. */
-          if (!G.VIsual_select && G.VIsual_mode == 'v')
-              unadjust_for_sel();
-
-          /* Save the current VIsual area for '< and '> marks, and "gv" */
-          G.curbuf.b_visual_start.setMark(G.VIsual);
-          G.curbuf.b_visual_end.setMark(cursor);
-          G.curbuf.b_visual_mode = G.VIsual_mode;
+	    /* If 'selection' is "exclusive", backup one character for
+	     * charwise selections. */
+          else if(G.VIsual_mode == 'v') {
+//# ifdef FEAT_VIRTUALEDIT...
+		    unadjust_for_sel();
+          }
 
           oap.start = G.VIsual;
           if (G.VIsual_mode == 'V')
