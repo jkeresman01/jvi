@@ -38,7 +38,6 @@ import java.util.prefs.BackingStoreException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
-import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 
 import java.awt.datatransfer.SystemFlavorMap;
@@ -47,6 +46,9 @@ import java.net.URI;
 import java.net.URL;
 
 import com.raelity.jvi.swing.KeyBinding;
+import com.raelity.jvi.swing.ViCaret;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.ref.WeakReference;
@@ -880,8 +882,11 @@ public class ViManager
         Normal.resetCommand(); // Means something first time window switched to
         buf.activateOptions(textView);
         textView.activateOptions(textView);
-        if(newTextView)
+        if(newTextView) {
             firePropertyChange(P_OPEN_WIN, currentTv, textView);
+            editorPane.addMouseListener(mouseListener);
+            editorPane.addMouseMotionListener(mouseMotionListener);
+        }
         if(textView.getBuffer().singleShare())
             firePropertyChange(P_OPEN_BUF, currentTv == null ? null : currentTv.getBuffer(),
                     textView.getBuffer());
@@ -963,27 +968,104 @@ public class ViManager
         }
     }
 
+    /** The viewport has changed or scrolled, clear messages*/
+    public static void viewMoveChange(ViTextView textView)
+    {
+        if(G.curwin == null) {
+            // this case is because switchto, does attach, does viewport init
+            // but G.curwin is not set yet. See switchTo(JEditorPane editorPane)
+            return;
+        }
+        Msg.clearMsg();
+    }
+
+    //////////////////////////////////////////////////////////////////////
+    //
+    // Mouse interactions
+    //
+
     private static boolean draggingBlockMode;
     private static boolean mouseDown;
+    private static boolean hasSelection;
 
     public static boolean isMouseDown()
     {
         return mouseDown;
     }
 
+    private static void uiCursorModeStuff() {
+
+        Misc.ui_cursor_shape();
+        Misc.showmode();
+    }
+
+    public static void cursorChange(ViCaret caret)
+    {
+        boolean nowSelection = caret.getDot() != caret.getMark();
+        if(hasSelection == nowSelection)
+            return;
+        uiCursorModeStuff();
+        hasSelection = nowSelection;
+    }
+
+    private static MouseListener mouseListener = new MouseListener() {
+
+        public void mouseClicked(MouseEvent e)
+        {
+            mouseClick(e);
+        }
+
+        public void mousePressed(MouseEvent e)
+        {
+            mousePress(e);
+        }
+
+        public void mouseReleased(MouseEvent e)
+        {
+            mouseRelease(e);
+        }
+
+        public void mouseEntered(MouseEvent e) { }
+
+        public void mouseExited(MouseEvent e) { }
+    };
+
+    private static MouseMotionListener mouseMotionListener
+            = new MouseMotionListener()
+    {
+
+        public void mouseDragged(MouseEvent e)
+        {
+            mouseDrag(e);
+        }
+
+        public void mouseMoved(MouseEvent e) { }
+    };
+
     /**
-     * A mouse click; switch to the activated editor.
-     * Pass the click on to the window and give it
-     * a chance to adjust the position and whatever.
+     * A mouse press; switch to the activated editor.
      */
-    public static int mouseSetDot(int pos, JTextComponent c, MouseEvent mev)
+    public static void mousePress(MouseEvent mev)
     {
         try {
             setJViBusy(true);
-            mouseDown = true;
 
-            if(!(c instanceof JEditorPane)) {
-                return pos;
+            int mask = MouseEvent.BUTTON1_DOWN_MASK
+                    | MouseEvent.BUTTON2_DOWN_MASK
+                    | MouseEvent.BUTTON3_DOWN_MASK;
+
+            if ((mev.getModifiersEx() & mask) != 0)
+                mouseDown = true;
+
+            if(G.dbgMouse.getBoolean()) {
+                System.err.println("mousePress: " + (mouseDown ? "down " : "up ")
+                        + MouseEvent.getModifiersExText(mev.getModifiersEx()));
+                //System.err.println(mev.getMouseModifiersText(
+                //                      mev.getModifiers()));
+            }
+
+            if(!(mev.getComponent() instanceof JEditorPane)) {
+                return;
             }
 
             GetChar.flush_buffers(true);
@@ -991,28 +1073,49 @@ public class ViManager
             if(currentEditorPane != null)
                 Normal.abortVisualMode();
 
-            JEditorPane editorPane = (JEditorPane)c;
+            JEditorPane editorPane = (JEditorPane)mev.getComponent();
 
             ViTextView tv = factory.getTextView(editorPane);
             if(tv == null)
-                return pos;
+                return;
 
             switchTo(editorPane);
-            /*int lookFor = mev.ALT_DOWN_MASK | mev.BUTTON1_DOWN_MASK;
-            int mods = mev.getModifiersEx();
-            if((mev.getModifiersEx() & lookFor) == lookFor) {
-                draggingBlockMode = true;
-                System.err.println("START_DRAG");
-            }*/
-            pos = tv.validateCursorPosition(pos);
+
+        } finally {
+            setJViBusy(false);
+        }
+
+    }
+
+    /**
+     * A mouse click.
+     * Pass the click on to the window and give it
+     * a chance to adjust the position and whatever.
+     *
+     * NOTE: isMouseDown is false in swing when this method invoked.
+     */
+    public static void mouseClick(MouseEvent mev)
+    {
+        if(mev.getComponent() != currentEditorPane)
+            return;
+
+        try {
+            setJViBusy(true);
+
+            ViTextView tv = factory.getTextView(currentEditorPane);
+            int pos = tv.getCaretPosition();
+            int newPos = tv.validateCursorPosition(pos);
+            if(pos != newPos)
+                tv.setCaretPosition(newPos);
 
             if(G.dbgMouse.getBoolean()) {
-                System.err.println("mouseSetDot(" + pos + ") "
+                System.err.println("mouseClick(" + pos + ") "
                         + MouseEvent.getModifiersExText(mev.getModifiersEx()));
                 //System.err.println(mev.getMouseModifiersText(
                 //                      mev.getModifiers()));
             }
-            return pos;
+
+            return;
         } finally {
             setJViBusy(false);
         }
@@ -1047,17 +1150,20 @@ public class ViManager
         }
     }
 
-    public static int mouseMoveDot(int pos, JTextComponent c, MouseEvent mev)
+
+            /*int lookFor = mev.ALT_DOWN_MASK | mev.BUTTON1_DOWN_MASK;
+            int mods = mev.getModifiersEx();
+            if((mev.getModifiersEx() & lookFor) == lookFor) {
+                draggingBlockMode = true;
+                System.err.println("START_DRAG");
+            }*/
+    public static void mouseDrag(MouseEvent mev)
     {
-        if(true) // NEEDSWORK: this method doesn't do anything anymore
-            return pos;
+        if(mev.getComponent() != currentEditorPane)
+            return;
 
         try {
             setJViBusy(true);
-
-            if(G.curwin == null || c != G.curwin.getEditorComponent()) {
-                return pos;
-            }
 
             //
             // Don't automatically go into visual mode on a drag,
@@ -1073,27 +1179,21 @@ public class ViManager
             // }
 
             if(G.dbgMouse.getBoolean()) {
-                System.err.println("mouseMoveDot(" + pos + ") "
+                System.err.println("mouseDrag "
                         + MouseEvent.getModifiersExText(mev.getModifiersEx()));
                 //System.err.println(mev.getMouseModifiersText(mev.getModifiers()));
             }
 
-            return pos;
+            return;
+
         } finally {
             setJViBusy(false);
         }
     }
 
-    /** The viewport has changed or scrolled, clear messages*/
-    public static void viewMoveChange(ViTextView textView)
-    {
-        if(G.curwin == null) {
-            // this case is because switchto, does attach, does viewport init
-            // but G.curwin is not set yet. See switchTo(JEditorPane editorPane)
-            return;
-        }
-        Msg.clearMsg();
-    }
+    //////////////////////////////////////////////////////////////////////
+    //
+    //
 
     static public void dumpStack(String msg, boolean supressIfNotBusy)
     {

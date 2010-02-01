@@ -142,7 +142,6 @@ public abstract class Window implements ViTextView
      * Do some bookkeeping and also adjust pcmark
      * if the caret is moved by an 'external agent' (e.g. an IDE).
      *
-     * <br/>NEEDSWORK: put this in Window?
      * @param lastDot previos dot position
      * @param dot new dot position
      * @param mark new mark position

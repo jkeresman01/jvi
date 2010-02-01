@@ -80,12 +80,18 @@ public class DefaultViFactory implements ViFactory
     private MouseInputAdapter mouseAdapter;
     private KeyListener keyListener;
 
+    Map<JEditorPane, StatusDisplay> mapJepSd; //HACK for cmd.Jvi
+
     // ............
 
 
     /**
      *  Default constructor.
      */
+    public DefaultViFactory(Map<JEditorPane, StatusDisplay> m) { //HACK for cmd.Jvi
+        this();
+        mapJepSd = m;
+    }
     public DefaultViFactory()
     {
         if ( INSTANCE != null ) {
@@ -147,6 +153,11 @@ public class DefaultViFactory implements ViFactory
     /** subclass probably wants to override this */
     protected ViTextView newTextView( JEditorPane editorPane )
     {
+        if(isStandalone() && mapJepSd != null) {
+            StatusDisplay sd = mapJepSd.get(editorPane);
+            if(sd != null)
+                return new TextView(editorPane, sd);
+        }
         return new TextView(editorPane);
     }
 
@@ -260,6 +271,11 @@ public class DefaultViFactory implements ViFactory
         }
     }
 
+
+    public String getPlatformSelectionDisplayName()
+    {
+        return "PLATFORM-SELECTION";
+    }
 
     public ViFS getFS()
     {

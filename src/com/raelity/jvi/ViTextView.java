@@ -149,14 +149,16 @@ public interface ViTextView extends ViOptionBag {
   //            maybe implement w_cursor.set(int).
   public void setCaretPosition(int offset);
 
-  /** select a region of the screen */
-  public void setSelect(int dot, int mark);
+  /** do a platform select a region of the screen */
+  public void setSelection(int dot, int mark);
 
-  /** clear the select, if any, on the screen, don't move the caret */
-  public void clearSelect();
+  /** is there a platform selection on the screen */
+  public boolean hasSelection();
+
+  /** clear a platform select, if any, on the screen, don't move the caret */
+  public void clearSelection();
 
 
-  
   /** Anonymous mark handling.
    * Count is the Nth mark forward, back. It is ignored by TOGGLE.
    */

@@ -94,7 +94,13 @@ public class TextView extends Window
     // ............
 
 
-    public TextView( final JEditorPane editorPane )
+    public TextView(final JEditorPane editorPane, ViStatusDisplay statusDisplay)
+    {
+        //HACK for cmd.Jvi
+        this(editorPane);
+        this.statusDisplay = statusDisplay;
+    }
+    public TextView( final JEditorPane editorPane)
     {
         super();
         this.editorPane = editorPane;
@@ -137,9 +143,6 @@ public class TextView extends Window
 
     public void startup()
     {
-        if ( statusDisplay == null ) {
-            statusDisplay = createStatusDisplay();
-        }
         enableCursorSave();
     }
 
@@ -195,11 +198,6 @@ public class TextView extends Window
      *  of status display.
      * @return
      */
-    protected ViStatusDisplay createStatusDisplay()
-    {
-        return new StatusDisplay();
-    }
-
 
     public void attach()
     {
@@ -464,15 +462,19 @@ public class TextView extends Window
     }
 
 
-    public void setSelect( int dot, int mark )
+    public void setSelection( int dot, int mark )
     {
         Caret c = editorPane.getCaret();
         c.setDot(mark);
         c.moveDot(dot);
     }
 
+    public boolean hasSelection() {
+        return editorPane.getSelectionStart() != editorPane.getSelectionEnd();
+    }
 
-    public void clearSelect()
+
+    public void clearSelection()
     {
         Caret c = editorPane.getCaret();
         c.setDot(c.getDot());

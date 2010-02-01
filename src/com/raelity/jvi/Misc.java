@@ -1116,6 +1116,11 @@ public class Misc implements ClipboardOwner {
           }
       }
 
+      // If there's a java selection
+      if(G.curwin.hasSelection()) {
+        return SHAPE_VE;
+      }
+
       return SHAPE_N;
   }
 
@@ -4236,6 +4241,10 @@ private static int put_in_typebuf(String s, boolean colon)
           }
         }
         
+      }
+      else {
+        if(G.curwin.hasSelection())
+          mode = ViManager.getViFactory().getPlatformSelectionDisplayName();
       }
       
       // Any "recording" string is handled by the disply function

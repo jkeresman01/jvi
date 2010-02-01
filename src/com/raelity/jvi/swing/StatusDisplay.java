@@ -31,10 +31,18 @@ import javax.swing.SwingUtilities;
  */
 public class StatusDisplay implements ViStatusDisplay
 {
-    public JLabel generalStatus;
-    public JLabel strokeStatus;
-    public JLabel modeStatus;
+    private JLabel generalStatus;
+    private JLabel strokeStatus;
+    private JLabel modeStatus;
     private boolean fFrozen;
+
+    public StatusDisplay(JLabel generalStatus, JLabel strokeStatus,
+                         JLabel modeStatus)
+    {
+        this.generalStatus = generalStatus;
+        this.strokeStatus = strokeStatus;
+        this.modeStatus = modeStatus;
+    }
 
     // ............
 

@@ -34,7 +34,6 @@ package com.raelity.jvi.cmd;
 import com.l2fprod.common.propertysheet.PropertySheetDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
-import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.SimpleAttributeSet;
@@ -52,7 +51,9 @@ import com.raelity.jvi.ViManager;
 import com.raelity.jvi.swing.DefaultViFactory;
 import com.raelity.jvi.swing.OptionsPanel;
 import com.raelity.jvi.swing.StatusDisplay;
-import com.raelity.jvi.swing.TextView;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.JScrollPane;
 
 public class Jvi
 {
@@ -66,6 +67,9 @@ public class Jvi
     private static JviFrame m_frame1 = null;
     private static JviFrame m_frame2 = null;    // test two jVi on same document
 
+    static Map<JEditorPane, StatusDisplay> mapJepSd
+            = new HashMap<JEditorPane, StatusDisplay>();
+
 
     /**
      *  Construct the frame-based application.
@@ -76,6 +80,7 @@ public class Jvi
         nFrame++;
 
         JEditorPane editor = frame.getEditor();
+        mapJepSd.put(editor, frame.getStatusDisplay());
         JScrollPane scrollPane = frame.getScrollPane();
 
         Font font = editor.getFont();
@@ -144,12 +149,6 @@ public class Jvi
 
         editor.setCaretColor(Color.black);
 
-        TextView tv = (TextView)ViManager.getViTextView(editor);
-        StatusDisplay sd = (StatusDisplay)tv.getStatusDisplay();
-        sd.generalStatus = f.generalStatusBar;
-        sd.strokeStatus  = f.strokeStatusBar;
-        sd.modeStatus    = f.modeStatusBar;
-
         //((BooleanOption)Options.getOption(Options.dbgKeyStrokes)).setBoolean(true);
         ViManager.activateAppEditor(editor, null, "Jvi.setupFrame");
         ViManager.requestSwitch(editor);
@@ -191,7 +190,7 @@ public class Jvi
             make2Frames = true;
         }
 
-        ViManager.setViFactory(new DefaultViFactory());
+        ViManager.setViFactory(new DefaultViFactory(mapJepSd));
 
         ColonCommands.register("dumpOptions", "dumpOptions", new ActionListener() {
             public void actionPerformed(ActionEvent e) {

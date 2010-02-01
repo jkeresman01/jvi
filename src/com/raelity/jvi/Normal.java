@@ -67,7 +67,7 @@ public class Normal {
   static int   restart_VIsual_select = 0;
   static int   old_mapped_len = 0;
 
-  static boolean cursorShapeHACK;
+  private static boolean cursorShapeHACK;
   
   
   static char redo_VIsual_mode = NUL; /* 'v', 'V', or Ctrl-V */
@@ -2419,16 +2419,23 @@ middle_code:
       // Convert the visual mode bounds to a java text selection.
       // This is kind of the idea of the command.
       // VIM: G.VIsual_select = !G.VIsual_select;
+
+      // The java selection does not include the caret.
+      // This converts directly when sel is exclusive
       int textMark = G.VIsual.getOffset();
+      int textDot = G.curwin.w_cursor.getOffset();
       end_visual_mode();	// stop Visual
       Misc.check_cursor_col();	// make sure cursor is not beyond EOL
-      int textDot = G.curwin.w_cursor.getOffset();
       G.curwin.w_set_curswant = true;
       update_curbuf(NOT_VALID);
       Misc.showmode();
-      //if(textDot < textMark)
-      //  textMark++;
-      G.curwin.setSelect(textDot, textMark);
+      if(G.p_sel.charAt(0) != 'e') {
+        if(textDot < textMark)
+          textMark++;
+        else
+          textDot++;
+      }
+      G.curwin.setSelection(textDot, textMark);
     }
     else if (!checkclearop(cap.oap))
       G.curbuf.displayFileInfo(G.curwin);
@@ -3808,24 +3815,34 @@ static private void nv_findpar(CMDARG cap, int dir)
 
   /**
    * This is used when initiating visual mode. If there is a
-   * selection then use it to set the visual mode boundaries.
+   * JavaTextSelection then use it to set the visual mode boundaries.
    */
   static private void convertSelectionToVisual() {
-    if(G.VIsual_active
-            && G.curwin.getCaretPosition() != G.curwin.getMarkPosition()) {
+    if(G.VIsual_active && G.curwin.hasSelection()) {
       // convert a selection into a visual mode thing,
       // set visual start, G.VIsual, to the offset
-      int offset = G.curwin.getMarkPosition();
       
       // convert a selection into a visual mode thing,
-      // set visual start, G.VIsual, to the offset
+      // set visual start, G.VIsual, to the textMark
       ViFPOS fpos = G.curwin.w_cursor.copy();
-      fpos.set(G.curbuf.getLineNumber(offset),
-              G.curbuf.getColumnNumber(offset));
+
+      int textMark = G.curwin.getMarkPosition();
+      int textDot = fpos.getOffset();
+
+      if(G.p_sel.charAt(0) != 'e') {
+        if(textMark < textDot)
+          G.curwin.w_cursor.set(fpos.getOffset()-1);
+        else
+          --textMark;
+      }
+
+      fpos.set(G.curbuf.getLineNumber(textMark),
+              G.curbuf.getColumnNumber(textMark));
+
       G.VIsual = fpos;
       
       // converting a selection into visual mode, clear the selection
-      G.curwin.clearSelect();
+      G.curwin.clearSelection();
     }
   }
   
@@ -4251,8 +4268,8 @@ static private void nv_findpar(CMDARG cap, int dir)
       Misc.check_cursor_col();	// make sure cursor is not beyond EOL
       G.curwin.w_set_curswant = true;
       update_curbuf(NOT_VALID);
-    } else if (G.curwin.w_cursor.getOffset() != G.curwin.getMarkPosition()) {
-      G.curwin.clearSelect();
+    } else if (G.curwin.hasSelection()) {
+      G.curwin.clearSelection();
     } else if (cap.oap.op_type == OP_NOP && opnum == 0
 	     && cap.count0 == 0 && cap.oap.regname == 0 && p_im == 0) {
       Util.vim_beep();

@@ -79,6 +79,9 @@ public interface ViFactory
     /** @return Set of active Buffer, some may have retired */
     public Set<Buffer> getBufferSet();
 
+    /** @return mode title to display when there's a java text selection */
+    public String getPlatformSelectionDisplayName();
+
     /** For an environmental object, used for debug output */
     public String getDisplayFilename(Object appHandle);
 

@@ -19,20 +19,22 @@
  */
 package com.raelity.jvi.swing;
 
-import java.awt.event.MouseEvent;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.lang.reflect.Method;
+import javax.swing.event.ChangeEvent;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 
 import com.raelity.jvi.*;
-import javax.swing.text.NavigationFilter;
-import javax.swing.text.Position.Bias;
+import javax.swing.event.ChangeListener;
 
 /**
  * This extension of {@link javax.swing.text.DefaultCaret} draws the
  * caret in different ways as defined by the cursor property.
+ *
+ * Turns out don't need NavigationFilter
+ *
  * // NEEDSWORK: cache the current font metric, listen to font property changes
  */
 public class DefaultViCaret extends DefaultCaret implements ViCaret
@@ -45,20 +47,12 @@ public class DefaultViCaret extends DefaultCaret implements ViCaret
     {
         super();
         viDelegate = new ViCaretDelegate(this);
-    }
-
-    @Override
-    public void install(JTextComponent c)
-    {
-        c.setNavigationFilter(new NavFilter());
-        super.install(c);
-    }
-
-    @Override
-    public void deinstall(JTextComponent c)
-    {
-        c.setNavigationFilter(null);
-        super.deinstall(c);
+        addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e)
+            {
+                ViManager.cursorChange(DefaultViCaret.this);
+            }
+        });
     }
 
     public void setCursor(ViCursor cursor)
@@ -102,82 +96,6 @@ public class DefaultViCaret extends DefaultCaret implements ViCaret
     public JTextComponent getTextComponent()
     {
         return super.getComponent();
-    }
-
-    private class NavFilter extends NavigationFilter {
-
-        @Override
-        public void setDot(FilterBypass fb, int dot, Bias bias)
-        {
-            if (isMouseAction || mouseButtonDown) {
-                dot = ViManager.mouseSetDot(dot, mouseComponent, mouseEvent);
-            }
-            fb.setDot(dot, bias);
-        }
-
-        @Override
-        public void moveDot(FilterBypass fb, int dot, Bias bias)
-        {
-            if (mouseButtonDown) {
-                dot = ViManager.mouseMoveDot(dot, mouseComponent, mouseEvent);
-            }
-            fb.moveDot(dot, bias);
-        }
-    }
-
-    //
-    // Following copied from NbCaret, all have to do with mouse action
-    //
-    boolean mouseButtonDown;
-
-    @Override
-    public void mousePressed(MouseEvent mouseEvent)
-    {
-        mouseButtonDown = true;
-        beginClickHack(mouseEvent);
-        super.mousePressed(mouseEvent);
-        endClickHack();
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent mouseEvent)
-    {
-        beginClickHack(mouseEvent);
-        super.mouseReleased(mouseEvent);
-        ViManager.mouseRelease(mouseEvent);
-        endClickHack();
-        mouseButtonDown = false;
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent mouseEvent)
-    {
-        beginClickHack(mouseEvent);
-        super.mouseClicked(mouseEvent);
-        endClickHack();
-    }
-
-    @Override
-    public void mouseDragged(MouseEvent mouseEvent)
-    {
-        beginClickHack(mouseEvent);
-        super.mouseDragged(mouseEvent);
-        endClickHack();
-    }
-    boolean isMouseAction = false;
-    JTextComponent mouseComponent;
-    MouseEvent mouseEvent;
-
-    private void beginClickHack(MouseEvent mouseEvent)
-    {
-        isMouseAction = true;
-        this.mouseEvent = mouseEvent;
-        mouseComponent = (JTextComponent) mouseEvent.getComponent();
-    }
-
-    private void endClickHack()
-    {
-        isMouseAction = false;
     }
 }
 

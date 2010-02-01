@@ -1072,7 +1072,7 @@ finished:
         // search /$ puts cursor on end of line
         new_pos = G.curwin.validateCursorPosition(new_pos);
     }
-    G.curwin.setSelect(new_pos, new_pos + search_match_len);
+    G.curwin.setSelection(new_pos, new_pos + search_match_len);
     G.curwin.w_set_curswant = true;
     if(wmsg != null) {
       Msg.wmsg(wmsg/*, true*/);
@@ -1334,7 +1334,7 @@ first_submatch(RegExp rp)
       modalResponse = 0;
       if(flags.testAnyBits(SUBST_CONFIRM)
               && ! flags.testAnyBits(SUBST_DID_ACK)) {
-        G.curwin.setSelect(segOffsetToDoc + prog.start(0),
+        G.curwin.setSelection(segOffsetToDoc + prog.start(0),
                            segOffsetToDoc + prog.stop(0)
                             + (prog.length(0) == 0 ? 1 : 0));
 
