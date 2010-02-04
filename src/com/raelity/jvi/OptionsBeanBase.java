@@ -46,11 +46,11 @@ import java.util.prefs.Preferences;
 
 import com.raelity.jvi.Option.ColorOption;
 import com.raelity.jvi.Options.EditOptionsControl;
-import com.raelity.org.openide.util.WeakListeners;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.WeakListeners;
 
 /**
  * Base class for jVi options beans. This method contains the read/write methods

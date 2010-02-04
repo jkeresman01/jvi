@@ -1,0 +1,7 @@
+jVi can be compiled standalone with the simple build.xml included.
+
+If you want to work with it as a NetBeans project, you can also get nbvi and
+put it in a sibling directory of jvi. Then open nbvi/nbvi-suite/jvi-project,
+a project with external sources, with NetBeans.
+
+If you want to work on the NetBeans plugin, see nbvi/README.

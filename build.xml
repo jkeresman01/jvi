@@ -30,7 +30,7 @@
 
   <property name="Name" value="Jvi"/>
   <property name="name" value="jvi"/>
-  <property name="version" value="0.7.1"/>
+  <property name="version" value="debug"/>
 
   <property name="final.name" value="${name}-${version}"/>
   <property name="complete.name" value="${final.name}"/>
