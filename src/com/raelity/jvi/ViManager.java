@@ -156,11 +156,11 @@ public class ViManager
         return b == null || b;
     }
 
+    private static Boolean isDebugAtHome;
     public static boolean isDebugAtHome() {
-        boolean f = false;
-        if(System.getProperty(DEBUG_AT_HOME) != null)
-            f = true;
-        return f;
+        if(isDebugAtHome == null)
+            isDebugAtHome = Boolean.getBoolean(DEBUG_AT_HOME);
+        return isDebugAtHome;
     }
 
     private ViManager() {}
@@ -1698,7 +1698,8 @@ public class ViManager
                 else
                     new Motd(sb.toString()).output();
             } catch (IOException ex) {
-                //ex.printStackTrace();
+                if(isDebugAtHome())
+                    ex.printStackTrace();
             }
         }
     }
