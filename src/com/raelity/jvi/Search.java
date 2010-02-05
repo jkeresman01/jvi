@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi;
 
+import com.raelity.jvi.lib.MutableInt;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;

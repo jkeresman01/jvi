@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi;
 
+import com.raelity.jvi.lib.MutableInt;
 import java.awt.Toolkit;
 import java.text.CharacterIterator;
 

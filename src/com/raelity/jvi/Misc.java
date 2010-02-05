@@ -19,6 +19,9 @@
  */
 package com.raelity.jvi;
 
+import com.raelity.jvi.lib.MutableBoolean;
+import com.raelity.jvi.lib.MutableString;
+import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.ViTextView.FOLDOP;
 import com.raelity.jvi.ViTextView.NLOP;
 import java.awt.event.KeyEvent;

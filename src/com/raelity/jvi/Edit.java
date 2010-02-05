@@ -19,6 +19,8 @@
  */
 package com.raelity.jvi;
 
+import com.raelity.jvi.lib.MutableBoolean;
+import com.raelity.jvi.lib.MutableInt;
 import java.util.Stack;
 
 import com.raelity.text.TextUtil.MySegment;

@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.lib.DefaultOutputStream;
 import com.raelity.jvi.options.OptionsBeanBase;
 import  static com.raelity.jvi.KeyDefs.*;
 import  com.raelity.jvi.*;

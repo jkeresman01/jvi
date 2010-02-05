@@ -18,10 +18,9 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
-package com.raelity.jvi.swing;
+package com.raelity.jvi.lib;
 
 import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.OutputStreamAdaptor;
 
 public class DefaultOutputStream extends OutputStreamAdaptor {
   String type;

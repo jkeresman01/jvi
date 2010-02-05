@@ -26,6 +26,8 @@
  */
 package com.raelity.jvi;
 
+import com.raelity.jvi.lib.MutableBoolean;
+import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.ViTextView.FOLDOP;
 import java.text.CharacterIterator;
 

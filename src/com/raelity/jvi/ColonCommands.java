@@ -20,6 +20,7 @@
 
 package com.raelity.jvi;
 
+import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.options.BooleanOption;
 import java.awt.EventQueue;
 import java.awt.event.ActionListener;

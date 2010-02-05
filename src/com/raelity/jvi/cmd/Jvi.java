@@ -17,17 +17,6 @@
  *
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-/**
- *  Title:        jVi
- *  <p>
- *  Description:  A VI-VIM clone. Use VIM as a model where applicable.
- *  <p>
- *  Copyright:    Copyright &copy; Ernie Rael <br>
- *  Company:      Raelity Engineering
- *
- * @author Ernie Rael
- * @version 1.0
- */
 
 package com.raelity.jvi.cmd;
 

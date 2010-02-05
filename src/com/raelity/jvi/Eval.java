@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi;
 
+import com.raelity.jvi.lib.MutableInt;
 import com.raelity.text.TextUtil.MySegment;
 import java.text.CharacterIterator;
 import static com.raelity.jvi.Constants.*;

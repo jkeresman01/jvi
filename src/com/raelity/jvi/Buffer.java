@@ -9,6 +9,7 @@
 
 package com.raelity.jvi;
 
+import com.raelity.jvi.lib.MutableInt;
 import com.raelity.text.RegExp;
 import com.raelity.text.RegExpJava;
 import com.raelity.text.TextUtil.MySegment;
