@@ -1,13 +1,3 @@
-/**
- * Title:        jVi<p>
- * Description:  A VI-VIM clone.
- * Use VIM as a model where applicable.<p>
- * Copyright:    Copyright (c) Ernie Rael<p>
- * Company:      Raelity Engineering<p>
- * @author Ernie Rael
- * @version 1.0
- */
-
 /*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -27,19 +17,20 @@
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi;
+package com.raelity.jvi.options;
 
+import com.raelity.jvi.Options;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 
 public class StringOption extends Option {
   private Validator validator;
   
-  StringOption(String key, String defaultValue) {
+  public StringOption(String key, String defaultValue) {
     this(key, defaultValue, null);
   }
   
-  StringOption(String key, String defaultValue, Validator validator) {
+  public StringOption(String key, String defaultValue, Validator validator) {
     super(key, defaultValue);
     if(validator == null) {
       // provide the default validator
@@ -75,7 +66,7 @@ public class StringOption extends Option {
     String oldValue = stringValue;
     stringValue = newValue;
     propogate();
-    Options.firePropertyChange(name, oldValue, newValue);
+    OptUtil.firePropertyChange(name, oldValue, newValue);
   }
 
   /**
@@ -95,7 +86,7 @@ public class StringOption extends Option {
   }
   
   public static abstract class Validator {
-    StringOption opt;
+    protected StringOption opt;
     
     public abstract void validate(String val) throws PropertyVetoException;
   }

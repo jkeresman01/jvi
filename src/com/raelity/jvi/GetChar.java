@@ -495,7 +495,7 @@ public class GetChar {
     static void initRedoTrackingPosition() {
       expectChar = false;
       redoTrackPosition = G.curwin.getCaretPosition();
-      if(G.dbgRedo.value)
+      if(G.dbgRedo.getBoolean())
         System.err.format("initRedoTrackingPosition %d '%s'\n",
                           redoTrackPosition,
                           TextUtil.debugString(redobuff.toString()));
@@ -503,7 +503,7 @@ public class GetChar {
 
     private static boolean notTracking() {
        return redoTrackPosition < 0
-               || !G.redoTrack.value
+               || !G.redoTrack.getBoolean()
                || disableTrackingOneEdit;
     }
 
@@ -511,7 +511,7 @@ public class GetChar {
       if(redoTrackPosition >= 0) {
         int prevRedoTrackPosition = redoTrackPosition;
         redoTrackPosition = G.curwin.getCaretPosition();
-        if(G.dbgRedo.value)
+        if(G.dbgRedo.getBoolean())
           System.err.format("markRedoTrackPositionBackspace %d --> %d '%s'\n",
                             prevRedoTrackPosition,
                             redoTrackPosition,
@@ -524,7 +524,7 @@ public class GetChar {
     // markRedoTrackPosition
 
     static void markRedoTrackPosition(char c) {
-      if(!G.redoTrack.value)
+      if(!G.redoTrack.getBoolean())
         return;
       removeDocAfterString = null;
       if(expectChar)
@@ -541,7 +541,7 @@ public class GetChar {
         // skip is 0 when the character comming in is where it is expected
         if(skip != 0) {
           String before = null; // debug
-          if(G.dbgRedo.value)
+          if(G.dbgRedo.getBoolean())
             before = afterBuff.toString();
           if(skip < 0) { // '[' --> '[|]', then NOW char, eg 'x', '[x|]'
             // One or more chars inserted before the track position,
@@ -567,14 +567,14 @@ public class GetChar {
                       && c != TAB)
          || c == DEL
          || (c & 0xF000) == VIRT) {
-        if(G.dbgRedo.value)debug("markRedoPosition OFF");
+        if(G.dbgRedo.getBoolean())debug("markRedoPosition OFF");
         redoTrackPosition = -1;
         expectChar = false;
         //
         // dump any leftover chars onto redo buff
         //
         if(afterBuff.length() > 0) {
-          if(G.dbgRedo.value)debug("markRedoPosition leftovers: " + afterBuff);
+          if(G.dbgRedo.getBoolean())debug("markRedoPosition leftovers: " + afterBuff);
           appendAfterBufToRedoBuff(afterBuff.length());
         }
         return true;
@@ -583,7 +583,7 @@ public class GetChar {
     }
     // assist for markRedoTrackPosition
     private static void debugMarkRedoTrackPositionSKIP(int skip, String before) {
-      if(G.dbgRedo.value)
+      if(G.dbgRedo.getBoolean())
         System.err.format("markRedoPosition SKIP[%d]: %s[%d] --> %s[%d]\n",
                           skip,
                           before, before.length(),
@@ -592,7 +592,7 @@ public class GetChar {
     // assist for markRedoTrackPosition
     private static void
     debugMarkRedoTrackPosition(int prevRedoTrackPosition, char c) {
-      if(G.dbgRedo.value)
+      if(G.dbgRedo.getBoolean())
         System.err.format("markRedoPosition %d --> %d '%c' '%s'\n",
                           prevRedoTrackPosition,
                           redoTrackPosition,
@@ -605,12 +605,12 @@ public class GetChar {
     // docInsert
 
     static void docInsert(int pos, String s) {
-      if(G.dbgRedo.value) debugDocInsert(pos, s);
+      if(G.dbgRedo.getBoolean()) debugDocInsert(pos, s);
       if(doingBackspace() || notTracking())
         return;
       if(removeDocBeforeInsstart != null && s != null
               && s.startsWith(removeDocBeforeInsstart)) {
-        if(G.dbgRedo.value) debugDocInsertMATCH_BEFORE();
+        if(G.dbgRedo.getBoolean()) debugDocInsertMATCH_BEFORE();
         int len = removeDocBeforeInsstart.length();
         pos += len;
         s = s.substring(len);
@@ -619,7 +619,7 @@ public class GetChar {
 
       if(expectChar) {
         if(pos == redoTrackPosition) {
-          if(G.dbgRedo.value)debugDocInsertMATCH_EXPECTED(pos, s);
+          if(G.dbgRedo.getBoolean())debugDocInsertMATCH_EXPECTED(pos, s);
           redoTrackPosition += 1;
         } else if(pos != redoTrackPosition)
           debugDocInsertERROR(pos, s);
@@ -631,14 +631,14 @@ public class GetChar {
         }
       } else {
         if(pos == redoTrackPosition && removeDocAfterString == null) {
-          if(G.dbgRedo.value) debugDocInsertMATCH_EXTRA(pos, s);
+          if(G.dbgRedo.getBoolean()) debugDocInsertMATCH_EXTRA(pos, s);
           //
           // Add the mystery string to the redo buffer
           //
           redobuff.append(s);
           redoTrackPosition += s.length();
         } else {
-          if(G.dbgRedo.value) debugDocInsertNO_MATCH();
+          if(G.dbgRedo.getBoolean()) debugDocInsertNO_MATCH();
 
           if(didCharWarpedRight(pos, s)) {
             // An insert to the right of where the next character was expected
@@ -686,7 +686,7 @@ public class GetChar {
         while(i-- > 0)
           redobuff.append(afterBuff.removeFirst());
         redobuff.append(s);
-        if(G.dbgRedo.value) debugDocInsertWARP(warpDistance);
+        if(G.dbgRedo.getBoolean()) debugDocInsertWARP(warpDistance);
         return true;
       }
       return false;
@@ -706,7 +706,7 @@ public class GetChar {
         redobuff.append(t);
         // NOTE: not adjusting redoTrackPosition, so no more stuff gets put
         // in the redo buffer.
-        if(G.dbgRedo.value) debugDocInsertMATCH_REMOVE_EXTRA(pos, t);
+        if(G.dbgRedo.getBoolean()) debugDocInsertMATCH_REMOVE_EXTRA(pos, t);
         return true;
       }
       return false;
@@ -716,12 +716,12 @@ public class GetChar {
                         pos, s.length(), TextUtil.debugString(s));
     }
     private static void debugDocInsertMATCH_BEFORE() {
-      if(G.dbgRedo.value)
+      if(G.dbgRedo.getBoolean())
         System.err.format("docInsert MATCH BEFORE '%s'\n",
                           TextUtil.debugString(removeDocBeforeInsstart));
     }
     private static void debugDocInsertMATCH_EXPECTED(int pos, String s) {
-      if(G.dbgRedo.value) {
+      if(G.dbgRedo.getBoolean()) {
         System.err.println("docInsert MATCH expected " + pos
                            + (s.length() > 1 ? " LENGTH: " + s.length() : ""));
       }
@@ -737,12 +737,12 @@ public class GetChar {
                         pos, s.length());
     }
     private static void debugDocInsertMATCH_EXTRA(int pos, String s) {
-      if(G.dbgRedo.value)
+      if(G.dbgRedo.getBoolean())
         System.err.format("docInsert MATCH EXTRA: %d '%s'\n",
                           pos, TextUtil.debugString(s));
     }
     private static void debugDocInsertNO_MATCH() {
-      if(G.dbgRedo.value)
+      if(G.dbgRedo.getBoolean())
         System.err.format("docInsert: NO MATCH redoPosition %d, redobuff %s[%d]"
                           + " afterBuff %s[%d]\n",
                           redoTrackPosition,
@@ -786,12 +786,12 @@ public class GetChar {
       }
 
       if(pos + len == redoTrackPosition) {
-        if(G.dbgRedo.value) debugDocRemoveMATCH(pos, len);
+        if(G.dbgRedo.getBoolean()) debugDocRemoveMATCH(pos, len);
         docRemoveExtendedWithRedobuf(len);
         redoTrackPosition -= len;
       } else if(didDocRemoveAfterTrackPosition(pos, len, removedText)) {
       } else {
-        if(G.dbgRedo.value) debugDocRemoveNO_MATCH();
+        if(G.dbgRedo.getBoolean()) debugDocRemoveNO_MATCH();
       }
       expectChar = false;
     }
@@ -804,10 +804,10 @@ public class GetChar {
         if(removedText != null && removedText.length() >= nChar) {
           // Do not even try to remove text before innstart
           removeDocBeforeInsstart = removedText.substring(0, nChar);
-          if(G.dbgRedo.value)debugDocRemoveBEFORE_INSSTART();
+          if(G.dbgRedo.getBoolean())debugDocRemoveBEFORE_INSSTART();
         } else {
           nChar = 0;
-          if(G.dbgRedo.value)debugDocRemoveBEFORE_INSSTART_NO_MATCH();
+          if(G.dbgRedo.getBoolean())debugDocRemoveBEFORE_INSSTART_NO_MATCH();
         }
       }
       return nChar;
@@ -856,7 +856,7 @@ public class GetChar {
             docRemoveExtendedWithRedobuf(nBefore);
             redoTrackPosition -= nBefore;
 
-            if(G.dbgRedo.value) debugDocRemoveREMOVE_AFTER(nBefore);
+            if(G.dbgRedo.getBoolean()) debugDocRemoveREMOVE_AFTER(nBefore);
             return true;
           } catch(Exception ex) {
 
@@ -880,34 +880,34 @@ public class GetChar {
       return false;
     }
     private static void debugDocRemove(int pos, int len, String removedText) {
-      if(G.dbgRedo.value)
+      if(G.dbgRedo.getBoolean())
         System.err.format("docRemove: pos %d, %d, '%s', track %d, insstart %d\n",
                           pos, len, TextUtil.debugString(removedText),
                           redoTrackPosition, Edit.getInsstart().getOffset());
     }
     private static void debugDocRemoveBEFORE_INSSTART() {
-      if(G.dbgRedo.value) System.err.format("docRemove BEFORE INSSTART: '%s'\n",
+      if(G.dbgRedo.getBoolean()) System.err.format("docRemove BEFORE INSSTART: '%s'\n",
                           TextUtil.debugString(removeDocBeforeInsstart));
     }
     private static void debugDocRemoveBEFORE_INSSTART_NO_MATCH() {
-      if(G.dbgRedo.value)
+      if(G.dbgRedo.getBoolean())
         System.err.format("docRemove BEFORE INSSTART NO MATCH\n");
     }
     private static void debugDocRemoveMATCH(int pos, int len) {
-      if(G.dbgRedo.value)
+      if(G.dbgRedo.getBoolean())
         System.err.format(
                   "docRemove MATCH%s: redoPosition %d --> %d, length %d\n",
                   (expectChar ? "-expect" : ""),
                   redoTrackPosition, pos, len);
     }
     private static void debugDocRemoveREMOVE_AFTER(int nBefore) {
-      if(G.dbgRedo.value)
+      if(G.dbgRedo.getBoolean())
         System.err.println("docRemove REMOVE AFTER,"
                            + " nBefore: " + nBefore
                            + " AfterString: '" + removeDocAfterString + "'");
     }
     private static void debugDocRemoveNO_MATCH() {
-      if(G.dbgRedo.value)
+      if(G.dbgRedo.getBoolean())
         System.err.println("docRemove NO MATCH");
     }
 
@@ -933,7 +933,7 @@ public class GetChar {
 
     private static boolean doingBackspace() {
       if(Edit.doingBackspace) {
-        if(G.dbgRedo.value) System.err.println("doing BACKSPACE");
+        if(G.dbgRedo.getBoolean()) System.err.println("doing BACKSPACE");
         return true;
       }
       return false;
@@ -941,7 +941,7 @@ public class GetChar {
 
     private static void debug(String s)
     {
-        if(G.dbgRedo.value)
+        if(G.dbgRedo.getBoolean())
           System.err.println(s);
     }
 
@@ -1083,7 +1083,7 @@ public class GetChar {
     stuffbuff.append(c);
     copy_redo(old_redo);
     handle_redo = true;
-    if(G.dbgRedo.value)
+    if(G.dbgRedo.getBoolean())
       System.err.println("stuffbuff = '" + stuffbuff + "'");
     return OK;
   }

@@ -671,7 +671,7 @@ finished:
   static public RegExp getLastRegExp() {
     if(lastPattern == null)
       return null;
-    return getRegExp(lastPattern, G.p_ic.value);
+    return getRegExp(lastPattern, G.p_ic.getBoolean());
   }
 
   //
@@ -1795,7 +1795,7 @@ found:
 
         // remember the line where the search started
         startlnum = pos.getLine();
-        cpo_J = G.p_cpo_j.value;
+        cpo_J = G.p_cpo_j.getBoolean();
 
         for (;;) {
           c = Misc.gchar_pos(pos);

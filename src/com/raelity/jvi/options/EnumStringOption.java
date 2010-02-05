@@ -17,23 +17,24 @@
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi;
+package com.raelity.jvi.options;
 
-public class EnumIntegerOption extends IntegerOption implements EnumOption {
-    Integer [] availableValues;
+public class EnumStringOption extends StringOption implements EnumOption {
+    String [] availableValues;
   
-  EnumIntegerOption(String key, int defaultValue, Integer[] availableValues) {
+  public EnumStringOption(String key, String defaultValue,
+          String[] availableValues) {
     this(key, defaultValue, null, availableValues);
   }
   
-  EnumIntegerOption(String key, int defaultValue,
-          IntegerOption.Validator validator,
-          Integer[] availableValues) {
+  public EnumStringOption(String key, String defaultValue,
+          StringOption.Validator validator,
+          String[] availableValues) {
     super(key, defaultValue, validator);
     this.availableValues = availableValues;
   }
 
-    public Integer[] getAvailableValues() {
+    public String[] getAvailableValues() {
         return availableValues;
     }
 

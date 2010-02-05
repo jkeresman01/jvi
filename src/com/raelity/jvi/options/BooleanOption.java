@@ -27,41 +27,34 @@
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi;
+package com.raelity.jvi.options;
 
-import java.beans.PropertyChangeEvent;
+import com.raelity.jvi.Options;
 import java.beans.PropertyVetoException;
 
-public class IntegerOption extends Option {
+public class BooleanOption extends Option {
   private Validator validator;
-  protected int value;
+  boolean value;
   
-  public IntegerOption(String key, int defaultValue) {
+  public BooleanOption(String key, boolean defaultValue) {
     this(key, defaultValue, null);
   }
   
-  public IntegerOption(String key, int defaultValue, Validator validator) {
+  public BooleanOption(String key, boolean defaultValue, Validator validator) {
     super(key, "" + defaultValue);
     if(validator == null) {
-      // The default validation is that the value must be >= zero.
+      // The default validation accepts everything
       validator = new Validator() {
                 @Override
-        public void validate(int val) throws PropertyVetoException {
-          if(val < 0) {
-            throw new PropertyVetoException(
-                        "Value must be positive: " + val,
-                        new PropertyChangeEvent(opt, opt.getName(),
-                                                opt.getInteger(), val));
-          }
+        public void validate(boolean val) throws PropertyVetoException {
         }
       };
     }
-    validator.opt = this;
     this.validator = validator;
   }
 
     @Override
-  public final int getInteger() {
+  public final boolean getBoolean() {
     return value;
   }
 
@@ -69,12 +62,12 @@ public class IntegerOption extends Option {
    * Set the value of the parameter.
    * @return true if value actually changed.
    */
-  public void setInteger(int newValue) {
-    int oldValue = value;
+  public void setBoolean(boolean newValue) {
+    boolean oldValue = value;
     value = newValue;
     stringValue = "" + value;
     propogate();
-    Options.firePropertyChange(name, oldValue, newValue);
+    OptUtil.firePropertyChange(name, oldValue, newValue);
   }
 
   /**
@@ -82,21 +75,18 @@ public class IntegerOption extends Option {
    */
     @Override
   public void setValue(String newValue) throws IllegalArgumentException {
-    int n = Integer.parseInt(newValue);
-    setInteger(n);
+    boolean b = Boolean.parseBoolean(newValue);
+    setBoolean(b);
   }
   
-  /**
-   * Validate the setting value.
-   */
     @Override
-  public void validate(int val) throws PropertyVetoException {
+  public void validate(boolean val) throws PropertyVetoException {
     validator.validate(val);
   }
   
   public static abstract class Validator {
-    protected IntegerOption opt;
+    protected BooleanOption opt;
     
-    public abstract void validate(int val) throws PropertyVetoException;
+    public abstract void validate(boolean val) throws PropertyVetoException;
   }
 }

@@ -26,7 +26,7 @@
  * and open the template in the editor.
  */
 
-package com.raelity.jvi;
+package com.raelity.jvi.options;
 
 import java.beans.BeanDescriptor;
 import java.beans.IntrospectionException;

@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.options.BooleanOption;
 import  static com.raelity.jvi.Constants.*;
 
 

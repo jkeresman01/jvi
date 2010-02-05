@@ -24,8 +24,8 @@
 
 package com.raelity.jvi.swing;
 
-import com.raelity.jvi.KeypadBindingBean;
-import com.raelity.jvi.KeyBindingBean;
+import com.raelity.jvi.options.KeypadBindingBean;
+import com.raelity.jvi.options.KeyBindingBean;
 import com.l2fprod.common.beans.ExtendedPropertyDescriptor;
 import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
 import com.l2fprod.common.beans.editor.ComboBoxPropertyEditor;
@@ -41,12 +41,12 @@ import com.l2fprod.common.swing.ComponentFactory;
 import com.l2fprod.common.swing.LookAndFeelTweaks;
 import com.l2fprod.common.swing.PercentLayout;
 import com.l2fprod.common.swing.renderer.ColorCellRenderer;
-import com.raelity.jvi.EnumOption;
-import com.raelity.jvi.Option;
-import com.raelity.jvi.Option.ColorOption;
+import com.raelity.jvi.options.EnumOption;
+import com.raelity.jvi.options.Option;
+import com.raelity.jvi.options.Option.ColorOption;
 import com.raelity.jvi.Options;
 import com.raelity.jvi.Options.EditOptionsControl;
-import com.raelity.jvi.OptionsBean;
+import com.raelity.jvi.options.OptionsBean;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;

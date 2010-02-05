@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi;
 
+import com.raelity.jvi.options.Option;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -108,7 +109,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.2.7");
+    public static final jViVersion version = new jViVersion("1.3.0.x2");
 
     private static final String DEBUG_AT_HOME = "com.raelity.jvi.DEBUG";
 
@@ -1577,7 +1578,7 @@ public class ViManager
                 return;
             if(outputBasicInfo && !valid)
                 return;
-            output(G.isHideVersion.value
+            output(G.isHideVersion.getBoolean()
                     ? ViOutputStream.PRI_LOW
                     : ViOutputStream.PRI_NORMAL);
         }

@@ -1,13 +1,3 @@
-/**
- * Title:        jVi<p>
- * Description:  A VI-VIM clone.
- * Use VIM as a model where applicable.<p>
- * Copyright:    Copyright (c) Ernie Rael<p>
- * Company:      Raelity Engineering<p>
- * @author Ernie Rael
- * @version 1.0
- */
-
 /*
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -27,7 +17,7 @@
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi;
+package com.raelity.jvi.options;
 
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
@@ -59,7 +49,7 @@ public abstract class Option {
 
     protected void initialize() {
 	fPropogate = false;
-	String initialValue = Options.getPrefs().get(name, defaultValue);
+	String initialValue = OptUtil.getPrefs().get(name, defaultValue);
 	setValue(initialValue);
 	fPropogate = true;
 
@@ -107,6 +97,22 @@ public abstract class Option {
         fExpert = f;
     }
 
+    public void setDesc(String desc)
+    {
+        if (this.desc != null) {
+            throw new Error("option: " + name + " already has a description.");
+        }
+        this.desc = desc;
+    }
+
+    public void setDisplayName(String displayName)
+    {
+        if (this.displayName != null) {
+            throw new Error("option: " + name + " already has a display name.");
+        }
+        this.displayName = displayName;
+    }
+
     /**
      * The preferences data base has changed, stay in sync.
      * Do not propogate change back to data base.
@@ -123,7 +129,7 @@ public abstract class Option {
 
     protected void propogate() {
 	if(fPropogate) {
-	    Options.prefs.put(name, stringValue);
+            OptUtil.getPrefs().put(name, stringValue);
 	}
     }
     
@@ -254,7 +260,7 @@ public abstract class Option {
             value = newValue;
             stringValue = xformToString(value);
             propogate();
-            Options.firePropertyChange(name, oldValue, newValue);
+            OptUtil.firePropertyChange(name, oldValue, newValue);
         }
 
         /**

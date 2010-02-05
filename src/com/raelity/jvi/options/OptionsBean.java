@@ -1,4 +1,6 @@
-package com.raelity.jvi;
+package com.raelity.jvi.options;
+
+import com.raelity.jvi.Options;
 
 /**
  * Simple class so there is some way to change vi options in the IDE.

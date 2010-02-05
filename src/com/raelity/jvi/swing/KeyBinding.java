@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.options.BooleanOption;
 import java.awt.EventQueue;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;

@@ -23,7 +23,7 @@
  * Created on February 12, 2007, 4:47 PM
  */
 
-package com.raelity.jvi;
+package com.raelity.jvi.options;
 
 import com.raelity.jvi.swing.*;
 import java.beans.BeanDescriptor;

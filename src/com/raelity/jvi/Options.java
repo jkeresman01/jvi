@@ -19,7 +19,14 @@
  */
 package com.raelity.jvi;
 
+import com.raelity.jvi.options.StringOption;
+import com.raelity.jvi.options.IntegerOption;
+import com.raelity.jvi.options.EnumStringOption;
+import com.raelity.jvi.options.EnumIntegerOption;
+import com.raelity.jvi.options.BooleanOption;
+import com.raelity.jvi.options.Option;
 import com.raelity.jvi.ColonCommands.ColonEvent;
+import com.raelity.jvi.options.OptUtil;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -36,12 +43,9 @@ import java.util.HashMap;
 import java.util.Collections;
 //import java.util.Deque; JDK1.6
 import java.util.Set;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
-import java.util.prefs.Preferences;
 
 import com.raelity.text.TextUtil.MySegment;
-import com.raelity.jvi.Option.ColorOption;
+import com.raelity.jvi.options.Option.ColorOption;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -182,8 +186,6 @@ public final class Options {
   static List<String>processList = new ArrayList<String>();
   static List<String>debugList = new ArrayList<String>();
 
-  static Preferences prefs;
-
   private static boolean didInit = false;
   public static void init() {
     if(didInit) {
@@ -191,18 +193,7 @@ public final class Options {
     }
     didInit = true;
 
-    prefs = ViManager.getViFactory().getPreferences();
-
-    prefs.addPreferenceChangeListener(new PreferenceChangeListener() {
-      public void preferenceChange(PreferenceChangeEvent evt) {
-	Option opt = optionsMap.get(evt.getKey());
-	if(opt != null) {
-          if(evt.getNewValue() != null) {
-              opt.preferenceChange(evt.getNewValue());
-          }
-	}
-      }
-    });
+    OptUtil.init(pcs);
     
     /////////////////////////////////////////////////////////////////////
     //
@@ -743,10 +734,6 @@ public final class Options {
                "");
   }
 
-  static Preferences getPrefs() {
-      return prefs;
-  }
-
   static public StringOption createStringOption(String name,
                                                  String defaultValue) {
     return createStringOption(name, defaultValue, null);
@@ -848,19 +835,6 @@ public final class Options {
     return optionsMap.get(name);
   }
 
-  /**
-   * Only used by JBuilder, should convert....
-   * @return the String key names of the options.
-   */
-  public static List<String> getOptionNamesList() {
-    List<String> l = new ArrayList<String>();
-    l.addAll(generalList);
-    l.addAll(modifyList);
-    l.addAll(cursorWrapList);
-    l.addAll(debugList);
-    return Collections.unmodifiableList(l);
-  }
-
   public static List<String> getOptionList(Category category) {
     List<String> catList = null;
     switch(category) {
@@ -893,11 +867,8 @@ public final class Options {
       if(optionsGroup != null) {
           optionsGroup.add(name);
       }
-      if(opt.desc != null) {
-	  throw new Error("option: " + name + " already has a description.");
-      }
-      opt.desc = desc;
-      opt.displayName = displayName;
+      opt.setDesc(desc);
+      opt.setDisplayName(displayName);
     } else {
       throw new Error("Unknown option: " + name);
     }
@@ -907,8 +878,8 @@ public final class Options {
                                       boolean fExpert, boolean fHidden) {
     Option opt = optionsMap.get(optionName);
     if(opt != null) {
-      opt.fExpert = fExpert;
-      opt.fHidden = fHidden;
+      opt.setExpert(fExpert);
+      opt.setHidden(fHidden);
     }
   }
   
@@ -937,11 +908,6 @@ public final class Options {
                                                   PropertyChangeListener l)
   {
     pcs.removePropertyChangeListener(p, l);
-  }
-  
-  /** This should only be used from Option and its subclasses */
-  static void firePropertyChange(String name, Object oldValue, Object newValue) {
-    pcs.firePropertyChange(name, oldValue, newValue);
   }
   
   //////////////////////////////////////////////////////////////////////
@@ -1281,7 +1247,7 @@ public final class Options {
       mlPat2 = Pattern.compile("\\s+(?:vi:|vim:|ex:)\\s*set? ([^:]*):");
     }
     int mls;
-    if(!G.p_ml.value || (mls = G.p_mls.value) == 0)
+    if(!G.p_ml.getBoolean() || (mls = G.p_mls.getInteger()) == 0)
       return;
     int lnum;
     int lcount = G.curbuf.getLineCount();
@@ -1358,7 +1324,7 @@ public final class Options {
   //
   
   static boolean can_bs(char what) {
-    switch(G.p_bs.value) {
+    switch(G.p_bs.getInteger()) {
       case 2:     return true;
       case 1:     return what != BS_START;
       case 0:     return false;
@@ -1395,7 +1361,7 @@ public final class Options {
   }
   
   public static boolean doHighlightSearch() {
-    return G.p_hls.value && !nohDisableHighlight;
+    return G.p_hls.getBoolean() && !nohDisableHighlight;
   }
   
   static void nohCommand() {

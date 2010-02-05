@@ -1768,7 +1768,7 @@ private static int put_in_typebuf(String s, boolean colon)
   static char adjust_clip_reg(char rp)
   {
     // If no reg. specified, and "unnamed" is in 'clipboard', use '*' reg.
-    if (rp == 0 && G.p_cb.value)
+    if (rp == 0 && G.p_cb.getBoolean())
       rp = '*';
     if(rp == '+')
       rp = '*';

@@ -2399,7 +2399,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
     // previous line
     //
     //else if (vim_strchr(p_ww, '[') != NULL && curwin->w_cursor.lnum > 1)
-    else if (G.p_ww_i_left.value && cursor.getLine() > 1)
+    else if (G.p_ww_i_left.getBoolean() && cursor.getLine() > 1)
     {
 	start_arrow(tpos);
         G.curwin.w_cursor.set(cursor.getLine() - 1, 0);
@@ -2466,7 +2466,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
     }
     // if 'whichwrap' set for cursor in insert mode, may move the
     // cursor to the next line
-    else if (G.p_ww_i_right.value
+    else if (G.p_ww_i_right.getBoolean()
              && cursor.getLine() < G.curbuf.getLineCount())
     {
       start_arrow(cursor);

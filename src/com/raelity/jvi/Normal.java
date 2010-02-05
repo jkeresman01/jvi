@@ -1547,7 +1547,7 @@ middle_code:
           if (!gui_yank) {
               G.VIsual_active = false;
               v_updateVisualState();
-              if (G.p_smd.value)
+              if (G.p_smd.getBoolean())
                   G.clear_cmdline = true;   /* unshow visual mode later */
               if (oap.op_type == OP_YANK || oap.op_type == OP_COLON ||
                       oap.op_type == OP_FILTER)
@@ -1879,7 +1879,7 @@ middle_code:
     G.curbuf.b_visual_end.setMark(G.curwin.w_cursor);
     G.curbuf.b_visual_mode = G.VIsual_mode;
 
-    if (G.p_smd.value)
+    if (G.p_smd.getBoolean())
         G.clear_cmdline = true;/* unshow visual mode later */
     v_updateVisualState();
 
@@ -3054,7 +3054,7 @@ middle_code:
       }
     } else {	    // "%" : go to matching paren
       cap.oap.motion_type = MCHAR;
-      boolean usePlatform = G.p_pbm.value & ViManager.getPlatformFindMatch();
+      boolean usePlatform = G.p_pbm.getBoolean() & ViManager.getPlatformFindMatch();
       if(usePlatform) {
         ViFPOS fpos = G.curwin.w_cursor.copy();
         int endingOffset = fpos.getOffset(); // this assumes failture
@@ -3754,7 +3754,7 @@ static private void nv_findpar(CMDARG cap, int dir)
               if (!selectmode)
               /* start Select mode when 'selectmode' contains "cmd" */
                   may_start_select('c');
-              if (G.p_smd.value)
+              if (G.p_smd.getBoolean())
                   redraw_cmdline = true;  /* show visual mode later */
               /*
                * For V and ^V, we multiply the number of lines even if there
@@ -3866,7 +3866,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       G.VIsual_mode = c;
       G.VIsual_active = true;
       G.VIsual_reselect = true;
-      if (G.p_smd.value)
+      if (G.p_smd.getBoolean())
           redraw_cmdline = true; /* show visual mode later */
 //#ifdef USE_CLIPBOARD
     /* Make sure the clipboard gets updated.  Needed because start and
@@ -4544,7 +4544,7 @@ static private void nv_findpar(CMDARG cap, int dir)
                 regname = cap.oap.regname;
                 regname = Misc.adjust_clip_reg(regname);
                 if (regname == 0 || Util.isdigit(regname)
-                    || (G.p_cb.value && (regname == '*' || regname == '+'))) {
+                    || (G.p_cb.getBoolean() && (regname == '*' || regname == '+'))) {
                   // the delete is going to overwrite the register we want to
                   // put, save it first.
                   reg1 = Misc.get_register(regname, true);

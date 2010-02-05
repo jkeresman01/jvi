@@ -18,9 +18,10 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
-package com.raelity.jvi;
+package com.raelity.jvi.options;
 
 import com.raelity.jvi.Options.EditOptionsControl;
+import com.raelity.jvi.ViManager;
 import com.raelity.jvi.swing.KeyBinding;
 import java.awt.Image;
 import java.beans.BeanInfo;

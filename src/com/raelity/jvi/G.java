@@ -20,6 +20,9 @@
 
 package com.raelity.jvi;
 
+import com.raelity.jvi.options.StringOption;
+import com.raelity.jvi.options.IntegerOption;
+import com.raelity.jvi.options.BooleanOption;
 import java.util.EnumSet;
 
 /**

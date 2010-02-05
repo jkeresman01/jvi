@@ -26,7 +26,7 @@
  * and open the template in the editor.
  */
 
-package com.raelity.jvi;
+package com.raelity.jvi.options;
 
 import java.awt.Color;
 import java.awt.Image;
@@ -44,8 +44,10 @@ import java.beans.VetoableChangeSupport;
 import java.util.List;
 import java.util.prefs.Preferences;
 
-import com.raelity.jvi.Option.ColorOption;
+import com.raelity.jvi.options.Option.ColorOption;
+import com.raelity.jvi.Options;
 import com.raelity.jvi.Options.EditOptionsControl;
+import com.raelity.jvi.ViManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;

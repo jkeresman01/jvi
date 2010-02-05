@@ -20,6 +20,7 @@
 
 package com.raelity.jvi;
 
+import com.raelity.jvi.options.BooleanOption;
 import java.awt.EventQueue;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -735,7 +736,7 @@ public static class BangAction extends ColonAction
         int nArgs = evt.getNArg();
         boolean isFilter = (evt.getAddrCount() > 0);
 
-        if (dbg.value) {
+        if (dbg.getBoolean()) {
             System.err.println("!: Original command: '" + evt.getArgString() + "'");
         }
         StringBuilder arg = new StringBuilder(evt.getArgString());
@@ -744,7 +745,7 @@ public static class BangAction extends ColonAction
             Msg.emsg("No previous command");
             return;
         }
-        if (dbg.value) {
+        if (dbg.getBoolean()) {
             System.err.println("!: Substitution '" + arg + "'");
         }
 
@@ -758,14 +759,14 @@ public static class BangAction extends ColonAction
         } else {
             lastBangCommand = "";
         }
-        if (dbg.value) {
+        if (dbg.getBoolean()) {
             System.err.println("!: Last command saved '" + lastBangCommand + "'");
         }
     }
 
     private void joinThread(Thread t)
     {
-        if(dbg.value) {
+        if(dbg.getBoolean()) {
             System.err.println("!: joining thread " + t.getName());
         }
         if(t.isAlive()) {
@@ -795,7 +796,7 @@ public static class BangAction extends ColonAction
             try {
                 int exit = coord.process.exitValue();
             } catch(IllegalThreadStateException ex) {
-                if(dbg.value) {
+                if(dbg.getBoolean()) {
                     System.err.println("!: destroying process");
                 }
                 coord.process.destroy();
@@ -935,7 +936,7 @@ public static class BangAction extends ColonAction
         shellCommandLine.add(G.p_shcf.getString());
         shellCommandLine.add(shellXQuote + commandLine + shellXQuote);
 
-        if (dbg.value) {
+        if (dbg.getBoolean()) {
             System.err.println(
                     "!: ProcessBuilder: '" + shellCommandLine + "'");
         }
@@ -976,7 +977,7 @@ public static class BangAction extends ColonAction
 
         // start the thread(s)
 
-        if (dbg.value) {
+        if (dbg.getBoolean()) {
             System.err.println("!: starting threads");
         }
 
@@ -1148,7 +1149,7 @@ private static class SimpleExecuteThread extends FilterThread
             return;
         }
         didCleanup = true;
-        if (dbg.value) {
+        if (dbg.getBoolean()) {
             dumpState();
         }
         if(vos != null) {
@@ -1175,7 +1176,7 @@ private static class SimpleExecuteThread extends FilterThread
                 if(line == null) {
                     break;
                 }
-                if (dbgData.value) {
+                if (dbgData.getBoolean()) {
                     System.err.println("!: Writing '" + line + "' to ViOutputStream");
                 }
                 vos.println(line);
@@ -1223,7 +1224,7 @@ private static class ProcessWriterThread extends FilterThread
             return;
         }
         didCleanup = true;
-        if (dbg.value) {
+        if (dbg.getBoolean()) {
             dumpState();
         }
         if(writer != null) {
@@ -1253,7 +1254,7 @@ private static class ProcessWriterThread extends FilterThread
                     break;
                 }
                 writer.write(data);
-                if (dbgData.value) {
+                if (dbgData.getBoolean()) {
                     // NEEDSWORK: why trim(), use Text.formDebugDString
                     System.err.println("!: Writer #" + currWriterLine
                             + ": '" + data.trim() + "'");
@@ -1268,7 +1269,7 @@ private static class ProcessWriterThread extends FilterThread
         } catch (IOException ex) {
             exception = ex;
         }
-        if (dbg.value) {
+        if (dbg.getBoolean()) {
             System.err.println("!: Wrote all lines needed to process");
         }
         if(!isProblem()) {
@@ -1312,7 +1313,7 @@ private static class ProcessReaderThread extends FilterThread
             return;
         }
         didCleanup = true;
-        if (dbg.value) {
+        if (dbg.getBoolean()) {
             dumpState();
         }
         if(reader != null) {
@@ -1342,12 +1343,12 @@ private static class ProcessReaderThread extends FilterThread
                     if (wroteFirstLineToFile && !isInterrupted()) {
                         reachedEndOfProcessOutput = true;
                     }
-                    if (dbg.value) {
+                    if (dbg.getBoolean()) {
                         System.err.println("!: end of process read data");
                     }
                     break;
                 }
-                if (dbgData.value) {
+                if (dbgData.getBoolean()) {
                     // NEEDSWORK: why trim(), use Text.formDebugString
                     System.err.println("!: Reader #" + currReaderLine
                             + ": '" + data.trim() + "'");
@@ -1493,7 +1494,7 @@ private static class DocumentThread extends FilterThread
         boolean didSomething = false;
         String data = null;
         if(docReadLine <= coord.lastLine) {
-            if (dbg.value) {
+            if (dbg.getBoolean()) {
                 System.err.println("!: rwDoc: try read doc");
             }
             while(!isProblem() && docReadLine <= coord.lastLine) {
@@ -1502,7 +1503,7 @@ private static class DocumentThread extends FilterThread
                 if(!coord.fromDoc.offer(data)) {
                     break;
                 }
-                if (dbgData.value) {
+                if (dbgData.getBoolean()) {
                     System.err.println("!: fromDoc #" + docReadLine + "," + docLine
                             + ": '" + data.trim() + "'");
                 }
@@ -1512,7 +1513,7 @@ private static class DocumentThread extends FilterThread
         } else {
             if(!docReadDone && coord.fromDoc.offer(DONE)) {
                 docReadDone = true;
-                if (dbg.value) {
+                if (dbg.getBoolean()) {
                     System.err.println("!: rwDoc: docReadDONE");
                 }
             }
@@ -1525,7 +1526,7 @@ private static class DocumentThread extends FilterThread
         boolean didSomething = false;
         String data = null;
         if(!docWriteDone) {
-            if (dbg.value)
+            if (dbg.getBoolean())
                 System.err.println("!: rwDoc: try write doc " + debugCounter++);
             while(!isProblem()) {
                 data = coord.toDoc.poll();
@@ -1534,14 +1535,14 @@ private static class DocumentThread extends FilterThread
                 }
                 if(DONE.equals(data)) {
                     docWriteDone = true;
-                    if (dbg.value) {
+                    if (dbg.getBoolean()) {
                         System.err.println("!: rwDoc: docWriteDONE");
                     }
                     break;
                 }
                 sb.append(data);
                 sb.append('\n');
-                if (dbgData.value) {
+                if (dbgData.getBoolean()) {
                     System.err.println("!: toDoc #" + docWriteLine + ": '"
                             + data.trim() + "'");
                 }
@@ -1568,14 +1569,14 @@ private static class DocumentThread extends FilterThread
             return;
         }
         didCleanup = true;
-        if (dbg.value) {
+        if (dbg.getBoolean()) {
             dumpState();
         }
 
         if(docReadDone && docReadLine <= coord.lastLine) {
             throw new IllegalStateException();
         }
-        if (dbg.value) {
+        if (dbg.getBoolean()) {
             System.err.println("!: checking doc CLEANUP");
         }
         // don't run the document cleanup if there are issues
@@ -1940,7 +1941,7 @@ private static abstract class FilterThread extends Thread
     public void doTaskCleanup()
     {
         if(exception != null) {
-            if (dbg.value) {
+            if (dbg.getBoolean()) {
                 LOG.log(Level.SEVERE,
                         "!: Exception in " + getName() , exception);
             }
@@ -1948,7 +1949,7 @@ private static abstract class FilterThread extends Thread
         }
 
         if(error) {
-            if (dbg.value) {
+            if (dbg.getBoolean()) {
                 System.err.println("!: error in " + getName());
             }
             cleanup();
@@ -1956,7 +1957,7 @@ private static abstract class FilterThread extends Thread
 
         if(isInterrupted()) {
             interrupted = true;
-            if (dbg.value) {
+            if (dbg.getBoolean()) {
                 System.err.println("!: cleanup in " + getName());
             }
             cleanup();

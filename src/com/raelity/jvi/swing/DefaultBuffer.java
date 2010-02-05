@@ -9,7 +9,7 @@
 
 package com.raelity.jvi.swing;
 
-import com.raelity.jvi.BooleanOption;
+import com.raelity.jvi.options.BooleanOption;
 import com.raelity.jvi.Buffer;
 import com.raelity.jvi.Options;
 import com.raelity.jvi.Util;
