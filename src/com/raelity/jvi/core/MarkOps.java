@@ -23,6 +23,7 @@ import com.raelity.jvi.ViManager;
 import com.raelity.jvi.core.ColonCommands.ColonAction;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
@@ -44,6 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.openide.util.lookup.ServiceProvider;
 import static com.raelity.jvi.ViTextView.MARKOP;
 import static com.raelity.jvi.ViTextView.MARKOP.NEXT;
 import static com.raelity.jvi.ViTextView.MARKOP.PREV;
@@ -69,7 +71,16 @@ class MarkOps
     /** This constant indicates mark is in other file. */
     final static FPOS otherFile = new FPOS();
 
-    static void init() {
+    @ServiceProvider(service=ViInitialization.class)
+    public static class Init implements ViInitialization
+    {
+      public void init()
+      {
+        MarkOps.init();
+      }
+    }
+
+    private static void init() {
         PropertyChangeListener pcl = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 String pname = evt.getPropertyName();

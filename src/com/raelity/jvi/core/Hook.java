@@ -20,7 +20,10 @@
 
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViTextView;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * This class facilitates communications between packages jvi and jvi.core.
@@ -34,8 +37,25 @@ import com.raelity.jvi.ViTextView;
  */
 public class Hook
 {
-    private static Hook INSTANCE = new Hook();
+    private static Hook INSTANCE;
     private Hook(){}
+
+    @ServiceProvider(service=ViInitialization.class)
+    public static class Init implements ViInitialization
+    {
+      public void init()
+      {
+        Hook.init();
+      }
+    }
+
+    private static void init()
+    {
+        if(INSTANCE != null)
+            return;
+        INSTANCE = new Hook();
+        ViManager.setCoreHook(INSTANCE);
+    }
 
     //////////////////////////////////////////////////////////////////////
     //

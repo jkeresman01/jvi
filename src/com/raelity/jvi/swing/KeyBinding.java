@@ -19,7 +19,6 @@
  */
 package com.raelity.jvi.swing;
 
-import com.raelity.jvi.ViManager;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.options.BooleanOption;
 import java.awt.EventQueue;
@@ -38,7 +37,6 @@ import javax.swing.text.Keymap;
 import javax.swing.KeyStroke;
 
 import com.raelity.jvi.*;
-import com.raelity.jvi.core.KeyDefs;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.HashSet;
@@ -48,6 +46,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.TextAction;
+import org.openide.util.lookup.ServiceProvider;
 import static java.awt.event.InputEvent.SHIFT_MASK;
 import static java.awt.event.InputEvent.CTRL_MASK;
 
@@ -59,6 +58,15 @@ public class KeyBinding {
   public static final String KEY_BINDINGS = "KeyBinding";
   private static Preferences prefs = ViManager.getViFactory()
                                 .getPreferences().node(ViManager.PREFS_KEYS);
+
+    @ServiceProvider(service=ViInitialization.class)
+    public static class Init implements ViInitialization
+    {
+      public void init()
+      {
+        KeyBinding.init();
+      }
+    }
 
   //
   // Set up a private INSTANCE of KeyBinding for use with propertyChange
@@ -94,7 +102,7 @@ public class KeyBinding {
 
   static final String enqueKeyAction = "enque-key";
 
-  public static void init() {
+  private static void init() {
       createSubKeymaps();
       prefs.addPreferenceChangeListener(new PreferenceChangeListener() {
           public void preferenceChange(PreferenceChangeEvent evt) {

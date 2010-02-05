@@ -23,6 +23,7 @@ import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.GetChar;
+import com.raelity.jvi.core.Hook;
 import com.raelity.jvi.core.KeyDefs;
 import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.core.Normal;
@@ -71,6 +72,7 @@ import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import org.openide.util.Lookup;
 
 /**
  * <p>
@@ -186,7 +188,7 @@ public class ViManager
     public static final String P_BOOT = "jViBoot";
     /**
      * This is invoked well after boot, just before edit operations. */
-    public static final String P_LATE_INIT = "jViBoot";
+    public static final String P_LATE_INIT = "jViLateInit";
     /**
      * jVi is closing up shop for the day. old/new are null */
     public static final String P_SHUTDOWN = "jViShutdown";
@@ -240,10 +242,11 @@ public class ViManager
         enabled = true;
         ViManager.factory = factory;
 
-        // Options.init();
-        // KeyBinding.init();
-        // MarkOps.init();
-        // Misc.init();
+        for (ViInitialization i : Lookup.getDefault().lookupAll(ViInitialization.class)) {
+            i.init();
+        }
+
+        assert core != null;
 
         ColonCommands.register("ve", "version", ACTION_version);
         ColonCommands.register("debugMotd", "debugMotd", ACTION_debugMotd);
@@ -261,6 +264,12 @@ public class ViManager
                 firePropertyChange(P_SHUTDOWN, null, null);
             }
         });
+    }
+
+    public static void setCoreHook(Hook hook)
+    {
+        assert core == null;
+        core = hook;
     }
 
     static ActionListener ACTION_version = new ActionListener() {

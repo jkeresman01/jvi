@@ -22,6 +22,7 @@ package com.raelity.jvi.core;
 import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViCursor;
 import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.MutableString;
@@ -60,6 +61,7 @@ import java.text.CharacterIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import org.openide.util.lookup.ServiceProvider;
 
 public class Misc implements ClipboardOwner {
   private static Logger LOG = Logger.getLogger(Misc.class.getName());
@@ -70,7 +72,16 @@ public class Misc implements ClipboardOwner {
   // "misc1.c"
   //
 
-  static void init() {
+    @ServiceProvider(service=ViInitialization.class)
+    public static class Init implements ViInitialization
+    {
+      public void init()
+      {
+        Misc.init();
+      }
+    }
+
+  private static void init() {
     PropertyChangeListener pcl = new PropertyChangeListener() {
       public void propertyChange(PropertyChangeEvent evt) {
         String pname = evt.getPropertyName();

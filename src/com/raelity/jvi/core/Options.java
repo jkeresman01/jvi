@@ -19,6 +19,8 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViManager;
 import com.raelity.jvi.options.StringOption;
 import com.raelity.jvi.options.IntegerOption;
@@ -55,6 +57,7 @@ import java.util.logging.Logger;
 import static com.raelity.jvi.core.Constants.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Option handling from external sources.
@@ -78,6 +81,15 @@ public final class Options {
         void clear();
         // cancel an inprogress edit
         void cancel();
+    }
+
+    @ServiceProvider(service=ViInitialization.class)
+    public static class Init implements ViInitialization
+    {
+      public void init()
+      {
+        Options.init();
+      }
     }
   
   static Options getOptions() {
@@ -190,7 +202,7 @@ public final class Options {
   static List<String>debugList = new ArrayList<String>();
 
   private static boolean didInit = false;
-  public static void init() {
+  private static void init() {
     if(didInit) {
       return;
     }
