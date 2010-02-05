@@ -19,6 +19,8 @@
  */
 package com.raelity.jvi;
 
+import com.raelity.jvi.core.Buffer;
+import com.raelity.jvi.core.ColonCommands;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
 import java.util.Set;

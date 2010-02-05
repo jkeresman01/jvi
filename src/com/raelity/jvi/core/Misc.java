@@ -17,13 +17,17 @@
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi;
+package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViCursor;
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.MutableString;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.ViTextView.FOLDOP;
 import com.raelity.jvi.ViTextView.NLOP;
+import com.raelity.jvi.ViXlateKey;
 import java.awt.event.KeyEvent;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.ClipboardOwner;
@@ -44,8 +48,8 @@ import java.util.prefs.BackingStoreException;
 import javax.swing.text.Keymap;
 import javax.swing.KeyStroke;
 
-import static com.raelity.jvi.Constants.*;
-import static com.raelity.jvi.KeyDefs.*;
+import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.KeyDefs.*;
 import com.raelity.text.TextUtil.MySegment;
 import java.beans.PropertyChangeListener;
 import java.io.InputStream;

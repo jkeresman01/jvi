@@ -17,7 +17,7 @@
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi;
+package com.raelity.jvi.core;
 
 import com.raelity.jvi.options.StringOption;
 import com.raelity.jvi.options.IntegerOption;
@@ -25,7 +25,9 @@ import com.raelity.jvi.options.EnumStringOption;
 import com.raelity.jvi.options.EnumIntegerOption;
 import com.raelity.jvi.options.BooleanOption;
 import com.raelity.jvi.options.Option;
-import com.raelity.jvi.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.ViOptionBag;
+import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.options.OptUtil;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -49,7 +51,7 @@ import com.raelity.jvi.options.Option.ColorOption;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static com.raelity.jvi.Constants.*;
+import static com.raelity.jvi.core.Constants.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

@@ -17,8 +17,11 @@
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi;
+package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViCmdEntry;
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.lib.MutableInt;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -36,12 +39,12 @@ import java.text.CharacterIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AbstractDocument;
-import static com.raelity.jvi.KeyDefs.K_X_SEARCH_FINISH;
-import static com.raelity.jvi.KeyDefs.K_X_INCR_SEARCH_DONE;
-import static com.raelity.jvi.KeyDefs.K_X_SEARCH_CANCEL;
+import static com.raelity.jvi.core.KeyDefs.K_X_SEARCH_FINISH;
+import static com.raelity.jvi.core.KeyDefs.K_X_INCR_SEARCH_DONE;
+import static com.raelity.jvi.core.KeyDefs.K_X_SEARCH_CANCEL;
 import javax.swing.text.Document;
 
-import static com.raelity.jvi.Constants.*;
+import static com.raelity.jvi.core.Constants.*;
 
 /**
  * Searching, regexp and substitution.

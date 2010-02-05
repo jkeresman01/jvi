@@ -19,7 +19,7 @@
  */
 package com.raelity.jvi.options;
 
-import com.raelity.jvi.Options;
+import com.raelity.jvi.core.Options;
 import java.beans.PropertyVetoException;
 
 public class BooleanOption extends Option {

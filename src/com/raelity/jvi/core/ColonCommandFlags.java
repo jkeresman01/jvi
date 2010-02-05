@@ -17,7 +17,7 @@
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi;
+package com.raelity.jvi.core;
 
 /**
  * Flags used to direct ":" command parsing. Only some of these

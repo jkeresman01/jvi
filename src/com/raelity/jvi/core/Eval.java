@@ -17,12 +17,14 @@
  *
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi;
+package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.text.TextUtil.MySegment;
 import java.text.CharacterIterator;
-import static com.raelity.jvi.Constants.*;
+import static com.raelity.jvi.core.Constants.*;
 
 /**
  *

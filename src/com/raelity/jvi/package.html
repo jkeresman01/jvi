@@ -103,13 +103,16 @@ other techniques to achieve this affect.
 <h3>Normal Mode Command Parsing</h3>
 
 <p>
+
 Normal mode Vi comands can have up to three chunks: buffer-operator-motion.
 For example: <b>"a3y4&lt;CR&gt;</b> has
+</p>
 <ul>
-  <li>buffer: "a
-  <li>operator: 3y
-  <li>motion: 4&lt;CR&gt;
+  <li>buffer: "a</li>
+  <li>operator: 3y</li>
+  <li>motion: 4&lt;CR&gt;</li>
 </ul>
+<p>
 The original vim invokes normal,
 similar in function to jVi's {@link com.raelity.jvi.Normal},
 3 times, one for each chunk. The caller
@@ -156,5 +159,6 @@ Multiple views/windows
 of the same document share the <code>Buffer</code> variables;
 for example, if you do ":set sw=8" on a file,
 any open windows into that file all have the same shiftwidth.
+</p>
     
 </body>

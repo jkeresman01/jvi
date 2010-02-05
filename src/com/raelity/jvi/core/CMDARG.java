@@ -17,12 +17,30 @@
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
+package com.raelity.jvi.core;
 
-package com.raelity.jvi;
+/**
+ * Arguments for Normal mode commands.
+ */
+class CMDARG
+{
+  OPARG  oap;		/* Operator arguments */
+  char   prechar;	/* prefix character (optional, always 'g') */
+  char   cmdchar;	/* command character */
+  char   nchar;		/* next character (optional) */
+  char   extra_char;	/* yet another character (optional) */
+  int    count0;	/* count, default 0 */
+  int    count1;	/* count, default 1 */
 
-public class NonExistentWindowException extends RuntimeException {
-
-  public NonExistentWindowException(String msg) {
-    super(msg);
+    @Override
+  public String toString() {
+    return	"prechar: " + prechar
+	      + " cmdchar: " + cmdchar
+	      + " nchar: " + nchar
+	      + " extra_char: " + extra_char
+	      + " count0: " + count0
+	      + " count1: " + count1
+	      + "\n" + oap
+	      ;
   }
 }

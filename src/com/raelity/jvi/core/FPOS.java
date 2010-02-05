@@ -17,8 +17,9 @@
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi;
+package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViFPOS;
 import java.lang.ref.WeakReference;
 
 /**

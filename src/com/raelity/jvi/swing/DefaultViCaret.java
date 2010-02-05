@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.core.ViManager;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.lang.reflect.Method;

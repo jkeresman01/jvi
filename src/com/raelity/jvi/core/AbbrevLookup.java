@@ -18,7 +18,7 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
-package com.raelity.jvi;
+package com.raelity.jvi.core;
 
 import java.util.ArrayList;
 import java.util.Collections;

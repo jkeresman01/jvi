@@ -24,8 +24,12 @@
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi;
+package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViFeature;
+import com.raelity.jvi.ViMark;
+import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.ViTextView.FOLDOP;
@@ -40,8 +44,8 @@ import com.raelity.jvi.swing.KeyBinding;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static com.raelity.jvi.Constants.*;
-import static com.raelity.jvi.KeyDefs.*;
+import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.KeyDefs.*;
 
 /**
  * Contains the main routine for processing characters in command mode.

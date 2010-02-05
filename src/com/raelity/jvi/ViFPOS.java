@@ -19,6 +19,8 @@
  */
 package com.raelity.jvi;
 
+import com.raelity.jvi.core.Buffer;
+
 /**
  * A position in a file/document.
  */

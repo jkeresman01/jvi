@@ -18,8 +18,13 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
-package com.raelity.jvi;
+package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViCmdEntry;
+import com.raelity.jvi.ViFactory;
+import com.raelity.jvi.ViMark;
+import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.options.BooleanOption;
 import java.awt.EventQueue;
@@ -39,8 +44,8 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import com.raelity.jvi.ViTextView.TAGOP;
 
-import static com.raelity.jvi.Constants.*;
-import static com.raelity.jvi.ColonCommandFlags.*;
+import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.ColonCommandFlags.*;
 
 import java.io.*;
 import java.lang.Thread.UncaughtExceptionHandler;
@@ -2511,6 +2516,10 @@ static void registerBuiltinCommands()
     register("w", "write", ACTION_write);
     register("wq", "wq", ACTION_wq);
     register("wa", "wall", ACTION_wall);
+
+    register("files","files", ACTION_BUFFERS);
+    register("buffers","buffers", ACTION_BUFFERS);
+    register("ls","ls", ACTION_BUFFERS);
 
     register("f", "file", ACTION_file);
     register("e", "edit", ACTION_edit);

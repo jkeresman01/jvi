@@ -17,8 +17,9 @@
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi;
+package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.lib.MutableInt;
 import java.awt.Toolkit;
 import java.text.CharacterIterator;

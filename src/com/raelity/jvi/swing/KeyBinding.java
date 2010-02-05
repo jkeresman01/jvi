@@ -19,6 +19,8 @@
  */
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.core.ViManager;
+import com.raelity.jvi.core.Options;
 import com.raelity.jvi.options.BooleanOption;
 import java.awt.EventQueue;
 import java.awt.event.KeyEvent;
@@ -36,6 +38,7 @@ import javax.swing.text.Keymap;
 import javax.swing.KeyStroke;
 
 import com.raelity.jvi.*;
+import com.raelity.jvi.core.KeyDefs;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.HashSet;
@@ -48,8 +51,8 @@ import javax.swing.text.TextAction;
 import static java.awt.event.InputEvent.SHIFT_MASK;
 import static java.awt.event.InputEvent.CTRL_MASK;
 
-import static com.raelity.jvi.KeyDefs.*;
-import static com.raelity.jvi.Constants.*;
+import static com.raelity.jvi.core.KeyDefs.*;
+import static com.raelity.jvi.core.Constants.*;
 
 public class KeyBinding {
   private static Logger LOG = Logger.getLogger(KeyBinding.class.getName());

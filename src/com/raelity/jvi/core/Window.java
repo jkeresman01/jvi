@@ -17,11 +17,14 @@
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi;
+package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViMark;
+import com.raelity.jvi.ViTextView;
 import java.util.LinkedList;
 import java.util.List;
-import static com.raelity.jvi.Constants.*;
+import static com.raelity.jvi.core.Constants.*;
 
 /**
  * This represents the core functionality of a vim window.

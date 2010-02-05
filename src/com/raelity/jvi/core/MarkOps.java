@@ -17,10 +17,14 @@
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi;
+package com.raelity.jvi.core;
 
-import com.raelity.jvi.ColonCommands.ColonAction;
-import com.raelity.jvi.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.ColonCommands.ColonAction;
+import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViMark;
+import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.ViTextView;
 import com.raelity.text.TextUtil.MySegment;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -44,8 +48,8 @@ import static com.raelity.jvi.ViTextView.MARKOP.NEXT;
 import static com.raelity.jvi.ViTextView.MARKOP.PREV;
 import static com.raelity.jvi.ViTextView.MARKOP.TOGGLE;
 
-import static com.raelity.jvi.Constants.*;
-import static com.raelity.jvi.Messages.*;
+import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.Messages.*;
 
 /**
  * Keep track of vi marks.

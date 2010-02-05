@@ -18,8 +18,12 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
-package com.raelity.jvi;
+package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViFeature;
+import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.options.StringOption;
 import com.raelity.jvi.options.IntegerOption;
 import com.raelity.jvi.options.BooleanOption;

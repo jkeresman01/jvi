@@ -19,6 +19,8 @@
  */
 package com.raelity.jvi;
 
+import com.raelity.jvi.core.Constants;
+
 /** Salient variables for doing a vi cursor. */
 
 public interface ViCursor {

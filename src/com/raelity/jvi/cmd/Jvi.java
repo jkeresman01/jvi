@@ -35,8 +35,8 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.prefs.BackingStoreException;
 
-import com.raelity.jvi.ColonCommands;
-import com.raelity.jvi.ViManager;
+import com.raelity.jvi.core.ColonCommands;
+import com.raelity.jvi.core.ViManager;
 import com.raelity.jvi.swing.DefaultViFactory;
 import com.raelity.jvi.swing.OptionsPanel;
 import com.raelity.jvi.swing.StatusDisplay;

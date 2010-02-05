@@ -21,7 +21,7 @@
 package com.raelity.jvi.swing;
 
 import com.raelity.jvi.ViStatusDisplay;
-import com.raelity.jvi.G;
+import com.raelity.jvi.core.G;
 
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;

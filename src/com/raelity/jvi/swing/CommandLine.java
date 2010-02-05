@@ -20,6 +20,11 @@
 
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.core.Normal;
+import com.raelity.jvi.core.ViManager;
+import com.raelity.jvi.core.Options;
+import com.raelity.jvi.core.G;
+import com.raelity.jvi.core.GetChar;
 import  com.raelity.jvi.*;
 
 import  javax.swing.*;

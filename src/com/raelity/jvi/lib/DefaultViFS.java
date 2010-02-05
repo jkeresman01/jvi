@@ -18,7 +18,12 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
-package com.raelity.jvi;
+package com.raelity.jvi.lib;
+
+import com.raelity.jvi.core.Msg;
+import com.raelity.jvi.ViBuffer;
+import com.raelity.jvi.ViFS;
+import com.raelity.jvi.ViTextView;
 
 /**
  *  A default implementation of the {@link com.raelity.jvi.ViFS}

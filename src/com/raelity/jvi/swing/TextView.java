@@ -20,8 +20,17 @@
 
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.core.Window;
+import com.raelity.jvi.core.Util;
+import com.raelity.jvi.core.Msg;
+import com.raelity.jvi.core.Buffer;
+import com.raelity.jvi.core.ViManager;
+import com.raelity.jvi.core.Misc;
+import com.raelity.jvi.core.Options;
+import com.raelity.jvi.core.Edit;
+import com.raelity.jvi.core.G;
 import com.raelity.jvi.options.BooleanOption;
-import  static com.raelity.jvi.Constants.*;
+import  static com.raelity.jvi.core.Constants.*;
 
 
 import com.raelity.jvi.*;

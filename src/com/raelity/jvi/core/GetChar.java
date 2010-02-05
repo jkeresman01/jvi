@@ -17,15 +17,15 @@
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi;
+package com.raelity.jvi.core;
 
 import com.raelity.jvi.swing.KeyBinding;
 import com.raelity.text.TextUtil;
 import javax.swing.JEditorPane;
 import javax.swing.text.AbstractDocument;
 
-import static com.raelity.jvi.Constants.*;
-import static com.raelity.jvi.KeyDefs.*;
+import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.KeyDefs.*;
 
 public class GetChar {
   private static boolean block_redo = false;

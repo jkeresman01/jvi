@@ -5,8 +5,8 @@
 
 package com.raelity.jvi.options;
 
-import com.raelity.jvi.Options;
-import com.raelity.jvi.ViManager;
+import com.raelity.jvi.core.Options;
+import com.raelity.jvi.core.ViManager;
 import java.beans.PropertyChangeSupport;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;

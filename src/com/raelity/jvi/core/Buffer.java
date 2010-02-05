@@ -7,8 +7,14 @@
  * and open the template in the editor.
  */
 
-package com.raelity.jvi;
+package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViBuffer;
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViFS;
+import com.raelity.jvi.ViMark;
+import com.raelity.jvi.ViOptionBag;
+import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.text.RegExp;
 import com.raelity.text.RegExpJava;
@@ -19,7 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.event.DocumentEvent;
 
-import static com.raelity.jvi.Constants.*;
+import static com.raelity.jvi.core.Constants.*;
 
 /**
  * Buffer: structure that holds information about one file, primarily

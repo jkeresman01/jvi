@@ -20,9 +20,14 @@
 
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.core.Buffer;
+import com.raelity.jvi.core.ColonCommands;
+import com.raelity.jvi.core.ViManager;
+import com.raelity.jvi.core.G;
+import com.raelity.jvi.lib.DefaultViFS;
 import com.raelity.jvi.lib.DefaultOutputStream;
 import com.raelity.jvi.options.OptionsBeanBase;
-import  static com.raelity.jvi.KeyDefs.*;
+import  static com.raelity.jvi.core.KeyDefs.*;
 import  com.raelity.jvi.*;
 import  com.raelity.jvi.ViTextView.TAGOP;
 

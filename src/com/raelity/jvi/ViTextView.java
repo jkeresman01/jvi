@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi;
 
+import com.raelity.jvi.core.Buffer;
 import javax.swing.JEditorPane;
 
 

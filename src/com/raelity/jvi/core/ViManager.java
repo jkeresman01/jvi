@@ -17,8 +17,14 @@
  *
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi;
+package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViCmdEntry;
+import com.raelity.jvi.ViFS;
+import com.raelity.jvi.ViFactory;
+import com.raelity.jvi.ViFeature;
+import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.options.Option;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionListener;
