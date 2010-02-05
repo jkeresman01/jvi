@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViManager;
 import com.raelity.jvi.core.ColonCommands.ColonAction;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.ViFPOS;

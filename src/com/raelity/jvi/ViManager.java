@@ -17,14 +17,17 @@
  *
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi.core;
+package com.raelity.jvi;
 
-import com.raelity.jvi.ViCmdEntry;
-import com.raelity.jvi.ViFS;
-import com.raelity.jvi.ViFactory;
-import com.raelity.jvi.ViFeature;
-import com.raelity.jvi.ViOutputStream;
-import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.core.Buffer;
+import com.raelity.jvi.core.ColonCommands;
+import com.raelity.jvi.core.G;
+import com.raelity.jvi.core.GetChar;
+import com.raelity.jvi.core.KeyDefs;
+import com.raelity.jvi.core.Msg;
+import com.raelity.jvi.core.Normal;
+import com.raelity.jvi.core.Options;
+import com.raelity.jvi.core.Util;
 import com.raelity.jvi.options.Option;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionListener;
@@ -54,6 +57,7 @@ import java.net.URL;
 
 import com.raelity.jvi.swing.KeyBinding;
 import com.raelity.jvi.swing.ViCaret;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeListener;
@@ -117,6 +121,8 @@ public class ViManager
     //
     public static final jViVersion version = new jViVersion("1.3.0.x2");
 
+    private static com.raelity.jvi.core.Hook core;
+
     private static final String DEBUG_AT_HOME = "com.raelity.jvi.DEBUG";
 
     public static final String PREFS_ROOT = "com/raelity/jvi";
@@ -149,6 +155,9 @@ public class ViManager
     private static Keymap editModeKeymap;
     private static Keymap normalModeKeymap;
 
+    /** The features which can be disabled by the platform. */
+    private static EnumSet<ViFeature> features = EnumSet.allOf(ViFeature.class);
+
     private static Map hackMap = new HashMap();
     public static void putHackMap(Object key, Object val) {
         hackMap.put(key, val);
@@ -173,8 +182,11 @@ public class ViManager
     private ViManager() {}
     private static ViManager viMan;
     /**
-     * jVi is initialized and ready to go. old/new are null */
+     * ViManager is initialized and ready to go. old/new are null */
     public static final String P_BOOT = "jViBoot";
+    /**
+     * This is invoked well after boot, just before edit operations. */
+    public static final String P_LATE_INIT = "jViBoot";
     /**
      * jVi is closing up shop for the day. old/new are null */
     public static final String P_SHUTDOWN = "jViShutdown";
@@ -228,10 +240,13 @@ public class ViManager
         enabled = true;
         ViManager.factory = factory;
 
-        Options.init();
-        KeyBinding.init();
-        MarkOps.init();
-        Misc.init();
+        // Options.init();
+        // KeyBinding.init();
+        // MarkOps.init();
+        // Misc.init();
+
+        ColonCommands.register("ve", "version", ACTION_version);
+        ColonCommands.register("debugMotd", "debugMotd", ACTION_debugMotd);
 
 
         firePropertyChange(P_BOOT, null, null);
@@ -248,13 +263,29 @@ public class ViManager
         });
     }
 
+    static ActionListener ACTION_version = new ActionListener() {
+
+        public void actionPerformed(ActionEvent ev)
+        {
+            ViManager.motd.output();
+        }
+    };
+    static ActionListener ACTION_debugMotd = new ActionListener() {
+
+        public void actionPerformed(ActionEvent ev)
+        {
+            ViManager.debugMotd();
+        }
+    };
+
     /**
      * Disable the feature.
      * @param f feature to diable
      */
     public static void removeFeature(ViFeature f)
     {
-        G.f.remove(f);
+        // NEEDSWORK: lock features after boot
+        features.remove(f);
     }
 
     /**
@@ -263,7 +294,13 @@ public class ViManager
      */
     public static void removeFeature(EnumSet<ViFeature> f)
     {
-        G.f.removeAll(f);
+        // NEEDSWORK: lock features after boot
+        features.removeAll(f);
+    }
+
+    public static boolean hasFeature(ViFeature f)
+    {
+        return features.contains(f);
     }
 
     public static String cid(Object o)
@@ -801,8 +838,8 @@ public class ViManager
             if(rerouteChar(key, modifier)) {
                 return;
             }
-            factory.finishTagPush(G.curwin);
-            GetChar.gotc(key, modifier);
+            factory.finishTagPush(G.curwin); // NEEDSWORK: cleanup
+            core.gotc(key, modifier);
 
             if(G.curwin != null)
                 G.curwin.getStatusDisplay().refresh();
@@ -878,14 +915,14 @@ public class ViManager
         }
 
         if(currentEditorPane != null) {
-            Normal.abortVisualMode();
+            core.abortVisualMode();
             // MOVED ABOVE: currentTv = getViTextView(currentEditorPane);
             // Freeze and/or detach listeners from previous active view
             currentTv.detach();
         }
 
         currentEditorPane = editorPane;
-        G.switchTo(textView, buf);
+        core.switchTo(textView, buf);
         Normal.resetCommand(); // Means something first time window switched to
         buf.activateOptions(textView);
         textView.activateOptions(textView);
@@ -915,7 +952,7 @@ public class ViManager
         while(iter.hasNext()) {
             ((ActionListener)iter.next()).actionPerformed(null);
         }
-        Misc.javaKeyMap = KeyBinding.initJavaKeyMap();
+        firePropertyChange(P_LATE_INIT, null, null);
         inStartup = false;
         startupList = null;
     }
@@ -1000,18 +1037,12 @@ public class ViManager
         return mouseDown;
     }
 
-    private static void uiCursorModeStuff() {
-
-        Misc.ui_cursor_shape();
-        Misc.showmode();
-    }
-
     public static void cursorChange(ViCaret caret)
     {
         boolean nowSelection = caret.getDot() != caret.getMark();
         if(hasSelection == nowSelection)
             return;
-        uiCursorModeStuff();
+        core.uiCursorAndModeAdjust();
         hasSelection = nowSelection;
     }
 
@@ -1064,7 +1095,7 @@ public class ViManager
             if ((mev.getModifiersEx() & mask) != 0)
                 mouseDown = true;
 
-            if(G.dbgMouse.getBoolean()) {
+            if(Options.getOption(Options.dbgMouse).getBoolean()) {
                 System.err.println("mousePress: " + (mouseDown ? "down " : "up ")
                         + MouseEvent.getModifiersExText(mev.getModifiersEx()));
                 //System.err.println(mev.getMouseModifiersText(
@@ -1078,7 +1109,7 @@ public class ViManager
             GetChar.flush_buffers(true);
             exitInputMode();
             if(currentEditorPane != null)
-                Normal.abortVisualMode();
+                core.abortVisualMode();
 
             JEditorPane editorPane = (JEditorPane)mev.getComponent();
 
@@ -1115,7 +1146,7 @@ public class ViManager
             if(pos != newPos)
                 tv.setCaretPosition(newPos);
 
-            if(G.dbgMouse.getBoolean()) {
+            if(Options.getOption(Options.dbgMouse).getBoolean()) {
                 System.err.println("mouseClick(" + pos + ") "
                         + MouseEvent.getModifiersExText(mev.getModifiersEx()));
                 //System.err.println(mev.getMouseModifiersText(
@@ -1146,7 +1177,7 @@ public class ViManager
                 System.err.println("END_DRAG");
             }*/
 
-            if(G.dbgMouse.getBoolean()) {
+            if(Options.getOption(Options.dbgMouse).getBoolean()) {
                 System.err.println("mouseRelease: "
                         + MouseEvent.getModifiersExText(mev.getModifiersEx()));
                 //System.err.println(mev.getMouseModifiersText(
@@ -1185,7 +1216,7 @@ public class ViManager
             //   Misc.showmode();
             // }
 
-            if(G.dbgMouse.getBoolean()) {
+            if(Options.getOption(Options.dbgMouse).getBoolean()) {
                 System.err.println("mouseDrag "
                         + MouseEvent.getModifiersExText(mev.getModifiersEx()));
                 //System.err.println(mev.getMouseModifiersText(mev.getModifiers()));
@@ -1249,7 +1280,8 @@ public class ViManager
     {
         ps.println("-----------------------------------");
         ps.println("currentEditorPane = "
-                + (G.curwin == null ? "null" : G.curbuf.getDisplayFileName()));
+                + (G.curwin == null
+                    ? "null" : G.curwin.getBuffer().getDisplayFileName()));
 
         ps.println("factory = " + factory );
 

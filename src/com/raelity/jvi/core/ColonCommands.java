@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.ViFactory;
 import com.raelity.jvi.ViMark;
@@ -118,7 +119,7 @@ private static ViCmdEntry getColonCommandEntry()
 static private void colonEntryComplete( ActionEvent ev )
 {
     try {
-        ViManager.setJViBusy(true);
+        Hook.setJViBusy(true);
 
         ViManager.getViFactory().commandEntryAssist(getColonCommandEntry(),false);
         ViManager.stopCommandEntry();
@@ -133,7 +134,7 @@ static private void colonEntryComplete( ActionEvent ev )
         }
         closePrint();
     } finally {
-        ViManager.setJViBusy(false);
+        Hook.setJViBusy(false);
     }
 }
 
@@ -2259,18 +2260,6 @@ static ActionListener ACTION_tags = new ActionListener() {
         }
     };
 
-static ActionListener ACTION_version = new ActionListener() {
-        public void actionPerformed(ActionEvent ev) {
-            ViManager.motd.output();
-        }
-    };
-
-static ActionListener ACTION_debugMotd = new ActionListener() {
-        public void actionPerformed(ActionEvent ev) {
-            ViManager.debugMotd();
-        }
-    };
-
 static ActionListener ACTION_nohlsearch = new ActionListener() {
         public void actionPerformed(ActionEvent ev) {
             Options.nohCommand();
@@ -2506,8 +2495,6 @@ static ActionListener ACTION_testModalKeys = new ActionListener() {
 
 static void registerBuiltinCommands()
 {
-    register("ve", "version", ACTION_version);
-    register("debugMotd", "debugMotd", ACTION_debugMotd);
 
     register("clo", "close", ACTION_close);
     register("on", "only", ACTION_only);

@@ -9,6 +9,7 @@
 
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViBuffer;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViFS;

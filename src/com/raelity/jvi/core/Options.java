@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViManager;
 import com.raelity.jvi.options.StringOption;
 import com.raelity.jvi.options.IntegerOption;
 import com.raelity.jvi.options.EnumStringOption;

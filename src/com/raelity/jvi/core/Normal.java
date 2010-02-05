@@ -26,6 +26,7 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViFeature;
 import com.raelity.jvi.ViMark;
@@ -1285,7 +1286,7 @@ middle_code:
 
   private static boolean hasF(ViFeature f)
   {
-    return G.f.contains(f);
+    return ViManager.hasFeature(f);
   }
 
   static void do_pending_operator(CMDARG cap, int old_col, boolean gui_yank)

@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViOutputStream;
@@ -136,7 +137,7 @@ private static boolean lt(ViFPOS p1, ViFPOS p2) { return Util.lt(p1, p2); }
 
   static private void searchEntryComplete(ActionEvent ev) {
     try {
-      ViManager.setJViBusy(true);
+      Hook.setJViBusy(true);
       String cmd = ev.getActionCommand();
       boolean acceptIncr = false;
       boolean cancel = false;
@@ -162,7 +163,7 @@ private static boolean lt(ViFPOS p1, ViFPOS p2) { return Util.lt(p1, p2); }
       else
         GetChar.fakeGotc(K_X_SEARCH_FINISH);
     } finally {
-      ViManager.setJViBusy(false);
+      Hook.setJViBusy(false);
     }
   }
   
@@ -294,7 +295,7 @@ private static boolean lt(ViFPOS p1, ViFPOS p2) { return Util.lt(p1, p2); }
   
   private static void doIncrementalSearch() {
     try {
-      ViManager.setJViBusy(true);
+      Hook.setJViBusy(true);
       String pattern = getSearchCommandEntry().getTextComponent().getText();
       
       if("".equals(pattern)) {
@@ -315,7 +316,7 @@ private static boolean lt(ViFPOS p1, ViFPOS p2) { return Util.lt(p1, p2); }
         LOG.log(Level.SEVERE, null, ex);
     } finally {
       Normal.v_updateVisualState();
-      ViManager.setJViBusy(false);
+      Hook.setJViBusy(false);
     }
   }
 

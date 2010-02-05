@@ -204,9 +204,4 @@ public class G
     */
     public static boolean did_ai = false;
 
-    /**
-     * The supported features.
-     */
-    static EnumSet<ViFeature> f = EnumSet.allOf(ViFeature.class);
-
 } // end com.raelity.jvi.G

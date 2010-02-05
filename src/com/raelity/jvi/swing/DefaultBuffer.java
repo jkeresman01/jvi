@@ -14,7 +14,7 @@ import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.Util;
 import com.raelity.jvi.ViFPOS;
-import com.raelity.jvi.core.ViManager;
+import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViMark.MarkException;
 import com.raelity.jvi.ViTextView;

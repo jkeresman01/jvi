@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViCursor;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViTextView;
@@ -75,12 +76,15 @@ public class Misc implements ClipboardOwner {
         String pname = evt.getPropertyName();
         if(pname.equals(ViManager.P_BOOT)) {
           read_viminfo_registers();
+        } else if(pname.equals(ViManager.P_LATE_INIT)) {
+          javaKeyMap = initJavaKeyMap();
         } else if(pname.equals(ViManager.P_SHUTDOWN)) {
           write_viminfo_registers();
         }
       }
     };
     ViManager.addPropertyChangeListener(ViManager.P_BOOT, pcl);
+    ViManager.addPropertyChangeListener(ViManager.P_LATE_INIT, pcl);
     ViManager.addPropertyChangeListener(ViManager.P_SHUTDOWN, pcl);
   }
 
@@ -4667,7 +4671,7 @@ private static int put_in_typebuf(String s, boolean colon)
 
 
     
-    static int[] javaKeyMap;
+    private static int[] javaKeyMap;
     
     /**
      * decode the vi key character embedded
@@ -4748,6 +4752,73 @@ private static int put_in_typebuf(String s, boolean colon)
       KeyEvent.VK_CIRCUMFLEX,
       KeyEvent.VK_UNDERSCORE
     };
+
+  /*
+   * This method return an array which maps special vi keys, from
+   * {@link KeyDefs}, to Java KeyEventt keys, which are turned into key strokes.
+   */
+  private static int[] initJavaKeyMap() {
+    int[] jk = new int[KeyDefs.MAX_JAVA_KEY_MAP + 1];
+
+    for(int i = 0; i < jk.length; i++) {
+      jk[i] = -1;
+    }
+
+    jk[MAP_K_UP] = KeyEvent.VK_UP;
+    jk[MAP_K_DOWN] = KeyEvent.VK_DOWN;
+    jk[MAP_K_LEFT] = KeyEvent.VK_LEFT;
+    jk[MAP_K_RIGHT] = KeyEvent.VK_RIGHT;
+    jk[MAP_K_TAB] = KeyEvent.VK_TAB;
+    jk[MAP_K_HOME] = KeyEvent.VK_HOME;
+    jk[MAP_K_END] = KeyEvent.VK_END;
+    // jk[MAP_K_S_UP] = KeyEvent.VK_S_UP;
+    // jk[MAP_K_S_DOWN] = KeyEvent.VK_S_DOWN;
+    // jk[MAP_K_S_LEFT] = KeyEvent.VK_S_LEFT;
+    // jk[MAP_K_S_RIGHT] = KeyEvent.VK_S_RIGHT;
+    // jk[MAP_K_S_TAB] = KeyEvent.VK_S_TAB;
+    // jk[MAP_K_S_HOME] = KeyEvent.VK_S_HOME;
+    // jk[MAP_K_S_END] = KeyEvent.VK_S_END;
+    jk[MAP_K_F1] = KeyEvent.VK_F1;
+    jk[MAP_K_F2] = KeyEvent.VK_F2;
+    jk[MAP_K_F3] = KeyEvent.VK_F3;
+    jk[MAP_K_F4] = KeyEvent.VK_F4;
+    jk[MAP_K_F5] = KeyEvent.VK_F5;
+    jk[MAP_K_F6] = KeyEvent.VK_F6;
+    jk[MAP_K_F7] = KeyEvent.VK_F7;
+    jk[MAP_K_F8] = KeyEvent.VK_F8;
+    jk[MAP_K_F9] = KeyEvent.VK_F9;
+    jk[MAP_K_F10] = KeyEvent.VK_F10;
+    jk[MAP_K_F11] = KeyEvent.VK_F11;
+    jk[MAP_K_F12] = KeyEvent.VK_F12;
+    jk[MAP_K_F13] = KeyEvent.VK_F13;
+    jk[MAP_K_F14] = KeyEvent.VK_F14;
+    jk[MAP_K_F15] = KeyEvent.VK_F15;
+    jk[MAP_K_F16] = KeyEvent.VK_F16;
+    jk[MAP_K_F17] = KeyEvent.VK_F17;
+    jk[MAP_K_F18] = KeyEvent.VK_F18;
+    jk[MAP_K_F19] = KeyEvent.VK_F19;
+    jk[MAP_K_F20] = KeyEvent.VK_F20;
+    jk[MAP_K_F21] = KeyEvent.VK_F21;
+    jk[MAP_K_F22] = KeyEvent.VK_F22;
+    jk[MAP_K_F23] = KeyEvent.VK_F23;
+    jk[MAP_K_F24] = KeyEvent.VK_F24;
+    jk[MAP_K_HELP] = KeyEvent.VK_HELP;
+    jk[MAP_K_UNDO] = KeyEvent.VK_UNDO;
+    jk[MAP_K_BS] = KeyEvent.VK_BACK_SPACE;
+    jk[MAP_K_INS] = KeyEvent.VK_INSERT;
+    jk[MAP_K_DEL] = KeyEvent.VK_DELETE;
+    jk[MAP_K_PAGEUP] = KeyEvent.VK_PAGE_UP;
+    jk[MAP_K_PAGEDOWN] = KeyEvent.VK_PAGE_DOWN;
+    jk[MAP_K_KPLUS] = KeyEvent.VK_PLUS;
+    jk[MAP_K_KMINUS] = KeyEvent.VK_MINUS;
+    jk[MAP_K_KDIVIDE] = KeyEvent.VK_DIVIDE;
+    jk[MAP_K_KMULTIPLY] = KeyEvent.VK_MULTIPLY;
+    jk[MAP_K_KENTER] = KeyEvent.VK_ENTER;
+    jk[MAP_K_X_PERIOD] = KeyEvent.VK_PERIOD;
+    jk[MAP_K_X_COMMA] = KeyEvent.VK_COMMA;
+
+    return jk;
+  }
     
     static class block_def {
       int       startspaces;   /* 'extra' cols of first char */
