@@ -184,7 +184,9 @@ public class ViManager
     private ViManager() {}
     private static ViManager viMan;
     /**
-     * ViManager is initialized and ready to go. old/new are null */
+     * ViManager is partially initialized; this event is fired from
+     * {@link #setViFactory(com.raelity.jvi.ViFactory)} after the
+     * {@link ViInitialization} methods are invoked. old/new are null */
     public static final String P_BOOT = "jViBoot";
     /**
      * This is invoked well after boot, just before edit operations. */
@@ -266,10 +268,19 @@ public class ViManager
         });
     }
 
-    public static void setCoreHook(Hook hook)
+    public static ViManHook setCoreHook(Hook hook)
     {
         assert core == null;
         core = hook;
+        return new ViManHook();
+    }
+
+    public static class ViManHook {
+        private ViManHook(){}
+
+        public void setJViBusy(boolean f) {
+            ViManager.setJViBusy(f);
+        }
     }
 
     static ActionListener ACTION_version = new ActionListener() {
@@ -1757,22 +1768,24 @@ public class ViManager
       // But they're static!
       //
 
+    /** This should typically be used from a {@link ViInitialization} */
       public static void addPropertyChangeListener(
               PropertyChangeListener listener )
       {
         pcs.addPropertyChangeListener( listener );
       }
 
-      public static void removePropertyChangeListener(
-              PropertyChangeListener listener )
-      {
-        pcs.removePropertyChangeListener( listener );
-      }
-
+    /** This should typically be used from a {@link ViInitialization} */
       public static void addPropertyChangeListener(String p,
                                                    PropertyChangeListener l)
       {
         pcs.addPropertyChangeListener(p, l);
+      }
+
+      public static void removePropertyChangeListener(
+              PropertyChangeListener listener )
+      {
+        pcs.removePropertyChangeListener( listener );
       }
 
       public static void removePropertyChangeListener(String p,

@@ -38,6 +38,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class Hook
 {
     private static Hook INSTANCE;
+    private static ViManager.ViManHook manHook;
     private Hook(){}
 
     @ServiceProvider(service=ViInitialization.class)
@@ -54,7 +55,7 @@ public class Hook
         if(INSTANCE != null)
             return;
         INSTANCE = new Hook();
-        ViManager.setCoreHook(INSTANCE);
+        manHook = ViManager.setCoreHook(INSTANCE);
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -89,6 +90,6 @@ public class Hook
     //
 
     static void setJViBusy(boolean f) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        manHook.setJViBusy(f);
     }
 }
