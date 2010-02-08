@@ -83,28 +83,24 @@ import org.openide.util.Lookup;
  * thread.
  * </p>
  * Here are several static methods used to inform jVi of major changes.
- * The <i>appHandle</i> is opaque to jVi; it means something to the platform.
- * It may be a logical container which tracks the editor. There is one of these
- * for each open editor, if the same document is editted in two windows, then
- * there are two of these. appHandle may be nulll; this signifies that the
- * editor is a "nomad" and is not associated directly with top level file data,
- * for example if the editor is in a dialog and is used to edit some app
- * configuration data. When appHandle is null, the editor is not added to the
- * MRU list, and so it does not show up in the ":ls" command.
+ * A {@link ViAppView} is the primary handle for an application editor.
+ * There is one of these for each open editor.
+ * If the same document is editted in two windows, then
+ * there are two of these.
  * <ul>
- * <li>{@link #activateAppEditor}(ep, appHandle)<br/>
+ * <li>{@link #activateAppEditor}(appView)<br/>
  * The application invokes this whenever an editor becomes selected.
  * This also serves as an open.
  * </li>
- * <li>{@link #deactivateCurrentAppEditor}(appHandle)<br/>
+ * <li>{@link #deactivateCurrentAppEditor}(appView)<br/>
  * Inform jVi that the currently active editor is going quiet. Primary function
  * is to take it out of input mode.
  * </li>
- * <li>{@link #closeAppEditor}(ep, appHandle)<br/>
+ * <li>{@link #closeAppEditor}(appView)<br/>
  * The applications invokes this method when a file is completely
  * removed from a container or should be forgotten by jVi.
  * </li>
- * <li>requestSwitch(ep)<br/>
+ * <li>requestSwitch(EditorComponent)<br/>
  * This rarely needs to be invoked directly. Use activateAppEditor.
  * </li>
  * </ul>
@@ -231,7 +227,7 @@ public class ViManager
     // HACK: to workaround JDK bug dealing with focus and JWindows
     private static ViCmdEntry activeCommandEntry;
 
-    private static boolean enabled;
+    private static boolean factoryLoaded;
 
     public static void setViFactory(ViFactory factory)
     {
@@ -241,8 +237,8 @@ public class ViManager
         }
 
 
-        enabled = true;
         ViManager.factory = factory;
+        factoryLoaded = true;
 
         for (ViInitialization i : Lookup.getDefault().lookupAll(ViInitialization.class)) {
             i.init();
@@ -574,9 +570,9 @@ public class ViManager
     //
 
     // NEEDSWORK: textMRU: use a weak reference to appHandle?
-    static class WeakObject extends WeakReference<Object> {
+    static class WeakObject extends WeakReference<ViAppView> {
 
-        public WeakObject(Object referent) {
+        public WeakObject(ViAppView referent) {
             super(referent);
         }
 
@@ -584,8 +580,8 @@ public class ViManager
         public boolean equals(Object obj) {
             if(!(obj instanceof WeakObject))
                 return false;
-            Object o = get();
-            Object other = ((WeakObject)obj).get();
+            ViAppView o = get();
+            ViAppView other = ((WeakObject)obj).get();
             return o == null ? o == obj : o.equals(other);
         }
 
@@ -601,30 +597,31 @@ public class ViManager
     private static class BuffersList {
         List<WeakReference> l = new ArrayList();
     }
-    private static List<Object> textBuffers = new ArrayList<Object>();
-    private static List<Object> textMRU = new ArrayList<Object>();
+    private static List<ViAppView> textBuffers = new ArrayList<ViAppView>();
+    private static List<ViAppView> textMRU = new ArrayList<ViAppView>();
+    //NEEDSWORK: should be WeakHashMap
     private static Set<WeakObject> textNomads = new LinkedHashSet<WeakObject>();
-    private static Object currentlyActive;
-    private static Object ignoreActivation;
+    private static ViAppView currentlyActive;
+    private static ViAppView keepMru;
 
-    private static void setCurrentAppHandle(Object appHandle, boolean isNomad)
+    private static void adjustMru(ViAppView av, boolean isNomad)
     {
         if(!isNomad) {
             // this used to be the default case
-            textMRU.remove(appHandle);
-            textMRU.add(0, appHandle);
-            if( ! textBuffers.contains(appHandle)) {
-                textBuffers.add(appHandle);
+            textMRU.remove(av);
+            textMRU.add(0,av);
+            if( ! textBuffers.contains(av)) {
+                textBuffers.add(av);
             }
             // Following for the bizare case where it was ...?
-            textNomads.remove(new WeakObject(appHandle));
+            textNomads.remove(new WeakObject(av));
         } else {
             // insure nomads not in these lists
-            textMRU.remove(appHandle);
-            textBuffers.remove(appHandle);
+            textMRU.remove(av);
+            textBuffers.remove(av);
             // and make sure it is in the nomad list
             // Don't need to check contained, since working with a Set.
-            textNomads.add(new WeakObject(appHandle));
+            textNomads.add(new WeakObject(av));
         }
     }
 
@@ -635,7 +632,7 @@ public class ViManager
      * See {@link #getMruBuffer}.
      * @return the buffer or null if i does not specify an active buffer.
      */
-    public static Object getTextBuffer(int i)
+    public static ViAppView getTextBuffer(int i)
     {
         i = i - 1; // put in range 0 - (N-1)
         if(i < 0 || i >= textBuffers.size())
@@ -643,7 +640,7 @@ public class ViManager
 
         return textBuffers.get(i);
     }
-    public static Iterator getTextBufferIterator()
+    public static Iterator<ViAppView> getTextBufferIterator()
     {
         return textBuffers.iterator();
     }
@@ -652,50 +649,50 @@ public class ViManager
      * Fetch the Nth buffer, 0 to N-1, from the Mru list.
      * @return the buffer, else null if i is out of bounds.
      */
-    public static Object getMruBuffer(int i)
+    public static ViAppView getMruBuffer(int i)
     {
         if(i < 0 || i >= textMRU.size())
             return null;
         return textMRU.get(i);
     }
 
-    public static Iterator getNomadBufferIterator()
+    public static Iterator<ViAppView> getNomadBufferIterator()
     {
         //return textNomads.iterator();
         // While this is iterated, null elements are tossed out.
         // remove is not implemented.
         final Iterator<WeakObject> iter = textNomads.iterator();
-        return new Iterator() {
-            Object nextObject;
+        return new Iterator<ViAppView>() {
+            ViAppView nextAppView;
 
             // Find the next non-null object, removing nulls
-            private void findNextObject() {
-                if(nextObject != null)
+            private void findNextAppView() {
+                if(nextAppView != null)
                     return;
                 WeakObject wo;
                 while(iter.hasNext()) {
                     wo = iter.next();
-                    nextObject = wo.get();
-                    if(nextObject != null)
+                    nextAppView = wo.get();
+                    if(nextAppView != null)
                         break;
                     iter.remove();
                 }
             }
 
             public boolean hasNext() {
-                if(nextObject != null)
+                if(nextAppView != null)
                     return true;
-                findNextObject();
-                return nextObject != null;
+                findNextAppView();
+                return nextAppView != null;
             }
 
-            public Object next() {
-                findNextObject();
-                if(nextObject == null)
+            public ViAppView next() {
+                findNextAppView();
+                if(nextAppView == null)
                     throw new NoSuchElementException();
-                Object o = nextObject;
-                nextObject = null;
-                return o;
+                ViAppView av = nextAppView;
+                nextAppView = null;
+                return av;
             }
 
             public void remove() {
@@ -706,18 +703,18 @@ public class ViManager
     }
 
     /**
-     * Return the Ith next/previous appHandle relative to the argument
-     * appHandle. If i &lt 0 then look in previously used direction.
+     * Return the Ith next/previous AppView relative to the argument
+     * AppView. If i &lt 0 then look in previously used direction.
      */
-    public static Object relativeMruBuffer(Object appHandle, int i)
+    private static ViAppView relativeMruBuffer(ViAppView av, int i)
     {
         if(factory != null && G.dbgEditorActivation.getBoolean()) {
             System.err.println("Activation: ViManager.relativeMruBuffer: "
-                    + factory.getDisplayFilename(appHandle));
+                    + factory.getFS().getDisplayFileName(av));
         }
         if(textMRU.size() == 0)
             return null;
-        int idx = textMRU.indexOf(appHandle);
+        int idx = textMRU.indexOf(av);
         if(idx < 0)
             return null;
         // the most recent is at index 0, so bigger numbers are backwwards in time
@@ -729,7 +726,7 @@ public class ViManager
         return textMRU.get(idx);
     }
 
-    public static Object relativeMruBuffer(int i)
+    public static ViAppView relativeMruBuffer(int i)
     {
         return relativeMruBuffer(currentlyActive, i);
     }
@@ -738,74 +735,72 @@ public class ViManager
      * Request that the next activation does not re-order the mru list if the
      * activated object is the argment.
      */
-    public static void ignoreActivation(Object appHandle)
+    public static void keepMruAfterActivation(ViAppView av)
     {
-        if(!textBuffers.contains(appHandle)) {
+        if(!textBuffers.contains(av)) {
             return; // can't ignore if its not in the list
         }
-        ignoreActivation = appHandle;
+        keepMru = av;
     }
 
     /**
      * The application invokes this whenever a file becomes selected
      * in the specified container. This also serves as an open.
-     * @param ep May be null, otherwise the associated editor pane
-     * @param appHandle Usually, but not necessarily, a container that hold the
-     *               editor. May be null if nomadic editor.
+     * @param appView AppView that is getting focus for editing.
+     *               Editor may be null, may be a nomad.
      * @param tag String used in debug messages.
      */
-    public static void activateAppEditor(
-            JEditorPane ep, Object appHandle, String tag)
+    public static void activateAppEditor(ViAppView av, String tag)
     {
+        JEditorPane ep = (JEditorPane)av.getEditor();
         if(factory != null && G.dbgEditorActivation.getBoolean()) {
             System.err.println("Activation: ViManager.activateAppEditor: "
-                    + tag + " " + cid(ep) + " " + cid(appHandle)
-                    + " " + factory.getDisplayFilename(appHandle)
+                    + tag + " " + cid(ep) + " " + cid(av)
+                    + " " + factory.getFS().getDisplayFileName(av)
                     );
         }
-        if(ep != null && enabled)
+        if(ep != null && factoryLoaded)
             factory.setupCaret(ep);
-        if(appHandle == null)
-            return;
 
-        Object ign = ignoreActivation;
-        ignoreActivation = null;
-        currentlyActive = appHandle;
-        if(textBuffers.contains(ign) && appHandle == ign) {
-            return;
+        ViAppView keep = keepMru;
+        keepMru = null;
+        currentlyActive = av;
+        if(textBuffers.contains(keep) && av.equals(keep)) {
+            return; // return without adjusting mru
         }
 
-        setCurrentAppHandle(appHandle, factory.isNomadic(ep, appHandle));
+        adjustMru(av, av.isNomad());
     }
 
-    public static void deactivateCurrentAppEditor(Object appHandle)
+    public static void deactivateCurrentAppEditor(ViAppView av)
     {
         if(factory != null && G.dbgEditorActivation.getBoolean()) {
             System.err.println(
                     "Activation: ViManager.deactivateCurentAppEditor: "
-                    + " " + cid(appHandle)
-                    + factory.getDisplayFilename(appHandle));
+                    + " " + cid(av)
+                    + factory.getFS().getDisplayFileName(av));
         }
         // For several reasons, eg. don't want to hold begin/endUndo
-        if(enabled)
+        if(factoryLoaded)
             exitInputMode();
 
         currentlyActive = null;
     }
 
-    public static boolean isKnownAppHandle(Object o)
+    public static boolean isKnownAppView(ViAppView av)
     {
-        return textBuffers.contains(o);
+        return textBuffers.contains(av);
     }
 
     /**
      * The applications invokes this method when a file is completely
      * removed from a container or should be forgotten by jVi.
      */
-    public static void closeAppEditor(JEditorPane ep, Object appHandle)
+    public static void closeAppEditor(ViAppView av)
     {
+        JEditorPane ep = (JEditorPane)av.getEditor();
         if(factory != null && G.dbgEditorActivation.getBoolean()) {
-            String fname = factory.getDisplayFilename(appHandle);
+            String fname = factory.getFS().getDisplayFileName(av);
             System.err.println("Activation: ViManager.closeAppEditor: "
                     + (ep == null ? "(no shutdown) " : "") + fname);
         }
@@ -817,15 +812,15 @@ public class ViManager
                 firePropertyChange(P_CLOSE_BUF, tv.getBuffer(), null);
         }
 
-        assert(factory != null);
-        if(factory != null && ep != null && enabled) {
+        assert(factoryLoaded);
+        if(factoryLoaded && ep != null) {
             factory.shutdown(ep);
         }
-        if(appHandle != null) { // null indicates nomad
-            if(appHandle == currentlyActive)
+        if(!av.isNomad()) { // null indicates nomad
+            if(av.equals(currentlyActive))
                 currentlyActive = null;
-            textMRU.remove(appHandle);
-            textBuffers.remove(appHandle);
+            textMRU.remove(av);
+            textBuffers.remove(av);
         }
     }
 
@@ -1306,21 +1301,21 @@ public class ViManager
         ps.println("factory = " + factory );
 
         ps.println("textBuffers: " + textBuffers.size());
-        for (Object appHandle : textBuffers) {
-            ps.println("\t" + factory.getDisplayFilename(appHandle)
-                    + ", " + appHandle.getClass().getSimpleName());
+        for (ViAppView av : textBuffers) {
+            ps.println("\t" + factory.getFS().getDisplayFileName(av)
+                    + ", " + av.getClass().getSimpleName());
         }
         ps.println("textMRU: " + textMRU.size());
-        for (Object appHandle : textMRU) {
-            ps.println("\t" + factory.getDisplayFilename(appHandle)
-                    + ", " + appHandle.getClass().getSimpleName());
+        for (ViAppView av : textMRU) {
+            ps.println("\t" + factory.getFS().getDisplayFileName(av)
+                    + ", " + av.getClass().getSimpleName());
         }
         ps.println("currentlyActive: " + (currentlyActive == null ? "none"
-                : "" + factory.getDisplayFilename(currentlyActive)
+                : "" + factory.getFS().getDisplayFileName(currentlyActive)
                 + ", " + currentlyActive.getClass().getSimpleName()));
-        ps.println("ignoreActivation: " + (ignoreActivation == null ? "none"
-                : "" + factory.getDisplayFilename(ignoreActivation)
-                + ", " + ignoreActivation.getClass().getSimpleName()));
+        ps.println("keepMru: " + (keepMru == null ? "none"
+                : "" + factory.getFS().getDisplayFileName(keepMru)
+                + ", " + keepMru.getClass().getSimpleName()));
 
         Set<ViTextView> tvSet = factory.getViTextViewSet();
         ps.println("TextViewSet: " + tvSet.size());
@@ -1334,16 +1329,16 @@ public class ViManager
             if(buf == null)
                 ps.println("null-buf");
             else
-                ps.println("\t" + factory.getDisplayFilename(buf.getDocument())
+                ps.println("\t" + factory.getFS().getDisplayFileName(buf)
                            + ", share: " + buf.getShare());
         }
 
         ps.println("textNomads: " + textNomads.size());
-        Iterator iter = getNomadBufferIterator();
+        Iterator<ViAppView> iter = getNomadBufferIterator();
         while(iter.hasNext()) {
-            Object appHandle = iter.next();
-            ps.println("\t" + factory.getDisplayFilename(appHandle)
-                    + ", " + appHandle.getClass().getSimpleName());
+            ViAppView av = iter.next();
+            ps.println("\t" + factory.getFS().getDisplayFileName(av)
+                    + ", " + av.getClass().getSimpleName());
         }
     }
 

@@ -19,7 +19,6 @@
  */
 package com.raelity.jvi.options;
 
-import com.raelity.jvi.core.Options;
 import java.beans.PropertyVetoException;
 
 public class BooleanOption extends Option {
@@ -50,6 +49,7 @@ public class BooleanOption extends Option {
 
   /**
    * Set the value of the parameter.
+   * <br/>NEEDSWORK: setBoolean is public. Needs a push/pop for temp changes
    * @return true if value actually changed.
    */
   public void setBoolean(boolean newValue) {
@@ -64,7 +64,7 @@ public class BooleanOption extends Option {
    * Set the value as a string.
    */
     @Override
-  public void setValue(String newValue) throws IllegalArgumentException {
+  void setValue(String newValue) throws IllegalArgumentException {
     boolean b = Boolean.parseBoolean(newValue);
     setBoolean(b);
   }

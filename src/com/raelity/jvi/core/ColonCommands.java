@@ -20,6 +20,8 @@
 
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViAppView;
+import com.raelity.jvi.options.SetColonCommand;
 import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.ViFactory;
@@ -2154,14 +2156,14 @@ public static ActionListener ACTION_BUFFERS = new ActionListener() {
                     "=== MRU (:n :N :e#-<digit>) ===                "
                         + "=== activation (:e#<digit> ===");
             int i = 0;
-            Object cur = ViManager.relativeMruBuffer(0);
-            Object prev = ViManager.getMruBuffer(1);
+            ViAppView cur = ViManager.relativeMruBuffer(0);
+            ViAppView prev = ViManager.getMruBuffer(1);
 
             List<String> l = new ArrayList<String>();
             ViFactory factory = ViManager.getViFactory();
             while(true) {
-                Object o1 = ViManager.getMruBuffer(i);
-                Object o2 = ViManager.getTextBuffer(i+1);
+                ViAppView o1 = ViManager.getMruBuffer(i);
+                ViAppView o2 = ViManager.getTextBuffer(i+1);
                 if(o1 == null && o2 == null) {
                     break;
                 }
@@ -2170,10 +2172,10 @@ public static ActionListener ACTION_BUFFERS = new ActionListener() {
                         " %2d %c %-40s %3d %c %s",
                         i,
                         cur == o1 ? '%' : prev == o1 ? '#' : ' ',
-                        o1 != null ? factory.getDisplayFilename(o1) : "",
+                        o1 != null ? factory.getFS().getDisplayFileName(o1) : "",
                         w2,
                         cur == o2 ? '%' : prev == o2 ? '#' : ' ',
-                        o2 != null ? factory.getDisplayFilename(o2) : ""));
+                        o2 != null ? factory.getFS().getDisplayFileName(o2) : ""));
                 i++;
             }
             // print in reverse order, MRU visible if scrolling
@@ -2515,7 +2517,7 @@ static void registerBuiltinCommands()
     register("d", "delete", ACTION_delete);
     register("p", "print", ACTION_print);
 
-    register("se", "set", new Options.SetCommand());
+    register("se", "set", new SetColonCommand());
 
     register("ju", "jumps", ACTION_jumps);
 

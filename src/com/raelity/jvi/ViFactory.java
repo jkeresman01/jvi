@@ -28,6 +28,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.Action;
 import com.raelity.jvi.ViTextView.TAGOP;
+import java.awt.Component;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 
@@ -47,20 +48,22 @@ public interface ViFactory
      */
     public boolean isEnabled();
 
+    public ViAppView getAppView(Component widget);
+
     /** Return a TextView, create one if it doesn't already exist */
     public ViTextView createTextView(JEditorPane editorPane);
 
     /** @return null if TextView does not exist */
-    public ViTextView getTextView(JEditorPane editorPane);
+    public ViTextView getTextView(Component editorPane);
 
-    public ViTextView getTextView(Object appHandle);
+    public ViTextView getTextView(ViAppView av);
 
     /** Make a best guess as to whether or not the 'ep' is a nomad.
      * Should default to false.
      */
-    public boolean isNomadic(JEditorPane ep, Object appHandle);
+    public boolean isNomadic(JEditorPane ep, ViAppView av);
 
-    public int getWNum(Object appHandle);
+    public int getWNum(ViAppView av);
 
     /** Handle changing document in text view.
      * Editor in TextView should hold new document.
@@ -83,9 +86,6 @@ public interface ViFactory
 
     /** @return mode title to display when there's a java text selection */
     public String getPlatformSelectionDisplayName();
-
-    /** For an environmental object, used for debug output */
-    public String getDisplayFilename(Object appHandle);
 
     /**
      * This editor pane is going away, forget about it.

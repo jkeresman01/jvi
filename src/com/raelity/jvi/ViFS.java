@@ -28,6 +28,8 @@ public interface ViFS
 
     public String getDisplayFileName( ViBuffer buf );
 
+    public String getDisplayFileName( ViAppView av );
+
 
     /**
      *  Has the associated document been modified?

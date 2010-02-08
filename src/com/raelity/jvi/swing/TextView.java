@@ -24,7 +24,6 @@ import com.raelity.jvi.core.Window;
 import com.raelity.jvi.core.Util;
 import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.core.Buffer;
-import com.raelity.jvi.ViManager;
 import com.raelity.jvi.core.Misc;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.Edit;
@@ -103,13 +102,6 @@ public class TextView extends Window
 
     // ............
 
-
-    public TextView(final JEditorPane editorPane, ViStatusDisplay statusDisplay)
-    {
-        //HACK for cmd.Jvi
-        this(editorPane);
-        this.statusDisplay = statusDisplay;
-    }
     public TextView( final JEditorPane editorPane)
     {
         super();

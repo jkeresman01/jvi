@@ -19,7 +19,6 @@
  */
 package com.raelity.jvi.options;
 
-import com.raelity.jvi.core.Options;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 
@@ -60,7 +59,7 @@ public class IntegerOption extends Option {
    * Set the value of the parameter.
    * @return true if value actually changed.
    */
-  public void setInteger(int newValue) {
+  void setInteger(int newValue) {
     int oldValue = value;
     value = newValue;
     stringValue = "" + value;
@@ -72,7 +71,7 @@ public class IntegerOption extends Option {
    * Set the value as a string.
    */
     @Override
-  public void setValue(String newValue) throws IllegalArgumentException {
+  void setValue(String newValue) throws IllegalArgumentException {
     int n = Integer.parseInt(newValue);
     setInteger(n);
   }

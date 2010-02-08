@@ -18,31 +18,53 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
-package com.raelity.jvi.lib;
+package com.raelity.jvi.cmd;
 
+import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.ViBuffer;
 import com.raelity.jvi.ViFS;
+import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViTextView;
+import javax.swing.JEditorPane;
+import javax.swing.text.Document;
 
 /**
  *  A default implementation of the {@link com.raelity.jvi.ViFS}
  *  (vi file system support).
  */
-public class DefaultViFS implements ViFS
+public class PlayFS implements ViFS
 {
 
     /**
      *  Default constructor.
      */
-    public DefaultViFS()
+    public PlayFS()
     {
     }
 
-
-    public String getDisplayFileName( ViBuffer buf )
+    public String getDisplayFileName(ViAppView av)
     {
+        JEditorPane ep = (JEditorPane)av.getEditor();
+        ViTextView tv = ViManager.getViFactory().getTextView(ep);
+        if(tv != null) {
+            return getDisplayFileName(tv.getBuffer());
+        }
+        assert false;
         return "xxx";
+    }
+
+
+    public String getDisplayFileName(ViBuffer buf)
+    {
+        String fname = null;
+        Document doc = (Document)buf.getDocument();
+        if(doc != null) {
+            Object o = doc.getProperty(Document.TitleProperty);
+            if(o != null)
+                fname = o.toString();
+        }
+        return fname != null ? fname : "file-name-unknown";
     }
 
 
@@ -106,4 +128,4 @@ public class DefaultViFS implements ViFS
     }
 
 
-} // end com.raelity.jvi.DefaultViFS
+} // end com.raelity.jvi.PlayFS

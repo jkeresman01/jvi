@@ -22,9 +22,8 @@ package com.raelity.jvi.swing;
 
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.ColonCommands;
-import com.raelity.jvi.ViManager;
 import com.raelity.jvi.core.G;
-import com.raelity.jvi.lib.DefaultViFS;
+import com.raelity.jvi.cmd.PlayFS;
 import com.raelity.jvi.lib.DefaultOutputStream;
 import com.raelity.jvi.options.OptionsBeanBase;
 import  static com.raelity.jvi.core.KeyDefs.*;
@@ -59,6 +58,7 @@ import  java.util.Map;
 import  java.util.Set;
 import  java.util.WeakHashMap;
 import  java.util.prefs.Preferences;
+import javax.swing.text.JTextComponent;
 
 /**
  * This provides the Vi items to interface with standard swing JEditorPane.
@@ -66,10 +66,11 @@ import  java.util.prefs.Preferences;
  * <li> only one text view supported for now
  * </ul>
  */
-public class DefaultViFactory implements ViFactory
+abstract public class Factory implements ViFactory
 {
-    public static final String PROP_VITV = "ViTextView";
+    public static final String PROP_TV = "ViTextView";
     public static final String PROP_BUF  = "ViBuffer";
+    public static final String PROP_AV = "ViAppView";
 
     // Really a WeakSet, all doc's that have been seen. value always null
     protected Map<Document, Object> docSet
@@ -80,26 +81,18 @@ public class DefaultViFactory implements ViFactory
             = new WeakHashMap<JEditorPane, Object>();
 
     JDialog dialog;
-    ViFS fs = new DefaultViFS();
-    protected static DefaultViFactory INSTANCE;
+    protected static Factory INSTANCE;
 
     private static final boolean isMac = ViManager.getOsVersion().isMac();
     private MouseInputAdapter mouseAdapter;
     private KeyListener keyListener;
 
-    Map<JEditorPane, StatusDisplay> mapJepSd; //HACK for cmd.Jvi
-
     // ............
-
 
     /**
      *  Default constructor.
      */
-    public DefaultViFactory(Map<JEditorPane, StatusDisplay> m) { //HACK for cmd.Jvi
-        this();
-        mapJepSd = m;
-    }
-    public DefaultViFactory()
+    public Factory()
     {
         if ( INSTANCE != null ) {
             throw new IllegalStateException("ViFactory already exists");
@@ -114,6 +107,10 @@ public class DefaultViFactory implements ViFactory
         return true;
     }
 
+    public ViAppView getAppView(Component e) {
+        return (ViAppView)((JTextComponent)e).getClientProperty(PROP_AV);
+    }
+
     public Class loadClass( String name ) throws ClassNotFoundException
     {
         // NEEDSWORK: should this be systemclassloader or this's class loader???
@@ -126,22 +123,14 @@ public class DefaultViFactory implements ViFactory
         return true;
     }
 
-    public final ViTextView getTextView(JEditorPane editorPane)
+    public final ViTextView getTextView(Component ep)
     {
-        return (ViTextView)editorPane.getClientProperty(PROP_VITV);
-    }
-
-    public ViTextView getTextView(Object appHandle) {
-        return null;
-    }
-
-    public int getWNum(Object appHandle) {
-        return -9;
+        return (ViTextView)(((JTextComponent)ep).getClientProperty(PROP_TV));
     }
 
     public final ViTextView createTextView(JEditorPane editorPane)
     {
-        ViTextView tv01 = (ViTextView)editorPane.getClientProperty(PROP_VITV);
+        ViTextView tv01 = (ViTextView)editorPane.getClientProperty(PROP_TV);
         if ( tv01 == null ) {
             if ( G.dbgEditorActivation.getBoolean() ) {
                 System.err.println("Activation: getViTextView: create");
@@ -150,30 +139,19 @@ public class DefaultViFactory implements ViFactory
             attachBuffer(tv01);
 
             tv01.startup();
-            editorPane.putClientProperty(PROP_VITV, tv01);
+            editorPane.putClientProperty(PROP_TV, tv01);
             editorSet.put(editorPane, null);
         }
         return tv01;
     }
 
-
-    /** subclass probably wants to override this */
-    protected ViTextView newTextView( JEditorPane editorPane )
-    {
-        if(isStandalone() && mapJepSd != null) {
-            StatusDisplay sd = mapJepSd.get(editorPane);
-            if(sd != null)
-                return new TextView(editorPane, sd);
-        }
-        return new TextView(editorPane);
-    }
-
+    abstract protected ViTextView newTextView( JEditorPane editorPane );
 
     public final Set<ViTextView> getViTextViewSet()
     {
         Set<ViTextView> s = new HashSet<ViTextView>();
         for (JEditorPane ep : editorSet.keySet()) {
-            ViTextView tv = (ViTextView) ep.getClientProperty(PROP_VITV);
+            ViTextView tv = (ViTextView) ep.getClientProperty(PROP_TV);
             if(tv != null)
                 s.add(tv);
         }
@@ -181,7 +159,7 @@ public class DefaultViFactory implements ViFactory
         return s;
     }
 
-    public boolean isNomadic(JEditorPane ep, Object appHandle) {
+    public boolean isNomadic(JEditorPane ep, ViAppView av) {
         return false;
     }
 
@@ -218,7 +196,7 @@ public class DefaultViFactory implements ViFactory
 
     public void shutdown( JEditorPane ep )
     {
-        ViTextView tv = (ViTextView)ep.getClientProperty(PROP_VITV);
+        ViTextView tv = (ViTextView)ep.getClientProperty(PROP_TV);
         if ( tv == null ) {
             return;
         }
@@ -228,7 +206,7 @@ public class DefaultViFactory implements ViFactory
         }
         Buffer buf = tv.getBuffer();
         tv.shutdown();
-        ep.putClientProperty(PROP_VITV, null);
+        ep.putClientProperty(PROP_TV, null);
         releaseBuffer(buf);
     }
 
@@ -282,11 +260,6 @@ public class DefaultViFactory implements ViFactory
     public String getPlatformSelectionDisplayName()
     {
         return "PLATFORM-SELECTION";
-    }
-
-    public ViFS getFS()
-    {
-        return fs;
     }
 
     public void setShutdownHook(Runnable hook) {
@@ -662,12 +635,6 @@ public class DefaultViFactory implements ViFactory
         }
 
     } // end inner class InsertModeAction
-
-
-    public String getDisplayFilename( Object appHandle )
-    {
-        return "xxx";
-    }
 
 
     public void startTagPush( ViTextView tv, String ident ) {}

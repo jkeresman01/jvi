@@ -21,7 +21,6 @@
 package com.raelity.jvi.swing;
 
 import com.raelity.jvi.core.Normal;
-import com.raelity.jvi.ViManager;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.GetChar;

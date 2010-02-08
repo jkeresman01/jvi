@@ -19,7 +19,6 @@
  */
 package com.raelity.jvi.options;
 
-import com.raelity.jvi.core.Options;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 
@@ -62,7 +61,7 @@ public class StringOption extends Option {
   /**
    * Set the value of the parameter.
    */
-  public void setString(String newValue) {
+  void setString(String newValue) {
     String oldValue = stringValue;
     stringValue = newValue;
     propogate();
@@ -73,7 +72,7 @@ public class StringOption extends Option {
    * Set the value as a string.
    */
     @Override
-  public void setValue(String newValue) {
+  void setValue(String newValue) {
     setString(newValue);
   }
   

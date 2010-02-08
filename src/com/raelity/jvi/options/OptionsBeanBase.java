@@ -44,7 +44,7 @@ import java.beans.VetoableChangeSupport;
 import java.util.List;
 import java.util.prefs.Preferences;
 
-import com.raelity.jvi.options.Option.ColorOption;
+import com.raelity.jvi.options.ColorOption;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.Options.EditOptionsControl;
 import com.raelity.jvi.ViManager;

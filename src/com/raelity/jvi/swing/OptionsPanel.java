@@ -43,7 +43,7 @@ import com.l2fprod.common.swing.PercentLayout;
 import com.l2fprod.common.swing.renderer.ColorCellRenderer;
 import com.raelity.jvi.options.EnumOption;
 import com.raelity.jvi.options.Option;
-import com.raelity.jvi.options.Option.ColorOption;
+import com.raelity.jvi.options.ColorOption;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.Options.EditOptionsControl;
 import com.raelity.jvi.options.OptionsBean;

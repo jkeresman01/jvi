@@ -37,12 +37,12 @@ import java.util.prefs.BackingStoreException;
 
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.ViManager;
-import com.raelity.jvi.swing.DefaultViFactory;
 import com.raelity.jvi.swing.OptionsPanel;
 import com.raelity.jvi.swing.StatusDisplay;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JScrollPane;
+import javax.swing.text.Document;
 
 public class Jvi
 {
@@ -139,7 +139,7 @@ public class Jvi
         editor.setCaretColor(Color.black);
 
         //((BooleanOption)Options.getOption(Options.dbgKeyStrokes)).setBoolean(true);
-        ViManager.activateAppEditor(editor, null, "Jvi.setupFrame");
+        ViManager.activateAppEditor(new PlayAppView(f, editor), "Jvi.setupFrame");
         ViManager.requestSwitch(editor);
     }
 
@@ -179,7 +179,7 @@ public class Jvi
             make2Frames = true;
         }
 
-        ViManager.setViFactory(new DefaultViFactory(mapJepSd));
+        ViManager.setViFactory(new PlayFactory(mapJepSd));
 
         ColonCommands.register("dumpOptions", "dumpOptions", new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -223,10 +223,15 @@ public class Jvi
                         });
                         setupFrame(m_frame1);
                         JEditorPane editor1 = m_frame1.getEditor();
+                        editor1.getDocument().putProperty(
+                                Document.TitleProperty, "DebugFileName");
                         if ( make2Frames ) {
                             m_frame2 = makeFrame();
                             JEditorPane editor2 = m_frame2.getEditor();
                             editor2.setDocument(editor1.getDocument());
+                            // since same document, can't have different name
+                            //editor2.getDocument().putProperty(
+                            //        Document.TitleProperty, "FileInFrame2");
                             setupFrame(m_frame2);
                         }
                         editor1.requestFocusInWindow();
