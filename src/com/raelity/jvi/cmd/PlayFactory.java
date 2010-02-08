@@ -22,6 +22,7 @@ package com.raelity.jvi.cmd;
 
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViFS;
+import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.swing.Factory;
 import com.raelity.jvi.swing.StatusDisplay;
@@ -62,6 +63,17 @@ public class PlayFactory extends Factory
     public ViFS getFS()
     {
         return fs;
+    }
+
+    public ViOutputStream createOutputStream(
+            ViTextView tv,
+            Object type,
+            Object info,
+            int priority )
+    {
+        return new PlayOutputStream(
+                tv, type.toString(),
+                info == null ? null : info.toString() );
     }
 
 }

@@ -18,23 +18,26 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
-package com.raelity.jvi.lib;
+package com.raelity.jvi.cmd;
 
 import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.lib.OutputStreamAdaptor;
 
-public class DefaultOutputStream extends OutputStreamAdaptor {
+public class PlayOutputStream extends OutputStreamAdaptor {
   String type;
   String info;
   ViTextView tv;
 
-  public DefaultOutputStream(ViTextView tv, String type, String info) {
+  public PlayOutputStream(ViTextView tv, String type, String info) {
     this.type = type;
     this.info = info;
     this.tv = tv;
     
     String fName = tv != null ? tv.getBuffer().getDisplayFileName() : "no-file";
     System.err.println("ViOutputStream: type: " + type
-                       + ", info: " + info + ", " + fName);
+                       + ", file: " + fName
+                       + ", info: \n"
+                       + "                " + info);
   }
 
     @Override

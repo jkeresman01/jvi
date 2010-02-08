@@ -24,7 +24,7 @@ import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.cmd.PlayFS;
-import com.raelity.jvi.lib.DefaultOutputStream;
+import com.raelity.jvi.cmd.PlayOutputStream;
 import com.raelity.jvi.options.OptionsBeanBase;
 import  static com.raelity.jvi.core.KeyDefs.*;
 import  com.raelity.jvi.*;
@@ -264,17 +264,6 @@ abstract public class Factory implements ViFactory
 
     public void setShutdownHook(Runnable hook) {
         Runtime.getRuntime().addShutdownHook(new Thread(hook));
-    }
-
-    public ViOutputStream createOutputStream(
-            ViTextView tv,
-            Object type,
-            Object info,
-            int priority )
-    {
-        return new DefaultOutputStream(
-                tv, type.toString(),
-                info == null ? null : info.toString() );
     }
 
 
