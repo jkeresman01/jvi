@@ -80,10 +80,10 @@ import javax.swing.text.StyledEditorKit;
  *  this class.
  *  </p>
  */
-public class TextView extends Window
+public class SwingTextView extends Window
         implements ViTextView, PropertyChangeListener, ChangeListener
 {
-    private static Logger LOG = Logger.getLogger(TextView.class.getName());
+    private static Logger LOG = Logger.getLogger(SwingTextView.class.getName());
     private static int genNum; // unique/invariant window id;
 
     protected int w_num;
@@ -102,7 +102,7 @@ public class TextView extends Window
 
     // ............
 
-    public TextView( final JEditorPane editorPane)
+    public SwingTextView( final JEditorPane editorPane)
     {
         super();
         this.editorPane = editorPane;
@@ -189,9 +189,9 @@ public class TextView extends Window
     }
 
 
-    public final DefaultBuffer getBuffer()
+    public final SwingBuffer getBuffer()
     {
-        return (DefaultBuffer) w_buffer;
+        return (SwingBuffer) w_buffer;
     }
 
 
@@ -700,7 +700,7 @@ public class TextView extends Window
                       coordLine, 1, getPoint0().y, line, lineRect.y));
            }
         } catch (BadLocationException ex) {
-            //Logger.getLogger(TextView.class.getName()).log(Level.SEVERE, null, ex);
+            //Logger.getLogger(SwingTextView.class.getName()).log(Level.SEVERE, null, ex);
         }
         return coordLine;
     }
@@ -905,8 +905,8 @@ public class TextView extends Window
             return w_buffer.createFPOS(getOffset());
         }
 
-        final public DefaultBuffer getBuffer() {
-            return (DefaultBuffer)w_buffer;
+        final public SwingBuffer getBuffer() {
+            return (SwingBuffer)w_buffer;
         }
 
         public void verify(Buffer buf) {
@@ -1534,4 +1534,4 @@ public class TextView extends Window
         }
     }
 
-} // end com.raelity.jvi.swing.TextView
+} // end com.raelity.jvi.swing.SwingTextView

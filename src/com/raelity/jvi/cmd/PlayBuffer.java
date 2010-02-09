@@ -20,20 +20,23 @@
 
 package com.raelity.jvi.cmd;
 
-import com.raelity.jvi.ViStatusDisplay;
-import com.raelity.jvi.swing.SwingTextView;
-import javax.swing.JEditorPane;
+import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.swing.SwingBuffer;
+import java.io.File;
 
 /**
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public class PlayTextView extends SwingTextView
-{
-    public PlayTextView(final JEditorPane ep, ViStatusDisplay sd)
+public class PlayBuffer extends SwingBuffer {
+
+    public PlayBuffer(ViTextView tv)
     {
-        super(ep);
-        this.statusDisplay = sd;
+        super(tv);
+    }
+
+    public File getFile() {
+        return new File("/tmp/test.file");
     }
 
 }

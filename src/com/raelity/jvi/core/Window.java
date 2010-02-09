@@ -46,7 +46,7 @@ public abstract class Window implements ViTextView
      * This is a magic ViFPOS. It tracks the caret positon on the screen
      * and modifying w_cursor moves the caret positon.
      */
-    final protected ViFPOS w_cursor;
+    final public ViFPOS w_cursor;
 
     /**
      * The column we'd like to be at. Used for up/down cursor motions.

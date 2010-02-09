@@ -30,6 +30,10 @@ public interface ViFS
 
     public String getDisplayFileName( ViAppView av );
 
+    public String getDisplayFileNameAndSize(ViBuffer buf);
+
+    public String getDisplayFileViewInfo(ViTextView tv);
+
 
     /**
      *  Has the associated document been modified?

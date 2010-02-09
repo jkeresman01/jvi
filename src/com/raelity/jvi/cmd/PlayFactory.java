@@ -24,8 +24,8 @@ import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.swing.Factory;
-import com.raelity.jvi.swing.StatusDisplay;
+import com.raelity.jvi.core.Buffer;
+import com.raelity.jvi.swing.SwingFactory;
 import java.util.Map;
 import javax.swing.JEditorPane;
 
@@ -33,19 +33,24 @@ import javax.swing.JEditorPane;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public class PlayFactory extends Factory
+final public class PlayFactory extends SwingFactory
 {
     private ViFS fs = new PlayFS();
     /** status displays for editors */
-    private Map<JEditorPane, StatusDisplay> mapJepSd;
+    private Map<JEditorPane, PlayStatusDisplay> mapJepSd;
 
-    public PlayFactory(Map<JEditorPane, StatusDisplay> m) {
+    public PlayFactory(Map<JEditorPane, PlayStatusDisplay> m) {
         mapJepSd = m;
     }
 
     protected ViTextView newTextView( JEditorPane editorPane )
     {
         return new PlayTextView(editorPane, mapJepSd.get(editorPane));
+    }
+
+    protected Buffer createBuffer( ViTextView tv )
+    {
+        return new PlayBuffer(tv);
     }
 
     public ViTextView getTextView(ViAppView av)

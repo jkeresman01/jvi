@@ -26,6 +26,7 @@ import com.raelity.jvi.ViBuffer;
 import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.lib.abstractFS;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 
@@ -33,7 +34,7 @@ import javax.swing.text.Document;
  *  A default implementation of the {@link com.raelity.jvi.ViFS}
  *  (vi file system support).
  */
-public class PlayFS implements ViFS
+public class PlayFS extends abstractFS
 {
 
     /**

@@ -2447,7 +2447,7 @@ middle_code:
       G.curwin.setSelection(textDot, textMark);
     }
     else if (!checkclearop(cap.oap))
-      G.curbuf.displayFileInfo(G.curwin);
+      Msg.smsg(ViManager.getFS().getDisplayFileViewInfo(G.curwin));
   }
 
   /**

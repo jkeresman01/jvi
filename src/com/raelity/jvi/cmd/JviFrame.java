@@ -20,7 +20,6 @@
 
 package com.raelity.jvi.cmd;
 
-import com.raelity.jvi.swing.StatusDisplay;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
@@ -38,7 +37,7 @@ public class JviFrame extends JFrame
     protected JScrollPane scrollPane;
     protected JButton optionsButton;
     protected JLabel generalStatusBar, strokeStatusBar, modeStatusBar;
-    protected StatusDisplay statusDisplay;
+    protected PlayStatusDisplay statusDisplay;
 
     private Color m_color1 = new java.awt.Color(142,142,142),
                   m_color2 = new java.awt.Color(99,99,99);
@@ -52,7 +51,7 @@ public class JviFrame extends JFrame
         enableEvents(AWTEvent.WINDOW_EVENT_MASK);
         try {
             jbInit();
-            statusDisplay = new StatusDisplay(generalStatusBar, strokeStatusBar,
+            statusDisplay = new PlayStatusDisplay(generalStatusBar, strokeStatusBar,
                                               modeStatusBar);
         } catch ( Exception e ) {
             System.err.println( e.getClass().getName() + " thrown by JviFrame():  " + e.getMessage() );
@@ -78,7 +77,7 @@ public class JviFrame extends JFrame
         return scrollPane;
     }
 
-    public StatusDisplay getStatusDisplay() {
+    public PlayStatusDisplay getStatusDisplay() {
         return statusDisplay;
     }
 

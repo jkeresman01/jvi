@@ -38,7 +38,6 @@ import java.util.prefs.BackingStoreException;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.ViManager;
 import com.raelity.jvi.swing.OptionsPanel;
-import com.raelity.jvi.swing.StatusDisplay;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JScrollPane;
@@ -56,8 +55,8 @@ public class Jvi
     private static JviFrame m_frame1 = null;
     private static JviFrame m_frame2 = null;    // test two jVi on same document
 
-    static Map<JEditorPane, StatusDisplay> mapJepSd
-            = new HashMap<JEditorPane, StatusDisplay>();
+    static Map<JEditorPane, PlayStatusDisplay> mapJepSd
+            = new HashMap<JEditorPane, PlayStatusDisplay>();
 
 
     /**
@@ -139,7 +138,7 @@ public class Jvi
         editor.setCaretColor(Color.black);
 
         //((BooleanOption)Options.getOption(Options.dbgKeyStrokes)).setBoolean(true);
-        ViManager.activateAppEditor(new PlayAppView(f, editor), "Jvi.setupFrame");
+        ViManager.activateAppView(new PlayAppView(f, editor), "Jvi.setupFrame");
         ViManager.requestSwitch(editor);
     }
 

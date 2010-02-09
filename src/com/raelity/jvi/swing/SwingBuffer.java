@@ -1,5 +1,5 @@
 /*
- * DefaultBuffer.java
+ * SwingBuffer.java
  * 
  * Created on Jul 5, 2007, 5:32:05 PM
  * 
@@ -38,14 +38,14 @@ import javax.swing.undo.UndoableEdit;
  *
  * @author erra
  */
-public class DefaultBuffer extends Buffer {
-    private static Logger LOG = Logger.getLogger(DefaultBuffer.class.getName());
+abstract public class SwingBuffer extends Buffer {
+    private static Logger LOG = Logger.getLogger(SwingBuffer.class.getName());
     private Document doc;
     private UndoGroupManager undoMan;
     //private UndoManager undoMan;
     //private CompoundEdit compoundEdit;
     
-    public DefaultBuffer(ViTextView tv) {
+    public SwingBuffer(ViTextView tv) {
         super(tv);
         doc = tv.getEditorComponent().getDocument();
         startDocumentEvents();
@@ -328,7 +328,7 @@ public class DefaultBuffer extends Buffer {
          * // NEEDSWORK: deprecate setMark, just call it set ?????
          */
         public void setMark(ViFPOS fpos) {
-            fpos.verify(DefaultBuffer.this);
+            fpos.verify(SwingBuffer.this);
             if(fpos instanceof ViMark) {
                 Mark mark = (Mark)fpos;
                 this.pos = mark.pos;
@@ -410,7 +410,7 @@ public class DefaultBuffer extends Buffer {
         }
 
         public Buffer getBuffer() {
-            return DefaultBuffer.this;
+            return SwingBuffer.this;
         }
 
         public void verify(Buffer buf) {

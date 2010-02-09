@@ -25,7 +25,8 @@ import java.awt.Container;
 import javax.swing.text.JTextComponent;
 
 /**
- * Basic Swing AppView.
+ * Basic Swing AppView. This is suitable when there is a 1-1
+ * and invarient relationship between Container and Text.
  *
  * @author Ernie Rael <err at raelity.com>
  */
@@ -35,7 +36,7 @@ public abstract class AppView implements ViAppView
     private JTextComponent e;
 
     /** this is added as a client property to the JTextComponent
-     * satisfying the requirements of {@link Factory}
+     * satisfying the requirements of {@link SwingFactory}
      * @param c platform/application handle
      * @param e text component where the action happens
      */
@@ -43,8 +44,8 @@ public abstract class AppView implements ViAppView
     {
         this.c = c;
         this.e = e;
-        assert e.getClientProperty(Factory.PROP_AV) == null;
-        e.putClientProperty(Factory.PROP_AV, this);
+        assert e.getClientProperty(SwingFactory.PROP_AV) == null;
+        e.putClientProperty(SwingFactory.PROP_AV, this);
     }
 
     /** Note this is not part of the ViAppView interface,

@@ -2008,8 +2008,8 @@ static ActionListener ACTION_wall = new ActionListener() {
 static ActionListener ACTION_file = new ActionListener() {
         public void actionPerformed(ActionEvent ev) {
             ColonEvent cev = (ColonEvent)ev;
-            cev.getViTextView().getBuffer()
-                    .displayFileInfo(cev.getViTextView());
+            Msg.smsg(ViManager.getFS()
+                    .getDisplayFileViewInfo(cev.getViTextView()));
         }};
 
 private static boolean do_write(ColonEvent cev)
@@ -2077,7 +2077,7 @@ static ColonAction ACTION_edit = new ColonAction() {
             ColonEvent cev = (ColonEvent)ev;
             /*
             if(cev.getNArg() == 0) {
-                ViManager.getFS().write(cev.getViTextView(), cev.isBang());
+                ViManager.getFS().write(cev.mayCreateTextView(), cev.isBang());
             } else
             */
             if(cev.getNArg() == 1 && cev.getArg(1).charAt(0) == '#') {

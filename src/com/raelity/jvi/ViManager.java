@@ -88,25 +88,26 @@ import org.openide.util.Lookup;
  * If the same document is editted in two windows, then
  * there are two of these.
  * <ul>
- * <li>{@link #activateAppEditor}(appView)<br/>
+ * <li>{@link #activateAppView}(appView)<br/>
  * The application invokes this whenever an editor becomes selected.
  * This also serves as an open.
  * </li>
- * <li>{@link #deactivateCurrentAppEditor}(appView)<br/>
+ * <li>{@link #deactivateCurrentAppView}(appView)<br/>
  * Inform jVi that the currently active editor is going quiet. Primary function
  * is to take it out of input mode.
  * </li>
- * <li>{@link #closeAppEditor}(appView)<br/>
+ * <li>{@link #closeAppView}(appView)<br/>
  * The applications invokes this method when a file is completely
  * removed from a container or should be forgotten by jVi.
  * </li>
  * <li>requestSwitch(EditorComponent)<br/>
- * This rarely needs to be invoked directly. Use activateAppEditor.
+ * This rarely needs to be invoked directly. Use {@linkplain activateAppView}.
  * </li>
  * </ul>
  * <b>NEEDSWORK:</b>
  * <ul>
- * <li>Get rid of requestSwitch. Do it automaticaly at end of activateAppEd</li>
+ * <li>Get rid of requestSwitch. Do it automaticaly at end of
+ * activateAppView</li>
  * </ul>
  */
 public class ViManager
@@ -441,7 +442,7 @@ public class ViManager
         return factory.getFS();
     }
 
-    public static ViTextView getViTextView(JEditorPane editorPane)
+    public static ViTextView mayCreateTextView(JEditorPane editorPane)
     {
         return factory.createTextView(editorPane);
     }
@@ -750,17 +751,20 @@ public class ViManager
      *               Editor may be null, may be a nomad.
      * @param tag String used in debug messages.
      */
-    public static void activateAppEditor(ViAppView av, String tag)
+    public static void activateAppView(ViAppView av, String tag)
     {
         JEditorPane ep = (JEditorPane)av.getEditor();
         if(factory != null && G.dbgEditorActivation.getBoolean()) {
-            System.err.println("Activation: ViManager.activateAppEditor: "
+            System.err.println("Activation: ViManager.activateAppView: "
                     + tag + " " + cid(ep) + " " + cid(av)
                     + " " + factory.getFS().getDisplayFileName(av)
                     );
         }
         if(ep != null && factoryLoaded)
             factory.setupCaret(ep);
+
+        if(G.curwin != null)
+            G.curwin.getStatusDisplay().refresh();
 
         ViAppView keep = keepMru;
         keepMru = null;
@@ -772,7 +776,11 @@ public class ViManager
         adjustMru(av, av.isNomad());
     }
 
-    public static void deactivateCurrentAppEditor(ViAppView av)
+    /** The specified appView is loosing focus.
+     * The associated jVi state is put into normal mode.
+     * @param av appView loosing focus.
+     */
+    public static void deactivateCurrentAppView(ViAppView av)
     {
         if(factory != null && G.dbgEditorActivation.getBoolean()) {
             System.err.println(
@@ -781,8 +789,10 @@ public class ViManager
                     + factory.getFS().getDisplayFileName(av));
         }
         // For several reasons, eg. don't want to hold begin/endUndo
-        if(factoryLoaded)
+        if(factoryLoaded) {
             exitInputMode();
+            G.curwin.getStatusDisplay().clearDisplay();
+        }
 
         currentlyActive = null;
     }
@@ -796,12 +806,12 @@ public class ViManager
      * The applications invokes this method when a file is completely
      * removed from a container or should be forgotten by jVi.
      */
-    public static void closeAppEditor(ViAppView av)
+    public static void closeAppView(ViAppView av)
     {
         JEditorPane ep = (JEditorPane)av.getEditor();
         if(factory != null && G.dbgEditorActivation.getBoolean()) {
             String fname = factory.getFS().getDisplayFileName(av);
-            System.err.println("Activation: ViManager.closeAppEditor: "
+            System.err.println("Activation: ViManager.closeAppView: "
                     + (ep == null ? "(no shutdown) " : "") + fname);
         }
 
@@ -827,15 +837,6 @@ public class ViManager
     //
     // END of OpenEditors list handling
     //
-
-    public static void log(Object... a)
-    {
-        StringBuilder s = new StringBuilder();
-        for (int i = 0; i < a.length; i++) {
-            s.append(a[i]);
-        }
-        System.err.println(s);
-    }
 
     /**
      * A key was typed. Handle the event.
@@ -890,7 +891,7 @@ public class ViManager
     /** requestSwitch can be used from platform code for situation where an
      * editor is activated. It allows things to be initialized,
      * with some visual implications, before a key is entered.
-     * It should typically only be used after activateAppEditor.
+     * It should typically only be used after {@linkplain #activateAppView}.
      */
     public static void requestSwitch(JEditorPane ep)
     {
@@ -914,12 +915,12 @@ public class ViManager
 
         ViTextView currentTv = null;
         if(currentEditorPane != null) {
-            currentTv = getViTextView(currentEditorPane);
+            currentTv = mayCreateTextView(currentEditorPane);
             firePropertyChange(P_SWITCH_FROM_WIN, currentTv, null);
         }
 
         boolean newTextView = factory.getTextView(editorPane) == null;
-        ViTextView textView = getViTextView(editorPane);
+        ViTextView textView = mayCreateTextView(editorPane);
         Buffer buf = textView.getBuffer();
         factory.setupCaret(editorPane); // make sure has the right caret
         textView.attach();
@@ -931,7 +932,7 @@ public class ViManager
 
         if(currentEditorPane != null) {
             core.abortVisualMode();
-            // MOVED ABOVE: currentTv = getViTextView(currentEditorPane);
+            // MOVED ABOVE: currentTv = mayCreateTextView(currentEditorPane);
             // Freeze and/or detach listeners from previous active view
             currentTv.detach();
         }
@@ -947,7 +948,8 @@ public class ViManager
             editorPane.addMouseMotionListener(mouseMotionListener);
         }
         if(textView.getBuffer().singleShare())
-            firePropertyChange(P_OPEN_BUF, currentTv == null ? null : currentTv.getBuffer(),
+            firePropertyChange(P_OPEN_BUF,
+                    currentTv == null ? null : currentTv.getBuffer(),
                     textView.getBuffer());
         firePropertyChange(P_SWITCH_TO_WIN, currentTv, textView);
     }
@@ -1054,6 +1056,9 @@ public class ViManager
 
     public static void cursorChange(ViCaret caret)
     {
+        if(G.curwin == null)
+            return;
+
         boolean nowSelection = caret.getDot() != caret.getMark();
         if(hasSelection == nowSelection)
             return;

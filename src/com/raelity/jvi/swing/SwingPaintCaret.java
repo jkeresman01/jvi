@@ -34,14 +34,14 @@ import java.awt.Font;
  * the big deal.
  * // NEEDSWORK: cache the current font metric, listen to font property changes
  */
-public class ViCaretDelegate
+public class SwingPaintCaret
 {
     ViCaret caret;        // the actual caret
     ViCursor cursor;
     /** width of a block cursor */
     int blockWidth = 8;
 
-    public ViCaretDelegate(ViCaret caret)
+    public SwingPaintCaret(ViCaret caret)
     {
         this.caret = caret;
     }

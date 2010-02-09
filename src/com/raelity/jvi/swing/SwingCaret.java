@@ -19,7 +19,6 @@
  */
 package com.raelity.jvi.swing;
 
-import com.raelity.jvi.ViManager;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.lang.reflect.Method;
@@ -38,20 +37,20 @@ import javax.swing.event.ChangeListener;
  *
  * // NEEDSWORK: cache the current font metric, listen to font property changes
  */
-public class DefaultViCaret extends DefaultCaret implements ViCaret
+public class SwingCaret extends DefaultCaret implements ViCaret
 {
-    ViCaretDelegate viDelegate;
+    SwingPaintCaret viDelegate;
     static Method super_setDot;
     static Method super_moveDot;
 
-    public DefaultViCaret()
+    public SwingCaret()
     {
         super();
-        viDelegate = new ViCaretDelegate(this);
+        viDelegate = new SwingPaintCaret(this);
         addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e)
             {
-                ViManager.cursorChange(DefaultViCaret.this);
+                ViManager.cursorChange(SwingCaret.this);
             }
         });
     }

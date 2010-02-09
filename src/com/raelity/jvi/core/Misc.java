@@ -54,6 +54,7 @@ import static com.raelity.jvi.core.Constants.*;
 import static com.raelity.jvi.core.KeyDefs.*;
 import com.raelity.text.TextUtil.MySegment;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -1912,8 +1913,8 @@ private static int put_in_typebuf(String s, boolean colon)
 
   static int check_fname()
   {
-    String s = G.curbuf.getFilename();
-    if(s == null || s.length() == 0) {
+    File f = G.curbuf.getFile();
+    if(f == null || !f.isFile()) {
       Msg.emsg(Messages.e_noname);
       return FAIL;
     }
@@ -1934,7 +1935,7 @@ private static int put_in_typebuf(String s, boolean colon)
           case '%':		// file name
               if (errmsg)
                   check_fname();	// will give emsg if not set
-              argp.setValue(G.curbuf.getFilename());
+              argp.setValue(G.curbuf.getFile().getPath());
               return true;
 
 //          case '#':		/* alternate file name */

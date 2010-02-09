@@ -12,7 +12,6 @@ package com.raelity.jvi.core;
 import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViBuffer;
 import com.raelity.jvi.ViFPOS;
-import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViOptionBag;
 import com.raelity.jvi.ViTextView;
@@ -169,52 +168,9 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         return fpos;
     }
 
-    
-    public void displayFileInfo(ViTextView tv) {
-        Window win = (Window)tv;
-        StringBuffer sb = new StringBuffer();
-        ViFS fs = ViManager.getViFactory().getFS();
-        sb.append("\"" + getDisplayFileName() + "\"");
-        if(fs.isModified(this))
-            sb.append(" [Modified]");
-        if(fs.isReadOnly(this))
-            sb.append(" [readonly]");
-        int l = getLineCount();
-        int percent = (win.w_cursor.getLine() * 100) / l;
-        if(true) {
-            sb.append(" " + l + " line" + Misc.plural(l));
-            sb.append(" --" + percent + "%--");
-        } else {
-            sb.append(" line " + win.w_cursor.getLine());
-            sb.append(" of " + getLineCount());
-            sb.append(" --" + percent + "%--");
-            sb.append(" col " + win.w_cursor.getColumn());
-        }
-        Msg.smsg(sb.toString());
-    }
-    
-    public String getDisplayFileNameAndSize() {
-        StringBuffer sb = new StringBuffer();
-        ViFS fs = ViManager.getViFactory().getFS();
-        sb.append("\"" + getDisplayFileName() + "\"");
-        int l = getLineCount();
-        sb.append(" " + getLineCount() + "L, ");
-        sb.append(" " + getLength() + "C");
-        return sb.toString();
-  }
 
     final public String getDisplayFileName() {
         return ViManager.getViFactory().getFS().getDisplayFileName(this);
-    }
-
-    public File getFile() {
-        return new File("/tmp/test.file");
-    }
-
-    public String getFilename()
-    {
-        File fi = G.curbuf.getFile();
-        return fi == null ? null : fi.getPath();
     }
 
     

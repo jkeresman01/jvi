@@ -66,7 +66,7 @@ import javax.swing.text.JTextComponent;
  * <li> only one text view supported for now
  * </ul>
  */
-abstract public class Factory implements ViFactory
+abstract public class SwingFactory implements ViFactory
 {
     public static final String PROP_TV = "ViTextView";
     public static final String PROP_BUF  = "ViBuffer";
@@ -81,7 +81,7 @@ abstract public class Factory implements ViFactory
             = new WeakHashMap<JEditorPane, Object>();
 
     JDialog dialog;
-    protected static Factory INSTANCE;
+    protected static SwingFactory INSTANCE;
 
     private static final boolean isMac = ViManager.getOsVersion().isMac();
     private MouseInputAdapter mouseAdapter;
@@ -92,7 +92,7 @@ abstract public class Factory implements ViFactory
     /**
      *  Default constructor.
      */
-    public Factory()
+    public SwingFactory()
     {
         if ( INSTANCE != null ) {
             throw new IllegalStateException("ViFactory already exists");
@@ -164,20 +164,13 @@ abstract public class Factory implements ViFactory
     }
 
 
-    public boolean isShowing( ViTextView tv ) // NEEDSWORK: tv.isShowing
+    public boolean isShowing( ViTextView tv )
     {
         return tv.getEditorComponent().isShowing();
     }
 
 
-    /**
-     *  Subclass probably wants to override this.
-     */
-    protected Buffer createBuffer( ViTextView tv )
-    {
-        Buffer buf = new DefaultBuffer(tv);
-        return buf;
-    }
+    abstract protected Buffer createBuffer( ViTextView tv );
 
 
     public Set<Buffer> getBufferSet() // NEEDSWORK: collection, list MRU?
@@ -405,7 +398,7 @@ abstract public class Factory implements ViFactory
         // install cursor if neeeded
         Caret c = editorPane.getCaret();
         if ( !(c instanceof ViCaret) ) {
-            DefaultViCaret caret = new DefaultViCaret();
+            SwingCaret caret = new SwingCaret();
             editorPane.setCaret(caret);
             caret.setDot(c.getDot());
             caret.setBlinkRate(c.getBlinkRate());

@@ -143,16 +143,11 @@ public interface ViBuffer {
 
     public ViFPOS createFPOS(int offset);
 
-
-    public void displayFileInfo(ViTextView tv);
-
     /**
      * Uses ViFS to get the info.
      * @return
      */
     public String getDisplayFileName();
-
-    public String getDisplayFileNameAndSize();
 
     /**
      * In the future, to support multiple file modifiers, could take a File
@@ -165,11 +160,9 @@ public interface ViBuffer {
      */
     public String modifyFilename(char option);
 
-    public String getFilename();
-
     /**
-     * This method provides a file only so that the path can be examined.
-     * @return null or the path for this file
+     * This method provides a {@linkplain File} for the buffer.
+     * @return null or the java File for this buffer
      */
     public File getFile();
 }

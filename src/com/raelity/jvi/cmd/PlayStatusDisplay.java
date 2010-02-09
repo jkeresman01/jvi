@@ -18,7 +18,7 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
-package com.raelity.jvi.swing;
+package com.raelity.jvi.cmd;
 
 import com.raelity.jvi.ViStatusDisplay;
 import com.raelity.jvi.core.G;
@@ -28,15 +28,17 @@ import javax.swing.SwingUtilities;
 
 /**
  *  A basic implementation of the vi status bar.
+ * It uses three JLabels. See NbStatus bar for an
+ * example that displays everything in a single label.
  */
-public class StatusDisplay implements ViStatusDisplay
+public class PlayStatusDisplay implements ViStatusDisplay
 {
     private JLabel generalStatus;
     private JLabel strokeStatus;
     private JLabel modeStatus;
     private boolean fFrozen;
 
-    public StatusDisplay(JLabel generalStatus, JLabel strokeStatus,
+    public PlayStatusDisplay(JLabel generalStatus, JLabel strokeStatus,
                          JLabel modeStatus)
     {
         this.generalStatus = generalStatus;
@@ -100,6 +102,14 @@ public class StatusDisplay implements ViStatusDisplay
     }
 
 
+    public void clearDisplay()
+    {
+        setText(generalStatus, "");
+        setText(modeStatus, "");
+        setText(strokeStatus, "");
+    }
+
+
     synchronized void setText( JLabel l00, String s00 )
     {
         if ( l00 == generalStatus && s00.equals("") ) {
@@ -127,6 +137,6 @@ public class StatusDisplay implements ViStatusDisplay
     }
 
 
-} // end com.raelity.jvi.swing.StatusDisplay
+} // end com.raelity.jvi.swing.PlayStatusDisplay
 
 // vi: ts=8 sw=4
