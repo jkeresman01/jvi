@@ -21,22 +21,84 @@
 package com.raelity.jvi.cmd;
 
 import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.core.Util;
 import com.raelity.jvi.swing.SwingBuffer;
+import com.raelity.jvi.swing.UndoGroupManager;
 import java.io.File;
+import javax.swing.event.DocumentEvent;
+import javax.swing.undo.UndoableEdit;
 
 /**
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public class PlayBuffer extends SwingBuffer {
+public class PlayBuffer extends SwingBuffer
+{
+    private UndoGroupManager undoMan;
 
     public PlayBuffer(ViTextView tv)
     {
         super(tv);
+
+        undoMan = new UndoGroupManager() {
+            @Override
+            public synchronized boolean addEdit(UndoableEdit anEdit) {
+                // only accepts insert/remove
+                // quietly throw away CHANGE events
+                if(anEdit instanceof DocumentEvent
+                    &&((DocumentEvent)anEdit).getType()
+                            == DocumentEvent.EventType.CHANGE)
+                        return isInProgress();
+                return super.addEdit(anEdit);
+            }
+        };
+        getDocument().addUndoableEditListener(undoMan);
+    }
+
+    @Override
+    public void removeShare()
+    {
+        if(singleShare()) {
+            // last share for the doc
+            getDocument().removeUndoableEditListener(undoMan);
+        }
+        super.removeShare();
     }
 
     public File getFile() {
         return new File("/tmp/test.file");
+    }
+
+    public void undo() {
+        if(undoMan.canUndo())
+            undoMan.undo();
+        else
+            Util.vim_beep();
+    }
+
+    public void redo() {
+        if(undoMan.canRedo())
+            undoMan.redo();
+        else
+            Util.vim_beep();
+    }
+
+    public void do_beginUndo() {
+        // NEEDSWORK: standalone like: ((AbstractDocument)doc).writeLock();
+        do_beginInsertUndo();
+    }
+
+    public void do_endUndo() {
+        do_endInsertUndo();
+        // NEEDSWORK: standalone like: ((AbstractDocument)doc).writeUnlock();
+    }
+
+    public void do_beginInsertUndo() {
+        undoMan.beginUndoGroup();
+    }
+
+    public void do_endInsertUndo() {
+        undoMan.endUndoGroup();
     }
 
 }
