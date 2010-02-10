@@ -17,16 +17,25 @@
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi.swing;
+package com.raelity.jvi;
 
-import javax.swing.text.Caret;
-import javax.swing.text.JTextComponent;
-import com.raelity.jvi.*;
+import java.awt.Component;
 
-public interface ViCaret extends Caret {
-  public void setCursor(ViCursor cursor);
+/**
+ * A non-ui-toolkit caret.
+ *
+ * @author Ernie Rael <err at raelity.com>
+ */
+public interface ViCaret {
+  public void setCursor(ViCaretStyle cursor);
 
-  public ViCursor getCursor();
+  public ViCaretStyle getCursor();
 
-  public JTextComponent getTextComponent();
+  public int getDot(); // also in Caret
+
+  public int getMark(); // also in Caret
+
+  public boolean isVisible();
+
+  public Component getTextComponent();
 }

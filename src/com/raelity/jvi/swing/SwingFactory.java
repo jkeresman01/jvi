@@ -56,7 +56,6 @@ import  java.util.Map;
 import  java.util.Set;
 import  java.util.WeakHashMap;
 import  java.util.prefs.Preferences;
-import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 
 /**
@@ -142,11 +141,6 @@ abstract public class SwingFactory implements ViFactory
         // NEEDSWORK: should this be systemclassloader or this's class loader???
         Class c = ClassLoader.getSystemClassLoader().loadClass(name);
         return c;
-    }
-
-    public boolean isStandalone()
-    {
-        return true;
     }
 
     public final ViTextView getTextView(Component ed)
@@ -514,7 +508,7 @@ abstract public class SwingFactory implements ViFactory
 
         public void actionPerformed( ActionEvent e )
         {
-            JTextComponent target = (JTextComponent)getTextComponent(e);
+            JTextComponent target = getTextComponent(e);
             if ( target != null && e != null ) {
                 String content = e.getActionCommand();
                 if ( content != null && content.length() > 0 ) {

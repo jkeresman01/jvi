@@ -23,10 +23,11 @@ import com.raelity.jvi.core.Constants;
 
 /** Salient variables for doing a vi cursor. */
 
-public interface ViCursor {
-  static final int SHAPE_BLOCK	= Constants.SHAPE_BLOCK;// block cursor
-  static final int SHAPE_HOR	= Constants.SHAPE_HOR;// horizontal bar cursor
-  static final int SHAPE_VER	= Constants.SHAPE_VER;// vertical bar cursor
+public interface ViCaretStyle {
+  public static final int SHAPE_BLOCK	= Constants.SHAPE_BLOCK;// block cursor
+  public static final int SHAPE_HOR	= Constants.SHAPE_HOR;// horizontal bar cursor
+  public static final int SHAPE_VER	= Constants.SHAPE_VER;// vertical bar cursor
+
   /** one of the SHAPE_ defined */
   public int getShape();
 

@@ -267,7 +267,7 @@ public interface ViTextView extends ViOptionBag {
   public boolean isShutdown();
 
   /** Change the cursor shape */
-  public void updateCursor(ViCursor cursor);
+  public void updateCursor(ViCaretStyle cursor);
 
   /** Quit editing window. Can close last view.
    */

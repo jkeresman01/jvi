@@ -62,27 +62,12 @@ public interface ViFactory
      */
     public boolean isNomadic(Component editor, ViAppView av);
 
-    /** Get the unique/invariant integer identifier of the editor/window
-     * associated with the av.
-     * When the app first opens an editor it should derive this number.
-     * This number is used in jVi commands such as ":e#!number!"
-     *
-     * NEEDSWORK: put this method on av
-     *
-     * @param av the appview
-     * @return the invariant number of the editor
-     */
-    public int getWNum(ViAppView av);
-
     /** Handle changing document in text view.
      * Editor in TextView should hold new document.
      * @param tv TextView holding editor that is changing document
      * @param oldDoc previous document (a Document for swing)
      */
     public void changeBuffer(ViTextView tv, Object oldDoc);
-
-    /** @return true if standalone (debug), else false */
-    public boolean isStandalone();
 
     /** @return Set of active ViTextView, some may have retired */
     public Set<ViTextView> getViTextViewSet();

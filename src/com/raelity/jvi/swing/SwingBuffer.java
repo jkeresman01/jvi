@@ -222,13 +222,6 @@ abstract public class SwingBuffer extends Buffer {
     }
 
 
-
-
-    
-
-
-
-
     public void reindent(int line, int count) {
         System.err.format("reindent line %d, count %d", line, count);
         Util.vim_beep();

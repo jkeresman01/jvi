@@ -79,7 +79,9 @@ public interface ViFS
 
 
     /**
-     *  Edit the nth file. If n &lt; 0 then n is MRU; n == -1 is most recent.
+     *  Edit the nth file. If n &lt; 0 then n is MRU,
+     * for example n == -1 is previous file and n == -2 is the
+     * file before that. Display MRU list with ":ls" command.
      */
     public void edit( ViTextView tv, boolean force, int n );
 

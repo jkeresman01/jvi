@@ -2167,14 +2167,14 @@ public static ActionListener ACTION_BUFFERS = new ActionListener() {
                 if(o1 == null && o2 == null) {
                     break;
                 }
-                int w2 = ViManager.getViFactory().getWNum(o2);
+                int w2 = o2.getWNum();
                 l.add(String.format(
                         " %2d %c %-40s %3d %c %s",
                         i,
-                        cur == o1 ? '%' : prev == o1 ? '#' : ' ',
+                        cur.equals(o1) ? '%' : prev.equals(o1) ? '#' : ' ',
                         o1 != null ? factory.getFS().getDisplayFileName(o1) : "",
                         w2,
-                        cur == o2 ? '%' : prev == o2 ? '#' : ' ',
+                        cur.equals(o2) ? '%' : prev.equals(o2) ? '#' : ' ',
                         o2 != null ? factory.getFS().getDisplayFileName(o2) : ""));
                 i++;
             }

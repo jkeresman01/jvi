@@ -56,7 +56,6 @@ import java.net.URI;
 import java.net.URL;
 
 import com.raelity.jvi.swing.KeyBinding;
-import com.raelity.jvi.swing.ViCaret;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseListener;

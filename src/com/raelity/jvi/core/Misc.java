@@ -20,7 +20,7 @@
 package com.raelity.jvi.core;
 
 import com.raelity.jvi.ViManager;
-import com.raelity.jvi.ViCursor;
+import com.raelity.jvi.ViCaretStyle;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViTextView;
@@ -1078,7 +1078,7 @@ public class Misc implements ClipboardOwner {
   }
 
 
-  private static ViCursor[] cursor_table;
+  private static ViCaretStyle[] cursor_table;
 
   /**
    * Parse options for cursor shapes.
@@ -1094,7 +1094,7 @@ public class Misc implements ClipboardOwner {
     Cursor hor20 = new Cursor(SHAPE_HOR, 20, 0);
     Cursor hor50 = new Cursor(SHAPE_HOR, 50, 0);
 
-    cursor_table = new ViCursor[SHAPE_COUNT];
+    cursor_table = new ViCaretStyle[SHAPE_COUNT];
     cursor_table[SHAPE_N] = block;
     cursor_table[SHAPE_V] = block;
     cursor_table[SHAPE_I] = ver25_input;
@@ -1110,7 +1110,7 @@ public class Misc implements ClipboardOwner {
   /**
    * @return the description of the cursor to draw
    */
-  private static ViCursor getCursor() {
+  private static ViCaretStyle getCursor() {
     if(cursor_table == null) {
       parse_guicursor();
     }

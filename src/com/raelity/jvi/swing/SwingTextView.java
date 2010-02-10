@@ -35,16 +35,13 @@ import  static com.raelity.jvi.core.Constants.*;
 import com.raelity.jvi.*;
 import com.raelity.text.TextUtil.MySegment;
 
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -53,21 +50,12 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.JViewport;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.MutableAttributeSet;
-import javax.swing.text.Position;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
-import javax.swing.text.StyledEditorKit;
 
 /**
  *  Presents a swing editor interface for use with vi. There is
@@ -784,7 +772,7 @@ public class SwingTextView extends Window
     }
 
 
-    public void updateCursor( ViCursor cursor )
+    public void updateCursor( ViCaretStyle cursor )
     {
         if ( isShutdown() ) {
             return; // NEEDSWORK: was getting some null pointer stuff here
@@ -1310,149 +1298,6 @@ public class SwingTextView extends Window
         changeView(false);
     }
 
-    /**
-     * Stabilize (do not allow scrolling) the JViewport displaying
-     * the indicated JTextComponent.
-     * This is typically used when the underlying document may change while
-     * being edited in another view. The {@link #stop} method is used to release
-     * the listeners and so unfreeze the viewport.
-     * <p>This is a one shot class. The editor is expected to be good to go.
-     * Only document changes are listened to. The first char of the top line is
-     * pinned to the upper left corner. If needed, this could be extended
-     * to pin the horizontal position as well.
-     */
-    public static class FreezeViewport
-    implements DocumentListener, ChangeListener
-    {
-        private JTextComponent ep;
-        private JViewport vp;
-        private AbstractDocument doc;
-        private Position pos;
-        private int topLine;
-        private int nLine;
-
-        public FreezeViewport(JTextComponent ep)
-        {
-            this.ep = ep;
-            Object o = ep.getDocument();
-            if (!(o instanceof AbstractDocument)) {
-                return;
-            }
-            doc = (AbstractDocument) ep.getDocument();
-            try {
-                doc.readLock();
-                vp = (JViewport) ep.getParent(); // may throw class cast, its ok
-                Element root = doc.getDefaultRootElement();
-                nLine = root.getElementCount();
-
-                // Get the offset of the first displayed char in the top line
-                Point pt = vp.getViewPosition();
-                int offset = ep.viewToModel(pt);
-
-                // Determine the line number of the top displayed line
-                topLine = root.getElementIndex(offset);
-                //System.err.format("FreezeViewport: top %d\n", topLine);
-
-                // Note. offset may not be first char, due to horiz scroll
-                // make offset the first char of the line
-                offset = root.getElement(topLine).getStartOffset();
-
-                // Get marker to offset in the document
-                pos = doc.createPosition(offset);
-                doc.addDocumentListener(this);
-                //vp.addChangeListener(this); // debug info
-            } catch (Exception ex) {
-                // Note: did not start listener
-            } finally {
-                doc.readUnlock();
-            }
-        }
-
-        public void stop()
-        {
-            if (doc != null) {
-                doc.removeDocumentListener(this);
-            }
-            if(vp != null) {
-                vp.removeChangeListener(this);
-            }
-        }
-
-        private void adjustViewport(int offset)
-        {
-            // Might be able to use info from DocumentEvent to optimize
-            try {
-                Point pt = ep.modelToView(offset).getLocation();
-                pt.translate(-pt.x, 0); // x <-- 0, leave a few pixels to left
-                vp.setViewPosition(pt);
-            } catch (Exception ex) {
-                stop();
-            }
-            return;
-        }
-
-        private void handleChange(DocumentEvent e)
-        {
-            // Note while in listener document can't change, no read lock
-            Element root = doc.getDefaultRootElement();
-            int newNumLine = root.getElementCount();
-            // return if line count unchanged or changed after our mark
-            if (nLine == newNumLine || e.getOffset() > pos.getOffset()) {
-                return;
-            }
-            nLine = newNumLine;
-
-            int newTopLine = root.getElementIndex(pos.getOffset());
-            //System.err.format("handleChange: old %d new %d\n", topLine, newTopLine);
-            if (topLine == newTopLine) {
-                return;
-            }
-            topLine = newTopLine;
-
-            // make a move
-            final int offset = root.getElement(topLine).getStartOffset();
-            if (false && EventQueue.isDispatchThread()) { // false needed NB6.8
-                adjustViewport(offset);
-                //System.err.println("handleChange: adjust in dispatch");
-            } else {
-                EventQueue.invokeLater(new Runnable()
-                        {
-                            public void run()
-                            {
-                                adjustViewport(offset);
-                                //System.err.println("handleChange: adjust later");
-                            }
-                        });
-            }
-        }
-
-        public void insertUpdate(DocumentEvent e)
-        {
-            handleChange(e);
-        }
-
-        public void removeUpdate(DocumentEvent e)
-        {
-            handleChange(e);
-        }
-
-        public void changedUpdate(DocumentEvent e)
-        {
-        }
-
-        public void stateChanged(ChangeEvent e) {
-            Point pt = vp.getViewPosition();
-            int offset = ep.viewToModel(pt);
-            Element root = doc.getDefaultRootElement();
-            int topl = root.getElementIndex(offset);
-            System.err.println("Viewport stateChanged: top line " + topl);
-        }
-
-    }
-
-
-    //////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////
     //
     // Visual Select
@@ -1460,104 +1305,21 @@ public class SwingTextView extends Window
 
     /**
      * Update the selection highlight.
+     *
+     * see PlayTextView for a simple implementation.
      */
-    public void updateVisualState()
-    {
-        // Following stuff standalone, only for debugging
-        // (should really be a seperate method)
-        if(ViManager.getViFactory().isStandalone()) {
-            if (!G.VIsual_active) {
-                try {
-                    unhighlight(new int[] {
-                        getBuffer().getMark('<').getOffset(),
-                        getBuffer().getMark('>').getOffset(),
-                        -1, -1});
-                } catch(Exception e) {
-                    unhighlight(new int[] {
-                        0, editorPane.getText().length(),
-                        -1, -1});
-                }
-            }
-            int[] b = getBuffer()
-                    .getVisualSelectBlocks(this, 0, Integer.MAX_VALUE);
-            //dumpBlocks("blocks", b);
-            highlight(b);
-        }
-    }
-
+    public void updateVisualState() {}
 
     //////////////////////////////////////////////////////////////////////
     //
     // Highlight Search
     //
 
-    public void updateHighlightSearchState()
-    {
-        applyBackground(new int[] {0, getBuffer().getLength(), -1, -1},
-                UNHIGHLIGHT);
-
-        if(!Options.doHighlightSearch()) {
-            return;
-        }
-
-        int[] b = getBuffer().getHighlightSearchBlocks(0, getBuffer().getLength());
-        applyBackground(b, HIGHLIGHT);
-    }
-
-
-    //////////////////////////////////////////////////////////////////////
-    //
-    // StyledDocument highlight methods
-    //
-
-    private static MutableAttributeSet HIGHLIGHT = new SimpleAttributeSet();
-    private static MutableAttributeSet UNHIGHLIGHT = new SimpleAttributeSet();
-    static {
-        StyleConstants.setBackground(HIGHLIGHT, Color.LIGHT_GRAY);
-        StyleConstants.setBackground(UNHIGHLIGHT, Color.WHITE);
-    }
-
-    private void unhighlight( int[] blocks )
-    {
-        applyBackground(blocks, UNHIGHLIGHT);
-    }
-
-    protected int[] previousAppliedHighlight = null;
-
-    private void highlight( int[] blocks )
-    {
-        if (previousAppliedHighlight != null
-                && !Arrays.equals(previousAppliedHighlight, blocks)) {
-            unhighlight(previousAppliedHighlight);
-        }
-        applyBackground(blocks, HIGHLIGHT);
-        previousAppliedHighlight = blocks;
-    }
-
-
-    protected void applyBackground( int[] blocks, MutableAttributeSet mas )
-    {
-        if(editorPane.getDocument() instanceof StyledDocument) {
-            StyledDocument document = (StyledDocument) editorPane.getDocument();
-            for ( int i = 0; i < blocks.length; i+=2 ) {
-                int start = blocks[i];
-                int end = blocks[i+1];
-                if ( start == -1 && end == -1 ) { // break
-                    return;
-                }
-                if ( start > end ) {
-                    int tmp = start;
-                    start = end;
-                    end = tmp;
-                }
-                document.setCharacterAttributes(start, end - start, mas, false);
-                // update styled editor kit with new attributes
-                // to overcome paint errors
-                StyledEditorKit k = (StyledEditorKit)getEditorKit();
-                MutableAttributeSet inputAttrs = k.getInputAttributes();
-                inputAttrs.addAttributes(mas);
-            }
-        }
-    }
+    /**
+     * Update the highlight search.
+     *
+     * see PlayTextView for a simple implementation.
+     */
+    public void updateHighlightSearchState() {}
 
 } // end com.raelity.jvi.swing.SwingTextView

@@ -19,9 +19,9 @@
  */
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.ViCursor;
+import com.raelity.jvi.ViCaretStyle;
 
-class Cursor implements ViCursor {
+class Cursor implements ViCaretStyle {
   int shape;
   int percentage;
   int blinkwait;

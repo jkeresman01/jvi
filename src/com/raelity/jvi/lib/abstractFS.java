@@ -20,12 +20,15 @@
 
 package com.raelity.jvi.lib;
 
+import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViBuffer;
 import com.raelity.jvi.ViFS;
+import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.Misc;
 import com.raelity.jvi.core.Window;
+import java.util.Iterator;
 
 /**
  *
@@ -33,6 +36,30 @@ import com.raelity.jvi.core.Window;
  */
 abstract public class abstractFS implements ViFS
 {
+    /**
+     * Look up the appView. If i ge 0 then find app view with window that
+     * matches that number. If i lt 0 then use it to index into the mru list.
+     * @param i
+     * @return
+     */
+    protected ViAppView getAppViewByNumber(int i)
+    {
+        ViAppView av = null;
+        if(i >= 0) {
+            Iterator<ViAppView> iter = ViManager.getTextBufferIterator();
+            while(iter.hasNext()) {
+                ViAppView av01 = iter.next();
+                if(i == av01.getWNum()) {
+                    av = av01;
+                    break;
+                }
+            }
+        } else {
+            av = ViManager.getMruBuffer(-i);
+        }
+        return av;
+    }
+
     public String getDisplayFileViewInfo(ViTextView tv) {
         Buffer buf = tv.getBuffer();
         Window win = (Window)tv;

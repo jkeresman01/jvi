@@ -19,6 +19,9 @@
  */
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.ViCaret;
+import com.raelity.jvi.ViCaretStyle;
+import com.raelity.jvi.ViManager;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.lang.reflect.Method;
@@ -26,7 +29,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 
-import com.raelity.jvi.*;
 import javax.swing.event.ChangeListener;
 
 /**
@@ -55,12 +57,12 @@ public class SwingCaret extends DefaultCaret implements ViCaret
         });
     }
 
-    public void setCursor(ViCursor cursor)
+    public void setCursor(ViCaretStyle cursor)
     {
         viDelegate.setCursor(cursor);
     }
 
-    public ViCursor getCursor()
+    public ViCaretStyle getCursor()
     {
         return viDelegate.getCursor();
     }

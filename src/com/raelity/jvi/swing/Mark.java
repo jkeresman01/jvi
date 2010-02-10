@@ -12,8 +12,10 @@ import javax.swing.text.Position;
  * A Mark in vi specifies a row and column. The row "floats" as lines are
  * inserted and deleted earlier in the file.
  * <b>However</b> the column is set when
- * the mark is created and does not change if characters are added on the
+ * the mark is created and does not change even if characters are added on the
  * same line before the column.
+ *
+ * This is a LEFT-BIAS mark. Swing is right bias, so there's a little didling.
  */
 class Mark implements ViMark
 {

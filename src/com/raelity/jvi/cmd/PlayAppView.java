@@ -49,4 +49,10 @@ public class PlayAppView extends AppView
     {
         return false;
     }
+
+    public int getWNum()
+    {
+        return -9;
+    }
+
 }

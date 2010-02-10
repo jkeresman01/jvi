@@ -67,10 +67,6 @@ final public class PlayFactory extends SwingFactory
         return null;
     }
 
-    public int getWNum(ViAppView av) {
-        return -9;
-    }
-
     @Override
     public ViFS getFS()
     {

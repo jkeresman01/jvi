@@ -27,8 +27,8 @@ import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.lib.abstractFS;
-import javax.swing.JEditorPane;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 
 /**
  *  A default implementation of the {@link com.raelity.jvi.ViFS}
@@ -43,16 +43,15 @@ public class PlayFS extends abstractFS
     public PlayFS()
     {
     }
-
     public String getDisplayFileName(ViAppView av)
     {
-        JEditorPane ep = (JEditorPane)av.getEditor();
+        JTextComponent ep = (JTextComponent)av.getEditor();
         ViTextView tv = ViManager.getViFactory().getTextView(ep);
         if(tv != null) {
             return getDisplayFileName(tv.getBuffer());
         }
         assert false;
-        return "xxx";
+        return "file-name-unkown-from-appview";
     }
 
 
@@ -119,6 +118,8 @@ public class PlayFS extends abstractFS
 
     public void edit( ViTextView tv, boolean force, int n )
     {
+        // get the av to open
+        ViAppView av = getAppViewByNumber(n);
         Msg.emsg("edit(tv, int{" + n + "}, force) not implemented");
     }
 

@@ -37,7 +37,7 @@ import java.awt.Font;
 public class SwingPaintCaret
 {
     ViCaret caret;        // the actual caret
-    ViCursor cursor;
+    ViCaretStyle cursor;
     /** width of a block cursor */
     int blockWidth = 8;
 
@@ -46,7 +46,7 @@ public class SwingPaintCaret
         this.caret = caret;
     }
 
-    public void setCursor(ViCursor cursor)
+    public void setCursor(ViCaretStyle cursor)
     {
         if (cursor == null) {
             return;
@@ -58,7 +58,7 @@ public class SwingPaintCaret
         //caret.setBlinkRate((cursor.getBlinkon() + cursor.getBlinkoff()) / 2);
     }
 
-    public ViCursor getCursor()
+    public ViCaretStyle getCursor()
     {
         return this.cursor;
     }
@@ -89,7 +89,7 @@ public class SwingPaintCaret
                         component, dot);
                 Rectangle r00 = null;
                 char c = 0;
-                int cursorShape = ViCursor.SHAPE_BLOCK;
+                int cursorShape = ViCaretStyle.SHAPE_BLOCK;
                 if (cursor != null) {
                     cursorShape = cursor.getShape();
                     c = cursor.getEditPutchar();
@@ -98,16 +98,16 @@ public class SwingPaintCaret
                     r00 = (Rectangle) r.clone();
                 int h02;
                 switch (cursorShape) {
-                    case ViCursor.SHAPE_BLOCK:
+                    case ViCaretStyle.SHAPE_BLOCK:
                         r.width = blockWidth;
                         break;
-                    case ViCursor.SHAPE_HOR:
+                    case ViCaretStyle.SHAPE_HOR:
                         r.width = blockWidth;
                         h02 = percent(r.height, cursor.getPercentage());
                         r.y += r.height - h02;
                         r.height = h02;
                         break;
-                    case ViCursor.SHAPE_VER:
+                    case ViCaretStyle.SHAPE_VER:
                         /* back up vertical cursors by one pixel */
                         /* NEEDSWORK: following was in 0.7.x
                         if(r.x > 0) {
@@ -117,7 +117,7 @@ public class SwingPaintCaret
                         break;
                 }
                 // only allow this if SHAPE_VER
-                if(c != 0 && cursorShape == ViCursor.SHAPE_VER) {
+                if(c != 0 && cursorShape == ViCaretStyle.SHAPE_VER) {
                     g.setColor(component.getBackground());
                     g.setFont(g.getFont().deriveFont(Font.BOLD));
                     g.fillRect(r00.x + r.width, r00.y,

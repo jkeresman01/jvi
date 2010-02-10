@@ -59,7 +59,7 @@ import java.awt.Component;
 public interface ViAppView
 {
     /**
-     * The editable component which is closely associated with
+     * The editable component which is associated with
      * a {@link ViTextView}.
      *
      * @return the editor component, may be null.
@@ -73,4 +73,15 @@ public interface ViAppView
      * @return true to exclude this editor from some commands and consideration.
      */
     public boolean isNomad();
+
+    /** Get the unique/invariant integer identifier of the editor/window
+     * associated with the av.
+     * When the app first opens an editor it should derive this number.
+     * This number is used in jVi commands such as ":e#!number!"
+     *
+     * NEEDSWORK: put this method on av
+     *
+     * @return the invariant number of the editor
+     */
+    public int getWNum();
 }
