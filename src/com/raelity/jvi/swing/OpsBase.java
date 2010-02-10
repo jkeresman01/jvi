@@ -28,7 +28,7 @@ import javax.swing.Action;
 import javax.swing.text.DefaultEditorKit;
 
 /**
- * This provides default swings JEditorPane actions that are
+ * This provides default swing JTextComponent behavior that are
  * used by vi.
  *
  * Usually {@link #xop(int)} is overridden for the environment. 
@@ -112,8 +112,7 @@ public class OpsBase implements TextOps {
     protected Action findAction(String actionName) {
         Action action = actionMap.get(actionName);
         if (action == null) {
-            Action[] actions
-		  = textView.getEditorComponent().getEditorKit().getActions();
+            Action[] actions = ((SwingTextView)textView).getActions();
             for (int i = 0; i < actions.length; i++) {
                 String name = (String)actions[i].getValue(Action.NAME);
                 if (name.equals(actionName)) {

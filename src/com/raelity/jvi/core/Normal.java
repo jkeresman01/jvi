@@ -179,7 +179,7 @@ public class Normal {
     newChunk = true;
     willStartNewChunk();
     if(editBusy) {
-      if ( KeyBinding.isKeyDebug() ) {
+      if ( Options.isKeyDebug() ) {
           System.err.println("resetCommand: EditBusy");
       }
       // Make sure redo buf is usable if edit interrupted

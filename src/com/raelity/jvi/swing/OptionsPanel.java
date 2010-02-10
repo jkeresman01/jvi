@@ -68,10 +68,8 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
@@ -190,11 +188,6 @@ public class OptionsPanel extends JPanel {
                 Component comp = sp.getBottomComponent();
                 if(comp != null) {
                     comp.setPreferredSize(new Dimension(100,100));
-                }
-                if(false && comp instanceof JScrollPane) {
-                    comp = ((JScrollPane)comp).getViewport().getView();
-                    if(comp instanceof JEditorPane) 
-                        LookAndFeelTweaks.makeMultilineLabel((JEditorPane)comp);
                 }
                 if(comp != null)
                     comp.invalidate();

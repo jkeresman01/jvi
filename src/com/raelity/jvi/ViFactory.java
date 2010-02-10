@@ -25,7 +25,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
 import java.util.Set;
 import java.util.prefs.Preferences;
-import javax.swing.JEditorPane;
 import javax.swing.Action;
 import com.raelity.jvi.ViTextView.TAGOP;
 import java.awt.Component;
@@ -48,21 +47,31 @@ public interface ViFactory
      */
     public boolean isEnabled();
 
-    public ViAppView getAppView(Component widget);
+    public ViAppView getAppView(Component editor);
 
     /** Return a TextView, create one if it doesn't already exist */
-    public ViTextView createTextView(JEditorPane editorPane);
+    public ViTextView createTextView(Component editor);
 
     /** @return null if TextView does not exist */
-    public ViTextView getTextView(Component editorPane);
+    public ViTextView getTextView(Component editor);
 
     public ViTextView getTextView(ViAppView av);
 
     /** Make a best guess as to whether or not the 'ep' is a nomad.
      * Should default to false.
      */
-    public boolean isNomadic(JEditorPane ep, ViAppView av);
+    public boolean isNomadic(Component editor, ViAppView av);
 
+    /** Get the unique/invariant integer identifier of the editor/window
+     * associated with the av.
+     * When the app first opens an editor it should derive this number.
+     * This number is used in jVi commands such as ":e#!number!"
+     *
+     * NEEDSWORK: put this method on av
+     *
+     * @param av the appview
+     * @return the invariant number of the editor
+     */
     public int getWNum(ViAppView av);
 
     /** Handle changing document in text view.
@@ -90,13 +99,13 @@ public interface ViFactory
     /**
      * This editor pane is going away, forget about it.
      */
-    public void shutdown(JEditorPane editorPane);
+    public void shutdown(Component editor);
 
   /*
    * Setup editor pane caret for use with vi.
    * This is a nop if already handled.
    */
-    public void setupCaret(JEditorPane editorPane);
+    public void setupCaret(Component editor);
 
     /**
      * File manipulation handled through this object.
@@ -122,16 +131,6 @@ public interface ViFactory
 
     public void startModalKeyCatch(KeyListener kl);
     public void stopModalKeyCatch();
-
-    /**
-     * @return action suitable for default key action
-     */
-    public Action createCharAction(String name);
-
-    /**
-     * @return action for picking up specified key
-     */
-    public Action createKeyAction(String name, char key);
 
     /**
      * fetch the keymap for insert mode operations

@@ -20,7 +20,7 @@
 package com.raelity.jvi;
 
 import com.raelity.jvi.core.Buffer;
-import javax.swing.JEditorPane;
+import java.awt.Component;
 
 
 /**
@@ -32,9 +32,6 @@ import javax.swing.JEditorPane;
  * <p>This has had a few "window" methods added to it, and it is
  * now the primary class referenced by most of the vi code. This
  * allows it to be G.curwin.
- * </p>
- * <p>
- * NEEDSWORK: get rid of JEditorPane reference, should not refer to swing.
  * </p>
  */
 
@@ -83,7 +80,7 @@ public interface ViTextView extends ViOptionBag {
 
   /** @return the underlying text component */
   // NEEDSWORK: make this an Object
-  public JEditorPane getEditorComponent();
+  public Component getEditorComponent();
 
   /** A text view is nomadic if it not attached to a main window.
    * It is commonly in a dialog. The editor has restricted capabilities.

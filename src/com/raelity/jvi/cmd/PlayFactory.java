@@ -25,9 +25,10 @@ import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Buffer;
+import com.raelity.jvi.swing.KeyBinding;
 import com.raelity.jvi.swing.SwingFactory;
 import java.util.Map;
-import javax.swing.JEditorPane;
+import javax.swing.text.JTextComponent;
 
 /**
  *
@@ -37,15 +38,21 @@ final public class PlayFactory extends SwingFactory
 {
     private ViFS fs = new PlayFS();
     /** status displays for editors */
-    private Map<JEditorPane, PlayStatusDisplay> mapJepSd;
+    private Map<JTextComponent, PlayStatusDisplay> mapJepSd;
 
-    public PlayFactory(Map<JEditorPane, PlayStatusDisplay> m) {
+    public PlayFactory(Map<JTextComponent, PlayStatusDisplay> m) {
         mapJepSd = m;
     }
 
-    protected ViTextView newTextView( JEditorPane editorPane )
+    protected ViTextView newTextView( JTextComponent editor )
     {
-        return new PlayTextView(editorPane, mapJepSd.get(editorPane));
+        return new PlayTextView(editor, mapJepSd.get(editor));
+    }
+
+    // NOT PART OF FACTORY INTERFACE
+    public static void installKeymap(JTextComponent ed)
+    {
+        ed.setKeymap(KeyBinding.getKeymap());
     }
 
     protected Buffer createBuffer( ViTextView tv )
@@ -56,7 +63,7 @@ final public class PlayFactory extends SwingFactory
     public ViTextView getTextView(ViAppView av)
     {
         if(av.getEditor() != null)
-            return getTextView((JEditorPane)av.getEditor());
+            return getTextView((JTextComponent)av.getEditor());
         return null;
     }
 

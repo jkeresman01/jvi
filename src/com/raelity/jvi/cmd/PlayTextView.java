@@ -22,7 +22,7 @@ package com.raelity.jvi.cmd;
 
 import com.raelity.jvi.ViStatusDisplay;
 import com.raelity.jvi.swing.SwingTextView;
-import javax.swing.JEditorPane;
+import javax.swing.text.JTextComponent;
 
 /**
  *
@@ -30,9 +30,9 @@ import javax.swing.JEditorPane;
  */
 public class PlayTextView extends SwingTextView
 {
-    public PlayTextView(final JEditorPane ep, ViStatusDisplay sd)
+    public PlayTextView(final JTextComponent editor, ViStatusDisplay sd)
     {
-        super(ep);
+        super(editor);
         this.statusDisplay = sd;
     }
 

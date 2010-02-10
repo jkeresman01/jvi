@@ -48,7 +48,6 @@ import java.util.Set;
 import java.util.prefs.BackingStoreException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.JEditorPane;
 import javax.swing.text.Keymap;
 
 import java.awt.datatransfer.SystemFlavorMap;
@@ -58,6 +57,7 @@ import java.net.URL;
 
 import com.raelity.jvi.swing.KeyBinding;
 import com.raelity.jvi.swing.ViCaret;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -148,7 +148,7 @@ public class ViManager
         }
     }
 
-    private static JEditorPane currentEditorPane;
+    private static Component currentEditorPane;
     private static ViFactory factory;
 
     private static Keymap editModeKeymap;
@@ -442,7 +442,7 @@ public class ViManager
         return factory.getFS();
     }
 
-    public static ViTextView mayCreateTextView(JEditorPane editorPane)
+    public static ViTextView mayCreateTextView(Component editorPane)
     {
         return factory.createTextView(editorPane);
     }
@@ -455,8 +455,8 @@ public class ViManager
         for (ViTextView tv02 : tvSet) {
             if(tv == tv02)
                 continue;
-            JEditorPane ep = tv02.getEditorComponent();
-            if(ep != null) {
+            Component ed = tv02.getEditorComponent();
+            if(ed != null) {
                 if(tv02.getBuffer() == buf) {
                     tv01 = tv02;
                     break;
@@ -482,11 +482,6 @@ public class ViManager
             int priority)
     {
         return factory.createOutputStream(tv, type, info, priority);
-    }
-
-    static public void installKeymap(JEditorPane editorPane)
-    {
-        editorPane.setKeymap(KeyBinding.getKeymap());
     }
 
     /**
@@ -753,15 +748,15 @@ public class ViManager
      */
     public static void activateAppView(ViAppView av, String tag)
     {
-        JEditorPane ep = (JEditorPane)av.getEditor();
+        Component ed = av.getEditor();
         if(factory != null && G.dbgEditorActivation.getBoolean()) {
             System.err.println("Activation: ViManager.activateAppView: "
-                    + tag + " " + cid(ep) + " " + cid(av)
+                    + tag + " " + cid(ed) + " " + cid(av)
                     + " " + factory.getFS().getDisplayFileName(av)
                     );
         }
-        if(ep != null && factoryLoaded)
-            factory.setupCaret(ep);
+        if(ed != null && factoryLoaded)
+            factory.setupCaret(ed);
 
         if(G.curwin != null)
             G.curwin.getStatusDisplay().refresh();
@@ -808,14 +803,14 @@ public class ViManager
      */
     public static void closeAppView(ViAppView av)
     {
-        JEditorPane ep = (JEditorPane)av.getEditor();
+        Component ed = av.getEditor();
         if(factory != null && G.dbgEditorActivation.getBoolean()) {
             String fname = factory.getFS().getDisplayFileName(av);
             System.err.println("Activation: ViManager.closeAppView: "
-                    + (ep == null ? "(no shutdown) " : "") + fname);
+                    + (ed == null ? "(no shutdown) " : "") + fname);
         }
 
-        ViTextView tv = getViFactory().getTextView(ep);
+        ViTextView tv = getViFactory().getTextView(ed);
         if(tv != null) {
             firePropertyChange(P_CLOSE_WIN, tv, null);
             if(tv.getBuffer().singleShare())
@@ -823,8 +818,8 @@ public class ViManager
         }
 
         assert(factoryLoaded);
-        if(factoryLoaded && ep != null) {
-            factory.shutdown(ep);
+        if(factoryLoaded && ed != null) {
+            factory.shutdown(ed);
         }
         if(!av.isNomad()) { // null indicates nomad
             if(av.equals(currentlyActive))
@@ -842,7 +837,7 @@ public class ViManager
      * A key was typed. Handle the event.
      * <br>NEEDSWORK: catch all exceptions comming out of here?
      */
-    static public void keyStroke(JEditorPane target, char key, int modifier)
+    static public void keyStroke(Component target, char key, int modifier)
     {
         if(jViBusy != 0) {
             ViManager.dumpStack();
@@ -878,7 +873,7 @@ public class ViManager
         if((c & 0xF000) != KeyDefs.VIRT
                 && modifiers == 0) {
             if(c >= 0x20 && c != 0x7f) {
-                if(KeyBinding.isKeyDebug()) {
+                if(Options.isKeyDebug()) {
                     System.err.println("rerouteChar");
                 }
                 activeCommandEntry.append(c);
@@ -893,15 +888,15 @@ public class ViManager
      * with some visual implications, before a key is entered.
      * It should typically only be used after {@linkplain #activateAppView}.
      */
-    public static void requestSwitch(JEditorPane ep)
+    public static void requestSwitch(Component ed)
     {
-        switchTo(ep);
+        switchTo(ed);
     }
 
     private static boolean started = false;
-    static void switchTo(JEditorPane editorPane)
+    static void switchTo(Component editor)
     {
-        if(editorPane == currentEditorPane) {
+        if(editor == currentEditorPane) {
             return;
         }
         if( ! started) {
@@ -919,15 +914,15 @@ public class ViManager
             firePropertyChange(P_SWITCH_FROM_WIN, currentTv, null);
         }
 
-        boolean newTextView = factory.getTextView(editorPane) == null;
-        ViTextView textView = mayCreateTextView(editorPane);
+        boolean newTextView = factory.getTextView(editor) == null;
+        ViTextView textView = mayCreateTextView(editor);
         Buffer buf = textView.getBuffer();
-        factory.setupCaret(editorPane); // make sure has the right caret
+        factory.setupCaret(editor); // make sure has the right caret
         textView.attach();
         if(G.dbgEditorActivation.getBoolean()) {
             String newStr = newTextView ? "NEW: " : "";
             System.err.println("Activation: ViManager.SWITCHTO: " + newStr
-                    + cid(editorPane) + " " + buf.getDisplayFileName());
+                    + cid(editor) + " " + buf.getDisplayFileName());
         }
 
         if(currentEditorPane != null) {
@@ -937,15 +932,15 @@ public class ViManager
             currentTv.detach();
         }
 
-        currentEditorPane = editorPane;
+        currentEditorPane = editor;
         core.switchTo(textView, buf);
         Normal.resetCommand(); // Means something first time window switched to
         buf.activateOptions(textView);
         textView.activateOptions(textView);
         if(newTextView) {
             firePropertyChange(P_OPEN_WIN, currentTv, textView);
-            editorPane.addMouseListener(mouseListener);
-            editorPane.addMouseMotionListener(mouseMotionListener);
+            editor.addMouseListener(mouseListener);
+            editor.addMouseMotionListener(mouseMotionListener);
         }
         if(textView.getBuffer().singleShare())
             firePropertyChange(P_OPEN_BUF,
@@ -1010,14 +1005,14 @@ public class ViManager
     }
 
     /**
-     * The arg JEditorPane is detached from its text view,
+     * The arg Component is detached from its text view,
      * forget about it.
      */
-    public static void detached(JEditorPane ep)
+    public static void detached(Component ed)
     {
-        if(currentEditorPane == ep) {
+        if(currentEditorPane == ed) {
             if(G.dbgEditorActivation.getBoolean()) {
-                System.err.println("Activation: ViManager.detached " + cid(ep));
+                System.err.println("Activation: ViManager.detached " + cid(ed));
             }
             currentEditorPane = null;
         }
@@ -1034,7 +1029,7 @@ public class ViManager
     {
         if(G.curwin == null) {
             // this case is because switchto, does attach, does viewport init
-            // but G.curwin is not set yet. See switchTo(JEditorPane editorPane)
+            // but G.curwin is not set yet. See switchTo(Component editor)
             return;
         }
         Msg.clearMsg();
@@ -1122,16 +1117,12 @@ public class ViManager
                 //                      mev.getModifiers()));
             }
 
-            if(!(mev.getComponent() instanceof JEditorPane)) {
-                return;
-            }
-
             GetChar.flush_buffers(true);
             exitInputMode();
             if(currentEditorPane != null)
                 core.abortVisualMode();
 
-            JEditorPane editorPane = (JEditorPane)mev.getComponent();
+            Component editorPane = mev.getComponent();
 
             ViTextView tv = factory.getTextView(editorPane);
             if(tv == null)

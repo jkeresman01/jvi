@@ -22,7 +22,6 @@ package com.raelity.jvi.core;
 import com.raelity.jvi.ViManager;
 import com.raelity.jvi.swing.KeyBinding;
 import com.raelity.text.TextUtil;
-import javax.swing.JEditorPane;
 import javax.swing.text.AbstractDocument;
 
 import static com.raelity.jvi.core.Constants.*;
@@ -64,9 +63,9 @@ public class GetChar {
     if(true)
         doc = null; // DISABLE
     else {
-        JEditorPane ep = G.curwin.getEditorComponent();
-        if(ep.getDocument() instanceof AbstractDocument)
-            doc = (AbstractDocument)ep.getDocument();
+        //JEditorPane ep = G.curwin.getEditorComponent();
+        //if(ep.getDocument() instanceof AbstractDocument)
+        //    doc = (AbstractDocument)ep.getDocument();
     }
     
     try {

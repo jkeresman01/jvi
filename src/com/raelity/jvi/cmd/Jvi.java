@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JScrollPane;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 
 public class Jvi
 {
@@ -55,8 +56,8 @@ public class Jvi
     private static JviFrame m_frame1 = null;
     private static JviFrame m_frame2 = null;    // test two jVi on same document
 
-    static Map<JEditorPane, PlayStatusDisplay> mapJepSd
-            = new HashMap<JEditorPane, PlayStatusDisplay>();
+    static Map<JTextComponent, PlayStatusDisplay> mapJepSd
+            = new HashMap<JTextComponent, PlayStatusDisplay>();
 
 
     /**
@@ -246,9 +247,9 @@ public class Jvi
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
                     public void run() {
-                        ViManager.installKeymap(m_frame1.getEditor());
+                        PlayFactory.installKeymap(m_frame1.getEditor());
                         if ( make2Frames ) {
-                            ViManager.installKeymap(m_frame2.getEditor());
+                            PlayFactory.installKeymap(m_frame2.getEditor());
                         }
                     }
                 });

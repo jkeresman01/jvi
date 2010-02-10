@@ -652,7 +652,7 @@ public class CommandLine extends JPanel
                     javax.swing.JScrollPane.class,
                     tv.getEditorComponent());
             if(jc == null) {
-                jc = tv.getEditorComponent();
+                jc = (JTextComponent)tv.getEditorComponent();
             }
 
             Dimension d00 = entry.getPreferredSize();

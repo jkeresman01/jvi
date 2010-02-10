@@ -47,18 +47,21 @@ import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Action;
+import javax.swing.JEditorPane;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.JEditorPane;
 import javax.swing.JViewport;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
+import javax.swing.text.EditorKit;
 import javax.swing.text.Element;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
@@ -68,7 +71,7 @@ import javax.swing.text.StyledEditorKit;
 
 /**
  *  Presents a swing editor interface for use with vi. There is
- *  one of these for each JEditorPane.
+ *  one of these for each JTextComponent.
  *  <p>
  *  Notice the listeners for caret changes. If the caret changes
  *  to a location that is unexpected, i.e. it came from some external
@@ -76,7 +79,7 @@ import javax.swing.text.StyledEditorKit;
  *  </p><p>
  *  The getEditorComponent method should not be used by the primary
  *  vi software. The primary vi software should only access, or make
- *  changes to, the underlying JEditorPane through other methods in
+ *  changes to, the underlying JTextComponent through other methods in
  *  this class.
  *  </p>
  */
@@ -89,7 +92,7 @@ public class SwingTextView extends Window
     protected int w_num;
 
 
-    protected JEditorPane editorPane;
+    protected JTextComponent editorPane;
     protected TextOps ops;
     protected Window window;
 
@@ -102,7 +105,7 @@ public class SwingTextView extends Window
 
     // ............
 
-    public SwingTextView( final JEditorPane editorPane)
+    public SwingTextView( final JTextComponent editorPane)
     {
         super();
         this.editorPane = editorPane;
@@ -116,6 +119,27 @@ public class SwingTextView extends Window
                 lastDot = ce.getDot();
             }
         };
+    }
+
+    //////////////////////////////////////////////////////////////////////
+    //
+    // Some swing specific things that an implementation may want to override
+    //
+
+    public Action[] getActions() {
+        Action[] actions = null;
+        if(editorPane instanceof JEditorPane)
+            actions = ((JEditorPane)editorPane).getEditorKit().getActions();
+        else
+            actions = (editorPane).getActions();
+        return actions;
+    }
+
+    public EditorKit getEditorKit() {
+        if(editorPane instanceof JEditorPane)
+            return ((JEditorPane)editorPane).getEditorKit();
+        else
+            return editorPane.getUI().getEditorKit(editorPane);
     }
 
 
@@ -231,7 +255,7 @@ public class SwingTextView extends Window
     }
 
 
-    public JEditorPane getEditorComponent()
+    public JTextComponent getEditorComponent()
     {
         return editorPane;
     }
@@ -732,7 +756,7 @@ public class SwingTextView extends Window
       // in other words, getNextVisualPositionFrom(here - 1) == here
       // if not, we're in nether regions, return here - 1
       try {
-          JEditorPane c = getEditorComponent();
+          JTextComponent c = getEditorComponent();
           for (int i = 1; i <= colIdx; i++) {
               int thisVisualPosition = lineOffset + i;
               int nextVisualPosition = c.getUI().getNextVisualPositionFrom(
@@ -1202,7 +1226,7 @@ public class SwingTextView extends Window
     /** This is called from the managing textview,
      * listen to things that affect the cache.
      */
-    private void attach(JEditorPane editor)
+    private void attach(JTextComponent editor)
     {
         if (G.dbgEditorActivation.getBoolean()) {
             System.err.println("TVCache: attach: "
@@ -1227,7 +1251,7 @@ public class SwingTextView extends Window
     boolean hasListeners = false;
 
     /** Dissassociate from the observed components. */
-    private void detach(JEditorPane ep)
+    private void detach(JTextComponent ep)
     {
         if (G.dbgEditorActivation.getBoolean()) {
             System.err.println("TVCache: detach: "
@@ -1241,7 +1265,7 @@ public class SwingTextView extends Window
     //removeListeners();
     }
 
-    private void shutdown(JEditorPane ep)
+    private void shutdown(JTextComponent ep)
     {
         if (freezer != null) {
             freezer.stop();
@@ -1253,7 +1277,7 @@ public class SwingTextView extends Window
     private void removeListeners()
     {
         hasListeners = false;
-        JEditorPane editor = getEditorComponent();
+        JTextComponent editor = getEditorComponent();
         editor.removePropertyChangeListener("font", this);
         editor.removePropertyChangeListener("document", this);
         editor.removePropertyChangeListener("ancestor", this);
@@ -1288,7 +1312,7 @@ public class SwingTextView extends Window
 
     /**
      * Stabilize (do not allow scrolling) the JViewport displaying
-     * the indicated JEditorPane.
+     * the indicated JTextComponent.
      * This is typically used when the underlying document may change while
      * being edited in another view. The {@link #stop} method is used to release
      * the listeners and so unfreeze the viewport.
@@ -1300,14 +1324,14 @@ public class SwingTextView extends Window
     public static class FreezeViewport
     implements DocumentListener, ChangeListener
     {
-        private JEditorPane ep;
+        private JTextComponent ep;
         private JViewport vp;
         private AbstractDocument doc;
         private Position pos;
         private int topLine;
         private int nLine;
 
-        public FreezeViewport(JEditorPane ep)
+        public FreezeViewport(JTextComponent ep)
         {
             this.ep = ep;
             Object o = ep.getDocument();
@@ -1513,24 +1537,26 @@ public class SwingTextView extends Window
 
     protected void applyBackground( int[] blocks, MutableAttributeSet mas )
     {
-        StyledDocument document = (StyledDocument) editorPane.getDocument();
-        for ( int i = 0; i < blocks.length; i+=2 ) {
-            int start = blocks[i];
-            int end = blocks[i+1];
-            if ( start == -1 && end == -1 ) { // break
-                return;
+        if(editorPane.getDocument() instanceof StyledDocument) {
+            StyledDocument document = (StyledDocument) editorPane.getDocument();
+            for ( int i = 0; i < blocks.length; i+=2 ) {
+                int start = blocks[i];
+                int end = blocks[i+1];
+                if ( start == -1 && end == -1 ) { // break
+                    return;
+                }
+                if ( start > end ) {
+                    int tmp = start;
+                    start = end;
+                    end = tmp;
+                }
+                document.setCharacterAttributes(start, end - start, mas, false);
+                // update styled editor kit with new attributes
+                // to overcome paint errors
+                StyledEditorKit k = (StyledEditorKit)getEditorKit();
+                MutableAttributeSet inputAttrs = k.getInputAttributes();
+                inputAttrs.addAttributes(mas);
             }
-            if ( start > end ) {
-                int tmp = start;
-                start = end;
-                end = tmp;
-            }
-            document.setCharacterAttributes(start, end - start, mas, false);
-            // update styled editor kit with new attributes
-            // to overcome paint errors
-            StyledEditorKit k = (StyledEditorKit)editorPane.getEditorKit();
-            MutableAttributeSet inputAttrs = k.getInputAttributes();
-            inputAttrs.addAttributes(mas);
         }
     }
 

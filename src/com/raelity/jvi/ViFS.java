@@ -20,6 +20,9 @@
 
 package com.raelity.jvi;
 
+import com.raelity.jvi.core.Filemark;
+import java.io.File;
+
 /**
  * jVi's interactions with files are funnelled through this interface.
  */
@@ -82,11 +85,12 @@ public interface ViFS
 
 
     /**
-     *  Edit the named file.
+     *  Edit the specified thing. fileThing can be a String which is a path,
+     * a {@link File} or a {@link Filemark}.
      * 
      * @param tv Editor containing data to write
      * @param force If a '!' was used with the command, then force is true.
-     * @param fName file name to edit, null if no name given
+     * @param fName the thing to open in the editor
      */
     public abstract void edit( ViTextView tv, boolean force, Object fileThing);
 

@@ -23,16 +23,14 @@ package com.raelity.jvi.swing;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.G;
-import com.raelity.jvi.cmd.PlayFS;
-import com.raelity.jvi.cmd.PlayOutputStream;
 import com.raelity.jvi.options.OptionsBeanBase;
 import  static com.raelity.jvi.core.KeyDefs.*;
 import  com.raelity.jvi.*;
 import  com.raelity.jvi.ViTextView.TAGOP;
+import com.raelity.jvi.core.Options;
 
 import  javax.swing.Action;
 import  javax.swing.JDialog;
-import  javax.swing.JEditorPane;
 import  javax.swing.JRootPane;
 import  javax.swing.SwingUtilities;
 import  javax.swing.event.MouseInputAdapter;
@@ -58,10 +56,11 @@ import  java.util.Map;
 import  java.util.Set;
 import  java.util.WeakHashMap;
 import  java.util.prefs.Preferences;
+import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 
 /**
- * This provides the Vi items to interface with standard swing JEditorPane.
+ * This provides the Vi items to interface with standard swing JTextComponent.
  * <b>NEEDSWORK:</b><ul>
  * <li> only one text view supported for now
  * </ul>
@@ -77,8 +76,8 @@ abstract public class SwingFactory implements ViFactory
             = new WeakHashMap<Document,Object>();
 
     // This is used only when dbgEditorActivation is turned on
-    protected WeakHashMap<JEditorPane, Object> editorSet
-            = new WeakHashMap<JEditorPane, Object>();
+    protected WeakHashMap<JTextComponent, Object> editorSet
+            = new WeakHashMap<JTextComponent, Object>();
 
     JDialog dialog;
     protected static SwingFactory INSTANCE;
@@ -103,6 +102,33 @@ abstract public class SwingFactory implements ViFactory
         // FlavorMap fm = SystemFlavorMap.getDefaultFlavorMap();
     }
 
+    //////////////////////////////////////////////////////////////////////
+    //
+    // Some swing specific things that an implementation may want to override
+    //
+
+    /**
+     * @return action suitable for default key action
+     */
+    public Action createCharAction( String name )
+    {
+        return new EnqueCharAction(name);
+    }
+
+
+    /**
+     * @return action for picking up specified key
+     */
+    public Action createKeyAction( String name, char key )
+    {
+        return new EnqueKeyAction(name, key);
+    }
+
+    //////////////////////////////////////////////////////////////////////
+    //
+    // ViFactory for swing
+    //
+
     public boolean isEnabled() {
         return true;
     }
@@ -123,35 +149,36 @@ abstract public class SwingFactory implements ViFactory
         return true;
     }
 
-    public final ViTextView getTextView(Component ep)
+    public final ViTextView getTextView(Component ed)
     {
-        return (ViTextView)(((JTextComponent)ep).getClientProperty(PROP_TV));
+        return (ViTextView)(((JTextComponent)ed).getClientProperty(PROP_TV));
     }
 
-    public final ViTextView createTextView(JEditorPane editorPane)
+    public final ViTextView createTextView(Component editor)
     {
-        ViTextView tv01 = (ViTextView)editorPane.getClientProperty(PROP_TV);
+        JTextComponent ed = (JTextComponent)editor;
+        ViTextView tv01 = (ViTextView)ed.getClientProperty(PROP_TV);
         if ( tv01 == null ) {
             if ( G.dbgEditorActivation.getBoolean() ) {
                 System.err.println("Activation: getViTextView: create");
             }
-            tv01 = newTextView(editorPane);
+            tv01 = newTextView(ed);
             attachBuffer(tv01);
 
             tv01.startup();
-            editorPane.putClientProperty(PROP_TV, tv01);
-            editorSet.put(editorPane, null);
+            ed.putClientProperty(PROP_TV, tv01);
+            editorSet.put(ed, null);
         }
         return tv01;
     }
 
-    abstract protected ViTextView newTextView( JEditorPane editorPane );
+    abstract protected ViTextView newTextView( JTextComponent ed );
 
     public final Set<ViTextView> getViTextViewSet()
     {
         Set<ViTextView> s = new HashSet<ViTextView>();
-        for (JEditorPane ep : editorSet.keySet()) {
-            ViTextView tv = (ViTextView) ep.getClientProperty(PROP_TV);
+        for (JTextComponent ed : editorSet.keySet()) {
+            ViTextView tv = (ViTextView) ed.getClientProperty(PROP_TV);
             if(tv != null)
                 s.add(tv);
         }
@@ -159,7 +186,7 @@ abstract public class SwingFactory implements ViFactory
         return s;
     }
 
-    public boolean isNomadic(JEditorPane ep, ViAppView av) {
+    public boolean isNomadic(Component ed, ViAppView av) {
         return false;
     }
 
@@ -187,9 +214,10 @@ abstract public class SwingFactory implements ViFactory
     }
 
 
-    public void shutdown( JEditorPane ep )
+    public void shutdown( Component editor )
     {
-        ViTextView tv = (ViTextView)ep.getClientProperty(PROP_TV);
+        JTextComponent ed = (JTextComponent)editor;
+        ViTextView tv = (ViTextView)ed.getClientProperty(PROP_TV);
         if ( tv == null ) {
             return;
         }
@@ -199,7 +227,7 @@ abstract public class SwingFactory implements ViFactory
         }
         Buffer buf = tv.getBuffer();
         tv.shutdown();
-        ep.putClientProperty(PROP_TV, null);
+        ed.putClientProperty(PROP_TV, null);
         releaseBuffer(buf);
     }
 
@@ -217,7 +245,7 @@ abstract public class SwingFactory implements ViFactory
 
     private void attachBuffer(ViTextView tv)
     {
-        Document doc = tv.getEditorComponent().getDocument();
+        Document doc = ((JTextComponent)tv.getEditorComponent()).getDocument();
         Buffer buf = null;
         if ( doc != null )
         {
@@ -349,8 +377,8 @@ abstract public class SwingFactory implements ViFactory
 
     public void startModalKeyCatch( KeyListener kl )
     {
-        JEditorPane ep = G.curwin.getEditorComponent();
-        java.awt.Window wep = SwingUtilities.getWindowAncestor(ep);
+        JTextComponent ed = (JTextComponent)G.curwin.getEditorComponent();
+        java.awt.Window wep = SwingUtilities.getWindowAncestor(ed);
         dialog = new JDialog((Frame)wep, "jVi", true);
         dialog.setUndecorated(true); // on windows see nothing, perfect
         dialog.pack();
@@ -359,7 +387,7 @@ abstract public class SwingFactory implements ViFactory
                 javax.swing.JScrollPane.class,
                 G.curwin.getEditorComponent());
         if ( jc == null ) {
-            jc = G.curwin.getEditorComponent();
+            jc = (JTextComponent)G.curwin.getEditorComponent();
         }
         // put the dialog just below the editor pane, on the right
         Dimension d00 = dialog.getSize();
@@ -393,15 +421,17 @@ abstract public class SwingFactory implements ViFactory
      * vi cursor. This is a nop
      * if already registered.
      */
-    public void setupCaret( JEditorPane editorPane )
+    public void setupCaret( Component editor)
     {
+        JTextComponent ed = (JTextComponent)editor;
         // install cursor if neeeded
-        Caret c = editorPane.getCaret();
+        Caret c = ed.getCaret();
         if ( !(c instanceof ViCaret) ) {
             SwingCaret caret = new SwingCaret();
-            editorPane.setCaret(caret);
+            ed.setCaret(caret);
             caret.setDot(c.getDot());
             caret.setBlinkRate(c.getBlinkRate());
+            caret.setVisible(c.isVisible());
         }
     }
 
@@ -431,24 +461,6 @@ abstract public class SwingFactory implements ViFactory
         } else {
             return new InlineCmdEntry(type);
         }
-    }
-
-
-    /**
-     * @return action suitable for default key action
-     */
-    public Action createCharAction( String name )
-    {
-        return new EnqueCharAction(name);
-    }
-
-
-    /**
-     * @return action for picking up specified key
-     */
-    public Action createKeyAction( String name, char key )
-    {
-        return new EnqueKeyAction(name, key);
     }
 
 
@@ -502,7 +514,7 @@ abstract public class SwingFactory implements ViFactory
 
         public void actionPerformed( ActionEvent e )
         {
-            JEditorPane target = (JEditorPane)getTextComponent(e);
+            JTextComponent target = (JTextComponent)getTextComponent(e);
             if ( target != null && e != null ) {
                 String content = e.getActionCommand();
                 if ( content != null && content.length() > 0 ) {
@@ -528,7 +540,7 @@ abstract public class SwingFactory implements ViFactory
                         keep = false;
                     }
 
-                    if ( KeyBinding.isKeyDebug() && c >= 0x20 ) {
+                    if ( Options.isKeyDebug() && c >= 0x20 ) {
                         System.err.println("CharAction: "
                                 + (keep ? "" : "REJECT: ")
                                 + "'" + content + "' "
@@ -539,7 +551,7 @@ abstract public class SwingFactory implements ViFactory
                         ViManager.keyStroke(target, c, mod);
                     }
                 } else {
-                    if  ( KeyBinding.isKeyDebug() ) {
+                    if  ( Options.isKeyDebug() ) {
                       System.err.println("CharAction: " + e);
                     }
                 }
@@ -571,10 +583,10 @@ abstract public class SwingFactory implements ViFactory
 
         public void actionPerformed( ActionEvent e )
         {
-            JEditorPane target = (JEditorPane)getTextComponent(e);
+            JTextComponent target = getTextComponent(e);
             int mod = e.getModifiers();
             char key = basekey;
-            if ( KeyBinding.isKeyDebug() ) {
+            if ( Options.isKeyDebug() ) {
                 String virt = ((key & 0xF000) == VIRT) ? "virt" : "";
                 System.err.println("KeyAction: "
                         + getValue(Action.NAME).toString()

@@ -26,6 +26,7 @@ import com.raelity.jvi.options.StringOption;
 import com.raelity.jvi.options.IntegerOption;
 import com.raelity.jvi.options.Option;
 import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.options.BooleanOption;
 import com.raelity.jvi.options.OptUtil;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
@@ -913,6 +914,24 @@ public final class Options {
     nohDisableHighlight = false;
     ViManager.updateHighlightSearchState();
     Normal.v_updateVisualState();
+  }
+
+  //////////////////////////////////////////////////////////////////////
+  //
+  // This optin is used a lot, make it fast
+  //
+
+  private static BooleanOption keyDebugOption;
+  public static final boolean isKeyDebug() {
+    // NEEDSWORK: clean isKeyDebug up
+    if(keyDebugOption == null) {
+       keyDebugOption = (BooleanOption)Options.getOption(Options.dbgKeyStrokes);
+    }
+    if(keyDebugOption == null) {
+      return false;
+    } else {
+      return keyDebugOption.getBoolean();
+    }
   }
 }
 

@@ -27,6 +27,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -47,7 +48,7 @@ abstract public class SwingBuffer extends Buffer {
     
     public SwingBuffer(ViTextView tv) {
         super(tv);
-        doc = tv.getEditorComponent().getDocument();
+        doc = ((JTextComponent)tv.getEditorComponent()).getDocument();
         startDocumentEvents();
         if(ViManager.getViFactory().isStandalone()) {
             undoMan = new UndoGroupManager();
@@ -65,8 +66,6 @@ abstract public class SwingBuffer extends Buffer {
             doc = null;
         }
     }
-
-    final protected Document getDoc() { return doc; }
 
     //////////////////////////////////////////////////////////////////////
     //
@@ -103,11 +102,11 @@ abstract public class SwingBuffer extends Buffer {
     }
     
     public int getLineCount() {
-        return getDoc().getDefaultRootElement().getElementCount();
+        return getDocument().getDefaultRootElement().getElementCount();
     }
 
     public int getLength() {
-        return getDoc().getLength();
+        return getDocument().getLength();
     }
 
     /*final public MySegment getLineSegment(int lnum) {
@@ -122,7 +121,7 @@ abstract public class SwingBuffer extends Buffer {
         if(seg == null)
             seg = new MySegment();
         try {
-            getDoc().getText(offset, length, seg);
+            getDocument().getText(offset, length, seg);
         } catch (BadLocationException ex) {
             seg.count = 0;
             LOG.log(Level.SEVERE, null, ex);
@@ -143,9 +142,9 @@ abstract public class SwingBuffer extends Buffer {
 
     /**
      * Use the document in default implementation.
-     * @return opaque FileObject backing this EditorPane */
+     * @return Swing Document backing this EditorPane */
     public Document getDocument() {
-        return getDoc();
+        return doc;
     }
 
     public void replaceString(int start, int end, String s) {
@@ -155,9 +154,9 @@ abstract public class SwingBuffer extends Buffer {
         }
         try {
             if(start != end) {
-                getDoc().remove(start, end - start);
+                getDocument().remove(start, end - start);
             }
-            getDoc().insertString(start, s, null);
+            getDocument().insertString(start, s, null);
         } catch(BadLocationException ex) {
             processTextException(ex);
         }
@@ -169,7 +168,7 @@ abstract public class SwingBuffer extends Buffer {
             return;
         }
         try {
-            getDoc().remove(start, end - start);
+            getDocument().remove(start, end - start);
         } catch(BadLocationException ex) {
             processTextException(ex);
         }
@@ -184,7 +183,7 @@ abstract public class SwingBuffer extends Buffer {
     setCaretPosition(offset);
     ops.xop(TextOps.INSERT_TEXT, s);
      ******************************************/
-        if(offset > getDoc().getLength()) {
+        if(offset > getDocument().getLength()) {
             // Damn, trying to insert after the final magic newline.
             // 	(the one that gets counted in elem.getEndOffset() but
             // 	not in getLength() )
@@ -204,11 +203,11 @@ abstract public class SwingBuffer extends Buffer {
             } else {
                 new_s.append(s);
             }
-            offset = getDoc().getLength();
+            offset = getDocument().getLength();
             s = new_s.toString();
         }
         try {
-            getDoc().insertString(offset, s, null);
+            getDocument().insertString(offset, s, null);
         } catch(BadLocationException ex) {
             processTextException(ex);
         }
@@ -223,15 +222,15 @@ abstract public class SwingBuffer extends Buffer {
         
         try {
             // This order works better with the do-again, '.', buffer
-            getDoc().insertString(offset, s, null);
-            getDoc().remove(offset + 1, 1);
+            getDocument().insertString(offset, s, null);
+            getDocument().remove(offset + 1, 1);
         } catch(BadLocationException ex) {
             processTextException(ex);
         }
     }
 
     public String getText(int offset, int length) throws BadLocationException {
-        return getDoc().getText(offset, length);
+        return getDocument().getText(offset, length);
     }
     
     protected void processTextException(BadLocationException ex) {
@@ -368,7 +367,7 @@ abstract public class SwingBuffer extends Buffer {
                     atZero = false;
                     --offset;
                 }
-                pos = getDoc().createPosition(offset);
+                pos = getDocument().createPosition(offset);
             } catch(BadLocationException ex) {
                 pos = null;
                 return;
@@ -427,14 +426,14 @@ abstract public class SwingBuffer extends Buffer {
         final void checkMarkUsable() {
             // same as isValid
             if(pos == null) throw new MarkException("Uninitialized Mark");
-            if(getDoc() == null) {
+            if(getDocument() == null) {
                 throw new MarkOrphanException("Mark Document null");
             }
         }
 
         final public boolean isValid() {
             // same as checkMarkUsable
-            return pos != null && getDoc() != null;
+            return pos != null && getDocument() != null;
         }
         
         final public int compareTo(ViFPOS p) {
@@ -535,7 +534,7 @@ abstract public class SwingBuffer extends Buffer {
     
     /** @return the element index from root which contains the offset */
     protected int getElemIndex(int offset) {
-        Element root = getDoc().getDefaultRootElement();
+        Element root = getDocument().getDefaultRootElement();
         return root.getElementIndex(offset);
     }
     
@@ -547,9 +546,9 @@ abstract public class SwingBuffer extends Buffer {
                 && offset < elem.getEndOffset()) {
             return elem;
         }
-        //Element root = getDoc().getDefaultRootElement();
+        //Element root = getDocument().getDefaultRootElement();
         //return root.getElement(root.getElementIndex(offset));
-        int line = getDoc().getDefaultRootElement().getElementIndex(offset) + 1;
+        int line = getDocument().getDefaultRootElement().getElementIndex(offset) + 1;
         return getLineElement(line);
     }
 
@@ -576,7 +575,7 @@ abstract public class SwingBuffer extends Buffer {
             if(cacheTrace.getBoolean())System.err.println("Miss seg: " + line);
             try {
                 Element elem = getLineElement(line);
-                getDoc().getText(elem.getStartOffset(),
+                getDocument().getText(elem.getStartOffset(),
                         elem.getEndOffset() - elem.getStartOffset(),
                         segment);
                 segment.docOffset = elem.getStartOffset();
@@ -624,7 +623,7 @@ abstract public class SwingBuffer extends Buffer {
         line--;
         if(cacheDisabled || element == null || elementLine != line) {
             if(cacheTrace.getBoolean())System.err.println("Miss elem: " + (line+1));
-            element = getDoc().getDefaultRootElement().getElement(line);
+            element = getDocument().getDefaultRootElement().getElement(line);
             elementLine = line;
             elemCache.line = line+1;
             elemCache.elem = element;
@@ -684,7 +683,7 @@ abstract public class SwingBuffer extends Buffer {
                 // magic redo tracking
                 // things can get wierd in there...
                 try {
-                    s = getDoc().getText(e.getOffset(), e.getLength());
+                    s = getDocument().getText(e.getOffset(), e.getLength());
                     docInsert(e.getOffset(), s);
                 } catch (Exception ex) {
                     LOG.log(Level.SEVERE, null, ex);
@@ -718,12 +717,12 @@ abstract public class SwingBuffer extends Buffer {
     }
 
     private void stopDocumentEvents() {
-        getDoc().removeDocumentListener(documentListener);
+        getDocument().removeDocumentListener(documentListener);
     }
     
     private void startDocumentEvents() {
         documentListener = new DocListen();
-        getDoc().addDocumentListener(documentListener);
+        getDocument().addDocumentListener(documentListener);
     }
   
     private void invalidateData() {
