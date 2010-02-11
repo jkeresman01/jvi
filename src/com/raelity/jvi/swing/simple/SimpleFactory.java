@@ -18,22 +18,41 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
-package com.raelity.jvi.cmd;
+package com.raelity.jvi.swing.simple;
 
-import com.raelity.jvi.ViStatusDisplay;
-import com.raelity.jvi.swing.simple.SimpleTextView;
+import com.raelity.jvi.ViAppView;
+import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.swing.KeyBinding;
+import com.raelity.jvi.swing.SwingFactory;
+import java.awt.Component;
 import javax.swing.text.JTextComponent;
 
 /**
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public class PlayTextView extends SimpleTextView
-{
-    public PlayTextView(final JTextComponent editor, ViStatusDisplay sd)
+abstract public class SimpleFactory extends SwingFactory {
+
+    public static void installKeymap(JTextComponent ed)
     {
-        super(editor);
-        this.statusDisplay = sd;
+        ed.setKeymap(KeyBinding.getKeymap());
+    }
+
+    public boolean isEnabled()
+    {
+        return true;
+    }
+
+    public boolean isNomadic(Component ed, ViAppView av)
+    {
+        return false;
+    }
+
+    public ViTextView getTextView(ViAppView av)
+    {
+        if (av.getEditor() != null)
+            return getTextView((JTextComponent)av.getEditor());
+        return null;
     }
 
 }

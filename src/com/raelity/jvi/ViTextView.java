@@ -73,7 +73,7 @@ public interface ViTextView extends ViOptionBag {
   public int validateCursorPosition(int offset);
 
   /** @return unique/invariant window number */
-  public int getNum();
+  public int getWNum();
 
   /** @return the associated Buffer */
   public Buffer getBuffer();

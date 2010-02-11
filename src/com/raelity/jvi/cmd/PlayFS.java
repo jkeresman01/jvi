@@ -24,17 +24,14 @@ import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.ViBuffer;
 import com.raelity.jvi.ViFS;
-import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.lib.abstractFS;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
+import com.raelity.jvi.swing.simple.SimpleFS;
 
 /**
  *  A default implementation of the {@link com.raelity.jvi.ViFS}
  *  (vi file system support).
  */
-public class PlayFS extends abstractFS
+public class PlayFS extends SimpleFS
 {
 
     /**
@@ -42,29 +39,6 @@ public class PlayFS extends abstractFS
      */
     public PlayFS()
     {
-    }
-    public String getDisplayFileName(ViAppView av)
-    {
-        JTextComponent ep = (JTextComponent)av.getEditor();
-        ViTextView tv = ViManager.getViFactory().getTextView(ep);
-        if(tv != null) {
-            return getDisplayFileName(tv.getBuffer());
-        }
-        assert false;
-        return "file-name-unkown-from-appview";
-    }
-
-
-    public String getDisplayFileName(ViBuffer buf)
-    {
-        String fname = null;
-        Document doc = (Document)buf.getDocument();
-        if(doc != null) {
-            Object o = doc.getProperty(Document.TitleProperty);
-            if(o != null)
-                fname = o.toString();
-        }
-        return fname != null ? fname : "file-name-unknown";
     }
 
 
@@ -103,8 +77,9 @@ public class PlayFS extends abstractFS
             r = "" + range[0] + "," + range[1];
         }
 
-        System.err.println(String.format(
-                "write tv: %s%s, range: %s", (force?"! ":""), writeTarget, r));
+        Msg.emsg(String.format(
+                "write tv: %s%s, range: %s not implemented",
+                (force?"! ":""), writeTarget, r));
         return true;
     }
 

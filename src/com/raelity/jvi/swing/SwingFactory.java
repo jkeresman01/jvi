@@ -103,7 +103,8 @@ abstract public class SwingFactory implements ViFactory
 
     //////////////////////////////////////////////////////////////////////
     //
-    // Some swing specific things that an implementation may want to override
+    // Some swing specific things that are "factory"ish,
+    // that an implementation may want to override
     //
 
     /**
@@ -127,10 +128,6 @@ abstract public class SwingFactory implements ViFactory
     //
     // ViFactory for swing
     //
-
-    public boolean isEnabled() {
-        return true;
-    }
 
     public ViAppView getAppView(Component e) {
         return (ViAppView)((JTextComponent)e).getClientProperty(PROP_AV);
@@ -179,11 +176,6 @@ abstract public class SwingFactory implements ViFactory
 
         return s;
     }
-
-    public boolean isNomadic(Component ed, ViAppView av) {
-        return false;
-    }
-
 
     public boolean isShowing( ViTextView tv )
     {

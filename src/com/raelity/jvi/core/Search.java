@@ -36,7 +36,6 @@ import com.raelity.text.*;
 import com.raelity.text.TextUtil.MySegment;
 
 import java.awt.EventQueue;
-import java.text.CharacterIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AbstractDocument;
@@ -51,7 +50,7 @@ import static com.raelity.jvi.core.Constants.*;
  * Searching, regexp and substitution.
  * Everything's static, can only do one thing at a time.
  */
-public class Search {
+public class Search extends CoreMethodHooks {
   private static Logger LOG = Logger.getLogger(Search.class.getName());
 
   ///////////////////////////////////////////////////////////////////////
@@ -76,42 +75,6 @@ public class Search {
   private static String lastPattern;
   private static String lastSubstitution;
 
-  // These bounce routines to make porting easier
-//Misc
-private static int dec_cursor() { return Misc.dec_cursor(); }
-private static int decl(ViFPOS pos) { return Misc.decl(pos); }
-private static char gchar_pos(ViFPOS pos) { return Misc.gchar_pos(pos); }
-private static char gchar_cursor() { return Misc.gchar_cursor(); }
-private static int inc_cursorV7() { return Misc.inc_cursorV7(); }
-private static int inclV7(ViFPOS pos) { return Misc.inclV7(pos); }
-private static int incV7(ViFPOS pos) { return Misc.incV7(pos); }
-private static boolean inindent(int i) { return Misc.inindent(i); }
-private static int skipwhite(MySegment seg, int idx) { return Misc.skipwhite(seg, idx); }
-private static boolean vim_iswhite(char c) { return Misc.vim_iswhite(c); }
-
-// Util
-private static MySegment ml_get(int lnum) { return Util.ml_get(lnum); }
-private static MySegment ml_get_curline() { return Util.ml_get_curline(); }
-private static CharacterIterator ml_get_cursor() { return Util.ml_get_cursor();}
-private static CharacterIterator ml_get_pos(ViFPOS pos) { return Util.ml_get_pos(pos);}
-private static int strncmp(String s1, String s2, int n) {
-  return Util.strncmp(s1, s2, n);
-}
-private static int strncmp(MySegment seg, int i, String s2, int n) {
-  return Util.strncmp(seg, i, s2, n);
-}
-private static String vim_strchr(String s, char c) {
-  return Util.vim_strchr(s, c);
-}
-
-// MarkOps
-private static void setpcmark() {MarkOps.setpcmark();}
-private static void setpcmark(ViFPOS pos) {MarkOps.setpcmark(pos);}
-
-// cursor compare
-private static boolean equalpos(ViFPOS p1, ViFPOS p2) { return Util.equalpos(p1, p2); }
-private static boolean lt(ViFPOS p1, ViFPOS p2) { return Util.lt(p1, p2); }
-  
   private static ViCmdEntry getSearchCommandEntry() {
     if(searchCommandEntry == null) {
       try {

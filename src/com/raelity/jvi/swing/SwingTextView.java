@@ -137,7 +137,7 @@ public class SwingTextView extends Window
     }
 
 
-    public int getNum() {
+    public int getWNum() {
         return w_num;
     }
 
@@ -168,7 +168,7 @@ public class SwingTextView extends Window
 
         super.shutdown();
 
-        shutdown(editorPane); // CACHE
+        shutdownMore();
         ViManager.detached(editorPane);
         editorPane = null;
     }
@@ -180,6 +180,7 @@ public class SwingTextView extends Window
     }
 
 
+    //////////////////////////////////////////////////////////////////////
     //
     // Declare the variables referenced as part of a ViOptionBag
     //
@@ -221,13 +222,13 @@ public class SwingTextView extends Window
         if ( G.dbgEditorActivation.getBoolean() ) {
           System.err.println("TV.attach: " + editorPane.hashCode());
         }
-        attach(editorPane); // CACHE
+        attachMore();
     }
 
 
     public void detach()
     {
-        detach(editorPane); // CACHE
+        detachMore();
 
         ViManager.detached(editorPane);
     }
@@ -1214,11 +1215,11 @@ public class SwingTextView extends Window
     /** This is called from the managing textview,
      * listen to things that affect the cache.
      */
-    private void attach(JTextComponent editor)
+    private void attachMore()
     {
         if (G.dbgEditorActivation.getBoolean()) {
             System.err.println("TVCache: attach: "
-                               + (editor == null ? 0 : editor.hashCode()));
+                               + (editorPane == null ? 0 : editorPane.hashCode()));
         }
         if (freezer != null) {
             freezer.stop();
@@ -1230,30 +1231,30 @@ public class SwingTextView extends Window
         }
 
         hasListeners = true;
-        editor.addPropertyChangeListener("font", this);
-        editor.addPropertyChangeListener("document", this);
-        editor.addPropertyChangeListener("ancestor", this);
-        changeFont(editor.getFont());
-        changeViewport(editor.getParent());
+        editorPane.addPropertyChangeListener("font", this);
+        editorPane.addPropertyChangeListener("document", this);
+        editorPane.addPropertyChangeListener("ancestor", this);
+        changeFont(editorPane.getFont());
+        changeViewport(editorPane.getParent());
     }
     boolean hasListeners = false;
 
     /** Dissassociate from the observed components. */
-    private void detach(JTextComponent ep)
+    private void detachMore()
     {
         if (G.dbgEditorActivation.getBoolean()) {
             System.err.println("TVCache: detach: "
-                               + (ep == null ? "" : ep.hashCode()));
+                               + (editorPane == null ? "" : editorPane.hashCode()));
         }
-        if (ep == null) {
+        if (editorPane == null) {
             return;
         }
-        freezer = new FreezeViewport(ep);
+        freezer = new FreezeViewport(editorPane);
 
     //removeListeners();
     }
 
-    private void shutdown(JTextComponent ep)
+    private void shutdownMore()
     {
         if (freezer != null) {
             freezer.stop();
@@ -1265,10 +1266,9 @@ public class SwingTextView extends Window
     private void removeListeners()
     {
         hasListeners = false;
-        JTextComponent editor = getEditorComponent();
-        editor.removePropertyChangeListener("font", this);
-        editor.removePropertyChangeListener("document", this);
-        editor.removePropertyChangeListener("ancestor", this);
+        editorPane.removePropertyChangeListener("font", this);
+        editorPane.removePropertyChangeListener("document", this);
+        editorPane.removePropertyChangeListener("ancestor", this);
         changeViewport(null);
     }
     private FreezeViewport freezer;

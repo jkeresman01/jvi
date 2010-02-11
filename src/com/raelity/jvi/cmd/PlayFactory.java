@@ -20,13 +20,11 @@
 
 package com.raelity.jvi.cmd;
 
-import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Buffer;
-import com.raelity.jvi.swing.KeyBinding;
-import com.raelity.jvi.swing.SwingFactory;
+import com.raelity.jvi.swing.simple.SimpleFactory;
 import java.util.Map;
 import javax.swing.text.JTextComponent;
 
@@ -34,7 +32,7 @@ import javax.swing.text.JTextComponent;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-final public class PlayFactory extends SwingFactory
+final public class PlayFactory extends SimpleFactory
 {
     private ViFS fs = new PlayFS();
     /** status displays for editors */
@@ -49,25 +47,11 @@ final public class PlayFactory extends SwingFactory
         return new PlayTextView(editor, mapJepSd.get(editor));
     }
 
-    // NOT PART OF FACTORY INTERFACE
-    public static void installKeymap(JTextComponent ed)
-    {
-        ed.setKeymap(KeyBinding.getKeymap());
-    }
-
     protected Buffer createBuffer( ViTextView tv )
     {
         return new PlayBuffer(tv);
     }
 
-    public ViTextView getTextView(ViAppView av)
-    {
-        if(av.getEditor() != null)
-            return getTextView((JTextComponent)av.getEditor());
-        return null;
-    }
-
-    @Override
     public ViFS getFS()
     {
         return fs;
