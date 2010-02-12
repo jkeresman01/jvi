@@ -20,13 +20,13 @@
 
 package com.raelity.jvi.swing.simple;
 
-import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.swing.SwingTextView;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Style;
@@ -57,14 +57,12 @@ abstract public class SimpleTextView extends SwingTextView
                 return;
         setupStyles();
 
-        clear();
         int[] b = getBuffer()
                 .getHighlightSearchBlocks(0, getBuffer().getLength());
         highlight(b, Options.searchColor);
     }
 
 
-    boolean visualDisplayed;
     /**
      * Update the visual mode selection highlight.
      */
@@ -76,15 +74,8 @@ abstract public class SimpleTextView extends SwingTextView
         setupStyles();
 
         int[] b = getBuffer().getVisualSelectBlocks(this, 0, Integer.MAX_VALUE);
-        if (!G.VIsual_active || isEmpty(b)) {
-            if(visualDisplayed)
-                clear();
-            visualDisplayed = false;
-        }
 
-        //dumpBlocks("blocks", b);
         highlight(b, Options.selectColor);
-        visualDisplayed = true;
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -102,9 +93,11 @@ abstract public class SimpleTextView extends SwingTextView
     //         Then setupStyles and updateStyles could be done directly to the
     //         single shared "sc", rather than to each document individually.
     //
-    //       - This implmentation only has one of visual or search highlights
-    //         at a time. Both sets of current blocks could be kept and
-    //         displayed as appropriate.
+    //       - to get things right in the face of changes to the document,
+    //         can add doc listeners and recalc blocks when stuff changes.
+    //         There is an example in the NB version.
+    //
+    // NEEDSWORK: doesn't highlight belong in Buffer, not TextView?
     //
 
     // Notice that the Document Styles are named like the jVi options.
@@ -173,58 +166,97 @@ abstract public class SimpleTextView extends SwingTextView
         return a == null || a[0] == -1;
     }
 
-    private int[] previousHighlightBlocks;
-    AttributeSet previousHighlightAs;
+    Map<String, int[]> currentHighlights;
 
     private void highlight(int[] blocks, String str)
     {
-        StyledDocument sdoc = (StyledDocument)getEditorComponent().getDocument();
-        AttributeSet as = sdoc.getStyle(str);
-        if(as == null)
-            return;
-        if (previousHighlightBlocks != null &&
-                !Arrays.equals(previousHighlightBlocks, blocks)) {
-            clear();
+        if(currentHighlights == null) {
+            clearCurrentHighlights();
         }
-        applyHighlight(blocks, as);
-        previousHighlightBlocks = blocks;
-        previousHighlightAs = as;
+        int[] prev = currentHighlights.get(str);
+        // if data has not changed, then return
+        for (int i = 0; i < prev.length; i++) {
+            int j = prev[i];
+            if(blocks[i] != j)
+                break;
+            if(j == -1)
+                return; // they are equal
+        }
+        currentHighlights.put(str, blocks);
+
+        applyCurentHighlights();
+
+    }
+
+    private void clearCurrentHighlights() {
+        if(currentHighlights == null) {
+            currentHighlights = new HashMap<String, int[]>();
+        }
+        currentHighlights.put(Options.selectColor, new int[]{-1});
+        currentHighlights.put(Options.searchColor, new int[]{-1});
     }
 
     private void clear() {
-        if(isEmpty(previousHighlightBlocks))
-            return;
-        System.err.println("CLEAR");
         StyledDocument sdoc = (StyledDocument)editorPane.getDocument();
         AttributeSet as = sdoc.getStyle(NO_HIGHLIGHT);
         sdoc.setCharacterAttributes(0, getBuffer().getLength(), as, true);
-        previousHighlightBlocks = null;
-        previousHighlightAs = null;
+
+        clearCurrentHighlights();
     }
 
     private void reApplyHighlight()
     {
-        if(!isEmpty(previousHighlightBlocks))
-            applyHighlight(previousHighlightBlocks, previousHighlightAs);
+        applyCurentHighlights();
+    }
+
+    private void applyCurentHighlights()
+    {
+        StyledDocument sdoc = (StyledDocument)editorPane.getDocument();
+
+        // simply redraw everything
+        // first clear our any previous highlights
+        sdoc.setCharacterAttributes(0, getBuffer().getLength(),
+                                    sdoc.getStyle(NO_HIGHLIGHT), true);
+
+        applyHighlight(currentHighlights.get(Options.searchColor),
+                       sdoc.getStyle(Options.searchColor));
+        applyHighlight(currentHighlights.get(Options.selectColor),
+                       sdoc.getStyle(Options.selectColor));
     }
 
     private void applyHighlight(int[] blocks, AttributeSet as)
     {
+        //System.err.println("HIGHLIGHT: " + dumpBlocks(blocks) + " " + as);
         StyledDocument document = (StyledDocument)editorPane.getDocument();
         for (int i = 0; i < blocks.length; i += 2) {
             int start = blocks[i];
-            int end = blocks[i + 1];
-            if (start == -1 && end == -1) {
+            if (start == -1) {
                 // break
                 return;
             }
+            int end = blocks[i + 1];
             if (start > end) {
                 int tmp = start;
                 start = end;
                 end = tmp;
             }
-            document.setCharacterAttributes(start, end - start, as, false);
+            document.setCharacterAttributes(start, end - start, as, true);
         }
+    }
+
+    private String dumpBlocks(int[] b)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[").append(b.length/2 -1).append("]{"); // nBlock
+        for(int i = 0; i < b.length && i < 5; i += 2) { // only dump a few
+            int start = b[i];
+            if (start == -1)
+                break;
+            int end = b[i + 1];
+            sb.append(start).append(",").append(end).append(",");
+        }
+        sb.append("}");
+        return sb.toString();
     }
 
 }

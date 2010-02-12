@@ -22,13 +22,9 @@ package com.raelity.jvi;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.G;
-import com.raelity.jvi.core.GetChar;
 import com.raelity.jvi.core.Hook;
 import com.raelity.jvi.core.KeyDefs;
-import com.raelity.jvi.core.Msg;
-import com.raelity.jvi.core.Normal;
 import com.raelity.jvi.core.Options;
-import com.raelity.jvi.core.Util;
 import com.raelity.jvi.options.Option;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionListener;
@@ -496,7 +492,7 @@ public class ViManager
             ViTextView tv,
             StringBuffer initialString)
     {
-        Msg.clearMsg();
+        core.clearMsg();
         if(initialString == null) {
             initialString = new StringBuffer();
         }
@@ -509,7 +505,7 @@ public class ViManager
         if (initialString.indexOf("\n") >= 0) {
             passThru = true;
         } else {
-            passThru = GetChar.getRecordedLine(initialString);
+            passThru = core.getRecordedLine(initialString);
         }
         try {
             commandEntry.activate(mode, tv, new String(initialString), passThru);
@@ -520,10 +516,10 @@ public class ViManager
             //
             // If modal, and everything went well, then activeCommandEntry is
             // already NULL. But not modal, then it isn't null.
-            Util.vim_beep();
+            core.vim_beep();
             LOG.log(Level.SEVERE, null, ex);
             activeCommandEntry = null;
-            Normal.resetCommand();
+            core.resetCommand();
         }
     }
 
@@ -933,9 +929,10 @@ public class ViManager
 
         currentEditorPane = editor;
         core.switchTo(textView, buf);
-        Normal.resetCommand(); // Means something first time window switched to
+        core.resetCommand(); // Means something first time window switched to
         buf.activateOptions(textView);
         textView.activateOptions(textView);
+        setHasSelection(); // a HACK
         if(newTextView) {
             firePropertyChange(P_OPEN_WIN, currentTv, textView);
             editor.addMouseListener(mouseListener);
@@ -1019,7 +1016,7 @@ public class ViManager
 
     public static void exitInputMode() {
         if(currentEditorPane != null) {
-            Normal.resetCommand();
+            core.resetCommand();
         }
     }
 
@@ -1031,7 +1028,7 @@ public class ViManager
             // but G.curwin is not set yet. See switchTo(Component editor)
             return;
         }
-        Msg.clearMsg();
+        core.clearMsg();
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -1046,6 +1043,13 @@ public class ViManager
     public static boolean isMouseDown()
     {
         return mouseDown;
+    }
+
+    private static void setHasSelection()
+    {
+        ViTextView tv = getCurrentTextView();
+        if(tv != null)
+            hasSelection = tv.hasSelection();
     }
 
     public static void cursorChange(ViCaret caret)
@@ -1116,7 +1120,7 @@ public class ViManager
                 //                      mev.getModifiers()));
             }
 
-            GetChar.flush_buffers(true);
+            core.flush_buffers(true);
             exitInputMode();
             if(currentEditorPane != null)
                 core.abortVisualMode();
@@ -1784,7 +1788,6 @@ public class ViManager
         pcs.removePropertyChangeListener(p, l);
       }
 
-      /** This should only be used from Option and its subclasses */
       private static void firePropertyChange(
               String name, Object oldValue, Object newValue) {
         pcs.firePropertyChange(name, oldValue, newValue);

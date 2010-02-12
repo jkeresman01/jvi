@@ -176,7 +176,7 @@ public class GetChar {
    * the CR. If the input stream empties, just return what was available.
    * @return true when a CR was encountered, else false
    */
-  public static boolean getRecordedLine(StringBuffer sb) {
+  static boolean getRecordedLine(StringBuffer sb) {
     boolean hasCR = false;
     while(true) {
       if( ! char_avail()) {
@@ -253,7 +253,7 @@ public class GetChar {
    * Write a stuff to the script and/or record buffer.
    * Used to stash command entry input.
    */
-  public static void userInput(String s) {
+  public static void userInput(String s) { //NEEDSWORK: public
     /* remember how many chars were last recorded */
     if (G.Recording) {
       last_recorded_len += s.length();
@@ -953,7 +953,7 @@ public class GetChar {
    * typeahead buffer (used in case of an error). If 'typeahead' is true,
    * flush all typeahead characters (used when interrupted by a CTRL-C).
    */
-  public static void flush_buffers(boolean typeahead) {
+  static void flush_buffers(boolean typeahead) {
     init_typebuf();
     start_stuff();
     stuffbuff.setLength(0); // while(read_stuff(true) != NUL);

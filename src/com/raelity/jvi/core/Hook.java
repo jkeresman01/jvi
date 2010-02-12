@@ -84,6 +84,31 @@ public class Hook
         GetChar.gotc(key, modifier);
     }
 
+    public void flush_buffers(boolean typeahead)
+    {
+        GetChar.flush_buffers(typeahead);
+    }
+
+    public boolean getRecordedLine(StringBuffer sb)
+    {
+        return GetChar.getRecordedLine(sb);
+    }
+
+    public void resetCommand()
+    {
+        Normal.resetCommand();
+    }
+
+    public void clearMsg()
+    {
+        Msg.clearMsg();
+    }
+
+    public void vim_beep()
+    {
+        Util.vim_beep();
+    }
+
     //////////////////////////////////////////////////////////////////////
     //
     // Here are the static methods that core package uses to get to ViManager
