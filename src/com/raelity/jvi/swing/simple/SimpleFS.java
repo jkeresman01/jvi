@@ -57,6 +57,7 @@ abstract public class SimpleFS extends abstractFS {
             if (o != null)
                 fname = o.toString();
         }
+        assert fname != null;
         return fname != null ? fname : "file_name_unknown_from_buf";
     }
 

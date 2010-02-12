@@ -24,15 +24,18 @@ import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.swing.SwingTextView;
 import java.awt.Color;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Arrays;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.MutableAttributeSet;
-import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import javax.swing.text.StyledEditorKit;
 
 /**
+ * Provides visual mode and search highlighting
+ * using a JTextPane Style techniques.
  *
  * @author Ernie Rael <err at raelity.com>
  */
@@ -50,34 +53,38 @@ abstract public class SimpleTextView extends SwingTextView
     @Override
     public void updateHighlightSearchState()
     {
-        // clear every thing
-        applyBackground(new int[]{0, getBuffer().getLength(), -1, -1},
-                        UNHIGHLIGHT);
-        if (!Options.doHighlightSearch()) {
-            return;
-        }
-        int[] b =
-                getBuffer().getHighlightSearchBlocks(0, getBuffer().getLength());
-        applyBackground(b, HIGHLIGHT);
+        if(!(editorPane.getDocument() instanceof StyledDocument))
+                return;
+        setupStyles();
+
+        clear();
+        int[] b = getBuffer()
+                .getHighlightSearchBlocks(0, getBuffer().getLength());
+        highlight(b, Options.searchColor);
     }
 
+
+    boolean visualDisplayed;
     /**
      * Update the visual mode selection highlight.
      */
     @Override
     public void updateVisualState()
     {
-        if (!G.VIsual_active) {
-            try {
-                unhighlight(new int[]{getBuffer().getMark('<').getOffset(), getBuffer().
-                        getMark('>').getOffset(), -1, -1});
-            } catch (Exception e) {
-                unhighlight(new int[]{0, editorPane.getText().length(), -1, -1});
-            }
-        }
+        if(!(editorPane.getDocument() instanceof StyledDocument))
+                return;
+        setupStyles();
+
         int[] b = getBuffer().getVisualSelectBlocks(this, 0, Integer.MAX_VALUE);
+        if (!G.VIsual_active || isEmpty(b)) {
+            if(visualDisplayed)
+                clear();
+            visualDisplayed = false;
+        }
+
         //dumpBlocks("blocks", b);
-        highlight(b);
+        highlight(b, Options.selectColor);
+        visualDisplayed = true;
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -87,32 +94,121 @@ abstract public class SimpleTextView extends SwingTextView
     // When style doc highlights used,
     // should filter out doc CHANGE events from undo/redo
     //
+    // CAN DO: PERFORMANCE ENHANCEMENTS
+    //       - This implementation adds stuff to each document as needed.
+    //         There are ways to improve and share stuff. For example, do:
+    //             sc = new StyleContext();
+    //             new JTextPane(new DefaultStyleDocument(sc))
+    //         Then setupStyles and updateStyles could be done directly to the
+    //         single shared "sc", rather than to each document individually.
+    //
+    //       - This implmentation only has one of visual or search highlights
+    //         at a time. Both sets of current blocks could be kept and
+    //         displayed as appropriate.
+    //
 
-    private void highlight(int[] blocks)
+    // Notice that the Document Styles are named like the jVi options.
+
+    private static final String NO_HIGHLIGHT = "ViNoHighlight";
+
+    boolean didInit;
+    private void hlInit()
     {
-        if (previousAppliedHighlight != null &&
-                !Arrays.equals(previousAppliedHighlight, blocks)) {
-            unhighlight(previousAppliedHighlight);
+        if(didInit)
+            return;
+        PropertyChangeListener pcl = new PropertyChangeListener()
+        {
+            public void propertyChange(PropertyChangeEvent evt)
+            {
+                updateStyles();
+                reApplyHighlight();
+            }
+        };
+        Options.addPropertyChangeListener(Options.selectColor, pcl);
+        Options.addPropertyChangeListener(Options.selectFgColor, pcl);
+        Options.addPropertyChangeListener(Options.searchColor, pcl);
+        Options.addPropertyChangeListener(Options.searchFgColor, pcl);
+    }
+
+    private void setupStyles()
+    {
+        hlInit();
+        StyledDocument sdoc = (StyledDocument)editorPane.getDocument();
+        Style s = sdoc.getStyle(Options.selectColor);
+        if(s == null) {
+            sdoc.addStyle(Options.selectColor, null);
+            sdoc.addStyle(Options.searchColor, null);
+            sdoc.addStyle(NO_HIGHLIGHT, null);
+            updateStyles();
         }
-        applyBackground(blocks, HIGHLIGHT);
-        previousAppliedHighlight = blocks;
     }
 
-    private void unhighlight(int[] blocks)
+    private void updateStyles()
     {
-        applyBackground(blocks, UNHIGHLIGHT);
+        StyledDocument sdoc = (StyledDocument)editorPane.getDocument();
+        Style s;
+
+        s = sdoc.getStyle(Options.selectColor);
+        Color color;
+        color = Options.getOption(Options.selectColor).getColor();
+        StyleConstants.setBackground(s, color);
+        color = Options.getOption(Options.selectFgColor).getColor();
+        if(color != null)
+            StyleConstants.setForeground(s, color);
+        else
+            s.removeAttribute(StyleConstants.Foreground);
+
+        s = sdoc.getStyle(Options.searchColor);
+        color = Options.getOption(Options.searchColor).getColor();
+        StyleConstants.setBackground(s, color);
+        color = Options.getOption(Options.searchFgColor).getColor();
+        if(color != null)
+            StyleConstants.setForeground(s, color);
+        else
+            s.removeAttribute(StyleConstants.Foreground);
     }
 
-    private static MutableAttributeSet HIGHLIGHT = new SimpleAttributeSet();
-    private static MutableAttributeSet UNHIGHLIGHT = new SimpleAttributeSet();
-    static {
-        StyleConstants.setBackground(HIGHLIGHT, Color.LIGHT_GRAY);
-        StyleConstants.setBackground(UNHIGHLIGHT, Color.WHITE);
+    private boolean isEmpty(int[] a)
+    {
+        return a == null || a[0] == -1;
     }
 
-    protected int[] previousAppliedHighlight = null;
+    private int[] previousHighlightBlocks;
+    AttributeSet previousHighlightAs;
 
-    protected void applyBackground(int[] blocks, MutableAttributeSet mas)
+    private void highlight(int[] blocks, String str)
+    {
+        StyledDocument sdoc = (StyledDocument)getEditorComponent().getDocument();
+        AttributeSet as = sdoc.getStyle(str);
+        if(as == null)
+            return;
+        if (previousHighlightBlocks != null &&
+                !Arrays.equals(previousHighlightBlocks, blocks)) {
+            clear();
+        }
+        applyHighlight(blocks, as);
+        previousHighlightBlocks = blocks;
+        previousHighlightAs = as;
+    }
+
+    private void clear() {
+        if(isEmpty(previousHighlightBlocks))
+            return;
+        System.err.println("CLEAR");
+        StyledDocument sdoc = (StyledDocument)editorPane.getDocument();
+        AttributeSet as = sdoc.getStyle(NO_HIGHLIGHT);
+        sdoc.setCharacterAttributes(0, getBuffer().getLength(), as, true);
+        previousHighlightBlocks = null;
+        previousHighlightAs = null;
+    }
+
+    private void reApplyHighlight()
+    {
+        if(!isEmpty(previousHighlightBlocks))
+            applyHighlight(previousHighlightBlocks, previousHighlightAs);
+    }
+
+    private void applyHighlight(int[] blocks, AttributeSet as)
     {
         StyledDocument document = (StyledDocument)editorPane.getDocument();
         for (int i = 0; i < blocks.length; i += 2) {
@@ -127,12 +223,7 @@ abstract public class SimpleTextView extends SwingTextView
                 start = end;
                 end = tmp;
             }
-            document.setCharacterAttributes(start, end - start, mas, false);
-            // update styled editor kit with new attributes
-            // to overcome paint errors
-            StyledEditorKit k = (StyledEditorKit)getEditorKit();
-            MutableAttributeSet inputAttrs = k.getInputAttributes();
-            inputAttrs.addAttributes(mas);
+            document.setCharacterAttributes(start, end - start, as, false);
         }
     }
 

@@ -42,6 +42,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -74,7 +76,7 @@ import javax.swing.text.JTextComponent;
 public class SwingTextView extends Window
         implements ViTextView, PropertyChangeListener, ChangeListener
 {
-    private static Logger LOG = Logger.getLogger(SwingTextView.class.getName());
+    protected static Logger LOG = Logger.getLogger(SwingTextView.class.getName());
     private static int genNum; // unique/invariant window id;
 
     protected int w_num;
@@ -115,19 +117,28 @@ public class SwingTextView extends Window
     //
 
     public Action[] getActions() {
-        Action[] actions = null;
-        if(editorPane instanceof JEditorPane)
-            actions = ((JEditorPane)editorPane).getEditorKit().getActions();
-        else
-            actions = (editorPane).getActions();
-        return actions;
+        if(ViManager.isDebugAtHome() && editorPane instanceof JEditorPane) {
+            List<Action> l1 = Arrays.asList(((
+                    JEditorPane)editorPane).getEditorKit().getActions());
+            List<Action> l2 = Arrays.asList((editorPane).getActions());
+            if(!l1.equals(l2))
+                LOG.log(Level.SEVERE, null, new Throwable(
+                        "different actions: " + getBuffer().getDisplayFileName()));
+        }
+
+        return editorPane.getActions();
     }
 
     public EditorKit getEditorKit() {
-        if(editorPane instanceof JEditorPane)
-            return ((JEditorPane)editorPane).getEditorKit();
-        else
-            return editorPane.getUI().getEditorKit(editorPane);
+        if(ViManager.isDebugAtHome() && editorPane instanceof JEditorPane) {
+            EditorKit kit1 = ((JEditorPane)editorPane).getEditorKit();
+            EditorKit kit2 = editorPane.getUI().getEditorKit(editorPane);
+            if(!kit1.equals(kit2))
+                LOG.log(Level.SEVERE, null, new Throwable(
+                        "different kit" + getBuffer().getDisplayFileName()));
+        }
+
+        return editorPane.getUI().getEditorKit(editorPane);
     }
 
 
