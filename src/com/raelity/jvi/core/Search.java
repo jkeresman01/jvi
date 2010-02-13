@@ -239,6 +239,8 @@ public class Search extends CoreMethodHooks {
       Document doc = getSearchCommandEntry().getTextComponent().getDocument();
       doc.removeDocumentListener(isListener);
       isListener = null;
+
+      G.curwin.clearSelection(); // since it is used by incr search
       
       if(accept) {
           lastPattern = fetchPattern();
@@ -270,6 +272,10 @@ public class Search extends CoreMethodHooks {
       int rc = searchit(null, pos, lastDir, pattern,
                         searchCount, searchFlags /*& ~SEARCH_MSG*/,
                         0, G.p_ic.getBoolean());
+      // for incr search, use java selection to show progress
+      int new_pos = G.curwin.w_cursor.getOffset();
+      G.curwin.setSelection(new_pos, new_pos + search_match_len);
+
       didIncrSearch = true;
       if(rc == FAIL)
         resetViewIncrementalSearch();
@@ -1040,7 +1046,7 @@ finished:
         // search /$ puts cursor on end of line
         new_pos = G.curwin.validateCursorPosition(new_pos);
     }
-    G.curwin.setSelection(new_pos, new_pos + search_match_len);
+    G.curwin.w_cursor.set(new_pos);
     G.curwin.w_set_curswant = true;
     if(wmsg != null) {
       Msg.wmsg(wmsg/*, true*/);
