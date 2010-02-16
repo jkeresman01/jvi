@@ -2171,10 +2171,12 @@ public static ActionListener ACTION_BUFFERS = new ActionListener() {
                 l.add(String.format(
                         " %2d %c %-40s %3d %c %s",
                         i,
-                        cur.equals(o1) ? '%' : prev.equals(o1) ? '#' : ' ',
+                        cur != null && cur.equals(o1) ? '%'
+                                : prev != null && prev.equals(o1) ? '#' : ' ',
                         o1 != null ? factory.getFS().getDisplayFileName(o1) : "",
                         w2,
-                        cur.equals(o2) ? '%' : prev.equals(o2) ? '#' : ' ',
+                        cur != null && cur.equals(o2) ? '%'
+                                : prev != null && prev.equals(o2) ? '#' : ' ',
                         o2 != null ? factory.getFS().getDisplayFileName(o2) : ""));
                 i++;
             }

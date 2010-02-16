@@ -42,6 +42,9 @@ abstract public class abstractFS implements ViFS
      * @param i
      * @return
      */
+    //
+    // NEEDSWORK: this is static and app independent
+    //
     protected ViAppView getAppViewByNumber(int i)
     {
         ViAppView av = null;
@@ -60,11 +63,16 @@ abstract public class abstractFS implements ViFS
         return av;
     }
 
+    //
+    // NEEDSWORK: this is static and app independent
+    //
     public String getDisplayFileViewInfo(ViTextView tv) {
+        ViAppView av = tv.getAppView();
         Buffer buf = tv.getBuffer();
         Window win = (Window)tv;
         StringBuffer sb = new StringBuffer();
-        sb.append("\"" + getDisplayFileName(buf) + "\"");
+        sb.append("\"" + (av != null ? getDisplayFileName(av)
+                                     : getDisplayFileName(buf)) + "\"");
         if(isModified(buf))
             sb.append(" [Modified]");
         if(isReadOnly(buf))
@@ -79,6 +87,14 @@ abstract public class abstractFS implements ViFS
             sb.append(" of " + buf.getLineCount());
             sb.append(" --" + percent + "%--");
             sb.append(" col " + win.w_cursor.getColumn());
+        }
+        if(av != null) {
+            if(av.isNomad()) {
+                sb.append("(nomad");
+                if(!tv.isEditable())
+                    sb.append(",no-edit");
+                sb.append(")");
+            }
         }
         return sb.toString();
     }

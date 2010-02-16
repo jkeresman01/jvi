@@ -42,12 +42,6 @@ public class PlayFS extends SimpleFS
     }
 
 
-    public boolean isReadOnly( ViBuffer buf )
-    {
-        return false;
-    }
-
-
     public boolean isModified( ViBuffer buf )
     {
         return true;
@@ -96,6 +90,11 @@ public class PlayFS extends SimpleFS
         // get the av to open
         ViAppView av = getAppViewByNumber(n);
         Msg.emsg("edit(tv, int{" + n + "}, force) not implemented");
+    }
+
+    public void edit(ViAppView av)
+    {
+        Msg.emsg("edit(av{" + av + "}) not implemented");
     }
 
 

@@ -43,11 +43,6 @@ abstract public class SimpleFactory extends SwingFactory {
         return true;
     }
 
-    public boolean isNomadic(Component ed, ViAppView av)
-    {
-        return false;
-    }
-
     public ViTextView getTextView(ViAppView av)
     {
         if (av.getEditor() != null)

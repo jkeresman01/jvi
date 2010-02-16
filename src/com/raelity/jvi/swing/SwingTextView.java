@@ -66,11 +66,6 @@ import javax.swing.text.JTextComponent;
  *  Notice the listeners for caret changes. If the caret changes
  *  to a location that is unexpected, i.e. it came from some external
  *  source, then an externalChange message is sent to vi.
- *  </p><p>
- *  The getEditorComponent method should not be used by the primary
- *  vi software. The primary vi software should only access, or make
- *  changes to, the underlying JTextComponent through other methods in
- *  this class.
  *  </p>
  */
 public class SwingTextView extends Window
@@ -147,11 +142,10 @@ public class SwingTextView extends Window
         return w_cursor == null ? new WCursor() : null;
     }
 
-
-    public int getWNum() {
-        return w_num;
+    public ViAppView getAppView()
+    {
+        return ViManager.getViFactory().getAppView(editorPane);
     }
-
 
     private void enableCursorSave()
     {
@@ -842,23 +836,6 @@ public class SwingTextView extends Window
     {
         Msg.emsg("win_goto not implemented");
     }
-
-    /** Cycle to the indicated buffer.
-     * @param n the positive/negative number of windows to cycle.
-     */
-    public void win_cycle( int n )
-    {
-        Msg.emsg("win_cycle not implemented");
-    }
-
-    /** Cycle to the indicated buffer.
-     * @param n the positive/negative number of windows to cycle.
-     */
-    public void win_cycle_nomad( int n )
-    {
-        Msg.emsg("win_cycle_nomad not implemented");
-    }
-
 
     public ViStatusDisplay getStatusDisplay()
     {

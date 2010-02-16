@@ -1170,7 +1170,7 @@ middle_code:
 
 	  case 0x1f & (int)('W'):	// Ctrl
 	    if (!checkclearop(oap))
-	      Misc.do_window(ca.nchar, ca.count0); // everything is in window.c
+	      Misc01.do_window(ca.nchar, ca.count0); // everything is in window.c
 	    break;
 
 	    /*
@@ -1304,7 +1304,9 @@ middle_code:
 			   boolean dont_adjust_op_end)
   throws NotSupportedException
   {
-    final OPARG	oap = cap.oap;
+    //final OPARG	oap = cap.oap;
+    assert oap == cap.oap;
+
     ViFPOS	old_cursor;
     boolean	empty_region_error;
     final ViFPOS cursor = G.curwin.w_cursor;
@@ -2932,7 +2934,8 @@ middle_code:
       return;
     }
     
-    OPARG oap = cap.oap;
+    //OPARG oap = cap.oap;
+    assert oap == cap.oap;
     int i;
     
     oap.motion_type = MCHAR;

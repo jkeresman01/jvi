@@ -79,9 +79,9 @@ public interface ViAppView
      * When the app first opens an editor it should derive this number.
      * This number is used in jVi commands such as ":e#!number!"
      *
-     * NEEDSWORK: put this method on av
+     * Nomads probably don't have a window number.
      *
-     * @return the invariant number of the editor
+     * @return the invariant number of the editor or less than 0 for unknown
      */
     public int getWNum();
 }

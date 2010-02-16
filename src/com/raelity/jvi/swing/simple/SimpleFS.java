@@ -25,6 +25,7 @@ import com.raelity.jvi.ViBuffer;
 import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.lib.abstractFS;
+import java.io.File;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
@@ -34,7 +35,12 @@ import javax.swing.text.JTextComponent;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-abstract public class SimpleFS extends abstractFS {
+abstract public class SimpleFS extends abstractFS
+{
+    public boolean isReadOnly(ViBuffer buf) {
+        File f = buf.getFile();
+        return f != null && !f.canWrite();
+    }
 
     public String getDisplayFileName(ViAppView av)
     {

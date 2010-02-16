@@ -20,6 +20,7 @@
 package com.raelity.jvi.core;
 
 import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViManager;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViTextView;
 import java.io.File;
@@ -31,9 +32,10 @@ import java.util.prefs.Preferences;
  * <p>
  * When the associated file is not opened, only getOffset() works.
  * </p>
+ *
  * @author Ernie Rael <err at raelity.com>
  */
-public class Filemark implements ViMark {
+public class Filemark implements ViMark { // NEEDSWORK: extends File
 
     private ViMark mark;
     private File f;
@@ -54,7 +56,8 @@ public class Filemark implements ViMark {
 
     private void initStuff(ViTextView tv) {
         this.fnum = tv.getBuffer().b_fnum;
-        this.wnum = tv.getWNum();
+        this.wnum = ViManager.getViFactory()
+                .getAppView(tv.getEditorComponent()).getWNum();
         this.line = mark.getLine();
         this.col = mark.getColumn();
     }

@@ -72,14 +72,13 @@ public interface ViTextView extends ViOptionBag {
    */
   public int validateCursorPosition(int offset);
 
-  /** @return unique/invariant window number */
-  public int getWNum();
+  /** convenience method */
+  public ViAppView getAppView();
 
   /** @return the associated Buffer */
   public Buffer getBuffer();
 
   /** @return the underlying text component */
-  // NEEDSWORK: make this an Object
   public Component getEditorComponent();
 
   /** A text view is nomadic if it not attached to a main window.
@@ -292,16 +291,6 @@ public interface ViTextView extends ViOptionBag {
    * @param n the index of the window to make current
    */
   public void win_goto(int n);
-
-  /** Cycle to the indicated buffer.
-   * @param n the positive/negative number of windows to cycle.
-   */
-  public void win_cycle(int n);
-
-  /** Cycle to the indicated nomadic window.
-   * @param n the positive/negative number of windows to cycle.
-   */
-  public void win_cycle_nomad(int n);
 
   /** Handle displayable editor state changes */
   public ViStatusDisplay getStatusDisplay();

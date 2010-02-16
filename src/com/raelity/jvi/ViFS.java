@@ -85,6 +85,12 @@ public interface ViFS
      */
     public void edit( ViTextView tv, boolean force, int n );
 
+    /**
+     * Focus on this editor.
+     * @param av the editor to start working on
+     */
+    public void edit(ViAppView av);
+
 
     /**
      *  Edit the specified thing. fileThing can be a String which is a path,

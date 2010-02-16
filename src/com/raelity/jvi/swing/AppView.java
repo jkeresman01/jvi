@@ -21,12 +21,14 @@
 package com.raelity.jvi.swing;
 
 import com.raelity.jvi.ViAppView;
+import com.raelity.jvi.ViManager;
 import java.awt.Container;
 import javax.swing.text.JTextComponent;
 
 /**
  * Basic Swing AppView. This is suitable when there is a 1-1
  * and invarient relationship between Container and Text.
+ * Assumes that equals is '=='.
  *
  * @author Ernie Rael <err at raelity.com>
  */
@@ -34,6 +36,9 @@ public abstract class AppView implements ViAppView
 {
     private Container c;
     private JTextComponent e;
+    private int wnum;
+
+    private static int genWNum; // for the generation of the unique nums
 
     /** this is added as a client property to the JTextComponent
      * satisfying the requirements of {@link SwingFactory}
@@ -44,8 +49,15 @@ public abstract class AppView implements ViAppView
     {
         this.c = c;
         this.e = e;
+        wnum = ++genWNum;
+        // The assert can be used when equals is based on '=='
         assert e.getClientProperty(SwingFactory.PROP_AV) == null;
         e.putClientProperty(SwingFactory.PROP_AV, this);
+    }
+
+    public int getWNum()
+    {
+        return wnum;
     }
 
     /** Note this is not part of the ViAppView interface,
@@ -61,32 +73,9 @@ public abstract class AppView implements ViAppView
     }
 
     @Override
-    public boolean equals(Object obj)
+    public String toString()
     {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final AppView other = (AppView)obj;
-        if (this.c != other.c && (this.c == null || !this.c.equals(other.c))) {
-            return false;
-        }
-        if (this.e != other.e &&
-                (this.e == null || !this.e.equals(other.e))) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode()
-    {
-        int hash = 7;
-        hash = 41 * hash + (this.c != null ? this.c.hashCode() : 0);
-        hash = 41 * hash + (this.e != null ? this.e.hashCode() : 0);
-        return hash;
+        return ViManager.getFS().getDisplayFileName(this);
     }
 
 }

@@ -113,12 +113,12 @@ public class Edit extends CoreMethodHooks {
     return canEdit(G.curwin, G.curbuf, G.curwin.getCaretPosition());
   }
   public static boolean canEdit(final ViTextView tv, ViBuffer buf, int offset) {
-    if(buf.isGuarded(offset)) {
+    if(buf.isGuarded(offset) || !tv.isEditable()) {
       Util.vim_beep();
       SwingUtilities.invokeLater(new Runnable() {
         public void run() {
           tv.getStatusDisplay().displayErrorMessage(
-                  "Can not modify write protected area."
+                  "Can not modify write protected area or file."
                   );
         }
       });

@@ -21,6 +21,7 @@
 package com.raelity.jvi.cmd;
 
 import com.raelity.jvi.swing.AppView;
+import com.raelity.jvi.swing.SwingFactory;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 
@@ -33,6 +34,8 @@ public class PlayAppView extends AppView
     public PlayAppView(JFrame f, JEditorPane ep)
     {
         super(f, ep);
+        // for convenience, in case want to get from JFrame-->AppView
+        f.getRootPane().putClientProperty(SwingFactory.PROP_AV, this);
     }
 
     /** Note this is not part of the ViAppView interface */
@@ -48,11 +51,6 @@ public class PlayAppView extends AppView
     public boolean isNomad()
     {
         return false;
-    }
-
-    public int getWNum()
-    {
-        return -9;
     }
 
 }
