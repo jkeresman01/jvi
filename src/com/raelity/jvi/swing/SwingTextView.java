@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.core.Window;
 import com.raelity.jvi.core.Util;
 import com.raelity.jvi.core.Msg;

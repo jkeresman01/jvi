@@ -21,8 +21,8 @@
 package com.raelity.jvi.core;
 
 import com.raelity.jvi.ViAppView;
-import com.raelity.jvi.ViManager;
-import com.raelity.jvi.ViManager.AppViews;
+import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.manager.ViManager.AppViews;
 import java.util.List;
 
 /**

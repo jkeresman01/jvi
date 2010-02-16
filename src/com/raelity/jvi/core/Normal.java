@@ -26,7 +26,7 @@
  */
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.ViManager;
+import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViFeature;
 import com.raelity.jvi.ViMark;

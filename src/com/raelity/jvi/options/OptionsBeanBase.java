@@ -47,7 +47,7 @@ import java.util.prefs.Preferences;
 import com.raelity.jvi.options.ColorOption;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.Options.EditOptionsControl;
-import com.raelity.jvi.ViManager;
+import com.raelity.jvi.manager.ViManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;

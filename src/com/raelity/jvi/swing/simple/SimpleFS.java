@@ -22,7 +22,7 @@ package com.raelity.jvi.swing.simple;
 
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViBuffer;
-import com.raelity.jvi.ViManager;
+import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.lib.abstractFS;
 import java.io.File;

@@ -1,6 +1,6 @@
 package com.raelity.jvi.options;
 
-import com.raelity.jvi.ViManager;
+import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViOptionBag;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.core.ColonCommands;

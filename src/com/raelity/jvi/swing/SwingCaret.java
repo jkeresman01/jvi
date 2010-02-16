@@ -21,7 +21,7 @@ package com.raelity.jvi.swing;
 
 import com.raelity.jvi.ViCaret;
 import com.raelity.jvi.ViCaretStyle;
-import com.raelity.jvi.ViManager;
+import com.raelity.jvi.manager.ViManager;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.lang.reflect.Method;

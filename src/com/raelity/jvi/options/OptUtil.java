@@ -21,7 +21,7 @@
 package com.raelity.jvi.options;
 
 import com.raelity.jvi.core.Options;
-import com.raelity.jvi.ViManager;
+import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.core.Options.Category;
 import java.awt.Color;
 import java.beans.PropertyChangeSupport;

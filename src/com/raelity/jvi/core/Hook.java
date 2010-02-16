@@ -21,7 +21,7 @@
 package com.raelity.jvi.core;
 
 import com.raelity.jvi.ViInitialization;
-import com.raelity.jvi.ViManager;
+import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViTextView;
 import org.openide.util.lookup.ServiceProvider;
 

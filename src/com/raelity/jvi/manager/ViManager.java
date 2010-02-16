@@ -17,8 +17,17 @@
  *
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi;
+package com.raelity.jvi.manager;
 
+import com.raelity.jvi.ViAppView;
+import com.raelity.jvi.ViCaret;
+import com.raelity.jvi.ViCmdEntry;
+import com.raelity.jvi.ViFS;
+import com.raelity.jvi.ViFactory;
+import com.raelity.jvi.ViFeature;
+import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.G;

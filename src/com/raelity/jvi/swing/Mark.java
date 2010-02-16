@@ -1,7 +1,7 @@
 package com.raelity.jvi.swing;
 
 import com.raelity.jvi.ViFPOS;
-import com.raelity.jvi.ViManager;
+import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.text.TextUtil.MySegment;

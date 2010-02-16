@@ -36,7 +36,7 @@ import java.io.IOException;
 import java.util.prefs.BackingStoreException;
 
 import com.raelity.jvi.core.ColonCommands;
-import com.raelity.jvi.ViManager;
+import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.swing.OptionsPanel;
 import java.util.HashMap;
 import java.util.Map;

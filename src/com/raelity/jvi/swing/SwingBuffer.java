@@ -13,7 +13,7 @@ import com.raelity.jvi.options.BooleanOption;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.Util;
-import com.raelity.jvi.ViManager;
+import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViTextView;
 import com.raelity.text.TextUtil.MySegment;

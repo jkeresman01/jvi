@@ -21,7 +21,7 @@
 package com.raelity.jvi.swing;
 
 import com.raelity.jvi.ViAppView;
-import com.raelity.jvi.ViManager;
+import com.raelity.jvi.manager.ViManager;
 import java.awt.Container;
 import javax.swing.text.JTextComponent;
 

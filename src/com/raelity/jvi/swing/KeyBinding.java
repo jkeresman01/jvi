@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.options.BooleanOption;
 import java.awt.EventQueue;
