@@ -57,28 +57,6 @@ import org.openide.util.Lookup;
  * noted, methods in this class should only be invoked from the event dispatch
  * thread.
  * </p>
- * Here are several static methods used to inform jVi of major changes.
- * A {@link ViAppView} is the primary handle for an application editor.
- * There is one of these for each open editor.
- * If the same document is editted in two windows, then
- * there are two of these.
- * <ul>
- * <li>{@link #activateAppView}(appView)<br/>
- * The application invokes this whenever an editor becomes selected.
- * This also serves as an open.
- * </li>
- * <li>{@link #deactivateCurrentAppView}(appView)<br/>
- * Inform jVi that the currently active editor is going quiet. Primary function
- * is to take it out of input mode.
- * </li>
- * <li>{@link #closeAppView}(appView)<br/>
- * The applications invokes this method when a file is completely
- * removed from a container or should be forgotten by jVi.
- * </li>
- * <li>requestSwitch(EditorComponent)<br/>
- * This rarely needs to be invoked directly. Use {@linkplain activateAppView}.
- * </li>
- * </ul>
  * <b>NEEDSWORK:</b>
  * <ul>
  * <li>Get rid of requestSwitch. Do it automaticaly at end of

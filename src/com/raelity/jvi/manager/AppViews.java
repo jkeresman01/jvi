@@ -40,11 +40,32 @@ import java.util.Set;
  * of editors, for example activated or closed, and to query about opened
  * editors.
  *
- * jVi maintains two lists of opened editors: the order they opened and a
- * MRU (MostRecentlyUsed) list.
+ * jVi maintains three lists of opened editors: ACTIVE is the order
+ * they opened, MRU is MostRecentlyUsed list and NOMAD are editors that
+ * are not associated with a top level platform editor.
  *
  * Even when jVi is disabled these methods should be used so that new editors
  * are properly handled.
+ *
+ * Here are several static methods used to inform jVi of major changes.
+ * A {@link ViAppView} is the primary handle for an application editor.
+ * There is one of these for each open editor.
+ * If the same document is editted in two windows, then
+ * there are two of these.
+ * <ul>
+ * <li>{@link #activate}(appView)<br/>
+ * The application invokes this whenever an editor becomes selected.
+ * This also serves as an open.
+ * </li>
+ * <li>{@link #deactivateCurrent}(appView)<br/>
+ * Inform jVi that the currently active editor is going quiet. Primary function
+ * is to take it out of input mode.
+ * </li>
+ * <li>{@link #close}(appView)<br/>
+ * The applications invokes this method when a file is completely
+ * removed from a container or should be forgotten by jVi.
+ * </li>
+ * </ul>
  *
  * @author Ernie Rael <err at raelity.com>
  */
