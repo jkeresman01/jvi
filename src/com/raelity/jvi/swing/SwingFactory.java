@@ -29,6 +29,7 @@ import  static com.raelity.jvi.core.KeyDefs.*;
 import  com.raelity.jvi.*;
 import  com.raelity.jvi.ViTextView.TAGOP;
 import com.raelity.jvi.core.Options;
+import com.raelity.jvi.manager.Scheduler;
 
 import  javax.swing.Action;
 import  javax.swing.JDialog;
@@ -539,7 +540,7 @@ abstract public class SwingFactory implements ViFactory
                                 + "(" + (int)c + ") " + mod);
                     }
                     if ( keep ) {
-                        ViManager.keyStroke(target, c, mod);
+                        Scheduler.keyStroke(target, c, mod);
                     }
                 } else {
                     if  ( Options.isKeyDebug() ) {
@@ -584,7 +585,7 @@ abstract public class SwingFactory implements ViFactory
                         + ": " + String.format("%x", (int)key)
                         + "(" + ((int)key&~VIRT) + ") " + mod + " " + virt);
             }
-            ViManager.keyStroke(target, key, mod);
+            Scheduler.keyStroke(target, key, mod);
         }
 
         @Override

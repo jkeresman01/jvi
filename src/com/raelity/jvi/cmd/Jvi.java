@@ -36,6 +36,8 @@ import java.io.IOException;
 import java.util.prefs.BackingStoreException;
 
 import com.raelity.jvi.core.ColonCommands;
+import com.raelity.jvi.manager.AppViews;
+import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.swing.OptionsPanel;
 import java.util.HashMap;
@@ -139,8 +141,8 @@ public class Jvi
         editor.setCaretColor(Color.black);
 
         //((BooleanOption)Options.getOption(Options.dbgKeyStrokes)).setBoolean(true);
-        ViManager.activateAppView(new PlayAppView(f, editor), "Jvi.setupFrame");
-        ViManager.requestSwitch(editor);
+        AppViews.activate(new PlayAppView(f, editor), "Jvi.setupFrame");
+        Scheduler.requestSwitch(editor);
     }
 
 

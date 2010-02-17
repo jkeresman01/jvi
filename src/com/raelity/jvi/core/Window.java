@@ -23,6 +23,7 @@ import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.manager.Scheduler;
 import java.util.LinkedList;
 import java.util.List;
 import static com.raelity.jvi.core.Constants.*;
@@ -162,7 +163,7 @@ public abstract class Window implements ViTextView
         if (G.dbgMouse.getBoolean())
             System.err.println("CaretMark: " + lastDot + " --> " + currDot
                     + " " + w_buffer.getDisplayFileName());
-        if (!ViManager.jViBusy() && !ViManager.isMouseDown()) {
+        if (!ViManager.jViBusy() && !Scheduler.isMouseDown()) {
             // The cursor was magcally moved and jVi had nothing to
             // do with it. (probably by an IDE or some such).
             // Record the previous location so that '' works (thanks Jose).

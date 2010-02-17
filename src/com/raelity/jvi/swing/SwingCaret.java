@@ -21,7 +21,7 @@ package com.raelity.jvi.swing;
 
 import com.raelity.jvi.ViCaret;
 import com.raelity.jvi.ViCaretStyle;
-import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.manager.Scheduler;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.lang.reflect.Method;
@@ -52,7 +52,7 @@ public class SwingCaret extends DefaultCaret implements ViCaret
         addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e)
             {
-                ViManager.cursorChange(SwingCaret.this);
+                Scheduler.cursorChange(SwingCaret.this);
             }
         });
     }

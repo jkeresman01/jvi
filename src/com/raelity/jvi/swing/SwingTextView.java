@@ -34,6 +34,7 @@ import  static com.raelity.jvi.core.Constants.*;
 
 
 import com.raelity.jvi.*;
+import com.raelity.jvi.manager.Scheduler;
 import com.raelity.text.TextUtil.MySegment;
 
 import java.awt.Dimension;
@@ -175,7 +176,7 @@ public class SwingTextView extends Window
         super.shutdown();
 
         shutdownMore();
-        ViManager.detached(editorPane);
+        Scheduler.detached(editorPane);
         editorPane = null;
     }
 
@@ -236,7 +237,7 @@ public class SwingTextView extends Window
     {
         detachMore();
 
-        ViManager.detached(editorPane);
+        Scheduler.detached(editorPane);
     }
 
 

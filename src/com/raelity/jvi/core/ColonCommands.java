@@ -46,6 +46,8 @@ import java.util.concurrent.BlockingQueue;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import com.raelity.jvi.ViTextView.TAGOP;
+import com.raelity.jvi.manager.AppViews;
+import com.raelity.jvi.manager.Scheduler;
 
 import static com.raelity.jvi.core.Constants.*;
 import static com.raelity.jvi.core.ColonCommandFlags.*;
@@ -124,7 +126,7 @@ static private void colonEntryComplete( ActionEvent ev )
         Hook.setJViBusy(true);
 
         ViManager.getViFactory().commandEntryAssist(getColonCommandEntry(),false);
-        ViManager.stopCommandEntry();
+        Scheduler.stopCommandEntry();
         String commandLine = colonCommandEntry.getCommand();
         String cmd = ev.getActionCommand();
         // if not <CR> must be an escape, just ignore it
@@ -144,7 +146,7 @@ static void doColonCommand(StringBuffer range)
 {
     ViCmdEntry cmdEntry = getColonCommandEntry();
     ViManager.getViFactory().commandEntryAssist(cmdEntry, true);
-    ViManager.startCommandEntry(cmdEntry, ":", G.curwin, range);
+    Scheduler.startCommandEntry(cmdEntry, ":", G.curwin, range);
 }
 
 
@@ -2156,14 +2158,14 @@ public static ActionListener ACTION_BUFFERS = new ActionListener() {
                     "=== MRU (:n :N :e#-<digit>) ===                "
                         + "=== activation (:e#<digit> ===");
             int i = 0;
-            ViAppView cur = ViManager.relativeMruBuffer(0);
-            ViAppView prev = ViManager.getMruBuffer(1);
+            ViAppView cur = AppViews.relativeMruBuffer(0);
+            ViAppView prev = AppViews.getMruBuffer(1);
 
             List<String> l = new ArrayList<String>();
             ViFactory factory = ViManager.getViFactory();
             while(true) {
-                ViAppView o1 = ViManager.getMruBuffer(i);
-                ViAppView o2 = ViManager.getTextBuffer(i+1);
+                ViAppView o1 = AppViews.getMruBuffer(i);
+                ViAppView o2 = AppViews.getTextBuffer(i+1);
                 if(o1 == null && o2 == null) {
                     break;
                 }
@@ -2535,7 +2537,7 @@ static void registerBuiltinCommands()
 
     ColonCommands.register("jviDump", "jviDump", new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ViManager.dump(System.err);
+                AppViews.dump(System.err);
             }
             });
 

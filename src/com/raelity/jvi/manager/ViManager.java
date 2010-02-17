@@ -20,8 +20,6 @@
 package com.raelity.jvi.manager;
 
 import com.raelity.jvi.ViAppView;
-import com.raelity.jvi.ViCaret;
-import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViFactory;
 import com.raelity.jvi.ViFeature;
@@ -32,48 +30,20 @@ import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Hook;
-import com.raelity.jvi.core.KeyDefs;
-import com.raelity.jvi.core.Msg;
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.options.Option;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URLConnection;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
-import java.util.List;
-import java.util.Iterator;
-import java.util.ArrayList;
 import java.util.Set;
-import java.util.prefs.BackingStoreException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.text.Keymap;
 
 import java.awt.datatransfer.SystemFlavorMap;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URL;
 
-import com.raelity.jvi.swing.KeyBinding;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.lang.ref.WeakReference;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -152,8 +122,6 @@ public class ViManager
             return this.equals(MAC);
         }
     }
-
-    private static Component currentEditorPane;
     private static ViFactory factory;
 
     private static Keymap editModeKeymap;
@@ -182,9 +150,6 @@ public class ViManager
             isDebugAtHome = Boolean.getBoolean(DEBUG_AT_HOME);
         return isDebugAtHome;
     }
-
-    private ViManager() {}
-    private static ViManager viMan;
     /**
      * ViManager is partially initialized; this event is fired from
      * {@link #setViFactory(com.raelity.jvi.ViFactory)} after the
@@ -224,14 +189,14 @@ public class ViManager
 
     private static PropertyChangeSupport pcs
             = new PropertyChangeSupport(getViMan());
-    static ViManager getViMan() {
+
+    ViManager() {} // PRIVATE
+    private static ViManager viMan;
+    private static ViManager getViMan() {
         if(viMan == null)
             viMan = new ViManager();
         return viMan;
     }
-
-    // HACK: to workaround JDK bug dealing with focus and JWindows
-    private static ViCmdEntry activeCommandEntry;
 
     private static boolean factoryLoaded;
 
@@ -261,13 +226,23 @@ public class ViManager
         // Add the vim clipboards
 
         // Spawn to get current release info
-        new GetMotd().start();
+        Motd.get(new ActionListener() {
+            public void actionPerformed(ActionEvent e)
+            {
+                motd = (Motd)e.getSource();
+            }
+        });
 
         getViFactory().setShutdownHook(new Runnable() {
             public void run() {
                 firePropertyChange(P_SHUTDOWN, null, null);
             }
         });
+    }
+
+    public static boolean isFactoryLoaded()
+    {
+        return factoryLoaded;
     }
 
     public static ViManHook setCoreHook(Hook hook)
@@ -277,7 +252,13 @@ public class ViManager
         return new ViManHook();
     }
 
-    public static class ViManHook {
+    /*package*/ static Hook getCore()
+    {
+        return core;
+    }
+
+    public static class ViManHook
+    {
         private ViManHook(){}
 
         public void setJViBusy(boolean f) {
@@ -285,15 +266,15 @@ public class ViManager
         }
     }
 
-    static ActionListener ACTION_version = new ActionListener() {
-
+    static ActionListener ACTION_version = new ActionListener()
+    {
         public void actionPerformed(ActionEvent ev)
         {
             ViManager.motd.output();
         }
     };
-    static ActionListener ACTION_debugMotd = new ActionListener() {
-
+    static ActionListener ACTION_debugMotd = new ActionListener()
+    {
         public void actionPerformed(ActionEvent ev)
         {
             ViManager.debugMotd();
@@ -339,29 +320,6 @@ public class ViManager
         return Integer.toHexString(System.identityHashCode(o));
     }
 
-    private static boolean jdk15;
-    private static boolean jdk16;
-
-    static
-    {
-        try {
-            jdk15 = true;
-            jdk16 = false;
-            Class.forName("java.util.ArrayDeque");
-            jdk15 = false;
-            jdk16 = true;
-        } catch (ClassNotFoundException ex) { }
-    }
-
-    public static boolean isJdk15()
-    {
-        return jdk15;
-    }
-    public static boolean isJdk16()
-    {
-        return jdk16;
-    }
-
     // public static final DataFlavor VimClipboard
     //         = addVimClipboard(VIM_CLIPBOARD);
     public static final DataFlavor VimClipboard2
@@ -392,6 +350,12 @@ public class ViManager
     public static boolean jViBusy()
     {
         return jViBusy != 0 || jViSettling;
+    }
+
+    static void verifyNotBusy()
+    {
+        if (jViBusy != 0)
+            ViManager.dumpStack();
     }
 
     static void setJViBusy(boolean f)
@@ -489,55 +453,6 @@ public class ViManager
         return factory.createOutputStream(tv, type, info, priority);
     }
 
-    /**
-     * Pass control to indicated ViCmdEntry widget. If there are
-     * readahead or typeahead characters available, then collect
-     * them up to a &lt;CR&gt; and append them to initialString.
-     * If there was a CR, then signal the widget to immeadiately
-     * fire its actionPerformed without displaying any UI element.
-     */
-    public static void startCommandEntry(
-            ViCmdEntry commandEntry,
-            String mode,
-            ViTextView tv,
-            StringBuffer initialString)
-    {
-        core.clearMsg();
-        if(initialString == null) {
-            initialString = new StringBuffer();
-        }
-        if(activeCommandEntry != null) {
-            throw new RuntimeException("activeCommandEntry not null");
-        }
-
-        activeCommandEntry = commandEntry;
-        boolean passThru;
-        if (initialString.indexOf("\n") >= 0) {
-            passThru = true;
-        } else {
-            passThru = core.getRecordedLine(initialString);
-        }
-        try {
-            commandEntry.activate(mode, tv, new String(initialString), passThru);
-        } catch(Throwable ex) {
-            // NOTE: do not set the flag until the activate completes.
-            // There have been cases of NPE.
-            // Particularly in relationship to nomands.
-            //
-            // If modal, and everything went well, then activeCommandEntry is
-            // already NULL. But not modal, then it isn't null.
-            core.vim_beep();
-            LOG.log(Level.SEVERE, null, ex);
-            activeCommandEntry = null;
-            core.resetCommand();
-        }
-    }
-
-    public static void stopCommandEntry()
-    {
-        activeCommandEntry = null;
-    }
-
     /** update visible textviews */
     public static void updateHighlightSearchState()
     {
@@ -561,580 +476,9 @@ public class ViManager
         return platformFindMatch;
     }
 
-    //////////////////////////////////////////////////////////////////////
-    //
-    // ACTIVATION, MRU and NOMAD lists
-    //
-    // jVi maintains two lists of opened files: the order they opened, and a
-    // MostRecentlyUsed list.
-    //
-    // Even if jVi is disabled, these methods can be used. They only maintain
-    // the lists.
-    //
-
-    private static class BuffersList {
-        List<WeakReference> l = new ArrayList();
-    }
-    private static List<ViAppView> textBuffers = new ArrayList<ViAppView>();
-    private static List<ViAppView> textMRU = new ArrayList<ViAppView>();
-    // note that it is ordered
-    // NEEDSWORK:  fix this up so don't need to create WeakAppView to query
-    private static Set<WeakAppView> textNomads = new LinkedHashSet<WeakAppView>();
-    private static ViAppView currentlyActiveAppView;
-    private static ViAppView keepMru;
-
-    public enum AppViews { ACTIVE, MRU, NOMAD }
-
-    /**
-     * Return a two element array of objects.
-     * First element is list of AppView, if showingOnly is true
-     * then only a list of user visible AppView.
-     * Second element is index of currently active top component, or -1.
-     * list of editors ordered as from getTextBuffer.
-     */
-    public static  Object[] getAppViews(AppViews which,
-                                               boolean showingOnly)
+    public static void exitInputMode() // NEEDSWORK: take editor as arg
     {
-        Iterator<ViAppView> iter = null;
-        switch(which) {
-            case ACTIVE:
-                iter = getTextBufferIterator();
-                break;
-            case MRU:
-                iter = getMruBufferIterator();
-            case NOMAD:
-                iter = getNomadBufferIterator();
-        }
-
-        List<ViAppView> l = new ArrayList();
-        int idx = -1;
-        while(iter.hasNext()) {
-            //TopComponent tc = ((NbAppView) iter.next()).getTopComponent();
-            ViAppView av = iter.next();
-            if(!showingOnly || av.getEditor().isShowing()) {
-                l.add(av);
-                //
-                // NEEDSWORK: regular handling use av.equals ??
-                //              NOMAD HANDLING use editor as follows
-                if(av.getEditor().equals(currentEditorPane))
-                    idx = l.size() - 1; // index of the current/active window
-
-                //Set<JEditorPane> s = (Set<JEditorPane>)
-                //        tc.getClientProperty(Module.PROP_JEP);
-                //if(s != null) {
-                //    for (JEditorPane ep : s) {
-                //        if(ep == getEditorComponent())
-                //            idx = l.size() - 1; // the current/active window
-                //    }
-                //}
-            }
-        }
-
-        Object[] o = new Object[] {l, idx};
-        return o;
-    }
-
-    // NEEDSWORK: textMRU: use a weak reference to appHandle?
-    static class WeakAppView extends WeakReference<ViAppView> {
-
-        public WeakAppView(ViAppView referent) {
-            super(referent);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if(!(obj instanceof WeakAppView))
-                return false;
-            ViAppView o = get();
-            ViAppView other = ((WeakAppView)obj).get();
-            return o == null ? o == obj : o.equals(other);
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            Object o = get();
-            if(o != null)
-                hash = o.hashCode();
-            return hash;
-        }
-    }
-
-    private static void adjustMru(ViAppView av)
-    {
-        if(!av.isNomad()) {
-            // this used to be the default case
-            textMRU.remove(av);
-            textMRU.add(0,av);
-            if( ! textBuffers.contains(av)) {
-                textBuffers.add(av);
-            }
-            // Following for the bizare case where it was ...?
-            textNomads.remove(new WeakAppView(av));
-        } else {
-            // insure nomads not in these lists
-            textMRU.remove(av);
-            textBuffers.remove(av);
-            // and make sure it is in the nomad list
-            // Don't need to check contained, since working with a Set.
-            textNomads.add(new WeakAppView(av));
-        }
-    }
-
-    /**
-     * Quietly add the app view to the END of the right lists. Typically this
-     * will be a nomad or perhaps something with editors in it that are
-     * not considered an editor (for example a diff window).
-     *
-     * @param av
-     * @param tag
-     */
-    public static void registerAppView(ViAppView av, String tag)
-    {
-        boolean nothingToDo = false;
-        if(av.isNomad()) {
-            if(textNomads.contains(new WeakAppView(av)))
-                nothingToDo = true;
-        } else {
-            if(textMRU.contains(av))
-                nothingToDo = true;
-        }
-        if(nothingToDo)
-            return;
-
-        Component ed = av.getEditor();
-        if(factory != null && G.dbgEditorActivation.getBoolean()) {
-            System.err.println("Activation: ViManager.registerAppView: "
-                    + tag + " " + cid(ed) + " " + cid(av)
-                    + " " + factory.getFS().getDisplayFileName(av)
-                    );
-        }
-        // as far as list maintenance goes, the only difference is that
-        // the av is added to the end of the MRU
-        if(!av.isNomad()) {
-            if( ! textMRU.contains(av))
-                textMRU.add(av);
-            if( ! textBuffers.contains(av))
-                textBuffers.add(av);
-            // Following for the bizare case where it was ...?
-            textNomads.remove(new WeakAppView(av));
-        } else {
-            // insure nomads not in these lists
-            textMRU.remove(av);
-            textBuffers.remove(av);
-            // and make sure it is in the nomad list
-            // Don't need to check contained, since working with a Set.
-            textNomads.add(new WeakAppView(av));
-        }
-    }
-
-    /**
-     * Fetch the text buffer indicated by the argument. The argument is
-     * positive, fetch the Nth buffer, numbered 1 to N, according to
-     * the order they were activated.
-     * See {@link #getMruBuffer}.
-     * @return the buffer or null if i does not specify an active buffer.
-     */
-    public static ViAppView getTextBuffer(int i)
-    {
-        i = i - 1; // put in range 0 - (N-1)
-        if(i < 0 || i >= textBuffers.size())
-            return null;
-
-        return textBuffers.get(i);
-    }
-
-    public static Iterator<ViAppView> getTextBufferIterator()
-    {
-        return textBuffers.iterator();
-    }
-
-    public static Iterator<ViAppView> getMruBufferIterator()
-    {
-        return textMRU.iterator();
-    }
-
-    /**
-     * Fetch the Nth buffer, 0 to N-1, from the Mru list.
-     * @return the buffer, else null if i is out of bounds.
-     */
-    public static ViAppView getMruBuffer(int i)
-    {
-        if(i < 0 || i >= textMRU.size())
-            return null;
-        return textMRU.get(i);
-    }
-
-    public static Iterator<ViAppView> getNomadBufferIterator()
-    {
-        //return textNomads.iterator();
-        // While this is iterated, null elements are tossed out.
-        // remove is not implemented.
-        final Iterator<WeakAppView> iter = textNomads.iterator();
-        return new Iterator<ViAppView>() {
-            ViAppView nextAppView;
-
-            // Find the next non-null object, removing nulls
-            private void findNextAppView() {
-                if(nextAppView != null)
-                    return;
-                WeakAppView wo;
-                while(iter.hasNext()) {
-                    wo = iter.next();
-                    nextAppView = wo.get();
-                    if(nextAppView != null)
-                        break;
-                    iter.remove();
-                }
-            }
-
-            public boolean hasNext() {
-                if(nextAppView != null)
-                    return true;
-                findNextAppView();
-                return nextAppView != null;
-            }
-
-            public ViAppView next() {
-                findNextAppView();
-                if(nextAppView == null)
-                    throw new NoSuchElementException();
-                ViAppView av = nextAppView;
-                nextAppView = null;
-                return av;
-            }
-
-            public void remove() {
-                // iter.remove() here probably works fine
-                throw new UnsupportedOperationException();
-            }
-        };
-    }
-
-    /**
-     * Return the Ith next/previous AppView relative to the argument
-     * AppView. If i &lt 0 then look in previously used direction.
-     */
-    private static ViAppView relativeMruBuffer(ViAppView av, int i)
-    {
-        if(factory != null && G.dbgEditorActivation.getBoolean()) {
-            System.err.println("Activation: ViManager.relativeMruBuffer: "
-                    + factory.getFS().getDisplayFileName(av));
-        }
-        if(textMRU.size() == 0)
-            return null;
-        int idx = textMRU.indexOf(av);
-        if(idx < 0)
-            return null;
-        // the most recent is at index 0, so bigger numbers are backwwards in time
-        idx += -i;
-        if(idx < 0)
-            idx = 0;
-        else if(idx >= textMRU.size())
-            idx = textMRU.size() -1;
-        return textMRU.get(idx);
-    }
-
-    public static ViAppView relativeMruBuffer(int i)
-    {
-        return relativeMruBuffer(currentlyActiveAppView, i);
-    }
-  
-    /**
-     * Request that the next activation does not re-order the mru list if the
-     * activated object is the argment.
-     */
-    public static void keepMruAfterActivation(ViAppView av)
-    {
-        if(!textBuffers.contains(av)) {
-            return; // can't ignore if its not in the list
-        }
-        keepMru = av;
-    }
-
-    /**
-     * The application invokes this whenever a file becomes selected
-     * in the specified container. This also serves as an open.
-     * @param appView AppView that is getting focus for editing.
-     *               Editor may be null, may be a nomad.
-     * @param tag String used in debug messages.
-     */
-    public static void activateAppView(ViAppView av, String tag)
-    {
-        Component ed = av.getEditor();
-        if(factory != null && G.dbgEditorActivation.getBoolean()) {
-            System.err.println("Activation: ViManager.activateAppView: "
-                    + tag + " " + cid(ed) + " " + cid(av)
-                    + " " + factory.getFS().getDisplayFileName(av)
-                    );
-        }
-        if(ed != null && factoryLoaded)
-            factory.setupCaret(ed);
-
-        if(G.curwin != null)
-            G.curwin.getStatusDisplay().refresh();
-
-        ViAppView keep = keepMru;
-        keepMru = null;
-        currentlyActiveAppView = av;
-        if(textBuffers.contains(keep) && av.equals(keep)) {
-            return; // return without adjusting mru
-        }
-
-        adjustMru(av);
-    }
-
-    /** The specified appView is loosing focus.
-     * The associated jVi state is put into normal mode.
-     * @param av appView loosing focus.
-     */
-    public static void deactivateCurrentAppView(ViAppView av)
-    {
-        if(factory != null && G.dbgEditorActivation.getBoolean()) {
-            System.err.println(
-                    "Activation: ViManager.deactivateCurentAppEditor: "
-                    + " " + cid(av)
-                    + factory.getFS().getDisplayFileName(av));
-        }
-        // For several reasons, eg. don't want to hold begin/endUndo
-        if(factoryLoaded) {
-            exitInputMode();
-            G.curwin.getStatusDisplay().clearDisplay();
-        }
-
-        currentlyActiveAppView = null;
-    }
-
-    public static boolean isKnownAppView(ViAppView av)
-    {
-        return textBuffers.contains(av);
-    }
-
-    /**
-     * The applications invokes this method when a file is completely
-     * removed from a container or should be forgotten by jVi.
-     */
-    public static void closeAppView(ViAppView av)
-    {
-        Component ed = av.getEditor();
-        if(factory != null && G.dbgEditorActivation.getBoolean()) {
-            String fname = factory.getFS().getDisplayFileName(av);
-            System.err.println("Activation: ViManager.closeAppView: "
-                    + (ed == null ? "(no shutdown) " : "") + fname);
-        }
-
-        ViTextView tv = getViFactory().getTextView(ed);
-        if(tv != null) {
-            firePropertyChange(P_CLOSE_WIN, tv, null);
-            if(tv.getBuffer().singleShare())
-                firePropertyChange(P_CLOSE_BUF, tv.getBuffer(), null);
-        }
-
-        assert(factoryLoaded);
-        if(factoryLoaded && ed != null) {
-            factory.shutdown(ed);
-        }
-
-        if(av.equals(currentlyActiveAppView))
-            currentlyActiveAppView = null;
-        textMRU.remove(av);
-        textBuffers.remove(av);
-        textNomads.remove(new WeakAppView(av));
-    }
-
-    //
-    // END of OpenEditors list handling
-    //
-
-    /**
-     * A key was typed. Handle the event.
-     * <br>NEEDSWORK: catch all exceptions comming out of here?
-     */
-    static public void keyStroke(Component target, char key, int modifier)
-    {
-        if(jViBusy != 0) {
-            ViManager.dumpStack();
-        }
-        try {
-            setJViBusy(true);
-
-            switchTo(target);
-            if(rerouteChar(key, modifier)) {
-                return;
-            }
-            factory.finishTagPush(G.curwin); // NEEDSWORK: cleanup
-            core.gotc(key, modifier);
-
-            if(G.curwin != null)
-                G.curwin.getStatusDisplay().refresh();
-        } finally {
-            setJViBusy(false);
-        }
-    }
-
-    /** If chars came in between the time a dialog was initiated and
-     * the time the dialog starts taking the characters, we feed the
-     * chars to the dialog.
-     * <p>Special characters are discarded.
-     * </p>
-     */
-    static boolean rerouteChar(char c, int modifiers)
-    {
-        if(activeCommandEntry == null) {
-            return false;
-        }
-        if((c & 0xF000) != KeyDefs.VIRT
-                && modifiers == 0) {
-            if(c >= 0x20 && c != 0x7f) {
-                if(Options.isKeyDebug()) {
-                    System.err.println("rerouteChar");
-                }
-                activeCommandEntry.append(c);
-            }
-        }
-        // System.err.println("rerouteChar " + (char)c);
-        return true;
-    }
-
-    /** requestSwitch can be used from platform code for situation where an
-     * editor is activated. It allows things to be initialized,
-     * with some visual implications, before a key is entered.
-     * It should typically only be used after {@linkplain #activateAppView}.
-     */
-    public static void requestSwitch(Component ed)
-    {
-        switchTo(ed);
-    }
-
-    private static boolean started = false;
-    static void switchTo(Component editor)
-    {
-        if(editor == currentEditorPane) {
-            return;
-        }
-        if( ! started) {
-            started = true;
-            startup();
-        }
-        motd.outputOnce();
-
-        exitInputMode(); // if switching, make sure prev out of input mode
-        draggingBlockMode = false;
-
-        ViTextView currentTv = null;
-        if(currentEditorPane != null) {
-            currentTv = mayCreateTextView(currentEditorPane);
-            firePropertyChange(P_SWITCH_FROM_WIN, currentTv, null);
-        }
-
-        boolean newTextView = factory.getTextView(editor) == null;
-        ViTextView textView = mayCreateTextView(editor);
-        Buffer buf = textView.getBuffer();
-        factory.setupCaret(editor); // make sure has the right caret
-        textView.attach();
-        if(G.dbgEditorActivation.getBoolean()) {
-            String newStr = newTextView ? "NEW: " : "";
-            System.err.println("Activation: ViManager.SWITCHTO: " + newStr
-                    + cid(editor) + " " + buf.getDisplayFileName());
-        }
-
-        if(currentEditorPane != null) {
-            core.abortVisualMode();
-            // MOVED ABOVE: currentTv = mayCreateTextView(currentEditorPane);
-            // Freeze and/or detach listeners from previous active view
-            currentTv.detach();
-        }
-
-        currentEditorPane = editor;
-        core.switchTo(textView, buf);
-        core.resetCommand(); // Means something first time window switched to
-        buf.activateOptions(textView);
-        textView.activateOptions(textView);
-        setHasSelection(); // a HACK
-        if(newTextView) {
-            firePropertyChange(P_OPEN_WIN, currentTv, textView);
-            editor.addMouseListener(mouseListener);
-            editor.addMouseMotionListener(mouseMotionListener);
-        }
-        if(textView.getBuffer().singleShare())
-            firePropertyChange(P_OPEN_BUF,
-                    currentTv == null ? null : currentTv.getBuffer(),
-                    textView.getBuffer());
-        firePropertyChange(P_SWITCH_TO_WIN, currentTv, textView);
-        Msg.smsg(getFS().getDisplayFileViewInfo(textView));
-    }
-
-    public static ViTextView getCurrentTextView()
-    {
-        return factory.getTextView(currentEditorPane);
-    }
-
-    private static boolean inStartup;
-    /** invoked once when vi is first used */
-    private static void startup()
-    {
-        setupStartupList();
-        inStartup = true;
-        Iterator iter = startupList.iterator();
-        while(iter.hasNext()) {
-            ((ActionListener)iter.next()).actionPerformed(null);
-        }
-        firePropertyChange(P_LATE_INIT, null, null);
-        inStartup = false;
-        startupList = null;
-    }
-
-    static List<ActionListener> startupList;
-    static void setupStartupList()
-    {
-        if(startupList == null) {
-            startupList = new ArrayList<ActionListener>();
-        }
-    }
-
-    /**
-     * Add listener to invoke when editor is starting up.
-     * A null argument can be used to test if startup has
-     * already occured.
-     * @return true if listener add, otherwise false indicates
-     * that startup has already occured.
-     */
-    public static boolean addStartupListener(ActionListener l)
-    {
-        if(started) {
-            return false;
-        }
-        if(l != null) {
-            setupStartupList();
-            startupList.add(l);
-        }
-        return true;
-    }
-
-    public static void removeStartupListener(ActionListener l)
-    {
-        if(inStartup) {
-            return;
-        }
-        startupList.remove(l);
-    }
-
-    /**
-     * The arg Component is detached from its text view,
-     * forget about it.
-     */
-    public static void detached(Component ed)
-    {
-        if(currentEditorPane == ed) {
-            if(G.dbgEditorActivation.getBoolean()) {
-                System.err.println("Activation: ViManager.detached " + cid(ed));
-            }
-            currentEditorPane = null;
-        }
-    }
-
-    public static void exitInputMode() {
-        if(currentEditorPane != null) {
+        if(Scheduler.getCurrentEditor() != null) {
             core.resetCommand();
         }
     }
@@ -1148,218 +492,6 @@ public class ViManager
             return;
         }
         core.clearMsg();
-    }
-
-    //////////////////////////////////////////////////////////////////////
-    //
-    // Mouse interactions
-    //
-
-    private static boolean draggingBlockMode;
-    private static boolean mouseDown;
-    private static boolean hasSelection;
-
-    public static boolean isMouseDown()
-    {
-        return mouseDown;
-    }
-
-    private static void setHasSelection()
-    {
-        ViTextView tv = getCurrentTextView();
-        if(tv != null)
-            hasSelection = tv.hasSelection();
-    }
-
-    public static void cursorChange(ViCaret caret)
-    {
-        if(G.curwin == null)
-            return;
-
-        boolean nowSelection = caret.getDot() != caret.getMark();
-        if(hasSelection == nowSelection)
-            return;
-        core.uiCursorAndModeAdjust();
-        hasSelection = nowSelection;
-    }
-
-    private static MouseListener mouseListener = new MouseListener() {
-
-        public void mouseClicked(MouseEvent e)
-        {
-            mouseClick(e);
-        }
-
-        public void mousePressed(MouseEvent e)
-        {
-            mousePress(e);
-        }
-
-        public void mouseReleased(MouseEvent e)
-        {
-            mouseRelease(e);
-        }
-
-        public void mouseEntered(MouseEvent e) { }
-
-        public void mouseExited(MouseEvent e) { }
-    };
-
-    private static MouseMotionListener mouseMotionListener
-            = new MouseMotionListener()
-    {
-
-        public void mouseDragged(MouseEvent e)
-        {
-            mouseDrag(e);
-        }
-
-        public void mouseMoved(MouseEvent e) { }
-    };
-
-    /**
-     * A mouse press; switch to the activated editor.
-     */
-    private static void mousePress(MouseEvent mev)
-    {
-        try {
-            setJViBusy(true);
-
-            int mask = MouseEvent.BUTTON1_DOWN_MASK
-                    | MouseEvent.BUTTON2_DOWN_MASK
-                    | MouseEvent.BUTTON3_DOWN_MASK;
-
-            if ((mev.getModifiersEx() & mask) != 0)
-                mouseDown = true;
-
-            if(Options.getOption(Options.dbgMouse).getBoolean()) {
-                System.err.println("mousePress: " + (mouseDown ? "down " : "up ")
-                        + MouseEvent.getModifiersExText(mev.getModifiersEx()));
-                //System.err.println(mev.getMouseModifiersText(
-                //                      mev.getModifiers()));
-            }
-
-            core.flush_buffers(true);
-            exitInputMode();
-            if(currentEditorPane != null)
-                core.abortVisualMode();
-
-            Component editorPane = mev.getComponent();
-
-            ViTextView tv = factory.getTextView(editorPane);
-            if(tv == null)
-                return;
-
-            switchTo(editorPane);
-
-        } finally {
-            setJViBusy(false);
-        }
-
-    }
-
-    /**
-     * A mouse click.
-     * Pass the click on to the window and give it
-     * a chance to adjust the position and whatever.
-     *
-     * NOTE: isMouseDown is false in swing when this method invoked.
-     */
-    public static void mouseClick(MouseEvent mev)
-    {
-        if(mev.getComponent() != currentEditorPane)
-            return;
-
-        try {
-            setJViBusy(true);
-
-            ViTextView tv = factory.getTextView(currentEditorPane);
-            int pos = tv.getCaretPosition();
-            int newPos = tv.validateCursorPosition(pos);
-            if(pos != newPos)
-                tv.setCaretPosition(newPos);
-
-            if(Options.getOption(Options.dbgMouse).getBoolean()) {
-                System.err.println("mouseClick(" + pos + ") "
-                        + MouseEvent.getModifiersExText(mev.getModifiersEx()));
-                //System.err.println(mev.getMouseModifiersText(
-                //                      mev.getModifiers()));
-            }
-
-            return;
-        } finally {
-            setJViBusy(false);
-        }
-    }
-
-    public static void mouseRelease(MouseEvent mev)
-    {
-        try {
-            setJViBusy(true);
-
-            int mask = MouseEvent.BUTTON1_DOWN_MASK
-                    | MouseEvent.BUTTON2_DOWN_MASK
-                    | MouseEvent.BUTTON3_DOWN_MASK;
-
-            if ((mev.getModifiersEx() & mask) == 0)
-                mouseDown = false;
-
-            /*if(draggingBlockMode
-                && (mev.getModifiersEx() & mev.BUTTON1_DOWN_MASK) == 0) {
-                draggingBlockMode = false;
-                System.err.println("END_DRAG");
-            }*/
-
-            if(Options.getOption(Options.dbgMouse).getBoolean()) {
-                System.err.println("mouseRelease: "
-                        + MouseEvent.getModifiersExText(mev.getModifiersEx()));
-                //System.err.println(mev.getMouseModifiersText(
-                //                      mev.getModifiers()));
-            }
-        } finally {
-            setJViBusy(false);
-        }
-    }
-
-
-            /*int lookFor = mev.ALT_DOWN_MASK | mev.BUTTON1_DOWN_MASK;
-            int mods = mev.getModifiersEx();
-            if((mev.getModifiersEx() & lookFor) == lookFor) {
-                draggingBlockMode = true;
-                System.err.println("START_DRAG");
-            }*/
-    public static void mouseDrag(MouseEvent mev)
-    {
-        if(mev.getComponent() != currentEditorPane)
-            return;
-
-        try {
-            setJViBusy(true);
-
-            //
-            // Don't automatically go into visual mode on a drag,
-            // vim does "SELECT" mode.
-            // But when in select mode would like to extend selection on arrow keys,
-            // which is also like vim.
-            //
-            // if(pos != G.curwin.getCaretPosition() && !G.VIsual_active) {
-            //   G.VIsual_mode ='v';
-            //   G.VIsual_active = true;
-            //   G.VIsual = (FPOS) G.curwin.getWCursor().copy();
-            //   Misc.showmode();
-            // }
-
-            if(Options.getOption(Options.dbgMouse).getBoolean()) {
-                System.err.println("mouseDrag "
-                        + MouseEvent.getModifiersExText(mev.getModifiersEx()));
-                //System.err.println(mev.getMouseModifiersText(mev.getModifiers()));
-            }
-
-            return;
-
-        } finally {
-            setJViBusy(false);
-        }
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -1408,472 +540,20 @@ public class ViManager
         return factory.xlateKeymapAction(act);
     }
   
-    // ":jviDump"
-    static public void dump(PrintStream ps)
+    private static Motd motd = new Motd();
+
+    static void motdOutputOnce()
     {
-        ps.println("-----------------------------------");
-        ps.println("currentEditorPane = "
-                + (G.curwin == null
-                    ? "null" : G.curwin.getBuffer().getDisplayFileName()));
-
-        ps.println("factory = " + factory );
-
-        ps.println("textBuffers: " + textBuffers.size());
-        for (ViAppView av : textBuffers) {
-            ps.println("\t" + factory.getFS().getDisplayFileName(av)
-                    + ", " + av.getClass().getSimpleName());
-        }
-        ps.println("textMRU: " + textMRU.size());
-        for (ViAppView av : textMRU) {
-            ps.println("\t" + factory.getFS().getDisplayFileName(av)
-                    + ", " + av.getClass().getSimpleName());
-        }
-        ps.println("currentlyActive: " + (currentlyActiveAppView == null ? "none"
-                : "" + factory.getFS().getDisplayFileName(currentlyActiveAppView)
-                + ", " + currentlyActiveAppView.getClass().getSimpleName()));
-        ps.println("keepMru: " + (keepMru == null ? "none"
-                : "" + factory.getFS().getDisplayFileName(keepMru)
-                + ", " + keepMru.getClass().getSimpleName()));
-
-        Set<ViTextView> tvSet = factory.getViTextViewSet();
-        ps.println("TextViewSet: " + tvSet.size());
-        for (ViTextView tv : tvSet) {
-            ps.println("\t" + tv.getBuffer().getDisplayFileName());
-        }
-
-        Set<Buffer> bufSet = factory.getBufferSet();
-        ps.println("BufferSet: " + bufSet.size());
-        for (Buffer buf : bufSet) {
-            if(buf == null)
-                ps.println("null-buf");
-            else
-                ps.println("\t" + factory.getFS().getDisplayFileName(buf)
-                           + ", share: " + buf.getShare());
-        }
-
-        ps.println("textNomads: " + textNomads.size());
-        Iterator<ViAppView> iter = getNomadBufferIterator();
-        while(iter.hasNext()) {
-            ViAppView av = iter.next();
-            ps.println("\t" + factory.getFS().getDisplayFileName(av)
-                    + ", " + av.getClass().getSimpleName());
-        }
-    }
-
-    /** version is of the form #.#.# or #.#.#.[x|alpha|beta|rc]#,
-    * examples 0.9.1, 0.9.1.beta1
-    * also, 0.9.1.beta1.3 for tweaking between exposed releases
-    */
-    public static final class jViVersion implements Comparable<jViVersion>
-    {
-        // in order
-        public static final String X = "x";
-        public static final String ALPHA = "alpha";
-        public static final String BETA = "beta";
-        public static final String RC = "rc";
-        // following is map in order of suspected quality, these map to values
-        // 0, 1, 2, 3
-        // a release has none of these tags and compares greater than any of
-        // them since it is set to value qualityMap.length, value == 4
-        String[] qualityMap = new String[] { X, ALPHA, BETA, RC };
-
-        // Each component of the version is an element of the array.
-        // major.minor.micro
-        // major.minor.micro.<quality>which
-        // If no a|alpha.... then this is the
-        private int[] version = new int[6];
-
-        private boolean valid;
-
-        public jViVersion(String s)
-        {
-            String rev[] = s.split("\\.");
-            if(rev.length < 3 || rev.length > 5) {
-                init(0, 0, 0, 0, 0);
-                return;
-            }
-            for(int i = 0; i < 3; i++)  {
-                try {
-                    version[i] = Integer.parseInt(rev[i]);
-                } catch (NumberFormatException ex) {
-                    LOG.log(Level.SEVERE, null, ex);
-                    init(0, 0, 0, 0, 0);
-                    return;
-                }
-            }
-            valid = true;
-            if(rev.length == 3) {
-                // A release version, no quality tag or tweak,
-                // it is "better" than those
-                version[3] = qualityMap.length;
-            } else {
-                // so this is something between releases
-                // version[0:2] has 1.2.3 stored in it
-                // rev[3] has string like beta3, rev[4] may have a tweak; beta3.7
-                // into rev[0:2] put strings for beta,3,7
-                Pattern p = Pattern.compile("(x|alpha|beta|rc)(\\d+)");
-                Matcher m = p.matcher(rev[3]);
-                // Note, if doesn't match, then version number looks like 1.2.3.x0
-                // since version[3:5] left at zero
-                if(m.matches()) {
-                    String q = m.group(1);
-                    for(int i = 0; i < qualityMap.length; i++) {
-                        if(q.equals(qualityMap[i])) {
-                            rev[0] = "" + i;
-                            break;
-                        }
-                    }
-                    rev[1] = m.group(2);
-                    // if there's a tweak on beta1, then copy it, else set to zero
-                    rev[2] = rev.length == 5 ? rev[4] : "0";
-                    try {
-                        for(int i = 0; i <= 2; i++)
-                            version[i+3] = Integer.parseInt(rev[i]);
-                    } catch (NumberFormatException ex) {
-                        LOG.log(Level.SEVERE, null, ex);
-                    }
-                }
-            }
-            //System.err.println("input: " + s + ", version: " + this);
-        }
-
-        private void init(int major, int minor, int micro, int qTag, int qVer)
-        {
-            version[0] = major;
-            version[1] = minor;
-            version[2] = micro;
-            version[3] = qTag;
-            version[4] = qVer;
-        }
-
-        public boolean isValid()
-        {
-            return valid;
-        }
-
-        public boolean isRelease()
-        {
-            return version[3] == qualityMap.length;
-        }
-
-        public boolean isDevelopment()
-        {
-            // development releases are x, alpha or any tweaks
-            // beta and rc are not (unless tweaked)
-            int qTag = version[3];
-            return qTag == 0 || qTag == 1 || getTweak() != 0;
-        }
-
-        @Override
-        public String toString()
-        {
-            String s =   "" + version[0]
-                    + "." + version[1]
-                    + "." + version[2];
-            if(version[3] != qualityMap.length)
-                s += "." + qualityMap[version[3]] + version[4];
-            if(version[5] != 0)
-                s += "." + version[5];
-            return s;
-        }
-
-        public int getMajor()
-        {
-            return version[0];
-        }
-
-        public int getMinor()
-        {
-            return version[1];
-        }
-
-        public int getMicro()
-        {
-            return version[2];
-        }
-
-        public int getTweak()
-        {
-            return version[5];
-        }
-
-        public String getTag()
-        {
-            if(isRelease())
-                return "";
-            return qualityMap[version[3]] + version[4]
-                    + (getTweak() == 0 ? "" : getTweak());
-        }
-
-        public int compareTo(ViManager.jViVersion v2)
-        {
-            for(int i = 0; i < version.length; i++) {
-                if(version[i] != v2.version[i])
-                    return version[i] - v2.version[i];
-            }
-            return 0;
-        }
-    }
-  
-    static Motd motd = new Motd();
-
-    /**
-     * Parse and output the jVi motd data.
-     * The fields are:
-     * <br/>    motd-version: version-number
-     * <br/>    jVi-release: release-number
-     * <br/>    jVi-beta: release-number
-     * <br/>    jVi-download-target: where to download new jvi stuff
-     * <br/>    motd-link: link-with-no-spaces
-     * <br/>    display text for link
-     * <br/>    &lt;EOT&gt;
-     * <br/>    motd-message:
-     *          The message, followed by a line starting with &lt;EOT&gt;
-     * <p/>
-     * Note:    there can be any number of motd-link and motd-message and
-     *          they are output in the order encounter
-     *
-     */
-    static class Motd
-    {
-        private interface  OutputHandler {
-            public void output(ViOutputStream vios);
-        }
-        private class OutputString implements OutputHandler {
-            String msg;
-
-            public OutputString(String msg) {
-                this.msg = msg;
-            }
-
-            public void output(ViOutputStream vios) {
-                vios.println(msg);
-            }
-
-            @Override
-            public String toString() {
-                return msg;
-            }
-        }
-        private class OutputLink implements OutputHandler {
-            String link, text;
-
-            public OutputLink(String link, String text) {
-                this.link = link;
-                this.text = text;
-            }
-
-            public void output(ViOutputStream vios) {
-                vios.printlnLink(link, text);
-            }
-
-            @Override
-            public String toString() {
-                return link + " : " + text;
-            }
-        }
-        private jViVersion latestRelease;
-        private jViVersion latestBeta;
-        private String motdVersion;
-        private String downloadTarget;
-
-        private int messageNumber;
-        private String message;
-        private boolean valid;
-        private boolean outputNetworkInfo;
-        private boolean outputBasicInfo;
-        // following could be a list of pairs of link:text
-        List<OutputHandler> outputList = new ArrayList<OutputHandler>(5);
-
-        Motd()
-        {
-            // not valid
-        }
-
-        boolean getValid()
-        {
-            return valid;
-        }
-
-        Motd(String s)
-        {
-            //String lines[] = motd.split("\n");
-            Pattern p;
-            Matcher m;
-
-            p = Pattern.compile("^motd-version:\\s*(\\S+)", Pattern.MULTILINE);
-            m = p.matcher(s);
-            if(m.find()) {
-                motdVersion = m.group(1);
-            }
-
-            p = Pattern.compile("^jVi-release:\\s*(\\S+)", Pattern.MULTILINE);
-            m = p.matcher(s);
-            if(m.find()) {
-                latestRelease = new jViVersion(m.group(1));
-            }
-
-            p = Pattern.compile("^jVi-beta:\\s*(\\S+)", Pattern.MULTILINE);
-            m = p.matcher(s);
-            if(m.find()) {
-                latestBeta = new jViVersion(m.group(1));
-            }
-
-            p = Pattern.compile("^jVi-download-target:\\s*(\\S+)",
-                                Pattern.MULTILINE);
-            m = p.matcher(s);
-            if(m.find()) {
-                downloadTarget = m.group(1);
-            }
-
-            p = Pattern.compile(  "^(?:motd-link:\\s*(\\S+)"
-                                +   "|motd-message:)"
-                                +                       "\\s*\\n"
-                                + "(.*?)\\s*\\n<EOT>",
-                                Pattern.MULTILINE|Pattern.DOTALL);
-            m = p.matcher(s);
-            while(m.find()) {
-                if(m.start(1) >= 0) {
-                    outputList.add(new OutputLink(m.group(1), m.group(2)));
-                } else {
-                    outputList.add(new OutputString(m.group(2)));
-                }
-            }
-
-            valid = true;
-        }
-
-        void outputOnce()
-        {
-            if(outputNetworkInfo)
-                return;
-            if(outputBasicInfo && !valid)
-                return;
-            output(G.isHideVersion.getBoolean()
-                    ? ViOutputStream.PRI_LOW
-                    : ViOutputStream.PRI_NORMAL);
-        }
-
-        void output()
-        {
-            output(ViOutputStream.PRI_NORMAL);
-        }
-
-        void output(int priority)
-        {
-            if(!valid) {
-                ViOutputStream vios = ViManager.createOutputStream(
-                    null, ViOutputStream.OUTPUT, getReleaseString(), priority);
-                vios.close();
-                outputBasicInfo = true;
-                return;
-            }
-            outputNetworkInfo = true;
-
-            ViOutputStream vios = ViManager.createOutputStream(
-                null, ViOutputStream.OUTPUT, "jVi Version Information", priority);
-
-            String tagCurrent = "";
-            String hasNewer = null;
-            if(latestRelease != null && latestRelease.isValid()) {
-                if(latestRelease.compareTo(version) > 0) {
-                    hasNewer = "Newer release available: " + latestRelease;
-                } else if(latestRelease.compareTo(version) == 0)
-                    tagCurrent = " (This is the latest release)";
-                else {
-                    // In this else, should be able to assert that !isRelease()
-                    if(version.isDevelopment())
-                        tagCurrent = " (development release)";
-                }
-            }
-            vios.println("Running: " + getReleaseString() + tagCurrent);
-            if(hasNewer != null)
-                vios.printlnLink(downloadTarget, hasNewer);
-            if(latestBeta != null && latestBeta.isValid()) {
-                if(latestBeta.compareTo(version) > 0) {
-                    vios.printlnLink(downloadTarget,
-                                   "Beta or release candidate available: "
-                                   + latestBeta);
-                }
-            }
-            for (int i = 0; i < outputList.size(); i++) {
-                OutputHandler outputHandler = outputList.get(i);
-                outputHandler.output(vios);
-            }
-            //if(message != null)
-            //    vios.println(message);
-            vios.close();
-        }
+        motd.outputOnce();
     }
 
     static void debugMotd() {
-        new GetMotd(true).start();
-    }
-
-    private static class GetMotd extends Thread
-    {
-        private static final int BUF_LEN = 1024;
-        private static final int MAX_MSG = 8 * 1024;
-        private boolean outputOnly;
-
-        public GetMotd() {
-        }
-
-        public GetMotd(boolean outputOnly) {
-            this.outputOnly = outputOnly;
-        }
-
-        @Override
-        public void run()
-        {
-            URL url = null;
-            try {
-                String s = System.getProperty("com.raelity.jvi.motd");
-                if(s != null)
-                    System.err.println("DEBUG MOTD: " + s);
-                if(s == null)
-                    s = "http://jvi.sourceforge.net/motd";
-                URI uri = new URI(s);
-                url = uri.toURL();
-            } catch (MalformedURLException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            } catch (URISyntaxException ex) {
-                LOG.log(Level.SEVERE, null, ex);
+        Motd.get(new ActionListener() {
+            public void actionPerformed(ActionEvent e)
+            {
+                ((Motd)e.getSource()).output();
             }
-            if(url == null)
-                return;
-
-            // Read the remote file into a string
-            // We *know* that the decoder will never have unprocessed
-            // bytes in it, US-ASCII ==> 1 byte per char.
-            // So use a simple algorithm.
-            try {
-                URLConnection c = url.openConnection();
-                InputStream in = c.getInputStream();
-                byte b[] = new byte[BUF_LEN];
-                ByteBuffer bb = ByteBuffer.wrap(b);
-                StringBuilder sb = new StringBuilder();
-                Charset cset = Charset.forName("US-ASCII");
-                int n;
-                int total = 0;
-                while((n = in.read(b)) > 0 && total < MAX_MSG) {
-                    bb.position(0);
-                    bb.limit(n);
-                    CharBuffer cb = cset.decode(bb);
-                    sb.append(cb.toString());
-                    total += n;
-                }
-                in.close();
-
-                if(!outputOnly)
-                    motd = new Motd(sb.toString());
-                else
-                    new Motd(sb.toString()).output();
-            } catch (IOException ex) {
-                if(isDebugAtHome())
-                    ex.printStackTrace();
-            }
-        }
+        });
     }
 
       //
@@ -1907,7 +587,7 @@ public class ViManager
         pcs.removePropertyChangeListener(p, l);
       }
 
-      private static void firePropertyChange(
+      /*package*/ static void firePropertyChange(
               String name, Object oldValue, Object newValue) {
         pcs.firePropertyChange(name, oldValue, newValue);
       }
@@ -1920,109 +600,6 @@ public class ViManager
                                 boolean clearDst)
     {
       new CopyPreferences(dst, src, clearDst);
-    }
-
-    static class CopyPreferences
-    {
-        Preferences srcRoot;
-        Preferences dstRoot;
-
-        CopyPreferences(Preferences dst, Preferences src, boolean clear)
-        {
-            dstRoot = dst;
-            srcRoot = src;
-            //copyJVi("");
-            //copyKeys(PREFS_KEYS);
-            copyTree("");
-        }
-
-        private void copyTree(String dir)
-        {
-            try {
-                Preferences srcNode = srcRoot.node(dir);
-                Preferences dstNode = dstRoot.node(dir);
-                String[] children = srcRoot.node(dir).childrenNames();
-                String[] keys = srcRoot.node(dir).keys();
-                for(String key : keys) {
-                    dstNode.put(key, srcNode.get(key, ""));
-                }
-                for(String child : children) {
-                    String subTree = dir.equals("") ? child : (dir + child);
-                    copyTree(subTree);
-                }
-            } catch (BackingStoreException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            }
-        }
-
-        //
-        // The following copyXXX get rid of stuff set to the default
-        // For it to work, a lot of stuff has to be set up
-        //
-
-        private void copyJVi(String dir)
-        {
-            String[] children;
-            String[] options;
-            try {
-                Preferences srcNode = srcRoot.node(dir);
-                Preferences dstNode = dstRoot.node(dir);
-                children = srcRoot.node(dir).childrenNames();
-                options = srcRoot.node(dir).keys();
-                for(String optionName : options) {
-                    Option opt = Options.getOption(optionName);
-                    if(opt != null) {
-                        String val;
-                        if(!(val = srcNode.get(optionName, opt.getDefault()))
-                                .equals(opt.getDefault())) {
-                            System.err.println(
-                                    "ADD: " + optionName + ":" + val);
-                            dstNode.put(optionName, val);
-                        } else {
-                            System.err.println(
-                                    "DEF: " + optionName + ":" + val);
-                        }
-                    } else {
-                        System.err.println("OPTION NOT FOUND: " + optionName);
-                        dstNode.put(optionName, srcNode.get(optionName, ""));
-                    }
-                }
-            } catch (BackingStoreException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            }
-            System.err.println("copy out");
-        }
-
-        private void copyKeys(String dir)
-        {
-            String[] children;
-            String[] options;
-            try {
-                Preferences srcNode = srcRoot.node(dir);
-                Preferences dstNode = dstRoot.node(dir);
-                children = srcRoot.node(dir).childrenNames();
-                options = srcRoot.node(dir).keys();
-                for(String optionName : options) {
-                    if(KeyBinding.isKnownKey(optionName)) {
-                        boolean val;
-                        boolean sDefault
-                                = KeyBinding.getCatchKeyDefault(optionName);
-                        val = srcNode.getBoolean(optionName, sDefault);
-                        if(val != sDefault) {
-                            System.err.println("ADD: " + optionName + ":" +val);
-                            dstNode.putBoolean(optionName, val);
-                        } else
-                            System.err.println("DEF: " + optionName + ":" +val);
-                    } else {
-                        System.err.println("OPTION NOT FOUND: " + optionName);
-                        dstNode.put(optionName, srcNode.get(optionName, ""));
-                    }
-                }
-            } catch (BackingStoreException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            }
-            System.err.println("copy out");
-        }
     }
 }
 

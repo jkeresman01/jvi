@@ -23,11 +23,11 @@ package com.raelity.jvi.lib;
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViBuffer;
 import com.raelity.jvi.ViFS;
-import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.Misc;
 import com.raelity.jvi.core.Window;
+import com.raelity.jvi.manager.AppViews;
 import java.util.Iterator;
 
 /**
@@ -49,7 +49,7 @@ abstract public class abstractFS implements ViFS
     {
         ViAppView av = null;
         if(i >= 0) {
-            Iterator<ViAppView> iter = ViManager.getTextBufferIterator();
+            Iterator<ViAppView> iter = AppViews.getTextBufferIterator();
             while(iter.hasNext()) {
                 ViAppView av01 = iter.next();
                 if(i == av01.getWNum()) {
@@ -58,7 +58,7 @@ abstract public class abstractFS implements ViFS
                 }
             }
         } else {
-            av = ViManager.getMruBuffer(-i);
+            av = AppViews.getMruBuffer(-i);
         }
         return av;
     }

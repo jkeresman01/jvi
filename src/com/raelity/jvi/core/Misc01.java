@@ -21,8 +21,8 @@
 package com.raelity.jvi.core;
 
 import com.raelity.jvi.ViAppView;
+import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.manager.ViManager.AppViews;
 import java.util.List;
 
 /**
@@ -80,7 +80,7 @@ public class Misc01
             n = 1;
         // NEEDSWORK: win_cycle options about nomads
 
-        Object[] o = ViManager.getAppViews(whichViews, true);
+        Object[] o = AppViews.get(whichViews, true);
         List<ViAppView> l = (List<ViAppView>) o[0];
         int idx = (Integer)o[1];
         if(l.size() == 0) {

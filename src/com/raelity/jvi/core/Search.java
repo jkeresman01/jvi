@@ -24,6 +24,7 @@ import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.lib.MutableInt;
+import com.raelity.jvi.manager.Scheduler;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -105,7 +106,7 @@ public class Search extends CoreMethodHooks {
       boolean acceptIncr = false;
       boolean cancel = false;
       
-      ViManager.stopCommandEntry();
+      Scheduler.stopCommandEntry();
       
       if(cmd.charAt(0) == '\n') {
         if(G.p_is.getBoolean()
@@ -148,7 +149,7 @@ public class Search extends CoreMethodHooks {
     ViCmdEntry ce = getSearchCommandEntry();
     if(G.p_is.getBoolean())
         startIncrementalSearch();
-    ViManager.startCommandEntry(ce, mode, G.curwin, null);
+    Scheduler.startCommandEntry(ce, mode, G.curwin, null);
   }
 
   static int getIncrSearchResultCode() {
