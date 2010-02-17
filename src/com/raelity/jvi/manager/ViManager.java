@@ -19,7 +19,6 @@
  */
 package com.raelity.jvi.manager;
 
-import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViFactory;
 import com.raelity.jvi.ViFeature;
@@ -176,18 +175,16 @@ public class ViManager
         return viMan;
     }
 
-    private static boolean factoryLoaded;
 
     public static void setViFactory(ViFactory factory)
     {
-        if(ViManager.factory != null)
+        if(isFactoryLoaded())
         {
             throw new RuntimeException("ViFactory already set");
         }
 
 
         ViManager.factory = factory;
-        factoryLoaded = true;
 
         for (ViInitialization i : Lookup.getDefault().lookupAll(ViInitialization.class)) {
             i.init();
@@ -220,7 +217,7 @@ public class ViManager
 
     public static boolean isFactoryLoaded()
     {
-        return factoryLoaded;
+        return factory != null;
     }
 
     public static ViManHook setCoreHook(Hook hook)
