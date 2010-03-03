@@ -20,7 +20,7 @@
 
 package com.raelity.jvi.cmd;
 
-import com.raelity.jvi.swing.AppView;
+import com.raelity.jvi.swing.simple.SimpleAppView;
 import com.raelity.jvi.swing.SwingFactory;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
@@ -29,7 +29,7 @@ import javax.swing.JFrame;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public class PlayAppView extends AppView
+public class PlayAppView extends SimpleAppView
 {
     public PlayAppView(JFrame f, JEditorPane ep)
     {

@@ -18,10 +18,11 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
-package com.raelity.jvi.swing;
+package com.raelity.jvi.swing.simple;
 
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.swing.SwingFactory;
 import java.awt.Container;
 import java.awt.Point;
 import java.util.Collections;
@@ -35,7 +36,7 @@ import javax.swing.text.JTextComponent;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public abstract class AppView implements ViAppView
+public abstract class SimpleAppView implements ViAppView
 {
     private Container c;
     private JTextComponent e;
@@ -48,7 +49,7 @@ public abstract class AppView implements ViAppView
      * @param c platform/application handle
      * @param e text component where the action happens
      */
-    public AppView(Container c, JTextComponent e)
+    public SimpleAppView(Container c, JTextComponent e)
     {
         this.c = c;
         this.e = e;
