@@ -431,7 +431,7 @@ public class Scheduler extends ViManager
 
     private static ViFactory fact()
     {
-        return ViManager.getViFactory();
+        return ViManager.getFactory();
     }
 
     private static Hook core()

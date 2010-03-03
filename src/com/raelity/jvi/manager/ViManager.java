@@ -211,7 +211,7 @@ public class ViManager
             }
         });
 
-        getViFactory().setShutdownHook(new Runnable() {
+        getFactory().setShutdownHook(new Runnable() {
             public void run() {
                 firePropertyChange(P_SHUTDOWN, null, null);
             }
@@ -379,7 +379,7 @@ public class ViManager
         return "jVi " + version;
     }
 
-    public static ViFactory getViFactory()
+    public static ViFactory getFactory()
     {
         return factory;
     }

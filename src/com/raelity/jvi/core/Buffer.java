@@ -170,7 +170,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
 
 
     final public String getDisplayFileName() {
-        return ViManager.getViFactory().getFS().getDisplayFileName(this);
+        return ViManager.getFactory().getFS().getDisplayFileName(this);
     }
 
     

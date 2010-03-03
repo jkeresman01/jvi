@@ -322,8 +322,8 @@ public class SetColonCommand extends ColonCommands.ColonAction
           determineOptionState(vopt, voptDesc);
           Set<? extends ViOptionBag> set =
                   (vopt.flags & P_WIN) != 0
-                  ? ViManager.getViFactory().getViTextViewSet()
-                  : ViManager.getViFactory().getBufferSet();
+                  ? ViManager.getFactory().getViTextViewSet()
+                  : ViManager.getFactory().getBufferSet();
           for (ViOptionBag bag : set) {
             try {
               voptDesc.f.set(bag, voptDesc.value);

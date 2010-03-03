@@ -57,7 +57,7 @@ import static com.raelity.jvi.core.Constants.*;
 public class KeyBinding {
   private static Logger LOG = Logger.getLogger(KeyBinding.class.getName());
   public static final String KEY_BINDINGS = "KeyBinding";
-  private static Preferences prefs = ViManager.getViFactory()
+  private static Preferences prefs = ViManager.getFactory()
                                 .getPreferences().node(ViManager.PREFS_KEYS);
 
     @ServiceProvider(service=ViInitialization.class)
@@ -82,12 +82,12 @@ public class KeyBinding {
   }
 
   private static Action createCharAction(String name) {
-    return ((SwingFactory)ViManager.getViFactory())
+    return ((SwingFactory)ViManager.getFactory())
             .createCharAction(name);
   }
 
 private static Action createKeyAction( String name, char key ) {
-    return ((SwingFactory)ViManager.getViFactory())
+    return ((SwingFactory)ViManager.getFactory())
             .createKeyAction(name, key);
 
 }
@@ -383,7 +383,7 @@ private static Action createKeyAction( String name, char key ) {
     private static List<Action> createActionList() {
         List<Action> actionsList = new ArrayList<Action>();
         try {
-            ViFactory factory = ViManager.getViFactory();
+            ViFactory factory = ViManager.getFactory();
             actionsList.add(createKeyAction("ViUpKey", K_UP));
             actionsList.add(createKeyAction("ViDownKey", K_DOWN));
             actionsList.add(createKeyAction("ViLeftKey", K_LEFT));
@@ -503,7 +503,7 @@ private static Action createKeyAction( String name, char key ) {
   public static Action[] getInsertModeActions() {
     Action[] localActions = null;
     try {
-      ViFactory factory = ViManager.getViFactory();
+      ViFactory factory = ViManager.getFactory();
       localActions = new Action[] {
 	  factory.createInsertModeKeyAction("ViInsert_shiftRight",
 		     IM_SHIFT_RIGHT,

@@ -103,7 +103,7 @@ private static ViCmdEntry getColonCommandEntry()
 {
     if ( colonCommandEntry == null ) {
         try {
-            colonCommandEntry = ViManager.getViFactory()
+            colonCommandEntry = ViManager.getFactory()
                                     .createCmdEntry(ViCmdEntry.COLON_ENTRY);
             colonCommandEntry.addActionListener(
                 new ActionListener() {
@@ -125,7 +125,7 @@ static private void colonEntryComplete( ActionEvent ev )
     try {
         Hook.setJViBusy(true);
 
-        ViManager.getViFactory().commandEntryAssist(getColonCommandEntry(),false);
+        ViManager.getFactory().commandEntryAssist(getColonCommandEntry(),false);
         Scheduler.stopCommandEntry();
         String commandLine = colonCommandEntry.getCommand();
         String cmd = ev.getActionCommand();
@@ -145,7 +145,7 @@ static private void colonEntryComplete( ActionEvent ev )
 static void doColonCommand(StringBuffer range)
 {
     ViCmdEntry cmdEntry = getColonCommandEntry();
-    ViManager.getViFactory().commandEntryAssist(cmdEntry, true);
+    ViManager.getFactory().commandEntryAssist(cmdEntry, true);
     Scheduler.startCommandEntry(cmdEntry, ":", G.curwin, range);
 }
 
@@ -291,7 +291,7 @@ static ColonEvent parseCommand( String commandLine )
         if(cev.line1 > cev.line2) {
             modalResponse = 0;
             Msg.wmsg("Backwards range given, OK to swap (y/n)?");
-            ViManager.getViFactory().startModalKeyCatch(new KeyAdapter() {
+            ViManager.getFactory().startModalKeyCatch(new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
                     e.consume();
@@ -308,7 +308,7 @@ static ColonEvent parseCommand( String commandLine )
                             break;
                     }
                     if(modalResponse != 0) {
-                        ViManager.getViFactory().stopModalKeyCatch();
+                        ViManager.getFactory().stopModalKeyCatch();
                     }
                 }
             });
@@ -798,7 +798,7 @@ public static class BangAction extends ColonAction
         if(coord == null)
             return;
         //System.err.println("!: DONE :!" + (!fOK ? " ABORT" : ""));
-        ViManager.getViFactory().stopGlassKeyCatch();
+        ViManager.getFactory().stopGlassKeyCatch();
         Msg.wmsg("");
 
         if(!fOK) {
@@ -973,7 +973,7 @@ public static class BangAction extends ColonAction
         coord.statusMessage = "Enter 'Ctrl-C' to ABORT";
         Msg.fmsg(coord.statusMessage);
 
-        ViManager.getViFactory().startGlassKeyCatch(new KeyAdapter() {
+        ViManager.getFactory().startGlassKeyCatch(new KeyAdapter() {
                 @Override
                 public void keyTyped(KeyEvent e) {
                     e.consume();
@@ -2178,7 +2178,7 @@ public static ActionListener ACTION_BUFFERS = new ActionListener() {
             ViAppView prev = AppViews.getMruAppView(1);
 
             List<String> outputData = new ArrayList<String>();
-            ViFactory factory = ViManager.getViFactory();
+            ViFactory factory = ViManager.getFactory();
             List<ViAppView> l1 = AppViews.getList(AppViews.MRU);
             List<ViAppView> l2 = AppViews.getList(AppViews.ACTIVE);
             assert l1.size() == l2.size();
@@ -2230,12 +2230,12 @@ static ColonAction ACTION_tag = new ColonAction() {
                 return;
             }
             if(evt.getNArg() == 1) {
-                ViManager.getViFactory().tagDialog(evt);
+                ViManager.getFactory().tagDialog(evt);
             } else {
                 int count = 1;
                 if(evt.getAddrCount() == 1)
                     count = evt.getLine2();
-                ViManager.getViFactory().tagStack(TAGOP.NEWER, count);
+                ViManager.getFactory().tagStack(TAGOP.NEWER, count);
             }
         }
     };
@@ -2254,7 +2254,7 @@ static ColonAction ACTION_pop = new ColonAction() {
             int count = 1;
             if(evt.getAddrCount() == 1)
                 count = evt.getLine2();
-            ViManager.getViFactory().tagStack(TAGOP.OLDER, count);
+            ViManager.getFactory().tagStack(TAGOP.OLDER, count);
         }
     };
 
@@ -2268,7 +2268,7 @@ static ColonAction ACTION_tselect = new ColonAction() {
             int count = 1;
             if(ce.getAddrCount() == 1)
                 count = ce.getLine2();
-            ViManager.getViFactory().tagDialog(ce);
+            ViManager.getFactory().tagDialog(ce);
         }
     };
 
@@ -2280,7 +2280,7 @@ static ActionListener ACTION_jumps = new ActionListener() {
 
 static ActionListener ACTION_tags = new ActionListener() {
         public void actionPerformed(ActionEvent ev) {
-            ViManager.getViFactory().displayTags();
+            ViManager.getFactory().displayTags();
         }
     };
 
@@ -2480,13 +2480,13 @@ static ColonAction ACTION_copy = new moveCopy(false);
 
 static ActionListener ACTION_testGlassKeys = new ActionListener() {
         public void actionPerformed(ActionEvent ev) {
-            ViManager.getViFactory().startGlassKeyCatch(new KeyAdapter() {
+            ViManager.getFactory().startGlassKeyCatch(new KeyAdapter() {
                     @Override
                     public void keyPressed(KeyEvent e)
                     {
                         e.consume();
                         if(e.getKeyCode() == KeyEvent.VK_Y) {
-                            ViManager.getViFactory().stopGlassKeyCatch();
+                            ViManager.getFactory().stopGlassKeyCatch();
                             Msg.clearMsg();
                         } else {
                             Util.vim_beep();
@@ -2501,13 +2501,13 @@ static ActionListener ACTION_testModalKeys = new ActionListener() {
         public void actionPerformed(ActionEvent ev)
         {
             Msg.smsg("Enter 'y' to proceed");
-            ViManager.getViFactory().startModalKeyCatch(new KeyAdapter() {
+            ViManager.getFactory().startModalKeyCatch(new KeyAdapter() {
                     @Override
                     public void keyPressed(KeyEvent e)
                     {
                         e.consume();
                         if(e.getKeyCode() == KeyEvent.VK_Y) {
-                            ViManager.getViFactory().stopModalKeyCatch();
+                            ViManager.getFactory().stopModalKeyCatch();
                         } else {
                             Util.vim_beep();
                         }
@@ -2588,7 +2588,7 @@ private static void addDebugColonCommands()
         public void actionPerformed(ActionEvent e) {
         try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            ViManager.getViFactory().getPreferences().exportSubtree(os);
+            ViManager.getFactory().getPreferences().exportSubtree(os);
             ViOutputStream vios = ViManager.createOutputStream(
                     null, ViOutputStream.OUTPUT, "Preferences");
             vios.println(os.toString());
@@ -2604,7 +2604,7 @@ private static void addDebugColonCommands()
     ColonCommands.register("optionsDelete", "optionsDelete", new ActionListener() {
         public void actionPerformed(ActionEvent e) {
         try {
-            Preferences prefs = ViManager.getViFactory().getPreferences();
+            Preferences prefs = ViManager.getFactory().getPreferences();
             String keys[] = prefs.keys();
             for (String key : keys) {
             prefs.remove(key);
@@ -2626,7 +2626,7 @@ private static void addDebugColonCommands()
 
                     if(cev.getNArg() == 1) {
                     String key = cev.getArg(1);
-                    Preferences prefs = ViManager.getViFactory().getPreferences();
+                    Preferences prefs = ViManager.getFactory().getPreferences();
                     prefs.remove(key);
                     } else
                     Msg.emsg("optionDelete takes exactly one argument");

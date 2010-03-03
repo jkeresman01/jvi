@@ -406,7 +406,7 @@ abstract public class SwingBuffer extends Buffer {
                 return;
             String s = "";
 
-            if(ViManager.getViFactory().isEnabled()) {
+            if(ViManager.getFactory().isEnabled()) {
                 // magic redo tracking
                 // things can get wierd in there...
                 try {
@@ -431,7 +431,7 @@ abstract public class SwingBuffer extends Buffer {
             if(!isInsertMode())
                 return;
 
-            if(ViManager.getViFactory().isEnabled()) {
+            if(ViManager.getFactory().isEnabled()) {
                 // magic redo tracking
                 // things can get wierd in there...
                 try {

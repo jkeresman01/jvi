@@ -184,7 +184,7 @@ public class Jvi
         ColonCommands.register("dumpOptions", "dumpOptions", new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    ViManager.getViFactory()
+                    ViManager.getFactory()
                             .getPreferences().exportSubtree(System.out);
                 } catch (BackingStoreException ex) {
                     ex.printStackTrace();
@@ -196,9 +196,9 @@ public class Jvi
         ColonCommands.register("deleteOptions", "deleteOptions", new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    String keys[] = ViManager.getViFactory().getPreferences().keys();
+                    String keys[] = ViManager.getFactory().getPreferences().keys();
                     for ( String key : keys ) {
-                        ViManager.getViFactory().getPreferences().remove(key);
+                        ViManager.getFactory().getPreferences().remove(key);
                     }
                 } catch ( BackingStoreException ex ) {
                     ex.printStackTrace();

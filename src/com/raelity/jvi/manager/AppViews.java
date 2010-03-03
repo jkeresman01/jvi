@@ -463,7 +463,7 @@ public enum AppViews
 
     private static ViFactory fact()
     {
-        return ViManager.getViFactory();
+        return ViManager.getFactory();
     }
 
     // Is the factory loaded

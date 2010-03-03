@@ -666,7 +666,7 @@ middle_code:
 	  case 0x1f & (int)('T'):    // backwards in tag stack	// Ctrl
 	    if (!checkclearopq(oap)) {
               // do_tag((char_u *)"", DT_POP, (int)ca.count1, FALSE, TRUE);
-              ViManager.getViFactory().tagStack(TAGOP.OLDER, ca.count1);
+              ViManager.getFactory().tagStack(TAGOP.OLDER, ca.count1);
             }
 	    break;
 

@@ -65,7 +65,7 @@ public class OptUtil {
 
         platformList.add("jViVersion"); // HACK - just doit
 
-        prefs = ViManager.getViFactory().getPreferences();
+        prefs = ViManager.getFactory().getPreferences();
 
         prefs.addPreferenceChangeListener(new PreferenceChangeListener() {
 

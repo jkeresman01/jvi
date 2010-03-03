@@ -325,7 +325,7 @@ class MarkOps
                 File f = G.curbuf.getFile();
                 if(changefile || f != null && f.equals(fm.getFile()))
                     // set force to true so non exist files are opened (as vim)
-                    ViManager.getViFactory().getFS().edit(fm.getFile(), true, fm);
+                    ViManager.getFactory().getFS().edit(fm.getFile(), true, fm);
                 else
                     fm = null;
             }
@@ -709,7 +709,7 @@ class MarkOps
 
     private static void read_viminfo_filemarks()
     {
-        Preferences prefs = ViManager.getViFactory()
+        Preferences prefs = ViManager.getFactory()
                 .getPreferences().node(PREF_FILEMARKS);
         for (int i = 0; i < namedfm.length; i++) {
             Filemark fm = Filemark.read_viminfo_filemark(prefs, markName(i));
@@ -720,7 +720,7 @@ class MarkOps
 
     private static void write_viminfo_filemarks()
     {
-        Preferences prefs = ViManager.getViFactory()
+        Preferences prefs = ViManager.getFactory()
                 .getPreferences().node(PREF_FILEMARKS);
         for (int i = 0; i < namedfm.length; i++) {
             Filemark.write_viminfo_filemark(prefs, markName(i), namedfm[i]);
@@ -757,7 +757,7 @@ class MarkOps
         static List<String> cleanup = new ArrayList<String>();
 
         static Preferences prefs
-                = ViManager.getViFactory().getPreferences().node(PREF_MARKS);
+                = ViManager.getFactory().getPreferences().node(PREF_MARKS);
 
         static Random random = new Random();
 
@@ -952,7 +952,7 @@ class MarkOps
         {
             try {
                 LOG.fine("write_viminfo entry");
-                for (Buffer buf : ViManager.getViFactory().getBufferSet()) {
+                for (Buffer buf : ViManager.getFactory().getBufferSet()) {
                     persist(buf);
                 }
                 int max = G.viminfoMaxBuf.getInteger();

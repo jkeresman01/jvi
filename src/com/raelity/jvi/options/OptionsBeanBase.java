@@ -168,7 +168,7 @@ public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsContro
                 d.setDisplayName("jVi Version");
             } else {
                 try {
-                    d = ViManager.getViFactory()
+                    d = ViManager.getFactory()
                             .createPropertyDescriptor(name, name, clazz);
                 } catch (IntrospectionException ex) {
                     LOG.log(Level.SEVERE, null, ex);
@@ -271,7 +271,7 @@ public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsContro
     //
     //      The interface to preferences.
     //
-    private Preferences prefs = ViManager.getViFactory().getPreferences();
+    private Preferences prefs = ViManager.getFactory().getPreferences();
 
     // Called before a change is made,
     // record the previous value.

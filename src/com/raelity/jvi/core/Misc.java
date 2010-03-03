@@ -1283,7 +1283,7 @@ public class Misc extends CoreMethodHooks implements ClipboardOwner {
   private static final String TYPE = "type";
 
   private static void read_viminfo_registers() {
-    Preferences prefsRegs = ViManager.getViFactory()
+    Preferences prefsRegs = ViManager.getFactory()
             .getPreferences().node(PREF_REGISTERS);
     for(int i = 0; i < y_regs.length; i++) {
       try {
@@ -1307,7 +1307,7 @@ public class Misc extends CoreMethodHooks implements ClipboardOwner {
   }
 
   private static void write_viminfo_registers() {
-    Preferences prefsRegs = ViManager.getViFactory()
+    Preferences prefsRegs = ViManager.getFactory()
             .getPreferences().node(PREF_REGISTERS);
     for(int i = 0; i < y_regs.length; i++) {
       String regname = getPersistableYankreg(i);
@@ -4267,7 +4267,7 @@ private static int put_in_typebuf(String s, boolean colon)
       }
       else {
         if(G.curwin.hasSelection())
-          mode = ViManager.getViFactory().getPlatformSelectionDisplayName();
+          mode = ViManager.getFactory().getPlatformSelectionDisplayName();
       }
       
       // Any "recording" string is handled by the disply function

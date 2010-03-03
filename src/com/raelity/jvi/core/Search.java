@@ -79,7 +79,7 @@ public class Search extends CoreMethodHooks {
   private static ViCmdEntry getSearchCommandEntry() {
     if(searchCommandEntry == null) {
       try {
-        searchCommandEntry = ViManager.getViFactory()
+        searchCommandEntry = ViManager.getFactory()
                               .createCmdEntry(ViCmdEntry.SEARCH_ENTRY);
         searchCommandEntry.addActionListener(
           new ActionListener() {
@@ -1314,7 +1314,7 @@ first_submatch(RegExp rp)
                             + (prog.length(0) == 0 ? 1 : 0));
 
         Msg.wmsg("replace with '" + subs + "' (y/n/a/q/l)");
-        ViManager.getViFactory().startModalKeyCatch(new KeyAdapter() {
+        ViManager.getFactory().startModalKeyCatch(new KeyAdapter() {
                     @Override
           public void keyPressed(KeyEvent e) {
             e.consume();
@@ -1331,7 +1331,7 @@ first_submatch(RegExp rp)
                 break;
             }
             if(modalResponse != 0) {
-              ViManager.getViFactory().stopModalKeyCatch();
+              ViManager.getFactory().stopModalKeyCatch();
             }
           }
         });

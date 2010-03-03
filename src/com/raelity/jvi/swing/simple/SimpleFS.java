@@ -46,7 +46,7 @@ abstract public class SimpleFS extends abstractFS
     {
         JTextComponent ep = (JTextComponent)av.getEditor();
         if (ep != null) {
-            ViTextView tv = ViManager.getViFactory().getTextView(ep);
+            ViTextView tv = ViManager.getFactory().getTextView(ep);
             if (tv != null)
                 return getDisplayFileName(tv.getBuffer());
         }

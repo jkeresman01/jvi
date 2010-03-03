@@ -54,7 +54,7 @@ public class KeyOptionsBeanBase extends SimpleBeanInfo
         changeMap.clear();
     }
 
-    protected Preferences prefs = ViManager.getViFactory()
+    protected Preferences prefs = ViManager.getFactory()
                                 .getPreferences().node(ViManager.PREFS_KEYS);
 
     protected void put(String name, boolean val) {

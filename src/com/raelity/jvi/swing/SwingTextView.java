@@ -100,7 +100,7 @@ public class SwingTextView extends Window
 
         cursorSaveListener = new CaretListener() {
             public void caretUpdate(CaretEvent ce) {
-                if(!ViManager.getViFactory().isEnabled())
+                if(!ViManager.getFactory().isEnabled())
                     return;
                 cursorMoveDetected(lastDot, ce.getDot(), ce.getMark());
                 lastDot = ce.getDot();
@@ -146,7 +146,7 @@ public class SwingTextView extends Window
 
     public ViAppView getAppView()
     {
-        return ViManager.getViFactory().getAppView(editorPane);
+        return ViManager.getFactory().getAppView(editorPane);
     }
 
     private void enableCursorSave()
@@ -943,7 +943,7 @@ public class SwingTextView extends Window
         }
         point0 = null;
         super.detachBuffer();
-        ViManager.getViFactory().changeBuffer(this, e.getOldValue());
+        ViManager.getFactory().changeBuffer(this, e.getOldValue());
     }
 
     final static int DIR_TOP = -1;

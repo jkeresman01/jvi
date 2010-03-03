@@ -56,7 +56,7 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
 
     private void initStuff(ViTextView tv) {
         this.fnum = tv.getBuffer().b_fnum;
-        this.wnum = ViManager.getViFactory()
+        this.wnum = ViManager.getFactory()
                 .getAppView(tv.getEditorComponent()).getWNum();
         this.line = mark.getLine();
         this.col = mark.getColumn();
