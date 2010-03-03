@@ -325,7 +325,7 @@ class MarkOps
                 File f = G.curbuf.getFile();
                 if(changefile || f != null && f.equals(fm.getFile()))
                     // set force to true so non exist files are opened (as vim)
-                    ViManager.getViFactory().getFS().edit(G.curwin, true, fm);
+                    ViManager.getViFactory().getFS().edit(fm.getFile(), true, fm);
                 else
                     fm = null;
             }

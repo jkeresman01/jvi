@@ -54,7 +54,6 @@ import static com.raelity.jvi.core.ColonCommandFlags.*;
 
 import java.io.*;
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -2122,8 +2121,7 @@ static ColonAction ACTION_edit = new ColonAction() {
                 }
             } else if ( cev.getNArg() < 2) {
                 String fName = cev.getNArg() == 0 ? null : cev.getArg(1);
-                ViManager.getFS().edit(
-                        cev.getViTextView(), cev.isBang(), new File(fName));
+                ViManager.getFS().edit(new File(fName), cev.isBang(), null);
             } else {
                 Msg.emsg(":edit only accepts none or one argument");
             }

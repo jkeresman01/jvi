@@ -23,10 +23,11 @@ package com.raelity.jvi.cmd;
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.ViBuffer;
+import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.swing.simple.SimpleFS;
+import java.io.File;
 
 /**
  *  A default implementation of the {@link com.raelity.jvi.ViFS}
@@ -91,9 +92,9 @@ public class PlayFS extends SimpleFS
     }
 
 
-    public void edit( ViTextView tv, boolean force, Object fileThing )
+    public void edit(File f, boolean force, ViFPOS fpos )
     {
-        Msg.emsg("edit(tv, int{" + fileThing + "}, force) not implemented");
+        Msg.emsg("edit(File{" + f + "}, force, fpos) not implemented");
     }
 
 

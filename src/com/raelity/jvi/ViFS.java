@@ -20,7 +20,6 @@
 
 package com.raelity.jvi;
 
-import com.raelity.jvi.core.Filemark;
 import java.io.File;
 
 /**
@@ -61,7 +60,7 @@ public interface ViFS
      * @param tv Editor containing data to write
      * @param force If a '!' was used with the command, then force is true.
      * @param writeTarget write the data to here
-     * @param range either empty or two elements, first/last lines
+     * @param range either null/empty or two elements, first/last lines
      * @return true if successful in writing the file.
      */
     public boolean write( ViTextView tv,
@@ -83,16 +82,19 @@ public interface ViFS
      */
     public void edit(ViAppView av, boolean force);
 
-
     /**
-     *  Edit the specified thing. fileThing can be a String which is a path,
-     * a {@link File} or a {@link Filemark}.
-     * 
-     * @param tv Editor containing data to write
+     * Edit the specified file. The platform may need to create an edtior view
+     * and read the file into the editor.
+     *
+     * The fpos may be null in which case typically the cursor is positioned
+     * at the first position in the file. The fpos may be out of bounds, in
+     * which case something in the neighborhood can be selected.
+     *
+     * @param file
      * @param force If a '!' was used with the command, then force is true.
-     * @param fName the thing to open in the editor
+     * @param fpos initial cursor position, may be null.
      */
-    public abstract void edit( ViTextView tv, boolean force, Object fileThing);
+    public void edit(File file, boolean force, ViFPOS fpos);
 
 
 } // end com.raelity.jvi.ViFS
