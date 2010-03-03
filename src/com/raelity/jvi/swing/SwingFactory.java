@@ -142,15 +142,6 @@ abstract public class SwingFactory implements ViFactory
         return c;
     }
 
-    public boolean isNomadic(Component ed, ViAppView av)
-    {
-        if(av == null)
-            av = getAppView(ed);
-        if(av != null)
-            return av.isNomad();
-        return true;
-    }
-
     public final ViTextView getTextView(Component ed)
     {
         return (ViTextView)(((JTextComponent)ed).getClientProperty(PROP_TV));

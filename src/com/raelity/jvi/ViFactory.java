@@ -57,11 +57,6 @@ public interface ViFactory
 
     public ViTextView getTextView(ViAppView av);
 
-    /** Make a best guess as to whether or not the 'ep' is a nomad.
-     * Should default to false.
-     */
-    public boolean isNomadic(Component editor, ViAppView av);
-
     /** Handle changing document in text view.
      * Editor in TextView should hold new document.
      * @param tv TextView holding editor that is changing document

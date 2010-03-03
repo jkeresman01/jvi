@@ -25,6 +25,7 @@ import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.ViBuffer;
 import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.swing.simple.SimpleFS;
 
 /**
@@ -84,15 +85,7 @@ public class PlayFS extends SimpleFS
         return false;
     }
 
-
-    public void edit( ViTextView tv, boolean force, int n )
-    {
-        // get the av to open
-        ViAppView av = getAppViewByNumber(n);
-        Msg.emsg("edit(tv, int{" + n + "}, force) not implemented");
-    }
-
-    public void edit(ViAppView av)
+    public void edit(ViAppView av, boolean force)
     {
         Msg.emsg("edit(av{" + av + "}) not implemented");
     }

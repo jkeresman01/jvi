@@ -43,9 +43,10 @@ public class PlayAppView extends AppView
         return (JFrame)super.getAppContainer();
     }
 
+    @Override
     public JEditorPane getEditor()
     {
-        return (JEditorPane)super.getTextComponent();
+        return (JEditorPane)super.getEditor();
     }
 
     public boolean isNomad()

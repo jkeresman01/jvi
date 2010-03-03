@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.manager;
 
+import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViCaret;
 import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.ViFactory;
@@ -31,6 +32,9 @@ import com.raelity.jvi.core.KeyDefs;
 import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.core.Options;
 import java.awt.Component;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -47,48 +51,119 @@ public class Scheduler extends ViManager
     private static Component currentEditorPane;
     private static boolean started = false;
     private static ViCmdEntry activeCommandEntry;
-    //////////////////////////////////////////////////////////////////////
-    //
-    // Mouse interactions
-    //
     private static boolean draggingBlockMode;
     private static boolean mouseDown;
     private static boolean hasSelection;
-    private static MouseListener mouseListener = new MouseListener() {
-        public void mouseClicked(MouseEvent e)
-        {
-            mouseClick(e);
+
+    static void switchTo(Component editor) // NEEDSWORK: make sure appview sync
+    {
+        if (editor == currentEditorPane)
+            return;
+        ViManager.motdOutputOnce();
+        if (!started) {
+            started = true;
+            firePropertyChange(P_LATE_INIT, null, null);
         }
 
-        public void mousePressed(MouseEvent e)
-        {
-            mousePress(e);
+        AppViews.deactivateCurrent(true);
+
+        draggingBlockMode = false;
+        ViTextView currentTv = null;
+        if (currentEditorPane != null) {
+            currentTv = mayCreateTextView(currentEditorPane);
+            firePropertyChange(P_SWITCH_FROM_WIN, currentTv, null);
         }
 
-        public void mouseReleased(MouseEvent e)
-        {
-            mouseRelease(e);
+        boolean fNewTextView = fact().getTextView(editor) == null;
+        ViTextView textView = mayCreateTextView(editor);
+        Buffer buf = textView.getBuffer();
+        fact().setupCaret(editor); // make sure has the right caret
+        textView.attach();
+        if (G.dbgEditorActivation.getBoolean()) {
+            String newStr = fNewTextView ? "NEW: " : "";
+            System.err.println("Activation: ViManager.SWITCHTO: " + newStr +
+                    cid(editor) + " " + buf.getDisplayFileName());
+        }
+        if (currentEditorPane != null) {
+            core().abortVisualMode();
+            // MOVED ABOVE: currentTv = mayCreateTextView(currentEditorPane);
+            // Freeze and/or detach listeners from previous active view
+            currentTv.detach();
         }
 
-        public void mouseEntered(MouseEvent e)
-        {
-        }
+        currentEditorPane = editor;
+        core().switchTo(textView, buf);
+        core().resetCommand(); // Means something first time window switched to
+        buf.activateOptions(textView);
+        textView.activateOptions(textView);
+        setHasSelection(); // a HACK
 
-        public void mouseExited(MouseEvent e)
+        ViAppView av = fact().getAppView(editor);
+        AppViews.activate(av);
+
+        if (fNewTextView) {
+            firePropertyChange(P_OPEN_WIN, currentTv, textView);
+            editor.addMouseListener(mouseListener);
+            editor.addMouseMotionListener(mouseMotionListener);
+        }
+        if (textView.getBuffer().singleShare())
+            firePropertyChange(P_OPEN_BUF,
+                               currentTv == null ? null : currentTv.getBuffer(),
+                               textView.getBuffer());
+        firePropertyChange(P_SWITCH_TO_WIN, currentTv, textView);
+        Msg.smsg(getFS().getDisplayFileViewInfo(textView));
+    }
+
+    private static FocusListener focusSwitcher = new FocusAdapter()
+    {
+        @Override
+        public void focusGained(FocusEvent e)
         {
+            Component c = e.getComponent();
+            if(c != null) {
+                switchTo(c);
+            }
         }
     };
-    private static MouseMotionListener mouseMotionListener =
-            new MouseMotionListener() {
-        public void mouseDragged(MouseEvent e)
-        {
-            mouseDrag(e);
-        }
 
-        public void mouseMoved(MouseEvent e)
-        {
+    // NEEDSWORK: register should not be public. This is public because of the
+    //          lazy app views. The editor can get focus before the
+    //          app view is full populated.
+    //          For now NbFactory.setupCaret calls this directly.
+    //          The factory could be given some special hooks.
+    public static void register(Component c)
+    {
+        if(c != null) {
+            if (fact() != null && G.dbgEditorActivation.getBoolean())
+                System.err.println("Activation: Scheduler.register: "
+                        + ViManager.cid(c));
+            c.removeFocusListener(focusSwitcher);
+            c.addFocusListener(focusSwitcher);
         }
-    };
+    }
+
+    static Component getCurrentEditor()
+    {
+        return currentEditorPane;
+    }
+
+    public static ViTextView getCurrentTextView()
+    {
+        return fact().getTextView(currentEditorPane);
+    }
+
+    /**
+     * The arg Component is detached from its text view,
+     * forget about it.
+     */
+    public static void detached(Component ed)
+    {
+        if (currentEditorPane == ed) {
+            if (G.dbgEditorActivation.getBoolean())
+                System.err.println("Activation: ViManager.detached " + cid(ed));
+            currentEditorPane = null;
+        }
+    }
 
     /**
      * A key was typed. Handle the event.
@@ -131,90 +206,10 @@ public class Scheduler extends ViManager
         return true;
     }
 
-    /**
-     * requestSwitch can be used from platform code for situation where an
-     * editor is activated. It allows things to be initialized,
-     * with some visual implications, before a key is entered.
-     * It should typically only be used after {@linkplain #activateAppView}.
-     */
-    public static void requestSwitch(Component ed)
-    {
-        switchTo(ed);
-    }
-
-    static Component getCurrentEditor()
-    {
-        return currentEditorPane;
-    }
-
-    static void switchTo(Component editor)
-    {
-        if (editor == currentEditorPane)
-            return;
-        if (!started) {
-            started = true;
-            firePropertyChange(P_LATE_INIT, null, null);
-        }
-        ViManager.motdOutputOnce();
-        exitInputMode(); // if switching, make sure prev out of input mode
-        draggingBlockMode = false;
-        ViTextView currentTv = null;
-        if (currentEditorPane != null) {
-            currentTv = mayCreateTextView(currentEditorPane);
-            firePropertyChange(P_SWITCH_FROM_WIN, currentTv, null);
-        }
-        boolean newTextView = fact().getTextView(editor) == null;
-        ViTextView textView = mayCreateTextView(editor);
-        Buffer buf = textView.getBuffer();
-        fact().setupCaret(editor); // make sure has the right caret
-        textView.attach();
-        if (G.dbgEditorActivation.getBoolean()) {
-            String newStr = newTextView ? "NEW: " : "";
-            System.err.println("Activation: ViManager.SWITCHTO: " + newStr +
-                    cid(editor) + " " + buf.getDisplayFileName());
-        }
-        if (currentEditorPane != null) {
-            core().abortVisualMode();
-            // MOVED ABOVE: currentTv = mayCreateTextView(currentEditorPane);
-            // Freeze and/or detach listeners from previous active view
-            currentTv.detach();
-        }
-        currentEditorPane = editor;
-        core().switchTo(textView, buf);
-        core().resetCommand(); // Means something first time window switched to
-        buf.activateOptions(textView);
-        textView.activateOptions(textView);
-        setHasSelection(); // a HACK
-        if (newTextView) {
-            firePropertyChange(P_OPEN_WIN, currentTv, textView);
-            editor.addMouseListener(mouseListener);
-            editor.addMouseMotionListener(mouseMotionListener);
-        }
-        if (textView.getBuffer().singleShare())
-            firePropertyChange(P_OPEN_BUF,
-                               currentTv == null ? null : currentTv.getBuffer(),
-                               textView.getBuffer());
-        firePropertyChange(P_SWITCH_TO_WIN, currentTv, textView);
-        Msg.smsg(getFS().getDisplayFileViewInfo(textView));
-    }
-
-    public static ViTextView getCurrentTextView()
-    {
-        return fact().getTextView(currentEditorPane);
-    }
-
-    /**
-     * The arg Component is detached from its text view,
-     * forget about it.
-     */
-    public static void detached(Component ed)
-    {
-        if (currentEditorPane == ed) {
-            if (G.dbgEditorActivation.getBoolean())
-                System.err.println("Activation: ViManager.detached " + cid(ed));
-            currentEditorPane = null;
-        }
-    }
+    //////////////////////////////////////////////////////////////////////
+    //
+    // Command Entry
+    //
 
     /**
      * Pass control to indicated ViCmdEntry widget. If there are
@@ -259,10 +254,10 @@ public class Scheduler extends ViManager
         activeCommandEntry = null;
     }
 
-    public static boolean isMouseDown()
-    {
-        return mouseDown;
-    }
+    //////////////////////////////////////////////////////////////////////
+    //
+    // Mouse related
+    //
 
     static void setHasSelection()
     {
@@ -280,6 +275,11 @@ public class Scheduler extends ViManager
             return;
         core().uiCursorAndModeAdjust();
         hasSelection = nowSelection;
+    }
+
+    public static boolean isMouseDown()
+    {
+        return mouseDown;
     }
 
     /**
@@ -387,6 +387,47 @@ public class Scheduler extends ViManager
             setJViBusy(false);
         }
     }
+
+    private static MouseListener mouseListener = new MouseListener() {
+        public void mouseClicked(MouseEvent e)
+        {
+            mouseClick(e);
+        }
+
+        public void mousePressed(MouseEvent e)
+        {
+            mousePress(e);
+        }
+
+        public void mouseReleased(MouseEvent e)
+        {
+            mouseRelease(e);
+        }
+
+        public void mouseEntered(MouseEvent e)
+        {
+        }
+
+        public void mouseExited(MouseEvent e)
+        {
+        }
+    };
+    private static MouseMotionListener mouseMotionListener =
+            new MouseMotionListener() {
+        public void mouseDragged(MouseEvent e)
+        {
+            mouseDrag(e);
+        }
+
+        public void mouseMoved(MouseEvent e)
+        {
+        }
+    };
+
+    //////////////////////////////////////////////////////////////////////
+    //
+    // Convenience
+    //
 
     private static ViFactory fact()
     {

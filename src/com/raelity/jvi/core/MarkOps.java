@@ -155,8 +155,7 @@ class MarkOps
         }
 
         if (Util.isupper(c)) {	// NEEDSWORK: upper case marks
-            if(ViManager.getViFactory().isNomadic(G.curwin.getEditorComponent(),
-                                                  null)) {
+            if(G.curwin.getAppView().isNomad()) {
                 Msg.emsg("Can not 'mark' a nomadic editor");
                 return FAIL;
             }

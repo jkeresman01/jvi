@@ -23,6 +23,9 @@ package com.raelity.jvi.swing;
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.manager.ViManager;
 import java.awt.Container;
+import java.awt.Point;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.text.JTextComponent;
 
 /**
@@ -60,16 +63,54 @@ public abstract class AppView implements ViAppView
         return wnum;
     }
 
+    public boolean isShowing()
+    {
+        return e.isShowing();
+    }
+
+    public JTextComponent getEditor()
+    {
+        return e;
+    }
+
+    public void sort(List<ViAppView> avs)
+    {
+        Collections.sort(avs);
+    }
+
+    public int compareTo(ViAppView o)
+    {
+        Point w1 = getLocation(this);
+        Point w2 = getLocation(o);
+
+        int rv;
+        // Specific implementations may want to use
+        // if(Math.abs(w1.x - w2.x) > ##) if an
+        // editor's margin may vary between the open editors
+        if(w1.x != w2.x)
+            rv = w1.x - w2.x;
+        else
+            rv = w1.y - w2.y;
+        // System.err.format("Comp rv %d\n    %s%s\n    %s%s\n",
+        //         rv, this, w1, o, w2);
+        return rv;
+    }
+
+    protected Point getLocation(ViAppView av)
+    {
+        Point p;
+        if(av.getEditor() != null)
+            p = av.getEditor().getLocationOnScreen();
+        else
+            p = new Point(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        return p;
+    }
+
+
     /** Note this is not part of the ViAppView interface,
      * override to cast in more convenient form. */
     protected Container getAppContainer() {
         return c;
-    }
-
-    /** Override this to cast in more convenient form */
-    protected JTextComponent getTextComponent()
-    {
-        return e;
     }
 
     @Override

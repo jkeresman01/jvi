@@ -54,6 +54,7 @@ import static com.raelity.jvi.core.ColonCommandFlags.*;
 
 import java.io.*;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -68,7 +69,7 @@ import javax.swing.text.Position;
  * and in some instances execution of ":" commands. Some internal vi
  * commands, e.g. set, are executed here. Colon commands are added to
  * the list of avaialable commands through the
- * {@link #register} method.
+ * {@link #open} method.
  * <p>
  * A command is represented by an {@link java.awt.event.ActionListener}.
  * A {@link javax.swing.Action} could be used. Only commands that subclass
@@ -2099,13 +2100,30 @@ static ColonAction ACTION_edit = new ColonAction() {
                     }
                 }
                 if( ! error) {
-                    ViManager.getFS().edit(
-                            cev.getViTextView(), cev.isBang(), i);
+                    ViAppView av = null;
+                    // Look up the appView. If i >= 0 then find app view
+                    // with window that matches that number (standard vim).
+                    // If i < 0 then use it to index into the mru list.
+                    if(i >= 0) {
+                        for (ViAppView av1 : AppViews.getList(AppViews.ACTIVE)) {
+                            if(i == av1.getWNum()) {
+                                av = av1;
+                                break;
+                            }
+                        }
+                    } else {
+                        av = AppViews.getMruAppView(-i);
+                    }
+                    if(av != null)
+                        ViManager.getFS().edit(av, cev.isBang());
+                    else
+                        Msg.emsg("No alternate file name to substitute for '#"
+                                + i + "'");
                 }
             } else if ( cev.getNArg() < 2) {
                 String fName = cev.getNArg() == 0 ? null : cev.getArg(1);
                 ViManager.getFS().edit(
-                        cev.getViTextView(), cev.isBang(), fName);
+                        cev.getViTextView(), cev.isBang(), new File(fName));
             } else {
                 Msg.emsg(":edit only accepts none or one argument");
             }
@@ -2147,7 +2165,7 @@ static ColonAction ACTION_global = new ColonAction() {
     };
 
 /** This is the default buffers,files,ls command. The platform specific code
-    * may chose to register this, or implement their own, possibly using
+    * may chose to open this, or implement their own, possibly using
     * popup gui components.
     */
 public static ActionListener ACTION_BUFFERS = new ActionListener() {
@@ -2158,19 +2176,21 @@ public static ActionListener ACTION_BUFFERS = new ActionListener() {
                     "=== MRU (:n :N :e#-<digit>) ===                "
                         + "=== activation (:e#<digit> ===");
             int i = 0;
-            ViAppView cur = AppViews.relativeMruBuffer(0);
-            ViAppView prev = AppViews.getMruBuffer(1);
+            ViAppView cur = AppViews.relativeMruAppView(0);
+            ViAppView prev = AppViews.getMruAppView(1);
 
-            List<String> l = new ArrayList<String>();
+            List<String> outputData = new ArrayList<String>();
             ViFactory factory = ViManager.getViFactory();
-            while(true) {
-                ViAppView o1 = AppViews.getMruBuffer(i);
-                ViAppView o2 = AppViews.getTextBuffer(i+1);
-                if(o1 == null && o2 == null) {
-                    break;
-                }
+            List<ViAppView> l1 = AppViews.getList(AppViews.MRU);
+            List<ViAppView> l2 = AppViews.getList(AppViews.ACTIVE);
+            assert l1.size() == l2.size();
+            while(i < l1.size()) {
+                //ViAppView o1 = AppViews.getMruAppView(i);
+                //ViAppView o2 = AppViews.getAppView(i+1);
+                ViAppView o1 = l1.get(i);
+                ViAppView o2 = l2.get(i);
                 int w2 = o2.getWNum();
-                l.add(String.format(
+                outputData.add(String.format(
                         " %2d %c %-40s %3d %c %s",
                         i,
                         cur != null && cur.equals(o1) ? '%'
@@ -2183,8 +2203,8 @@ public static ActionListener ACTION_BUFFERS = new ActionListener() {
                 i++;
             }
             // print in reverse order, MRU visible if scrolling
-            for(int i01 = l.size() -1; i01 >= 0; i01--) {
-                osa.println(l.get(i01));
+            for(int i01 = outputData.size() -1; i01 >= 0; i01--) {
+                osa.println(outputData.get(i01));
             }
             osa.close();
         }

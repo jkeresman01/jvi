@@ -77,19 +77,11 @@ public interface ViFS
      */
     public boolean writeAll( boolean force );
 
-
-    /**
-     *  Edit the nth file. If n &lt; 0 then n is MRU,
-     * for example n == -1 is previous file and n == -2 is the
-     * file before that. Display MRU list with ":ls" command.
-     */
-    public void edit( ViTextView tv, boolean force, int n );
-
     /**
      * Focus on this editor.
      * @param av the editor to start working on
      */
-    public void edit(ViAppView av);
+    public void edit(ViAppView av, boolean force);
 
 
     /**

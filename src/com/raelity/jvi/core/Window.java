@@ -110,6 +110,11 @@ public abstract class Window implements ViTextView
         }
     }
 
+    public void activateOptions(ViTextView tv) {
+        if(G.dbgEditorActivation.getBoolean() && getAppView().isNomad())
+            System.err.println("ACTIVATING OPTIONS FOR NOMAD");
+    }
+
     /**
      * This is invoked by a subclass to indicate that the size of the
      * view has changed.

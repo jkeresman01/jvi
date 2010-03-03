@@ -2,8 +2,6 @@ package com.raelity.jvi.manager;
 
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.core.G;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -20,6 +18,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Parse and output the jVi motd data.
@@ -55,9 +55,9 @@ class Motd
     List<OutputHandler> outputList =
             new ArrayList<OutputHandler>(5);
 
-    static void get(ActionListener action)
+    static void get(ChangeListener change)
     {
-        new GetMotd(action).start();
+        new GetMotd(change).start();
     }
 
     Motd()
@@ -218,10 +218,10 @@ class Motd
     {
         private static final int BUF_LEN = 1024;
         private static final int MAX_MSG = 8 * 1024;
-        private ActionListener action;
+        private ChangeListener change;
 
-        GetMotd(ActionListener action) {
-            this.action = action;
+        GetMotd(ChangeListener change) {
+            this.change = change;
         }
 
         @Override
@@ -266,8 +266,7 @@ class Motd
                 }
                 in.close();
 
-                action.actionPerformed(new ActionEvent(
-                        new Motd(sb.toString()), 0, null));
+                change.stateChanged(new ChangeEvent(new Motd(sb.toString())));
             } catch (IOException ex) {
                 if(ViManager.isDebugAtHome())
                     ex.printStackTrace();

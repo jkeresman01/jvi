@@ -36,32 +36,6 @@ import java.util.Iterator;
  */
 abstract public class abstractFS implements ViFS
 {
-    /**
-     * Look up the appView. If i ge 0 then find app view with window that
-     * matches that number. If i lt 0 then use it to index into the mru list.
-     * @param i
-     * @return
-     */
-    //
-    // NEEDSWORK: this is static and app independent
-    //
-    protected ViAppView getAppViewByNumber(int i)
-    {
-        ViAppView av = null;
-        if(i >= 0) {
-            Iterator<ViAppView> iter = AppViews.getTextBufferIterator();
-            while(iter.hasNext()) {
-                ViAppView av01 = iter.next();
-                if(i == av01.getWNum()) {
-                    av = av01;
-                    break;
-                }
-            }
-        } else {
-            av = AppViews.getMruBuffer(-i);
-        }
-        return av;
-    }
 
     //
     // NEEDSWORK: this is static and app independent
@@ -88,14 +62,10 @@ abstract public class abstractFS implements ViFS
             sb.append(" --" + percent + "%--");
             sb.append(" col " + win.w_cursor.getColumn());
         }
-        if(av != null) {
-            if(av.isNomad()) {
-                sb.append("(nomad");
-                if(!tv.isEditable())
-                    sb.append(",no-edit");
-                sb.append(")");
-            }
-        }
+        if(av != null && av.isNomad())
+            sb.append(" [nomad]");
+        if(!tv.isEditable())
+            sb.append(" [not-editable]");
         return sb.toString();
     }
 

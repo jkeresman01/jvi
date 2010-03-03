@@ -46,6 +46,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.openide.util.Lookup;
 
 /**
@@ -201,8 +203,9 @@ public class ViManager
         // Add the vim clipboards
 
         // Spawn to get current release info
-        Motd.get(new ActionListener() {
-            public void actionPerformed(ActionEvent e)
+        // Note this is async
+        Motd.get(new ChangeListener() {
+            public void stateChanged(ChangeEvent e)
             {
                 motd = (Motd)e.getSource();
             }
@@ -433,7 +436,7 @@ public class ViManager
     {
         Set<ViTextView> s = factory.getViTextViewSet();
         for (ViTextView tv : s) {
-            if(tv.getEditorComponent().isShowing())
+            if(tv.getAppView().isShowing())
                 tv.updateHighlightSearchState();
         }
     }
@@ -523,8 +526,8 @@ public class ViManager
     }
 
     static void debugMotd() {
-        Motd.get(new ActionListener() {
-            public void actionPerformed(ActionEvent e)
+        Motd.get(new ChangeListener() {
+            public void stateChanged(ChangeEvent e)
             {
                 ((Motd)e.getSource()).output();
             }

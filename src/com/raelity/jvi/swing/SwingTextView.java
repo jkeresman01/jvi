@@ -203,8 +203,10 @@ public class SwingTextView extends Window
     }
 
 
+    @Override
     public void activateOptions( ViTextView tv )
     {
+        super.activateOptions(tv);
         updateHighlightSearchState();
     }
 
