@@ -166,7 +166,8 @@ public enum AppViews
         if (fact() != null && G.dbgEditorActivation.getBoolean()) {
             String fname = fact().getFS().getDisplayFileName(av);
             System.err.println("Activation: AppViews.close: " +
-                    (ed == null ? "(no shutdown) " : "") + fname);
+                    (ed == null ? "(no shutdown) " : "")
+                    + fname + " " + ViManager.cid(ed));
         }
         ViTextView tv = fact().getTextView(ed);
         if (tv != null) {
@@ -183,6 +184,7 @@ public enum AppViews
         avsMRU.remove(av);
         avs.remove(av);
         avsNomads.remove(new WeakAppView(av));
+        Scheduler.forgetEditorComponentHack(ed);
     }
 
     /**

@@ -38,6 +38,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -114,6 +115,19 @@ public class Scheduler extends ViManager
         Msg.smsg(getFS().getDisplayFileViewInfo(textView));
     }
 
+    //
+    // HACK to workaround a NetBeans and/or JVM bug
+    // Bug 181490 -  JEditorPane gets focus after top component is closed
+    // With this hack if the very next focusGained component is the same
+    // as the one just set with forgetEditorComponentHack then ignore the focus
+    // gained.
+    //
+    static WeakReference<Component> forgetEditorHack;
+    static void forgetEditorComponentHack(Component c)
+    {
+        forgetEditorHack = new WeakReference<Component>(c);
+    }
+
     private static FocusListener focusSwitcher = new FocusAdapter()
     {
         @Override
@@ -121,7 +135,14 @@ public class Scheduler extends ViManager
         {
             Component c = e.getComponent();
             if(c != null) {
-                switchTo(c);
+                boolean skipSwitch = false;
+                if(forgetEditorHack != null
+                        && forgetEditorHack.get() == c) {
+                    skipSwitch = true;
+                }
+                forgetEditorHack = null;
+                if(!skipSwitch)
+                    switchTo(c);
             }
         }
     };
