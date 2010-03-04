@@ -27,9 +27,11 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import com.raelity.jvi.ViTextView.TAGOP;
+import com.raelity.jvi.core.WindowTreeBuilder;
 import java.awt.Component;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
+import java.util.List;
 
 /**
  * This provides Vi the items it needs to interface with
@@ -77,6 +79,8 @@ public interface ViFactory
      * This editor pane is going away, forget about it.
      */
     public void shutdown(Component editor);
+
+    public WindowTreeBuilder getWindowTreeBuilder(List<ViAppView> avs);
 
   /*
    * Setup editor pane caret for use with vi.

@@ -21,7 +21,6 @@
 package com.raelity.jvi;
 
 import java.awt.Component;
-import java.util.List;
 
 /**
  * This is a handle for a platform edit window.
@@ -57,7 +56,7 @@ import java.util.List;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public interface ViAppView extends Comparable<ViAppView>
+public interface ViAppView
 {
     /**
      * The editable component which is associated with
@@ -91,11 +90,4 @@ public interface ViAppView extends Comparable<ViAppView>
      */
     public int getWNum();
 
-    /**
-     * Sort the list. Typically an implementation will simple invoke
-     * Collections.sort(avs). But this method is provided in case the
-     * platform needs to do some preparation
-     * @param avs the list to sort
-     */
-    public void sort(List<ViAppView> avs);
 }

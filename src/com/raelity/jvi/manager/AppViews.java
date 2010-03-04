@@ -419,9 +419,10 @@ public enum AppViews
      */
     public static void sortAppView(List<ViAppView> avs)
     {
-        if(avs.size() < 1)
-            return;
-        avs.iterator().next().sort(avs);
+        List<ViAppView> avs01 = ViManager.getFactory()
+                .getWindowTreeBuilder(avs).processAppViews();
+        avs.clear();
+        avs.addAll(avs01);
     }
 
     private static Point getLocation(ViAppView av)

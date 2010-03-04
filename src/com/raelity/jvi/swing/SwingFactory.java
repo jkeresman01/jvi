@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.core.WindowTreeBuilder;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.ColonCommands;
@@ -30,6 +31,7 @@ import  com.raelity.jvi.*;
 import  com.raelity.jvi.ViTextView.TAGOP;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.manager.Scheduler;
+import com.raelity.jvi.swing.simple.SimpleWindowTreeBuilder;
 
 import  javax.swing.Action;
 import  javax.swing.JDialog;
@@ -54,6 +56,7 @@ import  java.beans.IntrospectionException;
 import  java.beans.PropertyDescriptor;
 import  java.util.Collections;
 import  java.util.HashSet;
+import java.util.List;
 import  java.util.Map;
 import  java.util.Set;
 import  java.util.WeakHashMap;
@@ -124,6 +127,11 @@ abstract public class SwingFactory implements ViFactory
     public Action createKeyAction( String name, char key )
     {
         return new EnqueKeyAction(name, key);
+    }
+
+    public WindowTreeBuilder getWindowTreeBuilder(List<ViAppView> avs)
+    {
+        return new SimpleWindowTreeBuilder(avs);
     }
 
     //////////////////////////////////////////////////////////////////////

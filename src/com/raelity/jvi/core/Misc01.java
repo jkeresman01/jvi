@@ -157,8 +157,10 @@ public class Misc01
         }
         AppViews.sortAppView(avs);
 
+        // n is in range 1..n, put into range 0..(n-1)
+        --n;
         if(n >= avs.size())
-            n = avs.size() -1;
+            n = avs.size() -1; // last window
 
         ViManager.getFS().edit(avs.get(n), false);
     }
