@@ -91,13 +91,13 @@ public class WindowCmdEntry extends CommandLine.CommandLineEntry {
 
         static private CommandLineWindow get(CommandLine commandLine,
                                    Window owner,
-                                   String title) {
-            // NEEDSWORK: create (Dialog)owner, when want to allow searching
-            //            in nomadic editors.
-            // NOTE: in JDK 1.6 can pass a window to JDialog constructor
-            CommandLineWindow d = owner instanceof Frame
-                    ? new CommandLineWindow((Frame)owner)
-                    : new CommandLineWindow((Dialog)owner);
+                                   String title)
+        {
+            if(!(owner instanceof Frame || owner instanceof Dialog))
+                owner = null; // e.g. owner is a JWindow, only Frame,Dialog ok
+
+            CommandLineWindow d = new CommandLineWindow(owner);
+
             d.setUndecorated(true);
             d.add(commandLine, BorderLayout.NORTH);
             d.pack();
@@ -105,12 +105,8 @@ public class WindowCmdEntry extends CommandLine.CommandLineEntry {
             return d;
         }
 
-        private CommandLineWindow(Frame owner) {
-            super(owner, true);
-        }
-
-        private CommandLineWindow(Dialog owner) {
-            super(owner, true);
+        private CommandLineWindow(Window owner) {
+            super(owner, DEFAULT_MODALITY_TYPE);
         }
     }
 }
