@@ -73,7 +73,7 @@ public class Misc extends CoreMethodHooks implements ClipboardOwner {
   // "misc1.c"
   //
 
-    @ServiceProvider(service=ViInitialization.class)
+    @ServiceProvider(service=ViInitialization.class, path="jVi/init")
     public static class Init implements ViInitialization
     {
       public void init()

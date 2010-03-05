@@ -60,7 +60,7 @@ public class KeyBinding {
   private static Preferences prefs = ViManager.getFactory()
                                 .getPreferences().node(ViManager.PREFS_KEYS);
 
-    @ServiceProvider(service=ViInitialization.class)
+    @ServiceProvider(service=ViInitialization.class, path="jVi/init")
     public static class Init implements ViInitialization
     {
       public void init()

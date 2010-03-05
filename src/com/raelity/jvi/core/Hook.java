@@ -41,7 +41,7 @@ public class Hook
     private static ViManager.ViManHook manHook;
     private Hook(){}
 
-    @ServiceProvider(service=ViInitialization.class)
+    @ServiceProvider(service=ViInitialization.class, path="jVi/init")
     public static class Init implements ViInitialization
     {
       public void init()

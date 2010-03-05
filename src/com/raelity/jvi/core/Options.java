@@ -70,7 +70,7 @@ public final class Options {
         void cancel();
     }
 
-    @ServiceProvider(service=ViInitialization.class)
+    @ServiceProvider(service=ViInitialization.class, path="jVi/init")
     public static class Init implements ViInitialization
     {
       public void init()

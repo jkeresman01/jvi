@@ -49,6 +49,7 @@ import java.util.prefs.Preferences;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * <p>
@@ -189,6 +190,11 @@ public class ViManager
         ViManager.factory = factory;
 
         for (ViInitialization i : Lookup.getDefault().lookupAll(ViInitialization.class)) {
+            i.init();
+        }
+
+        for (ViInitialization i : Lookups.forPath("jVi/init")
+                                        .lookupAll(ViInitialization.class)) {
             i.init();
         }
 

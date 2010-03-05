@@ -71,7 +71,7 @@ class MarkOps
     /** This constant indicates mark is in other file. */
     final static FPOS otherFile = new FPOS();
 
-    @ServiceProvider(service=ViInitialization.class)
+    @ServiceProvider(service=ViInitialization.class, path="jVi/init")
     public static class Init implements ViInitialization
     {
       public void init()
