@@ -184,7 +184,6 @@ public enum AppViews
         avsMRU.remove(av);
         avs.remove(av);
         avsNomads.remove(new WeakAppView(av));
-        Scheduler.forgetEditorComponentHack(ed);
     }
 
     /**

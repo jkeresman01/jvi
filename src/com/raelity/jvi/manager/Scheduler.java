@@ -115,19 +115,6 @@ public class Scheduler extends ViManager
         Msg.smsg(getFS().getDisplayFileViewInfo(textView));
     }
 
-    //
-    // HACK to workaround a NetBeans and/or JVM bug
-    // Bug 181490 -  JEditorPane gets focus after top component is closed
-    // With this hack if the very next focusGained component is the same
-    // as the one just set with forgetEditorComponentHack then ignore the focus
-    // gained.
-    //
-    static WeakReference<Component> forgetEditorHack;
-    static void forgetEditorComponentHack(Component c)
-    {
-        forgetEditorHack = new WeakReference<Component>(c);
-    }
-
     private static FocusListener focusSwitcher = new FocusAdapter()
     {
         @Override
@@ -135,13 +122,8 @@ public class Scheduler extends ViManager
         {
             Component c = e.getComponent();
             if(c != null) {
-                boolean skipSwitch = false;
-                if(forgetEditorHack != null
-                        && forgetEditorHack.get() == c) {
-                    skipSwitch = true;
-                }
-                forgetEditorHack = null;
-                if(!skipSwitch)
+                // Bug 181490 -  JEditorPane gets focus after TC is closed
+                if(c.isDisplayable()) // insure component has a peer
                     switchTo(c);
             }
         }
