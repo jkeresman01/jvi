@@ -1528,7 +1528,7 @@ first_submatch(RegExp rp)
 
     if(cmdExec.equals("")) {
       // if no command specified then "p" command
-      cmdAction = ColonCommands.ACTION_print;
+      cmdAction = Cc01.getActionPrint();
     } else {
       cevAction = ColonCommands.parseCommand(cmdExec);
       if(cevAction != null) {
@@ -1546,7 +1546,7 @@ first_submatch(RegExp rp)
     // deleted.
     
     ViOutputStream result = null;
-    if(cmdAction == ColonCommands.ACTION_print) {
+    if(cmdAction == Cc01.getActionPrint()) {
       result = ViManager.createOutputStream(G.curwin,
                                             ViOutputStream.SEARCH, pattern);
     } else {
@@ -1566,13 +1566,13 @@ first_submatch(RegExp rp)
 	  cevAction.line1 = lnum;
 	  cevAction.line2 = lnum;
 	}
-	if(cmdAction == ColonCommands.ACTION_print) {
+	if(cmdAction == Cc01.getActionPrint()) {
 	    result.println(lnum, prog.start(0) - line.offset, prog.length(0));
-	} else if(cmdAction == ColonCommands.ACTION_substitute) {
+	} else if(cmdAction == Cc01.getActionSubstitute()) {
 	  ColonCommands.executeCommand(cevAction);
           if(substFlags != null && substFlags.testAnyBits(SUBST_QUIT))
             break;
-	} else if(cmdAction == ColonCommands.ACTION_delete) {
+	} else if(cmdAction == Cc01.getActionDelete()) {
 	  OPARG oa = ColonCommands.setupExop(cevAction, false);
 	  oa.op_type = OP_DELETE;
 	  Misc.op_delete(oa);
@@ -1580,7 +1580,7 @@ first_submatch(RegExp rp)
 	  // A line has just been deleted
 	  --nLine;
 	  --lnum;
-	} else if(cmdAction == ColonCommands.ACTION_global) {
+	} else if(cmdAction == Cc01.getActionGlobal()) {
 	  Msg.emsg("Cannot do :global recursively");
 	  return;
 	} else {

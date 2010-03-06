@@ -72,7 +72,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.3.0.x2");
+    public static final jViVersion version = new jViVersion("1.3.0.x3");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -190,6 +190,8 @@ public class ViManager
 
         for (ViInitialization i : Lookups.forPath("jVi/init")
                                         .lookupAll(ViInitialization.class)) {
+            if(isDebugAtHome())
+                System.err.println("INIT: " + i.getClass().getName());
             i.init();
         }
 

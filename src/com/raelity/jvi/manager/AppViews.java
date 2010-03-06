@@ -22,12 +22,16 @@ package com.raelity.jvi.manager;
 
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViFactory;
+import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Buffer;
+import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Msg;
 import java.awt.Component;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.PrintStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -36,6 +40,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * These static methods are used by the platform to inform jVi of the state
@@ -84,6 +89,26 @@ public enum AppViews
             new LinkedHashSet<WeakAppView>();
     private static ViAppView avCurrentlyActive;
     private static ViAppView keepMru;
+
+    @ServiceProvider(service=ViInitialization.class, path="jVi/init")
+    public static class Init implements ViInitialization
+    {
+      public void init()
+      {
+        AppViews.init();
+      }
+    }
+
+    private static void init()
+    {
+        ColonCommands.register("jviDump", "jviDump", new ActionListener()
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+                AppViews.dump(System.err);
+            }
+        });
+    }
 
     /**
      * The application invokes this whenever a file becomes selected

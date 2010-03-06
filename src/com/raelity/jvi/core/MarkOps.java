@@ -81,6 +81,9 @@ class MarkOps
     }
 
     private static void init() {
+        ColonCommands.register("marks", "marks", ACTION_do_marks);
+        ColonCommands.register("delm", "delmarks", ACTION_ex_delmarks);
+
         PropertyChangeListener pcl = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 String pname = evt.getPropertyName();
@@ -447,14 +450,14 @@ class MarkOps
                 : win.w_jumplist.indexOf(indexedMark);
     }
 
-    static ColonAction ACTION_do_marks = new DoMarks();
-    static ColonAction ACTION_ex_delmarks = new ExDelmarks();
+    private static ColonAction ACTION_do_marks = new DoMarks();
+    private static ColonAction ACTION_ex_delmarks = new ExDelmarks();
 
     /**
      * print the marks
      */
-    private static class DoMarks extends ColonAction {
-
+    private static class DoMarks extends ColonAction
+    {
         public void actionPerformed(ActionEvent ev) {
             ColonEvent cev = (ColonEvent)ev;
 
@@ -588,8 +591,8 @@ class MarkOps
     // #endif
     }
 
-    private static class ExDelmarks extends ColonAction {
-
+    private static class ExDelmarks extends ColonAction
+    {
         @Override
         public int getFlags() {
             return ColonCommandFlags.BANG;

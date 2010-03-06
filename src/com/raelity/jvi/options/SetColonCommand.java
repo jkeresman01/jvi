@@ -1,5 +1,6 @@
 package com.raelity.jvi.options;
 
+import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViOptionBag;
 import com.raelity.jvi.ViOutputStream;
@@ -8,9 +9,6 @@ import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.core.Options;
-import com.raelity.jvi.options.BooleanOption;
-import com.raelity.jvi.options.IntegerOption;
-import com.raelity.jvi.options.Option;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Field;
@@ -19,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Implement ":se[t]".
@@ -34,6 +33,20 @@ import java.util.logging.Logger;
 public class SetColonCommand extends ColonCommands.ColonAction
 {
   private static Logger LOG = Logger.getLogger(SetColonCommand.class.getName());
+
+    @ServiceProvider(service=ViInitialization.class, path="jVi/init")
+    public static class Init implements ViInitialization
+    {
+      public void init()
+      {
+        SetColonCommand.init();
+      }
+    }
+
+    private static void init()
+    {
+        ColonCommands.register("se", "set", new SetColonCommand());
+    }
 
   public static class SetCommandException extends Exception
   {
