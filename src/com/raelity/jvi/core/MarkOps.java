@@ -595,7 +595,7 @@ class MarkOps
     {
         @Override
         public int getFlags() {
-            return ColonCommandFlags.BANG;
+            return BANG;
         }
 
         public void actionPerformed(ActionEvent e) {

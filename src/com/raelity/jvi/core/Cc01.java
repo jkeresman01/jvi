@@ -50,7 +50,6 @@ import javax.swing.text.Position;
 import org.openide.util.lookup.ServiceProvider;
 
 import static com.raelity.jvi.core.Constants.*;
-import static com.raelity.jvi.core.ColonCommandFlags.*;
 
 /**
  *

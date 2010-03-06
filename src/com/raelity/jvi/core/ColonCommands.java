@@ -40,7 +40,7 @@ import javax.swing.Action;
 import com.raelity.jvi.manager.Scheduler;
 
 import static com.raelity.jvi.core.Constants.*;
-import static com.raelity.jvi.core.ColonCommandFlags.*;
+import static com.raelity.jvi.core.ColonCommands.Flags.*;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -547,12 +547,12 @@ public static boolean deregister( String abbrev )
  */
 public abstract static class ColonAction
         extends AbstractAction
-        implements ColonCommandFlags
+        implements Flags
 {
     /**
      * Specify some of the commands argument handling. This default
      * implementation returns zero.
-     * @see ColonCommandFlags
+     * @see Flags
      */
     public int getFlags()
     {
@@ -816,6 +816,64 @@ static void closePrint()
     }
     printStream.close();
     printStream = null;
+}
+
+/**
+ * Flags used to direct ":" command parsing. Only some of these
+ * are used.
+ */
+public interface Flags {
+  /** allow a linespecs */
+  public static final int RANGE   = 0x01;
+  /** allow a ! after the command name (--USED--) */
+  public static final int BANG	   = 0x02;
+  /** allow extra args after command name */
+  public static final int EXTRA   = 0x04;       // -- XXX
+  /** expand wildcards in extra part */
+  public static final int XFILE   = 0x08;
+  /** no spaces allowed in the extra part */
+  public static final int NOSPC   = 0x10;
+  /** default file range is 1,$ */
+  public static final int DFLALL  = 0x20;
+  /** dont default to the current file name */
+  public static final int NODFL   = 0x40;
+  /** argument required */
+  public static final int NEEDARG = 0x80;
+  /** check for trailing vertical bar */
+  public static final int TRLBAR  = 0x100;
+  /** allow "x for register designation */
+  public static final int REGSTR  = 0x200;
+  /** allow count in argument, after command */
+  public static final int COUNT   = 0x400;
+  /** no trailing comment allowed */
+  public static final int NOTRLCOM  = 0x800;
+  /** zero line number allowed */
+  public static final int ZEROR   = 0x1000;
+  /** do not remove CTRL-V from argument */
+  public static final int USECTRLV = 0x2000;
+  /** num before command is not an address */
+  public static final int NOTADR = 0x4000;
+  /** has "+command" argument */
+  public static final int EDITCMD = 0x8000;
+  /** accepts buffer name */
+  public static final int BUFNAME = 0x10000;
+  /** multiple extra files allowed */
+  public static final int FILES   = (XFILE | EXTRA);
+  /** one extra word allowed */
+  public static final int WORD1   = (EXTRA | NOSPC);
+  /** 1 file allowed, defaults to current file */
+  public static final int FILE1   = (FILES | NOSPC);
+  /** 1 file allowed, defaults to "" */
+  public static final int NAMEDF  = (FILE1 | NODFL);
+  /** multiple files allowed, default is "" */
+  public static final int NAMEDFS = (FILES | NODFL);
+
+
+  //
+  // Additional stuff
+  //
+  /** don't parse command into words, arg1 is one big line. */
+  public static final int NOPARSE = 0x00020000;
 }
 
 } // end com.raelity.jvi.ColonCommand
