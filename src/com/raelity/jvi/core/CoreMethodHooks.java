@@ -57,6 +57,7 @@ static char gchar_cursor() { return Misc.gchar_cursor(); }
 static void getvcol(ViTextView tv, ViFPOS fpos, MutableInt start,
                             MutableInt cursor, MutableInt end)
                     { Misc.getvcol(tv, fpos, start, cursor, end); }
+static int inc(ViFPOS lp) { return Misc.inc(lp); }
 static int inc_cursor() { return Misc.inc_cursor(); }
 static int inc_cursorV7() { return Misc.inc_cursorV7(); }
 static int inclV7(ViFPOS pos) { return Misc.inclV7(pos); }

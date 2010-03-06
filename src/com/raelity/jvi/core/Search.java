@@ -404,9 +404,12 @@ public class Search extends CoreMethodHooks {
    * are reported as class 1 since only white space boundaries are of interest.
    */
   private static int cls() {
+    return cls(G.curwin.w_cursor);
+  }
+  private static int cls(ViFPOS fpos) {
     char    c;
 
-    c = Misc.gchar_cursor();
+    c = gchar_pos(fpos);
     if (c == ' ' || c == '\t' || c == '\n')
       return 0;
 
@@ -427,20 +430,26 @@ public class Search extends CoreMethodHooks {
    * If eol is TRUE, last word stops at end of line (for operators).
    */
   static int fwd_word(int count, boolean type, boolean eol) {
+    ViFPOS fpos = G.curwin.w_cursor.copy();
+    int rc = fwd_word(count, type, eol, fpos);
+    G.curwin.setCaretPosition(fpos.getOffset());
+    return rc;
+  }
+  static int fwd_word(int count, boolean type, boolean eol, ViFPOS fpos) {
     int		sclass;	    /* starting class */
     int		i;
     boolean	last_line;
 
     funnyCharsAsWord = type;
     while (--count >= 0) {
-      sclass = cls();
+      sclass = cls(fpos);
 
       //
       // We always move at least one character, unless on the last character
       // in the buffer.
       //
-      last_line = (G.curwin.w_cursor.getLine() == G.curbuf.getLineCount());
-      i = Misc.inc_cursor();
+      last_line = (fpos.getLine() == G.curbuf.getLineCount());
+      i = inc(fpos);
       if (i == -1 || (i == 1 && last_line)) // started at last char in file
 	return FAIL;
       if (i == 1 && eol && count == 0)      // started at last char in line
@@ -450,8 +459,8 @@ public class Search extends CoreMethodHooks {
       // Go one char past end of current word (if any)
       //
       if (sclass != 0)
-	while (cls() == sclass) {
-	  i = Misc.inc_cursor();
+	while (cls(fpos) == sclass) {
+	  i = inc(fpos);
 	  if (i == -1 || (i == 1 && eol && count == 0))
 	    return OK;
 	}
@@ -459,16 +468,16 @@ public class Search extends CoreMethodHooks {
       //
       // go to next non-white
       //
-      while (cls() == 0) {
+      while (cls(fpos) == 0) {
 	//
 	// We'll stop if we land on a blank line
 	//
-	if(G.curwin.w_cursor.getColumn() == 0
-	   	&& Misc.gchar_cursor() == '\n') {
+	if(fpos.getColumn() == 0
+	   	&& gchar_pos(fpos) == '\n') {
 	  break;
 	}
 
-	i = Misc.inc_cursor();
+	i = inc(fpos);
 	if (i == -1 || (i == 1 && eol && count == 0))
 	  return OK;
       }
@@ -484,37 +493,42 @@ public class Search extends CoreMethodHooks {
    * @return FAIL if top of the file was reached.
    */
   static int bck_word(int count, boolean type, boolean stop) {
+    ViFPOS fpos = G.curwin.w_cursor.copy();
+    int rc = bck_word(count, type, stop, fpos);
+    G.curwin.setCaretPosition(fpos.getOffset());
+    return rc;
+  }
+  static int bck_word(int count, boolean type, boolean stop, ViFPOS fpos) {
     int		sclass;	    /* starting class */
 
     funnyCharsAsWord = type;
     while (--count >= 0) {
-      sclass = cls();
-      if (Misc.dec_cursor() == -1)     /* started at start of file */
+      sclass = cls(fpos);
+      if (dec(fpos) == -1)     /* started at start of file */
 	return FAIL;
 
 finished_block:
       do {
-	if (!stop || sclass == cls() || sclass == 0) {
+	if (!stop || sclass == cls(fpos) || sclass == 0) {
 	  //
 	  // Skip white space before the word.
 	  // Stop on an empty line.
 	  //
-	  while (cls() == 0) {
-	    ViFPOS fpos = G.curwin.w_cursor;
+	  while (cls(fpos) == 0) {
 	    if (fpos.getColumn() == 0 && Util.lineempty(fpos.getLine()))
 	      break finished_block;
-	    if (Misc.dec_cursor() == -1)   // hit start of file, stop here
+	    if (dec(fpos) == -1)   // hit start of file, stop here
 	      return OK;
 	  }
 
 	  //
 	  // Move backward to start of this word.
 	  //
-	  if (skip_chars(cls(), BACKWARD))
+	  if (skip_chars(cls(fpos), BACKWARD, fpos))
 	    return OK;
 	}
 
-	Misc.inc_cursor();		 // overshot - forward one
+	inc(fpos);		 // overshot - forward one
       } while(false); // was a label here - finished:
       stop = false;
     }
@@ -537,12 +551,20 @@ finished_block:
    * @return FAIL if end of the file was reached.
    */
   static int end_word(int count, boolean type, boolean stop, boolean empty) {
+    ViFPOS fpos = G.curwin.w_cursor.copy();
+    int rc = end_word(count, type, stop, empty, fpos);
+    G.curwin.setCaretPosition(fpos.getOffset());
+    return rc;
+  }
+  static int end_word(
+          int count, boolean type, boolean stop, boolean empty, ViFPOS fpos)
+  {
     int		sclass;	    /* starting class */
 
     funnyCharsAsWord = type;
     while (--count >= 0) {
-      sclass = cls();
-      if (Misc.inc_cursor() == -1)
+      sclass = cls(fpos);
+      if (inc(fpos) == -1)
 	return FAIL;
 
 finished_block:
@@ -551,33 +573,32 @@ finished_block:
 	// If we're in the middle of a word, we just have to move to the end
 	// of it.
 	//
-	if (cls() == sclass && sclass != 0) {
+	if (cls(fpos) == sclass && sclass != 0) {
 	  //
 	  // Move forward to end of the current word
 	  //
-	  if (skip_chars(sclass, FORWARD))
+	  if (skip_chars(sclass, FORWARD, fpos))
 	    return FAIL;
 	} else if (!stop || sclass == 0) {
 	  //
 	  // We were at the end of a word. Go to the end of the next word.
 	  // First skip white space, if 'empty' is TRUE, stop at empty line.
 	  //
-	  while (cls() == 0) {
-	    ViFPOS fpos = G.curwin.w_cursor;
+	  while (cls(fpos) == 0) {
 	    if (empty && fpos.getColumn() == 0
 		&& Util.lineempty(fpos.getLine()))
 	      break finished_block;
-	    if (Misc.inc_cursor() == -1)    // hit end of file, stop here
+	    if (inc(fpos) == -1)    // hit end of file, stop here
 	      return FAIL;
 	  }
 
 	  //
 	  // Move forward to the end of this word.
 	  //
-	  if (skip_chars(cls(), FORWARD))
+	  if (skip_chars(cls(fpos), FORWARD, fpos))
 	    return FAIL;
 	}
-	Misc.dec_cursor();	// overshot - one char backward
+	dec(fpos);	// overshot - one char backward
       } while(false); // was a label here - finished:
 finished:
       stop = false;		// we move only one word less
@@ -593,13 +614,19 @@ finished:
    * @return FAIL if start of the file was reached.
    */
   static int bckend_word(int count, boolean type, boolean eol) {
+    ViFPOS fpos = G.curwin.w_cursor.copy();
+    int rc = bckend_word(count, type, eol, fpos);
+    G.curwin.setCaretPosition(fpos.getOffset());
+    return rc;
+  }
+  static int bckend_word(int count, boolean type, boolean eol, ViFPOS fpos) {
     int		sclass;	    // starting class
     int		i;
 
     funnyCharsAsWord = type;
     while (--count >= 0) {
-      sclass = cls();
-      if ((i = Misc.dec_cursor()) == -1)
+      sclass = cls(fpos);
+      if ((i = dec(fpos)) == -1)
 	return FAIL;
       if (eol && i == 1)
 	return OK;
@@ -608,19 +635,18 @@ finished:
       // Move backward to before the start of this word.
       //
       if (sclass != 0) {
-	while (cls() == sclass)
-	  if ((i = Misc.dec_cursor()) == -1 || (eol && i == 1))
+	while (cls(fpos) == sclass)
+	  if ((i = dec(fpos)) == -1 || (eol && i == 1))
 	    return OK;
       }
 
       //
       // Move backward to end of the previous word
       //
-      while (cls() == 0) {
-	ViFPOS fpos = G.curwin.w_cursor;
+      while (cls(fpos) == 0) {
 	if (fpos.getColumn() == 0 && Util.lineempty(fpos.getLine()))
 	  break;
-	if ((i = Misc.dec_cursor()) == -1 || (eol && i == 1))
+	if ((i = dec(fpos)) == -1 || (eol && i == 1))
 	  return OK;
       }
     }
@@ -632,8 +658,14 @@ finished:
    * @return TRUE when end-of-file reached, FALSE otherwise.
    */
   private static boolean skip_chars(int cclass, int dir) {
-    while (cls() == cclass)
-      if ((dir == FORWARD ? Misc.inc_cursor() : Misc.dec_cursor()) == -1)
+    ViFPOS fpos = G.curwin.w_cursor.copy();
+    boolean rc = skip_chars(cclass, dir, fpos);
+    G.curwin.setCaretPosition(fpos.getOffset());
+    return rc;
+  }
+  private static boolean skip_chars(int cclass, int dir, ViFPOS fpos) {
+    while (cls(fpos) == cclass)
+      if ((dir == FORWARD ? inc(fpos) : dec(fpos)) == -1)
 	return true;
     return false;
   }
