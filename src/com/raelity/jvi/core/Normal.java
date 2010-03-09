@@ -2435,16 +2435,28 @@ middle_code:
       // This converts directly when sel is exclusive
       int textMark = G.VIsual.getOffset();
       int textDot = G.curwin.w_cursor.getOffset();
+      boolean isLineMode = G.VIsual_mode == 'V';
       end_visual_mode();	// stop Visual
       Misc.check_cursor_col();	// make sure cursor is not beyond EOL
       G.curwin.w_set_curswant = true;
       update_curbuf(NOT_VALID);
       Misc.showmode();
-      if(G.p_sel.charAt(0) != 'e') {
-        if(textDot < textMark)
-          textMark++;
-        else
-          textDot++;
+      if(isLineMode) {
+        // adjust dot/mark for full lines
+        if(textDot < textMark) {
+          textDot = G.curbuf.getLineStartOffsetFromOffset(textDot);
+          textMark = G.curbuf.getLineEndOffsetFromOffset(textMark);
+        } else {
+          textDot = G.curbuf.getLineEndOffsetFromOffset(textDot);
+          textMark = G.curbuf.getLineStartOffsetFromOffset(textMark);
+        }
+      } else {
+        if(G.p_sel.charAt(0) != 'e') {
+          if(textDot < textMark)
+            textMark++;
+          else
+            textDot++;
+        }
       }
       G.curwin.setSelection(textDot, textMark);
     }
