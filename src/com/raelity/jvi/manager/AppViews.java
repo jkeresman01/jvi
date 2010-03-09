@@ -325,6 +325,21 @@ public enum AppViews
         return idx;
     }
 
+    public static ViAppView currentAppView(List<ViAppView> avs)
+    {
+        int idx = -1;
+        int i = 0;
+        for (ViAppView av : avs) {
+            if(av.getEditor() != null
+                    && av.getEditor().equals(Scheduler.getCurrentEditor())
+                || av.getEditor() == null
+                    && av.equals(avCurrentlyActive)) {
+                return av;
+            }
+        }
+        return null;
+    }
+
     /**
      * Fetch the Nth buffer, 0 to N-1, from the Mru list.
      * @return the buffer, else null if i is out of bounds.

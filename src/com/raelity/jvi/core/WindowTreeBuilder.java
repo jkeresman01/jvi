@@ -27,6 +27,7 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,6 +52,11 @@ public abstract class WindowTreeBuilder {
     private List<ViAppView> sorted = new ArrayList<ViAppView>();
     private List<Node> roots = new ArrayList<Node>();
 
+    private boolean dbg = false;
+
+    public enum Direction { LEFT, RIGHT, UP, DOWN }
+    public enum Orientation { LEFT_RIGHT, UP_DOWN }
+
     public WindowTreeBuilder(List<ViAppView> avs)
     {
         toDo.addAll(avs);
@@ -67,7 +73,7 @@ public abstract class WindowTreeBuilder {
             Component c = windowForAppView(toDo.iterator().next());
             //allComps(c);
             Node root = buildTree(c);
-            //dumpTree(root, 0);
+            if(dbg)dumpTree(root);
             assert root != null;
             if(root == null)
                 break;
@@ -85,26 +91,71 @@ public abstract class WindowTreeBuilder {
         return Collections.unmodifiableList(sorted);
     }
 
-    private void dumpTree(Node n, int depth)
+    public ViAppView jump(Direction dir, final ViAppView fromAv, int n)
     {
-        //String formatString = String.format("%%"+((depth+1)*4)+"s%%s\\n", "");
-        //System.err.format(formatString, "", n);
-        String shift = String.format("%"+((depth+1)*4)+"s", "");
-        System.err.println(shift + n);
-        for (Node child : n.getChildren()) {
-            dumpTree(child, depth+1);
+        if(n <= 0)
+            n = 1;
+
+        // get the node corresponding to the current app view
+        Visitor v = new Visitor()
+        {
+            @Override
+            void visit(Node node)
+            {
+                if(node.isEditor() && fromAv == getAppView(node.getPeer())) {
+                    foundNode = node;
+                    finished = true;
+                }
+            }
+        };
+
+        for (Node root : roots) {
+            traverse(root, v);
+            if(v.finished())
+                break;
         }
+        Node currentNode = v.foundNode;
+        if(currentNode == null)
+            return null;
+
+        Node targetNode = null;
+        do
+        {
+            currentNode = jump(dir, currentNode);
+            if(currentNode != null)
+                targetNode = currentNode;
+            if(dbg)System.err.println("windowJump: " + dbgName(currentNode));
+        } while(currentNode != null && --n > 0);
+
+        if(targetNode == null)
+            return null;
+        return getAppView(targetNode.getPeer());
+    }
+
+    private void dumpTree(Node n)
+    {
+        traverse(n, new Visitor()
+        {
+            @Override
+            void visit(Node node)
+            {
+                String shift = String.format("%"+((depth+1)*4)+"s", "");
+                System.err.println(shift + node);
+            }
+        });
     }
 
     private void addToSorted(Node n)
     {
-        if(n.isEditor()) {
-            sorted.add(getAppView(n.getPeer()));
-        } else {
-            for (Node n01 : n.children) {
-                addToSorted(n01);
+        traverse(n, new Visitor()
+        {
+            @Override
+            void visit(Node node)
+            {
+                if(node.isEditor())
+                    sorted.add(getAppView(node.getPeer()));
             }
-        }
+        });
     }
 
     private Node buildTree(Component c)
@@ -241,10 +292,41 @@ public abstract class WindowTreeBuilder {
         return new Node(peer, children);
     }
 
-    protected static class Node {
+    /** basically a preorder traversal */
+    private void traverse(Node n, Visitor v)
+    {
+        v.visit(n);
+        if(v.finished())
+            return;
+        ++v.depth;
+        for (Node child : n.getChildren()) {
+            traverse(child, v);
+            if(v.finished())
+                return;
+        }
+        --v.depth;
+    }
+
+    private static abstract class Visitor
+    {
+        int depth;
+        boolean finished;
+        Node foundNode; // hack
+
+        abstract void visit(Node node);
+
+        boolean finished() // to signal early termination
+        {
+            return finished;
+        }
+    }
+
+    protected static class Node
+    {
         private boolean isEditor;
-        private boolean isLeftRight;
+        private Orientation orientation;
         private Component peer;
+        Node parent;
         private List<Node> children;
 
         protected Node(Component peer)
@@ -258,12 +340,15 @@ public abstract class WindowTreeBuilder {
             this.peer = peer;
             this.children = children;
             adjustNode();
+            for (Node child : children) {
+                child.parent = this;
+            }
         }
 
         protected void adjustNode()
         {
             if(children != null && children.size() >= 2)
-                isLeftRight = calcIsLeftRightChildren(
+                orientation = calcOrientation(
                         children.get(0), children.get(1));
         }
 
@@ -277,14 +362,19 @@ public abstract class WindowTreeBuilder {
             return !isEditor;
         }
 
-        public boolean isLeftRight()
+        public Orientation getOrientation()
         {
-            return isLeftRight;
+            return orientation;
         }
 
         public Component getPeer()
         {
             return peer;
+        }
+
+        public Node getParent()
+        {
+            return parent;
         }
 
         public List<Node> getChildren()
@@ -299,18 +389,159 @@ public abstract class WindowTreeBuilder {
             String s = peer.getClass().getSimpleName();
             return isEditor() ? "editor: " + s
                               : "split:  " + s
-                                + (isLeftRight() ? " LeftRight" : " TopBottom");
+                                + (getOrientation() == Orientation.LEFT_RIGHT
+                                    ? " LeftRight" : " TopBottom");
         }
 
-        public static boolean calcIsLeftRightChildren(
+        public static Orientation calcOrientation(
                 Node n01, Node n02)
         {
             Point p1 = n01.getPeer().getLocationOnScreen();
             Point p2 = n02.getPeer().getLocationOnScreen();
             int dX = Math.abs(p1.x - p2.x);
             int dY = Math.abs(p1.y - p2.y);
-            return dX > dY;
+            return dX > dY ? Orientation.LEFT_RIGHT : Orientation.UP_DOWN;
         }
 
+    }
+
+    private Node jump(Direction dir, Node from)
+    {
+        Node to = treeUpFindSiblingNodeForJump(dir, from);
+        if(to == null)
+            return null;
+        to = treeDownFindJumpTarget(dir, to);
+        assert to != null;
+        return to;
+    }
+
+    /**
+     * Move up the tree, following parent link, looking for a targetNode where
+     * we can start going down the tree to get the target window in the
+     * direction.
+     * @param dir
+     * @param targetNode
+     * @return
+     */
+    private Node treeUpFindSiblingNodeForJump(Direction dir, Node node)
+    {
+        Node found = null;
+        while(true) {
+            Node parent = node.getParent();
+            if(parent == null)
+                break;
+            if(dbg)System.err.println("treeUp: " + dbgName(node));
+            if((found = pickSiblingForJump(dir, node)) != null)
+                break;
+            node = parent;
+        }
+        if(dbg)System.err.println("treeUp found: " + dbgName(found));
+        return found;
+    }
+    private String dbgName(Node n)
+    {
+        String s;
+        if(n == null)
+            s = null;
+        else if(n.isEditor()) {
+            s = getAppView(n.getPeer()).toString();
+        } else {
+            s = n.getPeer().getClass().getSimpleName();
+        }
+        return s;
+    }
+
+    /**
+     * Used while moving up the tree to get a sibling that can start the
+     * way down the tree to the target window. The parent targetNode must be
+     * oriented in the goal direction and there must be a sibling in the
+     * goal direction.
+     * @param dir
+     * @param targetNode
+     * @return sibling that satisfies the directional requirement or null
+     */
+    private Node pickSiblingForJump(Direction dir, Node child)
+    {
+        Node parent = child.getParent();
+        if(parent == null)
+            return null;
+        if(parent.getOrientation() != orientation(dir))
+            return null;
+        List<Node> children = parent.getChildren();
+        int idx = children.indexOf(child);
+        idx += (towardsFirst(dir) ? -1 : 1);
+        if(idx < 0 || idx >= children.size())
+            return null;
+        return children.get(idx);
+    }
+
+    /**
+     * Traverse the tree down to find the target window. Notice that the
+     * target window is kind of the "opposite" direction of the jump within
+     * the window targetNode we are jumping into. For example, if jump UP then
+     * in the group above pick the DOWN window.
+     * @param dir
+     * @param targetNode
+     * @return
+     */
+    private Node treeDownFindJumpTarget(Direction dir, Node node)
+    {
+        EnumSet<Direction> dirs = null;
+        switch(dir) {
+            case UP:
+                dirs = EnumSet.of(Direction.LEFT, Direction.DOWN);
+                break;
+            case DOWN:
+                dirs = EnumSet.of(Direction.LEFT, Direction.UP);
+                break;
+            case LEFT:
+                dirs = EnumSet.of(Direction.RIGHT, Direction.UP);
+                break;
+            case RIGHT:
+                dirs = EnumSet.of(Direction.LEFT, Direction.UP);
+                break;
+        }
+
+        while(!node.isEditor()) {
+            node = pickNodeForJumpDirection(dirs, node);
+            if(dbg)System.err.println("treeDown: " + dbgName(node));
+        }
+        return node;
+    }
+
+    private Node pickNodeForJumpDirection(EnumSet<Direction> dirs, Node node)
+    {
+        for (Direction dir : dirs) {
+            Orientation orientation = orientation(dir);
+            if(node.getOrientation() != orientation)
+                continue;
+            List<Node> children = node.getChildren();
+            return towardsFirst(dir) ? children.get(0)
+                                     : children.get(children.size()-1);
+        }
+        return null;
+    }
+
+    private Orientation orientation(Direction dir)
+    {
+        switch (dir) {
+            case LEFT:
+            case RIGHT:
+                return Orientation.LEFT_RIGHT;
+            case UP:
+            case DOWN:
+            default: // to keep compiler happy
+                return Orientation.UP_DOWN;
+        }
+    }
+
+    /**
+     * Return if target is towards the front or back of an ordered array.
+     * @param dir
+     * @return true if dir is LEFT or UP, false if RIGHT, DOWN
+     */
+    private boolean towardsFirst(Direction dir)
+    {
+        return dir == Direction.LEFT || dir == Direction.UP ? true : false;
     }
 }

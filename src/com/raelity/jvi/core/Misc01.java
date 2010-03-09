@@ -23,10 +23,12 @@ package com.raelity.jvi.core;
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.core.WindowTreeBuilder.Direction;
 import java.util.Iterator;
 import java.util.List;
 
 import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.KeyDefs.*;
 
 /**
  * do_window is some stuff from window.c and related.
@@ -74,6 +76,31 @@ public class Misc01
             case 'E' & 0x1f:
             case 'e':
                 win_move_forw(AppViews.NOMAD, Prenum);
+                break;
+
+            case K_DOWN:
+            case 'J' & 0x1f:
+            case 'j':
+                win_jump(Direction.DOWN, Prenum);
+                break;
+
+            case K_UP:
+            case 'K' & 0x1f:
+            case 'k':
+                win_jump(Direction.UP, Prenum);
+                break;
+
+            case K_LEFT:
+            case K_BS:
+            case 'H' & 0x1f:
+            case 'h':
+                win_jump(Direction.LEFT, Prenum);
+                break;
+
+            case K_RIGHT:
+            case 'L' & 0x1f:
+            case 'l':
+                win_jump(Direction.RIGHT, Prenum);
                 break;
 
             default:
@@ -163,6 +190,34 @@ public class Misc01
             n = avs.size() -1; // last window
 
         ViManager.getFS().edit(avs.get(n), false);
+    }
+
+    private static void win_jump(Direction direction, int n)
+    {
+        List<ViAppView> avs = AppViews.getList(AppViews.ACTIVE);
+        if(avs == null)
+            return;
+
+        // get rid of appviews that are not showing
+        for (Iterator<ViAppView> it = avs.iterator(); it.hasNext();) {
+            ViAppView av = it.next();
+            if(!av.isShowing())
+                it.remove();
+        }
+        WindowTreeBuilder tree
+                = ViManager.getFactory().getWindowTreeBuilder(avs);
+        tree.processAppViews();
+
+        ViAppView av = AppViews.currentAppView(avs);
+        if(av == null) {
+            Util.vim_beep();
+            return;
+        }
+
+        av = tree.jump(direction, av, n);
+
+        if(av != null)
+            ViManager.getFS().edit(av, false);
     }
 
 }
