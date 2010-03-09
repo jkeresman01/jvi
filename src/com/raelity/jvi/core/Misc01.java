@@ -61,6 +61,12 @@ public class Misc01
                 GetChar.stuffReadbuff(":only\n");
                 break;
 
+            // quit current window */
+            case 'Q' & 0x1f:
+            case 'q':
+                G.curwin.win_quit();
+                break;
+
             // cursor to next window with wrap around
             case 'W' & 0x1f:
             case 'w':
@@ -78,18 +84,21 @@ public class Misc01
                 win_move_forw(AppViews.NOMAD, Prenum);
                 break;
 
+            // cursor to window below
             case K_DOWN:
             case 'J' & 0x1f:
             case 'j':
                 win_jump(Direction.DOWN, Prenum);
                 break;
 
+            // cursor to window above
             case K_UP:
             case 'K' & 0x1f:
             case 'k':
                 win_jump(Direction.UP, Prenum);
                 break;
 
+            // cursor to left window
             case K_LEFT:
             case K_BS:
             case 'H' & 0x1f:
@@ -97,10 +106,32 @@ public class Misc01
                 win_jump(Direction.LEFT, Prenum);
                 break;
 
+            // cursor to right window
             case K_RIGHT:
             case 'L' & 0x1f:
             case 'l':
                 win_jump(Direction.RIGHT, Prenum);
+                break;
+
+            // cursor to top-left window
+            case 't':
+            case 'T' & 0x1f:
+                win_moveto(AppViews.ACTIVE, 1); // firstwin
+                break;
+
+            // cursor to bottom-right window
+            case 'b':
+            case 'B' & 0x1f:
+                win_moveto(AppViews.ACTIVE, Integer.MAX_VALUE); // lastwin
+                break;
+
+            // cursor to last accessed (previous) window
+            case 'p':
+            case 'P' & 0x1f:
+                // Handle like :e#
+                ViAppView av = AppViews.getMruAppView(1);
+                if(av != null)
+                    ViManager.getFS().edit(av, false);
                 break;
 
             default:
@@ -114,7 +145,7 @@ public class Misc01
         if(n == 0)
             win_cycle(whichViews, FORWARD);
         else
-            win_goto(whichViews, n);
+            win_moveto(whichViews, n);
     }
 
     private static void win_move_back(AppViews whichViews, int n)
@@ -122,7 +153,7 @@ public class Misc01
         if(n == 0)
             win_cycle(whichViews, BACKWARD);
         else
-            win_goto(whichViews, n);
+            win_moveto(whichViews, n);
     }
 
     private static void win_cycle(AppViews whichViews, int n)
@@ -133,17 +164,10 @@ public class Misc01
         else
             n = 1;
 
-        List<ViAppView> avs = AppViews.getList(whichViews);
+        List<ViAppView> avs = getSortedAppViews(whichViews);
         if(avs == null)
             return;
 
-        // get rid of appviews that are not showing
-        for (Iterator<ViAppView> it = avs.iterator(); it.hasNext();) {
-            ViAppView av = it.next();
-            if(!av.isShowing())
-                it.remove();
-        }
-        AppViews.sortAppView(avs);
         int idx = AppViews.indexOfCurrentAppView(avs);
 
         boolean foundInList = idx >= 0;
@@ -170,19 +194,11 @@ public class Misc01
         ViManager.getFS().edit(avs.get(idx), false);
     }
 
-    private static void win_goto(AppViews whichViews, int n)
+    private static void win_moveto(AppViews whichViews, int n)
     {
-        List<ViAppView> avs = AppViews.getList(whichViews);
+        List<ViAppView> avs = getSortedAppViews(whichViews);
         if(avs == null)
             return;
-
-        // get rid of appviews that are not showing
-        for (Iterator<ViAppView> it = avs.iterator(); it.hasNext();) {
-            ViAppView av = it.next();
-            if(!av.isShowing())
-                it.remove();
-        }
-        AppViews.sortAppView(avs);
 
         // n is in range 1..n, put into range 0..(n-1)
         --n;
@@ -194,16 +210,10 @@ public class Misc01
 
     private static void win_jump(Direction direction, int n)
     {
-        List<ViAppView> avs = AppViews.getList(AppViews.ACTIVE);
+        List<ViAppView> avs = getVisibleAppViews(AppViews.ACTIVE);
         if(avs == null)
             return;
 
-        // get rid of appviews that are not showing
-        for (Iterator<ViAppView> it = avs.iterator(); it.hasNext();) {
-            ViAppView av = it.next();
-            if(!av.isShowing())
-                it.remove();
-        }
         WindowTreeBuilder tree
                 = ViManager.getFactory().getWindowTreeBuilder(avs);
         tree.processAppViews();
@@ -218,6 +228,30 @@ public class Misc01
 
         if(av != null)
             ViManager.getFS().edit(av, false);
+    }
+
+    private static List<ViAppView> getSortedAppViews(AppViews whichViews)
+    {
+        List<ViAppView> avs = getVisibleAppViews(whichViews);
+        if(avs == null)
+            return null;
+
+        AppViews.sortAppView(avs);
+        return avs;
+    }
+    private static List<ViAppView> getVisibleAppViews(AppViews whichViews)
+    {
+        List<ViAppView> avs = AppViews.getList(whichViews);
+        if(avs == null)
+            return null;
+
+        // get rid of appviews that are not showing
+        for (Iterator<ViAppView> it = avs.iterator(); it.hasNext();) {
+            ViAppView av = it.next();
+            if(!av.isShowing())
+                it.remove();
+        }
+        return avs;
     }
 
 }
