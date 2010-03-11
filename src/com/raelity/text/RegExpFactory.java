@@ -21,8 +21,9 @@
 
 package com.raelity.text;
 
-import java.util.Vector;
 import java.lang.reflect.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,8 +38,9 @@ import java.util.logging.Logger;
  * @see RegExp
  */
 public class RegExpFactory {
-  private static Logger LOG = Logger.getLogger(RegExpFactory.class.getName());
-  protected static Vector<String> reImp = new Vector<String>(5);
+  private static final
+          Logger LOG = Logger.getLogger(RegExpFactory.class.getName());
+  protected static List<String> reImp = new ArrayList<String>(5);
 
   static {
     reImp.add("com.raelity.text.RegExpJava");
@@ -79,9 +81,9 @@ public class RegExpFactory {
   private RegExpFactory() {}
 
   /**
-   * Create a new instance of a regular expresion handler.
+   * Create a new instance of a regular expression handler.
    * <br>A NoClassDefFoundError is thrown if the factory
-   * is inoporable.
+   * is inoperable.
    * @return An instance of a regular expression handler.
    * @see RegExp
    */
@@ -90,10 +92,10 @@ public class RegExpFactory {
   }
 
   /**
-   * Create a new instance of a regular expresion handler
+   * Create a new instance of a regular expression handler
    * and compile <i>pattern</i> for the regular expression.
    * <br>A NoClassDefFoundError is thrown if the factory
-   * is inoporable.
+   * is inoperable.
    * @return An instance of a regular expression handler.
    * @see RegExp
    */
@@ -104,7 +106,7 @@ public class RegExpFactory {
   /**
    * Create a new instance of a regular expression handler
    * and compile the pattern. If a pattern error occurs dump
-   * the stack trace and rethrow the exception. Normall used
+   * the stack trace and rethrow the exception. Normal used
    * from static initializers since it seems exception handling
    * is funny in thows cases.
    * @return An instance of RegExp with a pattern.
@@ -128,7 +130,7 @@ public class RegExpFactory {
    * Do the actual instance creation. Optionally compile a pattern.
    * @ return The regular expression handler.
    */
-  final private static RegExp doCreate(boolean compflag, String pattern) {
+  private static RegExp doCreate(boolean compflag, String pattern) {
     if (reClass == null) {
       initFactory();
 
@@ -163,7 +165,7 @@ public class RegExpFactory {
   public static String[] getKnownImplementations() {
     String[] imps = new String[reImp.size()];
     for(int i = 0; i < reImp.size(); i++) {
-      imps[i] = (String)reImp.elementAt(i);
+      imps[i] = reImp.get(i);
     }
     return imps;
   }
@@ -176,7 +178,7 @@ public class RegExpFactory {
     if(reImp.indexOf(imp) >= 0) {
       return;
     }
-    reImp.addElement(imp);
+    reImp.add(imp);
   }
 
   /**
@@ -216,7 +218,7 @@ public class RegExpFactory {
     }
     for (int i = 0; i < reImp.size(); i++) {
       try {
-	load((String)reImp.elementAt(i));
+	load(reImp.get(i));
 
 	return true;
       } catch (Throwable e) {}

@@ -27,8 +27,6 @@ import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.Misc;
 import com.raelity.jvi.core.Window;
-import com.raelity.jvi.manager.AppViews;
-import java.util.Iterator;
 
 /**
  *
@@ -44,9 +42,10 @@ abstract public class abstractFS implements ViFS
         ViAppView av = tv.getAppView();
         Buffer buf = tv.getBuffer();
         Window win = (Window)tv;
-        StringBuffer sb = new StringBuffer();
-        sb.append("\"" + (av != null ? getDisplayFileName(av)
-                                     : getDisplayFileName(buf)) + "\"");
+        StringBuilder sb = new StringBuilder();
+        sb.append("\"")
+          .append(av != null ? getDisplayFileName(av) : getDisplayFileName(buf))
+          .append("\"");
         if(isModified(buf))
             sb.append(" [Modified]");
         if(isReadOnly(buf))
@@ -54,13 +53,13 @@ abstract public class abstractFS implements ViFS
         int l = buf.getLineCount();
         int percent = (win.w_cursor.getLine() * 100) / l;
         if(true) {
-            sb.append(" " + l + " line" + Misc.plural(l));
-            sb.append(" --" + percent + "%--");
+            sb.append(" ").append(l).append(" line").append(Misc.plural(l));
+            sb.append(" --").append(percent).append("%--");
         } else {
-            sb.append(" line " + win.w_cursor.getLine());
-            sb.append(" of " + buf.getLineCount());
-            sb.append(" --" + percent + "%--");
-            sb.append(" col " + win.w_cursor.getColumn());
+            sb.append(" line ").append(win.w_cursor.getLine());
+            sb.append(" of ").append(buf.getLineCount());
+            sb.append(" --").append(percent).append("%--");
+            sb.append(" col ").append(win.w_cursor.getColumn());
         }
         if(av != null && av.isNomad())
             sb.append(" [nomad]");
@@ -70,11 +69,11 @@ abstract public class abstractFS implements ViFS
     }
 
     public String getDisplayFileNameAndSize(ViBuffer buf) {
-        StringBuffer sb = new StringBuffer();
-        sb.append("\"" + buf.getDisplayFileName() + "\"");
+        StringBuilder sb = new StringBuilder();
+        sb.append("\"").append(buf.getDisplayFileName()).append("\"");
         int l = buf.getLineCount();
-        sb.append(" " + buf.getLineCount() + "L, ");
-        sb.append(" " + buf.getLength() + "C");
+        sb.append(" ").append(buf.getLineCount()).append("L, ");
+        sb.append(" ").append(buf.getLength()).append("C");
         return sb.toString();
   }
 

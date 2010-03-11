@@ -100,10 +100,15 @@ abstract public class SwingFactory implements ViFactory
         if ( INSTANCE != null ) {
             throw new IllegalStateException("ViFactory already exists");
         }
-        INSTANCE = this;
+        captureINSTANCE();
 
         // Add VimClipboard DataFlavor if not already there
         // FlavorMap fm = SystemFlavorMap.getDefaultFlavorMap();
+    }
+
+    private void captureINSTANCE()
+    {
+        INSTANCE = this;
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -152,6 +157,8 @@ abstract public class SwingFactory implements ViFactory
 
     public final ViTextView getTextView(Component ed)
     {
+        if(ed == null)
+            return null;
         return (ViTextView)(((JTextComponent)ed).getClientProperty(PROP_TV));
     }
 

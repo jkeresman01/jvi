@@ -38,17 +38,18 @@ import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static com.raelity.jvi.manager.ViManager.*;
 
 /**
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public class Scheduler extends ViManager
+public class Scheduler
 {
-    private static Logger LOG = Logger.getLogger(Scheduler.class.getName());
+    private static final Logger LOG = Logger.getLogger(Scheduler.class.getName());
     private static Component currentEditorPane;
     private static boolean started = false;
     private static ViCmdEntry activeCommandEntry;
@@ -170,11 +171,12 @@ public class Scheduler extends ViManager
 
     /**
      * A key was typed. Handle the event.
-     * <br>NEEDSWORK: catch all exceptions comming out of here?
+     * <br>NEEDSWORK: catch all exceptions coming out of here?
      */
     public static void keyStroke(Component target, char key, int modifier)
     {
-        ViManager.verifyNotBusy();
+        if(activeCommandEntry == null) // don't check when reroute character
+            ViManager.verifyNotBusy();
         try {
             ViManager.setJViBusy(true);
             switchTo(target);
@@ -200,7 +202,7 @@ public class Scheduler extends ViManager
     {
         if (activeCommandEntry == null)
             return false;
-        if ((c & 61440) != KeyDefs.VIRT && modifiers == 0)
+        if ((c & 61440) != KeyDefs.VIRT && modifiers == 0) // 0xf000
             if (c >= 32 && c != 127) {
                 if (Options.isKeyDebug())
                     System.err.println("rerouteChar");
@@ -216,9 +218,9 @@ public class Scheduler extends ViManager
 
     /**
      * Pass control to indicated ViCmdEntry widget. If there are
-     * readahead or typeahead characters available, then collect
+     * read ahead or typeahead characters available, then collect
      * them up to a &lt;CR&gt; and append them to initialString.
-     * If there was a CR, then signal the widget to immeadiately
+     * If there was a CR, then signal the widget to immediately
      * fire its actionPerformed without displaying any UI element.
      */
     public static void startCommandEntry(ViCmdEntry commandEntry, String mode,

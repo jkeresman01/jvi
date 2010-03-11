@@ -1234,7 +1234,7 @@ one_char: {
    * hence the segment can not be accessed publicly, only protected.</li>
    * </ul>
    */
-  public static final int beginlineColumnIndex(int flags, MySegment txt) {
+  public static int beginlineColumnIndex(int flags, MySegment txt) {
     int index;
     if ((flags & BL_SOL) != 0 && G.p_notsol.getBoolean()) {
       index = Misc.coladvanceColumnIndex(G.curwin.w_curswant, txt);
@@ -1259,7 +1259,7 @@ one_char: {
    * and here we are getting it again in BEGIN_LINE.
    * </ul>
    */
-  public static final void beginline(int flags) {
+  public static void beginline(int flags) {
     Normal.do_xop("beginline");
     int line = G.curwin.w_cursor.getLine();
     MySegment seg = G.curbuf.getLineSegment(line);

@@ -28,7 +28,7 @@ import com.raelity.text.TextUtil.MySegment;
 
 public class Util {
   // static final int TERMCAP2KEY(int a, int b) { return a + (b << 8); }
-  public static final char ctrl(char x) { return (char)(x & 0x1f); }
+  public static char ctrl(char x) { return (char)(x & 0x1f); }
   // static final int shift(int c) { return c | (0x1 << 24); }
   // static void stuffcharReadbuff(int c) {}
 
@@ -83,18 +83,18 @@ public class Util {
       return ((x >= 9 && x <= 13) || x == ' ');
   }
 
-  public static final boolean isalnum(int regname) {
+  public static boolean isalnum(int regname) {
     return	regname >= '0' && regname <= '9'
     		|| regname >= 'a' && regname <= 'z'
     		|| regname >= 'A' && regname <= 'Z';
   }
 
-  public static final boolean isalpha(char c) {
+  public static boolean isalpha(char c) {
     return	   c >= 'a' && c <= 'z'
     		|| c >= 'A' && c <= 'Z';
   }
 
-  public static final boolean ascii_isalpha(char c) {
+  public static boolean ascii_isalpha(char c) {
     return	   c < 0x7f && isalpha(c);
   }
 

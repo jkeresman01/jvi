@@ -56,7 +56,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 
 public final class Options {
-  private static Logger LOG = Logger.getLogger(Options.class.getName());
+  private static final Logger LOG = Logger.getLogger(Options.class.getName());
   private Options() {
   }
   private static Options options;
@@ -924,7 +924,7 @@ public final class Options {
   //
 
   private static BooleanOption keyDebugOption;
-  public static final boolean isKeyDebug() {
+  public static boolean isKeyDebug() {
     // NEEDSWORK: clean isKeyDebug up
     if(keyDebugOption == null) {
        keyDebugOption = (BooleanOption)Options.getOption(Options.dbgKeyStrokes);

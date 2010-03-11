@@ -29,19 +29,21 @@ import com.raelity.jvi.swing.*;
 import java.beans.BeanDescriptor;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Use thsi class to programatically enable/disable jVi catching particular
+ * Use this class to programmatically enable/disable jVi catching particular
  * keypad keys, or to determine if a particular key is being caught.
  *
  * @author erra
  */
 public class KeypadBindingBean extends KeyOptionsBeanBase
 {
-  private static Logger LOG = Logger.getLogger(KeypadBindingBean.class.getName());
+    private static final
+            Logger LOG = Logger.getLogger(KeypadBindingBean.class.getName());
 
     //
     // The BeanInfo is embedded in the same class
@@ -56,23 +58,21 @@ public BeanDescriptor getBeanDescriptor() {
         };
     }
     
-    Vector<PropertyDescriptor> vD;
     @Override
-    public PropertyDescriptor[] getPropertyDescriptors() {
-        vD = new Vector<PropertyDescriptor>();
+    public PropertyDescriptor[] getPropertyDescriptors()
+    {
+        List<PropertyDescriptor> vD = new ArrayList<PropertyDescriptor>();
         for (String key : KeyBinding.getKeypadNames()) {
-            addDesc(key, "");
-            addDesc(key, "Ctrl");
-            addDesc(key, "Shift");
+            addDesc(vD, key, "");
+            addDesc(vD, key, "Ctrl");
+            addDesc(vD, key, "Shift");
         }
         
-	PropertyDescriptor[] descriptors = new PropertyDescriptor[vD.size()];
-        vD.toArray(descriptors);
-        vD = null;
-	return descriptors;
+	return vD.toArray(new PropertyDescriptor[0]);
     }
     
-    private void addDesc(String key, String mod) {
+    private void addDesc(List<PropertyDescriptor> vD, String key, String mod)
+    {
 	int i = 0;
 
         PropertyDescriptor d;

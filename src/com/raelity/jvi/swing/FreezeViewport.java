@@ -57,13 +57,18 @@ public class FreezeViewport implements DocumentListener, ChangeListener
             offset = root.getElement(topLine).getStartOffset();
             // Get marker to offset in the document
             pos = doc.createPosition(offset);
-            doc.addDocumentListener(this);
+            setupDocListener();
             //vp.addChangeListener(this); // debug info
         } catch (Exception ex) {
             // Note: did not start listener
         } finally {
             doc.readUnlock();
         }
+    }
+
+    private void setupDocListener()
+    {
+        doc.addDocumentListener(this);
     }
 
     public void stop()

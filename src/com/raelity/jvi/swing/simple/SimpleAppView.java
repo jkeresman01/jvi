@@ -53,6 +53,11 @@ public abstract class SimpleAppView implements ViAppView
         wnum = ++genWNum;
         // The assert can be used when equals is based on '=='
         assert e.getClientProperty(SwingFactory.PROP_AV) == null;
+        linkFromTextComponent();
+    }
+
+    private void linkFromTextComponent()
+    {
         e.putClientProperty(SwingFactory.PROP_AV, this);
     }
 

@@ -31,18 +31,20 @@ package com.raelity.jvi.options;
 import java.beans.BeanDescriptor;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Use this class to programatically enable/disable jVi catching particular
+ * Use this class to programmatically enable/disable jVi catching particular
  * control keys or to determine if a particular key is being caught.
  *
  * @author erra
  */
 public class KeyBindingBean  extends KeyOptionsBeanBase {
-  private static Logger LOG = Logger.getLogger(KeyBindingBean.class.getName());
+    private static final
+            Logger LOG = Logger.getLogger(KeyBindingBean.class.getName());
     
     //
     // The BeanInfo is embedded in the same class
@@ -57,30 +59,28 @@ public class KeyBindingBean  extends KeyOptionsBeanBase {
         };
     }
     
-    Vector<PropertyDescriptor> vD;
     @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
-        vD = new Vector<PropertyDescriptor>();
+        List<PropertyDescriptor> vD = new ArrayList<PropertyDescriptor>();
         
 	for(char c = 'A'; c <= 'Z'; c++) {
             String keyChar = String.valueOf(c);
             String propertyName = "Ctrl_" + keyChar;
             String displayName = "Ctrl-" + keyChar;
-            addDesc(propertyName, displayName);
+            addDesc(vD, propertyName, displayName);
         }
-        addDesc("AaOpenBracket", "Ctrl-[    the \"real\" <ESC>");
-        addDesc("AbCloseBracket", "Ctrl-]");
-        addDesc("AcCommaOpenAngle", "Ctrl-< or Ctrl-,");
-        addDesc("AdPeriodCloseAngle", "Ctrl-> or Ctrl-.");
-        addDesc("AeCtrl_AT", "Ctrl-@");
+        addDesc(vD, "AaOpenBracket", "Ctrl-[    the \"real\" <ESC>");
+        addDesc(vD, "AbCloseBracket", "Ctrl-]");
+        addDesc(vD, "AcCommaOpenAngle", "Ctrl-< or Ctrl-,");
+        addDesc(vD, "AdPeriodCloseAngle", "Ctrl-> or Ctrl-.");
+        addDesc(vD, "AeCtrl_AT", "Ctrl-@");
         
-	PropertyDescriptor[] descriptors = new PropertyDescriptor[vD.size()];
-        vD.toArray(descriptors);
-        vD = null;
-	return descriptors;
+	return vD.toArray(new PropertyDescriptor[0]);
     }
     
-    private void addDesc(String propertyName, String displayName) {
+    private void addDesc(List<PropertyDescriptor> vD,
+                         String propertyName, String displayName)
+    {
         PropertyDescriptor d;
         try {
             d = new PropertyDescriptor(propertyName, KeyBindingBean.class);

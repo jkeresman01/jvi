@@ -67,7 +67,7 @@ import static com.raelity.jvi.core.KeyDefs.*;
  */
 
 public class Normal extends CoreMethodHooks {
-  private static Logger LOG = Logger.getLogger(Normal.class.getName());
+  private static final Logger LOG = Logger.getLogger(Normal.class.getName());
 
   // for normal_cmd() use, stuff that was declared static in the function
   static int	opnum = 0;		    /* count before an operator */
@@ -2119,7 +2119,7 @@ middle_code:
 
   public static void displaySelectState(String s) {
     showcmd_buf.setLength(0);
-    showcmd_buf.append(s + " ");
+    showcmd_buf.append(s).append(" ");
     Misc.setCommandCharacters(showcmd_buf.toString());
     Misc.out_flush();
   }

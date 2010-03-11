@@ -76,7 +76,7 @@ static boolean ascii_isalpha(char c) { return Util.ascii_isalpha(c); }
 static void beep_flush() { Util.beep_flush(); }
 static boolean bufempty() { return Util.bufempty(); }
 static int CharOrd(char c) { return Util.CharOrd(c); }
-static final char ctrl(char x) { return Util.ctrl(x); }
+static char ctrl(char x) { return Util.ctrl(x); }
 static int hex2nr(char c) { return Util.hex2nr(c); }
 static boolean isalpha(char c) { return Util.isalpha(c); }
 static boolean isdigit(char c) {return Util.isdigit(c); }

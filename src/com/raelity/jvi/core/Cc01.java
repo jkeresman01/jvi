@@ -57,7 +57,7 @@ import static com.raelity.jvi.core.Constants.*;
  */
 public class Cc01
 {
-    private static Logger LOG = Logger.getLogger(Cc01.class.getName());
+    private static final Logger LOG = Logger.getLogger(Cc01.class.getName());
 
     @ServiceProvider(service=ViInitialization.class, path="jVi/init")
     public static class Init implements ViInitialization

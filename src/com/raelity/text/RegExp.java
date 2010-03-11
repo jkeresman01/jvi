@@ -30,7 +30,7 @@ package com.raelity.text;
  * This is a simple interface to regular expressions.
  * It exists because the available regex packages have
  * different interfaces. This package does not contain
- * regular expression handling, rather it makes different reqular
+ * regular expression handling, rather it makes different regular
  * expression packages appear to have the same interface.
  * It supports compiling a regular expression, matching
  * a regular expression against a string and retrieving
@@ -41,7 +41,7 @@ package com.raelity.text;
  * <p>
  * Fortunately the available packages all seemed to
  * be modeled after perl and
- * the cababilities are generally the same. For better documentation
+ * the capabilities are generally the same. For better documentation
  * on regular expressions refer to perl documentation or the excellent www
  * pages of the packages, noted below, that are adapted.
  * </p><p>
@@ -80,7 +80,7 @@ package com.raelity.text;
  * be specified. If the index/offset is zero, then this is assumed to be
  * the beginning of line for use with the '^' anchor. If the index/offset
  * is greater than zero, then the character before the index/offset is
- * used to determin beginning of line.
+ * used to determine beginning of line.
  * </p>
  * <br>
  * <font size="+1">
@@ -226,7 +226,7 @@ public abstract class RegExp {
 
   /**
    * Check if the last call to <i>search</i> matched.
-   * @return True if the match succeded. False if it faled
+   * @return True if the match succeeded. False if it failed
    * or if no match has been attempted.
    */
   public boolean isMatch() {
@@ -263,14 +263,14 @@ public abstract class RegExp {
   public abstract int length(int i);
 
   /**
-   * The offset from the begining of the input to
-   * the start of thespecified group.
+   * The offset from the beginning of the input to
+   * the start of the specified group.
    * @see com.raelity.text.RegExpResult#start(int)
    */
   public abstract int start(int i);
 
   /**
-   * The offset from the begining of the input to
+   * The offset from the beginning of the input to
    * the end of the specified group.
    * @see com.raelity.text.RegExpResult#stop(int)
    */
@@ -282,15 +282,15 @@ public abstract class RegExp {
    * This function is provided for use by an adaptor
    * when a reg exp implementation does not
    * allow an alternate escape character to be specified.
-   * So we search the char array and substite each <i>escape</i>
+   * So we search the char array and substitute each <i>escape</i>
    * with a '\'. Also a pair of escape characters in a row is
    * replaced by a single character. And a '\' is replaced by two
    * of them.
-   * @param escape is the charater that was used as the escape character
+   * @param escape is the character that was used as the escape character
    * in <i>pattern</i>
    */
   static String fixupEscape(char[] pattern, int offset, char escape) {
-    StringBuffer outpattern = new StringBuffer(2*pattern.length);
+    StringBuilder outpattern = new StringBuilder(2*pattern.length);
     int in;
     char c;
     for(in = offset; in < pattern.length; in++) {

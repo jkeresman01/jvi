@@ -44,7 +44,6 @@ import java.beans.VetoableChangeSupport;
 import java.util.List;
 import java.util.prefs.Preferences;
 
-import com.raelity.jvi.options.ColorOption;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.Options.EditOptionsControl;
 import com.raelity.jvi.manager.ViManager;
@@ -57,13 +56,14 @@ import org.openide.util.WeakListeners;
 /**
  * Base class for jVi options beans. This method contains the read/write methods
  * for all options. Which options are made visible is controlled by the
- * optionsList given to the contstructor. Using this class, options are
+ * optionsList given to the constructor. Using this class, options are
  * grouped into different beans.
  *
  * @author erra
  */
 public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsControl {
-    private static Logger LOG = Logger.getLogger(OptionsBeanBase.class.getName());
+    private static final
+            Logger LOG = Logger.getLogger(OptionsBeanBase.class.getName());
     private Class clazz;
     private Options.Category category;
     private List<String> optionsList;
@@ -284,9 +284,9 @@ public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsContro
         if(clazz == String.class) {
             o = getString(name);
         } else if(clazz == Integer.class) {
-            o = new Integer(getint(name));
+            o = getint(name);
         } else if(clazz == Boolean.class) {
-            o = new Boolean(getboolean(name));
+            o = getboolean(name);
         } else if(clazz == Color.class) {
             o = getColor(name);
             if(o == null)

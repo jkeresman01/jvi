@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
  */
 public final class jViVersion implements Comparable<jViVersion>
 {
-    private static Logger LOG = Logger.getLogger(jViVersion.class.getName());
+    private static final Logger LOG = Logger.getLogger(jViVersion.class.getName());
 
     // in order
     public static final String X = "x";

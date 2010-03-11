@@ -10,7 +10,8 @@ import java.util.prefs.Preferences;
 
 class CopyPreferences
 {
-    private static Logger LOG = Logger.getLogger(CopyPreferences.class.getName());
+    private static final
+            Logger LOG = Logger.getLogger(CopyPreferences.class.getName());
 
     Preferences srcRoot;
     Preferences dstRoot;

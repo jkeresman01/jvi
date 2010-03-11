@@ -48,12 +48,13 @@ import java.util.logging.Logger;
  * delivered. When an event is delivered, the history list is updated.
  * The command line has a label that can be set with {@link #setMode}.
  * <p>Take steps to prevent this component from taking focus
- * throught the focus manager. But ultimately need to subclass the
+ * through the focus manager. But ultimately need to subclass the
  * editor component to handle it.
  */
 public class CommandLine extends JPanel
 {
-    private static Logger LOG = Logger.getLogger(CommandLine.class.getName());
+    private static final
+            Logger LOG = Logger.getLogger(CommandLine.class.getName());
     static public final int DEFAULT_HISTORY_SIZE = 50;
     static public final String COMMAND_LINE_KEYMAP = "viCommandLine";
     JLabel modeLabel = new JLabel();
@@ -174,7 +175,7 @@ public class CommandLine extends JPanel
      *  are not lost.
      *  <p>
      *  If there is a selection, then clear the selection. Do this because
-     *  typically typed chararacters replace the selection.
+     *  typically typed characters replace the selection.
      */
     public void append( char c )
     {
@@ -192,7 +193,7 @@ public class CommandLine extends JPanel
     }
 
 
-    void jbInit() throws Exception
+    private void jbInit() throws Exception
     {
         modeLabel.setText("");
         this.setLayout(gridBagLayout1);
@@ -259,7 +260,7 @@ public class CommandLine extends JPanel
     /**
      *  This sets the mode of the command line, e.g. ":" or "?".
      */
-    public void setMode( String newMode )
+    private void setMode( String newMode )
     {
         mode = newMode;
         modeLabel.setText(" " + mode + " ");
@@ -283,7 +284,7 @@ public class CommandLine extends JPanel
     }
 
 
-    JTextComponent getTextComponent()
+    final JTextComponent getTextComponent()
     {
         Component c = combo.getEditor().getEditorComponent();
         return (JTextComponent)c;
@@ -351,7 +352,7 @@ public class CommandLine extends JPanel
 
 
     /** Use this to limit the size of the history list */
-    public void setHistorySize( int newHistorySize )
+    private void setHistorySize( int newHistorySize )
     {
         if(newHistorySize < 0) {
             throw new IllegalArgumentException();
@@ -526,8 +527,7 @@ public class CommandLine extends JPanel
      * pane; CommandLineEntry is some common handling particularly for
      * the ViCmdEntry interface.
      */
-    public static abstract class CommandLineEntry
-            implements ViCmdEntry, ActionListener
+    public static abstract class CommandLineEntry implements ViCmdEntry
     {
         /** result of last entry */
         protected String lastCommand;
@@ -546,7 +546,14 @@ public class CommandLine extends JPanel
             commandLine = new CommandLine();
             commandLine.setupBorder();
             commandLine.setList(new LinkedList<String>());
-            commandLine.addActionListener(this);
+
+            commandLine.addActionListener(new ActionListener()
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    finishUpEntry(e);
+                }
+            });
 
             commandLine.setMode(entryType == ViCmdEntry.COLON_ENTRY
                     ? ":" : "/");
@@ -563,7 +570,7 @@ public class CommandLine extends JPanel
                     @Override
                     public void focusGained(FocusEvent e) {
                         JTextComponent tc = (JTextComponent) e.getSource();
-                        tc.removeFocusListener(this);
+                        tc.removeFocusListener(focusSetSelection);
                         Caret c = tc.getCaret();
                         tc.setCaretPosition(commandLine.mark);
                         tc.moveCaretPosition(commandLine.dot);
@@ -695,7 +702,7 @@ public class CommandLine extends JPanel
             return commandLine.getTextComponent();
         }
 
-        public void actionPerformed(ActionEvent e)
+        public void finishUpEntry(ActionEvent e)
         {
             if(tv == null) {
                 // There are cases where there are both

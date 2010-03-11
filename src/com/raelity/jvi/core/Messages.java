@@ -18,7 +18,6 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 package com.raelity.jvi.core;
-import com.raelity.jvi.swing.*;
 
 interface Messages {
   String e_abort	="Command aborted";

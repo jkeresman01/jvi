@@ -73,7 +73,8 @@ import javax.swing.text.JTextComponent;
 public class SwingTextView extends Window
         implements ViTextView, PropertyChangeListener, ChangeListener
 {
-    protected static Logger LOG = Logger.getLogger(SwingTextView.class.getName());
+    protected static final
+            Logger LOG = Logger.getLogger(SwingTextView.class.getName());
     private static int genNum; // unique/invariant window id;
 
     protected int w_num;
@@ -952,7 +953,7 @@ public class SwingTextView extends Window
     private static BooleanOption cacheTrace
             = (BooleanOption) Options.getOption(Options.dbgCache);
 
-    final private JViewport getViewport()
+    private JViewport getViewport()
     {
         return viewport;
     }

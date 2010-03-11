@@ -22,6 +22,7 @@ package com.raelity.text;
 
 import java.text.CharacterIterator;
 import java.util.*;
+import java.util.ArrayList;
 import javax.swing.text.Segment;
 
 /** Some convenient functions when working with text. This class is not
@@ -32,11 +33,11 @@ public class TextUtil {
   /** Split a string into a vector of words. White space is used
    * for the delimeters, " \t\n\r".
    */
-  public static Vector split(String s) {
-    Vector<String> word = new Vector<String>();
+  public static List<String> split(String s) {
+    List<String> word = new ArrayList<String>();
     StringTokenizer parse = new StringTokenizer(s);
     while(parse.hasMoreElements()) {
-      word.addElement(parse.nextToken());
+      word.add(parse.nextToken());
     }
     return word;
   }
@@ -44,11 +45,11 @@ public class TextUtil {
   /** Split a string into a vector of words, using <i>separarators</i>
    * to delineate the words.
    */
-  public static Vector split(String s, String separators) {
-    Vector<String> word = new Vector<String>();
+  public static List<String> split(String s, String separators) {
+    List<String> word = new ArrayList<String>();
     StringTokenizer parse = new StringTokenizer(s, separators);
     while(parse.hasMoreElements()) {
-      word.addElement(parse.nextToken());
+      word.add(parse.nextToken());
     }
     return word;
   }
@@ -121,6 +122,7 @@ public class TextUtil {
       this.docOffset = docOffset;
     }
     
+        @Override
     public char charAt(int index) {
       if (index < 0 || index >= count) {
         throw new StringIndexOutOfBoundsException(index);
@@ -128,10 +130,12 @@ public class TextUtil {
       return array[offset + index];
     }
     
+        @Override
     public int length() {
       return count;
     }
     
+        @Override
     public CharSequence subSequence(int start, int end) {
       if (start < 0) {
         throw new StringIndexOutOfBoundsException(start);

@@ -20,8 +20,6 @@
 package com.raelity.jvi.swing;
 
 import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.options.BooleanOption;
 import java.awt.EventQueue;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
@@ -55,7 +53,7 @@ import static com.raelity.jvi.core.KeyDefs.*;
 import static com.raelity.jvi.core.Constants.*;
 
 public class KeyBinding {
-  private static Logger LOG = Logger.getLogger(KeyBinding.class.getName());
+  private static final Logger LOG = Logger.getLogger(KeyBinding.class.getName());
   public static final String KEY_BINDINGS = "KeyBinding";
   private static Preferences prefs = ViManager.getFactory()
                                 .getPreferences().node(ViManager.PREFS_KEYS);

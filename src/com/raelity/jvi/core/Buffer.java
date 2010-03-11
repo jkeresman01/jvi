@@ -36,7 +36,7 @@ import static com.raelity.jvi.core.Constants.*;
  * @author erra
  */
 public abstract class Buffer implements ViBuffer, ViOptionBag {
-    private static Logger LOG = Logger.getLogger(Buffer.class.getName());
+    private static final Logger LOG = Logger.getLogger(Buffer.class.getName());
 
     /** Each buffer gets a unique and invariant number */
     private static int fnum;

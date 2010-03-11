@@ -44,12 +44,12 @@ public class G
         G.curbuf = buf;
     }
 
-    final static public void setModMask( int mod_mask )
+    public static void setModMask( int mod_mask )
     {
         G.mod_mask = mod_mask;
     }
 
-    final static public int getModMask()
+    public static int getModMask()
     {
         return mod_mask;
     }

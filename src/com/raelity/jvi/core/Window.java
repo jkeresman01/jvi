@@ -120,7 +120,7 @@ public abstract class Window implements ViTextView
      * view has changed.
      * Like win_new_height....
      */
-    public void viewSizeChange()
+    public final void viewSizeChange()
     {
         // from win_comp_scroll
         int i = (getViewLines() >> 1);

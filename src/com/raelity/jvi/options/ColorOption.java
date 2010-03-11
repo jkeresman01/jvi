@@ -40,6 +40,13 @@ public class ColorOption extends Option
                 }
             };
         }
+        linkUpValidator(validator);
+    }
+
+    private void linkUpValidator(Validator validator)
+    {
+        assert validator.opt == null;
+        validator.opt = this;
         this.validator = validator;
     }
 

@@ -40,7 +40,7 @@ import javax.swing.event.ChangeListener;
  */
 class Motd
 {
-    private static Logger LOG = Logger.getLogger(Motd.class.getName());
+    private static final Logger LOG = Logger.getLogger(Motd.class.getName());
 
     private jViVersion latestRelease;
     private jViVersion latestBeta;
@@ -269,7 +269,7 @@ class Motd
                 change.stateChanged(new ChangeEvent(new Motd(sb.toString())));
             } catch (IOException ex) {
                 if(ViManager.isDebugAtHome())
-                    ex.printStackTrace();
+                    LOG.log(Level.SEVERE, null, ex);
             }
         }
     }

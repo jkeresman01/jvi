@@ -24,7 +24,6 @@ import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.swing.KeyBinding;
 import com.raelity.jvi.swing.SwingFactory;
-import java.awt.Component;
 import javax.swing.text.JTextComponent;
 
 /**

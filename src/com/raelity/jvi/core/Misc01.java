@@ -172,7 +172,7 @@ public class Misc01
 
         boolean foundInList = idx >= 0;
 
-        if(avs.size() == 0 || foundInList && avs.size() == 1) {
+        if(avs.isEmpty() || foundInList && avs.size() == 1) {
             // nowhere to go
             Util.vim_beep();
             return;

@@ -45,6 +45,12 @@ public class StringOption extends Option {
         }
       };
     }
+    linkUpValidator(validator);
+  }
+
+  private void linkUpValidator(Validator validator)
+  {
+    assert validator.opt == null;
     validator.opt = this;
     this.validator = validator;
   }
@@ -90,3 +96,5 @@ public class StringOption extends Option {
     public abstract void validate(String val) throws PropertyVetoException;
   }
 }
+
+// vi:set sw=2 ts=8:

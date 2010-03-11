@@ -19,8 +19,6 @@
  */
 package com.raelity.text;
 
-import java.io.*;
-
 /**
  * This exception occurs when a regular expression pattern
  * has an error and will not compile. It is thrown by the

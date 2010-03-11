@@ -60,19 +60,19 @@ import org.openide.util.lookup.Lookups;
  * </p>
  * <b>NEEDSWORK:</b>
  * <ul>
- * <li>Get rid of requestSwitch. Do it automaticaly at end of
+ * <li>Get rid of requestSwitch. Do it automatically at end of
  * activateAppView</li>
  * </ul>
  */
 public class ViManager
 {
-    private static Logger LOG = Logger.getLogger(ViManager.class.getName());
+    private static final Logger LOG = Logger.getLogger(ViManager.class.getName());
 
     //
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.3.0.x3");
+    public static final jViVersion version = new jViVersion("1.3.0.x5");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -580,7 +580,7 @@ public class ViManager
                                 Preferences src,
                                 boolean clearDst)
     {
-      new CopyPreferences(dst, src, clearDst);
+        CopyPreferences p = new CopyPreferences(dst, src, clearDst);
     }
 }
 

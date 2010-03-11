@@ -373,7 +373,7 @@ public class OptionsPanel extends JPanel {
                 setDescriptor(descriptor);
             }
             
-            public void setDescriptor(PropertyDescriptor descriptor) {
+            private void setDescriptor(PropertyDescriptor descriptor) {
                 this.descriptor = descriptor;
             }
             

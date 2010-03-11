@@ -411,7 +411,7 @@ public enum AppViews
         if (fact() != null && G.dbgEditorActivation.getBoolean())
             System.err.println("Activation: AppViews.relativeMruAppView: " +
                     fact().getFS().getDisplayFileName(av));
-        if (avsMRU.size() == 0)
+        if (avsMRU.isEmpty())
             return null;
         int idx = avsMRU.indexOf(av);
         if (idx < 0)
@@ -431,7 +431,7 @@ public enum AppViews
 
     /**
      * Request that the next activation does not re-order the mru list if the
-     * activated object is the argment.
+     * activated object is the argument.
      */
     public static void keepMruAfterActivation(ViAppView av)
     {

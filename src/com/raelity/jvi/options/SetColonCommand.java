@@ -32,7 +32,8 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public class SetColonCommand extends ColonCommands.ColonAction
 {
-  private static Logger LOG = Logger.getLogger(SetColonCommand.class.getName());
+  private static final
+          Logger LOG = Logger.getLogger(SetColonCommand.class.getName());
 
     @ServiceProvider(service=ViInitialization.class, path="jVi/init")
     public static class Init implements ViInitialization

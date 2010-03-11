@@ -33,7 +33,8 @@ import javax.swing.text.Position;
  * @author erra
  */
 abstract public class SwingBuffer extends Buffer {
-    private static Logger LOG = Logger.getLogger(SwingBuffer.class.getName());
+    private static final
+            Logger LOG = Logger.getLogger(SwingBuffer.class.getName());
     private Document doc;
     
     public SwingBuffer(ViTextView tv) {
@@ -178,7 +179,7 @@ abstract public class SwingBuffer extends Buffer {
             // If there is no newline at the end of the string being inserted,
             // then there will end up being a newline added to the file magically,
             // but this shouldn't really matter.
-            StringBuffer new_s = new StringBuffer();
+            StringBuilder new_s = new StringBuilder();
             new_s.append('\n');
             if(s.endsWith("\n")) {
                 if(s.length() > 1) {
@@ -330,7 +331,7 @@ abstract public class SwingBuffer extends Buffer {
         return s;
     }
     
-    final private void invalidateLineSegment() {
+    private void invalidateLineSegment() {
         if(cacheTrace.getBoolean())System.err.println("Inval seg:");
         segment.count = 0;
     }
@@ -364,7 +365,7 @@ abstract public class SwingBuffer extends Buffer {
         return element;
     }
     
-    final private void invalidateElement() {
+    private void invalidateElement() {
         if(cacheTrace.getBoolean())System.err.println("Inval elem:");
         element = null;
     }

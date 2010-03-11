@@ -53,7 +53,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public class CcBang
 {
-private static Logger LOG = Logger.getLogger(CcBang.class.getName());
+private static final Logger LOG = Logger.getLogger(CcBang.class.getName());
 
     @ServiceProvider(service=ViInitialization.class, path="jVi/init")
     public static class Init implements ViInitialization
@@ -271,7 +271,7 @@ public static class BangAction extends ColonAction
         }
 
         for (int i = 1; i < nArgs; i++) {
-            result.append(' ' + cl.get(i));
+            result.append(' ').append(cl.get(i));
         }
 
         return result.toString();

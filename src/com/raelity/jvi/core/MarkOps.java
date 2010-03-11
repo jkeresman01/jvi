@@ -59,7 +59,7 @@ import static com.raelity.jvi.core.Messages.*;
  */
 class MarkOps
 {
-    private static Logger LOG = Logger.getLogger(MarkOps.class.getName());
+    private static final Logger LOG = Logger.getLogger(MarkOps.class.getName());
 
     private static final String PREF_MARKS = "marks";
     private static final String PREF_FILEMARKS = "filemarks";
@@ -252,7 +252,7 @@ class MarkOps
     {
         cleanup_jumplist();
         // NOTE: return otherFile if...
-        if(G.curwin.w_jumplist.size() == 0)     // nothing to jump to
+        if(G.curwin.w_jumplist.isEmpty())     // nothing to jump to
             return null;
         for(;;) {
             if(G.curwin.w_jumplistidx + count < 0
@@ -815,7 +815,7 @@ class MarkOps
         {
             if(buf.getFile() == null)
                 return;
-            LOG.fine("persist " + buf.getFile().getAbsolutePath());
+            LOG.log(Level.FINE, "persist {0}", buf.getFile().getAbsolutePath());
             try {
                 String name = buf.getFile().getAbsolutePath();
                 BufferMarks bm;
@@ -856,8 +856,8 @@ class MarkOps
             try {
                 String name = buf.getFile().getAbsolutePath();
                 BufferMarks bm = all.get(name);
-                LOG.fine("restore " + (bm == null ? "NOT " : "")
-                        + buf.getFile().getAbsolutePath());
+                LOG.log(Level.FINE, "restore {0}{1}", new Object[]{bm == null
+                        ? "NOT " : "", buf.getFile().getAbsolutePath()});
                 if (bm == null) {
                     return;
                 }
@@ -961,13 +961,13 @@ class MarkOps
                 int max = G.viminfoMaxBuf.getInteger();
                 int index = 1;
                 // first handle all buffers that were open this session.
-                LOG.fine("write_viminfo next count " + next.size());
+                LOG.log(Level.FINE, "write_viminfo next count {0}", next.size());
                 for (String name : next) {
                     writeIndex(name, index);
                     index++;
                 }
                 // now put out buffers from previous sessions
-                LOG.fine("write_viminfo prev count " + prev.size());
+                LOG.log(Level.FINE, "write_viminfo prev count {0}", prev.size());
                 for (String name : prev) {
                     // 2nd arg of 0 will cause removal
                     writeIndex(name, index <= max ? index : 0);
@@ -976,7 +976,7 @@ class MarkOps
                 for (String x : cleanup) {
                     Preferences p = prefs.node(x);
                     p.removeNode();
-                    LOG.fine("cleanup " + x);
+                    LOG.log(Level.FINE, "cleanup {0}", x);
                 }
 
                 prefs.flush();
@@ -989,7 +989,8 @@ class MarkOps
         private static void writeIndex(String name, int index)
                 throws BackingStoreException
         {
-                LOG.fine("write next " + name + " index " + index);
+                LOG.log(Level.FINE, "write next {0} index {1}",
+                        new Object[]{name, index});
                 BufferMarks bm = all.get(name);
                 if(bm == null) {
                     LOG.warning(String.format(

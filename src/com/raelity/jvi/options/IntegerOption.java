@@ -46,6 +46,12 @@ public class IntegerOption extends Option {
         }
       };
     }
+    linkUpValidator(validator);
+  }
+
+  private void linkUpValidator(Validator validator)
+  {
+    assert validator.opt == null;
     validator.opt = this;
     this.validator = validator;
   }
@@ -90,3 +96,5 @@ public class IntegerOption extends Option {
     public abstract void validate(int val) throws PropertyVetoException;
   }
 }
+
+// vi:set sw=2 ts=8:
