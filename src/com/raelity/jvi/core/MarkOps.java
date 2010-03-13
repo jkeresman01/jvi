@@ -71,6 +71,10 @@ class MarkOps
     /** This constant indicates mark is in other file. */
     final static FPOS otherFile = new FPOS();
 
+    private MarkOps()
+    {
+    }
+
     @ServiceProvider(service=ViInitialization.class, path="jVi/init")
     public static class Init implements ViInitialization
     {
@@ -762,6 +766,10 @@ class MarkOps
         static Preferences prefs
                 = ViManager.getFactory().getPreferences().node(PREF_MARKS);
 
+        private BufferMarksPersist()
+        {
+        }
+
         static Random random = new Random();
 
         static class MarkInfo {
@@ -900,8 +908,8 @@ class MarkOps
                 for (int i = 0; i < bufTags.length; i++) {
                     String bt = bufTags[i];
                     if(!bt.startsWith(BUF)) {
-                        LOG.warning("read_viminfo: "
-                                + "invalid buffer tag '" + bt + "'");
+                        LOG.log(Level.WARNING,"read_viminfo: "
+                                + "invalid buffer tag ''{0}''", bt);
                         cleanup.add(bt);
                         continue;
                     }
@@ -912,8 +920,8 @@ class MarkOps
                     if(name == null || !names.add(name)) {
                         // duplicate, get rid of it
                         bufData.removeNode();
-                        LOG.warning("read_viminfo: "
-                                + "ignoring duplicate '" + name + "'");
+                        LOG.log(Level.WARNING,"read_viminfo: "
+                                + "ignoring duplicate ''{0}''", name);
                         cleanup.add(bt);
                         continue;
                     }

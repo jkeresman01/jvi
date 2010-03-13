@@ -707,15 +707,19 @@ public class SwingTextView extends Window
         return offset;
     }
 
+    protected static int adjustedY(Rectangle r)
+    {
+        // return r.y + (r.height >> 2); // center of y in rectangle
+        return r.y;
+    }
 
-    // NEEDSWORK: This gets CALLED A LOT
-    private int getInternalCoordLine( int line )
+    private int getInternalCoordLine( int line ) // NEEDSWORK: CALLED A LOT
     {
         int coordLine = 1;
         try {
           int offset = getBuffer().getLineStartOffset(line);
           Rectangle lineRect = getEditorComponent().modelToView(offset);
-          int yDiff = lineRect.y - getPoint0().y;
+          int yDiff = adjustedY(lineRect) - getPoint0().y;
           coordLine = yDiff / getFheight() + 1;
           if ( G.dbgCoordSkip.getBoolean() ) {
               System.err.println(String.format(
@@ -763,8 +767,8 @@ public class SwingTextView extends Window
                       thisVisualPosition - 1,
                       javax.swing.text.Position.Bias.Forward,
                       javax.swing.SwingConstants.EAST,
-                      new javax.swing.text.Position.Bias[1]); // used in jdk1.5
-                      //null); // may be null in jdk1.6
+                      null); // may be null in jdk1.6
+                      //new javax.swing.text.Position.Bias[1]); // used in jdk1.5
               if ( thisVisualPosition != nextVisualPosition ) {
                   colIdx = i - 1;
                   break;

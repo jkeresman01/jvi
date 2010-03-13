@@ -27,7 +27,6 @@ import com.raelity.jvi.ViFactory;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.G;
-import com.raelity.jvi.core.Hook;
 import com.raelity.jvi.core.KeyDefs;
 import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.core.Options;
@@ -57,11 +56,15 @@ public class Scheduler
     private static boolean mouseDown;
     private static boolean hasSelection;
 
+    private Scheduler()
+    {
+    }
+
     static void switchTo(Component editor) // NEEDSWORK: make sure appview sync
     {
         if (editor == currentEditorPane)
             return;
-        ViManager.motdOutputOnce();
+        motdOutputOnce();
         if (!started) {
             started = true;
             firePropertyChange(P_LATE_INIT, null, null);
@@ -87,15 +90,15 @@ public class Scheduler
                     cid(editor) + " " + buf.getDisplayFileName());
         }
         if (currentEditorPane != null) {
-            core().abortVisualMode();
+            getCore().abortVisualMode();
             // MOVED ABOVE: currentTv = mayCreateTextView(currentEditorPane);
             // Freeze and/or detach listeners from previous active view
             currentTv.detach();
         }
 
         currentEditorPane = editor;
-        core().switchTo(textView, buf);
-        core().resetCommand(); // Means something first time window switched to
+        getCore().switchTo(textView, buf);
+        getCore().resetCommand(); // Means something first time window switched to
         buf.activateOptions(textView);
         textView.activateOptions(textView);
         setHasSelection(); // a HACK
@@ -139,8 +142,7 @@ public class Scheduler
     {
         if(c != null) {
             if (fact() != null && G.dbgEditorActivation.getBoolean())
-                System.err.println("Activation: Scheduler.register: "
-                        + ViManager.cid(c));
+                System.err.println("Activation: Scheduler.register: " + cid(c));
             c.removeFocusListener(focusSwitcher);
             c.addFocusListener(focusSwitcher);
         }
@@ -176,18 +178,18 @@ public class Scheduler
     public static void keyStroke(Component target, char key, int modifier)
     {
         if(activeCommandEntry == null) // don't check when reroute character
-            ViManager.verifyNotBusy();
+            verifyNotBusy();
         try {
-            ViManager.setJViBusy(true);
+            setJViBusy(true);
             switchTo(target);
             if (rerouteChar(key, modifier))
                 return;
             fact().finishTagPush(G.curwin); // NEEDSWORK: cleanup
-            core().gotc(key, modifier);
+            getCore().gotc(key, modifier);
             if (G.curwin != null)
                 G.curwin.getStatusDisplay().refresh();
         } finally {
-            ViManager.setJViBusy(false);
+            setJViBusy(false);
         }
     }
 
@@ -227,7 +229,7 @@ public class Scheduler
                                          ViTextView tv,
                                          StringBuffer initialString)
     {
-        core().clearMsg();
+        getCore().clearMsg();
         if (initialString == null)
             initialString = new StringBuffer();
         if (activeCommandEntry != null)
@@ -237,7 +239,7 @@ public class Scheduler
         if (initialString.indexOf("\n") >= 0)
             passThru = true;
         else
-            passThru = core().getRecordedLine(initialString);
+            passThru = getCore().getRecordedLine(initialString);
         try {
             commandEntry.activate(mode, tv, new String(initialString), passThru);
         } catch (Throwable ex) {
@@ -247,10 +249,10 @@ public class Scheduler
             //
             // If modal, and everything went well, then activeCommandEntry is
             // already NULL. But not modal, then it isn't null.
-            core().vim_beep();
+            getCore().vim_beep();
             LOG.log(Level.SEVERE, null, ex);
             activeCommandEntry = null;
-            core().resetCommand();
+            getCore().resetCommand();
         }
     }
 
@@ -278,7 +280,7 @@ public class Scheduler
         boolean nowSelection = caret.getDot() != caret.getMark();
         if (hasSelection == nowSelection)
             return;
-        core().uiCursorAndModeAdjust();
+        getCore().uiCursorAndModeAdjust();
         hasSelection = nowSelection;
     }
 
@@ -304,10 +306,10 @@ public class Scheduler
                         MouseEvent.getModifiersExText(mev.getModifiersEx()));
                 //System.err.println(mev.getMouseModifiersText(
                 //                      mev.getModifiers()));
-            core().flush_buffers(true);
+            getCore().flush_buffers(true);
             exitInputMode();
             if (currentEditorPane != null)
-                core().abortVisualMode();
+                getCore().abortVisualMode();
             Component editorPane = mev.getComponent();
             ViTextView tv = fact().getTextView(editorPane);
             if (tv == null)
@@ -436,11 +438,6 @@ public class Scheduler
 
     private static ViFactory fact()
     {
-        return ViManager.getFactory();
-    }
-
-    private static Hook core()
-    {
-        return ViManager.getCore();
+        return getFactory();
     }
 }
