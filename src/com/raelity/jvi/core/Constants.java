@@ -280,6 +280,7 @@ public interface Constants {
   static final char IM_SHIFT_RIGHT_TO_PAREN = KeyDefs.K_X_PERIOD;
   static final char IM_SHIFT_LEFT_TO_PAREN = KeyDefs.K_X_COMMA;
   static final char IM_INS_REP = KeyDefs.K_X_IM_INS_REP;
+  static final char IM_LITERAL = KeyDefs.K_X_IM_LITERAL;
 }
 
 /*

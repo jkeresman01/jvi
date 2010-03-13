@@ -293,6 +293,10 @@ public class Edit extends CoreMethodHooks {
           ins_ctrl_v();
           return;
         }
+        if(c == IM_LITERAL) {
+          ins_literal();
+          return;
+        }
         // skip some indent stuff
         // skip if(has_startsel)
         
@@ -645,12 +649,22 @@ private static void ins_ctrl_v()
     add_to_showcmd(ctrl('V'));
 
     //c = get_literal();
-    handleNextChar = new GetLiteral();
+    handleNextChar = new GetCtrlV();
 
-    // GetLiteral will finish up
+    // GetCtrlV will finish up
     //clear_showcmd();
     //insert_special(c, FALSE, TRUE);
 //#ifdef FEAT_RIGHTLEFT...
+}
+
+private static void ins_literal() // based on ins_ctrl_v
+{
+    edit_putchar('^', true);
+    AppendCharToRedobuff(IM_LITERAL);
+
+    add_to_showcmd(ctrl('V')); // close enough
+
+    handleNextChar = new GetLiteral();
 }
 
 /**
@@ -952,7 +966,8 @@ private static void edit_clearPutchar()
  * If one or two digits are entered, the next character is given to vungetc().
  * For Unicode a character > 255 may be returned.
  */
-private static class GetLiteral implements HandleNextChar {
+  private static class GetCtrlV implements HandleNextChar
+  {
     private int		cc = 0;
     private int		i = 0;
     private boolean	hex = false;
@@ -960,7 +975,7 @@ private static class GetLiteral implements HandleNextChar {
     private int		unicode = 0;
     private boolean	first_char = true;
 
-    public GetLiteral()
+    public GetCtrlV()
     {
     }
 
@@ -1104,6 +1119,22 @@ one_char: {
     }
 
 }
+
+  /** Grab one character. Like Ctrl-V but no special processing */
+private static class GetLiteral implements HandleNextChar
+{
+    public char go(char c)
+    {
+        handleNextChar = null; // all done.
+        // just put in the next character
+        clear_showcmd();
+        insert_special(c, false, true);
+        edit_clearPutchar();
+
+        return NUL;
+
+    }
+  }
   
   /**
    * Insert character, taking care of special keys and mod_mask.

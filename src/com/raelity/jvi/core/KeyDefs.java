@@ -60,7 +60,8 @@ public interface KeyDefs {
    * Any keys as opposed to characters, must be put out of range.
    * This is used to flag keys (non-ascii characters).
    */
-  public static final char VIRT = 0xE000;      // a key not a character
+  public static final char VIRT      = 0xE000;      // a key not a character
+  public static final int VIRT_MASK = 0xF000;
   /** modifier tags for the keys. */
   public static final char SHFT = 0x01;
   public static final char CTRL = 0x02;
@@ -147,8 +148,9 @@ public interface KeyDefs {
   public static final char MAP_K_X_IM_SHIFT_RIGHT = 0x49;
   public static final char MAP_K_X_IM_SHIFT_LEFT = 0x4a;
   public static final char MAP_K_X_IM_INS_REP = 0x4b;
+  public static final char MAP_K_X_IM_LITERAL = 0x4c;
   
-  public static final char MAX_JAVA_KEY_MAP = 0x4b;
+  public static final char MAX_JAVA_KEY_MAP = 0x4c;
   
   //public static final char MAP_K_S_UP	= MAP_K_UP + SHIFTED_VIRT_OFFSET;
   //public static final char MAP_K_S_DOWN = K_DOWN + SHIFTED_VIRT_OFFSET;
@@ -239,7 +241,9 @@ public interface KeyDefs {
   public static final char K_X_IM_SHIFT_RIGHT = MAP_K_X_IM_SHIFT_RIGHT + VIRT;
   public static final char K_X_IM_SHIFT_LEFT = MAP_K_X_IM_SHIFT_LEFT + VIRT;
   public static final char K_X_IM_INS_REP = MAP_K_X_IM_INS_REP + VIRT;
+  public static final char K_X_IM_LITERAL = MAP_K_X_IM_LITERAL + VIRT;
 
+}
   // public static final int K_F25		;
   // public static final int K_F26		;
   // public static final int K_F27		;
@@ -419,4 +423,3 @@ public interface KeyDefs {
   static final int KE_S_XF3 = 0;
   static final int KE_S_XF4 = 0;
   *****************************************************************/
-}

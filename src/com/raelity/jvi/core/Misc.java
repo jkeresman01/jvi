@@ -65,7 +65,7 @@ import java.util.prefs.Preferences;
 import org.openide.util.lookup.ServiceProvider;
 
 public class Misc extends CoreMethodHooks implements ClipboardOwner {
-  private static Logger LOG = Logger.getLogger(Misc.class.getName());
+  private static final Logger LOG = Logger.getLogger(Misc.class.getName());
   static final ClipboardOwner clipOwner = new Misc();
   private static final String PREF_REGISTERS = "registers";
   //////////////////////////////////////////////////////////////////
@@ -1896,16 +1896,16 @@ private static int put_in_typebuf(String s, boolean colon)
 
   /*
    * Stuff a string into the typeahead buffer, such that edit() will insert it
-   * literally.
+   * literally. Note that IM_LITERAL is used instead of Ctrl-V. That is because
+   * Ctrl-V only allows a few different characters.
    */
-  static void stuffescaped(String arg)
+  private static void stuffescaped(String arg)
   {
       int offset = 0;
       while (offset < arg.length())
       {
           char c = arg.charAt(offset);
-          if ((c < ' ' && c != TAB) /* || c > '~' */) // 16 bit chars in java
-              stuffcharReadbuff(ctrl('V'));
+          stuffcharReadbuff(IM_LITERAL);
           stuffcharReadbuff(c);
           offset++;
       }

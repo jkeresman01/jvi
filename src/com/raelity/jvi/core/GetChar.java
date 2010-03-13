@@ -31,6 +31,10 @@ public class GetChar {
   private static boolean block_redo = false;
   private static boolean handle_redo = false;
 
+  private GetChar()
+  {
+  }
+
   /** An input char from the user has been recieved.
    * Implement the key into 16 bit mapping defined in KeyDefs.
    * <p>
@@ -483,6 +487,10 @@ public class GetChar {
     // very briefly, only for one operation, insert or remove.
     private static String removeDocAfterString; // check when non-null
     private static String removeDocBeforeInsstart;
+
+    private MagicRedo()
+    {
+    }
 
     static void disableRedoTrackingOneEdit() {
       disableTrackingOneEdit = true;
