@@ -2216,16 +2216,16 @@ middle_code:
   }
   
   static private void scroll_redraw(boolean up, int count) {
-    if(G.curwin.getCoordLineCount() <= G.curwin.getViewLines())
+    if(G.curwin.getViewLineCount() <= G.curwin.getVpLines())
       return;
     
-    int prev_topline = G.curwin.getViewCoordTopLine();
-    int prev_lnum = G.curwin.getCoordLine(G.curwin.w_cursor.getLine());
+    int prev_topline = G.curwin.getVpTopViewLine();
+    int prev_lnum = G.curwin.getViewLine(G.curwin.w_cursor.getLine());
     
     int new_topline = prev_topline + (up ? count : -count);
     
-    new_topline = Misc.adjustCoordTopLine(new_topline);
-    int new_bottomline = new_topline + G.curwin.getViewLines() -1;
+    new_topline = Misc.adjustTopViewLine(new_topline);
+    int new_bottomline = new_topline + G.curwin.getVpLines() -1;
     
     int new_lnum = prev_lnum;
     int so = Misc.getScrollOff();
@@ -2235,13 +2235,13 @@ middle_code:
       new_lnum = new_bottomline - so;
     
     if(new_lnum != prev_lnum) {
-      G.curwin.setCursorCoordLine(new_lnum, 0);
+      G.curwin.setCursorViewLine(new_lnum, 0);
       Misc.coladvance(G.curwin.w_curswant);
     }
-    G.curwin.setViewCoordTopLine(new_topline);
+    G.curwin.setVpTopViewLine(new_topline);
   }
 
-  /** nv_zet is simplified a bunch, only do vi compat */
+  /** nv_zet is simplified */
   static private  void	nv_zet (CMDARG cap) {
     FOLDOP foldop = null;
     switch(cap.nchar) {
@@ -2284,57 +2284,6 @@ middle_code:
     }
   }
   
-  /* nv_zet_original NOT USED, does compile ok in java
-  static private  void	nv_zet_original (CMDARG cap) {
-    if(G.p_so.getInteger() != 0) {
-      nv_zet_scrolloff(cap);
-      return;
-    }
-    
-    do_xop("nv_zet");
-
-    int nchar = cap.nchar;
-    int target = G.curwin.getWCursor().getLine();
-    boolean change_line = false;
-    int top = 0;
-
-    if(cap.count0 != 0 && cap.count0 != target) {
-      MarkOps.setpcmark();
-      if(cap.count0 > G.curwin.getLineCount()) {
-	target = G.curwin.getLineCount();
-      } else {
-	target = cap.count0;
-      }
-    }
-
-    switch(nchar) {
-      case NL:		    // put curwin->w_cursor at top of screen
-      case CR:
-	top = target;
-	break;
-
-      case '.':		// put curwin->w_cursor in middle of screen
-	top = target - G.curwin.getViewLines() / 2 - 1;
-	break;
-
-      case '-':		// put curwin->w_cursor at bottom of screen
-	top = target - G.curwin.getViewLines() + 1;
-	break;
-
-      default:
-	clearopbeep(cap.oap);
-	return;
-    }
-
-    // Keep getlineSegment before setViewTopLine,
-    // don't want to fetch segment changing during rendering
-    Segment seg = G.curwin.getLineSegment(target);
-    int col = Edit.beginlineColumnIndex(BL_WHITE | BL_FIX, seg);
-    G.curwin.setViewTopLine(Misc.adjustTopLine(top));
-    G.curwin.setCaretPosition(target, col);
-  }
-  */
-
   static private  void	nv_zet_scrolloff (CMDARG cap) {
     do_xop("nv_zet");
 
@@ -2352,7 +2301,7 @@ middle_code:
 	target_doc_line = cap.count0;
       }
     }
-    int target = G.curwin.getCoordLine(target_doc_line);
+    int target = G.curwin.getViewLine(target_doc_line);
 
     switch(nchar) {
       case NL:		    // put curwin->w_cursor at top of screen
@@ -2364,12 +2313,12 @@ middle_code:
 
       case '.':		// put curwin->w_cursor in middle of screen
       case 'z':		// put curwin->w_cursor in middle of screen
-        top = target - G.curwin.getViewLines() / 2 - 1;
+        top = target - G.curwin.getVpLines() / 2 - 1;
 	break;
 
       case '-':		// put curwin->w_cursor at bottom of screen
       case 'b':
-	top = target - G.curwin.getViewLines() + 1 + so;
+	top = target - G.curwin.getVpLines() + 1 + so;
 	break;
 
       default:
@@ -2386,8 +2335,8 @@ middle_code:
     //G.curwin.setViewTopLine(Misc.adjustTopLine(top));
     //G.curwin.setCaretPosition(target, col);
 
-    G.curwin.setViewCoordTopLine(Misc.adjustTopLine(top));
-    G.curwin.setCursorCoordLine(target, 0);
+    G.curwin.setVpTopViewLine(Misc.adjustTopViewLine(top));
+    G.curwin.setCursorViewLine(target, 0);
     int target_column;
     boolean keepColumn = (nchar == 't') || (nchar == 'z') || (nchar == 'b');
     if(keepColumn)
@@ -2730,15 +2679,15 @@ middle_code:
     int newcursorline = -1;
 
     if(cap.cmdchar == 'M') {
-      int topline = G.curwin.getViewCoordTopLine();
-      int line_count = G.curwin.getCoordLineCount();
+      int topline = G.curwin.getVpTopViewLine();
+      int line_count = G.curwin.getViewLineCount();
       Misc.validate_botline();	    // make sure w_empty_rows is valid
-      int halfway = (G.curwin.getViewLines()
-                      - G.curwin.getViewCoordBlankLines() + 1) / 2;
+      int halfway = (G.curwin.getVpLines()
+                      - G.curwin.getVpBlankLines() + 1) / 2;
       for (n = 0; topline + n < line_count; ++n)
 	if ((used += Misc.plines(topline + n)) >= halfway)
 	  break;
-      if (n != 0 && used > G.curwin.getViewLines())
+      if (n != 0 && used > G.curwin.getVpLines())
 	--n;
       newcursorline = topline + n;
       if (newcursorline > line_count)
@@ -2752,22 +2701,22 @@ middle_code:
 	adjust = cap.count1 -1;
       }
       if (cap.cmdchar == 'L') {
-	newcursorline = G.curwin.getViewCoordBottomLine() - 1 - adjust;
-	if(newcursorline < G.curwin.getViewCoordTopLine() + so) {
-	  newcursorline = G.curwin.getViewCoordTopLine() + so;
+	newcursorline = G.curwin.getVpBottomViewLine() - 1 - adjust;
+	if(newcursorline < G.curwin.getVpTopViewLine() + so) {
+	  newcursorline = G.curwin.getVpTopViewLine() + so;
 	}
       } else {
 	// 'H'
-	newcursorline = G.curwin.getViewCoordTopLine() + adjust;
-	if(newcursorline > G.curwin.getViewCoordBottomLine() - 1 - so) {
-	  newcursorline = G.curwin.getViewCoordBottomLine() - 1 - so;
+	newcursorline = G.curwin.getVpTopViewLine() + adjust;
+	if(newcursorline > G.curwin.getVpBottomViewLine() - 1 - so) {
+	  newcursorline = G.curwin.getVpBottomViewLine() - 1 - so;
 	}
       }
     }
 
     if(newcursorline > 0) {
       //G.curwin.setCaretPosition(G.curbuf.getLineStartOffset(newcursorline));
-      G.curwin.setCursorCoordLine(newcursorline, 0);
+      G.curwin.setCursorViewLine(newcursorline, 0);
     }
     Misc.cursor_correct();	// correct for 'so'
     Edit.beginline(BL_SOL | BL_FIX);

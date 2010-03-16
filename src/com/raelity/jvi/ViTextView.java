@@ -39,7 +39,7 @@ public interface ViTextView extends ViOptionBag {
   // text fold operations
   public enum FOLDOP { CLOSE, OPEN, CLOSE_ALL, OPEN_ALL, MAKE_VISIBLE }
   
-  /** annonymous mark operations */
+  /** anonymous mark operations */
   public enum MARKOP { TOGGLE, NEXT, PREV }
   
   /** jump list operations */
@@ -51,7 +51,7 @@ public interface ViTextView extends ViOptionBag {
   /** move to other tab */
   public enum TABOP { NEXT_TAB, PREV_TAB }
 
-  /** word match opertations */
+  /** word match operations */
   public enum WMOP { NEXT_WORD_MATCH, PREV_WORD_MATCH }
 
   /** open new line forward/backward */
@@ -181,61 +181,81 @@ public interface ViTextView extends ViOptionBag {
 
 
 
-  /** @return the line number of first visible line in window */
-  public int getViewTopLine();
+  /** @return the document line number of first visible line in viewport */
+  public int getVpTopLine();
 
-  /** cause the idndicated line to be displayed as top line in view. */
-  public void setViewTopLine(int line);
-
-  /** @return the line number of line *after* end of window */
-  public int getViewBottomLine();
+  /** cause the indicated document line to be displayed as top line in viewport. */
+  public void setVpTopLine(int line);
 
   /** @return the number of unused lines on the display */
-  public int getViewBlankLines();
+  public int getVpBlankLines(); // NEEDSWORK: what about variable font
 
-  /** @return the number of lines in window */
-  public int getViewLines();
+  /** @return the number of lines in window/viewport */
+  public int getVpLines(); // NEEDSWORK: what about variable font
 
   /**
-   * When this returns the same value as getViewLines() then no non-existent
-   * lines can be displayed. If this returns getViewLines()/2 then the last
+   * When this returns the same value as getVpLines() then no non-existent
+   * lines can be displayed. If this returns getVpLines()/2 then the last
    * line of the file can be scrolled to the center of the screen.
    * 
    * @return the number of lines that must be displayed in the window.
    */
-  public int getRequiredDisplayLines();
-
-  /** Scroll down (n_lines positive) or up (n_lines negative) the
-   * specified number of lines.
-   */
-  public void scroll(int n_lines);
+  public int getRequiredVpLines();
 
   /** @return the line number of first visible line in window */
-  public int getViewCoordTopLine();
+  public int getVpTopViewLine();
 
-  /** cause the idndicated line to be displayed as top line in view. */
-  public void setViewCoordTopLine(int line);
+  /** cause the indicated line to be displayed as top line in view. */
+  public void setVpTopViewLine(int viewLine);
 
   /** @return the line number of line *after* end of window */
-  public int getViewCoordBottomLine();
+  public int getVpBottomViewLine();
 
-  /** @return the number of unused lines on the display */
-  public int getViewCoordBlankLines();
+  /**
+   * If there is no code folding, then the number of view lines is equal
+   * to the number of lines in the document. When some lines are folded,
+   * the number of view lines is smaller.
+   * @return number of lines in the view
+   */
+  public int getViewLineCount();
 
-  /** */
-  public int getCoordLineCount();
+  /**
+   * Translate a document line number to a view line number
+   * @param docLine line number in the document
+   * @return corresponding line number in the view
+   */
+  public int getViewLine(int docLine);
 
-  /** */
-  public int getCoordLine(int line);
+  /**
+   * Position the cursor.
+   * @param viewLine
+   * @param col
+   */
+  public void setCursorViewLine(int viewLine, int col);
 
-  /** */
-  public void setCursorCoordLine(int line, int col);
+  /**
+   * Find the first character in the line, less than or equal to col,
+   * which occupies the same x-position in the line. This situation may occur
+   * when there is code folding; if code folding is not possible or the line
+   * has no hidden characters, then col is returned. Typically a line with
+   * folding is a run of visible characters followed by a bunch of
+   * invisible characters that occupy the same position, there is some graphic
+   * that represents the invisible characters; the column of the first
+   * invisible character is commonly returned, then the cursor appears at the
+   * beginning of the graphic. It is possible that an implementation might
+   * return the last visible rather than the first invisible depending on
+   * where the cursor can be positioned.
+   *
+   * @param lineOffset offset in document of first char of line
+   * @param col target column for caret
+   * @return first column offset followed by an invisible character
+   */
+  public int getFirstHiddenColumn(int lineOffset, int col);
 
-  /** */
-  public int coladvanceCoord(int lineOffset, int col);
+  /** Reverse of getViewLine, convert view line to document line */
+  public int getDocLineOffset(int viewLine);
 
-  /** Reverse of getCoordLine, convert coord line to document line */
-  public int getBufferLineOffset(int line);
+  public int getDocLine(int viewLine);
 
 
 
@@ -279,11 +299,6 @@ public interface ViTextView extends ViOptionBag {
    */
   public void win_close_others(boolean forceit);
 
-  /** Goto the indicated buffer.
-   * @param n the index of the window to make current
-   */
-  public void win_goto(int n);
-
   /** Handle displayable editor state changes */
   public ViStatusDisplay getStatusDisplay();
 
@@ -293,7 +308,7 @@ public interface ViTextView extends ViOptionBag {
   public void updateVisualState();
   
   /**
-   * Update the hightlight search state
+   * Update the highlight search state
    */
   public void updateHighlightSearchState();
 }

@@ -539,131 +539,27 @@ public class Misc extends CoreMethodHooks implements ClipboardOwner {
    * or bottom as needed, otherwise center the target line on the screen.
    */
   static void gotoLine(int line, int flag) {
-    if(G.isCoordSkip.getBoolean()) {
-      if(line > G.curbuf.getLineCount())
-          line = G.curbuf.getLineCount();
-      int coordLine = G.curwin.getCoordLine(line);
-      int offset = G.curwin.getBufferLineOffset(coordLine);
-      int bufferLine = G.curbuf.getLineNumber(offset);
-      if(bufferLine != line) {
-        offset = G.curbuf.getLineStartOffset(line);
-        // System.err.println("LINE " + line + "-->" + bufferLine);
-        G.curwin.foldOperation(FOLDOP.MAKE_VISIBLE, offset);
-        // now that the fold is open, it should have moved on screen
-        coordLine = G.curwin.getCoordLine(line);
-      }
-      gotoCoordLine(coordLine, flag);
-    } else {
-      gotoLineAbsolute(line, flag);
+    if(line > G.curbuf.getLineCount())
+        line = G.curbuf.getLineCount();
+    int viewLine = G.curwin.getViewLine(line);
+    int offset = G.curwin.getDocLineOffset(viewLine);
+    int bufferLine = G.curbuf.getLineNumber(offset);
+    if(bufferLine != line) {
+      offset = G.curbuf.getLineStartOffset(line);
+      // System.err.println("LINE " + line + "-->" + bufferLine);
+      G.curwin.foldOperation(FOLDOP.MAKE_VISIBLE, offset);
+      // now that the fold is open, it should have moved on screen
+      viewLine = G.curwin.getViewLine(line);
     }
+    gotoViewLine(viewLine, flag);
     return;
   }
 
-  static void gotoLineAbsolute(int line, int flag) {
-    if(G.p_so.getInteger() != 0) {
-      gotoLine_scrolloff(line, flag);
-      return;
-    }
-    if(line > G.curbuf.getLineCount()) {
-      line = G.curbuf.getLineCount();
-    }
-
-    // if target is not visible then some special handling
-    if(line < G.curwin.getViewTopLine()
-            || line > G.curwin.getViewBottomLine()) {
-      // if target line is less than half a screen away from
-      // being visible, then just let it scroll, otherwise
-      // center the target line
-      int center = G.curwin.getViewTopLine()
-              + G.curwin.getViewLines() / 2 - 1;
-      if(line < center - G.curwin.getViewLines() - 1
-              || line > center + G.curwin.getViewLines()) {
-        int top = line - (G.curwin.getViewLines() / 2);
-        if((G.curwin.getViewLines() & 1) == 0) {
-          ++top; // even num lines, put target in upper half
-        }
-        G.curwin.setViewTopLine(adjustTopLine(top));
-      } else {
-        // Within half a screen, want to scroll to line.
-        // on some platforms simpley setting the cursor positon isn't enough
-        // to get it to scroll, so we calculate the top/botton to get the target
-        // line at the edge of visible range
-        int top;
-        if(line < G.curwin.getViewTopLine()) {
-          top = line;
-        } else {
-          top = line - G.curwin.getViewLines();
-        }
-        G.curwin.setViewTopLine(adjustTopLine(top));
-
-      }
-    }
-
-    // Now set column as needed
-    MySegment seg = G.curbuf.getLineSegment(line);
-    int col;
-    if(flag < 0) {
-      col = coladvanceColumnIndex(seg);
-    } else {
-      // from nv_goto
-      col = Edit.beginlineColumnIndex(flag, seg);
-    }
-    G.curwin.w_cursor.set(line, col);
-  }
-
-  static void gotoLine_scrolloff(int line, int flag) {
-    if(line > G.curbuf.getLineCount()) {
-      line = G.curbuf.getLineCount();
-    }
-
-    // if target line is less than half a screen away from
-    // being visible, then scroll it,
-    // otherwise center the target line
-
-    int curTop = G.curwin.getViewTopLine(); // assume the top line wont change
-    int viewLines = G.curwin.getViewLines();
-    int so = getScrollOff();
-    int center = curTop + viewLines / 2 - 1;
-
-    // reduce scrollMargin, the distance from center that we will scroll
-    // the screen, by amount of scrolloff.
-    int scrollMargin = viewLines - so; // max distance from center
-                                                // to do scroll
-    
-    int newTop = curTop;
-    if(line < center - scrollMargin - 1
-	    || line > center + scrollMargin) {
-      newTop = line - (viewLines / 2);
-      if((viewLines & 1) == 0) {
-        ++newTop; // even num lines, put target in upper half
-      }
-      // center the target line
-    } else {
-      // scroll to the line
-      if(line < curTop + so) {
-	newTop = line-so;
-      } else if(line > G.curwin.getViewBottomLine()-so-1) {
-	newTop = line-viewLines+1+so;
-      }
-    }
-    G.curwin.setViewTopLine(adjustTopLine(newTop));
-
-    MySegment seg = G.curbuf.getLineSegment(line);
-    int col;
-    if(flag < 0) {
-      col = coladvanceColumnIndex(seg);
-    } else {
-      // from nv_goto
-      col = Edit.beginlineColumnIndex(flag, seg);
-    }
-    G.curwin.w_cursor.set(line, col);
-  }
-  
   /**
    * @return scrolloff possibly adjusted for window size
    */
   static int getScrollOff() {
-    int halfLines = G.curwin.getViewLines()/2; // max distance from center
+    int halfLines = G.curwin.getVpLines()/2; // max distance from center
     int so = G.p_so.getInteger();
     if(so > halfLines) {
       // adjust scrolloff so that its not bigger than usable
@@ -677,36 +573,23 @@ public class Misc extends CoreMethodHooks implements ClipboardOwner {
    * The argument is the target for the top line, adjust
    * it so that there is no attempt to put blanks on the screen
    */
-  static int adjustTopLine(int top) {
-    if(G.isCoordSkip.getBoolean()) {
-      return adjustCoordTopLine(top);
-    }
-    if(top + G.curwin.getViewLines() > G.curbuf.getLineCount()) {
-      top = G.curbuf.getLineCount() - G.curwin.getViewLines() + 1;
-    }
-    if(top < 1) {
-      top = 1;
-    }
-    return top;
-  }
-
-  static int adjustCoordTopLine(int top) {
-    int nLinesRequiredOnScreen = G.curwin.getRequiredDisplayLines();
+  static int adjustTopViewLine(int topViewLine) {
+    int nLinesRequiredOnScreen = G.curwin.getRequiredVpLines();
     // nLinesAfterTop includes the top line
     // NOTE: the '+1' in the compare is not there in the previous
     //       so the case for ViewLines == RequireddisplayLines is different.
     //       top + VL > LC  vs RL > LC - top + 1
     //                         top + RL > LC + 1
-    int nLinesAfterTop = G.curwin.getCoordLineCount() - top + 1;
+    int nLinesAfterTop = G.curwin.getViewLineCount() - topViewLine + 1;
     if(nLinesAfterTop < nLinesRequiredOnScreen)
-      top = G.curwin.getCoordLineCount() - nLinesRequiredOnScreen + 1;
+      topViewLine = G.curwin.getViewLineCount() - nLinesRequiredOnScreen + 1;
     //if(top + G.curwin.getViewLines() > G.curwin.getCoordLineCount()) {
     //  top = G.curwin.getCoordLineCount() - G.curwin.getViewLines() + 1;
     //}
-    if(top < 1) {
-      top = 1;
+    if(topViewLine < 1) {
+      topViewLine = 1;
     }
-    return top;
+    return topViewLine;
   }
 
   static void msgmore(int n) {
@@ -798,9 +681,7 @@ public class Misc extends CoreMethodHooks implements ClipboardOwner {
       ++idx;
     }
 
-    if(G.isCoordSkip.getBoolean()) {
-      idx = G.curwin.coladvanceCoord(txt.docOffset, idx);
-    }
+    idx = G.curwin.getFirstHiddenColumn(txt.docOffset, idx);
 
     if(reached != null) {
       // indicate if the column was reached or not
@@ -3497,138 +3378,13 @@ private static int put_in_typebuf(String s, boolean colon)
     // "screen.c"
     //
     
-    /**
-     * Move screen 'count' pages up or down and update screen.
-     *<br/>
-     * return FAIL for failure, OK otherwise
-     */
-    static int onepage(int dir, int count) {
-      if(G.isCoordSkip.getBoolean()) {
-        return coordOnepage(dir, count);
-      }
-      Normal.do_xop("onepage");
-      int	    lp;
-      int	    n;
-      int	    off;
-      int	    retval = OK;
-      int newtopline = -1;
-      int newcursorline = -1;
-      
-      
-      if (G.curbuf.getLineCount() == 1) { // nothing to do
-        Util.beep_flush();
-        return FAIL;
-      }
-      
-      // NEEDSWORK: disable count for onepage (^F, ^B)
-      // 		need to only use variables, not real position
-      // 		inside for loop. Don't want to actually move
-      // 		the viewport each time through the loop.
-      
-      count = 1;
-      
-      int so = getScrollOff();
-      for ( ; count > 0; --count) {
-        validate_botline();
-        //
-        // It's an error to move a page up when the first line is already on
-        // the screen. It's an error to move a page down when the last line
-        // is on the screen and the topline is 'scrolloff' lines from the
-        // last line.
-        //
-        if (dir == FORWARD
-                ? ((G.curwin.getViewTopLine() >= G.curbuf.getLineCount() - so)
-                    && G.curwin.getViewBottomLine() > G.curbuf.getLineCount())
-                : (G.curwin.getViewTopLine() == 1)) {
-          Util.beep_flush();
-          retval = FAIL;
-          break;
-        }
-        
-        // the following test is added because with swing there can not be
-        // blank lines on the screen, so we can go no more when the cursor
-        // is positioned at the last line.
-        if (dir == FORWARD
-                && G.curwin.w_cursor.getLine() == G.curbuf.getLineCount()) {
-          Util.beep_flush();
-          retval = FAIL;
-          break;
-        }
-        
-        if (dir == FORWARD) {
-          // at end of file
-          if(G.curwin.getViewBottomLine() > G.curbuf.getLineCount()) {
-            newtopline = G.curbuf.getLineCount();
-            newcursorline = G.curbuf.getLineCount();
-            // curwin->w_valid &= ~(VALID_WROW|VALID_CROW);
-          } else {
-            lp = G.curwin.getViewBottomLine();
-            off = get_scroll_overlap(lp, -1);
-            newtopline = lp - off;
-            newcursorline = newtopline + so;
-            // curwin->w_valid &= ~(VALID_WCOL|VALID_CHEIGHT|VALID_WROW|
-            // VALID_CROW|VALID_BOTLINE|VALID_BOTLINE_AP);
-          }
-        } else {	// dir == BACKWARDS
-          lp = G.curwin.getViewTopLine() - 1;
-          off = get_scroll_overlap(lp, 1);
-          lp += off;
-          if (lp > G.curbuf.getLineCount())
-            lp = G.curbuf.getLineCount();
-          newcursorline = lp - so;
-          n = 0;
-          while (n <= G.curwin.getViewLines() && lp >= 1) {
-            n += plines(lp);
-            --lp;
-          }
-          if (n <= G.curwin.getViewLines()) {	    // at begin of file
-            newtopline = 1;
-            // curwin->w_valid &= ~(VALID_WROW|VALID_CROW|VALID_BOTLINE);
-          } else if (lp >= G.curwin.getViewTopLine() - 2) {   // very long lines
-            newtopline = G.curwin.getViewTopLine() - 1;
-            comp_botline();
-            newcursorline = G.curwin.getViewBottomLine() - 1;
-            // curwin->w_valid &= ~(VALID_WCOL|VALID_CHEIGHT|
-            // VALID_WROW|VALID_CROW);
-          } else {
-            newtopline = lp + 2;
-            // curwin->w_valid &= ~(VALID_WROW|VALID_CROW|VALID_BOTLINE);
-          }
-        }
-      }
-      
-      // now adjust cursor locations
-      if(newtopline > 0) {
-        G.curwin.setViewTopLine(adjustTopLine(newtopline));
-      }
-      if(newcursorline > 0) {
-        G.curwin.setCaretPosition(
-                G.curbuf.getLineStartOffset(newcursorline));
-      }
-      
-      cursor_correct();	// NEEDSWORK: implement
-      Edit.beginline(BL_SOL | BL_FIX);
-      // curwin->w_valid &= ~(VALID_WCOL|VALID_WROW|VALID_VIRTCOL);
-      
-    /*
-     * Avoid the screen jumping up and down when 'scrolloff' is non-zero.
-     */
-      if (dir == FORWARD && G.curwin.w_cursor.getLine()
-      < G.curwin.getViewTopLine() + so) {
-        // scroll_cursor_top(1, FALSE);	// NEEDSWORK: onepage ("^f") cleanup
-      }
-      
-      update_screen(VALID);
-      return retval;
-    }
-    
-  /*
+  /**
    * Decide how much overlap to use for page-up or page-down scrolling.
    * This is symmetric, so that doing both keeps the same lines displayed.
    */
     private static int get_scroll_overlap(int lnum, int dir) {
       int		h1, h2, h3, h4;
-      int		min_height = G.curwin.getViewLines() - 2;
+      int		min_height = G.curwin.getVpLines() - 2;
       
       h1 = plines_check(lnum);
       if (h1 > min_height) {
@@ -3651,105 +3407,6 @@ private static int put_in_typebuf(String s, boolean colon)
           }
         }
       }
-    }
-    
-    static void halfpage(boolean go_down, int Prenum) {
-      Normal.do_xop("halfpage");
-      if(G.isCoordSkip.getBoolean()) {
-        coordHalfpage(go_down, Prenum);
-        return;
-      }
-      
-      int		scrolled = 0;
-      int		i;
-      int		n;
-      int		room;
-      
-      int newtopline = -1;
-      int newbotline = -1;
-      int newcursorline = -1;
-      
-      final ViFPOS cursor = G.curwin.w_cursor;
-
-      if (Prenum != 0)
-        G.curwin.w_p_scroll = (Prenum > G.curwin.getViewLines())
-                               ? G.curwin.getViewLines() : Prenum;
-      n = (G.curwin.w_p_scroll <= G.curwin.getViewLines())
-      ?  G.curwin.w_p_scroll : G.curwin.getViewLines();
-      
-      validate_botline();
-      room = G.curwin.getViewBlankLines();
-      newtopline = G.curwin.getViewTopLine();
-      newbotline = G.curwin.getViewBottomLine();
-      newcursorline = cursor.getLine();
-      if (go_down) {	    // scroll down
-        while (n > 0 && newbotline <= G.curbuf.getLineCount()) {
-          i = plines(newtopline);
-          n -= i;
-          if (n < 0 && scrolled != 0)
-            break;
-          ++newtopline;
-          // curwin->w_valid &= ~(VALID_CROW|VALID_WROW);
-          scrolled += i;
-          
-          //
-          // Correct w_botline for changed w_topline.
-          //
-          room += i;
-          do {
-            i = plines(newbotline);
-            if (i > room)
-              break;
-            ++newbotline;
-            room -= i;
-          } while (newbotline <= G.curbuf.getLineCount());
-          
-          if (newcursorline < G.curbuf.getLineCount()) {
-            ++newcursorline;
-            // curwin->w_valid &= ~(VALID_VIRTCOL|VALID_CHEIGHT|VALID_WCOL);
-          }
-        }
-        
-        //
-        // When hit bottom of the file: move cursor down.
-        //
-        if (n > 0) {
-          newcursorline += n;
-          if(newcursorline > G.curbuf.getLineCount()) {
-            newcursorline = G.curbuf.getLineCount();
-          }
-        }
-      } else {	    // scroll up
-        while (n > 0 && newtopline > 1) {
-          i = plines(newtopline - 1);
-          n -= i;
-          if (n < 0 && scrolled != 0)
-            break;
-          scrolled += i;
-          --newtopline;
-          // curwin->w_valid &= ~(VALID_CROW|VALID_WROW|
-          // VALID_BOTLINE|VALID_BOTLINE_AP);
-          if (newcursorline > 1) {
-            --newcursorline;
-            // curwin->w_valid &= ~(VALID_VIRTCOL|VALID_CHEIGHT|VALID_WCOL);
-          }
-        }
-        //
-        // When hit top of the file: move cursor up.
-        //
-        if (n > 0) {
-          if (newcursorline > n)
-            newcursorline -= n;
-          else
-            newcursorline = 1;
-        }
-      }
-      G.curwin.setViewTopLine(newtopline);
-      cursor.set(newcursorline, 0);
-      cursor_correct();
-      Edit.beginline(BL_SOL | BL_FIX);
-      update_screen(VALID);
-      
     }
     
     static void update_curswant() {
@@ -3807,43 +3464,43 @@ private static int put_in_typebuf(String s, boolean colon)
      * then scroll to the line and the line will be near the top
      * or bottom as needed, otherwise center the target line on the screen.
      */
-    static void gotoCoordLine(int coordLine, int flag) {
-      if(coordLine < 1)
-        coordLine = 1;
-      if(coordLine > G.curwin.getCoordLineCount())
-        coordLine = G.curwin.getCoordLineCount();
+    static void gotoViewLine(int viewLine, int flag) {
+      if(viewLine < 1)
+        viewLine = 1;
+      if(viewLine > G.curwin.getViewLineCount())
+        viewLine = G.curwin.getViewLineCount();
       
       // if target line is less than half a screen away from
       // being visible, then just let it scroll, otherwise
       // center the target line
 
-      int curTop = G.curwin.getViewCoordTopLine();
-      int viewLines = G.curwin.getViewLines();
+      int curTop = G.curwin.getVpTopViewLine();
+      int vpLines = G.curwin.getVpLines();
       int so = getScrollOff();
-      int center = curTop + viewLines / 2 - 1;
+      int center = curTop + vpLines / 2 - 1;
       
       // reduce scrollMargin, the distance from center that we will scroll
       // the screen, by amount of scrolloff.
-      int scrollMargin = viewLines - so; // max distance from center to do scroll
+      int scrollMargin = vpLines - so; // max distance from center to do scroll
       
       int newTop = curTop;
-      if(coordLine < center - scrollMargin - 1
-              || coordLine > center + scrollMargin) {
-        newTop = coordLine - (viewLines / 2);
-        if((viewLines & 1) == 0) {
+      if(viewLine < center - scrollMargin - 1
+              || viewLine > center + scrollMargin) {
+        newTop = viewLine - (vpLines / 2);
+        if((vpLines & 1) == 0) {
           ++newTop; // even num lines, put target in upper half
         }
         // center the target line
       } else {
         // scroll to the line
-        if(coordLine < curTop+so) {
-          newTop = coordLine-so;
-        } else if(coordLine > G.curwin.getViewCoordBottomLine()-so-1) {
-          newTop = coordLine-viewLines+1+so;
+        if(viewLine < curTop+so) {
+          newTop = viewLine-so;
+        } else if(viewLine > G.curwin.getVpBottomViewLine()-so-1) {
+          newTop = viewLine-vpLines+1+so;
         }
       }
-      G.curwin.setViewCoordTopLine(adjustTopLine(newTop));
-      G.curwin.setCursorCoordLine(coordLine, 0);
+      G.curwin.setVpTopViewLine(adjustTopViewLine(newTop));
+      G.curwin.setCursorViewLine(viewLine, 0);
       //MySegment seg = G.curbuf.getLineSegment(coordLine);
       //int col;
       if(flag < 0) {
@@ -3859,7 +3516,7 @@ private static int put_in_typebuf(String s, boolean colon)
      *<br/>
      * return FAIL for failure, OK otherwise
      */
-    static int coordOnepage(int dir, int count) {
+    static int onepage(int dir, int count) {
       Normal.do_xop("onepage");
       int	    lp;
       int	    n;
@@ -3869,7 +3526,7 @@ private static int put_in_typebuf(String s, boolean colon)
       int newcursorline = -1;
       
       
-      if (G.curwin.getCoordLineCount() == 1) { // nothing to do
+      if (G.curwin.getViewLineCount() == 1) { // nothing to do
         Util.beep_flush();
         return FAIL;
       }
@@ -3891,11 +3548,11 @@ private static int put_in_typebuf(String s, boolean colon)
         // last line.
         //
         if (dir == FORWARD
-                ? ((G.curwin.getViewCoordTopLine()
-                                   >= G.curwin.getCoordLineCount() - so)
-                    && G.curwin.getViewCoordBottomLine()
-                                   > G.curwin.getCoordLineCount())
-                : (G.curwin.getViewCoordTopLine() == 1)) {
+                ? ((G.curwin.getVpTopViewLine()
+                                   >= G.curwin.getViewLineCount() - so)
+                    && G.curwin.getVpBottomViewLine()
+                                   > G.curwin.getViewLineCount())
+                : (G.curwin.getVpTopViewLine() == 1)) {
           Util.beep_flush();
           retval = FAIL;
           break;
@@ -3905,8 +3562,8 @@ private static int put_in_typebuf(String s, boolean colon)
         // blank lines on the screen, so we can go no more when the cursor
         // is positioned at the last line.
         if (dir == FORWARD
-                && G.curwin.getCoordLine(G.curwin.w_cursor.getLine())
-                      == G.curwin.getCoordLineCount()) {
+                && G.curwin.getViewLine(G.curwin.w_cursor.getLine())
+                      == G.curwin.getViewLineCount()) {
           Util.beep_flush();
           retval = FAIL;
           break;
@@ -3914,12 +3571,12 @@ private static int put_in_typebuf(String s, boolean colon)
         
         if (dir == FORWARD) {
           // at end of file
-          if(G.curwin.getViewCoordBottomLine() > G.curwin.getCoordLineCount()) {
-            newtopline = G.curwin.getCoordLineCount();
-            newcursorline = G.curwin.getCoordLineCount();
+          if(G.curwin.getVpBottomViewLine() > G.curwin.getViewLineCount()) {
+            newtopline = G.curwin.getViewLineCount();
+            newcursorline = G.curwin.getViewLineCount();
             // curwin->w_valid &= ~(VALID_WROW|VALID_CROW);
           } else {
-            lp = G.curwin.getViewCoordBottomLine();
+            lp = G.curwin.getVpBottomViewLine();
             off = get_scroll_overlap(lp, -1);
             newtopline = lp - off;
             newcursorline = newtopline + so;
@@ -3927,25 +3584,25 @@ private static int put_in_typebuf(String s, boolean colon)
             // VALID_CROW|VALID_BOTLINE|VALID_BOTLINE_AP);
           }
         } else {	// dir == BACKWARDS
-          lp = G.curwin.getViewCoordTopLine() - 1;
+          lp = G.curwin.getVpTopViewLine() - 1;
           off = get_scroll_overlap(lp, 1);
           lp += off;
-          if (lp > G.curwin.getCoordLineCount())
-            lp = G.curwin.getCoordLineCount();
+          if (lp > G.curwin.getViewLineCount())
+            lp = G.curwin.getViewLineCount();
           newcursorline = lp - so;
           n = 0;
-          while (n <= G.curwin.getViewLines() && lp >= 1) {
+          while (n <= G.curwin.getVpLines() && lp >= 1) {
             n += plines(lp);
             --lp;
           }
-          if (n <= G.curwin.getViewLines()) {	    // at begin of file
+          if (n <= G.curwin.getVpLines()) {	    // at begin of file
             newtopline = 1;
             // curwin->w_valid &= ~(VALID_WROW|VALID_CROW|VALID_BOTLINE);
-          } else if (lp >= G.curwin.getViewCoordTopLine() - 2) {
+          } else if (lp >= G.curwin.getVpTopViewLine() - 2) {
             // very long lines
-            newtopline = G.curwin.getViewCoordTopLine() - 1;
+            newtopline = G.curwin.getVpTopViewLine() - 1;
             comp_botline();
-            newcursorline = G.curwin.getViewCoordBottomLine() - 1;
+            newcursorline = G.curwin.getVpBottomViewLine() - 1;
             // curwin->w_valid &= ~(VALID_WCOL|VALID_CHEIGHT|
             // VALID_WROW|VALID_CROW);
           } else {
@@ -3957,13 +3614,13 @@ private static int put_in_typebuf(String s, boolean colon)
       
       // now adjust cursor locations
       if(newtopline > 0) {
-        G.curwin.setViewCoordTopLine(adjustCoordTopLine(newtopline));
+        G.curwin.setVpTopViewLine(adjustTopViewLine(newtopline));
       }
       if(newcursorline > 0) {
         //COORD CHANGE:
         //G.curwin.setCaretPosition(
         //        G.curbuf.getLineStartOffset(newcursorline));
-        G.curwin.setCursorCoordLine(newcursorline, 0);
+        G.curwin.setCursorViewLine(newcursorline, 0);
       }
       
       cursor_correct();	// NEEDSWORK: implement
@@ -3978,8 +3635,8 @@ private static int put_in_typebuf(String s, boolean colon)
       //  // scroll_cursor_top(1, FALSE);	// NEEDSWORK: onepage ("^f") cleanup
       //}
       if (dir == FORWARD
-          && G.curwin.getCoordLine(G.curwin.w_cursor.getLine())
-                                  < G.curwin.getViewCoordTopLine() + so) {
+          && G.curwin.getViewLine(G.curwin.w_cursor.getLine())
+                                  < G.curwin.getVpTopViewLine() + so) {
         // scroll_cursor_top(1, FALSE);	// NEEDSWORK: onepage ("^f") cleanup
       }
                 
@@ -3990,7 +3647,7 @@ private static int put_in_typebuf(String s, boolean colon)
     
     // This is identical to halfpage, except that the methods called in
     // curwin are the 'coord' variety, plus a little cursor fiddling.
-    static void coordHalfpage(boolean go_down, int Prenum) {
+    static void halfpage(boolean go_down, int Prenum) {
       Normal.do_xop("halfpage");
       
       int		scrolled = 0;
@@ -4005,19 +3662,19 @@ private static int put_in_typebuf(String s, boolean colon)
       final ViFPOS cursor = G.curwin.w_cursor;
       
       if (Prenum != 0)
-        G.curwin.w_p_scroll = (Prenum > G.curwin.getViewLines())
-                ? G.curwin.getViewLines() : Prenum;
-      n = (G.curwin.w_p_scroll <= G.curwin.getViewLines())
-          ?  G.curwin.w_p_scroll : G.curwin.getViewLines();
+        G.curwin.w_p_scroll = (Prenum > G.curwin.getVpLines())
+                ? G.curwin.getVpLines() : Prenum;
+      n = (G.curwin.w_p_scroll <= G.curwin.getVpLines())
+          ?  G.curwin.w_p_scroll : G.curwin.getVpLines();
       
       validate_botline();
-      room = G.curwin.getViewCoordBlankLines();
-      newtopline = G.curwin.getViewCoordTopLine();
-      newbotline = G.curwin.getViewCoordBottomLine();
+      room = G.curwin.getVpBlankLines();
+      newtopline = G.curwin.getVpTopViewLine();
+      newbotline = G.curwin.getVpBottomViewLine();
       //COORD CHANGED: newcursorline = cursor.getLine();
-      newcursorline = G.curwin.getCoordLine(cursor.getLine());
+      newcursorline = G.curwin.getViewLine(cursor.getLine());
       if (go_down) {	    // scroll down
-        while (n > 0 && newbotline <= G.curwin.getCoordLineCount()) {
+        while (n > 0 && newbotline <= G.curwin.getViewLineCount()) {
           i = plines(newtopline);
           n -= i;
           if (n < 0 && scrolled != 0)
@@ -4036,9 +3693,9 @@ private static int put_in_typebuf(String s, boolean colon)
               break;
             ++newbotline;
             room -= i;
-          } while (newbotline <= G.curwin.getCoordLineCount());
+          } while (newbotline <= G.curwin.getViewLineCount());
           
-          if (newcursorline < G.curwin.getCoordLineCount()) {
+          if (newcursorline < G.curwin.getViewLineCount()) {
             ++newcursorline;
             // curwin->w_valid &= ~(VALID_VIRTCOL|VALID_CHEIGHT|VALID_WCOL);
           }
@@ -4049,8 +3706,8 @@ private static int put_in_typebuf(String s, boolean colon)
         //
         if (n > 0) {
           newcursorline += n;
-          if(newcursorline > G.curwin.getCoordLineCount()) {
-            newcursorline = G.curwin.getCoordLineCount();
+          if(newcursorline > G.curwin.getViewLineCount()) {
+            newcursorline = G.curwin.getViewLineCount();
           }
         }
       } else {	    // scroll up
@@ -4078,9 +3735,9 @@ private static int put_in_typebuf(String s, boolean colon)
             newcursorline = 1;
         }
       }
-      G.curwin.setViewCoordTopLine(newtopline);
+      G.curwin.setVpTopViewLine(newtopline);
       //COORD CHANGED: cursor.set(newcursorline, 0);
-      G.curwin.setCursorCoordLine(newcursorline, 0);
+      G.curwin.setCursorViewLine(newcursorline, 0);
       cursor_correct();
       Edit.beginline(BL_SOL | BL_FIX);
       update_screen(VALID);

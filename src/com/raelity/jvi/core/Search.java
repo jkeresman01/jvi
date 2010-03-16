@@ -52,7 +52,7 @@ import static com.raelity.jvi.core.Constants.*;
  * Everything's static, can only do one thing at a time.
  */
 public class Search extends CoreMethodHooks {
-  private static Logger LOG = Logger.getLogger(Search.class.getName());
+  private static final Logger LOG = Logger.getLogger(Search.class.getName());
 
   ///////////////////////////////////////////////////////////////////////
   //
@@ -228,7 +228,7 @@ public class Search extends CoreMethodHooks {
         doc.removeDocumentListener(isListener);
       isListener = new SearchListener();
       searchPos = G.curwin.w_cursor.copy();
-      searchTopLine = G.curwin.getViewTopLine();
+      searchTopLine = G.curwin.getVpTopLine();
       setPCMarkAfterIncrSearch = (searchFlags & SEARCH_MARK) != 0;
       searchFlags &= ~SEARCH_MARK;
       didIncrSearch = false;
@@ -255,7 +255,7 @@ public class Search extends CoreMethodHooks {
   }
   
   private static void resetViewIncrementalSearch() {
-    G.curwin.setViewTopLine(searchTopLine);
+    G.curwin.setVpTopLine(searchTopLine);
     G.curwin.setCaretPosition(searchPos.getOffset());
   }
   
@@ -758,7 +758,7 @@ finished:
   static String cleanupPattern(String s) {
     forceCase_CleanupPatternHack = FORCE_CASE_NONE;
     String metacharacterEscapes = G.p_meta_escape.getString();
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     boolean isEscaped = false;
     for(int in = 0; in < s.length(); in++) {
       char c = s.charAt(in);

@@ -123,7 +123,7 @@ public abstract class Window implements ViTextView
     public final void viewSizeChange()
     {
         // from win_comp_scroll
-        int i = (getViewLines() >> 1);
+        int i = (getVpLines() >> 1);
         if (i <= 0) {
             i = 1;
         }

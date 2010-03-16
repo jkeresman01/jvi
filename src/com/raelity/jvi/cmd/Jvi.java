@@ -25,6 +25,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
+import javax.swing.event.CaretEvent;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.TabSet;
@@ -41,8 +42,11 @@ import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.swing.OptionsPanel;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.JLabel;
 import javax.swing.JScrollPane;
+import javax.swing.event.CaretListener;
 import javax.swing.text.Document;
+import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 
 public class Jvi
@@ -94,6 +98,22 @@ public class Jvi
         } else {
             frame.validate();
         }
+
+        final JLabel jl = frame.getCursorStatusBar();
+        editor.addCaretListener(new CaretListener()
+        {
+            public void caretUpdate(CaretEvent e)
+            {
+                JTextComponent jtc = (JTextComponent)e.getSource();
+                Document doc = jtc.getDocument();
+                int dot = e.getDot();
+                Element root = doc.getDefaultRootElement();
+                int l = root.getElementIndex(dot);
+                Element elem = root.getElement(l);
+                int col = dot - elem.getStartOffset();
+                jl.setText("" + (l+1) + "-" + col);
+            }
+        });
         // Center the window
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension frameSize = frame.getSize();

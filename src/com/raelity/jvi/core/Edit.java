@@ -1340,31 +1340,16 @@ private static class GetLiteral implements HandleNextChar
    */
   public static int cursor_up(int n, boolean upd_topline) {
     Normal.do_xop("cursor_up");
-    if(G.isCoordSkip.getBoolean()) {
-      int coordLine = G.curwin.getCoordLine(G.curwin.w_cursor.getLine());
-      if (n != 0) {
-        if (coordLine <= 1)
-          return FAIL;
-        if (n >= coordLine)
-          coordLine = 1;
-        else
-          coordLine -= n;
-      }
-      Misc.gotoCoordLine(coordLine, -1);
-      return OK;
-    }
-    int lnum = G.curwin.w_cursor.getLine();
+    int viewLine = G.curwin.getViewLine(G.curwin.w_cursor.getLine());
     if (n != 0) {
-      if (lnum <= 1)
+      if (viewLine <= 1)
         return FAIL;
-      if (n >= lnum)
-        lnum = 1;
+      if (n >= viewLine)
+        viewLine = 1;
       else
-        lnum -= n;
+        viewLine -= n;
     }
-    
-    Misc.gotoLine(lnum, -1);
-    
+    Misc.gotoViewLine(viewLine, -1);
     return OK;
   }
 
@@ -1374,27 +1359,14 @@ private static class GetLiteral implements HandleNextChar
    */
   public static int cursor_down(int n, boolean upd_topline) {
     Normal.do_xop("cursor_down");
-    if(G.isCoordSkip.getBoolean()) {
-      int coordLine = G.curwin.getCoordLine(G.curwin.w_cursor.getLine());
-      if (n != 0) {
-        int nline = G.curwin.getCoordLineCount();
-        if (coordLine >= nline) { return FAIL; }
-        coordLine += n;
-        if (coordLine > nline) { coordLine = nline; }
-    }
-      Misc.gotoCoordLine(coordLine, -1);
-      return OK;
-    }
-    int lnum = G.curwin.w_cursor.getLine();
+    int viewLine = G.curwin.getViewLine(G.curwin.w_cursor.getLine());
     if (n != 0) {
-      int nline = G.curbuf.getLineCount();
-      if (lnum >= nline) { return FAIL; }
-      lnum += n;
-      if (lnum > nline) { lnum = nline; }
+      int nline = G.curwin.getViewLineCount();
+      if (viewLine >= nline) { return FAIL; }
+      viewLine += n;
+      if (viewLine > nline) { viewLine = nline; }
     }
-    
-    Misc.gotoLine(lnum, -1);
-    
+    Misc.gotoViewLine(viewLine, -1);
     return OK;
   }
 

@@ -37,6 +37,7 @@ public class JviFrame extends JFrame
     protected JScrollPane scrollPane;
     protected JButton optionsButton;
     protected JLabel generalStatusBar, strokeStatusBar, modeStatusBar;
+    protected JLabel cursorStatusBar;
     protected PlayStatusDisplay statusDisplay;
 
     private Color m_color1 = new java.awt.Color(142,142,142),
@@ -79,6 +80,10 @@ public class JviFrame extends JFrame
 
     public PlayStatusDisplay getStatusDisplay() {
         return statusDisplay;
+    }
+
+    public JLabel getCursorStatusBar() {
+        return cursorStatusBar;
     }
 
 
@@ -125,11 +130,13 @@ public class JviFrame extends JFrame
         jPanel1.setLayout(new BorderLayout());
         JPanel statusPanel = new JPanel();
         statusPanel.setLayout(new GridBagLayout());
+
         generalStatusBar = new JLabel();
         generalStatusBar.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createBevelBorder(BevelBorder.LOWERED,Color.white,Color.white,m_color1,m_color2),
                 BorderFactory.createEmptyBorder(0,2,0,0)));
         generalStatusBar.setText("commandInputAndGeneralStatus");
+
         strokeStatusBar = new JLabel();
         strokeStatusBar.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createBevelBorder(BevelBorder.LOWERED,Color.white,Color.white,m_color1,m_color2),
@@ -137,12 +144,21 @@ public class JviFrame extends JFrame
         strokeStatusBar.setMinimumSize(new Dimension(60,21));
         strokeStatusBar.setPreferredSize(new Dimension(60,0));
         strokeStatusBar.setText("strokes");
+
         modeStatusBar = new JLabel();
         modeStatusBar.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createBevelBorder(BevelBorder.LOWERED,Color.white,Color.white,m_color1,m_color2),
                 BorderFactory.createEmptyBorder(0,2,0,0)));
         modeStatusBar.setMinimumSize(new Dimension(80,4));
         modeStatusBar.setPreferredSize(new Dimension(80,4));
+
+        cursorStatusBar = new JLabel();
+        cursorStatusBar.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createBevelBorder(BevelBorder.LOWERED,Color.white,Color.white,m_color1,m_color2),
+                BorderFactory.createEmptyBorder(0,2,0,0)));
+        cursorStatusBar.setMinimumSize(new Dimension(80,4));
+        cursorStatusBar.setPreferredSize(new Dimension(80,4));
+
         statusPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createBevelBorder(BevelBorder.RAISED,Color.white,Color.white,m_color1,m_color2),
                 BorderFactory.createEmptyBorder(2,0,2,0)));
@@ -171,6 +187,8 @@ public class JviFrame extends JFrame
                 GridBagConstraints.WEST, GridBagConstraints.VERTICAL, new Insets(0, 2, 0, 0), 0, 0));
         statusPanel.add(modeStatusBar, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
                 GridBagConstraints.WEST, GridBagConstraints.VERTICAL, new Insets(0, 2, 0, 0), 0, 0));
+        statusPanel.add(cursorStatusBar, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0,
+                GridBagConstraints.WEST, GridBagConstraints.VERTICAL, new Insets(0, 2, 0, 0), 0, 0));
     }
 
 
@@ -198,6 +216,7 @@ public class JviFrame extends JFrame
      * Overridden so we can exit when window is closed.
      * @override
      */
+    @Override
     protected void processWindowEvent( WindowEvent e )
     {
         super.processWindowEvent(e);
@@ -377,5 +396,9 @@ class SampleText
             + "\t\t\t\t\t\t=\n"
             + "a123456|b123456|c123456|d123456|e123456|f123456|=\n"
             + "\n";
+
+    private SampleText()
+    {
+    }
 
 } // end class SampleText
