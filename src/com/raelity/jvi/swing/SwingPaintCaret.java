@@ -144,33 +144,5 @@ public class SwingPaintCaret
         v = (int) (((v * (float) percentage) / 100) + .5);
         return v;
     }
-    /**
-     * Tries to set the position of the caret from
-     * the coordinates of a mouse event, using viewToModel().
-     * Notifies vi that the most has been clicked in window
-     * and give vi a chance to adjust the position.
-     * <br>
-     * Note: this implementation can not call setDot(pos, biasRet[0]),
-     * so other stuff can probably be eliminated.
-     *
-     * @param e the mouse event
-     */
-    /*public void positionCaret(MouseEvent e) {
-    Point pt = new Point(e.getX(), e.getY());
-    Position.Bias[] biasRet = new Position.Bias[1];
-    int pos = caret.getTextComponent().getUI()
-    .viewToModel(caret.getTextComponent(), pt, biasRet);
-    if(biasRet[0] == null)
-    biasRet[0] = Position.Bias.Forward;
-    pos = ViManager.mouseSetDot(pos, caret.getTextComponent(), e);
-    if (pos >= 0) {
-    // setDot(pos, biasRet[0]);
-    caret.setDot(pos);
-
-    // clear the prefferred caret position
-    // see: JCaret's UpAction/DownAction
-    caret.setMagicCaretPosition(null);
-    }
-    }*/
 }
 

@@ -1011,7 +1011,8 @@ public class SwingTextView extends Window
 
     public Rectangle2D modelToView(int offset) throws BadLocationException
     {
-        Shape s = modelToView(offset, Position.Bias.Forward);
+        Shape s = modelToView(
+                getEditorComponent(), offset, Position.Bias.Forward);
         Rectangle2D r = s.getBounds2D();
         // (0,3,300,300).contains(3,3,0,17) because of the 0 width (jdk1.5 at least)
         // so...
@@ -1030,18 +1031,24 @@ public class SwingTextView extends Window
         return r;
     }
 
-    // adapted from BasicTextUI
-    public Shape modelToView(int pos, Position.Bias bias)
+    public static Shape modelToView(JTextComponent jtc, int pos)
             throws BadLocationException
     {
-        JTextComponent tc = getEditorComponent();
-	Document doc = getEditorComponent().getDocument();
+        return modelToView(jtc, pos, Position.Bias.Forward);
+    }
+
+    // adapted from BasicTextUI
+    public static Shape modelToView(
+            JTextComponent jtc, int pos, Position.Bias bias)
+            throws BadLocationException
+    {
+	Document doc = jtc.getDocument();
 	if (doc instanceof AbstractDocument) {
 	    ((AbstractDocument)doc).readLock();
 	}
 	try {
-            View rootView = tc.getUI().getRootView(tc);
-	    Rectangle alloc = getVisibleEditorRect();
+            View rootView = jtc.getUI().getRootView(jtc);
+	    Rectangle alloc = getVisibleEditorRect(jtc);
 	    if (alloc != null) {
 		//rootView.setSize(alloc.width, alloc.height);
 		Shape s = rootView.modelToView(pos, alloc, bias);
@@ -1062,16 +1069,20 @@ public class SwingTextView extends Window
     {
         return viewToModel(getEditorComponent(), pt, biasReturnBitBucket);
     }
-    public int viewToModel(JTextComponent tc, Point2D pt,
+    public static int viewToModel(JTextComponent jtc, Point2D pt)
+    {
+        return viewToModel(jtc, pt, biasReturnBitBucket);
+    }
+    public static int viewToModel(JTextComponent jtc, Point2D pt,
 			   Position.Bias[] biasReturn) {
 	int offs = -1;
-	Document doc = getEditorComponent().getDocument();
+	Document doc = jtc.getDocument();
 	if (doc instanceof AbstractDocument) {
 	    ((AbstractDocument)doc).readLock();
 	}
 	try {
-            View rootView = tc.getUI().getRootView(tc);
-	    Rectangle alloc = getVisibleEditorRect();
+            View rootView = jtc.getUI().getRootView(jtc);
+	    Rectangle alloc = getVisibleEditorRect(jtc);
 	    if (alloc != null) {
 		rootView.setSize(alloc.width, alloc.height);
 		offs = rootView.viewToModel((float)pt.getX(), (float)pt.getY(),
@@ -1084,11 +1095,11 @@ public class SwingTextView extends Window
 	}
         return offs;
     }
-    private Rectangle getVisibleEditorRect() {
-	Rectangle alloc = getEditorComponent().getBounds();
+    private static Rectangle getVisibleEditorRect(JTextComponent jtc) {
+	Rectangle alloc = jtc.getBounds();
 	if ((alloc.width > 0) && (alloc.height > 0)) {
 	    alloc.x = alloc.y = 0;
-	    Insets insets = getEditorComponent().getInsets();
+	    Insets insets = jtc.getInsets();
 	    alloc.x += insets.left;
 	    alloc.y += insets.top;
 	    alloc.width -= insets.left + insets.right;

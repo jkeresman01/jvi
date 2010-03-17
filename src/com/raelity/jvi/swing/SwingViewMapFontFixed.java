@@ -22,7 +22,6 @@ package com.raelity.jvi.swing;
 
 import static java.lang.Math.round;
 import com.raelity.jvi.core.G;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
