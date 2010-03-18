@@ -34,7 +34,7 @@ package com.raelity.jvi.swing;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public interface ViewMap
+public interface LogicalLineMap
 {
     /**
      *
@@ -58,9 +58,9 @@ public interface ViewMap
      * @return line number taking folding into account
      * @throws RuntimeException if docLine is not in the file
      */
-    public int viewLine(int docLine) throws RuntimeException;
+    public int logicalLine(int docLine) throws RuntimeException; // NEEDSWORK:
 
-    public int docLine(int viewLine);
+    public int docLine(int logicalLine);
 
-    public int docLineOffset(int viewLine);
+    public int docLineOffset(int logicalLine);
 }

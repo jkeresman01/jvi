@@ -29,10 +29,10 @@ import com.raelity.jvi.core.G;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public class SwingViewMapSwitcher implements ViewMap
+public class SwingViewMapSwitcher implements LogicalLineMap
 {
-    ViewMap vmNoFolding;
-    ViewMap vmFontFixed;
+    LogicalLineMap vmNoFolding;
+    LogicalLineMap vmFontFixed;
 
     public SwingViewMapSwitcher(SwingTextView tv)
     {
@@ -40,14 +40,14 @@ public class SwingViewMapSwitcher implements ViewMap
         vmFontFixed = new SwingViewMapFontFixed(tv);
     }
 
-    private ViewMap getMap()
+    private LogicalLineMap getMap()
     {
         return G.isCoordSkip.getBoolean() ? vmFontFixed : vmNoFolding;
     }
 
-    public int viewLine(int docLine) throws RuntimeException
+    public int logicalLine(int docLine) throws RuntimeException
     {
-        return getMap().viewLine(docLine);
+        return getMap().logicalLine(docLine);
     }
 
     public boolean isFontFixedWidth()

@@ -541,17 +541,17 @@ public class Misc extends CoreMethodHooks implements ClipboardOwner {
   static void gotoLine(int line, int flag) {
     if(line > G.curbuf.getLineCount())
         line = G.curbuf.getLineCount();
-    int viewLine = G.curwin.getViewLine(line);
-    int offset = G.curwin.getDocLineOffset(viewLine);
+    int logicalLine = G.curwin.getLogicalLine(line);
+    int offset = G.curwin.getDocLineOffset(logicalLine);
     int bufferLine = G.curbuf.getLineNumber(offset);
     if(bufferLine != line) {
       offset = G.curbuf.getLineStartOffset(line);
       // System.err.println("LINE " + line + "-->" + bufferLine);
       G.curwin.foldOperation(FOLDOP.MAKE_VISIBLE, offset);
       // now that the fold is open, it should have moved on screen
-      viewLine = G.curwin.getViewLine(line);
+      logicalLine = G.curwin.getLogicalLine(line);
     }
-    gotoViewLine(viewLine, flag);
+    gotoLogicalLine(logicalLine, flag);
     return;
   }
 
@@ -573,23 +573,23 @@ public class Misc extends CoreMethodHooks implements ClipboardOwner {
    * The argument is the target for the top line, adjust
    * it so that there is no attempt to put blanks on the screen
    */
-  static int adjustTopViewLine(int topViewLine) {
+  static int adjustTopLogicalLine(int topLogicalLine) {
     int nLinesRequiredOnScreen = G.curwin.getRequiredVpLines();
     // nLinesAfterTop includes the top line
     // NOTE: the '+1' in the compare is not there in the previous
-    //       so the case for ViewLines == RequireddisplayLines is different.
+    //       so the case for LogicalLines == RequireddisplayLines is different.
     //       top + VL > LC  vs RL > LC - top + 1
     //                         top + RL > LC + 1
-    int nLinesAfterTop = G.curwin.getViewLineCount() - topViewLine + 1;
+    int nLinesAfterTop = G.curwin.getLogicalLineCount() - topLogicalLine + 1;
     if(nLinesAfterTop < nLinesRequiredOnScreen)
-      topViewLine = G.curwin.getViewLineCount() - nLinesRequiredOnScreen + 1;
-    //if(top + G.curwin.getViewLines() > G.curwin.getCoordLineCount()) {
-    //  top = G.curwin.getCoordLineCount() - G.curwin.getViewLines() + 1;
+      topLogicalLine = G.curwin.getLogicalLineCount() - nLinesRequiredOnScreen + 1;
+    //if(top + G.curwin.getLogicalLines() > G.curwin.getCoordLineCount()) {
+    //  top = G.curwin.getCoordLineCount() - G.curwin.getLogicalLines() + 1;
     //}
-    if(topViewLine < 1) {
-      topViewLine = 1;
+    if(topLogicalLine < 1) {
+      topLogicalLine = 1;
     }
-    return topViewLine;
+    return topLogicalLine;
   }
 
   static void msgmore(int n) {
@@ -3464,17 +3464,17 @@ private static int put_in_typebuf(String s, boolean colon)
      * then scroll to the line and the line will be near the top
      * or bottom as needed, otherwise center the target line on the screen.
      */
-    static void gotoViewLine(int viewLine, int flag) {
-      if(viewLine < 1)
-        viewLine = 1;
-      if(viewLine > G.curwin.getViewLineCount())
-        viewLine = G.curwin.getViewLineCount();
+    static void gotoLogicalLine(int logicalLine, int flag) {
+      if(logicalLine < 1)
+        logicalLine = 1;
+      if(logicalLine > G.curwin.getLogicalLineCount())
+        logicalLine = G.curwin.getLogicalLineCount();
       
       // if target line is less than half a screen away from
       // being visible, then just let it scroll, otherwise
       // center the target line
 
-      int curTop = G.curwin.getVpTopViewLine();
+      int curTop = G.curwin.getVpTopLogicalLine();
       int vpLines = G.curwin.getVpLines();
       int so = getScrollOff();
       int center = curTop + vpLines / 2 - 1;
@@ -3484,23 +3484,23 @@ private static int put_in_typebuf(String s, boolean colon)
       int scrollMargin = vpLines - so; // max distance from center to do scroll
       
       int newTop = curTop;
-      if(viewLine < center - scrollMargin - 1
-              || viewLine > center + scrollMargin) {
-        newTop = viewLine - (vpLines / 2);
+      if(logicalLine < center - scrollMargin - 1
+              || logicalLine > center + scrollMargin) {
+        newTop = logicalLine - (vpLines / 2);
         if((vpLines & 1) == 0) {
           ++newTop; // even num lines, put target in upper half
         }
         // center the target line
       } else {
         // scroll to the line
-        if(viewLine < curTop+so) {
-          newTop = viewLine-so;
-        } else if(viewLine > G.curwin.getVpBottomViewLine()-so-1) {
-          newTop = viewLine-vpLines+1+so;
+        if(logicalLine < curTop+so) {
+          newTop = logicalLine-so;
+        } else if(logicalLine > G.curwin.getVpBottomLogicalLine()-so-1) {
+          newTop = logicalLine-vpLines+1+so;
         }
       }
-      G.curwin.setVpTopViewLine(adjustTopViewLine(newTop));
-      G.curwin.setCursorViewLine(viewLine, 0);
+      G.curwin.setVpTopLogicalLine(adjustTopLogicalLine(newTop));
+      G.curwin.setCursorLogicalLine(logicalLine, 0);
       //MySegment seg = G.curbuf.getLineSegment(coordLine);
       //int col;
       if(flag < 0) {
@@ -3526,7 +3526,7 @@ private static int put_in_typebuf(String s, boolean colon)
       int newcursorline = -1;
       
       
-      if (G.curwin.getViewLineCount() == 1) { // nothing to do
+      if (G.curwin.getLogicalLineCount() == 1) { // nothing to do
         Util.beep_flush();
         return FAIL;
       }
@@ -3548,11 +3548,11 @@ private static int put_in_typebuf(String s, boolean colon)
         // last line.
         //
         if (dir == FORWARD
-                ? ((G.curwin.getVpTopViewLine()
-                                   >= G.curwin.getViewLineCount() - so)
-                    && G.curwin.getVpBottomViewLine()
-                                   > G.curwin.getViewLineCount())
-                : (G.curwin.getVpTopViewLine() == 1)) {
+                ? ((G.curwin.getVpTopLogicalLine()
+                                   >= G.curwin.getLogicalLineCount() - so)
+                    && G.curwin.getVpBottomLogicalLine()
+                                   > G.curwin.getLogicalLineCount())
+                : (G.curwin.getVpTopLogicalLine() == 1)) {
           Util.beep_flush();
           retval = FAIL;
           break;
@@ -3562,8 +3562,8 @@ private static int put_in_typebuf(String s, boolean colon)
         // blank lines on the screen, so we can go no more when the cursor
         // is positioned at the last line.
         if (dir == FORWARD
-                && G.curwin.getViewLine(G.curwin.w_cursor.getLine())
-                      == G.curwin.getViewLineCount()) {
+                && G.curwin.getLogicalLine(G.curwin.w_cursor.getLine())
+                      == G.curwin.getLogicalLineCount()) {
           Util.beep_flush();
           retval = FAIL;
           break;
@@ -3571,12 +3571,12 @@ private static int put_in_typebuf(String s, boolean colon)
         
         if (dir == FORWARD) {
           // at end of file
-          if(G.curwin.getVpBottomViewLine() > G.curwin.getViewLineCount()) {
-            newtopline = G.curwin.getViewLineCount();
-            newcursorline = G.curwin.getViewLineCount();
+          if(G.curwin.getVpBottomLogicalLine() > G.curwin.getLogicalLineCount()) {
+            newtopline = G.curwin.getLogicalLineCount();
+            newcursorline = G.curwin.getLogicalLineCount();
             // curwin->w_valid &= ~(VALID_WROW|VALID_CROW);
           } else {
-            lp = G.curwin.getVpBottomViewLine();
+            lp = G.curwin.getVpBottomLogicalLine();
             off = get_scroll_overlap(lp, -1);
             newtopline = lp - off;
             newcursorline = newtopline + so;
@@ -3584,11 +3584,11 @@ private static int put_in_typebuf(String s, boolean colon)
             // VALID_CROW|VALID_BOTLINE|VALID_BOTLINE_AP);
           }
         } else {	// dir == BACKWARDS
-          lp = G.curwin.getVpTopViewLine() - 1;
+          lp = G.curwin.getVpTopLogicalLine() - 1;
           off = get_scroll_overlap(lp, 1);
           lp += off;
-          if (lp > G.curwin.getViewLineCount())
-            lp = G.curwin.getViewLineCount();
+          if (lp > G.curwin.getLogicalLineCount())
+            lp = G.curwin.getLogicalLineCount();
           newcursorline = lp - so;
           n = 0;
           while (n <= G.curwin.getVpLines() && lp >= 1) {
@@ -3598,11 +3598,11 @@ private static int put_in_typebuf(String s, boolean colon)
           if (n <= G.curwin.getVpLines()) {	    // at begin of file
             newtopline = 1;
             // curwin->w_valid &= ~(VALID_WROW|VALID_CROW|VALID_BOTLINE);
-          } else if (lp >= G.curwin.getVpTopViewLine() - 2) {
+          } else if (lp >= G.curwin.getVpTopLogicalLine() - 2) {
             // very long lines
-            newtopline = G.curwin.getVpTopViewLine() - 1;
+            newtopline = G.curwin.getVpTopLogicalLine() - 1;
             comp_botline();
-            newcursorline = G.curwin.getVpBottomViewLine() - 1;
+            newcursorline = G.curwin.getVpBottomLogicalLine() - 1;
             // curwin->w_valid &= ~(VALID_WCOL|VALID_CHEIGHT|
             // VALID_WROW|VALID_CROW);
           } else {
@@ -3614,13 +3614,13 @@ private static int put_in_typebuf(String s, boolean colon)
       
       // now adjust cursor locations
       if(newtopline > 0) {
-        G.curwin.setVpTopViewLine(adjustTopViewLine(newtopline));
+        G.curwin.setVpTopLogicalLine(adjustTopLogicalLine(newtopline));
       }
       if(newcursorline > 0) {
         //COORD CHANGE:
         //G.curwin.setCaretPosition(
         //        G.curbuf.getLineStartOffset(newcursorline));
-        G.curwin.setCursorViewLine(newcursorline, 0);
+        G.curwin.setCursorLogicalLine(newcursorline, 0);
       }
       
       cursor_correct();	// NEEDSWORK: implement
@@ -3635,8 +3635,8 @@ private static int put_in_typebuf(String s, boolean colon)
       //  // scroll_cursor_top(1, FALSE);	// NEEDSWORK: onepage ("^f") cleanup
       //}
       if (dir == FORWARD
-          && G.curwin.getViewLine(G.curwin.w_cursor.getLine())
-                                  < G.curwin.getVpTopViewLine() + so) {
+          && G.curwin.getLogicalLine(G.curwin.w_cursor.getLine())
+                                  < G.curwin.getVpTopLogicalLine() + so) {
         // scroll_cursor_top(1, FALSE);	// NEEDSWORK: onepage ("^f") cleanup
       }
                 
@@ -3669,12 +3669,12 @@ private static int put_in_typebuf(String s, boolean colon)
       
       validate_botline();
       room = G.curwin.getVpBlankLines();
-      newtopline = G.curwin.getVpTopViewLine();
-      newbotline = G.curwin.getVpBottomViewLine();
+      newtopline = G.curwin.getVpTopLogicalLine();
+      newbotline = G.curwin.getVpBottomLogicalLine();
       //COORD CHANGED: newcursorline = cursor.getLine();
-      newcursorline = G.curwin.getViewLine(cursor.getLine());
+      newcursorline = G.curwin.getLogicalLine(cursor.getLine());
       if (go_down) {	    // scroll down
-        while (n > 0 && newbotline <= G.curwin.getViewLineCount()) {
+        while (n > 0 && newbotline <= G.curwin.getLogicalLineCount()) {
           i = plines(newtopline);
           n -= i;
           if (n < 0 && scrolled != 0)
@@ -3693,9 +3693,9 @@ private static int put_in_typebuf(String s, boolean colon)
               break;
             ++newbotline;
             room -= i;
-          } while (newbotline <= G.curwin.getViewLineCount());
+          } while (newbotline <= G.curwin.getLogicalLineCount());
           
-          if (newcursorline < G.curwin.getViewLineCount()) {
+          if (newcursorline < G.curwin.getLogicalLineCount()) {
             ++newcursorline;
             // curwin->w_valid &= ~(VALID_VIRTCOL|VALID_CHEIGHT|VALID_WCOL);
           }
@@ -3706,8 +3706,8 @@ private static int put_in_typebuf(String s, boolean colon)
         //
         if (n > 0) {
           newcursorline += n;
-          if(newcursorline > G.curwin.getViewLineCount()) {
-            newcursorline = G.curwin.getViewLineCount();
+          if(newcursorline > G.curwin.getLogicalLineCount()) {
+            newcursorline = G.curwin.getLogicalLineCount();
           }
         }
       } else {	    // scroll up
@@ -3735,9 +3735,9 @@ private static int put_in_typebuf(String s, boolean colon)
             newcursorline = 1;
         }
       }
-      G.curwin.setVpTopViewLine(newtopline);
+      G.curwin.setVpTopLogicalLine(newtopline);
       //COORD CHANGED: cursor.set(newcursorline, 0);
-      G.curwin.setCursorViewLine(newcursorline, 0);
+      G.curwin.setCursorLogicalLine(newcursorline, 0);
       cursor_correct();
       Edit.beginline(BL_SOL | BL_FIX);
       update_screen(VALID);

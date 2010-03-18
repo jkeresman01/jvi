@@ -25,7 +25,7 @@ package com.raelity.jvi.swing;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public class SwingViewMapNoFolding implements ViewMap
+public class SwingViewMapNoFolding implements LogicalLineMap
 {
     SwingTextView tv;
 
@@ -54,7 +54,7 @@ public class SwingViewMapNoFolding implements ViewMap
         return false;
     }
 
-    public int viewLine(int docLine) throws RuntimeException
+    public int logicalLine(int docLine) throws RuntimeException
     {
         return docLine;
     }

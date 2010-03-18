@@ -35,7 +35,7 @@ import javax.swing.text.BadLocationException;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public class SwingViewMapFontFixed implements ViewMap {
+public class SwingViewMapFontFixed implements LogicalLineMap {
     private static final
             Logger LOG = Logger.getLogger(SwingTextView.class.getName());
     private SwingTextView tv;
@@ -75,7 +75,7 @@ public class SwingViewMapFontFixed implements ViewMap {
     }
 
     // NEEDSWORK: getViewLine CALLED A LOT
-    public int viewLine(int docLine) throws RuntimeException
+    public int logicalLine(int docLine) throws RuntimeException
     {
         int viewLine = 1;
         try {

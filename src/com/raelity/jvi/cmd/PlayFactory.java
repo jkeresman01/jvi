@@ -26,7 +26,7 @@ import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.swing.SwingTextView;
 import com.raelity.jvi.swing.SwingViewMapSwitcher;
-import com.raelity.jvi.swing.ViewMap;
+import com.raelity.jvi.swing.LogicalLineMap;
 import com.raelity.jvi.swing.simple.SimpleFactory;
 import java.util.Map;
 import javax.swing.text.JTextComponent;
@@ -48,7 +48,7 @@ final public class PlayFactory extends SimpleFactory
     protected ViTextView newTextView( JTextComponent editor )
     {
         SwingTextView tv = new PlayTextView(editor, mapJepSd.get(editor));
-        ViewMap vm = new SwingViewMapSwitcher(tv);
+        LogicalLineMap vm = new SwingViewMapSwitcher(tv);
         tv.setViewMap(vm);
         return tv;
     }

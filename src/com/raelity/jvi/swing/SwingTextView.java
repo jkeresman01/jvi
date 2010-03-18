@@ -86,7 +86,7 @@ public class SwingTextView extends Window
 
     protected int w_num;
 
-    protected ViewMap vm;
+    protected LogicalLineMap vm;
 
     protected JTextComponent editorPane;
     protected TextOps ops;
@@ -117,7 +117,7 @@ public class SwingTextView extends Window
         };
     }
 
-    public void setViewMap(ViewMap vm)
+    public void setViewMap(LogicalLineMap vm)
     {
         assert this.vm == null;
         this.vm = vm;
@@ -460,7 +460,7 @@ public class SwingTextView extends Window
             // int cmpOffset = getBuffer()
             //                .getLineEndOffsetFromOffset(w_cursor.getOffset());
             offset = getDocLineOffset(
-                    getViewLine(w_cursor.getLine()) + 1);
+                    getLogicalLine(w_cursor.getLine()) + 1);
         } else {
             // before the current line
             offset = getBuffer()
@@ -568,22 +568,22 @@ public class SwingTextView extends Window
     }
 
 
-    public int getVpTopViewLine()
+    public int getVpTopLogicalLine()
     {
-        int viewLine = vm.viewLine(getVpTopLine());
+        int logicalLine = vm.logicalLine(getVpTopLine());
         if ( G.dbgCoordSkip.getBoolean() ) {
-            System.err.println("getVpViewTopLine: " + viewLine);
+            System.err.println("getVpViewTopLine: " + logicalLine);
         }
-        return viewLine;
+        return logicalLine;
     }
 
 
-    public void setVpTopViewLine( int viewLine )
+    public void setVpTopLogicalLine( int logicalLine )
     {
         Point2D p;
         int docLine = 1;
         int offset = 0;
-        docLine = vm.docLine(viewLine);
+        docLine = vm.docLine(logicalLine);
         offset = getBuffer().getLineStartOffset(docLine);
 
         try {
@@ -608,56 +608,56 @@ public class SwingTextView extends Window
     }
 
 
-    public int getVpBottomViewLine()
+    public int getVpBottomLogicalLine()
     {
         // NEEDSWORK: COORD consider blank lines on screen, coordLine past EOF
-        int viewLine = getVpTopViewLine() + getVpLines();
+        int logicalLine = getVpTopLogicalLine() + getVpLines();
         if(G.dbgCoordSkip.getBoolean()) {
-            System.err.println("getViewCoordBottomLine: " + viewLine);
+            System.err.println("getViewCoordBottomLine: " + logicalLine);
         }
-        return viewLine; // NEEDSWORK: line past full line, see getViewBottomLine
+        return logicalLine; // NEEDSWORK: line past full line, see getViewBottomLine
     }
 
 
-    public int getViewLineCount()
+    public int getLogicalLineCount()
     {
-        int viewLine = vm.viewLine(getBuffer().getLineCount());
+        int logicalLine = vm.logicalLine(getBuffer().getLineCount());
         if ( G.dbgCoordSkip.getBoolean() ) {
-            System.err.println("getViewLineCount: " + viewLine);
+            System.err.println("getLogicalLineCount: " + logicalLine);
         }
-        return viewLine;
+        return logicalLine;
     }
 
 
-    public int getViewLine(int docLine)
+    public int getLogicalLine(int docLine)
     {
         if(docLine > getBuffer().getLineCount()) {
             ViManager.dumpStack("line "+docLine
                                 +" past "+getBuffer().getLineCount());
             docLine = getBuffer().getLineCount();
         }
-        int viewLine = vm.viewLine(docLine);
+        int logicalLine = vm.logicalLine(docLine);
         if ( G.dbgCoordSkip.getBoolean() ) {
-            System.err.println("getViewLine: " + viewLine);
+            System.err.println("getLogicalLine: " + logicalLine);
         }
-        return viewLine;
+        return logicalLine;
     }
 
-    public int getDocLine(int viewLine)
+    public int getDocLine(int logicalLine)
     {
-        return vm.docLine(viewLine);
+        return vm.docLine(logicalLine);
     }
 
-    public int getDocLineOffset( int viewLine )
+    public int getDocLineOffset( int logicalLine )
     {
-        return getBuffer().getLineStartOffset(vm.docLine(viewLine));
+        return getBuffer().getLineStartOffset(vm.docLine(logicalLine));
     }
 
 
-    public void setCursorViewLine( int viewLine, int col )
+    public void setCursorLogicalLine( int logicalLine, int col )
     {
         //assert col == 0;
-        setCaretPosition(vm.docLineOffset(viewLine) + col);
+        setCaretPosition(vm.docLineOffset(logicalLine) + col);
     }
 
 
@@ -911,7 +911,7 @@ public class SwingTextView extends Window
             return 0;
 
         int n;
-        n = vpLines - (vm.viewLine(vpBottomLine) - vm.viewLine(vpTopLine) + 1);
+        n = vpLines - (vm.logicalLine(vpBottomLine) - vm.logicalLine(vpTopLine) + 1);
         return n;
     }
 

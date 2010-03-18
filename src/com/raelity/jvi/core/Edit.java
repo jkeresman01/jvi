@@ -1340,7 +1340,7 @@ private static class GetLiteral implements HandleNextChar
    */
   public static int cursor_up(int n, boolean upd_topline) {
     Normal.do_xop("cursor_up");
-    int viewLine = G.curwin.getViewLine(G.curwin.w_cursor.getLine());
+    int viewLine = G.curwin.getLogicalLine(G.curwin.w_cursor.getLine());
     if (n != 0) {
       if (viewLine <= 1)
         return FAIL;
@@ -1349,7 +1349,7 @@ private static class GetLiteral implements HandleNextChar
       else
         viewLine -= n;
     }
-    Misc.gotoViewLine(viewLine, -1);
+    Misc.gotoLogicalLine(viewLine, -1);
     return OK;
   }
 
@@ -1359,14 +1359,14 @@ private static class GetLiteral implements HandleNextChar
    */
   public static int cursor_down(int n, boolean upd_topline) {
     Normal.do_xop("cursor_down");
-    int viewLine = G.curwin.getViewLine(G.curwin.w_cursor.getLine());
+    int viewLine = G.curwin.getLogicalLine(G.curwin.w_cursor.getLine());
     if (n != 0) {
-      int nline = G.curwin.getViewLineCount();
+      int nline = G.curwin.getLogicalLineCount();
       if (viewLine >= nline) { return FAIL; }
       viewLine += n;
       if (viewLine > nline) { viewLine = nline; }
     }
-    Misc.gotoViewLine(viewLine, -1);
+    Misc.gotoLogicalLine(viewLine, -1);
     return OK;
   }
 

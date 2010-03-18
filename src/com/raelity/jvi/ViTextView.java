@@ -3,18 +3,18 @@
  * License Version 1.1 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of
  * the License at http://www.mozilla.org/MPL/
- * 
+ *
  * Software distributed under the License is distributed on an "AS
  * IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
  * implied. See the License for the specific language governing
  * rights and limitations under the License.
- * 
+ *
  * The Original Code is jvi - vi editor clone.
- * 
+ *
  * The Initial Developer of the Original Code is Ernie Rael.
  * Portions created by Ernie Rael are
  * Copyright (C) 2000 Ernie Rael.  All Rights Reserved.
- * 
+ *
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 package com.raelity.jvi;
@@ -38,13 +38,13 @@ import java.awt.Component;
 public interface ViTextView extends ViOptionBag {
   // text fold operations
   public enum FOLDOP { CLOSE, OPEN, CLOSE_ALL, OPEN_ALL, MAKE_VISIBLE }
-  
+
   /** anonymous mark operations */
   public enum MARKOP { TOGGLE, NEXT, PREV }
-  
+
   /** jump list operations */
   public enum JLOP { NEXT_JUMP, PREV_JUMP, NEXT_CHANGE, PREV_CHANGE }
-  
+
   /** tags and tagstack operations */
   public enum TAGOP { OLDER, NEWER }
 
@@ -86,7 +86,7 @@ public interface ViTextView extends ViOptionBag {
   // Text Modification methods
   // They all fail if !isEditable
   //
-  
+
   /** Can the editor text be changed */
   public boolean isEditable();
 
@@ -152,22 +152,22 @@ public interface ViTextView extends ViOptionBag {
    * Count is the Nth mark forward, back. It is ignored by TOGGLE.
    */
   public void anonymousMark(MARKOP op, int count);
-  
+
   /** find matching character for character under the cursor.
    * This is the '%' command. It is here to take advantage of
    * existing functionality in target environments.
    */
   public void findMatch();
-  
+
   /** Jump to the definition of the identifier under the cursor. */
   public void jumpDefinition(String ident);
-  
+
   /** Jump list handling */
   public void jumpList(JLOP op, int count);
-  
+
   /** Perform the fold operation.  */
   public void foldOperation(FOLDOP op);
-  
+
   /** Perform the fold operation.  */
   public void foldOperation(FOLDOP op, int offset);
 
@@ -185,7 +185,7 @@ public interface ViTextView extends ViOptionBag {
   public int getVpTopLine();
 
   /** cause the indicated document line to be displayed as top line in viewport. */
-  public void setVpTopLine(int line);
+  public void setVpTopLine(int docLine);
 
   /** @return the number of unused lines on the display */
   public int getVpBlankLines(); // NEEDSWORK: what about variable font
@@ -197,19 +197,19 @@ public interface ViTextView extends ViOptionBag {
    * When this returns the same value as getVpLines() then no non-existent
    * lines can be displayed. If this returns getVpLines()/2 then the last
    * line of the file can be scrolled to the center of the screen.
-   * 
+   *
    * @return the number of lines that must be displayed in the window.
    */
   public int getRequiredVpLines();
 
   /** @return the line number of first visible line in window */
-  public int getVpTopViewLine();
+  public int getVpTopLogicalLine();
 
-  /** cause the indicated line to be displayed as top line in view. */
-  public void setVpTopViewLine(int viewLine);
+  /** cause the indicated line to be displayed as top line in viewport. */
+  public void setVpTopLogicalLine(int logicalLine);
 
   /** @return the line number of line *after* end of window */
-  public int getVpBottomViewLine();
+  public int getVpBottomLogicalLine();
 
   /**
    * If there is no code folding, then the number of view lines is equal
@@ -217,21 +217,21 @@ public interface ViTextView extends ViOptionBag {
    * the number of view lines is smaller.
    * @return number of lines in the view
    */
-  public int getViewLineCount();
+  public int getLogicalLineCount();
 
   /**
    * Translate a document line number to a view line number
    * @param docLine line number in the document
    * @return corresponding line number in the view
    */
-  public int getViewLine(int docLine);
+  public int getLogicalLine(int docLine);
 
   /**
    * Position the cursor.
-   * @param viewLine
+   * @param logicalLine
    * @param col
    */
-  public void setCursorViewLine(int viewLine, int col);
+  public void setCursorLogicalLine(int logicalLine, int col);
 
   /**
    * Find the first character in the line, less than or equal to col,
@@ -252,10 +252,10 @@ public interface ViTextView extends ViOptionBag {
    */
   public int getFirstHiddenColumn(int lineOffset, int col);
 
-  /** Reverse of getViewLine, convert view line to document line */
-  public int getDocLineOffset(int viewLine);
+  /** Reverse of getlogicalLine, convert view line to document line */
+  public int getDocLineOffset(int logicalLine);
 
-  public int getDocLine(int viewLine);
+  public int getDocLine(int logicalLine);
 
 
 
@@ -264,13 +264,13 @@ public interface ViTextView extends ViOptionBag {
 
   /** tear down all the listeners */
   public void detach();
-  
+
   /** called after TV and Buffer are constructed */
   public void startup();
 
   /** attach Buffer to the text view */
   public void attachBuffer(Buffer buf);
-  
+
   /** going away, do any remaining cleanup */
   public void shutdown();
 
@@ -306,7 +306,7 @@ public interface ViTextView extends ViOptionBag {
    * Update the visual state (selection) of the window.
    */
   public void updateVisualState();
-  
+
   /**
    * Update the highlight search state
    */

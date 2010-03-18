@@ -2216,15 +2216,15 @@ middle_code:
   }
   
   static private void scroll_redraw(boolean up, int count) {
-    if(G.curwin.getViewLineCount() <= G.curwin.getVpLines())
+    if(G.curwin.getLogicalLineCount() <= G.curwin.getVpLines())
       return;
     
-    int prev_topline = G.curwin.getVpTopViewLine();
-    int prev_lnum = G.curwin.getViewLine(G.curwin.w_cursor.getLine());
+    int prev_topline = G.curwin.getVpTopLogicalLine();
+    int prev_lnum = G.curwin.getLogicalLine(G.curwin.w_cursor.getLine());
     
     int new_topline = prev_topline + (up ? count : -count);
     
-    new_topline = Misc.adjustTopViewLine(new_topline);
+    new_topline = Misc.adjustTopLogicalLine(new_topline);
     int new_bottomline = new_topline + G.curwin.getVpLines() -1;
     
     int new_lnum = prev_lnum;
@@ -2235,10 +2235,10 @@ middle_code:
       new_lnum = new_bottomline - so;
     
     if(new_lnum != prev_lnum) {
-      G.curwin.setCursorViewLine(new_lnum, 0);
+      G.curwin.setCursorLogicalLine(new_lnum, 0);
       Misc.coladvance(G.curwin.w_curswant);
     }
-    G.curwin.setVpTopViewLine(new_topline);
+    G.curwin.setVpTopLogicalLine(new_topline);
   }
 
   /** nv_zet is simplified */
@@ -2301,7 +2301,7 @@ middle_code:
 	target_doc_line = cap.count0;
       }
     }
-    int target = G.curwin.getViewLine(target_doc_line);
+    int target = G.curwin.getLogicalLine(target_doc_line);
 
     switch(nchar) {
       case NL:		    // put curwin->w_cursor at top of screen
@@ -2335,8 +2335,8 @@ middle_code:
     //G.curwin.setViewTopLine(Misc.adjustTopLine(top));
     //G.curwin.setCaretPosition(target, col);
 
-    G.curwin.setVpTopViewLine(Misc.adjustTopViewLine(top));
-    G.curwin.setCursorViewLine(target, 0);
+    G.curwin.setVpTopLogicalLine(Misc.adjustTopLogicalLine(top));
+    G.curwin.setCursorLogicalLine(target, 0);
     int target_column;
     boolean keepColumn = (nchar == 't') || (nchar == 'z') || (nchar == 'b');
     if(keepColumn)
@@ -2649,9 +2649,9 @@ middle_code:
 	Misc.validate_botline();	    // make sure w_empty_rows is valid
 	for (n = 0; topline + n < line_count; ++n)
 	  if ((used += Misc.plines(topline + n)) >=
-	      (G.curwin.getViewLines() - G.curwin.getViewBlankLines() + 1) / 2)
+	      (G.curwin.getLogicalLines() - G.curwin.getViewBlankLines() + 1) / 2)
 	    break;
-	if (n != 0 && used > G.curwin.getViewLines())
+	if (n != 0 && used > G.curwin.getLogicalLines())
 	  --n;
       } else {
 	n = cap.count1 - 1;
@@ -2679,8 +2679,8 @@ middle_code:
     int newcursorline = -1;
 
     if(cap.cmdchar == 'M') {
-      int topline = G.curwin.getVpTopViewLine();
-      int line_count = G.curwin.getViewLineCount();
+      int topline = G.curwin.getVpTopLogicalLine();
+      int line_count = G.curwin.getLogicalLineCount();
       Misc.validate_botline();	    // make sure w_empty_rows is valid
       int halfway = (G.curwin.getVpLines()
                       - G.curwin.getVpBlankLines() + 1) / 2;
@@ -2701,22 +2701,22 @@ middle_code:
 	adjust = cap.count1 -1;
       }
       if (cap.cmdchar == 'L') {
-	newcursorline = G.curwin.getVpBottomViewLine() - 1 - adjust;
-	if(newcursorline < G.curwin.getVpTopViewLine() + so) {
-	  newcursorline = G.curwin.getVpTopViewLine() + so;
+	newcursorline = G.curwin.getVpBottomLogicalLine() - 1 - adjust;
+	if(newcursorline < G.curwin.getVpTopLogicalLine() + so) {
+	  newcursorline = G.curwin.getVpTopLogicalLine() + so;
 	}
       } else {
 	// 'H'
-	newcursorline = G.curwin.getVpTopViewLine() + adjust;
-	if(newcursorline > G.curwin.getVpBottomViewLine() - 1 - so) {
-	  newcursorline = G.curwin.getVpBottomViewLine() - 1 - so;
+	newcursorline = G.curwin.getVpTopLogicalLine() + adjust;
+	if(newcursorline > G.curwin.getVpBottomLogicalLine() - 1 - so) {
+	  newcursorline = G.curwin.getVpBottomLogicalLine() - 1 - so;
 	}
       }
     }
 
     if(newcursorline > 0) {
       //G.curwin.setCaretPosition(G.curbuf.getLineStartOffset(newcursorline));
-      G.curwin.setCursorViewLine(newcursorline, 0);
+      G.curwin.setCursorLogicalLine(newcursorline, 0);
     }
     Misc.cursor_correct();	// correct for 'so'
     Edit.beginline(BL_SOL | BL_FIX);
