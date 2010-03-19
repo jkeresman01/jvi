@@ -28,7 +28,7 @@ import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.MutableString;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.ViTextView.FOLDOP;
-import com.raelity.jvi.ViTextView.NLOP;
+import com.raelity.jvi.ViTextView.DIR;
 import com.raelity.jvi.ViXlateKey;
 import java.awt.event.KeyEvent;
 import java.awt.datatransfer.StringSelection;
@@ -327,7 +327,7 @@ public class Misc extends CoreMethodHooks implements ClipboardOwner {
       G.curwin.insertNewLine();
     } else {
       ok = G.curwin.openNewLine(dir == FORWARD
-                                ? NLOP.NL_FORWARD : NLOP.NL_BACKWARD);
+                                ? DIR.FORWARD : DIR.BACKWARD);
     }
     if(ok)
       G.did_ai = true;
@@ -3464,7 +3464,8 @@ private static int put_in_typebuf(String s, boolean colon)
      * then scroll to the line and the line will be near the top
      * or bottom as needed, otherwise center the target line on the screen.
      */
-    static void gotoLogicalLine(int logicalLine, int flag) {
+    static void gotoLogicalLine(int logicalLine, int flag)
+    {
       if(logicalLine < 1)
         logicalLine = 1;
       if(logicalLine > G.curwin.getLogicalLineCount())

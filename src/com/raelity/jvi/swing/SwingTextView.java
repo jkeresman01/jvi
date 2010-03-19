@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.swing;
 
+import static java.lang.Math.round;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.core.Window;
 import com.raelity.jvi.core.Util;
@@ -66,6 +67,7 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import javax.swing.text.Utilities;
 import javax.swing.text.View;
 
 /**
@@ -433,13 +435,13 @@ public class SwingTextView extends Window
      * @param op
      * @return
      */
-    public boolean openNewLine( NLOP op )
+    public boolean openNewLine( DIR op )
     {
         if ( !isEditable() ) {
             Util.vim_beep();
             return false;
         }
-        if ( op == NLOP.NL_BACKWARD && w_cursor.getLine() == 1 ) {
+        if ( op == DIR.BACKWARD && w_cursor.getLine() == 1 ) {
             // Special case if BACKWARD and at position zero of document.
             // set the caret position to 0 so that insert line on first line
             // works as well, set position just before new line of first line
@@ -454,7 +456,7 @@ public class SwingTextView extends Window
         }
 
         int offset;
-        if ( op == NLOP.NL_FORWARD ) {
+        if ( op == DIR.FORWARD ) {
             // after the current line,
             // handle current line might be a fold
             // int cmpOffset = getBuffer()
@@ -641,6 +643,83 @@ public class SwingTextView extends Window
             System.err.println("getLogicalLine: " + logicalLine);
         }
         return logicalLine;
+    }
+
+    public boolean cursorScreenRowEdge(EDGE edge, ViFPOS fpos)
+    {
+        fpos.verify(getBuffer());
+        boolean ok = true;
+        try {
+            int offset = fpos.getOffset();
+            switch (edge) {
+                case LEFT:
+                    offset = Utilities.getRowStart(getEditorComponent(), offset);
+                    break;
+
+                case RIGHT:
+                    offset = Utilities.getRowEnd(getEditorComponent(), offset);
+                    break;
+
+                case MIDDLE:
+                    offset = Utilities.getRowStart(getEditorComponent(), offset);
+                    Rectangle2D left = modelToView(offset);
+                    offset = Utilities.getRowEnd(getEditorComponent(), offset);
+                    Rectangle2D right = modelToView(offset);
+
+                    offset = viewToModel(
+                            new Point2D.Double(
+                                round((left.getX() + right.getMaxX()) / 2),
+                                left.getCenterY()));
+                    break;
+
+                default:
+                    throw new AssertionError();
+            }
+            if(offset >= 0)
+                fpos.set(offset);
+            else
+                ok = false;
+        } catch (BadLocationException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            ok = false;
+        }
+        return ok;
+    }
+
+    public boolean cursorScreenUpDown(DIR dir, int distance, ViFPOS fpos)
+    {
+        fpos.verify(getBuffer());
+        boolean ok = true;
+        int offset = fpos.getOffset();
+        int x;
+        try {
+            x = (int)round(modelToView(offset).getX());
+        } catch (BadLocationException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            return false;
+        }
+
+        while(distance-- > 0) {
+            try {
+                if(dir == DIR.BACKWARD) {
+                    offset = Utilities.getPositionAbove(
+                            getEditorComponent(), offset, x);
+                } else { // DIR.FORWARD
+                    offset = Utilities.getPositionBelow(
+                            getEditorComponent(), offset, x);
+                }
+            } catch (BadLocationException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+                offset = -1;
+            }
+            if(offset < 0) {
+                ok = false;
+                break;
+            } else {
+                fpos.set(offset);
+            }
+        }
+        return ok;
     }
 
     public int getDocLine(int logicalLine)

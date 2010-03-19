@@ -54,8 +54,10 @@ public interface ViTextView extends ViOptionBag {
   /** word match operations */
   public enum WMOP { NEXT_WORD_MATCH, PREV_WORD_MATCH }
 
-  /** open new line forward/backward */
-  public enum NLOP { NL_FORWARD, NL_BACKWARD }
+  /** */
+  public enum DIR { FORWARD, BACKWARD }
+
+  public enum EDGE { LEFT, RIGHT, MIDDLE }
 
   /**
    * NOTE: this works only once.
@@ -94,7 +96,7 @@ public interface ViTextView extends ViOptionBag {
   public void insertNewLine();
 
   /** Open line is like insertNewLine, but is does autoindent dance */
-  public boolean openNewLine(NLOP op);
+  public boolean openNewLine(DIR op);
 
   /** Insert tab at current position */
   public void insertTab();
@@ -225,6 +227,34 @@ public interface ViTextView extends ViOptionBag {
    * @return corresponding line number in the view
    */
   public int getLogicalLine(int docLine);
+
+  /**
+   * Do a cursor up/down, according to dir, based on screen
+   * coordinates.
+   * If start position is on a wrapped line then the new position may be
+   * in the same logical line but a different screen line.
+   * The fpos specifies the
+   * starting position and returns the final position; the actual screen cursor
+   * is not moved.
+   * @param direction to move the cursor
+   * @param distance number of lines to move
+   * @param fpos input/output
+   * @return true if the cursor completed all requested moves
+   */
+  public boolean cursorScreenUpDown(DIR dir, int distance, ViFPOS fpos);
+
+  /**
+   * For the line with fpos, calculate the character position in the screen row.
+   * The resulting position stays on the same scren line. This is
+   * relevant when the fpos is on a wrapped line.
+   * Note that upon return fpos may point to a '\n'.
+   * The fpos specifies the
+   * starting position and is modified to return the final position;
+   * the actual screen cursor is not moved.
+   * @param fpos input/output
+   * @return true if the cursor moved.
+   */
+  public abstract boolean cursorScreenRowEdge(EDGE edge, ViFPOS fpos);
 
   /**
    * Position the cursor.

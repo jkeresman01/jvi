@@ -26,6 +26,8 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViTextView.EDGE;
+import com.raelity.jvi.ViTextView.DIR;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViFeature;
@@ -46,6 +48,7 @@ import com.raelity.jvi.swing.KeyBinding;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.Edit.oneright;
 import static com.raelity.jvi.core.KeyDefs.*;
 
 /**
@@ -645,7 +648,7 @@ middle_code:
 
 	  case 'Z':
 	    notImp("close file");
-	    nv_zzet(ca);
+	    //nv_zzet(ca);
 	    break;
 
 	  case 163:		// the pound sign, '#' for English keyboards
@@ -2207,6 +2210,23 @@ middle_code:
 
     display_showcmd();
   }*/
+
+  /**
+   * Move 'dist' lines in direction 'dir', counting lines by *screen*
+   * lines rather than lines in the file.
+   * 'dist' must be positive.
+   *
+   * Return OK if able to move cursor, FAIL otherwise.
+   */
+  static private int nv_screengo(OPARG oap, DIR dir, int dist)
+  {
+    if(dist == 0)
+      dist = 1;
+    ViFPOS fpos = G.curwin.w_cursor.copy();
+    boolean ok = G.curwin.cursorScreenUpDown(dir, dist, fpos);
+    G.curwin.w_cursor.set(fpos);
+    return ok ? OK : FAIL;
+  }
   
   static private void nv_scroll_line(CMDARG cap, boolean is_ctrl_e) {
     do_xop("nv_scroll_line");
@@ -3851,6 +3871,8 @@ static private void nv_findpar(CMDARG cap, int dir)
   throws NotSupportedException {
     do_xop("nv_g_cmd");
     ViFPOS tpos;
+    int t = 0;
+    boolean flag = false;
     switch (cap.nchar) {
       /*case 'x':
         Misc.Yankreg r1 = Misc.get_register('a', true);
@@ -3962,6 +3984,20 @@ static private void nv_findpar(CMDARG cap, int dir)
         nv_goto(cap, 1);
         break;
 
+      case 'j':
+      case K_DOWN:
+        t = nv_screengo(oap, DIR.FORWARD, cap.count1);
+        if(t == FAIL)
+          clearopbeep(oap);
+        break;
+
+      case 'k':
+      case K_UP:
+        t = nv_screengo(oap, DIR.BACKWARD, cap.count1);
+        if(t == FAIL)
+          clearopbeep(oap);
+        break;
+
       case 'q':
       case 'u':
       case 'U':
@@ -3972,6 +4008,59 @@ static private void nv_findpar(CMDARG cap, int dir)
       case 'p':
       case 'P':
         nv_put(cap);
+        break;
+
+      case '$':
+      case K_END:
+        {
+          G.curwin.w_curswant = MAXCOL;
+          int n = cap.count1;
+          boolean ok = true;
+          ViFPOS fpos = G.curwin.w_cursor.copy();
+          if(n > 1) {
+            ok = G.curwin.cursorScreenUpDown(
+                    DIR.FORWARD, n - 1, fpos);
+          }
+          G.curwin.cursorScreenRowEdge(EDGE.RIGHT, fpos);
+          //
+          // Back up the cursor off of a newline unless one of
+          // - empty line
+          // - visual mode and 'selection' is not "old"
+          if(gchar_pos(fpos) == '\n'
+                  && !(fpos.getColumn() == 0
+                       || (G.VIsual_active && G.p_sel.charAt(0) != 'o')))
+            fpos.decColumn();
+          G.curwin.w_cursor.set(fpos);
+          if(!ok)
+            clearopbeep(oap);
+        }
+        break;
+
+      case '^':
+        flag = true;
+        /*FALLTHROUGH*/
+      case '0':
+      case K_HOME:
+        {
+          ViFPOS fpos = G.curwin.w_cursor.copy();
+          G.curwin.cursorScreenRowEdge(EDGE.LEFT, fpos);
+
+          if(flag) {
+            char c;
+            do {
+              c = gchar_pos(fpos);
+            } while(vim_iswhite(c) && oneright(fpos) == OK);
+          }
+          G.curwin.w_cursor.set(fpos);
+          G.curwin.w_set_curswant = true;
+        }
+
+      case 'm':
+        {
+          ViFPOS fpos = G.curwin.w_cursor.copy();
+          G.curwin.cursorScreenRowEdge(EDGE.MIDDLE, fpos);
+          G.curwin.w_cursor.set(fpos);
+        }
         break;
 
     case 't':
@@ -4656,7 +4745,6 @@ static private void nv_findpar(CMDARG cap, int dir)
  * v_*(): functions called to handle Visual mode commands.
  */
   static private  void	nv_gd (OPARG oap, int nchar) {do_op("nv_gd");}
-  static private  int	nv_screengo (OPARG oap, int dir, long dist) { do_op("nv_screengo");return 0; }
   static private  void	nv_zzet (CMDARG cap) {do_op("nv_zzet");}
   static private  void	nv_gotofile (CMDARG cap) {do_op("nv_gotofile");}
   static private  int	nv_VReplace (CMDARG cap) { do_op("nv_VReplace");return 0; }

@@ -1307,8 +1307,17 @@ private static class GetLiteral implements HandleNextChar
    * Return OK when successful, FAIL when we hit a line of file boundary.
    */
   
-  public static int oneright() {
+  public static int oneright()
+  {
     ViFPOS fpos = G.curwin.w_cursor;
+    if(oneright(fpos) == FAIL)
+      return FAIL;
+    G.curwin.w_set_curswant = true;
+    G.curwin.w_cursor.set(fpos);
+    return OK;
+  }
+
+  public static int oneright(ViFPOS fpos) {
     int lnum = fpos.getLine();
     int col = fpos.getColumn();
     MySegment seg = G.curbuf.getLineSegment(lnum);
@@ -1319,7 +1328,7 @@ private static class GetLiteral implements HandleNextChar
     }
     
     G.curwin.w_set_curswant = true;
-    G.curwin.setCaretPosition(fpos.getOffset() + 1);
+    fpos.incColumn();
     return OK;
   }
   
