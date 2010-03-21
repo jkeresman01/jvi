@@ -1708,7 +1708,7 @@ middle_code:
 	case OP_COLON:
 
           // If 'equalprg' is empty, do the indenting internally.
-          if(oap.op_type == OP_INDENT && G.p_ep.getString().equals("")) {
+          if(oap.op_type == OP_INDENT && G.p_ep.getString().isEmpty()) {
             Misc.runUndoable(new Runnable() {
                 public void run() {
                   G.curbuf.reindent(G.curwin.w_cursor.getLine(),
@@ -1737,7 +1737,7 @@ middle_code:
 	  break;
 
 	case OP_FORMAT:
-	  if (! G.p_fp.getString().equals(""))
+	  if (G.p_fp.getString().isEmpty())
 	    op_colon(oap);		/* use external command */
 	  else
 	    op_format(oap);		/* use internal function */
@@ -1846,7 +1846,7 @@ middle_code:
     if (oap.op_type == OP_INDENT)
     {
       String indent;
-      if (G.p_ep.getString().equals(""))
+      if (G.p_ep.getString().isEmpty())
         indent = "indent";
       else
         indent = G.p_ep.getString();
@@ -1855,7 +1855,7 @@ middle_code:
     else if (oap.op_type == OP_FORMAT)
     {
         String fmt;
-	if (G.p_fp.getString().equals("")) {
+	if (G.p_fp.getString().isEmpty()) {
           fmt = "fmt";
         } else {
           fmt = G.p_fp.getString().replace(
@@ -2224,7 +2224,13 @@ middle_code:
       dist = 1;
     ViFPOS fpos = G.curwin.w_cursor.copy();
     boolean ok = G.curwin.cursorScreenUpDown(dir, dist, fpos);
-    G.curwin.w_cursor.set(fpos);
+    // get out of any fold
+    ViFPOS screenLineStartFpos = fpos.copy();
+    G.curwin.cursorScreenRowEdge(EDGE.LEFT, screenLineStartFpos);
+    int col = G.curwin.getFirstHiddenColumn(
+            screenLineStartFpos.getOffset(),
+            fpos.getOffset() - screenLineStartFpos.getOffset());
+    G.curwin.w_cursor.set(screenLineStartFpos.getOffset() + col);
     return ok ? OK : FAIL;
   }
   
@@ -4053,6 +4059,7 @@ static private void nv_findpar(CMDARG cap, int dir)
           }
           G.curwin.w_cursor.set(fpos);
           G.curwin.w_set_curswant = true;
+          break;
         }
 
       case 'm':
@@ -4060,8 +4067,9 @@ static private void nv_findpar(CMDARG cap, int dir)
           ViFPOS fpos = G.curwin.w_cursor.copy();
           G.curwin.cursorScreenRowEdge(EDGE.MIDDLE, fpos);
           G.curwin.w_cursor.set(fpos);
+          G.curwin.w_set_curswant = true;
+          break;
         }
-        break;
 
     case 't':
         G.curwin.tabOperation(TABOP.NEXT_TAB, 0);

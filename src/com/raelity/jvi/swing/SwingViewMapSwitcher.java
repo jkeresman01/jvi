@@ -40,6 +40,13 @@ public class SwingViewMapSwitcher implements LogicalLineMap
         vmFontFixed = new SwingViewMapFontFixed(tv);
     }
 
+    public SwingViewMapSwitcher(LogicalLineMap vmNoFolding,
+                                LogicalLineMap vmFolding)
+    {
+        this.vmNoFolding = vmNoFolding;
+        this.vmFontFixed = vmFolding;
+    }
+
     private LogicalLineMap getMap()
     {
         return G.isCoordSkip.getBoolean() ? vmFontFixed : vmNoFolding;

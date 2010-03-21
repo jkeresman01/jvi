@@ -20,6 +20,8 @@
 
 package com.raelity.jvi.swing;
 
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 import static java.lang.Math.round;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.core.Window;
@@ -119,7 +121,7 @@ public class SwingTextView extends Window
         };
     }
 
-    public void setViewMap(LogicalLineMap vm)
+    public void setLineMap(LogicalLineMap vm)
     {
         assert this.vm == null;
         this.vm = vm;
@@ -612,8 +614,10 @@ public class SwingTextView extends Window
 
     public int getVpBottomLogicalLine()
     {
-        // NEEDSWORK: COORD consider blank lines on screen, coordLine past EOF
         int logicalLine = getVpTopLogicalLine() + getVpLines();
+        int ll01 = getLogicalLineCount();
+        if(logicalLine > ll01)
+            logicalLine = ll01 + 1; // past last line
         if(G.dbgCoordSkip.getBoolean()) {
             System.err.println("getViewCoordBottomLine: " + logicalLine);
         }
@@ -651,19 +655,35 @@ public class SwingTextView extends Window
         boolean ok = true;
         try {
             int offset = fpos.getOffset();
+            int lineOff;
+            int col;
             switch (edge) {
                 case LEFT:
                     offset = Utilities.getRowStart(getEditorComponent(), offset);
                     break;
 
                 case RIGHT:
+                    lineOff = Utilities.getRowStart(getEditorComponent(), offset);
                     offset = Utilities.getRowEnd(getEditorComponent(), offset);
+                    // stay out of fold
+                    col = offset - lineOff; // col from begin of screen line
+                    col = getFirstHiddenColumn(lineOff, col);
+                    offset = lineOff + col;
                     break;
 
                 case MIDDLE:
-                    offset = Utilities.getRowStart(getEditorComponent(), offset);
-                    Rectangle2D left = modelToView(offset);
+                    lineOff = Utilities.getRowStart(getEditorComponent(), offset);
+                    Rectangle2D left = modelToView(lineOff);
                     offset = Utilities.getRowEnd(getEditorComponent(), offset);
+                    col = offset - lineOff;
+                    int col00 = getFirstHiddenColumn(lineOff, col);
+                    // go through the "col00 != col" dance because
+                    // in fold right.getMaxX() returns fold display width
+                    // rather than a char width
+                    if(col00 != col // into folded territory
+                            && col00 > 0) //
+                        --col00;
+                    offset = lineOff + col00;
                     Rectangle2D right = modelToView(offset);
 
                     offset = viewToModel(
@@ -691,13 +711,14 @@ public class SwingTextView extends Window
         fpos.verify(getBuffer());
         boolean ok = true;
         int offset = fpos.getOffset();
-        int x;
-        try {
-            x = (int)round(modelToView(offset).getX());
-        } catch (BadLocationException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            return false;
-        }
+        //int xx;
+        //try {
+        //    xx = (int)round(modelToView(offset).getX());
+        //} catch (BadLocationException ex) {
+        //    LOG.log(Level.SEVERE, null, ex);
+        //    return false;
+        //}
+        int x = (int)round(w_curswant * getMaxCharWidth());
 
         while(distance-- > 0) {
             try {
@@ -938,13 +959,33 @@ public class SwingTextView extends Window
     /** offset should be beginning of docLine */
     private double getLineHeight(int docLine, int offset)
     {
-        double h = 15; // rather arbitrary
+        return getCharRect(docLine, offset).getHeight();
+    }
+
+    private Rectangle2D getCharRect(int docLine, int offset)
+    {
+        Rectangle2D r = new Rectangle2D.Double(0, 0, 8, 15); // arbitrary
         try {
-            h = modelToView(offset).getHeight();
+            r = modelToView(offset);
         } catch (BadLocationException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
-        return h;
+        return r;
+    }
+    private double getMaxCharWidth() {
+        return getMaxCharBounds().getMaxX();
+    }
+    private Rectangle2D getMaxCharBounds() {
+        Rectangle2D r = new Rectangle2D.Double(0, 0, 8, 15); // arbitrary
+        Graphics g = getEditorComponent().getGraphics();
+        try {
+            FontMetrics fm = g.getFontMetrics();
+            //r = fm.getMaxCharBounds(g);
+            r = fm.getStringBounds("W", g);
+        } finally {
+            g.dispose();
+        }
+        return r;
     }
 
     // The visible part of the document, negative means not valid.
@@ -1060,7 +1101,9 @@ public class SwingTextView extends Window
         }
 
         boolean sizeChange = false;
-        if (newViewportExtent == null || !newViewportExtent.equals(viewportExtent) || newVpLines != vpLines) {
+        if (newViewportExtent == null
+                || !newViewportExtent.equals(viewportExtent)
+                || newVpLines != vpLines) {
             sizeChange = true;
         }
         vpLines = newVpLines;
@@ -1094,18 +1137,9 @@ public class SwingTextView extends Window
                 getEditorComponent(), offset, Position.Bias.Forward);
         Rectangle2D r = s.getBounds2D();
         // (0,3,300,300).contains(3,3,0,17) because of the 0 width (jdk1.5 at least)
-        // so...
+        // so... make sure there is some width
         if (r.getWidth() == 0) {
-            //r.width = 1;
             r.setRect(r.getX(), r.getY(), 1, r.getHeight());
-            //if(r instanceof Rectangle2D.Float)
-            //    ((Rectangle2D.Float)r).width = 1;
-            //else if(r instanceof Rectangle2D.Double)
-            //    ((Rectangle2D.Double)r).width = 1;
-            //else if(r instanceof Rectangle)
-            //    ((Rectangle)r).width = 1;
-            //else
-            //    assert false;
         }
         return r;
     }

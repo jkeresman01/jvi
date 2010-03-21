@@ -682,7 +682,7 @@ private static void edit_clearPutchar()
 }
 
   private static void removeUnusedWhiteSpace() {
-    if (Util.ml_get_curline().toString().trim().equals("")) {
+    if (Util.ml_get_curline().toString().trim().isEmpty()) {
       int startOffset =
         G.curbuf.getLineStartOffset(G.curwin.w_cursor.getLine());
       int endOffset = G.curbuf.getLineEndOffsetFromOffset(startOffset) - 1;
@@ -1312,7 +1312,6 @@ private static class GetLiteral implements HandleNextChar
     ViFPOS fpos = G.curwin.w_cursor;
     if(oneright(fpos) == FAIL)
       return FAIL;
-    G.curwin.w_set_curswant = true;
     G.curwin.w_cursor.set(fpos);
     return OK;
   }

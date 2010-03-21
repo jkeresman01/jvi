@@ -49,7 +49,7 @@ final public class PlayFactory extends SimpleFactory
     {
         SwingTextView tv = new PlayTextView(editor, mapJepSd.get(editor));
         LogicalLineMap vm = new SwingViewMapSwitcher(tv);
-        tv.setViewMap(vm);
+        tv.setLineMap(vm);
         return tv;
     }
 
