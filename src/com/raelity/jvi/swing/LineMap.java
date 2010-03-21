@@ -21,28 +21,25 @@
 package com.raelity.jvi.swing;
 
 /**
- * This interface is used to translate document line numbers to view line
- * numbers and visa-versa. View positions refers to the lines seen on
- * the screen; for example with code folding a group of lines may only
- * occupy a single line on the view/screen. There are also inquiries about
- * whether or not the font is fixed width and/or height.
+ * This interface is used to translate document line numbers to logical line
+ * numbers and visa-versa. Logical lines refer to the lines that get displayed;
+ * for example with code folding a group of lines and/or columns may only
+ * be displayed as a single line.
+ *
+ * Note that line wrap is a further complication. When there is line wrapping
+ * a single logical line may occupy multiple screen lines.
  * 
  * {@link SwingTextView} delegates to one of these.
+ * {@link SwingViewMapSwitcher} can be used to switch between two
+ * implementations based on a user option.
  *
- * The translation is quite simple with fixed width/height
- * fonts and no code folding.
+ * The translation is essentially 1-1 when fixed width/height
+ * fonts, no code folding and no line wrap.
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public interface LogicalLineMap
+public interface LineMap
 {
-    /**
-     *
-     * @return true if both fixed width and height
-     */
-    public boolean isFontFixed();
-    public boolean isFontFixedHeight();
-    public boolean isFontFixedWidth();
 
     /**
      * Check if folding is supported. Any feature that may hide lines,

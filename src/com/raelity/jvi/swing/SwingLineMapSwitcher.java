@@ -20,53 +20,56 @@
 
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.core.G;
+
 /**
- * No code folding, pretty much a 1-1 mapping of line numbers.
+ * Switch between NoFolding and FontFixed ViewMaps.
+ *
+ * A listener that sets the current vm is more efficient.
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public class SwingViewMapNoFolding implements LogicalLineMap
+public class SwingLineMapSwitcher implements LineMap
 {
-    SwingTextView tv;
+    LineMap vmNoFolding;
+    LineMap vmFontFixed;
 
-    public SwingViewMapNoFolding(SwingTextView tv)
+    public SwingLineMapSwitcher(SwingTextView tv)
     {
-        this.tv = tv;
+        vmNoFolding = new LineMapNoFoldingNoWrap(tv);
+        vmFontFixed = new SwingLineMapFontFixedCoord(tv);
     }
 
-    public boolean isFontFixed()
+    public SwingLineMapSwitcher(LineMap vmNoFolding,
+                                LineMap vmFolding)
     {
-        return true;
+        this.vmNoFolding = vmNoFolding;
+        this.vmFontFixed = vmFolding;
     }
 
-    public boolean isFontFixedHeight()
+    private LineMap getMap()
     {
-        return true;
-    }
-
-    public boolean isFontFixedWidth()
-    {
-        return true;
-    }
-
-    public boolean isFolding()
-    {
-        return false;
+        return G.isCoordSkip.getBoolean() ? vmFontFixed : vmNoFolding;
     }
 
     public int logicalLine(int docLine) throws RuntimeException
     {
-        return docLine;
+        return getMap().logicalLine(docLine);
     }
 
-    public int docLine(int viewLine)
+    public boolean isFolding()
     {
-        return viewLine;
+        return getMap().isFolding();
     }
 
     public int docLineOffset(int viewLine)
     {
-        return tv.getBuffer().getLineStartOffset(viewLine);
+        return getMap().docLineOffset(viewLine);
+    }
+
+    public int docLine(int viewLine)
+    {
+        return getMap().docLine(viewLine);
     }
 
 }

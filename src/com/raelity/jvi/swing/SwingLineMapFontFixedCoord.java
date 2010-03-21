@@ -35,12 +35,12 @@ import javax.swing.text.BadLocationException;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public class SwingViewMapFontFixed implements LogicalLineMap {
+public class SwingLineMapFontFixedCoord implements LineMap {
     private static final
             Logger LOG = Logger.getLogger(SwingTextView.class.getName());
     private SwingTextView tv;
 
-    public SwingViewMapFontFixed(SwingTextView tv)
+    public SwingLineMapFontFixedCoord(SwingTextView tv)
     {
         this.tv = tv;
         // tv.getEditorComponent().addPropertyChangeListener("font",
@@ -52,21 +52,6 @@ public class SwingViewMapFontFixed implements LogicalLineMap {
         //                 changeFont();
         //         }
         // });
-    }
-
-    public boolean isFontFixed()
-    {
-        return true;
-    }
-
-    public boolean isFontFixedHeight()
-    {
-        return true;
-    }
-
-    public boolean isFontFixedWidth()
-    {
-        return true;
     }
 
     public boolean isFolding()

@@ -90,7 +90,7 @@ public class SwingTextView extends Window
 
     protected int w_num;
 
-    protected LogicalLineMap vm;
+    protected LineMap vm;
 
     protected JTextComponent editorPane;
     protected TextOps ops;
@@ -121,7 +121,7 @@ public class SwingTextView extends Window
         };
     }
 
-    public void setLineMap(LogicalLineMap vm)
+    public void setLineMap(LineMap vm)
     {
         assert this.vm == null;
         this.vm = vm;
