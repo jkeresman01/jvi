@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import javax.swing.event.DocumentEvent;
 
 import static com.raelity.jvi.core.Constants.*;
+import static java.lang.Math.min;
 
 /**
  * Buffer: structure that holds information about one file, primarily
@@ -405,8 +406,10 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
                     right = t;
                 }
                 
-                // if inclusive, then include the end
-                if(G.p_sel.charAt(0) == 'i') {
+                
+                if(G.p_sel.charAt(0) == 'i' // if inclusive, include the end
+                        || left == right    // always display at lest one char
+                ) {
                     endOffset++;
                     right++;
                 }
@@ -473,13 +476,11 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         int[] newHighlight = null;
         if (vb.visMode == 'V') { // line selection mode
             // make sure the entire lines are selected
-            newHighlight = new int[] { getLineStartOffset(vb.startLine),
-            getLineEndOffset(vb.endLine),
-            -1, -1};
+            newHighlight = new int[] {
+                getLineStartOffset(vb.startLine), getLineEndOffset(vb.endLine),
+                -1, -1};
         } else if (vb.visMode == 'v') {
-            newHighlight = new int[] { vb.startOffset,
-            vb.endOffset,
-            -1, -1};
+            newHighlight = new int[] { vb.startOffset, vb.endOffset, -1, -1 };
         } else if (vb.visMode == (0x1f & 'V')) { // visual block mode
             int startLine = getLineNumber(startOffset);
             int endLine = getLineNumber(endOffset -1);
@@ -488,7 +489,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
                 newHighlight = new int[] { -1, -1};
             else {
                 startLine = Math.max(startLine, vb.startLine);
-                endLine = Math.min(endLine, vb.endLine);
+                endLine = min(endLine, vb.endLine);
                 newHighlight = new int[(((endLine - startLine)+1)*2) + 2];
                 
                 MutableInt left = new MutableInt();
@@ -498,11 +499,11 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
                     int offset = getLineStartOffset(line);
                     int len = getLineEndOffset(line) - offset;
                     if(getcols(line, vb.left, vb.wantRight, left, right)) {
-                        newHighlight[i++] = offset + Math.min(len, left.getValue());
-                        newHighlight[i++] = offset + Math.min(len, right.getValue());
+                        newHighlight[i++] = offset + min(len, left.getValue());
+                        newHighlight[i++] = offset + min(len, right.getValue());
                     } else {
-                        newHighlight[i++] = offset + Math.min(len, vb.left);
-                        newHighlight[i++] = offset + Math.min(len, vb.wantRight);
+                        newHighlight[i++] = offset + min(len, vb.left);
+                        newHighlight[i++] = offset + min(len, vb.wantRight);
                     }
                 }
                 newHighlight[i++] = -1;

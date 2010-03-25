@@ -159,10 +159,7 @@ public class Misc01
     private static void win_cycle(AppViews whichViews, int n)
     {
         // n should be 1 or -1
-        if(n < 0)
-            n = -1;
-        else
-            n = 1;
+        n = n < 0 ? -1 : 1;
 
         List<ViAppView> avs = getSortedAppViews(whichViews);
         if(avs == null)
