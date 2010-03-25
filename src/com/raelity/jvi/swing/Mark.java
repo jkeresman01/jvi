@@ -16,6 +16,9 @@ import javax.swing.text.Position;
  * same line before the column.
  *
  * This is a LEFT-BIAS mark. Swing is right bias, so there's a little didling.
+ * The primary implication is that the with a mark insertions at the mark
+ * location occur after the mark, whereas in swing they are after
+ * and move the position.
  */
 class Mark implements ViMark
 {

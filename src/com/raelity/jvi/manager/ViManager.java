@@ -72,7 +72,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.3.0.x6");
+    public static final jViVersion version = new jViVersion("1.3.0.x7");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -109,7 +109,7 @@ public class ViManager
     /** The features which can be disabled by the platform. */
     private static EnumSet<ViFeature> features = EnumSet.allOf(ViFeature.class);
 
-    private static Map hackMap = new HashMap();
+    private static Map<Object,Object> hackMap = new HashMap<Object,Object>();
     public static void putHackMap(Object key, Object val) {
         hackMap.put(key, val);
     }
@@ -488,7 +488,7 @@ public class ViManager
 
     static public void dumpStack(String msg)
     {
-        dumpStack(null, false);
+        dumpStack(msg, false);
     }
 
     static public void dumpStack()

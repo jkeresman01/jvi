@@ -37,6 +37,8 @@ import  static com.raelity.jvi.core.Constants.*;
 
 
 import com.raelity.jvi.*;
+import com.raelity.jvi.core.ColonCommands;
+import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.manager.Scheduler;
 import com.raelity.text.TextUtil.MySegment;
 
@@ -46,6 +48,7 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
@@ -71,6 +74,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Utilities;
 import javax.swing.text.View;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *  Presents a swing editor interface for use with vi. There is
@@ -103,6 +107,21 @@ public class SwingTextView extends Window
     private int lastDot;
     private static int gen;
 
+    private static boolean didInit;
+    @ServiceProvider(service=ViInitialization.class, path="jVi/init")
+    public static class Init implements ViInitialization
+    {
+        @Override
+        public void init()
+        {
+            if(didInit)
+                return;
+            ColonCommands.register("dumpLineMap", "dumpLineMap",
+                    new DumpLineMap());
+            didInit = true;
+        }
+    }
+
     // ............
 
     public SwingTextView( final JTextComponent editorPane)
@@ -125,6 +144,18 @@ public class SwingTextView extends Window
     {
         assert this.vm == null;
         this.vm = vm;
+    }
+
+    private static class DumpLineMap extends ColonCommands.ColonAction
+    {
+        @Override
+        public void actionPerformed(ActionEvent ev)
+        {
+            ColonEvent cev = (ColonEvent) ev;
+            SwingTextView tv = (SwingTextView)cev.getViTextView();
+            System.err.println(tv.vm.toString());
+        }
+
     }
 
     //////////////////////////////////////////////////////////////////////

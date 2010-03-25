@@ -20,10 +20,16 @@
 
 package com.raelity.jvi.core;
 
+import static com.raelity.jvi.manager.ViManager.cid;
 import com.raelity.jvi.ViAppView;
+import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.manager.AppViews;
+import com.raelity.jvi.manager.ViManager;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -31,6 +37,8 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.JViewport;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * The vim algorithm for traversing windows with the ^W_^W style commands is
@@ -60,6 +68,21 @@ public abstract class WindowTreeBuilder {
     public WindowTreeBuilder(List<ViAppView> avs)
     {
         toDo.addAll(avs);
+    }
+
+    private static boolean didInit;
+    @ServiceProvider(service=ViInitialization.class, path="jVi/init")
+    public static class Init implements ViInitialization
+    {
+        @Override
+        public void init()
+        {
+            if(didInit)
+                return;
+            ColonCommands.register("dumpWin", "dumpWindowHierarchy",
+                    new DumpWin());
+            didInit = true;
+        }
     }
 
     /**
@@ -130,6 +153,14 @@ public abstract class WindowTreeBuilder {
         if(targetNode == null)
             return null;
         return getAppView(targetNode.getPeer());
+    }
+
+    public void dumpTree()
+    {
+        for (Node node : roots) {
+            System.err.println("WindowTree for " + cid(node));
+            dumpTree(node);
+        }
     }
 
     private void dumpTree(Node n)
@@ -208,11 +239,15 @@ public abstract class WindowTreeBuilder {
 
     protected Point getLocation(Node n)
     {
-        return n.getPeer().getLocationOnScreen();
+        Component c = n.getPeer();
+        if(c.getParent() instanceof JViewport)
+            c = c.getParent();
+        return c.getLocationOnScreen();
     }
 
     protected class CompareNodeLocations implements Comparator<Node>
     {
+        @Override
         public int compare(Node n1, Node n2)
         {
             Point w1 = getLocation(n1);
@@ -231,7 +266,8 @@ public abstract class WindowTreeBuilder {
 
     private Component allComps(Component c)
     {
-        System.err.println("findNode check: " + c.getClass().getSimpleName());
+        System.err.println("findNode check: " + c.getClass().getSimpleName()
+            +" "+ (c.isShowing() ? c.getLocationOnScreen() : "not showing"));
         if(c.getClass().getSimpleName().equals("MultiSplitPane"))
             System.err.println("multisplitpane");
         if(isEditor(c))
@@ -292,6 +328,16 @@ public abstract class WindowTreeBuilder {
         return new Node(peer, children);
     }
 
+    protected Orientation calcOrientation(Node n01, Node n02)
+    {
+        Point p1 = getLocation(n01);
+        Point p2 = getLocation(n02);
+
+        int dX = Math.abs(p1.x - p2.x);
+        int dY = Math.abs(p1.y - p2.y);
+        return dX > dY ? Orientation.LEFT_RIGHT : Orientation.UP_DOWN;
+    }
+
     /** basically a preorder traversal */
     private void traverse(Node n, Visitor v)
     {
@@ -321,7 +367,7 @@ public abstract class WindowTreeBuilder {
         }
     }
 
-    protected static class Node
+    protected class Node
     {
         private boolean isEditor;
         private Orientation orientation;
@@ -339,17 +385,17 @@ public abstract class WindowTreeBuilder {
         {
             this.peer = peer;
             this.children = children;
-            adjustNode();
-            for (Node child : children) {
-                child.parent = this;
-            }
+            adjustNodes();
         }
 
-        protected void adjustNode()
+        private void adjustNodes()
         {
             if(children != null && children.size() >= 2)
                 orientation = calcOrientation(
                         children.get(0), children.get(1));
+            for (Node child : children) {
+                child.parent = this;
+            }
         }
 
         public boolean isEditor()
@@ -379,7 +425,7 @@ public abstract class WindowTreeBuilder {
 
         public List<Node> getChildren()
         {
-            return children == null ? Collections.EMPTY_LIST
+            return children == null ? Collections.<Node>emptyList()
                 : Collections.unmodifiableList(children);
         }
 
@@ -391,16 +437,6 @@ public abstract class WindowTreeBuilder {
                               : "split:  " + s
                                 + (getOrientation() == Orientation.LEFT_RIGHT
                                     ? " LeftRight" : " TopBottom");
-        }
-
-        public static Orientation calcOrientation(
-                Node n01, Node n02)
-        {
-            Point p1 = n01.getPeer().getLocationOnScreen();
-            Point p2 = n02.getPeer().getLocationOnScreen();
-            int dX = Math.abs(p1.x - p2.x);
-            int dY = Math.abs(p1.y - p2.y);
-            return dX > dY ? Orientation.LEFT_RIGHT : Orientation.UP_DOWN;
         }
 
     }
@@ -543,5 +579,17 @@ public abstract class WindowTreeBuilder {
     private boolean towardsFirst(Direction dir)
     {
         return dir == Direction.LEFT || dir == Direction.UP ? true : false;
+    }
+
+    private static class DumpWin implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            List<ViAppView> avs = Misc01.getVisibleAppViews(AppViews.ALL);
+            WindowTreeBuilder tree
+                    = ViManager.getFactory().getWindowTreeBuilder(avs);
+            tree.processAppViews();
+            tree.dumpTree();
+        }
     }
 }

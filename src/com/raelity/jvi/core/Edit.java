@@ -2647,7 +2647,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
     ViMark mark;
 
     public DynamicMark(ViBuffer buf, ViFPOS fpos) {
-      mark = buf.createMark();
+      mark = buf.createMark(null);
       mark.setMark(fpos);
     }
 

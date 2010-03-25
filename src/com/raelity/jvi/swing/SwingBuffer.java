@@ -9,6 +9,7 @@
 
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.options.BooleanOption;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.Options;
@@ -240,8 +241,11 @@ abstract public class SwingBuffer extends Buffer {
     // Marks
     //
     
-    public ViMark createMark() {
-        return new Mark(this);
+    public ViMark createMark(ViFPOS fpos) {
+        ViMark m = new Mark(this);
+        if(fpos != null)
+            m.setMark(fpos);
+        return m;
     }
     
     static final Position INVALID_MARK_LINE = new Position() {

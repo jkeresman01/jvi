@@ -23,6 +23,7 @@ import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViCaretStyle;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.MutableString;
@@ -1057,6 +1058,8 @@ public class Misc extends CoreMethodHooks implements ClipboardOwner {
     line = G.curwin.w_cursor.getLine();
     // NOTE: the optimization of using copy() is around 12%
     //       need to do single insert to get a big win
+    ViMark mStart = G.curbuf.createMark(oap.start);
+    ViMark mEnd = G.curbuf.createMark(oap.end);
     ViFPOS fpos = G.curwin.w_cursor.copy();
     for (i = oap.line_count; --i >= 0; ) {
       fpos.set(line, 0);
@@ -1086,11 +1089,8 @@ public class Misc extends CoreMethodHooks implements ClipboardOwner {
     /*
      * Set "'[" and "']" marks.
      */
-    G.curbuf.b_op_start.setMark(oap.start);
-    ViFPOS op_end = oap.end.copy();
-    int col = Util.lineLength(op_end.getLine());
-    op_end.setColumn(col == 0 ? 0 : col - 1);
-    G.curbuf.b_op_end.setMark(op_end);
+    G.curbuf.b_op_start.setMark(mStart);
+    G.curbuf.b_op_end.setMark(mEnd);
   }
 
   /**

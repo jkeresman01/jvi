@@ -88,8 +88,8 @@ public abstract class Window implements ViTextView
             ViManager.dumpStack();
         this.w_buffer = buf;
 
-        w_pcmark = buf.createMark();
-        w_prev_pcmark = buf.createMark();
+        w_pcmark = buf.createMark(null);
+        w_prev_pcmark = buf.createMark(null);
     }
 
     public void detachBuffer()

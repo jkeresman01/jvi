@@ -167,7 +167,7 @@ class MarkOps
                 return FAIL;
             }
             int i = c - 'A';
-            ViMark mark = G.curbuf.createMark();
+            ViMark mark = G.curbuf.createMark(null);
             mark.setMark(G.curwin.w_cursor);
             namedfm[i] = new Filemark(mark, G.curwin);
             return OK;
@@ -319,7 +319,7 @@ class MarkOps
                     col = Misc.check_cursor_col(m.getLine(), MAXCOL);
                 int lineoff = G.curbuf
                                .getLineStartOffsetFromOffset(m.getOffset());
-                m = G.curbuf.createMark();
+                m = G.curbuf.createMark(null);
                 ViFPOS fpos = G.curbuf.createFPOS(lineoff + col);
                 m.setMark(fpos);
             }

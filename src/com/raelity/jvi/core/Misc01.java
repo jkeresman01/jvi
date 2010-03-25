@@ -228,9 +228,11 @@ public class Misc01
 
         if(av != null)
             ViManager.getFS().edit(av, false);
+        else
+            Util.vim_beep();
     }
 
-    private static List<ViAppView> getSortedAppViews(AppViews whichViews)
+    static List<ViAppView> getSortedAppViews(AppViews whichViews)
     {
         List<ViAppView> avs = getVisibleAppViews(whichViews);
         if(avs == null)
@@ -239,7 +241,7 @@ public class Misc01
         AppViews.sortAppView(avs);
         return avs;
     }
-    private static List<ViAppView> getVisibleAppViews(AppViews whichViews)
+    static List<ViAppView> getVisibleAppViews(AppViews whichViews)
     {
         List<ViAppView> avs = AppViews.getList(whichViews);
         if(avs == null)
@@ -252,6 +254,10 @@ public class Misc01
                 it.remove();
         }
         return avs;
+    }
+
+    private Misc01()
+    {
     }
 
 }

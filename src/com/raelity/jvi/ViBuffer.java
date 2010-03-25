@@ -136,10 +136,11 @@ public interface ViBuffer {
      */
     public ViMark getMark(char c);
     
-    /** 
+    /**
+     * @param fpos if non-null, initialize mark to this value
      * @return a null Mark attached to this Buffer
      */
-    public ViMark createMark();
+    public abstract ViMark createMark(ViFPOS fpos);
 
     public ViFPOS createFPOS(int offset);
 

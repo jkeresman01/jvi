@@ -56,13 +56,13 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         //
         // create the well known marks
         //
-        b_visual_start = createMark();
-        b_visual_end = createMark();
-        b_op_start = createMark();
-        b_op_end = createMark();
-        b_last_insert = createMark();
+        b_visual_start = createMark(null);
+        b_visual_end = createMark(null);
+        b_op_start = createMark(null);
+        b_op_end = createMark(null);
+        b_last_insert = createMark(null);
         for(int i = 0; i < b_namedm.length; i++)
-            b_namedm[i] = createMark();
+            b_namedm[i] = createMark(null);
         b_fnum = ++fnum;
     }
     

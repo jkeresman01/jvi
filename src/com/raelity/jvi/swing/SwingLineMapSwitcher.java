@@ -52,24 +52,34 @@ public class SwingLineMapSwitcher implements LineMap
         return G.isCoordSkip.getBoolean() ? vmFontFixed : vmNoFolding;
     }
 
+    @Override
     public int logicalLine(int docLine) throws RuntimeException
     {
         return getMap().logicalLine(docLine);
     }
 
+    @Override
     public boolean isFolding()
     {
         return getMap().isFolding();
     }
 
+    @Override
     public int docLineOffset(int viewLine)
     {
         return getMap().docLineOffset(viewLine);
     }
 
+    @Override
     public int docLine(int viewLine)
     {
         return getMap().docLine(viewLine);
+    }
+
+    @Override
+    public String toString()
+    {
+        return getMap().toString();
     }
 
 }

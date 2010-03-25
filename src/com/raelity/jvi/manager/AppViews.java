@@ -79,7 +79,8 @@ public enum AppViews
 {
     ACTIVE,
     MRU,
-    NOMAD;
+    NOMAD,
+    ALL; // ACTIVE + NOMAD
 
     private static List<ViAppView> avs =
             new ArrayList<ViAppView>();
@@ -90,19 +91,25 @@ public enum AppViews
     private static ViAppView avCurrentlyActive;
     private static ViAppView keepMru;
 
+    private static boolean didInit;
     @ServiceProvider(service=ViInitialization.class, path="jVi/init")
     public static class Init implements ViInitialization
     {
-      public void init()
-      {
-        AppViews.init();
-      }
+        @Override
+        public void init()
+        {
+            if(didInit)
+                return;
+            AppViews.init();
+            didInit = true;
+        }
     }
 
     private static void init()
     {
-        ColonCommands.register("jviDump", "jviDump", new ActionListener()
+        ColonCommands.register("dumpJvi", "dumpJvi", new ActionListener()
         {
+            @Override
             public void actionPerformed(ActionEvent e)
             {
                 AppViews.dump(System.err);
@@ -299,6 +306,11 @@ public enum AppViews
                     l.add(av);
                 }
                 break;
+            case ALL:
+                l = new ArrayList<ViAppView>();
+                l.addAll(getList(ACTIVE));
+                l.addAll(getList(NOMAD));
+                break;
         }
         return l;
     }
@@ -376,6 +388,7 @@ public enum AppViews
                 }
             }
 
+            @Override
             public boolean hasNext()
             {
                 if (nextAppView != null)
@@ -384,6 +397,7 @@ public enum AppViews
                 return nextAppView != null;
             }
 
+            @Override
             public ViAppView next()
             {
                 findNextAppView();
@@ -394,6 +408,7 @@ public enum AppViews
                 return av;
             }
 
+            @Override
             public void remove()
             {
                 // iter.remove() here probably works fine
@@ -448,7 +463,7 @@ public enum AppViews
     private static class BuffersList
     {
 
-        List<WeakReference> l = new ArrayList();
+        List<WeakReference> l = new ArrayList<WeakReference>();
     }
 
     /**
