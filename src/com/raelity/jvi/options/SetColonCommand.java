@@ -35,14 +35,15 @@ public class SetColonCommand extends ColonCommands.ColonAction
   private static final
           Logger LOG = Logger.getLogger(SetColonCommand.class.getName());
 
-    @ServiceProvider(service=ViInitialization.class, path="jVi/init")
-    public static class Init implements ViInitialization
+  @ServiceProvider(service=ViInitialization.class, path="jVi/init")
+  public static class Init implements ViInitialization
+  {
+    @Override
+    public void init()
     {
-      public void init()
-      {
-        SetColonCommand.init();
-      }
+      SetColonCommand.init();
     }
+  }
 
     private static void init()
     {
@@ -57,43 +58,68 @@ public class SetColonCommand extends ColonCommands.ColonAction
       super(msg);
     }
   }
-  private static int P_IND = 1; // indirect: either curwin or curbuf
-  private static int P_WIN = 2; // curwin
-  private static int P_OPT = 4; // global option
+
+  private enum O {
+    P_GBL, // a global option
+    P_WIN, // a per window option
+    P_BUF; // a per buffer option
+
+    boolean isLocal()
+    {
+      return this == P_WIN || this == P_BUF;
+    }
+
+    boolean isGlobal()
+    {
+      return this == P_GBL;
+    }
+
+    boolean isWin()
+    {
+      return this == P_WIN;
+    }
+
+    boolean isBuf()
+    {
+      return this == P_BUF;
+    }
+  }
 
   private static class VimOption
   {
 
     String fullname; // option name
     String shortname; // option name
-    int flags; // P_* above
+    O type;
     // name of field and/or option
     String varName; // java variable name in curbuf or curwin
     String optName; // the jVi Option name.
 
-    VimOption(String fullname, String shortname, int flags, String varName,
-              String optName)
+    VimOption(String fullname, String shortname, O type,
+            String varName, String optName)
     {
       this.fullname = fullname;
       this.shortname = shortname;
-      this.flags = flags;
+      this.type = type;
       this.varName = varName;
       this.optName = optName;
     }
   }
-  // MUST NOT SET both P_IND and P_OPT
+
   private static VimOption[] vopts = new VimOption[]{
-      new VimOption("expandtab",   "et",  P_IND,       "b_p_et", null),
-      new VimOption("ignorecase",  "ic",  P_OPT,       null, Options.ignoreCase),
-      new VimOption("incsearch",   "is",  P_OPT,       null, Options.incrSearch),
-      new VimOption("hlsearch",    "hls", P_OPT,       null, Options.highlightSearch),
-      new VimOption("number",      "nu",  P_IND|P_WIN, "w_p_nu", null),
-      new VimOption("shiftwidth",  "sw",  P_IND,       "b_p_sw", Options.shiftWidth),
-      new VimOption("tabstop",     "ts",  P_IND,       "b_p_ts", Options.tabStop),
-      new VimOption("softtabstop", "sts", P_IND,       "b_p_sts", Options.softTabStop),
-      new VimOption("textwidth",   "tw",  P_IND,       "b_p_tw", Options.textWidth),
+    new VimOption("expandtab",   "et",  O.P_BUF, "b_p_et", null),
+    new VimOption("ignorecase",  "ic",  O.P_GBL, null, Options.ignoreCase),
+    new VimOption("incsearch",   "is",  O.P_GBL, null, Options.incrSearch),
+    new VimOption("hlsearch",    "hls", O.P_GBL, null, Options.highlightSearch),
+    new VimOption("wrapscan",    "ws",  O.P_GBL, null, Options.wrapScan),
+    new VimOption("number",      "nu",  O.P_WIN, "w_p_nu", null),
+    new VimOption("shiftwidth",  "sw",  O.P_BUF, "b_p_sw", Options.shiftWidth),
+    new VimOption("tabstop",     "ts",  O.P_BUF, "b_p_ts", Options.tabStop),
+    new VimOption("softtabstop", "sts", O.P_BUF, "b_p_sts", Options.softTabStop),
+    new VimOption("textwidth",   "tw",  O.P_BUF, "b_p_tw", Options.textWidth),
   };
 
+  @Override
   public void actionPerformed(ActionEvent e)
   {
     ColonEvent evt = (ColonEvent)e;
@@ -143,7 +169,7 @@ public class SetColonCommand extends ColonCommands.ColonAction
 
     Class type;
     Object value;
-    // used if P_IND
+    // used if type.isLocal()
     Field f;
     ViOptionBag bag;
     // used if regular option is provided
@@ -209,10 +235,11 @@ public class SetColonCommand extends ColonCommands.ColonAction
           throw new SetCommandException(ex.getMessage());
         }
       }
-      if ((vopt.flags & P_IND) != 0) {
+
+      if (vopt.type.isLocal()) {
         voptDesc.f.set(voptDesc.bag, newValue);
         voptDesc.bag.viOptionSet(G.curwin, vopt.varName);
-      } else {
+      } else { // isGlobal()
         voptDesc.opt.setValue(newValue.toString());
       }
     }
@@ -227,9 +254,8 @@ public class SetColonCommand extends ColonCommands.ColonAction
     if (vopt.optName != null) {
       voptDesc.opt = Options.getOption(vopt.optName);
     }
-    if ((vopt.flags & P_IND) != 0) {
-        // FOLLOWING WAS G.curbuf
-      voptDesc.bag = (vopt.flags & P_WIN) != 0 ? G.curwin : G.curwin.getBuffer();
+    if (vopt.type.isLocal()) {
+      voptDesc.bag = vopt.type.isWin() ? G.curwin : G.curwin.getBuffer();
       try {
         voptDesc.f = voptDesc.bag.getClass().getField(vopt.varName);
       } catch (SecurityException ex) {
@@ -249,7 +275,7 @@ public class SetColonCommand extends ColonCommands.ColonAction
       } catch (IllegalAccessException ex) {
         LOG.log(Level.SEVERE, null, ex);
       }
-    } else if ((vopt.flags & P_OPT) != 0) {
+    } else if (vopt.type.isGlobal()) {
       if (voptDesc.opt instanceof BooleanOption) {
         voptDesc.type = boolean.class;
         voptDesc.value = voptDesc.opt.getBoolean();
@@ -275,13 +301,10 @@ public class SetColonCommand extends ColonCommands.ColonAction
         throw new SetCommandException(msg);
       }
       if (!voptDesc.fShow) {
-        if (voptDesc.fInv) {
-          newValue = !((Boolean)voptDesc.value).booleanValue();
-        } else if (voptDesc.fNo) {
-          newValue = false;
-        } else {
-          newValue = true;
-        }
+        newValue =
+                voptDesc.fInv
+                ? !((Boolean)voptDesc.value).booleanValue()
+                : voptDesc.fNo ? false : true;
       }
     } else if (voptDesc.type == int.class) {
       if (!voptDesc.fValue) {
@@ -330,12 +353,12 @@ public class SetColonCommand extends ColonCommands.ColonAction
   public static void syncAllInstances(String varName)
   {
     for (VimOption vopt : vopts) {
-      if ((vopt.flags & P_IND) != 0) {
+      if (vopt.type.isLocal()) {
         if (vopt.varName.equals(varName)) {
           VimOptionDescriptor voptDesc = new VimOptionDescriptor();
           determineOptionState(vopt, voptDesc);
           Set<? extends ViOptionBag> set =
-                  (vopt.flags & P_WIN) != 0
+                  vopt.type.isWin()
                   ? ViManager.getFactory().getViTextViewSet()
                   : ViManager.getFactory().getBufferSet();
           for (ViOptionBag bag : set) {
@@ -353,3 +376,5 @@ public class SetColonCommand extends ColonCommands.ColonAction
     }
   }
 }
+
+// vi:sw=2 et
