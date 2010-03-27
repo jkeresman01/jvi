@@ -78,10 +78,11 @@ class MarkOps
     @ServiceProvider(service=ViInitialization.class, path="jVi/init")
     public static class Init implements ViInitialization
     {
-      public void init()
-      {
-        MarkOps.init();
-      }
+        @Override
+        public void init()
+        {
+            MarkOps.init();
+        }
     }
 
     private static void init() {
@@ -89,6 +90,7 @@ class MarkOps
         ColonCommands.register("delm", "delmarks", ACTION_ex_delmarks);
 
         PropertyChangeListener pcl = new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 String pname = evt.getPropertyName();
                 if(pname.equals(ViManager.P_OPEN_WIN)) {
@@ -462,6 +464,7 @@ class MarkOps
      */
     private static class DoMarks extends ColonAction
     {
+        @Override
         public void actionPerformed(ActionEvent ev) {
             ColonEvent cev = (ColonEvent)ev;
 
@@ -602,6 +605,7 @@ class MarkOps
             return BANG;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             ex_delmarks((ColonEvent)e);
         }
@@ -684,22 +688,21 @@ class MarkOps
 
     private static void openWin(ViTextView tv) {
         File f = tv.getBuffer().getFile();
-
         // Check if any filemarks match the file and/or window being opened.
         // Create a real mark for the file.
-        for (int i = 0; i < namedfm.length; i++) {
-            Filemark fm = namedfm[i];
-            if(fm != null)
+        for (Filemark fm : namedfm) {
+            if (fm != null) {
                 fm.startup(f, tv);
+            }
         }
     }
 
     private static void closeWin(ViTextView tv) {
         // capture line/col type info for a filemark
-        for (int i = 0; i < namedfm.length; i++) {
-            Filemark fm = namedfm[i];
-            if(fm != null)
+        for (Filemark fm : namedfm) {
+            if (fm != null) {
                 fm.shutdown(tv);
+            }
         }
     }
 
@@ -871,8 +874,7 @@ class MarkOps
                 }
                 Preferences bufData = prefs.node(bm.getBufTag());
                 String[] marks = bufData.childrenNames();
-                for (int j = 0; j < marks.length; j++) {
-                    String mName = marks[j];
+                for (String mName : marks) {
                     MarkInfo mi = readMark(bufData.node(mName));
                     if (mi == null) {
                         LOG.warning(String.format("restore: "
@@ -905,10 +907,9 @@ class MarkOps
                 Set<String> names = new HashSet<String>();
                 // following holds bufs in MRU order
                 BufferMarks[] bms = new BufferMarks[bufTags.length];
-                for (int i = 0; i < bufTags.length; i++) {
-                    String bt = bufTags[i];
-                    if(!bt.startsWith(BUF)) {
-                        LOG.log(Level.WARNING,"read_viminfo: "
+                for (String bt : bufTags) {
+                    if (!bt.startsWith(BUF)) {
+                        LOG.log(Level.WARNING, "read_viminfo: "
                                 + "invalid buffer tag ''{0}''", bt);
                         cleanup.add(bt);
                         continue;
@@ -916,38 +917,33 @@ class MarkOps
                     Preferences bufData = prefs.node(bt);
                     String name = bufData.get(FNAME, null);
                     int index = bufData.getInt(INDEX, -1);
-
-                    if(name == null || !names.add(name)) {
-                        // duplicate, get rid of it
+                    if (name == null || !names.add(name)) {
                         bufData.removeNode();
-                        LOG.log(Level.WARNING,"read_viminfo: "
+                        LOG.log(Level.WARNING, "read_viminfo: "
                                 + "ignoring duplicate ''{0}''", name);
                         cleanup.add(bt);
                         continue;
                     }
-                    if(index <= 0) {
-                        LOG.warning(String.format(
-                                "read_viminfo: "
+                    if (index <= 0) {
+                        LOG.warning(String.format("read_viminfo: "
                                 + "bad index: %d, name: %s", index, name));
                         cleanup.add(bt);
                         continue;
                     }
-                    if(bms[index-1] != null) {
-                        LOG.warning(String.format(
-                                "read_viminfo: "
+                    if (bms[index - 1] != null) {
+                        LOG.warning(String.format("read_viminfo: "
                                 + "duplicate index: %d, name: %s", index, name));
                         cleanup.add(bt);
                         continue;
                     }
                     BufferMarks bm = new BufferMarks(bt, name, index);
-                    bms[index-1] = bm;
+                    bms[index - 1] = bm;
                     all.put(name, bm);
                 }
-                // create the prev list, note that the bms list may have holes
-                for (int i = 0; i < bms.length; i++) {
-                    BufferMarks bm = bms[i];
-                    if(bm == null)
+                for (BufferMarks bm : bms) {
+                    if (bm == null) {
                         continue;
+                    }
                     prev.add(bm.getName());
                 }
             } catch (BackingStoreException ex) {
