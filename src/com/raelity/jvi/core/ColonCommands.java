@@ -671,7 +671,7 @@ static public class ColonEvent extends ActionEvent
         */
     public List<String> getArgs()
     {
-        return args;
+        return new ArrayList<String>(args);
     }
 
     /**

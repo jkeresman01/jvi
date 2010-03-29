@@ -774,17 +774,24 @@ public class SwingTextView extends Window
         return ok;
     }
 
+    @Override
     public int getDocLine(int logicalLine)
     {
         return vm.docLine(logicalLine);
     }
 
+    @Override
     public int getDocLineOffset( int logicalLine )
     {
-        return getBuffer().getLineStartOffset(vm.docLine(logicalLine));
+        int docLine = vm.docLine(logicalLine);
+        if(docLine > getBuffer().getLineCount()) {
+            return getBuffer().getLength() + 1; // just past EOF
+        }
+        return getBuffer().getLineStartOffset(docLine);
     }
 
 
+    @Override
     public void setCursorLogicalLine( int logicalLine, int col )
     {
         //assert col == 0;
@@ -792,6 +799,7 @@ public class SwingTextView extends Window
     }
 
 
+    @Override
     public int getFirstHiddenColumn( int lineOffset, int colIdx )
     {
         if(!vm.isFolding())

@@ -1737,7 +1737,7 @@ middle_code:
 	  break;
 
 	case OP_FORMAT:
-	  if (G.p_fp.getString().isEmpty())
+	  if (!G.p_fp.getString().isEmpty())
 	    op_colon(oap);		/* use external command */
 	  else
 	    op_format(oap);		/* use internal function */
@@ -4193,10 +4193,8 @@ static private void nv_findpar(CMDARG cap, int dir)
     // When a count is given, use it instead of the default lnum
     if(cap.count0 != 0)
         lnum = cap.count0;
-    if(lnum < 1)
-        lnum = 1;
-    else if(lnum > G.curbuf.getLineCount())
-        lnum = G.curbuf.getLineCount();
+    lnum = lnum < 1 ? 1
+            : lnum > G.curbuf.getLineCount() ? G.curbuf.getLineCount() : lnum;
     Misc.gotoLine(lnum, BL_SOL | BL_FIX);
   }
 

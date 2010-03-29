@@ -254,15 +254,26 @@ public class Cc01
                     ViManager.getFS().write(cev.mayCreateTextView(), cev.isBang());
                 } else
                 */
-                if(cev.getNArg() == 1 && cev.getArg(1).charAt(0) == '#') {
+                boolean reportUsage = false;
+                if(cev.getNArg() >= 1 && cev.getArg(1).charAt(0) == '#') {
+//                          && cev.getArg(1).length() >= 1
+//                      || cev.getNArg() == 2 && "#".equals(cev.getArg(1))) {
                     boolean error = false;
-                    String arg;
-                    int i = -1;
-                    arg = cev.getArg(1);
-                    if(arg.length() > 1) {
-                        arg = arg.substring(1);
+                    List<String> args = cev.getArgs();
+                    String stringWindowNumber = args.get(0).substring(1);
+                    args.remove(0);
+                    if(stringWindowNumber.isEmpty() && args.size() > 0) {
+                        stringWindowNumber = args.get(0);
+                        args.remove(0);
+                    }
+                    if(!args.isEmpty()) {
+                        reportUsage = true;
+                        error = true;
+                    }
+                    int windowNumber = -1;
+                    if(!error && !stringWindowNumber.isEmpty()) {
                         try {
-                            i = Integer.parseInt(arg);
+                            windowNumber = Integer.parseInt(stringWindowNumber);
                         } catch(NumberFormatException ex) {
                             error = true;
                         }
@@ -275,28 +286,29 @@ public class Cc01
                         // Look up the appView. If i >= 0 then find app view
                         // with window that matches that number (standard vim).
                         // If i < 0 then use it to index into the mru list.
-                        if(i >= 0) {
+                        if(windowNumber >= 0) {
                             for (ViAppView av1 : AppViews.getList(AppViews.ACTIVE)) {
-                                if(i == av1.getWNum()) {
+                                if(windowNumber == av1.getWNum()) {
                                     av = av1;
                                     break;
                                 }
                             }
                         } else {
-                            av = AppViews.getMruAppView(-i);
+                            av = AppViews.getMruAppView(-windowNumber);
                         }
                         if(av != null)
                             ViManager.getFS().edit(av, cev.isBang());
                         else
                             Msg.emsg("No alternate file name to substitute for '#"
-                                    + i + "'");
+                                    + windowNumber + "'");
                     }
-                } else if ( cev.getNArg() < 2) {
-                    String fName = cev.getNArg() == 0 ? null : cev.getArg(1);
+                } else if (cev.getNArg() == 1) {
+                    String fName = cev.getArg(1);
                     ViManager.getFS().edit(new File(fName), cev.isBang(), null);
-                } else {
-                    Msg.emsg(":edit only accepts none or one argument");
-                }
+                } else
+                    reportUsage = true;
+                if(reportUsage)
+                    Msg.emsg(":edit only accepts '# <win>' or '<fname>'");
             }
         };
 

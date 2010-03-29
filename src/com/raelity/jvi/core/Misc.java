@@ -540,17 +540,22 @@ public class Misc extends CoreMethodHooks implements ClipboardOwner {
    * or bottom as needed, otherwise center the target line on the screen.
    */
   static void gotoLine(int line, int flag) {
+    gotoLine(line, flag, false);
+  }
+  static void gotoLine(int line, int flag, boolean openFold) {
     if(line > G.curbuf.getLineCount())
         line = G.curbuf.getLineCount();
     int logicalLine = G.curwin.getLogicalLine(line);
-    int offset = G.curwin.getDocLineOffset(logicalLine);
-    int bufferLine = G.curbuf.getLineNumber(offset);
-    if(bufferLine != line) {
-      offset = G.curbuf.getLineStartOffset(line);
-      // System.err.println("LINE " + line + "-->" + bufferLine);
-      G.curwin.foldOperation(FOLDOP.MAKE_VISIBLE, offset);
-      // now that the fold is open, it should have moved on screen
-      logicalLine = G.curwin.getLogicalLine(line);
+    if(openFold) {
+      int offset = G.curwin.getDocLineOffset(logicalLine);
+      int bufferLine = G.curbuf.getLineNumber(offset);
+      if(bufferLine != line) {
+        offset = G.curbuf.getLineStartOffset(line);
+        // System.err.println("LINE " + line + "-->" + bufferLine);
+        G.curwin.foldOperation(FOLDOP.MAKE_VISIBLE, offset);
+        // now that the fold is open, it should have moved on screen
+        logicalLine = G.curwin.getLogicalLine(line);
+      }
     }
     gotoLogicalLine(logicalLine, flag);
     return;
