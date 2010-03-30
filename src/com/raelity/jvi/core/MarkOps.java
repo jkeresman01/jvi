@@ -924,9 +924,10 @@ class MarkOps
                         cleanup.add(bt);
                         continue;
                     }
-                    if (index <= 0) {
+                    if (index <= 0 || index > bms.length) {
                         LOG.warning(String.format("read_viminfo: "
-                                + "bad index: %d, name: %s", index, name));
+                                + "(expect 1-%d) bad index: %d, name: %s",
+                                bms.length, index, name));
                         cleanup.add(bt);
                         continue;
                     }
