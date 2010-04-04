@@ -13,7 +13,7 @@
  *
  * The Initial Developer of the Original Code is Ernie Rael.
  * Portions created by Ernie Rael are
- * Copyright (C) 2000 Ernie Rael.  All Rights Reserved.
+ * Copyright (C) 2000-2010 Ernie Rael.  All Rights Reserved.
  *
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
@@ -22,11 +22,35 @@ package com.raelity.jvi.lib;
 
 /**
  *
- * @author erra
+ * @author Ernie Rael <err at raelity.com>
  */
-public class MutableString {
-  String value;
+public class Wrap<T>
+{
+    private T value;
 
-  final public String getValue() { return value; }
-  final public void setValue(String value) { this.value = value; }
+    public Wrap()
+    {
+    }
+
+    public Wrap(T value)
+    {
+        this.value = value;
+    }
+
+    public T getValue()
+    {
+        return value;
+    }
+
+    public void setValue(T value)
+    {
+        this.value = value;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "[" + value.toString() + "]";
+    }
+
 }

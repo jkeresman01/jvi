@@ -26,11 +26,11 @@ import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.lib.MutableBoolean;
-import com.raelity.jvi.lib.MutableString;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.ViTextView.FOLDOP;
 import com.raelity.jvi.ViTextView.DIR;
 import com.raelity.jvi.ViXlateKey;
+import com.raelity.jvi.lib.Wrap;
 import java.awt.event.KeyEvent;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.ClipboardOwner;
@@ -1711,7 +1711,7 @@ private static int put_in_typebuf(String s, boolean colon)
     if (regname != NUL && !valid_yank_reg(regname, false))
 	return FAIL;
 
-    MutableString pArg = new MutableString();
+    Wrap<String> pArg = new Wrap<String>();
     if (regname == '*')
     {
 	if (!clipboard_available)
@@ -1810,7 +1810,7 @@ private static int put_in_typebuf(String s, boolean colon)
   /*
    * If "regname" is a special register, return a pointer to its value.
    */
-  static boolean get_spec_reg(char regname, MutableString argp, boolean errmsg)
+  static boolean get_spec_reg(char regname, Wrap<String> argp, boolean errmsg)
   {
       int		cnt;
       String            s;
