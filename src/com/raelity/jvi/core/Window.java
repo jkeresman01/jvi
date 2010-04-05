@@ -183,4 +183,11 @@ public abstract class Window implements ViTextView
             }
         }
     }
+
+    @Override
+    public String toString()
+    {
+        String fn = getBuffer() != null ? getBuffer().getDisplayFileName() : null;
+        return "TextView{" + fn + '}';
+    }
 }

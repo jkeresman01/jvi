@@ -117,6 +117,9 @@ public class SetColonCommand extends ColonCommands.ColonAction
     new VimOption("tabstop",     "ts",  O.P_BUF, "b_p_ts", Options.tabStop),
     new VimOption("softtabstop", "sts", O.P_BUF, "b_p_sts", Options.softTabStop),
     new VimOption("textwidth",   "tw",  O.P_BUF, "b_p_tw", Options.textWidth),
+    new VimOption("wrap",        "",    O.P_WIN, "w_p_wrap", null),
+    new VimOption("linebreak",   "lbr", O.P_WIN, "w_p_lbr",  null),
+    new VimOption("list",        "",    O.P_WIN, "w_p_list", null),
   };
 
   @Override
@@ -128,7 +131,7 @@ public class SetColonCommand extends ColonCommands.ColonAction
 
   public void parseSetOptions(List<String> eventArgs)
   {
-    if (eventArgs == null ||
+    if (eventArgs.isEmpty() ||
             eventArgs.size() == 1 && "all".equals(eventArgs.get(0))) {
       displayAllOptions();
       return;
@@ -164,7 +167,7 @@ public class SetColonCommand extends ColonCommands.ColonAction
   /**
    * This holds the results of parsing a set command
    */
-  private static class VimOptionDescriptor
+  private static class VimOptionState
   {
 
     Class type;
@@ -187,28 +190,29 @@ public class SetColonCommand extends ColonCommands.ColonAction
   public static void parseSetOption(String arg) throws IllegalAccessException,
                                                        SetCommandException
   {
-    VimOptionDescriptor voptDesc = new VimOptionDescriptor();
-    voptDesc.split = arg.split("[:=]");
-    String voptName = voptDesc.split[0];
-    if (voptDesc.split.length > 1) {
-      voptDesc.fValue = true;
+    VimOptionState voptState = new VimOptionState();
+    voptState.split = arg.split("[:=]");
+    String voptName = voptState.split[0];
+    if (voptState.split.length > 1) {
+      voptState.fValue = true;
     }
     if (voptName.startsWith("no")) {
-      voptDesc.fNo = true;
+      voptState.fNo = true;
       voptName = voptName.substring(2);
     } else if (voptName.startsWith("inv")) {
-      voptDesc.fInv = true;
+      voptState.fInv = true;
       voptName = voptName.substring(3);
     } else if (voptName.endsWith("!")) {
-      voptDesc.fInv = true;
+      voptState.fInv = true;
       voptName = voptName.substring(0, voptName.length() - 1);
     } else if (voptName.endsWith("?")) {
-      voptDesc.fShow = true;
+      voptState.fShow = true;
       voptName = voptName.substring(0, voptName.length() - 1);
     }
     VimOption vopt = null;
     for (VimOption v : vopts) {
-      if (voptName.equals(v.fullname) || voptName.equals(v.shortname)) {
+      if (voptName.equals(v.fullname)
+              || voptName.equals(v.shortname) && !v.shortname.isEmpty()) {
         vopt = v;
         break;
       }
@@ -218,18 +222,18 @@ public class SetColonCommand extends ColonCommands.ColonAction
       Msg.emsg(msg);
       throw new SetCommandException(msg);
     }
-    if (!determineOptionState(vopt, voptDesc)) {
+    if (!determineOptionState(vopt, voptState)) {
       String msg = "Internal error: " + arg;
       Msg.emsg(msg);
       throw new SetCommandException(msg);
     }
-    Object newValue = newOptionValue(arg, vopt, voptDesc);
-    if (voptDesc.fShow) {
-      Msg.smsg(formatDisplayValue(vopt, voptDesc.value));
+    Object newValue = newOptionValue(arg, vopt, voptState);
+    if (voptState.fShow) {
+      Msg.smsg(formatDisplayValue(vopt, voptState.value));
     } else {
-      if (voptDesc.opt != null) {
+      if (voptState.opt != null) {
         try {
-          voptDesc.opt.validate(newValue);
+          voptState.opt.validate(newValue);
         } catch (PropertyVetoException ex) {
           Msg.emsg(ex.getMessage());
           throw new SetCommandException(ex.getMessage());
@@ -237,51 +241,51 @@ public class SetColonCommand extends ColonCommands.ColonAction
       }
 
       if (vopt.type.isLocal()) {
-        voptDesc.f.set(voptDesc.bag, newValue);
-        voptDesc.bag.viOptionSet(G.curwin, vopt.varName);
+        voptState.f.set(voptState.bag, newValue);
+        voptState.bag.viOptionSet(G.curwin, vopt.varName);
       } else { // isGlobal()
-        voptDesc.opt.setValue(newValue.toString());
+        voptState.opt.setValue(newValue.toString());
       }
     }
   }
 
   /**
-   * Set voptDesc with information about the argument vopt.
+   * Set voptState with information about the argument vopt.
    */
   private static boolean determineOptionState(VimOption vopt,
-                                              VimOptionDescriptor voptDesc)
+                                              VimOptionState voptState)
   {
     if (vopt.optName != null) {
-      voptDesc.opt = Options.getOption(vopt.optName);
+      voptState.opt = Options.getOption(vopt.optName);
     }
     if (vopt.type.isLocal()) {
-      voptDesc.bag = vopt.type.isWin() ? G.curwin : G.curwin.getBuffer();
+      voptState.bag = vopt.type.isWin() ? G.curwin : G.curwin.getBuffer();
       try {
-        voptDesc.f = voptDesc.bag.getClass().getField(vopt.varName);
+        voptState.f = voptState.bag.getClass().getField(vopt.varName);
       } catch (SecurityException ex) {
         LOG.log(Level.SEVERE, null, ex);
       } catch (NoSuchFieldException ex) {
         LOG.log(Level.SEVERE, null, ex);
       }
-      if (voptDesc.f == null) {
+      if (voptState.f == null) {
         return false;
       }
-      voptDesc.type = voptDesc.f.getType();
+      voptState.type = voptState.f.getType();
       // impossible to get exceptions
       try {
-        voptDesc.value = voptDesc.f.get(voptDesc.bag);
+        voptState.value = voptState.f.get(voptState.bag);
       } catch (IllegalArgumentException ex) {
         LOG.log(Level.SEVERE, null, ex);
       } catch (IllegalAccessException ex) {
         LOG.log(Level.SEVERE, null, ex);
       }
     } else if (vopt.type.isGlobal()) {
-      if (voptDesc.opt instanceof BooleanOption) {
-        voptDesc.type = boolean.class;
-        voptDesc.value = voptDesc.opt.getBoolean();
-      } else if (voptDesc.opt instanceof IntegerOption) {
-        voptDesc.type = int.class;
-        voptDesc.value = voptDesc.opt.getInteger();
+      if (voptState.opt instanceof BooleanOption) {
+        voptState.type = boolean.class;
+        voptState.value = voptState.opt.getBoolean();
+      } else if (voptState.opt instanceof IntegerOption) {
+        voptState.type = int.class;
+        voptState.value = voptState.opt.getInteger();
       }
     }
     return true;
@@ -289,30 +293,30 @@ public class SetColonCommand extends ColonCommands.ColonAction
 
   // Most of the argument are class members
   private static Object newOptionValue(String arg, VimOption vopt,
-                                       VimOptionDescriptor voptDesc) throws NumberFormatException,
+                                       VimOptionState voptState) throws NumberFormatException,
                                                                             SetCommandException
   {
     Object newValue = null;
-    if (voptDesc.type == boolean.class) {
-      if (voptDesc.fValue) {
+    if (voptState.type == boolean.class) {
+      if (voptState.fValue) {
         // like: ":set ic=val"
         String msg = "Unknown argument: " + arg;
         Msg.emsg(msg);
         throw new SetCommandException(msg);
       }
-      if (!voptDesc.fShow) {
+      if (!voptState.fShow) {
         newValue =
-                voptDesc.fInv
-                ? !((Boolean)voptDesc.value).booleanValue()
-                : voptDesc.fNo ? false : true;
+                voptState.fInv
+                ? !((Boolean)voptState.value).booleanValue()
+                : voptState.fNo ? false : true;
       }
-    } else if (voptDesc.type == int.class) {
-      if (!voptDesc.fValue) {
-        voptDesc.fShow = true;
+    } else if (voptState.type == int.class) {
+      if (!voptState.fValue) {
+        voptState.fShow = true;
       }
-      if (!voptDesc.fShow) {
+      if (!voptState.fShow) {
         try {
-          newValue = Integer.parseInt(voptDesc.split[1]);
+          newValue = Integer.parseInt(voptState.split[1]);
         } catch (NumberFormatException ex) {
           String msg = "Number required after =: " + arg;
           Msg.emsg(msg);
@@ -320,7 +324,7 @@ public class SetColonCommand extends ColonCommands.ColonAction
         }
       }
     } else {
-      assert false : "Type " + voptDesc.type.getSimpleName() + " not handled";
+      assert false : "Type " + voptState.type.getSimpleName() + " not handled";
     }
     return newValue;
   }
@@ -343,9 +347,9 @@ public class SetColonCommand extends ColonCommands.ColonAction
     ViOutputStream osa =
             ViManager.createOutputStream(null, ViOutputStream.OUTPUT, null);
     for (VimOption vopt : vopts) {
-      VimOptionDescriptor voptDesc = new VimOptionDescriptor();
-      determineOptionState(vopt, voptDesc);
-      osa.println(formatDisplayValue(vopt, voptDesc.value));
+      VimOptionState voptState = new VimOptionState();
+      determineOptionState(vopt, voptState);
+      osa.println(formatDisplayValue(vopt, voptState.value));
     }
     osa.close();
   }
@@ -355,15 +359,17 @@ public class SetColonCommand extends ColonCommands.ColonAction
     for (VimOption vopt : vopts) {
       if (vopt.type.isLocal()) {
         if (vopt.varName.equals(varName)) {
-          VimOptionDescriptor voptDesc = new VimOptionDescriptor();
-          determineOptionState(vopt, voptDesc);
+          VimOptionState voptState = new VimOptionState();
+          determineOptionState(vopt, voptState);
           Set<? extends ViOptionBag> set =
                   vopt.type.isWin()
                   ? ViManager.getFactory().getViTextViewSet()
                   : ViManager.getFactory().getBufferSet();
           for (ViOptionBag bag : set) {
             try {
-              voptDesc.f.set(bag, voptDesc.value);
+              if(G.dbgOptions)
+                System.err.println("syncInstances: " + varName + " in " + bag);
+              voptState.f.set(bag, voptState.value);
             } catch (IllegalArgumentException ex) {
               LOG.log(Level.SEVERE, null, ex);
             } catch (IllegalAccessException ex) {

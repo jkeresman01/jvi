@@ -38,6 +38,7 @@ import java.util.StringTokenizer;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import com.raelity.jvi.manager.Scheduler;
+import java.util.Collections;
 
 import static com.raelity.jvi.core.Constants.*;
 import static com.raelity.jvi.core.ColonCommands.Flags.*;
@@ -597,6 +598,7 @@ static public class ColonEvent extends ActionEvent
     {
         super(c.getEditorComponent(), ActionEvent.ACTION_PERFORMED, "");
         viTextView = c;
+        args = Collections.emptyList();
     }
 
     /**
@@ -649,9 +651,6 @@ static public class ColonEvent extends ActionEvent
         */
     public int getNArg()
     {
-        if(args == null) {
-            return 0;
-        }
         return args.size();
     }
 

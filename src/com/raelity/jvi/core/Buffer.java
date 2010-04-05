@@ -614,6 +614,12 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
             System.err.print(String.format(" {%d,%d}", b[i], b[i+1]));
         System.err.println("");
     }
+
+    @Override
+    public String toString()
+    {
+        return "Buffer{" + getDisplayFileName() + '}';
+    }
     
 }
 

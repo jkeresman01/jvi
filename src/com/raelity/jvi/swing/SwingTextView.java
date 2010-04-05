@@ -242,10 +242,14 @@ public class SwingTextView extends Window
     // Declare the variables referenced as part of a ViOptionBag
     //
 
-    /** jVi doesn't support this flag. Keep it as a per window flag like vim.
+    /** jVi doesn't support these operations.
+     * Keep it as a per window flag like vim.
      * The platform may do something with it.
      */
     public boolean w_p_nu;
+    public boolean w_p_wrap;
+    public boolean w_p_lbr;
+    public boolean w_p_list;
 
 
     public void viOptionSet( ViTextView tv, String name )
