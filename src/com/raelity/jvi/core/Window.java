@@ -67,6 +67,10 @@ public abstract class Window implements ViTextView
 
     protected boolean w_p_list;
 
+    protected boolean w_p_nu;
+    protected boolean w_p_wrap;
+    protected boolean w_p_lbr;
+
     // NEEDSWORK: this should be comming from the cache (WHAT?)
     protected int w_p_scroll;
 
