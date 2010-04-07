@@ -3822,7 +3822,7 @@ private static int put_in_typebuf(String s, boolean colon)
             MutableInt start,
             MutableInt cursor,
             MutableInt end) {
-      getvcol(((Window)tv).w_buffer, fpos, start, cursor, end);
+      getvcol(((TextView)tv).w_buffer, fpos, start, cursor, end);
     }
 
     public static void getvcol(Buffer buf,

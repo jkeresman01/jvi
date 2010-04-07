@@ -24,7 +24,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import static java.lang.Math.round;
 import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.core.Window;
+import com.raelity.jvi.core.TextView;
 import com.raelity.jvi.core.Util;
 import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.core.Buffer;
@@ -85,7 +85,7 @@ import org.openide.util.lookup.ServiceProvider;
  *  source, then an externalChange message is sent to vi.
  *  </p>
  */
-public class SwingTextView extends Window
+public class SwingTextView extends TextView
         implements ViTextView, PropertyChangeListener, ChangeListener
 {
     protected static final
@@ -98,7 +98,7 @@ public class SwingTextView extends Window
 
     protected JTextComponent editorPane;
     protected TextOps ops;
-    protected Window window;
+    protected TextView window;
 
     protected ViStatusDisplay statusDisplay;
 

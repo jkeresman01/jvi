@@ -196,7 +196,7 @@ class MarkOps
             return;
         }
 
-        Window win = (Window)tv;
+        TextView win = (TextView)tv;
 
         win.w_prev_pcmark.setMark(win.w_pcmark);
         win.w_pcmark.setMark(fpos);
@@ -420,7 +420,7 @@ class MarkOps
      */
     private static void cleanup_jumplist()
     {
-        Window win = G.curwin;
+        TextView win = G.curwin;
 
         ViMark indexedMark = null;
         if(win.w_jumplistidx < win.w_jumplist.size())

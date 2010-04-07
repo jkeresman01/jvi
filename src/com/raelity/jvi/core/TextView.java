@@ -35,7 +35,7 @@ import static com.raelity.jvi.core.Constants.*;
  * interface, so the vim code is not preserved as we'd like.
  * </p>
  */
-public abstract class Window implements ViTextView
+public abstract class TextView implements ViTextView
 {
     protected Buffer w_buffer;
 
@@ -82,7 +82,7 @@ public abstract class Window implements ViTextView
     protected List<ViMark> w_jumplist = new LinkedList();
     protected int w_jumplistidx;
 
-    public Window()
+    public TextView()
     {
         w_set_curswant = true;
         w_cursor = createWCursor();

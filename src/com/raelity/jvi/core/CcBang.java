@@ -748,7 +748,7 @@ private static class DocumentThread extends FilterThread
     boolean docWriteDone;
     StringBuilder sb = new StringBuilder();
 
-    Window win;
+    TextView win;
 
     int debugCounter;
 
@@ -762,7 +762,7 @@ private static class DocumentThread extends FilterThread
     DocumentThread(FilterThreadCoordinator coord, ViTextView tv)
     {
         super(RW_DOC, coord);
-        win = (Window)tv;
+        win = (TextView)tv;
     }
 
     @Override

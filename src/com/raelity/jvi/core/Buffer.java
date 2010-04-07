@@ -451,14 +451,14 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
 
     public int[] getVisualSelectBlocks(ViTextView tv,
                                        int startOffset, int endOffset) {
-        Window win = (Window) tv;
+        TextView win = (TextView) tv;
         VisualBounds vb = getVisualBounds();
         if (G.drawSavedVisualBounds) {
             vb.init(b_visual_mode, b_visual_start, b_visual_end,
                     false);
         } else if(G.VIsual_active) {
             vb.init(G.VIsual_mode, G.VIsual, win.w_cursor.copy(),
-                    ((Window)tv).w_curswant == MAXCOL);
+                    ((TextView)tv).w_curswant == MAXCOL);
         } else {
             vb.clear();
         }

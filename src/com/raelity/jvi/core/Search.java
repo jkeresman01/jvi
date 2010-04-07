@@ -832,7 +832,7 @@ finished:
    // Not sure how. The vim code has a "at start of line" flag it passes
    // to the reg exp matcher.
    //
-  static int searchit(Window win,      // BUF,    NOT USED
+  static int searchit(TextView win,      // BUF,    NOT USED
                       ViFPOS pos,      // FPOS,
                       int dir,
                       String pattern,

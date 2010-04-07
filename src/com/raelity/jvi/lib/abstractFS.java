@@ -26,7 +26,7 @@ import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.Misc;
-import com.raelity.jvi.core.Window;
+import com.raelity.jvi.core.TextView;
 
 /**
  *
@@ -41,7 +41,7 @@ abstract public class abstractFS implements ViFS
     public String getDisplayFileViewInfo(ViTextView tv) {
         ViAppView av = tv.getAppView();
         Buffer buf = tv.getBuffer();
-        Window win = (Window)tv;
+        TextView win = (TextView)tv;
         StringBuilder sb = new StringBuilder();
         sb.append("\"")
           .append(av != null ? getDisplayFileName(av) : getDisplayFileName(buf))
