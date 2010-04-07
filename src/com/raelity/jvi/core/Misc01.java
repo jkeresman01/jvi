@@ -40,6 +40,7 @@ public class Misc01
     static void do_window(char nchar, int Prenum)
     {
         Normal.do_xop("do_window");
+        boolean ok = true;
         switch (nchar) {
             // split current window in two parts
             case 'S':
@@ -70,32 +71,32 @@ public class Misc01
             // cursor to next window with wrap around
             case 'W' & 0x1f:
             case 'w':
-                win_move_forw(AppViews.ACTIVE, Prenum);
+                ok = win_move_forw(AppViews.ALL, Prenum);
                 break;
 
             // cursor to prev window with wrap around
             case 'W':
-                win_move_back(AppViews.ACTIVE, Prenum);
+                ok = win_move_back(AppViews.ALL, Prenum);
                 break;
 
             // cursor to next nomadic editor with wrap around
             case 'E' & 0x1f:
             case 'e':
-                win_move_forw(AppViews.NOMAD, Prenum);
+                ok = win_move_forw(AppViews.NOMAD, Prenum);
                 break;
 
             // cursor to window below
             case K_DOWN:
             case 'J' & 0x1f:
             case 'j':
-                win_jump(Direction.DOWN, Prenum);
+                ok = win_jump(Direction.DOWN, Prenum);
                 break;
 
             // cursor to window above
             case K_UP:
             case 'K' & 0x1f:
             case 'k':
-                win_jump(Direction.UP, Prenum);
+                ok = win_jump(Direction.UP, Prenum);
                 break;
 
             // cursor to left window
@@ -103,26 +104,26 @@ public class Misc01
             case K_BS:
             case 'H' & 0x1f:
             case 'h':
-                win_jump(Direction.LEFT, Prenum);
+                ok = win_jump(Direction.LEFT, Prenum);
                 break;
 
             // cursor to right window
             case K_RIGHT:
             case 'L' & 0x1f:
             case 'l':
-                win_jump(Direction.RIGHT, Prenum);
+                ok = win_jump(Direction.RIGHT, Prenum);
                 break;
 
             // cursor to top-left window
             case 't':
             case 'T' & 0x1f:
-                win_moveto(AppViews.ACTIVE, 1); // firstwin
+                ok = win_moveto(AppViews.ALL, 1); // firstwin
                 break;
 
             // cursor to bottom-right window
             case 'b':
             case 'B' & 0x1f:
-                win_moveto(AppViews.ACTIVE, Integer.MAX_VALUE); // lastwin
+                ok = win_moveto(AppViews.ALL, Integer.MAX_VALUE); // lastwin
                 break;
 
             // cursor to last accessed (previous) window
@@ -130,40 +131,41 @@ public class Misc01
             case 'P' & 0x1f:
                 // Handle like :e#
                 ViAppView av = AppViews.getMruAppView(1);
-                if(av != null)
-                    ViManager.getFS().edit(av, false);
+                ok = av != null ? ViManager.getFS().edit(av, false) : false;
                 break;
 
             default:
-                Util.vim_beep();
+                ok = false;
                 break;
         }
+        if(!ok)
+            Util.vim_beep();
     }
 
-    private static void win_move_forw(AppViews whichViews, int n)
+    private static boolean win_move_forw(AppViews whichViews, int n)
     {
-        if(n == 0)
-            win_cycle(whichViews, FORWARD);
-        else
-            win_moveto(whichViews, n);
+        boolean ok = true;
+        ok = n == 0 ? win_cycle(whichViews, FORWARD)
+                    : win_moveto(whichViews, n);
+        return ok;
     }
 
-    private static void win_move_back(AppViews whichViews, int n)
+    private static boolean win_move_back(AppViews whichViews, int n)
     {
-        if(n == 0)
-            win_cycle(whichViews, BACKWARD);
-        else
-            win_moveto(whichViews, n);
+        boolean ok = true;
+        ok = n == 0 ? win_cycle(whichViews, BACKWARD)
+                    : win_moveto(whichViews, n);
+        return ok;
     }
 
-    private static void win_cycle(AppViews whichViews, int n)
+    private static boolean win_cycle(AppViews whichViews, int n)
     {
         // n should be 1 or -1
         n = n < 0 ? -1 : 1;
 
         List<ViAppView> avs = getSortedAppViews(whichViews);
         if(avs == null)
-            return;
+            return false;
 
         int idx = AppViews.indexOfCurrentAppView(avs);
 
@@ -171,8 +173,7 @@ public class Misc01
 
         if(avs.isEmpty() || foundInList && avs.size() == 1) {
             // nowhere to go
-            Util.vim_beep();
-            return;
+            return false;
         }
 
         if(!foundInList) {
@@ -188,28 +189,28 @@ public class Misc01
                 idx = avs.size() -1;
         }
 
-        ViManager.getFS().edit(avs.get(idx), false);
+        return ViManager.getFS().edit(avs.get(idx), false);
     }
 
-    private static void win_moveto(AppViews whichViews, int n)
+    private static boolean win_moveto(AppViews whichViews, int n)
     {
         List<ViAppView> avs = getSortedAppViews(whichViews);
         if(avs == null)
-            return;
+            return false;
 
         // n is in range 1..n, put into range 0..(n-1)
         --n;
         if(n >= avs.size())
             n = avs.size() -1; // last window
 
-        ViManager.getFS().edit(avs.get(n), false);
+        return ViManager.getFS().edit(avs.get(n), false);
     }
 
-    private static void win_jump(Direction direction, int n)
+    private static boolean win_jump(Direction direction, int n)
     {
-        List<ViAppView> avs = getVisibleAppViews(AppViews.ACTIVE);
+        List<ViAppView> avs = getVisibleAppViews(AppViews.ALL);
         if(avs == null)
-            return;
+            return false;
 
         WindowTreeBuilder tree
                 = ViManager.getFactory().getWindowTreeBuilder(avs);
@@ -217,16 +218,12 @@ public class Misc01
 
         ViAppView av = AppViews.currentAppView(avs);
         if(av == null) {
-            Util.vim_beep();
-            return;
+            return false;
         }
 
         av = tree.jump(direction, av, n);
 
-        if(av != null)
-            ViManager.getFS().edit(av, false);
-        else
-            Util.vim_beep();
+        return av != null ? ViManager.getFS().edit(av, false) : false;
     }
 
     static List<ViAppView> getSortedAppViews(AppViews whichViews)

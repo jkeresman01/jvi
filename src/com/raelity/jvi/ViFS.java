@@ -79,8 +79,9 @@ public interface ViFS
     /**
      * Focus on this editor.
      * @param av the editor to start working on
+     * @return false if some problem encountered
      */
-    public void edit(ViAppView av, boolean force);
+    public boolean edit(ViAppView av, boolean force);
 
     /**
      * Edit the specified file. The platform may need to create an edtior view

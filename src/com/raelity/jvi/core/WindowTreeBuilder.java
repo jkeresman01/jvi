@@ -38,6 +38,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -105,7 +106,7 @@ public abstract class WindowTreeBuilder {
 
         assert toDo.isEmpty();
 
-        // NEEDSWORK: sort roots by screen location
+        sortRoots(); // top-to-bottom then left-to-right
 
         for (Node root : roots) {
             addToSorted(root);
@@ -226,17 +227,6 @@ public abstract class WindowTreeBuilder {
                 : ns != null ? createSplitNode(c, ns) : null;
     }
 
-    /**
-     * sort the roots top-to-bottom then left-to-right.
-     *
-     * Notice that with multiple screens this sorting finishes a screen,
-     * top-to-bottom, before moving to the next screen on the right.
-     */
-    private void sortRoots()
-    {
-        Collections.sort(roots, new CompareNodeLocations());
-    }
-
     protected Point getLocation(Node n)
     {
         Component c = n.getPeer();
@@ -245,7 +235,39 @@ public abstract class WindowTreeBuilder {
         return c.getLocationOnScreen();
     }
 
-    protected class CompareNodeLocations implements Comparator<Node>
+    /**
+     * sort the roots top-to-bottom then left-to-right.
+     *
+     * Notice that with multiple screens this sorting finishes a screen,
+     * top-to-bottom, before moving to the next screen on the right.
+     */
+    private void sortRoots()
+    {
+        //Collections.sort(roots, new CompareNodeLocations());
+        Collections.sort(roots, new Comparator<Node>()
+        {
+            @Override
+            public int compare(Node n1, Node n2)
+            {
+                // NEEDSWORK: use TOP LEVEL WINDOW location
+                Point w1 = getWindowLocation(n1.getPeer());
+                Point w2 = getWindowLocation(n2.getPeer());
+
+                int rv;
+                rv = w1.x != w2.x ? w1.x - w2.x : w1.y - w2.y;
+                // System.err.format("Comp rv %d\n    %s%s\n    %s%s\n",
+                //         rv, this, w1, o, w2);
+                return rv;
+            }
+        });
+    }
+
+    private Point getWindowLocation(Component descendant)
+    {
+        return SwingUtilities.getRoot(descendant).getLocationOnScreen();
+    }
+
+    private class CompareNodeLocations implements Comparator<Node>
     {
         @Override
         public int compare(Node n1, Node n2)
@@ -254,10 +276,7 @@ public abstract class WindowTreeBuilder {
             Point w2 = getLocation(n2);
 
             int rv;
-            if(w1.x != w2.x)
-                rv = w1.x - w2.x;
-            else
-                rv = w1.y - w2.y;
+            rv = w1.x != w2.x ? w1.x - w2.x : w1.y - w2.y;
             // System.err.format("Comp rv %d\n    %s%s\n    %s%s\n",
             //         rv, this, w1, o, w2);
             return rv;
@@ -323,22 +342,48 @@ public abstract class WindowTreeBuilder {
         return new Node(peer);
     }
 
+    /** assumes children are in order */
     protected Node createSplitNode(Component peer, List<Node> children)
     {
-        return new Node(peer, children);
+        Orientation orientation = Orientation.LEFT_RIGHT; // any default
+        if(children != null && children.size() >= 2)
+            orientation = calcSplitterOrientation(
+                    peer, children.get(0), children.get(1));
+        return new Node(orientation, peer, children);
     }
 
-    protected Orientation calcOrientation(Node n01, Node n02)
+    /**
+     * Determine if splitter is left-right or up-down.
+     *
+     * The peers of the Nodes should have the splitter as an ancestor.
+     * @param splitter
+     * @param n01
+     * @param n02
+     * @return
+     */
+    protected Orientation calcSplitterOrientation(
+            Component splitter,Node n01, Node n02)
     {
-        Point p1 = getLocation(n01);
-        Point p2 = getLocation(n02);
+        Point p1 = getLocationInSplitter(splitter, n01.getPeer());
+        Point p2 = getLocationInSplitter(splitter, n02.getPeer());
 
         int dX = Math.abs(p1.x - p2.x);
         int dY = Math.abs(p1.y - p2.y);
         return dX > dY ? Orientation.LEFT_RIGHT : Orientation.UP_DOWN;
     }
 
-    /** basically a preorder traversal */
+    private Point getLocationInSplitter(Component splitter, Component descendant)
+    {
+        Point p = null;
+        while(descendant.getParent() != splitter)
+        {
+            descendant = descendant.getParent();
+        }
+
+        return descendant.getLocationOnScreen();
+    }
+
+    /** basically a preorder like traversal */
     private void traverse(Node n, Visitor v)
     {
         v.visit(n);
@@ -381,18 +426,12 @@ public abstract class WindowTreeBuilder {
             isEditor = true;
         }
 
-        protected Node(Component peer, List<Node> children)
+        @SuppressWarnings("LeakingThisInConstructor")
+        protected Node(Orientation orient, Component peer, List<Node> children)
         {
+            this.orientation = orient;
             this.peer = peer;
             this.children = children;
-            adjustNodes();
-        }
-
-        private void adjustNodes()
-        {
-            if(children != null && children.size() >= 2)
-                orientation = calcOrientation(
-                        children.get(0), children.get(1));
             for (Node child : children) {
                 child.parent = this;
             }

@@ -79,7 +79,7 @@ public abstract class TextView implements ViTextView
     public int w_p_scroll;
 
     //protected final int JUMPLISTSIZE = 50;
-    protected List<ViMark> w_jumplist = new LinkedList();
+    protected List<ViMark> w_jumplist = new LinkedList<ViMark>();
     protected int w_jumplistidx;
 
     public TextView()
@@ -105,7 +105,7 @@ public abstract class TextView implements ViTextView
         w_pcmark = null;
         w_prev_pcmark = null;
         w_buffer = null;
-        w_jumplist = new LinkedList();
+        w_jumplist = new LinkedList<ViMark>();
         w_jumplistidx = 0;
     }
 

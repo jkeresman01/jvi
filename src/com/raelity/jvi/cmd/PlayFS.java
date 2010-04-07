@@ -86,9 +86,10 @@ public class PlayFS extends SimpleFS
         return false;
     }
 
-    public void edit(ViAppView av, boolean force)
+    public boolean edit(ViAppView av, boolean force)
     {
         Msg.emsg("edit(av{" + av + "}) not implemented");
+        return true;
     }
 
 

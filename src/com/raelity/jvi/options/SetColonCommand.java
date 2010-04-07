@@ -11,6 +11,7 @@ import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.core.Options;
+import com.raelity.jvi.core.TextView;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Field;
@@ -378,19 +379,22 @@ private static VimOption getVopt(String varName)
    * @param varName the variable to sync
    * @param buf the buffer to check for
    */
-  public static void syncTextViewInstances(String varName, ViBuffer buf)
+  public static void syncTextViewInstances(String varName, TextView tv)
   {
-    // if var is not window then nothing to do
+    assert tv == G.curwin; // NEEDSWORK: because determine option state assumes
     VimOption vopt = getVopt(varName);
+    // if var is not window then nothing to do
     if(!vopt.type.isWin())
       return;
 
-    for(ViTextView tv : ViManager.getFactory().getViTextViewSet()) {
-      if(tv.getBuffer() != buf)
+    ViBuffer buf = tv.getBuffer();
+
+    for(ViTextView tv01 : ViManager.getFactory().getViTextViewSet()) {
+      if(tv01.getBuffer() != buf || tv01 == tv)
         continue;
       if(G.dbgOptions)
-        System.err.println("syncInstances: " + varName + " in " + tv);
-      setLocalOption(tv, vopt);
+        System.err.println("syncInstances: " + varName + " in " + tv01);
+      setLocalOption(tv01, vopt);
     }
   }
 
