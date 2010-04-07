@@ -143,6 +143,11 @@ public final class Options {
   public static final String showMode = "viShowMode";
   public static final String showCommand = "viShowCommand";
 
+  public static final String wrap = "viWrap";
+  public static final String list = "viList";
+  public static final String lineBreak = "viLineBreak";
+  public static final String number = "viNumber";
+
   public static final String nrFormats = "viNrFormats";
   public static final String matchPairs = "viMatchPairs";
   public static final String quoteEscape = "viQuoteEscape";
@@ -399,6 +404,23 @@ public final class Options {
             + " start Select mode instead of Visual mode, when a selection is"
             + " started. Possible values: 'mouse', key' or 'cmd'");
     setExpertHidden(selectMode, true, true);
+
+    OptUtil.createBooleanOption(wrap, true);
+    OptUtil.setupOptionDesc(Category.GENERAL, wrap, "'wrap'",
+          "This option changes how text is displayed."
+          + " When on, lines longer than the width of the window will"
+          + " wrap and displaying continues on the next line.  When off"
+          + " lines will not wrap and only part of long lines will"
+          + " be displayed."
+          + "\n\n"
+          + "The line will be broken in the middle of a word if necessary."
+          + " See 'linebreak' to get the break at a word boundary."
+            );
+
+    OptUtil.createBooleanOption(lineBreak, false);
+    OptUtil.setupOptionDesc(Category.GENERAL, lineBreak, "'linebreak' 'lbr'",
+          "If on Vim will wrap long lines at a word boundary rather"
+          + " than at the last character that fits on the screen.");
 
     /////////////////////////////////////////////////////////////////////
     //

@@ -78,7 +78,6 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     /**
      * Put stuff here that should run once
      * after after construction and every things is setup (curbuf, curwin).
-     * <br/>marks
      * <br/>initOptions
      * <br/>modeline
      */

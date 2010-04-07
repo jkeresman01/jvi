@@ -49,6 +49,8 @@ public abstract class Window implements ViTextView
      */
     final public ViFPOS w_cursor;
 
+    private boolean didFirstInit;
+
     /**
      * The column we'd like to be at. Used for up/down cursor motions.
      */
@@ -65,14 +67,16 @@ public abstract class Window implements ViTextView
     protected ViMark w_pcmark;
     protected ViMark w_prev_pcmark;
 
-    protected boolean w_p_list;
+    // need to be public until reflection code in setColonCommand is fixed
 
-    protected boolean w_p_nu;
-    protected boolean w_p_wrap;
-    protected boolean w_p_lbr;
+    public boolean w_p_nu;      // NOT USED
+    public boolean w_p_list;    // NOT USED
+
+    public boolean w_p_wrap;
+    public boolean w_p_lbr;
 
     // NEEDSWORK: this should be comming from the cache (WHAT?)
-    protected int w_p_scroll;
+    public int w_p_scroll;
 
     //protected final int JUMPLISTSIZE = 50;
     protected List<ViMark> w_jumplist = new LinkedList();
@@ -117,6 +121,22 @@ public abstract class Window implements ViTextView
     public void activateOptions(ViTextView tv) {
         if(G.dbgEditorActivation.getBoolean() && getAppView().isNomad())
             System.err.println("ACTIVATING OPTIONS FOR NOMAD");
+        if(!didFirstInit) {
+            firstGo();
+            didFirstInit = true;
+        }
+    }
+
+
+    /**
+     * Put stuff here that should run once
+     * after after construction and every things is setup (curbuf, curwin).
+     * <br/>initOptions
+     */
+    protected void firstGo()
+    {
+        w_p_wrap = Options.getOption(Options.wrap).getBoolean();
+        w_p_lbr = Options.getOption(Options.lineBreak).getBoolean();
     }
 
     /**

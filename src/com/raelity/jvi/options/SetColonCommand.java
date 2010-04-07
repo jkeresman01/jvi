@@ -1,9 +1,11 @@
 package com.raelity.jvi.options;
 
+import com.raelity.jvi.ViBuffer;
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViOptionBag;
 import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.core.G;
@@ -222,7 +224,7 @@ public class SetColonCommand extends ColonCommands.ColonAction
       Msg.emsg(msg);
       throw new SetCommandException(msg);
     }
-    if (!determineOptionState(vopt, voptState)) {
+    if (determineOptionState(vopt, voptState) == null) {
       String msg = "Internal error: " + arg;
       Msg.emsg(msg);
       throw new SetCommandException(msg);
@@ -251,10 +253,13 @@ public class SetColonCommand extends ColonCommands.ColonAction
 
   /**
    * Set voptState with information about the argument vopt.
+   * The info about the option is taken from curwin/curbuf.
    */
-  private static boolean determineOptionState(VimOption vopt,
+  private static VimOptionState determineOptionState(VimOption vopt,
                                               VimOptionState voptState)
   {
+    if(voptState == null)
+      voptState = new VimOptionState();
     if (vopt.optName != null) {
       voptState.opt = Options.getOption(vopt.optName);
     }
@@ -268,7 +273,7 @@ public class SetColonCommand extends ColonCommands.ColonAction
         LOG.log(Level.SEVERE, null, ex);
       }
       if (voptState.f == null) {
-        return false;
+        return null;
       }
       voptState.type = voptState.f.getType();
       // impossible to get exceptions
@@ -288,7 +293,7 @@ public class SetColonCommand extends ColonCommands.ColonAction
         voptState.value = voptState.opt.getInteger();
       }
     }
-    return true;
+    return voptState;
   }
 
   // Most of the argument are class members
@@ -347,38 +352,74 @@ public class SetColonCommand extends ColonCommands.ColonAction
     ViOutputStream osa =
             ViManager.createOutputStream(null, ViOutputStream.OUTPUT, null);
     for (VimOption vopt : vopts) {
-      VimOptionState voptState = new VimOptionState();
-      determineOptionState(vopt, voptState);
+      VimOptionState voptState = determineOptionState(vopt, null);
       osa.println(formatDisplayValue(vopt, voptState.value));
     }
     osa.close();
   }
 
+private static VimOption getVopt(String varName)
+{
+  VimOption v = null;
+  for(VimOption vopt : vopts) {
+    if(vopt.varName != null && vopt.varName.equals(varName)) {
+      v = vopt;
+      break;
+    }
+  }
+  return v;
+}
+
+  /**
+   * Some options (for example w_p_wrap) are per window; however the platform
+   * (NB) may support it only per buffer. So if the user changes it with set,
+   * then the variable in any other window that shares the buffer must be
+   * updated. The value to sync is taken from curwin.
+   * @param varName the variable to sync
+   * @param buf the buffer to check for
+   */
+  public static void syncTextViewInstances(String varName, ViBuffer buf)
+  {
+    // if var is not window then nothing to do
+    VimOption vopt = getVopt(varName);
+    if(!vopt.type.isWin())
+      return;
+
+    for(ViTextView tv : ViManager.getFactory().getViTextViewSet()) {
+      if(tv.getBuffer() != buf)
+        continue;
+      if(G.dbgOptions)
+        System.err.println("syncInstances: " + varName + " in " + tv);
+      setLocalOption(tv, vopt);
+    }
+  }
+
   public static void syncAllInstances(String varName)
   {
-    for (VimOption vopt : vopts) {
-      if (vopt.type.isLocal()) {
-        if (vopt.varName.equals(varName)) {
-          VimOptionState voptState = new VimOptionState();
-          determineOptionState(vopt, voptState);
-          Set<? extends ViOptionBag> set =
-                  vopt.type.isWin()
-                  ? ViManager.getFactory().getViTextViewSet()
-                  : ViManager.getFactory().getBufferSet();
-          for (ViOptionBag bag : set) {
-            try {
-              if(G.dbgOptions)
-                System.err.println("syncInstances: " + varName + " in " + bag);
-              voptState.f.set(bag, voptState.value);
-            } catch (IllegalArgumentException ex) {
-              LOG.log(Level.SEVERE, null, ex);
-            } catch (IllegalAccessException ex) {
-              LOG.log(Level.SEVERE, null, ex);
-            }
-          }
-          break;
+    VimOption vopt = getVopt(varName);
+    if(vopt.type.isLocal()) {
+      Set<? extends ViOptionBag> set =
+              vopt.type.isWin()
+              ? ViManager.getFactory().getViTextViewSet()
+              : ViManager.getFactory().getBufferSet();
+      for(ViOptionBag bag : set) {
+        if(G.dbgOptions) {
+          System.err.println("syncInstances: " + varName + " in " + bag);
         }
+        setLocalOption(bag, vopt);
       }
+    }
+  }
+
+  private static void setLocalOption(ViOptionBag bag, VimOption vopt)
+  {
+    VimOptionState voptState = determineOptionState(vopt, null);
+    try {
+      voptState.f.set(bag, voptState.value);
+    } catch (IllegalArgumentException ex) {
+      LOG.log(Level.SEVERE, null, ex);
+    } catch (IllegalAccessException ex) {
+      LOG.log(Level.SEVERE, null, ex);
     }
   }
 }
