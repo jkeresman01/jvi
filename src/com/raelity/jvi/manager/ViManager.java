@@ -367,12 +367,11 @@ public class ViManager
     {
         String s = System.getProperty("os.name");
         if(osVersion == null) {
-            if(s.startsWith("Windows"))
-                osVersion = OsVersion.WINDOWS;
-            else if(s.startsWith("Mac"))
-                osVersion = OsVersion.MAC;
-            else
-                osVersion = OsVersion.UNIX;
+            osVersion = s.startsWith("Windows")
+                            ? OsVersion.WINDOWS
+                            : s.startsWith("Mac")
+                                ? OsVersion.MAC
+                                : OsVersion.UNIX;
         }
         return osVersion;
     }
