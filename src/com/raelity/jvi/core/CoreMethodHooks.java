@@ -81,7 +81,7 @@ static void cursor_correct() { Misc01.cursor_correct(); }
 static int getScrollOff() { return Misc01.getScrollOff(); }
 static void gotoLine(int line, int flag) { Misc01.gotoLine(line, flag); }
 static void gotoLine(int line, int flag, boolean openFold)
-        { Misc.gotoLine(line, flag, openFold); }
+        { Misc01.gotoLine(line, flag, openFold); }
 static void gotoLogicalLine(int logicalLine, int flag)
         { Misc01.gotoLogicalLine(logicalLine, flag); }
 static void halfpage(boolean go_down, int Prenum)
