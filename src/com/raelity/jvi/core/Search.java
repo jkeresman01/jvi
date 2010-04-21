@@ -1073,7 +1073,7 @@ finished:
     if((options & SEARCH_MARK) != 0) {
       MarkOps.setpcmark();
     }
-    Misc.gotoLine(G.curbuf.getLineNumber(pos.getOffset()), 0, true);
+    gotoLine(G.curbuf.getLineNumber(pos.getOffset()), 0, true);
     int new_pos = pos.getOffset();
     if(search_match_len == 0) {
         // search /$ puts cursor on end of line
@@ -1267,7 +1267,7 @@ first_submatch(RegExp rp)
     
     if(! G.global_busy) {
       if(cursorLine > 0) {
-	Misc.gotoLine(cursorLine, BL_WHITE | BL_FIX, true);
+	gotoLine(cursorLine, BL_WHITE | BL_FIX, true);
       }
       if(nSubMatch == 0) {
 	Msg.emsg(Messages.e_patnotf2 + pattern);
@@ -1623,7 +1623,7 @@ first_submatch(RegExp rp)
     }
 
     if(cursorLine > 0) {
-      Misc.gotoLine(cursorLine, BL_WHITE | BL_FIX, true);
+      gotoLine(cursorLine, BL_WHITE | BL_FIX, true);
     }
     if(result != null)
       result.close();

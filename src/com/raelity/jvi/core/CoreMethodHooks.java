@@ -44,6 +44,7 @@ public class CoreMethodHooks {
 //
 //Misc
 //
+static boolean coladvance(int wcol) { return Misc.coladvance(wcol); }
 static int dec(ViFPOS fpos) { return Misc.dec(fpos); }
 static int dec_cursor() { return Misc.dec_cursor(); }
 static int decl(ViFPOS pos) { return Misc.decl(pos); }
@@ -65,8 +66,29 @@ static int incV7(ViFPOS pos) { return Misc.incV7(pos); }
 static boolean inindent(int i) { return Misc.inindent(i); }
 static void ins_char(char c) { Misc.ins_char(c); }
 static int skipwhite(MySegment seg, int idx) { return Misc.skipwhite(seg, idx); }
+static void update_screen(int type) { Misc.update_screen(type); }
+static void validate_botline() { Misc.validate_botline(); }
 static boolean vim_iswhite(char c) { return Misc.vim_iswhite(c); }
 static boolean vim_iswordc(char c) { return Misc.vim_iswordc(c); }
+
+//////////////////////////////////////////////////////////////////////
+//
+// Util
+//
+static int adjustTopLogicalLine(int topLogicalLine)
+        { return Misc01.adjustTopLogicalLine(topLogicalLine); }
+static void cursor_correct() { Misc01.cursor_correct(); }
+static int getScrollOff() { return Misc01.getScrollOff(); }
+static void gotoLine(int line, int flag) { Misc01.gotoLine(line, flag); }
+static void gotoLine(int line, int flag, boolean openFold)
+        { Misc.gotoLine(line, flag, openFold); }
+static void gotoLogicalLine(int logicalLine, int flag)
+        { Misc01.gotoLogicalLine(logicalLine, flag); }
+static void halfpage(boolean go_down, int Prenum)
+        { Misc01.halfpage(go_down, Prenum); }
+static int onepage(int dir, int count) { return Misc01.onepage(dir, count); }
+static int plines(int p) { return Misc01.plines(p); }
+static void update_curswant() { Misc01.update_curswant(); }
 
 //////////////////////////////////////////////////////////////////////
 //

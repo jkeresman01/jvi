@@ -281,7 +281,7 @@ public class Edit extends CoreMethodHooks {
         // && curwin.w_topline == old_topline)
         
         // ....
-        Misc.update_curswant();
+        update_curswant();
         // .....
         
         char lastc = c; // NEEDSWORK: use of lastc not supported
@@ -1357,7 +1357,7 @@ private static class GetLiteral implements HandleNextChar
       else
         viewLine -= n;
     }
-    Misc.gotoLogicalLine(viewLine, -1);
+    gotoLogicalLine(viewLine, -1);
     return OK;
   }
 
@@ -1374,7 +1374,7 @@ private static class GetLiteral implements HandleNextChar
       viewLine += n;
       if (viewLine > nline) { viewLine = nline; }
     }
-    Misc.gotoLogicalLine(viewLine, -1);
+    gotoLogicalLine(viewLine, -1);
     return OK;
   }
 

@@ -4195,7 +4195,7 @@ static private void nv_findpar(CMDARG cap, int dir)
         lnum = cap.count0;
     lnum = lnum < 1 ? 1
             : lnum > G.curbuf.getLineCount() ? G.curbuf.getLineCount() : lnum;
-    Misc.gotoLine(lnum, BL_SOL | BL_FIX);
+    gotoLine(lnum, BL_SOL | BL_FIX);
   }
 
   /**
@@ -4545,7 +4545,7 @@ static private void nv_findpar(CMDARG cap, int dir)
 	    && cursor.getLine() == G.curbuf.getLineCount()))
       clearopbeep(cap.oap);
     else if (!checkclearop(cap.oap)) {
-      Misc.halfpage(cap.cmdchar == Util.ctrl('D'), cap.count0);
+      halfpage(cap.cmdchar == Util.ctrl('D'), cap.count0);
     }
   }
 
