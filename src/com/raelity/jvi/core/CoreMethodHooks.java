@@ -67,13 +67,12 @@ static boolean inindent(int i) { return Misc.inindent(i); }
 static void ins_char(char c) { Misc.ins_char(c); }
 static int skipwhite(MySegment seg, int idx) { return Misc.skipwhite(seg, idx); }
 static void update_screen(int type) { Misc.update_screen(type); }
-static void validate_botline() { Misc.validate_botline(); }
 static boolean vim_iswhite(char c) { return Misc.vim_iswhite(c); }
 static boolean vim_iswordc(char c) { return Misc.vim_iswordc(c); }
 
 //////////////////////////////////////////////////////////////////////
 //
-// Util
+// Misc01
 //
 static int adjustTopLogicalLine(int topLogicalLine)
         { return Misc01.adjustTopLogicalLine(topLogicalLine); }
@@ -89,6 +88,7 @@ static void halfpage(boolean go_down, int Prenum)
 static int onepage(int dir, int count) { return Misc01.onepage(dir, count); }
 static int plines(int p) { return Misc01.plines(p); }
 static void update_curswant() { Misc01.update_curswant(); }
+static void validate_botline() { Misc01.validate_botline(); }
 
 //////////////////////////////////////////////////////////////////////
 //

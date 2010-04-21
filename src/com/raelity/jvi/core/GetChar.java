@@ -880,8 +880,13 @@ public class GetChar {
 
             } // END HACK ALERT
 
-            if(!skip)
-              ViManager.dumpStack("redo tracking: remove after");
+            if(!skip) {
+              if(ViManager.isDebugAtHome()) {
+                System.err.println("redo track: remove after: " + ex.getMessage());
+              }
+              if(G.dbgRedo.getBoolean())
+                ViManager.dumpStack("redo track: remove after: " + ex.getMessage());
+            }
           }
         }
       }

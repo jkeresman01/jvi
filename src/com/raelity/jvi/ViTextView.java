@@ -182,12 +182,13 @@ public interface ViTextView extends ViOptionBag {
   public void tabOperation(TABOP op, int count);
 
 
+  //
+  // Without other indiation, any Vp*Line refers to lines on the screen.
+  // Not logical or document lines. This is an issue when line wrap is possible
+  //
 
   /** @return the document line number of first visible line in viewport */
   public int getVpTopLine();
-
-  /** cause the indicated document line to be displayed as top line in viewport. */
-  public void setVpTopLine(int docLine);
 
   /** @return the number of unused lines on the display */
   public int getVpBlankLines(); // NEEDSWORK: what about variable font
@@ -204,6 +205,20 @@ public interface ViTextView extends ViOptionBag {
    */
   public int getRequiredVpLines();
 
+
+
+  // public void setVpTopScreenLine(int screenLine);
+  // public int getVpTopScreenLine();
+  // public int getVpBottomScreenLine();
+  // public void setCursorScreenLine(int screenLine, int col);
+
+
+
+  /** cause the indicated document line to be displayed as top line in viewport. */
+  public void setVpTopLine(int docLine);
+
+
+
   /** @return the line number of first visible line in window */
   public int getVpTopLogicalLine();
 
@@ -212,6 +227,8 @@ public interface ViTextView extends ViOptionBag {
 
   /** @return the line number of line *after* end of window */
   public int getVpBottomLogicalLine();
+
+
 
   /**
    * If there is no code folding, then the number of view lines is equal
