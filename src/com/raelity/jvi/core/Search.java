@@ -278,9 +278,10 @@ public class Search extends CoreMethodHooks {
       G.curwin.setSelection(new_pos, new_pos + search_match_len);
 
       didIncrSearch = true;
-      if(rc == FAIL)
+      if(rc == FAIL) {
         resetViewIncrementalSearch();
-      else
+        searchitErrorMessage(null);
+      } else
         incrSearchSucceed = true;
     } catch(Exception ex) {
         LOG.log(Level.SEVERE, null, ex);
@@ -1057,15 +1058,16 @@ finished:
 
     if (!found) {	    // did not find it
       if (false/*got_int*/)
-        Msg.emsg(Messages.e_interr);
+        searchitErrorMessage(Messages.e_interr);
       else if ((options & SEARCH_MSG) == SEARCH_MSG) {
         if (G.p_ws.getBoolean())
-          Msg.emsg(Messages.e_patnotf2 + pattern);
+          searchitErrorMessage(Messages.e_patnotf2 + pattern);
         else if (lnum == 0)
-          Msg.emsg("search hit TOP without match for: " + pattern);
+          searchitErrorMessage("search hit TOP without match for: " + pattern);
         else
-          Msg.emsg("search hit BOTTOM without match for: " + pattern);
+          searchitErrorMessage("search hit BOTTOM without match for: " + pattern);
       }
+      search_match_len = 0;
       return FAIL;
     }
     search_match_len = matchend - match;
@@ -1085,6 +1087,16 @@ finished:
       Msg.wmsg(wmsg/*, true*/);
     }
     return submatch + 1;
+  }
+  private static String lastSearchitErrorMessage;
+  /** null means reprint the last one */
+  private static void searchitErrorMessage(String s)
+  {
+    if(s != null) {
+      lastSearchitErrorMessage = s;
+    }
+    if(lastSearchitErrorMessage != null)
+      Msg.emsg(lastSearchitErrorMessage);
   }
 
 /**

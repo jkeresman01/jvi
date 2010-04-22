@@ -186,11 +186,11 @@ public class Scheduler
                 return;
             fact().finishTagPush(G.curwin); // NEEDSWORK: cleanup
             getCore().gotc(key, modifier);
-            if (G.curwin != null)
-                G.curwin.getStatusDisplay().refresh();
         } finally {
             setJViBusy(false);
         }
+        if (G.curwin != null)
+            G.curwin.getStatusDisplay().refresh();
     }
 
     /**

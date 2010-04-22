@@ -3734,8 +3734,9 @@ private static int put_in_typebuf(String s, boolean colon)
     
     /** update the command characters */
     static void setCommandCharacters(String s) {
+      if(!s.equals(commandCharacters))
+        ccDirty = true;
       commandCharacters = s;
-      ccDirty = true;
     }
     
     /** This is used to do showcommand stuff. */
