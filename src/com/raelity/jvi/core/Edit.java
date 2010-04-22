@@ -105,8 +105,9 @@ public class Edit extends CoreMethodHooks {
    * @return copy of the current start of insertion
    */
   static ViFPOS getInsstart() {
-    //return Insstart.copy();
-    return G.curbuf.createFPOS(Insstart.getOffset());
+    return Insstart == null
+            ? null
+            : G.curbuf.createFPOS(Insstart.getOffset());
   }
 
   static boolean canEdit() {

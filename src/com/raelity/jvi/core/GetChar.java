@@ -893,10 +893,13 @@ public class GetChar {
       return false;
     }
     private static void debugDocRemove(int pos, int len, String removedText) {
-      if(G.dbgRedo.getBoolean())
+      if(G.dbgRedo.getBoolean()) {
+        int insstart = Edit.getInsstart() != null
+                ? Edit.getInsstart().getOffset() : -1;
         System.err.format("docRemove: pos %d, %d, '%s', track %d, insstart %d\n",
                           pos, len, TextUtil.debugString(removedText),
-                          redoTrackPosition, Edit.getInsstart().getOffset());
+                          redoTrackPosition, insstart);
+      }
     }
     private static void debugDocRemoveBEFORE_INSSTART() {
       if(G.dbgRedo.getBoolean()) System.err.format("docRemove BEFORE INSSTART: '%s'\n",
