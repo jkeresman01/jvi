@@ -85,9 +85,9 @@ public class Scheduler
         fact().setupCaret(editor); // make sure has the right caret
         textView.attach();
         if (G.dbgEditorActivation.getBoolean()) {
-            String newStr = fNewTextView ? "NEW: " : "";
-            System.err.println("Activation: ViManager.SWITCHTO: " + newStr +
-                    cid(editor) + " " + buf.getDisplayFileName());
+            System.err.println("Activation: ViManager.SWITCHTO: "
+                    + (fNewTextView ? "NEW: " : "") + cid(editor)
+                    + " " + buf.getDisplayFileName() + " " + ViManager.cid(buf));
         }
         if (currentEditorPane != null) {
             getCore().abortVisualMode();
@@ -132,6 +132,12 @@ public class Scheduler
             }
         }
     };
+
+    static void changeBuffer(ViTextView tv)
+    {
+        if(G.curwin == tv)
+            getCore().switchTo(tv, tv.getBuffer());
+    }
 
     // NEEDSWORK: register should not be public. This is public because of the
     //          lazy app views. The editor can get focus before the

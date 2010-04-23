@@ -396,6 +396,12 @@ public class ViManager
         return factory.createTextView(editorPane);
     }
 
+    public static void changeBuffer(ViTextView tv, Object oldDoc)
+    {
+        factory.changeBuffer(tv, oldDoc);
+        Scheduler.changeBuffer(tv);
+    }
+
     /** get any text view, other than tv, which has buf KLUDGE HACK */
     public static ViTextView getAlternateTextView(ViTextView tv, Buffer buf)
     {
@@ -494,6 +500,13 @@ public class ViManager
     static public void dumpStack()
     {
         dumpStack(null);
+    }
+
+    static public void printStack()
+    {
+        for(StackTraceElement e : Thread.currentThread().getStackTrace()) {
+            System.err.println(" " + e.toString());
+        }
     }
 
     static public void setInsertModeKeymap(Keymap newInsertModeKeymap)

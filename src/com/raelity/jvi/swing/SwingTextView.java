@@ -978,7 +978,7 @@ public class SwingTextView extends TextView
         }
         point0 = null;
         super.detachBuffer();
-        ViManager.getFactory().changeBuffer(this, e.getOldValue());
+        ViManager.changeBuffer(this, e.getOldValue());
     }
 
     final static int DIR_TOP = -1;

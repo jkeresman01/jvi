@@ -62,6 +62,7 @@ import  java.util.Set;
 import  java.util.WeakHashMap;
 import  java.util.prefs.Preferences;
 import javax.swing.text.JTextComponent;
+import org.openide.util.WeakSet;
 
 /**
  * This provides the Vi items to interface with standard swing JTextComponent.
@@ -75,9 +76,8 @@ abstract public class SwingFactory implements ViFactory
     public static final String PROP_BUF  = "ViBuffer";
     public static final String PROP_AV = "ViAppView";
 
-    // Really a WeakSet, all doc's that have been seen. value always null
-    protected Map<Document, Object> docSet
-            = new WeakHashMap<Document,Object>();
+    // all doc's that have been seen.
+    protected Set<Document> docSet = new WeakSet<Document>();
 
     // This is used only when dbgEditorActivation is turned on
     protected WeakHashMap<JTextComponent, Object> editorSet
@@ -201,7 +201,7 @@ abstract public class SwingFactory implements ViFactory
     public Set<Buffer> getBufferSet() // NEEDSWORK: collection, list MRU?
     {
         Set<Buffer> s = new HashSet<Buffer>();
-        for (Document doc : docSet.keySet()) {
+        for (Document doc : docSet) {
             Buffer buf = (Buffer) doc.getProperty(PROP_BUF);
             if ( buf != null ) {
                 s.add(buf);
@@ -252,7 +252,7 @@ abstract public class SwingFactory implements ViFactory
             {
                 buf = createBuffer(tv);
                 doc.putProperty(PROP_BUF, buf);
-                docSet.put(doc, null);
+                docSet.add(doc);
             }
             buf.addShare();
         }
@@ -268,6 +268,7 @@ abstract public class SwingFactory implements ViFactory
             if(buf.getShare() == 0) {
                 if ( doc != null) {
                     doc.putProperty(PROP_BUF, null);
+                    docSet.remove(doc);
                 } else {
                     ViManager.dumpStack("SHUTDOWN NULL DOC");
                 }

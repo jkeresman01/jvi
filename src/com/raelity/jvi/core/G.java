@@ -23,6 +23,7 @@ package com.raelity.jvi.core;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.StringOption;
 import com.raelity.jvi.options.IntegerOption;
 import com.raelity.jvi.options.BooleanOption;
@@ -38,10 +39,15 @@ public class G
     /**
      *  Set the current editor.
      */
-    static void switchTo( ViTextView textView, Buffer buf )
+    static void switchTo( ViTextView tv, Buffer buf )
     {
-        G.curwin = (TextView)textView;
-        G.curbuf = buf;
+        if(curwin == tv && curbuf != buf
+                && dbgEditorActivation.getBoolean()) {
+            System.err.println("Activation: changeBuffer tv "
+                    + ViManager.cid(tv) + " buf " + ViManager.cid(buf));
+        }
+        curwin = (TextView)tv;
+        curbuf = buf;
     }
 
     public static void setModMask( int mod_mask )
