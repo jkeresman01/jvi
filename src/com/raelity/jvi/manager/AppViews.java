@@ -35,11 +35,9 @@ import java.awt.event.ActionListener;
 import java.io.PrintStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
+import org.openide.util.WeakSet;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -86,8 +84,7 @@ public enum AppViews
             new ArrayList<ViAppView>();
     private static List<ViAppView> avsMRU =
             new ArrayList<ViAppView>();
-    private static Set<WeakAppView> avsNomads =
-            new LinkedHashSet<WeakAppView>();
+    private static Set<ViAppView> avsNomads = new WeakSet<ViAppView>();
     private static ViAppView avCurrentlyActive;
     private static ViAppView keepMru;
 
@@ -215,7 +212,7 @@ public enum AppViews
             avCurrentlyActive = null;
         avsMRU.remove(av);
         avs.remove(av);
-        avsNomads.remove(new WeakAppView(av));
+        avsNomads.remove(av);
     }
 
     /**
@@ -234,7 +231,7 @@ public enum AppViews
         Scheduler.register(av.getEditor());
         boolean nothingToDo = false;
         if (av.isNomad()) {
-            if (avsNomads.contains(new WeakAppView(av)))
+            if (avsNomads.contains(av))
                 nothingToDo = true;
         } else
             if (avsMRU.contains(av))
@@ -251,7 +248,7 @@ public enum AppViews
                 avsMRU.add(av);
             if (!avs.contains(av))
                 avs.add(av);
-            avsNomads.remove(new WeakAppView(av));
+            avsNomads.remove(av);
         }
         else {
             // insure nomads not in these lists
@@ -259,7 +256,7 @@ public enum AppViews
             avs.remove(av);
             // and make sure it is in the nomad list
             // Don't need to check contained, since working with a Set.
-            avsNomads.add(new WeakAppView(av));
+            avsNomads.add(av);
         }
     }
 
@@ -271,7 +268,7 @@ public enum AppViews
             avsMRU.add(0, av);
             if (!avs.contains(av))
                 avs.add(av);
-            avsNomads.remove(new WeakAppView(av));
+            avsNomads.remove(av);
         }
         else {
             // insure nomads not in these lists
@@ -279,7 +276,7 @@ public enum AppViews
             avs.remove(av);
             // and make sure it is in the nomad list
             // Don't need to check contained, since working with a Set.
-            avsNomads.add(new WeakAppView(av));
+            avsNomads.add(av);
         }
     }
 
@@ -299,12 +296,7 @@ public enum AppViews
                 l = new ArrayList<ViAppView>(avsMRU);
                 break;
             case NOMAD:
-                Iterator<ViAppView> iter = getNomadAppViewIterator();
-                l = new ArrayList<ViAppView>();
-                while (iter.hasNext()) {
-                    ViAppView av = iter.next();
-                    l.add(av);
-                }
+                l = new ArrayList<ViAppView>(avsNomads);
                 break;
             case ALL:
                 l = new ArrayList<ViAppView>();
@@ -361,60 +353,6 @@ public enum AppViews
         if (i < 0 || i >= avsMRU.size())
             return null;
         return avsMRU.get(i);
-    }
-
-    private static Iterator<ViAppView> getNomadAppViewIterator()
-    {
-        //return avsNomads.iterator();
-        // While this is iterated, null elements are tossed out.
-        // remove is not implemented.
-        final Iterator<WeakAppView> iter = avsNomads.iterator();
-        return new Iterator<ViAppView>() {
-
-            ViAppView nextAppView;
-
-            // Find the next non-null object, removing nulls
-            private void findNextAppView()
-            {
-                if (nextAppView != null)
-                    return;
-                WeakAppView wo;
-                while (iter.hasNext()) {
-                    wo = iter.next();
-                    nextAppView = wo.get();
-                    if (nextAppView != null)
-                        break;
-                    iter.remove();
-                }
-            }
-
-            @Override
-            public boolean hasNext()
-            {
-                if (nextAppView != null)
-                    return true;
-                findNextAppView();
-                return nextAppView != null;
-            }
-
-            @Override
-            public ViAppView next()
-            {
-                findNextAppView();
-                if (nextAppView == null)
-                    throw new NoSuchElementException();
-                ViAppView av = nextAppView;
-                nextAppView = null;
-                return av;
-            }
-
-            @Override
-            public void remove()
-            {
-                // iter.remove() here probably works fine
-                throw new UnsupportedOperationException();
-            }
-        };
     }
 
     /**
@@ -489,35 +427,6 @@ public enum AppViews
         return p;
     }
 
-    private static class WeakAppView extends WeakReference<ViAppView>
-    {
-
-        public WeakAppView(ViAppView referent)
-        {
-            super(referent);
-        }
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            if (!(obj instanceof WeakAppView))
-                return false;
-            ViAppView o = get();
-            ViAppView other = ((WeakAppView)obj).get();
-            return o == null ? o == obj : o.equals(other);
-        }
-
-        @Override
-        public int hashCode()
-        {
-            int hash = 7;
-            Object o = get();
-            if (o != null)
-                hash = o.hashCode();
-            return hash;
-        }
-    }
-
     private static ViFactory fact()
     {
         return ViManager.getFactory();
@@ -570,9 +479,7 @@ public enum AppViews
                         ", share: " + buf.getShare());
         }
         ps.println("AppViewNomads: " + avsNomads.size());
-        Iterator<ViAppView> iter = getNomadAppViewIterator();
-        while (iter.hasNext()) {
-            ViAppView av = iter.next();
+        for(ViAppView av : avsNomads) {
             ps.println("\t" + fact().getFS().getDisplayFileName(av) + ", " +
                     av.getClass().getSimpleName());
         }
