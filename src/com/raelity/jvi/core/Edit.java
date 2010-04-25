@@ -1208,8 +1208,8 @@ private static class GetLiteral implements HandleNextChar
    */
   static void stop_arrow() {
     if (arrow_used) {
+      Misc.endInsertUndo();
       try {
-        Misc.endInsertUndo();
         Normal.u_save_cursor();    // errors are ignored!
         //Insstart = G.curwin.w_cursor.copy();    // new insertion starts here
         Insstart.set(G.curwin.w_cursor);
