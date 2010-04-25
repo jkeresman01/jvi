@@ -30,8 +30,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.TooManyListenersException;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.event.ChangeEvent;
 
 import com.raelity.text.*;
 import com.raelity.text.TextUtil.MySegment;
@@ -39,11 +38,10 @@ import com.raelity.text.TextUtil.MySegment;
 import java.awt.EventQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.AbstractDocument;
+import javax.swing.event.ChangeListener;
 import static com.raelity.jvi.core.KeyDefs.K_X_SEARCH_FINISH;
 import static com.raelity.jvi.core.KeyDefs.K_X_INCR_SEARCH_DONE;
 import static com.raelity.jvi.core.KeyDefs.K_X_SEARCH_CANCEL;
-import javax.swing.text.Document;
 
 import static com.raelity.jvi.core.Constants.*;
 
@@ -78,19 +76,13 @@ public class Search extends CoreMethodHooks {
 
   private static ViCmdEntry getSearchCommandEntry() {
     if(searchCommandEntry == null) {
-      try {
-        searchCommandEntry = ViManager.getFactory()
-                              .createCmdEntry(ViCmdEntry.SEARCH_ENTRY);
-        searchCommandEntry.addActionListener(
-          new ActionListener() {
-            public void actionPerformed(ActionEvent ev) {
-              searchEntryComplete(ev);
-            }   });
-      }
-      catch (TooManyListenersException ex) {
-        LOG.log(Level.SEVERE, null, ex);
-        throw new RuntimeException(ex);
-      }
+      searchCommandEntry = ViManager.getFactory()
+                            .createCmdEntry(ViCmdEntry.SEARCH_ENTRY);
+      searchCommandEntry.addActionListener(
+        new ActionListener() {
+          public void actionPerformed(ActionEvent ev) {
+            searchEntryComplete(ev);
+          }   });
     }
     return searchCommandEntry;
   }
@@ -203,12 +195,11 @@ public class Search extends CoreMethodHooks {
     });
   }
 
-  private static class SearchListener implements DocumentListener {
-    public void changedUpdate(DocumentEvent e) { }
-    public void insertUpdate(DocumentEvent e) {
-      laterDoIncrementalSearch();
-    }
-    public void removeUpdate(DocumentEvent e) {
+  private static class SearchListener implements ChangeListener
+  {
+    @Override
+    public void stateChanged(ChangeEvent e)
+    {
       laterDoIncrementalSearch();
     }
   }
@@ -216,30 +207,22 @@ public class Search extends CoreMethodHooks {
   private static SearchListener isListener;
 
   private static void startIncrementalSearch() {
-      Document doc = getSearchCommandEntry().getTextComponent().getDocument();
-      // funny aborts might leave one... Might want to use a weak listen as well
-      if(doc instanceof AbstractDocument) {
-        AbstractDocument ad = (AbstractDocument) doc;
-        for (DocumentListener documentListener : ad.getDocumentListeners()) {
-          if(documentListener instanceof SearchListener)
-            doc.removeDocumentListener(documentListener);
-        }
-      } else
-        doc.removeDocumentListener(isListener);
-      isListener = new SearchListener();
+      // funny aborts might leave one...
+      // NEEDSWORK: Might want to use a weak listen as well
+      getSearchCommandEntry().removeChangeListener(isListener);
+      if(isListener == null)
+        isListener = new SearchListener();
       searchPos = G.curwin.w_cursor.copy();
       searchTopLine = G.curwin.getVpTopLine();
       setPCMarkAfterIncrSearch = (searchFlags & SEARCH_MARK) != 0;
       searchFlags &= ~SEARCH_MARK;
       didIncrSearch = false;
       incrSearchSucceed = false;
-      doc.addDocumentListener(isListener);
+      getSearchCommandEntry().addChangeListener(isListener);
   }
   
   private static void stopIncrementalSearch(boolean accept) {
-      Document doc = getSearchCommandEntry().getTextComponent().getDocument();
-      doc.removeDocumentListener(isListener);
-      isListener = null;
+      getSearchCommandEntry().removeChangeListener(isListener);
 
       G.curwin.clearSelection(); // since it is used by incr search
       
@@ -262,7 +245,7 @@ public class Search extends CoreMethodHooks {
   private static void doIncrementalSearch() {
     try {
       Hook.setJViBusy(true);
-      String pattern = getSearchCommandEntry().getTextComponent().getText();
+      String pattern = getSearchCommandEntry().getCurrentEntry();
       
       if("".equals(pattern)) {
         resetViewIncrementalSearch();

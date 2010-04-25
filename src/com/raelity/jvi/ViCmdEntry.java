@@ -19,9 +19,10 @@
  */
 package com.raelity.jvi;
 
+import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.util.TooManyListenersException;
-import javax.swing.text.JTextComponent;
+import javax.swing.event.ChangeListener;
 
 /** This is used by vi to get command line input.
  * An LRU history of commands should be maintained, though this history
@@ -37,53 +38,60 @@ import javax.swing.text.JTextComponent;
  * </p>
  */
 public interface ViCmdEntry {
-  static public final int SEARCH_ENTRY = 1;
-  static public final int COLON_ENTRY = 2;
+    static public final int SEARCH_ENTRY = 1;
+    static public final int COLON_ENTRY = 2;
 
-  /** Start command entry.
-   * The mode can be used to label the entry field.
-   */
-  public void activate(String mode, ViTextView parent);
+    /** Start command entry.
+     * The mode can be used to label the entry field.
+     */
+    public void activate(String mode, ViTextView parent);
 
-  /** Start command entry.
-   * The mode can be used to label the entry field.
-   * @param parent component associated with the entry
-   * @param initialText text widget starts out with this text
-   * @param passThru when true, fire action with initialText as the command
-   */
-  public void activate(String mode, ViTextView parent,
-                       String initialText, boolean passThru);
+    /** Start command entry.
+     * The mode can be used to label the entry field.
+     * @param parent component associated with the entry
+     * @param initialText text widget starts out with this text
+     * @param passThru when true, fire action with initialText as the command
+     */
+    public void activate(String mode, ViTextView parent,
+                         String initialText, boolean passThru);
 
-  /**
-   * This is used to retrieve the command that was entered.
-   */
-  public String getCommand();
+    /**
+     * This is used to retrieve the command that was entered.
+     */
+    public String getCommand();
 
-  /**
-   * Stop command entry.
-   */
-  public void cancel();
+    /**
+     * Stop command entry.
+     */
+    public void cancel();
 
-  /**
-   * This method is used to append characters to the command line.
-   * It is used to prevent lost characters that may occur between
-   * the character that initiates command entry and the time the
-   * entry field is ready to take characters.
-   */
-  public void append(char c);
-  
-  /**
-   * Retrieve the component used for the data entry.
-   */
-  public JTextComponent getTextComponent();
+    /**
+     * This method is used to append characters to the command line.
+     * It is used to prevent lost characters that may occur between
+     * the character that initiates command entry and the time the
+     * entry field is ready to take characters.
+     */
+    public void append(char c);
 
-  /** When command entry is complete, this listener is invoked.
-   * The event is the key event that stopped entry, either a
-   * &lt;CR&gt; or an &lt;ESC&gt;.
-   * Only a single listener is needed.
-   */
-  public void addActionListener(ActionListener l)
-              throws TooManyListenersException;
+    /**
+     * Retrieve the component used for the data entry.
+     */
+    public Component getTextComponent();
 
-  public void removeActionListener(ActionListener l);
+    /** When command entry is complete, this listener is invoked.
+     * The event is the key event that stopped entry, either a
+     * &lt;CR&gt; or an &lt;ESC&gt;.
+     * Only a single listener is needed.
+     */
+    public void addActionListener(ActionListener l);
+
+    public void removeActionListener(ActionListener l);
+
+    //
+    // The following provide monitoring entry input per character
+    //
+
+    public void addChangeListener(ChangeListener l);
+    public void removeChangeListener(ChangeListener l);
+    public String getCurrentEntry();
 }

@@ -26,9 +26,12 @@ import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.GetChar;
 import  com.raelity.jvi.*;
+import com.raelity.jvi.lib.MyEventListenerList;
 
 import  javax.swing.*;
 import  javax.swing.border.*;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
 import  javax.swing.plaf.basic.BasicComboBoxEditor;
 import  javax.swing.text.*;
 import  java.awt.*;
@@ -39,6 +42,8 @@ import  java.lang.reflect.Method;
 import  java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  * This class presents a editable combo box UI for picking up command entry
@@ -531,8 +536,8 @@ public class CommandLine extends JPanel
     {
         /** result of last entry */
         protected String lastCommand;
-        /** reference back to the user of this entry widget */
-        protected ActionListener listener;
+
+        protected MyEventListenerList ell = new MyEventListenerList();
 
         protected int entryType;
         protected CommandLine commandLine;
@@ -752,23 +757,55 @@ public class CommandLine extends JPanel
                 sb.append('\n');
                 GetChar.userInput(new String(sb));
             }
-            listener.actionPerformed(e);
+            ell.fire(ActionListener.class, e);
         }
 
         public void addActionListener(ActionListener l )
-                throws TooManyListenersException
         {
-            if(listener != null) {
-                throw new TooManyListenersException();
-            }
-            listener = l;
+            ell.add(ActionListener.class, l);
         }
 
         public void removeActionListener(ActionListener l)
         {
-            if(listener == l) {
-                listener = null;
+            ell.remove(ActionListener.class, l);
+        }
+
+        private DocumentListener dl;
+        private class DocListener implements DocumentListener
+        {
+            @Override public void insertUpdate(DocumentEvent e) {
+                ell.fire(ChangeListener.class, new ChangeEvent(getTextComponent()));
             }
+            @Override public void removeUpdate(DocumentEvent e) {
+                ell.fire(ChangeListener.class, new ChangeEvent(getTextComponent()));
+            }
+            @Override public void changedUpdate(DocumentEvent e) { }
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener l)
+        {
+            if(ell.getListenerCount(ChangeListener.class) == 0) {
+                dl = new DocListener();
+                getTextComponent().getDocument().addDocumentListener(dl);
+            }
+            ell.add(ChangeListener.class, l);
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener l)
+        {
+            ell.remove(ChangeListener.class, l);
+            if(ell.getListenerCount(ChangeListener.class) == 0) {
+                getTextComponent().getDocument().removeDocumentListener(dl);
+                dl = null;
+            }
+        }
+
+        @Override
+        public String getCurrentEntry()
+        {
+            return getTextComponent().getText();
         }
 
     } // end inner CommandLineEntry

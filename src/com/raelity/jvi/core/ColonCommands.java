@@ -32,7 +32,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.TooManyListenersException;
 import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
@@ -43,7 +42,6 @@ import java.util.Collections;
 import static com.raelity.jvi.core.Constants.*;
 import static com.raelity.jvi.core.ColonCommands.Flags.*;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -80,19 +78,14 @@ public class ColonCommands
     private static ViCmdEntry getColonCommandEntry()
     {
         if ( colonCommandEntry == null ) {
-            try {
-                colonCommandEntry = ViManager.getFactory()
-                        .createCmdEntry(ViCmdEntry.COLON_ENTRY);
-                colonCommandEntry.addActionListener(
-                        new ActionListener() {
-                                public void actionPerformed(ActionEvent ev) {
-                                    colonEntryComplete(ev);
-                                }
-                });
-            } catch ( TooManyListenersException ex ) {
-                LOG.log(Level.SEVERE, null, ex);
-                throw new RuntimeException(ex);
-            }
+            colonCommandEntry = ViManager.getFactory()
+                    .createCmdEntry(ViCmdEntry.COLON_ENTRY);
+            colonCommandEntry.addActionListener(
+                    new ActionListener() {
+                            public void actionPerformed(ActionEvent ev) {
+                                colonEntryComplete(ev);
+                            }
+            });
         }
         return colonCommandEntry;
     }
