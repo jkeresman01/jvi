@@ -1936,6 +1936,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
 //		return false;
 	    Insstart.decLine();
 	    Insstart.setColumn(MAXCOL);
+            GetChar.changeInsstart();
 	}
 	/*
 	 * In replace mode:
@@ -2086,8 +2087,10 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
   	    {
   		/* Remember the first char we inserted */
   		if (G.curwin.w_cursor.getLine() == Insstart.getLine()
-                       && G.curwin.w_cursor.getColumn() < Insstart.getColumn())
+                       && G.curwin.w_cursor.getColumn() < Insstart.getColumn()) {
   		    Insstart.setColumn(G.curwin.w_cursor.getColumn());
+                    GetChar.changeInsstart();
+                }
 
   		if (G.State == VREPLACE)
   		    ins_char(' ');
@@ -2168,8 +2171,10 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
 
     /* If deleted before the insertion point, adjust it */
     if (G.curwin.w_cursor.getLine() == Insstart.getLine()
-		   && G.curwin.w_cursor.getColumn() < Insstart.getColumn())
+		   && G.curwin.w_cursor.getColumn() < Insstart.getColumn()) {
 	Insstart.setColumn(G.curwin.w_cursor.getColumn());
+        GetChar.changeInsstart();
+    }
 
     return did_backspace;
 }
@@ -2316,8 +2321,10 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
 		    change_col = fpos.getColumn();  /* Column of first change */
 		    /* May have to adjust Insstart */
 		    if (fpos.getLine() == Insstart.getLine()
-                            && fpos.getColumn() < Insstart.getColumn())
-			Insstart.setColumn(fpos.getColumn());
+                            && fpos.getColumn() < Insstart.getColumn()) {
+                      Insstart.setColumn(fpos.getColumn());
+                      GetChar.changeInsstart();
+                    }
 		}
 	    }
 	    fpos.incColumn();

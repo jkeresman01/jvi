@@ -90,11 +90,29 @@ public class TextUtil {
     StringBuilder sb = new StringBuilder();
     for(int i = 0; i < s.length(); i++) {
       char c = s.charAt(i);
-      if(c != '\n')
+      char t = 0;
+      String esc = null;
+      switch(c) {
+          case '\t': t = 't'; break;
+          case '\b': t = 'b'; break;
+          case '\n': t = 'n'; break;
+          case '\r': t = 'r'; break;
+          case '\f': t = 'f'; break;
+          // case '\'': esc = "\\\'"; break;
+          // case '\"': esc = "\\\""; break;
+          case '\\': esc = "\\\\"; break;
+          default:
+      }
+      if(c < ' ' && t == 0 && esc == null) {
+          // use '\<upper-case>' to show the character
+          // for example Ctrl-W shows as \W (this is not a regex string!)
+          t =   (char)(c | 0x40);
+      }
+      if(t == 0)
         sb.append(c);
       else {
         sb.append('\\');
-        sb.append('n');
+        sb.append(t);
       }
     }
     return sb.toString();

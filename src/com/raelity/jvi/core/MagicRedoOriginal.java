@@ -111,8 +111,10 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
     // redobuff is the master redobuff, MagicRedo pokes it in various ways
     private final BufferQueue redobuff;
 
-    private MagicRedoOriginal(BufferQueue redobuff)
+    MagicRedoOriginal(BufferQueue redobuff)
     {
+        if(G.dbgRedo.getBoolean())
+            System.err.format("CONSTRUCT redo: MagicRedoOriginal\n");
         this.redobuff = redobuff;
     }
 
@@ -122,8 +124,9 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
     }
 
     @Override
-    public void editComplete() {
+    public String editComplete() {
       disableTrackingOneEdit = false;
+      return null;
     }
 
     @Override

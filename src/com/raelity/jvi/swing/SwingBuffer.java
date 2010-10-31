@@ -247,6 +247,12 @@ abstract public class SwingBuffer extends Buffer {
             m.setMark(fpos);
         return m;
     }
+
+    @Override
+    public ViMark createMark(int offset, BIAS bias)
+    {
+        return new BiasMark(offset, bias);
+    }
     
     static final Position INVALID_MARK_LINE = new Position() {
         public int getOffset() {
@@ -490,5 +496,159 @@ abstract public class SwingBuffer extends Buffer {
     
     public int getUndoLength() {
         return undoLength;
+    }
+
+    // getOffset is the only supported method
+    private class BiasMark implements ViMark
+    {
+        Position p;
+        BIAS bias;
+        boolean atZero;
+
+        public BiasMark(int offset, BIAS bias)
+        {
+            try {
+                if(BIAS.BACK == bias) {
+                    // swing is FORW bias so make a best effort
+                    if(offset == 0)
+                        atZero = true;
+                    else
+                        --offset;
+                }
+                p = getDocument().createPosition(offset);
+            } catch(BadLocationException ex) {
+                Logger.getLogger(SwingBuffer.class.getName()).
+                        log(Level.SEVERE, null, ex);
+                p = getDocument().getStartPosition();
+            }
+            this.bias = bias;
+        }
+
+        @Override
+        public int getOffset()
+        {
+            return bias == BIAS.FORW ? p.getOffset()
+                                     : atZero ? 0 : p.getOffset() + 1;
+        }
+
+        @Override
+        public Buffer getBuffer()
+        {
+            return SwingBuffer.this;
+        }
+
+        //
+        // NOT SUPPORTED
+        //
+
+        @Override
+        public void setMark(ViFPOS fpos)
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void invalidate()
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean isValid()
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public int getLine()
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public int getColumn()
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void set(int line, int column)
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void set(int offset)
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void set(ViFPOS fpos)
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void setColumn(int col)
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void incColumn()
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void decColumn()
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void incLine()
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void decLine()
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void setLine(int line)
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public ViFPOS copy()
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void verify(Buffer buf)
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public int compareTo(ViFPOS o)
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String toString()
+        {
+            ViFPOS p0 = getBuffer().createFPOS(getOffset()); // for toString
+            return p0.toString();
+        }
+
     }
 }

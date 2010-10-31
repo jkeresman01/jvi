@@ -359,3 +359,4 @@ public interface ViTextView extends ViOptionBag {
    */
   public void updateHighlightSearchState();
 }
+// vi:sw=2 et

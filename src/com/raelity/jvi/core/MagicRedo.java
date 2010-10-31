@@ -20,18 +20,42 @@
 
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViMark;
+import com.raelity.jvi.ViBuffer.BIAS;
 import com.raelity.jvi.core.GetChar.BufferQueue;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.text.TextUtil;
 
 import static com.raelity.jvi.core.Constants.*;
 import static com.raelity.jvi.core.KeyDefs.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
 
 /**
+ * See MagicRedoOriginal for introductory comments and discussion of issues.
+ * This approach sets guards around the original insertion point. It returns
+ * the data between the guards from editComplete (assuming certain criteria
+ * are met). This approach has problems with multi-line insertions because
+ * the auto indent get included on the 2nd... lines.
+ *
+ * Note that when editComplete returns null, the normal redobuff should
+ * be used by the caller. One of the issues with this algorithm is when
+ * to return null. If there was no code completion, then returning null is
+ * the best thing to do, keeping the captured keystrokes in the redo buf.
+ *
+ * During the edit, if State.s_abort is entered, then a null will be returned.
+ * A null is also returned if there was no "magic" edits. This is detected
+ * by receiving a docInsert/Remove event without there being a user keystroke.
+ *
+ * This algorithm could probably operate one line at a time to avoid the
+ * indent issue. Some considerations: when moving to a new line provide
+ * info for that line and only move the pre guard;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public class MagicRedo
+class MagicRedo implements GetChar.ViMagicRedo
 {
     //
     // In input mode, want to track some platform changes to the document
@@ -99,6 +123,7 @@ public class MagicRedo
     private int redoTrackPosition = -1;
     private boolean expectChar;
     private boolean disableTrackingOneEdit;
+    private boolean localDisable;
     // afterBuff, characters added after the current insert position
     private BufferQueue afterBuff = new BufferQueue();
 
@@ -111,35 +136,521 @@ public class MagicRedo
     // redobuff is the master redobuff, MagicRedo pokes it in various ways
     private final BufferQueue redobuff;
 
-    private MagicRedo(BufferQueue redobuff)
+
+
+    private enum State {
+        s_off,          // waiting for a start event
+        s_abort,        // waiting for start, no magic available last input
+        s_wait_typed,   // collecting info
+        s_wait_doc,
+    }
+
+    private enum Event {
+        e_begin,
+        e_abort,
+        e_end,
+        e_gotc,
+        e_backspace,
+        e_doc_insert,
+        e_doc_remove,
+    }
+
+    private State state = State.s_off;
+    private Event currentEvent;
+    private boolean didMagic; // more than just user typing happened
+    private DocString preString;
+    private DocString postString;
+    private int trackOffset = -1;
+
+    ViMark initPos;
+    ViMark endPos;
+
+    private MagicRedo INSTANCE;
+
+
+    /**
+     * regular user typing flips between s_wait_typed and s_wait_doc.
+     * @param e
+     * @param params
+     * @param tag
+     */
+    private void stateMachine(Event e, Params params, String tag)
     {
+        currentEvent = e;
+
+        State newState = null;
+
+        // some events operate the same no matter what
+        switch(e) {
+            case e_begin:
+            case e_abort:
+            case e_end:
+                newState = defaultProcessEvent(e, params);
+                break;
+        }
+        if(state == State.s_abort && e != Event.e_begin)
+            newState = State.s_abort; // there's only one way out of abort
+
+        if(newState == null) {
+            switch(state) {
+                    // for off,abort only e_begin matters, handled above
+                case s_off:     break;
+                case s_abort:   break;
+
+                case s_wait_typed:
+                    switch(e) {
+                        case e_gotc:
+                        case e_backspace:
+                            newState = defaultProcessEvent(e, params);
+                            if(newState == null)
+                                newState = State.s_wait_doc;
+                            break;
+                        case e_doc_insert:
+                        case e_doc_remove:
+                            newState = defaultProcessEvent(e, params);
+                            System.err.println("MagicRedo: UNEXPECTED DOC EVENT");
+                            if(newState == null) {
+                                didMagic = true;
+                                newState = State.s_wait_typed;
+                            }
+                            break;
+
+                        default:
+                            break;
+                    }
+                    break;
+
+                case s_wait_doc:
+                    switch(e) {
+                        case e_gotc:
+                        case e_backspace:
+                            newState = defaultProcessEvent(e, params);
+                            // two keys in a row without a doc event,
+                            // how can that happen?
+                            System.err.println("MagicRedo: TWO CHARS IN A ROW");
+                            if(newState == null)
+                                newState = State.s_abort;
+                            break;
+                        case e_doc_insert:
+                        case e_doc_remove:
+                            newState = defaultProcessEvent(e, params);
+                            if(newState == null)
+                                newState = State.s_wait_typed;
+                            break;
+
+                        default:
+                            break;
+                    }
+                    break;
+                default:
+                    throw new AssertionError();
+            }
+        }
+
+        StringBuilder sb = new StringBuilder("MagicRedo stateMachine: " );
+        sb.append(e.name()).append(": ").append(state.name());
+
+        if(newState != null) {
+            if(newState != state)
+                sb.append(" --> ").append(newState.name());
+            state = newState;
+        }
+        if(tag != null)
+            sb.append(" [").append(tag).append("]");
+        System.err.println(sb.toString());
+
+        params = null;
+    }
+
+    private State defaultProcessEvent(Event e, Params params)
+    {
+        State newState = null;
+        switch(e) {
+            case e_begin:
+                newState = processBegin(params);
+                break;
+
+            case e_abort:
+                newState = State.s_abort;
+                break;
+
+            case e_end:
+                newState = State.s_off;
+                break;
+
+            case e_gotc:
+                newState = processCharTyped(params);
+                break;
+
+            case e_backspace:
+                newState = processBackspace(params);
+                break;
+
+            case e_doc_insert:
+                newState = processDocInsert(params);
+                break;
+
+            case e_doc_remove:
+                newState = processDocRemove(params);
+                break;
+
+            default:
+                throw new AssertionError();
+        }
+        return newState;
+    }
+
+    MagicRedo(BufferQueue redobuff)
+    {
+        if(G.dbgRedo.getBoolean())
+            System.err.format("CONSTRUCT redo: MagicRedo (guard)\n");
         this.redobuff = redobuff;
     }
 
-    void disableRedoTrackingOneEdit() {
-      disableTrackingOneEdit = true;
+    @Override
+    public void initRedoTrackingPosition()
+    {
+        stateMachine(Event.e_begin, null, "initRedoTrackingPosition");
+        initRedoTrackingPositionXXX();
     }
 
-    void editComplete() {
-      disableTrackingOneEdit = false;
+    private State processBegin(Params params)
+    {
+        trackOffset = G.curwin.getCaretPosition();
+
+        //initPos = G.curbuf.createMark(G.curwin.w_cursor.getOffset(), BIAS.BACK);
+        ViFPOS fpos = G.curbuf.createFPOS(G.curwin.w_cursor.getOffset());
+        initPos = G.curbuf.createMark(fpos);
+        endPos = G.curbuf.createMark(G.curwin.w_cursor.getOffset(), BIAS.FORW);
+        didMagic = false;
+
+        preString = null;
+        postString = null;
+        try {
+            String s = null;
+
+            // capture chars before the initial pos
+            int off = initPos.getOffset() - 50;
+            if(off <= 0)
+                off = 1;
+            s = G.curbuf.getText(off, initPos.getOffset() - off);
+            // only take the end of the string, back to the first newline
+            int i = s.lastIndexOf('\n') + 1; // +1 to skip the newline
+            if(i > 0 && i < s.length())
+                s = s.substring(i);
+            preString = new DocString(initPos.getOffset() - s.length(), s);
+
+            // capture chars after the initial pos
+            s = G.curbuf.getText(initPos.getOffset(), 10);
+            off = initPos.getOffset() + 11;
+            if(off >= G.curbuf.getLength())
+                off = G.curbuf.getLength();
+            postString = new DocString(off, s, true);
+
+        } catch(BadLocationException ex) {
+            Logger.getLogger(MagicRedo.class.getName()).log(Level.SEVERE, null,
+                                                            ex);
+        }
+
+        if(preString == null || postString == null) {
+            return State.s_abort;
+        } else {
+            return State.s_wait_typed;
+        }
     }
 
-    void initRedoTrackingPosition() {
-      expectChar = false;
-      redoTrackPosition = G.curwin.getCaretPosition();
-      if(G.dbgRedo.getBoolean())
-        System.err.format("initRedoTrackingPosition %d '%s'\n",
+    @Override
+    public String editComplete()
+    {
+        stateMachine(Event.e_end, nullParams, "editComplete");
+        editCompleteXXX();
+
+        dumpState("COMPLETE");
+        dumpFinalState();
+
+        if(haveInsertedChars())
+            return getInsertedChars();
+        else
+            return null;
+    }
+
+    private boolean haveInsertedChars()
+    {
+        if(didMagic && state == State.s_off
+                && preString.match() && postString.match())
+            return true;
+        else
+            return false;
+    }
+
+    private String getInsertedChars()
+    {
+        int p1 = preString.getInnerOffset();
+        int p2 = postString.getInnerOffset();
+        try {
+            return G.curbuf.getText(p1, p2 - p1);
+        } catch(BadLocationException ex) {
+            Logger.getLogger(MagicRedo.class.getName()).log(Level.SEVERE, null,
+                                                            ex);
+        }
+        return null;
+    }
+
+    @Override
+    public void disableRedoTrackingOneEdit()
+    {
+        stateMachine(Event.e_abort, nullParams, "disableRedoTrackingOneEdit");
+        disableRedoTrackingOneEditXXX();
+    }
+
+    @Override
+    public void charTyped(char c)
+    {
+        Params params = new Params(c);
+
+        //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+        trackOffset = G.curwin.getCaretPosition();
+
+        stateMachine(Event.e_gotc, params, "charTyped");
+    }
+    private State processCharTyped(Params params)
+    {
+        userInputCharXXX(params.typed);
+        dumpState("charTyped '" + String.valueOf(params.typed) + "'");
+        return null;
+    }
+
+    @Override
+    public void markRedoBackspace()
+    {
+        //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+        trackOffset = G.curwin.getCaretPosition();
+
+        stateMachine(Event.e_backspace, nullParams, "markRedoBackspace");
+    }
+    private State processBackspace(Params params)
+    {
+        markRedoBackspaceXXX();
+        return null;
+    }
+
+    @Override
+    public void changeInsstart()
+    {
+        stateMachine(Event.e_abort, nullParams, "changeInsstart");
+    }
+
+    @Override
+    public void docInsert(int pos, String s)
+    {
+        Params params = new Params(pos, s);
+        stateMachine(Event.e_doc_insert, params, debugDocInsert(params));
+    }
+    private State processDocInsert(Params params)
+    {
+        docInsertXXX(params.pos, params.text);
+        updateEndPos();
+        dumpState("docInsert...");
+        return null;
+    }
+    private String debugDocInsert(Params params) {
+        return String.format("pos %d, %d, '%s'",
+                params.pos, params.text.length(),
+                TextUtil.debugString(params.text));
+    }
+
+    @Override
+    public void docRemove(int pos, int len, String removedText)
+    {
+        Params params = new Params(pos, len, removedText);
+        stateMachine(Event.e_doc_remove, params, debugDocRemove(params));
+    }
+    private State processDocRemove(Params params)
+    {
+        docRemoveXXX(params.pos, params.len, params.text);
+        dumpState("docRemove...");
+        return null;
+    }
+    private String debugDocRemove(Params params) {
+        return String.format("pos %d, %d, '%s', track %d, initPos %d",
+                          params.pos, params.len,
+                          TextUtil.debugString(params.text),
                           redoTrackPosition,
-                          TextUtil.debugString(redobuff.toString()));
+                          initPos != null ? initPos.getOffset() : -1);
+    }
+
+
+
+    void updateEndPos()
+    {
+        if(redoTrackPosition > endPos.getOffset()) {
+            endPos = G.curbuf.createMark(redoTrackPosition + 1, BIAS.FORW);
+            System.err.println("****************udpateEndPos****************");
+            ViManager.dumpStack();
+        }
+    }
+
+    private static class Params {
+        char typed;
+        int pos;
+        int len;
+        String text;
+
+        public Params() { }
+        public Params(char typed) { this.typed = typed; }
+        public Params(int pos, String text)
+                { this.pos = pos; this.text = text; }
+        public Params(int pos, int len, String text)
+                { this.pos = pos; this.len = len; this.text = text; }
+
+    }
+    Params nullParams = new Params();
+
+    private static class DocString {
+        ViMark pos;
+        String text;
+        boolean anchorEnd;
+
+        DocString(int pos, String text)
+        {
+            this.pos = G.curbuf.createMark(pos, BIAS.BACK);
+            this.text = text;
+        }
+
+        DocString(int pos, String text, boolean anchorEnd)
+        {
+            this(pos, text);
+            this.anchorEnd = anchorEnd;
+        }
+
+        boolean match()
+        {
+            return getCurrent().equals(text);
+        }
+
+        /** return the "other" side to cut off the modified string */
+        int getInnerOffset()
+        {
+            int off = pos.getOffset();
+            if(anchorEnd)
+                off -= text.length() + 1;
+            else
+                off += text.length();
+            return off;
+        }
+
+        /** using Mark, grab a string of that size */
+        String getCurrent()
+        {
+            int off = pos.getOffset();
+            if(anchorEnd)
+                off -= text.length() + 1;
+            String s = "OOPS-DONT'T-MATCH-THIS";
+            try {
+                s = G.curbuf.getText(off, text.length());
+            } catch(BadLocationException ex) {
+                Logger.getLogger(MagicRedo.class.getName()).
+                        log(Level.SEVERE, null, ex);
+            }
+            return s;
+        }
+
+        @Override
+        public String toString()
+        {
+            return "DocString{"
+                    + "text=" + TextUtil.debugString(text)
+                    + ",pos=" + pos.getOffset()
+                    + ",anchorEnd=" + anchorEnd + '}'
+                    + "\n              '"
+                    + TextUtil.debugString(getCurrent()) + "'"
+                    + " match: " + match();
+        }
+
+    }
+
+    private void dumpState(String tag)
+    {
+        try {
+            ViFPOS p0 = initPos;
+            //ViFPOS p1 = G.curwin.w_cursor.copy();
+            ViFPOS p1 = endPos;
+            int len;
+            if(p0 == null || p1 == null)
+                System.err.printf("MagicRedo: %15s [%s,%s]\n", tag, p0, p1);
+            else {
+                len = p1.getOffset() - p0.getOffset();
+                System.err.printf("MagicRedo: %15s [%s,%s] '%s'\n", tag, p0, p1,
+                          len >= 0 ? TextUtil.debugString(G.curbuf.getText(
+                                p0.getOffset(), len)) : "<0");
+            }
+
+            if(false) {
+                p0 = Edit.getInsstart();
+                if(p0 == null || p1 == null)
+                    System.err.printf("      %15s [%s,%s]\n", "", p0, p1);
+                else {
+                    len = p1.getOffset() - p0.getOffset();
+                    System.err.printf("      %15s [%s,%s] '%s'\n", "", p0, p1,
+                              len >= 0 ? TextUtil.debugString(G.curbuf.getText(
+                                    p0.getOffset(), len)) : "<0");
+                }
+            }
+        } catch(BadLocationException ex) {
+            Logger.getLogger(MagicRedo.class.getName()).log(Level.SEVERE, null,
+                                                            ex);
+        }
+    }
+
+    private void dumpFinalState()
+    {
+        System.err.println("MagicRedo: didMagic: " + didMagic
+                + ", State: " + state);
+        System.err.println("MagicRedo: preString:\n" + preString);
+        System.err.println("MagicRedo: postString:\n" + postString);
+        String s = getInsertedChars();
+        if(haveInsertedChars()) {
+            System.err.println("MagicRedo: inserted: '" + s + "'");
+        } else {
+            System.err.println("MagicRedo: inserted: NO MATCH: '" + s + "'");
+        }
+    }
+
+
+
+
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+    public void disableRedoTrackingOneEditXXX() {
+        disableTrackingOneEdit = true;
+    }
+
+    public void editCompleteXXX() {
+        disableTrackingOneEdit = false;
+    }
+
+    public void initRedoTrackingPositionXXX() {
+        redoTrackPosition = G.curwin.getCaretPosition();
+        expectChar = false;
+        if(G.dbgRedo.getBoolean())
+            System.err.format("initRedoTrackingPosition %d '%s'\n",
+                              redoTrackPosition,
+                              TextUtil.debugString(redobuff.toString()));
     }
 
     private boolean notTracking() {
        return redoTrackPosition < 0
                || !G.redoTrack.getBoolean()
-               || disableTrackingOneEdit;
+               || disableTrackingOneEdit
+               //|| localDisable
+       ;
     }
 
-    void markRedoBackspace() {
+    public void markRedoBackspaceXXX() {
       if(redoTrackPosition >= 0) {
         int prevRedoTrackPosition = redoTrackPosition;
         redoTrackPosition = G.curwin.getCaretPosition();
@@ -149,13 +660,14 @@ public class MagicRedo
                             redoTrackPosition,
                             TextUtil.debugString(redobuff.toString()));
       }
+      dumpState("Backspace...");
     }
 
     //////////////////////////////////////////////////////////////////////////
     //
-    // markRedoTrackPosition
+    // userInputChar
 
-    void markRedoTrackPosition(char c) {
+    public void userInputCharXXX(char c) {
       if(!G.redoTrack.getBoolean())
         return;
       removeDocAfterString = null;
@@ -236,8 +748,8 @@ public class MagicRedo
     //
     // docInsert
 
-    void docInsert(int pos, String s) {
-      if(G.dbgRedo.getBoolean()) debugDocInsert(pos, s);
+    public void docInsertXXX(int pos, String s) {
+      if(G.dbgRedo.getBoolean()) debugDocInsertXXX(pos, s);
       if(doingBackspace() || notTracking())
         return;
       if(removeDocBeforeInsstart != null && s != null
@@ -343,7 +855,7 @@ public class MagicRedo
       }
       return false;
     }
-    private void debugDocInsert(int pos, String s) {
+    private void debugDocInsertXXX(int pos, String s) {
       System.err.format("docInsert: pos %d, %d, '%s'\n",
                         pos, s.length(), TextUtil.debugString(s));
     }
@@ -400,9 +912,9 @@ public class MagicRedo
     //
     // docRemove
 
-    void docRemove(int pos, int len, String removedText) {
+    public void docRemoveXXX(int pos, int len, String removedText) {
       removeDocAfterString = null;
-      debugDocRemove(pos, len, removedText);
+      debugDocRemoveXXX(pos, len, removedText);
       if(doingBackspace() || notTracking())
         return;
 
@@ -516,7 +1028,7 @@ public class MagicRedo
       }
       return false;
     }
-    private void debugDocRemove(int pos, int len, String removedText) {
+    private void debugDocRemoveXXX(int pos, int len, String removedText) {
       if(G.dbgRedo.getBoolean()) {
         int insstart = Edit.getInsstart() != null
                 ? Edit.getInsstart().getOffset() : -1;

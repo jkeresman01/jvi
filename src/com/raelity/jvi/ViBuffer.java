@@ -37,6 +37,8 @@ import javax.swing.text.BadLocationException;
  * @author erra
  */
 public interface ViBuffer {
+
+    public enum BIAS { BACK, FORW }
     
     /** @return opaque FileObject backing this Buffer */
     public Object getDocument();
@@ -138,9 +140,11 @@ public interface ViBuffer {
     
     /**
      * @param fpos if non-null, initialize mark to this value
-     * @return a null Mark attached to this Buffer
+     * @return a Mark attached to this Buffer
      */
-    public abstract ViMark createMark(ViFPOS fpos);
+    public ViMark createMark(ViFPOS fpos);
+    /** following marks only support getOffset() */
+    public ViMark createMark(int offset, BIAS bias);
 
     public ViFPOS createFPOS(int offset);
 
