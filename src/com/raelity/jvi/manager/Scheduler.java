@@ -404,17 +404,21 @@ public class Scheduler
     private static MouseListener mouseListener = new MouseListener() {
         public void mouseClicked(MouseEvent e)
         {
-            mouseClick(e);
+            if(fact().isEnabled())
+                mouseClick(e);
         }
 
         public void mousePressed(MouseEvent e)
         {
-            mousePress(e);
+            if(fact().isEnabled())
+                mousePress(e);
+            
         }
 
         public void mouseReleased(MouseEvent e)
         {
-            mouseRelease(e);
+            if(fact().isEnabled())
+                mouseRelease(e);
         }
 
         public void mouseEntered(MouseEvent e)
@@ -429,7 +433,8 @@ public class Scheduler
             new MouseMotionListener() {
         public void mouseDragged(MouseEvent e)
         {
-            mouseDrag(e);
+            if(fact().isEnabled())
+                mouseDrag(e);
         }
 
         public void mouseMoved(MouseEvent e)
