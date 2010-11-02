@@ -156,6 +156,11 @@ public class Misc01 extends CoreMethodHooks
      */
     static void gotoLogicalLine(int logicalLine, int flag)
     {
+      if ( G.dbgCoordSkip.getBoolean() ) {
+         System.err.println(String.format(
+                 "gotoLogicalLine: logicalLine %d, flag flag",
+                 logicalLine, flag));
+      }
       if(logicalLine < 1)
         logicalLine = 1;
       if(logicalLine > G.curwin.getLogicalLineCount())

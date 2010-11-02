@@ -29,7 +29,7 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 
 /**
- * Handle a view that has fixed with/height font.
+ * Handle a view that has fixed width/height font.
  *
  * Font changes in the document are handled.
  *
@@ -72,7 +72,7 @@ public class SwingLineMapFontFixedCoord implements LineMap {
               System.err.println(String.format(
                       "\tviewLine(fixed): %d, line1: %d:%g, line %d:%g",
                       viewLine, 1, getPoint0().getY(), docLine, lineRect.getY()));
-           }
+          }
         } catch (BadLocationException ex) {
             //Logger.getLogger(SwingTextView.class.getName()).log(Level.SEVERE, null, ex);
         }

@@ -24,32 +24,28 @@ import com.raelity.jvi.core.G;
 
 /**
  * Switch between NoFolding and FontFixed ViewMaps.
+ * 
+ * NOTE: NO SWING CODE
  *
  * A listener that sets the current vm is more efficient.
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public class SwingLineMapSwitcher implements LineMap
+public class LineMapFoldingSwitcher implements LineMap
 {
     LineMap vmNoFolding;
-    LineMap vmFontFixed;
+    LineMap vmFolding;
 
-    public SwingLineMapSwitcher(SwingTextView tv)
-    {
-        vmNoFolding = new LineMapNoFoldingNoWrap(tv);
-        vmFontFixed = new SwingLineMapFontFixedCoord(tv);
-    }
-
-    public SwingLineMapSwitcher(LineMap vmNoFolding,
+    public LineMapFoldingSwitcher(LineMap vmNoFolding,
                                 LineMap vmFolding)
     {
         this.vmNoFolding = vmNoFolding;
-        this.vmFontFixed = vmFolding;
+        this.vmFolding = vmFolding;
     }
 
     private LineMap getMap()
     {
-        return G.isCoordSkip.getBoolean() ? vmFontFixed : vmNoFolding;
+        return G.isCoordSkip.getBoolean() ? vmFolding : vmNoFolding;
     }
 
     @Override

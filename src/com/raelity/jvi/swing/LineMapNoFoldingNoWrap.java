@@ -22,8 +22,8 @@ package com.raelity.jvi.swing;
 
 /**
  * No code folding, pretty much a 1-1 mapping of line numbers.
- *
- * NEEDSWORK: move if/when LineMap gets out of jvi.swing.
+ * 
+ * NOTE: NO SWING CODE
  *
  * @author Ernie Rael <err at raelity.com>
  */

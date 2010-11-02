@@ -25,13 +25,15 @@ package com.raelity.jvi.swing;
  * numbers and visa-versa. Logical lines refer to the lines that get displayed;
  * for example with code folding a group of lines and/or columns may only
  * be displayed as a single line.
+ * 
+ * NOTE: NO SWING CODE
  *
  * Note that line wrap is a further complication. When there is line wrapping
  * a single logical line may occupy multiple screen lines.
  * 
  * {@link SwingTextView} delegates to one of these.
- * {@link SwingViewMapSwitcher} can be used to switch between two
- * implementations based on a user option.
+ * {@link LineMapFoldSwitcher} can be used to switch between two
+ * implementations based on a folding-compatible option.
  *
  * The translation is essentially 1-1 when fixed width/height
  * fonts, no code folding and no line wrap.
