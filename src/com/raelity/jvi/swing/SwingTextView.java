@@ -94,7 +94,8 @@ public class SwingTextView extends TextView
 
     protected int w_num;
 
-    protected LineMap vm;
+    private LineMap lm;
+    private ViewMap vm;
 
     protected JTextComponent editorPane;
     protected TextOps ops;
@@ -140,10 +141,22 @@ public class SwingTextView extends TextView
         };
     }
 
-    public void setLineMap(LineMap vm)
+    public void setMaps(LineMap lm, ViewMap vm)
     {
+        assert this.lm == null;
+        this.lm = lm;
         assert this.vm == null;
         this.vm = vm;
+    }
+
+    public LineMap getLineMap()
+    {
+        return this.lm;
+    }
+
+    public ViewMap getViewMap()
+    {
+        return this.vm;
     }
 
     private static class DumpLineMap extends ColonCommands.ColonAction
@@ -153,7 +166,7 @@ public class SwingTextView extends TextView
         {
             ColonEvent cev = (ColonEvent) ev;
             SwingTextView tv = (SwingTextView)cev.getViTextView();
-            System.err.println(tv.vm.toString());
+            System.err.println(tv.lm.toString());
         }
 
     }
@@ -602,9 +615,9 @@ public class SwingTextView extends TextView
 
     public int getVpTopLogicalLine()
     {
-        int logicalLine = vm.logicalLine(getVpTopLine());
+        int logicalLine = lm.logicalLine(getVpTopDocumentLine());
         if ( G.dbgCoordSkip.getBoolean() ) {
-            System.err.println("getVpViewTopLine: " + logicalLine);
+            System.err.println("getVpTopLogicalLine: " + logicalLine);
         }
         return logicalLine;
     }
@@ -615,7 +628,7 @@ public class SwingTextView extends TextView
         Point2D p;
         int docLine = 1;
         int offset = 0;
-        docLine = vm.docLine(logicalLine);
+        docLine = lm.docLine(logicalLine);
         offset = getBuffer().getLineStartOffset(docLine);
 
         try {
@@ -625,29 +638,18 @@ public class SwingTextView extends TextView
             p = new Point(0,0);
         }
 
-        // NEEDSWORK: may want previous line??
-        double height = getLineHeight(docLine, offset);
-
-        // If point is after viewport top && within one char of top
-        // then just return, to avoid wiggle
-        double topDiff = p.getY() - getViewport().getViewPosition().getY();
-        if ( topDiff > 0 && topDiff < height ) {
-            return;
-        }
-        Point p01 = makePointTruncY(p);
-        p01.x = 0;
-        getViewport().setViewPosition(p01);
+        setVpTopPoint(p);
     }
 
 
     public int getVpBottomLogicalLine()
     {
-        int logicalLine = getVpTopLogicalLine() + getVpLines();
+        int logicalLine = lm.logicalLine(getVpBottomDocumentLine());
         int ll01 = getLogicalLineCount();
         if(logicalLine > ll01)
             logicalLine = ll01 + 1; // past last line
         if(G.dbgCoordSkip.getBoolean()) {
-            System.err.println("getViewCoordBottomLine: " + logicalLine);
+            System.err.println("getViewBottomLogicalLine: " + logicalLine);
         }
         return logicalLine; // NEEDSWORK: line past full line, see getViewBottomLine
     }
@@ -655,7 +657,7 @@ public class SwingTextView extends TextView
 
     public int getLogicalLineCount()
     {
-        int logicalLine = vm.logicalLine(getBuffer().getLineCount());
+        int logicalLine = lm.logicalLine(getBuffer().getLineCount());
         if ( G.dbgCoordSkip.getBoolean() ) {
             System.err.println("getLogicalLineCount: " + logicalLine);
         }
@@ -670,11 +672,23 @@ public class SwingTextView extends TextView
                                 +" past "+getBuffer().getLineCount());
             docLine = getBuffer().getLineCount();
         }
-        int logicalLine = vm.logicalLine(docLine);
+        int logicalLine = lm.logicalLine(docLine);
         if ( G.dbgCoordSkip.getBoolean() ) {
             System.err.println("getLogicalLine: " + logicalLine);
         }
         return logicalLine;
+    }
+
+    @Override
+    public int getLogicalLineFromViewLine(int viewLine)
+    {
+        return vm.logicalLine(viewLine);
+    }
+
+    @Override
+    public int getViewLineFromLogicalLine(int logicalLine)
+    {
+        return vm.viewLine(logicalLine);
     }
 
     public boolean cursorScreenRowEdge(EDGE edge, ViFPOS fpos)
@@ -774,13 +788,13 @@ public class SwingTextView extends TextView
     @Override
     public int getDocLine(int logicalLine)
     {
-        return vm.docLine(logicalLine);
+        return lm.docLine(logicalLine);
     }
 
     @Override
     public int getDocLineOffset( int logicalLine )
     {
-        int docLine = vm.docLine(logicalLine);
+        int docLine = lm.docLine(logicalLine);
         if(docLine > getBuffer().getLineCount()) {
             return getBuffer().getLength() + 1; // just past EOF
         }
@@ -792,14 +806,14 @@ public class SwingTextView extends TextView
     public void setCursorLogicalLine( int logicalLine, int col )
     {
         //assert col == 0;
-        setCaretPosition(vm.docLineOffset(logicalLine) + col);
+        setCaretPosition(lm.docLineOffset(logicalLine) + col);
     }
 
 
     @Override
     public int getFirstHiddenColumn( int lineOffset, int colIdx )
     {
-        if(!vm.isFolding())
+        if(!lm.isFolding())
             return colIdx;
         JTextComponent c = getEditorComponent();
         int col = 0;
@@ -981,8 +995,9 @@ public class SwingTextView extends TextView
         ViManager.changeBuffer(this, e.getOldValue());
     }
 
-    final static int DIR_TOP = -1;
-    final static int DIR_BOT = 1;
+    private static int FIND_AT_TOP = -1;
+    private static int FIND_AT_BOT = 1;
+    enum FindLineInView { TOP, BOT };
 
     private static BooleanOption cacheTrace
             = (BooleanOption) Options.getOption(Options.dbgCache);
@@ -1024,31 +1039,135 @@ public class SwingTextView extends TextView
         return r;
     }
 
+    // private int fontHeight;
+    // private Rectangle rect0;
+
+    public int countViewLines(Rectangle2D r1, Rectangle2D r2)
+    {
+          double yDiff = r1.getCenterY() - r2.getCenterY();
+          int nLine = (int)round(yDiff / getFontHeight()) + 1;
+          return nLine;
+    }
+
+    public double getFontHeight()
+    {
+        return getRect0().getHeight();
+    }
+
+    public Rectangle2D getRect0()
+    {
+        try {
+          Rectangle2D r = modelToView(0);
+            if ( r != null ) {
+                return r;
+            }
+        } catch (BadLocationException ex) { }
+        return new Rectangle2D.Double(0,0,8,15); // arbitrary
+    }
+    //private Rectangle getRect0()
+    //{
+    //    if ( rect0 != null ) {
+    //        return rect0;
+    //    }
+    //    try {
+    //      Rectangle r = tv.modelToView(0);
+    //        if ( r != null ) {
+    //            rect0 = r;
+    //            return rect0;
+    //        }
+    //    } catch (BadLocationException ex) { }
+    //    return new Rectangle(0,0,8,15);
+    //}
+
+    public Point2D getPoint0()
+    {
+        return getLocation(getRect0());
+    }
+
+    public void translateY(Rectangle2D lrect, double adjY)
+    {
+        lrect.setRect(lrect.getX(), lrect.getY() + adjY,
+                      lrect.getWidth(), lrect.getHeight());
+    }
+
     // The visible part of the document, negative means not valid.
     // These values are updated whenever the viewport changes.
     private JViewport viewport;
     private Point viewportPosition;
     private Dimension viewportExtent;
-    private int vpTopLine;
-    private int vpBottomLine;
-    private int vpLines;
+    private int vpTopDocumentLine;
+    private int vpBottomDocumentLine;
+    private int vpTopViewLine;
+    private int vpBottomViewLine;
+    private int vpLines; //VIEW LINE
 
-    /** @return the top line number */
-    public int getVpTopLine()
+    @Override
+    public int getVpTopViewLine()
     {
         if(viewport == null)
             return 1;
-        return vpTopLine;
+        return vpTopViewLine;
     }
 
-    public void setVpTopLine(int line)
+    @Override
+    public void setVpTopViewLine(int viewLine)
+    {
+        Rectangle2D lrect = getRect0();
+        translateY(lrect, (viewLine - 1) * getFontHeight());
+        Point2D p = getLocation(lrect);
+        setVpTopPoint(p);
+    }
+
+    private void setVpTopPoint(Point2D p)
+    {
+        // NEEDSWORK: may want previous line??
+        double height = getFontHeight();
+
+        // If point is after viewport top && within one char of top
+        // then just return, to avoid wiggle
+        double topDiff = p.getY() - getViewport().getViewPosition().getY();
+        if ( topDiff > 0 && topDiff < height ) {
+            return;
+        }
+        Point p01 = makePointTruncY(p);
+        p01.x = 0;
+        getViewport().setViewPosition(p01);
+    }
+
+    @Override
+    public int getVpBottomViewLine()
+    {
+        if(viewport == null)
+            return 1;
+        return vpBottomViewLine + 1; // past the last line
+    }
+
+    /** @return the top line number */
+    @Override
+    public int getVpTopDocumentLine()
+    {
+        if(viewport == null)
+            return 1;
+        return vpTopDocumentLine;
+    }
+
+    /** @return the top line number */
+    private int getVpBottomDocumentLine()
+    {
+        if(viewport == null)
+            return 1;
+        return vpBottomDocumentLine;
+    }
+
+    @Override
+    public void setVpTopLine(int docLine)
     {
         if(viewport == null)
             return;
-        if (line == getVpTopLine()) {
+        if (docLine == getVpTopDocumentLine()) {
             return; // nothing to change
         }
-        int offset = getBuffer().getLineStartOffset(line);
+        int offset = getBuffer().getLineStartOffset(docLine);
         Rectangle2D r;
         try {
             r = modelToView(offset);
@@ -1061,17 +1180,26 @@ public class SwingTextView extends TextView
         viewport.setViewPosition(p);
     }
 
+    @Override
+    public int getCountViewLines(int logicalLine)
+    {
+        // this is vim's plines function
+        return vm.countViewLines(logicalLine);
+    }
+
+    @Override
     public int getVpBlankLines()
     {
         if(viewport == null)
             return 0;
 
         int n;
-        n = vpLines - (vm.logicalLine(vpBottomLine) - vm.logicalLine(vpTopLine) + 1);
+        n = vpLines - (vpBottomViewLine - vpTopViewLine + 1);
         return n;
     }
 
     /** @return number of lines on viewport */
+    @Override
     public int getVpLines() // NEEDSWORK: variable font height
     {
         if(viewport == null)
@@ -1079,22 +1207,14 @@ public class SwingTextView extends TextView
         return vpLines;
     }
 
+    /** standard swing requires all lines */
+    @Override
     public int getRequiredVpLines()
     {
         return getVpLines();
     }
 
     protected void fillLinePositions()
-    {
-        /*
-        SwingUtilities.invokeLater(
-        new Runnable() { public void run() { fillLinePositionsFinally(); }});
-         */
-        fillLinePositionsFinally();
-    }
-
-    /** determine document indicators visible in the viewport */
-    protected void fillLinePositionsFinally()
     {
         Point newViewportPosition;
         Dimension newViewportExtent;
@@ -1113,19 +1233,22 @@ public class SwingTextView extends TextView
         int newVpTopLine;
         if (newViewportPosition == null
                 || newViewportExtent == null
-                || (newVpTopLine = findFullLine(
-                                        newViewportPosition, DIR_TOP)) <= 0) {
-            vpTopLine = -1;
-            vpBottomLine = -1;
+                || (newVpTopLine = findFullDocumentLine(
+                                        newViewportPosition, FIND_AT_TOP)) <= 0) {
+            vpTopDocumentLine = -1;
+            vpBottomDocumentLine = -1;
             newVpLines = -1;
         } else {
-            if (vpTopLine != newVpTopLine) {
+            if (vpTopDocumentLine != newVpTopLine) {
                 topLineChange = true;
             }
-            vpTopLine = newVpTopLine;
+            vpTopDocumentLine = newVpTopLine;
+            vpTopViewLine = findFullViewLine(
+                                    newViewportPosition, FindLineInView.TOP);
             Point pt = new Point(newViewportPosition); // top-left
             pt.translate(0, newViewportExtent.height - 1); // bottom-left
-            vpBottomLine = findFullLine(pt, DIR_BOT);
+            vpBottomDocumentLine = findFullDocumentLine(pt, FIND_AT_BOT);
+            vpBottomViewLine = findFullViewLine(pt, FindLineInView.BOT);
             //
             // Calculate number of lines on screen, some may be blank
             //
@@ -1259,49 +1382,83 @@ public class SwingTextView extends TextView
     }
 
     /**
-     * Determine the line number of the text that is fully displayed
+     * Determine the view line number of the text that is fully displayed
      * (top or bottom not chopped off).
      * @return line number of text at point, -1 if can not be determined
      */
-    private int findFullLine(Point pt, int dir)
+    private int findFullViewLine(Point pt, FindLineInView pos)
     {
+        int viewLine = -1;
         try {
-            return findFullLineThrow(pt, dir);
+            Rectangle vrect = viewport.getViewRect();
+
+            int offset = viewToModel(pt);
+            if (offset < 0) {
+                return -1;
+            }
+
+            int line = getBuffer().getLineNumber(offset);
+            Rectangle2D lrect = modelToView(offset);
+            viewLine = countViewLines(lrect, getRect0());
+            if (vrect.contains(lrect)) {
+                return viewLine;
+            }
+            double adjY = getFontHeight(); // assume move down from top
+            if(pos == FindLineInView.BOT) {
+                adjY = -adjY; // move up from the bottom
+            }
+            translateY(lrect, adjY);
+            return countViewLines(lrect, getRect0());
+        } catch (BadLocationException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            System.err.println("findFullLine: ");
+        }
+        // if here, then got some error.
+        // if pos is BOT, then get the view line for the last line of the file
+
+        return viewLine;
+    }
+    /**
+     * Determine the document line number of the text that is fully displayed
+     * (top or bottom not chopped off).
+     * @return line number of text at point, -1 if can not be determined
+     */
+    private int findFullDocumentLine(Point pt, int dir)
+    {
+        // NEEDSWORK: currently docLine
+        //            needs to be viewLine and/or maybe viewLineOffset
+        try {
+            // return findFullLineThrow(pt, dir);
+            Rectangle vrect = viewport.getViewRect();
+
+            int offset = viewToModel(pt);
+            if (offset < 0) {
+                return -1;
+            }
+
+            int line = getBuffer().getLineNumber(offset);
+            Rectangle2D lrect = modelToView(offset);
+            if (vrect.contains(lrect)) {
+                return line;
+            }
+            int oline = line;
+            line -= dir; // move line away from top/bottom
+            if (line < 1 || line > getBuffer().getLineCount()) {
+                //System.err.println("findFullLine: line out of bounds " + line);
+                return oline;
+            }
+
+            offset = getBuffer().getLineStartOffset(line);
+            lrect = modelToView(offset);
+            if (!vrect.contains(lrect)) {
+                //System.err.println("findFullLine: adjusted line still out " + line);
+            }
+            return line;
         } catch (BadLocationException ex) {
             LOG.log(Level.SEVERE, null, ex);
             System.err.println("findFullLine: ");
             return -1;
         }
-    }
-
-    private int findFullLineThrow(Point pt, int dir)
-            throws BadLocationException
-    {
-        Rectangle vrect = viewport.getViewRect();
-
-        int offset = viewToModel(pt);
-        if (offset < 0) {
-            return -1;
-        }
-
-        int line = getBuffer().getLineNumber(offset);
-        Rectangle2D lrect = modelToView(offset);
-        if (vrect.contains(lrect)) {
-            return line;
-        }
-        int oline = line;
-        line -= dir; // move line away from top/bottom
-        if (line < 1 || line > getBuffer().getLineCount()) {
-            //System.err.println("findFullLine: line out of bounds " + line);
-            return oline;
-        }
-
-        offset = getBuffer().getLineStartOffset(line);
-        lrect = modelToView(offset);
-        if (!vrect.contains(lrect)) {
-            //System.err.println("findFullLine: adjusted line still out " + line);
-        }
-        return line;
     }
 
     //
@@ -1317,6 +1474,7 @@ public class SwingTextView extends TextView
 
     private void changeFont(Font f)
     {
+        System.err.println("changeFont:");
         fillLinePositions();
     }
 
@@ -1341,11 +1499,7 @@ public class SwingTextView extends TextView
      */
     private void changeVp(boolean init)
     {
-        if (init) {
-            fillLinePositionsFinally();
-        } else {
-            fillLinePositions();
-        }
+        fillLinePositions();
     }
 
     /** This is called from the managing textview,
@@ -1375,7 +1529,7 @@ public class SwingTextView extends TextView
     }
     boolean hasListeners = false;
 
-    /** Dissassociate from the observed components. */
+    /** Disassociate from the observed components. */
     private void detachMore()
     {
         if (G.dbgEditorActivation.getBoolean()) {

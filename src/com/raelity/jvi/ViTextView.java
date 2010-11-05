@@ -188,13 +188,28 @@ public interface ViTextView extends ViOptionBag {
   //
 
   /** @return the document line number of first visible line in viewport */
-  public int getVpTopLine();
+  public int getVpTopDocumentLine();
 
   /** @return the number of unused lines on the display */
   public int getVpBlankLines(); // NEEDSWORK: what about variable font
 
   /** @return the number of lines in window/viewport */
   public int getVpLines(); // NEEDSWORK: what about variable font
+
+  /** cause the indicated document line to be displayed as top line in viewport. */
+  public void setVpTopLine(int docLine);
+
+  /** @return the line number of first visible line in window */
+  public int getVpTopViewLine();
+
+  /** cause the indicated line to be displayed as top line in viewport. */
+  public void setVpTopViewLine(int viewLine);
+
+  /** @return the line number of line *after* end of window */
+  public int getVpBottomViewLine();
+
+  /** @return the number of screen lines used by the logical line */
+  public int getCountViewLines(int logicalLine);
 
   /**
    * When this returns the same value as getVpLines() then no non-existent
@@ -204,19 +219,6 @@ public interface ViTextView extends ViOptionBag {
    * @return the number of lines that must be displayed in the window.
    */
   public int getRequiredVpLines();
-
-
-
-  // public void setVpTopScreenLine(int screenLine);
-  // public int getVpTopScreenLine();
-  // public int getVpBottomScreenLine();
-  // public void setCursorScreenLine(int screenLine, int col);
-
-
-
-  /** cause the indicated document line to be displayed as top line in viewport. */
-  public void setVpTopLine(int docLine);
-
 
 
   /** @return the line number of first visible line in window */
@@ -244,6 +246,10 @@ public interface ViTextView extends ViOptionBag {
    * @return corresponding line number in the view
    */
   public int getLogicalLine(int docLine);
+
+  public int getLogicalLineFromViewLine(int viewLine);
+
+  public int getViewLineFromLogicalLine(int logicalLine);
 
   /**
    * Do a cursor up/down, according to dir, based on screen

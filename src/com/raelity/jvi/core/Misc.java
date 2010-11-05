@@ -630,8 +630,24 @@ public class Misc extends CoreMethodHooks implements ClipboardOwner {
   /** advance the fpos, note it may be the cursor */
   public static boolean coladvance(ViFPOS fpos, int wcol) {
     MySegment txt = G.curbuf.getLineSegment(fpos.getLine());
+    int startColumn = 0;
+    assert fpos.getColumn() == 0;
+    if(false) {
+      // WRAP issue. (OR IS IT...)
+      // NOTE that if fpos.col is ever not zero
+      //      then the txt segment starts *before* the col
+      //      and coladvance starts at a screwy place.
+      startColumn = fpos.getColumn();
+      if(startColumn != 0) {
+        // This is needed because of line wrap,
+        // it may actually be needed in general.
+        // coladvanceColumnIndex start from "txt.offset"
+        txt.offset += startColumn;
+        txt.count -= startColumn;
+      }
+    }
     int idx = coladvanceColumnIndex(wcol, txt, null);
-    fpos.setColumn(idx);
+    fpos.setColumn(startColumn + idx);
     return idx == wcol;
   }
 

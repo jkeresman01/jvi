@@ -180,6 +180,7 @@ public class Misc01 extends CoreMethodHooks
       int scrollMargin = vpLines - so; // max distance from center to do scroll
 
       int newTop = curTop;
+      int newViewTop = -1; // by default don't use this
       if(logicalLine < center - scrollMargin - 1
               || logicalLine > center + scrollMargin) {
         newTop = logicalLine - (vpLines / 2);
@@ -192,10 +193,15 @@ public class Misc01 extends CoreMethodHooks
         if(logicalLine < curTop+so) {
           newTop = logicalLine-so;
         } else if(logicalLine > G.curwin.getVpBottomLogicalLine()-so-1) {
-          newTop = logicalLine-vpLines+1+so;
+          //newTop = logicalLine-vpLines+1+so;
+          newViewTop = G.curwin.getViewLineFromLogicalLine(logicalLine)
+                        - vpLines + 1 + so;
         }
       }
-      G.curwin.setVpTopLogicalLine(adjustTopLogicalLine(newTop));
+      if(newViewTop >= 0)
+          G.curwin.setVpTopViewLine(newViewTop);
+      else
+          G.curwin.setVpTopLogicalLine(adjustTopLogicalLine(newTop));
       G.curwin.setCursorLogicalLine(logicalLine, 0);
       //MySegment seg = G.curbuf.getLineSegment(coordLine);
       //int col;
@@ -493,7 +499,7 @@ public class Misc01 extends CoreMethodHooks
     static int plines_check(int p) {
         if (p < 1 || p > G.curbuf.getLineCount())
             return MAXCOL;
-        return 1;
+        return G.curwin.getCountViewLines(p);
         // return plines_win(curwin, p); // IN plines_check, assume nowrap
     }
 
@@ -501,7 +507,7 @@ public class Misc01 extends CoreMethodHooks
      * plines(p) - return the number of physical screen lines taken by line 'p'.
      */
     static int plines(int p) {
-        return 1;
+        return G.curwin.getCountViewLines(p);
         // return plines_win(curwin, p); // IN plines_check, assume nowrap
     }
 

@@ -21,39 +21,18 @@
 package com.raelity.jvi.swing;
 
 /**
- * No code folding, pretty much a 1-1 mapping of line numbers.
- * 
- * NOTE: NO SWING CODE
+ * This translates logicalLines, see {@link LineMap}, to view lines.
+ * A view lines is something that is visible on the screen. If there is
+ * no line wrap, then view line to logical line is a 1 - 1 mapping.
+ * It is a compliment to LineMap
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public class LineMapNoFoldingNoWrap implements LineMap
+public interface ViewMap
 {
-    SwingTextView tv;
+    public int viewLine(int logicalLine);
 
-    public LineMapNoFoldingNoWrap(SwingTextView tv)
-    {
-        this.tv = tv;
-    }
+    public int countViewLines(int logicalLine);
 
-    public boolean isFolding()
-    {
-        return false;
-    }
-
-    public int logicalLine(int docLine) throws RuntimeException
-    {
-        return docLine;
-    }
-
-    public int docLine(int viewLine)
-    {
-        return viewLine;
-    }
-
-    public int docLineOffset(int viewLine)
-    {
-        return tv.getBuffer().getLineStartOffset(viewLine);
-    }
-
+    public int logicalLine(int viewLine);
 }

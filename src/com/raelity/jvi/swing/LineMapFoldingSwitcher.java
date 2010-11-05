@@ -27,25 +27,25 @@ import com.raelity.jvi.core.G;
  * 
  * NOTE: NO SWING CODE
  *
- * A listener that sets the current vm is more efficient.
+ * A listener that sets the current lm is more efficient.
  *
  * @author Ernie Rael <err at raelity.com>
  */
 public class LineMapFoldingSwitcher implements LineMap
 {
-    LineMap vmNoFolding;
-    LineMap vmFolding;
+    LineMap lmNoFolding;
+    LineMap lmFolding;
 
-    public LineMapFoldingSwitcher(LineMap vmNoFolding,
-                                LineMap vmFolding)
+    public LineMapFoldingSwitcher(LineMap lmNoFolding,
+                                LineMap lmFolding)
     {
-        this.vmNoFolding = vmNoFolding;
-        this.vmFolding = vmFolding;
+        this.lmNoFolding = lmNoFolding;
+        this.lmFolding = lmFolding;
     }
 
     private LineMap getMap()
     {
-        return G.isCoordSkip.getBoolean() ? vmFolding : vmNoFolding;
+        return G.isCoordSkip.getBoolean() ? lmFolding : lmNoFolding;
     }
 
     @Override

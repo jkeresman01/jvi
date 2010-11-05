@@ -29,7 +29,8 @@ package com.raelity.jvi.swing;
  * NOTE: NO SWING CODE
  *
  * Note that line wrap is a further complication. When there is line wrapping
- * a single logical line may occupy multiple screen lines.
+ * a single logical line may occupy multiple screen lines. The mappings for
+ * this situation are covered by methods viewLine and logicalLineFromViewLine.
  * 
  * {@link SwingTextView} delegates to one of these.
  * {@link LineMapFoldSwitcher} can be used to switch between two
@@ -51,7 +52,13 @@ public interface LineMap
     public boolean isFolding();
 
     /**
-     * Map a document line number to a view line number.
+     * Taking folding into account,
+     * map a document line number to a logical line number;
+     * A logical line is a line that gets displayed.
+     * For example, if there is a 12 line document which has 
+     * 1 regular line followed by 10 lines folded into a single line
+     * followed by a regular line. This doc has 3 logical lines.
+     * documentLines 2 - 11 map to logical line 2.
      * 
      * @param docLine line number of something in the document
      * @return line number taking folding into account
@@ -62,4 +69,5 @@ public interface LineMap
     public int docLine(int logicalLine);
 
     public int docLineOffset(int logicalLine);
+
 }

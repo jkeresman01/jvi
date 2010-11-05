@@ -213,7 +213,7 @@ public class Search extends CoreMethodHooks {
       if(isListener == null)
         isListener = new SearchListener();
       searchPos = G.curwin.w_cursor.copy();
-      searchTopLine = G.curwin.getVpTopLine();
+      searchTopLine = G.curwin.getVpTopDocumentLine();
       setPCMarkAfterIncrSearch = (searchFlags & SEARCH_MARK) != 0;
       searchFlags &= ~SEARCH_MARK;
       didIncrSearch = false;

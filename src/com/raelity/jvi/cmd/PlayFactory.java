@@ -25,10 +25,10 @@ import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.swing.SwingTextView;
-import com.raelity.jvi.swing.LineMapFoldingSwitcher;
 import com.raelity.jvi.swing.LineMap;
-import com.raelity.jvi.swing.LineMapNoFoldingNoWrap;
-import com.raelity.jvi.swing.SwingLineMapFontFixedCoord;
+import com.raelity.jvi.swing.LineMapNoFolding;
+import com.raelity.jvi.swing.SwingViewMapWrapFontFixed;
+import com.raelity.jvi.swing.ViewMap;
 import com.raelity.jvi.swing.simple.SimpleFactory;
 import java.util.Map;
 import javax.swing.text.JTextComponent;
@@ -47,26 +47,29 @@ final public class PlayFactory extends SimpleFactory
         mapJepSd = m;
     }
 
+    @Override
     protected ViTextView newTextView( JTextComponent editor )
     {
         SwingTextView tv = new PlayTextView(editor, mapJepSd.get(editor));
-        LineMap vm = new LineMapFoldingSwitcher(
-                new LineMapNoFoldingNoWrap(tv),
-                new SwingLineMapFontFixedCoord(tv));
-        tv.setLineMap(vm);
+        LineMap lm = new LineMapNoFolding(tv);
+        ViewMap vm = new SwingViewMapWrapFontFixed(tv);
+        tv.setMaps(lm, vm);
         return tv;
     }
 
+    @Override
     protected Buffer createBuffer( ViTextView tv )
     {
         return new PlayBuffer(tv);
     }
 
+    @Override
     public ViFS getFS()
     {
         return fs;
     }
 
+    @Override
     public ViOutputStream createOutputStream(
             ViTextView tv,
             Object type,

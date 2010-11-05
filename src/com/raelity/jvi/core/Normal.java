@@ -2704,12 +2704,11 @@ middle_code:
     MarkOps.setpcmark();
     int newcursorline = -1;
 
+    int halfway = (G.curwin.getVpLines() - G.curwin.getVpBlankLines() + 1) / 2;
     if(cap.cmdchar == 'M') {
       int topline = G.curwin.getVpTopLogicalLine();
       int line_count = G.curwin.getLogicalLineCount();
       Misc.validate_botline();	    // make sure w_empty_rows is valid
-      int halfway = (G.curwin.getVpLines()
-                      - G.curwin.getVpBlankLines() + 1) / 2;
       for (n = 0; topline + n < line_count; ++n)
 	if ((used += Misc.plines(topline + n)) >= halfway)
 	  break;
@@ -2726,18 +2725,21 @@ middle_code:
       if(cap.count1 -1 > so) {
 	adjust = cap.count1 -1;
       }
+      if(adjust > halfway)
+        adjust = halfway;
       if (cap.cmdchar == 'L') {
-	newcursorline = G.curwin.getVpBottomLogicalLine() - 1 - adjust;
-	if(newcursorline < G.curwin.getVpTopLogicalLine() + so) {
-	  newcursorline = G.curwin.getVpTopLogicalLine() + so;
+	newcursorline = G.curwin.getVpBottomViewLine() - 1 - adjust;
+	if(newcursorline < G.curwin.getVpTopViewLine() + so) {
+	  newcursorline = G.curwin.getVpTopViewLine() + so;
 	}
       } else {
 	// 'H'
-	newcursorline = G.curwin.getVpTopLogicalLine() + adjust;
-	if(newcursorline > G.curwin.getVpBottomLogicalLine() - 1 - so) {
-	  newcursorline = G.curwin.getVpBottomLogicalLine() - 1 - so;
+	newcursorline = G.curwin.getVpTopViewLine() + adjust;
+	if(newcursorline > G.curwin.getVpBottomViewLine() - 1 - so) {
+	  newcursorline = G.curwin.getVpBottomViewLine() - 1 - so;
 	}
       }
+      newcursorline = G.curwin.getLogicalLineFromViewLine(newcursorline);
     }
 
     if(newcursorline > 0) {
