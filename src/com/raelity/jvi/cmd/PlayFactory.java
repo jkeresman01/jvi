@@ -29,6 +29,7 @@ import com.raelity.jvi.swing.LineMap;
 import com.raelity.jvi.swing.LineMapNoFolding;
 import com.raelity.jvi.swing.SwingViewMapWrapFontFixed;
 import com.raelity.jvi.swing.ViewMap;
+import com.raelity.jvi.swing.ViewMapSwitcher;
 import com.raelity.jvi.swing.simple.SimpleFactory;
 import java.util.Map;
 import javax.swing.text.JTextComponent;
@@ -52,7 +53,8 @@ final public class PlayFactory extends SimpleFactory
     {
         SwingTextView tv = new PlayTextView(editor, mapJepSd.get(editor));
         LineMap lm = new LineMapNoFolding(tv);
-        ViewMap vm = new SwingViewMapWrapFontFixed(tv);
+        //ViewMap vm = new SwingViewMapWrapFontFixed(tv);
+        ViewMap vm = new ViewMapSwitcher(tv);
         tv.setMaps(lm, vm);
         return tv;
     }
