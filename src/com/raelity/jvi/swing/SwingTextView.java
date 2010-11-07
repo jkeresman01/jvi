@@ -1064,20 +1064,21 @@ public class SwingTextView extends TextView
         } catch (BadLocationException ex) { }
         return new Rectangle2D.Double(0,0,8,15); // arbitrary
     }
-    //private Rectangle getRect0()
-    //{
-    //    if ( rect0 != null ) {
-    //        return rect0;
-    //    }
-    //    try {
-    //      Rectangle r = tv.modelToView(0);
-    //        if ( r != null ) {
-    //            rect0 = r;
-    //            return rect0;
-    //        }
-    //    } catch (BadLocationException ex) { }
-    //    return new Rectangle(0,0,8,15);
-    //}
+    // private Rectangle2D rect0;
+    // public Rectangle2D getRect0()
+    // {
+    //     if ( rect0 != null ) {
+    //         return (Rectangle2D)rect0.clone();
+    //     }
+    //     try {
+    //       Rectangle2D r = modelToView(0);
+    //         if ( r != null ) {
+    //             rect0 = r;
+    //             return (Rectangle2D)rect0.clone();
+    //         }
+    //     } catch (BadLocationException ex) { }
+    //     return new Rectangle(0,0,8,15);
+    // }
 
     public Point2D getPoint0()
     {
@@ -1474,7 +1475,8 @@ public class SwingTextView extends TextView
 
     private void changeFont(Font f)
     {
-        System.err.println("changeFont:");
+        //rect0 = null;
+
         fillLinePositions();
     }
 
