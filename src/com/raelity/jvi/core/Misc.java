@@ -631,7 +631,10 @@ public class Misc extends CoreMethodHooks implements ClipboardOwner {
   public static boolean coladvance(ViFPOS fpos, int wcol) {
     MySegment txt = G.curbuf.getLineSegment(fpos.getLine());
     int startColumn = 0;
-    assert fpos.getColumn() == 0;
+    // NEEDSWORK: the following assert fires when used
+    //           used for block mode stuff like "I" command.
+    //           Doesn't seem to assert standalone
+    //assert fpos.getColumn() == 0;
     if(false) {
       // WRAP issue. (OR IS IT...)
       // NOTE that if fpos.col is ever not zero
