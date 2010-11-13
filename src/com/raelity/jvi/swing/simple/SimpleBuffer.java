@@ -25,15 +25,21 @@ import com.raelity.jvi.core.Util;
 import com.raelity.jvi.swing.SwingBuffer;
 import com.raelity.jvi.swing.UndoGroupManager;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.Document;
+import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 
 /**
+ * Add undo group handling to basic swing buffer.
  *
  * @author Ernie Rael <err at raelity.com>
  */
 abstract public class SimpleBuffer extends SwingBuffer
 {
-    private UndoGroupManager undoMan;
+    private UndoManager undoMan;
 
     public SimpleBuffer(ViTextView tv)
     {
@@ -41,17 +47,21 @@ abstract public class SimpleBuffer extends SwingBuffer
 
         undoMan = new UndoGroupManager() {
             @Override
-            public synchronized boolean addEdit(UndoableEdit anEdit) {
+            public void undoableEditHappened(UndoableEditEvent ue)
+            {
+                UndoableEdit edit = ue.getEdit();
                 // FOR USE WITH StyledDocument, see SimpleTextView
                 // only accepts insert/remove
                 // quietly throw away CHANGE events
-                if(anEdit instanceof DocumentEvent
-                    &&((DocumentEvent)anEdit).getType()
+                if(edit instanceof DocumentEvent
+                    &&((DocumentEvent)edit).getType()
                             == DocumentEvent.EventType.CHANGE)
-                        return isInProgress();
-                return super.addEdit(anEdit);
+                    return;
+
+                super.undoableEditHappened(ue);
             }
         };
+
         getDocument().addUndoableEditListener(undoMan);
     }
 
@@ -90,10 +100,21 @@ abstract public class SimpleBuffer extends SwingBuffer
     }
 
     public void do_beginInsertUndo() {
-        undoMan.beginUndoGroup();
+        sendUndoableEdit(UndoGroupManager.BEGIN_COMIT_GROUP);
     }
 
     public void do_endInsertUndo() {
-        undoMan.endUndoGroup();
+        sendUndoableEdit(UndoGroupManager.END_COMIT_GROUP);
+    }
+
+    void sendUndoableEdit(UndoableEdit ue) {
+        Document d = getDocument();
+        if(d instanceof AbstractDocument) {
+            UndoableEditListener[] uels = ((AbstractDocument)d).getUndoableEditListeners();
+            UndoableEditEvent ev = new UndoableEditEvent(d, ue);
+            for(UndoableEditListener uel : uels) {
+                uel.undoableEditHappened(ev);
+            }
+        }
     }
 }
