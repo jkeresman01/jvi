@@ -77,4 +77,9 @@ public class DebugOption extends EnumStringOption
         return logger.isLoggable(level);
     }
 
+    public Logger getLogger()
+    {
+        return logger;
+    }
+
 }
