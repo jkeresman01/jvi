@@ -27,6 +27,7 @@ import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.StringOption;
 import com.raelity.jvi.options.IntegerOption;
 import com.raelity.jvi.options.BooleanOption;
+import com.raelity.jvi.options.DebugOption;
 
 /**
  *  A class of globals. Most taken directly from vim code.
@@ -156,20 +157,20 @@ public class G
     public static BooleanOption readOnlyHack;
     public static BooleanOption isClassicUndo;
     public static BooleanOption isHideVersion;
-    public static BooleanOption dbgEditorActivation;
+    public static DebugOption dbgEditorActivation;
     public static BooleanOption isCoordSkip;
-    public static BooleanOption dbgCoordSkip;
+    public static DebugOption dbgCoordSkip;
     public static BooleanOption usePlatformInsertTab;
 
-    public static BooleanOption dbgKeyStrokes;
+    public static DebugOption dbgKeyStrokes;
     public static IntegerOption dbgFlow;  // 1-switch
                                           // 3-op/exec
                                           // 5-not supported
                                           // 7-not implemented
                                           // 9-xop
     static BooleanOption redoTrack; // track redo for magic/code-completion
-    static BooleanOption dbgRedo;
-    static BooleanOption dbgMouse;
+    static DebugOption dbgRedo;
+    static DebugOption dbgMouse;
     static BooleanOption pcmarkTrack; // track NB caret motions for pcmark
 
     public static boolean dbgOptions = false; // NEEDSWORK:

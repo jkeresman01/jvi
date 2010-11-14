@@ -440,14 +440,6 @@ public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsContro
 	return getboolean(Options.platformPreferences);
     }
 
-    public void setViDbgCoordSkip(boolean arg)  throws PropertyVetoException {
-        put(Options.dbgCoordSkip, arg);
-    }
-
-    public boolean getViDbgCoordSkip() {
-	return getboolean(Options.dbgCoordSkip);
-    }
-
     public void setViAutoPopupFN(boolean arg)  throws PropertyVetoException {
         put(Options.autoPopupFN, arg);
     }
@@ -890,68 +882,76 @@ public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsContro
 	return getboolean(Options.hideVersionOption);
     }
 
-    public void setViDbgMouse(boolean arg) {
-        put("viDbgMouse", arg);
+    public void setViDbgCoordSkip(String arg)  throws PropertyVetoException {
+        put(Options.dbgCoordSkip, arg);
     }
 
-    public boolean getViDbgMouse() {
-	return getboolean("viDbgMouse");
+    public String getViDbgCoordSkip() {
+	return getString(Options.dbgCoordSkip);
     }
 
-    public void setViDbgKeyStrokes(boolean arg) {
-        put("viDbgKeyStrokes", arg);
+    public void setViDbgMouse(String arg) throws PropertyVetoException {
+        put(Options.dbgMouse, arg);
     }
 
-    public boolean getViDbgKeyStrokes() {
-	return getboolean("viDbgKeyStrokes");
+    public String getViDbgMouse() {
+	return getString(Options.dbgMouse);
     }
 
-    public void setViDbgCache(boolean arg) {
-        put("viDbgCache", arg);
+    public void setViDbgKeyStrokes(String arg) throws PropertyVetoException {
+        put(Options.dbgKeyStrokes, arg);
     }
 
-    public boolean getViDbgCache() {
-	return getboolean("viDbgCache");
+    public String getViDbgKeyStrokes() {
+	return getString(Options.dbgKeyStrokes);
     }
 
-    public void setViDbgBang(boolean arg) {
-        put("viDbgBang", arg);
+    public void setViDbgCache(String arg) throws PropertyVetoException {
+        put(Options.dbgCache, arg);
     }
 
-    public boolean getViDbgBang() {
-	return getboolean("viDbgBang");
+    public String getViDbgCache() {
+	return getString(Options.dbgCache);
     }
 
-    public void setViDbgBangData(boolean arg) {
-        put("viDbgBangData", arg);
+    public void setViDbgBang(String arg) throws PropertyVetoException {
+        put(Options.dbgBang, arg);
     }
 
-    public boolean getViDbgBangData() {
-	return getboolean("viDbgBangData");
+    public String getViDbgBang() {
+	return getString(Options.dbgBang);
     }
 
-    public void setViDbgEditorActivation(boolean arg) {
-        put("viDbgEditorActivation", arg);
+    public void setViDbgBangData(String arg) throws PropertyVetoException {
+        put(Options.dbgBangData, arg);
     }
 
-    public boolean getViDbgEditorActivation() {
-	return getboolean("viDbgEditorActivation");
+    public String getViDbgBangData() {
+	return getString(Options.dbgBangData);
     }
 
-    public void setViDbgCompletion(boolean arg)  throws PropertyVetoException {
+    public void setViDbgEditorActivation(String arg) throws PropertyVetoException {
+        put(Options.dbgEditorActivation, arg);
+    }
+
+    public String getViDbgEditorActivation() {
+	return getString(Options.dbgEditorActivation);
+    }
+
+    public void setViDbgCompletion(String arg)  throws PropertyVetoException {
         put(Options.dbgCompletion, arg);
     }
 
-    public boolean getViDbgCompletion() {
-	return getboolean(Options.dbgCompletion);
+    public String getViDbgCompletion() {
+	return getString(Options.dbgCompletion);
     }
 
-    public void setViDbgRedo(boolean arg)  throws PropertyVetoException {
+    public void setViDbgRedo(String arg)  throws PropertyVetoException {
         put(Options.dbgRedo, arg);
     }
 
-    public boolean getViDbgRedo() {
-	return getboolean(Options.dbgRedo);
+    public String getViDbgRedo() {
+	return getString(Options.dbgRedo);
     }
 
     /*

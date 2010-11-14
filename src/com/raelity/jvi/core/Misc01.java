@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.core;
 
+import java.util.logging.Level;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViAppView;
@@ -156,9 +157,9 @@ public class Misc01 extends CoreMethodHooks
      */
     static void gotoLogicalLine(int logicalLine, int flag)
     {
-      if ( G.dbgCoordSkip.getBoolean() ) {
+      if ( G.dbgCoordSkip.getBoolean(Level.FINE) ) {
          System.err.println(String.format(
-                 "gotoLogicalLine: logicalLine %d, flag flag",
+                 "gotoLogicalLine: logicalLine %d, flag 0x%x",
                  logicalLine, flag));
       }
       if(logicalLine < 1)

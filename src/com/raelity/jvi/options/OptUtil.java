@@ -125,6 +125,14 @@ public class OptUtil {
     return opt;
   }
 
+  static public DebugOption createDebugOption(String name) {
+    if(optionsMap.get(name) != null)
+        throw new IllegalArgumentException("Option " + name + "already exists");
+    DebugOption opt = new DebugOption(name);
+    optionsMap.put(name, opt);
+    return opt;
+  }
+
   static public BooleanOption createBooleanOption(String name,
                                                   boolean defaultValue) {
     if(optionsMap.get(name) != null)

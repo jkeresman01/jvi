@@ -32,7 +32,6 @@ import com.raelity.jvi.core.Misc;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.Edit;
 import com.raelity.jvi.core.G;
-import com.raelity.jvi.options.BooleanOption;
 import  static com.raelity.jvi.core.Constants.*;
 
 
@@ -40,6 +39,7 @@ import com.raelity.jvi.*;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.manager.Scheduler;
+import com.raelity.jvi.options.Option;
 import com.raelity.text.TextUtil.MySegment;
 
 import java.awt.Dimension;
@@ -616,7 +616,7 @@ public class SwingTextView extends TextView
     public int getVpTopLogicalLine()
     {
         int logicalLine = lm.logicalLine(getVpTopDocumentLine());
-        if ( G.dbgCoordSkip.getBoolean() ) {
+        if ( G.dbgCoordSkip.getBoolean(Level.FINEST) ) {
             System.err.println("getVpTopLogicalLine: " + logicalLine);
         }
         return logicalLine;
@@ -648,7 +648,7 @@ public class SwingTextView extends TextView
         int ll01 = getLogicalLineCount();
         if(logicalLine > ll01)
             logicalLine = ll01 + 1; // past last line
-        if(G.dbgCoordSkip.getBoolean()) {
+        if(G.dbgCoordSkip.getBoolean(Level.FINEST)) {
             System.err.println("getViewBottomLogicalLine: " + logicalLine);
         }
         return logicalLine; // NEEDSWORK: line past full line, see getViewBottomLine
@@ -658,7 +658,7 @@ public class SwingTextView extends TextView
     public int getLogicalLineCount()
     {
         int logicalLine = lm.logicalLine(getBuffer().getLineCount());
-        if ( G.dbgCoordSkip.getBoolean() ) {
+        if ( G.dbgCoordSkip.getBoolean(Level.FINEST) ) {
             System.err.println("getLogicalLineCount: " + logicalLine);
         }
         return logicalLine;
@@ -673,7 +673,7 @@ public class SwingTextView extends TextView
             docLine = getBuffer().getLineCount();
         }
         int logicalLine = lm.logicalLine(docLine);
-        if ( G.dbgCoordSkip.getBoolean() ) {
+        if ( G.dbgCoordSkip.getBoolean(Level.FINE) ) {
             System.err.println("getLogicalLine: " + logicalLine);
         }
         return logicalLine;
@@ -999,8 +999,8 @@ public class SwingTextView extends TextView
     private static int FIND_AT_BOT = 1;
     enum FindLineInView { TOP, BOT };
 
-    private static BooleanOption cacheTrace
-            = (BooleanOption) Options.getOption(Options.dbgCache);
+    private static Option cacheTrace
+            = Options.getOption(Options.dbgCache);
 
     protected JViewport getViewport()
     {

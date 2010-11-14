@@ -10,13 +10,13 @@
 package com.raelity.jvi.swing;
 
 import com.raelity.jvi.ViFPOS;
-import com.raelity.jvi.options.BooleanOption;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.Util;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.options.Option;
 import com.raelity.text.TextUtil.MySegment;
 
 import java.util.logging.Level;
@@ -267,8 +267,8 @@ abstract public class SwingBuffer extends Buffer {
     
     final static private boolean cacheDisabled = false;
     
-    public static BooleanOption cacheTrace
-            = (BooleanOption)Options.getOption(Options.dbgCache);
+    public static Option cacheTrace
+            = Options.getOption(Options.dbgCache);
     
     /** @return the element index from root which contains the offset */
     protected int getElemIndex(int offset) {

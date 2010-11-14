@@ -22,6 +22,7 @@ package com.raelity.jvi.swing;
 
 import com.raelity.jvi.core.G;
 import java.awt.geom.Rectangle2D;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 
@@ -50,7 +51,7 @@ public class SwingViewMapWrapFontFixed implements ViewMap
           int offset = tv.getBuffer().getLineStartOffset(docLine);
           Rectangle2D lineRect = tv.modelToView(offset);
           viewLine = tv.countViewLines(lineRect, tv.getRect0());
-          if ( G.dbgCoordSkip.getBoolean() ) { // should be FINE log level
+          if ( G.dbgCoordSkip.getBoolean(Level.FINER) ) {
               System.err.println(String.format(
                       "\tviewLine(fixed): %d, line1: %d:%g, line %d:%g",
                       viewLine, 1, tv.getPoint0().getY(), docLine, lineRect.getY()));

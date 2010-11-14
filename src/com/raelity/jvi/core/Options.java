@@ -26,7 +26,6 @@ import com.raelity.jvi.options.StringOption;
 import com.raelity.jvi.options.IntegerOption;
 import com.raelity.jvi.options.Option;
 import com.raelity.jvi.ViOutputStream;
-import com.raelity.jvi.options.BooleanOption;
 import com.raelity.jvi.options.OptUtil;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
@@ -42,6 +41,7 @@ import com.raelity.text.TextUtil.MySegment;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static com.raelity.jvi.core.Constants.*;
+import com.raelity.jvi.options.DebugOption;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.openide.util.lookup.ServiceProvider;
@@ -716,39 +716,39 @@ public final class Options {
             + " using the Normal Mode vi commands.");
     setExpertHidden(readOnlyHack, true, true);
 
-    G.dbgEditorActivation = OptUtil.createBooleanOption(dbgEditorActivation, false);
+    G.dbgEditorActivation = OptUtil.createDebugOption(dbgEditorActivation);
     OptUtil.setupOptionDesc(Category.DEBUG, dbgEditorActivation, "debug activation",
                "Output info about editor switching between files/windows");
 
-    OptUtil.createBooleanOption(dbgKeyStrokes, false);
+    OptUtil.createDebugOption(dbgKeyStrokes);
     OptUtil.setupOptionDesc(Category.DEBUG, dbgKeyStrokes, "debug KeyStrokes",
                "Output info for each keystroke");
 
-    G.dbgRedo = OptUtil.createBooleanOption(dbgRedo, false);
+    G.dbgRedo = OptUtil.createDebugOption(dbgRedo);
     OptUtil.setupOptionDesc(Category.DEBUG, dbgRedo, "debug redo buffer",
                "Output info on magic/tracking changes to redo buffer");
 
-    OptUtil.createBooleanOption(dbgCache, false);
+    OptUtil.createDebugOption(dbgCache);
     OptUtil.setupOptionDesc(Category.DEBUG, dbgCache, "debug cache",
                "Output info on text/doc cache");
 
-    OptUtil.createBooleanOption(dbgBang, false);
+    OptUtil.createDebugOption(dbgBang);
     OptUtil.setupOptionDesc(Category.DEBUG, dbgBang, "debug \"!\" cmds",
                "Output info about external processes");
 
-    OptUtil.createBooleanOption(dbgBangData, false);
+    OptUtil.createDebugOption(dbgBangData);
     OptUtil.setupOptionDesc(Category.DEBUG, dbgBangData, "debug \"!\" cmds data",
                "Output data tranfers external processes");
 
-    OptUtil.createBooleanOption(dbgCompletion, false);
+    OptUtil.createDebugOption(dbgCompletion);
     OptUtil.setupOptionDesc(Category.DEBUG, dbgCompletion, "debug Completion",
                "Output info on completion, eg FileName.");
 
-    G.dbgMouse = OptUtil.createBooleanOption(dbgMouse, false);
+    G.dbgMouse = OptUtil.createDebugOption(dbgMouse);
     OptUtil.setupOptionDesc(Category.DEBUG, dbgMouse, "debug mouse events",
                "Output info about mouse events");
 
-    G.dbgCoordSkip = OptUtil.createBooleanOption(dbgCoordSkip, false);
+    G.dbgCoordSkip = OptUtil.createDebugOption(dbgCoordSkip);
     OptUtil.setupOptionDesc(Category.DEBUG, dbgCoordSkip, "debug coordinate skip",
                "");
   }
@@ -945,11 +945,11 @@ public final class Options {
   // This optin is used a lot, make it fast
   //
 
-  private static BooleanOption keyDebugOption;
+  private static DebugOption keyDebugOption;
   public static boolean isKeyDebug() {
     // NEEDSWORK: clean isKeyDebug up
     if(keyDebugOption == null) {
-       keyDebugOption = (BooleanOption)Options.getOption(Options.dbgKeyStrokes);
+       keyDebugOption = (DebugOption)Options.getOption(Options.dbgKeyStrokes);
     }
     if(keyDebugOption == null) {
       return false;

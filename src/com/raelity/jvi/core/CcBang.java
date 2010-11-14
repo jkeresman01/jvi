@@ -26,7 +26,7 @@ import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.ColonCommands.ColonAction;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.options.BooleanOption;
+import com.raelity.jvi.options.Option;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -76,7 +76,7 @@ private static final Logger LOG = Logger.getLogger(CcBang.class.getName());
 public static class BangAction extends ColonAction
 {
     FilterThreadCoordinator coord = null;
-    BooleanOption dbg = (BooleanOption)Options.getOption(Options.dbgBang);
+    Option dbg = Options.getOption(Options.dbgBang);
 
     public void actionPerformed(ActionEvent ev)
     {
@@ -1226,10 +1226,10 @@ private static abstract class FilterThread extends Thread
     protected boolean error;
     protected boolean interrupted;
 
-    protected BooleanOption dbg
-            = (BooleanOption)Options.getOption(Options.dbgBang);
-    protected BooleanOption dbgData
-            = (BooleanOption)Options.getOption(Options.dbgBangData);
+    protected Option dbg
+            = Options.getOption(Options.dbgBang);
+    protected Option dbgData
+            = Options.getOption(Options.dbgBangData);
 
     public FilterThread(String filterType, FilterThreadCoordinator coord)
     {
