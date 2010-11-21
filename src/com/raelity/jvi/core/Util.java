@@ -19,12 +19,13 @@
  */
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.lib.MutableInt;
+import com.raelity.jvi.ViFPOS;
+import com.raelity.text.TextUtil.MySegment;
+
 import java.awt.Toolkit;
 import java.text.CharacterIterator;
 
-import com.raelity.text.TextUtil.MySegment;
 
 public class Util {
   // static final int TERMCAP2KEY(int a, int b) { return a + (b << 8); }

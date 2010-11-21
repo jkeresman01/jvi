@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.ViMark;
@@ -32,17 +33,17 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.logging.Logger;
 import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import com.raelity.jvi.manager.Scheduler;
-import java.util.Collections;
 
-import static com.raelity.jvi.core.Constants.*;
 import static com.raelity.jvi.core.ColonCommands.Flags.*;
-
-import java.util.logging.Logger;
+import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.Misc.*;
+import static com.raelity.jvi.core.Misc01.*;
 
 /**
  * This class handles registration, command input, parsing, dispatching
@@ -196,7 +197,7 @@ static ColonEvent parseCommand( String commandLine )
         cev.line1 = cev.line2;
             // default is current line number
         cev.line2 = G.curwin.w_cursor.getLine();
-            sidx = Misc.skipwhite(commandLine, sidx);
+            sidx = skipwhite(commandLine, sidx);
         sidx = get_address(commandLine, sidx, skip, lnum);
         if (sidx < 0)            // error detected
             return null; // NEEDSWORK: goto doend;
@@ -294,7 +295,7 @@ static ColonEvent parseCommand( String commandLine )
 
     // Find the command
 
-    sidx = Misc.skipwhite(commandLine, sidx);
+    sidx = skipwhite(commandLine, sidx);
     if(sidx >= commandLine.length()) {
         // no command, but if a number was entered then goto that line
         if(cev.getAddrCount() > 0) {
@@ -302,7 +303,7 @@ static ColonEvent parseCommand( String commandLine )
             if(l == 0) {
                 l = 1;
             }
-            Misc.gotoLine(l, BL_SOL | BL_FIX);
+            gotoLine(l, BL_SOL | BL_FIX);
             return null;
         }
     }
@@ -327,7 +328,7 @@ static ColonEvent parseCommand( String commandLine )
         else ++sidx02;
         ++sidx;
     }
-    sidx = Misc.skipwhite(commandLine, sidx);
+    sidx = skipwhite(commandLine, sidx);
 
     String command = commandLine.substring(sidx01, sidx02);
     cev.inputCommand = command;
@@ -409,7 +410,7 @@ static int get_address(
 {
     // note that the return sidx is set to minus one if there is an error
 
-    sidx = Misc.skipwhite(s, sidx);
+    sidx = skipwhite(s, sidx);
     lnum.setValue(MAXLNUM);
     do {
         char c = s.charAt(sidx);
@@ -449,14 +450,14 @@ static int get_address(
             *******************************/
             default:
                 if(Util.isdigit(c)) {
-                    sidx = Misc.getdigits(s, sidx, lnum);
+                    sidx = getdigits(s, sidx, lnum);
                 }
         }
 
         int i = 0;
         int n = 0;
         for (;;) {
-            sidx = Misc.skipwhite(s, sidx);
+            sidx = skipwhite(s, sidx);
             if(sidx >= s.length()) {
                 break;
             }
@@ -483,7 +484,7 @@ static int get_address(
                 n = 1;
             } else {
                 MutableInt mi = new MutableInt(0);
-                sidx = Misc.getdigits(s, sidx, mi);
+                sidx = getdigits(s, sidx, mi);
                 n = mi.getValue();
             }
 
@@ -717,7 +718,7 @@ static public class ColonEvent extends ActionEvent
             String r = cev.getArg(nextArg);
             // Note a more restrictive validity test may occur later
             if(r.length() == 1
-                    && Misc.valid_yank_reg(r.charAt(0), false)
+                    && valid_yank_reg(r.charAt(0), false)
                     && !Util.isdigit(r.charAt(0))) {
                 oa.regname = r.charAt(0);
                 nextArg++;

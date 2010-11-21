@@ -29,7 +29,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.TooManyListenersException;
 import javax.swing.event.ChangeEvent;
 
 import com.raelity.text.*;
@@ -39,17 +38,19 @@ import java.awt.EventQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import static com.raelity.jvi.core.KeyDefs.K_X_SEARCH_FINISH;
-import static com.raelity.jvi.core.KeyDefs.K_X_INCR_SEARCH_DONE;
-import static com.raelity.jvi.core.KeyDefs.K_X_SEARCH_CANCEL;
 
 import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.KeyDefs.*;
+import static com.raelity.jvi.core.MarkOps.*;
+import static com.raelity.jvi.core.Misc.*;
+import static com.raelity.jvi.core.Misc01.*;
+import static com.raelity.jvi.core.Util.*;
 
 /**
  * Searching, regexp and substitution.
  * Everything's static, can only do one thing at a time.
  */
-public class Search extends CoreMethodHooks {
+public class Search {
   private static final Logger LOG = Logger.getLogger(Search.class.getName());
 
   ///////////////////////////////////////////////////////////////////////
@@ -149,7 +150,7 @@ public class Search extends CoreMethodHooks {
   }
 
   // This is used to grab the pattern after search complete, for redoBuffer.
-  static String getLastPattern() {
+  static String last_search_pat() {
     return lastPattern;
   }
   

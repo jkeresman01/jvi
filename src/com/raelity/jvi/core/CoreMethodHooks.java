@@ -166,7 +166,11 @@ static void setpcmark(ViFPOS pos) {MarkOps.setpcmark(pos);}
 static int stuff_inserted(char c, int count, boolean no_esc)
     throws NotSupportedException { return Edit.stuff_inserted(c, count, no_esc); }
 static String get_last_insert_save() {return Edit.get_last_insert_save();}
-static String last_search_pat() {return Search.getLastPattern();}
+static String last_search_pat() {return Search.last_search_pat();}
+
+    private CoreMethodHooks()
+    {
+    }
 
 
 }

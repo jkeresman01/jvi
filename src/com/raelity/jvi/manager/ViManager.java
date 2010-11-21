@@ -19,35 +19,36 @@
  */
 package com.raelity.jvi.manager;
 
-import com.raelity.jvi.ViFS;
-import com.raelity.jvi.ViFactory;
-import com.raelity.jvi.ViFeature;
-import com.raelity.jvi.ViInitialization;
-import com.raelity.jvi.ViOutputStream;
-import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Hook;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.event.ActionListener;
-import java.util.Set;
-import javax.swing.text.Keymap;
-
-import java.awt.datatransfer.SystemFlavorMap;
+import com.raelity.jvi.ViFactory;
+import com.raelity.jvi.ViFeature;
+import com.raelity.jvi.ViFS;
+import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.ViTextView;
 
 import java.awt.Component;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.SystemFlavorMap;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Map;
 import java.util.prefs.Preferences;
+import java.util.Set;
+
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Keymap;
+
 import org.openide.util.lookup.Lookups;
 
 /**

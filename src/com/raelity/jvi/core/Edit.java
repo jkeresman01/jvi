@@ -19,22 +19,28 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.lib.MutableBoolean;
+import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViBuffer;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.lib.MutableBoolean;
-import com.raelity.jvi.lib.MutableInt;
-import java.util.Stack;
-
 import com.raelity.text.TextUtil.MySegment;
 
-import javax.swing.SwingUtilities;
-import static com.raelity.jvi.core.KeyDefs.*;
-import static com.raelity.jvi.core.Constants.*;
+import java.awt.EventQueue;
+import java.util.Stack;
 
-public class Edit extends CoreMethodHooks {
+import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.GetChar.*;
+import static com.raelity.jvi.core.KeyDefs.*;
+import static com.raelity.jvi.core.Misc.*;
+import static com.raelity.jvi.core.Misc01.*;
+import static com.raelity.jvi.core.Normal.*;
+import static com.raelity.jvi.core.Options.*;
+import static com.raelity.jvi.core.Util.*;
+
+public class Edit {
   
   public static final String VI_MODE_COMMAND = "";
   public static final String VI_MODE_INSERT = "INSERT";
@@ -116,7 +122,7 @@ public class Edit extends CoreMethodHooks {
   public static boolean canEdit(final ViTextView tv, ViBuffer buf, int offset) {
     if(buf.isGuarded(offset) || !tv.isEditable()) {
       Util.vim_beep();
-      SwingUtilities.invokeLater(new Runnable() {
+      EventQueue.invokeLater(new Runnable() {
         public void run() {
           tv.getStatusDisplay().displayErrorMessage(
                   "Can not modify write protected area or file."
@@ -1032,7 +1038,7 @@ one_char: {
                       || unicode != 0
                       )
               {
-                  if (!vim_isxdigit(nc))
+                  if (!isxdigit(nc))
                       break one_char;
                   cc = cc * 16 + hex2nr(nc);
               }
@@ -1044,7 +1050,7 @@ one_char: {
               }
               else
               {
-                  if (!vim_isdigit(nc))
+                  if (!isdigit(nc))
                       break one_char;
                   cc = cc * 10 + nc - '0';
               }

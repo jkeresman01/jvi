@@ -20,7 +20,6 @@
 
 package com.raelity.jvi.core;
 
-import java.util.logging.Level;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViAppView;
@@ -28,18 +27,20 @@ import com.raelity.jvi.ViTextView.FOLDOP;
 import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.core.WindowTreeBuilder.Direction;
+import java.util.logging.Level;
 import java.util.Iterator;
 import java.util.List;
 
 import static com.raelity.jvi.core.Constants.*;
 import static com.raelity.jvi.core.KeyDefs.*;
+import static com.raelity.jvi.core.Misc.*;
 
 /**
  * do_window is some stuff from window.c and related.
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public class Misc01 extends CoreMethodHooks
+public class Misc01 
 {
     /////////////////////////////////////////////////////////////////////////
     //

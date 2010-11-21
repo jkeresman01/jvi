@@ -49,9 +49,6 @@ import java.util.List;
 import java.util.prefs.BackingStoreException;
 import javax.swing.text.Keymap;
 import javax.swing.KeyStroke;
-
-import static com.raelity.jvi.core.Constants.*;
-import static com.raelity.jvi.core.KeyDefs.*;
 import com.raelity.text.TextUtil.MySegment;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -64,7 +61,15 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.openide.util.lookup.ServiceProvider;
 
-public class Misc extends CoreMethodHooks implements ClipboardOwner {
+import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.Edit.*;
+import static com.raelity.jvi.core.GetChar.*;
+import static com.raelity.jvi.core.KeyDefs.*;
+import static com.raelity.jvi.core.Normal.*;
+import static com.raelity.jvi.core.Search.*;
+import static com.raelity.jvi.core.Util.*;
+
+public class Misc implements ClipboardOwner {
   private static final Logger LOG = Logger.getLogger(Misc.class.getName());
   static final ClipboardOwner clipOwner = new Misc();
   private static final String PREF_REGISTERS = "registers";
@@ -4196,14 +4201,14 @@ op_do_addsub(char command, int Prenum1)
      */
     col = G.curwin.w_cursor.getColumn();
     if (dohex)
-	while (col > 0 && vim_isxdigit(ptr.charAt(col)))
+	while (col > 0 && isxdigit(ptr.charAt(col)))
 	    --col;
     if (       dohex
 	    && col > 0
 	    && (ptr.charAt(col) == 'X'
 		|| ptr.charAt(col) == 'x')
 	    && ptr.charAt(col - 1) == '0'
-	    && vim_isxdigit(ptr.charAt(col + 1)))
+	    && isxdigit(ptr.charAt(col + 1)))
     {
 	/*
 	 * Found hexadecimal number, move to its start.
@@ -4219,12 +4224,12 @@ op_do_addsub(char command, int Prenum1)
 
 	while (col < ptr.length()
                 && ptr.charAt(col) != '\n'
-		&& !vim_isdigit(ptr.charAt(col))
+		&& !isdigit(ptr.charAt(col))
 		&& !(doalp && ascii_isalpha(ptr.charAt(col))))
 	    ++col;
 
 	while (col > 0
-		&& vim_isdigit(ptr.charAt(col - 1))
+		&& isdigit(ptr.charAt(col - 1))
 		&& !(doalp && ascii_isalpha(ptr.charAt(col))))
 	    --col;
     }
@@ -4234,7 +4239,7 @@ op_do_addsub(char command, int Prenum1)
      */
     firstdigit = ptr.charAt(col);
     //RLADDSUBFIX(ptr);
-    if ((!vim_isdigit(firstdigit) && !(doalp && ascii_isalpha(firstdigit)))
+    if ((!isdigit(firstdigit) && !(doalp && ascii_isalpha(firstdigit)))
 	    || u_save_cursor() != OK)
     {
 	beep_flush();

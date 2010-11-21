@@ -20,13 +20,17 @@
 package com.raelity.jvi.core;
 
 import com.raelity.jvi.ViFPOS;
+
 import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.MarkOps.*;
+import static com.raelity.jvi.core.Misc.*;
+import static com.raelity.jvi.core.Util.*;
 
 /**
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public class Eval extends CoreMethodHooks {
+public class Eval {
 
     /** NEEDSWORK: make class SaveCpo part of G */
     public static class SaveCpo {
@@ -202,5 +206,9 @@ public static int do_searchpair(
 
     return retval;
 }
+
+    private Eval()
+    {
+    }
 
 }

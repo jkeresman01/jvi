@@ -19,32 +19,32 @@
  */
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.options.SetColonCommand;
-import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.options.StringOption;
+import com.raelity.jvi.options.DebugOption;
 import com.raelity.jvi.options.IntegerOption;
 import com.raelity.jvi.options.Option;
-import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.options.OptUtil;
+import com.raelity.jvi.options.SetColonCommand;
+import com.raelity.jvi.options.StringOption;
+import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.ViOutputStream;
+import com.raelity.text.TextUtil.MySegment;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 //import java.util.ArrayDeque; JDK1.6
-import java.util.List;
 //import java.util.Deque; JDK1.6
 
-import com.raelity.text.TextUtil.MySegment;
-
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static com.raelity.jvi.core.Constants.*;
-import com.raelity.jvi.options.DebugOption;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.openide.util.lookup.ServiceProvider;
+
+import static com.raelity.jvi.core.Constants.*;
 
 /**
  * Option handling from external sources.

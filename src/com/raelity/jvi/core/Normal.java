@@ -36,8 +36,6 @@ import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.ViTextView.FOLDOP;
-import java.text.CharacterIterator;
-
 import com.raelity.jvi.ViTextView.TAGOP;
 import com.raelity.jvi.ViTextView.TABOP;
 import com.raelity.text.TextUtil;
@@ -45,11 +43,17 @@ import com.raelity.text.TextUtil.MySegment;
 
 import com.raelity.jvi.swing.KeyBinding;
 
+import java.text.CharacterIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import static com.raelity.jvi.core.Constants.*;
-import static com.raelity.jvi.core.Edit.oneright;
+import static com.raelity.jvi.core.Edit.*;
 import static com.raelity.jvi.core.KeyDefs.*;
+import static com.raelity.jvi.core.MarkOps.*;
+import static com.raelity.jvi.core.Misc.*;
+import static com.raelity.jvi.core.Misc01.*;
+import static com.raelity.jvi.core.Util.*;
 
 /**
  * Contains the main routine for processing characters in command mode.
@@ -69,7 +73,7 @@ import static com.raelity.jvi.core.KeyDefs.*;
  * <br/>v_*(): functions called to handle Visual mode commands.
  */
 
-public class Normal extends CoreMethodHooks {
+public class Normal {
   private static final Logger LOG = Logger.getLogger(Normal.class.getName());
 
   // for normal_cmd() use, stuff that was declared static in the function
@@ -151,7 +155,7 @@ public class Normal extends CoreMethodHooks {
         if(!editBusy) {
           try {
             if (opInsertBusy) {
-              Misc.finishOpSplit();
+              finishOpSplit();
             }
           } finally {
             opInsertBusy = false;
@@ -174,7 +178,7 @@ public class Normal extends CoreMethodHooks {
   }
 
   static void finishupEdit() {
-    Misc.endInsertUndo();
+    endInsertUndo();
   }
 
   static public void resetCommand() {
@@ -195,8 +199,8 @@ public class Normal extends CoreMethodHooks {
       finishupEdit();
     }
     clear_showcmd();
-    Misc.showmode();
-    Misc.ui_cursor_shape();
+    showmode();
+    ui_cursor_shape();
   }
 
   /**
@@ -213,7 +217,7 @@ public class Normal extends CoreMethodHooks {
     boolean tflag = G.finish_op;
     G.finish_op = (oap.op_type != OP_NOP);
     if (G.finish_op != tflag) {
-      Misc.ui_cursor_shape();	/* may show different cursor shape */
+      ui_cursor_shape();	/* may show different cursor shape */
     }
 
     G.State = NORMAL_BUSY;
@@ -260,7 +264,7 @@ public class Normal extends CoreMethodHooks {
   static public void normal_cmd(char c, boolean toplevel) {
                                         //NEEDSWORK: toplevel NOT USED
 
-    Misc.update_curswant();	// in vim called just before calling normal_cmd
+    update_curswant();	// in vim called just before calling normal_cmd
 
     if(newChunk) {
       newChunk = false;
@@ -428,7 +432,7 @@ public class Normal extends CoreMethodHooks {
           pickupExtraChar = true;
           if (ca.cmdchar == 'r') {
             G.State = REPLACE;	// pretend Replace mode, for cursor shape
-            Misc.ui_cursor_shape();	// show different cursor shape
+            ui_cursor_shape();	// show different cursor shape
           }
           return; // and get the extra char
         }
@@ -439,7 +443,7 @@ public class Normal extends CoreMethodHooks {
         }
         if (ca.cmdchar == 'g' && ca.nchar == 'r') {
           G.State = REPLACE;	// pretend Replace mode, for cursor shape
-          Misc.ui_cursor_shape();	// show different cursor shape
+          ui_cursor_shape();	// show different cursor shape
         }
         // For 'g' commands, already got next char above, "gr" still needs an
         // extra one though.
@@ -469,7 +473,7 @@ public class Normal extends CoreMethodHooks {
      * mappings.
      */
     if (need_flushbuf)
-      Misc.out_flush();
+      out_flush();
 
     // c not used past this point
     // ctrl_w not used past this point
@@ -580,7 +584,7 @@ middle_code:
             } else {
               if (checkclearop(oap))
                 break;
-              Misc.onepage(dir, ca.count1);
+              onepage(dir, ca.count1);
             }
 	    break;
 
@@ -964,7 +968,7 @@ middle_code:
 	  case K_UNDO:
 	    if (!checkclearopq(oap))
 	    {
-	      Misc.u_undo(ca.count1);
+	      u_undo(ca.count1);
               G.curwin.w_set_curswant = true;
 	    }
 	    break;
@@ -972,7 +976,7 @@ middle_code:
 	  case 0x1f & (int)('R'):	/* undo undo */	// Ctrl
 	    if (!checkclearopq(oap))
 	    {
-	      Misc.u_redo(ca.count1);
+	      u_redo(ca.count1);
               G.curwin.w_set_curswant = true;
 	    }
 	    break;
@@ -997,7 +1001,7 @@ middle_code:
 	  case 0x1f & (int)('A'):	    /* add to number */	// Ctrl
 	  case 0x1f & (int)('X'):	    /* subtract from number */	// Ctrl
 	    if (!checkclearopq(oap)
-                    && Misc.do_addsub(ca.cmdchar, ca.count1) == OK)
+                    && do_addsub(ca.cmdchar, ca.count1) == OK)
 	      prep_redo_cmd(ca);
 	    break;
 
@@ -1116,7 +1120,7 @@ middle_code:
 	    {
               notSup("ctrl-o vis mode");
 	      G.VIsual_select = false;
-	      Misc.showmode();
+	      showmode();
 	      restart_VIsual_select = 2;
 	      break;
 	    }
@@ -1258,7 +1262,7 @@ middle_code:
     /* Redraw the cursor with another shape, if we were in Operator-pending
      * mode or did a replace command. */
     if (wasFinishOp || ca.cmdchar == 'r' || cursorShapeHACK) {
-      Misc.ui_cursor_shape();		/* may show different cursor shape */
+      ui_cursor_shape();		/* may show different cursor shape */
       // Without cursorShapeHACK in 'v' mode after a 'y', or a variety
       // of other operators, the cursor never get back as required,
       // need sel == exclusive to see it.
@@ -1271,7 +1275,7 @@ middle_code:
     if(G.clear_cmdline || redraw_cmdline) {
         G.clear_cmdline = false;
         redraw_cmdline = false;
-        Misc.showmode();
+        showmode();
     }
     if (oap.op_type == OP_NOP && oap.regname == 0)
       clear_showcmd();
@@ -1388,7 +1392,7 @@ middle_code:
           if (redo_VIsual_col == MAXCOL)
           {
             G.curwin.w_curswant = MAXCOL;
-            Misc.coladvance(MAXCOL);
+            coladvance(MAXCOL);
           }
           cap.count0 = redo_VIsual_count;
           if (redo_VIsual_count != 0)
@@ -1447,12 +1451,12 @@ middle_code:
               MutableInt miStart = new MutableInt(), miEnd = new MutableInt();
 
               oap.block_mode = true;
-              Misc.getvcol(G.curwin, oap.start, miStart, null, miEnd);
+              getvcol(G.curwin, oap.start, miStart, null, miEnd);
               oap.start_vcol = miStart.getValue();
               oap.end_vcol = miEnd.getValue();
             if (!G.redo_VIsual_busy)
             {
-                Misc.getvcol(G.curwin, oap.end, miStart, null, miEnd);
+                getvcol(G.curwin, oap.end, miStart, null, miEnd);
                 start = miStart.getValue();
                 end = miEnd.getValue();
                 if (start < oap.start_vcol)
@@ -1476,7 +1480,7 @@ middle_code:
                 oap.end_vcol = 0;
                 for (int l = oap.start.getLine(); l <= oap.end.getLine(); l++) {
                   fpos.set(l, Util.lineLength(l));
-                  Misc.getvcol(G.curwin, fpos, null, null, miEnd);
+                  getvcol(G.curwin, fpos, null, null, miEnd);
                   end = miEnd.getValue();
                   if (end > oap.end_vcol)
                     oap.end_vcol = end;
@@ -1489,8 +1493,8 @@ middle_code:
             // upper-left and lower-right corner of the block area.
             //
             // simpler than vim since jvi has coladvance on an fpos
-            Misc.coladvance(oap.end, oap.end_vcol);
-            Misc.coladvance(oap.start, oap.start_vcol);
+            coladvance(oap.end, oap.end_vcol);
+            coladvance(oap.start, oap.start_vcol);
             // the vim code leaves cursor on the start, so do that
             cursor.set(oap.start);
           }
@@ -1577,7 +1581,7 @@ middle_code:
       oap.empty = (oap.motion_type == MCHAR
 	       && (!oap.inclusive
 		   || (oap.op_type == OP_YANK
-		       && Misc.gchar_pos(oap.end) == '\n'))
+		       && gchar_pos(oap.end) == '\n'))
 	       && oap.start.equals(oap.end));
       /*
        * For delete, change and yank, it's an error to operate on an
@@ -1608,7 +1612,7 @@ middle_code:
 	--oap.line_count;
 	int new_line = oap.end.getLine() - 1;
         int new_col = 0;
-	if (Misc.inindent(0))
+	if (inindent(0))
 	  oap.motion_type = MLINE;
 	else
 	{
@@ -1628,9 +1632,9 @@ middle_code:
       {
 	case OP_LSHIFT:
         case OP_RSHIFT:
-          Misc.runUndoable(new Runnable() {
+          runUndoable(new Runnable() {
               public void run() {
-                Misc.op_shift(oap, true, oap.is_VIsual ? cap.count1 : 1);
+                op_shift(oap, true, oap.is_VIsual ? cap.count1 : 1);
               }
           });
 	  break;
@@ -1645,9 +1649,9 @@ middle_code:
 	      G.curbuf.getLineCount()) {
 	    Util.beep_flush();
 	  } else {
-            Misc.runUndoable(new Runnable() {
+            runUndoable(new Runnable() {
                 public void run() {
-                  Misc.do_do_join(oap.line_count, oap.op_type == OP_JOIN, true);
+                  do_do_join(oap.line_count, oap.op_type == OP_JOIN, true);
                 }
             });
 	  }
@@ -1658,9 +1662,9 @@ middle_code:
 	  if (empty_region_error)
 	    Util.vim_beep();
 	  else {
-            Misc.runUndoable(new Runnable() {
+            runUndoable(new Runnable() {
                 public void run() {
-                  Misc.op_delete(oap);
+                  op_delete(oap);
                 }
             });
 	  }
@@ -1673,8 +1677,8 @@ middle_code:
 	      Util.vim_beep();
 	  }
 	  else
-	    Misc.op_yank(oap, false, !gui_yank);
-	  Misc.check_cursor_col();
+	    op_yank(oap, false, !gui_yank);
+	  check_cursor_col();
 	  break;
 
 	case OP_CHANGE:
@@ -1685,14 +1689,14 @@ middle_code:
 	  {
 	    // don't restart edit after typing <Esc> in edit()
 	    G.restart_edit = 0;
-            Misc.beginInsertUndo();
+            beginInsertUndo();
             try {
-              Misc.op_change(oap); // will call edit()
+              op_change(oap); // will call edit()
             } finally {
               if(editBusy) {
                 opInsertBusy = true;
               } else {
-                Misc.endInsertUndo();
+                endInsertUndo();
               }
             }
 	  }
@@ -1709,7 +1713,7 @@ middle_code:
 
           // If 'equalprg' is empty, do the indenting internally.
           if(oap.op_type == OP_INDENT && G.p_ep.getString().isEmpty()) {
-            Misc.runUndoable(new Runnable() {
+            runUndoable(new Runnable() {
                 public void run() {
                   G.curbuf.reindent(G.curwin.w_cursor.getLine(),
                                     oap.line_count);
@@ -1727,10 +1731,10 @@ middle_code:
 	  if (empty_region_error)
 	    Util.vim_beep();
 	  else {
-            Misc.runUndoable(new Runnable() {
+            runUndoable(new Runnable() {
                 public void run() {
-                  Misc.op_tilde(oap);
-                  Misc.check_cursor_col();
+                  op_tilde(oap);
+                  check_cursor_col();
                 }
             });
           }
@@ -1752,15 +1756,15 @@ middle_code:
             /* This is a new edit command, not a restart.  We don't edit
              * recursively. */
             G.restart_edit = 0;
-            Misc.beginInsertUndo();
+            beginInsertUndo();
             try {
-              Misc.op_insert(oap, cap.count1);/* handles insert & append
+              op_insert(oap, cap.count1);/* handles insert & append
                                           * will call edit() */
             } finally {
               if(editBusy) {
                 opInsertBusy = true;
               } else {
-                Misc.endInsertUndo();
+                endInsertUndo();
               }
             }
           }
@@ -1771,7 +1775,7 @@ middle_code:
           if (empty_region_error)
             Util.vim_beep();
           else 
-            Misc.op_replace(oap, cap.nchar);
+            op_replace(oap, cap.nchar);
 	  break;
 
 	default:
@@ -1787,7 +1791,7 @@ middle_code:
 	    && (oap.op_type == OP_LSHIFT || oap.op_type == OP_RSHIFT
 		|| oap.op_type == OP_DELETE)) {
           G.curwin.w_curswant = old_col;
-	  Misc.coladvance(old_col);
+	  coladvance(old_col);
 	}
 	oap.op_type = OP_NOP;
       }
@@ -1803,7 +1807,7 @@ middle_code:
   static void op_format(final OPARG oap)  {
     do_op("op_format");
     // NEESDWORK: hook into platform's format (if available)
-    Misc.runUndoable(new Runnable() {
+    runUndoable(new Runnable() {
         public void run() {
           G.curbuf.reformat(G.curwin.w_cursor.getLine(),
                             oap.line_count);
@@ -1898,7 +1902,7 @@ middle_code:
     /* Don't leave the cursor past the end of the line */
     if (G.curwin.w_cursor.getColumn() > 0 && Util.getChar() == '\n')
         G.curwin.setCaretPosition(G.curwin.getCaretPosition() -1);
-    Misc.ui_cursor_shape();
+    ui_cursor_shape();
   }
   /**
    * 
@@ -1933,8 +1937,8 @@ middle_code:
       col = G.curwin.w_cursor.getColumn();
       while (seg.array[col + seg.offset] != '\n'
              && (i == 0
-                 ? !Misc.vim_iswordc(seg.array[col + seg.offset])
-                 : Misc.vim_iswhite(seg.array[col + seg.offset])))
+                 ? !vim_iswordc(seg.array[col + seg.offset])
+                 : vim_iswhite(seg.array[col + seg.offset])))
         ++col;
 
       //
@@ -1945,10 +1949,10 @@ middle_code:
       ///
       while (col > 0
              && (i == 0
-                ? Misc.vim_iswordc(seg.array[col - 1 + seg.offset])
-                : (!Misc.vim_iswhite(seg.array[col - 1 + seg.offset])
+                ? vim_iswordc(seg.array[col - 1 + seg.offset])
+                : (!vim_iswhite(seg.array[col - 1 + seg.offset])
                    && (!((find_type & FIND_IDENT) != 0)
-                       || !Misc.vim_iswordc(seg.array[col - 1 + seg.offset])))))
+                       || !vim_iswordc(seg.array[col - 1 + seg.offset])))))
         --col;
 
       //
@@ -1956,14 +1960,14 @@ middle_code:
       // stop searching.
       ///
       if (!((find_type & FIND_STRING) != 0)
-          || Misc.vim_iswordc(seg.array[col + seg.offset]))
+          || vim_iswordc(seg.array[col + seg.offset]))
         break;
     }
     //
     // didn't find an identifier or string
     ///
     if (seg.array[col + seg.offset] == '\n'
-        || (!Misc.vim_iswordc(seg.array[col + seg.offset]) && i == 0))
+        || (!vim_iswordc(seg.array[col + seg.offset]) && i == 0))
     {
       if ((find_type & FIND_STRING) != 0)
         Msg.emsg("No string under cursor");
@@ -1979,9 +1983,9 @@ middle_code:
 
     int len = 0;
     while (i == 0
-           ? Misc.vim_iswordc(seg.array[len + col + seg.offset])
+           ? vim_iswordc(seg.array[len + col + seg.offset])
            : (seg.array[len + col + seg.offset] != '\n'
-              && !Misc.vim_iswhite(seg.array[len + col + seg.offset])))
+              && !vim_iswhite(seg.array[len + col + seg.offset])))
     {
       ++len;
     }
@@ -2105,7 +2109,7 @@ middle_code:
         return false;
 
     //add_one_to_showcmd_buffer(c);
-    String p = Misc.transchar(c);
+    String p = transchar(c);
     showcmd_buf.append(p);
 
     if (GetChar.char_avail())
@@ -2117,14 +2121,14 @@ middle_code:
   }
 
   static private void display_showcmd() {
-    Misc.setCommandCharacters(showcmd_buf.toString());
+    setCommandCharacters(showcmd_buf.toString());
   }
 
   public static void displaySelectState(String s) {
     showcmd_buf.setLength(0);
     showcmd_buf.append(s).append(" ");
-    Misc.setCommandCharacters(showcmd_buf.toString());
-    Misc.out_flush();
+    setCommandCharacters(showcmd_buf.toString());
+    out_flush();
   }
 
   /*static private void display_showcmd() {
@@ -2142,7 +2146,7 @@ middle_code:
 
     //G.curwin.getStatusDisplay()
 	      //.displayCommand(showcmd_buf.toString());
-    Misc.setCommandCharacters(showcmd_buf.toString());
+    setCommandCharacters(showcmd_buf.toString());
 
     //
     // clear the rest of an old message by outputing up to SHOWCMD_COLS spaces
@@ -2159,7 +2163,7 @@ middle_code:
     int	    extra_len;
     int	    overflow;
 
-    p = Misc.transchar(c);
+    p = transchar(c);
     old_len = showcmd_buf.length();
     extra_len = p.length();
     overflow = old_len + extra_len - SHOWCMD_COLS;
@@ -2250,11 +2254,11 @@ middle_code:
     
     int new_topline = prev_topline + (up ? count : -count);
     
-    new_topline = Misc.adjustTopLogicalLine(new_topline);
+    new_topline = adjustTopLogicalLine(new_topline);
     int new_bottomline = new_topline + G.curwin.getVpLines() -1;
     
     int new_lnum = prev_lnum;
-    int so = Misc.getScrollOff();
+    int so = getScrollOff();
     if(new_lnum < new_topline + so)
       new_lnum = new_topline + so;
     else if(new_lnum > new_bottomline - so)
@@ -2262,7 +2266,7 @@ middle_code:
     
     if(new_lnum != prev_lnum) {
       G.curwin.setCursorLogicalLine(new_lnum, 0);
-      Misc.coladvance(G.curwin.w_curswant);
+      coladvance(G.curwin.w_curswant);
     }
     G.curwin.setVpTopLogicalLine(new_topline);
   }
@@ -2313,7 +2317,7 @@ middle_code:
   static private  void	nv_zet_scrolloff (CMDARG cap) {
     do_xop("nv_zet");
 
-    int so = Misc.getScrollOff();
+    int so = getScrollOff();
     int nchar = cap.nchar;
     int target_doc_line = G.curwin.w_cursor.getLine();
     boolean change_line = false;
@@ -2358,10 +2362,10 @@ middle_code:
     //boolean keepColumn = (nchar == 't') || (nchar == 'z') || (nchar == 'b');
     //int col = (keepColumn) ? G.curwin.getWCursor().getColumn()
     //                       : Edit.beginlineColumnIndex(BL_WHITE | BL_FIX, seg);
-    //G.curwin.setViewTopLine(Misc.adjustTopLine(top));
+    //G.curwin.setViewTopLine(adjustTopLine(top));
     //G.curwin.setCaretPosition(target, col);
 
-    G.curwin.setVpTopLogicalLine(Misc.adjustTopLogicalLine(top));
+    G.curwin.setVpTopLogicalLine(adjustTopLogicalLine(top));
     G.curwin.setCursorLogicalLine(target, 0);
     int target_column;
     boolean keepColumn = (nchar == 't') || (nchar == 'z') || (nchar == 'b');
@@ -2373,7 +2377,7 @@ middle_code:
       MySegment seg = G.curbuf.getLineSegment(G.curwin.w_cursor.getLine());
       target_column = Edit.beginlineColumnIndex(BL_WHITE | BL_FIX, seg);
     }
-    Misc.coladvance(target_column);
+    coladvance(target_column);
   }
 
   static private void nv_colon (CMDARG cap) {
@@ -2412,10 +2416,10 @@ middle_code:
       int textDot = G.curwin.w_cursor.getOffset();
       boolean isLineMode = G.VIsual_mode == 'V';
       end_visual_mode();	// stop Visual
-      Misc.check_cursor_col();	// make sure cursor is not beyond EOL
+      check_cursor_col();	// make sure cursor is not beyond EOL
       G.curwin.w_set_curswant = true;
       update_curbuf(NOT_VALID);
-      Misc.showmode();
+      showmode();
       if(isLineMode) {
         // adjust dot/mark for full lines
         if(textDot < textMark) {
@@ -2537,7 +2541,7 @@ middle_code:
         G.curwin.w_cursor.set(G.curwin.w_cursor.getLine(),
                               ptrSeg.getIndex() - ptrSeg.getBeginIndex());
 
-        if (!g_cmd && Misc.vim_iswordc(ptrSeg.current()))
+        if (!g_cmd && vim_iswordc(ptrSeg.current()))
           GetChar.stuffReadbuff("\\<");
         // no_smartcase = TRUE;	// don't use 'smartcase' now
         break;
@@ -2619,7 +2623,7 @@ middle_code:
 
     if (       !g_cmd
             && (cmdchar == '*' || cmdchar == '#')
-            && Misc.vim_iswordc(ptrSeg.previous()))
+            && vim_iswordc(ptrSeg.previous()))
       GetChar.stuffReadbuff("\\>");
     GetChar.stuffReadbuff("\n");
 
@@ -2661,7 +2665,7 @@ middle_code:
     int newcursorline = -1;
 
     if (cap.cmdchar == 'L') {
-      Misc.validate_botline();	    // make sure curwin.w_botline is valid
+      validate_botline();	    // make sure curwin.w_botline is valid
       newcursorline = G.curwin.getViewBottomLine() - 1;
       if (cap.count1 - 1 >= newcursorline) {
 	newcursorline = 1;
@@ -2672,9 +2676,9 @@ middle_code:
       int topline = G.curwin.getViewTopLine();
       int line_count = G.curbuf.getLineCount();
       if (cap.cmdchar == 'M') {
-	Misc.validate_botline();	    // make sure w_empty_rows is valid
+	validate_botline();	    // make sure w_empty_rows is valid
 	for (n = 0; topline + n < line_count; ++n)
-	  if ((used += Misc.plines(topline + n)) >=
+	  if ((used += plines(topline + n)) >=
 	      (G.curwin.getLogicalLines() - G.curwin.getViewBlankLines() + 1) / 2)
 	    break;
 	if (n != 0 && used > G.curwin.getLogicalLines())
@@ -2690,7 +2694,7 @@ middle_code:
     if(newcursorline > 0) {
       G.curwin.setCaretPosition(G.curbuf.getLineStartOffset(newcursorline));
     }
-    Misc.cursor_correct();	// correct for 'so'
+    cursor_correct();	// correct for 'so'
     Edit.beginline(BL_SOL | BL_FIX);
      */
   }
@@ -2708,9 +2712,9 @@ middle_code:
     if(cap.cmdchar == 'M') {
       int topline = G.curwin.getVpTopLogicalLine();
       int line_count = G.curwin.getLogicalLineCount();
-      Misc.validate_botline();	    // make sure w_empty_rows is valid
+      validate_botline();	    // make sure w_empty_rows is valid
       for (n = 0; topline + n < line_count; ++n)
-	if ((used += Misc.plines(topline + n)) >= halfway)
+	if ((used += plines(topline + n)) >= halfway)
 	  break;
       if (n != 0 && used > G.curwin.getVpLines())
 	--n;
@@ -2719,8 +2723,8 @@ middle_code:
 	newcursorline = line_count;
     } else {
       // cap.cmdchar == 'H' or 'L'
-      //Misc.validate_botline(); 'L' // make sure curwin.w_botline is valid
-      int so = Misc.getScrollOff();
+      //validate_botline(); 'L' // make sure curwin.w_botline is valid
+      int so = getScrollOff();
       int adjust = so;
       if(cap.count1 -1 > so) {
 	adjust = cap.count1 -1;
@@ -2746,7 +2750,7 @@ middle_code:
       //G.curwin.setCaretPosition(G.curbuf.getLineStartOffset(newcursorline));
       G.curwin.setCursorLogicalLine(newcursorline, 0);
     }
-    Misc.cursor_correct();	// correct for 'so'
+    cursor_correct();	// correct for 'so'
     Edit.beginline(BL_SOL | BL_FIX);
   }
 
@@ -2841,13 +2845,13 @@ middle_code:
 	  /* **********************************
 	  int offset = G.curwin.getLineOffset(cursor.getLine() - 1);
 	  Segment seg = G.curwin.getLineSegment(cursor.getLine() - 1);
-	  int idx = Misc.coladvanceColumnIndex(MAXCOL, seg);
+	  int idx = coladvanceColumnIndex(MAXCOL, seg);
 	  G.curwin.setCaretPosition(offset + idx);
 	  ************************************/
 
 	  // use a different algorithm with swing document
 	  G.curwin.setCaretPosition(cursor.getOffset() - 1);
-	  Misc.check_cursor_col();
+	  check_cursor_col();
           G.curwin.w_set_curswant = true;
 
 	  // When the NL before the first char has to be deleted we
@@ -2939,7 +2943,7 @@ middle_code:
       i = 0;
 
     searchp.setLength(0);
-    searchp.append(Search.getLastPattern());
+    searchp.append(Search.last_search_pat());
                         
     if(i == 0) {
       clearop(oap);
@@ -3489,20 +3493,20 @@ static private void nv_findpar(CMDARG cap, int dir)
         MutableInt right = new MutableInt();
         ViFPOS old_cursor = cursor.copy();
 
-        Misc.getvcols(old_cursor, G.VIsual, left, right);
+        getvcols(old_cursor, G.VIsual, left, right);
         cursor.set(G.VIsual.getLine(), 0);
-        Misc.coladvance(left.getValue());
+        coladvance(left.getValue());
         G.VIsual.set(cursor);
         cursor.set(old_cursor.getLine(), 0);
-        Misc.coladvance(right.getValue());
+        coladvance(right.getValue());
         G.curwin.w_curswant = right.getValue();
         if (cursor.getColumn() == old_cursor.getColumn())
         {
             cursor.set(G.VIsual.getLine(), 0);
-            Misc.coladvance(right.getValue());
+            coladvance(right.getValue());
             G.VIsual.set(cursor);
             cursor.set(old_cursor.getLine(), 0);
-            Misc.coladvance(left.getValue());
+            coladvance(left.getValue());
             G.curwin.w_curswant = left.getValue();
         }
     }
@@ -3542,12 +3546,12 @@ static private void nv_findpar(CMDARG cap, int dir)
       nv_operator(cap);
     } else if (!checkclearopq(cap.oap)) {
       if (u_save_cursor() == OK) {
-        Misc.beginInsertUndo();
+        beginInsertUndo();
         try {
           Edit.edit('R', false, cap.count1);
         } finally {
             if(!editBusy)
-              Misc.endInsertUndo();
+              endInsertUndo();
         }
       }
     }
@@ -3573,12 +3577,12 @@ static private void nv_findpar(CMDARG cap, int dir)
     if (u_save_cursor() == FAIL)
       return;
 
-    Misc.runUndoable(new Runnable() {
+    runUndoable(new Runnable() {
         public void run() {
           for (int n = cap.count1; n > 0; --n) {
-            Misc.swapchar(cap.oap.op_type,G.curwin.w_cursor);
-            Misc.inc_cursor();
-            if (Misc.gchar_cursor() == '\n') {
+            swapchar(cap.oap.op_type,G.curwin.w_cursor);
+            inc_cursor();
+            if (gchar_cursor() == '\n') {
               if (G.p_ww_tilde.getBoolean()
                   && G.curwin.w_cursor.getLine() < G.curbuf.getLineCount())
               {
@@ -3590,7 +3594,7 @@ static private void nv_findpar(CMDARG cap, int dir)
             }
           }
 
-          Misc.adjust_cursor();
+          adjust_cursor();
           G.curwin.w_set_curswant = true;
         }
     });
@@ -3613,7 +3617,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       if(flag)
         Edit.beginline(BL_WHITE | BL_FIX);
       else
-        Misc.adjust_cursor();
+        adjust_cursor();
     }
     cap.oap.motion_type = flag ? MLINE : MCHAR;
     cap.oap.inclusive = false;		/* ignored if not MCHAR */
@@ -3672,10 +3676,10 @@ static private void nv_findpar(CMDARG cap, int dir)
     if (pos instanceof Filemark)
     {	    /* jumped to other file */
       if (flag) {
-	Misc.check_cursor_lnumBeginline(BL_WHITE | BL_FIX);
+	check_cursor_lnumBeginline(BL_WHITE | BL_FIX);
 	// Edit.beginline(BL_WHITE | BL_FIX);
       } else {
-	Misc.adjust_cursor();
+	adjust_cursor();
       }
     } else {
       nv_cursormark(cap, flag, pos);
@@ -3696,7 +3700,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       if (fpos == MarkOps.otherFile) {      /* jump to other file */
         notSup("nv_pcmark other file");
 	G.curwin.w_set_curswant = true;
-	Misc.adjust_cursor();
+	adjust_cursor();
       } else if (fpos != null) {	    /* can jump */
 	nv_cursormark(cap, false, fpos);
       } else {
@@ -3713,7 +3717,7 @@ static private void nv_findpar(CMDARG cap, int dir)
     do_xop("nv_regname");
     if (checkclearop(cap.oap))
       return;
-    if (cap.nchar != NUL && Misc.valid_yank_reg(cap.nchar, false)) {
+    if (cap.nchar != NUL && valid_yank_reg(cap.nchar, false)) {
       cap.oap.regname = cap.nchar;
       opnump.setValue(cap.count0);    // remember count before '"'
     } else {
@@ -3734,7 +3738,7 @@ static private void nv_findpar(CMDARG cap, int dir)
           } else {/* toggle char/block mode */
               /*or char/line mode */
               G.VIsual_mode = cap.cmdchar;
-              Misc.showmode();
+              showmode();
               /* update the screen cursor position */
               v_updateVisualState();
               //G.curwin.setWCurswant(G.curwin.getCaretPosition());
@@ -3767,7 +3771,7 @@ static private void nv_findpar(CMDARG cap, int dir)
                       line = G.curbuf.getLineCount();
                   // Not sure about how column should be set, but at least
                   // make sure it stays in the correct line
-                  int col = Misc.check_cursor_col(line,
+                  int col = check_cursor_col(line,
                                             G.curwin.w_cursor.getColumn());
                   G.curwin.w_cursor.set(line, col);
               }
@@ -3786,7 +3790,7 @@ static private void nv_findpar(CMDARG cap, int dir)
               if (resel_VIsual_col == MAXCOL)
               {
                   G.curwin.w_curswant = MAXCOL;
-                  Misc.coladvance(MAXCOL);
+                  coladvance(MAXCOL);
               }
               else if (G.VIsual_mode == Util.ctrl('V'))
               {
@@ -3794,7 +3798,7 @@ static private void nv_findpar(CMDARG cap, int dir)
                   //validate_virtcol();
                   G.curwin.w_curswant = G.curwin.w_cursor.getColumn()/*G.curwin.w_virtcol*/
                           + resel_VIsual_col * cap.count0 - 1;
-                  Misc.coladvance(G.curwin.w_curswant);
+                  coladvance(G.curwin.w_curswant);
               }
               else
                   G.curwin.w_set_curswant = true;
@@ -3811,7 +3815,7 @@ static private void nv_findpar(CMDARG cap, int dir)
               v_updateVisualState();
           }
       }
-      Misc.ui_cursor_shape();
+      ui_cursor_shape();
   }
 
   /**
@@ -3883,11 +3887,11 @@ static private void nv_findpar(CMDARG cap, int dir)
     boolean flag = false;
     switch (cap.nchar) {
       /*case 'x':
-        Misc.Yankreg r1 = Misc.get_register('a', true);
-        Misc.Yankreg r2 = Misc.get_register('a', false);
-        Misc.Yankreg r3 = Misc.get_register('a', false);
-        Misc.get_yank_register('z', false);
-        Misc.y_current.set(r2);
+        Yankreg r1 = Misc.get_register('a', true);
+        Yankreg r2 = Misc.get_register('a', false);
+        Yankreg r3 = Misc.get_register('a', false);
+        get_yank_register('z', false);
+        y_current.set(r2);
         break;*/
 
 //    case ',':
@@ -3937,10 +3941,10 @@ static private void nv_findpar(CMDARG cap, int dir)
 
             /* Set Visual to the start and w_cursor to the end of the Visual
              * area.  Make sure they are on an existing character. */
-            Misc.adjust_cursor();
+            adjust_cursor();
             G.VIsual =  cursor.copy();
             cursor.set(tpos);
-            Misc.adjust_cursor();
+            adjust_cursor();
             //update_topline();
             /*
              * When called from normal "g" command: start Select mode when
@@ -3961,8 +3965,8 @@ static private void nv_findpar(CMDARG cap, int dir)
             //clipboard.vmode = NUL;
             //#endif
             update_curbuf(NOT_VALID);
-            Misc.showmode();
-            Misc.ui_cursor_shape();
+            showmode();
+            ui_cursor_shape();
         }
         break;
       //
@@ -4099,15 +4103,15 @@ static private void nv_findpar(CMDARG cap, int dir)
       // if (u_save((curwin.w_cursor.lnum - (cap.cmdchar == 'O' ? 1 : 0)) .....
       // NEEDSWORK: would like the beginUndo only if actually making changes
       boolean startEdit = false;  
-      Misc.beginInsertUndo();
+      beginInsertUndo();
       try {
-        startEdit = Misc.open_line(cap.cmdchar == 'O' ? BACKWARD : FORWARD,
+        startEdit = open_line(cap.cmdchar == 'O' ? BACKWARD : FORWARD,
                                    true, false, 0);
         if(startEdit)
 	      Edit.edit(cap.cmdchar, true, cap.count1);
       } finally {
           if(!editBusy)
-            Misc.endInsertUndo();
+            endInsertUndo();
       }
     }
     return;
@@ -4177,7 +4181,7 @@ static private void nv_findpar(CMDARG cap, int dir)
     cap.oap.inclusive = false;
     Edit.beginline(0);
     if (cap.count0 > 0) {
-      Misc.coladvance(cap.count0 - 1);
+      coladvance(cap.count0 - 1);
       G.curwin.w_curswant = cap.count0 - 1;
     }
     else
@@ -4230,9 +4234,9 @@ static private void nv_findpar(CMDARG cap, int dir)
     // "cw" and "cW" are a special case.
     //
     if (!word_end && cap.oap.op_type == OP_CHANGE) {
-      c = Misc.gchar_cursor();
+      c = gchar_cursor();
       if (c != '\n') {			/* not an empty line */
-	if (Misc.vim_iswhite(c)) {
+	if (vim_iswhite(c)) {
 	  //
 	  // Reproduce a funny Vi behaviour: "cw" on a blank only
 	  // changes one character, not all blanks until the start of
@@ -4276,8 +4280,8 @@ static private void nv_findpar(CMDARG cap, int dir)
 
     // Don't leave the cursor on the NUL past a line
     if (G.curwin.w_cursor.getColumn() != 0
-		&& Misc.gchar_cursor() == '\n') {
-      Misc.dec_cursor();
+		&& gchar_cursor() == '\n') {
+      dec_cursor();
       cap.oap.inclusive = true;
     }
 
@@ -4295,7 +4299,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       if (G.VIsual_active
           && cap.oap.inclusive
           && G.p_sel.charAt(0) == 'e'
-          && Misc.gchar_cursor() != '\n')
+          && gchar_cursor() != '\n')
        {
           G.curwin.w_cursor.incColumn();
           cap.oap.inclusive = false;
@@ -4335,7 +4339,7 @@ static private void nv_findpar(CMDARG cap, int dir)
   static private void nv_esc(CMDARG cap, int opnum) {
     if (G.VIsual_active) {
       end_visual_mode();	// stop Visual
-      Misc.check_cursor_col();	// make sure cursor is not beyond EOL
+      check_cursor_col();	// make sure cursor is not beyond EOL
       G.curwin.w_set_curswant = true;
       update_curbuf(NOT_VALID);
     } else if (G.curwin.hasSelection()) {
@@ -4360,7 +4364,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       end_visual_mode();	// stop Visual
       G.curwin.w_set_curswant = true;
       update_curbuf(NOT_VALID);
-      Misc.showmode();
+      showmode();
     }
   }
 
@@ -4383,12 +4387,12 @@ static private void nv_findpar(CMDARG cap, int dir)
         nv_object(cap);
       //clearopbeep(cap.oap);
     } else if (!checkclearopq(cap.oap) && u_save_cursor() == OK) {
-      Misc.beginInsertUndo();
+      beginInsertUndo();
       try {
         nv_edit_dispatch(cap);
       } finally {
         if(!editBusy)
-          Misc.endInsertUndo();
+          endInsertUndo();
       }
       return;
     }
@@ -4515,7 +4519,7 @@ static private void nv_findpar(CMDARG cap, int dir)
     {
       /* (stop) recording into a named register */
       /* command is ignored while executing a register */
-      if (!G.Exec_reg && Misc.do_record(cap.nchar) == FAIL)
+      if (!G.Exec_reg && do_record(cap.nchar) == FAIL)
 	clearopbeep(cap.oap);
     }
   }
@@ -4529,7 +4533,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       return;
     while (cap.count1-- > 0)
     {
-      if (Misc.do_execreg(cap.nchar, false, false) == FAIL)
+      if (do_execreg(cap.nchar, false, false) == FAIL)
       {
 	clearopbeep(cap.oap);
 	break;
@@ -4567,9 +4571,9 @@ static private void nv_findpar(CMDARG cap, int dir)
       {
 	prep_redo(cap.oap.regname, cap.count0,
 		  NUL, cap.cmdchar, NUL, cap.nchar);
-        Misc.runUndoable(new Runnable() {
+        runUndoable(new Runnable() {
             public void run() {
-              Misc.do_do_join(cap.count0, cap.nchar == NUL, true);
+              do_do_join(cap.count0, cap.nchar == NUL, true);
             }
         });
       }
@@ -4585,10 +4589,10 @@ static private void nv_findpar(CMDARG cap, int dir)
       //#ifdef FEAT_DIFF ... #endif
       clearopbeep(cap.oap);
     } else {
-      Misc.runUndoable(new Runnable() {
+      runUndoable(new Runnable() {
           public void run() {
             char regname = 0;
-            Misc.Yankreg reg1 = null, reg2 = null;
+            Yankreg reg1 = null, reg2 = null;
             boolean empty = false;
             boolean was_visual = false;
             int dir;
@@ -4610,12 +4614,12 @@ static private void nv_findpar(CMDARG cap, int dir)
                 // overwrites if the old contents is being put.
                 was_visual = true;
                 regname = cap.oap.regname;
-                regname = Misc.adjust_clip_reg(regname);
+                regname = adjust_clip_reg(regname);
                 if (regname == 0 || Util.isdigit(regname)
                     || (G.p_cb.getBoolean() && (regname == '*' || regname == '+'))) {
                   // the delete is going to overwrite the register we want to
                   // put, save it first.
-                  reg1 = Misc.get_register(regname, true);
+                  reg1 = get_register(regname, true);
                 }
 
                 /* Now delete the selected text. */
@@ -4636,8 +4640,8 @@ static private void nv_findpar(CMDARG cap, int dir)
                 if (reg1 != null) {
                   // Delete probably changed the register we want to put, save
                   // it first. Then put back what was there before the delete.
-                  reg2 = Misc.get_register(regname, false);
-                  Misc.put_register(regname, reg1);
+                  reg2 = get_register(regname, false);
+                  put_register(regname, reg1);
                 }
 
                 // When deleted a linewise Visual area, put the register as
@@ -4658,12 +4662,12 @@ static private void nv_findpar(CMDARG cap, int dir)
                   // forward.
                   dir = FORWARD;
               }
-              Misc.do_put(cap.oap.regname, dir, cap.count1, flags);
+              do_put(cap.oap.regname, dir, cap.count1, flags);
 
             } finally {
               // If a register was saved, put it back now.
               if (reg2 != null)
-                Misc.put_register(regname, reg2);
+                put_register(regname, reg2);
             }
 
             // What to reselect with "gv"?  Selecting the just put text seems to
@@ -4684,7 +4688,7 @@ static private void nv_findpar(CMDARG cap, int dir)
     //	    if (G.curwin.getWCursor().getLine() > G.curbuf.b_ml.ml_line_count)
     //	    {
     //		G.curwin.getWCursor().setLine(G.curbuf.b_ml.ml_line_count);
-    //		Misc.coladvance(MAXCOL);
+    //		coladvance(MAXCOL);
     //	    }
     //	}
             //auto_format(false, true);
@@ -4906,6 +4910,10 @@ static private void nv_findpar(CMDARG cap, int dir)
    */
   static String getCmdChars() {
     return showcmd_buf.toString();
+  }
+
+  private Normal()
+  {
   }
 
 }
