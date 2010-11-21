@@ -1,5 +1,7 @@
 package com.raelity.jvi.swing;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
@@ -12,35 +14,39 @@ import javax.swing.undo.UndoableEdit;
  * and allows explicit control of what
  * <tt>UndoableEdit</tt>s are coalesced into compound edits,
  * rather than using the rules defined by the edits themselves.
- * Groups are defined using BEGIN_COMIT_GROUP and END_COMIT_GROUP.
+ * Groups are defined with {@link BEGIN_COMIT_GROUP} and {@link END_COMIT_GROUP}.
  * Send these to UndoableEditListener. These must always be paired.
+ * Undo or Redo while coalescing edits delimit edits, there is an implicit
+ * END/BEGIN.
  * <p>
  * These use cases are supported.
  * </p>
  * <ol>
  * <li> Default behavior is defined by {@link UndoManager}.</li>
- * <li> <tt>UnddoableEdit</tt>s issued between {@link #BEGIN_COMIT_GROUP}
- * and {@link END_COMIT_GROUP} are placed into a single
+ * <li> <tt>UnddoableEdit</tt>s issued between BEGIN_COMIT_GROUP
+ * and END_COMIT_GROUP are placed into a single
  * {@link CompoundEdit}.
  * Thus <tt>undo()</tt> and <tt>redo()</tt> treat them 
  * as a single undo/redo.</li>
- * <li> Use {@link comitUndoGroup} to commit accumulated
- * <tt>UndoableEdit</tt>s into a single <tt>CompoundEdit</tt>
- * (and to continue accumulating);
- * an application could do this at strategic points, such as EndOfLine
- * input or cursor movement. In this way, the application can accumulate
- * large chunks.</li>
  * <li>BEGIN/END nest.</li>
  * </ol>
  * @see UndoManager
  */
 public class UndoGroupManager extends UndoManager {
+    private static final Logger LOG = Logger.getLogger(UndoGroupManager.class.getName());
     /** signals that edits are being accumulated */
     private int buildUndoGroup;
     /** accumulate edits here in undoGroup */
     private CompoundEdit undoGroup;
 
-    /** Start a group of edits which will be committed as a single edit. */
+    /**
+     * Start a group of edits which will be committed as a single edit
+     * for purpose of undo/redo.
+     * Nesting semantics are that any BEGIN_COMIT_GROUP and
+     * END_COMIT_GROUP delimits a comit-group.
+     * While coalescing edits, any undo/redo/save implicitly delimits
+     * a comit-group.
+     */
     public static final UndoableEdit BEGIN_COMIT_GROUP = new ComitGroupEdit();
     /** End a group of edits. */
     public static final UndoableEdit END_COMIT_GROUP = new ComitGroupEdit();
@@ -74,13 +80,14 @@ public class UndoGroupManager extends UndoManager {
      * Direct this <tt>UndoGroupManager</tt> to begin coalescing any
      * <tt>UndoableEdit</tt>s that are added into a <tt>CompoundEdit</tt>.
      * <p>If edits are already being coalesced and some have been 
-     * accumulated, they are commited as an atomic group and a new
+     * accumulated, they are committed as an atomic group and a new
      * group is started.
      * @see #addEdit
      * @see #endUndoGroup
      */
     private synchronized void beginUndoGroup() {
         commitUndoGroup();
+        LOG.log(Level.FINE, "beginUndoGroup: nesting {0}", buildUndoGroup);
         buildUndoGroup++;
     }
 
@@ -94,8 +101,12 @@ public class UndoGroupManager extends UndoManager {
      */
     private synchronized void endUndoGroup() {
         buildUndoGroup--;
-        if(buildUndoGroup < 0)
+        LOG.log(Level.FINE, "endUndoGroup: nesting {0}", buildUndoGroup);
+        if(buildUndoGroup < 0) {
+            LOG.log(Level.WARNING, null,
+                    new Exception("endUndoGroup without beginUndoGroup"));
             buildUndoGroup = 0;
+        }
         // slam buildUndoGroup to 0 to disable nesting
         commitUndoGroup();
     }
@@ -146,8 +157,8 @@ public class UndoGroupManager extends UndoManager {
      * Otherwise, add it to this UndoManager. In either case the
      * edit is saved for later <tt>undo</tt> or <tt>redo</tt>.
      * @return {@inheritDoc}
-     * @see #beginUndoGroup
-     * @see #endUndoGroup
+     * @see #BEGIN_COMIT_GROUP
+     * @see #END_COMIT_GROUP
      */
     @Override
     public synchronized boolean addEdit(UndoableEdit anEdit) {
