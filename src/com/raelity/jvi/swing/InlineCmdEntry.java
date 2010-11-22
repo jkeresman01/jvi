@@ -15,9 +15,9 @@ public class InlineCmdEntry extends CommandLine.CommandLineEntry {
     private MouseListener mouseListener;
     private boolean doneWithCommandLine;
     public InlineCmdEntry(){
-        this(ViCmdEntry.COLON_ENTRY);
+        this(ViCmdEntry.Type.COLON);
     }
-    public InlineCmdEntry(int type){
+    public InlineCmdEntry(ViCmdEntry.Type type){
         super(type);
 
         // rather than screwing with the FocusTraversalPolicy,

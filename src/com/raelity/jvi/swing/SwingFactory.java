@@ -57,7 +57,6 @@ import  java.beans.PropertyDescriptor;
 import  java.util.Collections;
 import  java.util.HashSet;
 import java.util.List;
-import  java.util.Map;
 import  java.util.Set;
 import  java.util.WeakHashMap;
 import  java.util.prefs.Preferences;
@@ -446,7 +445,7 @@ abstract public class SwingFactory implements ViFactory
     }
 
 
-    public ViCmdEntry createCmdEntry( int type )
+    public ViCmdEntry createCmdEntry( ViCmdEntry.Type type )
     {
         // ViCmdEntry cmdEntry = new DefaultCmdEntry(cmdLine);
         // return cmdEntry;

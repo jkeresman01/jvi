@@ -75,10 +75,10 @@ public class Search {
   private static String lastPattern;
   private static String lastSubstitution;
 
-  private static ViCmdEntry getSearchCommandEntry() {
+  static ViCmdEntry getSearchCommandEntry() {
     if(searchCommandEntry == null) {
       searchCommandEntry = ViManager.getFactory()
-                            .createCmdEntry(ViCmdEntry.SEARCH_ENTRY);
+                            .createCmdEntry(ViCmdEntry.Type.SEARCH);
       searchCommandEntry.addActionListener(
         new ActionListener() {
           public void actionPerformed(ActionEvent ev) {

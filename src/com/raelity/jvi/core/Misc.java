@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViCaretStyle;
 import com.raelity.jvi.ViFPOS;
@@ -61,6 +62,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.openide.util.lookup.ServiceProvider;
 
+import static com.raelity.jvi.core.ColonCommands.*;
 import static com.raelity.jvi.core.Constants.*;
 import static com.raelity.jvi.core.Edit.*;
 import static com.raelity.jvi.core.GetChar.*;
@@ -73,6 +75,8 @@ public class Misc implements ClipboardOwner {
   private static final Logger LOG = Logger.getLogger(Misc.class.getName());
   static final ClipboardOwner clipOwner = new Misc();
   private static final String PREF_REGISTERS = "registers";
+  private static final String PREF_SEARCH = "search";
+  private static final String PREF_COMMANDS = "commands";
   //////////////////////////////////////////////////////////////////
   //
   // "misc1.c"
@@ -93,10 +97,14 @@ public class Misc implements ClipboardOwner {
         String pname = evt.getPropertyName();
         if(pname.equals(ViManager.P_BOOT)) {
           read_viminfo_registers();
+          read_viminfo_search();
+          read_viminfo_command();
         } else if(pname.equals(ViManager.P_LATE_INIT)) {
           javaKeyMap = initJavaKeyMap();
         } else if(pname.equals(ViManager.P_SHUTDOWN)) {
           write_viminfo_registers();
+          write_viminfo_search();
+          write_viminfo_command();
         }
       }
     };
@@ -1158,6 +1166,61 @@ public class Misc implements ClipboardOwner {
       } catch (BackingStoreException ex) {
         //Logger.getLogger(Misc.class.getName()).log(Level.SEVERE, null, ex);
       }
+    }
+  }
+
+  private static void read_viminfo_search() {
+    List<String> l = readList(PREF_SEARCH);
+    getSearchCommandEntry().SetHistory(l);
+  }
+
+  private static void read_viminfo_command() {
+    List<String> l = readList(PREF_COMMANDS);
+    getColonCommandEntry().SetHistory(l);
+  }
+
+  private static void write_viminfo_search() {
+    ViCmdEntry ce = getSearchCommandEntry();
+    writeList(PREF_SEARCH, ce.getHistory());
+  }
+
+  private static void write_viminfo_command() {
+    ViCmdEntry ce = getColonCommandEntry();
+    writeList(PREF_COMMANDS, ce.getHistory());
+  }
+
+  private static List<String> readList(String nodeName)
+  {
+    List<String> l = new ArrayList<String>();
+    try {
+      Preferences prefs = ViManager.getFactory().getPreferences().node(nodeName);
+      int nKey = prefs.keys().length;
+      for(int i = 1; i <= nKey; i++) {
+        String s = prefs.get("" + i, "");
+        if(!s.isEmpty())
+          l.add(s);
+      }
+    } catch(BackingStoreException ex) {
+      LOG.log(Level.SEVERE, null, ex);
+    }
+    return l;
+  }
+
+  private static void writeList(String nodeName, List<String> l)
+  {
+    try {
+      Preferences prefs = ViManager.getFactory().getPreferences().node(nodeName);
+      prefs.removeNode();
+      prefs = ViManager.getFactory().getPreferences().node(nodeName);
+      int i = 1;
+      for(String s : l) {
+        prefs.put("" + i, s);
+        i++;
+      }
+      prefs.flush();
+    } catch(IllegalStateException ex) {
+    } catch(BackingStoreException ex) {
+      LOG.log(Level.SEVERE, null, ex);
     }
   }
 

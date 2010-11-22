@@ -82,7 +82,7 @@ public class TestText {
   }
 
   static WindowCmdEntry commandDialog
-          = new WindowCmdEntry(ViCmdEntry.COLON_ENTRY);
+          = new WindowCmdEntry(ViCmdEntry.Type.COLON);
 
   /** Bounce the event, modified, to this class's user. */
   static class SimpleEvent extends TextAction {

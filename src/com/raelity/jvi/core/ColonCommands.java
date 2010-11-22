@@ -76,11 +76,11 @@ public class ColonCommands
 
     private static ViCmdEntry colonCommandEntry;
 
-    private static ViCmdEntry getColonCommandEntry()
+    static ViCmdEntry getColonCommandEntry()
     {
         if ( colonCommandEntry == null ) {
             colonCommandEntry = ViManager.getFactory()
-                    .createCmdEntry(ViCmdEntry.COLON_ENTRY);
+                    .createCmdEntry(ViCmdEntry.Type.COLON);
             colonCommandEntry.addActionListener(
                     new ActionListener() {
                             public void actionPerformed(ActionEvent ev) {

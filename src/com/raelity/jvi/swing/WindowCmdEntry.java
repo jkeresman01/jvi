@@ -44,10 +44,9 @@ public class WindowCmdEntry extends CommandLine.CommandLineEntry {
     
     String title;
     
-    public WindowCmdEntry(int type) {
+    public WindowCmdEntry(ViCmdEntry.Type type) {
         super(type);
-        title = type == ViCmdEntry.SEARCH_ENTRY
-                ? "Search Pattern" : "Command";
+        title = type == ViCmdEntry.Type.SEARCH ? "Search Pattern" : "Command";
     }
     
     /**

@@ -39,7 +39,10 @@ import  java.awt.event.*;
 import  java.beans.PropertyChangeEvent;
 import  java.beans.PropertyChangeListener;
 import  java.lang.reflect.Method;
-import  java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -64,9 +67,9 @@ public class CommandLine extends JPanel
     static public final String COMMAND_LINE_KEYMAP = "viCommandLine";
     JLabel modeLabel = new JLabel();
     JComboBox combo = new JComboBox();
+    DefaultComboBoxModel model = (DefaultComboBoxModel)combo.getModel();
     GridBagLayout gridBagLayout1 = new GridBagLayout();
     private String mode;
-    private java.util.List<String> list;
     private int historySize;
     Border border1;
     boolean setKeymapActive;
@@ -227,13 +230,11 @@ public class CommandLine extends JPanel
      */
     public void clear()
     {
-        if ( historySize == 0 || list == null ) {
+        if ( historySize == 0 ) {
             getTextComponent().setText("");
             return;
         }
-        list.add(0, "");
-        combo.insertItemAt("", 0);
-        combo.setSelectedIndex(0);
+        model.insertElementAt("", 0);
 
         // ??? prevent re-execute last command on <CR>
         getTextComponent().setText("");
@@ -297,29 +298,24 @@ public class CommandLine extends JPanel
 
 
     /**
-     *  This installs the history list. This allows multiple history
-     *  lists to share the same component.
+     *  This installs the history list.
      */
-    public void setList(java.util.List<String> newList)
+    public void SetHistory(List<String> l)
     {
-        list = newList;
-        combo.removeAllItems();
-        if(list == null) {
-            return;
-        }
-        Iterator iter = newList.iterator();
-        while(iter.hasNext()) {
-            combo.addItem(iter.next());
+        model.removeAllElements();
+        for(String s : l) {
+            model.addElement(s);
         }
     }
 
-
-    /** Retrieve the history list. */
-    public java.util.List getList()
+    public List<String> getHistory()
     {
-        return list;
+        List<String> l = new ArrayList<String>();
+        for(int i = 0; i < model.getSize(); i++) {
+            l.add((String)model.getElementAt(i));
+        }
+        return l;
     }
-
 
     /**
      *  Make the argument command the top of the list.
@@ -327,30 +323,18 @@ public class CommandLine extends JPanel
      */
     public void makeTop( String command )
     {
-        if ( historySize == 0 || list == null ) {
+        if ( historySize == 0 ) {
             return;
         }
         // remove the empty-blank element
-        int i = list.indexOf("");
-        if(i >= 0) {  // it really must be in the list
-            list.remove(i);
-            combo.removeItemAt(i);
-        }
+        model.removeElement("");
         // if the empty-blank string was selected we're done
         if(command.equals("")) {
             return;
         }
         // now move the selected string to the top of the list
-        i = list.indexOf(command);
-        if(i == 0) {
-            return;  // already on the top
-        }
-        if(i > 0) {  // if its already in the list, remove it.
-            list.remove(i);
-            combo.removeItemAt(i);
-        }
-        list.add(0, command);
-        combo.insertItemAt(command, 0);
+        model.removeElement(command);
+        model.insertElementAt(command, 0);
         combo.setSelectedIndex(0);
         trimList();
     }
@@ -363,6 +347,7 @@ public class CommandLine extends JPanel
             throw new IllegalArgumentException();
         }
         historySize = newHistorySize;
+        trimList();
     }
 
 
@@ -375,12 +360,8 @@ public class CommandLine extends JPanel
 
     private void trimList()
     {
-        if(list == null) {
-            return;
-        }
-        while(list.size() > historySize) {
-            combo.removeItemAt(list.size() - 1);
-            list.remove(list.size() - 1);
+        while(model.getSize() > historySize) {
+            model.removeElementAt(model.getSize() - 1);
         }
     }
 
@@ -539,18 +520,17 @@ public class CommandLine extends JPanel
 
         protected MyEventListenerList ell = new MyEventListenerList();
 
-        protected int entryType;
+        protected ViCmdEntry.Type entryType;
         protected CommandLine commandLine;
         protected ViTextView tv;
 
         protected String initialText;
 
-        CommandLineEntry(int type)
+        CommandLineEntry(ViCmdEntry.Type type)
         {
             entryType=type;
             commandLine = new CommandLine();
             commandLine.setupBorder();
-            commandLine.setList(new LinkedList<String>());
 
             commandLine.addActionListener(new ActionListener()
             {
@@ -560,8 +540,7 @@ public class CommandLine extends JPanel
                 }
             });
 
-            commandLine.setMode(entryType == ViCmdEntry.COLON_ENTRY
-                    ? ":" : "/");
+            commandLine.setMode(entryType == ViCmdEntry.Type.COLON ? ":" : "/");
 
             if(ViManager.getOsVersion().isMac()) {
                 // MAC needs a little TLC since the selection is changed
@@ -619,6 +598,18 @@ public class CommandLine extends JPanel
             commandLine.getTextComponent().addFocusListener(focusSetSelection);
 
             finishActivate();
+        }
+
+        @Override
+        public void SetHistory(List<String> l)
+        {
+            commandLine.SetHistory(l);
+        }
+
+        @Override
+        public List<String> getHistory()
+        {
+            return commandLine.getHistory();
         }
 
         /**

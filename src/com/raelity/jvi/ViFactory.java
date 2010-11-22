@@ -156,7 +156,7 @@ public interface ViFactory
      * A command entry object will be created if needed.
      * @return a CmdEntry object to handle the specified type of user input.
      */
-    public ViCmdEntry createCmdEntry(int type);
+    public ViCmdEntry createCmdEntry(ViCmdEntry.Type type);
 
     public Preferences getPreferences();
 

@@ -21,7 +21,7 @@ package com.raelity.jvi;
 
 import java.awt.Component;
 import java.awt.event.ActionListener;
-import java.util.TooManyListenersException;
+import java.util.List;
 import javax.swing.event.ChangeListener;
 
 /** This is used by vi to get command line input.
@@ -38,6 +38,7 @@ import javax.swing.event.ChangeListener;
  * </p>
  */
 public interface ViCmdEntry {
+    enum Type { SEARCH, COLON }
     static public final int SEARCH_ENTRY = 1;
     static public final int COLON_ENTRY = 2;
 
@@ -77,6 +78,16 @@ public interface ViCmdEntry {
      * Retrieve the component used for the data entry.
      */
     public Component getTextComponent();
+
+    /**
+     * Retrieve the history.
+     */
+    public List<String> getHistory();
+
+    /**
+     * Set the history.
+     */
+    public void SetHistory(List<String> l);
 
     /** When command entry is complete, this listener is invoked.
      * The event is the key event that stopped entry, either a
