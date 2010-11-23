@@ -100,11 +100,11 @@ abstract public class SimpleBuffer extends SwingBuffer
     }
 
     public void do_beginInsertUndo() {
-        sendUndoableEdit(UndoGroupManager.BEGIN_COMIT_GROUP);
+        sendUndoableEdit(UndoGroupManager.BEGIN_COMMIT_GROUP);
     }
 
     public void do_endInsertUndo() {
-        sendUndoableEdit(UndoGroupManager.END_COMIT_GROUP);
+        sendUndoableEdit(UndoGroupManager.END_COMMIT_GROUP);
     }
 
     void sendUndoableEdit(UndoableEdit ue) {

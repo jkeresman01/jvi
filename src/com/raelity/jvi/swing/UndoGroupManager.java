@@ -14,7 +14,7 @@ import javax.swing.undo.UndoableEdit;
  * and allows explicit control of what
  * <tt>UndoableEdit</tt>s are coalesced into compound edits,
  * rather than using the rules defined by the edits themselves.
- * Groups are defined with {@link BEGIN_COMIT_GROUP} and {@link END_COMIT_GROUP}.
+ * Groups are defined with {@link BEGIN_COMMIT_GROUP} and {@link END_COMMIT_GROUP}.
  * Send these to UndoableEditListener. These must always be paired.
  * Undo or Redo while coalescing edits delimit edits, there is an implicit
  * END/BEGIN.
@@ -23,8 +23,8 @@ import javax.swing.undo.UndoableEdit;
  * </p>
  * <ol>
  * <li> Default behavior is defined by {@link UndoManager}.</li>
- * <li> <tt>UnddoableEdit</tt>s issued between BEGIN_COMIT_GROUP
- * and END_COMIT_GROUP are placed into a single
+ * <li> <tt>UnddoableEdit</tt>s issued between BEGIN_COMMIT_GROUP
+ * and END_COMMIT_GROUP are placed into a single
  * {@link CompoundEdit}.
  * Thus <tt>undo()</tt> and <tt>redo()</tt> treat them 
  * as a single undo/redo.</li>
@@ -42,14 +42,14 @@ public class UndoGroupManager extends UndoManager {
     /**
      * Start a group of edits which will be committed as a single edit
      * for purpose of undo/redo.
-     * Nesting semantics are that any BEGIN_COMIT_GROUP and
-     * END_COMIT_GROUP delimits a comit-group.
+     * Nesting semantics are that any BEGIN_COMMIT_GROUP and
+     * END_COMMIT_GROUP delimits a commit-group.
      * While coalescing edits, any undo/redo/save implicitly delimits
-     * a comit-group.
+     * a commit-group.
      */
-    public static final UndoableEdit BEGIN_COMIT_GROUP = new ComitGroupEdit();
+    public static final UndoableEdit BEGIN_COMMIT_GROUP = new ComitGroupEdit();
     /** End a group of edits. */
-    public static final UndoableEdit END_COMIT_GROUP = new ComitGroupEdit();
+    public static final UndoableEdit END_COMMIT_GROUP = new ComitGroupEdit();
 
     /** SeparateEdit tags an UndoableEdit so the
      * UndoGroupManager does not coalesce it.
@@ -67,9 +67,9 @@ public class UndoGroupManager extends UndoManager {
     @Override
     public void undoableEditHappened(UndoableEditEvent ue)
     {
-        if(ue.getEdit() == BEGIN_COMIT_GROUP) {
+        if(ue.getEdit() == BEGIN_COMMIT_GROUP) {
             beginUndoGroup();
-        } else if(ue.getEdit() == END_COMIT_GROUP) {
+        } else if(ue.getEdit() == END_COMMIT_GROUP) {
             endUndoGroup();
         } else {
             super.undoableEditHappened(ue);
@@ -157,8 +157,8 @@ public class UndoGroupManager extends UndoManager {
      * Otherwise, add it to this UndoManager. In either case the
      * edit is saved for later <tt>undo</tt> or <tt>redo</tt>.
      * @return {@inheritDoc}
-     * @see #BEGIN_COMIT_GROUP
-     * @see #END_COMIT_GROUP
+     * @see #BEGIN_COMMIT_GROUP
+     * @see #END_COMMIT_GROUP
      */
     @Override
     public synchronized boolean addEdit(UndoableEdit anEdit) {
