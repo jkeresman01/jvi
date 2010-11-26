@@ -76,7 +76,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.3.1.beta2.7");
+    public static final jViVersion version = new jViVersion("1.3.1.beta2.8");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -632,6 +632,7 @@ public class ViManager
         }
     }
     
+    // NEEDSWORK: add another parameter flag about how to handle throw?
     public static void runInDispatch(boolean wait, Runnable runnable) {
         if(EventQueue.isDispatchThread()) {
             runnable.run();
@@ -648,9 +649,8 @@ if(false) {
                 LOG.log(Level.SEVERE, null, ex);
             }
             if(rl.getThrowable() != null) {
-                RuntimeException ex = new RuntimeException(
+                throw new RuntimeException(
                         "After wait after invokeLater", rl.getThrowable());
-                throw ex;
             }
 } else {
             //
@@ -664,8 +664,9 @@ if(false) {
             } catch (InvocationTargetException ex) {
                 ex1 = ex;
             }
-            if(ex1 != null)
-                LOG.log(Level.SEVERE, null, ex1);
+            if(ex1 != null) {
+                throw new RuntimeException("After wait after invokeLater", ex1);
+            }
 }
         }
     }
