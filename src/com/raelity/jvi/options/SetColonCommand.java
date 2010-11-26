@@ -38,7 +38,9 @@ public class SetColonCommand extends ColonCommands.ColonAction
   private static final
           Logger LOG = Logger.getLogger(SetColonCommand.class.getName());
 
-  @ServiceProvider(service=ViInitialization.class, path="jVi/init")
+  @ServiceProvider(service=ViInitialization.class,
+                   path="jVi/init",
+                   position=10)
   public static class Init implements ViInitialization
   {
     @Override

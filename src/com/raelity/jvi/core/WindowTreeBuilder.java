@@ -72,7 +72,9 @@ public abstract class WindowTreeBuilder {
     }
 
     private static boolean didInit;
-    @ServiceProvider(service=ViInitialization.class, path="jVi/init")
+    @ServiceProvider(service=ViInitialization.class,
+                     path="jVi/init",
+                     position=10)
     public static class Init implements ViInitialization
     {
         @Override

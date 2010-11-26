@@ -37,6 +37,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -48,6 +49,7 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Keymap;
+import org.openide.util.Lookup;
 
 import org.openide.util.lookup.Lookups;
 
@@ -73,7 +75,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.3.1.beta2.3");
+    public static final jViVersion version = new jViVersion("1.3.1.beta2.4");
 
     private static com.raelity.jvi.core.Hook core;
 

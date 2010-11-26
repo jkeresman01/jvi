@@ -82,7 +82,9 @@ public class Misc implements ClipboardOwner {
   // "misc1.c"
   //
 
-    @ServiceProvider(service=ViInitialization.class, path="jVi/init")
+    @ServiceProvider(service=ViInitialization.class,
+                     path="jVi/init",
+                     position=10)
     public static class Init implements ViInitialization
     {
       public void init()
