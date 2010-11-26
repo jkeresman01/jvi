@@ -31,13 +31,13 @@ import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.SystemFlavorMap;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -45,11 +45,11 @@ import java.util.logging.Logger;
 import java.util.Map;
 import java.util.prefs.Preferences;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Keymap;
-import org.openide.util.Lookup;
 
 import org.openide.util.lookup.Lookups;
 
@@ -75,7 +75,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.3.1.beta2.5");
+    public static final jViVersion version = new jViVersion("1.3.1.beta2.6");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -597,6 +597,59 @@ public class ViManager
                                 boolean clearDst)
     {
         CopyPreferences p = new CopyPreferences(dst, src, clearDst);
+    }
+
+    private static class RunLatched implements Runnable
+    {
+        Runnable r;
+        CountDownLatch latch;
+        Throwable ex;
+
+        public RunLatched(Runnable r, CountDownLatch latch)
+        {
+            this.r = r;
+            this.latch = latch;
+        }
+
+        @Override
+        public void run()
+        {
+            try {
+                r.run();
+            }
+            catch (Throwable ex1) {
+                ex = ex1;
+            }
+            finally {
+                latch.countDown();
+            }
+        }
+
+        Throwable getThrowable()
+        {
+            return ex;
+        }
+    }
+    
+    public static void runInDispatch(boolean wait, Runnable runnable) {
+        if(EventQueue.isDispatchThread()) {
+            runnable.run();
+        } else if(!wait) {
+            EventQueue.invokeLater(runnable);
+        } else {
+            CountDownLatch latch = new CountDownLatch(1);
+            RunLatched rl = new RunLatched(runnable, latch);
+            EventQueue.invokeLater(rl);
+            try {
+                latch.await();
+            } catch(InterruptedException ex) {
+            }
+            if(rl.getThrowable() != null) {
+                RuntimeException ex = new RuntimeException(
+                        "After wait after invokeLater", rl.getThrowable());
+                throw ex;
+            }
+        }
     }
 }
 
