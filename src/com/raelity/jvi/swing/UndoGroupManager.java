@@ -14,7 +14,8 @@ import javax.swing.undo.UndoableEdit;
  * and allows explicit control of what
  * <tt>UndoableEdit</tt>s are coalesced into compound edits,
  * rather than using the rules defined by the edits themselves.
- * Groups are defined with {@link BEGIN_COMMIT_GROUP} and {@link END_COMMIT_GROUP}.
+ * Groups are defined with {@link #BEGIN_COMMIT_GROUP}
+ * and {@link #END_COMMIT_GROUP}.
  * Send these to UndoableEditListener. These must always be paired.
  * Undo or Redo while coalescing edits delimit edits, there is an implicit
  * END/BEGIN.
@@ -121,7 +122,7 @@ public class UndoGroupManager extends UndoManager {
      * This has no effect if edits are not being coalesced, for example
      * <tt>beginUndoGroup</tt> has not been called.
      */
-    private synchronized void commitUndoGroup() {
+    protected synchronized void commitUndoGroup() {
         if(undoGroup == null) {
             return;
         }
