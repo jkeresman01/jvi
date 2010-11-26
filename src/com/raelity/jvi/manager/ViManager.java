@@ -75,7 +75,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.3.1.beta2.4");
+    public static final jViVersion version = new jViVersion("1.3.1.beta2.5");
 
     private static com.raelity.jvi.core.Hook core;
 
