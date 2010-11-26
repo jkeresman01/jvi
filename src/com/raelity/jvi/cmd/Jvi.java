@@ -227,7 +227,7 @@ public class Jvi
         });
 
         try {
-            SwingUtilities.invokeAndWait(new Runnable() {
+            ViManager.runInDispatch(true, new Runnable() {
                     public void run() {
                         Toolkit.getDefaultToolkit().setDynamicLayout(true);
                         m_frame1 = makeFrame();
@@ -265,7 +265,7 @@ public class Jvi
 
         // invoke and wait to make sure widget is fully drawn.
         try {
-            SwingUtilities.invokeAndWait(new Runnable() {
+            ViManager.runInDispatch(true, new Runnable() {
                     public void run() {
                         PlayFactory.installKeymap(m_frame1.getEditor());
                         if ( make2Frames ) {

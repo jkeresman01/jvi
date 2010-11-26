@@ -38,6 +38,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.reflect.InvocationTargetException;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -75,7 +76,7 @@ public class ViManager
     // 1.0.0.beta2 is NB vers 0.9.6.4
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
-    public static final jViVersion version = new jViVersion("1.3.1.beta2.6");
+    public static final jViVersion version = new jViVersion("1.3.1.beta2.7");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -637,18 +638,35 @@ public class ViManager
         } else if(!wait) {
             EventQueue.invokeLater(runnable);
         } else {
+if(false) {
             CountDownLatch latch = new CountDownLatch(1);
             RunLatched rl = new RunLatched(runnable, latch);
             EventQueue.invokeLater(rl);
             try {
                 latch.await();
             } catch(InterruptedException ex) {
+                LOG.log(Level.SEVERE, null, ex);
             }
             if(rl.getThrowable() != null) {
                 RuntimeException ex = new RuntimeException(
                         "After wait after invokeLater", rl.getThrowable());
                 throw ex;
             }
+} else {
+            //
+            // This path creates the lookup services bug more easily
+            //
+            Exception ex1 = null;
+            try {
+                EventQueue.invokeAndWait(runnable);
+            } catch (InterruptedException ex) {
+                ex1 = ex;
+            } catch (InvocationTargetException ex) {
+                ex1 = ex;
+            }
+            if(ex1 != null)
+                LOG.log(Level.SEVERE, null, ex1);
+}
         }
     }
 }

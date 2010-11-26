@@ -71,7 +71,7 @@ public class TestText {
     /*
     final Document d = frame.jEditorPane1.getDocument();
     try {
-      SwingUtilities.invokeAndWait( new Runnable() {
+      ViManager.runInDispatch(true, new Runnable() {
         public void run() {
           System.out.println("Length: " + d.getLength());
         }});
