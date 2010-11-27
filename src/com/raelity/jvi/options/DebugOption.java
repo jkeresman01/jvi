@@ -24,7 +24,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * This jVi option is for debug, based on enum of logger level.
+ * It supports getBoolean, with a variation that supplies a logger level.
+ * It also support some print methods.
+ * 
  * @author Ernie Rael <err at raelity.com>
  */
 public class DebugOption extends EnumStringOption
@@ -67,14 +70,36 @@ public class DebugOption extends EnumStringOption
     }
 
     @Override
-    public boolean getBoolean()
+    final public boolean getBoolean()
     {
-        return logger.isLoggable(Level.SEVERE);
+        return logger.isLoggable(Level.ALL);
     }
 
-    public boolean getBoolean(Level level)
+    final public boolean getBoolean(Level level)
     {
         return logger.isLoggable(level);
+    }
+
+    final public void println(String s)
+    {
+        println(Level.ALL, s);
+    }
+
+    final public void println(Level level, String s)
+    {
+        if(getBoolean(level))
+            System.err.println(s);
+    }
+
+    final public void printf(String format, Object... args)
+    {
+        printf(Level.ALL, format, args);
+    }
+
+    final public void printf(Level level, String format, Object... args)
+    {
+        if(getBoolean(level))
+            System.err.printf(format, args);
     }
 
     public Logger getLogger()
