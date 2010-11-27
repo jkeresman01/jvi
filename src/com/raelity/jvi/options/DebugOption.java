@@ -72,7 +72,7 @@ public class DebugOption extends EnumStringOption
     @Override
     final public boolean getBoolean()
     {
-        return logger.isLoggable(Level.ALL);
+        return logger.isLoggable(Level.SEVERE);
     }
 
     final public boolean getBoolean(Level level)
@@ -82,7 +82,7 @@ public class DebugOption extends EnumStringOption
 
     final public void println(String s)
     {
-        println(Level.ALL, s);
+        println(Level.SEVERE, s);
     }
 
     final public void println(Level level, String s)
@@ -93,7 +93,7 @@ public class DebugOption extends EnumStringOption
 
     final public void printf(String format, Object... args)
     {
-        printf(Level.ALL, format, args);
+        printf(Level.SEVERE, format, args);
     }
 
     final public void printf(Level level, String format, Object... args)
