@@ -62,7 +62,7 @@ import static com.raelity.jvi.core.Misc01.*;
  */
 public class ColonCommands
 {
-    private static Logger LOG = Logger.getLogger(ColonCommands.class.getName());
+    private static final Logger LOG = Logger.getLogger(ColonCommands.class.getName());
     private static AbbrevLookup m_commands = new AbbrevLookup();
 
     static String lastCommand;
