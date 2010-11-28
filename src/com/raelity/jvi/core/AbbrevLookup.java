@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class AbbrevLookup
 {
-    List<CommandElement> list = new ArrayList<CommandElement>();
+    private List<CommandElement> list = new ArrayList<CommandElement>();
     private CommandElement aCommandElement = new CommandElement();
 
 
@@ -50,9 +50,33 @@ public class AbbrevLookup
      * This method returns a read-only copy of the list.
      * The elements of the list are {@link CommandElement}.
      */
-    public List getList()
+    public List<CommandElement> getList()
     {
         return Collections.unmodifiableList(list);
+    }
+
+    //
+    // NEEDSWORK: keep these lists around
+    //
+
+    public List<String> getNameList()
+    {
+        List<String> l = new ArrayList<String>(list.size());
+        for(CommandElement ce : list) {
+            if(Character.isLetter(ce.getName().charAt(0)))
+                l.add(ce.getName());
+        }
+        return Collections.unmodifiableList(l);
+    }
+
+    public List<String> getAbrevList()
+    {
+        List<String> l = new ArrayList<String>(list.size());
+        for(CommandElement ce : list) {
+            if(Character.isLetter(ce.getName().charAt(0)))
+                l.add(ce.getAbbrev());
+        }
+        return Collections.unmodifiableList(l);
     }
 
 
@@ -213,6 +237,7 @@ public class AbbrevLookup
                     && this.name.startsWith(tryName);
         }
 
+        @Override
         public int compareTo(CommandElement o1)
         {
             return abbrev.compareTo(o1.abbrev);
@@ -224,6 +249,16 @@ public class AbbrevLookup
             return o1 instanceof CommandElement
                     ? abbrev.equals(o1)
                     : false;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            int hash = 3;
+            hash =
+                    29 * hash +
+                    (this.abbrev != null ? this.abbrev.hashCode() : 0);
+            return hash;
         }
 
     } // end inner class CommandElement

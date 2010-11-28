@@ -148,6 +148,12 @@ public class CommandLine extends JPanel
                 KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, set);
     }
 
+    void setupFont(Font srcFont)
+    {
+        modeLabel.setFont(srcFont.deriveFont(Font.BOLD));
+        combo.setFont(srcFont);
+    }
+
 
     /**
      *  This is used to initialize the text of the combo box, needed so that
@@ -592,6 +598,8 @@ public class CommandLine extends JPanel
                 commandLine.makeTop(initialText);
                 return;
             }
+            Font f = tv.getEditorComponent().getFont();
+            commandLine.setupFont(f);
             commandLine.setMode(mode);
             commandLine.init(initialText);
 

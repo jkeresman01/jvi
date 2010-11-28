@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.core.AbbrevLookup.CommandElement;
 import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViCmdEntry;
@@ -502,11 +503,21 @@ static int get_address(
 
 /**
     * This method returns a read-only list of the registered commands.
-    * The elements of the list are {@link AbbrevLookup.CommandElement}.
+    * The elements of the list are {@link CommandElement}.
     */
-static public List getCommandList()
+static public List<CommandElement> getList()
 {
     return m_commands.getList();
+}
+
+static public List<String> getNameList()
+{
+    return m_commands.getNameList();
+}
+
+static public List<String> getAbrevList()
+{
+    return m_commands.getAbrevList();
 }
 
 
@@ -570,7 +581,7 @@ static public class ColonEvent extends ActionEvent
     /** The command word as input */
     String inputCommand;
     /** The command associated with this event */
-    AbbrevLookup.CommandElement commandElement;
+    CommandElement commandElement;
     /** indicates that the command word has a trailing "!" */
     boolean bang;
     /** command line as entered */
