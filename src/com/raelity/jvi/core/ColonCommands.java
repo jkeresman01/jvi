@@ -20,7 +20,6 @@
 
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.core.AbbrevLookup.CommandElement;
 import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViCmdEntry;
@@ -84,6 +83,7 @@ public class ColonCommands
                     .createCmdEntry(ViCmdEntry.Type.COLON);
             colonCommandEntry.addActionListener(
                     new ActionListener() {
+                @Override
                             public void actionPerformed(ActionEvent ev) {
                                 colonEntryComplete(ev);
                             }
@@ -104,7 +104,7 @@ static private void colonEntryComplete( ActionEvent ev )
         String cmd = ev.getActionCommand();
         // if not <CR> must be an escape, just ignore it
         if(cmd.charAt(0) == '\n') {
-            if( ! commandLine.equals("")) {
+            if( ! commandLine.isEmpty()) {
                 lastCommand = commandLine;
                 executeCommand(parseCommand(commandLine));
             }
@@ -334,7 +334,7 @@ static ColonEvent parseCommand( String commandLine )
     String command = commandLine.substring(sidx01, sidx02);
     cev.inputCommand = command;
     cev.iArgString = sidx02;
-    AbbrevLookup.CommandElement ce = m_commands.lookupCommand(command);
+        ColonCommandItem ce = m_commands.lookupCommand(command);
     if(ce == null) {
         Msg.emsg("Not an editor command: " + command);
         Util.vim_beep();
@@ -392,17 +392,17 @@ static ColonEvent parseCommand( String commandLine )
 
 
 /**
-    * get a single EX address
-    *
-    * Set ptr to the next character after the part that was interpreted.
-    * Set ptr to NULL when an error is encountered.
-    *
-    * Return MAXLNUM when no Ex address was found.
-    *
-    * @param skip only skip the address, don't use it
-    * @return the index of next character after the part that was interpreted
-    * else minus one if there was an error;
-    */
+ * get a single EX address
+ *
+ * Set ptr to the next character after the part that was interpreted.
+ * Set ptr to NULL when an error is encountered.
+ *
+ * Return MAXLNUM when no Ex address was found.
+ *
+ * @param skip only skip the address, don't use it
+ * @return the index of next character after the part that was interpreted
+ * else minus one if there was an error;
+ */
 static int get_address(
         String s,
         int sidx,
@@ -502,10 +502,10 @@ static int get_address(
 
 
 /**
-    * This method returns a read-only list of the registered commands.
-    * The elements of the list are {@link CommandElement}.
-    */
-static public List<CommandElement> getList()
+ * This method returns a read-only list of the registered commands.
+ * The elements of the list are {@link ColonCommandItem}.
+ */
+static public List<ColonCommandItem> getList()
 {
     return m_commands.getList();
 }
@@ -581,7 +581,7 @@ static public class ColonEvent extends ActionEvent
     /** The command word as input */
     String inputCommand;
     /** The command associated with this event */
-    CommandElement commandElement;
+    ColonCommandItem commandElement;
     /** indicates that the command word has a trailing "!" */
     boolean bang;
     /** command line as entered */

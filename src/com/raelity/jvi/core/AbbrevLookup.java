@@ -31,26 +31,12 @@ import java.util.List;
  */
 public class AbbrevLookup
 {
-    private List<CommandElement> list = new ArrayList<CommandElement>();
-    private CommandElement aCommandElement = new CommandElement();
-
-
-    // ............
-
-
-    /**
-     *  Default constructor.
-     */
-    public AbbrevLookup()
-    {
-    }
-
+    private List<ColonCommandItem> list = new ArrayList<ColonCommandItem>();
 
     /**
      * This method returns a read-only copy of the list.
-     * The elements of the list are {@link CommandElement}.
      */
-    public List<CommandElement> getList()
+    public List<ColonCommandItem> getList()
     {
         return Collections.unmodifiableList(list);
     }
@@ -62,7 +48,7 @@ public class AbbrevLookup
     public List<String> getNameList()
     {
         List<String> l = new ArrayList<String>(list.size());
-        for(CommandElement ce : list) {
+        for(ColonCommandItem ce : list) {
             if(Character.isLetter(ce.getName().charAt(0)))
                 l.add(ce.getName());
         }
@@ -72,7 +58,7 @@ public class AbbrevLookup
     public List<String> getAbrevList()
     {
         List<String> l = new ArrayList<String>(list.size());
-        for(CommandElement ce : list) {
+        for(ColonCommandItem ce : list) {
             if(Character.isLetter(ce.getName().charAt(0)))
                 l.add(ce.getAbbrev());
         }
@@ -96,7 +82,7 @@ public class AbbrevLookup
         if ( abbrev == null || name == null || value == null ) {
             throw new IllegalArgumentException("All arguments must be non-null");
         }
-        int idx = Collections.binarySearch(list, getKey(abbrev));
+        int idx = Collections.binarySearch(list, getSearchKey(abbrev));
         if ( idx >= 0 ) {
             throw new IllegalArgumentException("The abbreviation '" + abbrev
                     + "' is already registered");
@@ -104,7 +90,7 @@ public class AbbrevLookup
         // spin through the list insuring command name not in use
         Iterator iter = list.iterator();
         while( iter.hasNext() ) {
-            if  ( ((CommandElement)iter.next()).name.equals(name) ) {
+            if  ( ((ColonCommandItem)iter.next()).getName().equals(name) ) {
                 throw new IllegalArgumentException("The name '" + abbrev
                         + "' is already registered");
             }
@@ -115,7 +101,7 @@ public class AbbrevLookup
         }
         // turn idx into something that can be used for insertion into list
         idx = -idx - 1;
-        list.add(idx, new CommandElement(abbrev, name, value));
+        list.add(idx, new ColonCommandItem(abbrev, name, value));
     }
 
 
@@ -133,7 +119,7 @@ public class AbbrevLookup
         if ( abbrev == null ) {
             throw new IllegalArgumentException("Null argument.");
         }
-        int idx = Collections.binarySearch(list, getKey(abbrev));
+        int idx = Collections.binarySearch(list, getSearchKey(abbrev));
         return idx >= 0
                 ? ( list.remove(idx) != null )
                 : false ;
@@ -144,22 +130,22 @@ public class AbbrevLookup
      * Search the list for the command. Sequentially search a list starting
      * with the list that start with the first letter of the input command.
      */
-    public CommandElement lookupCommand( String command )
+    public ColonCommandItem lookupCommand( String command )
     {
-        CommandElement ce = null;
+        ColonCommandItem ce = null;
         if ( command.length() == 0 ) {
             return ce;
         }
         String firstChar = command.substring(0, 1);
         String nextChar = String.valueOf((char)(command.charAt(0) + 1));
-        int cidx = Collections.binarySearch(list, getKey(firstChar));
+        int cidx = Collections.binarySearch(list, getSearchKey(firstChar));
         if ( cidx < 0 ) {
             cidx = -cidx - 1;
         }
         Iterator iter = list.listIterator(cidx);
         while ( iter.hasNext() ) {
-            CommandElement ce01 = (CommandElement)iter.next();
-            if ( ce01.abbrev.compareTo(nextChar) >= 0 ) {
+            ColonCommandItem ce01 = (ColonCommandItem)iter.next();
+            if ( ce01.getAbbrev().compareTo(nextChar) >= 0 ) {
                 break; // not in list
             }
             if ( ce01.match(command) ) {
@@ -170,98 +156,13 @@ public class AbbrevLookup
         return ce;
     }
 
-
     /**
      *  Return a command element that can be used for searching the
      *  command list. The returned element is reusable.
      */
-    private CommandElement getKey(String abbrev)
+    private ColonCommandItem getSearchKey(String abbrev)
     {
-        aCommandElement.abbrev = abbrev;
-        return aCommandElement;
+        return new ColonCommandItem(abbrev);
     }
 
-
-    /**
-     * A registered command is represented by this class.
-     * Comparison and equality is based on the command abbreviation.
-     */
-    public static class CommandElement implements Comparable<CommandElement>
-    {
-        private String abbrev;
-        private String name;
-        private Object value;
-
-        CommandElement()
-        {
-            this(null,null,null);
-        }
-
-        CommandElement( String abbrev, String name, Object value )
-        {
-            this.abbrev = abbrev;
-            this.name = name;
-            this.value = value;
-        }
-
-        /**
-         * @return the abbreviation for the command
-         */
-        public String getAbbrev()
-        {
-            return abbrev;
-        }
-
-        /**
-         * @return the full command name
-         */
-        public String getName()
-        {
-            return name;
-        }
-
-        /**
-         * @return the value.
-         */
-        public Object getValue()
-        {
-            return value;
-        }
-
-        /**
-         * Check if the argument can invoke this command.
-         */
-        public boolean match(String tryName)
-        {
-            return tryName.startsWith(this.abbrev)
-                    && this.name.startsWith(tryName);
-        }
-
-        @Override
-        public int compareTo(CommandElement o1)
-        {
-            return abbrev.compareTo(o1.abbrev);
-        }
-
-        @Override
-        public boolean equals(Object o1)
-        {
-            return o1 instanceof CommandElement
-                    ? abbrev.equals(o1)
-                    : false;
-        }
-
-        @Override
-        public int hashCode()
-        {
-            int hash = 3;
-            hash =
-                    29 * hash +
-                    (this.abbrev != null ? this.abbrev.hashCode() : 0);
-            return hash;
-        }
-
-    } // end inner class CommandElement
-
-
-} // end com.raelity.jvi.AbbrevLookup
+} 

@@ -651,7 +651,7 @@ private static void addDebugColonCommands()
     //
     // Some debug commands
     //
-    ColonCommands.register("optionsDump", "optionsDump", new ActionListener() {
+    ColonCommands.register("dumpOptions", "dumpOptions", new ActionListener() {
         public void actionPerformed(ActionEvent e) {
         try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -670,20 +670,20 @@ private static void addDebugColonCommands()
     });
     ColonCommands.register("optionsDelete", "optionsDelete", new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-        try {
-            Preferences prefs = ViManager.getFactory().getPreferences();
-            String keys[] = prefs.keys();
-            for (String key : keys) {
-            prefs.remove(key);
+            try {
+                Preferences prefs = ViManager.getFactory().getPreferences();
+                String keys[] = prefs.keys();
+                for (String key : keys) {
+                    prefs.remove(key);
+                }
+                prefs = prefs.node(ViManager.PREFS_KEYS);
+                keys = prefs.keys();
+                for (String key : keys) {
+                    prefs.remove(key);
+                }
+            } catch (BackingStoreException ex) {
+                LOG.log(Level.SEVERE, null, ex);
             }
-            prefs = prefs.node(ViManager.PREFS_KEYS);
-            keys = prefs.keys();
-            for (String key : keys) {
-            prefs.remove(key);
-            }
-        } catch (BackingStoreException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        }
         }
     });
     ColonCommands.register("optionDelete", "optionDelete",

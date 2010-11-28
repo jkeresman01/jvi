@@ -201,31 +201,6 @@ public class Jvi
 
         ViManager.setViFactory(new PlayFactory(mapJepSd));
 
-        ColonCommands.register("dumpOptions", "dumpOptions", new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    ViManager.getFactory()
-                            .getPreferences().exportSubtree(System.out);
-                } catch (BackingStoreException ex) {
-                    ex.printStackTrace();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
-        ColonCommands.register("deleteOptions", "deleteOptions", new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    String keys[] = ViManager.getFactory().getPreferences().keys();
-                    for ( String key : keys ) {
-                        ViManager.getFactory().getPreferences().remove(key);
-                    }
-                } catch ( BackingStoreException ex ) {
-                    ex.printStackTrace();
-                }
-            }
-        });
-
         try {
             ViManager.runInDispatch(true, new Runnable() {
                     public void run() {
