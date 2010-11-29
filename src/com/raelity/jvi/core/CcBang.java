@@ -39,6 +39,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.text.CharacterIterator;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import javax.swing.Timer;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -68,7 +69,8 @@ private static final Logger LOG = Logger.getLogger(CcBang.class.getName());
 
     private static void init()
     {
-        ColonCommands.register("!", "!", ACTION_bang);
+        ColonCommands.register("!", "!", ACTION_bang,
+                               EnumSet.of(ColonCommandItem.Flag.HIDE));
     }
 
     static String lastBangCommand = null;

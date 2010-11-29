@@ -52,7 +52,7 @@ public class SetColonCommand extends ColonCommands.ColonAction
 
     private static void init()
     {
-        ColonCommands.register("se", "set", new SetColonCommand());
+        ColonCommands.register("se", "set", new SetColonCommand(), null);
     }
 
   public static class SetCommandException extends Exception

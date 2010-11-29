@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.core;
 
+import java.util.EnumSet;
 import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViCmdEntry;
@@ -531,9 +532,10 @@ static public List<String> getAbrevList()
  * @exception IllegalArgumentException this is thrown if the abbreviation
  * and/or the name already exist in the list or there's a null argument.
  */
-public static void register( String abbrev, String name, ActionListener l )
+public static void register( String abbrev, String name, ActionListener l,
+                            EnumSet<ColonCommandItem.Flag> flags )
 {
-    m_commands.add(abbrev, name, l);
+    m_commands.add(abbrev, name, l, flags);
 }
 
 /**

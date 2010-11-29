@@ -25,6 +25,7 @@ import com.raelity.jvi.ViFactory;
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Buffer;
+import com.raelity.jvi.core.ColonCommandItem;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Msg;
@@ -35,6 +36,7 @@ import java.awt.event.ActionListener;
 import java.io.PrintStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import org.openide.util.WeakSet;
@@ -113,7 +115,7 @@ public enum AppViews
             {
                 AppViews.dump(System.err);
             }
-        });
+        }, EnumSet.of(ColonCommandItem.Flag.DBG));
     }
 
     /**

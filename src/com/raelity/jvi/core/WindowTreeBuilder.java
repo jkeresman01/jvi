@@ -83,7 +83,8 @@ public abstract class WindowTreeBuilder {
             if(didInit)
                 return;
             ColonCommands.register("dumpWin", "dumpWindowHierarchy",
-                    new DumpWin());
+                                   new DumpWin(),
+                                   EnumSet.of(ColonCommandItem.Flag.DBG));
             didInit = true;
         }
     }

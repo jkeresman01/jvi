@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.core;
 
+import java.util.EnumSet;
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViFactory;
 import com.raelity.jvi.ViInitialization;
@@ -72,52 +73,56 @@ public class Cc01
 
     private static void init()
     {
-        ColonCommands.register("n", "next", ACTION_next);
-        ColonCommands.register("N", "Next", ACTION_Next);
-        ColonCommands.register("prev", "previous", ACTION_Next);
-        ColonCommands.register("clo", "close", ACTION_close);
-        ColonCommands.register("on", "only", ACTION_only);
+        ColonCommands.register("n", "next", ACTION_next, null);
+        ColonCommands.register("N", "Next", ACTION_Next, null);
+        ColonCommands.register("prev", "previous", ACTION_Next, null);
+        ColonCommands.register("clo", "close", ACTION_close, null);
+        ColonCommands.register("on", "only", ACTION_only, null);
 
-        ColonCommands.register("q", "quit", ACTION_quit);
-        ColonCommands.register("w", "write", ACTION_write);
-        ColonCommands.register("wq", "wq", ACTION_wq);
-        ColonCommands.register("wa", "wall", ACTION_wall);
+        ColonCommands.register("q", "quit", ACTION_quit, null);
+        ColonCommands.register("w", "write", ACTION_write, null);
+        ColonCommands.register("wq", "wq", ACTION_wq, null);
+        ColonCommands.register("wa", "wall", ACTION_wall, null);
 
-        ColonCommands.register("files","files", ACTION_BUFFERS);
-        ColonCommands.register("buffers","buffers", ACTION_BUFFERS);
-        ColonCommands.register("ls","ls", ACTION_BUFFERS);
+        ColonCommands.register("files","files", ACTION_BUFFERS, null);
+        ColonCommands.register("buffers","buffers", ACTION_BUFFERS, null);
+        ColonCommands.register("ls","ls", ACTION_BUFFERS, null);
 
-        ColonCommands.register("f", "file", ACTION_file);
-        ColonCommands.register("e", "edit", ACTION_edit);
-        ColonCommands.register("s", "substitute", ACTION_substitute);
-        ColonCommands.register("g", "global", ACTION_global);
-        ColonCommands.register("d", "delete", ACTION_delete);
-        ColonCommands.register("p", "print", ACTION_print);
+        ColonCommands.register("f", "file", ACTION_file, null);
+        ColonCommands.register("e", "edit", ACTION_edit, null);
+        ColonCommands.register("s", "substitute", ACTION_substitute, null);
+        ColonCommands.register("g", "global", ACTION_global, null);
+        ColonCommands.register("d", "delete", ACTION_delete, null);
+        ColonCommands.register("p", "print", ACTION_print, null);
 
-        ColonCommands.register("ju", "jumps", ACTION_jumps);
+        ColonCommands.register("ju", "jumps", ACTION_jumps, null);
 
-        ColonCommands.register("ta", "tag", ACTION_tag);
-        ColonCommands.register("tags", "tags", ACTION_tags);
-        ColonCommands.register("ts", "tselect", ACTION_tselect);
-        ColonCommands.register("po", "pop", ACTION_pop);
+        ColonCommands.register("ta", "tag", ACTION_tag, null);
+        ColonCommands.register("tags", "tags", ACTION_tags, null);
+        ColonCommands.register("ts", "tselect", ACTION_tselect, null);
+        ColonCommands.register("po", "pop", ACTION_pop, null);
 
-        ColonCommands.register("noh", "nohlsearch", ACTION_nohlsearch);
+        ColonCommands.register("noh", "nohlsearch", ACTION_nohlsearch, null);
 
         ColonCommands.register("testGlassKeys", "testGlassKeys",
-                               ACTION_testGlassKeys);
+                               ACTION_testGlassKeys,
+                               EnumSet.of(ColonCommandItem.Flag.DBG));
         ColonCommands.register("testModalKeys", "testModalKeys",
-                               ACTION_testModalKeys);
+                               ACTION_testModalKeys,
+                               EnumSet.of(ColonCommandItem.Flag.DBG));
 
-        ColonCommands.register("y", "yank", ACTION_yank);
+        ColonCommands.register("y", "yank", ACTION_yank, null);
         // not pretty, limit the number of shifts...
         ColonCommands.register(">", ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",
-                               ACTION_rshift);
+                               ACTION_rshift,
+                               EnumSet.of(ColonCommandItem.Flag.HIDE));
         ColonCommands.register("<", "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<",
-                               ACTION_lshift);
+                               ACTION_lshift,
+                               EnumSet.of(ColonCommandItem.Flag.HIDE));
 
-        ColonCommands.register("m", "move", ACTION_move);
-        ColonCommands.register("co", "copy", ACTION_copy);
-        ColonCommands.register("t", "t", ACTION_copy);
+        ColonCommands.register("m", "move", ACTION_move, null);
+        ColonCommands.register("co", "copy", ACTION_copy, null);
+        ColonCommands.register("t", "t", ACTION_copy, null);
 
         addDebugColonCommands();
     }
@@ -667,7 +672,7 @@ private static void addDebugColonCommands()
             LOG.log(Level.SEVERE, null, ex);
         }
         }
-    });
+    },  EnumSet.of(ColonCommandItem.Flag.DBG));
     ColonCommands.register("optionsDelete", "optionsDelete", new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             try {
@@ -685,7 +690,7 @@ private static void addDebugColonCommands()
                 LOG.log(Level.SEVERE, null, ex);
             }
         }
-    });
+    },  EnumSet.of(ColonCommandItem.Flag.DBG));
     ColonCommands.register("optionDelete", "optionDelete",
             new ColonCommands.ColonAction() {
                 public void actionPerformed(ActionEvent ev) {
@@ -698,7 +703,7 @@ private static void addDebugColonCommands()
                     } else
                     Msg.emsg("optionDelete takes exactly one argument");
                 }
-            });
+            }, EnumSet.of(ColonCommandItem.Flag.DBG));
 
 } // end
 }

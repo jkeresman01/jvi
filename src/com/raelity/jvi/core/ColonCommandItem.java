@@ -1,27 +1,44 @@
 package com.raelity.jvi.core;
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
+
 /**
  * A registered command is represented by this class.
  * Comparison and equality is based on the command abbreviation.
  */
 public class ColonCommandItem implements Comparable<ColonCommandItem> {
 
+    public enum Flag { DBG, HIDE, NO_ARGS }
+
     private final String abbrev;
     private final String name;
     private final Object value;
+    private final EnumSet<Flag> flags;
 
     ColonCommandItem(String abbrev)
     {
-        this.abbrev = abbrev;
-        this.name = null;
-        this.value = null;
+        this(abbrev, null, null, null);
     }
 
-    ColonCommandItem(String abbrev, String name, Object value)
+    ColonCommandItem(String abbrev, String name, Object value,
+                     EnumSet<Flag> flags)
     {
         this.abbrev = abbrev;
         this.name = name;
         this.value = value;
+        if(flags == null)
+            flags = EnumSet.noneOf(Flag.class);
+        this.flags = flags;
+    }
+
+    /**
+     * @return the flags
+     */
+    public Set<Flag> getFlags()
+    {
+        return Collections.unmodifiableSet(flags);
     }
 
     /**

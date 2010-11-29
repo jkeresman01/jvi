@@ -29,6 +29,7 @@ import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.core.ColonCommandItem;
 
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -201,8 +202,9 @@ public class ViManager
 
         assert core != null;
 
-        ColonCommands.register("ve", "version", ACTION_version);
-        ColonCommands.register("debugMotd", "debugMotd", ACTION_debugMotd);
+        ColonCommands.register("ve", "version", ACTION_version, null);
+        ColonCommands.register("debugMotd", "debugMotd", ACTION_debugMotd,
+                               EnumSet.of(ColonCommandItem.Flag.DBG));
 
 
         firePropertyChange(P_BOOT, null, null);
@@ -212,6 +214,7 @@ public class ViManager
         // Spawn to get current release info
         // Note this is async
         Motd.get(new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e)
             {
                 motd = (Motd)e.getSource();
@@ -219,6 +222,7 @@ public class ViManager
         });
 
         getFactory().setShutdownHook(new Runnable() {
+            @Override
             public void run() {
                 firePropertyChange(P_SHUTDOWN, null, null);
             }
@@ -253,6 +257,7 @@ public class ViManager
 
     static ActionListener ACTION_version = new ActionListener()
     {
+        @Override
         public void actionPerformed(ActionEvent ev)
         {
             ViManager.motd.output();
@@ -260,6 +265,7 @@ public class ViManager
     };
     static ActionListener ACTION_debugMotd = new ActionListener()
     {
+        @Override
         public void actionPerformed(ActionEvent ev)
         {
             ViManager.debugMotd();
@@ -547,6 +553,7 @@ public class ViManager
 
     static void debugMotd() {
         Motd.get(new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e)
             {
                 ((Motd)e.getSource()).output();

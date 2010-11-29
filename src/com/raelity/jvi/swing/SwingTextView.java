@@ -36,6 +36,7 @@ import  static com.raelity.jvi.core.Constants.*;
 
 
 import com.raelity.jvi.*;
+import com.raelity.jvi.core.ColonCommandItem;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.manager.Scheduler;
@@ -54,6 +55,7 @@ import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -120,7 +122,8 @@ public class SwingTextView extends TextView
             if(didInit)
                 return;
             ColonCommands.register("dumpLineMap", "dumpLineMap",
-                    new DumpLineMap());
+                                   new DumpLineMap(),
+                                   EnumSet.of(ColonCommandItem.Flag.DBG));
             didInit = true;
         }
     }

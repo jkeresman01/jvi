@@ -88,8 +88,8 @@ class MarkOps
     }
 
     private static void init() {
-        ColonCommands.register("marks", "marks", ACTION_do_marks);
-        ColonCommands.register("delm", "delmarks", ACTION_ex_delmarks);
+        ColonCommands.register("marks", "marks", ACTION_do_marks, null);
+        ColonCommands.register("delm", "delmarks", ACTION_ex_delmarks, null);
 
         PropertyChangeListener pcl = new PropertyChangeListener() {
             @Override

@@ -22,6 +22,7 @@ package com.raelity.jvi.core;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -75,9 +76,11 @@ public class AbbrevLookup
      * are recognized.
      *
      * @exception IllegalArgumentException this is thrown if the abbreviation
-     *     and/or the name already exist in the list or there's a null argument.
+     *     and/or the name already exist in the list or there's a null argument;
+     *     except flags may be null.
      */
-    public void add(String abbrev, String name, Object value)
+    public void add(String abbrev, String name, Object value,
+                    EnumSet<ColonCommandItem.Flag> flags)
     {
         if ( abbrev == null || name == null || value == null ) {
             throw new IllegalArgumentException("All arguments must be non-null");
@@ -101,7 +104,7 @@ public class AbbrevLookup
         }
         // turn idx into something that can be used for insertion into list
         idx = -idx - 1;
-        list.add(idx, new ColonCommandItem(abbrev, name, value));
+        list.add(idx, new ColonCommandItem(abbrev, name, value, flags));
     }
 
 
