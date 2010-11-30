@@ -134,6 +134,24 @@ static void executeCommand( ColonEvent cev )
 
 private static char modalResponse;
 
+/** only used for parsing where we don't care about the command */
+private static final ColonAction dummyColonAction = new ColonAction() {
+        @Override public int getFlags() {
+            return BANG | NOPARSE;
+        }
+
+        @Override public boolean isEnabled() {
+            return true;
+        }
+        
+        @Override public void actionPerformed(ActionEvent e) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+    };
+
+private static final ColonCommandItem dummyColonCommandItem
+        = new ColonCommandItem("xyzzy", "xyzzy", dummyColonAction, null);
+
 /**
     * Parse (partially) the command.
     * Return null if parse failure or otherwise can't execute,
@@ -156,13 +174,14 @@ private static char modalResponse;
     * This function may be called recursively!
     * </pre>
     */
-static ColonEvent parseCommand( String commandLine )
+private static ColonEvent parseCommandGuts(String commandLine,
+                                           boolean isExecuting)
 {
     int sidx = 0; // index into string
     int sidx01;
     int sidx02;
     // Use the TextView as source
-    ColonEvent cev = new ColonEvent(G.curwin);
+    ColonEvent cev = new ColonEvent(isExecuting ? G.curwin : null);
     boolean bang = false;
     MutableInt lnum = new MutableInt(0);
     boolean skip = false; // NEEDSWORK: executCommmand how else is this set
@@ -199,7 +218,7 @@ static ColonEvent parseCommand( String commandLine )
         cev.line1 = cev.line2;
             // default is current line number
         cev.line2 = G.curwin.w_cursor.getLine();
-            sidx = skipwhite(commandLine, sidx);
+        sidx = skipwhite(commandLine, sidx);
         sidx = get_address(commandLine, sidx, skip, lnum);
         if (sidx < 0)            // error detected
             return null; // NEEDSWORK: goto doend;
@@ -234,7 +253,7 @@ static ColonEvent parseCommand( String commandLine )
                 ++ea.addr_count;
             }
             }
-                ************************************************************/
+            ************************************************************/
         } else {
             cev.line2 = lnum.getValue();
         }
@@ -248,7 +267,7 @@ static ColonEvent parseCommand( String commandLine )
         } else
         ********************************************************************/
         if (sidx >= commandLine.length() || commandLine.charAt(sidx) != ',')
-        break;
+            break;
         ++sidx;
     }
 
@@ -263,32 +282,35 @@ static ColonEvent parseCommand( String commandLine )
 
     if(cev.addr_count > 1) {
         if(cev.line1 > cev.line2) {
-            modalResponse = 0;
-            Msg.wmsg("Backwards range given, OK to swap (y/n)?");
-            ViManager.getFactory().startModalKeyCatch(new KeyAdapter() {
-                @Override
-                public void keyPressed(KeyEvent e) {
-                    e.consume();
-                    char c = e.getKeyChar();
-                    switch(c) {
-                        case 'y': case 'n':
-                            modalResponse = c;
-                            break;
-                        case KeyEvent.VK_ESCAPE:
-                            modalResponse = 'n';
-                            break;
-                        default:
-                            Util.vim_beep();
-                            break;
+            if(isExecuting) {
+                modalResponse = 0;
+                Msg.wmsg("Backwards range given, OK to swap (y/n)?");
+                ViManager.getFactory().startModalKeyCatch(new KeyAdapter() {
+                    @Override
+                    public void keyPressed(KeyEvent e) {
+                        e.consume();
+                        char c = e.getKeyChar();
+                        switch(c) {
+                            case 'y': case 'n':
+                                modalResponse = c;
+                                break;
+                            case KeyEvent.VK_ESCAPE:
+                                modalResponse = 'n';
+                                break;
+                            default:
+                                Util.vim_beep();
+                                break;
+                        }
+                        if(modalResponse != 0) {
+                            ViManager.getFactory().stopModalKeyCatch();
+                        }
                     }
-                    if(modalResponse != 0) {
-                        ViManager.getFactory().stopModalKeyCatch();
-                    }
-                }
-            });
-            Msg.wmsg("Backwards range given, OK to swap (y/n)? " + modalResponse);
-            if(modalResponse != 'y')
-                return null;
+                });
+                Msg.wmsg("Backwards range given, OK to swap (y/n)? "
+                         + modalResponse);
+                if(modalResponse != 'y')
+                    return null;
+            }
             int t = cev.line1;
             cev.line1 = cev.line2;
             cev.line2 = t;
@@ -300,7 +322,7 @@ static ColonEvent parseCommand( String commandLine )
     sidx = skipwhite(commandLine, sidx);
     if(sidx >= commandLine.length()) {
         // no command, but if a number was entered then goto that line
-        if(cev.getAddrCount() > 0) {
+        if(isExecuting && cev.getAddrCount() > 0) {
             int l = cev.getLine1();
             if(l == 0) {
                 l = 1;
@@ -334,12 +356,19 @@ static ColonEvent parseCommand( String commandLine )
 
     String command = commandLine.substring(sidx01, sidx02);
     cev.inputCommand = command;
+    cev.iInputCommand = sidx01;
+
     cev.iArgString = sidx02;
-        ColonCommandItem ce = m_commands.lookupCommand(command);
-    if(ce == null) {
-        Msg.emsg("Not an editor command: " + command);
-        Util.vim_beep();
-        return null;
+    ColonCommandItem ce;
+    if(isExecuting) {
+        ce = m_commands.lookupCommand(command);
+        if(ce == null) {
+            Msg.emsg("Not an editor command: " + command);
+            Util.vim_beep();
+            return null;
+        }
+    } else {
+        ce = dummyColonCommandItem; // so parse will complete ok
     }
 
     //
@@ -388,9 +417,17 @@ static ColonEvent parseCommand( String commandLine )
 
     cev.commandElement = ce;
     return cev;
-    // ((ActionListener)ce.getValue()).actionPerformed(cev);
 }
 
+public static ColonEvent parseCommandDummy(String commandLine)
+{
+    return parseCommandGuts(commandLine, false);
+}
+
+static ColonEvent parseCommand(String commandLine)
+{
+    return parseCommandGuts(commandLine, true);
+}
 
 /**
  * get a single EX address
@@ -414,6 +451,8 @@ static int get_address(
 
     sidx = skipwhite(s, sidx);
     lnum.setValue(MAXLNUM);
+    if(sidx == s.length())
+        return sidx;
     do {
         char c = s.charAt(sidx);
         switch(c) {
@@ -535,6 +574,15 @@ static public List<String> getAbrevList()
 public static void register( String abbrev, String name, ActionListener l,
                             EnumSet<ColonCommandItem.Flag> flags )
 {
+    if(flags == null)
+        flags = EnumSet.noneOf(ColonCommandItem.Flag.class);
+    if(l instanceof ColonAction) {
+        // ColonAction ca = (ColonAction)l;
+        // if((ca.getFlags() & EXTRA) == 0)
+        //     flags.add(ColonCommandItem.Flag.NO_ARGS);
+    } else {
+        flags.add(ColonCommandItem.Flag.NO_ARGS);
+    }
     m_commands.add(abbrev, name, l, flags);
 }
 
@@ -582,6 +630,8 @@ static public class ColonEvent extends ActionEvent
     String command;
     /** The command word as input */
     String inputCommand;
+    /** The index of the command word on the line */
+    int iInputCommand;
     /** The command associated with this event */
     ColonCommandItem commandElement;
     /** indicates that the command word has a trailing "!" */
@@ -603,91 +653,92 @@ static public class ColonEvent extends ActionEvent
 
     ColonEvent(ViTextView c)
     {
-        super(c.getEditorComponent(), ActionEvent.ACTION_PERFORMED, "");
+        super(c == null ? "" : c.getEditorComponent(),
+              ActionEvent.ACTION_PERFORMED, "");
         viTextView = c;
         args = Collections.emptyList();
     }
 
     /**
-        * @return the first line number
-        */
+     * @return the first line number
+     */
     public int getLine1()
     {
         return line1;
     }
-
+    
     /**
-        * @return the second line number or count
-        */
+     * @return the second line number or count
+     */
     public int getLine2()
     {
         return line2;
     }
-
+    
     /**
-        * @return the number of addresses given
-        */
+     * @return the number of addresses given
+     */
     public int getAddrCount()
     {
         return addr_count;
     }
-
+    
     public ActionListener getAction()
     {
         return (ActionListener)commandElement.getValue();
     }
-
+    
     /**
-        * @return true if the command has a "!" appended.
-        */
+     * @return true if the command has a "!" appended.
+     */
     public boolean isBang()
     {
         return bang;
     }
-
+    
     /**
-        * @return the textView for this command
-        */
+     * @return the textView for this command
+     */
     public ViTextView getViTextView()
     {
         return viTextView;
     }
-
+    
     /**
-        * @return the number of arguments, not including command name.
-        */
+     * @return the number of arguments, not including command name.
+     */
     public int getNArg()
     {
         return args.size();
     }
-
+    
     /**
-        * Fetch an argument.
-        * @return the nth argument, n == 0 is the expanded command name.
-        */
+     * Fetch an argument.
+     * @return the nth argument, n == 0 is the expanded command name.
+     */
     public String getArg( int n )
     {
         return n == 0
                 ? command
                 : args.get(n-1) ;
     }
-
+    
     /**
-        * Fetch the list of command arguments.
-        */
+     * Fetch the list of command arguments.
+     */
     public List<String> getArgs()
     {
         return new ArrayList<String>(args);
     }
-
+    
     /**
-        * @return the expanded commandName
-        */
+     * @return the expanded commandName
+     */
     public String getComandName()
     {
         return command;
     }
-
+    
     /**
      * @return the command as it was input. May be a partial command name
      */
@@ -696,17 +747,22 @@ static public class ColonEvent extends ActionEvent
         return inputCommand;
     }
 
+    public int getIndexInputCommandName()
+    {
+        return iInputCommand;
+    }
+    
     /**
-        * @return the unparsed string of arguments
-        */
+     * @return the unparsed string of arguments
+     */
     public String getArgString()
     {
         return commandLine.substring(iArgString);
     }
-
+    
     /**
-        * Fetch the command line, including commmand name
-        */
+     * Fetch the command line, including commmand name
+     */
     public String XXXgetCommandLine()
     {
         return commandLine;
