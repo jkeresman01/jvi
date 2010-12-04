@@ -33,7 +33,7 @@ import org.openide.util.lookup.ServiceProvider;
  * In some cases, due to platform limitation, the same variable must be
  * set in all the instances, syncAllInstances(var) does that.
  */
-public class SetColonCommand extends ColonCommands.ColonAction
+public class SetColonCommand extends ColonCommands.AbstractColonAction
 {
   private static final
           Logger LOG = Logger.getLogger(SetColonCommand.class.getName());

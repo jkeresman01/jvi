@@ -23,6 +23,7 @@ package com.raelity.jvi.core;
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
 import com.raelity.jvi.core.ColonCommands.ColonAction;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.manager.ViManager;
@@ -79,7 +80,7 @@ private static final Logger LOG = Logger.getLogger(CcBang.class.getName());
     {
     }
 
-public static class BangAction extends ColonAction
+public static class BangAction extends AbstractColonAction
 {
     FilterThreadCoordinator coord = null;
     Option dbg = Options.getOption(Options.dbgBang);

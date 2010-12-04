@@ -27,6 +27,7 @@ import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.ViTextView.TAGOP;
+import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
 import com.raelity.jvi.core.ColonCommands.ColonAction;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.lib.MutableInt;
@@ -139,7 +140,7 @@ public class Cc01
     private static ColonAction ACTION_Next = new Next(false);
 
     /** next/Next/previous through MRU list */
-    static private class Next extends ColonAction { // NEEDSWORK: count
+    static private class Next extends AbstractColonAction { // NEEDSWORK: count
         boolean goForward;
 
         @Override
@@ -223,7 +224,7 @@ public class Cc01
     /**
         * Write command.
         */
-    private static ColonAction ACTION_write = new ColonAction() {
+    private static ColonAction ACTION_write = new AbstractColonAction() {
             @Override
             public EnumSet<CcFlag> getFlags()
             {
@@ -236,7 +237,7 @@ public class Cc01
             }
         };
 
-    private static ColonAction ACTION_wq = new ColonAction() {
+    private static ColonAction ACTION_wq = new AbstractColonAction() {
             @Override
             public EnumSet<CcFlag> getFlags()
             {
@@ -254,7 +255,7 @@ public class Cc01
     /**
      * Edit command.
      */
-    private static ColonAction ACTION_edit = new ColonAction() {
+    private static ColonAction ACTION_edit = new AbstractColonAction() {
             @Override
             public EnumSet<CcFlag> getFlags()
             {
@@ -327,7 +328,7 @@ public class Cc01
             }
         };
 
-    private static ColonAction ACTION_substitute = new ColonAction() {
+    private static ColonAction ACTION_substitute = new AbstractColonAction() {
             @Override
             public EnumSet<CcFlag> getFlags()
             {
@@ -344,7 +345,7 @@ public class Cc01
             }
         };
 
-    private static ColonAction ACTION_global = new ColonAction() {
+    private static ColonAction ACTION_global = new AbstractColonAction() {
             @Override
             public EnumSet<CcFlag> getFlags()
             {
@@ -412,7 +413,7 @@ public class Cc01
         * :print command. If not busy global then output to "print" stream.
         * For now, its just a no-op so the word "print" can be found.
         */
-    private static ColonAction ACTION_print = new ColonAction() {
+    private static ColonAction ACTION_print = new AbstractColonAction() {
             @Override
             public EnumSet<CcFlag> getFlags()
             {
@@ -426,7 +427,7 @@ public class Cc01
     /**
         * :tag command.
         */
-    private static ColonAction ACTION_tag = new ColonAction() {
+    private static ColonAction ACTION_tag = new AbstractColonAction() {
             public void actionPerformed(ActionEvent ev)
             {
                 ColonEvent evt = (ColonEvent)ev;
@@ -448,7 +449,7 @@ public class Cc01
     /**
         * :pop command.
         */
-    private static ColonAction ACTION_pop = new ColonAction() {
+    private static ColonAction ACTION_pop = new AbstractColonAction() {
             @Override
             public EnumSet<CcFlag> getFlags()
             {
@@ -469,7 +470,7 @@ public class Cc01
             }
         };
 
-    private static ColonAction ACTION_tselect = new ColonAction() {
+    private static ColonAction ACTION_tselect = new AbstractColonAction() {
             public void actionPerformed(ActionEvent ev) {
                 ColonEvent ce = (ColonEvent)ev;
                 if(ce.getNArg() > 1) {
@@ -505,7 +506,7 @@ public class Cc01
     /**
      * :delete command.
      */
-    private static ColonAction ACTION_delete = new ColonAction() {
+    private static ColonAction ACTION_delete = new AbstractColonAction() {
         @Override
         public EnumSet<CcFlag> getFlags()
         {
@@ -526,7 +527,7 @@ public class Cc01
     /**
      * :yank command.
      */
-    private static ColonAction ACTION_yank = new ColonAction() {
+    private static ColonAction ACTION_yank = new AbstractColonAction() {
         public void actionPerformed(ActionEvent ev)
         {
             OPARG oa = ColonCommands.setupExop((ColonEvent)ev, true);
@@ -540,7 +541,7 @@ public class Cc01
     private static ColonAction ACTION_lshift = new ShiftAction(OP_LSHIFT);
     private static ColonAction ACTION_rshift = new ShiftAction(OP_RSHIFT);
 
-    private static class ShiftAction extends ColonAction
+    private static class ShiftAction extends AbstractColonAction
     {
         final int op;
 
@@ -572,7 +573,7 @@ public class Cc01
         }
     }
 
-    private static class moveCopy extends ColonAction
+    private static class moveCopy extends AbstractColonAction
     {
         private boolean doMove;
         moveCopy(boolean doMove)
@@ -723,7 +724,7 @@ private static void addDebugColonCommands()
         }
     },  EnumSet.of(CcFlag.DBG));
     ColonCommands.register("optionDelete", "optionDelete",
-            new ColonCommands.ColonAction() {
+            new ColonCommands.AbstractColonAction() {
                 public void actionPerformed(ActionEvent ev) {
                     ColonEvent cev = (ColonEvent) ev;
 
@@ -733,6 +734,26 @@ private static void addDebugColonCommands()
                     prefs.remove(key);
                     } else
                     Msg.emsg("optionDelete takes exactly one argument");
+                }
+            }, EnumSet.of(CcFlag.DBG));
+    ColonCommands.register("disabledCommand", "disabledCommand",
+            new ColonCommands.AbstractColonAction() {
+
+            @Override
+            public boolean isEnabled()
+            {
+                return false;
+            }
+
+            @Override
+            public EnumSet<CcFlag> getFlags()
+            {
+                return EnumSet.of(CcFlag.NO_ARGS);
+            }
+                
+            @Override
+                public void actionPerformed(ActionEvent ev) {
+                    Msg.emsg("***** executing !isEnabled command *****");
                 }
             }, EnumSet.of(CcFlag.DBG));
 

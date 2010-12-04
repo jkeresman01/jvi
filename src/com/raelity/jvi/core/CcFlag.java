@@ -22,12 +22,20 @@ package com.raelity.jvi.core;
 
 public enum CcFlag {
 
-    BANG,               // command accepts a '!'
-    DBG,                // internal debug command
-    DEPRECATED,         // command is deprecated
-    HIDE,               // don't display the command
-    NO_ARGS,            // command takes no arguments
-    NO_PARSE,           // treat all arguments as a single string (HACK)
+    /** command accepts a '!' */
+    BANG,
+    /** internal debug command */
+    DBG,
+    /** command is deprecated */
+    DEPRECATED,
+    /** don't display the command */
+    HIDE,
+    /** command takes no arguments */
+    NO_ARGS,
+    /** treat all arguments as a single string (HACK) */
+    NO_PARSE,
+    /** allow a line specifier */
+    RANGE,
     ;
 }
 

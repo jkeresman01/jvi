@@ -40,6 +40,14 @@ public final class ColonCommandItem implements Comparable<ColonCommandItem> {
         return Collections.unmodifiableSet(flags);
     }
 
+    public boolean isEnabled()
+    {
+        if(value instanceof ColonAction)
+            return ((ColonAction)value).isEnabled();
+        else
+            return true;
+    }
+
     /**
      * @return the abbreviation for the command
      */
@@ -58,8 +66,8 @@ public final class ColonCommandItem implements Comparable<ColonCommandItem> {
 
     public String getDisplayName()
     {
-        if(getValue() instanceof ColonAction)
-            return ((ColonAction)getValue()).getDisplayName(this);
+        if(value instanceof ColonAction)
+            return ((ColonAction)value).getDisplayName(this);
         else
             return getName();
     }

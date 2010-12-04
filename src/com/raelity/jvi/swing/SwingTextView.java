@@ -164,7 +164,7 @@ public class SwingTextView extends TextView
         return this.vm;
     }
 
-    private static class DumpLineMap extends ColonCommands.ColonAction
+    private static class DumpLineMap extends ColonCommands.AbstractColonAction
     {
         @Override
         public void actionPerformed(ActionEvent ev)

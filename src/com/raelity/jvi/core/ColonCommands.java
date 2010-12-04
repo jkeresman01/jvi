@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.core;
 
+import java.util.logging.Level;
 import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViCmdEntry;
@@ -39,9 +40,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-
 import static com.raelity.jvi.core.Constants.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
@@ -50,14 +48,16 @@ import static com.raelity.jvi.core.Misc01.*;
  * This class handles registration, command input, parsing, dispatching
  * and in some instances execution of ":" commands. Some internal vi
  * commands, e.g. set, are executed here. Colon commands are added to
- * the list of avaialable commands through the
+ * the list of available commands through the
  * {@link #open} method.
  * <p>
  * A command is represented by an {@link java.awt.event.ActionListener}.
- * A {@link javax.swing.Action} could be used. Only commands that subclass
- * {@link ColonCommands.ColonAction} can have arguments. These commands
- * are passed a {@link ColonCommands.ColonEvent}. Actions that subclass
- * {@link javax.swing.Action} are not invoked if they are disabled. The source
+ * Typically a subclass is used. Only actions that implement
+ * {@link ColonCommands.ColonAction} get command line parsing for
+ * arguments, ranges. The actions get the command line arguments through
+ * the {@link ColonCommands.ColonEvent}. Actions that implement
+ * {@link ColonCommands.ColonAction} are not invoked if 
+ * their isEnabled method returns false. The source
  * of the {@link java.awt.event.ActionEvent}
  * is a {@link javax.swing.JEditorPane}.
  */
@@ -135,7 +135,7 @@ static void executeCommand( ColonEvent cev )
 private static char modalResponse;
 
 /** only used for parsing where we don't care about the command */
-private static final ColonAction dummyColonAction = new ColonAction() {
+private static final ColonAction dummyColonAction = new AbstractColonAction() {
         @Override public EnumSet<CcFlag> getFlags() {
             return EnumSet.of(CcFlag.BANG, CcFlag.NO_PARSE);
         }
@@ -376,12 +376,29 @@ private static ColonEvent parseCommandGuts(String commandLine,
     // Invoke the command
     //
 
-    if(cci.getValue() instanceof Action) {
-        if( ! ((Action)cci.getValue()).isEnabled()) {
-            Msg.emsg(cci.getName() + " is not enabled");
-            return null;
-        }
+    if( ! cci.isEnabled()) {
+        Msg.emsg(cci.getName() + " is not enabled");
+        return null;
     }
+
+    //
+    // TODO: once NO_ARGS and RANGE are working, really use these checks
+    if(sidx < commandLine.length() && flags.contains(CcFlag.NO_ARGS)) {
+        if(ViManager.isDebugAtHome())
+            LOG.log(Level.SEVERE, null, new IllegalStateException("NO_ARGS"));
+        // Msg.emsg(Messages.e_trailing);
+        // return null;
+    }
+    if(cev.getAddrCount() > 0 && !flags.contains(CcFlag.RANGE)) {
+        if(ViManager.isDebugAtHome())
+            LOG.log(Level.SEVERE, null, new IllegalStateException("RANGE"));
+        // Msg.emsg(Messages.e_norange);
+        // return null;
+    }
+
+    //
+    // TODO: Get rid of the following stuff in favor of using flags
+    //
     if( ! (cci.getValue() instanceof ColonAction)) {
         // no arguments allowed
         if(sidx < commandLine.length()) {
@@ -604,18 +621,13 @@ public static boolean deregister( String abbrev )
  * command arguments can be controled through the {@link ColonAction#getFlags}
  * method.
  */
-public abstract static class ColonAction
-        extends AbstractAction
-{
+public interface ColonAction extends ActionListener {
     /**
      * Specify some of the commands argument handling. This default
      * implementation returns zero.
      * @see Flags
      */
-    public EnumSet<CcFlag> getFlags()
-    {
-        return EnumSet.noneOf(CcFlag.class);
-    }
+    public EnumSet<CcFlag> getFlags();
 
     /**
      * A string suitable for display for this action as the argument command.
@@ -625,9 +637,33 @@ public abstract static class ColonAction
      * @param cci The command this action is executing as
      * @return The string to display or null which means use the default
      */
+    public String getDisplayName(ColonCommandItem cci);
+
+    /**
+     * Note that this is intended to be the same method as used in swing.
+     * @return true if the action is enabled.
+     */
+    public boolean isEnabled();
+}
+
+public abstract static class AbstractColonAction implements ColonAction
+{
+    @Override
+    public EnumSet<CcFlag> getFlags()
+    {
+        return EnumSet.noneOf(CcFlag.class);
+    }
+
+    @Override
     public String getDisplayName(ColonCommandItem cci)
     {
         return cci.getName();
+    }
+
+    @Override
+    public boolean isEnabled()
+    {
+        return true;
     }
 }
 
