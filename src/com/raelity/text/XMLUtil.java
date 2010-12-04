@@ -43,7 +43,7 @@ package com.raelity.text;
  */
 public class XMLUtil {
 
-    protected static XMLUtil s_instance = new XMLUtil();
+    private static XMLUtil s_instance;
     // *  [2]    Char    ::=    #x9 | #xA | #xD | [#x20-#xD7FF] |
     // *                        [#xE000-#xFFFD] | [#x10000-#x10FFFF]
     //private static final char LOWER_RANGE_1 = 0x20;
@@ -85,6 +85,8 @@ public class XMLUtil {
      */
     public static XMLUtil get()
     {
+        if(s_instance == null)
+            s_instance = new XMLUtil();
         return s_instance;
     }
     //------------------------------------------

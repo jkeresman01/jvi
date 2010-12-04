@@ -36,7 +36,7 @@ import  static com.raelity.jvi.core.Constants.*;
 
 
 import com.raelity.jvi.*;
-import com.raelity.jvi.core.ColonCommandItem;
+import com.raelity.jvi.core.CcFlag;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.manager.Scheduler;
@@ -123,7 +123,7 @@ public class SwingTextView extends TextView
                 return;
             ColonCommands.register("dumpLineMap", "dumpLineMap",
                                    new DumpLineMap(),
-                                   EnumSet.of(ColonCommandItem.Flag.DBG));
+                                   EnumSet.of(CcFlag.DBG));
             didInit = true;
         }
     }

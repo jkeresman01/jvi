@@ -25,7 +25,7 @@ import com.raelity.jvi.ViFactory;
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Buffer;
-import com.raelity.jvi.core.ColonCommandItem;
+import com.raelity.jvi.core.CcFlag;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Msg;
@@ -115,7 +115,7 @@ public enum AppViews
             {
                 AppViews.dump(System.err);
             }
-        }, EnumSet.of(ColonCommandItem.Flag.DBG));
+        }, EnumSet.of(CcFlag.DBG));
     }
 
     /**

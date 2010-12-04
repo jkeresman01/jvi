@@ -50,6 +50,8 @@ import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.openide.util.lookup.ServiceProvider;
 
+import static java.lang.Math.min;
+
 import static com.raelity.jvi.core.Constants.*;
 
 /**
@@ -106,19 +108,19 @@ public class Cc01
 
         ColonCommands.register("testGlassKeys", "testGlassKeys",
                                ACTION_testGlassKeys,
-                               EnumSet.of(ColonCommandItem.Flag.DBG));
+                               EnumSet.of(CcFlag.DBG));
         ColonCommands.register("testModalKeys", "testModalKeys",
                                ACTION_testModalKeys,
-                               EnumSet.of(ColonCommandItem.Flag.DBG));
+                               EnumSet.of(CcFlag.DBG));
 
         ColonCommands.register("y", "yank", ACTION_yank, null);
         // not pretty, limit the number of shifts...
         ColonCommands.register(">", ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",
                                ACTION_rshift,
-                               EnumSet.of(ColonCommandItem.Flag.HIDE));
+                               null);
         ColonCommands.register("<", "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<",
                                ACTION_lshift,
-                               EnumSet.of(ColonCommandItem.Flag.HIDE));
+                               null);
 
         ColonCommands.register("m", "move", ACTION_move, null);
         ColonCommands.register("co", "copy", ACTION_copy, null);
@@ -139,6 +141,12 @@ public class Cc01
     /** next/Next/previous through MRU list */
     static private class Next extends ColonAction { // NEEDSWORK: count
         boolean goForward;
+
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.NO_ARGS);
+        }
 
         Next(boolean goForward) {
             this.goForward = goForward;
@@ -217,9 +225,9 @@ public class Cc01
         */
     private static ColonAction ACTION_write = new ColonAction() {
             @Override
-            public int getFlags()
+            public EnumSet<CcFlag> getFlags()
             {
-                return BANG;
+                return EnumSet.of(CcFlag.BANG);
             }
 
             public void actionPerformed(ActionEvent ev)
@@ -230,9 +238,9 @@ public class Cc01
 
     private static ColonAction ACTION_wq = new ColonAction() {
             @Override
-            public int getFlags()
+            public EnumSet<CcFlag> getFlags()
             {
-                return BANG;
+                return EnumSet.of(CcFlag.BANG);
             }
 
             public void actionPerformed(ActionEvent ev)
@@ -244,13 +252,13 @@ public class Cc01
         };
 
     /**
-        * Edit command. Only ':e#[number]' is supported.
-        */
+     * Edit command.
+     */
     private static ColonAction ACTION_edit = new ColonAction() {
             @Override
-            public int getFlags()
+            public EnumSet<CcFlag> getFlags()
             {
-                return BANG;
+                return EnumSet.of(CcFlag.BANG);
             }
 
             public void actionPerformed(ActionEvent ev)
@@ -321,9 +329,9 @@ public class Cc01
 
     private static ColonAction ACTION_substitute = new ColonAction() {
             @Override
-            public int getFlags()
+            public EnumSet<CcFlag> getFlags()
             {
-                return NOPARSE;
+                return EnumSet.of(CcFlag.NO_PARSE);
             }
 
             public void actionPerformed(final ActionEvent ev)
@@ -338,9 +346,9 @@ public class Cc01
 
     private static ColonAction ACTION_global = new ColonAction() {
             @Override
-            public int getFlags()
+            public EnumSet<CcFlag> getFlags()
             {
-                return NOPARSE;
+                return EnumSet.of(CcFlag.NO_PARSE);
             }
 
             public void actionPerformed(final ActionEvent ev) {
@@ -405,8 +413,13 @@ public class Cc01
         * For now, its just a no-op so the word "print" can be found.
         */
     private static ColonAction ACTION_print = new ColonAction() {
-            public void actionPerformed(ActionEvent ev) {
+            @Override
+            public EnumSet<CcFlag> getFlags()
+            {
+                return EnumSet.of(CcFlag.HIDE);
+            }
 
+            public void actionPerformed(ActionEvent ev) {
             }
         };
 
@@ -436,6 +449,12 @@ public class Cc01
         * :pop command.
         */
     private static ColonAction ACTION_pop = new ColonAction() {
+            @Override
+            public EnumSet<CcFlag> getFlags()
+            {
+                return EnumSet.of(CcFlag.NO_ARGS);
+            }
+
             public void actionPerformed(ActionEvent ev)
             {
                 ColonEvent evt = (ColonEvent)ev;
@@ -487,6 +506,12 @@ public class Cc01
      * :delete command.
      */
     private static ColonAction ACTION_delete = new ColonAction() {
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.NO_ARGS);
+        }
+
         public void actionPerformed(ActionEvent ev)
         {
             ColonEvent cev = (ColonEvent)ev;
@@ -522,6 +547,12 @@ public class Cc01
         public ShiftAction(int op)
         {
             this.op = op;
+        }
+
+        @Override
+        public String getDisplayName(ColonCommandItem cci)
+        {
+            return cci.getName().substring(0, min(10, cci.getName().length()));
         }
 
         public void actionPerformed(ActionEvent ev)
@@ -672,7 +703,7 @@ private static void addDebugColonCommands()
             LOG.log(Level.SEVERE, null, ex);
         }
         }
-    },  EnumSet.of(ColonCommandItem.Flag.DBG));
+    },  EnumSet.of(CcFlag.DBG));
     ColonCommands.register("optionsDelete", "optionsDelete", new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             try {
@@ -690,7 +721,7 @@ private static void addDebugColonCommands()
                 LOG.log(Level.SEVERE, null, ex);
             }
         }
-    },  EnumSet.of(ColonCommandItem.Flag.DBG));
+    },  EnumSet.of(CcFlag.DBG));
     ColonCommands.register("optionDelete", "optionDelete",
             new ColonCommands.ColonAction() {
                 public void actionPerformed(ActionEvent ev) {
@@ -703,7 +734,7 @@ private static void addDebugColonCommands()
                     } else
                     Msg.emsg("optionDelete takes exactly one argument");
                 }
-            }, EnumSet.of(ColonCommandItem.Flag.DBG));
+            }, EnumSet.of(CcFlag.DBG));
 
 } // end
 }

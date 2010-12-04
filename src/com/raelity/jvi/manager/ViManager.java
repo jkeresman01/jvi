@@ -20,6 +20,7 @@
 package com.raelity.jvi.manager;
 
 import com.raelity.jvi.core.Buffer;
+import com.raelity.jvi.core.CcFlag;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Hook;
@@ -29,7 +30,6 @@ import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.core.ColonCommandItem;
 
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -204,7 +204,7 @@ public class ViManager
 
         ColonCommands.register("ve", "version", ACTION_version, null);
         ColonCommands.register("debugMotd", "debugMotd", ACTION_debugMotd,
-                               EnumSet.of(ColonCommandItem.Flag.DBG));
+                               EnumSet.of(CcFlag.DBG));
 
 
         firePropertyChange(P_BOOT, null, null);

@@ -1,5 +1,6 @@
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.core.ColonCommands.ColonAction;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
@@ -8,14 +9,12 @@ import java.util.Set;
  * A registered command is represented by this class.
  * Comparison and equality is based on the command abbreviation.
  */
-public class ColonCommandItem implements Comparable<ColonCommandItem> {
-
-    public enum Flag { DBG, HIDE, NO_ARGS }
+public final class ColonCommandItem implements Comparable<ColonCommandItem> {
 
     private final String abbrev;
     private final String name;
     private final Object value;
-    private final EnumSet<Flag> flags;
+    private final EnumSet<CcFlag> flags;
 
     ColonCommandItem(String abbrev)
     {
@@ -23,20 +22,20 @@ public class ColonCommandItem implements Comparable<ColonCommandItem> {
     }
 
     ColonCommandItem(String abbrev, String name, Object value,
-                     EnumSet<Flag> flags)
+                     EnumSet<CcFlag> flags)
     {
         this.abbrev = abbrev;
         this.name = name;
         this.value = value;
         if(flags == null)
-            flags = EnumSet.noneOf(Flag.class);
+            flags = EnumSet.noneOf(CcFlag.class);
         this.flags = flags;
     }
 
     /**
      * @return the flags
      */
-    public Set<Flag> getFlags()
+    public Set<CcFlag> getFlags()
     {
         return Collections.unmodifiableSet(flags);
     }
@@ -55,6 +54,14 @@ public class ColonCommandItem implements Comparable<ColonCommandItem> {
     public String getName()
     {
         return name;
+    }
+
+    public String getDisplayName()
+    {
+        if(getValue() instanceof ColonAction)
+            return ((ColonAction)getValue()).getDisplayName(this);
+        else
+            return getName();
     }
 
     /**

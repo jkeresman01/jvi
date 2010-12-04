@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.core;
 
+import java.util.EnumSet;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.core.ColonCommands.ColonAction;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
@@ -602,9 +603,8 @@ class MarkOps
 
     private static class ExDelmarks extends ColonAction
     {
-        @Override
-        public int getFlags() {
-            return BANG;
+        @Override public EnumSet<CcFlag> getFlags() {
+            return EnumSet.of(CcFlag.BANG);
         }
 
         @Override

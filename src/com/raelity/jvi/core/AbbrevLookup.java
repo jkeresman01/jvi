@@ -80,7 +80,7 @@ public class AbbrevLookup
      *     except flags may be null.
      */
     public void add(String abbrev, String name, Object value,
-                    EnumSet<ColonCommandItem.Flag> flags)
+                    EnumSet<CcFlag> flags)
     {
         if ( abbrev == null || name == null || value == null ) {
             throw new IllegalArgumentException("All arguments must be non-null");

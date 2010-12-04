@@ -20,7 +20,6 @@
 
 package com.raelity.jvi.core;
 
-import java.util.EnumSet;
 import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViCmdEntry;
@@ -32,16 +31,17 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.logging.Logger;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 
-import static com.raelity.jvi.core.ColonCommands.Flags.*;
 import static com.raelity.jvi.core.Constants.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
@@ -136,8 +136,8 @@ private static char modalResponse;
 
 /** only used for parsing where we don't care about the command */
 private static final ColonAction dummyColonAction = new ColonAction() {
-        @Override public int getFlags() {
-            return BANG | NOPARSE;
+        @Override public EnumSet<CcFlag> getFlags() {
+            return EnumSet.of(CcFlag.BANG, CcFlag.NO_PARSE);
         }
 
         @Override public boolean isEnabled() {
@@ -359,29 +359,30 @@ private static ColonEvent parseCommandGuts(String commandLine,
     cev.iInputCommand = sidx01;
 
     cev.iArgString = sidx02;
-    ColonCommandItem ce;
+    ColonCommandItem cci;
     if(isExecuting) {
-        ce = m_commands.lookupCommand(command);
-        if(ce == null) {
+        cci = m_commands.lookupCommand(command);
+        if(cci == null) {
             Msg.emsg("Not an editor command: " + command);
             Util.vim_beep();
             return null;
         }
     } else {
-        ce = dummyColonCommandItem; // so parse will complete ok
+        cci = dummyColonCommandItem; // so parse will complete ok
     }
+    Set<CcFlag> flags = cci.getFlags();
 
     //
     // Invoke the command
     //
 
-    if(ce.getValue() instanceof Action) {
-        if( ! ((Action)ce.getValue()).isEnabled()) {
-            Msg.emsg(ce.getName() + " is not enabled");
+    if(cci.getValue() instanceof Action) {
+        if( ! ((Action)cci.getValue()).isEnabled()) {
+            Msg.emsg(cci.getName() + " is not enabled");
             return null;
         }
     }
-    if( ! (ce.getValue() instanceof ColonAction)) {
+    if( ! (cci.getValue() instanceof ColonAction)) {
         // no arguments allowed
         if(sidx < commandLine.length()) {
             Msg.emsg(Messages.e_trailing);
@@ -392,18 +393,17 @@ private static ColonEvent parseCommandGuts(String commandLine,
             return null;
         }
     }
-    if(bang
-            && ( ! (ce.getValue() instanceof ColonAction)
-                || (((ColonAction)ce.getValue()).getFlags() & BANG) == 0)) {
+    if(bang && !flags.contains(CcFlag.BANG))
+    {
         Msg.emsg("No ! allowed");
         return null;
     }
-    cev.command = ce.getName();
+    cev.command = cci.getName();
     cev.bang = bang;
 
     if(sidx < commandLine.length()) {
         cev.args = new ArrayList<String>();
-        if((((ColonAction)ce.getValue()).getFlags() & NOPARSE) != 0) {
+        if(flags.contains(CcFlag.NO_PARSE)) {
             // put the line (without command name) as the argument
             cev.args.add(commandLine.substring(sidx));
         } else {
@@ -415,7 +415,7 @@ private static ColonEvent parseCommandGuts(String commandLine,
         }
     }
 
-    cev.commandElement = ce;
+    cev.commandElement = cci;
     return cev;
 }
 
@@ -568,22 +568,25 @@ static public List<String> getAbrevList()
  * than "set" because "s" sorts earlier than "se". Consider this when
  * adding commands, since unique prefix has nothing to do with how commands
  * are recognized.
+ * 
+ * NOTE: if the ActionListener is a ColonAction and the ColonAction
+ *       has non null getFlags() then those flags are merged
+ *       with the argument flags.
  * @exception IllegalArgumentException this is thrown if the abbreviation
  * and/or the name already exist in the list or there's a null argument.
  */
 public static void register( String abbrev, String name, ActionListener l,
-                            EnumSet<ColonCommandItem.Flag> flags )
+                            Set<CcFlag> flags )
 {
-    if(flags == null)
-        flags = EnumSet.noneOf(ColonCommandItem.Flag.class);
+    EnumSet<CcFlag> newFlags = EnumSet.noneOf(CcFlag.class);
+    if(flags != null)
+        newFlags.addAll(flags);
     if(l instanceof ColonAction) {
-        // ColonAction ca = (ColonAction)l;
-        // if((ca.getFlags() & EXTRA) == 0)
-        //     flags.add(ColonCommandItem.Flag.NO_ARGS);
+        newFlags.addAll(((ColonAction)l).getFlags());
     } else {
-        flags.add(ColonCommandItem.Flag.NO_ARGS);
+        newFlags.add(CcFlag.NO_ARGS);
     }
-    m_commands.add(abbrev, name, l, flags);
+    m_commands.add(abbrev, name, l, newFlags);
 }
 
 /**
@@ -603,16 +606,28 @@ public static boolean deregister( String abbrev )
  */
 public abstract static class ColonAction
         extends AbstractAction
-        implements Flags
 {
     /**
      * Specify some of the commands argument handling. This default
      * implementation returns zero.
      * @see Flags
      */
-    public int getFlags()
+    public EnumSet<CcFlag> getFlags()
     {
-        return 0;
+        return EnumSet.noneOf(CcFlag.class);
+    }
+
+    /**
+     * A string suitable for display for this action as the argument command.
+     * The abrev must be an initial substring of the returned displayName.
+     * The default method returns the command name with which the action
+     * is registered.
+     * @param cci The command this action is executing as
+     * @return The string to display or null which means use the default
+     */
+    public String getDisplayName(ColonCommandItem cci)
+    {
+        return cci.getName();
     }
 }
 
@@ -878,64 +893,6 @@ static void closePrint()
     }
     printStream.close();
     printStream = null;
-}
-
-/**
- * Flags used to direct ":" command parsing. Only some of these
- * are used.
- */
-public interface Flags {
-  /** allow a linespecs */
-  public static final int RANGE   = 0x01;
-  /** allow a ! after the command name (--USED--) */
-  public static final int BANG	   = 0x02;
-  /** allow extra args after command name */
-  public static final int EXTRA   = 0x04;       // -- XXX
-  /** expand wildcards in extra part */
-  public static final int XFILE   = 0x08;
-  /** no spaces allowed in the extra part */
-  public static final int NOSPC   = 0x10;
-  /** default file range is 1,$ */
-  public static final int DFLALL  = 0x20;
-  /** dont default to the current file name */
-  public static final int NODFL   = 0x40;
-  /** argument required */
-  public static final int NEEDARG = 0x80;
-  /** check for trailing vertical bar */
-  public static final int TRLBAR  = 0x100;
-  /** allow "x for register designation */
-  public static final int REGSTR  = 0x200;
-  /** allow count in argument, after command */
-  public static final int COUNT   = 0x400;
-  /** no trailing comment allowed */
-  public static final int NOTRLCOM  = 0x800;
-  /** zero line number allowed */
-  public static final int ZEROR   = 0x1000;
-  /** do not remove CTRL-V from argument */
-  public static final int USECTRLV = 0x2000;
-  /** num before command is not an address */
-  public static final int NOTADR = 0x4000;
-  /** has "+command" argument */
-  public static final int EDITCMD = 0x8000;
-  /** accepts buffer name */
-  public static final int BUFNAME = 0x10000;
-  /** multiple extra files allowed */
-  public static final int FILES   = (XFILE | EXTRA);
-  /** one extra word allowed */
-  public static final int WORD1   = (EXTRA | NOSPC);
-  /** 1 file allowed, defaults to current file */
-  public static final int FILE1   = (FILES | NOSPC);
-  /** 1 file allowed, defaults to "" */
-  public static final int NAMEDF  = (FILE1 | NODFL);
-  /** multiple files allowed, default is "" */
-  public static final int NAMEDFS = (FILES | NODFL);
-
-
-  //
-  // Additional stuff
-  //
-  /** don't parse command into words, arg1 is one big line. */
-  public static final int NOPARSE = 0x00020000;
 }
 
 } // end com.raelity.jvi.ColonCommand
