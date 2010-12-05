@@ -20,7 +20,6 @@
 
 package com.raelity.jvi.core;
 
-import java.util.logging.Level;
 import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViCmdEntry;
@@ -374,7 +373,9 @@ private static ColonEvent parseCommandGuts(String commandLine,
     Set<CcFlag> flags = cci.getFlags();
 
     //
-    // Invoke the command
+    // Invoke the command.
+    // Actually, check for command usage issues
+    // then parse the arguments.
     //
 
     if( ! cci.isEnabled()) {
@@ -604,7 +605,7 @@ public interface ColonAction extends ActionListener {
     /**
      * Specify some of the commands argument handling. This default
      * implementation returns zero.
-     * @see Flags
+     * @see CcFlag
      */
     public EnumSet<CcFlag> getFlags();
 
