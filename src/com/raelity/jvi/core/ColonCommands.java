@@ -59,7 +59,7 @@ import static com.raelity.jvi.core.Misc01.*;
  * {@link ColonCommands.ColonAction} are not invoked if 
  * their isEnabled method returns false. The source
  * of the {@link java.awt.event.ActionEvent}
- * is a {@link javax.swing.JEditorPane}.
+ * is often a JEditorPane for swing implementations.
  */
 public class ColonCommands
 {
@@ -137,7 +137,7 @@ private static char modalResponse;
 /** only used for parsing where we don't care about the command */
 private static final ColonAction dummyColonAction = new AbstractColonAction() {
         @Override public EnumSet<CcFlag> getFlags() {
-            return EnumSet.of(CcFlag.BANG, CcFlag.NO_PARSE);
+            return EnumSet.of(CcFlag.BANG, CcFlag.NO_PARSE, CcFlag.RANGE);
         }
 
         @Override public boolean isEnabled() {
@@ -150,7 +150,8 @@ private static final ColonAction dummyColonAction = new AbstractColonAction() {
     };
 
 private static final ColonCommandItem dummyColonCommandItem
-        = new ColonCommandItem("xyzzy", "xyzzy", dummyColonAction, null);
+        = new ColonCommandItem("xyzzy", "xyzzy", dummyColonAction,
+                               dummyColonAction.getFlags());
 
 /**
     * Parse (partially) the command.
@@ -380,41 +381,19 @@ private static ColonEvent parseCommandGuts(String commandLine,
         Msg.emsg(cci.getName() + " is not enabled");
         return null;
     }
-
-    //
-    // TODO: once NO_ARGS and RANGE are working, really use these checks
     if(sidx < commandLine.length() && flags.contains(CcFlag.NO_ARGS)) {
-        if(ViManager.isDebugAtHome())
-            LOG.log(Level.SEVERE, null, new IllegalStateException("NO_ARGS"));
-        // Msg.emsg(Messages.e_trailing);
-        // return null;
+        Msg.emsg(Messages.e_trailing);
+        return null;
     }
     if(cev.getAddrCount() > 0 && !flags.contains(CcFlag.RANGE)) {
-        if(ViManager.isDebugAtHome())
-            LOG.log(Level.SEVERE, null, new IllegalStateException("RANGE"));
-        // Msg.emsg(Messages.e_norange);
-        // return null;
+        Msg.emsg(Messages.e_norange);
+        return null;
     }
-
-    //
-    // TODO: Get rid of the following stuff in favor of using flags
-    //
-    if( ! (cci.getValue() instanceof ColonAction)) {
-        // no arguments allowed
-        if(sidx < commandLine.length()) {
-            Msg.emsg(Messages.e_trailing);
-            return null;
-        }
-        if(cev.getAddrCount() > 0) {
-            Msg.emsg(Messages.e_norange);
-            return null;
-        }
-    }
-    if(bang && !flags.contains(CcFlag.BANG))
-    {
+    if(bang && !flags.contains(CcFlag.BANG)) {
         Msg.emsg("No ! allowed");
         return null;
     }
+
     cev.command = cci.getName();
     cev.bang = bang;
 

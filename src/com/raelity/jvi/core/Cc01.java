@@ -20,8 +20,10 @@
 
 package com.raelity.jvi.core;
 
-import java.util.EnumSet;
+import com.raelity.jvi.ViBadLocationException;
+import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViAppView;
+import com.raelity.jvi.ViBuffer.BIAS;
 import com.raelity.jvi.ViFactory;
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViOutputStream;
@@ -41,14 +43,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.Position;
 import org.openide.util.lookup.ServiceProvider;
 
 import static java.lang.Math.min;
@@ -73,6 +73,8 @@ public class Cc01
         Cc01.init();
       }
     }
+
+    private Cc01() { }
 
     private static void init()
     {
@@ -146,7 +148,7 @@ public class Cc01
         @Override
         public EnumSet<CcFlag> getFlags()
         {
-            return EnumSet.of(CcFlag.NO_ARGS);
+            return EnumSet.of(CcFlag.NO_ARGS, CcFlag.RANGE);
         }
 
         Next(boolean goForward) {
@@ -332,7 +334,7 @@ public class Cc01
             @Override
             public EnumSet<CcFlag> getFlags()
             {
-                return EnumSet.of(CcFlag.NO_PARSE);
+                return EnumSet.of(CcFlag.NO_PARSE, CcFlag.RANGE);
             }
 
             public void actionPerformed(final ActionEvent ev)
@@ -349,7 +351,7 @@ public class Cc01
             @Override
             public EnumSet<CcFlag> getFlags()
             {
-                return EnumSet.of(CcFlag.NO_PARSE);
+                return EnumSet.of(CcFlag.NO_PARSE, CcFlag.RANGE);
             }
 
             public void actionPerformed(final ActionEvent ev) {
@@ -417,7 +419,7 @@ public class Cc01
             @Override
             public EnumSet<CcFlag> getFlags()
             {
-                return EnumSet.of(CcFlag.HIDE);
+                return EnumSet.of(CcFlag.HIDE, CcFlag.NO_ARGS);
             }
 
             public void actionPerformed(ActionEvent ev) {
@@ -428,6 +430,13 @@ public class Cc01
         * :tag command.
         */
     private static ColonAction ACTION_tag = new AbstractColonAction() {
+            @Override
+            public EnumSet<CcFlag> getFlags()
+            {
+                return EnumSet.of(CcFlag.RANGE);
+            }
+
+            @Override
             public void actionPerformed(ActionEvent ev)
             {
                 ColonEvent evt = (ColonEvent)ev;
@@ -453,7 +462,7 @@ public class Cc01
             @Override
             public EnumSet<CcFlag> getFlags()
             {
-                return EnumSet.of(CcFlag.NO_ARGS);
+                return EnumSet.of(CcFlag.NO_ARGS, CcFlag.RANGE);
             }
 
             public void actionPerformed(ActionEvent ev)
@@ -471,6 +480,12 @@ public class Cc01
         };
 
     private static ColonAction ACTION_tselect = new AbstractColonAction() {
+            @Override
+            public EnumSet<CcFlag> getFlags()
+            {
+                return EnumSet.of(CcFlag.RANGE);
+            }
+
             public void actionPerformed(ActionEvent ev) {
                 ColonEvent ce = (ColonEvent)ev;
                 if(ce.getNArg() > 1) {
@@ -510,7 +525,7 @@ public class Cc01
         @Override
         public EnumSet<CcFlag> getFlags()
         {
-            return EnumSet.of(CcFlag.NO_ARGS);
+            return EnumSet.of(CcFlag.NO_ARGS, CcFlag.RANGE);
         }
 
         public void actionPerformed(ActionEvent ev)
@@ -528,6 +543,13 @@ public class Cc01
      * :yank command.
      */
     private static ColonAction ACTION_yank = new AbstractColonAction() {
+
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.RANGE);
+        }
+        
         public void actionPerformed(ActionEvent ev)
         {
             OPARG oa = ColonCommands.setupExop((ColonEvent)ev, true);
@@ -548,6 +570,11 @@ public class Cc01
         public ShiftAction(int op)
         {
             this.op = op;
+        }
+
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.RANGE);
         }
 
         @Override
@@ -579,6 +606,12 @@ public class Cc01
         moveCopy(boolean doMove)
         {
             this.doMove = doMove;
+        }
+
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.RANGE);
         }
 
         public void actionPerformed(ActionEvent e)
@@ -618,21 +651,17 @@ public class Cc01
             Misc.runUndoable(new Runnable() {
                 public void run() {
                     try {
-                        Position pos1 = doMove
-                                ? ((Document)buf.getDocument())
-                                            .createPosition(offset1)
-                                : null;
-                        Position pos2 = doMove
-                                ? ((Document)buf.getDocument())
-                                            .createPosition(offset2)
-                                : null;
+                        ViMark pos1 = doMove
+                                ? buf.createMark(offset1, BIAS.FORW) : null;
+                        ViMark pos2 = doMove
+                                ? buf.createMark(offset2, BIAS.FORW) : null;
                         String s = buf.getText(offset1, offset2 - offset1);
                         buf.insertText(dstOffset, s);
                         if(doMove) {
                             buf.deleteChar(pos1.getOffset() - atEndAdjust,
                                             pos2.getOffset() - atEndAdjust);
                         }
-                    } catch (BadLocationException ex) {
+                    } catch (ViBadLocationException ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }
                 }

@@ -40,6 +40,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.text.CharacterIterator;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import javax.swing.Timer;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -84,6 +85,12 @@ public static class BangAction extends AbstractColonAction
 {
     FilterThreadCoordinator coord = null;
     Option dbg = Options.getOption(Options.dbgBang);
+
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.RANGE);
+        }
 
     public void actionPerformed(ActionEvent ev)
     {

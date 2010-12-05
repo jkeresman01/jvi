@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViBadLocationException;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViBuffer.BIAS;
@@ -31,7 +32,6 @@ import static com.raelity.jvi.core.Constants.*;
 import static com.raelity.jvi.core.KeyDefs.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.BadLocationException;
 
 /**
  * See MagicRedoOriginal for introductory comments and discussion of issues.
@@ -347,7 +347,7 @@ class MagicRedo implements GetChar.ViMagicRedo
                 off = G.curbuf.getLength();
             postString = new DocString(off, s, true);
 
-        } catch(BadLocationException ex) {
+        } catch(ViBadLocationException ex) {
             Logger.getLogger(MagicRedo.class.getName()).log(Level.SEVERE, null,
                                                             ex);
         }
@@ -389,7 +389,7 @@ class MagicRedo implements GetChar.ViMagicRedo
         int p2 = postString.getInnerOffset();
         try {
             return G.curbuf.getText(p1, p2 - p1);
-        } catch(BadLocationException ex) {
+        } catch(ViBadLocationException ex) {
             Logger.getLogger(MagicRedo.class.getName()).log(Level.SEVERE, null,
                                                             ex);
         }
@@ -548,7 +548,7 @@ class MagicRedo implements GetChar.ViMagicRedo
             String s = "OOPS-DONT'T-MATCH-THIS";
             try {
                 s = G.curbuf.getText(off, text.length());
-            } catch(BadLocationException ex) {
+            } catch(ViBadLocationException ex) {
                 Logger.getLogger(MagicRedo.class.getName()).
                         log(Level.SEVERE, null, ex);
             }
@@ -596,7 +596,7 @@ class MagicRedo implements GetChar.ViMagicRedo
                                     p0.getOffset(), len)) : "<0");
                 }
             }
-        } catch(BadLocationException ex) {
+        } catch(ViBadLocationException ex) {
             Logger.getLogger(MagicRedo.class.getName()).log(Level.SEVERE, null,
                                                             ex);
         }

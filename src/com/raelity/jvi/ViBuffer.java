@@ -30,10 +30,10 @@ package com.raelity.jvi;
 
 import com.raelity.text.TextUtil.MySegment;
 import java.io.File;
-import javax.swing.text.BadLocationException;
 
 /**
- *
+ * TODO: throw ViBadLocationException in all doc mod methods.
+ * 
  * @author erra
  */
 public interface ViBuffer {
@@ -53,7 +53,7 @@ public interface ViBuffer {
     public void insertText(int offset, String s);
     
     /** get some text from the document */
-    public String getText(int offset, int length) throws BadLocationException;
+    public String getText(int offset, int length) throws ViBadLocationException;
     
     public void replaceChar(int offset, char c);
     

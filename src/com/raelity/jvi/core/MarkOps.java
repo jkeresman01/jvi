@@ -472,11 +472,6 @@ class MarkOps
         public void actionPerformed(ActionEvent ev) {
             ColonEvent cev = (ColonEvent)ev;
 
-            if(cev.getAddrCount() > 0) {
-                Msg.emsg(Messages.e_norange);
-                return;
-            }
-
             String arg = null;
             if(cev.getNArg() > 0)
                 arg = cev.getArgString();

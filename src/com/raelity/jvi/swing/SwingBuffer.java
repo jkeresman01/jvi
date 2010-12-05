@@ -9,6 +9,7 @@
 
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.ViBadLocationException;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.Options;
@@ -215,8 +216,12 @@ abstract public class SwingBuffer extends Buffer {
         }
     }
 
-    public String getText(int offset, int length) throws BadLocationException {
-        return getDocument().getText(offset, length);
+    public String getText(int offset, int length) throws ViBadLocationException {
+        try {
+            return getDocument().getText(offset, length);
+        } catch(BadLocationException ex) {
+            throw new SwingBadLocationException(ex);
+        }
     }
     
     protected void processTextException(BadLocationException ex) {

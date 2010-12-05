@@ -75,6 +75,7 @@ abstract public class SimpleBuffer extends SwingBuffer
         super.removeShare();
     }
 
+    @Override
     public void undo() {
         if(undoMan.canUndo())
             undoMan.undo();
@@ -82,6 +83,7 @@ abstract public class SimpleBuffer extends SwingBuffer
             Util.vim_beep();
     }
 
+    @Override
     public void redo() {
         if(undoMan.canRedo())
             undoMan.redo();
@@ -89,20 +91,24 @@ abstract public class SimpleBuffer extends SwingBuffer
             Util.vim_beep();
     }
 
+    @Override
     public void do_beginUndo() {
         // NEEDSWORK: standalone like: ((AbstractDocument)doc).writeLock();
         do_beginInsertUndo();
     }
 
+    @Override
     public void do_endUndo() {
         do_endInsertUndo();
         // NEEDSWORK: standalone like: ((AbstractDocument)doc).writeUnlock();
     }
 
+    @Override
     public void do_beginInsertUndo() {
         sendUndoableEdit(UndoGroupManager.BEGIN_COMMIT_GROUP);
     }
 
+    @Override
     public void do_endInsertUndo() {
         sendUndoableEdit(UndoGroupManager.END_COMMIT_GROUP);
     }
