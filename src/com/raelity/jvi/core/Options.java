@@ -99,6 +99,7 @@ public final class Options {
   public static final String redoTrack = "viRedoTrack";
   public static final String pcmarkTrack = "viPCMarkTrack";
   public static final String autoPopupFN = "viAutoPopupFN";
+  public static final String autoPopupCcName = "viAutoPopupCcName";
   public static final String coordSkip = "viCoordSkip";
   public static final String platformPreferences = "viPlatformPreferences";
   public static final String platformTab = "viPlatformTab";
@@ -261,7 +262,15 @@ public final class Options {
     OptUtil.setupOptionDesc(Category.PLATFORM, autoPopupFN, "\":e#\" Auto Popup",
                "When doing \":\" command line entry, if \"e#\" is"
                + " entered then automatically popup a file"
-               + " name completion window. NB6 only; post 07/07/22");
+               + " name completion window.");
+    
+    OptUtil.createBooleanOption(autoPopupCcName, false);
+    OptUtil.setupOptionDesc(Category.PLATFORM, autoPopupCcName,
+                            "\":\" Command Name Auto Popup",
+               "After doing \":\" for command line entry,"
+               + " automatically popup command"
+               + " name completion.");
+    setExpertHidden(autoPopupCcName, false, true);
 
     G.isCoordSkip = OptUtil.createBooleanOption(coordSkip, true);
     OptUtil.setupOptionDesc(Category.PLATFORM, coordSkip, "Code Folding Compatible",

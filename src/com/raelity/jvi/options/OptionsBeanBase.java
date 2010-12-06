@@ -448,6 +448,14 @@ public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsContro
 	return getboolean(Options.autoPopupFN);
     }
 
+    public void setViAutoPopupCcName(boolean arg)  throws PropertyVetoException {
+        put(Options.autoPopupCcName, arg);
+    }
+
+    public boolean getViAutoPopupCcName() {
+	return getboolean(Options.autoPopupCcName);
+    }
+
     public void setViPlatformBraceMatch(boolean arg)  throws PropertyVetoException {
         put(Options.platformBraceMatch, arg);
     }
