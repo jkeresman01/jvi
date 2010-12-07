@@ -32,7 +32,12 @@ import javax.swing.event.ChangeListener;
  * <br/>    display text for link
  * <br/>    &lt;EOT&gt;
  * <br/>    motd-message:
- * The message, followed by a line starting with &lt;EOT&gt;
+ * <br/>    The message, followed by a line starting with &lt;EOT&gt;
+ * <br/>
+ * <br/> Added later, typically they are both specified to point to the latest.
+ *       The corresponding file name in the "new release" message link here.
+ * <br/>    jVi-release-link:
+ * <br/>    jVi-beta-link:
  * <p/>
  * Note:    there can be any number of motd-link and motd-message and
  * they are output in the order encounter
@@ -46,11 +51,12 @@ class Motd
     private jViVersion latestBeta;
     private String motdVersion;
     private String downloadTarget;
-    private int messageNumber;
-    private String message;
     private boolean valid;
     private boolean outputNetworkInfo;
     private boolean outputBasicInfo;
+    private String linkRelease;
+    private String linkBeta;
+
     // following could be a list of pairs of link:text
     List<OutputHandler> outputList =
             new ArrayList<OutputHandler>(5);
@@ -71,29 +77,30 @@ class Motd
 
     Motd(String s)
     {
-        //String lines[] = motd.split("\n");
+        String match;
+        motdVersion = find("^motd-version:\\s*(\\S+)", Pattern.MULTILINE, s);
+        if(ViManager.isDebugAtHome())
+            LOG.log(Level.INFO, "Motd version:{0}", motdVersion);
+        match = find("^jVi-release:\\s*(\\S+)", Pattern.MULTILINE, s);
+        if (match != null)
+            latestRelease = new jViVersion(match);
+        match = find("^jVi-beta:\\s*(\\S+)", Pattern.MULTILINE, s);
+        if (match != null)
+            latestBeta = new jViVersion(match);
+        downloadTarget = find("^jVi-download-target:\\s*(\\S+)",
+                              Pattern.MULTILINE, s);
+        linkRelease = find("^jVi-release-link:\\s*(\\S+)",
+                              Pattern.MULTILINE, s);
+        linkBeta = find("^jVi-beta-link:\\s*(\\S+)",
+                              Pattern.MULTILINE, s);
+
         Pattern p;
         Matcher m;
-        p = Pattern.compile("^motd-version:\\s*(\\S+)", Pattern.MULTILINE);
-        m = p.matcher(s);
-        if (m.find())
-            motdVersion = m.group(1);
-        p = Pattern.compile("^jVi-release:\\s*(\\S+)", Pattern.MULTILINE);
-        m = p.matcher(s);
-        if (m.find())
-            latestRelease = new jViVersion(m.group(1));
-        p = Pattern.compile("^jVi-beta:\\s*(\\S+)", Pattern.MULTILINE);
-        m = p.matcher(s);
-        if (m.find())
-            latestBeta = new jViVersion(m.group(1));
-        p = Pattern.compile("^jVi-download-target:\\s*(\\S+)", Pattern.MULTILINE);
-        m = p.matcher(s);
-        if (m.find())
-            downloadTarget = m.group(1);
-        p =
-                Pattern.compile("^(?:motd-link:\\s*(\\S+)" + "|motd-message:)" +
-                "\\s*\\n" + "(.*?)\\s*\\n<EOT>",
-                                Pattern.MULTILINE | Pattern.DOTALL);
+        p = Pattern.compile("^(?:motd-link:\\s*(\\S+)"
+                          + "|motd-message:)"
+                          + "\\s*\\n"
+                          + "(.*?)\\s*\\n<EOT>",
+                          Pattern.MULTILINE | Pattern.DOTALL);
         m = p.matcher(s);
         while (m.find()) {
             if (m.start(1) >= 0)
@@ -102,6 +109,17 @@ class Motd
                 outputList.add(new OutputString(m.group(2)));
         }
         valid = true;
+    }
+
+    private String find(String regex, int flags, String input)
+    {
+        Pattern p;
+        Matcher m;
+        p = Pattern.compile(regex, flags);
+        m = p.matcher(input);
+        if (m.find())
+            return m.group(1);
+        return null;
     }
 
     void outputOnce()
@@ -141,24 +159,31 @@ class Motd
                 hasNewer = "Newer release available: " + latestRelease;
             else if (latestRelease.compareTo(ViManager.version) == 0)
                 tagCurrent = " (This is the latest release)";
-            else
+            else {
                 // In this else, should be able to assert that !isRelease()
                 if (ViManager.version.isDevelopment())
                     tagCurrent = " (development release)";
+            }
         vios.println("Running: " + ViManager.getReleaseString() + tagCurrent);
-        if (hasNewer != null)
-            vios.printlnLink(downloadTarget, hasNewer);
+        if (hasNewer != null) {
+            if(linkRelease != null)
+                vios.printlnLink(linkRelease, hasNewer);
+            else
+                vios.println(hasNewer);
+        }
         if (latestBeta != null && latestBeta.isValid())
-            if (latestBeta.compareTo(ViManager.version) > 0)
-                vios.printlnLink(downloadTarget,
-                                 "Beta or release candidate available: " +
-                        latestBeta);
+            if (latestBeta.compareTo(ViManager.version) > 0) {
+                String betaMsg = "Beta or release candidate available: "
+                                      + latestBeta;
+                if(linkBeta != null)
+                    vios.printlnLink(linkBeta, betaMsg);
+                else
+                    vios.println(betaMsg);
+            }
         for (int i = 0; i < outputList.size(); i++) {
             OutputHandler outputHandler = outputList.get(i);
             outputHandler.output(vios);
         }
-        //if(message != null)
-        //    vios.println(message);
         vios.close();
     }
 
