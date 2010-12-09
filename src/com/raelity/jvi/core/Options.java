@@ -270,7 +270,7 @@ public final class Options {
                "After doing \":\" for command line entry,"
                + " automatically popup command"
                + " name completion.");
-    setExpertHidden(autoPopupCcName, false, true);
+    setExpertHidden(autoPopupCcName, false, false);
 
     G.isCoordSkip = OptUtil.createBooleanOption(coordSkip, true);
     OptUtil.setupOptionDesc(Category.PLATFORM, coordSkip, "Code Folding Compatible",

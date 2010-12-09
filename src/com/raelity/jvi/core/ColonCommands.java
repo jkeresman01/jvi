@@ -217,7 +217,7 @@ private static ColonEvent parseCommandGuts(String commandLine,
     for (;;) {
         cev.line1 = cev.line2;
             // default is current line number
-        cev.line2 = G.curwin.w_cursor.getLine();
+        cev.line2 = isExecuting ? G.curwin.w_cursor.getLine() : 1;
         sidx = skipwhite(commandLine, sidx);
         sidx = get_address(commandLine, sidx, skip, lnum);
         if (sidx < 0)            // error detected
@@ -229,7 +229,7 @@ private static ColonEvent parseCommandGuts(String commandLine,
             if (commandLine.charAt(sidx) == '%') { // '%' - all lines
                 ++sidx;
                 cev.line1 = 1;
-                cev.line2 = G.curbuf.getLineCount();
+                cev.line2 = isExecuting ? G.curbuf.getLineCount() : MAXLNUM - 1;
                 ++cev.addr_count;
             }
             /* ************************************************************
@@ -368,6 +368,8 @@ private static ColonEvent parseCommandGuts(String commandLine,
             return null;
         }
     } else {
+        ColonCommandItem cci2 = m_commands.lookupCommand(command);
+        cev.dummyParserCommand = cci2 != null ? cci2.getName() : "";
         cci = dummyColonCommandItem; // so parse will complete ok
     }
     Set<CcFlag> flags = cci.getFlags();
@@ -416,7 +418,7 @@ private static ColonEvent parseCommandGuts(String commandLine,
     return cev;
 }
 
-public static ColonEvent parseCommandDummy(String commandLine)
+public static ColonEvent parseCommandNoExec(String commandLine)
 {
     return parseCommandGuts(commandLine, false);
 }
@@ -663,6 +665,8 @@ static public class ColonEvent extends ActionEvent
     String inputCommand;
     /** The index of the command word on the line */
     int iInputCommand;
+    /** */
+    String dummyParserCommand;
     /** The command associated with this event */
     ColonCommandItem commandElement;
     /** indicates that the command word has a trailing "!" */
@@ -768,6 +772,14 @@ static public class ColonEvent extends ActionEvent
     public String getComandName()
     {
         return command;
+    }
+
+    /** use in dummy parse to give the command name lookup match.
+     * @return lookup command, empty string if lookup failed
+     */
+    public String getNoExecCommandNameLookup()
+    {
+        return dummyParserCommand;
     }
     
     /**
