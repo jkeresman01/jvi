@@ -87,6 +87,7 @@ public class Misc implements ClipboardOwner {
                      position=10)
     public static class Init implements ViInitialization
     {
+      @Override
       public void init()
       {
         Misc.init();
@@ -95,6 +96,7 @@ public class Misc implements ClipboardOwner {
 
   private static void init() {
     PropertyChangeListener pcl = new PropertyChangeListener() {
+      @Override
       public void propertyChange(PropertyChangeEvent evt) {
         String pname = evt.getPropertyName();
         if(pname.equals(ViManager.P_BOOT)) {
@@ -2256,6 +2258,7 @@ private static int put_in_typebuf(String s, boolean colon)
   public static int op_replace(final OPARG oap, final char c) {
     final MutableInt rval = new MutableInt();
     Misc.runUndoable(new Runnable() {
+        @Override
         public void run() {
           rval.setValue(op_replace7(oap, c)); // from vim7
         }
@@ -3321,6 +3324,7 @@ private static int put_in_typebuf(String s, boolean colon)
             System.err.println("VimClip available");
         DataFlavor dfa[] = cb.getAvailableDataFlavors();
         Arrays.sort(dfa, new Comparator<DataFlavor>() {
+            @Override
             public int compare(DataFlavor df1, DataFlavor df2) {
               return df1.getMimeType().compareTo(df2.getMimeType());
             }
@@ -3377,6 +3381,7 @@ private static int put_in_typebuf(String s, boolean colon)
     /**
      * Lost clipboard ownership, implementation of ClibboardOwner.
      */
+    @Override
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
       synchronized(clipOwner) {
         clipboard_owned = false;
@@ -4227,6 +4232,7 @@ do_addsub(final char command, final int Prenum1)
 {
     final MutableInt rval = new MutableInt();
     Misc.runUndoable(new Runnable() {
+        @Override
         public void run() {
           rval.setValue(op_do_addsub(command, Prenum1));
         }
