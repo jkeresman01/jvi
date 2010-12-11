@@ -201,6 +201,8 @@ public class ViManager
             i.init();
         }
 
+        if(core == null)
+            throw new RuntimeException("NetBeans Bug 192496");
         assert core != null;
 
         ColonCommands.register("ve", "version", ACTION_version, null);
