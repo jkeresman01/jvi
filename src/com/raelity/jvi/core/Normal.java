@@ -53,6 +53,8 @@ import static com.raelity.jvi.core.KeyDefs.*;
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
+import static com.raelity.jvi.core.Search.*;
+import static com.raelity.jvi.core.Search01.*;
 import static com.raelity.jvi.core.Util.*;
 
 /**
@@ -2915,10 +2917,10 @@ middle_code:
     // after the pattern is input.
     pickupExtraChar = true;
     
-    Search.inputSearchPattern(cap,
-                              cap.count1,
-                              (dont_set_mark ? 0 : SEARCH_MARK)
-                               | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG);
+    inputSearchPattern(cap,
+                       cap.count1,
+                       (dont_set_mark ? 0 : SEARCH_MARK)
+                        | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG);
   }
   
   static private void nv_search_finish(CMDARG cap, StringBuilder searchp) {
@@ -2942,14 +2944,14 @@ middle_code:
     G.curwin.w_set_curswant = true;
     
     if(cap.nchar == K_X_INCR_SEARCH_DONE)
-      i = Search.getIncrSearchResultCode();
+      i = getIncrSearchResultCode();
     else if(cap.nchar == K_X_SEARCH_FINISH)
-      i = Search.doSearch();
+      i = doSearch();
     else
       i = 0;
 
     searchp.setLength(0);
-    searchp.append(Search.last_search_pat());
+    searchp.append(last_search_pat());
                         
     if(i == 0) {
       clearop(oap);
@@ -3005,7 +3007,7 @@ middle_code:
    */
   static private  void	nv_next (CMDARG cap, int flag) {
     do_xop("nv_next");
-    int rc = Search.doNext(cap, cap.count1,
+    int rc = doNext(cap, cap.count1,
 	      SEARCH_MARK | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG | flag);
     if(rc == FAIL) {
       clearop(cap.oap);
@@ -3034,7 +3036,7 @@ middle_code:
     else
       cap.oap.inclusive = true;
     if (cap.nchar >= 0x100
-		|| !Search.searchc(cap.nchar, dir, type, cap.count1)) {
+		|| !searchc(cap.nchar, dir, type, cap.count1)) {
       clearopbeep(cap.oap);
     } else {
       G.curwin.w_set_curswant = true;
@@ -3079,7 +3081,7 @@ middle_code:
         }
       } else {
         // Use the internal findmatch!
-        ViFPOS fpos = Search.findmatch(cap.oap, NUL);
+        ViFPOS fpos = findmatch(cap.oap, NUL);
         if (fpos == null) {
           clearopbeep(cap.oap);
         } else {
@@ -3194,7 +3196,7 @@ nv_brackets(CMDARG cap, int dir)
 	}
 	for ( ; n > 0; --n)
 	{
-	    if ((pos = Search.findmatchlimit(cursor, cap.oap, findc,
+	    if ((pos = findmatchlimit(cursor, cap.oap, findc,
 		(cap.cmdchar == '[') ? FM_BACKWARD : FM_FORWARD, 0)) == null)
 	    {
 		if (new_pos == null)	/* nothing found */
@@ -3266,7 +3268,7 @@ nv_brackets(CMDARG cap, int dir)
 			    pos = new_pos;
 			}
 			/* found start/end of other method: go to match */
-			else if ((pos = Search.findmatchlimit(cursor,
+			else if ((pos = findmatchlimit(cursor,
                                 cap.oap, findc,
 			    (cap.cmdchar == '[') ? FM_BACKWARD : FM_FORWARD,
 								  0)) == null)
@@ -3311,7 +3313,7 @@ nv_brackets(CMDARG cap, int dir)
 	 * Imitate strange Vi behaviour: When using "]]" with an operator
 	 * we also stop at '}'.
 	 */
-	if (!Search.findpar(cap, dir, cap.count1, flag,
+	if (!findpar(cap, dir, cap.count1, flag,
 	      (cap.oap.op_type != OP_NOP && dir == FORWARD && flag == '{')))
 	    clearopbeep(cap.oap);
 	else
@@ -3437,7 +3439,7 @@ nv_brackets(CMDARG cap, int dir)
 
     G.curwin.w_set_curswant = true;
 
-    if (!Search.findsent(dir, cap.count1))
+    if (!findsent(dir, cap.count1))
       clearopbeep(cap.oap);
   }
   
@@ -3450,7 +3452,7 @@ static private void nv_findpar(CMDARG cap, int dir)
   cap.oap.motion_type = MCHAR;
   cap.oap.inclusive = false;
   G.curwin.w_set_curswant = true;
-  if (!Search.findpar(cap, dir, cap.count1, NUL, false))
+  if (!findpar(cap, dir, cap.count1, NUL, false))
     clearopbeep(cap.oap);
 }
 
@@ -3992,7 +3994,7 @@ static private void nv_findpar(CMDARG cap, int dir)
           oap.motion_type = MCHAR;
           G.curwin.w_set_curswant = true;
           oap.inclusive = true;
-          if (Search.bckend_word(cap.count1, cap.nchar == 'E', false) == FAIL)
+          if (bckend_word(cap.count1, cap.nchar == 'E', false) == FAIL)
               clearopbeep(oap);
           break;
       //
@@ -4219,7 +4221,7 @@ static private void nv_findpar(CMDARG cap, int dir)
     cap.oap.motion_type = MCHAR;
     cap.oap.inclusive = false;
     G.curwin.w_set_curswant = true;
-    if (Search.bck_word(cap.count1, type, false) == FAIL)
+    if (bck_word(cap.count1, type, false) == FAIL)
       clearopbeep(cap.oap);
   }
 
@@ -4280,9 +4282,9 @@ static private void nv_findpar(CMDARG cap, int dir)
     G.curwin.w_set_curswant = true;
     int rc;
     if (word_end) {
-      rc = Search.end_word(cap.count1, type, flag, false);
+      rc = end_word(cap.count1, type, flag, false);
     } else {
-      rc = Search.fwd_word(cap.count1, type, cap.oap.op_type != OP_NOP);
+      rc = fwd_word(cap.count1, type, cap.oap.op_type != OP_NOP);
     }
 
     // Don't leave the cursor on the NUL past a line
@@ -4455,42 +4457,42 @@ static private void nv_findpar(CMDARG cap, int dir)
       switch (cap.nchar)
       {
         case 'w': /* "aw" = a word */
-            flag = Search.current_word(cap.oap, cap.count1, include, false);
+            flag = current_word(cap.oap, cap.count1, include, false);
             break;
         case 'W': /* "aW" = a WORD */
-            flag = Search.current_word(cap.oap, cap.count1, include, true);
+            flag = current_word(cap.oap, cap.count1, include, true);
             break;
         case 'b': /* "ab" = a braces block */
         case '(':
         case ')':
-            flag = Search.current_block(cap.oap, cap.count1, include, '(', ')');
+            flag = current_block(cap.oap, cap.count1, include, '(', ')');
             break;
         case 'B': /* "aB" = a Brackets block */
         case '{':
         case '}':
-            flag = Search.current_block(cap.oap, cap.count1, include, '{', '}');
+            flag = current_block(cap.oap, cap.count1, include, '{', '}');
             break;
         case '[': /* "a[" = a [] block */
         case ']':
-            flag = Search.current_block(cap.oap, cap.count1, include, '[', ']');
+            flag = current_block(cap.oap, cap.count1, include, '[', ']');
             break;
         case '<': /* "a<" = a <> block */
         case '>':
-            flag = Search.current_block(cap.oap, cap.count1, include, '<', '>');
+            flag = current_block(cap.oap, cap.count1, include, '<', '>');
             break;
 	case 't': /* "at" = a tag block (xml and html) */
-		flag = Search.current_tagblock(cap.oap, cap.count1, include);
+		flag = current_tagblock(cap.oap, cap.count1, include);
 		break;
         case 'p': /* "ap" = a paragraph */
-            flag = Search.current_par(cap.oap, cap.count1, include, 'p');
+            flag = current_par(cap.oap, cap.count1, include, 'p');
             break;
          case 's': /* "as" = a sentence */
-             flag = Search.current_sent(cap.oap, cap.count1, include);
+             flag = current_sent(cap.oap, cap.count1, include);
              break;
 	case '"': /* "a"" = a double quoted string */
 	case '\'': /* "a'" = a single quoted string */
 	case '`': /* "a`" = a backtick quoted string */
-		flag = Search.current_quote(cap.oap, cap.count1, include,
+		flag = current_quote(cap.oap, cap.count1, include,
 								  cap.nchar);
 		break;
 //             //#if 0­  /* TODO */
