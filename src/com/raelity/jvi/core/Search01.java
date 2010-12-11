@@ -729,7 +729,7 @@ public class Search01 {
     {
         int p = 0;
     //#ifdef FEAT_LISP...
-        while ((p = vim_strchr(seg, p, '/')) > 0)
+        while ((p = vim_strchr(seg, p, '/')) >= 0)
         {
             if (seg.charAt(p + 1) == '/')
                 break;
