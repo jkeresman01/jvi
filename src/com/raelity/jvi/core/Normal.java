@@ -1633,6 +1633,7 @@ middle_code:
 	case OP_LSHIFT:
         case OP_RSHIFT:
           runUndoable(new Runnable() {
+        @Override
               public void run() {
                 op_shift(oap, true, oap.is_VIsual ? cap.count1 : 1);
               }
@@ -1650,6 +1651,7 @@ middle_code:
 	    Util.beep_flush();
 	  } else {
             runUndoable(new Runnable() {
+          @Override
                 public void run() {
                   do_do_join(oap.line_count, oap.op_type == OP_JOIN, true);
                 }
@@ -1663,6 +1665,7 @@ middle_code:
 	    Util.vim_beep();
 	  else {
             runUndoable(new Runnable() {
+          @Override
                 public void run() {
                   op_delete(oap);
                 }
@@ -1714,6 +1717,7 @@ middle_code:
           // If 'equalprg' is empty, do the indenting internally.
           if(oap.op_type == OP_INDENT && G.p_ep.getString().isEmpty()) {
             runUndoable(new Runnable() {
+          @Override
                 public void run() {
                   G.curbuf.reindent(G.curwin.w_cursor.getLine(),
                                     oap.line_count);
@@ -1732,6 +1736,7 @@ middle_code:
 	    Util.vim_beep();
 	  else {
             runUndoable(new Runnable() {
+          @Override
                 public void run() {
                   op_tilde(oap);
                   check_cursor_col();
@@ -1808,6 +1813,7 @@ middle_code:
     do_op("op_format");
     // NEESDWORK: hook into platform's format (if available)
     runUndoable(new Runnable() {
+      @Override
         public void run() {
           G.curbuf.reformat(G.curwin.w_cursor.getLine(),
                             oap.line_count);
@@ -3578,6 +3584,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       return;
 
     runUndoable(new Runnable() {
+      @Override
         public void run() {
           for (int n = cap.count1; n > 0; --n) {
             swapchar(cap.oap.op_type,G.curwin.w_cursor);
@@ -4572,6 +4579,7 @@ static private void nv_findpar(CMDARG cap, int dir)
 	prep_redo(cap.oap.regname, cap.count0,
 		  NUL, cap.cmdchar, NUL, cap.nchar);
         runUndoable(new Runnable() {
+          @Override
             public void run() {
               do_do_join(cap.count0, cap.nchar == NUL, true);
             }
@@ -4590,6 +4598,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       clearopbeep(cap.oap);
     } else {
       runUndoable(new Runnable() {
+        @Override
           public void run() {
             char regname = 0;
             Yankreg reg1 = null, reg2 = null;
