@@ -44,7 +44,6 @@ import static com.raelity.jvi.core.KeyDefs.*;
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
-import static com.raelity.jvi.core.Search01.*;
 import static com.raelity.jvi.core.Util.*;
 
 /**
