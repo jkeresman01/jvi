@@ -20,6 +20,7 @@
 package com.raelity.jvi;
 
 import com.raelity.jvi.core.Buffer;
+import com.raelity.jvi.lib.MutableInt;
 import java.awt.Component;
 
 
@@ -250,6 +251,17 @@ public interface ViTextView extends ViOptionBag {
   public int getLogicalLineFromViewLine(int viewLine);
 
   public int getViewLineFromLogicalLine(int logicalLine);
+
+  /**
+   * Return TRUE if line "lnum" in the current window is part of a closed
+   * fold.
+   * When returning TRUE, *firstp and *lastp are set to the first and last
+   * lnum of the sequence of folded lines (skipped when NULL).
+   * 
+   * This is verbatim the vim interface.
+   */
+  public boolean hasFolding(int docLine,
+                            MutableInt pDocFirst, MutableInt pDocLast);
 
   /**
    * Do a cursor up/down, according to dir, based on screen

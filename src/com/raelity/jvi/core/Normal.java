@@ -1436,12 +1436,29 @@ middle_code:
       // Set oap.start to the first position of the operated text, oap.end
       // to the end of the operated text.  w_cursor is equal to oap.start.
       //
+      // NEEDSWORK: cursor modification if folding, use shadow cursor
       if (oap.start.compareTo(cursor) < 0) {
+	// Include folded lines completely.
+        if(!G.VIsual_active) {
+          MutableInt mi = new MutableInt();
+          if(G.curwin.hasFolding(oap.start.getLine(), mi, null))
+            oap.start.set(mi.getValue(), 0);
+          if(G.curwin.hasFolding(cursor.getLine(), null, mi))
+            cursor.set(mi.getValue(), lineLength(mi.getValue()));
+        }
 	oap.end = cursor.copy();
 	cursor.set(oap.start);
       }
       else
       {
+	// Include folded lines completely.
+        if(!G.VIsual_active && oap.motion_type == MLINE) {
+          MutableInt mi = new MutableInt();
+          if(G.curwin.hasFolding(cursor.getLine(), mi, null))
+            cursor.set(mi.getValue(), 0);
+          if(G.curwin.hasFolding(oap.start.getLine(), null, mi))
+            oap.start.set(mi.getValue(), lineLength(mi.getValue()));
+        }
 	oap.end = oap.start.copy();
 	oap.start = cursor.copy();
       }

@@ -20,6 +20,8 @@
 
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.lib.MutableInt;
+
 /**
  * This interface is used to translate document line numbers to logical line
  * numbers and visa-versa. Logical lines refer to the lines that get displayed;
@@ -67,6 +69,17 @@ public interface LineMap
     public int logicalLine(int docLine) throws RuntimeException; // NEEDSWORK:
 
     public int docLine(int logicalLine);
+
+    /**
+     * Return TRUE if line "lnum" in the current window is part of a closed
+     * fold.
+     * When returning TRUE, *firstp and *lastp are set to the first and last
+     * lnum of the sequence of folded lines (skipped when NULL).
+     * 
+     * This is verbatim the vim interface.
+     */
+    public boolean hasFolding(int docLine,
+                              MutableInt pDocFirst, MutableInt pDocLast);
 
     public int docLineOffset(int logicalLine);
 

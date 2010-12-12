@@ -20,6 +20,8 @@
 
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.lib.MutableInt;
+
 /**
  * No code folding, pretty much a 1-1 mapping of line numbers.
  * 
@@ -36,21 +38,33 @@ public class LineMapNoFolding implements LineMap
         this.tv = tv;
     }
 
+    @Override
     public boolean isFolding()
     {
         return false;
     }
 
+    @Override
     public int logicalLine(int docLine) throws RuntimeException
     {
         return docLine;
     }
 
+    @Override
     public int docLine(int logicalLine)
     {
         return logicalLine;
     }
+    
+    @Override
+    public boolean hasFolding(int docLine,
+                              MutableInt pDocFirst,
+                              MutableInt pDocLast)
+    {
+        return false;
+    }
 
+    @Override
     public int docLineOffset(int logicalLine)
     {
         return tv.getBuffer().getLineStartOffset(logicalLine);

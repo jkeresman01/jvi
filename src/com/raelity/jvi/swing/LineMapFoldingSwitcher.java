@@ -21,6 +21,7 @@
 package com.raelity.jvi.swing;
 
 import com.raelity.jvi.core.G;
+import com.raelity.jvi.lib.MutableInt;
 
 /**
  * Switch between NoFolding and FontFixed ViewMaps.
@@ -52,6 +53,13 @@ public class LineMapFoldingSwitcher implements LineMap
     public int logicalLine(int docLine) throws RuntimeException
     {
         return getMap().logicalLine(docLine);
+    }
+
+    @Override
+    public boolean hasFolding(int docLine,
+                            MutableInt pDocFirst, MutableInt pDocLast)
+    {
+        return getMap().hasFolding(docLine, pDocFirst, pDocLast);
     }
 
     @Override

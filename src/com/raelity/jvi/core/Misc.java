@@ -2888,8 +2888,8 @@ private static int put_in_typebuf(String s, boolean colon)
    *
    * FIX_INDENT not supported, used by mouse and bracket print, [p
    */
-  public static void do_put(int regname_, int dir, int count, int flags) {
-
+  public static void do_put(int regname_, int dir, int count, int flags)
+  {
     //StringBuffer        ptr;
     int                 ptr_idx;
     MySegment           oldp;
@@ -2971,7 +2971,8 @@ private static int put_in_typebuf(String s, boolean colon)
     }
 
 
-    int offset = cursor.getOffset();
+    ViFPOS fpos = cursor.copy();
+    int offset = fpos.getOffset();
     int length;
     int new_offset;
     if(y_type == MCHAR) {
@@ -2982,6 +2983,23 @@ private static int put_in_typebuf(String s, boolean colon)
 	}
       }
     } else if(y_type == MLINE) {
+      // adjust for folding
+      lnum = fpos.getLine();
+      MutableInt mi = new MutableInt(lnum);
+      if(dir == BACKWARD)
+        G.curwin.hasFolding(lnum, mi, null);
+      else
+        G.curwin.hasFolding(lnum, null, mi);
+      lnum = mi.getValue();
+
+      // vim: if(dir == FORWARD)
+      // vim:    ++lnum;
+
+      // vim for folding does: if(FORW) cursor.setLine(lnum-1) else setLine(lnum)
+      fpos.setLine(lnum);
+
+      // jVi uses offsets for the put, offset may have changed if folding
+      offset = fpos.getOffset();
       if(dir == FORWARD) {
 	offset = G.curbuf.getLineEndOffsetFromOffset(offset);
       } else {
@@ -2989,11 +3007,12 @@ private static int put_in_typebuf(String s, boolean colon)
       }
     }
 
-    lnum = cursor.getLine();
-    col = cursor.getColumn();
+    lnum = fpos.getLine();
+    col = fpos.getColumn();
 
     // block mode
     if (y_type == MBLOCK) {
+      cursor.set(fpos); // NEEDSWORK: do the blockmode with shadowCursor
       int finishPositionColumn = cursor.getColumn();
 
       char c = gchar_pos(cursor);
@@ -3153,7 +3172,7 @@ private static int put_in_typebuf(String s, boolean colon)
 //        else
 //            update_screen(VALID_TO_CURSCHAR);
       
-    } else { // not block mode
+    } else { // not block mode, fpos still in efect
       String s = y_array[0].toString();
       // NEEDSWORK: HACK for PUT_LINE flag, NOTE: should not need to do
       // (flags&PUT_LINE)!=0 since all MLINE should be terminated by \n
@@ -3170,7 +3189,7 @@ private static int put_in_typebuf(String s, boolean colon)
       length = s.length();
       G.curwin.insertText(offset, s);
 
-      ViFPOS t = cursor.copy();
+      ViFPOS t = fpos.copy();
       t.set(G.curbuf.getLineNumber(offset),
             G.curbuf.getColumnNumber(offset));
       G.curbuf.b_op_start.setMark(t);

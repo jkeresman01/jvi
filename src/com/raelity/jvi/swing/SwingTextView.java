@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.lib.MutableInt;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import static java.lang.Math.round;
@@ -694,6 +695,13 @@ public class SwingTextView extends TextView
     public int getViewLineFromLogicalLine(int logicalLine)
     {
         return vm.viewLine(logicalLine);
+    }
+
+    @Override
+    public boolean hasFolding(int docLine, MutableInt pDocFirst,
+                              MutableInt pDocLast)
+    {
+        return getLineMap().hasFolding(docLine, pDocFirst, pDocLast);
     }
 
     public boolean cursorScreenRowEdge(EDGE edge, ViFPOS fpos)
