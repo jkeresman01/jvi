@@ -184,7 +184,7 @@ private static ColonEvent parseCommandGuts(String commandLine,
     ColonEvent cev = new ColonEvent(isExecuting ? G.curwin : null);
     boolean bang = false;
     MutableInt lnum = new MutableInt(0);
-    boolean skip = false; // NEEDSWORK: executCommmand how else is this set
+    boolean skip = !isExecuting; // skip mark lookup in get_address
     cev.commandLine = commandLine;
 
     //
@@ -219,7 +219,10 @@ private static ColonEvent parseCommandGuts(String commandLine,
             // default is current line number
         cev.line2 = isExecuting ? G.curwin.w_cursor.getLine() : 1;
         sidx = skipwhite(commandLine, sidx);
-        sidx = get_address(commandLine, sidx, skip, lnum);
+        sidx = get_address(commandLine,
+                           sidx,
+                           skip,
+                           lnum);
         if (sidx < 0)            // error detected
             return null; // NEEDSWORK: goto doend;
         // if(lnum.getValue() == 0) {
