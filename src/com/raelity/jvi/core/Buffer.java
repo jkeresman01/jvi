@@ -68,6 +68,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     }
     
     /** from switchto */
+    @Override
     public void activateOptions(ViTextView tv) {
         if(!didFirstInit) {
             firstGo();
@@ -102,6 +103,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         Options.processModelines();
     }
 
+    @Override
     public void viOptionSet(ViTextView tv, String name) {
     }
     
@@ -146,6 +148,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     //
 
 
+    @Override
     public ViMark getMark(char c) {
         // NEEDSWORK: buf.getMark, handle all per buf marks
         if (Util.islower(c)) {
@@ -161,6 +164,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     }
 
 
+    @Override
     final public ViFPOS createFPOS(int offset)
     {
         FPOS fpos = new FPOS(this);
@@ -169,6 +173,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     }
 
 
+    @Override
     final public String getDisplayFileName() {
         return ViManager.getFactory().getFS().getDisplayFileName(this);
     }
@@ -184,6 +189,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
      * NEEDSWORK: missing options, only one option handled
      */
     @SuppressWarnings("fallthrough")
+    @Override
     public String modifyFilename(char option) {
         File fi = getFile();
         String filename = "";
@@ -279,6 +285,25 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     // Visual Mode
     //
 
+    /**
+     * Save visual marks, and adjust the line numbers for folding.
+     */
+    void saveVisualMarks(TextView win) {
+        // VISUAL FOLD HANDLING
+        ViFPOS visual = G.VIsual.copy();
+        ViFPOS fpos = win.w_cursor.copy();
+
+        int visual_col = visual.getColumn();
+        int fpos_col = fpos.getColumn();
+        Normal.foldAdjustVisual(win, this, visual, fpos);
+        // restore the column position; one got didled by p_sel, sigh.
+        visual.setColumn(visual_col);
+        fpos.setColumn(fpos_col); 
+
+        b_visual_start.setMark(visual);
+        b_visual_end.setMark(fpos);
+        b_visual_mode = G.VIsual_mode;
+    }
 
     private final VisualBounds visualBounds = new VisualBounds();
 
@@ -295,7 +320,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
      * </p><p>
      * NEEDSWORK: revisit to include TAB logic (screen.c:768 wish found sooner)
      */
-    public class VisualBounds {
+    public static class VisualBounds {
         private char visMode;
         private int startOffset, endOffset;
         // following are line and column information
@@ -347,7 +372,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
 
         //void init(char visMode, ViFPOS startPos, ViFPOS cursorPos) {
         public void init(char visMode, ViFPOS startPos, ViFPOS cursorPos,
-                         boolean wantMax) {
+                         boolean wantMax, Buffer buf, ViTextView win) {
             ViFPOS start, end; // start.offset less than end.offset
             
             this.visMode = visMode;
@@ -359,6 +384,8 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
                 start = cursorPos;
                 end = startPos;
             }
+            // VISUAL FOLD HANDLING
+            Normal.foldAdjustVisual(win, buf, start, end);
             startOffset = start.getOffset();
             endOffset = end.getOffset();
             
@@ -377,10 +404,10 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
                 MutableInt to = new MutableInt();
                 
                 int from1,to1,from2,to2;
-                Misc.getvcol(Buffer.this, start, from, null, to);
+                Misc.getvcol(buf, start, from, null, to);
                 from1 = from.getValue();
                 to1 = to.getValue();
-                Misc.getvcol(Buffer.this, end, from, null, to);
+                Misc.getvcol(buf, end, from, null, to);
                 from2 = from.getValue();
                 to2 = to.getValue();
                 
@@ -423,6 +450,20 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         getVisualBounds().clear();
     }
 
+    VisualBounds calcCurrentVisualBounds()
+    {
+        // VISUAL FOLD HANDLING
+        assert this == G.curbuf;
+        if(!G.VIsual_active) {
+            return null;
+        }
+        VisualBounds vb = getVisualBounds();
+        
+        vb.init(G.VIsual_mode, G.VIsual, G.curwin.w_cursor.copy(),
+                G.curwin.w_curswant == MAXCOL, G.curbuf, G.curwin);
+        return vb;
+    }
+
     String getVisualSelectStateString() {
         assert this == G.curbuf;
         VisualBounds vb = getVisualBounds();
@@ -432,7 +473,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         }
         
         vb.init(G.VIsual_mode, G.VIsual, G.curwin.w_cursor.copy(),
-                G.curwin.w_curswant == MAXCOL);
+                G.curwin.w_curswant == MAXCOL, G.curbuf, G.curwin);
         
         int nLine = vb.getEndLine() - vb.getStartLine() + 1;
         int nCol = vb.getRight() - vb.getLeft();
@@ -449,16 +490,17 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         return s;
     }
 
+    @Override
     public int[] getVisualSelectBlocks(ViTextView tv,
                                        int startOffset, int endOffset) {
         TextView win = (TextView) tv;
         VisualBounds vb = getVisualBounds();
         if (G.drawSavedVisualBounds) {
             vb.init(b_visual_mode, b_visual_start, b_visual_end,
-                    false);
+                    false, this, win);
         } else if(G.VIsual_active) {
             vb.init(G.VIsual_mode, G.VIsual, win.w_cursor.copy(),
-                    ((TextView)tv).w_curswant == MAXCOL);
+                    ((TextView)tv).w_curswant == MAXCOL, this, win);
         } else {
             vb.clear();
         }

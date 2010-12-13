@@ -1403,10 +1403,12 @@ middle_code:
           else
               cap.count1 = 1;
       } else if (G.VIsual_active) {
-          /* Save the current VIsual area for '< and '> marks, and "gv" */
-          G.curbuf.b_visual_start.setMark(G.VIsual);
-          G.curbuf.b_visual_end.setMark(cursor);
-          G.curbuf.b_visual_mode = G.VIsual_mode;
+          // Save the current VIsual area for '< and '> marks, and "gv"
+          // G.curbuf.b_visual_start.setMark(G.VIsual);
+          // G.curbuf.b_visual_end.setMark(cursor);
+          // G.curbuf.b_visual_mode = G.VIsual_mode;
+          // VISUAL FOLD HANDLING
+          G.curbuf.saveVisualMarks(G.curwin);
 
             /* In Select mode, a linewise selection is operated upon like a
              * characterwise selection. */
@@ -1438,7 +1440,7 @@ middle_code:
       //
       // NEEDSWORK: cursor modification if folding, use shadow cursor
       if (oap.start.compareTo(cursor) < 0) {
-	// Include folded lines completely.
+        // Include folded lines completely.
         if(!G.VIsual_active) {
           MutableInt mi = new MutableInt();
           if(G.curwin.hasFolding(oap.start.getLine(), mi, null))
@@ -1446,12 +1448,12 @@ middle_code:
           if(G.curwin.hasFolding(cursor.getLine(), null, mi))
             cursor.set(mi.getValue(), lineLength(mi.getValue()));
         }
-	oap.end = cursor.copy();
-	cursor.set(oap.start);
+        oap.end = cursor.copy();
+        cursor.set(oap.start);
       }
       else
       {
-	// Include folded lines completely.
+        // Include folded lines completely.
         if(!G.VIsual_active && oap.motion_type == MLINE) {
           MutableInt mi = new MutableInt();
           if(G.curwin.hasFolding(cursor.getLine(), mi, null))
@@ -1459,8 +1461,12 @@ middle_code:
           if(G.curwin.hasFolding(oap.start.getLine(), null, mi))
             oap.start.set(mi.getValue(), lineLength(mi.getValue()));
         }
-	oap.end = oap.start.copy();
-	oap.start = cursor.copy();
+        oap.end = oap.start.copy();
+        oap.start = cursor.copy();
+      }
+      if(G.VIsual_active) {
+        // VISUAL FOLD HANDLING
+        Normal.foldAdjustVisual(G.curwin, G.curbuf, oap.start, oap.end);
       }
       oap.line_count = oap.end.getLine() - oap.start.getLine() + 1;
 
@@ -1496,7 +1502,7 @@ middle_code:
                 //curwin.w_cursor.col = MAXCOL;
                 // Can't set the cursor to MAXCOL (well you can, but...)
                 // Use an fpos and set it to the \n for the each iteration
-                ViFPOS fpos = cursor.copy();
+                ViFPOS fpos = cursor.copy(); // doesn't use cursor line/col
                 oap.end_vcol = 0;
                 for (int l = oap.start.getLine(); l <= oap.end.getLine(); l++) {
                   fpos.set(l, Util.lineLength(l));
@@ -1910,16 +1916,19 @@ middle_code:
 //        clip_auto_select();
 //#endif
 
-    G.VIsual_active = false;
 //#ifdef USE_MOUSE
 //    setmouse();
 //    mouse_dragging = 0;
 //#endif
 
     /* Save the current VIsual area for '< and '> marks, and "gv" */
-    G.curbuf.b_visual_start.setMark(G.VIsual);
-    G.curbuf.b_visual_end.setMark(G.curwin.w_cursor);
-    G.curbuf.b_visual_mode = G.VIsual_mode;
+    // G.curbuf.b_visual_start.setMark(G.VIsual);
+    // G.curbuf.b_visual_end.setMark(G.curwin.w_cursor);
+    // G.curbuf.b_visual_mode = G.VIsual_mode;
+    // VISUAL FOLD HANDLING
+    G.curbuf.saveVisualMarks(G.curwin);
+
+    G.VIsual_active = false; // was above, but saveVisualMarks needs it active
 
     if (G.p_smd.getBoolean())
         G.clear_cmdline = true;/* unshow visual mode later */
@@ -1930,6 +1939,7 @@ middle_code:
         G.curwin.setCaretPosition(G.curwin.getCaretPosition() -1);
     ui_cursor_shape();
   }
+
   /**
    * 
    * <p>
@@ -3834,7 +3844,7 @@ static private void nv_findpar(CMDARG cap, int dir)
               v_updateVisualState();
           } else {
               if (!selectmode)
-/* start Select mode when 'selectmode' contains "cmd" */
+                  // start Select mode when 'selectmode' contains "cmd"
                   may_start_select('c');
               n_start_visual_mode(cap.cmdchar);
               /* update the screen cursor position */
@@ -3896,6 +3906,13 @@ static private void nv_findpar(CMDARG cap, int dir)
       G.VIsual_mode = c;
       G.VIsual_active = true;
       G.VIsual_reselect = true;
+
+      //
+      // VISUAL FOLD HANDLING
+      // vim changes the actual bounds here, opens folds....
+      // foldAdjustVisual();
+      //
+
       if (G.p_smd.getBoolean())
           redraw_cmdline = true; /* show visual mode later */
 //#ifdef USE_CLIPBOARD
@@ -3904,6 +3921,45 @@ static private void nv_findpar(CMDARG cap, int dir)
 //    clipboard.vmode = NUL;
 //#endif
       //update_screenline();/* start the inversion */
+  }
+
+  // VISUAL FOLD HANDLING
+  /**
+   * Adjust the Visual area to include any fold at the start or end completely.
+   */
+  static void foldAdjustVisual()
+  {
+    if (!G.VIsual_active) // || !hasAnyFolding(curwin)
+      return;
+
+    foldAdjustVisual(G.curwin, G.curbuf, G.VIsual, G.curwin.w_cursor);
+  }
+
+  /** does not depend on G */
+  static void foldAdjustVisual(ViTextView win, Buffer buf,
+                               ViFPOS start, ViFPOS end)
+  {
+    // ViFPOS start, end;
+    
+    if (!G.VIsual_active) // || !hasAnyFolding(curwin)
+      return;
+
+    if(start.compareTo(end) > 0) {
+      ViFPOS t = start;
+      start = end;
+      end = t;
+    }
+
+    MutableInt mi = new MutableInt();
+    if(win.hasFolding(start.getLine(), mi, null)) {
+      start.set(mi.getValue(), 0);
+    }
+    if(win.hasFolding(end.getLine(), null, mi)) {
+      int col = lineLength(buf, mi.getValue());
+      if(col > 0 && G.p_sel.charAt(0) != 'o')
+        --col;
+      end.set(mi.getValue(), col);
+    }
   }
 
   static private void nv_g_cmd(CMDARG cap, StringBuilder searchbuff)

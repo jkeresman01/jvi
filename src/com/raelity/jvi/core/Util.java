@@ -28,6 +28,8 @@ import java.text.CharacterIterator;
 
 
 public class Util {
+  private Util() { }
+
   // static final int TERMCAP2KEY(int a, int b) { return a + (b << 8); }
   public static char ctrl(char x) { return (char)(x & 0x1f); }
   // static final int shift(int c) { return c | (0x1 << 24); }
@@ -197,7 +199,11 @@ public class Util {
    * Get the length of a line, not incuding the newline
    */
   static int lineLength(int line) {
-    MySegment seg = G.curbuf.getLineSegment(line);
+    return lineLength(G.curbuf, line);
+  }
+
+  static int lineLength(Buffer buf, int line) {
+    MySegment seg = buf.getLineSegment(line);
     return seg.count < 1 ? 0 : seg.count - 1;
   }
 

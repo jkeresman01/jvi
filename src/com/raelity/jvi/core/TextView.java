@@ -90,6 +90,7 @@ public abstract class TextView implements ViTextView
     }
 
 
+    @Override
     public void attachBuffer( Buffer buf )
     {
         if(this.w_buffer != null)
@@ -109,6 +110,7 @@ public abstract class TextView implements ViTextView
         w_jumplistidx = 0;
     }
 
+    @Override
     public void shutdown()
     {
         if ( G.dbgEditorActivation.getBoolean() ) {
@@ -118,6 +120,7 @@ public abstract class TextView implements ViTextView
         }
     }
 
+    @Override
     public void activateOptions(ViTextView tv) {
         if(G.dbgEditorActivation.getBoolean() && getAppView().isNomad())
             System.err.println("ACTIVATING OPTIONS FOR NOMAD");
@@ -158,6 +161,7 @@ public abstract class TextView implements ViTextView
      * A mouse click, or some other situation, has occured in this window.
      * Check the position so it is not on a newline (unless in input mode)
      */
+    @Override
     public int validateCursorPosition(int offset)
     {
         w_set_curswant = true; // NEEDSWORK: keep this?
