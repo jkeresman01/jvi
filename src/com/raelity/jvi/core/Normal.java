@@ -55,7 +55,7 @@ import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.Search.*;
 import static com.raelity.jvi.core.Search01.*;
-import static com.raelity.jvi.core.Search02.*;
+import static com.raelity.jvi.core.Search03.*;
 import static com.raelity.jvi.core.Util.*;
 
 /**

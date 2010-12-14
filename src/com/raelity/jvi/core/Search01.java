@@ -25,7 +25,7 @@ import com.raelity.text.TextUtil.MySegment;
 
 import static com.raelity.jvi.core.Constants.*;
 import static com.raelity.jvi.core.Misc.*;
-import static com.raelity.jvi.core.Search02.*;
+import static com.raelity.jvi.core.Search03.*;
 import static com.raelity.jvi.core.Util.*;
 
 /**

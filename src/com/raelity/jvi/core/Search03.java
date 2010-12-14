@@ -35,10 +35,10 @@ import static com.raelity.jvi.core.Util.*;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public class Search02
+public class Search03
 {
 
-    private Search02() { }
+    private Search03() { }
 
     /**
      * Check if line[] contains a / / comment.
