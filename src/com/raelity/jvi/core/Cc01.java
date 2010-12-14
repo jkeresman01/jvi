@@ -341,7 +341,7 @@ public class Cc01
             {
                 Misc.runUndoable(new Runnable() {
                     public void run() {
-                        Search.substitute((ColonEvent)ev);
+                        Search01.substitute((ColonEvent)ev);
                     }
                 });
             }
@@ -357,7 +357,7 @@ public class Cc01
             public void actionPerformed(final ActionEvent ev) {
                 Misc.runUndoable(new Runnable() {
                     public void run() {
-                        Search.global((ColonEvent)ev);
+                        Search01.global((ColonEvent)ev);
                         Options.newSearch();
                     }
                 });

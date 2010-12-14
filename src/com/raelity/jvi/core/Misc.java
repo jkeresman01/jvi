@@ -3907,6 +3907,7 @@ private static int put_in_typebuf(String s, boolean colon)
     }
 
     static void beginInsertUndo() {
+      if(inInsertUndo) LOG.log(Level.SEVERE, "inInsertUndo", new Throwable());
       if(isInAnyUndo()) {
         return;
       }
@@ -3916,6 +3917,7 @@ private static int put_in_typebuf(String s, boolean colon)
 
     /** Note: no guarentee that this is not called without a begin */
     static void endInsertUndo() {
+      if(!inInsertUndo) LOG.log(Level.SEVERE, "!inInsertUndo", new Throwable());
       inInsertUndo = false;
       G.curbuf.do_endInsertUndo();
     }
