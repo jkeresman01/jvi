@@ -32,9 +32,9 @@ import static com.raelity.jvi.core.Util.*;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public class Search01 {
+public class Search02 {
 
-    private Search01()
+    private Search02()
     {
     }
 
