@@ -160,6 +160,7 @@ public class G
     public static DebugOption dbgEditorActivation;
     public static BooleanOption isCoordSkip;
     public static DebugOption dbgCoordSkip;
+    public static DebugOption dbgUndo;
     public static BooleanOption usePlatformInsertTab;
 
     public static DebugOption dbgKeyStrokes;

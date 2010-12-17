@@ -21,6 +21,7 @@
 package com.raelity.jvi.swing.simple;
 
 import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Util;
 import com.raelity.jvi.swing.SwingBuffer;
 import com.raelity.jvi.swing.UndoGroupManager;
@@ -93,23 +94,27 @@ abstract public class SimpleBuffer extends SwingBuffer
 
     @Override
     public void do_beginUndo() {
+        G.dbgUndo.printf("SimpleBuf:do_beginUndo: \n");
         // NEEDSWORK: standalone like: ((AbstractDocument)doc).writeLock();
         do_beginInsertUndo();
     }
 
     @Override
     public void do_endUndo() {
-        do_endInsertUndo();
         // NEEDSWORK: standalone like: ((AbstractDocument)doc).writeUnlock();
+        do_endInsertUndo();
+        G.dbgUndo.printf("SimpleBuf:do_endUndo: \n");
     }
 
     @Override
     public void do_beginInsertUndo() {
+        G.dbgUndo.printf("SimpleBuf:do_beginInsertUndo: \n");
         sendUndoableEdit(UndoGroupManager.BEGIN_COMMIT_GROUP);
     }
 
     @Override
     public void do_endInsertUndo() {
+        G.dbgUndo.printf("SimpleBuf:do_endInsertUndo: \n");
         sendUndoableEdit(UndoGroupManager.END_COMMIT_GROUP);
     }
 

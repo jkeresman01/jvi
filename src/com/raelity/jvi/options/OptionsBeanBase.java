@@ -91,17 +91,20 @@ public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsContro
         //    System.err.println("CONSTRUCT: " + displayName);
     }
 
+    @Override
     public void clear() {
         // no changes so far
         changeMap.clear();
     }
 
+    @Override
     public void cancel() {
         undoChanges();
     }
 
     private OptionsListener optionsListener;
     private class OptionsListener implements PropertyChangeListener {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if(optionsList.contains(evt.getPropertyName())) {
                 //System.err.println("Fire: " + evt.getPropertyName());
@@ -896,6 +899,14 @@ public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsContro
 
     public String getViDbgCoordSkip() {
 	return getString(Options.dbgCoordSkip);
+    }
+
+    public void setViDbgUndo(String arg)  throws PropertyVetoException {
+        put(Options.dbgUndo, arg);
+    }
+
+    public String getViDbgUndo() {
+	return getString(Options.dbgUndo);
     }
 
     public void setViDbgMouse(String arg) throws PropertyVetoException {

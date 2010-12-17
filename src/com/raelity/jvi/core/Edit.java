@@ -83,6 +83,8 @@ public class Edit {
 
   static final boolean p_sta = false; // At least for now...
 
+  private Edit() { }
+
   /**
    * There are commands in edit mode, such as ^V and ^R, that
    * require one or more arugment chars.
@@ -123,6 +125,7 @@ public class Edit {
     if(buf.isGuarded(offset) || !tv.isEditable()) {
       Util.vim_beep();
       EventQueue.invokeLater(new Runnable() {
+        @Override
         public void run() {
           tv.getStatusDisplay().displayErrorMessage(
                   "Can not modify write protected area or file."
@@ -986,6 +989,7 @@ private static void edit_clearPutchar()
     {
     }
 
+    @Override
     public char go(char nc)
     {
 //    if (got_int)
@@ -1130,6 +1134,7 @@ one_char: {
   /** Grab one character. Like Ctrl-V but no special processing */
 private static class GetLiteral implements HandleNextChar
 {
+    @Override
     public char go(char c)
     {
         handleNextChar = null; // all done.
@@ -1651,6 +1656,7 @@ private static class GetLiteral implements HandleNextChar
   {
     char literally = NUL;
 
+    @Override
     public char go(char nc)
     throws NotSupportedException
     {
@@ -2665,16 +2671,19 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
       mark.setMark(fpos);
     }
 
+    @Override
     public void set(ViFPOS fpos) {
       mark.setMark(fpos);
     }
 
+    @Override
     public void setColumn(int col) {
       ViFPOS fpos = mark.getBuffer().createFPOS(mark.getOffset());
       fpos.setColumn(col);
       mark.setMark(fpos);
     }
 
+    @Override
     public void decLine() {
       ViFPOS fpos = mark.getBuffer().createFPOS(mark.getOffset());
       fpos.decLine();
@@ -2702,58 +2711,72 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
       return mark.equals(obj);
     }
 
+    @Override
     public int compareTo(ViFPOS o) {
       return mark.compareTo(o);
     }
 
+    @Override
     public boolean isValid() {
       return mark.isValid();
     }
 
+    @Override
     public void verify(Buffer buf) {
       mark.verify(buf);
     }
 
+    @Override
     public void setLine(int line) {
       mark.setLine(line);
     }
 
+    @Override
     public void set(int offset) {
       mark.set(offset);
     }
 
+    @Override
     public void set(int line, int column) {
       mark.set(line, column);
     }
 
+    @Override
     public void incLine() {
       mark.incLine();
     }
 
+    @Override
     public void incColumn() {
       mark.incColumn();
     }
 
+    @Override
     public int getOffset() {
       return mark.getOffset();
     }
 
+    @Override
     public int getLine() {
       return mark.getLine();
     }
 
+    @Override
     public int getColumn() {
       return mark.getColumn();
     }
 
+    @Override
     public void decColumn() {
       mark.decColumn();
     }
 
+    @Override
     public ViFPOS copy() {
       return mark.copy();
     }
 
+    @Override
     public Buffer getBuffer() {
       return mark.getBuffer();
     }

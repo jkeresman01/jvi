@@ -75,6 +75,7 @@ public final class Options {
                      position=2)
     public static class Init implements ViInitialization
     {
+      @Override
       public void init()
       {
         Options.init();
@@ -186,6 +187,7 @@ public final class Options {
   public static final String dbgMouse = "viDbgMouse";
   public static final String dbgCompletion = "viDbgCompletion";
   public static final String dbgCoordSkip = "viDbgCoordSkip";
+  public static final String dbgUndo = "viDbgUndo";
 
   public static final String twMagic = "#TEXT-WIDTH#";
 
@@ -758,8 +760,12 @@ public final class Options {
                "Output info about mouse events");
 
     G.dbgCoordSkip = OptUtil.createDebugOption(dbgCoordSkip);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgCoordSkip, "debug coordinate skip",
-               "");
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgCoordSkip,
+                            "debug coordinate skip", "");
+
+    G.dbgUndo = OptUtil.createDebugOption(dbgUndo);
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgUndo, "debug undo begin/end",
+                            "");
   }
 
   /**
@@ -872,7 +878,7 @@ public final class Options {
         }
         if(sb.length() != 0)
           sb.append('\n');
-        if(!msg.equals("")) {
+        if(!msg.isEmpty()) {
           sb.append("Error: ").append(msg);
           parseError = true;
         } else
@@ -917,6 +923,7 @@ public final class Options {
   
   static {
     addPropertyChangeListener(highlightSearch, new PropertyChangeListener() {
+      @Override
       public void propertyChange(PropertyChangeEvent evt) {
         if(G.curwin != null) {
           nohDisableHighlight = false;
@@ -926,6 +933,7 @@ public final class Options {
     });
 
     addPropertyChangeListener(ignoreCase, new PropertyChangeListener() {
+      @Override
       public void propertyChange(PropertyChangeEvent evt) {
         if(G.curwin != null) {
           ViManager.updateHighlightSearchState();

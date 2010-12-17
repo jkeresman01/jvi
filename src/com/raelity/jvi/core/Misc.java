@@ -3866,60 +3866,79 @@ private static int put_in_typebuf(String s, boolean colon)
     //
 
     private static int undoNesting;
-    private static boolean inInsertUndo;
+    private static int insertUndoNesting;
 
-    public static boolean isInUndo() {
+    static boolean isInUndo() {
         return undoNesting != 0;
     }
 
-    public static boolean isInInsertUndo() {
-      return inInsertUndo;
+    static boolean isInInsertUndo() {
+      return insertUndoNesting != 0;
     }
 
     public static boolean isInAnyUndo() {
-      return inInsertUndo || isInUndo();
+      return isInInsertUndo() || isInUndo();
+    }
+
+    private static void debugUndo(String tag) {
+        if(!G.dbgUndo.getBoolean())
+            return;
+        G.dbgUndo.printf("%s: nesting: %d, inInsert: %d\n",
+                         tag, undoNesting, insertUndoNesting);
     }
 
     public static void runUndoable(Runnable r) {
-        if(isInAnyUndo()) {
-          endInsertUndo();
+        beginUndo();
+        try {
+            G.curbuf.do_runUndoable(r);
+        } finally {
+            endUndo();
         }
+    }
+
+    //
+    // beginUndo and endUndo are used only from runUndoable
+    // these methods help control interactions with insertUndo
+    //
+    private static void beginUndo() {
+        debugUndo("Misc:beginUndo");
         checkUndoThreading();
         if(undoNesting == 0) {
             G.curbuf.do_beginUndo();
         }
         undoNesting++;
 
-        try {
-
-            G.curbuf.do_runUndoable(r);
-
-        } finally {
-            undoNesting--;
-            if(undoNesting == 0) {
-                try {
-                  G.curbuf.do_endUndo();
-                } finally {
-                  clearUndoThreading();
-                }
+    }
+    private static void endUndo() {
+        undoNesting--;
+        if(undoNesting == 0) {
+            try {
+              G.curbuf.do_endUndo();
+            } finally {
+              clearUndoThreading();
             }
         }
+        debugUndo("Misc:endUndo");
     }
 
     static void beginInsertUndo() {
-      if(inInsertUndo) LOG.log(Level.SEVERE, "inInsertUndo", new Throwable());
-      if(isInAnyUndo()) {
-        return;
+      debugUndo("Misc:beginInsertUndo");
+      if(isInInsertUndo()) LOG.log(Level.SEVERE, "inInsertUndo", new Throwable());
+      if(insertUndoNesting == 0) {
+          G.curbuf.do_beginInsertUndo();
       }
-      inInsertUndo = true;
-      G.curbuf.do_beginInsertUndo();
+      insertUndoNesting++;
     }
 
-    /** Note: no guarentee that this is not called without a begin */
+    /** Note: no guarantee that this is not called without a begin */
     static void endInsertUndo() {
-      if(!inInsertUndo) LOG.log(Level.SEVERE, "!inInsertUndo", new Throwable());
-      inInsertUndo = false;
-      G.curbuf.do_endInsertUndo();
+      if(!isInInsertUndo()) LOG.log(
+              Level.SEVERE, "!inInsertUndo", new Throwable());
+      insertUndoNesting--;
+      if(insertUndoNesting == 0) {
+          G.curbuf.do_endInsertUndo();
+      }
+      debugUndo("Misc:endInsertUndo");
     }
 
     private static Thread undoThread;
