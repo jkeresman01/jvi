@@ -457,6 +457,11 @@ public class Search01 {
     int cursorLine = 0; // set to line number of last found line
     int sidx = 1; // after delimiter
 
+    char type = cev.getComandName().charAt(0);
+    if(cev.isBang()) // must be g!
+      type = 'v';
+    assert type == 'g' || type == 'v';
+
     //
     // pick up the pattern
     //
@@ -547,7 +552,8 @@ public class Search01 {
     // Use two marks/line to detect if a line is deleted.
     for(int lnum = cev.getLine1(); lnum <= cev.getLine2(); lnum++) {
       line = G.curbuf.getLineSegment(lnum);
-      if(prog.search(line.array, line.offset, line.count)) {
+      boolean match = prog.search(line.array, line.offset, line.count);
+      if(type == 'g' && match || type == 'v' && !match) {
         marks.add(G.curbuf.createMark(line.docOffset, BIAS.FORW));
         marks.add(G.curbuf.createMark(line.docOffset + line.count, BIAS.FORW));
         if(debugInfo != null) {

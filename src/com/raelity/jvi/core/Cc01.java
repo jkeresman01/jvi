@@ -98,6 +98,7 @@ public class Cc01
         ColonCommands.register("e", "edit", ACTION_edit, null);
         ColonCommands.register("s", "substitute", ACTION_substitute, null);
         ColonCommands.register("g", "global", ACTION_global, null);
+        ColonCommands.register("v", "vglobal", ACTION_vglobal, null);
         ColonCommands.register("d", "delete", ACTION_delete, null);
         ColonCommands.register("p", "print", ACTION_print, null);
 
@@ -360,6 +361,25 @@ public class Cc01
     };
 
     private static ColonAction ACTION_global = new AbstractColonAction() {
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.NO_PARSE, CcFlag.RANGE, CcFlag.BANG);
+        }
+        
+        @Override
+        public void actionPerformed(final ActionEvent ev) {
+            Misc.runUndoable(new Runnable() {
+                @Override
+                public void run() {
+                    Search01.global((ColonEvent)ev);
+                    Options.newSearch();
+                }
+            });
+        }
+    };
+
+    private static ColonAction ACTION_vglobal = new AbstractColonAction() {
         @Override
         public EnumSet<CcFlag> getFlags()
         {
