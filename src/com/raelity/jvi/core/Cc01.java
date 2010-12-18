@@ -68,10 +68,11 @@ public class Cc01
                      position=10)
     public static class Init implements ViInitialization
     {
-      public void init()
-      {
-        Cc01.init();
-      }
+        @Override
+        public void init()
+        {
+            Cc01.init();
+        }
     }
 
     private Cc01() { }
@@ -154,6 +155,7 @@ public class Cc01
         Next(boolean goForward) {
             this.goForward = goForward;
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             ColonEvent ce = (ColonEvent)e;
             int offset;
@@ -173,36 +175,41 @@ public class Cc01
     }
 
     private static ActionListener ACTION_quit = new ActionListener() {
-            public void actionPerformed(ActionEvent ev) {
-                ColonEvent cev = (ColonEvent)ev;
-                cev.getViTextView().win_quit();
-            }};
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            ColonEvent cev = (ColonEvent)ev;
+            cev.getViTextView().win_quit();
+        }};
 
     private static ActionListener ACTION_close = new ActionListener() {
-            public void actionPerformed(ActionEvent ev) {
-                ColonEvent cev = (ColonEvent)ev;
-                // NEEDSWORK: win_close: hidden, need_hide....
-                cev.getViTextView().win_close(false);
-            }};
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            ColonEvent cev = (ColonEvent)ev;
+            // NEEDSWORK: win_close: hidden, need_hide....
+            cev.getViTextView().win_close(false);
+        }};
 
     private static ActionListener ACTION_only = new ActionListener() {
-            public void actionPerformed(ActionEvent ev) {
-                ColonEvent cev = (ColonEvent)ev;
-                // NEEDSWORK: win_close_others: forceit....
-                cev.getViTextView().win_close_others(false);
-            }};
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            ColonEvent cev = (ColonEvent)ev;
+            // NEEDSWORK: win_close_others: forceit....
+            cev.getViTextView().win_close_others(false);
+        }};
 
     private static ActionListener ACTION_wall = new ActionListener() {
-            public void actionPerformed(ActionEvent ev) {
-                ViManager.getFS().writeAll(false);
-            }};
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            ViManager.getFS().writeAll(false);
+        }};
 
     private static ActionListener ACTION_file = new ActionListener() {
-            public void actionPerformed(ActionEvent ev) {
-                ColonEvent cev = (ColonEvent)ev;
-                Msg.smsg(ViManager.getFS()
-                        .getDisplayFileViewInfo(cev.getViTextView()));
-            }};
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            ColonEvent cev = (ColonEvent)ev;
+            Msg.smsg(ViManager.getFS()
+                    .getDisplayFileViewInfo(cev.getViTextView()));
+        }};
 
     private static boolean do_write(ColonEvent cev)
     {
@@ -227,142 +234,149 @@ public class Cc01
         * Write command.
         */
     private static ColonAction ACTION_write = new AbstractColonAction() {
-            @Override
-            public EnumSet<CcFlag> getFlags()
-            {
-                return EnumSet.of(CcFlag.BANG);
-            }
-
-            public void actionPerformed(ActionEvent ev)
-            {
-                do_write((ColonEvent)ev);
-            }
-        };
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.BANG);
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent ev)
+        {
+            do_write((ColonEvent)ev);
+        }
+    };
 
     private static ColonAction ACTION_wq = new AbstractColonAction() {
-            @Override
-            public EnumSet<CcFlag> getFlags()
-            {
-                return EnumSet.of(CcFlag.BANG);
-            }
-
-            public void actionPerformed(ActionEvent ev)
-            {
-                ColonEvent cev = (ColonEvent)ev;
-                if(do_write(cev))
-                    cev.getViTextView().win_quit();
-            }
-        };
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.BANG);
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent ev)
+        {
+            ColonEvent cev = (ColonEvent)ev;
+            if(do_write(cev))
+                cev.getViTextView().win_quit();
+        }
+    };
 
     /**
      * Edit command.
      */
     private static ColonAction ACTION_edit = new AbstractColonAction() {
-            @Override
-            public EnumSet<CcFlag> getFlags()
-            {
-                return EnumSet.of(CcFlag.BANG);
-            }
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.BANG);
+        }
 
-            public void actionPerformed(ActionEvent ev)
-            {
-                ColonEvent cev = (ColonEvent)ev;
-                /*
-                if(cev.getNArg() == 0) {
-                    ViManager.getFS().write(cev.mayCreateTextView(), cev.isBang());
-                } else
-                */
-                boolean reportUsage = false;
-                if(cev.getNArg() >= 1 && cev.getArg(1).charAt(0) == '#') {
-//                          && cev.getArg(1).length() >= 1
-//                      || cev.getNArg() == 2 && "#".equals(cev.getArg(1))) {
-                    boolean error = false;
-                    List<String> args = cev.getArgs();
-                    String stringWindowNumber = args.get(0).substring(1);
+        @Override
+        public void actionPerformed(ActionEvent ev)
+        {
+            ColonEvent cev = (ColonEvent)ev;
+            /*
+             * if(cev.getNArg() == 0) {
+             * ViManager.getFS().write(cev.mayCreateTextView(), cev.isBang());
+             * } else
+             */
+            boolean reportUsage = false;
+            if(cev.getNArg() >= 1 && cev.getArg(1).charAt(0) == '#') {
+                //        && cev.getArg(1).length() >= 1
+                //    || cev.getNArg() == 2 && "#".equals(cev.getArg(1))) {
+                boolean error = false;
+                List<String> args = cev.getArgs();
+                String stringWindowNumber = args.get(0).substring(1);
+                args.remove(0);
+                if(stringWindowNumber.isEmpty() && args.size() > 0) {
+                    stringWindowNumber = args.get(0);
                     args.remove(0);
-                    if(stringWindowNumber.isEmpty() && args.size() > 0) {
-                        stringWindowNumber = args.get(0);
-                        args.remove(0);
-                    }
-                    if(!args.isEmpty()) {
-                        reportUsage = true;
+                }
+                if(!args.isEmpty()) {
+                    reportUsage = true;
+                    error = true;
+                }
+                int windowNumber = -1;
+                if(!error && !stringWindowNumber.isEmpty()) {
+                    try {
+                        windowNumber = Integer.parseInt(stringWindowNumber);
+                    } catch(NumberFormatException ex) {
                         error = true;
                     }
-                    int windowNumber = -1;
-                    if(!error && !stringWindowNumber.isEmpty()) {
-                        try {
-                            windowNumber = Integer.parseInt(stringWindowNumber);
-                        } catch(NumberFormatException ex) {
-                            error = true;
-                        }
-                        if(error) {
-                            Msg.emsg("Only 'e#[<number>]' allowed");
-                        }
+                    if(error) {
+                        Msg.emsg("Only 'e#[<number>]' allowed");
                     }
-                    if( ! error) {
-                        ViAppView av = null;
-                        // Look up the appView. If i >= 0 then find app view
-                        // with window that matches that number (standard vim).
-                        // If i < 0 then use it to index into the mru list.
-                        if(windowNumber >= 0) {
-                            for (ViAppView av1 : AppViews.getList(AppViews.ACTIVE)) {
-                                if(windowNumber == av1.getWNum()) {
-                                    av = av1;
-                                    break;
-                                }
+                }
+                if( ! error) {
+                    ViAppView av = null;
+                    // Look up the appView. If i >= 0 then find app view
+                    // with window that matches that number (standard vim).
+                    // If i < 0 then use it to index into the mru list.
+                    if(windowNumber >= 0) {
+                        for (ViAppView av1 : AppViews.getList(AppViews.ACTIVE)) {
+                            if(windowNumber == av1.getWNum()) {
+                                av = av1;
+                                break;
                             }
-                        } else {
-                            av = AppViews.getMruAppView(-windowNumber);
                         }
-                        if(av != null)
-                            ViManager.getFS().edit(av, cev.isBang());
-                        else
-                            Msg.emsg("No alternate file name to substitute for '#"
-                                    + windowNumber + "'");
+                    } else {
+                        av = AppViews.getMruAppView(-windowNumber);
                     }
-                } else if (cev.getNArg() == 1) {
-                    String fName = cev.getArg(1);
-                    ViManager.getFS().edit(new File(fName), cev.isBang(), null);
-                } else
-                    reportUsage = true;
-                if(reportUsage)
-                    Msg.emsg(":edit only accepts '# <win>' or '<fname>'");
-            }
-        };
+                    if(av != null)
+                        ViManager.getFS().edit(av, cev.isBang());
+                    else
+                        Msg.emsg("No alternate file name to substitute for '#"
+                                + windowNumber + "'");
+                }
+            } else if (cev.getNArg() == 1) {
+                String fName = cev.getArg(1);
+                ViManager.getFS().edit(new File(fName), cev.isBang(), null);
+            } else
+                reportUsage = true;
+            if(reportUsage)
+                Msg.emsg(":edit only accepts '# <win>' or '<fname>'");
+        }
+    };
 
     private static ColonAction ACTION_substitute = new AbstractColonAction() {
-            @Override
-            public EnumSet<CcFlag> getFlags()
-            {
-                return EnumSet.of(CcFlag.NO_PARSE, CcFlag.RANGE);
-            }
-
-            public void actionPerformed(final ActionEvent ev)
-            {
-                Misc.runUndoable(new Runnable() {
-                    public void run() {
-                        Search01.substitute((ColonEvent)ev);
-                    }
-                });
-            }
-        };
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.NO_PARSE, CcFlag.RANGE);
+        }
+        
+        @Override
+        public void actionPerformed(final ActionEvent ev)
+        {
+            Misc.runUndoable(new Runnable() {
+                @Override
+                public void run() {
+                    Search01.substitute((ColonEvent)ev);
+                }
+            });
+        }
+    };
 
     private static ColonAction ACTION_global = new AbstractColonAction() {
-            @Override
-            public EnumSet<CcFlag> getFlags()
-            {
-                return EnumSet.of(CcFlag.NO_PARSE, CcFlag.RANGE);
-            }
-
-            public void actionPerformed(final ActionEvent ev) {
-                Misc.runUndoable(new Runnable() {
-                    public void run() {
-                        Search01.global((ColonEvent)ev);
-                        Options.newSearch();
-                    }
-                });
-            }
-        };
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.NO_PARSE, CcFlag.RANGE);
+        }
+        
+        @Override
+        public void actionPerformed(final ActionEvent ev) {
+            Misc.runUndoable(new Runnable() {
+                @Override
+                public void run() {
+                    Search01.global((ColonEvent)ev);
+                    Options.newSearch();
+                }
+            });
+        }
+    };
 
     /** This is the default buffers,files,ls command. The platform specific code
         * may chose to open this, or implement their own, possibly using
@@ -370,6 +384,7 @@ public class Cc01
         */
     private static ActionListener ACTION_BUFFERS = new ActionListener()
     {
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             ViOutputStream osa = ViManager.createOutputStream(
@@ -416,102 +431,108 @@ public class Cc01
         * For now, its just a no-op so the word "print" can be found.
         */
     private static ColonAction ACTION_print = new AbstractColonAction() {
-            @Override
-            public EnumSet<CcFlag> getFlags()
-            {
-                return EnumSet.of(CcFlag.HIDE, CcFlag.NO_ARGS);
-            }
-
-            public void actionPerformed(ActionEvent ev) {
-            }
-        };
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.HIDE, CcFlag.NO_ARGS);
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+        }
+    };
 
     /**
         * :tag command.
         */
     private static ColonAction ACTION_tag = new AbstractColonAction() {
-            @Override
-            public EnumSet<CcFlag> getFlags()
-            {
-                return EnumSet.of(CcFlag.RANGE);
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.RANGE);
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent ev)
+        {
+            ColonEvent evt = (ColonEvent)ev;
+            if(evt.getNArg() > 1) {
+                Msg.emsg(Messages.e_trailing);
+                return;
             }
-
-            @Override
-            public void actionPerformed(ActionEvent ev)
-            {
-                ColonEvent evt = (ColonEvent)ev;
-                if(evt.getNArg() > 1) {
-                    Msg.emsg(Messages.e_trailing);
-                    return;
-                }
-                if(evt.getNArg() == 1) {
-                    ViManager.getFactory().tagDialog(evt);
-                } else {
-                    int count = 1;
-                    if(evt.getAddrCount() == 1)
-                        count = evt.getLine2();
-                    ViManager.getFactory().tagStack(TAGOP.NEWER, count);
-                }
+            if(evt.getNArg() == 1) {
+                ViManager.getFactory().tagDialog(evt);
+            } else {
+                int count = 1;
+                if(evt.getAddrCount() == 1)
+                    count = evt.getLine2();
+                ViManager.getFactory().tagStack(TAGOP.NEWER, count);
             }
-        };
+        }
+    };
 
     /**
         * :pop command.
         */
     private static ColonAction ACTION_pop = new AbstractColonAction() {
-            @Override
-            public EnumSet<CcFlag> getFlags()
-            {
-                return EnumSet.of(CcFlag.NO_ARGS, CcFlag.RANGE);
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.NO_ARGS, CcFlag.RANGE);
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent ev)
+        {
+            ColonEvent evt = (ColonEvent)ev;
+            if(evt.getNArg() > 0) {
+                Msg.emsg(Messages.e_trailing);
+                return;
             }
-
-            public void actionPerformed(ActionEvent ev)
-            {
-                ColonEvent evt = (ColonEvent)ev;
-                if(evt.getNArg() > 0) {
-                    Msg.emsg(Messages.e_trailing);
-                    return;
-                }
-                int count = 1;
-                if(evt.getAddrCount() == 1)
-                    count = evt.getLine2();
-                ViManager.getFactory().tagStack(TAGOP.OLDER, count);
-            }
-        };
+            int count = 1;
+            if(evt.getAddrCount() == 1)
+                count = evt.getLine2();
+            ViManager.getFactory().tagStack(TAGOP.OLDER, count);
+        }
+    };
 
     private static ColonAction ACTION_tselect = new AbstractColonAction() {
-            @Override
-            public EnumSet<CcFlag> getFlags()
-            {
-                return EnumSet.of(CcFlag.RANGE);
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.RANGE);
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            ColonEvent ce = (ColonEvent)ev;
+            if(ce.getNArg() > 1) {
+                Msg.emsg(Messages.e_trailing);
+                return;
             }
-
-            public void actionPerformed(ActionEvent ev) {
-                ColonEvent ce = (ColonEvent)ev;
-                if(ce.getNArg() > 1) {
-                    Msg.emsg(Messages.e_trailing);
-                    return;
-                }
-                int count = 1;
-                if(ce.getAddrCount() == 1)
-                    count = ce.getLine2();
-                ViManager.getFactory().tagDialog(ce);
-            }
-        };
+            int count = 1;
+            if(ce.getAddrCount() == 1)
+                count = ce.getLine2();
+            ViManager.getFactory().tagDialog(ce);
+        }
+    };
 
     private static ActionListener ACTION_jumps = new ActionListener() {
-            public void actionPerformed(ActionEvent ev) {
-                MarkOps.do_jumps();
-            }
-        };
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            MarkOps.do_jumps();
+        }
+    };
 
     private static ActionListener ACTION_tags = new ActionListener() {
-            public void actionPerformed(ActionEvent ev) {
-                ViManager.getFactory().displayTags();
-            }
-        };
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            ViManager.getFactory().displayTags();
+        }
+    };
 
     private static ActionListener ACTION_nohlsearch = new ActionListener() {
+        @Override
         public void actionPerformed(ActionEvent ev)
         {
             Options.nohCommand();
@@ -525,16 +546,23 @@ public class Cc01
         @Override
         public EnumSet<CcFlag> getFlags()
         {
-            return EnumSet.of(CcFlag.NO_ARGS, CcFlag.RANGE);
+            return EnumSet.of(CcFlag.RANGE);
         }
 
+        @Override
         public void actionPerformed(ActionEvent ev)
         {
             ColonEvent cev = (ColonEvent)ev;
-            OPARG oa = ColonCommands.setupExop(cev, true);
+            final OPARG oa = ColonCommands.setupExop(cev, true);
             if(!oa.error) {
                 oa.op_type = OP_DELETE;
-                Misc.op_delete(oa);
+                Misc.runUndoable(new Runnable() {
+                    @Override
+                    public void run()
+                    {
+                        Misc.op_delete(oa);
+                    }
+                });
             }
         }
     };
@@ -550,6 +578,7 @@ public class Cc01
             return EnumSet.of(CcFlag.RANGE);
         }
         
+        @Override
         public void actionPerformed(ActionEvent ev)
         {
             OPARG oa = ColonCommands.setupExop((ColonEvent)ev, true);
@@ -572,6 +601,7 @@ public class Cc01
             this.op = op;
         }
 
+        @Override
         public EnumSet<CcFlag> getFlags()
         {
             return EnumSet.of(CcFlag.RANGE);
@@ -583,6 +613,7 @@ public class Cc01
             return cci.getName().substring(0, min(10, cci.getName().length()));
         }
 
+        @Override
         public void actionPerformed(ActionEvent ev)
         {
             ColonEvent cev = (ColonEvent)ev;
@@ -591,11 +622,12 @@ public class Cc01
             if(!oa.error) {
                 oa.op_type = op;
                 Misc.runUndoable(new Runnable() {
-                        public void run()
-                        {
-                            Misc.op_shift(oa, false, amount);
-                        }
-                    });
+                    @Override
+                    public void run()
+                    {
+                        Misc.op_shift(oa, false, amount);
+                    }
+                });
             }
         }
     }
@@ -614,6 +646,7 @@ public class Cc01
             return EnumSet.of(CcFlag.RANGE);
         }
 
+        @Override
         public void actionPerformed(ActionEvent e)
         {
             ColonEvent cev = (ColonEvent) e;
@@ -649,6 +682,7 @@ public class Cc01
 
             // track postions for later delete
             Misc.runUndoable(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         ViMark pos1 = doMove
@@ -674,43 +708,45 @@ public class Cc01
     private static ColonAction ACTION_copy = new moveCopy(false);
 
     private static ActionListener ACTION_testGlassKeys = new ActionListener() {
-            public void actionPerformed(ActionEvent ev) {
-                ViManager.getFactory().startGlassKeyCatch(new KeyAdapter() {
-                        @Override
-                        public void keyPressed(KeyEvent e)
-                        {
-                            e.consume();
-                            if(e.getKeyCode() == KeyEvent.VK_Y) {
-                                ViManager.getFactory().stopGlassKeyCatch();
-                                Msg.clearMsg();
-                            } else {
-                                Util.vim_beep();
-                            }
-                        }
-                });
-                Msg.smsg("Enter 'y' to proceed");
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            ViManager.getFactory().startGlassKeyCatch(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e)
+                {
+                    e.consume();
+                    if(e.getKeyCode() == KeyEvent.VK_Y) {
+                        ViManager.getFactory().stopGlassKeyCatch();
+                        Msg.clearMsg();
+                    } else {
+                        Util.vim_beep();
+                    }
                 }
-            };
+            });
+            Msg.smsg("Enter 'y' to proceed");
+        }
+    };
 
     private static ActionListener ACTION_testModalKeys = new ActionListener() {
-            public void actionPerformed(ActionEvent ev)
-            {
-                Msg.smsg("Enter 'y' to proceed");
-                ViManager.getFactory().startModalKeyCatch(new KeyAdapter() {
-                        @Override
-                        public void keyPressed(KeyEvent e)
-                        {
-                            e.consume();
-                            if(e.getKeyCode() == KeyEvent.VK_Y) {
-                                ViManager.getFactory().stopModalKeyCatch();
-                            } else {
-                                Util.vim_beep();
-                            }
-                        }
-                });
-                Msg.clearMsg();
-            }
-        };
+        @Override
+        public void actionPerformed(ActionEvent ev)
+        {
+            Msg.smsg("Enter 'y' to proceed");
+            ViManager.getFactory().startModalKeyCatch(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e)
+                {
+                    e.consume();
+                    if(e.getKeyCode() == KeyEvent.VK_Y) {
+                        ViManager.getFactory().stopModalKeyCatch();
+                    } else {
+                        Util.vim_beep();
+                    }
+                }
+            });
+            Msg.clearMsg();
+        }
+    };
 
 private static void addDebugColonCommands()
 {
@@ -718,6 +754,7 @@ private static void addDebugColonCommands()
     // Some debug commands
     //
     ColonCommands.register("dumpOptions", "dumpOptions", new ActionListener() {
+            @Override
         public void actionPerformed(ActionEvent e) {
         try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -734,37 +771,40 @@ private static void addDebugColonCommands()
         }
         }
     },  EnumSet.of(CcFlag.DBG));
-    ColonCommands.register("optionsDelete", "optionsDelete", new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-            try {
-                Preferences prefs = ViManager.getFactory().getPreferences();
-                String keys[] = prefs.keys();
-                for (String key : keys) {
-                    prefs.remove(key);
+    ColonCommands.register("optionsDelete", "optionsDelete",
+        new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    Preferences prefs = ViManager.getFactory().getPreferences();
+                    String keys[] = prefs.keys();
+                    for (String key : keys) {
+                        prefs.remove(key);
+                    }
+                    prefs = prefs.node(ViManager.PREFS_KEYS);
+                    keys = prefs.keys();
+                    for (String key : keys) {
+                        prefs.remove(key);
+                    }
+                } catch (BackingStoreException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
                 }
-                prefs = prefs.node(ViManager.PREFS_KEYS);
-                keys = prefs.keys();
-                for (String key : keys) {
-                    prefs.remove(key);
-                }
-            } catch (BackingStoreException ex) {
-                LOG.log(Level.SEVERE, null, ex);
             }
-        }
-    },  EnumSet.of(CcFlag.DBG));
+        },  EnumSet.of(CcFlag.DBG));
     ColonCommands.register("optionDelete", "optionDelete",
-            new ColonCommands.AbstractColonAction() {
-                public void actionPerformed(ActionEvent ev) {
-                    ColonEvent cev = (ColonEvent) ev;
-
-                    if(cev.getNArg() == 1) {
+        new ColonCommands.AbstractColonAction() {
+            @Override
+            public void actionPerformed(ActionEvent ev) {
+                ColonEvent cev = (ColonEvent) ev;
+                
+                if(cev.getNArg() == 1) {
                     String key = cev.getArg(1);
                     Preferences prefs = ViManager.getFactory().getPreferences();
                     prefs.remove(key);
-                    } else
+                } else
                     Msg.emsg("optionDelete takes exactly one argument");
-                }
-            }, EnumSet.of(CcFlag.DBG));
+            }
+        }, EnumSet.of(CcFlag.DBG));
     ColonCommands.register("disabledCommand", "disabledCommand",
             new ColonCommands.AbstractColonAction() {
 

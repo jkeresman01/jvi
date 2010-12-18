@@ -196,7 +196,7 @@ public class Util {
   }
 
   /**
-   * Get the length of a line, not incuding the newline
+   * Get the length of a line, not including the newline
    */
   static int lineLength(int line) {
     return lineLength(G.curbuf, line);
@@ -204,6 +204,10 @@ public class Util {
 
   static int lineLength(Buffer buf, int line) {
     MySegment seg = buf.getLineSegment(line);
+    return lineLength(seg);
+  }
+
+  static int lineLength(MySegment seg) {
     return seg.count < 1 ? 0 : seg.count - 1;
   }
 
