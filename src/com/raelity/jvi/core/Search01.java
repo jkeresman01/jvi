@@ -20,7 +20,10 @@
 
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViBuffer.BIAS;
+import java.util.List;
 import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.ViManager;
@@ -29,6 +32,7 @@ import com.raelity.text.TextUtil.MySegment;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 
 import static com.raelity.jvi.core.Constants.*;
 import static com.raelity.jvi.core.MarkOps.*;
@@ -504,14 +508,22 @@ public class Search01 {
       }
     }
 
-    int nLine = G.curbuf.getLineCount();
+    // if no address range then entire file
+    if(cev.getAddrCount() == 0) {
+      cev.line1 = 1;
+      cev.line2 = G.curbuf.getLineCount();
+    }
       
     // for now special case a few known commands that can be global'd
-    // NEEDSWORK: make global two pass, check vim sources. There's no nice
-    // way to keep track of the matched lines for the seconde pass. The only
-    // generalized thing that would seem to work is to catch the document
-    // events for delete and remove any lines from the global list that are
-    // deleted.
+    // 
+    // As in vim, do this in two passes. First pass build list of line marks
+    // that match the pattern. Second pass operate on those lines.
+    //
+    // Potential future problem is that multiple lines could be deleted and
+    // a line, other than the current line, with a mark is deleted.
+    // This situation is not detected currently.
+    // The vim doc says: If a line is deleted its mark disappears.
+    //
     
     ViOutputStream result = null;
     if(cmdAction == Cc01.getActionPrint()) {
@@ -525,38 +537,42 @@ public class Search01 {
     
     substFlags = null;
 
-    for(int lnum = 1; lnum <= nLine; lnum++) {
+    List<ViMark> marks = new ArrayList<ViMark>();
+    for(int lnum = cev.getLine1(); lnum <= cev.getLine2(); lnum++) {
       line = G.curbuf.getLineSegment(lnum);
       if(prog.search(line.array, line.offset, line.count)) {
-	// if full parse each time command executed,
-	// then should move cursor (or equivilent) but.....
-	if(cevAction != null) {
-	  cevAction.line1 = lnum;
-	  cevAction.line2 = lnum;
-	}
-	if(cmdAction == Cc01.getActionPrint()) {
-	    result.println(lnum, prog.start(0) - line.offset, prog.length(0));
-	} else if(cmdAction == Cc01.getActionSubstitute()) {
-	  ColonCommands.executeCommand(cevAction);
-          if(substFlags != null && substFlags.testAnyBits(SUBST_QUIT))
-            break;
-	} else if(cmdAction == Cc01.getActionDelete()) {
-	  OPARG oa = ColonCommands.setupExop(cevAction, false);
-	  oa.op_type = OP_DELETE;
-	  Misc.op_delete(oa);
-	  // The troublesome command/situation
-	  // A line has just been deleted
-	  --nLine;
-	  --lnum;
-	} else if(cmdAction == Cc01.getActionGlobal()) {
-	  Msg.emsg("Cannot do :global recursively");
-	  return;
-	} else {
-	  // no command specified, but cursorLine is getting set above
-	}
-	cursorLine = lnum;  // keep track of last line matched
+        marks.add(G.curbuf.createMark(line.docOffset, BIAS.FORW));
       }
     }
+
+    for(ViMark m : marks) {
+      int lnum = G.curbuf.getLineNumber(m.getOffset());
+      // if full parse each time command executed,
+      // then should move cursor (or equivilent) but.....
+      if(cevAction != null) {
+        cevAction.line1 = lnum;
+        cevAction.line2 = lnum;
+      }
+      if(cmdAction == Cc01.getActionPrint()) {
+        line = G.curbuf.getLineSegment(lnum);
+        result.println(lnum, 0, 0);
+      } else if(cmdAction == Cc01.getActionSubstitute()) {
+        ColonCommands.executeCommand(cevAction);
+        if(substFlags != null && substFlags.testAnyBits(SUBST_QUIT))
+          break;
+      } else if(cmdAction == Cc01.getActionDelete()) {
+        OPARG oa = ColonCommands.setupExop(cevAction, false);
+        oa.op_type = OP_DELETE;
+        Misc.op_delete(oa);
+      } else if(cmdAction == Cc01.getActionGlobal()) {
+        Msg.emsg("Cannot do :global recursively");
+        return;
+      } else {
+        // no command specified, but cursorLine is getting set above
+      }
+      cursorLine = lnum;  // keep track of last line matched
+    }
+
 
     if(cursorLine > 0) {
       gotoLine(cursorLine, BL_WHITE | BL_FIX, true);

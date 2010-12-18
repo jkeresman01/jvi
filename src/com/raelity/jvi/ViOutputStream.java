@@ -43,7 +43,7 @@ public interface ViOutputStream {
    * to identify a match within a line.
    * @param line line number corresponding to this message
    * @param col column within line
-   * @param length length, from col, in the line
+   * @param length length, from col, in the line; 0 means to end of line
    */
   public void println(int line, int col, int length);
   
