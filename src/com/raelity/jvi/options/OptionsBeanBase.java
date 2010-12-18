@@ -909,6 +909,14 @@ public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsContro
 	return getString(Options.dbgUndo);
     }
 
+    public void setViDbgSearch(String arg)  throws PropertyVetoException {
+        put(Options.dbgSearch, arg);
+    }
+
+    public String getViDbgSearch() {
+	return getString(Options.dbgSearch);
+    }
+
     public void setViDbgMouse(String arg) throws PropertyVetoException {
         put(Options.dbgMouse, arg);
     }

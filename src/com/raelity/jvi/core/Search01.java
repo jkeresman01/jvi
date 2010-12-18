@@ -33,6 +33,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import static com.raelity.jvi.core.Constants.*;
 import static com.raelity.jvi.core.MarkOps.*;
@@ -538,14 +539,46 @@ public class Search01 {
     substFlags = null;
 
     List<ViMark> marks = new ArrayList<ViMark>();
+    List<String> debugInfo = null;
+    if(G.dbgSearch.getBoolean())
+      debugInfo = new ArrayList<String>();
+
+    // Set up two marks for each line, first char and after newline.
+    // Use two marks/line to detect if a line is deleted.
     for(int lnum = cev.getLine1(); lnum <= cev.getLine2(); lnum++) {
       line = G.curbuf.getLineSegment(lnum);
       if(prog.search(line.array, line.offset, line.count)) {
         marks.add(G.curbuf.createMark(line.docOffset, BIAS.FORW));
+        marks.add(G.curbuf.createMark(line.docOffset + line.count, BIAS.FORW));
+        if(debugInfo != null) {
+          debugInfo.add(new String(line.array, line.offset, lineLength(line)));
+        }
       }
     }
 
-    for(ViMark m : marks) {
+    G.dbgSearch.printf(":global: %d lines match\n", marks.size() >> 1);
+    Iterator<String> debugIt = null;
+    if(debugInfo != null)
+      debugIt = debugInfo.iterator();
+
+    // second pass, perform the actions on the matching lines
+    for(Iterator<ViMark> it = marks.iterator(); it.hasNext();) {
+      ViMark m = it.next();
+      ViMark mEnd = it.next();
+      String debugText = null;
+      if(debugIt != null)
+        debugText = debugIt.next();
+
+      // skip lines deleted by ":global" actions so far
+      if(m.getOffset() == mEnd.getOffset()) {
+        if(G.dbgSearch.getBoolean()) {
+          ViFPOS fpos = G.curbuf.createFPOS(m.getOffset());
+          G.dbgSearch.printf(":global: line deleted after %d: %s\n",
+                             fpos.getLine(), debugText);
+        }
+        continue;
+      }
+
       int lnum = G.curbuf.getLineNumber(m.getOffset());
       // if full parse each time command executed,
       // then should move cursor (or equivilent) but.....
@@ -561,7 +594,7 @@ public class Search01 {
         if(substFlags != null && substFlags.testAnyBits(SUBST_QUIT))
           break;
       } else if(cmdAction == Cc01.getActionDelete()) {
-        OPARG oa = ColonCommands.setupExop(cevAction, false);
+        OPARG oa = ColonCommands.setupExop(cevAction, true);
         oa.op_type = OP_DELETE;
         Misc.op_delete(oa);
       } else if(cmdAction == Cc01.getActionGlobal()) {

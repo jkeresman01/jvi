@@ -188,6 +188,7 @@ public final class Options {
   public static final String dbgCompletion = "viDbgCompletion";
   public static final String dbgCoordSkip = "viDbgCoordSkip";
   public static final String dbgUndo = "viDbgUndo";
+  public static final String dbgSearch = "viDbgSearch";
 
   public static final String twMagic = "#TEXT-WIDTH#";
 
@@ -764,8 +765,10 @@ public final class Options {
                             "debug coordinate skip", "");
 
     G.dbgUndo = OptUtil.createDebugOption(dbgUndo);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgUndo, "debug undo begin/end",
-                            "");
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgUndo, "debug undo begin/end", "");
+
+    G.dbgSearch = OptUtil.createDebugOption(dbgSearch);
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgSearch, "debug search", "");
   }
 
   /**
