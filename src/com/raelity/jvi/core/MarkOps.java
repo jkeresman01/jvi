@@ -122,7 +122,7 @@ class MarkOps
         ViManager.addPropertyChangeListener(ViManager.P_CLOSE_BUF, pcl);
 
         if(ViManager.isDebugAtHome())
-            LOG.setLevel(Level.FINE);
+            LOG.setLevel(Level.FINER);
     }
 
     /** Set the indicated mark to the current cursor position;
@@ -872,6 +872,8 @@ class MarkOps
                 }
                 Preferences bufData = prefs.node(bm.getBufTag());
                 String[] marks = bufData.childrenNames();
+                LOG.log(Level.FINER, "restoring {0} marks from {1}",
+                        new Object[]{marks.length, bufData.absolutePath()});
                 for (String mName : marks) {
                     MarkInfo mi = readMark(bufData.node(mName));
                     if (mi == null) {
@@ -905,6 +907,8 @@ class MarkOps
                 Set<String> names = new HashSet<String>();
                 // following holds bufs in MRU order
                 BufferMarks[] bms = new BufferMarks[bufTags.length];
+                LOG.log(Level.FINER, "persisted file count: {0}",
+                        bufTags.length);
                 for (String bt : bufTags) {
                     if (!bt.startsWith(BUF)) {
                         LOG.log(Level.WARNING, "read_viminfo: "
@@ -922,6 +926,8 @@ class MarkOps
                         cleanup.add(bt);
                         continue;
                     }
+                    LOG.log(Level.FINER, "Node: {0} name: {1} index: {2}",
+                            new Object[]{bt, name, index});
                     if (index <= 0 || index > bms.length) {
                         LOG.warning(String.format("read_viminfo: "
                                 + "(expect 1-%d) bad index: %d, name: %s",
@@ -1015,8 +1021,11 @@ class MarkOps
             o = p.getInt(OFFSET, -1);
             l = p.getInt(LINE, -1);
             c = p.getInt(COL, -1);
-            if(o < 0 || l < 0 || c < 0)
+            LOG.log(Level.FINER, "{3}: offset: {0} line: {1} col: {2}",
+                    new Object[]{o, l, c, p.name()});
+            if(o < 0 || l < 0 || c < 0) {
                 return null;
+            }
 
             return new MarkInfo(o, l, c);
         }
