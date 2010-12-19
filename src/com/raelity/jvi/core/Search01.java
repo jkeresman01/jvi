@@ -403,6 +403,14 @@ public class Search01 {
                 int group = c - '0';
                 sb.append(line.array, prog.start(group), prog.length(group));
                 break;
+              case 'n':
+                // Treat \n like \r, add a newline to the file.
+                // So don't put NULL into the file for \n
+                // sb.append('\000');
+                // break;
+              case 'r':
+                sb.append('\n');
+                break;
 
               default:
                 // escaped a regular character, just append it
