@@ -59,39 +59,47 @@ abstract public class SwingBuffer extends Buffer {
     // ViBuffer interface
     // 
     
+    @Override
     public int getLineNumber(int offset) {
         return getElemIndex(offset) + 1;
     }
     
+    @Override
     public int getColumnNumber(int offset) {
         Element elem = getElem(offset);
         return offset - elem.getStartOffset();
     }
     
     /** @return the starting offset of the line */
+    @Override
     public int getLineStartOffset(int line) {
         return getLineElement(line).getStartOffset();
     }
     
     /** @return the starting offset of the line */
+    @Override
     public int getLineEndOffset(int line) {
         return getLineElement(line).getEndOffset();
     }
     
+    @Override
     public int getLineStartOffsetFromOffset(int offset) {
         Element elem = getElem(offset);
         return elem.getStartOffset();
     }
     
+    @Override
     public int getLineEndOffsetFromOffset(int offset) {
         Element elem = getElem(offset);
         return elem.getEndOffset();
     }
     
+    @Override
     public int getLineCount() {
         return getDocument().getDefaultRootElement().getElementCount();
     }
 
+    @Override
     public int getLength() {
         return getDocument().getLength();
     }
@@ -104,6 +112,7 @@ abstract public class SwingBuffer extends Buffer {
         return getLineElement(lnum); // CACHE
     }*/
     
+    @Override
     final public MySegment getSegment(int offset, int length, MySegment seg) {
         if(seg == null)
             seg = new MySegment();
@@ -118,6 +127,7 @@ abstract public class SwingBuffer extends Buffer {
         return seg;
     }
 
+    @Override
     public boolean isGuarded(int offset) {
         return false;
     }
@@ -130,10 +140,12 @@ abstract public class SwingBuffer extends Buffer {
     /**
      * Use the document in default implementation.
      * @return Swing Document backing this EditorPane */
+    @Override
     public Document getDocument() {
         return doc;
     }
 
+    @Override
     public void replaceString(int start, int end, String s) {
         if( ! isEditable()) {
             Util.vim_beep();
@@ -149,6 +161,7 @@ abstract public class SwingBuffer extends Buffer {
         }
     }
     
+    @Override
     public void deleteChar(int start, int end) {
         if( ! isEditable()) {
             Util.vim_beep();
@@ -161,6 +174,7 @@ abstract public class SwingBuffer extends Buffer {
         }
     }
 
+    @Override
     public void insertText(int offset, String s) {
         if( ! isEditable()) {
             Util.vim_beep();
@@ -200,6 +214,7 @@ abstract public class SwingBuffer extends Buffer {
         }
     }
     
+    @Override
     public void replaceChar(int offset, char c) {
         if( ! isEditable()) {
             Util.vim_beep();
@@ -216,6 +231,7 @@ abstract public class SwingBuffer extends Buffer {
         }
     }
 
+    @Override
     public String getText(int offset, int length) throws ViBadLocationException {
         try {
             return getDocument().getText(offset, length);
@@ -229,11 +245,13 @@ abstract public class SwingBuffer extends Buffer {
     }
 
 
+    @Override
     public void reindent(int line, int count) {
         System.err.format("reindent line %d, count %d", line, count);
         Util.vim_beep();
     }
 
+    @Override
     public void reformat(int line, int count) {
         System.err.format("reformat line %d, count %d", line, count);
         Util.vim_beep();
@@ -246,6 +264,7 @@ abstract public class SwingBuffer extends Buffer {
     // Marks
     //
     
+    @Override
     public ViMark createMark(ViFPOS fpos) {
         ViMark m = new Mark(this);
         if(fpos != null)
@@ -260,6 +279,7 @@ abstract public class SwingBuffer extends Buffer {
     }
     
     static final Position INVALID_MARK_LINE = new Position() {
+        @Override
         public int getOffset() {
             return 0;
         }
@@ -313,6 +333,7 @@ abstract public class SwingBuffer extends Buffer {
     // private Segment tempSegment = new Segment();
     
     /** @return the positionsegment for the indicated line */
+    @Override
     final public MySegment getLineSegment(int line) {
         if(cacheDisabled || segment.count == 0 || segment.line != line) {
             if(cacheTrace.getBoolean())System.err.println("Miss seg: " + line);
@@ -398,6 +419,7 @@ abstract public class SwingBuffer extends Buffer {
     //      1) Invalidate cached information about the document
     //      2) Provide information for magic redo tracking
     class DocListen implements DocumentListener {
+        @Override
         public void changedUpdate(DocumentEvent e) {
             if(cacheTrace.getBoolean()) {
                 System.err.println("doc changed: " + e.getOffset()
@@ -408,6 +430,7 @@ abstract public class SwingBuffer extends Buffer {
             // invalidateData();
         }
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             if(cacheTrace.getBoolean())
                 System.err.println("doc insert: " + e.getOffset()
@@ -434,6 +457,7 @@ abstract public class SwingBuffer extends Buffer {
             }
         }
         
+        @Override
         public void removeUpdate(DocumentEvent e) {
             if(cacheTrace.getBoolean())
                 System.err.println("doc remove: " + e.getOffset()
