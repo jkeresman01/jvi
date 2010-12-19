@@ -130,6 +130,8 @@ public class Cc01
         ColonCommands.register("m", "move", ACTION_move, null);
         ColonCommands.register("co", "copy", ACTION_copy, null);
         ColonCommands.register("t", "t", ACTION_copy, null);
+        ColonCommands.register("u", "undo", ACTION_undo, null);
+        ColonCommands.register("red", "redo", ACTION_redo, null);
 
         addDebugColonCommands();
     }
@@ -744,6 +746,22 @@ public class Cc01
                 }
             });
             Msg.smsg("Enter 'y' to proceed");
+        }
+    };
+
+    private static ActionListener ACTION_undo = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent ev)
+        {
+            G.curbuf.undo();
+        }
+    };
+
+    private static ActionListener ACTION_redo = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent ev)
+        {
+            G.curbuf.redo();
         }
     };
 
