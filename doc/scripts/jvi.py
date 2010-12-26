@@ -21,13 +21,8 @@ helpfiles = [ x for x in os.listdir(INPUT_DIR) if x.endswith('.txt') ]
 
 print 'helpfiles:', helpfiles
 
-with open(TAGS_FILE) as f: tags = f.read()
-h2h = VimH2H(tags)
-
-#with open(TAGS_FILE) as f: h2h = VimH2H(f)
+with open(TAGS_FILE) as f: h2h = VimH2H(f)
 
 for helpfile in helpfiles:
-    with open(INPUT_DIR + helpfile) as f: content = f.read()
-    content = content.replace('\r\n', '\n')
-    html = h2h.to_html(helpfile, content)
+    with open(INPUT_DIR + helpfile) as f: html = h2h.to_html(helpfile, f)
     with open(OUTPUT_DIR + helpfile + '.html', 'w') as f: f.write(html)

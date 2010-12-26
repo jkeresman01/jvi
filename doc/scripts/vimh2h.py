@@ -125,7 +125,7 @@ class VimH2H:
     urls = { }
 
     def __init__(self, tags):
-	for line in RE_NEWLINE.split(tags):
+	for line in tags:
 	    m = RE_TAGLINE.match(line)
 	    if m:
 		tag, filename = m.group(1, 2)
@@ -168,7 +168,7 @@ class VimH2H:
 
 	inexample = 0
 	faq_line = False
-	for line in RE_NEWLINE.split(contents):
+	for line in contents:
 	    line = line.rstrip('\r\n')
 	    line_tabs = line
 	    line = line.expandtabs()
