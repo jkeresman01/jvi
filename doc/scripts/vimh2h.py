@@ -79,17 +79,17 @@ class VimH2H:
         self.parser = VimHelpParser(tags)
 
     def to_html(self, filename, contents, include_sitesearch = True,
-	    include_faq = True):
+            include_faq = True):
 
         out = self.parser.parse(filename, contents, include_faq)
 
-	return HEADER1.replace('{filename}', filename) + \
-		(START_HEADER if filename == 'help.txt' else '') + \
-		SITENAVI + \
-		(SITESEARCH if include_sitesearch else '') + \
-		HEADER2 + \
-		''.join(out) + \
-		FOOTER + \
-		SITENAVI + \
-		FOOTER2
+        return HEADER1.replace('{filename}', filename) + \
+                (START_HEADER if filename == 'help.txt' else '') + \
+                SITENAVI + \
+                (SITESEARCH if include_sitesearch else '') + \
+                HEADER2 + \
+                ''.join(out) + \
+                FOOTER + \
+                SITENAVI + \
+                FOOTER2
 
