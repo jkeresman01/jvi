@@ -1,0 +1,62 @@
+*repeat.txt*    For Vim version 5.6.  Last change: 1999 Oct 02
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+Repeating commands					*repeating*
+
+1. Single repeats	|single-repeat|
+3. Complex repeats	|complex-repeat|
+
+==============================================================================
+1. Single repeats					*single-repeat*
+
+							*.*
+.			Repeat last change, with count replaced with [count].
+			Also repeat a yank command, when the 'y' flag is
+			included in 'cpoptions'.
+
+Simple changes can be repeated with the "." command.  Without a count, the
+count of the last change is used.  If you enter a count, it will replace the
+last one.  If the last change included a specification of a numbered register,
+the register number will be incremented.  See |undo-redo| for an example how
+to use this.  Note that when repeating a command that used a Visual selection,
+the same SIZE of area is used, see |visual-repeat|.
+
+==============================================================================
+3. Complex repeats					*complex-repeat*
+
+							*q* *recording*
+q{0-9a-zA-Z"}		Record typed characters into register {0-9a-zA-Z"}
+			(uppercase to append).  The 'q' command is disabled
+			while executing a register, and it doesn't work inside
+			a mapping.  {Vi: no recording}
+
+q			Stops recording.  (Implementation note: The 'q' that
+			stops recording is not stored in the register, unless
+			it was the result of a mapping)  {Vi: no recording}
+
+							*@*
+@{0-9a-z".=*}		Execute the contents of register {0-9a-z".=*} [count]
+			times.  Note that register '%' (name of the current
+			file) and '#' (name of the alternate file) cannot be
+			used.  For "@=" you are prompted to enter an
+			expression.  The result of the expression is then
+			executed.  See also |@:|.  {Vi: only named registers}
+
+							*@@*
+@@			Repeat the previous @{0-9a-z":*} [count] times.
+
+All commands and command sequences can be repeated by putting them in a named
+register and then executing it.  There are two ways to get the commands in the
+register:
+- Use the record command "q".  You type the commands once, and while they are
+  being executed they are stored in a register.  Easy, because you can see
+  what you are doing.  If you make a mistake, "p"ut the register into the
+  file, edit the command sequence, and then delete it into the register
+  again.  You can continue recording by appending to the register (use an
+  uppercase letter).
+- Delete or yank the command sequence into the register.
+
+ vim:tw=78:ts=8:sw=8: 

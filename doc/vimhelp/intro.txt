@@ -1,0 +1,156 @@
+*intro.txt*     For Vim version 5.6.  Last change: 2000 Jan 10
+
+
+		  Excerpts from
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+Introduction to Vim					*ref* *reference*
+
+4. Notation			|notation|
+5. Modes, introduction		|vim-modes-intro|
+
+==============================================================================
+4. Notation						*notation*
+
+When syntax highlighting is used to read this, text that is not typed
+literally is often highlighted with the Special group.  These are items in [],
+{} and <>, and CTRL-X.
+
+[]		Characters in square brackets are optional.
+
+							*count* *[count]*
+[count]		An optional number that may precede the command to multiply
+		or iterate the command.  If no number is given, a count of one
+		is used, unless otherwise noted.  Note that in this manual the
+		[count] is not mentioned in the description of the command,
+		but only in the explanation.  This was done to make the
+		commands easier to look up.  If the 'showcmd' option is on,
+		the (partially) entered count is shown at the bottom of the
+		window.  You can use <Del> to erase the last digit (|N<Del>|).
+
+							*[quotex]*
+["x]		An optional register designation where text can be stored.
+		See |registers|.  The x is a single character between 'a' and
+		'z' or 'A' and 'Z' or '"', and in some cases (with the put
+		command) between '0' and '9', '%', '#', ':' or '.'. The
+		uppercase and lower case letter designate the same register,
+		but the lower case letter is used to overwrite the previous
+		register contents, while the uppercase letter is used to
+		append to the previous register contents. Without the ""x" or
+		with """" the stored text is put into the unnamed register.
+
+							*{}*
+{}		Curly braces denote parts of the command which must appear,
+		but which can take a number of different values.  The
+		differences between Vim and Vi are also given in curly braces
+		(this will be clear from the context).
+
+							*{motion}*
+{motion}	A command that moves the cursor.  See the list at
+		|motion.txt|.  This is used after an operator command
+		|operator| to move over the text that is to be operated upon.
+		If the motion includes a count and the operator also had a
+		count, the two counts are multiplied.  For example: "2d3w"
+		deletes six words.  The motion can also be a mouse click.  The
+		mouse is currently only supported for MS-DOS, Win32, Linux
+		console with GPM and xterm under Unix.  The ":omap" command
+		can be used to map characters while an operator is pending.
+
+							*<character>*
+<character>	A special character from the table below, optionally with
+		modifiers, or a single ASCII character with modifiers.
+
+							*'character'*
+'c'		A single ASCII character.
+
+							*CTRL-{char}*
+CTRL-{char}	{char} typed as a control character; that is, typing {char}
+		while holding the CTRL key down.  The case of {char} does not
+		matter; thus CTRL-A and CTRL-a are equivalent.  But on some
+		terminals, using the SHIFT key will produce another code,
+		don't use it then.
+
+							*'option'*
+'option'	An option, or parameter, that can be set to a value, is
+		enclosed in single quotes.  See |options|.
+
+							*quotecommandquote*
+"command"	A reference to a command that you can type is enclosed in
+		double quotes.
+
+==============================================================================
+5. Modes, introduction				*vim-modes-intro* *vim-modes*
+
+Vim has six BASIC modes:
+
+					*Normal* *Normal-mode* *command-mode*
+Normal mode		In Normal mode you can enter all the normal editor
+			commands.  If you start the editor you are in this
+			mode (unless you have set the 'insertmode' option,
+			see below).  This is also known as command mode.
+
+Visual mode		This is like Normal mode, but the movement commands
+			extend a highlighted area.  When a non-movement
+			command is used, it is executed for the highlighted
+			area.  See |Visual-mode|.
+			If the 'showmode' option is on "-- VISUAL --" is shown
+			at the bottom of the window.
+
+Insert mode		In Insert mode the text you type is inserted into the
+			buffer.  See |Insert-mode|.
+			If the 'showmode' option is on "-- INSERT --" is shown
+			at the bottom of the window.
+
+Command-line mode	In Command-line mode (also called Cmdline mode) you
+Cmdline mode		can enter one line of text at the bottom of the
+			window.  This is for the Ex commands, ":", the pattern
+			search commands, "?" and "/", and the filter command,
+			"!".  |Cmdline-mode|
+
+There are five ADDITIONAL modes:
+
+				*Operator-pending* *Operator-pending-mode*
+Operator-pending mode	This is like Normal mode, but after an operator
+			command has started, and Vim is waiting for a {motion}
+			to specify the text that the operator will work on.
+
+Replace mode		Replace mode is a special case of Insert mode.  You
+			can do the same things as in Insert mode, but for
+			each character you enter, one character of the existing
+			text is deleted.  See |Replace-mode|.
+			If the 'showmode' option is on "-- REPLACE --" is
+			shown at the bottom of the window.
+
+==============================================================================
+6. Switching from mode to mode				*mode-switching*
+
+If for any reason you do not know which mode you are in, you can always get
+back to Normal mode by typing <Esc> twice.  You will know you are back in
+Normal mode when you see the screen flash or hear the bell after you type
+<Esc>.  This doesn't work for Ex mode, use ":visual".
+
+							*i_esc*
+		TO mode					
+		Normal	Visual	Insert	  Replace   Cmd-line
+FROM mode						    
+Normal			v V ^V	 *1	    R	    : / ? ! 
+Visual		 *2		 c C	    --	      :     
+Insert		 <Esc>	  --		  <Insert>    --    
+Replace		 <Esc>	  --	<Insert>	      --    
+Command-line	 *3	  --	 :start	    --		    
+
+-  NA
+-- not possible
+
+*1 Go from Normal mode to Insert mode by giving the command "i", "I", "a",
+   "A", "o", "O", "c", "C", "s" or S".
+*2 Go from Visual mode to Normal mode by giving a non-movement command, which
+   causes the command to be executed, or by hitting <Esc> "v", "V" or "CTRL-V"
+   (see |v_v|), which just stops Visual mode without side effects.
+*3 Go from Command-line mode to Normal mode by:
+   - Hitting <CR> or <NL>, which causes the entered command to be executed.
+   - Hitting CTRL-C or <Esc>, which quits the command-line without executing
+     the command.
+
+ vim:ts=8:sw=8:tw=78: 

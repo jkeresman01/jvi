@@ -1,0 +1,73 @@
+*windows.txt*   For Vim version 5.6.  Last change: 1999 Dec 21
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+Editing with multiple windows and buffers.		*windows* *buffers*
+
+The commands which have been added to use multiple windows and buffers are
+explained here.  Additionally, there are explanations for commands that work
+differently when used in combination with more than one window.
+
+3.  Opening and closing a window	|opening-window|
+4.  Moving cursor to other windows	|window-move-cursor|
+8.  Writing with multiple buffers	|buffer-write|
+
+{Vi does not have any of these commands}
+
+==============================================================================
+3. Opening and closing a window				*opening-window*
+
+CTRL-W s						*CTRL-W_s*
+CTRL-W S						*CTRL-W_S*
+CTRL-W CTRL-S						*CTRL-W_CTRL-S*
+:[N]sp[lit] [+cmd]					*:sp* *:split*
+		Split current window in two.  The result is two viewports on
+		the same file.  Make new window N high (default is to use half
+		the height of the current window).  Reduces the current window
+		height to create room (and others, if the 'equalalways' option
+		is set).  (Note: CTRL-S does not work on all terminals).  Also
+		see |+cmd|.
+
+Closing a window
+----------------
+
+CTRL-W c					*CTRL-W_c* *:clo* *:close*
+:clo[se][!]	Close current window.  When the 'hidden' option is set, or
+		when the buffer was changed and the [!] is used, the buffer
+		becomes hidden (unless there is another window editing it).
+		This command fails when:
+		- There is only one window on the screen.
+		- When 'hidden' is not set, [!] is not used, the buffer has
+		  changes, and there is no other window on this buffer.
+		Changes to the buffer are not written and won't get lost, so
+		this is a "safe" command.
+
+CTRL-W o						*CTRL-W_o*
+CTRL-W CTRL-O					*CTRL-W_CTRL-O* *:on* *:only*
+:on[ly][!]	Make the current window the only one on the screen.  All other
+		windows are closed.
+		When the 'hidden' option is set, all buffers in closed windows
+		become hidden.
+		When 'hidden' is not set, and the 'autowrite' option is set,
+		modified buffers are written.  Otherwise, windows that have
+		buffers that are modified are not removed, unless the [!] is
+		given, then they become hidden.  But modified buffers are
+		never abandoned, so changes cannot get lost.
+
+==============================================================================
+4. Moving cursor to other windows			*window-move-cursor*
+
+CTRL-W w					*CTRL-W_w* *CTRL-W_CTRL-W*
+CTRL-W CTRL-W	Without count: move cursor to window below current one.  If
+		there is no window below, go to top window.
+		With count: go to Nth window.
+
+==============================================================================
+8. Writing with multiple buffers			*buffer-write*
+
+							*:wa* *:wall*
+:wa[ll]		Write all changed buffers.  Buffers without a file name or
+		which are readonly are not written.
+
