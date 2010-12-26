@@ -3,6 +3,10 @@ from vimh2h import VimH2H
 
 if len(sys.argv) < 2:   exit(1)
 
+# usage: cmd input_dir [output_dir]
+# if output_dir not present, use input_dir
+# tags and any .txt files in input_dir are processed
+
 INPUT_DIR = sys.argv[1]
 if INPUT_DIR[-1] != '/':
     INPUT_DIR = INPUT_DIR + '/'
@@ -10,8 +14,11 @@ if len(sys.argv) > 2:
     OUTPUT_DIR = sys.argv[2]
     if OUTPUT_DIR[-1] != '/':
         OUTPUT_DIR = OUTPUT_DIR + '/'
+    try: os.mkdir(OUTPUT_DIR)
+    except: pass
 else:
     OUTPUT_DIR = INPUT_DIR
+
 
 print 'input dir:', INPUT_DIR, 'output dir:', OUTPUT_DIR
 
