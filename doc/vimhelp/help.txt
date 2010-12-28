@@ -1,6 +1,6 @@
-*help.txt*	For Vim version 7.0.  Last change: 2010 Dec 27
+*help.txt*	For jVi version 1.3.1.  Last change: 2010 Dec 27
 
-			VIM - main help file
+                    JVI REFERENCE - main help file
 									 k
       Move around:  Use the cursor keys, or "h" to go left,	       h   l
 		    "j" to go down, "k" to go up, "l" to go right.	 j

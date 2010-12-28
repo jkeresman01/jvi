@@ -1,9 +1,5 @@
 # converts vim documentation to html
 
-import sys
-import re
-import cgi
-import urllib
 from vimh_parse import VimHelpParser
 
 
@@ -77,7 +73,7 @@ FOOTER2 = """
 </html>
 """
 
-class VimH2H:
+class VimH2H(object):
     def __init__(self, tags):
         self.parser = VimHelpParser(tags)
 

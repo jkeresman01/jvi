@@ -2,6 +2,7 @@ import os, sys
 import re
 import vimh2h as vh
 from vimh2h import VimH2H
+import vimh_parse as vp
 
 if len(sys.argv) < 2:   exit(1)
 
@@ -35,7 +36,15 @@ helpfiles = [ x for x in os.listdir(INPUT_DIR) if x.endswith('.txt') ]
 
 print 'helpfiles:', helpfiles
 
-with open(TAGS_FILE) as f: h2h = VimH2H(f)
+
+PAT_TITLE    = r'(?P<title>jVi version [0-9.a-z]+|JVI REFERENCE.*)'
+vp.PAT_TITLE = PAT_TITLE
+
+class JviH2H(VimH2H):
+    def __init__(self, tags):
+        super(JviH2H, self).__init__(tags)
+
+with open(TAGS_FILE) as f: h2h = JviH2H(f)
 
 for helpfile in helpfiles:
     with open(INPUT_DIR + helpfile) as f:
@@ -57,8 +66,8 @@ for helpfile in helpfiles:
                     skipping = 1
                     continue
                 l.append(line)
-            html = h2h.to_html(helpfile, l, False)
+            html = h2h.to_html(helpfile, l, False, False)
             l = None
-        else: html = h2h.to_html(helpfile, f, False)
+        else: html = h2h.to_html(helpfile, f, False, False)
 
     with open(OUTPUT_DIR + helpfile + '.html', 'w') as f: f.write(html)

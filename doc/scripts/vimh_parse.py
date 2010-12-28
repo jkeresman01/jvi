@@ -1,6 +1,5 @@
 # parses vim documentation
 
-import sys
 import re
 import cgi
 import urllib
@@ -24,22 +23,26 @@ PAT_TITLE    = r'(?P<title>Vim version [0-9.a-z]+|VIM REFERENCE.*)'
 PAT_NOTE     = r'(?P<note>Notes?:?)'
 PAT_URL      = r'(?P<url>(?:https?|ftp)://[^\'"<> \t]+[a-zA-Z0-9/])'
 PAT_WORD     = r'(?P<word>[!#-)+-{}~]+)'
-RE_LINKWORD = re.compile(
-        PAT_OPTWORD  + '|' + \
-        PAT_CTRL     + '|' + \
-        PAT_SPECIAL)
-RE_TAGWORD = re.compile(
-        PAT_HEADER   + '|' + \
-        PAT_GRAPHIC  + '|' + \
-        PAT_PIPEWORD + '|' + \
-        PAT_STARWORD + '|' + \
-        PAT_OPTWORD  + '|' + \
-        PAT_CTRL     + '|' + \
-        PAT_SPECIAL  + '|' + \
-        PAT_TITLE    + '|' + \
-        PAT_NOTE     + '|' + \
-        PAT_URL      + '|' + \
-        PAT_WORD)
+
+def build_re_from_pat():
+    global RE_LINKWORD, RE_TAGWORD
+    RE_LINKWORD = re.compile(
+            PAT_OPTWORD  + '|' + \
+            PAT_CTRL     + '|' + \
+            PAT_SPECIAL)
+    RE_TAGWORD = re.compile(
+            PAT_HEADER   + '|' + \
+            PAT_GRAPHIC  + '|' + \
+            PAT_PIPEWORD + '|' + \
+            PAT_STARWORD + '|' + \
+            PAT_OPTWORD  + '|' + \
+            PAT_CTRL     + '|' + \
+            PAT_SPECIAL  + '|' + \
+            PAT_TITLE    + '|' + \
+            PAT_NOTE     + '|' + \
+            PAT_URL      + '|' + \
+            PAT_WORD)
+
 RE_NEWLINE   = re.compile(r'[\r\n]')
 RE_HRULE     = re.compile(r'[-=]{3,}.*[-=]{3,3}$')
 RE_EG_START  = re.compile(r'(?:.* )?>$')
@@ -48,9 +51,9 @@ RE_SECTION   = re.compile(r'[-A-Z .][-A-Z0-9 .()]*(?=\s+\*)')
 RE_STARTAG   = re.compile(r'\s\*([^ \t|]+)\*(?:\s|$)')
 RE_LOCAL_ADD = re.compile(r'LOCAL ADDITIONS:\s+\*local-additions\*$')
 
-STR_DEL       = 'DOC-DEL'
-STR_START_DEL = 'START-DOC-DEL'
-STR_STOP_DEL  = 'STOP-DOC-DEL'
+STR_SKIP       = 'DOC-DEL'
+STR_START_SKIP = 'START-DOC-DEL'
+STR_STOP_SKIP  = 'STOP-DOC-DEL'
 
 class Link:
     def __init__(self, link_pipe, link_plain):
@@ -61,6 +64,7 @@ class VimHelpParser:
     urls = { }
 
     def __init__(self, tags):
+        build_re_from_pat()
         for line in tags:
             m = RE_TAGLINE.match(line)
             if m:
@@ -105,11 +109,11 @@ class VimHelpParser:
         inexample = 0
         faq_line = False
         for line in contents:
-            if line.startswith(STR_DEL): continue
-            if line.startswith(STR_STOP_DEL):
+            if line.startswith(STR_SKIP): continue
+            if line.startswith(STR_STOP_SKIP):
                 inskip = 0
                 continue
-            if inskip or line.startswith(STR_START_DEL):
+            if inskip or line.startswith(STR_START_SKIP):
                 inskip = 1
                 continue
             line = line.rstrip('\r\n')
@@ -178,7 +182,7 @@ class VimHelpParser:
                 out.append(cgi.escape(line[lastpos:]))
             out.append('\n')
             if inexample == 1: inexample = 2
-            if faq_line:
+            if faq_line and include_faq:
                 out.append(VIM_FAQ_LINE)
                 faq_line = False
 
