@@ -30,6 +30,9 @@ vh.SITENAVI = '<p> Quick links: ' \
         + vh.NAV_RTOC + ' &middot; \n' \
         + '</p>'
 
+vh.OWNER = '<p id="footer">These help files are maintained' \
+        +' with thanks to Carlo Teubner for the vimhelp to html.</p>'
+
 TAGS_FILE = INPUT_DIR + 'tags'
 
 helpfiles = [ x for x in os.listdir(INPUT_DIR) if x.endswith('.txt') ]

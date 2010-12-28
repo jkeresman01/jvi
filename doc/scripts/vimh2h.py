@@ -67,10 +67,11 @@ HEADER2 = """
 <pre>
 """
 
+OWNER = '<p id="footer">This site is maintained by Carlo Teubner (<i>(my first name) dot (my last name) at gmail dot com</i>).</p>'
+
 FOOTER = '</pre>'
 
 FOOTER2 = """
-<p id="footer">This site is maintained by Carlo Teubner (<i>(my first name) dot (my last name) at gmail dot com</i>).</p>
 </div>
 </div>
 </body>
@@ -94,5 +95,6 @@ class VimH2H:
                 ''.join(out) + \
                 FOOTER + \
                 SITENAVI + \
+                OWNER + \
                 FOOTER2
 
