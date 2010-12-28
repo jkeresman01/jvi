@@ -48,6 +48,10 @@ RE_SECTION   = re.compile(r'[-A-Z .][-A-Z0-9 .()]*(?=\s+\*)')
 RE_STARTAG   = re.compile(r'\s\*([^ \t|]+)\*(?:\s|$)')
 RE_LOCAL_ADD = re.compile(r'LOCAL ADDITIONS:\s+\*local-additions\*$')
 
+STR_DEL       = 'DOC-DEL'
+STR_START_DEL = 'START-DOC-DEL'
+STR_STOP_DEL  = 'STOP-DOC-DEL'
+
 class Link:
     def __init__(self, link_pipe, link_plain):
         self.link_pipe = link_pipe
@@ -97,9 +101,17 @@ class VimHelpParser:
 
         out = [ ]
 
+        inskip = 0
         inexample = 0
         faq_line = False
         for line in contents:
+            if line.startswith(STR_DEL): continue
+            if line.startswith(STR_STOP_DEL):
+                inskip = 0
+                continue
+            if inskip or line.startswith(STR_START_DEL):
+                inskip = 1
+                continue
             line = line.rstrip('\r\n')
             line_tabs = line
             line = line.expandtabs()

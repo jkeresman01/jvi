@@ -32,17 +32,20 @@ href="vim_faq.txt.html">Vim FAQ</a>, kept up to date from its <a
 href="http://github.com/chrisbra/vim_faq" target="_blank" class="d">github
 repository</a>.</p>
 """
+NAV_OVER  = '<a href="/">help overview</a>'
+NAV_QUICK = '<a href="quickref.txt.html">quick reference</a>'
+NAV_UTOC  = '<a href="usr_toc.txt.html">user manual toc</a>'
+NAV_RTOC  = '<a href="help.txt.html#reference_toc">reference manual toc</a>'
+NAV_FAQ   = '<a href="vim_faq.txt.html">faq</a>'
 
-SITENAVI = """
-<p>
-Quick links:
-<a href="/">help overview</a> &middot;
-<a href="quickref.txt.html">quick reference</a> &middot;
-<a href="usr_toc.txt.html">user manual toc</a> &middot;
-<a href="help.txt.html#reference_toc">reference manual toc</a> &middot;
-<a href="vim_faq.txt.html">faq</a>
-</p>
-"""
+SITENAVI = '<p> Quick links: ' \
+        + NAV_OVER + ' &middot; \n' \
+        + NAV_QUICK + ' &middot; \n' \
+        + NAV_UTOC + ' &middot; \n' \
+        + NAV_RTOC + ' &middot; \n' \
+        + NAV_FAQ + ' \n' \
+        + '</p>'
+
 
 SITESEARCH = """
 <div id="cse" style="width: 100%;">Loading Google custom search</div>
