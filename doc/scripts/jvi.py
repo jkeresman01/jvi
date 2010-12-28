@@ -24,11 +24,7 @@ else:
 print 'input dir:', INPUT_DIR, 'output dir:', OUTPUT_DIR
 
 JVI_NAV_OVER  = '<a href="help.txt.html">help overview</a>'
-vh.SITENAVI = '<p> Quick links: ' \
-        + JVI_NAV_OVER + ' &middot; \n' \
-        + vh.NAV_QUICK + ' &middot; \n' \
-        + vh.NAV_RTOC + ' &middot; \n' \
-        + '</p>'
+vh.SITENAVI = [ JVI_NAV_OVER, vh.NAV_QUICK, vh.NAV_RTOC ]
 
 vh.OWNER = '<p id="footer">These help files are maintained' \
         +' with thanks to Carlo Teubner for the vimhelp to html.</p>'

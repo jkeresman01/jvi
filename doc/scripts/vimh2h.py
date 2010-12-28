@@ -38,13 +38,12 @@ NAV_UTOC  = '<a href="usr_toc.txt.html">user manual toc</a>'
 NAV_RTOC  = '<a href="help.txt.html#reference_toc">reference manual toc</a>'
 NAV_FAQ   = '<a href="vim_faq.txt.html">faq</a>'
 
-SITENAVI = '<p> Quick links: ' \
-        + NAV_OVER + ' &middot; \n' \
-        + NAV_QUICK + ' &middot; \n' \
-        + NAV_UTOC + ' &middot; \n' \
-        + NAV_RTOC + ' &middot; \n' \
-        + NAV_FAQ + ' \n' \
-        + '</p>'
+BEG_NAVI = '<p> Quick links: '
+END_NAVI = '</p>'
+SITENAVI = [ NAV_OVER, NAV_QUICK, NAV_UTOC, NAV_RTOC, NAV_FAQ ]
+
+def _site_nav():
+    return BEG_NAVI + ' &middot; '.join(SITENAVI) + END_NAVI
 
 
 SITESEARCH = """
@@ -89,12 +88,12 @@ class VimH2H:
 
         return HEADER1.replace('{filename}', filename) + \
                 (START_HEADER if filename == 'help.txt' else '') + \
-                SITENAVI + \
+                _site_nav() + \
                 (SITESEARCH if include_sitesearch else '') + \
                 HEADER2 + \
                 ''.join(out) + \
                 FOOTER + \
-                SITENAVI + \
+                _site_nav() + \
                 OWNER + \
                 FOOTER2
 
