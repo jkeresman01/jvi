@@ -1,4 +1,4 @@
-*index.txt*     ${jvi-version-title}
+*index.txt*	${jvi-version-title}
 
 
                   ${reference-manual}
@@ -20,14 +20,16 @@ to look for deleting something, use: "/delete".
 3. Visual mode				|visual-index|
 
 
+START-DOC-DEL
 LEGEND FOR THE FIRST COLUMN:	" " works
 				"e" works if platform support, eg an IDE
 				"." future support, may be partial
 				"x" not supported or planned (but plans change)
 
 
-Blocking user specified keys from jVi
-is handled by platform specific methods.
+STOP-DOC-DEL
+NOTE: there may be platform specific methods
+to block user specified keys from jVi.
 
 ==============================================================================
 1. Insert mode						*insert-index*
@@ -241,7 +243,7 @@ x|U|		U		2  undo all latest changes on one line
  |l|		l		1  cursor N chars to the right
  |m|		m{A-Za-z}	   set mark {A-Za-z} at cursor position
  		m{.<>}		   anonymous mark {toggle-set, go-prev, go-next}
-				   jVi only anonymous marks
+				   {jVi only anonymous marks}
  |n|		n		1  repeat the latest '/' or '?' N times
  |o|		o		2  begin a new line below the cursor and
  				   insert text, repeat N times
