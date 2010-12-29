@@ -94,7 +94,13 @@ class VimHelpParser:
     def maplink(self, tag, css_class = None):
         links = self.urls.get(tag)
         if links is not None:
-            if css_class == 'l': return links.link_pipe
+            if css_class == 'l':
+                # drop the anchor if foo.txt and foo.txt.html#foo.txt
+                if tag.endswith('.txt') \
+                        and links.link_pipe.find(
+                                '"' + tag + '.html#' + tag + '"') >= 0:
+                    return links.link_pipe.replace('#' + tag, '');
+                return links.link_pipe
             else: return links.link_plain
         elif css_class is not None:
             return '<span class="' + css_class + '">' + cgi.escape(tag) + \
