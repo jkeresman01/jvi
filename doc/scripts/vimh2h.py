@@ -54,24 +54,27 @@ SITESEARCH = """
 </script>
 """
 
-BODY_BEGIN = '<body>'
-BODY_END = '</body></html>'
+BODY_BEGIN   = '<body>'
+BODY_END     = '</body></html>'
 
-TOP_BEGIN = ''
-TOP_END = ''
+TOP_BEGIN    = ''
+TOP_END      = ''
 
-MAIN_BEGIN = """
+MAIN_BEGIN   = """
 <div id="d1">
 <pre id="sp">                                                                                </pre>
 <div id="d2">
 <pre>
 """
-MAIN_END = '</pre>'
+MAIN_END     = '</pre>'
 
-OWNER = '<p id="footer">This site is maintained by Carlo Teubner (<i>(my first name) dot (my last name) at gmail dot com</i>).</p>'
+OWNER        = """
+<p id="footer">This site is maintained by Carlo Teubner
+(<i>(my first name) dot (my last name) at gmail dot com</i>).</p>
+"""
 
 FOOTER_BEGIN = ''
-FOOTER_END = """
+FOOTER_END   = """
 </div>
 </div>
 """

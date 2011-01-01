@@ -40,33 +40,37 @@ vh.TOP_BEGIN = """
 <pre id="sp">                                                                                </pre>
 <div id="d2">
 """
-vh.TOP_END =  ''
+vh.TOP_END      =  ''
 
-vh.MAIN_BEGIN = """
+vh.MAIN_BEGIN   = """
 <div>
 <pre>
 """
-vh.MAIN_END = """
+vh.MAIN_END     = """
 </pre>
 """
-vh.FOOTER_END = """
+
+vh.FOOTER_BEGIN = ''
+vh.FOOTER_END   = """
 </div>
 </div>
 </div>
 """
 
-JVI_NAV_OVER  = '<a href="help.txt.html">help overview</a>'
-JVI_NAV_INDEX = '<a href="index.txt.html">command index</a>'
-vh.SITENAVI = [ JVI_NAV_OVER, vh.NAV_QUICK, vh.NAV_RTOC, JVI_NAV_INDEX ]
+JVI_NAV_OVER    = '<a href="help.txt.html">help overview</a>'
+JVI_NAV_INDEX   = '<a href="index.txt.html">command index</a>'
+vh.SITENAVI     = [ JVI_NAV_OVER, vh.NAV_QUICK, vh.NAV_RTOC, JVI_NAV_INDEX ]
 
-vh.OWNER = '<p id="footer">These help files are maintained with thanks' \
-        +' to Carlo Teubner for his vimhelp to html work.</p>'
+vh.OWNER        = """
+<p id="footer">These help files are maintained with thanks
+to Carlo Teubner for his vimhelp to html work.</p>
+"""
 
 TAGS_FILE = INPUT_DIR + 'tags'
 
 helpfiles = [ x for x in os.listdir(INPUT_DIR) if x.endswith('.txt') ]
 
-print 'helpfiles:', helpfiles
+#print 'helpfiles:', helpfiles
 
 
 PAT_TITLE    = r'(?P<title>jVi version [0-9.a-z]+|JVI REFERENCE.*)'
