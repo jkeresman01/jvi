@@ -3,7 +3,7 @@
 from vimh_parse import VimHelpParser
 
 
-HEADER1 = """
+HTML_HEAD = """
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
@@ -15,10 +15,9 @@ HEADER1 = """
 <link rel="stylesheet" href="vimhelp.css" type="text/css">
 <!--<![endif]-->
 </head>
-<body>
 """
 
-START_HEADER = """
+TOP_TEXT = """
 <h1>Vim help files</h1>
 <p>This is an HTML version of the <a href="http://www.vim.org/"
 target="_blank">Vim</a> help pages. They are kept up-to-date automatically from
@@ -38,7 +37,7 @@ BEG_NAVI = '<p> Quick links: '
 END_NAVI = '</p>'
 SITENAVI = [ NAV_OVER, NAV_QUICK, NAV_UTOC, NAV_RTOC, NAV_FAQ ]
 
-def _site_nav():
+def _site_navi():
     return BEG_NAVI + ' &middot; '.join(SITENAVI) + END_NAVI
 
 
@@ -55,22 +54,26 @@ SITESEARCH = """
 </script>
 """
 
-HEADER2 = """
+BODY_BEGIN = '<body>'
+BODY_END = '</body></html>'
+
+TOP_BEGIN = ''
+TOP_END = ''
+
+MAIN_BEGIN = """
 <div id="d1">
 <pre id="sp">                                                                                </pre>
 <div id="d2">
 <pre>
 """
+MAIN_END = '</pre>'
 
 OWNER = '<p id="footer">This site is maintained by Carlo Teubner (<i>(my first name) dot (my last name) at gmail dot com</i>).</p>'
 
-FOOTER = '</pre>'
-
-FOOTER2 = """
+FOOTER_BEGIN = ''
+FOOTER_END = """
 </div>
 </div>
-</body>
-</html>
 """
 
 class VimH2H(object):
@@ -82,14 +85,19 @@ class VimH2H(object):
 
         out = self.parser.parse(filename, contents, include_faq)
 
-        return HEADER1.replace('{filename}', filename) + \
-                (START_HEADER if filename == 'help.txt' else '') + \
-                _site_nav() + \
-                (SITESEARCH if include_sitesearch else '') + \
-                HEADER2 + \
-                ''.join(out) + \
-                FOOTER + \
-                _site_nav() + \
-                OWNER + \
-                FOOTER2
+        return HTML_HEAD.replace('{filename}', filename) \
+                + BODY_BEGIN \
+                + TOP_BEGIN \
+                + (TOP_TEXT if filename == 'help.txt' else '') \
+                + _site_navi() \
+                + (SITESEARCH if include_sitesearch else '') \
+                + TOP_END \
+                + MAIN_BEGIN \
+                + ''.join(out) \
+                + MAIN_END \
+                + FOOTER_BEGIN \
+                + _site_navi() \
+                + OWNER \
+                + FOOTER_END \
+                + BODY_END
 

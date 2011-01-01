@@ -2,6 +2,8 @@ body { font-family: georgia, palatino, serif;  background-color: #F0F0E0 }
 
 pre { font-size: 11pt }
 
+p.fix-width { width: 700px }
+
 #d1 { position: relative; display: table; margin: 0 auto }
 #d2 { position: absolute; top: inherit }
 

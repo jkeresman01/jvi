@@ -2,6 +2,8 @@ body { font-family: georgia, palatino, serif;  background-color: #F0E0C0 }
 
 pre { font-size: 11pt }
 
+p.fix-width { width: 700px }
+
 #d1 { text-align: center }
 #d2 { text-align: left; width: 80ex; margin: 0 auto }
 
