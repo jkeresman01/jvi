@@ -7,6 +7,9 @@ p.fix-width { width: 700px }
 #d1 { text-align: center }
 #d2 { text-align: left; width: 80ex; margin: 0 auto }
 
+#d3 { background-color: #F0F0E0; padding: 15px;
+      position: relative; left: -15px }
+
 #sp { visibility: hidden; height: 1px; margin: 0 }
 
 #footer { font-size: 85%; padding-top: 1em }

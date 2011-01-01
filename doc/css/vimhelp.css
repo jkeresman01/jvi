@@ -1,4 +1,4 @@
-body { font-family: georgia, palatino, serif;  background-color: #F0F0E0 }
+body { font-family: georgia, palatino, serif;  background-color: #F0E0C0 }
 
 pre { font-size: 11pt }
 
@@ -6,6 +6,9 @@ p.fix-width { width: 700px }
 
 #d1 { position: relative; display: table; margin: 0 auto }
 #d2 { position: absolute; top: inherit }
+
+#d3 { background-color: #F0F0E0; padding: 15px;
+      position: relative; left: -15px }
 
 #sp { visibility: hidden; height: 1px; margin: 0 }
 

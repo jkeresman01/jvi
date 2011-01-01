@@ -43,16 +43,16 @@ vh.TOP_BEGIN = """
 vh.TOP_END      =  ''
 
 vh.MAIN_BEGIN   = """
-<div>
+<div id="d3">
 <pre>
 """
 vh.MAIN_END     = """
 </pre>
+</div>
 """
 
 vh.FOOTER_BEGIN = ''
 vh.FOOTER_END   = """
-</div>
 </div>
 </div>
 """
