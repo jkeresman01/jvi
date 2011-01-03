@@ -1,6 +1,6 @@
 
-DOC=../vimhelp
-BUILD=../build
+DOC=../test
+BUILD=../test
 
 # vim -e -s << EOT
 #     helptags $(cygpath -a -m ../vimhelp/)

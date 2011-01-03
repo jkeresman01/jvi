@@ -1,6 +1,6 @@
 # converts vim documentation to html
 
-from vimh_parse import VimHelpParser
+from vimh_scan import VimHelpScanner
 
 
 HTML_HEAD = """
@@ -80,13 +80,18 @@ FOOTER_END   = """
 """
 
 class VimH2H(object):
-    def __init__(self, tags):
-        self.parser = VimHelpParser(tags)
+    def __init__(self, tags, builder = None):
+        self.parser = VimHelpScanner(tags, builder)
+        self.builder = builder
 
     def to_html(self, filename, contents, include_sitesearch = True,
             include_faq = True):
 
         out = self.parser.parse(filename, contents, include_faq)
+
+
+        #result = ''.join(out)
+        result = ''.join(self.builder.get_output())
 
         return HTML_HEAD.replace('{filename}', filename) \
                 + BODY_BEGIN \
@@ -96,7 +101,7 @@ class VimH2H(object):
                 + (SITESEARCH if include_sitesearch else '') \
                 + TOP_END \
                 + MAIN_BEGIN \
-                + ''.join(out) \
+                + result \
                 + MAIN_END \
                 + FOOTER_BEGIN \
                 + _site_navi() \

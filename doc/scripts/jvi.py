@@ -2,7 +2,8 @@ import os, sys
 import re
 import vimh2h as vh
 from vimh2h import VimH2H
-import vimh_parse as vp
+import vimh_scan as vs
+from vimh_build import VimHelpBuildHtml
 
 if len(sys.argv) < 2:   exit(1)
 
@@ -74,11 +75,12 @@ helpfiles = [ x for x in os.listdir(INPUT_DIR) if x.endswith('.txt') ]
 
 
 PAT_TITLE    = r'(?P<title>jVi version [0-9.a-z]+|JVI REFERENCE.*)'
-vp.PAT_TITLE = PAT_TITLE
+vs.PAT_TITLE = PAT_TITLE
 
 class JviH2H(VimH2H):
     def __init__(self, tags):
-        super(JviH2H, self).__init__(tags)
+        #super(JviH2H, self).__init__(tags)
+        super(JviH2H, self).__init__(tags, VimHelpBuildHtml(tags))
 
 with open(TAGS_FILE) as f: h2h = JviH2H(f)
 
