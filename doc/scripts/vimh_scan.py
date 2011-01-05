@@ -44,14 +44,20 @@ RE_SECTION    = re.compile(r'[-A-Z .][-A-Z0-9 .()]*(?=\s+\*)')
 RE_STARTAG    = re.compile(r'\s\*([^ \t|]+)\*(?:\s|$)')
 RE_LOCAL_ADD  = re.compile(r'LOCAL ADDITIONS:\s+\*local-additions\*$')
 
-RE_MARKUP     = re.compile(r'#+#(.*?)#+#')
-RE_SKIP_CHARS = re.compile(r'#-#.*?#-#')
+# special markup directions in capture group
+# Either '#+#some markup#+#' or '#*#some other markup #*#'
+# if the #*# form is used then the line on which it appears is deleted
+RE_MARKUP     = re.compile(r'#(\+|\*)#(.*?)#\1#')
+# delete chars within a line
+RE_DEL_CHARS  = re.compile(r'#-#.*?#-#')
 
+# following match at beginning of line
 STR_SKIP       = 'DOC-DEL'
 STR_START_SKIP = 'START-DOC-DEL'
 STR_STOP_SKIP  = 'STOP-DOC-DEL'
 
 def _trim_token(token_data):
+    """Take out extra characters from the token."""
     token, chars, col = token_data
     if 'pipe' == token or 'star' == token:
         chars = chars[1:-1]
@@ -79,11 +85,14 @@ class VimHelpScanner:
 
         self.builder.start_file(filename)
 
+        lnum = 0
         inskip = 0
         inexample = 0
         faq_line = False
         for line in contents:
+            lnum += 1
 
+            # Skip lines as directed
             if line.startswith(STR_SKIP): continue
             if line.startswith(STR_STOP_SKIP):
                 inskip = 0
@@ -96,17 +105,37 @@ class VimHelpScanner:
             line_tabs = line
             line = line.expandtabs()
 
-            self.builder.start_line(line)
+            self.builder.start_line(lnum, line)
+
+            # handle custom markup
+            delete_line = False
+            pos = 0
+            while True:
+                m = RE_MARKUP.search(line, pos)
+                if m:
+                    self.builder.markup(m.group(2))
+                    if m.group(1) == '*':
+                        delete_line = True
+                    pos = m.start()
+                    line = line[:pos] + line[m.end():]
+                else: break;
+            if delete_line:
+                # print 'markup delete line'
+                continue
+            # handle line fragment deletion
+            line = RE_DEL_CHARS.sub('', line)
 
             if RE_HRULE.match(line):
                 self.builder.put_token(('ruler', line, -1))
                 continue
 
+            col_offset = 0
             if inexample == 2:
                 if RE_EG_END.match(line):
                     inexample = 0
-                    # NOTE: this assignment moves column offset
-                    if line[0] == '<': line = line[1:]
+                    if line[0] == '<':
+                        line = line[1:]
+                        col_offset = 1
                 else:
                     self.builder.put_token(("example", line, 0))
                     continue
@@ -116,10 +145,10 @@ class VimHelpScanner:
 
             if RE_SECTION.match(line_tabs):
                 m = RE_SECTION.match(line)
-                # WHY NOT cgi.escape?????
-                self.builder.put_token(('section', m.group(), m.start()))
-                # NOTE: this assignment moves column offset
+                self.builder.put_token(
+                        ('section', m.group(), m.start() + col_offset))
                 line = line[m.end():]
+                col_offset += m.end()
 
             if filename == 'help.txt' and RE_LOCAL_ADD.match(line_tabs):
                 faq_line = True
@@ -128,14 +157,15 @@ class VimHelpScanner:
             for match in RE_TAGWORD.finditer(line):
                 pos = match.start()
                 if pos > lastpos:
-                    self.builder.put_token(('chars', line[lastpos:pos], lastpos))
-                    ##### CAN continue GO HERE????????
+                    self.builder.put_token(
+                            ('chars', line[lastpos:pos], lastpos + col_offset))
                 lastpos = match.end()
                 #print 'match:', match.lastgroup, match.group(match.lastgroup)
                 self.builder.put_token(_trim_token((match.lastgroup,
-                                        match.group(), match.start())))
+                                        match.group(), pos + col_offset)))
             if lastpos < len(line):
-                self.builder.put_token(('chars', line[lastpos:], lastpos))
+                self.builder.put_token(
+                        ('chars', line[lastpos:], lastpos + col_offset))
             self.builder.put_token(('newline', '', -1));
             if inexample == 1: inexample = 2
             if faq_line and include_faq:

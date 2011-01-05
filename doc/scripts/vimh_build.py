@@ -36,7 +36,7 @@ class VimHelpBuildDummy(object):
     def start_file(self, filename):
         pass
 
-    def start_line(self, line):
+    def start_line(self, lnum, line):
         pass
 
     def put_token(self, token_data):
@@ -120,10 +120,17 @@ class VimHelpBuildHtml(object):
                     '</span>'
         else: return cgi.escape(tag)
 
-    def start_line(self, line):
+    def start_line(self, lnum, line):
         """The next line to be parsed, generally for debug/diagnostics"""
         self.input_line = line
+        self.lnum = lnum
         #print line
+        pass
+
+    def markup(self, markup):
+        markup = markup.strip()
+        # print 'markup: %s:%s "%s"' \
+        #         % (self.filename, self.lnum, markup)
         pass
 
     def put_token(self, token_data):
@@ -166,9 +173,9 @@ class VimHelpBuildHtml(object):
         elif 'section' == token:
             # NOTE: WHY NOT cgi.escape?????
             self.out.append(r'<span class="c">' + chars + '</span>')
+            # print self.filename + ': section: "' + chars +'"'
         elif 'chars' == token:
             if not chars.isspace():
-                #print '"',chars,'"', self.filename, self.input_line, 'NOT ISSPACE'
                 #print '"%s" %s:"%s" NOT ISSPACE' \
                 #        % (chars,self.filename, self.input_line)
                 # the only non-space I've seen is blanks followed by a double-quote
