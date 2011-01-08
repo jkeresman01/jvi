@@ -1,7 +1,7 @@
 # scan vim documentation, output tokens
 
 import re
-from vimh_build import VimHelpBuildDummy
+from vimh_build import VimHelpBuildBase
 
 VIM_FAQ_LINE = '<a href="vim_faq.txt.html#vim_faq.txt" class="l">' \
                'vim_faq.txt</a>   Frequently Asked Questions\n'
@@ -69,16 +69,10 @@ def _trim_token(token_data):
         return token_data
     return (token, chars, col)
 
-class Link:
-    def __init__(self, link_pipe, link_plain):
-        self.link_pipe = link_pipe
-        self.link_plain = link_plain
-
 class VimHelpScanner:
-    urls = { }
 
     def __init__(self, tags, _builder = None):
-        self.builder = _builder if _builder else VimHelpBuildDummy()
+        self.builder = _builder if _builder else VimHelpBuildBase()
         build_re_from_pat()
 
     def parse(self, filename, contents, include_faq = True):
@@ -171,3 +165,4 @@ class VimHelpScanner:
             if faq_line and include_faq:
                 out.append(VIM_FAQ_LINE)
                 faq_line = False
+

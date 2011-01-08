@@ -31,12 +31,18 @@ import vimh_scan as vs
 # This class is like a base class for accepting tokens
 # from VimHelpScanner. It simply collects what it gets, and can dump it.
 #
-class VimHelpBuildDummy(object):
+class VimHelpBuildBase(object):
 
     def start_file(self, filename):
-        pass
+        self.filename = filename
+        self.out = [ ]
 
     def start_line(self, lnum, line):
+        """The next line to be parsed, generally for debug/diagnostics"""
+        self.input_line = line
+        self.lnum = lnum
+
+    def markup(self, markup):
         pass
 
     def put_token(self, token_data):
@@ -69,7 +75,7 @@ class HtmlLink:
         self.link_pipe = link_pipe
         self.link_plain = link_plain
 
-class VimHelpBuildHtml(object):
+class VimHelpBuildHtml(VimHelpBuildBase):
     urls = { }
 
     def __init__(self, tags):
@@ -79,10 +85,6 @@ class VimHelpBuildHtml(object):
             if m:
                 tag, filename = m.group(1, 2)
                 self.do_add_tag(filename, tag)
-
-    def start_file(self, filename):
-        self.filename = filename
-        self.out = [ ]
 
     def add_tags(self, filename, contents):
         for match in RE_STARTAG.finditer(contents):
@@ -119,13 +121,6 @@ class VimHelpBuildHtml(object):
             return '<span class="' + css_class + '">' + cgi.escape(tag) + \
                     '</span>'
         else: return cgi.escape(tag)
-
-    def start_line(self, lnum, line):
-        """The next line to be parsed, generally for debug/diagnostics"""
-        self.input_line = line
-        self.lnum = lnum
-        #print line
-        pass
 
     def markup(self, markup):
         markup = markup.strip()

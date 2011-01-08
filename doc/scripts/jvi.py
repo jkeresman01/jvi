@@ -79,7 +79,6 @@ vs.PAT_TITLE = PAT_TITLE
 
 class JviH2H(VimH2H):
     def __init__(self, tags):
-        #super(JviH2H, self).__init__(tags)
         super(JviH2H, self).__init__(tags, VimHelpBuildHtml(tags))
 
 with open(TAGS_FILE) as f: h2h = JviH2H(f)
@@ -88,6 +87,7 @@ for helpfile in helpfiles:
     with open(INPUT_DIR + helpfile) as f:
         if helpfile == 'index.txt':
             # initial columns might be like ' |w|', 'x|w|', ...
+            # strip the initial character
             re_fix = re.compile(r'^(?:([ e])|([x.]))\|')
             l = []
             skipping = 0
