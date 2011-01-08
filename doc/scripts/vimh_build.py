@@ -9,22 +9,28 @@ import vimh_scan as vs
 # It puts stuff together per file
 #
 
-# The following are the tokens recognized by the vim scanner
+# The following are the tokens recognized by the vim scanner.
+# They are grouped by either paragraphs or words, where paragraphs
+# are groups of lines.
+#
+# paragraphs
 #       header
 #       ruler           col ignored
 #       graphic
+#       section
+#       title
+#       example
+# words
 #       pipe
 #       star
 #       opt
 #       ctrl
 #       special
-#       title
 #       note
 #       url
 #       word
-#       example
-#       section
 #       chars
+# other
 #       newline         col ignored
 
 def build_link_re_from_pat():
