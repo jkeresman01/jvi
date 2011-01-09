@@ -4,6 +4,8 @@
 \.chg\..*$
 \.rej$
 \.conflict\~$
+\.pyc$
+^doc/vimhelp/tags$
 
 #adapted from NetBeans' .hgignore
 ~$
@@ -21,4 +23,3 @@ derby\.log
 ^tags$
 /gensrc$
 ^hs_err_pid[0-9]*\.log
-\.pyc$
