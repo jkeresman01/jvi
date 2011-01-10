@@ -1,5 +1,6 @@
 import re
 import cgi
+import xml.etree.ElementTree as ET
 import urllib
 import vimh_scan as vs
 
@@ -13,25 +14,37 @@ import vimh_scan as vs
 # They are grouped by either paragraphs or words, where paragraphs
 # are groups of lines.
 #
-# paragraphs
-#       header
-#       ruler           col ignored
-#       graphic
-#       section
-#       title
-#       example
-# words
-#       pipe
-#       star
-#       opt
-#       ctrl
-#       special
-#       note
-#       url
-#       word
-#       chars
-# other
-#       newline         col ignored
+# Note: there is also 'newline' token.
+# Note: 'newline' ignores the column
+#
+# Note: there is a link type of 'hidden', much like a token
+#
+
+SET_PARA = set(('header',
+                'ruler',
+                'graphic',
+                'section',
+                'title',
+                'example'))
+
+SET_WORD = set(('pipe',
+                'star',
+                'opt',
+                'ctrl',
+                'special',
+                'note',
+                'url',
+                'word',
+                'chars'))
+
+TY_PARA = 1
+TY_WORD = 2
+TY_NL   = 3
+
+MAP_TY = {}
+MAP_TY.update(zip(SET_PARA, (TY_PARA,) * len(SET_PARA)))
+MAP_TY.update(zip(SET_WORD, (TY_WORD,) * len(SET_WORD)))
+MAP_TY['newline'] = TY_NL
 
 def build_link_re_from_pat():
     global RE_LINKWORD
@@ -41,8 +54,7 @@ def build_link_re_from_pat():
             vs.PAT_SPECIAL)
 
 #
-# This class is like a base class for accepting tokens
-# from VimHelpScanner. It simply collects what it gets, and can dump it.
+# This class is a base class for accepting tokens from VimHelpScanner.
 #
 class VimHelpBuildBase(object):
 
@@ -64,7 +76,7 @@ class VimHelpBuildBase(object):
         pass
 
     def get_output(self):
-        pass
+        return self.out
 
 RE_TAGLINE = re.compile(r'(\S+)\s+(\S+)')
 
@@ -88,18 +100,161 @@ class Links(dict):
         style = 'hidden'
         m = RE_LINKWORD.match(tag)
         if m:
-            opt, ctrl, special = m.group('opt', 'ctrl', 'special')
-            if opt is not None: style = 'option'
-            elif ctrl is not None: style = 'keystroke'
-            elif special is not None: style = 'special'
+            # style to one of: opt, ctrl, special
+            style = m.lastgroup
         link = Link(filename)
         link.style = style
         self[tag] = link
 
+    def maplink(self, tag, css_class = None):
+        link = self[tag]
+        if link is not None:
+            # this is a known link from the tags file
+            if css_class and css_class != self.style:
+                print 'LINK STYLE MISMATCH'
+            pass
+        elif css_class is not None:
+            # not a known link, but a class was specified
+            pass
+        else:
+            # not know link, no class specifed, just return it
+            return tag
 
 #
 # XML builder
 #
+# <vimhelp> is the root, the schema looks a bit like
+#       <vimhelp> ::= [ <p> | <table> ]+
+# and these are made up of leaf elements
+#       element   ::= <target> | <link> | <em>
+#
+# Every element can have a "t" attribute (type). For paragraphs they are
+# one of SET_PARA. For the leaf elements they are from SET_WORD.
+# But note that 'word' and 'chars' is typically just text.
+#
+
+class XmlLinks(Links):
+    def __init__(self, tags):
+        super(XmlLinks, self).__init__(tags)
+
+    def maplink(self, tag, style = None):
+        link = self[tag]
+        if link is not None:
+            # this is a known link from the tags file
+            if style and style != link.style: # and style != 'pipe':
+                print 'LINK STYLE MISMATCH'
+            elem_tag = 'link'
+        elif style is not None:
+            # not a known link, but a class was specified
+            elem_tag = 'em'
+        else:
+            # not known link, no class specifed
+            return tag
+        return VimHelpBuildXml.make_elem(elem_tag, style, tag)
+
+class VimHelpBuildXml(VimHelpBuildBase):
+
+    def __init__(self, tags):
+        build_link_re_from_pat()
+        self.links = XmlLinks(tags)
+        self.blank_lines = 0
+        self.root = ET.Element('vimhelp')
+        self.tree = ET.ElementTree(self.root)
+        self.cur_elem = None
+
+    def get_output(self):
+        return self.tree
+
+    def start_line(self, lnum, line):
+        super(VimHelpBuildXml, self).start_line(lnum, line)
+        print 'start_line:', self.lnum, self.input_line
+
+    def markup(self, markup):
+        print 'markup:', markup
+        pass
+
+    def put_token(self, token_data):
+        """token_data is (token, chars, col)."""
+        token, chars, col = token_data
+        ty = MAP_TY[token]
+        print 'token_data:', ty, token_data
+        if ty == TY_NL:
+            if len(self.input_line) == 0 or self.input_line.isspace():
+                self.blank_lines += 1
+                print 'BLANK_LINE'
+            else:
+                self.add_stuff('\n')
+
+        elif ty == TY_PARA:
+            self.add_para(token, chars)
+        else:
+            if token == 'chars':
+                w = chars
+            elif token == 'word':
+                # may end up mapped to a 'link' or 'em'
+                w = self.links.maplink(chars)
+            elif token == 'pipe':
+                w = self.links.maplink(chars, 'pipe')
+            elif token == 'star':
+                w = self.make_elem('target', token, chars)
+            elif token in ('opt', 'ctrl', 'special'):
+                w = self.links.maplink(chars, token)
+            else:
+                w = self.make_elem('em', token, chars)
+            self.add_stuff(w)
+
+    def add_stuff(self, stuff):
+        self.fixup_blank_lines()
+        self.do_add_stuff(stuff)
+
+    def do_add_stuff(self, stuff):
+        """Add plain text or an element to current paragraph."""
+        e = self.get_cur_elem()
+        if ET.iselement(stuff):
+            e.append(stuff)
+            return
+        if len(e) == 0:
+            e.text += stuff
+        else:
+            e[-1].tail += stuff
+
+    def add_para(self, token, chars):
+        self.fixup_blank_lines()
+        e = self.cur_elem
+        # if not the same kind of paragraph, "close" it
+        if e is not None and (e.tag != 'p' or e.get('t', '') != token):
+            # done with current paragraph
+            self.cur_elem = None
+        if self.cur_elem is None:
+            e = self.get_cur_elem()
+            e.set('t', token)
+        self.add_stuff(chars)
+
+    @staticmethod
+    def make_elem(elem_tag, style, chars):
+        e = ET.Element(elem_tag, {'t':style})
+        e.text = chars
+        e.tail = ''
+        return e
+
+    def get_cur_elem(self):
+        if self.cur_elem is not None: return self.cur_elem
+        p = ET.SubElement(self.root, 'p')
+        self.cur_elem = p
+        p.text = ''
+        p.tail = ''
+        return p
+
+    def fixup_blank_lines(self, token = None):
+        # may treat blank lines as continuation of current paragraph
+        # such as blank lines in header/title
+        closeit = False
+        while self.blank_lines > 0:
+            closeit = True
+            self.do_add_stuff('\n')
+            self.blank_lines -= 1
+        if closeit:
+            self.cur_elem = None
 
 #
 # Simple Html builder, should reproduce original work from Carlo
@@ -109,7 +264,7 @@ class Links(dict):
 # provides for reporting defined links that are not referenced
 class HtmlLinks(Links):
     # styles map to the html style class for the link
-    styles = dict(link='l', option='o', keystroke='k',
+    styles = dict(link='l', opt='o', ctrl='k',
                   special='s', hidden='d')
 
     def __init__(self, tags):
@@ -174,9 +329,9 @@ class VimHelpBuildHtml(VimHelpBuildBase):
             self.out.append('<a name="' + urllib.quote_plus(tag) +
                     '" class="t">' + cgi.escape(tag) + '</a>')
         elif 'opt' == token:
-            self.out.append(self.links.maplink(chars, 'option'))
+            self.out.append(self.links.maplink(chars, 'opt'))
         elif 'ctrl' == token:
-            self.out.append(self.links.maplink(chars, 'keystroke'))
+            self.out.append(self.links.maplink(chars, 'ctrl'))
         elif 'special' == token:
             self.out.append(self.links.maplink(chars, 'special'))
         elif 'title' == token:
@@ -186,7 +341,7 @@ class VimHelpBuildHtml(VimHelpBuildBase):
             self.out.append('<span class="n">' +
                     cgi.escape(chars) + '</span>')
         elif 'ruler' == token:
-            self.out.append('<span class="h">' + chars + '</span>\n')
+            self.out.append('<span class="h">' + chars + '</span>')
         elif 'header' == token:
             self.out.append('<span class="h">' +
                     cgi.escape(chars) + '</span>')
@@ -214,7 +369,4 @@ class VimHelpBuildHtml(VimHelpBuildBase):
         elif 'newline' == token:
             self.out.append('\n')
         else: print 'ERROR: unknown token "' + token + '"'
-
-    def get_output(self):
-        return self.out
 

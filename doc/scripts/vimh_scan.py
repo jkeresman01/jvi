@@ -120,7 +120,8 @@ class VimHelpScanner:
             line = RE_DEL_CHARS.sub('', line)
 
             if RE_HRULE.match(line):
-                self.builder.put_token(('ruler', line, -1))
+                self.builder.put_token(('ruler', line, 0))
+                self.builder.put_token(('newline', '', -1));
                 continue
 
             col_offset = 0
@@ -132,6 +133,7 @@ class VimHelpScanner:
                         col_offset = 1
                 else:
                     self.builder.put_token(("example", line, 0))
+                    self.builder.put_token(('newline', '', -1));
                     continue
             if RE_EG_START.match(line_tabs):
                 inexample = 1

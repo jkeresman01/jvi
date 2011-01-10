@@ -87,10 +87,8 @@ class VimH2H(object):
     def to_html(self, filename, contents, include_sitesearch = True,
             include_faq = True):
 
-        out = self.parser.parse(filename, contents, include_faq)
+        self.parser.parse(filename, contents, include_faq)
 
-
-        #result = ''.join(out)
         result = ''.join(self.builder.get_output())
 
         return HTML_HEAD.replace('{filename}', filename) \

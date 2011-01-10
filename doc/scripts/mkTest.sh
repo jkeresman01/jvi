@@ -1,3 +1,4 @@
+#!/usr/bin/bash
 
 DOC=../test
 BUILD=../test
@@ -8,5 +9,6 @@ BUILD=../test
 # EOT
 vim -e -s -c "helptags $(cygpath -a -m $DOC)" -c q
 
-python jvi.py $DOC $BUILD
+#python jvi.py $DOC $BUILD
+python vimh_xml.py $DOC $BUILD
 cp $DOC/../css/*.css $BUILD
