@@ -239,6 +239,9 @@ class VimHelpBuildXml(VimHelpBuildBase):
                 print 'BLANK_LINE'
             else:
                 self.add_stuff('\n', token_data)
+                # TODO:TY_NL PROBLEM WITH fixup_blank_lines SEAMANTICS
+                # following prevents paragraphs of same ty from combining
+                if self.cur_elem.get('t') is not None: self.cur_elem = None
 
         elif ty == TY_PARA:
             self.add_para(token, chars)
@@ -267,21 +270,20 @@ class VimHelpBuildXml(VimHelpBuildBase):
     # same paragraph.
     def add_para(self, token, chars):
         self.fixup_blank_lines()
-        e = self.cur_elem
-        if e is not None and (e.tag != 'p' or e.get('t', '') != token):
-            # done with current paragraph
-            self.cur_elem = None
-        if self.cur_elem is None:
-            e = self.get_cur_elem()
-            e.set('t', token)
-        self.do_add_stuff(chars)
+        e = self.get_cur_elem('p', token)
+        self.do_add_stuff(chars, e)
 
     def add_stuff(self, stuff, token_data):
         if self.in_table:
             self.add_to_table(stuff, token_data)
             return
+
+        # TODO:TY_NL FOLLOWING THREE LINES PART OF MESS
         self.fixup_blank_lines()
-        self.do_add_stuff(stuff)
+        # newlines can be added to any type of element
+        e = self.cur_elem if MAP_TY[token_data[0]] == TY_NL else None
+
+        self.do_add_stuff(stuff, e)
 
     def do_add_stuff(self, stuff, e = None):
         """Add plain text or an element to current paragraph."""
@@ -296,9 +298,11 @@ class VimHelpBuildXml(VimHelpBuildBase):
             e[-1].tail += stuff
 
     @staticmethod
-    def make_elem(elem_tag, style = {}, chars = '', parent = None):
+    def make_elem(elem_tag, style = None, chars = '', parent = None):
         if isinstance(style, str):
             style = {'t':style}
+        elif style is None:
+            style = {}
         e = ET.Element(elem_tag, style)
         e.text = chars
         e.tail = ''
@@ -307,20 +311,25 @@ class VimHelpBuildXml(VimHelpBuildBase):
         return e
 
     @staticmethod
-    def make_sub_elem(parent, elem_tag, style = {}, chars = ''):
+    def make_sub_elem(parent, elem_tag, style = None, chars = ''):
         return VimHelpBuildXml.make_elem(elem_tag, style, chars, parent)
 
-    def get_cur_elem(self, elem_tag = None):
-        if self.cur_elem is not None and elem_tag is not None \
-                and self.cur_elem.tag != elem_tag:
-            self.cur_elem = None
+    ##
+    # Get the current element of the specified tag-style.
+    # If the current element doesn't match then create a new one.
+    # 
+    # @return the current elemenent
+    def get_cur_elem(self, elem_tag = 'p', style = None):
         if self.cur_elem is not None:
-            return self.cur_elem
-        if not elem_tag: elem_tag = 'p'
-        e = self.make_sub_elem(self.root, elem_tag)
+            if self.cur_elem.tag == elem_tag \
+                    and self.cur_elem.get('t') == style:
+                return self.cur_elem
+            self.cur_elem = None
+        e = self.make_sub_elem(self.root, elem_tag, style)
         self.cur_elem = e
         return e
 
+    # TODO:TY_NL THIS METHOD HAS MESSY SEMANTICS
     def fixup_blank_lines(self, token = None):
         # may treat blank lines as continuation of current paragraph
         # such as blank lines in header/title
