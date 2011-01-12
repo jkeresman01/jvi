@@ -79,7 +79,7 @@ class VimHelpBuildBase(object):
 
     def put_token(self, token_data):
         """token_data is (token, chars, col)."""
-        #print token_data
+        ###print token_data
         pass
 
     def get_output(self):
@@ -144,10 +144,26 @@ class Links(dict):
 # one of SET_PARA. For the leaf elements they are from SET_WORD.
 # But note that 'word' and 'chars' is typically just text.
 #
-# TODO: put this inside VimHelpBUildXml,
+# Table's are introduced by markup such as:
+#       #*# table:form=index:id=xxx 1:tag 17:command 33:opt:note 36:desc #*#
+#   - where the first word must be table and any with it anything like
+#     id=xxx becomes an attribute on the table. Known attributes are
+#               form ::= index  // an index of commands, the first and second
+#                               // columns may be combined into a single column
+#                               // when an output table is generated. The
+#                               // "command" column is displayed as a
+#                               // link to "tag" column's target.
+#                      | ref    // typically holds descriptions for a commands.
+#                               // Each description is the target of a link.
+#                      | simple // just a table
+#   - the rest of the groups are the columns. The first item in the group
+#     is the column where the table starts. The rest of the items 
+#
+# TODO: put this inside VimHelpBuildXml,
 #       attempting that results in:
 #               link = super(XmlLinks, self).do_add_tag(filename, vim_tag)
 #           NameError: global name 'XmlLinks' is not defined
+#       probably wants super(VimHelpBuildXml.XmlLinks,...)
 
 class XmlLinks(Links):
 
@@ -192,7 +208,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
 
     def start_line(self, lnum, line):
         super(VimHelpBuildXml, self).start_line(lnum, line)
-        # print 'start_line:', self.lnum, self.input_line
+        ### print 'start_line:', self.lnum, self.input_line
 
     def markup(self, markup):
         markup = markup.strip()
@@ -210,7 +226,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
         """token_data is (token, chars, col)."""
         token, chars, col = token_data
         ty = MAP_TY[token]
-        # print 'token_data:', ty, token_data
+        ### print 'token_data:', ty, token_data
 
         if self.in_table:
             ret = self.check_stop_table(ty, token_data)
@@ -245,6 +261,10 @@ class VimHelpBuildXml(VimHelpBuildBase):
 
             self.add_stuff(w, token_data)
 
+    ##
+    # Add paragraphs and contents of a particular type.
+    # Consecutive stuff of the same token type are put into the
+    # same paragraph.
     def add_para(self, token, chars):
         self.fixup_blank_lines()
         e = self.cur_elem
@@ -258,7 +278,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
 
     def add_stuff(self, stuff, token_data):
         if self.in_table:
-            self.add_table(stuff, token_data)
+            self.add_to_table(stuff, token_data)
             return
         self.fixup_blank_lines()
         self.do_add_stuff(stuff)
@@ -298,9 +318,6 @@ class VimHelpBuildXml(VimHelpBuildBase):
             return self.cur_elem
         if not elem_tag: elem_tag = 'p'
         e = self.make_sub_elem(self.root, elem_tag)
-        # e = ET.SubElement(self.root, elem_tag)
-        # e.text = ''
-        # e.tail = ''
         self.cur_elem = e
         return e
 
@@ -316,19 +333,21 @@ class VimHelpBuildXml(VimHelpBuildBase):
             self.cur_elem = None
 
     def check_start_table(self, cmd, column_info):
-        t = cmd.split(':')
-        if 'table' != t[0]:
+        t01 = cmd.split(':')
+        if 'table' != t01[0]:
             return False
-        self.t_args = t
+        self.t_args = t01
         self.t_data = []
 
         # convert info to list of list items: col# , 'arg2', 'arg3', ...
-        t = [x.split(':') for x in  column_info.split()]
-        self.t_cols = [ [int(x[0]),] + x[1:] for x in t ]
+        t02 = [x.split(':') for x in  column_info.split()]
+        self.t_cols = [ [int(x[0]),] + x[1:] for x in t02 ]
 
         self.fixup_blank_lines()
         self.cur_elem = None
-        self.get_cur_elem('table')
+        e = self.get_cur_elem('table')
+        for k,v in [ x.split('=') for x in t01[1:] if x.find('=') >= 0 ]:
+            e.set(k, v)
         self.in_table = True
         return True
 
@@ -344,7 +363,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
             return True
         return False
 
-    def add_table(self, w, token_data):
+    def add_to_table(self, w, token_data):
         self.t_data.append((token_data[0], w, token_data[2]))
 
     def build_table(self):
@@ -353,7 +372,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
 
         tr = None
         for token, stuff, pos in self.t_data:
-            #print 'YYY', (token, stuff, pos)
+            ###print 'YYY', (token, stuff, pos)
             if pos == 0 and (not isinstance(stuff, str) or not stuff.isspace())\
                     or tr is None:
                 if tr: self.cur_elem.append(tr)
@@ -367,10 +386,10 @@ class VimHelpBuildXml(VimHelpBuildBase):
                 for i in xrange(len(cpos) - 1):
                     if cpos[i] <= pos < cpos[i+1]:
                         col = i
-                #print 'ZZZ', (col, stuff, td[col])
+                ###print 'ZZZ', (col, stuff, td[col])
                 self.do_add_stuff(stuff, td[col])
         if tr: self.cur_elem.append(tr)
-        ET.dump(self.cur_elem)
+        ###ET.dump(self.cur_elem)
         self.cur_elem = None
         self.in_table = False
         self.t_data = None
@@ -433,14 +452,14 @@ class VimHelpBuildHtml(VimHelpBuildBase):
 
     def markup(self, markup):
         markup = markup.strip()
-        # print 'markup: %s:%s "%s"' \
-        #         % (self.filename, self.lnum, markup)
+        ### print 'markup: %s:%s "%s"' \
+        ###         % (self.filename, self.lnum, markup)
         pass
 
     def put_token(self, token_data):
         """token_data is (type, chars, col)."""
         token, chars, col = token_data
-        #print token_data
+        ###print token_data
         if 'pipe' == token:
             self.out.append(self.links.maplink(chars, 'link'))
         elif 'star' == token:
@@ -477,12 +496,12 @@ class VimHelpBuildHtml(VimHelpBuildBase):
         elif 'section' == token:
             # NOTE: WHY NOT cgi.escape?????
             self.out.append(r'<span class="c">' + chars + '</span>')
-            # print self.filename + ': section: "' + chars +'"'
+            ### print self.filename + ': section: "' + chars +'"'
         elif 'chars' == token:
             if not chars.isspace():
-                #print '"%s" %s:"%s" NOT ISSPACE' \
-                #        % (chars,self.filename, self.input_line)
-                # the only non-space I've seen is blanks followed by a double-quote
+                ###print '"%s" %s:"%s" NOT ISSPACE' \
+                ###        % (chars,self.filename, self.input_line)
+                ### the only non-space I've seen is blanks followed by a double-quote
                 pass
             self.out.append(cgi.escape(chars))
         elif token in ('newline', 'blankline'):
