@@ -119,6 +119,10 @@ class VimHelpScanner:
             # handle line fragment deletion
             line = RE_DEL_CHARS.sub('', line)
 
+            if len(line) == 0 or line.isspace():
+                self.builder.put_token(('blankline', '', -1));
+                continue
+
             if RE_HRULE.match(line):
                 self.builder.put_token(('ruler', line, 0))
                 self.builder.put_token(('newline', '', -1));
@@ -167,4 +171,5 @@ class VimHelpScanner:
             if faq_line and include_faq:
                 out.append(VIM_FAQ_LINE)
                 faq_line = False
+        self.builder.put_token(('eof', '', -1))
 
