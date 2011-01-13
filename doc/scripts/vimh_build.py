@@ -20,7 +20,7 @@ import vimh_scan as vs
 # Note: there is a link type of 'hidden', much like a token
 #
 
-SET_PARA  = set(('header',
+SET_PRE   = set(('header',
                  'ruler',
                  'graphic',
                  'section',
@@ -42,13 +42,13 @@ SET_NL    = set(('newline',
 
 SET_OTHER = set(('eof'))
 
-TY_PARA = 1
+TY_PRE  = 1
 TY_WORD = 2
 TY_NL   = 3
 TY_EOF  = 4
 
 MAP_TY = {}
-MAP_TY.update(zip(SET_PARA, (TY_PARA,) * len(SET_PARA)))
+MAP_TY.update(zip(SET_PRE,  (TY_PRE,) * len(SET_PRE)))
 MAP_TY.update(zip(SET_WORD, (TY_WORD,) * len(SET_WORD)))
 MAP_TY.update(zip(SET_NL,   (TY_NL,)   * len(SET_NL)))
 MAP_TY['eof'] = TY_EOF
@@ -136,16 +136,34 @@ class Links(dict):
 # XML builder
 #
 # <vimhelp> is the root, the schema looks a bit like
-#       <vimhelp> ::= [ <p> | <table> ]+
+#       <vimhelp> ::= [ <p> | <pre> | <table> ]+
 # and these are made up of leaf elements and character data
 #       element   ::= <target> | <link> | <em>
 #
-# Every element can have a "t" attribute (type). For paragraphs they are
-# one of SET_PARA. For the leaf elements they are from SET_WORD.
-# But note that 'word' and 'chars' is typically just text.
+# Every element can have a 't' attribute (type). For <pre> they are
+# one of SET_PRE. For the leaf elements they are from SET_WORD.
+# Note that 'word' and 'chars' is typically just text/cdata.
 #
-# Table's are introduced by markup such as:
+# All '\n' that are encountered are copied into <p> and <pre> elements. And for
+# <table> elements, each column gets a '\n' copied into it. This is done so
+# that the original text *and* intent can be recreated from the xml
+# representation.  For example, when expressing a table, multiple words on
+# the same line and in the same column, may be handled together.
+#
+# <p> elements
+#       These elements group words and chars, including <em> elements from
+#       SET_WORD.  There is typically no 't' attribute associated with a <p>.
+#       A <p> is terminated by a blank line; but note that any number of
+#       trailing \n are copied into the <p>'s text.
+#
+# <pre> elements
+#       These elements are typically scanned as complete lines.
+#       Multiple <pre> of the same 't' (type) are combined into a single <pre>
+#       element.
+#
+# <table> elements are introduced by markup such as:
 #       #*# table:form=index:id=xxx 1:tag 17:command 33:opt:note 36:desc #*#
+#       #*# table 1 17 33 36 #*#
 #   - where the first word must be table and any with it anything like
 #     id=xxx becomes an attribute on the table. Known attributes are
 #               form ::= index  // an index of commands, the first and second
@@ -156,6 +174,8 @@ class Links(dict):
 #                      | ref    // typically holds descriptions for a commands.
 #                               // Each description is the target of a link.
 #                      | simple // just a table
+#     There is no requirement to use this "form" attribute/values, but
+#     that's what I'm using to markup my vim help files for processing...
 #   - the rest of the groups are the columns. The first item in the group
 #     is the column where the table starts. The rest of the items 
 #
@@ -197,7 +217,8 @@ class VimHelpBuildXml(VimHelpBuildBase):
         self.root = ET.Element('vimhelp')
         self.tree = ET.ElementTree(self.root)
         self.cur_elem = None
-        self.in_table = False
+        self.cur_table = None
+        self.after_blank_line = False
 
     def start_file(self, filename):
         super(VimHelpBuildXml, self).start_file(filename)
@@ -228,26 +249,23 @@ class VimHelpBuildXml(VimHelpBuildBase):
         ty = MAP_TY[token]
         ### print 'token_data:', ty, token_data
 
-        if self.in_table:
+        if self.cur_table is not None:
             ret = self.check_stop_table(ty, token_data)
             if ret:
                 return
 
         if ty == TY_NL:
             if token == 'blankline':
-                self.blank_lines += 1
-                print 'BLANK_LINE'
-            else:
-                self.add_stuff('\n', token_data)
-                # TODO:TY_NL PROBLEM WITH fixup_blank_lines SEAMANTICS
-                # following prevents paragraphs of same ty from combining
-                if self.cur_elem.get('t') is not None: self.cur_elem = None
-
-        elif ty == TY_PARA:
+                self.after_blank_line = True
+            self.add_stuff('\n', token_data)
+        elif ty == TY_PRE:
             self.add_para(token, chars)
         elif ty == TY_EOF:
             pass
         else:
+            if self.after_blank_line:
+                self.cur_elem = None
+                self.after_blank_line = False
             if token == 'chars':
                 w = chars
             elif token == 'word':
@@ -269,19 +287,16 @@ class VimHelpBuildXml(VimHelpBuildBase):
     # Consecutive stuff of the same token type are put into the
     # same paragraph.
     def add_para(self, token, chars):
-        self.fixup_blank_lines()
-        e = self.get_cur_elem('p', token)
+        e = self.get_cur_elem('pre', token)
         self.do_add_stuff(chars, e)
 
     def add_stuff(self, stuff, token_data):
-        if self.in_table:
+        if self.cur_table is not None:
             self.add_to_table(stuff, token_data)
             return
 
-        # TODO:TY_NL FOLLOWING THREE LINES PART OF MESS
-        self.fixup_blank_lines()
         # newlines can be added to any type of element
-        e = self.cur_elem if MAP_TY[token_data[0]] == TY_NL else None
+        e = self.cur_elem if TY_NL == MAP_TY[token_data[0]] else None
 
         self.do_add_stuff(stuff, e)
 
@@ -329,18 +344,6 @@ class VimHelpBuildXml(VimHelpBuildBase):
         self.cur_elem = e
         return e
 
-    # TODO:TY_NL THIS METHOD HAS MESSY SEMANTICS
-    def fixup_blank_lines(self, token = None):
-        # may treat blank lines as continuation of current paragraph
-        # such as blank lines in header/title
-        closeit = False
-        while self.blank_lines > 0:
-            closeit = True
-            self.do_add_stuff('\n')
-            self.blank_lines -= 1
-        if closeit:
-            self.cur_elem = None
-
     def check_start_table(self, cmd, column_info):
         t01 = cmd.split(':')
         if 'table' != t01[0]:
@@ -352,16 +355,16 @@ class VimHelpBuildXml(VimHelpBuildBase):
         t02 = [x.split(':') for x in  column_info.split()]
         self.t_cols = [ [int(x[0]),] + x[1:] for x in t02 ]
 
-        self.fixup_blank_lines()
         self.cur_elem = None
-        e = self.get_cur_elem('table')
+        self.cur_table = self.get_cur_elem('table')
+        self.cur_elem = None
         for k,v in [ x.split('=') for x in t01[1:] if x.find('=') >= 0 ]:
-            e.set(k, v)
-        self.in_table = True
+            self.cur_table.set(k, v)
+        self.cur_table.set('markup', cmd + ' ' + column_info)
         return True
 
     def check_stop_table(self, ty, token_data):
-        if ty == TY_PARA:
+        if ty == TY_PRE:
             self.build_table()
             return True
         if ty == TY_EOF:
@@ -384,7 +387,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
             ###print 'YYY', (token, stuff, pos)
             if pos == 0 and (not isinstance(stuff, str) or not stuff.isspace())\
                     or tr is None:
-                if tr: self.cur_elem.append(tr)
+                if tr is not None: self.cur_table.append(tr)
                 tr = self.make_elem('tr')
                 td = [ self.make_sub_elem(tr, 'td') for x in xrange(len(cpos))]
             col = len(cpos) - 1 # assume words in last col
@@ -397,10 +400,9 @@ class VimHelpBuildXml(VimHelpBuildBase):
                         col = i
                 ###print 'ZZZ', (col, stuff, td[col])
                 self.do_add_stuff(stuff, td[col])
-        if tr: self.cur_elem.append(tr)
-        ###ET.dump(self.cur_elem)
-        self.cur_elem = None
-        self.in_table = False
+        if tr is not None: self.cur_table.append(tr)
+        ###ET.dump(self.cur_table)
+        self.cur_table = None
         self.t_data = None
 
 #
