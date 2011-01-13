@@ -195,7 +195,7 @@ def internal_elem_text(e, sb):
     sb.write(e.text)
     for i in e.getchildren():
         internal_elem_text(i, sb)
-        sb.write(i.tail)
+    sb.write(e.tail)
 
 def dump_table(table):
     print 'table:'
