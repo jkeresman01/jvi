@@ -3,6 +3,7 @@ import cgi
 import xml.etree.ElementTree as ET
 import urllib
 import vimh_scan as vs
+from StringIO import StringIO
 
 # accept tokens from vim help scanner
 #
@@ -185,6 +186,28 @@ class Links(dict):
 #           NameError: global name 'XmlLinks' is not defined
 #       probably wants super(VimHelpBuildXml.XmlLinks,...)
 
+def elem_text(e):
+    sb = StringIO()
+    internal_elem_text(e, sb)
+    return sb.getvalue()
+
+def internal_elem_text(e, sb):
+    sb.write(e.text)
+    for i in e.getchildren():
+        internal_elem_text(i, sb)
+        sb.write(i.tail)
+
+def dump_table(table):
+    print 'table:'
+    for tr in table:
+        print '  tr:'
+        for td in tr:
+            text = elem_text(td)
+            l = [x.get('t') for x in td]
+            s = set(l)
+            print '    td:', re.sub('\n', r'\\n', text)
+            print '      :', s, l
+
 class XmlLinks(Links):
 
     def do_add_tag(self, filename, vim_tag):
@@ -364,16 +387,18 @@ class VimHelpBuildXml(VimHelpBuildBase):
         return True
 
     def check_stop_table(self, ty, token_data):
+        do_build = False
         if ty == TY_PRE:
+            do_build = True
+        elif ty == TY_EOF:
+            do_build = True
+        elif token_data[0] == 'blankline':
+            do_build = True
+        if do_build:
+            table = self.cur_table
             self.build_table()
-            return True
-        if ty == TY_EOF:
-            self.build_table()
-            return True
-        if token_data[0] == 'blankline':
-            self.build_table()
-            return True
-        return False
+            dump_table(table)
+        return do_build
 
     def add_to_table(self, w, token_data):
         self.t_data.append((token_data[0], w, token_data[2]))
