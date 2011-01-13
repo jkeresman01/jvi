@@ -15,9 +15,6 @@ from StringIO import StringIO
 # They are grouped by either paragraphs or words, where paragraphs
 # are groups of lines.
 #
-# Note: there is also 'newline' token.
-# Note: 'newline' ignores the column
-#
 # Note: there is a link type of 'hidden', much like a token
 #
 
@@ -180,11 +177,21 @@ class Links(dict):
 #   - the rest of the groups are the columns. The first item in the group
 #     is the column where the table starts. The rest of the items 
 #
-# TODO: put this inside VimHelpBuildXml,
-#       attempting that results in:
-#               link = super(XmlLinks, self).do_add_tag(filename, vim_tag)
-#           NameError: global name 'XmlLinks' is not defined
-#       probably wants super(VimHelpBuildXml.XmlLinks,...)
+
+def make_elem(elem_tag, style = None, chars = '', parent = None):
+    if isinstance(style, str):
+        style = {'t':style}
+    elif style is None:
+        style = {}
+    e = ET.Element(elem_tag, style)
+    e.text = chars
+    e.tail = ''
+    if parent is not None:
+        parent.append(e)
+    return e
+
+def make_sub_elem(parent, elem_tag, style = None, chars = ''):
+    return make_elem(elem_tag, style, chars, parent)
 
 def elem_text(e):
     sb = StringIO()
@@ -229,7 +236,7 @@ class XmlLinks(Links):
             # not known link, no class specifed
             return vim_tag
         print "maplink: '%s' '%s' '%s'" % (vim_tag, elem_tag, style)
-        return VimHelpBuildXml.make_elem(elem_tag, style, vim_tag)
+        return make_elem(elem_tag, style, vim_tag)
 
 class VimHelpBuildXml(VimHelpBuildBase):
 
@@ -297,11 +304,11 @@ class VimHelpBuildXml(VimHelpBuildBase):
             elif token == 'pipe':
                 w = self.links.maplink(chars, 'pipe')
             elif token == 'star':
-                w = self.make_elem('target', token, chars)
+                w = make_elem('target', token, chars)
             elif token in ('opt', 'ctrl', 'special'):
                 w = self.links.maplink(chars, token)
             else:
-                w = self.make_elem('em', token, chars)
+                w = make_elem('em', token, chars)
 
             self.add_stuff(w, token_data)
 
@@ -335,23 +342,6 @@ class VimHelpBuildXml(VimHelpBuildBase):
         else:
             e[-1].tail += stuff
 
-    @staticmethod
-    def make_elem(elem_tag, style = None, chars = '', parent = None):
-        if isinstance(style, str):
-            style = {'t':style}
-        elif style is None:
-            style = {}
-        e = ET.Element(elem_tag, style)
-        e.text = chars
-        e.tail = ''
-        if parent is not None:
-            parent.append(e)
-        return e
-
-    @staticmethod
-    def make_sub_elem(parent, elem_tag, style = None, chars = ''):
-        return VimHelpBuildXml.make_elem(elem_tag, style, chars, parent)
-
     ##
     # Get the current element of the specified tag-style.
     # If the current element doesn't match then create a new one.
@@ -363,7 +353,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
                     and self.cur_elem.get('t') == style:
                 return self.cur_elem
             self.cur_elem = None
-        e = self.make_sub_elem(self.root, elem_tag, style)
+        e = make_sub_elem(self.root, elem_tag, style)
         self.cur_elem = e
         return e
 
@@ -388,16 +378,16 @@ class VimHelpBuildXml(VimHelpBuildBase):
 
     def check_stop_table(self, ty, token_data):
         do_build = False
-        if ty == TY_PRE:
-            do_build = True
-        elif ty == TY_EOF:
+        if ty in (TY_PRE, TY_EOF):
             do_build = True
         elif token_data[0] == 'blankline':
             do_build = True
+
         if do_build:
-            table = self.cur_table
             self.build_table()
-            dump_table(table)
+            dump_table(self.cur_table)
+            self.cur_table = None
+            self.t_data = None
         return do_build
 
     def add_to_table(self, w, token_data):
@@ -409,26 +399,28 @@ class VimHelpBuildXml(VimHelpBuildBase):
 
         tr = None
         for token, stuff, pos in self.t_data:
-            ###print 'YYY', (token, stuff, pos)
             if pos == 0 and (not isinstance(stuff, str) or not stuff.isspace())\
                     or tr is None:
-                if tr is not None: self.cur_table.append(tr)
-                tr = self.make_elem('tr')
-                td = [ self.make_sub_elem(tr, 'td') for x in xrange(len(cpos))]
-            col = len(cpos) - 1 # assume words in last col
+                if tr is not None:
+                    self.cur_table.append(tr)
+                tr = make_elem('tr')
+                td = [ make_sub_elem(tr, 'td') for x in xrange(len(cpos))]
             if MAP_TY[token] == TY_NL:
                 for x in td:
                     self.do_add_stuff('\n', x)
             else:
+                col = len(cpos) - 1 # assume words in last col
                 for i in xrange(len(cpos) - 1):
                     if cpos[i] <= pos < cpos[i+1]:
                         col = i
-                ###print 'ZZZ', (col, stuff, td[col])
+                        break
                 self.do_add_stuff(stuff, td[col])
         if tr is not None: self.cur_table.append(tr)
-        ###ET.dump(self.cur_table)
-        self.cur_table = None
-        self.t_data = None
+
+
+
+
+###################################################################
 
 #
 # Simple Html builder, should reproduce original work from Carlo
