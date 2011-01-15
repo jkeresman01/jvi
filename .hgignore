@@ -5,7 +5,6 @@
 \.rej$
 \.conflict\~$
 \.pyc$
-^doc/vimhelp/tags$
 
 #adapted from NetBeans' .hgignore
 ~$

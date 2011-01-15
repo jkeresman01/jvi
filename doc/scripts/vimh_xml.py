@@ -25,7 +25,7 @@ else:
 print 'input dir:', INPUT_DIR, 'output dir:', OUTPUT_DIR
 
 
-TAGS_FILE = INPUT_DIR + 'tags'
+TAGS_FILE = OUTPUT_DIR + 'tags'
 
 helpfiles = [ x for x in os.listdir(INPUT_DIR) if x.endswith('.txt') ]
 

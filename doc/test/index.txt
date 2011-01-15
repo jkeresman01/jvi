@@ -1,0 +1,65 @@
+*index.txt*	${jvi-version-title}
+
+
+                  ${reference-manual}
+
+
+								*index*
+This file contains a list of all commands for each mode, with a tag and a
+short description.  The lists are sorted on ASCII value.
+
+This is a paragraph following a paragraph.
+It has two lines
+
+1. Insert mode				|insert-index|
+
+START-DOC-DEL
+FooBar
+Foo#+#PLUS1 markup#+#Bar#+#PLUS2 markup#+#Baz
+Foo#*#STAR markup #*#Bar
+
+
+LEGEND FOR THE FIRST COLUMN:	" " works
+				"e" works if platform support, eg an IDE
+				"." future support, may be partial
+				"x" not supported or planned (but plans change)
+
+
+
+
+
+
+
+
+STOP-DOC-DEL
+NOTE: there may be platform specific methods
+to block user specified keys from jVi.
+
+							*{motion}*
+{motion}	A command that moves the cursor.  See the list at
+
+==============================================================================
+==============================================================================
+1. Insert mode						*insert-index*
+
+tag		char		action	~
+-----------------------------------------------------------------------
+#*# table:form=index 1:tag 17:command 33:opt:note 36:desc #*#
+ 		CTRL-@		   not used
+ |CTRL-A|	CTRL-A CTRL-B	2  add N to number at/after cursor
+
+
+==============================================================================
+2. Normal mode						*normal-index*
+
+#*# table:form=simple 1 10 #*#
+N	 a number entered before the command
+{motion} a cursor movement command
+SECTION	 a section that possibly starts with '}' instead of '{'
+
+tag		char	      note action in Normal mode	~
+------------------------------------------------------------------------------
+#*# table:form=index:name=foo 1:tag 17:command 33:opt:note 36:desc #*#
+ |CTRL-X|	CTRL-X		2  add N to number at/after cursor
+ |CTRL-E|	CTRL-E CTRL-E	   stuff for ctrl e,
+				   second line of stuff for ctrl e
