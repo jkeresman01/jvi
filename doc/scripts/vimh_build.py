@@ -38,18 +38,21 @@ SET_WORD  = set(('pipe',
 SET_NL    = set(('newline',
                  'blankline'))
 
-SET_OTHER = set(('eof'))
+SET_OTHER = set(('eof',
+                  'markup'))
 
-TY_PRE  = 1
-TY_WORD = 2
-TY_NL   = 3
-TY_EOF  = 4
+TY_PRE     = 1
+TY_WORD    = 2
+TY_EOL     = 3
+TY_EOF     = 4
+TY_MARKUP  = 5
 
 MAP_TY = {}
-MAP_TY.update(zip(SET_PRE,  (TY_PRE,) * len(SET_PRE)))
+MAP_TY.update(zip(SET_PRE,  (TY_PRE,)  * len(SET_PRE)))
 MAP_TY.update(zip(SET_WORD, (TY_WORD,) * len(SET_WORD)))
-MAP_TY.update(zip(SET_NL,   (TY_NL,)   * len(SET_NL)))
+MAP_TY.update(zip(SET_NL,   (TY_EOL,)  * len(SET_NL)))
 MAP_TY['eof'] = TY_EOF
+MAP_TY['markup'] = TY_MARKUP
 
 def build_link_re_from_pat():
     global RE_LINKWORD
@@ -163,8 +166,9 @@ class Links(dict):
 #       #*# table:form=index:id=xxx 1:tag 17:command 33:opt:note 36:desc #*#
 #       #*# table 1 17 33 36 #*#
 #   - where the first word must be table and any with it anything like
-#     id=xxx becomes an attribute on the table. Known attributes are
-#               form ::= index  // an index of commands, the first and second
+#     id=xxx becomes an attribute on the table. The form attribute affect
+#     the parsing of a table
+#          form_attr ::= index  // an index of commands, the first and second
 #                               // columns may be combined into a single column
 #                               // when an output table is generated. The
 #                               // "command" column is displayed as a
@@ -172,10 +176,15 @@ class Links(dict):
 #                      | ref    // typically holds descriptions for a commands.
 #                               // Each description is the target of a link.
 #                      | simple // just a table
-#     There is no requirement to use this "form" attribute/values, but
-#     that's what I'm using to markup my vim help files for processing...
 #   - the rest of the groups are the columns. The first item in the group
-#     is the column where the table starts. The rest of the items 
+#     is the column where the table starts. The rest of the items usually
+#     include a table column description.
+#   - a form=ref table markup typically looks like:
+#               #*#table:ref 1:command 2:extra-or 25:desc #*#
+#     The column with 'extra-or' markup catches areas of a line that are
+#     typically blank. Sometimes that area has the word 'or' which indicates
+#     that the line after is a continuation. Sometimes it has text
+#     which is example or special details of usage.
 #
 
 def make_elem(elem_tag, style = None, chars = '', parent = None):
@@ -207,13 +216,18 @@ def internal_elem_text(e, sb):
 def dump_table(table):
     print 'table:'
     for tr in table:
-        print '  tr:'
-        for td in tr:
-            text = elem_text(td)
-            l = [x.get('t') for x in td]
-            s = set(l)
-            print '    td:', re.sub('\n', r'\\n', text)
-            print '      :', s, l
+        dump_table_row(tr)
+
+def dump_table_row(tr):
+    print '  tr:'
+    for td in tr:
+        text = elem_text(td)
+        l = [x.get('t') for x in td]
+        s = set(l)
+        # print '    td:', re.sub('\n', r'\\n', text)
+        # print '      :', text.split('\n')
+        print '    td:', [ x.strip() for x in text.split('\n') ]
+        # print '      :', s, l
 
 class XmlLinks(Links):
 
@@ -250,6 +264,9 @@ class VimHelpBuildXml(VimHelpBuildBase):
         self.cur_table = None
         self.after_blank_line = False
 
+        self._init_table_ops()
+
+
     def start_file(self, filename):
         super(VimHelpBuildXml, self).start_file(filename)
         self.root.set('filename', filename)
@@ -264,10 +281,12 @@ class VimHelpBuildXml(VimHelpBuildBase):
     def markup(self, markup):
         markup = markup.strip()
         print 'markup:', markup
-        cmd,rest = markup.split(None,1)
+        l = markup.split(None,1)
+        cmd = l[0]
+        rest = l[1] if len(l) > 1 else None
         started = False
         if cmd.find('table') >= 0:
-            started = self.check_start_table(cmd, rest)
+            started = self.check_table_markup(cmd, rest)
 
         if not started:
             self.error('UNKNOWN MARKUP COMMAND ' + cmd)
@@ -284,7 +303,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
             if ret:
                 return
 
-        if ty == TY_NL:
+        if ty == TY_EOL:
             if token == 'blankline':
                 self.after_blank_line = True
             self.add_stuff('\n', token_data)
@@ -326,7 +345,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
             return
 
         # newlines can be added to any type of element
-        e = self.cur_elem if TY_NL == MAP_TY[token_data[0]] else None
+        e = self.cur_elem if TY_EOL == MAP_TY[token_data[0]] else None
 
         self.do_add_stuff(stuff, e)
 
@@ -357,55 +376,144 @@ class VimHelpBuildXml(VimHelpBuildBase):
         self.cur_elem = e
         return e
 
-    def check_start_table(self, cmd, column_info):
+    #
+    # Table Handling
+    #
+
+    def _init_table_ops(self):
+        self.DEFAULT_TABLE_OPS = (self.check_stop_table_simple,
+                                  self.check_start_table_row_simple)
+        self.TABLE_OPS = { 'simple' : self.DEFAULT_TABLE_OPS,
+                           'index'  : self.DEFAULT_TABLE_OPS,
+                           'ref'    : (self.check_stop_table_ref,
+                                       self.check_start_table_row_ref)
+                         }
+
+    def check_table_markup(self, cmd, column_info):
         t01 = cmd.split(':')
         if 'table' != t01[0]:
             return False
+        if 'stop-table' in t01:
+            self.check_stop_table(TY_MARKUP, ('markup', 'stop-table', 0))
+            return True
+
         self.t_args = t01
         self.t_data = []
 
-        # convert info to list of list items: col# , 'arg2', 'arg3', ...
+        # convert info to list of list items: int-col , 'arg2', 'arg3', ...
         t02 = [x.split(':') for x in  column_info.split()]
         self.t_cols = [ [int(x[0]),] + x[1:] for x in t02 ]
 
         self.cur_elem = None
-        self.cur_table = self.get_cur_elem('table')
+        table = self.get_cur_elem('table')
         self.cur_elem = None
         for k,v in [ x.split('=') for x in t01[1:] if x.find('=') >= 0 ]:
-            self.cur_table.set(k, v)
-        self.cur_table.set('markup', cmd + ' ' + column_info)
+            table.set(k, v)
+        table.set('markup', cmd + ' ' + column_info)
+        form = table.get('form', '')
+        self.t_ops = self.TABLE_OPS.get(form, self.DEFAULT_TABLE_OPS)
+        print 'form', (form, self.t_ops)
+        self.t_ref_table_checked_idx = -1
+        self.t_ref_table_extra_or_col = -1
+        i = 0
+        for x in t02:
+            if 'extra-or' in x:
+                self.t_ref_table_extra_or_col = i
+                break
+            i += 1
+        self.cur_table = table
         return True
 
     def check_stop_table(self, ty, token_data):
-        do_build = False
-        if ty in (TY_PRE, TY_EOF):
-            do_build = True
-        elif token_data[0] == 'blankline':
-            do_build = True
+        if self.cur_table is None:
+            return False
 
-        if do_build:
+        finish_table, consume_token = self.t_ops[0](ty, token_data)
+
+        if finish_table:
             self.build_table()
             dump_table(self.cur_table)
             self.cur_table = None
             self.t_data = None
-        return do_build
+        return consume_token
 
     def add_to_table(self, w, token_data):
         self.t_data.append((token_data[0], w, token_data[2]))
+
+    # used for both form in {index, simple}
+    def check_stop_table_simple(self, ty, token_data):
+        finish_table = False
+        if ty in (TY_PRE, TY_EOF):
+            finish_table = True
+        elif token_data[0] == 'blankline':
+            finish_table = True
+        return (finish_table, False)
+
+    def check_start_table_row_simple(self, idx):
+        # token starts in column zero
+        # and either token is not a string (i.e. it is an element)
+        #            or token is not all blanks
+        token, stuff, pos = self.t_data[idx]
+        return (pos == 0
+                and (not isinstance(stuff, str) or not stuff.isspace()))
+
+    def check_stop_table_ref(self, ty, token_data):
+        finish_table = False
+        consume_token = False
+        if ty == TY_EOF:
+            finish_table = True
+        elif 'ruler' == token_data[0]:
+            finish_table = True
+        elif ty == TY_MARKUP and 'stop-table' == token_data[1]:
+            finish_table, consume_token = (True, True)
+        return (finish_table, consume_token)
+
+    ##
+    # reference table entry starts with <target t="star"> somewhere in the line.
+    # Check till EOL or EOF. If there's an extra-or column, then check
+    # previous input line for 'or', if present then this line is continuation.
+    def check_start_table_row_ref(self, idx):
+        if idx <= self.t_ref_table_checked_idx:
+            return False
+        new_entry_ok = True
+        if self.t_ref_table_extra_or_col >= 0 and self.cur_table_row is not None:
+            tr = self.cur_table_row
+            l = elem_text(tr[self.t_ref_table_extra_or_col]).split('\n')
+            if len(l) > 1 and 'or' == l[-2].strip():
+                # advance past this line, will never return true
+                new_entry_ok = False
+        new_entry = False
+        while True:
+            token, stuff, pos = self.t_data[idx]
+            ty = MAP_TY[token]
+            if ty in (TY_EOL, TY_EOF):
+                break;
+            if (new_entry_ok
+                    and ET.iselement(stuff) and stuff.tag == 'target'
+                    and stuff.get('t') == 'star'):
+                new_entry = True
+            idx += 1
+        self.t_ref_table_checked_idx = idx
+        if not new_entry:
+            return False
+        return True
 
     def build_table(self):
         cpos = [ x[0]-1 for x in self.t_cols]
         print 'XXX', cpos
 
         tr = None
-        for token, stuff, pos in self.t_data:
-            if pos == 0 and (not isinstance(stuff, str) or not stuff.isspace())\
-                    or tr is None:
+        self.cur_table_row = tr
+        # use an index into t_data, since may need to do lookahead
+        for idx in xrange(len(self.t_data)):
+            token, stuff, pos = self.t_data[idx]
+            if self.t_ops[1](idx) or tr is None:
                 if tr is not None:
                     self.cur_table.append(tr)
                 tr = make_elem('tr')
                 td = [ make_sub_elem(tr, 'td') for x in xrange(len(cpos))]
-            if MAP_TY[token] == TY_NL:
+                self.cur_table_row = tr
+            if MAP_TY[token] == TY_EOL:
                 for x in td:
                     self.do_add_stuff('\n', x)
             else:
@@ -418,8 +526,8 @@ class VimHelpBuildXml(VimHelpBuildBase):
         if tr is not None: self.cur_table.append(tr)
 
 
-
-
+###################################################################
+###################################################################
 ###################################################################
 
 #
