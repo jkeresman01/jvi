@@ -18,41 +18,44 @@ from StringIO import StringIO
 # Note: there is a link type of 'hidden', much like a token
 #
 
-SET_PRE   = set(('header',
-                 'ruler',
-                 'graphic',
-                 'section',
-                 'title',
-                 'example'))
+SET_PRE     = set(('header',
+                   'ruler',
+                   'graphic',
+                   'section',
+                   'title',
+                   'example'))
 
-SET_WORD  = set(('pipe',
-                 'star',
-                 'opt',
-                 'ctrl',
-                 'special',
-                 'note',
-                 'url',
-                 'word',
-                 'chars'))
+SET_WORD    = set(('pipe',
+                   'star',
+                   'opt',
+                   'ctrl',
+                   'special',
+                   'note',
+                   'url',
+                   'word',
+                   'chars'))
 
-SET_NL    = set(('newline',
-                 'blankline'))
+SET_NL      = set(('newline',
+                   'blankline'))
 
-SET_OTHER = set(('eof',
-                  'markup'))
+SET_CONTROL = set(('markup',
+                   'start_line',
+                   'start_file'))
+
+SET_OTHER   = set(('eof'))
 
 TY_PRE     = 1
 TY_WORD    = 2
 TY_EOL     = 3
 TY_EOF     = 4
-TY_MARKUP  = 5
+TY_CONTROL = 6
 
 MAP_TY = {}
-MAP_TY.update(zip(SET_PRE,  (TY_PRE,)  * len(SET_PRE)))
-MAP_TY.update(zip(SET_WORD, (TY_WORD,) * len(SET_WORD)))
-MAP_TY.update(zip(SET_NL,   (TY_EOL,)  * len(SET_NL)))
+MAP_TY.update(zip(SET_PRE,     (TY_PRE,)     * len(SET_PRE)))
+MAP_TY.update(zip(SET_WORD,    (TY_WORD,)    * len(SET_WORD)))
+MAP_TY.update(zip(SET_NL,      (TY_EOL,)     * len(SET_NL)))
+MAP_TY.update(zip(SET_CONTROL, (TY_CONTROL,) * len(SET_CONTROL)))
 MAP_TY['eof'] = TY_EOF
-MAP_TY['markup'] = TY_MARKUP
 
 def build_link_re_from_pat():
     global RE_LINKWORD
@@ -66,22 +69,24 @@ def build_link_re_from_pat():
 #
 class VimHelpBuildBase(object):
 
-    def start_file(self, filename):
+    def _start_file(self, filename):
         self.filename = filename
         self.out = [ ]
 
-    def start_line(self, lnum, input_line):
+    def _start_line(self, input_line, lnum):
         """The next line to be parsed, generally for debug/diagnostics"""
         self.input_line = input_line
         self.lnum = lnum
 
-    def markup(self, markup):
+    def _markup(self, markup):
         pass
 
     def put_token(self, token_data):
         """token_data is (token, chars, col)."""
-        ###print token_data
-        pass
+        token, chars, col = token_data
+        if 'markup' == token: self._markup(chars)
+        elif 'start_file' == token: self._start_file(chars)
+        elif 'start_line' == token: self._start_line(chars, col)
 
     def get_output(self):
         return self.out
@@ -186,6 +191,10 @@ class Links(dict):
 #     that the line after is a continuation. Sometimes it has text
 #     which is example or special details of usage.
 #
+#
+# TODO: - build in a more nested/recursive fashion. vim help files have
+#         nested tables. See insert.txt for example i_CTRL-R or i_CTRL-X_CTRL-P.
+#
 
 def make_elem(elem_tag, style = None, chars = '', parent = None):
     if isinstance(style, str):
@@ -267,18 +276,18 @@ class VimHelpBuildXml(VimHelpBuildBase):
         self._init_table_ops()
 
 
-    def start_file(self, filename):
-        super(VimHelpBuildXml, self).start_file(filename)
-        self.root.set('filename', filename)
-
     def get_output(self):
         return self.tree
 
-    def start_line(self, lnum, line):
-        super(VimHelpBuildXml, self).start_line(lnum, line)
+    def _start_file(self, filename):
+        super(VimHelpBuildXml, self)._start_file(filename)
+        self.root.set('filename', filename)
+
+    def _start_line(self, line, lnum):
+        super(VimHelpBuildXml, self)._start_line(line, lnum)
         ### print 'start_line:', self.lnum, self.input_line
 
-    def markup(self, markup):
+    def _markup(self, markup):
         markup = markup.strip()
         print 'markup:', markup
         l = markup.split(None,1)
@@ -295,6 +304,9 @@ class VimHelpBuildXml(VimHelpBuildBase):
     def put_token(self, token_data):
         """token_data is (token, chars, col)."""
         token, chars, col = token_data
+        if token in ('markup', 'start_file', 'start_line'):
+            super(VimHelpBuildXml, self).put_token(token_data)
+            return
         ty = MAP_TY[token]
         ### print 'token_data:', ty, token_data
 
@@ -394,7 +406,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
         if 'table' != t01[0]:
             return False
         if 'stop-table' in t01:
-            self.check_stop_table(TY_MARKUP, ('markup', 'stop-table', 0))
+            self.check_stop_table(TY_CONTROL, ('markup', 'stop-table', 0))
             return True
 
         self.t_args = t01
@@ -464,7 +476,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
             finish_table = True
         elif 'ruler' == token_data[0]:
             finish_table = True
-        elif ty == TY_MARKUP and 'stop-table' == token_data[1]:
+        elif 'markup' == token_data[0] and 'stop-table' == token_data[1]:
             finish_table, consume_token = (True, True)
         return (finish_table, consume_token)
 
@@ -585,16 +597,12 @@ class VimHelpBuildHtml(VimHelpBuildBase):
         build_link_re_from_pat()
         self.links = HtmlLinks(tags)
 
-
-    def markup(self, markup):
-        markup = markup.strip()
-        ### print 'markup: %s:%s "%s"' \
-        ###         % (self.filename, self.lnum, markup)
-        pass
-
     def put_token(self, token_data):
         """token_data is (type, chars, col)."""
         token, chars, col = token_data
+        if token in ('markup', 'start_file', 'start_line'):
+            super(VimHelpBuildHtml, self).put_token(token_data)
+            return
         ###print token_data
         if 'pipe' == token:
             self.out.append(self.links.maplink(chars, 'link'))

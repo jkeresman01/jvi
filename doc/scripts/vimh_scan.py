@@ -77,7 +77,7 @@ class VimHelpScanner:
 
     def parse(self, filename, contents, include_faq = True):
 
-        self.builder.start_file(filename)
+        self.builder.put_token(('start_file', filename, 0))
 
         lnum = 0
         inskip = 0
@@ -99,7 +99,7 @@ class VimHelpScanner:
             line_tabs = line
             line = line.expandtabs()
 
-            self.builder.start_line(lnum, line)
+            self.builder.put_token(('start_line', line, lnum))
 
             # handle custom markup
             delete_line = False
@@ -107,7 +107,7 @@ class VimHelpScanner:
             while True:
                 m = RE_MARKUP.search(line, pos)
                 if m:
-                    self.builder.markup(m.group(2))
+                    self.builder.put_token(('markup', m.group(2), 0))
                     if m.group(1) == '*':
                         delete_line = True
                     pos = m.start()
