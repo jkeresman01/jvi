@@ -81,12 +81,20 @@ class VimHelpBuildBase(object):
     def _markup(self, markup):
         pass
 
-    def put_token(self, token_data):
+    def _put_token(self, token_data):
         """token_data is (token, chars, col)."""
         token, chars, col = token_data
         if 'markup' == token: self._markup(chars)
         elif 'start_file' == token: self._start_file(chars)
         elif 'start_line' == token: self._start_line(chars, col)
+
+    def process(self, data):
+        print '      first entry:', data[0]
+        print 'number of entries:', len(data)
+        print '       last entry:', data[-1]
+
+        while len(data) > 0:
+            self._put_token(data.popleft())
 
     def get_output(self):
         return self.out
@@ -301,11 +309,11 @@ class VimHelpBuildXml(VimHelpBuildBase):
             self.error('UNKNOWN MARKUP COMMAND ' + cmd)
         pass
 
-    def put_token(self, token_data):
+    def _put_token(self, token_data):
         """token_data is (token, chars, col)."""
         token, chars, col = token_data
         if token in ('markup', 'start_file', 'start_line'):
-            super(VimHelpBuildXml, self).put_token(token_data)
+            super(VimHelpBuildXml, self)._put_token(token_data)
             return
         ty = MAP_TY[token]
         ### print 'token_data:', ty, token_data
@@ -597,11 +605,11 @@ class VimHelpBuildHtml(VimHelpBuildBase):
         build_link_re_from_pat()
         self.links = HtmlLinks(tags)
 
-    def put_token(self, token_data):
+    def _put_token(self, token_data):
         """token_data is (type, chars, col)."""
         token, chars, col = token_data
         if token in ('markup', 'start_file', 'start_line'):
-            super(VimHelpBuildHtml, self).put_token(token_data)
+            super(VimHelpBuildHtml, self)._put_token(token_data)
             return
         ###print token_data
         if 'pipe' == token:

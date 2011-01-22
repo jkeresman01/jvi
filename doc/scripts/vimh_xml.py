@@ -3,6 +3,7 @@ import re
 import vimh_scan as vs
 from vimh_scan import VimHelpScanner
 from vimh_build import VimHelpBuildXml
+from collections import deque
 
 if len(sys.argv) < 2:   exit(1)
 
@@ -38,15 +39,16 @@ vs.PAT_TITLE = PAT_TITLE
 class VimHelp2Xml(object):
 
     def __init__(self, tags):
+        self.parser = VimHelpScanner()
         self.builder = VimHelpBuildXml(tags)
-        self.parser = VimHelpScanner(tags, self.builder)
 
     def to_xml(self, filename, contents, include_sitesearch = True,
             include_faq = True):
 
-        self.parser.parse(filename, contents, include_faq)
+        tokens = deque()
+        self.parser.parse(filename, contents, tokens, include_faq)
+        self.builder.process(tokens)
 
-        #result = ''.join(self.builder.get_output())
         return self.builder.get_output()
 
 

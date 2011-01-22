@@ -71,13 +71,12 @@ def _trim_token(token_data):
 
 class VimHelpScanner:
 
-    def __init__(self, tags, _builder = None):
-        self.builder = _builder if _builder else VimHelpBuildBase()
+    def __init__(self):
         build_re_from_pat()
 
-    def parse(self, filename, contents, include_faq = True):
+    def parse(self, filename, contents, data, include_faq = True):
 
-        self.builder.put_token(('start_file', filename, 0))
+        data.append(('start_file', filename, 0))
 
         lnum = 0
         inskip = 0
@@ -99,7 +98,7 @@ class VimHelpScanner:
             line_tabs = line
             line = line.expandtabs()
 
-            self.builder.put_token(('start_line', line, lnum))
+            data.append(('start_line', line, lnum))
 
             # handle custom markup
             delete_line = False
@@ -107,7 +106,7 @@ class VimHelpScanner:
             while True:
                 m = RE_MARKUP.search(line, pos)
                 if m:
-                    self.builder.put_token(('markup', m.group(2), 0))
+                    data.append(('markup', m.group(2), 0))
                     if m.group(1) == '*':
                         delete_line = True
                     pos = m.start()
@@ -120,12 +119,12 @@ class VimHelpScanner:
             line = RE_DEL_CHARS.sub('', line)
 
             if len(line) == 0 or line.isspace():
-                self.builder.put_token(('blankline', '', -1));
+                data.append(('blankline', '', -1));
                 continue
 
             if RE_HRULE.match(line):
-                self.builder.put_token(('ruler', line, 0))
-                self.builder.put_token(('newline', '', -1));
+                data.append(('ruler', line, 0))
+                data.append(('newline', '', -1));
                 continue
 
             col_offset = 0
@@ -136,8 +135,8 @@ class VimHelpScanner:
                         line = line[1:]
                         col_offset = 1
                 else:
-                    self.builder.put_token(("example", line, 0))
-                    self.builder.put_token(('newline', '', -1));
+                    data.append(("example", line, 0))
+                    data.append(('newline', '', -1));
                     continue
             if RE_EG_START.match(line_tabs):
                 inexample = 1
@@ -145,7 +144,7 @@ class VimHelpScanner:
 
             if RE_SECTION.match(line_tabs):
                 m = RE_SECTION.match(line)
-                self.builder.put_token(
+                data.append(
                         ('section', m.group(), m.start() + col_offset))
                 line = line[m.end():]
                 col_offset += m.end()
@@ -157,19 +156,19 @@ class VimHelpScanner:
             for match in RE_TAGWORD.finditer(line):
                 pos = match.start()
                 if pos > lastpos:
-                    self.builder.put_token(
+                    data.append(
                             ('chars', line[lastpos:pos], lastpos + col_offset))
                 lastpos = match.end()
                 #print 'match:', match.lastgroup, match.group(match.lastgroup)
-                self.builder.put_token(_trim_token((match.lastgroup,
+                data.append(_trim_token((match.lastgroup,
                                         match.group(), pos + col_offset)))
             if lastpos < len(line):
-                self.builder.put_token(
+                data.append(
                         ('chars', line[lastpos:], lastpos + col_offset))
-            self.builder.put_token(('newline', '', -1));
+            data.append(('newline', '', -1));
             if inexample == 1: inexample = 2
             if faq_line and include_faq:
                 out.append(VIM_FAQ_LINE)
                 faq_line = False
-        self.builder.put_token(('eof', '', -1))
+        data.append(('eof', '', -1))
 

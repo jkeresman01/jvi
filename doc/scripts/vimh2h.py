@@ -1,6 +1,7 @@
 # converts vim documentation to html
 
 from vimh_scan import VimHelpScanner
+from collections import deque
 
 
 HTML_HEAD = """
@@ -81,13 +82,15 @@ FOOTER_END   = """
 
 class VimH2H(object):
     def __init__(self, tags, builder = None):
-        self.parser = VimHelpScanner(tags, builder)
+        self.parser = VimHelpScanner()
         self.builder = builder
 
     def to_html(self, filename, contents, include_sitesearch = True,
             include_faq = True):
 
-        self.parser.parse(filename, contents, include_faq)
+        tokens = deque()
+        self.parser.parse(filename, contents, tokens, include_faq)
+        self.builder.process(tokens)
 
         result = ''.join(self.builder.get_output())
 
