@@ -15,7 +15,7 @@ PAT_CTRL     = r'(?P<ctrl>CTRL-(?:W_)?(?:[\w\[\]^+-<>=@]|<[A-Za-z]+?>)?)'
 PAT_SPECIAL  = r'(?P<special><.*?>|\{.*?}|' + \
                r'\[(?:range|line|count|offset|\+?cmd|[-+]?num|\+\+opt|' + \
                r'arg|arg(?:uments)|ident|addr|group)]|' + \
-               r'\s\[[-a-z^A-Z0-9_]{2,}])'
+               r'(?<=\s)\[[-a-z^A-Z0-9_]{2,}])'
 PAT_TITLE    = r'(?P<title>Vim version [0-9.a-z]+|VIM REFERENCE.*)'
 PAT_NOTE     = r'(?P<note>N(ote|OTE)[sS]?:?)'
 PAT_URL      = r'(?P<url>(?:https?|ftp)://[^\'"<> \t]+[a-zA-Z0-9/])'
@@ -69,13 +69,23 @@ def _trim_token(token_data):
         return token_data
     return (token, chars, col)
 
+class DataWrapper(object):
+    def __init__(self, data):
+        self.data = data
+
+    def append(self, d):
+        print d
+        self.data.append(d)
+
 class VimHelpScanner:
 
     def __init__(self):
         build_re_from_pat()
 
-    def parse(self, filename, contents, data, include_faq = True):
+    def parse(self, filename, contents, _data, include_faq = True):
 
+        #data = DataWrapper(_data)
+        data = _data
         data.append(('start_file', filename, 0))
 
         lnum = 0
@@ -135,7 +145,7 @@ class VimHelpScanner:
                         line = line[1:]
                         col_offset = 1
                 else:
-                    data.append(("example", line, 0))
+                    data.append(('example', line, 0))
                     data.append(('newline', '', -1));
                     continue
             if RE_EG_START.match(line_tabs):
@@ -159,7 +169,7 @@ class VimHelpScanner:
                     data.append(
                             ('chars', line[lastpos:pos], lastpos + col_offset))
                 lastpos = match.end()
-                #print 'match:', match.lastgroup, match.group(match.lastgroup)
+                #print 'match:', (match.lastgroup, match.group(match.lastgroup))
                 data.append(_trim_token((match.lastgroup,
                                         match.group(), pos + col_offset)))
             if lastpos < len(line):

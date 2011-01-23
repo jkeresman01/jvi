@@ -94,6 +94,7 @@ class VimHelpBuildBase(object):
         print '       last entry:', data[-1]
 
         while len(data) > 0:
+            ### print data[0]
             self._put_token(data.popleft())
 
     def get_output(self):
@@ -209,6 +210,7 @@ def make_elem(elem_tag, style = None, chars = '', parent = None):
         style = {'t':style}
     elif style is None:
         style = {}
+    ### print 'make_elem', elem_tag, style, chars, parent
     e = ET.Element(elem_tag, style)
     e.text = chars
     e.tail = ''
@@ -250,14 +252,20 @@ class XmlLinks(Links):
 
     def do_add_tag(self, filename, vim_tag):
         link = super(XmlLinks, self).do_add_tag(filename, vim_tag)
-        print 'do_add_tag:', vim_tag, link.filename, link.style
+        ### print 'do_add_tag:', vim_tag, link.filename, link.style
 
     def maplink(self, vim_tag, style = None):
         link = self[vim_tag]
+        ### print "maplink-1: '%s' '%s' '%s'" % (vim_tag, link, style)
         if link is not None:
+            ### print "maplink-1a: '%s' '%s' '%s'" % (vim_tag, link.__dict__, style)
             # this is a known link from the tags file
             if style and style != link.style and style != 'pipe':
                 print 'LINK STYLE MISMATCH'
+            # this is weird logic, since MISMATCH is never printed,
+            # seems the idea is that, use link.style unless 'link' is
+            # argument, in which case make it a 'pipe'
+            style = 'pipe' if 'link' == style else link.style
             style = {'t':style, 'filename':link.filename}
             elem_tag = 'link'
         elif style is not None:
@@ -266,7 +274,7 @@ class XmlLinks(Links):
         else:
             # not known link, no class specifed
             return vim_tag
-        print "maplink: '%s' '%s' '%s'" % (vim_tag, elem_tag, style)
+        ### print "maplink-2: '%s' '%s' '%s'" % (vim_tag, elem_tag, style)
         return make_elem(elem_tag, style, vim_tag)
 
 class VimHelpBuildXml(VimHelpBuildBase):
@@ -432,7 +440,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
         table.set('markup', cmd + ' ' + column_info)
         form = table.get('form', '')
         self.t_ops = self.TABLE_OPS.get(form, self.DEFAULT_TABLE_OPS)
-        print 'form', (form, self.t_ops)
+        ### print 'form', (form, self.t_ops)
         self.t_ref_table_checked_idx = -1
         self.t_ref_table_extra_or_col = -1
         i = 0
