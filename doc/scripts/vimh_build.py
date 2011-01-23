@@ -3,7 +3,7 @@ import cgi
 import xml.etree.ElementTree as ET
 import urllib
 import vimh_scan as vs
-from StringIO import StringIO
+import xml_sub as xs
 
 # accept tokens from vim help scanner
 #
@@ -205,48 +205,6 @@ class Links(dict):
 #         nested tables. See insert.txt for example i_CTRL-R or i_CTRL-X_CTRL-P.
 #
 
-def make_elem(elem_tag, style = None, chars = '', parent = None):
-    if isinstance(style, str):
-        style = {'t':style}
-    elif style is None:
-        style = {}
-    ### print 'make_elem', elem_tag, style, chars, parent
-    e = ET.Element(elem_tag, style)
-    e.text = chars
-    e.tail = ''
-    if parent is not None:
-        parent.append(e)
-    return e
-
-def make_sub_elem(parent, elem_tag, style = None, chars = ''):
-    return make_elem(elem_tag, style, chars, parent)
-
-def elem_text(e):
-    sb = StringIO()
-    internal_elem_text(e, sb)
-    return sb.getvalue()
-
-def internal_elem_text(e, sb):
-    sb.write(e.text)
-    for i in e.getchildren():
-        internal_elem_text(i, sb)
-    sb.write(e.tail)
-
-def dump_table(table):
-    print 'table:'
-    for tr in table:
-        dump_table_row(tr)
-
-def dump_table_row(tr):
-    print '  tr:'
-    for td in tr:
-        text = elem_text(td)
-        l = [x.get('t') for x in td]
-        s = set(l)
-        # print '    td:', re.sub('\n', r'\\n', text)
-        # print '      :', text.split('\n')
-        print '    td:', [ x.strip() for x in text.split('\n') ]
-        # print '      :', s, l
 
 class XmlLinks(Links):
 
@@ -275,7 +233,7 @@ class XmlLinks(Links):
             # not known link, no class specifed
             return vim_tag
         ### print "maplink-2: '%s' '%s' '%s'" % (vim_tag, elem_tag, style)
-        return make_elem(elem_tag, style, vim_tag)
+        return xs.make_elem(elem_tag, style, vim_tag)
 
 class VimHelpBuildXml(VimHelpBuildBase):
 
@@ -351,11 +309,11 @@ class VimHelpBuildXml(VimHelpBuildBase):
             elif token == 'pipe':
                 w = self.links.maplink(chars, 'pipe')
             elif token == 'star':
-                w = make_elem('target', token, chars)
+                w = xs.make_elem('target', token, chars)
             elif token in ('opt', 'ctrl', 'special'):
                 w = self.links.maplink(chars, token)
             else:
-                w = make_elem('em', token, chars)
+                w = xs.make_elem('em', token, chars)
 
             self.add_stuff(w, token_data)
 
@@ -400,7 +358,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
                     and self.cur_elem.get('t') == style:
                 return self.cur_elem
             self.cur_elem = None
-        e = make_sub_elem(self.root, elem_tag, style)
+        e = xs.make_sub_elem(self.root, elem_tag, style)
         self.cur_elem = e
         return e
 
@@ -460,7 +418,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
 
         if finish_table:
             self.build_table()
-            dump_table(self.cur_table)
+            xs.dump_table(self.cur_table)
             self.cur_table = None
             self.t_data = None
         return consume_token
@@ -506,7 +464,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
         new_entry_ok = True
         if self.t_ref_table_extra_or_col >= 0 and self.cur_table_row is not None:
             tr = self.cur_table_row
-            l = elem_text(tr[self.t_ref_table_extra_or_col]).split('\n')
+            l = xs.elem_text(tr[self.t_ref_table_extra_or_col]).split('\n')
             if len(l) > 1 and 'or' == l[-2].strip():
                 # advance past this line, will never return true
                 new_entry_ok = False
@@ -538,8 +496,8 @@ class VimHelpBuildXml(VimHelpBuildBase):
             if self.t_ops[1](idx) or tr is None:
                 if tr is not None:
                     self.cur_table.append(tr)
-                tr = make_elem('tr')
-                td = [ make_sub_elem(tr, 'td') for x in xrange(len(cpos))]
+                tr = xs.make_elem('tr')
+                td = [ xs.make_sub_elem(tr, 'td') for x in xrange(len(cpos))]
                 self.cur_table_row = tr
             if MAP_TY[token] == TY_EOL:
                 for x in td:
