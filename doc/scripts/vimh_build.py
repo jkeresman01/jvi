@@ -3,6 +3,7 @@ import cgi
 import xml.etree.ElementTree as ET
 import urllib
 import vimh_scan as vs
+import vimh_gen as vg
 import xml_sub as xs
 
 # accept tokens from vim help scanner
@@ -203,6 +204,8 @@ class Links(dict):
 #
 # TODO: - build in a more nested/recursive fashion. vim help files have
 #         nested tables. See insert.txt for example i_CTRL-R or i_CTRL-X_CTRL-P.
+# TODO: - Add stop-table and unkown markup as comments,
+#         need a better concept of current know (building in that recursive...)
 #
 
 
@@ -223,7 +226,7 @@ class XmlLinks(Links):
             # this is weird logic, since MISMATCH is never printed,
             # seems the idea is that, use link.style unless 'link' is
             # argument, in which case make it a 'pipe'
-            style = 'pipe' if 'link' == style else link.style
+            style = 'pipe' if 'pipe' == style else link.style
             style = {'t':style, 'filename':link.filename}
             elem_tag = 'link'
         elif style is not None:
@@ -240,13 +243,6 @@ class VimHelpBuildXml(VimHelpBuildBase):
     def __init__(self, tags):
         build_link_re_from_pat()
         self.links = XmlLinks(tags)
-        self.blank_lines = 0
-        self.root = ET.Element('vimhelp')
-        self.tree = ET.ElementTree(self.root)
-        self.cur_elem = None
-        self.cur_table = None
-        self.after_blank_line = False
-
         self._init_table_ops()
 
 
@@ -255,6 +251,14 @@ class VimHelpBuildXml(VimHelpBuildBase):
 
     def _start_file(self, filename):
         super(VimHelpBuildXml, self)._start_file(filename)
+
+        self.blank_lines = 0
+        self.root = ET.Element('vimhelp')
+        self.tree = ET.ElementTree(self.root)
+        self.cur_elem = None
+        self.cur_table = None
+        self.after_blank_line = False
+
         self.root.set('filename', filename)
 
     def _start_line(self, line, lnum):
@@ -418,7 +422,8 @@ class VimHelpBuildXml(VimHelpBuildBase):
 
         if finish_table:
             self.build_table()
-            xs.dump_table(self.cur_table)
+            xs.dump_table_ascii(self.cur_table)
+            #print vg.get_txt(self.cur_table),
             self.cur_table = None
             self.t_data = None
         return consume_token
