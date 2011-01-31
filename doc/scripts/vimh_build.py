@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 import urllib
 import vimh_scan as vs
 import vimh_gen as vg
-import xml_sub as xs
+import xml_sub as XS
 
 # accept tokens from vim help scanner
 #
@@ -236,7 +236,7 @@ class XmlLinks(Links):
             # not known link, no class specifed
             return vim_tag
         ### print "maplink-2: '%s' '%s' '%s'" % (vim_tag, elem_tag, style)
-        return xs.make_elem(elem_tag, style, vim_tag)
+        return XS.make_elem(elem_tag, style, vim_tag)
 
 class VimHelpBuildXml(VimHelpBuildBase):
 
@@ -313,11 +313,11 @@ class VimHelpBuildXml(VimHelpBuildBase):
             elif token == 'pipe':
                 w = self.links.maplink(chars, 'pipe')
             elif token == 'star':
-                w = xs.make_elem('target', token, chars)
+                w = XS.make_elem('target', token, chars)
             elif token in ('opt', 'ctrl', 'special'):
                 w = self.links.maplink(chars, token)
             else:
-                w = xs.make_elem('em', token, chars)
+                w = XS.make_elem('em', token, chars)
 
             self.add_stuff(w, token_data)
 
@@ -362,7 +362,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
                     and self.cur_elem.get('t') == style:
                 return self.cur_elem
             self.cur_elem = None
-        e = xs.make_sub_elem(self.root, elem_tag, style)
+        e = XS.make_sub_elem(self.root, elem_tag, style)
         self.cur_elem = e
         return e
 
@@ -422,7 +422,8 @@ class VimHelpBuildXml(VimHelpBuildBase):
 
         if finish_table:
             self.build_table()
-            xs.dump_table_ascii(self.cur_table)
+            XS.dump_table(self.cur_table)
+            XS.dump_table_ascii(self.cur_table)
             #print vg.get_txt(self.cur_table),
             self.cur_table = None
             self.t_data = None
@@ -469,7 +470,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
         new_entry_ok = True
         if self.t_ref_table_extra_or_col >= 0 and self.cur_table_row is not None:
             tr = self.cur_table_row
-            l = xs.elem_text(tr[self.t_ref_table_extra_or_col]).split('\n')
+            l = XS.elem_text(tr[self.t_ref_table_extra_or_col]).split('\n')
             if len(l) > 1 and 'or' == l[-2].strip():
                 # advance past this line, will never return true
                 new_entry_ok = False
@@ -501,8 +502,8 @@ class VimHelpBuildXml(VimHelpBuildBase):
             if self.t_ops[1](idx) or tr is None:
                 if tr is not None:
                     self.cur_table.append(tr)
-                tr = xs.make_elem('tr')
-                td = [ xs.make_sub_elem(tr, 'td') for x in xrange(len(cpos))]
+                tr = XS.make_elem('tr')
+                td = [ XS.make_sub_elem(tr, 'td') for x in xrange(len(cpos))]
                 self.cur_table_row = tr
             if MAP_TY[token] == TY_EOL:
                 for x in td:
