@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import os, sys
 import re
 import vimh2h as vh
@@ -5,7 +7,13 @@ from vimh2h import VimH2H
 import vimh_scan as vs
 from vimh_build import VimHelpBuildHtml
 
-if len(sys.argv) < 2:   exit(1)
+def usage():
+    print 'jvi.py input_dir [output_dir]'
+    exit(1)
+
+if len(sys.argv) < 2:
+    print 'must be at least one argument'
+    usage()
 
 # usage: cmd input_dir [output_dir]
 # if output_dir not present, use input_dir

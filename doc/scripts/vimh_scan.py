@@ -41,7 +41,7 @@ RE_HRULE      = re.compile(r'[-=]{3,}.*[-=]{3,3}$')
 RE_EG_START   = re.compile(r'(?:.* )?>$')
 RE_EG_END     = re.compile(r'\S')
 RE_SECTION    = re.compile(r'[-A-Z .][-A-Z0-9 .()]*(?=\s+\*)')
-RE_STARTAG    = re.compile(r'\s\*([^ \t|]+)\*(?:\s|$)')
+#####NU RE_STARTAG    = re.compile(r'\s\*([^ \t|]+)\*(?:\s|$)')
 RE_LOCAL_ADD  = re.compile(r'LOCAL ADDITIONS:\s+\*local-additions\*$')
 
 # special markup directions in capture group

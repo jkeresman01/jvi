@@ -3,7 +3,7 @@ import cgi
 import xml.etree.ElementTree as ET
 import urllib
 import vimh_scan as vs
-import vimh_gen as vg
+import vimh_gen as VG
 import xml_sub as XS
 
 # accept tokens from vim help scanner
@@ -209,6 +209,23 @@ class Links(dict):
 #
 
 
+def make_elem(elem_tag, style = None, chars = '', parent = None):
+    if isinstance(style, str):
+        style = {'t':style}
+    elif style is None:
+        style = {}
+    ### print 'make_elem', elem_tag, style, chars, parent
+    e = ET.Element(elem_tag, style)
+    e.text = chars
+    e.tail = ''
+    if parent is not None:
+        parent.append(e)
+    return e
+
+def make_sub_elem(parent, elem_tag, style = None, chars = ''):
+    return make_elem(elem_tag, style, chars, parent)
+
+
 class XmlLinks(Links):
 
     def do_add_tag(self, filename, vim_tag):
@@ -236,7 +253,7 @@ class XmlLinks(Links):
             # not known link, no class specifed
             return vim_tag
         ### print "maplink-2: '%s' '%s' '%s'" % (vim_tag, elem_tag, style)
-        return XS.make_elem(elem_tag, style, vim_tag)
+        return make_elem(elem_tag, style, vim_tag)
 
 class VimHelpBuildXml(VimHelpBuildBase):
 
@@ -266,16 +283,9 @@ class VimHelpBuildXml(VimHelpBuildBase):
         ### print 'start_line:', self.lnum, self.input_line
 
     def _markup(self, markup):
-        markup = markup.strip()
-        print 'markup:', markup
-        l = markup.split(None,1)
-        cmd = l[0]
-        rest = l[1] if len(l) > 1 else None
-        started = False
-        if cmd.find('table') >= 0:
-            started = self.check_table_markup(cmd, rest)
+        handled = self.check_table_markup(markup)
 
-        if not started:
+        if not handled:
             self.error('UNKNOWN MARKUP COMMAND ' + cmd)
         pass
 
@@ -313,11 +323,11 @@ class VimHelpBuildXml(VimHelpBuildBase):
             elif token == 'pipe':
                 w = self.links.maplink(chars, 'pipe')
             elif token == 'star':
-                w = XS.make_elem('target', token, chars)
+                w = make_elem('target', token, chars)
             elif token in ('opt', 'ctrl', 'special'):
                 w = self.links.maplink(chars, token)
             else:
-                w = XS.make_elem('em', token, chars)
+                w = make_elem('em', token, chars)
 
             self.add_stuff(w, token_data)
 
@@ -341,6 +351,9 @@ class VimHelpBuildXml(VimHelpBuildBase):
 
     def do_add_stuff(self, stuff, e = None):
         """Add plain text or an element to current paragraph."""
+        if '\n' == stuff:
+            stuff = make_elem('nl')
+            stuff.tail = '\n'
         if e is None:
             e = self.get_cur_elem()
         if ET.iselement(stuff):
@@ -362,7 +375,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
                     and self.cur_elem.get('t') == style:
                 return self.cur_elem
             self.cur_elem = None
-        e = XS.make_sub_elem(self.root, elem_tag, style)
+        e = make_sub_elem(self.root, elem_tag, style)
         self.cur_elem = e
         return e
 
@@ -379,39 +392,34 @@ class VimHelpBuildXml(VimHelpBuildBase):
                                        self.check_start_table_row_ref)
                          }
 
-    def check_table_markup(self, cmd, column_info):
-        t01 = cmd.split(':')
+    def check_table_markup(self, markup):
+        t = parse_table_markup(markup)
+        t01 = t[0]
+        # t02 has a list for each column
+        t02 = t[1:]
+
         if 'table' != t01[0]:
             return False
         if 'stop-table' in t01:
             self.check_stop_table(TY_CONTROL, ('markup', 'stop-table', 0))
             return True
 
-        self.t_args = t01
-        self.t_data = []
-
-        # convert info to list of list items: int-col , 'arg2', 'arg3', ...
-        t02 = [x.split(':') for x in  column_info.split()]
-        self.t_cols = [ [int(x[0]),] + x[1:] for x in t02 ]
-
         self.cur_elem = None
         table = self.get_cur_elem('table')
         self.cur_elem = None
+        self.cur_table = table
+
+        table.set('markup', markup)
+        table.v_markup = t01
+        table.v_cols = t02
         for k,v in [ x.split('=') for x in t01[1:] if x.find('=') >= 0 ]:
             table.set(k, v)
-        table.set('markup', cmd + ' ' + column_info)
         form = table.get('form', '')
         self.t_ops = self.TABLE_OPS.get(form, self.DEFAULT_TABLE_OPS)
-        ### print 'form', (form, self.t_ops)
+
+        self.t_data = []
         self.t_ref_table_checked_idx = -1
-        self.t_ref_table_extra_or_col = -1
-        i = 0
-        for x in t02:
-            if 'extra-or' in x:
-                self.t_ref_table_extra_or_col = i
-                break
-            i += 1
-        self.cur_table = table
+        self.t_ref_table_extra_or_col = VG.find_table_column(table, 'extra-or')
         return True
 
     def check_stop_table(self, ty, token_data):
@@ -422,9 +430,10 @@ class VimHelpBuildXml(VimHelpBuildBase):
 
         if finish_table:
             self.build_table()
+            VG.fix_vim_table_columns(self.cur_table)
             XS.dump_table(self.cur_table)
             XS.dump_table_ascii(self.cur_table)
-            #print vg.get_txt(self.cur_table),
+            #print VG.get_txt(self.cur_table),
             self.cur_table = None
             self.t_data = None
         return consume_token
@@ -470,7 +479,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
         new_entry_ok = True
         if self.t_ref_table_extra_or_col >= 0 and self.cur_table_row is not None:
             tr = self.cur_table_row
-            l = XS.elem_text(tr[self.t_ref_table_extra_or_col]).split('\n')
+            l = VG.get_content(tr[self.t_ref_table_extra_or_col]).split('\n')
             if len(l) > 1 and 'or' == l[-2].strip():
                 # advance past this line, will never return true
                 new_entry_ok = False
@@ -491,7 +500,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
         return True
 
     def build_table(self):
-        cpos = [ x[0]-1 for x in self.t_cols]
+        cpos = [ x[0]-1 for x in self.cur_table.v_cols]
         print 'XXX', cpos
 
         tr = None
@@ -502,8 +511,8 @@ class VimHelpBuildXml(VimHelpBuildBase):
             if self.t_ops[1](idx) or tr is None:
                 if tr is not None:
                     self.cur_table.append(tr)
-                tr = XS.make_elem('tr')
-                td = [ XS.make_sub_elem(tr, 'td') for x in xrange(len(cpos))]
+                tr = make_elem('tr')
+                td = [ make_sub_elem(tr, 'td') for x in xrange(len(cpos))]
                 self.cur_table_row = tr
             if MAP_TY[token] == TY_EOL:
                 for x in td:
@@ -516,6 +525,23 @@ class VimHelpBuildXml(VimHelpBuildBase):
                         break
                 self.do_add_stuff(stuff, td[col])
         if tr is not None: self.cur_table.append(tr)
+
+
+##
+# @return list of lists, first list for table, remaining are list per column
+def parse_table_markup(markup):
+    markup = markup.strip()
+    l = markup.split(None,1)
+    cmd = l[0]
+    t01 = [ cmd.split(':') ]
+    if len(l) > 1:
+        column_info = l[1]
+        # convert info to list of list items: int-col , 'arg2', 'arg3', ...
+        t02 = [x.split(':') for x in  column_info.split()]
+        t02 = [ [int(x[0]),] + x[1:] for x in t02 ]
+        t01 += t02
+    print 'markup:', (markup, t01)
+    return t01
 
 
 ###################################################################

@@ -8,4 +8,4 @@ mv $DOC/tags $BUILD
 
 echo python vimh_xml.py $DOC $BUILD
 python vimh_xml.py $DOC $BUILD
-#cp $DOC/../css/*.css $BUILD
+cp $DOC/../css/*.css $BUILD
