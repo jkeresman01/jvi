@@ -1,7 +1,9 @@
+
+import os, sys
 import re
 import xml.etree.ElementTree as ET
 from StringIO import StringIO
-import xml_sub as XS
+import vimh_build as VB
 
 #
 # This module works with xml representation of the vim help files
@@ -122,7 +124,7 @@ def fix_line_ending(s, end):
 def find_table_column(table, label):
     col_idx = -1
     i = 0
-    for x in table.v_cols:
+    for x in table.vh_cols:
         if label in x:
             col_idx = i
             break
@@ -193,13 +195,8 @@ def fix_table_index(table):
             # plug the link into the command column
             cmd[:] = (link,)
 
-        if True:
-            del tr[tag_idx]
-        else:
-            # clear tag column
-            tr[tag_idx].clear()
-            tr[tag_idx].text = ''
-            tr[tag_idx].tail = ''
+        del tr[tag_idx]
+        # TODO: fix markup info to reflect deleted table column
 
         for td in tr:
             remove_nl(td)
@@ -280,7 +277,9 @@ def dump_table(table):
 
 def dump_table_row(tr):
     dump_table_row_elements(tr)
+
     return
+
     print '  tr:'
     for td in tr:
         text = get_content(td)
@@ -330,3 +329,76 @@ def dump_table_row_ascii(tr):
     for s in t:
         if len(s) == 0: s = '---'
         print s
+
+
+###################################################################
+###################################################################
+###################################################################
+
+#
+# commands to generate output from the xml files
+
+OUTPUT_FORMATS = ('txt', 'html', 'flex', 'tables')
+
+def usage():
+    print ( sys.argv[0]
+            + ' (' + '|'.join(OUTPUT_FORMATS) + ') input_dir [output_dir]')
+    exit(1)
+
+def gen_tables(xml):
+    for table in xml.findall('table'):
+        fix_vim_table_columns(table)
+        print 'table:', table
+
+def runit():
+    global INPUT_DIR, OUTPUT_DIR
+
+    if len(sys.argv) < 3:
+        print 'must be at least two arguments'
+        usage()
+
+    # if output_dir not present, use input_dir
+    # tags and any .txt files in input_dir are processed
+
+    output_format = sys.argv[1]
+    if output_format not in OUTPUT_FORMATS:
+        print 'unknown output format:', output_format
+        usage()
+
+    INPUT_DIR = sys.argv[2]
+    if INPUT_DIR[-1] != '/':
+        INPUT_DIR = INPUT_DIR + '/'
+    if len(sys.argv) > 3:
+        OUTPUT_DIR = sys.argv[3]
+        if OUTPUT_DIR[-1] != '/':
+            OUTPUT_DIR = OUTPUT_DIR + '/'
+        try: os.mkdir(OUTPUT_DIR)
+        except: pass
+    else:
+        OUTPUT_DIR = INPUT_DIR
+
+    print 'input dir:', INPUT_DIR, 'output dir:', OUTPUT_DIR
+
+    xmlfiles = [ x for x in os.listdir(INPUT_DIR) if x.endswith('.txt.xml') ]
+
+    print 'xmlfiles:', xmlfiles
+
+
+    for xmlfile in xmlfiles:
+        xml = VB.read_xml_file(INPUT_DIR + xmlfile)
+
+        if 'txt' == output_format:
+            txt = VG.get_txt(xml.getroot())
+
+            with open(OUTPUT_DIR + xmlfile + '.' + output_format, 'w') as f:
+                f.write(txt)
+        elif 'tables' == output_format:
+            gen_tables(xml)
+        else:
+            print 'not handled: "%s"' % (output_format,)
+            exit(1)
+
+
+if __name__ == "__main__":
+    runit()
+

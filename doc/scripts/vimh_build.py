@@ -2,9 +2,9 @@ import re
 import cgi
 import xml.etree.ElementTree as ET
 import urllib
+from collections import namedtuple
 import vimh_scan as vs
 import vimh_gen as VG
-import xml_sub as XS
 
 # accept tokens from vim help scanner
 #
@@ -208,6 +208,28 @@ class Links(dict):
 #         need a better concept of current know (building in that recursive...)
 #
 
+##
+# Read in and parse the xml file. Modify the tree node to be in vimh format;
+# this means making text and tail fields empty strings instead of null,
+# and parsing table markups.
+#
+# TODO: might be most efficient to override xml tree builder and do this stuff
+#       as the parse is proceeding.
+#
+# @return ElementTree
+#
+def read_xml_file(fname):
+    xml = ET.parse(fname)
+    _add_empty_content(xml.getroot())
+    for table in xml.findall('table'):
+        parse_table_markup(table)
+    return xml
+
+def _add_empty_content(e):
+    if e.text is None: e.text = ''
+    if e.tail is None: e.tail = ''
+    for i in e.getchildren():
+        _add_empty_content(i)
 
 def make_elem(elem_tag, style = None, chars = '', parent = None):
     if isinstance(style, str):
@@ -255,6 +277,9 @@ class XmlLinks(Links):
         ### print "maplink-2: '%s' '%s' '%s'" % (vim_tag, elem_tag, style)
         return make_elem(elem_tag, style, vim_tag)
 
+TableOps = namedtuple('TableOps',
+                      'check_stop_table, check_start_table_row')
+
 class VimHelpBuildXml(VimHelpBuildBase):
 
     def __init__(self, tags):
@@ -299,7 +324,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
         ### print 'token_data:', ty, token_data
 
         if self.cur_table is not None:
-            ret = self.check_stop_table(ty, token_data)
+            ret = self.check_finish_table(ty, token_data)
             if ret:
                 return
 
@@ -384,24 +409,21 @@ class VimHelpBuildXml(VimHelpBuildBase):
     #
 
     def _init_table_ops(self):
-        self.DEFAULT_TABLE_OPS = (self.check_stop_table_simple,
-                                  self.check_start_table_row_simple)
+        self.DEFAULT_TABLE_OPS = TableOps(self.check_stop_table_simple,
+                                          self.check_start_table_row_simple)
+
         self.TABLE_OPS = { 'simple' : self.DEFAULT_TABLE_OPS,
                            'index'  : self.DEFAULT_TABLE_OPS,
-                           'ref'    : (self.check_stop_table_ref,
-                                       self.check_start_table_row_ref)
+                           'ref'    : TableOps(self.check_stop_table_ref,
+                                               self.check_start_table_row_ref)
                          }
 
     def check_table_markup(self, markup):
-        t = parse_table_markup(markup)
-        t01 = t[0]
-        # t02 has a list for each column
-        t02 = t[1:]
-
+        t01 = parse_basic_markup(markup)
         if 'table' != t01[0]:
             return False
         if 'stop-table' in t01:
-            self.check_stop_table(TY_CONTROL, ('markup', 'stop-table', 0))
+            self.check_finish_table(TY_CONTROL, ('markup', 'stop-table', 0))
             return True
 
         self.cur_elem = None
@@ -410,10 +432,8 @@ class VimHelpBuildXml(VimHelpBuildBase):
         self.cur_table = table
 
         table.set('markup', markup)
-        table.v_markup = t01
-        table.v_cols = t02
-        for k,v in [ x.split('=') for x in t01[1:] if x.find('=') >= 0 ]:
-            table.set(k, v)
+        parse_table_markup(table)
+
         form = table.get('form', '')
         self.t_ops = self.TABLE_OPS.get(form, self.DEFAULT_TABLE_OPS)
 
@@ -422,17 +442,16 @@ class VimHelpBuildXml(VimHelpBuildBase):
         self.t_ref_table_extra_or_col = VG.find_table_column(table, 'extra-or')
         return True
 
-    def check_stop_table(self, ty, token_data):
+    def check_finish_table(self, ty, token_data):
         if self.cur_table is None:
             return False
 
-        finish_table, consume_token = self.t_ops[0](ty, token_data)
+        finish_table, consume_token = self.t_ops.check_stop_table(ty, token_data)
 
         if finish_table:
             self.build_table()
-            VG.fix_vim_table_columns(self.cur_table)
-            XS.dump_table(self.cur_table)
-            XS.dump_table_ascii(self.cur_table)
+            VG.dump_table(self.cur_table)
+            VG.dump_table_ascii(self.cur_table)
             #print VG.get_txt(self.cur_table),
             self.cur_table = None
             self.t_data = None
@@ -500,7 +519,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
         return True
 
     def build_table(self):
-        cpos = [ x[0]-1 for x in self.cur_table.v_cols]
+        cpos = [ x[0]-1 for x in self.cur_table.vh_cols]
         print 'XXX', cpos
 
         tr = None
@@ -508,7 +527,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
         # use an index into t_data, since may need to do lookahead
         for idx in xrange(len(self.t_data)):
             token, stuff, pos = self.t_data[idx]
-            if self.t_ops[1](idx) or tr is None:
+            if self.t_ops.check_start_table_row(idx) or tr is None:
                 if tr is not None:
                     self.cur_table.append(tr)
                 tr = make_elem('tr')
@@ -526,22 +545,40 @@ class VimHelpBuildXml(VimHelpBuildBase):
                 self.do_add_stuff(stuff, td[col])
         if tr is not None: self.cur_table.append(tr)
 
+##
+# Assuming something of the form "a:b:c(\sMoreStuff)?" return [ a, b, c]
+def parse_basic_markup(markup):
+    return markup.split(None,1)[0].split(':')
 
 ##
-# @return list of lists, first list for table, remaining are list per column
-def parse_table_markup(markup):
-    markup = markup.strip()
-    l = markup.split(None,1)
+# If the table does not have parsed markup info
+# then parse the 'markup' attr on table element and set up
+# table object fields vh_markup and vh_cols.
+#
+# Also using vh_markup to add element attrs to table.
+def parse_table_markup(table):
+    if getattr(table, 'vh_markup', None) is not None:
+        return
+
+    markup = table.get('markup')
+
+    l = markup.split(None, 1)
     cmd = l[0]
-    t01 = [ cmd.split(':') ]
+    t01 = cmd.split(':')
+    t02 = None
     if len(l) > 1:
         column_info = l[1]
         # convert info to list of list items: int-col , 'arg2', 'arg3', ...
         t02 = [x.split(':') for x in  column_info.split()]
         t02 = [ [int(x[0]),] + x[1:] for x in t02 ]
-        t01 += t02
-    print 'markup:', (markup, t01)
-    return t01
+    print 'markup:', (markup, t01, t02)
+    table.vh_markup = t01
+    table.vh_cols = t02
+
+    # add each attribute, unless it is already set
+    for k,v in [ x.split('=', 1) for x in t01[1:] if x.find('=') >= 0 ]:
+        if table.get(k) is None:
+            table.set(k, v)
 
 
 ###################################################################

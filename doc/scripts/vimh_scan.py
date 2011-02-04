@@ -1,7 +1,6 @@
 # scan vim documentation, output tokens
 
 import re
-from vimh_build import VimHelpBuildBase
 
 VIM_FAQ_LINE = '<a href="vim_faq.txt.html#vim_faq.txt" class="l">' \
                'vim_faq.txt</a>   Frequently Asked Questions\n'

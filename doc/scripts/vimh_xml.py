@@ -1,6 +1,6 @@
 import os, sys
 import re
-import vimh_scan as vs
+import vimh_scan as VS
 from vimh_scan import VimHelpScanner
 from vimh_build import VimHelpBuildXml
 from collections import deque
@@ -34,7 +34,7 @@ helpfiles = [ x for x in os.listdir(INPUT_DIR) if x.endswith('.txt') ]
 
 
 PAT_TITLE    = r'(?P<title>jVi version [0-9.a-z]+|JVI REFERENCE.*)'
-vs.PAT_TITLE = PAT_TITLE
+VS.PAT_TITLE = PAT_TITLE
 
 class VimHelp2Xml(object):
 
