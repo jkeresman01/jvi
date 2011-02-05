@@ -9,6 +9,8 @@ import vimh_build as VB
 # This module works with xml representation of the vim help files
 #
 
+RE_CLEANSPACE = re.compile(r'\s+')
+
 ###################################################################
 ###################################################################
 ###################################################################
@@ -117,6 +119,17 @@ def fix_line_ending(s, end):
 # general xml and vim help xml manipulations
 #
 
+def get_content(e):
+    sb = StringIO()
+    sb_get_content(e, sb)
+    return sb.getvalue()
+
+def sb_get_content(e, sb):
+    sb.write(e.text)
+    for i in e.getchildren():
+        sb_get_content(i, sb)
+    sb.write(e.tail)
+
 
 ##
 # Find column that has word as part of its markup description.
@@ -132,9 +145,7 @@ def find_table_column(table, label):
     return col_idx
 
 ##
-# Remove direct 'nl' children nodes from param element.
-# '\n' in content are converted to spaces,
-# otherwise param content is unchanged.
+# Historical turned into fix_whitespace
 def remove_nl(td):
     cur_tail = None
     for e in td:
@@ -149,6 +160,28 @@ def remove_nl(td):
     for i in reversed(xrange(len(td))):
         if 'nl' == td[i].tag:
             del td[i]
+
+##
+# Remove <nl/> nodes recursively, <br/> nodes remain.
+# Multiple whitespace in content are converted to single space,
+def fix_whitespace(e):
+    cur_tail = None
+    for e01 in e:
+        fix_whitespace(e01)
+        if 'nl' == e01.tag:
+            t = re.sub('\n', ' ', e01.tail)
+            if cur_tail is None:
+                e.text += t
+            else:
+                cur_tail.tail += t
+        else:
+            cur_tail = e01
+    for i in reversed(xrange(len(e))):
+        if 'nl' == e[i].tag:
+            del e[i]
+
+    if e.text != '': e.text = RE_CLEANSPACE.sub(' ', e.text)
+    if e.tail != '': e.tail = RE_CLEANSPACE.sub(' ', e.tail)
 
 ##
 # Convert some <nl/> to <br/> in some table columns for text which
@@ -173,7 +206,7 @@ def fix_vim_table_columns(table):
 def fix_table_index(table):
     tag_idx = find_table_column(table, 'tag')
     command_idx = find_table_column(table, 'command')
-    ### print 'fix_table_index', (tag_idx, command_idx)
+    print 'FIXUP TABLE: index', (table.get('name'), tag_idx, command_idx)
     if tag_idx < 0 or command_idx < 0:
         return
     new_col = None
@@ -198,22 +231,19 @@ def fix_table_index(table):
         del tr[tag_idx]
         # TODO: fix markup info to reflect deleted table column
 
-        for td in tr:
-            remove_nl(td)
         ### print 'fix_table_index 09:'
         ### XS.dump_table_row_elements(tr)
 
 def fix_table_ref(table):
-    idx = find_table_column(table, 'command')
-    print 'FIXUP: ref command col', idx
-    if idx >= 0:
+    command_idx = find_table_column(table, 'command')
+    desc_idx = find_table_column(table, 'desc')
+    print 'FIXUP TABLE: ref', (table.get('name'), command_idx, desc_idx)
+    if command_idx >= 0:
         for tr in table:
-            fix_table_ref_command(tr[idx])
-    idx = find_table_column(table, 'desc')
-    print 'FIXUP: ref desc col', idx
-    if idx >= 0:
+            fix_table_ref_command(tr[command_idx])
+    if desc_idx >= 0:
         for tr in table:
-            fix_table_ref_desc(tr[idx])
+            fix_table_ref_desc(tr[desc_idx])
 
 def fix_table_ref_command(td):
     t = td.text
@@ -242,26 +272,6 @@ def fix_table_ref_desc(td):
             break
 
 
-def get_content(e):
-    sb = StringIO()
-    sb_get_content(e, sb)
-    return sb.getvalue()
-
-def sb_get_content(e, sb):
-    # tag = e.tag
-    # style = e.get('t')
-    s = e.text
-
-    # if 'table' == tag:
-    #     # s = sb_get_content_table(e, sb)
-    #     s = ' GET_CONTENT TABLE '
-    #     return
-    sb.write(s)
-    for i in e.getchildren():
-        sb_get_content(i, sb)
-    sb.write(e.tail)
-
-
 ###################################################################
 ###################################################################
 ###################################################################
@@ -269,6 +279,37 @@ def sb_get_content(e, sb):
 #
 # debug assistance
 #
+
+##
+# prettyprint dump an element
+def edump(x, l = 0):
+    f_closed = _edump(x, l)
+    l1 = l + 1
+    _idump(x.text,l1)
+    for i in x.getchildren():
+        edump(i,l1)
+    if not f_closed:
+        _edump(x, l1, True)
+    _idump(x.tail,l)
+
+def _idump(s, l):
+    if s: print ' ' * (l*2) + s
+
+def _edump(e, l, closetag=False):
+    if not ET.iselement(e):
+        return
+    f_closed = False
+    if closetag:
+        _idump('</'+e.tag + '>', l-1)
+    else:
+        f_closed = (e.text is None or e.text == '') and len(e) == 0
+        end = '/>' if f_closed else '>'
+        s1 = '<'+e.tag
+        s2 = ' '.join([k + '="' + v + '"' for (k,v) in e.items()])
+        if s2: s1 += ' ' + s2
+        s1 += end
+        _idump(s1, l)
+    return f_closed
 
 def dump_table(table):
     print 'table:'
@@ -345,10 +386,15 @@ def usage():
             + ' (' + '|'.join(OUTPUT_FORMATS) + ') input_dir [output_dir]')
     exit(1)
 
-def gen_tables(xml):
+def fix_tables(xml):
     for table in xml.findall('table'):
+        ### print '\nBEFORE\n\n'
+        ### edump(table)
         fix_vim_table_columns(table)
-        print 'table:', table
+        fix_whitespace(table)
+        print '\nAFTER\n\n'
+        edump(table)
+        print 'fix table:', table
 
 def runit():
     global INPUT_DIR, OUTPUT_DIR
@@ -393,10 +439,15 @@ def runit():
             with open(OUTPUT_DIR + xmlfile + '.' + output_format, 'w') as f:
                 f.write(txt)
         elif 'tables' == output_format:
-            gen_tables(xml)
+            fix_tables(xml)
         else:
             print 'not handled: "%s"' % (output_format,)
             exit(1)
+
+#####
+##### FOR PRETTY PRINTING
+##### from xml.dom.minidom import parse, parseString
+#####
 
 
 if __name__ == "__main__":

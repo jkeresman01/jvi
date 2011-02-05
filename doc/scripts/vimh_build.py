@@ -213,23 +213,21 @@ class Links(dict):
 # this means making text and tail fields empty strings instead of null,
 # and parsing table markups.
 #
-# TODO: might be most efficient to override xml tree builder and do this stuff
-#       as the parse is proceeding.
-#
 # @return ElementTree
 #
 def read_xml_file(fname):
-    xml = ET.parse(fname)
-    _add_empty_content(xml.getroot())
-    for table in xml.findall('table'):
-        parse_table_markup(table)
+    for ev,e in ET.iterparse(fname):
+        if e.text is None: e.text = ''
+        if e.tail is None: e.tail = ''
+        if 'table' == e.tag:
+            parse_table_markup(e)
+    # Note: 'e' is the last element and the root of the tree
+    xml = ET.ElementTree(e)
     return xml
 
-def _add_empty_content(e):
-    if e.text is None: e.text = ''
-    if e.tail is None: e.tail = ''
-    for i in e.getchildren():
-        _add_empty_content(i)
+# TODO: manually copying is probably more efficient
+def copy_elem(e):
+    return ET.fromstring(ET.tostring(e))
 
 def make_elem(elem_tag, style = None, chars = '', parent = None):
     if isinstance(style, str):
