@@ -154,7 +154,7 @@ class Links(dict):
 # <vimhelp> is the root, the schema looks a bit like
 #       <vimhelp> ::= [ <p> | <pre> | <table> ]+
 # and these are made up of leaf elements and character data
-#       element   ::= <target> | <link> | <em>
+#       element   ::= <anchor> | <link> | <em>
 #
 # Every element can have a 't' attribute (type). For <pre> they are
 # one of SET_PRE. For the leaf elements they are from SET_WORD.
@@ -187,9 +187,9 @@ class Links(dict):
 #                               // columns may be combined into a single column
 #                               // when an output table is generated. The
 #                               // "command" column is displayed as a
-#                               // link to "tag" column's target.
+#                               // link to "tag" column's anchor.
 #                      | ref    // typically holds descriptions for a commands.
-#                               // Each description is the target of a link.
+#                               // Each description is the anchor of a link.
 #                      | simple // just a table
 #   - the rest of the groups are the columns. The first item in the group
 #     is the column where the table starts. The rest of the items usually
@@ -229,6 +229,15 @@ def read_xml_file(fname):
 def copy_elem(e):
     return ET.fromstring(ET.tostring(e))
 
+def make_vimhelp_tree(fname):
+    root = ET.Element('vimhelp')
+    root.text = '\n'
+    root.tail = '\n'
+    if fname is not None:
+        root.set('filename', fname)
+    tree = ET.ElementTree(root)
+    return tree
+
 def make_elem(elem_tag, style = None, chars = '', parent = None):
     if isinstance(style, str):
         style = {'t':style}
@@ -264,7 +273,7 @@ class XmlLinks(Links):
             # seems the idea is that, use link.style unless 'link' is
             # argument, in which case make it a 'pipe'
             style = 'pipe' if 'pipe' == style else link.style
-            style = {'t':style, 'filename':link.filename}
+            style = {'t':style, 'filename':link.filename, 'linkto':vim_tag}
             elem_tag = 'link'
         elif style is not None:
             # not a known link, but a style was specified
@@ -293,13 +302,10 @@ class VimHelpBuildXml(VimHelpBuildBase):
         super(VimHelpBuildXml, self)._start_file(filename)
 
         self.blank_lines = 0
-        self.root = ET.Element('vimhelp')
-        self.tree = ET.ElementTree(self.root)
+        self.tree = make_vimhelp_tree(filename)
         self.cur_elem = None
         self.cur_table = None
         self.after_blank_line = False
-
-        self.root.set('filename', filename)
 
     def _start_line(self, line, lnum):
         super(VimHelpBuildXml, self)._start_line(line, lnum)
@@ -346,7 +352,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
             elif token == 'pipe':
                 w = self.links.maplink(chars, 'pipe')
             elif token == 'star':
-                w = make_elem('target', token, chars)
+                w = make_elem('anchor', token, chars)
             elif token in ('opt', 'ctrl', 'special'):
                 w = self.links.maplink(chars, token)
             else:
@@ -398,7 +404,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
                     and self.cur_elem.get('t') == style:
                 return self.cur_elem
             self.cur_elem = None
-        e = make_sub_elem(self.root, elem_tag, style)
+        e = make_sub_elem(self.tree.getroot(), elem_tag, style)
         self.cur_elem = e
         return e
 
@@ -487,7 +493,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
         return (finish_table, consume_token)
 
     ##
-    # reference table entry starts with <target t="star"> somewhere in the line.
+    # reference table entry starts with <anchor t="star"> somewhere in the line.
     # Check till EOL or EOF. If there's an extra-or column, then check
     # previous input line for 'or', if present then this line is continuation.
     def check_start_table_row_ref(self, idx):
@@ -507,7 +513,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
             if ty in (TY_EOL, TY_EOF):
                 break;
             if (new_entry_ok
-                    and ET.iselement(stuff) and stuff.tag == 'target'
+                    and ET.iselement(stuff) and stuff.tag == 'anchor'
                     and stuff.get('t') == 'star'):
                 new_entry = True
             idx += 1

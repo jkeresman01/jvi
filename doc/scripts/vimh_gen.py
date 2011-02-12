@@ -187,16 +187,18 @@ def fix_whitespace(e):
 # Convert some <nl/> to <br/> in some table columns for text which
 # acts like entry headers, like command name and pipe target.
 # Two types of table fixups: 'ref' and 'index'.
+#
 # index: with 'tag' and 'command' columns
 #       combine the tag and command columns. the command becomes a
 #       <link> whose target is taken from tag
 #       TODO: the tag column is deleted, so markup info doesn't match
 #             columns, clean it up (delete and add flag to table?)
+#
 # ref:
 #       - 'command' column (genererally first column)
 #         one or more lines give the command text
 #       - 'desc' column
-#         may start with one or more lines of <target>s
+#         may start with one or more lines of <anchor>s
 def fix_vim_table_columns(table):
     if 'index' == table.get('form'):
         fix_table_index(table)
@@ -206,7 +208,7 @@ def fix_vim_table_columns(table):
 def fix_table_index(table):
     tag_idx = find_table_column(table, 'tag')
     command_idx = find_table_column(table, 'command')
-    print 'FIXUP TABLE: index', (table.get('name'), tag_idx, command_idx)
+    print 'FIXUP TABLE: index', (table.get('label'), tag_idx, command_idx)
     if tag_idx < 0 or command_idx < 0:
         return
     new_col = None
@@ -237,13 +239,17 @@ def fix_table_index(table):
 def fix_table_ref(table):
     command_idx = find_table_column(table, 'command')
     desc_idx = find_table_column(table, 'desc')
-    print 'FIXUP TABLE: ref', (table.get('name'), command_idx, desc_idx)
+    extra_or_idx = find_table_column(table, 'extra-or')
+    print 'FIXUP TABLE: ref', (table.get('label'), command_idx, desc_idx)
     if command_idx >= 0:
         for tr in table:
             fix_table_ref_command(tr[command_idx])
     if desc_idx >= 0:
         for tr in table:
-            fix_table_ref_desc(tr[desc_idx])
+            td_anchor = fix_table_ref_desc(tr[desc_idx])
+            if extra_or_idx >= 0:
+                del tr[extra_or_idx]
+            tr.insert(0, td_anchor)
 
 def fix_table_ref_command(td):
     t = td.text
@@ -256,20 +262,31 @@ def fix_table_ref_command(td):
 
 def fix_table_ref_desc(td):
     t = td.text
-    saw_target = False
+    saw_anchor = False
+    anchors = []
     for e in td:
-        if 'target' == e.tag:
-            saw_target = True
+        if 'anchor' == e.tag:
+            saw_anchor = True
             t += e.tail
         elif 'nl' == e.tag:
-            if saw_target:
+            if saw_anchor:
                 e.tag = 'br'
-                saw_target = False
+                saw_anchor = False
             t = e.tail
         else:
             t += get_txt(e)
         if len(t) > 0 and not t.isspace():
             break
+        anchors.append(e)
+    td_anchor = VB.make_elem('td')
+    if len(anchors) > 0:
+        # split node; put the anchors into their own element
+        for e in anchors:
+            td.remove(e)
+        td_anchor[:] += anchors
+        td[0].text += anchors[-1].tail
+        anchors[-1].tail = ''
+    return td_anchor
 
 
 ###################################################################
@@ -277,25 +294,25 @@ def fix_table_ref_desc(td):
 ###################################################################
 
 #
-# debug assistance
+# debug output
 #
 
 ##
 # prettyprint dump an element
 def edump(x, l = 0):
-    f_closed = _edump(x, l)
+    f_closed = _edump1(x, l)
     l1 = l + 1
     _idump(x.text,l1)
     for i in x.getchildren():
         edump(i,l1)
     if not f_closed:
-        _edump(x, l1, True)
+        _edump1(x, l1, True)
     _idump(x.tail,l)
 
 def _idump(s, l):
     if s: print ' ' * (l*2) + s
 
-def _edump(e, l, closetag=False):
+def _edump1(e, l, closetag=False):
     if not ET.iselement(e):
         return
     f_closed = False
@@ -386,15 +403,20 @@ def usage():
             + ' (' + '|'.join(OUTPUT_FORMATS) + ') input_dir [output_dir]')
     exit(1)
 
+def gen_tables(xml):
+    out = VB.make_vimhelp_tree(xml.getroot().get('filename'))
+    root = out.getroot()
+    tables = [ table for table in xml.findall('table') ]
+    for table in tables:
+        table.tail = '\n'
+        edump(table)
+        root.append(table)
+    return out
+
 def fix_tables(xml):
     for table in xml.findall('table'):
-        ### print '\nBEFORE\n\n'
-        ### edump(table)
         fix_vim_table_columns(table)
         fix_whitespace(table)
-        print '\nAFTER\n\n'
-        edump(table)
-        print 'fix table:', table
 
 def runit():
     global INPUT_DIR, OUTPUT_DIR
@@ -431,6 +453,7 @@ def runit():
 
 
     for xmlfile in xmlfiles:
+        print 'PROCESSING:', xmlfile
         xml = VB.read_xml_file(INPUT_DIR + xmlfile)
 
         if 'txt' == output_format:
@@ -440,6 +463,9 @@ def runit():
                 f.write(txt)
         elif 'tables' == output_format:
             fix_tables(xml)
+            out = gen_tables(xml)
+            with open(OUTPUT_DIR + xmlfile + '.' + output_format, 'w') as f:
+                out.write(f)
         else:
             print 'not handled: "%s"' % (output_format,)
             exit(1)
