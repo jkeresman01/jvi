@@ -350,14 +350,14 @@ abc	      defghijklmnopqrstuvwxyz
 abcdef  ghi   jklmnopqrstuvwxyz
 abcdefghijklmnopqrstuvwxyz
 
-4. fo3j>..							*v_b_>_example*
+4. fo<C-v>3j>..							*v_b_>_example*
 
 abcdefghijklmn		  opqrstuvwxyz
 abc			    defghijklmnopqrstuvwxyz
 abcdef  ghi			    jklmnopqrstuvwxyz
 abcdefghijklmn		  opqrstuvwxyz
 
-5. fo5l3jrX							*v_b_r_example*
+5. fo<C-v>5l3jrX						*v_b_r_example*
 
 abcdefghijklmnXXXXXXuvwxyz
 abc	      XXXXXXhijklmnopqrstuvwxyz

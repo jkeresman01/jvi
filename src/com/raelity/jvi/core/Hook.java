@@ -46,6 +46,7 @@ public class Hook
                      position=1)
     public static class Init implements ViInitialization
     {
+      @Override
       public void init()
       {
         Hook.init();

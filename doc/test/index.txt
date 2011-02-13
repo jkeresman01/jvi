@@ -3,7 +3,12 @@
 
                   ${reference-manual}
 
+#*# table:form=ref:label=word-motions 1:command 3:extra-or 25:desc #*#
+<S-Right>	or					*<S-Right>* *w*
+w			[count] words forward (exclusive).
+#*#table:stop-table #*#
 
+START-DOC-DEL
 								*index*
 This file contains a list of all commands for each mode, with a tag and a
 short description.  The lists are sorted on ASCII value.
@@ -33,8 +38,10 @@ LEGEND FOR THE FIRST COLUMN:	" " works
 
 STOP-DOC-DEL
 NOTE: there may be platform specific methods
-to block user specified keys from jVi.
-
+to block user specified keys from jVi. >
+		An example
+		of two lines
+<
 							*{motion}*
 {motion}	A command that moves the cursor.  See the list at
 
@@ -60,13 +67,15 @@ SECTION	 a section that possibly starts with '}' instead of '{'
 
 tag		char	      note action in Normal mode	~
 ------------------------------------------------------------------------------
-#*# table:form=index:name=foo 1:tag 17:command 33:opt:note 36:desc #*#
+#*# table:form=index:label=normal-index 1:tag 17:command 33:opt:note 36:desc #*#
  |CTRL-X|	CTRL-X		2  add N to number at/after cursor
  |CTRL-E|	CTRL-E CTRL-E	   stuff for ctrl e,
-				   second line of stuff for ctrl e
+				   (between first and second)
+				   second line with CTRL-E stuff
+				   third line of stuff for ctrl e
 
 
-#*# table:form=ref:name=foo 1:command 2:extra-or 25:desc #*#
+#*# table:form=ref:label=other-index 1:command 2:extra-or 25:desc #*#
 							*CTRL-E*
 CTRL-E			Scroll window [count] lines downwards in the buffer.
 			Mnemonic: Extra lines.
@@ -82,3 +91,4 @@ CTRL-F			Scroll window [count] pages Forwards (downwards) in
 			the buffer.  See also 'startofline' option.
 
 #*#table:stop-table #*#
+

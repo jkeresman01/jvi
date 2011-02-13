@@ -26,6 +26,7 @@ NOTE: in insert mode, any unused control character takes you out of input mode.
 
 char		action	~
 -----------------------------------------------------------------------
+#*# table:form=ref:label=ins-special-keys 1:command 3:extra-or 17:desc #*#
 						*i_CTRL-[* *i_<Esc>*
 <Esc> or CTRL-[	End insert or Replace mode, go back to Normal mode.  Finish
 		abbreviation.
@@ -161,36 +162,30 @@ The changes (inserted or deleted characters) before and after these keys can
 be undone separately.  Only the last change can be redone and always behaves
 like an "i" command.
 
-IN THE FOLLOWING TABLE
-LEGEND FOR THE FIRST COLUMN:	" " works
-				"e" works if platform support, eg an IDE
-				"." future support
-				"x" not supported or planned (but plans change)
-
 char		action	~
 -----------------------------------------------------------------------
-  <Up>            cursor one line up                           *i_<Up>*
-  <Down>          cursor one line down                         *i_<Down>*
-  <Left>          cursor one character left                    *i_<Left>*
-  <Right>         cursor one character right                   *i_<Right>*
-  <S-Left>        cursor one word back (like "b" command)      *i_<S-Left>*
-  <C-Left>        cursor one word back (like "b" command)      *i_<C-Left>*
-  <S-Right>       cursor one word forward (like "w" command)   *i_<S-Right>*
-  <C-Right>       cursor one word forward (like "w" command)   *i_<C-Right>*
-  <Home>          cursor to first char in the line             *i_<Home>*
-  <End>           cursor to after last char in the line        *i_<End>*
-  <C-Home>        cursor to first char in the file             *i_<C-Home>*
-  <C-End>         cursor to after last char in the file        *i_<C-End>*
-. <LeftMouse>     cursor to position of mouse click            *i_<LeftMouse>*
-. <S-Up>          move window one page up                      *i_<S-Up>*
-. <PageUp>        move window one page up                      *i_<PageUp>*
-. <S-Down>        move window one page down                    *i_<S-Down>*
-. <PageDown>      move window one page down                    *i_<PageDown>*
-e <MouseDown>     scroll three lines down                      *i_<MouseDown>*
-e <S-MouseDown>   scroll a full page down                      *i_<S-MouseDown>*
-e <MouseUp>       scroll three lines up                        *i_<MouseUp>*
-e <S-MouseUp>     scroll a full page up                        *i_<S-MouseUp>*
-x CTRL-O          execute one command, return to Insert mode   *i_CTRL-O*
+#*# table:form=ref:label=ins-special-special 1:command 18:desc 63:target#*#
+ <Up>            cursor one line up                           *i_<Up>*
+ <Down>          cursor one line down                         *i_<Down>*
+ <Left>          cursor one character left                    *i_<Left>*
+ <Right>         cursor one character right                   *i_<Right>*
+ <S-Left>        cursor one word back (like "b" command)      *i_<S-Left>*
+ <C-Left>        cursor one word back (like "b" command)      *i_<C-Left>*
+ <S-Right>       cursor one word forward (like "w" command)   *i_<S-Right>*
+ <C-Right>       cursor one word forward (like "w" command)   *i_<C-Right>*
+ <Home>          cursor to first char in the line             *i_<Home>*
+ <End>           cursor to after last char in the line        *i_<End>*
+ <C-Home>        cursor to first char in the file             *i_<C-Home>*
+ <C-End>         cursor to after last char in the file        *i_<C-End>*
+ <LeftMouse>     cursor to position of mouse click            *i_<LeftMouse>*
+ <S-Up>          move window one page up                      *i_<S-Up>*
+ <PageUp>        move window one page up                      *i_<PageUp>*
+ <S-Down>        move window one page down                    *i_<S-Down>*
+ <PageDown>      move window one page down                    *i_<PageDown>*
+ <MouseDown>     scroll three lines down                      *i_<MouseDown>*
+ <S-MouseDown>   scroll a full page down                      *i_<S-MouseDown>*
+ <MouseUp>       scroll three lines up                        *i_<MouseUp>*
+ <S-MouseUp>     scroll a full page up                        *i_<S-MouseUp>*
 -----------------------------------------------------------------------
 
 When the 'whichwrap' option is set appropriately, the <Left> and <Right>
@@ -245,6 +240,7 @@ last one).  {Vi does not have the 'expandtab' option}
 The following commands can be used to insert new text into the buffer.  They
 can all be undone and repeated with the "." command.
 
+#*# table:form=ref:label=inserting 1:command 3:extra-or 25:desc #*#
 							*a*
 a			Append text after the cursor [count] times.
 
@@ -267,6 +263,7 @@ o			Begin a new line below the cursor and insert text,
 O			Begin a new line above the cursor and insert text,
 			repeat [count] times.  {Vi: blank [count] screen
 			lines}
+#*#table:stop-table #*#
 
 These commands are used to start inserting text.  You can end insert mode with
 <Esc>.  See |mode-ins-repl| for the other special characters in Insert mode.

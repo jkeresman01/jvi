@@ -22,6 +22,7 @@ For inserting text see |insert.txt|.
 ==============================================================================
 1. Deleting text					*deleting*
 
+#*# table:form=ref:label=deleting 1:command 3:extra-or 25:desc #*#
 ["x]<Del>	or					*<Del>* *x* *dl*
 ["x]x			Delete [count] characters under and after the cursor
 			[into register x] (not linewise).  Does the same as
@@ -45,6 +46,7 @@ For inserting text see |insert.txt|.
 ["x]D			Delete the characters under the cursor until the end
 			of the line and [count]-1 more lines [into register
 			x]; synonym for d$ (not linewise).
+#*#table:stop-table #*#
 
 These commands delete text.  You can repeat them with the "." command
 (except ":d") and undo them.  Use Visual mode to delete blocks of text.  See
@@ -59,10 +61,12 @@ might expect to remain.
 Trying to delete an empty region of text (e.g., "d0" in the first column)
 is an error when 'cpoptions' includes the 'E' flag.
 
+#*# table:form=ref:label=FIXME 1:command 3:extra-or 25:desc #*#
 							*J*
 J			Join [count] lines, with a minimum of two lines.
 			Remove the indent and insert up to two spaces (see
 			below).
+#*#table:stop-table #*#
 
 These commands delete the <EOL> between lines.  This has the effect of joining
 multiple lines into one line.  You can repeat these commands (except ":j") and
@@ -79,6 +83,7 @@ only after a '.').
 ==============================================================================
 2. Delete and insert				*delete-insert* *replacing*
 
+#*# table:form=ref:label=delete-insert 1:command 3:extra-or 25:desc #*#
 							*R*
 R			Enter Replace mode: Each character you type replaces
 			an existing character, starting with the character
@@ -113,6 +118,7 @@ R			Enter Replace mode: Each character you type replaces
 							*S*
 ["x]S			Delete [count] lines [into register x] and start
 			insert.  Synonym for "cc" (linewise).
+#*#table:stop-table #*#
 
 Notes:
 - You can end Insert and Replace mode with <Esc>.
@@ -131,16 +137,19 @@ further characters (just like Insert mode).  In Replace mode, the backspace
 key restores the original text (if there was any).  (See section "Insert and
 Replace mode" |mode-ins-repl|).
 
+#*#table:form=ref 1:desc#*#
 						*cw* *cW*
 Special case: "cw" and "cW" work the same as "ce" and "cE" if the cursor is
 on a non-blank.  This is because Vim interprets "cw" as change-word, and a
 word does not include the following white space.  {Vi: "cw" when on a blank
 followed by other blanks changes only the first blank; this is probably a
 bug, because "dw" deletes all the blanks}
+#*#table:stop-table #*#
 
 ==============================================================================
 3. Simple changes					*simple-change*
 
+#*# table:form=ref 1:command 3:extra-or 25:desc #*#
 							*r*
 r{char}			Replace the character under the cursor with {char}.
 			If {char} is a <CR> or <NL>, a line break replaces the
@@ -155,6 +164,7 @@ r{char}			Replace the character under the cursor with {char}.
 			Vim performs autoindenting.  This works just like
 			deleting the characters that are replaced and then
 			doing "i<CR><Esc>".
+#*#table:stop-table #*#
 
 
 						*case* *locale* *$LANG*
@@ -163,6 +173,8 @@ locale is used.  This depends on your system  On Unix, setting the $LANG
 environment variable can make a difference.  For example, to enable changing
 the case of letters with umlauts:
 >	setenv LANG de
+
+#*# table:form=ref 1:command 3:extra-or 25:desc #*#
 							*~*
 ~			'notildeop' option: Switch case of the character
 			under the cursor and move the cursor to the right.
@@ -171,10 +183,12 @@ the case of letters with umlauts:
 
 ~{motion}		'tildeop' option: switch case of {motion} text. {Vi:
 			tilde cannot be used as an operator}
+#*#table:stop-table #*#
 
 
 SHIFTING LINES LEFT OR RIGHT				*shift-left-right*
 
+#*# table:form=ref:label=shift-left-right 1:command 3:extra-or 25:desc #*#
 							*<*
 <{motion}		Shift {motion} lines one 'shiftwidth' leftwards.
 
@@ -186,6 +200,34 @@ SHIFTING LINES LEFT OR RIGHT				*shift-left-right*
 
 							*>>*
  >>			Shift [count] lines one 'shiftwidth' rightwards.
+
+							*v_>*
+{Visual}[count]>	Shift the highlighted lines [count] 'shiftwidth'
+			rightwards (for {Visual} see |Visual-mode|).  {not in
+			Vi}
+
+							*:<*
+:[range]<		Shift [range] lines one 'shiftwidth' left.  Repeat '<'
+			for shifting multiple 'shiftwidth's.
+
+:[range]< {count}	Shift {count} lines one 'shiftwidth' left, starting
+			with [range] (default current line |cmdline-ranges|).
+			Repeat '<' for shifting multiple 'shiftwidth's.
+
+:[range]le[ft] [indent]	left align lines in [range].  Sets the indent in the
+			lines to [indent] (default 0).  {not in Vi}
+
+							*:>*
+:[range]> [flags]	Shift {count} [range] lines one 'shiftwidth' right.
+			Repeat '>' for shifting multiple 'shiftwidth's.
+			See |ex-flags| for [flags].
+
+:[range]> {count} [flags]
+			Shift {count} lines one 'shiftwidth' right, starting
+			with [range] (default current line |cmdline-ranges|).
+			Repeat '>' for shifting multiple 'shiftwidth's.
+			See |ex-flags| for [flags].
+#*#table:stop-table #*#
 
 The ">" and "<" commands are handy for changing the indentation within
 programs.  Use the 'shiftwidth' option to set the size of the white space
@@ -202,6 +244,13 @@ made out of spaces with the same indent made out of <Tab>s (and a few spaces
 if necessary).  If the 'expandtab' option is on, Vim uses only spaces.  Then
 you can use ">><<" to replace <Tab>s in the indent by spaces (or use
 ":retab!").
+
+To move a line several 'shiftwidth's, use Visual mode or the ":" commands.
+For example: >
+	Vjj4>		move three lines 4 indents to the right
+	:<<<		move current line 3 indents to the left
+	:>> 5		move 5 lines 2 indents to the right
+	:5>>		move line 5 2 indents to the right
 
 ==============================================================================
 4. Complex changes					*complex-change*
@@ -221,6 +270,7 @@ comment (starting with '"') after the ":!" command.
 See the end of the Colon Commands reference doc for a list of
 available filename-modifiers.
 
+#*# table:form=ref:label=filter 1:command 3:extra-or 25:desc #*#
 							*!*
 !{motion}{filter}	Filter {motion} text through the external program
 			{filter}.
@@ -261,6 +311,7 @@ available filename-modifiers.
 			'equalprg' option is empty (this is the default),
 			use the internal formatting function |C-indenting|.
 			(for {Visual} see |Visual-mode|).  {not in Vi}
+#*#table:stop-table #*#
 
 
 4.2 Substitute						*:substitute*
@@ -330,6 +381,7 @@ magic		  action    ~
 ==============================================================================
 5. Copying and moving text				*copy-move*
 
+#*# table:form=ref:label=copy-move 1:command 3:extra-or 25:desc #*#
 							*quote*
 "{a-zA-Z0-9.%#:-"}	Use register {a-zA-Z0-9.%#:-"} for next delete, yank
 			or put (use uppercase character to append with
@@ -358,6 +410,7 @@ magic		  action    ~
 ["x]<MiddleMouse>	Put the text [from register x] before the cursor
 			[count] times.  Using the mouse only works when
 			'mouse' contains 'n' or 'a'.  {Vi: no count}
+#*#table:stop-table #*#
 
 You can use these commands to copy text from one place to another.  Do this
 by first getting the text into a register with a yank, delete or change

@@ -92,10 +92,16 @@ looking at the keyboard.  Think of j as an arrow pointing downwards.
 ==============================================================================
 2. Left-right motions					*left-right-motions*
 
+These commands move the cursor to the specified column in the current line.
+They stop at the first column and at the end of the line, except "$", which
+may move to one of the next lines.  See 'whichwrap' option to make some of the
+commands move across line boundaries.
+
+#*# table:form=ref:label=left-right-motions 1:command 3:extra-or 25:desc #*#
 h		or					*h*
 <Left>		or					*<Left>*
 CTRL-H		or					*CTRL-H* *<BS>*
-<BS>			[count] characters to the left (exclusive).
+<BS>			[count] characters to the left |exclusive|.
 			Note: If you prefer <BS> to delete a character, use
 			the mapping:
 				:map CTRL-V<BS>		X
@@ -106,30 +112,66 @@ CTRL-H		or					*CTRL-H* *<BS>*
 
 l		or					*l*
 <Right>		or					*<Right>* *<Space>*
-<Space>			[count] characters to the right (exclusive).
+<Space>			[count] characters to the right |exclusive|.
 
 							*0*
-0			To the first character of the line (exclusive).  When
+0			To the first character of the line |exclusive|.  When
 			moving up or down, stay in same screen column (if
 			possible).
 
 							*<Home>* *<kHome>*
-<Home>			To the first character of the line (exclusive).  When
+<Home>			To the first character of the line |exclusive|.  When
 			moving up or down, stay in same text column (if
 			possible).  Works like "1|", which differs from "0"
 			when the line starts with a <Tab>.  {not in Vi}
 
 							*^*
 ^			To the first non-blank character of the line
-			(exclusive).
+			|exclusive|.
 
 							*$* *<End>* *<kEnd>*
 $  or <End>		To the end of the line and [count - 1] lines downward
 			(inclusive).
 
+							*g0* *g<Home>*
+g0 or g<Home>		When lines wrap ('wrap' on): To the first character of
+			the screen line.  |exclusive| motion.  Differs from
+			"0" when a line is wider than the screen.
+			When lines don't wrap ('wrap' off): To the leftmost
+			character of the current line that is on the screen.
+			Differs from "0" when the first character of the line
+			is not on the screen.  {not in Vi}
+
+							*g^*
+g^			When lines wrap ('wrap' on): To the first non-blank
+			character of the screen line.  |exclusive| motion.
+			Differs from "^" when a line is wider than the screen.
+			When lines don't wrap ('wrap' off): To the leftmost
+			non-blank character of the current line that is on the
+			screen.  Differs from "^" when the first non-blank
+			character of the line is not on the screen.  {not in
+			Vi}
+
+							*gm*
+gm			Like "g0", but half a screenwidth to the right (or as
+			much as possible). {not in Vi}
+
+							*g$* *g<End>*
+g$ or g<End>		When lines wrap ('wrap' on): To the last character of
+			the screen line and [count - 1] screen lines downward
+			|inclusive|.  Differs from "$" when a line is wider
+			than the screen.
+			When lines don't wrap ('wrap' off): To the rightmost
+			character of the current line that is visible on the
+			screen.  Differs from "$" when the last character of
+			the line is not on the screen or when a count is used.
+			Additionally, vertical movements keep the column,
+			instead of going to the end of the line.
+			{not in Vi}
+
 							*bar*
 |			To screen column [count] in the current line
-			(exclusive).
+			|exclusive|.
 
 							*f*
 f{char}			To [count]'th occurrence of {char} to the right.  The
@@ -155,6 +197,7 @@ T{char}			Till after [count]'th occurrence of {char} to the
 							*,*
 ,			Repeat latest f, t, F or T in opposite direction
 			[count] times.
+#*#table:stop-table #*#
 
 These commands move the cursor to the specified column in the current line.
 They stop at the first column and at the end of the line, except "$", which
@@ -164,6 +207,7 @@ commands move across line boundaries.
 ==============================================================================
 3. Up-down motions					*up-down-motions*
 
+#*# table:form=ref:label=up-down-motions 1:command 5:extra-or 25:desc #*#
 k		or					*k*
 <Up>		or					*<Up>* *CTRL-P*
 CTRL-P			[count] lines upward (linewise).
@@ -173,6 +217,16 @@ j		or					*j*
 CTRL-J		or					*CTRL-J*
 <NL>		or					*<NL>* *CTRL-N*
 CTRL-N			[count] lines downward (linewise).
+
+gk		or					*gk* *g<Up>*
+g<Up>			[count] display lines upward.  |exclusive| motion.
+			Differs from 'k' when lines wrap, and when used with
+			an operator, because it's not linewise.  {not in Vi}
+
+gj		or					*gj* *g<Down>*
+g<Down>			[count] display lines downward.  |exclusive| motion.
+			Differs from 'j' when lines wrap, and when used with
+			an operator, because it's not linewise.  {not in Vi}
 
 							*-*
 -  <minus>		[count] lines upward, on the first non-blank
@@ -192,12 +246,19 @@ G			Goto line [count], default last line, on the first
 			non-blank character (linewise).  If 'startofline' not
 			set, keep the same column.
 
+:[range]		Set the cursor on the last line number in [range].
+			[range] can also be just one line number, e.g., ":1"
+			or ":'m".
+			In contrast with |G| this command does not modify the
+			|jumplist|.
+
 							*N%*
 {count}%		Go to {count} percentage in the file, on the first
 			non-blank in the line (linewise).  To compute the new
 			line number this formula is used: {count} *
 			number-of-lines / 100.  See also 'startofline'
 			option.  {not in Vi}
+#*#table:stop-table #*#
 
 These commands move to the specified line.  They stop when reaching the first
 or the last line.  The first two commands put the cursor in the same column
@@ -208,6 +269,7 @@ character of the line.
 ==============================================================================
 4. Word motions						*word-motions*
 
+#*# table:form=ref:label=word-motions 1:command 3:extra-or 25:desc #*#
 <S-Right>	or					*<S-Right>* *w*
 w			[count] words forward (exclusive).
 
@@ -225,6 +287,13 @@ b			[count] words backward (exclusive).
 
 <C-Left>	or					*<C-Left>* *B*
 B			[count] WORDS backward (exclusive).
+
+							*ge*
+ge			Backward to the end of word [count] |inclusive|.
+
+							*gE*
+gE			Backward to the end of WORD [count] |inclusive|.
+#*#table:stop-table #*#
 
 These commands move over words or WORDS.
 							*word*

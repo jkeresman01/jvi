@@ -50,7 +50,7 @@ note: 1 = cursor movement command; 2 = can be undone/redone
 
 tag		char	      note action in Normal mode	~
 ------------------------------------------------------------------------------
-#*# table 1:tag 16:command 32:opt-note 35:desc #*#
+#*# table:form=index:label=normal-index 1:tag 16:command 32:opt-note 35:desc #*#
  		CTRL-@		   not used
  |CTRL-A|	CTRL-A		2  add N to number at/after cursor
  |CTRL-B|	CTRL-B		1  scroll N screens Backwards
@@ -329,7 +329,7 @@ These can be used after an operator or in Visual mode to select an object.
 
 tag		command		   action in Normal mode	~
 ------------------------------------------------------------------------------
-#*# table 1:tag 17:command 36:desc #*#
+#*# table:form=index:label=objects 1:tag 17:command 36:desc #*#
  |v_a(|          a(                 same as ab
  |v_a)|          a)                 same as ab
  |v_a<|          a<                 "a <>" from '<' to the matching '>'
@@ -364,7 +364,7 @@ tag		command		   action in Normal mode	~
 
 tag		command		   action in Normal mode	~
 ------------------------------------------------------------------------------
-#*# table 1:tag 17:command 36:desc #*#
+#*# table:form=index:label=CTRL-W 1:tag 17:command 36:desc #*#
  |CTRL-W_CTRL-B| CTRL-W CTRL-B      same as "CTRL-W b"
  |CTRL-W_CTRL-C| CTRL-W CTRL-C      same as "CTRL-W c"
 x|CTRL-W_CTRL-D| CTRL-W CTRL-D      same as "CTRL-W d"
@@ -464,7 +464,7 @@ x|CTRL-W_}|      CTRL-W }           show tag under cursor in preview window
 
  tag		char	      note action in Normal mode	~
 ------------------------------------------------------------------------------
-#*# table 1:tag 16:command 32:opt-note 35:desc #*#
+#*# table:form=index:label=][ 1:tag 16:command 32:opt-note 35:desc #*#
  |[#|		[#		1  cursor to N previous unmatched #if, #else
  				   or #ifdef
 x|['|		['		1  cursor to previous lowercase mark, on first
@@ -495,7 +495,7 @@ x|[`|		[`		1  cursor to previous lowercase mark
 
 tag		char	      note action in Normal mode	~
 ------------------------------------------------------------------------------
-#*# table 1:tag 16:command 32:opt-note 35:desc #*#
+#*# table:form=index:label=g 1:tag 16:command 32:opt-note 35:desc #*#
 x|g_CTRL-A|	g CTRL-A	   only when compiled with MEM_PROFILE
 				   defined: dump a memory profile
 x|g_CTRL-G|	g CTRL-G	   show information about current cursor
@@ -591,7 +591,7 @@ here are those that are different.
 
 tag		command	      note action in Visual mode	~
 ------------------------------------------------------------------------------
-#*# table 1:tag 16:command 32:opt-note 35:desc #*#
+#*# table:form=index:label=visual-index 1:tag 16:command 32:opt-note 35:desc #*#
 .|v_CTRL-\_CTRL-N| CTRL-\ CTRL-N   stop Visual mode
 .|v_CTRL-C|	CTRL-C		   stop Visual mode
  |v_CTRL-G|	CTRL-G		   convert visual mode to java text selection
