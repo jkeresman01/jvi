@@ -216,13 +216,23 @@ class Links(dict):
 # @return ElementTree
 #
 def read_xml_file(fname):
-    for ev,e in ET.iterparse(fname):
-        if e.text is None: e.text = ''
-        if e.tail is None: e.tail = ''
-        if 'table' == e.tag:
-            parse_table_markup(e)
-    # Note: 'e' is the last element and the root of the tree
-    xml = ET.ElementTree(e)
+    if False:
+        for ev,e in ET.iterparse(fname):
+            # TODO: File bug, the following two lines cause random crashes.
+            #       Note that the parse_table can be removed and still crashes.
+            if e.text is None: e.text = ''
+            if e.tail is None: e.tail = ''
+            if 'table' == e.tag:
+                parse_table_markup(e)
+        # Note: 'e' is the last element and the root of the tree
+        xml = ET.ElementTree(e)
+    else:
+        xml = ET.parse(fname)
+        for e in xml.getroot().getiterator():
+            if e.text is None: e.text = ''
+            if e.tail is None: e.tail = ''
+            if 'table' == e.tag:
+                parse_table_markup(e)
     return xml
 
 # TODO: manually copying is probably more efficient

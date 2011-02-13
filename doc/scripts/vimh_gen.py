@@ -198,10 +198,12 @@ def fix_whitespace(e):
 #       - 'command' column (genererally first column)
 #         one or more lines give the command text
 #       - 'desc' column
-#         may start with one or more lines of <anchor>s
+#         May start with one or more lines of <anchor>s.
+#         NOTE: A new column is inserted, first column, from the anchors.
 def fix_vim_table_columns(table):
     if 'index' == table.get('form'):
         fix_table_index(table)
+        pass
     elif 'ref' == table.get('form'):
         fix_table_ref(table)
 
@@ -227,8 +229,9 @@ def fix_table_index(table):
             link.text = get_content(cmd).strip()
             link.tail = ''
             ### print 'fix_table_index 04:'
-            # plug the link into the command column
+            # plug the link into the command column, and remove old text
             cmd[:] = (link,)
+            cmd.text = ''
 
         del tr[tag_idx]
         # TODO: fix markup info to reflect deleted table column
@@ -263,10 +266,12 @@ def fix_table_ref_command(td):
 def fix_table_ref_desc(td):
     t = td.text
     saw_anchor = False
+    any_anchor = False
     anchors = []
     for e in td:
         if 'anchor' == e.tag:
             saw_anchor = True
+            any_anchor = True
             t += e.tail
         elif 'nl' == e.tag:
             if saw_anchor:
@@ -276,15 +281,21 @@ def fix_table_ref_desc(td):
         else:
             t += get_txt(e)
         if len(t) > 0 and not t.isspace():
+            if 'br' == e.tag:
+                anchors.append(e)
             break
         anchors.append(e)
+    if not any_anchor and len(anchors) > 0:
+        print '===== INPUT FILE PROBLEM ====='
+        edump(td)
+
     td_anchor = VB.make_elem('td')
-    if len(anchors) > 0:
+    if any_anchor and len(anchors) > 0:
         # split node; put the anchors into their own element
         for e in anchors:
             td.remove(e)
         td_anchor[:] += anchors
-        td[0].text += anchors[-1].tail
+        td.text += anchors[-1].tail
         anchors[-1].tail = ''
     return td_anchor
 
@@ -409,7 +420,7 @@ def gen_tables(xml):
     tables = [ table for table in xml.findall('table') ]
     for table in tables:
         table.tail = '\n'
-        edump(table)
+        ### edump(table)
         root.append(table)
     return out
 
