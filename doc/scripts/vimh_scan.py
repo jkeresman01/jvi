@@ -18,7 +18,7 @@ PAT_SPECIAL  = r'(?P<special><.*?>|\{.*?}|' + \
 PAT_TITLE    = r'(?P<title>Vim version [0-9.a-z]+|VIM REFERENCE.*)'
 PAT_NOTE     = r'(?P<note>N(ote|OTE)[sS]?:?)'
 PAT_URL      = r'(?P<url>(?:https?|ftp)://[^\'"<> \t]+[a-zA-Z0-9/])'
-PAT_WORD     = r'(?P<word>[!#-)+-{}~]+)'
+PAT_WORD     = r'(?P<word>[!#-)+-{}~]+|")'
 
 def build_re_from_pat():
     global RE_TAGWORD

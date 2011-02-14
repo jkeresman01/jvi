@@ -427,7 +427,8 @@ class VimHelpBuildXml(VimHelpBuildBase):
                                           self.check_start_table_row_simple)
 
         self.TABLE_OPS = { 'simple' : self.DEFAULT_TABLE_OPS,
-                           'index'  : self.DEFAULT_TABLE_OPS,
+                           'index'  : TableOps(self.check_stop_table_simple,
+                                               self.check_start_table_row_index),
                            'ref'    : TableOps(self.check_stop_table_ref,
                                                self.check_start_table_row_ref)
                          }
@@ -491,6 +492,23 @@ class VimHelpBuildXml(VimHelpBuildBase):
         return (pos == 0
                 and (not isinstance(stuff, str) or not stuff.isspace()))
 
+    def check_start_table_row_index(self, idx):
+        if self.check_start_table_row_simple(idx):
+            return True
+
+        token, stuff, pos = self.t_data[idx]
+        if pos != 0:
+            return False
+        if MAP_TY[token] == TY_EOL:
+            return False
+
+        # check the next token; start new row if in 2nd table column
+        token, stuff, pos = self.t_data[idx+1]
+        if MAP_TY[token] == TY_EOL:
+            return False
+        token_col_idx = self.get_token_col_idx(pos)
+        return token_col_idx == 1
+
     def check_stop_table_ref(self, ty, token_data):
         finish_table = False
         consume_token = False
@@ -532,8 +550,18 @@ class VimHelpBuildXml(VimHelpBuildBase):
             return False
         return True
 
+    def get_token_col_idx(self, pos):
+        cpos = self.globalish_cpos
+        col = len(cpos) - 1 # assume token in last col
+        for i in xrange(len(cpos) - 1):
+            if cpos[i] <= pos < cpos[i+1]:
+                col = i
+                break
+        return col
+
     def build_table(self):
         cpos = [ x[0]-1 for x in self.cur_table.vh_cols]
+        self.globalish_cpos = cpos
         print 'XXX', cpos
 
         tr = None
@@ -551,13 +579,10 @@ class VimHelpBuildXml(VimHelpBuildBase):
                 for x in td:
                     self.do_add_stuff('\n', x)
             else:
-                col = len(cpos) - 1 # assume words in last col
-                for i in xrange(len(cpos) - 1):
-                    if cpos[i] <= pos < cpos[i+1]:
-                        col = i
-                        break
+                col = self.get_token_col_idx(pos)
                 self.do_add_stuff(stuff, td[col])
         if tr is not None: self.cur_table.append(tr)
+        self.globalish_cpos = None
 
 ##
 # Assuming something of the form "a:b:c(\sMoreStuff)?" return [ a, b, c]

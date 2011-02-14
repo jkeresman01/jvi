@@ -46,10 +46,20 @@
             <xsl:when test="@form = 'ref'">
                 <xsl:call-template name="ref-table"/>
             </xsl:when>
+            <xsl:when test="@form = 'index'">
+                <xsl:call-template name="index-table"/>
+            </xsl:when>
             <xsl:otherwise>
                 <xsl:call-template name="normal-table"/>
             </xsl:otherwise>
         </xsl:choose>
+    </xsl:template>
+
+    <xsl:template name="normal-table">
+        <xsl:call-template name="table-header"/>
+        <table border="1">
+            <xsl:apply-templates/>
+        </table>
     </xsl:template>
 
     <xsl:template name="ref-table">
@@ -73,10 +83,26 @@
         </table>
     </xsl:template>
 
-    <xsl:template name="normal-table">
+    <xsl:template name="index-table">
         <xsl:call-template name="table-header"/>
         <table border="1">
-            <xsl:apply-templates/>
+            <xsl:for-each select="tr">
+                <tr>
+                    <xsl:for-each select="td">
+                        <xsl:choose>
+                            <xsl:when test="position() = 1">
+                                <xsl:apply-templates select=".">
+                                    <xsl:with-param name="f_title_linkto"
+                                        select="true()" tunnel="yes"/>
+                                </xsl:apply-templates>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:apply-templates select="."/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:for-each>
+                </tr>
+            </xsl:for-each>
         </table>
     </xsl:template>
 
@@ -97,7 +123,11 @@
     </xsl:template>
 
     <xsl:template match="link">
+        <xsl:param name="f_title_linkto" select="false()" tunnel="yes"/>
         <a href="{@filename}.html#{@linkto}" class="{myf:getClass(@t)}">
+            <xsl:if test="$f_title_linkto">
+                <xsl:attribute name="title" select="@linkto"/>
+            </xsl:if>
             <xsl:apply-templates/>
         </a>
     </xsl:template>
