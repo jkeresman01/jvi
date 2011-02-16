@@ -26,19 +26,18 @@ NOTE: in insert mode, any unused control character takes you out of input mode.
 
 char		action	~
 -----------------------------------------------------------------------
-#*# table:form=ref:label=ins-special-keys 1:command 3:extra-or 17:desc #*#
+#*# table:form=ref:label=ins-special-keys 1:command 12:extra-or 17:desc #*#
 						*i_CTRL-[* *i_<Esc>*
-<Esc> or CTRL-[	End insert or Replace mode, go back to Normal mode.  Finish
-		abbreviation.
+<Esc>	   or	End insert or Replace mode, go back to Normal mode.  Finish
+CTRL-[		abbreviation.
 						*i_CTRL-@*
 CTRL-@		Insert previously inserted text and stop insert.  {Vi: only
 		when typed as first char, only up to 128 chars}
 						*i_CTRL-A*
 CTRL-A		Insert previously inserted text.  {not in Vi}
 						*i_CTRL-H* *i_<BS>*
-<BS> or CTRL-H	Delete the character before the cursor (see |i_backspacing|
-		about joining lines).
-		See |:fixdel| if your <BS> key does not do what you want.
+<BS>	   or	Delete the character before the cursor (see |i_backspacing|
+CTRL-H		about joining lines).
 		{Vi: does not delete autoindents}
 						*i_<Del>*
 <Del>		Delete the character under the cursor.  If the cursor is at
@@ -56,13 +55,15 @@ CTRL-U		Delete all entered characters in the current line (see
 		|i_backspacing| about joining lines).
 
 						*i_CTRL-I* *i_<Tab>*
-<Tab> or CTRL-I Insert a tab.  If the 'expandtab' option is on, the
-		equivalent number of spaces is inserted. Also see the
+<Tab>	   or	Insert a tab.  If the 'expandtab' option is on, the
+CTRL-I		equivalent number of spaces is inserted. Also see the
                 'softtabstop' option.
-						*i_CTRL-J* *i_<NL>*
-<NL> or CTRL-J	Begin new line.
-						*i_CTRL-M* *i_<CR>*
-<CR> or CTRL-M	Begin new line.
+
+<NL>	   or					*i_CTRL-J* *i_<NL>*
+CTRL-J		Begin new line.
+
+<CR>	   or					*i_CTRL-M* *i_<CR>*
+CTRL-M		Begin new line.
 						*i_CTRL-N*
 CTRL-N		Find next match for words that start with the
 		keyword in front of the cursor, looking in places
@@ -94,33 +95,35 @@ CTRL-R CTRL-P {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-P*
 		Insert the contents of a register literally and fix the
 		indent.
 
-						*i_CTRL-T*
+							*i_CTRL-T*
 CTRL-T		Insert one shiftwidth of indent at the start of the current
 		line.  The indent is always rounded to a 'shiftwidth' (this is
 		vi compatible).  {Vi: only when in indent}
-						*i_CTRL-D*
+							*i_CTRL-D*
 CTRL-D		Delete one shiftwidth of indent at the start of the current
 		line.  The indent is always rounded to a 'shiftwidth' (this is
 		vi compatible).  {Vi: CTRL-D works only when used after
 		autoindent}
-						*i_CTRL-E*
+						*	i_CTRL-E*
 CTRL-E		Insert the character which is below the cursor.  {not in Vi}
-						*i_CTRL-Y*
+							*i_CTRL-Y*
 CTRL-Y		Insert the character which is above the cursor.  {not in Vi}
 		Note that for CTRL-E and CTRL-Y 'textwidth' is not used, to be
 		able to copy characters from a long line.
 
-						*i_<Insert>*
+							*i_<Insert>*
 <Insert>	Toggle between insert and replace mode.  {not in Vi}
 
-CTRL-.		Align first non white character of current line with next
-CTRL->		parenthesis (column-wise) in previous line by inserting indent
+							*i_CTRL->*
+CTRL->	   or	Align first non white character of current line with next
+CTRL-.		parenthesis (column-wise) in previous line by inserting indent
 		into current line.  Usefull for aligning arguments of a
 		function call. Also anchors to first character of previous
 		line. Think Ctrl-> for shift-like behavior. {jVi only}
 
-CTRL-,		Align first non white character of current line with previous
-CTRL-<		parenthesis (column-wise) in previous line by removing indent
+							*i_CTRL-<*
+CTRL-<	   or	Align first non white character of current line with previous
+CTRL-,		parenthesis (column-wise) in previous line by removing indent
 		from current line.  Usefull for aligning arguments of a
 		function call. Also anchors to first character of previous
 		line. Think Ctrl-< for shift-like behavior. {jVi only}
@@ -240,7 +243,7 @@ last one).  {Vi does not have the 'expandtab' option}
 The following commands can be used to insert new text into the buffer.  They
 can all be undone and repeated with the "." command.
 
-#*# table:form=ref:label=inserting 1:command 3:extra-or 25:desc #*#
+#*# table:form=ref:label=inserting 1:command 17:extra-or 25:desc #*#
 							*a*
 a			Append text after the cursor [count] times.
 
@@ -256,13 +259,13 @@ I			Insert text before the first non-blank in the line
 
 							*o*
 o			Begin a new line below the cursor and insert text,
-			repeat [count] times.  {Vi: blank [count] screen
-			lines}
+			repeat [count] times.
+			{Vi: blank [count] screen lines}
 
 							*O*
 O			Begin a new line above the cursor and insert text,
-			repeat [count] times.  {Vi: blank [count] screen
-			lines}
+			repeat [count] times.
+			{Vi: blank [count] screen lines}
 #*#table:stop-table #*#
 
 These commands are used to start inserting text.  You can end insert mode with

@@ -29,6 +29,7 @@ function name and hit CTRL-].  This will bring you to the function definition.
 An easy way back is with the CTRL-T command.  Also read about the tag stack
 below.
 
+#*# table:form=ref:label=tag-commands 1:command 17:extra-or 25:desc #*#
 							*:ta* *:tag*
 :ta[g] {ident}  	Jump to the definition of {ident}, using the
 			information in the tags file(s).  Put {ident} in the
@@ -42,6 +43,7 @@ CTRL-]			Same as ":tag {ident}", where {ident} is the keyword
 							*v_CTRL-]*
 {Visual}CTRL-]		Same as ":tag {ident}", where {ident} is the text that
 			is highlighted.  {not in Vi}
+#*#table:stop-table #*#
 
 
 ==============================================================================
@@ -49,6 +51,8 @@ CTRL-]			Same as ":tag {ident}", where {ident} is the keyword
 
 On the tag stack is remembered which tags you jumped to, and from where.
 
+#*# table:form=ref:label=tag-stack 1:command 17:extra-or 25:desc #*#
+							*CTRL-T*
 CTRL-T			Jump to [count] older entry in the tag stack
 			(default 1).  {not in Vi}
 
@@ -62,6 +66,7 @@ CTRL-T			Jump to [count] older entry in the tag stack
 							*:tags*
 :tags			Show the contents of the tag stack.  The active
 			entry is marked with a '>'.  {not in Vi}
+#*#table:stop-table #*#
 
 The output of ":tags" looks like this:
 

@@ -17,9 +17,9 @@ When syntax highlighting is used to read this, text that is not typed
 literally is often highlighted with the Special group.  These are items in [],
 {} and <>, and CTRL-X.
 
+#*# table:form=ref:label=notation 1:command 14:extra-or 17:desc #*#
 []		Characters in square brackets are optional.
 
-#*# table:form=ref:label=notation 1:command 3:extra-or 17:desc #*#
 							*count* *[count]*
 [count]		An optional number that may precede the command to multiply
 		or iterate the command.  If no number is given, a count of one
@@ -86,7 +86,7 @@ CTRL-{char}	{char} typed as a control character; that is, typing {char}
 
 Vim has six BASIC modes:
 
-#*# table:form=ref:label=vim-modes 1:command 18:extra-or 25:desc #*#
+#*# table:form=ref:label=vim-modes:todo=table-handling 1:command 19:extra-or 25:desc #*#
 					*Normal* *Normal-mode* *command-mode*
 Normal mode		In Normal mode you can enter all the normal editor
 			commands.  If you start the editor you are in this

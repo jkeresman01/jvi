@@ -22,7 +22,7 @@ For inserting text see |insert.txt|.
 ==============================================================================
 1. Deleting text					*deleting*
 
-#*# table:form=ref:label=deleting 1:command 3:extra-or 25:desc #*#
+#*# table:form=ref:label=deleting 1:command 10:extra-or 25:desc #*#
 ["x]<Del>	or					*<Del>* *x* *dl*
 ["x]x			Delete [count] characters under and after the cursor
 			[into register x] (not linewise).  Does the same as
@@ -83,7 +83,7 @@ only after a '.').
 ==============================================================================
 2. Delete and insert				*delete-insert* *replacing*
 
-#*# table:form=ref:label=delete-insert 1:command 3:extra-or 25:desc #*#
+#*# table:form=ref:label=delete-insert 1:command 10:extra-or 25:desc #*#
 							*R*
 R			Enter Replace mode: Each character you type replaces
 			an existing character, starting with the character
@@ -137,19 +137,17 @@ further characters (just like Insert mode).  In Replace mode, the backspace
 key restores the original text (if there was any).  (See section "Insert and
 Replace mode" |mode-ins-repl|).
 
-#*#table:form=ref 1:desc#*#
 						*cw* *cW*
 Special case: "cw" and "cW" work the same as "ce" and "cE" if the cursor is
 on a non-blank.  This is because Vim interprets "cw" as change-word, and a
 word does not include the following white space.  {Vi: "cw" when on a blank
 followed by other blanks changes only the first blank; this is probably a
 bug, because "dw" deletes all the blanks}
-#*#table:stop-table #*#
 
 ==============================================================================
 3. Simple changes					*simple-change*
 
-#*# table:form=ref 1:command 3:extra-or 25:desc #*#
+#*# table:form=ref:lable=simple-change 1:command 10:extra-or 25:desc #*#
 							*r*
 r{char}			Replace the character under the cursor with {char}.
 			If {char} is a <CR> or <NL>, a line break replaces the
@@ -174,21 +172,21 @@ environment variable can make a difference.  For example, to enable changing
 the case of letters with umlauts:
 >	setenv LANG de
 
-#*# table:form=ref 1:command 3:extra-or 25:desc #*#
+#*# table:form=ref 1:command 10:extra-or 25:desc #*#
 							*~*
 ~			'notildeop' option: Switch case of the character
 			under the cursor and move the cursor to the right.
-			If a [count] is given, do that many characters. {Vi:
-			no count}
-
-~{motion}		'tildeop' option: switch case of {motion} text. {Vi:
-			tilde cannot be used as an operator}
+			If a [count] is given, do that many characters.
+			{Vi: no count}
+							*~{motion}*
+~{motion}		'tildeop' option: switch case of {motion} text.
+			{Vi: tilde cannot be used as an operator}
 #*#table:stop-table #*#
 
 
 SHIFTING LINES LEFT OR RIGHT				*shift-left-right*
 
-#*# table:form=ref:label=shift-left-right 1:command 3:extra-or 25:desc #*#
+#*# table:form=ref:label=shift-left-right 1:command 25:desc #*#
 							*<*
 <{motion}		Shift {motion} lines one 'shiftwidth' leftwards.
 
@@ -381,7 +379,7 @@ magic		  action    ~
 ==============================================================================
 5. Copying and moving text				*copy-move*
 
-#*# table:form=ref:label=copy-move 1:command 3:extra-or 25:desc #*#
+#*# table:form=ref:label=copy-move 1:command 10:extra-or 25:desc #*#
 							*quote*
 "{a-zA-Z0-9.%#:-"}	Use register {a-zA-Z0-9.%#:-"} for next delete, yank
 			or put (use uppercase character to append with

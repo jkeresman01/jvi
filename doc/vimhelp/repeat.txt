@@ -12,10 +12,12 @@ Repeating commands					*repeating*
 ==============================================================================
 1. Single repeats					*single-repeat*
 
+#*# table:form=ref:label=single-repeat 1:command 17:extra-or 25:desc #*#
 							*.*
 .			Repeat last change, with count replaced with [count].
 			Also repeat a yank command, when the 'y' flag is
 			included in 'cpoptions'.
+#*#table:stop-table #*#
 
 Simple changes can be repeated with the "." command.  Without a count, the
 count of the last change is used.  If you enter a count, it will replace the
@@ -27,6 +29,7 @@ the same SIZE of area is used, see |visual-repeat|.
 ==============================================================================
 3. Complex repeats					*complex-repeat*
 
+#*# table:form=ref:label=complex-repeat 1:command 17:extra-or 25:desc #*#
 							*q* *recording*
 q{0-9a-zA-Z"}		Record typed characters into register {0-9a-zA-Z"}
 			(uppercase to append).  The 'q' command is disabled
@@ -47,6 +50,7 @@ q			Stops recording.  (Implementation note: The 'q' that
 
 							*@@*
 @@			Repeat the previous @{0-9a-z":*} [count] times.
+#*#table:stop-table #*#
 
 All commands and command sequences can be repeated by putting them in a named
 register and then executing it.  There are two ways to get the commands in the

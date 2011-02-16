@@ -25,6 +25,7 @@ The following commands move the edit window (the part of the buffer that you
 see) downwards (this means that more lines downwards in the text buffer can be
 seen):
 
+#*# table:form=ref:label=scroll-down 1:command 17:extra-or 25:desc #*#
 							*CTRL-E*
 CTRL-E			Scroll window [count] lines downwards in the buffer.
 			Mnemonic: Extra lines.
@@ -47,6 +48,7 @@ CTRL-D			Scroll window Downwards in the buffer.  The number of
 <PageDown>	or				*<PageDown>* *CTRL-F*
 CTRL-F			Scroll window [count] pages Forwards (downwards) in
 			the buffer.  See also 'startofline' option.
+#*#table:stop-table #*#
 
 ==============================================================================
 2. Scrolling upwards					*scroll-up*
@@ -55,6 +57,7 @@ The following commands move the edit window (the part of the buffer that you
 see) upwards (this means that more lines upwards in the text buffer can be
 seen):
 
+#*# table:form=ref:label=scroll-up 1:command 17:extra-or 25:desc #*#
 							*CTRL-Y*
 CTRL-Y			Scroll window [count] lines upwards in the buffer.
 
@@ -76,6 +79,7 @@ CTRL-U			Scroll window Upwards in the buffer.  The number of
 <PageUp>	or					*<PageUp>* *CTRL-B*
 CTRL-B			Scroll window [count] pages Backwards (upwards) in the
 			buffer.  See also 'startofline' option.
+#*#table:stop-table #*#
 
 ==============================================================================
 3. Scrolling relative to cursor				*scroll-cursor*
@@ -83,6 +87,7 @@ CTRL-B			Scroll window [count] pages Backwards (upwards) in the
 The following commands reposition the edit window (the part of the buffer that
 you see) while keeping the cursor on the same line:
 
+#*# table:form=ref:label=scroll-cursor 1:command 17:extra-or 25:desc #*#
 							*z* *z<CR>*
 z<CR>			Redraw, line [count] at top of window (default
 			cursor line).  Put cursor at first non-blank in the
@@ -101,5 +106,6 @@ zz			Like "z.", but leave the cursor in the same column.
 z-			Redraw, line [count] at bottom of window (default
 			cursor line).  Put cursor at first non-blank in the
 			line.
+#*#table:stop-table #*#
 
  vim:tw=78:ts=8:sw=8: 

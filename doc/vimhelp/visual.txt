@@ -51,6 +51,7 @@ position.
 ==============================================================================
 2. Starting and stopping Visual mode			*visual-start*
 
+#*# table:form=ref:label=visual-start 1:command 17:extra-or 25:desc #*#
 						*v* *characterwise-visual*
 v			start Visual mode per character.
 
@@ -61,6 +62,7 @@ V			start Visual mode linewise.
 CTRL-V			start Visual mode blockwise.  Note: Under Windows
 			CTRL-V could be mapped to paste text, it doesn't work
 			to start Visual mode then, see |CTRL-V-alternative|.
+#*#table:stop-table #*#
 
 If you use <Esc>, click the left mouse button or use any command that
 does a jump to another buffer while in Visual mode, the highlighting stops
@@ -75,17 +77,21 @@ Visual		    Normal	   blockwise Visual	  linewise Visual
 blockwise Visual    Visual	   Normal		  linewise Visual
 linewise Visual     Visual	   blockwise Visual	  Normal
 
+#*# table:form=ref:label=visual-start-2 1:command 17:extra-or 25:desc #*#
 							*gv* *v_gv*
 gv			Start Visual mode with the same area as the previous
 			area and the same mode.  In Visual mode the current and
 			the previous Visual area are exchanged.
 
+START-DOC-DEL
 <RightMouse>		Start Visual mode if it is not active.  The text from
 			the cursor position to the position of the click is
 			highlighted.  If Visual mode was already active move
 			the start or end of the highlighted text, which ever
 			is closest, to the position of the click.  Only when
 			'mouse' option contains 'n' or 'a'.
+STOP-DOC-DEL
+#*#table:stop-table #*#
 
 			Note: when 'mousemodel' is set to "popup",
 			<S-LeftMouse> has to be used instead of <RightMouse>.
@@ -111,14 +117,17 @@ extended to the rightmost column of the longest line.
 If you want to highlight exactly the same area as the last time, you can use
 "gv" |gv| |v_gv|.
 
+START-DOC-DEL
 							*v_CTRL-C*
 CTRL-C			In Visual mode: Stop Visual mode.  When insert mode is
 			pending (the mode message shows
 			"-- (insert) VISUAL --"), it is also stopped.
 
+STOP-DOC-DEL
 ==============================================================================
 3. Changing the Visual area				*visual-change*
 
+#*# table:form=ref:label=visual-change 1:command 17:extra-or 25:desc #*#
 							*v_o*
 o			Go to Other end of highlighted text: The current
 			cursor position becomes the start of the highlighted
@@ -133,6 +142,7 @@ O			Go to Other end of highlighted text.  This is like
 			a character that occupies more than one position on
 			the screen (e.g., a <Tab>), the highlighted text may
 			change.
+#*#table:stop-table #*#
 
 							*v_$*
 When the "$" command is used with blockwise Visual mode, the right end of the
@@ -364,6 +374,7 @@ abc	      XXXXXXhijklmnopqrstuvwxyz
 abcdef  ghi   XXXXXX    jklmnopqrstuvwxyz
 abcdefghijklmnXXXXXXuvwxyz
 
+START-DOC-DEL
 ==============================================================================
 8. Select mode						*Select* *Select-mode*
 
@@ -398,4 +409,5 @@ When using an operator in Select mode, and the selection is linewise, the
 selected lines are operated upon, but like in characterwise selection.  For
 example, when a whole line is deleted, it can later be pasted halfway a line.
 
+STOP-DOC-DEL
  vim:tw=78:ts=8:sw=8:

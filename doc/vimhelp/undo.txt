@@ -12,6 +12,7 @@ Undo and redo						*undo-redo*
 ==============================================================================
 1. Undo and redo commands				*undo-commands*
 
+#*# table:form=ref:label=undo-commands 1:command 17:extra-or 25:desc #*#
 <Undo>		or					*undo* *<Undo>* *u*
 u			Undo [count] changes.  {Vi: only one level}
 
@@ -24,6 +25,7 @@ CTRL-R			Redo [count] changes which were undone.  {Vi: redraw
 
 							*:red* *:redo* *redo*
 :red[o]			Redo one change which was undone.  {Vi: no redo}
+#*#table:stop-table #*#
 
 The last changes are remembered.  You can use the undo and redo commands above
 to revert the text to how it was before each change.  You can also apply the
