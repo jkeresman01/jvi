@@ -204,6 +204,7 @@ class Links(dict):
 #
 # TODO: - build in a more nested/recursive fashion. vim help files have
 #         nested tables. See insert.txt for example i_CTRL-R or i_CTRL-X_CTRL-P.
+#         In particular, finish conversion to a pull architecture.
 # TODO: - Add stop-table and unkown markup as comments,
 #         need a better concept of current know (building in that recursive...)
 #
@@ -465,8 +466,8 @@ class VimHelpBuildXml(VimHelpBuildBase):
 
         if finish_table:
             self.build_table()
-            VG.dump_table(self.cur_table)
-            VG.dump_table_ascii(self.cur_table)
+            #VG.dump_table(self.cur_table)
+            #VG.dump_table_ascii(self.cur_table)
             #print VG.get_txt(self.cur_table),
             self.cur_table = None
             self.t_data = None
@@ -485,11 +486,11 @@ class VimHelpBuildXml(VimHelpBuildBase):
         return (finish_table, False)
 
     def check_start_table_row_simple(self, idx):
-        # token starts in column zero
+        # token starts in first column's starting position
         # and either token is not a string (i.e. it is an element)
         #            or token is not all blanks
         token, stuff, pos = self.t_data[idx]
-        return (pos == 0
+        return (pos == self.globalish_cpos[0]
                 and (not isinstance(stuff, str) or not stuff.isspace()))
 
     def check_start_table_row_index(self, idx):
@@ -540,10 +541,15 @@ class VimHelpBuildXml(VimHelpBuildBase):
             ty = MAP_TY[token]
             if ty in (TY_EOL, TY_EOF):
                 break;
-            if (new_entry_ok
-                    and ET.iselement(stuff) and stuff.tag == 'anchor'
-                    and stuff.get('t') == 'star'):
-                new_entry = True
+            if new_entry_ok:
+                if (ET.iselement(stuff) and stuff.tag == 'anchor'
+                        and stuff.get('t') == 'star'):
+                    new_entry = True
+                elif (pos == self.globalish_cpos[0]
+                            and self.globalish_after_blank_line
+                            and (ET.iselement(stuff)
+                                or len(stuff) > 0 and not stuff[0].isspace())):
+                    new_entry = True
             idx += 1
         self.t_ref_table_checked_idx = idx
         if not new_entry:
@@ -562,7 +568,8 @@ class VimHelpBuildXml(VimHelpBuildBase):
     def build_table(self):
         cpos = [ x[0]-1 for x in self.cur_table.vh_cols]
         self.globalish_cpos = cpos
-        print 'XXX', cpos
+        self.globalish_after_blank_line = False
+        print '=== CPOS ===', cpos
 
         tr = None
         self.cur_table_row = tr
@@ -581,8 +588,10 @@ class VimHelpBuildXml(VimHelpBuildBase):
             else:
                 col = self.get_token_col_idx(pos)
                 self.do_add_stuff(stuff, td[col])
+            self.globalish_after_blank_line = 'blankline' == token
         if tr is not None: self.cur_table.append(tr)
         self.globalish_cpos = None
+        self.globalish_after_blank_line = None
 
 ##
 # Assuming something of the form "a:b:c(\sMoreStuff)?" return [ a, b, c]

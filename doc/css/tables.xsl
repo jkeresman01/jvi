@@ -8,6 +8,18 @@
 
     <xsl:output method="html"/>
 
+    <xsl:attribute-set name="main-table">
+        <xsl:attribute name="border" select="1"/>
+        <xsl:attribute name="cellspacing" select="0"/>
+        <xsl:attribute name="cellpadding" select="0"/>
+    </xsl:attribute-set>
+
+    <xsl:attribute-set name="ref-desc-internal-table">
+        <xsl:attribute name="border" select="0"/>
+        <xsl:attribute name="cellspacing" select="0"/>
+        <xsl:attribute name="cellpadding" select="0"/>
+    </xsl:attribute-set>
+
     <xsl:template match="/vimhelp">
         <html>
             <head>
@@ -57,19 +69,20 @@
 
     <xsl:template name="normal-table">
         <xsl:call-template name="table-header"/>
-        <table border="1">
+        <table xsl:use-attribute-sets="main-table">
             <xsl:apply-templates/>
         </table>
     </xsl:template>
 
     <xsl:template name="ref-table">
         <xsl:call-template name="table-header"/>
-        <table border="1">
+        <table xsl:use-attribute-sets="main-table">
             <xsl:for-each select="tr">
                 <tr valign="top">
                     <xsl:apply-templates select="*[2]"/>
                     <td>
-                        <table width="100%">
+                        <table width="100%"
+                               xsl:use-attribute-sets="ref-desc-internal-table">
                             <tr align="right">
                                 <xsl:apply-templates select="*[1]"/>
                             </tr>
@@ -85,7 +98,7 @@
 
     <xsl:template name="index-table">
         <xsl:call-template name="table-header"/>
-        <table border="1">
+        <table xsl:use-attribute-sets="main-table">
             <xsl:for-each select="tr">
                 <tr>
                     <xsl:for-each select="td">
