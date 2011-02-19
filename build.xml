@@ -117,7 +117,9 @@
   <path id="build.classpath">
     <pathelement path="${build.home}/classes"/>
     <fileset dir="${lib.home}"><include name="*.jar"/></fileset>
-    <pathelement path="${java.class.path}"/>
+            <!--
+            <pathelement path="${java.class.path}"/>
+            -->
   </path>
 
   <!-- Construct execute.classpath -->
@@ -125,7 +127,9 @@
     <pathelement location="${jvi.jar}"/>
     <fileset dir="${build.lib.home}"><include name="*.jar"/></fileset>
     <fileset dir="${lib.home}"><include name="*.jar"/></fileset>
-    <pathelement path="${java.class.path}"/>
+            <!--
+            <pathelement path="${java.class.path}"/>
+            -->
   </path>
 
   <!-- Construct executeShell.classpath -->
@@ -151,8 +155,8 @@
      Java version:          ${java.version}
      OS name and version:   ${os.name} ${os.version}
      Jvi lib:               ${lib.home}
-     Compile classpath:     ${build.classpath}
-     Execute classpath:     ${execute.classpath}
+     Compile classpath:     ${toString:build.classpath}
+     Execute classpath:     ${toString:execute.classpath}
 
      complete.
     </echo>
@@ -228,7 +232,7 @@
             basedir="${build.dest}"
            manifest="${source.home}/META-INF/MANIFEST.MF"
            compress="true"
-           includes="com/raelity/**"
+           includes="com/raelity/** META-INF/**"
            excludes="">
       <manifest>
         <attribute   name="Created-By"             value="Murray Altheim"/>
