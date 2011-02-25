@@ -60,6 +60,7 @@ class Mark implements ViMark
      * a null mark.
      * // NEEDSWORK: deprecate setMark, just call it set ?????
      */
+    @Override
     public void setMark(ViFPOS fpos)
     {
         fpos.verify(buf);
@@ -114,6 +115,7 @@ class Mark implements ViMark
         return atZero ? 0 : pos.getOffset() + 1;
     }
 
+    @Override
     public int getLine()
     {
         checkMarkUsable();
@@ -123,6 +125,7 @@ class Mark implements ViMark
         return buf.getLineNumber(getDocOffset());
     }
 
+    @Override
     public int getColumn()
     {
         checkMarkUsable();
@@ -134,6 +137,7 @@ class Mark implements ViMark
         return seg.length() <= 0 ? 0 : Math.min(col, len);
     }
 
+    @Override
     public int getOffset()
     {
         checkMarkUsable();
@@ -143,16 +147,19 @@ class Mark implements ViMark
         return buf.getLineStartOffsetFromOffset(getDocOffset()) + getColumn();
     }
 
+    @Override
     public void invalidate()
     {
         pos = null;
     }
 
+    @Override
     public Buffer getBuffer()
     {
         return buf;
     }
 
+    @Override
     public void verify(Buffer buf)
     {
         if (buf != getBuffer()) {
@@ -160,6 +167,7 @@ class Mark implements ViMark
         }
     }
 
+    @Override
     public ViFPOS copy()
     {
         Mark m = new Mark(buf);
@@ -178,12 +186,14 @@ class Mark implements ViMark
         }
     }
 
+    @Override
     public final boolean isValid()
     {
         // same as checkMarkUsable
         return pos != null && buf.getDocument() != null;
     }
 
+    @Override
     public final int compareTo(ViFPOS p)
     {
         if (this.getOffset() < p.getOffset()) {
@@ -215,48 +225,57 @@ class Mark implements ViMark
     }
 
     /** This is optional, may throw an UnsupportedOperationException */
+    @Override
     public void set(int line, int col)
     {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void set(ViFPOS fpos)
     {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void set(int offset)
     {
         throw new UnsupportedOperationException();
     }
 
     /** This is optional, may throw an UnsupportedOperationException */
+    @Override
     public void setColumn(int col)
     {
         throw new UnsupportedOperationException();
     }
 
     /** This is optional, may throw an UnsupportedOperationException */
+    @Override
     public void setLine(int line)
     {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void decColumn()
     {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void incColumn()
     {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void decLine()
     {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void incLine()
     {
         throw new UnsupportedOperationException();
