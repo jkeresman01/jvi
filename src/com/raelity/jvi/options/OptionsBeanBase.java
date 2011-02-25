@@ -387,6 +387,14 @@ public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsContro
         return ViManager.getReleaseString();
     }
 
+    public void setViMagicRedoAlgorithm(String arg)  throws PropertyVetoException {
+        put(Options.magicRedoAlgorithm, arg);
+    }
+
+    public String getViMagicRedoAlgorithm() {
+	return getString(Options.magicRedoAlgorithm);
+    }
+
     public void setViWrap(boolean arg)  throws PropertyVetoException {
         put(Options.wrap, arg);
     }

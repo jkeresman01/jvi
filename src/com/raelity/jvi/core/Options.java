@@ -104,6 +104,7 @@ public final class Options {
   public static final String coordSkip = "viCoordSkip";
   public static final String platformPreferences = "viPlatformPreferences";
   public static final String platformTab = "viPlatformTab";
+  public static final String magicRedoAlgorithm = "viMagicRedoAlgorithm";
 
   public static final String backspaceWrapPrevious = "viBackspaceWrapPrevious";
   public static final String hWrapPrevious = "viHWrapPrevious";
@@ -303,6 +304,24 @@ public final class Options {
             + " in the jVi tab handling.");
     setExpertHidden(platformTab, true, false);
 
+    OptUtil.createEnumStringOption(magicRedoAlgorithm, "anal",
+            new String[] {"anal", "guard"});
+    OptUtil.setupOptionDesc(Category.PLATFORM,
+                            magicRedoAlgorithm, "magic redo algorithm",
+            "Which algorithm to use to capture code completion"
+            + " changes for use in a subsequent '.' (redo) command."
+            + " None is perfect."
+            + "\n\n"
+            + "The 'anal' algorithm looks at each document change,"
+            + " analizes it and adjusts the redo buffer."
+            + "\n\n"
+            + "The 'guard'"
+            + " algorithm places marks around the insertion point and"
+            + " captures that as the change;"
+            + " this is currently experimental, but handles some single"
+            + " line cases better; simpler algorithm.");
+    setExpertHidden(magicRedoAlgorithm, true, false);
+
     /////////////////////////////////////////////////////////////////////
     //
     //
@@ -374,21 +393,6 @@ public final class Options {
 
     G.p_sel = OptUtil.createEnumStringOption(selection, "inclusive",
             new String[] {"old", "inclusive", "exclusive"});
-            // not needed with enum option
-            // new StringOption.Validator() {
-            // @Override
-            //   public void validate(String val) throws PropertyVetoException {
-            //     if("old".equals(val)
-            //        || "inclusive".equals(val)
-            //        || "exclusive".equals(val))
-            //       return;
-            //     throw new PropertyVetoException(
-            //         "Value must be one of 'old', 'inclusive' or 'exclusive'."
-            //                     + " Not '" + val + "'.",
-            //                 new PropertyChangeEvent(opt, opt.getName(),
-            //                                         opt.getString(), val));
-            //   }
-            // }
     OptUtil.setupOptionDesc(Category.GENERAL, selection, "'selection' 'sel'",
             "This option defines the behavior of the selection."
             + " It is only used in Visual and Select mode."
@@ -397,20 +401,6 @@ public final class Options {
     
     G.p_slm = OptUtil.createEnumStringOption(selectMode, "",
             new String[] {"mouse", "key", "cmd"});
-            // new StringOption.Validator() {
-            // @Override
-            //   public void validate(String val) throws PropertyVetoException {
-            //       if ("mouse".equals(val)
-            //           || "key".equals(val)
-            //           || "cmd".equals(val))
-            //       return;
-            //     throw new PropertyVetoException(
-            //         "Value must be one of 'mouse', 'key' or 'cmd'."
-            //                     + " Not '" + val + "'.",
-            //                 new PropertyChangeEvent(opt, opt.getName(),
-            //                                         opt.getString(), val));
-            //   }
-            // }
     OptUtil.setupOptionDesc(Category.GENERAL, selectMode, "'selectmode' 'slm'",
             "This is a comma separated list of words, which specifies when to"
             + " start Select mode instead of Visual mode, when a selection is"
@@ -458,18 +448,6 @@ public final class Options {
                "\"<\" and \">\" round indent to multiple of shiftwidth");
 
     G.p_bs = OptUtil.createEnumIntegerOption(backspace, 0, new Integer[] { 0, 1, 2});
-            //new IntegerOption.Validator() {
-            //@Override
-            //  public void validate(int val) throws PropertyVetoException {
-            //      if(val < 0 || val > 2) {
-	    //         throw new PropertyVetoException(
-	    //             "Only 0, 1, or 2 are allowed."
-            //             + " Not '" + val + "'.",
-            //           new PropertyChangeEvent(opt, opt.getName(),
-            //                                   opt.getInteger(), val));
-            //      }
-            //  }
-            //}
     OptUtil.setupOptionDesc(Category.MODIFY, backspace, "'backspace' 'bs'",
             "Influences the working of <BS>, <Del> during insert."
             + "\n  0 - no special handling."

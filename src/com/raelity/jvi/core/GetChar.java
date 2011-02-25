@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.options.Option;
 import com.raelity.jvi.swing.KeyBinding;
 
 import static com.raelity.jvi.core.Constants.*;
@@ -27,6 +28,9 @@ import static com.raelity.jvi.core.KeyDefs.*;
 public class GetChar {
   private static boolean block_redo = false;
   private static boolean handle_redo = false;
+  private static Option magicRedoAlgo
+          = Options.getOption(Options.magicRedoAlgorithm);
+  private static String currentMagicRedoAlgo = "anal";
 
   private GetChar()
   {
@@ -352,6 +356,16 @@ public class GetChar {
    * This is used for the CTRL-O <.> command in insert mode.
    */
   static void ResetRedobuff() {
+    if(!magicRedoAlgo.getString().equals(currentMagicRedoAlgo)) {
+      currentMagicRedoAlgo = magicRedoAlgo.getString();
+      G.dbgRedo.printf("Switching redo to %s\n", currentMagicRedoAlgo);
+      if(currentMagicRedoAlgo.equals("anal"))
+        magicRedo = new MagicRedoOriginal(redobuff);
+      else if(currentMagicRedoAlgo.equals("guard"))
+        magicRedo = new MagicRedo(redobuff);
+      else 
+        System.err.format("WHAT?! magic redo algo: " + currentMagicRedoAlgo);
+    }
     magicRedo.charTyped(NUL);
     if (!block_redo()) {
       // old_redobuff = redobuff;
@@ -691,9 +705,7 @@ public class GetChar {
   private static final BufferQueue redobuff = new BufferQueue();
   private static final BufferQueue recordbuff = new BufferQueue();
   private static final BufferQueue typebuf = new BufferQueue();
-  private static final ViMagicRedo magicRedo
-                        = new MagicRedoOriginal(redobuff);
-                     // = new MagicRedo(redobuff);
+  private static ViMagicRedo magicRedo = new MagicRedoOriginal(redobuff);
   private static String startInsertCommand;
 
   private static int last_recorded_len = 0;  // number of last recorded chars
