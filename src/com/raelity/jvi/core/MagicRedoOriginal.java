@@ -94,6 +94,11 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
     //          and then '.' would give you "lengthx()". To try to handle cases
     //          like this would have to embed special commands (uF000 range?)
     //          in the redobuff.
+    //        - str.ch|();
+    //          This produces something like:
+    //                  str.charValue(index|);
+    //          then can change index by typing. Can't redo.
+    //          Not sure its a problem.
     //
 
     private int redoTrackPosition = -1;
