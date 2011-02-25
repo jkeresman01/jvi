@@ -166,6 +166,12 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
     //
     // A filemark have very limited functionality, mostly unsupported
 
+    @Override
+    public int getOriginalColumnDelta()
+    {
+        throw new UnsupportedOperationException();
+    }
+
     public void setMark(ViFPOS fpos) {
         throw new UnsupportedOperationException();
     }

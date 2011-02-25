@@ -55,7 +55,7 @@ public class Edit {
   public static final String VI_MODE_BLOCK = "BLOCK";
   public static final String VI_MODE_LINE = "LINE";
   
-  private static ViFPOS Insstart;
+  private static DynamicMark Insstart;
   static int Insstart_textlen;	// length of line when insert started
   
   static final int BACKSPACE_CHAR		= 1;
@@ -116,6 +116,10 @@ public class Edit {
     return Insstart == null
             ? null
             : G.curbuf.createFPOS(Insstart.getOffset());
+  }
+
+  static int getInsstartOriginalOffset() {
+    return Insstart.getOffset() + Insstart.getOriginalColumnDelta();
   }
 
   static boolean canEdit() {
@@ -2754,6 +2758,10 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
     @Override
     public int getOffset() {
       return mark.getOffset();
+    }
+
+    public int getOriginalColumnDelta() {
+      return mark.getOriginalColumnDelta();
     }
 
     @Override

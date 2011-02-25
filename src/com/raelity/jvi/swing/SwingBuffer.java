@@ -561,6 +561,12 @@ abstract public class SwingBuffer extends Buffer {
         }
 
         @Override
+        public int getOriginalColumnDelta()
+        {
+            return 0;
+        }
+
+        @Override
         public Buffer getBuffer()
         {
             return SwingBuffer.this;

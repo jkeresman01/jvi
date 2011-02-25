@@ -445,7 +445,7 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
     }
     private int
     didDocRemoveBeforeInsertionStart(int pos, int len, String removedText) {
-      int insstartOffset = Edit.getInsstart().getOffset();
+      int insstartOffset = Edit.getInsstartOriginalOffset();
       removeDocBeforeInsstart = null;
       int nChar = insstartOffset - pos;
       if(nChar > 0) {
@@ -478,8 +478,8 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
     didDocRemoveAfterTrackPosition(int pos, int len, String removedText) {
       if(pos + len > redoTrackPosition) {  // goes past insertion point
         int nBefore = redoTrackPosition - pos;
-        int insstart = Edit.getInsstart().getOffset();
-        int nInsertedBefore = redoTrackPosition - insstart;
+        int insstartOffset = Edit.getInsstartOriginalOffset();
+        int nInsertedBefore = redoTrackPosition - insstartOffset;
         if(nBefore <= nInsertedBefore  // enough to remove
                   && removedText != null  // there's something to work with
                   && afterBuff.length() == 0  // don't deal with it if this not empty

@@ -24,6 +24,8 @@ import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.text.TextUtil.MySegment;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 
@@ -101,7 +103,9 @@ class Mark implements ViMark
                 atZero = true;
             } else {
                 atZero = false;
-                --offset;
+                // adjust offset for LEFT-BIAS, but don't change the line
+                if(getChar(offset - 1) != '\n')
+                    --offset;
             }
             pos = buf.getDocument().createPosition(offset);
         } catch (BadLocationException ex) {
@@ -112,7 +116,29 @@ class Mark implements ViMark
 
     private int getDocOffset()
     {
-        return atZero ? 0 : pos.getOffset() + 1;
+        int offset = 0;
+        if(!atZero) {
+            // We're doing LEFT-BIAS so add one to the offset
+            // (notice that we subtracted one when we set it)
+            // UNLESS pointing at a newline; do not change lines.
+            offset = pos.getOffset();
+            if(getChar(offset) != '\n')
+                offset += 1;
+        }
+        return offset;
+    }
+
+    private char getChar(int offset)
+    {
+        // It is "impossible" to get the exception since we're based on pos
+        // but default to '\n'; that will avoid adjusting the offset
+        char c = '\n';
+        try {
+            c = buf.getDocument().getText(offset, 1).charAt(0);
+        } catch(BadLocationException ex) {
+            Logger.getLogger(Mark.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return c;
     }
 
     @Override
@@ -145,6 +171,12 @@ class Mark implements ViMark
             return Integer.MAX_VALUE;
         }
         return buf.getLineStartOffsetFromOffset(getDocOffset()) + getColumn();
+    }
+
+    @Override
+    public int getOriginalColumnDelta()
+    {
+        return col - getColumn();
     }
 
     @Override
@@ -284,7 +316,9 @@ class Mark implements ViMark
     @Override
     public String toString()
     {
+        int reportCol = getColumn();
+        String realCol = reportCol < col ? "(" + col + ")" : "";
         return "offset: " + getOffset() + " lnum: " + getLine() + " col: " +
-                getColumn();
+                reportCol + realCol;
     }
 }

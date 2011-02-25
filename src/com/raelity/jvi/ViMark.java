@@ -22,6 +22,12 @@ package com.raelity.jvi;
 /**
  * A Mark represents a position within a document. A Mark is tracked
  * by the document.
+ *
+ * A Mark in vi specifies a row and column. The row "floats" as lines are
+ * inserted and deleted earlier in the file.
+ * <b>However</b> the column is set when
+ * the mark is created and does not change even if characters are added on the
+ * same line before the column.
  */
 public interface ViMark extends ViFPOS {
     
@@ -30,6 +36,15 @@ public interface ViMark extends ViFPOS {
     
     /** Invalidate the mark. */
     public void invalidate();
+
+    /**
+     * Since the column is generally fixed when the mark is set,
+     * if characters are deleted then the value returned by getColumn()
+     * may be less than the original column.
+     * This returns originalColumn - getColumn(); note always ge 0.
+     * @return number of columns "lost".
+     */
+    public int getOriginalColumnDelta();
     
     public class MarkException extends RuntimeException {
         public MarkException(String msg) {
