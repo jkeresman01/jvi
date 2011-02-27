@@ -384,35 +384,18 @@ public class GetChar {
       redobuff.append(s);
     }
   }
-//=======================================
-//  if (!block_redo()) {
-//    if(s.length() == 1) {
-//      AppendCharToRedobuff(s.charAt(0));
-//      return;
-//    }
-//    magicRedo.charTyped(NUL);
-//    redobuff.append(s);
-//  }
-//=======================================
 
   static void AppendCharToRedobuff(char c) {
     if (!block_redo()) {
       if(c == BS) {
-        magicRedo.markRedoBackspace(); // NOTE below: previosly not blocked
+        magicRedo.markRedoBackspace();
       } else {
-        // Like ^W or ^U; really means called from Edit.ins_bs
         magicRedo.charTyped(c);
       }
       redobuff.append(c);
     } else
       magicRedo.charTyped(NUL);
   }
-//=======================================
-//  if (!block_redo()) {
-//    magicRedo.charTyped(c);
-//    redobuff.append(c);
-//  }
-//=======================================
 
   static void AppendNumberToRedobuff(int n) {
     magicRedo.charTyped(NUL);
@@ -420,25 +403,6 @@ public class GetChar {
       redobuff.append(n);
     }
   }
-
-  ///// static void appendBackspaceToRedobuff(char c) {
-  /////   if (!block_redo()) {
-  /////     if(c == BS) {
-  /////       magicRedo.markRedoBackspace(); // NOTE below: previosly not blocked
-  /////     } else {
-  /////       // Like ^W or ^U; really means called from Edit.ins_bs
-  /////       magicRedo.charTyped(c);
-  /////     }
-  /////     redobuff.append(c);
-  /////   } else
-  /////     magicRedo.charTyped(NUL);
-  ///// }
-//=======================================
-//  MagicRedo.markRedoBackspace();
-//  if (!handle_redo && !block_redo) {
-//    redobuff.append(BS);
-//  }
-//=======================================
 
   static void changeInsstart() {
     magicRedo.changeInsstart();
