@@ -264,6 +264,7 @@ public class SwingTextView extends TextView
 
     public void viOptionSet( ViTextView tv, String name )
     {
+        super.viOptionSet(tv, name);
     }
 
 

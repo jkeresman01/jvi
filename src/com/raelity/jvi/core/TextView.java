@@ -130,6 +130,15 @@ public abstract class TextView implements ViTextView
         }
     }
 
+    @Override
+    public void viOptionSet(ViTextView tv, String name)
+    {
+        if("w_p_scroll".equals(name)) {
+            if(w_p_scroll == 0)
+                viewSizeChange(); // set to half window size
+        }
+    }
+
 
     /**
      * Put stuff here that should run once

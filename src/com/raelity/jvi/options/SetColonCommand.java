@@ -125,6 +125,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     new VimOption("wrap",        "",    O.P_WIN, "w_p_wrap", null),
     new VimOption("linebreak",   "lbr", O.P_WIN, "w_p_lbr",  null),
     new VimOption("list",        "",    O.P_WIN, "w_p_list", null),
+    new VimOption("scroll",      "scr", O.P_WIN, "w_p_scroll", null),
   };
 
   @Override
