@@ -2183,7 +2183,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
      * with.
      */
     doingBackspace = false;
-    GetChar.appendBackspaceToRedobuff(); //AppendCharToRedobuff(c);
+    AppendCharToRedobuff(c);
 
     /* If deleted before the insertion point, adjust it */
     if (G.curwin.w_cursor.getLine() == Insstart.getLine()

@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.text.TextUtil;
 import com.raelity.jvi.options.Option;
 import com.raelity.jvi.swing.KeyBinding;
 
@@ -396,7 +397,12 @@ public class GetChar {
 
   static void AppendCharToRedobuff(char c) {
     if (!block_redo()) {
-      magicRedo.charTyped(c);
+      if(c == BS) {
+        magicRedo.markRedoBackspace(); // NOTE below: previosly not blocked
+      } else {
+        // Like ^W or ^U; really means called from Edit.ins_bs
+        magicRedo.charTyped(c);
+      }
       redobuff.append(c);
     } else
       magicRedo.charTyped(NUL);
@@ -415,13 +421,18 @@ public class GetChar {
     }
   }
 
-  static void appendBackspaceToRedobuff() {
-    if (!block_redo()) {
-      magicRedo.markRedoBackspace(); // NOTE below: previosly not blocked
-      redobuff.append(BS);
-    } else
-      magicRedo.charTyped(NUL);
-  }
+  ///// static void appendBackspaceToRedobuff(char c) {
+  /////   if (!block_redo()) {
+  /////     if(c == BS) {
+  /////       magicRedo.markRedoBackspace(); // NOTE below: previosly not blocked
+  /////     } else {
+  /////       // Like ^W or ^U; really means called from Edit.ins_bs
+  /////       magicRedo.charTyped(c);
+  /////     }
+  /////     redobuff.append(c);
+  /////   } else
+  /////     magicRedo.charTyped(NUL);
+  ///// }
 //=======================================
 //  MagicRedo.markRedoBackspace();
 //  if (!handle_redo && !block_redo) {
@@ -599,7 +610,8 @@ public class GetChar {
     copy_redo(old_redo);
     handle_redo = true;
     if(G.dbgRedo.getBoolean())
-      System.err.println("stuffbuff = '" + stuffbuff + "'");
+      System.err.println("stuffbuff = '"
+                         + TextUtil.debugString(stuffbuff.toString())+ "'");
     return OK;
   }
 
