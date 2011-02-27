@@ -111,7 +111,9 @@ public class TextUtil {
                 // for example Ctrl-W shows as \W (this is not a regex string!)
                 t =   (char)(c | 0x40);
             }
-            if(t == 0)
+            if(c >= 0x100) {
+                sb.append(String.format("\\u%04x", (int)c));
+            } else if(t == 0)
                 sb.append(c);
             else {
                 sb.append('\\');
