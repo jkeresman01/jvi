@@ -138,6 +138,7 @@ public class SwingTextView extends TextView
         w_num = ++genNum;
 
         cursorSaveListener = new CaretListener() {
+            @Override
             public void caretUpdate(CaretEvent ce) {
                 if(!ViManager.getFactory().isEnabled())
                     return;
@@ -208,11 +209,13 @@ public class SwingTextView extends TextView
     }
 
 
+    @Override
     public ViFPOS createWCursor()
     {
         return w_cursor == null ? new WCursor() : null;
     }
 
+    @Override
     public ViAppView getAppView()
     {
         return ViManager.getFactory().getAppView(editorPane);
@@ -231,6 +234,7 @@ public class SwingTextView extends TextView
     }
 
 
+    @Override
     public void startup()
     {
         enableCursorSave();
@@ -250,6 +254,7 @@ public class SwingTextView extends TextView
     }
 
 
+    @Override
     public boolean isShutdown()
     {
         return editorPane == null;
@@ -262,6 +267,7 @@ public class SwingTextView extends TextView
     //
 
 
+    @Override
     public void viOptionSet( ViTextView tv, String name )
     {
         super.viOptionSet(tv, name);
@@ -278,6 +284,7 @@ public class SwingTextView extends TextView
     //////////////////////////////////////////////////////////////////////
     //
 
+    @Override
     public final SwingBuffer getBuffer()
     {
         return (SwingBuffer) w_buffer;
@@ -290,6 +297,7 @@ public class SwingTextView extends TextView
      * @return
      */
 
+    @Override
     public void attach()
     {
         if ( ops == null ) {
@@ -302,6 +310,7 @@ public class SwingTextView extends TextView
     }
 
 
+    @Override
     public void detach()
     {
         detachMore();
@@ -320,6 +329,7 @@ public class SwingTextView extends TextView
     }
 
 
+    @Override
     public JTextComponent getEditorComponent()
     {
         return editorPane;
@@ -329,6 +339,7 @@ public class SwingTextView extends TextView
     /**
      *  @return true if the text can be changed.
      */
+    @Override
     public boolean isEditable()
     {
         return editorPane.isEditable();
@@ -349,6 +360,7 @@ public class SwingTextView extends TextView
     //            must be used to get proper autoindent handling.
     //
 
+    @Override
     public void insertNewLine()
     {
         if ( ! isEditable() ) {
@@ -358,6 +370,7 @@ public class SwingTextView extends TextView
         ops.xop(TextOps.INSERT_NEW_LINE); // NEEDSWORK: xop throws no exception
     }
 
+    @Override
     public void insertTab()
     {
         if ( ! isEditable() ) {
@@ -368,6 +381,7 @@ public class SwingTextView extends TextView
     }
 
 
+    @Override
     public void replaceChar( char c, boolean advanceCursor )
     {
         if ( !isEditable() ) {
@@ -382,6 +396,7 @@ public class SwingTextView extends TextView
         setCaretPosition(offset);// also clears the selection
     }
 
+    @Override
     public void deletePreviousChar()
     {
         if ( !isEditable() ) {
@@ -397,6 +412,7 @@ public class SwingTextView extends TextView
      *  special actions may be taken.
      * @param c
      */
+    @Override
     public void insertChar( char c )
     {
         if ( !isEditable() ) {
@@ -418,6 +434,7 @@ public class SwingTextView extends TextView
      *  Add a character verbatim to the window.
      * @param c
      */
+    @Override
     public void insertTypedChar( char c )
     {
         if ( !isEditable() ) {
@@ -435,6 +452,7 @@ public class SwingTextView extends TextView
     // in Buffer.
     //
 
+    @Override
     public void replaceString( int start, int end, String s )
     {
         if ( !isEditable() ) {
@@ -445,6 +463,7 @@ public class SwingTextView extends TextView
     }
 
 
+    @Override
     public void deleteChar( int start, int end )
     {
         if ( !isEditable() ) {
@@ -455,6 +474,7 @@ public class SwingTextView extends TextView
     }
 
 
+    @Override
     public void insertText( int offset, String s )
     {
         if ( !isEditable() ) {
@@ -485,6 +505,7 @@ public class SwingTextView extends TextView
      * @param op
      * @return
      */
+    @Override
     public boolean openNewLine( DIR op )
     {
         if ( !isEditable() ) {
@@ -533,6 +554,7 @@ public class SwingTextView extends TextView
 
 
 
+    @Override
     public int getCaretPosition()
     {
         // NEEDSWORK: what is using this?
@@ -540,12 +562,14 @@ public class SwingTextView extends TextView
     }
 
 
+    @Override
     public int getMarkPosition()
     {
         return editorPane.getCaret().getMark();
     }
 
 
+    @Override
     public void setCaretPosition( int offset )
     {
         // NEEDSWORK: what is using this?
@@ -553,6 +577,7 @@ public class SwingTextView extends TextView
     }
 
 
+    @Override
     public void setSelection( int dot, int mark )
     {
         Caret c = editorPane.getCaret();
@@ -560,11 +585,13 @@ public class SwingTextView extends TextView
         c.moveDot(dot);
     }
 
+    @Override
     public boolean hasSelection() {
         return editorPane.getSelectionStart() != editorPane.getSelectionEnd();
     }
 
 
+    @Override
     public void clearSelection()
     {
         Caret c = editorPane.getCaret();
@@ -572,54 +599,63 @@ public class SwingTextView extends TextView
     }
 
 
+    @Override
     public void findMatch()
     {
         Util.vim_beep();
     }
 
 
+    @Override
     public void jumpDefinition( String ident )
     {
         Util.vim_beep();
     }
 
 
+    @Override
     public void anonymousMark( MARKOP op, int count )
     {
         Util.vim_beep();
     }
 
 
+    @Override
     public void jumpList( JLOP op, int count )
     {
         Util.vim_beep();
     }
 
 
+    @Override
     public void foldOperation( FOLDOP op )
     {
         Util.vim_beep();
     }
 
 
+    @Override
     public void foldOperation( FOLDOP op, int offset )
     {
         Util.vim_beep();
     }
 
 
+    @Override
     public void wordMatchOperation( WMOP op )
     {
         Util.vim_beep();
     }
 
 
+    @Override
     public void tabOperation( TABOP op, int count )
     {
         Util.vim_beep();
     }
 
 
+    @Override
     public int getVpTopLogicalLine()
     {
         int logicalLine = lm.logicalLine(getVpTopDocumentLine());
@@ -630,6 +666,7 @@ public class SwingTextView extends TextView
     }
 
 
+    @Override
     public void setVpTopLogicalLine( int logicalLine )
     {
         Point2D p;
@@ -649,6 +686,7 @@ public class SwingTextView extends TextView
     }
 
 
+    @Override
     public int getVpBottomLogicalLine()
     {
         int logicalLine = lm.logicalLine(getVpBottomDocumentLine());
@@ -662,6 +700,7 @@ public class SwingTextView extends TextView
     }
 
 
+    @Override
     public int getLogicalLineCount()
     {
         int logicalLine = lm.logicalLine(getBuffer().getLineCount());
@@ -672,6 +711,7 @@ public class SwingTextView extends TextView
     }
 
 
+    @Override
     public int getLogicalLine(int docLine)
     {
         if(docLine > getBuffer().getLineCount()) {
@@ -705,6 +745,7 @@ public class SwingTextView extends TextView
         return getLineMap().hasFolding(docLine, pDocFirst, pDocLast);
     }
 
+    @Override
     public boolean cursorScreenRowEdge(EDGE edge, ViFPOS fpos)
     {
         fpos.verify(getBuffer());
@@ -762,6 +803,7 @@ public class SwingTextView extends TextView
         return ok;
     }
 
+    @Override
     public boolean cursorScreenUpDown(DIR dir, int distance, ViFPOS fpos)
     {
         fpos.verify(getBuffer());
@@ -854,6 +896,7 @@ public class SwingTextView extends TextView
     }
 
 
+    @Override
     public void updateCursor( ViCaretStyle cursor )
     {
         if ( isShutdown() ) {
@@ -872,6 +915,7 @@ public class SwingTextView extends TextView
 
     /** Quit editing window. Can close last view.
      */
+    @Override
     public void win_quit()
     {
         Msg.emsg("win_quit not implemented");
@@ -881,6 +925,7 @@ public class SwingTextView extends TextView
     /** Split this window.
      * @param n the size of the new window.
      */
+    @Override
     public void win_split( int n )
     {
         Msg.emsg("win_split not implemented");
@@ -890,6 +935,7 @@ public class SwingTextView extends TextView
     /** Close this window
      * @param freeBuf true if the related buffer may be freed
      */
+    @Override
     public void win_close( boolean freeBuf )
     {
         Msg.emsg("win_close not implemented");
@@ -899,11 +945,13 @@ public class SwingTextView extends TextView
     /** Close other windows
      * @param forceit true if always hide all other windows
      */
+    @Override
     public void win_close_others(boolean forceit)
     {
         Msg.emsg("win_close_others not implemented");
     }
 
+    @Override
     public ViStatusDisplay getStatusDisplay()
     {
         return statusDisplay;
@@ -917,15 +965,18 @@ public class SwingTextView extends TextView
     private class WCursor extends ViFPOS.abstractFPOS
     {
 
+    @Override
         public boolean isValid() {
             return true;
         }
 
+        @Override
         final public int getLine()
         {
             return getBuffer().getElemCache(getOffset()).line;
         }
 
+        @Override
         final public int getColumn()
         {
             int offset = getOffset();
@@ -933,6 +984,7 @@ public class SwingTextView extends TextView
                                        .elem.getStartOffset();
         }
 
+        @Override
         final public int getOffset()
         {
             return editorPane.getCaretPosition();
@@ -944,6 +996,7 @@ public class SwingTextView extends TextView
             editorPane.setCaretPosition(offset);
         }
 
+        @Override
         final public void set(int line, int column)
         {
             //System.err.println("setPosition("+line+","+column+")");
@@ -968,15 +1021,18 @@ public class SwingTextView extends TextView
             editorPane.setCaretPosition(startOffset + column);
         }
 
+        @Override
         final public ViFPOS copy()
         {
             return w_buffer.createFPOS(getOffset());
         }
 
+        @Override
         final public SwingBuffer getBuffer() {
             return (SwingBuffer)w_buffer;
         }
 
+        @Override
         public void verify(Buffer buf) {
             if(w_buffer != buf)
                 throw new IllegalStateException("fpos buffer mis-match");
@@ -1584,6 +1640,7 @@ public class SwingTextView extends TextView
     //
 
     // -- property change events --
+    @Override
     public void propertyChange(PropertyChangeEvent e)
     {
         String p = e.getPropertyName();
@@ -1599,6 +1656,7 @@ public class SwingTextView extends TextView
 
 
     // -- viewport event --
+    @Override
     public void stateChanged(ChangeEvent e)
     {
         changeVp(false);
@@ -1614,6 +1672,7 @@ public class SwingTextView extends TextView
      *
      * see PlayTextView for a simple implementation.
      */
+    @Override
     public void updateVisualState() {}
 
     //////////////////////////////////////////////////////////////////////
@@ -1626,6 +1685,7 @@ public class SwingTextView extends TextView
      *
      * see PlayTextView for a simple implementation.
      */
+    @Override
     public void updateHighlightSearchState() {}
 
 } // end com.raelity.jvi.swing.SwingTextView
