@@ -133,6 +133,7 @@ abstract public class SwingFactory implements ViFactory
         return new EnqueKeyAction(name, key);
     }
 
+    @Override
     public WindowTreeBuilder getWindowTreeBuilder(List<ViAppView> avs)
     {
         return new SimpleWindowTreeBuilder(avs);
@@ -143,10 +144,12 @@ abstract public class SwingFactory implements ViFactory
     // ViFactory for swing
     //
 
+    @Override
     public ViAppView getAppView(Component e) {
         return (ViAppView)((JTextComponent)e).getClientProperty(PROP_AV);
     }
 
+    @Override
     public Class loadClass( String name ) throws ClassNotFoundException
     {
         // NEEDSWORK: should this be systemclassloader or this's class loader???
@@ -154,6 +157,7 @@ abstract public class SwingFactory implements ViFactory
         return c;
     }
 
+    @Override
     public final ViTextView getTextView(Component ed)
     {
         if(ed == null)
@@ -161,6 +165,7 @@ abstract public class SwingFactory implements ViFactory
         return (ViTextView)(((JTextComponent)ed).getClientProperty(PROP_TV));
     }
 
+    @Override
     public final ViTextView createTextView(Component editor)
     {
         JTextComponent ed = (JTextComponent)editor;
@@ -181,6 +186,7 @@ abstract public class SwingFactory implements ViFactory
 
     abstract protected ViTextView newTextView( JTextComponent ed );
 
+    @Override
     public final Set<ViTextView> getViTextViewSet()
     {
         Set<ViTextView> s = new HashSet<ViTextView>();
@@ -197,6 +203,7 @@ abstract public class SwingFactory implements ViFactory
     abstract protected Buffer createBuffer( ViTextView tv );
 
 
+    @Override
     public Set<Buffer> getBufferSet() // NEEDSWORK: collection, list MRU?
     {
         Set<Buffer> s = new HashSet<Buffer>();
@@ -211,6 +218,7 @@ abstract public class SwingFactory implements ViFactory
     }
 
 
+    @Override
     public void shutdown( Component editor )
     {
         JTextComponent ed = (JTextComponent)editor;
@@ -229,6 +237,7 @@ abstract public class SwingFactory implements ViFactory
     }
 
 
+    @Override
     public void changeBuffer(ViTextView tv, Object _oldDoc)
     {
         Document oldDoc = (Document) _oldDoc;
@@ -276,11 +285,13 @@ abstract public class SwingFactory implements ViFactory
     }
 
 
+    @Override
     public String getPlatformSelectionDisplayName()
     {
         return "PLATFORM-SELECTION";
     }
 
+    @Override
     public void setShutdownHook(Runnable hook) {
         Runtime.getRuntime().addShutdownHook(new Thread(hook));
     }
@@ -319,6 +330,7 @@ abstract public class SwingFactory implements ViFactory
      *  This is not modal, in particular the event thread is still running, but
      *  it blocks the current window.
      */
+    @Override
     public void startGlassKeyCatch(KeyListener kl)
     {
         if ( mouseAdapter != null ) {
@@ -346,6 +358,7 @@ abstract public class SwingFactory implements ViFactory
     }
 
 
+    @Override
     public void stopGlassKeyCatch()
     {
         if ( mouseAdapter == null ) {
@@ -373,6 +386,7 @@ abstract public class SwingFactory implements ViFactory
     }
 
 
+    @Override
     public void startModalKeyCatch( KeyListener kl )
     {
         JTextComponent ed = (JTextComponent)G.curwin.getEditorComponent();
@@ -403,6 +417,7 @@ abstract public class SwingFactory implements ViFactory
     }
 
 
+    @Override
     public void stopModalKeyCatch()
     {
         if ( dialog == null ) {
@@ -419,6 +434,7 @@ abstract public class SwingFactory implements ViFactory
      * vi cursor. This is a nop
      * if already registered.
      */
+    @Override
     public void setupCaret( Component editor)
     {
         JTextComponent ed = (JTextComponent)editor;
@@ -434,6 +450,7 @@ abstract public class SwingFactory implements ViFactory
     }
 
 
+    @Override
     public PropertyDescriptor createPropertyDescriptor(
             String optName,
             String methodName,
@@ -445,6 +462,7 @@ abstract public class SwingFactory implements ViFactory
     }
 
 
+    @Override
     public ViCmdEntry createCmdEntry( ViCmdEntry.Type type )
     {
         // ViCmdEntry cmdEntry = new DefaultCmdEntry(cmdLine);
@@ -475,21 +493,25 @@ abstract public class SwingFactory implements ViFactory
     */
 
 
+    @Override
     public Action createInsertModeKeyAction(String name, char vkey, String desc)
     {
         return new InsertModeAction(name, vkey, desc);
     }
 
+    @Override
     public Action createNormalModeKeyAction(String name, int vkey, String desc)
     {
          return null;
     }
 
+    @Override
     public ActionListener xlateKeymapAction( ActionListener act )
     {
         return act;
     }
 
+    @Override
     public Preferences getPreferences()
     {
         return Preferences.userRoot().node(ViManager.PREFS_ROOT);
@@ -510,6 +532,7 @@ abstract public class SwingFactory implements ViFactory
         }
 
 
+        @Override
         public void actionPerformed( ActionEvent e )
         {
             JTextComponent target = getTextComponent(e);
@@ -579,6 +602,7 @@ abstract public class SwingFactory implements ViFactory
             this.basekey = key;
         }
 
+        @Override
         public void actionPerformed( ActionEvent e )
         {
             JTextComponent target = getTextComponent(e);
@@ -618,10 +642,12 @@ abstract public class SwingFactory implements ViFactory
             //                                      JBViKeymap.VI_EDIT_KEYMAP);
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             // NOT USED for the translation keymap
         }
 
+        @Override
         public char getXlateKey() {
             return basekey;
         }
@@ -629,16 +655,22 @@ abstract public class SwingFactory implements ViFactory
     } // end inner class InsertModeAction
 
 
+    @Override
     public void startTagPush( ViTextView tv, String ident ) {}
 
+    @Override
     public void finishTagPush( ViTextView tv ) {}
 
+    @Override
     public void tagStack( TAGOP op, int count ) {}
 
+    @Override
     public void displayTags() {}
 
+    @Override
     public void tagDialog( ColonCommands.ColonEvent e ) {}
 
+    @Override
     public void commandEntryAssist(ViCmdEntry cmdEntry, boolean enable ) {}
 
 
