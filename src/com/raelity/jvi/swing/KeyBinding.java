@@ -355,7 +355,7 @@ private static Action createKeyAction( String name, char key ) {
      * 
      * NEEDSWORK: only need actionsMap, use values to get all the actions.
      */
-    public static Action[] getActions() {
+    private static Action[] getActions() {
       List<Action> l = getActionsListInternal();
       return l.toArray(new Action[l.size()]);
     }
