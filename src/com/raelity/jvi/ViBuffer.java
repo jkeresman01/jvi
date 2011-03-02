@@ -84,8 +84,17 @@ public interface ViBuffer {
     /** @return the starting offset of the line */
     public int getLineStartOffset(int line);
     
-    /** @return the starting offset of the line */
+    /** @return the end offset of the line, char past newline */
     public int getLineEndOffset(int line);
+    
+    /**
+     * Like getLineEndOffset, but backup the offset if points after the
+     * implied '\n'. See javax.swing.text.element.getEndOffset
+     * (note: probably want to migrate all uses to this method, deprecate other)
+     * 
+     * @return the end offset of the line, char past newline.
+     */
+    public int getLineEndOffset2(int line);
     
     /** @return the starting offset of the line */
     public int getLineStartOffsetFromOffset(int offset);

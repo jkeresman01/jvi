@@ -70,16 +70,25 @@ abstract public class SwingBuffer extends Buffer {
         return offset - elem.getStartOffset();
     }
     
-    /** @return the starting offset of the line */
+    /** @return the start offset of the line */
     @Override
     public int getLineStartOffset(int line) {
         return getLineElement(line).getStartOffset();
     }
     
-    /** @return the starting offset of the line */
+    /** @return the end offset of the line, past newline char */
     @Override
     public int getLineEndOffset(int line) {
         return getLineElement(line).getEndOffset();
+    }
+
+    /** @return the end offset of the line, past newline char (not past eof) */
+    @Override
+    public int getLineEndOffset2(int line) {
+        int offset = getLineElement(line).getEndOffset();
+        if(offset > getDocument().getLength())
+            offset--; //offset = getDocument().getLength();
+        return offset;
     }
     
     @Override
