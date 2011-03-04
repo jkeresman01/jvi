@@ -1,18 +1,26 @@
 jVi for NetBeans 7.0
 ====================
-These are ordered with the newest release first down to the oldest
+
+See `CHANGES <http://jvi.sourceforge.net/?CHANGES.html>`_ for per release
+feature and fix information.
+
+nbvi-1.3.1.beta4.zip
+--------------------
+Tested with *NetBeans 7.0Beta2*.
+
+NOTE: NB now has support for proper undo/redo granularity. No patch required.
 
 nbvi-1.3.1.beta3.zip
 --------------------
-This is not compatible with *NetBeans 7.0Beta*, it requires the module
-org-openide-text.nbm specification version 6.34 or greater
-which first appeared in a dev build a
-few days after *Beta* was released. That module incorporates the previously
-available optional patch for vim's undo/redo granularity.
 
-This version of jVi has colon command name completion,
-use Ctrl-D or Ctrl-Space.
+    This is not compatible with *NetBeans 7.0Beta*, it requires the module
+    org-openide-text.nbm specification version 6.34 or greater
+    which first appeared in a dev build a
+    few days *after* Beta was released. That module incorporates the previously
+    available optional patch for vim's undo/redo granularity.
 
+    This version of jVi has colon command name completion,
+    use Ctrl-D or Ctrl-Space.
 
 nbvi-1.3.1.beta2.zip
 --------------------
