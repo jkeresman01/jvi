@@ -39,7 +39,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.lang.reflect.InvocationTargetException;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -78,7 +77,7 @@ public class ViManager
     // 1.0.0.beta3 is NB vers 0.9.7.5
     //
     // 1.3.1.beta3 is module rev 1.3.0 
-    public static final jViVersion version = new jViVersion("1.3.1.beta4");
+    public static final jViVersion version = new jViVersion("1.3.1.beta4.1");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -649,7 +648,6 @@ public class ViManager
         } else if(!wait) {
             EventQueue.invokeLater(runnable);
         } else {
-if(false) {
             CountDownLatch latch = new CountDownLatch(1);
             RunLatched rl = new RunLatched(runnable, latch);
             EventQueue.invokeLater(rl);
@@ -662,22 +660,6 @@ if(false) {
                 throw new RuntimeException(
                         "After wait after invokeLater", rl.getThrowable());
             }
-} else {
-            //
-            // This path creates the lookup services bug more easily
-            //
-            Exception ex1 = null;
-            try {
-                EventQueue.invokeAndWait(runnable);
-            } catch (InterruptedException ex) {
-                ex1 = ex;
-            } catch (InvocationTargetException ex) {
-                ex1 = ex;
-            }
-            if(ex1 != null) {
-                throw new RuntimeException("After wait after invokeLater", ex1);
-            }
-}
         }
     }
 }
