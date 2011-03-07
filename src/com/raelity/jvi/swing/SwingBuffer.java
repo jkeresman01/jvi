@@ -385,6 +385,12 @@ abstract public class SwingBuffer extends Buffer {
         int line;
         Element elem;
     }
+
+    @Override
+    public CharSequence getDocumentCharSequence(int start, int end)
+    {
+        return new DocumentCharSequence(getDocument(), start, end);
+    }
     
     private ElemCache elemCache = new ElemCache();
     /** the element cache */

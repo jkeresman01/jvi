@@ -121,6 +121,13 @@ public interface ViBuffer {
      */
     public MySegment getSegment(int offset, int length, MySegment segment);
 
+    /**
+     * Handy for searching the document.
+     * If end less than zero, then goto end of document.
+     * @param start document offset
+     */
+    public CharSequence getDocumentCharSequence(int start, int end);
+
 
 
     public int[] getVisualSelectBlocks(ViTextView tv,
