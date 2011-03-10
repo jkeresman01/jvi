@@ -265,6 +265,7 @@ public class OptionsPanel extends JPanel {
             // (which will update the Preference which updates the option)
             PropertyChangeListener pcl;
             pcl = new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     Property prop = (Property)evt.getSource();
                     boolean change = false;
@@ -380,18 +381,22 @@ public class OptionsPanel extends JPanel {
                 return descriptor;
             }
             
+            @Override
             public String getName() {
                 return descriptor.getName();
             }
             
+            @Override
             public String getDisplayName() {
                 return descriptor.getDisplayName();
             }
             
+            @Override
             public String getShortDescription() {
                 return descriptor.getShortDescription();
             }
             
+            @Override
             public Class getType() {
                 return descriptor.getPropertyType();
             }
@@ -403,6 +408,7 @@ public class OptionsPanel extends JPanel {
                 return clone;
             }
             
+            @Override
             public void readFromObject(Object object) {
                 try {
                     Method method = descriptor.getReadMethod();
@@ -420,6 +426,7 @@ public class OptionsPanel extends JPanel {
                 }
             }
             
+            @Override
             public void writeToObject(Object object) {
                 try {
                     Method method = descriptor.getWriteMethod();
@@ -443,10 +450,12 @@ public class OptionsPanel extends JPanel {
                 }
             }
             
+            @Override
             public boolean isEditable() {
                 return descriptor.getWriteMethod() != null;
             }
             
+            @Override
             public String getCategory() {
                 if (descriptor instanceof ExtendedPropertyDescriptor) {
                     return ((ExtendedPropertyDescriptor)descriptor).getCategory();
@@ -505,6 +514,7 @@ public class OptionsPanel extends JPanel {
             ((JPanel)editor).add(button = ComponentFactory.Helper.getFactory()
                     .createMiniButton());
             button.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     selectColor();
                 }
@@ -515,6 +525,7 @@ public class OptionsPanel extends JPanel {
                         .getFactory().createMiniButton());
                 button.setText("X");
                 button.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         selectNull();
                     }
@@ -526,6 +537,7 @@ public class OptionsPanel extends JPanel {
                         .createMiniButton());
                 button.setText("DFLT");
                 button.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         selectDefault();
                     }
@@ -592,6 +604,7 @@ public class OptionsPanel extends JPanel {
             editor = new JCheckBox();
             ((JCheckBox)editor).setOpaque(false);
             ((JCheckBox)editor).addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     firePropertyChange(
                             ((JCheckBox)editor).isSelected()
@@ -628,12 +641,16 @@ public class OptionsPanel extends JPanel {
             new NaturalOrderStringComparator();
 
     static Comparator reverseStringCompare = new Comparator() {
+        @Override
+        @SuppressWarnings("unchecked") // STRING_COMPARATOR
         public int compare(Object o1, Object o2) {
             return - STRING_COMPARATOR.compare(o1, o2);
         }
     };
 
     static Comparator propertyNameCompare = new Comparator() {
+        @Override
+        @SuppressWarnings("unchecked") // STRING_COMPARATOR
         public int compare(Object o1, Object o2) {
             if (o1 instanceof Property && o2 instanceof Property) {
                 Property prop1 = (Property) o1;
