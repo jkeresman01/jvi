@@ -21,15 +21,20 @@ package com.raelity.jvi.swing;
 
 import com.raelity.jvi.ViCaret;
 import com.raelity.jvi.ViCaretStyle;
+import com.raelity.jvi.core.Options;
 import com.raelity.jvi.manager.Scheduler;
+import com.raelity.jvi.manager.ViManager;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.lang.reflect.Method;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.event.ChangeEvent;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 
 import javax.swing.event.ChangeListener;
+import org.openide.util.WeakListeners;
 
 /**
  * This extension of {@link javax.swing.text.DefaultCaret} draws the
@@ -42,26 +47,43 @@ import javax.swing.event.ChangeListener;
 public class SwingCaret extends DefaultCaret implements ViCaret
 {
     SwingPaintCaret viDelegate;
-    static Method super_setDot;
-    static Method super_moveDot;
 
     public SwingCaret()
     {
         super();
         viDelegate = new SwingPaintCaret(this);
         addChangeListener(new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e)
             {
                 Scheduler.cursorChange(SwingCaret.this);
             }
         });
+
+        Preferences prefs = ViManager.getFactory().getPreferences();
+        prefs.addPreferenceChangeListener(WeakListeners.create(
+                PreferenceChangeListener.class, prefsListener, prefs));
     }
 
+    private final PreferenceChangeListener prefsListener
+            = new PreferenceChangeListener() {
+        @Override
+        public void preferenceChange(PreferenceChangeEvent evt)
+        {
+            if(evt.getKey().equals(Options.caretBlinkRate)) {
+                int n = Options.getOption(Options.caretBlinkRate).getInteger();
+                setBlinkRate(n);
+            }
+        }
+    };
+
+    @Override
     public void setCursor(ViCaretStyle cursor)
     {
         viDelegate.setCursor(cursor);
     }
 
+    @Override
     public ViCaretStyle getCursor()
     {
         return viDelegate.getCursor();
@@ -95,6 +117,7 @@ public class SwingCaret extends DefaultCaret implements ViCaret
         viDelegate.paint(g, getComponent());
     }
 
+    @Override
     public JTextComponent getTextComponent()
     {
         return super.getComponent();

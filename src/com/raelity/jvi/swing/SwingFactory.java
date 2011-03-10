@@ -444,7 +444,8 @@ abstract public class SwingFactory implements ViFactory
             SwingCaret caret = new SwingCaret();
             ed.setCaret(caret);
             caret.setDot(c.getDot());
-            caret.setBlinkRate(c.getBlinkRate());
+            int n = Options.getOption(Options.caretBlinkRate).getInteger();
+            caret.setBlinkRate(n);
             caret.setVisible(c.isVisible());
         }
     }

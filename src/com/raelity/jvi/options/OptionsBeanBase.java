@@ -387,6 +387,14 @@ public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsContro
         return ViManager.getReleaseString();
     }
 
+    public void setViCaretBlinkRate(int arg)  throws PropertyVetoException {
+        put(Options.caretBlinkRate, arg);
+    }
+
+    public int getViCaretBlinkRate() {
+	    return getint(Options.caretBlinkRate);
+    }
+
     public void setViMagicRedoAlgorithm(String arg)  throws PropertyVetoException {
         put(Options.magicRedoAlgorithm, arg);
     }
