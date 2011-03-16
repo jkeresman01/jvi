@@ -20,6 +20,8 @@
 
 package com.raelity.jvi.core;
 
+import java.util.Collections;
+import com.raelity.jvi.options.OptUtil;
 import com.raelity.jvi.ViBadLocationException;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViAppView;
@@ -35,6 +37,7 @@ import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.options.Option;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -43,6 +46,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.logging.Level;
@@ -791,8 +795,9 @@ private static void addDebugColonCommands()
     //
     // Some debug commands
     //
-    ColonCommands.register("dumpOptions", "dumpOptions", new ActionListener() {
-            @Override
+    ColonCommands.register("dumpPreferences", "dumpPreferences",
+                           new ActionListener() {
+        @Override
         public void actionPerformed(ActionEvent e) {
         try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -808,7 +813,7 @@ private static void addDebugColonCommands()
             LOG.log(Level.SEVERE, null, ex);
         }
         }
-    },  EnumSet.of(CcFlag.DBG));
+    },  EnumSet.of(CcFlag.DBG, CcFlag.NO_ARGS));
     ColonCommands.register("optionsDelete", "optionsDelete",
         new ActionListener() {
             @Override
@@ -863,6 +868,44 @@ private static void addDebugColonCommands()
                     Msg.emsg("***** executing !isEnabled command *****");
                 }
             }, EnumSet.of(CcFlag.DBG));
+    ColonCommands.register("dumpCommands", "dumpCommands",
+                           new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ViOutputStream vios = ViManager.createOutputStream(
+                    null, ViOutputStream.OUTPUT, "Dump Commands");
+            for(ColonCommandItem cci : ColonCommands.getList()) {
+                vios.println(String.format("\t%s%s%s",
+                    cci.getDisplayName(),
+                    cci.getFlags().contains(CcFlag.DBG) ? " debug" : "",
+                    cci.getFlags().contains(CcFlag.DEPRECATED) ? " deprec" : "",
+                    cci.getFlags().contains(CcFlag.NO_ARGS) ? "" : " ..."
+                    ));
+            }
+            vios.close();
+        }
+    },  EnumSet.of(CcFlag.DBG, CcFlag.NO_ARGS));
+    ColonCommands.register("dumpOptions", "dumpOptions", new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ViOutputStream vios = ViManager.createOutputStream(
+                    null, ViOutputStream.OUTPUT, "Dump Options");
+            // sort by display name
+            Comparator<Option> comp = new Comparator<Option>() {
+                @Override public int compare(Option o1, Option o2)
+                { return o1.getDisplayName().compareTo(o2.getDisplayName()); }
+            };
+            List<Option> opts = new ArrayList<Option>(OptUtil.getOptions());
+            Collections.sort(opts, comp);
+            for(Option opt : opts) {
+                vios.println(String.format("\t%s (%s) [%s]",
+                                           opt.getDisplayName(),
+                                           opt.getCategory(),
+                                           opt.getName()));
+            }
+            vios.close();
+        }
+    },  EnumSet.of(CcFlag.DBG, CcFlag.NO_ARGS));
 
 } // end
 }

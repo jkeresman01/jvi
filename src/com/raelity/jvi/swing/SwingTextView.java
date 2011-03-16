@@ -124,7 +124,7 @@ public class SwingTextView extends TextView
                 return;
             ColonCommands.register("dumpLineMap", "dumpLineMap",
                                    new DumpLineMap(),
-                                   EnumSet.of(CcFlag.DBG));
+                                   EnumSet.of(CcFlag.DBG, CcFlag.NO_ARGS));
             didInit = true;
         }
     }

@@ -26,6 +26,7 @@ import com.raelity.jvi.core.Options.Category;
 import java.awt.Color;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -196,6 +197,10 @@ public class OptUtil {
     return optionsMap.get(name);
   }
 
+  public static Collection<Option> getOptions() {
+    return Collections.unmodifiableCollection(optionsMap.values());
+  }
+
   public static List<String> getOptionList(Category category) {
     List<String> catList = null;
     switch(category) {
@@ -224,21 +229,19 @@ public class OptUtil {
     return catList;
   }
 
-  public static void setupOptionDesc(Category category, String name,
-                                     String displayName, String desc) {
-      List<String> catList = getWritableOptionList(category);
-      setupOptionDesc(catList, name, displayName, desc);
-  }
-
   public static void setupOptionDesc(String name,
                                      String displayName, String desc) {
-      setupOptionDesc((List<String>)null, name, displayName, desc);
+      setupOptionDesc(null, name, displayName, desc);
   }
 
-  private static void setupOptionDesc(List<String> optionsGroup, String name,
+  public static void setupOptionDesc(Category category, String name,
                                       String displayName, String desc) {
+    List<String> optionsGroup = null;
+    if(category != null)
+        optionsGroup = getWritableOptionList(category);
     Option opt = optionsMap.get(name);
     if(opt != null) {
+      opt.category = category;
       if(optionsGroup != null) {
           optionsGroup.add(name);
       }
@@ -257,4 +260,10 @@ public class OptUtil {
       opt.setHidden(fHidden);
     }
   }
+
+  private OptUtil()
+  {
+  }
 }
+
+// vi: sw=2 et

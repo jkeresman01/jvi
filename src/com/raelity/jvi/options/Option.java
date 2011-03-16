@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.options;
 
+import com.raelity.jvi.core.Options.Category;
 import java.awt.Color;
 import java.beans.PropertyVetoException;
 
@@ -30,6 +31,7 @@ public abstract class Option {
     protected String defaultValue;
     protected boolean fExpert;
     protected boolean fHidden;
+    Category category;
     
     protected boolean fPropogate; // used in logic, not part of option type
     
@@ -94,6 +96,11 @@ public abstract class Option {
     
     public void setExpert(boolean f) {
         fExpert = f;
+    }
+
+    public Category getCategory()
+    {
+        return category;
     }
 
     public void setDesc(String desc)
