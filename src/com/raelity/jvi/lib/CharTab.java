@@ -30,6 +30,7 @@ import java.util.BitSet;
 public class CharTab implements Cloneable {
 
     private BitSet table = new BitSet(256);
+    private String spec;
 
     /**
      * Parse the spec.
@@ -37,6 +38,7 @@ public class CharTab implements Cloneable {
      */
     public boolean init(String spec) {
         table.clear();
+        this.spec = "";
 
         int p = 0;
         char c;
@@ -103,6 +105,7 @@ public class CharTab implements Cloneable {
 	    }
 	    p = skip_to_option_part(spec, p);
 	}
+        this.spec = spec;
         return true;
     }
 
@@ -114,6 +117,10 @@ public class CharTab implements Cloneable {
             isWord = Character.isLetterOrDigit(c);
         }
         return isWord;
+    }
+
+    public String getSpec() {
+        return spec;
     }
 
     private BitSet getTableClone() {

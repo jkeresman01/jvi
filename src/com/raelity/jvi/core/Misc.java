@@ -3642,22 +3642,9 @@ private static int put_in_typebuf(String s, boolean colon)
     /**
      * return TRUE if 'c' is a keyword character: Letters and characters from
      * 'iskeyword' option for current buffer.
-     * <p>NOTE: hardcode for now to typical program identifier settings
-     * </p>
      */
     static boolean vim_iswordc(char c) {
-      boolean isWord;
-      if(c < 0x80) {
-        isWord =
-                'a' <= c && c <= 'z'
-                || 'A' <= c && c <= 'Z'
-                || '0' <= c && c <= '9'
-                || '_' == c
-                ;
-      } else {
-        isWord = Character.isLetterOrDigit(c);
-      }
-      return isWord;
+      return G.curbuf.b_chartab.iswordc(c);
     }
     
     /**

@@ -28,6 +28,7 @@ import com.raelity.jvi.options.SetColonCommand;
 import com.raelity.jvi.options.StringOption;
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.lib.CharTab;
 import com.raelity.text.TextUtil.MySegment;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
@@ -126,6 +127,7 @@ public final class Options {
   public static final String searchFromEnd = "viSearchFromEnd";
   public static final String endOfSentence = "viEndOfSentence";
   public static final String wrapScan = "viWrapScan";
+  public static final String isKeyWord = "viIsKeyWord";
 
   public static final String metaEquals = "viMetaEquals";
   public static final String metaEscape = "viMetaEscape";
@@ -576,8 +578,30 @@ public final class Options {
     OptUtil.setupOptionDesc(Category.SEARCH, metaEscape, "RE Meta Escape",
             "Regular expression metacharacters requiring escape:"
             + " any of: '(', ')', '|', '+', '?', '{'."
-            + " By default vim requires escape, '\\', for these characters.");
+            + " By default vim requires escape, '\\', for these characters."
+            + "\n\nDefault: '" + G.metaEscapeDefault + "'");
     setExpertHidden(metaEscape, true, false);
+
+    String defaultIsKeyWord = "@,48-57,_,192-255";
+    OptUtil.createStringOption(isKeyWord, defaultIsKeyWord,
+            new StringOption.Validator() {
+            @Override
+              public void validate(String val) throws PropertyVetoException {
+                CharTab ct = new CharTab();
+                if(!ct.init(val)) {
+                   throw new PropertyVetoException(
+                       "parse of '" + val + "' failed.",
+                     new PropertyChangeEvent(opt, opt.getName(),
+                                             opt.getString(), val));
+                }
+              }
+            });
+    OptUtil.setupOptionDesc(Category.SEARCH, isKeyWord, "'iskeyword' 'isk'",
+              "Keywords are used in searching and recognizing with many commands:"
+            + " \"w\", \"*\", etc. See vim docs for more info."
+            + " The \":set iskeyword=xxx\" command is per buffer"
+            + " and this works with modelines."
+            + "\n\nDefault: '" + defaultIsKeyWord + "'");
 
     /////////////////////////////////////////////////////////////////////
     //

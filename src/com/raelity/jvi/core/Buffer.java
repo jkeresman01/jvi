@@ -9,6 +9,7 @@
 
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.lib.CharTab;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViBuffer;
 import com.raelity.jvi.ViFPOS;
@@ -94,6 +95,10 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         b_p_tw = Options.getOption(Options.textWidth).getInteger();
         b_p_nf = Options.getOption(Options.nrFormats).getString();
 
+        b_p_isk = Options.getOption(Options.isKeyWord).getString();
+        b_chartab = new CharTab();
+        b_chartab.init(b_p_isk);
+
         //b_p_mps = Options.getOption(Options.matchPairs).getString();
         //b_p_qe = Options.getOption(Options.quoteEscape).getString();
 
@@ -105,6 +110,9 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
 
     @Override
     public void viOptionSet(ViTextView tv, String name) {
+        if("b_p_isk".equals(name)) {
+            b_chartab.init(b_p_isk);
+        }
     }
     
     //////////////////////////////////////////////////////////////////////
@@ -117,6 +125,8 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     public int b_p_ts;          // tab stop
     public int b_p_sts;         // soft tab stop
     public int b_p_tw;          // text width
+    public String b_p_isk;      // is key word pattern
+    public CharTab b_chartab;   // for b_p_isk
     
     //////////////////////////////////////////////////////////////////////
     //

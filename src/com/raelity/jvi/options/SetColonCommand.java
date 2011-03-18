@@ -12,6 +12,7 @@ import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.TextView;
+import com.raelity.jvi.core.Util;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Field;
@@ -126,6 +127,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     new VimOption("linebreak",   "lbr", O.P_WIN, "w_p_lbr",  null),
     new VimOption("list",        "",    O.P_WIN, "w_p_list", null),
     new VimOption("scroll",      "scr", O.P_WIN, "w_p_scroll", null),
+    new VimOption("iskeyword",   "isk", O.P_BUF, "b_p_isk", Options.isKeyWord),
   };
 
   @Override
@@ -226,11 +228,13 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     if (vopt == null) {
       String msg = "Unknown option: " + voptName;
       Msg.emsg(msg);
+      Util.vim_beep();
       throw new SetCommandException(msg);
     }
     if (determineOptionState(vopt, voptState) == null) {
       String msg = "Internal error: " + arg;
       Msg.emsg(msg);
+      Util.vim_beep();
       throw new SetCommandException(msg);
     }
     Object newValue = newOptionValue(arg, vopt, voptState);
@@ -242,6 +246,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
           voptState.opt.validate(newValue);
         } catch (PropertyVetoException ex) {
           Msg.emsg(ex.getMessage());
+          Util.vim_beep();
           throw new SetCommandException(ex.getMessage());
         }
       }
@@ -295,6 +300,9 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
       } else if (voptState.opt instanceof IntegerOption) {
         voptState.type = int.class;
         voptState.value = voptState.opt.getInteger();
+      } else if (voptState.opt instanceof StringOption) {
+        voptState.type = String.class;
+        voptState.value = voptState.opt.getString();
       }
     }
     return voptState;
@@ -302,8 +310,8 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
 
   // Most of the argument are class members
   private static Object newOptionValue(String arg, VimOption vopt,
-                                       VimOptionState voptState) throws NumberFormatException,
-                                                                            SetCommandException
+                                       VimOptionState voptState)
+          throws NumberFormatException, SetCommandException
   {
     Object newValue = null;
     if (voptState.type == boolean.class) {
@@ -311,6 +319,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         // like: ":set ic=val"
         String msg = "Unknown argument: " + arg;
         Msg.emsg(msg);
+        Util.vim_beep();
         throw new SetCommandException(msg);
       }
       if (!voptState.fShow) {
@@ -329,8 +338,17 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         } catch (NumberFormatException ex) {
           String msg = "Number required after =: " + arg;
           Msg.emsg(msg);
+          Util.vim_beep();
           throw new SetCommandException(msg);
         }
+      }
+    } else if (voptState.type == String.class) {
+      // NEEDSWORK: option string escape processing here. vim's option-backslash
+      if (!voptState.fValue) {
+        voptState.fShow = true;
+      }
+      if (!voptState.fShow) {
+        newValue = voptState.split[1];
       }
     } else {
       assert false : "Type " + voptState.type.getSimpleName() + " not handled";
@@ -343,7 +361,8 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     String v = "";
     if (value instanceof Boolean) {
       v = (((Boolean)value).booleanValue() ? "  " : "no") + vopt.fullname;
-    } else if (value instanceof Integer) {
+    } else if (value instanceof Integer
+               || value instanceof String) {
       v = vopt.fullname + "=" + value;
     } else {
       assert false : value.getClass().getSimpleName() + " not handled";

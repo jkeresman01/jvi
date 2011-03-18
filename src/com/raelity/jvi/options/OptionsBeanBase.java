@@ -395,6 +395,14 @@ public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsContro
 	    return getint(Options.caretBlinkRate);
     }
 
+    public void setViIsKeyWord(String arg)  throws PropertyVetoException {
+        put(Options.isKeyWord, arg);
+    }
+
+    public String getViIsKeyWord() {
+	return getString(Options.isKeyWord);
+    }
+
     public void setViMagicRedoAlgorithm(String arg)  throws PropertyVetoException {
         put(Options.magicRedoAlgorithm, arg);
     }
