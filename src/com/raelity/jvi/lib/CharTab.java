@@ -58,7 +58,8 @@ public class CharTab implements Cloneable {
             c = getCharValue(spec, mi);
             p = mi.getValue();
 	    c2 = -1;
-	    if (spec.charAt(p) == '-' && p < (spec.length() - 1))
+	    if (p < spec.length()
+                    && spec.charAt(p) == '-' && p < (spec.length() - 1))
 	    {
 		++p;
                 mi.setValue(p);

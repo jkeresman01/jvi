@@ -127,6 +127,90 @@ public class CharTabTest {
 
     }
 
+    static class ExcludeComma implements IsWordC
+    {
+        @Override
+        public String getSpec()
+        {
+            return "!-~,^,,9";
+        }
+
+        @Override
+        public boolean iswordc(char c)
+        {
+            if(',' == c)
+                return false;
+            boolean isWord =
+                '!' <= c && c <= '~'
+                || 9 == c // tab
+                ;
+            return isWord;
+        }
+
+    }
+
+    static class DigitsCommaUnderscore implements IsWordC
+    {
+        @Override
+        public String getSpec()
+        {
+            return "48-57,,,_";
+        }
+
+        @Override
+        public boolean iswordc(char c)
+        {
+            boolean isWord =
+                48 <= c && c <= 57 // '0'...'9'
+                || '_' == c
+                || ',' == c
+                ;
+            return isWord;
+        }
+
+    }
+
+    static class LettersAt implements IsWordC
+    {
+        @Override
+        public String getSpec()
+        {
+            return "a-z,A-Z,@-@";
+        }
+
+        @Override
+        public boolean iswordc(char c)
+        {
+            boolean isWord =
+                'a' <= c && c <= 'z'
+                || 'A' <= c && c <= 'Z'
+                || '@' == c
+                ;
+            return isWord;
+        }
+
+    }
+
+    static class PoundCaret implements IsWordC
+    {
+        @Override
+        public String getSpec()
+        {
+            return "#,^";
+        }
+
+        @Override
+        public boolean iswordc(char c)
+        {
+            boolean isWord =
+                '#' == c
+                || '^' == c
+                ;
+            return isWord;
+        }
+
+    }
+
     byte[] asArray(IsWordC isWordC) {
         byte[] b = new byte[256];
         for(char c = 0; c < 256; c++) {
@@ -158,6 +242,10 @@ public class CharTabTest {
         runTest(new DefaultIsWordC());
         runTest(new NoAlphaIsWordC());
         runTest(new ExcludeIsWordC());
+        runTest(new ExcludeComma());
+        runTest(new DigitsCommaUnderscore());
+        runTest(new LettersAt());
+        runTest(new PoundCaret());
     }
     
     // @Test
