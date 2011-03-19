@@ -30,15 +30,14 @@ import java.util.BitSet;
 public class CharTab implements Cloneable {
 
     private BitSet table = new BitSet(256);
-    private String spec;
+    private String spec = "";
 
     /**
      * Parse the spec.
      * Do iskeyword processing only
      */
     public boolean init(String spec) {
-        table.clear();
-        this.spec = "";
+        BitSet newTable = new BitSet(256);
 
         int p = 0;
         char c;
@@ -97,15 +96,16 @@ public class CharTab implements Cloneable {
 		{
 		    /* (re)set keyword flag */
                     if (tilde)
-                        table.clear(c);
+                        newTable.clear(c);
                     else
-                        table.set(c);
+                        newTable.set(c);
 		}
 		++c;
 	    }
 	    p = skip_to_option_part(spec, p);
 	}
         this.spec = spec;
+        table = newTable;
         return true;
     }
 
