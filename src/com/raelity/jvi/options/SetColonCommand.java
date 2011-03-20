@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -71,25 +73,65 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         P_WIN, // a per window option
         P_BUF; // a per buffer option
         
-        boolean isLocal()
-        {
+        boolean isLocal() {
             return this == P_WIN || this == P_BUF;
         }
         
-        boolean isGlobal()
-        {
+        boolean isGlobal() {
             return this == P_GBL;
         }
         
-        boolean isWin()
-        {
+        boolean isWin() {
             return this == P_WIN;
         }
         
-        boolean isBuf()
-        {
+        boolean isBuf() {
             return this == P_BUF;
         }
+    }
+
+    private enum OP {
+        DFLT(""),       // DEFAULT if nothing specified, like ":set ic".
+                        // Could be SHOW as in ":set isk" for non boolean.
+        SHOW("?"),      // display option
+        INV("inv"),     // ! invert boolean
+        NO("no"),       // no<opt> set boolean false
+        ASS("="),       // = assign
+        ADD("+="),      // +=
+        PRE("^="),      // ^=
+        SUB("-="),      // -=
+        ;
+
+        private String token;
+
+        OP(String token) {
+            this.token = token;
+        }
+
+        public String getToken()
+        {
+            return token;
+        }
+
+        boolean isBooleanOp() {
+            return this == INV || this == NO;
+        }
+
+        boolean isAnyAssign() {
+            return this == ASS || this == ADD || this == PRE || this == SUB;
+        }
+
+        boolean isAssignOp() {
+            return this == ADD || this == PRE || this == SUB;
+        }
+
+        boolean isShow() { return this == SHOW; }
+        boolean isInv()  { return this == INV; }
+        boolean isNo()   { return this == NO; }
+        boolean isAss()  { return this == ASS; }
+        boolean isAdd()  { return this == ADD; }
+        boolean isPre()  { return this == PRE; }
+        boolean isSub()  { return this == SUB; }
     }
     
     private static class VimOption
@@ -153,8 +195,14 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         ColonEvent evt = (ColonEvent)e;
         parseSetOptions(evt.getArgs());
     }
+
+    private static void error(String msg)
+    {
+        Msg.emsg(msg);
+        Util.vim_beep();
+    }
     
-    public void parseSetOptions(List<String> eventArgs)
+    public static void parseSetOptions(List<String> eventArgs)
     {
         if (eventArgs.isEmpty() ||
                 eventArgs.size() == 1 && "all".equals(eventArgs.get(0))) {
@@ -203,11 +251,8 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         Option opt;
         // Following not really option state, they are the
         // parse results when settigns options
-        boolean fInv;
-        boolean fNo;
-        boolean fShow;
-        boolean fValue;
-        String[] split;
+        OP op;
+        String stringValue;
     }
 
     // This is train of thought
@@ -215,24 +260,28 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     throws IllegalAccessException, SetCommandException
     {
         VimOptionState voptState = new VimOptionState();
-        voptState.split = arg.split("[:=]"); //BUG<<<<<<<<<<<<<<<<<<<<<
-        String voptName = voptState.split[0];
-        if (voptState.split.length > 1) {
-            voptState.fValue = true;
+        String voptName = arg; // assume split does nothing
+        Object[] split = splitAssignment(arg);
+        if(split != null) {
+            voptName = (String)split[0];
+            voptState.op = (OP)split[1];
+            voptState.stringValue = (String)split[2];
         }
         if (voptName.startsWith("no")) {
-            voptState.fNo = true;
+            voptState.op = OP.NO;
             voptName = voptName.substring(2);
         } else if (voptName.startsWith("inv")) {
-            voptState.fInv = true;
+            voptState.op = OP.INV;
             voptName = voptName.substring(3);
         } else if (voptName.endsWith("!")) {
-            voptState.fInv = true;
+            voptState.op = OP.INV;
             voptName = voptName.substring(0, voptName.length() - 1);
         } else if (voptName.endsWith("?")) {
-            voptState.fShow = true;
+            voptState.op = OP.SHOW;
             voptName = voptName.substring(0, voptName.length() - 1);
         }
+        if(voptState.op == null)
+            voptState.op = OP.DFLT;
         VimOption vopt = null;
         for (VimOption v : vopts) {
             if (voptName.equals(v.fullname)
@@ -243,26 +292,23 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         }
         if (vopt == null) {
             String msg = "Unknown option: " + voptName;
-            Msg.emsg(msg);
-            Util.vim_beep();
+            error(msg);
             throw new SetCommandException(msg);
         }
         if (determineOptionState(vopt, voptState) == null) {
             String msg = "Internal error: " + arg;
-            Msg.emsg(msg);
-            Util.vim_beep();
+            error(msg);
             throw new SetCommandException(msg);
         }
         Object newValue = newOptionValue(arg, vopt, voptState);
-        if (voptState.fShow) {
+        if (voptState.op.isShow()) {
             Msg.smsg(formatDisplayValue(vopt, voptState.value));
         } else {
             if (voptState.opt != null) {
                 try {
                     voptState.opt.validate(newValue);
                 } catch (PropertyVetoException ex) {
-                    Msg.emsg(ex.getMessage());
-                    Util.vim_beep();
+                    error(ex.getMessage());
                     throw new SetCommandException(ex.getMessage());
                 }
             }
@@ -274,6 +320,34 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                 voptState.opt.setValue(newValue.toString());
             }
         }
+    }
+
+    // Split on '=', '+=', '-=', '^='
+    private static Object[] splitAssignment(String arg)
+    {
+        Pattern p = Pattern.compile("^([a-z]+)(=|\\+=|\\^=|-=)(.*)$");
+        Matcher m = p.matcher(arg);
+        if(m.matches()) {
+            Object[] split = new Object[3];
+            split[0] = m.group(1);
+            split[2] = m.group(3);
+            OP op = null;
+            String sop = m.group(2);
+            if("=".equals(sop)) {
+                op = OP.ASS;
+            } else if("+=".equals(sop)) {
+                op = OP.ADD;
+            } else if("-=".equals(sop)) {
+                op = OP.SUB;
+            } else if("^=".equals(sop)) {
+                op = OP.PRE;
+            }
+            split[1] = op;
+
+            return split;
+        }
+
+        return null;
     }
     
     /**
@@ -327,49 +401,86 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     // Most of the argument are class members
     private static Object newOptionValue(String arg, VimOption vopt,
                                          VimOptionState voptState)
-    throws NumberFormatException, SetCommandException
+    throws SetCommandException
     {
         Object newValue = null;
         if (voptState.type == boolean.class) {
-            if (voptState.fValue) {
+            if (voptState.stringValue != null) {
                 // like: ":set ic=val"
                 String msg = "Unknown argument: " + arg;
-                Msg.emsg(msg);
-                Util.vim_beep();
+                error(msg);
                 throw new SetCommandException(msg);
             }
-            if (!voptState.fShow) {
+            if (!voptState.op.isShow()) {
                 newValue =
-                        voptState.fInv
+                        voptState.op.isInv()
                         ? !((Boolean)voptState.value).booleanValue()
-                        : voptState.fNo ? false : true;
+                        : voptState.op.isNo() ? false : true;
             }
-        } else if (voptState.type == int.class) {
-            if (!voptState.fValue) {
-                voptState.fShow = true;
+
+        } else {
+            // handle a number or a string
+            if(voptState.op.isBooleanOp()) {
+                String msg = "boolean op '" + voptState.op
+                                + "' invalid for "
+                                + voptState.type.getSimpleName()
+                                + " option";
+                error(msg);
+                throw new SetCommandException(msg);
             }
-            if (!voptState.fShow) {
-                try {
-                    newValue = Integer.parseInt(voptState.split[1]);
-                } catch (NumberFormatException ex) {
-                    String msg = "Number required after =: " + arg;
-                    Msg.emsg(msg);
-                    Util.vim_beep();
+            if (voptState.stringValue == null) {
+                voptState.op = OP.SHOW;
+            }
+            if (!voptState.op.isShow()) {
+                if(!voptState.op.isAnyAssign()) {
+                    String msg = "Operation '" + voptState.op
+                                    + "' invalid in this context";
+                    error(msg);
                     throw new SetCommandException(msg);
                 }
+                if (voptState.type == int.class) {
+                    try {
+                        int oldValue = (Integer)voptState.value;
+                        int val = Integer.parseInt(voptState.stringValue);
+                        //newValue = Integer.parseInt(voptState.stringValue);
+                        switch(voptState.op) {
+                            case ASS: break; // val = val
+                            case ADD: val = oldValue + val; break;
+                            case SUB: val = oldValue - val; break;
+                            case PRE: val = oldValue * val; break;
+                        }
+                        newValue = (Integer)val;
+                    } catch (NumberFormatException ex) {
+                        String msg = "Number required after '=': " + arg;
+                        error(msg);
+                        throw new SetCommandException(msg);
+                    }
+                } else if (voptState.type == String.class) {
+                    if(!voptState.op.isAssignOp())
+                        newValue = voptState.stringValue;
+                    else
+                        newValue = doStringAssignOp(arg, vopt, voptState);
+                } else {
+                    assert false : "Type " + voptState.type.getSimpleName()
+                                    + " not handled";
+                }
             }
-        } else if (voptState.type == String.class) {
-            // NEEDSWORK: option string escape processing here. option-backslash
-            if (!voptState.fValue) {
-                voptState.fShow = true;
-            }
-            if (!voptState.fShow) {
-                newValue = voptState.split[1];
-            }
-        } else {
-            assert false : "Type " + voptState.type.getSimpleName()
-                            + " not handled";
         }
+        return newValue;
+    }
+
+    private static String doStringAssignOp(String arg, VimOption vopt,
+                                           VimOptionState voptState)
+            throws SetCommandException
+    {
+        String newValue = null;
+        if(voptState.op.isAssignOp()) {
+            String msg = "String operation '" + voptState.op.getToken()
+                            + "' not implemented";
+            error(msg);
+            throw new SetCommandException(msg);
+        }
+
         return newValue;
     }
     
