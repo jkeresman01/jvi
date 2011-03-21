@@ -77,6 +77,19 @@ public class Util {
     return -1;
   }
 
+  // get rid of "_cs" when MySegment replaced by CharSequence
+  // CAN PROBABLY DO IT RIGHT NOW and REMOVE above method
+  public static int vim_strchr_cs(CharSequence cs, int i, char c) {
+    int p = i;
+    int length = cs.length();
+    while(p < length) {
+      if(cs.charAt(p) == c)
+        return p;
+      ++p;
+    }
+    return -1;
+  }
+
   /**
    * Vim has its own isspace() function, because on some machines isspace()
    * can't handle characters above 128.

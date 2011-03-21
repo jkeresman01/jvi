@@ -16,6 +16,7 @@ import com.raelity.jvi.core.Util;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Field;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -133,6 +134,15 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         boolean isPre()  { return this == PRE; }
         boolean isSub()  { return this == SUB; }
     }
+
+    // option flags
+    private enum F {
+        COMMA,          // comma separated list
+        NODUP,          // don't allow duplicate strings
+        FLAGLIST,       // list of single-char flags
+    }
+
+    private static final Set<F> nullF = EnumSet.noneOf(F.class);
     
     private static class VimOption
     {
@@ -143,50 +153,56 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         // name of field and/or option
         String varName; // java variable name in curbuf or curwin
         String optName; // the jVi Option name.
+        Set<F> flags;
         
         VimOption(String fullname, String shortname,
                                String varName, String optName,
-                               S scope)
+                               S scope, Set<F> flags)
         {
             this.fullname = fullname;
             this.shortname = shortname;
             this.varName = varName;
             this.optName = optName;
             this.scope = scope;
+            this.flags = flags;
+        }
+
+        boolean f(F f) {
+            return flags.contains(f);
         }
     }
     
     private static VimOption[] vopts = new VimOption[]{
     new VimOption("expandtab",   "et",  "b_p_et",   null,
-                  S.P_BUF),
+                  S.P_BUF, nullF),
     new VimOption("ignorecase",  "ic",  null,       Options.ignoreCase,
-                  S.P_GBL),
+                  S.P_GBL, nullF),
     new VimOption("incsearch",   "is",  null,       Options.incrSearch,
-                  S.P_GBL),
+                  S.P_GBL, nullF),
     new VimOption("hlsearch",    "hls", null,       Options.highlightSearch,
-                  S.P_GBL),
+                  S.P_GBL, nullF),
     new VimOption("wrapscan",    "ws",  null,       Options.wrapScan,
-                  S.P_GBL),
+                  S.P_GBL, nullF),
     new VimOption("number",      "nu",  "w_p_nu",   null,
-                  S.P_WIN),
+                  S.P_WIN, nullF),
     new VimOption("shiftwidth",  "sw",  "b_p_sw",   Options.shiftWidth,
-                  S.P_BUF),
+                  S.P_BUF, nullF),
     new VimOption("tabstop",     "ts",  "b_p_ts",   Options.tabStop,
-                  S.P_BUF),
+                  S.P_BUF, nullF),
     new VimOption("softtabstop", "sts", "b_p_sts",  Options.softTabStop,
-                  S.P_BUF),
+                  S.P_BUF, nullF),
     new VimOption("textwidth",   "tw",  "b_p_tw",   Options.textWidth,
-                  S.P_BUF),
+                  S.P_BUF, nullF),
     new VimOption("wrap",        "",    "w_p_wrap", null,
-                  S.P_WIN),
+                  S.P_WIN, nullF),
     new VimOption("linebreak",   "lbr", "w_p_lbr",  null,
-                  S.P_WIN),
+                  S.P_WIN, nullF),
     new VimOption("list",        "",    "w_p_list", null,
-                  S.P_WIN),
+                  S.P_WIN, nullF),
     new VimOption("scroll",      "scr", "w_p_scroll", null,
-                  S.P_WIN),
+                  S.P_WIN, nullF),
     new VimOption("iskeyword",   "isk", "b_p_isk",  Options.isKeyWord,
-                  S.P_BUF),
+                  S.P_BUF, EnumSet.of(F.COMMA, F.NODUP)),
     };
     
     @Override
@@ -442,7 +458,6 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                     try {
                         int oldValue = (Integer)voptState.value;
                         int val = Integer.parseInt(voptState.stringValue);
-                        //newValue = Integer.parseInt(voptState.stringValue);
                         switch(voptState.op) {
                             case ASS: break; // val = val
                             case ADD: val = oldValue + val; break;
@@ -473,15 +488,114 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                                            VimOptionState voptState)
             throws SetCommandException
     {
-        String newValue = null;
-        if(voptState.op.isAssignOp()) {
-            String msg = "String operation '" + voptState.op.getToken()
-                            + "' not implemented";
-            error(msg);
-            throw new SetCommandException(msg);
+        // See vim's option.c...
+        String origval = (String)voptState.value;
+        String newval = voptState.stringValue;
+        boolean adding = voptState.op.isAdd();
+        boolean prepending = voptState.op.isPre();
+        boolean removing = voptState.op.isSub();
+
+        // System.err.printf("doStringAssignOp '%s'\n\t%s\n\t%s\n",
+        //                   voptState.op.getToken(),origval, newval);
+
+        // locate newval[] in origval[] when removing it
+        // and when adding to avoid duplicates
+        int i = 0;
+        int s = 0;
+        if(removing || vopt.f(F.NODUP)) {
+            i = newval.length();
+            int bs = 0;
+            for(s = 0; s < origval.length(); s++)
+            {
+                if((!vopt.f(F.COMMA)
+                            || s == 0
+                            || origval.charAt(s - 1) == ',' && (bs & 1) == 0)
+                        && origval.substring(s).startsWith(newval)
+                        && (!vopt.f(F.COMMA)
+                            || origval.length() == s + i
+                            || origval.charAt(s + i) == ',')
+                ) {
+                    break;
+                }
+                // Count backslashes.  Only a comma with an
+                // even number of backslashes before it is
+                // recognized as a separator
+                if(s > 0 && origval.charAt(s - 1) == '\\')
+                    ++bs;
+                else
+                    bs = 0;
+            }
+            
+            /* do not add if already there */
+            if ((adding || prepending) && s < origval.length())
+            {
+                prepending = false;
+                adding = false;
+                newval = origval;
+            }
+        }
+            
+        // concatenate the two strings; add a ',' if
+        // needed
+        if (adding || prepending)
+        {
+            boolean comma = vopt.f(F.COMMA) && !origval.isEmpty()
+                                             && !newval.isEmpty();
+            if(adding) {
+                newval = origval + (comma ? "," : "") + newval;
+            } else {
+                newval += (comma ? "," : "") + origval;
+            }
         }
 
-        return newValue;
+        // Remove newval[] from origval[]. (Note: "i" has
+        // been set above and is used here).
+        if (removing)
+        {
+            newval = origval;
+            if(s < origval.length())
+            {
+                // may need to remove a comma
+                if(vopt.f(F.COMMA)) {
+                    if(s == 0) {
+                        // include comma after string
+                        if(s + i < origval.length()
+                                && origval.charAt(s + i) == ',')
+                            ++i;
+                    } else {
+                        // include comma before string
+                        --s;
+                        ++i;
+                    }
+                }
+                newval = origval.substring(0, s)
+                            + origval.substring(s + i);
+            }
+        }
+
+        if(vopt.f(F.FLAGLIST))
+        {
+            // remove flags that appear twice
+            StringBuilder sb = new StringBuilder(newval);
+            for(s = 0; s < sb.length(); s++) {
+                if((!vopt.f(F.COMMA) || sb.charAt(s) != ',')
+                    && Util.vim_strchr_cs(sb, s + 1, sb.charAt(s)) >= 0)
+                {
+                    sb.deleteCharAt(s);
+                    --s; // since it is about to be incremented
+                }
+            }
+            if(sb.length() != newval.length())
+                newval = sb.toString();
+        }
+
+        ///// STRANGE, may need some day...
+        ///// if (save_arg != NULL)   /* number for 'whichwrap'
+        /////     arg = save_arg;
+
+        // System.err.println("\t"+newval);
+
+        return newval;
     }
     
     private static String formatDisplayValue(VimOption vopt, Object value)
