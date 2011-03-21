@@ -66,20 +66,7 @@ public class Util {
     return s.substring(index);
   }
 
-  public static int vim_strchr(MySegment seg, int i, char c) {
-    int end = seg.offset + seg.count;
-    i += seg.offset;
-    for(; i < end; i++) {
-      if(seg.array[i] == c) {
-        return i - seg.offset;
-      }
-    }
-    return -1;
-  }
-
-  // get rid of "_cs" when MySegment replaced by CharSequence
-  // CAN PROBABLY DO IT RIGHT NOW and REMOVE above method
-  public static int vim_strchr_cs(CharSequence cs, int i, char c) {
+  public static int vim_strchr(CharSequence cs, int i, char c) {
     int p = i;
     int length = cs.length();
     while(p < length) {

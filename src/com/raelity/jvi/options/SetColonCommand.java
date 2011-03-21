@@ -579,7 +579,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
             StringBuilder sb = new StringBuilder(newval);
             for(s = 0; s < sb.length(); s++) {
                 if((!vopt.f(F.COMMA) || sb.charAt(s) != ',')
-                    && Util.vim_strchr_cs(sb, s + 1, sb.charAt(s)) >= 0)
+                    && Util.vim_strchr(sb, s + 1, sb.charAt(s)) >= 0)
                 {
                     sb.deleteCharAt(s);
                     --s; // since it is about to be incremented
