@@ -315,9 +315,15 @@ public class OptionsPanel extends JPanel {
                 if(!descriptors[i].isHidden()) {
                     // xmlify the description
                     PropertyDescriptor d = descriptors[i];
+                    Option opt = Options.getOption(d.getName());
                     String s = d.getShortDescription();
                     sb.setLength(0);
                     xmlFix.utf2xml(s, sb);
+                    if(opt != null) {
+                        sb.append("<br/><br/>Default: '<b>")
+                          .append(opt.getDefault())
+                          .append("</b>'");
+                    }
                     s = sb.toString();
                     d.setShortDescription(s);
                     Property prop = new MyPropAdapt(d);
@@ -327,7 +333,6 @@ public class OptionsPanel extends JPanel {
                                 .registerEditor(prop,
                                                 new ColorPropertyEditor(prop));
                     }
-                    Option opt = Options.getOption(prop.getName());
                     if(opt instanceof EnumOption) {
                         ComboBoxPropertyEditor pe = new ComboBoxPropertyEditor();
                         pe.setAvailableValues(

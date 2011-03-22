@@ -578,12 +578,10 @@ public final class Options {
     OptUtil.setupOptionDesc(Category.SEARCH, metaEscape, "RE Meta Escape",
             "Regular expression metacharacters requiring escape:"
             + " any of: '(', ')', '|', '+', '?', '{'."
-            + " By default vim requires escape, '\\', for these characters."
-            + "\n\nDefault: '" + G.metaEscapeDefault + "'");
+            + " By default vim requires escape, '\\', for these characters.");
     setExpertHidden(metaEscape, true, false);
 
-    String defaultIsKeyWord = "@,48-57,_,192-255";
-    OptUtil.createStringOption(isKeyWord, defaultIsKeyWord,
+    OptUtil.createStringOption(isKeyWord, "@,48-57,_,192-255",
             new StringOption.Validator() {
             @Override
               public void validate(String val) throws PropertyVetoException {
@@ -600,8 +598,7 @@ public final class Options {
               "Keywords are used in searching and recognizing with many commands:"
             + " \"w\", \"*\", etc. See vim docs for more info."
             + " The \":set iskeyword=xxx\" command is per buffer"
-            + " and this works with modelines."
-            + "\n\nDefault: '" + defaultIsKeyWord + "'");
+            + " and this works with modelines.");
 
     /////////////////////////////////////////////////////////////////////
     //
