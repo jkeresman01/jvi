@@ -575,10 +575,11 @@ public final class Options {
 		}
               }
             });
-    OptUtil.setupOptionDesc(Category.SEARCH, metaEscape, "RE Meta Escape",
-            "Regular expression metacharacters requiring escape:"
-            + " any of: '(', ')', '|', '+', '?', '{'."
-            + " By default vim requires escape, '\\', for these characters.");
+    OptUtil.setupOptionDesc(Category.SEARCH, metaEscape, "'remescape' 'rem'",
+            "Regular expression metacharacters requiring escape;"
+            + " Any of: '(', ')', '|', '+', '?', '{'."
+            + " By default vim requires escape, '\\', for these characters."
+            + "\njVi only.");
     setExpertHidden(metaEscape, true, false);
 
     OptUtil.createStringOption(isKeyWord, "@,48-57,_,192-255",

@@ -92,8 +92,9 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     }
 
     private enum OP {
-        DFLT(""),       // DEFAULT if nothing specified, like ":set ic".
+        NONE(""),       // if nothing specified, like ":set ic".
                         // Could be SHOW as in ":set isk" for non boolean.
+        DFLT("&"),      // set to default, like ":set ic&".
         SHOW("?"),      // display option
         INV("inv"),     // ! invert boolean
         NO("no"),       // no<opt> set boolean false
@@ -129,6 +130,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         boolean isShow() { return this == SHOW; }
         boolean isInv()  { return this == INV; }
         boolean isNo()   { return this == NO; }
+        boolean isDflt() { return this == DFLT; }
         boolean isAss()  { return this == ASS; }
         boolean isAdd()  { return this == ADD; }
         boolean isPre()  { return this == PRE; }
@@ -175,34 +177,36 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     private static VimOption[] vopts = new VimOption[]{
     new VimOption("expandtab",   "et",  "b_p_et",   null,
                   S.P_BUF, nullF),
+    new VimOption("hlsearch",    "hls", null,       Options.highlightSearch,
+                  S.P_GBL, nullF),
     new VimOption("ignorecase",  "ic",  null,       Options.ignoreCase,
                   S.P_GBL, nullF),
     new VimOption("incsearch",   "is",  null,       Options.incrSearch,
                   S.P_GBL, nullF),
-    new VimOption("hlsearch",    "hls", null,       Options.highlightSearch,
-                  S.P_GBL, nullF),
-    new VimOption("wrapscan",    "ws",  null,       Options.wrapScan,
-                  S.P_GBL, nullF),
+    new VimOption("iskeyword",   "isk", "b_p_isk",  Options.isKeyWord,
+                  S.P_BUF, EnumSet.of(F.COMMA, F.NODUP)),
+    new VimOption("linebreak",   "lbr", "w_p_lbr",  null,
+                  S.P_WIN, nullF),
+    new VimOption("list",        "",    "w_p_list", null,
+                  S.P_WIN, nullF),
     new VimOption("number",      "nu",  "w_p_nu",   null,
+                  S.P_WIN, nullF),
+    new VimOption("remescape",   "rem", null,       Options.metaEscape,
+                  S.P_GBL, EnumSet.of(F.FLAGLIST)),
+    new VimOption("scroll",      "scr", "w_p_scroll", null,
                   S.P_WIN, nullF),
     new VimOption("shiftwidth",  "sw",  "b_p_sw",   Options.shiftWidth,
                   S.P_BUF, nullF),
-    new VimOption("tabstop",     "ts",  "b_p_ts",   Options.tabStop,
-                  S.P_BUF, nullF),
     new VimOption("softtabstop", "sts", "b_p_sts",  Options.softTabStop,
+                  S.P_BUF, nullF),
+    new VimOption("tabstop",     "ts",  "b_p_ts",   Options.tabStop,
                   S.P_BUF, nullF),
     new VimOption("textwidth",   "tw",  "b_p_tw",   Options.textWidth,
                   S.P_BUF, nullF),
     new VimOption("wrap",        "",    "w_p_wrap", null,
                   S.P_WIN, nullF),
-    new VimOption("linebreak",   "lbr", "w_p_lbr",  null,
-                  S.P_WIN, nullF),
-    new VimOption("list",        "",    "w_p_list", null,
-                  S.P_WIN, nullF),
-    new VimOption("scroll",      "scr", "w_p_scroll", null,
-                  S.P_WIN, nullF),
-    new VimOption("iskeyword",   "isk", "b_p_isk",  Options.isKeyWord,
-                  S.P_BUF, EnumSet.of(F.COMMA, F.NODUP)),
+    new VimOption("wrapscan",    "ws",  null,       Options.wrapScan,
+                  S.P_GBL, nullF),
     };
     
     @Override
@@ -212,17 +216,18 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         parseSetOptions(evt.getArgs());
     }
 
-    private static void error(String msg)
+    private static void setCommandError(String msg) throws SetCommandException
     {
         Msg.emsg(msg);
         Util.vim_beep();
+        throw new SetCommandException(msg);
     }
     
     public static void parseSetOptions(List<String> eventArgs)
     {
         if (eventArgs.isEmpty() ||
                 eventArgs.size() == 1 && "all".equals(eventArgs.get(0))) {
-            displayAllOptions();
+            displayAllOptions(eventArgs);
             return;
         }
         LinkedList<String> args = new LinkedList<String>();
@@ -295,9 +300,12 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         } else if (voptName.endsWith("?")) {
             voptState.op = OP.SHOW;
             voptName = voptName.substring(0, voptName.length() - 1);
+        } else if (voptName.endsWith("&")) {
+            voptState.op = OP.DFLT;
+            voptName = voptName.substring(0, voptName.length() - 1);
         }
         if(voptState.op == null)
-            voptState.op = OP.DFLT;
+            voptState.op = OP.NONE;
         VimOption vopt = null;
         for (VimOption v : vopts) {
             if (voptName.equals(v.fullname)
@@ -308,13 +316,11 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         }
         if (vopt == null) {
             String msg = "Unknown option: " + voptName;
-            error(msg);
-            throw new SetCommandException(msg);
+            setCommandError(msg);
         }
         if (determineOptionState(vopt, voptState) == null) {
             String msg = "Internal error: " + arg;
-            error(msg);
-            throw new SetCommandException(msg);
+            setCommandError(msg);
         }
         Object newValue = newOptionValue(arg, vopt, voptState);
         if (voptState.op.isShow()) {
@@ -324,8 +330,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                 try {
                     voptState.opt.validate(newValue);
                 } catch (PropertyVetoException ex) {
-                    error(ex.getMessage());
-                    throw new SetCommandException(ex.getMessage());
+                    setCommandError(ex.getMessage());
                 }
             }
             
@@ -420,12 +425,18 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     throws SetCommandException
     {
         Object newValue = null;
+        if(voptState.op.isDflt()) {
+            if(voptState.opt != null
+                    && (newValue = voptState.opt.getDefault()) != null)
+                return newValue;
+            setCommandError("Can not determine default value");
+        }
+
         if (voptState.type == boolean.class) {
             if (voptState.stringValue != null) {
                 // like: ":set ic=val"
                 String msg = "Unknown argument: " + arg;
-                error(msg);
-                throw new SetCommandException(msg);
+                setCommandError(msg);
             }
             if (!voptState.op.isShow()) {
                 newValue =
@@ -441,8 +452,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                                 + "' invalid for "
                                 + voptState.type.getSimpleName()
                                 + " option";
-                error(msg);
-                throw new SetCommandException(msg);
+                setCommandError(msg);
             }
             if (voptState.stringValue == null) {
                 voptState.op = OP.SHOW;
@@ -451,8 +461,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                 if(!voptState.op.isAnyAssign()) {
                     String msg = "Operation '" + voptState.op
                                     + "' invalid in this context";
-                    error(msg);
-                    throw new SetCommandException(msg);
+                    setCommandError(msg);
                 }
                 if (voptState.type == int.class) {
                     try {
@@ -467,8 +476,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                         newValue = (Integer)val;
                     } catch (NumberFormatException ex) {
                         String msg = "Number required after '=': " + arg;
-                        error(msg);
-                        throw new SetCommandException(msg);
+                        setCommandError(msg);
                     }
                 } else if (voptState.type == String.class) {
                     if(!voptState.op.isAssignOp())
@@ -605,15 +613,16 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
             v = (((Boolean)value).booleanValue() ? "  " : "no") + vopt.fullname;
         } else if (value instanceof Integer
                 || value instanceof String) {
-            v = vopt.fullname + "=" + value;
+            v = "  " + vopt.fullname + "=" + value;
         } else {
             assert false : value.getClass().getSimpleName() + " not handled";
         }
         return v;
     }
     
-    private static void displayAllOptions()
+    private static void displayAllOptions(List<String> eventArgs)
     {
+        boolean all = eventArgs.size() == 1 && "all".equals(eventArgs.get(0));
         ViOutputStream osa =
                 ViManager.createOutputStream(null, ViOutputStream.OUTPUT, null);
         for (VimOption vopt : vopts) {
