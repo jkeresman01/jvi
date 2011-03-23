@@ -153,6 +153,7 @@ public final class Options {
   public static final String list = "viList";
   public static final String lineBreak = "viLineBreak";
   public static final String number = "viNumber";
+  public static final String scroll = "viScroll";
 
   public static final String nrFormats = "viNrFormats";
   public static final String matchPairs = "viMatchPairs";
@@ -204,6 +205,10 @@ public final class Options {
     didInit = true;
 
     OptUtil.init(pcs);
+    
+    // This option does not appear in the dialog
+    OptUtil.createIntegerOption(scroll, 0);
+    OptUtil.setupOptionDesc(null, scroll, "'scroll' 'scr'", "");
     
     /////////////////////////////////////////////////////////////////////
     //
@@ -432,6 +437,15 @@ public final class Options {
     OptUtil.setupOptionDesc(Category.GENERAL, lineBreak, "'linebreak' 'lbr'",
           "If on Vim will wrap long lines at a word boundary rather"
           + " than at the last character that fits on the screen.");
+
+    OptUtil.createBooleanOption(number, false);
+    OptUtil.setupOptionDesc(Category.GENERAL, number, "'number' 'nu'",
+          "Print the line number in front of each line.");
+
+    OptUtil.createBooleanOption(list, false);
+    OptUtil.setupOptionDesc(Category.GENERAL, list, "'list'",
+          "List mode. Useful to see the difference between tabs"
+            + " and spaces and for trailing blanks.");
 
     /////////////////////////////////////////////////////////////////////
     //

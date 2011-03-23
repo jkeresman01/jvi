@@ -387,6 +387,22 @@ public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsContro
         return ViManager.getReleaseString();
     }
 
+    public void setViList(boolean arg)  throws PropertyVetoException {
+        put(Options.list, arg);
+    }
+
+    public boolean getViList() {
+	return getboolean(Options.list);
+    }
+
+    public void setViNumber(boolean arg)  throws PropertyVetoException {
+        put(Options.number, arg);
+    }
+
+    public boolean getViNumber() {
+	return getboolean(Options.number);
+    }
+
     public void setViCaretBlinkRate(int arg)  throws PropertyVetoException {
         put(Options.caretBlinkRate, arg);
     }

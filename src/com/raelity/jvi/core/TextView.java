@@ -75,8 +75,7 @@ public abstract class TextView implements ViTextView
     public boolean w_p_wrap;
     public boolean w_p_lbr;
 
-    // NEEDSWORK: this should be comming from the cache (WHAT?)
-    public int w_p_scroll;
+    public int w_p_scr;
 
     //protected final int JUMPLISTSIZE = 50;
     protected List<ViMark> w_jumplist = new LinkedList<ViMark>();
@@ -133,8 +132,8 @@ public abstract class TextView implements ViTextView
     @Override
     public void viOptionSet(ViTextView tv, String name)
     {
-        if("w_p_scroll".equals(name)) {
-            if(w_p_scroll == 0)
+        if("w_p_scr".equals(name)) {
+            if(w_p_scr == 0)
                 viewSizeChange(); // set to half window size
         }
     }
@@ -149,6 +148,8 @@ public abstract class TextView implements ViTextView
     {
         w_p_wrap = Options.getOption(Options.wrap).getBoolean();
         w_p_lbr = Options.getOption(Options.lineBreak).getBoolean();
+        w_p_list = Options.getOption(Options.list).getBoolean();
+        w_p_nu = Options.getOption(Options.number).getBoolean();
     }
 
     /**
@@ -163,7 +164,7 @@ public abstract class TextView implements ViTextView
         if (i <= 0) {
             i = 1;
         }
-        w_p_scroll = i;
+        w_p_scr = i;
     }
 
     /**

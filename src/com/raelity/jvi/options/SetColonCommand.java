@@ -175,7 +175,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     }
     
     private static VimOption[] vopts = new VimOption[]{
-    new VimOption("expandtab",   "et",  "b_p_et",   null,
+    new VimOption("expandtab",   "et",  "b_p_et",   Options.expandTabs,
                   S.P_BUF, nullF),
     new VimOption("hlsearch",    "hls", null,       Options.highlightSearch,
                   S.P_GBL, nullF),
@@ -185,15 +185,15 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                   S.P_GBL, nullF),
     new VimOption("iskeyword",   "isk", "b_p_isk",  Options.isKeyWord,
                   S.P_BUF, EnumSet.of(F.COMMA, F.NODUP)),
-    new VimOption("linebreak",   "lbr", "w_p_lbr",  null,
+    new VimOption("linebreak",   "lbr", "w_p_lbr",  Options.lineBreak,
                   S.P_WIN, nullF),
-    new VimOption("list",        "",    "w_p_list", null,
+    new VimOption("list",        "",    "w_p_list", Options.list,
                   S.P_WIN, nullF),
-    new VimOption("number",      "nu",  "w_p_nu",   null,
+    new VimOption("number",      "nu",  "w_p_nu",   Options.number,
                   S.P_WIN, nullF),
     new VimOption("remescape",   "rem", null,       Options.metaEscape,
                   S.P_GBL, EnumSet.of(F.FLAGLIST)),
-    new VimOption("scroll",      "scr", "w_p_scroll", null,
+    new VimOption("scroll",      "scr", "w_p_scr",  Options.scroll,
                   S.P_WIN, nullF),
     new VimOption("shiftwidth",  "sw",  "b_p_sw",   Options.shiftWidth,
                   S.P_BUF, nullF),
@@ -203,7 +203,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                   S.P_BUF, nullF),
     new VimOption("textwidth",   "tw",  "b_p_tw",   Options.textWidth,
                   S.P_BUF, nullF),
-    new VimOption("wrap",        "",    "w_p_wrap", null,
+    new VimOption("wrap",        "",    "w_p_wrap", Options.wrap,
                   S.P_WIN, nullF),
     new VimOption("wrapscan",    "ws",  null,       Options.wrapScan,
                   S.P_GBL, nullF),
@@ -227,7 +227,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     {
         if (eventArgs.isEmpty() ||
                 eventArgs.size() == 1 && "all".equals(eventArgs.get(0))) {
-            displayAllOptions(eventArgs);
+            displayOptions(eventArgs);
             return;
         }
         LinkedList<String> args = new LinkedList<String>();
@@ -264,7 +264,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     private static class VimOptionState
     {
         Class type;
-        Object value;
+        Object curValue;
         // used if type.isLocal()
         Field f;
         ViOptionBag bag;
@@ -273,7 +273,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         // Following not really option state, they are the
         // parse results when settigns options
         OP op;
-        String stringValue;
+        String inputValue; // new value
     }
 
     // This is train of thought
@@ -286,7 +286,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         if(split != null) {
             voptName = (String)split[0];
             voptState.op = (OP)split[1];
-            voptState.stringValue = (String)split[2];
+            voptState.inputValue = (String)split[2];
         }
         if (voptName.startsWith("no")) {
             voptState.op = OP.NO;
@@ -324,14 +324,12 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         }
         Object newValue = newOptionValue(arg, vopt, voptState);
         if (voptState.op.isShow()) {
-            Msg.smsg(formatDisplayValue(vopt, voptState.value));
+            Msg.smsg(formatDisplayValue(vopt, voptState.curValue));
         } else {
-            if (voptState.opt != null) {
-                try {
-                    voptState.opt.validate(newValue);
-                } catch (PropertyVetoException ex) {
-                    setCommandError(ex.getMessage());
-                }
+            try {
+                voptState.opt.validate(newValue);
+            } catch (PropertyVetoException ex) {
+                setCommandError(ex.getMessage());
             }
             
             if (vopt.scope.isLocal()) {
@@ -398,7 +396,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
             voptState.type = voptState.f.getType();
             // impossible to get exceptions
             try {
-                voptState.value = voptState.f.get(voptState.bag);
+                voptState.curValue = voptState.f.get(voptState.bag);
             } catch (IllegalArgumentException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             } catch (IllegalAccessException ex) {
@@ -407,13 +405,13 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         } else if (vopt.scope.isGlobal()) {
             if (voptState.opt instanceof BooleanOption) {
                 voptState.type = boolean.class;
-                voptState.value = voptState.opt.getBoolean();
+                voptState.curValue = voptState.opt.getBoolean();
             } else if (voptState.opt instanceof IntegerOption) {
                 voptState.type = int.class;
-                voptState.value = voptState.opt.getInteger();
+                voptState.curValue = voptState.opt.getInteger();
             } else if (voptState.opt instanceof StringOption) {
                 voptState.type = String.class;
-                voptState.value = voptState.opt.getString();
+                voptState.curValue = voptState.opt.getString();
             }
         }
         return voptState;
@@ -426,22 +424,21 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     {
         Object newValue = null;
         if(voptState.op.isDflt()) {
-            if(voptState.opt != null
-                    && (newValue = voptState.opt.getDefault()) != null)
+            if((newValue = voptState.opt.getDefault()) != null)
                 return newValue;
             setCommandError("Can not determine default value");
         }
 
         if (voptState.type == boolean.class) {
-            if (voptState.stringValue != null) {
+            if (voptState.inputValue != null) {
                 // like: ":set ic=val"
-                String msg = "Unknown argument: " + arg;
+                String msg = "Can't assign to boolean: " + arg;
                 setCommandError(msg);
             }
             if (!voptState.op.isShow()) {
                 newValue =
                         voptState.op.isInv()
-                        ? !((Boolean)voptState.value).booleanValue()
+                        ? !((Boolean)voptState.curValue).booleanValue()
                         : voptState.op.isNo() ? false : true;
             }
 
@@ -454,7 +451,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                                 + " option";
                 setCommandError(msg);
             }
-            if (voptState.stringValue == null) {
+            if (voptState.inputValue == null) {
                 voptState.op = OP.SHOW;
             }
             if (!voptState.op.isShow()) {
@@ -465,8 +462,8 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                 }
                 if (voptState.type == int.class) {
                     try {
-                        int oldValue = (Integer)voptState.value;
-                        int val = Integer.parseInt(voptState.stringValue);
+                        int oldValue = (Integer)voptState.curValue;
+                        int val = Integer.parseInt(voptState.inputValue);
                         switch(voptState.op) {
                             case ASS: break; // val = val
                             case ADD: val = oldValue + val; break;
@@ -480,7 +477,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                     }
                 } else if (voptState.type == String.class) {
                     if(!voptState.op.isAssignOp())
-                        newValue = voptState.stringValue;
+                        newValue = voptState.inputValue;
                     else
                         newValue = doStringAssignOp(arg, vopt, voptState);
                 } else {
@@ -497,8 +494,8 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
             throws SetCommandException
     {
         // See vim's option.c...
-        String origval = (String)voptState.value;
-        String newval = voptState.stringValue;
+        String origval = (String)voptState.curValue;
+        String newval = voptState.inputValue;
         boolean adding = voptState.op.isAdd();
         boolean prepending = voptState.op.isPre();
         boolean removing = voptState.op.isSub();
@@ -620,14 +617,16 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         return v;
     }
     
-    private static void displayAllOptions(List<String> eventArgs)
+    private static void displayOptions(List<String> eventArgs)
     {
         boolean all = eventArgs.size() == 1 && "all".equals(eventArgs.get(0));
         ViOutputStream osa =
                 ViManager.createOutputStream(null, ViOutputStream.OUTPUT, null);
         for (VimOption vopt : vopts) {
             VimOptionState voptState = determineOptionState(vopt, null);
-            osa.println(formatDisplayValue(vopt, voptState.value));
+            if(all || ! voptState.curValue.toString()
+                        .equals(voptState.opt.getDefault()))
+                osa.println(formatDisplayValue(vopt, voptState.curValue));
         }
         osa.close();
     }
@@ -693,7 +692,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     {
         VimOptionState voptState = determineOptionState(vopt, null);
         try {
-            voptState.f.set(bag, voptState.value);
+            voptState.f.set(bag, voptState.curValue);
         } catch (IllegalArgumentException ex) {
             LOG.log(Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {

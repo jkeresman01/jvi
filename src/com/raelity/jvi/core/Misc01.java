@@ -366,10 +366,10 @@ public class Misc01
       final ViFPOS cursor = G.curwin.w_cursor;
 
       if (Prenum != 0)
-        G.curwin.w_p_scroll = (Prenum > G.curwin.getVpLines())
+        G.curwin.w_p_scr = (Prenum > G.curwin.getVpLines())
                 ? G.curwin.getVpLines() : Prenum;
-      n = (G.curwin.w_p_scroll <= G.curwin.getVpLines())
-          ?  G.curwin.w_p_scroll : G.curwin.getVpLines();
+      n = (G.curwin.w_p_scr <= G.curwin.getVpLines())
+          ?  G.curwin.w_p_scr : G.curwin.getVpLines();
 
       validate_botline();
       room = G.curwin.getVpBlankLines();
