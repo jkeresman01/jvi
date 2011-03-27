@@ -50,10 +50,13 @@ import javax.swing.text.JTextComponent;
  * <br/>The AppViews one is optional.
  * <br/>The statusDisplay is for single line output.
  * <br/>Note that bulk output via PlayOutputStream goes to System.err.
+ * <br/>Following are some key hookups.
  * <pre>
+ *      ViManager.setViFactory(new PlayFactory(mapJepSd));
  *      AppViews.open(new PlayAppView(f, editor), "Jvi.setupFrame");
  *      PlayFactory.installKeymap(m_frame1.getEditor());
  *      mapJepSd.put(editor, frame.getStatusDisplay());
+ *      static private MyPropertySheetDialog dialog;
  * </pre>
  * 
  * @author Ernie Rael <err at raelity.com>
