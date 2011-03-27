@@ -48,7 +48,7 @@ import static com.raelity.jvi.core.Misc01.*;
  * and in some instances execution of ":" commands. Some internal vi
  * commands, e.g. set, are executed here. Colon commands are added to
  * the list of available commands through the
- * {@link #open} method.
+ * {@link #register} method.
  * <p>
  * A command is represented by an {@link java.awt.event.ActionListener}.
  * Typically a subclass is used. Only actions that implement
@@ -570,10 +570,12 @@ static public List<String> getAbrevList()
  * than "set" because "s" sorts earlier than "se". Consider this when
  * adding commands, since unique prefix has nothing to do with how commands
  * are recognized.
- * 
+ * <pre>
  * NOTE: if the ActionListener is a ColonAction and the ColonAction
  *       has non null getFlags() then those flags are merged
  *       with the argument flags.
+ * </pre>
+ * @param flags may be null
  * @exception IllegalArgumentException this is thrown if the abbreviation
  * and/or the name already exist in the list or there's a null argument.
  */

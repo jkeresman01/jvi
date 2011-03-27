@@ -28,7 +28,7 @@ import javax.swing.text.JTextComponent;
 
 /**
  * Basic Swing AppView. This is suitable when there is a 1-1
- * and invarient relationship between Container and Text.
+ * and invariant relationship between Container and Text.
  * Assumes that equals is '=='.
  *
  * @author Ernie Rael <err at raelity.com>
@@ -41,7 +41,7 @@ public abstract class SimpleAppView implements ViAppView
 
     private static int genWNum; // for the generation of the unique nums
 
-    /** this is added as a client property to the JTextComponent
+    /** this ViAppView is added as a client property to the JTextComponent
      * satisfying the requirements of {@link SwingFactory}
      * @param c platform/application handle
      * @param e text component where the action happens
@@ -61,16 +61,19 @@ public abstract class SimpleAppView implements ViAppView
         e.putClientProperty(SwingFactory.PROP_AV, this);
     }
 
+    @Override
     public int getWNum()
     {
         return wnum;
     }
 
+    @Override
     public boolean isShowing()
     {
         return e.isShowing();
     }
 
+    @Override
     public JTextComponent getEditor()
     {
         return e;

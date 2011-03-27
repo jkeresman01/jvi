@@ -31,10 +31,12 @@ import javax.swing.JFrame;
  */
 public class PlayAppView extends SimpleAppView
 {
+    @SuppressWarnings("LeakingThisInConstructor")
     public PlayAppView(JFrame f, JEditorPane ep)
     {
         super(f, ep);
-        // for convenience, in case want to get from JFrame-->AppView
+        // For convenience, in case want to get from JFrame-->AppView.
+        // In this play app, a JFrame has one and only one editor.
         f.getRootPane().putClientProperty(SwingFactory.PROP_AV, this);
     }
 
@@ -49,6 +51,7 @@ public class PlayAppView extends SimpleAppView
         return (JEditorPane)super.getEditor();
     }
 
+    @Override
     public boolean isNomad()
     {
         return false;

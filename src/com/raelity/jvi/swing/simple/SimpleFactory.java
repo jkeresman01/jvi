@@ -25,6 +25,7 @@ import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.swing.KeyBinding;
 import com.raelity.jvi.swing.SwingFactory;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Keymap;
 
 /**
  *
@@ -32,16 +33,33 @@ import javax.swing.text.JTextComponent;
  */
 abstract public class SimpleFactory extends SwingFactory {
 
+    /**
+     *<pre>
+     * NOTE: if it is possible that different text
+     *       components might have different keymaps,
+     *       then this will have to be changed.
+     *       Maybe a {@literal Map<OriginalKeymap, jViKeymap>}
+     *</pre>
+     * @param ed 
+     */
     public static void installKeymap(JTextComponent ed)
     {
-        ed.setKeymap(KeyBinding.getKeymap());
+        Keymap keymap = JTextComponent.getKeymap("jVi");
+        if(keymap == null) {
+            keymap = KeyBinding.getKeymap("jVi");
+            Keymap km = ed.getKeymap();
+            keymap.setResolveParent(km);
+        }
+        ed.setKeymap(keymap);
     }
 
+    @Override
     public boolean isEnabled()
     {
         return true;
     }
 
+    @Override
     public ViTextView getTextView(ViAppView av)
     {
         if (av.getEditor() != null)

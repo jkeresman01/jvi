@@ -27,7 +27,6 @@ import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.swing.SwingTextView;
 import com.raelity.jvi.swing.LineMap;
 import com.raelity.jvi.swing.LineMapNoFolding;
-import com.raelity.jvi.swing.SwingViewMapWrapFontFixed;
 import com.raelity.jvi.swing.ViewMap;
 import com.raelity.jvi.swing.ViewMapSwitcher;
 import com.raelity.jvi.swing.simple.SimpleFactory;

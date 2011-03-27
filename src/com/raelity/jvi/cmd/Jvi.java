@@ -24,7 +24,6 @@ import com.l2fprod.common.propertysheet.PropertySheetDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -33,10 +32,7 @@ import javax.swing.text.TabStop;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.util.prefs.BackingStoreException;
 
-import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.swing.OptionsPanel;
@@ -49,6 +45,16 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 
+/**
+ * The following are the hooks into jVi used in this class.
+ * The AppViews one is optional.
+ * <pre>
+ *      AppViews.open(new PlayAppView(f, editor), "Jvi.setupFrame");
+ *      PlayFactory.installKeymap(m_frame1.getEditor());
+ * </pre>
+ * 
+ * @author Ernie Rael <err at raelity.com>
+ */
 public class Jvi
 {
     /** If true, pack resulting UI. */
@@ -102,6 +108,7 @@ public class Jvi
         final JLabel jl = frame.getCursorStatusBar();
         editor.addCaretListener(new CaretListener()
         {
+            @Override
             public void caretUpdate(CaretEvent e)
             {
                 JTextComponent jtc = (JTextComponent)e.getSource();
@@ -160,6 +167,7 @@ public class Jvi
         editor.setCaretColor(Color.black);
 
         //((BooleanOption)Options.getOption(Options.dbgKeyStrokes)).setBoolean(true);
+        // Following is optional, some commands like ":ls" depend on it
         AppViews.open(new PlayAppView(f, editor), "Jvi.setupFrame");
     }
 
@@ -185,6 +193,7 @@ public class Jvi
     /**
      *  Main method.
      */
+    @SuppressWarnings("CallToThreadDumpStack")
     public static void main( String[] args )
     {
         try {
@@ -203,11 +212,13 @@ public class Jvi
 
         try {
             ViManager.runInDispatch(true, new Runnable() {
+                    @Override
                     public void run() {
                         Toolkit.getDefaultToolkit().setDynamicLayout(true);
                         m_frame1 = makeFrame();
                         m_frame1.optionsButton.addActionListener(
                         new ActionListener() {
+                            @Override
                             public void actionPerformed(ActionEvent e) {
                                 try {
                                     showOptionsDialog(m_frame1);
@@ -241,6 +252,7 @@ public class Jvi
         // invoke and wait to make sure widget is fully drawn.
         try {
             ViManager.runInDispatch(true, new Runnable() {
+                    @Override
                     public void run() {
                         PlayFactory.installKeymap(m_frame1.getEditor());
                         if ( make2Frames ) {
@@ -296,6 +308,7 @@ public class Jvi
         // dialog.setVisible(true);
         if(dialog == null) {
             optionsPanel = new OptionsPanel(new OptionsPanel.ChangeNotify() {
+                @Override
                 public void change()
                 {
                     System.err.println("Property Change");

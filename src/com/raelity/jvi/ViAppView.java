@@ -30,21 +30,21 @@ import java.awt.Component;
  * When used, the platform may,but is not required to,
  * include the editable component in the
  * implementation, and return it from getEditor.
- *
+ * <p/>
  * Note that a ViAppView may exist before the contained editor is
  * actually instantiated by the platform.
  * This interface is often used when an application allows multiple
  * open editors.
- *
+ * <p/>
  * NEEDSWORK: jVi generally keeps weak references to these.
- *
+ * <p/>
  * A platform may have editors that do not have a special container,
  * or for some reason jVi should not track the editor,
  * for example an editor in a dialog. Usually there is no user accessible
  * disk file associated with these editors.
  * jVi considers them  "nomadic" edtiors and
  * an AppView is not needed for these.
- *
+ * <p/>
  * The equality of two of these is based on equals. But in some situations
  * a platform may start working with the container before an editor component
  * is assigned to the container. ViManager has a method to cleanup "stale"
@@ -52,7 +52,7 @@ import java.awt.Component;
  * for example a set, is fixed up. Note that if there is always a 1-1,
  * or 1-0, * relationship between Container and Editor then
  * equality can be based on Container.
- *
+ * <p/>
  *
  * @author Ernie Rael <err at raelity.com>
  */

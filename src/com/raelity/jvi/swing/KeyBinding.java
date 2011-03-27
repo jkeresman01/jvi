@@ -124,18 +124,19 @@ private static Action createKeyAction( String name, char key ) {
   
   /**
    * Return a keymap for a standard swing text component.
-   * Also, if not already existing, construct insert and normal mode
-   * keymaps only used for user
-   * defined mappings.
    */
-  
-   public static Keymap getKeymap() {
-    Keymap keymap = JTextComponent.addKeymap(null, null);
+
+   public static Keymap getKeymap(String nm) {
+    Keymap keymap = JTextComponent.addKeymap(nm, null);
     keymap.setDefaultAction(createCharAction(enqueKeyAction));
     JTextComponent.loadKeymap(keymap, getBindings(), getActions());
     createSubKeymaps();
     return keymap;
   }
+  
+   public static Keymap getKeymap() {
+     return getKeymap(null);
+   }
   
   static void createSubKeymaps() {
     Keymap insertModeKeymap = JTextComponent.addKeymap(null, null);

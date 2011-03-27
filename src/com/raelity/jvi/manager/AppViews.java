@@ -60,7 +60,7 @@ import org.openide.util.lookup.ServiceProvider;
  * If the same document is editted in two windows, then
  * there are two of these.
  * <ul>
- * <li>{@link #open(AppView)}<br/>
+ * <li>{@link #open(AppView, String)}<br/>
  * Add the appView to jVi's lists of known editors.
  * </li>
  * <li>{@link #deactivate}(appView)<br/>
