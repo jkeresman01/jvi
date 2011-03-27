@@ -47,10 +47,13 @@ import javax.swing.text.JTextComponent;
 
 /**
  * The following are the hooks into jVi used in this class.
- * The AppViews one is optional.
+ * <br/>The AppViews one is optional.
+ * <br/>The statusDisplay is for single line output.
+ * <br/>Note that bulk output via PlayOutputStream goes to System.err.
  * <pre>
  *      AppViews.open(new PlayAppView(f, editor), "Jvi.setupFrame");
  *      PlayFactory.installKeymap(m_frame1.getEditor());
+ *      mapJepSd.put(editor, frame.getStatusDisplay());
  * </pre>
  * 
  * @author Ernie Rael <err at raelity.com>
