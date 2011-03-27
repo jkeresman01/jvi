@@ -25,6 +25,7 @@ import com.raelity.jvi.swing.KeyBinding;
 
 import static com.raelity.jvi.core.Constants.*;
 import static com.raelity.jvi.core.KeyDefs.*;
+import static com.raelity.jvi.core.Util.*;
 
 public class GetChar {
   private static boolean block_redo = false;
@@ -593,7 +594,7 @@ public class GetChar {
 
     /* skip the count and the command character */
     while ((c = read_redo(false, false)) != NUL) {
-      if (Util.vim_strchr("AaIiRrOo", c) != null) {
+      if (vim_strchr("AaIiRrOo", 0, c) >= 0) {
 	if (c == 'O' || c == 'o')
 	  stuffReadbuff(NL_STR);
 	break;

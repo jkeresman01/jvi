@@ -1092,7 +1092,7 @@ public class Search03
                 return -1;
             c = line.charAt(col);
             //if (escape != null && vim_strchr(escape, c) != null)
-            if(escape != null && vim_strchr(escape, c) != null)
+            if(escape != null && vim_strchr(escape, 0, c) >= 0)
                 ++col;
             else if (c == quotechar)
                 break;
@@ -1121,7 +1121,7 @@ public class Search03
             n = 0;
             if (escape != null)
                 while (col_start - n > 0
-                       && vim_strchr(escape, line.charAt(col_start - n - 1)) != null)
+                       && vim_strchr(escape, 0, line.charAt(col_start - n - 1)) >= 0)
                     ++n;
             if ((n & 1) != 0)
                 col_start -= n;	// uneven number of escape chars, skip it

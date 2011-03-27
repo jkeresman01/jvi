@@ -419,11 +419,11 @@ public class Normal {
       if(!pickupExtraChar) {
         // check if additional char needed
         if (  (oap.op_type == OP_NOP
-                      && Util.vim_strchr("@zm\"", ca.cmdchar) != null)
+                      && vim_strchr("@zm\"", 0, ca.cmdchar) >= 0)
                  || (oap.op_type == OP_NOP
                      && (ca.cmdchar == 'r'
                          || (!G.VIsual_active && ca.cmdchar == 'Z')))
-                 || Util.vim_strchr("tTfF[]g'`", ca.cmdchar) != null
+                 || vim_strchr("tTfF[]g'`", 0, ca.cmdchar) >= 0
                  || (ca.cmdchar == 'q'
                      && oap.op_type == OP_NOP
                      && !G.Recording
@@ -505,7 +505,7 @@ middle_code:
       }
 
       /* when 'keymodel' contains "startsel" some keys start Select/Visual mode */
-      if (!G.VIsual_active && Util.vim_strchr(G.p_km, 'a') != null)
+      if (!G.VIsual_active && vim_strchr(G.p_km, 0, 'a') >= 0)
       {
 	int	i;
 
@@ -1234,7 +1234,7 @@ middle_code:
         * need it later.
         */
         if (!G.finish_op && oap.op_type == 0 &&
-            Util.vim_strchr("\"DCYSsXx.", ca.cmdchar) == null)
+            vim_strchr("\"DCYSsXx.", 0, ca.cmdchar) < 0)
           oap.regname = 0;
 
         //
@@ -1354,7 +1354,7 @@ middle_code:
       oap.is_VIsual = G.VIsual_active;
 
       /* only redo yank when 'y' flag is in 'cpoptions' */
-      if ((Util.vim_strchr(G.p_cpo, CPO_YANK) != null || oap.op_type != OP_YANK)
+      if ((vim_strchr(G.p_cpo, 0, CPO_YANK) >= 0 || oap.op_type != OP_YANK)
 	  && !G.VIsual_active)
       {
 	prep_redo(oap.regname, cap.count0,
@@ -1366,7 +1366,7 @@ middle_code:
 	   * If 'cpoptions' does not contain 'r', insert the search
 	   * pattern to really repeat the same command.
 	   */
-	  if (Util.vim_strchr(G.p_cpo, CPO_REDO) == null) {
+	  if (vim_strchr(G.p_cpo, 0, CPO_REDO) < 0) {
             GetChar.AppendToRedobuff(searchbuff.toString());
           }
 	  GetChar.AppendToRedobuff(NL_STR);
@@ -1544,7 +1544,7 @@ middle_code:
           }
 
           /* can't redo yank (unless 'y' is in 'cpoptions') and ":" */
-          if ((Util.vim_strchr(G.p_cpo, CPO_YANK) != null || oap.op_type != OP_YANK)
+          if ((vim_strchr(G.p_cpo, 0, CPO_YANK) >= 0 || oap.op_type != OP_YANK)
                   && oap.op_type != OP_COLON)
           {
               prep_redo(oap.regname, 0, NUL, 'v', get_op_char(oap.op_type),
@@ -1615,7 +1615,7 @@ middle_code:
        * empty region, when 'E' inclucded in 'cpoptions' (Vi compatible).
        */
       empty_region_error = (oap.empty
-			    && Util.vim_strchr(G.p_cpo, CPO_EMPTYREGION) != null);
+			    && vim_strchr(G.p_cpo, 0, CPO_EMPTYREGION) >= 0);
 
       /* Force a redraw when operating on an empty Visual region */
 //       if (oap.is_VIsual && oap.empty)
@@ -1733,7 +1733,7 @@ middle_code:
 	  break;
 
 	case OP_FILTER:
-	  if (Util.vim_strchr(G.p_cpo, CPO_FILTER) != null)
+	  if (vim_strchr(G.p_cpo, 0, CPO_FILTER) >= 0)
 	    GetChar.AppendToRedobuff("!\r");  /* use any last used !cmd */
 	  else
 	    bangredo = true;    /* do_bang() will put cmd in redo buffer */
@@ -2650,7 +2650,7 @@ middle_code:
     String escapeMe = "/?.*~[^$\\";
     while(n-- != 0) {
       char c = ptrSeg.current();
-      if(Util.vim_strchr(escapeMe, c) != null) {
+      if(vim_strchr(escapeMe, 0, c) >= 0) {
         GetChar.stuffcharReadbuff('\\');
       }
       // don't quote control characters, shouldn't be any....
@@ -3202,9 +3202,9 @@ nv_brackets(CMDARG cap, int dir)
      * "[M" or "]M" search for prev/next end of (Java) method.
      */
     if (  (cap.cmdchar == '['
-		&& vim_strchr("{(*/#mM", cap.nchar) != null)
+		&& vim_strchr("{(*/#mM", 0, cap.nchar) >= 0)
 	    || (cap.cmdchar == ']'
-		&& vim_strchr("})*/#mM", cap.nchar) != null))
+		&& vim_strchr("})*/#mM", 0, cap.nchar) >= 0))
     {
 	if (cap.nchar == '*')
 	    cap.nchar = '/';
@@ -3894,7 +3894,7 @@ static private void nv_findpar(CMDARG cap, int dir)
   */
   static void may_start_select(char c) {
       G.VIsual_select = (GetChar.stuff_empty() && typebuf_typed()
-        && (Util.vim_strchr(G.p_slm.getString(), c) != null));
+        && (vim_strchr(G.p_slm.getString(), 0, c) >= 0));
   }
   
   /*
@@ -4955,7 +4955,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       if(G.VIsual_active) {
         String category = null;
         if(G.VIsual_mode == Util.ctrl('V')
-          && Util.vim_strchr("<>", op) != null) {
+            && vim_strchr("<>", 0, op) >= 0) {
           category = "block";
         }
         if(category != null) {

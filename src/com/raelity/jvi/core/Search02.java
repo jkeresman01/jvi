@@ -116,8 +116,8 @@ public class Search02 {
         pos_col = cursor.getColumn();
         linep = ml_get(pos_lnum);
 
-        cpo_match = (vim_strchr(G.p_cpo, CPO_MATCH) != null);
-        cpo_bsl = (vim_strchr(G.p_cpo, CPO_MATCHBSL) != null);
+        cpo_match = (vim_strchr(G.p_cpo, 0, CPO_MATCH) >= 0);
+        cpo_bsl = (vim_strchr(G.p_cpo, 0, CPO_MATCHBSL) >= 0);
 
         /* Direction to search when initc is '/', '*' or '#' */
         if ((flags & FM_BACKWARD) != 0)

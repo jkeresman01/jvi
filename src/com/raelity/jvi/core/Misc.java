@@ -1400,7 +1400,7 @@ public class Misc implements ClipboardOwner {
     if (regname > '~')
       return false;
     if (       Util.isalnum(regname)
-	       || (!writing && Util.vim_strchr("/.%#:" , regname) != null)
+	       || (!writing && vim_strchr("/.%#:", 0, regname) >= 0)
 	       || regname == '"'
 	       || regname == '-'
 	       || regname == '_'
@@ -1943,7 +1943,7 @@ private static int put_in_typebuf(String s, boolean colon)
       // It's an error to operate on an empty region, when 'E' inclucded in
       // 'cpoptions' (Vi compatible).
       //
-      if (Util.vim_strchr(G.p_cpo, CPO_EMPTYREGION) != null) {
+      if (vim_strchr(G.p_cpo, 0, CPO_EMPTYREGION) >= 0) {
 	Util.beep_flush();
         return false;
       }
@@ -4287,9 +4287,9 @@ op_do_addsub(char command, int Prenum1)
     boolean	negative;
     boolean	subtract;
 
-    dohex = (vim_strchr(G.curbuf.b_p_nf, 'x') != null);	/* "heX" */
-    dooct = (vim_strchr(G.curbuf.b_p_nf, 'o') != null);	/* "Octal" */
-    doalp = (vim_strchr(G.curbuf.b_p_nf, 'p') != null);	/* "alPha" */
+    dohex = (vim_strchr(G.curbuf.b_p_nf, 0, 'x') >= 0);	/* "heX" */
+    dooct = (vim_strchr(G.curbuf.b_p_nf, 0, 'o') >= 0);	/* "Octal" */
+    doalp = (vim_strchr(G.curbuf.b_p_nf, 0, 'p') >= 0);	/* "alPha" */
 
     ptr = ml_get_curline();
     //RLADDSUBFIX(ptr);

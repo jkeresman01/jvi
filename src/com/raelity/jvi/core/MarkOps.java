@@ -55,6 +55,7 @@ import static com.raelity.jvi.ViTextView.MARKOP.TOGGLE;
 
 import static com.raelity.jvi.core.Constants.*;
 import static com.raelity.jvi.core.Messages.*;
+import static com.raelity.jvi.core.Util.*;
 
 /**
  * Keep track of vi marks.
@@ -549,7 +550,7 @@ class MarkOps
                     Msg.emsg("No marks mastching \"" + arg + "\"");
             }
         }
-        else if((arg == null || Util.vim_strchr(arg, c) != null)
+        else if((arg == null || vim_strchr(arg, 0, c) >= 0)
                 && p != null
                         // filemark always usable for this simple case
                 && (p instanceof Filemark || p.isValid())) {

@@ -724,8 +724,8 @@ public class Search01 {
       else if (c == '\\') {
         if(sidx+1 < s.length()) {
           char c2 = s.charAt(sidx+1);
-          if(vim_strchr(REGEXP_INRANGE, c2) != null
-             || (!cpo_lit && vim_strchr(REGEXP_ABBR, c2) != null)) {
+          if(vim_strchr(REGEXP_INRANGE, 0, c2) >= 0
+             || (!cpo_lit && vim_strchr(REGEXP_ABBR, 0, c2) >= 0)) {
             sidx += 2;
           }
         }
@@ -783,8 +783,8 @@ found:
         // go back to previous non-blank character
         found_dot = false;
         while ((c = Misc.gchar_pos(pos)) == ' ' || c == '\t' ||
-          (dir == BACKWARD && vim_strchr(".!?)]\"'", c) != null)) {
-          if (vim_strchr(".!?", c) != null) {
+          (dir == BACKWARD && vim_strchr(".!?)]\"'", 0, c) >= 0)) {
+          if (vim_strchr(".!?", 0, c) >= 0) {
             // Only skip over a '.', '!' and '?' once.
             if (found_dot)
               break;
@@ -816,7 +816,7 @@ found:
             do
               if ((i = Misc.inc(tpos)) == -1)
                 break;
-            while (vim_strchr(")]\"'", c = Misc.gchar_pos(tpos)) != null);
+            while (vim_strchr(")]\"'", 0, (c = Misc.gchar_pos(tpos))) >= 0);
 
             if (i == -1 || (!cpo_J && (c == ' ' || c == '\t')) || c == '\n'
                 || (cpo_J && (c == ' ' && Misc.inc(tpos) >= 0
