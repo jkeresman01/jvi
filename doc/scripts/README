@@ -1,0 +1,28 @@
+vimh_scan  - scans the vimhelp files produces tokens
+             scan handle the #*#scan-filter#*# markup
+vimh_build - this file has two builders:
+             VimHelpBuildHtml - produces the original fix-width html
+             VimHelpBuildXml  - produces xml
+vimh_gen   - works with xml files
+
+====================================================================
+MARKUP
+
+- following match at beginning of line
+  DOC-DEL               delete a single line
+  START-DOC-DEL         start deleting multiple lines
+  STOP-DOC-DEL          stop deleting multiple lines
+
+- special markup directions in capture group
+  Either '#+#some markup#+#' or '#*#some other markup #*#'
+  if the #*# form is used then the line on which it appears is deleted
+- delete chars within a line: #-#xxx#-#
+  RE_DEL_CHARS  = re.compile(r'#-#.*?#-#')
+
+vimh_build:
+    #*# filter-scan:ref #*#
+    #*# stop-filter-scan #*#
+
+vimh_build: "XML builder" for <table> markup details
+    #*# table:form=index:id=xxx 1:tag 17:command 33:opt:note 36:desc #*#
+    #*# stop-table #*#

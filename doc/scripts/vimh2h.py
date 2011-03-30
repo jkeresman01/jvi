@@ -80,6 +80,9 @@ FOOTER_END   = """
 </div>
 """
 
+class my_deque(deque):
+    pass
+
 class VimH2H(object):
     def __init__(self, tags, builder = None):
         self.parser = VimHelpScanner()
@@ -88,8 +91,9 @@ class VimH2H(object):
     def to_html(self, filename, contents, include_sitesearch = True,
             include_faq = True):
 
-        tokens = deque()
+        tokens = my_deque()
         self.parser.parse(filename, contents, tokens, include_faq)
+        ##### print 'NEEDS FILTERING:', tokens.f_needs_filter_scan
         self.builder.process(tokens)
 
         result = ''.join(self.builder.get_output())

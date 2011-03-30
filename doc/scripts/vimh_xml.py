@@ -36,6 +36,9 @@ helpfiles = [ x for x in os.listdir(INPUT_DIR) if x.endswith('.txt') ]
 PAT_TITLE    = r'(?P<title>jVi version [0-9.a-z]+|JVI REFERENCE.*)'
 VS.PAT_TITLE = PAT_TITLE
 
+class my_deque(deque):
+    pass
+
 class VimHelp2Xml(object):
 
     def __init__(self, tags):
@@ -45,7 +48,7 @@ class VimHelp2Xml(object):
     def to_xml(self, filename, contents, include_sitesearch = True,
             include_faq = True):
 
-        tokens = deque()
+        tokens = my_deque()
         self.parser.parse(filename, contents, tokens, include_faq)
         self.builder.process(tokens)
 

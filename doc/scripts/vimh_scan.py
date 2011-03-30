@@ -50,6 +50,9 @@ RE_MARKUP     = re.compile(r'#(\+|\*)#(.*?)#\1#')
 # delete chars within a line
 RE_DEL_CHARS  = re.compile(r'#-#.*?#-#')
 
+STR_START_FILTER = 'filter-scan'
+STR_STOP_FILTER = 'stop-filter-scan'
+
 # following match at beginning of line
 STR_SKIP       = 'DOC-DEL'
 STR_START_SKIP = 'START-DOC-DEL'
@@ -85,6 +88,7 @@ class VimHelpScanner:
 
         #data = DataWrapper(_data)
         data = _data
+        data.f_needs_filter_scan = False;
         data.append(('start_file', filename, 0))
 
         lnum = 0
@@ -120,6 +124,8 @@ class VimHelpScanner:
                         delete_line = True
                     pos = m.start()
                     line = line[:pos] + line[m.end():]
+                    if m.group(2).find(STR_START_FILTER) >= 0:
+                        data.f_needs_filter_scan = True
                 else: break;
             if delete_line:
                 # print 'markup delete line'

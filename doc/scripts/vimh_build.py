@@ -89,10 +89,67 @@ class VimHelpBuildBase(object):
         elif 'start_file' == token: self._start_file(chars)
         elif 'start_line' == token: self._start_line(chars, col)
 
+    def _do_filter(self, data):
+        if not data.f_needs_filter_scan:
+            return
+        print '***** do filtering *****'
+        # convert deque to list
+        token_data = list(data)
+
+        tnum = 0
+        startline = 0
+        has_link = False
+        ischecking = False
+        while tnum < len(token_data):
+            if ischecking:
+                startline = tnum
+                # examine each token until stop markup
+                while tnum < len(token_data):
+                    token, chars, col = token_data[tnum]
+                    ty = MAP_TY[token]
+                    if (ty == TY_EOF):
+                        break
+                    if ('markup' == token
+                            and match_basic_markup(chars, vs.STR_STOP_FILTER)):
+                        ischecking = False
+                        break
+                    if ty == TY_EOL:
+                        tnum += 1
+                        if not has_link:
+                            ##### print 'token_data trim', (startline, tnum)
+                            token_data[startline:tnum] = []
+                            # backup tnum
+                            tnum = startline
+                        has_link = False
+                        startline = tnum
+                        continue
+                    elif (ty == TY_WORD
+                            and self.links.islink(chars)
+                            and ('pipe' == token or 'opt' == token)):
+                        ##### print 'SET has_link', token_data[tnum]
+                        has_link = True
+                    tnum += 1
+            else:
+                # find our kind of markup
+                while (tnum < len(token_data)
+                        and 'markup' != token_data[tnum][0]):
+                    tnum += 1
+                if (tnum < len(token_data)
+                        and match_basic_markup(token_data[tnum][1],
+                            vs.STR_START_FILTER, 'ref')):
+                    ischecking = True
+                tnum += 1
+
+        data.clear()
+        data.extend(token_data)
+
     def process(self, data):
         print '      first entry:', data[0]
         print 'number of entries:', len(data)
         print '       last entry:', data[-1]
+
+        # handle scan output filtering
+        self._do_filter(data)
 
         while len(data) > 0:
             ### print data[0]
@@ -147,6 +204,9 @@ class Links(dict):
         else:
             # not know link, no class specifed, just return it
             return vim_tag
+
+    def islink(self, vim_tag):
+        return vim_tag in self
 
 #
 # XML builder
@@ -598,6 +658,11 @@ class VimHelpBuildXml(VimHelpBuildBase):
 def parse_basic_markup(markup):
     return markup.split(None,1)[0].split(':')
 
+def match_basic_markup(markup, t1, t2 = None):
+    t01 = parse_basic_markup(markup)
+    return (len(t01) > 0 and t1 == t01[0]
+            and (t2 is None or (len(t01) > 1 and t2 in t01[1])))
+
 ##
 # If the table does not have parsed markup info
 # then parse the 'markup' attr on table element and set up
@@ -694,7 +759,7 @@ class VimHelpBuildHtml(VimHelpBuildBase):
         if token in ('markup', 'start_file', 'start_line'):
             super(VimHelpBuildHtml, self)._put_token(token_data)
             return
-        ###print token_data
+        ##### print (MAP_TY[token], token_data)
         if 'pipe' == token:
             self.out.append(self.links.maplink(chars, 'link'))
         elif 'star' == token:
