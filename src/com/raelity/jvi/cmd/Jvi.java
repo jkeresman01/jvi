@@ -35,7 +35,7 @@ import java.awt.event.ActionListener;
 
 import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.swing.OptionsPanel;
+import com.raelity.jvi.swing.ui.options.OptionsPanel;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JLabel;
