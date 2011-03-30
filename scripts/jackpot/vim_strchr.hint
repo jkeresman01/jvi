@@ -1,0 +1,13 @@
+<?
+import static com.raelity.jvi.core.Util.vim_strchr;
+?>
+
+'vim_strchr found':
+vim_strchr($str, $chr) != null
+=> vim_strchr($str, 0, $chr) >= 0
+;;
+
+'vim_strchr not found':
+vim_strchr($str, $chr) == null
+=> vim_strchr($str, 0, $chr) < 0
+;;
