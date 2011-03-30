@@ -73,10 +73,13 @@ import static com.raelity.jvi.core.Util.*;
 
 public class Misc implements ClipboardOwner {
   private static final Logger LOG = Logger.getLogger(Misc.class.getName());
-  static final ClipboardOwner clipOwner = new Misc();
+  private static final ClipboardOwner clipOwner = new Misc();
   private static final String PREF_REGISTERS = "registers";
   private static final String PREF_SEARCH = "search";
   private static final String PREF_COMMANDS = "commands";
+
+  private Misc() {}
+
   //////////////////////////////////////////////////////////////////
   //
   // "misc1.c"
@@ -2919,7 +2922,7 @@ private static int put_in_typebuf(String s, boolean colon)
     int			old_lcount = G.curbuf.getLineCount();
 
     // Adjust register name for "unnamed" in 'clipboard'.
-    adjust_clip_reg(regname);
+    regname = adjust_clip_reg(regname);
     if (regname == '*')
       clip_get_selection();
 
@@ -3318,14 +3321,15 @@ private static int put_in_typebuf(String s, boolean colon)
   //
 
   /** When true, allow the clipboard to be used. */
-  static boolean clipboard_available = true;
-  static boolean clipboard_owned = false;
+  private static boolean clipboard_available = true;
+  private static boolean clipboard_owned = false;
 
   static void clip_gen_set_selection() {
     StringSelection ss = y_regs[CLIPBOARD_REGISTER].getStringSelection();
     Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
     synchronized(clipOwner) {
       clipboard_owned = true;
+      LOG.fine("clipboard: clip_gen_set_selection");
       cb.setContents(ss, clipOwner);
     }
   }
@@ -3404,6 +3408,7 @@ private static int put_in_typebuf(String s, boolean colon)
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
       synchronized(clipOwner) {
         clipboard_owned = false;
+        LOG.fine("clipboard: lostOwnership");
       }
     }
 
