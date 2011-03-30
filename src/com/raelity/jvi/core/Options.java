@@ -270,15 +270,16 @@ public final class Options {
                + " Change takes affect after restart.");
     setExpertHidden(commandEntryFrame, true, false);
     
-    OptUtil.createBooleanOption(autoPopupFN, false);
-    OptUtil.setupOptionDesc(Category.PLATFORM, autoPopupFN, "\":e#\" Auto Popup",
+    OptUtil.createBooleanOption(autoPopupFN, true);
+    OptUtil.setupOptionDesc(Category.PLATFORM, autoPopupFN,
+                            "\":e#\" Completion Auto Popup",
                "When doing \":\" command line entry, if \"e#\" is"
                + " entered then automatically popup a file"
                + " name completion window.");
     
-    OptUtil.createBooleanOption(autoPopupCcName, false);
+    OptUtil.createBooleanOption(autoPopupCcName, true);
     OptUtil.setupOptionDesc(Category.PLATFORM, autoPopupCcName,
-                            "\":\" Command Name Auto Popup",
+                            "\":\" Command Completion Auto Popup",
                "After doing \":\" for command line entry,"
                + " automatically popup command"
                + " name completion.");

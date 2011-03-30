@@ -229,7 +229,9 @@ private static ColonEvent parseCommandGuts(String commandLine,
         //   lnum.setValue(1);    // NEEDSWORK: is this right?
         // }
         if (lnum.getValue() == MAXLNUM) {
-            if (commandLine.charAt(sidx) == '%') { // '%' - all lines
+            if (sidx < commandLine.length()
+                    && commandLine.charAt(sidx) == '%' // '%' - all lines
+            ) {
                 ++sidx;
                 cev.line1 = 1;
                 cev.line2 = isExecuting ? G.curbuf.getLineCount() : MAXLNUM - 1;
