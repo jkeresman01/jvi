@@ -588,6 +588,7 @@ In Insert or Command-line mode:
 					  the help.
 
 Short explanation of each option:		*option-list*
+#*# filter-scan:ref #*#
 'aleph'		  'al'	    ASCII code of the letter Aleph (Hebrew)
 'allowrevins'	  'ari'     allow CTRL-_ in Insert and Command-line mode
 'altkeymap'	  'akm'     for default second language (Farsi/Hebrew)
@@ -930,6 +931,7 @@ Short explanation of each option:		*option-list*
 'writeany'	  'wa'	    write to file with no need for "!" override
 'writebackup'	  'wb'	    make a backup before overwriting a file
 'writedelay'	  'wd'	    delay this many msec for each char (for debug)
+#*# stop-filter-scan #*#
 ------------------------------------------------------------------------------
 *Q_ur*		Undo/Redo commands
 

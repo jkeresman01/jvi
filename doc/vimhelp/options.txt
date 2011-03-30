@@ -44,7 +44,8 @@ achieve special effects.  These options come in three forms:
 :se[t] inv{option}	Toggle option: Invert value. {not in Vi}
 
 				*:set-default* *:set-&* *:set-&vi* *:set-&vim*
-:se[t] {option}&	Reset option to its default value.  May depend on the
+:se[t] {option}&	Reset option to its default value.#-#  May depend on the#-#
+START-DOC-DEL
 			current value of 'compatible'. {not in Vi}
 :se[t] {option}&vi	Reset option to its Vi default value. {not in Vi}
 :se[t] {option}&vim	Reset option to its Vim default value. {not in Vi}
@@ -52,6 +53,7 @@ achieve special effects.  These options come in three forms:
 :se[t] all&		Set all options, except terminal options, to their
 			default value.  The values of 'term', 'lines' and
 			'columns' are not changed. {not in Vi}
+STOP-DOC-DEL
 
 						*:set-args* *E487* *E521*
 :se[t] {option}={value}		or
@@ -106,6 +108,7 @@ The {option} arguments to ":set" may be repeated.  For example: >
 	:set ai nosi sw=3 ts=3
 If you make an error in one of the arguments, an error message will be given
 and the following arguments will be ignored.
+START-DOC-DEL
 
 							*:set-verbose*
 When 'verbose' is non-zero, displaying an option value will also tell where it
@@ -180,6 +183,7 @@ For the first one the start is kept, but for the second one the backslashes
 are halved.  This makes sure it works both when you expect backslashes to be
 halved and when you expect the backslashes to be kept.  The third gives a
 result which is probably not what you want.  Avoid it.
+STOP-DOC-DEL
 
 				*add-option-flags* *remove-option-flags*
 				*E539* *E550* *E551* *E552*
@@ -192,6 +196,7 @@ This removes the 'a' flag from 'guioptions'.
 Note that you should add or remove one flag at a time.  If 'guioptions' has
 the value "ab", using "set guioptions-=ba" won't work, because the string "ba"
 doesn't appear.
+START-DOC-DEL
 
 			   *:set_env* *expand-env* *expand-environment-var*
 Environment variables in specific string options will be expanded.  If the
@@ -426,6 +431,7 @@ the system, mostly it is something like 256 or 1024 characters.
 <			If this works, add this in your .Xmodmap file: >
 				keysym 22 = BackSpace
 <			You need to restart for this to take effect.
+STOP-DOC-DEL
 
 ==============================================================================
 2. Automatically setting options			*auto-setting*
@@ -489,6 +495,7 @@ buffer and window that contain the file.  Although it's possible to set global
 options from a modeline, this is unusual.  If you have two windows open and
 the files in it set the same global option to a different value, the result
 depends on which one was opened last.
+START-DOC-DEL
 
 When editing a file that was already loaded, only the window-local options
 from the modeline are used.  Thus if you manually changed a buffer-local
@@ -508,10 +515,12 @@ For example, to use a modeline only for Vim 6.0 and later:
 To use a modeline for Vim before version 5.7:
 	/* vim<570: set sw=4: */ ~
 There can be no blanks between "vim" and the ":".
+STOP-DOC-DEL
 
 
 The number of lines that are checked can be set with the 'modelines' option.
 If 'modeline' is off or 'modelines' is 0 no lines are checked.
+START-DOC-DEL
 
 Note that for the first form all of the rest of the line is used, thus a line
 like:
@@ -536,6 +545,7 @@ example: >
 	au BufReadPost * if getline(1) =~ "VAR" | call SetVar() | endif
 And define a function SetVar() that does something with the line containing
 "VAR".
+STOP-DOC-DEL
 
 ==============================================================================
 3. Options summary					*option-summary*
@@ -610,19 +620,23 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  0	same as ":set backspace=" (Vi compatible)
 	  1	same as ":set backspace=indent,eol"
 	  2	same as ":set backspace=indent,eol,start"
+START-DOC-DEL
 
 	See |:fixdel| if your <BS> or <Del> key does not do what you want.
 	NOTE: This option is set to "" when 'compatible' is set.
+STOP-DOC-DEL
 
 						*'clipboard'* *'cb'*
 'clipboard' 'cb'	string	(default "autoselect,exclude:cons\|linux"
 						  for X-windows, "" otherwise)
 			global
+START-DOC-DEL
 			{not in Vi}
 			{only in GUI versions or when the |+xterm_clipboard|
 			feature is included}
 	This option is a list of comma separated names.
 	These names are recognized:
+STOP-DOC-DEL
 
 	unnamed		When included, Vim will use the clipboard register '*'
 			for all yank, delete, change and put operations which
@@ -632,6 +646,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			or not.  The clipboard register can always be
 			explicitly accessed using the "* notation.  Also see
 			|gui-clipboard|.
+START-DOC-DEL
 
 	autoselect	Works like the 'a' flag in 'guioptions': If present,
 			then whenever Visual mode is started, or the Visual
@@ -667,11 +682,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 			interpreted as if 'magic' was on.
 			The rest of the option value will be used for
 			{pattern}, this must be the last entry.
+STOP-DOC-DEL
 
 						*'cpoptions'* *'cpo'*
 'cpoptions' 'cpo'	string	(Vim default: "aABceFs",
 				 Vi default:  all flags)
 			global
+START-DOC-DEL
 			{not in Vi}
 	A sequence of single character flags.  When a character is present
 	this indicates vi-compatible behavior.  This is used for things where
@@ -865,10 +882,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 			erased from the screen right away.  With this flag the
 			screen newly typed text overwrites backspaced
 			characters.
+STOP-DOC-DEL
 								*cpo-w*
 		w	When using "cw" on a blank character, only change one
 			character and not all blanks until the start of the
 			next word.
+START-DOC-DEL
 								*cpo-W*
 		W	Don't overwrite a readonly file.  When omitted, ":w!"
 			overwrites a readonly file, if possible.
@@ -969,6 +988,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		|	The value of the $LINES and $COLUMNS environment
 			variables overrule the terminal size values obtained
 			with system specific functions.
+STOP-DOC-DEL
 
 
 						*'equalprg'* *'ep'*
@@ -1008,6 +1028,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	about including spaces and backslashes.
 	The expression may be evaluated in the |sandbox|, see
 	|sandbox-option|.
+START-DOC-DEL
 
 						*'highlight'* *'hl'*
 'highlight' 'hl'	string	(default (as a single string):
@@ -1085,13 +1106,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 	of highlighting, including using color.  See |:highlight| on how to
 	define one.  The default uses a different group for each occasion.
 	See |highlight-default| for the default highlight groups.
+STOP-DOC-DEL
 
 				 *'hlsearch'* *'hls'* *'nohlsearch'* *'nohls'*
 'hlsearch' 'hls'	boolean	(default off)
 			global
+START-DOC-DEL
 			{not in Vi}
 			{not available when compiled without the
 			|+extra_search| feature}
+STOP-DOC-DEL
 	When there is a previous search pattern, highlight all its matches.
 	The type of highlighting used can be set with the 'l' occasion in the
 	'highlight' option.  This uses the "Search" highlight group by
@@ -1101,12 +1125,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When you get bored looking at the highlighted matches, you can turn it
 	off with |:nohlsearch|.  As soon as you use a search command, the
 	highlighting comes back.
+START-DOC-DEL
 	When the search pattern can match an end-of-line, Vim will try to
 	highlight all of the matched text.  However, this depends on where the
 	search starts.  This will be the first line in the window or the first
 	line below a closed fold.  A match in a previous line which is not
 	drawn may not continue in a newly drawn line.
 	NOTE: This option is reset when 'compatible' is set.
+STOP-DOC-DEL
 
 			*'ignorecase'* *'ic'* *'noignorecase'* *'noic'*
 'ignorecase' 'ic'	boolean	(default off)
@@ -1131,6 +1157,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	original position when no match is found and when pressing <Esc>.  You
 	still need to finish the search command with <Enter> to move the
 	cursor to the match.
+START-DOC-DEL
 	The highlighting can be set with the 'i' flag in 'highlight'.
 	See also: 'hlsearch'.
 	CTRL-L can be used to add one character from after the current match
@@ -1138,6 +1165,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	CTRL-R CTRL-W can be used to add the word at the end of the current
 	match, excluding the characters that were already typed.
 	NOTE: This option is reset when 'compatible' is set.
+STOP-DOC-DEL
 
 						*'iskeyword'* *'isk'*
 'iskeyword' 'isk'	string (Vim default for MS-DOS and Win32:
@@ -1150,12 +1178,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 	"w", "*", "[i", etc.  It is also used for "\k" in a |pattern|.  See
 	'isfname' for a description of the format of this option.  For C
 	programs you could use "a-z,A-Z,48-57,_,.,-,>".
+START-DOC-DEL
 	For a help file it is set to all non-blank printable characters except
 	'*', '"' and '|' (so that CTRL-] on a command finds the help for that
 	command).
 	When the 'lisp' option is on the '-' character is always included.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
+STOP-DOC-DEL
 
 			*'joinspaces'* *'js'* *'nojoinspaces'* *'nojs'*
 'joinspaces' 'js'	boolean	(default on)
@@ -1274,10 +1304,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	in an operation.  For example, when "x" is used to delete the
 	selection.
 	Note that when "exclusive" is used and selecting from the end
-	backwards, you cannot include the last character of a line, when
+	backwards,#-# you cannot include the last character of a line, when #-#
+START-DOC-DEL
 	starting in Normal mode and 'virtualedit' empty.
 
 	The 'selection' option is set by the |:behave| command.
+STOP-DOC-DEL
 
 						*'shell'* *'sh'* *E91*
 'shell' 'sh'		string	(default $SHELL or "sh",
@@ -1298,6 +1330,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	"-f" is not inside the quotes, because it is not part of the command
 	name.  And Vim automagically recognizes the backslashes that are path
 	separators.
+START-DOC-DEL
 	For Dos 32 bits (DJGPP), you can set the $DJSYSFLAGS environment
 	variable to change the way external commands are executed.  See the
 	libc.inf file of DJGPP.
@@ -1310,6 +1343,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:set shell=command.com\ /c\ 4dos
 <	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
+STOP-DOC-DEL
 
 						*'shellcmdflag'* *'shcf'*
 'shellcmdflag' 'shcf'	string	(default: "-c", MS-DOS and Win32, when 'shell'
@@ -1317,13 +1351,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{not in Vi}
 	Flag passed to the shell to execute "!" and ":!" commands; e.g.,
-	"bash.exe -c ls" or "command.com /c dir".  For the MS-DOS-like
+	"bash.exe -c ls" or "command.com /c dir".#-#  For the MS-DOS-like #-#
+START-DOC-DEL
 	systems, the default is set according to the value of 'shell', to
 	reduce the need to set this option by the user.  It's not used for
 	OS/2 (EMX figures this out itself).  See |option-backslash| about
 	including spaces and backslashes.  See |dos-shell|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
+STOP-DOC-DEL
 
 			*'shellslash'* *'ssl'* *'noshellslash'* *'nossl'*
 'shellslash' 'ssl'	boolean	(default off)
@@ -1333,6 +1369,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	useful when a Unix-like shell is used instead of command.com or
 	cmd.exe.  Backward slashes can still be typed, but they are changed to
 	forward slashes by Vim.
+START-DOC-DEL
 	Note that setting or resetting this option has no effect for some
 	existing file names, thus this option needs to be set before opening
 	any file for best results.  This might change in the future.
@@ -1340,6 +1377,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	separator.  To test if this is so use: >
 		if exists('+shellslash')
 <
+STOP-DOC-DEL
 						*'shellxquote'* *'sxq'*
 'shellxquote' 'sxq'	string	(default: "";
 					for Win32, when 'shell' contains "sh"
@@ -1366,7 +1404,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Round indent to multiple of 'shiftwidth'.  Applies to > and <
 	commands.  CTRL-T and CTRL-D in Insert mode always round the indent to
 	a multiple of 'shiftwidth' (this is Vi compatible).
-	NOTE: This option is reset when 'compatible' is set.
+DOC-DEL	NOTE: This option is reset when 'compatible' is set.
 
 						*'shiftwidth'* *'sw'*
 'shiftwidth' 'sw'	number	(default 8)
@@ -1394,6 +1432,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'showmode' 'smd'	boolean	(Vim default: on, Vi default: off)
 			global
 	If in Insert, Replace or Visual mode put a message on the last line.
+START-DOC-DEL
 	Use the 'M' flag in 'highlight' to set the type of highlighting for
 	this message.
 	When |XIM| may be used the message will include "XIM".  But this
@@ -1401,6 +1440,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	not set.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
+STOP-DOC-DEL
 
 					*'softtabstop'* *'sts'*
 'softtabstop' 'sts'	number	(default 0)
@@ -1498,6 +1538,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		 ~    "~"	 Normal
 		 [    <Left>	 Insert and Replace
 		 ]    <Right>	 Insert and Replace
+START-DOC-DEL
 	For example: >
 		:set ww=<,>,[,]
 <	allows wrap only when cursor keys are used.
@@ -1513,6 +1554,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	"yl" etc. work normally.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
+STOP-DOC-DEL
 
 						*'wrap'* *'nowrap'*
 'wrap'			boolean	(default on)
