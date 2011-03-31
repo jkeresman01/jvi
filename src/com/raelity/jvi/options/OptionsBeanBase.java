@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.prefs.Preferences;
 
 import com.raelity.jvi.core.Options;
-import com.raelity.jvi.core.Options.EditOptionsControl;
 import com.raelity.jvi.manager.ViManager;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,7 +60,8 @@ import org.openide.util.WeakListeners;
  *
  * @author erra
  */
-public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsControl {
+public class OptionsBeanBase extends SimpleBeanInfo
+implements Options.EditControl {
     private static final
             Logger LOG = Logger.getLogger(OptionsBeanBase.class.getName());
     private Class clazz;
@@ -92,9 +92,15 @@ public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsContro
     }
 
     @Override
-    public void clear() {
+    public void start() {
         // no changes so far
         changeMap.clear();
+    }
+
+    @Override
+    public void ok()
+    {
+        // nothing to do since edits persist as you go
     }
 
     @Override
@@ -385,6 +391,14 @@ public class OptionsBeanBase extends SimpleBeanInfo implements EditOptionsContro
     /** this read-only option is special cased */
     public String getJViVersion() {
         return ViManager.getReleaseString();
+    }
+
+    public void setViMapCommands(String arg)  throws PropertyVetoException {
+        put(Options.mapCommands, arg);
+    }
+
+    public String getViMapCommands() {
+	return getString(Options.mapCommands);
     }
 
     public void setViList(boolean arg)  throws PropertyVetoException {

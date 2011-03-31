@@ -19,14 +19,13 @@
  */
 package com.raelity.jvi.swing.ui.options;
 
-import com.l2fprod.common.beans.ExtendedPropertyDescriptor;
 import com.l2fprod.common.beans.editor.ComboBoxPropertyEditor;
-import com.l2fprod.common.propertysheet.AbstractProperty;
 import com.l2fprod.common.propertysheet.Property;
 import com.l2fprod.common.propertysheet.PropertyEditorRegistry;
 import com.l2fprod.common.propertysheet.PropertySheet;
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
 import com.l2fprod.common.propertysheet.PropertySheetTableModel;
+import com.l2fprod.common.propertysheet.PropertySheetTableModel.NaturalOrderStringComparator;
 import com.l2fprod.common.swing.LookAndFeelTweaks;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.options.EnumOption;
@@ -39,8 +38,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyVetoException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.util.Comparator;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
@@ -49,15 +47,17 @@ import javax.swing.JTextArea;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-class OptionSheet extends JPanel {
+class OptionSheet extends JPanel implements Options.EditControl {
     // NOTE: bean/beanInfo are same class
     final BeanInfo bean; // keep a reference,
     PropertySheetPanel sheet;
-    final OptionsPanel optionPanel;
+    final OptionsPanel optionsPanel;
 
-    OptionSheet(BeanInfo _bean, OptionsPanel _optionPanel)
+    OptionSheet(BeanInfo _bean, OptionsPanel _optionsPanel)
     {
-        this.optionPanel = _optionPanel;
+        createPropertyEditors();
+
+        this.optionsPanel = _optionsPanel;
         this.bean = _bean;
         BeanDescriptor bdesc = bean.getBeanDescriptor();
         //bdesc.setShortDescription("A desc xxx");
@@ -74,9 +74,11 @@ class OptionSheet extends JPanel {
         setupSheetAndBeanProperties(sheet, bean);
         sheet.readFromObject(bean);
         // compare reverse order so that Prop is before Expert
-        ((PropertySheetTableModel)sheet.getTable().getModel()).setCategorySortingComparator(OptionsPanel.reverseStringCompare);
+        ((PropertySheetTableModel)sheet.getTable().getModel())
+                .setCategorySortingComparator(reverseStringCompare);
         // compare properties by property name rather than display name
-        ((PropertySheetTableModel)sheet.getTable().getModel()).setPropertySortingComparator(OptionsPanel.propertyNameCompare);
+        ((PropertySheetTableModel)sheet.getTable().getModel())
+                .setPropertySortingComparator(propertyNameCompare);
         sheet.setMode(PropertySheet.VIEW_AS_CATEGORIES);
         sheet.setDescriptionVisible(true);
         sheet.setSortingCategories(true);
@@ -124,23 +126,50 @@ class OptionSheet extends JPanel {
                                                   JOptionPane.ERROR_MESSAGE);
                     prop.setValue(Options.getOption(prop.getName()).getString());
                 }
-                if(change && optionPanel.changeNotify != null) {
-                    optionPanel.changeNotify.change();
+                if(change && optionsPanel.changeNotify != null) {
+                    optionsPanel.changeNotify.change();
                 }
             }
         };
         sheet.addPropertySheetChangeListener(pcl);
     }
 
-    void load()
+    // read property values from backing store
+    // and prepare for a new property edit op
+    @Override
+    public void start()
     {
         sheet.readFromObject(bean);
+        ((Options.EditControl)bean).start();
     }
+
+    @Override
+    public void ok()
+    {
+        // option sheet persists as you go, so nothing to do
+    }
+
+    // back out the changes
+    @Override
+    public void cancel()
+    {
+        ((Options.EditControl)bean).cancel();
+    }
+
+    //
+    // Character mapping for xlate to xml.
+    // NOTE: using "<br>" instead of "<br/>"
+    // to avoid the "\n>" from the html rendering engine
+    //
+    static final char[] IN_RANGE_INVALID_CR =
+        { '<',    '>',    '"',      /*'\'',*/     '&',     '\n' };
+    static final String IN_RANGE_VALID_CR[] =
+        { "&lt;", "&gt;", "&quot;", /*"&apos;",*/ "&amp;", "<br>" };
 
     private void setupSheetAndBeanProperties(PropertySheetPanel sheet,
                                              BeanInfo bean)
     {
-        sheet.setEditorFactory(optionPanel.propertyEditors);
+        sheet.setEditorFactory(propertyEditors);
         PropertyDescriptor[] descriptors = bean.getPropertyDescriptors();
         // count the hidden properties
         int nHidden = 0;
@@ -153,8 +182,7 @@ class OptionSheet extends JPanel {
         Property[] properties = new Property[descriptors.length - nHidden];
         StringBuffer sb = new StringBuffer();
         XMLUtil xmlFix =
-                new XMLUtil(OptionsPanel.IN_RANGE_INVALID_CR,
-                            OptionsPanel.IN_RANGE_VALID_CR);
+                new XMLUtil(IN_RANGE_INVALID_CR, IN_RANGE_VALID_CR);
         for(int i = 0, i2 = 0, c = descriptors.length; i < c; i++) {
             if(!descriptors[i].isHidden()) {
                 // xmlify the description
@@ -172,14 +200,13 @@ class OptionSheet extends JPanel {
                 Property prop = new MyPropAdapt(d);
                 // wish PropertyDescriptor.createPropertyEditor was used
                 if(prop.getType().equals(Color.class)) {
-                    ((PropertyEditorRegistry)optionPanel.propertyEditors).registerEditor(prop,
-                                                                                         new OptionsPanel.ColorPropertyEditor(prop));
+                    propertyEditors.registerEditor(
+                            prop, new ColorPropertyEditor(prop));
                 }
                 if(opt instanceof EnumOption) {
                     ComboBoxPropertyEditor pe = new ComboBoxPropertyEditor();
                     pe.setAvailableValues(((EnumOption)opt).getAvailableValues());
-                    ((PropertyEditorRegistry)optionPanel.propertyEditors).registerEditor(prop,
-                                                                                         pe);
+                    propertyEditors.registerEditor(prop, pe);
                 }
                 properties[i2++] = prop;
             }
@@ -205,122 +232,54 @@ class OptionSheet extends JPanel {
         }
     }
 
-    //
-    // L2FProd's PropertyDescriptorAdapter is not public, so copy it here
-    // and change descriptor field protected
-    //
-    class PropertyDescriptorAdapter extends AbstractProperty {
-
-        protected PropertyDescriptor descriptor;
-
-        public PropertyDescriptorAdapter(PropertyDescriptor descriptor)
-        {
-            setDescriptor(descriptor);
-        }
-
-        private void setDescriptor(PropertyDescriptor descriptor)
-        {
-            this.descriptor = descriptor;
-        }
-
-        public PropertyDescriptor getDescriptor()
-        {
-            return descriptor;
-        }
-
-        @Override
-        public String getName()
-        {
-            return descriptor.getName();
-        }
-
-        @Override
-        public String getDisplayName()
-        {
-            return descriptor.getDisplayName();
-        }
-
-        @Override
-        public String getShortDescription()
-        {
-            return descriptor.getShortDescription();
-        }
-
-        @Override
-        public Class getType()
-        {
-            return descriptor.getPropertyType();
-        }
-
-        @Override
-        public Object clone()
-        {
-            PropertyDescriptorAdapter clone =
-                    new PropertyDescriptorAdapter(descriptor);
-            clone.setValue(getValue());
-            return clone;
-        }
-
-        @Override
-        public void readFromObject(Object object)
-        {
-            try {
-                Method method = descriptor.getReadMethod();
-                if(method != null) {
-                    setValue(method.invoke(object, (Object[])null));
-                }
-            } catch(Exception e) {
-                String message =
-                        "Got exception when reading property " + getName();
-                if(object == null) {
-                    message += ", object was 'null'";
-                } else {
-                    message += ", object was " + String.valueOf(object);
-                }
-                throw new RuntimeException(message, e);
-            }
-        }
-
-        @Override
-        public void writeToObject(Object object)
-        {
-            try {
-                Method method = descriptor.getWriteMethod();
-                if(method != null) {
-                    method.invoke(object, new Object[]{getValue()});
-                }
-            } catch(Exception e) {
-                // let PropertyVetoException go to the upper level without logging
-                if(e instanceof InvocationTargetException &&
-                        ((InvocationTargetException)e).getTargetException() instanceof PropertyVetoException) {
-                    throw new RuntimeException(((InvocationTargetException)e).getTargetException());
-                }
-                String message =
-                        "Got exception when writing property " + getName();
-                if(object == null) {
-                    message += ", object was 'null'";
-                } else {
-                    message += ", object was " + String.valueOf(object);
-                }
-                throw new RuntimeException(message, e);
-            }
-        }
-
-        @Override
-        public boolean isEditable()
-        {
-            return descriptor.getWriteMethod() != null;
-        }
-
-        @Override
-        public String getCategory()
-        {
-            if(descriptor instanceof ExtendedPropertyDescriptor) {
-                return ((ExtendedPropertyDescriptor)descriptor).getCategory();
-            } else {
-                return null;
-            }
+    private static PropertyEditorRegistry propertyEditors;
+    
+    private void createPropertyEditors() {
+        if(propertyEditors == null) {
+            PropertyEditorRegistry pe = new PropertyEditorRegistry();
+            // Add our custom editors
+            pe.registerEditor(boolean.class,
+                              BooleanAsCheckBoxPropertyEditor.class);
+            pe.registerEditor(Color.class,
+                              ColorPropertyEditor.class);
+            propertyEditors = pe;
         }
     }
+
+    private static final Comparator STRING_COMPARATOR =
+            new NaturalOrderStringComparator();
+
+    static Comparator reverseStringCompare = new Comparator() {
+        @Override
+        @SuppressWarnings("unchecked") // STRING_COMPARATOR
+        public int compare(Object o1, Object o2) {
+            return - STRING_COMPARATOR.compare(o1, o2);
+        }
+    };
+
+    static Comparator propertyNameCompare = new Comparator() {
+        @Override
+        @SuppressWarnings("unchecked") // STRING_COMPARATOR
+        public int compare(Object o1, Object o2) {
+            if (o1 instanceof Property && o2 instanceof Property) {
+                Property prop1 = (Property) o1;
+                Property prop2 = (Property) o2;
+                if (prop1 == null) {
+                    return prop2==null?0:-1;
+                } else {
+                    return STRING_COMPARATOR.compare(
+                            prop1.getName(), prop2.getName());
+                            // prop1.getDisplayName()==null
+                            //     ? null
+                            //     : prop1.getDisplayName().toLowerCase(),
+                            // prop2.getDisplayName() == null
+                            //     ? null
+                            //     : prop2.getDisplayName().toLowerCase());
+                }
+            } else {
+                return 0;
+            }
+        }
+    };
     
 }

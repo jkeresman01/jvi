@@ -68,8 +68,9 @@ public class OptUtil {
 
         prefs = ViManager.getFactory().getPreferences();
 
-        prefs.addPreferenceChangeListener(new PreferenceChangeListener() {
-
+        prefs.addPreferenceChangeListener(new PreferenceChangeListener()
+        {
+            @Override
             public void preferenceChange(PreferenceChangeEvent evt)
             {
                 Option opt = Options.getOption(evt.getKey());

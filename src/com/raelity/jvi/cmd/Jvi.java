@@ -300,6 +300,7 @@ public class Jvi
         public void ok()
         {
             super.ok();
+            optionsPanel.ok();
         }
 
     }

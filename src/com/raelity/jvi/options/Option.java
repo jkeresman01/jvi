@@ -39,6 +39,7 @@ public abstract class Option {
         this(key, defaultValue, true);
     }
 
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     public Option(String key, String defaultValue, boolean doInit) {
 	name = key;
 	this.defaultValue = defaultValue;

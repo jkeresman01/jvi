@@ -64,7 +64,7 @@ public class ColorOption extends Option
     public final Color decode(String s)
     {
         Color color;
-        if (s.equals("")) {
+        if (s.isEmpty()) {
             if (permitNull) {
                 color = null;
             } else {

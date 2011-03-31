@@ -64,11 +64,13 @@ public final class Options {
   private static PropertyChangeSupport pcs
                         = new PropertyChangeSupport(getOptions());
 
-    public static interface EditOptionsControl {
-        // start clean
-        void clear();
-        // cancel an inprogress edit
-        void cancel();
+    public static interface EditControl {
+        /** starting edit */
+        public void start();
+        /** accept an edit */
+        public void ok();
+        /** cancel an in progress edit */
+        public void cancel();
     }
 
     @ServiceProvider(service=ViInitialization.class,
@@ -177,6 +179,8 @@ public final class Options {
   public static final String shellXQuote = "viShellXQuote";
   public static final String shellSlash = "viShellSlash";
 
+  public static final String mapCommands = "viMapCommands";
+
   public static final String persistedBufMarks = "viPersistedBufMarks";
   
   public static final String readOnlyHack = "viReadOnlyHack";
@@ -206,9 +210,24 @@ public final class Options {
 
     OptUtil.init(pcs);
     
-    // This option does not appear in the dialog
+    // Some options that do not appear in the dialog property sheets.
+
     OptUtil.createIntegerOption(scroll, 0);
     OptUtil.setupOptionDesc(null, scroll, "'scroll' 'scr'", "");
+
+    //
+    // Put this in GENERAL, but mark it hidden.
+    // It is handled very specially.
+    //
+    OptUtil.createStringOption(mapCommands, "");
+    OptUtil.setupOptionDesc(Category.GENERAL, mapCommands, "Map Commands",
+            "Very simple mappings . Only a single character can be mapped."
+            + " Mappings are only applied in normal mode."
+            + " Each line should have two fields, separated by white space."
+            + " The first field is a single character or"
+            + " special character."
+            + " Special characters are specified as <F2> or <C-F>");
+    setExpertHidden(mapCommands, true, true);
     
     /////////////////////////////////////////////////////////////////////
     //

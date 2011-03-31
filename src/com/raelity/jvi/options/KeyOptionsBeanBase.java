@@ -20,7 +20,7 @@
 
 package com.raelity.jvi.options;
 
-import com.raelity.jvi.core.Options.EditOptionsControl;
+import com.raelity.jvi.core.Options;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.swing.KeyBinding;
 import java.awt.Image;
@@ -35,10 +35,11 @@ import java.util.prefs.Preferences;
  * @author erra
  */
 public class KeyOptionsBeanBase extends SimpleBeanInfo
-        implements EditOptionsControl {
+        implements Options.EditControl {
 
     private Map<String,Boolean> changeMap = new HashMap<String,Boolean>();
 
+    @Override
     public void cancel()
     {
         for (Map.Entry<String, Boolean> entry : changeMap.entrySet()) {
@@ -48,7 +49,14 @@ public class KeyOptionsBeanBase extends SimpleBeanInfo
         }
     }
 
-    public void clear()
+    @Override
+    public void ok()
+    {
+        // nothing to do since edits persist as you go
+    }
+
+    @Override
+    public void start()
     {
         // no changes so far
         changeMap.clear();
