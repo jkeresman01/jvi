@@ -19,9 +19,15 @@
  */
 package com.raelity.jvi.core;
 
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import com.raelity.jvi.lib.Wrap;
+import java.util.Map;
 import com.raelity.text.TextUtil;
 import com.raelity.jvi.options.Option;
 import com.raelity.jvi.swing.KeyBinding;
+import java.util.HashMap;
 
 import static com.raelity.jvi.core.Constants.*;
 import static com.raelity.jvi.core.KeyDefs.*;
@@ -120,6 +126,130 @@ public class GetChar {
 
     Misc.out_flush();
   }
+
+  //////////////////////////////////////////////////////////////////////
+
+  private static final Map<String, Character> mapCommandSpecial
+          = new HashMap<String, Character>();
+  static {
+    mapCommandSpecial.put("key1", 'X');
+    mapCommandSpecial.put("key2", 'Y');
+  }
+
+  /** convert the match to a char */
+  private static char mapCommandChar(Matcher m)
+  {
+    char c = 0;
+    String s;
+    if((s = m.group(g_char)) != null)
+      c = s.charAt(0);
+    else if((s = m.group(g_ctrl)) != null)
+      c = (char)(s.charAt(0) & ~0x40);
+    else if((s = m.group(g_spec)) != null) {
+      c = mapCommandSpecial.get(s);
+      s = m.group(g_modif);
+      if(s != null) {
+        if(s.equals("C")) {
+          c |= (KeyDefs.CTRL << KeyDefs.MODIFIER_POSITION_SHIFT);
+        } else if(s.equals("S")) {
+          c |= (KeyDefs.SHFT << KeyDefs.MODIFIER_POSITION_SHIFT);
+        }
+      }
+    }
+
+    return c;
+  }
+
+  // the groups in mapSeqPattern
+  private static final int g_char = 1;
+  private static final int g_ctrl = 2;
+  private static final int g_modif = 3;
+  private static final int g_spec = 4;
+
+  static Map<Character,String>
+  createMapCommandsMap(String input, Wrap<String>emsg)
+  {
+    StringBuilder rhs = new StringBuilder();
+
+    //
+    // a char is matched like:
+    //          [!-~&&[^\\<]]           all printables, except \ and < and space
+    //          <C-[@-\[\]-_]>          all control chars, except Ctrl-\,Ctrl-<
+    //          <special>               list of special chars
+    //          <C-special>             ctrl of list of special chars
+    //          <S-special>             shft of list of special chars
+    // NOTE: special look like: key1|key2|key3
+    // char: [!-~&&[^\\<]] | <C-[@-_]> | <([SC]-)?(special)>
+    // a line is like: noremap char char+
+    //
+    String pat = "([!-~&&[^\\\\<]])"
+                  + "|<C-([@-\\[\\]-_])>"
+                  + "|<(?:([SC])-)?(special)>";
+    // Collect all the special words we match.
+    // Use rhs as a temporary.
+    for(String k : mapCommandSpecial.keySet()) {
+      rhs.append(k).append("|");
+    }
+    rhs.deleteCharAt(rhs.length() - 1);
+    pat = pat.replace("special", rhs.toString());
+    Pattern mapSeqPattern = Pattern.compile(pat);
+    rhs.setLength(0);
+
+
+    StringBuilder emsgs = new StringBuilder();
+
+    List<String> lines = TextUtil.split(input, "\n");
+    for(int lnum = 0; lnum < lines.size(); lnum++) {
+      String line = lines.get(lnum);
+
+      List<String> fields = TextUtil.split(line);
+
+      if(fields.isEmpty() || fields.get(0).startsWith("\""))
+        continue;
+      if(fields.size() != 3) {
+        emsgs.append("Map Command line ").append(lnum + 1)
+                .append(": Must be exactly three fields\n");
+        continue;
+      }
+      if(!"noremap".equals(fields.get(0))) {
+        emsgs.append("Map Command line ").append(lnum + 1)
+                .append(": Only \"noremap\" command supported\n");
+        continue;
+      }
+
+      Character lhs = null;
+
+      Matcher m = mapSeqPattern.matcher(fields.get(1));
+      if(m.matches()) {
+        lhs = mapCommandChar(m);
+      } else {
+        emsgs.append("Map Command line ").append(lnum + 1)
+                .append(": \"")
+                .append(fields.get(1))
+                .append("\" left-side not recognized\n");
+      }
+
+      m.reset(fields.get(2));
+      while(m.find()) {
+        char c = mapCommandChar(m);
+        rhs.append(c);
+      }
+
+      System.err.println("line: " + line
+              + " '" + TextUtil.debugString(String.valueOf(lhs))
+              + "' --> '" + TextUtil.debugString(rhs.toString()) + "'");
+      rhs.setLength(0);
+    }
+
+    if(emsgs.length() > 0) {
+      emsg.setValue(emsgs.toString());
+      return null;
+    }
+    return new HashMap<Character, String>();
+  }
+
+
+  //////////////////////////////////////////////////////////////////////////
   
   /** This is a special case for the two part search */
   static void fakeGotc(char key) {
@@ -651,7 +781,7 @@ public class GetChar {
       return FAIL;
     }
 
-    typebuf.insert(0, str);
+    typebuf.insert(offset, str);
 
     //
     // Adjust noremapbuf[] for the new characters:

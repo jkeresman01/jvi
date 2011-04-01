@@ -40,7 +40,7 @@ import javax.swing.UIManager;
 /**
  * NEEDSWORK:
  * This should use the property descriptors to read/write Options.mapCommands.
- * 
+ *
  * @author Ernie Rael <err at raelity.com>
  */
 public class MapCommands extends javax.swing.JPanel
@@ -91,10 +91,13 @@ implements Options.EditControl {
             bean.setViMapCommands(newText);
             change = true;
         } catch(PropertyVetoException ex) {
-            JOptionPane.showMessageDialog(null,
-                                          ex.getCause().getMessage(),
-                                          "jVi Option Error",
-                                          JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    null,
+                    ex.getCause() != null
+                        ? ex.getCause().getMessage()
+                        : ex.getMessage(),
+                    "jVi Option Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
         if(change && optionsPanel.changeNotify != null) {
             optionsPanel.changeNotify.change();

@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.text.TextUtil.MySegment;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.DebugOption;
 import com.raelity.jvi.options.IntegerOption;
@@ -29,14 +30,15 @@ import com.raelity.jvi.options.StringOption;
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.lib.CharTab;
-import com.raelity.text.TextUtil.MySegment;
-import java.awt.Color;
+import com.raelity.jvi.lib.Wrap;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 //import java.util.ArrayDeque; JDK1.6
 //import java.util.Deque; JDK1.6
+
+import java.awt.Color;
 
 import java.util.List;
 import java.util.logging.Level;
@@ -219,14 +221,39 @@ public final class Options {
     // Put this in GENERAL, but mark it hidden.
     // It is handled very specially.
     //
-    OptUtil.createStringOption(mapCommands, "");
+    OptUtil.createStringOption(mapCommands, "",
+            new StringOption.Validator() {
+            @Override
+              public void validate(String val) throws PropertyVetoException {
+
+                Wrap<String> emsg = new Wrap<String>("");
+                if(null == GetChar.createMapCommandsMap(val, emsg)) {
+        	     throw new PropertyVetoException(
+                             emsg.getValue(),
+                             new PropertyChangeEvent(opt, opt.getName(),
+                                                     opt.getString(), val));
+                }
+              }
+            });
     OptUtil.setupOptionDesc(Category.GENERAL, mapCommands, "Map Commands",
             "Very simple mappings . Only a single character can be mapped."
-            + " Mappings are only applied in normal mode."
-            + " Each line should have two fields, separated by white space."
-            + " The first field is a single character or"
-            + " special character."
-            + " Special characters are specified as <F2> or <C-F>");
+            + " Only noremap; mappings applied only in normal mode."
+            + " Comments are on a line by themselves and start with \"."
+            + "\n"
+            + "\nExamples:"
+            + "\n    noremap Y y$"
+            + "\n    noremap j gj"
+            + "\n    noremap <Down> gj"
+            + "\n    \" following ususally does nothing"
+            + "\n    noremap <C-Up> <Down><Up>"
+            + "\n"
+            + "\nIn lhs or rhs a char is of the form:"
+            + "\n    \"c\"           - except \\ and < and space"
+            + "\n    \"<C-X>\"       - except Ctrl-\\,Ctrl-<"
+            + "\n    \"<special>\"   - see vim doc for valid special"
+            + "\n    \"<C-special>\" - ctrl"
+            + "\n    \"<S-special>\" - shft"
+            );
     setExpertHidden(mapCommands, true, true);
     
     /////////////////////////////////////////////////////////////////////

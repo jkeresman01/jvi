@@ -85,8 +85,7 @@ public class TextUtil {
         }
     }
     
-    /** replace control characters with something visible,
-     * only handle \n for now. */
+    /** replace control characters with something visible */
     public static String debugString(String s) {
         if(s == null)
             return "(null)";

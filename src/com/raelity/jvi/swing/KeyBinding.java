@@ -63,6 +63,7 @@ public class KeyBinding {
                      position=10)
     public static class Init implements ViInitialization
     {
+      @Override
       public void init()
       {
         KeyBinding.init();
@@ -104,6 +105,7 @@ private static Action createKeyAction( String name, char key ) {
   private static void init() {
       createSubKeymaps();
       prefs.addPreferenceChangeListener(new PreferenceChangeListener() {
+          @Override
           public void preferenceChange(PreferenceChangeEvent evt) {
               if(EventQueue.isDispatchThread())
                 updateKeymap.run();
@@ -116,6 +118,7 @@ private static Action createKeyAction( String name, char key ) {
   }
   
     private static Runnable updateKeymap = new Runnable() {
+        @Override
         public void run() {
             bindingList = null; // force recalculation
             firePropertyChange(KEY_BINDINGS, null, null);
