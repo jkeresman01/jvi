@@ -128,6 +128,9 @@ public class GetChar {
   }
 
   //////////////////////////////////////////////////////////////////////
+  //
+  // Map Command handling
+  //
 
   private static final Map<String, Character> mapCommandSpecial
           = new HashMap<String, Character>();
@@ -237,7 +240,7 @@ public class GetChar {
 
       System.err.println("line: " + line
               + " '" + TextUtil.debugString(String.valueOf(lhs))
-              + "' --> '" + TextUtil.debugString(rhs.toString()) + "'");
+              + "' --> '" + TextUtil.debugString(rhs) + "'");
       rhs.setLength(0);
     }
 
@@ -706,7 +709,7 @@ public class GetChar {
     handle_redo = true;
     if(G.dbgRedo.getBoolean())
       System.err.println("stuffbuff = '"
-                         + TextUtil.debugString(stuffbuff.toString())+ "'");
+                         + TextUtil.debugString(stuffbuff)+ "'");
     return OK;
   }
 
@@ -822,15 +825,28 @@ public class GetChar {
   /**
   * Small queue of characters. Can't extend StringBuffer, so delegate.
   */
-  static class BufferQueue {
+  static class BufferQueue implements CharSequence {
     private StringBuilder buf = new StringBuilder();
 
     void setLength(int length) {
       buf.setLength(length);
     }
 
-    int length() {
+    @Override
+    public int length() {
       return buf.length();
+    }
+
+    @Override
+    public char charAt(int index)
+    {
+      return buf.charAt(index);
+    }
+
+    @Override
+    public CharSequence subSequence(int start, int end)
+    {
+      return buf.subSequence(start, end);
     }
 
     boolean hasNext() {

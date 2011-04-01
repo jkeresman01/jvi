@@ -86,7 +86,7 @@ public class TextUtil {
     }
     
     /** replace control characters with something visible */
-    public static String debugString(String s) {
+    public static String debugString(CharSequence s) {
         if(s == null)
             return "(null)";
         StringBuilder sb = new StringBuilder();
