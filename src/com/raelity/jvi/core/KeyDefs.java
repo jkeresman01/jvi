@@ -72,6 +72,8 @@ public class KeyDefs {
     public static final char META = 0x04;
     public static final char ALT  = 0x08;
     public static final int MODIFIER_POSITION_SHIFT = 8;   // a numeric shift
+
+    public static final int MOD_MASK = SHFT | CTRL | META | ALT;
     
     /** the special keys that have shifted versions */
     public static final char SHIFTED_VIRT_OFFSET = 0x10;

@@ -22,7 +22,6 @@ package com.raelity.jvi.swing;
 import com.raelity.jvi.manager.ViManager;
 import java.awt.EventQueue;
 import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -94,11 +93,6 @@ private static Action createKeyAction( String name, char key ) {
 }
   
   public static boolean notImpDebug = false;
-
-  public static final int MOD_MASK = SHIFT_MASK
-	    				| CTRL_MASK
-					| InputEvent.META_MASK
-					| InputEvent.ALT_MASK;
 
   static final String enqueKeyAction = "enque-key";
 

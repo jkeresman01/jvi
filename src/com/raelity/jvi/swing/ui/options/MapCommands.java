@@ -77,6 +77,7 @@ implements Options.EditControl {
             + opt.getDisplayName()
             + "</b><br>"
             + xmlFix.utf2xml(opt.getDesc()));
+        description.setCaretPosition(0);
     }
 
     @Override

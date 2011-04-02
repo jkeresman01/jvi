@@ -20,14 +20,16 @@
 package com.raelity.jvi.core;
 
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import com.raelity.jvi.lib.Wrap;
 import java.util.Map;
 import com.raelity.text.TextUtil;
 import com.raelity.jvi.options.Option;
-import com.raelity.jvi.swing.KeyBinding;
+import java.util.AbstractMap;
 import java.util.HashMap;
+import java.util.logging.Level;
 
 import static com.raelity.jvi.core.Constants.*;
 import static com.raelity.jvi.core.KeyDefs.*;
@@ -55,12 +57,10 @@ public class GetChar {
    * </p>
    */
   static void gotc(char key, int modifier) {
+    Options.kd.printf(Level.FINER,
+        "gotc: '%s' %d\n", TextUtil.debugString(String.valueOf(key)), modifier);
     if((key & 0xF000) == VIRT) {
-      if((modifier & KeyBinding.MOD_MASK) == SHFT
-                && key >= VIRT && key <= VIRT + 0x0f) {
-        // only the shift key is pressed and its one of "those".
-        key += SHIFTED_VIRT_OFFSET;
-      }
+      key = adjustShiftedSpecial(key, modifier);
     }
     G.setModMask(modifier);
 
@@ -127,21 +127,100 @@ public class GetChar {
     Misc.out_flush();
   }
 
+  private static char adjustShiftedSpecial(char key, int modifier) {
+      if((modifier & KeyDefs.MOD_MASK) == SHFT
+                && key >= VIRT && key <= VIRT + 0x0f) {
+        // only the shift key is pressed and its one of "those".
+        key += SHIFTED_VIRT_OFFSET;
+      }
+      return key;
+  }
+
   //////////////////////////////////////////////////////////////////////
   //
   // Map Command handling
   //
 
+  private static Map<Character,String> mappings
+          = new HashMap<Character, String>();
   private static final Map<String, Character> mapCommandSpecial
           = new HashMap<String, Character>();
-  static {
-    mapCommandSpecial.put("key1", 'X');
-    mapCommandSpecial.put("key2", 'Y');
+
+  private static void createMapCommandSpecial()
+  {
+    if(!mapCommandSpecial.isEmpty())
+      return;
+    mapCommandSpecial.put("Nul",      '\n');
+    mapCommandSpecial.put("BS",       '\b');///////////////////////////////
+    mapCommandSpecial.put("Tab",      '\t');///////////////////////////////
+    mapCommandSpecial.put("NL",       '\n');
+    mapCommandSpecial.put("FF",       '\f');
+    mapCommandSpecial.put("CR",       '\n');
+    mapCommandSpecial.put("Return",   '\n');
+    mapCommandSpecial.put("Enter",    '\n');
+    mapCommandSpecial.put("Esc",      '\u001b');///////////////////////////////
+    mapCommandSpecial.put("Space",    ' ');
+    mapCommandSpecial.put("lt",       '<');
+    mapCommandSpecial.put("Bslash",   '\\');
+    mapCommandSpecial.put("Bar",      '|');
+    mapCommandSpecial.put("Del",      '\u007f');///////////////////////////////
+
+    mapCommandSpecial.put("EOL",      '\n');
+
+    mapCommandSpecial.put("Up",       K_UP);
+    mapCommandSpecial.put("Down",     K_DOWN);
+    mapCommandSpecial.put("Left",     K_LEFT);
+    mapCommandSpecial.put("Right",    K_RIGHT);
+
+    mapCommandSpecial.put("Help",     K_HELP);
+    mapCommandSpecial.put("Undo",     K_UNDO);
+    mapCommandSpecial.put("Insert",   K_INS);
+    mapCommandSpecial.put("Home",     K_HOME);
+    mapCommandSpecial.put("End",      K_END);
+    mapCommandSpecial.put("PageUp",   K_PAGEUP);
+    mapCommandSpecial.put("PageDown", K_PAGEDOWN);
+
+/*
+<kHome>
+<kEnd>
+<kPageUp>
+<kPageDown>
+<kPlus>
+<kMinus>
+<kMultiply>
+<kDivide>
+<kEnter>
+<kPoint>
+<k0> - <k9>
+
+<S-Up>
+<S-Down>
+<S-Left>
+<S-Right>
+<C-Left>
+<C-Right>
+<F1> - <F12>
+<S-F1> - <S-F12>
+<CSI>
+<xCSI>
+*/
   }
 
-  /** convert the match to a char */
-  private static char mapCommandChar(Matcher m)
+  /**
+   * Convert the match to a char.
+   * @return null if problem else translated char
+   */
+  private static Character mapCommandChar(Matcher m, boolean is_rhs, String orig)
   {
+    if(false) {
+      System.err.println("region: '"
+              +  orig.substring(m.start())
+              + "' match: '" + m.group() + "'");
+      for(int i = 1; i <= m.groupCount(); i++) {
+        System.err.println("\t" + m.group(i));
+      }
+    }
+
     char c = 0;
     String s;
     if((s = m.group(g_char)) != null)
@@ -151,6 +230,7 @@ public class GetChar {
     else if((s = m.group(g_spec)) != null) {
       c = mapCommandSpecial.get(s);
       s = m.group(g_modif);
+      // TODO: adjust c if needed **********************************
       if(s != null) {
         if(s.equals("C")) {
           c |= (KeyDefs.CTRL << KeyDefs.MODIFIER_POSITION_SHIFT);
@@ -169,10 +249,9 @@ public class GetChar {
   private static final int g_modif = 3;
   private static final int g_spec = 4;
 
-  static Map<Character,String>
-  createMapCommandsMap(String input, Wrap<String>emsg)
+  private static Pattern createMapSeqPattern()
   {
-    StringBuilder rhs = new StringBuilder();
+    StringBuilder sb = new StringBuilder();
 
     //
     // a char is matched like:
@@ -188,67 +267,132 @@ public class GetChar {
     String pat = "([!-~&&[^\\\\<]])"
                   + "|<C-([@-\\[\\]-_])>"
                   + "|<(?:([SC])-)?(special)>";
-    // Collect all the special words we match.
-    // Use rhs as a temporary.
+    // Make a string of all the special words we match.
     for(String k : mapCommandSpecial.keySet()) {
-      rhs.append(k).append("|");
+      sb.append(k).append("|");
     }
-    rhs.deleteCharAt(rhs.length() - 1);
-    pat = pat.replace("special", rhs.toString());
-    Pattern mapSeqPattern = Pattern.compile(pat);
-    rhs.setLength(0);
+    sb.deleteCharAt(sb.length() - 1);
+    pat = pat.replace("special", sb.toString());
+    return Pattern.compile(pat);
+  }
 
+  /**
+   * Parse the mapping command.
+   * If msgs is not changed, then no error occurred.
+   * @param line
+   * @param msgs
+   * @param m
+   * @param rhs
+   * @return null if no mapping on line or error
+   */
+  static Map.Entry<Character, String>
+  parseMapCommand(String line, int lnum,
+                  StringBuilder emsgs, Matcher m, StringBuilder rhs)
+  {
+    if(m == null) {
+      m = createMapSeqPattern().matcher("");
+    }
+    if(rhs == null) {
+      rhs = new StringBuilder();
+    }
+    int initialEmsgs = emsgs.length();
+
+    List<String> fields = TextUtil.split(line);
+
+    if(fields.isEmpty() || fields.get(0).startsWith("\""))
+      return null;
+    if(fields.size() != 3) {
+      emsgs.append("Map Command line ").append(lnum + 1)
+              .append(": Must be exactly three fields\n");
+      return null;
+    }
+    if(!"noremap".equals(fields.get(0))) {
+      emsgs.append("Map Command line ").append(lnum + 1)
+              .append(": Only \"noremap\" command supported\n");
+      return null;
+    }
+
+    Character lhs = null;
+    rhs.setLength(0);
+    boolean ok;
+
+    m.reset(fields.get(1));
+    ok = false;
+    if(m.matches()) {
+      ok = (lhs = mapCommandChar(m, false, fields.get(1))) != null;
+    }
+    if(!ok) {
+      emsgs.append("Map Command line ").append(lnum + 1)
+              .append(": \"")
+              .append(fields.get(1))
+              .append("\" left-side not recognized\n");
+    }
+
+    m.reset(fields.get(2));
+    int idx = 0;
+    do {
+      if(false) {
+        System.err.println("checking: '" + fields.get(2).substring(idx) + "'");
+      }
+      ok = false;
+      if(m.find() && idx == m.start()) {
+        Character c = mapCommandChar(m, true, fields.get(2));
+        if(c != null) {
+          rhs.append(c.charValue());
+          ok = true;
+        }
+      }
+      if(!ok) {
+        emsgs.append("Map Command line ").append(lnum + 1)
+                .append(": \"")
+                .append(fields.get(2).substring(idx))
+                .append("\" right-side not recognized\n");
+        break;
+      }
+      idx = m.end();
+    } while(idx < m.regionEnd());
+
+    if(emsgs.length() == initialEmsgs) {
+      if(Options.isKeyDebug()) {
+        System.err.println("parseMapCommand: " + line
+                + ": '" + TextUtil.debugString(String.valueOf(lhs))
+                + "' --> '" + TextUtil.debugString(rhs) + "'");
+      }
+
+      return new AbstractMap.SimpleEntry<Character, String>(lhs, rhs.toString());
+    } else {
+      Options.kd.printf("parseMapCommand: %s: error\n", line);
+      return null;
+    }
+  }
+
+  static Map<Character,String>
+  createMapCommandsMap(String input, Wrap<String>emsg)
+  {
+    createMapCommandSpecial();
+
+    Map<Character, String> mapCommands = new HashMap<Character, String>();
 
     StringBuilder emsgs = new StringBuilder();
+
+    Pattern mapSeqPattern = createMapSeqPattern();
+    Matcher m = mapSeqPattern.matcher("");
+    StringBuilder rhs = new StringBuilder();
 
     List<String> lines = TextUtil.split(input, "\n");
     for(int lnum = 0; lnum < lines.size(); lnum++) {
       String line = lines.get(lnum);
-
-      List<String> fields = TextUtil.split(line);
-
-      if(fields.isEmpty() || fields.get(0).startsWith("\""))
-        continue;
-      if(fields.size() != 3) {
-        emsgs.append("Map Command line ").append(lnum + 1)
-                .append(": Must be exactly three fields\n");
-        continue;
-      }
-      if(!"noremap".equals(fields.get(0))) {
-        emsgs.append("Map Command line ").append(lnum + 1)
-                .append(": Only \"noremap\" command supported\n");
-        continue;
-      }
-
-      Character lhs = null;
-
-      Matcher m = mapSeqPattern.matcher(fields.get(1));
-      if(m.matches()) {
-        lhs = mapCommandChar(m);
-      } else {
-        emsgs.append("Map Command line ").append(lnum + 1)
-                .append(": \"")
-                .append(fields.get(1))
-                .append("\" left-side not recognized\n");
-      }
-
-      m.reset(fields.get(2));
-      while(m.find()) {
-        char c = mapCommandChar(m);
-        rhs.append(c);
-      }
-
-      System.err.println("line: " + line
-              + " '" + TextUtil.debugString(String.valueOf(lhs))
-              + "' --> '" + TextUtil.debugString(rhs) + "'");
-      rhs.setLength(0);
+      Entry<Character, String> kv
+              = parseMapCommand(line, lnum, emsgs, m, rhs);
+      if(kv != null)
+        mapCommands.put(kv.getKey(), kv.getValue());
     }
 
     if(emsgs.length() > 0) {
       emsg.setValue(emsgs.toString());
       return null;
     }
-    return new HashMap<Character, String>();
+    return mapCommands;
   }
 
 
@@ -450,9 +594,9 @@ public class GetChar {
 
   /**
    * get a character: 1. from a previously ungotten character
-   *		    2. from the stuffbuffer
-   *		    3. from the typeahead buffer
-   *		    4. from the user
+   *		      2. from the stuffbuffer
+   *		      3. from the typeahead buffer
+   *		      4. from the user
    * <br/>
    * if "advance" is TRUE (vgetc()):
    *	really get the character.

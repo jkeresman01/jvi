@@ -239,20 +239,18 @@ public final class Options {
             "Very simple mappings . Only a single character can be mapped."
             + " Only noremap; mappings applied only in normal mode."
             + " Comments are on a line by themselves and start with \"."
-            + "\n"
             + "\nExamples:"
-            + "\n    noremap Y y$"
-            + "\n    noremap j gj"
-            + "\n    noremap <Down> gj"
-            + "\n    \" following ususally does nothing"
-            + "\n    noremap <C-Up> <Down><Up>"
-            + "\n"
+            + "\n\u00a0\u00a0\u00a0\u00a0noremap j gj"
+            + "\n\u00a0\u00a0\u00a0\u00a0noremap <Down> gj"
+            + "\n\u00a0\u00a0\u00a0\u00a0\" following ususally does nothing"
+            + "\n\u00a0\u00a0\u00a0\u00a0noremap <C-Up> <Down><Up>"
             + "\nIn lhs or rhs a char is of the form:"
-            + "\n    \"c\"           - except \\ and < and space"
-            + "\n    \"<C-X>\"       - except Ctrl-\\,Ctrl-<"
-            + "\n    \"<special>\"   - see vim doc for valid special"
-            + "\n    \"<C-special>\" - ctrl"
-            + "\n    \"<S-special>\" - shft"
+            + "\n\u00a0\u00a0\u00a0\u00a0\"c\"           - except \\ and < and space"
+            + "\n\u00a0\u00a0\u00a0\u00a0\"<C-X>\"       - except Ctrl-\\,Ctrl-<"
+            + "\n\u00a0\u00a0\u00a0\u00a0\"<special>\"   - see vim doc for valid specials"
+            + "\n\u00a0\u00a0\u00a0\u00a0\"<C-special>\" - ctrl"
+            + "\n\u00a0\u00a0\u00a0\u00a0\"<S-special>\" - shft"
+            + "\nSome specials: <lt>,<Space>,<Bslash>"
             );
     setExpertHidden(mapCommands, true, true);
     
@@ -800,7 +798,7 @@ public final class Options {
     OptUtil.setupOptionDesc(Category.DEBUG, dbgEditorActivation, "debug activation",
                "Output info about editor switching between files/windows");
 
-    OptUtil.createDebugOption(dbgKeyStrokes);
+    kd = OptUtil.createDebugOption(dbgKeyStrokes);
     OptUtil.setupOptionDesc(Category.DEBUG, dbgKeyStrokes, "debug KeyStrokes",
                "Output info for each keystroke");
 
@@ -1030,20 +1028,18 @@ public final class Options {
 
   //////////////////////////////////////////////////////////////////////
   //
-  // This optin is used a lot, make it fast
+  // This option is used a lot, make it fast
   //
 
-  private static DebugOption keyDebugOption;
+  static DebugOption kd;
+
   public static boolean isKeyDebug() {
+    return isKeyDebug(Level.FINE);
+  }
+
+  public static boolean isKeyDebug(Level level) {
     // NEEDSWORK: clean isKeyDebug up
-    if(keyDebugOption == null) {
-       keyDebugOption = (DebugOption)Options.getOption(Options.dbgKeyStrokes);
-    }
-    if(keyDebugOption == null) {
-      return false;
-    } else {
-      return keyDebugOption.getBoolean();
-    }
+    return kd.getBoolean(level);
   }
 }
 
