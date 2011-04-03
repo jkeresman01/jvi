@@ -119,7 +119,7 @@ Advanced editing ~
 DOC-DEL |cmdline.txt|	Command-line editing
 |options.txt|	description of all options
 |pattern.txt|	regexp patterns and search commands
-DOC-DEL |map.txt|	key mapping and abbreviations
+|map.txt|	key mapping and abbreviations
 |tagsearch.txt|	tags and special searches
 DOC-DEL |quickfix.txt|	commands for a quick edit-compile-fix cycle
 |windows.txt|	commands for using multiple windows and buffers
