@@ -26,6 +26,8 @@ import com.raelity.text.TextUtil.MySegment;
 import java.awt.Toolkit;
 import java.text.CharacterIterator;
 
+import static com.raelity.jvi.core.Constants.*;
+
 
 public class Util {
   private Util() { }
@@ -75,6 +77,22 @@ public class Util {
       ++p;
     }
     return -1;
+  }
+
+  /**
+   * VISUAL and OP_PENDING State are never set, they are equal to NORMAL State
+   * with a condition.  This function returns the real State.
+   */
+  public static int get_real_state()
+  {
+    if ((G.State & NORMAL) != 0)
+    {
+      if (G.VIsual_active)
+        return VISUAL;
+      else if (G.finish_op)
+        return OP_PENDING;
+    }
+    return G.State;
   }
 
   /**

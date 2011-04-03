@@ -87,7 +87,8 @@ public class GetChar {
         ///// if(doc != null)
         /////     doc.readLock();
         
-        Normal.processInputChar(key, true);
+        // Normal.processInputChar(key, true);
+        user_ins_typebuf(key);
 
         if(!handle_redo)
             pumpVi();
@@ -106,7 +107,7 @@ public class GetChar {
             // NEEDSWORK: INPUT MODE FROM MACRO ????????
             try {
               Misc.runUndoable(new Runnable() {
-            @Override
+                @Override
                 public void run() {
                   pumpVi();
                 }
@@ -142,15 +143,311 @@ public class GetChar {
   // Map Command handling
   //
 
-  private static Map<Character,String> mappings
-          = new HashMap<Character, String>();
+  private static Map<Character, Mapping> mappings
+          = new HashMap<Character, Mapping>();
+  private static Map<Character, Mapping> defaultMappings
+          = new HashMap<Character, Mapping>();
   private static final Map<String, Character> mapCommandSpecial
           = new HashMap<String, Character>();
 
-  private static void createMapCommandSpecial()
+  private static class Mapping {
+    String lhs;
+    String rhs;
+    int mode;
+    boolean noremap;
+
+    public Mapping(String lhs, String rhs, int mode, boolean noremap)
+    {
+      this.lhs = lhs;
+      this.rhs = rhs;
+      this.mode = mode;
+      this.noremap = noremap;
+    }
+
+    @Override
+    public String toString()
+    {
+      return "Mapping{'" + TextUtil.debugString(lhs)
+              + "' --> '" + TextUtil.debugString(rhs)
+              + "' mode=" + mode + ", noremap=" + noremap + '}';
+    }
+
+  }
+
+  /**
+   * Convert the match to a char.
+   * @return null if problem else translated char
+   */
+  private static Character mapCommandChar(Matcher m, boolean is_rhs, String orig)
+  {
+    if(false) {
+      System.err.println("region: '"
+              +  orig.substring(m.start())
+              + "' match: '" + m.group() + "'");
+      for(int i = 1; i <= m.groupCount(); i++) {
+        System.err.println("\t" + m.group(i));
+      }
+    }
+
+    char c = 0;
+    String s;
+    if((s = m.group(g_char)) != null)
+      c = s.charAt(0);
+    else if((s = m.group(g_ctrl)) != null)
+      c = (char)(s.charAt(0) & ~0x40);
+    else if((s = m.group(g_spec)) != null) {
+      c = mapCommandSpecial.get(s);
+      s = m.group(g_modif);
+
+      // TODO: adjust c if needed **********************************
+      // adjust if needed
+
+      if(s != null) {
+        if(s.equals("C")) {
+          c |= (KeyDefs.CTRL << KeyDefs.MODIFIER_POSITION_SHIFT);
+        } else if(s.equals("S")) {
+          c |= (KeyDefs.SHFT << KeyDefs.MODIFIER_POSITION_SHIFT);
+        }
+      }
+    }
+
+    return c;
+  }
+
+  // the groups in mapSeqPattern
+  private static final int g_char = 1;
+  private static final int g_ctrl = 2;
+  private static final int g_modif = 3;
+  private static final int g_spec = 4;
+
+  private static Pattern createMapSeqPattern()
+  {
+    StringBuilder sb = new StringBuilder();
+
+    //
+    // a char is matched like:
+    //          [!-~&&[^\\<]]           all printables, except \ and < and space
+    //          <C-[@-\[\]-_]>          all control chars, except Ctrl-\,Ctrl-<
+    //          <special>               list of special chars
+    //          <C-special>             ctrl of list of special chars
+    //          <S-special>             shft of list of special chars
+    // NOTE: special look like: key1|key2|key3
+    // char: [!-~&&[^\\<]] | <C-[@-_]> | <([SC]-)?(special)>
+    // a line is like: noremap char char+
+    //
+    String pat = "([!-~&&[^\\\\<]])"
+                  + "|<C-([@-\\[\\]-_])>"
+                  + "|<(?:([SC])-)?(special)>";
+    // Make a string of all the special words we match.
+    for(String k : mapCommandSpecial.keySet()) {
+      sb.append(k).append("|");
+    }
+    sb.deleteCharAt(sb.length() - 1);
+    pat = pat.replace("special", sb.toString());
+    return Pattern.compile(pat);
+  }
+
+  /** should already have verified that cmd is supported */
+  private static int get_map_mode(Wrap<String>cmdp, boolean forceit)
+  {
+    String cmd = cmdp.getValue();
+    int p = 0;
+    int mode = 0;
+    char modec = cmd.charAt(p++);
+    if (modec == 'i')
+	mode = INSERT;				   /* :imap */
+    else if (modec == 'c')
+	mode = CMDLINE;				   /* :cmap */
+    else if (modec == 'n' && cmd.charAt(p) != 'o') /* avoid :noremap */
+	mode = NORMAL;				   /* :nmap */
+    else if (modec == 'v')
+	mode = VISUAL;				   /* :vmap */
+    else if (modec == 'o')
+	mode = OP_PENDING;			   /* :omap */
+    else
+    {
+	--p;
+	if (forceit)
+	    mode = INSERT + CMDLINE;		/* :map ! */
+	else
+	    mode = VISUAL + NORMAL + OP_PENDING;/* :map */
+    }
+
+    cmdp.setValue(cmd.substring(p));
+    return mode;
+  }
+
+  private static boolean supportedMapCommand(String cmd)
+  {
+    return   false
+           | "map".equals(cmd)
+           | "nmap".equals(cmd)
+           | "vmap".equals(cmd)
+           | "omap".equals(cmd)
+           | "noremap".equals(cmd)
+           | "nnoremap".equals(cmd)
+           | "vnoremap".equals(cmd)
+           | "onoremap".equals(cmd)
+           ;
+  }
+
+  /**
+   * Parse the mapping command.
+   * If emsgs is not changed, then no error occurred.
+   * @param line
+   * @param emsgs
+   * @param m
+   * @param rhs
+   * @return null if no mapping on line or error
+   */
+  static Map.Entry<Character, Mapping>
+  parseMapCommand(String line, int lnum,
+                  StringBuilder emsgs, Matcher m, StringBuilder rhs)
+  {
+    if(m == null) {
+      m = createMapSeqPattern().matcher("");
+    }
+    if(rhs == null) {
+      rhs = new StringBuilder();
+    }
+    int initialEmsgs = emsgs.length();
+
+    List<String> fields = TextUtil.split(line);
+
+    if(fields.isEmpty() || fields.get(0).startsWith("\""))
+      return null;
+    if(fields.size() != 3) {
+      emsgs.append("Map Command line ").append(lnum + 1)
+              .append(": Must be exactly three fields\n");
+      return null;
+    }
+
+    // NEEDSWORK: forceit/'!' handling
+    String cmd = fields.get(0);
+    if(!supportedMapCommand(cmd)) {
+      emsgs.append("Map Command line ").append(lnum + 1)
+              .append(": \"").append(cmd)
+              .append("\" command not supported\n");
+      return null;
+    }
+
+    Wrap<String> cmdp = new Wrap<String>(cmd);
+    int mode = get_map_mode(cmdp, false);
+    cmd = cmdp.getValue();
+    int maptype = (cmd.charAt(0) == 'n') ? 2 : cmd.charAt(0) == 'u' ? 1 : 0;
+    assert maptype != 1;
+
+    Character lhs = null;
+    rhs.setLength(0);
+    boolean ok;
+
+    m.reset(fields.get(1));
+    ok = false;
+    if(m.matches()) {
+      ok = (lhs = mapCommandChar(m, false, fields.get(1))) != null;
+    }
+    if(!ok) {
+      emsgs.append("Map Command line ").append(lnum + 1)
+              .append(": \"")
+              .append(fields.get(1))
+              .append("\" left-side not recognized\n");
+    }
+
+    m.reset(fields.get(2));
+    int idx = 0;
+    do {
+      if(false) {
+        System.err.println("checking: '" + fields.get(2).substring(idx) + "'");
+      }
+      ok = false;
+      if(m.find() && idx == m.start()) {
+        Character c = mapCommandChar(m, true, fields.get(2));
+        if(c != null) {
+          rhs.append(c.charValue());
+          ok = true;
+        }
+      }
+      if(!ok) {
+        emsgs.append("Map Command line ").append(lnum + 1)
+                .append(": \"")
+                .append(fields.get(2).substring(idx))
+                .append("\" right-side not recognized\n");
+        break;
+      }
+      idx = m.end();
+    } while(idx < m.regionEnd());
+
+    if(emsgs.length() == initialEmsgs) {
+      Mapping mapping = new Mapping(String.valueOf(lhs), rhs.toString(),
+                                    mode, maptype == 2);
+      if(Options.isKeyDebug()) {
+        System.err.println("parseMapCommand: " + line
+                + ": " + mapping);
+      }
+
+      return new AbstractMap.SimpleEntry<Character, Mapping>(lhs, mapping);
+              //lhs, rhs.toString());
+    } else {
+      Options.kd.printf("parseMapCommand: %s: error\n", line);
+      return null;
+    }
+  }
+
+  static Map<Character, Mapping>
+  createMapCommandsMap(String input, Wrap<String>emsg)
+  {
+    initMapCommandStuff();
+
+    Map<Character, Mapping> mapCommands = new HashMap<Character, Mapping>();
+
+    StringBuilder emsgs = new StringBuilder();
+
+    Pattern mapSeqPattern = createMapSeqPattern();
+    Matcher m = mapSeqPattern.matcher("");
+    StringBuilder rhs = new StringBuilder();
+
+    List<String> lines = TextUtil.split(input, "\n");
+    for(int lnum = 0; lnum < lines.size(); lnum++) {
+      String line = lines.get(lnum);
+      Entry<Character, Mapping> kv
+              = parseMapCommand(line, lnum, emsgs, m, rhs);
+      if(kv != null)
+        mapCommands.put(kv.getKey(), kv.getValue());
+    }
+
+    if(emsgs.length() > 0) {
+      emsg.setValue(emsgs.toString());
+      return null;
+    }
+
+    // TODO: put this ...
+    // HACK: save map as current map, should be somewhere else;
+    saveMappings(mapCommands);
+
+    return mapCommands;
+  }
+
+  private static void saveMappings(Map<Character, Mapping> newMappings)
+  {
+    mappings.clear();
+    mappings.putAll(defaultMappings);
+    mappings.putAll(newMappings);
+  }
+
+  private static void initMapCommandStuff()
   {
     if(!mapCommandSpecial.isEmpty())
       return;
+    createMapCommandSpecial();
+
+    // TODO: setup default mappings
+
+  }
+
+
+  /** used for parsing */
+  private static void createMapCommandSpecial()
+  {
     mapCommandSpecial.put("Nul",      '\n');
     mapCommandSpecial.put("BS",       '\b');///////////////////////////////
     mapCommandSpecial.put("Tab",      '\t');///////////////////////////////
@@ -207,196 +504,6 @@ public class GetChar {
 */
   }
 
-  /**
-   * Convert the match to a char.
-   * @return null if problem else translated char
-   */
-  private static Character mapCommandChar(Matcher m, boolean is_rhs, String orig)
-  {
-    if(false) {
-      System.err.println("region: '"
-              +  orig.substring(m.start())
-              + "' match: '" + m.group() + "'");
-      for(int i = 1; i <= m.groupCount(); i++) {
-        System.err.println("\t" + m.group(i));
-      }
-    }
-
-    char c = 0;
-    String s;
-    if((s = m.group(g_char)) != null)
-      c = s.charAt(0);
-    else if((s = m.group(g_ctrl)) != null)
-      c = (char)(s.charAt(0) & ~0x40);
-    else if((s = m.group(g_spec)) != null) {
-      c = mapCommandSpecial.get(s);
-      s = m.group(g_modif);
-      // TODO: adjust c if needed **********************************
-      if(s != null) {
-        if(s.equals("C")) {
-          c |= (KeyDefs.CTRL << KeyDefs.MODIFIER_POSITION_SHIFT);
-        } else if(s.equals("S")) {
-          c |= (KeyDefs.SHFT << KeyDefs.MODIFIER_POSITION_SHIFT);
-        }
-      }
-    }
-
-    return c;
-  }
-
-  // the groups in mapSeqPattern
-  private static final int g_char = 1;
-  private static final int g_ctrl = 2;
-  private static final int g_modif = 3;
-  private static final int g_spec = 4;
-
-  private static Pattern createMapSeqPattern()
-  {
-    StringBuilder sb = new StringBuilder();
-
-    //
-    // a char is matched like:
-    //          [!-~&&[^\\<]]           all printables, except \ and < and space
-    //          <C-[@-\[\]-_]>          all control chars, except Ctrl-\,Ctrl-<
-    //          <special>               list of special chars
-    //          <C-special>             ctrl of list of special chars
-    //          <S-special>             shft of list of special chars
-    // NOTE: special look like: key1|key2|key3
-    // char: [!-~&&[^\\<]] | <C-[@-_]> | <([SC]-)?(special)>
-    // a line is like: noremap char char+
-    //
-    String pat = "([!-~&&[^\\\\<]])"
-                  + "|<C-([@-\\[\\]-_])>"
-                  + "|<(?:([SC])-)?(special)>";
-    // Make a string of all the special words we match.
-    for(String k : mapCommandSpecial.keySet()) {
-      sb.append(k).append("|");
-    }
-    sb.deleteCharAt(sb.length() - 1);
-    pat = pat.replace("special", sb.toString());
-    return Pattern.compile(pat);
-  }
-
-  /**
-   * Parse the mapping command.
-   * If emsgs is not changed, then no error occurred.
-   * @param line
-   * @param emsgs
-   * @param m
-   * @param rhs
-   * @return null if no mapping on line or error
-   */
-  static Map.Entry<Character, String>
-  parseMapCommand(String line, int lnum,
-                  StringBuilder emsgs, Matcher m, StringBuilder rhs)
-  {
-    if(m == null) {
-      m = createMapSeqPattern().matcher("");
-    }
-    if(rhs == null) {
-      rhs = new StringBuilder();
-    }
-    int initialEmsgs = emsgs.length();
-
-    List<String> fields = TextUtil.split(line);
-
-    if(fields.isEmpty() || fields.get(0).startsWith("\""))
-      return null;
-    if(fields.size() != 3) {
-      emsgs.append("Map Command line ").append(lnum + 1)
-              .append(": Must be exactly three fields\n");
-      return null;
-    }
-    if(!"noremap".equals(fields.get(0))) {
-      emsgs.append("Map Command line ").append(lnum + 1)
-              .append(": Only \"noremap\" command supported\n");
-      return null;
-    }
-
-    Character lhs = null;
-    rhs.setLength(0);
-    boolean ok;
-
-    m.reset(fields.get(1));
-    ok = false;
-    if(m.matches()) {
-      ok = (lhs = mapCommandChar(m, false, fields.get(1))) != null;
-    }
-    if(!ok) {
-      emsgs.append("Map Command line ").append(lnum + 1)
-              .append(": \"")
-              .append(fields.get(1))
-              .append("\" left-side not recognized\n");
-    }
-
-    m.reset(fields.get(2));
-    int idx = 0;
-    do {
-      if(false) {
-        System.err.println("checking: '" + fields.get(2).substring(idx) + "'");
-      }
-      ok = false;
-      if(m.find() && idx == m.start()) {
-        Character c = mapCommandChar(m, true, fields.get(2));
-        if(c != null) {
-          rhs.append(c.charValue());
-          ok = true;
-        }
-      }
-      if(!ok) {
-        emsgs.append("Map Command line ").append(lnum + 1)
-                .append(": \"")
-                .append(fields.get(2).substring(idx))
-                .append("\" right-side not recognized\n");
-        break;
-      }
-      idx = m.end();
-    } while(idx < m.regionEnd());
-
-    if(emsgs.length() == initialEmsgs) {
-      if(Options.isKeyDebug()) {
-        System.err.println("parseMapCommand: " + line
-                + ": '" + TextUtil.debugString(String.valueOf(lhs))
-                + "' --> '" + TextUtil.debugString(rhs) + "'");
-      }
-
-      return new AbstractMap.SimpleEntry<Character, String>(lhs, rhs.toString());
-    } else {
-      Options.kd.printf("parseMapCommand: %s: error\n", line);
-      return null;
-    }
-  }
-
-  static Map<Character,String>
-  createMapCommandsMap(String input, Wrap<String>emsg)
-  {
-    createMapCommandSpecial();
-
-    Map<Character, String> mapCommands = new HashMap<Character, String>();
-
-    StringBuilder emsgs = new StringBuilder();
-
-    Pattern mapSeqPattern = createMapSeqPattern();
-    Matcher m = mapSeqPattern.matcher("");
-    StringBuilder rhs = new StringBuilder();
-
-    List<String> lines = TextUtil.split(input, "\n");
-    for(int lnum = 0; lnum < lines.size(); lnum++) {
-      String line = lines.get(lnum);
-      Entry<Character, String> kv
-              = parseMapCommand(line, lnum, emsgs, m, rhs);
-      if(kv != null)
-        mapCommands.put(kv.getKey(), kv.getValue());
-    }
-
-    if(emsgs.length() > 0) {
-      emsg.setValue(emsgs.toString());
-      return null;
-    }
-    return mapCommands;
-  }
-
-
   //////////////////////////////////////////////////////////////////////////
   
   /** This is a special case for the two part search */
@@ -426,7 +533,7 @@ public class GetChar {
         pumpChar(stuffbuff.removeFirst());
       }
       if(typebuf.hasNext()) {
-        pumpChar(typebuf.removeFirst());
+        pumpChar(typebuf.getChar());
       } else {
         break;
       }
@@ -443,12 +550,14 @@ public class GetChar {
       return stuffbuff.removeFirst();
     }
     if(typebuf.hasNext()) {
-      return typebuf.removeFirst();
+      return typebuf.getChar();
     }
     throw new RuntimeException("No character available");
   }
 
   private static void pumpChar(char c) {
+    if(c == -1)
+      return;
     int modifiers = 0;
     if((c & 0xF000) == VIRT) {
       modifiers = (c >> MODIFIER_POSITION_SHIFT) & 0x0f;
@@ -921,19 +1030,10 @@ public class GetChar {
   static int ins_typebuf(String str, int noremap,
                          int offset, boolean nottyped)
   {
-    // NEEDSWORK: ins_typebuf: performance can be improved
-    if(typebuf.length() + str.length() > MAXTYPEBUFLEN) {
-      Msg.emsg(Messages.e_toocompl);     // also calls flushbuff
-      //setcursor();
-      Logger.getLogger(GetChar.class.getName())
-              .log(Level.SEVERE, null, new Exception("MAXTYPEBUFLEN"));
-      return FAIL;
-    }
-
-    return typebuf.insert(offset, str, noremap, nottyped) ? OK : FAIL;
+    return typebuf.insert(str, noremap, offset, nottyped) ? OK : FAIL;
   }
 
-  static void user_input(char c)
+  static void user_ins_typebuf(char c)
   {
     // add at end of typebuf with remap ok
     ins_typebuf(String.valueOf(c), 0, typebuf.length(), false);
@@ -953,8 +1053,17 @@ public class GetChar {
     private StringBuilder buf = new StringBuilder();
     private StringBuilder noremapbuf = new StringBuilder();
 
-    public boolean insert(int offset, String str, int noremap, boolean nottyped)
+    public boolean insert(String str, int noremap, int offset, boolean nottyped)
     {
+      // NEEDSWORK: ins_typebuf: performance can be improved
+      if(length() + str.length() > MAXTYPEBUFLEN) {
+        Msg.emsg(Messages.e_toocompl);     // also calls flushbuff
+        //setcursor();
+        Logger.getLogger(GetChar.class.getName())
+                .log(Level.SEVERE, null, new Exception("MAXTYPEBUFLEN"));
+        return false;
+      }
+
       buf.insert(offset, str);
 
       //
@@ -968,7 +1077,7 @@ public class GetChar {
       if(noremap < 0)
         noremap = str.length();
       for(int i = 0; i < str.length(); i++) {
-        noremapbuf.insert(offset + i, (noremap-- > 0 ? 1 : 0));
+        noremapbuf.insert(offset + i, (char)(noremap-- > 0 ? 1 : 0));
       }
 
       /* ************************************************************
@@ -988,15 +1097,80 @@ public class GetChar {
       noremapbuf.delete(start, end);
     }
 
-    boolean hasNext() {
-      return buf.length() > 0;
+    /**
+     * return a character, map as needed.
+     * @return
+     */
+    char getChar() {
+      char c;
+      int loops = 0;
+      while(true) {
+        c = buf.charAt(0);
+        if(Options.isKeyDebug(Level.FINEST))
+          System.err.println("getChar check: "
+                             + TextUtil.debugString(String.valueOf(c)));
+        if(noremapbuf.charAt(0) == 0) {
+          if(++loops > G.p_mmd) {
+            Msg.emsg("recursive mapping");
+            c = (char)-1;
+            break;
+          }
+          int state = get_real_state();
+          // no insert mode or cmdline mode (yet?)
+          if((state & (NORMAL|VISUAL|OP_PENDING)) != 0) {
+            Mapping mapping = mappings.get(c);
+            if(mapping != null && (mapping.mode & state) != 0)
+            {
+              // ok, map it. first delete old char
+              delete(0, 1);
+              //
+              // Insert the 'to' part in the typebuf.
+              // If 'from' field is the same as the start of the
+              // 'to' field, don't remap the first character.
+              // If m_noremap is set, don't remap the whole 'to'
+              // part.
+              //
+              if(Options.isKeyDebug() && loops <= 20)
+                System.err.println("getChar: map: " + mapping
+                        + (loops == 20 ? "... ... ..." : ""));
+              if(!insert(mapping.rhs,
+                         mapping.noremap
+                             ? -1
+                             : mapping.rhs.startsWith(mapping.lhs) ? 1 : 0,
+                         0,
+                         true))
+              {
+                c = (char)-1;
+                break;
+              }
+              continue;
+            }
+          }
+        }
+        break;
+      }
+
+      if(c != -1) {
+        delete(0, 1);
+      } else {
+        setLength(0); // note, this should have already been done
+      }
+
+      assert buf.length() == noremapbuf.length();
+      if(Options.isKeyDebug(Level.FINEST))
+        System.err.println("getChar return: "
+                           + TextUtil.debugString(String.valueOf(c)));
+      return c;
     }
 
-    char removeFirst() {
-      char c = buf.charAt(0);
-      buf.deleteCharAt(0);
-      noremapbuf.deleteCharAt(0);
-      return c;
+    public void setLength(int newLength)
+    {
+      buf.setLength(newLength);
+      noremapbuf.setLength(newLength);
+    }
+
+    boolean hasNext() {
+      return buf.length() > 0;
     }
 
     @Override
@@ -1009,11 +1183,6 @@ public class GetChar {
     public CharSequence subSequence(int start, int end)
     {
       return buf.subSequence(start, end);
-    }
-
-    public void setLength(int newLength)
-    {
-      buf.setLength(newLength);
     }
 
     @Override

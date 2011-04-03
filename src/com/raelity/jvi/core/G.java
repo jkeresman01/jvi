@@ -98,6 +98,8 @@ public class G
     static int old_indent = 0;
     static int ai_col = 0;
 
+    static int p_mmd = 1000;
+
     // static String p_ww = "bshl<>[]"; // b,s
     // options for whichwrap
     static BooleanOption p_ww_bs;
