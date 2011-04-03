@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.core;
 
+import java.util.logging.Logger;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
@@ -278,9 +279,9 @@ public class GetChar {
 
   /**
    * Parse the mapping command.
-   * If msgs is not changed, then no error occurred.
+   * If emsgs is not changed, then no error occurred.
    * @param line
-   * @param msgs
+   * @param emsgs
    * @param m
    * @param rhs
    * @return null if no mapping on line or error
@@ -406,7 +407,7 @@ public class GetChar {
   }
 
   // NEEDSWORK: old_mod_mask
-  static char old_char;
+  private static char old_char;
 
   /**
    * Pass queued up characters to vi for processing.
@@ -906,15 +907,14 @@ public class GetChar {
   /**
    * insert a string in position 'offset' in the typeahead buffer (for "@r"
    * and ":normal" command, vgetorpeek() and check_termcode())
-   * <p>
+   * <pre>
    * If noremap is 0, new string can be mapped again.
-   * <br/>If noremap is -1, new string cannot be mapped again.
-   * <br/>If noremap is >0, that many characters of the new string
-   * cannot be mapped.
-   * </p><p>
+   * If noremap is -1, new string cannot be mapped again.
+   * If noremap is &gt; 0, that many characters of the
+   *                       new string cannot be mapped.
    * If nottyped is TRUE, the string does not return KeyTyped (don't use when
    * offset is non-zero!).
-   * </p>
+   * </pre>
    *
    * @return FAIL for failure, OK otherwise
    */
@@ -925,30 +925,109 @@ public class GetChar {
     if(typebuf.length() + str.length() > MAXTYPEBUFLEN) {
       Msg.emsg(Messages.e_toocompl);     // also calls flushbuff
       //setcursor();
+      Logger.getLogger(GetChar.class.getName())
+              .log(Level.SEVERE, null, new Exception("MAXTYPEBUFLEN"));
       return FAIL;
     }
 
-    typebuf.insert(offset, str);
+    return typebuf.insert(offset, str, noremap, nottyped) ? OK : FAIL;
+  }
 
-    //
-    // Adjust noremapbuf[] for the new characters:
-    // If noremap  < 0: all the new characters are flagged not remappable
-    // If noremap == 0: all the new characters are flagged mappable
-    // If noremap  > 0: 'noremap' characters are flagged not remappable, the
-    //			rest mappable
-    //
+  static void user_input(char c)
+  {
+    // add at end of typebuf with remap ok
+    ins_typebuf(String.valueOf(c), 0, typebuf.length(), false);
+  }
 
-    ////// NEEDSWORK: ins_typebuf: mapping stuff
+  static void del_typebuf(int len, int offset)
+  {
+    typebuf.delete(offset, offset + len);
+  }
 
-    /* ************************************************************
-		    // this is only correct for offset == 0!
-    if (nottyped)			// the inserted string is not typed
-      typemaplen += str.length();
-    if (no_abbr_cnt && offset == 0)	// and not used for abbreviations
-      no_abbr_cnt += str.length();
-    *************************************************************/
+  /**
+   * Like BufferQueue, but typebuf has some special requirements.
+   * In particular, typebuf has a parallel data structure to track
+   * if a given char can be re-mapped.
+   */
+  final static class TypeBuf implements CharSequence {
+    private StringBuilder buf = new StringBuilder();
+    private StringBuilder noremapbuf = new StringBuilder();
 
-    return OK;
+    public boolean insert(int offset, String str, int noremap, boolean nottyped)
+    {
+      buf.insert(offset, str);
+
+      //
+      // Adjust noremapbuf[] for the new characters:
+      // If noremap  < 0: all the new characters are flagged not remappable
+      // If noremap == 0: all the new characters are flagged mappable
+      // If noremap  > 0: 'noremap' characters are flagged not remappable, the
+      //		  rest mappable
+      //
+
+      if(noremap < 0)
+        noremap = str.length();
+      for(int i = 0; i < str.length(); i++) {
+        noremapbuf.insert(offset + i, (noremap-- > 0 ? 1 : 0));
+      }
+
+      /* ************************************************************
+                      // this is only correct for offset == 0!
+      if (nottyped)			// the inserted string is not typed
+        typemaplen += str.length();
+      if (no_abbr_cnt && offset == 0)	// and not used for abbreviations
+        no_abbr_cnt += str.length();
+      *************************************************************/
+
+      return true;
+    }
+
+    void delete(int start, int end)
+    {
+      buf.delete(start, end);
+      noremapbuf.delete(start, end);
+    }
+
+    boolean hasNext() {
+      return buf.length() > 0;
+    }
+
+    char removeFirst() {
+      char c = buf.charAt(0);
+      buf.deleteCharAt(0);
+      noremapbuf.deleteCharAt(0);
+      return c;
+    }
+
+    @Override
+    public int length()
+    {
+      return buf.length();
+    }
+
+    @Override
+    public CharSequence subSequence(int start, int end)
+    {
+      return buf.subSequence(start, end);
+    }
+
+    public void setLength(int newLength)
+    {
+      buf.setLength(newLength);
+    }
+
+    @Override
+    public char charAt(int index)
+    {
+      return buf.charAt(index);
+    }
+
+    @Override
+    public String toString()
+    {
+      return buf.toString();
+    }
+
   }
 
   //
@@ -958,7 +1037,7 @@ public class GetChar {
   private static final BufferQueue stuffbuff = new BufferQueue();
   private static final BufferQueue redobuff = new BufferQueue();
   private static final BufferQueue recordbuff = new BufferQueue();
-  private static final BufferQueue typebuf = new BufferQueue();
+  private static final TypeBuf typebuf = new TypeBuf();
   private static ViMagicRedo magicRedo = new MagicRedoOriginal(redobuff);
   private static String startInsertCommand;
 
@@ -969,7 +1048,7 @@ public class GetChar {
   /**
   * Small queue of characters. Can't extend StringBuffer, so delegate.
   */
-  static class BufferQueue implements CharSequence {
+  final static class BufferQueue implements CharSequence {
     private StringBuilder buf = new StringBuilder();
 
     void setLength(int length) {
@@ -995,13 +1074,6 @@ public class GetChar {
 
     boolean hasNext() {
       return buf.length() > 0;
-    }
-
-    /** @deprecated in favor of getFirst */
-    char getNext() {
-      char c = buf.charAt(0);
-      buf.deleteCharAt(0);
-      return c;
     }
 
     char removeFirst() {

@@ -62,7 +62,7 @@ public class KeyDefs {
 
     /**
      * Any keys as opposed to characters, must be put out of range.
-     * This is used to flag keys (non-ascii characters).
+     * This is used to flag keys (non-unicode characters).
      */
     public static final char VIRT      = 0xE000;      // a key not a character
     public static final int VIRT_MASK = 0xF000;
