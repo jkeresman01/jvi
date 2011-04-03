@@ -68,6 +68,7 @@ implements Options.EditControl {
 
         previousText = opt.getValue();
         mappings.setText(previousText);
+        mappings.setCaretPosition(0);
 
         XMLUtil xmlFix = new XMLUtil(OptionSheet.IN_RANGE_INVALID_CR,
                                      OptionSheet.IN_RANGE_VALID_CR);

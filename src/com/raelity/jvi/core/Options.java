@@ -227,7 +227,7 @@ public final class Options {
               public void validate(String val) throws PropertyVetoException {
 
                 Wrap<String> emsg = new Wrap<String>("");
-                if(null == GetChar.createMapCommandsMap(val, emsg)) {
+                if(null == GetChar.parseMapCommands(val, emsg)) {
         	     throw new PropertyVetoException(
                              emsg.getValue(),
                              new PropertyChangeEvent(opt, opt.getName(),
@@ -236,14 +236,15 @@ public final class Options {
               }
             });
     OptUtil.setupOptionDesc(Category.GENERAL, mapCommands, "Map Commands",
-            "Very simple mappings . Only a single character can be mapped."
-            + " Only noremap; mappings applied only in normal mode."
+            "Only a single character can be mapped;"
+            + " [nvo]map and [nvo]noremap commands supported"
+            + " (only normal mode)."
             + " Comments are on a line by themselves and start with \"."
             + "\nExamples:"
-            + "\n\u00a0\u00a0\u00a0\u00a0noremap j gj"
-            + "\n\u00a0\u00a0\u00a0\u00a0noremap <Down> gj"
-            + "\n\u00a0\u00a0\u00a0\u00a0\" following ususally does nothing"
-            + "\n\u00a0\u00a0\u00a0\u00a0noremap <C-Up> <Down><Up>"
+            + "\n\u00a0\u00a0\u00a0\u00a0 noremap j gj"
+            + "\n\u00a0\u00a0\u00a0\u00a0nnoremap <Down> gj"
+            + "\n\u00a0\u00a0\u00a0\u00a0\" visual mode only, following ususally does nothing"
+            + "\n\u00a0\u00a0\u00a0\u00a0vnoremap <C-Up> <Down><Up>"
             + "\nIn lhs or rhs a char is of the form:"
             + "\n\u00a0\u00a0\u00a0\u00a0\"c\"           - except \\ and < and space"
             + "\n\u00a0\u00a0\u00a0\u00a0\"<C-X>\"       - except Ctrl-\\,Ctrl-<"

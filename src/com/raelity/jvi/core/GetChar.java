@@ -19,16 +19,20 @@
  */
 package com.raelity.jvi.core;
 
+import java.util.ListIterator;
+import com.raelity.jvi.ViInitialization;
+import org.openide.util.lookup.ServiceProvider;
 import java.util.logging.Logger;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import com.raelity.jvi.lib.Wrap;
+import com.raelity.jvi.options.OptUtil;
 import java.util.Map;
 import com.raelity.text.TextUtil;
 import com.raelity.jvi.options.Option;
-import java.util.AbstractMap;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Level;
 
@@ -45,6 +49,22 @@ public class GetChar {
 
   private GetChar()
   {
+  }
+
+  @ServiceProvider(service=ViInitialization.class,
+                   path="jVi/init",
+                   position=100)
+  public static class Init implements ViInitialization
+  {
+    @Override
+    public void init()
+    {
+      GetChar.init();
+    }
+  }
+
+  private static void init() {
+    initMappings();
   }
 
   /** An input char from the user has been recieved.
@@ -143,12 +163,10 @@ public class GetChar {
   // Map Command handling
   //
 
-  private static Map<Character, Mapping> mappings
-          = new HashMap<Character, Mapping>();
-  private static Map<Character, Mapping> defaultMappings
-          = new HashMap<Character, Mapping>();
-  private static final Map<String, Character> mapCommandSpecial
-          = new HashMap<String, Character>();
+  private static Map<Character, List<Mapping>> mappings
+          = new HashMap<Character, List<Mapping>>();
+  private static WeakReference<List<Mapping>> refDefaultMappings;
+  private static WeakReference<Map<String, Character>> refMapCommandSpecial;
 
   private static class Mapping {
     String lhs;
@@ -196,7 +214,7 @@ public class GetChar {
     else if((s = m.group(g_ctrl)) != null)
       c = (char)(s.charAt(0) & ~0x40);
     else if((s = m.group(g_spec)) != null) {
-      c = mapCommandSpecial.get(s);
+      c = getMapCommandSpecial().get(s);
       s = m.group(g_modif);
 
       // TODO: adjust c if needed **********************************
@@ -220,31 +238,41 @@ public class GetChar {
   private static final int g_modif = 3;
   private static final int g_spec = 4;
 
-  private static Pattern createMapSeqPattern()
-  {
-    StringBuilder sb = new StringBuilder();
+  private static WeakReference<Pattern> refMapCharsPattern;
 
-    //
-    // a char is matched like:
-    //          [!-~&&[^\\<]]           all printables, except \ and < and space
-    //          <C-[@-\[\]-_]>          all control chars, except Ctrl-\,Ctrl-<
-    //          <special>               list of special chars
-    //          <C-special>             ctrl of list of special chars
-    //          <S-special>             shft of list of special chars
-    // NOTE: special look like: key1|key2|key3
-    // char: [!-~&&[^\\<]] | <C-[@-_]> | <([SC]-)?(special)>
-    // a line is like: noremap char char+
-    //
-    String pat = "([!-~&&[^\\\\<]])"
-                  + "|<C-([@-\\[\\]-_])>"
-                  + "|<(?:([SC])-)?(special)>";
-    // Make a string of all the special words we match.
-    for(String k : mapCommandSpecial.keySet()) {
-      sb.append(k).append("|");
+  private static Pattern getMapSeqPattern()
+  {
+    Pattern mapCharsPattern;
+
+    if(refMapCharsPattern == null
+            || (mapCharsPattern = refMapCharsPattern.get()) == null) {
+      //
+      // a char is matched like:
+      //          [!-~&&[^\\<]]      all printables, except \ and < and space
+      //          <C-[@-\[\]-_]>     all control chars, except Ctrl-\,Ctrl-<
+      //          <special>          list of special chars
+      //          <C-special>        ctrl of list of special chars
+      //          <S-special>        shft of list of special chars
+      // NOTE: special look like: key1|key2|key3
+      // char: [!-~&&[^\\<]] | <C-[@-_]> | <([SC]-)?(special)>
+      // a line is like: noremap char char+
+      //
+      String pat = "([!-~&&[^\\\\<]])"
+                    + "|<C-([@-\\[\\]-_])>"
+                    + "|<(?:([SC])-)?(special)>";
+      // Make a string of all the special words we match.
+      StringBuilder sb = new StringBuilder();
+      for(String k : getMapCommandSpecial().keySet()) {
+        sb.append(k).append("|");
+      }
+      sb.deleteCharAt(sb.length() - 1);
+      pat = pat.replace("special", sb.toString());
+
+      mapCharsPattern = Pattern.compile(pat);
+      refMapCharsPattern
+              = new WeakReference<Pattern>(mapCharsPattern);
     }
-    sb.deleteCharAt(sb.length() - 1);
-    pat = pat.replace("special", sb.toString());
-    return Pattern.compile(pat);
+    return mapCharsPattern;
   }
 
   /** should already have verified that cmd is supported */
@@ -296,16 +324,16 @@ public class GetChar {
    * If emsgs is not changed, then no error occurred.
    * @param line
    * @param emsgs
-   * @param m
+   * @param matcher
    * @param rhs
    * @return null if no mapping on line or error
    */
-  static Map.Entry<Character, Mapping>
+  static Mapping
   parseMapCommand(String line, int lnum,
-                  StringBuilder emsgs, Matcher m, StringBuilder rhs)
+                  StringBuilder emsgs, Matcher matcher, StringBuilder rhs)
   {
-    if(m == null) {
-      m = createMapSeqPattern().matcher("");
+    if(matcher == null) {
+      matcher = getMapSeqPattern().matcher("");
     }
     if(rhs == null) {
       rhs = new StringBuilder();
@@ -341,10 +369,10 @@ public class GetChar {
     rhs.setLength(0);
     boolean ok;
 
-    m.reset(fields.get(1));
+    matcher.reset(fields.get(1));
     ok = false;
-    if(m.matches()) {
-      ok = (lhs = mapCommandChar(m, false, fields.get(1))) != null;
+    if(matcher.matches()) {
+      ok = (lhs = mapCommandChar(matcher, false, fields.get(1))) != null;
     }
     if(!ok) {
       emsgs.append("Map Command line ").append(lnum + 1)
@@ -353,15 +381,15 @@ public class GetChar {
               .append("\" left-side not recognized\n");
     }
 
-    m.reset(fields.get(2));
+    matcher.reset(fields.get(2));
     int idx = 0;
     do {
       if(false) {
         System.err.println("checking: '" + fields.get(2).substring(idx) + "'");
       }
       ok = false;
-      if(m.find() && idx == m.start()) {
-        Character c = mapCommandChar(m, true, fields.get(2));
+      if(matcher.find() && idx == matcher.start()) {
+        Character c = mapCommandChar(matcher, true, fields.get(2));
         if(c != null) {
           rhs.append(c.charValue());
           ok = true;
@@ -374,8 +402,8 @@ public class GetChar {
                 .append("\" right-side not recognized\n");
         break;
       }
-      idx = m.end();
-    } while(idx < m.regionEnd());
+      idx = matcher.end();
+    } while(idx < matcher.regionEnd());
 
     if(emsgs.length() == initialEmsgs) {
       Mapping mapping = new Mapping(String.valueOf(lhs), rhs.toString(),
@@ -385,7 +413,7 @@ public class GetChar {
                 + ": " + mapping);
       }
 
-      return new AbstractMap.SimpleEntry<Character, Mapping>(lhs, mapping);
+      return mapping;
               //lhs, rhs.toString());
     } else {
       Options.kd.printf("parseMapCommand: %s: error\n", line);
@@ -393,26 +421,23 @@ public class GetChar {
     }
   }
 
-  static Map<Character, Mapping>
-  createMapCommandsMap(String input, Wrap<String>emsg)
+  static List<Mapping>
+  parseMapCommands(String input, Wrap<String>emsg)
   {
-    initMapCommandStuff();
-
-    Map<Character, Mapping> mapCommands = new HashMap<Character, Mapping>();
+    List<Mapping> mapCommands = new ArrayList<Mapping>();
 
     StringBuilder emsgs = new StringBuilder();
 
-    Pattern mapSeqPattern = createMapSeqPattern();
-    Matcher m = mapSeqPattern.matcher("");
+    Pattern mapSeqPattern = getMapSeqPattern();
+    Matcher matcher = mapSeqPattern.matcher("");
     StringBuilder rhs = new StringBuilder();
 
     List<String> lines = TextUtil.split(input, "\n");
     for(int lnum = 0; lnum < lines.size(); lnum++) {
       String line = lines.get(lnum);
-      Entry<Character, Mapping> kv
-              = parseMapCommand(line, lnum, emsgs, m, rhs);
-      if(kv != null)
-        mapCommands.put(kv.getKey(), kv.getValue());
+      Mapping m = parseMapCommand(line, lnum, emsgs, matcher, rhs);
+      if(m != null)
+        mapCommands.add(m);
     }
 
     if(emsgs.length() > 0) {
@@ -420,63 +445,148 @@ public class GetChar {
       return null;
     }
 
+    ///////////////////////////////////////////////////////////////////
+    //
     // TODO: put this ...
     // HACK: save map as current map, should be somewhere else;
+    //
+    ///////////////////////////////////////////////////////////////////
     saveMappings(mapCommands);
 
     return mapCommands;
   }
 
-  private static void saveMappings(Map<Character, Mapping> newMappings)
+  private static void initMappings()
+  {
+    Wrap<String> emsg = new Wrap<String>();
+    List<Mapping> mapCommands = parseMapCommands(
+            OptUtil.getOption(Options.mapCommands).getValue(),
+            emsg);
+    if(mapCommands != null)
+      saveMappings(mapCommands);
+    else
+      Logger.getLogger(GetChar.class.getName())
+              .log(Level.SEVERE, null, new Exception(emsg.getValue()));
+  }
+
+  private static void putMapping(Mapping m)
+  {
+    Character c = m.lhs.charAt(0);
+    List<Mapping> lM = mappings.get(c);
+    if(lM == null)
+      mappings.put(c, (lM = new ArrayList<Mapping>()));
+
+    // remove any mappings that overlap with the new mapping
+    for(ListIterator<Mapping> it = lM.listIterator(); it.hasNext();) {
+      Mapping oldM = it.next();
+      if((m.mode & oldM.mode) != 0) {
+        Options.kd.printf("addMapping: remove %s\n", oldM);
+        it.remove();
+      }
+    }
+    lM.add(m);
+  }
+
+  private static Mapping getMapping(Character c, int mode)
+  {
+    List<Mapping> lM = mappings.get(c);
+    if(lM == null)
+      return null;
+
+    for(ListIterator<Mapping> it = lM.listIterator(); it.hasNext();) {
+      Mapping m = it.next();
+      if((m.mode & mode) != 0)
+        return m;
+    }
+    return null;
+  }
+
+  private static void removeMapping(Character c, int mode)
+  {
+    List<Mapping> lM = mappings.get(c);
+    if(lM == null)
+      return;
+
+    // remove any mappings that overlap with the mode
+    for(ListIterator<Mapping> it = lM.listIterator(); it.hasNext();) {
+      Mapping oldM = it.next();
+      if((mode & oldM.mode) != 0) {
+        Options.kd.printf("removeMapping: remove %s\n", oldM);
+        it.remove();
+      }
+    }
+  }
+
+  private static void saveMappings(List<Mapping> newMappings)
   {
     mappings.clear();
-    mappings.putAll(defaultMappings);
-    mappings.putAll(newMappings);
+    for(Mapping m : getDefaultMappings()) {
+      putMapping(m);
+    }
+    for(Mapping m : newMappings) {
+      putMapping(m);
+    }
   }
 
-  private static void initMapCommandStuff()
+  static private List<Mapping>
+  getDefaultMappings()
   {
-    if(!mapCommandSpecial.isEmpty())
-      return;
-    createMapCommandSpecial();
+    List<Mapping> defaultMappings;
 
-    // TODO: setup default mappings
+    if(refDefaultMappings == null
+            || (defaultMappings = refDefaultMappings.get()) == null) {
+      defaultMappings = new ArrayList<Mapping>();
+      refDefaultMappings
+              = new WeakReference<List<Mapping>>(defaultMappings);
 
+      // defaultMappings.put('x', new Mapping(lhs, rhs, mode, noremap));
+    }
+    return defaultMappings;
   }
-
 
   /** used for parsing */
-  private static void createMapCommandSpecial()
+  private static Map<String, Character> getMapCommandSpecial()
   {
-    mapCommandSpecial.put("Nul",      '\n');
-    mapCommandSpecial.put("BS",       '\b');///////////////////////////////
-    mapCommandSpecial.put("Tab",      '\t');///////////////////////////////
-    mapCommandSpecial.put("NL",       '\n');
-    mapCommandSpecial.put("FF",       '\f');
-    mapCommandSpecial.put("CR",       '\n');
-    mapCommandSpecial.put("Return",   '\n');
-    mapCommandSpecial.put("Enter",    '\n');
-    mapCommandSpecial.put("Esc",      '\u001b');///////////////////////////////
-    mapCommandSpecial.put("Space",    ' ');
-    mapCommandSpecial.put("lt",       '<');
-    mapCommandSpecial.put("Bslash",   '\\');
-    mapCommandSpecial.put("Bar",      '|');
-    mapCommandSpecial.put("Del",      '\u007f');///////////////////////////////
+    Map<String, Character> mapCommandSpecial;
 
-    mapCommandSpecial.put("EOL",      '\n');
+    if(refMapCommandSpecial == null
+            || (mapCommandSpecial = refMapCommandSpecial.get()) == null) {
+      mapCommandSpecial = new HashMap<String, Character>(30 + 30);
+      refMapCommandSpecial
+              = new WeakReference<Map<String, Character>>(mapCommandSpecial);
 
-    mapCommandSpecial.put("Up",       K_UP);
-    mapCommandSpecial.put("Down",     K_DOWN);
-    mapCommandSpecial.put("Left",     K_LEFT);
-    mapCommandSpecial.put("Right",    K_RIGHT);
+      mapCommandSpecial.put("Nul",      '\n');
+      mapCommandSpecial.put("BS",       '\b');///////////////////////////////
+      mapCommandSpecial.put("Tab",      '\t');///////////////////////////////
+      mapCommandSpecial.put("NL",       '\n');
+      mapCommandSpecial.put("FF",       '\f');
+      mapCommandSpecial.put("CR",       '\n');
+      mapCommandSpecial.put("Return",   '\n');
+      mapCommandSpecial.put("Enter",    '\n');
+      mapCommandSpecial.put("Esc",      '\u001b');///////////////////////////
+      mapCommandSpecial.put("Space",    ' ');
+      mapCommandSpecial.put("lt",       '<');
+      mapCommandSpecial.put("Bslash",   '\\');
+      mapCommandSpecial.put("Bar",      '|');
+      mapCommandSpecial.put("Del",      '\u007f');///////////////////////////
 
-    mapCommandSpecial.put("Help",     K_HELP);
-    mapCommandSpecial.put("Undo",     K_UNDO);
-    mapCommandSpecial.put("Insert",   K_INS);
-    mapCommandSpecial.put("Home",     K_HOME);
-    mapCommandSpecial.put("End",      K_END);
-    mapCommandSpecial.put("PageUp",   K_PAGEUP);
-    mapCommandSpecial.put("PageDown", K_PAGEDOWN);
+      mapCommandSpecial.put("EOL",      '\n');
+
+      mapCommandSpecial.put("Up",       K_UP);
+      mapCommandSpecial.put("Down",     K_DOWN);
+      mapCommandSpecial.put("Left",     K_LEFT);
+      mapCommandSpecial.put("Right",    K_RIGHT);
+
+      mapCommandSpecial.put("Help",     K_HELP);
+      mapCommandSpecial.put("Undo",     K_UNDO);
+      mapCommandSpecial.put("Insert",   K_INS);
+      mapCommandSpecial.put("Home",     K_HOME);
+      mapCommandSpecial.put("End",      K_END);
+      mapCommandSpecial.put("PageUp",   K_PAGEUP);
+      mapCommandSpecial.put("PageDown", K_PAGEDOWN);
+    }
+
+    return mapCommandSpecial;
 
 /*
 <kHome>
@@ -1106,9 +1216,12 @@ public class GetChar {
       int loops = 0;
       while(true) {
         c = buf.charAt(0);
-        if(Options.isKeyDebug(Level.FINEST))
-          System.err.println("getChar check: "
-                             + TextUtil.debugString(String.valueOf(c)));
+        if(Options.isKeyDebug(Level.FINEST)) {
+          System.err.printf("getChar check: '%s' noremap=0x%x, state=0x%x\n",
+                            TextUtil.debugString(String.valueOf(c)),
+                            (int)noremapbuf.charAt(0),
+                            get_real_state());
+        }
         if(noremapbuf.charAt(0) == 0) {
           if(++loops > G.p_mmd) {
             Msg.emsg("recursive mapping");
@@ -1118,7 +1231,7 @@ public class GetChar {
           int state = get_real_state();
           // no insert mode or cmdline mode (yet?)
           if((state & (NORMAL|VISUAL|OP_PENDING)) != 0) {
-            Mapping mapping = mappings.get(c);
+            Mapping mapping = getMapping(c, state);
             if(mapping != null && (mapping.mode & state) != 0)
             {
               // ok, map it. first delete old char
