@@ -19,6 +19,10 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.manager.ViManager;
+import java.awt.event.ActionEvent;
 import java.util.ListIterator;
 import com.raelity.jvi.ViInitialization;
 import org.openide.util.lookup.ServiceProvider;
@@ -33,6 +37,8 @@ import com.raelity.text.TextUtil;
 import com.raelity.jvi.options.Option;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.logging.Level;
 
@@ -59,6 +65,7 @@ public class GetChar {
     @Override
     public void init()
     {
+      GetChar.registerCommands();
       GetChar.init();
     }
   }
@@ -167,12 +174,15 @@ public class GetChar {
           = new HashMap<Character, List<Mapping>>();
   private static WeakReference<List<Mapping>> refDefaultMappings;
   private static WeakReference<Map<String, Character>> refMapCommandSpecial;
+  private static WeakReference<Map<Character, String>> refReverseMapCommandSpecial;
 
   private static class Mapping {
     String lhs;
     String rhs;
     int mode;
     boolean noremap;
+    boolean isUnmap;
+    boolean isHidden;
 
     public Mapping(String lhs, String rhs, int mode, boolean noremap)
     {
@@ -187,7 +197,11 @@ public class GetChar {
     {
       return "Mapping{'" + TextUtil.debugString(lhs)
               + "' --> '" + TextUtil.debugString(rhs)
-              + "' mode=" + mode + ", noremap=" + noremap + '}';
+              + "' mode=" + mode
+              + (noremap ? ", noremap" : "")
+              + (isUnmap ? ", isUnmap" : "")
+              + (isHidden ? ", isHidder" : "")
+              + '}';
     }
 
   }
@@ -305,17 +319,28 @@ public class GetChar {
     return mode;
   }
 
+  //
+  // Commands are looked up, but that only resolves abbreviations.
+  // Still need to know command is a valid map-command.
+  //
   private static boolean supportedMapCommand(String cmd)
   {
-    return   false
-           | "map".equals(cmd)
-           | "nmap".equals(cmd)
-           | "vmap".equals(cmd)
-           | "omap".equals(cmd)
-           | "noremap".equals(cmd)
-           | "nnoremap".equals(cmd)
-           | "vnoremap".equals(cmd)
-           | "onoremap".equals(cmd)
+    return   cmd != null
+            && (
+                 false
+               | "map".equals(cmd)
+               | "nmap".equals(cmd)
+               | "vmap".equals(cmd)
+               | "omap".equals(cmd)
+               | "noremap".equals(cmd)
+               | "nnoremap".equals(cmd)
+               | "vnoremap".equals(cmd)
+               | "onoremap".equals(cmd)
+               | "unmap".equals(cmd)
+               | "nunmap".equals(cmd)
+               | "vunmap".equals(cmd)
+               | "ounmap".equals(cmd)
+            )
            ;
   }
 
@@ -329,8 +354,9 @@ public class GetChar {
    * @return null if no mapping on line or error
    */
   static Mapping
-  parseMapCommand(String line, int lnum,
-                  StringBuilder emsgs, Matcher matcher, StringBuilder rhs)
+  parseMapCommand(String line, int lnum, StringBuilder emsgs,
+                  Matcher matcher, StringBuilder rhs,
+                  boolean printOk)
   {
     if(matcher == null) {
       matcher = getMapSeqPattern().matcher("");
@@ -344,26 +370,52 @@ public class GetChar {
 
     if(fields.isEmpty() || fields.get(0).startsWith("\""))
       return null;
-    if(fields.size() != 3) {
-      emsgs.append("Map Command line ").append(lnum + 1)
-              .append(": Must be exactly three fields\n");
+    if(fields.size() > 3) {
+      if(lnum >= 0)
+        emsgs.append("Map Command line ").append(lnum + 1).append(": ");
+      emsgs.append("too many fields\n");
       return null;
     }
 
     // NEEDSWORK: forceit/'!' handling
     String cmd = fields.get(0);
-    if(!supportedMapCommand(cmd)) {
-      emsgs.append("Map Command line ").append(lnum + 1)
-              .append(": \"").append(cmd)
-              .append("\" command not supported\n");
+    if(!supportedMapCommand(ColonCommands.getFullCommandName(cmd))) {
+      if(lnum >= 0)
+        emsgs.append("Map Command line ").append(lnum + 1).append(": ");
+      emsgs.append("\"").append(cmd).append("\" command not supported\n");
       return null;
     }
 
+    String originalCmd = cmd;
     Wrap<String> cmdp = new Wrap<String>(cmd);
     int mode = get_map_mode(cmdp, false);
     cmd = cmdp.getValue();
     int maptype = (cmd.charAt(0) == 'n') ? 2 : cmd.charAt(0) == 'u' ? 1 : 0;
-    assert maptype != 1;
+
+    if(maptype != 0) {
+      // check number of arguments
+      if(fields.size() == 1                             // unmap or noremap
+              || fields.size() == 2  && maptype == 2    // noremap
+      ) {
+        if(lnum >= 0)
+          emsgs.append("Map Command line ").append(lnum + 1).append(": ");
+        emsgs.append("\"").append(originalCmd).append("\" missing arguments\n");
+        return null;
+      }
+    }
+
+    if(fields.size() == 1) {
+      if(maptype == 0) {
+        if(printOk)
+          printMappings(null, mode);
+      }
+      ///// else {
+      /////   if(lnum >= 0)
+      /////     emsgs.append("Map Command line ").append(lnum + 1).append(": ");
+      /////   emsgs.append("\"").append(cmd).append("\" missging arguments\n");
+      ///// }
+      return null;
+    }
 
     Character lhs = null;
     rhs.setLength(0);
@@ -375,10 +427,31 @@ public class GetChar {
       ok = (lhs = mapCommandChar(matcher, false, fields.get(1))) != null;
     }
     if(!ok) {
-      emsgs.append("Map Command line ").append(lnum + 1)
-              .append(": \"")
-              .append(fields.get(1))
+      if(lnum >= 0)
+        emsgs.append("Map Command line ").append(lnum + 1).append(": ");
+      emsgs.append("\"").append(fields.get(1))
               .append("\" left-side not recognized\n");
+    }
+
+    if(fields.size() == 2) {
+      if(ok && maptype == 1) {
+        // an unmap
+        Mapping mapping = new Mapping(String.valueOf(lhs), null,
+                                      mode, false);
+        mapping.isUnmap = true;
+        return mapping;
+      }
+      if(maptype == 0) {
+        if(printOk)
+          printMappings(lhs, mode);
+      }
+      ///// else {
+      /////   // noremap variant
+      /////   if(lnum >= 0)
+      /////     emsgs.append("Map Command line ").append(lnum + 1).append(": ");
+      /////   emsgs.append("\"").append(cmd).append("\" missging arguments\n");
+      ///// }
+      return null;
     }
 
     matcher.reset(fields.get(2));
@@ -396,9 +469,9 @@ public class GetChar {
         }
       }
       if(!ok) {
-        emsgs.append("Map Command line ").append(lnum + 1)
-                .append(": \"")
-                .append(fields.get(2).substring(idx))
+        if(lnum >= 0)
+          emsgs.append("Map Command line ").append(lnum + 1).append(": ");
+        emsgs.append("\"").append(fields.get(2).substring(idx))
                 .append("\" right-side not recognized\n");
         break;
       }
@@ -435,7 +508,7 @@ public class GetChar {
     List<String> lines = TextUtil.split(input, "\n");
     for(int lnum = 0; lnum < lines.size(); lnum++) {
       String line = lines.get(lnum);
-      Mapping m = parseMapCommand(line, lnum, emsgs, matcher, rhs);
+      Mapping m = parseMapCommand(line, lnum, emsgs, matcher, rhs, false);
       if(m != null)
         mapCommands.add(m);
     }
@@ -445,15 +518,120 @@ public class GetChar {
       return null;
     }
 
-    ///////////////////////////////////////////////////////////////////
-    //
-    // TODO: put this ...
-    // HACK: save map as current map, should be somewhere else;
-    //
-    ///////////////////////////////////////////////////////////////////
-    saveMappings(mapCommands);
-
     return mapCommands;
+  }
+
+  private static class MapColonCommand
+  extends ColonCommands.AbstractColonAction
+  {
+    @Override
+    public void actionPerformed(ActionEvent e)
+    {
+      ColonEvent cev = (ColonEvent) e;
+      StringBuilder emsg = new StringBuilder();
+      Mapping m = parseMapCommand(cev.getCommandLine(), -1, emsg,
+                                  null, null, true);
+      if(m != null && m.isUnmap && !containsMappings(m.lhs.charAt(0))) {
+        emsg.append("No such mapping");
+        m = null;
+      }
+      if(m != null)
+        putMapping(m);
+      else if(emsg.length() != 0)
+        Msg.emsg(emsg.toString());     // also calls flushbuff
+    }
+
+  }
+
+  private static void registerCommands()
+  {
+    ColonCommands.AbstractColonAction cmd = new MapColonCommand();
+
+    // EnumSet.of(CcFlag.NO_PARSE)
+
+    ColonCommands.register("map", "map",  cmd, null);
+    ColonCommands.register("nm",  "nmap", cmd, null);
+    ColonCommands.register("vm",  "vmap", cmd, null);
+    ColonCommands.register("om",  "omap", cmd, null);
+
+    ColonCommands.register("no",  "noremap",  cmd, null);
+    ColonCommands.register("nn",  "nnoremap", cmd, null);
+    ColonCommands.register("vn",  "vnoremap", cmd, null);
+    ColonCommands.register("ono", "onoremap", cmd, null);
+
+    ColonCommands.register("unm", "unmap",  cmd, null);
+    ColonCommands.register("nun", "nunmap", cmd, null);
+    ColonCommands.register("vu",  "vunmap", cmd, null);
+    ColonCommands.register("ou",  "ounmap", cmd, null);
+
+  }
+
+  private static void printMappings(Character lhs, int mode)
+  {
+    List<Mapping> lM = getMappings(lhs, mode);
+    Collections.sort(lM, new Comparator<Mapping>() {
+      @Override
+      public int compare(Mapping o1, Mapping o2)
+      {
+        return o1.lhs.compareTo(o2.lhs);
+      }
+    });
+
+    StringBuilder sb = new StringBuilder();
+    ViOutputStream vios = ViManager.createOutputStream(
+            null, ViOutputStream.OUTPUT, "mappings");
+    for(Mapping m : lM) {
+      sb.setLength(0);
+      int n = 0;
+      if(m.mode != (NORMAL|VISUAL|OP_PENDING)) {
+        if((m.mode & NORMAL) != 0) {
+          sb.append('n');
+          n++;
+        }
+        if((m.mode & VISUAL) != 0) {
+          sb.append('v');
+          n++;
+        }
+        if((m.mode & OP_PENDING) != 0) {
+          sb.append('o');
+          n++;
+        }
+      }
+      for(int i = 3 - n; i >= 0; i--) { sb.append(' '); }
+
+      String s = mappingString(m.lhs);
+      sb.append(' ').append(s);
+      for(int i = 13 - s.length(); i >= 0; i--) { sb.append(' '); }
+
+      sb.append(m.noremap ? '*' : ' ');
+      s = mappingString(m.rhs);
+      sb.append(' ').append(s);
+
+      vios.println(sb.toString());
+    }
+    vios.close();
+  }
+
+  private static String mappingString(String s)
+  {
+    Map<Character, String> cmap = getReverseMapCommandSpecial();
+    StringBuilder sb = new StringBuilder();
+    for(int i = 0; i < s.length(); i++) {
+      String mapC = cmap.get(s.charAt(i));
+      if(mapC != null)
+        mapC = "<" + mapC + ">";
+      else
+        mapC = String.valueOf(s.charAt(i));
+      sb.append(mapC);
+    }
+    return sb.toString();
+  }
+
+  // Presumably this has been through the validator
+  // no error is possible
+  static void reinitMappings()
+  {
+    initMappings();
   }
 
   private static void initMappings()
@@ -469,22 +647,68 @@ public class GetChar {
               .log(Level.SEVERE, null, new Exception(emsg.getValue()));
   }
 
-  private static void putMapping(Mapping m)
+  // NOTE: if mapping has "isUnmap",
+  // then overlapping mappings are removed.
+  private static boolean putMapping(Mapping m)
   {
+    boolean unmap = m.isUnmap;
+    Options.kd.printf(Level.FINER,
+                      "putMapping(unmap %b): %s\n", unmap, m);
+
     Character c = m.lhs.charAt(0);
     List<Mapping> lM = mappings.get(c);
-    if(lM == null)
+    if(lM == null) {
+      if(unmap)
+        return false;
       mappings.put(c, (lM = new ArrayList<Mapping>()));
+    }
 
-    // remove any mappings that overlap with the new mapping
+    // remove any mappings that the new mapping replaces
     for(ListIterator<Mapping> it = lM.listIterator(); it.hasNext();) {
-      Mapping oldM = it.next();
-      if((m.mode & oldM.mode) != 0) {
-        Options.kd.printf("addMapping: remove %s\n", oldM);
+      Mapping oldMapping = it.next();
+      int oldMode = oldMapping.mode;
+      int newMode = oldMapping.mode & ~m.mode;
+      if(newMode == 0) {
+        Options.kd.printf("putMapping: remove %s\n", oldMapping);
         it.remove();
+      } else if(oldMode != newMode) {
+        oldMapping.mode = newMode;
+        Options.kd.printf("putMapping: mode change: %s (was %d)\n",
+                          oldMapping, oldMode);
       }
     }
-    lM.add(m);
+    if(!unmap)
+      lM.add(m);
+    return true;
+  }
+
+  private static boolean containsMappings(Character lhs)
+  {
+    return mappings.containsKey(lhs);
+  }
+
+  private static List<Mapping> getMappings(List<Mapping> origM, int mode)
+  {
+    List<Mapping> lM = new ArrayList<Mapping>();
+    if(origM != null) {
+      for(Mapping m : origM) {
+        if((m.mode & mode) != 0)
+          lM.add(m);
+      }
+    }
+    return lM;
+  }
+
+  private static List<Mapping> getMappings(Character lhs, int mode)
+  {
+    if(lhs != null) {
+      return getMappings(mappings.get(lhs), mode);
+    }
+    List<Mapping> lM = new ArrayList<Mapping>();
+    for(List<Mapping> l : mappings.values()) {
+      lM.addAll(getMappings(l, mode));
+    }
+    return lM;
   }
 
   private static Mapping getMapping(Character c, int mode)
@@ -520,10 +744,16 @@ public class GetChar {
   private static void saveMappings(List<Mapping> newMappings)
   {
     mappings.clear();
+    //
+    // NOTE: these must be "put" in order
+    //
     for(Mapping m : getDefaultMappings()) {
       putMapping(m);
     }
     for(Mapping m : newMappings) {
+      // if(m.isUnmap && !containsMappings(m.lhs.charAt(0))) {
+      //   //
+      // }
       putMapping(m);
     }
   }
@@ -542,6 +772,26 @@ public class GetChar {
       // defaultMappings.put('x', new Mapping(lhs, rhs, mode, noremap));
     }
     return defaultMappings;
+  }
+
+  private static Map<Character, String> getReverseMapCommandSpecial()
+  {
+    Map<Character, String> reverseMapCommandSpecial;
+
+    if(refReverseMapCommandSpecial == null
+            || (reverseMapCommandSpecial = refReverseMapCommandSpecial.get())
+                        == null) {
+      Map<String, Character> smap = getMapCommandSpecial();
+      reverseMapCommandSpecial = new HashMap<Character, String>(smap.size());
+      refReverseMapCommandSpecial = new WeakReference<
+                          Map<Character, String>>(reverseMapCommandSpecial);
+
+      for(Map.Entry<String, Character> entry : smap.entrySet()) {
+        reverseMapCommandSpecial.put(entry.getValue(), entry.getKey());
+      }
+      reverseMapCommandSpecial.put('\n', "<NL>");
+    }
+    return reverseMapCommandSpecial;
   }
 
   /** used for parsing */

@@ -79,6 +79,7 @@ public class OptUtil {
                         opt.preferenceChange(evt.getNewValue());
                     }
                 }
+                Options.optionChangeFixup(opt, evt);
             }
         });
     }

@@ -564,6 +564,17 @@ static public List<String> getAbrevList()
     return m_commands.getAbrevList();
 }
 
+/**
+ *
+ * @param cmd a possibly abreviated command name
+ * @return full command name or null if no such command
+ */
+static public String getFullCommandName(String cmd)
+{
+    ColonCommandItem cci = m_commands.lookupCommand(cmd);
+    return cci == null ? null : cci.getName();
+}
+
 
 /**
  * Register a command; the abbrev must be unique.  The abbrev is the "key"
@@ -813,7 +824,7 @@ static public class ColonEvent extends ActionEvent
     /**
      * Fetch the command line, including commmand name
      */
-    public String XXXgetCommandLine()
+    public String getCommandLine()
     {
         return commandLine;
     }

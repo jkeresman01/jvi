@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.core;
 
+import java.util.prefs.PreferenceChangeEvent;
 import com.raelity.text.TextUtil.MySegment;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.DebugOption;
@@ -84,6 +85,15 @@ public final class Options {
       public void init()
       {
         Options.init();
+      }
+    }
+
+    // Sigh, don't want public...
+    // invoked from OptUtil
+    public static void optionChangeFixup(Option opt, PreferenceChangeEvent evt)
+    {
+      if(evt.getKey().equals(mapCommands)) {
+        GetChar.reinitMappings();
       }
     }
   
