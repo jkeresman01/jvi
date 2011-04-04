@@ -247,8 +247,8 @@ public final class Options {
             });
     OptUtil.setupOptionDesc(Category.GENERAL, mapCommands, "Map Commands",
             "Only a single character can be mapped;"
-            + " [nvo]map and [nvo]noremap commands supported"
-            + " (only normal mode)."
+            + " [nvo]map and [nvo]noremap [nvo]unmap commands supported"
+            + " (only normal mode mappings)."
             + " Comments are on a line by themselves and start with \"."
             + "\nExamples:"
             + "\n\u00a0\u00a0\u00a0\u00a0 noremap j gj"

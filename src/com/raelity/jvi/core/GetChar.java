@@ -85,12 +85,10 @@ public class GetChar {
    * </p>
    */
   static void gotc(char key, int modifier) {
-    Options.kd.printf(Level.FINER,
-        "gotc: '%s' %d\n", TextUtil.debugString(String.valueOf(key)), modifier);
+
     if((key & 0xF000) == VIRT) {
-      key = adjustShiftedSpecial(key, modifier);
+      key |= ((modifier & MOD_MASK) << MODIFIER_POSITION_SHIFT);
     }
-    G.setModMask(modifier);
 
     last_recorded_len = 0;      // for the one in vgetc()
     userInput(key);
@@ -100,25 +98,23 @@ public class GetChar {
 
     ///// NEED API, NO SWING...
     ///// // Lock document while handling a single user character
-    ///// // EXPERIMENTAL
-    ///// AbstractDocument doc = null;
-    ///// if(true)
-    /////     doc = null; // DISABLE
-    ///// else {
-    /////     //JEditorPane ep = G.curwin.getEditorComponent();
-    /////     //if(ep.getDocument() instanceof AbstractDocument)
-    /////     //    doc = (AbstractDocument)ep.getDocument();
-    ///// }
     
     try {
         ///// if(doc != null)
         /////     doc.readLock();
         
-        // Normal.processInputChar(key, true);
         user_ins_typebuf(key);
+        pumpChar(typebuf.getChar());
+
+        ///////////////////////////////////////////////////////
+        //
+        // NEEDSWORK: does pumpAllChars need to check for entering
+        //            "handle_redo" and switch to Misc.runUndoable
+        //
+        ///////////////////////////////////////////////////////
 
         if(!handle_redo)
-            pumpVi();
+            pumpAllChars();
         else {
             //
             // Handle some type of redo command: start_redo or start_redo_ins.
@@ -136,7 +132,7 @@ public class GetChar {
               Misc.runUndoable(new Runnable() {
                 @Override
                 public void run() {
-                  pumpVi();
+                  pumpAllChars();
                 }
               });
             } finally {
@@ -154,15 +150,6 @@ public class GetChar {
     // but can't test for pending characters, so ....
 
     Misc.out_flush();
-  }
-
-  private static char adjustShiftedSpecial(char key, int modifier) {
-      if((modifier & KeyDefs.MOD_MASK) == SHFT
-                && key >= VIRT && key <= VIRT + 0x0f) {
-        // only the shift key is pressed and its one of "those".
-        key += SHIFTED_VIRT_OFFSET;
-      }
-      return key;
   }
 
   //////////////////////////////////////////////////////////////////////
@@ -210,7 +197,8 @@ public class GetChar {
    * Convert the match to a char.
    * @return null if problem else translated char
    */
-  private static Character mapCommandChar(Matcher m, boolean is_rhs, String orig)
+  private static Character tranlateMapCommandChar(
+          Matcher m, boolean is_rhs, String orig)
   {
     if(false) {
       System.err.println("region: '"
@@ -236,9 +224,9 @@ public class GetChar {
 
       if(s != null) {
         if(s.equals("C")) {
-          c |= (KeyDefs.CTRL << KeyDefs.MODIFIER_POSITION_SHIFT);
+          c |= (CTRL << MODIFIER_POSITION_SHIFT);
         } else if(s.equals("S")) {
-          c |= (KeyDefs.SHFT << KeyDefs.MODIFIER_POSITION_SHIFT);
+          c |= (SHFT << MODIFIER_POSITION_SHIFT);
         }
       }
     }
@@ -405,15 +393,9 @@ public class GetChar {
     }
 
     if(fields.size() == 1) {
-      if(maptype == 0) {
-        if(printOk)
-          printMappings(null, mode);
+      if(maptype == 0 && printOk) {
+        printMappings(null, mode);
       }
-      ///// else {
-      /////   if(lnum >= 0)
-      /////     emsgs.append("Map Command line ").append(lnum + 1).append(": ");
-      /////   emsgs.append("\"").append(cmd).append("\" missging arguments\n");
-      ///// }
       return null;
     }
 
@@ -424,7 +406,7 @@ public class GetChar {
     matcher.reset(fields.get(1));
     ok = false;
     if(matcher.matches()) {
-      ok = (lhs = mapCommandChar(matcher, false, fields.get(1))) != null;
+      ok = (lhs = tranlateMapCommandChar(matcher, false, fields.get(1))) != null;
     }
     if(!ok) {
       if(lnum >= 0)
@@ -441,16 +423,9 @@ public class GetChar {
         mapping.isUnmap = true;
         return mapping;
       }
-      if(maptype == 0) {
-        if(printOk)
-          printMappings(lhs, mode);
+      if(maptype == 0 && printOk) {
+        printMappings(lhs, mode);
       }
-      ///// else {
-      /////   // noremap variant
-      /////   if(lnum >= 0)
-      /////     emsgs.append("Map Command line ").append(lnum + 1).append(": ");
-      /////   emsgs.append("\"").append(cmd).append("\" missging arguments\n");
-      ///// }
       return null;
     }
 
@@ -462,7 +437,7 @@ public class GetChar {
       }
       ok = false;
       if(matcher.find() && idx == matcher.start()) {
-        Character c = mapCommandChar(matcher, true, fields.get(2));
+        Character c = tranlateMapCommandChar(matcher, true, fields.get(2));
         if(c != null) {
           rhs.append(c.charValue());
           ok = true;
@@ -485,9 +460,7 @@ public class GetChar {
         System.err.println("parseMapCommand: " + line
                 + ": " + mapping);
       }
-
       return mapping;
-              //lhs, rhs.toString());
     } else {
       Options.kd.printf("parseMapCommand: %s: error\n", line);
       return null;
@@ -868,8 +841,7 @@ public class GetChar {
   
   /** This is a special case for the two part search */
   static void fakeGotc(char key) {
-    G.setModMask(0);
-    Normal.processInputChar(key, true);
+    pumpChar(key);
     Misc.out_flush();   // returning from event
   }
 
@@ -880,7 +852,7 @@ public class GetChar {
    * Pass queued up characters to vi for processing.
    * First from stuffbuf, then typebuf.
    */
-  private static void pumpVi() {
+  private static void pumpAllChars() {
     // NEEDSWORK: pumpVi: check for interupt?
       
     while(true) {
@@ -901,6 +873,32 @@ public class GetChar {
     G.Exec_reg = false;
   }
 
+  private static void pumpChar(char c) {
+    if(c == -1)
+      return;
+    int modifiers = 0;
+    if((c & 0xF000) == VIRT) {
+      modifiers = c & (MOD_MASK << MODIFIER_POSITION_SHIFT);
+      if(modifiers != 0) {
+        c &= ~modifiers;
+        modifiers = modifiers >> MODIFIER_POSITION_SHIFT;
+
+        // if modifiers are only/exactly the shift key
+        if(modifiers == SHFT
+                  && c >= VIRT && c <= VIRT + 0x0f) {
+          // only the shift key is pressed and its one of "those".
+          c += SHIFTED_VIRT_OFFSET;
+        }
+      }
+    }
+    if(Options.isKeyDebug(Level.FINEST))
+      System.err.println("pumpChar: "
+                         + TextUtil.debugString(String.valueOf(c))
+                         + " (" +  modifiers + ")");
+    G.setModMask(modifiers);
+    Normal.processInputChar(c, true);
+  }
+
   /**
    * @return a queued character from input stream.
    * @exception RuntimeException if no characters are available
@@ -913,18 +911,6 @@ public class GetChar {
       return typebuf.getChar();
     }
     throw new RuntimeException("No character available");
-  }
-
-  private static void pumpChar(char c) {
-    if(c == -1)
-      return;
-    int modifiers = 0;
-    if((c & 0xF000) == VIRT) {
-      modifiers = (c >> MODIFIER_POSITION_SHIFT) & 0x0f;
-      c &= ~(0x0f << MODIFIER_POSITION_SHIFT);
-    }
-    G.setModMask(modifiers);
-    Normal.processInputChar(c, true);
   }
 
   /**
@@ -1415,7 +1401,10 @@ public class GetChar {
 
     public boolean insert(String str, int noremap, int offset, boolean nottyped)
     {
+      //
       // NEEDSWORK: ins_typebuf: performance can be improved
+      //            For example, pass in a char array
+      //
       if(length() + str.length() > MAXTYPEBUFLEN) {
         Msg.emsg(Messages.e_toocompl);     // also calls flushbuff
         //setcursor();
