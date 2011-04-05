@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.core;
 
+import java.util.Locale;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.manager.ViManager;
@@ -160,7 +161,7 @@ public class GetChar {
   private static Map<Character, List<Mapping>> mappings
           = new HashMap<Character, List<Mapping>>();
   private static WeakReference<List<Mapping>> refDefaultMappings;
-  private static WeakReference<Map<String, Character>> refMapCommandSpecial;
+  private static WeakReference<Map<AsLower, Character>> refMapCommandSpecial;
   private static WeakReference<Map<Character, String>> refReverseMapCommandSpecial;
 
   private static class Mapping {
@@ -209,22 +210,32 @@ public class GetChar {
       }
     }
 
+    // the groups in mapSeqPattern
+    final int g_char = 1;
+    final int g_ctrl = 2;
+    final int g_modif = 3; // possible only if g_spec match
+    final int g_spec = 4;
+
     char c = 0;
     String s;
     if((s = m.group(g_char)) != null)
       c = s.charAt(0);
     else if((s = m.group(g_ctrl)) != null)
-      c = (char)(s.charAt(0) & ~0x40);
+      c = (char)(s.charAt(0) & ~0x60); // convert both upper/lower case
     else if((s = m.group(g_spec)) != null) {
       int modifiers = 0;
-      c = getMapCommandSpecial().get(s);
+      c = getMapCommandSpecial().get(new AsLower(s));
       s = m.group(g_modif);
 
       if(s != null) {
-        if(s.equals("C")) {
+        if(s.equals("C") || s.equals("c")) {
           modifiers |= CTRL;
-        } else if(s.equals("S")) {
+        } else if(s.equals("S") || s.equals("s")) {
           modifiers |= SHFT;
+        } else {
+          Logger.getLogger(GetChar.class.getName())
+                  .log(Level.SEVERE, null,
+                       new Exception("unknown modifier: " + s));
         }
         if(isVIRT(c)) {
           c |= (modifiers << MODIFIER_POSITION_SHIFT);
@@ -239,12 +250,6 @@ public class GetChar {
     return c;
   }
 
-  // the groups in mapSeqPattern
-  private static final int g_char = 1;
-  private static final int g_ctrl = 2;
-  private static final int g_modif = 3;
-  private static final int g_spec = 4;
-
   private static WeakReference<Matcher> refMapCharsMatcher;
 
   private static Matcher getMapCharsMatcher()
@@ -256,26 +261,27 @@ public class GetChar {
       //
       // a char is matched like:
       //          [!-~&&[^\\<]]      all printables, except \ and < and space
-      //          <C-[@-\[\]-_]>     all control chars, except Ctrl-\,Ctrl-<
+      //          <C-[@-_&&[^\\\\]]> all real control chars, except Ctrl-\
       //          <special>          list of special chars
-      //          <C-special>        ctrl of list of special chars
-      //          <S-special>        shft of list of special chars
+      //          <C-special>        ctrl of special chars
+      //          <S-special>        shft of special chars
       // NOTE: special look like: key1|key2|key3
       // char: [!-~&&[^\\<]] | <C-[@-_]> | <([SC]-)?(special)>
       // a line is like: noremap char char+
       //
       String pat = "([!-~&&[^\\\\<]])"
-                    + "|<C-([@-\\[\\]-_])>"
+                    + "|<C-([@-_&&[^\\\\]])>"
                     + "|<(?:([SC])-)?(special)>";
       // Make a string of all the special words we match.
       StringBuilder sb = new StringBuilder();
-      for(String k : getMapCommandSpecial().keySet()) {
-        sb.append(k).append("|");
+      for(AsLower k : getMapCommandSpecial().keySet()) {
+        sb.append(k.s).append("|");
       }
       sb.deleteCharAt(sb.length() - 1);
+      // plug all the special chars into the pattern
       pat = pat.replace("special", sb.toString());
 
-      Pattern mapCharsPattern = Pattern.compile(pat);
+      Pattern mapCharsPattern = Pattern.compile(pat, Pattern.CASE_INSENSITIVE);
       mapCharsMatcher = mapCharsPattern.matcher("");
       refMapCharsMatcher = new WeakReference<Matcher>(mapCharsMatcher);
     }
@@ -438,7 +444,7 @@ public class GetChar {
                 .append(field.substring(matcher.end()))
                 .append("'\n");
       } else {
-        lhs = tranlateMapCommandChar(matcher, false, fields.get(1), emsg);
+        lhs = tranlateMapCommandChar(matcher, false, field, emsg);
         ok = lhs != null;
       }
     } else {
@@ -628,11 +634,27 @@ public class GetChar {
     Map<Character, String> cmap = getReverseMapCommandSpecial();
     StringBuilder sb = new StringBuilder();
     for(int i = 0; i < s.length(); i++) {
-      String mapC = cmap.get(s.charAt(i));
-      if(mapC != null)
-        mapC = "<" + mapC + ">";
-      else
-        mapC = String.valueOf(s.charAt(i));
+      char c = s.charAt(i);
+      int mods = 0;
+      if(isVIRT(c)) {
+        mods = (c >> MODIFIER_POSITION_SHIFT) & MOD_MASK;
+        c &= ~(MOD_MASK << MODIFIER_POSITION_SHIFT);
+      }
+      String mapC = cmap.get(c);
+      if(mapC != null)  {
+        String modifier = "";
+        if(mods != 0) {
+          modifier = (mods & SHFT) != 0 ? "S-"
+                      : (mods & CTRL) != 0 ? "C-" : "?-";
+        }
+        mapC = "<" + modifier + mapC + ">";
+      } else {
+        if(c < 0x20) {
+          mapC = "<C-" + (char)('@' + c) + ">";
+        } else {
+          mapC = String.valueOf(c);
+        }
+      }
       sb.append(mapC);
     }
     return sb.toString();
@@ -792,59 +814,89 @@ public class GetChar {
     if(refReverseMapCommandSpecial == null
             || (reverseMapCommandSpecial = refReverseMapCommandSpecial.get())
                         == null) {
-      Map<String, Character> smap = getMapCommandSpecial();
+      Map<AsLower, Character> smap = getMapCommandSpecial();
       reverseMapCommandSpecial = new HashMap<Character, String>(smap.size());
       refReverseMapCommandSpecial = new WeakReference<
                           Map<Character, String>>(reverseMapCommandSpecial);
 
-      for(Map.Entry<String, Character> entry : smap.entrySet()) {
-        reverseMapCommandSpecial.put(entry.getValue(), entry.getKey());
+      for(Map.Entry<AsLower, Character> entry : smap.entrySet()) {
+        reverseMapCommandSpecial.put(entry.getValue(), entry.getKey().s);
       }
       reverseMapCommandSpecial.put('\n', "<NL>");
     }
     return reverseMapCommandSpecial;
   }
 
+  // A string that hashes/compares as lower case.
+  private static class AsLower {
+    private String s;
+
+    public AsLower(String s)
+    {
+      this.s = s;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+      if(obj == null) {
+        return false;
+      }
+      if(getClass() != obj.getClass()) {
+        return false;
+      }
+      final AsLower other = (AsLower)obj;
+      return s.toLowerCase(Locale.ENGLISH)
+                .equals(other.s.toLowerCase(Locale.ENGLISH));
+    }
+
+    @Override
+    public int hashCode()
+    {
+      return s.toLowerCase(Locale.ENGLISH).hashCode();
+    }
+  }
+
   /** used for parsing */
-  private static Map<String, Character> getMapCommandSpecial()
+  private static Map<AsLower, Character> getMapCommandSpecial()
   {
-    Map<String, Character> mapCommandSpecial;
+    Map<AsLower, Character> mapCommandSpecial;
 
     if(refMapCommandSpecial == null
             || (mapCommandSpecial = refMapCommandSpecial.get()) == null) {
-      mapCommandSpecial = new HashMap<String, Character>(30 + 30);
+      mapCommandSpecial = new HashMap<AsLower, Character>(30 + 30);
       refMapCommandSpecial
-              = new WeakReference<Map<String, Character>>(mapCommandSpecial);
+              = new WeakReference<Map<AsLower, Character>>(mapCommandSpecial);
 
-      mapCommandSpecial.put("Nul",      '\n');
-      mapCommandSpecial.put("BS",       '\b');///////////////////////////////
-      mapCommandSpecial.put("Tab",      '\t');///////////////////////////////
-      mapCommandSpecial.put("NL",       '\n');
-      mapCommandSpecial.put("FF",       '\f');
-      mapCommandSpecial.put("CR",       '\n');
-      mapCommandSpecial.put("Return",   '\n');
-      mapCommandSpecial.put("Enter",    '\n');
-      mapCommandSpecial.put("Esc",      '\u001b');///////////////////////////
-      mapCommandSpecial.put("Space",    ' ');
-      mapCommandSpecial.put("lt",       '<');
-      mapCommandSpecial.put("Bslash",   '\\');
-      mapCommandSpecial.put("Bar",      '|');
-      mapCommandSpecial.put("Del",      '\u007f');///////////////////////////
+      mapCommandSpecial.put(new AsLower("Nul"),      '\n');
+      mapCommandSpecial.put(new AsLower("BS"),       '\b');///////////////////
+      mapCommandSpecial.put(new AsLower("Tab"),      '\t');///////////////////
+      mapCommandSpecial.put(new AsLower("NL"),       '\n');
+      mapCommandSpecial.put(new AsLower("FF"),       '\f');
+      mapCommandSpecial.put(new AsLower("CR"),       '\n');
+      mapCommandSpecial.put(new AsLower("Return"),   '\n');
+      mapCommandSpecial.put(new AsLower("Enter"),    '\n');
+      mapCommandSpecial.put(new AsLower("Esc"),      '\u001b');///////////////
+      mapCommandSpecial.put(new AsLower("Space"),    ' ');
+      mapCommandSpecial.put(new AsLower("lt"),       '<');
+      mapCommandSpecial.put(new AsLower("Bslash"),   '\\');
+      mapCommandSpecial.put(new AsLower("Bar"),      '|');
+      mapCommandSpecial.put(new AsLower("Del"),      '\u007f');///////////////
 
-      mapCommandSpecial.put("EOL",      '\n');
+      mapCommandSpecial.put(new AsLower("EOL"),      '\n');
 
-      mapCommandSpecial.put("Up",       K_UP);
-      mapCommandSpecial.put("Down",     K_DOWN);
-      mapCommandSpecial.put("Left",     K_LEFT);
-      mapCommandSpecial.put("Right",    K_RIGHT);
+      mapCommandSpecial.put(new AsLower("Up"),       K_UP);
+      mapCommandSpecial.put(new AsLower("Down"),     K_DOWN);
+      mapCommandSpecial.put(new AsLower("Left"),     K_LEFT);
+      mapCommandSpecial.put(new AsLower("Right"),    K_RIGHT);
 
-      mapCommandSpecial.put("Help",     K_HELP);
-      mapCommandSpecial.put("Undo",     K_UNDO);
-      mapCommandSpecial.put("Insert",   K_INS);
-      mapCommandSpecial.put("Home",     K_HOME);
-      mapCommandSpecial.put("End",      K_END);
-      mapCommandSpecial.put("PageUp",   K_PAGEUP);
-      mapCommandSpecial.put("PageDown", K_PAGEDOWN);
+      mapCommandSpecial.put(new AsLower("Help"),     K_HELP);
+      mapCommandSpecial.put(new AsLower("Undo"),     K_UNDO);
+      mapCommandSpecial.put(new AsLower("Insert"),   K_INS);
+      mapCommandSpecial.put(new AsLower("Home"),     K_HOME);
+      mapCommandSpecial.put(new AsLower("End"),      K_END);
+      mapCommandSpecial.put(new AsLower("PageUp"),   K_PAGEUP);
+      mapCommandSpecial.put(new AsLower("PageDown"), K_PAGEDOWN);
     }
 
     return mapCommandSpecial;

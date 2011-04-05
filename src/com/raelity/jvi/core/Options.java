@@ -246,21 +246,20 @@ public final class Options {
               }
             });
     OptUtil.setupOptionDesc(Category.GENERAL, mapCommands, "Map Commands",
-            "Only a single character can be mapped;"
+            "map-cmd {lhs} {rhs}"
+            + "\n{lhs} must represent a single character."
             + " [nvo]map and [nvo]noremap [nvo]unmap commands supported"
             + " (only normal mode mappings)."
             + " Comments are on a line by themselves and start with \"."
             + "\nExamples:"
-            + "\n\u00a0\u00a0\u00a0\u00a0 noremap j gj"
             + "\n\u00a0\u00a0\u00a0\u00a0nnoremap <Down> gj"
             + "\n\u00a0\u00a0\u00a0\u00a0\" visual mode only, following ususally does nothing"
             + "\n\u00a0\u00a0\u00a0\u00a0vnoremap <C-Up> <Down><Up>"
             + "\nIn lhs or rhs a char is of the form:"
             + "\n\u00a0\u00a0\u00a0\u00a0\"c\"           - except \\ and < and space"
-            + "\n\u00a0\u00a0\u00a0\u00a0\"<C-X>\"       - except Ctrl-\\,Ctrl-<"
-            + "\n\u00a0\u00a0\u00a0\u00a0\"<special>\"   - see vim doc for valid specials"
-            + "\n\u00a0\u00a0\u00a0\u00a0\"<C-special>\" - ctrl"
-            + "\n\u00a0\u00a0\u00a0\u00a0\"<S-special>\" - shft"
+            + "\n\u00a0\u00a0\u00a0\u00a0\"<C-X>\"       - except Ctrl-\\"
+            + "\n\u00a0\u00a0\u00a0\u00a0\"<special>\"   - see jVi doc for valid specials"
+            + "\n\u00a0\u00a0\u00a0\u00a0\"<C-special>\" \"<S-special>\""
             + "\nSome specials: <lt>,<Space>,<Bslash>"
             );
     setExpertHidden(mapCommands, true, true);
