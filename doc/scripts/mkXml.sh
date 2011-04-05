@@ -1,11 +1,21 @@
 #!/usr/bin/bash
 
-DOC=../vimhelp
-BUILD=../build/xml
+BASE=..
 
-vim -e -s -c "helptags $(cygpath -a -m $DOC)" -c q
-mv $DOC/tags $BUILD
+UNFILTERED=$BASE/vimhelp
 
-echo python vimh_xml.py $DOC $BUILD
-python vimh_xml.py $DOC $BUILD
-cp $DOC/../css/*.css $BUILD
+FILTERED=$BASE/build/filtered
+OUT=$BASE/build/xml
+
+# filter the documents, removing lines, before creating tags
+#
+./filter.sh $UNFILTERED $FILTERED
+
+vim -e -s -c "helptags $(cygpath -a -m $FILTERED)" -c q
+
+mkdir -p $OUT
+mv $FILTERED/tags $OUT/tags
+
+echo python vimh_xml.py $FILTERED $OUT
+python vimh_xml.py $FILTERED $OUT
+cp $BASE/css/*.css $OUT
