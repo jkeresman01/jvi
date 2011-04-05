@@ -245,14 +245,14 @@ public class GetChar {
   private static final int g_modif = 3;
   private static final int g_spec = 4;
 
-  private static WeakReference<Pattern> refMapCharsPattern;
+  private static WeakReference<Matcher> refMapCharsMatcher;
 
-  private static Pattern getMapSeqPattern()
+  private static Matcher getMapCharsMatcher()
   {
-    Pattern mapCharsPattern;
+    Matcher mapCharsMatcher;
 
-    if(refMapCharsPattern == null
-            || (mapCharsPattern = refMapCharsPattern.get()) == null) {
+    if(refMapCharsMatcher == null
+            || (mapCharsMatcher = refMapCharsMatcher.get()) == null) {
       //
       // a char is matched like:
       //          [!-~&&[^\\<]]      all printables, except \ and < and space
@@ -275,11 +275,11 @@ public class GetChar {
       sb.deleteCharAt(sb.length() - 1);
       pat = pat.replace("special", sb.toString());
 
-      mapCharsPattern = Pattern.compile(pat);
-      refMapCharsPattern
-              = new WeakReference<Pattern>(mapCharsPattern);
+      Pattern mapCharsPattern = Pattern.compile(pat);
+      mapCharsMatcher = mapCharsPattern.matcher("");
+      refMapCharsMatcher = new WeakReference<Matcher>(mapCharsMatcher);
     }
-    return mapCharsPattern;
+    return mapCharsMatcher;
   }
 
   /** should already have verified that cmd is supported */
@@ -377,21 +377,13 @@ public class GetChar {
    * If emsgs is not changed, then no error occurred.
    * @param line
    * @param emsgs
-   * @param matcher
-   * @param rhs
    * @return null if no mapping on line or error
    */
   static Mapping
-  parseMapCommand(String line, Emsg emsg,
-                  Matcher matcher, StringBuilder rhs,
-                  boolean printOk)
+  parseMapCommand(String line, Emsg emsg, boolean printOk)
   {
-    if(matcher == null) {
-      matcher = getMapSeqPattern().matcher("");
-    }
-    if(rhs == null) {
-      rhs = new StringBuilder();
-    }
+    Matcher matcher = getMapCharsMatcher();
+    StringBuilder rhs = new StringBuilder();
     int initialEmsgs = emsg.length();
 
     List<String> fields = TextUtil.tokens(line);
@@ -524,15 +516,11 @@ public class GetChar {
 
     Emsg emsg = new Emsg();
 
-    Pattern mapSeqPattern = getMapSeqPattern();
-    Matcher matcher = mapSeqPattern.matcher("");
-    StringBuilder rhs = new StringBuilder();
-
     String[] lines = input.split("\n");
     for(int lnum = 0; lnum < lines.length; lnum++) {
       String line = lines[lnum];
       emsg.lnum = lnum + 1;
-      Mapping m = parseMapCommand(line, emsg, matcher, rhs, false);
+      Mapping m = parseMapCommand(line, emsg, false);
       if(m != null)
         mapCommands.add(m);
     }
@@ -553,8 +541,7 @@ public class GetChar {
     {
       ColonEvent cev = (ColonEvent) e;
       Emsg emsg = new Emsg();
-      Mapping m = parseMapCommand(cev.getCommandLine(), emsg,
-                                  null, null, true);
+      Mapping m = parseMapCommand(cev.getCommandLine(), emsg, true);
       if(m != null && m.isUnmap && !containsMappings(m.lhs.charAt(0))) {
         emsg.error().append("No such mapping");
         m = null;
