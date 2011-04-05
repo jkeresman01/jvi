@@ -467,6 +467,16 @@ public class GetChar {
     }
   }
 
+  /**
+   * Parse the mappings, return empty string if no error.
+   */
+  public static String parseMapCommands(String input)
+  {
+    Wrap<String>emsg = new Wrap<String>("");
+    parseMapCommands(input, emsg);
+    return emsg.getValue();
+  }
+
   static List<Mapping>
   parseMapCommands(String input, Wrap<String>emsg)
   {
