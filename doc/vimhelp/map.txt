@@ -94,24 +94,30 @@ STOP-DOC-DEL
 			used to redefine a command.  {not in Vi}
 
 
-START-DOC-DEL
 :unm[ap]  {lhs}			|mapmode-nvo|		*:unm*  *:unmap*
 :nun[map] {lhs}			|mapmode-n|		*:nun*  *:nunmap*
 :vu[nmap] {lhs}			|mapmode-v|		*:vu*   *:vunmap*
+START-DOC-DEL
 :xu[nmap] {lhs}			|mapmode-x|		*:xu*   *:xunmap*
 :sunm[ap] {lhs}			|mapmode-s|		*:sunm* *:sunmap*
+STOP-DOC-DEL
 :ou[nmap] {lhs}			|mapmode-o|		*:ou*   *:ounmap*
+START-DOC-DEL
 :unm[ap]! {lhs}			|mapmode-ic|		*:unm!* *:unmap!*
 :iu[nmap] {lhs}			|mapmode-i|		*:iu*   *:iunmap*
 :lu[nmap] {lhs}			|mapmode-l|		*:lu*   *:lunmap*
 :cu[nmap] {lhs}			|mapmode-c|		*:cu*   *:cunmap*
+STOP-DOC-DEL
 			Remove the mapping of {lhs} for the modes where the
 			map command applies.  The mapping may remain defined
 			for other modes where it applies.
+START-DOC-DEL
 			Note: Trailing spaces are included in the {lhs}.  This
 			unmap does NOT work: >
 				:map @@ foo
 				:unmap @@ | print
+STOP-DOC-DEL
+START-DOC-DEL
 
 :mapc[lear]			|mapmode-nvo|		*:mapc*   *:mapclear*
 :nmapc[lear]			|mapmode-n|		*:nmapc*  *:nmapclear*
@@ -126,17 +132,22 @@ START-DOC-DEL
 			Remove ALL mappings for the modes where the map
 			command applies.  {not in Vi}
 			Warning: This also removes the default mappings.
+STOP-DOC-DEL
 
 :map				|mapmode-nvo|
 :nm[ap]				|mapmode-n|
 :vm[ap]				|mapmode-v|
+START-DOC-DEL
 :xm[ap]				|mapmode-x|
 :sm[ap]				|mapmode-s|
+STOP-DOC-DEL
 :om[ap]				|mapmode-o|
+START-DOC-DEL
 :map!				|mapmode-ic|
 :im[ap]				|mapmode-i|
 :lm[ap]				|mapmode-l|
 :cm[ap]				|mapmode-c|
+STOP-DOC-DEL
 			List all key mappings for the modes where the map
 			command applies.  Note that ":map" and ":map!" are
 			used most often, because they include the other modes.
@@ -144,13 +155,17 @@ START-DOC-DEL
 :map    {lhs}			|mapmode-nvo|		*:map_l*
 :nm[ap] {lhs}			|mapmode-n|		*:nmap_l*
 :vm[ap] {lhs}			|mapmode-v|		*:vmap_l*
+START-DOC-DEL
 :xm[ap] {lhs}			|mapmode-x|		*:xmap_l*
 :sm[ap] {lhs}			|mapmode-s|		*:smap_l*
+STOP-DOC-DEL
 :om[ap] {lhs}			|mapmode-o|		*:omap_l*
+START-DOC-DEL
 :map!   {lhs}			|mapmode-ic|		*:map_l!*
 :im[ap] {lhs}			|mapmode-i|		*:imap_l*
 :lm[ap] {lhs}			|mapmode-l|		*:lmap_l*
 :cm[ap] {lhs}			|mapmode-c|		*:cmap_l*
+STOP-DOC-DEL
 			List the key mappings for the key sequences starting
 			with {lhs} in the modes where the map command applies.
 			{not in Vi}
@@ -430,6 +445,7 @@ with a space.
 
 Note: When using mappings for Visual mode, you can use the "'<" mark, which
 is the start of the last selected Visual area in the current buffer |'<|.
+START-DOC-DEL
 
 							*:map-verbose*
 When 'verbose' is non-zero, listing a key map will also display where it was
@@ -440,12 +456,13 @@ last defined.  Example: >
 		Last set from /home/abcd/.vimrc
 
 See |:verbose-cmd| for more information.
+STOP-DOC-DEL
 
 
 1.5 MAPPING SPECIAL KEYS				*:map-special-keys*
 
 jVi currently supports the following special keys. This will likely expand.
-There may be semantic/incompatible changes as well
+There may be semantic/incompatible changes as well.
 
       <Nul>     '\n'
       <BS>      '\b'
@@ -463,6 +480,8 @@ There may be semantic/incompatible changes as well
       <Del>     '\u007f'
 
       <EOL>     '\n'
+
+The control/shifted versions can be mapped as <C-special>/<S-special>.
 
       <Up>
       <Down>
