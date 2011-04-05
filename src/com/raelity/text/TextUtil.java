@@ -35,7 +35,7 @@ public class TextUtil {
     /** Split a string into a vector of words. White space is used
      * for the delimeters, " \t\n\r".
      */
-    public static List<String> split(String s) {
+    public static List<String> tokens(String s) {
         List<String> word = new ArrayList<String>();
         StringTokenizer parse = new StringTokenizer(s);
         while(parse.hasMoreElements()) {
@@ -47,7 +47,7 @@ public class TextUtil {
     /** Split a string into a vector of words, using <i>separarators</i>
      * to delineate the words.
      */
-    public static List<String> split(String s, String separators) {
+    public static List<String> tokens(String s, String separators) {
         List<String> word = new ArrayList<String>();
         StringTokenizer parse = new StringTokenizer(s, separators);
         while(parse.hasMoreElements()) {

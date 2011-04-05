@@ -86,7 +86,7 @@ public class GetChar {
    */
   static void gotc(char key, int modifier) {
 
-    if((key & 0xF000) == VIRT) {
+    if(isVIRT(key)) {
       key |= ((modifier & MOD_MASK) << MODIFIER_POSITION_SHIFT);
     }
 
@@ -198,7 +198,7 @@ public class GetChar {
    * @return null if problem else translated char
    */
   private static Character tranlateMapCommandChar(
-          Matcher m, boolean is_rhs, String orig)
+          Matcher m, boolean is_rhs, String orig, Emsg emsg)
   {
     if(false) {
       System.err.println("region: '"
@@ -216,17 +216,22 @@ public class GetChar {
     else if((s = m.group(g_ctrl)) != null)
       c = (char)(s.charAt(0) & ~0x40);
     else if((s = m.group(g_spec)) != null) {
+      int modifiers = 0;
       c = getMapCommandSpecial().get(s);
       s = m.group(g_modif);
 
-      // TODO: adjust c if needed **********************************
-      // adjust if needed
-
       if(s != null) {
         if(s.equals("C")) {
-          c |= (CTRL << MODIFIER_POSITION_SHIFT);
+          modifiers |= CTRL;
         } else if(s.equals("S")) {
-          c |= (SHFT << MODIFIER_POSITION_SHIFT);
+          modifiers |= SHFT;
+        }
+        if(isVIRT(c)) {
+          c |= (modifiers << MODIFIER_POSITION_SHIFT);
+        } else {
+          emsg.error().append("Ctrl/Shft not supported with '<")
+                  .append(m.group(g_spec)).append(">'\n");
+          return null;
         }
       }
     }
@@ -332,6 +337,41 @@ public class GetChar {
            ;
   }
 
+  private static class Emsg {
+    StringBuilder sb;
+    int lnum;
+
+    Emsg()
+    {
+      this.sb = new StringBuilder();
+    }
+
+    StringBuilder error()
+    {
+      if(lnum > 0)
+        sb.append("line ").append(lnum).append(": ");
+      return sb;
+    }
+
+    int length()
+    {
+      return sb.length();
+    }
+
+    void clear()
+    {
+      sb.setLength(0);
+      lnum = 0;
+    }
+
+    @Override
+    public String toString()
+    {
+      return sb.toString();
+    }
+
+  }
+
   /**
    * Parse the mapping command.
    * If emsgs is not changed, then no error occurred.
@@ -342,7 +382,7 @@ public class GetChar {
    * @return null if no mapping on line or error
    */
   static Mapping
-  parseMapCommand(String line, int lnum, StringBuilder emsgs,
+  parseMapCommand(String line, Emsg emsg,
                   Matcher matcher, StringBuilder rhs,
                   boolean printOk)
   {
@@ -352,25 +392,21 @@ public class GetChar {
     if(rhs == null) {
       rhs = new StringBuilder();
     }
-    int initialEmsgs = emsgs.length();
+    int initialEmsgs = emsg.length();
 
-    List<String> fields = TextUtil.split(line);
+    List<String> fields = TextUtil.tokens(line);
 
     if(fields.isEmpty() || fields.get(0).startsWith("\""))
       return null;
     if(fields.size() > 3) {
-      if(lnum >= 0)
-        emsgs.append("Map Command line ").append(lnum + 1).append(": ");
-      emsgs.append("too many fields\n");
+      emsg.error().append("too many fields\n");
       return null;
     }
 
     // NEEDSWORK: forceit/'!' handling
     String cmd = fields.get(0);
     if(!supportedMapCommand(ColonCommands.getFullCommandName(cmd))) {
-      if(lnum >= 0)
-        emsgs.append("Map Command line ").append(lnum + 1).append(": ");
-      emsgs.append("\"").append(cmd).append("\" command not supported\n");
+      emsg.error().append("\"").append(cmd).append("\" command not supported\n");
       return null;
     }
 
@@ -385,9 +421,7 @@ public class GetChar {
       if(fields.size() == 1                             // unmap or noremap
               || fields.size() == 2  && maptype == 2    // noremap
       ) {
-        if(lnum >= 0)
-          emsgs.append("Map Command line ").append(lnum + 1).append(": ");
-        emsgs.append("\"").append(originalCmd).append("\" missing arguments\n");
+        emsg.error().append("\"").append(originalCmd).append("\" missing arguments\n");
         return null;
       }
     }
@@ -403,15 +437,20 @@ public class GetChar {
     rhs.setLength(0);
     boolean ok;
 
-    matcher.reset(fields.get(1));
+    String field = fields.get(1);
+    matcher.reset(field);
     ok = false;
-    if(matcher.matches()) {
-      ok = (lhs = tranlateMapCommandChar(matcher, false, fields.get(1))) != null;
-    }
-    if(!ok) {
-      if(lnum >= 0)
-        emsgs.append("Map Command line ").append(lnum + 1).append(": ");
-      emsgs.append("\"").append(fields.get(1))
+    if(matcher.lookingAt()) {
+      if(matcher.end() < field.length()) {
+        emsg.error().append("for lhs only one char allowed; trailing: '")
+                .append(field.substring(matcher.end()))
+                .append("'\n");
+      } else {
+        lhs = tranlateMapCommandChar(matcher, false, fields.get(1), emsg);
+        ok = lhs != null;
+      }
+    } else {
+      emsg.error().append("\"").append(field)
               .append("\" left-side not recognized\n");
     }
 
@@ -429,31 +468,32 @@ public class GetChar {
       return null;
     }
 
-    matcher.reset(fields.get(2));
+
+    field = fields.get(2);
+    matcher.reset(field);
     int idx = 0;
     do {
       if(false) {
-        System.err.println("checking: '" + fields.get(2).substring(idx) + "'");
+        System.err.println("checking: '" + field.substring(idx) + "'");
       }
       ok = false;
       if(matcher.find() && idx == matcher.start()) {
-        Character c = tranlateMapCommandChar(matcher, true, fields.get(2));
+        Character c = tranlateMapCommandChar(matcher, true, field, emsg);
         if(c != null) {
           rhs.append(c.charValue());
           ok = true;
         }
+      } else {
+        emsg.error().append("\"").append(field.substring(idx))
+                .append("\" right-side not recognized\n");
       }
       if(!ok) {
-        if(lnum >= 0)
-          emsgs.append("Map Command line ").append(lnum + 1).append(": ");
-        emsgs.append("\"").append(fields.get(2).substring(idx))
-                .append("\" right-side not recognized\n");
         break;
       }
       idx = matcher.end();
     } while(idx < matcher.regionEnd());
 
-    if(emsgs.length() == initialEmsgs) {
+    if(emsg.length() == initialEmsgs) {
       Mapping mapping = new Mapping(String.valueOf(lhs), rhs.toString(),
                                     mode, maptype == 2);
       if(Options.isKeyDebug()) {
@@ -478,26 +518,27 @@ public class GetChar {
   }
 
   static List<Mapping>
-  parseMapCommands(String input, Wrap<String>emsg)
+  parseMapCommands(String input, Wrap<String>p_emsg)
   {
     List<Mapping> mapCommands = new ArrayList<Mapping>();
 
-    StringBuilder emsgs = new StringBuilder();
+    Emsg emsg = new Emsg();
 
     Pattern mapSeqPattern = getMapSeqPattern();
     Matcher matcher = mapSeqPattern.matcher("");
     StringBuilder rhs = new StringBuilder();
 
-    List<String> lines = TextUtil.split(input, "\n");
-    for(int lnum = 0; lnum < lines.size(); lnum++) {
-      String line = lines.get(lnum);
-      Mapping m = parseMapCommand(line, lnum, emsgs, matcher, rhs, false);
+    String[] lines = input.split("\n");
+    for(int lnum = 0; lnum < lines.length; lnum++) {
+      String line = lines[lnum];
+      emsg.lnum = lnum + 1;
+      Mapping m = parseMapCommand(line, emsg, matcher, rhs, false);
       if(m != null)
         mapCommands.add(m);
     }
 
-    if(emsgs.length() > 0) {
-      emsg.setValue(emsgs.toString());
+    if(emsg.length() > 0) {
+      p_emsg.setValue(emsg.toString());
       return null;
     }
 
@@ -511,11 +552,11 @@ public class GetChar {
     public void actionPerformed(ActionEvent e)
     {
       ColonEvent cev = (ColonEvent) e;
-      StringBuilder emsg = new StringBuilder();
-      Mapping m = parseMapCommand(cev.getCommandLine(), -1, emsg,
+      Emsg emsg = new Emsg();
+      Mapping m = parseMapCommand(cev.getCommandLine(), emsg,
                                   null, null, true);
       if(m != null && m.isUnmap && !containsMappings(m.lhs.charAt(0))) {
-        emsg.append("No such mapping");
+        emsg.error().append("No such mapping");
         m = null;
       }
       if(m != null)
@@ -887,7 +928,7 @@ public class GetChar {
     if(c == -1)
       return;
     int modifiers = 0;
-    if((c & 0xF000) == VIRT) {
+    if(isVIRT(c)) {
       modifiers = c & (MOD_MASK << MODIFIER_POSITION_SHIFT);
       if(modifiers != 0) {
         c &= ~modifiers;
@@ -978,7 +1019,7 @@ public class GetChar {
     /* remember how many chars were last recorded */
     if (G.Recording) {
       last_recorded_len += 1;
-      if((c & 0xF000) == VIRT) {
+      if(isVIRT(c)) {
         c |= (G.getModMask() << MODIFIER_POSITION_SHIFT);
       }
       recordbuff.append(c);

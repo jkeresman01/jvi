@@ -60,6 +60,11 @@ public class KeyDefs {
     {
     }
 
+    public static boolean isVIRT(char c)
+    {
+        return (c & 0xF000) == VIRT;
+    }
+
     /**
      * Any keys as opposed to characters, must be put out of range.
      * This is used to flag keys (non-unicode characters).
