@@ -1463,9 +1463,18 @@ public class GetChar {
    *
    * @return FAIL for failure, OK otherwise
    */
-  static int ins_typebuf(String str, int noremap,
+  private static int ins_typebuf(CharSequence str, int noremap,
+                                 int offset, boolean nottyped)
+  {
+    return typebuf.insert(str, noremap, offset, nottyped) ? OK : FAIL;
+  }
+
+  // introduce _redo version to make it clear that this
+  // controls undo chunking
+  static int ins_typebuf_redo(CharSequence str, int noremap,
                          int offset, boolean nottyped)
   {
+    handle_redo = true;
     return typebuf.insert(str, noremap, offset, nottyped) ? OK : FAIL;
   }
 
@@ -1484,13 +1493,23 @@ public class GetChar {
    * Like BufferQueue, but typebuf has some special requirements.
    * In particular, typebuf has a parallel data structure to track
    * if a given char can be re-mapped.
+   * NOTE: always: buf.length() == noremapbuf.length()
    */
   final static class TypeBuf implements CharSequence {
     private StringBuilder buf = new StringBuilder();
     private StringBuilder noremapbuf = new StringBuilder();
 
-    public boolean insert(String str, int noremap, int offset, boolean nottyped)
+    public boolean insert(CharSequence str, int noremap,
+                          int offset, boolean nottyped)
     {
+      // if cap() > 3/4 of MAX then shrink the buffer
+      // NEEDSWORK: have some hysteresis, so don't shrink too soon
+      if(buf.capacity() > MAXTYPEBUFLEN  - (MAXTYPEBUFLEN >> 2)
+              && buf.length() < 500) {
+        buf.trimToSize();
+        noremapbuf.trimToSize();
+      }
+
       //
       // NEEDSWORK: ins_typebuf: performance can be improved
       //            For example, pass in a char array
@@ -1624,7 +1643,11 @@ public class GetChar {
     @Override
     public CharSequence subSequence(int start, int end)
     {
-      return buf.subSequence(start, end);
+      // If this is ever used, I'd be surprised...
+      TypeBuf tb = new TypeBuf();
+      tb.buf.append(buf.subSequence(start, end));
+      tb.noremapbuf.append(noremapbuf.subSequence(start, end));
+      return tb;
     }
 
     @Override

@@ -1622,14 +1622,16 @@ public class Misc implements ClipboardOwner {
       }
       ****************************************************************/
       // Just roll our own for jvi
-      String s;
-        s = new String(y_current.y_array[0]);
+      StringBuilder sb = new StringBuilder(y_current.y_array[0]);
       if(y_current.y_type == MLINE || addcr) {
-        if( ! s.endsWith("\n")) {
-          s += "\n";
+        if(sb.length() == 0 || sb.charAt(sb.length()-1) != '\n') {
+          sb.append('\n');
         }
       }
-      if(ins_typebuf(s, remap, 0, true) == FAIL) {
+      //
+      // NEEDSWORK: if(colon) put ":" begin of each line
+      //
+      if(ins_typebuf_redo(sb, remap, 0, true) == FAIL) {
         return FAIL;
       }
       G.Exec_reg = true;	// disable the 'q' command
@@ -1642,11 +1644,11 @@ private static int put_in_typebuf(String s, boolean colon)
     int		retval = OK;
 
     if (colon)
-	retval = ins_typebuf("\n", FALSE, 0, true);
+	retval = ins_typebuf_redo("\n", FALSE, 0, true);
     if (retval == OK)
-	retval = ins_typebuf(s, FALSE, 0, true);
+	retval = ins_typebuf_redo(s, FALSE, 0, true);
     if (colon && retval == OK)
-	retval = ins_typebuf(":", FALSE, 0, true);
+	retval = ins_typebuf_redo(":", FALSE, 0, true);
     return retval;
 }
 

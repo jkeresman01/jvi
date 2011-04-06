@@ -272,6 +272,8 @@ class SampleText
             + "XXX0xfffXXX\n"
             + "0777\n"
             + "\n"
+            + "dwlllllldwllllllldwllllllldwj0\n"
+            + "\n"
             + "/**\n"
             + " * Option handling from external sources.\n"
             + " * <br>\n"

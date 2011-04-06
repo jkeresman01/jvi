@@ -36,8 +36,7 @@ public interface Constants {
   static final int MAXLNUM = 0x7fffffff;
   static final int MAXCOL = 0x7fffffff;
 
-  static final int MAXTYPEBUFLEN = 1000; // was 5000, that seems huge,
-                                         // but check out orig...
+  static final int MAXTYPEBUFLEN = 10000; // seems huge, but check out orig...
 
   //
   // Operator IDs; The order must correspond to opchars[] in ops.c!
