@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.core.lib.Mappings;
 import java.util.prefs.PreferenceChangeEvent;
 import com.raelity.text.TextUtil.MySegment;
 import com.raelity.jvi.manager.ViManager;
@@ -237,7 +238,7 @@ public final class Options {
               public void validate(String val) throws PropertyVetoException {
 
                 Wrap<String> emsg = new Wrap<String>("");
-                if(null == GetChar.parseMapCommands(val, emsg)) {
+                if(null == Mappings.parseMapCommands(val, emsg)) {
         	     throw new PropertyVetoException(
                              emsg.getValue(),
                              new PropertyChangeEvent(opt, opt.getName(),
@@ -248,11 +249,11 @@ public final class Options {
     OptUtil.setupOptionDesc(Category.GENERAL, mapCommands, "Map Commands",
             "map-cmd {lhs} {rhs}"
             + "\n{lhs} must represent a single character."
-            + " [nvo]map and [nvo]noremap [nvo]unmap commands supported"
+            + "\n[nvo]map, [nvo]noremap and [nvo]unmap commands supported"
             + " (only normal mode mappings)."
             + " Comments are on a line by themselves and start with \"."
             + "\nExamples:"
-            + "\n\u00a0\u00a0\u00a0\u00a0nnoremap <Down> gj"
+            + "\n\u00a0\u00a0\u00a0\u00a0noremap <Down> gj"
             + "\n\u00a0\u00a0\u00a0\u00a0\" visual mode only, following ususally does nothing"
             + "\n\u00a0\u00a0\u00a0\u00a0vnoremap <C-Up> <Down><Up>"
             + "\nIn lhs or rhs a char is of the form:"
@@ -1042,6 +1043,9 @@ public final class Options {
   //
 
   static DebugOption kd;
+  public static DebugOption kd() {
+    return kd;
+  }
 
   public static boolean isKeyDebug() {
     return isKeyDebug(Level.FINE);

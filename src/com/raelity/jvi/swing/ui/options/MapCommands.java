@@ -28,12 +28,13 @@
  */
 package com.raelity.jvi.swing.ui.options;
 
-import com.raelity.jvi.core.GetChar;
 import com.raelity.jvi.core.Options;
+import com.raelity.jvi.core.lib.Mappings;
 import com.raelity.jvi.options.OptUtil;
 import com.raelity.jvi.options.Option;
 import com.raelity.jvi.options.OptionsBean;
 import com.raelity.text.XMLUtil;
+import java.awt.Color;
 import java.beans.PropertyVetoException;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
@@ -140,9 +141,16 @@ implements Options.EditControl {
     private void setStatus(boolean defaultError)
     {
         if(opt.getValue().equals(mappings.getText())) {
+            status.setForeground(Color.black);
             status.setText(statusCurrent);
         } else {
-            status.setText(defaultError ? statusError : statusModified);
+            if(defaultError) {
+                status.setForeground(Color.red);
+                status.setText(statusError);
+            } else {
+                status.setForeground(Color.black);
+                status.setText(statusModified);
+            }
         }
     }
 
@@ -164,7 +172,7 @@ implements Options.EditControl {
 
     private void check()
     {
-        String emsg = GetChar.parseMapCommands(mappings.getText());
+        String emsg = Mappings.parseMapCommands(mappings.getText());
         if(!emsg.isEmpty()) {
             showError(emsg);
             setStatus(true);
