@@ -205,6 +205,8 @@ public class Normal {
     clear_showcmd();
     showmode();
     ui_cursor_shape();
+    G.allow_keys = 0;
+    G.no_mapping = 0;
   }
 
   /**

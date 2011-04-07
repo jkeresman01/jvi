@@ -82,6 +82,8 @@ public class G
     }
     ********************************************************************/
 
+    public static int no_mapping() { return no_mapping; }
+    public static int allow_keys() { return allow_keys; }
     static int no_mapping;
     static int allow_keys;
     static boolean finish_op;
@@ -98,7 +100,8 @@ public class G
     static int old_indent = 0;
     static int ai_col = 0;
 
-    static int p_mmd = 1000;
+    static int p_mmd  = 1000;
+    static int p_mmd2 = 10000;  // detects an internal error
 
     // static String p_ww = "bshl<>[]"; // b,s
     // options for whichwrap

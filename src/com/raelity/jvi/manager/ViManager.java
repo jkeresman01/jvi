@@ -78,7 +78,7 @@ public class ViManager
     //
     // 1.3.1.beta3 is module rev 1.3.0
     // 1.3.1.beta5 is module rev 1.3.15
-    public static final jViVersion version = new jViVersion("1.3.1.beta5");
+    public static final jViVersion version = new jViVersion("1.3.1.beta5.1");
 
     private static com.raelity.jvi.core.Hook core;
 
