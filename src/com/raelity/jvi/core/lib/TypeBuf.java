@@ -39,7 +39,7 @@ import static com.raelity.jvi.core.Util.*;
  * <p/>
  * NEEDSWORK: There's a performance problem with using a StringBuilder.
  * The insert and delete at the beginning are arraycopy.
- * USE A deque.
+ * USE A deque, but DEQUE doesn't support the insert at arbitrary spot.
  *
  * @author Ernie Rael <err at raelity.com>
  */
