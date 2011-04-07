@@ -38,8 +38,13 @@ import java.awt.Color;
 import java.beans.PropertyVetoException;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
+import javax.swing.text.Element;
+import javax.swing.text.JTextComponent;
 import org.openide.util.WeakListeners;
 
 /**
@@ -53,9 +58,9 @@ implements Options.EditControl {
     private final OptionsPanel optionsPanel;
     private final Option opt;
     private OptionsBean.General bean;
-    private String statusCurrent = "Displaying saved mappings";
-    private String statusModified = "Displaying modified mappings";
-    private String statusError = "Displaying failed mappings ";
+    private String statusCurrent = "saved mappings";
+    private String statusModified = "modified mappings";
+    private String statusError = "failed mappings ";
 
     private static String lastSetMappings;
 
@@ -69,6 +74,8 @@ implements Options.EditControl {
         bean = new OptionsBean.General();
         mappings.getDocument().addDocumentListener(
                 WeakListeners.document(listen, mappings.getDocument()));
+        mappings.addCaretListener(WeakListeners.create(
+                CaretListener.class, caretListener, mappings));
     }
 
     DocumentListener listen = new DocumentListener() {
@@ -84,6 +91,19 @@ implements Options.EditControl {
         @Override public void changedUpdate(DocumentEvent e) { }
     };
 
+    CaretListener caretListener = new CaretListener() {
+        @Override
+        public void caretUpdate(CaretEvent e)
+        {
+            JTextComponent jtc = (JTextComponent)e.getSource();
+            Document doc = jtc.getDocument();
+            int dot = e.getDot();
+            Element root = doc.getDefaultRootElement();
+            int l = root.getElementIndex(dot);
+            line.setText("Line " + (l+1));
+        }
+    };
+
     @Override
     public void start()
     {
@@ -96,6 +116,7 @@ implements Options.EditControl {
         } else {
             mappings.setText(lastSetMappings);
             mappings.setCaretPosition(0);
+
             status.setText(statusError);
             setStatus(true);
         }
@@ -168,6 +189,7 @@ implements Options.EditControl {
         mappings.setText(opt.getValue());
         mappings.setCaretPosition(0);
         setStatus(false);
+        mappings.requestFocusInWindow();
     }
 
     private void check()
@@ -184,6 +206,7 @@ implements Options.EditControl {
                     JOptionPane.INFORMATION_MESSAGE);
             setStatus(false);
         }
+        mappings.requestFocusInWindow();
     }
 
     /** This method is called from within the constructor to
@@ -203,6 +226,7 @@ implements Options.EditControl {
                 reset = new javax.swing.JButton();
                 check = new javax.swing.JButton();
                 status = new javax.swing.JLabel();
+                line = new javax.swing.JLabel();
                 jScrollPane2 = new javax.swing.JScrollPane();
                 description = new javax.swing.JEditorPane();
 
@@ -233,13 +257,18 @@ implements Options.EditControl {
                 status.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
                 status.setText("X"); // NOI18N
 
+                line.setText("Line 100"); // NOI18N
+                line.setToolTipText("Caret line number"); // NOI18N
+                line.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED), javax.swing.BorderFactory.createEmptyBorder(1, 3, 1, 1)));
+
                 javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
                 jPanel2.setLayout(jPanel2Layout);
                 jPanel2Layout.setHorizontalGroup(
                         jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                                .addComponent(line, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
-                                .addComponent(status, javax.swing.GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
+                                .addComponent(status, javax.swing.GroupLayout.DEFAULT_SIZE, 136, Short.MAX_VALUE)
                                 .addGap(18, 18, 18)
                                 .addComponent(check)
                                 .addGap(18, 18, 18)
@@ -256,7 +285,8 @@ implements Options.EditControl {
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                         .addComponent(reset)
                                         .addComponent(check)
-                                        .addComponent(status, javax.swing.GroupLayout.DEFAULT_SIZE, 18, Short.MAX_VALUE)))
+                                        .addComponent(status, javax.swing.GroupLayout.DEFAULT_SIZE, 18, Short.MAX_VALUE)
+                                        .addComponent(line)))
                 );
 
                 javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -331,6 +361,7 @@ implements Options.EditControl {
         private javax.swing.JScrollPane jScrollPane1;
         private javax.swing.JScrollPane jScrollPane2;
         private javax.swing.JSplitPane jSplitPane1;
+        private javax.swing.JLabel line;
         private javax.swing.JTextArea mappings;
         private javax.swing.JButton reset;
         private javax.swing.JLabel status;
