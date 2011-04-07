@@ -21,8 +21,6 @@ package com.raelity.jvi.core.lib;
 
 /**
  * Small queue of characters. Can't extend StringBuffer, so delegate.
- */
-/**
  *
  * @author Ernie Rael <err at raelity.com>
  */

@@ -40,8 +40,6 @@ import static com.raelity.jvi.core.Util.*;
  * NEEDSWORK: There's a performance problem with using a StringBuilder.
  * The insert and delete at the beginning are arraycopy.
  * USE A deque.
- */
-/**
  *
  * @author Ernie Rael <err at raelity.com>
  */
