@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.core.lib.Messages;
 import java.util.Collections;
 import com.raelity.jvi.options.OptUtil;
 import com.raelity.jvi.ViBadLocationException;

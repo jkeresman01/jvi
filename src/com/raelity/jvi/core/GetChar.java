@@ -19,11 +19,11 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.core.lib.TypeBuf;
+import com.raelity.jvi.core.lib.BufferQueue;
 import com.raelity.jvi.core.lib.Mappings;
-import com.raelity.jvi.core.lib.Mapping;
 import com.raelity.jvi.ViInitialization;
 import org.openide.util.lookup.ServiceProvider;
-import java.util.logging.Logger;
 import com.raelity.text.TextUtil;
 import com.raelity.jvi.options.Option;
 import java.util.logging.Level;
@@ -38,7 +38,9 @@ public class GetChar {
     private static Option magicRedoAlgo
             = Options.getOption(Options.magicRedoAlgorithm);
     private static String currentMagicRedoAlgo = "anal";
-    private static int nMappings;
+
+    private static Mappings mappings;
+    private static TypeBuf typebuf;
 
     private GetChar()
     {
@@ -52,24 +54,19 @@ public class GetChar {
         @Override
         public void init()
         {
-            cmappings = new Mappings();
+            mappings = new Mappings();
+            typebuf = new TypeBuf(mappings);
         }
     }
 
-    //////////////////////////////////////////////////////////////////////
-    //
-    // Map Command handling
-    //
-    private static Mappings cmappings;
-
     static public void printMappings(Character lhs, int mode)
     {
-        cmappings.printMappings(lhs, mode);
+        mappings.printMappings(lhs, mode);
     }
 
     static void reinitMappings()
     {
-        cmappings.reinitMappings();
+        mappings.reinitMappings();
     }
 
     /** An input char from the user has been recieved.
@@ -103,7 +100,7 @@ public class GetChar {
 
             // If there are too many mappings between user input keys
             // then we'll do a flush_buf. This detects internal errors
-            nMappings = 0;
+            typebuf.clearNMappings();
             user_ins_typebuf(key);
             pumpChar(typebuf.getChar());
 
@@ -718,196 +715,6 @@ public class GetChar {
         typebuf.delete(offset, offset + len);
     }
 
-    /**
-     * Like BufferQueue, but typebuf has some special requirements.
-     * In particular, typebuf has a parallel data structure to track
-     * if a given char can be re-mapped.
-     * <p/>
-     * NOTE: always: buf.length() == noremapbuf.length()
-     * <p/>
-     * NEEDSWORK: There's a performance problem with using a StringBuilder.
-     *            The insert and delete at the beginning are arraycopy.
-     *            USE A deque.
-     */
-    final static class TypeBuf implements CharSequence {
-        private StringBuilder buf = new StringBuilder();
-        private StringBuilder noremapbuf = new StringBuilder();
-
-        public boolean insert(CharSequence str, int noremap,
-                                              int offset, boolean nottyped)
-        {
-            // if cap() > 3/4 of MAX then shrink the buffer
-            // NEEDSWORK: have some hysteresis, so don't shrink too soon
-            if(buf.capacity() > MAXTYPEBUFLEN  - (MAXTYPEBUFLEN >> 2)
-                    && buf.length() < 500) {
-                buf.trimToSize();
-                noremapbuf.trimToSize();
-            }
-
-            //
-            // NEEDSWORK: ins_typebuf: performance can be improved
-            //            For example, pass in a char array
-            //
-            if(length() + str.length() > MAXTYPEBUFLEN) {
-                Msg.emsg(Messages.e_toocompl);     // also calls flushbuff
-                //setcursor();
-                Logger.getLogger(GetChar.class.getName())
-                        .log(Level.SEVERE, null, new Exception("MAXTYPEBUFLEN"));
-                return false;
-            }
-
-            buf.insert(offset, str);
-
-            //
-            // Adjust noremapbuf[] for the new characters:
-            // If noremap  < 0: all the new characters are flagged not remappable
-            // If noremap == 0: all the new characters are flagged mappable
-            // If noremap  > 0: 'noremap' characters are flagged not remappable,
-            //                  the rest mappable
-            //
-
-            if(noremap < 0)
-                noremap = str.length();
-            for(int i = 0; i < str.length(); i++) {
-                noremapbuf.insert(offset + i, (char)(noremap-- > 0 ? 1 : 0));
-            }
-
-            /* ************************************************************
-             * // this is only correct for offset == 0!
-             * if (nottyped)		// the inserted string is not typed
-             * typemaplen += str.length();
-             * if (no_abbr_cnt && offset == 0) // and not used for abbreviations
-             * no_abbr_cnt += str.length();
-             *************************************************************/
-
-            return true;
-        }
-
-        void delete(int start, int end)
-        {
-            buf.delete(start, end);
-            noremapbuf.delete(start, end);
-        }
-
-        /**
-         * return a character, map as needed.
-         * @return
-         */
-        char getChar() {
-            char c;
-            int loops = 0;
-            while(true) {
-                c = buf.charAt(0);
-                if(Options.isKeyDebug(Level.FINEST)
-                        || (G.no_mapping != 0 || G.allow_keys != 0)
-                            && Options.isKeyDebug()) {
-                    System.err.printf("getChar check: '%s' noremap=%b,"
-                            + " state=0x%x, G.no_mapping=%d, G.allow_keys=%d\n",
-                            TextUtil.debugString(String.valueOf(c)),
-                            noremapbuf.charAt(0) != 0,
-                            get_real_state(),
-                            G.no_mapping,
-                            G.allow_keys
-                            );
-                }
-                if(noremapbuf.charAt(0) == 0
-                        && G.no_mapping == 0) { // && G.allow_keys == 0 ?????
-                    int state = get_real_state();
-                    Mapping mapping = cmappings.getMapping(c, state);
-                    if(mapping != null)
-                    {
-                        if(++loops > G.p_mmd) {
-                            Msg.emsg("recursive mapping");
-                            c = (char)-1;
-                            break;
-                        }
-                        if(nMappings++ > G.p_mmd2) {
-                            Msg.emsg("internal map-cmd error, file bug report");
-                            c = (char)-1;
-                            break;
-                        }
-                        // ok, map it. first delete old char
-                        delete(0, 1);
-                        //
-                        // Insert the 'to' part in the typebuf.
-                        // If 'from' field is the same as the start of the
-                        // 'to' field, don't remap the first character.
-                        // If m_noremap is set, don't remap the whole 'to'
-                        // part.
-                        //
-                        if(Options.isKeyDebug() && loops <= 20)
-                            System.err.println("getChar: map: " + mapping
-                                    + (loops == 20 ? "... ... ..." : ""));
-                        if(!insert(mapping.getRhs(),
-                                 mapping.isNoremap()
-                                ? -1
-                                : mapping.getRhs().startsWith(mapping.getLhs())
-                                ? 1 : 0,
-                                 0,
-                                 true))
-                        {
-                            c = (char)-1;
-                            break;
-                        }
-                        continue;
-                    }
-                }
-                break;
-            }
-
-            if(c != -1) {
-                delete(0, 1);
-            } else {
-                setLength(0); // note, this should have already been done
-            }
-
-            assert buf.length() == noremapbuf.length();
-            if(Options.isKeyDebug(Level.FINEST))
-                System.err.println("getChar return: "
-                        + TextUtil.debugString(String.valueOf(c)));
-            return c;
-        }
-
-        public void setLength(int newLength)
-        {
-            buf.setLength(newLength);
-            noremapbuf.setLength(newLength);
-        }
-
-        boolean hasNext() {
-            return buf.length() > 0;
-        }
-
-        @Override
-        public int length()
-        {
-            return buf.length();
-        }
-
-        @Override
-        public CharSequence subSequence(int start, int end)
-        {
-            // If this is ever used, I'd be surprised...
-            TypeBuf tb = new TypeBuf();
-            tb.buf.append(buf.subSequence(start, end));
-            tb.noremapbuf.append(noremapbuf.subSequence(start, end));
-            return tb;
-        }
-
-        @Override
-        public char charAt(int index)
-        {
-            return buf.charAt(index);
-        }
-
-        @Override
-        public String toString()
-        {
-            return buf.toString();
-        }
-
-    }
-
   //
   // The various character queues
   //
@@ -915,108 +722,12 @@ public class GetChar {
     private static final BufferQueue stuffbuff = new BufferQueue();
     private static final BufferQueue redobuff = new BufferQueue();
     private static final BufferQueue recordbuff = new BufferQueue();
-    private static final TypeBuf typebuf = new TypeBuf();
     private static ViMagicRedo magicRedo = new MagicRedoOriginal(redobuff);
     private static String startInsertCommand;
 
     private static int last_recorded_len = 0;  // number of last recorded chars
     private static int redobuff_idx = 0;
     // static BufferQueue old_redobuff;
-
-    /**
-     * Small queue of characters. Can't extend StringBuffer, so delegate.
-     */
-    final static class BufferQueue implements CharSequence {
-        private StringBuilder buf = new StringBuilder();
-
-        void setLength(int length) {
-            buf.setLength(length);
-        }
-
-        @Override
-        public int length() {
-            return buf.length();
-        }
-
-        @Override
-        public char charAt(int index)
-        {
-            return buf.charAt(index);
-        }
-
-        @Override
-        public CharSequence subSequence(int start, int end)
-        {
-            return buf.subSequence(start, end);
-        }
-
-        boolean hasNext() {
-            return buf.length() > 0;
-        }
-
-        char removeFirst() {
-            char c = buf.charAt(0);
-            buf.deleteCharAt(0);
-            return c;
-        }
-
-        BufferQueue addFirst(char c) {
-            buf.insert(0, c);
-            return this;
-        }
-
-        char removeLast() {
-            int newLength = buf.length() - 1;
-            char c = buf.charAt(newLength);
-            buf.setLength(newLength);
-            return c;
-        }
-
-        char getLast() {
-            return getLast(0);
-        }
-
-        char getLast(int i) {
-            return buf.charAt(buf.length() - 1 - i);
-        }
-
-        BufferQueue insert(int ix, String s) {
-            buf.insert(ix, s);
-            return this;
-        }
-
-        boolean hasCharAt(int idx) {
-            return buf.length() > idx;
-        }
-
-        char getCharAt(int idx) {
-            return buf.charAt(idx);
-        }
-
-        String substring(int idx) {
-            return buf.substring(idx);
-        }
-
-        BufferQueue append(char c) {
-            buf.append(c);
-            return this;
-        }
-
-        BufferQueue append(int n) {
-            buf.append(n);
-            return this;
-        }
-
-        BufferQueue append(String s) {
-            buf.append(s);
-            return this;
-        }
-
-        @Override
-        public String toString() {
-            return buf.toString();
-        }
-    }
 
     interface ViMagicRedo {
         void charTyped(char c);

@@ -100,6 +100,8 @@ public class G
     static int old_indent = 0;
     static int ai_col = 0;
 
+    public static int p_mmd() { return p_mmd; }
+    public static int p_mmd2() { return p_mmd2; }
     static int p_mmd  = 1000;
     static int p_mmd2 = 10000;  // detects an internal error
 

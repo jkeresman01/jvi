@@ -121,7 +121,7 @@ public final class Mappings {
         public void actionPerformed(ActionEvent e)
         {
             ColonEvent cev = (ColonEvent) e;
-            Emsg emsg = new Emsg();
+            Emsgs emsg = new Emsgs();
             Mapping m = parseMapCommand(cev.getCommandLine(), emsg, true);
             if(m != null && m.isUnmap && !containsMappings(m.lhs.charAt(0))) {
                 emsg.error().append("No such mapping");
@@ -140,7 +140,7 @@ public final class Mappings {
      * @return null if problem else translated char
      */
     private static Character tranlateMapCommandChar(
-            Matcher m, boolean is_rhs, String orig, Emsg emsg)
+            Matcher m, boolean is_rhs, String orig, Emsgs emsg)
     {
         if(false) {
             System.err.println("region: '"
@@ -293,7 +293,7 @@ public final class Mappings {
      * @param emsgs
      * @return null if no mapping on line or error
      */
-    static Mapping parseMapCommand(String line, Emsg emsg, boolean printOk)
+    static Mapping parseMapCommand(String line, Emsgs emsg, boolean printOk)
     {
         Matcher matcher = getMapCharsMatcher();
         StringBuilder rhs = new StringBuilder();
@@ -429,7 +429,7 @@ public final class Mappings {
     {
         List<Mapping> mapCommands = new ArrayList<Mapping>();
 
-        Emsg emsg = new Emsg();
+        Emsgs emsg = new Emsgs();
 
         String[] lines = input.split("\n");
         for(int lnum = 0; lnum < lines.length; lnum++) {

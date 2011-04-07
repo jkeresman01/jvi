@@ -25,11 +25,11 @@ package com.raelity.jvi.core.lib;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public class Emsg {
+public class Emsgs {
     private StringBuilder sb;
     private int lnum;
 
-    public Emsg()
+    public Emsgs()
     {
         this.sb = new StringBuilder();
     }

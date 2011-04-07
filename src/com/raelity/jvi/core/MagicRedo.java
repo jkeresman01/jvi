@@ -24,7 +24,7 @@ import com.raelity.jvi.ViBadLocationException;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViBuffer.BIAS;
-import com.raelity.jvi.core.GetChar.BufferQueue;
+import com.raelity.jvi.core.lib.BufferQueue;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.text.TextUtil;
 

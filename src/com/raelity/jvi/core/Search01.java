@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.core.lib.Messages;
 import com.raelity.jvi.ViBuffer.BIAS;
 import java.util.List;
 import com.raelity.jvi.ViFPOS;
