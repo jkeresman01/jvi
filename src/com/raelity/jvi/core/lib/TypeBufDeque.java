@@ -19,7 +19,6 @@
  */
 package com.raelity.jvi.core.lib;
 
-import com.raelity.jvi.core.Constants;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.GetChar;
 import com.raelity.jvi.core.Msg;
@@ -29,6 +28,7 @@ import java.util.ArrayDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.raelity.jvi.core.Constants.*;
 import static com.raelity.jvi.core.KeyDefs.NO_CHAR;
 import static com.raelity.jvi.core.Util.*;
 
@@ -39,21 +39,21 @@ import static com.raelity.jvi.core.Util.*;
  * <p/>
  * NOTE: always: buf.length() == noremapbuf.length()
  * <p/>
- * NEEDSWORK: There's a performance problem with using a StringBuilder.
- * The insert and delete at the beginning are arraycopy.
- * USE A deque, but DEQUE doesn't support the insert at arbitrary spot.
+ * NEEDSWORK: I bet copying the Deque code and useing an int array
+ * would be real fast.
  *
  * @author Ernie Rael <err at raelity.com>
  */
 public final class TypeBufDeque {
     private Mappings mappings;
-    private ArrayDeque<Integer> buf = new ArrayDeque<Integer>();
+    private ArrayDeque<Integer> buf;
     private int nMappings;
     private int capacity;
 
     public TypeBufDeque(Mappings mappings)
     {
         this.mappings = mappings;
+        clear();
     }
 
     public void clearNMappings()
@@ -66,15 +66,14 @@ public final class TypeBufDeque {
     {
         // if maxSize > 3/4 of MAX then shrink the buffer
         // NEEDSWORK: have some hysteresis, so don't shrink too soon
-        if(capacity > Constants.MAXTYPEBUFLEN - (Constants.MAXTYPEBUFLEN >> 2)
-                && buf.isEmpty()) {
+        if(capacity > ADJUSTTYPEBUFLEN && buf.isEmpty()) {
             clear();
         }
         //
         // NEEDSWORK: ins_typebuf: performance can be improved
         //            For example, pass in a char array
         //
-        if(length() + str.length() > Constants.MAXTYPEBUFLEN) {
+        if(length() + str.length() > MAXTYPEBUFLEN) {
             Msg.emsg(Messages.e_toocompl); // also calls flushbuff
             //setcursor();
             Logger.getLogger(GetChar.class.getName()).
@@ -182,8 +181,6 @@ public final class TypeBufDeque {
                         c = NO_CHAR;
                         break;
                     }
-                    // ok, map it. first delete old char
-                    delete(0, 1);
                     //
                     // Insert the 'to' part in the typebuf.
                     // If 'from' field is the same as the start of the
@@ -205,14 +202,13 @@ public final class TypeBufDeque {
                         c = NO_CHAR;
                         break;
                     }
+                    // do it again
                     continue;
                 }
             }
             break;
         }
-        if(c != NO_CHAR) {
-            delete(0, 1);
-        } else {
+        if(c == NO_CHAR) {
             clear(); // note, this should have already been done
         }
         if(Options.isKeyDebug(Level.FINEST)) {

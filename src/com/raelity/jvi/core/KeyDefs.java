@@ -65,6 +65,8 @@ public class KeyDefs {
         return (c & 0xF000) == VIRT;
     }
 
+    public static final char NO_CHAR = '\uffff';
+
     /**
      * Any keys as opposed to characters, must be put out of range.
      * This is used to flag keys (non-unicode characters).

@@ -28,6 +28,8 @@ import com.raelity.text.TextUtil;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.KeyDefs.NO_CHAR;
 import static com.raelity.jvi.core.Util.*;
 
 /**
@@ -37,9 +39,7 @@ import static com.raelity.jvi.core.Util.*;
  * <p/>
  * NOTE: always: buf.length() == noremapbuf.length()
  * <p/>
- * NEEDSWORK: There's a performance problem with using a StringBuilder.
- * The insert and delete at the beginning are arraycopy.
- * USE A deque, but DEQUE doesn't support the insert at arbitrary spot.
+ * There's a Deque version.
  *
  * @author Ernie Rael <err at raelity.com>
  */
@@ -65,9 +65,7 @@ public final class TypeBuf {
     {
         // if cap() > 3/4 of MAX then shrink the buffer
         // NEEDSWORK: have some hysteresis, so don't shrink too soon
-        if(buf.capacity() >
-                    Constants.MAXTYPEBUFLEN - (Constants.MAXTYPEBUFLEN >> 2)
-                && buf.length() < 500) {
+        if(buf.capacity() > ADJUSTTYPEBUFLEN && buf.length() < 500) {
             buf.trimToSize();
             noremapbuf.trimToSize();
         }
@@ -142,12 +140,12 @@ public final class TypeBuf {
                 if(mapping != null) {
                     if(++loops > G.p_mmd()) {
                         Msg.emsg("recursive mapping");
-                        c = (char)-1;
+                        c = NO_CHAR;
                         break;
                     }
                     if(nMappings++ > G.p_mmd2()) {
                         Msg.emsg("internal map-cmd error, file bug report");
-                        c = (char)-1;
+                        c = NO_CHAR;
                         break;
                     }
                     // ok, map it. first delete old char
@@ -167,7 +165,7 @@ public final class TypeBuf {
                                mapping.isNoremap() ? -1
                             : mapping.getRhs().startsWith(mapping.getLhs()) ? 1
                             : 0, 0, true)) {
-                        c = (char)-1;
+                        c = NO_CHAR;
                         break;
                     }
                     continue;
@@ -175,10 +173,10 @@ public final class TypeBuf {
             }
             break;
         }
-        if(c != -1) {
+        if(c != NO_CHAR) {
             delete(0, 1);
         } else {
-            setLength(0); // note, this should have already been done
+            clear(); // note, this should have already been done
         }
         assert buf.length() == noremapbuf.length();
         if(Options.isKeyDebug(Level.FINEST)) {
@@ -188,10 +186,10 @@ public final class TypeBuf {
         return c;
     }
 
-    public void setLength(int newLength)
+    public void clear()
     {
-        buf.setLength(newLength);
-        noremapbuf.setLength(newLength);
+        buf.setLength(0);
+        noremapbuf.setLength(0);
     }
 
     public boolean hasNext()

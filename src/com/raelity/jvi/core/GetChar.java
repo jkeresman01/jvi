@@ -19,7 +19,7 @@
  */
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.core.lib.TypeBuf;
+import com.raelity.jvi.core.lib.TypeBufDeque;
 import com.raelity.jvi.core.lib.BufferQueue;
 import com.raelity.jvi.core.lib.Mappings;
 import com.raelity.jvi.ViInitialization;
@@ -40,7 +40,7 @@ public class GetChar {
     private static String currentMagicRedoAlgo = "anal";
 
     private static Mappings mappings;
-    private static TypeBuf typebuf;
+    private static TypeBufDeque typebuf;
 
     private GetChar()
     {
@@ -55,7 +55,7 @@ public class GetChar {
         public void init()
         {
             mappings = new Mappings();
-            typebuf = new TypeBuf(mappings);
+            typebuf = new TypeBufDeque(mappings);
         }
     }
 
@@ -67,6 +67,11 @@ public class GetChar {
     static void reinitMappings()
     {
         mappings.reinitMappings();
+    }
+
+    static int typeBufLenght()
+    {
+      return typebuf.length();
     }
 
     /** An input char from the user has been recieved.
@@ -672,7 +677,7 @@ public class GetChar {
     }
 
     static private void init_typebuf() {
-        typebuf.setLength(0);
+        typebuf.clear();
     }
 
     /**
