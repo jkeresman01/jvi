@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.core.lib.CcFlag;
 import com.raelity.jvi.core.lib.ColonCommandItem;
 import com.raelity.jvi.core.lib.AbbrevLookup;
 import com.raelity.jvi.core.lib.Messages;

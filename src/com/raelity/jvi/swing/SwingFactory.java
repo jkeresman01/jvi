@@ -20,7 +20,7 @@
 
 package com.raelity.jvi.swing;
 
-import com.raelity.jvi.core.WindowTreeBuilder;
+import com.raelity.jvi.core.lib.WindowTreeBuilder;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.ColonCommands;

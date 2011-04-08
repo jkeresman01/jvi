@@ -27,7 +27,7 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import com.raelity.jvi.ViTextView.TAGOP;
-import com.raelity.jvi.core.WindowTreeBuilder;
+import com.raelity.jvi.core.lib.WindowTreeBuilder;
 import java.awt.Component;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;

@@ -26,7 +26,8 @@ import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViTextView.FOLDOP;
 import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.core.WindowTreeBuilder.Direction;
+import com.raelity.jvi.core.lib.WindowTreeBuilder;
+import com.raelity.jvi.core.lib.WindowTreeBuilder.Direction;
 import java.util.logging.Level;
 import java.util.Iterator;
 import java.util.List;
@@ -737,7 +738,8 @@ public class Misc01
         AppViews.sortAppView(avs);
         return avs;
     }
-    static List<ViAppView> getVisibleAppViews(AppViews whichViews)
+
+    public static List<ViAppView> getVisibleAppViews(AppViews whichViews)
     {
         List<ViAppView> avs = AppViews.getList(whichViews);
         if(avs == null)

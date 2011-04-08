@@ -37,7 +37,7 @@ import  static com.raelity.jvi.core.lib.Constants.*;
 
 
 import com.raelity.jvi.*;
-import com.raelity.jvi.core.CcFlag;
+import com.raelity.jvi.core.lib.CcFlag;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.manager.Scheduler;

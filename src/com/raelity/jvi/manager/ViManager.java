@@ -20,7 +20,7 @@
 package com.raelity.jvi.manager;
 
 import com.raelity.jvi.core.Buffer;
-import com.raelity.jvi.core.CcFlag;
+import com.raelity.jvi.core.lib.CcFlag;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Hook;

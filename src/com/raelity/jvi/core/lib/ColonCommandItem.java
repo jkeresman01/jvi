@@ -1,6 +1,5 @@
 package com.raelity.jvi.core.lib;
 
-import com.raelity.jvi.core.CcFlag;
 import com.raelity.jvi.core.ColonCommands.ColonAction;
 import java.util.Collections;
 import java.util.EnumSet;

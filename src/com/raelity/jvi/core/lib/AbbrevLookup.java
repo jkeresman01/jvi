@@ -20,7 +20,6 @@
 
 package com.raelity.jvi.core.lib;
 
-import com.raelity.jvi.core.CcFlag;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;

@@ -18,11 +18,14 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
-package com.raelity.jvi.core;
+package com.raelity.jvi.core.lib;
 
+import com.raelity.jvi.core.lib.CcFlag;
 import static com.raelity.jvi.manager.ViManager.cid;
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.core.ColonCommands;
+import com.raelity.jvi.core.Misc01;
 import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.manager.ViManager;
 import java.awt.Component;

@@ -18,7 +18,7 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
-package com.raelity.jvi.core;
+package com.raelity.jvi.core.lib;
 
 public enum CcFlag {
 

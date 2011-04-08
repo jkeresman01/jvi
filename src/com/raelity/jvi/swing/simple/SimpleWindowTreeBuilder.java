@@ -21,7 +21,7 @@
 package com.raelity.jvi.swing.simple;
 
 import com.raelity.jvi.ViAppView;
-import com.raelity.jvi.core.WindowTreeBuilder;
+import com.raelity.jvi.core.lib.WindowTreeBuilder;
 import com.raelity.jvi.manager.ViManager;
 import java.awt.Component;
 import java.util.List;

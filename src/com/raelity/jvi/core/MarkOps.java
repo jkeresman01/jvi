@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.core.lib.CcFlag;
 import com.raelity.jvi.core.ColonCommands.ColonAction;
 import java.util.EnumSet;
 import com.raelity.jvi.manager.ViManager;
