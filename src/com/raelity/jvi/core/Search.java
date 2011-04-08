@@ -36,8 +36,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 
-import static com.raelity.jvi.core.Constants.*;
-import static com.raelity.jvi.core.KeyDefs.*;
+import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.lib.KeyDefs.*;
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;

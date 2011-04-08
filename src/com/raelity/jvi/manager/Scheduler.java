@@ -27,7 +27,7 @@ import com.raelity.jvi.ViFactory;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.G;
-import com.raelity.jvi.core.KeyDefs;
+import com.raelity.jvi.core.lib.KeyDefs;
 import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.core.Options;
 import java.awt.Component;

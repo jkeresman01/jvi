@@ -26,7 +26,7 @@ import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.options.OptionsBeanBase;
-import static com.raelity.jvi.core.KeyDefs.*;
+import static com.raelity.jvi.core.lib.KeyDefs.*;
 import com.raelity.jvi.*;
 import com.raelity.jvi.ViTextView.TAGOP;
 import com.raelity.jvi.core.Options;

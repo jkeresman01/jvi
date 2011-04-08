@@ -20,6 +20,8 @@
 
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.core.lib.ColonCommandItem;
+import com.raelity.jvi.core.lib.AbbrevLookup;
 import com.raelity.jvi.core.lib.Messages;
 import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.manager.ViManager;
@@ -40,7 +42,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
-import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
 

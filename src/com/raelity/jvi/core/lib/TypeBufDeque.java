@@ -28,8 +28,8 @@ import java.util.ArrayDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.raelity.jvi.core.Constants.*;
-import static com.raelity.jvi.core.KeyDefs.NO_CHAR;
+import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.lib.KeyDefs.NO_CHAR;
 import static com.raelity.jvi.core.Util.*;
 
 /**

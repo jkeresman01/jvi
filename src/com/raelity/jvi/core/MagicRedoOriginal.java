@@ -24,8 +24,8 @@ import com.raelity.jvi.core.lib.BufferQueue;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.text.TextUtil;
 
-import static com.raelity.jvi.core.Constants.*;
-import static com.raelity.jvi.core.KeyDefs.*;
+import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.lib.KeyDefs.*;
 
 /**
  *

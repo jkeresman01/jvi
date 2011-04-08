@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.core.lib.NotSupportedException;
 import com.raelity.jvi.core.lib.Messages;
 import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.manager.ViManager;
@@ -64,10 +65,10 @@ import java.util.prefs.Preferences;
 import org.openide.util.lookup.ServiceProvider;
 
 import static com.raelity.jvi.core.ColonCommands.*;
-import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.Edit.*;
 import static com.raelity.jvi.core.GetChar.*;
-import static com.raelity.jvi.core.KeyDefs.*;
+import static com.raelity.jvi.core.lib.KeyDefs.*;
 import static com.raelity.jvi.core.Normal.*;
 import static com.raelity.jvi.core.Search.*;
 import static com.raelity.jvi.core.Util.*;
@@ -4040,7 +4041,7 @@ private static int put_in_typebuf(String s, boolean colon)
    * {@link KeyDefs}, to Java KeyEventt keys, which are turned into key strokes.
    */
   private static int[] initJavaKeyMap() {
-    int[] jk = new int[KeyDefs.MAX_JAVA_KEY_MAP + 1];
+    int[] jk = new int[MAX_JAVA_KEY_MAP + 1];
 
     for(int i = 0; i < jk.length; i++) {
       jk[i] = -1;

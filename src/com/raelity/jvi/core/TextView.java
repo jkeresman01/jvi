@@ -26,7 +26,7 @@ import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.manager.Scheduler;
 import java.util.LinkedList;
 import java.util.List;
-import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.lib.Constants.*;
 
 /**
  * This represents the core functionality of a vim window.

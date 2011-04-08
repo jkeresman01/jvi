@@ -36,7 +36,7 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.Search.*;

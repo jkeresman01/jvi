@@ -26,7 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.event.DocumentEvent;
 
-import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.lib.Constants.*;
 import static java.lang.Math.min;
 
 /**

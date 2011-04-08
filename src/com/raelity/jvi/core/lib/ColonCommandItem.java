@@ -1,5 +1,6 @@
-package com.raelity.jvi.core;
+package com.raelity.jvi.core.lib;
 
+import com.raelity.jvi.core.CcFlag;
 import com.raelity.jvi.core.ColonCommands.ColonAction;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -16,12 +17,12 @@ public final class ColonCommandItem implements Comparable<ColonCommandItem> {
     private final Object value;
     private final EnumSet<CcFlag> flags;
 
-    ColonCommandItem(String abbrev)
+    public ColonCommandItem(String abbrev)
     {
         this(abbrev, null, null, null);
     }
 
-    ColonCommandItem(String abbrev, String name, Object value,
+    public ColonCommandItem(String abbrev, String name, Object value,
                      EnumSet<CcFlag> flags)
     {
         this.abbrev = abbrev;

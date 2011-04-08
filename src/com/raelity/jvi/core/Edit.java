@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.core.lib.NotSupportedException;
 import com.raelity.jvi.core.lib.Messages;
 import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.MutableInt;
@@ -32,9 +33,9 @@ import com.raelity.text.TextUtil.MySegment;
 import java.awt.EventQueue;
 import java.util.Stack;
 
-import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.GetChar.*;
-import static com.raelity.jvi.core.KeyDefs.*;
+import static com.raelity.jvi.core.lib.KeyDefs.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.Normal.*;

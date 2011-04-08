@@ -21,7 +21,7 @@ package com.raelity.jvi.core.lib;
 
 import com.raelity.text.TextUtil;
 
-import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.lib.Constants.*;
 
 /**
  * This specifies a translation for the map command.

@@ -17,7 +17,7 @@
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi.core;
+package com.raelity.jvi.core.lib;
 
 /**
  * The vim code uses character constants and key constants.
@@ -163,7 +163,7 @@ public class KeyDefs {
     public static final char MAP_K_X_IM_INS_REP = 0x4b;
     public static final char MAP_K_X_IM_LITERAL = 0x4c;
     
-    public static final char MAX_JAVA_KEY_MAP = 0x4c;
+    public static final int MAX_JAVA_KEY_MAP = 0x4c;
     
     //public static final char MAP_K_S_UP	= MAP_K_UP + SHIFTED_VIRT_OFFSET;
     //public static final char MAP_K_S_DOWN = K_DOWN + SHIFTED_VIRT_OFFSET;

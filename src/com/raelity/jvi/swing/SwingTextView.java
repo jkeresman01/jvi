@@ -33,7 +33,7 @@ import com.raelity.jvi.core.Misc;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.Edit;
 import com.raelity.jvi.core.G;
-import  static com.raelity.jvi.core.Constants.*;
+import  static com.raelity.jvi.core.lib.Constants.*;
 
 
 import com.raelity.jvi.*;

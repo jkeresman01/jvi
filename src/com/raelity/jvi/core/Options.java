@@ -49,7 +49,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.openide.util.lookup.ServiceProvider;
 
-import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.lib.Constants.*;
 
 /**
  * Option handling from external sources.

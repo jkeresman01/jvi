@@ -26,6 +26,7 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.core.lib.NotSupportedException;
 import com.raelity.jvi.ViTextView.EDGE;
 import com.raelity.jvi.ViTextView.DIR;
 import com.raelity.jvi.manager.ViManager;
@@ -47,9 +48,9 @@ import java.text.CharacterIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.Edit.*;
-import static com.raelity.jvi.core.KeyDefs.*;
+import static com.raelity.jvi.core.lib.KeyDefs.*;
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;

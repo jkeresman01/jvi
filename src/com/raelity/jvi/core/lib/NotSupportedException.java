@@ -17,13 +17,13 @@
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.jvi.core;
+package com.raelity.jvi.core.lib;
 
-class NotSupportedException extends Exception {
+public class NotSupportedException extends Exception {
   String op;
   String cmd;
 
-  NotSupportedException(String op, String cmd) {
+  public NotSupportedException(String op, String cmd) {
     super();
     this.op = op;
     this.cmd = cmd;

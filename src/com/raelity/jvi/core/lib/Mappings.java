@@ -43,8 +43,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.raelity.jvi.core.Constants.*;
-import static com.raelity.jvi.core.KeyDefs.*;
+import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.lib.KeyDefs.*;
 
 /**
  *

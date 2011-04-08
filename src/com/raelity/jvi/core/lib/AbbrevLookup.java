@@ -18,8 +18,9 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
-package com.raelity.jvi.core;
+package com.raelity.jvi.core.lib;
 
+import com.raelity.jvi.core.CcFlag;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -117,7 +118,7 @@ public class AbbrevLookup
      * @exception IllegalArgumentException this is thrown if passed a
      *         null argument.
      */
-    protected boolean remove( String abbrev )
+    public boolean remove( String abbrev )
     {
         if ( abbrev == null ) {
             throw new IllegalArgumentException("Null argument.");

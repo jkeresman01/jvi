@@ -48,8 +48,8 @@ import org.openide.util.lookup.ServiceProvider;
 import static java.awt.event.InputEvent.SHIFT_MASK;
 import static java.awt.event.InputEvent.CTRL_MASK;
 
-import static com.raelity.jvi.core.KeyDefs.*;
-import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.lib.KeyDefs.*;
+import static com.raelity.jvi.core.lib.Constants.*;
 
 public class KeyBinding {
   private static final Logger LOG = Logger.getLogger(KeyBinding.class.getName());

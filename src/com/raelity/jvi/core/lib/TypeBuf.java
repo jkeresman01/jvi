@@ -19,7 +19,6 @@
  */
 package com.raelity.jvi.core.lib;
 
-import com.raelity.jvi.core.Constants;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.GetChar;
 import com.raelity.jvi.core.Msg;
@@ -28,8 +27,8 @@ import com.raelity.text.TextUtil;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.raelity.jvi.core.Constants.*;
-import static com.raelity.jvi.core.KeyDefs.NO_CHAR;
+import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.lib.KeyDefs.NO_CHAR;
 import static com.raelity.jvi.core.Util.*;
 
 /**

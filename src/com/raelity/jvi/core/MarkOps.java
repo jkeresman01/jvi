@@ -53,7 +53,7 @@ import static com.raelity.jvi.ViTextView.MARKOP.NEXT;
 import static com.raelity.jvi.ViTextView.MARKOP.PREV;
 import static com.raelity.jvi.ViTextView.MARKOP.TOGGLE;
 
-import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Messages.*;
 import static com.raelity.jvi.core.Util.*;
 

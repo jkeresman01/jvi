@@ -19,7 +19,7 @@
  */
 package com.raelity.jvi;
 
-import com.raelity.jvi.core.Constants;
+import com.raelity.jvi.core.lib.Constants;
 
 /** Salient variables for doing a vi cursor. */
 

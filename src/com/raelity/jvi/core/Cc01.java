@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.core.lib.ColonCommandItem;
 import com.raelity.jvi.core.lib.Messages;
 import java.util.Collections;
 import com.raelity.jvi.options.OptUtil;
@@ -58,7 +59,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 import static java.lang.Math.min;
 
-import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.lib.Constants.*;
 
 /**
  *

@@ -28,8 +28,8 @@ import com.raelity.text.TextUtil;
 import com.raelity.jvi.options.Option;
 import java.util.logging.Level;
 
-import static com.raelity.jvi.core.Constants.*;
-import static com.raelity.jvi.core.KeyDefs.*;
+import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.lib.KeyDefs.*;
 import static com.raelity.jvi.core.Util.*;
 
 public class GetChar {

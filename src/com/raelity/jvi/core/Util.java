@@ -26,7 +26,7 @@ import com.raelity.text.TextUtil.MySegment;
 import java.awt.Toolkit;
 import java.text.CharacterIterator;
 
-import static com.raelity.jvi.core.Constants.*;
+import static com.raelity.jvi.core.lib.Constants.*;
 
 
 public class Util {
