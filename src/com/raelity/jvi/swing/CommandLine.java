@@ -75,6 +75,9 @@ public class CommandLine extends JPanel
     boolean setKeymapActive;
     int dot;
     int mark;
+    private static final String ACT_FINISH = "vi-command-finish";
+    private static final String ACT_TAB = "vi-command-tab";
+    private static final String ACT_BACK_SPACE = "vi-command-backspace";
 
     /**
      *  This is not intended to match an actual keystroke, it is used
@@ -371,12 +374,6 @@ public class CommandLine extends JPanel
     }
 
 
-    protected Action createSimpleEvent(String name)
-    {
-        return new SimpleEvent(name);
-    }
-
-
     private void setComboDoneListener()
     {
         combo.addActionListener(new ActionListener() {
@@ -385,7 +382,7 @@ public class CommandLine extends JPanel
                 if(e.getActionCommand().equals("comboBoxEdited")) {
                     ActionEvent e01 = new ActionEvent(CommandLine.this,
                             e.getID(), "\n", e.getModifiers());
-                    fireActionPerformed(e01);
+                    fireCommandLineActionPerformed(e01);
                 }
             }
         });
@@ -402,7 +399,8 @@ public class CommandLine extends JPanel
             return;
         }
         setKeymapActive = true;
-        Keymap keymap = JTextComponent.addKeymap(CommandLine.COMMAND_LINE_KEYMAP,
+        Keymap keymap = JTextComponent.addKeymap(
+                CommandLine.COMMAND_LINE_KEYMAP,
                 getTextComponent().getKeymap());
         JTextComponent.loadKeymap(keymap, getBindings(), getActions());
         getTextComponent().setKeymap(keymap);
@@ -413,14 +411,21 @@ public class CommandLine extends JPanel
     protected JTextComponent.KeyBinding[] getBindings()
     {
         JTextComponent.KeyBinding[] bindings = {
-            new JTextComponent.KeyBinding(EXECUTE_KEY,
-                    "vi-command-execute"),
+            new JTextComponent.KeyBinding(
+                    EXECUTE_KEY,
+                    ACT_FINISH),
             new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                     KeyEvent.VK_ESCAPE, 0),
-                    "vi-command-escape"),
+                    ACT_FINISH),
             new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                     '\t'),
-                    "vi-command-tab"),
+                    ACT_TAB),
+            new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                    KeyEvent.VK_BACK_SPACE, 0, false),
+                    ACT_BACK_SPACE),
+            new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                    KeyEvent.VK_H, InputEvent.CTRL_DOWN_MASK, false),
+                    ACT_BACK_SPACE),
         };
         return bindings;
     }
@@ -431,14 +436,48 @@ public class CommandLine extends JPanel
         Action[] localActions = null;
         try {
             localActions = new Action[] {
-                createSimpleEvent("vi-command-execute"),
-                createSimpleEvent("vi-command-escape"),
-                new TextAction("vi-command-tab") {
+                new TextAction(ACT_FINISH) {
                     @Override
-                    public void actionPerformed(ActionEvent e) {
-                        ((JTextField)e.getSource()).replaceSelection("\t");
+                    public void actionPerformed(ActionEvent e)
+                    {
+                        // bounce the event to process the command line
+                        ActionEvent e01 = new ActionEvent(
+                                CommandLine.this,
+                                e.getID(),
+                                e.getActionCommand(),
+                                e.getModifiers());
+                        fireCommandLineActionPerformed(e01);
                     }
-                }
+                },
+                new TextAction(ACT_TAB) {
+                    @Override
+                    public void actionPerformed(ActionEvent e)
+                    {
+                        // input the tab (instead of focus traversal)
+                        getTextComponent(e).replaceSelection("\t");
+                    }
+                },
+                new TextAction(ACT_BACK_SPACE) {
+                    @Override
+                    public void actionPerformed(ActionEvent e)
+                    {
+                        // Treat a backspace on an empty line like <ESC>
+                        JTextComponent jtc = getTextComponent(e);
+                        if(jtc.getText().isEmpty()) {
+                            Action act = jtc.getKeymap().getAction(
+                                    KeyStroke.getKeyStroke(
+                                        KeyEvent.VK_ESCAPE, 0));
+                            act.actionPerformed(new ActionEvent(
+                                    e.getSource(), e.getID(), "\u001b"));
+                        } else {
+                            Action bs= jtc.getActionMap()
+                                .get(DefaultEditorKit.deletePrevCharAction);
+                            if(bs != null) {
+                                bs.actionPerformed(e);
+                            }
+                        }
+                    }
+                },
             };
         } catch(Throwable e) {
             LOG.log(Level.SEVERE, null, e);
@@ -448,11 +487,11 @@ public class CommandLine extends JPanel
 
 
     /**
-     * Take the argument event and create an action event copy with
-     * this as its source. Then deliver it as needed.
+     * Deliver event to command line listener;
+     * This is expected to complete the command
      * Do some maintenance on the LRU history.
      */
-    protected void fireActionPerformed( ActionEvent e )
+    protected void fireCommandLineActionPerformed( ActionEvent e )
     {
         String command = getTextComponent().getText();
 
@@ -499,21 +538,6 @@ public class CommandLine extends JPanel
 
 
     // inner classes ...........................................................
-
-
-    /** Bounce the event, modified, to this class's user. */
-    private class SimpleEvent extends TextAction
-    {
-        SimpleEvent(String name) {
-            super(name);
-        }
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            ActionEvent e01 = new ActionEvent(CommandLine.this, e.getID(),
-                    e.getActionCommand(), e.getModifiers());
-            fireActionPerformed(e01);
-        }
-    }
 
 
     /**
