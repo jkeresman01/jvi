@@ -61,8 +61,8 @@ import javax.swing.event.DocumentListener;
  */
 public class CommandLine extends JPanel
 {
-    private static final
-            Logger LOG = Logger.getLogger(CommandLine.class.getName());
+    private static final Logger LOG
+            = Logger.getLogger(CommandLine.class.getName());
     static public final int DEFAULT_HISTORY_SIZE = 50;
     static public final String COMMAND_LINE_KEYMAP = "viCommandLine";
     JLabel modeLabel = new JLabel();
@@ -94,9 +94,6 @@ public class CommandLine extends JPanel
     // ............
 
 
-    /**
-     *  Default constructor.
-     */
     public CommandLine()
     {
         // see https://substance.dev.java.net/issues/show_bug.cgi?id=285
@@ -107,6 +104,7 @@ public class CommandLine extends JPanel
         JTextComponent text
                 = (JTextComponent) combo.getEditor().getEditorComponent();
         text.addPropertyChangeListener("keymap", new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if(setKeymapActive)
                     return;
@@ -114,6 +112,7 @@ public class CommandLine extends JPanel
                 Object oldO = evt.getOldValue();
                 if(newO != null) {
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             setKeymap();
                         }
@@ -129,12 +128,12 @@ public class CommandLine extends JPanel
         }
         Font font = modeLabel.getFont();
         modeLabel.setFont(new Font("Monospaced",
-                Font.BOLD,
-                font.getSize()));
+                                   Font.BOLD,
+                                   font.getSize()));
         font = combo.getFont();
         combo.setFont(new Font("Monospaced",
-                font.getStyle(),
-                font.getSize()));
+                               font.getStyle(),
+                               font.getSize()));
         setHistorySize(DEFAULT_HISTORY_SIZE);
         setMode(" ");
         setComboDoneListener();
@@ -335,7 +334,7 @@ public class CommandLine extends JPanel
         // remove the empty-blank element
         model.removeElement("");
         // if the empty-blank string was selected we're done
-        if(command.equals("")) {
+        if(command.isEmpty()) {
             return;
         }
         // now move the selected string to the top of the list
@@ -381,6 +380,7 @@ public class CommandLine extends JPanel
     private void setComboDoneListener()
     {
         combo.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if(e.getActionCommand().equals("comboBoxEdited")) {
                     ActionEvent e01 = new ActionEvent(CommandLine.this,
@@ -434,6 +434,7 @@ public class CommandLine extends JPanel
                 createSimpleEvent("vi-command-execute"),
                 createSimpleEvent("vi-command-escape"),
                 new TextAction("vi-command-tab") {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         ((JTextField)e.getSource()).replaceSelection("\t");
                     }
@@ -506,6 +507,7 @@ public class CommandLine extends JPanel
         SimpleEvent(String name) {
             super(name);
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             ActionEvent e01 = new ActionEvent(CommandLine.this, e.getID(),
                     e.getActionCommand(), e.getModifiers());
@@ -540,6 +542,7 @@ public class CommandLine extends JPanel
 
             commandLine.addActionListener(new ActionListener()
             {
+                @Override
                 public void actionPerformed(ActionEvent e)
                 {
                     finishUpEntry(e);
@@ -570,6 +573,7 @@ public class CommandLine extends JPanel
         }
 
         /** ViCmdEntry interface */
+        @Override
         final public void activate( String mode, ViTextView parent )
         {
             activate(mode, parent, "", false);
@@ -579,6 +583,7 @@ public class CommandLine extends JPanel
          * Start taking input. As a side effect of invoking this,
          * the variable {@line #commandLineWindow} is set.
          */
+        @Override
         final public void activate(
                 String mode,
                 ViTextView tv,
@@ -626,6 +631,7 @@ public class CommandLine extends JPanel
          */
         private FocusListener focusSetSelection;
 
+        @Override
         public void append( char c )
         {
             if (c == '\n') {
@@ -685,11 +691,13 @@ public class CommandLine extends JPanel
             return pos;
         }
 
+        @Override
         public String getCommand()
         {
             return lastCommand;
         };
 
+        @Override
         public void cancel()
         {
             lastCommand = "";
@@ -701,6 +709,7 @@ public class CommandLine extends JPanel
             return commandLine.getModeLabel();
         }
 
+        @Override
         public JTextComponent getTextComponent()
         {
             return commandLine.getTextComponent();
@@ -747,7 +756,7 @@ public class CommandLine extends JPanel
         {
             if(e.getActionCommand().charAt(0) == '\n') {
                 StringBuffer sb = new StringBuffer();
-                if( ! initialText.equals("")
+                if( ! initialText.isEmpty()
                         && lastCommand.startsWith(initialText)) {
                     sb.append(lastCommand.substring(initialText.length()));
                 } else {
@@ -759,11 +768,13 @@ public class CommandLine extends JPanel
             ell.fire(ActionListener.class, e);
         }
 
+        @Override
         public void addActionListener(ActionListener l )
         {
             ell.add(ActionListener.class, l);
         }
 
+        @Override
         public void removeActionListener(ActionListener l)
         {
             ell.remove(ActionListener.class, l);
@@ -847,6 +858,7 @@ public class CommandLine extends JPanel
             });*/
             editor.addPropertyChangeListener("keymap",
                                              new PropertyChangeListener() {
+                                                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (!(evt.getNewValue() instanceof FilteredKeymap)) {
                         // We have to do this lazily, because the property change
@@ -857,23 +869,27 @@ public class CommandLine extends JPanel
             });
         }
 
+        @Override
         public void addActionListener(ActionListener l)
         {
             // NB that setEditor calls addActionListener
             //editor.addActionListener(l);
         }
 
+        @Override
         public void removeActionListener(ActionListener l)
         {
             //assert false;
             //editor.removeActionListener(l);
         }
 
+        @Override
         public Component getEditorComponent()
         {
             return editor;
         }
 
+        @Override
         public Object getItem()
         {
             Object newValue = editor.getText();
@@ -888,6 +904,7 @@ public class CommandLine extends JPanel
                     // and get the value and cast it to the new type.
                     Class cls = oldValue.getClass();
                     try {
+                        @SuppressWarnings("unchecked")
                         Method method = cls.getMethod("valueOf",
                                 new Class[]{String.class});
                         newValue = method.invoke(oldValue,
@@ -900,6 +917,7 @@ public class CommandLine extends JPanel
             return newValue;
         }
 
+        @Override
         public void setItem(Object obj)
         {
             if (obj != null)  {
@@ -911,6 +929,7 @@ public class CommandLine extends JPanel
             }
         }
 
+        @Override
         public void selectAll()
         {
             editor.selectAll();
@@ -919,6 +938,7 @@ public class CommandLine extends JPanel
 
         private class KeymapUpdater implements Runnable
         {
+            @Override
             public void run()
             {
                 editor.setKeymap(new FilteredKeymap(editor.getKeymap()));
@@ -945,11 +965,13 @@ public class CommandLine extends JPanel
             this.keyMap = keyMap;
         }
 
+        @Override
         public void addActionForKeyStroke(KeyStroke key, Action a)
         {
             keyMap.addActionForKeyStroke(key, a);
         }
 
+        @Override
         public Action getAction(KeyStroke key)
         {
             if (enter.equals(key) ||
@@ -962,36 +984,43 @@ public class CommandLine extends JPanel
             }
         }
 
+        @Override
         public Action[] getBoundActions()
         {
             return keyMap.getBoundActions();
         }
 
+        @Override
         public KeyStroke[] getBoundKeyStrokes()
         {
             return keyMap.getBoundKeyStrokes();
         }
 
+        @Override
         public Action getDefaultAction()
         {
             return keyMap.getDefaultAction();
         }
 
+        @Override
         public KeyStroke[] getKeyStrokesForAction(Action a)
         {
             return keyMap.getKeyStrokesForAction(a);
         }
 
+        @Override
         public String getName()
         {
             return keyMap.getName()+"_Filtered"; //NOI18N
         }
 
+        @Override
         public javax.swing.text.Keymap getResolveParent()
         {
             return keyMap.getResolveParent();
         }
 
+        @Override
         public boolean isLocallyDefined(KeyStroke key)
         {
             if (enter.equals(key) ||
@@ -1004,21 +1033,25 @@ public class CommandLine extends JPanel
             }
         }
 
+        @Override
         public void removeBindings()
         {
             keyMap.removeBindings();
         }
 
+        @Override
         public void removeKeyStrokeBinding(KeyStroke keys)
         {
             keyMap.removeKeyStrokeBinding(keys);
         }
 
+        @Override
         public void setDefaultAction(Action a)
         {
             keyMap.setDefaultAction(a);
         }
 
+        @Override
         public void setResolveParent(Keymap parent)
         {
             keyMap.setResolveParent(parent);

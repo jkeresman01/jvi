@@ -37,6 +37,7 @@ public class InlineCmdEntry extends CommandLine.CommandLineEntry {
         };
     }
 
+    @Override
     public void finishActivate() {
         JPanel glass = (JPanel)getRootPane().getGlassPane();
         commandLine.setBounds(positionCommandEntry(glass, commandLine));
@@ -52,6 +53,7 @@ public class InlineCmdEntry extends CommandLine.CommandLineEntry {
         commandLine.takeFocus(true);
     };
 
+    @Override
     protected void prepareShutdown(){
         doneWithCommandLine = true;
         //commandLine.removeActionListener(this);

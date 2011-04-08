@@ -52,6 +52,7 @@ public class WindowCmdEntry extends CommandLine.CommandLineEntry {
     /**
      * Position the dialog and start taking input.
      */
+    @Override
     public void finishActivate() {
         Window root = SwingUtilities.getWindowAncestor(tv.getEditorComponent());
         if(commandLineWindow == null || commandLineWindow.getOwner() != root) {
@@ -79,6 +80,7 @@ public class WindowCmdEntry extends CommandLine.CommandLineEntry {
         commandLineWindow.setVisible(true);
     }
     
+    @Override
     protected void prepareShutdown() {
         commandLineWindow.setVisible(false);
     }
