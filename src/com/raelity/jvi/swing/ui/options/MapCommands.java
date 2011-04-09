@@ -124,11 +124,17 @@ implements Options.EditControl {
         XMLUtil xmlFix = new XMLUtil(OptionSheet.IN_RANGE_INVALID_CR,
                                      OptionSheet.IN_RANGE_VALID_CR);
 
+        StringBuilder sb = new StringBuilder();
+
         description.setText("<html>"
-            + "<b>"
-            + opt.getDisplayName()
-            + "</b><br>"
-            + xmlFix.utf2xml(opt.getDesc()));
+                + "<b>"
+                + opt.getDisplayName()
+                + "</b><br>"
+                + xmlFix.utf2xml(opt.getDesc())
+                + "<br/><br/>Default: <br/>"
+                + xmlFix.utf2xml(opt.getDefault())
+                + ""
+                );
         description.setCaretPosition(0);
     }
 

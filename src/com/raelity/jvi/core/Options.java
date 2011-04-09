@@ -232,7 +232,20 @@ public final class Options {
     // Put this in GENERAL, but mark it hidden.
     // It is handled very specially.
     //
-    OptUtil.createStringOption(mapCommands, "",
+    OptUtil.createStringOption(mapCommands,
+              "\" These mapping are handy if line wrap is turned on."
+            + "\n\" With them, j,k,$,0,^ behave visually as usual."
+            + "\n\" On wrapped lines the cursor will not change visual line."
+            + "\n\" The arrow keys and <Home>, <End> still behave as usual,"
+            + "\n\" they could be mapped as well."
+            + "\n\" Uncomment them and try them out with wrapped lines."
+            + "\n"
+            + "\n\" map j gj"
+            + "\n\" map k gk"
+            + "\n\" map $ g$"
+            + "\n\" map 0 g0"
+            + "\n\" map ^ g^"
+            + "",
             new StringOption.Validator() {
             @Override
               public void validate(String val) throws PropertyVetoException {
@@ -252,16 +265,12 @@ public final class Options {
             + "\n[nvo]map, [nvo]noremap and [nvo]unmap commands supported"
             + " (only normal mode mappings)."
             + " Comments are on a line by themselves and start with \"."
-            + "\nExamples:"
-            + "\n\u00a0\u00a0\u00a0\u00a0noremap <Down> gj"
-            + "\n\u00a0\u00a0\u00a0\u00a0\" visual mode only, following ususally does nothing"
-            + "\n\u00a0\u00a0\u00a0\u00a0vnoremap <C-Up> <Down><Up>"
             + "\nIn lhs or rhs a char is of the form:"
             + "\n\u00a0\u00a0\u00a0\u00a0\"c\"           - except \\ and < and space"
             + "\n\u00a0\u00a0\u00a0\u00a0\"<C-X>\"       - except Ctrl-\\"
             + "\n\u00a0\u00a0\u00a0\u00a0\"<special>\"   - see jVi doc for valid specials"
             + "\n\u00a0\u00a0\u00a0\u00a0\"<C-special>\" \"<S-special>\""
-            + "\nSome specials: <lt>,<Space>,<Bslash>"
+            + "\nSome specials: <lt>,<Space>,<Bslash>,<Up>,<Home>"
             );
     setExpertHidden(mapCommands, true, true);
     

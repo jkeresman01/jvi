@@ -49,6 +49,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
@@ -843,12 +844,28 @@ private static void addDebugColonCommands()
             public void actionPerformed(ActionEvent ev) {
                 ColonEvent cev = (ColonEvent) ev;
                 
-                if(cev.getNArg() == 1) {
-                    String key = cev.getArg(1);
-                    Preferences prefs = ViManager.getFactory().getPreferences();
-                    prefs.remove(key);
-                } else
+                if(cev.getNArg() != 1) {
                     Msg.emsg("optionDelete takes exactly one argument");
+                    return;
+                }
+                String key = cev.getArg(1);
+                Option opt = Options.getOption(key);
+                if(Options.getOption(key) == null) {
+                    Msg.emsg("No such option: " + key);
+                    return;
+                }
+                Preferences prefs = ViManager.getFactory().getPreferences();
+                List<String> keys;
+                try {
+                    keys = Arrays.asList(prefs.keys());
+                    if(keys.contains(key)) {
+                        prefs.remove(key);
+                    } else {
+                        Msg.smsg("option is not set: " + key);
+                    }
+                } catch(BackingStoreException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
             }
         }, EnumSet.of(CcFlag.DBG));
     ColonCommands.register("disabledCommand", "disabledCommand",
