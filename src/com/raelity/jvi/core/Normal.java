@@ -2275,6 +2275,7 @@ middle_code:
             screenLineStartFpos.getOffset(),
             fpos.getOffset() - screenLineStartFpos.getOffset());
     G.curwin.w_cursor.set(screenLineStartFpos.getOffset() + col);
+    adjust_cursor();
     return ok ? OK : FAIL;
   }
   

@@ -287,9 +287,9 @@ public interface ViTextView extends ViOptionBag {
    * starting position and is modified to return the final position;
    * the actual screen cursor is not moved.
    * @param fpos input/output
-   * @return true if the cursor moved.
+   * @return true if the fpos-cursor moved.
    */
-  public abstract boolean cursorScreenRowEdge(EDGE edge, ViFPOS fpos);
+  public boolean cursorScreenRowEdge(EDGE edge, ViFPOS fpos);
 
   /**
    * Position the cursor.
@@ -309,7 +309,8 @@ public interface ViTextView extends ViOptionBag {
    * invisible character is commonly returned, then the cursor appears at the
    * beginning of the graphic. It is possible that an implementation might
    * return the last visible rather than the first invisible depending on
-   * where the cursor can be positioned.
+   * where the cursor can be positioned. Note that upon return fpos
+   * map point to a '\n'
    *
    * @param lineOffset offset in document of first char of line
    * @param col target column for caret
