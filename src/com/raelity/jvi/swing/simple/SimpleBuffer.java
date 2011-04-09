@@ -20,18 +20,26 @@
 
 package com.raelity.jvi.swing.simple;
 
+import com.raelity.jvi.core.TextView;
+import com.raelity.jvi.ViBadLocationException;
 import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.core.Edit;
 import com.raelity.jvi.core.G;
+import com.raelity.jvi.core.Misc;
 import com.raelity.jvi.core.Util;
+import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.swing.SwingBuffer;
 import com.raelity.jvi.swing.UndoGroupManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
+
+import static com.raelity.jvi.core.lib.Constants.*;
 
 /**
  * Add undo group handling to basic swing buffer.
@@ -78,18 +86,156 @@ abstract public class SimpleBuffer extends SwingBuffer
 
     @Override
     public void undo() {
-        if(undoMan.canUndo())
-            undoMan.undo();
-        else
+        if(undoMan.canUndo()) {
+            doUndoRedo(true);
+        } else
             Util.vim_beep();
     }
 
     @Override
     public void redo() {
-        if(undoMan.canRedo())
-            undoMan.redo();
-        else
+        if(undoMan.canRedo()) {
+            doUndoRedo(false);
+        } else
             Util.vim_beep();
+    }
+
+    private void doUndoRedo(boolean isUndo)
+    {
+        isInUndoRedoCommand = true;
+        try {
+            URData stuff = beforeUndoRedo(false);
+            if(isUndo)
+                undoMan.undo();
+            else
+                undoMan.redo();
+            afterUndoRedo(stuff);
+        } finally {
+            isInUndoRedoCommand = false;
+            undoRemovedText = null;
+        }
+    }
+
+    private boolean isInUndoRedoCommand;
+    private String undoRemovedText;
+
+    @Override
+    protected void filterRemove(int offset, int length)
+    {
+        if(isInUndoRedoCommand) {
+            try {
+                undoRemovedText = getDocument().getText(offset, length);
+            } catch(BadLocationException ex) {
+            }
+        }
+    }
+
+    @Override
+    protected String getRemovedText(DocumentEvent _e)
+    {
+        String s = null;
+        //
+        // With reflection, could get into the
+        // Vector of edits and then into
+        // GapContent$RemoveUndo which has the deleted text
+        //
+        ////////////////////////////////////////////////////
+        // BUT, use a document filter to grab the removed
+        // text, then can check the text
+        //
+
+        ///// if(_e instanceof DefaultDocumentEvent) {
+        /////     DefaultDocumentEvent e = (DefaultDocumentEvent)_e;
+        /////     System.err.println(""+e);
+        ///// }
+        ///// ElementChange change
+        /////         = _e.getChange(_e.getDocument().getDefaultRootElement());
+
+        return s;
+    }
+
+
+
+    private static class URData {
+        boolean isUndo;
+        int nLine;
+
+        public URData(boolean isUndo)
+        {
+            this.isUndo = isUndo;
+        }
+
+    }
+
+    private URData beforeUndoRedo(boolean isUndo)
+    {
+        createDocChangeInfo();
+        URData stuff = new URData(isUndo);
+        stuff.nLine = getLineCount();
+        return stuff;
+    }
+
+
+    //
+    // Here are some observed behavior of vim,
+    // without digging into implementation
+    //
+    // LINEMODE OPERATIONS
+    // === after removing some lines
+    //
+    //     undo & more-lines
+    //             1st line of new lines (first non-blank char)
+    //             (jvi - same)
+    //
+    //     redo & less-lines
+    //             1st line after removed lines,
+    //                 same column as 1st non-blank column of removed text
+    //             (jvi - correct line, but jvi is going to first non-blank)
+    //
+    // === after adding some lines with put
+    //
+    //     undo & less-lines
+    //             1st line before removed lines
+    //             (** jvi - after removed lines)
+    //
+    //     redo & more-lines
+    //             1st line before new lines
+    //             (** jvi - on 1st line of new lines)
+    //
+    // CHARACTER OPERATION
+    // === removing stuff
+    //     at the beginning of the sequence of chars
+    // === adding stuff
+    //     looks like the cursor position is remembered
+    //
+
+    private void afterUndoRedo(URData stuff)
+    {
+        DocChangeInfo data = getDocChangeInfo();
+        if(data.isChange) {
+            try {
+                int nLine = stuff.nLine;
+
+                TextView tv = (TextView)Scheduler.getCurrentTextView();
+                int initOff = tv.getCaretPosition();
+                int off = data.offset;
+                tv.setCaretPosition(off);
+                if(G.dbgUndo.getBoolean()) {
+                    G.dbgUndo.printf(
+                      "afterUR: after  off=%d, col=%d\n"
+                    + "         change off=%d, len=%d, inert=%b\n",
+                            tv.w_cursor.getOffset(), tv.w_cursor.getColumn(),
+                            data.offset, data.length, data.isInsert
+                            //getUndoOffset(), getUndoLength(), getUndoInsert()
+                            );
+                }
+                if(nLine != getLineCount())
+                    Edit.beginline(BL_WHITE);
+                else if ("\n".equals(getText(tv.getCaretPosition(), 1))) {
+                    Misc.check_cursor_col();
+                }
+            } catch (ViBadLocationException ex) { }
+        }
     }
 
     @Override

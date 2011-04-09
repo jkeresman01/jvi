@@ -24,7 +24,6 @@ import java.io.File;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.event.DocumentEvent;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 import static java.lang.Math.min;
@@ -260,11 +259,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     //
     //
     
-    protected String getRemovedText(DocumentEvent e) {
-        return null;
-    }
-    
-    protected boolean isInsertMode() {
+    public final boolean isInsertMode() {
         return (G.State & BASE_STATE_MASK) == INSERT;
     }
 

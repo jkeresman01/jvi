@@ -24,21 +24,36 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.DocumentFilter.FilterBypass;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 
 /**
+ * The swing implementation of jVi's ViBuffer.
+ * <p/>
+ * This class has a DocumentListener; as a convenience for subclasses,
+ * the listener calls protected methods
+ *      documentChangeUpdate, documentInsertUpdate, documentRemoveUpdate
+ * after this class has finished its processing.
+ * <p/>
+ * There is also a DocumentFilter which calls protected methods
+ *      filterInsertString, filterRemove, filterReplace
+ * However, the argument DocumentFilter.FilterBypass is *not* provided.
  *
  * @author erra
  */
-abstract public class SwingBuffer extends Buffer {
+abstract public class SwingBuffer extends Buffer
+{
     private static final
             Logger LOG = Logger.getLogger(SwingBuffer.class.getName());
     private Document doc;
-    
+
     public SwingBuffer(ViTextView tv) {
         super(tv);
         doc = ((JTextComponent)tv.getEditorComponent()).getDocument();
@@ -451,9 +466,12 @@ abstract public class SwingBuffer extends Buffer {
                 System.err.println("doc insert: " + e.getOffset()
                                    + ":" + e.getLength() + " " + e);
             invalidateData();
-            undoOffset = e.getOffset();
-            undoLength = e.getLength();
-            undoChange = true;
+            if(docChangeInfo != null) {
+                docChangeInfo.isChange = true;
+                docChangeInfo.offset = e.getOffset();
+                docChangeInfo.length = e.getLength();
+                docChangeInfo.isInsert = true;
+            }
             
             // If not in insert mode, then no magic redo tracking
             if(!isInsertMode())
@@ -478,10 +496,13 @@ abstract public class SwingBuffer extends Buffer {
                 System.err.println("doc remove: " + e.getOffset()
                                    + ":" + e.getLength() + " " + e);
             invalidateData();
-            undoOffset = e.getOffset();
-            undoLength = e.getLength();
-            undoChange = true;
-            
+            if(docChangeInfo != null) {
+                docChangeInfo.isChange = true;
+                docChangeInfo.offset = e.getOffset();
+                docChangeInfo.length = e.getLength();
+                docChangeInfo.isInsert = false;
+            }
+
             // If not in insert mode, then no magic redo tracking
             if(!isInsertMode())
                 return;
@@ -498,13 +519,73 @@ abstract public class SwingBuffer extends Buffer {
         }
     }
 
+    protected void filterInsertString(int offset, String string,
+                                      AttributeSet attr)
+    {
+    }
+
+    protected void filterRemove(int offset, int length)
+    {
+    }
+
+    protected void filterReplace(int offset, int length,
+                           String text, AttributeSet attrs)
+    {
+    }
+
+    //
+    // CURRENTLY NOT USED
+    //
+    class FilterListen extends DocumentFilter {
+
+        @Override
+        public void insertString(FilterBypass fb, int offset, String string,
+                                 AttributeSet attr)
+        throws BadLocationException
+        {
+            filterInsertString(offset, string, attr);
+            fb.insertString(offset, string, attr);
+        }
+
+        @Override
+        public void remove(FilterBypass fb, int offset, int length)
+        throws BadLocationException
+        {
+            filterRemove(offset, length);
+            fb.remove(offset, length);
+        }
+
+        @Override
+        public void replace(FilterBypass fb, int offset, int length,
+                            String text, AttributeSet attrs)
+        throws BadLocationException
+        {
+            filterReplace(offset, length, text, attrs);
+            fb.replace(offset, length, text, attrs);
+        }
+    }
+
     private void stopDocumentEvents() {
         getDocument().removeDocumentListener(documentListener);
+        documentListener = null;
+
+        // NOT USED, see startDocumentEvents
+        // if(getDocument() instanceof AbstractDocument) {
+        //     ((AbstractDocument)getDocument()).setDocumentFilter(null);
+        // }
+
     }
     
     private void startDocumentEvents() {
         documentListener = new DocListen();
         getDocument().addDocumentListener(documentListener);
+
+        // WANTED THIS TO ANALIZE UNDO/REDO,
+        // BUT THEY DO NOT TRIGGER FILTERABLE EVENTS
+        // if(getDocument() instanceof AbstractDocument) {
+        //     ((AbstractDocument)getDocument()).setDocumentFilter(
+        //             new FilterListen());
+        // }
     }
   
     private void invalidateData() {
@@ -514,32 +595,51 @@ abstract public class SwingBuffer extends Buffer {
     }
     
     /**
-     * This method can be used to determine if some action(s)
-     * cause a change. The method itself has nothing to do with undo. It
-     * is called from an optimized undo.
+     * This method can be used to determine information about the
+     * most recent document change. It clears the cached info, so it can
+     * only be used once per change. It is typically use like:
+     * <pre><code>
+     *          createDocChangeInfo();
+     *          undo(); // do an undo or redo action
+     *          DocChangeInfo data = getDocChangeInfo(); // works once
+     *          if(data.isChange) {...}
+     * </code></pre>
+     * The method itself has nothing to do with undo.
+     * One use is to adjust the cursor position after undo/redo.
      *
-     * @return true if there has be a change to the document since this method
+     * @return info about last change, null if no change since
+     *         last clearUndoChange.
      * was last called.
      */
-    protected boolean isUndoChange() {
-        boolean rval;
-        rval = undoChange;
-        undoChange = false;
-        return rval;
+    protected DocChangeInfo getDocChangeInfo()
+    {
+        DocChangeInfo t = docChangeInfo;
+        docChangeInfo = null;
+        return t;
     }
+
+    protected void createDocChangeInfo()
+    {
+        docChangeInfo = new DocChangeInfo();
+    }
+
+    private DocChangeInfo docChangeInfo;
     
     // These variables track last insert/remove to document.
-    // They are usually used for undo/redo.
-    private int undoOffset;
-    private int undoLength;
-    private boolean undoChange;
-    
-    public int getUndoOffset() {
-        return undoOffset;
+    // They are usually used for undo/redo issue by subclasses.
+    protected class DocChangeInfo {
+        /** did a change happen */
+        public boolean isChange;
+        /** last change was an insert */
+        public boolean isInsert;
+        /** doc offset of last change */
+        public int offset;
+        /** length of last change */
+        public int length;
     }
-    
-    public int getUndoLength() {
-        return undoLength;
+
+    protected String getRemovedText(DocumentEvent e) {
+        return null;
     }
 
     // getOffset is the only supported method
