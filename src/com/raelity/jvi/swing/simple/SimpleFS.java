@@ -37,11 +37,13 @@ import javax.swing.text.JTextComponent;
  */
 abstract public class SimpleFS extends abstractFS
 {
+    @Override
     public boolean isReadOnly(ViBuffer buf) {
         File f = buf.getFile();
         return f != null && !f.canWrite();
     }
 
+    @Override
     public String getDisplayFileName(ViAppView av)
     {
         JTextComponent ep = (JTextComponent)av.getEditor();
@@ -50,10 +52,13 @@ abstract public class SimpleFS extends abstractFS
             if (tv != null)
                 return getDisplayFileName(tv.getBuffer());
         }
-        assert false;
+        // NEEDSWORK: triggered by com.raelity.jvi.cmd.Jvi.setupFrame debug
+
+        // assert false;
         return "file_name_unkown_from_appview";
     }
 
+    @Override
     public String getDisplayFileName(ViBuffer buf)
     {
         String fname = null;
