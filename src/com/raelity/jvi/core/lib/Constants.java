@@ -36,7 +36,7 @@ public interface Constants {
     public static final int MAXLNUM = 0x7fffffff;
     public static final int MAXCOL = 0x7fffffff;
 
-    public static final int MAXTYPEBUFLEN = 200000; // make huge, 200k, check out orig...
+    public static final int MAXTYPEBUFLEN = 500000; // make huge, 500k, check out orig...
     public static final int ADJUSTTYPEBUFLEN = 10000; // 10k
 
   //
