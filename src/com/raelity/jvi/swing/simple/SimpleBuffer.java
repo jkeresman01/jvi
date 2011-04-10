@@ -30,6 +30,7 @@ import com.raelity.jvi.core.Util;
 import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.swing.SwingBuffer;
 import com.raelity.jvi.swing.UndoGroupManager;
+import java.util.logging.Level;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
@@ -221,9 +222,9 @@ abstract public class SimpleBuffer extends SwingBuffer
                 int off = data.offset;
                 tv.setCaretPosition(off);
                 if(G.dbgUndo.getBoolean()) {
-                    G.dbgUndo.printf(
+                    G.dbgUndo.printf(Level.FINEST,
                       "afterUR: after  off=%d, col=%d\n"
-                    + "         change off=%d, len=%d, inert=%b\n",
+                    + "         change off=%d, len=%d, insert=%b\n",
                             tv.w_cursor.getOffset(), tv.w_cursor.getColumn(),
                             data.offset, data.length, data.isInsert
                             //getUndoOffset(), getUndoLength(), getUndoInsert()

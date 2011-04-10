@@ -95,6 +95,10 @@ public class Util {
     return G.State;
   }
 
+  public static boolean isInsertMode() {
+    return (G.State & BASE_STATE_MASK) == INSERT;
+  }
+
   /**
    * Vim has its own isspace() function, because on some machines isspace()
    * can't handle characters above 128.

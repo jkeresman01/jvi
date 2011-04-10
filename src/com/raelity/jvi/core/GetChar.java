@@ -69,12 +69,7 @@ public class GetChar {
         mappings.reinitMappings();
     }
 
-    static int typeBufLenght()
-    {
-      return typebuf.length();
-    }
-
-    /** An input char from the user has been recieved.
+    /** An input char from the user has been received.
      * Implement the key into 16 bit mapping defined in KeyDefs.
      * <p>
      * There is still a hole. This doesn't handle stuff where screwy
@@ -84,68 +79,31 @@ public class GetChar {
      * E000-E07f range, and put the K_UP type keys in the E080 range.
      * </p>
      */
-    static void gotc(char key, int modifier) {
+    static void gotc(char key, int modifier)
+    {
+        assert typebuf.length() + stuffbuff.length() == 0;
 
         if(isVIRT(key)) {
             key |= ((modifier & MOD_MASK) << MODIFIER_POSITION_SHIFT);
         }
 
-        last_recorded_len = 0;      // for the one in vgetc()
-        userInput(key);
-
-        assert(!handle_redo);
         handle_redo = false;
-
-        ///// NEED API, NO SWING...
-        ///// // Lock document while handling a single user character
-
         try {
-            ///// if(doc != null)
+            last_recorded_len = 0;      // for the one in vgetc()
+            userInput(key);
+
+            ///// if(doc != null)               // NEED API
             /////     doc.readLock();
 
-            // If there are too many mappings between user input keys
-            // then we'll do a flush_buf. This detects internal errors
-            typebuf.clearNMappings();
-            user_ins_typebuf(key);
-            pumpChar(typebuf.getChar());
+            // proccess the typed key, may set handle_redo
+            if(user_ins_typebuf(key) == OK)
+                pumpChar(typebuf.getChar());
 
-            ///////////////////////////////////////////////////////
-            //
-            // NEEDSWORK: does pumpAllChars need to check for entering
-            //            "handle_redo" and switch to Misc.runUndoable
-            //
-            ///////////////////////////////////////////////////////
+            startPump(handle_redo);
 
-            if(!handle_redo)
-                pumpAllChars();
-            else {
-                //
-                // Handle some type of redo command: start_redo or
-                // start_redo_ins.Execute these commands atomically, with the
-                //  file locked ifsupported by the platform. We need these
-                // special brackets since while executing the command, other
-                // begin/endUndo's may occur.
-                //
-                // During the above processInputChar, a redo
-                // command was setup by // stuffing the buffer. pumpVi()
-                // delivers stuffbuf and typebuf // to processInputChar.
-                // It's tempting to always bracket pumpVi with
-                // begin/endRedoUndo, but macro execution might end
-                // in input mode.
-                //
-                // NEEDSWORK: INPUT MODE FROM MACRO ????????
-                try {
-                    Misc.runUndoable(new Runnable() {
-                        @Override
-                        public void run() {
-                            pumpAllChars();
-                        }
-                    });
-                } finally {
-                    handle_redo = false;
-                }
-            }
         } finally {
+            handle_redo = false;
+            G.Exec_reg = false;
             ///// if(doc != null)
             /////     doc.readUnlock();
         }
@@ -166,6 +124,53 @@ public class GetChar {
         Misc.out_flush();   // returning from event
     }
 
+    // interactions with redo/groupUndo
+    //
+    // NOTE:    The confusing handle_redo flag might be extraneous
+    //          since we know how to automatically enter groupUndo.
+    //          To do this I think all we need to do is check
+    //          stuffbuff.length() in the following
+    //              if(!groupUndo && typebuf.length() > 0 && isInsertMode()) {
+    //          The current check basically is for catching mappings that
+    //          might have multiple inserts.
+    //          handle_redo is set by
+    //                  start_redo()       - the '.' commands
+    //                  start_redo_ins()   - like: '77a/<esc>'
+    //                  ins_typebuf_redo() - the '@' commands
+    //          If we get rid of handle_redo, then we must
+    //          get rid fo the pumpChar in gotc (I think).
+    //
+    // HERE ARE THE OLD COMMENTS ON handle_redo doing runUndoable
+    // Handle some type of redo command: start_redo or
+    // start_redo_ins.Execute these commands atomically, with the
+    //  file locked ifsupported by the platform. We need these
+    // special brackets since while executing the command, other
+    // begin/endUndo's may occur.
+    //
+    // During the above processInputChar, a redo
+    // command was setup by // stuffing the buffer. pumpVi()
+    // delivers stuffbuf and typebuf // to processInputChar.
+    // It's tempting to always bracket pumpVi with
+    // begin/endRedoUndo, but macro execution might end
+    // in input mode.
+    //
+    // NEEDSWORK: INPUT MODE FROM MACRO ????????
+
+
+    private static void startPump(final boolean groupUndo)
+    {
+        if(!groupUndo)
+            pumpAllChars(groupUndo);
+        else {
+            Misc.runUndoable(new Runnable() {
+                @Override
+                public void run() {
+                    pumpAllChars(groupUndo);
+                }
+            });
+        }
+    }
+
     // NEEDSWORK: old_mod_mask
     private static char old_char;
 
@@ -173,7 +178,7 @@ public class GetChar {
      * Pass queued up characters to vi for processing.
      * First from stuffbuf, then typebuf.
      */
-    private static void pumpAllChars() {
+    private static void pumpAllChars(boolean groupUndo) {
         // NEEDSWORK: pumpVi: check for interupt?
 
         while(true) {
@@ -187,11 +192,16 @@ public class GetChar {
             }
             if(typebuf.hasNext()) {
                 pumpChar(typebuf.getChar());
+                // after processing char...
+                if(!groupUndo && typebuf.length() > 0 && isInsertMode()) {
+                    G.dbgUndo.println("pumpAllChars: switching to group undo");
+                    startPump(true);
+                    return;
+                }
             } else {
                 break;
             }
         }
-        G.Exec_reg = false;
     }
 
     private static void pumpChar(char c) {
@@ -709,10 +719,15 @@ public class GetChar {
         return typebuf.insert(str, noremap, offset, nottyped) ? OK : FAIL;
     }
 
-    static void user_ins_typebuf(char c)
+    static int user_ins_typebuf(char c)
     {
+        // If there are too many mappings between user input keys
+        // then we'll do a flush_buf. This detects internal errors,
+        // and avoids a hang.
+        typebuf.clearNMappings(); // to detect/recover internal errors
+
         // add at end of typebuf with remap ok
-        ins_typebuf(String.valueOf(c), 0, typebuf.length(), false);
+        return ins_typebuf(String.valueOf(c), 0, typebuf.length(), false);
     }
 
     static void del_typebuf(int len, int offset)
@@ -746,4 +761,4 @@ public class GetChar {
     }
 }
 
-// vi:set sw=2 ts=8:
+// vi:set sw=4 ts=8:

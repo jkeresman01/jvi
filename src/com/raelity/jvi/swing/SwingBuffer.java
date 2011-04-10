@@ -24,7 +24,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -474,7 +473,7 @@ abstract public class SwingBuffer extends Buffer
             }
             
             // If not in insert mode, then no magic redo tracking
-            if(!isInsertMode())
+            if(!Util.isInsertMode())
                 return;
             String s = "";
 
@@ -504,7 +503,7 @@ abstract public class SwingBuffer extends Buffer
             }
 
             // If not in insert mode, then no magic redo tracking
-            if(!isInsertMode())
+            if(!Util.isInsertMode())
                 return;
 
             if(ViManager.getFactory().isEnabled()) {

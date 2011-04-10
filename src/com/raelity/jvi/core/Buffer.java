@@ -258,10 +258,6 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     //////////////////////////////////////////////////////////////////////
     //
     //
-    
-    public final boolean isInsertMode() {
-        return (G.State & BASE_STATE_MASK) == INSERT;
-    }
 
     protected void docInsert(int offset, String s) {
         GetChar.docInsert(offset, s);
