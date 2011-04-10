@@ -68,9 +68,6 @@ import static com.raelity.jvi.core.Util.*;
  * something that can be used in a JEditorPane framework to implement vi.
  * So things that are handled by swing text are taken out.
  * Here is a partial list of changes.
- * <ul>
- * <li>Visual mode has been commented out for now.
- * </ul>
  * </p>
  *
  * <br/>nv_*(): functions called to handle Normal and Visual mode commands.
@@ -208,6 +205,7 @@ public class Normal {
     ui_cursor_shape();
     G.allow_keys = 0;
     G.no_mapping = 0;
+    G.no_zero_mapping = 0;
   }
 
   /**
@@ -276,6 +274,7 @@ public class Normal {
     if(newChunk) {
       newChunk = false;
       lookForDigit = true;
+      G.no_zero_mapping++;
       pickupExtraChar = false;
       firstTimeHere01 = true;
       ca = new CMDARG();
@@ -335,6 +334,7 @@ public class Normal {
 
 
     if(lookForDigit) {
+      --G.no_zero_mapping;
       if (!(G.VIsual_active && G.VIsual_select)) {
         if (ctrl_w) {
           --G.no_mapping;
@@ -360,7 +360,8 @@ public class Normal {
             ++G.no_mapping;
             ++G.allow_keys;		// no mapping for nchar, but keys
           }
-          return; // go get another char
+          G.no_zero_mapping++;
+          return; // "c = safe_vgetc()" go get another char
 
         }
 
@@ -374,6 +375,7 @@ public class Normal {
           ca.count0 = 0;
           ++G.no_mapping;
           ++G.allow_keys;		// no mapping for nchar, but keys
+          ++G.no_zero_mapping;
           return; // go get another char
         }
       }

@@ -121,19 +121,26 @@ public final class TypeBuf {
             c = buf.charAt(0);
             if(Options.isKeyDebug()) {
                 if(Options.isKeyDebug(Level.FINEST)
-                        || (G.no_mapping() != 0 || G.allow_keys() != 0)) {
+                        || G.no_mapping() != 0
+                        || G.allow_keys() != 0
+                        || G.no_zero_mapping() != 0) {
                     System.err.printf("getChar check: '%s'"
                             + " noremap=%b, state=0x%x,"
-                            + " G.no_mapping=%d, G.allow_keys=%d\n",
+                            + " G.no_mapping=%d, G.allow_keys=%d"
+                            + " G.no_zero_mapping=%d\n",
                             TextUtil.debugString(String.valueOf(c)),
                             noremapbuf.charAt(0) != 0,
                             get_real_state(),
                             G.no_mapping(),
-                            G.allow_keys());
+                            G.allow_keys(),
+                            G.no_zero_mapping());
                 }
             }
             if(noremapbuf.charAt(0) == 0
-                    && G.no_mapping() == 0) { // && G.allow_keys == 0 ?????
+                    && G.no_mapping() == 0
+                    && (c != '0' || G.no_zero_mapping() == 0)
+                    // && G.allow_keys == 0 ?????
+            ) {
                 int state = get_real_state();
                 Mapping mapping = mappings.getMapping(c, state);
                 if(mapping != null) {

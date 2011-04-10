@@ -84,8 +84,10 @@ public class G
 
     public static int no_mapping() { return no_mapping; }
     public static int allow_keys() { return allow_keys; }
+    public static int no_zero_mapping() { return no_zero_mapping; }
     static int no_mapping;
     static int allow_keys;
+    static int no_zero_mapping;
     static boolean finish_op;
     static int State;
     static int restart_edit;
