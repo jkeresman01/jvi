@@ -75,5 +75,9 @@ public class Msg
         G.curwin.getStatusDisplay().clearMessage();
     }
 
+    private Msg()
+    {
+    }
+
 
 } // end
