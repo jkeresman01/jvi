@@ -129,7 +129,7 @@ public class Edit {
   }
   public static boolean canEdit(final ViTextView tv, ViBuffer buf, int offset) {
     if(buf.isGuarded(offset) || !tv.isEditable()) {
-      Util.vim_beep();
+      Util.beep_flush();
       EventQueue.invokeLater(new Runnable() {
         @Override
         public void run() {

@@ -642,7 +642,7 @@ public class Misc01
                 break;
         }
         if(!ok)
-            Util.vim_beep();
+            Util.beep_flush();
     }
 
     private static boolean win_move_forw(AppViews whichViews, int n)

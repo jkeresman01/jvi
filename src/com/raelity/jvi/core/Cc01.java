@@ -749,7 +749,7 @@ public class Cc01
                         ViManager.getFactory().stopGlassKeyCatch();
                         Msg.clearMsg();
                     } else {
-                        Util.vim_beep();
+                        Util.beep_flush();
                     }
                 }
             });
@@ -786,7 +786,7 @@ public class Cc01
                     if(e.getKeyCode() == KeyEvent.VK_Y) {
                         ViManager.getFactory().stopModalKeyCatch();
                     } else {
-                        Util.vim_beep();
+                        Util.beep_flush();
                     }
                 }
             });

@@ -364,7 +364,7 @@ public class SwingTextView extends TextView
     public void insertNewLine()
     {
         if ( ! isEditable() ) {
-            Util.vim_beep();
+            Util.beep_flush();
             return;
         }
         ops.xop(TextOps.INSERT_NEW_LINE); // NEEDSWORK: xop throws no exception
@@ -374,7 +374,7 @@ public class SwingTextView extends TextView
     public void insertTab()
     {
         if ( ! isEditable() ) {
-            Util.vim_beep();
+            Util.beep_flush();
             return;
         }
         ops.xop(TextOps.INSERT_TAB); // NEEDSWORK: xop throws no exception
@@ -385,7 +385,7 @@ public class SwingTextView extends TextView
     public void replaceChar( char c, boolean advanceCursor )
     {
         if ( !isEditable() ) {
-            Util.vim_beep();
+            Util.beep_flush();
             return;
         }
         int offset = w_cursor.getOffset();
@@ -400,7 +400,7 @@ public class SwingTextView extends TextView
     public void deletePreviousChar()
     {
         if ( !isEditable() ) {
-            Util.vim_beep();
+            Util.beep_flush();
             return;
         }
         ops.xop(TextOps.DELETE_PREVIOUS_CHAR); // NEEDSWORK: xop throws no exception
@@ -416,7 +416,7 @@ public class SwingTextView extends TextView
     public void insertChar( char c )
     {
         if ( !isEditable() ) {
-            Util.vim_beep();
+            Util.beep_flush();
             return;
         }
         if ( c == '\t' ) {
@@ -456,7 +456,7 @@ public class SwingTextView extends TextView
     public void replaceString( int start, int end, String s )
     {
         if ( !isEditable() ) {
-            Util.vim_beep();
+            Util.beep_flush();
             return;
         }
         getBuffer().replaceString(start, end, s);
@@ -467,7 +467,7 @@ public class SwingTextView extends TextView
     public void deleteChar( int start, int end )
     {
         if ( !isEditable() ) {
-            Util.vim_beep();
+            Util.beep_flush();
             return;
         }
         getBuffer().deleteChar(start, end);
@@ -478,7 +478,7 @@ public class SwingTextView extends TextView
     public void insertText( int offset, String s )
     {
         if ( !isEditable() ) {
-            Util.vim_beep();
+            Util.beep_flush();
             return;
         }
         getBuffer().insertText(offset, s);
@@ -509,7 +509,7 @@ public class SwingTextView extends TextView
     public boolean openNewLine( DIR op )
     {
         if ( !isEditable() ) {
-            Util.vim_beep();
+            Util.beep_flush();
             return false;
         }
         if ( op == DIR.BACKWARD && w_cursor.getLine() == 1 ) {
@@ -602,56 +602,56 @@ public class SwingTextView extends TextView
     @Override
     public void findMatch()
     {
-        Util.vim_beep();
+        Util.beep_flush();
     }
 
 
     @Override
     public void jumpDefinition( String ident )
     {
-        Util.vim_beep();
+        Util.beep_flush();
     }
 
 
     @Override
     public void anonymousMark( MARKOP op, int count )
     {
-        Util.vim_beep();
+        Util.beep_flush();
     }
 
 
     @Override
     public void jumpList( JLOP op, int count )
     {
-        Util.vim_beep();
+        Util.beep_flush();
     }
 
 
     @Override
     public void foldOperation( FOLDOP op )
     {
-        Util.vim_beep();
+        Util.beep_flush();
     }
 
 
     @Override
     public void foldOperation( FOLDOP op, int offset )
     {
-        Util.vim_beep();
+        Util.beep_flush();
     }
 
 
     @Override
     public void wordMatchOperation( WMOP op )
     {
-        Util.vim_beep();
+        Util.beep_flush();
     }
 
 
     @Override
     public void tabOperation( TABOP op, int count )
     {
-        Util.vim_beep();
+        Util.beep_flush();
     }
 
 
@@ -1243,7 +1243,7 @@ public class SwingTextView extends TextView
         try {
             r = modelToView(offset);
         } catch (BadLocationException e) {
-            Util.vim_beep();
+            Util.beep_flush();
             return;
         }
         Point p = makePointTruncY(getLocation(r));

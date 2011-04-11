@@ -50,6 +50,12 @@ public class Util {
     G.curwin.setCaretPosition(offset);
   }
 
+  /**
+   * "ring the bell", by default use the Toolkit's beep.
+   * <p/>
+   * Note: if there's an error and the typeahead buffer should be flushed
+   * then use beep_flush().
+   */
   public static void vim_beep() {
     Toolkit.getDefaultToolkit().beep();
   }
@@ -254,8 +260,8 @@ public class Util {
     return seg.count > 0 ? seg.array[seg.offset] : 0;
   }
 
-  /** flush map and typeahead buffers and vige a warning for an error */
-  static void beep_flush() {
+  /** flush map and typeahead buffers and give a warning for an error */
+  public static void beep_flush() {
     GetChar.flush_buffers(false);
     vim_beep();
   }

@@ -171,7 +171,7 @@ abstract public class SwingBuffer extends Buffer
     @Override
     public void replaceString(int start, int end, String s) {
         if( ! isEditable()) {
-            Util.vim_beep();
+            Util.beep_flush();
             return;
         }
         try {
@@ -187,7 +187,7 @@ abstract public class SwingBuffer extends Buffer
     @Override
     public void deleteChar(int start, int end) {
         if( ! isEditable()) {
-            Util.vim_beep();
+            Util.beep_flush();
             return;
         }
         try {
@@ -200,7 +200,7 @@ abstract public class SwingBuffer extends Buffer
     @Override
     public void insertText(int offset, String s) {
         if( ! isEditable()) {
-            Util.vim_beep();
+            Util.beep_flush();
             return;
         }
     /* ******************************************
@@ -240,7 +240,7 @@ abstract public class SwingBuffer extends Buffer
     @Override
     public void replaceChar(int offset, char c) {
         if( ! isEditable()) {
-            Util.vim_beep();
+            Util.beep_flush();
             return;
         }
         String s = String.valueOf(c);
@@ -264,20 +264,20 @@ abstract public class SwingBuffer extends Buffer
     }
     
     protected void processTextException(BadLocationException ex) {
-        Util.vim_beep();
+        Util.beep_flush();
     }
 
 
     @Override
     public void reindent(int line, int count) {
         System.err.format("reindent line %d, count %d", line, count);
-        Util.vim_beep();
+        Util.beep_flush();
     }
 
     @Override
     public void reformat(int line, int count) {
         System.err.format("reformat line %d, count %d", line, count);
-        Util.vim_beep();
+        Util.beep_flush();
     }
 
 

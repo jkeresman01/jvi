@@ -3371,9 +3371,9 @@ private static int put_in_typebuf(String s, boolean colon)
       try {
 	s = (String)trans.getTransferData(DataFlavor.stringFlavor);
       } catch(IOException e) {
-        Util.vim_beep();
+        Util.beep_flush();
       } catch(UnsupportedFlavorException e) {
-        Util.vim_beep();
+        Util.beep_flush();
       }
       // NEEDSWORK: use a string reader and transfer to StringBuffer
       get_yank_register('*', false);

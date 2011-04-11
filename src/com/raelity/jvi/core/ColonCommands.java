@@ -294,6 +294,7 @@ private static ColonEvent parseCommandGuts(String commandLine,
             if(isExecuting) {
                 modalResponse = 0;
                 Msg.wmsg("Backwards range given, OK to swap (y/n)?");
+                // NEEDSWORK: not exactly what vim's ask_yesno does.
                 ViManager.getFactory().startModalKeyCatch(new KeyAdapter() {
                     @Override
                     public void keyPressed(KeyEvent e) {
@@ -307,7 +308,7 @@ private static ColonEvent parseCommandGuts(String commandLine,
                                 modalResponse = 'n';
                                 break;
                             default:
-                                Util.vim_beep();
+                                Util.beep_flush();
                                 break;
                         }
                         if(modalResponse != 0) {
@@ -373,7 +374,7 @@ private static ColonEvent parseCommandGuts(String commandLine,
         cci = m_commands.lookupCommand(command);
         if(cci == null) {
             Msg.emsg("Not an editor command: " + command);
-            Util.vim_beep();
+            Util.beep_flush();
             return null;
         }
     } else {

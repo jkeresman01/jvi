@@ -288,6 +288,7 @@ public class Search01 {
                             + (prog.length(0) == 0 ? 1 : 0));
 
         Msg.wmsg("replace with '" + subs + "' (y/n/a/q/l)");
+        // NEEDSWORK: LOOP? not exactly what vim's ask_yesno type thing does.
         ViManager.getFactory().startModalKeyCatch(new KeyAdapter() {
                     @Override
           public void keyPressed(KeyEvent e) {
@@ -301,7 +302,7 @@ public class Search01 {
                 modalResponse = 'q';
                 break;
               default:
-                vim_beep();
+                beep_flush();
                 break;
             }
             if(modalResponse != 0) {

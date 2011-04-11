@@ -90,7 +90,7 @@ abstract public class SimpleBuffer extends SwingBuffer
         if(undoMan.canUndo()) {
             doUndoRedo(true);
         } else
-            Util.vim_beep();
+            Util.beep_flush();
     }
 
     @Override
@@ -98,7 +98,7 @@ abstract public class SimpleBuffer extends SwingBuffer
         if(undoMan.canRedo()) {
             doUndoRedo(false);
         } else
-            Util.vim_beep();
+            Util.beep_flush();
     }
 
     private void doUndoRedo(boolean isUndo)

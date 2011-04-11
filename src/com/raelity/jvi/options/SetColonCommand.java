@@ -219,7 +219,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     private static void setCommandError(String msg) throws SetCommandException
     {
         Msg.emsg(msg);
-        Util.vim_beep();
+        Util.beep_flush();
         throw new SetCommandException(msg);
     }
     

@@ -337,7 +337,7 @@ public static class BangAction extends AbstractColonAction
                         && (e.getModifiers() & KeyEvent.CTRL_MASK) != 0) {
                         finishBangCommand(false);
                     } else {
-                        Util.vim_beep();
+                        Util.beep_flush();
                     }
                 }
             });
