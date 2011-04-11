@@ -435,7 +435,11 @@ public final class Options {
     
     G.p_ml = OptUtil.createBooleanOption(modeline, true);
     OptUtil.setupOptionDesc(Category.GENERAL, modeline, "'modeline' 'ml'",
-            "Enable/disable modelines option");
+            "Enable/disable modelines option."
+            + "\n[text]{white}{vi:|vim:|ex:}[white]{options}"
+            + "\n\u00a0\u00a0\u00a0\u00a0example: vi:noai:sw=3 ts=6"
+            + "\n[text]{white}{vi:|vim:|ex:}[white]se[t] {options}:[text]"
+            + "\n\u00a0\u00a0\u00a0\u00a0example: /* vim: set ai tw=75: */");
     
     G.p_mls = OptUtil.createIntegerOption(modelines, 5);
     OptUtil.setupOptionDesc(Category.GENERAL, modelines, "'modelines' 'mls'",
