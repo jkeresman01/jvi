@@ -403,12 +403,14 @@ public class Scheduler
     }
 
     private static MouseListener mouseListener = new MouseListener() {
+        @Override
         public void mouseClicked(MouseEvent e)
         {
             if(fact().isEnabled())
                 mouseClick(e);
         }
 
+        @Override
         public void mousePressed(MouseEvent e)
         {
             if(fact().isEnabled())
@@ -416,31 +418,36 @@ public class Scheduler
             
         }
 
+        @Override
         public void mouseReleased(MouseEvent e)
         {
             if(fact().isEnabled())
                 mouseRelease(e);
         }
 
+        @Override
         public void mouseEntered(MouseEvent e)
         {
         }
 
+        @Override
         public void mouseExited(MouseEvent e)
         {
         }
     };
     private static MouseMotionListener mouseMotionListener =
             new MouseMotionListener() {
-        public void mouseDragged(MouseEvent e)
-        {
-            if(fact().isEnabled())
-                mouseDrag(e);
-        }
+                @Override
+                public void mouseDragged(MouseEvent e)
+                {
+                    if(fact().isEnabled())
+                        mouseDrag(e);
+                }
 
-        public void mouseMoved(MouseEvent e)
-        {
-        }
+                @Override
+                public void mouseMoved(MouseEvent e)
+                {
+                }
     };
 
     //////////////////////////////////////////////////////////////////////
