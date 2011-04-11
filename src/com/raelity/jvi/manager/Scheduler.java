@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.manager;
 
+import com.raelity.jvi.core.Util;
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViCaret;
 import com.raelity.jvi.ViCmdEntry;
@@ -235,7 +236,7 @@ public class Scheduler
                                          ViTextView tv,
                                          StringBuffer initialString)
     {
-        getCore().clearMsg();
+        Msg.clearMsg();
         if (initialString == null)
             initialString = new StringBuffer();
         if (activeCommandEntry != null)
@@ -255,7 +256,7 @@ public class Scheduler
             //
             // If modal, and everything went well, then activeCommandEntry is
             // already NULL. But not modal, then it isn't null.
-            getCore().vim_beep();
+            Util.vim_beep();
             LOG.log(Level.SEVERE, null, ex);
             activeCommandEntry = null;
             getCore().resetCommand();

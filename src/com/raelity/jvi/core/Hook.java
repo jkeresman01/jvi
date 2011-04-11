@@ -102,16 +102,6 @@ public class Hook
         Normal.resetCommand();
     }
 
-    public void clearMsg()
-    {
-        Msg.clearMsg();
-    }
-
-    public void vim_beep()
-    {
-        Util.vim_beep();
-    }
-
     //////////////////////////////////////////////////////////////////////
     //
     // Here are the static methods that core package uses to get to ViManager

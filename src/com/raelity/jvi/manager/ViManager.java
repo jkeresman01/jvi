@@ -30,6 +30,7 @@ import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.core.Msg;
 
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -487,7 +488,7 @@ public class ViManager
             // but G.curwin is not set yet. See switchTo(Component editor)
             return;
         }
-        core.clearMsg();
+        Msg.clearMsg();
     }
 
     //////////////////////////////////////////////////////////////////////
