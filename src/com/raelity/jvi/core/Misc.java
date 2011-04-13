@@ -19,6 +19,8 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.core.lib.ImportCheck;
+import com.raelity.jvi.core.lib.KeyDefs;
 import com.raelity.jvi.core.lib.NotSupportedException;
 import com.raelity.jvi.core.lib.Messages;
 import com.raelity.jvi.ViCmdEntry;
@@ -74,53 +76,75 @@ import static com.raelity.jvi.core.Search.*;
 import static com.raelity.jvi.core.Util.*;
 
 public class Misc implements ClipboardOwner {
-  private static final Logger LOG = Logger.getLogger(Misc.class.getName());
-  private static final ClipboardOwner clipOwner = new Misc();
-  private static final String PREF_REGISTERS = "registers";
-  private static final String PREF_SEARCH = "search";
-  private static final String PREF_COMMANDS = "commands";
+    private static final Logger LOG = Logger.getLogger(Misc.class.getName());
+    private static final ClipboardOwner clipOwner = new Misc();
+    private static final String PREF_REGISTERS = "registers";
+    private static final String PREF_SEARCH = "search";
+    private static final String PREF_COMMANDS = "commands";
+    private static ImportCheck registersImportCheck;
+    private static ImportCheck searchImportCheck;
+    private static ImportCheck commandsImportCheck;
 
-  private Misc() {}
+    private Misc() {}
 
-  //////////////////////////////////////////////////////////////////
-  //
-  // "misc1.c"
-  //
+    //////////////////////////////////////////////////////////////////
+    //
+    // "misc1.c"
+    //
 
     @ServiceProvider(service=ViInitialization.class,
                      path="jVi/init",
                      position=10)
     public static class Init implements ViInitialization
     {
-      @Override
-      public void init()
-      {
-        Misc.init();
-      }
+        @Override
+        public void init()
+        {
+            Misc.init();
+        }
     }
 
-  private static void init() {
-    PropertyChangeListener pcl = new PropertyChangeListener() {
-      @Override
-      public void propertyChange(PropertyChangeEvent evt) {
-        String pname = evt.getPropertyName();
-        if(pname.equals(ViManager.P_BOOT)) {
-          read_viminfo_registers();
-          read_viminfo_search();
-          read_viminfo_command();
-        } else if(pname.equals(ViManager.P_LATE_INIT)) {
-          javaKeyMap = initJavaKeyMap();
-        } else if(pname.equals(ViManager.P_SHUTDOWN)) {
-          write_viminfo_registers();
-          write_viminfo_search();
-          write_viminfo_command();
-        }
-      }
-    };
-    ViManager.addPropertyChangeListener(ViManager.P_BOOT, pcl);
-    ViManager.addPropertyChangeListener(ViManager.P_LATE_INIT, pcl);
-    ViManager.addPropertyChangeListener(ViManager.P_SHUTDOWN, pcl);
-  }
+    private static void init() {
+        PropertyChangeListener pcl = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String pname = evt.getPropertyName();
+                if(pname.equals(ViManager.P_BOOT)) {
+                    read_viminfo_registers();
+                    read_viminfo_search();
+                    read_viminfo_command();
+                    startImportCheck();
+                } else if(pname.equals(ViManager.P_LATE_INIT)) {
+                    javaKeyMap = initJavaKeyMap();
+                } else if(pname.equals(ViManager.P_SHUTDOWN)) {
+                    write_viminfo_registers();
+                    write_viminfo_search();
+                    write_viminfo_command();
+                }
+            }
+        };
+        ViManager.addPropertyChangeListener(ViManager.P_BOOT, pcl);
+        ViManager.addPropertyChangeListener(ViManager.P_LATE_INIT, pcl);
+        ViManager.addPropertyChangeListener(ViManager.P_SHUTDOWN, pcl);
+
+        // startImportCheck();
+    }
+
+    private static void startImportCheck()
+    {
+        // DEBUG XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+        registersImportCheck = new ImportCheck(
+                ViManager.getFactory().getPreferences(), "KeyBindings");
+        // DEBUG XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+        // commandsImportCheck = new ImportCheck(
+        //         ViManager.getFactory().getPreferences(), PREF_COMMANDS);
+        // searchImportCheck = new ImportCheck(
+        //         ViManager.getFactory().getPreferences(), PREF_SEARCH);
+
+        // registersImportCheck = new ImportCheck(
+        //         ViManager.getFactory().getPreferences(), PREF_REGISTERS);
+    }
 
   /**
    * count the size of the indent in the current line
