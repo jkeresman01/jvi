@@ -124,7 +124,7 @@ class MarkOps
         ViManager.addPropertyChangeListener(ViManager.P_CLOSE_BUF, pcl);
 
         if(ViManager.isDebugAtHome())
-            LOG.setLevel(Level.FINER);
+            LOG.setLevel(Level.FINE);
     }
 
     /** Set the indicated mark to the current cursor position;
@@ -1000,7 +1000,7 @@ class MarkOps
         private static void writeIndex(String name, int index)
                 throws BackingStoreException
         {
-                LOG.log(Level.FINE, "write next {0} index {1}",
+                LOG.log(Level.FINER, "write next {0} index {1}",
                         new Object[]{name, index});
                 BufferMarks bm = all.get(name);
                 if(bm == null) {
