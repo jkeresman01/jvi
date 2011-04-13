@@ -803,6 +803,15 @@ public class SwingTextView extends TextView
         return ok;
     }
 
+    final int roundint(double d)
+    {
+        long l = round(d);
+        if(l > Integer.MAX_VALUE) {
+            l = Integer.MAX_VALUE;
+        }
+        return (int)l;
+    }
+
     @Override
     public boolean cursorScreenUpDown(DIR dir, int distance, ViFPOS fpos)
     {
@@ -816,7 +825,7 @@ public class SwingTextView extends TextView
         //    LOG.log(Level.SEVERE, null, ex);
         //    return false;
         //}
-        int x = (int)round(w_curswant * getMaxCharWidth());
+        int x = roundint(w_curswant * getMaxCharWidth());
 
         while(distance-- > 0) {
             try {
