@@ -99,10 +99,10 @@ public class JviFrame extends JFrame
         ImageIcon image1 = new ImageIcon(JviFrame.class.getResource("openFile.gif"));
         ImageIcon image2 = new ImageIcon(JviFrame.class.getResource("closeFile.gif"));
         ImageIcon image3 = new ImageIcon(JviFrame.class.getResource("help.gif"));
-        final ImageIcon jvi = new ImageIcon(
-                JviFrame.class.getResource("jViLogoToggle24.png"));
+        final ImageIcon jvi_on = new ImageIcon(
+                JviFrame.class.getResource("jViLogoToggle24_checked.png"));
         final ImageIcon jvi_off = new ImageIcon(
-                JviFrame.class.getResource("jViLogoToggle24_off.png"));
+                JviFrame.class.getResource("jViLogoToggle24.png"));
         JPanel contentPane = (JPanel)this.getContentPane();
         contentPane.setLayout(new BorderLayout());
         this.setSize(new Dimension(400, 285));
@@ -136,8 +136,9 @@ public class JviFrame extends JFrame
         helpButton.setToolTipText("Help");
         optionsButton = new JButton("Options");
         optionsButton.setToolTipText("Options");
-        jviButton = new JToggleButton(jvi, true);
+        jviButton = new JToggleButton(jvi_on, true);
         jviButton.setPressedIcon(jvi_off);
+        jviButton.setPreferredSize(new Dimension(24, 24));
         jviButton.getModel().addChangeListener(new ChangeListener() {
 
             @Override
@@ -147,7 +148,7 @@ public class JviFrame extends JFrame
                         = (JToggleButton.ToggleButtonModel)e.getSource();
                 //should
                 if(m.isSelected())
-                    jviButton.setIcon(jvi);
+                    jviButton.setIcon(jvi_on);
                 else
                     jviButton.setIcon(jvi_off);
             }
