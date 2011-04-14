@@ -119,16 +119,19 @@ public class Misc implements ClipboardOwner {
                 } else if(pname.equals(ViManager.P_SHUTDOWN)) {
                     if(!registersImportCheck.isChange()) {
                         write_viminfo_registers();
+                    } else {
                         System.err.println("jVi registers history imported");
                         LOG.info("jVi registers history imported");
                     }
                     if(!searchImportCheck.isChange()) {
                         write_viminfo_search();
+                    } else {
                         System.err.println("jVi search history imported");
                         LOG.info("jVi search history imported");
                     }
                     if(!commandsImportCheck.isChange()) {
                         write_viminfo_command();
+                    } else {
                         System.err.println("jVi commmands history imported");
                         LOG.info("jVi commmands history imported");
                     }
@@ -140,7 +143,7 @@ public class Misc implements ClipboardOwner {
         ViManager.addPropertyChangeListener(ViManager.P_SHUTDOWN, pcl);
     }
 
-    private static PreferencesChangeMonitor DEBUG_CHECKER;
+    // private static PreferencesChangeMonitor DEBUG_CHECKER;
     private static void startImportCheck()
     {
         // // DEBUG XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -148,15 +151,11 @@ public class Misc implements ClipboardOwner {
         //         ViManager.getFactory().getPreferences(), "KeyBindings");
         // // DEBUG XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-        commandsImportCheck = PreferencesChangeMonitor.getHackChecker(
-        //commandsImportCheck = new PreferencesChangeMonitor(
+        commandsImportCheck = PreferencesChangeMonitor.getMonitor(
                 ViManager.getFactory().getPreferences(), PREF_COMMANDS);
-        searchImportCheck = PreferencesChangeMonitor.getHackChecker(
-        //searchImportCheck = new PreferencesChangeMonitor(
+        searchImportCheck = PreferencesChangeMonitor.getMonitor(
                 ViManager.getFactory().getPreferences(), PREF_SEARCH);
-
-        registersImportCheck = PreferencesChangeMonitor.getHackChecker(
-        //registersImportCheck = new PreferencesChangeMonitor(
+        registersImportCheck = PreferencesChangeMonitor.getMonitor(
                 ViManager.getFactory().getPreferences(), PREF_REGISTERS);
     }
 

@@ -48,10 +48,10 @@ public final class PreferencesChangeMonitor {
     private PreferenceChangeListener prefListener;
     private NodeChangeListener nodeListener;
     private Map<String, ParentListener> parentListeners;
+
     private static final boolean DUMP = true;
 
     private static final boolean DISABLE = true;
-
     private boolean hack;
     private Preferences hackBase;
     private Date hackValue;
@@ -67,23 +67,31 @@ public final class PreferencesChangeMonitor {
     public PreferencesChangeMonitor(Preferences parent, String child)
     {
         this();
+        if(parent == null || child == null)
+            throw new NullPointerException("parent == null || child == null");
         startMonitoring(parent, child);
     }
 
     /**
      * Use tricks to detect nb import.
-     * Preferences may be null, in which case startMonitoring must be used.
      * This has the unfortunate side effect of creating any child
      * node that we are monitoring.
+     * <p/>
+     * Preferences may be null, in which case startMonitoring must be used.
      */
-    public static PreferencesChangeMonitor getHackChecker(Preferences parent,
-                                                          String child)
+    public static PreferencesChangeMonitor getMonitor(Preferences parent,
+                                                      String child)
     {
         PreferencesChangeMonitor checker = new PreferencesChangeMonitor();
+
         checker.hack = true;
         checker.hackBase = parent;
         checker.hackValue = new Date();
-        checker.startMonitoring(parent, child);
+
+        if(parent != null)
+            checker.startMonitoring(parent, child);
+        else if(child != null)
+            throw new IllegalArgumentException("parent == null, child != null");
         return checker;
     }
 
@@ -94,7 +102,7 @@ public final class PreferencesChangeMonitor {
         if(hack) {
             for(String path : parentListeners.keySet()) {
                 // +1 in following for '/' serarator
-                String child = path.substring(hackBase.absolutePath().length() + 1);
+                String child = path.substring(hackBase.absolutePath().length()+1);
                 Preferences p = hackBase.node(child);
                 if(!p.get(HACK_KEY, "").equals(hackValue.toString())) {
                     change = true;
