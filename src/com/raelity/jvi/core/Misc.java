@@ -144,19 +144,19 @@ public class Misc implements ClipboardOwner {
     private static void startImportCheck()
     {
         // // DEBUG XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-        // DEBUG_CHECKER = new ImportCheck(
+        // DEBUG_CHECKER = new PreferencesChangeMonitor(
         //         ViManager.getFactory().getPreferences(), "KeyBindings");
         // // DEBUG XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
         commandsImportCheck = PreferencesChangeMonitor.getHackChecker(
-        //commandsImportCheck = new ImportCheck(
+        //commandsImportCheck = new PreferencesChangeMonitor(
                 ViManager.getFactory().getPreferences(), PREF_COMMANDS);
         searchImportCheck = PreferencesChangeMonitor.getHackChecker(
-        //searchImportCheck = new ImportCheck(
+        //searchImportCheck = new PreferencesChangeMonitor(
                 ViManager.getFactory().getPreferences(), PREF_SEARCH);
 
         registersImportCheck = PreferencesChangeMonitor.getHackChecker(
-        //registersImportCheck = new ImportCheck(
+        //registersImportCheck = new PreferencesChangeMonitor(
                 ViManager.getFactory().getPreferences(), PREF_REGISTERS);
     }
 
