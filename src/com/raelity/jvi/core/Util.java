@@ -88,6 +88,7 @@ public class Util {
   /**
    * VISUAL and OP_PENDING State are never set, they are equal to NORMAL State
    * with a condition.  This function returns the real State.
+   * {jVi} PLATFORM.
    */
   public static int get_real_state()
   {
@@ -97,6 +98,8 @@ public class Util {
         return VISUAL;
       else if (G.finish_op)
         return OP_PENDING;
+      else if(G.curwin.hasSelection())
+        return PLATFORM;
     }
     return G.State;
   }

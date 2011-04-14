@@ -93,11 +93,12 @@ public interface Constants {
     public static final int BASE_STATE_MASK = 0xff;
 
     public static final int  NORMAL	= 0x01;	// Normal mode, command expected
-    public static final int  VISUAL	= 0x02;	// Visual mode - use get_real_state()
-    public static final int  OP_PENDING	= 0x04;	// Normal mode, operator is pending - use
-				  // get_real_state()
+    public static final int  VISUAL	= 0x02;	// Visual mode - get_real_state()
+    public static final int  OP_PENDING	= 0x04;	// Normal mode, operator is
+                                                // pending - use get_real_state()
     public static final int  CMDLINE	= 0x08;	// Editing command line
     public static final int  INSERT	= 0x10;	// Insert mode
+    public static final int  PLATFORM   = 0x20; // platform-sel, get_real_state()
 
     public static final int  NORMAL_BUSY	= (0x100 + NORMAL); // Normal mode, busy command
     public static final int  REPLACE	= (0x200 + INSERT); // Replace mode

@@ -233,7 +233,13 @@ public final class Options {
     // It is handled very specially.
     //
     OptUtil.createStringOption(mapCommands,
-              "\" These mapping are handy if line wrap is turned on."
+              ""
+            + "\" These two mappings, which apply to PLATFORM-SELECT only,"
+            + "\n\" get 'y' and 'p' to work with the mouse selection."
+            + "\n\" pnoremap y vy"
+            + "\n\" pnoremap p vp"
+            + "\n"
+            + "\n\" These mapping are handy if line wrap is turned on."
             + "\n\" With them, j,k,$,0,^ behave visually as usual."
             + "\n\" On wrapped lines the cursor will not change visual line."
             + "\n\" The arrow keys and <Home>, <End> still behave as usual,"
@@ -262,9 +268,10 @@ public final class Options {
     OptUtil.setupOptionDesc(Category.GENERAL, mapCommands, "Map Commands",
             "map-cmd {lhs} {rhs}"
             + "\n{lhs} must represent a single character."
-            + "\n[nvo]map, [nvo]noremap and [nvo]unmap commands supported"
+            + "\n[nvop]map, [nvop]noremap and [nvop]unmap commands supported"
             + " (only normal mode mappings)."
-            + " Comments are on a line by themselves and start with \"."
+            + "\npmap is jVi only, when PLATFORM-SELECT."
+            + "\nComments are on a line by themselves and start with \"."
             + "\nIn lhs or rhs a char is of the form:"
             + "\n\u00a0\u00a0\u00a0\u00a0\"c\"           - except \\ and < and space"
             + "\n\u00a0\u00a0\u00a0\u00a0\"<C-X>\"       - except Ctrl-\\"

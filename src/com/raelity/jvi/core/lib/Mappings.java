@@ -101,16 +101,19 @@ public final class Mappings {
         ColonCommands.register("nm",  "nmap", cmd, null);
         ColonCommands.register("vm",  "vmap", cmd, null);
         ColonCommands.register("om",  "omap", cmd, null);
+        ColonCommands.register("pm",  "pmap", cmd, null);
 
         ColonCommands.register("no",  "noremap",  cmd, null);
         ColonCommands.register("nn",  "nnoremap", cmd, null);
         ColonCommands.register("vn",  "vnoremap", cmd, null);
         ColonCommands.register("ono", "onoremap", cmd, null);
+        ColonCommands.register("pn",  "pnoremap", cmd, null);
 
         ColonCommands.register("unm", "unmap",  cmd, null);
         ColonCommands.register("nun", "nunmap", cmd, null);
         ColonCommands.register("vu",  "vunmap", cmd, null);
         ColonCommands.register("ou",  "ounmap", cmd, null);
+        ColonCommands.register("pun", "punmap", cmd, null);
 
     }
 
@@ -246,13 +249,16 @@ public final class Mappings {
             mode = VISUAL;				   /* :vmap */
         else if (modec == 'o')
             mode = OP_PENDING;			   /* :omap */
+        else if (modec == 'p')
+            mode = PLATFORM;			   /* :omap */
         else
         {
             --p;
             if (forceit)
                 mode = INSERT + CMDLINE;		/* :map ! */
             else
-                mode = VISUAL + NORMAL + OP_PENDING;/* :map */
+                mode = VISUAL + NORMAL
+                        + OP_PENDING + PLATFORM;/* :map */
         }
 
         cmdp.setValue(cmd.substring(p));
@@ -272,14 +278,17 @@ public final class Mappings {
                 | "nmap".equals(cmd)
                 | "vmap".equals(cmd)
                 | "omap".equals(cmd)
+                | "pmap".equals(cmd)
                 | "noremap".equals(cmd)
                 | "nnoremap".equals(cmd)
                 | "vnoremap".equals(cmd)
                 | "onoremap".equals(cmd)
+                | "pnoremap".equals(cmd)
                 | "unmap".equals(cmd)
                 | "nunmap".equals(cmd)
                 | "vunmap".equals(cmd)
                 | "ounmap".equals(cmd)
+                | "punmap".equals(cmd)
                 )
                 ;
     }

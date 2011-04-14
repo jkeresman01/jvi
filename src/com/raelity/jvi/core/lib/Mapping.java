@@ -98,7 +98,7 @@ public class Mapping {
     static int modeString(StringBuilder sb, int mode, boolean verbose)
     {
         int n = 0;
-        if(verbose || mode != (NORMAL|VISUAL|OP_PENDING)) {
+        if(verbose || mode != (NORMAL|VISUAL|OP_PENDING|PLATFORM)) {
             if((mode & NORMAL) != 0) {
                 sb.append('n');
                 n++;
@@ -109,6 +109,10 @@ public class Mapping {
             }
             if((mode & OP_PENDING) != 0) {
                 sb.append('o');
+                n++;
+            }
+            if((mode & PLATFORM) != 0) {
+                sb.append('p');
                 n++;
             }
         }
