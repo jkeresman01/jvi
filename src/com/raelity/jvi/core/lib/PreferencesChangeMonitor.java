@@ -43,7 +43,7 @@ import java.util.prefs.Preferences;
  *              I suppose could put that in a finalize...
  * @author Ernie Rael <err at raelity.com>
  */
-public final class ImportCheck {
+public final class PreferencesChangeMonitor {
     private boolean change;
     private PreferenceChangeListener prefListener;
     private NodeChangeListener nodeListener;
@@ -55,14 +55,14 @@ public final class ImportCheck {
     private Date hackValue;
     private static final String HACK_KEY = "IMPORT_CHECK_HACK";
 
-    public ImportCheck()
+    public PreferencesChangeMonitor()
     {
-        prefListener = new PrefImportCheckListener();
-        nodeListener = new NodeImportCheckListener();
+        prefListener = new PrefCheckListener();
+        nodeListener = new NodeCheckListener();
         parentListeners = new HashMap<String, ParentListener>(2);
     }
 
-    public ImportCheck(Preferences parent, String child)
+    public PreferencesChangeMonitor(Preferences parent, String child)
     {
         this();
         startMonitoring(parent, child);
@@ -74,10 +74,10 @@ public final class ImportCheck {
      * This has the unfortunate side effect of creating any child
      * node that we are monitoring.
      */
-    public static ImportCheck getHackChecker(Preferences parent,
+    public static PreferencesChangeMonitor getHackChecker(Preferences parent,
                                                           String child)
     {
-        ImportCheck checker = new ImportCheck();
+        PreferencesChangeMonitor checker = new PreferencesChangeMonitor();
         checker.hack = true;
         checker.hackBase = parent;
         checker.hackValue = new Date();
@@ -107,10 +107,10 @@ public final class ImportCheck {
     public void startMonitoring(Preferences parent, String child)
     {
 
-        parentImportCheck(false, parent, child);
+        parentCheck(false, parent, child);
         try {
             if(parent.nodeExists(child)) {
-                recursiveImportCheck(false, parent.node(child));
+                recursiveCheck(false, parent.node(child));
             }
         } catch(BackingStoreException ex) {
         }
@@ -119,11 +119,11 @@ public final class ImportCheck {
     public void stopMonitoring(Preferences parent, String child)
     {
         parent = null; parent.toString();
-        // parentImportCheck(true, prefs);
-        // recursiveImportCheck(true, prefs);
+        // parentCheck(true, prefs);
+        // recursiveCheck(true, prefs);
     }
 
-    private void parentImportCheck(boolean remove,
+    private void parentCheck(boolean remove,
                                    Preferences parent,
                                    String child)
     {
@@ -156,7 +156,7 @@ public final class ImportCheck {
         }
     }
 
-    private void recursiveImportCheck(boolean remove, Preferences prefs)
+    private void recursiveCheck(boolean remove, Preferences prefs)
     {
         try {
             try {
@@ -176,10 +176,10 @@ public final class ImportCheck {
             catch(IllegalStateException ex) { }
 
             for(String name : prefs.childrenNames()) {
-                recursiveImportCheck(remove, prefs.node(name));
+                recursiveCheck(remove, prefs.node(name));
             }
         } catch(BackingStoreException ex) {
-            Logger.getLogger(ImportCheck.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PreferencesChangeMonitor.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -231,7 +231,7 @@ public final class ImportCheck {
 
     }
 
-    private class NodeImportCheckListener
+    private class NodeCheckListener
     implements NodeChangeListener
     {
         @Override
@@ -258,7 +258,7 @@ public final class ImportCheck {
 
     }
 
-    private class PrefImportCheckListener
+    private class PrefCheckListener
     implements PreferenceChangeListener
     {
         @Override

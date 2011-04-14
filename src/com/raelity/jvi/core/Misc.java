@@ -19,7 +19,7 @@
  */
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.core.lib.ImportCheck;
+import com.raelity.jvi.core.lib.PreferencesChangeMonitor;
 import com.raelity.jvi.core.lib.KeyDefs;
 import com.raelity.jvi.core.lib.NotSupportedException;
 import com.raelity.jvi.core.lib.Messages;
@@ -81,9 +81,9 @@ public class Misc implements ClipboardOwner {
     private static final String PREF_REGISTERS = "registers";
     private static final String PREF_SEARCH = "search";
     private static final String PREF_COMMANDS = "commands";
-    private static ImportCheck registersImportCheck;
-    private static ImportCheck searchImportCheck;
-    private static ImportCheck commandsImportCheck;
+    private static PreferencesChangeMonitor registersImportCheck;
+    private static PreferencesChangeMonitor searchImportCheck;
+    private static PreferencesChangeMonitor commandsImportCheck;
 
     private Misc() {}
 
@@ -140,7 +140,7 @@ public class Misc implements ClipboardOwner {
         ViManager.addPropertyChangeListener(ViManager.P_SHUTDOWN, pcl);
     }
 
-    private static ImportCheck DEBUG_CHECKER;
+    private static PreferencesChangeMonitor DEBUG_CHECKER;
     private static void startImportCheck()
     {
         // // DEBUG XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -148,14 +148,14 @@ public class Misc implements ClipboardOwner {
         //         ViManager.getFactory().getPreferences(), "KeyBindings");
         // // DEBUG XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-        commandsImportCheck = ImportCheck.getHackChecker(
+        commandsImportCheck = PreferencesChangeMonitor.getHackChecker(
         //commandsImportCheck = new ImportCheck(
                 ViManager.getFactory().getPreferences(), PREF_COMMANDS);
-        searchImportCheck = ImportCheck.getHackChecker(
+        searchImportCheck = PreferencesChangeMonitor.getHackChecker(
         //searchImportCheck = new ImportCheck(
                 ViManager.getFactory().getPreferences(), PREF_SEARCH);
 
-        registersImportCheck = ImportCheck.getHackChecker(
+        registersImportCheck = PreferencesChangeMonitor.getHackChecker(
         //registersImportCheck = new ImportCheck(
                 ViManager.getFactory().getPreferences(), PREF_REGISTERS);
     }
