@@ -212,28 +212,40 @@ abstract public class SimpleBuffer extends SwingBuffer
 
     private void afterUndoRedo(URData stuff)
     {
-        DocChangeInfo data = getDocChangeInfo();
-        if(data.isChange) {
+        DocChangeInfo info = getDocChangeInfo();
+        if(info.isChange) {
             try {
                 int nLine = stuff.nLine;
 
                 TextView tv = (TextView)Scheduler.getCurrentTextView();
-                int initOff = tv.getCaretPosition();
-                int off = data.offset;
-                tv.setCaretPosition(off);
+                if(info.offset != tv.w_cursor.getOffset()) {
+                    tv.w_cursor.set(info.offset);
+                }
                 if(G.dbgUndo.getBoolean()) {
+                    String text = "";
+                    try {
+                        if(info.isInsert)
+                            text = getDocument().getText(info.offset, info.length);
+                    } catch(BadLocationException ex) {
+                    }
                     G.dbgUndo.printf(Level.FINEST,
                       "afterUR: after  off=%d, col=%d\n"
-                    + "         change off=%d, len=%d, insert=%b\n",
+                    + "         change off=%d, len=%d, insert=%b\n"
+                    + "         text='%s'\n",
                             tv.w_cursor.getOffset(), tv.w_cursor.getColumn(),
-                            data.offset, data.length, data.isInsert
-                            //getUndoOffset(), getUndoLength(), getUndoInsert()
+                            info.offset, info.length, info.isInsert,
+                            text
                             );
                 }
-                if(nLine != getLineCount())
-                    Edit.beginline(BL_WHITE);
-                else if ("\n".equals(getText(tv.getCaretPosition(), 1))) {
-                    Misc.check_cursor_col();
+                // Only adjust the cursor if undo/redo left the cursor on col 0;
+                // not entirely correct, but...
+                if(tv.w_cursor.getColumn() == 0) {
+                    //NEEDSWORK could try following the rules outlined above
+                    if(nLine != getLineCount())
+                        Edit.beginline(BL_WHITE);
+                    else if ("\n".equals(getText(tv.getCaretPosition(), 1))) {
+                        Misc.check_cursor_col();
+                    }
                 }
             } catch (ViBadLocationException ex) { }
         }

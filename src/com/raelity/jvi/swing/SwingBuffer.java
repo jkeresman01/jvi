@@ -466,10 +466,7 @@ abstract public class SwingBuffer extends Buffer
                                    + ":" + e.getLength() + " " + e);
             invalidateData();
             if(docChangeInfo != null) {
-                docChangeInfo.isChange = true;
-                docChangeInfo.offset = e.getOffset();
-                docChangeInfo.length = e.getLength();
-                docChangeInfo.isInsert = true;
+                docChangeInfo.setup(true, e);
             }
             
             // If not in insert mode, then no magic redo tracking
@@ -496,10 +493,7 @@ abstract public class SwingBuffer extends Buffer
                                    + ":" + e.getLength() + " " + e);
             invalidateData();
             if(docChangeInfo != null) {
-                docChangeInfo.isChange = true;
-                docChangeInfo.offset = e.getOffset();
-                docChangeInfo.length = e.getLength();
-                docChangeInfo.isInsert = false;
+                docChangeInfo.setup(false, e);
             }
 
             // If not in insert mode, then no magic redo tracking
@@ -515,6 +509,30 @@ abstract public class SwingBuffer extends Buffer
                     LOG.log(Level.SEVERE, null, ex);
                 }
             }
+        }
+    }
+
+    private DocChangeInfo docChangeInfo;
+
+    // These variables track last insert/remove to document.
+    // They are usually used for undo/redo issue by subclasses.
+    protected class DocChangeInfo {
+        /** did a change happen */
+        public boolean isChange;
+        /** last change was an insert */
+        public boolean isInsert;
+        /** doc offset of last change */
+        public int offset;
+        /** length of last change */
+        public int length;
+
+        private void setup(boolean isInsert, DocumentEvent e) {
+            this.isInsert = isInsert;
+            isChange = true;
+            offset = e.getOffset();
+            length = e.getLength();
+            // ElementChange change
+            //         = e.getChange(e.getDocument().getDefaultRootElement());
         }
     }
 
@@ -620,21 +638,6 @@ abstract public class SwingBuffer extends Buffer
     protected void createDocChangeInfo()
     {
         docChangeInfo = new DocChangeInfo();
-    }
-
-    private DocChangeInfo docChangeInfo;
-    
-    // These variables track last insert/remove to document.
-    // They are usually used for undo/redo issue by subclasses.
-    protected class DocChangeInfo {
-        /** did a change happen */
-        public boolean isChange;
-        /** last change was an insert */
-        public boolean isInsert;
-        /** doc offset of last change */
-        public int offset;
-        /** length of last change */
-        public int length;
     }
 
     protected String getRemovedText(DocumentEvent e) {

@@ -48,6 +48,9 @@ public class SampleText {
 
     static String txt02 =
   ""
++ "0123\n"
++ "abcd\n"
++ "wxyz\n"
 + "package com.raelity.tools.vi;\n"
 + "\n"
 + "import java.util.Map;\n"
