@@ -19,7 +19,7 @@
  */
 package com.raelity.jvi.core.lib;
 
-import com.raelity.jvi.core.Misc;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -32,21 +32,28 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 /**
- * Monitor a preferences subtree for changes.
- * If preferences in a subtree are only saved at shutdown,
- * then this will detect external changes, such as importing preferences.
+ * Monitor a preferences subtree for creation and/or changes.
  * <p/>
- * NEEDSWORK: could track all startChecking stopChecking args and
- *            have a clear/reset method does stopChecking as needed.
- *            I suppose could put that in a finalize...
+ * Set variable DUMP to true for System.err output.
+ * <p/>
+ * NEEDSWORK:   if a change is detected, then remove listeners right away.
+ * <p/>
+ * NEEDSWORK:   could track all startChecking stopChecking args and
+ *              have a clear/reset method does stopChecking as needed.
+ *              I suppose could put that in a finalize...
  * @author Ernie Rael <err at raelity.com>
  */
 public final class ImportCheck {
-    private boolean imports;
+    private boolean change;
     private PreferenceChangeListener prefListener;
     private NodeChangeListener nodeListener;
     private Map<String, ParentListener> parentListeners;
     private static final boolean DUMP = true;
+
+    private boolean hack;
+    private Preferences hackBase;
+    private Date hackValue;
+    private static final String HACK_KEY = "IMPORT_CHECK_HACK";
 
     public ImportCheck()
     {
@@ -58,15 +65,46 @@ public final class ImportCheck {
     public ImportCheck(Preferences parent, String child)
     {
         this();
-        startChecking(parent, child);
+        startMonitoring(parent, child);
     }
 
-    public boolean isImports()
+    /**
+     * Use tricks to detect nb import.
+     * Preferences may be null, in which case startMonitoring must be used.
+     * This has the unfortunate side effect of creating any child
+     * node that we are monitoring.
+     */
+    public static ImportCheck getHackChecker(Preferences parent,
+                                                          String child)
     {
-        return imports;
+        ImportCheck checker = new ImportCheck();
+        checker.hack = true;
+        checker.hackBase = parent;
+        checker.hackValue = new Date();
+        checker.startMonitoring(parent, child);
+        return checker;
     }
 
-    public void startChecking(Preferences parent, String child)
+    public boolean isChange()
+    {
+        if(hack) {
+            for(String path : parentListeners.keySet()) {
+                // +1 in following for '/' serarator
+                String child = path.substring(hackBase.absolutePath().length() + 1);
+                Preferences p = hackBase.node(child);
+                if(!p.get(HACK_KEY, "").equals(hackValue.toString())) {
+                    change = true;
+                    if(DUMP) {
+                        System.err.println("PREF CHANGE: "
+                                + "HACK in " + p.absolutePath());
+                    }
+                }
+            }
+        }
+        return change;
+    }
+
+    public void startMonitoring(Preferences parent, String child)
     {
 
         parentImportCheck(false, parent, child);
@@ -78,7 +116,7 @@ public final class ImportCheck {
         }
     }
 
-    public void stopChecking(Preferences parent, String child)
+    public void stopMonitoring(Preferences parent, String child)
     {
         parent = null; parent.toString();
         // parentImportCheck(true, prefs);
@@ -89,30 +127,32 @@ public final class ImportCheck {
                                    Preferences parent,
                                    String child)
     {
-        // Preferences parent = prefs.parent();
-        if(parent != null) {
-            String childPath = parent.absolutePath() + "/" + child;
-            ParentListener pl = parentListeners.get(childPath);
-            if(pl == null && !remove) {
-                pl = new ParentListener(child);
-                parentListeners.put(childPath, pl);
-            }
-            if(pl != null) {
-                try {
-                    if(remove) {
-                        parent.removeNodeChangeListener(pl);
-                    } else {
-                        parent.addNodeChangeListener(pl);
-                        if(DUMP) {
-                            System.err.println("PARENT START CHECKING: "
-                                    + child + " in "
-                                    + parent.absolutePath());
-                        }
+        String childPath = parent.absolutePath() + "/" + child;
+        if(hack) {
+            assert childPath.startsWith(hackBase.absolutePath());
+            Preferences p = parent.node(child);
+            p.put(HACK_KEY, hackValue.toString());
+        }
+        ParentListener pl = parentListeners.get(childPath);
+        if(pl == null && !remove) {
+            pl = new ParentListener(child);
+            parentListeners.put(childPath, pl);
+        }
+        if(pl != null) {
+            try {
+                if(remove) {
+                    parent.removeNodeChangeListener(pl);
+                } else {
+                    parent.addNodeChangeListener(pl);
+                    if(DUMP) {
+                        System.err.println("PARENT START CHECKING: "
+                                + child + " in "
+                                + parent.absolutePath());
                     }
                 }
-                catch (IllegalArgumentException ex) {}
-                catch (IllegalStateException ex) {}
             }
+            catch (IllegalArgumentException ex) {}
+            catch (IllegalStateException ex) {}
         }
     }
 
@@ -139,7 +179,7 @@ public final class ImportCheck {
                 recursiveImportCheck(remove, prefs.node(name));
             }
         } catch(BackingStoreException ex) {
-            Logger.getLogger(Misc.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ImportCheck.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -157,7 +197,7 @@ public final class ImportCheck {
         public void childAdded(NodeChangeEvent evt)
         {
             if(evt.getChild().name().equals(child)) {
-                imports = true;
+                change = true;
                 if(DUMP) {
                     System.err.println("PARENT NODE CHANGE: childAdded: "
                             + evt.getChild().name()
@@ -175,7 +215,7 @@ public final class ImportCheck {
         public void childRemoved(NodeChangeEvent evt)
         {
             if(evt.getChild().name().equals(child)) {
-                imports = true;
+                change = true;
                 if(DUMP) {
                     System.err.println("PARENT NODE CHANGE: childRemoved: "
                             + evt.getChild().name()
@@ -197,7 +237,7 @@ public final class ImportCheck {
         @Override
         public void childAdded(NodeChangeEvent evt)
         {
-            imports = true;
+            change = true;
             if(DUMP) {
                 System.err.println("NODE CHANGE: childAdded: "
                         + evt.getChild().name()
@@ -208,7 +248,7 @@ public final class ImportCheck {
         @Override
         public void childRemoved(NodeChangeEvent evt)
         {
-            imports = true;
+            change = true;
             if(DUMP) {
                 System.err.println("NODE CHANGE: childRemoved: "
                         + evt.getChild().name()
@@ -224,7 +264,7 @@ public final class ImportCheck {
         @Override
         public void preferenceChange(PreferenceChangeEvent evt)
         {
-            imports = true;
+            change = true;
             if(DUMP) {
                 System.err.println("PREF CHANGE: "
                         + evt.getKey()

@@ -117,33 +117,47 @@ public class Misc implements ClipboardOwner {
                 } else if(pname.equals(ViManager.P_LATE_INIT)) {
                     javaKeyMap = initJavaKeyMap();
                 } else if(pname.equals(ViManager.P_SHUTDOWN)) {
-                    write_viminfo_registers();
-                    write_viminfo_search();
-                    write_viminfo_command();
+                    if(!registersImportCheck.isChange()) {
+                        write_viminfo_registers();
+                        System.err.println("jVi registers history imported");
+                        LOG.info("jVi registers history imported");
+                    }
+                    if(!searchImportCheck.isChange()) {
+                        write_viminfo_search();
+                        System.err.println("jVi search history imported");
+                        LOG.info("jVi search history imported");
+                    }
+                    if(!commandsImportCheck.isChange()) {
+                        write_viminfo_command();
+                        System.err.println("jVi commmands history imported");
+                        LOG.info("jVi commmands history imported");
+                    }
                 }
             }
         };
         ViManager.addPropertyChangeListener(ViManager.P_BOOT, pcl);
         ViManager.addPropertyChangeListener(ViManager.P_LATE_INIT, pcl);
         ViManager.addPropertyChangeListener(ViManager.P_SHUTDOWN, pcl);
-
-        // startImportCheck();
     }
 
+    private static ImportCheck DEBUG_CHECKER;
     private static void startImportCheck()
     {
-        // DEBUG XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-        // registersImportCheck = new ImportCheck(
+        // // DEBUG XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+        // DEBUG_CHECKER = new ImportCheck(
         //         ViManager.getFactory().getPreferences(), "KeyBindings");
-        // DEBUG XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+        // // DEBUG XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-        // commandsImportCheck = new ImportCheck(
-        //         ViManager.getFactory().getPreferences(), PREF_COMMANDS);
-        // searchImportCheck = new ImportCheck(
-        //         ViManager.getFactory().getPreferences(), PREF_SEARCH);
+        commandsImportCheck = ImportCheck.getHackChecker(
+        //commandsImportCheck = new ImportCheck(
+                ViManager.getFactory().getPreferences(), PREF_COMMANDS);
+        searchImportCheck = ImportCheck.getHackChecker(
+        //searchImportCheck = new ImportCheck(
+                ViManager.getFactory().getPreferences(), PREF_SEARCH);
 
-        // registersImportCheck = new ImportCheck(
-        //         ViManager.getFactory().getPreferences(), PREF_REGISTERS);
+        registersImportCheck = ImportCheck.getHackChecker(
+        //registersImportCheck = new ImportCheck(
+                ViManager.getFactory().getPreferences(), PREF_REGISTERS);
     }
 
   /**
