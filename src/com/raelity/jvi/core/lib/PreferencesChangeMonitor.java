@@ -50,6 +50,8 @@ public final class PreferencesChangeMonitor {
     private Map<String, ParentListener> parentListeners;
     private static final boolean DUMP = true;
 
+    private static final boolean DISABLE = true;
+
     private boolean hack;
     private Preferences hackBase;
     private Date hackValue;
@@ -87,6 +89,8 @@ public final class PreferencesChangeMonitor {
 
     public boolean isChange()
     {
+        if(DISABLE)
+            return false;
         if(hack) {
             for(String path : parentListeners.keySet()) {
                 // +1 in following for '/' serarator
@@ -106,6 +110,8 @@ public final class PreferencesChangeMonitor {
 
     public void startMonitoring(Preferences parent, String child)
     {
+        if(DISABLE)
+            return;
 
         parentCheck(false, parent, child);
         try {
