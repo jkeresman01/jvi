@@ -119,7 +119,10 @@ public class GetChar {
     //////////////////////////////////////////////////////////////////////////
   
     /** This is a special case for the two part search */
-    static void fakeGotc(char key) {
+    static void fakeGotcPickupExtraChar(char key) {
+        Normal.pickupExtraChar = true;
+        ++G.no_mapping;
+        ++G.allow_keys;
         pumpChar(key);
         Misc.out_flush();   // returning from event
     }

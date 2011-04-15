@@ -113,11 +113,11 @@ public class Search {
       }
       
       if(acceptIncr)
-        GetChar.fakeGotc(K_X_INCR_SEARCH_DONE);
+        GetChar.fakeGotcPickupExtraChar(K_X_INCR_SEARCH_DONE);
       else if(cancel)
-        GetChar.fakeGotc(K_X_SEARCH_CANCEL);
+        GetChar.fakeGotcPickupExtraChar(K_X_SEARCH_CANCEL);
       else
-        GetChar.fakeGotc(K_X_SEARCH_FINISH);
+        GetChar.fakeGotcPickupExtraChar(K_X_SEARCH_FINISH);
     } finally {
       Hook.setJViBusy(false);
     }

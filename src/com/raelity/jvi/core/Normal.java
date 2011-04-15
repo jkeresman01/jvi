@@ -2947,11 +2947,6 @@ middle_code:
                                 boolean dont_set_mark) {
     do_xop("nv_search");
     
-    // This flags normal_cmd to pick up another character
-    // for the search command. This othe character will be issued
-    // after the pattern is input.
-    pickupExtraChar = true;
-    
     inputSearchPattern(cap,
                        cap.count1,
                        (dont_set_mark ? 0 : SEARCH_MARK)
