@@ -22,9 +22,9 @@ package com.raelity.jvi.cmd;
 
 import com.raelity.jvi.ViStatusDisplay;
 import com.raelity.jvi.core.G;
+import com.raelity.jvi.manager.ViManager;
 
 import javax.swing.JLabel;
-import javax.swing.SwingUtilities;
 
 /**
  *  A basic implementation of the vi status bar.
@@ -37,6 +37,7 @@ public class PlayStatusDisplay implements ViStatusDisplay
     private JLabel strokeStatus;
     private JLabel modeStatus;
     private boolean fFrozen;
+    private int scrollCount;
 
     public PlayStatusDisplay(JLabel generalStatus, JLabel strokeStatus,
                          JLabel modeStatus)
@@ -49,28 +50,32 @@ public class PlayStatusDisplay implements ViStatusDisplay
     // ............
 
 
+    @Override
     public void displayMode( String mode )
     {
         String s = mode + ( G.Recording ? "recording" : "" );
-        if ( s.equals("") ) {
+        if ( s.isEmpty() ) {
             s = " ";
         }
         setText(modeStatus, s);
     }
 
 
+    @Override
     public void displayCommand( String cmd )
     {
         setText(strokeStatus, cmd);
     }
 
 
+    @Override
     public void displayStatusMessage( String msg )
     {
         fFrozen = false;
         setText(generalStatus, msg);
     }
 
+    @Override
     public void displayErrorMessage( String msg )
     {
         fFrozen = false;
@@ -79,6 +84,7 @@ public class PlayStatusDisplay implements ViStatusDisplay
     }
 
 
+    @Override
     public void displayWarningMessage( String msg )
     {
         fFrozen = false;
@@ -87,6 +93,7 @@ public class PlayStatusDisplay implements ViStatusDisplay
     }
 
 
+    @Override
     public void displayFrozenMessage(String msg)
     {
         fFrozen = true;
@@ -94,6 +101,7 @@ public class PlayStatusDisplay implements ViStatusDisplay
     }
 
 
+    @Override
     public void clearMessage()
     {
         if ( !fFrozen ) {
@@ -102,6 +110,7 @@ public class PlayStatusDisplay implements ViStatusDisplay
     }
 
 
+    @Override
     public void clearDisplay()
     {
         setText(generalStatus, "");
@@ -109,32 +118,40 @@ public class PlayStatusDisplay implements ViStatusDisplay
         setText(strokeStatus, "");
     }
 
-
-    synchronized void setText( JLabel l00, String s00 )
-    {
-        if ( l00 == generalStatus && s00.equals("") ) {
-            s00 = " "; // need this to keep the status bar from collapsing
-        }
-        if ( SwingUtilities.isEventDispatchThread() ) {
-            l00.setText(s00);
-        } else {
-            final JLabel l01 = l00;
-            final String s01 = s00;
-            SwingUtilities.invokeLater(
-            new Runnable() {
-                    public void run() {
-                        l01.setText(s01);
-                    } });
-        }
-    }
-
-
     /**
      *  Don't need anything special here.
      */
+    @Override
     public void refresh()
     {
     }
+
+    @Override
+    public void scrolling()
+    {
+        // let messages hang around a little more,
+        // there is more scrolling that happens in swing...
+        if(++scrollCount > 3) {
+            clearMessage();
+        }
+    }
+
+
+    synchronized void setText( final JLabel l00, String s00 )
+    {
+        scrollCount = 0;
+        if ( l00 == generalStatus && s00.isEmpty() ) {
+            s00 = " "; // need this to keep the status bar from collapsing
+        }
+        final String s01 = s00;
+        ViManager.runInDispatch(false,
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        l00.setText(s01);
+                                    } });
+    }
+
 
 
 } // end com.raelity.jvi.swing.PlayStatusDisplay

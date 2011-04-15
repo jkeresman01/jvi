@@ -488,7 +488,7 @@ public class ViManager
             // but G.curwin is not set yet. See switchTo(Component editor)
             return;
         }
-        Msg.clearMsg();
+        G.curwin.getStatusDisplay().scrolling();
     }
 
     //////////////////////////////////////////////////////////////////////

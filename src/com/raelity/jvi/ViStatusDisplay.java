@@ -48,6 +48,12 @@ public interface ViStatusDisplay {
 
   /** Clear display */
   public void clearDisplay();
+
+  /** This method is called when the textview scrolls.
+   * Vim clears the message when there's a scroll,
+   * I think it should be ignored...
+   */
+  public void scrolling();
   
   /** Redisplay last message. May be noop depending on implementation.
    * This is invoked when exiting a keystroke because some platforms
