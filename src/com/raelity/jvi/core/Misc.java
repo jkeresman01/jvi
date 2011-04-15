@@ -121,7 +121,7 @@ public class Misc implements ClipboardOwner {
                         write_viminfo_registers();
                     } else {
                         System.err.println("jVi registers history imported");
-                        LOG.info("jVi registers history imported");
+                        LOG.info("jVi registers imported");
                     }
                     if(!searchImportCheck.isChange()) {
                         write_viminfo_search();
@@ -133,7 +133,7 @@ public class Misc implements ClipboardOwner {
                         write_viminfo_command();
                     } else {
                         System.err.println("jVi commmands history imported");
-                        LOG.info("jVi commmands history imported");
+                        LOG.info("jVi commmand history imported");
                     }
                 }
             }
@@ -143,14 +143,8 @@ public class Misc implements ClipboardOwner {
         ViManager.addPropertyChangeListener(ViManager.P_SHUTDOWN, pcl);
     }
 
-    // private static PreferencesChangeMonitor DEBUG_CHECKER;
     private static void startImportCheck()
     {
-        // // DEBUG XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-        // DEBUG_CHECKER = new PreferencesChangeMonitor(
-        //         ViManager.getFactory().getPreferences(), "KeyBindings");
-        // // DEBUG XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
         commandsImportCheck = PreferencesChangeMonitor.getMonitor(
                 ViManager.getFactory().getPreferences(), PREF_COMMANDS);
         searchImportCheck = PreferencesChangeMonitor.getMonitor(

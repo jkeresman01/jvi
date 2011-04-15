@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.core.lib;
 
+import com.raelity.jvi.manager.ViManager;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,48 +46,53 @@ import java.util.prefs.Preferences;
  */
 public final class PreferencesChangeMonitor {
     private boolean change;
+    private boolean freeze;
     private PreferenceChangeListener prefListener;
     private NodeChangeListener nodeListener;
     private Map<String, ParentListener> parentListeners;
 
-    private static final boolean DUMP = true;
+    private static boolean DUMP = false;
 
-    private static final boolean DISABLE = true;
+    private static final boolean ENABLE_HACK = true;
     private boolean hack;
     private Preferences hackBase;
-    private Date hackValue;
+    private String hackValue;
     private static final String HACK_KEY = "IMPORT_CHECK_HACK";
+    private static FileHack fileHack;
 
-    public PreferencesChangeMonitor()
+    private PreferencesChangeMonitor()
     {
         prefListener = new PrefCheckListener();
         nodeListener = new NodeCheckListener();
         parentListeners = new HashMap<String, ParentListener>(2);
+        DUMP = ViManager.isDebugAtHome();
     }
 
-    public PreferencesChangeMonitor(Preferences parent, String child)
-    {
-        this();
-        if(parent == null || child == null)
-            throw new NullPointerException("parent == null || child == null");
-        startMonitoring(parent, child);
+    public static void setFileHack(FileHack fileHack)
+        { PreferencesChangeMonitor.fileHack = fileHack; }
+    public interface FileHack {
+        public boolean hasKeyValue(Preferences prefs, String child,
+                                   String key, String val);
     }
 
     /**
-     * Use tricks to detect nb import.
-     * This has the unfortunate side effect of creating any child
-     * node that we are monitoring.
-     * <p/>
-     * Preferences may be null, in which case startMonitoring must be used.
+     * Preferences may be null, in which case startMonitoring should be used.
      */
     public static PreferencesChangeMonitor getMonitor(Preferences parent,
                                                       String child)
     {
         PreferencesChangeMonitor checker = new PreferencesChangeMonitor();
 
-        checker.hack = true;
-        checker.hackBase = parent;
-        checker.hackValue = new Date();
+        if(ENABLE_HACK) {
+            // Use tricks to detect nb import.
+            // This has the unfortunate side effect of creating any child
+            // node that we are monitoring.
+            // <p/>
+            assert checker.hackBase == null || checker.hackBase == parent;
+            checker.hack = true;
+            checker.hackBase = parent;
+            checker.hackValue = new Date().toString();
+        }
 
         if(parent != null)
             checker.startMonitoring(parent, child);
@@ -97,18 +103,30 @@ public final class PreferencesChangeMonitor {
 
     public boolean isChange()
     {
-        if(DISABLE)
-            return false;
-        if(hack) {
-            for(String path : parentListeners.keySet()) {
-                // +1 in following for '/' serarator
-                String child = path.substring(hackBase.absolutePath().length()+1);
-                Preferences p = hackBase.node(child);
-                if(!p.get(HACK_KEY, "").equals(hackValue.toString())) {
-                    change = true;
-                    if(DUMP) {
-                        System.err.println("PREF CHANGE: "
-                                + "HACK in " + p.absolutePath());
+        if(ENABLE_HACK) {
+            if(hack) {
+                for(String path : parentListeners.keySet()) {
+                    // +1 in following for '/' serarator
+                    String child = path.substring(
+                            hackBase.absolutePath().length()+1);
+                    if(fileHack != null) {
+                        if(!fileHack.hasKeyValue(hackBase, child,
+                                                 HACK_KEY, hackValue)) {
+                            change = true;
+                            if(DUMP) {
+                                System.err.println("PREF CHANGE: "
+                                        + "HACK in " + path);
+                            }
+                        }
+                    } else {
+                        Preferences p = hackBase.node(child);
+                        if(!p.get(HACK_KEY, "").equals(hackValue)) {
+                            change = true;
+                            if(DUMP) {
+                                System.err.println("PREF CHANGE: "
+                                        + "HACK in " + p.absolutePath());
+                            }
+                        }
                     }
                 }
             }
@@ -116,11 +134,23 @@ public final class PreferencesChangeMonitor {
         return change;
     }
 
+    public void setFreeze(boolean freeze)
+    {
+        this.freeze = freeze;
+    }
+
+    private void changeDetected()
+    {
+        if(!freeze)
+            change = true;
+        else
+            if(DUMP) {
+                System.err.println("CHANGE FROZEN:");
+            }
+    }
+
     public void startMonitoring(Preferences parent, String child)
     {
-        if(DISABLE)
-            return;
-
         parentCheck(false, parent, child);
         try {
             if(parent.nodeExists(child)) {
@@ -138,14 +168,16 @@ public final class PreferencesChangeMonitor {
     }
 
     private void parentCheck(boolean remove,
-                                   Preferences parent,
-                                   String child)
+                             Preferences parent,
+                             String child)
     {
         String childPath = parent.absolutePath() + "/" + child;
-        if(hack) {
-            assert childPath.startsWith(hackBase.absolutePath());
-            Preferences p = parent.node(child);
-            p.put(HACK_KEY, hackValue.toString());
+        if(ENABLE_HACK) {
+            if(hack) {
+                assert childPath.startsWith(hackBase.absolutePath());
+                Preferences p = parent.node(child);
+                p.put(HACK_KEY, hackValue);
+            }
         }
         ParentListener pl = parentListeners.get(childPath);
         if(pl == null && !remove) {
@@ -211,7 +243,7 @@ public final class PreferencesChangeMonitor {
         public void childAdded(NodeChangeEvent evt)
         {
             if(evt.getChild().name().equals(child)) {
-                change = true;
+                changeDetected();
                 if(DUMP) {
                     System.err.println("PARENT NODE CHANGE: childAdded: "
                             + evt.getChild().name()
@@ -229,7 +261,7 @@ public final class PreferencesChangeMonitor {
         public void childRemoved(NodeChangeEvent evt)
         {
             if(evt.getChild().name().equals(child)) {
-                change = true;
+                changeDetected();
                 if(DUMP) {
                     System.err.println("PARENT NODE CHANGE: childRemoved: "
                             + evt.getChild().name()
@@ -251,7 +283,7 @@ public final class PreferencesChangeMonitor {
         @Override
         public void childAdded(NodeChangeEvent evt)
         {
-            change = true;
+            changeDetected();
             if(DUMP) {
                 System.err.println("NODE CHANGE: childAdded: "
                         + evt.getChild().name()
@@ -262,7 +294,7 @@ public final class PreferencesChangeMonitor {
         @Override
         public void childRemoved(NodeChangeEvent evt)
         {
-            change = true;
+            changeDetected();
             if(DUMP) {
                 System.err.println("NODE CHANGE: childRemoved: "
                         + evt.getChild().name()
@@ -278,7 +310,7 @@ public final class PreferencesChangeMonitor {
         @Override
         public void preferenceChange(PreferenceChangeEvent evt)
         {
-            change = true;
+            changeDetected();
             if(DUMP) {
                 System.err.println("PREF CHANGE: "
                         + evt.getKey()

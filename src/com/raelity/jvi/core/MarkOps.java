@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.core.lib.PreferencesChangeMonitor;
 import com.raelity.jvi.core.lib.CcFlag;
 import com.raelity.jvi.core.ColonCommands.ColonAction;
 import java.util.EnumSet;
@@ -75,6 +76,9 @@ class MarkOps
     /** This constant indicates mark is in other file. */
     final static FPOS otherFile = new FPOS();
 
+    private static PreferencesChangeMonitor marksImportCheck;
+    private static PreferencesChangeMonitor filemarksImportCheck;
+
     private MarkOps()
     {
     }
@@ -106,13 +110,34 @@ class MarkOps
                 } else if(pname.equals(ViManager.P_OPEN_BUF)) {
                     BufferMarksPersist.restore((Buffer)evt.getNewValue());
                 } else if(pname.equals(ViManager.P_CLOSE_BUF)) {
-                    BufferMarksPersist.persist((Buffer)evt.getOldValue());
+                    if(!marksImportCheck.isChange()) {
+                        marksImportCheck.setFreeze(true);
+                        try {
+                            BufferMarksPersist.persist((Buffer)evt.getOldValue());
+                        } finally {
+                            marksImportCheck.setFreeze(false);
+                        }
+                    } else {
+                        System.err.println("jVi marks imported (buffer)");
+                        LOG.info("jVi marks imported (buffer)");
+                    }
                 } else if(pname.equals(ViManager.P_BOOT)) {
                     BufferMarksPersist.read_viminfo();
                     read_viminfo_filemarks();
+                    startImportCheck();
                 } else if(pname.equals(ViManager.P_SHUTDOWN)) {
-                    write_viminfo_filemarks();
-                    BufferMarksPersist.write_viminfo();
+                    if(!filemarksImportCheck.isChange()) {
+                        write_viminfo_filemarks();
+                    } else {
+                        System.err.println("jVi filemarks imported");
+                        LOG.info("jVi filemarks imported");
+                    }
+                    if(!marksImportCheck.isChange()) {
+                        BufferMarksPersist.write_viminfo();
+                    } else {
+                        System.err.println("jVi marks imported");
+                        LOG.info("jVi marks imported");
+                    }
                 }
             }
         };
@@ -125,6 +150,14 @@ class MarkOps
 
         if(ViManager.isDebugAtHome())
             LOG.setLevel(Level.FINE);
+    }
+
+    private static void startImportCheck()
+    {
+        marksImportCheck = PreferencesChangeMonitor.getMonitor(
+                ViManager.getFactory().getPreferences(), PREF_MARKS);
+        filemarksImportCheck = PreferencesChangeMonitor.getMonitor(
+                ViManager.getFactory().getPreferences(), PREF_FILEMARKS);
     }
 
     /** Set the indicated mark to the current cursor position;
@@ -857,6 +890,11 @@ class MarkOps
             } catch(BackingStoreException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
+            try {
+                prefs.flush();
+            } catch(BackingStoreException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
         }
 
         /** put the previously saved marks into the buffer */
@@ -879,7 +917,9 @@ class MarkOps
                 for (String mName : marks) {
                     MarkInfo mi = readMark(bufData.node(mName));
                     if (mi == null) {
-                        LOG.warning(String.format("restore: "
+                        // following was warning, but it fires too much
+                        // wonder why...., but its igored.
+                        LOG.config(String.format("restore: "
                                 + "bad mark: %s, name: %s", mName, name));
                         continue;
                     }
