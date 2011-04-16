@@ -28,8 +28,10 @@
  */
 package com.raelity.jvi.swing.ui.options;
 
+import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.lib.Mappings;
+import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.OptUtil;
 import com.raelity.jvi.options.Option;
 import com.raelity.jvi.options.OptionsBean;
@@ -183,10 +185,17 @@ implements Options.EditControl {
 
     private void showError(String msg)
     {
+        ViOutputStream vios
+                = ViManager.createOutputStream(null,
+                                               ViOutputStream.LINES,
+                                               "Mappings Errors",
+                                               ViOutputStream.PRI_HIGH);
+        vios.println(msg);
+        vios.close();
         JOptionPane.showMessageDialog(
                 null,
                 msg,
-                "jVi Mappings Error",
+                "jVi Mappings Errors",
                 JOptionPane.ERROR_MESSAGE);
     }
 
