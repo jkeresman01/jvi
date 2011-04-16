@@ -60,9 +60,11 @@ implements Options.EditControl {
     private final OptionsPanel optionsPanel;
     private final Option opt;
     private OptionsBean.General bean;
-    private String statusCurrent = "saved mappings";
-    private String statusModified = "modified mappings";
-    private String statusError = "failed mappings ";
+    private static final String statusCurrent = "saved mappings";
+    private static final String statusModified = "modified mappings";
+    private static final String statusError = "failed mappings ";
+    private static final String DIALOG_TITLE = "jVi Mappings Parse Status";
+    private static final String OUTPUT_TITLE = "Mappings Errors";
 
     private static String lastSetMappings;
 
@@ -188,14 +190,18 @@ implements Options.EditControl {
         ViOutputStream vios
                 = ViManager.createOutputStream(null,
                                                ViOutputStream.LINES,
-                                               "Mappings Errors",
+                                               OUTPUT_TITLE,
                                                ViOutputStream.PRI_HIGH);
         vios.println(msg);
         vios.close();
         JOptionPane.showMessageDialog(
                 null,
-                msg,
-                "jVi Mappings Errors",
+                "Parse failed."
+                + "\n"
+                + "\nSee \""
+                + "jVi " + OUTPUT_TITLE
+                + "\" in Output window for details",
+                DIALOG_TITLE,
                 JOptionPane.ERROR_MESSAGE);
     }
 
@@ -217,7 +223,7 @@ implements Options.EditControl {
             JOptionPane.showMessageDialog(
                     null,
                     "Parse succeeded",
-                    "jVi Mappings Error",
+                    DIALOG_TITLE,
                     JOptionPane.INFORMATION_MESSAGE);
             setStatus(false);
         }
