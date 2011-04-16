@@ -30,7 +30,14 @@ START-DOC-DEL
 STOP-DOC-DEL
 
 NOTE: jVi only supports mapping a single character as {lhs} (currently)
-NOTE: only the three normal mode mapmodes are supported (currently)
+NOTE: only normal mode mappings are supported (currently)
+
+NOTE: jVi supports additional map commands, :pmap, :pnoremap, :punmap.
+      These are normal mode, they are valid when PLATFORM-SELECT is the
+      displayed mode, that is when the mouse is used to make a selection.
+          :pnoremap y vy
+          :pnoremap p vp
+      get yank and put to work with the mouse selection
 
 ==============================================================================
 1. Key mapping				*key-mapping* *mapping* *macro*
@@ -62,6 +69,7 @@ START-DOC-DEL
 :smap	{lhs} {rhs}		|mapmode-s|		      *:smap*
 STOP-DOC-DEL
 :om[ap]	{lhs} {rhs}		|mapmode-o|		*:om* *:omap*
+:pm[ap]	{lhs} {rhs}		|mapmode-p|		*:pm* *:pmap*
 START-DOC-DEL
 :map!	{lhs} {rhs}		|mapmode-ic|		*:map!*
 :im[ap]	{lhs} {rhs}		|mapmode-i|		*:im* *:imap*
@@ -82,6 +90,7 @@ START-DOC-DEL
 :snor[emap] {lhs} {rhs}		|mapmode-s|		*:snor* *:snoremap*
 STOP-DOC-DEL
 :ono[remap] {lhs} {rhs}		|mapmode-o|		*:ono* *:onoremap*
+:pn[oremap] {lhs} {rhs}		|mapmode-p|		*:pn*  *:pnoremap*
 START-DOC-DEL
 :no[remap]! {lhs} {rhs}		|mapmode-ic|		*:no!* *:noremap!*
 :ino[remap] {lhs} {rhs}		|mapmode-i|		*:ino* *:inoremap*
@@ -102,6 +111,7 @@ START-DOC-DEL
 :sunm[ap] {lhs}			|mapmode-s|		*:sunm* *:sunmap*
 STOP-DOC-DEL
 :ou[nmap] {lhs}			|mapmode-o|		*:ou*   *:ounmap*
+:pun[map] {lhs}			|mapmode-p|		*:pun*  *:punmap*
 START-DOC-DEL
 :unm[ap]! {lhs}			|mapmode-ic|		*:unm!* *:unmap!*
 :iu[nmap] {lhs}			|mapmode-i|		*:iu*   *:iunmap*
@@ -142,6 +152,7 @@ START-DOC-DEL
 :sm[ap]				|mapmode-s|
 STOP-DOC-DEL
 :om[ap]				|mapmode-o|
+:pm[ap]				|mapmode-p|
 START-DOC-DEL
 :map!				|mapmode-ic|
 :im[ap]				|mapmode-i|
@@ -160,6 +171,7 @@ START-DOC-DEL
 :sm[ap] {lhs}			|mapmode-s|		*:smap_l*
 STOP-DOC-DEL
 :om[ap] {lhs}			|mapmode-o|		*:omap_l*
+:pm[ap] {lhs}			|mapmode-p|		*:pmap_l*
 START-DOC-DEL
 :map!   {lhs}			|mapmode-ic|		*:map_l!*
 :im[ap] {lhs}			|mapmode-i|		*:imap_l*
@@ -308,7 +320,7 @@ as a special key.
 STOP-DOC-DEL
 
 1.3 MAPPING AND MODES					*:map-modes*
-			*mapmode-nvo* *mapmode-n* *mapmode-v* *mapmode-o*
+		*mapmode-nvo* *mapmode-n* *mapmode-v* *mapmode-o* *mapmode-p*
 
 There are six sets of mappings
 - For Normal mode: When typing commands.
@@ -318,14 +330,15 @@ START-DOC-DEL
 STOP-DOC-DEL
 - For Operator-pending mode: When an operator is pending (after "d", "y", "c",
   etc.).  See below: |omap-info|.
+- For PLATFORM-SELECT mode: when there is a mouse selection {jVi only}
 START-DOC-DEL
 - For Insert mode.  These are also used in Replace mode.
 - For Command-line mode: When entering a ":" or "/" command.
+STOP-DOC-DEL
 
 Special case: While typing a count for a command in Normal mode, mapping zero
 is disabled.  This makes it possible to map zero without making it impossible
 to type a count with a zero.
-STOP-DOC-DEL
 
 						*map-overview* *map-modes*
 Overview of which map command works in which mode:
