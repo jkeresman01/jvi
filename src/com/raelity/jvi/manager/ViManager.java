@@ -73,9 +73,9 @@ public class ViManager
     private static final Logger LOG = Logger.getLogger(ViManager.class.getName());
 
     //
-    // 1.3.1.beta5 is module rev 1.3.15
     // 1.3.1.beta6 is module rev 1.3.16
-    public static final jViVersion version = new jViVersion("1.3.1.beta6.7");
+    // 1.3.1.beta7 is module rev 1.3.17
+    public static final jViVersion version = new jViVersion("1.3.1.beta7");
 
     private static com.raelity.jvi.core.Hook core;
 
