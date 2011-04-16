@@ -472,19 +472,12 @@ public final class Mappings {
         ViOutputStream vios = ViManager.createOutputStream(
                 null, ViOutputStream.OUTPUT, "mappings");
         for(Mapping m : lM) {
-            sb.setLength(0);
-            int n = Mapping.modeString(sb, m.mode, false);
-            for(int i = 3 - n; i >= 0; i--) { sb.append(' '); }
-
-            String s = mappingString(m.lhs);
-            sb.append(' ').append(s);
-            for(int i = 13 - s.length(); i >= 0; i--) { sb.append(' '); }
-
-            sb.append(m.noremap ? '*' : ' ');
-            s = mappingString(m.rhs);
-            sb.append(' ').append(s);
-
-            vios.println(sb.toString());
+            vios.println(String.format("%-3s %-8s %c %s",
+                                       Mapping.modeString(m.mode, false),
+                                       mappingString(m.lhs),
+                                       m.noremap ? Character.valueOf('*')
+                                                 : Character.valueOf(' '),
+                                       mappingString(m.rhs)));
         }
         vios.close();
     }

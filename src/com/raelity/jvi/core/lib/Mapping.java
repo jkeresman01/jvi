@@ -83,7 +83,7 @@ public class Mapping {
                 .append(TextUtil.debugString(lhs))
                 .append("' --> '").append(TextUtil.debugString(rhs))
                 .append("' mode=");
-        modeString(sb, mode, true);
+        sb.append(modeString(mode, true));
         sb.append(noremap ? ", noremap" : "")
                 .append(isUnmap ? ", isUnmap" : "")
                 .append(isHidden ? ", isHidder" : "")
@@ -95,29 +95,17 @@ public class Mapping {
      * verbose mean can return "nvo" other wise that is return as ""
      * @return the number of characters added to the StringBuffer
      */
-    static int modeString(StringBuilder sb, int mode, boolean verbose)
+    static String modeString(int mode, boolean verbose)
     {
-        int n = 0;
-        if(verbose || mode != (NORMAL|VISUAL|OP_PENDING|PLATFORM)) {
-            if((mode & NORMAL) != 0) {
-                sb.append('n');
-                n++;
-            }
-            if((mode & VISUAL) != 0) {
-                sb.append('v');
-                n++;
-            }
-            if((mode & OP_PENDING) != 0) {
-                sb.append('o');
-                n++;
-            }
-            if((mode & PLATFORM) != 0) {
-                sb.append('p');
-                n++;
-            }
-        }
+        StringBuilder sb = new StringBuilder();
 
-        return n;
+        if(verbose || mode != (NORMAL|VISUAL|OP_PENDING|PLATFORM)) {
+            if((mode & NORMAL) != 0)     sb.append('n');
+            if((mode & VISUAL) != 0)     sb.append('v');
+            if((mode & OP_PENDING) != 0) sb.append('o');
+            if((mode & PLATFORM) != 0)   sb.append('p');
+        }
+        return sb.toString();
     }
 
 }
