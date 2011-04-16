@@ -817,24 +817,20 @@ public class SwingTextView extends TextView
     {
         fpos.verify(getBuffer());
         boolean ok = true;
-        int offset = fpos.getOffset();
-        //int xx;
-        //try {
-        //    xx = (int)round(modelToView(offset).getX());
-        //} catch (BadLocationException ex) {
-        //    LOG.log(Level.SEVERE, null, ex);
-        //    return false;
-        //}
         int x = roundint(w_curswant * getMaxCharWidth());
+        int limit = -1;
 
         while(distance-- > 0) {
+            int offset;
             try {
                 if(dir == DIR.BACKWARD) {
                     offset = Utilities.getPositionAbove(
-                            getEditorComponent(), offset, x);
+                            getEditorComponent(), fpos.getOffset(), x);
+                    limit = 1;
                 } else { // DIR.FORWARD
                     offset = Utilities.getPositionBelow(
-                            getEditorComponent(), offset, x);
+                            getEditorComponent(), fpos.getOffset(), x);
+                    limit = getBuffer().getLineCount();
                 }
             } catch (BadLocationException ex) {
                 LOG.log(Level.SEVERE, null, ex);
@@ -844,6 +840,18 @@ public class SwingTextView extends TextView
                 ok = false;
                 break;
             } else {
+                if(offset == fpos.getOffset()) {
+                    if(fpos.getLine() == limit) {
+                        ok = false;
+                        break;
+                    } else {
+                        // work around NB bug
+                        int line = fpos.getLine()
+                                + (dir == DIR.FORWARD ? +1 : -1);
+                        fpos.set(line, 0);
+                        continue;
+                    }
+                }
                 fpos.set(offset);
             }
         }
