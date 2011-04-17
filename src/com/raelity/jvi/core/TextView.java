@@ -53,6 +53,8 @@ public abstract class TextView implements ViTextView
 
     /**
      * The column we'd like to be at. Used for up/down cursor motions.
+     * Should not be written to directly, except in special situations,
+     * use updateCurswant().
      */
     protected int w_curswant;
 
@@ -88,6 +90,16 @@ public abstract class TextView implements ViTextView
         viewSizeChange();
     }
 
+    /**
+     * The default implementation simply updates w_curswant.
+     * An implementation might save/compute a "w_view_curswant"
+     * which takes wrapping into account.
+     * @param fpos cursor on line to consider, if null then w_cursor
+     */
+    protected void updateCurswant(ViFPOS fpos, int curswant)
+    {
+        w_curswant = curswant;
+    }
 
     @Override
     public void attachBuffer( Buffer buf )

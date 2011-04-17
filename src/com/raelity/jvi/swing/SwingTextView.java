@@ -97,6 +97,9 @@ public class SwingTextView extends TextView
 
     protected int w_num;
 
+    /** column for a view line */
+    protected int w_view_curswant;
+
     private LineMap lm;
     private ViewMap vm;
 
@@ -812,12 +815,89 @@ public class SwingTextView extends TextView
         return (int)l;
     }
 
+    //
+    // c   - cursor
+    // w   - curswant
+    // vw  - view curswant
+    // ls  - line start
+    // vs  - view line start
+    //
+    // Note: c is used to compute vls and ls.
+    //
+    // vw = ls + w - vs
+    //  w = vs - ls + vw
+    //
+
+    // could run this after each updateCurswant, but only needed for gj,gk
+    private int vwFromW(ViFPOS fpos)
+    {
+        if(w_curswant == MAXCOL)
+            return w_curswant;
+        int ls = w_buffer.getLineStartOffsetFromOffset(fpos.getOffset());
+        ViFPOS vs = fpos.copy();
+        int vw = 0;
+        if(cursorScreenRowEdge(EDGE.LEFT, vs)) {
+            vw = ls + w_curswant - vs.getOffset();
+            if(vw < 0) {
+                LOG.log(Level.WARNING,
+                        "vwFromW: c={0}, ls={1}, vs={2}, w={3}, vw={4} ",
+                        new Object[]{fpos, ls, vs.getOffset(), w_curswant, vw});
+                vw = 0;
+            }
+        }
+        return vw;
+    }
+
+    private int wFromVW(ViFPOS fpos)
+    {
+        if(w_view_curswant == MAXCOL)
+            return w_view_curswant;
+        int ls = w_buffer.getLineStartOffsetFromOffset(fpos.getOffset());
+        ViFPOS vs = fpos.copy();
+        int w = 0;
+        if(cursorScreenRowEdge(EDGE.LEFT, vs)) {
+            w = vs.getOffset() - ls + w_view_curswant;
+            if(w < 0) {
+                LOG.log(Level.WARNING,
+                        "wFromVW: c={0}, ls={1}, vs={2}, w={3}, vw={4} ",
+                        new Object[]{fpos, ls, vs.getOffset(),
+                                     w_view_curswant, w});
+                w = 0;
+            }
+        }
+        return w;
+    }
+
+    private void vwLog(String tag, ViFPOS fpos)
+    {
+        if(LOG.isLoggable(Level.FINE)) {
+            // if(w_curswant == MAXCOL)
+            //     return w_curswant;
+            int ls = w_buffer.getLineStartOffsetFromOffset(fpos.getOffset());
+            ViFPOS vs = fpos.copy();
+            int vw = 0;
+            if(cursorScreenRowEdge(EDGE.LEFT, vs)) {
+                if(w_curswant == MAXCOL)
+                    vw = MAXCOL;
+                else
+                    vw = ls + w_curswant - vs.getOffset();
+                    LOG.log(Level.FINE,
+                            "{5} vwFromW: c={0}, ls={1}, vs={2}, w={3}, vw={4} ",
+                            new Object[]{fpos, ls, vs.getOffset(),
+                                         w_curswant, vw, tag});
+            }
+        }
+    }
+
     @Override
     public boolean cursorScreenUpDown(DIR dir, int distance, ViFPOS fpos)
     {
         fpos.verify(getBuffer());
         boolean ok = true;
-        int x = roundint(w_curswant * getMaxCharWidth());
+
+        w_view_curswant = vwFromW(fpos);
+
+        int x = roundint(w_view_curswant * getMaxCharWidth());
         int limit = -1;
 
         while(distance-- > 0) {
@@ -855,6 +935,7 @@ public class SwingTextView extends TextView
                 fpos.set(offset);
             }
         }
+        w_curswant = wFromVW(fpos);
         return ok;
     }
 

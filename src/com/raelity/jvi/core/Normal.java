@@ -1400,7 +1400,7 @@ middle_code:
 
           if (redo_VIsual_col == MAXCOL)
           {
-            G.curwin.w_curswant = MAXCOL;
+            G.curwin.updateCurswant(null, MAXCOL);
             coladvance(MAXCOL);
           }
           cap.count0 = redo_VIsual_count;
@@ -1827,7 +1827,7 @@ middle_code:
             && !oap.end_adjusted
 	    && (oap.op_type == OP_LSHIFT || oap.op_type == OP_RSHIFT
 		|| oap.op_type == OP_DELETE)) {
-          G.curwin.w_curswant = old_col;
+          G.curwin.updateCurswant(null, old_col);
 	  coladvance(old_col);
 	}
 	oap.op_type = OP_NOP;
@@ -2927,7 +2927,7 @@ middle_code:
   static private void nv_dollar(CMDARG cap) {
     cap.oap.motion_type = MCHAR;
     cap.oap.inclusive = true;
-    G.curwin.w_curswant = MAXCOL;	// so we stay at the end
+    G.curwin.updateCurswant(null, MAXCOL);	// so we stay at the end
     if (Edit.cursor_down(cap.count1 - 1, cap.oap.op_type == OP_NOP) == FAIL) {
       clearopbeep(cap.oap);
     }
@@ -3537,7 +3537,7 @@ static private void nv_findpar(CMDARG cap, int dir)
         G.VIsual.set(cursor);
         cursor.set(old_cursor.getLine(), 0);
         coladvance(right.getValue());
-        G.curwin.w_curswant = right.getValue();
+        G.curwin.updateCurswant(cursor, right.getValue());
         if (cursor.getColumn() == old_cursor.getColumn())
         {
             cursor.set(G.VIsual.getLine(), 0);
@@ -3545,7 +3545,7 @@ static private void nv_findpar(CMDARG cap, int dir)
             G.VIsual.set(cursor);
             cursor.set(old_cursor.getLine(), 0);
             coladvance(left.getValue());
-            G.curwin.w_curswant = left.getValue();
+            G.curwin.updateCurswant(cursor, left.getValue());
         }
     }
     if (cap.cmdchar != 'O' || G.VIsual_mode != Util.ctrl('V'))
@@ -3677,7 +3677,7 @@ static private void nv_findpar(CMDARG cap, int dir)
        if (G.VIsual_mode != Util.ctrl('V'))
            G.VIsual_mode = 'V';
        else if (cap.cmdchar == 'C' || cap.cmdchar == 'D')
-            G.curwin.w_curswant = MAXCOL;
+            G.curwin.updateCurswant(null, MAXCOL);
     }
     cap.cmdchar = Util.vim_strchr(trans, cap.cmdchar).charAt(1);
     nv_operator(cap);
@@ -3828,15 +3828,17 @@ static private void nv_findpar(CMDARG cap, int dir)
               }
               if (resel_VIsual_col == MAXCOL)
               {
-                  G.curwin.w_curswant = MAXCOL;
+                  G.curwin.updateCurswant(null, MAXCOL);
                   coladvance(MAXCOL);
               }
               else if (G.VIsual_mode == Util.ctrl('V'))
               {
                   //TODO: FIXME_VISUAL BLOCK MODE
                   //validate_virtcol();
-                  G.curwin.w_curswant = G.curwin.w_cursor.getColumn()/*G.curwin.w_virtcol*/
-                          + resel_VIsual_col * cap.count0 - 1;
+                          /*G.curwin.w_virtcol*/
+                  G.curwin.updateCurswant(null,
+                                          G.curwin.w_cursor.getColumn()
+                                          + resel_VIsual_col * cap.count0 - 1);
                   coladvance(G.curwin.w_curswant);
               }
               else
@@ -4110,7 +4112,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       case '$':
       case K_END:
         {
-          G.curwin.w_curswant = MAXCOL;
+          G.curwin.updateCurswant(null, MAXCOL);
           int n = cap.count1;
           boolean ok = true;
           ViFPOS fpos = G.curwin.w_cursor.copy();
@@ -4267,10 +4269,10 @@ static private void nv_findpar(CMDARG cap, int dir)
     Edit.beginline(0);
     if (cap.count0 > 0) {
       coladvance(cap.count0 - 1);
-      G.curwin.w_curswant = cap.count0 - 1;
+      G.curwin.updateCurswant(null, cap.count0 - 1);
     }
     else
-      G.curwin.w_curswant = 0;
+      G.curwin.updateCurswant(null, 0);
     // keep curswant at the column where we wanted to go, not where
     // we ended; differs is line is too short
     G.curwin.w_set_curswant = false;

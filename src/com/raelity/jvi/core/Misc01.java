@@ -460,7 +460,7 @@ public class Misc01
         // G.curwin.setWCurswant(G.curwin.getWCursor().getColumn());
         MutableInt mi = new MutableInt();
         getvcol(G.curwin, G.curwin.w_cursor, null, mi, null);
-        G.curwin.w_curswant = mi.getValue();
+        G.curwin.updateCurswant(G.curwin.w_cursor, mi.getValue());
         G.curwin.w_set_curswant = false;
       }
     }

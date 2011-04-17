@@ -2464,7 +2464,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
       line = 1;
     int col = 0;
     G.curwin.w_cursor.set(line, col);
-    G.curwin.w_curswant = col;
+    G.curwin.updateCurswant(null, col);
     start_arrow(tpos);
   }
   
@@ -2477,7 +2477,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
       G.curwin.w_cursor.set(G.curbuf.getLineCount(), 0);
     }
     Misc.coladvance(MAXCOL);
-    G.curwin.w_curswant = MAXCOL;
+    G.curwin.updateCurswant(null, MAXCOL);
     start_arrow(tpos);
   }
   
