@@ -116,6 +116,8 @@ public interface ViTextView extends ViOptionBag {
   /** insert the char verbatim, no special actions */
   public void insertTypedChar(char c);
 
+
+  //////// DEPRECATED SHOULD BE IN BUFFER ////////
   // NEEDSWORK: get rid of the following three, if offset this must be Buffer.
 
   /** Replace indicated region with string */
@@ -127,6 +129,7 @@ public interface ViTextView extends ViOptionBag {
   /** insert text at specified location */
   public void insertText(int offset, String s);
 
+  //////////////////////////////////////////////////////////////////////
   //
   //
 
@@ -185,6 +188,8 @@ public interface ViTextView extends ViOptionBag {
 
   //
   // Without other indiation, any Vp*Line refers to lines on the screen.
+  // A viewLine is the linenumber when the document is layed-out given
+  // the consideration of linewrapping and folding.
   // Not logical or document lines. This is an issue when line wrap is possible
   //
 
@@ -234,22 +239,35 @@ public interface ViTextView extends ViOptionBag {
 
 
   /**
-   * If there is no code folding, then the number of view lines is equal
+   * If there is no code folding, then the number of logical lines is equal
    * to the number of lines in the document. When some lines are folded,
-   * the number of view lines is smaller.
-   * @return number of lines in the view
+   * the number of logical lines is smaller.
+   * @return number of logical lines in the document
    */
   public int getLogicalLineCount();
 
   /**
-   * Translate a document line number to a view line number
+   * Translate a document line number to a logical line number.
+   * Logical line number takes folding into account.
    * @param docLine line number in the document
    * @return corresponding line number in the view
    */
   public int getLogicalLine(int docLine);
 
+  /**
+   * logical line considers folding, view line considers wrapping.
+   *
+   * @param viewLine line number when rendered
+   * @return line number that takes folding into account
+   */
   public int getLogicalLineFromViewLine(int viewLine);
 
+  /**
+   * logical line considers folding, view line considers wrapping.
+   *
+   * @param logicalLine line number that takes folding into account
+   * @return viewLine line number if rendered
+   */
   public int getViewLineFromLogicalLine(int logicalLine);
 
   /**
@@ -318,9 +336,10 @@ public interface ViTextView extends ViOptionBag {
    */
   public int getFirstHiddenColumn(int lineOffset, int col);
 
-  /** Reverse of getlogicalLine, convert view line to document line */
+  /** Reverse of getlogicalLine, convert logical line to document line */
   public int getDocLineOffset(int logicalLine);
 
+  /** Reverse of getlogicalLine, convert logical line to document line */
   public int getDocLine(int logicalLine);
 
 
