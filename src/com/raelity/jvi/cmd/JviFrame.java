@@ -24,8 +24,6 @@ import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 public class JviFrame extends JFrame
 {
@@ -38,7 +36,7 @@ public class JviFrame extends JFrame
     protected JEditorPane editorPane;
     protected JScrollPane scrollPane;
     protected JButton optionsButton;
-    protected JToggleButton jviButton;
+    protected AbstractButton jviButton;
     protected JLabel generalStatusBar, strokeStatusBar, modeStatusBar;
     protected JLabel cursorStatusBar;
     protected PlayStatusDisplay statusDisplay;
@@ -100,7 +98,7 @@ public class JviFrame extends JFrame
         ImageIcon image2 = new ImageIcon(JviFrame.class.getResource("closeFile.gif"));
         ImageIcon image3 = new ImageIcon(JviFrame.class.getResource("help.gif"));
         final ImageIcon jvi_on = new ImageIcon(
-                JviFrame.class.getResource("jViLogoToggle24_checked.png"));
+                JviFrame.class.getResource("jViLogoToggle24_selected.png"));
         final ImageIcon jvi_off = new ImageIcon(
                 JviFrame.class.getResource("jViLogoToggle24.png"));
         JPanel contentPane = (JPanel)this.getContentPane();
@@ -136,23 +134,27 @@ public class JviFrame extends JFrame
         helpButton.setToolTipText("Help");
         optionsButton = new JButton("Options");
         optionsButton.setToolTipText("Options");
-        jviButton = new JToggleButton(jvi_on, true);
-        jviButton.setPressedIcon(jvi_off);
-        jviButton.setPreferredSize(new Dimension(24, 24));
-        jviButton.getModel().addChangeListener(new ChangeListener() {
 
-            @Override
-            public void stateChanged(ChangeEvent e)
-            {
-                JToggleButton.ToggleButtonModel m
-                        = (JToggleButton.ToggleButtonModel)e.getSource();
-                //should
-                if(m.isSelected())
-                    jviButton.setIcon(jvi_on);
-                else
-                    jviButton.setIcon(jvi_off);
-            }
-        });
+        if(true) {
+            jviButton = new JToggleButton(jvi_off);
+            jviButton.setSelectedIcon(jvi_on);
+            //jviButton.setContentAreaFilled(false);
+            jviButton.setFocusPainted(false);
+            jviButton.setPreferredSize(new Dimension(24, 24));
+        } else {
+            jviButton = new JButton(jvi_off);
+            jviButton.setSelectedIcon(jvi_on);
+            //jviButton.setContentAreaFilled(false);
+            jviButton.setFocusPainted(false);
+            jviButton.setPreferredSize(new Dimension(24, 24));
+            jviButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e)
+                {
+                    jviButton.setSelected(!jviButton.isSelected());
+                }
+            });
+        }
 
         JPanel jPanel1 = new JPanel();
         jPanel1.setLayout(new BorderLayout());
