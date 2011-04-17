@@ -48,6 +48,9 @@ public class SampleText {
 
     static String txt02 =
   ""
++ "One long line:\n"
++ "dsfjklaaldskfjklasdjf asdlfkjalksdjfkl adlkfjakldsjfklajds alkjsdflkajsdfklaj alkdsjflkasdjfkl alsdkfjlkasdjfkl aldksfjalksjdfklaj alskjdflkadfkladsfj alkdjfklasjdflkajsdf alskdfjalkdjflkajdf lakjflkajdflkj alkdfjlkasjdf lkajdflkja dlfkjlkadfj aldkfjlakdfjlak dflkjadfl aldfj alkjdsflkjadlksfj alkdsfjlka jdflkaj\n"
++ "\n"
 + "0123\n"
 + "abcd\n"
 + "wxyz\n"
