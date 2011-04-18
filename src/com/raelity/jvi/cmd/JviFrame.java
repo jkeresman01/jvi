@@ -155,6 +155,10 @@ public class JviFrame extends JFrame
                 }
             });
         }
+        System.err.println("jviButton UI: "
+                + jviButton.getUI().getClass().getName() );
+        System.err.println("jviButton isContentAreaFilled: "
+                + jviButton.isContentAreaFilled());
 
         JPanel jPanel1 = new JPanel();
         jPanel1.setLayout(new BorderLayout());
