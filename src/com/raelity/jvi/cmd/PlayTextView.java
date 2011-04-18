@@ -44,10 +44,19 @@ public class PlayTextView extends SimpleTextView
         if("w_p_wrap".equals(name)) {
             JviFrame frame = Jvi.mapJepFrame.get(
                     (JTextComponent)tv.getEditorComponent());
+            getEditorComponent().lineWrap = w_p_wrap;
             frame.scrollPane.setHorizontalScrollBarPolicy(
                     w_p_wrap ? JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
                              : JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         }
+
+
+    }
+
+    @Override
+    public PlayEditorPane getEditorComponent()
+    {
+        return (PlayEditorPane)super.getEditorComponent();
     }
 
 }

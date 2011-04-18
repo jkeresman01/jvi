@@ -41,9 +41,9 @@ final public class PlayFactory extends SimpleFactory
 {
     private ViFS fs = new PlayFS();
     /** status displays for editors */
-    private Map<JTextComponent, JviFrame> mapJepFrame;
+    private Map<PlayEditorPane, JviFrame> mapJepFrame;
 
-    public PlayFactory(Map<JTextComponent, JviFrame> m) {
+    public PlayFactory(Map<PlayEditorPane, JviFrame> m) {
         mapJepFrame = m;
     }
 

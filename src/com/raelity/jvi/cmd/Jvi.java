@@ -73,8 +73,8 @@ public class Jvi
     private static JviFrame m_frame1 = null;
     private static JviFrame m_frame2 = null;    // test two jVi on same document
 
-    static Map<JTextComponent, JviFrame> mapJepFrame
-            = new HashMap<JTextComponent, JviFrame>();
+    static Map<PlayEditorPane, JviFrame> mapJepFrame
+            = new HashMap<PlayEditorPane, JviFrame>();
 
 
     /**
@@ -85,7 +85,7 @@ public class Jvi
         JviFrame frame = new JviFrame();
         nFrame++;
 
-        JEditorPane editor = frame.getEditor();
+        PlayEditorPane editor = frame.getEditor();
         mapJepFrame.put(editor, frame);
         JScrollPane scrollPane = frame.getScrollPane();
 

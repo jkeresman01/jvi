@@ -33,7 +33,7 @@ public class JviFrame extends JFrame
      */
     public static boolean SystemExitOnCloseFrame = true;
 
-    protected JEditorPane editorPane;
+    protected PlayEditorPane editorPane;
     protected JScrollPane scrollPane;
     protected JButton optionsButton;
     protected AbstractButton jviButton;
@@ -64,9 +64,9 @@ public class JviFrame extends JFrame
 
 
     /**
-     *  Return the JEditorPane used by this JviFrame.
+     *  Return the PlayEditorPane used by this JviFrame.
      */
-    public JEditorPane getEditor()
+    public PlayEditorPane getEditor()
     {
         return editorPane;
     }
@@ -192,7 +192,7 @@ public class JviFrame extends JFrame
         statusPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createBevelBorder(BevelBorder.RAISED,Color.white,Color.white,m_color1,m_color2),
                 BorderFactory.createEmptyBorder(2,0,2,0)));
-        editorPane = new JTextPane();
+        editorPane = new PlayEditorPane();
         editorPane.setText(SampleText.txt02);
         JToolBar toolBar = new JToolBar();
         toolBar.add(jButton1);
