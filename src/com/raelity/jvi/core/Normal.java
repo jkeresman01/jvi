@@ -2269,14 +2269,14 @@ middle_code:
     if(dist == 0)
       dist = 1;
     ViFPOS fpos = G.curwin.w_cursor.copy();
-    boolean ok = G.curwin.cursorScreenUpDown(dir, dist, fpos);
+    boolean ok = G.curwin.viewLineUpDown(dir, dist, fpos);
     // get out of any fold
-    ViFPOS screenLineStartFpos = fpos.copy();
-    G.curwin.cursorScreenRowEdge(EDGE.LEFT, screenLineStartFpos);
+    ViFPOS viewLineStartFpos = fpos.copy();
+    G.curwin.viewLineEdge(EDGE.LEFT, viewLineStartFpos);
     int col = G.curwin.getFirstHiddenColumn(
-            screenLineStartFpos.getOffset(),
-            fpos.getOffset() - screenLineStartFpos.getOffset());
-    G.curwin.w_cursor.set(screenLineStartFpos.getOffset() + col);
+            viewLineStartFpos.getOffset(),
+            fpos.getOffset() - viewLineStartFpos.getOffset());
+    G.curwin.w_cursor.set(viewLineStartFpos.getOffset() + col);
     adjust_cursor();
     return ok ? OK : FAIL;
   }
@@ -4112,15 +4112,16 @@ static private void nv_findpar(CMDARG cap, int dir)
       case '$':
       case K_END:
         {
+          cap.oap.motion_type = MCHAR;
+          cap.oap.inclusive = true;
           G.curwin.updateCurswant(null, MAXCOL);
           int n = cap.count1;
           boolean ok = true;
           ViFPOS fpos = G.curwin.w_cursor.copy();
           if(n > 1) {
-            ok = G.curwin.cursorScreenUpDown(
-                    DIR.FORWARD, n - 1, fpos);
+            ok = G.curwin.viewLineUpDown(DIR.FORWARD, n - 1, fpos);
           }
-          G.curwin.cursorScreenRowEdge(EDGE.RIGHT, fpos);
+          G.curwin.viewLineEdge(EDGE.RIGHT, fpos);
           //
           // Back up the cursor off of a newline unless one of
           // - empty line
@@ -4142,7 +4143,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       case K_HOME:
         {
           ViFPOS fpos = G.curwin.w_cursor.copy();
-          G.curwin.cursorScreenRowEdge(EDGE.LEFT, fpos);
+          G.curwin.viewLineEdge(EDGE.LEFT, fpos);
 
           if(flag) {
             char c;
@@ -4158,7 +4159,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       case 'm':
         {
           ViFPOS fpos = G.curwin.w_cursor.copy();
-          G.curwin.cursorScreenRowEdge(EDGE.MIDDLE, fpos);
+          G.curwin.viewLineEdge(EDGE.MIDDLE, fpos);
           G.curwin.w_cursor.set(fpos);
           G.curwin.w_set_curswant = true;
           break;

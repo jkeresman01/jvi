@@ -749,7 +749,7 @@ public class SwingTextView extends TextView
     }
 
     @Override
-    public boolean cursorScreenRowEdge(EDGE edge, ViFPOS fpos)
+    public boolean viewLineEdge(EDGE edge, ViFPOS fpos)
     {
         fpos.verify(getBuffer());
         boolean ok = true;
@@ -836,7 +836,7 @@ public class SwingTextView extends TextView
         int ls = w_buffer.getLineStartOffsetFromOffset(fpos.getOffset());
         ViFPOS vs = fpos.copy();
         int vw = 0;
-        if(cursorScreenRowEdge(EDGE.LEFT, vs)) {
+        if(viewLineEdge(EDGE.LEFT, vs)) {
             vw = ls + w_curswant - vs.getOffset();
             if(vw < 0) {
                 LOG.log(Level.WARNING,
@@ -855,7 +855,7 @@ public class SwingTextView extends TextView
         int ls = w_buffer.getLineStartOffsetFromOffset(fpos.getOffset());
         ViFPOS vs = fpos.copy();
         int w = 0;
-        if(cursorScreenRowEdge(EDGE.LEFT, vs)) {
+        if(viewLineEdge(EDGE.LEFT, vs)) {
             w = vs.getOffset() - ls + w_view_curswant;
             if(w < 0) {
                 LOG.log(Level.WARNING,
@@ -876,7 +876,7 @@ public class SwingTextView extends TextView
             int ls = w_buffer.getLineStartOffsetFromOffset(fpos.getOffset());
             ViFPOS vs = fpos.copy();
             int vw = 0;
-            if(cursorScreenRowEdge(EDGE.LEFT, vs)) {
+            if(viewLineEdge(EDGE.LEFT, vs)) {
                 if(w_curswant == MAXCOL)
                     vw = MAXCOL;
                 else
@@ -890,7 +890,7 @@ public class SwingTextView extends TextView
     }
 
     @Override
-    public boolean cursorScreenUpDown(DIR dir, int distance, ViFPOS fpos)
+    public boolean viewLineUpDown(DIR dir, int distance, ViFPOS fpos)
     {
         fpos.verify(getBuffer());
         boolean ok = true;

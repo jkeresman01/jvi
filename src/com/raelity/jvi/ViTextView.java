@@ -288,13 +288,13 @@ public interface ViTextView extends ViOptionBag {
    * in the same logical line but a different screen line.
    * The fpos specifies the
    * starting position and returns the final position; the actual screen cursor
-   * is not moved.
+   * is not moved directly.
    * @param direction to move the cursor
    * @param distance number of lines to move
    * @param fpos input/output
    * @return true if the cursor completed all requested moves
    */
-  public boolean cursorScreenUpDown(DIR dir, int distance, ViFPOS fpos);
+  public boolean viewLineUpDown(DIR dir, int distance, ViFPOS fpos);
 
   /**
    * For the line with fpos, calculate the character position in the screen row.
@@ -303,11 +303,11 @@ public interface ViTextView extends ViOptionBag {
    * Note that upon return fpos may point to a '\n'.
    * The fpos specifies the
    * starting position and is modified to return the final position;
-   * the actual screen cursor is not moved.
+   * the actual screen cursor is not moved directly.
    * @param fpos input/output
    * @return true if the fpos-cursor moved.
    */
-  public boolean cursorScreenRowEdge(EDGE edge, ViFPOS fpos);
+  public boolean viewLineEdge(EDGE edge, ViFPOS fpos);
 
   /**
    * Position the cursor.
