@@ -4056,58 +4056,79 @@ static private void nv_findpar(CMDARG cap, int dir)
             ui_cursor_shape();
         }
         break;
-      //
-      // "g*" and "g#", like "*" and "#" but without using "\<" and "\>"
-      //
-      case '*':
-      case '#':
-          nv_ident(cap, searchbuff);
-          break;
 
       //
-      // ge and gE: go back to end of word
+      // "gj" and "gk" two new funny movement keys -- up and down
+      // movement based on *screen* line rather than *file* line.
       //
-      case 'e':
-      case 'E':
-          oap.motion_type = MCHAR;
-          G.curwin.w_set_curswant = true;
-          oap.inclusive = true;
-          if (bckend_word(cap.count1, cap.nchar == 'E', false) == FAIL)
-              clearopbeep(oap);
-          break;
-      //
-      // "gg": Goto the first line in file.  With a count it goes to
-      // that line number like for "G". -- webb
-      //
-      case 'g':
-        nv_goto(cap, 1);
-        break;
-
       case 'j':
       case K_DOWN:
-        t = nv_screengo(oap, DIR.FORWARD, cap.count1);
+	// with 'nowrap' it works just like the normal "j" command
+        if(!G.curwin.w_p_wrap
+              || G.curwin.hasFolding(G.curwin.w_cursor.getLine(), null, null)) {
+          oap.motion_type = MLINE;
+          t = cursor_down(cap.count1, oap.op_type == OP_NOP);
+        } else
+          t = nv_screengo(oap, DIR.FORWARD, cap.count1);
         if(t == FAIL)
           clearopbeep(oap);
         break;
 
       case 'k':
       case K_UP:
-        t = nv_screengo(oap, DIR.BACKWARD, cap.count1);
+	// with 'nowrap' it works just like the normal "k" command
+        if(!G.curwin.w_p_wrap
+              || G.curwin.hasFolding(G.curwin.w_cursor.getLine(), null, null)) {
+          oap.motion_type = MLINE;
+          t = cursor_up(cap.count1, oap.op_type == OP_NOP);
+        } else
+          t = nv_screengo(oap, DIR.BACKWARD, cap.count1);
         if(t == FAIL)
           clearopbeep(oap);
         break;
 
-      case 'q':
-      case 'u':
-      case 'U':
-        nv_operator(cap);
+      //
+      // "gJ": join two lines without inserting a space.
+      //
+      case 'J':
+        nv_join(cap);
         break;
+      //
+      // "g0", "g^" and "g$": Like "0", "^" and "$" but for screen lines.
+      // "gm": middle of "g0" and "g$".
+      //
+      case '^':
+        flag = true;
+        /*FALLTHROUGH*/
+      case '0':
+      case K_HOME:
+        {
+          cap.oap.motion_type = MCHAR;
+          cap.oap.inclusive = false;
+          ViFPOS fpos = G.curwin.w_cursor.copy();
+          G.curwin.viewLineEdge(EDGE.LEFT, fpos);
 
-      // "gP" and "gp": same as "P" and "p" but leave cursor just after new text
-      case 'p':
-      case 'P':
-        nv_put(cap);
-        break;
+          if(flag) {
+            char c;
+            do {
+              c = gchar_pos(fpos);
+            } while(vim_iswhite(c) && oneright(fpos) == OK);
+          }
+          G.curwin.w_cursor.set(fpos);
+          G.curwin.w_set_curswant = true;
+          break;
+        }
+
+      case 'm':
+        {
+          cap.oap.motion_type = MCHAR;
+          cap.oap.inclusive = false;
+          ViFPOS fpos = G.curwin.w_cursor.copy();
+          G.curwin.viewLineEdge(EDGE.MIDDLE, fpos);
+          G.curwin.w_cursor.set(fpos);
+          G.curwin.w_set_curswant = true;
+          break;
+        }
 
       case '$':
       case K_END:
@@ -4135,42 +4156,62 @@ static private void nv_findpar(CMDARG cap, int dir)
             clearopbeep(oap);
         }
         break;
-
-      case '^':
-        flag = true;
-        /*FALLTHROUGH*/
-      case '0':
-      case K_HOME:
-        {
-          ViFPOS fpos = G.curwin.w_cursor.copy();
-          G.curwin.viewLineEdge(EDGE.LEFT, fpos);
-
-          if(flag) {
-            char c;
-            do {
-              c = gchar_pos(fpos);
-            } while(vim_iswhite(c) && oneright(fpos) == OK);
-          }
-          G.curwin.w_cursor.set(fpos);
-          G.curwin.w_set_curswant = true;
+      //
+      // "g*" and "g#", like "*" and "#" but without using "\<" and "\>"
+      //
+      case '*':
+      case '#':
+          nv_ident(cap, searchbuff);
           break;
-        }
 
-      case 'm':
-        {
-          ViFPOS fpos = G.curwin.w_cursor.copy();
-          G.curwin.viewLineEdge(EDGE.MIDDLE, fpos);
-          G.curwin.w_cursor.set(fpos);
+      //
+      // ge and gE: go back to end of word
+      //
+      case 'e':
+      case 'E':
+          oap.motion_type = MCHAR;
           G.curwin.w_set_curswant = true;
+          oap.inclusive = true;
+          if (bckend_word(cap.count1, cap.nchar == 'E', false) == FAIL)
+              clearopbeep(oap);
           break;
-        }
+      //
+      // "gg": Goto the first line in file.  With a count it goes to
+      // that line number like for "G". -- webb
+      //
+      case 'g':
+        nv_goto(cap, 1);
+        break;
+
+      //
+      //   Two-character operators:
+      //   "gq"	    Format text
+      //   "gw"	    Format text and keep cursor position
+      //   "g~"	    Toggle the case of the text.
+      //   "gu"	    Change text to lower case.
+      //   "gU"	    Change text to upper case.
+      //   "g?"	    rot13 encoding
+      //   "g@"	    call 'operatorfunc'
+      //
+      case 'q':
+      case '~':
+      case 'u':
+      case 'U':
+        nv_operator(cap);
+        break;
+
+      // "gP" and "gp": same as "P" and "p" but leave cursor just after new text
+      case 'p':
+      case 'P':
+        nv_put(cap);
+        break;
 
     case 't':
-        G.curwin.tabOperation(TABOP.NEXT_TAB, 0);
+        G.curwin.tabOperation(TABOP.NEXT_TAB, cap.count0);
         break;
 
     case 'T':
-        G.curwin.tabOperation(TABOP.PREV_TAB, 0);
+        G.curwin.tabOperation(TABOP.PREV_TAB, cap.count0);
         break;
 
       default:
@@ -4885,8 +4926,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       new Opchar('<', '\000', true),	/* OP_LSHIFT */
       new Opchar('>', '\000', true),	/* OP_RSHIFT */
       new Opchar('!', '\000', true),	/* OP_FILTER */
-      ////////////////new Opchar('g', '~', false),	/* OP_TILDE */
-      new Opchar('~', '\000', false),	/* OP_TILDE */
+      new Opchar('g', '~', false),	/* OP_TILDE */
       new Opchar('=', '\000', true),	/* OP_INDENT */
       new Opchar('g', 'q', true),	/* OP_FORMAT */
       new Opchar(':', '\000', true),	/* OP_COLON */
