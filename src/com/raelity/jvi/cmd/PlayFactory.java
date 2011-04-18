@@ -50,6 +50,7 @@ final public class PlayFactory extends SimpleFactory
     @Override
     protected ViTextView newTextView( JTextComponent editor )
     {
+        @SuppressWarnings("element-type-mismatch")
         SwingTextView tv = new PlayTextView(
                 editor, mapJepFrame.get(editor).getStatusDisplay());
         LineMap lm = new LineMapNoFolding(tv);
