@@ -21,7 +21,9 @@
 package com.raelity.jvi.cmd;
 
 import com.raelity.jvi.ViStatusDisplay;
+import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.swing.simple.SimpleTextView;
+import javax.swing.JScrollPane;
 import javax.swing.text.JTextComponent;
 
 /**
@@ -34,6 +36,18 @@ public class PlayTextView extends SimpleTextView
     {
         super(editor);
         this.statusDisplay = sd;
+    }
+
+    @Override
+    public void viOptionSet(ViTextView tv, String name) {
+        super.viOptionSet(tv, name);
+        if("w_p_wrap".equals(name)) {
+            JviFrame frame = Jvi.mapJepFrame.get(
+                    (JTextComponent)tv.getEditorComponent());
+            frame.scrollPane.setHorizontalScrollBarPolicy(
+                    w_p_wrap ? JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+                             : JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        }
     }
 
 }

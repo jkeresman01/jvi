@@ -41,16 +41,17 @@ final public class PlayFactory extends SimpleFactory
 {
     private ViFS fs = new PlayFS();
     /** status displays for editors */
-    private Map<JTextComponent, PlayStatusDisplay> mapJepSd;
+    private Map<JTextComponent, JviFrame> mapJepFrame;
 
-    public PlayFactory(Map<JTextComponent, PlayStatusDisplay> m) {
-        mapJepSd = m;
+    public PlayFactory(Map<JTextComponent, JviFrame> m) {
+        mapJepFrame = m;
     }
 
     @Override
     protected ViTextView newTextView( JTextComponent editor )
     {
-        SwingTextView tv = new PlayTextView(editor, mapJepSd.get(editor));
+        SwingTextView tv = new PlayTextView(
+                editor, mapJepFrame.get(editor).getStatusDisplay());
         LineMap lm = new LineMapNoFolding(tv);
         //ViewMap vm = new SwingViewMapWrapFontFixed(tv);
         ViewMap vm = new ViewMapSwitcher(tv);

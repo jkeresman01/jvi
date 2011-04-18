@@ -52,10 +52,10 @@ import javax.swing.text.JTextComponent;
  * <br/>Note that bulk output via PlayOutputStream goes to System.err.
  * <br/>Following are some key hookups.
  * <pre>
- *      ViManager.setViFactory(new PlayFactory(mapJepSd));
+ *      ViManager.setViFactory(new PlayFactory(mapJepFrame));
  *      AppViews.open(new PlayAppView(f, editor), "Jvi.setupFrame");
  *      PlayFactory.installKeymap(m_frame1.getEditor());
- *      mapJepSd.put(editor, frame.getStatusDisplay());
+ *      mapJepFrame.put(editor, frame);
  *      static private MyPropertySheetDialog dialog;
  * </pre>
  * 
@@ -73,8 +73,8 @@ public class Jvi
     private static JviFrame m_frame1 = null;
     private static JviFrame m_frame2 = null;    // test two jVi on same document
 
-    static Map<JTextComponent, PlayStatusDisplay> mapJepSd
-            = new HashMap<JTextComponent, PlayStatusDisplay>();
+    static Map<JTextComponent, JviFrame> mapJepFrame
+            = new HashMap<JTextComponent, JviFrame>();
 
 
     /**
@@ -86,7 +86,7 @@ public class Jvi
         nFrame++;
 
         JEditorPane editor = frame.getEditor();
-        mapJepSd.put(editor, frame.getStatusDisplay());
+        mapJepFrame.put(editor, frame);
         JScrollPane scrollPane = frame.getScrollPane();
 
         Font font = editor.getFont();
@@ -214,7 +214,7 @@ public class Jvi
             make2Frames = true;
         }
 
-        ViManager.setViFactory(new PlayFactory(mapJepSd));
+        ViManager.setViFactory(new PlayFactory(mapJepFrame));
 
         try {
             ViManager.runInDispatch(true, new Runnable() {
