@@ -97,9 +97,6 @@ public class SwingTextView extends TextView
 
     protected int w_num;
 
-    /** column for a view line */
-    protected int w_view_curswant;
-
     private LineMap lm;
     private ViewMap vm;
 
@@ -834,21 +831,21 @@ public class SwingTextView extends TextView
     //
 
     // could run this after each updateCurswant, but only needed for gj,gk
-    private int vwFromW(ViFPOS fpos)
+    private int vwFromW(ViFPOS fpos, int w)
     {
-        if(w_curswant == MAXCOL)
-            return w_curswant;
+        if(w == MAXCOL)
+            return w;
         ViFPOS vs = fpos.copy();
         int vw = 0;
         if(viewLineEdge(EDGE.LEFT, vs)) {
             MutableInt vsc = new MutableInt();
             Misc.getvcol(w_buffer, vs, vsc, null, null);
-            vw = w_curswant - vsc.getValue();
+            vw = w - vsc.getValue();
             if(LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE,
                         "vwFromW: c={0}, vsc={1}, vs={2}, w={3}, vw={4} ",
                         new Object[]{fpos, vsc.getValue(),
-                                     vs.getOffset(), w_curswant, vw});
+                                     vs.getOffset(), w, vw});
             }
             if(vw < 0) {
                 LOG.log(Level.WARNING, "vwFromW: negative vw{0}", vw);
@@ -858,43 +855,24 @@ public class SwingTextView extends TextView
         return vw;
     }
 
-    private int wFromVW(ViFPOS fpos)
+    private int wFromVW(ViFPOS fpos, int vw)
     {
-        if(w_view_curswant == MAXCOL)
-            return w_view_curswant;
+        if(vw == MAXCOL)
+            return vw;
         ViFPOS vs = fpos.copy();
         int w = 0;
         if(viewLineEdge(EDGE.LEFT, vs)) {
             MutableInt vsc = new MutableInt();
             Misc.getvcol(w_buffer, vs, vsc, null, null);
-            w = w_view_curswant + vsc.getValue();
+            w = vw + vsc.getValue();
             if(LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE,
                         "wFromVW: c={0}, vsc={1}, vs={2}, w={3}, vw={4} ",
                         new Object[]{fpos, vsc.getValue(),
-                                     vs.getOffset(), w_view_curswant, w});
+                                     vs.getOffset(), vw, w});
             }
         }
         return w;
-    }
-
-    private void vwLog(String tag, ViFPOS fpos)
-    {
-        if(LOG.isLoggable(Level.FINE)) {
-            int ls = w_buffer.getLineStartOffsetFromOffset(fpos.getOffset());
-            ViFPOS vs = fpos.copy();
-            int vw = 0;
-            if(viewLineEdge(EDGE.LEFT, vs)) {
-                if(w_curswant == MAXCOL)
-                    vw = MAXCOL;
-                else
-                    vw = ls + w_curswant - vs.getOffset();
-                    LOG.log(Level.FINE,
-                            "{5} vwFromW: c={0}, ls={1}, vs={2}, w={3}, vw={4} ",
-                            new Object[]{fpos, ls, vs.getOffset(),
-                                         w_curswant, vw, tag});
-            }
-        }
     }
 
     @Override
@@ -903,9 +881,9 @@ public class SwingTextView extends TextView
         fpos.verify(getBuffer());
         boolean ok = true;
 
-        w_view_curswant = vwFromW(fpos);
+        int view_curswant = vwFromW(fpos, w_curswant);
 
-        int x = roundint(w_view_curswant * getMaxCharWidth());
+        int x = roundint(view_curswant * getMaxCharWidth());
         int limit = -1;
 
         while(distance-- > 0) {
@@ -943,7 +921,7 @@ public class SwingTextView extends TextView
                 fpos.set(offset);
             }
         }
-        w_curswant = wFromVW(fpos);
+        w_curswant = wFromVW(fpos, view_curswant);
         return ok;
     }
 
