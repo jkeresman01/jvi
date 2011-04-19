@@ -4135,7 +4135,6 @@ static private void nv_findpar(CMDARG cap, int dir)
         {
           cap.oap.motion_type = MCHAR;
           cap.oap.inclusive = true;
-          G.curwin.updateCurswant(null, MAXCOL);
           int n = cap.count1;
           boolean ok = true;
           ViFPOS fpos = G.curwin.w_cursor.copy();
@@ -4143,6 +4142,7 @@ static private void nv_findpar(CMDARG cap, int dir)
             ok = G.curwin.viewLineUpDown(DIR.FORWARD, n - 1, fpos);
           }
           G.curwin.viewLineEdge(EDGE.RIGHT, fpos);
+
           //
           // Back up the cursor off of a newline unless one of
           // - empty line
@@ -4152,6 +4152,13 @@ static private void nv_findpar(CMDARG cap, int dir)
                        || (G.VIsual_active && G.p_sel.charAt(0) != 'o')))
             fpos.decColumn();
           G.curwin.w_cursor.set(fpos);
+
+          if(G.curwin.w_p_wrap) {
+            G.curwin.updateCurswant(null, MAXCOL);
+          } else {
+            G.curwin.w_set_curswant = true;
+          }
+
           if(!ok)
             clearopbeep(oap);
         }

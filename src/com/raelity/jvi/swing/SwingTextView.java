@@ -748,30 +748,59 @@ public class SwingTextView extends TextView
     @Override
     public boolean viewLineEdge(EDGE edge, ViFPOS fpos)
     {
+        JTextComponent ep = getEditorComponent();
         fpos.verify(getBuffer());
         boolean ok = true;
         try {
             int offset = fpos.getOffset();
             int lineOff;
             int col;
+            Rectangle r = null;
+            Point pt = null;
+            if(!w_p_wrap) {
+                // y position is the same for everything
+                r = ep.modelToView(fpos.getOffset());
+                // and put x at the viewport edge
+                pt = new Point(viewport.getViewPosition().x, r.y + r.height/2);
+            }
             switch (edge) {
                 case LEFT:
-                    offset = Utilities.getRowStart(getEditorComponent(), offset);
+                    if(w_p_wrap) {
+                        offset = Utilities.getRowStart(ep, offset);
+                    } else {
+                        offset = ep.viewToModel(pt);
+                    }
                     break;
 
                 case RIGHT:
-                    lineOff = Utilities.getRowStart(getEditorComponent(), offset);
-                    offset = Utilities.getRowEnd(getEditorComponent(), offset);
+                    if(w_p_wrap) {
+                        lineOff = Utilities.getRowStart(ep, offset);
+                        offset = Utilities.getRowEnd(ep, offset);
+                    } else {
+                        lineOff = w_buffer.getLineStartOffsetFromOffset(offset);
+                        pt.x += viewport.getExtentSize().width
+                                        - (int)getMaxCharWidth();
+                        offset = ep.viewToModel(pt);
+                        r = ep.modelToView(offset);
+                        if(r.width == 0)
+                            // these things usually come back as zero,
+                            // I guess the offset is the position between chars
+                            r.width = (int)getMaxCharWidth();
+                        if(!viewport.getViewRect().contains(r)) {
+                            --offset;
+                        }
+                    }
                     // stay out of fold
+                    // NEEDSWORK: if line not on a fold, bypass; cheaper?
                     col = offset - lineOff; // col from begin of screen line
                     col = getFirstHiddenColumn(lineOff, col);
                     offset = lineOff + col;
                     break;
 
                 case MIDDLE:
-                    lineOff = Utilities.getRowStart(getEditorComponent(), offset);
+                    lineOff = Utilities.getRowStart(ep, offset);
                     Rectangle2D left = modelToView(lineOff);
-                    offset = Utilities.getRowEnd(getEditorComponent(), offset);
+                    offset = Utilities.getRowEnd(ep, offset);
                     col = offset - lineOff;
                     int col00 = getFirstHiddenColumn(lineOff, col);
                     // go through the "col00 != col" dance because
@@ -1593,6 +1622,10 @@ public class SwingTextView extends TextView
 
             int line = getBuffer().getLineNumber(offset);
             Rectangle2D lrect = modelToView(offset);
+            // make sure the line rect's x is within the viewport
+            // all we care about is y
+            lrect.setRect(vrect.x+1, lrect.getY(),
+                          lrect.getWidth(), lrect.getHeight());
             if (vrect.contains(lrect)) {
                 return line;
             }
