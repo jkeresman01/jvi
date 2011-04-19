@@ -106,7 +106,6 @@ public class SwingTextView extends TextView
 
     protected ViStatusDisplay statusDisplay;
 
-    private Point point0;
     private CaretListener cursorSaveListener;
     private int lastDot;
     private static int gen;
@@ -798,24 +797,24 @@ public class SwingTextView extends TextView
                     break;
 
                 case MIDDLE:
-                    lineOff = Utilities.getRowStart(ep, offset);
-                    Rectangle2D left = modelToView(lineOff);
-                    offset = Utilities.getRowEnd(ep, offset);
-                    col = offset - lineOff;
-                    int col00 = getFirstHiddenColumn(lineOff, col);
-                    // go through the "col00 != col" dance because
-                    // in fold right.getMaxX() returns fold display width
-                    // rather than a char width
-                    if(col00 != col // into folded territory
-                            && col00 > 0) //
-                        --col00;
-                    offset = lineOff + col00;
-                    Rectangle2D right = modelToView(offset);
+                    if(!viewLineEdge(EDGE.LEFT, fpos))
+                        return false;
 
-                    offset = viewToModel(
-                            new Point2D.Double(
-                                round((left.getX() + right.getMaxX()) / 2),
-                                left.getCenterY()));
+                    int curCol = fpos.getColumn();
+                    // move half a screen width to the right
+                    col = curCol + (int)((viewportExtent.width
+                                                / getMaxCharWidth())/2);
+                    if(col > w_buffer.getLineLength(fpos.getLine()))
+                        col = w_buffer.getLineLength(fpos.getLine()) - 1;
+                    if(col < 0)
+                        col = 0;
+                    // make col offset from current column
+                    col = col - curCol;
+
+                    int col00 = getFirstHiddenColumn(fpos.getOffset(), col);
+                    if(col00 != col && col00 > 0) // into folded territory
+                        --col00;
+                    offset = fpos.getOffset() + col00;
                     break;
 
                 default:
@@ -1173,7 +1172,6 @@ public class SwingTextView extends TextView
         if (cacheTrace.getBoolean()) {
             System.err.println("doc switch: ");
         }
-        point0 = null;
         super.detachBuffer();
         ViManager.changeBuffer(this, e.getOldValue());
     }
@@ -1263,7 +1261,7 @@ public class SwingTextView extends TextView
     //     return new Rectangle(0,0,8,15);
     // }
 
-    public Point2D getPoint0()
+    final public Point2D getPoint0()
     {
         return getLocation(getRect0());
     }
@@ -1314,7 +1312,11 @@ public class SwingTextView extends TextView
             return;
         }
         Point p01 = makePointTruncY(p);
-        p01.x = 0;
+        // Only want vertical scroll, don't change x.
+        p01.x = viewport.getViewPosition().x;
+        // But, if x is at begining of line, the set it to zero
+        if(p01.x <= getPoint0().getX())
+            p01.x = 0;
         getViewport().setViewPosition(p01);
     }
 
@@ -1359,9 +1361,7 @@ public class SwingTextView extends TextView
             Util.beep_flush();
             return;
         }
-        Point p = makePointTruncY(getLocation(r));
-        p.x = 0;
-        viewport.setViewPosition(p);
+        setVpTopPoint(getLocation(r));
     }
 
     @Override

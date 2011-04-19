@@ -354,6 +354,19 @@ abstract public class SwingBuffer extends Buffer
     /** the segment cache */
     private PositionSegment segment = new PositionSegment();
     // private Segment tempSegment = new Segment();
+
+    @Override
+    final public int getLineLength(int line) {
+        int len;
+        if(cacheDisabled || segment.count == 0 || segment.line != line) {
+            Element elem = getLineElement(line);
+            len = elem.getEndOffset() - elem.getStartOffset();
+        } else {
+            len = segment.count;
+        }
+        // forget the '\n'
+        return len < 1 ? 0 : len - 1;
+    }
     
     /** @return the positionsegment for the indicated line */
     @Override
@@ -367,16 +380,6 @@ abstract public class SwingBuffer extends Buffer
                         segment);
                 segment.docOffset = elem.getStartOffset();
                 segment.line = line;
-        /* **************************************************
-        int len = Math.max(80, tempSegment.count + 10);
-        if(segment.array == null || segment.array.length < len) {
-          segment.array = new char[len];
-        }
-        System.arraycopy(tempSegment.array, tempSegment.offset,
-                         segment.array, 0, tempSegment.count);
-        segment.count = tempSegment.count;
-         **************************************************/
-                // segment.offset is always zero
             } catch(BadLocationException ex) {
                 segment.count = 0;
                 LOG.log(Level.SEVERE, null, ex);

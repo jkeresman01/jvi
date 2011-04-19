@@ -233,12 +233,11 @@ public class Util {
     return lineLength(G.curbuf, line);
   }
 
-  static int lineLength(Buffer buf, int line) {
-    MySegment seg = buf.getLineSegment(line);
-    return lineLength(seg);
+  public static int lineLength(Buffer buf, int line) {
+    return buf.getLineLength(line);
   }
 
-  static int lineLength(MySegment seg) {
+  public static int lineLength(MySegment seg) {
     return seg.count < 1 ? 0 : seg.count - 1;
   }
 

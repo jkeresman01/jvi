@@ -107,6 +107,9 @@ public interface ViBuffer {
     
     /** @return the length of the document */
     public int getLength();
+
+    /** @return the length of the line, not including the '\n' */
+    public int getLineLength(int line);
     
     /**
      * The associated character iterator is initialized with first().
