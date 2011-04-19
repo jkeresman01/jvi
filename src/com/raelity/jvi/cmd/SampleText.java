@@ -48,8 +48,8 @@ public class SampleText {
 
     static String txt02 =
   ""
-+ "LONG-LINE dsfjklaaldskfjklasdjf asdlfkjalksdjfkl adlkfjakldsjfklajds alkjsdflkajsdfklaj alkdsjflkasdjfkl alsdkfjlkasdjfkl aldksfjalksjdfklaj alskjdflkadfkladsfj alkdjfklasjdflkajsdf alskdfjalkdjflkajdf lakjflkajdflkj alkdfjlkasjdf lkajdflkja dlfkjlkadfj aldkfjlakdfjlak dflkjadfl aldfj alkjdsflkjadlksfj alkdsfjlka jdflkaj END-LONG-LINE-END\n"
-+ "LONG-LINE dsfjklaaldskfjklasdjf asdlfkjalksdjfkl adlkfjakldsjfklajds alkjsdflkajsdfklaj alkdsjflkasdjfkl alsdkfjlkasdjfkl aldksfjalksjdfklaj alskjdflkadfkladsfj alkdjfklasjdflkajsdf alskdfjalkdjflkajdf lakjflkajdflkj alkdfjlkasjdf lkajdflkja dlfkjlkadfj aldkfjlakdfjlak dflkjadfl aldfj alkjdsflkjadlksfj alkdsfjlka jdflkaj END-LONG-LINE-END\n"
++ "LONG-LINE (1)0123456789 (2)0123456789 (3)0123456789 (4)0123456789 (5)0123456789 (6)0123456789 (7)0123456789 (8)0123456789 (9)0123456789 (10)0123456789 (11)0123456789 (12)0123456789 (13)0123456789 (14)0123456789 (15)0123456789 (16)0123456789 (17)0123456789 (18)0123456789 (19)0123456789 (20)0123456789 (21)0123456789 \n"
++ "LONG-LINE (1)0123456789 (2)0123456789 (3)0123456789 (4)0123456789 (5)0123456789 (6)0123456789 (7)0123456789 (8)0123456789 (9)0123456789 (10)0123456789 (11)0123456789 (12)0123456789 (13)0123456789 (14)0123456789 (15)0123456789 (16)0123456789 (17)0123456789 (18)0123456789 (19)0123456789 (20)0123456789 (21)0123456789 \n"
 + "\n"
 + "0123\n"
 + "abcd\n"
