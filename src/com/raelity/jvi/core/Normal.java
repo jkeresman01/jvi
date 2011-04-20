@@ -26,6 +26,8 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViTextView.HDIR;
+import com.raelity.jvi.ViTextView.HSCROLL;
 import com.raelity.jvi.core.lib.NotSupportedException;
 import com.raelity.jvi.ViTextView.EDGE;
 import com.raelity.jvi.ViTextView.DIR;
@@ -2317,6 +2319,8 @@ middle_code:
   /** nv_zet is simplified */
   static private  void	nv_zet (CMDARG cap) {
     FOLDOP foldop = null;
+    HSCROLL hscroll = null;
+    HDIR hdir = null;
     switch(cap.nchar) {
       case NL:		// put curwin->w_cursor at top of screen
                         // and set cursor at the first character of that line
@@ -2347,13 +2351,47 @@ middle_code:
       case 'R':
         foldop = FOLDOP.OPEN_ALL;
         break;
+
+      case 'h':
+      case K_LEFT:
+        hscroll = HSCROLL.COUNT;
+        hdir = HDIR.LEFT;
+        break;
+
+      case 'l':
+      case K_RIGHT:
+        hscroll = HSCROLL.COUNT;
+        hdir = HDIR.RIGHT;
+        break;
+
+      case 'H':
+        hscroll = HSCROLL.HALF;
+        hdir = HDIR.LEFT;
+        break;
+
+      case 'L':
+        hscroll = HSCROLL.HALF;
+        hdir = HDIR.RIGHT;
+        break;
+
+      case 's':
+        hscroll = HSCROLL.CURSOR;
+        hdir = HDIR.RIGHT;
+        break;
+
+      case 'e':
+        hscroll = HSCROLL.CURSOR;
+        hdir = HDIR.LEFT;
+        break;
           
       default:
 	break;
     }
     if(foldop != null) {
       G.curwin.foldOperation(foldop);
-    } else {
+    } else if(hscroll != null) {
+      G.curwin.hscroll(hscroll, hdir, cap.count0 != 0 ? cap.count0 : 1);
+      G.curwin.w_set_curswant = true;
     }
   }
   

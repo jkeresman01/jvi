@@ -60,6 +60,10 @@ public interface ViTextView extends ViOptionBag {
 
   public enum EDGE { LEFT, RIGHT, MIDDLE }
 
+  public enum HSCROLL { COUNT, HALF, CURSOR }
+
+  public enum HDIR { LEFT, RIGHT }
+
   /**
    * NOTE: this works only once.
    * @return create the ViFPOS that corresponds to the screens caret.
@@ -308,6 +312,16 @@ public interface ViTextView extends ViOptionBag {
    * @return true if the fpos-cursor moved.
    */
   public boolean viewLineEdge(EDGE edge, ViFPOS fpos);
+
+  /**
+   * Horizontal scroll. move the viewport as specified.
+   * If needed, move the cursor to keep it on screen.
+   *
+   * @param op
+   * @param dir direction the viewport moves
+   * @param count number of characters, only used for op == COUNT
+   */
+  public void hscroll(HSCROLL op, HDIR dir, int count);
 
   /**
    * Position the cursor.

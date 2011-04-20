@@ -831,6 +831,65 @@ public class SwingTextView extends TextView
         return ok;
     }
 
+    @Override
+    public void hscroll(HSCROLL op, HDIR hdir, int count)
+    {
+        try {
+            if(w_p_wrap)
+                return;
+
+            JTextComponent ep = getEditorComponent();
+            Dimension bound = ep.getPreferredSize();
+
+            ViFPOS fpos = w_cursor.copy();
+            Rectangle cRect;
+            if(HSCROLL.HALF == op) {
+                count = (int)((viewportExtent.width / getMaxCharWidth())/2);
+            } else if(HSCROLL.CURSOR == op) {
+                cRect = ep.modelToView(fpos.getOffset());
+                cRect.width = (int)getMaxCharWidth();
+                if(HDIR.LEFT == hdir) {
+                    count = (int)((viewportPosition.x + viewportExtent.width
+                                    - cRect.getMaxX()) /getMaxCharWidth());
+                } else {
+                    count = (int)((cRect.getX() - viewportPosition.x)
+                                        /getMaxCharWidth());
+                }
+            }
+
+            // convert count to view coordinates
+            count *= getMaxCharWidth();
+            // calculate the move, make sure don't go past the editor's bounds
+            Point pt = viewport.getViewPosition();
+            if(HDIR.LEFT == hdir) {
+                pt.x -= count;
+                if(pt.x < 0)
+                    pt.x = 0;
+            } else {
+                pt.x += count;
+                if(pt.x + viewportExtent.width > bound.width)
+                    pt.x = bound.width - viewportExtent.width;
+            }
+
+            viewport.setViewPosition(pt);
+            // make sure the cursor is visible
+            cRect = ep.modelToView(fpos.getOffset());
+            cRect.width = (int)getMaxCharWidth();
+            Rectangle vRect = viewport.getViewRect();
+            if(!vRect.contains(cRect)) {
+                if(HDIR.LEFT == hdir) {
+                    viewLineEdge(EDGE.RIGHT, fpos);
+                } else {
+                    viewLineEdge(EDGE.LEFT, fpos);
+                }
+                w_cursor.set(fpos);
+            }
+        } catch(BadLocationException ex) {
+            Logger.getLogger(SwingTextView.class.getName()).
+                    log(Level.SEVERE, null, ex);
+        }
+    }
+
     final int roundint(double d)
     {
         long l = round(d);
