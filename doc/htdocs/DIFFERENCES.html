@@ -1,0 +1,47 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="Ernie Rael">
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; U) [Netscape]">
+  <meta name="Description" content="status and documentation of jVi">
+  <title>jVi Home Page</title>
+  <LINK REL ="stylesheet" TYPE="text/css" HREF="stylesheet.css" TITLE="Style">
+</head>
+<body>
+<pre>
+
+        Known differences between jVi and Vim
+        -------------------------------------
+        -------------------------------------
+
+Applicable vim documentation is provided. Most things that do not apply have
+been removed from this documentation. It still needs further cleanup, but it
+does provide a good description of implemented commands and operation.
+
+Check the file NORMAL_COMMANDS for a complete list of vim normal mode
+commands. Each command is marked as "works", "not yet" or "not planned".  Over
+100 normal mode commands are implemented.
+
+Only a few ":" commands are implemented.
+
+A mouse click will stop insert mode. Otherwise the mouse does not participate
+in commands. Java selections, i.e. highlighted text, are not used in any way.
+If there is a java selection, enter either v, V or ^V to convert to
+visual mode selection. With a visual mode selection, enter ^G to
+convert it to java selection.
+
+The vim 'cpoptions' "u", do vi compatible single level undo, is not
+supported. The u (undo) and Ctlr-R (redo) are always multi-level.
+
+Not all of vim's extensions to the "z" command are implemented.
+</pre>
+
+<!-- raelity copyright -->
+<hr>
+<address><font size="-1">
+Copyright &copy; 2011 Raelity Engineering</font></address>
+<font size="-1"><a href="mailto:support@raelity.com">
+Contact Raelity Engineering</a></font>
+</body>
+</html>

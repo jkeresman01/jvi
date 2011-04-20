@@ -1,0 +1,280 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="Ernie Rael">
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; U) [Netscape]">
+  <meta name="Description" content="status and documentation of jVi">
+  <title>jVi old news and downloads</title>
+  <LINK REL ="stylesheet" TYPE="text/css" HREF="stylesheet.css" TITLE="Style">
+</head>
+<body>
+
+
+<h1 class="MainSec00Font">News</h1>
+<p>
+<dl>
+
+<dt>August 7, 2002</dt>
+<dd>
+<b>jVi-0.7.0 released</b>
+Works with JBuilder 7 only. Use jVi-0.6.6 for earlier versions.
+<A HREF="CHANGES.html" TARGET="mainFrame" >See changes</A>
+</dd>
+
+<dt>April 7, 2002</dt>
+<dd>
+<b>jVi-0.6.6 released</b>
+Handling switch between read-only/writable.
+undo/redo will not just move cursor. A few other things.
+<A HREF="CHANGES.html" TARGET="mainFrame" >See changes</A>
+</dd>
+
+<dt>Feb 17, 2002</dt>
+<dd>
+<b>jVi-0.6.5 released</b>
+Fix [#212530] Some commands fail on read-only files.
+<A HREF="CHANGES.html" TARGET="mainFrame" >See changes</A>
+</dd>
+
+<dt>Feb 2, 2002</dt>
+<dd>
+<b>jVi-0.6.4 released</b>
+Maintenance release for JB5 and JB6.
+Fix [#456635] Indent ending curly brace with JB5, JB6; 
+[#494586] Keystrokes not processed in JBuilder 6, Code Insight.
+<A HREF="CHANGES.html" TARGET="mainFrame" >See changes</A>
+</dd>
+
+<dt>Feb 18, 2001</dt>
+<dd>
+<b>jVi-0.6.3.6 released</b>
+Fix [Bug #132312]. "*" search command can freeze editor. This was introduced
+in the last release. Failed only under certain conditions. A few other
+commands may be affected.
+<A HREF="CHANGES.html" TARGET="mainFrame" >See changes</A>
+</dd>
+
+<dt>Jan 30, 2001</dt>
+<dd>
+<b>jVi-0.6.3.5 released</b>
+Fix for troublesome linux/unix problem that occurs with some combinations
+of jdk/wm: [ Bug #107566 ] "/" or ":" dialog doesn't get focus.
+<A HREF="CHANGES.html" TARGET="mainFrame" >See changes</A>
+</dd>
+
+<dt>Oct 29, 2000</dt>
+<dd>
+<b>jVi-0.6.3.3 released</b>
+Some bug fixes and improved operability with .class files.
+<A HREF="CHANGES.html" TARGET="mainFrame" >See changes</A>
+</dd>
+
+<dt>Sept 20, 2000</dt>
+<dd>
+<b>jVi-0.6.3.2 released</b>
+Some bug fixes and integrated with JBuilder4.
+<A HREF="CHANGES.html" TARGET="mainFrame" >See changes</A>
+</dd>
+
+<dt>Aug 1, 2000</dt>
+<dd>
+<b>jVi-0.6.3 released</b>
+Some bug fixes and new features, including a 
+partial ":global" command. You can do
+<tt>:g/pat1/s/pat2/repl/g</tt>, ":delete" and ":print" also work.
+<A HREF="CHANGES.html" TARGET="mainFrame" >See changes</A>
+</dd>
+<dt>July 1, 2000</dt>
+<dd>
+<b>jVi-0.6.2 released</b>
+Primarily cleanup and bug fixes. And there's some new features.
+<A HREF="CHANGES.html" TARGET="mainFrame" >See changes</A>
+</dd>
+
+<dt>
+May 25, 2000</dt>
+<dd>
+<b>Source code</b> uploaded to sourceforge. Visit the
+<a href="http://sourceforge.net/project/?group_id=3653">jVi project page</a>
+or go directly to the
+<a href="http://sourceforge.net/cvs/?group_id=3653">jVi CVS page</a>.
+Source licensed under
+<a href="http://www.mozilla.org/MPL/" target="_top">
+MOZILLA PUBLIC LICENSE</a></dd>
+
+<dt>
+May 25, 2000</dt>
+<dd>
+<b>jVi-0.6.1 released</b>.
+<A HREF="CHANGES.html" TARGET="mainFrame" >See changes</A>
+This corresponds to the first source upload. A few bug fixes
+and an alpha of the ":s[ubstitute]" command.</dd>
+</dl>
+
+<p>
+<!-- IF_DOCS
+<a href="http://sourceforge.net">
+<img src="images/sflogo.png"
+        width="88" height="31" border="0" alt="SourceForge Logo" align="right">
+        </a>
+-->
+<!-- NOT_IF_DOCS -->
+<a href="http://sourceforge.net">
+<img src="http://sourceforge.net/sflogo.php?group_id=3653&type=1"
+        width="88" height="31" border="0" alt="SourceForge Logo" align="right">
+        </a>
+<!-- -->
+jVi is hosted on hosted on SourceForge and makes use of only some of the 
+facilities. This includes hosting this web site, the CVS source repository,
+bug tracking and mailing lists. Check out SourceForge for hundreds of
+Open Source projects.
+</p>
+
+<a name="Download">
+<h1 class="MainSec00Font">jVi Download</h1>
+<p>
+Currently jVi is only integrated into a single application,
+<a href="http://www.borland.com/jbuilder" target="_top"> JBuilder</a>.
+<b>jbvi-0.7.1.jar only works with JBuilder7, use jbvi-0.6.6.jar
+for earlier versions of JBuilder.</b>
+For <b>Jbuilder 3.5</b> use jbvi-0.6.3.6.
+Download the file and extract the jar file into JB's lib/ext directory;
+for some JB releases you must manually add it to JB's classpath. 
+The jar file can be extracted from the zip file using the jar commaned,
+for example <b><tt>jar -xf jbvi-0.7.1.zip jbvi-0.7.1.jar</tt></b>.
+You may
+want to SHIFT-CLICK to download one of the following links.
+See <a href="#Quick Start">Quick Start</a> for information on enabling
+full <b>regular expression</b> support.
+</p>
+<p>
+<b>Enable Vi in JBuilder.</b>
+<br>
+After installing the jar into JB's lib/ext directory, restart JBuilder.
+On JBuilder's menu line, select "Tools|IDE Options". Select the
+"Browser" tab. The "Keymap:" combo box should allow you to
+select "VI". Also there is a "VI..." tab for some options
+and there are also some vi options in the "Editor" tab.
+</p>
+<!-- IF_DOCS
+<p>
+<b>Go to the <a href="http://jvi.sourceforge.net" target="_top">web site</a>
+        for downloading</b>
+</p>
+-->
+<!-- NOT_IF_DOCS -->
+
+Version 0.7.1
+<ul>
+<li>jar wrapped in zip:
+        <a href="http://prdownloads.sourceforge.net/jvi/jbvi-0.7.1.zip">
+        jbvi-0.7.1.zip</a></li>
+<li><b>for developers and integrators</b>. jVi api javadoc:
+        <a href="http://prdownloads.sourceforge.net/jvi/jvi-api-0.6.5.zip">
+        jvi-api-0.6.5.zip</a></li>
+</ul>
+
+Version 0.7.0
+<ul>
+<li>jar wrapped in zip:
+        <a href="http://prdownloads.sourceforge.net/jvi/jbvi-0.7.0.zip">
+        jbvi-0.7.0.zip</a></li>
+<li><b>for developers and integrators</b>. jVi api javadoc:
+        <a href="http://prdownloads.sourceforge.net/jvi/jvi-api-0.6.5.zip">
+        jvi-api-0.6.5.zip</a></li>
+</ul>
+
+Version 0.6.6
+<ul>
+<li>jar wrapped in zip:
+        <a href="http://prdownloads.sourceforge.net/jvi/jbvi-0.6.6.zip">
+        jbvi-0.6.6.zip</a></li>
+<li><b>for developers and integrators</b>. jVi api javadoc:
+        <a href="http://prdownloads.sourceforge.net/jvi/jvi-api-0.6.5.zip">
+        jvi-api-0.6.5.zip</a></li>
+</ul>
+
+Version 0.6.5
+<ul>
+<li>jar wrapped in zip:
+        <a href="http://prdownloads.sourceforge.net/jvi/jbvi-0.6.5.zip">
+        jbvi-0.6.5.zip</a></li>
+<li><b>for developers and integrators</b>. jVi api javadoc:
+        <a href="http://prdownloads.sourceforge.net/jvi/jvi-api-0.6.5.zip">
+        jvi-api-0.6.5.zip</a></li>
+</ul>
+
+Version 0.6.4
+<ul>
+<li>via HTTP, jar wrapped in zip:
+        <a href="http://prdownloads.sourceforge.net/jvi/jbvi-0.6.4.zip">
+        jbvi-0.6.4.zip</a></li>
+</ul>
+
+Version 0.6.3.6
+<ul>
+<li>via HTTP, jar wrapped in zip:
+        <a href="http://download.sourceforge.net/jvi/jbvi-0.6.3.6.zip">
+        jbvi-0.6.3.6.zip</a></li>
+</ul>
+
+Version 0.6.3.5
+<ul>
+<li>via HTTP, jar wrapped in zip:
+        <a href="http://download.sourceforge.net/jvi/jbvi-0.6.3.5.zip">
+        jbvi-0.6.3.5.zip</a></li>
+</ul>
+
+Version 0.6.3.3
+<ul>
+<li>via HTTP, jar wrapped in zip:
+        <a href="http://download.sourceforge.net/jvi/jbvi-0.6.3.3.zip">
+        jbvi-0.6.3.3.zip</a></li>
+</ul>
+
+
+Version 0.6.3.2
+<ul>
+<li>via HTTP, jar wrapped in zip:
+        <a href="http://download.sourceforge.net/jvi/jbvi-0.6.3.2.zip">
+        jbvi-0.6.3.2.zip</a></li>
+</ul>
+
+Version 0.6.3.1
+<ul>
+<li>via HTTP, jar wrapped in zip:
+        <a href="http://download.sourceforge.net/jvi/jbvi-0.6.3.1.zip">
+        jbvi-0.6.3.1.zip</a></li>
+</ul>
+
+Version 0.6.2
+<ul>
+<li>via HTTP, jar wrapped in zip:
+        <a href="http://download.sourceforge.net/jvi/jbvi-0.6.2.zip">
+        jbvi-0.6.2.zip</a></li>
+</ul>
+
+Version 0.6.1
+<ul>
+<li>via HTTP, jar wrapped in zip:
+        <a href="http://download.sourceforge.net/jvi/jbvi-0.6.1.zip">
+        jbvi-0.6.1.zip</a></li>
+</ul>
+
+Version 0.6
+<ul>
+<li>via HTTP, jar wrapped in zip:
+        <a href="http://download.sourceforge.net/jvi/jbvi-0.6.zip">
+        jbvi-0.6.zip</a></li>
+</ul>
+<!-- -->
+
+<!-- raelity copyright -->
+<hr>
+<address><font size="-1">
+Copyright &copy; 2011 Raelity Engineering</font></address>
+<font size="-1"><a href="mailto:support@raelity.com">
+Contact Raelity Engineering</a></font>
+</body>
+</html>

@@ -1,0 +1,1381 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="Ernie Rael">
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; U) [Netscape]">
+  <meta name="Description" content="status and documentation of jVi">
+  <title>jVi Home Page</title>
+  <LINK REL ="stylesheet" TYPE="text/css" HREF="stylesheet.css" TITLE="Style">
+</head>
+<body>
+  <!-- <h1 class="MainSec00Font" align="center">Changes</h1> -->
+<h1 align="center">Changes</h1>
+
+<!--
+<b>NB6.5/NB6.7 only, in CVS</b>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li></li>
+      <li>
+        <a href="">
+        [#] </a>
+      </li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>jVi NetBeans KeyBindings</dt>
+  <dd>
+    <ul>
+      <li></li>
+      <li>
+        <a href="">
+        [#] </a>
+      </li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li></li>
+      <li>
+        <a href="">
+        [#] </a>
+      </li>
+    </ul>
+  </dd>
+</dl>
+-->
+
+<h2>jVi-1.3 development</h2>
+<!-- <b>NB7.0 only, VCS - 2010/04/06, Mercurial repository</b> -->
+<p>
+jVi-1.3 has major source code refactoring to simplify embedding jVi.
+</p>
+
+<!--
+<b>NB7.0 only, in repository - 2010/04/06 </b>
+-->
+<b>NB7.0 only, in repository - 2010/04/18 </b>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li>Added <tt>gJ</tt> and <tt>g~</tt> commands</li>
+      <li>horizontal scroll commands:
+      <tt>zl</tt>,
+      <tt>z&lt;Right&gt;</tt>,
+      <tt>zL</tt>,
+      <tt>zh</tt>,
+      <tt>z&lt;Left&gt;</tt>,
+      <tt>zH</tt>,
+      <tt>zs</tt>
+      and <tt>ze</tt>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li>Navigation in long lines and around line wrapping.
+          <br/>Don't keep messing up horizontal scroll position.
+      </li>
+    </ul>
+  </dd>
+</dl>
+
+<b>NB7.0 only, Version 1.3.1.beta7 - 2011/04/15 </b>
+<p><b>Consider this RC1</b></p>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li>Added <tt>:pmap</tt>, <tt>:pnoremap</tt> and <tt>:punmap</tt>
+        commands. They are normal mode mappings which are active when
+        PLATFORM-SELECTION.
+        See jVi help files, <a href="vimhelp/map.txt.html">map.txt</a>.
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=3280820&group_id=3653&atid=103653">
+        [#3280820] exit ": mode" on BS on empty line</a>
+      </li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=3271587&group_id=3653&atid=103653">
+        [#3271587] jvi Icon doesn't update</a>
+      </li>
+    </ul>
+  </dd>
+</dl>
+
+
+<b>NB7.0 only, Version 1.3.1.beta6 - 2011/04/06 </b>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=2019611&group_id=3653&atid=353653">
+          [#2019611] map commands; User define key binding in Normal mode</a>
+        <br/><tt>[nvo]map</tt>, <tt>[nvo]noremap</tt>, <tt>[nvo]unmap</tt>
+        <br/>"Options&gt;Map Commands" for persited mappings.
+        Also work as colon commands.
+        <br/>Current mappings are displayed
+        with <tt>:[nvo]map</tt> and <tt>:[nvo]map {lhs}</tt>.
+        <br/>See jVi help files, <a href="vimhelp/map.txt.html">map.txt</a>.
+      </li>
+      <li> <a href="https://sourceforge.net/tracker/?func=detail&aid=3166782&group_id=3653&atid=353653">
+        [#3166782] iskeyword or skip to underscore?</a>
+        <br/>add option: <tt>'iskeyword' 'isk'</tt><br/>
+        This is a per buffer option.
+        It works with <tt>:set iskeyword=xxx</tt> and modeline</li>
+      <li>Implement <tt>:set</tt> operations:
+        <tt>+=</tt>, <tt>-=</tt> and <tt>^=</tt>. (useful with 'isk')</li>
+      <li>Implement set {option}&amp; to set option to default value</li>
+      <li><tt>:set</tt> only display settable options that differ from their
+        default. Use <tt>:set all</tt> to see all settable options</li>
+      <li>new option: <tt>blinkrate</tt></li>
+      <li>In jVi options dialog, each option displays default value</li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=3273859&group_id=3653&atid=103653">
+          [#3273859] undo bug with <tt>@</tt> (execute register contents)</a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=3280820&group_id=3653&atid=103653">
+        [#3280820] exit ": mode" on BS on empty line</a>
+      </li>
+      <li>
+        <a href="">
+        [#3258663] clipboard option doesn't work</a>
+      </li>
+    </ul>
+  </dd>
+</dl>
+
+<b>NB7.0 only, Version 1.3.1.beta4 - 2011/03/03</b>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=2825295&group_id=3653&atid=353653">
+        [#2825295] yank/put/delete Actions on the closed fold at the cursor</a>
+        <br/>Most actions on folds work, for example <tt>&gt;&gt;</tt>.
+        <br/>Actions on visual mode selections involving folds
+        also implemented.
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=3001654&group_id=3653&atid=353653">
+        [#3001654] Ability to use line breaks with substitute command</a>
+        <br/> Implementation allows '\r' in the replacement text.
+        '\n' is also allowed and maps to newline (not NULL char into doc).
+      </li>
+      <li>Add <tt>:vglobal</tt> and <tt>:global!</tt> commands.</li>
+      <li><tt>:set scroll=0</tt> accepted to reset to half window height</li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=3054372&group_id=3653&atid=353653">
+        [#3054372] Make ":u" Perform Undo Operation</a>
+        <br/>Add both <tt>:undo</tt> and <tt>:redo</tt>
+      </li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li>
+        <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=3018062&group_id=3653&atid=103653">
+        [#3018062] Ranges don't work with ":global"</a>
+        <br/>Also fixed the ":global" command so that if matching lines
+        are deleted, there is no attempt to operate on them.
+        <br/>In particular, something like <tt>:g/pattern/d 5</tt>
+        does the right thing.
+      </li>
+      <li>Fix <tt>[/</tt> and <tt>[*</tt> when "/*" starts in column 0</li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=3074904&group_id=3653&atid=103653">
+        [#3074904] Cursor Position off by one when jVi turned off</a>
+      </li>
+      <li>Handle insert mode Ctrl-W and Ctrl-U properly
+        for '.' redo command.</li>
+      <li>
+        <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=3196343&group_id=3653&atid=103653">
+        [#3196343] ggVG= throws exception</a>
+      </li>
+    </ul>
+  </dd>
+</dl>
+
+<b>NB7.0 only, Version 1.3.1.beta3 - 2010/12/05 (Mercurial repository)</b>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li> persist history for search and command entry.
+      </li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>jVi NetBeans KeyBindings</dt>
+  <dd>
+    <ul>
+      <li>Colon Command Name Completion<br/>
+      During ":" command line entry Ctrl-Space or Ctrl-D bring up a
+      completion list.
+      </li>
+    </ul>
+  </dd>
+</dl>
+
+<b>NB7.0 only, Version 1.3.1.beta2 - 2010/10/30 (Mercurial repository)</b>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=2977160&group_id=3653&atid=353653">
+        [#2977160] ":set wrapscan" command please</a>
+      </li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li> fixes for commands for line wrap like up,down,^D,^U,^F,^B,H,M,L
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=3093239&group_id=3653&atid=103653">
+        [#3093239] cursor backspaces when jVi turned off</a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=3032783&group_id=3653&atid=103653">
+        [#3032783] Wrong cursor after search</a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=3006347&group_id=3653&atid=103653">
+        [#3006347] IllegalStateException when executing ":e!"</a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=2925219&group_id=3653&atid=103653">
+        [#2925219] Nullpointer exception</a>
+      </li>
+    </ul>
+  </dd>
+</dl>
+
+<b>NB7.0 only, Version 1.3.1.beta1 - 2010/10/30 (Mercurial repository)</b>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li><tt>:set</tt> options:
+        <tt>wrap</tt>, <tt>linebreak</tt> and <tt>list</tt></li>
+      <li>Various commands for a line wrap environment,
+        including <tt>gj</tt>, <tt>gk</tt>, <tt>g$</tt>,
+        <tt>g0</tt>, <tt>g^</tt>, <tt>gm</tt> </li>
+      <li>
+        <a href="http://sourceforge.net/tracker/?func=detail&aid=2777608&group_id=3653&atid=353653">
+          [#2777608] Multiple-editor pane support (Ctrl-w)</a><br/>
+        An accurate implementation
+        of Ctrl-W window traversal commands, e.g. left/right/up/down.
+        There are over 10
+        traversal's implemented.
+        All jVi editors, such as visual diff and expression evaluator,
+        are included.
+      </li>
+      <li>Ctrl-G in visual line mode does full line java text selections.
+        Note that this changes the jVi start-end of the current visual bounds.
+      </li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>jVi NetBeans KeyBindings</dt>
+  <dd>
+    <ul>
+      <li>use the NetBeans REUSE flag for tag stack operations,
+        for example <tt>Ctrl-]</tt> and <tt>Ctrl-T</tt>. This means that
+        several operations in a row will share the same editor window.
+        Use the <tt>:pin</tt> command to prevent a file from being replaced.
+      </li>
+      <li><tt>:pin</tt> to clear editor REUSE flag. The red push pin,
+        "Editor Pin", on toolbar is active when the currently selected
+        editor is REUSEable.
+      </li>
+    </ul>
+  </dd>
+</dl>
+
+<h2>jVi-1.2 released</h2>
+
+<b>NB6.9 only, Version 1.3.0.x1 - 2010/02/01</b>
+<br/>
+<b>NB6.8 only, Version 1.2.7 - 2010/02/01</b>
+
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=2832400&group_id=3653&atid=353653">
+        [#2832400] Xml/Html Tag text-object </a>
+      </li>
+      <li>
+        <a href="http://sourceforge.net/tracker/?func=detail&aid=1829295&group_id=3653&atid=353653">
+        [#1829295] [ ] Brace/paren/other navigation.</a>
+      Implemented:
+        <tt>[m</tt>, <tt>]m</tt>, <tt>[M</tt>, <tt>]M</tt>,
+        <tt>[{</tt>, <tt>[(</tt>, <tt>]}</tt>, <tt>])</tt>,
+        <tt>[/</tt>, <tt>[*</tt>, <tt>]/</tt>, <tt>]*</tt>,
+        <tt>[#</tt>, <tt>]#</tt>,
+        <tt>[[</tt>, <tt>[]</tt>, <tt>]]</tt>, <tt>][</tt>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=2833497&group_id=3653&atid=353653">
+          [#2833497] Save macros</a>.
+          Persist named yank/put registers/buffers, e.g. <tt>"a</tt>, between sessions. (only if size under 1K)
+      </li>
+      <li>Implement filemarks, aka upper case marks,
+        like <tt>mA</tt> and <tt>'A</tt>;
+        also <tt>:marks</tt> and <tt>:delm[arks]</tt> commands.
+        Support <tt>^</tt> mark.
+        Persist filemarks and per buffer marks between sessions.
+        General option to control max number of persisted buffer-marks.
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=2929586&group_id=3653&atid=353653">
+          [#2929586] <tt>:[range]&lt;</tt> command missing</a>
+        Implement shift [range] lines one 'shiftwidth' left. Repeat '&lt;' for shifting multiple 'shiftwidth's.
+      </li>
+      <li>platform option so initial verion output does not bring up output window</li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>jVi NetBeans KeyBindings</dt>
+  <dd>
+    <ul>
+      <li></li>
+      <li>
+        <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=2931204&group_id=3653&atid=353653">
+          [#2931204] code formatting in visual mode in NB 6.8</a>
+        Hook 'Q' and 'gq' commands to NetBeans' reformat action.
+      </li>
+      <li>In input mode put TAB character directly into file (assuming
+        <tt>'noet'</tt> and other options call for it),
+        unles <tt>'usePlatformTab'</tt> option is set</li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li>Cleanup visual mode when option <tt>'selection'</tt>
+      is <tt>"exclusive"</tt>.
+        </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=2922216&group_id=3653&atid=103653">
+        [#2922216] The options panel is so wide ...</a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=2865050&group_id=3653&atid=103653">
+          [#2865050] <tt>cw</tt>, change word, command and accented chars </a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=2936394&group_id=3653&atid=103653">
+        [#2936394] mouse-drive selection not taking last character on the line</a>
+      </li>
+      <li>don't open output window unlesss <tt>p</tt>
+          (as in g//s///p) is used</li>
+      <li>fix cursor positoning for <tt>z</tt> commands
+        with partially full screens</li>
+      <li>fix bug in execution of <tt>:make</tt> command (NB)</li>
+      <li>tweak code that prevents visible clone editor from scrolling for nb6.8.</li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=2922313&group_id=3653&atid=103653">
+        [#2922313] exception: didDocRemoveAfterTrackPosition</a>
+      </li>
+    </ul>
+  </dd>
+</dl>
+
+<b>NB6.5/NB6.7/NB6.8 only, Version 1.2.6 - 2009/7/19</b>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li>In visual mode, Ctrl-G converts visual bounds to java text selection.
+      Allows IDE/platform commands to operate on it.
+      <br/>&lt;ESC&gt; clears a java text selection.
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=2805922&group_id=3653&atid=353653">
+          [#2805922] Please implement softtabstop option</a>.
+      A per buffer option, works with modeline. This change also
+      implements most (all?) of the vim logic related to expandtabs rather than
+      passing it off to the platform. When 'et' is false and 'sts'
+      true, neighboring spaces are coelesced into tabs;
+      when 'et' true and 'sts' true, a backspace may
+      remove multiple spaces. See vim's doc.
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=2779250&group_id=3653&atid=353653">
+        [#2779250] i_ctrl-a (insert mode command)</a> Also implement i_ctrl-@.
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=1726929&group_id=3653&atid=353653">
+        [#1726929] i_CTRL_R to paste buffer content</a> including the i_Ctrl-R sub-commands.
+      </li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>jVi NetBeans KeyBindings</dt>
+  <dd>
+    <ul>
+      <li>
+        <a href="https://sourceforge.net/tracker/?group_id=3653&atid=353653">
+        [#2777608] Multiple-editor pane support (Ctrl-w)</a>
+      Only a partial fix.
+      <br/>Ctrl-W_Ctrl-W An imperfect implementation: cycles in arbitrary,
+      but fixed, order.
+      <br/>
+      There are no commands that create windows; that
+      requires some NetBeans API work, at a minimum see 
+        <a href="http://www.netbeans.org/issues/show_bug.cgi?id=135385">
+        add attachTopComponentToSide method to WindowManager</a>.
+      <br/>
+      <b>NOTE:</b> Users may want to reprogram NetBeans' "Close
+      Window" shortcuts from <i>Ctrl-W</i> and <i>Ctrl-F4</i>
+      to <i>Ctrl-W_c</i> and <i>Ctrl-W_Ctrl-C</i> for consistency and to
+      <b>avoid accidental window closing</b>.
+      </li>
+      <li><tt>:only</tt>, Ctrl-W_Ctrl-O
+      </li>
+      <li>Ctrl-W_Ctrl-E and Ctrl-W_e <i>{not in vim}</i> These commands are similar to
+      Ctrl-W_Ctrl-W, except that
+      they cycle through visible editors that do not have an associated file.
+      In a debug situation, with the expression evaluator visible, this
+      command typically changes focus to the expression evaluator window.
+      </li>
+      <li>Hook jVi into Tools&gt;Options Export and Import dialog</li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=2816171&group_id=3653&atid=103653">
+        [#2816171] NB6.7 empty file bottom not supported</a>
+      </li>
+      <li>Clean up and fix some problems with "magic-redo" (gets '.' to work
+      better after code completion).</li>
+      <li>Fix '.' problem with backspace introduced by 'sts' option in beta1.</li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=2808635&group_id=3653&atid=103653">
+        [#2808635] Unable to edit preferences on Mac OS X</a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=2808634&group_id=3653&atid=103653">
+        [#2808634] Warning message in logs and an error 6.7</a>
+      </li>
+    </ul>
+  </dd>
+</dl>
+
+<b>NB6.5/NB6.7 only, Version 1.2.5 - 2009/6/12</b>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li>^V in input mode (values limitted to 16 bits so ^VU not supported)</li>
+      <li>Improve performance, generally 2x, of some visual block operations:
+        <tt>I</tt>, <tt>A</tt>, <tt>x</tt>, <tt>D</tt>, <tt>r</tt>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=2777562&group_id=3653&atid=353653">
+        [#2777562] ge and gE don't work</a> Also implemented g* and g#.
+      </li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>jVi NetBeans KeyBindings</dt>
+  <dd>
+    <ul>
+      <li>Make jVi options a top level option (no longer in AdvacedOptions)</li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li>Clean up behavior of "<tt>:tog[gle]</tt>" command</li>
+      <li>Set <tt>`[</tt> and <tt>`]</tt> properly after an insert operation</li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&aid=2783881&group_id=3653&atid=103653">
+        [#2783881] Refactor colon commands with netbeans 6.7-beta don't work</a>
+      </li>
+    </ul>
+  </dd>
+</dl>
+
+<b>NB6.5/NB6.7 only, Version 1.2.4 - 2009/2/28</b>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li>
+        <a href="https://sourceforge.net/tracker2/?func=detail&aid=1976163&group_id=3653&atid=353653">
+        [#1976163] Implement CTRL+A and CTRL+X</a> (command mode)
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker2/?func=detail&aid=1703043&group_id=3653&atid=353653">
+        [#1703043] Support for Ctrl-U and Ctrl-W</a> (input mode)
+      </li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li>NPE in ViCursorDelegate. Some experimental code in
+          the 1.2.3 release. So much for a simple quick fix for NB6.7.
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker2/?func=detail&aid=2636118&group_id=3653&atid=103653">
+        [#2636118] jVi doesn't work in NetBeans 6.7</a>
+      </li>
+    </ul>
+  </dd>
+</dl>
+
+<b>NB6.5 only, Version 1.2.2 - 2009/2/22</b>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li>
+        <a href="https://sourceforge.net/tracker2/?func=detail&aid=2339621&group_id=3653&atid=353653">
+        [#2339621] ci", di}, yi) commands... Text Object Selection</a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker2/?func=detail&aid=2166561&group_id=3653&atid=353653">
+        [#2166561] gU/u</a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker2/?func=detail&aid=2118243&group_id=3653&atid=353653">
+        [#2118243] Add mapping for Ctrl-Q to start block select mode</a>
+      </li>
+      <li>Jump list. Includes <tt>:ju[mps]</tt>, <tt>Ctrl-O</tt> and <tt>Ctrl-I</tt></li>
+      <li><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=232351&group_id=3653&atid=353653">
+        [#232351] copy/move operations on marked block aren't implemented</a>
+      </li>
+      <li><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=436544&group_id=3653&atid=353653">
+        [ 436544 ] yank doesn\'t work with colon commands</a>
+      </li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li>
+        <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=2388723&group_id=3653&atid=103653">
+        [#2388723] IDE hangs when pasting text to the find-textfield (linux only)</a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker2/?func=detail&aid=2018514&group_id=3653&atid=103653">
+        [#2018514] SIOOBE during editing in GetChar.docRemoveInternal</a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker2/?func=detail&aid=2191596&group_id=3653&atid=103653">
+        [#2191596] Unable to autogen code from Ctrl+Space</a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker2/?func=detail&aid=2200316&group_id=3653&atid=103653">
+        [#2200316] The Repeat command fails when search pattern</a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker2/?func=detail&aid=2200322&group_id=3653&atid=353653">
+        [#2200322] paste command doesn't accept numbers</a>
+      </li>
+      <li>
+        <a href="http://www.netbeans.org/issues/show_bug.cgi?id=150199">
+        [NetBeans Issue 150199] [jVi] AssertionError: Start offset must be less than or equal to the end offset. startOffset = 0, endOffset = -1</a>
+      </li>
+
+      <li><a href="https://sourceforge.net/tracker2/?func=detail&aid=2130840&group_id=3653&atid=103653">
+        [#2130840] JVIEnable action not showing in the available keybindings</a>
+      </li>
+      <li><a href="https://sourceforge.net/tracker/index.php?func=detail&aid=2014322&group_id=3653&atid=103653">
+        [#2014322] Does not work with Netbeans 6.5</a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=2015265&group_id=3653&atid=103653">
+        [#2015265] Exception when going to a line # outside the file range</a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=2016745&group_id=3653&atid=103653">
+          [#2016745] assert while in diff editor</a>
+      </li>
+    </ul>
+  </dd>
+</dl>
+
+<h2>jVi-1.1 released</h2>
+
+<b>NB6 only, Version 1.1.6 2008/5/31</b>
+<dl>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li>Work around an NB6.1 bug in undo/redo handling.<br/>
+          <a href="http://www.netbeans.org/issues/show_bug.cgi?id=135837">
+          [Issue 135837] New - NbEditorKit.undoAction misbehaves (and two undoable edit listeners)</a>
+      </li>
+    </ul>
+  </dd>
+</dl>
+
+<b>NB6 only, Version 1.1.5 2008/4/20</b>
+<dl>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li><a href="https://sourceforge.net/tracker/?func=detail&atid=353653&aid=1941326&group_id=3653">
+        [#1941326] substitute in selected block (MAC ONLY)</a>
+      </li>
+    </ul>
+  </dd>
+</dl>
+
+<b>NB6 only, Version 1.1.4 2008/4/6</b>
+<dl>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li><a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1914140&group_id=3653&atid=103653">
+        [#1914140] Visual mode highlighting broken after jVi re-enable</a>
+      </li>
+      <li>Fix interactions when extending visual mode selection with
+      searching and incremental searching.</li>
+      <li><a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1693415&group_id=3653&atid=103653">
+        [#1693415] jVi doesn't work well with protected text</a></li>
+      <li>handle interactions where "O"/"o" open new line commands
+      would open folds, or fail because they were next to guarded areas.</li>
+      <li>1.1.4.x2 don't get confused when attempts to modify guarded
+      regions in any of the various ways: regular, block/visual,
+      delete, change, ... Detect the situations and properly report.</li>
+    </ul>
+  </dd>
+</dl>
+
+<b>NB6 only, Version 1.1.3.beta3 2008/2/14</b>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li>Code Folding compatible.</li>
+      <li>[#1829293] \c,\C in search for case sensitive</li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>jVi NetBeans KeyBindings</dt>
+  <dd>
+    <ul>
+      <li>Add option to keep initialization options/configuration
+      in userdir (using NbPreferences), rather than shared for all
+      installations of NB.</li>
+      <li>In insert mode bind Ctrl-N, Ctrl-P to NB's
+      wordMatchNext/Previous.</li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li>1.1.2.x8 avoid substitute confirm hang ide (reflection hack)</li>
+      <li>When parsing modeline, don't raise output window if no error.</li>
+      <li>Add search strings from '*' and '#' to search history</li>
+      <li>Extra &lt;RET&gt; not needed on ":e#" file name completion, bug
+      introduced by fix for command completion on MAC.
+      </li>
+      <li>fix the way visual mode highlights are updated so '%' changes
+      visible visual mode selection.
+      </li>
+      <li>fix assert when ":q"</li>
+    </ul>
+  </dd>
+</dl>
+
+<b>NB6 only, Version 1.1.1.beta1 2007/10/26</b>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li>Command/Search entry window is now modal dialog
+        by default. Better for MDI mode.
+        <br/>New option <tt>use
+        modal frame</tt>, if disabled uses old technique of a glass pane.
+        <br/>Note that glass pane doesn't work well with file name completion
+        popup for NetBeans.
+      </li>
+      <li><tt>Ctrl-C</tt> exits input mode<li>
+      <li>Add <tt>zt</tt> and <tt>zb</tt>. Thanks to Marian P.</li>
+      <li>Add <tt>gt</tt>, <tt>gT</tt>,
+        <tt>:tabn[ext]</tt> <tt>:tabp[revious]</tt>, <tt>:tabN[ext]</tt>.
+        <br/> Traverse editor tabs.
+            They hook into platform actions as available.
+      </li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>jVi NetBeans KeyBindings</dt>
+  <dd>
+    <ul>
+      <li> <tt> :mak[e] [b[uild] | c[lean] | r[ebuild] | d[oc] | de[bug] | ru[n]]
+        <br/>[ m[ain] | p[roject] | % ]</tt>
+        <br/>Default is "make build main"
+      </li>
+      <li>NB6 beta1 only (or post 07/07/22 build).
+        <tt>:e#</tt> supports file name completion popup of open files.
+        <br/>New option: <tt>":e#" Auto Popup</tt> to enable/disable.
+      </li>
+      <li>
+        Add some refactoring commands. <tt>:rfr[ename]</tt> plus many more.
+        See <a href="ReadmeNetBeans.html#refactoring">Netbeans specific doc</a>.
+      </li>
+      <li>Stop tracking wrapscan/ignorecase. Just ignore the NB settings.
+      </li>
+          <li><tt>:tog[gle] [&lt;view-pane&gt;]</tt>
+              <br/>&lt;view-pane&gt; ::= <tt>bo[ttom] | ou[tput] | de[bug]</tt>
+              <br/>Toggle visibility (show/hide) of some windows
+          </li>
+      </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li>[#1787950] jVi Output pane constantly pops up</li>
+      <li>now typeahead after ":" replaces previous command</li>
+      <li>properly set <tt>'[</tt> and <tt>']</tt> after delete lines
+        and avoid a stack dump.
+      </li>
+      <li>listen to jVi option changes from displayed property sheets.</li>
+      <li>Fix when moving position offscreen. If target within half
+        a screen then target at top/bottom of view; like a scroll to target,
+        rather than target at center of view.
+      </li>
+    </ul>
+  </dd>
+</dl>
+
+<b>Version 1.0.3 2007/07/23</b>
+<dl>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li>Remove bogus assert that might trigger when editing
+        same file in two windows</li>
+    </ul>
+  </dd>
+</dl>
+
+<b>Version 1.0.2 2007/07/10</b>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li>[#1749954] Fix jVi's defaultKeyType handling of Alt/Meta modifiers
+      so {}[] can be entered on Mac's Norwegian and French keyboards</li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>jVi NetBeans KeyBindings</dt>
+  <dd>
+    <ul>
+      <li><tt>:fixi[mports]</tt></li>
+    </ul>
+  </dd>
+</dl>
+
+<b>Version 1.0.1 2007/07/04</b>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li>Visual Block Mode with most commands, including yank/put,
+        <tt>I</tt> (input), <tt>A</tt> (append), <tt>c</tt> (change),
+        <tt>r</tt> (replace), <tt>x</tt>, <tt>d</tt> (delete).
+      </li>
+      <li>The bang commands: such as <tt>!{motion}{filter}</tt>,
+          <tt>:{range}![!]{filter} [!][arg]</tt>
+          and of course <tt>:!{cmd}</tt>. vim options <tt>shell</tt>,
+          <tt>shellcmdflag</tt> and <tt>shellxquote</tt>.
+          <tt>%</tt>, current file, for "!" commands, with file-modifiers
+          <tt>:p</tt>, <tt>:e</tt>, <tt>:r</tt>, <tt>:t</tt>, <tt>:h</tt>.
+      </li>
+      <li><tt>=</tt> operator with <tt>equalprg</tt> option. When
+        <tt>equalprg</tt> empty, hook into platform reindent.
+      </li>
+      <li><tt>gq</tt> operator using <tt>formatprg</tt> option. <tt>Q</tt> 
+        is an alias for the operator. Add text width option for use with
+        "gq"/"Q" commands.
+      </li>
+      <li>highlight search,
+        <tt>:set [no]hlsearch</tt>, <tt>:noh[lsearch]</tt>
+      </li>
+      <li>modeline processing; <tt>modeline</tt> and <tt>modelines</tt>
+        options.
+      </li>
+      <li>For '.' redo handling, during input mode track changes made external
+        to jVi, typically by IDE for code-completion.
+        Use option <tt>"." magic redo tracking</tt> to disable this feature.
+      </li>
+      <li>More insert mode operations: cursor motion with
+        <tt>whichwrap</tt> options <tt>[]</tt>,
+        [#1723582] <tt>DEL</tt> as in vim,
+        [#1723996] <tt>Ctrl-Y</tt>, <tt>Ctrl-E</tt> to copy
+        character from previous, next line.
+      </li>
+      <li>Added <tt>gp</tt> and <tt>gP</tt> commands.
+        start/end of previous operation.</li>
+      <li>[#1733806] c[onfirm] option for substitute</li>
+
+      <li><tt>``</tt> magic pcmark tracking. Cursor movements, usually the
+        result of IDE actions invoked exteral to jVi, are noted so that
+        <tt>``</tt> return to where you were.
+        Use option <tt>"``" magic pcmark tracking</tt> to disable this feature.
+        Thanks Jose.</li>
+      <li>The auto indent is removed on a line where
+          no text is entered.
+      </li>
+      <li>implement <tt>'[</tt> and <tt>']</tt> marks</li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>jVi NetBeans KeyBindings</dt>
+  <dd>
+    <ul>
+      <li><tt>=</tt> does reformat action on specified range</li>
+      <li>jVi ToolsMenu enable now persists across NB restarts.</li>
+      <li>helpset for visual block mode</li>
+      <li><tt>:gr[ep]</tt> peforms the "Find Usages" action on the identifier
+      under the cursor</li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li>[#1723554] <tt>TAB</tt> accepted in entry widget,
+        so search expression can now include tab character.
+      </li>
+      <li>[#1703407] Exceptions when used in CVS Diff views</li>
+      <li>The RE pattern <tt>/^</tt> now only matches the beginning of line.
+      </li>
+      <li>Position caret correctly after undo/redo to keep it off the newline.
+      </li>
+      <li>beep when undow/redo does nothing</li>
+      <li>'.' redo works for input mode Ctrl-T, Ctrl-D,
+        Ctrl-&lt;, Ctrl-&gt;
+      </li>
+      <li><tt>C</tt> on empy line no longer deletes line</li>
+      <li>[#1724053] Missing EOL in visual mode yank</li>
+      <li>PCMark, "''", after incremental search not correct</li>
+      <li>Add "Backward range given, ok to swap" dialog for <tt>:</tt> ranges</li>
+      <li>Fix <tt>p</tt> command to work when visual selection.
+      Thanks Roy.</li>
+      <li>Fix marks, they should have had a fixed column position; instead
+      column adjusted as chars inserted/deleted. Been that way forever,
+      only noticed with the <tt>gv</tt> command.</li>
+      <li>For <tt>:f</tt> and <tt>Ctrl-G</tt> indicate modified as
+      appropriate</li>
+    </ul>
+  </dd>
+</dl>
+
+<b>Version 0.9.0/0.9.1 04/17/07</b>
+<p>This release has the single most requested feature and
+    biggest jVi core development effort since jVi was introduced
+    over 5 years ago; thanks to Roy van der Kuil <b>Visual Mode</b>
+    is now available. <b>Tag stack</b> also available.
+</p>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li>[#1678712] Visual mode: <tt>v V '< '> `< `> </tt>
+        <br/>thanks to Roy van der Kuil. (not visual block yet, but on the way)
+      </li>
+      <li>[#424678 ] sentence and paragraph motions: <tt>{ } ( )</tt>
+        <br/>thanks to Jose Alburquerque.
+      </li>
+      <li>[#1679153] Tag stack:
+        <tt>Ctrl-] [count]Ctrl-T :[count]ta[g] :tags :ts[elect]</tt>
+        <br/><tt>:tag</tt> and <tt>:tselect</tt> with no arguments
+      </li>
+      <li>[#1688909] Regular, Shift and Control for Enter, Escape,
+          BackSpace and Tab can be enabled for jVi handling through options.
+      </li>
+      <li><tt>zz</tt> cursor to cente of screen command
+      </li>
+      <li>when search or command entry widget comes up, the previous entry is
+        displayed in combo box; it is highlighted so any input will erase it.
+      </li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li>[#1703078] [JVI 0.9.0] NullPointerException</li>
+      <li><tt>:set [no]ic</tt> NPE (bitten by a last minute change)</li>
+      <li><tt>z&lt;ENTER&gt;</tt> did nothing except beep.</li>
+      <li>[#1695646] shift-O on first line of file is broken</li>
+      <li>Status display fix: don't loose "red" in messages.</li>
+      <li>Avoid doing bogus searches associated with incremtental search.</li>
+      <li>Fix some NB6 issues</li>
+    </ul>
+  </dd>
+</dl>
+
+<b>Version 0.8.3 03/07/07</b>
+<p>These are the changes since the snapshot release 0.8.0 which was 
+    made available mid February.
+    <br/><b>Incremental search</b> and <b>:set</b> are
+    <!-- and <b>highlight search</b> are -->
+    my favorites.
+</p>
+
+<dl>
+  <dt>jVi NetBeans KeyBindings</dt>
+    <dd>
+    <ul>
+        <li> jVi keybindings attach to any file type.</li>
+        <li>Use <i>Tools > jVi</i> menu checkbox to enable/disable jVi.</li>
+        <li>Can bind jVi-enable toggle to a shortcut.
+            In Tools > Options > keymap, open the Tools folder, bind jVi.</li>
+        <li>jVi install does not require NB restart.</li>
+            <li><tt>:n</tt>, <tt>:N</tt>, <tt>:prev</tt> traverses the MRU list,
+            use <tt>:ls</tt> to see list.</li>
+        <li>Advanced Options modifications to jVi KeyBindings effective immeadiately.
+            No restart required.</li>
+        <li>Simplify StatusBar interface/ui.</li>
+        <li>showcmd and showmode are now options.</li>
+        <!-- <li>Highlighting done with NetBeans APIs.</li> -->
+    </ul>
+    </dd>
+</dl>
+<dl>
+  <dt>jVi Core</dt>
+    <dd>
+    <ul>
+            <li>Incremental search. Not particularly efficient,
+            quite the opposite.</li>
+            <!--
+            <li>Highlight search. When on highlight all the matches to the
+            previous search pattern.</li>
+            <li><tt>:noh</tt> of course</li>
+            -->
+            <li>A few <tt>:set</tt> commands: <tt>ignorecase</tt>,
+                <tt>incsearch</tt>, <tt>number</tt>, <tt>tabstop</tt>,
+                <tt>shiftwidth</tt> and <tt>expandtabs</tt> See
+                <a href="COLON_COMMANDS">Colon Commands</a> and
+                <a href="ReadmeNetBeans.html#options"> NetBeans
+                options information</a>.
+            </li>
+            <li>Added <tt>gg</tt> normal command.</li>
+            <li><tt>m&lt;</tt> and <tt>m&gt;</tt> mark the current line before
+            jumping so the <tt>''</tt> returns. (Like doing <tt>m'</tt>).</li>
+            <li><tt>Ctrl-<</tt> and <tt>Ctrl-></tt> will catch first
+            non blank in a line.</li>
+            <li>In <tt>[count]&lt;op&gt;{motion}</tt>, when {motion} was
+            a search like <tt>/foo</tt>, the &lt;op&gt; was ignored. So now
+            stuff like <tt>y/foo</tt> and <tt>3d/one</tt> work.
+    </ul>
+    </dd>
+</dl>
+<dl>
+  <dt>Bugs fixed</dt>
+    <dd>
+    <ul>
+        <li> [#1665143] With JDK1.5, search not possible in netbeans JVI editor</li>
+        <li> [#780967] Ctrl-E and Ctrl-Y</li>
+        <li> Searching and Options work with JDK1.5.</li>
+        <li>keypad keys and other non-characters no longer go into the file,
+            they kick you out of input mode.</li>
+        <li>An assert would fire if options brought up before init'd.</li>
+        <li>'.' with input mode dump'd stacktrace (not an exception)</li>
+        <li>Various other exceptions</li>
+    </ul>
+    </dd>
+</dl>
+
+<b>Version 0.7.1 08/24/02</b>
+<dl>
+  <dt>Bugs fixed</dt>
+    <dd>
+    <ul>
+      <li> [#597899] :make and :build broken in JB7 </li>
+      <li> [#598501] % brace matching broken in JBuilder 7</li>
+    </ul>
+    </dd>
+</dl>
+
+<b>Version 0.7.0 08/07/02</b>
+<dl>
+  <dt>New features</dt>
+    <dd>
+    <ul>
+      <li>Works with JBuidler 7 only. Use 0.6.6 for earlier versions.</li>
+    </ul>
+    </dd>
+  <dt>Bugs fixed</dt>
+    <dd>
+    <ul>
+      <li> [#564025] Will not load in JBuilder 7 </li>
+    </ul>
+    </dd>
+</dl>
+
+<b>Version 0.6.6 04/07/02</b>
+<dl>
+  <dt>New features</dt>
+    <dd>
+    <ul>
+      <li>undo/redo handling now matches vim; the action always
+	  causes a change, never just cursor movement.
+          The JBuilder/swing behavior is available as an option.</li>
+      <li>:s command with no args repeats last substitute command.</li>
+    </ul>
+    </dd>
+  <dt>Bugs fixed</dt>
+    <dd>
+    <ul>
+      <li> [#520480] more Read-only problems. Handling switch
+	    between writable/read-only. </li>
+      <li> [#520481] Can't "put" at the end of a file. </li>
+      <li> Show '?' in search command entry for backwards search. </li>
+    </ul>
+    </dd>
+</dl>
+
+<b>Version 0.6.5 02/17/02</b>
+<dl>
+  <dt>Bugs fixed</dt>
+    <dd>
+    <ul>
+      <li>
+	[#212530] Some commands fail on read-only files
+	  <p> jVi, when running under JBuilder, now has an option to work
+	  around this jdk1.3 issue. The problem is that if
+	  JEditorPane.isEditable() is false, then KEY_TYPED events are not
+	  delivered to the application. Stuff like '^D' still gets through,
+	  but normal asci does not.</p>
+	  <p>
+	  The fix involves changing 'isEditable()' while the window is the
+	  currently active editor. This behavior, which defaults on, can be
+	  turned off with the 'hack read-only' option in the 'Editor' tab of
+	  the 'EditorOptions' dialog.  </p>
+      </li>
+    </ul>
+    </dd>
+</dl>
+
+<b>Version 0.6.4 02/02/02</b>
+<dl>
+  <dt>Bugs fixed</dt>
+    <dd>
+    <ul>
+      <li>
+	[ #456635 ] Indent ending curly brace with JBuilder5, JBuilder6
+      </li>
+      <li>
+	[ #494586 ] Keystrokes not processed in JBuilder 6, Code Insight
+      </li>
+      <li>
+	[ #484417 ] Installation
+      </li>
+    </ul>
+    </dd>
+(read only files still not handled completely)
+</dl>
+
+<b>Version 0.6.3.6 02/18/01</b>
+<dl>
+  <dt>Bugs fixed</dt>
+    <dd>
+    <ul>
+      <li>132312: "*" search command can freeze editor
+	<br>This was introduced
+	in the last release. Failed only under certain conditions.
+	Some commands, as well as searching, may be affected.
+      </li>
+    </ul>
+    </dd>
+</dl>
+
+<b>Version 0.6.3.5 01/30/01</b>
+<dl>
+  <dt>Bugs fixed</dt>
+    <dd>
+    <ul>
+      <li>107566: "/" or ":" dialog doesn't get focus
+          <br> With some combinations of jdk/window-managers,
+	  on some unix systems, including linix, the dialogs used
+	  for entering ":" commands and search patterns would not get
+	  the focus when they poped up. This workaround puts the input
+	  field on the glass pane rather than using a seperate frame.
+	  <br><br>Thanks to Keith Gaddis for this fix.
+	  <br><br>Under JBuilder4 the old behavior, modal frame, can be
+	  selected. It is a misc boolean option. After making the selection
+	  JBuilder must be restarted for the change to take effect.
+      </li>
+    </ul>
+    </dd>
+</dl>
+
+<b>Version 0.6.3.3 10/29/00</b>
+<dl>
+  <dt>New features</dt>
+    <dd>
+    <ul>
+      <li>JBuilder: ":e" commands, e.g. ":e#" or ":e -3",
+          now works with .class files</li>
+    </ul>
+    </dd>
+  <dt>Bugs fixed</dt>
+    <dd>
+    <ul>
+      <li>117287: Does jVi support special, e.g. french, characters?
+          <br>In insert mode control characters and others are no
+	  longer filtered out.
+	  Any and all unicode characters that are received
+	  are inserted into the file (except zero).
+      </li>
+      <li>116560: JBuilder: Renaming open file renders editor useless
+      </li>
+    </ul>
+    </dd>
+</dl>
+
+<b>Version 0.6.3.2 9/20/00</b>
+<dl>
+  <dt>New features</dt>
+    <dd>
+    <ul>
+      <li>JBuilder4 supported</li>
+      <li>JBuilder4 only: if
+        <a href="http://www.users.fast.net/~jpmcgrath/cosmetics/"
+	target="_top">Cosmetics</a> open tool is loaded, then there is
+	a command ":tog[gle] tab[s]".
+      </li>
+    </ul>
+    </dd>
+  <dt>Bugs fixed</dt>
+    <dd>
+    <ul>
+      <li>113802: ":0" command should go to first line</li>
+      <li>114281: JBuilder: in insert mode if the user enters a tab
+	character the UseTabs Option should be followed. See
+        <a href="http://sourceforge.net/bugs/?func=detailbug&bug_id=114281&group_id=3653"
+	target="_top"> Bug Report</a> for details.
+    </ul>
+    </dd>
+</dl>
+
+<b>Version 0.6.3 8/01/00</b>
+<dl>
+  <dt>New features</dt>
+    <dd>
+    <ul>
+    <li>:delete command</li>
+    <li>:global command
+	<br><code>:global/pattern/command</code>
+	<br>only commands substitute, print and delete one line are supported.
+	</li>
+    <li>print flag supported by substitute command</li>
+    <li>In insert mode, Ctrl-',' and Ctrl-'.' (think of them as
+	Ctrl-'&lt;' and Ctrl-'&gt;') indent line left/right
+	so first character of line is after '(' in previous line.
+	Useful for aligning arguments of function call.
+	</li>
+    </ul>
+    </dd>
+  <dt>
+  <dt>Bugs fixed</dt>
+    <dd>
+    <ul>
+    <li>108836: With gnu.regex the end of line anchor, "$", doesn't work.</li>
+    <li>109242: up/down arrow sometimes goes to wrong column position.</li>
+    <li>JBuilder: tab in insert mode now inserts a tab
+	character (not shiftwidth) unless smart tab option is set</li>
+    <li>JBuidler: "o" command would sometimes (after replace mode)
+	forget to insert a new line</li>
+    </ul>
+    </dd>
+  <dt>
+  <dt>Notes</dt>
+    <dd>
+    <ul>
+    <li>In JBuilder the results of "print" from <code>:s///p</code>
+	and <code>:g//p</code>,
+	go to the search tab.
+	</li>
+    </ul>
+    </dd>
+</dl>
+
+<b>Version 0.6.2 7/01/00</b>
+<dl>
+  <dt>Thanks to Jeff Kreska for all the bug reports!</dt>
+  <dt>New features</dt>
+    <dd>
+    <ul>
+    <li>substitute command
+      <br><code>:[&lt;addr&gt;[,&lt;addr&gt;]]s[ubstitute]/pattern/replacement/[g]</code>
+    <li>JBuilder: Keep focus in source editor after ":q" or ":close"
+    <li>107684: status/error messages cleared after a scroll
+    <li>Scrolloff configuration variable is implemented
+    <li>GNU regexp package support
+    </ul>
+    </dd>
+
+  <dt>Bugs fixed</dt>
+    <dd>
+    <ul>
+    <li>107919: Bind 'CTRL-[' to escape
+    <li>no more micro-scrolling
+    <li>108062: Pressing CTRL-F or &lt;pgdown&gt; when
+                  close to EOF causes redraw problems
+    <li>106829: JBuilder: searching broken if no third
+                  party regular expression package in application's classpath
+    <li>106947: window redraw is screwed up if last line deleted
+    </ul>
+    </dd>
+  <dt>Differences and notes</dt>
+    <dd>
+    <ul>
+    <li>JBuilder: when CodeInsight is dismissed with the escape key and jVi is
+        in input mode, jVi goes into command mode.
+    <li>JBuidler: If the browser window is sized so that the toolbar wraps onto
+        multiple lines then messages will usually be lost.
+    <li>If gnu.regexp is used, the pattern assertions '\b' and '\B' are not
+        supported, note that these are used to implement '\&lt;' and '\&gt;'.
+    </ul>
+    </dd>
+</dl>
+
+<b>Version 0.6.1 5/28/00</b>
+<dl>
+  <dt>Corresponds to first (premature?) source release.</dt>
+  <dt>Bug fixes:</dt>
+  <ul>
+  <li> fix: tabs for left/right shift, '&lt;' and '&gt;', fixed.
+  In JB controlled with "useTabCharacter".
+  <li> JB fix: ":q" in split window only closes current window, not node/tab.
+  <li> fix: C-End, C-Home, C-Left, C-Right
+  <li> All problems reported at
+       <a href="http://sourceforge.net/bugs/?group_id=3653" target="_top">
+       jVi Bug Tracking</a> closed.
+  </ul>
+
+  <dt>Alpha/preview feature:</dt>
+  <dd>":[&lt;addr&gt;[,&lt;addr&gt;]]s[ubstitute]/pattern/replacement/[g]"
+</dl>
+
+
+<b>Version 0.6 4/01/00</b>
+<dl>
+  <dt> Additional Normal Mode Commands:</dt>
+  <dd>'*' and '#'</dd>
+
+  <dt><a href="pattern.txt">Perl5 Regular Expressions:</a></dt>
+  <dd>User must put either
+    <a href="http://www.savarese.org/oro/software/OROMatcher1.1.html">
+    OROMatcher</a>
+    or <a href="http://www.javaregex.com/ ">
+    com.stevesoft.pat</a> (version 1.4) in path.
+    <br>Options available on what needs to be escaped.</dd>
+
+  <dt><a href="COLON_COMMANDS">':' Commands:</a></dt>
+  <dd><tt>w[rite] [*], wa[ll], q[uit], f[ile], clo[se],
+      on[ly], e[dit] #[number]</tt>.
+
+  <dt><a href="vimhelp/windows.txt">Window Commands:</a></dt>
+  <dd>split: <tt>Ctrl-W Ctrl-S</tt>, <tt>Ctrl-W S</tt>, <tt>Ctrl-W s</tt></dd>
+  <dd>close current: <tt>Ctrl-W Ctrl-C</tt>, <tt>Ctrl-W c</tt>,
+                    <tt>:close</tt></dd>
+  <dd>close all but current: <tt>Ctrl-W O</tt>, <tt>Ctrl-W o</tt>,
+                    <tt>:only</tt></dd>
+  <dd>next window: <tt>Ctrl-W Ctrl-W</tt>, <tt>Ctrl-W w</tt></dd>
+
+  <dt><a href="ReadmeJBuilder.html#colon">JB ':' Commands:</a></dt>
+  <dd>  <tt>mak[e] [%]</tt>, 
+        <tt>bui[ld] [%]</tt>,
+        <tt>run</tt>, 
+        <tt>deb[ug]</tt>,
+        <tt>tog[gle] &lt;view-pane&gt;</tt>
+
+  <dt>Macros Usablity Fixes
+  <dd>now <a href="vimhelp/repeat.txt">'q' command macros</a>
+      can search, do input mode, escape, return, ...
+</dl>
+
+<pre>
+<b>Version 0.5 2/15/00, First Release</b>
+  - marks, named buffers, '*' for clipboard
+  - yank, put handle both line and character mode.
+  - Macros using 'q' command.
+  - Over 100 normal mode commands
+</pre>
+
+<!-- raelity copyright -->
+<hr>
+<address><font size="-1">
+Copyright &copy; 20117 Raelity Engineering</font></address>
+<font size="-1"><a href="mailto:support@raelity.com">
+Contact Raelity Engineering</a></font>
+</body>
+</html>
+<!-- vi:set sw=2 et ts=8: -->

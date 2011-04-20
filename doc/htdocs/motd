@@ -1,0 +1,49 @@
+# Note: the special tags must start in column one
+#       and there is a single space after the special tags
+# Note: This is NOT an xml file, rather adhoc
+
+motd-version: 1
+jVi-release: 1.2.7
+#jVi-release-link: 
+
+#jVi-beta: 1.3.1.beta4
+jVi-beta: 1.3.1.beta8
+jVi-beta-link: http://sourceforge.net/projects/jvi/files/jvi/1.3-NB7.0/nbvi-1.3.1.beta8.zip/download
+
+# Following used when a new release.
+#jVi-download-target: https://sourceforge.net/projects/jvi/files/jvi/
+
+# There may be any number of motd-link and motd-message in any order.
+# They are displayed in the order they are given.
+# There may be any number of lines before the EOT
+motd-message:
+nbvi-1.3.1.beta8 is for NetBeans 7.0 RC2 or later
+<EOT>
+motd-message:
+***** nbvi-1.3.1.beta8 horizontal-scroll-commands, map-commands *****
+<EOT>
+
+motd-link: http://jvi.sourceforge.net/?CHANGES.html
+jVi recent features and changes.
+<EOT>
+
+motd-link: https://sourceforge.net/projects/jvi/files/jvi/
+All jVi download files
+<EOT>
+
+# After 1.2.6.beta2 the following is a way to output a message
+#motd-message:
+#This is a message
+#with two lines.
+#<EOT>
+#motd-message:
+#This is a message with only one line.
+#<EOT>
+
+#
+# FOLLOWING is ignored by releases after 1.2.6.beta2
+# The jvi-message starts at the line after the jVi-message to end of file
+# jVi-message: 1
+#This is ignored if jvi-message is commented out
+jVi-message: 1
+See http://jvi.sourceforge.net/?CHANGES.html for recent features and changes.

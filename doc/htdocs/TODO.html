@@ -1,0 +1,288 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="Ernie Rael">
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; U) [Netscape]">
+  <meta name="Description" content="status and documentation of jVi">
+  <title>jVi Home Page</title>
+  <LINK REL ="stylesheet" TYPE="text/css" HREF="stylesheet.css" TITLE="Style">
+</head>
+<body>
+
+  <h2>jVi NEEDSWORK/TODO list</h2>
+
+<pre>
+
+Documentation
+=============
+  - Parse jVi docs for html, javahelp, per topic help. Per topic used for
+    popup as NetBeans' doc popup; in NB have ":he x" list all matching *x*.
+  - include notes, Murry doc
+  - doc ^W commands
+  - Add {jVi Xxx category} to vimhelp for options.
+  - Add {works with :set} to vimhelp for options.
+    Also vimhelp list of what works with :set.
+    (may become moot if all things work with set)
+  - Review javadocs
+    - Role of AppView as Registry
+    - Registering colon commands
+
+
+Bugs
+====
+  - Handing of no_mapping/allow_keys.
+    What does allow_keys really do?
+    Edit handling of no_mapping/allow_keys.
+  - Create JUnit testing infrastructure. Create tests.
+  - See sourcforge...
+  - 0 ==&gt; don't persist marks
+  - :e#m<ctrl-s> if ":  e #  nx" not detected correctly
+  - in jVi-standalone, wrapped lines and TAB chars, eg. following one line
+        asdf asdf asdf asdf asdf asdf asdf asdf asdf asdfxxxxx<space..>
+        aaa<tab>#sd asdf asdfhasdklfjh asdklfjhasdf asdfkljhasdf asd
+        asdfasdf asdf asdf asdf
+    If curson on '#' (2nd view line) after left/right motion, then gj/gk
+    don't go to the correct column. How far off and where it goes is
+    dependent on the number of <space> chars at the end of the first view
+    line. The problem does not appear in NB.
+
+netbeans embedding
+----------------
+  - auto add a bunch of ^W bindings, for example ^Wc to close a window
+    See play/fs-dobj for some examples.
+    Some NB issues that need fixing:
+        - Multikey shortcut doesn't override single key shortcut
+          Adding multi-key shortcut via layer.xml doesn't remove single key
+        - Shortcut missing in Options menu
+          adding binding, eg Alt-U, in layer.xml doesn't show up in shortcuts
+          display in options. (but shortcut as part of a new action does).
+          And the action's generated layer.xml seems same
+    Following is (may be) related:
+        - Adding an multi-key binding doesn't remove single key binding.
+          There a bug filed a while ago
+  - C:\a\src\jvi-dev\nbvi\src\org\netbeans\modules\jvi\impl\NbOps.java:31:
+    warning: [deprecation] org.netbeans.editor.BaseKit.DefaultKeyTypedAction
+    in org.netbeans.editor.BaseKit has been deprecated
+  - find out how to catch/bypass the dialog ESC handling, so that jVi
+    operates more comfortably in a dialog.
+    - It does work in some dialogs, for example "new watch" seems to
+      have a keybinding for ESC, when jVi not active ESC dismisses that
+      dialog.
+  - ^W^W Eval Window requires click
+  - diff window
+    - ^W^E for diff window requires click
+    - :q in diff window
+
+
+NetBeans/Platform Bugs
+======================
+  - editor focus lost after next diff action changes file
+  - can't see cursor in left side diff
+  - See umbrella bug for jVi in NetBeans
+    <a href="https://netbeans.org/bugzilla/show_bug.cgi?id=179047">Bug 179047 - jVi integration</a>
+
+
+Features
+========
+  - See sourcforge...
+  - Add autocmd, at least a simple form of it.
+  - Have an option(s) for multiline matching. E.g. handle \n in pattern
+    and allow '.' to match newline.
+    Create CharSequence that wraps multiple Segment, then can use Segment's
+    partial return and scan whole file without gap content copying.
+  - Support the vim search offset (there a feature request about this)
+    and also the "/test 1/;/test" type of multi search stuff.
+  - :registers, :nomads, :winnr
+  - There is now an internal findmatch which does a pretty good job with '%';
+    it is either/or. Allow a fallback from platform to internal? For example
+    for the '#'.
+  - middle mouse button insert
+  - :browse
+  - persist jumplist
+  - Handle tag file
+      - tag generation in java
+        - http://www.ars.net/jtags/
+  - Standalone:
+    - indent: integrate jindent or somesuch (or port vim)
+  - for filter commands use a temp file
+
+
+NetBeans Features
+=================
+  - rework status window issues.
+    when scroll clears status, give a few seconds
+  - Have option for jVi shortcuts, several ^W at least.
+    See options.keymap: KeymapManager, KeymapModel, LayersBridge
+    and editor.macros: MacroShortcutsInjector and MacrosKeymapManager.
+    There's Utilities.keyToString,stringToKey
+    Note: jvi has been made a friend in options.keymap
+  - global shortcut key to attach jVi to any text component,
+    in particular JTextArea for commit messages
+        See [platform-dev] Re: Magic global accessibility keys
+        in mail folder: Developement/NetBeans/Wiki
+        [Action.this.]putProperty("OpenIDE-Transmodal-Action", true);
+  - brace matching interface should give access to offsets
+    see the '%' code in Normal
+  - NB ":tog" has problems with debug... get it to interoperate with sliders.
+  - Simplify adding ":" random colon commands.
+    Require an escape key for these commands so jVi not poluted?
+    Clean up module/package exports, make NB "fried" of jVi?
+
+
+Anomolies
+=========
+  - incomplete port of ^t, ^d in input mode
+      - '^'^d (remove all indent) isn't supported
+      - if cursor is before first non-blank, it is left at the
+        first non-blank. Position within indent should be maintained.
+      - Replace stack is ignored
+      - 'start of insert' should be repositioned, its left alone.
+
+  - Extend jVi jumplist (^O, ^I) implementation to work between files.
+    This seems almost impossible, jump list is per window and jVi
+    has a 1-1 on window-file; can not swap contents of window.
+
+
+Mappings
+========
+  - handle_redo and mappings interactions
+    the pump loop should probably incorporate redo issues
+  - put mapping error msg into output window
+  - map command to generate map-cmds for current mappings
+    A button, Current, in the mappings dialog, 
+  - ^V issues, should prevent mapping
+  - Use JEditorPane for mappings ui with jVi in it.
+  - add p_mmd option (currently hardcoded)
+  - imap commands for insert mode mappings
+  - pmap, pnoremap...
+    A platform-selection set of map commands these mappings apply if there is
+    a platform selection. The following would allow y/p work with platform sel
+        pnoremap y vy
+        pnoremap p vp
+  - keybinding for *everything* possible and a big default mapping.
+    F-keys, keypad. Include multiple modifiers at once.  Ctrl,Shft,Alt,Meta
+    - when specify a mapping for a key, and key is not "caught"
+      ask if the key(s) should be caught.
+      - NOTE: if auto-catch, then in :map list output make it clear which
+              keybindings have been taken away.
+
+  - map {lhs} <Nop>
+  - multiple chars on {lhs}
+  - allow space chars in right hand side?
+  - accept '\' escapes
+    maybe part of globally handling escapes
+  - alt key by itself, not as a modifier.
+    see: https://sourceforge.net/projects/jvi/forums/forum/10908/topic/4414466/index/page/1
+  - for example "map <AltKey> <esc>".
+    issues: handling bindings that use the alt key
+            maybe could check that alt-press alt-release
+            with no intervening keys.
+
+
+Options
+=======
+  - Have "DEFAULT" button for all options/properties
+  - Make the G.xxx globals privitive types; when opt.setValue reflect the
+    new value into the primitive.
+    then change all references to G.xxx to xxx() (note use static import)
+    and the primitive xxx can be private, so it would be impossible to modify
+    it except by modifying the Option or through a set command.
+    - :set command should not change the Option, but should ask the option
+      to reflect the value. Might want a dialog of global options that are 
+      different in memory, and allow you to selectively persist some of them.
+  - Option validate as part of save (or something like that).
+    Issue really comes up with map-cmd, want to convert the string option
+    into a data structure. The data structure is mostly built by the
+    validate process.
+    - the Option could have a validateSet combo method which invokes the
+      validator (which can stash something into the option), then poll for
+      veto's, then finish, maybe using the stash. Might simply want to get
+      hold of the stash in a pref-change listener.
+    - may want to associate a method/action assoc with the option.
+      this might be an alternative to this discussion or in addition to.
+      Currently need to use pref listener.
+    
+
+
+Cleanup
+=======
+  - get rid of "G."; use static import. For G.xx, use xx()
+  - Consider getting rid of 
+        Misc.xlateViKey(ViManager.getInsertModeKeymap(), c, G.getModMask())
+    would just handle ^T (or whatever) in the redobuf? Other issues?
+    ^&lt; and ^&gt; might be a problem.
+  - abstractFS - getAppView by #, - getDisplay.... WHAT TO DO WITH THEM
+  - test numbered marks
+  - command entry to
+      - bypass widget completely when possible
+      - handle all input and manipulate combo box directly
+  - Misc.do_put still needs some work.
+  - Reduce public methods
+    - in ViMan there's all the mouse stuff is public. Create a class which
+      bounces to them and give it to Caret impl, then they can be private.
+  - to GetChar::docRemove pass object that knows how to get/work with the
+    removed text rather than getting the removed text directly, then don't
+    have to construct the removed text if not needed.
+  - at end of do_pend... when save current vis area do vi_curswant
+  - use CountDownLatch for commandLine/glass wait
+  - change curswant to also track x position
+    Probably need methods either take char pos or "X" float.
+    This is a MUST for multi-width fonts.
+  - jViFeature handling. Make more things features. Separate file/class?
+  - in ViTextView there is replaceString,deleteChar,insertText
+    should be in Buffer
+  - Explicitly activate options on buffer/textview creation?
+    The "firstgo" seems hokey.
+
+
+TODO
+====
+  - Tool tips in property dialog
+  - Use Character class for iswhitespace...
+
+
+Performance
+===========
+- The biggest performance hit is from swing's document change operations.
+
+  This is clearly seen with the block mode operation profiling. For these,
+  I think the change text lines could be constructed in a separate string and
+  swapped in en masse. The trick is to preserve the marks.
+
+  This same technique could work with '&gt;&gt;' and '&lt;&lt;'.
+- lazy creation of colon commands (probably not a big issue)
+
+
+BLUE SKY
+========
+
+  - Multithread and document locking issues
+      - Do long running ops in separate thread
+      - Have the main jViThread not be the EventThread.
+      - event thread used to queue keyboard input for use by jVi thread.
+        jVi thread can then do "getc" where/when it wants to.
+        ^C can have better effect.
+      - implement ^C (when there's separate thread for long running things....)
+  - Commands that take a program, e.g. '!', '=', have some way to hook
+    them to other loaded classes.
+  - implement and extend EditorPane, Document and AbstractDocument.Content 
+    tuned for vi. Make sure to always be able to go native.
+    . do getChar from cache'd segment?
+  - Implement a virtual cursor (use WCursor as a virtual cursor) so that
+    cursor movement and/or searching can occur without queuing up redraw.
+    Then have an update method.
+  - how to display control characters. Could extend view somehow and graphically
+    fix them up. NB is going to implement something.
+
+
+</pre>
+
+<!-- raelity copyright -->
+<hr>
+<address><font size="-1">
+Copyright &copy; 2011 Raelity Engineering</font></address>
+<font size="-1"><a href="mailto:support@raelity.com">
+Contact Raelity Engineering</a></font>
+</body>
+</html>

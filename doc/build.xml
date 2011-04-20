@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+
+<project name="jvi-docs" default="usage" basedir=".">
+
+    <!-- ================================================================= -->
+    <!-- Help on usage                                                     -->
+    <!-- ================================================================= -->
+
+    <target name="usage">
+        <echo>
+            placeholder
+        </echo>
+    </target>
+
+    <target name="build">
+    </target>
+
+    <target name="clean">
+    </target>
+
+    <target name="doc">
+    </target>
+
+    <target name="javadoc">
+    </target>
+
+</project>

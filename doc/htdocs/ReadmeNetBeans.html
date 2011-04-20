@@ -1,0 +1,414 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="Ernie Rael">
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; U) [Netscape]">
+  <meta name="Description" content="status and documentation of jVi">
+  <title>jVi Home Page</title>
+  <LINK REL ="stylesheet" TYPE="text/css" HREF="stylesheet.css" TITLE="Style">
+</head>
+<body>
+
+
+
+<h2 align="center">jVi in NetBeans</h2>
+<a name="intro"/>
+<h1 class="MainSec00Font">Introduction</h1>
+
+<p>
+Now you can use vi/vim commands while taking advantage of the NetBeans
+editors' code completion, templates, fixing compiler errors quickly and access
+to other IDE features.
+</p>
+<p>For proper <b>undo/redo granularity</b> there is a
+<a href="https://sourceforge.net/project/platformdownload.php?group_id=3653">
+        small patch for netbeans</a>. NOTE: not needed for NetBeans 7.
+</p>
+ 
+<p>
+The keystrokes that are delivered to jVi is a configuration option.
+See <a href="#keys">Key Bindings</a> below.
+</p>
+
+<p>Look at <a href="CHANGES.html">recent changes to jVi</a>
+and <a href="nbvi.issues">jVi in NetBeans status, issues and bugs</a>.
+</p>
+
+<p>Disable/enable jVi using Main Menu <i>Tools > jVi</i> checkbox.
+    There is also a toggle action that can be bound to a shortcut.
+</p>
+
+<p>
+<b> Log bugs at
+    <a href="http://sourceforge.net/bugs/?group_id=3653" target="_top">
+jVi Bug Tracking</a>.</b>
+Please include both the <b>jVi version number</b> and the
+<b>NetBeans version number</b>,
+e.g. NB5.5, when reporting problems.
+Get the version of jVi with the <tt>:version</tt> command,
+also the version of jVi in use is displayed on the
+<i>jVi Options and Configuration</i> editing option property page..
+</p>
+<p>
+
+Discuss your issues, problems and/or requests at
+<a href="http://sourceforge.net/forum/forum.php?forum_id=10908">
+jVi Open Discussion Forum</a>. 
+This is a good way to indicate what you'd like to see in jVi for NetBeans.
+
+Communications can also be sent to
+<a href="mailto:jvi@raelity.com">jVi</a>.
+</p>
+
+<a name="normal"/>
+<h1 class="MainSec00Font">Normal Mode</h1>
+There are some Normal Mode commands that hook into NetBeans features.
+<table border="1" cellpadding="3">
+    <tbody>
+        <tr>
+            <td><tt>Ctrl-]</tt></td>
+            <td>Go To Declaration</td>
+        </tr>
+        <tr>
+            <td><tt>m{.&lt;&gt;}</tt></td>
+            <td>toggle bookmark, previous bookmark, next bookmark</td>
+        </tr>
+        <tr>
+            <td><tt>z{ocRM}</tt></td>
+            <td>expand fold, collapse fold, expand all, collapse all</td>
+        </tr>
+        <tr>
+            <td><tt>g{,;}</tt></td>
+            <td>Jump to Next Edit Cross Window, Jump to Previous Edit Cross Window</td>
+        </tr>
+        <tr>
+            <td><tt>gt</tt>, <tt>gT</tt></td>
+            <td>Go to the next/previous editor tab page.
+                Wraps around from first to last.
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<a name="colon"/>
+<h1 class="MainSec00Font">Colon Commands</h1>
+There are several colon commands that hook directly to NetBeans'
+features.
+<br/>It is simple to customize jVi by
+<a href="#custom">adding you own colon commands</a>.
+<table border="1" cellpadding="3">
+    <tbody>
+        <tr>
+            <td><tt>:se[t]</tt></td>
+            <td>See <a href="COLON_COMMANDS">Colon Commands</a> for
+                information on available options. See <a href="#options">
+                Netbeans options information</a> for platform interactions
+                of the <tt>sw</tt>, <tt>et</tt>, <tt>ts</tt>, <tt>nu</tt>
+                options.
+            </td>
+        </tr>
+        <tr>
+            <td><tt>:e#[&lt;digit&gt;]</tt></td>
+            <td>
+                After <tt>:e#</tt> code completion allows the selection
+                of an open file. There is a jVi option <i>":e#" Auto popup</i>.
+            </td>
+        </tr>
+        <tr>
+                <td><tt>:g/.../p</tt>, <tt>:g/.../s/.../p</tt>,
+                <tt>:1,$s/.../p</tt></td>
+            <td>The output of these commands go to an Output window
+                with hyperlinks</td>
+        </tr>
+        <tr>
+            <td><tt>:ls</tt>, <tt>:buffers</tt>, <tt>:files</tt></td>
+            <td>The output of these commands go to an Output window</td>
+        </tr>
+        <tr>
+                <td><tt>:n[ext]</tt>, <tt>:N[ext]</tt>,
+                <tt>:prev[ious]</tt></td>
+            <td>Operate on MRU file list, otherwise similar to vim. For
+                example, <tt>:3N</tt> goes to the third previously file
+                active</td>
+        </tr>
+        <tr>
+            <td><tt>:q[uit]</tt>, <tt>:wq[!]</tt></td>
+            <td>Close the curernt tab. Return to the previously active
+                tab; for example <tt>Ctrl-]</tt>, <tt>Ctrl-]</tt>,
+                <tt>:q</tt>, <tt>:q</tt> gets you back to where you started.</td>
+        </tr>
+        <tr>
+            <td><tt>:ts [&lt;any-chars&gt;]</tt>,
+            <br/><tt>:ta &lt;any-chars&gt;</tt></td>
+            <td>These bring up the "Go To Class" dialog.</td>
+        </tr>
+        <tr>
+            <td><tt>:gr[ep]</tt> </td>
+            <td>perform "Find Usages" action on the identifier under
+            the cursor.</td>
+        </tr>
+        <tr>
+            <td><tt>:mak[e]&nbsp;&lt;op&gt; &lt;target&gt;</tt></td>
+            <td>
+                &lt;op&gt; ::=
+                <tt>[ b[uild] | c[lean] | r[ebuild] | d[oc] | de[bug] | ru[n] ]
+                </tt>
+                <br/>&lt;target&gt; ::= <tt>[ m[ain] | p[roject] | % ] </tt>
+                for main-project current-project current-file.
+                <br/>Default &lt;op&gt; is <tt>build</tt>,
+                default &lt;target&gt; is <tt>main</tt>. So entering
+                <tt>:mak</tt> is the same as <tt>:make build main</tt>.
+            </td>
+        </tr>
+        <tr>
+            <td><tt>:cn[ext]</tt></td>
+            <td>Goto the next in the list. In addition to compiler errors,
+                it applies to many lists; for example in the diff window
+                and in the output area,
+            such as Find Usages or &quot;g/pattern/p&quot;.</td>
+        </tr>
+        <tr>
+            <td><tt>:cp[revious]</tt>, <tt>:cN[ext]</tt></td>
+            <td>Goto the previous in the list.</td>
+        </tr>
+        <tr>
+            <td> <tt>:tabn[ext]</tt>,
+                <tt>:tabp[revious]</tt>, <tt>:tabN[ext]</tt>
+            </td>
+            <td>Go to the next/previous editor tab page.
+                Wraps around from first to last.
+            </td>
+        </tr>
+        <tr>
+            <td><tt>:tog[gle] [&lt;view-pane&gt;]</tt></td>
+            <td>
+                &lt;view-pane&gt; ::= <tt>bo[ttom] | ou[tput] | de[bug]</tt>
+                <br/>toggle some NetBeans' window(s) visibility. With no
+                arguments is the same as <tt>bottom</tt>.
+                <tt>output</tt> is the output mode; some windows that
+                go here are Output and Usages.
+                <tt>debug</tt> are the debug windows.
+                <tt>bottom</tt> is both of output and debug.
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<a name="refactoring"/>
+<br/><b>Refactoring commands</b>
+<br/>The following commands bring up the indicated dialog. Typically the cursor
+should be set as needed before executing the command.
+<table border="1" cellpadding="3">
+    <tbody>
+        <tr>
+            <td><tt>:rfr[ename]</tt></td>
+            <td>Refactor &gt; Rename...</td>
+        </tr>
+        <tr>
+            <td><tt>:rfm[ove]</tt></td>
+            <td>Refactor &gt; Move...</td>
+        </tr>
+        <tr>
+            <td><tt>:rfc[opy]</tt></td>
+            <td>Refactor &gt; Copy...</td>
+        </tr>
+        <tr>
+            <td><tt>:rfde[lete]</tt>, <tt>:rfsa[fedelete]</tt></td>
+            <td>Refactor &gt; Safe Delete...</td>
+        </tr>
+        <tr><td></td></tr>
+        <tr>
+            <td><tt>:rfch[angemethodparameters]</tt></td>
+            <td>Refactor &gt; Change Method Parameters...</td>
+        </tr>
+        <tr>
+            <td><tt>:rfenc[apsulatefields]</tt></td>
+            <td>Refactor &gt; Encapsulate Fields...</td>
+        </tr>
+        <tr><td></td></tr>
+        <tr>
+            <td><tt>:rfup</tt>, <tt>:rfpul[lup]</tt></td>
+            <td>Refactor &gt; Pull Up...</td>
+        </tr>
+        <tr>
+            <td><tt>:rfdo[wn]</tt>, <tt>:rfpus[hdown]</tt></td>
+            <td>Refactor &gt; Push Down...</td>
+        </tr>
+        <tr><td></td></tr>
+        <tr>
+            <td><tt>:rfvar[iable]</tt></td>
+            <td>Refactor &gt; Introduce Variable...</td>
+        </tr>
+        <tr>
+            <td><tt>:rfcon[stant]</tt></td>
+            <td>Refactor &gt; Introduce Constant...</td>
+        </tr>
+        <tr>
+            <td><tt>:rffie[ld]</tt></td>
+            <td>Refactor &gt; Introduce Field...</td>
+        </tr>
+        <tr>
+            <td><tt>:rfmet[hod]</tt></td>
+            <td>Refactor &gt; Introduce Method...</td>
+        </tr>
+    </tbody>
+</table>
+
+<br/><b>These are not implemented yet</b>
+<table border="1" cellpadding="3">
+    <tbody>
+        <tr>
+            <td><tt>:run</tt></td>
+            <td>Use <tt>:make run</tt></td>
+        </tr>
+        <tr>
+            <td><tt>:deb[ug]</tt></td>
+            <td>Use <tt>:make debug</tt></td>
+        </tr>
+    </tbody>
+</table>
+
+<!--
+<dd>This command is used to show/hide stuff in the browser window.
+The visible state of the specified &lt;view-pane&gt; is toggled.
+This might
+better be done with the ":set" command but there are
+technical difficulties. So, for now at least, there is the toggle command.
+This will probably also be available from the set command in some future
+release.
+The &lt;view-pane&gt; can be any one of:
+  <ul>
+    <li><tt>cur[tain]</tt></li>
+    <li><tt>mes[sages]</tt></li>
+    <li><tt>con[tent]</tt></li>
+    <li><tt>pro[ject]</tt></li>
+    <li><tt>str[ucture]</tt></li>
+    <li><tt>sta[tusbar]</tt></li>
+    <li><tt>tab[s]</tt></li>
+  </ul>
+Note: the "<tt>tabs</tt>" view-pane is only available if the
+        <a href="http://www.users.fast.net/~jpmcgrath/cosmetics/"
+	target="_top">Cosmetics</a> open tool is loaded. It hides/shows
+	the filename tabs of the editor.
+</dd>
+-->
+
+<a name="options"/>
+<h1 class="MainSec00Font">Options</h1>
+<p>
+    <img SRC="images/jViMiscOptionsPage.png"
+         ALT="Built for NetBeans"
+         align="right" border="0"/>
+    There are several options that control jVi's behavior. They can be found
+    though NetBeans' Main Menu at
+    <i>Tools &gt; Options &gt; AdvancedOptions &gt; Editing &gt;
+    jViOptionsAndConfiguration</i>.
+    Note that there are Sub Pages that contain jVi options as well. Most of these
+    are well known vim options. If you click on an option name, a description of
+    the option is displayed. The option names can generally be used in vim to get
+    help if you want a more detailed description of what the option does.
+</p>
+<p>
+    <b><tt>:set</tt> options details.</b> The options
+    <tt>shiftwidth</tt>, <tt>expandtabs</tt> and <tt>tabstop</tt> are per file
+    options, so that any editor clones of a given file have the same value for
+    these options.
+    Different files can have different values for these options. The values
+    set through the GUI are the default values for the options, so setting the
+    values in the GUI is like putting them in a .vimrc. Any <i>modeline</i>
+    settings are applied after the GUI option values.
+    <b>Note that jVi
+        changes the NetBeans values of these options to keep NetBeans in sync
+    with the options of the file being edited.</b> The 
+    <tt>number</tt> options should be per window, but netbeans applys it to
+    all windows.
+</p>
+
+<p>NetBeans options are shared where applicable.
+For example, there is only one <i>IgnoreCase</i> flag in the system. jVi
+shares this settings with NetBeans. If you change this option in one place, it
+is changed in the other. The only other fully shared option is <i>wrapscan</i>.
+</p>
+<p>
+Autoindent and other such editor features are handled and configured through
+NetBeans.  </p>
+
+<a name="keys"/>
+<h1 class="MainSec00Font">Key Bindings</h1>
+
+<p>
+        <img SRC="images/jViKeyOptionsPage.png"
+        ALT="Built for NetBeans"
+        align="right" border="0"/>
+Keybindings that are not delivered to jVi are passed on to the next keymap in
+line. For example, jVi does not catch any key strokes that use the Alt key.
+<p>
+Configure the Keys that are caught by jVi though its
+<i>Control-Key Bindings</i> and <i>Keypad Bindings</i>
+options pages. If a key is not checked
+(disabled) then it can be used for NetBeans keybindings. For example, uncheck
+Ctrl-I and then this key brings up NetBeans' <i>Override and Implement
+Methods</i> dialog. And of course there's ^C, ^X and ^V. The Ctrl-J starts some
+pretty good NetBeans multi-key bindings.
+</p>
+<p>You may want to bind the Find dialog to a keybinding other than Ctrl-F to
+get easy access to it. At least until jVi is hooked into incremental search
+and hilight.
+
+<a name="search"/>
+<h1 class="MainSec00Font">Text Search</h1>
+<p>
+    <p>
+        There are options for controlling metacharacter escaping.
+        By default vim requires that several RE metacharacters be escaped. For example
+        '|' and '(', with the <b>RE Meta Escape</b> option you can specify which
+        characters must be escaped.
+        Check
+        <A HREF="pattern.txt" TARGET="mainFrame">Searching and Patterns</A>
+        for information on searching and a description of the options.
+        <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/regex/Pattern.html">
+        javadocs describe the pattern syntax</a>.
+    </p>
+    
+    <a name="custom"/>
+    <h1 class="MainSec00Font">Customization</h1>
+    
+    <p>
+        Here is an example for adding a simple ":" command that takes no arguments.
+        Refer to
+        <a href="jvi-javadoc/com/raelity/jvi/ColonCommands.html">ColonCommands</a>
+        and its inner clases API for more info, such as handling line number and
+        arguments as in <tt>:3,7 mycom arg arg</tt>.
+        The source of the ActionEvent is the JEditorPane from where the command
+        is executed. I haven't actully tried it, <tt>ColonCommands</tt> is in the
+        <i>jVi Core</i> module.
+    </p>
+    
+    <pre>
+<code>
+
+    import org.netbeans.modules.whatever;
+    import com.raelity.jvi.ColonCommands;
+    import org.netbeans.modules.jvi.Module;
+
+    class MyStuff {
+
+      private void registerJViCommands() {
+        ColonCommands.register("com", "command", whatever.someAction);
+	// Execute something out of the FileSystem, could be a SystemAction
+	ColonCommands.register("plat", "platform",
+	    new Module.DelelgateFileSystemAction("org-what-ever.instance"));
+      }
+    }
+</code>
+    </pre>
+
+<!-- raelity copyright -->
+<hr>
+<address><font size="-1">
+Copyright &copy; 2011 Raelity Engineering</font></address>
+<font size="-1"><a href="mailto:support@raelity.com">
+Contact Raelity Engineering</a></font>
+</body>
+</html>

@@ -1,0 +1,321 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="Ernie Rael">
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; U) [Netscape]">
+  <meta name="Description" content="status and documentation of jVi">
+  <title>jVi Home Page</title>
+  <LINK REL ="stylesheet" TYPE="text/css" HREF="stylesheet.css" TITLE="Style">
+</head>
+<body>
+
+<a name="Introduction">
+<h1 class="MainSec00Font" align="center">jVi - vi editor clone</h1>
+
+<p>
+Welcome to the jVi home page. Currently these pages have some random 
+thoughts/comments, serve as the user documentation and get you
+<br/>to
+<a href="http://sourceforge.net/projects/jvi/files/" target="_top">
+  <font size="+2"><b>DOWNLOAD jVi for NetBeans</b></font></a>
+<!--
+<a href="https://sourceforge.net/project/platformdownload.php?group_id=3653">
+<b>jVi for NetBeans download</b></a>
+-->
+ and <a href="#Download">other jVi download info</a>.
+<!--
+and pointers to the 
+<a href="jvi-doc/index.html">user documentation</a> and
+<a href="jvi-download.html"> jVi download instructions</a>.
+-->
+There is news and information about
+the different applications in which jVi is integrated. 
+</p>
+<font size="+1">
+<p>
+Note that jVi is a port of a major chunk of vim. It is not like many IDE
+keybindings where, for example, I often hear stuff like "its similar to emacs
+but not the same".
+jVi is the same, try <code>:.,$s/([^ ]*) (.*$)/\2 \1/</code>
+(you can set options so you don't need to escape '(' and other 
+metacharacters in regular expressions) or
+<code>"*2d3w</code> which deletes 6 words stashing them in the system
+clipboard or <code>y%</code> or ... And, yes, "." works.
+There is stuff missing, but if what's
+there doesn't work like vi/vim then its a bug (or a feature).
+</p>
+<p>
+And jVi has <a href="doc_notes">features not found in vim</a>.
+</p>
+</font>
+<p>
+After a 5 year hiatus from Java, there's some personal projects I want to
+<a href="http://www.netbeans.org" target="_top">
+        <img SRC="images/BuiltForNetbeans.png"
+        ALT="Built for NetBeans"
+        height="75" width="150" align="right" border="0"></a>
+work on, 3D visualization of Sacred Geometry is one of them and there may be
+some RCP. I wanted to use
+an open source IDE, not JBuilder, and that means another port of jVi. I looked
+at Eclipse, but the burden of SWT
+was more than I would bear. Looking through some NetBeans mail archives
+I was led to some work that Rich Unger did a few years ago to integrate jVi
+into NetBeans; many thanks Rich. He
+said he put it together in an evening; it was a good proof of concept, there
+was vi behavior in the editor, but it was unusable for work. But that
+starting point saved me countless hours. And now, with an editor I want to use,
+I can start learning about NetBeans and get my personal projects going.
+<p>
+Check out
+<A HREF="ReadmeNetBeans.html" TARGET="mainFrame" >jVi in NetBeans</A>
+and <a href="nbvi.issues">status, issues and bugs</a>.
+Share your opinions and comments at the
+<a href="http://sourceforge.net/forum/forum.php?forum_id=10908">
+jVi Open Discussion Forum</a>; if you use jVi, consider monitoring this Forum.
+</p>
+
+<p>jVi is available for recent JBuilder releases, thanks to the efforts of
+scribe777. There's <a href="ReadmeJBuilder.html">jVi in JBuilder</a>
+documentation, including <a href="BUGS_JBUILDER.html">known defects</a>.
+</p>
+<p>There's <a href="jvi-javadoc/index.html" target="_top">jVi javadoc</a>.
+<!--
+and <a href="nbvi-javadoc/index.html">nbVi javadoc</a> for the NetBeans
+interface.
+-->
+</p>
+
+<p>
+<!-- IF_DOCS
+<a href="http://sourceforge.net">
+<img src="images/sflogo.png"
+        width="88" height="31" border="0" alt="SourceForge Logo" align="right">
+        </a>
+-->
+<!-- 
+<a href="http://sourceforge.net">
+<img src="http://sourceforge.net/sflogo.php?group_id=3653&type=1"
+        width="88" height="31" border="0" alt="SourceForge Logo" align="right">
+        </a>
+-->
+<!-- NOT_IF_DOCS -->
+<a href="http://sourceforge.net/projects/jvi" target="_top">
+<img src="http://sflogo.sourceforge.net/sflogo.php?group_id=3653&type=14"
+  width="150" height="40" border="0" align="right"
+  alt="Get jVi - vi editor clone at SourceForge.net.
+       Fast, secure and Free Open Source software downloads" />
+</a>
+<!-- -->
+jVi is hosted on on SourceForge and makes use of only some of the 
+facilities. This includes hosting this web site, the CVS source repository,
+bug tracking and mailing lists.
+</p>
+
+<a name="Why jVi">
+<h1 class="MainSec00Font">Why jVi?</h1>
+<p> jVi is motivated by my frustration with the editors provided
+by desktop apps, from mail readers to IDE's.&nbsp; The advent of java based
+desktop apps, and the ability to extend them, makes it possible to put
+together a vi which easily integrates into multiple disparate apps. A goal,
+over time, is to make jVi fully functional with good performance. However
+i believe there will always be performance limitations with jVi and expect to
+continue using "native" editors for heavy duty tasks.
+</p>
+<p>jVi is patterned after
+<a href="http://www.vim.org">vim</a>.
+<a href="http://www.vim.org">
+        <img SRC="images/vim_moolenaar_vimlogo.gif"
+        ALT="Vim Logo" height=60 width=125 align=right border="0"></a>
+Vim is freely available charityware and running on a large number of
+platforms, including for instance amiga and mac. Check out the site for
+general vi pointers and documentation. jVi is a small subset of vim. Some
+source code in jVi is taken from vim and modified to work in the java
+environment.  The user documentation is almost exclusively from vim, only
+modified to remove things that are not applicable.
+</p>
+
+<a name="Quick Start">
+<h1 class="MainSec00Font">Quick Start</h1>
+<p>
+There is a list of all <a href="NORMAL_COMMANDS">
+normal mode commands
+</a>
+supported by vim. In this list, the over 100 commands supported by jVi
+are marked. The <code>'</code> and <code>"</code> for marks and
+named buffers work as expected;
+a <code>*</code> is a named buffer for the clipboard.
+There are a few <a href="COLON_COMMANDS">colon commands</a>
+available, try <tt>:g/foo/s/bar/baz/gp</tt>, and also see the platform
+specific documentation for additional colon commands.
+    There are several <a href="vimhelp/insert.txt">insert mode commands</a>
+supported. And jVi sports a Ctrl-&lt; and Ctrl-&gt; in insert mode
+to align with '('s on the previous line.
+</p><p>
+If you are a vi or vim user you can
+just start using jVi and be comfortable. You may occasionally see
+a "not implemented" message.
+There are a variety of options available. Check the Reference Doc
+for more information. There are also some
+<a href="doc_notes">jVi only features</a>.
+</p>
+<p>
+<b>Text search</b> commands, for example <code>"/"</code> and <code>"?"</code>,
+use the vim regular expression syntax, see
+<A HREF="pattern.txt">Searching and Patterns</A>. If you don't like escaping
+characters like <code>"("</code> and <code>"|"</code> in patterns there are
+options to change that. The java.util.regex package is used and
+<a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/regex/Pattern.html">
+javadocs describe the pattern syntax</a>.
+</p>
+<p>
+jVi is embedded; where applicable, the
+standard commands, for example "<code>:w</code>", are directed to the
+application for execution.
+There may be capabilities available
+while editing that are provided by the primary application. For example,
+when jVi is used within
+<a href="http://www.borland.com/jbuilder" target="_top"> JBuilder</a>,
+or
+<a href="http://www.netbeans.org/" target="_top">NetBeans</a>,
+code insight works while editing.
+The platform specific documentation about jVi should be consulted.
+</p><p>
+Almost all of the reference documentation is derived from the vim help files.
+A subset of the vim help files are included. They are
+modified to remove things that are not applicable. This is
+detailed information on the commands and operation.
+</p>
+
+<a name="Support">
+<h1 class="MainSec00Font">Support</h1>
+<ul>
+<li>Log defects at
+<a href="http://sourceforge.net/bugs/?group_id=3653" target="_top">
+jVi Bug Tracking</a>
+
+<li>Use the
+<a href="http://sourceforge.net/forum/forum.php?forum_id=10908">
+jVi Open Discussion Forum</a>
+
+<li>There's a very low volume
+<a href="http://lists.sourceforge.net/mailman/listinfo/jvi-announce">
+announcement mailing list</a>
+<li>Other communications can be sent to
+<a href="mailto:jvi@raelity.com">jVi</a>
+<li>At sourceforge there's the
+<a href="http://sourceforge.net/project/?group_id=3653" target="_top">
+jVi project page</a>
+</ul>
+Feedback is particularly wanted about
+<ul>
+<li>bugs and anomolous behavior
+<li>what "must have" vi and/or vim features are missing
+<li>severe performance problems
+<li>applications where jVi can be embedded
+</ul>
+
+<a name="License">
+<h1 class="MainSec00Font">License Information</h1>
+</a>
+<p>
+The source code for jVi is licensed under the
+<a href="http://www.mozilla.org/MPL/" target="_top">
+MOZILLA PUBLIC LICENSE</a>.
+</p><p>
+See
+<a href="http://www.opensource.org/">The Open Source Page</a>
+and
+<a href="http://www.opensource.org/licenses">
+Open Source Page's Approved Licenses</a> for more information on Open Source licensing.
+</p>
+
+<a name="Download">
+<h1 class="MainSec00Font">jVi Download</h1>
+
+<h1 class="MainSec01Font">
+<!--
+<a href="http://www.netbeans.org" target="_top"> NetBeans</a>
+-->
+NetBeans
+</h1>
+<p>
+jVi for NetBeans is available at sourceforge's 
+<a href="https://sourceforge.net/project/platformdownload.php?group_id=3653">
+  jVi download page</a>.
+</p><p>
+The jVi NBMs are signed.
+Here it is in human-readable format.
+</p>
+<pre>
+keytool -printcert -file jvi.cert
+Owner: OU=jVi, O=Raelity Engineering, L=Campbell, ST=California, C=US
+Issuer: OU=jVi, O=Raelity Engineering, L=Campbell, ST=California, C=US
+Serial number: 45d098d3
+Valid from: Mon Feb 12 08:41:55 PST 2007 until: Thu Aug 16 09:41:55 PDT 2012
+Certificate fingerprints:
+         MD5:  6B:A3:8E:AB:9A:FF:93:9A:33:88:E6:E3:50:37:53:3B
+         SHA1: F1:AE:A1:0F:06:58:C5:A1:73:13:26:F8:1B:D4:49:98:14:A1:37:3C
+         Signature algorithm name: SHA1withDSA
+         Version: 3
+</pre>
+
+<h1 class="MainSec01Font">
+<a href="http://www.borland.com/jbuilder" target="_top"> JBuilder</a>
+</h1>
+
+<p>
+<b>jbvi-0.7.1.jar only works with JBuilder7, use jbvi-0.6.6.jar
+for earlier versions of JBuilder.</b>
+For <b>Jbuilder 3.5</b> use jbvi-0.6.3.6.
+Download the file and extract the jar file into JB's lib/ext directory;
+for some JB releases you must manually add it to JB's classpath. 
+The jar file can be extracted from the zip file using the jar commaned,
+for example <b><tt>jar -xf jbvi-0.7.1.zip jbvi-0.7.1.jar</tt></b>.
+You may
+want to SHIFT-CLICK to download one of the following links.
+See downloaded docs for information on enabling
+full <b>regular expression</b> support if there seem to be issues.
+</p>
+<p>
+<b>Enable Vi in JBuilder.</b>
+<br>
+After installing the jar into JB's lib/ext directory, restart JBuilder.
+On JBuilder's menu line, select "Tools|IDE Options". Select the
+"Browser" tab. The "Keymap:" combo box should allow you to
+select "VI". Also there is a "VI..." tab for some options
+and there are also some vi options in the "Editor" tab.
+</p>
+<!-- IF_DOCS
+<p>
+<b>Go to the <a href="http://jvi.sourceforge.net" target="_top">web site</a>
+        for downloading</b>
+</p>
+-->
+<!-- NOT_IF_DOCS -->
+
+<p>
+<a href="http://crosswire.org/~scribe/jvi/">
+  jVi versions for JBuilder 2005, 2006</a> from a jVi user (Thanks to scribe777)
+<p/>
+
+Version 0.7.1
+<ul>
+<li>jar wrapped in zip:
+        <a href="http://prdownloads.sourceforge.net/jvi/jbvi-0.7.1.zip">
+        jbvi-0.7.1.zip</a></li>
+<li><b>for developers and integrators</b>. jVi api javadoc:
+        <a href="http://prdownloads.sourceforge.net/jvi/jvi-api-0.6.5.zip">
+        jvi-api-0.6.5.zip</a></li>
+</ul>
+
+<!-- -->
+
+<!-- raelity copyright -->
+<hr>
+<address><font size="-1">
+Copyright &copy; 2011 Raelity Engineering</font></address>
+<font size="-1"><a href="mailto:support@raelity.com">
+Contact Raelity Engineering</a></font>
+</body>
+</html>
