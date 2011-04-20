@@ -5,7 +5,10 @@ BASE=..
 UNFILTERED=$BASE/vimhelp
 
 FILTERED=$BASE/build/filtered
-OUT=$BASE/build/txt_html
+
+VIMHELP_OUT=$BASE/build/txt_html
+
+OUT=$VIMHELP_OUT
 
 # filter the documents, removing lines, before creating tags
 #
