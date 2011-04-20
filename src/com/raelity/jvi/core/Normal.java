@@ -2385,7 +2385,8 @@ middle_code:
         break;
           
       default:
-	break;
+	clearopbeep(oap);
+        break;
     }
     if(foldop != null) {
       G.curwin.foldOperation(foldop);

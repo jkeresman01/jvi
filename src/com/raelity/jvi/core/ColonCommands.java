@@ -711,7 +711,7 @@ static public class ColonEvent extends ActionEvent
 
     ColonEvent(ViTextView c)
     {
-        super(c == null ? "" : c.getEditorComponent(),
+        super(c == null ? "" : c.getEditor(),
               ActionEvent.ACTION_PERFORMED, "");
         viTextView = c;
         args = Collections.emptyList();

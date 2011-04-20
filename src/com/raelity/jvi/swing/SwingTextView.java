@@ -329,7 +329,7 @@ public class SwingTextView extends TextView
 
 
     @Override
-    public JTextComponent getEditorComponent()
+    public JTextComponent getEditor()
     {
         return editorPane;
     }
@@ -747,7 +747,7 @@ public class SwingTextView extends TextView
     @Override
     public boolean viewLineEdge(EDGE edge, ViFPOS fpos)
     {
-        JTextComponent ep = getEditorComponent();
+        JTextComponent ep = getEditor();
         fpos.verify(getBuffer());
         boolean ok = true;
         try {
@@ -838,7 +838,7 @@ public class SwingTextView extends TextView
             if(w_p_wrap)
                 return;
 
-            JTextComponent ep = getEditorComponent();
+            JTextComponent ep = getEditor();
             Dimension bound = ep.getPreferredSize();
 
             ViFPOS fpos = w_cursor.copy();
@@ -978,11 +978,11 @@ public class SwingTextView extends TextView
             try {
                 if(dir == DIR.BACKWARD) {
                     offset = Utilities.getPositionAbove(
-                            getEditorComponent(), fpos.getOffset(), x);
+                            getEditor(), fpos.getOffset(), x);
                     limit = 1;
                 } else { // DIR.FORWARD
                     offset = Utilities.getPositionBelow(
-                            getEditorComponent(), fpos.getOffset(), x);
+                            getEditor(), fpos.getOffset(), x);
                     limit = getBuffer().getLineCount();
                 }
             } catch (BadLocationException ex) {
@@ -1042,7 +1042,7 @@ public class SwingTextView extends TextView
     {
         if(!lm.isFolding())
             return colIdx;
-        JTextComponent c = getEditorComponent();
+        JTextComponent c = getEditor();
         int col = 0;
         {
             try {
@@ -1268,7 +1268,7 @@ public class SwingTextView extends TextView
     }
     private Rectangle2D getMaxCharBounds() {
         Rectangle2D r = new Rectangle2D.Double(0, 0, 8, 15); // arbitrary
-        Graphics g = getEditorComponent().getGraphics();
+        Graphics g = getEditor().getGraphics();
         try {
             FontMetrics fm = g.getFontMetrics();
             //r = fm.getMaxCharBounds(g);
@@ -1536,7 +1536,7 @@ public class SwingTextView extends TextView
     public Rectangle2D modelToView(int offset) throws BadLocationException
     {
         Shape s = modelToView(
-                getEditorComponent(), offset, Position.Bias.Forward);
+                getEditor(), offset, Position.Bias.Forward);
         Rectangle2D r = s.getBounds2D();
         // (0,3,300,300).contains(3,3,0,17) because of the 0 width (jdk1.5 at least)
         // so... make sure there is some width
@@ -1582,7 +1582,7 @@ public class SwingTextView extends TextView
     static Position.Bias[] biasReturnBitBucket = new Position.Bias[1];
     public int viewToModel(Point2D pt)
     {
-        return viewToModel(getEditorComponent(), pt, biasReturnBitBucket);
+        return viewToModel(getEditor(), pt, biasReturnBitBucket);
     }
     public static int viewToModel(JTextComponent jtc, Point2D pt)
     {

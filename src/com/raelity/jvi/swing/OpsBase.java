@@ -58,7 +58,7 @@ public class OpsBase implements TextOps {
     }
 
     public void xact(Action action) {
-        event.setSource(textView.getEditorComponent());
+        event.setSource(textView.getEditor());
 	action.actionPerformed(event);
     }
 

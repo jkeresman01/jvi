@@ -621,13 +621,13 @@ public class CommandLine extends JPanel
             lastCommand = "";
             if(passThru) {
                 lastCommand = initialText;
-                fireEvent(new ActionEvent(tv.getEditorComponent(),
+                fireEvent(new ActionEvent(tv.getEditor(),
                         ActionEvent.ACTION_PERFORMED,
                         "\n"));
                 commandLine.makeTop(initialText);
                 return;
             }
-            Font f = tv.getEditorComponent().getFont();
+            Font f = tv.getEditor().getFont();
             commandLine.setupFont(f);
             commandLine.setMode(mode);
             commandLine.init(initialText);
@@ -659,7 +659,7 @@ public class CommandLine extends JPanel
         public void append( char c )
         {
             if (c == '\n') {
-                fireEvent(new ActionEvent(tv.getEditorComponent(),
+                fireEvent(new ActionEvent(tv.getEditor(),
                         ActionEvent.ACTION_PERFORMED,
                         "\n"));
             } else
@@ -674,7 +674,7 @@ public class CommandLine extends JPanel
                     .removeFocusListener(focusSetSelection);
             prepareShutdown();
 
-            tv.getEditorComponent().requestFocus();
+            tv.getEditor().requestFocus();
             tv = null;
         }
 
@@ -692,9 +692,9 @@ public class CommandLine extends JPanel
         {
             Container jc = SwingUtilities.getAncestorOfClass(
                     javax.swing.JScrollPane.class,
-                    tv.getEditorComponent());
+                    tv.getEditor());
             if(jc == null) {
-                jc = (JTextComponent)tv.getEditorComponent();
+                jc = (JTextComponent)tv.getEditor();
             }
 
             Dimension d00 = entry.getPreferredSize();

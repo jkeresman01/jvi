@@ -42,8 +42,8 @@ public class PlayTextView extends SimpleTextView
     public void viOptionSet(ViTextView tv, String name) {
         super.viOptionSet(tv, name);
         if("w_p_wrap".equals(name)) {
-            JviFrame frame = Jvi.mapJepFrame.get(getEditorComponent());
-            getEditorComponent().lineWrap = w_p_wrap;
+            JviFrame frame = Jvi.mapJepFrame.get(getEditor());
+            getEditor().lineWrap = w_p_wrap;
             frame.scrollPane.setHorizontalScrollBarPolicy(
                     w_p_wrap ? JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
                              : JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -53,9 +53,9 @@ public class PlayTextView extends SimpleTextView
     }
 
     @Override
-    public PlayEditorPane getEditorComponent()
+    public PlayEditorPane getEditor()
     {
-        return (PlayEditorPane)super.getEditorComponent();
+        return (PlayEditorPane)super.getEditor();
     }
 
 }

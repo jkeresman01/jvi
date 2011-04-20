@@ -420,7 +420,7 @@ public class ViManager
         for (ViTextView tv02 : tvSet) {
             if(tv == tv02)
                 continue;
-            Component ed = tv02.getEditorComponent();
+            Component ed = tv02.getEditor();
             if(ed != null) {
                 if(tv02.getBuffer() == buf) {
                     tv01 = tv02;

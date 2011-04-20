@@ -86,7 +86,7 @@ public interface ViTextView extends ViOptionBag {
   public Buffer getBuffer();
 
   /** @return the underlying text component */
-  public Component getEditorComponent();
+  public Component getEditor();
 
   //////////////////////////////////////////////////////////////////////
   //

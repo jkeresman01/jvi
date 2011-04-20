@@ -54,7 +54,7 @@ public class WindowCmdEntry extends CommandLine.CommandLineEntry {
      */
     @Override
     public void finishActivate() {
-        Window root = SwingUtilities.getWindowAncestor(tv.getEditorComponent());
+        Window root = SwingUtilities.getWindowAncestor(tv.getEditor());
         if(commandLineWindow == null || commandLineWindow.getOwner() != root) {
             if(commandLineWindow != null) {
                 commandLineWindow.remove(commandLine);

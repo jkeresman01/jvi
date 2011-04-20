@@ -55,7 +55,7 @@ abstract public class SwingBuffer extends Buffer
 
     public SwingBuffer(ViTextView tv) {
         super(tv);
-        doc = ((JTextComponent)tv.getEditorComponent()).getDocument();
+        doc = ((JTextComponent)tv.getEditor()).getDocument();
         startDocumentEvents();
     }
 

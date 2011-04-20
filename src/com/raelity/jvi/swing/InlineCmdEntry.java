@@ -92,7 +92,7 @@ public class InlineCmdEntry extends CommandLine.CommandLineEntry {
     
     final JRootPane getRootPane(){
         if(tv!=null)
-            return SwingUtilities.getRootPane(tv.getEditorComponent());
+            return SwingUtilities.getRootPane(tv.getEditor());
         else
             return null;
     }
