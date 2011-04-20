@@ -46,6 +46,26 @@ For inserting text see |insert.txt|.
 ["x]D			Delete the characters under the cursor until the end
 			of the line and [count]-1 more lines [into register
 			x]; synonym for d$ (not linewise).
+
+{Visual}["x]x	or					*v_x* *v_d* *v_<Del>*
+{Visual}["x]d   or
+{Visual}["x]<Del>	Delete the highlighted text [into register x] (for
+			{Visual} see |Visual-mode|).  {not in Vi}
+
+{Visual}["x]X	or					*v_X* *v_D* *v_b_D*
+{Visual}["x]D		Delete the highlighted lines [into register x] (for
+			{Visual} see |Visual-mode|).  In Visual block mode,
+			"D" deletes the highlighted text plus all text until
+			the end of the line.  {not in Vi}
+
+						*:d* *:de* *:del* *:delete*
+:[range]d[elete] [x]	Delete [range] lines (default: current line) [into
+			register x].
+
+:[range]d[elete] [x] {count}
+			Delete {count} lines, starting with [range]
+			(default: current line |cmdline-ranges|) [into
+			register x].
 #*#table:stop-table #*#
 
 These commands delete text.  You can repeat them with the "." command
@@ -66,6 +86,20 @@ is an error when 'cpoptions' includes the 'E' flag.
 J			Join [count] lines, with a minimum of two lines.
 			Remove the indent and insert up to two spaces (see
 			below).
+
+							*v_J*
+{Visual}J		Join the highlighted lines, with a minimum of two
+			lines.  Remove the indent and insert up to two spaces
+			(see below).  {not in Vi}
+
+							*gJ*
+gJ			Join [count] lines, with a minimum of two lines.
+			Don't insert or remove any spaces.  {not in Vi}
+
+							*v_gJ*
+{Visual}gJ		Join the highlighted lines, with a minimum of two
+			lines.  Don't insert or remove any spaces.  {not in
+			Vi}
 #*#table:stop-table #*#
 
 These commands delete the <EOL> between lines.  This has the effect of joining
@@ -118,6 +152,26 @@ R			Enter Replace mode: Each character you type replaces
 							*S*
 ["x]S			Delete [count] lines [into register x] and start
 			insert.  Synonym for "cc" (linewise).
+
+{Visual}["x]c	or					*v_c* *v_s*
+{Visual}["x]s		Delete the highlighted text [into register x] and
+			start insert (for {Visual} see |Visual-mode|).  {not
+			in Vi}
+
+							*v_r*
+{Visual}["x]r{char}	Replace all selected characters by {char}.
+
+							*v_C*
+{Visual}["x]C		Delete the highlighted lines [into register x] and
+			start insert.  In Visual block mode it works
+			differently |v_b_C|.  {not in Vi}
+							*v_S*
+{Visual}["x]S		Delete the highlighted lines [into register x] and
+			start insert (for {Visual} see |Visual-mode|).  {not
+			in Vi}
+							*v_R*
+{Visual}["x]R		Currently just like {Visual}["x]S.  In a next version
+			it might work differently. {not in Vi}
 #*#table:stop-table #*#
 
 Notes:
@@ -144,10 +198,14 @@ word does not include the following white space.  {Vi: "cw" when on a blank
 followed by other blanks changes only the first blank; this is probably a
 bug, because "dw" deletes all the blanks}
 
+If you prefer "cw" to include the space after a word, use this mapping: >
+	:map cw dwi
+Or use "caw" (see |aw|).
+
 ==============================================================================
 3. Simple changes					*simple-change*
 
-#*# table:form=ref:lable=simple-change 1:command 10:extra-or 25:desc #*#
+#*# table:form=ref:label=simple-change 1:command 10:extra-or 25:desc #*#
 							*r*
 r{char}			Replace the character under the cursor with {char}.
 			If {char} is a <CR> or <NL>, a line break replaces the
@@ -165,14 +223,10 @@ r{char}			Replace the character under the cursor with {char}.
 #*#table:stop-table #*#
 
 
-						*case* *locale* *$LANG*
-The following commands change the case of letters.  The currently active
-locale is used.  This depends on your system  On Unix, setting the $LANG
-environment variable can make a difference.  For example, to enable changing
-the case of letters with umlauts:
->	setenv LANG de
+						*case*
+The following commands change the case of letters.
 
-#*# table:form=ref 1:command 10:extra-or 25:desc #*#
+#*# table:form=ref:label=case 1:command 10:extra-or 25:desc #*#
 							*~*
 ~			'notildeop' option: Switch case of the character
 			under the cursor and move the cursor to the right.
@@ -181,7 +235,93 @@ the case of letters with umlauts:
 							*~{motion}*
 ~{motion}		'tildeop' option: switch case of {motion} text.
 			{Vi: tilde cannot be used as an operator}
+
+							*g~*
+g~{motion}		Switch case of {motion} text. {not in Vi}
+
+g~g~							*g~g~* *g~~*
+g~~			Switch case of current line. {not in Vi}.
+
+							*v_~*
+{Visual}~		Switch case of highlighted text (for {Visual} see
+			|Visual-mode|). {not in Vi}
+
+							*v_U*
+{Visual}U		Make highlighted text uppercase (for {Visual} see
+			|Visual-mode|). {not in Vi}
+
+							*gU* *uppercase*
+gU{motion}		Make {motion} text uppercase. {not in Vi}
+			Example: >
+				:map! <C-F> <Esc>gUiw`]a
+<			This works in Insert mode: press CTRL-F to make the
+			word before the cursor uppercase.  Handy to type
+			words in lowercase and then make them uppercase.
+
+
+gUgU							*gUgU* *gUU*
+gUU			Make current line uppercase. {not in Vi}.
+
+							*v_u*
+{Visual}u		Make highlighted text lowercase (for {Visual} see
+			|Visual-mode|).  {not in Vi}
+
+							*gu* *lowercase*
+gu{motion}		Make {motion} text lowercase. {not in Vi}
+
+gugu							*gugu* *guu*
+guu			Make current line lowercase. {not in Vi}.
 #*#table:stop-table #*#
+
+
+Adding and subtracting ~
+#*# table:form=ref 1:command 10:extra-or 25:desc #*#
+							*CTRL-A*
+CTRL-A			Add [count] to the number or alphabetic character at
+			or after the cursor.  {not in Vi}
+
+							*CTRL-X*
+CTRL-X			Subtract [count] from the number or alphabetic
+			character at or after the cursor.  {not in Vi}
+#*#table:stop-table #*#
+
+The CTRL-A and CTRL-X commands work for (signed) decimal numbers, unsigned
+octal and hexadecimal numbers and alphabetic characters.  This depends on the
+'nrformats' option.
+- When 'nrformats' includes "octal", Vim considers numbers starting with a '0'
+  to be octal, unless the number includes a '8' or '9'.  Other numbers are
+  decimal and may have a preceding minus sign.
+  If the cursor is on a number, the commands apply to that number; otherwise
+  Vim uses the number to the right of the cursor.
+- When 'nrformats' includes "hex", Vim assumes numbers starting with '0x' or
+  '0X' are hexadecimal.  The case of the rightmost letter in the number
+  determines the case of the resulting hexadecimal number.  If there is no
+  letter in the current number, Vim uses the previously detected case.
+- When 'nrformats' includes "alpha", Vim will change the alphabetic character
+  under or after the cursor.  This is useful to make lists with an alphabetic
+  index.
+
+For numbers with leading zeros (including all octal and hexadecimal numbers),
+Vim preserves the number of characters in the number when possible.  CTRL-A on
+"0077" results in "0100", CTRL-X on "0x100" results in "0x0ff".
+There is one exception: When a number that starts with a zero is found not to
+be octal (it contains a '8' or '9'), but 'nrformats' does include "octal",
+leading zeros are removed to avoid that the result may be recognized as an
+octal number.
+
+Note that when 'nrformats' includes "octal", decimal numbers with leading
+zeros cause mistakes, because they can be confused with octal numbers.
+
+The CTRL-A command is very useful in a macro.  Example: Use the following
+steps to make a numbered list.
+
+1. Create the first list entry, make sure it starts with a number.
+2. qa	     - start recording into register 'a'
+3. Y	     - yank the entry
+4. p	     - put a copy of the entry below the first one
+5. CTRL-A    - increment the number
+6. q	     - stop recording
+7. <count>@a - repeat the yank, put and increment <count> times
 
 
 SHIFTING LINES LEFT OR RIGHT				*shift-left-right*
@@ -192,6 +332,11 @@ SHIFTING LINES LEFT OR RIGHT				*shift-left-right*
 
 							*<<*
 <<			Shift [count] lines one 'shiftwidth' leftwards.
+
+							*v_<*
+{Visual}[count]<	Shift the highlighted lines [count] 'shiftwidth'
+			leftwards (for {Visual} see |Visual-mode|).  {not in
+			Vi}
 
 							*>*
  >{motion}		Shift {motion} lines one 'shiftwidth' rightwards.
@@ -212,9 +357,11 @@ SHIFTING LINES LEFT OR RIGHT				*shift-left-right*
 			with [range] (default current line |cmdline-ranges|).
 			Repeat '<' for shifting multiple 'shiftwidth's.
 
+START-DOC-DEL
 :[range]le[ft] [indent]	left align lines in [range].  Sets the indent in the
 			lines to [indent] (default 0).  {not in Vi}
 
+STOP-DOC-DEL
 							*:>*
 :[range]> [flags]	Shift {count} [range] lines one 'shiftwidth' right.
 			Repeat '>' for shifting multiple 'shiftwidth's.
@@ -385,6 +532,22 @@ magic		  action    ~
 			or put (use uppercase character to append with
 			delete and yank) ({.%#:} only work with put).
 
+							*:reg* *:registers*
+:reg[isters]		Display the contents of all numbered and named
+			registers.  If a register is written to for |:redir|
+			it will not be listed.
+			{not in Vi}
+
+
+:reg[isters] {arg}	Display the contents of the numbered and named
+			registers that are mentioned in {arg}.  For example:
+				:dis 1a
+ 			to display registers '1' and 'a'.  Spaces are allowed
+			in {arg}.  {not in Vi}
+
+							*:di* *:display*
+:di[splay] [arg]	Same as :registers.  {not in Vi}
+
 							*y* *yank*
 ["x]y{motion}		Yank {motion} text [into register x].  When no
 			characters are to be yanked (e.g., "y0" in column 1),
@@ -400,6 +563,22 @@ magic		  action    ~
 			cursor to the end of line (which is more logical,
 			but not Vi-compatible) use ":map Y y$".
 
+							*v_y*
+{Visual}["x]y		Yank the highlighted text [into register x] (for
+			{Visual} see |Visual-mode|).  {not in Vi}
+
+							*v_Y*
+{Visual}["x]Y		Yank the highlighted lines [into register x] (for
+			{Visual} see |Visual-mode|).  {not in Vi}
+
+							*:y* *:yank*
+:[range]y[ank] [x]	Yank [range] lines [into register x].
+
+:[range]y[ank] [x] {count}
+			Yank {count} lines, starting with last line number
+			in [range] (default: current line |cmdline-ranges|),
+			[into register x].
+
 							*p* *put*
 ["x]p			Put the text [from register x] after the cursor
 			[count] times.  {Vi: no count}
@@ -408,6 +587,35 @@ magic		  action    ~
 ["x]<MiddleMouse>	Put the text [from register x] before the cursor
 			[count] times.  Using the mouse only works when
 			'mouse' contains 'n' or 'a'.  {Vi: no count}
+
+							*gp*
+["x]gp			Just like "p", but leave the cursor just after the new
+			text.  {not in Vi}
+
+							*gP*
+["x]gP			Just like "P", but leave the cursor just after the new
+			text.  {not in Vi}
+START-DOC-DEL
+
+							*:pu* *:put*
+:[line]pu[t] [x]	Put the text [from register x] after [line] (default
+			current line).  This always works |linewise|, thus
+			this command can be used to put a yanked block as new
+			lines.
+			The cursor is left on the first non-blank in the last
+			new line.
+			The register can also be '=' followed by an optional
+			expression.  The expression continues until the end of
+			the command.  You need to escape the '|' and '"'
+			characters to prevent them from terminating the
+			command.  Example:
+				:put ='path' . \",/test\"
+ 			If there is no expression after '=', Vim uses the
+			previous expression.  You can see it with ":dis =".
+
+:[line]pu[t]! [x]	Put the text [from register x] before [line] (default
+			current line).
+STOP-DOC-DEL
 #*#table:stop-table #*#
 
 You can use these commands to copy text from one place to another.  Do this
@@ -489,4 +697,19 @@ you are confused, use the ":dis" command to find out what Vim will put (this
 command displays all named and numbered registers; the unnamed register is
 labelled '"').
 
- vim:tw=78:ts=8:sw=8: 
+The next three commands always work on whole lines.
+
+#*# table:form=ref 1:command 10:extra-or 25:desc #*#
+:[range]co[py] {address}				*:co* *:copy*
+			Copy the lines given by [range] to below the line
+			given by {address}.
+
+							*:t*
+:t			Synonym for copy.
+
+:[range]m[ove] {address}			*:m* *:mo* *:move* *E134*
+			Move the lines given by [range] to below the line
+			given by {address}.
+#*#table:stop-table #*#
+
+ vim:tw=78:ts=8:sw=8 noet:
