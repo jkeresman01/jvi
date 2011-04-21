@@ -1,11 +1,6 @@
 #!/usr/bin/bash
 
-BASE=..
-
-HTDOCS=$BASE/htdocs
-
-VIMHELP_OUT=$BASE/build/txt_html
-HTDOCS_OUT=$BASE/build/htdocs
+. VARS.sh
 
 
 OUT=$HTDOCS_OUT

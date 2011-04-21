@@ -1,10 +1,8 @@
 #!/usr/bin/bash
 
-BASE=..
+. VARS.sh
 
-UNFILTERED=$BASE/vimhelp
 
-FILTERED=$BASE/build/filtered
 OUT=$BASE/build/xml
 
 # filter the documents, removing lines, before creating tags

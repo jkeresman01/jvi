@@ -1,18 +1,13 @@
 #!/usr/bin/bash
 
-BASE=..
+. VARS.sh
 
-UNFILTERED=$BASE/vimhelp
-
-FILTERED=$BASE/build/filtered
-
-VIMHELP_OUT=$BASE/build/txt_html
 
 OUT=$VIMHELP_OUT
 
 # filter the documents, removing lines, before creating tags
 #
-./filter.sh $UNFILTERED $FILTERED
+$SCRIPTS/filter.sh $UNFILTERED $FILTERED
 
 # vim -e -s << EOT
 #     helptags $(cygpath -a -m ../vimhelp/)
@@ -25,4 +20,4 @@ mkdir -p $OUT
 mv $FILTERED/tags $OUT/tags
 
 python jvi.py $FILTERED $OUT
-cp $BASE/css/*.css $OUT
+cp $VIM_CSS/*.css $OUT

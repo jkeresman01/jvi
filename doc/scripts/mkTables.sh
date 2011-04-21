@@ -1,8 +1,9 @@
 #!/usr/bin/bash
 
-# in IN_XML files are like foo.txt.xml
+. VARS.sh
 
-BASE=..
+
+# in IN_XML files are like foo.txt.xml
 
 IN_XML=$BASE/build/xml
 OUT_XML=$BASE/build/tables/xml
@@ -20,4 +21,4 @@ do
     xslt $f $XSL $HTML/$bn.html
 done
 
-cp $BASE/css/*.css $HTML
+cp $VIM_CSS/*.css $HTML
