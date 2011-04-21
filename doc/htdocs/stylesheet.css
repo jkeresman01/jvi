@@ -2,7 +2,10 @@
 /* Define colors, fonts and other style attributes here to override the defaults
  */
 
-tt { font-size: 130% }
+.tt { font-size: 120%;
+    font-family: 'Courier New',Courier,monospace;
+    white-space: nowrap;
+}
 
 /* Page background color */
 
@@ -20,7 +23,7 @@ A.critical:visited {color: red; }
 A.note:link { background-color: yellow; color: black; }
 A.note:visited { background-color: yellow; color: black; }
 A.note:active { background-color: yellow; color: black; }
-A.note:hover { background-color: #F0E0C0; color: black; }
+A.note:hover { background-color: white; color: black; }
 /*
 A.note:active {color: green; font-weight: bold}
 A.note:visited {color: green; font-weight: bold}

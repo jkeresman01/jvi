@@ -1,12 +1,12 @@
 <!doctype html public "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-  <meta name="Author" content="Ernie Rael">
-  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; U) [Netscape]">
-  <meta name="Description" content="status and documentation of jVi">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+  <meta name="Author" content="Ernie Rael"/>
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; U) [Netscape]"/>
+  <meta name="Description" content="status and documentation of jVi"/>
   <title>jVi Home Page</title>
-  <LINK REL ="stylesheet" TYPE="text/css" HREF="stylesheet.css" TITLE="Style">
+  <LINK REL ="stylesheet" TYPE="text/css" HREF="stylesheet.css" TITLE="Style"/>
 </head>
 <body>
 
@@ -22,23 +22,22 @@ and <a href="#Download">jVi for JBuilder download info</a>.
 There is news and information about
 the different applications in which jVi is integrated. 
 </p>
-<font size="+1">
-<p>
+<p style="font-size: larger">
 Note that jVi is a port of a major chunk of vim. It is not like many IDE
 keybindings where, for example, I often hear stuff like "its similar to emacs
 but not the same".
-jVi is the same, try <code>:.,$s/([^ ]*) (.*$)/\2 \1/</code>
+jVi is the same, try visual mode or map commands or
+<span class="tt">:.,$s/([^ ]*) (.*$)/\2 \1/</span>
 (you can set options so you don't need to escape '(' and other 
 metacharacters in regular expressions) or
-<code>"*2d3w</code> which deletes 6 words stashing them in the system
-clipboard or <code>y%</code> or ... And, yes, "." works.
+<span class="tt">"*2d3w</span> which deletes 6 words stashing them in the system
+clipboard or <span class="tt">y%</span> or ... And, yes, "." works.
 There is stuff missing, but if what's
 there doesn't work like vi/vim then its a bug (or a feature).
 </p>
 <p>
 And jVi has <a href="doc_notes">features not found in vim</a>.
 </p>
-</font>
 <p>
 After a 5 year hiatus from Java, there's some personal projects I want to
 <a href="http://www.netbeans.org" target="_top">
@@ -59,7 +58,8 @@ I can start learning about NetBeans and get my personal projects going.
 <p>
 Check out
 <A HREF="ReadmeNetBeans.html" TARGET="mainFrame" >jVi in NetBeans</A>
-and <a href="nbvi.issues">status, issues and bugs</a>.
+and <a href="https://sourceforge.net/tracker/?group_id=3653">
+    bugs and feature requests</a>.
 Share your opinions and comments at the
 <a href="http://sourceforge.net/forum/forum.php?forum_id=10908">
 jVi Open Discussion Forum</a>; if you use jVi, consider monitoring this Forum.
@@ -77,26 +77,12 @@ interface.
 </p>
 
 <p>
-<!-- IF_DOCS
-<a href="http://sourceforge.net">
-<img src="images/sflogo.png"
-        width="88" height="31" border="0" alt="SourceForge Logo" align="right">
-        </a>
--->
-<!-- 
-<a href="http://sourceforge.net">
-<img src="http://sourceforge.net/sflogo.php?group_id=3653&type=1"
-        width="88" height="31" border="0" alt="SourceForge Logo" align="right">
-        </a>
--->
-<!-- NOT_IF_DOCS -->
 <a href="http://sourceforge.net/projects/jvi" target="_top">
 <img src="http://sflogo.sourceforge.net/sflogo.php?group_id=3653&type=14"
   width="150" height="40" border="0" align="right"
   alt="Get jVi - vi editor clone at SourceForge.net.
        Fast, secure and Free Open Source software downloads" />
 </a>
-<!-- -->
 jVi is hosted on on SourceForge and makes use of only some of the 
 facilities. This includes hosting this web site, the CVS source repository,
 bug tracking and mailing lists.
@@ -127,17 +113,17 @@ modified to remove things that are not applicable.
 
 <h1 id="Quick_Start" class="MainSec00Font">Quick Start</h1>
 <p>
-There is a list of all <a href="NORMAL_COMMANDS">
-normal mode commands
+There is a list of all (most?) <a href="vimhelp/index.txt.html">
+normal and visual mode commands
 </a>
 supported by vim. In this list, the over 100 commands supported by jVi
-are marked. The <code>'</code> and <code>"</code> for marks and
+are marked. The <span class="tt">'</span> and <span class="tt">"</span> for marks and
 named buffers work as expected;
-a <code>*</code> is a named buffer for the clipboard.
-There are a few <a href="COLON_COMMANDS">colon commands</a>
-available, try <tt>:g/foo/s/bar/baz/gp</tt>, and also see the platform
+a <span class="tt">*</span> is a named buffer for the clipboard.
+There are a few colon commands
+available, try <span class="tt">:g/foo/s/bar/baz/gp</span>, and also see the platform
 specific documentation for additional colon commands.
-    There are several <a href="vimhelp/insert.txt">insert mode commands</a>
+    There are several <a href="vimhelp/insert.txt.html">insert mode commands</a>
 supported. And jVi sports a Ctrl-&lt; and Ctrl-&gt; in insert mode
 to align with '('s on the previous line.
 </p><p>
@@ -149,17 +135,17 @@ for more information. There are also some
 <a href="doc_notes">jVi only features</a>.
 </p>
 <p>
-<b>Text search</b> commands, for example <code>"/"</code> and <code>"?"</code>,
+<b>Text search</b> commands, for example <span class="tt">"/"</span> and <span class="tt">"?"</span>,
 use the vim regular expression syntax, see
 <A HREF="pattern.txt">Searching and Patterns</A>. If you don't like escaping
-characters like <code>"("</code> and <code>"|"</code> in patterns there are
+characters like <span class="tt">"("</span> and <span class="tt">"|"</span> in patterns there are
 options to change that. The java.util.regex package is used and
 <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/regex/Pattern.html">
 javadocs describe the pattern syntax</a>.
 </p>
 <p>
 jVi is embedded; where applicable, the
-standard commands, for example "<code>:w</code>", are directed to the
+standard commands, for example "<span class="tt">:w</span>", are directed to the
 application for execution.
 There may be capabilities available
 while editing that are provided by the primary application. For example,
@@ -176,25 +162,29 @@ modified to remove things that are not applicable. This is
 detailed information on the commands and operation.
 </p>
 
-<a name="Support">
-<h1 class="MainSec00Font">Support</h1>
+<h1 id="Support" class="MainSec00Font">Support</h1>
 <ul>
-<li>Log defects at
+    <!--
 <a href="http://sourceforge.net/bugs/?group_id=3653" target="_top">
-jVi Bug Tracking</a>
-
+Log defects</a>
+    -->
+<li>
+<a href="https://sourceforge.net/tracker/?func=add&amp;group_id=3653&amp;atid=103653"
+   target="_top">Report a bug</a></li>
+<li>
+<a href="https://sourceforge.net/tracker/?func=add&amp;group_id=3653&amp;atid=353653"
+   target="_top">Make a feature request</a></li>
 <li>Use the
-<a href="http://sourceforge.net/forum/forum.php?forum_id=10908">
-jVi Open Discussion Forum</a>
-
+<a href="http://sourceforge.net/forum/forum.php?forum_id=10908" target="_top">
+jVi Open Discussion Forum</a></li>
 <li>There's a very low volume
-<a href="http://lists.sourceforge.net/mailman/listinfo/jvi-announce">
-announcement mailing list</a>
+<a href="http://lists.sourceforge.net/mailman/listinfo/jvi-announce" target="_top">
+announcement mailing list</a></li>
 <li>Other communications can be sent to
-<a href="mailto:jvi@raelity.com">jVi</a>
+<a href="mailto:jvi@raelity.com">jVi</a></li>
 <li>At sourceforge there's the
 <a href="http://sourceforge.net/project/?group_id=3653" target="_top">
-jVi project page</a>
+jVi project page</a></li>
 </ul>
 Feedback is particularly wanted about
 <ul>
@@ -204,9 +194,7 @@ Feedback is particularly wanted about
 <li>applications where jVi can be embedded
 </ul>
 
-<a name="License">
-<h1 class="MainSec00Font">License Information</h1>
-</a>
+<h1 id="License" class="MainSec00Font">License Information</h1>
 <p>
 The source code for jVi is licensed under the
 <a href="http://www.mozilla.org/MPL/">
@@ -229,18 +217,11 @@ On JBuilder's menu line, select "Tools|IDE Options". Select the
 select "VI". Also there is a "VI..." tab for some options
 and there are also some vi options in the "Editor" tab.
 </p>
-<!-- IF_DOCS
-<p>
-<b>Go to the <a href="http://jvi.sourceforge.net" target="_top">web site</a>
-        for downloading</b>
-</p>
--->
-<!-- NOT_IF_DOCS -->
 
 <p>
 <a href="http://crosswire.org/~scribe/jvi/">
   jVi versions for JBuilder 2005, 2006</a> from a jVi user (Thanks to scribe777)
-<p/>
+</p>
 
 Version 0.7.1
 <ul>
@@ -252,13 +233,11 @@ Version 0.7.1
         jvi-api-0.6.5.zip</a></li>
 </ul>
 
-<!-- -->
-
 <!-- raelity copyright -->
-<hr>
-<address><font size="-1">
-Copyright &copy; 2011 Raelity Engineering</font></address>
-<font size="-1"><a href="mailto:support@raelity.com">
-Contact Raelity Engineering</a></font>
+<hr/>
+<address style="font-size: smaller">
+Copyright &copy; 2011 Raelity Engineering</address>
+<a href="mailto:support@raelity.com" style="font-size: smaller">
+Contact Raelity Engineering</a>
 </body>
 </html>
