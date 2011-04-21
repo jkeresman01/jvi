@@ -117,6 +117,10 @@ public class Misc implements ClipboardOwner {
                 } else if(pname.equals(ViManager.P_LATE_INIT)) {
                     javaKeyMap = initJavaKeyMap();
                 } else if(pname.equals(ViManager.P_SHUTDOWN)) {
+                    registersImportCheck.stopAll();
+                    searchImportCheck.stopAll();
+                    commandsImportCheck.stopAll();
+
                     if(!registersImportCheck.isChange()) {
                         write_viminfo_registers();
                     } else {

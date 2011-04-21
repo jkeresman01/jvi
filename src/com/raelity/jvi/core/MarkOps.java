@@ -119,13 +119,16 @@ class MarkOps
                         }
                     } else {
                         System.err.println("jVi marks imported (buffer)");
-                        LOG.info("jVi marks imported (buffer)");
+                        LOG.info("jVi marks imported (buffer close)");
                     }
                 } else if(pname.equals(ViManager.P_BOOT)) {
                     BufferMarksPersist.read_viminfo();
                     read_viminfo_filemarks();
                     startImportCheck();
                 } else if(pname.equals(ViManager.P_SHUTDOWN)) {
+                    filemarksImportCheck.stopAll();
+                    marksImportCheck.stopAll();
+
                     if(!filemarksImportCheck.isChange()) {
                         write_viminfo_filemarks();
                     } else {

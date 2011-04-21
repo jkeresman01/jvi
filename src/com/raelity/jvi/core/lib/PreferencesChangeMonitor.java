@@ -22,7 +22,9 @@ package com.raelity.jvi.core.lib;
 import com.raelity.jvi.manager.ViManager;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -33,7 +35,8 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 /**
- * Monitor a preferences subtree for creation and/or changes.
+ * Monitor preferences subtrees for creation and/or changes.
+ * startMonitoring can be called multiple times to monitor several trees.
  * <p/>
  * Set variable DUMP to true for System.err output.
  * <p/>
@@ -50,8 +53,9 @@ public final class PreferencesChangeMonitor {
     private PreferenceChangeListener prefListener;
     private NodeChangeListener nodeListener;
     private Map<String, ParentListener> parentListeners;
+    private Set<ParentChild> parentChilds = new HashSet<ParentChild>();
 
-    private static boolean DUMP = false;
+    private static boolean DUMP = true;
 
     private static final boolean ENABLE_HACK = true;
     private boolean hack;
@@ -76,7 +80,9 @@ public final class PreferencesChangeMonitor {
     }
 
     /**
-     * Preferences may be null, in which case startMonitoring should be used.
+     * Preferences and child may both be null,
+     * in which case startMonitoring should be used.
+     * Calls startMonitoring if parent/child != null.
      */
     public static PreferencesChangeMonitor getMonitor(Preferences parent,
                                                       String child)
@@ -99,6 +105,14 @@ public final class PreferencesChangeMonitor {
         else if(child != null)
             throw new IllegalArgumentException("parent == null, child != null");
         return checker;
+    }
+
+    /** stop monitoring all parent-child sets */
+    public void stopAll()
+    {
+        for(ParentChild pc : parentChilds) {
+            stopMonitoring(pc.parent, pc.child);
+        }
     }
 
     public boolean isChange()
@@ -149,8 +163,20 @@ public final class PreferencesChangeMonitor {
             }
     }
 
+    /**
+     * Start monitor the parent-child.
+     * @param parent parent to monitor for the child
+     * @param child  child subtree to monitor
+     * @throws IllegalStateException if parent-child already monitored by this
+     */
     public void startMonitoring(Preferences parent, String child)
     {
+        ParentChild pc = new ParentChild(parent, child);
+        if(!parentChilds.add(pc)) {
+            throw new IllegalStateException(
+                    "parent-child duplicate: " + parent + ":" + child);
+        }
+
         parentCheck(false, parent, child);
         try {
             if(parent.nodeExists(child)) {
@@ -162,9 +188,16 @@ public final class PreferencesChangeMonitor {
 
     public void stopMonitoring(Preferences parent, String child)
     {
-        parent = null; parent.toString();
-        // parentCheck(true, prefs);
-        // recursiveCheck(true, prefs);
+        ParentChild pc = new ParentChild(parent, child);
+        parentChilds.remove(pc);
+
+        parentCheck(true, parent, child);
+        try {
+            if(parent.nodeExists(child)) {
+                recursiveCheck(true, parent.node(child));
+            }
+        } catch(BackingStoreException ex) {
+        }
     }
 
     private void parentCheck(boolean remove,
@@ -175,8 +208,10 @@ public final class PreferencesChangeMonitor {
         if(ENABLE_HACK) {
             if(hack) {
                 assert childPath.startsWith(hackBase.absolutePath());
-                Preferences p = parent.node(child);
-                p.put(HACK_KEY, hackValue);
+                if(!remove) {
+                    Preferences p = parent.node(child);
+                    p.put(HACK_KEY, hackValue);
+                }
             }
         }
         ParentListener pl = parentListeners.get(childPath);
@@ -317,5 +352,49 @@ public final class PreferencesChangeMonitor {
                         + " in " + evt.getNode().absolutePath());
             }
         }
+    }
+
+    private static class ParentChild {
+        Preferences parent;
+        String child;
+
+        public ParentChild(Preferences parent, String child)
+        {
+            this.parent = parent;
+            this.child = child;
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            if(obj == null) {
+                return false;
+            }
+            if(getClass() != obj.getClass()) {
+                return false;
+            }
+            final ParentChild other = (ParentChild)obj;
+            if(this.parent != other.parent &&
+                    (this.parent == null || !this.parent.equals(other.parent))) {
+                return false;
+            }
+            if((this.child == null) ? (other.child != null)
+                    : !this.child.equals(other.child)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            int hash = 5;
+            hash =
+                    97 * hash +
+                    (this.parent != null ? this.parent.hashCode() : 0);
+            hash = 97 * hash + (this.child != null ? this.child.hashCode() : 0);
+            return hash;
+        }
+
     }
 }
