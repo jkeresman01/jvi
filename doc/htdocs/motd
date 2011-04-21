@@ -8,16 +8,17 @@ jVi-release: 1.2.7
 
 #jVi-beta: 1.3.1.beta4
 jVi-beta: 1.3.1.beta8
-jVi-beta-link: http://sourceforge.net/projects/jvi/files/jvi/1.3-NB7.0/nbvi-1.3.1.beta8.zip/download
+jVi-beta-link: http://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-7.0/nbvi-1.3.1.beta8.zip/download
 
 # Following used when a new release.
 #jVi-download-target: https://sourceforge.net/projects/jvi/files/jvi/
 
 # There may be any number of motd-link and motd-message in any order.
 # They are displayed in the order they are given.
-# There may be any number of lines before the EOT
+# There may be any number of lines before the <EOT>
+
 motd-message:
-nbvi-1.3.1.beta8 is for NetBeans 7.0 RC2 or later
+nbvi-1.3.1 is for NetBeans 7.0
 <EOT>
 motd-message:
 ***** nbvi-1.3.1.beta8 horizontal-scroll-commands, map-commands *****
@@ -27,7 +28,7 @@ motd-link: http://jvi.sourceforge.net/?CHANGES.html
 jVi recent features and changes.
 <EOT>
 
-motd-link: https://sourceforge.net/projects/jvi/files/jvi/
+motd-link: https://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/
 All jVi download files
 <EOT>
 
