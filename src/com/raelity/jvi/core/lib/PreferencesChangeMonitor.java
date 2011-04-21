@@ -55,7 +55,7 @@ public final class PreferencesChangeMonitor {
     private Map<String, ParentListener> parentListeners;
     private Set<ParentChild> parentChilds = new HashSet<ParentChild>();
 
-    private static boolean DUMP = true;
+    private static boolean DUMP = false;
 
     private static final boolean ENABLE_HACK = true;
     private boolean hack;
