@@ -21,7 +21,6 @@ package com.raelity.jvi.core;
 
 import com.raelity.jvi.core.lib.PreferencesChangeMonitor;
 import com.raelity.jvi.core.lib.CcFlag;
-import com.raelity.jvi.core.ColonCommands.ColonAction;
 import java.util.EnumSet;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
@@ -96,8 +95,8 @@ class MarkOps
     }
 
     private static void init() {
-        ColonCommands.register("marks", "marks", ACTION_do_marks, null);
-        ColonCommands.register("delm", "delmarks", ACTION_ex_delmarks, null);
+        ColonCommands.register("marks", "marks", new DoMarks(), null);
+        ColonCommands.register("delm", "delmarks", new ExDelmarks(), null);
 
         PropertyChangeListener pcl = new PropertyChangeListener() {
             @Override
@@ -498,9 +497,6 @@ class MarkOps
                 : win.w_jumplist.indexOf(indexedMark);
     }
 
-    private static ColonAction ACTION_do_marks = new DoMarks();
-    private static ColonAction ACTION_ex_delmarks = new ExDelmarks();
-
     /**
      * print the marks
      */
@@ -567,7 +563,11 @@ class MarkOps
         s = mp.getBuffer().getLineSegment(mp.getLine()).toString();
         s = s.substring(Misc.skipwhite(s, 0));
         // get rid of the newline
-        if(s.length() > 0)
+        // and arbitrarily truncate to 60 chars
+        final int truncateTo = 60;
+        if(s.length() > truncateTo)
+            s = s.substring(0, truncateTo);
+        else if(s.length() > 0)
             s = s.substring(0, s.length() -1);
         return s;
     }
