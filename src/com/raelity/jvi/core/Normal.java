@@ -2460,7 +2460,7 @@ middle_code:
       // The cursor is set a few lines above, so the segment is for the line
       // that is the fold.
       MySegment seg = G.curbuf.getLineSegment(fpos.getLine());
-      target_column = Edit.beginlineColumnIndex(BL_WHITE | BL_FIX, seg);
+      target_column = Edit.beginlineColumnIndex(seg, BL_WHITE | BL_FIX);
     }
     coladvance(fpos, target_column);
     G.curwin.w_cursor.set(fpos);

@@ -1283,7 +1283,7 @@ private static class GetLiteral implements HandleNextChar
    * hence the segment can not be accessed publicly, only protected.</li>
    * </ul>
    */
-  public static int beginlineColumnIndex(int flags, MySegment txt) {
+  public static int beginlineColumnIndex(MySegment txt, int flags) {
     int index;
     if ((flags & BL_SOL) != 0 && G.p_notsol.getBoolean()) {
       index = Misc.coladvanceColumnIndex(G.curwin.w_curswant, txt);
@@ -1311,7 +1311,7 @@ private static class GetLiteral implements HandleNextChar
   public static void beginline(ViFPOS fpos, int flags) {
     int line = fpos.getLine();
     MySegment seg = fpos.getBuffer().getLineSegment(line);
-    int offset = seg.docOffset + beginlineColumnIndex(flags, seg);
+    int offset = seg.docOffset + beginlineColumnIndex(seg, flags);
     fpos.set(offset);
   }
 
