@@ -31,6 +31,7 @@ Documentation
 
 Bugs
 ====
+  - ^F/^B count
   - Handing of no_mapping/allow_keys.
     What does allow_keys really do?
     Edit handling of no_mapping/allow_keys.
@@ -208,6 +209,8 @@ Options
 Cleanup
 =======
   - get rid of "G."; use static import. For G.xx, use xx()
+  - make TextView.w_cursor a simple fpos,
+    do an "update" when exitting key event
   - Consider getting rid of 
         Misc.xlateViKey(ViManager.getInsertModeKeymap(), c, G.getModMask())
     would just handle ^T (or whatever) in the redobuf? Other issues?

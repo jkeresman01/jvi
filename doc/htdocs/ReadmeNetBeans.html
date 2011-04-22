@@ -12,9 +12,8 @@
 
 
 
-<h2 align="center">jVi in NetBeans</h2>
-<a name="intro"/>
-<h1 class="MainSec00Font">Introduction</h1>
+<h1>jVi in NetBeans</h1>
+<h2 id="intro" class="MainSec00Font">Introduction</h2>
 
 <p>
 Now you can use vi/vim commands while taking advantage of the NetBeans
@@ -46,7 +45,7 @@ jVi Bug Tracking</a>.</b>
 Please include both the <b>jVi version number</b> and the
 <b>NetBeans version number</b>,
 e.g. NB5.5, when reporting problems.
-Get the version of jVi with the <tt>:version</tt> command,
+Get the version of jVi with the <span class="tt">:version</span> command,
 also the version of jVi in use is displayed on the
 <i>jVi Options and Configuration</i> editing option property page..
 </p>
@@ -61,29 +60,28 @@ Communications can also be sent to
 <a href="mailto:jvi@raelity.com">jVi</a>.
 </p>
 
-<a name="normal"/>
-<h1 class="MainSec00Font">Normal Mode</h1>
+<h2 id="normal" class="MainSec00Font">Normal Mode</h2>
 There are some Normal Mode commands that hook into NetBeans features.
 <table border="1" cellpadding="3">
     <tbody>
         <tr>
-            <td><tt>Ctrl-]</tt></td>
+            <td><span class="tt">Ctrl-]</span></td>
             <td>Go To Declaration</td>
         </tr>
         <tr>
-            <td><tt>m{.&lt;&gt;}</tt></td>
+            <td><span class="tt">m{.&lt;&gt;}</span></td>
             <td>toggle bookmark, previous bookmark, next bookmark</td>
         </tr>
         <tr>
-            <td><tt>z{ocRM}</tt></td>
+            <td><span class="tt">z{ocRM}</span></td>
             <td>expand fold, collapse fold, expand all, collapse all</td>
         </tr>
         <tr>
-            <td><tt>g{,;}</tt></td>
+            <td><span class="tt">g{,;}</span></td>
             <td>Jump to Next Edit Cross Window, Jump to Previous Edit Cross Window</td>
         </tr>
         <tr>
-            <td><tt>gt</tt>, <tt>gT</tt></td>
+            <td><span class="tt">gt</span>, <span class="tt">gT</span></td>
             <td>Go to the next/previous editor tab page.
                 Wraps around from first to last.
             </td>
@@ -91,180 +89,192 @@ There are some Normal Mode commands that hook into NetBeans features.
     </tbody>
 </table>
 
-<a name="colon"/>
-<h1 class="MainSec00Font">Colon Commands</h1>
-There are several colon commands that hook directly to NetBeans'
-features.
-<br/>It is simple to customize jVi by
-<a href="#custom">adding you own colon commands</a>.
-<table border="1" cellpadding="3">
+<h2 id="colon" class="MainSec00Font">Colon Commands</h2>
+<h2 class="MainSec01Font">NetBeans colon command hooks</h2>
+<table id="nb-hooks" border="1" cellpadding="3">
     <tbody>
         <tr>
-            <td><tt>:se[t]</tt></td>
+            <td><span class="tt">:se[t]</span></td>
             <td>See <a href="COLON_COMMANDS">Colon Commands</a> for
                 information on available options. See <a href="#options">
                 Netbeans options information</a> for platform interactions
-                of the <tt>sw</tt>, <tt>et</tt>, <tt>ts</tt>, <tt>nu</tt>
+                of the <span class="tt">sw</span>, <span class="tt">et</span>,
+                <span class="tt">ts</span>, <span class="tt">nu</span>
                 options.
             </td>
         </tr>
         <tr>
-            <td><tt>:e#[&lt;digit&gt;]</tt></td>
+            <td><span class="tt">:e#[&lt;digit&gt;]</span></td>
             <td>
-                After <tt>:e#</tt> code completion allows the selection
+                After <span class="tt">:e#</span>
+                code completion allows the selection
                 of an open file. There is a jVi option <i>":e#" Auto popup</i>.
             </td>
         </tr>
         <tr>
-                <td><tt>:g/.../p</tt>, <tt>:g/.../s/.../p</tt>,
-                <tt>:1,$s/.../p</tt></td>
+                <td><span class="tt">:g/.../p</span>,
+                    <span class="tt">:g/.../s/.../p</span>,
+                <span class="tt">:1,$s/.../p</span></td>
             <td>The output of these commands go to an Output window
                 with hyperlinks</td>
         </tr>
         <tr>
-            <td><tt>:ls</tt>, <tt>:buffers</tt>, <tt>:files</tt></td>
+            <td><span class="tt">:ls</span>, <span class="tt">:buffers</span>, <span class="tt">:files</span></td>
             <td>The output of these commands go to an Output window</td>
         </tr>
         <tr>
-                <td><tt>:n[ext]</tt>, <tt>:N[ext]</tt>,
-                <tt>:prev[ious]</tt></td>
+                <td><span class="tt">:n[ext]</span>, <span class="tt">:N[ext]</span>,
+                <span class="tt">:prev[ious]</span></td>
             <td>Operate on MRU file list, otherwise similar to vim. For
-                example, <tt>:3N</tt> goes to the third previously file
+                example, <span class="tt">:3N</span> goes to the third previously file
                 active</td>
         </tr>
         <tr>
-            <td><tt>:q[uit]</tt>, <tt>:wq[!]</tt></td>
+            <td><span class="tt">:q[uit]</span>,
+                <span class="tt">:wq[!]</span></td>
             <td>Close the curernt tab. Return to the previously active
-                tab; for example <tt>Ctrl-]</tt>, <tt>Ctrl-]</tt>,
-                <tt>:q</tt>, <tt>:q</tt> gets you back to where you started.</td>
+                tab; for example <span class="tt">Ctrl-]</span>,
+                <span class="tt">Ctrl-]</span>,
+                <span class="tt">:q</span>,
+                <span class="tt">:q</span> gets you back
+                to where you started.</td>
         </tr>
         <tr>
-            <td><tt>:ts [&lt;any-chars&gt;]</tt>,
-            <br/><tt>:ta &lt;any-chars&gt;</tt></td>
+            <td><span class="tt">:ts [&lt;any-chars&gt;]</span>,
+            <br/><span class="tt">:ta &lt;any-chars&gt;</span></td>
             <td>These bring up the "Go To Class" dialog.</td>
         </tr>
         <tr>
-            <td><tt>:gr[ep]</tt> </td>
+            <td><span class="tt">:gr[ep]</span> </td>
             <td>perform "Find Usages" action on the identifier under
             the cursor.</td>
         </tr>
         <tr>
-            <td><tt>:mak[e]&nbsp;&lt;op&gt; &lt;target&gt;</tt></td>
+            <td><span class="tt">:mak[e]&nbsp;&lt;op&gt; &lt;target&gt;</span>
+            </td>
             <td>
                 &lt;op&gt; ::=
-                <tt>[ b[uild] | c[lean] | r[ebuild] | d[oc] | de[bug] | ru[n] ]
-                </tt>
-                <br/>&lt;target&gt; ::= <tt>[ m[ain] | p[roject] | % ] </tt>
+                <span class="tt">
+                    [ b[uild] | c[lean] | r[ebuild] | d[oc] | de[bug] | ru[n] ]
+                </span>
+                <br/>&lt;target&gt; ::= <span class="tt">
+                    [ m[ain] | p[roject] | % ] </span>
                 for main-project current-project current-file.
-                <br/>Default &lt;op&gt; is <tt>build</tt>,
-                default &lt;target&gt; is <tt>main</tt>. So entering
-                <tt>:mak</tt> is the same as <tt>:make build main</tt>.
+                <br/>Default &lt;op&gt; is <span class="tt">build</span>,
+                default &lt;target&gt; is <span class="tt">main</span>. So entering
+                <span class="tt">:mak</span> is the same as
+                <span class="tt">:make build main</span>.
             </td>
         </tr>
         <tr>
-            <td><tt>:cn[ext]</tt></td>
+            <td><span class="tt">:cn[ext]</span></td>
             <td>Goto the next in the list. In addition to compiler errors,
                 it applies to many lists; for example in the diff window
                 and in the output area,
             such as Find Usages or &quot;g/pattern/p&quot;.</td>
         </tr>
         <tr>
-            <td><tt>:cp[revious]</tt>, <tt>:cN[ext]</tt></td>
+            <td><span class="tt">:cp[revious]</span>,
+                <span class="tt">:cN[ext]</span></td>
             <td>Goto the previous in the list.</td>
         </tr>
         <tr>
-            <td> <tt>:tabn[ext]</tt>,
-                <tt>:tabp[revious]</tt>, <tt>:tabN[ext]</tt>
+            <td> <span class="tt">:tabn[ext]</span>,
+                <span class="tt">:tabp[revious]</span>,
+                <span class="tt">:tabN[ext]</span>
             </td>
             <td>Go to the next/previous editor tab page.
                 Wraps around from first to last.
             </td>
         </tr>
         <tr>
-            <td><tt>:tog[gle] [&lt;view-pane&gt;]</tt></td>
+            <td><span class="tt">:tog[gle] [&lt;view-pane&gt;]</span></td>
             <td>
-                &lt;view-pane&gt; ::= <tt>bo[ttom] | ou[tput] | de[bug]</tt>
+                &lt;view-pane&gt; ::= <span class="tt">bo[ttom] | ou[tput] | de[bug]</span>
                 <br/>toggle some NetBeans' window(s) visibility. With no
-                arguments is the same as <tt>bottom</tt>.
-                <tt>output</tt> is the output mode; some windows that
+                arguments is the same as <span class="tt">bottom</span>.
+                <span class="tt">output</span> is the output mode; some windows that
                 go here are Output and Usages.
-                <tt>debug</tt> are the debug windows.
-                <tt>bottom</tt> is both of output and debug.
+                <span class="tt">debug</span> are the debug windows.
+                <span class="tt">bottom</span> is both of output and debug.
             </td>
         </tr>
     </tbody>
 </table>
 
-<a name="refactoring"/>
-<br/><b>Refactoring commands</b>
-<br/>The following commands bring up the indicated dialog. Typically the cursor
+<h2 id="refactoring" class="MainSec01Font">Refactoring commands</h2>
+The following commands bring up the indicated dialog. Typically the cursor
 should be set as needed before executing the command.
 <table border="1" cellpadding="3">
     <tbody>
         <tr>
-            <td><tt>:rfr[ename]</tt></td>
+            <td><span class="tt">:rfr[ename]</span></td>
             <td>Refactor &gt; Rename...</td>
         </tr>
         <tr>
-            <td><tt>:rfm[ove]</tt></td>
+            <td><span class="tt">:rfm[ove]</span></td>
             <td>Refactor &gt; Move...</td>
         </tr>
         <tr>
-            <td><tt>:rfc[opy]</tt></td>
+            <td><span class="tt">:rfc[opy]</span></td>
             <td>Refactor &gt; Copy...</td>
         </tr>
         <tr>
-            <td><tt>:rfde[lete]</tt>, <tt>:rfsa[fedelete]</tt></td>
+            <td><span class="tt">:rfde[lete]</span>,
+                <span class="tt">:rfsa[fedelete]</span></td>
             <td>Refactor &gt; Safe Delete...</td>
         </tr>
         <tr><td></td></tr>
         <tr>
-            <td><tt>:rfch[angemethodparameters]</tt></td>
+            <td><span class="tt">:rfch[angemethodparameters]</span></td>
             <td>Refactor &gt; Change Method Parameters...</td>
         </tr>
         <tr>
-            <td><tt>:rfenc[apsulatefields]</tt></td>
+            <td><span class="tt">:rfenc[apsulatefields]</span></td>
             <td>Refactor &gt; Encapsulate Fields...</td>
         </tr>
         <tr><td></td></tr>
         <tr>
-            <td><tt>:rfup</tt>, <tt>:rfpul[lup]</tt></td>
+            <td><span class="tt">:rfup</span>,
+                <span class="tt">:rfpul[lup]</span></td>
             <td>Refactor &gt; Pull Up...</td>
         </tr>
         <tr>
-            <td><tt>:rfdo[wn]</tt>, <tt>:rfpus[hdown]</tt></td>
+            <td><span class="tt">:rfdo[wn]</span>,
+                <span class="tt">:rfpus[hdown]</span></td>
             <td>Refactor &gt; Push Down...</td>
         </tr>
-        <tr><td></td></tr>
+        <tr><td></td><td></td></tr>
         <tr>
-            <td><tt>:rfvar[iable]</tt></td>
+            <td><span class="tt">:rfvar[iable]</span></td>
             <td>Refactor &gt; Introduce Variable...</td>
         </tr>
         <tr>
-            <td><tt>:rfcon[stant]</tt></td>
+            <td><span class="tt">:rfcon[stant]</span></td>
             <td>Refactor &gt; Introduce Constant...</td>
         </tr>
         <tr>
-            <td><tt>:rffie[ld]</tt></td>
+            <td><span class="tt">:rffie[ld]</span></td>
             <td>Refactor &gt; Introduce Field...</td>
         </tr>
         <tr>
-            <td><tt>:rfmet[hod]</tt></td>
+            <td><span class="tt">:rfmet[hod]</span></td>
             <td>Refactor &gt; Introduce Method...</td>
         </tr>
     </tbody>
 </table>
 
-<br/><b>These are not implemented yet</b>
+<h2 id="execution" class="MainSec01Font">Execution</h2>
+<i>These are not implemented yet</i>
 <table border="1" cellpadding="3">
     <tbody>
         <tr>
-            <td><tt>:run</tt></td>
-            <td>Use <tt>:make run</tt></td>
+            <td><span class="tt">:run</span></td>
+            <td>Use <span class="tt">:make run</span></td>
         </tr>
         <tr>
-            <td><tt>:deb[ug]</tt></td>
-            <td>Use <tt>:make debug</tt></td>
+            <td><span class="tt">:deb[ug]</span></td>
+            <td>Use <span class="tt">:make debug</span></td>
         </tr>
     </tbody>
 </table>
@@ -279,23 +289,22 @@ This will probably also be available from the set command in some future
 release.
 The &lt;view-pane&gt; can be any one of:
   <ul>
-    <li><tt>cur[tain]</tt></li>
-    <li><tt>mes[sages]</tt></li>
-    <li><tt>con[tent]</tt></li>
-    <li><tt>pro[ject]</tt></li>
-    <li><tt>str[ucture]</tt></li>
-    <li><tt>sta[tusbar]</tt></li>
-    <li><tt>tab[s]</tt></li>
+    <li><span class="tt">cur[tain]</span></li>
+    <li><span class="tt">mes[sages]</span></li>
+    <li><span class="tt">con[tent]</span></li>
+    <li><span class="tt">pro[ject]</span></li>
+    <li><span class="tt">str[ucture]</span></li>
+    <li><span class="tt">sta[tusbar]</span></li>
+    <li><span class="tt">tab[s]</span></li>
   </ul>
-Note: the "<tt>tabs</tt>" view-pane is only available if the
+Note: the "<span class="tt">tabs</span>" view-pane is only available if the
         <a href="http://www.users.fast.net/~jpmcgrath/cosmetics/"
 	target="_top">Cosmetics</a> open tool is loaded. It hides/shows
 	the filename tabs of the editor.
 </dd>
 -->
 
-<a name="options"/>
-<h1 class="MainSec00Font">Options</h1>
+<h2 id="options" class="MainSec00Font">Options</h2>
 <p>
     <img SRC="images/jViMiscOptionsPage.png"
          ALT="Built for NetBeans"
@@ -310,8 +319,9 @@ Note: the "<tt>tabs</tt>" view-pane is only available if the
     help if you want a more detailed description of what the option does.
 </p>
 <p>
-    <b><tt>:set</tt> options details.</b> The options
-    <tt>shiftwidth</tt>, <tt>expandtabs</tt> and <tt>tabstop</tt> are per file
+    <b><span class="tt">:set</span> options details.</b> The options
+    <span class="tt">shiftwidth</span>, <span class="tt">expandtabs</span>
+    and <span class="tt">tabstop</span> are per file
     options, so that any editor clones of a given file have the same value for
     these options.
     Different files can have different values for these options. The values
@@ -321,8 +331,8 @@ Note: the "<tt>tabs</tt>" view-pane is only available if the
     <b>Note that jVi
         changes the NetBeans values of these options to keep NetBeans in sync
     with the options of the file being edited.</b> The 
-    <tt>number</tt> options should be per window, but netbeans applys it to
-    all windows.
+    <span class="tt">number</span> options should be per window,
+    but netbeans applys it to all windows.
 </p>
 
 <p>NetBeans options are shared where applicable.
@@ -334,8 +344,7 @@ is changed in the other. The only other fully shared option is <i>wrapscan</i>.
 Autoindent and other such editor features are handled and configured through
 NetBeans.  </p>
 
-<a name="keys"/>
-<h1 class="MainSec00Font">Key Bindings</h1>
+<h2 id="keys" class="MainSec00Font">Key Bindings</h2>
 
 <p>
         <img SRC="images/jViKeyOptionsPage.png"
@@ -356,14 +365,13 @@ pretty good NetBeans multi-key bindings.
 get easy access to it. At least until jVi is hooked into incremental search
 and hilight.
 
-<a name="search"/>
-<h1 class="MainSec00Font">Text Search</h1>
+<h2 id="search" class="MainSec00Font">Text Search</h2>
 <p>
     <p>
         There are options for controlling metacharacter escaping.
-        By default vim requires that several RE metacharacters be escaped. For example
-        '|' and '(', with the <b>RE Meta Escape</b> option you can specify which
-        characters must be escaped.
+        By default vim requires that several RE metacharacters be escaped.
+        For example '|' and '(', with the <b>RE Meta Escape</b> option you
+        can specify which characters must be escaped.
         Check
         <A HREF="pattern.txt" TARGET="mainFrame">Searching and Patterns</A>
         for information on searching and a description of the options.
@@ -371,17 +379,16 @@ and hilight.
         javadocs describe the pattern syntax</a>.
     </p>
     
-    <a name="custom"/>
-    <h1 class="MainSec00Font">Customization</h1>
+    <h2 id="custom" class="MainSec00Font">Customization</h2>
     
     <p>
         Here is an example for adding a simple ":" command that takes no arguments.
         Refer to
         <a href="jvi-javadoc/com/raelity/jvi/ColonCommands.html">ColonCommands</a>
         and its inner clases API for more info, such as handling line number and
-        arguments as in <tt>:3,7 mycom arg arg</tt>.
+        arguments as in <span class="tt">:3,7 mycom arg arg</span>.
         The source of the ActionEvent is the JEditorPane from where the command
-        is executed. I haven't actully tried it, <tt>ColonCommands</tt> is in the
+        is executed. I haven't actully tried it, <span class="tt">ColonCommands</span> is in the
         <i>jVi Core</i> module.
     </p>
     
@@ -406,9 +413,9 @@ and hilight.
 
 <!-- raelity copyright -->
 <hr>
-<address><font size="-1">
-Copyright &copy; 2011 Raelity Engineering</font></address>
-<font size="-1"><a href="mailto:support@raelity.com">
-Contact Raelity Engineering</a></font>
+<address class="addr">
+Copyright &copy; 2011 Raelity Engineering</address>
+<a href="mailto:support@raelity.com" class="addr">
+Contact Raelity Engineering</a>
 </body>
 </html>
