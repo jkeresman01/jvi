@@ -55,6 +55,15 @@ public interface ViFPOS extends Comparable<ViFPOS>
     public void set(ViFPOS fpos);
 
     /**
+     * convenience for chaining.
+     * <br/>NOTE: this returns target, not "this",
+     * so the chaining object changes.
+     * @param target set target with "this"
+     * @return target
+     */
+    public ViFPOS copyTo(ViFPOS target);
+
+    /**
      * Set the column, leave the line unchanged.
      * <br/>
      * This is optional, may throw an UnsupportedOperationException
@@ -88,6 +97,7 @@ public interface ViFPOS extends Comparable<ViFPOS>
 
     public static abstract class abstractFPOS implements ViFPOS
     {
+        @Override
         public void set(ViFPOS fpos)
         {
             if(fpos instanceof ViMark)
@@ -96,29 +106,43 @@ public interface ViFPOS extends Comparable<ViFPOS>
                 set(fpos.getLine(), fpos.getColumn());
         }
 
+        @Override
+        public ViFPOS copyTo(ViFPOS target)
+        {
+            target.set(this);
+            return target;
+        }
+
+
+
         // Should not reference instance variables lnum or col directly,
         // must use accessor functions since subclasses, in particular
         // WCursor, must validate values
+        @Override
         public void setColumn(int column)
         {
             set(getLine(), column);
         }
 
+        @Override
         public void incColumn()
         {
             set(getLine(), getColumn()+1);
         }
 
+        @Override
         public void decColumn()
         {
             set(getLine(), getColumn()-1);
         }
 
+        @Override
         public void incLine()
         {
             set(getLine()+1, getColumn());
         }
 
+        @Override
         public void decLine()
         {
             set(getLine()-1, getColumn());
@@ -127,24 +151,24 @@ public interface ViFPOS extends Comparable<ViFPOS>
         // Should not reference instance variables lnum or col directly,
         // must use accessor functions since subclasses, in particular
         // WCursor, must validate values
+        @Override
         public void setLine(int line)
         {
             set(line, getColumn());
         }
 
+        // This is optional, may throw an UnsupportedOperationException
         @Override
-        final public boolean equals(Object o)
+        public void set(int offset)
         {
-            // NEEDSWORK: equals FPOS, should doc be checked as same?
-            if (o instanceof ViFPOS) {
-                ViFPOS fpos = (ViFPOS) o;
-                return this.getOffset() == fpos.getOffset();
-            }
-            return false;
+            throw new UnsupportedOperationException();
         }
 
+        @Override
         final public int compareTo(ViFPOS p)
         {
+            if(!getBuffer().equals(p.getBuffer()))
+                throw new IllegalArgumentException("different buffers");
             if (this.getOffset() < p.getOffset()) {
                 return -1;
             } else if (this.getOffset() > p.getOffset()) {
@@ -157,13 +181,40 @@ public interface ViFPOS extends Comparable<ViFPOS>
         @Override
         public String toString()
         {
-            return "offset: " + getOffset() + " lnum: " + getLine() + " col: " + getColumn();
+            return "offset=" + getOffset()
+                    + " lnum=" + getLine() + " col=" + getColumn();
         }
 
-        // This is optional, may throw an UnsupportedOperationException
-        public void set(int offset)
+        @Override
+        public boolean equals(Object obj)
         {
-            throw new UnsupportedOperationException();
+            if(obj == null) {
+                return false;
+            }
+            if(!(obj instanceof ViFPOS))
+                return false;
+            final ViFPOS other = (ViFPOS)obj;
+            if(this.getBuffer() != other.getBuffer() &&
+                    (this.getBuffer() == null ||
+                    !this.getBuffer().equals(other.getBuffer()))) {
+                return false;
+            }
+            if(this.getOffset() != other.getOffset()) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            int hash = 7;
+            hash =
+                    79 * hash +
+                    (this.getBuffer() != null
+                        ? this.getBuffer().hashCode() : 0);
+            hash = 79 * hash + this.getOffset();
+            return hash;
         }
     }
 }

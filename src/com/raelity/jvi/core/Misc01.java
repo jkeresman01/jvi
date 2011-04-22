@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.Edit.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
 import static com.raelity.jvi.core.Misc.*;
 
@@ -74,6 +75,23 @@ public class Misc01
     }
     gotoLogicalLine(logicalLine, flag);
     return;
+  }
+
+  static ViFPOS fpos()
+  {
+      return G.curwin.w_cursor.copy();
+  }
+
+  static ViFPOS fposLogicalLine(int logicalLine)
+  {
+    ViFPOS fpos = G.curwin.w_cursor.copy();
+    return fposLogicalLine(fpos, logicalLine);
+  }
+
+  static ViFPOS fposLogicalLine(ViFPOS fpos, int logicalLine)
+  {
+    fpos.set(G.curwin.getDocLine(logicalLine), 0);
+    return fpos;
   }
 
   /**
@@ -205,15 +223,13 @@ public class Misc01
           G.curwin.setVpTopViewLine(newViewTop);
       else
           G.curwin.setVpTopLogicalLine(adjustTopLogicalLine(newTop));
-      ViFPOS fpos = G.curwin.w_cursor.copy();
-      fpos.set(G.curwin.getDocLine(logicalLine), 0);
+      ViFPOS fpos = fposLogicalLine(logicalLine);
       if(flag < 0) {
-        coladvance(fpos, G.curwin.w_curswant);
+        coladvance(fpos, G.curwin.w_curswant).copyTo(G.curwin.w_cursor);
       } else {
         // from nv_goto
-        Edit.beginline(fpos, flag);
+        beginline(fpos, flag).copyTo(G.curwin.w_cursor);
       }
-      G.curwin.w_cursor.set(fpos);
 
     }
 
@@ -325,12 +341,11 @@ public class Misc01
       }
       ViFPOS fpos = G.curwin.w_cursor.copy();
       if(newcursorline > 0) {
-        fpos.set(G.curwin.getDocLine(newcursorline), 0);
+        fposLogicalLine(fpos, newcursorline);
       }
 
       cursor_correct(fpos);	// NEEDSWORK: implement
-      Edit.beginline(fpos, BL_SOL | BL_FIX);
-      G.curwin.w_cursor.set(fpos);
+      beginline(fpos, BL_SOL | BL_FIX).copyTo(G.curwin.w_cursor);
       // curwin->w_valid &= ~(VALID_WCOL|VALID_WROW|VALID_VIRTCOL);
 
     /*
@@ -442,11 +457,9 @@ public class Misc01
         }
       }
       G.curwin.setVpTopLogicalLine(newtopline);
-      ViFPOS fpos = G.curwin.w_cursor.copy();
-      fpos.set(G.curwin.getDocLine(newcursorline), 0);
+      ViFPOS fpos = fposLogicalLine(newcursorline);
       cursor_correct(fpos);
-      Edit.beginline(fpos, BL_SOL | BL_FIX);
-      G.curwin.w_cursor.set(fpos);
+      beginline(fpos, BL_SOL | BL_FIX).copyTo(G.curwin.w_cursor);
       update_screen(VALID);
 
     }

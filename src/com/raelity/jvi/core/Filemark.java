@@ -101,23 +101,28 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
         return mark != null && mark.isValid() && fnum != 0;
     }
 
-    public int getOffset() {
+    @Override public int getOffset() {
         return ! isValidFilemark() ? offset : mark.getOffset();
     }
 
-    public int getLine() {
+    @Override public int getLine() {
         return ! isValidFilemark() ? line : mark.getLine();
     }
 
-    public int getColumn() {
+    @Override public int getColumn() {
         return ! isValidFilemark() ? col : mark.getColumn();
     }
 
-    public boolean isValid() {
+    @Override public ViFPOS copyTo(ViFPOS target) {
+        target.set(this);
+        return target;
+    }
+
+    @Override public boolean isValid() {
         return true; // though in a limitted context
     }
 
-    public Buffer getBuffer() {
+    @Override public Buffer getBuffer() {
         return ! isValidFilemark() ? null : mark.getBuffer();
     }
 
@@ -172,59 +177,59 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
         throw new UnsupportedOperationException();
     }
 
-    public void setMark(ViFPOS fpos) {
+    @Override public void setMark(ViFPOS fpos) {
         throw new UnsupportedOperationException();
     }
 
-    public void invalidate() {
+    @Override public void invalidate() {
         throw new UnsupportedOperationException();
     }
 
-    public void set(int line, int column) {
+    @Override public void set(int line, int column) {
         throw new UnsupportedOperationException();
     }
 
-    public void set(int offset) {
+    @Override public void set(int offset) {
         throw new UnsupportedOperationException();
     }
 
-    public void set(ViFPOS fpos) {
+    @Override public void set(ViFPOS fpos) {
         throw new UnsupportedOperationException();
     }
 
-    public void setColumn(int col) {
+    @Override public void setColumn(int col) {
         throw new UnsupportedOperationException();
     }
 
-    public void incColumn() {
+    @Override public void incColumn() {
         throw new UnsupportedOperationException();
     }
 
-    public void decColumn() {
+    @Override public void decColumn() {
         throw new UnsupportedOperationException();
     }
 
-    public void incLine() {
+    @Override public void incLine() {
         throw new UnsupportedOperationException();
     }
 
-    public void decLine() {
+    @Override public void decLine() {
         throw new UnsupportedOperationException();
     }
 
-    public void setLine(int line) {
+    @Override public void setLine(int line) {
         throw new UnsupportedOperationException();
     }
 
-    public ViFPOS copy() {
+    @Override public ViFPOS copy() {
         throw new UnsupportedOperationException();
     }
 
-    public void verify(Buffer buf) {
+    @Override public void verify(Buffer buf) {
         throw new UnsupportedOperationException();
     }
 
-    public int compareTo(ViFPOS o) {
+    @Override public int compareTo(ViFPOS o) {
         throw new UnsupportedOperationException();
     }
 

@@ -2227,10 +2227,8 @@ middle_code:
     
     G.curwin.setVpTopLogicalLine(new_topline);
     if(new_lnum != prev_lnum) {
-      ViFPOS fpos = G.curwin.w_cursor.copy();
-      fpos.set(G.curwin.getDocLine(new_lnum), 0);
-      coladvance(fpos, G.curwin.w_curswant);
-      G.curwin.w_cursor.set(fpos);
+      ViFPOS fpos = fposLogicalLine(new_lnum);
+      coladvance(fpos, G.curwin.w_curswant).copyTo(G.curwin.w_cursor);
     }
   }
 
@@ -2366,8 +2364,7 @@ middle_code:
     //G.curwin.setCaretPosition(target, col);
 
     G.curwin.setVpTopLogicalLine(adjustTopLogicalLine(top));
-    ViFPOS fpos = G.curwin.w_cursor.copy();
-    fpos.set(G.curwin.getDocLine(target), 0);
+    ViFPOS fpos = fposLogicalLine(target);
     int target_column;
     boolean keepColumn = (nchar == 't') || (nchar == 'z') || (nchar == 'b');
     if(keepColumn)
@@ -2378,8 +2375,7 @@ middle_code:
       MySegment seg = G.curbuf.getLineSegment(fpos.getLine());
       target_column = Edit.beginlineColumnIndex(seg, BL_WHITE | BL_FIX);
     }
-    coladvance(fpos, target_column);
-    G.curwin.w_cursor.set(fpos);
+    coladvance(fpos, target_column).copyTo(G.curwin.w_cursor);
   }
 
   static private void nv_colon (CMDARG cap) {
@@ -2704,11 +2700,10 @@ middle_code:
 
     ViFPOS fpos = G.curwin.w_cursor.copy();
     if(newcursorline > 0) {
-      fpos.set(G.curwin.getDocLine(newcursorline), 0);
+      fposLogicalLine(fpos, newcursorline);
     }
     cursor_correct(fpos);	// correct for 'so' !!DONE ELSEWHERE!!
-    Edit.beginline(fpos, BL_SOL | BL_FIX);
-    G.curwin.w_cursor.set(fpos);
+    beginline(fpos, BL_SOL | BL_FIX).copyTo(G.curwin.w_cursor);
   }
 
   /**

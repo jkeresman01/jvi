@@ -680,12 +680,19 @@ public class Misc implements ClipboardOwner {
     return coladvanceColumnIndex(G.curwin.w_curswant, txt, null);
   }
 
-  public static boolean coladvance(int wcol) {
+  public static ViFPOS coladvance(int wcol) {
     return coladvance(G.curwin.w_cursor, wcol);
   }
 
-  /** advance the fpos, note if fpos is w_cursor then it may be the cursor */
-  public static boolean coladvance(ViFPOS fpos, int wcol) {
+  public static ViFPOS coladvance(ViFPOS fpos, int wcol)
+  {
+    return coladvance(fpos, wcol, null);
+  }
+
+  /** advance the fpos, note if fpos is w_cursor, may move the cursor */
+  public static ViFPOS coladvance(ViFPOS fpos, int wcol,
+                                  MutableBoolean hitTarget)
+  {
     MySegment txt = G.curbuf.getLineSegment(fpos.getLine());
     int startColumn = 0;
     // NEEDSWORK: the following assert fires when used
@@ -708,7 +715,9 @@ public class Misc implements ClipboardOwner {
     }
     int idx = coladvanceColumnIndex(wcol, txt, null);
     fpos.setColumn(startColumn + idx);
-    return idx == wcol;
+    if(hitTarget != null)
+      hitTarget.setValue(idx == wcol);
+    return fpos;
   }
 
   /**

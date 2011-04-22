@@ -1308,11 +1308,12 @@ private static class GetLiteral implements HandleNextChar
    * and here we are getting it again in BEGIN_LINE.
    * </ul>
    */
-  public static void beginline(ViFPOS fpos, int flags) {
+  public static ViFPOS beginline(ViFPOS fpos, int flags) {
     int line = fpos.getLine();
     MySegment seg = fpos.getBuffer().getLineSegment(line);
     int offset = seg.docOffset + beginlineColumnIndex(seg, flags);
     fpos.set(offset);
+    return fpos;
   }
 
   public static void beginline(int flags) {
@@ -2706,6 +2707,12 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
     @Override
     public String toString() {
       return mark.toString();
+    }
+
+    @Override
+    public ViFPOS copyTo(ViFPOS target)
+    {
+      return mark.copyTo(target);
     }
 
     @Override

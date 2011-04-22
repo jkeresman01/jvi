@@ -745,6 +745,12 @@ abstract public class SwingBuffer extends Buffer
         }
 
         @Override
+        public ViFPOS copyTo(ViFPOS target)
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
         public void setColumn(int col)
         {
             throw new UnsupportedOperationException("Not supported yet.");

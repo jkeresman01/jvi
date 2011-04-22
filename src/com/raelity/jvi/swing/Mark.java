@@ -91,6 +91,13 @@ class Mark implements ViMark
         }
     }
 
+    @Override
+    public ViFPOS copyTo(ViFPOS target)
+    {
+        target.set(this);
+        return target;
+    }
+
     /**
      * If the mark offset is not valid then this mark is converted into
      * a null mark.
