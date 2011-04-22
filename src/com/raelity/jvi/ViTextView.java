@@ -324,13 +324,6 @@ public interface ViTextView extends ViOptionBag {
   public void hscroll(HSCROLL op, HDIR dir, int count);
 
   /**
-   * Position the cursor.
-   * @param logicalLine
-   * @param col
-   */
-  public void setCursorLogicalLine(int logicalLine, int col);
-
-  /**
    * Find the first character in the line, less than or equal to col,
    * which occupies the same x-position in the line. This situation may occur
    * when there is code folding; if code folding is not possible or the line

@@ -205,15 +205,16 @@ public class Misc01
           G.curwin.setVpTopViewLine(newViewTop);
       else
           G.curwin.setVpTopLogicalLine(adjustTopLogicalLine(newTop));
-      G.curwin.setCursorLogicalLine(logicalLine, 0);
-      //MySegment seg = G.curbuf.getLineSegment(coordLine);
-      //int col;
+      ViFPOS fpos = G.curwin.w_cursor.copy();
+      fpos.set(G.curwin.getDocLine(logicalLine), 0);
       if(flag < 0) {
-        coladvance(G.curwin.w_curswant);
+        coladvance(fpos, G.curwin.w_curswant);
       } else {
         // from nv_goto
-        Edit.beginline(flag);
+        Edit.beginline(fpos, flag);
       }
+      G.curwin.w_cursor.set(fpos);
+
     }
 
     /**
@@ -276,7 +277,8 @@ public class Misc01
 
         if (dir == FORWARD) {
           // at end of file
-          if(G.curwin.getVpBottomLogicalLine() > G.curwin.getLogicalLineCount()) {
+          if(G.curwin.getVpBottomLogicalLine()
+                  > G.curwin.getLogicalLineCount()) {
             newtopline = G.curwin.getLogicalLineCount();
             newcursorline = G.curwin.getLogicalLineCount();
             // curwin->w_valid &= ~(VALID_WROW|VALID_CROW);
@@ -321,15 +323,14 @@ public class Misc01
       if(newtopline > 0) {
         G.curwin.setVpTopLogicalLine(adjustTopLogicalLine(newtopline));
       }
+      ViFPOS fpos = G.curwin.w_cursor.copy();
       if(newcursorline > 0) {
-        //COORD CHANGE:
-        //G.curwin.setCaretPosition(
-        //        G.curbuf.getLineStartOffset(newcursorline));
-        G.curwin.setCursorLogicalLine(newcursorline, 0);
+        fpos.set(G.curwin.getDocLine(newcursorline), 0);
       }
 
-      cursor_correct();	// NEEDSWORK: implement
-      Edit.beginline(BL_SOL | BL_FIX);
+      cursor_correct(fpos);	// NEEDSWORK: implement
+      Edit.beginline(fpos, BL_SOL | BL_FIX);
+      G.curwin.w_cursor.set(fpos);
       // curwin->w_valid &= ~(VALID_WCOL|VALID_WROW|VALID_VIRTCOL);
 
     /*
@@ -441,10 +442,11 @@ public class Misc01
         }
       }
       G.curwin.setVpTopLogicalLine(newtopline);
-      //COORD CHANGED: cursor.set(newcursorline, 0);
-      G.curwin.setCursorLogicalLine(newcursorline, 0);
-      cursor_correct();
-      Edit.beginline(BL_SOL | BL_FIX);
+      ViFPOS fpos = G.curwin.w_cursor.copy();
+      fpos.set(G.curwin.getDocLine(newcursorline), 0);
+      cursor_correct(fpos);
+      Edit.beginline(fpos, BL_SOL | BL_FIX);
+      G.curwin.w_cursor.set(fpos);
       update_screen(VALID);
 
     }
@@ -521,6 +523,10 @@ public class Misc01
      * When called topline must be valid!
      */
     static void cursor_correct() {
+      // NEEDSWORK: cursor_correct: handle p_so and the rest
+      return;
+    }
+    static void cursor_correct(ViFPOS fpos) {
       // NEEDSWORK: cursor_correct: handle p_so and the rest
       return;
     }

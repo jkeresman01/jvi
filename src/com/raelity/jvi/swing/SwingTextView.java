@@ -1030,14 +1030,6 @@ public class SwingTextView extends TextView
 
 
     @Override
-    public void setCursorLogicalLine( int logicalLine, int col )
-    {
-        //assert col == 0;
-        setCaretPosition(lm.docLineOffset(logicalLine) + col);
-    }
-
-
-    @Override
     public int getFirstHiddenColumn( int lineOffset, int colIdx )
     {
         if(!lm.isFolding())

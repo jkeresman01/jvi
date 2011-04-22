@@ -684,7 +684,7 @@ public class Misc implements ClipboardOwner {
     return coladvance(G.curwin.w_cursor, wcol);
   }
 
-  /** advance the fpos, note it may be the cursor */
+  /** advance the fpos, note if fpos is w_cursor then it may be the cursor */
   public static boolean coladvance(ViFPOS fpos, int wcol) {
     MySegment txt = G.curbuf.getLineSegment(fpos.getLine());
     int startColumn = 0;

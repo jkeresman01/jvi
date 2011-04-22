@@ -1308,13 +1308,15 @@ private static class GetLiteral implements HandleNextChar
    * and here we are getting it again in BEGIN_LINE.
    * </ul>
    */
+  public static void beginline(ViFPOS fpos, int flags) {
+    int line = fpos.getLine();
+    MySegment seg = fpos.getBuffer().getLineSegment(line);
+    int offset = seg.docOffset + beginlineColumnIndex(flags, seg);
+    fpos.set(offset);
+  }
+
   public static void beginline(int flags) {
-    Normal.do_xop("beginline");
-    int line = G.curwin.w_cursor.getLine();
-    MySegment seg = G.curbuf.getLineSegment(line);
-    int offset = G.curbuf.getLineStartOffset(line)
-                  + beginlineColumnIndex(flags, seg);
-    G.curwin.setCaretPosition(offset);
+    beginline(G.curwin.w_cursor, flags);
   }
   
   

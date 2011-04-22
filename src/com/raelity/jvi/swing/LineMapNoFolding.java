@@ -64,10 +64,4 @@ public class LineMapNoFolding implements LineMap
         return false;
     }
 
-    @Override
-    public int docLineOffset(int logicalLine)
-    {
-        return tv.getBuffer().getLineStartOffset(logicalLine);
-    }
-
 }

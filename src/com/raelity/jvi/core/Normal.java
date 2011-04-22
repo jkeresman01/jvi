@@ -2309,11 +2309,13 @@ middle_code:
     else if(new_lnum > new_bottomline - so)
       new_lnum = new_bottomline - so;
     
-    if(new_lnum != prev_lnum) {
-      G.curwin.setCursorLogicalLine(new_lnum, 0);
-      coladvance(G.curwin.w_curswant);
-    }
     G.curwin.setVpTopLogicalLine(new_topline);
+    if(new_lnum != prev_lnum) {
+      ViFPOS fpos = G.curwin.w_cursor.copy();
+      fpos.set(G.curwin.getDocLine(new_lnum), 0);
+      coladvance(fpos, G.curwin.w_curswant);
+      G.curwin.w_cursor.set(fpos);
+    }
   }
 
   /** nv_zet is simplified */
@@ -2448,7 +2450,8 @@ middle_code:
     //G.curwin.setCaretPosition(target, col);
 
     G.curwin.setVpTopLogicalLine(adjustTopLogicalLine(top));
-    G.curwin.setCursorLogicalLine(target, 0);
+    ViFPOS fpos = G.curwin.w_cursor.copy();
+    fpos.set(G.curwin.getDocLine(target), 0);
     int target_column;
     boolean keepColumn = (nchar == 't') || (nchar == 'z') || (nchar == 'b');
     if(keepColumn)
@@ -2456,10 +2459,11 @@ middle_code:
     else {
       // The cursor is set a few lines above, so the segment is for the line
       // that is the fold.
-      MySegment seg = G.curbuf.getLineSegment(G.curwin.w_cursor.getLine());
+      MySegment seg = G.curbuf.getLineSegment(fpos.getLine());
       target_column = Edit.beginlineColumnIndex(BL_WHITE | BL_FIX, seg);
     }
-    coladvance(target_column);
+    coladvance(fpos, target_column);
+    G.curwin.w_cursor.set(fpos);
   }
 
   static private void nv_colon (CMDARG cap) {
@@ -2828,12 +2832,13 @@ middle_code:
       newcursorline = G.curwin.getLogicalLineFromViewLine(newcursorline);
     }
 
+    ViFPOS fpos = G.curwin.w_cursor.copy();
     if(newcursorline > 0) {
-      //G.curwin.setCaretPosition(G.curbuf.getLineStartOffset(newcursorline));
-      G.curwin.setCursorLogicalLine(newcursorline, 0);
+      fpos.set(G.curwin.getDocLine(newcursorline), 0);
     }
-    cursor_correct();	// correct for 'so'
-    Edit.beginline(BL_SOL | BL_FIX);
+    cursor_correct(fpos);	// correct for 'so' !!DONE ELSEWHERE!!
+    Edit.beginline(fpos, BL_SOL | BL_FIX);
+    G.curwin.w_cursor.set(fpos);
   }
 
   /**

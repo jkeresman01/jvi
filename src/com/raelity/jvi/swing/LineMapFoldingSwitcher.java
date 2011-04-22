@@ -69,12 +69,6 @@ public class LineMapFoldingSwitcher implements LineMap
     }
 
     @Override
-    public int docLineOffset(int viewLine)
-    {
-        return getMap().docLineOffset(viewLine);
-    }
-
-    @Override
     public int docLine(int viewLine)
     {
         return getMap().docLine(viewLine);

@@ -81,6 +81,4 @@ public interface LineMap
     public boolean hasFolding(int docLine,
                               MutableInt pDocFirst, MutableInt pDocLast);
 
-    public int docLineOffset(int logicalLine);
-
 }
