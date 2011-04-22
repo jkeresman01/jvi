@@ -558,7 +558,7 @@ class MarkOps
                 || mp.getOffset() > mp.getBuffer().getLength())
             return "-invalid-";
 
-        // Forget the truncate and lead_len stuff
+        // Forget the lead_len stuff
 
         s = mp.getBuffer().getLineSegment(mp.getLine()).toString();
         s = s.substring(Misc.skipwhite(s, 0));
