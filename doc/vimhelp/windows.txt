@@ -59,10 +59,49 @@ CTRL-W CTRL-O					*CTRL-W_CTRL-O* *:on* *:only*
 ==============================================================================
 4. Moving cursor to other windows			*window-move-cursor*
 
+CTRL-W <Down>					*CTRL-W_<Down>*
+CTRL-W CTRL-J					*CTRL-W_CTRL-J* *CTRL-W_j*
+CTRL-W j	Move cursor to Nth window below current one.  Uses the cursor
+		position to select between alternatives.
+
+CTRL-W <Up>					*CTRL-W_<Up>*
+CTRL-W CTRL-K					*CTRL-W_CTRL-K* *CTRL-W_k*
+CTRL-W k	Move cursor to Nth window above current one.  Uses the cursor
+		position to select between alternatives.
+
+CTRL-W <Left>					*CTRL-W_<Left>*
+CTRL-W CTRL-H					*CTRL-W_CTRL-H*
+CTRL-W <BS>					*CTRL-W_<BS>* *CTRL-W_h*
+CTRL-W h	Move cursor to Nth window left of current one.  Uses the
+		cursor position to select between alternatives.
+
+CTRL-W <Right>					*CTRL-W_<Right>*
+CTRL-W CTRL-L					*CTRL-W_CTRL-L* *CTRL-W_l*
+CTRL-W l	Move cursor to Nth window right of current one.  Uses the
+		cursor position to select between alternatives.
+
 CTRL-W w					*CTRL-W_w* *CTRL-W_CTRL-W*
-CTRL-W CTRL-W	Without count: move cursor to window below current one.  If
-		there is no window below, go to top window.
-		With count: go to Nth window.
+CTRL-W CTRL-W	Without count: move cursor to window below/right of the
+		current one.  If there is no window below or right, go to
+		top-left window.
+		With count: go to Nth window (windows are numbered from
+		top-left to bottom-right).  To obtain the window number see
+		|bufwinnr()| and |winnr()|.  When N is larger than the number
+		of windows go to the last window.
+
+						*CTRL-W_W*
+CTRL-W W	Without count: move cursor to window above/left of current
+		one.  If there is no window above or left, go to bottom-right
+		window.  With count: go to Nth window, like with CTRL-W w.
+
+CTRL-W t					*CTRL-W_t* *CTRL-W_CTRL-T*
+CTRL-W CTRL-T	Move cursor to top-left window.
+
+CTRL-W b					*CTRL-W_b* *CTRL-W_CTRL-B*
+CTRL-W CTRL-B	Move cursor to bottom-right window.
+
+CTRL-W p					*CTRL-W_p* *CTRL-W_CTRL-P*
+CTRL-W CTRL-P	Go to previous (last accessed) window.
 
 ==============================================================================
 8. Writing with multiple buffers			*buffer-write*

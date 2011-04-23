@@ -16,6 +16,8 @@ h1 {text-align: center; }
     white-space: nowrap;
 }
 
+.note { background-color: yellow; color: black; }
+
 A.critical:link {color: red; }
 A.critical:active {color: red; }
 A.critical:visited {color: red; }

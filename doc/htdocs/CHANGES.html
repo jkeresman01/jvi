@@ -1,4 +1,8 @@
-<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<!--<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> -->
+
+<!--<!DOCTYPE html public "-//w3c//DTD HTML 4.01 transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">-->
+<!-- <!doctype html public "-//w3c//dtd html 4.0 transitional//en"> -->
+
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -9,8 +13,7 @@
   <LINK REL ="stylesheet" TYPE="text/css" HREF="stylesheet.css" TITLE="Style">
 </head>
 <body>
-  <!-- <h1 class="MainSec00Font" align="center">Changes</h1> -->
-<h1 align="center">Changes</h1>
+<h1>Changes</h1>
 
 <!--
 <b>NB6.5/NB6.7 only, in CVS</b>
@@ -52,6 +55,198 @@
 </dl>
 -->
 
+<h2>jVi-1.3 Release</h2>
+<p>
+jVi-1.3 has major source code refactoring to simplify embedding jVi.
+</p>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li>
+        handle line wrap; also handle long lines better
+        <ul>
+          <li><span class="tt">:set</span> options:
+            <span class="tt">wrap</span> and <span class="tt">linebreak</span></li>
+          <li>Various commands for a line wrap environment,
+            including <span class="tt">gj</span>, <span class="tt">gk</span>, <span class="tt">g$</span>,
+            <span class="tt">g0</span>, <span class="tt">g^</span>, <span class="tt">gm</span> </li>
+          <li>horizontal scroll commands:
+            <span class="tt">zl</span>,
+            <span class="tt">z&lt;Right&gt;</span>,
+            <span class="tt">zL</span>,
+            <span class="tt">zh</span>,
+            <span class="tt">z&lt;Left&gt;</span>,
+            <span class="tt">zH</span>,
+            <span class="tt">zs</span>
+            and <span class="tt">ze</span>
+          </li>
+        </ul>
+      </li>
+      <li><span class="tt">:set list</span></li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=2019611&amp;group_id=3653&amp;atid=353653">
+          [#2019611] map commands; User define key binding in Normal mode</a>
+        <br/><span class="tt">[nvop]map</span>, <span class="tt">[nvop]noremap</span>, <span class="tt">[nvop]unmap</span>
+        <br/>"Options&gt;Map Commands" for persited mappings.
+        Also work as colon commands.
+        <br/>Current mappings are displayed
+        with <span class="tt">:[nvop]map</span> and <span class="tt">:[nvop]map {lhs}</span>.
+        <br/>See jVi help files, <a href="vimhelp/map.txt.html">map.txt</a>.
+        <br/>
+        <span class="note">Note:</span> "p" mode mappings are jVi only.
+        <br/>The <span class="tt">:pmap</span>, <span class="tt">:pnoremap</span>
+        and <span class="tt">:punmap</span> commands are normal mode
+        mappings which are active in PLATFORM-SELECTION state. Selecting
+        text with the mouse produces a platform selection.
+      </li>
+      <li>
+        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2777608&amp;group_id=3653&amp;atid=353653">
+          [#2777608] Multiple-editor pane support (Ctrl-w)</a><br/>
+        A more accurate implementation
+        of Ctrl-W window traversal commands, e.g. left/right/up/down.
+        There are over 10 traversal's implemented.
+        <br/>See jVi help files,
+        <a href="vimhelp/windows.txt.html#window-move-cursor">windows.txt</a>.
+        All jVi editors, such as visual diff and expression evaluator,
+        are included.
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=2825295&amp;group_id=3653&amp;atid=353653">
+        [#2825295] yank/put/delete Actions on the closed fold at the cursor</a>
+        <br/>Most actions on folds work, for example <span class="tt">&gt;&gt;</span>.
+        <br/>Actions on visual mode selections involving folds
+        also implemented.
+      </li>
+      <li> Persist history for search and command entry,
+        along with values for marks, filemarks and registers.
+        <br/> They persist when the program exits normally.
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3001654&amp;group_id=3653&amp;atid=353653">
+        [#3001654] Ability to use line breaks with substitute command</a>
+        <br/> Implementation allows '\r' in the replacement text.
+        '\n' is also allowed and maps to newline (not NULL char into doc).
+      </li>
+      <li>Added <span class="tt">gJ</span> and <span class="tt">g~</span> commands</li>
+      <li>Add <span class="tt">:vglobal</span> and <span class="tt">:global!</span> commands.</li>
+      <li>
+        set command
+        <ul>
+          <li>Implement <span class="tt">:set</span> operations:
+            <span class="tt">+=</span>, <span class="tt">-=</span> and <span class="tt">^=</span>. (useful with 'isk')</li>
+          <li>Implement set {option}&amp; to set option to default value</li>
+          <li><span class="tt">:set</span> only display settable options that differ from their
+            default. Use <span class="tt">:set all</span> to see all settable options</li>
+        </ul>
+      </li>
+      <li> <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3166782&amp;group_id=3653&amp;atid=353653">
+          [#3166782] iskeyword or skip to underscore?</a>
+        <br/>add option: <span class="tt">'iskeyword' 'isk'</span><br/>
+        This is a per buffer option.
+        It works with <span class="tt">:set iskeyword=xxx</span> and modeline</li>
+      <li>add option: <span class="tt">blinkrate</span></li>
+      <li><span class="tt">:set scroll=0</span> accepted to reset to half window height</li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=2977160&amp;group_id=3653&amp;atid=353653">
+        [#2977160] ":set wrapscan" command </a>
+      </li>
+      <li>In jVi options dialog, each option displays default value</li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3054372&amp;group_id=3653&amp;atid=353653">
+        [#3054372] Make ":u" Perform Undo Operation</a>
+        <br/>Add both <span class="tt">:undo</span> and <span class="tt">:redo</span>
+      </li>
+      <li>Ctrl-G in visual line mode does full line java text selections.
+        Note that this changes the jVi start-end of the current visual bounds.
+      </li>
+    </ul>
+  </dd>
+  <dt>jVi NetBeans KeyBindings</dt>
+  <dd>
+    <ul>
+      <li>Colon Command Name Completion<br/>
+      During ":" command line entry Ctrl-Space or Ctrl-D bring up a
+      completion list.
+      </li>
+      <li>use the NetBeans REUSE flag for tag stack operations,
+        for example <span class="tt">Ctrl-]</span> and <span class="tt">Ctrl-T</span>. This means that
+        several operations in a row will share the same editor window.
+        Use the <span class="tt">:pin</span> command to prevent a file from being replaced.
+      </li>
+      <li><span class="tt">:pin</span> to clear editor REUSE flag. The red push pin,
+        "Editor Pin", on toolbar is active when the currently selected
+        editor is REUSEable.
+      </li>
+    </ul>
+  </dd>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li>Navigation in long lines and around line wrapping.
+          <br/>Don't keep messing up horizontal scroll position.
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3280820&amp;group_id=3653&amp;atid=103653">
+        [#3280820] exit ": mode" on BS on empty line</a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3271587&amp;group_id=3653&amp;atid=103653">
+        [#3271587] jvi Icon doesn't update</a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3273859&amp;group_id=3653&amp;atid=103653">
+          [#3273859] undo bug with <span class="tt">@</span> (execute register contents)</a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3280820&amp;group_id=3653&amp;atid=103653">
+        [#3280820] exit ": mode" on BS on empty line</a>
+      </li>
+      <li>
+        <a href="">
+        [#3258663] clipboard option doesn't work</a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/index.php?func=detail&amp;aid=3018062&amp;group_id=3653&amp;atid=103653">
+        [#3018062] Ranges don't work with ":global"</a>
+        <br/>Also fixed the ":global" command so that if matching lines
+        are deleted, there is no attempt to operate on them.
+        <br/>In particular, something like <span class="tt">:g/pattern/d 5</span>
+        does the right thing.
+      </li>
+      <li>Fix <span class="tt">[/</span> and <span class="tt">[*</span> when "/*" starts in column 0</li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3074904&amp;group_id=3653&amp;atid=103653">
+        [#3074904] Cursor Position off by one when jVi turned off</a>
+      </li>
+      <li>Handle insert mode Ctrl-W and Ctrl-U properly
+        for '.' redo command.</li>
+      <li>
+        <a href="https://sourceforge.net/tracker/index.php?func=detail&amp;aid=3196343&amp;group_id=3653&amp;atid=103653">
+        [#3196343] ggVG= throws exception</a>
+      </li>
+      <li> fixes for commands for line wrap like up,down,^D,^U,^F,^B,H,M,L
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3093239&amp;group_id=3653&amp;atid=103653">
+        [#3093239] cursor backspaces when jVi turned off</a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3032783&amp;group_id=3653&amp;atid=103653">
+        [#3032783] Wrong cursor after search</a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3006347&amp;group_id=3653&amp;atid=103653">
+        [#3006347] IllegalStateException when executing ":e!"</a>
+      </li>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=2925219&amp;group_id=3653&amp;atid=103653">
+        [#2925219] Nullpointer exception</a>
+      </li>
+    </ul>
+  </dd>
+</dl>
+
 <h2>jVi-1.3 development</h2>
 <!-- <b>NB7.0 only, VCS - 2010/04/06, Mercurial repository</b> -->
 <p>
@@ -76,10 +271,9 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
       <span class="tt">zH</span>,
       <span class="tt">zs</span>
       and <span class="tt">ze</span>
+      </li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>Bug fixes</dt>
   <dd>
     <ul>
@@ -102,18 +296,16 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
         See jVi help files, <a href="vimhelp/map.txt.html">map.txt</a>.
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=3280820&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3280820&amp;group_id=3653&amp;atid=103653">
         [#3280820] exit ": mode" on BS on empty line</a>
       </li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>Bug fixes</dt>
   <dd>
     <ul>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=3271587&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3271587&amp;group_id=3653&amp;atid=103653">
         [#3271587] jvi Icon doesn't update</a>
       </li>
     </ul>
@@ -127,7 +319,7 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
   <dd>
     <ul>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=2019611&group_id=3653&atid=353653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=2019611&amp;group_id=3653&amp;atid=353653">
           [#2019611] map commands; User define key binding in Normal mode</a>
         <br/><span class="tt">[nvo]map</span>, <span class="tt">[nvo]noremap</span>, <span class="tt">[nvo]unmap</span>
         <br/>"Options&gt;Map Commands" for persited mappings.
@@ -136,7 +328,7 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
         with <span class="tt">:[nvo]map</span> and <span class="tt">:[nvo]map {lhs}</span>.
         <br/>See jVi help files, <a href="vimhelp/map.txt.html">map.txt</a>.
       </li>
-      <li> <a href="https://sourceforge.net/tracker/?func=detail&aid=3166782&group_id=3653&atid=353653">
+      <li> <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3166782&amp;group_id=3653&amp;atid=353653">
         [#3166782] iskeyword or skip to underscore?</a>
         <br/>add option: <span class="tt">'iskeyword' 'isk'</span><br/>
         This is a per buffer option.
@@ -150,17 +342,15 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
       <li>In jVi options dialog, each option displays default value</li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>Bug fixes</dt>
   <dd>
     <ul>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=3273859&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3273859&amp;group_id=3653&amp;atid=103653">
           [#3273859] undo bug with <span class="tt">@</span> (execute register contents)</a>
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=3280820&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3280820&amp;group_id=3653&amp;atid=103653">
         [#3280820] exit ": mode" on BS on empty line</a>
       </li>
       <li>
@@ -177,14 +367,14 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
   <dd>
     <ul>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=2825295&group_id=3653&atid=353653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=2825295&amp;group_id=3653&amp;atid=353653">
         [#2825295] yank/put/delete Actions on the closed fold at the cursor</a>
         <br/>Most actions on folds work, for example <span class="tt">&gt;&gt;</span>.
         <br/>Actions on visual mode selections involving folds
         also implemented.
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=3001654&group_id=3653&atid=353653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3001654&amp;group_id=3653&amp;atid=353653">
         [#3001654] Ability to use line breaks with substitute command</a>
         <br/> Implementation allows '\r' in the replacement text.
         '\n' is also allowed and maps to newline (not NULL char into doc).
@@ -192,19 +382,17 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
       <li>Add <span class="tt">:vglobal</span> and <span class="tt">:global!</span> commands.</li>
       <li><span class="tt">:set scroll=0</span> accepted to reset to half window height</li>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=3054372&group_id=3653&atid=353653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3054372&amp;group_id=3653&amp;atid=353653">
         [#3054372] Make ":u" Perform Undo Operation</a>
         <br/>Add both <span class="tt">:undo</span> and <span class="tt">:redo</span>
       </li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>Bug fixes</dt>
   <dd>
     <ul>
       <li>
-        <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=3018062&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/index.php?func=detail&amp;aid=3018062&amp;group_id=3653&amp;atid=103653">
         [#3018062] Ranges don't work with ":global"</a>
         <br/>Also fixed the ":global" command so that if matching lines
         are deleted, there is no attempt to operate on them.
@@ -213,13 +401,13 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
       </li>
       <li>Fix <span class="tt">[/</span> and <span class="tt">[*</span> when "/*" starts in column 0</li>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=3074904&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3074904&amp;group_id=3653&amp;atid=103653">
         [#3074904] Cursor Position off by one when jVi turned off</a>
       </li>
       <li>Handle insert mode Ctrl-W and Ctrl-U properly
         for '.' redo command.</li>
       <li>
-        <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=3196343&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/index.php?func=detail&amp;aid=3196343&amp;group_id=3653&amp;atid=103653">
         [#3196343] ggVG= throws exception</a>
       </li>
     </ul>
@@ -235,8 +423,6 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
       </li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>jVi NetBeans KeyBindings</dt>
   <dd>
     <ul>
@@ -254,32 +440,30 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
   <dd>
     <ul>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=2977160&group_id=3653&atid=353653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=2977160&amp;group_id=3653&amp;atid=353653">
         [#2977160] ":set wrapscan" command please</a>
       </li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>Bug fixes</dt>
   <dd>
     <ul>
       <li> fixes for commands for line wrap like up,down,^D,^U,^F,^B,H,M,L
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=3093239&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3093239&amp;group_id=3653&amp;atid=103653">
         [#3093239] cursor backspaces when jVi turned off</a>
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=3032783&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3032783&amp;group_id=3653&amp;atid=103653">
         [#3032783] Wrong cursor after search</a>
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=3006347&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3006347&amp;group_id=3653&amp;atid=103653">
         [#3006347] IllegalStateException when executing ":e!"</a>
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=2925219&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=2925219&amp;group_id=3653&amp;atid=103653">
         [#2925219] Nullpointer exception</a>
       </li>
     </ul>
@@ -297,7 +481,7 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
         including <span class="tt">gj</span>, <span class="tt">gk</span>, <span class="tt">g$</span>,
         <span class="tt">g0</span>, <span class="tt">g^</span>, <span class="tt">gm</span> </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&aid=2777608&group_id=3653&atid=353653">
+        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2777608&amp;group_id=3653&amp;atid=353653">
           [#2777608] Multiple-editor pane support (Ctrl-w)</a><br/>
         An accurate implementation
         of Ctrl-W window traversal commands, e.g. left/right/up/down.
@@ -311,8 +495,6 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
       </li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>jVi NetBeans KeyBindings</dt>
   <dd>
     <ul>
@@ -340,11 +522,11 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
   <dd>
     <ul>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=2832400&group_id=3653&atid=353653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=2832400&amp;group_id=3653&amp;atid=353653">
         [#2832400] Xml/Html Tag text-object </a>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&aid=1829295&group_id=3653&atid=353653">
+        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=1829295&amp;group_id=3653&amp;atid=353653">
         [#1829295] [ ] Brace/paren/other navigation.</a>
       Implemented:
         <span class="tt">[m</span>, <span class="tt">]m</span>, <span class="tt">[M</span>, <span class="tt">]M</span>,
@@ -354,7 +536,7 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
         <span class="tt">[[</span>, <span class="tt">[]</span>, <span class="tt">]]</span>, <span class="tt">][</span>
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=2833497&group_id=3653&atid=353653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=2833497&amp;group_id=3653&amp;atid=353653">
           [#2833497] Save macros</a>.
           Persist named yank/put registers/buffers, e.g. <span class="tt">"a</span>, between sessions. (only if size under 1K)
       </li>
@@ -366,21 +548,19 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
         General option to control max number of persisted buffer-marks.
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=2929586&group_id=3653&atid=353653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=2929586&amp;group_id=3653&amp;atid=353653">
           [#2929586] <span class="tt">:[range]&lt;</span> command missing</a>
         Implement shift [range] lines one 'shiftwidth' left. Repeat '&lt;' for shifting multiple 'shiftwidth's.
       </li>
       <li>platform option so initial verion output does not bring up output window</li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>jVi NetBeans KeyBindings</dt>
   <dd>
     <ul>
       <li></li>
       <li>
-        <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=2931204&group_id=3653&atid=353653">
+        <a href="https://sourceforge.net/tracker/index.php?func=detail&amp;aid=2931204&amp;group_id=3653&amp;atid=353653">
           [#2931204] code formatting in visual mode in NB 6.8</a>
         Hook 'Q' and 'gq' commands to NetBeans' reformat action.
       </li>
@@ -389,8 +569,6 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
         unles <span class="tt">'usePlatformTab'</span> option is set</li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>Bug fixes</dt>
   <dd>
     <ul>
@@ -398,15 +576,15 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
       is <span class="tt">"exclusive"</span>.
         </li>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=2922216&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=2922216&amp;group_id=3653&amp;atid=103653">
         [#2922216] The options panel is so wide ...</a>
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=2865050&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=2865050&amp;group_id=3653&amp;atid=103653">
           [#2865050] <span class="tt">cw</span>, change word, command and accented chars </a>
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=2936394&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/index.php?func=detail&amp;aid=2936394&amp;group_id=3653&amp;atid=103653">
         [#2936394] mouse-drive selection not taking last character on the line</a>
       </li>
       <li>don't open output window unlesss <span class="tt">p</span>
@@ -416,7 +594,7 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
       <li>fix bug in execution of <span class="tt">:make</span> command (NB)</li>
       <li>tweak code that prevents visible clone editor from scrolling for nb6.8.</li>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=2922313&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=2922313&amp;group_id=3653&amp;atid=103653">
         [#2922313] exception: didDocRemoveAfterTrackPosition</a>
       </li>
     </ul>
@@ -433,7 +611,7 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
       <br/>&lt;ESC&gt; clears a java text selection.
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=2805922&group_id=3653&atid=353653">
+        <a href="https://sourceforge.net/tracker/index.php?func=detail&amp;aid=2805922&amp;group_id=3653&amp;atid=353653">
           [#2805922] Please implement softtabstop option</a>.
       A per buffer option, works with modeline. This change also
       implements most (all?) of the vim logic related to expandtabs rather than
@@ -443,22 +621,20 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
       remove multiple spaces. See vim's doc.
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=2779250&group_id=3653&atid=353653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=2779250&amp;group_id=3653&amp;atid=353653">
         [#2779250] i_ctrl-a (insert mode command)</a> Also implement i_ctrl-@.
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=1726929&group_id=3653&atid=353653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=1726929&amp;group_id=3653&amp;atid=353653">
         [#1726929] i_CTRL_R to paste buffer content</a> including the i_Ctrl-R sub-commands.
       </li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>jVi NetBeans KeyBindings</dt>
   <dd>
     <ul>
       <li>
-        <a href="https://sourceforge.net/tracker/?group_id=3653&atid=353653">
+        <a href="https://sourceforge.net/tracker/?group_id=3653&amp;atid=353653">
         [#2777608] Multiple-editor pane support (Ctrl-w)</a>
       Only a partial fix.
       <br/>Ctrl-W_Ctrl-W An imperfect implementation: cycles in arbitrary,
@@ -485,24 +661,22 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
       <li>Hook jVi into Tools&gt;Options Export and Import dialog</li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>Bug fixes</dt>
   <dd>
     <ul>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=2816171&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=2816171&amp;group_id=3653&amp;atid=103653">
         [#2816171] NB6.7 empty file bottom not supported</a>
       </li>
       <li>Clean up and fix some problems with "magic-redo" (gets '.' to work
       better after code completion).</li>
       <li>Fix '.' problem with backspace introduced by 'sts' option in beta1.</li>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=2808635&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=2808635&amp;group_id=3653&amp;atid=103653">
         [#2808635] Unable to edit preferences on Mac OS X</a>
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=2808634&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=2808634&amp;group_id=3653&amp;atid=103653">
         [#2808634] Warning message in logs and an error 6.7</a>
       </li>
     </ul>
@@ -519,28 +693,24 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
         <span class="tt">I</span>, <span class="tt">A</span>, <span class="tt">x</span>, <span class="tt">D</span>, <span class="tt">r</span>
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=2777562&group_id=3653&atid=353653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=2777562&amp;group_id=3653&amp;atid=353653">
         [#2777562] ge and gE don't work</a> Also implemented g* and g#.
       </li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>jVi NetBeans KeyBindings</dt>
   <dd>
     <ul>
       <li>Make jVi options a top level option (no longer in AdvacedOptions)</li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>Bug fixes</dt>
   <dd>
     <ul>
       <li>Clean up behavior of "<span class="tt">:tog[gle]</span>" command</li>
       <li>Set <span class="tt">`[</span> and <span class="tt">`]</span> properly after an insert operation</li>
       <li>
-        <a href="https://sourceforge.net/tracker/?func=detail&aid=2783881&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=2783881&amp;group_id=3653&amp;atid=103653">
         [#2783881] Refactor colon commands with netbeans 6.7-beta don't work</a>
       </li>
     </ul>
@@ -553,17 +723,15 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
   <dd>
     <ul>
       <li>
-        <a href="https://sourceforge.net/tracker2/?func=detail&aid=1976163&group_id=3653&atid=353653">
+        <a href="https://sourceforge.net/tracker2/?func=detail&amp;aid=1976163&amp;group_id=3653&amp;atid=353653">
         [#1976163] Implement CTRL+A and CTRL+X</a> (command mode)
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker2/?func=detail&aid=1703043&group_id=3653&atid=353653">
+        <a href="https://sourceforge.net/tracker2/?func=detail&amp;aid=1703043&amp;group_id=3653&amp;atid=353653">
         [#1703043] Support for Ctrl-U and Ctrl-W</a> (input mode)
       </li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>Bug fixes</dt>
   <dd>
     <ul>
@@ -571,7 +739,7 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
           the 1.2.3 release. So much for a simple quick fix for NB6.7.
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker2/?func=detail&aid=2636118&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker2/?func=detail&amp;aid=2636118&amp;group_id=3653&amp;atid=103653">
         [#2636118] jVi doesn't work in NetBeans 6.7</a>
       </li>
     </ul>
@@ -584,49 +752,47 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
   <dd>
     <ul>
       <li>
-        <a href="https://sourceforge.net/tracker2/?func=detail&aid=2339621&group_id=3653&atid=353653">
+        <a href="https://sourceforge.net/tracker2/?func=detail&amp;aid=2339621&amp;group_id=3653&amp;atid=353653">
         [#2339621] ci", di}, yi) commands... Text Object Selection</a>
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker2/?func=detail&aid=2166561&group_id=3653&atid=353653">
+        <a href="https://sourceforge.net/tracker2/?func=detail&amp;aid=2166561&amp;group_id=3653&amp;atid=353653">
         [#2166561] gU/u</a>
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker2/?func=detail&aid=2118243&group_id=3653&atid=353653">
+        <a href="https://sourceforge.net/tracker2/?func=detail&amp;aid=2118243&amp;group_id=3653&amp;atid=353653">
         [#2118243] Add mapping for Ctrl-Q to start block select mode</a>
       </li>
       <li>Jump list. Includes <span class="tt">:ju[mps]</span>, <span class="tt">Ctrl-O</span> and <span class="tt">Ctrl-I</span></li>
-      <li><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=232351&group_id=3653&atid=353653">
+      <li><a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=232351&amp;group_id=3653&amp;atid=353653">
         [#232351] copy/move operations on marked block aren't implemented</a>
       </li>
-      <li><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=436544&group_id=3653&atid=353653">
+      <li><a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=436544&amp;group_id=3653&amp;atid=353653">
         [ 436544 ] yank doesn\'t work with colon commands</a>
       </li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>Bug fixes</dt>
   <dd>
     <ul>
       <li>
-        <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=2388723&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/index.php?func=detail&amp;aid=2388723&amp;group_id=3653&amp;atid=103653">
         [#2388723] IDE hangs when pasting text to the find-textfield (linux only)</a>
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker2/?func=detail&aid=2018514&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker2/?func=detail&amp;aid=2018514&amp;group_id=3653&amp;atid=103653">
         [#2018514] SIOOBE during editing in GetChar.docRemoveInternal</a>
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker2/?func=detail&aid=2191596&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker2/?func=detail&amp;aid=2191596&amp;group_id=3653&amp;atid=103653">
         [#2191596] Unable to autogen code from Ctrl+Space</a>
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker2/?func=detail&aid=2200316&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker2/?func=detail&amp;aid=2200316&amp;group_id=3653&amp;atid=103653">
         [#2200316] The Repeat command fails when search pattern</a>
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker2/?func=detail&aid=2200322&group_id=3653&atid=353653">
+        <a href="https://sourceforge.net/tracker2/?func=detail&amp;aid=2200322&amp;group_id=3653&amp;atid=353653">
         [#2200322] paste command doesn't accept numbers</a>
       </li>
       <li>
@@ -634,18 +800,18 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
         [NetBeans Issue 150199] [jVi] AssertionError: Start offset must be less than or equal to the end offset. startOffset = 0, endOffset = -1</a>
       </li>
 
-      <li><a href="https://sourceforge.net/tracker2/?func=detail&aid=2130840&group_id=3653&atid=103653">
+      <li><a href="https://sourceforge.net/tracker2/?func=detail&amp;aid=2130840&amp;group_id=3653&amp;atid=103653">
         [#2130840] JVIEnable action not showing in the available keybindings</a>
       </li>
-      <li><a href="https://sourceforge.net/tracker/index.php?func=detail&aid=2014322&group_id=3653&atid=103653">
+      <li><a href="https://sourceforge.net/tracker/index.php?func=detail&amp;aid=2014322&amp;group_id=3653&amp;atid=103653">
         [#2014322] Does not work with Netbeans 6.5</a>
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=2015265&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/index.php?func=detail&amp;aid=2015265&amp;group_id=3653&amp;atid=103653">
         [#2015265] Exception when going to a line # outside the file range</a>
       </li>
       <li>
-        <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=2016745&group_id=3653&atid=103653">
+        <a href="https://sourceforge.net/tracker/index.php?func=detail&amp;aid=2016745&amp;group_id=3653&amp;atid=103653">
           [#2016745] assert while in diff editor</a>
       </li>
     </ul>
@@ -672,7 +838,7 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
   <dt>Bug fixes</dt>
   <dd>
     <ul>
-      <li><a href="https://sourceforge.net/tracker/?func=detail&atid=353653&aid=1941326&group_id=3653">
+      <li><a href="https://sourceforge.net/tracker/?func=detail&amp;atid=353653&amp;aid=1941326&amp;group_id=3653">
         [#1941326] substitute in selected block (MAC ONLY)</a>
       </li>
     </ul>
@@ -684,12 +850,12 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
   <dt>Bug fixes</dt>
   <dd>
     <ul>
-      <li><a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1914140&group_id=3653&atid=103653">
+      <li><a href="https://sourceforge.net/tracker/index.php?func=detail&amp;aid=1914140&amp;group_id=3653&amp;atid=103653">
         [#1914140] Visual mode highlighting broken after jVi re-enable</a>
       </li>
       <li>Fix interactions when extending visual mode selection with
       searching and incremental searching.</li>
-      <li><a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1693415&group_id=3653&atid=103653">
+      <li><a href="https://sourceforge.net/tracker/index.php?func=detail&amp;aid=1693415&amp;group_id=3653&amp;atid=103653">
         [#1693415] jVi doesn't work well with protected text</a></li>
       <li>handle interactions where "O"/"o" open new line commands
       would open folds, or fail because they were next to guarded areas.</li>
@@ -709,8 +875,6 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
       <li>[#1829293] \c,\C in search for case sensitive</li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>jVi NetBeans KeyBindings</dt>
   <dd>
     <ul>
@@ -721,8 +885,6 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
       wordMatchNext/Previous.</li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>Bug fixes</dt>
   <dd>
     <ul>
@@ -761,8 +923,6 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
       </li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>jVi NetBeans KeyBindings</dt>
   <dd>
     <ul>
@@ -786,8 +946,6 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
           </li>
       </ul>
   </dd>
-</dl>
-<dl>
   <dt>Bug fixes</dt>
   <dd>
     <ul>
@@ -825,8 +983,6 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
       so {}[] can be entered on Mac's Norwegian and French keyboards</li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>jVi NetBeans KeyBindings</dt>
   <dd>
     <ul>
@@ -889,8 +1045,6 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
       <li>implement <span class="tt">'[</span> and <span class="tt">']</span> marks</li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>jVi NetBeans KeyBindings</dt>
   <dd>
     <ul>
@@ -901,8 +1055,6 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
       under the cursor</li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>Bug fixes</dt>
   <dd>
     <ul>
@@ -943,7 +1095,7 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
   <dt>jVi Core</dt>
   <dd>
     <ul>
-      <li>[#1678712] Visual mode: <span class="tt">v V '< '> `< `> </span>
+      <li>[#1678712] Visual mode: <span class="tt">v V '&lt; '&gt; `&lt; `&gt; </span>
         <br/>thanks to Roy van der Kuil. (not visual block yet, but on the way)
       </li>
       <li>[#424678 ] sentence and paragraph motions: <span class="tt">{ } ( )</span>
@@ -963,8 +1115,6 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
       </li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>Bug fixes</dt>
   <dd>
     <ul>
@@ -1005,8 +1155,6 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
         <!-- <li>Highlighting done with NetBeans APIs.</li> -->
     </ul>
     </dd>
-</dl>
-<dl>
   <dt>jVi Core</dt>
     <dd>
     <ul>
@@ -1027,15 +1175,13 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
             <li>Added <span class="tt">gg</span> normal command.</li>
             <li><span class="tt">m&lt;</span> and <span class="tt">m&gt;</span> mark the current line before
             jumping so the <span class="tt">''</span> returns. (Like doing <span class="tt">m'</span>).</li>
-            <li><span class="tt">Ctrl-<</span> and <span class="tt">Ctrl-></span> will catch first
+            <li><span class="tt">Ctrl-&lt;</span> and <span class="tt">Ctrl-&gt;</span> will catch first
             non blank in a line.</li>
             <li>In <span class="tt">[count]&lt;op&gt;{motion}</span>, when {motion} was
             a search like <span class="tt">/foo</span>, the &lt;op&gt; was ignored. So now
             stuff like <span class="tt">y/foo</span> and <span class="tt">3d/one</span> work.
     </ul>
     </dd>
-</dl>
-<dl>
   <dt>Bugs fixed</dt>
     <dd>
     <ul>
@@ -1138,8 +1284,8 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
       </li>
     </ul>
     </dd>
-(read only files still not handled completely)
 </dl>
+(read only files still not handled completely)
 
 <b>Version 0.6.3.6 02/18/01</b>
 <dl>
@@ -1218,7 +1364,7 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
       <li>113802: ":0" command should go to first line</li>
       <li>114281: JBuilder: in insert mode if the user enters a tab
 	character the UseTabs Option should be followed. See
-        <a href="http://sourceforge.net/bugs/?func=detailbug&bug_id=114281&group_id=3653"
+        <a href="http://sourceforge.net/bugs/?func=detailbug&amp;bug_id=114281&amp;group_id=3653"
 	target="_top"> Bug Report</a> for details.
     </ul>
     </dd>
@@ -1310,15 +1456,17 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
 <dl>
   <dt>Corresponds to first (premature?) source release.</dt>
   <dt>Bug fixes:</dt>
-  <ul>
-  <li> fix: tabs for left/right shift, '&lt;' and '&gt;', fixed.
-  In JB controlled with "useTabCharacter".
-  <li> JB fix: ":q" in split window only closes current window, not node/tab.
-  <li> fix: C-End, C-Home, C-Left, C-Right
-  <li> All problems reported at
-       <a href="http://sourceforge.net/bugs/?group_id=3653" target="_top">
-       jVi Bug Tracking</a> closed.
-  </ul>
+  <dd>
+    <ul>
+    <li> fix: tabs for left/right shift, '&lt;' and '&gt;', fixed.
+    In JB controlled with "useTabCharacter".
+    <li> JB fix: ":q" in split window only closes current window, not node/tab.
+    <li> fix: C-End, C-Home, C-Left, C-Right
+    <li> All problems reported at
+         <a href="http://sourceforge.net/bugs/?group_id=3653" target="_top">
+         jVi Bug Tracking</a> closed.
+    </ul>
+  </dd>
 
   <dt>Alpha/preview feature:</dt>
   <dd>":[&lt;addr&gt;[,&lt;addr&gt;]]s[ubstitute]/pattern/replacement/[g]"
@@ -1334,7 +1482,7 @@ jVi-1.3 has major source code refactoring to simplify embedding jVi.
   <dd>User must put either
     <a href="http://www.savarese.org/oro/software/OROMatcher1.1.html">
     OROMatcher</a>
-    or <a href="http://www.javaregex.com/ ">
+    or <a href="http://www.javaregex.com/">
     com.stevesoft.pat</a> (version 1.4) in path.
     <br>Options available on what needs to be escaped.</dd>
 
