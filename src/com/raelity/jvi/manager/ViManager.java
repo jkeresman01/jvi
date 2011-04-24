@@ -73,10 +73,14 @@ public class ViManager
     private static final Logger LOG = Logger.getLogger(ViManager.class.getName());
 
     //
+    // Note the use of "9" for the "final" release
+    // conventionally: 1.2.beta3        module-rev 1.2.3  (actually 03)
+    // conventionally: 1.2              module-rev 1.2.9  (actually 09)
     // conventionally: 1.2.3.beta4      module-rev 1.2.34
     // conventionally: 1.2.3            module-rev 1.2.39
     // 1.3.1 is module rev 1.3.19
-    public static final jViVersion version = new jViVersion("1.3.1");
+    // 1.4 is module rev 1.4
+    public static final jViVersion version = new jViVersion("1.4.0");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -203,9 +207,12 @@ public class ViManager
             throw new RuntimeException("NetBeans Bug 192496");
         assert core != null;
 
-        ColonCommands.register("ve", "version", ACTION_version, null);
-        ColonCommands.register("debugMotd", "debugMotd", ACTION_debugMotd,
-                               EnumSet.of(CcFlag.DBG));
+        ColonCommands.register("ve", "version",
+                               new VersionCommand(), null);
+        ColonCommands.register("debugMotd", "debugMotd",
+                               new DebugMotdCommand(), EnumSet.of(CcFlag.DBG));
+        ColonCommands.register("debugVersion", "debugVersion",
+                               new DebugVersionCommand(), null);
 
 
         firePropertyChange(P_BOOT, null, null);
@@ -256,7 +263,7 @@ public class ViManager
         }
     }
 
-    static ActionListener ACTION_version = new ActionListener()
+    static class VersionCommand implements ActionListener //ACTION_version = new ActionListener()
     {
         @Override
         public void actionPerformed(ActionEvent ev)
@@ -264,7 +271,7 @@ public class ViManager
             ViManager.motd.output();
         }
     };
-    static ActionListener ACTION_debugMotd = new ActionListener()
+    static class DebugMotdCommand implements ActionListener //ACTION_debugMotd = new ActionListener()
     {
         @Override
         public void actionPerformed(ActionEvent ev)
@@ -272,6 +279,29 @@ public class ViManager
             ViManager.debugMotd();
         }
     };
+    static class DebugVersionCommand extends ColonCommands.AbstractColonAction
+    {
+
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.DBG);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            ColonCommands.ColonEvent cev = (ColonCommands.ColonEvent)e;
+            if(cev.getNArg() == 1) {
+                String vs = cev.getArg(1);
+                jViVersion v = new jViVersion(vs);
+                System.err.println("input=" + vs
+                                   +", version=" + v.toString()
+                                   + ", vToCur=" + v.compareTo(version));
+            }
+        }
+
+    }
 
     /**
      * Disable the feature.

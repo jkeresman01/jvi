@@ -115,12 +115,16 @@ public final class jViVersion implements Comparable<jViVersion>
     @Override
     public String toString()
     {
-        String s = "" + version[0] + "." + version[1] + "." + version[2];
-        if (version[3] != qualityMap.length)
-            s += "." + qualityMap[version[3]] + version[4];
+        StringBuilder sb = new StringBuilder();
+        sb.append(version[0]).append(".").append(version[1]);
+        if(version[2] != 0 || version[3] != qualityMap.length)
+            sb.append(".").append(version[2]);
+        if (version[3] != qualityMap.length) {
+            sb.append(".").append(qualityMap[version[3]]).append(version[4]);
+        }
         if (version[5] != 0)
-            s += "." + version[5];
-        return s;
+            sb.append(".").append(version[5]);
+        return sb.toString();
     }
 
     public int getMajor()
@@ -151,6 +155,7 @@ public final class jViVersion implements Comparable<jViVersion>
                 (getTweak() == 0 ? "" : getTweak());
     }
 
+    @Override
     public int compareTo(jViVersion v2)
     {
         for (int i = 0; i < version.length; i++) {
