@@ -37,7 +37,10 @@ A.note:visited {color: green; font-weight: bold}
 
 /* a table of jVi commands */
 .TableOfCommands { border-collapse: collapse; }
-.TableOfCommands td { border-style: ridge; }
+.TableOfCommands td { border-style: ridge;
+                      padding: 0 4px;
+                      border-width: 3px;
+}
 
 .ImgRight { float: right; border: 0; }
 
