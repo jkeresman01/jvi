@@ -1,4 +1,4 @@
-<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<!-- <!doctype html public "-//w3c//dtd html 4.0 transitional//en"> -->
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -64,7 +64,7 @@ Communications can also be sent to
 
 <h2 id="normal" class="MainSec00Font">Normal Mode</h2>
 There are some Normal Mode commands that hook into NetBeans features.
-<table border="1" cellpadding="3">
+<table class="TableOfCommands">
     <tbody>
         <tr>
             <td><span class="tt">Ctrl-]</span></td>
@@ -93,7 +93,7 @@ There are some Normal Mode commands that hook into NetBeans features.
 
 <h2 id="colon" class="MainSec00Font">Colon Commands</h2>
 <h2 class="MainSec01Font">NetBeans colon command hooks</h2>
-<table id="nb-hooks" border="1" cellpadding="3">
+<table id="nb-hooks" class="TableOfCommands">
     <tbody>
         <tr>
             <td><span class="tt">:se[t]</span></td>
@@ -207,7 +207,7 @@ There are some Normal Mode commands that hook into NetBeans features.
 <h2 id="refactoring" class="MainSec01Font">Refactoring commands</h2>
 The following commands bring up the indicated dialog. Typically the cursor
 should be set as needed before executing the command.
-<table border="1" cellpadding="3">
+<table class="TableOfCommands">
     <tbody>
         <tr>
             <td><span class="tt">:rfr[ename]</span></td>
@@ -226,7 +226,7 @@ should be set as needed before executing the command.
                 <span class="tt">:rfsa[fedelete]</span></td>
             <td>Refactor &gt; Safe Delete...</td>
         </tr>
-        <tr><td></td></tr>
+        <tr><td></td><td></td></tr>
         <tr>
             <td><span class="tt">:rfch[angemethodparameters]</span></td>
             <td>Refactor &gt; Change Method Parameters...</td>
@@ -235,7 +235,7 @@ should be set as needed before executing the command.
             <td><span class="tt">:rfenc[apsulatefields]</span></td>
             <td>Refactor &gt; Encapsulate Fields...</td>
         </tr>
-        <tr><td></td></tr>
+        <tr><td></td><td></td></tr>
         <tr>
             <td><span class="tt">:rfup</span>,
                 <span class="tt">:rfpul[lup]</span></td>
@@ -248,19 +248,19 @@ should be set as needed before executing the command.
         </tr>
         <tr><td></td><td></td></tr>
         <tr>
-            <td><span class="tt">:rfvar[iable]</span></td>
+            <td><span class="tt">:rfintrovar[iable]</span></td>
             <td>Refactor &gt; Introduce Variable...</td>
         </tr>
         <tr>
-            <td><span class="tt">:rfcon[stant]</span></td>
+            <td><span class="tt">:rfintrocon[stant]</span></td>
             <td>Refactor &gt; Introduce Constant...</td>
         </tr>
         <tr>
-            <td><span class="tt">:rffie[ld]</span></td>
+            <td><span class="tt">:rfintrofie[ld]</span></td>
             <td>Refactor &gt; Introduce Field...</td>
         </tr>
         <tr>
-            <td><span class="tt">:rfmet[hod]</span></td>
+            <td><span class="tt">:rfintromet[hod]</span></td>
             <td>Refactor &gt; Introduce Method...</td>
         </tr>
     </tbody>
@@ -268,7 +268,7 @@ should be set as needed before executing the command.
 
 <h2 id="execution" class="MainSec01Font">Execution</h2>
 <i>These are not implemented yet</i>
-<table border="1" cellpadding="3">
+<table class="TableOfCommands">
     <tbody>
         <tr>
             <td><span class="tt">:run</span></td>
@@ -310,7 +310,7 @@ Note: the "<span class="tt">tabs</span>" view-pane is only available if the
 <p>
     <img SRC="images/jViMiscOptionsPage.png"
          ALT="Built for NetBeans"
-         align="right" border="0"/>
+         class="ImgRight"/>
     There are several options that control jVi's behavior. They can be found
     though NetBeans' Main Menu at
     <i>Tools &gt; Options &gt; AdvancedOptions &gt; Editing &gt;
@@ -349,11 +349,11 @@ NetBeans.  </p>
 <h2 id="keys" class="MainSec00Font">Key Bindings</h2>
 
 <p>
-        <img SRC="images/jViKeyOptionsPage.png"
-        ALT="Built for NetBeans"
-        align="right" border="0"/>
-Keybindings that are not delivered to jVi are passed on to the next keymap in
-line. For example, jVi does not catch any key strokes that use the Alt key.
+    <img SRC="images/jViKeyOptionsPage.png"
+         ALT="Built for NetBeans"
+         class="ImgRight"/>
+Keybindings that are not caught by jVi are passed on to the embedding
+application. For example, jVi does not catch any key strokes that use the Alt key.
 <p>
 Configure the Keys that are caught by jVi though its
 <i>Control-Key Bindings</i> and <i>Keypad Bindings</i>
@@ -416,8 +416,8 @@ and hilight.
 <!-- raelity copyright -->
 <hr>
 <address class="addr">
-Copyright &copy; 2011 Raelity Engineering</address>
-<a href="mailto:support@raelity.com" class="addr">
-Contact Raelity Engineering</a>
+  Copyright &copy; 2011 Raelity Engineering<br/>
+  <a href="mailto:support@raelity.com">Contact Raelity Engineering</a>
+</address>
 </body>
 </html>

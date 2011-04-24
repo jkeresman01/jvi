@@ -9,6 +9,10 @@
 body { background-color: #F0E0C0 }      /* darker */
     /* body { background-color: #FFF0D0 }      lighter */
 
+/* Attributes for main body */
+.MainSec00Font { font-size: large }
+.MainSec01Font { font-size: medium }
+
 h1 {text-align: center; }
 
 .tt { font-size: larger;
@@ -31,6 +35,12 @@ A.note:active {color: green; font-weight: bold}
 A.note:visited {color: green; font-weight: bold}
 */
 
+/* a table of jVi commands */
+.TableOfCommands { border-collapse: collapse; }
+.TableOfCommands td { border-style: ridge; }
+
+.ImgRight { float: right; border: 0; }
+
 /* Table colors */
 .TableHeadingColor     { background: #CCCCFF } /* Dark mauve */
 .TableSubHeadingColor  { background: #EEEEFF } /* Light mauve */
@@ -41,10 +51,6 @@ A.note:visited {color: green; font-weight: bold}
 /* .IndexHeadingFont { font-size: normal; font-family: normal } */
 .IndexSec00Font { font-size: 15pt; font-family: normal; font-weight: normal }
 .IndexItemFont    { font-family: normal }
-
-/* Attributes for main body */
-.MainSec00Font { font-size: large }
-.MainSec01Font { font-size: medium }
 
 .addr { font-size: smaller }
 
