@@ -467,7 +467,7 @@ public class Search01 {
     int cursorLine = 0; // set to line number of last found line
     int sidx = 1; // after delimiter
 
-    char type = cev.getComandName().charAt(0);
+    char type = cev.getArg(0).charAt(0);
     if(cev.isBang()) // must be g!
       type = 'v';
     assert type == 'g' || type == 'v';

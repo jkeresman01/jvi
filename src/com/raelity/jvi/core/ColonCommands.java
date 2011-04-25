@@ -788,14 +788,6 @@ static public class ColonEvent extends ActionEvent
     {
         return new ArrayList<String>(args);
     }
-    
-    /**
-     * @return the expanded commandName
-     */
-    public String getComandName()
-    {
-        return command;
-    }
 
     /** use in dummy parse to give the command name lookup match.
      * @return lookup command, empty string if lookup failed
