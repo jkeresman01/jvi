@@ -5,3 +5,4 @@ put it in a sibling directory of jvi. Then open nbvi/nbvi-suite/jvi-project,
 a project with external sources, with NetBeans.
 
 If you want to work on the NetBeans plugin, see nbvi/README.
+
