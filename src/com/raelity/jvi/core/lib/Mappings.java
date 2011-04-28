@@ -139,7 +139,14 @@ public final class Mappings {
     }
 
     /**
-     * Convert the match to a char.
+     * Convert the next part of user map command input
+     * to actual character. A single character is produced.
+     *
+     * the match to a char.
+     * @param m regex matcher for the next input to translate
+     * @param is_rhs translating the rhs of a map command
+     * @param orig for debug, the string that is matched
+     * @param emsg append error messages to here
      * @return null if problem else translated char
      */
     private static Character tranlateMapCommandChar(
@@ -196,6 +203,9 @@ public final class Mappings {
 
     private static WeakReference<Matcher> refMapCharsMatcher;
 
+    /**
+     * @return matcher to parse chars in lhs/rhs of map command.
+     */
     private static Matcher getMapCharsMatcher()
     {
         Matcher mapCharsMatcher;
@@ -232,8 +242,11 @@ public final class Mappings {
         return mapCharsMatcher;
     }
 
-    /** should already have verified that cmd is supported */
-    private static int get_map_mode(Wrap<String>cmdp, boolean forceit)
+    /**
+     * Should already have verified that cmd is supported.
+     * @return mode(s) that the command matches
+     */
+    private static int parseMapMode(Wrap<String>cmdp, boolean forceit)
     {
         String cmd = cmdp.getValue();
         int p = 0;
@@ -279,11 +292,13 @@ public final class Mappings {
                 | "vmap".equals(cmd)
                 | "omap".equals(cmd)
                 | "pmap".equals(cmd)
+
                 | "noremap".equals(cmd)
                 | "nnoremap".equals(cmd)
                 | "vnoremap".equals(cmd)
                 | "onoremap".equals(cmd)
                 | "pnoremap".equals(cmd)
+
                 | "unmap".equals(cmd)
                 | "nunmap".equals(cmd)
                 | "vunmap".equals(cmd)
@@ -326,7 +341,7 @@ public final class Mappings {
 
         String originalCmd = cmd;
         Wrap<String> cmdp = new Wrap<String>(cmd);
-        int mode = get_map_mode(cmdp, false);
+        int mode = parseMapMode(cmdp, false);
         cmd = cmdp.getValue();
         int maptype = (cmd.charAt(0) == 'n') ? 2 : cmd.charAt(0) == 'u' ? 1 : 0;
 
@@ -424,7 +439,9 @@ public final class Mappings {
     }
 
     /**
-     * Parse the mappings, return empty string if no error.
+     * Parse the mappings, return any errors.
+     * Return empty string if no error.
+     * Discard the results of the parse.
      */
     public static String parseMapCommands(String input)
     {
@@ -482,6 +499,12 @@ public final class Mappings {
         vios.close();
     }
 
+    /**
+     * convert lhs/rhs of a mapping to @{literal <C-x>, <Special>}
+     * style for display.
+     * @param s
+     * @return
+     */
     private static String mappingString(String s)
     {
         Map<Character, String> cmap = getReverseMapCommandSpecial();
@@ -513,21 +536,12 @@ public final class Mappings {
         return sb.toString();
     }
 
-    private static List<Mapping> getMappings(List<Mapping> origM, int mode)
-    {
-        List<Mapping> lM = new ArrayList<Mapping>();
-        if(origM != null) {
-            for(Mapping m : origM) {
-                if((m.mode & mode) != 0)
-                    lM.add(m);
-            }
-        }
-        return lM;
-    }
-
-    // NOTE: if mapping has "isUnmap",
-    // then overlapping mappings are removed.
-    private boolean putMapping(Mapping m)
+    /**
+     * Remove any mappings that overlap the param mapping
+     * and add the new mapping unless m.isUnmap is set.
+     * @param m
+     */
+    private void putMapping(Mapping m)
     {
         boolean unmap = m.isUnmap;
         Options.kd().printf(Level.FINER,
@@ -537,7 +551,7 @@ public final class Mappings {
         List<Mapping> lM = mappings.get(c);
         if(lM == null) {
             if(unmap)
-                return false;
+                return;
             mappings.put(c, (lM = new ArrayList<Mapping>()));
         }
 
@@ -557,7 +571,7 @@ public final class Mappings {
         }
         if(!unmap)
             lM.add(m);
-        return true;
+        return;
     }
 
     private boolean containsMappings(Character lhs)
@@ -565,6 +579,20 @@ public final class Mappings {
         return mappings.containsKey(lhs);
     }
 
+    /** for print mappings */
+    private static List<Mapping> getMappings(List<Mapping> origM, int mode)
+    {
+        List<Mapping> lM = new ArrayList<Mapping>();
+        if(origM != null) {
+            for(Mapping m : origM) {
+                if((m.mode & mode) != 0)
+                    lM.add(m);
+            }
+        }
+        return lM;
+    }
+
+    /** for print mappings */
     private List<Mapping> getMappings(Character lhs, int mode)
     {
         if(lhs != null) {
@@ -577,6 +605,7 @@ public final class Mappings {
         return lM;
     }
 
+    /** for print mappings */
     public Mapping getMapping(Character c, int state)
     {
         List<Mapping> lM = mappings.get(c);
@@ -607,6 +636,7 @@ public final class Mappings {
         }
     }
 
+    /** reinitialize the mappings with these new mappings */
     public void saveMappings(List<Mapping> newMappings)
     {
         mappings.clear();
@@ -624,8 +654,7 @@ public final class Mappings {
         }
     }
 
-    static private List<Mapping>
-            getDefaultMappings()
+    static private List<Mapping> getDefaultMappings()
     {
         List<Mapping> defaultMappings;
 
@@ -640,6 +669,9 @@ public final class Mappings {
         return defaultMappings;
     }
 
+    /** Used for display.
+     * @return map of char to Special
+     */
     private static Map<Character, String> getReverseMapCommandSpecial()
     {
         Map<Character, String> reverseMapCommandSpecial;
@@ -661,6 +693,10 @@ public final class Mappings {
         return reverseMapCommandSpecial;
     }
 
+    /**
+     *
+     * @return map of &lt;special&gt; to actual character
+     */
     private static Map<EqLower, Character> getMapCommandSpecial()
     {
         Map<EqLower, Character> mapCommandSpecial;
