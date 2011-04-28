@@ -477,6 +477,10 @@ public final class Mappings {
     public void printMappings(Character lhs, int mode)
     {
         List<Mapping> lM = getMappings(lhs, mode);
+        if(lM.isEmpty()) {
+            Msg.smsg("No mapping found");
+            return;
+        }
         Collections.sort(lM, new Comparator<Mapping>() {
             @Override
             public int compare(Mapping o1, Mapping o2)
