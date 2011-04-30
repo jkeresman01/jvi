@@ -19,27 +19,30 @@
  */
 package com.raelity.jvi.core.lib;
 
-import com.raelity.jvi.options.OptUtil;
-import java.util.ListIterator;
-import com.raelity.jvi.ViOutputStream;
-import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.GetChar;
+import com.raelity.jvi.core.lib.TypeBufMultiCharMapping.TypeBufPeek;
 import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.core.Options;
+import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.Wrap;
 import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.options.OptUtil;
+import com.raelity.jvi.ViOutputStream;
 import com.raelity.text.TextUtil;
+
 import java.awt.event.ActionEvent;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -126,7 +129,7 @@ public final class Mappings {
             ColonEvent cev = (ColonEvent) e;
             Emsgs emsg = new Emsgs();
             Mapping m = parseMapCommand(cev.getCommandLine(), emsg, true);
-            if(m != null && m.isUnmap && !containsMappings(m.lhs.charAt(0))) {
+            if(m != null && m.isUnmap && !containsMappings(m)) {
                 emsg.error().append("No such mapping");
                 m = null;
             }
@@ -319,8 +322,7 @@ public final class Mappings {
      */
     static Mapping parseMapCommand(String line, Emsgs emsg, boolean printOk)
     {
-        Matcher matcher = getMapCharsMatcher();
-        StringBuilder rhs = new StringBuilder();
+        Matcher matcher = getMapCharsMatcher(); // just holds a reference
         int initialEmsgs = emsg.length();
 
         List<String> fields = TextUtil.tokens(line);
@@ -363,32 +365,13 @@ public final class Mappings {
             return null;
         }
 
-        Character lhs = null;
-        rhs.setLength(0);
-        boolean ok;
-
-        String field = fields.get(1);
-        matcher.reset(field);
-        ok = false;
-        if(matcher.lookingAt()) {
-            if(matcher.end() < field.length()) {
-                emsg.error().append("for lhs only one char allowed; trailing: '")
-                        .append(field.substring(matcher.end()))
-                        .append("'\n");
-            } else {
-                lhs = tranlateMapCommandChar(matcher, false, field, emsg);
-                ok = lhs != null;
-            }
-        } else {
-            emsg.error().append("\"").append(field)
-                    .append("\" left-side not recognized\n");
-        }
+        String lhs = parseMappingChars(fields.get(1), emsg, "left-side");
+        boolean ok = lhs != null;
 
         if(fields.size() == 2) {
             if(ok && maptype == 1) {
                 // an unmap
-                Mapping mapping = new Mapping(String.valueOf(lhs), null,
-                        mode, false);
+                Mapping mapping = new Mapping(lhs, null, mode, false);
                 mapping.isUnmap = true;
                 return mapping;
             }
@@ -399,34 +382,10 @@ public final class Mappings {
             return null;
         }
 
-
-        field = fields.get(2);
-        matcher.reset(field);
-        int idx = 0;
-        do {
-            if(false) {
-                System.err.println("checking: '" + field.substring(idx) + "'");
-            }
-            ok = false;
-            if(matcher.find() && idx == matcher.start()) {
-                Character c = tranlateMapCommandChar(matcher, true, field, emsg);
-                if(c != null) {
-                    rhs.append(c.charValue());
-                    ok = true;
-                }
-            } else {
-                emsg.error().append("\"").append(field.substring(idx))
-                        .append("\" right-side not recognized\n");
-            }
-            if(!ok) {
-                break;
-            }
-            idx = matcher.end();
-        } while(idx < matcher.regionEnd());
+        String rhs = parseMappingChars(fields.get(2), emsg, "right-side");
 
         if(emsg.length() == initialEmsgs) {
-            Mapping mapping = new Mapping(String.valueOf(lhs), rhs.toString(),
-                    mode, maptype == 2);
+            Mapping mapping = new Mapping(lhs, rhs, mode, maptype == 2);
             if(Options.isKeyDebug()) {
                 System.err.println("parseMapCommand: " + line
                         + ": " + mapping);
@@ -453,6 +412,7 @@ public final class Mappings {
     public static List<Mapping> parseMapCommands(String input,
                                                  Wrap<String>p_emsg)
     {
+        Matcher matcher = getMapCharsMatcher(); // just holds a reference
         List<Mapping> mapCommands = new ArrayList<Mapping>();
 
         Emsgs emsg = new Emsgs();
@@ -474,7 +434,42 @@ public final class Mappings {
         return mapCommands;
     }
 
-    public void printMappings(Character lhs, int mode)
+    private static String parseMappingChars(String field,
+                                            Emsgs emsg,
+                                            String tag)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        Matcher matcher = getMapCharsMatcher();
+        matcher.reset(field);
+        boolean ok = false;
+
+        int idx = 0;
+        do {
+            if(false) {
+                System.err.println("checking: '" + field.substring(idx) + "'");
+            }
+            ok = false;
+            if(matcher.find() && idx == matcher.start()) {
+                Character c = tranlateMapCommandChar(matcher, true, field, emsg);
+                if(c != null) {
+                    sb.append(c.charValue());
+                    ok = true;
+                }
+            } else {
+                emsg.error().append("\"").append(field.substring(idx))
+                        .append("\" ").append(tag).append(" not recognized\n");
+            }
+            if(!ok) {
+                return null;
+            }
+            idx = matcher.end();
+        } while(idx < matcher.regionEnd());
+
+        return sb.toString();
+    }
+
+    public void printMappings(String lhs, int mode)
     {
         List<Mapping> lM = getMappings(lhs, mode);
         if(lM.isEmpty()) {
@@ -501,6 +496,38 @@ public final class Mappings {
                                        mappingString(m.rhs)));
         }
         vios.close();
+    }
+
+    /** for print mappings */
+    private static List<Mapping> getMappings(List<Mapping> origM, int mode)
+    {
+        List<Mapping> lM = new ArrayList<Mapping>();
+        if(origM != null) {
+            for(Mapping m : origM) {
+                if((m.mode & mode) != 0)
+                    lM.add(m);
+            }
+        }
+        return lM;
+    }
+
+    /** for print mappings */
+    private List<Mapping> getMappings(String lhs, int mode)
+    {
+        List<Mapping> lM = new ArrayList<Mapping>();
+        if(lhs != null) {
+            for(Mapping m : getMappings(mappings.get(lhs.charAt(0)), mode)) {
+                if(m.lhs.startsWith(lhs)) {
+                    lM.add(m);
+                }
+            }
+
+            return lM;
+        }
+        for(List<Mapping> l : mappings.values()) {
+            lM.addAll(getMappings(l, mode));
+        }
+        return lM;
     }
 
     /**
@@ -543,15 +570,17 @@ public final class Mappings {
     /**
      * Remove any mappings that overlap the param mapping
      * and add the new mapping unless m.isUnmap is set.
+     * May change the mode of an existing mapping to reduce
+     * the modes it operates on.
      * @param m
      */
-    private void putMapping(Mapping m)
+    private void putMapping(Mapping newMapping)
     {
-        boolean unmap = m.isUnmap;
+        boolean unmap = newMapping.isUnmap;
         Options.kd().printf(Level.FINER,
-                      "putMapping(unmap %b): %s\n", unmap, m);
+                      "putMapping(unmap %b): %s\n", unmap, newMapping);
 
-        Character c = m.lhs.charAt(0);
+        Character c = newMapping.lhs.charAt(0);
         List<Mapping> lM = mappings.get(c);
         if(lM == null) {
             if(unmap)
@@ -560,83 +589,82 @@ public final class Mappings {
         }
 
         // remove any mappings that the new mapping replaces
-        for(ListIterator<Mapping> it = lM.listIterator(); it.hasNext();) {
+        for(Iterator<Mapping> it = lM.iterator(); it.hasNext();) {
             Mapping oldMapping = it.next();
-            int oldMode = oldMapping.mode;
-            int newMode = oldMapping.mode & ~m.mode;
-            if(newMode == 0) {
-                Options.kd().printf("putMapping: remove %s\n", oldMapping);
-                it.remove();
-            } else if(oldMode != newMode) {
-                oldMapping.mode = newMode;
-                Options.kd().printf("putMapping: mode change: %s (was %d)\n",
-                          oldMapping, oldMode);
+            boolean fixupOldMapping = false;
+
+            if(newMapping.lhs.length() == oldMapping.lhs.length()) {
+                if(newMapping.lhs.equals(oldMapping.lhs)) {
+                    fixupOldMapping = true;
+                }
+            } else if(newMapping.lhs.length() > oldMapping.lhs.length()) {
+                if(newMapping.lhs.startsWith(oldMapping.lhs)
+                        && !unmap) {
+                    fixupOldMapping = true;
+                }
+            } else { //if(newMapping.lhs.length() < oldMapping.lhs.length())
+                if(oldMapping.lhs.startsWith(newMapping.lhs)) {
+                    fixupOldMapping = true;
+                }
+            }
+
+            if(fixupOldMapping) {
+                int oldMode = oldMapping.mode;
+                int newMode = oldMapping.mode & ~newMapping.mode;
+                if(newMode == 0) {
+                    Options.kd().printf("putMapping: remove %s\n", oldMapping);
+                    it.remove();
+                } else if(oldMode != newMode) {
+                    oldMapping.mode = newMode;
+                    Options.kd().printf("putMapping: mode change:"
+                            + " %s (was %d)\n", oldMapping, oldMode);
+                }
             }
         }
         if(!unmap)
-            lM.add(m);
+            lM.add(newMapping);
         return;
     }
 
-    private boolean containsMappings(Character lhs)
+    Mapping getMapping(TypeBufPeek peek, int state, MutableBoolean maybe)
     {
-        return mappings.containsKey(lhs);
-    }
-
-    /** for print mappings */
-    private static List<Mapping> getMappings(List<Mapping> origM, int mode)
-    {
-        List<Mapping> lM = new ArrayList<Mapping>();
-        if(origM != null) {
-            for(Mapping m : origM) {
-                if((m.mode & mode) != 0)
-                    lM.add(m);
+        if(maybe != null)
+            maybe.setValue(false);
+        List<Mapping> lM = mappings.get(peek.firstChar());
+        if( lM != null) {
+            for(Mapping m : lM) {
+                if((m.mode & state) != 0 && peek.isMatch(m.lhs, maybe))
+                    return m;
             }
-        }
-        return lM;
-    }
-
-    /** for print mappings */
-    private List<Mapping> getMappings(Character lhs, int mode)
-    {
-        if(lhs != null) {
-            return getMappings(mappings.get(lhs), mode);
-        }
-        List<Mapping> lM = new ArrayList<Mapping>();
-        for(List<Mapping> l : mappings.values()) {
-            lM.addAll(getMappings(l, mode));
-        }
-        return lM;
-    }
-
-    /** for print mappings */
-    public Mapping getMapping(Character c, int state)
-    {
-        List<Mapping> lM = mappings.get(c);
-        if(lM == null)
-            return null;
-
-        for(ListIterator<Mapping> it = lM.listIterator(); it.hasNext();) {
-            Mapping m = it.next();
-            if((m.mode & state) != 0)
-                return m;
         }
         return null;
     }
 
-    private void removeMapping(Character c, int mode)
+    private boolean containsMappings(Mapping m)
     {
-        List<Mapping> lM = mappings.get(c);
-        if(lM == null)
-            return;
+        return null != getMapping(new StringLookup(m.lhs), m.mode, null);
+    }
 
-        // remove any mappings that overlap with the mode
-        for(ListIterator<Mapping> it = lM.listIterator(); it.hasNext();) {
-            Mapping oldM = it.next();
-            if((mode & oldM.mode) != 0) {
-                Options.kd().printf("removeMapping: remove %s\n", oldM);
-                it.remove();
-            }
+    private static class StringLookup implements TypeBufPeek
+    {
+        String buf;
+
+        public StringLookup(String buf)
+        {
+            this.buf = buf;
+        }
+
+        @Override
+        public char firstChar()
+        {
+            return buf.charAt(0);
+        }
+
+        @Override
+        public boolean isMatch(String lhs, MutableBoolean maybe)
+        {
+            // no partial match for lookup
+            return buf.startsWith(lhs);
         }
     }
 
@@ -645,15 +673,12 @@ public final class Mappings {
     {
         mappings.clear();
         //
-        // NOTE: these must be "put" in order
+        // NOTE: defaults must be put first
         //
         for(Mapping m : getDefaultMappings()) {
             putMapping(m);
         }
         for(Mapping m : newMappings) {
-            // if(m.isUnmap && !containsMappings(m.lhs.charAt(0))) {
-            //   //
-            // }
             putMapping(m);
         }
     }

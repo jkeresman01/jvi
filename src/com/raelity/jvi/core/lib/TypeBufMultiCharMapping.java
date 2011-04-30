@@ -23,8 +23,10 @@ import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.GetChar;
 import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.core.Options;
+import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.text.TextUtil;
 import java.util.ArrayDeque;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,9 +58,65 @@ public final class TypeBufMultiCharMapping {
         clear();
     }
 
+    interface TypeBufPeek
+    {
+        char firstChar();
+
+        boolean isMatch(String lhs, MutableBoolean maybe);
+    }
+
+    private boolean isNoremap(int i)
+    {
+        return (i & ~0xffff) != 0;
+    }
+
+    /*
+     * startsWith and couldMatch use iterator
+     * along with building a temporary string
+     * string gets destroyed when deque is modified
+     *
+     * NEEDSWORK: noremap issues
+     */
+    private class MyTypeBufPeek implements TypeBufPeek
+    {
+        @Override
+        public char firstChar()
+        {
+            int i = buf.getFirst(); // does not remove
+            assert ! isNoremap(i); // should not be called if noremap
+            return (char)(i & 0xffff);
+        }
+
+        @Override
+        public boolean isMatch(String lhs, MutableBoolean fPartialMatch)
+        {
+            int idx = 0;
+            for(Iterator<Integer> it = buf.iterator();
+                    it.hasNext() && idx < lhs.length(); idx++) {
+                int i = it.next();
+                if(lhs.charAt(idx) != (i & 0xffff) || isNoremap(i)) {
+                    return false;
+                }
+            }
+
+            if(fPartialMatch != null) {
+                fPartialMatch.setValue(idx == buf.size());
+            }
+            partialMatch = lhs.substring(0, idx);
+            return idx == lhs.length();
+        }
+    }
+    private final TypeBufPeek peek = new MyTypeBufPeek();
+    private String partialMatch = "";
+
     public void clearNMappings()
     {
         nMappings = 0;
+    }
+
+    public String getPartialMatch()
+    {
+        return partialMatch;
     }
 
     public boolean insert(CharSequence str, int noremap,
@@ -95,7 +153,7 @@ public final class TypeBufMultiCharMapping {
         byte[] temp = new byte[str.length()];
         for(int i = 0; i < str.length(); i++) {
             // noremapbuf.insert(offset + i, (char)(noremap-- > 0 ? 1 : 0));
-            temp[offset + i] = noremap-- > 0 ? (byte)1 : (byte)0;
+            temp[i] = noremap-- > 0 ? (byte)1 : (byte)0;
         }
 
         if(offset == 0) {
@@ -103,6 +161,11 @@ public final class TypeBufMultiCharMapping {
             // and add them to deque (in reverse order!).
             for(int i = temp.length-1; i >= 0; i--) {
                 buf.addFirst((temp[i] << 16) | str.charAt(i));
+            }
+        } else if(offset == buf.size()) {
+            // append to end of Deque
+            for(int i = 0; i < temp.length; i++) {
+                buf.addLast((temp[i] << 16) | str.charAt(i));
             }
         } else {
             // Make a big array, then use System.arrayCopy to
@@ -146,37 +209,44 @@ public final class TypeBufMultiCharMapping {
      */
     public char getChar()
     {
+        if(buf.isEmpty())
+            return NO_CHAR;
+
         char c;
         int loops = 0;
+        boolean needsRemove;
         while(true) {
-            int noremap = buf.removeFirst();
-            c = (char)(noremap & 0xffff);
-            noremap &= ~0xffff;
+            int peekData = buf.getFirst();
+            needsRemove = true;
+            boolean noremap = isNoremap(peekData);
+            c = (char)(peekData & 0xffff);
 
-            if(Options.isKeyDebug()) {
-                if(Options.isKeyDebug(Level.FINEST)
-                        || G.no_mapping() != 0
-                        || G.allow_keys() != 0
-                        || G.no_zero_mapping() != 0) {
-                    System.err.printf("getChar check: '%s'"
-                            + " noremap=%b, state=0x%x,"
-                            + " G.no_mapping=%d, G.allow_keys=%d"
-                            + " G.no_zero_mapping=%d\n",
-                            TextUtil.debugString(String.valueOf(c)),
-                            noremap != 0,
-                            get_real_state(),
-                            G.no_mapping(),
-                            G.allow_keys(),
-                            G.no_zero_mapping());
-                }
-            }
-            if(noremap == 0
+                        if(Options.isKeyDebug()) {
+                            if(Options.isKeyDebug(Level.FINEST)
+                                    || G.no_mapping() != 0
+                                    || G.allow_keys() != 0
+                                    || G.no_zero_mapping() != 0) {
+                                System.err.printf("getChar check: '%s'"
+                                        + " noremap=%b, state=0x%x,"
+                                        + " G.no_mapping=%d, G.allow_keys=%d"
+                                        + " G.no_zero_mapping=%d\n",
+                                        TextUtil.debugString(String.valueOf(c)),
+                                        noremap,
+                                        get_real_state(),
+                                        G.no_mapping(),
+                                        G.allow_keys(),
+                                        G.no_zero_mapping());
+                            }
+                        }
+
+            if(!noremap
                     && G.no_mapping() == 0
                     && (c != '0' || G.no_zero_mapping() == 0)
                     // && G.allow_keys == 0 ?????
             ) {
                 int state = get_real_state();
-                Mapping mapping = mappings.getMapping(c, state);
+                MutableBoolean fPartialMatch = new MutableBoolean();
+                Mapping mapping = mappings.getMapping(peek, state, fPartialMatch);
                 if(mapping != null) {
                     if(++loops > G.p_mmd()) {
                         Msg.emsg("recursive mapping");
@@ -199,6 +269,11 @@ public final class TypeBufMultiCharMapping {
                         System.err.println("getChar: map: " + mapping +
                                 (loops == 20 ? "... ... ..." : ""));
                     }
+                    // get rid of the stuff we've matched
+                    for(int i = mapping.lhs.length(); i > 0; --i) {
+                        buf.removeFirst();
+                    }
+                    needsRemove = false;
                     if(!insert(mapping.getRhs(),
                             mapping.isNoremap()
                                 ? -1
@@ -206,18 +281,27 @@ public final class TypeBufMultiCharMapping {
                                     ? 1 : 0,
                             0,
                             true)) {
+                        clear();
                         c = NO_CHAR;
                         break;
                     }
                     // do it again
                     continue;
+                } else if(fPartialMatch.getValue()) {
+                    // matches something so far
+                    if(Options.isKeyDebug(Level.FINEST)) {
+                        System.err.println("getChar partial match: " +
+                                partialMatch);
+                    }
+                    c = NO_CHAR;
+                    needsRemove = false;
+                    break;
                 }
-            }
+            } // end if(!noremap
             break;
-        }
-        if(c == NO_CHAR) {
-            clear(); // note, this should have already been done
-        }
+        } // end while(true)
+        if(needsRemove)
+            buf.removeFirst();
         if(Options.isKeyDebug(Level.FINEST)) {
             System.err.println("getChar return: " +
                     TextUtil.debugString(String.valueOf(c)));

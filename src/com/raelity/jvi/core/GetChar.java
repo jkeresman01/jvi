@@ -19,14 +19,15 @@
  */
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.core.lib.TypeBufDeque;
 import com.raelity.jvi.core.lib.BufferQueue;
+import com.raelity.jvi.core.lib.KeyDefs;
 import com.raelity.jvi.core.lib.Mappings;
-import com.raelity.jvi.ViInitialization;
-import org.openide.util.lookup.ServiceProvider;
-import com.raelity.text.TextUtil;
+import com.raelity.jvi.core.lib.TypeBufMultiCharMapping;
 import com.raelity.jvi.options.Option;
+import com.raelity.jvi.ViInitialization;
+import com.raelity.text.TextUtil;
 import java.util.logging.Level;
+import org.openide.util.lookup.ServiceProvider;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
@@ -40,7 +41,7 @@ public class GetChar {
     private static String currentMagicRedoAlgo = "anal";
 
     private static Mappings mappings;
-    private static TypeBufDeque typebuf;
+    private static TypeBufMultiCharMapping typebuf;
 
     private GetChar()
     {
@@ -55,11 +56,11 @@ public class GetChar {
         public void init()
         {
             mappings = new Mappings();
-            typebuf = new TypeBufDeque(mappings);
+            typebuf = new TypeBufMultiCharMapping(mappings);
         }
     }
 
-    static public void printMappings(Character lhs, int mode)
+    static public void printMappings(String lhs, int mode)
     {
         mappings.printMappings(lhs, mode);
     }
@@ -81,10 +82,15 @@ public class GetChar {
      */
     static void gotc(char key, int modifier)
     {
-        assert typebuf.length() + stuffbuff.length() == 0;
+        assert stuffbuff.length() == 0;
+        //assert typebuf.length();// NO MORE, WITH mutli-char mappings
 
         if(isVIRT(key)) {
             key |= ((modifier & MOD_MASK) << MODIFIER_POSITION_SHIFT);
+        }
+
+        if(typebuf.hasNext()) {
+            Normal.pop_showcmd();
         }
 
         handle_redo = false;
@@ -108,6 +114,10 @@ public class GetChar {
             /////     doc.readUnlock();
         }
 
+        if(typebuf.hasNext()) {
+            // should be a partial match
+            Normal.push_add_to_showcmd(typebuf.getPartialMatch());
+        }
 
         // returning from event
         // only do this if no pending characters
@@ -193,8 +203,9 @@ public class GetChar {
             while(stuffbuff.hasNext()) {
                 pumpChar(stuffbuff.removeFirst());
             }
-            if(typebuf.hasNext()) {
-                pumpChar(typebuf.getChar());
+            char c = typebuf.getChar();
+            if( c != NO_CHAR) { //if(typebuf.hasNext()) {
+                pumpChar(c);
                 // after processing char...
                 if(!groupUndo && typebuf.length() > 0 && isInsertMode()) {
                     G.dbgUndo.println("pumpAllChars: switching to group undo");
@@ -208,7 +219,7 @@ public class GetChar {
     }
 
     private static void pumpChar(char c) {
-        if(c == -1)
+        if(c == NO_CHAR)
             return;
         int modifiers = 0;
         if(isVIRT(c)) {
@@ -259,6 +270,9 @@ public class GetChar {
                 break;
             }
             char c = getOneChar();
+            if(c == NO_CHAR) // NEEDSWORK: added to workaround
+                break;       //            TypeBufMultiChar issues
+
             if(c == '\n') {
                 hasCR = true;
                 break;

@@ -2117,9 +2117,8 @@ middle_code:
   //
 
   static StringBuffer showcmd_buf = new StringBuffer();
-  //static StringBuffer old_showcmd_buf = new StringBuffer();
+  static StringBuffer old_showcmd_buf = new StringBuffer();
   //static boolean showcmd_is_clear = true;
-  // static char_u old_showcmd_buf[SHOWCMD_COLS + 1];  /* For push_showcmd() */
 
   static void clear_showcmd() {
     do_xop("clear_showcmd");
@@ -2149,6 +2148,7 @@ middle_code:
 
     if (!G.p_sc.getBoolean())
       return false;
+    // NEEDSWORK: proper display of virtual chars
     if((c & 0xf000) == VIRT)
         return false;
 
@@ -2156,16 +2156,35 @@ middle_code:
     String p = transchar(c);
     showcmd_buf.append(p);
 
-    if (GetChar.char_avail())
-      return false;
+    // NEEDSWORK: typebuf MutilChar issues
+    // if (GetChar.char_avail())
+    //   return false;
 
     display_showcmd();
 
     return true;
   }
 
+  static void push_add_to_showcmd(String s) {
+    push_showcmd();
+    // NEEDSWORK: proper display of virtual chars
+    showcmd_buf.append(s);
+    display_showcmd();
+  }
+
   static private void display_showcmd() {
     setCommandCharacters(showcmd_buf.toString());
+  }
+
+  static void push_showcmd() {
+    old_showcmd_buf.setLength(0);
+    old_showcmd_buf.append(showcmd_buf);
+  }
+
+  static void pop_showcmd() {
+    showcmd_buf.setLength(0);
+    showcmd_buf.append(old_showcmd_buf);
+    old_showcmd_buf.setLength(0);
   }
 
   public static void displaySelectState(String s) {

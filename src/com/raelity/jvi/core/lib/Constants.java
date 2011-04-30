@@ -100,6 +100,9 @@ public interface Constants {
     public static final int  INSERT	= 0x10;	// Insert mode
     public static final int  PLATFORM   = 0x20; // platform-sel, get_real_state()
 
+    public static final int  MAP_ALL_MODES = 0x3f; // all mode bits used for
+						   // mapping
+
     public static final int  NORMAL_BUSY	= (0x100 + NORMAL); // Normal mode, busy command
     public static final int  REPLACE	= (0x200 + INSERT); // Replace mode
     public static final int  VREPLACE	= (0x300 + INSERT); // Virtual replace mode
