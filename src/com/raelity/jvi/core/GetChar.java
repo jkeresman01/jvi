@@ -20,7 +20,6 @@
 package com.raelity.jvi.core;
 
 import com.raelity.jvi.core.lib.BufferQueue;
-import com.raelity.jvi.core.lib.KeyDefs;
 import com.raelity.jvi.core.lib.Mappings;
 import com.raelity.jvi.core.lib.TypeBufMultiCharMapping;
 import com.raelity.jvi.options.Option;
@@ -85,25 +84,26 @@ public class GetChar {
         assert stuffbuff.length() == 0;
         //assert typebuf.length();// NO MORE, WITH mutli-char mappings
 
-        if(isVIRT(key)) {
-            key |= ((modifier & MOD_MASK) << MODIFIER_POSITION_SHIFT);
-        }
-
         if(typebuf.hasNext()) {
             Normal.pop_showcmd();
         }
 
-        handle_redo = false;
-        try {
+        if(key != NO_CHAR) { // might be NO_CHAR if input wait timeout
+            if(isVIRT(key)) {
+                key |= ((modifier & MOD_MASK) << MODIFIER_POSITION_SHIFT);
+            }
+
             last_recorded_len = 0;      // for the one in vgetc()
             userInput(key);
 
+            user_ins_typebuf(key);
+        }
+
+        handle_redo = false;
+        try {
+
             ///// if(doc != null)               // NEED API
             /////     doc.readLock();
-
-            // proccess the typed key, may set handle_redo
-            if(user_ins_typebuf(key) == OK)
-                pumpChar(typebuf.getChar());
 
             startPump(handle_redo);
 
@@ -195,23 +195,26 @@ public class GetChar {
         // NEEDSWORK: pumpVi: check for interupt?
 
         while(true) {
+            if(!groupUndo
+                    && (typebuf.length() > 0 && isInsertMode()
+                        || handle_redo)) {
+                G.dbgUndo.println("pumpAllChars: switching to group undo");
+                startPump(true);
+                return;
+            }
             if(old_char != NUL) {
                 char c = old_char;
                 old_char = NUL;
                 pumpChar(c);
+                continue;
             }
-            while(stuffbuff.hasNext()) {
+            if(stuffbuff.hasNext()) {
                 pumpChar(stuffbuff.removeFirst());
+                continue;
             }
             char c = typebuf.getChar();
             if( c != NO_CHAR) { //if(typebuf.hasNext()) {
                 pumpChar(c);
-                // after processing char...
-                if(!groupUndo && typebuf.length() > 0 && isInsertMode()) {
-                    G.dbgUndo.println("pumpAllChars: switching to group undo");
-                    startPump(true);
-                    return;
-                }
             } else {
                 break;
             }
