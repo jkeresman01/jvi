@@ -24,7 +24,11 @@ import com.raelity.jvi.core.lib.Mappings;
 import com.raelity.jvi.core.lib.TypeBufMultiCharMapping;
 import com.raelity.jvi.options.Option;
 import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.options.OptUtil;
 import com.raelity.text.TextUtil;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.logging.Level;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -69,6 +73,21 @@ public class GetChar {
         mappings.reinitMappings();
     }
 
+    static void reset()
+    {
+        ViManager.getFactory().stopTimeout(mappingTimeout);
+        flush_buffers(true);
+    }
+
+    private static ActionListener mappingTimeout = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            typebuf.mappingTimeout();
+            gotc(NO_CHAR, 0);
+        }
+    };
+
     /** An input char from the user has been received.
      * Implement the key into 16 bit mapping defined in KeyDefs.
      * <p>
@@ -84,9 +103,10 @@ public class GetChar {
         assert stuffbuff.length() == 0;
         //assert typebuf.length();// NO MORE, WITH mutli-char mappings
 
-        if(typebuf.hasNext()) {
+        if(typebuf.getPartialMatch() != null) {
             Normal.pop_showcmd();
         }
+        ViManager.getFactory().stopTimeout(mappingTimeout); // just in case
 
         if(key != NO_CHAR) { // might be NO_CHAR if input wait timeout
             if(isVIRT(key)) {
@@ -114,9 +134,13 @@ public class GetChar {
             /////     doc.readUnlock();
         }
 
-        if(typebuf.hasNext()) {
-            // should be a partial match
+        if(typebuf.getPartialMatch() != null) {
             Normal.push_add_to_showcmd(typebuf.getPartialMatch());
+            if(OptUtil.getOption(Options.timeout).getBoolean()) {
+                ViManager.getFactory().startTimeout(
+                        OptUtil.getOption(Options.timeoutlen).getInteger(),
+                        mappingTimeout);
+            }
         }
 
         // returning from event

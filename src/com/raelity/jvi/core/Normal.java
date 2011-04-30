@@ -208,6 +208,7 @@ public class Normal {
     G.allow_keys = 0;
     G.no_mapping = 0;
     G.no_zero_mapping = 0;
+    GetChar.reset();
   }
 
   /**

@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.prefs.Preferences;
+import javax.swing.Timer;
 import javax.swing.text.JTextComponent;
 import org.openide.util.WeakSet;
 
@@ -426,6 +427,28 @@ abstract public class SwingFactory implements ViFactory
         dialog.setVisible(false);
         dialog.dispose();
         dialog = null;
+    }
+
+    private Timer timer;
+
+    @Override
+    public void startTimeout(int timeoutlen, ActionListener l)
+    {
+        if(timer == null)
+            timer = new Timer(0, null);
+        timer.setInitialDelay(timeoutlen);
+        timer.addActionListener(l);
+        timer.setRepeats(false);
+        timer.start();
+    }
+
+    @Override
+    public void stopTimeout(ActionListener l)
+    {
+        if(timer == null)
+            return;
+        timer.stop();
+        timer.removeActionListener(l);
     }
 
 

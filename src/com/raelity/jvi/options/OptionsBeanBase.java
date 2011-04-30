@@ -393,6 +393,22 @@ implements Options.EditControl {
         return ViManager.getReleaseString();
     }
 
+    public void setViTimeout(boolean arg)  throws PropertyVetoException {
+        put(Options.timeout, arg);
+    }
+
+    public boolean getViTimeout() {
+	return getboolean(Options.timeout);
+    }
+
+    public void setViTimeoutLen(int arg)  throws PropertyVetoException {
+        put(Options.timeoutlen, arg);
+    }
+
+    public int getViTimeoutLen() {
+	    return getint(Options.timeoutlen);
+    }
+
     public void setViMapCommands(String arg)  throws PropertyVetoException {
         put(Options.mapCommands, arg);
     }

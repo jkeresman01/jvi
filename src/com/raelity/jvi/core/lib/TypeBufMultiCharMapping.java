@@ -51,6 +51,8 @@ public final class TypeBufMultiCharMapping {
     private ArrayDeque<Integer> buf;
     private int nMappings;
     private int capacity;
+    private boolean fWaitMapping;
+    private boolean fMappingTimeout;
 
     public TypeBufMultiCharMapping(Mappings mappings)
     {
@@ -99,10 +101,10 @@ public final class TypeBufMultiCharMapping {
                 }
             }
 
-            if(fPartialMatch != null) {
-                fPartialMatch.setValue(idx == buf.size());
+            if(idx == buf.size()) {
+                fPartialMatch.setValue(true);
+                partialMatch = lhs.substring(0, idx);
             }
-            partialMatch = lhs.substring(0, idx);
             return idx == lhs.length();
         }
     }
@@ -116,7 +118,12 @@ public final class TypeBufMultiCharMapping {
 
     public String getPartialMatch()
     {
-        return partialMatch;
+        return fWaitMapping ? partialMatch : null;
+    }
+
+    public void mappingTimeout()
+    {
+        fMappingTimeout = true;
     }
 
     public boolean insert(CharSequence str, int noremap,
@@ -209,6 +216,9 @@ public final class TypeBufMultiCharMapping {
      */
     public char getChar()
     {
+        fWaitMapping = false;
+        boolean sawMappingTimeout = fMappingTimeout;
+        fMappingTimeout = false;
         if(buf.isEmpty())
             return NO_CHAR;
 
@@ -289,12 +299,15 @@ public final class TypeBufMultiCharMapping {
                     continue;
                 } else if(fPartialMatch.getValue()) {
                     // matches something so far
-                    if(Options.isKeyDebug(Level.FINEST)) {
-                        System.err.println("getChar partial match: " +
-                                partialMatch);
+                    if(!sawMappingTimeout) {
+                        fWaitMapping = true;
+                        if(Options.isKeyDebug(Level.FINEST)) {
+                            System.err.println("getChar partial match: " +
+                                    partialMatch);
+                        }
+                        c = NO_CHAR;
+                        needsRemove = false;
                     }
-                    c = NO_CHAR;
-                    needsRemove = false;
                     break;
                 }
             } // end if(!noremap
@@ -313,6 +326,8 @@ public final class TypeBufMultiCharMapping {
     {
         buf = new ArrayDeque<Integer>(250);
         capacity = 0;
+        fMappingTimeout = false;
+        fWaitMapping = false;
     }
 
     public boolean hasNext()

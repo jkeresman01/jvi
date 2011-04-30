@@ -169,6 +169,8 @@ public final class Options {
   public static final String lineBreak = "viLineBreak";
   public static final String number = "viNumber";
   public static final String scroll = "viScroll";
+  public static final String timeout = "viTimeout";
+  public static final String timeoutlen = "viTimeoutLen";
 
   public static final String nrFormats = "viNrFormats";
   public static final String matchPairs = "viMatchPairs";
@@ -522,6 +524,18 @@ public final class Options {
     OptUtil.setupOptionDesc(Category.GENERAL, list, "'list'",
           "List mode. Useful to see the difference between tabs"
             + " and spaces and for trailing blanks.");
+
+    OptUtil.createBooleanOption(timeout, true);
+    OptUtil.setupOptionDesc(Category.GENERAL, timeout, "'timeout' 'to'",
+          "Enables timeout when part of a mapped key sequence has been"
+            + " received. After that the already received"
+            + " characters are interpreted as single characters. "
+            + " The waiting time can be changed with the 'timeoutlen' option.");
+
+    OptUtil.createIntegerOption(timeoutlen, 1000);
+    OptUtil.setupOptionDesc(Category.GENERAL, timeoutlen, "'timeoutlen' 'tm'",
+          "The time in milliseconds that is waited for a mapped"
+            + " key sequence to complete.");
 
     /////////////////////////////////////////////////////////////////////
     //

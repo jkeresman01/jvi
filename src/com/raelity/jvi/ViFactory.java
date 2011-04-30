@@ -113,6 +113,12 @@ public interface ViFactory
     public void startModalKeyCatch(KeyListener kl);
     public void stopModalKeyCatch();
 
+    /** Assumed only one active timeout at a time.
+     * Suppose could key by listener and support multiple timers.
+     */
+    public void startTimeout(int timeoutlen, ActionListener l);
+    public void stopTimeout(ActionListener l);
+
     /**
      * fetch the keymap for insert mode operations
      */
