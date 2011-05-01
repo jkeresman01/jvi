@@ -1,305 +1,75 @@
-<?xml version="1.0"?>
-<!-- ======================================================================= -->
-<!-- Ant build file for Jvi
-
-       Author:    Murray Altheim
-       Revision:  $Id$
-
-     Copyright 2008 Murray Altheim. All Rights Reserved. 
-     Used with permission of the author.
-
-     Comments:
-     This build file relies on a proper installation of Java 1.4
-     (or greater), and Ant 1.4 (or greater).
-     The Ant jar files should be included in your $CLASSPATH.
-
-     CONFIGURATION:
-
-         - in the compile target's javac task there is an excludes
-           OptionsDialog which can be removed if the l2fprod library is
-           provided.
--->
-
-<project name="jvi" default="usage" basedir=".">
-
-  <tstamp>
-    <format property="current.year" pattern="yyyy"/>
-    <format property="DSTAMP"       pattern="yyyy-MM-dd"/>
-    <format property="TSTAMP"       pattern="HH:mm:ss"/>
-  </tstamp>
-
-  <property name="Name" value="Jvi"/>
-  <property name="name" value="jvi"/>
-  <property name="version" value="debug"/>
-
-  <property name="final.name" value="${name}-${version}"/>
-  <property name="complete.name" value="${final.name}"/>
-
-
-  <!-- ===================================================================== -->
-  <!-- Help on usage                                                         -->
-  <!-- ===================================================================== -->
-
-  <target name="usage">
-    <echo>
-
-       ${complete.name}, a vi-vim editor clone in Java.
-       Copyright ${current.year} Ernie Rael. All Rights Reserved.
-       Revision:  $Id$
-       See License.txt included with distribution.
-
-     ${Name} Build instructions
-     -------------------------------------------------------------
-
-     Available targets are:
-
-       usage             -&gt;  provides help on using the build tool (default)
-
-     + build:
-       all               -&gt;  clean, then generate all jars and docs
-       compile           -&gt;  compiles the source code
-       jar               -&gt;  creates the ${Name} jar file
-       clean             -&gt;  cleans up all generated files and directories
-
-     + execution:
-       jvi               -&gt;  starts the ${Name} application
-
-     + documentation:
-       docs              -&gt;  generates all documentation (aka 'javadoc')
-       javadoc           -&gt;  generates the API docs (needs Java 1.2 or higher)
-
-     Put l2fprod-common-sheet.jar into ./lib for Options Button.
-     See comments inside the build.xml file for more details.
-     -------------------------------------------------------------
-
-    </echo>
-  </target>
-
-  <!-- ===================================================================== -->
-  <!-- Names and Locations of Important Things                               -->
-  <!-- ===================================================================== -->
-
-  <!-- The build compiler ('jikes' or 'modern') -->
-  <property name="build.compiler" value="modern"/>
-
-  <!-- The base directory for compilation targets -->
-  <property name="build.home"     value="${basedir}/build"/>
-  <!-- The base directory for a build-side copy of source -->
-  <property name="build.src" value="${build.home}/src"/>
-  <!-- The base directory for class files -->
-  <property name="build.dest"     value="${build.home}/classes"/>
-  <!-- The base directory for component sources -->
-  <property name="source.home"    value="${basedir}/src"/>
-  <!-- The base directory for dependent jars -->
-  <property name="lib.home"       value="${basedir}/lib"/>
-  <!-- The base directory for built library jars -->
-  <property name="build.lib.home" value="${build.home}/lib"/>
-  <!-- The base directory for executable scripts -->
-  <property name="bin.home"       value="${basedir}/bin"/>
-  <!-- The base directory for Javadoc API documentation -->
-  <property name="doc.home"       value="${basedir}/docs/"/>
-  <!-- The name of the Jvi jar file -->
-  <property name="jvi.jar"     value="${build.lib.home}/${final.name}.jar"/>
-
-
-  <!-- ===================================================================== -->
-  <!-- Classpaths and Compiler Defaults                                      -->
-  <!-- ===================================================================== -->
-
-  <!-- Should Java compilations set the 'debug' compiler option? -->
-  <property name="build.debug"  value="true"/>
-  <!-- Should Java compilations set the 'deprecation' compiler option? -->
-  <property name="build.deprecation" value="true"/>
-  <!-- Should Java compilations set the 'optimize' compiler option? -->
-  <property name="build.optimize" value="false"/>
-
-  <!-- Construct build.classpath -->
-  <path id="build.classpath">
-    <pathelement path="${build.home}/classes"/>
-    <fileset dir="${lib.home}"><include name="*.jar"/></fileset>
-            <!--
-            <pathelement path="${java.class.path}"/>
-            -->
-  </path>
-
-  <!-- Construct execute.classpath -->
-  <path id="execute.classpath">
-    <pathelement location="${jvi.jar}"/>
-    <fileset dir="${build.lib.home}"><include name="*.jar"/></fileset>
-    <fileset dir="${lib.home}"><include name="*.jar"/></fileset>
-            <!--
-            <pathelement path="${java.class.path}"/>
-            -->
-  </path>
-
-  <!-- Construct executeShell.classpath -->
-  <path id="executeShell.classpath">
-    <pathelement location="${xnode-impl.jar}"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See commented blocks below for -->
+<!-- some examples of how to customize the build. -->
+<!-- (If you delete it and reopen the project it will be recreated.) -->
+<!-- By default, only the Clean and Build commands use this build script. -->
+<!-- Commands such as Run, Debug, and Test only use this build script if -->
+<!-- the Compile on Save feature is turned off for the project. -->
+<!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
+<!-- in the project's Project Properties dialog box.-->
+<project name="jvi-project" default="default" basedir=".">
+    <description>Builds, tests, and runs the project jvi-project.</description>
+    <import file="nbproject/build-impl.xml"/>
+    <import file="nbproject/profiler-build-impl.xml"/>
     <!--
-    <fileset dir="${resource.home}" ><include name="*.properties"/></fileset>
-    <fileset dir="${lib.home}"><include name="serializer.jar"/></fileset>
+
+    There exist several targets which are by default empty and which can be 
+    used for execution of your tasks. These targets are usually executed 
+    before and after some main targets. They are: 
+
+      -pre-init:                 called before initialization of project properties
+      -post-init:                called after initialization of project properties
+      -pre-compile:              called before javac compilation
+      -post-compile:             called after javac compilation
+      -pre-compile-single:       called before javac compilation of single file
+      -post-compile-single:      called after javac compilation of single file
+      -pre-compile-test:         called before javac compilation of JUnit tests
+      -post-compile-test:        called after javac compilation of JUnit tests
+      -pre-compile-test-single:  called before javac compilation of single JUnit test
+      -post-compile-test-single: called after javac compilation of single JUunit test
+      -pre-jar:                  called before JAR building
+      -post-jar:                 called after JAR building
+      -post-clean:               called after cleaning build products
+
+    (Targets beginning with '-' are not intended to be called on their own.)
+
+    Example of inserting an obfuscator after compilation could look like this:
+
+        <target name="-post-compile">
+            <obfuscate>
+                <fileset dir="${build.classes.dir}"/>
+            </obfuscate>
+        </target>
+
+    For list of available properties check the imported 
+    nbproject/build-impl.xml file. 
+
+
+    Another way to customize the build is by overriding existing main targets.
+    The targets of interest are: 
+
+      -init-macrodef-javac:     defines macro for javac compilation
+      -init-macrodef-junit:     defines macro for junit execution
+      -init-macrodef-debug:     defines macro for class debugging
+      -init-macrodef-java:      defines macro for class execution
+      -do-jar-with-manifest:    JAR building (if you are using a manifest)
+      -do-jar-without-manifest: JAR building (if you are not using a manifest)
+      run:                      execution of project 
+      -javadoc-build:           Javadoc generation
+      test-report:              JUnit report generation
+
+    An example of overriding the target for project execution could look like this:
+
+        <target name="run" depends="jvi-project-impl.jar">
+            <exec dir="bin" executable="launcher.exe">
+                <arg file="${dist.jar}"/>
+            </exec>
+        </target>
+
+    Notice that the overridden target depends on the jar target and not only on 
+    the compile target as the regular run target does. Again, for a list of available 
+    properties which you can use, check the target you are overriding in the
+    nbproject/build-impl.xml file. 
+
     -->
-    <pathelement path="${java.class.path}"/>
-  </path>
-
-  <!-- ===================================================================== -->
-  <!-- Utility Targets                                                       -->
-  <!-- ===================================================================== -->
-
-  <target      name="print"
-        description="print classpaths">
-    <echo>
-
-     Environment
-     ===========
-     Java version:          ${java.version}
-     OS name and version:   ${os.name} ${os.version}
-     Jvi lib:               ${lib.home}
-     Compile classpath:     ${toString:build.classpath}
-     Execute classpath:     ${toString:execute.classpath}
-
-     complete.
-    </echo>
-  </target>
-
-  <target      name="prepare"
-        description="prepare build directory">
-    <!-- <echo>
-
-     Environment
-     ===========
-     Java version:          ${java.version}
-     OS name and version:   ${os.name} ${os.version}
-
-     preparing build directories...
-    </echo> -->
-    <echo   message="Compiling with Java ${java.version}, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
-    <mkdir dir="${basedir}/lib"/>
-    <mkdir dir="${build.home}"/>
-    <mkdir dir="${build.home}/bin"/>
-    <mkdir dir="${build.home}/lib"/>
-    <mkdir dir="${build.home}/classes"/>
-    <mkdir dir="${doc.home}"/>
-
-    <condition property="build.excludes"
-               value="com/raelity/jvi/cmd/OptionsDialog.java">
-      <not>
-        <available classname="com.l2fprod.common.propertysheet.PropertySheet"
-                   classpathref="build.classpath"/>
-      </not>
-    </condition>
-  </target>
-
-  <target      name="compile"
-            depends="prepare"
-        description="compile the classes">
-    <copy     todir="${build.home}/classes/com/raelity/jvi/cmd/">
-      <fileset  dir="${source.home}/com/raelity/jvi/cmd"
-           includes="*.gif"/>
-    </copy>
-    <!-- ......................................................... -->
-    <!-- <echo message="copying images to build directory..."/> -->
-    <javac   srcdir="${source.home}"
-            destdir="${build.home}/classes"
-       classpathref="build.classpath"
-              debug="${build.debug}"
-        deprecation="${build.deprecation}"
-           excludes="${build.excludes}"
-           optimize="${build.optimize}">
-      <!--compilerarg value="-Xlint:unchecked"/ -->
-    </javac>
-  </target>
-
-  <!-- ===================================================================== -->
-  <!-- Sudsy Clean Up                                                        -->
-  <!-- ===================================================================== -->
-
-  <target      name="clean"
-        description="clean build directory">
-    <echo   message="cleaning build directory..."/>
-    <delete     dir="${build.home}"/>
-    <delete     dir="${doc.home}"/>
-  </target>
-
-  <!-- ===================================================================== -->
-  <!-- Builds the Jvi jar files                                              -->
-  <!-- ===================================================================== -->
-
-  <target      name="jar"
-            depends="compile"
-        description="build ${jvi.jar} file">
-    <jar    jarfile="${jvi.jar}"
-            basedir="${build.dest}"
-           manifest="${source.home}/META-INF/MANIFEST.MF"
-           compress="true"
-           includes="com/raelity/** META-INF/**"
-           excludes="">
-      <manifest>
-        <attribute   name="Created-By"             value="Murray Altheim"/>
-        <section     name="com/raelity/">
-          <attribute name="Specification-Title"    value="${Name} Java vi"/>
-          <attribute name="Specification-Version"  value="${version}"/>
-          <attribute name="Specification-Vendor"   value="raelity.com"/>
-          <attribute name="Implementation-Title"   value="com.raelity.jvi"/>
-          <attribute name="Implementation-Version" value="build ${DSTAMP} ${TSTAMP}"/>
-          <attribute name="Implementation-Vemdpr"  value="${Name}"/>
-        </section>
-      </manifest>
-    </jar>
-  </target>
-
-  <!-- ===================================================================== -->
-  <!-- Execution Targets                                                     -->
-  <!-- ===================================================================== -->
-
-  <!-- display Jvi UI Framework with database access -->
-  <target name="jvi"
-          depends="jar"
-          description="executes Jvi application">
-    <echo message="starting Jvi application..."/>
-    <java classname="com.raelity.jvi.cmd.Jvi"
-       classpathref="execute.classpath" fork="yes">
-      <!--
-      <jvmarg value="-Djavax.xml.parsers.DocumentBuilderFactory=org.apache.xerces.jaxp.DocumentBuilderFactoryImpl"/>
-      <jvmarg value="-Djavax.xml.parsers.SAXParserFactory=org.apache.xerces.jaxp.SAXParserFactoryImpl"/>
-      <jvmarg value="-Djrat.factory=org.shiftone.jrat.provider.tree.TreeMethodHandlerFactory"/>
-      <arg value="-dGNV"/>
-      -->
-      <!-- provides TrueType text smoothing if available -->
-      <jvmarg value="-Dswing.aatext=true"/>
-    </java>
-  </target>
-
-  <target      name="all"
-            depends="clean, compile, jar, docs"
-        description="clean and compile all components and documentation">
-    <echo   message="To start jvi, type 'ant jvi'"/>
-  </target>
-
-  <!-- ===================================================================== -->
-  <!-- Documentation Targets                                                 -->
-  <!-- ===================================================================== -->
-
-  <target      name="docs"
-            depends="javadoc">
-    <echo   message="building documentation..."/>
-  </target>
-
-  <target      name="javadoc"
-            depends="jar"
-        description="build the API documentation">
-    <echo   message="building API documentation..."/>
-    <javadoc
-       packagenames="com.raelity.*"
-         sourcepath="${source.home}"
-            destdir="${doc.home}"
-             author="true"
-          maxmemory="256m"
-            version="true"
-        windowtitle="${Name} API Documentation"
-           doctitle="${Name}">
-      <classpath refid="execute.classpath"/>
-    </javadoc>
-  </target>
-
 </project>
