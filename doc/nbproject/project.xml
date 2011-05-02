@@ -1,13 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+   - <ide-actions>' <script> is relative to nbproject directory
+   -
+   - <view><items><source-{folder,file}> is project-dir
+  -->
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.ant.freeform</type>
     <configuration>
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/2">
             <name>doc jVi</name>
             <properties>
-                <property name="ant.script">build.xml</property>
+                <property name="ant.script">../build.xml</property>
             </properties>
-            <!--
+            <folders>
+                <source-folder>
+                    <label>doc</label>
+                    <location>.</location>
+                </source-folder>
+            </folders>
             <ide-actions>
                 <action name="build">
                     <script>${ant.script}</script>
@@ -31,7 +41,6 @@
                     <target>build</target>
                 </action>
             </ide-actions>
-            -->
             <view>
                 <items>
                     <source-folder style="tree">
@@ -47,10 +56,9 @@
                         <location>scripts</location>
                     </source-folder>
                     <source-file>
-                        <location>${ant.script}</location>
+                        <location>build.xml</location>
                     </source-file>
                 </items>
-                <!--
                 <context-menu>
                     <ide-action name="build"/>
                     <ide-action name="rebuild"/>
@@ -58,7 +66,6 @@
                     <ide-action name="web-site"/>
                     <ide-action name="javadoc"/>
                 </context-menu>
-                -->
             </view>
             <subprojects/>
         </general-data>
