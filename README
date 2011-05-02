@@ -1,5 +1,6 @@
 jVi can be compiled standalone with the simple build.xml included. It can
-also be opened as a netbeans project.
+also be opened as a netbeans project. Executing jVi brings up a standalone
+swing app that is useful for debugging jVi internals.
 
 If you want to work on the NetBeans plugin, see nbvi/README.
 
