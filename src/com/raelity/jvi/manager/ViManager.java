@@ -76,11 +76,12 @@ public class ViManager
     // Note the use of "9" for the "final" release
     // conventionally: 1.2.beta3        module-rev 1.2.3  (actually 03)
     // conventionally: 1.2              module-rev 1.2.9  (actually 09)
-    // conventionally: 1.2.3.beta4      module-rev 1.2.34
+    // conventionally: 1.2.3.beta4      module-rev 1.2.34    NOTE: THESE TWO
+    // conventionally: 1.2.3.x4         module-rev 1.2.34          ARE SAME #
     // conventionally: 1.2.3            module-rev 1.2.39
-    // 1.3.1 is module rev 1.3.19
-    // 1.4 is module rev 1.4
-    public static final jViVersion version = new jViVersion("1.4.0");
+    // 1.4.0 is module rev 1.4.9
+    // 1.4.1.x1 is module rev 1.4.11
+    public static final jViVersion version = new jViVersion("1.4.1.x1");
 
     private static com.raelity.jvi.core.Hook core;
 

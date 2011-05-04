@@ -203,6 +203,7 @@ class Motd
             this.msg = msg;
         }
 
+        @Override
         public void output(ViOutputStream vios)
         {
             vios.println(msg);
@@ -227,6 +228,7 @@ class Motd
             this.text = text;
         }
 
+        @Override
         public void output(ViOutputStream vios)
         {
             vios.printlnLink(link, text);

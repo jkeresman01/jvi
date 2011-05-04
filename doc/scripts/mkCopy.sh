@@ -9,8 +9,8 @@ OUT=$HTDOCS_OUT
 mkdir -p $OUT
 cp -pr $HTDOCS/* $OUT
 
-rm $OUT/javahelpset
-ln -s $jvi/nbvi/javahelp/org/netbeans/modules/jvi/docs \
+rm -f $OUT/javahelpset
+ln -s $jvi/nbvi/nbvi-module/javahelp/org/netbeans/modules/jvi/docs \
       $OUT/javahelpset
 
 mkdir -p $OUT/vimhelp
