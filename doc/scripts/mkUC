@@ -7,9 +7,9 @@ OUT=$UC_OUT
 GUTS=$OUT/cat-guts
 CATALOG=$OUT/catalog.xml
 
-#F1=/a/src/jvi-dev/rel/nbvi-1.4/updates.xml 
+F1=/a/src/jvi-dev/rel/nbvi-1.4/updates.xml 
 
-F1=/a/src/jvi-dev/nbvi/build/updates/updates.xml 
+#F1=/a/src/jvi-dev/nbvi/build/updates/updates.xml 
 F2=/a/src/nbm/dummy-nbvi-suite/build/updates/updates.xml
 
 
@@ -21,4 +21,8 @@ echo '<!DOCTYPE module_updates PUBLIC "-//NetBeans//DTD Autoupdate Catalog 2.6//
 
 cat $GUTS >> $CATALOG
 rm $GUTS
+
+# keep both files around since there is an update center out there
+# that references the non-gz version
+gzip -9 -c $CATALOG > $CATALOG.gz
 
