@@ -7,14 +7,19 @@ OUT=$UC_OUT
 GUTS=$OUT/cat-guts
 CATALOG=$OUT/catalog.xml
 
-F1=/a/src/jvi-dev/rel/nbvi-1.4/updates.xml 
+#JVI_MAIN=/a/src/jvi-dev/rel/nbvi-1.4/updates.xml 
+#JVI_UC=/a/src/nbm/jvi.uc.nb70/build/updates.xml
 
-#F1=/a/src/jvi-dev/nbvi/build/updates/updates.xml 
-F2=/a/src/nbm/dummy-nbvi-suite/build/updates/updates.xml
+JVI_MAIN=/a/src/jvi-dev/nbvi/build/updates/updates.xml 
+JVI_UC=/a/src/nbm/jvi.uc.nb70ea/build/updates.xml
+
+JVI_ADD="
+    /a/src/nbm/editor.pin/build/updates.xml
+    "
 
 
 mkdir -p $OUT
-python combine_uc.py $F1 $F2 $OUT
+python combine_uc.py $JVI_MAIN $JVI_UC $JVI_ADD $OUT
 
 echo '<?xml version="1.0" encoding="UTF-8"?>' > $CATALOG
 echo '<!DOCTYPE module_updates PUBLIC "-//NetBeans//DTD Autoupdate Catalog 2.6//EN" "http://www.netbeans.org/dtds/autoupdate-catalog-2_6.dtd">' >> $CATALOG
