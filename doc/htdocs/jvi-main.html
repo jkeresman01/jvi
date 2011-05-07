@@ -23,7 +23,7 @@ There is news and information about
 the different applications in which jVi is integrated. 
 </p>
 <p style="font-size: larger">
-Note that jVi is a port of a major chunk of vim. It is not like many IDE
+jVi is a port of a major chunk of vim to java. It is not like many IDE
 keybindings where, for example, I often hear stuff like "its similar to emacs
 but not the same".
 jVi is the same, try visual mode or map commands or
@@ -35,6 +35,55 @@ clipboard or <span class="tt">y%</span> or ... And, yes, "." works.
 There is stuff missing, but if what's
 there doesn't work like vi/vim then its a bug (or a feature).
 </p>
+<ul>
+    <li>marks, file-marks and yank buffers,
+        for example <span class="tt">"ay'a</span>.
+        <br>These are persisted between sessions,
+        along with colon and search commands.
+    </li>
+    <li> <a href="vimhelp/index.txt.html">
+        over 200 normal mode commands, operators and motions</a>
+    </li>
+    <li>tag stack
+    </li>
+    <li>visual mode, including
+        <a href="javahelpset/jvi-vis_block.html">
+        detailed visual block mode documentation</a> (aka RECTANGULAR EDIT)
+    </li>
+    <li>text object selection
+    </li>
+    <li><a href="vimhelp/map.txt.html">
+        map commands for user defined key mappings</a>
+    </li>
+    <li>'wrap', 'linebreak' and 'list' options;
+        also horizontal scroll commands
+    </li>
+    <li><span class="tt">:set all</span> and
+        <a href="vimhelp/options.txt.html">
+        several other <span class="tt">:set</span> commads</a>
+    </li><li>substiute command with back references, there are options
+        to specify what meta characters need to be escaped, so you can enter
+    <br><span class="tt">:.,$s/([^ ]*) (.*$)/\2 \1</span>
+    </li>
+    <li> modeline processing; <span class="tt">modeline</span>
+        and <span class="tt">modelines</span>
+        options.
+    </li>
+    <li>Results of commands like <span class="tt">:g/TextFilter/p</span>
+        go into output window with hyperlinks to file.
+    </li>
+    <li>The bang commands: such as <span class="tt">!{motion}{filter}</span>,
+        <span class="tt">:{range}![!]{filter} [!][arg]</span>
+        and of course <span class="tt">:!{cmd}</span>.
+        vim options <span class="tt">shell</span>,
+        <span class="tt">shellcmdflag</span>
+        and <span class="tt">shellxquote</span>
+    </li>
+    <li><span class="tt">=</span> operator with <span class="tt">equalprg</span>
+        option. When <span class="tt">equalprg</span> empty, hook into platform
+        reindent.
+    </li>
+</ul>
 <p>
 And jVi has <a href="doc_notes">features not found in vim</a>.
 </p>
