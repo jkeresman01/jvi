@@ -42,7 +42,10 @@ A.note:visited {color: green; font-weight: bold}
                       border-width: 3px;
 }
 
-.ImgRight { float: right; border: 0; }
+.ImgRight { float: right; margin: 0 0 15px 15px; }
+.ImgLeft { float:left; margin: 0 15px 15px 0; }
+/* following can use like: class="ImgRight frame" */
+.frame { padding: 5px; border: 1px solid #aaa; }
 
 /* Table colors */
 .TableHeadingColor     { background: #CCCCFF } /* Dark mauve */
