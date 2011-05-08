@@ -14,4 +14,6 @@ VIMHELP_OUT=$BASE/build/txt_html
 HTDOCS_OUT=$BASE/build/htdocs
 UC_OUT=$BASE/build/update-center
 
+UC_MIRROR=/z/jvi/frs/jVi-for-NetBeans
+
 set -e

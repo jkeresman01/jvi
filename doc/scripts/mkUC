@@ -7,11 +7,15 @@ OUT=$UC_OUT
 GUTS=$OUT/cat-guts
 CATALOG=$OUT/catalog.xml
 
-#JVI_MAIN=/a/src/jvi-dev/rel/nbvi-1.4/updates.xml 
-#JVI_UC=/a/src/nbm/jvi.uc.nb70/build/updates.xml
+NB_VERSION=NetBeans-7.0
 
-JVI_MAIN=/a/src/jvi-dev/nbvi/build/updates/updates.xml 
-JVI_UC=/a/src/nbm/jvi.uc.nb70ea/build/updates.xml
+JVI_MAIN=/a/src/jvi-dev/rel/nbvi-1.4/updates.xml 
+JVI_UC=/a/src/nbm/jvi.uc.nb70/build/updates.xml
+UC_DIR=UC
+
+#JVI_MAIN=/a/src/jvi-dev/nbvi/build/updates/updates.xml 
+#JVI_UC=/a/src/nbm/jvi.uc.nb70ea/build/updates.xml
+#UC_DIR=eaUC
 
 JVI_ADD="
     /a/src/nbm/editor.pin/build/updates.xml
@@ -31,3 +35,23 @@ rm $GUTS
 # that references the non-gz version
 gzip -9 -c $CATALOG > $CATALOG.gz
 
+
+# don't abort on error since the cmp might fail
+set +e
+
+cd $OUT
+
+for i in *
+do
+    echo ===== $i
+    arg=""
+    if [[ $i = ${CATALOG##*/}.gz ]]
+    then
+        # ignore the date 
+        arg=-i8
+    fi
+    if ! cmp $arg $i $UC_MIRROR/$NB_VERSION/$UC_DIR/$i > /dev/null
+    then
+        echo "      ^ DIFFERS ^"
+    fi
+done
