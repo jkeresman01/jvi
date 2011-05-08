@@ -193,9 +193,20 @@ public class Search01 {
       nSubMatch = 0;
       nSubChanges = 0;
     }
-    for(int i = line1;
-          i <= line2 && !substFlags.testAnyBits(SUBST_QUIT);
-          i++) {
+
+    // Mark the beginning of each line in case extra lines are added
+    // (unlike the 'g' command, doGlobal, not checking if lines are deleted)
+
+    List<ViMark> marks = new ArrayList<ViMark>();
+    for(int lnum = cev.getLine1(); lnum <= cev.getLine2(); lnum++) {
+      marks.add(G.curbuf.createMark(G.curbuf.getLineStartOffset(lnum),
+                                    BIAS.FORW));
+    }
+
+    for(ViMark m : marks) {
+      if(substFlags.testAnyBits(SUBST_QUIT))
+        break;
+      int i = G.curbuf.getLineNumber(m.getOffset());
       int nChange = substitute_line(prog, i, substFlags, substitution);
       if(nChange > 0) {
         nSubChanges += nChange;
@@ -205,8 +216,9 @@ public class Search01 {
           ColonCommands.outputPrint(i, 0, 0);
         }
       }
+
     }
-    
+
     if(! G.global_busy) {
       if(cursorLine > 0) {
 	gotoLine(cursorLine, BL_WHITE | BL_FIX, true);
@@ -250,9 +262,9 @@ public class Search01 {
    * @return number of changes on the line
    */
   static int substitute_line(RegExp prog,
-                                      int lnum,
-                                      MutableInt flags,
-                                      CharSequence subs)
+                             int lnum,
+                             MutableInt flags,
+                             CharSequence subs)
   {
     MySegment seg = G.curbuf.getLineSegment(lnum);
 
