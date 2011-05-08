@@ -1376,7 +1376,10 @@ public class SwingTextView extends TextView
     {
         if(viewport == null)
             return 1;
-        return vpBottomViewLine + 1; // past the last line
+        int l = vpBottomViewLine;
+        if(l > getBuffer().getLineCount())
+            l = getBuffer().getLineCount();
+        return l + 1; // past the last line
     }
 
     /** @return the top line number */
@@ -1631,8 +1634,12 @@ public class SwingTextView extends TextView
             if (offset < 0) {
                 return -1;
             }
+            if(offset >= getBuffer().getLength()) {
+                offset = getBuffer().getLength() - 1;
+            }
 
-            int line = getBuffer().getLineNumber(offset);
+            // NOT USED, comment out
+            //int line = getBuffer().getLineNumber(offset);
             Rectangle2D lrect = modelToView(offset);
             viewLine = countViewLines(lrect, getRect0());
             if (vrect.contains(lrect)) {

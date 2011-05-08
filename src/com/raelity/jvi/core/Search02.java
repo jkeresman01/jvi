@@ -108,8 +108,6 @@ public class Search02 {
         int		comment_col = MAXCOL;   // start of / / comment
     //#ifdef FEAT_LISP...
 
-        assert initc != 0;
-
         // pos_lnum = G.curwin.w_cursor.getLine();
         // pos_col = G.curwin.w_cursor.getColumn();
         pos_lnum = cursor.getLine();
