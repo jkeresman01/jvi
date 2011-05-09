@@ -1,0 +1,159 @@
+<!-- <!doctype html public "-//w3c//dtd html 4.0 transitional//en"> -->
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="Ernie Rael">
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; U) [Netscape]">
+  <meta name="Description" content="status and documentation of jVi">
+  <title>jVi Home Page</title>
+  <LINK REL ="stylesheet" TYPE="text/css" HREF="stylesheet.css" TITLE="Style">
+</head>
+<body>
+
+
+
+<h1>jVi Quick Start</h1>
+
+<p>
+There is a list of most of the
+<a href="vimhelp/index.txt.html">normal and visual mode commands</a>
+supported by jVi. In this list, the over 200 commands supported by jVi
+are marked. The <span class="tt">'</span> and <span class="tt">"</span> for marks and
+named buffers work as expected;
+a <span class="tt">*</span> is a named buffer for the clipboard.
+There are a few colon commands
+available, try <span class="tt">:g/foo/s/bar/baz/gp</span>, and also see the platform
+specific documentation for additional colon commands.
+    There are several <a href="vimhelp/insert.txt.html">insert mode commands</a>
+supported. And jVi sports a Ctrl-&lt; and Ctrl-&gt; in insert mode
+to align with '('s on the previous line.
+</p><p>
+If you are a vi or vim user you can
+just start using jVi and be comfortable.
+There are a variety of options available 
+<a href="#options">through a dialog</a>. Check the
+<a href="vimhelp/help.txt.html">jVi Help Files</a>
+for more information.
+Almost all of the reference documentation is derived from the vim help files.
+A subset of the vim help files are included. They are
+modified to remove things that are not applicable. This is
+detailed information on the commands and operation.
+There are also some
+<a href="doc_notes">jVi only features</a>.
+</p>
+<p>
+jVi is embedded; where applicable, the
+standard commands, for example "<span class="tt">:w</span>", are directed to the
+application for execution.
+There may be capabilities available
+while editing that are provided by the primary application. For example,
+when jVi is used within
+<a href="http://www.borland.com/jbuilder" target="_top"> JBuilder</a>,
+or
+<a href="http://www.netbeans.org/" target="_top">NetBeans</a>,
+code completion works while editing.
+The platform specific documentation about jVi should be consulted.
+</p>
+
+<p><a href="CHANGES.html">Recent changes to jVi</a>
+is good for getting an feel for the available features.
+</p>
+
+<p>
+<b> Log bugs at
+    <a href="http://sourceforge.net/bugs/?group_id=3653" target="_top">
+jVi Bug Tracking</a>.</b>
+Please include both the <b>jVi version number</b> and the
+<b>application version number</b>,
+e.g. NetBeans 7.0, when reporting problems.
+Get the version of jVi with the <span class="tt">:version</span> command,
+also the version of jVi in use is displayed on the
+<i>jVi Config</i> option property page..
+</p>
+<p>
+
+Discuss your issues, problems and/or requests at
+<a href="http://sourceforge.net/forum/forum.php?forum_id=10908">
+jVi Open Discussion Forum</a>. 
+This is a good way to indicate what you'd like to see in jVi for NetBeans.
+
+Communications can also be sent to
+<a href="mailto:jvi@raelity.com">jVi</a>.
+</p>
+
+<img SRC="images/jViSearchEntry.png"
+     ALT="jVi Options Example"
+     class="ImgRight"/>
+<h2 id="search" class="MainSec00Font">Search and Command Entry</h2>
+<p>
+<b>Text search</b>, <span class="tt">"/"</span> and <span class="tt">"?"</span>,
+uses the java regular expression syntax, mostly like perl, see
+<A HREF="pattern.txt">Searching and Patterns</A>.
+As in vim, by default characters like "(", "{" and "|" need to be escaped when part of the
+regular expression syntax; if you don't want to escape
+these characters there is an
+options to change what needs escaping.
+The java.util.regex package
+<a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/regex/Pattern.html">
+javadocs describe the pattern syntax</a>.
+</p>
+<p>
+    When <span class="tt">"/"</span> is entered in normal mode,
+    an entry window is pop'ed up just
+    beneath the current editor pane, as shown on the right. This widget has
+    a combo box UI; the history of search commands is available using
+    the &lt;Up&gt; and &lt;Down&gt; arrows.
+</p>
+<p>
+    <b>Command Entry</b>, after a <span class="tt">":"</span>,
+    is similar.
+</p>
+
+<h2 id="options" class="MainSec00Font">Options</h2>
+<p>
+    <img SRC="images/jViOptionsExample.png"
+         ALT="jVi Options Example"
+         class="ImgRight"/>
+    There are several options that control jVi's behavior. They
+    are usually found
+    though the application's <i>Options</i> menu.
+    There are several tabs that contain jVi options. Most of these
+    are well known vim options. If you click on an option name, a description of
+    the option is displayed. The option names can generally be used in vim to get
+    help if you want a more detailed description of what the option does.
+</p>
+<p>
+    The values
+    set through the UI are the default values for the options, so setting the
+    values in the UI is like putting them in a .vimrc.
+    jVi supports per file/buffer and per window options as in vim.
+    <i>modeline</i>
+    settings are applied after the UI option values.
+</p>
+<p>
+    The <a href="vimhelp/options.txt.html">jVi <span class="tt">:set</span> command</a>
+    has several forms and what's implemented works mostly like vim.
+    Currently, only a limited number of options can be used with the
+    <span class="tt">:set</span> command. Use <span class="tt">:set all</span>
+    to get a list of them.
+</p>
+
+<h2 id="keys" class="MainSec00Font">Key Bindings</h2>
+
+<p>
+Keybindings that are not caught by jVi are passed on to the embedding
+application.
+Configure the Keys that are caught by jVi though its
+<i>Control-Key Bindings</i> and <i>Keypad Bindings</i>
+options pages. If a key is not checked
+(disabled) then it can be used for application keybindings.
+
+
+<!-- raelity copyright -->
+<hr>
+<address class="addr">
+  Copyright &copy; 2011 Raelity Engineering<br/>
+  <a href="mailto:support@raelity.com">Contact Raelity Engineering</a>
+</address>
+</body>
+</html>

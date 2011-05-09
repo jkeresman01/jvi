@@ -35,6 +35,11 @@ clipboard or <span class="tt">y%</span> or ... And, yes, "." works.
 There is stuff missing, but if what's
 there doesn't work like vi/vim then its a bug (or a feature).
 </p>
+
+<img SRC="images/opts-block-tags-notes.png"
+     title="Screenshot of jVi in NetBeans"
+     ALT="Lots of features in one picture"
+     class="ImgRight"/>
 <ul>
     <li>marks, file-marks and yank buffers,
         for example <span class="tt">"ay'a</span>.
@@ -157,57 +162,6 @@ general vi pointers and documentation. jVi is a small subset of vim. Some
 source code in jVi is taken from vim and modified to work in the java
 environment.  The user documentation is almost exclusively from vim, only
 modified to remove things that are not applicable.
-</p>
-
-<h2 id="Quick_Start" class="MainSec00Font">Quick Start</h2>
-<p>
-There is a list of all (most?) <a href="vimhelp/index.txt.html">
-normal and visual mode commands
-</a>
-supported by vim. In this list, the over 100 commands supported by jVi
-are marked. The <span class="tt">'</span> and <span class="tt">"</span> for marks and
-named buffers work as expected;
-a <span class="tt">*</span> is a named buffer for the clipboard.
-There are a few colon commands
-available, try <span class="tt">:g/foo/s/bar/baz/gp</span>, and also see the platform
-specific documentation for additional colon commands.
-    There are several <a href="vimhelp/insert.txt.html">insert mode commands</a>
-supported. And jVi sports a Ctrl-&lt; and Ctrl-&gt; in insert mode
-to align with '('s on the previous line.
-</p><p>
-If you are a vi or vim user you can
-just start using jVi and be comfortable. You may occasionally see
-a "not implemented" message.
-There are a variety of options available. Check the Reference Doc
-for more information. There are also some
-<a href="doc_notes">jVi only features</a>.
-</p>
-<p>
-<b>Text search</b> commands, for example <span class="tt">"/"</span> and <span class="tt">"?"</span>,
-use the vim regular expression syntax, see
-<A HREF="pattern.txt">Searching and Patterns</A>. If you don't like escaping
-characters like <span class="tt">"("</span> and <span class="tt">"|"</span> in patterns there are
-options to change that. The java.util.regex package is used and
-<a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/regex/Pattern.html">
-javadocs describe the pattern syntax</a>.
-</p>
-<p>
-jVi is embedded; where applicable, the
-standard commands, for example "<span class="tt">:w</span>", are directed to the
-application for execution.
-There may be capabilities available
-while editing that are provided by the primary application. For example,
-when jVi is used within
-<a href="http://www.borland.com/jbuilder" target="_top"> JBuilder</a>,
-or
-<a href="http://www.netbeans.org/" target="_top">NetBeans</a>,
-code insight works while editing.
-The platform specific documentation about jVi should be consulted.
-</p><p>
-Almost all of the reference documentation is derived from the vim help files.
-A subset of the vim help files are included. They are
-modified to remove things that are not applicable. This is
-detailed information on the commands and operation.
 </p>
 
 <h2 id="Support" class="MainSec00Font">Support</h2>

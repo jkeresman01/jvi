@@ -16,28 +16,22 @@
 <h2 id="intro" class="MainSec00Font">Introduction</h2>
 
 <p>
-Now you can use vi/vim commands while taking advantage of the NetBeans
-editors' code completion, templates, fixing compiler errors quickly and access
-to other IDE features. Start by
-<a href="http://sourceforge.net/projects/jvi/files/jVi-for-NetBeans"
-   style="font-size: larger" target="_top">downloading jVi for NetBeans</a>.
+    Now you can use vi/vim commands while taking advantage of the NetBeans
+    editors' code completion, templates, fixing compiler errors quickly and access
+    to other IDE features. Start by
+    installing the <i>jVi for NB-7.0 Update Center</i>
+    from <i>Tools &gt; Plugins &gt; Available Plugins</i> or
+    <a href="http://sourceforge.net/projects/jvi/files/jVi-for-NetBeans"
+       style="font-size: larger" target="_top">downloading jVi for NetBeans</a>
+    Enable/disable jVi using Main Menu <i>Tools > jVi</i> checkbox.
+    There is also a toggle action that can be bound to a shortcut.
+    <a href="CHANGES.html">Recent changes to jVi</a>
+    is useful for getting an idea of the features in jVi.
 </p>
 <p>For proper <b>undo/redo granularity</b> there is a
 <a href="https://sourceforge.net/project/platformdownload.php?group_id=3653">
-        small patch for netbeans</a>. NOTE: not needed for NetBeans 7.
-</p>
- 
-<p>
-The keystrokes that are delivered to jVi is a configuration option.
-See <a href="#keys">Key Bindings</a> below.
-</p>
-
-<p>Look at <a href="CHANGES.html">recent changes to jVi</a>
-and <a href="nbvi.issues">jVi in NetBeans status, issues and bugs</a>.
-</p>
-
-<p>Disable/enable jVi using Main Menu <i>Tools > jVi</i> checkbox.
-    There is also a toggle action that can be bound to a shortcut.
+    small patch for NetBeans</a>.
+    <span class="note">NOTE:</span> not needed for NetBeans 7.
 </p>
 
 <p>
@@ -62,6 +56,46 @@ Communications can also be sent to
 <a href="mailto:jvi@raelity.com">jVi</a>.
 </p>
 
+<h2 id="command-line" class="MainSec00Font">Command Line Completion</h2>
+
+<p>
+<img SRC="images/NbJviCommandNameCompletion.png"
+     ALT="NetBeans jVi Command Name Completion"
+     class="ImgLeft"/>
+
+In NetBeans,
+the jVi command line supports some limited completion functionality.
+It is based on the NetBeans editor code completion infrastructure.
+The completion list is brought up with &lt;Ctrl-Space&gt; or &lt;Ctrl-D&gt;.
+There are options, <a href="#options">see below</a>,
+to control whether or not to auto popup the completion lists.
+</p>
+<p>
+    <img SRC="images/NbJviEditOther.png"
+         ALT="NetBeans jVi Edit Other"
+         class="ImgRight"/>
+
+    There is command name completion as shown at the left.
+    When &lt;Return&gt; is entered, the command which is highlighted
+    in the list is copied to the command line and,
+    unless it has <span class="tt">...</span> after it,
+    it is executed immediately. The <span class="tt">...</span>
+    indicates that the command may accept parameters; there is an
+    opportunity to add the parameters and a second
+    &lt;Return&gt; is required to execute the command.
+    At the time of this writing, there is no completion for options,
+    except for <span class="tt">:e#</span>.
+</p>
+<p>
+    The <span class="tt">:e#</span> command support file name completion
+    as show on the right; again, use &lt;Ctrl-Space&gt; or &lt;Ctrl-D&gt;
+    to bring up the list.
+    The file list is only for files currently open
+    in the NetBeans editor. And of course if no parameter is provided
+    for <span class="tt">:e#</span> then the previous file becomes the
+    current file.
+</p>
+
 <h2 id="normal" class="MainSec00Font">Normal Mode</h2>
 There are some Normal Mode commands that hook into NetBeans features.
 <table class="TableOfCommands">
@@ -77,10 +111,6 @@ There are some Normal Mode commands that hook into NetBeans features.
         <tr>
             <td><span class="tt">z{ocRM}</span></td>
             <td>expand fold, collapse fold, expand all, collapse all</td>
-        </tr>
-        <tr>
-            <td><span class="tt">g{,;}</span></td>
-            <td>Jump to Next Edit Cross Window, Jump to Previous Edit Cross Window</td>
         </tr>
         <tr>
             <td><span class="tt">gt</span>, <span class="tt">gT</span></td>
@@ -306,20 +336,22 @@ Note: the "<span class="tt">tabs</span>" view-pane is only available if the
 </dd>
 -->
 
+    <img SRC="images/NbJviOptionsPanel.png"
+         ALT="NetBeans jVi Options Panel"
+         class="ImgRight"/>
+
 <h2 id="options" class="MainSec00Font">Options</h2>
 <p>
-    <img SRC="images/jViMiscOptionsPage.png"
-         ALT="Built for NetBeans"
-         class="ImgRight"/>
-    There are several options that control jVi's behavior. They can be found
+    There options that control jVi's behavior are found
     though NetBeans' Main Menu at
-    <i>Tools &gt; Options &gt; AdvancedOptions &gt; Editing &gt;
-    jViOptionsAndConfiguration</i>.
-    Note that there are Sub Pages that contain jVi options as well. Most of these
+    <i>Tools &gt; Options &gt; jViConfig</i>.
+    <span class="note">Note</span> that there are several sub tabs
+    that contain jVi options as well. Most of these
     are well known vim options. If you click on an option name, a description of
     the option is displayed. The option names can generally be used in vim to get
     help if you want a more detailed description of what the option does.
 </p>
+<h2 id="shiftwidth" class="MainSec01Font">shiftwidth, expandtabs and tabstop</h2>
 <p>
     <b><span class="tt">:set</span> options details.</b> The options
     <span class="tt">shiftwidth</span>, <span class="tt">expandtabs</span>
@@ -327,33 +359,52 @@ Note: the "<span class="tt">tabs</span>" view-pane is only available if the
     options, so that any editor clones of a given file have the same value for
     these options.
     Different files can have different values for these options. The values
-    set through the GUI are the default values for the options, so setting the
-    values in the GUI is like putting them in a .vimrc. Any <i>modeline</i>
-    settings are applied after the GUI option values.
-    <b>Note that jVi
-        changes the NetBeans values of these options to keep NetBeans in sync
-    with the options of the file being edited.</b> The 
+    set through the UI, in the <span class="tt">Buffer Modification</span>
+    tab of the <span class="tt">jViConfig</span> options
+    are the default values when a file is opened; setting the
+    values in the UI is like putting them in a .vimrc. Any
+    <span class="tt">modeline</span>
+    settings are applied after the UI option values.
+    The
     <span class="tt">number</span> options should be per window,
-    but netbeans applys it to all windows.
+    but NetBeans applies it to all windows.
+</p>
+<p>
+    <b>
+        <span class="note">Note</span> that jVi
+        changes the NetBeans values of these options to keep NetBeans in sync
+        with the options for the current file.
+    </b>
 </p>
 
-<p>NetBeans options are shared where applicable.
-For example, there is only one <i>IgnoreCase</i> flag in the system. jVi
-shares this settings with NetBeans. If you change this option in one place, it
-is changed in the other. The only other fully shared option is <i>wrapscan</i>.
-</p>
 <p>
 Autoindent and other such editor features are handled and configured through
 NetBeans.  </p>
 
+    <img SRC="images/NbJviImport.png"
+         ALT="NetBeans jVi Import"
+         class="ImgRight"/>
+<h2 id="options-import" class="MainSec01Font">Options Import</h2>
+<p>
+    After installing a new release of NetBeans, jVi's option settings
+    can be imported from the previous NetBeans userdir. Start by
+    pressing <span class="tt">Import</span> on the Options dialog.
+</p><p>
+    The options export feature saves the options settings to a file.
+    This can be used to
+    move the options to a different machine when they can be imported.
+</p>
+<p>
+    In addition to options, history information can also be
+    imported and exported.
+</p>
+
 <h2 id="keys" class="MainSec00Font">Key Bindings</h2>
 
 <p>
-    <img SRC="images/jViKeyOptionsPage.png"
-         ALT="Built for NetBeans"
-         class="ImgRight"/>
-Keybindings that are not caught by jVi are passed on to the embedding
-application. For example, jVi does not catch any key strokes that use the Alt key.
+Keybindings that are not caught by jVi are passed on to NetBeans
+application.
+</p>
 <p>
 Configure the Keys that are caught by jVi though its
 <i>Control-Key Bindings</i> and <i>Keypad Bindings</i>
@@ -363,36 +414,18 @@ Ctrl-I and then this key brings up NetBeans' <i>Override and Implement
 Methods</i> dialog. And of course there's ^C, ^X and ^V. The Ctrl-J starts some
 pretty good NetBeans multi-key bindings.
 </p>
-<p>You may want to bind the Find dialog to a keybinding other than Ctrl-F to
-get easy access to it. At least until jVi is hooked into incremental search
-and hilight.
 
-<h2 id="search" class="MainSec00Font">Text Search</h2>
+<h2 id="custom" class="MainSec00Font">Customization</h2>
 <p>
-    <p>
-        There are options for controlling metacharacter escaping.
-        By default vim requires that several RE metacharacters be escaped.
-        For example '|' and '(', with the <b>RE Meta Escape</b> option you
-        can specify which characters must be escaped.
-        Check
-        <A HREF="pattern.txt" TARGET="mainFrame">Searching and Patterns</A>
-        for information on searching and a description of the options.
-        <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/regex/Pattern.html">
-        javadocs describe the pattern syntax</a>.
-    </p>
-    
-    <h2 id="custom" class="MainSec00Font">Customization</h2>
-    
-    <p>
-        Here is an example for adding a simple ":" command that takes no arguments.
-        Refer to
-        <a href="jvi-javadoc/com/raelity/jvi/ColonCommands.html">ColonCommands</a>
-        and its inner clases API for more info, such as handling line number and
-        arguments as in <span class="tt">:3,7 mycom arg arg</span>.
-        The source of the ActionEvent is the JEditorPane from where the command
-        is executed. I haven't actully tried it, <span class="tt">ColonCommands</span> is in the
-        <i>jVi Core</i> module.
-    </p>
+    Here is an example for adding a simple ":" command that takes no arguments.
+    Refer to
+    <a href="jvi-javadoc/com/raelity/jvi/ColonCommands.html">ColonCommands</a>
+    and its inner clases API for more info, such as handling line number and
+    arguments as in <span class="tt">:3,7 mycom arg arg</span>.
+    The source of the ActionEvent is the JEditorPane from where the command
+    is executed. I haven't actully tried it, <span class="tt">ColonCommands</span> is in the
+    <i>jVi Core</i> module.
+</p>
     
     <pre>
 <code>
@@ -407,7 +440,8 @@ and hilight.
         ColonCommands.register("com", "command", whatever.someAction);
 	// Execute something out of the FileSystem, could be a SystemAction
 	ColonCommands.register("plat", "platform",
-	    new Module.DelelgateFileSystemAction("org-what-ever.instance"));
+	    new Module.DelelgateFileSystemAction(
+                "Actions/Tools/org-what-ever.instance"));
       }
     }
 </code>

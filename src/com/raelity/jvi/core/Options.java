@@ -269,7 +269,6 @@ public final class Options {
             });
     OptUtil.setupOptionDesc(Category.GENERAL, mapCommands, "Map Commands",
             "map-cmd {lhs} {rhs}"
-            + "\n{lhs} must represent a single character."
             + "\n[nvop]map, [nvop]noremap and [nvop]unmap commands supported"
             + " (only normal mode mappings)."
             + "\npmap is jVi only, when PLATFORM-SELECT."
