@@ -105,18 +105,21 @@ public final class Mappings {
         ColonCommands.register("vm",  "vmap", cmd, null);
         ColonCommands.register("om",  "omap", cmd, null);
         ColonCommands.register("pm",  "pmap", cmd, null);
+        ColonCommands.register("im",  "imap", cmd, null);
 
         ColonCommands.register("no",  "noremap",  cmd, null);
         ColonCommands.register("nn",  "nnoremap", cmd, null);
         ColonCommands.register("vn",  "vnoremap", cmd, null);
         ColonCommands.register("ono", "onoremap", cmd, null);
         ColonCommands.register("pn",  "pnoremap", cmd, null);
+        ColonCommands.register("ino", "inoremap", cmd, null);
 
         ColonCommands.register("unm", "unmap",  cmd, null);
         ColonCommands.register("nun", "nunmap", cmd, null);
         ColonCommands.register("vu",  "vunmap", cmd, null);
         ColonCommands.register("ou",  "ounmap", cmd, null);
         ColonCommands.register("pun", "punmap", cmd, null);
+        ColonCommands.register("iu",  "iunmap", cmd, null);
 
     }
 
@@ -247,6 +250,9 @@ public final class Mappings {
 
     /**
      * Should already have verified that cmd is supported.
+     *
+     * vim's get_map_mode()
+     *
      * @return mode(s) that the command matches
      */
     private static int parseMapMode(Wrap<String>cmdp, boolean forceit)
@@ -295,18 +301,21 @@ public final class Mappings {
                 | "vmap".equals(cmd)
                 | "omap".equals(cmd)
                 | "pmap".equals(cmd)
+                | "imap".equals(cmd)
 
                 | "noremap".equals(cmd)
                 | "nnoremap".equals(cmd)
                 | "vnoremap".equals(cmd)
                 | "onoremap".equals(cmd)
                 | "pnoremap".equals(cmd)
+                | "inoremap".equals(cmd)
 
                 | "unmap".equals(cmd)
                 | "nunmap".equals(cmd)
                 | "vunmap".equals(cmd)
                 | "ounmap".equals(cmd)
                 | "punmap".equals(cmd)
+                | "iunmap".equals(cmd)
                 )
                 ;
     }

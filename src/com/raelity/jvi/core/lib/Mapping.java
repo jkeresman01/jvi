@@ -104,6 +104,7 @@ public class Mapping {
             if((mode & VISUAL) != 0)     sb.append('v');
             if((mode & OP_PENDING) != 0) sb.append('o');
             if((mode & PLATFORM) != 0)   sb.append('p');
+            if((mode & INSERT) != 0)     sb.append('i');
         }
         return sb.toString();
     }
