@@ -20,10 +20,10 @@
 
 package com.raelity.jvi.core.lib;
 
-import com.raelity.jvi.core.lib.CcFlag;
 import static com.raelity.jvi.manager.ViManager.cid;
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.Misc01;
 import com.raelity.jvi.manager.AppViews;
@@ -103,7 +103,7 @@ public abstract class WindowTreeBuilder {
             Component c = windowForAppView(toDo.iterator().next());
             //allComps(c);
             Node root = buildTree(c);
-            if(dbg)dumpTree(root);
+            if(dbg) System.err.println(dumpTree(root).toString());
             assert root != null;
             if(root == null)
                 break;
@@ -162,25 +162,40 @@ public abstract class WindowTreeBuilder {
         return getAppView(targetNode.getPeer());
     }
 
-    public void dumpTree()
+    private StringBuilder dumpTree()
+    {
+        StringBuilder sb = new StringBuilder();
+        dumpTree(sb);
+        return sb;
+    }
+
+    private void dumpTree(StringBuilder sb)
     {
         for (Node node : roots) {
-            System.err.println("WindowTree for " + cid(node));
-            dumpTree(node);
+            sb.append("WindowTree for ").append(cid(node)).append('\n');
+            dumpTree(sb, node);
         }
     }
 
-    private void dumpTree(Node n)
+    private StringBuilder dumpTree(Node n)
     {
-        traverse(n, new Visitor()
-        {
-            @Override
-            void visit(Node node)
-            {
-                String shift = String.format("%"+((depth+1)*4)+"s", "");
-                System.err.println(shift + node);
-            }
-        });
+        StringBuilder sb = new StringBuilder();
+        dumpTree(sb, n);
+        return sb;
+    }
+
+    private void dumpTree(final StringBuilder sb, Node n)
+    {
+        traverse(n,
+                 new Visitor()
+                 {
+                     @Override
+                     void visit(Node node)
+                     {
+                         String shift = String.format("%"+((depth+1)*4)+"s", "");
+                         sb.append(shift).append(node).append('\n');
+                     }
+                 });
     }
 
     private void addToSorted(Node n)
@@ -634,7 +649,12 @@ public abstract class WindowTreeBuilder {
             WindowTreeBuilder tree
                     = ViManager.getFactory().getWindowTreeBuilder(avs);
             tree.processAppViews();
-            tree.dumpTree();
+            StringBuilder sb = tree.dumpTree();
+            ViOutputStream vios
+                    = ViManager.createOutputStream(null, ViOutputStream.OUTPUT,
+                                                   "Dump Window Hierarchy");
+            vios.println(sb.toString());
+            vios.close();
         }
     }
 }
