@@ -641,6 +641,20 @@ public abstract class WindowTreeBuilder {
         return dir == Direction.LEFT || dir == Direction.UP ? true : false;
     }
 
+    protected void dumpWinAction(ActionEvent e, StringBuilder sb)
+    {
+        if(sb == null) {
+            sb = new StringBuilder();
+        }
+        processAppViews();
+        dumpTree(sb);
+        ViOutputStream vios
+                = ViManager.createOutputStream(null, ViOutputStream.OUTPUT,
+                                               "Dump Window Hierarchy");
+        vios.println(sb.toString());
+        vios.close();
+    }
+
     private static class DumpWin implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e)
@@ -648,13 +662,7 @@ public abstract class WindowTreeBuilder {
             List<ViAppView> avs = Misc01.getVisibleAppViews(AppViews.ALL);
             WindowTreeBuilder tree
                     = ViManager.getFactory().getWindowTreeBuilder(avs);
-            tree.processAppViews();
-            StringBuilder sb = tree.dumpTree();
-            ViOutputStream vios
-                    = ViManager.createOutputStream(null, ViOutputStream.OUTPUT,
-                                                   "Dump Window Hierarchy");
-            vios.println(sb.toString());
-            vios.close();
+            tree.dumpWinAction(e, null);
         }
     }
 }
