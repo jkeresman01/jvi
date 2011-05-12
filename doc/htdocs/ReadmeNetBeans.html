@@ -222,6 +222,13 @@ There are some Normal Mode commands that hook into NetBeans features.
         <tr>
             <td><span class="tt">:tog[gle] [&lt;view-pane&gt;]</span></td>
             <td>
+                &lt;view-pane&gt; ::= <span class="tt">ou[tput]</span>
+                <br/>toggle some NetBeans' window(s) visibility; it
+                does this by docking window either into a visible mode
+                or a minimized mode. With no
+                arguments is the same as <span class="tt">output</span>.
+                <span class="tt">output</span> is the output mode.
+                <!--
                 &lt;view-pane&gt; ::= <span class="tt">bo[ttom] | ou[tput] | de[bug]</span>
                 <br/>toggle some NetBeans' window(s) visibility. With no
                 arguments is the same as <span class="tt">bottom</span>.
@@ -229,6 +236,7 @@ There are some Normal Mode commands that hook into NetBeans features.
                 go here are Output and Usages.
                 <span class="tt">debug</span> are the debug windows.
                 <span class="tt">bottom</span> is both of output and debug.
+                -->
             </td>
         </tr>
     </tbody>
@@ -292,21 +300,6 @@ should be set as needed before executing the command.
         <tr>
             <td><span class="tt">:rfintromet[hod]</span></td>
             <td>Refactor &gt; Introduce Method...</td>
-        </tr>
-    </tbody>
-</table>
-
-<h2 id="execution" class="MainSec01Font">Execution</h2>
-<i>These are not implemented yet</i>
-<table class="TableOfCommands">
-    <tbody>
-        <tr>
-            <td><span class="tt">:run</span></td>
-            <td>Use <span class="tt">:make run</span></td>
-        </tr>
-        <tr>
-            <td><span class="tt">:deb[ug]</span></td>
-            <td>Use <span class="tt">:make debug</span></td>
         </tr>
     </tbody>
 </table>
