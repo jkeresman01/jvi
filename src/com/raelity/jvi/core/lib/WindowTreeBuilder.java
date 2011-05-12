@@ -34,6 +34,7 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -66,7 +67,23 @@ public abstract class WindowTreeBuilder {
 
     private boolean dbg = false;
 
-    public enum Direction { LEFT, RIGHT, UP, DOWN }
+    public enum Direction {
+        LEFT   (Orientation.LEFT_RIGHT),
+        RIGHT  (Orientation.LEFT_RIGHT),
+        UP     (Orientation.UP_DOWN),
+        DOWN   (Orientation.UP_DOWN),
+        ;
+
+        private Orientation orientation;
+
+        private Direction(Orientation orientation)
+        {
+            this.orientation = orientation;
+        }
+
+        Orientation getOrientation() { return orientation; }
+    }
+
     public enum Orientation { LEFT_RIGHT, UP_DOWN }
 
     public WindowTreeBuilder(List<ViAppView> avs)
@@ -501,8 +518,24 @@ public abstract class WindowTreeBuilder {
 
     }
 
+    private String dbgName(Node n)
+    {
+        String s;
+        if(n == null)
+            s = null;
+        else if(n.isEditor()) {
+            s = getAppView(n.getPeer()).toString();
+        } else {
+            s = n.getPeer().getClass().getSimpleName();
+        }
+        return s;
+    }
+
+    Collection<Node> jumpTargets;
+
     private Node jump(Direction dir, Node from)
     {
+        jumpTargets = new ArrayList<Node>();
         Node to = treeUpFindSiblingNodeForJump(dir, from);
         if(to == null)
             return null;
@@ -534,18 +567,6 @@ public abstract class WindowTreeBuilder {
         if(dbg)System.err.println("treeUp found: " + dbgName(found));
         return found;
     }
-    private String dbgName(Node n)
-    {
-        String s;
-        if(n == null)
-            s = null;
-        else if(n.isEditor()) {
-            s = getAppView(n.getPeer()).toString();
-        } else {
-            s = n.getPeer().getClass().getSimpleName();
-        }
-        return s;
-    }
 
     /**
      * Used while moving up the tree to get a sibling that can start the
@@ -561,7 +582,7 @@ public abstract class WindowTreeBuilder {
         Node parent = child.getParent();
         if(parent == null)
             return null;
-        if(parent.getOrientation() != orientation(dir))
+        if(parent.getOrientation() != dir.getOrientation())
             return null;
         List<Node> children = parent.getChildren();
         int idx = children.indexOf(child);
@@ -608,27 +629,13 @@ public abstract class WindowTreeBuilder {
     private Node pickNodeForJumpDirection(EnumSet<Direction> dirs, Node node)
     {
         for (Direction dir : dirs) {
-            Orientation orientation = orientation(dir);
-            if(node.getOrientation() != orientation)
+            if(node.getOrientation() != dir.getOrientation())
                 continue;
             List<Node> children = node.getChildren();
             return towardsFirst(dir) ? children.get(0)
                                      : children.get(children.size()-1);
         }
         return null;
-    }
-
-    private Orientation orientation(Direction dir)
-    {
-        switch (dir) {
-            case LEFT:
-            case RIGHT:
-                return Orientation.LEFT_RIGHT;
-            case UP:
-            case DOWN:
-            default: // to keep compiler happy
-                return Orientation.UP_DOWN;
-        }
     }
 
     /**
