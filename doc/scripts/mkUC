@@ -9,14 +9,14 @@ CATALOG=$OUT/catalog.xml
 
 NB_VERSION=NetBeans-7.0
 
-JVI_MAIN=/a/src/jvi-dev/rel/nbvi-1.4/updates.xml 
-JVI_UC=/a/src/nbm/jvi.uc.nb70/build/updates.xml
-UC_DIR=UC
+#JVI_MAIN=/a/src/jvi-dev/rel/nbvi-1.4/updates.xml 
+#JVI_UC=/a/src/nbm/jvi.uc.nb70/build/updates.xml
+#UC_DIR=UC
+#JVI_ADD=" /a/src/nbm/editor.pin/build/updates.xml "
 
-#JVI_MAIN=/a/src/jvi-dev/nbvi/build/updates/updates.xml 
-#JVI_UC=/a/src/nbm/jvi.uc.nb70ea/build/updates.xml
-#UC_DIR=eaUC
-
+JVI_MAIN=/a/src/jvi-dev/nbvi/build/updates/updates.xml 
+JVI_UC=/a/src/nbm/jvi.uc.nb70ea/build/updates.xml
+UC_DIR=eaUC
 JVI_ADD="
     /a/src/nbm/editor.pin/build/updates.xml
     "
