@@ -10,7 +10,7 @@ mkdir -p $OUT
 cp -pr $HTDOCS/* $OUT
 
 rm -f $OUT/javahelpset
-ln -s $jvi/nbvi/nbvi-module/javahelp/org/netbeans/modules/jvi/docs \
+ln -s $jvi/nbvi/jvi-help/src/org/netbeans/modules/jvi/help/docs \
       $OUT/javahelpset
 
 mkdir -p $OUT/vimhelp
