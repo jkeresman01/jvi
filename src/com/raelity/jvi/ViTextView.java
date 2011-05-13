@@ -22,6 +22,7 @@ package com.raelity.jvi;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.lib.MutableInt;
 import java.awt.Component;
+import java.awt.geom.Rectangle2D;
 
 
 /**
@@ -239,6 +240,13 @@ public interface ViTextView extends ViOptionBag {
 
   /** @return the line number of line *after* end of window */
   public int getVpBottomLogicalLine();
+
+  /**
+   * If fpos out of sight, move rectangle into viewport.
+   * Note the fpos may be changed by this method.
+   * @return bounding box for specified position in the view port co-ords.
+   */
+  public Rectangle2D getVpLocation(ViFPOS fpos);
 
 
 

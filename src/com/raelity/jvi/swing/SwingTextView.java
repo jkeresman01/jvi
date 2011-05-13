@@ -1335,6 +1335,31 @@ public class SwingTextView extends TextView
     private int vpLines; //VIEW LINE
 
     @Override
+    public Rectangle2D getVpLocation(ViFPOS fpos)
+    {
+        try {
+            Rectangle2D r = modelToView(fpos.getOffset());
+            Rectangle2D b = getMaxCharBounds();
+            Point pView = viewport.getViewPosition();
+            Dimension extView = viewport.getViewSize();
+            double x = r.getX() - pView.x;
+            double y = r.getY() - pView.y;
+            if(x < 0)
+                x = 0;
+            if(x > extView.width)
+                x = extView.width - b.getWidth();
+            if(y < 0)
+                y = 0;
+            if(y > extView.height)
+                y = extView.width - b.getHeight();
+            r.setRect(x, y, b.getWidth(), b.getHeight());
+            return r;
+        } catch(BadLocationException ex) {
+            return getRect0();
+        }
+    }
+
+    @Override
     public int getVpTopViewLine()
     {
         if(viewport == null)
