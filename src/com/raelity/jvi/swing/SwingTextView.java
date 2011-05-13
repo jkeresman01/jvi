@@ -1094,6 +1094,12 @@ public class SwingTextView extends TextView
         Msg.emsg("win_split not implemented");
     }
 
+    @Override
+    public void win_move(Direction dir)
+    {
+        Msg.emsg("win_move not implemented");
+    }
+
 
     /** Close this window
      * @param freeBuf true if the related buffer may be freed

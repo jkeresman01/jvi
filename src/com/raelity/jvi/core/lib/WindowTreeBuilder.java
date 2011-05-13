@@ -24,6 +24,8 @@ import static com.raelity.jvi.manager.ViManager.cid;
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.ViTextView.Direction;
+import com.raelity.jvi.ViTextView.Orientation;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.Misc01;
 import com.raelity.jvi.core.TextView;
@@ -68,33 +70,6 @@ public abstract class WindowTreeBuilder {
     private List<Node> roots = new ArrayList<Node>();
 
     private static boolean dbg = false;
-
-    public enum Direction {
-        LEFT, RIGHT, UP, DOWN;
-
-        Orientation getOrientation() {
-            switch(this) {
-                case LEFT:
-                case RIGHT:     return Orientation.LEFT_RIGHT;
-                case UP:
-                case DOWN:
-                default:        return Orientation.UP_DOWN;
-            }
-        }
-
-        Direction getOpposite()
-        {
-            switch(this) {
-                case LEFT:      return RIGHT;
-                case RIGHT:     return LEFT;
-                case UP:        return DOWN;
-                case DOWN:
-                default:        return UP;
-            }
-        }
-    }
-
-    public enum Orientation { LEFT_RIGHT, UP_DOWN }
 
     public WindowTreeBuilder(List<ViAppView> avs)
     {

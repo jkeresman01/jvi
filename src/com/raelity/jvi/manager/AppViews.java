@@ -179,7 +179,7 @@ public enum AppViews
         if(!force && avCurrentlyActive == null)
             return;
         if (fact() != null && G.dbgEditorActivation.getBoolean())
-            System.err.println("Activation: AppViews.deactivateCurent: ");
+            System.err.println("Activation: AppViews.deactivateCurrent: ");
             //System.err.println("Activation: avs.deactivateCurent: " +
             //        " " + ViManager.cid(av) + fact().getFS().getDisplayFileName(av));
         if (hasFact() && Scheduler.getCurrentEditor() != null) {

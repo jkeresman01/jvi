@@ -150,8 +150,8 @@ class MarkOps
         ViManager.addPropertyChangeListener(ViManager.P_OPEN_BUF, pcl);
         ViManager.addPropertyChangeListener(ViManager.P_CLOSE_BUF, pcl);
 
-        if(ViManager.isDebugAtHome())
-            LOG.setLevel(Level.FINE);
+        // if(ViManager.isDebugAtHome())
+        //     LOG.setLevel(Level.FINE);
     }
 
     private static void startImportCheck()

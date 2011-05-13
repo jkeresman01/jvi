@@ -65,6 +65,33 @@ public interface ViTextView extends ViOptionBag {
 
   public enum HDIR { LEFT, RIGHT }
 
+  public enum Direction {
+      LEFT, RIGHT, UP, DOWN;
+
+      public Orientation getOrientation() {
+          switch(this) {
+              case LEFT:
+              case RIGHT:     return Orientation.LEFT_RIGHT;
+              case UP:
+              case DOWN:
+              default:        return Orientation.UP_DOWN;
+          }
+      }
+
+      public Direction getOpposite()
+      {
+          switch(this) {
+              case LEFT:      return RIGHT;
+              case RIGHT:     return LEFT;
+              case UP:        return DOWN;
+              case DOWN:
+              default:        return UP;
+          }
+      }
+  }
+
+  public enum Orientation { LEFT_RIGHT, UP_DOWN }
+
   /**
    * NOTE: this works only once.
    * @return create the ViFPOS that corresponds to the screens caret.
@@ -388,6 +415,9 @@ public interface ViTextView extends ViOptionBag {
    * @param n the size of the new window.
    */
   public void win_split(int n);
+
+  /** Move this window */
+  public void win_move(Direction dir);
 
   /** Close this window. Does not close last view.
    * @param freeBuf true if the related buffer may be freed

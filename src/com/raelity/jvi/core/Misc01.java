@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViTextView.Direction;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViAppView;
@@ -27,7 +28,6 @@ import com.raelity.jvi.ViTextView.FOLDOP;
 import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.core.lib.WindowTreeBuilder;
-import com.raelity.jvi.core.lib.WindowTreeBuilder.Direction;
 import java.util.logging.Level;
 import java.util.Iterator;
 import java.util.List;
@@ -593,19 +593,25 @@ public class Misc01
             // cursor to next window with wrap around
             case 'W' & 0x1f:
             case 'w':
-                ok = win_move_forw(AppViews.ALL, Prenum);
+                ok = win_jump_forw(AppViews.ALL, Prenum);
                 break;
 
             // cursor to prev window with wrap around
             case 'W':
-                ok = win_move_back(AppViews.ALL, Prenum);
+                ok = win_jump_back(AppViews.ALL, Prenum);
                 break;
 
             // cursor to next nomadic editor with wrap around
             case 'E' & 0x1f:
             case 'e':
-                ok = win_move_forw(AppViews.NOMAD, Prenum);
+                ok = win_jump_forw(AppViews.NOMAD, Prenum);
                 break;
+
+            // move the current window
+            case 'J':   win_move(Direction.DOWN);  break;
+            case 'K':   win_move(Direction.UP);    break;
+            case 'H':   win_move(Direction.LEFT);  break;
+            case 'L':   win_move(Direction.RIGHT); break;
 
             // cursor to window below
             case K_DOWN:
@@ -639,13 +645,13 @@ public class Misc01
             // cursor to top-left window
             case 't':
             case 'T' & 0x1f:
-                ok = win_moveto(AppViews.ALL, 1); // firstwin
+                ok = win_jump_to(AppViews.ALL, 1); // firstwin
                 break;
 
             // cursor to bottom-right window
             case 'b':
             case 'B' & 0x1f:
-                ok = win_moveto(AppViews.ALL, Integer.MAX_VALUE); // lastwin
+                ok = win_jump_to(AppViews.ALL, Integer.MAX_VALUE); // lastwin
                 break;
 
             // cursor to last accessed (previous) window
@@ -664,19 +670,19 @@ public class Misc01
             Util.beep_flush();
     }
 
-    private static boolean win_move_forw(AppViews whichViews, int n)
+    private static boolean win_jump_forw(AppViews whichViews, int n)
     {
         boolean ok = true;
         ok = n == 0 ? win_cycle(whichViews, FORWARD)
-                    : win_moveto(whichViews, n);
+                    : win_jump_to(whichViews, n);
         return ok;
     }
 
-    private static boolean win_move_back(AppViews whichViews, int n)
+    private static boolean win_jump_back(AppViews whichViews, int n)
     {
         boolean ok = true;
         ok = n == 0 ? win_cycle(whichViews, BACKWARD)
-                    : win_moveto(whichViews, n);
+                    : win_jump_to(whichViews, n);
         return ok;
     }
 
@@ -714,7 +720,7 @@ public class Misc01
         return ViManager.getFS().edit(avs.get(idx), false);
     }
 
-    private static boolean win_moveto(AppViews whichViews, int n)
+    private static boolean win_jump_to(AppViews whichViews, int n)
     {
         List<ViAppView> avs = getSortedAppViews(whichViews);
         if(avs == null)
@@ -726,6 +732,11 @@ public class Misc01
             n = avs.size() -1; // last window
 
         return ViManager.getFS().edit(avs.get(n), false);
+    }
+
+    private static void win_move(Direction direction)
+    {
+        G.curwin.win_move(direction);
     }
 
     private static boolean win_jump(Direction direction, int n)
