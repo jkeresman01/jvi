@@ -41,6 +41,10 @@ set +e
 
 cd $OUT
 
+UC=$UC_MIRROR/$NB_VERSION/$UC_DIR
+
+echo ===== $UC =====
+
 for i in *
 do
     echo ===== $i
@@ -50,7 +54,7 @@ do
         # ignore the date 
         arg=-i8
     fi
-    if ! cmp $arg $i $UC_MIRROR/$NB_VERSION/$UC_DIR/$i > /dev/null
+    if ! cmp $arg $i $UC/$i > /dev/null
     then
         echo "      ^ DIFFERS ^"
     fi
