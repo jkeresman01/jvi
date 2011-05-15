@@ -6,7 +6,7 @@ motd-version: 1
 jVi-release: 1.4.0
 jVi-release-link:  http://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-7.0/nbvi-1.4.zip/download
 
-#jVi-beta: 1.3.1.beta8
+jVi-beta: 1.4.1.x3
 #jVi-beta-link: http://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-7.0/nbvi-1.3.1.beta8.zip/download
 
 # Following used when a new release.
@@ -15,12 +15,16 @@ jVi-release-link:  http://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/Ne
 # There may be any number of motd-link and motd-message in any order.
 # They are displayed in the order they are given.
 # There may be any number of lines before the <EOT>
+motd-message:
+*** jVi for Netbeans 7.0 Update Center ***
+Install it from Plugin Portal with Tools>Plugins>AvailablePlugins
+<EOT>
 
 motd-message:
-nbvi-1.4 is for NetBeans 7.0
-<EOT>
-motd-message:
-*** nbvi-1.4 map-commands, horizontal-scroll-commands, ...  ***
+*
+* Early access: split/clone/move windows; multi-char {lhs} mappings w/timeout option
+* Create a jVi early access update center with Tools>Plugins>Settings>Add with URL:
+* https://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-7.0/eaUC/catalog.xml.gz
 <EOT>
 
 motd-link: http://jvi.sourceforge.net/?CHANGES.html

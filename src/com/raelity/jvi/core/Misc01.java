@@ -557,7 +557,7 @@ public class Misc01
 
     /////////////////////////////////////////////////////////////////////////
     //
-    // Window navigation stuff
+    // Ctrl-W window splitting/moving/navigation stuff
     //
     static void do_window(char nchar, int Prenum)
     {

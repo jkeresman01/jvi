@@ -87,6 +87,7 @@ class Motd
         match = find("^jVi-beta:\\s*(\\S+)", Pattern.MULTILINE, s);
         if (match != null)
             latestBeta = new jViVersion(match);
+        // NOT USED downloadTarget
         downloadTarget = find("^jVi-download-target:\\s*(\\S+)",
                               Pattern.MULTILINE, s);
         linkRelease = find("^jVi-release-link:\\s*(\\S+)",
