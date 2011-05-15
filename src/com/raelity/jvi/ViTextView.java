@@ -246,7 +246,7 @@ public interface ViTextView extends ViOptionBag {
   /** @return the line number of line *after* end of window */
   public int getVpBottomViewLine();
 
-  /** @return the number of screen lines used by the logical line */
+  /** @return number of screen lines used by the logical line (vim's plines) */
   public int getCountViewLines(int logicalLine);
 
   /**
