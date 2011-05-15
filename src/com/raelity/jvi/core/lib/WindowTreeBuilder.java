@@ -125,6 +125,12 @@ public abstract class WindowTreeBuilder {
 
     public ViAppView jump(Direction dir, final ViAppView fromAv, int n)
     {
+        return jump(dir, fromAv, n, false);
+    }
+
+    public ViAppView jump(Direction dir, final ViAppView fromAv,
+                          int n, boolean mustTouch)
+    {
         if(n <= 0)
             n = 1;
 
@@ -151,18 +157,20 @@ public abstract class WindowTreeBuilder {
             return null;
 
         Node targetNode = null;
+        boolean touches;
         do
         {
+            touches = false;
             List<Node> nodes = jump(dir, currentNode);
             if(nodes == null || nodes.isEmpty())
                 break;
 
-            Rectangle cursor = getProjectedCursorRectangle(dir.getOrientation(),
-                                                           currentNode);
+            Rectangle cursorProjection = getProjectedCursorRectangle(
+                                    dir.getOrientation(), currentNode);
             if(dbg) {
                 System.err.println("\ncurrentNode:" + dbgName(currentNode) + " "
                     + getProjectedRectangle(dir.getOrientation(), currentNode));
-                System.err.println("cursor: " + cursor);
+                System.err.println("cursor: " + cursorProjection);
                 System.err.println("jump Targets");
                 for(Node n1 : nodes) {
                     System.err.println(dbgName(n1) + " "
@@ -170,31 +178,70 @@ public abstract class WindowTreeBuilder {
                 }
             }
 
-            currentNode = null;
+            Node nextNode = null;
             int fuzzyDistance = Integer.MAX_VALUE;
             Node fuzzyNode = null;
             for(Node n1 : nodes) {
-                Rectangle n1Rect = getProjectedRectangle(dir.getOrientation(),
-                                                         n1);
-                if(cursor.intersects(n1Rect)) {
-                    currentNode = n1;
+                Rectangle n1Projection
+                        = getProjectedRectangle(dir.getOrientation(), n1);
+                if(cursorProjection.intersects(n1Projection)) {
+                    nextNode = n1;
                     break;
                 }
-                int d = distance(dir.getOrientation(), cursor, n1Rect);
+                int d = distance(dir.getOrientation(), cursorProjection, n1Projection);
                 if(d < fuzzyDistance) {
                     fuzzyDistance = d;
                     fuzzyNode = n1;
                 }
             }
-            if(null == currentNode)
-                currentNode = fuzzyNode;
+            if(null == nextNode)
+                nextNode = fuzzyNode;
+
+            Rectangle currentNodeProjection
+                    = getProjectedRectangle(dir.getOrientation(), currentNode);
+            Rectangle nextNodeProjection
+                    = getProjectedRectangle(dir.getOrientation(), nextNode);
+            if(currentNodeProjection.intersects(nextNodeProjection)
+                    && touches(currentNode, dir, nextNode))
+                touches = true;
+
+            currentNode = nextNode;
             targetNode = currentNode;
             // if(dbg)System.err.println("windowJump: " + dbgName(currentNode));
         } while(--n > 0);
 
-        if(targetNode == null)
+        if(targetNode == null || mustTouch && ! touches)
             return null;
         return getAppView(targetNode.getPeer());
+    }
+
+    /** A hack */
+    private boolean touches(Node n, Direction dir, Node nOther)
+    {
+        Rectangle r = getNodeRectangle(n);
+        Rectangle rOther = getNodeRectangle(nOther);
+
+        int d;
+        switch(dir) {
+            case LEFT:
+                d = r.x - (rOther.x + rOther.width);
+                break;
+            case RIGHT:
+                d = rOther.x - (r.x + r.width);
+                break;
+            case UP:
+                d = r.y - (rOther.y + rOther.height);
+                break;
+            case DOWN:
+            default:
+                d = rOther.y - (r.y + r.height);
+                break;
+        }
+        assert d >= 0;
+        if(d < 0)
+            return false;
+
+        return d < 100 ? true : false;
     }
 
     /** minimal distance along the projection */
@@ -249,15 +296,23 @@ public abstract class WindowTreeBuilder {
      * @param n
      * @return
      */
-    private Rectangle getProjectedRectangle(Orientation orientation,
-                                            Node n)
+    private Rectangle getProjectedRectangle(Orientation orientation, Node n)
+    {
+        return getProjectedRectangle(orientation, getNodeRectangle(n));
+    }
+
+    //
+    // NEEDSWORK: NodeRect should be textView,
+    // e.g. return "Mode" boundaries on NetBeans
+    //
+    private Rectangle getNodeRectangle(Node n)
     {
         Component c = n.getPeer();
         if(c.getParent() instanceof JViewport)
             c = c.getParent();
         Rectangle r = SwingUtilities.getLocalBounds(c);
         r = SwingUtilities.convertRectangle(c, r, null);
-        return getProjectedRectangle(orientation, r);
+        return r;
     }
 
     private Rectangle getProjectedCursorRectangle(Orientation orientation,
