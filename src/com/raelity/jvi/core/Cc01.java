@@ -141,6 +141,9 @@ public class Cc01
         ColonCommands.register("u", "undo", ACTION_undo, null);
         ColonCommands.register("red", "redo", ACTION_redo, null);
 
+        // clone an editor
+        ColonCommands.register("clon", "clone", new Clone(), null);
+
         addDebugColonCommands();
     }
 
@@ -772,6 +775,15 @@ public class Cc01
             G.curbuf.redo();
         }
     };
+
+    static private class Clone implements ActionListener
+    {
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            G.curwin.win_clone();
+        }
+    }
 
     private static ActionListener ACTION_testModalKeys = new ActionListener() {
         @Override

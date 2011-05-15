@@ -1089,7 +1089,7 @@ public class SwingTextView extends TextView
      * @param n the size of the new window.
      */
     @Override
-    public void win_split( int n )
+    public void win_split( Direction dir, int n )
     {
         Msg.emsg("win_split not implemented");
     }
@@ -1098,6 +1098,12 @@ public class SwingTextView extends TextView
     public void win_move(Direction dir)
     {
         Msg.emsg("win_move not implemented");
+    }
+
+    @Override
+    public void win_clone()
+    {
+        Msg.emsg("win_clone not implemented");
     }
 
 

@@ -414,10 +414,18 @@ public interface ViTextView extends ViOptionBag {
   /** Split this window.
    * @param n the size of the new window.
    */
-  public void win_split(int n);
+  public void win_split(Direction dir, int n);
 
   /** Move this window */
   public void win_move(Direction dir);
+
+  /**
+   * Make another view of the editor as a tab.
+   * Map this from ^WT
+   * Much like ":tabnew %"
+   * This could be first step in ^W^S type behavior.
+   */
+  public void win_clone();
 
   /** Close this window. Does not close last view.
    * @param freeBuf true if the related buffer may be freed

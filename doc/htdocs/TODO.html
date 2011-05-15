@@ -14,6 +14,34 @@
 
 <pre>
 
+Ctrl-W commands
+===============
+  - ^WT same as :clone
+    have a tv.win_clone? maybe incorporate into other?
+  - implement win_split
+  - win_move has problems, nb issues
+  - study core.windows in detail
+      - look interesting
+        Central.userDroppedTopComponentsAroundEditor
+        Central.userDroppedTopComponentsIntoEmptyEditor
+        - from WindowDnDManager.performDrop
+          also from performDrop:
+        WindowDnDManager.dragStarting # EditorView impl a TopComponentDroppable
+
+          In performDrop, when moving ed to a different mode,
+            droppable is a DefaultSplitContainer$ModePanel
+            and the ViewElement seems to be the ed after which to put dragged ed
+
+                if(viewElement instanceof EditorView)  IS FALSE
+          so enter,
+                } else if(viewElement instanceof ModeView) {
+          and does
+                controller.userDroppedTopComponents(modeView,
+                        tcArray, ((Integer)constr).intValue());
+          which ends up in Central.userDroppedTopComponents(...
+                updateViewAfterDnD(
+                            moveTopComponentsIntoMode(mode, tcs, index));
+
 Documentation
 =============
   - Parse jVi docs for html, javahelp, per topic help. Per topic used for
@@ -156,12 +184,6 @@ Mappings
   - ^V issues, should prevent mapping
   - Use JEditorPane for mappings ui with jVi in it.
   - add p_mmd option (currently hardcoded)
-  - imap commands for insert mode mappings
-  - pmap, pnoremap...
-    A platform-selection set of map commands these mappings apply if there is
-    a platform selection. The following would allow y/p work with platform sel
-        pnoremap y vy
-        pnoremap p vp
   - keybinding for *everything* possible and a big default mapping.
     F-keys, keypad. Include multiple modifiers at once.  Ctrl,Shft,Alt,Meta
     - when specify a mapping for a key, and key is not "caught"
@@ -170,16 +192,9 @@ Mappings
               keybindings have been taken away.
 
   - map {lhs} <Nop>
-  - multiple chars on {lhs}
   - allow space chars in right hand side?
   - accept '\' escapes
     maybe part of globally handling escapes
-  - alt key by itself, not as a modifier.
-    see: https://sourceforge.net/projects/jvi/forums/forum/10908/topic/4414466/index/page/1
-  - for example "map <AltKey> <esc>".
-    issues: handling bindings that use the alt key
-            maybe could check that alt-press alt-release
-            with no intervening keys.
 
 
 Options
@@ -290,3 +305,4 @@ Copyright &copy; 2011 Raelity Engineering</font></address>
 Contact Raelity Engineering</a></font>
 </body>
 </html>
+<!-- vim: set sw=2: -->

@@ -568,7 +568,12 @@ public class Misc01
             case 'S':
             case 's':
             case 'S' & 0x1f:          // Ctrl
-                G.curwin.win_split(Prenum);
+                G.curwin.win_split(Direction.UP, Prenum);
+                break;
+
+            case 'v':
+            case 'V' & 0x1f:          // Ctrl
+                G.curwin.win_split(Direction.LEFT, Prenum);
                 break;
 
             // close current window
@@ -606,6 +611,9 @@ public class Misc01
             case 'e':
                 ok = win_jump_forw(AppViews.NOMAD, Prenum);
                 break;
+
+            // make a clone
+            case 'T':   win_clone(); break;
 
             // move the current window
             case 'J':   win_move(Direction.DOWN);  break;
@@ -737,6 +745,11 @@ public class Misc01
     private static void win_move(Direction direction)
     {
         G.curwin.win_move(direction);
+    }
+
+    private static void win_clone()
+    {
+        G.curwin.win_clone();
     }
 
     private static boolean win_jump(Direction direction, int n)
