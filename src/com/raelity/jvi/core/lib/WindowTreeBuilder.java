@@ -29,6 +29,7 @@ import com.raelity.jvi.ViTextView.Orientation;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.Misc01;
 import com.raelity.jvi.core.TextView;
+import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.manager.ViManager;
 import java.awt.Component;
@@ -202,7 +203,7 @@ public abstract class WindowTreeBuilder {
             Rectangle nextNodeProjection
                     = getProjectedRectangle(dir.getOrientation(), nextNode);
             if(currentNodeProjection.intersects(nextNodeProjection)
-                    && touches(currentNode, dir, nextNode))
+                    && touches(currentNode, dir, nextNode, null))
                 touches = true;
 
             currentNode = nextNode;
@@ -215,8 +216,8 @@ public abstract class WindowTreeBuilder {
         return getAppView(targetNode.getPeer());
     }
 
-    /** A hack */
-    private boolean touches(Node n, Direction dir, Node nOther)
+    protected boolean touches(Node n, Direction dir, Node nOther,
+                              MutableInt distance)
     {
         Rectangle r = getNodeRectangle(n);
         Rectangle rOther = getNodeRectangle(nOther);
@@ -237,11 +238,12 @@ public abstract class WindowTreeBuilder {
                 d = rOther.y - (r.y + r.height);
                 break;
         }
-        assert d >= 0;
+        if(distance != null)
+            distance.setValue(d);
         if(d < 0)
             return false;
 
-        return d < 100 ? true : false;
+        return d < 100; // NEEDSWORK: WindowTreeBuilder.touches
     }
 
     /** minimal distance along the projection */
@@ -301,11 +303,12 @@ public abstract class WindowTreeBuilder {
         return getProjectedRectangle(orientation, getNodeRectangle(n));
     }
 
-    //
-    // NEEDSWORK: NodeRect should be textView,
-    // e.g. return "Mode" boundaries on NetBeans
-    //
-    private Rectangle getNodeRectangle(Node n)
+    /**
+     * The bounds in Window (Frame/Dialog) coord space.
+     * Override to return platform specific.
+     * e.g. return "Mode" boundaries on NetBeans
+     */
+    protected Rectangle getNodeRectangle(Node n)
     {
         Component c = n.getPeer();
         if(c.getParent() instanceof JViewport)
