@@ -1,13 +1,12 @@
 See `CHANGES <http://jvi.sourceforge.net/?CHANGES.html>`_ for per release
 feature and fix information.
 
-nbvi-1.4
-====================
-| Recent additions are map-commands and horizontal-scroll-commands.
+**nbvi-1.4**
+  Recent additions are map-commands and horizontal-scroll-commands.
 
-nbvi-1.4.1.x3 (nbvi-1.4.1 early access)
-=======================================
-| Recent addition: some ^W split window, move window, see CHANGES
-nbvi-1.4.1.x2 (nbvi-1.4.1 early access)
-=======================================
-| Recent addition: multi-char map-commands with 'timeout', 'timeoutlen'
+**nbvi-1.4.1.x3 (nbvi-1.4.1 early access)**
+  Recent addition: some ^W split window, move window, see CHANGES
+
+**nbvi-1.4.1.x2 (nbvi-1.4.1 early access)**
+  Recent addition: multi-char map-commands with 'timeout', 'timeoutlen'
+
