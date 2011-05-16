@@ -16,9 +16,10 @@
 
 Ctrl-W commands
 ===============
-  - ^WT same as :clone
-    have a tv.win_clone? maybe incorporate into other?
-  - implement win_split
+  - win_split, win_move
+    more complete implementation that doesn't depend on reflection
+    - See Bug 198657 - APIs to work with Modes
+                       (implement jVi window split/move/... commands)
   - win_move has problems, nb issues
   - study core.windows in detail
       - look interesting
@@ -66,18 +67,24 @@ Bugs
   - Create JUnit testing infrastructure. Create tests.
   - See sourcforge...
   - 0 ==&gt; don't persist marks
-  - :e#m<ctrl-s> if ":  e #  nx" not detected correctly
+  - :e#m&lt;ctrl-s&gt; if ":  e #  nx" not detected correctly
   - in jVi-standalone, wrapped lines and TAB chars, eg. following one line
-        asdf asdf asdf asdf asdf asdf asdf asdf asdf asdfxxxxx<space..>
-        aaa<tab>#sd asdf asdfhasdklfjh asdklfjhasdf asdfkljhasdf asd
+        asdf asdf asdf asdf asdf asdf asdf asdf asdf asdfxxxxx{space..}
+        aaa{tab}#sd asdf asdfhasdklfjh asdklfjhasdf asdfkljhasdf asd
         asdfasdf asdf asdf asdf
     If curson on '#' (2nd view line) after left/right motion, then gj/gk
     don't go to the correct column. How far off and where it goes is
-    dependent on the number of <space> chars at the end of the first view
+    dependent on the number of {space} chars at the end of the first view
     line. The problem does not appear in NB.
 
 netbeans embedding
 ----------------
+  - {begin,end}undo issue and atomic lock stuff.
+    stop using atomic lock for programmatic changes,
+    to do this must automatically undo anything that was done
+    that caused a problem.
+    - example bug: create multi-line ^V block, do "rx". This requires
+      two undo.
   - auto add a bunch of ^W bindings, for example ^Wc to close a window
     See play/fs-dobj for some examples.
     Some NB issues that need fixing:
