@@ -20,6 +20,8 @@
 
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.ViFPOS;
+
 /**
  * This translates logicalLines, see {@link LineMap}, to view lines.
  * A view lines is something that is visible on the screen. If there is
@@ -31,6 +33,8 @@ package com.raelity.jvi.swing;
 public interface ViewMap
 {
     public int viewLine(int logicalLine);
+
+    public int viewLine(ViFPOS fpos);
 
     public int countViewLines(int logicalLine);
 

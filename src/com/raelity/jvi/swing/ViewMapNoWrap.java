@@ -20,17 +20,31 @@
 
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.ViFPOS;
+
 /**
  *
  * @author Ernie Rael <err at raelity.com>
  */
 public class ViewMapNoWrap implements ViewMap
 {
+    private final SwingTextView tv;
+
+    public ViewMapNoWrap(SwingTextView tv)
+    {
+        this.tv = tv;
+    }
 
     @Override
     public int viewLine(int logicalLine)
     {
         return logicalLine;
+    }
+
+    @Override
+    public int viewLine(ViFPOS fpos)
+    {
+        return tv.getLogicalLine(fpos.getLine());
     }
 
     @Override

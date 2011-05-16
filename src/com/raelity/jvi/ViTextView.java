@@ -309,6 +309,9 @@ public interface ViTextView extends ViOptionBag {
    */
   public int getViewLineFromLogicalLine(int logicalLine);
 
+  /** @return viewLine of fpos */
+  public int getViewLine(ViFPOS fpos);
+
   /**
    * Return TRUE if line "lnum" in the current window is part of a closed
    * fold.

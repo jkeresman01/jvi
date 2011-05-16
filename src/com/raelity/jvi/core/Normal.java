@@ -2331,42 +2331,42 @@ middle_code:
       G.curwin.w_set_curswant = true;
     }
   }
-  
+
   static private  void	nv_zet_scrolloff (CMDARG cap) {
     do_xop("nv_zet");
 
     int so = getScrollOff();
     int nchar = cap.nchar;
-    int target_doc_line = G.curwin.w_cursor.getLine();
+    int target_view_line = G.curwin.getViewLine(G.curwin.w_cursor);
     boolean change_line = false;
-    int top = 0;
+    int top_view_line = 0;
 
-    if(cap.count0 != 0 && cap.count0 != target_doc_line) {
+    if(cap.count0 != 0 && cap.count0 != target_view_line) {
       MarkOps.setpcmark();
       if(cap.count0 > G.curbuf.getLineCount()) {
-	target_doc_line = G.curbuf.getLineCount();
+	target_view_line = G.curbuf.getLineCount();
       } else {
-	target_doc_line = cap.count0;
+	target_view_line = cap.count0;
       }
     }
-    int target = G.curwin.getLogicalLine(target_doc_line);
+    //int target = G.curwin.getLogicalLine(target_view_line);
 
     switch(nchar) {
       case NL:		    // put curwin->w_cursor at top of screen
       case K_KENTER:
       case CR:
       case 't':
-	top = target - so;
+	top_view_line = target_view_line - so;
 	break;
 
       case '.':		// put curwin->w_cursor in middle of screen
       case 'z':		// put curwin->w_cursor in middle of screen
-        top = target - G.curwin.getVpLines() / 2 - 1;
+        top_view_line = target_view_line - G.curwin.getVpLines() / 2;
 	break;
 
       case '-':		// put curwin->w_cursor at bottom of screen
       case 'b':
-	top = target - G.curwin.getVpLines() + 1 + so;
+	top_view_line = target_view_line - G.curwin.getVpLines() + 1 + so;
 	break;
 
       default:
@@ -2374,17 +2374,20 @@ middle_code:
 	return;
     }
 
-    // Keep getlineSegment before setViewTopLine,
-    // don't want to fetch segment changing during rendering
-    //MySegment seg = G.curbuf.getLineSegment(target); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //boolean keepColumn = (nchar == 't') || (nchar == 'z') || (nchar == 'b');
-    //int col = (keepColumn) ? G.curwin.getWCursor().getColumn()
-    //                       : Edit.beginlineColumnIndex(BL_WHITE | BL_FIX, seg);
-    //G.curwin.setViewTopLine(adjustTopLine(top));
-    //G.curwin.setCaretPosition(target, col);
+    int top_logical_line = G.curwin.getLogicalLineFromViewLine(top_view_line);
+    int vlStart = G.curwin.getViewLineFromLogicalLine(top_logical_line);
+    if(top_view_line != vlStart) {
+      // want th etop line to be the start of a line
+      if(nchar == '-' || nchar == 'b') {
+        if(top_logical_line < G.curwin.getLogicalLineCount())
+          top_logical_line++;
+      }
+    }
 
-    G.curwin.setVpTopLogicalLine(adjustTopLogicalLine(top));
-    ViFPOS fpos = fposLogicalLine(target);
+    G.curwin.setVpTopLogicalLine(top_logical_line);
+
+    ViFPOS fpos = fposLogicalLine(
+                    G.curwin.getLogicalLineFromViewLine(target_view_line));
     int target_column;
     boolean keepColumn = (nchar == 't') || (nchar == 'z') || (nchar == 'b');
     if(keepColumn)
@@ -2397,7 +2400,7 @@ middle_code:
     }
     coladvance(fpos, target_column).copyTo(G.curwin.w_cursor);
   }
-
+  
   static private void nv_colon (CMDARG cap) {
     do_xop("nv_colon");
     if (G.VIsual_active) {

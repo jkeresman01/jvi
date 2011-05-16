@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.core.G;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Level;
@@ -34,7 +35,7 @@ public class SwingViewMapWrapFontFixed implements ViewMap
 {
     private static final
             Logger LOG = Logger.getLogger(SwingTextView.class.getName());
-    private SwingTextView tv;
+    private final SwingTextView tv;
 
     public SwingViewMapWrapFontFixed(SwingTextView tv)
     {
@@ -63,6 +64,16 @@ public class SwingViewMapWrapFontFixed implements ViewMap
     }
 
     @Override
+    public int viewLine(ViFPOS fpos)
+    {
+        int logicalLine = tv.getLogicalLine(fpos.getLine());
+        int viewLine = viewLine(fpos.getLine());
+        return viewLine
+                + countViewLines(tv.getBuffer().getLineStartOffset(logicalLine),
+                                 fpos.getOffset()) - 1;
+    }
+
+    @Override
     public int logicalLine(int viewLine)
     {
         Rectangle2D lrect = tv.getRect0();
@@ -88,6 +99,19 @@ public class SwingViewMapWrapFontFixed implements ViewMap
             //Logger.getLogger(SwingTextView.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+        return count;
+    }
+
+    int countViewLines(int offset1, int offset2)
+    {
+        int count = 1; // default if exception
+        try {
+            count = tv.countViewLines(tv.modelToView(offset2),
+                                      tv.modelToView(offset1));
+        } catch(BadLocationException ex) {
+            // Logger.getLogger(SwingViewMapWrapFontFixed.class.getName()).
+            //      log(Level.SEVERE, null, ex);
+        }
         return count;
     }
 

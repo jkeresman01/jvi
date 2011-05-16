@@ -20,7 +20,7 @@
 
 package com.raelity.jvi.swing;
 
-import com.raelity.jvi.swing.ViewMap;
+import com.raelity.jvi.ViFPOS;
 
 /**
  * Switch between view maps depending on jVi wrap option
@@ -34,7 +34,7 @@ public class ViewMapSwitcher implements ViewMap {
     public ViewMapSwitcher(SwingTextView tv)
     {
         this.tv = tv;
-        vmNoWrap = new ViewMapNoWrap();
+        vmNoWrap = new ViewMapNoWrap(tv);
         vmWrap = new SwingViewMapWrapFontFixed(tv);
     }
 
@@ -43,16 +43,25 @@ public class ViewMapSwitcher implements ViewMap {
         return tv.w_p_wrap ? vmWrap : vmNoWrap;
     }
 
+    @Override
     public int viewLine(int logicalLine)
     {
         return getMap().viewLine(logicalLine);
     }
 
+    @Override
+    public int viewLine(ViFPOS fpos)
+    {
+        return getMap().viewLine(fpos);
+    }
+
+    @Override
     public int logicalLine(int viewLine)
     {
         return getMap().logicalLine(viewLine);
     }
 
+    @Override
     public int countViewLines(int logicalLine)
     {
         return getMap().countViewLines(logicalLine);

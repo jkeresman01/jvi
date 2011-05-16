@@ -23,6 +23,7 @@ package com.raelity.jvi.swing;
 import com.raelity.jvi.lib.MutableInt;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import static java.lang.Math.abs;
 import static java.lang.Math.round;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.core.TextView;
@@ -1289,7 +1290,7 @@ public class SwingTextView extends TextView
     public int countViewLines(Rectangle2D r1, Rectangle2D r2)
     {
           double yDiff = r1.getCenterY() - r2.getCenterY();
-          int nLine = (int)round(yDiff / getFontHeight()) + 1;
+          int nLine = abs((int)round(yDiff / getFontHeight())) + 1;
           return nLine;
     }
 
@@ -1460,6 +1461,12 @@ public class SwingTextView extends TextView
     {
         // this is vim's plines function
         return vm.countViewLines(logicalLine);
+    }
+
+    @Override
+    public int getViewLine(ViFPOS fpos)
+    {
+        return vm.viewLine(fpos);
     }
 
     @Override
