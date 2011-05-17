@@ -3941,7 +3941,7 @@ private static int put_in_typebuf(String s, boolean colon)
     // these methods help control interactions with insertUndo
     //
     private static void beginUndo() {
-        debugUndo("Misc:beginUndo");
+        debugUndo("{Misc:beginUndo");
         checkUndoThreading();
         if(undoNesting == 0) {
             G.curbuf.do_beginUndo();
@@ -3958,11 +3958,11 @@ private static int put_in_typebuf(String s, boolean colon)
               clearUndoThreading();
             }
         }
-        debugUndo("Misc:endUndo");
+        debugUndo("}Misc:endUndo");
     }
 
     static void beginInsertUndo() {
-      debugUndo("Misc:beginInsertUndo");
+      debugUndo("{Misc:beginInsertUndo");
       if(isInInsertUndo()) LOG.log(Level.SEVERE, "inInsertUndo", new Throwable());
       if(insertUndoNesting == 0) {
           G.curbuf.do_beginInsertUndo();
@@ -3978,7 +3978,7 @@ private static int put_in_typebuf(String s, boolean colon)
       if(insertUndoNesting == 0) {
           G.curbuf.do_endInsertUndo();
       }
-      debugUndo("Misc:endInsertUndo");
+      debugUndo("}Misc:endInsertUndo");
     }
 
     private static Thread undoThread;

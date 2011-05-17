@@ -256,7 +256,7 @@ abstract public class SimpleBuffer extends SwingBuffer
 
     @Override
     public void do_beginUndo() {
-        G.dbgUndo.printf("SimpleBuf:do_beginUndo: \n");
+        G.dbgUndo.printf("{SimpleBuf:do_beginUndo: \n");
         // NEEDSWORK: standalone like: ((AbstractDocument)doc).writeLock();
         assert !fCommandUndo;
         fCommandUndo = true;
@@ -269,12 +269,12 @@ abstract public class SimpleBuffer extends SwingBuffer
         assert fCommandUndo;
         endAnyUndo();
         fCommandUndo = false;
-        G.dbgUndo.printf("SimpleBuf:do_endUndo: \n");
+        G.dbgUndo.printf("}SimpleBuf:do_endUndo: \n");
     }
 
     @Override
     public void do_beginInsertUndo() {
-        G.dbgUndo.printf("SimpleBuf:do_beginInsertUndo: \n");
+        G.dbgUndo.printf("{SimpleBuf:do_beginInsertUndo: \n");
         assert !fInsertUndo;
         fInsertUndo = true;
         beginAnyUndo();
@@ -285,7 +285,7 @@ abstract public class SimpleBuffer extends SwingBuffer
         assert fInsertUndo;
         endAnyUndo();
         fInsertUndo = false;
-        G.dbgUndo.printf("SimpleBuf:do_endInsertUndo: \n");
+        G.dbgUndo.printf("}SimpleBuf:do_endInsertUndo: \n");
     }
 
     private void beginAnyUndo() {
