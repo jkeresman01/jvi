@@ -1,18 +1,5 @@
 #!/usr/bin/bash
 
-set -e
-
-#. VARS.sh
-UC_MIRROR=/z/jvi/frs/jVi-for-NetBeans
-SCRIPTS_DIR=$jd
-
-JVI_RELDIR=/a/src/jvi-dev/rel
-
-#JVI_VERSION=nbvi-1.4.1.x3
-JVI_VERSION=$(basename $(pwd))
-
-echo $JVI_VERSION
-
 if [[ ! -d proj ]]
 then
     echo not found: proj
@@ -20,21 +7,32 @@ then
     exit 1
 fi
 
+set -e
+
+#JVI_VERSION=nbvi-1.4.1.x3
+JVI_VERSION=$(basename $(pwd))
+echo Createing update center $JVI_VERSION
+
+JVI_RELDIR=/a/src/jvi-dev/rel
+UC_MIRROR=/z/jvi/frs/jVi-for-NetBeans
+
 JVI_VERSIONDIR=$JVI_RELDIR/$JVI_VERSION
+
+NB_VERSION=NetBeans-7.0
+
+JVI_MAIN=$JVI_VERSIONDIR/proj/updates.xml
+JVI_UC=         # pick up from plugin portal update center
+UC_DIR=UC
+JVI_ADD="
+    $JVI_RELDIR/editor.pin-1.3.2/proj/updates.xml
+    "
 
 OUT=$JVI_VERSIONDIR/build-uc
 
 GUTS=$OUT/cat-guts
 CATALOG=$OUT/catalog.xml
 
-NB_VERSION=NetBeans-7.0
-
-JVI_MAIN=$JVI_VERSIONDIR/proj/updates.xml
-JVI_UC=         # early access update center must be manually entered
-UC_DIR=eaUC
-JVI_ADD="
-    $JVI_RELDIR/editor.pin-1.3.2/proj/updates.xml
-    "
+SCRIPTS_DIR=$jd
 
 mkdir -p $OUT
 # Turn several modules into update center. $GUTS is the catalog.
@@ -81,10 +79,13 @@ done
 
 cd $SAVE_DIR
 
-rm -rf new-files
-mkdir new-files
+CHANGED_FILES_DIR=changed-files
+
+rm -rf $CHANGED_FILES_DIR
+mkdir $CHANGED_FILES_DIR
 
 for i in $FILES
 do
-    cp $OUT/$i new-files
+    cp $OUT/$i $CHANGED_FILES_DIR
 done
+

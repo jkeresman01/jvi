@@ -29,7 +29,6 @@ import com.raelity.jvi.ViTextView.Orientation;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.Misc01;
 import com.raelity.jvi.core.TextView;
-import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.manager.ViManager;
 import java.awt.Component;
@@ -202,8 +201,7 @@ public abstract class WindowTreeBuilder {
                     = getProjectedRectangle(dir.getOrientation(), currentNode);
             Rectangle nextNodeProjection
                     = getProjectedRectangle(dir.getOrientation(), nextNode);
-            if(currentNodeProjection.intersects(nextNodeProjection)
-                    && touches(currentNode, dir, nextNode, null))
+            if(currentNodeProjection.intersects(nextNodeProjection))
                 touches = true;
 
             currentNode = nextNode;
@@ -216,35 +214,35 @@ public abstract class WindowTreeBuilder {
         return getAppView(targetNode.getPeer());
     }
 
-    protected boolean touches(Node n, Direction dir, Node nOther,
-                              MutableInt distance)
-    {
-        Rectangle r = getNodeRectangle(n);
-        Rectangle rOther = getNodeRectangle(nOther);
+    // protected boolean touches(Node n, Direction dir, Node nOther,
+    //                           MutableInt distance)
+    // {
+    //     Rectangle r = getNodeRectangle(n);
+    //     Rectangle rOther = getNodeRectangle(nOther);
 
-        int d;
-        switch(dir) {
-            case LEFT:
-                d = r.x - (rOther.x + rOther.width);
-                break;
-            case RIGHT:
-                d = rOther.x - (r.x + r.width);
-                break;
-            case UP:
-                d = r.y - (rOther.y + rOther.height);
-                break;
-            case DOWN:
-            default:
-                d = rOther.y - (r.y + r.height);
-                break;
-        }
-        if(distance != null)
-            distance.setValue(d);
-        if(d < 0)
-            return false;
+    //     int d;
+    //     switch(dir) {
+    //         case LEFT:
+    //             d = r.x - (rOther.x + rOther.width);
+    //             break;
+    //         case RIGHT:
+    //             d = rOther.x - (r.x + r.width);
+    //             break;
+    //         case UP:
+    //             d = r.y - (rOther.y + rOther.height);
+    //             break;
+    //         case DOWN:
+    //         default:
+    //             d = rOther.y - (r.y + r.height);
+    //             break;
+    //     }
+    //     if(distance != null)
+    //         distance.setValue(d);
+    //     if(d < 0)
+    //         return false;
 
-        return d < 100; // NEEDSWORK: WindowTreeBuilder.touches
-    }
+    //     return d < 100; // NEEDSWORK: WindowTreeBuilder.touches
+    // }
 
     /** minimal distance along the projection */
     private int distance(Orientation orientation, Rectangle r1, Rectangle r2)
