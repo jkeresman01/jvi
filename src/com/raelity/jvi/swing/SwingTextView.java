@@ -1096,7 +1096,7 @@ public class SwingTextView extends TextView
     }
 
     @Override
-    public void win_move(Direction dir)
+    public void win_move(Direction dir, int n)
     {
         Msg.emsg("win_move not implemented");
     }

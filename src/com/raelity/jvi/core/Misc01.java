@@ -616,10 +616,10 @@ public class Misc01
             case 'T':   win_clone(); break;
 
             // move the current window
-            case 'J':   win_move(Direction.DOWN);  break;
-            case 'K':   win_move(Direction.UP);    break;
-            case 'H':   win_move(Direction.LEFT);  break;
-            case 'L':   win_move(Direction.RIGHT); break;
+            case 'J':   win_move(Direction.DOWN, Prenum);  break;
+            case 'K':   win_move(Direction.UP, Prenum);    break;
+            case 'H':   win_move(Direction.LEFT, Prenum);  break;
+            case 'L':   win_move(Direction.RIGHT, Prenum); break;
 
             // cursor to window below
             case K_DOWN:
@@ -742,9 +742,9 @@ public class Misc01
         return ViManager.getFS().edit(avs.get(n), false);
     }
 
-    private static void win_move(Direction direction)
+    private static void win_move(Direction direction, int n)
     {
-        G.curwin.win_move(direction);
+        G.curwin.win_move(direction, n);
     }
 
     private static void win_clone()

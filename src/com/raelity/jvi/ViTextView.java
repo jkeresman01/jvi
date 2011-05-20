@@ -78,6 +78,17 @@ public interface ViTextView extends ViOptionBag {
           }
       }
 
+      public String getSplitSide() {
+          // From JSplitPane constant for TOP/BOTTOM/LEFT/RIGHT
+          switch(this) {
+              case LEFT:      return "left";
+              case RIGHT:     return "right";
+              case UP:        return "top";
+              case DOWN:
+              default:        return "bottom";
+          }
+      }
+
       public Direction getOpposite()
       {
           switch(this) {
@@ -419,8 +430,13 @@ public interface ViTextView extends ViOptionBag {
    */
   public void win_split(Direction dir, int n);
 
-  /** Move this window */
-  public void win_move(Direction dir);
+  /**
+   * Move this window, create a new one if no existing target
+   * in that direction. When new window is created, use the
+   * specified size as appropriate.
+   * @param n size of a new window
+   */
+  public void win_move(Direction dir, int n);
 
   /**
    * Make another view of the editor as a tab.

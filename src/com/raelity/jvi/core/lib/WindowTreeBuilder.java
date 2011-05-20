@@ -26,6 +26,7 @@ import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView.Direction;
 import com.raelity.jvi.ViTextView.Orientation;
+import com.raelity.jvi.ViWindowNavigation;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.Misc01;
 import com.raelity.jvi.core.TextView;
@@ -64,7 +65,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public abstract class WindowTreeBuilder {
+public abstract class WindowTreeBuilder implements ViWindowNavigation {
     private Set<ViAppView> toDo = new HashSet<ViAppView>();
     private List<ViAppView> sorted = new ArrayList<ViAppView>();
     private List<Node> roots = new ArrayList<Node>();
@@ -97,8 +98,9 @@ public abstract class WindowTreeBuilder {
     /**
      * This only does something the first timeit is called. Subsequent
      * calls return the same stuff.
-     * @return app views in order for Ctrl-W traversal
+     * @return app views in order for sequential Ctrl-W traversal
      */
+    @Override
     public List<ViAppView> processAppViews()
     {
         while(!toDo.isEmpty()) {
@@ -123,36 +125,46 @@ public abstract class WindowTreeBuilder {
         return Collections.unmodifiableList(sorted);
     }
 
+    public static class Siblings
+    {
+        public Orientation orientation;
+        public int targetIndex;
+        public List<ViAppView> siblings = new ArrayList<ViAppView>();
+    }
+
+    public Siblings Siblings(ViAppView targetAv)
+    {
+        Node n = findNode(targetAv);
+        Node parent = n.getParent();
+        Siblings s = new Siblings();
+        s.orientation = parent.getOrientation();
+        s.targetIndex = -1;
+        for(int i = 0; i < parent.getChildren().size(); i++) {
+            Node child = parent.getChildren().get(i);
+            s.siblings.add(getAppView(child.getPeer()));
+            if(n.equals(child))
+                s.targetIndex = i;
+        }
+        assert parent.isSplitter();
+        assert s.targetIndex >= 0;
+
+        return s;
+    }
+
+    @Override
     public ViAppView jump(Direction dir, final ViAppView fromAv, int n)
     {
         return jump(dir, fromAv, n, false);
     }
 
+    @Override
     public ViAppView jump(Direction dir, final ViAppView fromAv,
                           int n, boolean mustTouch)
     {
         if(n <= 0)
             n = 1;
 
-        // get the node corresponding to the current app view
-        Visitor v = new Visitor()
-        {
-            @Override
-            void visit(Node node)
-            {
-                if(node.isEditor() && fromAv == getAppView(node.getPeer())) {
-                    foundNode = node;
-                    finished = true;
-                }
-            }
-        };
-
-        for (Node root : roots) {
-            traverse(root, v);
-            if(v.finished())
-                break;
-        }
-        Node currentNode = v.foundNode;
+        Node currentNode = findNode(fromAv);
         if(currentNode == null)
             return null;
 
@@ -212,6 +224,28 @@ public abstract class WindowTreeBuilder {
         if(targetNode == null || mustTouch && ! touches)
             return null;
         return getAppView(targetNode.getPeer());
+    }
+
+    private Node findNode(final ViAppView targetAv)
+    {
+        Visitor v = new Visitor()
+        {
+            @Override
+            void visit(Node node)
+            {
+                if(node.isEditor() && targetAv == getAppView(node.getPeer())) {
+                    foundNode = node;
+                    finished = true;
+                }
+            }
+        };
+
+        for (Node root : roots) {
+            traverse(root, v);
+            if(v.finished())
+                break;
+        }
+        return v.foundNode;
     }
 
     // protected boolean touches(Node n, Direction dir, Node nOther,
