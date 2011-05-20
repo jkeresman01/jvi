@@ -25,9 +25,9 @@ import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViTextView.FOLDOP;
+import com.raelity.jvi.ViWindowNavigator;
 import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.core.lib.WindowTreeBuilder;
 import java.util.logging.Level;
 import java.util.Iterator;
 import java.util.List;
@@ -754,20 +754,13 @@ public class Misc01
 
     private static boolean win_jump(Direction direction, int n)
     {
-        List<ViAppView> avs = getVisibleAppViews(AppViews.ALL);
-        if(avs == null)
-            return false;
-
-        WindowTreeBuilder tree
-                = ViManager.getFactory().getWindowTreeBuilder(avs);
-        tree.processAppViews();
-
-        ViAppView av = AppViews.currentAppView(avs);
+        ViAppView av = G.curwin.getAppView();
         if(av == null) {
             return false;
         }
 
-        av = tree.jump(direction, av, n);
+        ViWindowNavigator nav = ViManager.getFactory().getWindowNavigator();
+        av = nav.getTarget(direction, av, n);
 
         return av != null ? ViManager.getFS().edit(av, false) : false;
     }

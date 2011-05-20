@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import com.raelity.jvi.ViTextView.TAGOP;
-import com.raelity.jvi.core.lib.WindowTreeBuilder;
 import java.awt.Component;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
@@ -80,7 +79,19 @@ public interface ViFactory
      */
     public void shutdown(Component editor);
 
-    public WindowTreeBuilder getWindowTreeBuilder(List<ViAppView> avs);
+    /**
+     * Construct a window navigator for the specified list of ViAppView.
+     * If avs is null, then select all visible appViews.
+     * @param avs
+     * @return
+     */
+    public ViWindowNavigator getWindowNavigator(List<ViAppView> avs);
+
+    /**
+     * Construct a window navigator for all visible AppViews.
+     * @return 
+     */
+    public ViWindowNavigator getWindowNavigator();
 
   /*
    * Setup editor pane caret for use with vi.

@@ -26,11 +26,9 @@ import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView.Direction;
 import com.raelity.jvi.ViTextView.Orientation;
-import com.raelity.jvi.ViWindowNavigation;
+import com.raelity.jvi.ViWindowNavigator;
 import com.raelity.jvi.core.ColonCommands;
-import com.raelity.jvi.core.Misc01;
 import com.raelity.jvi.core.TextView;
-import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.manager.ViManager;
 import java.awt.Component;
 import java.awt.Container;
@@ -65,16 +63,43 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public abstract class WindowTreeBuilder implements ViWindowNavigation {
+public abstract class WindowTreeBuilder implements ViWindowNavigator {
     private Set<ViAppView> toDo = new HashSet<ViAppView>();
     private List<ViAppView> sorted = new ArrayList<ViAppView>();
     private List<Node> roots = new ArrayList<Node>();
+    private boolean didTreeInit;
 
     private static boolean dbg = false;
 
     public WindowTreeBuilder(List<ViAppView> avs)
     {
         toDo.addAll(avs);
+    }
+
+    protected void initTree()
+    {
+        if(didTreeInit)
+            return;
+        didTreeInit = true;
+
+        while(!toDo.isEmpty()) {
+            Component c = windowForAppView(toDo.iterator().next());
+            //allComps(c);
+            Node root = buildTree(c);
+            if(dbg) System.err.println(dumpTree(root).toString());
+            assert root != null;
+            if(root == null)
+                break;
+            roots.add(root);
+        }
+
+        assert toDo.isEmpty();
+
+        sortRoots(); // top-to-bottom then left-to-right
+
+        for (Node root : roots) {
+            addToSorted(root);
+        }
     }
 
     private static boolean didInit;
@@ -101,26 +126,9 @@ public abstract class WindowTreeBuilder implements ViWindowNavigation {
      * @return app views in order for sequential Ctrl-W traversal
      */
     @Override
-    public List<ViAppView> processAppViews()
+    final public List<ViAppView> getList()
     {
-        while(!toDo.isEmpty()) {
-            Component c = windowForAppView(toDo.iterator().next());
-            //allComps(c);
-            Node root = buildTree(c);
-            if(dbg) System.err.println(dumpTree(root).toString());
-            assert root != null;
-            if(root == null)
-                break;
-            roots.add(root);
-        }
-
-        assert toDo.isEmpty();
-
-        sortRoots(); // top-to-bottom then left-to-right
-
-        for (Node root : roots) {
-            addToSorted(root);
-        }
+        initTree();
 
         return Collections.unmodifiableList(sorted);
     }
@@ -132,8 +140,10 @@ public abstract class WindowTreeBuilder implements ViWindowNavigation {
         public List<ViAppView> siblings = new ArrayList<ViAppView>();
     }
 
-    public Siblings Siblings(ViAppView targetAv)
+    final public Siblings Siblings(ViAppView targetAv)
     {
+        initTree();
+
         Node n = findNode(targetAv);
         Node parent = n.getParent();
         Siblings s = new Siblings();
@@ -152,15 +162,17 @@ public abstract class WindowTreeBuilder implements ViWindowNavigation {
     }
 
     @Override
-    public ViAppView jump(Direction dir, final ViAppView fromAv, int n)
+    final public ViAppView getTarget(Direction dir, ViAppView fromAv, int n)
     {
-        return jump(dir, fromAv, n, false);
+        return getTarget(dir, fromAv, n, false);
     }
 
     @Override
-    public ViAppView jump(Direction dir, final ViAppView fromAv,
-                          int n, boolean mustTouch)
+    final public ViAppView getTarget(
+            Direction dir, ViAppView fromAv, int n, boolean mustTouch)
     {
+        initTree();
+
         if(n <= 0)
             n = 1;
 
@@ -826,7 +838,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigation {
         if(sb == null) {
             sb = new StringBuilder();
         }
-        processAppViews();
+        initTree();
         dumpTree(sb);
         ViOutputStream vios
                 = ViManager.createOutputStream(null, ViOutputStream.OUTPUT,
@@ -839,10 +851,9 @@ public abstract class WindowTreeBuilder implements ViWindowNavigation {
         @Override
         public void actionPerformed(ActionEvent e)
         {
-            List<ViAppView> avs = Misc01.getVisibleAppViews(AppViews.ALL);
-            WindowTreeBuilder tree
-                    = ViManager.getFactory().getWindowTreeBuilder(avs);
-            tree.dumpWinAction(e, null);
+            WindowTreeBuilder nav = (WindowTreeBuilder)
+                    ViManager.getFactory().getWindowNavigator();
+            nav.dumpWinAction(e, null);
         }
     }
 }

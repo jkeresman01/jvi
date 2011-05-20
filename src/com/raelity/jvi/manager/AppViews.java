@@ -416,7 +416,7 @@ public enum AppViews
     public static void sortAppView(List<ViAppView> avs)
     {
         List<ViAppView> avs01 = ViManager.getFactory()
-                .getWindowTreeBuilder(avs).processAppViews();
+                .getWindowNavigator(avs).getList();
         avs.clear();
         avs.addAll(avs01);
     }

@@ -26,12 +26,17 @@ import java.util.List;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public interface ViWindowNavigation
+public interface ViWindowNavigator
 {
     /**
+     * The windows are sorted top-to-bottom then left-to-right.
+     *
+     * Notice that with multiple screens this sorting finishes a screen,
+     * top-to-bottom, before moving to the next screen on the right.
+     *
      * @return app views in order for sequential Ctrl-W traversal
      */
-    public List<ViAppView> processAppViews();
+    public List<ViAppView> getList();
 
     /**
      * Select an AppView as the target for Ctrl-W window motion commands
@@ -45,9 +50,9 @@ public interface ViWindowNavigation
      *        false means target could be off to the side
      * @return target, null if no target satisfies contraints
      */
-    public ViAppView jump(Direction dir, ViAppView fromAv, int n,
-                          boolean mustTouch);
+    public ViAppView getTarget(Direction dir, ViAppView fromAv,
+                               int n, boolean mustTouch);
 
-    public ViAppView jump(Direction dir, ViAppView fromAv, int n);
+    public ViAppView getTarget(Direction dir, ViAppView fromAv, int n);
 
 }

@@ -20,7 +20,6 @@
 
 package com.raelity.jvi.swing;
 
-import com.raelity.jvi.core.lib.WindowTreeBuilder;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.ColonCommands;
@@ -29,7 +28,9 @@ import com.raelity.jvi.options.OptionsBeanBase;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
 import com.raelity.jvi.*;
 import com.raelity.jvi.ViTextView.TAGOP;
+import com.raelity.jvi.core.Misc01;
 import com.raelity.jvi.core.Options;
+import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.swing.simple.SimpleWindowTreeBuilder;
 
@@ -135,7 +136,16 @@ abstract public class SwingFactory implements ViFactory
     }
 
     @Override
-    public WindowTreeBuilder getWindowTreeBuilder(List<ViAppView> avs)
+    public ViWindowNavigator getWindowNavigator()
+    {
+        List<ViAppView> avs = Misc01.getVisibleAppViews(AppViews.ALL);
+        if(avs == null)
+            return null;
+        return new SimpleWindowTreeBuilder(avs);
+    }
+
+    @Override
+    public ViWindowNavigator getWindowNavigator(List<ViAppView> avs)
     {
         return new SimpleWindowTreeBuilder(avs);
     }
