@@ -175,9 +175,11 @@ public class Normal {
         }
       }
     } catch(Throwable e) {
-      LOG.log(Level.SEVERE, null, e);
-      Util.beep_flush();
-      resetCommand();
+      if(!G.curwin.isShutdown()) {
+        LOG.log(Level.SEVERE, null, e);
+        Util.beep_flush();
+        resetCommand();
+      }
     }
   }
 
@@ -1237,21 +1239,19 @@ middle_code:
 
 	}	/* end of switch on command character */
 
-        /*
-        * if we didn't start or finish an operator, reset oap.regname, unless we
-        * need it later.
-        */
+        // A modal ':' command may have quit/shutdown the text view.
+        if(G.curwin.isShutdown())
+          return;
+
+        // if we didn't start or finish an operator, reset oap.regname;
+        // unless we need it later.
         if (!G.finish_op && oap.op_type == 0 &&
             vim_strchr("\"DCYSsXx.", 0, ca.cmdchar) < 0)
           oap.regname = 0;
 
-        //
         // If an operation is pending, handle it...
-        // A modal ':' command may have quit/shutdown the text view.
-        //
-        if(!G.curwin.isShutdown())
-          do_pending_operator(ca, searchbuff,
-                            null, old_col, false, dont_adjust_op_end);
+        do_pending_operator(ca, searchbuff, null,
+                            old_col, false, dont_adjust_op_end);
       } catch(NotSupportedException e) {
 	clearopbeep(oap);
       }
