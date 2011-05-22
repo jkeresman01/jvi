@@ -1253,7 +1253,7 @@ public class SwingTextView extends TextView
     }
 
     /** offset should be beginning of docLine */
-    private double getLineHeight(int docLine, int offset)
+    protected double getLineHeight(int docLine, int offset)
     {
         return getCharRect(docLine, offset).getHeight();
     }
@@ -1268,7 +1268,7 @@ public class SwingTextView extends TextView
         }
         return r;
     }
-    private double getMaxCharWidth() {
+    protected double getMaxCharWidth() {
         return getMaxCharBounds().getMaxX();
     }
     private Rectangle2D getMaxCharBounds() {

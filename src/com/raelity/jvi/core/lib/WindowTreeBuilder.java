@@ -133,33 +133,35 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         return Collections.unmodifiableList(sorted);
     }
 
-    public static class Siblings
-    {
-        public Orientation orientation;
-        public int targetIndex;
-        public List<ViAppView> siblings = new ArrayList<ViAppView>();
-    }
+    // public static class Siblings
+    // {
+    //     public Orientation orientation;
+    //     public int targetIndex;
+    //     public List<ViAppView> siblings = new ArrayList<ViAppView>();
+    // }
 
-    final public Siblings Siblings(ViAppView targetAv)
-    {
-        initTree();
+    // final public Siblings Siblings(ViAppView targetAv)
+    // {
+    //     initTree();
 
-        Node n = findNode(targetAv);
-        Node parent = n.getParent();
-        Siblings s = new Siblings();
-        s.orientation = parent.getOrientation();
-        s.targetIndex = -1;
-        for(int i = 0; i < parent.getChildren().size(); i++) {
-            Node child = parent.getChildren().get(i);
-            s.siblings.add(getAppView(child.getPeer()));
-            if(n.equals(child))
-                s.targetIndex = i;
-        }
-        assert parent.isSplitter();
-        assert s.targetIndex >= 0;
+    //     Node n = findNode(targetAv);
+    //     Node parent = n.getParent();
+    //     Siblings s = new Siblings();
+    //     s.orientation = parent.getOrientation();
+    //     s.targetIndex = -1;
+    //     for(int i = 0; i < parent.getChildren().size(); i++) {
+    //         Node child = parent.getChildren().get(i);
+    //         s.siblings.add(getAppView(child.getPeer()));
+    //         if(n.equals(child))
+    //             s.targetIndex = i;
+    //     }
+    //     assert parent.isSplitter();
+    //     assert s.targetIndex >= 0;
 
-        return s;
-    }
+    //     return s;
+    // }
+
+
 
     @Override
     final public ViAppView getTarget(Direction dir, ViAppView fromAv, int n)
@@ -238,6 +240,19 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         return getAppView(targetNode.getPeer());
     }
 
+    @Override
+    public Component getParentSplitter(ViAppView av)
+    {
+        Node currentNode = findNode(av);
+        if(av == null)
+            return null;
+        Node n = currentNode.getParent();
+        if(n == null)
+            return null;
+        assert n.isSplitter();
+        return n.getPeer();
+    }
+
     private Node findNode(final ViAppView targetAv)
     {
         Visitor v = new Visitor()
@@ -314,7 +329,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
      * @param r
      * @return
      */
-    private Rectangle getProjectedRectangle(Orientation orientation,
+    public static Rectangle getProjectedRectangle(Orientation orientation,
                                             Rectangle2D r)
     {
         Rectangle r1 = round(r);
@@ -328,7 +343,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         return r1;
     }
 
-    private Rectangle round(Rectangle2D r)
+    private static Rectangle round(Rectangle2D r)
     {
         return new Rectangle((int)Math.round(r.getX()),
                              (int)Math.round(r.getY()),

@@ -20,6 +20,7 @@
 package com.raelity.jvi;
 
 import com.raelity.jvi.ViTextView.Direction;
+import java.awt.Component;
 import java.util.List;
 
 /**
@@ -54,5 +55,7 @@ public interface ViWindowNavigator
                                int n, boolean mustTouch);
 
     public ViAppView getTarget(Direction dir, ViAppView fromAv, int n);
+
+    public Component getParentSplitter(ViAppView av);
 
 }

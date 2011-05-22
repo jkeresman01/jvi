@@ -99,6 +99,20 @@ public interface ViTextView extends ViOptionBag {
               default:        return UP;
           }
       }
+
+      /**
+       * @return clockwise 90 degree direction
+       */
+      public Direction getClockwise()
+      {
+          switch(this) {
+              case LEFT:      return UP;
+              case UP:        return RIGHT;
+              case RIGHT:     return DOWN;
+              case DOWN:
+              default:        return LEFT;
+          }
+      }
   }
 
   public enum Orientation { LEFT_RIGHT, UP_DOWN }
