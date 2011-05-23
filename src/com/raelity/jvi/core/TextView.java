@@ -19,6 +19,10 @@
  */
 package com.raelity.jvi.core;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import com.raelity.jvi.ViInitialization;
+import org.openide.util.lookup.ServiceProvider;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViMark;
@@ -37,6 +41,61 @@ import static com.raelity.jvi.core.lib.Constants.*;
  */
 public abstract class TextView implements ViTextView
 {
+    @ServiceProvider(service=ViInitialization.class,
+                     path="jVi/init",
+                     position=10)
+    public static class Init implements ViInitialization
+    {
+        @Override
+        public void init()
+        {
+            TextView.init();
+        }
+    }
+    private static void init() {
+        PropertyChangeListener pcl = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String pname = evt.getPropertyName();
+                if(pname.equals(ViManager.P_OPEN_WIN)) {
+                    if(checkOpen != null
+                            && checkOpen.fname
+                                .equals(G.curbuf.getDisplayFileName())) {
+                        G.curwin.w_cursor.set(checkOpen.offset);
+                    }
+                } else if(pname.equals(ViManager.P_SWITCH_TO_WIN)) {
+                    // There's only one chance
+                    checkOpen = null;
+                }
+            }
+        };
+        ViManager.addPropertyChangeListener(ViManager.P_OPEN_WIN, pcl);
+        ViManager.addPropertyChangeListener(ViManager.P_SWITCH_TO_WIN, pcl);
+    }
+    private static class ExpectedNewActivation {
+        private String fname;
+        private int offset;
+
+        public ExpectedNewActivation(String fname, int offset)
+        {
+            this.fname = fname;
+            this.offset = offset;
+        }
+
+    }
+    private static ExpectedNewActivation checkOpen;
+    /**
+     * Use this to signal that the next activation should be for a
+     * new text view. Sets the line number for the newly opened window.
+     * If next activation doesn't meet the conditions, then nothing happens.
+     */
+    static void setExpectedNewActivation(String fname, int offset)
+    {
+        checkOpen = new ExpectedNewActivation(fname, offset);
+    }
+
+
+
     protected Buffer w_buffer;
 
     //

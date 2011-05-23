@@ -568,12 +568,12 @@ public class Misc01
             case 'S':
             case 's':
             case 'S' & 0x1f:          // Ctrl
-                G.curwin.win_split(Direction.UP, Prenum);
+                win_split(Direction.UP, Prenum);
                 break;
 
             case 'v':
             case 'V' & 0x1f:          // Ctrl
-                G.curwin.win_split(Direction.LEFT, Prenum);
+                win_split(Direction.LEFT, Prenum);
                 break;
 
             // close current window
@@ -740,6 +740,13 @@ public class Misc01
             n = avs.size() -1; // last window
 
         return ViManager.getFS().edit(avs.get(n), false);
+    }
+
+    private static void win_split(Direction direction, int n)
+    {
+        TextView.setExpectedNewActivation(
+                G.curbuf.getDisplayFileName(), G.curwin.w_cursor.getOffset());
+        G.curwin.win_split(direction, n);
     }
 
     private static void win_move(Direction direction, int n)
