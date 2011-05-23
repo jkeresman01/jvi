@@ -183,8 +183,6 @@ public interface ViFactory
 
     public void startTagPush(ViTextView tv, String ident);
 
-    public void finishTagPush(ViTextView tv);
-
     public void tagStack(TAGOP op, int count);
 
     public void displayTags();

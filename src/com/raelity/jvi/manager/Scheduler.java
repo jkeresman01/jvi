@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.manager;
 
+import java.util.Queue;
 import com.raelity.jvi.core.Util;
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViCaret;
@@ -32,12 +33,15 @@ import com.raelity.jvi.core.lib.KeyDefs;
 import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.core.Options;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,6 +60,8 @@ public class Scheduler
     private static boolean draggingBlockMode;
     private static boolean mouseDown;
     private static boolean hasSelection;
+    private static Queue<ActionListener> keyStrokeTodo
+            = new LinkedList<ActionListener>();
 
     private Scheduler()
     {
@@ -178,6 +184,19 @@ public class Scheduler
         }
     }
 
+    public static void putKeyStrokeTodo(ActionListener act)
+    {
+        keyStrokeTodo.add(act);
+    }
+
+    private static void runKeyStrokeTodo()
+    {
+        ActionEvent e = new ActionEvent(G.curwin, 0, null);
+        while(!keyStrokeTodo.isEmpty()) {
+            keyStrokeTodo.remove().actionPerformed(e);
+        }
+    }
+
     /**
      * A key was typed. Handle the event.
      * <br>NEEDSWORK: catch all exceptions coming out of here?
@@ -191,7 +210,8 @@ public class Scheduler
             switchTo(target);
             if (rerouteChar(key, modifier))
                 return;
-            fact().finishTagPush(G.curwin); // NEEDSWORK: cleanup
+            if(!keyStrokeTodo.isEmpty() && G.curwin != null)
+                runKeyStrokeTodo();
             getCore().gotc(key, modifier);
         } finally {
             setJViBusy(false);

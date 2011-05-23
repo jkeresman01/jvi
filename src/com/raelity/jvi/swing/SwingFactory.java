@@ -693,9 +693,6 @@ abstract public class SwingFactory implements ViFactory
     public void startTagPush( ViTextView tv, String ident ) {}
 
     @Override
-    public void finishTagPush( ViTextView tv ) {}
-
-    @Override
     public void tagStack( TAGOP op, int count ) {}
 
     @Override
