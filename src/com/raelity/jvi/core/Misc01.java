@@ -756,6 +756,8 @@ public class Misc01
 
     private static void win_clone()
     {
+        TextView.setExpectedNewActivation(
+                G.curbuf.getDisplayFileName(), G.curwin.w_cursor.getOffset());
         G.curwin.win_clone();
     }
 
