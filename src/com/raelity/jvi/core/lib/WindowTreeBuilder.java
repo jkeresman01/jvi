@@ -244,7 +244,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
     public Component getParentSplitter(ViAppView av)
     {
         Node currentNode = findNode(av);
-        if(av == null)
+        if(currentNode == null)
             return null;
         Node n = currentNode.getParent();
         if(n == null)
