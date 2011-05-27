@@ -340,6 +340,11 @@ public final class TypeBufMultiCharMapping {
         return buf.size();
     }
 
+    public boolean isEmpty()
+    {
+        return buf.isEmpty();
+    }
+
     @Override
     public String toString()
     {

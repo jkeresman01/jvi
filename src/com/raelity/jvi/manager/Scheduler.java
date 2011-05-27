@@ -105,7 +105,7 @@ public class Scheduler
 
         currentEditorPane = editor;
         getCore().switchTo(textView, buf);
-        getCore().resetCommand(); // Means something first time window switched to
+        getCore().resetCommand(false); // Means something first time window switched to
         buf.activateOptions(textView);
         textView.activateOptions(textView);
         setHasSelection(); // a HACK
@@ -279,7 +279,7 @@ public class Scheduler
             Util.vim_beep();
             LOG.log(Level.SEVERE, null, ex);
             activeCommandEntry = null;
-            getCore().resetCommand();
+            getCore().resetCommand(false);
         }
     }
 

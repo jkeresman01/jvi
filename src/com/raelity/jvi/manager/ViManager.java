@@ -507,7 +507,7 @@ public class ViManager
     public static void exitInputMode() // NEEDSWORK: take editor as arg
     {
         if(Scheduler.getCurrentEditor() != null) {
-            core.resetCommand();
+            core.resetCommand(false);
         }
     }
 
@@ -669,6 +669,19 @@ public class ViManager
         {
             return ex;
         }
+    }
+
+    /**
+     * Request that after the current character is processed,
+     * let the eventQ run before processing more characters.
+     * An example is in NB after doing TC.requestActive().
+     *
+     * This will be ignored if certain conditions are not met,
+     * see GetChar.requestRunEventQueue for details.
+     */
+    public static void requestRunEventQueue(int nLoop)
+    {
+        core.requestRunEventQueue(nLoop);
     }
     
     // NEEDSWORK: add another parameter flag about how to handle throw?

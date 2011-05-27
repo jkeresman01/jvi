@@ -27,6 +27,7 @@ import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.OptUtil;
 import com.raelity.text.TextUtil;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.logging.Level;
@@ -73,10 +74,13 @@ public class GetChar {
         mappings.reinitMappings();
     }
 
-    static void reset()
+    static void reset(boolean flush)
     {
         ViManager.getFactory().stopTimeout(mappingTimeout);
-        flush_buffers(true);
+        // NEEDSWORK: flush_buffers has a typeahead flag which is ignored
+        //            could use that as part of this handling
+        if(flush)
+            flush_buffers(true);
     }
 
     private static ActionListener mappingTimeout = new ActionListener() {
@@ -161,13 +165,14 @@ public class GetChar {
         Misc.out_flush();   // returning from event
     }
 
-    // interactions with redo/groupUndo
+    // interactions with redo/collectingGroupUndo
     //
     // NOTE:    The confusing handle_redo flag might be extraneous
-    //          since we know how to automatically enter groupUndo.
+    //          since we know how to automatically enter collectingGroupUndo.
     //          To do this I think all we need to do is check
     //          stuffbuff.length() in the following
-    //              if(!groupUndo && typebuf.length() > 0 && isInsertMode()) {
+    //              if(!collectingGroupUndo
+    //                  && typebuf.length() > 0 && isInsertMode()) {
     //          The current check basically is for catching mappings that
     //          might have multiple inserts.
     //          handle_redo is set by
@@ -193,16 +198,52 @@ public class GetChar {
     //
     // NEEDSWORK: INPUT MODE FROM MACRO ????????
 
-
-    private static void startPump(final boolean groupUndo)
+    private static int runEventQueue;
+    static void requestRunEventQueue(int nLoop)
     {
-        if(!groupUndo)
-            pumpAllChars(groupUndo);
+        runEventQueue = nLoop;
+    }
+
+    /**
+     * Process every thing that's currently in the eventQ
+     * <p/>
+     * collectingGroupUndo must be false.
+     * Must be some characters to process.
+     * Must be in command mode.
+     * @param collectingGroupUndo true if in undo group
+     * @return true if posting gotc
+     */
+    private static boolean runEventQueue(final boolean collectingGroupUndo)
+    {
+        if(runEventQueue > 0)
+            --runEventQueue;
+        if(collectingGroupUndo || !isAnyChar() || (G.State & NORMAL) == 0) {
+            runEventQueue = 0;
+            return false;
+        }
+        EventQueue.invokeLater(new Runnable() {
+
+            @Override
+            public void run()
+            {
+                if(runEventQueue > 0)
+                    runEventQueue(collectingGroupUndo);
+                else
+                    gotc(NO_CHAR, 0);
+            }
+        });
+        return true;
+    }
+
+    private static void startPump(final boolean collectingGroupUndo)
+    {
+        if(!collectingGroupUndo)
+            pumpAllChars(collectingGroupUndo);
         else {
             Misc.runUndoable(new Runnable() {
                 @Override
                 public void run() {
-                    pumpAllChars(groupUndo);
+                    pumpAllChars(collectingGroupUndo);
                 }
             });
         }
@@ -211,21 +252,28 @@ public class GetChar {
     // NEEDSWORK: old_mod_mask
     private static char old_char;
 
+    private static boolean isAnyChar()
+    {
+        return old_char != NUL || stuffbuff.hasNext() || !typebuf.isEmpty();
+    }
+
     /**
      * Pass queued up characters to vi for processing.
      * First from stuffbuf, then typebuf.
      */
-    private static void pumpAllChars(boolean groupUndo) {
+    private static void pumpAllChars(boolean collectingGroupUndo) {
         // NEEDSWORK: pumpVi: check for interupt?
 
         while(true) {
-            if(!groupUndo
-                    && (typebuf.length() > 0 && isInsertMode()
+            if(!collectingGroupUndo
+                    && (!typebuf.isEmpty() && isInsertMode()
                         || handle_redo)) {
                 G.dbgUndo.println("pumpAllChars: switching to group undo");
                 startPump(true);
                 return;
             }
+            if(runEventQueue > 0 && runEventQueue(collectingGroupUndo))
+                return;
             if(old_char != NUL) {
                 char c = old_char;
                 old_char = NUL;

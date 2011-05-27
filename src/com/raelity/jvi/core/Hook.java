@@ -97,9 +97,14 @@ public class Hook
         return GetChar.getRecordedLine(sb);
     }
 
-    public void resetCommand()
+    public void resetCommand(boolean flush)
     {
-        Normal.resetCommand();
+        Normal.resetCommand(flush);
+    }
+
+    public void requestRunEventQueue(int nLoop)
+    {
+        GetChar.requestRunEventQueue(nLoop);
     }
 
     //////////////////////////////////////////////////////////////////////

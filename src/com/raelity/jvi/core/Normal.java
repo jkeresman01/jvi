@@ -178,7 +178,7 @@ public class Normal {
       if(!G.curwin.isShutdown()) {
         LOG.log(Level.SEVERE, null, e);
         Util.beep_flush();
-        resetCommand();
+        resetCommand(false);
       }
     }
   }
@@ -187,7 +187,7 @@ public class Normal {
     endInsertUndo();
   }
 
-  static public void resetCommand() {
+  static public void resetCommand(boolean flush) {
     oap.clearop();
     newChunk = true;
     willStartNewChunk();
@@ -210,7 +210,7 @@ public class Normal {
     G.allow_keys = 0;
     G.no_mapping = 0;
     G.no_zero_mapping = 0;
-    GetChar.reset();
+    GetChar.reset(flush);
   }
 
   /**
