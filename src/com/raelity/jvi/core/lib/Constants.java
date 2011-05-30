@@ -196,6 +196,14 @@ public interface Constants {
     public static final int SEARCH_START =0x100;  // start search without col offset
     public static final int SEARCH_MARK  =0x200;  // set previous context mark
     public static final int SEARCH_KEEP  =0x400;  // keep previous search pattern
+    public static final int SEARCH_PEEK  =0x800;  // peek for typed char, cancel search
+
+    // Values for sub_cmd and which_pat argument for search_regcomp()
+    // Also used for which_pat argument for searchit()
+    public static final int RE_SEARCH = 0; // save/use pat in/from search_pattern
+    public static final int RE_SUBST = 1;  // save/use pat in/from subst_pattern
+    public static final int RE_BOTH = 2;   // save pat in both patterns
+    public static final int RE_LAST = 2;   // use last used pattern if "pat" NULL
 
     public static final int SP_NOMOVE	= 0x01; /* don't move cursor */
     public static final int SP_REPEAT	= 0x02; /* repeat to find outer pair */
@@ -216,6 +224,12 @@ public interface Constants {
   //
     public static final int FIND_IDENT	=1;	// find identifier (word)
     public static final int FIND_STRING	=2;	// find any string (WORD)
+
+    //
+    // There are four history tables:
+    //
+    public static final int HIST_CMD    = 0;	// colon commands
+    public static final int HIST_SEARCH	= 1;	// search commands
 
   //
   // characters for the p_cpo option:

@@ -67,7 +67,49 @@
 
 <h2>jVi-1.4 Release, NB7.0 only</h2>
 
-<b>Version 1.4.1.x3 (1.4.1 early access) - 2011/05/13</b>
+<b>in repository - 2011/05/30 </b>
+<p>
+  <span class="note">Note: </span> to run/compile VCS trunk requires
+  patches to NB, the source for which is included.
+</p>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li>
+        <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3304144&amp;group_id=3653&amp;atid=353653">
+        [#3304144] smartcase support</a>
+      </li>
+    </ul>
+  </dd>
+  <dt>jVi NetBeans KeyBindings</dt>
+  <dd>
+    <ul>
+      <li>
+        (changed from 1.4.1 to really do a split)
+        <br/>The split commands, such as
+        <span class="tt">Ctrl-W_s</span>
+        and <span class="tt">Ctrl-W_v</span>,
+        split the current editor.
+        The command accepts a count to specify the size of the new area.
+        To make a copy of an editor in a neighboring area
+        (similar to 1.4.1 behavior),
+        do something like
+        <span class="tt">Ctrl-W_Ctrl-T Ctrl-W_L</span>;
+        I personally map <span class="tt">Ctrl-W_&lt;Left&gt;</span> to that.
+      </li>
+      <li>
+        (changed from 1.4.1 if not a target area in the direction)
+        <br/>When there is not a target in the direction,
+        the move commands, such as
+        <span class="tt">Ctrl-W_H</span>,
+        create a new area.
+      </li>
+    </ul>
+  </dd>
+</dl>
+
+<b>Version 1.4.1 - 2011/05/18</b>
 <dl>
   <dt>jVi Core</dt>
   <dd>
@@ -97,7 +139,7 @@
         <span class="tt">Ctrl-W_Ctrl-S</span>,
         <span class="tt">Ctrl-W_v</span>,
         <span class="tt">Ctrl-W_Ctrl-V</span>,
-        The feel is like vim's split a window. Currently there must
+        <br/>The feel is like vim's split a window. Currently there must
         be a neighboring target for the newly created editor.
         In the future a target will be created when needed (needs NB support).
       </li>
@@ -106,7 +148,7 @@
         <span class="tt">Ctrl-W_J</span>,
         <span class="tt">Ctrl-W_K</span>,
         <span class="tt">Ctrl-W_L</span>
-        move the current editor in the direction.
+        <br/>move the current editor in the direction.
         <br/>Note: there must be somewhere for the editor to go.
       </li>
       <li><span class="tt">Ctrl-W T</span> and <span class="tt">:clon[e]</span>

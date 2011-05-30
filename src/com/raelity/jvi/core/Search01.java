@@ -75,14 +75,25 @@ public class Search01 {
    * Substitute command
    * @param cev cev's first arg is /pattern/substitution/{flags}
    */
-  static void substitute(ColonCommands.ColonEvent cev) {
+  static void substitute(ColonCommands.ColonEvent cev)
+  {
+    boolean newFlags = false;
+    if(!G.global_busy || substFlags == null) {
+      substFlags = new MutableInt();
+      newFlags = true;
+    }
+
+    int which_pat = RE_SUBST;
+    boolean do_error = true;
+
     // The substitute command doesn't parse arguments,
     // so it has 0 or 1 argument.
     String cmd;
     if(cev.getNArg() == 0) {
       cmd = lastSubstituteArg;
       if(cmd == null) {
-	Msg.emsg("No previous substitute argument");
+        substFlags.setBits(SUBST_QUIT);
+	Msg.emsg(Messages.e_nopresub);
 	return;
       }
     } else {
@@ -96,12 +107,6 @@ public class Search01 {
     MySegment line;
     int cursorLine = 0; // set to line number of last change
     int sidx = 1; // after delimiter
-
-    boolean newFlags = false;
-    if(!G.global_busy || substFlags == null) {
-      substFlags = new MutableInt();
-      newFlags = true;
-    }
     
     //
     // pick up the pattern
@@ -109,13 +114,9 @@ public class Search01 {
 
     int sidx01 = sidx;
     sidx = skip_regexp(cmd, sidx, delimiter, true);
-    if(sidx01 == sidx) {
-      pattern = last_search_pat();
-    } else {
+    if(sidx01 != sidx) {
       pattern = cmd.substring(sidx01, sidx);
-      last_search_pat(pattern);
     }
-    Options.newSearch();
     
     //
     // pick up the substitution string
@@ -180,10 +181,15 @@ public class Search01 {
     // compile regex
     //
     
-    prog = getRegExp(pattern, G.p_ic.getBoolean());
+    prog = search_regcomp(pattern, RE_SUBST, which_pat, SEARCH_HIS);
     if(prog == null) {
+      if(do_error)
+        Msg.emsg(Messages.e_invcmd);
+      substFlags.setBits(SUBST_QUIT);
       return;
     }
+    if(newFlags)
+      Options.newSearch();
 
     int line1 = cev.getLine1();
     int line2 = cev.getLine2();
@@ -474,31 +480,50 @@ public class Search01 {
     String cmdExec;
     String pattern = null;
     RegExp prog = null;
-    char delimiter = cmd.charAt(0);
+    char delim = 0;
+    char c;
     MySegment line;
     int cursorLine = 0; // set to line number of last found line
-    int sidx = 1; // after delimiter
+    int sidx = 0;
 
     char type = cev.getArg(0).charAt(0);
     if(cev.isBang()) // must be g!
       type = 'v';
     assert type == 'g' || type == 'v';
+    int which_pat = RE_LAST;            // default: use last used regexp
 
     //
     // pick up the pattern
     //
 
-    int sidx01 = sidx;
-    sidx = skip_regexp(cmd, sidx, delimiter, true);
-    if(sidx01 == sidx) {
-      pattern = last_search_pat();
-    } else {
-      pattern = cmd.substring(sidx01, sidx);
-      last_search_pat(pattern);
-    }
-    if(last_search_pat() == null) {
-      Msg.emsg(Messages.e_noprevre);
+    //
+    // undocumented vi feature:
+    //	"\/" and "\?": use previous search pattern.
+    //		 "\&": use previous substitute pattern.
+    //
+
+    if(cmd.isEmpty()) {
+      Msg.emsg("Regular expression missing from global");
       return;
+    }
+    if(cmd.charAt(sidx) == '\\') {
+      ++sidx;
+      c = cmd.charAt(sidx);
+      if(vim_strchr("/?&", 0,c) < 0) {
+        Msg.emsg(Messages.e_backslash);
+        return;
+      }
+      which_pat = c == '&' ? RE_SUBST : RE_SEARCH;
+      ++sidx;
+      pattern = "";
+    } else {
+      delim = cmd.charAt(sidx);         // get the delimiter
+      ++sidx;
+      int sidx01 = sidx;
+      sidx = skip_regexp(cmd, sidx, delim, true);
+      if(sidx01 != sidx) {
+        pattern = cmd.substring(sidx01, sidx);
+      }
     }
 
     //
@@ -516,8 +541,9 @@ public class Search01 {
     // compile regex
     //
 
-    prog = getRegExp(pattern, G.p_ic.getBoolean());
+    prog = search_regcomp(pattern, RE_BOTH, which_pat, SEARCH_HIS);
     if(prog == null) {
+      Msg.emsg(Messages.e_invcmd);
       return;
     }
 

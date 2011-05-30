@@ -1224,12 +1224,12 @@ public class Misc implements ClipboardOwner {
 
   private static void read_viminfo_search() {
     List<String> l = readList(PREF_SEARCH);
-    getSearchCommandEntry().SetHistory(l);
+    getSearchCommandEntry().setHistory(l);
   }
 
   private static void read_viminfo_command() {
     List<String> l = readList(PREF_COMMANDS);
-    getColonCommandEntry().SetHistory(l);
+    getColonCommandEntry().setHistory(l);
   }
 
   private static void write_viminfo_search() {

@@ -72,8 +72,8 @@ public static int do_searchpair(
     int		dir,	    /* BACKWARD or FORWARD */
     String	skip,	    /* skip expression */
     int		flags,	    /* SP_SETPCMARK and other SP_ values */
-    ViFPOS	match_pos,      // NOTE: was *match_pos to RETURN a value
-    int	lnum_stop  /* stop at this line if not zero */
+    ViFPOS	match_pos,  // NOTE: was *match_pos to RETURN a value
+    int         lnum_stop   /* stop at this line if not zero */
 )
 {
     SaveCpo	save_cpo;
@@ -120,8 +120,7 @@ public static int do_searchpair(
                             //curbuf,
                             pos, dir, pat, 1,
                             options,
-                            0, // was: RE_SEARCH. NOTE: param is ignored
-                            false); // was lnum_stop);
+                            RE_SEARCH, lnum_stop);
         if (n == FAIL || equalpos(pos, firstpos))
             /* didn't find it or found the first match again: FAIL */
             break;

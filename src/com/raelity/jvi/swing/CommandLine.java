@@ -638,9 +638,15 @@ public class CommandLine extends JPanel
         }
 
         @Override
-        public void SetHistory(List<String> l)
+        public void setHistory(List<String> l)
         {
             commandLine.SetHistory(l);
+        }
+
+        @Override
+        public void makeTop(String s)
+        {
+            commandLine.makeTop(s);
         }
 
         @Override

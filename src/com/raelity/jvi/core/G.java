@@ -133,11 +133,14 @@ public class G
 
     public static BooleanOption p_ic;   // ignorecase
     public static BooleanOption p_pbm;  // use PlatformBraceMatch
+    public static BooleanOption p_scs;  // smartcase
+    public static boolean no_smartcase;
 
     public static BooleanOption p_meta_equals;  // true use '=' instead of '?'
     public static StringOption p_meta_escape;   // metacharacters escaped
     public static BooleanOption p_is;
     public static BooleanOption p_hls;
+    public static boolean no_hlsearch;
 
     public static BooleanOption p_smd; // showmode edit/command mode in display
     public static BooleanOption p_sc; // showcmd

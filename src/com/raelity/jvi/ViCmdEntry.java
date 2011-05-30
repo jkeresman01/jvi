@@ -85,9 +85,14 @@ public interface ViCmdEntry {
     public List<String> getHistory();
 
     /**
+     * Make the string the most recent in the history
+     */
+    public void makeTop(String s);
+
+    /**
      * Set the history.
      */
-    public void SetHistory(List<String> l);
+    public void setHistory(List<String> l);
 
     /** When command entry is complete, this listener is invoked.
      * The event is the key event that stopped entry, either a

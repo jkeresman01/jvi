@@ -64,6 +64,15 @@ Bugs
   - Handing of no_mapping/allow_keys.
     What does allow_keys really do?
     Edit handling of no_mapping/allow_keys.
+  - g/foo/s/bar/baz
+    Problem is that substitue is executed fully each time,
+    would like devise a way to parse s command once for a given g.
+    At a minimum, don't get the regexp again.
+  - Search issues; get it all up to vim7.
+    Verify options SEARCH_FOLD,SEARCH_PEEK etc.
+  - substitute command add more features
+    - for s/// handle undocumented vim feature: \/,\?,\&amp; like in g//
+    - more of the s///flags
   - Create JUnit testing infrastructure. Create tests.
   - See sourcforge...
   - 0 ==&gt; don't persist marks
@@ -79,6 +88,8 @@ Bugs
 
 netbeans embedding
 ----------------
+  - If using non-modal command line, the command completion doesn't
+    get keys. In particular up/down/CR.
   - {begin,end}undo issue and atomic lock stuff.
     stop using atomic lock for programmatic changes,
     to do this must automatically undo anything that was done

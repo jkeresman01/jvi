@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.text.TextUtil.MySegment;
@@ -74,6 +75,13 @@ public class Util {
     return s.substring(index);
   }
 
+  /**
+   * Returns the position of c in cs or -1 if not part of s.
+   * @param cs sequence to search
+   * @param i start checking at this position
+   * @param c look for this char
+   * @return position if found, else -1
+   */
   public static int vim_strchr(CharSequence cs, int i, char c) {
     int p = i;
     int length = cs.length();
@@ -432,6 +440,14 @@ static boolean equalpos(ViFPOS p1, ViFPOS p2) {
 }
 static boolean lt(ViFPOS p1, ViFPOS p2) {
   return p1.compareTo(p2) < 0;
+}
+
+static void add_to_history(int histype, String new_entry)
+{
+  ViCmdEntry ce = histype == HIST_SEARCH
+          ? Search.getSearchCommandEntry()
+          : ColonCommands.getColonCommandEntry();
+  ce.makeTop(new_entry);
 }
 
 }

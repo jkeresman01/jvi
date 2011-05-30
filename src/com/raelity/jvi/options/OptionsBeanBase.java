@@ -883,6 +883,14 @@ implements Options.EditControl {
 	return getboolean("viIgnoreCase");
     }
 
+    public void setViSmartCase(boolean arg) {
+        put(Options.smartCase, arg);
+    }
+
+    public boolean getViSmartCase() {
+	return getboolean(Options.smartCase);
+    }
+
     public void setViExpandTabs(boolean arg) {
         put("viExpandTabs", arg);
     }

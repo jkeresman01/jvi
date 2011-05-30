@@ -2484,6 +2484,7 @@ middle_code:
     
     MutableInt  mi = new MutableInt(0);
     boolean     fDoingSearch = false;
+    StringBuilder sb = new StringBuilder();
 
 
     if (cap.cmdchar == 'g')	// "g*", "g#", "g]" and "gCTRL-]"
@@ -2563,8 +2564,8 @@ middle_code:
                               ptrSeg.getIndex() - ptrSeg.getBeginIndex());
 
         if (!g_cmd && vim_iswordc(ptrSeg.current()))
-          GetChar.stuffReadbuff("\\<");
-        // no_smartcase = TRUE;	// don't use 'smartcase' now
+          sb.append("\\<");
+        G.no_smartcase = true;
         break;
         
       case 0x1f & (int)(']'):   // Ctrl-]
@@ -2635,18 +2636,12 @@ middle_code:
     while(n-- != 0) {
       char c = ptrSeg.current();
       if(vim_strchr(escapeMe, 0, c) >= 0) {
-        GetChar.stuffcharReadbuff('\\');
+        sb.append('\\');
       }
       // don't quote control characters, shouldn't be any....
-      GetChar.stuffcharReadbuff(c);
+      sb.append(c);
       ptrSeg.next();
     }
-
-    if (       !g_cmd
-            && (cmdchar == '*' || cmdchar == '#')
-            && vim_iswordc(ptrSeg.previous()))
-      GetChar.stuffReadbuff("\\>");
-    GetChar.stuffReadbuff("\n");
 
     //
     // The search commands may be given after an operator.  Therefore they
@@ -2654,13 +2649,19 @@ middle_code:
     ///
     if (cmdchar == '*' || cmdchar == '#')
     {
-      if (cmdchar == '*')
-        cap.cmdchar = '/';
-      else
-        cap.cmdchar = '?';
-      
-      nv_search(cap, searchp, true);
-      fDoingSearch = true;
+      if (       !g_cmd
+              && vim_iswordc(ptrSeg.previous()))
+        sb.append("\\>");
+
+      // use SEARCH_HIS rather than vim's calling add_to_history directly
+      normal_search(cap, cmdchar == '*' ? '/' : '?', sb.toString(), SEARCH_HIS);
+
+      //fDoingSearch = true;
+    }
+    else {
+      //do_cmdline_cmd(buf); ///// probably stuffbuf append
+      System.err.println("do_cmdline_cmd(buf)");
+      assert false;
     }
     return fDoingSearch;
   }
@@ -2878,12 +2879,17 @@ middle_code:
                                 StringBuilder searchp,
                                 boolean dont_set_mark) {
     do_xop("nv_search");
+    // NOTE: in newer vim, nv_search does a small dance,
+    //       then calls normal_search.
     
     inputSearchPattern(cap,
                        cap.count1,
                        (dont_set_mark ? 0 : SEARCH_MARK)
-                        | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG);
+                        | normal_search_standard_options);
   }
+
+  private static final int normal_search_standard_options
+          = SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG;
   
   static private void nv_search_finish(CMDARG cap, StringBuilder searchp) {
     do_xop("nv_search_finish");
@@ -2908,6 +2914,9 @@ middle_code:
     if(cap.nchar == K_X_INCR_SEARCH_DONE)
       i = getIncrSearchResultCode();
     else if(cap.nchar == K_X_SEARCH_FINISH)
+      //
+      // REPLACE WITH normal_search (or do_search)
+      //
       i = doSearch();
     else
       i = 0;
@@ -2962,33 +2971,52 @@ middle_code:
     // correct that here
     adjust_cursor();
     ******************************************************/
-  }
+    }
 
   /**
    * Handle "N" and "n" commands.
+   * (not using cap->arg in jVi (yet?), its in options)
+   * cap->arg is SEARCH_REV for "N", 0 for "n".
    */
-  static private  void	nv_next (CMDARG cap, int flag) {
+  static private  void	nv_next (CMDARG cap, int options) {
     do_xop("nv_next");
-    int rc = doNext(cap, cap.count1,
-	      SEARCH_MARK | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG | flag);
-    if(rc == FAIL) {
-      clearop(cap.oap);
-    }
-    
-    Options.newSearch();
-    
-    /* *******************************************************
-    cap.oap.motion_type = MCHAR;
-    cap.oap.inclusive = FALSE;
-    curwin.w_set_curswant = TRUE;
-    if (!do_search(cap.oap, 0, NULL, cap.count1,
-	       SEARCH_MARK | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG | flag))
-      clearop(cap.oap);
+    normal_search(cap, '\000', null, SEARCH_MARK | options);
+  }
 
-    // "/$" will put the cursor after the end of the line, may need to
-    // correct that here
-    adjust_cursor();
-    *********************************************************/
+  /**
+   * Search for "pat" in direction "dir" ('/' or '?', 0 for repeat).
+   * Uses only cap->count1 and cap->oap from "cap".
+   */
+  static private void
+  normal_search(CMDARG cap, char dir, String pat,
+                int opt		// extra flags for do_search()
+  ) {
+      int		i;
+
+      cap.oap.motion_type = MCHAR;
+      cap.oap.inclusive = false;
+      // cap.oap.use_reg_one = true;
+      G.curwin.w_set_curswant = true;
+
+      i = do_search(cap.oap, dir, pat, cap.count1,
+                    opt | normal_search_standard_options);
+      if (i == 0)
+          clearop(cap.oap);
+      else
+      {
+          if (i == 2)
+              cap.oap.motion_type = MLINE;
+  // #ifdef FEAT_FOLDING
+  // 	if (cap->oap->op_type == OP_NOP && (fdo_flags & FDO_SEARCH) && KeyTyped)
+  // 	    foldOpenCursor();
+  // #endif
+          Options.newSearch();
+      }
+  /*
+      // "/$" will put the cursor after the end of the line, may need to
+      // correct that here
+      check_cursor();
+  */
   }
 
   static private void nv_csearch(CMDARG cap, int dir, boolean type) {

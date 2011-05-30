@@ -23,6 +23,7 @@ import com.raelity.jvi.core.lib.Messages;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.Scheduler;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -56,10 +57,12 @@ public class Search {
   //
   private static ViCmdEntry searchCommandEntry;
   
-  // parameters for the current search, they do not change during search
+  // Parameters for the current search, they do not change during search.
+  // These are used/needed because the search is split into two parts,
+  // they bridge the parts.
   private static int searchCount;
-  private static int searchFlags;
-  private static int lastDir = FORWARD;
+  private static int searchOptions;
+  private static int lastDir = FORWARD; // NEEDSWORK: get rid of this, use spats
   
   // state when incremental search started
   private static ViFPOS searchPos;
@@ -67,9 +70,6 @@ public class Search {
   private static boolean didIncrSearch;
   private static boolean setPCMarkAfterIncrSearch;
   private static boolean incrSearchSucceed;
-
-  // for next command and such
-  private static String lastPattern;
 
   private Search() { }
 
@@ -103,8 +103,10 @@ public class Search {
       if(cmd.charAt(0) == '\n') {
         if(G.p_is.getBoolean()
            && didIncrSearch
-           && ! "".equals(fetchPattern()))
+           && ! fetchPattern().isEmpty()) {
           acceptIncr = true;
+          spats[0].off.dir = lastDir == FORWARD ? '/' : '?'; // NEEDSWORK:
+        }
       } else
         cancel = true;
       
@@ -123,9 +125,14 @@ public class Search {
     }
   }
   
-  /** Start the entry dialog and stash the interesting info for later use
-   *  int doSearch(). */
-  static void inputSearchPattern(CMDARG cap, int count, int flags) {
+  /**
+   * Start the entry dialog and stash the interesting info for later use
+   * in doSearch().
+   * <p/>
+   * Note that inputSearchPattern and doSearch together
+   * are like vim's do_search.
+   */
+  static void inputSearchPattern(CMDARG cap, int options, int flags) {
     String mode = "";
     int cmdchar = cap.cmdchar;
     if (cmdchar == '/') {
@@ -135,8 +142,8 @@ public class Search {
       mode = "?";
       lastDir = BACKWARD;
     }
-    searchCount = count;
-    searchFlags = flags;
+    searchCount = options;
+    searchOptions = flags;
     
     ViCmdEntry ce = getSearchCommandEntry();
     if(G.p_is.getBoolean())
@@ -151,29 +158,22 @@ public class Search {
   // This is used to grab the pattern after search complete, for redoBuffer.
   // or for use in Search01
   static String last_search_pat() {
-    return lastPattern;
-  }
-  static void last_search_pat(String s) {
-    lastPattern = s;
+    return spats[last_idx].pat;
   }
   
   /** doSearch() should only be called after inputSearchPattern() */
   static int doSearch() {
     String pattern = fetchPattern();
     G.curwin.w_set_curswant = true;
-    if(pattern.isEmpty()) {
-      if(lastPattern == null) {
-        Msg.emsg(Messages.e_noprevre);
-        return 0;
-      }
-      pattern = lastPattern;
-    }
-    lastPattern = pattern;
-    // executeSearch(pattern, lastDir, G.p_ic.getBoolean());
     ViFPOS pos = G.curwin.w_cursor.copy();
     int rc = searchit(null, pos, lastDir, pattern,
-                      searchCount, searchFlags, 0, G.p_ic.getBoolean());
+                      searchCount,
+                      searchOptions & (SEARCH_KEEP + SEARCH_PEEK + SEARCH_HIS
+                                       + SEARCH_MSG + SEARCH_START
+                                       + (false ? 0 : SEARCH_NOOF)),
+                      RE_LAST, 0);
     if(rc != FAIL) {
+      spats[0].off.dir = lastDir == FORWARD ? '/' : '?'; // NEEDSWORK:
       Msg.smsg((lastDir == FORWARD ? "/" : "?") + pattern);
     }
     
@@ -188,6 +188,108 @@ public class Search {
       Normal.clearopInstance();
     }
     ******************************/
+  }
+
+  /**
+   * This is the vim interface, except there's 'tm' (yet?).
+   * Most of vim's guts are not here, they are about repeating
+   * the search, like for pattern followed by ';', e.g. "/foo/;?bar"
+   * and probably some search offset stuff.
+   * <p/>
+   * Highest level string search function.
+   * Search for the 'count'th occurrence of pattern 'pat' in direction 'dirc'
+   *		  If 'dirc' is 0: use previous dir.
+   *    If 'pat' is NULL or empty : use previous string.
+   *    If 'options & SEARCH_REV' : go in reverse of previous dir.
+   *    If 'options & SEARCH_ECHO': echo the search command and handle options
+   *    If 'options & SEARCH_MSG' : may give error message
+   *    If 'options & SEARCH_OPT' : interpret optional flags
+   *    If 'options & SEARCH_HIS' : put search pattern in history
+   *    If 'options & SEARCH_NOOF': don't add offset to position
+   *    If 'options & SEARCH_MARK': set previous context mark
+   *    If 'options & SEARCH_KEEP': keep previous search pattern
+   *    If 'options & SEARCH_START': accept match at curpos itself
+   *    If 'options & SEARCH_PEEK': check for typed char, cancel search
+   *
+   * Careful: If spats[0].off.line == TRUE and spats[0].off.off == 0 this
+   * makes the movement linewise without moving the match position.
+   *
+   * return 0 for failure, 1 for found, 2 for found and line offset added
+   */
+  static int do_search(OPARG oap, char dirc, String pat, int count, int options)
+  {
+    int retval = 0; // assume not found
+    String searchstr = null;
+
+    ViFPOS pos = G.curwin.w_cursor.copy();
+
+    Spat spat0 = spats[0];
+
+    //
+    // find direction of search
+    //
+    if(dirc == 0)
+      dirc = spat0.off.dir;
+    else {
+      spat0.off.dir = dirc;
+      // #if defined(FEAT_EVAL)
+    }
+    if((options & SEARCH_REV) != 0) {
+      dirc = dirc == '/' ? '?' : '/';
+    }
+
+    // #ifdef FEAT_FOLDING
+    /* If the cursor is in a closed fold, don't find another match
+     * in the same fold. */
+    // NEEDSWORK: folding search issue
+    // #endif
+
+    searchstr = pat;
+    if(pat == null || pat.isEmpty()) //     || *pat == dirc)
+    {
+      if(spats[RE_SEARCH].pat == null) {          // no previous pattern
+        pat = spats[RE_SUBST].pat;
+        if(pat == null) {
+          Msg.emsg(Messages.e_noprevre);
+          retval = 0;
+          // goto end_do_search
+          return retval; // NEEDSWORK: goto end_do_search some stuff is missing
+        }
+        searchstr = pat;
+      } else {
+        // make search_regcomp() use spats[RE_SEARCH].pat
+        searchstr = "";
+      }
+    }
+
+    // ..... lots of offset and some SEARCH_ECHO stuff .....
+
+    int rc = searchit(null, pos,
+                      dirc == '/' ? FORWARD : BACKWARD,
+                      searchstr,
+                      count,
+                      // spats[0].off.end + // this may be SEARCH_END
+                      options & (SEARCH_KEEP + SEARCH_PEEK + SEARCH_HIS
+                                 + SEARCH_MSG + SEARCH_START
+                                 + (false ? 0 : SEARCH_NOOF)),
+                      RE_LAST, 0);
+    if(rc == FAIL) {
+      retval = 0;
+      // goto end_do_search;
+    } else {
+      // if(spat0.off.end && oap != null)
+      //    oap.inclusive = true;  // 'e' includes last character
+      retval = 1;  // pattern found
+    }
+
+    if((options & SEARCH_MARK) != 0)
+      setpcmark();
+
+    G.curwin.w_cursor.set(pos);
+    G.curwin.w_set_curswant = true;
+
+// end_do_search:
+    return retval;
   }
   
   private static void laterDoIncrementalSearch() {
@@ -219,8 +321,8 @@ public class Search {
         isListener = new SearchListener();
       searchPos = G.curwin.w_cursor.copy();
       searchTopLine = G.curwin.getVpTopDocumentLine();
-      setPCMarkAfterIncrSearch = (searchFlags & SEARCH_MARK) != 0;
-      searchFlags &= ~SEARCH_MARK;
+      setPCMarkAfterIncrSearch = (searchOptions & SEARCH_MARK) != 0;
+      searchOptions &= ~SEARCH_MARK;
       didIncrSearch = false;
       incrSearchSucceed = false;
       getSearchCommandEntry().addChangeListener(isListener);
@@ -231,9 +333,7 @@ public class Search {
 
       G.curwin.clearSelection(); // since it is used by incr search
       
-      if(accept) {
-          lastPattern = fetchPattern();
-      } else
+      if(!accept)
         resetViewIncrementalSearch();
 
       // NEEDSWORK: setpcmark if accept == false ????????
@@ -259,8 +359,8 @@ public class Search {
       ViFPOS pos = searchPos.copy();
       incrSearchSucceed = false;
       int rc = searchit(null, pos, lastDir, pattern,
-                        searchCount, searchFlags /*& ~SEARCH_MSG*/,
-                        0, G.p_ic.getBoolean());
+                        searchCount, searchOptions,
+                        0, 0);
       // for incr search, use java selection to show progress
       int new_pos = G.curwin.w_cursor.getOffset();
       G.curwin.setSelection(new_pos, new_pos + search_match_len);
@@ -277,23 +377,6 @@ public class Search {
       Normal.v_updateVisualState();
       Hook.setJViBusy(false);
     }
-  }
-
-  static int doNext(CMDARG cap, int count, int flag) {
-    G.curwin.w_set_curswant = true;
-    int dir = ((flag & SEARCH_REV) != 0 ? - lastDir : lastDir);
-    //G.curwin.repeatSearch(dir);
-    int rc = FAIL;
-    if(lastPattern == null) {
-      Msg.emsg(Messages.e_noprevre);
-    } else {
-      Msg.smsg((dir == FORWARD ? "/" : "?") + lastPattern);
-      // executeSearch(lastPattern, dir, G.p_ic.getBoolean());
-      ViFPOS pos = G.curwin.w_cursor.copy();
-      rc = searchit(null, pos, dir, lastPattern,
-                        count, flag, 0, G.p_ic.getBoolean());
-    }
-    return rc;
   }
 
   ////////////////////////////////////////////////////////////////
@@ -664,61 +747,211 @@ finished:
   // regualr expression handling stuff
   //
 
-  static public RegExp getLastRegExp() {
-    if(lastPattern == null)
-      return null;
-    return getRegExp(lastPattern, G.p_ic.getBoolean());
+  ////////// vim comments ///////////
+  //
+  // This file contains various searching-related routines. These fall into
+  // three groups:
+  // 1. string searches (for /, ?, n, and N)
+  // 2. character searches within a single line (for f, F, t, T, etc)
+  // 3. "other" kinds of searches like the '%' command, and 'word' searches.
+  //
+
+  //
+  // String searches
+  //
+  // The string search functions are divided into two levels:
+  // lowest:  searchit(); uses an pos_T for starting position and found match.
+  // Highest: do_search(); uses curwin->w_cursor; calls searchit().
+  //
+  // The last search pattern is remembered for repeating the same search.
+  // This pattern is shared between the :g, :s, ? and / commands.
+  // This is in search_regcomp().
+  //
+  // The actual string matching is done using a heavily modified version of
+  // Henry Spencer's regular expression library.  See regexp.c.
+  //
+
+  // The offset for a search command is store in a soff struct
+  // Note: only spats[0].off is really used
+  //
+  ////////// end vim comments ///////////
+
+
+  static class Soffset {
+    char dir = '/';
   }
 
-  //
-  // NEEDSWORK: need to build a structure out of a pattern that
-  // tracks things like lastRegExp* and forceCase
-  //
-  // simple cache. Helps "n" and "N" commands
-  static RegExp lastRegExp;
-  static String lastRegExpPattern = "";
-  static boolean lastRegExpIC;
+  // spat in vim
+  static class Spat {
 
-  static int forceCase_CleanupPatternHack; // for \c and \C
-  static final int FORCE_CASE_IGNORE = 1;
-  static final int FORCE_CASE_EXACT = -1;
-  static final int FORCE_CASE_NONE = 0;
+    public Spat()
+    {
+      off = new Soffset();
+    }
+    String pat;
+    RegExp re;     // not in vim
+    boolean re_ic; // re was compiled with this ic flag
+    // int magic;
+    boolean no_scs;
+    // struct soffset off;
+    int embededVimFlags; // embedded in pattern
+    Soffset off;
+  }
 
-  /** Get a compiled regular expression. Clean up the escaping as needed. */
-  static RegExp getRegExp(String pattern, boolean ignoreCase) {
-    String cleanPattern = cleanupPattern(pattern);
+  // keep last for RE_SEARCH, RE_SUBST
+  // private static Spat[] spats = new Spat[] {new Spat(), new Spat()};
+  private static Spat[] spats = { new Spat(), new Spat() };
 
-    // If the pattern has an 'ignoreCase' flag built in,
+  static public RegExp getLastRegExp() {
+    return spats[last_idx].re;
+  }
+
+  private static int last_idx;
+  private static boolean rc_did_emsg;
+  private static String mr_pattern;
+
+
+  private static final int FORCE_CASE_IGNORE = 1;
+  private static final int FORCE_CASE_EXACT = 2;
+  private static final int HAS_UPPER = 4;
+
+  /*
+   * Difference from vim. The regular expression is compiled here.
+   * success returns RegExp, fail returns null. Otherwise should be the same.
+   * Some features, like magic, not supported.
+   * NEEDSWORK: defer compilation of re; and rebuild re if wrong ign case
+   *
+   * === vim comment ===
+   * translate search pattern for vim_regcomp()
+   *
+   * pat_save == RE_SEARCH: save pat in spats[RE_SEARCH].pat (normal search cmd)
+   * pat_save == RE_SUBST: save pat in spats[RE_SUBST].pat (:substitute command)
+   * pat_save == RE_BOTH: save pat in both patterns (:global command)
+   * pat_use  == RE_SEARCH: use previous search pattern if "pat" is NULL
+   * pat_use  == RE_SUBST: use previous substitute pattern if "pat" is NULL
+   * pat_use  == RE_LAST: use last used pattern if "pat" is NULL
+   * options & SEARCH_HIS: put search string in history
+   * options & SEARCH_KEEP: keep previous search pattern
+   *
+   * returns FAIL if failed, OK otherwise.
+   */
+  static RegExp search_regcomp(String pattern,
+                               int pat_save, int pat_use, int options)
+  {
+    Spat spat = null;
+    int i;
+    String cleanPattern;
+    MutableInt embeddedVimFlags = new MutableInt();
+    rc_did_emsg = false;
+    if(pattern == null || pattern.isEmpty()) {
+      if(pat_use == RE_LAST)
+        i = last_idx;
+      else
+        i = pat_use;
+      spat = spats[i];
+      if(spat.pat == null) { // pattern was never defined
+        if(pat_use == RE_SUBST)
+          Msg.emsg(Messages.e_nopresub);
+        else
+          Msg.emsg(Messages.e_noprevre);
+        rc_did_emsg = true;
+        return null;
+      }
+      cleanPattern = spat.pat;
+      embeddedVimFlags.setValue(spat.embededVimFlags);
+      // magic = spat.magic;
+      G.no_smartcase = spat.no_scs;
+    } else {
+      if((options & SEARCH_HIS) != 0)	// put new pattern in history
+          add_to_history(HIST_SEARCH, pattern);
+      cleanPattern = cleanupPattern(pattern, embeddedVimFlags);
+    }
+
+    // jVi saves more state in spat
+    // (has to do with compiled re having ignore case state)
+    boolean last_no_smartcase = G.no_smartcase;
+    boolean ic = ignorecase(embeddedVimFlags);
+
+    // If the pattern has an embedded 'ignoreCase' flag, \c or \C,
     // then apply the override
-    if(forceCase_CleanupPatternHack == FORCE_CASE_EXACT) {
-      ignoreCase = false;
-    } else if(forceCase_CleanupPatternHack == FORCE_CASE_IGNORE) {
-      ignoreCase = true;
+    if(embeddedVimFlags.testAnyBits(FORCE_CASE_EXACT)) {
+      ic = false;
+    } else if(embeddedVimFlags.testAnyBits(FORCE_CASE_IGNORE)) {
+      ic = true;
     } // else FORCE_CASE_NONE
 
-    // can the last re be reused?
-    // NEEDSWORK: getRegExp: cache re's, LRU?
-    if(cleanPattern.equals(lastRegExpPattern) && lastRegExpIC == ignoreCase) {
-      return lastRegExp;
-    }
     RegExp re = null;
-    try {
-      int flags = ignoreCase ? RegExp.IGNORE_CASE : 0;
-      re = RegExpFactory.create();
-      // NEEDSWORK: compilePattern vs cleanPattern
-      String compilePattern = re.patternType() == RegExp.PATTERN_SIMPLE
-                                ? pattern : cleanPattern;
-      re.compile(cleanPattern, flags);
-      // cache the information
-      lastRegExpPattern = cleanPattern;
-      lastRegExpIC = ignoreCase;
-      lastRegExp = re;
-    } catch(RegExpPatternError ex) {
-      Msg.emsg(ex.getMessage() + " [" + ex.getIndex() + "]" + pattern);
-      //Msg.emsg("Invalid search string: \"" + pattern + "\" " + ex.getMessage());
-      re = null;
+    // if using saved, can the re be reused?
+    if(spat != null && spat.re_ic == ic) {
+      re = spat.re;
+    } else {
+      re = get_spat_cache(cleanPattern, ic);
+      if(re == null) {
+        try {
+          int flags = ic ? RegExp.IGNORE_CASE : 0;
+          re = RegExpFactory.create();
+          re.compile(cleanPattern, flags);
+        } catch(RegExpPatternError ex) {
+          Msg.emsg(ex.getMessage() + " [" + ex.getIndex() + "]" + pattern);
+          re = null;
+        }
+      }
+    }
+    mr_pattern = cleanPattern;
+
+    if(re != null) {
+      if((options & SEARCH_KEEP) == 0) {
+	// search or global command
+	if (pat_save == RE_SEARCH || pat_save == RE_BOTH)
+          save_re_pat(RE_SEARCH, cleanPattern, re,
+                      embeddedVimFlags.getValue(),
+                      ic, last_no_smartcase);
+	// substitute or global command
+	if (pat_save == RE_SUBST || pat_save == RE_BOTH)
+          save_re_pat(RE_SUBST, cleanPattern, re,
+                      embeddedVimFlags.getValue(),
+                      ic, last_no_smartcase);
+      }
     }
     return re;
+  }
+
+  private static RegExp get_spat_cache(String pat, boolean ic)
+  {
+    for(Spat spat : spats) {
+      if(spat.re_ic == ic && pat.equals(spat.pat))
+        return spat.re;
+    }
+    return null;
+  }
+
+  private static void save_re_pat(int idx, String pat, RegExp re,
+                                  int embeddedVimFlags,
+                                  boolean re_ic, boolean no_smartcase)
+  {
+    // There's so many fields, rather than trying to figure out if its
+    // safe to bypass the save if pat == spat.pat
+    Spat spat = spats[idx];
+    spat.pat = pat;
+    spat.re = re;
+    spat.embededVimFlags = embeddedVimFlags;
+    spat.re_ic = re_ic;
+    spat.no_scs = no_smartcase;
+    last_idx = idx;
+    // in vim, there's code to redraw hl search if pattern changed.
+    // but inc search goes through here...
+    // if(G.p_hls.getBoolean())
+    //   Options.newSearch();
+    // G.no_hlsearch = false;
+  }
+
+  private static boolean ignorecase(MutableInt embeddedVimFlags)
+  {
+    boolean ic = G.p_ic.getBoolean();
+    if(ic && !G.no_smartcase && G.p_scs.getBoolean())
+      ic = !embeddedVimFlags.testAnyBits(HAS_UPPER);
+    G.no_smartcase = false;
+    return ic;
   }
 
   private static final int ESCAPED_FLAG = 0x10000;
@@ -744,11 +977,12 @@ finished:
    * p_meta_equals was false.
    * </p>
    */
-  static String cleanupPattern(String s) {
-    forceCase_CleanupPatternHack = FORCE_CASE_NONE;
+  private static String cleanupPattern(String s, MutableInt flags) {
+    flags.setValue(0);
     String metacharacterEscapes = G.p_meta_escape.getString();
     StringBuilder sb = new StringBuilder();
     boolean isEscaped = false;
+    boolean hasUpper = false;
     for(int in = 0; in < s.length(); in++) {
       char c = s.charAt(in);
       if( ! isEscaped && c == '\\') {
@@ -776,13 +1010,16 @@ finished:
       } else if(isEscaped && (c == '<' || c == '>')) {
         sb.append("\\b");
       } else if(isEscaped && c == 'c') {
-        forceCase_CleanupPatternHack = FORCE_CASE_IGNORE;
+        flags.setBits(FORCE_CASE_IGNORE);
       } else if(isEscaped && c == 'C') {
-        forceCase_CleanupPatternHack = FORCE_CASE_EXACT;
+        flags.setBits(FORCE_CASE_EXACT);
       } else {
         // pass through what was seen
         if(isEscaped) {
           sb.append("\\");
+        } else {
+            if(Character.isUpperCase(c))
+                flags.setBits(HAS_UPPER);
         }
         sb.append(c);
       }
@@ -802,13 +1039,15 @@ finished:
    * Search for 'count'th occurrence of 'str' in direction 'dir'.
    * Start at position 'pos' and return the found position in 'pos'.
    *
-   * <br>if (options & SEARCH_MSG) == 0 don't give any messages
-   * <br>if (options & SEARCH_MSG) == SEARCH_NFMSG dont give 'notfound' messages
-   * <br>if (options & SEARCH_MSG) == SEARCH_MSG give all messages
-   * <br>if (options & SEARCH_HIS) put search pattern in history
-   * <br>if (options & SEARCH_END) return position at end of match
-   * <br>if (options & SEARCH_START) accept match at pos itself
-   * <br>if (options & SEARCH_KEEP) keep previous search pattern
+   * <br/>if (options & SEARCH_MSG) == 0 don't give any messages
+   * <br/>if (options & SEARCH_MSG) == SEARCH_NFMSG dont give 'notfound' messages
+   * <br/>if (options & SEARCH_MSG) == SEARCH_MSG give all messages
+   * <br/>if (options & SEARCH_HIS) put search pattern in history
+   * <br/>if (options & SEARCH_END) return position at end of match
+   * <br/>if (options & SEARCH_START) accept match at pos itself
+   * <br/>if (options & SEARCH_KEEP) keep previous search pattern
+   * <br/>if (options & SEARCH_FOLD) match only once in a closed fold
+   * <br/>if (options & SEARCH_PEEK) check for typed char, cancel search
    * <p>
    * Return FAIL (zero) for failure, non-zero for success.
    * When FEAT_EVAL is defined, returns the index of the first matching
@@ -821,14 +1060,16 @@ finished:
    // Not sure how. The vim code has a "at start of line" flag it passes
    // to the reg exp matcher.
    //
-  static int searchit(TextView win,      // BUF,    NOT USED
+  static int searchit(TextView win,
+                      // BUF,    NOT USED
                       ViFPOS pos,      // FPOS,
                       int dir,
                       String pattern,
                       int count,
                       int options,
                       int pat_use,
-                      boolean ignoreCase)
+                      int stop_lnum   // NOT USED (yet?)
+          )
   {
     ViFPOS start_pos;
     boolean found;
@@ -844,10 +1085,12 @@ finished:
     String wmsg = null;
 
 
-    RegExp prog = getRegExp(pattern, ignoreCase); // various arguments in vim
+    RegExp prog = search_regcomp(pattern, RE_SEARCH, pat_use,
+                                 (options & (SEARCH_HIS+SEARCH_KEEP)));
     if(prog == null) {
-        //Msg.emsg("Invalid search string: " + pattern);
-        return FAIL;
+      if((options & SEARCH_MSG) != 0 && !rc_did_emsg)
+        Msg.emsg("Invalid search string: " + mr_pattern);
+      return FAIL;
     }
 
     if ((options & SEARCH_START) != 0)

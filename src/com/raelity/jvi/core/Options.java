@@ -150,6 +150,7 @@ public final class Options {
   public static final String highlightSearch = "viHighlightSearch";
 
   public static final String ignoreCase = "viIgnoreCase";
+  public static final String smartCase = "viSmartCase";
   public static final String platformBraceMatch = "viPlatformBraceMatch";
   
   public static final String expandTabs = "viExpandTabs";
@@ -631,10 +632,15 @@ public final class Options {
     OptUtil.setupOptionDesc(Category.SEARCH, highlightSearch, "'hlsearch' 'hls'",
                     "When there is a previous search pattern, highlight"
                     + " all its matches");
-    
+
     G.p_ic = OptUtil.createBooleanOption(ignoreCase, false);
     OptUtil.setupOptionDesc(Category.SEARCH, ignoreCase, "'ignorecase' 'ic'",
             "Ignore case in search patterns.");
+    
+    G.p_scs = OptUtil.createBooleanOption(smartCase, false);
+    OptUtil.setupOptionDesc(Category.SEARCH, smartCase, "'smartcase' 'scs'",
+            "Override the 'ignorecase' option if the search pattern"
+            + " contains upper case characters.");
 
     G.p_ws = OptUtil.createBooleanOption(wrapScan, true);
     OptUtil.setupOptionDesc(Category.SEARCH, wrapScan, "'wrapscan' 'ws'",
