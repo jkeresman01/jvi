@@ -900,7 +900,6 @@ public class Misc implements ClipboardOwner {
    * @return correct line number.
    */
   static int check_cursor_lnum(int lnum) {
-    Normal.do_xop("check_cursor_lnum");
     if(lnum > G.curbuf.getLineCount()) {
       lnum = G.curbuf.getLineCount();
     }
@@ -927,7 +926,6 @@ public class Misc implements ClipboardOwner {
    * @return correct column number.
    */
   static int check_cursor_col(int lnum, int col) {
-    Normal.do_xop("check_cursor_col");
     int len;
     MySegment seg = G.curbuf.getLineSegment(lnum);
     len = seg.count - 1; // don't count trailing newline
@@ -956,7 +954,6 @@ public class Misc implements ClipboardOwner {
    * but this may backup the cursor off of a newline.
    */
   static void adjust_cursor() {
-    Normal.do_xop("adjust_cursor");
     final ViFPOS cursor = G.curwin.w_cursor;
     int lnum = check_cursor_lnum(cursor.getLine());
     int col = check_cursor_col(lnum, cursor.getColumn());
@@ -1934,7 +1931,6 @@ private static int put_in_typebuf(String s, boolean colon)
    * op_delete - handle a delete operation
    */
   static boolean op_delete(OPARG oap) {
-    Normal.do_xop("op_delete");
 
     boolean		did_yank = true;
     int			old_lcount = G.curbuf.getLineCount();
@@ -3360,7 +3356,6 @@ private static int put_in_typebuf(String s, boolean colon)
   //
 
   static void ui_cursor_shape() {
-    Normal.do_xop("ui_cursor_shape");
     G.curwin.updateCursor(getCursor());
   }
 

@@ -500,7 +500,6 @@ public class GetChar {
     }
 
     static boolean stuff_empty() {
-        Normal.do_xop("stuff_empty");
         return ! stuffbuff.hasNext();
     }
 

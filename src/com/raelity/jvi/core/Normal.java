@@ -1357,7 +1357,6 @@ middle_code:
      * If an operation is pending, handle it...
      */
     if ((G.VIsual_active || G.finish_op) && oap.op_type != OP_NOP) {
-      do_xop("do_pending_operator");
       oap.is_VIsual = G.VIsual_active;
 
       /* only redo yank when 'y' flag is in 'cpoptions' */
@@ -1844,7 +1843,6 @@ middle_code:
   }
 
   static void op_format(final OPARG oap)  {
-    do_op("op_format");
     // NEESDWORK: hook into platform's format (if available)
     runUndoable(new Runnable() {
       @Override
@@ -1856,7 +1854,6 @@ middle_code:
   }
   
   static private  void	op_colon (OPARG oap) {
-      do_op("op_colon");
       StringBuffer range = new StringBuffer();
       if(oap.is_VIsual) {
         range.append("'<,'>");
@@ -1912,7 +1909,6 @@ middle_code:
   }
 
   static void end_visual_mode() {
-      do_op("end_visual_mode");
 // #ifdef USE_CLIPBOARD
     /*
      * If we are using the clipboard, then remember what was selected in case
@@ -2071,7 +2067,6 @@ middle_code:
    * @return TRUE if operator was active
    */
   static private  boolean checkclearop(OPARG oap) {
-    do_xop("checkclearop");
     if (oap.op_type == OP_NOP)
       return false;
     clearopbeep(oap);
@@ -2084,7 +2079,6 @@ middle_code:
    * @return TRUE if operator was active
    */
   static private boolean checkclearopq(OPARG oap) {
-    do_xop("checkclearopq");
     if (oap.op_type == OP_NOP && !G.VIsual_active)
       return false;
     clearopbeep(oap);
@@ -2092,7 +2086,6 @@ middle_code:
   }
 
   static private void clearop(OPARG oap) {
-    do_xop("clearop");
     oap.clearop();
   }
 
@@ -2103,7 +2096,6 @@ middle_code:
   ********************************/
 
   static private void clearopbeep(OPARG oap) {
-    do_xop("clearopbeep");
     clearop(oap);
     Util.beep_flush();
   }
@@ -2121,7 +2113,6 @@ middle_code:
   //static boolean showcmd_is_clear = true;
 
   static void clear_showcmd() {
-    do_xop("clear_showcmd");
 
     if (!G.p_sc.getBoolean())
       return;
@@ -2144,7 +2135,6 @@ middle_code:
    */
   static boolean add_to_showcmd(char c) {
 
-    do_xop("add_to_showcmd");
 
     if (!G.p_sc.getBoolean())
       return false;
@@ -2219,7 +2209,6 @@ middle_code:
   }
   
   static private void nv_scroll_line(CMDARG cap, boolean is_ctrl_e) {
-    do_xop("nv_scroll_line");
     if(checkclearop(cap.oap))
       return;
     scroll_redraw(is_ctrl_e, cap.count1);
@@ -2332,7 +2321,6 @@ middle_code:
   }
 
   static private  void	nv_zet_scrolloff (CMDARG cap) {
-    do_xop("nv_zet");
 
     int so = getScrollOff();
     int nchar = cap.nchar;
@@ -2401,7 +2389,6 @@ middle_code:
   }
   
   static private void nv_colon (CMDARG cap) {
-    do_xop("nv_colon");
     if (G.VIsual_active) {
        // VISUAL REPAINT HACK
        G.drawSavedVisualBounds = true;
@@ -2423,7 +2410,6 @@ middle_code:
   }
 
   static private  void	nv_ctrlg (CMDARG cap) {
-    do_xop("nv_ctrlg");
     if (G.VIsual_active)	// toggle Selection/Visual mode
     {
       // Convert the visual mode bounds to a java text selection.
@@ -2472,7 +2458,6 @@ middle_code:
   static private void nv_ident (CMDARG cap, StringBuilder searchp)
                                throws NotSupportedException
   {
-    do_xop("nv_ident");
     CharacterIterator     ptrSeg = null;
     int		n = 0;		// init for GCC
     char	cmdchar;
@@ -2621,7 +2606,6 @@ middle_code:
   }
 
   static private void nv_scroll_scrolloff(CMDARG cap) {
-    do_xop("nv_scroll");
     int	    used = 0;
     int    n;
 
@@ -2823,7 +2807,6 @@ middle_code:
   static private void nv_search(CMDARG cap,
                                 StringBuilder searchp,
                                 boolean dont_set_mark) {
-    do_xop("nv_search");
     // NOTE: in newer vim, nv_search does a small dance,
     //       then calls normal_search.
     
@@ -2833,7 +2816,6 @@ middle_code:
                         | normal_search_standard_options);
   }
   static private void nv_search_finish(CMDARG cap, StringBuilder searchp) {
-    do_xop("nv_search_finish");
                         assert cap.nchar == K_X_INCR_SEARCH_DONE
                                || cap.nchar == K_X_SEARCH_CANCEL
                                || cap.nchar == K_X_SEARCH_FINISH;
@@ -2858,7 +2840,6 @@ middle_code:
    * cap->arg is SEARCH_REV for "N", 0 for "n".
    */
   static private  void	nv_next (CMDARG cap, int options) {
-    do_xop("nv_next");
     normal_search(null, cap, '\000', null, SEARCH_MARK | options);
   }
 
@@ -2920,7 +2901,6 @@ middle_code:
    * Handle Normal mode "%" command.
    */
   static private void nv_percent(CMDARG cap) {
-    do_xop("nv_percent");
 
     cap.oap.inclusive = true;
     if (cap.count0 != 0) {	    // {cnt}% : goto {cnt} percentage in file
@@ -3300,7 +3280,6 @@ nv_brackets(CMDARG cap, int dir)
  */
  
   static private void nv_brace(CMDARG cap, int dir) {
-    do_xop("nv_brace");
 
     cap.oap.motion_type = MCHAR;
 
@@ -3364,7 +3343,6 @@ static private void nv_findpar(CMDARG cap, int dir)
    * 'O': same, but in block mode exchange left and right corners.
    */
   static private  void	v_swap_corners (CMDARG cap) {
-    do_op("v_swap_corners");
 
     final ViFPOS cursor = G.curwin.w_cursor;
     if ((cap.cmdchar == 'O') && G.VIsual_mode == Util.ctrl('V'))
@@ -3441,7 +3419,6 @@ static private void nv_findpar(CMDARG cap, int dir)
    * Swap case for "~" command, when it does not work like an operator.
    */
   static private  void	n_swapchar (final CMDARG cap) {
-    do_op("n_swapchar");
 
     if (checkclearopq(cap.oap))
       return;
@@ -3487,7 +3464,6 @@ static private void nv_findpar(CMDARG cap, int dir)
   }
 
   static private  void	nv_cursormark (CMDARG cap, boolean flag, ViMark mark) {
-    do_xop("nv_cursormark");
     if (MarkOps.check_mark(mark) == FAIL)
       clearop(cap.oap);
     else
@@ -3509,7 +3485,6 @@ static private void nv_findpar(CMDARG cap, int dir)
    * Handle commands that are operators in Visual mode.
    */
   static private  void	v_visop (CMDARG cap) {
-      do_op("v_visop");
       String trans = "YyDdCcxdXdAAIIrr";
 
     /* Uppercase means linewise, except in block mode, then "D" deletes till
@@ -3532,7 +3507,6 @@ static private void nv_findpar(CMDARG cap, int dir)
    * Translate a command into another command.
    */
   static private  void	nv_optrans (CMDARG cap) {
-    do_xop("nv_optrans");
 
     String str = "xXDCsSY&";
     if (!checkclearopq(cap.oap))
@@ -3549,7 +3523,6 @@ static private void nv_findpar(CMDARG cap, int dir)
    * Handle "'" and "`" commands.
    */
   static private void nv_gomark(CMDARG cap, boolean flag) {
-    do_xop("nv_gomark");
     ViMark	pos;
 
     pos = MarkOps.getmark(cap.nchar, (cap.oap.op_type == OP_NOP));
@@ -3572,7 +3545,6 @@ static private void nv_findpar(CMDARG cap, int dir)
    */
   static private void nv_pcmark(CMDARG cap)
   throws NotSupportedException {
-    do_xop("nv_pcmark");
     //G.curwin.jumpList(op, cap.count1);
     ViMark	fpos;
 
@@ -3595,7 +3567,6 @@ static private void nv_findpar(CMDARG cap, int dir)
    * Handle '"' command.
    */
   static private  void	nv_regname (CMDARG cap, MutableInt opnump) {
-    do_xop("nv_regname");
     if (checkclearop(cap.oap))
       return;
     if (cap.nchar != NUL && valid_yank_reg(cap.nchar, false)) {
@@ -3612,7 +3583,6 @@ static private void nv_findpar(CMDARG cap, int dir)
    */
   
   static private  void	nv_visual(CMDARG cap, boolean selectmode) {
-      do_op("nv_visual");
       if (G.VIsual_active) {/* change Visual mode */
           if (G.VIsual_mode == cap.cmdchar) {    /* stop visual mode */
               end_visual_mode();
@@ -3747,7 +3717,6 @@ static private void nv_findpar(CMDARG cap, int dir)
    * Should set VIsual_select before calling this.
    */
   static private  void	n_start_visual_mode(char c) {
-      do_op("n_start_visual_mode");
       G.VIsual = G.curwin.w_cursor.copy();
       G.VIsual_mode = c;
       G.VIsual_active = true;
@@ -3810,7 +3779,6 @@ static private void nv_findpar(CMDARG cap, int dir)
 
   static private void nv_g_cmd(CMDARG cap, StringBuilder searchbuff)
   throws NotSupportedException {
-    do_xop("nv_g_cmd");
     ViFPOS tpos;
     int t = 0;
     boolean flag = false;
@@ -4074,7 +4042,6 @@ static private void nv_findpar(CMDARG cap, int dir)
    */
   static private void n_opencmd(CMDARG cap)
   {
-    do_xop("n_opencmd");
 
     ViFPOS fpos = G.curwin.w_cursor;
     if (!checkclearopq(cap.oap)) {
@@ -4099,7 +4066,6 @@ static private void nv_findpar(CMDARG cap, int dir)
    * Handle "U" command.
    */
   static private  void	nv_Undo (CMDARG cap) throws NotSupportedException {
-      do_op("nv_Undo");
          // In Visual mode and typing "gUU" triggers an operator
     if (G.VIsual_active || cap.oap.op_type == OP_UPPER)
     {
@@ -4120,7 +4086,6 @@ static private void nv_findpar(CMDARG cap, int dir)
    */
   static private void nv_operator(CMDARG cap) {
     int	    op_type;
-    do_xop("nv_operator");
 
     op_type = get_op_type(cap.cmdchar, cap.nchar);
 
@@ -4137,7 +4102,6 @@ static private void nv_findpar(CMDARG cap, int dir)
    * Handle linewise operator "dd", "yy", etc.
    */
   static private void nv_lineop(CMDARG cap) {
-    do_xop("nv_lineop");
     cap.oap.motion_type = MLINE;
     if (Edit.cursor_down(cap.count1 - 1, cap.oap.op_type == OP_NOP) == FAIL)
       clearopbeep(cap.oap);
@@ -4153,7 +4117,6 @@ static private void nv_findpar(CMDARG cap, int dir)
    * Handle "|" command.
    */
   static private  void	nv_pipe (CMDARG cap) {
-    do_xop("nv_pipe");
 
     cap.oap.motion_type = MCHAR;
     cap.oap.inclusive = false;
@@ -4170,7 +4133,6 @@ static private void nv_findpar(CMDARG cap, int dir)
   }
 
   static private void nv_goto (CMDARG cap, int lnum) {
-    do_xop("nv_goto");
     cap.oap.motion_type = MLINE;
     MarkOps.setpcmark();
     
@@ -4186,7 +4148,6 @@ static private void nv_findpar(CMDARG cap, int dir)
    * Handle back-word command "b".
    */
   static void nv_bck_word(CMDARG cap, boolean type) {
-    do_xop("nv_bck_word");
     cap.oap.motion_type = MCHAR;
     cap.oap.inclusive = false;
     G.curwin.w_set_curswant = true;
@@ -4201,7 +4162,6 @@ static private void nv_findpar(CMDARG cap, int dir)
     char       c;
     boolean    word_end;
     boolean    flag = false;
-    do_xop("nv_wordcmd");
 
     //
     // Inclusive has been set for the "E" and "e" command.
@@ -4351,7 +4311,6 @@ static private void nv_findpar(CMDARG cap, int dir)
    */
   static private void nv_edit (CMDARG cap)
   {
-    do_xop("nv_edit");
     /* in Visual mode "A" and "I" are an operator */
     if ((cap.cmdchar == 'A' || cap.cmdchar == 'I')
 	&& G.VIsual_active)
@@ -4408,7 +4367,6 @@ static private void nv_findpar(CMDARG cap, int dir)
   }
 
   static private  void	nv_object (CMDARG cap) {
-      do_op("nv_object");
       int flag;
       boolean include;
       //char_u *mps_save;
@@ -4486,7 +4444,6 @@ static private void nv_findpar(CMDARG cap, int dir)
    * Handle the "q" key.
    */
   static private void nv_q(CMDARG cap) throws NotSupportedException {
-    do_xop("nv_q");
     if (cap.oap.op_type == OP_FORMAT) {
       /* "gqq" is the same as "gqgq": format line */
       cap.cmdchar = 'g';
@@ -4506,7 +4463,6 @@ static private void nv_findpar(CMDARG cap, int dir)
    * Handle the "@r" command.
    */
   static private void nv_at(CMDARG cap) {
-    do_xop("nv_at");
     if (checkclearop(cap.oap))
       return;
     while (cap.count1-- > 0)
@@ -4677,23 +4633,23 @@ static private void nv_findpar(CMDARG cap, int dir)
     }
   }
 
-  static int u_save_cursor() {/*do_op("u_save_cursor");*/return OK; }
+  static int u_save_cursor() { return OK; }
 
-  static void start_selection() {do_op("start_selection");}
-  static void do_help(String s) {do_op("do_help");}
+  static void start_selection() {}
+  static void do_help(String s) {}
   static boolean buflist_getfile(int n, int lnum, int options, boolean forceit) {
-    do_op("buflist_getfile");return true;
+    return true;
   }
-  static void update_curbuf(int type) {do_op("update_curbuf");}
-  static void redraw_curbuf_later(int type) {do_op("redraw_curbuf_later");}
+  static void update_curbuf(int type) {}
+  static void redraw_curbuf_later(int type) {}
   static void do_tag(String tag, int type, int count,
-	      boolean forceit, boolean verbose) {do_op("do_tag");}
-  static boolean typebuf_typed() { do_op("typebuf_typed");return true; }
-  static boolean msg_attr(String s, int attr) { do_op("msg_attr");return true; }
-  static void setcursor() {do_op("setcursor");}
-  static void cursor_on() {do_op("curson_on");}
-  static void ui_delay(int msec, boolean ignoreinput) {do_op("ui_delay");}
-  static void update_other_win() {do_op("update_other_win");}
+	      boolean forceit, boolean verbose) {}
+  static boolean typebuf_typed() { return true; }
+  static boolean msg_attr(String s, int attr) { return true; }
+  static void setcursor() {}
+  static void cursor_on() {}
+  static void ui_delay(int msec, boolean ignoreinput) {}
+  static void update_other_win() {}
 
   //
   //
@@ -4731,23 +4687,10 @@ static private void nv_findpar(CMDARG cap, int dir)
   static int	resel_VIsual_col;	/* nr of cols or end col */
 
 
-/*
- * nv_*(): functions called to handle Normal and Visual mode commands.
- * n_*(): functions called to handle Normal mode commands.
- * v_*(): functions called to handle Visual mode commands.
- */
-  static private  void	nv_gd (OPARG oap, int nchar) {do_op("nv_gd");}
-  static private  void	nv_zzet (CMDARG cap) {do_op("nv_zzet");}
-  static private  void	nv_gotofile (CMDARG cap) {do_op("nv_gotofile");}
-  static private  int	nv_VReplace (CMDARG cap) { do_op("nv_VReplace");return 0; }
-  static private  int	nv_vreplace (CMDARG cap) { do_op("nv_vreplace");return 0; }
-  static private  void	nv_select (CMDARG cap) {do_op("nv_select");}
-  static private  void	nv_normal (CMDARG cap) {do_op("nv_normal");}
-
-
-  static void do_exmode() {do_op("do_exmode");}
-  static void update_screen(boolean flag) {do_op("update_screen(bool)");}
-  static void update_screen(int flag) {do_op("update_screen(int)");}
+  static private  void	nv_normal (CMDARG cap) {}
+  static void do_exmode() {}
+  static void update_screen(boolean flag) {}
+  static void update_screen(int flag) {}
 
 
 
@@ -4869,19 +4812,6 @@ static private void nv_findpar(CMDARG cap, int dir)
     if(KeyBinding.notImpDebug) System.err.println("Not supported: "
                        + op + ": " + "\"" + getCmdChars() + "\"");
     throw new NotSupportedException(op, getCmdChars());
-  }
-
-  static void do_op(String op) {
-    if(G.debugOpPrint) System.err.println("Exec: " + op);
-  }
-
-  static void do_xop(String op) {
-    if(G.debugPrint) System.err.println("Exec: ** " + op);
-  }
-
-  static void do_op_clear(String op, OPARG oap) {
-    if(G.debugPrint) System.err.println("Exec: " + op);
-    clearop(oap);
   }
 
   /**

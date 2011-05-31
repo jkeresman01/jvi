@@ -175,7 +175,6 @@ public class Edit {
       if(!canEdit())
         return;
       Normal.editBusy = true;
-      Normal.do_xop("edit");
       count = new MutableInt(count_arg);
       
       // clear any selection so a character insert doesn't do more than wanted
@@ -1161,7 +1160,6 @@ private static class GetLiteral implements HandleNextChar
   private static void insert_special(char c,
                                      boolean allow_modmask,
                                      boolean ctrlv) {
-    Normal.do_xop("insert_special: " + c);
     
     // NEEDSWORK: edit: insert_special
     // Special function key, translate into "<Key>". Up to the last '>' is
@@ -1368,7 +1366,6 @@ private static class GetLiteral implements HandleNextChar
    * When TRUE: update topline.
    */
   public static int cursor_up(int n, boolean upd_topline) {
-    Normal.do_xop("cursor_up");
     int viewLine = G.curwin.getLogicalLine(G.curwin.w_cursor.getLine());
     if (n != 0) {
       if (viewLine <= 1)
@@ -1387,7 +1384,6 @@ private static class GetLiteral implements HandleNextChar
    * @param upd_topline When TRUE: update topline.
    */
   public static int cursor_down(int n, boolean upd_topline) {
-    Normal.do_xop("cursor_down");
     int viewLine = G.curwin.getLogicalLine(G.curwin.w_cursor.getLine());
     if (n != 0) {
       int nline = G.curwin.getLogicalLineCount();
@@ -1871,7 +1867,6 @@ private static class GetLiteral implements HandleNextChar
   }
   
   private static void ins_del() throws NotSupportedException {
-    Normal.do_xop("ins_del");
     int	    temp;
 
     stop_arrow();

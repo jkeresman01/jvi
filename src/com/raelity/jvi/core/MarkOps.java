@@ -170,8 +170,6 @@ class MarkOps
      */
     static int setmark(char c, int count)
     {
-        Normal.do_xop("setmark");
-
         {
             // Handle anonymous mark operations here
 

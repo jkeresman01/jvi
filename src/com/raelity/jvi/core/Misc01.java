@@ -239,7 +239,6 @@ public class Misc01
      * return FAIL for failure, OK otherwise
      */
     static int onepage(int dir, int count) {
-      Normal.do_xop("onepage");
       int	    lp;
       int	    n;
       int	    off;
@@ -369,7 +368,6 @@ public class Misc01
     // This is identical to halfpage, except that the methods called in
     // curwin are the 'coord' variety, plus a little cursor fiddling.
     static void halfpage(boolean go_down, int Prenum) {
-      Normal.do_xop("halfpage");
 
       int		scrolled = 0;
       int		i;
@@ -561,7 +559,6 @@ public class Misc01
     //
     static void do_window(char nchar, int Prenum)
     {
-        Normal.do_xop("do_window");
         boolean ok = true;
         switch (nchar) {
             // split current window in two parts
