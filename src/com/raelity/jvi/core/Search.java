@@ -162,6 +162,92 @@ public class Search
   static String last_search_pat() {
     return spats[last_idx].pat;
   }
+  
+  private static void laterDoIncrementalSearch() {
+    EventQueue.invokeLater(new Runnable() {
+      @Override
+      public void run()
+      {
+        doIncrementalSearch();
+      }
+    });
+  }
+
+  private static class SearchListener implements ChangeListener
+  {
+    @Override
+    public void stateChanged(ChangeEvent e)
+    {
+      laterDoIncrementalSearch();
+    }
+  }
+
+  private static SearchListener isListener;
+
+  private static void startIncrementalSearch() {
+      // funny aborts might leave one...
+      // NEEDSWORK: Might want to use a weak listen as well
+      getSearchCommandEntry().removeChangeListener(isListener);
+      if(isListener == null)
+        isListener = new SearchListener();
+      ass.searchPos = G.curwin.w_cursor.copy(); // NEEDSWORK: REMOVE ME NOW
+      ass.searchTopLine = G.curwin.getVpTopDocumentLine();
+      ass.didIncrSearch = false;
+      getSearchCommandEntry().addChangeListener(isListener);
+  }
+  
+  private static void stopIncrementalSearch(boolean accept) {
+      getSearchCommandEntry().removeChangeListener(isListener);
+
+      G.curwin.clearSelection(); // since it is used by incr search
+      
+      if(!accept)
+        resetViewIncrementalSearch();
+  }
+  
+  private static void resetViewIncrementalSearch() {
+    G.curwin.setVpTopLine(ass.searchTopLine);
+    G.curwin.setCaretPosition(ass.searchPos.getOffset());
+  }
+  
+  private static void doIncrementalSearch() {
+    Hook.setJViBusy(true);
+    try {
+      String pattern = getSearchCommandEntry().getCurrentEntry();
+      
+      if(pattern.isEmpty()) {
+        resetViewIncrementalSearch();
+        return;
+      }
+
+      int rc;
+      rc = do_search(ass.searchPos.copy(), null,
+                     ass.dirc, pattern, ass.searchCount,
+                     SEARCH_KEEP + SEARCH_OPT + SEARCH_NOOF + SEARCH_PEEK);
+      // for incr search, use java selection to show progress
+      int new_pos = G.curwin.w_cursor.getOffset();
+      G.curwin.setSelection(new_pos, new_pos + search_match_len);
+
+      ass.didIncrSearch = true;
+      if(rc == FAIL) {
+        resetViewIncrementalSearch();
+        searchitErrorMessage(null);
+      }
+    } catch(Exception ex) {
+        LOG.log(Level.SEVERE, null, ex);
+    } finally {
+      try {
+        Normal.v_updateVisualState();
+      } finally {
+        Hook.setJViBusy(false);
+      }
+    }
+  }
+
+  ///////////////////////////////////////////////////////////////////////
+  //
+  // do_search
+  //
 
   /**
    * This is the vim interface, except there's 'tm' (yet?).
@@ -297,87 +383,6 @@ end_do_search:
     //   spat0.off = old_off;
 
     return retval;
-  }
-  
-  private static void laterDoIncrementalSearch() {
-    EventQueue.invokeLater(new Runnable() {
-      @Override
-      public void run()
-      {
-        doIncrementalSearch();
-      }
-    });
-  }
-
-  private static class SearchListener implements ChangeListener
-  {
-    @Override
-    public void stateChanged(ChangeEvent e)
-    {
-      laterDoIncrementalSearch();
-    }
-  }
-
-  private static SearchListener isListener;
-
-  private static void startIncrementalSearch() {
-      // funny aborts might leave one...
-      // NEEDSWORK: Might want to use a weak listen as well
-      getSearchCommandEntry().removeChangeListener(isListener);
-      if(isListener == null)
-        isListener = new SearchListener();
-      ass.searchPos = G.curwin.w_cursor.copy(); // NEEDSWORK: REMOVE ME NOW
-      ass.searchTopLine = G.curwin.getVpTopDocumentLine();
-      ass.didIncrSearch = false;
-      getSearchCommandEntry().addChangeListener(isListener);
-  }
-  
-  private static void stopIncrementalSearch(boolean accept) {
-      getSearchCommandEntry().removeChangeListener(isListener);
-
-      G.curwin.clearSelection(); // since it is used by incr search
-      
-      if(!accept)
-        resetViewIncrementalSearch();
-  }
-  
-  private static void resetViewIncrementalSearch() {
-    G.curwin.setVpTopLine(ass.searchTopLine);
-    G.curwin.setCaretPosition(ass.searchPos.getOffset());
-  }
-  
-  private static void doIncrementalSearch() {
-    Hook.setJViBusy(true);
-    try {
-      String pattern = getSearchCommandEntry().getCurrentEntry();
-      
-      if(pattern.isEmpty()) {
-        resetViewIncrementalSearch();
-        return;
-      }
-
-      int rc;
-      rc = do_search(ass.searchPos.copy(), null,
-                     ass.dirc, pattern, ass.searchCount,
-                     SEARCH_KEEP + SEARCH_OPT + SEARCH_NOOF + SEARCH_PEEK);
-      // for incr search, use java selection to show progress
-      int new_pos = G.curwin.w_cursor.getOffset();
-      G.curwin.setSelection(new_pos, new_pos + search_match_len);
-
-      ass.didIncrSearch = true;
-      if(rc == FAIL) {
-        resetViewIncrementalSearch();
-        searchitErrorMessage(null);
-      }
-    } catch(Exception ex) {
-        LOG.log(Level.SEVERE, null, ex);
-    } finally {
-      try {
-        Normal.v_updateVisualState();
-      } finally {
-        Hook.setJViBusy(false);
-      }
-    }
   }
 
   ////////////////////////////////////////////////////////////////
