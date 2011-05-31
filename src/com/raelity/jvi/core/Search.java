@@ -48,7 +48,10 @@ import static com.raelity.jvi.core.Util.*;
  * Searching, regexp and substitution.
  * Everything's static, can only do one thing at a time.
  */
-public class Search {
+public class Search
+{
+  private Search() { }
+
   private static final Logger LOG = Logger.getLogger(Search.class.getName());
 
   ///////////////////////////////////////////////////////////////////////
@@ -56,22 +59,29 @@ public class Search {
   // normal searching like "/" and "?"
   //
   private static ViCmdEntry searchCommandEntry;
-  
-  // Parameters for the current search, they do not change during search.
-  // These are used/needed because the search is split into two parts,
-  // they bridge the parts.
-  private static int searchCount;
-  private static int searchOptions;
-  private static int lastDir = FORWARD; // NEEDSWORK: get rid of this, use spats
-  
-  // state when incremental search started
-  private static ViFPOS searchPos;
-  private static int searchTopLine;
-  private static boolean didIncrSearch;
-  private static boolean setPCMarkAfterIncrSearch;
-  private static boolean incrSearchSucceed;
 
-  private Search() { }
+  /**
+   * Since the search is often two parts, due to command entry widget,
+   * this holds the shared state between the parts.
+   * Additional info for incremental search.
+   */
+  static class ActiveSearchState
+  {
+    private ViFPOS searchPos;
+    private int searchTopLine;
+    private boolean didIncrSearch;
+    private boolean incrSearchActive;
+    private int searchCount;
+    private int searchOptions;
+    private char dirc;
+
+    char dirc() { return dirc; }
+    int searchOptions() { return searchOptions; }
+    ViFPOS searchPos() { return searchPos; }
+    String pattern() { return fetchInputPattern(); }
+  }
+
+  static final ActiveSearchState ass = new ActiveSearchState();
 
   static ViCmdEntry getSearchCommandEntry() {
     if(searchCommandEntry == null) {
@@ -87,7 +97,7 @@ public class Search {
     return searchCommandEntry;
   }
   
-  private static String fetchPattern() {
+  private static String fetchInputPattern() {
       return getSearchCommandEntry().getCommand();
   }
 
@@ -101,16 +111,15 @@ public class Search {
       Scheduler.stopCommandEntry();
       
       if(cmd.charAt(0) == '\n') {
-        if(G.p_is.getBoolean()
-           && didIncrSearch
-           && ! fetchPattern().isEmpty()) {
+        if(ass.incrSearchActive
+           && ass.didIncrSearch
+           && ! fetchInputPattern().isEmpty()) {
           acceptIncr = true;
-          spats[0].off.dir = lastDir == FORWARD ? '/' : '?'; // NEEDSWORK:
         }
       } else
         cancel = true;
       
-      if(G.p_is.getBoolean()) {
+      if(ass.incrSearchActive) {
         stopIncrementalSearch(acceptIncr);
       }
       
@@ -132,62 +141,26 @@ public class Search {
    * Note that inputSearchPattern and doSearch together
    * are like vim's do_search.
    */
-  static void inputSearchPattern(CMDARG cap, int options, int flags) {
+  static void inputSearchPattern(CMDARG cap, int count, int options) {
     String mode = "";
     int cmdchar = cap.cmdchar;
-    if (cmdchar == '/') {
-      mode = "/";
-      lastDir = FORWARD;
-    } else if (cmdchar == '?') {
-      mode = "?";
-      lastDir = BACKWARD;
-    }
-    searchCount = options;
-    searchOptions = flags;
+
+    ass.searchPos = G.curwin.w_cursor.copy();
+    ass.searchCount = count;
+    ass.searchOptions = options;
+    ass.dirc = (char)cmdchar;
+    ass.incrSearchActive = G.p_is.getBoolean();
     
     ViCmdEntry ce = getSearchCommandEntry();
-    if(G.p_is.getBoolean())
+    if(ass.incrSearchActive)
         startIncrementalSearch();
-    Scheduler.startCommandEntry(ce, mode, G.curwin, null);
-  }
-
-  static int getIncrSearchResultCode() {
-      return incrSearchSucceed ? OK : FAIL;
+    Scheduler.startCommandEntry(ce, String.valueOf(ass.dirc), G.curwin, null);
   }
 
   // This is used to grab the pattern after search complete, for redoBuffer.
   // or for use in Search01
   static String last_search_pat() {
     return spats[last_idx].pat;
-  }
-  
-  /** doSearch() should only be called after inputSearchPattern() */
-  static int doSearch() {
-    String pattern = fetchPattern();
-    G.curwin.w_set_curswant = true;
-    ViFPOS pos = G.curwin.w_cursor.copy();
-    int rc = searchit(null, pos, lastDir, pattern,
-                      searchCount,
-                      searchOptions & (SEARCH_KEEP + SEARCH_PEEK + SEARCH_HIS
-                                       + SEARCH_MSG + SEARCH_START
-                                       + (false ? 0 : SEARCH_NOOF)),
-                      RE_LAST, 0);
-    if(rc != FAIL) {
-      spats[0].off.dir = lastDir == FORWARD ? '/' : '?'; // NEEDSWORK:
-      Msg.smsg((lastDir == FORWARD ? "/" : "?") + pattern);
-    }
-    
-    if(rc == FAIL) {
-      return 0;
-    } else {
-      return 1; // NEEDSWORK: not returning 2 ever, so not line mode.
-    }
-    
-    /* ***************************
-    if(rc == FAIL) {
-      Normal.clearopInstance();
-    }
-    ******************************/
   }
 
   /**
@@ -216,12 +189,16 @@ public class Search {
    *
    * return 0 for failure, 1 for found, 2 for found and line offset added
    */
-  static int do_search(OPARG oap, char dirc, String pat, int count, int options)
+  static int do_search(ViFPOS pos,   // not a vim arg
+                       OPARG oap, char dirc, String pat,
+                       int count, int options)
   {
+    if(pos == null)
+      pos = G.curwin.w_cursor.copy(); // start searching from here
+    ViFPOS initialPos = pos.copy();   // use with setpcmark on success (!vim)
+
     int retval = 0; // assume not found
     String searchstr = null;
-
-    ViFPOS pos = G.curwin.w_cursor.copy();
 
     Spat spat0 = spats[0];
 
@@ -244,51 +221,81 @@ public class Search {
     // NEEDSWORK: folding search issue
     // #endif
 
-    searchstr = pat;
-    if(pat == null || pat.isEmpty()) //     || *pat == dirc)
+end_do_search:
     {
-      if(spats[RE_SEARCH].pat == null) {          // no previous pattern
-        pat = spats[RE_SUBST].pat;
-        if(pat == null) {
-          Msg.emsg(Messages.e_noprevre);
-          retval = 0;
-          // goto end_do_search
-          return retval; // NEEDSWORK: goto end_do_search some stuff is missing
+
+      //
+      // Repeat the search when pattern followed by ';', e.g. "/foo/;?bar".
+      //
+      // for (;;)
+      searchstr = pat;
+      if(pat == null || pat.isEmpty()) //     || *pat == dirc)
+      {
+        if(spats[RE_SEARCH].pat == null) {          // no previous pattern
+          pat = spats[RE_SUBST].pat;
+          if(pat == null) {
+            Msg.emsg(Messages.e_noprevre);
+            retval = 0;
+            break end_do_search;
+          }
+          searchstr = pat;
+        } else {
+          // make search_regcomp() use spats[RE_SEARCH].pat
+          searchstr = "";
         }
-        searchstr = pat;
-      } else {
-        // make search_regcomp() use spats[RE_SEARCH].pat
-        searchstr = "";
       }
-    }
 
-    // ..... lots of offset and some SEARCH_ECHO stuff .....
+      // ..... lots of offset and some SEARCH_ECHO stuff .....
 
-    int rc = searchit(null, pos,
-                      dirc == '/' ? FORWARD : BACKWARD,
-                      searchstr,
-                      count,
-                      // spats[0].off.end + // this may be SEARCH_END
-                      options & (SEARCH_KEEP + SEARCH_PEEK + SEARCH_HIS
-                                 + SEARCH_MSG + SEARCH_START
-                                 + (false ? 0 : SEARCH_NOOF)),
-                      RE_LAST, 0);
-    if(rc == FAIL) {
-      retval = 0;
-      // goto end_do_search;
-    } else {
+      int rc = searchit(null, pos,
+                        dirc == '/' ? FORWARD : BACKWARD,
+                        searchstr,
+                        count,
+                        // spats[0].off.end + // this may be SEARCH_END
+                        options & (SEARCH_KEEP + SEARCH_PEEK + SEARCH_HIS
+                                   + SEARCH_MSG + SEARCH_START
+                                   + (false ? 0 : SEARCH_NOOF)),
+                        RE_LAST, 0);
+      if(rc == FAIL) {
+        retval = 0;
+        break end_do_search;
+      }
       // if(spat0.off.end && oap != null)
       //    oap.inclusive = true;  // 'e' includes last character
       retval = 1;  // pattern found
+
+      //
+      // add character and/or line offset
+      //
+      // if (!(options & SEARCH_NOOF) || (pat != NULL && *pat == ';'))
+      //   ...
+      //   retval = 2;
+      //   ...
+      //
+
+      //
+      // The search command can be followed by a ';' to do another search.
+      // For example: "/pat/;/foo/+3;?bar"
+      // This is like doing another search command, except:
+      // - The remembered direction '/' or '?' is from the first search.
+      // - When an error happens the cursor isn't moved at all.
+      // Don't do this when called by get_address() (it handles ';' itself).
+      //
+      // ...
+
+      // end of for(;;) when handling multi-part search
+
+      if((options & SEARCH_MARK) != 0)
+        setpcmark(initialPos);
+
+      G.curwin.w_cursor.set(pos);
+      G.curwin.w_set_curswant = true;
     }
+// end_do_search: TARGET OF GOTO
 
-    if((options & SEARCH_MARK) != 0)
-      setpcmark();
+    // if((options & SEARCH_KEEP) != 0)
+    //   spat0.off = old_off;
 
-    G.curwin.w_cursor.set(pos);
-    G.curwin.w_set_curswant = true;
-
-// end_do_search:
     return retval;
   }
   
@@ -319,12 +326,9 @@ public class Search {
       getSearchCommandEntry().removeChangeListener(isListener);
       if(isListener == null)
         isListener = new SearchListener();
-      searchPos = G.curwin.w_cursor.copy();
-      searchTopLine = G.curwin.getVpTopDocumentLine();
-      setPCMarkAfterIncrSearch = (searchOptions & SEARCH_MARK) != 0;
-      searchOptions &= ~SEARCH_MARK;
-      didIncrSearch = false;
-      incrSearchSucceed = false;
+      ass.searchPos = G.curwin.w_cursor.copy(); // NEEDSWORK: REMOVE ME NOW
+      ass.searchTopLine = G.curwin.getVpTopDocumentLine();
+      ass.didIncrSearch = false;
       getSearchCommandEntry().addChangeListener(isListener);
   }
   
@@ -335,47 +339,44 @@ public class Search {
       
       if(!accept)
         resetViewIncrementalSearch();
-
-      // NEEDSWORK: setpcmark if accept == false ????????
-      if(setPCMarkAfterIncrSearch && incrSearchSucceed) {
-        setpcmark(searchPos);
-      }
   }
   
   private static void resetViewIncrementalSearch() {
-    G.curwin.setVpTopLine(searchTopLine);
-    G.curwin.setCaretPosition(searchPos.getOffset());
+    G.curwin.setVpTopLine(ass.searchTopLine);
+    G.curwin.setCaretPosition(ass.searchPos.getOffset());
   }
   
   private static void doIncrementalSearch() {
+    Hook.setJViBusy(true);
     try {
-      Hook.setJViBusy(true);
       String pattern = getSearchCommandEntry().getCurrentEntry();
       
-      if("".equals(pattern)) {
+      if(pattern.isEmpty()) {
         resetViewIncrementalSearch();
         return;
       }
-      ViFPOS pos = searchPos.copy();
-      incrSearchSucceed = false;
-      int rc = searchit(null, pos, lastDir, pattern,
-                        searchCount, searchOptions,
-                        0, 0);
+
+      int rc;
+      rc = do_search(ass.searchPos.copy(), null,
+                     ass.dirc, pattern, ass.searchCount,
+                     SEARCH_KEEP + SEARCH_OPT + SEARCH_NOOF + SEARCH_PEEK);
       // for incr search, use java selection to show progress
       int new_pos = G.curwin.w_cursor.getOffset();
       G.curwin.setSelection(new_pos, new_pos + search_match_len);
 
-      didIncrSearch = true;
+      ass.didIncrSearch = true;
       if(rc == FAIL) {
         resetViewIncrementalSearch();
         searchitErrorMessage(null);
-      } else
-        incrSearchSucceed = true;
+      }
     } catch(Exception ex) {
         LOG.log(Level.SEVERE, null, ex);
     } finally {
-      Normal.v_updateVisualState();
-      Hook.setJViBusy(false);
+      try {
+        Normal.v_updateVisualState();
+      } finally {
+        Hook.setJViBusy(false);
+      }
     }
   }
 
@@ -1303,9 +1304,6 @@ finished:
     }
     search_match_len = matchend - match;
 
-    if((options & SEARCH_MARK) != 0) {
-      setpcmark();
-    }
     gotoLine(G.curbuf.getLineNumber(pos.getOffset()), 0, true);
     int new_pos = pos.getOffset();
     if(search_match_len == 0) {

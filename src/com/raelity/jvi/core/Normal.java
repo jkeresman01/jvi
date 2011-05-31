@@ -680,8 +680,7 @@ middle_code:
 	  case '#':		    // ? to current identifier or string
 	    if (ca.cmdchar == K_KMULTIPLY)
 	      ca.cmdchar = '*';
-	    if(nv_ident(ca, searchbuff))
-                return;
+	    nv_ident(ca, searchbuff);
 	    break;
 
 	  case 0x1f & (int)('T'):    // backwards in tag stack	// Ctrl
@@ -2470,7 +2469,7 @@ middle_code:
    * @return TRUE for "*" and "#" commands, indicating that the next search
    * should not set the pcmark.
    */
-  static private boolean nv_ident (CMDARG cap, StringBuilder searchp)
+  static private void nv_ident (CMDARG cap, StringBuilder searchp)
                                throws NotSupportedException
   {
     do_xop("nv_ident");
@@ -2511,7 +2510,7 @@ middle_code:
         if (G.VIsual.getLine() != G.curwin.w_cursor.getLine())
         {
           clearopbeep(cap.oap);
-          return fDoingSearch;
+          return;
         }
         if( G.curwin.w_cursor.compareTo(G.VIsual) < 0)
         {
@@ -2528,7 +2527,7 @@ middle_code:
         redraw_curbuf_later(NOT_VALID);    // update the inversion later
       }
       if (checkclearopq(cap.oap))
-        return fDoingSearch;
+        return;
     }
 
     if (ptrSeg == null) {
@@ -2536,19 +2535,12 @@ middle_code:
                               (cmdchar == '*' || cmdchar == '#')
                               ? FIND_IDENT|FIND_STRING : FIND_IDENT)) == null) {
         clearop(cap.oap);
-        return fDoingSearch;
+        return;
       }
       // found something, get the length
       n = mi.getValue();
     }
 
-    /*
-    isman = (STRCMP(p_kp, "man") == 0);
-    isman_s = (STRCMP(p_kp, "man -s") == 0);
-    if (cap.count0 && !(cmdchar == 'K' && (isman || isman_s))
-        && !(cmdchar == '*' || cmdchar == '#'))
-      stuffnumReadbuff(cap.count0);
-    */
     switch (cmdchar)
     {
       case '*':
@@ -2575,40 +2567,10 @@ middle_code:
         G.curwin.w_cursor.set(G.curwin.w_cursor.getLine(),
                               ptrSeg.getIndex() - ptrSeg.getBeginIndex());
 	G.curwin.jumpDefinition(TextUtil.toString(ptrSeg, ptrSeg.getIndex(), n));
-        return fDoingSearch;
+        return;
 
-      /*
-      case 'K':
-        if (*p_kp == NUL)
-          stuffReadbuff((char_u *)":he ");
-        else
-        {
-          stuffReadbuff((char_u *)":! ");
-          if (!cap.count0 && isman_s)
-            stuffReadbuff((char_u *)"man");
-          else
-            stuffReadbuff(p_kp);
-          stuffReadbuff((char_u *)" ");
-          if (cap.count0 && (isman || isman_s))
-          {
-            stuffnumReadbuff(cap.count0);
-            stuffReadbuff((char_u *)" ");
-          }
-        }
-        break;
-
-      case ']':
-        stuffReadbuff((char_u *)":ts ");
-        break;
-
-      default:
-        if (curbuf.b_help)
-          stuffReadbuff((char_u *)":he ");
-        else if (g_cmd)
-          stuffReadbuff((char_u *)":tj ");
-        else
-          stuffReadbuff((char_u *)":ta ");
-      */
+      //case 'K':
+      //case ']':
       default:
         notImp("nv_ident subset");
     }
@@ -2616,22 +2578,6 @@ middle_code:
     //
     // Now grab the chars in the identifier
     ///
-    /*
-    if (cmdchar == '*' || cmdchar == '#')
-      aux_offset = (char_u *)(p_magic ? "/?.*~[^$\\" : "/?^$\\");
-    else
-      aux_offset = escape_chars;
-    while (n--)
-    {
-      // put a backslash before \ and some others
-      if (vim_strchr(aux_offset, *offset) != NULL)
-        stuffcharReadbuff('\\');
-      // don't interpret the characters as edit commands
-      else if (*offset < ' ' || *offset > '~')
-        stuffcharReadbuff(Ctrl('V'));
-      stuffcharReadbuff(*offset++);
-    }
-    */
     String escapeMe = "/?.*~[^$\\";
     while(n-- != 0) {
       char c = ptrSeg.current();
@@ -2654,16 +2600,15 @@ middle_code:
         sb.append("\\>");
 
       // use SEARCH_HIS rather than vim's calling add_to_history directly
-      normal_search(cap, cmdchar == '*' ? '/' : '?', sb.toString(), SEARCH_HIS);
-
-      //fDoingSearch = true;
+      normal_search(null, cap, cmdchar == '*' ? '/' : '?',
+                    sb.toString(), SEARCH_HIS);
     }
     else {
       //do_cmdline_cmd(buf); ///// probably stuffbuf append
       System.err.println("do_cmdline_cmd(buf)");
       assert false;
     }
-    return fDoingSearch;
+    return;
   }
 
   /**
@@ -2887,91 +2832,25 @@ middle_code:
                        (dont_set_mark ? 0 : SEARCH_MARK)
                         | normal_search_standard_options);
   }
-
-  private static final int normal_search_standard_options
-          = SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG;
-  
   static private void nv_search_finish(CMDARG cap, StringBuilder searchp) {
     do_xop("nv_search_finish");
-    assert cap.nchar == K_X_INCR_SEARCH_DONE
-           || cap.nchar == K_X_SEARCH_CANCEL
-           || cap.nchar == K_X_SEARCH_FINISH;
-    
+                        assert cap.nchar == K_X_INCR_SEARCH_DONE
+                               || cap.nchar == K_X_SEARCH_CANCEL
+                               || cap.nchar == K_X_SEARCH_FINISH;
+
     if(cap.nchar == K_X_SEARCH_CANCEL) {
       Msg.clearMsg();
       clearop(oap);
       return;
     }
-    
-    //OPARG oap = cap.oap;
-    assert oap == cap.oap;
-    int i;
-    
-    oap.motion_type = MCHAR;
-    oap.inclusive = false;
-    G.curwin.w_set_curswant = true;
-    
-    if(cap.nchar == K_X_INCR_SEARCH_DONE)
-      i = getIncrSearchResultCode();
-    else if(cap.nchar == K_X_SEARCH_FINISH)
-      //
-      // REPLACE WITH normal_search (or do_search)
-      //
-      i = doSearch();
-    else
-      i = 0;
 
-    searchp.setLength(0);
-    searchp.append(last_search_pat());
-                        
-    if(i == 0) {
-      clearop(oap);
-    } else if(i == 2) {
-      oap.motion_type = MLINE;
-    }
-    
-    Options.newSearch();
+    normal_search(ass.searchPos(), cap,
+                  ass.dirc(), ass.pattern(), ass.searchOptions());
 
     // now that we've used/abused this field, clear it so prep_redo happy
     cap.nchar = 0;
-
     return;
-
-    /* *********************************************************
-    OPARG	*oap = cap.oap;
-    int		i;
-
-    if (cap.cmdchar == '?' && cap.oap.op_type == OP_ROT13)
-    {
-      // Translate "g??" to "g?g?"
-      cap.cmdchar = 'g';
-      cap.nchar = '?';
-      nv_operator(cap);
-      return;
-    }
-
-    if ((*searchp = getcmdline(cap.cmdchar, cap.count1, 0)) == NULL)
-    {
-      clearop(oap);
-      return;
-    }
-    oap.motion_type = MCHAR;
-    oap.inclusive = FALSE;
-    curwin.w_set_curswant = TRUE;
-
-    i = do_search(oap, cap.cmdchar, *searchp, cap.count1,
-		  (dont_set_mark ? 0 : SEARCH_MARK) |
-		  SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG);
-    if (i == 0)
-      clearop(oap);
-    else if (i == 2)
-      oap.motion_type = MLINE;
-
-    // "/$" will put the cursor after the end of the line, may need to
-    // correct that here
-    adjust_cursor();
-    ******************************************************/
-    }
+  }
 
   /**
    * Handle "N" and "n" commands.
@@ -2980,43 +2859,46 @@ middle_code:
    */
   static private  void	nv_next (CMDARG cap, int options) {
     do_xop("nv_next");
-    normal_search(cap, '\000', null, SEARCH_MARK | options);
+    normal_search(null, cap, '\000', null, SEARCH_MARK | options);
   }
+
+  private static final int normal_search_standard_options
+          = SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG;
 
   /**
    * Search for "pat" in direction "dir" ('/' or '?', 0 for repeat).
    * Uses only cap->count1 and cap->oap from "cap".
    */
   static private void
-  normal_search(CMDARG cap, char dir, String pat,
+  normal_search(ViFPOS pos,     // not a vim arg, null means from cursor
+                CMDARG cap, char dir, String pat,
                 int opt		// extra flags for do_search()
   ) {
-      int		i;
-
       cap.oap.motion_type = MCHAR;
       cap.oap.inclusive = false;
       // cap.oap.use_reg_one = true;
       G.curwin.w_set_curswant = true;
 
-      i = do_search(cap.oap, dir, pat, cap.count1,
-                    opt | normal_search_standard_options);
+      int i = do_search(pos, cap.oap, dir, pat, cap.count1,
+                        opt | normal_search_standard_options);
+
       if (i == 0)
           clearop(cap.oap);
       else
       {
           if (i == 2)
               cap.oap.motion_type = MLINE;
-  // #ifdef FEAT_FOLDING
-  // 	if (cap->oap->op_type == OP_NOP && (fdo_flags & FDO_SEARCH) && KeyTyped)
-  // 	    foldOpenCursor();
-  // #endif
+          // #ifdef FEAT_FOLDING
+          // if (cap->oap->op_type == OP_NOP
+          //            && (fdo_flags & FDO_SEARCH) && KeyTyped)
+          // 	    foldOpenCursor();
+          // #endif
           Options.newSearch();
       }
-  /*
+
       // "/$" will put the cursor after the end of the line, may need to
       // correct that here
-      check_cursor();
-  */
+      //check_cursor();
   }
 
   static private void nv_csearch(CMDARG cap, int dir, boolean type) {
@@ -3124,7 +3006,7 @@ nv_brackets(CMDARG cap, int dir)
 //      *			search	     list	    jump
 //      *		      fwd   bwd    fwd	 bwd	 fwd	bwd
 //      * identifier     "]i"  "[i"   "]I"  "[I"	"]^I"  "[^I"
-//      * define	      "]d"  "[d"   "]D"  "[D"	"]^D"  "[^D"
+//      * define	 "]d"  "[d"   "]D"  "[D"	"]^D"  "[^D"
 //      */
 //     if (vim_strchr((char_u *)
 // #ifdef EBCDIC
