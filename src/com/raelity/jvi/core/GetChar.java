@@ -19,6 +19,8 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.core.lib.KeyDefs;
+import java.util.logging.Logger;
 import com.raelity.jvi.core.lib.BufferQueue;
 import com.raelity.jvi.core.lib.Mappings;
 import com.raelity.jvi.core.lib.TypeBufMultiCharMapping;
@@ -264,33 +266,42 @@ public class GetChar {
     private static void pumpAllChars(boolean collectingGroupUndo) {
         // NEEDSWORK: pumpVi: check for interupt?
 
-        while(true) {
-            if(!collectingGroupUndo
-                    && (!typebuf.isEmpty() && isInsertMode()
-                        || handle_redo)) {
-                G.dbgUndo.println("pumpAllChars: switching to group undo");
-                startPump(true);
-                return;
+        try {
+
+            while(true) {
+                if(!collectingGroupUndo
+                        && (!typebuf.isEmpty() && isInsertMode()
+                            || handle_redo)) {
+                    G.dbgUndo.println("pumpAllChars: switching to group undo");
+                    startPump(true);
+                    return;
+                }
+                if(runEventQueue > 0 && runEventQueue(collectingGroupUndo))
+                    return;
+                if(old_char != NUL) {
+                    char c = old_char;
+                    old_char = NUL;
+                    pumpChar(c);
+                    continue;
+                }
+                if(stuffbuff.hasNext()) {
+                    pumpChar(stuffbuff.removeFirst());
+                    continue;
+                }
+                char c = typebuf.getChar();
+                if( c != NO_CHAR) { //if(typebuf.hasNext()) {
+                    pumpChar(c);
+                } else {
+                    break;
+                }
             }
-            if(runEventQueue > 0 && runEventQueue(collectingGroupUndo))
-                return;
-            if(old_char != NUL) {
-                char c = old_char;
-                old_char = NUL;
-                pumpChar(c);
-                continue;
-            }
-            if(stuffbuff.hasNext()) {
-                pumpChar(stuffbuff.removeFirst());
-                continue;
-            }
-            char c = typebuf.getChar();
-            if( c != NO_CHAR) { //if(typebuf.hasNext()) {
-                pumpChar(c);
-            } else {
-                break;
-            }
+        } catch(Exception ex) {
+            vim_beep();
+            Normal.resetCommand(true);
+            Logger.getLogger(GetChar.class.getName()).
+                    log(Level.SEVERE, null, ex);
         }
+
     }
 
     private static void pumpChar(char c) {

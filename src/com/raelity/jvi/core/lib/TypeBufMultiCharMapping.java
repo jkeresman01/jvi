@@ -139,6 +139,7 @@ public final class TypeBufMultiCharMapping {
         //            For example, pass in a char array
         //
         if(length() + str.length() > MAXTYPEBUFLEN) {
+            vim_beep();
             Msg.emsg(Messages.e_toocompl); // also calls flushbuff
             //setcursor();
             Logger.getLogger(GetChar.class.getName()).
@@ -259,12 +260,16 @@ public final class TypeBufMultiCharMapping {
                 Mapping mapping = mappings.getMapping(peek, state, fPartialMatch);
                 if(mapping != null) {
                     if(++loops > G.p_mmd()) {
+                        vim_beep();
                         Msg.emsg("recursive mapping");
+                        needsRemove = false;
                         c = NO_CHAR;
                         break;
                     }
                     if(nMappings++ > G.p_mmd2()) {
-                        Msg.emsg("internal map-cmd error, file bug report");
+                        vim_beep();
+                        Msg.emsg("map-cmd error, probably recursive mapping");
+                        needsRemove = false;
                         c = NO_CHAR;
                         break;
                     }
@@ -348,7 +353,22 @@ public final class TypeBufMultiCharMapping {
     @Override
     public String toString()
     {
-        return buf.toString();
+        Iterator<Integer> i = buf.iterator();
+	if (! i.hasNext())
+	    return "[]";
+
+	StringBuilder sb = new StringBuilder();
+	sb.append('[');
+	for (;;) {
+            Integer data = i.next();
+            if(isNoremap(data))
+                sb.append('*');
+
+	    sb.append((char)data.intValue());
+	    if (! i.hasNext())
+		return sb.append(']').toString();
+	    sb.append(", ");
+	}
     }
 
 }
