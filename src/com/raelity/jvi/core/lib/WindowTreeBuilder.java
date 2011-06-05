@@ -241,8 +241,9 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
     }
 
     @Override
-    public Component getParentSplitter(ViAppView av)
+    public SplitterNode getParentSplitter(ViAppView av)
     {
+        initTree();
         Node currentNode = findNode(av);
         if(currentNode == null)
             return null;
@@ -250,7 +251,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         if(n == null)
             return null;
         assert n.isSplitter();
-        return n.getPeer();
+        return new MySplitterNode(n);
     }
 
     private Node findNode(final ViAppView targetAv)
@@ -655,6 +656,31 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         boolean finished() // to signal early termination
         {
             return finished;
+        }
+    }
+
+    /**
+     * A splitter node packaged for public consumption.
+     */
+    private class MySplitterNode implements SplitterNode
+    {
+        Node node;
+
+        public MySplitterNode(Node node)
+        {
+            this.node = node;
+        }
+
+        @Override
+        public Component getComponent()
+        {
+            return node.getPeer();
+        }
+
+        @Override
+        public Orientation getOrientation()
+        {
+            return node.getOrientation();
         }
     }
 

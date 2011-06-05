@@ -25,6 +25,8 @@ import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViTextView.FOLDOP;
+import com.raelity.jvi.ViTextView.Orientation;
+import com.raelity.jvi.ViTextView.SIZOP;
 import com.raelity.jvi.ViWindowNavigator;
 import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.manager.ViManager;
@@ -561,6 +563,35 @@ public class Misc01
     {
         boolean ok = true;
         switch (nchar) {
+            case '=':
+                win_size(SIZOP.SAME, null, 0);
+                break;
+            case '-':
+                win_size(SIZOP.ADJUST, Orientation.UP_DOWN,
+                         Prenum == 0 ? -1 : Prenum);
+                break;
+            case '+':
+                win_size(SIZOP.ADJUST, Orientation.UP_DOWN,
+                         Prenum == 0 ? 1 : Prenum);
+                break;
+            case '_':
+            case '_' & 0x1f:            // Ctrl
+                win_size(SIZOP.SET, Orientation.UP_DOWN,
+                         Prenum == 0 ? 10000 : Prenum);
+                break;
+            case '<':
+                win_size(SIZOP.ADJUST, Orientation.LEFT_RIGHT,
+                         Prenum == 0 ? -1 : Prenum);
+                break;
+            case '>':
+                win_size(SIZOP.ADJUST, Orientation.LEFT_RIGHT,
+                         Prenum == 0 ? 1 : Prenum);
+                break;
+            case '|':
+                win_size(SIZOP.SET, Orientation.LEFT_RIGHT,
+                         Prenum == 0 ? 10000 : Prenum);
+                break;
+
             // split current window in two parts
             case 'S':
             case 's':
@@ -749,6 +780,11 @@ public class Misc01
     private static void win_move(Direction direction, int n)
     {
         G.curwin.win_move(direction, n);
+    }
+
+    private static void win_size(SIZOP op, Orientation o, int n)
+    {
+        G.curwin.win_size(op, o, n);
     }
 
     private static void win_clone()

@@ -117,6 +117,9 @@ public interface ViTextView extends ViOptionBag {
 
   public enum Orientation { LEFT_RIGHT, UP_DOWN }
 
+  /** Used in conjunction with Orientation. */
+  public enum SIZOP { SET, ADJUST, SAME }
+
   /**
    * NOTE: this works only once.
    * @return create the ViFPOS that corresponds to the screens caret.
@@ -459,6 +462,14 @@ public interface ViTextView extends ViOptionBag {
    * This could be first step in ^W^S type behavior.
    */
   public void win_clone();
+
+  /**
+   * Change the size of a window.
+   * @param op how to change size, ADJUST incr/decr by n
+   * @param orientation indicates changing number of rows or columns.
+   * @param n set or adjust count, not used with SAME
+   */
+  public void win_size(SIZOP op, Orientation orientation, int n);
 
   /** Close this window. Does not close last view.
    * @param freeBuf true if the related buffer may be freed

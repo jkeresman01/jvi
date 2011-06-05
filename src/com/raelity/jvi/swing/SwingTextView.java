@@ -1107,6 +1107,12 @@ public class SwingTextView extends TextView
         Msg.emsg("win_clone not implemented");
     }
 
+    @Override
+    public void win_size(SIZOP op, Orientation orientation, int n)
+    {
+        Msg.emsg("win_size not implemented");
+    }
+
 
     /** Close this window
      * @param freeBuf true if the related buffer may be freed
@@ -1287,6 +1293,9 @@ public class SwingTextView extends TextView
     // private int fontHeight;
     // private Rectangle rect0;
 
+    /**
+     * Number of view lines that include the two rect.
+     */
     public int countViewLines(Rectangle2D r1, Rectangle2D r2)
     {
           double yDiff = r1.getCenterY() - r2.getCenterY();

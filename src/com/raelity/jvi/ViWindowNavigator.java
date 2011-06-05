@@ -20,6 +20,7 @@
 package com.raelity.jvi;
 
 import com.raelity.jvi.ViTextView.Direction;
+import com.raelity.jvi.ViTextView.Orientation;
 import java.awt.Component;
 import java.util.List;
 
@@ -56,6 +57,11 @@ public interface ViWindowNavigator
 
     public ViAppView getTarget(Direction dir, ViAppView fromAv, int n);
 
-    public Component getParentSplitter(ViAppView av);
+    public SplitterNode getParentSplitter(ViAppView av);
+
+    public interface SplitterNode {
+        Component getComponent();
+        Orientation getOrientation();
+    }
 
 }
