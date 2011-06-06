@@ -251,7 +251,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         if(n == null)
             return null;
         assert n.isSplitter();
-        return new MySplitterNode(n);
+        return new MySplitterNode(n, n.getChildren().indexOf(currentNode));
     }
 
     private Node findNode(final ViAppView targetAv)
@@ -665,16 +665,30 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
     private class MySplitterNode implements SplitterNode
     {
         Node node;
+        int targetIndex;
 
-        public MySplitterNode(Node node)
+        public MySplitterNode(Node node, int targetIndex)
         {
             this.node = node;
+            this.targetIndex = targetIndex;
         }
 
         @Override
         public Component getComponent()
         {
             return node.getPeer();
+        }
+
+        @Override
+        public int getChildCount()
+        {
+            return node.getChildren().size();
+        }
+
+        @Override
+        public int getTargetIndex()
+        {
+            return targetIndex;
         }
 
         @Override

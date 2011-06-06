@@ -60,6 +60,8 @@ public interface ViWindowNavigator
     public SplitterNode getParentSplitter(ViAppView av);
 
     public interface SplitterNode {
+        int getTargetIndex();
+        int getChildCount();
         Component getComponent();
         Orientation getOrientation();
     }
