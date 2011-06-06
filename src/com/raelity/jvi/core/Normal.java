@@ -2158,7 +2158,10 @@ middle_code:
   static void push_add_to_showcmd(String s) {
     push_showcmd();
     // NEEDSWORK: proper display of virtual chars
-    showcmd_buf.append(s);
+    for(int i = 0; i < s.length(); i++) {
+      char c = s.charAt(i);
+      showcmd_buf.append(transchar(c));
+    }
     display_showcmd();
   }
 

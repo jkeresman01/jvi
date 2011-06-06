@@ -568,7 +568,7 @@ public class Misc01
                 break;
             case '-':
                 win_size(SIZOP.ADJUST, Orientation.UP_DOWN,
-                         Prenum == 0 ? -1 : Prenum);
+                         Prenum == 0 ? -1 : -Prenum);
                 break;
             case '+':
                 win_size(SIZOP.ADJUST, Orientation.UP_DOWN,
@@ -581,7 +581,7 @@ public class Misc01
                 break;
             case '<':
                 win_size(SIZOP.ADJUST, Orientation.LEFT_RIGHT,
-                         Prenum == 0 ? -1 : Prenum);
+                         Prenum == 0 ? -1 : -Prenum);
                 break;
             case '>':
                 win_size(SIZOP.ADJUST, Orientation.LEFT_RIGHT,
