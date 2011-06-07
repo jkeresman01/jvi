@@ -154,6 +154,10 @@ public class G
     public static StringOption p_sel; // 'selection'
     public static StringOption p_slm; // 'selectionmode'
 
+    public static BooleanOption p_ea; // 'equalalways'
+    public static BooleanOption p_sb; // 'splitbelow'
+    public static BooleanOption p_spr; // 'splitright'
+
     public static StringOption p_ep; // 'equalprg'
     public static StringOption p_fp; // formatprg
     static String p_cpo = "aABceFs"; // cpoptions

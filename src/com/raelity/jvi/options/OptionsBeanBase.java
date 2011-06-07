@@ -393,6 +393,30 @@ implements Options.EditControl {
         return ViManager.getReleaseString();
     }
 
+    public void setViEqualAlways(boolean arg)  throws PropertyVetoException {
+        put(Options.equalAlways, arg);
+    }
+
+    public boolean getViEqualAlways() {
+	return getboolean(Options.equalAlways);
+    }
+
+    public void setViSplitBelow(boolean arg)  throws PropertyVetoException {
+        put(Options.splitBelow, arg);
+    }
+
+    public boolean getViSplitBelow() {
+	return getboolean(Options.splitBelow);
+    }
+
+    public void setViSplitRight(boolean arg)  throws PropertyVetoException {
+        put(Options.splitRight, arg);
+    }
+
+    public boolean getViSplitRight() {
+	return getboolean(Options.splitRight);
+    }
+
     public void setViTimeout(boolean arg)  throws PropertyVetoException {
         put(Options.timeout, arg);
     }

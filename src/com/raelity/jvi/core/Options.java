@@ -172,6 +172,9 @@ public final class Options {
   public static final String scroll = "viScroll";
   public static final String timeout = "viTimeout";
   public static final String timeoutlen = "viTimeoutLen";
+  public static final String equalAlways = "viEqualAlways";
+  public static final String splitBelow = "viSplitBelow";
+  public static final String splitRight = "viSplitRight";
 
   public static final String nrFormats = "viNrFormats";
   public static final String matchPairs = "viMatchPairs";
@@ -536,6 +539,21 @@ public final class Options {
     OptUtil.setupOptionDesc(Category.GENERAL, timeoutlen, "'timeoutlen' 'tm'",
           "The time in milliseconds that is waited for a mapped"
             + " key sequence to complete.");
+
+    G.p_ea = OptUtil.createBooleanOption(equalAlways, true);
+    OptUtil.setupOptionDesc(Category.GENERAL, equalAlways, "'equalalways' 'ea'",
+        "When on, all the windows are automatically made the same size after"
+	+ " splitting or closing a window.");
+
+    G.p_sb = OptUtil.createBooleanOption(splitBelow, false);
+    OptUtil.setupOptionDesc(Category.GENERAL, splitBelow, "'splitbelow' 'sb'",
+	"When on, splitting a window will put the new window below the current"
+	+ " one.");
+
+    G.p_spr = OptUtil.createBooleanOption(splitRight, false);
+    OptUtil.setupOptionDesc(Category.GENERAL, splitRight, "'splitright' 'spr'",
+	"When on, splitting a window will put the new window right of the"
+	+ " current one.");
 
     /////////////////////////////////////////////////////////////////////
     //
