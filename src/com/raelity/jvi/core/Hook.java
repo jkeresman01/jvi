@@ -102,9 +102,9 @@ public class Hook
         Normal.resetCommand(flush);
     }
 
-    public void requestRunEventQueue(int nLoop)
+    public void requestCharBreakPauseRunEventQueue(int nLoop)
     {
-        GetChar.requestRunEventQueue(nLoop);
+        GetChar.requestCharBreakPauseRunEventQueue(nLoop);
     }
 
     //////////////////////////////////////////////////////////////////////

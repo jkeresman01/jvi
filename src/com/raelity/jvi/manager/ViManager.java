@@ -81,7 +81,7 @@ public class ViManager
     // conventionally: 1.2.3            module-rev 1.2.39
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
-    public static final jViVersion version = new jViVersion("1.4.2.x4");
+    public static final jViVersion version = new jViVersion("1.4.2.x4.2");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -679,9 +679,25 @@ public class ViManager
      * This will be ignored if certain conditions are not met,
      * see GetChar.requestRunEventQueue for details.
      */
-    public static void requestRunEventQueue(int nLoop)
+    public static void requestCharBreakPauseRunEventQueue(int nLoop)
     {
-        core.requestRunEventQueue(nLoop);
+        core.requestCharBreakPauseRunEventQueue(nLoop);
+    }
+
+    public static void nInvokeLater(int nPause, final Runnable runnable)
+    {
+        if(nPause <= 0) {
+            runnable.run();
+        } else {
+            final int decr = nPause - 1;
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run()
+                {
+                    nInvokeLater(decr, runnable);
+                }
+            });
+        }
     }
     
     // NEEDSWORK: add another parameter flag about how to handle throw?

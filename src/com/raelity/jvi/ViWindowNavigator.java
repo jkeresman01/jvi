@@ -62,6 +62,8 @@ public interface ViWindowNavigator
     public interface SplitterNode {
         int getTargetIndex();
         int getChildCount();
+        /** children are either splitters or editors */
+        Component[] getChildren();
         Component getComponent();
         Orientation getOrientation();
     }

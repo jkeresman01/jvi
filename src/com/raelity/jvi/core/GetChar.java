@@ -201,7 +201,7 @@ public class GetChar {
     // NEEDSWORK: INPUT MODE FROM MACRO ????????
 
     private static int runEventQueue;
-    static void requestRunEventQueue(int nLoop)
+    static void requestCharBreakPauseRunEventQueue(int nLoop)
     {
         runEventQueue = nLoop;
     }

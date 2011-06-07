@@ -662,7 +662,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
     /**
      * A splitter node packaged for public consumption.
      */
-    private class MySplitterNode implements SplitterNode
+    private static class MySplitterNode implements SplitterNode
     {
         Node node;
         int targetIndex;
@@ -677,6 +677,16 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         public Component getComponent()
         {
             return node.getPeer();
+        }
+
+        @Override
+        public Component[] getChildren()
+        {
+            Component[] children = new Component[getChildCount()];
+            for(int i = 0; i < children.length; i++) {
+                children[i] = node.getChildren().get(i).getPeer();
+            }
+            return children;
         }
 
         @Override
