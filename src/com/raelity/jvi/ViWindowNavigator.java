@@ -59,6 +59,21 @@ public interface ViWindowNavigator
 
     public SplitterNode getParentSplitter(ViAppView av);
 
+    /**
+     * If the parent splitter is not the expected orientation or there is
+     * no parent splitter, then return a dummy splitter that is suitable
+     * for calculating sizes in the specified orientation.
+     */
+    public SplitterNode getParentSplitter(ViAppView av, Orientation orientation);
+
+    /**
+     * The root splitter should only be used to calculate
+     * target weight.
+     * <p/>
+     * The children should not be used (at least not yet)
+     */
+    public SplitterNode getRootSplitter(ViAppView av, Orientation orientation);
+
     public interface SplitterNode {
         int getTargetIndex();
         int getChildCount();

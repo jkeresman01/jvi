@@ -28,6 +28,8 @@ import com.raelity.jvi.ViTextView.Direction;
 import com.raelity.jvi.ViTextView.Orientation;
 import com.raelity.jvi.ViWindowNavigator;
 import com.raelity.jvi.core.ColonCommands;
+import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
+import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.core.TextView;
 import com.raelity.jvi.manager.ViManager;
 import java.awt.Component;
@@ -35,7 +37,6 @@ import java.awt.Container;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -241,6 +242,20 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
     }
 
     @Override
+    public SplitterNode getParentSplitter(ViAppView av, Orientation orientation)
+    {
+        SplitterNode sn = getParentSplitter(av);
+        if(sn == null || sn.getOrientation() != orientation) {
+            // construct a splitter node that looks like one child
+            Node currentNode = findNode(av);
+            if(currentNode == null)
+                return null;
+            sn = new DummySplitterNode(currentNode.getPeer(), orientation);
+        }
+        return sn;
+    }
+
+    @Override
     public SplitterNode getParentSplitter(ViAppView av)
     {
         initTree();
@@ -252,6 +267,32 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
             return null;
         assert n.isSplitter();
         return new MySplitterNode(n, n.getChildren().indexOf(currentNode));
+    }
+
+    /** this is only useful, for "outer" */
+    @Override
+    public SplitterNode getRootSplitter(ViAppView av, Orientation orientation)
+    {
+        initTree();
+        Node node = findNode(av);
+        if(node == null)
+            return null;
+        Node rootNode = node;
+        int targetIndex = 0;
+        Node parentNode;
+        while((parentNode = rootNode.getParent()) != null) {
+            targetIndex = parentNode.getChildren().indexOf(rootNode);
+            rootNode = parentNode;
+        }
+        SplitterNode sp;
+        if(rootNode.getOrientation() != orientation) {
+            // Notice the rootNode is both child and the container
+            sp = new DummySplitterNode(rootNode.getPeer(), orientation,
+                                       rootNode.getPeer());
+        } else {
+            sp = new MySplitterNode(rootNode, targetIndex);
+        }
+        return sp;
     }
 
     private Node findNode(final ViAppView targetAv)
@@ -708,6 +749,63 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         }
     }
 
+    /** typically this should only be used for an initial weight calculation */
+    private class DummySplitterNode implements SplitterNode
+    {
+        private Component child;
+        private Orientation orientation;
+        private Component splitterComponent;
+
+        DummySplitterNode(Component child, Orientation orientation)
+        {
+            this(child, orientation, getDummySplitterComponent(child));
+        }
+
+        public DummySplitterNode(Component child, Orientation orientation,
+                                 Component splitterComponent)
+        {
+            this.child = child;
+            this.orientation = orientation;
+            this.splitterComponent = splitterComponent;
+        }
+
+        @Override
+        public int getTargetIndex()
+        {
+            return 0;
+        }
+
+        @Override
+        public int getChildCount()
+        {
+            return 1;
+        }
+
+        @Override
+        public Component[] getChildren()
+        {
+            return new Component[] { child };
+        }
+
+        @Override
+        public Component getComponent()
+        {
+            return splitterComponent;
+        }
+
+        @Override
+        public Orientation getOrientation()
+        {
+            return orientation;
+        }
+    }
+
+    /** look for a container for the component */
+    protected Component getDummySplitterComponent(Component c)
+    {
+        return c;
+    }
+
     protected class Node
     {
         private boolean isEditor;
@@ -898,7 +996,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         return dir == Direction.LEFT || dir == Direction.UP ? true : false;
     }
 
-    protected void dumpWinAction(ActionEvent e, StringBuilder sb)
+    protected void dumpWinAction(ActionEvent e, StringBuilder sb, boolean verbose)
     {
         if(sb == null) {
             sb = new StringBuilder();
@@ -912,13 +1010,15 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         vios.close();
     }
 
-    private static class DumpWin implements ActionListener {
+    private static class DumpWin extends AbstractColonAction {
         @Override
         public void actionPerformed(ActionEvent e)
         {
+            ColonEvent cev = (ColonEvent)e;
+
             WindowTreeBuilder nav = (WindowTreeBuilder)
                     ViManager.getFactory().getWindowNavigator();
-            nav.dumpWinAction(e, null);
+            nav.dumpWinAction(e, null, cev.getNArg() != 0);
         }
     }
 }

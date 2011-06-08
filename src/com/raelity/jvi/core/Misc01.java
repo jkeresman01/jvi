@@ -596,12 +596,14 @@ public class Misc01
             case 'S':
             case 's':
             case 'S' & 0x1f:          // Ctrl
-                win_split(Direction.UP, Prenum);
+                win_split(G.p_sb.getBoolean() ? Direction.DOWN : Direction.UP,
+                          Prenum);
                 break;
 
             case 'v':
             case 'V' & 0x1f:          // Ctrl
-                win_split(Direction.LEFT, Prenum);
+                win_split(G.p_spr.getBoolean() ? Direction.RIGHT : Direction.LEFT,
+                          Prenum);
                 break;
 
             // close current window
