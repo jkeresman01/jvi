@@ -1687,7 +1687,7 @@ public class SwingTextView extends TextView
             if (offset < 0) {
                 return -1;
             }
-            if(offset >= getBuffer().getLength()) {
+            if(offset >= getBuffer().getLength() && offset != 0) {
                 offset = getBuffer().getLength() - 1;
             }
 
