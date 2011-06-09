@@ -425,6 +425,8 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         Component c = n.getPeer();
         TextView tv = (TextView)ViManager.getFactory().getTextView(c);
         Rectangle r = round(tv.getVpLocation(tv.w_cursor));
+        if(c.getParent() instanceof JViewport)
+            c = c.getParent();
         r = SwingUtilities.convertRectangle(c, r, null);
         return getProjectedRectangle(orientation, r);
     }
