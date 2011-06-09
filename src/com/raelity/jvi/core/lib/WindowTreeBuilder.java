@@ -865,11 +865,19 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         @Override
         public String toString()
         {
-            String s = peer.getClass().getSimpleName();
-            return isEditor() ? "editor: " + s
-                              : "split:  " + s
-                                + (getOrientation() == Orientation.LEFT_RIGHT
+            StringBuilder sb = new StringBuilder(40);
+            sb.append(isEditor() ? "editor: " : "split: ");
+            sb.append(peer.getClass().getSimpleName());
+
+            Rectangle r = getNodeRectangle(this);
+            sb.append(" [").append(r.x)
+              .append(',').append(r.y)
+              .append(',').append(r.width)
+              .append(',').append(r.height).append(']');
+            if(!isEditor())
+                sb.append(getOrientation() == Orientation.LEFT_RIGHT
                                     ? " LeftRight" : " TopBottom");
+            return sb.toString();
         }
 
     }
