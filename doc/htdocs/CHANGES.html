@@ -67,12 +67,10 @@
 
 <h2>jVi-1.4 Release, NB7.0 only</h2>
 
-<b>in repository - 2011/05/30 </b>
+<b>Version 1.4.2.x5 early access - 2011/06/10 </b>
 <p>
-  <span class="note">Note: </span> the source includes a two module patch
-  to netbeans for setting window size as part of split/move and for
-  window resizing commands. This patch, in the module suite "patch-windows",
-  can be separately compiled and installed.
+  The early access update center is at
+  http://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-7.0/eaUC/catalog.xml.gz
 </p>
 <dl>
   <dt>jVi Core</dt>
@@ -83,7 +81,7 @@
       </li>
       <li>
         <a href="https://sourceforge.net/tracker/?func=detail&amp;aid=3304144&amp;group_id=3653&amp;atid=353653">
-        [#3304144] smartcase support</a>
+        [#3304144] smartcase option support</a>
       </li>
       <li>With <span class="tt">:g</span> command,
         handle vi/vim undocumented pattern selection feature.
@@ -100,21 +98,38 @@
       <li>
         (changed from 1.4.1 to really do a split)
         <br/>The split commands, such as
-        <span class="tt">Ctrl-W_s</span>
-        and <span class="tt">Ctrl-W_v</span>,
-        split the current editor.
-        The command accepts a count to specify the size of the new area.
-        To make a copy of an editor in a neighboring area
-        (similar to 1.4.1 behavior),
-        do something like
-        <span class="tt">Ctrl-W_Ctrl-T Ctrl-W_L</span>;
-        I personally map <span class="tt">Ctrl-W_&lt;Left&gt;</span> to that.
+        <span class="tt">Ctrl-W s</span>
+        and <span class="tt">Ctrl-W v</span>,
+        split the current editor;
+        The command accepts a count to specify the size of the new editor.
+        <br/><br/>To put a copy of an editor in a neighboring area
+        (similar to 1.4.1 behavior), create a clone and move it.
+        For example, to make a clone/copy of an editor in an existing
+        area to the left, do something like
+        <span class="tt">Ctrl-W Ctrl-T Ctrl-W H</span>;
+        (I personally map <span class="tt">Ctrl-W &lt;Left&gt;</span>
+        to that sequence)
+      </li>
+      <li>
+        Implement window resizing commands along with the
+        <span class="tt">'equalalways'</span>,
+        <span class="tt">'splitbelow'</span>
+        and <span class="tt">'splitright'</span> options.
+
+        <br/>
+        <span class="tt">Ctrl-W =</span>,
+        <span class="tt">Ctrl-W -</span>,
+        <span class="tt">Ctrl-W _</span>,
+        <span class="tt">Ctrl-W Ctrl-_</span>,
+        <span class="tt">Ctrl-W &lt;</span>,
+        <span class="tt">Ctrl-W &gt;</span>
+        and <span class="tt">Ctrl-W |</span>.
       </li>
       <li>
         (changed from 1.4.1 if not a target area in the direction)
         <br/>When there is not a target in the direction,
         the move commands, such as
-        <span class="tt">Ctrl-W_H</span>,
+        <span class="tt">Ctrl-W H</span>,
         create a new area.
       </li>
     </ul>
@@ -146,20 +161,20 @@
   <dd>
     <ul>
       <li>
-        <span class="tt">Ctrl-W_S</span>,
-        <span class="tt">Ctrl-W_s</span>,
-        <span class="tt">Ctrl-W_Ctrl-S</span>,
-        <span class="tt">Ctrl-W_v</span>,
-        <span class="tt">Ctrl-W_Ctrl-V</span>,
+        <span class="tt">Ctrl-W S</span>,
+        <span class="tt">Ctrl-W s</span>,
+        <span class="tt">Ctrl-W Ctrl-S</span>,
+        <span class="tt">Ctrl-W v</span>,
+        <span class="tt">Ctrl-W Ctrl-V</span>,
         <br/>The feel is like vim's split a window. Currently there must
         be a neighboring target for the newly created editor.
         In the future a target will be created when needed (needs NB support).
       </li>
       <li>
-        <span class="tt">Ctrl-W_H</span>,
-        <span class="tt">Ctrl-W_J</span>,
-        <span class="tt">Ctrl-W_K</span>,
-        <span class="tt">Ctrl-W_L</span>
+        <span class="tt">Ctrl-W H</span>,
+        <span class="tt">Ctrl-W J</span>,
+        <span class="tt">Ctrl-W K</span>,
+        <span class="tt">Ctrl-W L</span>
         <br/>move the current editor in the direction.
         <br/>Note: there must be somewhere for the editor to go.
       </li>
