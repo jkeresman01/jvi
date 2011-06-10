@@ -707,13 +707,20 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
      */
     private static class MySplitterNode implements SplitterNode
     {
-        Node node;
-        int targetIndex;
+        final private Node node;
+        final private int targetIndex;
+        private SplitterChildNode[] children;
 
         public MySplitterNode(Node node, int targetIndex)
         {
             this.node = node;
             this.targetIndex = targetIndex;
+        }
+
+        @Override
+        public boolean isEditor()
+        {
+            return false;
         }
 
         @Override
@@ -723,11 +730,13 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         }
 
         @Override
-        public Component[] getChildren()
+        public SplitterChildNode[] getChildren()
         {
-            Component[] children = new Component[getChildCount()];
-            for(int i = 0; i < children.length; i++) {
-                children[i] = node.getChildren().get(i).getPeer();
+            if(children == null) {
+                children = new SplitterChildNode[getChildCount()];
+                for(int i = 0; i < children.length; i++) {
+                    children[i] = new MyChildNode(i);
+                }
             }
             return children;
         }
@@ -735,7 +744,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         @Override
         public int getChildCount()
         {
-            return node.getChildren().size();
+            return node.children.size();
         }
 
         @Override
@@ -749,14 +758,41 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         {
             return node.getOrientation();
         }
+
+        private class MyChildNode implements SplitterChildNode
+        {
+            private int childIndex;
+
+            public MyChildNode(int i)
+            {
+                this.childIndex = i;
+            }
+
+            @Override
+            public boolean isEditor()
+            {
+                return node.children.get(childIndex).isEditor();
+            }
+
+            @Override
+            public Component getComponent()
+            {
+                return node.children.get(childIndex).getPeer();
+            }
+
+            private MySplitterNode outer()
+            {
+                return MySplitterNode.this;
+            }
+        }
     }
 
     /** typically this should only be used for an initial weight calculation */
     private class DummySplitterNode implements SplitterNode
     {
-        private Component child;
-        private Orientation orientation;
-        private Component splitterComponent;
+        final private Component child;
+        final private Orientation orientation;
+        final private Component splitterComponent;
 
         DummySplitterNode(Component child, Orientation orientation)
         {
@@ -772,6 +808,12 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         }
 
         @Override
+        public boolean isEditor()
+        {
+            return false;
+        }
+
+        @Override
         public int getTargetIndex()
         {
             return 0;
@@ -784,9 +826,9 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         }
 
         @Override
-        public Component[] getChildren()
+        public SplitterChildNode[] getChildren()
         {
-            return new Component[] { child };
+            return new SplitterChildNode[] { new DummyChildNode() };
         }
 
         @Override
@@ -799,6 +841,22 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         public Orientation getOrientation()
         {
             return orientation;
+        }
+
+        private class DummyChildNode implements SplitterChildNode
+        {
+
+            @Override
+            public boolean isEditor()
+            {
+                return false;
+            }
+
+            @Override
+            public Component getComponent()
+            {
+                return child;
+            }
         }
     }
 

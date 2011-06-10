@@ -57,9 +57,16 @@ public interface ViWindowNavigator
 
     public ViAppView getTarget(Direction dir, ViAppView fromAv, int n);
 
+    /**
+     * Get the splitter that contains the av;
+     * av is used to set the targetIndex.
+     */
     public SplitterNode getParentSplitter(ViAppView av);
 
     /**
+     * Get the splitter that contains the av;
+     * av is used to set the targetIndex.
+     * <p/>
      * If the parent splitter is not the expected orientation or there is
      * no parent splitter, then return a dummy splitter that is suitable
      * for calculating sizes in the specified orientation.
@@ -67,20 +74,24 @@ public interface ViWindowNavigator
     public SplitterNode getParentSplitter(ViAppView av, Orientation orientation);
 
     /**
+     * Get the splitter that contains the av;
+     * av is used to set the targetIndex.
+     * <p/>
      * The root splitter should only be used to calculate
      * target weight.
-     * <p/>
-     * The children should not be used (at least not yet)
      */
     public SplitterNode getRootSplitter(ViAppView av, Orientation orientation);
 
-    public interface SplitterNode {
+    public interface SplitterNode extends SplitterChildNode {
+        Orientation getOrientation();
         int getTargetIndex();
         int getChildCount();
-        /** children are either splitters or editors */
-        Component[] getChildren();
+        SplitterChildNode[] getChildren();
+    }
+
+    public interface SplitterChildNode {
+        boolean isEditor();
         Component getComponent();
-        Orientation getOrientation();
     }
 
 }
