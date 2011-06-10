@@ -1,0 +1,18 @@
+System.err.println($debug); :: wrappedWith($_)
+=> $debugOption.println($level$, $debug); :: $debugOption instanceof com.raelity.jvi.options.DebugOption
+=> ((com.raelity.jvi.options.DebugOption) $debugOption).println($level$, $debug); :: $debugOption instanceof com.raelity.jvi.options.Option && !$debugOption instanceof com.raelity.jvi.options.DebugOption
+;;
+
+<?
+private boolean wrappedWith(Variable all) {
+     if (   matcher.matchesWithBind(context.parent(all), "if ($debugOption.getBoolean($level$)) $stmts;")
+         || matcher.matchesWithBind(context.parent(all), "if ($whatever && $debugOption.getBoolean($level$)) $stmts;")) {
+        return true;
+     }
+     if (   matcher.matchesWithBind(context.parent(context.parent(all)), "if ($debugOption.getBoolean($level$)) $stmts;")
+         || matcher.matchesWithBind(context.parent(context.parent(all)), "if ($whatever && $debugOption.getBoolean($level$)) $stmts;")) {
+        return true;
+     }
+     return false;
+}
+?>
