@@ -269,28 +269,44 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         return new MySplitterNode(n, n.getChildren().indexOf(currentNode));
     }
 
+    @Override
+    public SplitterNode getAncestorSplitter(ViAppView av,
+                                            Orientation orientation)
+    {
+        return getAncestorSplitter(av, orientation, false);
+    }
+
     /** this is only useful, for "outer" */
     @Override
     public SplitterNode getRootSplitter(ViAppView av, Orientation orientation)
+    {
+        return getAncestorSplitter(av, orientation, true);
+    }
+
+    private SplitterNode getAncestorSplitter(ViAppView av,
+                                             Orientation orientation,
+                                             boolean fRoot)
     {
         initTree();
         Node node = findNode(av);
         if(node == null)
             return null;
-        Node rootNode = node;
+        Node splitterNode = node;
         int targetIndex = 0;
         Node parentNode;
-        while((parentNode = rootNode.getParent()) != null) {
-            targetIndex = parentNode.getChildren().indexOf(rootNode);
-            rootNode = parentNode;
+        while((parentNode = splitterNode.getParent()) != null) {
+            targetIndex = parentNode.getChildren().indexOf(splitterNode);
+            splitterNode = parentNode;
+            if(!fRoot && splitterNode.getOrientation() == orientation)
+                break;
         }
         SplitterNode sp;
-        if(rootNode.getOrientation() != orientation) {
+        if(splitterNode.getOrientation() != orientation) {
             // Notice the rootNode is both child and the container
-            sp = new DummySplitterNode(rootNode.getPeer(), orientation,
-                                       rootNode.getPeer());
+            sp = new DummySplitterNode(splitterNode.getPeer(), orientation,
+                                       splitterNode.getPeer());
         } else {
-            sp = new MySplitterNode(rootNode, targetIndex);
+            sp = new MySplitterNode(splitterNode, targetIndex);
         }
         return sp;
     }

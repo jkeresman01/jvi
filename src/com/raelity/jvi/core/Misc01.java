@@ -564,32 +564,26 @@ public class Misc01
         boolean ok = true;
         switch (nchar) {
             case '=':
-                win_size(SIZOP.SAME, null, 0);
+                win_size(SIZOP.SAME, null, 0, false);
                 break;
             case '-':
-                win_size(SIZOP.ADJUST, Orientation.UP_DOWN,
-                         Prenum == 0 ? -1 : -Prenum);
+                win_size(SIZOP.ADJUST, Orientation.UP_DOWN, Prenum, true);
                 break;
             case '+':
-                win_size(SIZOP.ADJUST, Orientation.UP_DOWN,
-                         Prenum == 0 ? 1 : Prenum);
+                win_size(SIZOP.ADJUST, Orientation.UP_DOWN, Prenum, false);
                 break;
             case '_':
             case '_' & 0x1f:            // Ctrl
-                win_size(SIZOP.SET, Orientation.UP_DOWN,
-                         Prenum == 0 ? 10000 : Prenum);
+                win_size(SIZOP.SET, Orientation.UP_DOWN, Prenum, false);
                 break;
             case '<':
-                win_size(SIZOP.ADJUST, Orientation.LEFT_RIGHT,
-                         Prenum == 0 ? -1 : -Prenum);
+                win_size(SIZOP.ADJUST, Orientation.LEFT_RIGHT, Prenum, true);
                 break;
             case '>':
-                win_size(SIZOP.ADJUST, Orientation.LEFT_RIGHT,
-                         Prenum == 0 ? 1 : Prenum);
+                win_size(SIZOP.ADJUST, Orientation.LEFT_RIGHT, Prenum, false);
                 break;
             case '|':
-                win_size(SIZOP.SET, Orientation.LEFT_RIGHT,
-                         Prenum == 0 ? 10000 : Prenum);
+                win_size(SIZOP.SET, Orientation.LEFT_RIGHT, Prenum, false);
                 break;
 
             // split current window in two parts
@@ -784,8 +778,20 @@ public class Misc01
         G.curwin.win_move(direction, n);
     }
 
-    private static void win_size(SIZOP op, Orientation o, int n)
+    private static void win_size(SIZOP op, Orientation o,
+                                 int n, boolean fSmaller)
     {
+        switch(op) {
+            case ADJUST:
+                if(n == 0)      n = 1;
+                if(fSmaller)    n = -n;
+                break;
+            case SET:
+                if(n == 0)      n = 10000;
+                break;
+            case SAME:
+                break;
+        }
         G.curwin.win_size(op, o, n);
     }
 

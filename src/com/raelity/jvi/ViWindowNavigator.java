@@ -74,6 +74,15 @@ public interface ViWindowNavigator
     public SplitterNode getParentSplitter(ViAppView av, Orientation orientation);
 
     /**
+     * Get a splitter that contains the av;
+     * av is used to set the targetIndex.
+     * <p/>
+     * Go up the ancestor chain until a splitter is found in the
+     * target orientation.
+     */
+    public SplitterNode getAncestorSplitter(ViAppView av, Orientation orientation);
+
+    /**
      * Get the splitter that contains the av;
      * av is used to set the targetIndex.
      * <p/>
