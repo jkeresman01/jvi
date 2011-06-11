@@ -12,6 +12,8 @@ differently when used in combination with more than one window.
 
 3.  Opening and closing a window	|opening-window|
 4.  Moving cursor to other windows	|window-move-cursor|
+5.  Moving windows around			|window-moving|
+6.  Window resizing				|window-resize|
 8.  Writing with multiple buffers	|buffer-write|
 
 {Vi does not have any of these commands}
@@ -27,8 +29,21 @@ CTRL-W CTRL-S						*CTRL-W_CTRL-S*
 		the same file.  Make new window N high (default is to use half
 		the height of the current window).  Reduces the current window
 		height to create room (and others, if the 'equalalways' option
-		is set).  (Note: CTRL-S does not work on all terminals).  Also
-		see |+cmd|.
+		is set and 'eadirection' isn't "hor").
+START-DOC-DEL
+		Note: CTRL-S does not work on all terminals and might block
+		further input, use CTRL-Q to get going again.
+		Also see |++opt| and |+cmd|.
+STOP-DOC-DEL
+
+CTRL-W CTRL-V						*CTRL-W_CTRL-V*
+CTRL-W v						*CTRL-W_v*
+:[N]vs[plit] [++opt] [+cmd] [file]			*:vs* *:vsplit*
+		Like |:split|, but split vertically.  If 'equalalways' is set
+		and 'eadirection' isn't "ver" the windows will be spread out
+		horizontally, unless a width was specified.
+		Note: In other places CTRL-Q does the same as CTRL-V, but here
+		it doesn't!
 
 Closing a window
 ----------------
@@ -102,6 +117,160 @@ CTRL-W CTRL-B	Move cursor to bottom-right window.
 
 CTRL-W p					*CTRL-W_p* *CTRL-W_CTRL-P*
 CTRL-W CTRL-P	Go to previous (last accessed) window.
+
+==============================================================================
+5. Moving windows around				*window-moving*
+START-DOC-DEL
+
+CTRL-W r				*CTRL-W_r* *CTRL-W_CTRL-R* *E443*
+CTRL-W CTRL-R	Rotate windows downwards/rightwards.  The first window becomes
+		the second one, the second one becomes the third one, etc.
+		The last window becomes the first window.  The cursor remains
+		in the same window.
+		This only works within the row or column of windows that the
+		current window is in.
+
+						*CTRL-W_R*
+CTRL-W R	Rotate windows upwards/leftwards.  The second window becomes
+		the first one, the third one becomes the second one, etc.  The
+		first window becomes the last window.  The cursor remains in
+		the same window.
+		This only works within the row or column of windows that the
+		current window is in.
+
+CTRL-W x					*CTRL-W_x* *CTRL-W_CTRL-X*
+CTRL-W CTRL-X	Without count: Exchange current window with next one.  If there
+		is no next window, exchange with previous window.
+		With count: Exchange current window with Nth window (first
+		window is 1).  The cursor is put in the other window.
+		When vertical and horizontal window splits are mixed, the
+		exchange is only done in the row or column of windows that the
+		current window is in.
+STOP-DOC-DEL
+
+The following commands can be used to change the window layout.  For example,
+when there are two vertically split windows, CTRL-W K will change that in
+horizontally split windows.  CTRL-W H does it the other way around.
+
+NOTE: jVi typically has different semantics for CTRL-W [HJKL].
+There are two cases to consider:
+    1) when the window is at the edge of the area that contains editors.
+    2) when there is an editor in the direction specified.
+1) is as described here. For 2) the current editor is moved and becomes
+a tab in the neighboring area.
+
+						*CTRL-W_K*
+CTRL-W K	Move the current window to be at the very top, using the full
+		width of the screen.  This works like closing the current
+		window and then creating another one with ":topleft split",
+		except that the current window contents is used for the new
+		window.
+
+						*CTRL-W_J*
+CTRL-W J	Move the current window to be at the very bottom, using the
+		full width of the screen.  This works like closing the current
+		window and then creating another one with ":botright split",
+		except that the current window contents is used for the new
+		window.
+
+						*CTRL-W_H*
+CTRL-W H	Move the current window to be at the far left, using the
+		full height of the screen.  This works like closing the
+		current window and then creating another one with
+		":vert topleft split", except that the current window contents
+		is used for the new window.
+		{not available when compiled without the +vertsplit feature}
+
+						*CTRL-W_L*
+CTRL-W L	Move the current window to be at the far right, using the full
+		height of the screen.  This works like closing the
+		current window and then creating another one with
+		":vert botright split", except that the current window
+		contents is used for the new window.
+		{not available when compiled without the +vertsplit feature}
+
+						*CTRL-W_T*
+CTRL-W T	Create a clone in a separate tab of the current editor.
+START-DOC-DEL
+CTRL-W T	Move the current window to a new tab page.  This fails if
+		there is only one window in the current tab page.
+		When a count is specified the new tab page will be opened
+		before the tab page with this index.  Otherwise it comes after
+		the current tab page.
+STOP-DOC-DEL
+
+==============================================================================
+6. Window resizing					*window-resize*
+
+						*CTRL-W_=*
+CTRL-W =	Make all windows (almost) equally high and wide, but use
+		'winheight' and 'winwidth' for the current window.
+
+:res[ize] -N					*:res* *:resize* *CTRL-W_-*
+CTRL-W -	Decrease current window height by N (default 1).
+		If used after 'vertical': decrease width by N.
+
+:res[ize] +N					*CTRL-W_+*
+CTRL-W +	Increase current window height by N (default 1).
+		If used after 'vertical': increase width by N.
+
+:res[ize] [N]
+CTRL-W CTRL-_					*CTRL-W_CTRL-_* *CTRL-W__*
+CTRL-W _	Set current window height to N (default: highest possible).
+
+z{nr}<CR>	Set current window height to {nr}.
+
+						*CTRL-W_<*
+CTRL-W <	Decrease current window width by N (default 1).
+
+						*CTRL-W_>*
+CTRL-W >	Increase current window width by N (default 1).
+
+:vertical res[ize] [N]			*:vertical-resize* *CTRL-W_bar*
+CTRL-W |	Set current window width to N (default: widest possible).
+START-DOC-DEL
+
+You can also resize a window by dragging a status line up or down with the
+mouse.  Or by dragging a vertical separator line left or right.  This only
+works if the version of Vim that is being used supports the mouse and the
+'mouse' option has been set to enable it.
+
+The option 'winheight' ('wh') is used to set the minimal window height of the
+current window.  This option is used each time another window becomes the
+current window.  If the option is '0', it is disabled.  Set 'winheight' to a
+very large value, e.g., '9999', to make the current window always fill all
+available space.  Set it to a reasonable value, e.g., '10', to make editing in
+the current window comfortable.
+
+The equivalent 'winwidth' ('wiw') option is used to set the minimal width of
+the current window.
+STOP-DOC-DEL
+
+When the option 'equalalways' ('ea') is set, all the windows are automatically
+made the same size after splitting or closing a window.  If you don't set this
+option, splitting a window will reduce the size of the current window and
+leave the other windows the same.  When closing a window, the extra lines are
+given to the window above it.
+
+The 'eadirection' option limits the direction in which the 'equalalways'
+option is applied.  The default "both" resizes in both directions.  When the
+value is "ver" only the heights of windows are equalized.  Use this when you
+have manually resized a vertically split window and want to keep this width.
+Likewise, "hor" causes only the widths of windows to be equalized.
+START-DOC-DEL
+
+The option 'cmdheight' ('ch') is used to set the height of the command-line.
+If you are annoyed by the |hit-enter| prompt for long messages, set this
+option to 2 or 3.
+
+If there is only one window, resizing that window will also change the command
+line height.  If there are several windows, resizing the current window will
+also change the height of the window below it (and sometimes the window above
+it).
+
+The minimal height and width of a window is set with 'winminheight' and
+'winminwidth'.  These are hard values, a window will never become smaller.
+STOP-DOC-DEL
 
 ==============================================================================
 8. Writing with multiple buffers			*buffer-write*

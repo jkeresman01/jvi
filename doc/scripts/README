@@ -7,6 +7,10 @@ Make a release
         $jd/mkREL.sh       # it picks up the basename 
         $jd/mkZip.sh
 ====================================================================
+Create documentation
+        mkDoc.sh        # parse the help files
+        mkCopy.sh       # package htdocs and help files for putjvidocs
+====================================================================
 
 vimh_scan  - scans the vimhelp files produces tokens
              scan handle the #*#scan-filter#*# markup

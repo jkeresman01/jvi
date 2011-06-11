@@ -991,6 +991,24 @@ START-DOC-DEL
 STOP-DOC-DEL
 
 
+			     *'equalalways'* *'ea'* *'noequalalways'* *'noea'*
+'equalalways' 'ea'	boolean	(default on)
+			global
+			{not in Vi}
+	When on, all the windows are automatically made the same size after
+	splitting or closing a window.  This also happens the moment the
+	option is switched on.  When off, splitting a window will reduce the
+	size of the current window and leave the other windows the same.  When
+	closing a window the extra lines are given to the window next to it
+	(depending on 'splitbelow' and 'splitright').
+START-DOC-DEL
+	When mixing vertically and horizontally split windows, a minimal size
+	is computed and some windows may be larger if there is room.  The
+	'eadirection' option tells in which direction the size is affected.
+	Changing the height of a window can be avoided by setting
+	'winfixheight'.
+STOP-DOC-DEL
+
 						*'equalprg'* *'ep'*
 'equalprg' 'ep'		string	(default "")
 			global or local to buffer |global-local|
@@ -1442,6 +1460,18 @@ START-DOC-DEL
 	set and to the Vim default value when 'compatible' is reset.
 STOP-DOC-DEL
 
+			*'smartcase'* *'scs'* *'nosmartcase'* *'noscs'*
+'smartcase' 'scs'	boolean	(default off)
+			global
+			{not in Vi}
+	Override the 'ignorecase' option if the search pattern contains upper
+	case characters.  Only used when the search pattern is typed and
+	'ignorecase' option is on.  Used for the commands "/", "?", "n", "N",
+	":g" and ":s".  Not used for "*", "#", "gd", tag search, etc..  After
+	"*" and "#" you can make 'smartcase' used by doing a "/" command,
+	recalling the search pattern from history and hitting <Enter>.
+	NOTE: This option is reset when 'compatible' is set.
+
 					*'softtabstop'* *'sts'*
 'softtabstop' 'sts'	number	(default 0)
 			local to buffer
@@ -1459,6 +1489,20 @@ STOP-DOC-DEL
 	The 'L' flag in 'cpoptions' changes how tabs are used when 'list' is
 	set.
 	NOTE: This option is set to 0 when 'compatible' is set.
+
+			*'splitbelow'* *'sb'* *'nosplitbelow'* *'nosb'*
+'splitbelow' 'sb'	boolean	(default off)
+			global
+			{not in Vi}
+	When on, splitting a window will put the new window below the current
+	one. |:split|
+
+			*'splitright'* *'spr'* *'nosplitright'* *'nospr'*
+'splitright' 'spr'	boolean	(default off)
+			global
+			{not in Vi}
+	When on, splitting a window will put the new window right of the
+	current one. |:vsplit|
 
 			   *'startofline'* *'sol'* *'nostartofline'* *'nosol'*
 'startofline' 'sol'	boolean	(default on)
@@ -1521,6 +1565,34 @@ STOP-DOC-DEL
 	When on: The tilde command "~" behaves like an operator.
 	NOTE: This option is reset when 'compatible' is set.
 
+				*'timeout'* *'to'* *'notimeout'* *'noto'*
+'timeout' 'to'		boolean (default on)
+			global
+	This option determine the behavior when part of a
+	mapped key sequence has been received:
+
+	'timeout'	action	~
+	   off		do not time out
+	   on		time out on :mappings
+
+	If option is off, jVi will wait until either the complete
+	mapping has been received, or it is clear that there
+	is no mapping for the received characters.  For
+	example: if you have mapped "vl" and Vim has received 'v', the next
+	character is needed to see if the 'v' is followed by an 'l'.
+	When the options is on, Vim will wait for about 1 second for
+	the next character to arrive.  After that the already received
+	characters are interpreted as single characters.  The waiting time can
+	be changed with the 'timeoutlen' option.
+
+						*'timeoutlen'* *'tm'*
+'timeoutlen' 'tm'	number	(default 1000)
+			global
+			{not in all versions of Vi}
+	The time in milliseconds that is waited for a mapped key
+	sequence to complete.  Also used for CTRL-\ CTRL-N and CTRL-\ CTRL-G
+	when part of a command has been typed.
+
 						*'whichwrap'* *'ww'*
 'whichwrap' 'ww'	string	(Vim default: "b,s", Vi default: "")
 			global
@@ -1580,4 +1652,4 @@ STOP-DOC-DEL
 	Searches wrap around the end of the file.  Also applies to |]s| and
 	|[s|, searching for spelling mistakes.
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:

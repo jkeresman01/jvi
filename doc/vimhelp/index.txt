@@ -380,29 +380,30 @@ tag		command		   action in Normal mode	~
 #*# table:form=index:label=CTRL-W 1:tag 17:command 36:desc #*#
 |CTRL-W_CTRL-B|	CTRL-W CTRL-B	   same as "CTRL-W b"
 |CTRL-W_CTRL-C|	CTRL-W CTRL-C	   same as "CTRL-W c"
-DOC-DEL|CTRL-W_CTRL-D| CTRL-W CTRL-D	    same as "CTRL-W d"
+DOC-DEL		|CTRL-W_CTRL-D| CTRL-W CTRL-D	    same as "CTRL-W d"
 |CTRL-W_CTRL-E|	CTRL-W CTRL-E	   same as "CTRL-W e" {jVi only}
-DOC-DEL|CTRL-W_CTRL-F| CTRL-W CTRL-F	    same as "CTRL-W f"
+DOC-DEL		|CTRL-W_CTRL-F| CTRL-W CTRL-F	    same as "CTRL-W f"
 DOC-DEL		CTRL-W CTRL-G	   same as "CTRL-W g .."
 |CTRL-W_CTRL-H|	CTRL-W CTRL-H	   same as "CTRL-W h"
-DOC-DEL|CTRL-W_CTRL-I| CTRL-W CTRL-I	    same as "CTRL-W i"
+DOC-DEL		|CTRL-W_CTRL-I| CTRL-W CTRL-I	    same as "CTRL-W i"
 |CTRL-W_CTRL-J|	CTRL-W CTRL-J	   same as "CTRL-W j"
 |CTRL-W_CTRL-K|	CTRL-W CTRL-K	   same as "CTRL-W k"
 |CTRL-W_CTRL-L|	CTRL-W CTRL-L	   same as "CTRL-W l"
-DOC-DEL|CTRL-W_CTRL-N| CTRL-W CTRL-N	    same as "CTRL-W n"
+DOC-DEL		|CTRL-W_CTRL-N| CTRL-W CTRL-N	    same as "CTRL-W n"
 |CTRL-W_CTRL-O|	CTRL-W CTRL-O	   same as "CTRL-W o"
 |CTRL-W_CTRL-P|	CTRL-W CTRL-P	   same as "CTRL-W p"
 |CTRL-W_CTRL-Q|	CTRL-W CTRL-Q	   same as "CTRL-W q"
-DOC-DEL|CTRL-W_CTRL-R| CTRL-W CTRL-R	    same as "CTRL-W r"
-DOC-DEL|CTRL-W_CTRL-S| CTRL-W CTRL-S	    same as "CTRL-W s"
+DOC-DEL		|CTRL-W_CTRL-R| CTRL-W CTRL-R	    same as "CTRL-W r"
+DOC-DEL		|CTRL-W_CTRL-S| CTRL-W CTRL-S	    same as "CTRL-W s"
 |CTRL-W_CTRL-T|	CTRL-W CTRL-T	    same as "CTRL-W t"
-DOC-DEL|CTRL-W_CTRL-V| CTRL-W CTRL-V	    same as "CTRL-W v"
+|CTRL-W_CTRL-V| CTRL-W CTRL-V	    same as "CTRL-W v"
 |CTRL-W_CTRL-W|	CTRL-W CTRL-W	    same as "CTRL-W w"
 START-DOC-DEL
 |CTRL-W_CTRL-X|	CTRL-W CTRL-X	   same as "CTRL-W x"
 |CTRL-W_CTRL-Z|	CTRL-W CTRL-Z	   same as "CTRL-W z"
 |CTRL-W_CTRL-]|	CTRL-W CTRL-]	   same as "CTRL-W ]"
 |CTRL-W_CTRL-^|	CTRL-W CTRL-^	   same as "CTRL-W ^"
+STOP-DOC-DEL
 |CTRL-W_CTRL-_|	CTRL-W CTRL-_	   same as "CTRL-W _"
 |CTRL-W_+|	CTRL-W +	   increase current window height N lines
 |CTRL-W_-|	CTRL-W -	   decrease current window height N lines
@@ -412,60 +413,61 @@ START-DOC-DEL
 |CTRL-W_H|	CTRL-W H	   move current window to the far left
 |CTRL-W_J|	CTRL-W J	   move current window to the very bottom
 |CTRL-W_K|	CTRL-W K	   move current window to the very top
-|CTRL-W_L|	 CTRL-W L	   move current window to the far right
-|CTRL-W_P|	 CTRL-W P	   go to preview window
-|CTRL-W_R|	 CTRL-W R	   rotate windows upwards N times
-|CTRL-W_S|	 CTRL-W S	   same as "CTRL-W s"
-|CTRL-W_T|	 CTRL-W T	   move current window to a new tab page
-|CTRL-W_W|	 CTRL-W W	   go to N previous window (wrap around)
-|CTRL-W_]|	 CTRL-W ]	   split window and jump to tag under cursor
-|CTRL-W_^|	 CTRL-W ^	   split current window and edit alternate
-				   file N
-|CTRL-W__|	 CTRL-W _	   set current window height to N (default:
-				   very high)
+|CTRL-W_L|	CTRL-W L	   move current window to the far right
+START-DOC-DEL
+|CTRL-W_P|	CTRL-W P	   go to preview window
+|CTRL-W_R|	CTRL-W R	   rotate windows upwards N times
 STOP-DOC-DEL
-|CTRL-W_b|	 CTRL-W b	   go to bottom window
-|CTRL-W_c|	 CTRL-W c	   close current window (like |:close|)
-DOC-DEL|CTRL-W_d|	 CTRL-W d	    split window and jump to definition under
-DOC-DEL			    the cursor
-|CTRL-W_e|	 CTRL-W e	   go to Nth next window in *alternate* set
+|CTRL-W_S|	CTRL-W S	   same as "CTRL-W s"
+DOC-DEL		|CTRL-W_T|	 CTRL-W T	   move current window to a new tab page
+START-DOC-DEL
+|CTRL-W_W|	CTRL-W W	   go to N previous window (wrap around)
+|CTRL-W_]|	CTRL-W ]	   split window and jump to tag under cursor
+|CTRL-W_^|	CTRL-W ^	   split current window and edit alternate
+				   file N
+STOP-DOC-DEL
+|CTRL-W__|	CTRL-W _	   set current window height to N (default:
+				   very high)
+|CTRL-W_b|	CTRL-W b	   go to bottom window
+|CTRL-W_c|	CTRL-W c	   close current window (like |:close|)
+DOC-DEL		|CTRL-W_d|	 CTRL-W d	    split window and jump to definition under
+DOC-DEL					    the cursor
+|CTRL-W_e|	CTRL-W e	   go to Nth next window in *alternate* set
 				   of windows (those without associated files)
 				   {jVi only}
 START-DOC-DEL
-|CTRL-W_f|	 CTRL-W f	   split window and edit file name under the
+|CTRL-W_f|	CTRL-W f	   split window and edit file name under the
 				   cursor
-|CTRL-W_F|	 CTRL-W F	   split window and edit file name under the
+|CTRL-W_F|	CTRL-W F	   split window and edit file name under the
 				   cursor and jump to the line number
 				   following the file name.
 |CTRL-W_g_CTRL-]| CTRL-W g CTRL-]  split window and do |:tjump| to tag under
 				   cursor
-|CTRL-W_g]|	 CTRL-W g ]	   split window and do |:tselect| for tag
+|CTRL-W_g]|	CTRL-W g ]	   split window and do |:tselect| for tag
 				   under cursor
-|CTRL-W_g}|	 CTRL-W g }	   do a |:ptjump| to the tag under the cursor
-|CTRL-W_gf|	 CTRL-W g f	   edit file name under the cursor in a new
+|CTRL-W_g}|	CTRL-W g }	   do a |:ptjump| to the tag under the cursor
+|CTRL-W_gf|	CTRL-W g f	   edit file name under the cursor in a new
 				   tab page
-|CTRL-W_gF|	 CTRL-W g F	   edit file name under the cursor in a new
+|CTRL-W_gF|	CTRL-W g F	   edit file name under the cursor in a new
 				   tab page and jump to the line number
 				   following the file name.
 STOP-DOC-DEL
-|CTRL-W_h|	 CTRL-W h	   go to Nth left window (stop at first window)
-DOC-DEL|CTRL-W_i|	 CTRL-W i	    split window and jump to declaration of
-				   identifier under the cursor
+|CTRL-W_h|	CTRL-W h	   go to Nth left window (stop at first window)
+DOC-DEL		|CTRL-W_i|	 CTRL-W i	    split window and jump to declaration of
+						   identifier under the cursor
 |CTRL-W_j|	CTRL-W j	   go N windows down (stop at last window)
 |CTRL-W_k|	CTRL-W k	   go N windows up (stop at first window)
 |CTRL-W_l|	CTRL-W l	   go to Nth right window (stop at last window)
-DOC-DEL|CTRL-W_n|	 CTRL-W n	    open new window, N lines high
+DOC-DEL		|CTRL-W_n|	 CTRL-W n	    open new window, N lines high
 |CTRL-W_o|	CTRL-W o	   close all but current window (like |:only|)
 |CTRL-W_p|	CTRL-W p	   go to previous (last accessed) window
 |CTRL-W_q|	CTRL-W q	   quit current window (like |:quit|)
-START-DOC-DEL
-|CTRL-W_r|	CTRL-W r	   rotate windows downwards N times
+DOC-DEL		|CTRL-W_r|	CTRL-W r	   rotate windows downwards N times
 |CTRL-W_s|	CTRL-W s	   split current window in two parts, new
 				   window N lines high
-STOP-DOC-DEL
-|CTRL-W_t|	 CTRL-W t	   go to top window
-DOC-DEL|CTRL-W_v|	 CTRL-W v	    split current window vertically, new window
-DOC-DEL				   N lines wide
+|CTRL-W_t|	CTRL-W t	   go to top window
+|CTRL-W_v|	CTRL-W v	    split current window vertically, new window
+				   N lines wide
 |CTRL-W_w|	CTRL-W w	   go to N next window (wrap around)
 START-DOC-DEL
 |CTRL-W_x|	CTRL-W x	   exchange current window with window N
@@ -715,3 +717,5 @@ DOC-DEL|v_CTRL-]|	CTRL-]		   jump to highlighted tag
 |v_x|		x		2  delete the highlighted area
 |v_y|		y		   yank the highlighted area
 |v_~|		~		2  swap case for the highlighted area
+
+ vim:tw=78:ts=8:noet:
