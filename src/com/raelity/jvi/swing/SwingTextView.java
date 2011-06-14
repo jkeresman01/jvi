@@ -1090,7 +1090,7 @@ public class SwingTextView extends TextView
      * @param n the size of the new window.
      */
     @Override
-    public void win_split( Direction dir, int n )
+    public void win_split( Direction dir, int n, ViAppView av)
     {
         Msg.emsg("win_split not implemented");
     }

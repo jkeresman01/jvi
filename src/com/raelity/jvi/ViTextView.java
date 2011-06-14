@@ -442,10 +442,15 @@ public interface ViTextView extends ViOptionBag {
    */
   public void win_quit();
 
-  /** Split this window.
-   * @param n the size of the new window.
+  /**
+   * Split this window, creating new area in the indicated direction.
+   * If av is null, then a clone of the current text view is in there.
+   * window is
+   * @param dir create new area in this direction
+   * @param n the size of the new window, lines/cols.
+   * @param av editor to put into new window, may be null
    */
-  public void win_split(Direction dir, int n);
+  public void win_split(Direction dir, int n, ViAppView av);
 
   /**
    * Move this window, create a new one if no existing target

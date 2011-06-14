@@ -590,14 +590,12 @@ public class Misc01
             case 'S':
             case 's':
             case 'S' & 0x1f:          // Ctrl
-                win_split(G.p_sb.getBoolean() ? Direction.DOWN : Direction.UP,
-                          Prenum);
+                win_split(Orientation.UP_DOWN, Prenum, null);
                 break;
 
             case 'v':
             case 'V' & 0x1f:          // Ctrl
-                win_split(G.p_spr.getBoolean() ? Direction.RIGHT : Direction.LEFT,
-                          Prenum);
+                win_split(Orientation.LEFT_RIGHT, Prenum, null);
                 break;
 
             // close current window
@@ -766,11 +764,23 @@ public class Misc01
         return ViManager.getFS().edit(avs.get(n), false);
     }
 
-    private static void win_split(Direction direction, int n)
+    /**
+     * Split the current window. The new window should handle n lines.
+     * If av is not null, put that editor into the newly created area.
+     *
+     * @param orientation which way to split
+     * @param n size lines or cols of new view area
+     * @param av put this into the new view area
+     */
+    static void win_split(Orientation orientation, int n, ViAppView av)
     {
-        TextView.setExpectedNewActivation(
-                G.curbuf.getDisplayFileName(), G.curwin.w_cursor.getOffset());
-        G.curwin.win_split(direction, n);
+        if(av == null)
+            TextView.setExpectedNewActivation(G.curbuf.getDisplayFileName(),
+                                              G.curwin.w_cursor.getOffset());
+        Direction dir = orientation == Orientation.LEFT_RIGHT
+                    ? (G.p_spr.getBoolean() ? Direction.RIGHT : Direction.LEFT)
+                    : (G.p_sb.getBoolean() ? Direction.DOWN : Direction.UP);
+        G.curwin.win_split(dir, n, av);
     }
 
     private static void win_move(Direction direction, int n)

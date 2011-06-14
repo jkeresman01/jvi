@@ -36,6 +36,8 @@ public enum CcFlag {
     NO_PARSE,
     /** allow a line specifier */
     RANGE,
+    /** supports '#' file name completion */
+    COMPL_FN,
     ;
 }
 

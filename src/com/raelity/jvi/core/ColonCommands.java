@@ -140,7 +140,7 @@ private static char modalResponse;
 /** only used for parsing where we don't care about the command */
 private static final ColonAction dummyColonAction = new AbstractColonAction() {
         @Override public EnumSet<CcFlag> getFlags() {
-            return EnumSet.of(CcFlag.BANG, CcFlag.NO_PARSE, CcFlag.RANGE);
+            return EnumSet.of(CcFlag.BANG, CcFlag.RANGE);
         }
 
         @Override public boolean isEnabled() {
@@ -151,10 +151,16 @@ private static final ColonAction dummyColonAction = new AbstractColonAction() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     };
+/** dummy action for parse only, no exec, but merge in the real flags */
+private static ColonCommandItem
+createDummyColonCommandItem(ColonCommandItem cci)
+{
+    EnumSet<CcFlag> flags = dummyColonAction.getFlags();
+    if(cci != null)
+        flags.addAll(cci.getFlags());
+    return new ColonCommandItem("xyzzy", "xyzzy", dummyColonAction, flags);
 
-private static final ColonCommandItem dummyColonCommandItem
-        = new ColonCommandItem("xyzzy", "xyzzy", dummyColonAction,
-                               dummyColonAction.getFlags());
+}
 
 /**
     * Parse (partially) the command.
@@ -378,9 +384,10 @@ private static ColonEvent parseCommandGuts(String commandLine,
             return null;
         }
     } else {
-        ColonCommandItem cci2 = m_commands.lookupCommand(command);
-        cev.dummyParserCommand = cci2 != null ? cci2.getName() : "";
-        cci = dummyColonCommandItem; // so parse will complete ok
+        // create a dummy so parse will complete ok and have useful info
+        ColonCommandItem cciReal = m_commands.lookupCommand(command);
+        cev.dummyParserCommand = cciReal != null ? cciReal.getName() : "";
+        cci = createDummyColonCommandItem(cciReal);
     }
     Set<CcFlag> flags = cci.getFlags();
 
@@ -416,6 +423,7 @@ private static ColonEvent parseCommandGuts(String commandLine,
             // put the line (without command name) as the argument
             cev.args.add(commandLine.substring(sidx));
         } else {
+            // NEEDSWORK: more efficient command line parse tokenizer
             // parse the command into tokens
             StringTokenizer toks = new StringTokenizer(commandLine.substring(sidx));
             while(toks.hasMoreTokens()) {
@@ -744,6 +752,11 @@ static public class ColonEvent extends ActionEvent
     public ActionListener getAction()
     {
         return (ActionListener)commandElement.getValue();
+    }
+
+    public ColonCommandItem getColonCommandItem()
+    {
+        return commandElement;
     }
     
     /**

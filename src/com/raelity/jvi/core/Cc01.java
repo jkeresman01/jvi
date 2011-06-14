@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViTextView.Orientation;
 import com.raelity.jvi.core.lib.CcFlag;
 import com.raelity.jvi.core.lib.ColonCommandItem;
 import com.raelity.jvi.core.lib.Messages;
@@ -37,6 +38,7 @@ import com.raelity.jvi.ViTextView.TAGOP;
 import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
 import com.raelity.jvi.core.ColonCommands.ColonAction;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.manager.ViManager;
@@ -87,6 +89,7 @@ public class Cc01
 
     private static void init()
     {
+        ActionListener al;
         ColonCommands.register("n", "next", ACTION_next, null);
         ColonCommands.register("N", "Next", ACTION_Next, null);
         ColonCommands.register("prev", "previous", ACTION_Next, null);
@@ -142,7 +145,11 @@ public class Cc01
         ColonCommands.register("red", "redo", ACTION_redo, null);
 
         // clone an editor
-        ColonCommands.register("clon", "clone", new Clone(), null);
+        ColonCommands.register("clon", "clone", new CloneAction(), null);
+        ColonCommands.register("sp", "split",
+                               new SplitAction(Orientation.UP_DOWN), null);
+        ColonCommands.register("vs", "vsplit",
+                               new SplitAction(Orientation.LEFT_RIGHT), null);
 
         addDebugColonCommands();
     }
@@ -277,6 +284,46 @@ public class Cc01
         }
     };
 
+    private static class SplitAction extends AbstractColonAction
+    {
+        Orientation orientation;
+
+        public SplitAction(Orientation orientation)
+        {
+            this.orientation = orientation;
+        }
+
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.COMPL_FN, CcFlag.RANGE);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            ColonEvent cev = (ColonEvent)e;
+            int n = cev.getAddrCount() == 0 ? 0 : cev.getLine2();
+            boolean reportUsage = false;
+            List<String> args = cev.getArgs();
+            MutableBoolean reportedError = new MutableBoolean();
+            if(args.size() >= 1 && args.get(0).charAt(0) == '#') {
+                ViAppView av = parseFileNumber(args, reportedError);
+                if(!args.isEmpty() && !reportedError.getValue()) {
+                    reportUsage = true;
+                }
+                if(av != null)
+                    Misc01.win_split(orientation, n, av);
+            } else if(args.isEmpty()) {
+                Misc01.win_split(orientation, n, null);
+            } else
+                reportUsage = true;
+            if(reportUsage)
+                Msg.emsg(":" + cev.getArg(0)
+                        + " accepts no arguments or only '# <WindowNum>'");
+        }
+    }
+
     /**
      * Edit command.
      */
@@ -284,75 +331,112 @@ public class Cc01
         @Override
         public EnumSet<CcFlag> getFlags()
         {
-            return EnumSet.of(CcFlag.BANG);
+            return EnumSet.of(CcFlag.BANG, CcFlag.COMPL_FN);
         }
 
         @Override
         public void actionPerformed(ActionEvent ev)
         {
             ColonEvent cev = (ColonEvent)ev;
-            /*
-             * if(cev.getNArg() == 0) {
-             * ViManager.getFS().write(cev.mayCreateTextView(), cev.isBang());
-             * } else
-             */
             boolean reportUsage = false;
-            if(cev.getNArg() >= 1 && cev.getArg(1).charAt(0) == '#') {
-                //        && cev.getArg(1).length() >= 1
-                //    || cev.getNArg() == 2 && "#".equals(cev.getArg(1))) {
-                boolean error = false;
-                List<String> args = cev.getArgs();
-                String stringWindowNumber = args.get(0).substring(1);
-                args.remove(0);
-                if(stringWindowNumber.isEmpty() && args.size() > 0) {
-                    stringWindowNumber = args.get(0);
-                    args.remove(0);
-                }
-                if(!args.isEmpty()) {
+            List<String> args = cev.getArgs();
+            MutableBoolean reportedError = new MutableBoolean();
+            if(args.size() >= 1 && args.get(0).charAt(0) == '#') {
+                ViAppView av = parseFileNumber(args, reportedError);
+                if(!args.isEmpty() && !reportedError.getValue()) {
                     reportUsage = true;
-                    error = true;
                 }
-                int windowNumber = -1;
-                if(!error && !stringWindowNumber.isEmpty()) {
-                    try {
-                        windowNumber = Integer.parseInt(stringWindowNumber);
-                    } catch(NumberFormatException ex) {
-                        error = true;
-                    }
-                    if(error) {
-                        Msg.emsg("Only 'e#[<number>]' allowed");
-                    }
-                }
-                if( ! error) {
-                    ViAppView av = null;
-                    // Look up the appView. If i >= 0 then find app view
-                    // with window that matches that number (standard vim).
-                    // If i < 0 then use it to index into the mru list.
-                    if(windowNumber >= 0) {
-                        for (ViAppView av1 : AppViews.getList(AppViews.ACTIVE)) {
-                            if(windowNumber == av1.getWNum()) {
-                                av = av1;
-                                break;
-                            }
-                        }
-                    } else {
-                        av = AppViews.getMruAppView(-windowNumber);
-                    }
-                    if(av != null)
-                        ViManager.getFS().edit(av, cev.isBang());
-                    else
-                        Msg.emsg("No alternate file name to substitute for '#"
-                                + windowNumber + "'");
-                }
-            } else if (cev.getNArg() == 1) {
-                String fName = cev.getArg(1);
+                if(av != null)
+                    ViManager.getFS().edit(av, cev.isBang());
+            } else if (args.size() == 1) {
+                String fName = args.get(0);
                 ViManager.getFS().edit(new File(fName), cev.isBang(), null);
             } else
                 reportUsage = true;
             if(reportUsage)
-                Msg.emsg(":edit only accepts '# <win>' or '<fname>'");
+                Msg.emsg(":edit only accepts '# <WinNum>' or '<fname>'");
         }
     };
+
+    /**
+     * args is typically from a colon event. Expect to see either
+     * ("#[number]) or ("#", "[number]"). If a "#" is seen, then
+     * either one or two elements are removed from the list.
+     * <p/>
+     * NEEDSWORK: in future, may only want to remove "<number>" if it in fact
+     *            parsed as a number.
+     * @param args
+     * @param reportedError
+     * @return
+     */
+    static ViAppView parseFileNumber(List<String> args,
+                                        MutableBoolean reportedError)
+    {
+        ViAppView av = null;
+
+        assert args.size() >= 1 && args.get(0).charAt(0) == '#';
+        if(args.size() >= 1 && args.get(0).charAt(0) == '#') {
+            boolean error = false;
+
+            String stringWindowNumber = args.get(0).substring(1);
+            args.remove(0);
+            if(stringWindowNumber.isEmpty() && args.size() > 0) {
+                stringWindowNumber = args.get(0);
+                args.remove(0);
+            }
+            av = convertFileNumber(stringWindowNumber, reportedError);
+        }
+
+        return av;
+    }
+
+    /**
+     * Convert the string number into an AppView. Positive numbers are
+     * window number; negative are index into mru list.
+     * @param stringWindowNumber
+     * @param reportedError set to true if an error was reported
+     * @return av or null if bad parse
+     */
+    static ViAppView convertFileNumber(String stringWindowNumber,
+                                       MutableBoolean reportedError)
+    {
+        ViAppView av = null;
+        boolean error = false;
+
+        int windowNumber = -1;
+        if(!error && !stringWindowNumber.isEmpty()) {
+            try {
+                windowNumber = Integer.parseInt(stringWindowNumber);
+            } catch(NumberFormatException ex) {
+                error = true;
+            }
+            if(error) {
+                reportedError.setValue(true);
+                Msg.emsg("Only '#[<number>]' allowed");
+            }
+        }
+        if( ! error) {
+            // Look up the appView. If i >= 0 then find app view
+            // with window that matches that number (standard vim).
+            // If i < 0 then use it to index into the mru list.
+            if(windowNumber >= 0) {
+                for (ViAppView av1 : AppViews.getList(AppViews.ACTIVE)) {
+                    if(windowNumber == av1.getWNum()) {
+                        av = av1;
+                        break;
+                    }
+                }
+            } else {
+                av = AppViews.getMruAppView(-windowNumber);
+            }
+            if(av == null) {
+                reportedError.setValue(true);
+                Msg.emsg("No alternate file name to substitute for '#"
+                        + windowNumber + "'");
+            }
+        }
+        return av;
+    }
 
     private static ColonAction ACTION_substitute = new AbstractColonAction() {
         @Override
@@ -776,7 +860,7 @@ public class Cc01
         }
     };
 
-    static private class Clone implements ActionListener
+    static private class CloneAction implements ActionListener
     {
         @Override
         public void actionPerformed(ActionEvent e)
