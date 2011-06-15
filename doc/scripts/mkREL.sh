@@ -22,11 +22,11 @@ NB_VERSION=NetBeans-7.0
 
 JVI_MAIN=$JVI_VERSIONDIR/proj/updates.xml
 JVI_UC=         # pick up from plugin portal update center
-UC_DIR=UC
+UC_DIR=eaUC
 JVI_ADD="
     $JVI_RELDIR/editor.pin-1.3.2/proj/updates.xml
     $JVI_RELDIR/jvi.help-1.0/proj/updates.xml
-    $JVI_RELDIR/nb-jvi-spi-1.2/proj/updates.xml
+    $JVI_RELDIR/nb-jvi-spi-1.3/proj/updates.xml
     "
 
 OUT=$JVI_VERSIONDIR/build-uc
