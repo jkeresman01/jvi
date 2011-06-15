@@ -36,7 +36,6 @@ import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.ViTextView.TAGOP;
 import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
-import com.raelity.jvi.core.ColonCommands.ColonAction;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.MutableInt;
@@ -89,60 +88,62 @@ public class Cc01
 
     private static void init()
     {
-        ActionListener al;
-        ColonCommands.register("n", "next", ACTION_next, null);
-        ColonCommands.register("N", "Next", ACTION_Next, null);
-        ColonCommands.register("prev", "previous", ACTION_Next, null);
-        ColonCommands.register("clo", "close", ACTION_close, null);
-        ColonCommands.register("on", "only", ACTION_only, null);
+        ColonCommands.register("n", "next", new Next(true), null);
+        ActionListener alNext= new Next(false);
+        ColonCommands.register("N", "Next", alNext, null);
+        ColonCommands.register("prev", "previous", alNext, null);
+        ColonCommands.register("clo", "close", new Close(), null);
+        ColonCommands.register("on", "only", new Only(), null);
 
-        ColonCommands.register("q", "quit", ACTION_quit, null);
-        ColonCommands.register("w", "write", ACTION_write, null);
-        ColonCommands.register("wq", "wq", ACTION_wq, null);
-        ColonCommands.register("wa", "wall", ACTION_wall, null);
+        ColonCommands.register("q", "quit", new Quit(), null);
+        ColonCommands.register("w", "write", new Write(), null);
+        ColonCommands.register("wq", "wq", new Wq(), null);
+        ColonCommands.register("wa", "wall", new Wall(), null);
 
-        ColonCommands.register("files","files", ACTION_BUFFERS, null);
-        ColonCommands.register("buffers","buffers", ACTION_BUFFERS, null);
-        ColonCommands.register("ls","ls", ACTION_BUFFERS, null);
+        ActionListener alBuffers = new Buffers();
+        ColonCommands.register("files","files", alBuffers, null);
+        ColonCommands.register("buffers","buffers", alBuffers, null);
+        ColonCommands.register("ls","ls", alBuffers, null);
 
-        ColonCommands.register("f", "file", ACTION_file, null);
-        ColonCommands.register("e", "edit", ACTION_edit, null);
+        ColonCommands.register("f", "file", new FileAction(), null);
+        ColonCommands.register("e", "edit", new Edit(), null);
         ColonCommands.register("s", "substitute", ACTION_substitute, null);
         ColonCommands.register("g", "global", ACTION_global, null);
-        ColonCommands.register("v", "vglobal", ACTION_vglobal, null);
+        ColonCommands.register("v", "vglobal", new Vglobal(), null);
         ColonCommands.register("d", "delete", ACTION_delete, null);
         ColonCommands.register("p", "print", ACTION_print, null);
 
-        ColonCommands.register("ju", "jumps", ACTION_jumps, null);
+        ColonCommands.register("ju", "jumps", new Jumps(), null);
 
-        ColonCommands.register("ta", "tag", ACTION_tag, null);
-        ColonCommands.register("tags", "tags", ACTION_tags, null);
-        ColonCommands.register("ts", "tselect", ACTION_tselect, null);
-        ColonCommands.register("po", "pop", ACTION_pop, null);
+        ColonCommands.register("ta", "tag", new Tag(), null);
+        ColonCommands.register("tags", "tags", new Tags(), null);
+        ColonCommands.register("ts", "tselect", new Tselect(), null);
+        ColonCommands.register("po", "pop", new Pop(), null);
 
-        ColonCommands.register("noh", "nohlsearch", ACTION_nohlsearch, null);
+        ColonCommands.register("noh", "nohlsearch", new Nohlsearch(), null);
 
         ColonCommands.register("testGlassKeys", "testGlassKeys",
-                               ACTION_testGlassKeys,
+                               new TestGlassKeys(),
                                EnumSet.of(CcFlag.DBG));
         ColonCommands.register("testModalKeys", "testModalKeys",
-                               ACTION_testModalKeys,
+                               new TestModalKeys(),
                                EnumSet.of(CcFlag.DBG));
 
         ColonCommands.register("y", "yank", ACTION_yank, null);
         // not pretty, limit the number of shifts...
         ColonCommands.register(">", ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",
-                               ACTION_rshift,
+                               new ShiftAction(OP_RSHIFT),
                                null);
         ColonCommands.register("<", "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<",
-                               ACTION_lshift,
+                               new ShiftAction(OP_LSHIFT),
                                null);
 
-        ColonCommands.register("m", "move", ACTION_move, null);
-        ColonCommands.register("co", "copy", ACTION_copy, null);
-        ColonCommands.register("t", "t", ACTION_copy, null);
-        ColonCommands.register("u", "undo", ACTION_undo, null);
-        ColonCommands.register("red", "redo", ACTION_redo, null);
+        ColonCommands.register("m", "move", new moveCopy(true), null);
+        ActionListener alCopy = new moveCopy(false);
+        ColonCommands.register("co", "copy", alCopy, null);
+        ColonCommands.register("t", "t", alCopy, null);
+        ColonCommands.register("u", "undo", new Undo(), null);
+        ColonCommands.register("red", "redo", new Redo(), null);
 
         // clone an editor
         ColonCommands.register("clon", "clone", new CloneAction(), null);
@@ -154,14 +155,18 @@ public class Cc01
         addDebugColonCommands();
     }
 
-    static ActionListener getActionPrint() { return ACTION_print; }
-    static ActionListener getActionYank() { return ACTION_yank; }
-    static ActionListener getActionSubstitute() { return ACTION_substitute; }
-    static ActionListener getActionDelete() { return ACTION_delete; }
-    static ActionListener getActionGlobal() { return ACTION_global; }
+    private static final ActionListener ACTION_substitute = new Substitute();
+    private static final ActionListener ACTION_print      = new Print();
+    private static final ActionListener ACTION_yank       = new Yank();
+    private static final ActionListener ACTION_delete     = new Delete();
+    private static final ActionListener ACTION_global     = new Global();
 
-    private static ColonAction ACTION_next = new Next(true);
-    private static ColonAction ACTION_Next = new Next(false);
+
+    static ActionListener getActionPrint()      { return ACTION_print; }
+    static ActionListener getActionYank()       { return ACTION_yank; }
+    static ActionListener getActionSubstitute() { return ACTION_substitute; }
+    static ActionListener getActionDelete()     { return ACTION_delete; }
+    static ActionListener getActionGlobal()     { return ACTION_global; }
 
     /** next/Next/previous through MRU list */
     static private class Next extends AbstractColonAction { // NEEDSWORK: count
@@ -195,14 +200,14 @@ public class Cc01
         }
     }
 
-    private static ActionListener ACTION_quit = new ActionListener() {
+    private static class Quit implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent ev) {
             ColonEvent cev = (ColonEvent)ev;
             cev.getViTextView().win_quit();
         }};
 
-    private static ActionListener ACTION_close = new ActionListener() {
+    private static class Close implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent ev) {
             ColonEvent cev = (ColonEvent)ev;
@@ -210,7 +215,7 @@ public class Cc01
             cev.getViTextView().win_close(false);
         }};
 
-    private static ActionListener ACTION_only = new ActionListener() {
+    private static class Only implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent ev) {
             ColonEvent cev = (ColonEvent)ev;
@@ -218,13 +223,13 @@ public class Cc01
             cev.getViTextView().win_close_others(false);
         }};
 
-    private static ActionListener ACTION_wall = new ActionListener() {
+    private static class Wall implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent ev) {
             ViManager.getFS().writeAll(false);
         }};
 
-    private static ActionListener ACTION_file = new ActionListener() {
+    private static class FileAction implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent ev) {
             ColonEvent cev = (ColonEvent)ev;
@@ -254,7 +259,7 @@ public class Cc01
     /**
         * Write command.
         */
-    private static ColonAction ACTION_write = new AbstractColonAction() {
+    private static class Write extends AbstractColonAction {
         @Override
         public EnumSet<CcFlag> getFlags()
         {
@@ -268,7 +273,7 @@ public class Cc01
         }
     };
 
-    private static ColonAction ACTION_wq = new AbstractColonAction() {
+    private static class Wq extends AbstractColonAction {
         @Override
         public EnumSet<CcFlag> getFlags()
         {
@@ -327,7 +332,7 @@ public class Cc01
     /**
      * Edit command.
      */
-    private static ColonAction ACTION_edit = new AbstractColonAction() {
+    private static class Edit extends AbstractColonAction {
         @Override
         public EnumSet<CcFlag> getFlags()
         {
@@ -438,7 +443,7 @@ public class Cc01
         return av;
     }
 
-    private static ColonAction ACTION_substitute = new AbstractColonAction() {
+    private static class Substitute extends AbstractColonAction {
         @Override
         public EnumSet<CcFlag> getFlags()
         {
@@ -457,7 +462,7 @@ public class Cc01
         }
     };
 
-    private static ColonAction ACTION_global = new AbstractColonAction() {
+    private static class Global extends AbstractColonAction {
         @Override
         public EnumSet<CcFlag> getFlags()
         {
@@ -476,7 +481,7 @@ public class Cc01
         }
     };
 
-    private static ColonAction ACTION_vglobal = new AbstractColonAction() {
+    private static class Vglobal extends AbstractColonAction {
         @Override
         public EnumSet<CcFlag> getFlags()
         {
@@ -499,7 +504,7 @@ public class Cc01
         * may chose to open this, or implement their own, possibly using
         * popup gui components.
         */
-    private static ActionListener ACTION_BUFFERS = new ActionListener()
+    private static class Buffers implements ActionListener
     {
         @Override
         public void actionPerformed(ActionEvent e)
@@ -547,7 +552,7 @@ public class Cc01
         * :print command. If not busy global then output to "print" stream.
         * For now, its just a no-op so the word "print" can be found.
         */
-    private static ColonAction ACTION_print = new AbstractColonAction() {
+    private static class Print extends AbstractColonAction {
         @Override
         public EnumSet<CcFlag> getFlags()
         {
@@ -562,7 +567,7 @@ public class Cc01
     /**
         * :tag command.
         */
-    private static ColonAction ACTION_tag = new AbstractColonAction() {
+    private static class Tag extends AbstractColonAction {
         @Override
         public EnumSet<CcFlag> getFlags()
         {
@@ -591,7 +596,7 @@ public class Cc01
     /**
         * :pop command.
         */
-    private static ColonAction ACTION_pop = new AbstractColonAction() {
+    private static class Pop extends AbstractColonAction {
         @Override
         public EnumSet<CcFlag> getFlags()
         {
@@ -613,7 +618,7 @@ public class Cc01
         }
     };
 
-    private static ColonAction ACTION_tselect = new AbstractColonAction() {
+    private static class Tselect extends AbstractColonAction {
         @Override
         public EnumSet<CcFlag> getFlags()
         {
@@ -634,21 +639,21 @@ public class Cc01
         }
     };
 
-    private static ActionListener ACTION_jumps = new ActionListener() {
+    private static class Jumps implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent ev) {
             MarkOps.do_jumps();
         }
     };
 
-    private static ActionListener ACTION_tags = new ActionListener() {
+    private static class Tags implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent ev) {
             ViManager.getFactory().displayTags();
         }
     };
 
-    private static ActionListener ACTION_nohlsearch = new ActionListener() {
+    private static class Nohlsearch implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent ev)
         {
@@ -659,7 +664,7 @@ public class Cc01
     /**
      * :delete command.
      */
-    private static ColonAction ACTION_delete = new AbstractColonAction() {
+    private static class Delete extends AbstractColonAction {
         @Override
         public EnumSet<CcFlag> getFlags()
         {
@@ -687,7 +692,7 @@ public class Cc01
     /**
      * :yank command.
      */
-    private static ColonAction ACTION_yank = new AbstractColonAction() {
+    private static class Yank extends AbstractColonAction {
 
         @Override
         public EnumSet<CcFlag> getFlags()
@@ -705,9 +710,6 @@ public class Cc01
             }
         }
     };
-
-    private static ColonAction ACTION_lshift = new ShiftAction(OP_LSHIFT);
-    private static ColonAction ACTION_rshift = new ShiftAction(OP_RSHIFT);
 
     private static class ShiftAction extends AbstractColonAction
     {
@@ -821,10 +823,7 @@ public class Cc01
 
     }
 
-    private static ColonAction ACTION_move = new moveCopy(true);
-    private static ColonAction ACTION_copy = new moveCopy(false);
-
-    private static ActionListener ACTION_testGlassKeys = new ActionListener() {
+    private static class TestGlassKeys implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent ev) {
             ViManager.getFactory().startGlassKeyCatch(new KeyAdapter() {
@@ -844,7 +843,7 @@ public class Cc01
         }
     };
 
-    private static ActionListener ACTION_undo = new ActionListener() {
+    private static class Undo implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent ev)
         {
@@ -852,7 +851,7 @@ public class Cc01
         }
     };
 
-    private static ActionListener ACTION_redo = new ActionListener() {
+    private static class Redo implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent ev)
         {
@@ -869,7 +868,7 @@ public class Cc01
         }
     }
 
-    private static ActionListener ACTION_testModalKeys = new ActionListener() {
+    private static class TestModalKeys implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent ev)
         {
