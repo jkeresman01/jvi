@@ -24,7 +24,7 @@ differently when used in combination with more than one window.
 CTRL-W s						*CTRL-W_s*
 CTRL-W S						*CTRL-W_S*
 CTRL-W CTRL-S						*CTRL-W_CTRL-S*
-:[N]sp[lit] [+cmd]					*:sp* *:split*
+:[N]sp[lit] [+cmd] [file]				*:sp* *:split*
 		Split current window in two.  The result is two viewports on
 		the same file.  Make new window N high (default is to use half
 		the height of the current window).  Reduces the current window
@@ -279,3 +279,4 @@ STOP-DOC-DEL
 :wa[ll]		Write all changed buffers.  Buffers without a file name or
 		which are readonly are not written.
 
+ vim:tw=78:ts=8:sw=8:noet:

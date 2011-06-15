@@ -124,4 +124,4 @@ commands explained above the tag stack will look like this:
    2 FuncB	       59  harddisk2:text/vim/src/main.c
  >
 
- vim:tw=78:ts=8:sw=8:
+ vim:tw=78:ts=8:sw=8:noet:

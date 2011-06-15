@@ -278,4 +278,4 @@ previous line.
 NOTE: in jVi the platform does a lot of the insert new line handling.
       Platform docs should be referenced.
 
- vim:tw=78:ts=8:sw=8: 
+ vim:tw=78:ts=8:sw=8:noet:

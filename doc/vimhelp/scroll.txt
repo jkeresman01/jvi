@@ -167,4 +167,4 @@ ze			Scroll the text horizontally to position the cursor
 #*#table:stop-table #*#
 
 
- vim:tw=78:ts=8:sw=8: 
+ vim:tw=78:ts=8:sw=8:noet:

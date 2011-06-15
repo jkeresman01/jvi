@@ -410,4 +410,4 @@ selected lines are operated upon, but like in characterwise selection.  For
 example, when a whole line is deleted, it can later be pasted halfway a line.
 
 STOP-DOC-DEL
- vim:tw=78:ts=8:sw=8:
+ vim:tw=78:ts=8:sw=8:noet:

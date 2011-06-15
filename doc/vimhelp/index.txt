@@ -718,4 +718,4 @@ DOC-DEL|v_CTRL-]|	CTRL-]		   jump to highlighted tag
 |v_y|		y		   yank the highlighted area
 |v_~|		~		2  swap case for the highlighted area
 
- vim:tw=78:ts=8:noet:
+ vim:tw=78:ts=8:sw=8:noet:

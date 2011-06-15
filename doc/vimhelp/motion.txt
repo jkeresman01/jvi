@@ -1193,4 +1193,4 @@ START-DOC-DEL
 STOP-DOC-DEL
 #*#table:stop-table #*#
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:sw=8:noet:

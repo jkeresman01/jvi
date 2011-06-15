@@ -712,4 +712,4 @@ The next three commands always work on whole lines.
 			given by {address}.
 #*#table:stop-table #*#
 
- vim:tw=78:ts=8:sw=8 noet:
+ vim:tw=78:ts=8:sw=8:noet:

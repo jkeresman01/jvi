@@ -63,4 +63,4 @@ register:
   uppercase letter).
 - Delete or yank the command sequence into the register.
 
- vim:tw=78:ts=8:sw=8: 
+ vim:tw=78:ts=8:sw=8:noet:

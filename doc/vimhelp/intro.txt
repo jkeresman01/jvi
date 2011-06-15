@@ -159,4 +159,4 @@ Command-line	 *3	  --	 :start	    --
    - Hitting CTRL-C or <Esc>, which quits the command-line without executing
      the command.
 
- vim:ts=8:sw=8:tw=78: 
+ vim:tw=78:ts=8:sw=8:noet:
