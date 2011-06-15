@@ -1298,11 +1298,11 @@ finished:
         searchitErrorMessage(Messages.e_interr);
       else if ((options & SEARCH_MSG) == SEARCH_MSG) {
         if (G.p_ws.getBoolean())
-          searchitErrorMessage(Messages.e_patnotf2 + pattern);
+          searchitErrorMessage(Messages.e_patnotf2 + mr_pattern);
         else if (lnum == 0)
-          searchitErrorMessage("search hit TOP without match for: " + pattern);
+          searchitErrorMessage("search hit TOP without match for: " + mr_pattern);
         else
-          searchitErrorMessage("search hit BOTTOM without match for: " + pattern);
+          searchitErrorMessage("search hit BOTTOM without match for: " + mr_pattern);
       }
       search_match_len = 0;
       return FAIL;
