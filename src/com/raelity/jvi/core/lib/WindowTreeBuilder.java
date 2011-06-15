@@ -250,7 +250,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
             Node currentNode = findNode(av);
             if(currentNode == null)
                 return null;
-            sn = new DummySplitterNode(currentNode.getPeer(), orientation);
+            sn = new DummySplitterNode(currentNode, orientation);
         }
         return sn;
     }
@@ -303,7 +303,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         SplitterNode sp;
         if(splitterNode.getOrientation() != orientation) {
             // Notice the rootNode is both child and the container
-            sp = new DummySplitterNode(splitterNode.getPeer(), orientation,
+            sp = new DummySplitterNode(splitterNode, orientation,
                                        splitterNode.getPeer());
         } else {
             sp = new MySplitterNode(splitterNode, targetIndex);
@@ -806,16 +806,16 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
     /** typically this should only be used for an initial weight calculation */
     private class DummySplitterNode implements SplitterNode
     {
-        final private Component child;
+        final private Node child;
         final private Orientation orientation;
         final private Component splitterComponent;
 
-        DummySplitterNode(Component child, Orientation orientation)
+        DummySplitterNode(Node child, Orientation orientation)
         {
-            this(child, orientation, getDummySplitterComponent(child));
+            this(child, orientation, getDummySplitterComponent(child.getPeer()));
         }
 
-        public DummySplitterNode(Component child, Orientation orientation,
+        public DummySplitterNode(Node child, Orientation orientation,
                                  Component splitterComponent)
         {
             this.child = child;
@@ -865,13 +865,13 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
             @Override
             public boolean isEditor()
             {
-                return false;
+                return child.isEditor();
             }
 
             @Override
             public Component getComponent()
             {
-                return child;
+                return child.getPeer();
             }
         }
     }
