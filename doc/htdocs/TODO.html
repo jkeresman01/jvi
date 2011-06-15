@@ -6,62 +6,34 @@
   <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; U) [Netscape]">
   <meta name="Description" content="status and documentation of jVi">
   <title>jVi Home Page</title>
-  <LINK REL ="stylesheet" TYPE="text/css" HREF="stylesheet.css" TITLE="Style">
+  <LINK REL ="stylesheet" TYPE="text/css" HREF="stylesheet.css" TITLE="Style"/>
+  <style type="text/css">
+    .TodoSection { font-size: x-large; font-weight: bold; }
+  </style>
 </head>
 <body>
 
   <h2>jVi NEEDSWORK/TODO list</h2>
 
+  <ul>
+    <li><a href="#Bugs">                   Bugs</a></li>
+    <li><a href="#NetBeans_Embedding">     NetBeans Embedding</a></li>
+    <li><a href="#NetBeans_Platform_Bugs"> NetBeans Platform Bugs</a></li>
+    <li><a href="#Features">               Features</a></li>
+    <li><a href="#NetBeans_Feature">       NetBeans Feature</a></li>
+    <li><a href="#Anomalies">              Anomalies</a></li>
+    <li><a href="#Documentation">          Documentation</a></li>
+    <li><a href="#Ctrl-W_commands">        Ctrl-W commands</a></li>
+    <li><a href="#Mappings">               Mappings</a></li>
+    <li><a href="#Options">                Options</a></li>
+    <li><a href="#Cleanup">                Cleanup</a></li>
+    <li><a href="#Performance">            Performance</a></li>
+    <li><a href="#Blue_Sky">               Blue Sky</a></li>
+  </ul>
+
+
 <pre>
-
-Ctrl-W commands
-===============
-  - implement more windows options
-    eadirection, winfixheight,...
-  - win_split, win_move
-    more complete implementation that doesn't depend on reflection
-    - See Bug 198657 - APIs to work with Modes
-                       (implement jVi window split/move/... commands)
-  - win_move has problems, nb issues
-  - study core.windows in detail
-      - look interesting
-        Central.userDroppedTopComponentsAroundEditor
-        Central.userDroppedTopComponentsIntoEmptyEditor
-        - from WindowDnDManager.performDrop
-          also from performDrop:
-        WindowDnDManager.dragStarting # EditorView impl a TopComponentDroppable
-
-          In performDrop, when moving ed to a different mode,
-            droppable is a DefaultSplitContainer$ModePanel
-            and the ViewElement seems to be the ed after which to put dragged ed
-
-                if(viewElement instanceof EditorView)  IS FALSE
-          so enter,
-                } else if(viewElement instanceof ModeView) {
-          and does
-                controller.userDroppedTopComponents(modeView,
-                        tcArray, ((Integer)constr).intValue());
-          which ends up in Central.userDroppedTopComponents(...
-                updateViewAfterDnD(
-                            moveTopComponentsIntoMode(mode, tcs, index));
-
-Documentation
-=============
-  - Parse jVi docs for html, javahelp, per topic help. Per topic used for
-    popup as NetBeans' doc popup; in NB have ":he x" list all matching *x*.
-  - include notes, Murry doc
-  - doc ^W commands
-  - Add {jVi Xxx category} to vimhelp for options.
-  - Add {works with :set} to vimhelp for options.
-    Also vimhelp list of what works with :set.
-    (may become moot if all things work with set)
-  - Review javadocs
-    - Role of AppView as Registry
-    - Registering colon commands
-
-
-Bugs
-====
+<span id="Bugs" class="TodoSection">Bugs</span>
   - ^V... then IxxESC requires two undo, see $jvi/bugs/need-extra-undo
   - 'o' open new line, if ESC removes auto indent, then additional undo
   - ^F/^B count
@@ -91,8 +63,7 @@ Bugs
     dependent on the number of {space} chars at the end of the first view
     line. The problem does not appear in NB.
 
-netbeans embedding
-----------------
+<span id="NetBeans_Embedding" class="TodoSection">NetBeans Embedding</span>
   - If using non-modal command line, the command completion doesn't
     get keys. In particular up/down/CR.
   - {begin,end}undo issue and atomic lock stuff.
@@ -127,17 +98,16 @@ netbeans embedding
     - :q in diff window
 
 
-NetBeans/Platform Bugs
-======================
+<span id="NetBeans_Platform_Bugs" class="TodoSection">NetBeans Platform Bugs</span>
   - editor focus lost after next diff action changes file
   - can't see cursor in left side diff
   - See umbrella bug for jVi in NetBeans
     <a href="https://netbeans.org/bugzilla/show_bug.cgi?id=179047">Bug 179047 - jVi integration</a>
 
 
-Features
-========
+<span id="Features" class="TodoSection">Features</span>
   - See sourcforge...
+  - options sidescroll, sidescrolloff
   - :brwose {command} for 'e', 'w'...
   - Add autocmd, at least a simple form of it.
   - Have an option(s) for multiline matching. E.g. handle \n in pattern
@@ -159,10 +129,10 @@ Features
   - Standalone:
     - indent: integrate jindent or somesuch (or port vim)
   - for filter commands use a temp file
+  - Use Character class for iswhitespace...
 
 
-NetBeans Features
-=================
+<span id="NetBeans_Feature" class="TodoSection">NetBeans Feature</span>
   - rework status window issues.
     when scroll clears status, give a few seconds
   - Have option for jVi shortcuts, several ^W at least.
@@ -183,22 +153,64 @@ NetBeans Features
     Clean up module/package exports, make NB "fried" of jVi?
 
 
-Anomolies
-=========
+<span id="Anomalies" class="TodoSection">Anomalies</span>
   - incomplete port of ^t, ^d in input mode
       - '^'^d (remove all indent) isn't supported
       - if cursor is before first non-blank, it is left at the
         first non-blank. Position within indent should be maintained.
       - Replace stack is ignored
       - 'start of insert' should be repositioned, its left alone.
-
   - Extend jVi jumplist (^O, ^I) implementation to work between files.
     This seems almost impossible, jump list is per window and jVi
     has a 1-1 on window-file; can not swap contents of window.
 
 
-Mappings
-========
+<span id="Documentation" class="TodoSection">Documentation</span>
+  - Parse jVi docs for html, javahelp, per topic help. Per topic used for
+    popup as NetBeans' doc popup; in NB have ":he x" list all matching *x*.
+  - include notes, Murry doc
+  - doc ^W commands
+  - Add {jVi Xxx category} to vimhelp for options.
+  - Add {works with :set} to vimhelp for options.
+    Also vimhelp list of what works with :set.
+    (may become moot if all things work with set)
+  - Review javadocs
+    - Role of AppView as Registry
+    - Registering colon commands
+
+
+<span id="Ctrl-W_commands" class="TodoSection">Ctrl-W commands</span>
+  - implement more windows options
+    eadirection, winfixheight,...
+  - win_split, win_move
+    more complete implementation that doesn't depend on reflection
+    - See Bug 198657 - APIs to work with Modes
+                       (implement jVi window split/move/... commands)
+  - win_move has problems, nb issues
+  - study core.windows in detail
+      - look interesting
+        Central.userDroppedTopComponentsAroundEditor
+        Central.userDroppedTopComponentsIntoEmptyEditor
+        - from WindowDnDManager.performDrop
+          also from performDrop:
+        WindowDnDManager.dragStarting # EditorView impl a TopComponentDroppable
+
+          In performDrop, when moving ed to a different mode,
+            droppable is a DefaultSplitContainer$ModePanel
+            and the ViewElement seems to be the ed after which to put dragged ed
+
+                if(viewElement instanceof EditorView)  IS FALSE
+          so enter,
+                } else if(viewElement instanceof ModeView) {
+          and does
+                controller.userDroppedTopComponents(modeView,
+                        tcArray, ((Integer)constr).intValue());
+          which ends up in Central.userDroppedTopComponents(...
+                updateViewAfterDnD(
+                            moveTopComponentsIntoMode(mode, tcs, index));
+
+
+<span id="Mappings" class="TodoSection">Mappings</span>
   - handle_redo and mappings interactions
     the pump loop should probably incorporate redo issues
   - put mapping error msg into output window
@@ -214,14 +226,13 @@ Mappings
       - NOTE: if auto-catch, then in :map list output make it clear which
               keybindings have been taken away.
 
-  - map {lhs} <Nop>
+  - map {lhs} &lt;Nop&gt;
   - allow space chars in right hand side?
   - accept '\' escapes
     maybe part of globally handling escapes
 
 
-Options
-=======
+<span id="Options" class="TodoSection">Options</span>
   - Have "DEFAULT" button for all options/properties
   - Make the G.xxx globals privitive types; when opt.setValue reflect the
     new value into the primitive.
@@ -242,14 +253,17 @@ Options
     - may want to associate a method/action assoc with the option.
       this might be an alternative to this discussion or in addition to.
       Currently need to use pref listener.
+  - Tool tips in property dialog
     
 
 
-Cleanup
-=======
+<span id="Cleanup" class="TodoSection">Cleanup</span>
+  - In cc01.java get rid of the "private static ACTION_edit = new ...."
+    in favor of "private static class EditAction {...}"
   - get rid of "G."; use static import. For G.xx, use xx()
   - make TextView.w_cursor a simple fpos,
     do an "update" when exitting key event
+    NOTE: this may not be viable, maybe if doc change events invalidate it
   - Consider getting rid of 
         Misc.xlateViKey(ViManager.getInsertModeKeymap(), c, G.getModMask())
     would just handle ^T (or whatever) in the redobuf? Other issues?
@@ -278,14 +292,7 @@ Cleanup
     The "firstgo" seems hokey.
 
 
-TODO
-====
-  - Tool tips in property dialog
-  - Use Character class for iswhitespace...
-
-
-Performance
-===========
+<span id="Performance" class="TodoSection">Performance</span>
 - The biggest performance hit is from swing's document change operations.
 
   This is clearly seen with the block mode operation profiling. For these,
@@ -296,8 +303,7 @@ Performance
 - lazy creation of colon commands (probably not a big issue)
 
 
-BLUE SKY
-========
+<span id="Blue_Sky" class="TodoSection">Blue Sky</span>
 
   - Multithread and document locking issues
       - Do long running ops in separate thread
@@ -320,12 +326,11 @@ BLUE SKY
 
 </pre>
 
-<!-- raelity copyright -->
-<hr>
-<address><font size="-1">
-Copyright &copy; 2011 Raelity Engineering</font></address>
-<font size="-1"><a href="mailto:support@raelity.com">
-Contact Raelity Engineering</a></font>
+<hr/>
+<address class="addr">
+  Copyright &copy; 2011 Raelity Engineering<br/>
+  <a href="mailto:support@raelity.com">Contact Raelity Engineering</a>
+</address>
 </body>
 </html>
 <!-- vim: set sw=2: -->
