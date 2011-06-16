@@ -38,6 +38,7 @@ import java.util.Iterator;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.MarkOps.*;
+import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.Search.*;
 import static com.raelity.jvi.core.Util.*;
@@ -57,7 +58,7 @@ public class Search01 {
   private static int nSubChanges;
   private static int nSubLine = 0;
   
-  private static String lastSubstitution;
+  private static String old_sub;	/* previous substitute pattern */
   private static String lastSubstituteArg;
 
   private static final int SUBST_ALL      = 0x0001;
@@ -71,9 +72,14 @@ public class Search01 {
 
   private Search01() { }
 
-  /**
-   * Substitute command
-   * @param cev cev's first arg is /pattern/substitution/{flags}
+  /** do_sub()
+   *
+   * Perform a substitution from line eap->line1 to line eap->line2 using the
+   * command pointed to by eap->arg which should be of the form:
+   *
+   * /pattern/substitution/{flags}
+   *
+   * The usual escapes are supported as described in the regexp docs.
    */
   static void substitute(ColonCommands.ColonEvent cev)
   {
@@ -83,70 +89,106 @@ public class Search01 {
       newFlags = true;
     }
 
+    // which_pat = eap->cmdidx == CMD_tilde ? RE_LAST : RE_SUBST;
     int which_pat = RE_SUBST;
     boolean do_error = true;
 
-    // The substitute command doesn't parse arguments,
-    // so it has 0 or 1 argument.
-    String cmd;
-    if(cev.getNArg() == 0) {
-      cmd = lastSubstituteArg;
-      if(cmd == null) {
+    String pattern = null;
+    char delimiter = 0;
+    CharSequence substitution;
+    RegExp prog = null;
+
+    // The sub command is a little weird
+    // "s c" or "sub c" means use previous pattern/sub with 'c' as flags
+    // need to see " c" (not the space before the 'c')
+    // So grab the whole thing.
+    String cmd = cev.getArgString();
+
+    int sidx = 0;
+    int sidx01;
+    if(cev.getArg(0).charAt(0) == 's' && cmd != null && cmd.length() > 0
+            && !vim_iswhite(cmd.charAt(0))
+            && vim_strchr("0123456789cegriIp|\"", 0, cmd.charAt(0)) < 0) {
+      if(isalpha(cmd.charAt(sidx))) {
+        Msg.emsg("Regular expressions can't be delimited by letters");
+        return;
+      }
+      //
+      // undocumented vi feature:
+      //  "\/sub/" and "\?sub?" use last used search pattern (almost like
+      //  //sub/r).  "\&sub&" use last substitute pattern (like //sub/).
+      //
+      if (cmd.charAt(sidx) == '\\') {
+        ++sidx;
+        if (vim_strchr("/?&", 0, cmd.charAt(sidx)) < 0)
+        {
+          Msg.emsg(Messages.e_backslash);
+          return;
+        }
+        if (cmd.charAt(sidx) != '&')
+          which_pat = RE_SEARCH;	    // use last '/' pattern
+        pattern = "";	        	    // empty search pattern
+        delimiter = cmd.charAt(sidx);	    // remember delimiter character
+        ++sidx;
+      }
+      else		// find the end of the regexp
+      {
+        which_pat = RE_LAST;    	    // use last used regexp
+        delimiter = cmd.charAt(sidx);	    // remember delimiter character
+        ++sidx;
+        sidx01 = sidx;		    // remember start of search pat
+        sidx = skip_regexp(cmd, sidx, delimiter, true);
+        if(sidx01 != sidx)
+          pattern = cmd.substring(sidx01, sidx);
+      }
+
+      //
+      // HUH?
+      // Small incompatibility: vi sees '\n' as end of the command, but in
+      // Vim we want to use '\n' to find/substitute a NUL.
+      //
+      sidx++;               // first char of substitution
+      sidx01 = sidx;	    // remember the start of the substitution
+      for( ; sidx < cmd.length(); sidx++) {
+        char c = cmd.charAt(sidx);
+        if(c == delimiter) {		// end delimiter found
+          break;
+        }
+        if(c == '\\' && sidx+1 < cmd.length()) {  // skip escaped characters
+          ++sidx;
+        }
+      }
+      if(sidx01 == sidx) {
+        old_sub = "";
+      } else {
+        old_sub = cmd.substring(sidx01, sidx);
+      }
+      substitution = old_sub;
+    } else {
+      // use previous pattern and substitution
+      //cmd = lastSubstituteArg;
+      if(old_sub == null) {	// there is no previous command
         substFlags.setBits(SUBST_QUIT);
 	Msg.emsg(Messages.e_nopresub);
 	return;
       }
-    } else {
-      cmd = cev.getArg(1);
-      lastSubstituteArg = cmd;
+      pattern = null;	// search_regcomp() will use previous pattern
+      substitution = old_sub;
     }
-    String pattern = null;
-    RegExp prog = null;
-    CharSequence substitution;
-    char delimiter = cmd.charAt(0);
-    MySegment line;
+
+    //RegExp prog = null;
+    //CharSequence substitution;
+    //char delimiter = cmd.charAt(0);
+
     int cursorLine = 0; // set to line number of last change
-    int sidx = 1; // after delimiter
-    
-    //
-    // pick up the pattern
-    //
 
-    int sidx01 = sidx;
-    sidx = skip_regexp(cmd, sidx, delimiter, true);
-    if(sidx01 != sidx) {
-      pattern = cmd.substring(sidx01, sidx);
-    }
-    
-    //
-    // pick up the substitution string
-    //
-
-    sidx++; // first char of substitution
-    sidx01 = sidx;
-    for( ; sidx < cmd.length(); sidx++) {
-      char c = cmd.charAt(sidx);
-      if(c == delimiter) {
-        break;
-      }
-      if(c == '\\' && sidx+1 < cmd.length()) {
-        ++sidx;
-      }
-    }
-    if(sidx01 == sidx) {
-      lastSubstitution = "";
-    } else {
-      lastSubstitution = cmd.substring(sidx01, sidx);
-    }
-    substitution = lastSubstitution;
-
-    if(newFlags) {
+    if(cmd != null && newFlags) {
       //
       // pick up the flags
       //
                 // NEEDSWORK: || lastSubstitution.indexOf('~', sidx01) != -1;
-      if(lastSubstitution.indexOf('\\') != -1
-                  || lastSubstitution.indexOf('&') != -1)
+      if(old_sub.indexOf('\\') != -1
+                  || old_sub.indexOf('&') != -1)
         substFlags.setBits(SUBST_ESCAPE);
     
       
@@ -230,7 +272,7 @@ public class Search01 {
 	gotoLine(cursorLine, BL_WHITE | BL_FIX, true);
       }
       if(nSubMatch == 0) {
-	Msg.emsg(Messages.e_patnotf2 + pattern);
+	Msg.emsg(Messages.e_patnotf2 + get_search_pat());
       } else {
 	do_sub_msg();
       }
@@ -582,11 +624,13 @@ public class Search01 {
     ViOutputStream result = null;
     if(cmdAction == Cc01.getActionPrint()) {
       result = ViManager.createOutputStream(G.curwin,
-                                            ViOutputStream.SEARCH, pattern);
+                                            ViOutputStream.SEARCH,
+                                            get_search_pat());
     } else {
       // Assume it will be handled by the command
       //result = ViManager.createOutputStream(G.curwin,
-      //                                      ViOutputStream.LINES, pattern);
+      //                                      ViOutputStream.LINES,
+      //                                      get_search_pat());
     }
     
     substFlags = null;

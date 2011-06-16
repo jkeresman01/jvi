@@ -922,6 +922,12 @@ finished:
     return re;
   }
 
+  /** used only to print error messages */
+  static String get_search_pat()
+  {
+    return mr_pattern;
+  }
+
   private static RegExp get_spat_cache(String pat, boolean ic)
   {
     for(Spat spat : spats) {

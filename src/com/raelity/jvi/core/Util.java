@@ -77,6 +77,7 @@ public class Util {
 
   /**
    * Returns the position of c in cs or -1 if not part of s.
+   * vim_strchar(s, 0, c) < 0 can replace vim_strchr(s, c) == null
    * @param cs sequence to search
    * @param i start checking at this position
    * @param c look for this char
