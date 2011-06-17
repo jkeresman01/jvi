@@ -201,6 +201,12 @@ public class GetChar {
     // NEEDSWORK: INPUT MODE FROM MACRO ????????
 
     private static int runEventQueue;
+    /**
+     * BE VERY CAREFULL
+     * Don't do this if you don't have to.
+     * This will stop an undo group, which is a problem
+     * for the "AutoUndo" situation.
+     */
     static void requestCharBreakPauseRunEventQueue(int nLoop)
     {
         runEventQueue = nLoop;
@@ -209,7 +215,10 @@ public class GetChar {
     /**
      * Process every thing that's currently in the eventQ
      * <p/>
-     * collectingGroupUndo must be false.
+     * THIS CASE DOESN'T WORK: collectingGroupUndo must be false.
+     *                         collectingGroupUndo is turned on if
+     *                         typebuf has characters in it (independent of insert)
+     *                         saving state about this would be weird
      * Must be some characters to process.
      * Must be in command mode.
      * @param collectingGroupUndo true if in undo group
@@ -219,7 +228,9 @@ public class GetChar {
     {
         if(runEventQueue > 0)
             --runEventQueue;
-        if(collectingGroupUndo || !isAnyChar() || (G.State & NORMAL) == 0) {
+        if(/*collectingGroupUndo ||*/ !isAnyChar() || (G.State & NORMAL) == 0) {
+            if(Options.isKeyDebug())
+                System.err.println("runEventQueue:" + runEventQueue + " SKIP");
             runEventQueue = 0;
             return false;
         }
@@ -228,6 +239,8 @@ public class GetChar {
             @Override
             public void run()
             {
+                if(Options.isKeyDebug())
+                    System.err.println("runEventQueue:" + runEventQueue);
                 if(runEventQueue > 0)
                     runEventQueue(collectingGroupUndo);
                 else
