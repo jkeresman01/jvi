@@ -251,53 +251,14 @@ abstract public class SimpleBuffer extends SwingBuffer
         }
     }
 
-    private boolean fCommandUndo;
-    private boolean fInsertUndo;
-
     @Override
-    public void do_beginUndo() {
-        G.dbgUndo.printf("{SimpleBuf:do_beginUndo: \n");
-        // NEEDSWORK: standalone like: ((AbstractDocument)doc).writeLock();
-        assert !fCommandUndo;
-        fCommandUndo = true;
-        beginAnyUndo();
-    }
-
-    @Override
-    public void do_endUndo() {
-        // NEEDSWORK: standalone like: ((AbstractDocument)doc).writeUnlock();
-        assert fCommandUndo;
-        endAnyUndo();
-        fCommandUndo = false;
-        G.dbgUndo.printf("}SimpleBuf:do_endUndo: \n");
-    }
-
-    @Override
-    public void do_beginInsertUndo() {
-        G.dbgUndo.printf("{SimpleBuf:do_beginInsertUndo: \n");
-        assert !fInsertUndo;
-        fInsertUndo = true;
-        beginAnyUndo();
-    }
-
-    @Override
-    public void do_endInsertUndo() {
-        assert fInsertUndo;
-        endAnyUndo();
-        fInsertUndo = false;
-        G.dbgUndo.printf("}SimpleBuf:do_endInsertUndo: \n");
-    }
-
-    private void beginAnyUndo() {
-        if(fCommandUndo && fInsertUndo)
-            return;
+    protected void beginAnyUndo() {
         sendUndoableEdit(UndoGroupManager.BEGIN_COMMIT_GROUP);
     }
 
-    private void endAnyUndo()
+    @Override
+    protected void endAnyUndo()
     {
-        if(fCommandUndo && fInsertUndo)
-            return;
         sendUndoableEdit(UndoGroupManager.END_COMMIT_GROUP);
     }
 

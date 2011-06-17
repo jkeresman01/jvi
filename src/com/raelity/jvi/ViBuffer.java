@@ -65,6 +65,9 @@ public interface ViBuffer {
 
     /** a portion of a document may be write protected */
     public boolean isGuarded(int offset);
+
+    /** notify that a read only violation */
+    public void readOnlyError(ViTextView tv);
     
     
     

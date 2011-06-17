@@ -688,6 +688,8 @@ public class ViManager
     {
         if(nPause <= 0) {
             runnable.run();
+        } else if(nPause == 1) {
+            EventQueue.invokeLater(runnable);
         } else {
             final int decr = nPause - 1;
             EventQueue.invokeLater(new Runnable() {

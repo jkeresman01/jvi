@@ -9,6 +9,7 @@
 
 package com.raelity.jvi.core;
 
+import java.awt.EventQueue;
 import com.raelity.jvi.lib.CharTab;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViBuffer;
@@ -272,8 +273,91 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     //
     // undo/redo
     //
+    // The jVi undo/redo API provide for two undo/redo situations;
+    // one for insert mode and one for programmatic/command/redo/macro.
+    // This is painful if you need to use it...
+    //
+    // This default implementation for
+    //          do_beginUndo, do_endUndo, do_beginInsertUndo, do_endInsertUndo
+    // provide an interface that ignores the insert/programmatic differences.
+    // They channel everything into beginAnyUndo/endAnyUndo which can
+    // be overriden to use the simpler interface.
+    //
     protected void do_runUndoable(Runnable r) {
+        G.dbgUndo.printf("{Buffer:RunUndoable: \n");
         r.run();
+    }
+
+    @Override
+    public void readOnlyError(final ViTextView tv)
+    {
+        Util.beep_flush();
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                tv.getStatusDisplay().displayErrorMessage(
+                        "Can not modify write protected area or file."
+                        );
+            }
+        });
+    }
+
+    private boolean fCommandUndo;
+    private boolean fInsertUndo;
+
+    @Override
+    public void do_beginUndo() {
+        G.dbgUndo.printf("{Buffer:do_beginUndo: \n");
+        // NEEDSWORK: standalone like: ((AbstractDocument)doc).writeLock();
+        assert !fCommandUndo;
+        fCommandUndo = true;
+        checkBeginAnyUndo();
+    }
+
+    @Override
+    public void do_endUndo() {
+        // NEEDSWORK: standalone like: ((AbstractDocument)doc).writeUnlock();
+        assert fCommandUndo;
+        checkEndAnyUndo();
+        fCommandUndo = false;
+        G.dbgUndo.printf("}Buffer:do_endUndo: \n");
+    }
+
+    @Override
+    public void do_beginInsertUndo() {
+        G.dbgUndo.printf("{Buffer:do_beginInsertUndo: \n");
+        assert !fInsertUndo;
+        fInsertUndo = true;
+        checkBeginAnyUndo();
+    }
+
+    @Override
+    public void do_endInsertUndo() {
+        assert fInsertUndo;
+        checkEndAnyUndo();
+        fInsertUndo = false;
+        G.dbgUndo.printf("}Buffer:do_endInsertUndo: \n");
+    }
+
+    private void checkBeginAnyUndo() {
+        if(fCommandUndo && fInsertUndo)
+            return;
+        beginAnyUndo();
+    }
+
+    private void checkEndAnyUndo()
+    {
+        if(fCommandUndo && fInsertUndo)
+            return;
+        endAnyUndo();
+    }
+
+    protected void beginAnyUndo()
+    {
+    }
+
+    protected void endAnyUndo()
+    {
     }
 
     //////////////////////////////////////////////////////////////////////

@@ -127,17 +127,10 @@ public class Edit {
   static boolean canEdit() {
     return canEdit(G.curwin, G.curbuf, G.curwin.getCaretPosition());
   }
+
   public static boolean canEdit(final ViTextView tv, ViBuffer buf, int offset) {
     if(buf.isGuarded(offset) || !tv.isEditable()) {
-      Util.beep_flush();
-      EventQueue.invokeLater(new Runnable() {
-        @Override
-        public void run() {
-          tv.getStatusDisplay().displayErrorMessage(
-                  "Can not modify write protected area or file."
-                  );
-        }
-      });
+      buf.readOnlyError(tv);
       return false;
     }
     return true;
