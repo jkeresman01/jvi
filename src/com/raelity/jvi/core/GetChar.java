@@ -131,7 +131,7 @@ public class GetChar {
             ///// if(doc != null)               // NEED API
             /////     doc.readLock();
 
-            startPump(handle_redo);
+            startPump(NO_CHAR, handle_redo);
 
         } finally {
             handle_redo = false;
@@ -237,7 +237,13 @@ public class GetChar {
         return true;
     }
 
-    private static void startPump(final boolean collectingGroupUndo)
+    /**
+     * NOTE: if collectingGroupUndo is false, then 'c' must be NO_CHAR
+     * @param c
+     * @param collectingGroupUndo
+     */
+    private static void startPump(final char c,
+                                  final boolean collectingGroupUndo)
     {
         if(!collectingGroupUndo)
             pumpAllChars(collectingGroupUndo);
@@ -245,6 +251,8 @@ public class GetChar {
             Misc.runUndoable(new Runnable() {
                 @Override
                 public void run() {
+                    if(c != NO_CHAR)
+                        pumpChar(c);
                     pumpAllChars(collectingGroupUndo);
                 }
             });
@@ -269,15 +277,15 @@ public class GetChar {
         try {
 
             while(true) {
-                if(!collectingGroupUndo
-                        && (!typebuf.isEmpty() && isInsertMode()
-                            || handle_redo)) {
-                    G.dbgUndo.println("pumpAllChars: switching to group undo");
-                    startPump(true);
-                    return;
-                }
                 if(runEventQueue > 0 && runEventQueue(collectingGroupUndo))
                     return;
+                if(!collectingGroupUndo
+                        && (typebuf.length() > 1 // && isInsertMode()
+                            || handle_redo)) {
+                    G.dbgUndo.println("pumpAllChars: switch 1 to group undo");
+                    startPump(NO_CHAR, true);
+                    return;
+                }
                 if(old_char != NUL) {
                     char c = old_char;
                     old_char = NUL;
@@ -289,6 +297,14 @@ public class GetChar {
                     continue;
                 }
                 char c = typebuf.getChar();
+                // Do this again since typebuf length may have just changed.
+                if(!collectingGroupUndo
+                        && (typebuf.length() > 1 // && isInsertMode()
+                            || handle_redo)) {
+                    G.dbgUndo.println("pumpAllChars: switch 2 to group undo");
+                    startPump(c, true);
+                    return;
+                }
                 if( c != NO_CHAR) { //if(typebuf.hasNext()) {
                     pumpChar(c);
                 } else {
