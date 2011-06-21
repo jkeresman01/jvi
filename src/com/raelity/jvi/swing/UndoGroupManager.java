@@ -30,6 +30,11 @@ import javax.swing.undo.UndoableEdit;
  * Thus <tt>undo()</tt> and <tt>redo()</tt> treat them 
  * as a single undo/redo.</li>
  * <li>BEGIN/END nest.</li>
+ * <li> Issue MARK_COMMIT_GROUP to commit accumulated
+ * <tt>UndoableEdit</tt>s into a single <tt>CompoundEdit</tt>
+ * and to continue accumulating;
+ * an application could do this at strategic points, such as EndOfLine
+ * input or cursor movement.</li>
  * </ol>
  * @see UndoManager
  */
@@ -39,18 +44,30 @@ public class UndoGroupManager extends UndoManager {
     private int buildUndoGroup;
     /** accumulate edits here in undoGroup */
     private CompoundEdit undoGroup;
+    /**
+     * Signal that nested group started and that current undo group
+     * must be committed if edit is added. Then can avoid doing the commit
+     * if the nested group turns out to be empty.
+     */
+    private int needsNestingCommit;
 
     /**
      * Start a group of edits which will be committed as a single edit
      * for purpose of undo/redo.
      * Nesting semantics are that any BEGIN_COMMIT_GROUP and
-     * END_COMMIT_GROUP delimits a commit-group.
+     * END_COMMIT_GROUP delimits a commit-group, unless the group is
+     * empty in which case the begin/end is ignored.
      * While coalescing edits, any undo/redo/save implicitly delimits
      * a commit-group.
      */
-    public static final UndoableEdit BEGIN_COMMIT_GROUP = new ComitGroupEdit();
+    public static final UndoableEdit BEGIN_COMMIT_GROUP = new CommitGroupEdit();
     /** End a group of edits. */
-    public static final UndoableEdit END_COMMIT_GROUP = new ComitGroupEdit();
+    public static final UndoableEdit END_COMMIT_GROUP = new CommitGroupEdit();
+    /**
+     * Any coalesced edits become a commit-group and a new commit-group
+     * is started.
+     */
+    public static final UndoableEdit MARK_COMMIT_GROUP = new CommitGroupEdit();
 
     /** SeparateEdit tags an UndoableEdit so the
      * UndoGroupManager does not coalesce it.
@@ -58,7 +75,7 @@ public class UndoGroupManager extends UndoManager {
     public interface SeparateEdit {
     }
 
-    private static class ComitGroupEdit extends AbstractUndoableEdit {
+    private static class CommitGroupEdit extends AbstractUndoableEdit {
         @Override
         public boolean isSignificant() {
             return false;
@@ -72,6 +89,8 @@ public class UndoGroupManager extends UndoManager {
             beginUndoGroup();
         } else if(ue.getEdit() == END_COMMIT_GROUP) {
             endUndoGroup();
+        } else if(ue.getEdit() == MARK_COMMIT_GROUP) {
+            commitUndoGroup();
         } else {
             super.undoableEditHappened(ue);
         }
@@ -81,13 +100,14 @@ public class UndoGroupManager extends UndoManager {
      * Direct this <tt>UndoGroupManager</tt> to begin coalescing any
      * <tt>UndoableEdit</tt>s that are added into a <tt>CompoundEdit</tt>.
      * <p>If edits are already being coalesced and some have been 
-     * accumulated, they are committed as an atomic group and a new
-     * group is started.
+     * accumulated, they are flagged for commitment as an atomic group and
+     * a new group will be started.
      * @see #addEdit
      * @see #endUndoGroup
      */
     private synchronized void beginUndoGroup() {
-        commitUndoGroup();
+        if(undoGroup != null)
+            needsNestingCommit++;
         LOG.log(Level.FINE, "beginUndoGroup: nesting {0}", buildUndoGroup);
         buildUndoGroup++;
     }
@@ -106,10 +126,13 @@ public class UndoGroupManager extends UndoManager {
         if(buildUndoGroup < 0) {
             LOG.log(Level.WARNING, null,
                     new Exception("endUndoGroup without beginUndoGroup"));
+            // slam buildUndoGroup to 0 to disable nesting
             buildUndoGroup = 0;
         }
-        // slam buildUndoGroup to 0 to disable nesting
-        commitUndoGroup();
+        if(needsNestingCommit <= 0)
+            commitUndoGroup();
+        if(--needsNestingCommit < 0)
+            needsNestingCommit = 0;
     }
 
     /**
@@ -126,6 +149,11 @@ public class UndoGroupManager extends UndoManager {
         if(undoGroup == null) {
             return;
         }
+
+        // undoGroup is being set to null,
+        // needsNestingCommit has no meaning now
+        needsNestingCommit = 0;
+
         // super.addEdit may end up in this.addEdit,
         // so buildUndoGroup must be false
         int saveBuildUndoGroup = buildUndoGroup;
@@ -153,6 +181,8 @@ public class UndoGroupManager extends UndoManager {
     }
 
     /**
+     * If there's a pending undo group that needs to be committed
+     * then commit it.
      * If this <tt>UndoManager</tt> is coalescing edits then add
      * <tt>anEdit</tt> to the accumulating <tt>CompoundEdit</tt>.
      * Otherwise, add it to this UndoManager. In either case the
@@ -166,6 +196,10 @@ public class UndoGroupManager extends UndoManager {
         if(!isInProgress())
             return false;
 
+        if(needsNestingCommit > 0) {
+            commitUndoGroup();
+        }
+
         if(buildUndoGroup > 0) {
             if(anEdit instanceof SeparateEdit)
                 return commitAddEdit(anEdit);
@@ -177,7 +211,6 @@ public class UndoGroupManager extends UndoManager {
         }
     }
 
-    /** {@inheritDoc} */
     @Override
     public synchronized void discardAllEdits() {
         commitUndoGroup();
@@ -188,14 +221,12 @@ public class UndoGroupManager extends UndoManager {
     // TODO: limits
     //
 
-    /** {@inheritDoc} */
     @Override
     public synchronized void undoOrRedo() {
         commitUndoGroup();
         super.undoOrRedo();
     }
 
-    /** {@inheritDoc} */
     @Override
     public synchronized boolean canUndoOrRedo() {
         if(undoGroup != null)
@@ -203,14 +234,12 @@ public class UndoGroupManager extends UndoManager {
         return super.canUndoOrRedo();
     }
 
-    /** {@inheritDoc} */
     @Override
     public synchronized void undo() {
         commitUndoGroup();
         super.undo();
     }
 
-    /** {@inheritDoc} */
     @Override
     public synchronized boolean canUndo() {
         if(undoGroup != null)
@@ -218,7 +247,6 @@ public class UndoGroupManager extends UndoManager {
         return super.canUndo();
     }
 
-    /** {@inheritDoc} */
     @Override
     public synchronized void redo() {
         if(undoGroup != null)
@@ -226,7 +254,6 @@ public class UndoGroupManager extends UndoManager {
         super.redo();
     }
 
-    /** {@inheritDoc} */
     @Override
     public synchronized boolean canRedo() {
         if(undoGroup != null)
@@ -234,14 +261,12 @@ public class UndoGroupManager extends UndoManager {
         return super.canRedo();
     }
 
-    /** {@inheritDoc} */
     @Override
     public synchronized void end() {
         commitUndoGroup();
         super.end();
     }
 
-    /** {@inheritDoc} */
     @Override
     public synchronized String getUndoOrRedoPresentationName() {
         if(undoGroup != null)
@@ -249,7 +274,6 @@ public class UndoGroupManager extends UndoManager {
         return super.getUndoOrRedoPresentationName();
     }
 
-    /** {@inheritDoc} */
     @Override
     public synchronized String getUndoPresentationName() {
         if(undoGroup != null)
@@ -257,7 +281,6 @@ public class UndoGroupManager extends UndoManager {
         return super.getUndoPresentationName();
     }
 
-    /** {@inheritDoc} */
     @Override
     public synchronized String getRedoPresentationName() {
         if(undoGroup != null)
@@ -265,7 +288,6 @@ public class UndoGroupManager extends UndoManager {
         return super.getRedoPresentationName();
     }
 
-    /** {@inheritDoc} */
     @Override
     public boolean isSignificant() {
         if(undoGroup != null && undoGroup.isSignificant()) {
@@ -274,14 +296,12 @@ public class UndoGroupManager extends UndoManager {
         return super.isSignificant();
     }
 
-    /** {@inheritDoc} */
     @Override
     public synchronized void die() {
         commitUndoGroup();
         super.die();
     }
 
-    /** {@inheritDoc} */
     @Override
     public String getPresentationName() {
         if(undoGroup != null)
