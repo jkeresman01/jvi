@@ -223,7 +223,8 @@ public class Search
       int rc;
       rc = do_search(ass.searchPos.copy(), null,
                      ass.dirc, pattern, ass.searchCount,
-                     SEARCH_KEEP + SEARCH_OPT + SEARCH_NOOF + SEARCH_PEEK);
+                     SEARCH_MSG
+                     + SEARCH_KEEP + SEARCH_OPT + SEARCH_NOOF + SEARCH_PEEK);
       // for incr search, use java selection to show progress
       int new_pos = G.curwin.w_cursor.getOffset();
       G.curwin.setSelection(new_pos, new_pos + search_match_len);
