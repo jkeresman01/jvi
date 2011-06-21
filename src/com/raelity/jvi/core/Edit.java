@@ -30,7 +30,6 @@ import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViTextView;
 import com.raelity.text.TextUtil.MySegment;
 
-import java.awt.EventQueue;
 import java.util.Stack;
 
 import static com.raelity.jvi.core.lib.Constants.*;
@@ -352,6 +351,11 @@ public class Edit {
           case 0x1f & (int)('R'):	// Ctrl
             ins_reg();
             inserted_space.setValue(false);
+            break;
+
+          // commands starting with CTRL-G
+          case 0x1f & (int)('G'):       // Ctrl
+            ins_ctrl_g();
             break;
             
             // Make indent one shiftwidth smaller.
@@ -1711,6 +1715,40 @@ private static class GetLiteral implements HandleNextChar
       handleNextChar = null; // all done.
       return NUL;
     }
+  }
+
+  private static void ins_ctrl_g()
+  {
+      if(true) // if (redrawing() && !char_avail())
+      {
+          //add_to_showcmd_c(ctrl('R'));
+          add_to_showcmd(ctrl('G'));
+      }
+
+  //#ifdef USE_ON_FLY_SCROLL...
+      handleNextChar = new CallbackInsCtrlG();
+
+  }
+
+  private static class CallbackInsCtrlG implements HandleNextChar
+  {
+    @Override
+    public char go(char c) throws NotSupportedException
+    {
+      handleNextChar = null; // all done.
+
+      switch(c) {
+        case 'u':
+          Misc.endInsertUndo();
+          Misc.beginInsertUndo();
+          break;
+
+        default:
+      }
+      clear_showcmd();
+      return NUL; // no more processing for this
+    }
+
   }
   
   /**
