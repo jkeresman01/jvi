@@ -238,7 +238,7 @@ abstract public class SwingBuffer extends Buffer
     }
     
     @Override
-    public void replaceChar(int offset, char c) {
+    public void replaceChar(ViMark pos, char c) {
         if( ! isEditable()) {
             Util.beep_flush();
             return;
@@ -246,9 +246,9 @@ abstract public class SwingBuffer extends Buffer
         String s = String.valueOf(c);
         
         try {
-            // This order works better with the do-again, '.', buffer
-            getDocument().insertString(offset, s, null);
-            getDocument().remove(offset + 1, 1);
+            // This order works better with the do-again, '.', buffer magic
+            getDocument().insertString(pos.getOffset(), s, null);
+            getDocument().remove(pos.getOffset() + 1, 1);
         } catch(BadLocationException ex) {
             processTextException(ex);
         }

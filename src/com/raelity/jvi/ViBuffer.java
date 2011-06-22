@@ -54,8 +54,9 @@ public interface ViBuffer {
     
     /** get some text from the document */
     public String getText(int offset, int length) throws ViBadLocationException;
-    
-    public void replaceChar(int offset, char c);
+
+    /** should be a BIAS.BACK mark */
+    public void replaceChar(ViMark pos, char c);
     
     /** undo a change */
     public void undo();

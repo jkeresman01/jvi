@@ -278,8 +278,8 @@ public class Edit {
     // whole lot of stuff deleted
     //	if (c == Ctrl('V') || c == Ctrl('Q'))
     
-    normal_char:	// do "break normal_char" to insert a character
-    while(true) {
+normal_char:	// do "break normal_char" to insert a character
+    {
       try {
         
         G.curwin.w_set_curswant = true;
@@ -596,7 +596,8 @@ public class Edit {
         return; // ignore the character
       }
       
-    } //  normal_char: while(true), so a "break normal_char" goes to next line
+    }
+// normal_char:         LABEL   "break normal_char" GOES HERE
     
     // just do something simple for now
     // if(vim_iswordc(c) || !echeck_abbr(c))

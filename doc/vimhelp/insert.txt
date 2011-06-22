@@ -180,6 +180,7 @@ char		action	~
  <End>           cursor to after last char in the line        *i_<End>*
  <C-Home>        cursor to first char in the file             *i_<C-Home>*
  <C-End>         cursor to after last char in the file        *i_<C-End>*
+START-DOC-DEL
  <LeftMouse>     cursor to position of mouse click            *i_<LeftMouse>*
  <S-Up>          move window one page up                      *i_<S-Up>*
  <PageUp>        move window one page up                      *i_<PageUp>*
@@ -189,6 +190,8 @@ char		action	~
  <S-MouseDown>   scroll a full page down                      *i_<S-MouseDown>*
  <MouseUp>       scroll three lines up                        *i_<MouseUp>*
  <S-MouseUp>     scroll a full page up                        *i_<S-MouseUp>*
+STOP-DOC-DEL
+ CTRL-G u        break undo sequence, start new change        *i_CTRL-G_u*
 -----------------------------------------------------------------------
 
 When the 'whichwrap' option is set appropriately, the <Left> and <Right>

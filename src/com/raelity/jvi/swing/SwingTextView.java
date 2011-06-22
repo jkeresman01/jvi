@@ -388,12 +388,16 @@ public class SwingTextView extends TextView
             Util.beep_flush();
             return;
         }
-        int offset = w_cursor.getOffset();
-        getBuffer().replaceChar(offset, c);
+        ViMark pos = getBuffer().createMark(w_cursor.getOffset(),
+                                            ViBuffer.BIAS.BACK);
+        getBuffer().replaceChar(pos, c);
+        // need to get the cursor again because the platform may have done
+        // more than you expect...
+        int offset = pos.getOffset();
         if ( advanceCursor ) {
             offset++;
         }
-        setCaretPosition(offset);// also clears the selection
+        w_cursor.set(offset); // also clears the selection if needed
     }
 
     @Override
