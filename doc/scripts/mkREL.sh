@@ -22,7 +22,8 @@ NB_VERSION=NetBeans-7.0
 
 JVI_MAIN=$JVI_VERSIONDIR/proj/updates.xml
 JVI_UC=         # pick up from plugin portal update center
-UC_DIR=eaUC
+#UC_DIR=eaUC
+UC_DIR=UC
 JVI_ADD="
     $JVI_RELDIR/editor.pin-1.3.2/proj/updates.xml
     $JVI_RELDIR/jvi.help-1.0/proj/updates.xml
@@ -51,9 +52,6 @@ rm $GUTS
 gzip -9 -c $CATALOG > $CATALOG.gz
 
 
-# don't abort on error since the cmp might fail
-set +e
-
 SAVE_DIR=$(pwd)
 cd $OUT
 
@@ -62,6 +60,9 @@ UC=$UC_MIRROR/$NB_VERSION/$UC_DIR
 echo ========= $UC =========
 
 FILES=
+
+# don't abort on error since the cmp might fail
+set +e
 
 for i in *
 do
@@ -78,6 +79,8 @@ do
         FILES="$FILES $i"
     fi
 done
+
+set -e
 
 cd $SAVE_DIR
 
