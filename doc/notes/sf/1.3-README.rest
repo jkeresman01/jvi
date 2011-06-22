@@ -1,10 +1,11 @@
 See `CHANGES <http://jvi.sourceforge.net/?CHANGES.html>`_ for per release
-feature and fix information.
+feature and fix information and details.
+In NetBeans, install "jVi for NB-7.0 Update Center",
+with Tools>Plugins>AvailablePlugins
+(source: Plugin Portal, category: editing)
 
-| **nbvi-1.4**
-|   Recent additions are map-commands and horizontal-scroll-commands.
-| 
+| **nbvi-1.4.2**
+|       ^W split, resize, move window commands; see CHANGES
 | **nbvi-1.4.1**
-|   some ^W split window, move window commands; see CHANGES
-|   multi-char {lhs} map-commands with 'timeout' options
+|       multi-char {lhs} map-commands with 'timeout' options
 

@@ -3,7 +3,7 @@
 # Note: This is NOT an xml file, rather adhoc
 
 motd-version: 1
-jVi-release: 1.4.1
+jVi-release: 1.4.2
 #jVi-release-link:  http://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-7.0/nbvi-1.4.zip/download
 
 #jVi-beta: 1.4.1.beta4
@@ -16,12 +16,11 @@ jVi-download-target: http://sourceforge.net/projects/jvi/files/jvi/
 # They are displayed in the order they are given.
 # There may be any number of lines before the <EOT>
 motd-message:
-*** jVi for Netbeans 7.0 Update Center ***
-Install UC, source: Plugin Portal with Tools>Plugins>AvailablePlugins
+Install "jVi for Netbeans 7.0 Update Center" with Tools>Plugins>AvailablePlugins
+(source: Plugin Portal, category: editing)
 * see CHANGES about:
-*     split and move window commands, e.g. Ctrl-W_v and Ctrl-W_L
+*     split, resize and move window commands, e.g. Ctrl-W_s, Ctrl-W_=, Ctrl-W_L
 *     multi-char {lhs} mappings, including insert mode, w/timeout options
-*     horizontal scroll commands
 <EOT>
 
 # motd-message:
@@ -32,7 +31,7 @@ Install UC, source: Plugin Portal with Tools>Plugins>AvailablePlugins
 # <EOT>
 
 motd-link: http://jvi.sourceforge.net/?CHANGES.html
-jVi recent features and CHANGES at website.
+See jVi recent features and CHANGES at website.
 <EOT>
 
 motd-link: https://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/
