@@ -171,7 +171,6 @@ public class G
     public static BooleanOption p_ssl;   // shellSlash - flag for filename expansion
 
     public static BooleanOption readOnlyHack;
-    public static BooleanOption isClassicUndo;
     public static BooleanOption isHideVersion;
     public static DebugOption dbgEditorActivation;
     public static BooleanOption isCoordSkip;

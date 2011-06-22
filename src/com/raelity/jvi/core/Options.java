@@ -327,12 +327,6 @@ public final class Options {
     OptUtil.setupOptionDesc(Category.PLATFORM, selectFgColor, "'hl-visual' foreground color",
             "The color used for a visual mode selection foreground.");
     setExpertHidden(selectFgColor, false, false);
-
-    G.isClassicUndo = OptUtil.createBooleanOption(classicUndoOption, true);
-    OptUtil.setupOptionDesc(Category.PLATFORM, classicUndoOption, "classic undo",
-                    "When false, undo is done according to the"
-                    + " underlying platform; usually tiny chunks.");
-    setExpertHidden(classicUndoOption, true, false);
     
     G.isHideVersion = OptUtil.createBooleanOption(hideVersionOption, false);
     OptUtil.setupOptionDesc(Category.PLATFORM, hideVersionOption, "hide version",
