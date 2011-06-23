@@ -16,6 +16,7 @@
   <h2>jVi NEEDSWORK/TODO list</h2>
 
   <ul>
+    <li><a href="#New">                    New</a></li>
     <li><a href="#Bugs">                   Bugs</a></li>
     <li><a href="#NetBeans_Embedding">     NetBeans Embedding</a></li>
     <li><a href="#NetBeans_Platform_Bugs"> NetBeans Platform Bugs</a></li>
@@ -33,9 +34,22 @@
 
 
 <pre>
+<span id="New" class="TodoSection">New</span>
+  - PositionsBag vs OffsetsBag for HighlightsLayer. Currently both blockmode
+    and search highlighters are OffsetsBag. Maybe search should be positions?
+  - For ins_ctrl_g() do no_mappings dance.
+  - NB undo and code completion issues, in progress
+    Bug 199568 - Define empty begin/end COMMIT_GROUP behavior,
+                 add MARK_COMMIT_GROUP
+    Bug 150251 - Too high granularity of undo history
+                 when undoing CC (Ctrl+Enter)
+  - MutliEdit and AppView and ":e#". Like source half of Matisse.
+
+
 <span id="Bugs" class="TodoSection">Bugs</span>
-  - ^V... then IxxESC requires two undo, see $jvi/bugs/need-extra-undo
-  - 'o' open new line, if ESC removes auto indent, then additional undo
+  - See sourcforge...
+  - getRecordedLine() and :command issues
+    colon characters should come through typebuf? (see in cleanup below)
   - ^F/^B count
   - Handing of no_mapping/allow_keys.
     What does allow_keys really do?
@@ -43,17 +57,14 @@
   - g/foo/s/bar/baz
     Problem is that substitue is executed fully each time,
     would like devise a way to parse s command once for a given g.
-    At a minimum, don't get the regexp again.
+    At a minimum, don't get the regexp again. (there's a regexp cache now)
   - Search issues; get it all up to vim7.
     Verify options SEARCH_FOLD,SEARCH_PEEK etc.
     support SEARCH_OPT, SEARCH_NOOF, SEARCH_PEEK
   - substitute command add more features
-    - for s/// handle undocumented vim feature: \/,\?,\&amp; like in g//
     - more of the s///flags
   - Create JUnit testing infrastructure. Create tests.
-  - See sourcforge...
   - 0 ==&gt; don't persist marks
-  - :e#m&lt;ctrl-s&gt; if ":  e #  nx" not detected correctly
   - in jVi-standalone, wrapped lines and TAB chars, eg. following one line
         asdf asdf asdf asdf asdf asdf asdf asdf asdf asdfxxxxx{space..}
         aaa{tab}#sd asdf asdfhasdklfjh asdklfjhasdf asdfkljhasdf asd
@@ -63,8 +74,9 @@
     dependent on the number of {space} chars at the end of the first view
     line. The problem does not appear in NB.
 
+
 <span id="NetBeans_Embedding" class="TodoSection">NetBeans Embedding</span>
-  - If using non-modal command line, the command completion doesn't
+  * If using non-modal command line, the command completion doesn't
     get keys. In particular up/down/CR.
   - {begin,end}undo issue and atomic lock stuff.
     stop using atomic lock for programmatic changes,
@@ -87,7 +99,7 @@
   - C:\a\src\jvi-dev\nbvi\src\org\netbeans\modules\jvi\impl\NbOps.java:31:
     warning: [deprecation] org.netbeans.editor.BaseKit.DefaultKeyTypedAction
     in org.netbeans.editor.BaseKit has been deprecated
-  - find out how to catch/bypass the dialog ESC handling, so that jVi
+  * find out how to catch/bypass the dialog ESC handling, so that jVi
     operates more comfortably in a dialog.
     - It does work in some dialogs, for example "new watch" seems to
       have a keybinding for ESC, when jVi not active ESC dismisses that
@@ -101,26 +113,29 @@
 <span id="NetBeans_Platform_Bugs" class="TodoSection">NetBeans Platform Bugs</span>
   - editor focus lost after next diff action changes file
   - can't see cursor in left side diff
+  - in NB's diff window, delete-a-diff (make two side the same) and the next
+    diff is offscreen. Hit the "next-diff" button, and a diff is skipped.
   - See umbrella bug for jVi in NetBeans
     <a href="https://netbeans.org/bugzilla/show_bug.cgi?id=179047">Bug 179047 - jVi integration</a>
 
 
 <span id="Features" class="TodoSection">Features</span>
   - See sourcforge...
+  - usage of shell variable in "external process" commands
   - options sidescroll, sidescrolloff
   - :brwose {command} for 'e', 'w'...
-  - Add autocmd, at least a simple form of it.
+  - {sf} Add autocmd, at least a simple form of it.
   - Have an option(s) for multiline matching. E.g. handle \n in pattern
     and allow '.' to match newline.
     Create CharSequence that wraps multiple Segment, then can use Segment's
     partial return and scan whole file without gap content copying.
-  - Support the vim search offset (there a feature request about this)
-    and also the "/test 1/;/test" type of multi search stuff.
+  - {sf} Support the vim search offset, also the "/test 1/;/test" stuff.
+    Recent do_search/searchit rewrite better positioned for multi search stuff
   - :registers, :nomads, :winnr
   - There is now an internal findmatch which does a pretty good job with '%';
     it is either/or. Allow a fallback from platform to internal? For example
     for the '#'.
-  - middle mouse button insert
+  - {sf} middle mouse button insert
   - :browse
   - persist jumplist
   - Handle tag file
@@ -145,10 +160,10 @@
         See [platform-dev] Re: Magic global accessibility keys
         in mail folder: Developement/NetBeans/Wiki
         [Action.this.]putProperty("OpenIDE-Transmodal-Action", true);
-  - brace matching interface should give access to offsets
+  * brace matching interface should give access to offsets
     see the '%' code in Normal
   - NB ":tog" has problems with debug... get it to interoperate with sliders.
-  - Simplify adding ":" random colon commands.
+  * Simplify adding ":" random colon commands.
     Require an escape key for these commands so jVi not poluted?
     Clean up module/package exports, make NB "fried" of jVi?
 
@@ -169,7 +184,6 @@
   - Parse jVi docs for html, javahelp, per topic help. Per topic used for
     popup as NetBeans' doc popup; in NB have ":he x" list all matching *x*.
   - include notes, Murry doc
-  - doc ^W commands
   - Add {jVi Xxx category} to vimhelp for options.
   - Add {works with :set} to vimhelp for options.
     Also vimhelp list of what works with :set.
@@ -233,8 +247,9 @@
 
 
 <span id="Options" class="TodoSection">Options</span>
+  - vim's :options command (brings up dialog)
   - Have "DEFAULT" button for all options/properties
-  - Make the G.xxx globals privitive types; when opt.setValue reflect the
+  - Make the G.xxx globals private types; when opt.setValue reflect the
     new value into the primitive.
     then change all references to G.xxx to xxx() (note use static import)
     and the primitive xxx can be private, so it would be impossible to modify
@@ -254,16 +269,13 @@
       this might be an alternative to this discussion or in addition to.
       Currently need to use pref listener.
   - Tool tips in property dialog
-    
 
 
 <span id="Cleanup" class="TodoSection">Cleanup</span>
-  - In cc01.java get rid of the "private static ACTION_edit = new ...."
-    in favor of "private static class EditAction {...}"
-  - get rid of "G."; use static import. For G.xx, use xx()
   - make TextView.w_cursor a simple fpos,
     do an "update" when exitting key event
-    NOTE: this may not be viable, maybe if doc change events invalidate it
+    NOTE: this may not be viable, maybe could be made to work if
+    doc change and cursor move events invalidate it
   - Consider getting rid of 
         Misc.xlateViKey(ViManager.getInsertModeKeymap(), c, G.getModMask())
     would just handle ^T (or whatever) in the redobuf? Other issues?
