@@ -1,0 +1,78 @@
+Working with jVi options
+
+  - General
+    . options are persisted to the Preferences data base
+    . Option.java is the base class for all options.
+    . Currently ther are four types of options, BooleanOption, IntegerOption,
+      StringOption and ColorOption.
+    . listen to changes to options by doing
+      Options.getOptions().addPropertyChangeListener(optName, listener)
+
+  - Adding an option
+    . If needed, in G.java define pointer to the option, e.g. G.p_opt_name
+      Otherwise option can be found with Options.getOption(optName)
+    . In Option.java
+      - define the name of the option
+
+        public static final String report = "viReport";
+
+      Note that the options are grouped by category
+
+      - create the option and default value; assign to global if needed
+
+        G.p_report = createIntegerOption(report, 2);
+
+        There is an optional third argument to createXxxOptions, this argument
+        is a validator. If not provided, then any value suitable for the type
+        is accepted.
+
+      - Assign option to category, provide short and long description.
+        The shortdesc and longdesc are taken from vim when applicable.
+        The shortdesc is the name(s) of the vim option.
+
+        setupOptionDesc(categoryList, optName, shortdesc, longdesc);
+
+      - Optionally to mark the option as expert, or hide it from the UI
+
+        setExpertHidden(optName, expertFlag, hiddenFlag);
+
+      - In OptionsBeanBase.java define the getter/setter for the option
+        Typically add new get/set right after getJViVersion()
+
+        public void setViShowMode(boolean arg) { put(Options.showMode, arg); }
+
+        public boolean getViShowMode() { return getboolean(Options.showMode); }
+
+  - Adding a new category of options.
+    A category of options is represented by a list of option names.
+
+    . In Options.java define the category
+
+      static List<String>cursorWrapList = new ArrayList<String>();
+
+    . In OptionsBean.java define a tiny class for the category. This class is
+      a subclass of OptionsBeanBase.
+
+      static public class Search extends OptionsBeanBase {
+          public Search() {
+              super(Search.class, "Search Options", Options.searchList);
+          } }
+
+      The arguments to the superclass are the class itself, the name of the
+      category for UI display and the List<Strign> defined in previous step.
+
+    . For NetBeans add the new category to NbOptionsNode.java
+
+      - In this file, use an existing node as an example; like NODE_SEARCH.
+
+        Define NODE_XXX, use it in two other places.
+
+      - Add a class for the category. Copy the example class SearchNode,
+        change class name to XxxNode, invoke super() with the class defined in
+        OptionsBean.java
+        
+        super(new OptionsBean.Xxx() { ....
+
+        We need to override the put methods because NetBeans doesn't handle
+        a bean's PropertyVetoException (I think that's a NetBeans bug).
+
