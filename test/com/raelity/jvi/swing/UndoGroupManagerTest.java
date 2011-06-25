@@ -508,15 +508,55 @@ public class UndoGroupManagerTest {
         assertEquals("undo3", "", d.getText(0, d.getLength()));
     }
 
+    @Test
+    public void testDefaultUndoManagerar() throws Exception {
+        content = "";
+        StyledDocument d = support.openDocument();
+        support.changeUndoManager(new UndoManager());
+
+        d.insertString(d.getLength(), "a", null);
+        beginChunk(d);
+        d.insertString(d.getLength(), "b", null);
+        endChunk(d);
+
+        assertEquals("data", "ab", d.getText(0, d.getLength()));
+
+        ur().undo();
+        ur().undo();
+        assertEquals("after undo data", "", d.getText(0, d.getLength()));
+
+        // do the same steps, this tests that the CommitGroupEdit,
+        // e.g. BEGIN_COMMIT_GROUP, can be reused. The re-use is
+        // accomplished through overriding canRedo/canUndo
+
+        d.insertString(d.getLength(), "a", null);
+        beginChunk(d);
+        d.insertString(d.getLength(), "b", null);
+        endChunk(d);
+
+        assertEquals("data", "ab", d.getText(0, d.getLength()));
+
+        ur().undo();
+        ur().undo();
+        assertEquals("after undo data", "", d.getText(0, d.getLength()));
+    }
+
     static class Support {
         StyledDocument doc;
         UndoManager undoMan;
 
-        public Support()
+        Support()
         {
             doc = new DefaultStyledDocument();
             undoMan = new UndoGroupManager();
             doc.addUndoableEditListener(undoMan);
+        }
+
+        void changeUndoManager(UndoManager undoMan)
+        {
+            doc.removeUndoableEditListener(this.undoMan);
+            doc.addUndoableEditListener(undoMan);
+            this.undoMan = undoMan;
         }
 
         StyledDocument openDocument()

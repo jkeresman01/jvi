@@ -80,6 +80,18 @@ public class UndoGroupManager extends UndoManager {
         public boolean isSignificant() {
             return false;
         }
+
+        @Override
+        public boolean canRedo()
+        {
+            return true;
+        }
+
+        @Override
+        public boolean canUndo()
+        {
+            return true;
+        }
     }
 
     @Override
