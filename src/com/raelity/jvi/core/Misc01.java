@@ -180,7 +180,7 @@ public class Misc01
     static void gotoLogicalLine(int logicalLine, int flag)
     {
       if ( G.dbgCoordSkip.getBoolean(Level.FINE) ) {
-         System.err.println(String.format(
+            G.dbgCoordSkip.println(Level.FINE, String.format(
                  "gotoLogicalLine: logicalLine %d, flag 0x%x",
                  logicalLine, flag));
       }

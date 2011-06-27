@@ -92,7 +92,7 @@ public class Scheduler
         fact().setupCaret(editor); // make sure has the right caret
         textView.attach();
         if (G.dbgEditorActivation.getBoolean()) {
-            System.err.println("Activation: ViManager.SWITCHTO: "
+            G.dbgEditorActivation.println("Activation: ViManager.SWITCHTO: "
                     + (fNewTextView ? "NEW: " : "") + cid(editor)
                     + " " + buf.getDisplayFileName() + " " + ViManager.cid(buf));
         }
@@ -155,7 +155,7 @@ public class Scheduler
     {
         if(c != null) {
             if (fact() != null && G.dbgEditorActivation.getBoolean())
-                System.err.println("Activation: Scheduler.register: " + cid(c));
+                G.dbgEditorActivation.println("Activation: Scheduler.register: " + cid(c));
             c.removeFocusListener(focusSwitcher);
             c.addFocusListener(focusSwitcher);
         }
@@ -179,7 +179,7 @@ public class Scheduler
     {
         if (currentEditorPane == ed) {
             if (G.dbgEditorActivation.getBoolean())
-                System.err.println("Activation: ViManager.detached " + cid(ed));
+                G.dbgEditorActivation.println("Activation: ViManager.detached " + cid(ed));
             currentEditorPane = null;
         }
     }

@@ -142,7 +142,7 @@ public enum AppViews
 
         Component ed = av.getEditor();
         if (fact() != null && G.dbgEditorActivation.getBoolean())
-            System.err.println("Activation: AppViews.activate: " + tag +
+            G.dbgEditorActivation.println("Activation: AppViews.activate: " + tag +
                     " " + ViManager.cid(ed) + " " + ViManager.cid(av) + " " +
                     fact().getFS().getDisplayFileName(av));
         ViAppView keep = keepMru;
@@ -179,7 +179,7 @@ public enum AppViews
         if(!force && avCurrentlyActive == null)
             return;
         if (fact() != null && G.dbgEditorActivation.getBoolean())
-            System.err.println("Activation: AppViews.deactivateCurrent: ");
+            G.dbgEditorActivation.println("Activation: AppViews.deactivateCurrent: ");
             //System.err.println("Activation: avs.deactivateCurent: " +
             //        " " + ViManager.cid(av) + fact().getFS().getDisplayFileName(av));
         if (hasFact() && Scheduler.getCurrentEditor() != null) {
@@ -198,7 +198,7 @@ public enum AppViews
         Component ed = av.getEditor();
         if (fact() != null && G.dbgEditorActivation.getBoolean()) {
             String fname = fact().getFS().getDisplayFileName(av);
-            System.err.println("Activation: AppViews.close: " +
+            G.dbgEditorActivation.println("Activation: AppViews.close: " +
                     (ed == null ? "(no shutdown) " : "")
                     + fname + " " + ViManager.cid(ed));
         }
@@ -244,7 +244,7 @@ public enum AppViews
             return;
         Component ed = av.getEditor();
         if (fact() != null && G.dbgEditorActivation.getBoolean())
-            System.err.println("Activation: AppViews.open: " + tag +
+            G.dbgEditorActivation.println("Activation: AppViews.open: " + tag +
                     " " + ViManager.cid(ed) + " " + ViManager.cid(av) + " " +
                     fact().getFS().getDisplayFileName(av)); // the av is added to the end of the MRU
         if (!av.isNomad()) {
@@ -366,7 +366,7 @@ public enum AppViews
     private static ViAppView relativeMruAppView(ViAppView av, int i)
     {
         if (fact() != null && G.dbgEditorActivation.getBoolean())
-            System.err.println("Activation: AppViews.relativeMruAppView: " +
+            G.dbgEditorActivation.println("Activation: AppViews.relativeMruAppView: " +
                     fact().getFS().getDisplayFileName(av));
         if (avsMRU.isEmpty())
             return null;

@@ -275,7 +275,7 @@ public abstract class TextView implements ViTextView
 
         int currDot = dot;
         if (G.dbgMouse.getBoolean())
-            System.err.println("CaretMark: " + lastDot + " --> " + currDot
+            G.dbgMouse.println("CaretMark: " + lastDot + " --> " + currDot
                     + " " + w_buffer.getDisplayFileName());
         if (!ViManager.jViBusy() && !Scheduler.isMouseDown()) {
             // The cursor was magcally moved and jVi had nothing to
@@ -286,7 +286,7 @@ public abstract class TextView implements ViTextView
                                 - w_buffer.getLineNumber(lastDot));
             if (diff > 0) {
                 if (G.dbgMouse.getBoolean())
-                    System.err.println("caretUpdate: setPCMark");
+                    G.dbgMouse.println("caretUpdate: setPCMark");
                 ViFPOS fpos = w_buffer.createFPOS(lastDot);
                 MarkOps.setpcmark(this, fpos);
             }

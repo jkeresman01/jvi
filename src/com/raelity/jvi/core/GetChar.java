@@ -770,7 +770,7 @@ public class GetChar {
         copy_redo(old_redo);
         handle_redo = true;
         if(G.dbgRedo.getBoolean())
-            System.err.println("stuffbuff = '"
+            G.dbgRedo.println("stuffbuff = '"
                     + TextUtil.debugString(stuffbuff)+ "'");
         return OK;
     }

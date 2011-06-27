@@ -374,7 +374,7 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
     }
     private void debugDocInsertMATCH_EXPECTED(int pos, String s) {
       if(G.dbgRedo.getBoolean()) {
-        System.err.println("docInsert MATCH expected " + pos
+            G.dbgRedo.println("docInsert MATCH expected " + pos
                            + (s.length() > 1 ? " LENGTH: " + s.length() : ""));
       }
     }
@@ -563,13 +563,13 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
     }
     private void debugDocRemoveREMOVE_AFTER(int nBefore) {
       if(G.dbgRedo.getBoolean())
-        System.err.println("docRemove REMOVE AFTER,"
+        G.dbgRedo.println("docRemove REMOVE AFTER,"
                            + " nBefore: " + nBefore
                            + " AfterString: '" + removeDocAfterString + "'");
     }
     private void debugDocRemoveNO_MATCH() {
       if(G.dbgRedo.getBoolean())
-        System.err.println("docRemove NO MATCH");
+        G.dbgRedo.println("docRemove NO MATCH");
     }
 
     private boolean appendAfterBufToRedoBuff(int len)
@@ -594,7 +594,7 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
 
     private boolean doingBackspace() {
       if(Edit.doingBackspace) {
-        if(G.dbgRedo.getBoolean()) System.err.println("doing BACKSPACE");
+        if(G.dbgRedo.getBoolean()) G.dbgRedo.println("doing BACKSPACE");
         return true;
       }
       return false;
@@ -603,7 +603,7 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
     private void debug(String s)
     {
         if(G.dbgRedo.getBoolean())
-          System.err.println(s);
+          G.dbgRedo.println(s);
     }
 
     private void nop() {}

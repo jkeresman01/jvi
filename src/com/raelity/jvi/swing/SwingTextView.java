@@ -304,7 +304,7 @@ public class SwingTextView extends TextView
             createOps();
         }
         if ( G.dbgEditorActivation.getBoolean() ) {
-          System.err.println("TV.attach: " + editorPane.hashCode());
+            G.dbgEditorActivation.println("TV.attach: " + editorPane.hashCode());
         }
         attachMore();
     }
@@ -664,7 +664,7 @@ public class SwingTextView extends TextView
     {
         int logicalLine = lm.logicalLine(getVpTopDocumentLine());
         if ( G.dbgCoordSkip.getBoolean(Level.FINEST) ) {
-            System.err.println("getVpTopLogicalLine: " + logicalLine);
+            G.dbgCoordSkip.println(Level.FINEST, "getVpTopLogicalLine: " + logicalLine);
         }
         return logicalLine;
     }
@@ -698,7 +698,7 @@ public class SwingTextView extends TextView
         if(logicalLine > ll01)
             logicalLine = ll01 + 1; // past last line
         if(G.dbgCoordSkip.getBoolean(Level.FINEST)) {
-            System.err.println("getViewBottomLogicalLine: " + logicalLine);
+            G.dbgCoordSkip.println(Level.FINEST, "getViewBottomLogicalLine: " + logicalLine);
         }
         return logicalLine; // NEEDSWORK: line past full line, see getViewBottomLine
     }
@@ -709,7 +709,7 @@ public class SwingTextView extends TextView
     {
         int logicalLine = lm.logicalLine(getBuffer().getLineCount());
         if ( G.dbgCoordSkip.getBoolean(Level.FINEST) ) {
-            System.err.println("getLogicalLineCount: " + logicalLine);
+            G.dbgCoordSkip.println(Level.FINEST, "getLogicalLineCount: " + logicalLine);
         }
         return logicalLine;
     }
@@ -725,7 +725,7 @@ public class SwingTextView extends TextView
         }
         int logicalLine = lm.logicalLine(docLine);
         if ( G.dbgCoordSkip.getBoolean(Level.FINE) ) {
-            System.err.println("getLogicalLine: " + logicalLine);
+            G.dbgCoordSkip.println(Level.FINE, "getLogicalLine: " + logicalLine);
         }
         return logicalLine;
     }
@@ -1812,7 +1812,7 @@ public class SwingTextView extends TextView
     private void attachMore()
     {
         if (G.dbgEditorActivation.getBoolean()) {
-            System.err.println("TVCache: attach: "
+            G.dbgEditorActivation.println("TVCache: attach: "
                                + (editorPane == null ? 0 : editorPane.hashCode()));
         }
         if (freezer != null) {
@@ -1837,7 +1837,7 @@ public class SwingTextView extends TextView
     private void detachMore()
     {
         if (G.dbgEditorActivation.getBoolean()) {
-            System.err.println("TVCache: detach: "
+            G.dbgEditorActivation.println("TVCache: detach: "
                                + (editorPane == null ? "" : editorPane.hashCode()));
         }
         if (editorPane == null) {

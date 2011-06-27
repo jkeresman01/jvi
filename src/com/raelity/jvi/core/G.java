@@ -44,7 +44,7 @@ public class G
     {
         if(curwin == tv && curbuf != buf
                 && dbgEditorActivation.getBoolean()) {
-            System.err.println("Activation: changeBuffer tv "
+            dbgEditorActivation.println("Activation: changeBuffer tv "
                     + ViManager.cid(tv) + " buf " + ViManager.cid(buf));
         }
         curwin = (TextView)tv;
