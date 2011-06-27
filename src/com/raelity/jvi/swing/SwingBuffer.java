@@ -17,7 +17,7 @@ import com.raelity.jvi.core.Util;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.options.Option;
+import com.raelity.jvi.options.DebugOption;
 import com.raelity.text.TextUtil.MySegment;
 
 import java.util.logging.Level;
@@ -315,8 +315,8 @@ abstract public class SwingBuffer extends Buffer
     
     final static private boolean cacheDisabled = false;
     
-    public static Option cacheTrace
-            = Options.getOption(Options.dbgCache);
+    public static DebugOption cacheTrace
+            = (DebugOption)Options.getOption(Options.dbgCache);
     
     /** @return the element index from root which contains the offset */
     protected int getElemIndex(int offset) {
@@ -372,7 +372,7 @@ abstract public class SwingBuffer extends Buffer
     @Override
     final public MySegment getLineSegment(int line) {
         if(cacheDisabled || segment.count == 0 || segment.line != line) {
-            if(cacheTrace.getBoolean())System.err.println("Miss seg: " + line);
+            if(cacheTrace.getBoolean())cacheTrace.println("Miss seg: " + line);
             try {
                 Element elem = getLineElement(line);
                 getDocument().getText(elem.getStartOffset(),
@@ -385,7 +385,7 @@ abstract public class SwingBuffer extends Buffer
                 LOG.log(Level.SEVERE, null, ex);
             }
         } else {
-            if(cacheTrace.getBoolean())System.err.println("Hit seg: " + line);
+            if(cacheTrace.getBoolean())cacheTrace.println("Hit seg: " + line);
         }
         //return segment;
         MySegment s = new MySegment(segment);
@@ -394,7 +394,7 @@ abstract public class SwingBuffer extends Buffer
     }
     
     private void invalidateLineSegment() {
-        if(cacheTrace.getBoolean())System.err.println("Inval seg:");
+        if(cacheTrace.getBoolean())cacheTrace.println("Inval seg:");
         segment.count = 0;
     }
 
@@ -418,13 +418,13 @@ abstract public class SwingBuffer extends Buffer
     final public Element getLineElement(int line) {
         line--;
         if(cacheDisabled || element == null || elementLine != line) {
-            if(cacheTrace.getBoolean())System.err.println("Miss elem: " + (line+1));
+            if(cacheTrace.getBoolean())cacheTrace.println("Miss elem: " + (line+1));
             element = getDocument().getDefaultRootElement().getElement(line);
             elementLine = line;
             elemCache.line = line+1;
             elemCache.elem = element;
         } else {
-            if(cacheTrace.getBoolean())System.err.println("Hit elem: " + (line+1));
+            if(cacheTrace.getBoolean())cacheTrace.println("Hit elem: " + (line+1));
         }
         return element;
     }
@@ -434,7 +434,7 @@ abstract public class SwingBuffer extends Buffer
     }
     
     private void invalidateElement() {
-        if(cacheTrace.getBoolean())System.err.println("Inval elem:");
+        if(cacheTrace.getBoolean())cacheTrace.println("Inval elem:");
         element = null;
     }
 
@@ -454,7 +454,7 @@ abstract public class SwingBuffer extends Buffer
         @Override
         public void changedUpdate(DocumentEvent e) {
             if(cacheTrace.getBoolean()) {
-                System.err.println("doc changed: " + e.getOffset()
+                cacheTrace.println("doc changed: " + e.getOffset()
                                    + ":" + e.getLength() + " " + e);
                 // System.err.println("element" + e.getChange());
             }
@@ -465,7 +465,7 @@ abstract public class SwingBuffer extends Buffer
         @Override
         public void insertUpdate(DocumentEvent e) {
             if(cacheTrace.getBoolean())
-                System.err.println("doc insert: " + e.getOffset()
+                cacheTrace.println("doc insert: " + e.getOffset()
                                    + ":" + e.getLength() + " " + e);
             invalidateData();
             if(docChangeInfo != null) {
@@ -492,7 +492,7 @@ abstract public class SwingBuffer extends Buffer
         @Override
         public void removeUpdate(DocumentEvent e) {
             if(cacheTrace.getBoolean())
-                System.err.println("doc remove: " + e.getOffset()
+                cacheTrace.println("doc remove: " + e.getOffset()
                                    + ":" + e.getLength() + " " + e);
             invalidateData();
             if(docChangeInfo != null) {
