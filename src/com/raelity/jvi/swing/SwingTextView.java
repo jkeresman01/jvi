@@ -42,7 +42,7 @@ import com.raelity.jvi.core.lib.CcFlag;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.manager.Scheduler;
-import com.raelity.jvi.options.Option;
+import com.raelity.jvi.options.DebugOption;
 import com.raelity.text.TextUtil.MySegment;
 
 import java.awt.Dimension;
@@ -1244,7 +1244,7 @@ public class SwingTextView extends TextView
 
     protected void changeDocument(PropertyChangeEvent e) {
         if (cacheTrace.getBoolean()) {
-            System.err.println("doc switch: ");
+            cacheTrace.println("doc switch: ");
         }
         super.detachBuffer();
         ViManager.changeBuffer(this, e.getOldValue());
@@ -1254,8 +1254,8 @@ public class SwingTextView extends TextView
     private static int FIND_AT_BOT = 1;
     enum FindLineInView { TOP, BOT };
 
-    private static Option cacheTrace
-            = Options.getOption(Options.dbgCache);
+    private static DebugOption cacheTrace
+            = (DebugOption)Options.getOption(Options.dbgCache);
 
     protected JViewport getViewport()
     {
