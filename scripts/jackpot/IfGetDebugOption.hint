@@ -1,0 +1,25 @@
+
+# Bug 197600 - System.err stops going to messages.log
+#              and console after running debugger
+<?
+import com.raelity.jvi.core.Options;
+?>
+
+if(Options.getOption($option).getBoolean($level$))
+    System.err.println($debug);
+:: $option instanceof String
+=>  final DebugOption dbg = Options.getDebugOption($option);
+    if(dbg.getBoolean($level$))
+        System.err.println($debug);
+;;
+
+
+
+
+# if(Options.getOption($option).getBoolean($level$))
+#     System.err.println($debug);
+# :: $option instanceof String
+# => final DebugOption dbg = Options.getDebugOption($option);
+#    if(dbg.getBoolean($level$))
+#        System.err.println($debug);
+# ;;

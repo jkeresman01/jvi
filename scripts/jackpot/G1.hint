@@ -5,9 +5,6 @@
 System.err.println($debug); :: wrappedWith($_)
 => $debugOption.println($level$, $debug);
     :: $debugOption instanceof com.raelity.jvi.options.DebugOption
-=> ((com.raelity.jvi.options.DebugOption) $debugOption).println($level$, $debug);
-    ::      $debugOption instanceof com.raelity.jvi.options.Option
-        && !$debugOption instanceof com.raelity.jvi.options.DebugOption
 ;;
 
 <?

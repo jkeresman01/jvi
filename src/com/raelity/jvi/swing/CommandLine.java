@@ -28,6 +28,7 @@ import com.raelity.jvi.core.GetChar;
 import  com.raelity.jvi.*;
 import com.raelity.jvi.lib.MyEventListenerList;
 
+import com.raelity.jvi.options.DebugOption;
 import  javax.swing.*;
 import  javax.swing.border.*;
 import javax.swing.event.ChangeListener;
@@ -766,9 +767,10 @@ public class CommandLine extends JPanel
                 }
                 // END VISUAL REPAINT HACK
                 lastCommand = commandLine.getCommand();
-                if (Options.getOption(Options.dbgKeyStrokes).getBoolean()) {
-                    System.err.println("CommandAction: '" + lastCommand + "'");
-                }
+                final DebugOption dbg =
+                        Options.getDebugOption(Options.dbgKeyStrokes);
+                if (dbg.getBoolean())
+                    dbg.println("CommandAction: '" + lastCommand + "'");
                 shutdownEntry();
                 fireEvent(e);
             } catch (Exception ex) {

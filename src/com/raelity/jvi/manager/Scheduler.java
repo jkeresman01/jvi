@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.manager;
 
+import com.raelity.jvi.options.DebugOption;
 import java.util.Queue;
 import com.raelity.jvi.core.Util;
 import com.raelity.jvi.ViAppView;
@@ -328,9 +329,10 @@ public class Scheduler
                     MouseEvent.BUTTON3_DOWN_MASK;
             if ((mev.getModifiersEx() & mask) != 0)
                 mouseDown = true;
-            if (Options.getOption(Options.dbgMouse).getBoolean())
-                System.err.println("mousePress: " + (mouseDown ? "down " : "up ") +
-                        MouseEvent.getModifiersExText(mev.getModifiersEx()));
+            final DebugOption dbg = Options.getDebugOption(Options.dbgMouse);
+            if (dbg.getBoolean())
+                dbg.println("mousePress: " + (mouseDown ? "down " : "up ") +
+                            MouseEvent.getModifiersExText(mev.getModifiersEx()));
                 //System.err.println(mev.getMouseModifiersText(
                 //                      mev.getModifiers()));
             getCore().flush_buffers(true);
@@ -365,9 +367,10 @@ public class Scheduler
             int newPos = tv.validateCursorPosition(pos);
             if (pos != newPos)
                 tv.setCaretPosition(newPos);
-            if (Options.getOption(Options.dbgMouse).getBoolean())
-                System.err.println("mouseClick(" + pos + ") " +
-                        MouseEvent.getModifiersExText(mev.getModifiersEx()));
+            final DebugOption dbg = Options.getDebugOption(Options.dbgMouse);
+            if (dbg.getBoolean())
+                dbg.println("mouseClick(" + pos + ") " +
+                            MouseEvent.getModifiersExText(mev.getModifiersEx()));
                 //System.err.println(mev.getMouseModifiersText(
                 //                      mev.getModifiers()));
             return;
@@ -385,9 +388,10 @@ public class Scheduler
                     MouseEvent.BUTTON3_DOWN_MASK;
             if ((mev.getModifiersEx() & mask) == 0)
                 mouseDown = false;
-            if (Options.getOption(Options.dbgMouse).getBoolean())
-                System.err.println("mouseRelease: " +
-                        MouseEvent.getModifiersExText(mev.getModifiersEx()));
+            final DebugOption dbg = Options.getDebugOption(Options.dbgMouse);
+            if (dbg.getBoolean())
+                dbg.println("mouseRelease: " +
+                            MouseEvent.getModifiersExText(mev.getModifiersEx()));
                 //System.err.println(mev.getMouseModifiersText(
                 //                      mev.getModifiers()));
         } finally {
@@ -413,8 +417,10 @@ public class Scheduler
             //   G.VIsual = (FPOS) G.curwin.getWCursor().copy();
             //   Misc.showmode();
             // }
-            if (Options.getOption(Options.dbgMouse).getBoolean())
-                System.err.println("mouseDrag " + MouseEvent.getModifiersExText(mev.getModifiersEx()));
+            final DebugOption dbg = Options.getDebugOption(Options.dbgMouse);
+            if (dbg.getBoolean())
+                dbg.println("mouseDrag "
+                        + MouseEvent.getModifiersExText(mev.getModifiersEx()));
                 //System.err.println(mev.getMouseModifiersText(mev.getModifiers()));
             return;
         } finally {

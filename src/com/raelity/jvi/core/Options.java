@@ -908,6 +908,10 @@ public final class Options {
     return OptUtil.getOption(name);
   }
 
+  public static DebugOption getDebugOption(String name) {
+    return (DebugOption)OptUtil.getOption(name);
+  }
+
   /**
    * Get the option names in the specified option category
    * @param category of options
