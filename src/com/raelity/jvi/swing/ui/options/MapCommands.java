@@ -82,6 +82,11 @@ implements Options.EditControl {
                 CaretListener.class, caretListener, mappings));
     }
 
+    private String getMapContentType()
+    {
+        return "text/plain";
+    }
+
     DocumentListener listen = new DocumentListener() {
 
         @Override public void insertUpdate(DocumentEvent e) {
@@ -242,7 +247,7 @@ implements Options.EditControl {
                 jSplitPane1 = new javax.swing.JSplitPane();
                 jPanel1 = new javax.swing.JPanel();
                 jScrollPane1 = new javax.swing.JScrollPane();
-                mappings = new javax.swing.JTextArea();
+                mappings = new javax.swing.JEditorPane();
                 jPanel2 = new javax.swing.JPanel();
                 reset = new javax.swing.JButton();
                 check = new javax.swing.JButton();
@@ -255,8 +260,7 @@ implements Options.EditControl {
                 jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
                 jSplitPane1.setResizeWeight(0.65);
 
-                mappings.setColumns(20);
-                mappings.setRows(15);
+                mappings.setContentType(getMapContentType());
                 jScrollPane1.setViewportView(mappings);
 
                 reset.setText("Reset"); // NOI18N
@@ -373,7 +377,7 @@ implements Options.EditControl {
         private javax.swing.JScrollPane jScrollPane2;
         private javax.swing.JSplitPane jSplitPane1;
         private javax.swing.JLabel line;
-        private javax.swing.JTextArea mappings;
+        private javax.swing.JEditorPane mappings;
         private javax.swing.JButton reset;
         private javax.swing.JLabel status;
         // End of variables declaration//GEN-END:variables

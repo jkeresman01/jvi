@@ -77,10 +77,11 @@
 
               <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
               <SubComponents>
-                <Component class="javax.swing.JTextArea" name="mappings">
+                <Component class="javax.swing.JEditorPane" name="mappings">
                   <Properties>
-                    <Property name="columns" type="int" value="20"/>
-                    <Property name="rows" type="int" value="15"/>
+                    <Property name="contentType" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                      <Connection code="getMapContentType()" type="code"/>
+                    </Property>
                   </Properties>
                 </Component>
               </SubComponents>
