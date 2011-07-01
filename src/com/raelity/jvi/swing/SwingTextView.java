@@ -90,7 +90,7 @@ import org.openide.util.lookup.ServiceProvider;
  *  </p>
  */
 public class SwingTextView extends TextView
-        implements ViTextView, PropertyChangeListener, ChangeListener
+        implements ViTextView, PropertyChangeListener
 {
     protected static final
             Logger LOG = Logger.getLogger(SwingTextView.class.getName());
@@ -1422,15 +1422,29 @@ public class SwingTextView extends TextView
         getViewport().setViewPosition(p01);
     }
 
+    // following could be used for caching, but need doc listener
+    // private int vpViewLineCount; // number of view lines in document
     @Override
     public int getVpBottomViewLine()
     {
         if(viewport == null)
             return 1;
         int l = vpBottomViewLine;
-        if(l > getBuffer().getLineCount())
-            l = getBuffer().getLineCount();
+        int viewLineCount = getViewLineCount();
+        if(l > viewLineCount)
+            l = viewLineCount;
         return l + 1; // past the last line
+    }
+
+    // return the view line number of the last char
+    protected int getViewLineCount()
+    {
+        int offset = getBuffer().getLength() - 1;
+        if(offset < 0)
+            return 1;
+        Rectangle2D lrect;
+        ViFPOS fpos = getBuffer().createFPOS(offset);
+        return getViewLine(fpos);
     }
 
     /** @return the top line number */
@@ -1509,7 +1523,7 @@ public class SwingTextView extends TextView
         return getVpLines();
     }
 
-    protected void fillLinePositions()
+    private void fillLinePositions()
     {
         Point newViewportPosition;
         Dimension newViewportExtent;
@@ -1564,12 +1578,30 @@ public class SwingTextView extends TextView
         viewportPosition = newViewportPosition;
         viewportExtent = newViewportExtent;
 
+        // System.err.println(vpParams());
+
         if (sizeChange) {
             viewSizeChange();
         }
         if (sizeChange || topLineChange) {
             ViManager.viewMoveChange(this);
         }
+    }
+    private String vpParams()
+    {
+        String s;
+        if(viewportExtent != null && viewportPosition != null) {
+            s = String.format("vpTopDoc %d, vpBotDoc %d,"
+                    + " vpTopView %d, vpBotView %d, vpLines %d\n"
+                    + "        vpPos (%d,%d), vpExt (%d,%d)",
+                    vpTopDocumentLine, vpBottomDocumentLine,
+                    vpTopViewLine, vpBottomViewLine, vpLines,
+                    viewportPosition.x, viewportPosition.y,
+                    viewportExtent.width, viewportExtent.height);
+        } else {
+            s = "vpParams null";
+        }
+        return s;
     }
 
     public Point makePointTruncY(Point2D p)
@@ -1782,15 +1814,23 @@ public class SwingTextView extends TextView
         fillLinePositions();
     }
 
+    final private ChangeListener vpChangeListener = new ChangeListener() {
+        @Override
+        public void stateChanged(ChangeEvent e)
+        {
+            changeVp(false);
+        }
+    };
+
     /** The container for the editor has changed. */
     private void changeViewport(Object component)
     {
         if (viewport != null) {
-            viewport.removeChangeListener(this);
+            viewport.removeChangeListener(vpChangeListener);
         }
         if (component instanceof JViewport) {
             viewport = (JViewport) component;
-            viewport.addChangeListener(this);
+            viewport.addChangeListener(vpChangeListener);
         } else {
             viewport = null;
         }
@@ -1799,10 +1839,11 @@ public class SwingTextView extends TextView
 
     /** The defining rectangle of the viewport has changed
      *  @param init true indicates that the position should be
-     *  checked immeadiately, not potentially defered with an invoke later.
+     *  checked immediately, not potentially deferred with an invoke later.
      */
-    private void changeVp(boolean init)
+    protected void changeVp(boolean init)
     {
+        //System.err.println("CHANGE VP");
         fillLinePositions();
     }
 
@@ -1884,14 +1925,6 @@ public class SwingTextView extends TextView
         } else if ("ancestor".equals(p)) {
             changeViewport(o);
         }
-    }
-
-
-    // -- viewport event --
-    @Override
-    public void stateChanged(ChangeEvent e)
-    {
-        changeVp(false);
     }
 
     //////////////////////////////////////////////////////////////////////

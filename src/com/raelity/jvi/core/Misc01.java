@@ -514,18 +514,18 @@ public class Misc01
     /**
      * plines_check(p) - like plines(), but return MAXCOL for invalid lnum.
      */
-    static int plines_check(int p) {
-        if (p < 1 || p > G.curbuf.getLineCount())
+    static int plines_check(int logicalLine) {
+        if (logicalLine < 1 || logicalLine > G.curbuf.getLineCount())
             return MAXCOL;
-        return G.curwin.getCountViewLines(p);
+        return G.curwin.getCountViewLines(logicalLine);
         // return plines_win(curwin, p); // IN plines_check, assume nowrap
     }
 
     /**
      * plines(p) - return the number of physical screen lines taken by line 'p'.
      */
-    static int plines(int p) {
-        return G.curwin.getCountViewLines(p);
+    static int plines(int logicalLine) {
+        return G.curwin.getCountViewLines(logicalLine);
         // return plines_win(curwin, p); // IN plines_check, assume nowrap
     }
 

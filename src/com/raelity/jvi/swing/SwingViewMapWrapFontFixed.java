@@ -66,10 +66,9 @@ public class SwingViewMapWrapFontFixed implements ViewMap
     @Override
     public int viewLine(ViFPOS fpos)
     {
-        int logicalLine = tv.getLogicalLine(fpos.getLine());
-        int viewLine = viewLine(fpos.getLine());
+        int viewLine = viewLine(tv.getLogicalLine(fpos.getLine()));
         return viewLine
-                + countViewLines(tv.getBuffer().getLineStartOffset(logicalLine),
+                + countViewLines(tv.getBuffer().getLineStartOffset(fpos.getLine()),
                                  fpos.getOffset()) - 1;
     }
 
@@ -90,11 +89,12 @@ public class SwingViewMapWrapFontFixed implements ViewMap
         int count = 1; // default if some exception
 
         try {
-          int offset1 = tv.getBuffer().getLineStartOffset(logicalLine);
-          // following should be offset of '\n' 
-          int offset2 = tv.getBuffer().getLineEndOffset(logicalLine) - 1;
-          count = tv.countViewLines(tv.modelToView(offset2),
-                                 tv.modelToView(offset1));
+            int docLine = tv.getDocLine(logicalLine);
+            int offset1 = tv.getBuffer().getLineStartOffset(docLine);
+            // following should be offset of '\n'
+            int offset2 = tv.getBuffer().getLineEndOffset(docLine) - 1;
+            count = tv.countViewLines(tv.modelToView(offset2),
+                                   tv.modelToView(offset1));
         } catch (BadLocationException ex) {
             //Logger.getLogger(SwingTextView.class.getName()).log(Level.SEVERE, null, ex);
         }

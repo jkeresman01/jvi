@@ -274,7 +274,11 @@ public interface ViTextView extends ViOptionBag {
   /** @return the line number of line *after* end of window */
   public int getVpBottomViewLine();
 
-  /** @return number of screen lines used by the logical line (vim's plines) */
+  /**
+   * Assumes that if logical line is in a fold, then doesn't wrap.
+   *
+   * @return number of screen lines used by the logical line (vim's plines)
+   */
   public int getCountViewLines(int logicalLine);
 
   /**
