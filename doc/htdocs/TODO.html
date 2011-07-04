@@ -35,6 +35,10 @@
 
 <pre>
 <span id="New" class="TodoSection">New</span>
+  - Use jVi bindings for commit dialog test area
+    See org.netbeans.modules.mercurial.ui.commit.CommitPanel;
+    It uses JTextArea's setWrapStyleWord and setColumns and setTab
+    There's example in jVi standalone for doing wrap in JEditorPane.
   - PositionsBag vs OffsetsBag for HighlightsLayer. Currently both blockmode
     and search highlighters are OffsetsBag. Maybe search should be positions?
   - For ins_ctrl_g() do no_mappings dance.
