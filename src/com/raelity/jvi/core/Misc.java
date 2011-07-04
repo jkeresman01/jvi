@@ -655,7 +655,7 @@ public class Misc implements ClipboardOwner {
      * Also in Visual mode, when 'selection' is not "old".
      */
     if (((G.State & INSERT) != 0
-	 	|| (G.VIsual_active && G.p_sel.charAt(0) != 'o'))
+	 	|| (G.VIsual_active && G.p_sel().charAt(0) != 'o'))
 	&& col <= wcol) {
       ++idx;
     }
@@ -939,7 +939,7 @@ public class Misc implements ClipboardOwner {
       // Allow cursor past end-of-line in Insert mode, restarting Insert
       // mode or when in Visual mode and 'selection' isn't "old"
       if ((G.State & INSERT) != 0 || G.restart_edit != 0
-	 	|| (G.VIsual_active && G.p_sel.charAt(0) != 'o')) {
+	 	|| (G.VIsual_active && G.p_sel().charAt(0) != 'o')) {
 	col = len;
       } else {
 	col = len - 1;
@@ -1017,7 +1017,7 @@ public class Misc implements ClipboardOwner {
       }
       if (G.finish_op)		{ return SHAPE_O; }
       if (G.VIsual_active) {
-	  if (G.p_sel.charAt(0) == 'e') {
+	  if (G.p_sel().charAt(0) == 'e') {
               return SHAPE_VE;
           } else {
               return SHAPE_V;
@@ -2814,7 +2814,7 @@ private static int put_in_typebuf(String s, boolean colon)
     if (       oap.motion_type == MCHAR
 	    && oap.start.getColumn() == 0
 	    && !oap.inclusive
-	    && (!oap.is_VIsual || G.p_sel.charAt(0) == 'o')
+	    && (!oap.is_VIsual || G.p_sel().charAt(0) == 'o')
             && !oap.block_mode  // from vim7
 	    && oap.end.getColumn() == 0
 	    && yanklines > 1)
@@ -3568,7 +3568,7 @@ private static int put_in_typebuf(String s, boolean colon)
         end.setValue(vcol + incr - 1);
       if (cursor != null) {
         if (c == TAB && ((G.State & NORMAL) != 0) // && !wp->w_p_list
-        && !(G.VIsual_active && G.p_sel.charAt(0) == 'e'))
+        && !(G.VIsual_active && G.p_sel().charAt(0) == 'e'))
           cursor.setValue(vcol + incr - 1);	    // cursor at end
         else
           cursor.setValue(vcol);	    // cursor at start

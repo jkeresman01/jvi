@@ -1496,7 +1496,7 @@ middle_code:
                     oap.start_vcol = start;
                 if (end > oap.end_vcol)
                 {
-                    if (G.p_sel.charAt(0) == 'e' && start - 1 >= oap.end_vcol)
+                    if (G.p_sel().charAt(0) == 'e' && start - 1 >= oap.end_vcol)
                         oap.end_vcol = start - 1;
                     else
                         oap.end_vcol = end;
@@ -1576,7 +1576,7 @@ middle_code:
                   oap.inclusive = false;
                   // Try to include the newline, unless it's an operator
                   // that works on lines only
-                  if (G.p_sel.charAt(0) != 'o'
+                  if (G.p_sel().charAt(0) != 'o'
                             && !op_on_lines(oap.op_type)
                             && oap.end.getLine() < G.curbuf.getLineCount())
                   {
@@ -1638,7 +1638,7 @@ middle_code:
 		   && oap.inclusive == false
 		   && !dont_adjust_op_end
 		   && oap.end.getColumn() == 0
-		   && (!oap.is_VIsual || G.p_sel.charAt(0) == 'o')
+		   && (!oap.is_VIsual || G.p_sel().charAt(0) == 'o')
 		   && oap.line_count > 1)
       {
 	oap.end_adjusted = true;	    /* remember that we did this */
@@ -2439,7 +2439,7 @@ middle_code:
           textMark = G.curbuf.getLineStartOffsetFromOffset(textMark);
         }
       } else {
-        if(G.p_sel.charAt(0) != 'e') {
+        if(G.p_sel().charAt(0) != 'e') {
           if(textDot < textMark)
             textMark++;
           else
@@ -2671,7 +2671,7 @@ middle_code:
 
     cap.oap.motion_type = MCHAR;
     cap.oap.inclusive = false;
-    past_line = (G.VIsual_active && G.p_sel.charAt(0) != 'o');
+    past_line = (G.VIsual_active && G.p_sel().charAt(0) != 'o');
     for (n = cap.count1; n > 0; --n) {
       final ViFPOS cursor = G.curwin.w_cursor;
       MySegment seg = G.curbuf.getLineSegment(cursor.getLine());
@@ -3690,7 +3690,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       int textMark = G.curwin.getMarkPosition();
       int textDot = fpos.getOffset();
 
-      if(G.p_sel.charAt(0) != 'e') {
+      if(G.p_sel().charAt(0) != 'e') {
         if(textMark < textDot)
           G.curwin.w_cursor.set(fpos.getOffset()-1);
         else
@@ -3774,7 +3774,7 @@ static private void nv_findpar(CMDARG cap, int dir)
     }
     if(win.hasFolding(end.getLine(), null, mi)) {
       int col = lineLength(buf, mi.getValue());
-      if(col > 0 && G.p_sel.charAt(0) != 'o')
+      if(col > 0 && G.p_sel().charAt(0) != 'o')
         --col;
       end.set(mi.getValue(), col);
     }
@@ -3962,7 +3962,7 @@ static private void nv_findpar(CMDARG cap, int dir)
           // - visual mode and 'selection' is not "old"
           if(gchar_pos(fpos) == '\n'
                   && !(fpos.getColumn() == 0
-                       || (G.VIsual_active && G.p_sel.charAt(0) != 'o')))
+                       || (G.VIsual_active && G.p_sel().charAt(0) != 'o')))
             fpos.decColumn();
           G.curwin.w_cursor.set(fpos);
 
@@ -4239,7 +4239,7 @@ static private void nv_findpar(CMDARG cap, int dir)
   static private void adjust_for_sel(CMDARG cap) {
       if (G.VIsual_active
           && cap.oap.inclusive
-          && G.p_sel.charAt(0) == 'e'
+          && G.p_sel().charAt(0) == 'e'
           && gchar_cursor() != '\n')
        {
           G.curwin.w_cursor.incColumn();
@@ -4256,7 +4256,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       ViFPOS	pp;
       final ViFPOS cursor = G.curwin.w_cursor;
 
-      if (G.p_sel.charAt(0) == 'e' && G.VIsual.compareTo(cursor) != 0)
+      if (G.p_sel().charAt(0) == 'e' && G.VIsual.compareTo(cursor) != 0)
       {
           if(G.VIsual.compareTo(cursor) < 0)
               pp = cursor;
