@@ -582,7 +582,7 @@ public class Misc implements ClipboardOwner {
     if(n > 0) { pn = n; }
     else { pn = -n; }
 
-    if(pn >= G.p_report.getInteger()) {
+    if(pn >= G.p_report()) {
       String msg = "" + pn + " " + (n > 0 ? "more" : "fewer")
 		+ " line" + plural(pn);
       // NEEDSWORK: msgmore: conditionally append "(interrupted)" to msg
@@ -1068,7 +1068,7 @@ public class Misc implements ClipboardOwner {
       fpos.set(line, 0);
       first_char = gchar_pos(fpos);
       if (first_char != '\n') {	// empty line
-	shift_line(oap.op_type == OP_LSHIFT, G.p_sr.getBoolean(), amount, fpos);
+	shift_line(oap.op_type == OP_LSHIFT, G.p_sr(), amount, fpos);
       }
       line++;
     }
@@ -1083,7 +1083,7 @@ public class Misc implements ClipboardOwner {
     // update_topline();
     // update_screen(NOT_VALID);
 
-    if (oap.line_count >= G.p_report.getInteger()) {
+    if (oap.line_count >= G.p_report()) {
       Msg.smsg("" + oap.line_count + " line" + plural(oap.line_count)
 	       + " " + ((oap.op_type == OP_RSHIFT) ? ">" : "<") + "ed "
 	       + amount + " time" +  plural(amount));
@@ -1732,7 +1732,7 @@ private static int put_in_typebuf(String s, boolean colon)
   static char adjust_clip_reg(char rp)
   {
     // If no reg. specified, and "unnamed" is in 'clipboard', use '*' reg.
-    if (rp == 0 && G.p_cb.getBoolean())
+    if (rp == 0 && G.p_cb())
       rp = '*';
     if(rp == '+')
       rp = '*';
@@ -1950,7 +1950,7 @@ private static int put_in_typebuf(String s, boolean colon)
     }
 
     // If no register specified, and "unnamed" in 'clipboard', use * register
-    if (oap.regname == 0 && G.p_cb.getBoolean())
+    if (oap.regname == 0 && G.p_cb())
       oap.regname = '*';
     if (!clipboard_available && oap.regname == '*')
       oap.regname = 0;
@@ -2595,7 +2595,7 @@ private static int put_in_typebuf(String s, boolean colon)
     G.curbuf.b_op_start.setMark(oap.start);
     G.curbuf.b_op_end.setMark(oap.end);
 
-    if (oap.line_count > G.p_report.getInteger()) {
+    if (oap.line_count > G.p_report()) {
       Msg.smsg("" + oap.line_count + " line" + plural(oap.line_count) + " ~ed");
     }
   }
@@ -2791,7 +2791,7 @@ private static int put_in_typebuf(String s, boolean colon)
 	return OK;
 
     // If no register specified, and "unnamed" in 'clipboard', use * register
-    if (!deleting && oap.regname == 0 && G.p_cb.getBoolean())
+    if (!deleting && oap.regname == 0 && G.p_cb())
         oap.regname = '*';
     if (!clipboard_available && oap.regname == '*')
 	oap.regname = 0;
@@ -2893,7 +2893,7 @@ private static int put_in_typebuf(String s, boolean colon)
 	if (yanktype == MCHAR && !oap.block_mode && yanklines == 1)
 	    yanklines = 0;
 	// Some versions of Vi use ">=" here, some don't...
-	if (yanklines >= G.p_report.getInteger())
+	if (yanklines >= G.p_report())
 	{
 	    // redisplay now, so message is not deleted
 	    // NEEDSWORK: update_topline_redraw();
@@ -3335,7 +3335,7 @@ private static int put_in_typebuf(String s, boolean colon)
 	}
 	if(nextc != ')' && lastc != ' ' && lastc != TAB && lastc != '\n') {
 	  spaces.append(' ');
-	  if(G.p_js.getBoolean() && (lastc == '.' || lastc == '?'
+	  if(G.p_js() && (lastc == '.' || lastc == '?'
                                      || lastc =='!')) {
 	    spaces.append(' ');
 	  }

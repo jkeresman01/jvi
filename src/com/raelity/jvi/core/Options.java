@@ -962,7 +962,7 @@ public final class Options {
       mlPat2 = Pattern.compile("\\s+(?:vi:|vim:|ex:)\\s*set? ([^:]*):");
     }
     int mls;
-    if(!G.p_ml.getBoolean() || (mls = G.p_mls.getInteger()) == 0)
+    if(!G.p_ml() || (mls = G.p_mls()) == 0)
       return;
     int lnum;
     int lcount = G.curbuf.getLineCount();
@@ -1039,7 +1039,7 @@ public final class Options {
   //
   
   static boolean can_bs(char what) {
-    switch(G.p_bs.getInteger()) {
+    switch(G.p_bs()) {
       case 2:     return true;
       case 1:     return what != BS_START;
       case 0:     return false;
@@ -1078,7 +1078,7 @@ public final class Options {
   }
   
   public static boolean doHighlightSearch() {
-    return G.p_hls.getBoolean() && !nohDisableHighlight;
+    return G.p_hls() && !nohDisableHighlight;
   }
   
   static void nohCommand() {

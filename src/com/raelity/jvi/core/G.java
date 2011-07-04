@@ -109,66 +109,66 @@ public class G
 
     // static String p_ww = "bshl<>[]"; // b,s
     // options for whichwrap
-    static BooleanOption p_ww_bs;
-    static BooleanOption p_ww_sp;
-    static BooleanOption p_ww_h;
-    static BooleanOption p_ww_l;
-    static BooleanOption p_ww_larrow;
-    static BooleanOption p_ww_rarrow;
-    static BooleanOption p_ww_tilde;
-    static BooleanOption p_ww_i_left;
-    static BooleanOption p_ww_i_right;
+    // static BooleanOption p_ww_bs;
+    // static BooleanOption p_ww_sp;
+    // static BooleanOption p_ww_h;
+    // static BooleanOption p_ww_l;
+    // static BooleanOption p_ww_larrow;
+    // static BooleanOption p_ww_rarrow;
+    // static BooleanOption p_ww_tilde;
+    // static BooleanOption p_ww_i_left;
+    // static BooleanOption p_ww_i_right;
 
-    static BooleanOption p_cb;  // clipboard, treat as boolean for 'unnamed'
-    static BooleanOption p_sr;   // shiftround
-    static BooleanOption p_notsol;  // startofline
-    static BooleanOption p_cpo_w; // change word blanks
-    static BooleanOption p_cpo_search; // continue search from end of match
-    static BooleanOption p_cpo_j; // sentence search two spaces
-    static BooleanOption p_js;   // joinspaces, 2 spaces after .?!
-    static BooleanOption p_to;   // tildeop
-    static BooleanOption p_ws;   // wrapscan
+    // static BooleanOption p_cb;  // clipboard, treat as boolean for 'unnamed'
+    // static BooleanOption p_sr;   // shiftround
+    // static BooleanOption p_notsol;  // startofline
+    // static BooleanOption p_cpo_w; // change word blanks
+    // static BooleanOption p_cpo_search; // continue search from end of match
+    // static BooleanOption p_cpo_j; // sentence search two spaces
+    // static BooleanOption p_js;   // joinspaces, 2 spaces after .?!
+    // static BooleanOption p_to;   // tildeop
+    // static BooleanOption p_ws;   // wrapscan
 
     public static BooleanOption useFrame;    // use JFrame for command entry
 
-    public static BooleanOption p_ic;   // ignorecase
-    public static BooleanOption p_pbm;  // use PlatformBraceMatch
-    public static BooleanOption p_scs;  // smartcase
+    // public static BooleanOption p_ic;   // ignorecase
+    // public static BooleanOption p_pbm;  // use PlatformBraceMatch
+    // public static BooleanOption p_scs;  // smartcase
     public static boolean no_smartcase;
 
-    public static BooleanOption p_meta_equals;  // true use '=' instead of '?'
-    public static StringOption p_meta_escape;   // metacharacters escaped
-    public static BooleanOption p_is;
-    public static BooleanOption p_hls;
+    // public static BooleanOption p_meta_equals;  // true use '=' instead of '?'
+    // public static StringOption p_meta_escape;   // metacharacters escaped
+    // public static BooleanOption p_is;
+    // public static BooleanOption p_hls;
     public static boolean no_hlsearch;
 
-    public static BooleanOption p_smd; // showmode edit/command mode in display
-    public static BooleanOption p_sc; // showcmd
+    // public static BooleanOption p_smd; // showmode edit/command mode in display
+    // public static BooleanOption p_sc; // showcmd
 
-    public static IntegerOption p_report;
-    public static IntegerOption p_bs ;   // backspace over start of insert, and more
-    public static IntegerOption p_so;   // scrolloff, lines before/after current
+    // public static IntegerOption p_report;
+    // public static IntegerOption p_bs ;   // backspace over start of insert, and more
+    // public static IntegerOption p_so;   // scrolloff, lines before/after current
 
     static String p_km = "";      // keymodel
 
-    public static StringOption p_sel; // 'selection'
-    public static StringOption p_slm; // 'selectionmode'
+    // public static StringOption p_sel; // 'selection'
+    // public static StringOption p_slm; // 'selectionmode'
 
-    public static BooleanOption p_ea; // 'equalalways'
-    public static BooleanOption p_sb; // 'splitbelow'
-    public static BooleanOption p_spr; // 'splitright'
+    // public static BooleanOption p_ea; // 'equalalways'
+    // public static BooleanOption p_sb; // 'splitbelow'
+    // public static BooleanOption p_spr; // 'splitright'
 
-    public static StringOption p_ep; // 'equalprg'
-    public static StringOption p_fp; // formatprg
+    // public static StringOption p_ep; // 'equalprg'
+    // public static StringOption p_fp; // formatprg
     static String p_cpo = "aABceFs"; // cpoptions
 
-    public static BooleanOption p_ml;     // modeline
-    public static IntegerOption p_mls;    // modelines
+    // public static BooleanOption p_ml;     // modeline
+    // public static IntegerOption p_mls;    // modelines
 
-    public static StringOption p_sh;     // shell - used for external commands
-    public static StringOption p_shcf;   // shellcmdflag - flag for shell
-    public static StringOption p_sxq;    // shellXQuote - flag for shell
-    public static BooleanOption p_ssl;   // shellSlash - flag for filename expansion
+    // public static StringOption p_sh;     // shell - used for external commands
+    // public static StringOption p_shcf;   // shellcmdflag - flag for shell
+    // public static StringOption p_sxq;    // shellXQuote - flag for shell
+    // public static BooleanOption p_ssl;   // shellSlash - flag for filename expansion
 
     public static BooleanOption readOnlyHack;
     public static BooleanOption isHideVersion;
@@ -180,7 +180,7 @@ public class G
     public static BooleanOption usePlatformInsertTab;
 
     public static DebugOption dbgKeyStrokes;
-    public static IntegerOption dbgFlow;  // 1-switch
+    // public static IntegerOption dbgFlow;  // 1-switch
                                           // 3-op/exec
                                           // 5-not supported
                                           // 7-not implemented
@@ -227,5 +227,136 @@ public class G
     * is received, and did_ai is TRUE, the line is truncated.
     */
     public static boolean did_ai = false;
+
+
+    // backspace over start of insert, and more
+    public static IntegerOption p_bs;
+    public static int p_bs() { return p_bs.getInteger(); }
+    // clipboard, treat as boolean for 'unnamed'
+    public static BooleanOption p_cb;
+    public static boolean p_cb() { return p_cb.getBoolean(); }
+    // sentence search two spaces
+    public static BooleanOption p_cpo_j;
+    public static boolean p_cpo_j() { return p_cpo_j.getBoolean(); }
+    // continue search from end of match
+    public static BooleanOption p_cpo_search;
+    public static boolean p_cpo_search() { return p_cpo_search.getBoolean(); }
+    // change word blanks
+    public static BooleanOption p_cpo_w;
+    public static boolean p_cpo_w() { return p_cpo_w.getBoolean(); }
+    // 'equalalways'
+    public static BooleanOption p_ea;
+    public static boolean p_ea() { return p_ea.getBoolean(); }
+    // 'equalprg'
+    public static StringOption p_ep;
+    public static String p_ep() { return p_ep.getString(); }
+    // formatprg
+    public static StringOption p_fp;
+    public static String p_fp() { return p_fp.getString(); }
+
+    public static BooleanOption p_hls;
+    public static boolean p_hls() { return p_hls.getBoolean(); }
+    // ignorecase
+    public static BooleanOption p_ic;
+    public static boolean p_ic() { return p_ic.getBoolean(); }
+
+    public static BooleanOption p_is;
+    public static boolean p_is() { return p_is.getBoolean(); }
+    // joinspaces, 2 spaces after .?!
+    public static BooleanOption p_js;
+    public static boolean p_js() { return p_js.getBoolean(); }
+    // true use '=' instead of '?'
+    public static BooleanOption p_meta_equals;
+    public static boolean p_meta_equals() { return p_meta_equals.getBoolean(); }
+    // metacharacters escaped
+    public static StringOption p_meta_escape;
+    public static String p_meta_escape() { return p_meta_escape.getString(); }
+    // modeline
+    public static BooleanOption p_ml;
+    public static boolean p_ml() { return p_ml.getBoolean(); }
+    // modelines
+    public static IntegerOption p_mls;
+    public static int p_mls() { return p_mls.getInteger(); }
+    // startofline
+    public static BooleanOption p_notsol;
+    public static boolean p_notsol() { return p_notsol.getBoolean(); }
+    // use PlatformBraceMatch
+    public static BooleanOption p_pbm;
+    public static boolean p_pbm() { return p_pbm.getBoolean(); }
+
+    public static IntegerOption p_report;
+    public static int p_report() { return p_report.getInteger(); }
+    // 'splitbelow'
+    public static BooleanOption p_sb;
+    public static boolean p_sb() { return p_sb.getBoolean(); }
+    // showcmd
+    public static BooleanOption p_sc;
+    public static boolean p_sc() { return p_sc.getBoolean(); }
+    // smartcase
+    public static BooleanOption p_scs;
+    public static boolean p_scs() { return p_scs.getBoolean(); }
+    // 'selection'
+    public static StringOption p_sel;
+    public static String p_sel() { return p_sel.getString(); }
+    // shell - used for external commands
+    public static StringOption p_sh;
+    public static String p_sh() { return p_sh.getString(); }
+    // shellcmdflag - flag for shell
+    public static StringOption p_shcf;
+    public static String p_shcf() { return p_shcf.getString(); }
+    // 'selectionmode'
+    public static StringOption p_slm;
+    public static String p_slm() { return p_slm.getString(); }
+    // showmode edit/command mode in display
+    public static BooleanOption p_smd;
+    public static boolean p_smd() { return p_smd.getBoolean(); }
+    // scrolloff, lines before/after current
+    public static IntegerOption p_so;
+    public static int p_so() { return p_so.getInteger(); }
+    // 'splitright'
+    public static BooleanOption p_spr;
+    public static boolean p_spr() { return p_spr.getBoolean(); }
+    // shiftround
+    public static BooleanOption p_sr;
+    public static boolean p_sr() { return p_sr.getBoolean(); }
+    // shellSlash - flag for filename expansion
+    public static BooleanOption p_ssl;
+    public static boolean p_ssl() { return p_ssl.getBoolean(); }
+    // shellXQuote - flag for shell
+    public static StringOption p_sxq;
+    public static String p_sxq() { return p_sxq.getString(); }
+    // tildeop
+    public static BooleanOption p_to;
+    public static boolean p_to() { return p_to.getBoolean(); }
+    // wrapscan
+    public static BooleanOption p_ws;
+    public static boolean p_ws() { return p_ws.getBoolean(); }
+
+    public static BooleanOption p_ww_bs;
+    public static boolean p_ww_bs() { return p_ww_bs.getBoolean(); }
+
+    public static BooleanOption p_ww_h;
+    public static boolean p_ww_h() { return p_ww_h.getBoolean(); }
+
+    public static BooleanOption p_ww_i_left;
+    public static boolean p_ww_i_left() { return p_ww_i_left.getBoolean(); }
+
+    public static BooleanOption p_ww_i_right;
+    public static boolean p_ww_i_right() { return p_ww_i_right.getBoolean(); }
+
+    public static BooleanOption p_ww_l;
+    public static boolean p_ww_l() { return p_ww_l.getBoolean(); }
+
+    public static BooleanOption p_ww_larrow;
+    public static boolean p_ww_larrow() { return p_ww_larrow.getBoolean(); }
+
+    public static BooleanOption p_ww_rarrow;
+    public static boolean p_ww_rarrow() { return p_ww_rarrow.getBoolean(); }
+
+    public static BooleanOption p_ww_sp;
+    public static boolean p_ww_sp() { return p_ww_sp.getBoolean(); }
+
+    public static BooleanOption p_ww_tilde;
+    public static boolean p_ww_tilde() { return p_ww_tilde.getBoolean(); }
 
 } // end com.raelity.jvi.G

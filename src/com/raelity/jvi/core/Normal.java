@@ -1049,7 +1049,7 @@ middle_code:
 	     * if tilde is not an operator and Visual is off: swap case
 	     * of a single character
 	     */
-	    if (	   ! G.p_to.getBoolean()
+	    if (	   ! G.p_to()
 			   && !G.VIsual_active
 			   && oap.op_type != OP_TILDE)
 	    {
@@ -1596,7 +1596,7 @@ middle_code:
           if (!gui_yank) {
               G.VIsual_active = false;
               v_updateVisualState();
-              if (G.p_smd.getBoolean())
+              if (G.p_smd())
                   G.clear_cmdline = true;   /* unshow visual mode later */
               if (oap.op_type == OP_YANK || oap.op_type == OP_COLON ||
                       oap.op_type == OP_FILTER)
@@ -1748,7 +1748,7 @@ middle_code:
 	case OP_COLON:
 
           // If 'equalprg' is empty, do the indenting internally.
-          if(oap.op_type == OP_INDENT && G.p_ep.getString().isEmpty()) {
+          if(oap.op_type == OP_INDENT && G.p_ep().isEmpty()) {
             runUndoable(new Runnable() {
           @Override
                 public void run() {
@@ -1779,7 +1779,7 @@ middle_code:
 	  break;
 
 	case OP_FORMAT:
-	  if (!G.p_fp.getString().isEmpty())
+	  if (!G.p_fp().isEmpty())
 	    op_colon(oap);		/* use external command */
 	  else
 	    op_format(oap);		/* use internal function */
@@ -1824,7 +1824,7 @@ middle_code:
 	/*
 	 * if 'sol' not set, go back to old column for some commands
 	 */
-	if (G.p_notsol.getBoolean() && oap.motion_type == MLINE
+	if (G.p_notsol() && oap.motion_type == MLINE
             && !oap.end_adjusted
 	    && (oap.op_type == OP_LSHIFT || oap.op_type == OP_RSHIFT
 		|| oap.op_type == OP_DELETE)) {
@@ -1887,19 +1887,19 @@ middle_code:
     if (oap.op_type == OP_INDENT)
     {
       String indent;
-      if (G.p_ep.getString().isEmpty())
+      if (G.p_ep().isEmpty())
         indent = "indent";
       else
-        indent = G.p_ep.getString();
+        indent = G.p_ep();
       range.append(indent).append("\n");
     }
     else if (oap.op_type == OP_FORMAT)
     {
         String fmt;
-	if (G.p_fp.getString().isEmpty()) {
+	if (G.p_fp().isEmpty()) {
           fmt = "fmt";
         } else {
-          fmt = G.p_fp.getString().replace(
+          fmt = G.p_fp().replace(
                   Options.twMagic, "" + G.curbuf.b_p_tw);
         }
         range.append(fmt).append("\n");
@@ -1934,7 +1934,7 @@ middle_code:
 
     G.VIsual_active = false; // was above, but saveVisualMarks needs it active
 
-    if (G.p_smd.getBoolean())
+    if (G.p_smd())
         G.clear_cmdline = true;/* unshow visual mode later */
     v_updateVisualState();
 
@@ -2114,7 +2114,7 @@ middle_code:
 
   static void clear_showcmd() {
 
-    if (!G.p_sc.getBoolean())
+    if (!G.p_sc())
       return;
     if(G.VIsual_active)
       return;
@@ -2136,7 +2136,7 @@ middle_code:
   static boolean add_to_showcmd(char c) {
 
 
-    if (!G.p_sc.getBoolean())
+    if (!G.p_sc())
       return false;
     // NEEDSWORK: proper display of virtual chars
     if((c & 0xf000) == VIRT)
@@ -2685,9 +2685,9 @@ middle_code:
 	//	      'l' wraps to next line if 'whichwrap' bit 2 set.
 	// CURS_RIGHT wraps to next line if 'whichwrap' bit 3 set
 	//
-	if (       ((cap.cmdchar == ' ' && G.p_ww_sp.getBoolean())
-		    || (cap.cmdchar == 'l' && G.p_ww_l.getBoolean())
-		    || (cap.cmdchar == K_RIGHT && G.p_ww_rarrow.getBoolean()))
+	if (       ((cap.cmdchar == ' ' && G.p_ww_sp())
+		    || (cap.cmdchar == 'l' && G.p_ww_l())
+		    || (cap.cmdchar == K_RIGHT && G.p_ww_rarrow()))
 		   // && curwin.w_cursor.lnum < curbuf.b_ml.ml_line_count
 		   && cursor.getLine() < G.curbuf.getLineCount())
 	{
@@ -2743,11 +2743,11 @@ middle_code:
 	//
 	if (       (((cap.cmdchar == K_BS
 		      || cap.cmdchar == Util.ctrl('H'))
-		     && G.p_ww_bs.getBoolean())
+		     && G.p_ww_bs())
 		    || (cap.cmdchar == 'h'
-			&& G.p_ww_h.getBoolean())
+			&& G.p_ww_h())
 		    || (cap.cmdchar == K_LEFT
-			&& G.p_ww_larrow.getBoolean()))
+			&& G.p_ww_larrow()))
 		   && cursor.getLine() > 1)
 	{
 	  /* **********************************
@@ -2920,7 +2920,7 @@ middle_code:
       }
     } else {	    // "%" : go to matching paren
       cap.oap.motion_type = MCHAR;
-      boolean usePlatform = G.p_pbm.getBoolean() & ViManager.getPlatformFindMatch();
+      boolean usePlatform = G.p_pbm() & ViManager.getPlatformFindMatch();
       if(usePlatform) {
         ViFPOS fpos = G.curwin.w_cursor.copy();
         int endingOffset = fpos.getOffset(); // this assumes failture
@@ -3427,7 +3427,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       return;
 
     if (Util.lineempty(G.curwin.w_cursor.getLine())
-                && G.p_ww_tilde.getBoolean()) {
+                && G.p_ww_tilde()) {
       clearopbeep(cap.oap);
       return;
     }
@@ -3444,7 +3444,7 @@ static private void nv_findpar(CMDARG cap, int dir)
             swapchar(cap.oap.op_type,G.curwin.w_cursor);
             inc_cursor();
             if (gchar_cursor() == '\n') {
-              if (G.p_ww_tilde.getBoolean()
+              if (G.p_ww_tilde()
                   && G.curwin.w_cursor.getLine() < G.curbuf.getLineCount())
               {
                 G.curwin.w_cursor.set(G.curwin.w_cursor.getLine() + 1, 0);
@@ -3611,7 +3611,7 @@ static private void nv_findpar(CMDARG cap, int dir)
               if (!selectmode)
               /* start Select mode when 'selectmode' contains "cmd" */
                   may_start_select('c');
-              if (G.p_smd.getBoolean())
+              if (G.p_smd())
                   redraw_cmdline = true;  /* show visual mode later */
               /*
                * For V and ^V, we multiply the number of lines even if there
@@ -3712,7 +3712,7 @@ static private void nv_findpar(CMDARG cap, int dir)
   */
   static void may_start_select(char c) {
       G.VIsual_select = (GetChar.stuff_empty() && typebuf_typed()
-        && (vim_strchr(G.p_slm.getString(), 0, c) >= 0));
+        && (vim_strchr(G.p_slm(), 0, c) >= 0));
   }
   
   /*
@@ -3731,7 +3731,7 @@ static private void nv_findpar(CMDARG cap, int dir)
       // foldAdjustVisual();
       //
 
-      if (G.p_smd.getBoolean())
+      if (G.p_smd())
           redraw_cmdline = true; /* show visual mode later */
 //#ifdef USE_CLIPBOARD
     /* Make sure the clipboard gets updated.  Needed because start and
@@ -4186,7 +4186,7 @@ static private void nv_findpar(CMDARG cap, int dir)
           //
           // Note: the p_cpo_w flag is false for vi behavour.
 	  //
-	  if (cap.count1 == 1 && ! G.p_cpo_w.getBoolean()) {
+	  if (cap.count1 == 1 && ! G.p_cpo_w()) {
 	    cap.oap.inclusive = true;
 	    cap.oap.motion_type = MCHAR;
 	    return;
@@ -4555,7 +4555,7 @@ static private void nv_findpar(CMDARG cap, int dir)
                 regname = cap.oap.regname;
                 regname = adjust_clip_reg(regname);
                 if (regname == 0 || Util.isdigit(regname)
-                    || (G.p_cb.getBoolean() && (regname == '*' || regname == '+'))) {
+                    || (G.p_cb() && (regname == '*' || regname == '+'))) {
                   // the delete is going to overwrite the register we want to
                   // put, save it first.
                   reg1 = get_register(regname, true);

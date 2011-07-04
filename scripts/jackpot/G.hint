@@ -1,6 +1,6 @@
 
-# Bug 197600 - System.err stops going to messages.log
-#              and console after running debugger
+// Bug 197600 - System.err stops going to messages.log
+//              and console after running debugger
 
 System.err.println($debug); :: wrappedWith($_)
 => $debugOption.println($level$, $debug);

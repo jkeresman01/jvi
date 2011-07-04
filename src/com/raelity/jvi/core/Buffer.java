@@ -248,7 +248,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
                 break;
             }
             
-            if(G.p_ssl.getBoolean()){
+            if(G.p_ssl()){
                 // Shellslash is on, replace \ with /
                 filename = filename.replace('\\','/');
             }

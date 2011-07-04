@@ -722,7 +722,7 @@ public class Search03
         int		len;
         int		r;
         boolean	do_include = include;
-        boolean	save_p_ws = G.p_ws.getBoolean();
+        boolean	save_p_ws = G.p_ws();
         int		retval = FAIL;
 
         G.p_ws.setBoolean(false);

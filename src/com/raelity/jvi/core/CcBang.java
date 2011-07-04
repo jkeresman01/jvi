@@ -298,10 +298,10 @@ public static class BangAction extends AbstractColonAction
         boolean isFilter = (evt.getAddrCount() > 0);
 
         ArrayList<String> shellCommandLine = new ArrayList<String>(3);
-        String shellXQuote = G.p_sxq.getString();
+        String shellXQuote = G.p_sxq();
 
-        shellCommandLine.add(G.p_sh.getString());
-        shellCommandLine.add(G.p_shcf.getString());
+        shellCommandLine.add(G.p_sh());
+        shellCommandLine.add(G.p_shcf());
         shellCommandLine.add(shellXQuote + commandLine + shellXQuote);
 
         if (dbg.getBoolean()) {

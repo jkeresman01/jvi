@@ -101,7 +101,7 @@ public class Misc01
    */
   static int getScrollOff() {
     int halfLines = G.curwin.getVpLines()/2; // max distance from center
-    int so = G.p_so.getInteger();
+    int so = G.p_so();
     if(so > halfLines) {
       // adjust scrolloff so that its not bigger than usable
       so = halfLines;
@@ -778,8 +778,8 @@ public class Misc01
             TextView.setExpectedNewActivation(G.curbuf.getDisplayFileName(),
                                               G.curwin.w_cursor.getOffset());
         Direction dir = orientation == Orientation.LEFT_RIGHT
-                    ? (G.p_spr.getBoolean() ? Direction.RIGHT : Direction.LEFT)
-                    : (G.p_sb.getBoolean() ? Direction.DOWN : Direction.UP);
+                    ? (G.p_spr() ? Direction.RIGHT : Direction.LEFT)
+                    : (G.p_sb() ? Direction.DOWN : Direction.UP);
         G.curwin.win_split(dir, n, av);
     }
 

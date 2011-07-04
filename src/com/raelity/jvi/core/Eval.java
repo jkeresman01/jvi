@@ -39,9 +39,9 @@ public class Eval {
         boolean j;
 
         public SaveCpo() {
-            w      = G.p_cpo_w.getBoolean();
-            search = G.p_cpo_search.getBoolean();
-            j      = G.p_cpo_j.getBoolean();
+            w      = G.p_cpo_w();
+            search = G.p_cpo_search();
+            j      = G.p_cpo_j();
         }
 
         public void restore() {

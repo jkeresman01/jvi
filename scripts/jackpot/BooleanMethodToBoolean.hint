@@ -1,0 +1,9 @@
+<?
+    import t.A;
+?>
+
+'xxx() --> xxx':
+
+A.$opt()
+=> A.$opt
+;;
