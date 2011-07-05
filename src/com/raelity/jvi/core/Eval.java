@@ -45,15 +45,15 @@ public class Eval {
         }
 
         public void restore() {
-            G.p_cpo_w.setBoolean(w);
-            G.p_cpo_search.setBoolean(search);
-            G.p_cpo_j.setBoolean(j);
+            G.p_cpo_wOption_setBoolean(w);
+            G.p_cpo_searchOption_setBoolean(search);
+            G.p_cpo_jOption_setBoolean(j);
         }
 
         static public void clearCpo() {
-            G.p_cpo_w.setBoolean(false);
-            G.p_cpo_search.setBoolean(false);
-            G.p_cpo_j.setBoolean(false);
+            G.p_cpo_wOption_setBoolean(false);
+            G.p_cpo_searchOption_setBoolean(false);
+            G.p_cpo_jOption_setBoolean(false);
         }
     }
 

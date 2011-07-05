@@ -414,7 +414,7 @@ public final class Options {
     //
     //
     
-    G.p_so = OptUtil.createIntegerOption(scrollOff, 0);
+    G.p_soOption = OptUtil.createIntegerOption(scrollOff, 0);
     OptUtil.setupOptionDesc(Category.GENERAL, scrollOff, "'scrolloff' 'so'",
            "visible context around cursor (scrolloff)" 
             + "	Minimal number of screen lines to keep above and below the"
@@ -423,15 +423,15 @@ public final class Options {
             + " cursor line will always be in the middle of the window"
             + " (except at the start or end of the file)");
     
-    G.p_smd = OptUtil.createBooleanOption(showMode, true);
+    G.p_smdOption = OptUtil.createBooleanOption(showMode, true);
     OptUtil.setupOptionDesc(Category.GENERAL, showMode, "'showmode' 'smd'",
             "If in Insert or Replace mode display that information.");
     
-    G.p_sc = OptUtil.createBooleanOption(showCommand, true);
+    G.p_scOption = OptUtil.createBooleanOption(showCommand, true);
     OptUtil.setupOptionDesc(Category.GENERAL, showCommand, "'showcmd' 'sc'",
             "Show (partial) command in status line.");
 
-    G.p_report = OptUtil.createIntegerOption(report, 2);
+    G.p_reportOption = OptUtil.createIntegerOption(report, 2);
     OptUtil.setupOptionDesc(Category.GENERAL, report, "'report'",
             "Threshold for reporting number of lines changed.  When the"
             + " number of changed lines is more than 'report' a message will"
@@ -439,7 +439,7 @@ public final class Options {
             + " 'report' to 0.  For the \":substitute\" command the number of"
             + " substitutions is used instead of the number of lines.");
     
-    G.p_ml = OptUtil.createBooleanOption(modeline, true);
+    G.p_mlOption = OptUtil.createBooleanOption(modeline, true);
     OptUtil.setupOptionDesc(Category.GENERAL, modeline, "'modeline' 'ml'",
             "Enable/disable modelines option."
             + "\n[text]{white}{vi:|vim:|ex:}[white]{options}"
@@ -447,18 +447,18 @@ public final class Options {
             + "\n[text]{white}{vi:|vim:|ex:}[white]se[t] {options}:[text]"
             + "\n\u00a0\u00a0\u00a0\u00a0example: /* vim: set ai tw=75: */");
     
-    G.p_mls = OptUtil.createIntegerOption(modelines, 5);
+    G.p_mlsOption = OptUtil.createIntegerOption(modelines, 5);
     OptUtil.setupOptionDesc(Category.GENERAL, modelines, "'modelines' 'mls'",
 	    " If 'modeline' is on 'modelines' gives the number of lines"
             + " that is checked for set commands.  If 'modeline' is off"
             + " or 'modelines' is zero no lines are checked.");
 
-    G.p_cb = OptUtil.createBooleanOption(unnamedClipboard, false);
+    G.p_cbOption = OptUtil.createBooleanOption(unnamedClipboard, false);
     OptUtil.setupOptionDesc(Category.GENERAL, unnamedClipboard,
                "'clipboard' 'cb' (unnamed)",
                "use clipboard for unamed yank, delete and put");
 
-    G.p_notsol = OptUtil.createBooleanOption(notStartOfLine, false);
+    G.p_notsolOption = OptUtil.createBooleanOption(notStartOfLine, false);
     OptUtil.setupOptionDesc(Category.GENERAL, notStartOfLine, "(not)'startofline' (not)'sol'",
                "After motion try to keep column position."
             + " NOTE: state is opposite of vim.");
@@ -480,7 +480,7 @@ public final class Options {
             "Maximum number of previously edited files for which the marks"
 	  + " are remembered. Set to 0 and no marks are persisted.");
 
-    G.p_sel = OptUtil.createEnumStringOption(selection, "inclusive",
+    G.p_selOption = OptUtil.createEnumStringOption(selection, "inclusive",
             new String[] {"old", "inclusive", "exclusive"});
     OptUtil.setupOptionDesc(Category.GENERAL, selection, "'selection' 'sel'",
             "This option defines the behavior of the selection."
@@ -488,7 +488,7 @@ public final class Options {
             + "Possible values: 'old', 'inclusive', 'exclusive'");
     setExpertHidden(selection, false, false);
     
-    G.p_slm = OptUtil.createEnumStringOption(selectMode, "",
+    G.p_slmOption = OptUtil.createEnumStringOption(selectMode, "",
             new String[] {"mouse", "key", "cmd"});
     OptUtil.setupOptionDesc(Category.GENERAL, selectMode, "'selectmode' 'slm'",
             "This is a comma separated list of words, which specifies when to"
@@ -534,17 +534,17 @@ public final class Options {
           "The time in milliseconds that is waited for a mapped"
             + " key sequence to complete.");
 
-    G.p_ea = OptUtil.createBooleanOption(equalAlways, true);
+    G.p_eaOption = OptUtil.createBooleanOption(equalAlways, true);
     OptUtil.setupOptionDesc(Category.GENERAL, equalAlways, "'equalalways' 'ea'",
         "When on, all the windows are automatically made the same size after"
 	+ " splitting or closing a window.");
 
-    G.p_sb = OptUtil.createBooleanOption(splitBelow, false);
+    G.p_sbOption = OptUtil.createBooleanOption(splitBelow, false);
     OptUtil.setupOptionDesc(Category.GENERAL, splitBelow, "'splitbelow' 'sb'",
 	"When on, splitting a window will put the new window below the current"
 	+ " one.");
 
-    G.p_spr = OptUtil.createBooleanOption(splitRight, false);
+    G.p_sprOption = OptUtil.createBooleanOption(splitRight, false);
     OptUtil.setupOptionDesc(Category.GENERAL, splitRight, "'splitright' 'spr'",
 	"When on, splitting a window will put the new window right of the"
 	+ " current one.");
@@ -556,23 +556,23 @@ public final class Options {
     //
     //
 
-    G.p_to = OptUtil.createBooleanOption(tildeOperator, false);
+    G.p_toOption = OptUtil.createBooleanOption(tildeOperator, false);
     OptUtil.setupOptionDesc(Category.MODIFY, tildeOperator , "'tildeop' 'top'",
                "tilde \"~\" acts like an operator, e.g. \"~w\" works");
 
-    G.p_cpo_w = OptUtil.createBooleanOption(changeWordBlanks, true);
+    G.p_cpo_wOption = OptUtil.createBooleanOption(changeWordBlanks, true);
     OptUtil.setupOptionDesc(Category.MODIFY, changeWordBlanks, "'cpoptions' 'cpo' \"w\"",
                "\"cw\" affects sequential white space");
 
-    G.p_js = OptUtil.createBooleanOption(joinSpaces, true);
+    G.p_jsOption = OptUtil.createBooleanOption(joinSpaces, true);
     OptUtil.setupOptionDesc(Category.MODIFY, joinSpaces, "'joinspaces' 'js'",
                "\"J\" inserts two spaces after a \".\", \"?\" or \"!\"");
 
-    G.p_sr = OptUtil.createBooleanOption(shiftRound, false);
+    G.p_srOption = OptUtil.createBooleanOption(shiftRound, false);
     OptUtil.setupOptionDesc(Category.MODIFY, shiftRound, "'shiftround' 'sr'",
                "\"<\" and \">\" round indent to multiple of shiftwidth");
 
-    G.p_bs = OptUtil.createEnumIntegerOption(backspace, 0, new Integer[] { 0, 1, 2});
+    G.p_bsOption = OptUtil.createEnumIntegerOption(backspace, 0, new Integer[] { 0, 1, 2});
     OptUtil.setupOptionDesc(Category.MODIFY, backspace, "'backspace' 'bs'",
             "Influences the working of <BS>, <Del> during insert."
             + "\n  0 - no special handling."
@@ -632,7 +632,7 @@ public final class Options {
     //
     //
 
-    G.p_is = OptUtil.createBooleanOption(incrSearch, true);
+    G.p_isOption = OptUtil.createBooleanOption(incrSearch, true);
     OptUtil.setupOptionDesc(Category.SEARCH, incrSearch, "'incsearch' 'is'",
             "While typing a search command, show where the pattern, as it was"
             + " typed so far, matches. If invalid pattern, no match"
@@ -640,47 +640,47 @@ public final class Options {
             + " You still need to finish the search with"
             + " <ENTER> or abort it with <ESC>.");
     
-    G.p_hls = OptUtil.createBooleanOption(highlightSearch, true);
+    G.p_hlsOption = OptUtil.createBooleanOption(highlightSearch, true);
     OptUtil.setupOptionDesc(Category.SEARCH, highlightSearch, "'hlsearch' 'hls'",
                     "When there is a previous search pattern, highlight"
                     + " all its matches");
 
-    G.p_ic = OptUtil.createBooleanOption(ignoreCase, false);
+    G.p_icOption = OptUtil.createBooleanOption(ignoreCase, false);
     OptUtil.setupOptionDesc(Category.SEARCH, ignoreCase, "'ignorecase' 'ic'",
             "Ignore case in search patterns.");
     
-    G.p_scs = OptUtil.createBooleanOption(smartCase, false);
+    G.p_scsOption = OptUtil.createBooleanOption(smartCase, false);
     OptUtil.setupOptionDesc(Category.SEARCH, smartCase, "'smartcase' 'scs'",
             "Override the 'ignorecase' option if the search pattern"
             + " contains upper case characters.");
 
-    G.p_ws = OptUtil.createBooleanOption(wrapScan, true);
+    G.p_wsOption = OptUtil.createBooleanOption(wrapScan, true);
     OptUtil.setupOptionDesc(Category.SEARCH, wrapScan, "'wrapscan' 'ws'",
                "Searches wrap around the end of the file.");
 
-    G.p_cpo_search = OptUtil.createBooleanOption(searchFromEnd, true);
+    G.p_cpo_searchOption = OptUtil.createBooleanOption(searchFromEnd, true);
     OptUtil.setupOptionDesc(Category.SEARCH, searchFromEnd, "'cpoptions' 'cpo' \"c\"",
                "search continues at end of match");
 
-    G.p_cpo_j = OptUtil.createBooleanOption(endOfSentence, false);
+    G.p_cpo_jOption = OptUtil.createBooleanOption(endOfSentence, false);
     OptUtil.setupOptionDesc(Category.SEARCH, endOfSentence, "'cpoptions' 'cpo' \"j\"",
 		  "A sentence has to be followed by two spaces after"
                 + " the '.', '!' or '?'.  A <Tab> is not recognized as"
                 + " white space.");
 
-    G.p_pbm = OptUtil.createBooleanOption(platformBraceMatch, true);
+    G.p_pbmOption = OptUtil.createBooleanOption(platformBraceMatch, true);
     OptUtil.setupOptionDesc(Category.SEARCH, platformBraceMatch, "Platform Brace Matching",
 		  "Use the platform/IDE for brace matching"
                   + " and match highlighting. This may enable additional"
                   + " match characters, words and features.");
     
-    G.p_meta_equals = OptUtil.createBooleanOption(metaEquals, true);
+    G.p_meta_equalsOption = OptUtil.createBooleanOption(metaEquals, true);
     OptUtil.setupOptionDesc(Category.SEARCH, metaEquals, "RE Meta Equals",
             "In a regular expression allow"
             + " '=', in addition to '?', to indicate an optional atom.");
     setExpertHidden(metaEquals, true, false);
 
-    G.p_meta_escape = OptUtil.createStringOption(metaEscape, G.metaEscapeDefault,
+    G.p_meta_escapeOption = OptUtil.createStringOption(metaEscape, G.metaEscapeDefault,
             new StringOption.Validator() {
             @Override
               public void validate(String val) throws PropertyVetoException {
@@ -728,47 +728,47 @@ public final class Options {
     // Vi cursor wrap options
     //
     //
-    G.p_ww_bs = OptUtil.createBooleanOption(backspaceWrapPrevious, true);
+    G.p_ww_bsOption = OptUtil.createBooleanOption(backspaceWrapPrevious, true);
     OptUtil.setupOptionDesc(Category.CURSOR_WRAP, backspaceWrapPrevious,
                "'whichwrap' 'ww'  b - <BS>",
                "<backspace> wraps to previous line");
 
-    G.p_ww_h = OptUtil.createBooleanOption(hWrapPrevious, false);
+    G.p_ww_hOption = OptUtil.createBooleanOption(hWrapPrevious, false);
     OptUtil.setupOptionDesc(Category.CURSOR_WRAP, hWrapPrevious,
                "'whichwrap' 'ww'  h - \"h\"",
                "\"h\" wraps to previous line (not recommended, see vim doc)");
 
-    G.p_ww_larrow = OptUtil.createBooleanOption(leftWrapPrevious, false);
+    G.p_ww_larrowOption = OptUtil.createBooleanOption(leftWrapPrevious, false);
     OptUtil.setupOptionDesc(Category.CURSOR_WRAP, leftWrapPrevious,
                "'whichwrap' 'ww'  < - <Left>",
                "<left> wraps to previous line");
 
-    G.p_ww_sp = OptUtil.createBooleanOption(spaceWrapNext, true);
+    G.p_ww_spOption = OptUtil.createBooleanOption(spaceWrapNext, true);
     OptUtil.setupOptionDesc(Category.CURSOR_WRAP, spaceWrapNext,
                "'whichwrap' 'ww'  s - <Space>",
                "<space> wraps to next line");
 
-    G.p_ww_l = OptUtil.createBooleanOption(lWrapNext, false);
+    G.p_ww_lOption = OptUtil.createBooleanOption(lWrapNext, false);
     OptUtil.setupOptionDesc(Category.CURSOR_WRAP, lWrapNext,
                "'whichwrap' 'ww'  l - \"l\"",
                "\"l\" wraps to next line (not recommended, see vim doc)");
 
-    G.p_ww_rarrow = OptUtil.createBooleanOption(rightWrapNext, false);
+    G.p_ww_rarrowOption = OptUtil.createBooleanOption(rightWrapNext, false);
     OptUtil.setupOptionDesc(Category.CURSOR_WRAP, rightWrapNext,
                "'whichwrap' 'ww'  > - <Right>",
                "<right> wraps to next line");
 
-    G.p_ww_tilde = OptUtil.createBooleanOption(tildeWrapNext, false);
+    G.p_ww_tildeOption = OptUtil.createBooleanOption(tildeWrapNext, false);
     OptUtil.setupOptionDesc(Category.CURSOR_WRAP, tildeWrapNext,
                "'whichwrap' 'ww'  ~ - \"~\"",
                "\"~\" wraps to next line");
 
-    G.p_ww_i_left = OptUtil.createBooleanOption(insertLeftWrapPrevious, false);
+    G.p_ww_i_leftOption = OptUtil.createBooleanOption(insertLeftWrapPrevious, false);
     OptUtil.setupOptionDesc(Category.CURSOR_WRAP, insertLeftWrapPrevious,
                "'whichwrap' 'ww'  [ - <Left>",
                "in Insert Mode <Left> wraps to previous line");
 
-    G.p_ww_i_right = OptUtil.createBooleanOption(insertRightWrapNext, false);
+    G.p_ww_i_rightOption = OptUtil.createBooleanOption(insertRightWrapNext, false);
     OptUtil.setupOptionDesc(Category.CURSOR_WRAP, insertRightWrapNext,
                "'whichwrap' 'ww'  ] - <Right>",
                "in Insert Mode <Right> wraps to next line");
@@ -799,38 +799,38 @@ public final class Options {
     else
       defaultFlag = "/c";
 
-    G.p_sh = OptUtil.createStringOption(shell, defaultShell);
+    G.p_shOption = OptUtil.createStringOption(shell, defaultShell);
     OptUtil.setupOptionDesc(Category.PROCESS, shell, "'shell' 'sh'",
             "Name of shell to use for ! and :! commands.  (default $SHELL " +
             "or \"sh\", MS-DOS and Win32: \"command.com\" or \"cmd.exe\").  " +
             "When changing also check 'shellcmndflag'.");
 
-    G.p_shcf = OptUtil.createStringOption(shellCmdFlag, defaultFlag);
+    G.p_shcfOption = OptUtil.createStringOption(shellCmdFlag, defaultFlag);
     OptUtil.setupOptionDesc(Category.PROCESS, shellCmdFlag, "'shellcmdflag' 'shcf'",
             "Flag passed to shell to execute \"!\" and \":!\" commands; " +
             "e.g., \"bash.exe -c ls\" or \"command.com /c dir\" (default: " +
             "\"-c\", MS-DOS and Win32, when 'shell' does not contain \"sh\" " +
             "somewhere: \"/c\").");
 
-    G.p_sxq = OptUtil.createStringOption(shellXQuote, defaultXQuote);
+    G.p_sxqOption = OptUtil.createStringOption(shellXQuote, defaultXQuote);
     OptUtil.setupOptionDesc(Category.PROCESS, shellXQuote, "'shellxquote' 'sxq'",
             "Quoting character(s), put around the commands passed to the " +
             "shell, for the \"!\" and \":!\" commands (default: \"\"; for " +
             "Win32, when 'shell' contains \"sh\" somewhere: \"\\\"\").");
     
-    G.p_ssl = OptUtil.createBooleanOption(shellSlash, false);
+    G.p_sslOption = OptUtil.createBooleanOption(shellSlash, false);
     OptUtil.setupOptionDesc(Category.PROCESS, shellSlash, "'shellslash' 'ssl'",
             "When set, a forward slash is used when expanding file names." +
             "This is useful when a Unix-like shell is used instead of " +
             "command.com or cmd.exe.");
     
-    G.p_ep = OptUtil.createStringOption(equalProgram, "");
+    G.p_epOption = OptUtil.createStringOption(equalProgram, "");
     OptUtil.setupOptionDesc(Category.PROCESS, equalProgram, "'equalprg' 'ep'",
             "External program to use for \"=\" command (default \"\").  " +
             "When this option is empty the internal formatting functions " +
             "are used.");
 
-    G.p_fp = OptUtil.createStringOption(formatProgram, "");
+    G.p_fpOption = OptUtil.createStringOption(formatProgram, "");
     OptUtil.setupOptionDesc(Category.PROCESS, formatProgram, "'formatprg' 'fp'",
             "External program to use for \"qq\" or \"Q\" command (default \"\")."
           + " When this option is empty the internal formatting functions"

@@ -2,26 +2,49 @@
     import java.util.HashSet;
 ?>
 
+/*
+'p_bs --> p_bsOption':
+
+$opt ::    $opt instanceof com.raelity.jvi.options.Option
+        && elementKindMatches($opt, ElementKind.FIELD)
+        && hasModifier($opt, Modifier.STATIC)
+        && matchName($opt) 
+=>
+G.$optNew :: changeVariableName($opt, $optNew)
+;;
+
+$opt ::    $opt instanceof com.raelity.jvi.options.Option
+        && ! $opt instanceof com.raelity.jvi.options.DebugOption
+        // && elementKindMatches($opt, ElementKind.FIELD)
+        // && hasModifier($opt, Modifier.STATIC)
+        // && matchName($opt) 
+// =>
+// G.$optNew :: changeVariableName($opt, $optNew)
+;;
+*/
+
 'p_bs --> p_bsOption':
 
 /*
-BooleanOption $opt;
+static BooleanOption $opt;
     ::    $opt instanceof com.raelity.jvi.options.Option
        && matchName($opt) && hasModifier($opt, Modifier.STATIC)
 =>
-BooleanOption $optNew; :: changeVariableName($opt, $optNew)
+static BooleanOption $optNew; :: changeVariableName($opt, $optNew)
 ;;
 
-$opt.getInteger()
+static IntegerOption $opt;
     ::    $opt instanceof com.raelity.jvi.options.Option
        && matchName($opt) && hasModifier($opt, Modifier.STATIC)
-=> $opt()
+=>
+static IntegerOption $optNew; :: changeVariableName($opt, $optNew)
 ;;
 
-$opt.getString()
+static StringOption $opt;
     ::    $opt instanceof com.raelity.jvi.options.Option
        && matchName($opt) && hasModifier($opt, Modifier.STATIC)
-=> $opt()
+=>
+static StringOption $optNew; :: changeVariableName($opt, $optNew)
 ;;
 */
 
@@ -29,7 +52,7 @@ $opt
     ::    $opt instanceof com.raelity.jvi.options.Option
        && matchName($opt) && hasModifier($opt, Modifier.STATIC)
 =>
-$optNew :: changeVariableName($opt, $optNew)
+G.$optNew :: changeVariableName($opt, $optNew)
 ;;
 
 <?

@@ -725,7 +725,7 @@ public class Search03
         boolean	save_p_ws = G.p_ws();
         int		retval = FAIL;
 
-        G.p_ws.setBoolean(false);
+        G.p_wsOption_setBoolean(false);
 
         old_pos = G.curwin.w_cursor.copy();
         old_end = G.curwin.w_cursor.copy();		    /* remember where we started */
@@ -898,7 +898,7 @@ public class Search03
         retval = OK;
     } while(false); // theend:
 
-        G.p_ws.setBoolean(save_p_ws);
+        G.p_wsOption_setBoolean(save_p_ws);
         return retval;
     }
 
