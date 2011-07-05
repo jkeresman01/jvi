@@ -241,6 +241,30 @@ public class G
         p_wsOption.setBoolean(f);
     }
 
+    public static class SaveCpo {
+        boolean w;
+        boolean search;
+        boolean j;
+
+        public SaveCpo() {
+            w      = G.p_cpo_w();
+            search = G.p_cpo_search();
+            j      = G.p_cpo_j();
+        }
+
+        public void restore() {
+            G.p_cpo_wOption_setBoolean(w);
+            G.p_cpo_searchOption_setBoolean(search);
+            G.p_cpo_jOption_setBoolean(j);
+        }
+
+        static public void clearCpo() {
+            G.p_cpo_wOption_setBoolean(false);
+            G.p_cpo_searchOption_setBoolean(false);
+            G.p_cpo_jOption_setBoolean(false);
+        }
+    }
+
     // backspace over start of insert, and more
     public static IntegerOption p_bsOption;
     public static int p_bs() { return p_bsOption.getInteger(); }
