@@ -20,17 +20,21 @@
 
 package com.raelity.jvi.options;
 
+import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.core.Options.Category;
 import java.awt.Color;
 import java.beans.PropertyChangeSupport;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -260,6 +264,61 @@ public class OptUtil {
     if(opt != null) {
       opt.setExpert(fExpert);
       opt.setHidden(fHidden);
+    }
+  }
+
+  static void intializeGlobalOptionMemoryValue(Option opt)
+  {
+    VimOption vopt = VimOption.get(opt.getName());
+    if(vopt == null || !vopt.isGlobal())
+      return;
+    try {
+      Field f = G.class.getDeclaredField(vopt.getVarName());
+      f.setAccessible(true);
+      if(f.getType() == int.class)
+        f.setInt(null, opt.getInteger());
+      else if(f.getType() == boolean.class)
+        f.setBoolean(null, opt.getBoolean());
+      else if(f.getType() == String.class)
+        f.set(null, opt.getString());
+      if(G.dbgOptions)
+        System.err.printf("Init G.%s to '%s'\n", vopt.getVarName(), opt.getValue());
+    } catch(IllegalArgumentException ex) {
+      Logger.getLogger(OptUtil.class.getName()).log(Level.SEVERE, null, ex);
+    } catch(IllegalAccessException ex) {
+      Logger.getLogger(OptUtil.class.getName()).log(Level.SEVERE, null, ex);
+    } catch(NoSuchFieldException ex) {
+      Logger.getLogger(OptUtil.class.getName()).log(Level.SEVERE, null, ex);
+    } catch(SecurityException ex) {
+      Logger.getLogger(OptUtil.class.getName()).log(Level.SEVERE, null, ex);
+    }
+  }
+
+  public static void verifyVimOptions() {
+    for(VimOption vopt : VimOption.getAll()) {
+      if(!vopt.isGlobal())
+        continue;
+      try {
+        // The option should exist
+        // G should have something with the var name
+        // and the types should match
+        Option opt = OptUtil.getOption(vopt.getOptName());
+        Field f = G.class.getDeclaredField(vopt.getVarName());
+        if(f.getType() == int.class)
+          opt.getInteger();
+        else if(f.getType() == boolean.class)
+          opt.getBoolean();
+        else if(f.getType() == String.class)
+          opt.getString();
+        if(G.dbgOptions)
+          System.err.println("VERIFY: " + vopt.getOptName());
+      } catch(NoSuchFieldException ex) {
+        Logger.getLogger(VimOption.class.getName()).log(Level.SEVERE, null,
+                                                                      ex);
+      } catch(SecurityException ex) {
+        Logger.getLogger(VimOption.class.getName()).log(Level.SEVERE, null,
+                                                                      ex);
+      }
     }
   }
 

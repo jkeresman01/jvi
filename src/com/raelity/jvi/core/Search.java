@@ -992,7 +992,7 @@ finished:
    */
   private static String cleanupPattern(String s, MutableInt flags) {
     flags.setValue(0);
-    String metacharacterEscapes = G.p_meta_escape();
+    String metacharacterEscapes = G.p_rem();
     StringBuilder sb = new StringBuilder();
     boolean isEscaped = false;
     boolean hasUpper = false;
@@ -1003,7 +1003,7 @@ finished:
         continue;
       }
       
-      if((c == '=') && G.p_meta_equals()) {
+      if((c == '=') && G.p_req()) {
         // Have an '=' and that char is used to specify an optional atom.
         // Set useEscape if the '=' needs to be escaped to mean optional.
         boolean useEscape = metacharacterEscapes.indexOf('?') >= 0;

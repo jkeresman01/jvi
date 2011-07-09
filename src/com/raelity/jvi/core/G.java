@@ -21,6 +21,7 @@
 package com.raelity.jvi.core;
 
 import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViOptionBag;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.manager.ViManager;
@@ -32,10 +33,22 @@ import com.raelity.jvi.options.DebugOption;
 /**
  *  A class of globals. Most taken directly from vim code.
  */
-public class G
+public class G implements ViOptionBag
 {
     static public final String metaEscapeDefault = "()|+?{";
     static public final String metaEscapeAll = "()|+?{";
+
+    private static final G INSTANCE = new G();
+    public static G get() { return INSTANCE; }
+    private G() {}
+
+    @Override public void viOptionSet(ViTextView tv, String name) {
+        assert false;
+    }
+
+    @Override public void activateOptions(ViTextView tv) {
+        assert false;
+    }
 
     /**
      *  Set the current editor.
@@ -190,7 +203,7 @@ public class G
     static DebugOption dbgMouse;
     static BooleanOption pcmarkTrack; // track NB caret motions for pcmark
 
-    public static boolean dbgOptions = false; // NEEDSWORK:
+    public static boolean dbgOptions = ViManager.isDebugAtHome(); // NEEDSWORK:
 
     static IntegerOption viminfoMaxBuf;
     //static int viminfoMaxPersistedBuffersWithMarks = 25;
@@ -258,7 +271,7 @@ public class G
             G.p_cpo_jOption_setBoolean(j);
         }
 
-        static public void clearCpo() {
+        public void clearCpo() {
             G.p_cpo_wOption_setBoolean(false);
             G.p_cpo_searchOption_setBoolean(false);
             G.p_cpo_jOption_setBoolean(false);
@@ -313,14 +326,6 @@ public class G
     public static BooleanOption p_jsOption;
     public static boolean p_js() { return p_jsOption.getBoolean(); }
            static boolean p_js;
-    // true use '=' instead of '?'
-    public static BooleanOption p_meta_equalsOption;
-    public static boolean p_meta_equals() { return p_meta_equalsOption.getBoolean(); }
-           static boolean p_meta_equals;
-    // metacharacters escaped
-    public static StringOption p_meta_escapeOption;
-    public static String p_meta_escape() { return p_meta_escapeOption.getString(); }
-           static String p_meta_escape;
     // modeline
     public static BooleanOption p_mlOption;
     public static boolean p_ml() { return p_mlOption.getBoolean(); }
@@ -337,10 +342,18 @@ public class G
     public static BooleanOption p_pbmOption;
     public static boolean p_pbm() { return p_pbmOption.getBoolean(); }
            static boolean p_pbm;
+    // metacharacters escaped
+    public static StringOption p_remOption;
+    public static String p_rem() { return p_remOption.getString(); }
+           static String p_rem;
 
     public static IntegerOption p_reportOption;
     public static int p_report() { return p_reportOption.getInteger(); }
            static int p_report;
+    // true use '=' instead of '?'
+    public static BooleanOption p_reqOption;
+    public static boolean p_req() { return p_reqOption.getBoolean(); }
+           static boolean p_req;
     // 'splitbelow'
     public static BooleanOption p_sbOption;
     public static boolean p_sb() { return p_sbOption.getBoolean(); }
@@ -394,9 +407,17 @@ public class G
     public static String p_sxq() { return p_sxqOption.getString(); }
            static String p_sxq;
     // tildeop
+    public static BooleanOption p_topOption;
+    public static boolean p_top() { return p_topOption.getBoolean(); }
+           static boolean p_top;
+    // timeout
     public static BooleanOption p_toOption;
     public static boolean p_to() { return p_toOption.getBoolean(); }
            static boolean p_to;
+    // timeoutlen
+    public static IntegerOption p_tmOption;
+    public static int p_tm() { return p_tmOption.getInteger(); }
+           static int p_tm;
     // wrapscan
     public static BooleanOption p_wsOption;
     public static boolean p_ws() { return p_wsOption.getBoolean(); }

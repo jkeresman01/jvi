@@ -1049,7 +1049,7 @@ middle_code:
 	     * if tilde is not an operator and Visual is off: swap case
 	     * of a single character
 	     */
-	    if (	   ! G.p_to()
+	    if (	   ! G.p_top()
 			   && !G.VIsual_active
 			   && oap.op_type != OP_TILDE)
 	    {

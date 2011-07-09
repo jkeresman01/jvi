@@ -522,14 +522,14 @@ public final class Options {
           "List mode. Useful to see the difference between tabs"
             + " and spaces and for trailing blanks.");
 
-    OptUtil.createBooleanOption(timeout, true);
+    G.p_toOption = OptUtil.createBooleanOption(timeout, true);
     OptUtil.setupOptionDesc(Category.GENERAL, timeout, "'timeout' 'to'",
           "Enables timeout when part of a mapped key sequence has been"
             + " received. After that the already received"
             + " characters are interpreted as single characters. "
             + " The waiting time can be changed with the 'timeoutlen' option.");
 
-    OptUtil.createIntegerOption(timeoutlen, 1000);
+    G.p_tmOption = OptUtil.createIntegerOption(timeoutlen, 1000);
     OptUtil.setupOptionDesc(Category.GENERAL, timeoutlen, "'timeoutlen' 'tm'",
           "The time in milliseconds that is waited for a mapped"
             + " key sequence to complete.");
@@ -556,7 +556,7 @@ public final class Options {
     //
     //
 
-    G.p_toOption = OptUtil.createBooleanOption(tildeOperator, false);
+    G.p_topOption = OptUtil.createBooleanOption(tildeOperator, false);
     OptUtil.setupOptionDesc(Category.MODIFY, tildeOperator , "'tildeop' 'top'",
                "tilde \"~\" acts like an operator, e.g. \"~w\" works");
 
@@ -674,13 +674,13 @@ public final class Options {
                   + " and match highlighting. This may enable additional"
                   + " match characters, words and features.");
     
-    G.p_meta_equalsOption = OptUtil.createBooleanOption(metaEquals, true);
-    OptUtil.setupOptionDesc(Category.SEARCH, metaEquals, "RE Meta Equals",
+    G.p_reqOption = OptUtil.createBooleanOption(metaEquals, true);
+    OptUtil.setupOptionDesc(Category.SEARCH, metaEquals, "'reMetaEquals' 'req'",
             "In a regular expression allow"
             + " '=', in addition to '?', to indicate an optional atom.");
     setExpertHidden(metaEquals, true, false);
 
-    G.p_meta_escapeOption = OptUtil.createStringOption(metaEscape, G.metaEscapeDefault,
+    G.p_remOption = OptUtil.createStringOption(metaEscape, G.metaEscapeDefault,
             new StringOption.Validator() {
             @Override
               public void validate(String val) throws PropertyVetoException {
@@ -696,7 +696,7 @@ public final class Options {
 		}
               }
             });
-    OptUtil.setupOptionDesc(Category.SEARCH, metaEscape, "'remescape' 'rem'",
+    OptUtil.setupOptionDesc(Category.SEARCH, metaEscape, "'reMetaEscape' 'rem'",
             "Regular expression metacharacters requiring escape;"
             + " Any of: '(', ')', '|', '+', '?', '{'."
             + " By default vim requires escape, '\\', for these characters."
@@ -897,6 +897,8 @@ public final class Options {
 
     G.dbgSearch = OptUtil.createDebugOption(dbgSearch);
     OptUtil.setupOptionDesc(Category.DEBUG, dbgSearch, "debug search", "");
+
+    OptUtil.verifyVimOptions();
   }
 
   /**

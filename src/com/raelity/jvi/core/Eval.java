@@ -68,7 +68,7 @@ public class Eval {
 
         /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
         save_cpo = new SaveCpo();
-        SaveCpo.clearCpo(); // p_cpo = (char_u *)"";
+        save_cpo.clearCpo(); // p_cpo = (char_u *)"";
 
         /* Make two search patterns: start/end (pat2, for in nested pairs) and
          * start/middle/end (pat3, for the top pair). */

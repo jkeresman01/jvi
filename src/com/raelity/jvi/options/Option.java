@@ -138,6 +138,7 @@ public abstract class Option {
 	if(fPropogate) {
             OptUtil.getPrefs().put(name, stringValue);
 	}
+        OptUtil.intializeGlobalOptionMemoryValue(this);
     }
     
     public int getInteger() {

@@ -19,6 +19,10 @@
  */
 package com.raelity.jvi.options;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.util.Arrays;
+
 public class EnumIntegerOption extends IntegerOption implements EnumOption {
     Integer [] availableValues;
   
@@ -29,12 +33,36 @@ public class EnumIntegerOption extends IntegerOption implements EnumOption {
   public EnumIntegerOption(String key, int defaultValue,
           IntegerOption.Validator validator,
           Integer[] availableValues) {
-    super(key, defaultValue, validator);
+    super(key, defaultValue, getValidator(validator));
     this.availableValues = availableValues;
   }
 
-    public Integer[] getAvailableValues() {
-        return availableValues;
+    private static IntegerOption.Validator
+    getValidator(IntegerOption.Validator validator) {
+        return validator != null ? validator : new DefaultEnumIntegerValidator();
     }
 
+    @Override
+    public Integer[] getAvailableValues() {
+        // NEEDSWORK: return unModifiable list to avoid copy
+        return Arrays.copyOf(availableValues, availableValues.length);
+    }
+
+    public static class DefaultEnumIntegerValidator
+    extends IntegerOption.Validator {
+        @Override
+        public void validate(int val) throws PropertyVetoException
+        {
+            EnumIntegerOption eOpt = (EnumIntegerOption)this.opt;
+            for(Integer eVal : eOpt.availableValues) {
+                if(eVal.equals(val))
+                    return;
+            }
+            throw new PropertyVetoException(
+                    "Invalid option value: " + val,
+                    new PropertyChangeEvent(opt, opt.getName(),
+                            opt.getInteger(), val));
+        }
+
+    }
 }

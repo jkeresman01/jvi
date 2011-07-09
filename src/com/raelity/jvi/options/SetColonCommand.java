@@ -13,10 +13,10 @@ import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.TextView;
 import com.raelity.jvi.core.Util;
+import com.raelity.jvi.options.VimOption.F;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Field;
-import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -58,6 +58,10 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     {
         ColonCommands.register("se", "set", new SetColonCommand(), null);
     }
+
+    private SetColonCommand()
+    {
+    }
     
     public static class SetCommandException extends Exception
     {
@@ -65,29 +69,6 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         public SetCommandException(String msg)
         {
             super(msg);
-        }
-    }
-    
-    // Scope of the option
-    private enum S {
-        P_GBL, // a global option
-        P_WIN, // a per window option
-        P_BUF; // a per buffer option
-        
-        boolean isLocal() {
-            return this == P_WIN || this == P_BUF;
-        }
-        
-        boolean isGlobal() {
-            return this == P_GBL;
-        }
-        
-        boolean isWin() {
-            return this == P_WIN;
-        }
-        
-        boolean isBuf() {
-            return this == P_BUF;
         }
     }
 
@@ -136,78 +117,6 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         boolean isPre()  { return this == PRE; }
         boolean isSub()  { return this == SUB; }
     }
-
-    // option flags
-    private enum F {
-        COMMA,          // comma separated list
-        NODUP,          // don't allow duplicate strings
-        FLAGLIST,       // list of single-char flags
-    }
-
-    private static final Set<F> nullF = EnumSet.noneOf(F.class);
-    
-    private static class VimOption
-    {
-        
-        String fullname; // option name
-        String shortname; // option name
-        S scope;
-        // name of field and/or option
-        String varName; // java variable name in curbuf or curwin
-        String optName; // the jVi Option name.
-        Set<F> flags;
-        
-        VimOption(String fullname, String shortname,
-                               String varName, String optName,
-                               S scope, Set<F> flags)
-        {
-            this.fullname = fullname;
-            this.shortname = shortname;
-            this.varName = varName;
-            this.optName = optName;
-            this.scope = scope;
-            this.flags = flags;
-        }
-
-        boolean f(F f) {
-            return flags.contains(f);
-        }
-    }
-    
-    private static VimOption[] vopts = new VimOption[]{
-    new VimOption("expandtab",   "et",  "b_p_et",   Options.expandTabs,
-                  S.P_BUF, nullF),
-    new VimOption("hlsearch",    "hls", null,       Options.highlightSearch,
-                  S.P_GBL, nullF),
-    new VimOption("ignorecase",  "ic",  null,       Options.ignoreCase,
-                  S.P_GBL, nullF),
-    new VimOption("incsearch",   "is",  null,       Options.incrSearch,
-                  S.P_GBL, nullF),
-    new VimOption("iskeyword",   "isk", "b_p_isk",  Options.isKeyWord,
-                  S.P_BUF, EnumSet.of(F.COMMA, F.NODUP)),
-    new VimOption("linebreak",   "lbr", "w_p_lbr",  Options.lineBreak,
-                  S.P_WIN, nullF),
-    new VimOption("list",        "",    "w_p_list", Options.list,
-                  S.P_WIN, nullF),
-    new VimOption("number",      "nu",  "w_p_nu",   Options.number,
-                  S.P_WIN, nullF),
-    new VimOption("remescape",   "rem", null,       Options.metaEscape,
-                  S.P_GBL, EnumSet.of(F.FLAGLIST)),
-    new VimOption("scroll",      "scr", "w_p_scr",  Options.scroll,
-                  S.P_WIN, nullF),
-    new VimOption("shiftwidth",  "sw",  "b_p_sw",   Options.shiftWidth,
-                  S.P_BUF, nullF),
-    new VimOption("softtabstop", "sts", "b_p_sts",  Options.softTabStop,
-                  S.P_BUF, nullF),
-    new VimOption("tabstop",     "ts",  "b_p_ts",   Options.tabStop,
-                  S.P_BUF, nullF),
-    new VimOption("textwidth",   "tw",  "b_p_tw",   Options.textWidth,
-                  S.P_BUF, nullF),
-    new VimOption("wrap",        "",    "w_p_wrap", Options.wrap,
-                  S.P_WIN, nullF),
-    new VimOption("wrapscan",    "ws",  null,       Options.wrapScan,
-                  S.P_GBL, nullF),
-    };
     
     @Override
     public void actionPerformed(ActionEvent e)
@@ -307,13 +216,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         if(voptState.op == null)
             voptState.op = OP.NONE;
         VimOption vopt = null;
-        for (VimOption v : vopts) {
-            if (voptName.equals(v.fullname)
-                    || voptName.equals(v.shortname) && !v.shortname.isEmpty()) {
-                vopt = v;
-                break;
-            }
-        }
+        vopt = VimOption.lookupUserName(voptName);
         if (vopt == null) {
             String msg = "Unknown option: " + voptName;
             setCommandError(msg);
@@ -331,12 +234,16 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
             } catch (PropertyVetoException ex) {
                 setCommandError(ex.getMessage());
             }
-            
-            if (vopt.scope.isLocal()) {
-                voptState.f.set(voptState.bag, newValue);
+
+            if(G.dbgOptions) {
+                System.err.printf("SET %s%s to '%s'\n",
+                                  vopt.isGlobal() ? "G." : "",
+                                  vopt.getVarName(), newValue);
+            }
+            voptState.f.set(voptState.bag, newValue);
+            // NEEDSWORK: call some method if a global is set?
+            if (vopt.isLocal()) {
                 voptState.bag.viOptionSet(G.curwin, vopt.varName);
-            } else { // isGlobal()
-                voptState.opt.setValue(newValue.toString());
             }
         }
     }
@@ -374,46 +281,41 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
      * The info about the option is taken from curwin/curbuf.
      */
     private static VimOptionState determineOptionState(VimOption vopt,
-                                                     VimOptionState voptState)
+                                                       VimOptionState voptState)
     {
         if(voptState == null)
             voptState = new VimOptionState();
         if (vopt.optName != null) {
             voptState.opt = Options.getOption(vopt.optName);
         }
-        if (vopt.scope.isLocal()) {
-            voptState.bag = vopt.scope.isWin() ? G.curwin : G.curwin.getBuffer();
-            try {
-                voptState.f = voptState.bag.getClass().getField(vopt.varName);
-            } catch (SecurityException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            } catch (NoSuchFieldException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            }
-            if (voptState.f == null) {
-                return null;
-            }
+
+        voptState.bag = vopt.isGlobal()
+                ? G.get()
+                : vopt.isWin() ? G.curwin : G.curwin.getBuffer();
+        try {
+            //
+            // NEEDSWORK: Clean up getField/getDeclaredField.
+            //            Using GetField for win/buffer
+            //            and getDeclaredField for "G".
+            //            The stuff in G does not need to be global.
+            //            Also, the stuff in G is static.
+            //
+            voptState.f = vopt.isGlobal()
+                    ? voptState.bag.getClass().getDeclaredField(vopt.varName)
+                    : voptState.bag.getClass().getField(vopt.varName);
+            voptState.f.setAccessible(true);
             voptState.type = voptState.f.getType();
-            // impossible to get exceptions
-            try {
-                voptState.curValue = voptState.f.get(voptState.bag);
-            } catch (IllegalArgumentException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            } catch (IllegalAccessException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            }
-        } else if (vopt.scope.isGlobal()) {
-            if (voptState.opt instanceof BooleanOption) {
-                voptState.type = boolean.class;
-                voptState.curValue = voptState.opt.getBoolean();
-            } else if (voptState.opt instanceof IntegerOption) {
-                voptState.type = int.class;
-                voptState.curValue = voptState.opt.getInteger();
-            } else if (voptState.opt instanceof StringOption) {
-                voptState.type = String.class;
-                voptState.curValue = voptState.opt.getString();
-            }
+            voptState.curValue = voptState.f.get(voptState.bag);
+        } catch(NoSuchFieldException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        } catch(SecurityException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        } catch(IllegalArgumentException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        } catch(IllegalAccessException ex) {
+            LOG.log(Level.SEVERE, null, ex);
         }
+
         return voptState;
     }
     
@@ -607,10 +509,10 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     {
         String v = "";
         if (value instanceof Boolean) {
-            v = (((Boolean)value).booleanValue() ? "  " : "no") + vopt.fullname;
+            v = (((Boolean)value).booleanValue() ? "  " : "no") + vopt.fullName;
         } else if (value instanceof Integer
                 || value instanceof String) {
-            v = "  " + vopt.fullname + "=" + value;
+            v = "  " + vopt.fullName + "=" + value;
         } else {
             assert false : value.getClass().getSimpleName() + " not handled";
         }
@@ -622,25 +524,13 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         boolean all = eventArgs.size() == 1 && "all".equals(eventArgs.get(0));
         ViOutputStream osa =
                 ViManager.createOutputStream(null, ViOutputStream.OUTPUT, null);
-        for (VimOption vopt : vopts) {
+        for (VimOption vopt : VimOption.getAllUser()) {
             VimOptionState voptState = determineOptionState(vopt, null);
             if(all || ! voptState.curValue.toString()
                         .equals(voptState.opt.getDefault()))
                 osa.println(formatDisplayValue(vopt, voptState.curValue));
         }
         osa.close();
-    }
-    
-    private static VimOption getVopt(String varName)
-    {
-        VimOption v = null;
-        for(VimOption vopt : vopts) {
-            if(vopt.varName != null && vopt.varName.equals(varName)) {
-                v = vopt;
-                break;
-            }
-        }
-        return v;
     }
     
     /**
@@ -654,9 +544,9 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     public static void syncTextViewInstances(String varName, TextView tv)
     {
         assert tv == G.curwin; // NEEDSWORK: since determine option state assumes
-        VimOption vopt = getVopt(varName);
+        VimOption vopt = VimOption.lookupVarName(varName);
         // if var is not window then nothing to do
-        if(!vopt.scope.isWin())
+        if(!vopt.isWin())
             return;
         
         ViBuffer buf = tv.getBuffer();
@@ -672,10 +562,10 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     
     public static void syncAllInstances(String varName)
     {
-        VimOption vopt = getVopt(varName);
-        if(vopt.scope.isLocal()) {
+        VimOption vopt = VimOption.lookupVarName(varName);
+        if(vopt.isLocal()) {
             Set<? extends ViOptionBag> set =
-                    vopt.scope.isWin()
+                    vopt.isWin()
                     ? ViManager.getFactory().getViTextViewSet()
                     : ViManager.getFactory().getBufferSet();
             for(ViOptionBag bag : set) {
