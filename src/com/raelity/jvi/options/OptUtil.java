@@ -267,6 +267,10 @@ public class OptUtil {
     }
   }
 
+  static void intializeGlobalOptionMemoryValueNew(OptionNew opt)
+  {
+  }
+
   static void intializeGlobalOptionMemoryValue(Option opt)
   {
     VimOption vopt = VimOption.get(opt.getName());
