@@ -1,4 +1,44 @@
 
+<?
+    //import t.A;
+?>
+
+'getBoolean() --> ()':
+
+t.A.$opt() :: $opt instanceof t.Option
+		&& matchName($_)
+		// && matchesAny($_, "")
+		// && parentMatches("")
+=> A.$opt // :: matchName($opt)
+;;
+
+<?
+public boolean matchName(Variable v) {
+    String name = context.name(v);
+    return
+           "p_f2".equals(name)
+    ;
+}
+?>
+
+=============================================================================
+
+t.A.$opt()
+
+In FindPatternOccurences, see
+    if(A.p_f1())
+         ^^^^ is bold
+
+For
+    context.getVariable(context.variableForName("$_"))
+has
+    TreePath with leaf: A.p_f1()
+looks like the $_ is a "method invocation"
+take note of
+    Utilities.createRefactoringElementImplementation(
+
+=============================================================================
+
 === CHANGE A VARIABLE NAME
 === file/test/unit/src/org/netbeans/modules/
 ===     jackpot30/file/NameBoundVariablesGetSet.hint

@@ -25,7 +25,6 @@ import com.raelity.jvi.ViOptionBag;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.options.StringOption;
 import com.raelity.jvi.options.IntegerOption;
 import com.raelity.jvi.options.BooleanOption;
 import com.raelity.jvi.options.DebugOption;
@@ -241,17 +240,8 @@ public class G implements ViOptionBag
     */
     public static boolean did_ai = false;
 
-    static void p_cpo_wOption_setBoolean(boolean f) {
-        p_cpo_wOption.setBoolean(f);
-    }
-    static void p_cpo_searchOption_setBoolean(boolean f) {
-        p_cpo_searchOption.setBoolean(f);
-    }
-    static void p_cpo_jOption_setBoolean(boolean f) {
-        p_cpo_jOption.setBoolean(f);
-    }
-    static void p_wsOption_setBoolean(boolean f) {
-        p_wsOption.setBoolean(f);
+    static void p_wsOption_set(boolean f) {
+        p_ws = f;
     }
 
     public static class SaveCpo {
@@ -260,203 +250,158 @@ public class G implements ViOptionBag
         boolean j;
 
         public SaveCpo() {
-            w      = G.p_cpo_w();
-            search = G.p_cpo_search();
-            j      = G.p_cpo_j();
+            w      = p_cpo_w;
+            search = p_cpo_search;
+            j      = p_cpo_j;
         }
 
         public void restore() {
-            G.p_cpo_wOption_setBoolean(w);
-            G.p_cpo_searchOption_setBoolean(search);
-            G.p_cpo_jOption_setBoolean(j);
+            p_cpo_w = w;
+            p_cpo_search = search;
+            p_cpo_j = j;
         }
 
         public void clearCpo() {
-            G.p_cpo_wOption_setBoolean(false);
-            G.p_cpo_searchOption_setBoolean(false);
-            G.p_cpo_jOption_setBoolean(false);
+            p_cpo_w = false;
+            p_cpo_search = false;
+            p_cpo_j = false;
         }
     }
 
     // backspace over start of insert, and more
-    public static IntegerOption p_bsOption;
-    public static int p_bs() { return p_bsOption.getInteger(); }
+    public static int p_bs() { return p_bs; }
            static int p_bs;
     // clipboard, treat as boolean for 'unnamed'
-    public static BooleanOption p_cbOption;
-    public static boolean p_cb() { return p_cbOption.getBoolean(); }
+    public static boolean p_cb() { return p_cb; }
            static boolean p_cb;
     // sentence search two spaces
-    public static BooleanOption p_cpo_jOption;
-    public static boolean p_cpo_j() { return p_cpo_jOption.getBoolean(); }
+    public static boolean p_cpo_j() { return p_cpo_j; }
            static boolean p_cpo_j;
     // continue search from end of match
-    public static BooleanOption p_cpo_searchOption;
-    public static boolean p_cpo_search() { return p_cpo_searchOption.getBoolean(); }
+    public static boolean p_cpo_search() { return p_cpo_search; }
            static boolean p_cpo_search;
     // change word blanks
-    public static BooleanOption p_cpo_wOption;
-    public static boolean p_cpo_w() { return p_cpo_wOption.getBoolean(); }
+    public static boolean p_cpo_w() { return p_cpo_w; }
            static boolean p_cpo_w;
     // 'equalalways'
-    public static BooleanOption p_eaOption;
-    public static boolean p_ea() { return p_eaOption.getBoolean(); }
+    public static boolean p_ea() { return p_ea; }
            static boolean p_ea;
     // 'equalprg'
-    public static StringOption p_epOption;
-    public static String p_ep() { return p_epOption.getString(); }
+    public static String p_ep() { return p_ep; }
            static String p_ep;
     // formatprg
-    public static StringOption p_fpOption;
-    public static String p_fp() { return p_fpOption.getString(); }
+    public static String p_fp() { return p_fp; }
            static String p_fp;
 
-    public static BooleanOption p_hlsOption;
-    public static boolean p_hls() { return p_hlsOption.getBoolean(); }
+    public static boolean p_hls() { return p_hls; }
            static boolean p_hls;
     // ignorecase
-    public static BooleanOption p_icOption;
-    public static boolean p_ic() { return p_icOption.getBoolean(); }
+    public static boolean p_ic() { return p_ic; }
            static boolean p_ic;
 
-    public static BooleanOption p_isOption;
-    public static boolean p_is() { return p_isOption.getBoolean(); }
+    public static boolean p_is() { return p_is; }
            static boolean p_is;
     // joinspaces, 2 spaces after .?!
-    public static BooleanOption p_jsOption;
-    public static boolean p_js() { return p_jsOption.getBoolean(); }
+    public static boolean p_js() { return p_js; }
            static boolean p_js;
     // modeline
-    public static BooleanOption p_mlOption;
-    public static boolean p_ml() { return p_mlOption.getBoolean(); }
+    public static boolean p_ml() { return p_ml; }
            static boolean p_ml;
     // modelines
-    public static IntegerOption p_mlsOption;
-    public static int p_mls() { return p_mlsOption.getInteger(); }
+    public static int p_mls() { return p_mls; }
            static int p_mls;
     // startofline
-    public static BooleanOption p_notsolOption;
-    public static boolean p_notsol() { return p_notsolOption.getBoolean(); }
+    public static boolean p_notsol() { return p_notsol; }
            static boolean p_notsol;
     // use PlatformBraceMatch
-    public static BooleanOption p_pbmOption;
-    public static boolean p_pbm() { return p_pbmOption.getBoolean(); }
+    public static boolean p_pbm() { return p_pbm; }
            static boolean p_pbm;
     // metacharacters escaped
-    public static StringOption p_remOption;
-    public static String p_rem() { return p_remOption.getString(); }
+    public static String p_rem() { return p_rem; }
            static String p_rem;
 
-    public static IntegerOption p_reportOption;
-    public static int p_report() { return p_reportOption.getInteger(); }
+    public static int p_report() { return p_report; }
            static int p_report;
     // true use '=' instead of '?'
-    public static BooleanOption p_reqOption;
-    public static boolean p_req() { return p_reqOption.getBoolean(); }
+    public static boolean p_req() { return p_req; }
            static boolean p_req;
     // 'splitbelow'
-    public static BooleanOption p_sbOption;
-    public static boolean p_sb() { return p_sbOption.getBoolean(); }
+    public static boolean p_sb() { return p_sb; }
            static boolean p_sb;
     // showcmd
-    public static BooleanOption p_scOption;
-    public static boolean p_sc() { return p_scOption.getBoolean(); }
+    public static boolean p_sc() { return p_sc; }
            static boolean p_sc;
     // smartcase
-    public static BooleanOption p_scsOption;
-    public static boolean p_scs() { return p_scsOption.getBoolean(); }
+    public static boolean p_scs() { return p_scs; }
            static boolean p_scs;
     // 'selection'
-    public static StringOption p_selOption;
-    public static String p_sel() { return p_selOption.getString(); }
+    public static String p_sel() { return p_sel; }
            static String p_sel;
     // shell - used for external commands
-    public static StringOption p_shOption;
-    public static String p_sh() { return p_shOption.getString(); }
+    public static String p_sh() { return p_sh; }
            static String p_sh;
     // shellcmdflag - flag for shell
-    public static StringOption p_shcfOption;
-    public static String p_shcf() { return p_shcfOption.getString(); }
+    public static String p_shcf() { return p_shcf; }
            static String p_shcf;
     // 'selectionmode'
-    public static StringOption p_slmOption;
-    public static String p_slm() { return p_slmOption.getString(); }
+    public static String p_slm() { return p_slm; }
            static String p_slm;
     // showmode edit/command mode in display
-    public static BooleanOption p_smdOption;
-    public static boolean p_smd() { return p_smdOption.getBoolean(); }
+    public static boolean p_smd() { return p_smd; }
            static boolean p_smd;
     // scrolloff, lines before/after current
-    public static IntegerOption p_soOption;
-    public static int p_so() { return p_soOption.getInteger(); }
+    public static int p_so() { return p_so; }
            static int p_so;
     // 'splitright'
-    public static BooleanOption p_sprOption;
-    public static boolean p_spr() { return p_sprOption.getBoolean(); }
+    public static boolean p_spr() { return p_spr; }
            static boolean p_spr;
     // shiftround
-    public static BooleanOption p_srOption;
-    public static boolean p_sr() { return p_srOption.getBoolean(); }
+    public static boolean p_sr() { return p_sr; }
            static boolean p_sr;
     // shellSlash - flag for filename expansion
-    public static BooleanOption p_sslOption;
-    public static boolean p_ssl() { return p_sslOption.getBoolean(); }
+    public static boolean p_ssl() { return p_ssl; }
            static boolean p_ssl;
     // shellXQuote - flag for shell
-    public static StringOption p_sxqOption;
-    public static String p_sxq() { return p_sxqOption.getString(); }
+    public static String p_sxq() { return p_sxq; }
            static String p_sxq;
-    // tildeop
-    public static BooleanOption p_topOption;
-    public static boolean p_top() { return p_topOption.getBoolean(); }
-           static boolean p_top;
-    // timeout
-    public static BooleanOption p_toOption;
-    public static boolean p_to() { return p_toOption.getBoolean(); }
-           static boolean p_to;
     // timeoutlen
-    public static IntegerOption p_tmOption;
-    public static int p_tm() { return p_tmOption.getInteger(); }
+    public static int p_tm() { return p_tm; }
            static int p_tm;
+    // timeout
+    public static boolean p_to() { return p_to; }
+           static boolean p_to;
+    // tildeop
+    public static boolean p_top() { return p_top; }
+           static boolean p_top;
     // wrapscan
-    public static BooleanOption p_wsOption;
-    public static boolean p_ws() { return p_wsOption.getBoolean(); }
+    public static boolean p_ws() { return p_ws; }
            static boolean p_ws;
 
-    public static BooleanOption p_ww_bsOption;
-    public static boolean p_ww_bs() { return p_ww_bsOption.getBoolean(); }
+    public static boolean p_ww_bs() { return p_ww_bs; }
            static boolean p_ww_bs;
 
-    public static BooleanOption p_ww_hOption;
-    public static boolean p_ww_h() { return p_ww_hOption.getBoolean(); }
+    public static boolean p_ww_h() { return p_ww_h; }
            static boolean p_ww_h;
 
-    public static BooleanOption p_ww_i_leftOption;
-    public static boolean p_ww_i_left() { return p_ww_i_leftOption.getBoolean(); }
+    public static boolean p_ww_i_left() { return p_ww_i_left; }
            static boolean p_ww_i_left;
 
-    public static BooleanOption p_ww_i_rightOption;
-    public static boolean p_ww_i_right() { return p_ww_i_rightOption.getBoolean(); }
+    public static boolean p_ww_i_right() { return p_ww_i_right; }
            static boolean p_ww_i_right;
 
-    public static BooleanOption p_ww_lOption;
-    public static boolean p_ww_l() { return p_ww_lOption.getBoolean(); }
+    public static boolean p_ww_l() { return p_ww_l; }
            static boolean p_ww_l;
 
-    public static BooleanOption p_ww_larrowOption;
-    public static boolean p_ww_larrow() { return p_ww_larrowOption.getBoolean(); }
+    public static boolean p_ww_larrow() { return p_ww_larrow; }
            static boolean p_ww_larrow;
 
-    public static BooleanOption p_ww_rarrowOption;
-    public static boolean p_ww_rarrow() { return p_ww_rarrowOption.getBoolean(); }
+    public static boolean p_ww_rarrow() { return p_ww_rarrow; }
            static boolean p_ww_rarrow;
 
-    public static BooleanOption p_ww_spOption;
-    public static boolean p_ww_sp() { return p_ww_spOption.getBoolean(); }
+    public static boolean p_ww_sp() { return p_ww_sp; }
            static boolean p_ww_sp;
 
-    public static BooleanOption p_ww_tildeOption;
-    public static boolean p_ww_tilde() { return p_ww_tildeOption.getBoolean(); }
+    public static boolean p_ww_tilde() { return p_ww_tilde; }
            static boolean p_ww_tilde;
 
 } // end com.raelity.jvi.G

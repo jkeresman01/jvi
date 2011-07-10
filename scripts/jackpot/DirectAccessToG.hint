@@ -1,0 +1,64 @@
+<?
+    import java.util.HashSet;
+?>
+' G.xxx() --> G.xxx':
+   com.raelity.jvi.core.G.$opt()
+       :: matchName($_)
+=> G.$opt
+;;
+
+<?
+    public boolean matchName(Variable v) {
+        String name = context.name(v);
+        return names.contains(name);
+    }
+
+    final static HashSet<String> names = new HashSet<String>();
+    static {
+        names.add("p_bs");
+        names.add("p_cb");
+        names.add("p_cpo_j");
+        names.add("p_cpo_search");
+        names.add("p_cpo_w");
+        names.add("p_ea");
+        names.add("p_ep");
+        names.add("p_fp");
+        names.add("p_hls");
+        names.add("p_ic");
+        names.add("p_is");
+        names.add("p_js");
+        names.add("p_ml");
+        names.add("p_mls");
+        names.add("p_notsol");
+        names.add("p_pbm");
+        names.add("p_rem");
+        names.add("p_report");
+        names.add("p_req");
+        names.add("p_sb");
+        names.add("p_sc");
+        names.add("p_scs");
+        names.add("p_sel");
+        names.add("p_sh");
+        names.add("p_shcf");
+        names.add("p_slm");
+        names.add("p_smd");
+        names.add("p_so");
+        names.add("p_spr");
+        names.add("p_sr");
+        names.add("p_ssl");
+        names.add("p_sxq");
+        names.add("p_tm");
+        names.add("p_to");
+        names.add("p_top");
+        names.add("p_ws");
+        names.add("p_ww_bs");
+        names.add("p_ww_h");
+        names.add("p_ww_i_left");
+        names.add("p_ww_i_right");
+        names.add("p_ww_l");
+        names.add("p_ww_larrow");
+        names.add("p_ww_rarrow");
+        names.add("p_ww_sp");
+        names.add("p_ww_tilde");
+    }
+?>
