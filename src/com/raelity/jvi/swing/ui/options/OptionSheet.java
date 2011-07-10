@@ -30,6 +30,7 @@ import com.l2fprod.common.swing.LookAndFeelTweaks;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.options.EnumOption;
 import com.raelity.jvi.options.Option;
+import com.raelity.jvi.options.VimOption;
 import com.raelity.text.XMLUtil;
 import java.awt.Color;
 import java.beans.BeanDescriptor;
@@ -188,13 +189,27 @@ class OptionSheet extends JPanel implements Options.EditControl {
                 // xmlify the description
                 PropertyDescriptor d = descriptors[i];
                 Option opt = Options.getOption(d.getName());
-                String s = d.getShortDescription();
+                VimOption vopt = VimOption.get(d.getName());
                 sb.setLength(0);
-                xmlFix.utf2xml(s, sb);
                 if(opt != null) {
-                    sb.append("<br/><br/>Default: '<b>").
+                    sb.append("Default: '<b>").
                             append(opt.getDefault()).append("</b>'");
+                    sb.append("; ").append(d.getPropertyType().getSimpleName());
+                    if(vopt != null) {
+                        sb.append("; ");
+                        if(vopt.isGlobal())
+                            sb.append("global");
+                        else
+                            sb.append("local to ")
+                              .append(vopt.isBuf() ? "buffer" : "window");
+                        if(!vopt.isHidden())
+                            sb.append("; can use \"<b>:set</b>\"");
+                    }
+                    sb.append("<br/><br/>");
                 }
+                String s = d.getShortDescription();
+                xmlFix.utf2xml(s, sb);
+
                 s = sb.toString();
                 d.setShortDescription(s);
                 Property prop = new MyPropAdapt(d);

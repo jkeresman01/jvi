@@ -17,6 +17,7 @@ import com.raelity.jvi.options.VimOption.F;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -518,18 +519,47 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         }
         return v;
     }
-    
+
+    private static final int COL = 80;
+    private static final int INC = 20;
+    private static final int GAP = 3;
+
     private static void displayOptions(List<String> eventArgs)
     {
         boolean all = eventArgs.size() == 1 && "all".equals(eventArgs.get(0));
-        ViOutputStream osa =
-                ViManager.createOutputStream(null, ViOutputStream.OUTPUT, null);
+        List<String> l = new ArrayList<String>(50);
+        List<String> l2 = new ArrayList<String>();
         for (VimOption vopt : VimOption.getAllUser()) {
             VimOptionState voptState = determineOptionState(vopt, null);
             if(all || ! voptState.curValue.toString()
-                        .equals(voptState.opt.getDefault()))
-                osa.println(formatDisplayValue(vopt, voptState.curValue));
+                        .equals(voptState.opt.getDefault())) {
+                String s = formatDisplayValue(vopt, voptState.curValue);
+                (s.length() < INC - GAP ? l : l2).add(s);
+            }
         }
+        ViOutputStream osa =
+                ViManager.createOutputStream(null, ViOutputStream.OUTPUT, null);
+        int cols = COL / INC;
+        int rows = (l.size() + cols - 1) / cols;
+        StringBuilder sb = new StringBuilder(85);
+        osa.println("");
+
+        for(int row = 0; row < rows; row++) {
+            for(int i = row; i < l.size(); i += rows) {
+                String s = l.get(i);
+                sb.append(s);
+                for(int j = s.length(); j < INC; j++) {
+                    sb.append(' ');
+                }
+            }
+            osa.println(sb.toString());
+            sb.setLength(0);
+        }
+
+        for(String s : l2) {
+            osa.println(s);
+        }
+
         osa.close();
     }
     

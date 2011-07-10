@@ -33,7 +33,7 @@ import java.util.Set;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-final class VimOption {
+public final class VimOption {
     final String fullName; // option name
     final String shortName; // option name
     // name of field and/or option
@@ -42,7 +42,7 @@ final class VimOption {
     final S scope;
     final Set<F> flags;
 
-    static VimOption get(String optionName)
+    public static VimOption get(String optionName)
     {
         return mapOptionName.get(optionName);
     }
@@ -55,9 +55,7 @@ final class VimOption {
     static VimOption lookupUserName(String userName)
     {
         VimOption vopt = mapUserName.get(userName);
-        return vopt == null || vopt.f(F.HIDE)
-                    || Options.getOption(vopt.getOptName()).isHidden()
-               ? null : vopt;
+        return vopt == null || vopt.isHidden() ? null : vopt;
     }
 
     static List<VimOption> getAll()
@@ -139,6 +137,11 @@ final class VimOption {
     public boolean isBuf()
     {
         return scope.isBuf();
+    }
+
+    public boolean isHidden()
+    {
+        return f(F.HIDE) || Options.getOption(getOptName()).isHidden();
     }
 
     // Scope of the option
