@@ -1,14 +1,29 @@
+/*
+ * The contents of this file are subject to the Mozilla Public
+ * License Version 1.1 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of
+ * the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS
+ * IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * rights and limitations under the License.
+ *
+ * The Original Code is jvi - vi editor clone.
+ *
+ * The Initial Developer of the Original Code is Ernie Rael.
+ * Portions created by Ernie Rael are
+ * Copyright (C) 2011 Ernie Rael.  All Rights Reserved.
+ *
+ * Contributor(s): Ernie Rael <err@raelity.com>
+ */
 package com.raelity.jvi.options;
 
 import java.awt.Color;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 
-public class ColorOptionNew extends Option
+public class ColorOptionNew extends OptionNew<Color>
 {
-
-    private Validator validator;
-    Color value;
     private boolean permitNull;
 
     public ColorOptionNew(String key, Color defaultValue)
@@ -17,48 +32,42 @@ public class ColorOptionNew extends Option
     }
 
     public ColorOptionNew(String key, Color defaultValue, boolean permitNull,
-                       Validator validator)
+                       ValidatorNew<Color> validator)
     {
-        super(key, xformToString(defaultValue), false); // don't initialize
+        super(Color.class, key, defaultValue, getValidator(validator));
         this.permitNull = permitNull;
-        initialize(); // ok, initialize now that permitNull is set
-        if (validator == null) {
-            // The default validation accepts everything, checks permitNull
-            validator = new Validator() {
 
-                @Override
-                public void validate(Color val) throws PropertyVetoException
-                {
-                    if (val == null && !ColorOptionNew.this.permitNull) {
-                        throw new PropertyVetoException(
-                                "null color not permitted",
-                                new PropertyChangeEvent(opt,
-                                                        opt.getName(),
-                                                        opt.getColor(),
-                                                        val));
-                    }
-                }
-            };
-        }
-        linkUpValidator(validator);
-    }
-
-    private void linkUpValidator(Validator validator)
-    {
-        assert validator.opt == null;
-        validator.opt = this;
-        this.validator = validator;
+        // must do this after permitNull is set
+        super.initialize();
     }
 
     @Override
-    public final Color getColor()
+    void initialize()
     {
-        return value;
+        // can't initialize until after permitNull is set
+    }
+
+    private static ValidatorNew<Color>
+    getValidator(ValidatorNew<Color> validator)
+    {
+        return validator != null ? validator : new DefaultColorValidator();
     }
 
     public boolean isPermitNull()
     {
         return permitNull;
+    }
+
+    @Override
+    final Color getValueFromString(String sVal)
+    {
+        return decode(sVal);
+    }
+
+    @Override
+    final String getValueAsString(Color val)
+    {
+        return xformToString(val);
     }
 
     public final Color decode(String s)
@@ -68,13 +77,15 @@ public class ColorOptionNew extends Option
             if (permitNull) {
                 color = null;
             } else {
-                color = Color.decode(defaultValue);
+                color = defaultValue;
             }
         } else {
             color = Color.decode(s);
         }
         return color;
     }
+
+
 
     public static String xformToString(Color c)
     {
@@ -84,38 +95,14 @@ public class ColorOptionNew extends Option
         return String.format("0x%x", c.getRGB() & 16777215);
     }
 
-    /**
-     * Set the value of the parameter.
-     */
-    void setColor(Color newValue)
+    static class DefaultColorValidator extends ValidatorNew<Color>
     {
-        Color oldValue = value;
-        value = newValue;
-        stringValue = xformToString(value);
-        propogate();
-        OptUtil.firePropertyChange(name, oldValue, newValue);
-    }
-
-    /**
-     * Set the value as a string.
-     */
-    @Override
-    void setValue(String newValue) throws IllegalArgumentException
-    {
-        setColor(decode(newValue));
-    }
-
-    @Override
-    public void validate(Color val) throws PropertyVetoException
-    {
-        validator.validate(val);
-    }
-
-    public static abstract class Validator
-    {
-
-        protected ColorOptionNew opt;
-
-        public abstract void validate(Color val) throws PropertyVetoException;
+        @Override
+        public void validate(Color val) throws PropertyVetoException
+        {
+            if (val == null && !((ColorOptionNew)opt).isPermitNull()) {
+                reportPropertyVetoException("null color not permitted", val);
+            }
+        }
     }
 }

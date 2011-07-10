@@ -19,12 +19,25 @@
  */
 package com.raelity.jvi.options;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 
 /**
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public interface ValidatorNew<T> {
+// NEEDSWORK: make this a subclass of Option with reference to it's option
+public abstract class ValidatorNew<T> {
+    OptionNew<T> opt;
+
     public abstract void validate(T val) throws PropertyVetoException;
+
+    protected void reportPropertyVetoException(String msg, T val)
+    throws PropertyVetoException
+    {
+          throw new PropertyVetoException(
+                      "null is not a valid string option",
+                      new PropertyChangeEvent(opt, opt.getName(),
+                                              opt.getValue(), val));
+    }
 }
