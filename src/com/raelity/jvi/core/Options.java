@@ -19,16 +19,15 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.options.Validator;
 import com.raelity.jvi.core.lib.Mappings;
 import java.util.prefs.PreferenceChangeEvent;
 import com.raelity.text.TextUtil.MySegment;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.DebugOption;
-import com.raelity.jvi.options.IntegerOption;
 import com.raelity.jvi.options.Option;
 import com.raelity.jvi.options.OptUtil;
 import com.raelity.jvi.options.SetColonCommand;
-import com.raelity.jvi.options.StringOption;
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.lib.CharTab;
@@ -258,16 +257,13 @@ public final class Options {
             + "\n\" map 0 g0"
             + "\n\" map ^ g^"
             + "",
-            new StringOption.Validator() {
+            new Validator<String>() {
             @Override
               public void validate(String val) throws PropertyVetoException {
 
                 Wrap<String> emsg = new Wrap<String>("");
                 if(null == Mappings.parseMapCommands(val, emsg)) {
-        	     throw new PropertyVetoException(
-                             emsg.getValue(),
-                             new PropertyChangeEvent(opt, opt.getName(),
-                                                     opt.getString(), val));
+                  reportPropertyVetoException(emsg.getValue(), val);
                 }
               }
             });
@@ -464,15 +460,13 @@ public final class Options {
             + " NOTE: state is opposite of vim.");
 
     G.viminfoMaxBuf = OptUtil.createIntegerOption(
-            persistedBufMarks, 25, new IntegerOption.Validator() {
+            persistedBufMarks, 25, new Validator<Integer>() {
               @Override
-              public void validate(int val) throws PropertyVetoException {
+              public void validate(Integer val) throws PropertyVetoException {
                   if(val < 0 || val > 100) {
-		     throw new PropertyVetoException(
-		         "Only 0 - 100 allowed."
-                         + " Not '" + val + "'.",
-                       new PropertyChangeEvent(opt, opt.getName(),
-                                               opt.getInteger(), val));
+                    reportPropertyVetoException(
+		         "Only 0 - 100 allowed. Not '" + val + "'.",
+                         val);
                   }
               }
             });
@@ -681,17 +675,16 @@ public final class Options {
     setExpertHidden(metaEquals, true, false);
 
     OptUtil.createStringOption(metaEscape, G.metaEscapeDefault,
-            new StringOption.Validator() {
+            new Validator<String>() {
             @Override
               public void validate(String val) throws PropertyVetoException {
 		for(int i = 0; i < val.length(); i++) {
 		  if(G.metaEscapeAll.indexOf(val.charAt(i)) < 0) {
-		     throw new PropertyVetoException(
-		         "Only characters from '" + G.metaEscapeAll
-                         + "' are RE metacharacters."
-                         + " Not '" + val.substring(i,i+1) + "'.",
-                       new PropertyChangeEvent(opt, opt.getName(),
-                                               opt.getString(), val));
+                    reportPropertyVetoException(
+                             "Only characters from '" + G.metaEscapeAll
+                             + "' are RE metacharacters."
+                             + " Not '" + val.substring(i,i+1) + "'.",
+                             val);
 		  }
 		}
               }
@@ -704,15 +697,13 @@ public final class Options {
     setExpertHidden(metaEscape, true, false);
 
     OptUtil.createStringOption(isKeyWord, "@,48-57,_,192-255",
-            new StringOption.Validator() {
+            new Validator<String>() {
             @Override
               public void validate(String val) throws PropertyVetoException {
                 CharTab ct = new CharTab();
                 if(!ct.init(val)) {
-                   throw new PropertyVetoException(
-                       "parse of '" + val + "' failed.",
-                     new PropertyChangeEvent(opt, opt.getName(),
-                                             opt.getString(), val));
+                  reportPropertyVetoException("parse of '" + val + "' failed.",
+                                              val);
                 }
               }
             });

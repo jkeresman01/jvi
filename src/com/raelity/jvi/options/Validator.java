@@ -27,8 +27,8 @@ import java.beans.PropertyVetoException;
  * @author Ernie Rael <err at raelity.com>
  */
 // NEEDSWORK: make this a subclass of Option with reference to it's option
-public abstract class ValidatorNew<T> {
-    OptionNew<T> opt;
+public abstract class Validator<T> {
+    protected Option<T> opt;
 
     public abstract void validate(T val) throws PropertyVetoException;
 
@@ -36,7 +36,7 @@ public abstract class ValidatorNew<T> {
     throws PropertyVetoException
     {
           throw new PropertyVetoException(
-                      "null is not a valid string option",
+                      msg,
                       new PropertyChangeEvent(opt, opt.getName(),
                                               opt.getValue(), val));
     }

@@ -106,27 +106,31 @@ public class OptUtil {
 
   static public StringOption createStringOption(String name,
                                                 String defaultValue,
-                                                StringOption.Validator valid) {
+                                                Validator<String> valid) {
     if(optionsMap.get(name) != null)
         throw new IllegalArgumentException("Option " + name + "already exists");
+    if(valid == null)
+      valid = new Option.DefaultStringValidator();
     StringOption opt = new StringOption(name, defaultValue, valid);
     optionsMap.put(name, opt);
     return opt;
   }
 
-  static public EnumStringOption createEnumStringOption(String name,
+  static public EnumOption<String> createEnumStringOption(String name,
                                                  String defaultValue,
                                                  String [] availableValues) {
     return createEnumStringOption(name, defaultValue, null, availableValues);
   }
 
-  static public EnumStringOption createEnumStringOption(String name,
+  static public EnumOption<String> createEnumStringOption(String name,
                                                 String defaultValue,
-                                                StringOption.Validator valid,
+                                                Validator<String> valid,
                                                 String [] availableValues) {
     if(optionsMap.get(name) != null)
         throw new IllegalArgumentException("Option " + name + "already exists");
-    EnumStringOption opt = new EnumStringOption(name, defaultValue,
+    if(valid == null)
+      valid = new EnumOption.DefaultEnumValidator<String>();
+    EnumOption<String> opt = new EnumOption<String>(name, defaultValue,
             valid, availableValues);
     optionsMap.put(name, opt);
     return opt;
@@ -156,27 +160,31 @@ public class OptUtil {
 
   static public IntegerOption createIntegerOption(String name,
                                                   int defaultValue,
-                                                  IntegerOption.Validator valid) {
+                                                  Validator<Integer> valid) {
     if(optionsMap.get(name) != null)
         throw new IllegalArgumentException("Option " + name + "already exists");
+    if(valid == null)
+      valid = new Option.DefaultIntegerValidator();
     IntegerOption opt = new IntegerOption(name, defaultValue, valid);
     optionsMap.put(name, opt);
     return opt;
   }
 
-  static public EnumIntegerOption createEnumIntegerOption(String name,
+  static public EnumOption<Integer> createEnumIntegerOption(String name,
                                                  int defaultValue,
                                                  Integer [] availableValues) {
     return createEnumIntegerOption(name, defaultValue, null, availableValues);
   }
 
-  static public EnumIntegerOption createEnumIntegerOption(String name,
+  static public EnumOption<Integer> createEnumIntegerOption(String name,
                                                 int defaultValue,
-                                                IntegerOption.Validator valid,
+                                                Validator<Integer> valid,
                                                 Integer [] availableValues) {
     if(optionsMap.get(name) != null)
         throw new IllegalArgumentException("Option " + name + "already exists");
-    EnumIntegerOption opt = new EnumIntegerOption(name, defaultValue,
+    if(valid == null)
+      valid = new EnumOption.DefaultEnumValidator<Integer>();
+    EnumOption<Integer> opt = new EnumOption<Integer>(name, defaultValue,
             valid, availableValues);
     optionsMap.put(name, opt);
     return opt;
@@ -191,9 +199,11 @@ public class OptUtil {
   static public ColorOption createColorOption(String name,
                                               Color defaultValue,
                                               boolean permitNull,
-                                              ColorOption.Validator valid) {
+                                              Validator<Color> valid) {
     if(optionsMap.get(name) != null)
         throw new IllegalArgumentException("Option " + name + "already exists");
+    if(valid == null)
+      valid = new ColorOption.DefaultColorValidator();
     ColorOption opt = new ColorOption(name, defaultValue, permitNull, valid);
     optionsMap.put(name, opt);
     return opt;
@@ -267,10 +277,6 @@ public class OptUtil {
     }
   }
 
-  static void intializeGlobalOptionMemoryValueNew(OptionNew opt)
-  {
-  }
-
   static void intializeGlobalOptionMemoryValue(Option opt)
   {
     VimOption vopt = VimOption.get(opt.getName());
@@ -285,6 +291,10 @@ public class OptUtil {
         f.setBoolean(null, opt.getBoolean());
       else if(f.getType() == String.class)
         f.set(null, opt.getString());
+      else if(f.getType() == Color.class)
+        f.set(null, opt.getColor());
+      else
+        throw new IllegalArgumentException("option " + opt.getName());
       if(G.dbgOptions)
         System.err.printf("Init G.%s to '%s'\n", vopt.getVarName(), opt.getValue());
     } catch(IllegalArgumentException ex) {

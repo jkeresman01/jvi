@@ -134,7 +134,7 @@ public class ColorPropertyEditor extends AbstractPropertyEditor {
     {
         Color oldColor = color;
         ColorOption opt = (ColorOption)Options.getOption(property.getName());
-        Color newColor = opt.decode(opt.getDefault());
+        Color newColor = opt.getDefault();
         label.setValue(newColor);
         color = newColor;
         firePropertyChange(oldColor, newColor);

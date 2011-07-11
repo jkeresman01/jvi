@@ -36,7 +36,7 @@ class CopyPreferences
                 dstNode.put(key, srcNode.get(key, ""));
             }
             for (String child : children) {
-                String subTree = dir.equals("") ? child : (dir + child);
+                String subTree = dir.isEmpty() ? child : (dir + child);
                 copyTree(subTree);
             }
         } catch (BackingStoreException ex) {
@@ -61,7 +61,8 @@ class CopyPreferences
                 Option opt = Options.getOption(optionName);
                 if (opt != null) {
                     String val;
-                    if (!(val = srcNode.get(optionName, opt.getDefault())).equals(opt.getDefault())) {
+                    if (!(val = srcNode.get(optionName, "-DEFAULT-VALUE-"))
+                                    .equals("-DEFAULT-VALUE-")) {
                         System.err.println("ADD: " + optionName + ":" + val);
                         dstNode.put(optionName, val);
                     }

@@ -30,7 +30,7 @@ import java.util.logging.Logger;
  * 
  * @author Ernie Rael <err at raelity.com>
  */
-public class DebugOption extends EnumStringOption
+public class DebugOption extends EnumOption<String>
 {
     @SuppressWarnings("NonConstantLogger")
     private final Logger logger;
@@ -48,11 +48,23 @@ public class DebugOption extends EnumStringOption
 
     public DebugOption(String key)
     {
-        super(key, "OFF", loggerValues);
+        super(key, "OFF", new DefaultEnumValidator<String>(),
+              new String[] {
+                  "OFF",
+                  "ALL",
+                  "SEVERE",
+                  "WARNING",
+                  "INFO",
+                  "CONFIG",
+                  "FINE",
+                  "FINER",
+                  "FINEST",
+              }
+                      );
         logger = Logger.getLogger("com.raelity.jvi.debug." + key);
         // setValue below gets invoked by the constructor,
         // so it can't set the logger level
-        logger.setLevel(Level.parse(stringValue));
+        logger.setLevel(Level.parse(value));
     }
 
     @Override
@@ -70,7 +82,9 @@ public class DebugOption extends EnumStringOption
     }
 
     @Override
-    final public boolean getBoolean()
+    // NEEDSWORK: change getBoolean to something like: fLog(),
+    //            then make getBoolean final.
+    final public Boolean getBoolean()
     {
         return logger.isLoggable(Level.SEVERE);
     }
@@ -102,7 +116,7 @@ public class DebugOption extends EnumStringOption
             System.err.printf(format, args);
     }
 
-    public Logger getLogger()
+    final public Logger getLogger()
     {
         return logger;
     }

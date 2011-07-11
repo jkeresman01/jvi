@@ -85,7 +85,7 @@ public final class Mappings {
     {
         Wrap<String> emsg = new Wrap<String>();
         List<Mapping> mapCommands = Mappings.parseMapCommands(
-                OptUtil.getOption(Options.mapCommands).getValue(),
+                OptUtil.getOption(Options.mapCommands).getString(),
                 emsg);
         if(mapCommands != null)
             saveMappings(mapCommands);

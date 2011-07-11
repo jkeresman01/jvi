@@ -20,16 +20,47 @@
 
 package com.raelity.jvi.options;
 
+import java.beans.PropertyVetoException;
+
 /**
- * Essentially a tag for an Option with enum values.
- *
- * Would like to have EnumOption<E>
- * but that's a lot more work. Since can't do
- * EnumOption<Integer> extends IntegerOption, everything would have to change.
- * Would need Option<E> as well.
- *
  * @author Ernie Rael <err at raelity.com>
  */
-public interface EnumOption {
-    public Object[] getAvailableValues();
+public class EnumOption<T> extends Option<T> {
+    private T[] enumValues;
+
+    @SuppressWarnings("unchecked")
+    /*package*/ EnumOption(String key, T defaultValue,
+                              Validator<T> validator, T[] enumValues)
+    {
+        super((Class<T>)enumValues.getClass().getComponentType(),
+              key, defaultValue, validator);
+        this.enumValues = enumValues;
+    }
+
+    public T[] getAvailableValues()
+    {
+        return enumValues;
+    }
+
+    /** Notice that for the default validator, 'T' does not matter */
+    public static class DefaultEnumValidator<T> extends Validator<T> {
+
+        @Override
+        public void validate(T val) throws PropertyVetoException
+        {
+            EnumOption eOpt = (EnumOption)opt;
+            for(Object eVal : eOpt.enumValues) {
+                if(eVal == null) {
+                    if(val == null)
+                        return;
+                } else {
+                    if(eVal.equals(val))
+                        return;
+                }
+            }
+            reportPropertyVetoException(
+                    "Invalid option value: " + val, val);
+        }
+
+    }
 }

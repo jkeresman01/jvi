@@ -33,8 +33,8 @@ import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.lib.Mappings;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.OptUtil;
-import com.raelity.jvi.options.Option;
 import com.raelity.jvi.options.OptionsBean;
+import com.raelity.jvi.options.StringOption;
 import com.raelity.text.XMLUtil;
 import java.awt.Color;
 import java.beans.PropertyVetoException;
@@ -58,7 +58,7 @@ import org.openide.util.WeakListeners;
 public class MapCommands extends javax.swing.JPanel
 implements Options.EditControl {
     private final OptionsPanel optionsPanel;
-    private final Option opt;
+    private final StringOption opt;
     private OptionsBean.General bean;
     private static final String statusCurrent = "saved mappings";
     private static final String statusModified = "modified mappings";
@@ -74,7 +74,7 @@ implements Options.EditControl {
         assert optName.equals(Options.mapCommands);
         initComponents();
         this.optionsPanel = optionsPanel;
-        opt = OptUtil.getOption(optName);
+        opt = (StringOption)OptUtil.getOption(optName);
         bean = new OptionsBean.General();
         mappings.getDocument().addDocumentListener(
                 WeakListeners.document(listen, mappings.getDocument()));
@@ -212,7 +212,7 @@ implements Options.EditControl {
 
     private void reset()
     {
-        mappings.setText(opt.getValue());
+        mappings.setText(opt.getString());
         mappings.setCaretPosition(0);
         setStatus(false);
         mappings.requestFocusInWindow();

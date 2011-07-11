@@ -330,7 +330,7 @@ implements Options.EditControl {
     protected void put(String name, String val) throws PropertyVetoException {
         String old = getString(name);
 	Option opt = Options.getOption(name);
-        ((StringOption)opt).validate(val);
+        opt.validate(val);
         this.vcs.fireVetoableChange( name, old, val );
         trackChange(name, String.class);
 	prefs.put(name, val);
@@ -340,7 +340,7 @@ implements Options.EditControl {
     protected void put(String name, int val) throws PropertyVetoException {
         int old = getint(name);
 	Option opt = Options.getOption(name);
-        ((IntegerOption)opt).validate(val);
+        opt.validate(val);
         this.vcs.fireVetoableChange( name, old, val );
         trackChange(name, Integer.class);
 	prefs.putInt(name, val);
@@ -353,7 +353,7 @@ implements Options.EditControl {
         opt.validate(val);
         this.vcs.fireVetoableChange( name, old, val );
         trackChange(name, Color.class);
-	prefs.put(name, opt.xformToString(val));
+	prefs.put(name, ColorOption.xformToString(val));
         this.pcs.firePropertyChange( name, old, val );
     }
 
@@ -364,23 +364,22 @@ implements Options.EditControl {
 
     protected String getString(String name) {
 	Option opt = Options.getOption(name);
-	return prefs.get(name, opt.getDefault());
+	return opt.getString();
     }
 
     protected int getint(String name) {
 	Option opt = Options.getOption(name);
-	return prefs.getInt(name, Integer.parseInt(opt.getDefault()));
+	return opt.getInteger();
     }
 
     protected Color getColor(String name) {
-	ColorOption opt = (ColorOption) Options.getOption(name);
-        String s = prefs.get(name, opt.getDefault());
-	return opt.decode(s);
+	Option opt = (ColorOption) Options.getOption(name);
+        return opt.getColor();
     }
 
     protected boolean getboolean(String name) {
 	Option opt = Options.getOption(name);
-	return prefs.getBoolean(name, Boolean.parseBoolean(opt.getDefault()));
+	return opt.getBoolean();
     }
     
     //

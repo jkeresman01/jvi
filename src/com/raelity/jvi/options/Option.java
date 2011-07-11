@@ -13,7 +13,7 @@
  * 
  * The Initial Developer of the Original Code is Ernie Rael.
  * Portions created by Ernie Rael are
- * Copyright (C) 2000 Ernie Rael.  All Rights Reserved.
+ * Copyright (C) 2011 Ernie Rael.  All Rights Reserved.
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
@@ -21,61 +21,72 @@ package com.raelity.jvi.options;
 
 import com.raelity.jvi.core.Options.Category;
 import java.awt.Color;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 
-public abstract class Option {
-    protected String name;
+public abstract class Option<T> {
+    final Class<T> optionType;
+    final protected String name;
+    final protected T defaultValue;
+    final private Validator<T> validator;
+    protected T value;
+
     protected String displayName;
-    protected String stringValue;
     protected String desc;
-    protected String defaultValue;
     protected boolean fExpert;
     protected boolean fHidden;
     Category category;
     
     protected boolean fPropogate; // used in logic, not part of option type
-    
-    public Option(String key, String defaultValue) {
-        this(key, defaultValue, true);
-    }
 
-    @SuppressWarnings("OverridableMethodCallInConstructor")
-    public Option(String key, String defaultValue, boolean doInit) {
+    // NOTE: can not deduce optionType from defaultValue since
+    //       color allows null.
+
+    @SuppressWarnings({"LeakingThisInConstructor", "OverridableMethodCallInConstructor"})
+    /*package*/ Option(Class<T> optionType, String key, T defaultValue,
+                          Validator<T> validator) {
+        this.optionType = optionType;
 	name = key;
 	this.defaultValue = defaultValue;
+        this.validator = validator;
+        assert validator.opt == null;
+        validator.opt = this;
+
 	fExpert = false;
         fHidden = false;
-        if(doInit)
-            initialize();
+
+        initialize();
     }
 
-    protected void initialize() {
-	fPropogate = false;
-	String initialValue = OptUtil.getPrefs().get(name, defaultValue);
-	setValue(initialValue);
-	fPropogate = true;
-
+    void initialize() {
+        preferenceChange(OptUtil.getPrefs().get(name, getValueAsString(defaultValue)));
     }
 
-    abstract void setValue(String value);
+    // public String getValue() {
+    //     return stringValue;
+    // }
 
-    public String getValue() {
-	return stringValue;
+    final public T getValue() {
+        return value;
     }
 
-    public String getName() {
+    final public String getName() {
 	return name;
     }
     
-    public String getDefault() {
+    // NEEDSWORK: MAKE IT NOT PUBLIC
+    final public T getDefault() {
 	return defaultValue;
     }
     
-    public String getDesc() {
+    final public String getDesc() {
 	return desc;
     }
 
-    public String getDisplayName() {
+    final public String getDisplayName() {
 	if(displayName != null) {
 	    return displayName;
 	} else {
@@ -83,28 +94,28 @@ public abstract class Option {
 	}
     }
 
-    public boolean isExpert() {
+    final public boolean isExpert() {
 	return fExpert;
     }
 
-    public boolean isHidden() {
+    final public boolean isHidden() {
 	return fHidden;
     }
     
-    public void setHidden(boolean f) {
+    final public void setHidden(boolean f) {
         fHidden = f;
     }
     
-    public void setExpert(boolean f) {
+    final public void setExpert(boolean f) {
         fExpert = f;
     }
 
-    public Category getCategory()
+    final public Category getCategory()
     {
         return category;
     }
 
-    public void setDesc(String desc)
+    final public void setDesc(String desc)
     {
         if (this.desc != null) {
             throw new Error("option: " + name + " already has a description.");
@@ -112,7 +123,7 @@ public abstract class Option {
         this.desc = desc;
     }
 
-    public void setDisplayName(String displayName)
+    final public void setDisplayName(String displayName)
     {
         if (this.displayName != null) {
             throw new Error("option: " + name + " already has a display name.");
@@ -120,7 +131,16 @@ public abstract class Option {
         this.displayName = displayName;
     }
 
+    void setValue(T newValue)
+    {
+        T oldValue = value;
+        value = newValue;
+        propogate();
+        OptUtil.firePropertyChange(name, oldValue, newValue);
+    }
+
     /**
+     * SetValue from String without propogating.
      * The preferences data base has changed, stay in sync.
      * Do not propogate change back to data base.
      */
@@ -128,71 +148,133 @@ public abstract class Option {
 	fPropogate = false;
         try {
 	    //System.err.println("preferenceChange " + name + ": " + newValue);
-            setValue(newValue);
+            setValueFromString(newValue);
         } finally {
 	    fPropogate = true;
         }
     }
 
-    protected void propogate() {
+    String getValueAsString(T val)
+    {
+        return val.toString();
+    }
+
+    final void setValueFromString(String sVal)
+    {
+        setValue(getValueFromString(sVal));
+    }
+
+    T getValueFromString(String sVal)
+    {
+        Preferences prefs = OptUtil.getPrefs();
+        prefs.get("foo", "bar");
+        assert isBaseType();
+        Object o = sVal;
+        if(optionType == Integer.class) {
+            try {
+                o = Integer.parseInt(sVal);
+            } catch(NumberFormatException ex) {
+                // NEEDSWORK: log sever
+                Logger.getLogger(Option.class.getName()).log(
+                        Level.SEVERE, null, ex);
+                o = 0;
+            }
+        } else if(optionType == Boolean.class)
+            o = Boolean.parseBoolean(sVal);
+
+        return optionType.cast(o);
+    }
+
+    private boolean isBaseType()
+    {
+        return optionType == Integer.class
+                || optionType == Boolean.class
+                || optionType == String.class;
+    }
+
+    void propogate() {
 	if(fPropogate) {
-            OptUtil.getPrefs().put(name, stringValue);
+            OptUtil.getPrefs().put(name, getValueAsString(value));
 	}
         OptUtil.intializeGlobalOptionMemoryValue(this);
     }
     
-    public int getInteger() {
-        throw new ClassCastException(this.getClass().getSimpleName()
-                                     + " is not an IntegerOption");
+    final public Integer getInteger() {
+        if(optionType != Integer.class)
+            throw new ClassCastException(this.getClass().getSimpleName()
+                                         + " is not an IntegerOption");
+        return (Integer)value;
+    }
+
+    // NEEDSWORK: should be final, except for DebugOption
+    public Boolean getBoolean() {
+        if(optionType != Boolean.class)
+            throw new ClassCastException(this.getClass().getSimpleName()
+                                         + " is not a BooleanOption");
+        return (Boolean)value;
     }
     
-    public boolean getBoolean() {
-        throw new ClassCastException(this.getClass().getSimpleName()
-                                     + " is not a BooleanOption");
+    final public String getString() {
+        if(optionType != String.class)
+            throw new ClassCastException(this.getClass().getSimpleName()
+                                         + " is not a StringOption");
+        return (String)value;
     }
     
-    public String getString() {
-        throw new ClassCastException(this.getClass().getSimpleName()
-                                     + " is not a StringOption");
+    final public Color getColor() {
+        if(optionType != Color.class)
+            throw new ClassCastException(this.getClass().getSimpleName()
+                                         + " is not a ColorOption");
+        return (Color)value;
     }
-    
-    public Color getColor() {
-        throw new ClassCastException(this.getClass().getSimpleName()
-                                     + " is not a ColorOption");
+
+    final public void validate(Object o) throws PropertyVetoException {
+
+        T val;
+        try {
+            val = optionType.cast(o);
+        } catch(ClassCastException ex) {
+            throw new PropertyVetoException(
+                      "expected type "+ optionType.getSimpleName() + ": " + o,
+                      new PropertyChangeEvent(this, this.getName(),
+                                          this.getValue(), o));
+        }
+        validator.validate(val);
     }
-    
-    public void validate(int val) throws PropertyVetoException {
-        throw new ClassCastException(this.getClass().getSimpleName()
-                                     + " is not an IntegerOption");
+
+    /** default validator ensures that val greaterthan or equal to zero. */
+    static class DefaultIntegerValidator extends Validator<Integer>
+    {
+        @Override
+        public void validate(Integer val) throws PropertyVetoException
+        {
+            if(val == null || val < 0) {
+                reportPropertyVetoException(
+                        "Value must be >= 0: " + val, val);
+          }
+        }
     }
-    
-    public void validate(boolean val) throws PropertyVetoException {
-        throw new ClassCastException(this.getClass().getSimpleName()
-                                     + " is not a BooleanOption");
+
+    static class DefaultStringValidator extends Validator<String>
+    {
+        @Override
+        public void validate(String val) throws PropertyVetoException
+        {
+            if(val == null) {
+                reportPropertyVetoException(
+                        "null is not a valid string option" , val);
+          }
+        }
     }
-    
-    public void validate(String val) throws PropertyVetoException {
-        throw new ClassCastException(this.getClass().getSimpleName()
-                                     + " is not a StringOption");
-    }
-    
-    public void validate(Color val) throws PropertyVetoException {
-        throw new ClassCastException(this.getClass().getSimpleName()
-                                     + " is not a ColorOption");
-    }
-    
-    public void validate(Object val) throws PropertyVetoException {
-        if(val instanceof String)
-            validate((String)val);
-        else if(val instanceof Color)
-            validate((Color)val);
-        else if(val instanceof Boolean)
-            validate(((Boolean)val).booleanValue());
-        else if(val instanceof Integer)
-            validate(((Integer)val).intValue());
-        else 
-            throw new ClassCastException(val.getClass().getSimpleName()
-                                    + " is not int, boolean, Color or String");
+
+    static class DefaultBooleanValidator extends Validator<Boolean>
+    {
+        // The default validation accepts everything
+        @Override
+        public void validate(Boolean val) throws PropertyVetoException
+        {
+        }
+
     }
 }
 
