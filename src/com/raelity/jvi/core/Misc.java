@@ -582,7 +582,7 @@ public class Misc implements ClipboardOwner {
     if(n > 0) { pn = n; }
     else { pn = -n; }
 
-    if(pn >= G.p_report()) {
+    if(pn >= G.p_report) {
       String msg = "" + pn + " " + (n > 0 ? "more" : "fewer")
 		+ " line" + plural(pn);
       // NEEDSWORK: msgmore: conditionally append "(interrupted)" to msg
@@ -655,7 +655,7 @@ public class Misc implements ClipboardOwner {
      * Also in Visual mode, when 'selection' is not "old".
      */
     if (((G.State & INSERT) != 0
-	 	|| (G.VIsual_active && G.p_sel().charAt(0) != 'o'))
+	 	|| (G.VIsual_active && G.p_sel.charAt(0) != 'o'))
 	&& col <= wcol) {
       ++idx;
     }
@@ -939,7 +939,7 @@ public class Misc implements ClipboardOwner {
       // Allow cursor past end-of-line in Insert mode, restarting Insert
       // mode or when in Visual mode and 'selection' isn't "old"
       if ((G.State & INSERT) != 0 || G.restart_edit != 0
-	 	|| (G.VIsual_active && G.p_sel().charAt(0) != 'o')) {
+	 	|| (G.VIsual_active && G.p_sel.charAt(0) != 'o')) {
 	col = len;
       } else {
 	col = len - 1;
@@ -1017,7 +1017,7 @@ public class Misc implements ClipboardOwner {
       }
       if (G.finish_op)		{ return SHAPE_O; }
       if (G.VIsual_active) {
-	  if (G.p_sel().charAt(0) == 'e') {
+	  if (G.p_sel.charAt(0) == 'e') {
               return SHAPE_VE;
           } else {
               return SHAPE_V;
@@ -1068,7 +1068,7 @@ public class Misc implements ClipboardOwner {
       fpos.set(line, 0);
       first_char = gchar_pos(fpos);
       if (first_char != '\n') {	// empty line
-	shift_line(oap.op_type == OP_LSHIFT, G.p_sr(), amount, fpos);
+	shift_line(oap.op_type == OP_LSHIFT, G.p_sr, amount, fpos);
       }
       line++;
     }
@@ -1083,7 +1083,7 @@ public class Misc implements ClipboardOwner {
     // update_topline();
     // update_screen(NOT_VALID);
 
-    if (oap.line_count >= G.p_report()) {
+    if (oap.line_count >= G.p_report) {
       Msg.smsg("" + oap.line_count + " line" + plural(oap.line_count)
 	       + " " + ((oap.op_type == OP_RSHIFT) ? ">" : "<") + "ed "
 	       + amount + " time" +  plural(amount));
@@ -1732,7 +1732,7 @@ private static int put_in_typebuf(String s, boolean colon)
   static char adjust_clip_reg(char rp)
   {
     // If no reg. specified, and "unnamed" is in 'clipboard', use '*' reg.
-    if (rp == 0 && G.p_cb())
+    if (rp == 0 && G.p_cb)
       rp = '*';
     if(rp == '+')
       rp = '*';
@@ -1950,7 +1950,7 @@ private static int put_in_typebuf(String s, boolean colon)
     }
 
     // If no register specified, and "unnamed" in 'clipboard', use * register
-    if (oap.regname == 0 && G.p_cb())
+    if (oap.regname == 0 && G.p_cb)
       oap.regname = '*';
     if (!clipboard_available && oap.regname == '*')
       oap.regname = 0;
@@ -2595,7 +2595,7 @@ private static int put_in_typebuf(String s, boolean colon)
     G.curbuf.b_op_start.setMark(oap.start);
     G.curbuf.b_op_end.setMark(oap.end);
 
-    if (oap.line_count > G.p_report()) {
+    if (oap.line_count > G.p_report) {
       Msg.smsg("" + oap.line_count + " line" + plural(oap.line_count) + " ~ed");
     }
   }
@@ -2791,7 +2791,7 @@ private static int put_in_typebuf(String s, boolean colon)
 	return OK;
 
     // If no register specified, and "unnamed" in 'clipboard', use * register
-    if (!deleting && oap.regname == 0 && G.p_cb())
+    if (!deleting && oap.regname == 0 && G.p_cb)
         oap.regname = '*';
     if (!clipboard_available && oap.regname == '*')
 	oap.regname = 0;
@@ -2814,7 +2814,7 @@ private static int put_in_typebuf(String s, boolean colon)
     if (       oap.motion_type == MCHAR
 	    && oap.start.getColumn() == 0
 	    && !oap.inclusive
-	    && (!oap.is_VIsual || G.p_sel().charAt(0) == 'o')
+	    && (!oap.is_VIsual || G.p_sel.charAt(0) == 'o')
             && !oap.block_mode  // from vim7
 	    && oap.end.getColumn() == 0
 	    && yanklines > 1)
@@ -2893,7 +2893,7 @@ private static int put_in_typebuf(String s, boolean colon)
 	if (yanktype == MCHAR && !oap.block_mode && yanklines == 1)
 	    yanklines = 0;
 	// Some versions of Vi use ">=" here, some don't...
-	if (yanklines >= G.p_report())
+	if (yanklines >= G.p_report)
 	{
 	    // redisplay now, so message is not deleted
 	    // NEEDSWORK: update_topline_redraw();
@@ -3335,7 +3335,7 @@ private static int put_in_typebuf(String s, boolean colon)
 	}
 	if(nextc != ')' && lastc != ' ' && lastc != TAB && lastc != '\n') {
 	  spaces.append(' ');
-	  if(G.p_js() && (lastc == '.' || lastc == '?'
+	  if(   G.p_js && (lastc == '.' || lastc == '?'
                                      || lastc =='!')) {
 	    spaces.append(' ');
 	  }
@@ -3568,7 +3568,7 @@ private static int put_in_typebuf(String s, boolean colon)
         end.setValue(vcol + incr - 1);
       if (cursor != null) {
         if (c == TAB && ((G.State & NORMAL) != 0) // && !wp->w_p_list
-        && !(G.VIsual_active && G.p_sel().charAt(0) == 'e'))
+        && !(G.VIsual_active && G.p_sel.charAt(0) == 'e'))
           cursor.setValue(vcol + incr - 1);	    // cursor at end
         else
           cursor.setValue(vcol);	    // cursor at start

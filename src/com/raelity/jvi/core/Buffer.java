@@ -248,7 +248,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
                 break;
             }
             
-            if(G.p_ssl()){
+            if(G.p_ssl){
                 // Shellslash is on, replace \ with /
                 filename = filename.replace('\\','/');
             }
@@ -499,7 +499,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
                 if(from2 < from1)
                     from1 = from2;
                 if(to2 > to1) {
-                    if(G.p_sel().charAt(0) == 'e' && from2 - 1 >= to1)
+                    if(G.p_sel.charAt(0) == 'e' && from2 - 1 >= to1)
                         to1 = from2 - 1;
                     else
                         to1 = to2;
@@ -518,7 +518,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
                 }
                 
                 
-                if(G.p_sel().charAt(0) == 'i' // if inclusive, include the end
+                if(G.p_sel.charAt(0) == 'i' // if inclusive, include the end
                         || left == right    // always display at lest one char
                 ) {
                     endOffset++;

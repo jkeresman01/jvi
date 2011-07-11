@@ -234,7 +234,7 @@ public class Edit {
       }
       
       int i = 0;
-      if(G.p_smd()) {
+      if(   G.p_smd) {
         i = Misc.showmode();
       }
       
@@ -1281,7 +1281,7 @@ private static class GetLiteral implements HandleNextChar
    */
   public static int beginlineColumnIndex(MySegment txt, int flags) {
     int index;
-    if ((flags & BL_SOL) != 0 && G.p_notsol()) {
+    if ((flags & BL_SOL) != 0 && G.p_notsol) {
       index = Misc.coladvanceColumnIndex(G.curwin.w_curswant, txt);
     } else {
       index = 0;
@@ -2472,7 +2472,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
     // previous line
     //
     //else if (vim_strchr(p_ww, '[') != NULL && curwin->w_cursor.lnum > 1)
-    else if (G.p_ww_i_left() && cursor.getLine() > 1)
+    else if (G.p_ww_i_left && cursor.getLine() > 1)
     {
 	start_arrow(tpos);
         G.curwin.w_cursor.set(cursor.getLine() - 1, 0);
@@ -2539,7 +2539,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
     }
     // if 'whichwrap' set for cursor in insert mode, may move the
     // cursor to the next line
-    else if (G.p_ww_i_right()
+    else if (G.p_ww_i_right
              && cursor.getLine() < G.curbuf.getLineCount())
     {
       start_arrow(cursor);

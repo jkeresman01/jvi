@@ -140,7 +140,7 @@ public class Search03
         start_pos = null; // clearpos(&start_pos);
 
         /* Correct cursor when 'selection' is exclusive */
-        if (G.VIsual_active && G.p_sel().charAt(0) == 'e'
+        if (G.VIsual_active && G.p_sel.charAt(0) == 'e'
                 && G.VIsual.compareTo(G.curwin.w_cursor) < 0)
             Misc.dec_cursor();
 
@@ -282,7 +282,7 @@ public class Search03
 
         if (G.VIsual_active)
         {
-            if (G.p_sel().charAt(0) == 'e'
+            if (G.p_sel.charAt(0) == 'e'
                     && inclusive
                     && G.VIsual.compareTo(G.curwin.w_cursor) <= 0)
                 inc_cursorV7();
@@ -401,7 +401,7 @@ public class Search03
                 if (include)	/* "as" gets twice as much as "is" */
                     count *= 2;
                 findsent_forward(count, at_start_sent);
-                if (G.p_sel().charAt(0) == 'e')
+                if (G.p_sel.charAt(0) == 'e')
                     G.curwin.w_cursor.incColumn();
             }
             return OK;
@@ -462,7 +462,7 @@ public class Search03
                 extending = true; // part of goto workaround
                 continue extend;  // was goto extend
             }
-            if (G.p_sel().charAt(0) == 'e')
+            if (G.p_sel.charAt(0) == 'e')
                 G.curwin.w_cursor.incColumn();
             G.VIsual = start_pos;
             G.VIsual_mode = 'v';
@@ -601,7 +601,7 @@ public class Search03
 
         if (G.VIsual_active)
         {
-            if (G.p_sel().charAt(0) == 'e')
+            if (G.p_sel.charAt(0) == 'e')
                 G.curwin.w_cursor.incColumn();
             if (sol && Misc.gchar_cursor() != NUL)
                 Misc.inc(G.curwin.w_cursor);	// include the line break
@@ -722,7 +722,7 @@ public class Search03
         int		len;
         int		r;
         boolean	do_include = include;
-        boolean	save_p_ws = G.p_ws();
+        boolean	save_p_ws = G.p_ws;
         int		retval = FAIL;
 
         G.p_wsOption_set(false);
@@ -881,7 +881,7 @@ public class Search03
 
         if (G.VIsual_active)
         {
-            if (G.p_sel().charAt(0) == 'e')
+            if (G.p_sel.charAt(0) == 'e')
                 G.curwin.w_cursor.incColumn();
             G.VIsual = start_pos.copy();
             G.VIsual_mode = 'v';
@@ -1153,7 +1153,7 @@ public class Search03
         if (G.VIsual_active)
         {
             vis_bef_curs = G.VIsual.compareTo(G.curwin.w_cursor) < 0;
-            if (G.p_sel().charAt(0) == 'e' && vis_bef_curs)
+            if (G.p_sel.charAt(0) == 'e' && vis_bef_curs)
                 dec_cursor();
             vis_empty = G.VIsual.equals(G.curwin.w_cursor);
         }
@@ -1339,7 +1339,7 @@ public class Search03
             if (vis_empty || vis_bef_curs)
             {
                 // decrement cursor when 'selection' is not exclusive
-                if (G.p_sel().charAt(0) != 'e')
+                if (G.p_sel.charAt(0) != 'e')
                     dec_cursor();
             }
             else

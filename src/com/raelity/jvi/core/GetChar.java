@@ -142,9 +142,9 @@ public class GetChar {
 
         if(typebuf.getPartialMatch() != null) {
             Normal.push_add_to_showcmd(typebuf.getPartialMatch());
-            if(G.p_to()) {
+            if(G.p_to) {
                 ViManager.getFactory().startTimeout(
-                        G.p_tm(),
+                        G.p_tm,
                         mappingTimeout);
             }
         }

@@ -286,7 +286,7 @@ public class Search01 {
    * Return TRUE if a message was given.
    */
   private static boolean do_sub_msg() {
-    if(nSubChanges >= G.p_report()) {
+    if(nSubChanges >= G.p_report) {
       String msg = "" + nSubChanges + " substitution" + Misc.plural(nSubChanges)
 		   + " on " + nSubLine + " line" + Misc.plural(nSubLine);
       G.curwin.getStatusDisplay().displayStatusMessage(msg);
@@ -885,7 +885,7 @@ found:
 
         // remember the line where the search started
         startlnum = pos.getLine();
-        cpo_J = G.p_cpo_j();
+        cpo_J = G.p_cpo_j;
 
         for (;;) {
           c = Misc.gchar_pos(pos);

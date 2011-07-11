@@ -149,7 +149,7 @@ public class Search
     ass.searchCount = count;
     ass.searchOptions = options;
     ass.dirc = (char)cmdchar;
-    ass.incrSearchActive = G.p_is();
+    ass.incrSearchActive = G.p_is;
     
     ViCmdEntry ce = getSearchCommandEntry();
     if(ass.incrSearchActive)
@@ -960,8 +960,8 @@ finished:
 
   private static boolean ignorecase(MutableInt embeddedVimFlags)
   {
-    boolean ic = G.p_ic();
-    if(ic && !G.no_smartcase && G.p_scs())
+    boolean ic = G.p_ic;
+    if(ic && !G.no_smartcase && G.p_scs)
       ic = !embeddedVimFlags.testAnyBits(HAS_UPPER);
     G.no_smartcase = false;
     return ic;
@@ -992,7 +992,7 @@ finished:
    */
   private static String cleanupPattern(String s, MutableInt flags) {
     flags.setValue(0);
-    String metacharacterEscapes = G.p_rem();
+    String metacharacterEscapes = G.p_rem;
     StringBuilder sb = new StringBuilder();
     boolean isEscaped = false;
     boolean hasUpper = false;
@@ -1003,7 +1003,7 @@ finished:
         continue;
       }
       
-      if((c == '=') && G.p_req()) {
+      if((c == '=') && G.p_req) {
         // Have an '=' and that char is used to specify an optional atom.
         // Set useEscape if the '=' needs to be escaped to mean optional.
         boolean useEscape = metacharacterEscapes.indexOf('?') >= 0;
@@ -1172,7 +1172,7 @@ finished:
                 // of the match, otherwise continue one position
                 // forward.
                 //
-                if(G.p_cpo_search()) {
+                if(             G.p_cpo_search) {
                   p = matchend;
                   if (match == p && p != eolColumn)
                     ++p;
@@ -1227,7 +1227,7 @@ finished:
                 // of the match, otherwise continue one position
                 // forward.
                 //
-                if(G.p_cpo_search()) {
+                if(             G.p_cpo_search) {
                   p = matchend;
                   if (p == match && p != eolColumn)
                     ++p;
@@ -1273,7 +1273,7 @@ finished:
         // stop the search if wrapscan isn't set, after an interrupt and
         // after a match
         ///
-        if (!G.p_ws() /*|| got_int*/ || found)
+        if (!   G.p_ws /*|| got_int*/ || found)
           break;
 
         //
@@ -1304,7 +1304,7 @@ finished:
       if (false/*got_int*/)
         searchitErrorMessage(Messages.e_interr);
       else if ((options & SEARCH_MSG) == SEARCH_MSG) {
-        if (G.p_ws())
+        if (    G.p_ws)
           searchitErrorMessage(Messages.e_patnotf2 + mr_pattern);
         else if (lnum == 0)
           searchitErrorMessage("search hit TOP without match for: " + mr_pattern);
