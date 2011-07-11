@@ -53,7 +53,7 @@ public class PlayStatusDisplay implements ViStatusDisplay
     @Override
     public void displayMode( String mode )
     {
-        String s = mode + ( G.Recording ? "recording" : "" );
+        String s = mode + ( G.Recording() ? "recording" : "" );
         if ( s.isEmpty() ) {
             s = " ";
         }

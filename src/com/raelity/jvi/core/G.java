@@ -113,18 +113,20 @@ public class G implements ViOptionBag
 
     public static boolean VIsual_active() { return VIsual_active; }
     public static boolean VIsual_select() { return VIsual_select; }
-    public static boolean drawSavedVisualBounds() { return drawSavedVisualBounds;}
     public static char VIsual_mode() {return VIsual_mode;}
     //
     static ViFPOS VIsual; // start position of active Visual selection
     static boolean VIsual_active; // whether Visual mode is active
     static boolean VIsual_select; // whether Select mode is active
     static boolean VIsual_reselect;
+    // whether to restart the selection after a Select mode mapping or menu
+    static char VIsual_mode; // type of Visual mode
+
+    public static boolean drawSavedVisualBounds() { return drawSavedVisualBounds;}
+    public static void drawSavedVisualBounds(boolean f) { drawSavedVisualBounds=f;}
     // VISUAL repaint hack when in colon command from visual mode
     static boolean drawSavedVisualBounds = false;
     // end VISUAL repaint hack when in colon command from visual mode
-    // whether to restart the selection after a Select mode mapping or menu
-    static char VIsual_mode; // type of Visual mode
 
     /* The visual area is remembered for redo */
     static boolean redo_VIsual_busy = false;

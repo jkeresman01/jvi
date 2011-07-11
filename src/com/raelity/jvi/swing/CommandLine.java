@@ -761,8 +761,8 @@ public class CommandLine extends JPanel
                 // Repaint before executing commands..
                 // so that I can be sure the visual area didn't change yet
                 // and all has been repainted
-                if (G.drawSavedVisualBounds) {
-                    G.drawSavedVisualBounds = false;
+                if (G.drawSavedVisualBounds()) {
+                    G.drawSavedVisualBounds(false);
                     Normal.v_updateVisualState(tv);
                 }
                 // END VISUAL REPAINT HACK
