@@ -34,17 +34,6 @@ public class DebugOption extends EnumOption<String>
 {
     @SuppressWarnings("NonConstantLogger")
     private final Logger logger;
-    static String[] loggerValues = {
-        "OFF",
-        "ALL",
-        "SEVERE",
-        "WARNING",
-        "INFO",
-        "CONFIG",
-        "FINE",
-        "FINER",
-        "FINEST",
-    };
 
     public DebugOption(String key)
     {
@@ -64,7 +53,7 @@ public class DebugOption extends EnumOption<String>
         logger = Logger.getLogger("com.raelity.jvi.debug." + key);
         // setValue below gets invoked by the constructor,
         // so it can't set the logger level
-        logger.setLevel(Level.parse(value));
+        logger.setLevel(Level.parse(getValue()));
     }
 
     @Override
@@ -79,6 +68,16 @@ public class DebugOption extends EnumOption<String>
         super.setValue(newValue);
         if(logger != null)
             logger.setLevel(Level.parse(newValue));
+    }
+
+    final public boolean fLog()
+    {
+        return logger.isLoggable(Level.SEVERE);
+    }
+
+    final public boolean fLog(Level level)
+    {
+        return logger.isLoggable(level);
     }
 
     @Override

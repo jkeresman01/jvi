@@ -257,7 +257,7 @@ public class OptUtil {
         optionsGroup = getWritableOptionList(category);
     Option opt = optionsMap.get(name);
     if(opt != null) {
-      opt.category = category;
+      opt.setCategory(category);
       if(optionsGroup != null) {
           optionsGroup.add(name);
       }

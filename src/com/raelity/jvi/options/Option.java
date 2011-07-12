@@ -32,15 +32,15 @@ public abstract class Option<T> {
     final protected String name;
     final protected T defaultValue;
     final private Validator<T> validator;
-    protected T value;
+    private T value;
 
-    protected String displayName;
-    protected String desc;
-    protected boolean fExpert;
-    protected boolean fHidden;
-    Category category;
+    private String displayName;
+    private String desc;
+    private boolean fExpert;
+    private boolean fHidden;
+    private Category category;
     
-    protected boolean fPropogate; // used in logic, not part of option type
+    private boolean fPropogate; // used in logic, not part of option type
 
     // NOTE: can not deduce optionType from defaultValue since
     //       color allows null.
@@ -58,79 +58,18 @@ public abstract class Option<T> {
 	fExpert = false;
         fHidden = false;
 
-        initialize();
+        initialize(); // overridableMethodCallInConstructor
     }
 
     void initialize() {
         preferenceChange(OptUtil.getPrefs().get(name, getValueAsString(defaultValue)));
     }
 
-    // public String getValue() {
-    //     return stringValue;
-    // }
-
     final public T getValue() {
         return value;
     }
 
-    final public String getName() {
-	return name;
-    }
-    
-    // NEEDSWORK: MAKE IT NOT PUBLIC
-    final public T getDefault() {
-	return defaultValue;
-    }
-    
-    final public String getDesc() {
-	return desc;
-    }
-
-    final public String getDisplayName() {
-	if(displayName != null) {
-	    return displayName;
-	} else {
-	    return name;
-	}
-    }
-
-    final public boolean isExpert() {
-	return fExpert;
-    }
-
-    final public boolean isHidden() {
-	return fHidden;
-    }
-    
-    final public void setHidden(boolean f) {
-        fHidden = f;
-    }
-    
-    final public void setExpert(boolean f) {
-        fExpert = f;
-    }
-
-    final public Category getCategory()
-    {
-        return category;
-    }
-
-    final public void setDesc(String desc)
-    {
-        if (this.desc != null) {
-            throw new Error("option: " + name + " already has a description.");
-        }
-        this.desc = desc;
-    }
-
-    final public void setDisplayName(String displayName)
-    {
-        if (this.displayName != null) {
-            throw new Error("option: " + name + " already has a display name.");
-        }
-        this.displayName = displayName;
-    }
-
+    /** If overridden, should invoke super.setValue */
     void setValue(T newValue)
     {
         T oldValue = value;
@@ -139,12 +78,22 @@ public abstract class Option<T> {
         OptUtil.firePropertyChange(name, oldValue, newValue);
     }
 
+    private void propogate() {
+	if(fPropogate) {
+            OptUtil.getPrefs().put(name, getValueAsString(value));
+	}
+        OptUtil.intializeGlobalOptionMemoryValue(this);
+    }
+
     /**
-     * SetValue from String without propogating.
+     * SetValue from String without propagating.
      * The preferences data base has changed, stay in sync.
-     * Do not propogate change back to data base.
+     * Do not propagate change back to data base.
+     * <p/>
+     * This is invoked by a preferences change listener
+     * as well as the initialize method.
      */
-    void preferenceChange(String newValue) {
+    final void preferenceChange(String newValue) {
 	fPropogate = false;
         try {
 	    //System.err.println("preferenceChange " + name + ": " + newValue);
@@ -154,14 +103,14 @@ public abstract class Option<T> {
         }
     }
 
+    private void setValueFromString(String sVal)
+    {
+        setValue(getValueFromString(sVal));
+    }
+
     String getValueAsString(T val)
     {
         return val.toString();
-    }
-
-    final void setValueFromString(String sVal)
-    {
-        setValue(getValueFromString(sVal));
     }
 
     T getValueFromString(String sVal)
@@ -185,18 +134,13 @@ public abstract class Option<T> {
         return optionType.cast(o);
     }
 
+    //////////////////////////////////////////////////////////////////////
+
     private boolean isBaseType()
     {
         return optionType == Integer.class
                 || optionType == Boolean.class
                 || optionType == String.class;
-    }
-
-    void propogate() {
-	if(fPropogate) {
-            OptUtil.getPrefs().put(name, getValueAsString(value));
-	}
-        OptUtil.intializeGlobalOptionMemoryValue(this);
     }
     
     final public Integer getInteger() {
@@ -235,7 +179,8 @@ public abstract class Option<T> {
             val = optionType.cast(o);
         } catch(ClassCastException ex) {
             throw new PropertyVetoException(
-                      "expected type "+ optionType.getSimpleName() + ": " + o,
+                      "expected type "+ optionType.getSimpleName()
+                        + " not " + o.getClass().getSimpleName() + ": " + o,
                       new PropertyChangeEvent(this, this.getName(),
                                           this.getValue(), o));
         }
@@ -275,6 +220,71 @@ public abstract class Option<T> {
         {
         }
 
+    }
+
+    final public String getName() {
+	return name;
+    }
+
+    final public T getDefault() {
+	return defaultValue;
+    }
+
+    final public String getDesc() {
+	return desc;
+    }
+
+    final public String getDisplayName() {
+	if(displayName != null) {
+	    return displayName;
+	} else {
+	    return name;
+	}
+    }
+
+    final public boolean isExpert() {
+	return fExpert;
+    }
+
+    final public boolean isHidden() {
+	return fHidden;
+    }
+
+    final public void setHidden(boolean f) {
+        fHidden = f;
+    }
+
+    final public void setExpert(boolean f) {
+        fExpert = f;
+    }
+
+    final public Category getCategory()
+    {
+        return category;
+    }
+
+    final public void setDesc(String desc)
+    {
+        if (this.desc != null) {
+            throw new Error("option: " + name + " already has a description.");
+        }
+        this.desc = desc;
+    }
+
+    final public void setDisplayName(String displayName)
+    {
+        if (this.displayName != null) {
+            throw new Error("option: " + name + " already has a display name.");
+        }
+        this.displayName = displayName;
+    }
+
+    final public void setCategory(Category category)
+    {
+        if (this.category != null) {
+            throw new Error("option: " + name + " already has a category.");
+        }
+        this.category = category;
     }
 }
 

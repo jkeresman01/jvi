@@ -74,7 +74,10 @@ public final class VimOption {
         return l;
     }
 
-    /** NOTE: varName is constructed from shortName and scope */
+    /**
+     * NOTE: varName is constructed from shortName and scope;
+     *       fullName is used if no shortName.
+     */
     private VimOption(String fullName, String shortName,
                       String optName, S scope, Set<F> flags)
     {
@@ -172,83 +175,80 @@ public final class VimOption {
         COMMA,          // comma separated list
         NODUP,          // don't allow duplicate strings
         FLAGLIST,       // list of single-char flags
-        HIDE,          // don't allow set command
+        HIDE,           // don't allow set command
     }
 
     private static final Set<F> nullF = EnumSet.noneOf(F.class);
 
 
-    final private static VimOption[] vopts = new VimOption[]{
-    new VimOption("backspace",   "bs",   Options.backspace,       S.P_GBL, nullF),
-    new VimOption("clipboard",   "cb",   Options.unnamedClipboard,S.P_GBL, nullF),
-    new VimOption("cpo_j",       "",     Options.endOfSentence,   S.P_GBL, EnumSet.of(F.HIDE)),
-    new VimOption("cpo_search",  "",     Options.searchFromEnd,   S.P_GBL, EnumSet.of(F.HIDE)),
-    new VimOption("cpo_w",       "",     Options.changeWordBlanks,S.P_GBL, EnumSet.of(F.HIDE)),
-    new VimOption("equalalways", "ea",   Options.equalAlways,     S.P_GBL, nullF),
-    new VimOption("equalprg",    "ep",   Options.equalProgram,    S.P_GBL, nullF),
-    new VimOption("expandtab",   "et",   Options.expandTabs,      S.P_BUF, nullF),
-    new VimOption("formatprg",   "fp",   Options.formatProgram,   S.P_GBL, nullF),
-    new VimOption("hlsearch",    "hls",  Options.highlightSearch, S.P_GBL, nullF),
-    new VimOption("ignorecase",  "ic",   Options.ignoreCase,      S.P_GBL, nullF),
-    new VimOption("incsearch",   "is",   Options.incrSearch,      S.P_GBL, nullF),
-    new VimOption("iskeyword",   "isk",  Options.isKeyWord,       S.P_BUF, EnumSet.of(F.COMMA, F.NODUP)),
-    new VimOption("joinspaces",  "js",   Options.joinSpaces,      S.P_GBL, nullF),
-    new VimOption("linebreak",   "lbr",  Options.lineBreak,       S.P_WIN, nullF),
-    new VimOption("list",        "",     Options.list,            S.P_WIN, nullF),
-    new VimOption("modeline",    "ml",   Options.modeline,        S.P_GBL, nullF),
-    new VimOption("modelines",   "mls",  Options.modelines,       S.P_GBL, nullF),
-    new VimOption("number",      "nu",   Options.number,          S.P_WIN, nullF),
-    new VimOption("platformbrace","pbm", Options.platformBraceMatch,S.P_GBL,EnumSet.of(F.HIDE)),
-    new VimOption("remetaescape","rem",  Options.metaEscape,      S.P_GBL, EnumSet.of(F.FLAGLIST)),
-    new VimOption("remetaequals","req",  Options.metaEquals,      S.P_GBL, EnumSet.of(F.HIDE)),
-    new VimOption("report",      "",     Options.report,          S.P_GBL, nullF),
-    new VimOption("scroll",      "scr",  Options.scroll,          S.P_WIN, nullF),
-    new VimOption("scrolloff",   "so",   Options.scrollOff,       S.P_GBL, nullF),
-    new VimOption("selection",   "sel",  Options.selection,       S.P_GBL, nullF),
-    new VimOption("selectmode",  "slm",  Options.selectMode,      S.P_GBL, nullF),
-    new VimOption("shell",       "sh",   Options.shell,           S.P_GBL, nullF),
-    new VimOption("shellcmdflag","shcf", Options.shellCmdFlag,    S.P_GBL, nullF),
-    new VimOption("shellslash",  "ssl",  Options.shellSlash,      S.P_GBL, nullF),
-    new VimOption("shellxquote", "sxq",  Options.shellXQuote,     S.P_GBL, nullF),
-    new VimOption("shiftround",  "sr",   Options.shiftRound,      S.P_GBL, nullF),
-    new VimOption("shiftwidth",  "sw",   Options.shiftWidth,      S.P_BUF, nullF),
-    new VimOption("showcmd",     "sc",   Options.showCommand,     S.P_GBL, nullF),
-    new VimOption("showmode",    "smd",  Options.showMode,        S.P_GBL, nullF),
-    new VimOption("smartcase",   "scs",  Options.smartCase,       S.P_GBL, nullF),
-    new VimOption("softtabstop", "sts",  Options.softTabStop,     S.P_BUF, nullF),
-    new VimOption("splitbelow",  "sb",   Options.splitBelow,      S.P_GBL, nullF),
-    new VimOption("splitright",  "spr",  Options.splitRight,      S.P_GBL, nullF),
-    new VimOption("startofline", "notsol",Options.notStartOfLine, S.P_GBL, nullF),
-    new VimOption("tabstop",     "ts",   Options.tabStop,         S.P_BUF, nullF),
-    new VimOption("textwidth",   "tw",   Options.textWidth,       S.P_BUF, nullF),
-    new VimOption("tildeop",     "top",  Options.tildeOperator,   S.P_GBL, nullF),
-    new VimOption("timeout",     "to",   Options.timeout,         S.P_GBL, nullF),
-    new VimOption("timeoutlen",  "tm",   Options.timeoutlen,      S.P_GBL, nullF),
-    new VimOption("wrap",        "",     Options.wrap,            S.P_WIN, nullF),
-    new VimOption("wrapscan",    "ws",   Options.wrapScan,        S.P_GBL, nullF),
-    new VimOption("ww_bs",       "",     Options.backspaceWrapPrevious,S.P_GBL, EnumSet.of(F.HIDE)),
-    new VimOption("ww_h",        "",     Options.hWrapPrevious,   S.P_GBL, EnumSet.of(F.HIDE)),
-    new VimOption("ww_i_left",   "",     Options.insertLeftWrapPrevious,S.P_GBL, EnumSet.of(F.HIDE)),
-    new VimOption("ww_i_right",  "",     Options.insertRightWrapNext,S.P_GBL, EnumSet.of(F.HIDE)),
-    new VimOption("ww_l",        "",     Options.lWrapNext,       S.P_GBL, EnumSet.of(F.HIDE)),
-    new VimOption("ww_larrow",   "",     Options.leftWrapPrevious,S.P_GBL, EnumSet.of(F.HIDE)),
-    new VimOption("ww_rarrow",   "",     Options.rightWrapNext,   S.P_GBL, EnumSet.of(F.HIDE)),
-    new VimOption("ww_sp",       "",     Options.spaceWrapNext,   S.P_GBL, EnumSet.of(F.HIDE)),
-    new VimOption("ww_tilde",    "",     Options.tildeWrapNext,   S.P_GBL, EnumSet.of(F.HIDE)),
-    };
+final private static VimOption[] vopts = new VimOption[]{
+new VimOption("backspace",   "bs",   Options.backspace,       S.P_GBL, nullF),
+new VimOption("clipboard",   "cb",   Options.unnamedClipboard,S.P_GBL, nullF),
+new VimOption("cpo_j",       "",     Options.endOfSentence,   S.P_GBL, EnumSet.of(F.HIDE)),
+new VimOption("cpo_search",  "",     Options.searchFromEnd,   S.P_GBL, EnumSet.of(F.HIDE)),
+new VimOption("cpo_w",       "",     Options.changeWordBlanks,S.P_GBL, EnumSet.of(F.HIDE)),
+new VimOption("equalalways", "ea",   Options.equalAlways,     S.P_GBL, nullF),
+new VimOption("equalprg",    "ep",   Options.equalProgram,    S.P_GBL, nullF),
+new VimOption("expandtab",   "et",   Options.expandTabs,      S.P_BUF, nullF),
+new VimOption("formatprg",   "fp",   Options.formatProgram,   S.P_GBL, nullF),
+new VimOption("hlsearch",    "hls",  Options.highlightSearch, S.P_GBL, nullF),
+new VimOption("ignorecase",  "ic",   Options.ignoreCase,      S.P_GBL, nullF),
+new VimOption("incsearch",   "is",   Options.incrSearch,      S.P_GBL, nullF),
+new VimOption("iskeyword",   "isk",  Options.isKeyWord,       S.P_BUF, EnumSet.of(F.COMMA, F.NODUP)),
+new VimOption("joinspaces",  "js",   Options.joinSpaces,      S.P_GBL, nullF),
+new VimOption("linebreak",   "lbr",  Options.lineBreak,       S.P_WIN, nullF),
+new VimOption("list",        "",     Options.list,            S.P_WIN, nullF),
+new VimOption("modeline",    "ml",   Options.modeline,        S.P_GBL, nullF),
+new VimOption("modelines",   "mls",  Options.modelines,       S.P_GBL, nullF),
+new VimOption("number",      "nu",   Options.number,          S.P_WIN, nullF),
+new VimOption("platformbrace","pbm", Options.platformBraceMatch,S.P_GBL,EnumSet.of(F.HIDE)),
+new VimOption("remetaescape","rem",  Options.metaEscape,      S.P_GBL, EnumSet.of(F.FLAGLIST)),
+new VimOption("remetaequals","req",  Options.metaEquals,      S.P_GBL, EnumSet.of(F.HIDE)),
+new VimOption("report",      "",     Options.report,          S.P_GBL, nullF),
+new VimOption("scroll",      "scr",  Options.scroll,          S.P_WIN, nullF),
+new VimOption("scrolloff",   "so",   Options.scrollOff,       S.P_GBL, nullF),
+new VimOption("selection",   "sel",  Options.selection,       S.P_GBL, nullF),
+new VimOption("selectmode",  "slm",  Options.selectMode,      S.P_GBL, nullF),
+new VimOption("shell",       "sh",   Options.shell,           S.P_GBL, nullF),
+new VimOption("shellcmdflag","shcf", Options.shellCmdFlag,    S.P_GBL, nullF),
+new VimOption("shellslash",  "ssl",  Options.shellSlash,      S.P_GBL, nullF),
+new VimOption("shellxquote", "sxq",  Options.shellXQuote,     S.P_GBL, nullF),
+new VimOption("shiftround",  "sr",   Options.shiftRound,      S.P_GBL, nullF),
+new VimOption("shiftwidth",  "sw",   Options.shiftWidth,      S.P_BUF, nullF),
+new VimOption("showcmd",     "sc",   Options.showCommand,     S.P_GBL, nullF),
+new VimOption("showmode",    "smd",  Options.showMode,        S.P_GBL, nullF),
+new VimOption("smartcase",   "scs",  Options.smartCase,       S.P_GBL, nullF),
+new VimOption("softtabstop", "sts",  Options.softTabStop,     S.P_BUF, nullF),
+new VimOption("splitbelow",  "sb",   Options.splitBelow,      S.P_GBL, nullF),
+new VimOption("splitright",  "spr",  Options.splitRight,      S.P_GBL, nullF),
+new VimOption("startofline", "notsol",Options.notStartOfLine, S.P_GBL, nullF),
+new VimOption("tabstop",     "ts",   Options.tabStop,         S.P_BUF, nullF),
+new VimOption("textwidth",   "tw",   Options.textWidth,       S.P_BUF, nullF),
+new VimOption("tildeop",     "top",  Options.tildeOperator,   S.P_GBL, nullF),
+new VimOption("timeout",     "to",   Options.timeout,         S.P_GBL, nullF),
+new VimOption("timeoutlen",  "tm",   Options.timeoutlen,      S.P_GBL, nullF),
+new VimOption("wrap",        "",     Options.wrap,            S.P_WIN, nullF),
+new VimOption("wrapscan",    "ws",   Options.wrapScan,        S.P_GBL, nullF),
+new VimOption("ww_bs",       "",     Options.backspaceWrapPrevious,S.P_GBL, EnumSet.of(F.HIDE)),
+new VimOption("ww_h",        "",     Options.hWrapPrevious,   S.P_GBL, EnumSet.of(F.HIDE)),
+new VimOption("ww_i_left",   "",     Options.insertLeftWrapPrevious,S.P_GBL, EnumSet.of(F.HIDE)),
+new VimOption("ww_i_right",  "",     Options.insertRightWrapNext,S.P_GBL, EnumSet.of(F.HIDE)),
+new VimOption("ww_l",        "",     Options.lWrapNext,       S.P_GBL, EnumSet.of(F.HIDE)),
+new VimOption("ww_larrow",   "",     Options.leftWrapPrevious,S.P_GBL, EnumSet.of(F.HIDE)),
+new VimOption("ww_rarrow",   "",     Options.rightWrapNext,   S.P_GBL, EnumSet.of(F.HIDE)),
+new VimOption("ww_sp",       "",     Options.spaceWrapNext,   S.P_GBL, EnumSet.of(F.HIDE)),
+new VimOption("ww_tilde",    "",     Options.tildeWrapNext,   S.P_GBL, EnumSet.of(F.HIDE)),
+};
 
 
+    private static int capacity(int c) { return (int)(c / .75) + 3; }
     final private static Map<String, VimOption> mapOptionName
-            = new HashMap<String, VimOption>(vopts.length);
+            = new HashMap<String, VimOption>(capacity(vopts.length));
     final private static Map<String, VimOption> mapVarName
-            = new HashMap<String, VimOption>(vopts.length);
+            = new HashMap<String, VimOption>(capacity(vopts.length));
 
     final private static Map<String, VimOption> mapUserName
-            = new HashMap<String, VimOption>(2 * vopts.length);
-    ///// final private static Map<String, VimOption> mapFullName
-    /////         = new HashMap<String, VimOption>(vopts.length);
-    ///// final private static Map<String, VimOption> mapShortName
-    /////         = new HashMap<String, VimOption>(vopts.length);
+            = new HashMap<String, VimOption>(capacity(2 * vopts.length));
     static {
         for(VimOption vopt : vopts) {
             assert !mapOptionName.containsKey(vopt.getOptName());
@@ -262,13 +262,6 @@ public final class VimOption {
                 assert !mapUserName.containsKey(vopt.getShortName());
                 mapUserName.put(vopt.getShortName(), vopt);
             }
-
-            ///// assert !mapFullName.containsKey(vopt.getFullName());
-            ///// mapFullName.put(vopt.getFullName(), vopt);
-            ///// if(!vopt.getShortName().isEmpty()) {
-            /////     assert !mapShortName.containsKey(vopt.getShortName());
-            /////     mapShortName.put(vopt.getShortName(), vopt);
-            ///// }
         }
     }
 }
