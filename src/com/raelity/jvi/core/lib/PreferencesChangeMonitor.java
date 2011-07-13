@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.core.lib;
 
+import com.raelity.jvi.core.G;
 import com.raelity.jvi.manager.ViManager;
 import java.util.Date;
 import java.util.HashMap;
@@ -55,8 +56,6 @@ public final class PreferencesChangeMonitor {
     private Map<String, ParentListener> parentListeners;
     private Set<ParentChild> parentChilds = new HashSet<ParentChild>();
 
-    private static boolean DUMP = false;
-
     private static final boolean ENABLE_HACK = true;
     private boolean hack;
     private Preferences hackBase;
@@ -69,7 +68,6 @@ public final class PreferencesChangeMonitor {
         prefListener = new PrefCheckListener();
         nodeListener = new NodeCheckListener();
         parentListeners = new HashMap<String, ParentListener>(2);
-        DUMP = ViManager.isDebugAtHome();
     }
 
     public static void setFileHack(FileHack fileHack)
@@ -127,8 +125,8 @@ public final class PreferencesChangeMonitor {
                         if(!fileHack.hasKeyValue(hackBase, child,
                                                  HACK_KEY, hackValue)) {
                             change = true;
-                            if(DUMP) {
-                                ViManager.println("PREF CHANGE: "
+                            if(G.dbgPrefChangeMonitor().getBoolean()) {
+                                G.dbgPrefChangeMonitor().println("PREF CHANGE: "
                                         + "HACK in " + path);
                             }
                         }
@@ -136,8 +134,8 @@ public final class PreferencesChangeMonitor {
                         Preferences p = hackBase.node(child);
                         if(!p.get(HACK_KEY, "").equals(hackValue)) {
                             change = true;
-                            if(DUMP) {
-                                ViManager.println("PREF CHANGE: "
+                            if(G.dbgPrefChangeMonitor().getBoolean()) {
+                                G.dbgPrefChangeMonitor().println("PREF CHANGE: "
                                         + "HACK in " + p.absolutePath());
                             }
                         }
@@ -158,8 +156,8 @@ public final class PreferencesChangeMonitor {
         if(!freeze)
             change = true;
         else
-            if(DUMP) {
-                ViManager.println("CHANGE FROZEN:");
+            if(G.dbgPrefChangeMonitor().getBoolean()) {
+                G.dbgPrefChangeMonitor().println("CHANGE FROZEN:");
             }
     }
 
@@ -225,8 +223,8 @@ public final class PreferencesChangeMonitor {
                     parent.removeNodeChangeListener(pl);
                 } else {
                     parent.addNodeChangeListener(pl);
-                    if(DUMP) {
-                        ViManager.println("PARENT START CHECKING: "
+                    if(G.dbgPrefChangeMonitor().getBoolean()) {
+                        G.dbgPrefChangeMonitor().println("PARENT START CHECKING: "
                                 + child + " in "
                                 + parent.absolutePath());
                     }
@@ -247,8 +245,8 @@ public final class PreferencesChangeMonitor {
                 } else {
                     prefs.addPreferenceChangeListener(prefListener);
                     prefs.addNodeChangeListener(nodeListener);
-                    if(DUMP) {
-                        ViManager.println("START CHECKING: "
+                    if(G.dbgPrefChangeMonitor().getBoolean()) {
+                        G.dbgPrefChangeMonitor().println("START CHECKING: "
                                 + prefs.absolutePath());
                     }
                 }
@@ -279,14 +277,14 @@ public final class PreferencesChangeMonitor {
         {
             if(evt.getChild().name().equals(child)) {
                 changeDetected();
-                if(DUMP) {
-                    ViManager.println("PARENT NODE CHANGE: childAdded: "
+                if(G.dbgPrefChangeMonitor().getBoolean()) {
+                    G.dbgPrefChangeMonitor().println("PARENT NODE CHANGE: childAdded: "
                             + evt.getChild().name()
                             + " in " + evt.getParent().absolutePath());
                 }
             } else
-                if(DUMP) {
-                    ViManager.println("PARENT NODE CHANGE IGNORED: childAdded: "
+                if(G.dbgPrefChangeMonitor().getBoolean()) {
+                    G.dbgPrefChangeMonitor().println("PARENT NODE CHANGE IGNORED: childAdded: "
                             + evt.getChild().name()
                             + " in " + evt.getParent().absolutePath());
                 }
@@ -297,14 +295,14 @@ public final class PreferencesChangeMonitor {
         {
             if(evt.getChild().name().equals(child)) {
                 changeDetected();
-                if(DUMP) {
-                    ViManager.println("PARENT NODE CHANGE: childRemoved: "
+                if(G.dbgPrefChangeMonitor().getBoolean()) {
+                    G.dbgPrefChangeMonitor().println("PARENT NODE CHANGE: childRemoved: "
                             + evt.getChild().name()
                             + " in " + evt.getParent().absolutePath());
                 }
             } else
-                if(DUMP) {
-                    ViManager.println("PARENT NODE CHANGE IGNORED: childRemoved: "
+                if(G.dbgPrefChangeMonitor().getBoolean()) {
+                    G.dbgPrefChangeMonitor().println("PARENT NODE CHANGE IGNORED: childRemoved: "
                             + evt.getChild().name()
                             + " in " + evt.getParent().absolutePath());
                 }
@@ -319,8 +317,8 @@ public final class PreferencesChangeMonitor {
         public void childAdded(NodeChangeEvent evt)
         {
             changeDetected();
-            if(DUMP) {
-                ViManager.println("NODE CHANGE: childAdded: "
+            if(G.dbgPrefChangeMonitor().getBoolean()) {
+                G.dbgPrefChangeMonitor().println("NODE CHANGE: childAdded: "
                         + evt.getChild().name()
                         + " in " + evt.getParent().absolutePath());
             }
@@ -330,8 +328,8 @@ public final class PreferencesChangeMonitor {
         public void childRemoved(NodeChangeEvent evt)
         {
             changeDetected();
-            if(DUMP) {
-                ViManager.println("NODE CHANGE: childRemoved: "
+            if(G.dbgPrefChangeMonitor().getBoolean()) {
+                G.dbgPrefChangeMonitor().println("NODE CHANGE: childRemoved: "
                         + evt.getChild().name()
                         + " in " + evt.getParent().absolutePath());
             }
@@ -346,8 +344,8 @@ public final class PreferencesChangeMonitor {
         public void preferenceChange(PreferenceChangeEvent evt)
         {
             changeDetected();
-            if(DUMP) {
-                ViManager.println("PREF CHANGE: "
+            if(G.dbgPrefChangeMonitor().getBoolean()) {
+                G.dbgPrefChangeMonitor().println("PREF CHANGE: "
                         + evt.getKey()
                         + " in " + evt.getNode().absolutePath());
             }

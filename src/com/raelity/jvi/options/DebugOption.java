@@ -71,13 +71,6 @@ public class DebugOption extends EnumOption<String>
     }
 
     @Override
-    final public String getString() {
-        // Actually, it is a string option.
-        // Use getValue if you want to see the log level string.
-        throw new ClassCastException("DebugOption is not a StringOption");
-    }
-
-    @Override
     // NEEDSWORK: change getBoolean to something like: fLog(),
     //            then make getBoolean final.
     final public Boolean getBoolean()

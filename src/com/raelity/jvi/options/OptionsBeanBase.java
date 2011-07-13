@@ -1018,6 +1018,30 @@ implements Options.EditControl {
 	return getString(Options.dbgSearch);
     }
 
+    public void setViDbgOptions(String arg)  throws PropertyVetoException {
+        put(Options.dbgOptions, arg);
+    }
+
+    public String getViDbgOptions() {
+	return getString(Options.dbgOptions);
+    }
+
+    public void setViDbgWindowTreeBuilder(String arg)  throws PropertyVetoException {
+        put(Options.dbgWindowTreeBuilder, arg);
+    }
+
+    public String getViDbgWindowTreeBuilder() {
+	return getString(Options.dbgWindowTreeBuilder);
+    }
+
+    public void setViDbgPrefChangeMonitor(String arg)  throws PropertyVetoException {
+        put(Options.dbgPrefChangeMonitor, arg);
+    }
+
+    public String getViDbgPrefChangeMonitor() {
+	return getString(Options.dbgPrefChangeMonitor);
+    }
+
     public void setViDbgMouse(String arg) throws PropertyVetoException {
         put(Options.dbgMouse, arg);
     }

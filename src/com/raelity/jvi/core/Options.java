@@ -216,6 +216,9 @@ public final class Options {
   public static final String dbgCoordSkip = "viDbgCoordSkip";
   public static final String dbgUndo = "viDbgUndo";
   public static final String dbgSearch = "viDbgSearch";
+  public static final String dbgOptions = "viDbgOptions";
+  public static final String dbgWindowTreeBuilder = "viDbgWindowTreeBuilder";
+  public static final String dbgPrefChangeMonitor = "viDbgPrefChangeMonitor";
 
   public static final String twMagic = "#TEXT-WIDTH#";
 
@@ -888,6 +891,15 @@ public final class Options {
 
     G.dbgSearch = OptUtil.createDebugOption(dbgSearch);
     OptUtil.setupOptionDesc(Category.DEBUG, dbgSearch, "debug search", "");
+
+    G.dbgOptions = OptUtil.createDebugOption(dbgOptions);
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgOptions, "debug options set", "");
+
+    G.dbgWindowTreeBuilder = OptUtil.createDebugOption(dbgWindowTreeBuilder);
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgWindowTreeBuilder, "debug window tree builder", "");
+
+    G.dbgPrefChangeMonitor = OptUtil.createDebugOption(dbgPrefChangeMonitor);
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgPrefChangeMonitor, "debug pref change monitor", "");
 
     OptUtil.verifyVimOptions();
   }

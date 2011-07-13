@@ -150,9 +150,6 @@ public class G implements ViOptionBag
      */
     static String p_cpo = "aABceFs"; // cpoptions
 
-    // NEEDSWORK: make dbgOptins a real option
-    public static boolean dbgOptions() { return ViManager.isDebugAtHome(); }
-
     //////////////////////////////////////////////////////////////////////
     //
     // Options that show up in the dialog
@@ -172,6 +169,42 @@ public class G implements ViOptionBag
     static IntegerOption viminfoMaxBuf; //viminfoMaxPersistedBuffersWithMarks
 
 
+
+    /** deal with a race condition */
+    public static class ProxyDebugOption {
+        private DebugOption opt;
+        public boolean getBoolean() {
+            return opt == null ? false : opt.getBoolean();
+        }
+
+        final public void println(String s)
+        {
+            if(opt != null)
+                opt.println(s);
+        }
+
+        final public void printf(String format, Object... args)
+        {
+            if(opt != null)
+                opt.printf(format, args);
+        }
+
+    }
+    private static ProxyDebugOption fdo = new ProxyDebugOption();
+    public static ProxyDebugOption dbgOptions() {
+        // This one has a race conditions
+        fdo.opt = dbgOptions;
+        return fdo;
+    }
+    public static DebugOption dbgWindowTreeBuilder()
+        { return dbgWindowTreeBuilder; }
+    public static DebugOption dbgPrefChangeMonitor()
+        { return dbgPrefChangeMonitor; }
+    public static DebugOption dbgEditorActivation()
+        { return dbgEditorActivation; }
+    public static DebugOption dbgUndo()
+        { return dbgUndo; }
+    //
     public static DebugOption dbgEditorActivation;
     public static DebugOption dbgCoordSkip;
     public static DebugOption dbgUndo;
@@ -179,6 +212,9 @@ public class G implements ViOptionBag
     public static DebugOption dbgKeyStrokes;
            static DebugOption dbgRedo;
            static DebugOption dbgMouse;
+           static DebugOption dbgWindowTreeBuilder;
+           static DebugOption dbgPrefChangeMonitor;
+           static DebugOption dbgOptions;
 
     //
     // some options are accessed from out of core

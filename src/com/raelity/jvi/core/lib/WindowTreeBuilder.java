@@ -30,6 +30,7 @@ import com.raelity.jvi.ViWindowNavigator;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.TextView;
 import com.raelity.jvi.manager.ViManager;
 import java.awt.Component;
@@ -70,8 +71,6 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
     private List<Node> roots = new ArrayList<Node>();
     private boolean didTreeInit;
 
-    private static boolean dbg = false;
-
     public WindowTreeBuilder(List<ViAppView> avs)
     {
         toDo.addAll(avs);
@@ -87,7 +86,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
             Component c = windowForAppView(toDo.iterator().next());
             //allComps(c);
             Node root = buildTree(c);
-            if(dbg) ViManager.println(dumpTree(root).toString());
+            if(G.dbgWindowTreeBuilder().getBoolean()) G.dbgWindowTreeBuilder().println(dumpTree(root).toString());
             assert root != null;
             if(root == null)
                 break;
@@ -194,13 +193,13 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
 
             Rectangle cursorProjection = getProjectedCursorRectangle(
                                     dir.getOrientation(), currentNode);
-            if(dbg) {
-                ViManager.println("\ncurrentNode:" + dbgName(currentNode) + " "
-                    + getProjectedRectangle(dir.getOrientation(), currentNode));
-                ViManager.println("cursor: " + cursorProjection);
-                ViManager.println("jump Targets");
+            if(G.dbgWindowTreeBuilder().getBoolean()) {
+                G.dbgWindowTreeBuilder().println("\ncurrentNode:" + dbgName(currentNode) + " "
+                                  + getProjectedRectangle(dir.getOrientation(), currentNode));
+                G.dbgWindowTreeBuilder().println("cursor: " + cursorProjection);
+                G.dbgWindowTreeBuilder().println("jump Targets");
                 for(Node n1 : nodes) {
-                    ViManager.println(dbgName(n1) + " "
+                    System.err.println(dbgName(n1) + " "
                             + getProjectedRectangle(dir.getOrientation(), n1));
                 }
             }
@@ -1008,12 +1007,12 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
             Node parent = node.getParent();
             if(parent == null)
                 break;
-            if(dbg)ViManager.println("treeUp: " + dbgName(node));
+            if(G.dbgWindowTreeBuilder().getBoolean())G.dbgWindowTreeBuilder().println("treeUp: " + dbgName(node));
             if((found = pickSiblingForJump(dir, node)) != null)
                 break;
             node = parent;
         }
-        if(dbg)ViManager.println("treeUp found: " + dbgName(found));
+        if(G.dbgWindowTreeBuilder().getBoolean())G.dbgWindowTreeBuilder().println("treeUp found: " + dbgName(found));
         return found;
     }
 

@@ -236,8 +236,8 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                 setCommandError(ex.getMessage());
             }
 
-            if(G.dbgOptions()) {
-                System.err.printf("SET %s%s to '%s'\n",
+            if(G.dbgOptions().getBoolean()) {
+                G.dbgOptions().printf("SET %s%s to '%s'\n",
                                   vopt.isGlobal() ? "G." : "",
                                   vopt.getVarName(), newValue);
             }
@@ -584,8 +584,8 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         for(ViTextView tv01 : ViManager.getFactory().getViTextViewSet()) {
             if(tv01.getBuffer() != buf || tv01 == tv)
                 continue;
-            if(G.dbgOptions())
-                System.err.println("syncInstances: " + varName + " in " + tv01);
+            if(G.dbgOptions().getBoolean())
+                G.dbgOptions().println("syncInstances: " + varName + " in " + tv01);
             setLocalOption(tv01, vopt);
         }
     }
@@ -599,8 +599,8 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                     ? ViManager.getFactory().getViTextViewSet()
                     : ViManager.getFactory().getBufferSet();
             for(ViOptionBag bag : set) {
-                if(G.dbgOptions()) {
-                    System.err.printf("syncInstances: %s in %s\n",
+                if(G.dbgOptions().getBoolean()) {
+                    G.dbgOptions().printf("syncInstances: %s in %s\n",
                                       varName, bag);
                 }
                 setLocalOption(bag, vopt);

@@ -295,8 +295,8 @@ public class OptUtil {
         f.set(null, opt.getColor());
       else
         throw new IllegalArgumentException("option " + opt.getName());
-      if(G.dbgOptions())
-        System.err.printf("Init G.%s to '%s'\n", vopt.getVarName(), opt.getValue());
+      if(   G.dbgOptions().getBoolean())
+            G.dbgOptions().printf("Init G.%s to '%s'\n", vopt.getVarName(), opt.getValue());
     } catch(IllegalArgumentException ex) {
       Logger.getLogger(OptUtil.class.getName()).log(Level.SEVERE, null, ex);
     } catch(IllegalAccessException ex) {
@@ -324,8 +324,8 @@ public class OptUtil {
           opt.getBoolean();
         else if(f.getType() == String.class)
           opt.getString();
-        if(G.dbgOptions())
-          System.err.println("VERIFY: " + vopt.getOptName());
+        if(     G.dbgOptions().getBoolean())
+                G.dbgOptions().println("VERIFY: " + vopt.getOptName());
       } catch(NoSuchFieldException ex) {
         Logger.getLogger(VimOption.class.getName()).log(Level.SEVERE, null,
                                                                       ex);

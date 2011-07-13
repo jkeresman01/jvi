@@ -1,0 +1,50 @@
+
+<?
+    import java.util.HashSet;
+    import java.util.regex.Pattern;
+?>
+
+' G.xxx --> G.xxx()':
+   $opt :: $opt instanceof com.raelity.jvi.options.DebugOption
+        && elementKindMatches($opt, ElementKind.FIELD)
+        && hasModifier($opt, Modifier.STATIC)
+       && matchName($opt)
+=> $opt()
+;;
+
+<?
+    final static java.util.regex.Matcher m
+        = Pattern.compile("G\\.(\\w+)").matcher("");
+
+    public boolean matchName(Variable v) {
+        //String name = context.name(v);
+        String text = context.text(v);
+
+        // Variable parent = context.parent(context.variableForName("$_"));
+        // String parentText = context.text(parent);
+
+        // System.err.printf("NAME: %s, TEXT: %s, PARENT: %s\n", name, text, parentText);
+
+
+        m.reset(text);
+        if(!m.find()) {
+            //System.err.println("SKIP: " + text);
+            return false;
+        }
+
+        boolean f = names.contains(m.group(1));
+        // if(!f)
+        //     System.err.println("NO-MATCH: " + text);
+        return f;
+        // return true;
+    }
+
+    final static HashSet<String> names = new HashSet<String>();
+    static {
+        names.add("dbgEditorActivation");
+        names.add("dbgCoordSkip");
+        names.add("dbgUndo");
+        names.add("dbgSearch");
+        names.add("dbgKeyStrokes");
+    }
+?>
