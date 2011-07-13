@@ -52,8 +52,8 @@ public class SwingViewMapWrapFontFixed implements ViewMap
           int offset = tv.getBuffer().getLineStartOffset(docLine);
           Rectangle2D lineRect = tv.modelToView(offset);
           viewLine = tv.countViewLines(lineRect, tv.getRect0());
-          if ( G.dbgCoordSkip.getBoolean(Level.FINER) ) {
-                G.dbgCoordSkip.println(Level.FINER, String.format(
+          if ( G.dbgCoordSkip().getBoolean(Level.FINER) ) {
+                G.dbgCoordSkip().println(Level.FINER, String.format(
                       "\tviewLine(fixed): %d, line1: %d:%g, line %d:%g",
                       viewLine, 1, tv.getPoint0().getY(), docLine, lineRect.getY()));
           }

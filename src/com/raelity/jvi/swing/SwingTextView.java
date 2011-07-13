@@ -303,8 +303,8 @@ public class SwingTextView extends TextView
         if ( ops == null ) {
             createOps();
         }
-        if ( G.dbgEditorActivation.getBoolean() ) {
-            G.dbgEditorActivation.println("TV.attach: " + editorPane.hashCode());
+        if ( G.dbgEditorActivation().getBoolean() ) {
+            G.dbgEditorActivation().println("TV.attach: " + editorPane.hashCode());
         }
         attachMore();
     }
@@ -663,8 +663,8 @@ public class SwingTextView extends TextView
     public int getVpTopLogicalLine()
     {
         int logicalLine = lm.logicalLine(getVpTopDocumentLine());
-        if ( G.dbgCoordSkip.getBoolean(Level.FINEST) ) {
-            G.dbgCoordSkip.println(Level.FINEST, "getVpTopLogicalLine: " + logicalLine);
+        if ( G.dbgCoordSkip().getBoolean(Level.FINEST) ) {
+            G.dbgCoordSkip().println(Level.FINEST, "getVpTopLogicalLine: " + logicalLine);
         }
         return logicalLine;
     }
@@ -697,8 +697,8 @@ public class SwingTextView extends TextView
         int ll01 = getLogicalLineCount();
         if(logicalLine > ll01)
             logicalLine = ll01 + 1; // past last line
-        if(G.dbgCoordSkip.getBoolean(Level.FINEST)) {
-            G.dbgCoordSkip.println(Level.FINEST, "getViewBottomLogicalLine: " + logicalLine);
+        if(G.dbgCoordSkip().getBoolean(Level.FINEST)) {
+            G.dbgCoordSkip().println(Level.FINEST, "getViewBottomLogicalLine: " + logicalLine);
         }
         return logicalLine; // NEEDSWORK: line past full line, see getViewBottomLine
     }
@@ -708,8 +708,8 @@ public class SwingTextView extends TextView
     public int getLogicalLineCount()
     {
         int logicalLine = lm.logicalLine(getBuffer().getLineCount());
-        if ( G.dbgCoordSkip.getBoolean(Level.FINEST) ) {
-            G.dbgCoordSkip.println(Level.FINEST, "getLogicalLineCount: " + logicalLine);
+        if ( G.dbgCoordSkip().getBoolean(Level.FINEST) ) {
+            G.dbgCoordSkip().println(Level.FINEST, "getLogicalLineCount: " + logicalLine);
         }
         return logicalLine;
     }
@@ -724,8 +724,8 @@ public class SwingTextView extends TextView
             docLine = getBuffer().getLineCount();
         }
         int logicalLine = lm.logicalLine(docLine);
-        if ( G.dbgCoordSkip.getBoolean(Level.FINE) ) {
-            G.dbgCoordSkip.println(Level.FINE, "getLogicalLine: " + logicalLine);
+        if ( G.dbgCoordSkip().getBoolean(Level.FINE) ) {
+            G.dbgCoordSkip().println(Level.FINE, "getLogicalLine: " + logicalLine);
         }
         return logicalLine;
     }
@@ -1850,8 +1850,8 @@ public class SwingTextView extends TextView
      */
     private void attachMore()
     {
-        if (G.dbgEditorActivation.getBoolean()) {
-            G.dbgEditorActivation.println("TVCache: attach: "
+        if (G.dbgEditorActivation().getBoolean()) {
+            G.dbgEditorActivation().println("TVCache: attach: "
                                + (editorPane == null ? 0 : editorPane.hashCode()));
         }
         if (freezer != null) {
@@ -1875,8 +1875,8 @@ public class SwingTextView extends TextView
     /** Disassociate from the observed components. */
     private void detachMore()
     {
-        if (G.dbgEditorActivation.getBoolean()) {
-            G.dbgEditorActivation.println("TVCache: detach: "
+        if (G.dbgEditorActivation().getBoolean()) {
+            G.dbgEditorActivation().println("TVCache: detach: "
                                + (editorPane == null ? "" : editorPane.hashCode()));
         }
         if (editorPane == null) {

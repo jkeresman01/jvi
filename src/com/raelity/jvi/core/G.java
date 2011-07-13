@@ -64,6 +64,7 @@ public class G implements ViOptionBag
     static int mod_mask;
 
     // NEEDSWORK: create curwin() for use outside of core (jackpot)
+    public static TextView curwin() { return curwin; }
     public static TextView curwin;
 
     static Buffer curbuf; // per file options. as int,boolean
@@ -204,17 +205,19 @@ public class G implements ViOptionBag
         { return dbgEditorActivation; }
     public static DebugOption dbgUndo()
         { return dbgUndo; }
+    public static DebugOption dbgCoordSkip()
+        { return dbgCoordSkip; }
     //
-    public static DebugOption dbgEditorActivation;
-    public static DebugOption dbgCoordSkip;
-    public static DebugOption dbgUndo;
-    public static DebugOption dbgSearch;
-    public static DebugOption dbgKeyStrokes;
-           static DebugOption dbgRedo;
-           static DebugOption dbgMouse;
-           static DebugOption dbgWindowTreeBuilder;
-           static DebugOption dbgPrefChangeMonitor;
-           static DebugOption dbgOptions;
+    static DebugOption dbgEditorActivation;
+    static DebugOption dbgCoordSkip;
+    static DebugOption dbgUndo;
+    static DebugOption dbgSearch;
+    static DebugOption dbgKeyStrokes;
+    static DebugOption dbgRedo;
+    static DebugOption dbgMouse;
+    static DebugOption dbgWindowTreeBuilder;
+    static DebugOption dbgPrefChangeMonitor;
+    static DebugOption dbgOptions;
 
     //
     // some options are accessed from out of core

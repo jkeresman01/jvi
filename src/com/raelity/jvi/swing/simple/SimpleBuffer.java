@@ -221,14 +221,14 @@ abstract public class SimpleBuffer extends SwingBuffer
                 if(info.offset != tv.w_cursor.getOffset()) {
                     tv.w_cursor.set(info.offset);
                 }
-                if(G.dbgUndo.getBoolean()) {
+                if(G.dbgUndo().getBoolean()) {
                     String text = "";
                     try {
                         if(info.isInsert)
                             text = getDocument().getText(info.offset, info.length);
                     } catch(BadLocationException ex) {
                     }
-                    G.dbgUndo.printf(Level.FINEST,
+                    G.dbgUndo().printf(Level.FINEST,
                       "afterUR: after  off=%d, col=%d\n"
                     + "         change off=%d, len=%d, insert=%b\n"
                     + "         text='%s'\n",

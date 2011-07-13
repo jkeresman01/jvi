@@ -182,8 +182,8 @@ abstract public class SwingFactory implements ViFactory
         JTextComponent ed = (JTextComponent)editor;
         ViTextView tv01 = (ViTextView)ed.getClientProperty(PROP_TV);
         if ( tv01 == null ) {
-            if ( G.dbgEditorActivation.getBoolean() ) {
-                G.dbgEditorActivation.println("Activation: getViTextView: create");
+            if ( G.dbgEditorActivation().getBoolean() ) {
+                G.dbgEditorActivation().println("Activation: getViTextView: create");
             }
             tv01 = newTextView(ed);
             attachBuffer(tv01);
@@ -238,8 +238,8 @@ abstract public class SwingFactory implements ViFactory
             return;
         }
 
-        if ( G.dbgEditorActivation.getBoolean() ) {
-            G.dbgEditorActivation.println("Activation: shutdown TV");
+        if ( G.dbgEditorActivation().getBoolean() ) {
+            G.dbgEditorActivation().println("Activation: shutdown TV");
         }
         Buffer buf = tv.getBuffer();
         tv.shutdown();
@@ -252,8 +252,8 @@ abstract public class SwingFactory implements ViFactory
     public void changeBuffer(ViTextView tv, Object _oldDoc)
     {
         Document oldDoc = (Document) _oldDoc;
-        if ( G.dbgEditorActivation.getBoolean() ) {
-            G.dbgEditorActivation.println("Activation: changeBuffer");
+        if ( G.dbgEditorActivation().getBoolean() ) {
+            G.dbgEditorActivation().println("Activation: changeBuffer");
         }
         attachBuffer(tv);
         releaseBuffer((Buffer)oldDoc.getProperty(PROP_BUF));

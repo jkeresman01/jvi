@@ -92,8 +92,8 @@ public class Scheduler
         Buffer buf = textView.getBuffer();
         fact().setupCaret(editor); // make sure has the right caret
         textView.attach();
-        if (G.dbgEditorActivation.getBoolean()) {
-            G.dbgEditorActivation.println("Activation: ViManager.SWITCHTO: "
+        if (G.dbgEditorActivation().getBoolean()) {
+            G.dbgEditorActivation().println("Activation: ViManager.SWITCHTO: "
                     + (fNewTextView ? "NEW: " : "") + cid(editor)
                     + " " + buf.getDisplayFileName() + " " + ViManager.cid(buf));
         }
@@ -155,8 +155,8 @@ public class Scheduler
     public static void register(Component c)
     {
         if(c != null) {
-            if (fact() != null && G.dbgEditorActivation.getBoolean())
-                G.dbgEditorActivation.println("Activation: Scheduler.register: " + cid(c));
+            if (fact() != null && G.dbgEditorActivation().getBoolean())
+                G.dbgEditorActivation().println("Activation: Scheduler.register: " + cid(c));
             c.removeFocusListener(focusSwitcher);
             c.addFocusListener(focusSwitcher);
         }
@@ -179,8 +179,8 @@ public class Scheduler
     public static void detached(Component ed)
     {
         if (currentEditorPane == ed) {
-            if (G.dbgEditorActivation.getBoolean())
-                G.dbgEditorActivation.println("Activation: ViManager.detached " + cid(ed));
+            if (G.dbgEditorActivation().getBoolean())
+                G.dbgEditorActivation().println("Activation: ViManager.detached " + cid(ed));
             currentEditorPane = null;
         }
     }
