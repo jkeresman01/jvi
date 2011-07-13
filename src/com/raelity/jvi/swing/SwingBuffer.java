@@ -270,13 +270,13 @@ abstract public class SwingBuffer extends Buffer
 
     @Override
     public void reindent(int line, int count) {
-        System.err.format("reindent line %d, count %d", line, count);
+        ViManager.printf("reindent line %d, count %d", line, count);
         Util.beep_flush();
     }
 
     @Override
     public void reformat(int line, int count) {
-        System.err.format("reformat line %d, count %d", line, count);
+        ViManager.printf("reformat line %d, count %d", line, count);
         Util.beep_flush();
     }
 

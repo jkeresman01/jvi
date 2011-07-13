@@ -1094,15 +1094,6 @@ public final class Options {
   public static DebugOption kd() {
     return kd;
   }
-
-  public static boolean isKeyDebug() {
-    return isKeyDebug(Level.FINE);
-  }
-
-  public static boolean isKeyDebug(Level level) {
-    // NEEDSWORK: clean isKeyDebug up
-    return kd.getBoolean(level);
-  }
 }
 
 // vi:sw=2 et

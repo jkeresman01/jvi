@@ -120,6 +120,8 @@ class MagicRedo implements GetChar.ViMagicRedo
     //          in the redobuff.
     //
 
+    private static final Logger LOG = Logger.getLogger(MagicRedo.class.getName());
+
     private int redoTrackPosition = -1;
     private boolean expectChar;
     private boolean disableTrackingOneEdit;
@@ -208,7 +210,7 @@ class MagicRedo implements GetChar.ViMagicRedo
                         case e_doc_insert:
                         case e_doc_remove:
                             newState = defaultProcessEvent(e, params);
-                            System.err.println("MagicRedo: UNEXPECTED DOC EVENT");
+                            LOG.warning("MagicRedo: UNEXPECTED DOC EVENT");
                             if(newState == null) {
                                 didMagic = true;
                                 newState = State.s_wait_typed;
@@ -227,7 +229,7 @@ class MagicRedo implements GetChar.ViMagicRedo
                             newState = defaultProcessEvent(e, params);
                             // two keys in a row without a doc event,
                             // how can that happen?
-                            System.err.println("MagicRedo: TWO CHARS IN A ROW");
+                            LOG.warning("MagicRedo: TWO CHARS IN A ROW");
                             if(newState == null)
                                 newState = State.s_abort;
                             break;
@@ -247,17 +249,19 @@ class MagicRedo implements GetChar.ViMagicRedo
             }
         }
 
-        StringBuilder sb = new StringBuilder("MagicRedo stateMachine: " );
-        sb.append(e.name()).append(": ").append(state.name());
+        if(G.dbgRedo.getBoolean()) {
+          StringBuilder sb = new StringBuilder("MagicRedo stateMachine: " );
+          sb.append(e.name()).append(": ").append(state.name());
 
-        if(newState != null) {
-            if(newState != state)
-                sb.append(" --> ").append(newState.name());
-            state = newState;
+          if(newState != null) {
+              if(newState != state)
+                  sb.append(" --> ").append(newState.name());
+              state = newState;
+          }
+          if(tag != null)
+              sb.append(" [").append(tag).append("]");
+          G.dbgRedo.println(sb.toString());
         }
-        if(tag != null)
-            sb.append(" [").append(tag).append("]");
-        System.err.println(sb.toString());
 
         params = null;
     }
@@ -303,7 +307,7 @@ class MagicRedo implements GetChar.ViMagicRedo
     MagicRedo(BufferQueue redobuff)
     {
         if(G.dbgRedo.getBoolean())
-            System.err.format("CONSTRUCT redo: MagicRedo (guard)\n");
+            G.dbgRedo.printf("CONSTRUCT redo: MagicRedo (guard)\n");
         this.redobuff = redobuff;
     }
 
@@ -485,7 +489,7 @@ class MagicRedo implements GetChar.ViMagicRedo
     {
         if(redoTrackPosition > endPos.getOffset()) {
             endPos = G.curbuf.createMark(redoTrackPosition + 1, BIAS.FORW);
-            System.err.println("****************udpateEndPos****************");
+            LOG.warning("****************udpateEndPos****************");
             ViManager.dumpStack();
         }
     }
@@ -577,10 +581,10 @@ class MagicRedo implements GetChar.ViMagicRedo
             ViFPOS p1 = endPos;
             int len;
             if(p0 == null || p1 == null)
-                System.err.printf("MagicRedo: %15s [%s,%s]\n", tag, p0, p1);
+                ViManager.printf("MagicRedo: %15s [%s,%s]\n", tag, p0, p1);
             else {
                 len = p1.getOffset() - p0.getOffset();
-                System.err.printf("MagicRedo: %15s [%s,%s] '%s'\n", tag, p0, p1,
+                ViManager.printf("MagicRedo: %15s [%s,%s] '%s'\n", tag, p0, p1,
                           len >= 0 ? TextUtil.debugString(G.curbuf.getText(
                                 p0.getOffset(), len)) : "<0");
             }
@@ -588,10 +592,10 @@ class MagicRedo implements GetChar.ViMagicRedo
             if(false) {
                 p0 = Edit.getInsstart();
                 if(p0 == null || p1 == null)
-                    System.err.printf("      %15s [%s,%s]\n", "", p0, p1);
+                    ViManager.printf("      %15s [%s,%s]\n", "", p0, p1);
                 else {
                     len = p1.getOffset() - p0.getOffset();
-                    System.err.printf("      %15s [%s,%s] '%s'\n", "", p0, p1,
+                    ViManager.printf("      %15s [%s,%s] '%s'\n", "", p0, p1,
                               len >= 0 ? TextUtil.debugString(G.curbuf.getText(
                                     p0.getOffset(), len)) : "<0");
                 }
@@ -604,15 +608,15 @@ class MagicRedo implements GetChar.ViMagicRedo
 
     private void dumpFinalState()
     {
-        System.err.println("MagicRedo: didMagic: " + didMagic
+        ViManager.println("MagicRedo: didMagic: " + didMagic
                 + ", State: " + state);
-        System.err.println("MagicRedo: preString:\n" + preString);
-        System.err.println("MagicRedo: postString:\n" + postString);
+        ViManager.println("MagicRedo: preString:\n" + preString);
+        ViManager.println("MagicRedo: postString:\n" + postString);
         String s = getInsertedChars();
         if(haveInsertedChars()) {
-            System.err.println("MagicRedo: inserted: '" + s + "'");
+            ViManager.println("MagicRedo: inserted: '" + s + "'");
         } else {
-            System.err.println("MagicRedo: inserted: NO MATCH: '" + s + "'");
+            ViManager.println("MagicRedo: inserted: NO MATCH: '" + s + "'");
         }
     }
 
@@ -637,7 +641,7 @@ class MagicRedo implements GetChar.ViMagicRedo
         redoTrackPosition = G.curwin.getCaretPosition();
         expectChar = false;
         if(G.dbgRedo.getBoolean())
-            System.err.format("initRedoTrackingPosition %d '%s'\n",
+            G.dbgRedo.printf("initRedoTrackingPosition %d '%s'\n",
                               redoTrackPosition,
                               TextUtil.debugString(redobuff.toString()));
     }
@@ -655,7 +659,7 @@ class MagicRedo implements GetChar.ViMagicRedo
         int prevRedoTrackPosition = redoTrackPosition;
         redoTrackPosition = G.curwin.getCaretPosition();
         if(G.dbgRedo.getBoolean())
-          System.err.format("markRedoTrackPositionBackspace %d --> %d '%s'\n",
+            G.dbgRedo.printf("markRedoTrackPositionBackspace %d --> %d '%s'\n",
                             prevRedoTrackPosition,
                             redoTrackPosition,
                             TextUtil.debugString(redobuff.toString()));
@@ -672,7 +676,7 @@ class MagicRedo implements GetChar.ViMagicRedo
         return;
       removeDocAfterString = null;
       if(expectChar)
-        System.err.println("markRedoPosition ERROR: expectChar");
+        LOG.warning("markRedoPosition ERROR: expectChar");
 
       if(didNotInsertableChar(c))
         return;
@@ -728,7 +732,7 @@ class MagicRedo implements GetChar.ViMagicRedo
     // assist for markRedoTrackPosition
     private void debugMarkRedoTrackPositionSKIP(int skip, String before) {
       if(G.dbgRedo.getBoolean())
-        System.err.format("markRedoPosition SKIP[%d]: %s[%d] --> %s[%d]\n",
+        G.dbgRedo.printf("markRedoPosition SKIP[%d]: %s[%d] --> %s[%d]\n",
                           skip,
                           before, before.length(),
                           afterBuff, afterBuff.length());
@@ -737,7 +741,7 @@ class MagicRedo implements GetChar.ViMagicRedo
     private void
     debugMarkRedoTrackPosition(int prevRedoTrackPosition, char c) {
       if(G.dbgRedo.getBoolean())
-        System.err.format("markRedoPosition %d --> %d '%c' '%s'\n",
+        G.dbgRedo.printf("markRedoPosition %d --> %d '%c' '%s'\n",
                           prevRedoTrackPosition,
                           redoTrackPosition,
                           c,
@@ -749,12 +753,12 @@ class MagicRedo implements GetChar.ViMagicRedo
     // docInsert
 
     public void docInsertXXX(int pos, String s) {
-      if(G.dbgRedo.getBoolean()) debugDocInsertXXX(pos, s);
+      debugDocInsertXXX(pos, s);
       if(doingBackspace() || notTracking())
         return;
       if(removeDocBeforeInsstart != null && s != null
               && s.startsWith(removeDocBeforeInsstart)) {
-        if(G.dbgRedo.getBoolean()) debugDocInsertMATCH_BEFORE();
+        debugDocInsertMATCH_BEFORE();
         int len = removeDocBeforeInsstart.length();
         pos += len;
         s = s.substring(len);
@@ -763,7 +767,7 @@ class MagicRedo implements GetChar.ViMagicRedo
 
       if(expectChar) {
         if(pos == redoTrackPosition) {
-          if(G.dbgRedo.getBoolean())debugDocInsertMATCH_EXPECTED(pos, s);
+          debugDocInsertMATCH_EXPECTED(pos, s);
           redoTrackPosition += 1;
         } else if(pos != redoTrackPosition)
           debugDocInsertERROR(pos, s);
@@ -775,14 +779,14 @@ class MagicRedo implements GetChar.ViMagicRedo
         }
       } else {
         if(pos == redoTrackPosition && removeDocAfterString == null) {
-          if(G.dbgRedo.getBoolean()) debugDocInsertMATCH_EXTRA(pos, s);
+          debugDocInsertMATCH_EXTRA(pos, s);
           //
           // Add the mystery string to the redo buffer
           //
           redobuff.append(s);
           redoTrackPosition += s.length();
         } else {
-          if(G.dbgRedo.getBoolean()) debugDocInsertNO_MATCH();
+          debugDocInsertNO_MATCH();
 
           if(didCharWarpedRight(pos, s)) {
             // An insert to the right of where the next character was expected
@@ -830,7 +834,7 @@ class MagicRedo implements GetChar.ViMagicRedo
         while(i-- > 0)
           redobuff.append(afterBuff.removeFirst());
         redobuff.append(s);
-        if(G.dbgRedo.getBoolean()) debugDocInsertWARP(warpDistance);
+        debugDocInsertWARP(warpDistance);
         return true;
       }
       return false;
@@ -850,18 +854,19 @@ class MagicRedo implements GetChar.ViMagicRedo
         redobuff.append(t);
         // NOTE: not adjusting redoTrackPosition, so no more stuff gets put
         // in the redo buffer.
-        if(G.dbgRedo.getBoolean()) debugDocInsertMATCH_REMOVE_EXTRA(pos, t);
+        debugDocInsertMATCH_REMOVE_EXTRA(pos, t);
         return true;
       }
       return false;
     }
     private void debugDocInsertXXX(int pos, String s) {
-      System.err.format("docInsert: pos %d, %d, '%s'\n",
-                        pos, s.length(), TextUtil.debugString(s));
+      if(G.dbgRedo.getBoolean())
+        G.dbgRedo.printf("docInsert: pos %d, %d, '%s'\n",
+                          pos, s.length(), TextUtil.debugString(s));
     }
     private void debugDocInsertMATCH_BEFORE() {
       if(G.dbgRedo.getBoolean())
-        System.err.format("docInsert MATCH BEFORE '%s'\n",
+        G.dbgRedo.printf("docInsert MATCH BEFORE '%s'\n",
                           TextUtil.debugString(removeDocBeforeInsstart));
     }
     private void debugDocInsertMATCH_EXPECTED(int pos, String s) {
@@ -871,41 +876,41 @@ class MagicRedo implements GetChar.ViMagicRedo
       }
     }
     private void debugDocInsertERROR(int pos, String s) {
-      // NOTE: error condition, not based on dbgRedo
-      System.err.format("docInsert ERROR: pos %d, redoPosition %d, '%s'\n",
-                        pos, redoTrackPosition, s);
+      LOG.log(Level.WARNING, "docInsert ERROR: pos {0}, redoPosition {1}, '{2}'",
+                        new Object[]{pos, redoTrackPosition, s});
     }
     private void debugDocInsertLONG(int pos, String s) {
-      // NOTE: error condition, not based on dbgRedo
-      System.err.format("docInsert LONG: %d, length %d\n",
-                        pos, s.length());
+      LOG.log(Level.WARNING, "docInsert LONG: {0}, length {1}",
+                        new Object[]{pos, s.length()});
     }
     private void debugDocInsertMATCH_EXTRA(int pos, String s) {
       if(G.dbgRedo.getBoolean())
-        System.err.format("docInsert MATCH EXTRA: %d '%s'\n",
+        G.dbgRedo.printf("docInsert MATCH EXTRA: %d '%s'\n",
                           pos, TextUtil.debugString(s));
     }
     private void debugDocInsertNO_MATCH() {
       if(G.dbgRedo.getBoolean())
-        System.err.format("docInsert: NO MATCH redoPosition %d, redobuff %s[%d]"
+        G.dbgRedo.printf("docInsert: NO MATCH redoPosition %d, redobuff %s[%d]"
                           + " afterBuff %s[%d]\n",
                           redoTrackPosition,
                           redobuff, redobuff.length(),
                           afterBuff, afterBuff.length());
     }
     private void debugDocInsertWARP(int warpDistance) {
-      System.err.format("docInsert: WARP %d, redobuff %s[%d]"
-                        + " afterBuff %s[%d]\n",
-                        warpDistance,
-                        redobuff, redobuff.length(),
-                        afterBuff, afterBuff.length());
+      if(G.dbgRedo.getBoolean())
+        G.dbgRedo.printf("docInsert: WARP %d, redobuff %s[%d]"
+                          + " afterBuff %s[%d]\n",
+                          warpDistance,
+                          redobuff, redobuff.length(),
+                          afterBuff, afterBuff.length());
     }
     private void debugDocInsertMATCH_REMOVE_EXTRA(int pos, String t) {
-      System.err.format("docInsert MATCH REMOVE/EXTRA:"
-                         + " %d, '%s' / '%s'\n",
-                         pos,
-                         TextUtil.debugString(removeDocAfterString),
-                         TextUtil.debugString(t));
+      if(G.dbgRedo.getBoolean())
+        G.dbgRedo.printf("docInsert MATCH REMOVE/EXTRA:"
+                           + " %d, '%s' / '%s'\n",
+                           pos,
+                           TextUtil.debugString(removeDocAfterString),
+                           TextUtil.debugString(t));
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -962,7 +967,7 @@ class MagicRedo implements GetChar.ViMagicRedo
         // Delete the string from the redo buffer, using BS
         //
         if(expectChar && len != 1) {
-          System.err.println("docRemove ERROR: expectChar len = " + len);
+          LOG.log(Level.WARNING, "docRemove ERROR: expectChar len = {0}", len);
         }
         // when expectChar, the BS is already in redobuff
         if(!expectChar) {
@@ -1018,7 +1023,7 @@ class MagicRedo implements GetChar.ViMagicRedo
 
             if(!skip) {
               if(ViManager.isDebugAtHome()) {
-                System.err.println("redo track: remove after: " + ex.getMessage());
+                LOG.log(Level.WARNING, "redo track: remove after: {0}", ex.getMessage());
               }
               if(G.dbgRedo.getBoolean())
                 ViManager.dumpStack("redo track: remove after: " + ex.getMessage());
@@ -1032,22 +1037,22 @@ class MagicRedo implements GetChar.ViMagicRedo
       if(G.dbgRedo.getBoolean()) {
         int insstart = Edit.getInsstart() != null
                 ? Edit.getInsstart().getOffset() : -1;
-        System.err.format("docRemove: pos %d, %d, '%s', track %d, insstart %d\n",
+            G.dbgRedo.printf("docRemove: pos %d, %d, '%s', track %d, insstart %d\n",
                           pos, len, TextUtil.debugString(removedText),
                           redoTrackPosition, insstart);
       }
     }
     private void debugDocRemoveBEFORE_INSSTART() {
-      if(G.dbgRedo.getBoolean()) System.err.format("docRemove BEFORE INSSTART: '%s'\n",
+      if(G.dbgRedo.getBoolean()) G.dbgRedo.printf("docRemove BEFORE INSSTART: '%s'\n",
                           TextUtil.debugString(removeDocBeforeInsstart));
     }
     private void debugDocRemoveBEFORE_INSSTART_NO_MATCH() {
       if(G.dbgRedo.getBoolean())
-        System.err.format("docRemove BEFORE INSSTART NO MATCH\n");
+        G.dbgRedo.printf("docRemove BEFORE INSSTART NO MATCH\n");
     }
     private void debugDocRemoveMATCH(int pos, int len) {
       if(G.dbgRedo.getBoolean())
-        System.err.format(
+        G.dbgRedo.printf(
                   "docRemove MATCH%s: redoPosition %d --> %d, length %d\n",
                   (expectChar ? "-expect" : ""),
                   redoTrackPosition, pos, len);

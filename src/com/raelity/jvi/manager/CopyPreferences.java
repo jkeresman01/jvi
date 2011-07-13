@@ -63,21 +63,21 @@ class CopyPreferences
                     String val;
                     if (!(val = srcNode.get(optionName, "-DEFAULT-VALUE-"))
                                     .equals("-DEFAULT-VALUE-")) {
-                        System.err.println("ADD: " + optionName + ":" + val);
+                        LOG.log(Level.CONFIG, "ADD: {0}:{1}", new Object[]{optionName, val});
                         dstNode.put(optionName, val);
                     }
                     else
-                        System.err.println("DEF: " + optionName + ":" + val);
+                        LOG.log(Level.CONFIG, "DEF: {0}:{1}", new Object[]{optionName, val});
                 }
                 else {
-                    System.err.println("OPTION NOT FOUND: " + optionName);
+                    LOG.log(Level.CONFIG, "OPTION NOT FOUND: {0}", optionName);
                     dstNode.put(optionName, srcNode.get(optionName, ""));
                 }
             }
         } catch (BackingStoreException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
-        System.err.println("copy out");
+        LOG.config("copy out");
     }
 
     private void copyKeys(String dir)
@@ -95,20 +95,20 @@ class CopyPreferences
                     boolean sDefault = KeyBinding.getCatchKeyDefault(optionName);
                     val = srcNode.getBoolean(optionName, sDefault);
                     if (val != sDefault) {
-                        System.err.println("ADD: " + optionName + ":" + val);
+                        LOG.log(Level.CONFIG, "ADD: {0}:{1}", new Object[]{optionName, val});
                         dstNode.putBoolean(optionName, val);
                     }
                     else
-                        System.err.println("DEF: " + optionName + ":" + val);
+                        LOG.log(Level.CONFIG, "DEF: {0}:{1}", new Object[]{optionName, val});
                 }
                 else {
-                    System.err.println("OPTION NOT FOUND: " + optionName);
+                    LOG.log(Level.CONFIG, "OPTION NOT FOUND: {0}", optionName);
                     dstNode.put(optionName, srcNode.get(optionName, ""));
                 }
             }
         } catch (BackingStoreException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
-        System.err.println("copy out");
+        LOG.config("copy out");
     }
 }

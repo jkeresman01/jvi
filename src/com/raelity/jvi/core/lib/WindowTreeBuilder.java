@@ -87,7 +87,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
             Component c = windowForAppView(toDo.iterator().next());
             //allComps(c);
             Node root = buildTree(c);
-            if(dbg) System.err.println(dumpTree(root).toString());
+            if(dbg) ViManager.println(dumpTree(root).toString());
             assert root != null;
             if(root == null)
                 break;
@@ -195,12 +195,12 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
             Rectangle cursorProjection = getProjectedCursorRectangle(
                                     dir.getOrientation(), currentNode);
             if(dbg) {
-                System.err.println("\ncurrentNode:" + dbgName(currentNode) + " "
+                ViManager.println("\ncurrentNode:" + dbgName(currentNode) + " "
                     + getProjectedRectangle(dir.getOrientation(), currentNode));
-                System.err.println("cursor: " + cursorProjection);
-                System.err.println("jump Targets");
+                ViManager.println("cursor: " + cursorProjection);
+                ViManager.println("jump Targets");
                 for(Node n1 : nodes) {
-                    System.err.println(dbgName(n1) + " "
+                    ViManager.println(dbgName(n1) + " "
                             + getProjectedRectangle(dir.getOrientation(), n1));
                 }
             }
@@ -591,12 +591,12 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
 
     private Component allComps(Component c)
     {
-        System.err.println("findNode check: " + c.getClass().getSimpleName()
+        ViManager.println("findNode check: " + c.getClass().getSimpleName()
             +" "+ (c.isShowing() ? c.getLocationOnScreen() : "not showing"));
         if(c.getClass().getSimpleName().equals("MultiSplitPane"))
-            System.err.println("multisplitpane");
+            ViManager.println("multisplitpane");
         if(isEditor(c))
-            System.err.println("FOUND ONE");//return c;
+            ViManager.println("FOUND ONE");//return c;
         if(c instanceof Container) {
             Component components[] = ((Container)c).getComponents();
             for (int i = 0; i < components.length; i++) {
@@ -1008,12 +1008,12 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
             Node parent = node.getParent();
             if(parent == null)
                 break;
-            if(dbg)System.err.println("treeUp: " + dbgName(node));
+            if(dbg)ViManager.println("treeUp: " + dbgName(node));
             if((found = pickSiblingForJump(dir, node)) != null)
                 break;
             node = parent;
         }
-        if(dbg)System.err.println("treeUp found: " + dbgName(found));
+        if(dbg)ViManager.println("treeUp found: " + dbgName(found));
         return found;
     }
 

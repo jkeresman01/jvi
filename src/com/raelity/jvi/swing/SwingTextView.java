@@ -173,7 +173,7 @@ public class SwingTextView extends TextView
         {
             ColonEvent cev = (ColonEvent) ev;
             SwingTextView tv = (SwingTextView)cev.getViTextView();
-            System.err.println(tv.lm.toString());
+            ViManager.println(tv.lm.toString());
         }
 
     }
@@ -1742,7 +1742,6 @@ public class SwingTextView extends TextView
             return countViewLines(lrect, getRect0());
         } catch (BadLocationException ex) {
             LOG.log(Level.SEVERE, null, ex);
-            System.err.println("findFullLine: ");
         }
         // if here, then got some error.
         // if pos is BOT, then get the view line for the last line of the file
@@ -1791,7 +1790,6 @@ public class SwingTextView extends TextView
             return line;
         } catch (BadLocationException ex) {
             LOG.log(Level.SEVERE, null, ex);
-            System.err.println("findFullLine: ");
             return -1;
         }
     }

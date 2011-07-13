@@ -124,19 +124,16 @@ public class Misc implements ClipboardOwner {
                     if(!registersImportCheck.isChange()) {
                         write_viminfo_registers();
                     } else {
-                        System.err.println("jVi registers history imported");
                         LOG.info("jVi registers imported");
                     }
                     if(!searchImportCheck.isChange()) {
                         write_viminfo_search();
                     } else {
-                        System.err.println("jVi search history imported");
                         LOG.info("jVi search history imported");
                     }
                     if(!commandsImportCheck.isChange()) {
                         write_viminfo_command();
                     } else {
-                        System.err.println("jVi commmands history imported");
                         LOG.info("jVi commmand history imported");
                     }
                 }
@@ -2283,7 +2280,7 @@ private static int put_in_typebuf(String s, boolean colon)
       // don't believe this is needed
       start = oap.end;
       end = oap.start;
-      System.err.println("SWITCH END<-->START");
+      // System.err.println("SWITCH END<-->START");
     }
 
     // check for guarded regions,
@@ -3387,7 +3384,7 @@ private static int put_in_typebuf(String s, boolean colon)
       Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
       if(debugClip) {
         if(cb.isDataFlavorAvailable(ViManager.VimClipboard2))
-            System.err.println("VimClip available");
+            ViManager.println("VimClip available");
         DataFlavor dfa[] = cb.getAvailableDataFlavors();
         Arrays.sort(dfa, new Comparator<DataFlavor>() {
             @Override
@@ -3398,13 +3395,13 @@ private static int put_in_typebuf(String s, boolean colon)
         
         );
         for (DataFlavor df : dfa) {
-          System.err.println(df.getMimeType());
+          ViManager.println(df.getMimeType());
         }
       }
       
       Transferable trans = cb.getContents(null);
       if(debugClip && trans.isDataFlavorSupported(ViManager.VimClipboard2)) {
-        System.err.println("VimClip supported");
+        ViManager.println("VimClip supported");
       }
       String s = "";
       try {

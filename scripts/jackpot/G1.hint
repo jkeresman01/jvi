@@ -1,9 +1,19 @@
 
-# Bug 197600 - System.err stops going to messages.log
-#              and console after running debugger
+// Bug 197600 - System.err stops going to messages.log
+//              and console after running debugger
 
 System.err.println($debug); :: wrappedWith($_)
 => $debugOption.println($level$, $debug);
+    :: $debugOption instanceof com.raelity.jvi.options.DebugOption
+;;
+
+System.err.printf($debug$); :: wrappedWith($_)
+=> $debugOption.printf($level$, $debug$);
+    :: $debugOption instanceof com.raelity.jvi.options.DebugOption
+;;
+
+System.err.format($debug$); :: wrappedWith($_)
+=> $debugOption.printf($level$, $debug$);
     :: $debugOption instanceof com.raelity.jvi.options.DebugOption
 ;;
 

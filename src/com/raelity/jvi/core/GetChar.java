@@ -27,7 +27,6 @@ import com.raelity.jvi.core.lib.TypeBufMultiCharMapping;
 import com.raelity.jvi.options.Option;
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.options.OptUtil;
 import com.raelity.text.TextUtil;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -229,8 +228,8 @@ public class GetChar {
         if(runEventQueue > 0)
             --runEventQueue;
         if(/*collectingGroupUndo ||*/ !isAnyChar() || (G.State & NORMAL) == 0) {
-            if(Options.isKeyDebug())
-                System.err.println("runEventQueue:" + runEventQueue + " SKIP");
+            if(Options.kd().getBoolean())
+                Options.kd().println("runEventQueue:" + runEventQueue + " SKIP");
             runEventQueue = 0;
             return false;
         }
@@ -239,8 +238,8 @@ public class GetChar {
             @Override
             public void run()
             {
-                if(Options.isKeyDebug())
-                    System.err.println("runEventQueue:" + runEventQueue);
+                if(Options.kd().getBoolean())
+                    Options.kd().println("runEventQueue:" + runEventQueue);
                 if(runEventQueue > 0)
                     runEventQueue(collectingGroupUndo);
                 else
@@ -351,8 +350,8 @@ public class GetChar {
                 }
             }
         }
-        if(Options.isKeyDebug(Level.FINEST))
-            System.err.println("pumpChar: "
+        if(Options.kd().getBoolean(Level.FINEST))
+            Options.kd().println(Level.FINEST, "pumpChar: "
                     + TextUtil.debugString(String.valueOf(c))
                     + " (" +  modifiers + ")");
         G.setModMask(modifiers);
@@ -561,7 +560,7 @@ public class GetChar {
             else if(currentMagicRedoAlgo.equals("guard"))
                 magicRedo = new MagicRedo(redobuff);
             else
-                System.err.format("WHAT?! magic redo algo: " + currentMagicRedoAlgo);
+                ViManager.warning("WHAT?! magic redo algo: " + currentMagicRedoAlgo);
         }
         magicRedo.charTyped(NUL);
         if (!block_redo()) {

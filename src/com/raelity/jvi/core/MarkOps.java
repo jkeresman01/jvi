@@ -117,7 +117,6 @@ class MarkOps
                             marksImportCheck.setFreeze(false);
                         }
                     } else {
-                        System.err.println("jVi marks imported (buffer)");
                         LOG.info("jVi marks imported (buffer close)");
                     }
                 } else if(pname.equals(ViManager.P_BOOT)) {
@@ -131,13 +130,11 @@ class MarkOps
                     if(!filemarksImportCheck.isChange()) {
                         write_viminfo_filemarks();
                     } else {
-                        System.err.println("jVi filemarks imported");
                         LOG.info("jVi filemarks imported");
                     }
                     if(!marksImportCheck.isChange()) {
                         BufferMarksPersist.write_viminfo();
                     } else {
-                        System.err.println("jVi marks imported");
                         LOG.info("jVi marks imported");
                     }
                 }

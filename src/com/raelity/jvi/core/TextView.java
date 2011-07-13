@@ -185,7 +185,7 @@ public abstract class TextView implements ViTextView
     {
         if ( G.dbgEditorActivation.getBoolean() ) {
             if(w_buffer.getShare() == 1) {
-                System.err.println("TV.shutdown: LAST CLOSE");
+                G.dbgEditorActivation.println("TV.shutdown: LAST CLOSE");
             }
         }
     }
@@ -193,7 +193,7 @@ public abstract class TextView implements ViTextView
     @Override
     public void activateOptions(ViTextView tv) {
         if(G.dbgEditorActivation.getBoolean() && getAppView().isNomad())
-            System.err.println("ACTIVATING OPTIONS FOR NOMAD");
+            G.dbgEditorActivation.println("ACTIVATING OPTIONS FOR NOMAD");
         if(!didFirstInit) {
             firstGo();
             didFirstInit = true;

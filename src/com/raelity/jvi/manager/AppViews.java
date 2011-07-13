@@ -33,7 +33,6 @@ import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.PrintStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -113,7 +112,7 @@ public enum AppViews
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                AppViews.dump(System.err);
+                System.err.println(AppViews.dump(null).toString());
             }
         }, EnumSet.of(CcFlag.DBG));
     }
@@ -442,51 +441,61 @@ public enum AppViews
         return ViManager.isFactoryLoaded();
     }
 
-    public static void dump(PrintStream ps)
+    public static StringBuilder dump(StringBuilder ps)
     {
-        ps.println("-----------------------------------");
-        ps.println("currentEditorPane = " +
-                (G.curwin == null ? "null"
-                : G.curwin.getBuffer().getDisplayFileName()));
-        ps.println("factory = " + fact());
-        ps.println("AppViews: " + avs.size());
+        if(ps == null)
+            ps = new StringBuilder(200);
+        ps.append("-----------------------------------").append('\n');
+        ps.append("currentEditorPane = ")
+          .append(G.curwin == null
+                  ? "null"
+                  : G.curwin.getBuffer().getDisplayFileName()).append('\n');
+        ps.append("factory = ").append(fact()).append('\n');
+        ps.append("AppViews: ").append(avs.size()).append('\n');
         for (ViAppView av : avs) {
-            ps.println("\t" + fact().getFS().getDisplayFileName(av) + ", " +
-                    av.getClass().getSimpleName());
+            ps.append("\t").append(fact().getFS().getDisplayFileName(av))
+              .append(", ").append(av.getClass().getSimpleName()).append('\n');
         }
-        ps.println("AppViewsMRU: " + avsMRU.size());
+        ps.append("AppViewsMRU: ").append(avsMRU.size()).append('\n');
         for (ViAppView av : avsMRU) {
-            ps.println("\t" + fact().getFS().getDisplayFileName(av) + ", " +
-                    av.getClass().getSimpleName());
+            ps.append("\t").append(fact().getFS().getDisplayFileName(av))
+              .append(", ").append(av.getClass().getSimpleName()).append('\n');
         }
-        ps.println("currentlyActive: " +
-                (avCurrentlyActive == null ? "none"
-                : "" + fact().getFS().
-                getDisplayFileName(avCurrentlyActive) + ", " +
-                avCurrentlyActive.getClass().getSimpleName()));
-        ps.println("keepMru: " +
-                (keepMru == null ? "none"
-                : "" + fact().getFS().getDisplayFileName(keepMru) + ", " +
-                keepMru.getClass().getSimpleName()));
+        ps.append("currentlyActive: ");
+        if(avCurrentlyActive == null)
+            ps.append("none");
+        else
+            ps.append("")
+              .append(fact().getFS().getDisplayFileName(avCurrentlyActive))
+              .append(", ").append(avCurrentlyActive.getClass().getSimpleName());
+        ps.append('\n');
+        ps.append("keepMru: ");
+        if(keepMru == null)
+            ps.append("none");
+        else
+            ps.append("").append(fact().getFS().getDisplayFileName(keepMru))
+              .append(", ").append(keepMru.getClass().getSimpleName());
+        ps.append('\n');
         Set<ViTextView> tvSet = fact().getViTextViewSet();
-        ps.println("TextViewSet: " + tvSet.size());
+        ps.append("TextViewSet: ").append(tvSet.size()).append('\n');
         for (ViTextView tv : tvSet) {
-            ps.println("\t" + tv.getBuffer().getDisplayFileName());
+            ps.append("\t").append(tv.getBuffer().getDisplayFileName()).append('\n');
         }
         Set<Buffer> bufSet = fact().getBufferSet();
-        ps.println("BufferSet: " + bufSet.size());
+        ps.append("BufferSet: ").append(bufSet.size()).append('\n');
         for (Buffer buf : bufSet) {
             if (buf == null)
-                ps.println("null-buf");
+                ps.append("null-buf").append('\n');
             else
-                ps.println("\t" + fact().getFS().getDisplayFileName(buf) +
-                        ", share: " + buf.getShare());
+                ps.append("\t").append(fact().getFS().getDisplayFileName(buf))
+                  .append(", share: ").append(buf.getShare()).append('\n');
         }
-        ps.println("AppViewNomads: " + avsNomads.size());
+        ps.append("AppViewNomads: ").append(avsNomads.size()).append('\n');
         for(ViAppView av : avsNomads) {
-            ps.println("\t" + fact().getFS().getDisplayFileName(av) + ", " +
-                    av.getClass().getSimpleName());
+            ps.append("\t").append(fact().getFS().getDisplayFileName(av))
+              .append(", ").append(av.getClass().getSimpleName()).append('\n');
         }
+        return ps;
     }
 
 }

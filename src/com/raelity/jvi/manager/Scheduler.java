@@ -234,8 +234,8 @@ public class Scheduler
             return false;
         if ((c & 61440) != KeyDefs.VIRT && modifiers == 0) // 0xf000
             if (c >= 32 && c != 127) {
-                if (Options.isKeyDebug())
-                    System.err.println("rerouteChar");
+                if (Options.kd().getBoolean())
+                    Options.kd().println("rerouteChar");
                 activeCommandEntry.append(c);
             }
         return true;

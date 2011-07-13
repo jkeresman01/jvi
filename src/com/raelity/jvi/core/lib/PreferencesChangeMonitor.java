@@ -38,7 +38,7 @@ import java.util.prefs.Preferences;
  * Monitor preferences subtrees for creation and/or changes.
  * startMonitoring can be called multiple times to monitor several trees.
  * <p/>
- * Set variable DUMP to true for System.err output.
+ * Set variable DUMP to true for ViManager/System.err output.
  * <p/>
  * NEEDSWORK:   if a change is detected, then remove listeners right away.
  * <p/>
@@ -128,7 +128,7 @@ public final class PreferencesChangeMonitor {
                                                  HACK_KEY, hackValue)) {
                             change = true;
                             if(DUMP) {
-                                System.err.println("PREF CHANGE: "
+                                ViManager.println("PREF CHANGE: "
                                         + "HACK in " + path);
                             }
                         }
@@ -137,7 +137,7 @@ public final class PreferencesChangeMonitor {
                         if(!p.get(HACK_KEY, "").equals(hackValue)) {
                             change = true;
                             if(DUMP) {
-                                System.err.println("PREF CHANGE: "
+                                ViManager.println("PREF CHANGE: "
                                         + "HACK in " + p.absolutePath());
                             }
                         }
@@ -159,7 +159,7 @@ public final class PreferencesChangeMonitor {
             change = true;
         else
             if(DUMP) {
-                System.err.println("CHANGE FROZEN:");
+                ViManager.println("CHANGE FROZEN:");
             }
     }
 
@@ -226,7 +226,7 @@ public final class PreferencesChangeMonitor {
                 } else {
                     parent.addNodeChangeListener(pl);
                     if(DUMP) {
-                        System.err.println("PARENT START CHECKING: "
+                        ViManager.println("PARENT START CHECKING: "
                                 + child + " in "
                                 + parent.absolutePath());
                     }
@@ -248,7 +248,7 @@ public final class PreferencesChangeMonitor {
                     prefs.addPreferenceChangeListener(prefListener);
                     prefs.addNodeChangeListener(nodeListener);
                     if(DUMP) {
-                        System.err.println("START CHECKING: "
+                        ViManager.println("START CHECKING: "
                                 + prefs.absolutePath());
                     }
                 }
@@ -280,13 +280,13 @@ public final class PreferencesChangeMonitor {
             if(evt.getChild().name().equals(child)) {
                 changeDetected();
                 if(DUMP) {
-                    System.err.println("PARENT NODE CHANGE: childAdded: "
+                    ViManager.println("PARENT NODE CHANGE: childAdded: "
                             + evt.getChild().name()
                             + " in " + evt.getParent().absolutePath());
                 }
             } else
                 if(DUMP) {
-                    System.err.println("PARENT NODE CHANGE IGNORED: childAdded: "
+                    ViManager.println("PARENT NODE CHANGE IGNORED: childAdded: "
                             + evt.getChild().name()
                             + " in " + evt.getParent().absolutePath());
                 }
@@ -298,13 +298,13 @@ public final class PreferencesChangeMonitor {
             if(evt.getChild().name().equals(child)) {
                 changeDetected();
                 if(DUMP) {
-                    System.err.println("PARENT NODE CHANGE: childRemoved: "
+                    ViManager.println("PARENT NODE CHANGE: childRemoved: "
                             + evt.getChild().name()
                             + " in " + evt.getParent().absolutePath());
                 }
             } else
                 if(DUMP) {
-                    System.err.println("PARENT NODE CHANGE IGNORED: childRemoved: "
+                    ViManager.println("PARENT NODE CHANGE IGNORED: childRemoved: "
                             + evt.getChild().name()
                             + " in " + evt.getParent().absolutePath());
                 }
@@ -320,7 +320,7 @@ public final class PreferencesChangeMonitor {
         {
             changeDetected();
             if(DUMP) {
-                System.err.println("NODE CHANGE: childAdded: "
+                ViManager.println("NODE CHANGE: childAdded: "
                         + evt.getChild().name()
                         + " in " + evt.getParent().absolutePath());
             }
@@ -331,7 +331,7 @@ public final class PreferencesChangeMonitor {
         {
             changeDetected();
             if(DUMP) {
-                System.err.println("NODE CHANGE: childRemoved: "
+                ViManager.println("NODE CHANGE: childRemoved: "
                         + evt.getChild().name()
                         + " in " + evt.getParent().absolutePath());
             }
@@ -347,7 +347,7 @@ public final class PreferencesChangeMonitor {
         {
             changeDetected();
             if(DUMP) {
-                System.err.println("PREF CHANGE: "
+                ViManager.println("PREF CHANGE: "
                         + evt.getKey()
                         + " in " + evt.getNode().absolutePath());
             }

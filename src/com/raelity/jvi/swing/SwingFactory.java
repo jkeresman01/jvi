@@ -595,7 +595,7 @@ abstract public class SwingFactory implements ViFactory
                         keep = false;
                     }
 
-                    if ( Options.isKeyDebug() && c >= 0x20 ) {
+                    if ( Options.kd().getBoolean() && c >= 0x20 ) {
                         System.err.println("CharAction: "
                                 + (keep ? "" : "REJECT: ")
                                 + "'" + content + "' "
@@ -606,8 +606,8 @@ abstract public class SwingFactory implements ViFactory
                         Scheduler.keyStroke(target, c, mod);
                     }
                 } else {
-                    if  ( Options.isKeyDebug() ) {
-                      System.err.println("CharAction: " + e);
+                    if  ( Options.kd().getBoolean() ) {
+                      Options.kd().println("CharAction: " + e);
                     }
                 }
             }
@@ -642,9 +642,9 @@ abstract public class SwingFactory implements ViFactory
             JTextComponent target = getTextComponent(e);
             int mod = e.getModifiers();
             char key = basekey;
-            if ( Options.isKeyDebug() ) {
+            if ( Options.kd().getBoolean() ) {
                 String virt = ((key & 0xF000) == VIRT) ? "virt" : "";
-                System.err.println("KeyAction: "
+                Options.kd().println("KeyAction: "
                         + getValue(Action.NAME).toString()
                         + ": " + String.format("%x", (int)key)
                         + "(" + ((int)key&~VIRT) + ") " + mod + " " + virt);

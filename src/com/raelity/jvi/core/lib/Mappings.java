@@ -159,11 +159,11 @@ public final class Mappings {
             Matcher m, boolean is_rhs, String orig, Emsgs emsg)
     {
         if(false) {
-            System.err.println("region: '"
+            ViManager.println("region: '"
                     +  orig.substring(m.start())
                     + "' match: '" + m.group() + "'");
             for(int i = 1; i <= m.groupCount(); i++) {
-                System.err.println("\t" + m.group(i));
+                ViManager.println("\t" + m.group(i));
             }
         }
 
@@ -395,8 +395,8 @@ public final class Mappings {
 
         if(emsg.length() == initialEmsgs) {
             Mapping mapping = new Mapping(lhs, rhs, mode, maptype == 2);
-            if(Options.isKeyDebug()) {
-                System.err.println("parseMapCommand: " + line
+            if(Options.kd().getBoolean()) {
+                Options.kd().println("parseMapCommand: " + line
                         + ": " + mapping);
             }
             return mapping;
@@ -456,7 +456,7 @@ public final class Mappings {
         int idx = 0;
         do {
             if(false) {
-                System.err.println("checking: '" + field.substring(idx) + "'");
+                ViManager.println("checking: '" + field.substring(idx) + "'");
             }
             ok = false;
             if(matcher.find() && idx == matcher.start()) {

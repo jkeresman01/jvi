@@ -192,8 +192,8 @@ public class Normal {
     newChunk = true;
     willStartNewChunk();
     if(editBusy) {
-      if ( Options.isKeyDebug() ) {
-          System.err.println("resetCommand: EditBusy");
+      if (  Options.kd().getBoolean() ) {
+          Options.kd().println("resetCommand: EditBusy");
       }
       // Make sure redo buf is usable if edit interrupted
       //    an alternative is to "GetChar.ResetRedobuff()",
@@ -2593,8 +2593,7 @@ middle_code:
     }
     else {
       //do_cmdline_cmd(buf); ///// probably stuffbuf append
-      System.err.println("do_cmdline_cmd(buf)");
-      assert false;
+      throw new IllegalStateException("do_cmdline_cmd(buf)");
     }
     return;
   }
@@ -4783,7 +4782,7 @@ static private void nv_findpar(CMDARG cap, int dir)
    */
   static void notImp(String op) throws NotSupportedException {
     // setGeneralStatus
-    if(KeyBinding.notImpDebug) System.err.println("Not Implemented: "
+    if(KeyBinding.notImpDebug) ViManager.println("Not Implemented: "
                       + op + ": " + "\"" + getCmdChars() + "\"");
     throw new NotSupportedException(op, getCmdChars());
   }
@@ -4812,7 +4811,7 @@ static private void nv_findpar(CMDARG cap, int dir)
    */
   static void notSup(String op) throws NotSupportedException {
     // setGeneralStatus
-    if(KeyBinding.notImpDebug) System.err.println("Not supported: "
+    if(KeyBinding.notImpDebug) ViManager.println("Not supported: "
                        + op + ": " + "\"" + getCmdChars() + "\"");
     throw new NotSupportedException(op, getCmdChars());
   }

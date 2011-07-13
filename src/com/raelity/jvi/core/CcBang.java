@@ -144,7 +144,7 @@ public static class BangAction extends AbstractColonAction
             } catch (InterruptedException ex) {
             }
             if(t.isAlive()) {
-                System.err.println("Thread " + t.getName() + " won't die");
+                LOG.log(Level.WARNING, "Thread {0} won''t die", t.getName());
             }
         }
     }
@@ -475,7 +475,8 @@ private static class FilterThreadCoordinator
 
     public void dumpState()
     {
-        System.err.println("startLine " + startLine + ", lastLine = " + lastLine );
+        Options.getDebugOption(Options.dbgBang)
+            .println("startLine " + startLine + ", lastLine = " + lastLine );
     }
 
 } // end inner class
@@ -579,7 +580,7 @@ private static class ProcessWriterThread extends FilterThread
     @Override
     public void dumpState()
     {
-        System.err.println("currWriterLine " + currWriterLine
+        dbg.println("currWriterLine " + currWriterLine
                 + ", wroteFirstLineToProcess " + wroteFirstLineToProcess
                 + ", reachedEndOfLines " + reachedEndOfLines );
         super.dumpState();
@@ -667,7 +668,7 @@ private static class ProcessReaderThread extends FilterThread
     @Override
     public void dumpState()
     {
-        System.err.println("currReaderLine " + currReaderLine
+        dbg.println("currReaderLine " + currReaderLine
                 + ", wroteFirstLineToFile " + wroteFirstLineToFile
                 + ", reachedEndOfProcessOutput "
                 + reachedEndOfProcessOutput );
@@ -923,7 +924,7 @@ private static class DocumentThread extends FilterThread
     @Override
     public void dumpState()
     {
-        System.err.println("docReadDone " + docReadDone
+        dbg.println("docReadDone " + docReadDone
                 + ", docReadLine " + docReadLine
                 + ", docWriteDone " + docWriteDone
                 + ", docWriteLine " + docWriteLine);
@@ -1262,16 +1263,16 @@ private static abstract class FilterThread extends Thread
     protected void dumpState()
     {
         if(exception != null) {
-            System.err.println("exception: " + exception.getMessage());
+            dbg.println("exception: " + exception.getMessage());
         }
         if(uncaughtException != null) {
-            System.err.println("uncaughtException: " + uncaughtException.getMessage());
+            dbg.println("uncaughtException: " + uncaughtException.getMessage());
         }
         if(error) {
-            System.err.println("error: " + error);
+            dbg.println("error: " + error);
         }
         if(interrupted) {
-            System.err.println("interrupted: " + interrupted);
+            dbg.println("interrupted: " + interrupted);
         }
         coord.dumpState();
     }

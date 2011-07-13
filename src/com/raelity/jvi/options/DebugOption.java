@@ -70,14 +70,11 @@ public class DebugOption extends EnumOption<String>
             logger.setLevel(Level.parse(newValue));
     }
 
-    final public boolean fLog()
-    {
-        return logger.isLoggable(Level.SEVERE);
-    }
-
-    final public boolean fLog(Level level)
-    {
-        return logger.isLoggable(level);
+    @Override
+    final public String getString() {
+        // Actually, it is a string option.
+        // Use getValue if you want to see the log level string.
+        throw new ClassCastException("DebugOption is not a StringOption");
     }
 
     @Override

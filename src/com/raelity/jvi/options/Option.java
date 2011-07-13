@@ -143,32 +143,32 @@ public abstract class Option<T> {
                 || optionType == String.class;
     }
     
-    final public Integer getInteger() {
-        if(optionType != Integer.class)
-            throw new ClassCastException(this.getClass().getSimpleName()
-                                         + " is not an IntegerOption");
+    public Integer getInteger() {
+        // if(optionType != Integer.class)
+        //     throw new ClassCastException(this.getClass().getSimpleName()
+        //                                  + " is not an IntegerOption");
         return (Integer)value;
     }
 
     // NEEDSWORK: should be final, except for DebugOption
     public Boolean getBoolean() {
-        if(optionType != Boolean.class)
-            throw new ClassCastException(this.getClass().getSimpleName()
-                                         + " is not a BooleanOption");
+        // if(optionType != Boolean.class)
+        //     throw new ClassCastException(this.getClass().getSimpleName()
+        //                                  + " is not a BooleanOption");
         return (Boolean)value;
     }
     
-    final public String getString() {
-        if(optionType != String.class)
-            throw new ClassCastException(this.getClass().getSimpleName()
-                                         + " is not a StringOption");
+    public String getString() {
+        // if(optionType != String.class)
+        //     throw new ClassCastException(this.getClass().getSimpleName()
+        //                                  + " is not a StringOption");
         return (String)value;
     }
     
-    final public Color getColor() {
-        if(optionType != Color.class)
-            throw new ClassCastException(this.getClass().getSimpleName()
-                                         + " is not a ColorOption");
+    public Color getColor() {
+        // if(optionType != Color.class)
+        //     throw new ClassCastException(this.getClass().getSimpleName()
+        //                                  + " is not a ColorOption");
         return (Color)value;
     }
 

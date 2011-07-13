@@ -84,7 +84,7 @@ public class ViManager
     //
     // 1.4.3.x1.1 - add accessors like: p_bs() { return p_bs.getInteger(); }
     // 1.4.3.x2   - G is almost all package local fields, many more :set options
-    public static final jViVersion version = new jViVersion("1.4.3.x2");
+    public static final jViVersion version = new jViVersion("1.4.3.x2.1");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -529,11 +529,24 @@ public class ViManager
     //
     //
 
+    /** this is assumed to be some output protected by debug consideration */
+    static public void println(String s)
+    {
+        System.err.println(s);
+    }
+    static public void printf(String s, Object... args)
+    {
+        System.err.printf(s, args);
+    }
+    static public void warning(String s)
+    {
+        LOG.warning(s);
+    }
+
     static public void dumpStack(String msg, boolean supressIfNotBusy)
     {
         if(supressIfNotBusy && !jViBusy())
             return;
-        System.err.println("" + msg);
         LOG.log(Level.SEVERE, msg, new IllegalStateException());
     }
 

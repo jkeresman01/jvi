@@ -47,6 +47,8 @@ import static com.raelity.jvi.core.Util.*;
  * @author Ernie Rael <err at raelity.com>
  */
 public final class TypeBufMultiCharMapping {
+    private static final Logger LOG = Logger.getLogger(TypeBufMultiCharMapping.class.getName());
+
     private Mappings mappings;
     private ArrayDeque<Integer> buf;
     private int nMappings;
@@ -181,8 +183,7 @@ public final class TypeBufMultiCharMapping {
             // and add that back to a new Deque
 
             // crash and burn
-            Object o = null;
-            System.err.println("Crash and burn" + o.toString());
+            throw new IllegalStateException("unhandled insert in middle");
 
             // Integer[] toArray = buf.toArray(new Integer[0]);
         }
@@ -203,8 +204,8 @@ public final class TypeBufMultiCharMapping {
     public void delete(int start, int end)
     {
         if(start != 0) {
-            Object o = null;
-            System.err.println("Crash and burn" + o.toString());
+            // crash and burn
+            throw new IllegalStateException("unhandled delete in middle");
         }
         for(int i = end - start; i > 0; i--) {
             buf.removeFirst();
@@ -232,8 +233,8 @@ public final class TypeBufMultiCharMapping {
             boolean noremap = isNoremap(peekData);
             c = (char)(peekData & 0xffff);
 
-                        if(Options.isKeyDebug()) {
-                            if(Options.isKeyDebug(Level.FINEST)
+                        if(Options.kd().getBoolean()) {
+                            if(Options.kd().getBoolean(Level.FINEST)
                                     || G.no_mapping() != 0
                                     || G.allow_keys() != 0
                                     || G.no_zero_mapping() != 0) {
@@ -280,7 +281,7 @@ public final class TypeBufMultiCharMapping {
                     // If m_noremap is set, don't remap the whole 'to'
                     // part.
                     //
-                    if(Options.isKeyDebug() && loops <= 20) {
+                    if(Options.kd().getBoolean() && loops <= 20) {
                         System.err.println("getChar: map: " + mapping +
                                 (loops == 20 ? "... ... ..." : ""));
                     }
@@ -306,8 +307,8 @@ public final class TypeBufMultiCharMapping {
                     // matches something so far
                     if(!sawMappingTimeout) {
                         fWaitMapping = true;
-                        if(Options.isKeyDebug(Level.FINEST)) {
-                            System.err.println("getChar partial match: " +
+                        if(Options.kd().getBoolean(Level.FINEST)) {
+                            Options.kd().println(Level.FINEST, "getChar partial match: " +
                                     partialMatch);
                         }
                         c = NO_CHAR;
@@ -320,8 +321,8 @@ public final class TypeBufMultiCharMapping {
         } // end while(true)
         if(needsRemove)
             buf.removeFirst();
-        if(Options.isKeyDebug(Level.FINEST)) {
-            System.err.println("getChar return: " +
+        if(Options.kd().getBoolean(Level.FINEST)) {
+            Options.kd().println(Level.FINEST, "getChar return: " +
                     TextUtil.debugString(String.valueOf(c)));
         }
         return c;
