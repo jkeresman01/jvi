@@ -157,6 +157,8 @@ public final class Options {
   public static final String report = "viReport";
   public static final String backspace = "viBackspace";
   public static final String scrollOff = "viScrollOff";
+  public static final String sideScroll = "viSideScroll";
+  public static final String sideScrollOff = "viSideScrollOff";
   public static final String shiftWidth = "viShiftWidth";
   public static final String tabStop = "viTabStop";
   public static final String softTabStop = "viSoftTabStop";
@@ -474,15 +476,30 @@ public final class Options {
     // General Options
     //
     //
-    
+
     OptUtil.createIntegerOption(scrollOff, 0);
     OptUtil.setupOptionDesc(Category.GENERAL, scrollOff, "'scrolloff' 'so'",
-           "visible context around cursor (scrolloff)" 
+           "visible context around cursor (scrolloff)"
             + "	Minimal number of screen lines to keep above and below the"
             + " cursor. This will make some context visible around where you"
             + " are working.  If you set it to a very large value (999) the"
             + " cursor line will always be in the middle of the window"
             + " (except at the start or end of the file)");
+
+    OptUtil.createIntegerOption(sideScroll, 0);
+    OptUtil.setupOptionDesc(Category.GENERAL, sideScroll, "'sidescroll' 'ss'",
+            "The minimal number of columns to scroll horizontally.  Used"
+            + "only when the 'wrap' option is off and the cursor is moved"
+            + "off of the screen. When it is zero the cursor will be put"
+            + "in the middle of the screen."
+            + "Not used for \"zh\" and \"zl\" commands.");
+    setExpertHidden(sideScroll, false, true);
+
+    OptUtil.createIntegerOption(sideScrollOff, 0);
+    OptUtil.setupOptionDesc(Category.GENERAL, sideScrollOff, "'sidescrolloff' 'siso'",
+            "The minimal number of screen columns to keep to the left and"
+            + "to the right of the cursor if 'nowrap' is set.");
+    setExpertHidden(sideScrollOff, false, true);
     
     OptUtil.createBooleanOption(showMode, true);
     OptUtil.setupOptionDesc(Category.GENERAL, showMode, "'showmode' 'smd'",

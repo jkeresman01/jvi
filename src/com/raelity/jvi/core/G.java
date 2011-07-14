@@ -264,6 +264,8 @@ public class G implements ViOptionBag
     static String p_sh;
     // shellcmdflag - flag for shell
     static String p_shcf;
+    // 'sidescrolloff'
+    static int p_siso;
     // 'selectionmode'
     static String p_slm;
     // showmode edit/command mode in display
@@ -274,6 +276,8 @@ public class G implements ViOptionBag
     static boolean p_spr;
     // shiftround
     static boolean p_sr;
+    // 'sidescroll'
+    static int p_ss;
     // shellSlash - flag for filename expansion
     static boolean p_ssl;
     // shellXQuote - flag for shell

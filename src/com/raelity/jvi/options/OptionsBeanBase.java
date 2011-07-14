@@ -946,6 +946,22 @@ implements Options.EditControl {
 	return getint("viScrollOff");
     }
 
+    public void setViSideScroll(int arg) throws PropertyVetoException {
+        put(Options.sideScroll, arg);
+    }
+
+    public int getViSideScroll() {
+	return getint(Options.sideScroll);
+    }
+
+    public void setViSideScrollOff(int arg) throws PropertyVetoException {
+        put(Options.sideScrollOff, arg);
+    }
+
+    public int getViSideScrollOff() {
+	return getint(Options.sideScrollOff);
+    }
+
     public void setViShiftWidth(int arg) throws PropertyVetoException {
         put("viShiftWidth", arg);
     }
