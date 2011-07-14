@@ -136,10 +136,14 @@ public class OptUtil {
     return opt;
   }
 
+  static public DebugOption createBootDebugOption(boolean v) {
+    return new BootDebugOption(v);
+  }
+
   static public DebugOption createDebugOption(String name) {
     if(optionsMap.get(name) != null)
         throw new IllegalArgumentException("Option " + name + "already exists");
-    DebugOption opt = new DebugOption(name);
+    DebugOption opt = new ConcreteDebugOption(name);
     optionsMap.put(name, opt);
     return opt;
   }

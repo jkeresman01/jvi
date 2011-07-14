@@ -30,84 +30,28 @@ import java.util.logging.Logger;
  * 
  * @author Ernie Rael <err at raelity.com>
  */
-public class DebugOption extends EnumOption<String>
+abstract public class DebugOption extends EnumOption<String>
 {
-    @SuppressWarnings("NonConstantLogger")
-    private final Logger logger;
 
-    public DebugOption(String key)
+    public DebugOption(String key, String defaultValue,
+                              Validator<String> validator, String[] enumValues)
     {
-        super(key, "OFF", new DefaultEnumValidator<String>(),
-              new String[] {
-                  "OFF",
-                  "ALL",
-                  "SEVERE",
-                  "WARNING",
-                  "INFO",
-                  "CONFIG",
-                  "FINE",
-                  "FINER",
-                  "FINEST",
-              }
-                      );
-        logger = Logger.getLogger("com.raelity.jvi.debug." + key);
-        // setValue below gets invoked by the constructor,
-        // so it can't set the logger level
-        logger.setLevel(Level.parse(getValue()));
+        super(key, defaultValue, validator, enumValues);
     }
 
     @Override
-    void setValue(String newValue)
-    {
-        // do conversion of boolean
-        if("true".equalsIgnoreCase(newValue))
-            newValue = "ALL";
-        else if("false".equalsIgnoreCase(newValue))
-            newValue = "OFF";
+    abstract public Boolean getBoolean();
 
-        super.setValue(newValue);
-        if(logger != null)
-            logger.setLevel(Level.parse(newValue));
-    }
+    abstract public boolean getBoolean(Level level);
 
-    @Override
-    // NEEDSWORK: change getBoolean to something like: fLog(),
-    //            then make getBoolean final.
-    final public Boolean getBoolean()
-    {
-        return logger.isLoggable(Level.SEVERE);
-    }
+    abstract public void println(String s);
 
-    final public boolean getBoolean(Level level)
-    {
-        return logger.isLoggable(level);
-    }
+    abstract public void println(Level level, String s);
 
-    final public void println(String s)
-    {
-        println(Level.SEVERE, s);
-    }
+    abstract public void printf(String format, Object... args);
 
-    final public void println(Level level, String s)
-    {
-        if(getBoolean(level))
-            System.err.println(s);
-    }
+    abstract public void printf(Level level, String format, Object... args);
 
-    final public void printf(String format, Object... args)
-    {
-        printf(Level.SEVERE, format, args);
-    }
-
-    final public void printf(Level level, String format, Object... args)
-    {
-        if(getBoolean(level))
-            System.err.printf(format, args);
-    }
-
-    final public Logger getLogger()
-    {
-        return logger;
-    }
+    abstract public Logger getLogger();
 
 }

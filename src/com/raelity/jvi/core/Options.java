@@ -230,6 +230,11 @@ public final class Options {
     didInit = true;
 
     OptUtil.init(pcs);
+
+    // Since this is used to debug options, put it first
+
+    G.dbgOptions = OptUtil.createDebugOption(dbgOptions);
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgOptions, "debug options set", "");
     
     // Some options that do not appear in the dialog property sheets.
 
@@ -335,9 +340,6 @@ public final class Options {
 
     G.dbgSearch = OptUtil.createDebugOption(dbgSearch);
     OptUtil.setupOptionDesc(Category.DEBUG, dbgSearch, "debug search", "");
-
-    G.dbgOptions = OptUtil.createDebugOption(dbgOptions);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgOptions, "debug options set", "");
 
     G.dbgWindowTreeBuilder = OptUtil.createDebugOption(dbgWindowTreeBuilder);
     OptUtil.setupOptionDesc(Category.DEBUG, dbgWindowTreeBuilder, "debug window tree builder", "");

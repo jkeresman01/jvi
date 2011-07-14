@@ -26,6 +26,7 @@ import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.DebugOption;
+import com.raelity.jvi.options.OptUtil;
 
 /**
  *  A class of globals. Most taken directly from vim code.
@@ -154,32 +155,8 @@ public class G implements ViOptionBag
     // Options that show up in the dialog
     //
 
-    /** deal with a race condition */
-    public static class DeferredDebugOption {
-        private DebugOption opt;
-        public boolean getBoolean() {
-            return opt == null ? false : opt.getBoolean();
-        }
-
-        final public void println(String s)
-        {
-            if(opt != null)
-                opt.println(s);
-        }
-
-        final public void printf(String format, Object... args)
-        {
-            if(opt != null)
-                opt.printf(format, args);
-        }
-
-    }
-    private static DeferredDebugOption fdo = new DeferredDebugOption();
-    public static DeferredDebugOption dbgOptions() {
-        // This one has a race conditions
-        fdo.opt = dbgOptions;
-        return fdo;
-    }
+    public static DebugOption dbgOptions()
+        { return dbgOptions; }
     public static DebugOption dbgWindowTreeBuilder()
         { return dbgWindowTreeBuilder; }
     public static DebugOption dbgPrefChangeMonitor()
@@ -200,7 +177,7 @@ public class G implements ViOptionBag
     static DebugOption dbgMouse;
     static DebugOption dbgWindowTreeBuilder;
     static DebugOption dbgPrefChangeMonitor;
-    static DebugOption dbgOptions;
+    static DebugOption dbgOptions = OptUtil.createBootDebugOption(false);
 
     //
     // some options are accessed from out of core
