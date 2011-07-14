@@ -129,7 +129,7 @@ class Motd
             return;
         if (outputBasicInfo && !valid)
             return;
-        output(G.isHideVersion.getBoolean() ? ViOutputStream.PRI_LOW
+        output(G.isHideVersion() ? ViOutputStream.PRI_LOW
                 : ViOutputStream.PRI_NORMAL);
     }
 

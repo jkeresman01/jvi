@@ -150,8 +150,8 @@ public enum AppViews
         if (!(avs.contains(keep) && av.equals(keep)))
             adjustMru(av); // adjust since keepMru not in effect
 
-        if (G.curwin != null)
-            G.curwin.getStatusDisplay().refresh();
+        if (G.curwin() != null)
+            G.curwin().getStatusDisplay().refresh();
         ViTextView tv = fact().getTextView(av);
         if(tv != null)
             Msg.smsg(fact().getFS().getDisplayFileViewInfo(tv));
@@ -183,7 +183,7 @@ public enum AppViews
             //        " " + ViManager.cid(av) + fact().getFS().getDisplayFileName(av));
         if (hasFact() && Scheduler.getCurrentEditor() != null) {
             ViManager.exitInputMode(); // NEEDSWORK: relates AppView to Editor
-            G.curwin.getStatusDisplay().clearDisplay();
+            G.curwin().getStatusDisplay().clearDisplay();
         }
         avCurrentlyActive = null;
     }
@@ -447,9 +447,9 @@ public enum AppViews
             ps = new StringBuilder(200);
         ps.append("-----------------------------------").append('\n');
         ps.append("currentEditorPane = ")
-          .append(G.curwin == null
+          .append(G.curwin() == null
                   ? "null"
-                  : G.curwin.getBuffer().getDisplayFileName()).append('\n');
+                  : G.curwin().getBuffer().getDisplayFileName()).append('\n');
         ps.append("factory = ").append(fact()).append('\n');
         ps.append("AppViews: ").append(avs.size()).append('\n');
         for (ViAppView av : avs) {

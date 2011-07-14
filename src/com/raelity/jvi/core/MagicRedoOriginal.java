@@ -150,7 +150,7 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
 
     private boolean notTracking() {
        return redoTrackPosition < 0
-               || !G.redoTrack.getBoolean()
+               || !G.redoTrack
                || disableTrackingOneEdit;
     }
 
@@ -179,7 +179,7 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
 
     @Override
     public void charTyped(char c) {
-      if(!G.redoTrack.getBoolean())
+      if(!G.redoTrack)
         return;
       removeDocAfterString = null;
       if(expectChar)

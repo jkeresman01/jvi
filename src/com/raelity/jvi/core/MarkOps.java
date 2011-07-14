@@ -1007,7 +1007,7 @@ class MarkOps
                 for (Buffer buf : ViManager.getFactory().getBufferSet()) {
                     persist(buf);
                 }
-                int max = G.viminfoMaxBuf.getInteger();
+                int max = G.viminfoMaxBuf;
                 int index = 1;
                 // first handle all buffers that were open this session.
                 LOG.log(Level.FINE, "write_viminfo next count {0}", next.size());

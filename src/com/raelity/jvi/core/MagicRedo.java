@@ -648,7 +648,7 @@ class MagicRedo implements GetChar.ViMagicRedo
 
     private boolean notTracking() {
        return redoTrackPosition < 0
-               || !G.redoTrack.getBoolean()
+               || !G.redoTrack
                || disableTrackingOneEdit
                //|| localDisable
        ;
@@ -672,7 +672,7 @@ class MagicRedo implements GetChar.ViMagicRedo
     // userInputChar
 
     public void userInputCharXXX(char c) {
-      if(!G.redoTrack.getBoolean())
+      if(!G.redoTrack)
         return;
       removeDocAfterString = null;
       if(expectChar)

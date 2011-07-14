@@ -25,8 +25,6 @@ import com.raelity.jvi.ViOptionBag;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.options.IntegerOption;
-import com.raelity.jvi.options.BooleanOption;
 import com.raelity.jvi.options.DebugOption;
 
 /**
@@ -65,7 +63,7 @@ public class G implements ViOptionBag
 
     // NEEDSWORK: create curwin() for use outside of core (jackpot)
     public static TextView curwin() { return curwin; }
-    public static TextView curwin;
+    static TextView curwin;
 
     static Buffer curbuf; // per file options. as int,boolean
 
@@ -156,23 +154,8 @@ public class G implements ViOptionBag
     // Options that show up in the dialog
     //
 
-
-    public static BooleanOption useFrame;    // use JFrame for command entry
-    public static BooleanOption usePlatformInsertTab;
-
-    public static BooleanOption readOnlyHack;
-    public static BooleanOption isHideVersion;
-    public static BooleanOption isCoordSkip;
-
-    static BooleanOption redoTrack; // track redo for magic/code-completion
-    static BooleanOption pcmarkTrack; // track NB caret motions for pcmark
-
-    static IntegerOption viminfoMaxBuf; //viminfoMaxPersistedBuffersWithMarks
-
-
-
     /** deal with a race condition */
-    public static class ProxyDebugOption {
+    public static class DeferredDebugOption {
         private DebugOption opt;
         public boolean getBoolean() {
             return opt == null ? false : opt.getBoolean();
@@ -191,8 +174,8 @@ public class G implements ViOptionBag
         }
 
     }
-    private static ProxyDebugOption fdo = new ProxyDebugOption();
-    public static ProxyDebugOption dbgOptions() {
+    private static DeferredDebugOption fdo = new DeferredDebugOption();
+    public static DeferredDebugOption dbgOptions() {
         // This one has a race conditions
         fdo.opt = dbgOptions;
         return fdo;
@@ -338,5 +321,21 @@ public class G implements ViOptionBag
     static boolean p_ww_rarrow;
     static boolean p_ww_sp;
     static boolean p_ww_tilde;
+
+
+
+    public static boolean usePlatformInsertTab() { return usePlatformInsertTab; }
+    public static boolean useFrame() { return useFrame; }
+    public static boolean isHideVersion() { return isHideVersion; }
+    public static boolean isCoordSkip() { return isCoordSkip; }
+
+    static boolean useFrame;    // use JFrame for command entry
+    static boolean usePlatformInsertTab;
+    static boolean readOnlyHack;
+    static boolean isHideVersion;
+    static boolean isCoordSkip;
+    static boolean redoTrack; // track redo for magic/code-completion
+    static boolean pcmarkTrack; // track NB caret motions for pcmark
+    static int viminfoMaxBuf; //viminfoMaxPersistedBuffersWithMarks
 
 } // end com.raelity.jvi.G

@@ -143,7 +143,7 @@ public class Scheduler
 
     static void changeBuffer(ViTextView tv)
     {
-        if(G.curwin == tv)
+        if(G.curwin() == tv)
             getCore().switchTo(tv, tv.getBuffer());
     }
 
@@ -192,7 +192,7 @@ public class Scheduler
 
     private static void runKeyStrokeTodo()
     {
-        ActionEvent e = new ActionEvent(G.curwin, 0, null);
+        ActionEvent e = new ActionEvent(G.curwin(), 0, null);
         while(!keyStrokeTodo.isEmpty()) {
             keyStrokeTodo.remove().actionPerformed(e);
         }
@@ -211,14 +211,14 @@ public class Scheduler
             switchTo(target);
             if (rerouteChar(key, modifier))
                 return;
-            if(!keyStrokeTodo.isEmpty() && G.curwin != null)
+            if(!keyStrokeTodo.isEmpty() && G.curwin() != null)
                 runKeyStrokeTodo();
             getCore().gotc(key, modifier);
         } finally {
             setJViBusy(false);
         }
-        if (G.curwin != null)
-            G.curwin.getStatusDisplay().refresh();
+        if (G.curwin() != null)
+            G.curwin().getStatusDisplay().refresh();
     }
 
     /**
@@ -303,7 +303,7 @@ public class Scheduler
 
     public static void cursorChange(ViCaret caret)
     {
-        if (G.curwin == null)
+        if (G.curwin() == null)
             return;
         boolean nowSelection = caret.getDot() != caret.getMark();
         if (hasSelection == nowSelection)

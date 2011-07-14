@@ -46,7 +46,7 @@ public class LineMapFoldingSwitcher implements LineMap
 
     private LineMap getMap()
     {
-        return G.isCoordSkip.getBoolean() ? lmFolding : lmNoFolding;
+        return G.isCoordSkip() ? lmFolding : lmNoFolding;
     }
 
     @Override

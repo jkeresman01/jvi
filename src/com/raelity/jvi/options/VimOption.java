@@ -88,12 +88,16 @@ public final class VimOption {
         this.flags = flags;
         StringBuilder sb = new StringBuilder();
         // construct varName
-        if(isWin())
-            sb.append("w_");
-        else if(isBuf())
-            sb.append("b_");
-        sb.append("p_");
-        sb.append(shortName.isEmpty() ? fullName : shortName);
+        if(flags.contains(F.VERBATIM)) {
+            sb.append(fullName);
+        } else {
+            if(isWin())
+                sb.append("w_");
+            else if(isBuf())
+                sb.append("b_");
+            sb.append("p_");
+            sb.append(shortName.isEmpty() ? fullName : shortName);
+        }
         this.varName = sb.toString();
     }
 
@@ -176,6 +180,7 @@ public final class VimOption {
         NODUP,          // don't allow duplicate strings
         FLAGLIST,       // list of single-char flags
         HIDE,           // don't allow set command
+        VERBATIM,       // use fullName verbatim as varName
     }
 
     private static final Set<F> nullF = EnumSet.noneOf(F.class);
@@ -238,6 +243,14 @@ new VimOption("ww_larrow",   "",     Options.leftWrapPrevious,S.P_GBL, EnumSet.o
 new VimOption("ww_rarrow",   "",     Options.rightWrapNext,   S.P_GBL, EnumSet.of(F.HIDE)),
 new VimOption("ww_sp",       "",     Options.spaceWrapNext,   S.P_GBL, EnumSet.of(F.HIDE)),
 new VimOption("ww_tilde",    "",     Options.tildeWrapNext,   S.P_GBL, EnumSet.of(F.HIDE)),
+
+new VimOption("isHideVersion","",    Options.hideVersionOption,S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
+new VimOption("isCoordSkip", "",     Options.coordSkip,        S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
+new VimOption("pcmarkTrack", "",     Options.pcmarkTrack,      S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
+new VimOption("readOnlyHack","",     Options.readOnlyHack,    S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
+new VimOption("redoTrack",   "",     Options.redoTrack,        S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
+new VimOption("useFrame",    "",     Options.commandEntryFrame,S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
+new VimOption("viminfoMaxBuf","",    Options.persistedBufMarks,S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 };
 
 

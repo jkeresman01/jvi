@@ -424,7 +424,7 @@ public class SwingTextView extends TextView
             return;
         }
         if ( c == '\t' ) {
-            if(G.usePlatformInsertTab.getBoolean())
+            if(G.usePlatformInsertTab())
                 insertTab();
             else
                 insertText(w_cursor.getOffset(), "\t");

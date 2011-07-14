@@ -270,7 +270,7 @@ public abstract class TextView implements ViTextView
         if (G.VIsual_active && this == G.curwin)
             Normal.v_updateVisualState(this);
 
-        if (!G.pcmarkTrack.getBoolean())
+        if (!G.pcmarkTrack)
             return;
 
         int currDot = dot;

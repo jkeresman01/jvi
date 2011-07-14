@@ -517,12 +517,12 @@ public class ViManager
     /** The viewport has changed or scrolled, clear messages*/
     public static void viewMoveChange(ViTextView textView)
     {
-        if(G.curwin == null) {
+        if(G.curwin() == null) {
             // this case is because switchto, does attach, does viewport init
             // but G.curwin is not set yet. See switchTo(Component editor)
             return;
         }
-        G.curwin.getStatusDisplay().scrolling();
+        G.curwin().getStatusDisplay().scrolling();
     }
 
     //////////////////////////////////////////////////////////////////////

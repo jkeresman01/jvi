@@ -505,7 +505,7 @@ normal_char:	// do "break normal_char" to insert a character
           case TAB:
             inserted_space.setValue(false);
             // bypass the ins_tab method if always use the platform tab handling
-            if(G.usePlatformInsertTab.getBoolean() || ins_tab())
+            if( G.usePlatformInsertTab || ins_tab())
               break normal_char;
             break;
             

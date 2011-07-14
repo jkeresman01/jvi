@@ -244,7 +244,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
             voptState.f.set(voptState.bag, newValue);
             // NEEDSWORK: call some method if a global is set?
             if (vopt.isLocal()) {
-                voptState.bag.viOptionSet(G.curwin, vopt.varName);
+                voptState.bag.viOptionSet(G.curwin(), vopt.varName);
             }
         }
     }
@@ -292,7 +292,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
 
         voptState.bag = vopt.isGlobal()
                 ? G.get()
-                : vopt.isWin() ? G.curwin : G.curwin.getBuffer();
+                : vopt.isWin() ? G.curwin() : G.curwin().getBuffer();
         try {
             //
             // NEEDSWORK: Clean up getField/getDeclaredField.
@@ -573,7 +573,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
      */
     public static void syncTextViewInstances(String varName, TextView tv)
     {
-        assert tv == G.curwin; // NEEDSWORK: since determine option state assumes
+        assert tv == G.curwin(); // NEEDSWORK: since determine option state assumes
         VimOption vopt = VimOption.lookupVarName(varName);
         // if var is not window then nothing to do
         if(!vopt.isWin())

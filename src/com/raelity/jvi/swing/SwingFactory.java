@@ -348,7 +348,7 @@ abstract public class SwingFactory implements ViFactory
             throw new IllegalStateException("Already in modal state");
         }
 
-        Container glass = getModalGlassPane(G.curwin.getEditor());
+        Container glass = getModalGlassPane(G.curwin().getEditor());
         keyListener = kl;
         glass.addKeyListener(kl);
         glass.setVisible(true);
@@ -375,7 +375,7 @@ abstract public class SwingFactory implements ViFactory
         if ( mouseAdapter == null ) {
             throw new IllegalStateException("Not in modal state");
         }
-        Container glass = getModalGlassPane(G.curwin.getEditor());
+        Container glass = getModalGlassPane(G.curwin().getEditor());
         glass.setVisible(false);
         glass.removeMouseListener(mouseAdapter);
         glass.removeMouseMotionListener(mouseAdapter);
@@ -393,14 +393,14 @@ abstract public class SwingFactory implements ViFactory
                 KeyboardFocusManager.DOWN_CYCLE_TRAVERSAL_KEYS, null);
         glass.setFocusTraversalKeys(
                 KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS, null);
-        G.curwin.getEditor().requestFocusInWindow();
+        G.curwin().getEditor().requestFocusInWindow();
     }
 
 
     @Override
     public void startModalKeyCatch( KeyListener kl )
     {
-        JTextComponent ed = (JTextComponent)G.curwin.getEditor();
+        JTextComponent ed = (JTextComponent)G.curwin().getEditor();
         java.awt.Window wep = SwingUtilities.getWindowAncestor(ed);
         dialog = new JDialog((Frame)wep, "jVi", true);
         dialog.setUndecorated(true); // on windows see nothing, perfect
@@ -408,9 +408,9 @@ abstract public class SwingFactory implements ViFactory
         // place dialog in lower left of editor
         Container jc = SwingUtilities.getAncestorOfClass(
                 javax.swing.JScrollPane.class,
-                G.curwin.getEditor());
+                G.curwin().getEditor());
         if ( jc == null ) {
-            jc = (JTextComponent)G.curwin.getEditor();
+            jc = (JTextComponent)G.curwin().getEditor();
         }
         // put the dialog just below the editor pane, on the right
         Dimension d00 = dialog.getSize();
@@ -506,7 +506,7 @@ abstract public class SwingFactory implements ViFactory
         // cleaner and more understandable key input state machine revisit
         // this.
 
-        if ( G.useFrame.getBoolean() ) {
+        if ( G.useFrame() ) {
             return new WindowCmdEntry(type);
         } else {
             return new InlineCmdEntry(type);

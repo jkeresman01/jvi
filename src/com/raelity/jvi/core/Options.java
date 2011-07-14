@@ -284,6 +284,66 @@ public final class Options {
             + "\nSome specials: <lt>,<Space>,<Bslash>,<Up>,<Home>"
             );
     setExpertHidden(mapCommands, true, true);
+
+    /////////////////////////////////////////////////////////////////////
+    //
+    //
+    // Debug Options
+    //
+    //
+
+    // debug options first
+
+    G.dbgEditorActivation = OptUtil.createDebugOption(dbgEditorActivation);
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgEditorActivation, "debug activation",
+               "Output info about editor switching between files/windows");
+
+    kd = OptUtil.createDebugOption(dbgKeyStrokes);
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgKeyStrokes, "debug KeyStrokes",
+               "Output info for each keystroke");
+
+    G.dbgRedo = OptUtil.createDebugOption(dbgRedo);
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgRedo, "debug redo buffer",
+               "Output info on magic/tracking changes to redo buffer");
+
+    OptUtil.createDebugOption(dbgCache);
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgCache, "debug cache",
+               "Output info on text/doc cache");
+
+    OptUtil.createDebugOption(dbgBang);
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgBang, "debug \"!\" cmds",
+               "Output info about external processes");
+
+    OptUtil.createDebugOption(dbgBangData);
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgBangData, "debug \"!\" cmds data",
+               "Output data tranfers external processes");
+
+    OptUtil.createDebugOption(dbgCompletion);
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgCompletion, "debug Completion",
+               "Output info on completion, eg FileName.");
+
+    G.dbgMouse = OptUtil.createDebugOption(dbgMouse);
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgMouse, "debug mouse events",
+               "Output info about mouse events");
+
+    G.dbgCoordSkip = OptUtil.createDebugOption(dbgCoordSkip);
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgCoordSkip,
+                            "debug coordinate skip", "");
+
+    G.dbgUndo = OptUtil.createDebugOption(dbgUndo);
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgUndo, "debug undo begin/end", "");
+
+    G.dbgSearch = OptUtil.createDebugOption(dbgSearch);
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgSearch, "debug search", "");
+
+    G.dbgOptions = OptUtil.createDebugOption(dbgOptions);
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgOptions, "debug options set", "");
+
+    G.dbgWindowTreeBuilder = OptUtil.createDebugOption(dbgWindowTreeBuilder);
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgWindowTreeBuilder, "debug window tree builder", "");
+
+    G.dbgPrefChangeMonitor = OptUtil.createDebugOption(dbgPrefChangeMonitor);
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgPrefChangeMonitor, "debug pref change monitor", "");
     
     /////////////////////////////////////////////////////////////////////
     //
@@ -294,13 +354,13 @@ public final class Options {
     
     // platformList.add("jViVersion"); // hard coded in OptUtil.init
 
-    G.redoTrack = OptUtil.createBooleanOption(redoTrack, true);
+    OptUtil.createBooleanOption(redoTrack, true);
     OptUtil.setupOptionDesc(Category.PLATFORM, redoTrack, "\".\" magic redo tracking",
                     "Track magic document changes during input"
                     + " mode for the \".\" commnad. These"
                     + " changes are often the result of IDE code completion");
 
-    G.pcmarkTrack = OptUtil.createBooleanOption(pcmarkTrack, true);
+    OptUtil.createBooleanOption(pcmarkTrack, true);
     OptUtil.setupOptionDesc(Category.PLATFORM, pcmarkTrack,
                     "\"``\" magic pcmark tracking", "Track magic cursor "
                     + " movments for the \"``\" command. These movement are"
@@ -327,13 +387,13 @@ public final class Options {
             "The color used for a visual mode selection foreground.");
     setExpertHidden(selectFgColor, false, false);
     
-    G.isHideVersion = OptUtil.createBooleanOption(hideVersionOption, false);
+    OptUtil.createBooleanOption(hideVersionOption, false);
     OptUtil.setupOptionDesc(Category.PLATFORM, hideVersionOption, "hide version",
                     "When true, display of initial version information"
                     + " does not bring up output window.");
     setExpertHidden(hideVersionOption, true, false);
     
-    G.useFrame  = OptUtil.createBooleanOption(commandEntryFrame , true);
+    OptUtil.createBooleanOption(commandEntryFrame , true);
     OptUtil.setupOptionDesc(Category.PLATFORM, commandEntryFrame, "use modal frame",
                "Use modal frame for command/search entry."
                + " Change takes affect after restart.");
@@ -354,7 +414,7 @@ public final class Options {
                + " name completion.");
     setExpertHidden(autoPopupCcName, false, false);
 
-    G.isCoordSkip = OptUtil.createBooleanOption(coordSkip, true);
+    OptUtil.createBooleanOption(coordSkip, true);
     OptUtil.setupOptionDesc(Category.PLATFORM, coordSkip, "Code Folding Compatible",
             "When false revert some navigation algorithms, e.g. ^F,"
             + " to pre code folding behavior. A just in case option;"
@@ -372,7 +432,7 @@ public final class Options {
                     + " are not propogated to the other.");
     setExpertHidden(platformPreferences, true, true);
 
-    G.usePlatformInsertTab = OptUtil.createBooleanOption(platformTab, false);
+    OptUtil.createBooleanOption(platformTab, false);
     OptUtil.setupOptionDesc(Category.PLATFORM, platformTab,
             "Use the platform's TAB handling",
             "When false, jVi processes the TAB character according"
@@ -462,7 +522,7 @@ public final class Options {
                "After motion try to keep column position."
             + " NOTE: state is opposite of vim.");
 
-    G.viminfoMaxBuf = OptUtil.createIntegerOption(
+    OptUtil.createIntegerOption(
             persistedBufMarks, 25, new Validator<Integer>() {
               @Override
               public void validate(Integer val) throws PropertyVetoException {
@@ -838,68 +898,13 @@ public final class Options {
 
     /////////////////////////////////////////////////////////////////////
     //
-    //
-    // Vi debug options
-    //
-    //
-    G.readOnlyHack = OptUtil.createBooleanOption(readOnlyHack, true);
+    OptUtil.createBooleanOption(readOnlyHack, true);
     OptUtil.setupOptionDesc(Category.DEBUG, readOnlyHack, "enable read only hack",
             "A Java implementation issue, restricts the characters that jVi"
             + " recieves for a read only file. Enabling this, changes the file"
             + " editor mode to read/write so that the file can be viewed"
             + " using the Normal Mode vi commands.");
     setExpertHidden(readOnlyHack, true, true);
-
-    G.dbgEditorActivation = OptUtil.createDebugOption(dbgEditorActivation);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgEditorActivation, "debug activation",
-               "Output info about editor switching between files/windows");
-
-    kd = OptUtil.createDebugOption(dbgKeyStrokes);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgKeyStrokes, "debug KeyStrokes",
-               "Output info for each keystroke");
-
-    G.dbgRedo = OptUtil.createDebugOption(dbgRedo);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgRedo, "debug redo buffer",
-               "Output info on magic/tracking changes to redo buffer");
-
-    OptUtil.createDebugOption(dbgCache);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgCache, "debug cache",
-               "Output info on text/doc cache");
-
-    OptUtil.createDebugOption(dbgBang);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgBang, "debug \"!\" cmds",
-               "Output info about external processes");
-
-    OptUtil.createDebugOption(dbgBangData);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgBangData, "debug \"!\" cmds data",
-               "Output data tranfers external processes");
-
-    OptUtil.createDebugOption(dbgCompletion);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgCompletion, "debug Completion",
-               "Output info on completion, eg FileName.");
-
-    G.dbgMouse = OptUtil.createDebugOption(dbgMouse);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgMouse, "debug mouse events",
-               "Output info about mouse events");
-
-    G.dbgCoordSkip = OptUtil.createDebugOption(dbgCoordSkip);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgCoordSkip,
-                            "debug coordinate skip", "");
-
-    G.dbgUndo = OptUtil.createDebugOption(dbgUndo);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgUndo, "debug undo begin/end", "");
-
-    G.dbgSearch = OptUtil.createDebugOption(dbgSearch);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgSearch, "debug search", "");
-
-    G.dbgOptions = OptUtil.createDebugOption(dbgOptions);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgOptions, "debug options set", "");
-
-    G.dbgWindowTreeBuilder = OptUtil.createDebugOption(dbgWindowTreeBuilder);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgWindowTreeBuilder, "debug window tree builder", "");
-
-    G.dbgPrefChangeMonitor = OptUtil.createDebugOption(dbgPrefChangeMonitor);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgPrefChangeMonitor, "debug pref change monitor", "");
 
     OptUtil.verifyVimOptions();
   }
