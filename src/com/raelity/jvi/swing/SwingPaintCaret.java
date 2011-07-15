@@ -77,22 +77,23 @@ public class SwingPaintCaret
 
     /**
      * Render the caret as specified by the cursor.
+     *
+     * Want to handle focus'd and read only. It's difficult, NB/jdk aren't
+     * the same and when they call is not consistent with each other.
+     * Need to push logic out of hear, into caller.
      */
-    public void paint(Graphics g, boolean caretVisible, JTextComponent component)
+    public void paint(Graphics g, boolean blinkVisible, char[] dotChar,
+                      JTextComponent component)
     {
-        if(component == null)
-            return;
         // if the caret is not visible and the editor is not writable
         // then show an outline of a block caret
-        boolean isNotFocused = !component.isFocusOwner();
-        boolean isReadOnly = !component.isEditable();
-        boolean drawRect = false;
-        boolean drawCross = false;
-        if(isNotFocused)
-            drawRect = true;
-        else if(isReadOnly)
-            drawCross = true;
-        if (drawRect || drawCross || caretVisible) {
+        boolean drawNotFocused = !component.isFocusOwner();
+        boolean drawReadOnly = !component.isEditable();
+        boolean drawNormal = false;
+        if(!drawReadOnly && !drawNotFocused)
+            drawNormal = blinkVisible;
+
+        if (drawNotFocused || drawReadOnly || drawNormal) {
             int dot = caret.getDot();
             FontMetrics fm = g.getFontMetrics();	// NEEDSWORK: should be cached
             blockWidth = fm.charWidth('.');		// assume all the same width
@@ -106,7 +107,7 @@ public class SwingPaintCaret
                     cursorShape = cursor.getShape();
                     c = cursor.getEditPutchar();
                 }
-                if(drawRect || drawCross) {
+                if(drawNotFocused || drawReadOnly) {
                     cursorShape = ViCaretStyle.SHAPE_BLOCK;
                     c = 0;
                 }
@@ -145,11 +146,24 @@ public class SwingPaintCaret
                 }
                 g.setColor(component.getCaretColor());
                 g.setXORMode(component.getBackground());
-                if(caretVisible)
+                if(drawNormal) {
                     g.fillRect(r.x, r.y, r.width, r.height);
-                else if(drawRect)
+                    // drawing the char over the cursor derived from NB
+                    // if(cursorShape == ViCaretStyle.SHAPE_BLOCK
+                    //         && dotChar != null
+                    //         && !Character.isWhitespace(dotChar[0])
+                    // ) {
+                    //     Color textBackgroundColor = component.getBackground();
+                    //     if (textBackgroundColor != null)
+                    //         g.setColor(textBackgroundColor);
+                    //     // int ascent = FontMetricsCache.getFontMetrics(afterCaretFont, c).getAscent();
+                    //     g.drawChars(dotChar, 0, 1, r.x,
+                    //             r.y + fm.getAscent());
+                    //             // r.y + editorUI.getLineAscent());
+                    // }
+                } else if(drawNotFocused)
                     g.drawRect(r.x, r.y, r.width-1, r.height-1);
-                else if(drawCross) {
+                else if(drawReadOnly) {
                     g.drawRect(r.x, r.y, r.width-1, r.height-1);
                     // draw vertical line
                     // g.drawLine(r.x + r.width/2, r.y,
