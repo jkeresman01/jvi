@@ -138,9 +138,17 @@ public class JviFrame extends JFrame
         if(true) {
             jviButton = new JToggleButton(jvi_off);
             jviButton.setSelectedIcon(jvi_on);
+            jviButton.setSelected(true);
             //jviButton.setContentAreaFilled(false);
             jviButton.setFocusPainted(false);
             jviButton.setPreferredSize(new Dimension(24, 24));
+            jviButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e)
+                {
+                    editorPane.setEditable(jviButton.isSelected());
+                }
+            });
         } else {
             jviButton = new JButton(jvi_off);
             jviButton.setSelectedIcon(jvi_on);

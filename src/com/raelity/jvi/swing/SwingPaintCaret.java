@@ -78,9 +78,21 @@ public class SwingPaintCaret
     /**
      * Render the caret as specified by the cursor.
      */
-    public void paint(Graphics g, JTextComponent component)
+    public void paint(Graphics g, boolean caretVisible, JTextComponent component)
     {
-        if (caret.isVisible()) {
+        if(component == null)
+            return;
+        // if the caret is not visible and the editor is not writable
+        // then show an outline of a block caret
+        boolean isNotFocused = !component.isFocusOwner();
+        boolean isReadOnly = !component.isEditable();
+        boolean drawRect = false;
+        boolean drawCross = false;
+        if(isNotFocused)
+            drawRect = true;
+        else if(isReadOnly)
+            drawCross = true;
+        if (drawRect || drawCross || caretVisible) {
             int dot = caret.getDot();
             FontMetrics fm = g.getFontMetrics();	// NEEDSWORK: should be cached
             blockWidth = fm.charWidth('.');		// assume all the same width
@@ -93,6 +105,10 @@ public class SwingPaintCaret
                 if (cursor != null) {
                     cursorShape = cursor.getShape();
                     c = cursor.getEditPutchar();
+                }
+                if(drawRect || drawCross) {
+                    cursorShape = ViCaretStyle.SHAPE_BLOCK;
+                    c = 0;
                 }
                 if(c != 0)
                     r00 = (Rectangle) r.clone();
@@ -129,7 +145,36 @@ public class SwingPaintCaret
                 }
                 g.setColor(component.getCaretColor());
                 g.setXORMode(component.getBackground());
-                g.fillRect(r.x, r.y, r.width, r.height);
+                if(caretVisible)
+                    g.fillRect(r.x, r.y, r.width, r.height);
+                else if(drawRect)
+                    g.drawRect(r.x, r.y, r.width-1, r.height-1);
+                else if(drawCross) {
+                    g.drawRect(r.x, r.y, r.width-1, r.height-1);
+                    // draw vertical line
+                    // g.drawLine(r.x + r.width/2, r.y,
+                    //            r.x + r.width/2, r.y + r.height-1);
+
+                    // thicken the line at top
+                    g.drawLine(r.x + 1        , r.y + 1,
+                               r.x + r.width-2, r.y + 1);
+                    // thicken the line at bottom
+                    g.drawLine(r.x + 1        , r.y + r.height - 2,
+                               r.x + r.width-2, r.y + r.height - 2);
+                    // draw vertical line
+                    // g.drawLine(r.x + r.width/2, r.y + 2,
+                    //            r.x + r.width/2, r.y + r.height-3);
+
+                    // // draw horiz line 1/2 way down
+                    // g.drawLine(r.x            , r.y + r.height/2,
+                    //            r.x + r.width-2, r.y + r.height/2);
+                    // // draw horiz line 1/3 way down
+                    // g.drawLine(r.x            , r.y + r.height/3,
+                    //            r.x + r.width-2, r.y + r.height/3);
+                    // // draw horiz line 1/3 way down
+                    // g.drawLine(r.x            , r.y + r.height*2/3,
+                    //            r.x + r.width-2, r.y + r.height*2/3);
+                }
                 g.setPaintMode();
 
             } catch (BadLocationException e) {

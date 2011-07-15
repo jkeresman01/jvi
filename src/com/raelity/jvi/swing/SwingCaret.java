@@ -114,7 +114,7 @@ public class SwingCaret extends DefaultCaret implements ViCaret
     @Override
     public void paint(Graphics g)
     {
-        viDelegate.paint(g, getComponent());
+        viDelegate.paint(g, isVisible(), getComponent());
     }
 
     @Override
