@@ -26,6 +26,7 @@ import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.manager.ViManager;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.awt.event.FocusEvent;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -103,6 +104,13 @@ public class SwingCaret extends DefaultCaret implements ViCaret
         Rectangle r = new Rectangle();
         viDelegate.damage(r, nloc); // broaden to encompass whole character
         super.adjustVisibility(r);
+    }
+
+    /** make sure the not-focused caret is drawn */
+    @Override
+    public void focusLost(FocusEvent e)
+    {
+        repaint();
     }
 
     /**
