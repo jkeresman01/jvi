@@ -27,6 +27,7 @@ import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.DebugOption;
 import com.raelity.jvi.options.OptUtil;
+import java.awt.Color;
 
 /**
  *  A class of globals. Most taken directly from vim code.
@@ -184,6 +185,7 @@ public class G implements ViOptionBag
     //
     public static boolean p_pbm() { return p_pbm; }
     public static boolean p_ea() { return p_ea; }
+    public static Color p_rocc() { return p_rocc; }
 
 
     static void p_wsOption_set(boolean f) {
@@ -252,6 +254,8 @@ public class G implements ViOptionBag
     static int p_report;
     // true use '=' instead of '?'
     static boolean p_req;
+    // read only cursor color
+    static Color p_rocc;
     // 'splitbelow'
     static boolean p_sb;
     // showcmd

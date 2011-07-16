@@ -674,6 +674,14 @@ implements Options.EditControl {
         return getColor(Options.selectColor);
     }
 
+    public void setViRoCursorColor(Color arg)  throws PropertyVetoException {
+        put(Options.roCursorColor, arg);
+    }
+
+    public Color getViRoCursorColor() {
+        return getColor(Options.roCursorColor);
+    }
+
     public void setViSelectFgColor(Color arg)  throws PropertyVetoException {
         put(Options.selectFgColor, arg);
     }

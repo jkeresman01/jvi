@@ -26,6 +26,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
 import com.raelity.jvi.*;
+import com.raelity.jvi.core.G;
 import java.awt.Color;
 import java.awt.Font;
 
@@ -164,6 +165,8 @@ public class SwingPaintCaret
                 } else if(drawNotFocused)
                     g.drawRect(r.x, r.y, r.width-1, r.height-1);
                 else if(drawReadOnly) {
+                    if(G.p_rocc() != null)
+                        g.setColor(G.p_rocc());
                     g.drawRect(r.x, r.y, r.width-1, r.height-1);
                     // draw vertical line
                     // g.drawLine(r.x + r.width/2, r.y,

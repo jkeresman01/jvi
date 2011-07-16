@@ -210,6 +210,7 @@ new VimOption("platformbrace","pbm", Options.platformBraceMatch,S.P_GBL,EnumSet.
 new VimOption("remetaescape","rem",  Options.metaEscape,      S.P_GBL, EnumSet.of(F.FLAGLIST)),
 new VimOption("remetaequals","req",  Options.metaEquals,      S.P_GBL, EnumSet.of(F.HIDE)),
 new VimOption("report",      "",     Options.report,          S.P_GBL, nullF),
+new VimOption("rocursorcolor","rocc",Options.roCursorColor,   S.P_GBL, nullF),
 new VimOption("scroll",      "scr",  Options.scroll,          S.P_WIN, nullF),
 new VimOption("scrolloff",   "so",   Options.scrollOff,       S.P_GBL, nullF),
 new VimOption("selection",   "sel",  Options.selection,       S.P_GBL, nullF),

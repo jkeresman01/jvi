@@ -14,6 +14,7 @@ import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.TextView;
 import com.raelity.jvi.core.Util;
 import com.raelity.jvi.options.VimOption.F;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Field;
@@ -346,7 +347,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
             }
 
         } else {
-            // handle a number or a string
+            // handle a number, string or a color
             if(voptState.op.isBooleanOp()) {
                 String msg = "boolean op '" + voptState.op
                                 + "' invalid for "
@@ -383,6 +384,26 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                         newValue = voptState.inputValue;
                     else
                         newValue = doStringAssignOp(arg, vopt, voptState);
+                } else if (voptState.type == Color.class) {
+                    if(!voptState.inputValue.isEmpty()) {
+                        try {
+                            newValue = Color.decode(voptState.inputValue);
+                        } catch(NumberFormatException ex) { }
+                        if(newValue == null) {
+                            Field f = null;
+                            try {
+                                // maybe it's a known color name
+                                f = Color.class.getField(voptState.inputValue);
+                                if(f.getType().equals(Color.class))
+                                    newValue = (Color)f.get(null);
+                            } catch(IllegalArgumentException ex) {
+                            } catch(IllegalAccessException ex) {
+                            } catch(NoSuchFieldException ex) {
+                            } catch(SecurityException ex) { }
+                        }
+                        if(newValue == null)
+                            setCommandError("Not a color: " + voptState.inputValue);
+                    }
                 } else {
                     assert false : "Type " + voptState.type.getSimpleName()
                                     + " not handled";
@@ -514,6 +535,13 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         } else if (value instanceof Integer
                 || value instanceof String) {
             v = "  " + vopt.fullName + "=" + value;
+        } else if(value instanceof Color) {
+            if(value != null) {
+                Color c = (Color)value;
+                v = String.format("%s [r=%x,g=%x,b=%x]",
+                                  ColorOption.xformToString(c),
+                                  c.getRed(), c.getGreen(), c.getBlue());
+            }
         } else {
             assert false : value.getClass().getSimpleName() + " not handled";
         }

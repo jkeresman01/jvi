@@ -190,6 +190,7 @@ public final class Options {
   public static final String selectFgColor = "viSelectFgColor";
   public static final String searchColor = "viSearchColor";
   public static final String searchFgColor = "viSearchFgColor";
+  public static final String roCursorColor = "viRoCursorColor";
 
   public static final String equalProgram = "viEqualProgram";
   public static final String formatProgram = "viFormatProgram";
@@ -390,6 +391,11 @@ public final class Options {
     OptUtil.setupOptionDesc(Category.PLATFORM, selectFgColor, "'hl-visual' foreground color",
             "The color used for a visual mode selection foreground.");
     setExpertHidden(selectFgColor, false, false);
+
+    OptUtil.createColorOption(roCursorColor, Color.red, true);
+    OptUtil.setupOptionDesc(Category.PLATFORM, roCursorColor, "'rocursorcolor' 'rocc'",
+            "If not empty, this overrides the cursor color in a"
+            + " read only editor. With :set can use some color names.");
     
     OptUtil.createBooleanOption(hideVersionOption, false);
     OptUtil.setupOptionDesc(Category.PLATFORM, hideVersionOption, "hide version",
