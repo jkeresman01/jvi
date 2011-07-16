@@ -294,6 +294,9 @@
   - Reduce public methods
     - in ViMan there's all the mouse stuff is public. Create a class which
       bounces to them and give it to Caret impl, then they can be private.
+    - ViFactory is a candidate for a Factory implementation that acts as
+      a base class with protected things like access to curwin.
+    - Further hide things in "G"; some of the methods expose too much, G.curwin()
   - to GetChar::docRemove pass object that knows how to get/work with the
     removed text rather than getting the removed text directly, then don't
     have to construct the removed text if not needed.
