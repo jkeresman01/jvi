@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.manager;
 
+import com.raelity.jvi.core.lib.KeyDefs.KeyStrokeType;
 import com.raelity.jvi.options.DebugOption;
 import java.util.Queue;
 import com.raelity.jvi.core.Util;
@@ -202,14 +203,15 @@ public class Scheduler
      * A key was typed. Handle the event.
      * <br>NEEDSWORK: catch all exceptions coming out of here?
      */
-    public static void keyStroke(Component target, char key, int modifier)
+    public static void keyStroke(Component target, char key,
+                                 int modifier, KeyStrokeType ksType)
     {
         if(activeCommandEntry == null) // don't check when reroute character
             verifyNotBusy();
         try {
             setJViBusy(true);
             switchTo(target);
-            if (rerouteChar(key, modifier))
+            if (rerouteChar(key, modifier, ksType))
                 return;
             if(!keyStrokeTodo.isEmpty() && G.curwin() != null)
                 runKeyStrokeTodo();
@@ -228,11 +230,12 @@ public class Scheduler
      * <p>Special characters are discarded.
      * </p>
      */
-    static boolean rerouteChar(char c, int modifiers)
+    static boolean rerouteChar(char c, int modifiers, KeyStrokeType ksType)
     {
         if (activeCommandEntry == null)
             return false;
-        if ((c & 61440) != KeyDefs.VIRT && modifiers == 0) // 0xf000
+        // Probably just checking for CHAR would be good enough
+        if ((c & 0xf000) != KeyDefs.VIRT && ksType == KeyStrokeType.CHAR)
             if (c >= 32 && c != 127) {
                 if (Options.kd().getBoolean())
                     Options.kd().println("rerouteChar");
@@ -284,9 +287,31 @@ public class Scheduler
         }
     }
 
-    public static void stopCommandEntry()
+    public static void stopCommandEntry(ViCmdEntry ce)
     {
+        if(ce != activeCommandEntry) {
+            LOG.log(Level.SEVERE, null,
+                    new IllegalStateException("wrong command entry"));
+            return;
+        }
+        if(activeCommandEntry == null)
+            return;
+        internalStopCommandEntry();
+    }
+
+    private static void internalStopCommandEntry()
+    {
+        activeCommandEntry.cancel();
         activeCommandEntry = null;
+    }
+
+    static void cancelCommandEntry()
+    {
+        if(activeCommandEntry == null)
+            return;
+        if(G.dbgEditorActivation().getBoolean())
+            G.dbgEditorActivation().println("Activation: cancel CommandEntry");
+        internalStopCommandEntry();
     }
 
     //////////////////////////////////////////////////////////////////////

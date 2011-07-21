@@ -55,10 +55,9 @@ package com.raelity.jvi.core.lib;
  * </p>
  */
 public class KeyDefs {
+    private KeyDefs() { }
 
-    private KeyDefs()
-    {
-    }
+    public enum KeyStrokeType { CHAR, KEY }
 
     public static boolean isVIRT(char c)
     {

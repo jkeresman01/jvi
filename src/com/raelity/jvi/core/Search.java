@@ -108,7 +108,7 @@ public class Search
       boolean acceptIncr = false;
       boolean cancel = false;
       
-      Scheduler.stopCommandEntry();
+      Scheduler.stopCommandEntry(getSearchCommandEntry());
       
       if(cmd.charAt(0) == '\n') {
         if(ass.incrSearchActive

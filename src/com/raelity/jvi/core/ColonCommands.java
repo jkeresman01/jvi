@@ -13,7 +13,7 @@
  *
  * The Initial Developer of the Original Code is Ernie Rael.
  * Portions created by Ernie Rael are
- * Copyright (C) 2000 Ernie Rael.  All Rights Reserved.
+ * Copyright (C) 2011 Ernie Rael.  All Rights Reserved.
  *
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
@@ -103,7 +103,7 @@ static private void colonEntryComplete( ActionEvent ev )
         Hook.setJViBusy(true);
 
         ViManager.getFactory().commandEntryAssist(getColonCommandEntry(),false);
-        Scheduler.stopCommandEntry();
+        Scheduler.stopCommandEntry(getColonCommandEntry());
         String commandLine = colonCommandEntry.getCommand();
         String cmd = ev.getActionCommand();
         // if not <CR> must be an escape, just ignore it

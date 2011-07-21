@@ -138,6 +138,7 @@ public enum AppViews
             return;
         if(avCurrentlyActive != null)
             deactivateCurrent();
+        Scheduler.cancelCommandEntry();
 
         Component ed = av.getEditor();
         if (fact() != null && G.dbgEditorActivation().getBoolean())
@@ -177,6 +178,7 @@ public enum AppViews
     {
         if(!force && avCurrentlyActive == null)
             return;
+        Scheduler.cancelCommandEntry();
         if (fact() != null && G.dbgEditorActivation().getBoolean())
             G.dbgEditorActivation().println("Activation: AppViews.deactivateCurrent: ");
             //System.err.println("Activation: avs.deactivateCurent: " +

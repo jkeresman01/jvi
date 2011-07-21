@@ -675,13 +675,16 @@ public class CommandLine extends JPanel
 
         protected abstract void finishActivate();
 
-        private void shutdownEntry()
+        private void shutdownEntry(boolean isCancel)
         {
             commandLine.getTextComponent()
                     .removeFocusListener(focusSetSelection);
             prepareShutdown();
 
-            tv.getEditor().requestFocus();
+            // A cancel is the result of external changes, including focus,
+            // so don't throw in additional focus stuff
+            if(!isCancel)
+                tv.getEditor().requestFocus();
             tv = null;
         }
 
@@ -731,8 +734,10 @@ public class CommandLine extends JPanel
         @Override
         public void cancel()
         {
+            if(tv == null)
+                return;
             lastCommand = "";
-            shutdownEntry();
+            shutdownEntry(true);
         };
 
         public JLabel getModeLabel()
@@ -771,7 +776,7 @@ public class CommandLine extends JPanel
                         Options.getDebugOption(Options.dbgKeyStrokes);
                 if (dbg.getBoolean())
                     dbg.println("CommandAction: '" + lastCommand + "'");
-                shutdownEntry();
+                shutdownEntry(false);
                 fireEvent(e);
             } catch (Exception ex) {
                 LOG.log(Level.SEVERE, null, ex);

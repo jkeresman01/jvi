@@ -603,7 +603,7 @@ abstract public class SwingFactory implements ViFactory
                                 + "(" + (int)c + ") " + mod);
                     }
                     if ( keep ) {
-                        Scheduler.keyStroke(target, c, mod);
+                        Scheduler.keyStroke(target, c, mod, KeyStrokeType.CHAR);
                     }
                 } else {
                     if  ( Options.kd().getBoolean() ) {
@@ -649,7 +649,7 @@ abstract public class SwingFactory implements ViFactory
                         + ": " + String.format("%x", (int)key)
                         + "(" + ((int)key&~VIRT) + ") " + mod + " " + virt);
             }
-            Scheduler.keyStroke(target, key, mod);
+            Scheduler.keyStroke(target, key, mod, KeyStrokeType.KEY);
         }
 
         @Override
