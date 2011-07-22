@@ -82,9 +82,7 @@ public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    // 1.4.3.x1.1 - add accessors like: p_bs() { return p_bs.getInteger(); }
-    // 1.4.3.x2   - G is almost all package local fields, many more :set options
-    public static final jViVersion version = new jViVersion("1.4.3.x3.3");
+    public static final jViVersion version = new jViVersion("1.4.3.x4");
 
     private static com.raelity.jvi.core.Hook core;
 
