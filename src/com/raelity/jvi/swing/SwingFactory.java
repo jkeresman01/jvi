@@ -235,6 +235,7 @@ abstract public class SwingFactory implements ViFactory
         JTextComponent ed = (JTextComponent)editor;
         ViTextView tv = (ViTextView)ed.getClientProperty(PROP_TV);
         if ( tv == null ) {
+            ed.putClientProperty(PROP_AV, null);
             return;
         }
 
@@ -244,6 +245,7 @@ abstract public class SwingFactory implements ViFactory
         Buffer buf = tv.getBuffer();
         tv.shutdown();
         ed.putClientProperty(PROP_TV, null);
+        ed.putClientProperty(PROP_AV, null);
         releaseBuffer(buf);
     }
 
