@@ -35,7 +35,9 @@
 
 <pre>
 <span id="New" class="TodoSection">New</span>
-  - add DebugOption for WindowTreeBuilder, PreferencesChangeMonitor, dbgOptions
+  - set REUSE flag for tagstack stuff ^] & ^t .
+  - When create/open textView sync up with shares as needed;
+    See syncTextViewInstances and its comment for more info.
   - Use jVi bindings for commit dialog test area
     See org.netbeans.modules.mercurial.ui.commit.CommitPanel;
     It uses JTextArea's setWrapStyleWord and setColumns and setTab
@@ -48,7 +50,10 @@
                  add MARK_COMMIT_GROUP
     Bug 150251 - Too high granularity of undo history
                  when undoing CC (Ctrl+Enter)
-  - MutliEdit and AppView and ":e#". Like source half of Matisse.
+  - give warning if not all fonts are same size and monospace.
+    font.getFontFamily().equals(MONOSPACED)
+  - after [DOWN] vm.viewLine gets called 5 times.
+  - test without freezer.
 
 
 <span id="Bugs" class="TodoSection">Bugs</span>
@@ -154,13 +159,17 @@
 
 <span id="NetBeans_Feature" class="TodoSection">NetBeans Feature</span>
   - rework status window issues.
-    when scroll clears status, give a few seconds
+    - when scroll clears status, give a few seconds; currently status line
+      persists through several scrolls.
+    - Could use a long timer, for example after 1st scroll, rewrite message
+      with a timer.
+    - clear message when change mode, for example, "^Gixxxx[ESC]"
   - Have option for jVi shortcuts, several ^W at least.
     See options.keymap: KeymapManager, KeymapModel, LayersBridge
     and editor.macros: MacroShortcutsInjector and MacrosKeymapManager.
     There's Utilities.keyToString,stringToKey
     Note: jvi has been made a friend in options.keymap
-  - global shortcut key to attach jVi to any text component,
+  - global shortcut key to attach/install jVi to any text component,
     in particular JTextArea for commit messages
         See [platform-dev] Re: Magic global accessibility keys
         in mail folder: Developement/NetBeans/Wiki
@@ -236,7 +245,6 @@
   - map command to generate map-cmds for current mappings
     A button, Current, in the mappings dialog, 
   - ^V issues, should prevent mapping
-  - Use JEditorPane for mappings ui with jVi in it.
   - add p_mmd option (currently hardcoded)
   - keybinding for *everything* possible and a big default mapping.
     F-keys, keypad. Include multiple modifiers at once.  Ctrl,Shft,Alt,Meta
@@ -277,6 +285,7 @@
 
 
 <span id="Cleanup" class="TodoSection">Cleanup</span>
+  - fpos.getMark()? fpos.verify() throw special exception.
   - make TextView.w_cursor a simple fpos,
     do an "update" when exitting key event
     NOTE: this may not be viable, maybe could be made to work if
