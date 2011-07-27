@@ -23,16 +23,32 @@ import com.raelity.jvi.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.awt.*;
+import java.lang.ref.WeakReference;
 
 /**
  * A command line entry widget that sits on the glass pane,
  * instead of a modal dialog; the modal dialog is preferred.
  * This widget can avoid problems with interpreter bugs,
  * particularly on early linux interpreters, around 2002.
+ *
+ * There is some funny business with the rootPane and its defaultButton.
+ * This is because with the glass pane usage, when InlineCmdEntry.java
+ * is used doing something like ":ls[RETURN]" or searching
+ * it ends up activating the default button.
+ * The dialog goes away before the command line fires completion, otherwise
+ * the completion event would be consumed and prevent the default button
+ * (I think) and so this means its a glass pane timning/race issue.
+ * Consider "Glasspane not catching keyboard events properly"
+ * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4137681 .
+ * NEEDSWORK: make this handling NB specific???
+ * BTW, the problem might also be fixable using
+ * KeyboardFocusManager/KeyEventDispatch.
  */
 public class InlineCmdEntry extends CommandLine.CommandLineEntry {
     private MouseListener mouseListener;
     private boolean doneWithCommandLine;
+    WeakReference<JRootPane> refRootPane;
+    JButton button;
     public InlineCmdEntry(){
         this(ViCmdEntry.Type.COLON);
     }
@@ -58,7 +74,13 @@ public class InlineCmdEntry extends CommandLine.CommandLineEntry {
 
     @Override
     public void finishActivate() {
-        JPanel glass = (JPanel)getRootPane().getGlassPane();
+        JRootPane rootPane = getRootPane();
+        refRootPane = new WeakReference<JRootPane>(rootPane);
+        JPanel glass = (JPanel)rootPane.getGlassPane();
+
+        button = rootPane.getDefaultButton();
+        rootPane.setDefaultButton(null);
+
         commandLine.setBounds(positionCommandEntry(glass, commandLine));
         if(glass.getLayout() != null) {
             glass.setLayout(null);
@@ -76,13 +98,19 @@ public class InlineCmdEntry extends CommandLine.CommandLineEntry {
     protected void prepareShutdown(){
         doneWithCommandLine = true;
         //commandLine.removeActionListener(this);
-        JPanel glass = (JPanel)getRootPane().getGlassPane();
+        JRootPane rootPane = refRootPane.get();
+        refRootPane.clear();
+        if(rootPane == null)
+            return; // we're in trouble
+        rootPane.setDefaultButton(button);
+        button = null;
+        JPanel glass = (JPanel)rootPane.getGlassPane();
         glass.removeMouseListener(mouseListener);
         glass.setVisible(false);
         glass.remove(commandLine);
         
         // repaint area around entry right now so it looks faster
-        JComponent jc = (JComponent)getRootPane().getContentPane();
+        JComponent jc = (JComponent)rootPane.getContentPane();
         Rectangle pos = commandLine.getBounds();
         Point p00 = SwingUtilities.convertPoint(glass,
                 pos.x, pos.y, jc);
