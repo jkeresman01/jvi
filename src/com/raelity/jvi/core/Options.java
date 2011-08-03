@@ -222,6 +222,7 @@ public final class Options {
   public static final String dbgOptions = "viDbgOptions";
   public static final String dbgWindowTreeBuilder = "viDbgWindowTreeBuilder";
   public static final String dbgPrefChangeMonitor = "viDbgPrefChangeMonitor";
+  public static final String dbgFonts = "viDbgFonts";
 
   public static final String twMagic = "#TEXT-WIDTH#";
 
@@ -349,6 +350,9 @@ public final class Options {
 
     G.dbgPrefChangeMonitor = OptUtil.createDebugOption(dbgPrefChangeMonitor);
     OptUtil.setupOptionDesc(Category.DEBUG, dbgPrefChangeMonitor, "debug pref change monitor", "");
+
+    G.dbgFonts = OptUtil.createDebugOption(dbgFonts);
+    OptUtil.setupOptionDesc(Category.DEBUG, dbgFonts, "debug font issues", "");
     
     /////////////////////////////////////////////////////////////////////
     //

@@ -1018,6 +1018,14 @@ implements Options.EditControl {
 	return getboolean(Options.hideVersionOption);
     }
 
+    public void setViDbgFonts(String arg)  throws PropertyVetoException {
+        put(Options.dbgFonts, arg);
+    }
+
+    public String getViDbgFonts() {
+	return getString(Options.dbgFonts);
+    }
+
     public void setViDbgCoordSkip(String arg)  throws PropertyVetoException {
         put(Options.dbgCoordSkip, arg);
     }

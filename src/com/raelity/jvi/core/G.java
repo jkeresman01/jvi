@@ -168,6 +168,8 @@ public class G implements ViOptionBag
         { return dbgUndo; }
     public static DebugOption dbgCoordSkip()
         { return dbgCoordSkip; }
+    public static DebugOption dbgFonts()
+        { return dbgFonts; }
     //
     static DebugOption dbgEditorActivation;
     static DebugOption dbgCoordSkip;
@@ -179,6 +181,7 @@ public class G implements ViOptionBag
     static DebugOption dbgWindowTreeBuilder;
     static DebugOption dbgPrefChangeMonitor;
     static DebugOption dbgOptions = OptUtil.createBootDebugOption(false);
+    static DebugOption dbgFonts;
 
     //
     // some options are accessed from out of core
