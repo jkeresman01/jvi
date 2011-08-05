@@ -25,10 +25,11 @@ JVI_UC=         # pick up from plugin portal update center
 UC_DIR=eaUC
 #UC_DIR=UC
 JVI_ADD="
-    $JVI_RELDIR/editor.pin-1.3.2/proj/updates.xml
-    $JVI_RELDIR/jvi.help-1.0/proj/updates.xml
-    $JVI_RELDIR/nb-jvi-spi-1.4/proj/updates.xml
-    $JVI_RELDIR/nb-70-text-1.1/proj/updates.xml
+    $JVI_RELDIR/editor.pin/editor.pin-1.3.2/proj/updates.xml
+    $JVI_RELDIR/jvi.help/jvi.help-1.0/proj/updates.xml
+    $JVI_RELDIR/nb-jvi-spi/nb-jvi-spi-1.4/proj/updates.xml
+    $JVI_RELDIR/nb-701/openide.text-1.0/proj/updates.xml
+    $JVI_RELDIR/nb-701/editor.completion-1.0/proj/updates.xml
     "
 
 OUT=$JVI_VERSIONDIR/build-uc
