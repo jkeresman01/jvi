@@ -286,6 +286,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     protected void do_runUndoable(Runnable r) {
         G.dbgUndo.printf("{Buffer:RunUndoable: \n");
         r.run();
+        G.dbgUndo.printf("}Buffer:RunUndoable: \n");
     }
 
     @Override
