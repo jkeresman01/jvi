@@ -2876,8 +2876,9 @@ middle_code:
           //            && (fdo_flags & FDO_SEARCH) && KeyTyped)
           // 	    foldOpenCursor();
           // #endif
-          Options.newSearch();
       }
+      // always do this since might turn off highlighting if no match found
+      Options.newSearch();
 
       // "/$" will put the cursor after the end of the line, may need to
       // correct that here
