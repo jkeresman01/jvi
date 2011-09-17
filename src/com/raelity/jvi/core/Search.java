@@ -333,6 +333,15 @@ end_do_search:
       }
 
       // ..... lots of offset and some SEARCH_ECHO stuff .....
+      if((options & SEARCH_ECHO) != 0) {
+        // simplified
+        String p;
+        if(searchstr == null || searchstr.isEmpty())
+          p = spats[last_idx].pat;
+        else
+          p = searchstr;
+        Msg.smsg(String.valueOf(dirc) + p);
+      }
 
       int rc = searchit(null, pos,
                         dirc == '/' ? FORWARD : BACKWARD,
