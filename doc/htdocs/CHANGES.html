@@ -33,8 +33,6 @@
       </li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>jVi NetBeans KeyBindings</dt>
   <dd>
     <ul>
@@ -45,8 +43,6 @@
       </li>
     </ul>
   </dd>
-</dl>
-<dl>
   <dt>Bug fixes</dt>
   <dd>
     <ul>
@@ -74,6 +70,7 @@
 
 <h2>jVi-1.4 Release, NB7.0 only</h2>
 
+<!--
 <b>Version 1.4.3 early access</b>
 <p>
   The early access update center is at
@@ -84,43 +81,58 @@
   <dt>1.4.3.x5 - 2011/07/22</dt>
   <dd>
     <ul>
-      <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&aid=3408923&group_id=3653&atid=103653">
-        [#3408923] Search Wrap Message never goes away</a>
-        <br/>Be more vim-like and always display search pattern; fixes issue.
-      </li>
-      <li>Give warning if fonts are not all the same size.</li>
     </ul>
   </dd>
   <dt>1.4.3.x4 - 2011/07/22</dt>
   <dd>
     <ul>
-      <li>Add platform option, rocursorcolor/rocc, for color of
-        cursor in read only editor; works with <span class="tt">:set</span>. </li>
-      <li>Fix some issues with non-modal command line entry.</li>
     </ul>
   </dd>
-  <dt>1.4.3.x3 - 2011/07/16</dt>
+</dl>
+-->
+
+<b>Version 1.4.3 - 2011/09/19 </b>
+<p>
+
+</p>
+
+<dl>
+  <dt>jVi Core</dt>
   <dd>
     <ul>
-      <li>Draw caret as empty rectangle when editor not focused.</li>
-      <li>Draw caret as emphasized empty rectangle when
-        focused editor is read only. For example the left side of diff</li>
-    </ul>
-  </dd>
-  <dt>1.4.3.x2 - 2011/07/11</dt>
-  <dd>
-    <ul>
-      <li>Mappings entry in Options dialog has jVi bindings.</li>
-      <li>Almost all options supported by <span class="tt">:set</span> command.
+      <li>
+        <span class="tt">:set</span> command supports almost all options.
         Use <span class="tt">:set all</span> to see options;
         command output is now multi column.
       </li>
+      <li>Different cursor used in readonly and/or not focused windows.
+        <ul>
+          <li>Draw caret as empty rectangle when editor not focused.</li>
+          <li>Draw caret as emphasized empty rectangle when
+            focused editor is read only. For example the left side of diff
+          </li>
+          <li>Add platform option, rocursorcolor/rocc, for color of
+            cursor in read only editor; works with <span class="tt">:set</span>.
+          </li>
+        </ul>
+      </li>
     </ul>
   </dd>
-  <dt>1.4.3.x1 - 2011/07/01</dt>
+  <dt>jVi NetBeans KeyBindings</dt>
   <dd>
     <ul>
+      <li>Entering key mappings in Options dialog uses jVi editor bindings.</li>
+      <li>Give warning if fonts are not all the same size.</li>
+    </ul>
+  </dd>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li>
+        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3408923&amp;group_id=3653&amp;atid=103653">
+        [#3408923] Search Wrap Message never goes away</a>
+        <br/>Be more vim-like and always display search pattern; fixes issue.
+      </li>
       <li> Fix various issues around wrap and folding for
         cursor positioning and view related
         navigation commands:
@@ -131,6 +143,7 @@
         <span class="tt">zz</span>
         and <span class="tt">zb</span>.
       </li>
+      <li>Fix some issues with non-modal command line entry.</li>
     </ul>
   </dd>
 </dl>
@@ -164,7 +177,7 @@
         <span class="tt">:g\/</span> and
         <span class="tt">:g\?</span>
         use the last search pattern and
-        <span class="tt">:g\&</span> uses the last substitute pattern.
+        <span class="tt">:g\&amp;</span> uses the last substitute pattern.
       </li>
     </ul>
   </dd>
