@@ -4,6 +4,8 @@ In NetBeans, install "jVi for NB-7.0 Update Center",
 with Tools>Plugins>AvailablePlugins
 (source: Plugin Portal, category: editing)
 
+| **nbvi-1.4.3**
+|       try ":set all", other minor features and fixes; see CHANGES
 | **nbvi-1.4.2**
 |       ^W split, resize, move window commands; see CHANGES
 | **nbvi-1.4.1**
