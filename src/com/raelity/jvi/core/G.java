@@ -312,11 +312,13 @@ public class G implements ViOptionBag
 
 
 
+    public static boolean disableFontError() { return disableFontError; }
     public static boolean usePlatformInsertTab() { return usePlatformInsertTab; }
     public static boolean useFrame() { return useFrame; }
     public static boolean isHideVersion() { return isHideVersion; }
     public static boolean isCoordSkip() { return isCoordSkip; }
 
+    static boolean disableFontError;
     static boolean useFrame;    // use JFrame for command entry
     static boolean usePlatformInsertTab;
     static boolean readOnlyHack;

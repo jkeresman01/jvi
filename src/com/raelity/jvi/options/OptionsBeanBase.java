@@ -392,6 +392,14 @@ implements Options.EditControl {
         return ViManager.getReleaseString();
     }
 
+    public void setViDisableFontError(boolean arg)  throws PropertyVetoException {
+        put(Options.disableFontError, arg);
+    }
+
+    public boolean getViDisableFontError() {
+	return getboolean(Options.disableFontError);
+    }
+
     public void setViEqualAlways(boolean arg)  throws PropertyVetoException {
         put(Options.equalAlways, arg);
     }

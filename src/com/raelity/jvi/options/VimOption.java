@@ -247,10 +247,11 @@ new VimOption("ww_rarrow",   "",     Options.rightWrapNext,   S.P_GBL, EnumSet.o
 new VimOption("ww_sp",       "",     Options.spaceWrapNext,   S.P_GBL, EnumSet.of(F.HIDE)),
 new VimOption("ww_tilde",    "",     Options.tildeWrapNext,   S.P_GBL, EnumSet.of(F.HIDE)),
 
+new VimOption("disableFontError","", Options.disableFontError, S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 new VimOption("isHideVersion","",    Options.hideVersionOption,S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 new VimOption("isCoordSkip", "",     Options.coordSkip,        S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 new VimOption("pcmarkTrack", "",     Options.pcmarkTrack,      S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
-new VimOption("readOnlyHack","",     Options.readOnlyHack,    S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
+new VimOption("readOnlyHack","",     Options.readOnlyHack,     S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 new VimOption("redoTrack",   "",     Options.redoTrack,        S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 new VimOption("useFrame",    "",     Options.commandEntryFrame,S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 new VimOption("viminfoMaxBuf","",    Options.persistedBufMarks,S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),

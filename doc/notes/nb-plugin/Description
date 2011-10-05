@@ -1,0 +1,66 @@
+
+<p>jVi features include:
+</p>
+<ul><li>a port of vim to java, so things like
+        <b><code>"*2d3w</code></b>
+        and <b><code>y% </code></b>work as expected
+    </li>
+    <li>marks, file-marks and yank buffers,
+        for example <b><code>"ay'a</code></b>.
+        <br>These are persisted between sessions,
+        along with colon and search commands.
+    </li>
+    <li> <a href="http://jvi.sourceforge.net/?vimhelp/index.txt.html">
+        over 200 normal mode commands, operators and motions</a>
+    </li>
+    <li> <a href="http://jvi.sourceforge.net/?vimhelp/windows.txt.html">
+        Window <em><b>split</b></em>, <em><b>resize</b></em>
+        and <em><b>move</b></em> commands </a>, for example
+        Ctrl-W_s, Ctrl-W_=, Ctrl-W_L.
+        <br/>Options 'equalalways', 'splitbelow' and 'splitright'
+        are supported.
+    </li>
+    <li>tag stack
+    </li>
+    <li>visual mode, including 
+        <a href="http://jvi.sourceforge.net/javahelpset/jvi-vis_block.html">
+        detailed visual block mode documentation</a> (aka RECTANGULAR EDIT)
+    </li>
+    <li>text object selection
+    </li>
+    <li><a href="http://jvi.sourceforge.net/?vimhelp/map.txt.html">
+        map commands for user defined key mappings</a>
+    </li>
+    <li>'wrap', 'linebreak' and 'list' options;
+        also horizontal scroll commands
+    </li>
+    <li><b><code>:set all</code></b> and
+        <a href="http://jvi.sourceforge.net/?vimhelp/options.txt.html">
+        several other <code>:set</code> commads</a>
+    </li><li>substiute command with back references, there are options
+        to specify what meta characters need to be escaped, so you can enter
+    <br><b><code>:.,$s/([^ ]*) (.*$)/\2 \1</code></b>
+    </li>
+    <li> modeline processing; <b><code>modeline</code></b> 
+        and <b><code>modelines</code></b>
+        options.
+    </li>
+    <li>Results of commands like <b><code>:g/TextFilter/p</code></b>
+        go into output window with hyperlinks to file.
+    </li>
+    <li>The bang commands: such as <b><code>!{motion}{filter}</code></b>,
+        <b><code>:{range}![!]{filter} [!][arg]</code></b> 
+        and of course <b><code>:!{cmd}</code></b>.
+        vim options <b><code>shell</code></b>, <b><code>shellcmdflag</code></b>
+        and <b><code>shellxquote</code></b>
+    </li>
+    <li><b><code>=</code></b> operator with <b><code>equalprg</code></b>
+        option. When <b><code>equalprg</code></b> empty, hook into platform
+        reindent.
+    </li>
+    <li><a href="http://jvi.sourceforge.net/">Online documentation</a>
+    </li>
+</ul><p><i>Before NetBeans 7.0</i>, for proper  <b>undo/redo granularity</b>,
+a small, optional, jVi NetBeans patch is required. This is available
+as a download.
+</p>

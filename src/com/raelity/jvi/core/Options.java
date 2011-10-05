@@ -121,6 +121,7 @@ public final class Options {
   public static final String platformTab = "viPlatformTab";
   public static final String magicRedoAlgorithm = "viMagicRedoAlgorithm";
   public static final String caretBlinkRate = "viCaretBlinkRate";
+  public static final String disableFontError = "viDisableFontError";
 
   public static final String backspaceWrapPrevious = "viBackspaceWrapPrevious";
   public static final String hWrapPrevious = "viHWrapPrevious";
@@ -479,6 +480,13 @@ public final class Options {
                             caretBlinkRate, "caret blink rate",
             "This determines if and how fast the caret blinks."
             + " If this is zero the caret will not blink");
+
+    OptUtil.createBooleanOption(disableFontError, false);
+    OptUtil.setupOptionDesc(Category.PLATFORM,
+                            disableFontError, "disable Font Problem Dialog",
+            "If a font size problem is detected, don't bring up a dialog."
+            + " No matter how this is set, the error is reported in"
+            + " the output window");
 
     /////////////////////////////////////////////////////////////////////
     //
