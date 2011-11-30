@@ -29,15 +29,15 @@ START-DOC-DEL
 4. User-defined commands	|user-commands|
 STOP-DOC-DEL
 
-NOTE: jVi only supports mapping a single character as {lhs} (currently)
-NOTE: only normal mode mappings are supported (currently)
+NOTE: only nvoip mode mappings are supported (currently)
+      normal, visual, operator-pending, insert PLATFORM-SELECT mode
 
 NOTE: jVi supports additional map commands, :pmap, :pnoremap, :punmap.
       These are normal mode, they are valid when PLATFORM-SELECT is the
-      displayed mode, that is when the mouse is used to make a selection.
+      displayed mode, for example the mouse is used to make a selection.
           :pnoremap y vy
           :pnoremap p vp
-      get yank and put to work with the mouse selection
+      map yank and put to work with the mouse selection
 
 ==============================================================================
 1. Key mapping				*key-mapping* *mapping* *macro*
