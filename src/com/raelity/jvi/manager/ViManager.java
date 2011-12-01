@@ -130,7 +130,7 @@ public class ViManager
         Boolean b = (Boolean) hackMap.get(key);
         //return b == null || !b ? false : true;
         // null is treated as true !?
-        return b == null || b;
+        return b == null ? false : b;
     }
 
     private static Boolean isDebugAtHome;
