@@ -400,6 +400,14 @@ implements Options.EditControl {
 	return getboolean(Options.disableFontError);
     }
 
+    public void setViDisableFontCheckSpecial(boolean arg)  throws PropertyVetoException {
+        put(Options.disableFontCheckSpecial, arg);
+    }
+
+    public boolean getViDisableFontCheckSpecial() {
+	return getboolean(Options.disableFontCheckSpecial);
+    }
+
     public void setViEqualAlways(boolean arg)  throws PropertyVetoException {
         put(Options.equalAlways, arg);
     }

@@ -122,6 +122,7 @@ public final class Options {
   public static final String magicRedoAlgorithm = "viMagicRedoAlgorithm";
   public static final String caretBlinkRate = "viCaretBlinkRate";
   public static final String disableFontError = "viDisableFontError";
+  public static final String disableFontCheckSpecial = "viDisableFontCheckSpecial";
 
   public static final String backspaceWrapPrevious = "viBackspaceWrapPrevious";
   public static final String hWrapPrevious = "viHWrapPrevious";
@@ -483,10 +484,20 @@ public final class Options {
 
     OptUtil.createBooleanOption(disableFontError, false);
     OptUtil.setupOptionDesc(Category.PLATFORM,
-                            disableFontError, "disable Font Problem Dialog",
+                            disableFontError, "Font Check disable Problem Dialog",
             "If a font size problem is detected, don't bring up a dialog."
             + " No matter how this is set, the error is reported in"
             + " the output window");
+
+    OptUtil.createBooleanOption(disableFontCheckSpecial, true);
+    OptUtil.setupOptionDesc(Category.PLATFORM,
+                            disableFontCheckSpecial,
+                            "Font Check ignore special chars",
+            "By default all characters are used to determine font width."
+            + " Some fonts have special characters, unicode u0000 to u001f,"
+            + " that are a different width from standard chars."
+            + " Use this option to ignore the special chars when checking"
+            + "for font size problems.");
 
     /////////////////////////////////////////////////////////////////////
     //
