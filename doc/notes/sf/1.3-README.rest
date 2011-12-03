@@ -4,6 +4,8 @@ In NetBeans, install "jVi for NB-7.0 Update Center",
 with Tools>Plugins>AvailablePlugins
 (source: Plugin Portal, category: editing)
 
+| **nbvi-1.4.5.rc2**
+|       fix for 7.1; works with 7.0. In 7.1 ":tog[gle]" minimize/restore output window group
 | **nbvi-1.4.3**
 |       try ":set all", other minor features and fixes; see CHANGES
 | **nbvi-1.4.2**
