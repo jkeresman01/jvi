@@ -95,6 +95,7 @@ public class TestText {
     SimpleEvent(String name) {
       super(name);
     }
+        @Override
     public void actionPerformed(ActionEvent e) {
       commandDialog.activate(":", null/*frame.jEditorPane1*/);
     }
@@ -110,6 +111,7 @@ public class TestText {
       super(name);
       msg = name;
     }
+        @Override
     public void actionPerformed(ActionEvent e) {
       System.err.println("action: " + msg);
     }

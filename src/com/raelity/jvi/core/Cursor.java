@@ -48,40 +48,48 @@ class Cursor implements ViCaretStyle {
   }
 
   /** one of the SHAPE_ defined */
+    @Override
   public int getShape() {
     return shape;
   }
 
+    @Override
   public char getEditPutchar() {
       return G.editPutchar;
   }
 
   /** percentage of cell for bar */
+    @Override
   public int getPercentage() {
     return percentage;
   }
   
   /** match brace offset */
+    @Override
   public int getMatchBraceOffset() {
       return matchBraceOffset;
   }
 
   /** blinking, wait time before blinking starts */
+    @Override
   public int getBlinkwait() {
     return blinkwait;
   }
 
   /** blinking, on time */
+    @Override
   public int getBlinkon() {
     return blinkon;
   }
 
   /** blinking, off time */
+    @Override
   public int getBlinkoff() {
     return blinkoff;
   }
 
   /** highlight group ID */
+    @Override
   public int getHighlightId() {
     return highlightId;
   }

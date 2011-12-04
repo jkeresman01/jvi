@@ -120,6 +120,7 @@ public class FreezeViewport implements DocumentListener, ChangeListener
         } else {
             EventQueue.invokeLater(new Runnable() {
 
+                @Override
                 public void run()
                 {
                     adjustViewport(offset);
@@ -129,20 +130,24 @@ public class FreezeViewport implements DocumentListener, ChangeListener
         }
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e)
     {
         handleChange(e);
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e)
     {
         handleChange(e);
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e)
     {
     }
 
+    @Override
     public void stateChanged(ChangeEvent e)
     {
         Point pt = vp.getViewPosition();

@@ -35,6 +35,7 @@ public class MutableInt implements Comparable<MutableInt> {
   final public boolean testAnyBits(int mask) { return (value & mask) != 0; }
   final public boolean testAllBits(int mask) { return (value & mask) == mask; }
 
+    @Override
   public int compareTo(MutableInt o) {
     return value - o.value;
   }

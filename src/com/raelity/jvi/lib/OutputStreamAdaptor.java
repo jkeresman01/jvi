@@ -31,15 +31,19 @@ public class OutputStreamAdaptor implements ViOutputStream {
   public OutputStreamAdaptor() {
   }
 
+    @Override
   public void println(int line, int col, int length) {
   }
 
+    @Override
   public void println(String s) {
   }
 
+    @Override
   public void printlnLink(String link, String text) {
   }
 
+    @Override
   public void close() {
   }
 }

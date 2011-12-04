@@ -95,25 +95,30 @@ class FPOS extends ViFPOS.abstractFPOS
         initFPOS(offset, l, offset - buf.getLineStartOffset(l));
     }
 
+    @Override
     public boolean isValid() {
         return true;
     }
 
+    @Override
     public int getLine()
     {
         return lnum;
     }
 
+    @Override
     public int getColumn()
     {
         return col;
     }
 
+    @Override
     public int getOffset()
     {
         return offset;
     }
 
+    @Override
     public void set(int line, int column)
     {
         set(G.curbuf, line, column);
@@ -142,6 +147,7 @@ class FPOS extends ViFPOS.abstractFPOS
         initFPOS(startOffset + column, line, column);
     }
 
+    @Override
     final public ViFPOS copy()
     {
         FPOS fpos = new FPOS(rBuf.get());
@@ -149,10 +155,12 @@ class FPOS extends ViFPOS.abstractFPOS
         return fpos;
     }
 
+    @Override
     public Buffer getBuffer() {
         return rBuf.get();
     }
 
+    @Override
     public void verify(Buffer buf)
     {
         if (rBuf.get() != buf) {

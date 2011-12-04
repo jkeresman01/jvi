@@ -113,6 +113,7 @@ abstract public class SimpleTextView extends SwingTextView
             return;
         PropertyChangeListener pcl = new PropertyChangeListener()
         {
+            @Override
             public void propertyChange(PropertyChangeEvent evt)
             {
                 updateStyles();

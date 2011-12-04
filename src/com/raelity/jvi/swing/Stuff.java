@@ -72,6 +72,7 @@ public class Stuff
     private static PropertyChangeListener focusManagerListener;
     private static class FocusManagerListener implements PropertyChangeListener
     {
+        @Override
         public void propertyChange(PropertyChangeEvent evt)
         {
             Object n = evt.getNewValue();

@@ -45,12 +45,14 @@ public class PlayFS extends SimpleFS
     }
 
 
+    @Override
     public boolean isModified( ViBuffer buf )
     {
         return true;
     }
 
 
+    @Override
     public boolean write(ViTextView tv,
                          boolean force,
                          Object writeTarget,
@@ -81,12 +83,14 @@ public class PlayFS extends SimpleFS
     }
 
 
+    @Override
     public boolean writeAll( boolean force )
     {
         Msg.emsg("writAll() not implemented");
         return false;
     }
 
+    @Override
     public boolean edit(ViAppView av, boolean force)
     {
         Msg.emsg("edit(av{" + av + "}) not implemented");
@@ -94,6 +98,7 @@ public class PlayFS extends SimpleFS
     }
 
 
+    @Override
     public void edit(File f, boolean force, ViFPOS fpos )
     {
         Msg.emsg("edit(File{" + f + "}, force, fpos) not implemented");

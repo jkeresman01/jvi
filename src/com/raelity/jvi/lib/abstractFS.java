@@ -38,6 +38,7 @@ abstract public class abstractFS implements ViFS
     //
     // NEEDSWORK: this is static and app independent
     //
+    @Override
     public String getDisplayFileViewInfo(ViTextView tv) {
         ViAppView av = tv.getAppView();
         Buffer buf = tv.getBuffer();
@@ -68,6 +69,7 @@ abstract public class abstractFS implements ViFS
         return sb.toString();
     }
 
+    @Override
     public String getDisplayFileNameAndSize(ViBuffer buf) {
         StringBuilder sb = new StringBuilder();
         sb.append("\"").append(buf.getDisplayFileName()).append("\"");

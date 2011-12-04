@@ -66,6 +66,7 @@ private static final Logger LOG = Logger.getLogger(CcBang.class.getName());
                      position=10)
     public static class Init implements ViInitialization
     {
+        @Override
       public void init()
       {
         CcBang.init();
@@ -96,6 +97,7 @@ public static class BangAction extends AbstractColonAction
             return EnumSet.of(CcFlag.RANGE);
         }
 
+        @Override
     public void actionPerformed(ActionEvent ev)
     {
         if(coord != null) {
@@ -468,6 +470,7 @@ private static class FilterThreadCoordinator
             ba.finishBangCommand(fOK);
         } else {
             EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         ba.finishBangCommand(fOK);
                     }
@@ -806,6 +809,7 @@ private static class DocumentThread extends FilterThread
     {
         assert(!isThread);
         timer = new Timer(coord.WAIT, new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     assert(EventQueue.isDispatchThread());
                     if(timer != null) {
@@ -956,6 +960,7 @@ private static class DocumentThread extends FilterThread
         }
 
         Misc.runUndoable(new Runnable() {
+                @Override
             public void run() {
                 Buffer buf = win.w_buffer;
                 int startOffset = buf.getLineStartOffset(coord.startLine);
@@ -1293,6 +1298,7 @@ private static abstract class FilterThread extends Thread
     public void run()
     {
         setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+                @Override
                 public void uncaughtException(Thread t, Throwable e) {
                     FilterThread thisThread = (FilterThread) t;
                     if(thisThread.uncaughtException != null) {

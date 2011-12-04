@@ -59,21 +59,25 @@ public class OpsBase implements TextOps {
         this.textView = textView;
     }
 
+    @Override
     public void xact(Action action) {
         event.setSource(textView.getEditor());
 	action.actionPerformed(event);
     }
 
+    @Override
     public void xact(Action action, String s) {
         event.setActionCommand(s);
         xact(action);
     }
 
+    @Override
     public void xop(int op, String s) {
         event.setActionCommand(s);
         xop(op);
     }
     
+    @Override
     public void xact(String actionName) {
         Action action = findAction(actionName);
         xact(action);
@@ -82,6 +86,7 @@ public class OpsBase implements TextOps {
     /**
      * Try to do something useful with the op.
      */
+    @Override
     public void xop(int op) {
         String actionName;
         switch(op) {
