@@ -20,13 +20,15 @@
 
 package com.raelity.jvi.swing.simple;
 
+import java.awt.Component;
+import java.util.List;
+
+import javax.swing.JComponent;
+import javax.swing.text.JTextComponent;
+
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.core.lib.WindowTreeBuilder;
 import com.raelity.jvi.manager.ViManager;
-import java.awt.Component;
-import java.util.List;
-import javax.swing.JComponent;
-import javax.swing.text.JTextComponent;
 
 /**
  * Swing inmplementation.

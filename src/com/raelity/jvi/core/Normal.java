@@ -26,33 +26,31 @@
  */
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.ViTextView.HDIR;
-import com.raelity.jvi.ViTextView.HSCROLL;
-import com.raelity.jvi.core.lib.NotSupportedException;
-import com.raelity.jvi.ViTextView.EDGE;
-import com.raelity.jvi.ViTextView.DIR;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.ViFPOS;
-import com.raelity.jvi.ViFeature;
-import com.raelity.jvi.ViMark;
-import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.lib.MutableBoolean;
-import com.raelity.jvi.lib.MutableInt;
-import com.raelity.jvi.ViTextView.FOLDOP;
-import com.raelity.jvi.ViTextView.TAGOP;
-import com.raelity.jvi.ViTextView.TABOP;
-import com.raelity.text.TextUtil;
-import com.raelity.text.TextUtil.MySegment;
-
-import com.raelity.jvi.swing.KeyBinding;
-
 import java.text.CharacterIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.raelity.jvi.core.lib.Constants.*;
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViFeature;
+import com.raelity.jvi.ViMark;
+import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.ViTextView.DIR;
+import com.raelity.jvi.ViTextView.EDGE;
+import com.raelity.jvi.ViTextView.FOLDOP;
+import com.raelity.jvi.ViTextView.HDIR;
+import com.raelity.jvi.ViTextView.HSCROLL;
+import com.raelity.jvi.ViTextView.TABOP;
+import com.raelity.jvi.ViTextView.TAGOP;
+import com.raelity.jvi.core.Misc.Yankreg;
+import com.raelity.jvi.core.lib.NotSupportedException;
+import com.raelity.jvi.lib.MutableBoolean;
+import com.raelity.jvi.lib.MutableInt;
+import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.swing.KeyBinding;
+import com.raelity.text.TextUtil;
+import com.raelity.text.TextUtil.MySegment;
+
 import static com.raelity.jvi.core.Edit.*;
-import static com.raelity.jvi.core.lib.KeyDefs.*;
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
@@ -61,6 +59,8 @@ import static com.raelity.jvi.core.Search01.*;
 import static com.raelity.jvi.core.Search02.*;
 import static com.raelity.jvi.core.Search03.*;
 import static com.raelity.jvi.core.Util.*;
+import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.lib.KeyDefs.*;
 
 /**
  * Contains the main routine for processing characters in command mode.

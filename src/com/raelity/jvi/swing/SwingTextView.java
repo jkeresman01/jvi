@@ -20,33 +20,10 @@
 
 package com.raelity.jvi.swing;
 
-import com.raelity.jvi.lib.MutableInt;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import static java.lang.Math.abs;
-import static java.lang.Math.round;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.core.TextView;
-import com.raelity.jvi.core.Util;
-import com.raelity.jvi.core.Msg;
-import com.raelity.jvi.core.Buffer;
-import com.raelity.jvi.core.Misc;
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.core.Edit;
-import com.raelity.jvi.core.G;
-import  static com.raelity.jvi.core.lib.Constants.*;
-
-
-import com.raelity.jvi.*;
-import com.raelity.jvi.core.lib.CcFlag;
-import com.raelity.jvi.core.ColonCommands;
-import com.raelity.jvi.core.ColonCommands.ColonEvent;
-import com.raelity.jvi.manager.Scheduler;
-import com.raelity.jvi.options.DebugOption;
-import com.raelity.text.TextUtil.MySegment;
-
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -61,13 +38,14 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.swing.Action;
 import javax.swing.JEditorPane;
+import javax.swing.JViewport;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.JViewport;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -78,7 +56,39 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Utilities;
 import javax.swing.text.View;
+
 import org.openide.util.lookup.ServiceProvider;
+
+import com.raelity.jvi.ViAppView;
+import com.raelity.jvi.ViBuffer;
+import com.raelity.jvi.ViCaret;
+import com.raelity.jvi.ViCaretStyle;
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.ViMark;
+import com.raelity.jvi.ViStatusDisplay;
+import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.core.Buffer;
+import com.raelity.jvi.core.ColonCommands;
+import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.Edit;
+import com.raelity.jvi.core.G;
+import com.raelity.jvi.core.Misc;
+import com.raelity.jvi.core.Msg;
+import com.raelity.jvi.core.Options;
+import com.raelity.jvi.core.TextView;
+import com.raelity.jvi.core.Util;
+import com.raelity.jvi.core.lib.CcFlag;
+import com.raelity.jvi.lib.MutableInt;
+import com.raelity.jvi.manager.Scheduler;
+import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.options.DebugOption;
+import com.raelity.text.TextUtil.MySegment;
+
+import static java.lang.Math.abs;
+import static java.lang.Math.round;
+
+import static com.raelity.jvi.core.lib.Constants.*;
 
 /**
  *  Presents a swing editor interface for use with vi. There is

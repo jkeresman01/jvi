@@ -20,24 +20,25 @@
 
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.ViTextView.Direction;
-import com.raelity.jvi.lib.MutableInt;
-import com.raelity.jvi.ViFPOS;
+import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Level;
+
 import com.raelity.jvi.ViAppView;
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViTextView.Direction;
 import com.raelity.jvi.ViTextView.FOLDOP;
 import com.raelity.jvi.ViTextView.Orientation;
 import com.raelity.jvi.ViTextView.SIZOP;
 import com.raelity.jvi.ViWindowNavigator;
+import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.manager.ViManager;
-import java.util.logging.Level;
-import java.util.Iterator;
-import java.util.List;
 
-import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.Edit.*;
-import static com.raelity.jvi.core.lib.KeyDefs.*;
 import static com.raelity.jvi.core.Misc.*;
+import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.lib.KeyDefs.*;
 
 /**
  * do_window is some stuff from window.c and related.

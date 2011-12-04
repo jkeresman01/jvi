@@ -2,6 +2,7 @@ package com.raelity.jvi.swing;
 
 import java.awt.EventQueue;
 import java.awt.Point;
+
 import javax.swing.JViewport;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;

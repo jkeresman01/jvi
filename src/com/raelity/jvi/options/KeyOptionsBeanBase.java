@@ -20,15 +20,16 @@
 
 package com.raelity.jvi.options;
 
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.swing.KeyBinding;
 import java.awt.Image;
 import java.beans.BeanInfo;
 import java.beans.SimpleBeanInfo;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
+
+import com.raelity.jvi.core.Options;
+import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.swing.KeyBinding;
 
 /**
  *

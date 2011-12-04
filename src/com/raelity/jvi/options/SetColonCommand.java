@@ -1,19 +1,5 @@
 package com.raelity.jvi.options;
 
-import com.raelity.jvi.ViBuffer;
-import com.raelity.jvi.ViInitialization;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.ViOptionBag;
-import com.raelity.jvi.ViOutputStream;
-import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.core.ColonCommands;
-import com.raelity.jvi.core.ColonCommands.ColonEvent;
-import com.raelity.jvi.core.G;
-import com.raelity.jvi.core.Msg;
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.core.TextView;
-import com.raelity.jvi.core.Util;
-import com.raelity.jvi.options.VimOption.F;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
@@ -26,7 +12,23 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.openide.util.lookup.ServiceProvider;
+
+import com.raelity.jvi.ViBuffer;
+import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.ViOptionBag;
+import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.core.ColonCommands;
+import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.G;
+import com.raelity.jvi.core.Msg;
+import com.raelity.jvi.core.Options;
+import com.raelity.jvi.core.TextView;
+import com.raelity.jvi.core.Util;
+import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.options.VimOption.F;
 
 /**
  * Implement ":se[t]".

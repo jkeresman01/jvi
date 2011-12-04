@@ -22,6 +22,7 @@ package com.raelity.jvi.core;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import com.raelity.jvi.core.lib.BufferQueue;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.text.TextUtil;

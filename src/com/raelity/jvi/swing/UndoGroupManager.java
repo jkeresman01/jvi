@@ -2,6 +2,7 @@ package com.raelity.jvi.swing;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;

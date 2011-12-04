@@ -1,7 +1,5 @@
 package com.raelity.jvi.manager;
 
-import com.raelity.jvi.ViOutputStream;
-import com.raelity.jvi.core.G;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -18,8 +16,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.core.G;
 
 /**
  * Parse and output the jVi motd data.

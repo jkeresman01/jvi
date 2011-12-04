@@ -20,20 +20,6 @@
 
 package com.raelity.jvi.manager;
 
-import com.raelity.jvi.core.lib.KeyDefs.KeyStrokeType;
-import com.raelity.jvi.options.DebugOption;
-import java.util.Queue;
-import com.raelity.jvi.core.Util;
-import com.raelity.jvi.ViAppView;
-import com.raelity.jvi.ViCaret;
-import com.raelity.jvi.ViCmdEntry;
-import com.raelity.jvi.ViFactory;
-import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.core.Buffer;
-import com.raelity.jvi.core.G;
-import com.raelity.jvi.core.lib.KeyDefs;
-import com.raelity.jvi.core.Msg;
-import com.raelity.jvi.core.Options;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -44,8 +30,23 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.LinkedList;
+import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.raelity.jvi.ViAppView;
+import com.raelity.jvi.ViCaret;
+import com.raelity.jvi.ViCmdEntry;
+import com.raelity.jvi.ViFactory;
+import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.core.Buffer;
+import com.raelity.jvi.core.G;
+import com.raelity.jvi.core.Msg;
+import com.raelity.jvi.core.Options;
+import com.raelity.jvi.core.Util;
+import com.raelity.jvi.core.lib.KeyDefs;
+import com.raelity.jvi.core.lib.KeyDefs.KeyStrokeType;
+import com.raelity.jvi.options.DebugOption;
 
 import static com.raelity.jvi.manager.ViManager.*;
 

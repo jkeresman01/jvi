@@ -20,10 +20,6 @@
 
 package com.raelity.jvi.options;
 
-import com.raelity.jvi.core.G;
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.core.Options.Category;
 import java.awt.Color;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Field;
@@ -38,6 +34,11 @@ import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+
+import com.raelity.jvi.core.G;
+import com.raelity.jvi.core.Options;
+import com.raelity.jvi.core.Options.Category;
+import com.raelity.jvi.manager.ViManager;
 
 /**
  * static methods to create options and populate option categories.

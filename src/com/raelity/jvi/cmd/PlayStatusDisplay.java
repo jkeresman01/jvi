@@ -20,11 +20,11 @@
 
 package com.raelity.jvi.cmd;
 
+import javax.swing.JLabel;
+
 import com.raelity.jvi.ViStatusDisplay;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.manager.ViManager;
-
-import javax.swing.JLabel;
 
 /**
  *  A basic implementation of the vi status bar.

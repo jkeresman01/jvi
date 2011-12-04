@@ -19,24 +19,26 @@
  */
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.core.lib.KeyDefs;
-import java.util.logging.Logger;
-import com.raelity.jvi.core.lib.BufferQueue;
-import com.raelity.jvi.core.lib.Mappings;
-import com.raelity.jvi.core.lib.TypeBufMultiCharMapping;
-import com.raelity.jvi.options.Option;
-import com.raelity.jvi.ViInitialization;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.text.TextUtil;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.openide.util.lookup.ServiceProvider;
 
+import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.core.lib.BufferQueue;
+import com.raelity.jvi.core.lib.KeyDefs;
+import com.raelity.jvi.core.lib.Mappings;
+import com.raelity.jvi.core.lib.TypeBufMultiCharMapping;
+import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.options.Option;
+import com.raelity.text.TextUtil;
+
+import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
-import static com.raelity.jvi.core.Util.*;
 
 public class GetChar {
     private static boolean block_redo = false;

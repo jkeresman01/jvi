@@ -28,16 +28,9 @@
  */
 package com.raelity.jvi.swing.ui.options;
 
-import com.raelity.jvi.ViOutputStream;
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.core.lib.Mappings;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.options.OptUtil;
-import com.raelity.jvi.options.OptionsBean;
-import com.raelity.jvi.options.StringOption;
-import com.raelity.text.XMLUtil;
 import java.awt.Color;
 import java.beans.PropertyVetoException;
+
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.event.CaretEvent;
@@ -47,7 +40,17 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
+
 import org.openide.util.WeakListeners;
+
+import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.core.Options;
+import com.raelity.jvi.core.lib.Mappings;
+import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.options.OptUtil;
+import com.raelity.jvi.options.OptionsBean;
+import com.raelity.jvi.options.StringOption;
+import com.raelity.text.XMLUtil;
 
 /**
  * NEEDSWORK:

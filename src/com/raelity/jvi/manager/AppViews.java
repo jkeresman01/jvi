@@ -20,15 +20,6 @@
 
 package com.raelity.jvi.manager;
 
-import com.raelity.jvi.ViAppView;
-import com.raelity.jvi.ViFactory;
-import com.raelity.jvi.ViInitialization;
-import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.core.Buffer;
-import com.raelity.jvi.core.lib.CcFlag;
-import com.raelity.jvi.core.ColonCommands;
-import com.raelity.jvi.core.G;
-import com.raelity.jvi.core.Msg;
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -38,8 +29,19 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+
 import org.openide.util.WeakSet;
 import org.openide.util.lookup.ServiceProvider;
+
+import com.raelity.jvi.ViAppView;
+import com.raelity.jvi.ViFactory;
+import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.core.Buffer;
+import com.raelity.jvi.core.ColonCommands;
+import com.raelity.jvi.core.G;
+import com.raelity.jvi.core.Msg;
+import com.raelity.jvi.core.lib.CcFlag;
 
 /**
  * These static methods are used by the platform to inform jVi of the state

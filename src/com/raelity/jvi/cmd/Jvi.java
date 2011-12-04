@@ -20,30 +20,39 @@
 
 package com.raelity.jvi.cmd;
 
-import com.l2fprod.common.propertysheet.PropertySheetDialog;
-import javax.swing.JEditorPane;
-import javax.swing.JFrame;
-import javax.swing.JTextPane;
-import javax.swing.event.CaretEvent;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.TabSet;
-import javax.swing.text.TabStop;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Frame;
+import java.awt.HeadlessException;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-import com.raelity.jvi.manager.AppViews;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.swing.ui.options.OptionsPanel;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.swing.JEditorPane;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
+import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.TabSet;
+import javax.swing.text.TabStop;
+
+import com.l2fprod.common.propertysheet.PropertySheetDialog;
+
+import com.raelity.jvi.manager.AppViews;
+import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.swing.ui.options.OptionsPanel;
 
 /**
  * The following are the hooks into jVi used in this class.

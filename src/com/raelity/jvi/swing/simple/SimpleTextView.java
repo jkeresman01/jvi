@@ -20,18 +20,20 @@
 
 package com.raelity.jvi.swing.simple;
 
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.swing.SwingTextView;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.swing.text.AttributeSet;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+
+import com.raelity.jvi.core.Options;
+import com.raelity.jvi.swing.SwingTextView;
 
 /**
  * Provides visual mode and search highlighting

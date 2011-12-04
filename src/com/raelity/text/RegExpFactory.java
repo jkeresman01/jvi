@@ -21,7 +21,7 @@
 
 package com.raelity.text;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;

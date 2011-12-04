@@ -9,19 +9,9 @@
 
 package com.raelity.jvi.swing;
 
-import com.raelity.jvi.ViBadLocationException;
-import com.raelity.jvi.ViFPOS;
-import com.raelity.jvi.core.Buffer;
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.core.Util;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.ViMark;
-import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.options.DebugOption;
-import com.raelity.text.TextUtil.MySegment;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
@@ -32,6 +22,17 @@ import javax.swing.text.DocumentFilter.FilterBypass;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+
+import com.raelity.jvi.ViBadLocationException;
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViMark;
+import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.core.Buffer;
+import com.raelity.jvi.core.Options;
+import com.raelity.jvi.core.Util;
+import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.options.DebugOption;
+import com.raelity.text.TextUtil.MySegment;
 
 /**
  * The swing implementation of jVi's ViBuffer.

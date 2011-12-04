@@ -19,30 +19,32 @@
  */
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.core.lib.Messages;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.ViCmdEntry;
-import com.raelity.jvi.ViFPOS;
-import com.raelity.jvi.lib.MutableInt;
-import com.raelity.jvi.manager.Scheduler;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.event.ChangeEvent;
-
-import com.raelity.text.*;
-import com.raelity.text.TextUtil.MySegment;
-
-import java.awt.EventQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import static com.raelity.jvi.core.lib.Constants.*;
-import static com.raelity.jvi.core.lib.KeyDefs.*;
+import com.raelity.jvi.ViCmdEntry;
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.core.lib.Messages;
+import com.raelity.jvi.lib.MutableInt;
+import com.raelity.jvi.manager.Scheduler;
+import com.raelity.jvi.manager.ViManager;
+import com.raelity.text.RegExp;
+import com.raelity.text.RegExpFactory;
+import com.raelity.text.RegExpPatternError;
+import com.raelity.text.TextUtil.MySegment;
+
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.Util.*;
+import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.lib.KeyDefs.*;
 
 /**
  * Searching, regexp and substitution.

@@ -20,12 +20,14 @@
 
 package com.raelity.jvi.swing;
 
-import com.raelity.jvi.ViFPOS;
-import com.raelity.jvi.core.G;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.swing.text.BadLocationException;
+
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.core.G;
 
 /**
  *

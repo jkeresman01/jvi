@@ -19,11 +19,21 @@
  */
 
 package com.raelity.jvi.swing;
-import com.raelity.jvi.*;
-import java.awt.event.*;
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.lang.ref.WeakReference;
+
+import javax.swing.InputVerifier;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JRootPane;
+import javax.swing.SwingUtilities;
+
+import com.raelity.jvi.ViCmdEntry;
 
 /**
  * A command line entry widget that sits on the glass pane,

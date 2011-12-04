@@ -19,10 +19,11 @@
  */
 package com.raelity.jvi;
 
-import com.raelity.jvi.core.Buffer;
-import com.raelity.jvi.lib.MutableInt;
 import java.awt.Component;
 import java.awt.geom.Rectangle2D;
+
+import com.raelity.jvi.core.Buffer;
+import com.raelity.jvi.lib.MutableInt;
 
 
 /**

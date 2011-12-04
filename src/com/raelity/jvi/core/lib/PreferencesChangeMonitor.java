@@ -19,8 +19,6 @@
  */
 package com.raelity.jvi.core.lib;
 
-import com.raelity.jvi.core.G;
-import com.raelity.jvi.manager.ViManager;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,6 +32,8 @@ import java.util.prefs.NodeChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+
+import com.raelity.jvi.core.G;
 
 /**
  * Monitor preferences subtrees for creation and/or changes.

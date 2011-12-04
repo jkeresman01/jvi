@@ -19,8 +19,8 @@
  */
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.core.lib.Constants;
 import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.core.lib.Constants;
 
 /**
  * Arguments for operators.

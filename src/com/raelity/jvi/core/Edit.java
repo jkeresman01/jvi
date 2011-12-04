@@ -19,27 +19,27 @@
  */
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.core.lib.NotSupportedException;
-import com.raelity.jvi.core.lib.Messages;
-import com.raelity.jvi.lib.MutableBoolean;
-import com.raelity.jvi.lib.MutableInt;
-import com.raelity.jvi.manager.ViManager;
+import java.util.Stack;
+
 import com.raelity.jvi.ViBuffer;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.core.lib.Messages;
+import com.raelity.jvi.core.lib.NotSupportedException;
+import com.raelity.jvi.lib.MutableBoolean;
+import com.raelity.jvi.lib.MutableInt;
+import com.raelity.jvi.manager.ViManager;
 import com.raelity.text.TextUtil.MySegment;
 
-import java.util.Stack;
-
-import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.GetChar.*;
-import static com.raelity.jvi.core.lib.KeyDefs.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.Normal.*;
 import static com.raelity.jvi.core.Options.*;
 import static com.raelity.jvi.core.Util.*;
+import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.lib.KeyDefs.*;
 
 public class Edit {
   

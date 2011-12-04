@@ -19,17 +19,18 @@
  */
 package com.raelity.jvi.swing;
 
-import javax.swing.WindowConstants;
-import javax.swing.SwingUtilities;
-
-import com.raelity.jvi.ViCmdEntry;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
+
 import javax.swing.JDialog;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
+
+import com.raelity.jvi.ViCmdEntry;
 
 /**
  * This class provides a floating CommandLine entry widget.

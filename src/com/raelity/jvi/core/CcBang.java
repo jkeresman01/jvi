@@ -20,16 +20,6 @@
 
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.core.lib.CcFlag;
-import com.raelity.jvi.ViInitialization;
-import com.raelity.jvi.ViOutputStream;
-import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
-import com.raelity.jvi.core.ColonCommands.ColonAction;
-import com.raelity.jvi.core.ColonCommands.ColonEvent;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.options.DebugOption;
-import com.raelity.jvi.options.Option;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -44,12 +34,24 @@ import java.text.CharacterIterator;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import javax.swing.Timer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.Timer;
+
 import org.openide.util.lookup.ServiceProvider;
+
+import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
+import com.raelity.jvi.core.ColonCommands.ColonAction;
+import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.lib.CcFlag;
+import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.options.DebugOption;
 
 /**
  *

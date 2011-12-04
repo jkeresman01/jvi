@@ -19,16 +19,18 @@
  */
 package com.raelity.jvi.swing;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
-import com.raelity.jvi.*;
+import com.raelity.jvi.ViCaret;
+import com.raelity.jvi.ViCaretStyle;
 import com.raelity.jvi.core.G;
-import java.awt.Color;
-import java.awt.Font;
 
 /**
  * This handles the VI behavior of a caret, drawing the caret is

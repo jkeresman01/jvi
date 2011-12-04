@@ -19,19 +19,6 @@
  */
 package com.raelity.jvi.core.lib;
 
-import com.raelity.jvi.core.ColonCommands.ColonEvent;
-import com.raelity.jvi.core.ColonCommands;
-import com.raelity.jvi.core.GetChar;
-import com.raelity.jvi.core.lib.TypeBufMultiCharMapping.TypeBufPeek;
-import com.raelity.jvi.core.Msg;
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.lib.MutableBoolean;
-import com.raelity.jvi.lib.Wrap;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.options.OptUtil;
-import com.raelity.jvi.ViOutputStream;
-import com.raelity.text.TextUtil;
-
 import java.awt.event.ActionEvent;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -40,11 +27,24 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.core.ColonCommands;
+import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.GetChar;
+import com.raelity.jvi.core.Msg;
+import com.raelity.jvi.core.Options;
+import com.raelity.jvi.core.lib.TypeBufMultiCharMapping.TypeBufPeek;
+import com.raelity.jvi.lib.MutableBoolean;
+import com.raelity.jvi.lib.Wrap;
+import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.options.OptUtil;
+import com.raelity.text.TextUtil;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;

@@ -19,19 +19,6 @@
  */
 package com.raelity.jvi.swing.ui.options;
 
-import com.l2fprod.common.beans.editor.ComboBoxPropertyEditor;
-import com.l2fprod.common.propertysheet.Property;
-import com.l2fprod.common.propertysheet.PropertyEditorRegistry;
-import com.l2fprod.common.propertysheet.PropertySheet;
-import com.l2fprod.common.propertysheet.PropertySheetPanel;
-import com.l2fprod.common.propertysheet.PropertySheetTableModel;
-import com.l2fprod.common.propertysheet.PropertySheetTableModel.NaturalOrderStringComparator;
-import com.l2fprod.common.swing.LookAndFeelTweaks;
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.options.EnumOption;
-import com.raelity.jvi.options.Option;
-import com.raelity.jvi.options.VimOption;
-import com.raelity.text.XMLUtil;
 import java.awt.Color;
 import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
@@ -40,9 +27,25 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyVetoException;
 import java.util.Comparator;
+
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+
+import com.l2fprod.common.beans.editor.ComboBoxPropertyEditor;
+import com.l2fprod.common.propertysheet.Property;
+import com.l2fprod.common.propertysheet.PropertyEditorRegistry;
+import com.l2fprod.common.propertysheet.PropertySheet;
+import com.l2fprod.common.propertysheet.PropertySheetPanel;
+import com.l2fprod.common.propertysheet.PropertySheetTableModel;
+import com.l2fprod.common.propertysheet.PropertySheetTableModel.NaturalOrderStringComparator;
+import com.l2fprod.common.swing.LookAndFeelTweaks;
+
+import com.raelity.jvi.core.Options;
+import com.raelity.jvi.options.EnumOption;
+import com.raelity.jvi.options.Option;
+import com.raelity.jvi.options.VimOption;
+import com.raelity.text.XMLUtil;
 
 /**
  *

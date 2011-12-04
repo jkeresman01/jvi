@@ -20,9 +20,10 @@
 
 package com.raelity.jvi.cmd;
 
+import java.io.File;
+
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.swing.simple.SimpleBuffer;
-import java.io.File;
 
 /**
  *

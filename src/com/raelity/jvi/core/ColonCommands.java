@@ -20,19 +20,8 @@
 
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.core.lib.CcFlag;
-import com.raelity.jvi.core.lib.ColonCommandItem;
-import com.raelity.jvi.core.lib.AbbrevLookup;
-import com.raelity.jvi.core.lib.Messages;
-import com.raelity.jvi.manager.Scheduler;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.ViCmdEntry;
-import com.raelity.jvi.ViMark;
-import com.raelity.jvi.ViOutputStream;
-import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.lib.MutableInt;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -43,9 +32,21 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
-import static com.raelity.jvi.core.lib.Constants.*;
+import com.raelity.jvi.ViCmdEntry;
+import com.raelity.jvi.ViMark;
+import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.core.lib.AbbrevLookup;
+import com.raelity.jvi.core.lib.CcFlag;
+import com.raelity.jvi.core.lib.ColonCommandItem;
+import com.raelity.jvi.core.lib.Messages;
+import com.raelity.jvi.lib.MutableInt;
+import com.raelity.jvi.manager.Scheduler;
+import com.raelity.jvi.manager.ViManager;
+
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
+import static com.raelity.jvi.core.lib.Constants.*;
 
 /**
  * This class handles registration, command input, parsing, dispatching

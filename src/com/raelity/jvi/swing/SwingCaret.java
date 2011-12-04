@@ -19,23 +19,25 @@
  */
 package com.raelity.jvi.swing;
 
-import com.raelity.jvi.ViCaret;
-import com.raelity.jvi.ViCaretStyle;
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.manager.Scheduler;
-import com.raelity.jvi.manager.ViManager;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 
-import javax.swing.event.ChangeListener;
 import org.openide.util.WeakListeners;
+
+import com.raelity.jvi.ViCaret;
+import com.raelity.jvi.ViCaretStyle;
+import com.raelity.jvi.core.Options;
+import com.raelity.jvi.manager.Scheduler;
+import com.raelity.jvi.manager.ViManager;
 
 /**
  * This extension of {@link javax.swing.text.DefaultCaret} draws the

@@ -20,14 +20,16 @@
 
 package com.raelity.jvi.swing.simple;
 
-import com.raelity.jvi.ViAppView;
-import com.raelity.jvi.ViBuffer;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.lib.abstractFS;
 import java.io.File;
+
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+
+import com.raelity.jvi.ViAppView;
+import com.raelity.jvi.ViBuffer;
+import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.lib.abstractFS;
+import com.raelity.jvi.manager.ViManager;
 
 /**
  * Filename determination uses {@linkplain Document.TitleProperty}, the

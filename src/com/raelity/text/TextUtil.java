@@ -21,8 +21,10 @@
 package com.raelity.text;
 
 import java.text.CharacterIterator;
-import java.util.*;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+
 import javax.swing.text.Segment;
 
 /** Some convenient functions when working with text. This class is not

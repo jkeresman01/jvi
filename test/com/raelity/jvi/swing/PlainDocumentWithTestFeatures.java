@@ -22,6 +22,7 @@ package com.raelity.jvi.swing;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.Segment;

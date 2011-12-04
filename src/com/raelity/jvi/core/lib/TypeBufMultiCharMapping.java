@@ -19,20 +19,21 @@
  */
 package com.raelity.jvi.core.lib;
 
+import java.util.ArrayDeque;
+import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.GetChar;
 import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.text.TextUtil;
-import java.util.ArrayDeque;
-import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.NO_CHAR;
-import static com.raelity.jvi.core.Util.*;
 
 /**
  * Like BufferQueue, but typebuf has some special requirements.

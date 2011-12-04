@@ -19,19 +19,22 @@
  */
 package com.raelity.jvi.swing.ui.options;
 
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JColorChooser;
+import javax.swing.JPanel;
+
 import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
 import com.l2fprod.common.propertysheet.Property;
 import com.l2fprod.common.swing.ComponentFactory;
 import com.l2fprod.common.swing.PercentLayout;
 import com.l2fprod.common.swing.renderer.ColorCellRenderer;
+
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.options.ColorOption;
-import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.JButton;
-import javax.swing.JColorChooser;
-import javax.swing.JPanel;
 
 /**
  *

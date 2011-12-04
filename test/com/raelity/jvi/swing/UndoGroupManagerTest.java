@@ -21,19 +21,22 @@ package com.raelity.jvi.swing;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.StyledDocument;
-import javax.swing.undo.UndoManager;
+
+import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
-import javax.swing.event.UndoableEditEvent;
+import javax.swing.text.StyledDocument;
+import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 /**

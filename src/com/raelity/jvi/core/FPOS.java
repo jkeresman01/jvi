@@ -19,10 +19,11 @@
  */
 package com.raelity.jvi.core;
 
+import java.lang.ref.WeakReference;
+
+import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.core.lib.Constants;
 import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.ViFPOS;
-import java.lang.ref.WeakReference;
 
 /**
  * Buffer position, accessable as line number, 1 based, and column, 0 based.

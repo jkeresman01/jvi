@@ -41,16 +41,17 @@ import java.beans.PropertyVetoException;
 import java.beans.SimpleBeanInfo;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
-import java.util.List;
-import java.util.prefs.Preferences;
-
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.manager.ViManager;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+
 import org.openide.util.WeakListeners;
+
+import com.raelity.jvi.core.Options;
+import com.raelity.jvi.manager.ViManager;
 
 /**
  * Base class for jVi options beans. This method contains the read/write methods

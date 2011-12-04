@@ -20,18 +20,20 @@
 
 package com.raelity.jvi.cmd;
 
+import java.util.Map;
+
+import javax.swing.text.JTextComponent;
+
 import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Buffer;
-import com.raelity.jvi.swing.SwingTextView;
 import com.raelity.jvi.swing.LineMap;
 import com.raelity.jvi.swing.LineMapNoFolding;
+import com.raelity.jvi.swing.SwingTextView;
 import com.raelity.jvi.swing.ViewMap;
 import com.raelity.jvi.swing.ViewMapSwitcher;
 import com.raelity.jvi.swing.simple.SimpleFactory;
-import java.util.Map;
-import javax.swing.text.JTextComponent;
 
 /**
  *

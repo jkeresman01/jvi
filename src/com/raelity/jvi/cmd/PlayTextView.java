@@ -20,11 +20,12 @@
 
 package com.raelity.jvi.cmd;
 
+import javax.swing.JScrollPane;
+import javax.swing.text.JTextComponent;
+
 import com.raelity.jvi.ViStatusDisplay;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.swing.simple.SimpleTextView;
-import javax.swing.JScrollPane;
-import javax.swing.text.JTextComponent;
 
 /**
  *

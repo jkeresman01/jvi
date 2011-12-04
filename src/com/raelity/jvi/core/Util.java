@@ -19,13 +19,13 @@
  */
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.ViCmdEntry;
-import com.raelity.jvi.lib.MutableInt;
-import com.raelity.jvi.ViFPOS;
-import com.raelity.text.TextUtil.MySegment;
-
 import java.awt.Toolkit;
 import java.text.CharacterIterator;
+
+import com.raelity.jvi.ViCmdEntry;
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.lib.MutableInt;
+import com.raelity.text.TextUtil.MySegment;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 

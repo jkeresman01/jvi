@@ -20,8 +20,9 @@
 
 package com.raelity.jvi.swing;
 
-import com.raelity.jvi.ViBadLocationException;
 import javax.swing.text.BadLocationException;
+
+import com.raelity.jvi.ViBadLocationException;
 
 /**
  *

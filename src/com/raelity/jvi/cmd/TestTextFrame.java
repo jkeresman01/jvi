@@ -19,9 +19,15 @@
  */
 package com.raelity.jvi.cmd;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.AWTEvent;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.event.WindowEvent;
+
+import javax.swing.JEditorPane;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 public class TestTextFrame extends JFrame {
   JPanel contentPane;

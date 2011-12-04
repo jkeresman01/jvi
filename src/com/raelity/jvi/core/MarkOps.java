@@ -19,23 +19,12 @@
  */
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.core.lib.PreferencesChangeMonitor;
-import com.raelity.jvi.core.lib.CcFlag;
-import java.util.EnumSet;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
-import com.raelity.jvi.core.ColonCommands.ColonEvent;
-import com.raelity.jvi.ViFPOS;
-import com.raelity.jvi.ViInitialization;
-import com.raelity.jvi.ViMark;
-import com.raelity.jvi.ViOutputStream;
-import com.raelity.jvi.ViTextView;
-import com.raelity.text.TextUtil.MySegment;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -48,15 +37,28 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+
 import org.openide.util.lookup.ServiceProvider;
-import static com.raelity.jvi.ViTextView.MARKOP;
+
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.ViMark;
+import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.ViTextView.MARKOP;
+import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
+import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.lib.CcFlag;
+import com.raelity.jvi.core.lib.PreferencesChangeMonitor;
+import com.raelity.jvi.manager.ViManager;
+import com.raelity.text.TextUtil.MySegment;
+
 import static com.raelity.jvi.ViTextView.MARKOP.NEXT;
 import static com.raelity.jvi.ViTextView.MARKOP.PREV;
 import static com.raelity.jvi.ViTextView.MARKOP.TOGGLE;
-
+import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Messages.*;
-import static com.raelity.jvi.core.Util.*;
 
 /**
  * Keep track of vi marks.

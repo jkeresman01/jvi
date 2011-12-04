@@ -20,34 +20,69 @@
 
 package com.raelity.jvi.swing;
 
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.core.Normal;
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.core.G;
-import com.raelity.jvi.core.GetChar;
-import  com.raelity.jvi.*;
-import com.raelity.jvi.lib.MyEventListenerList;
-
-import com.raelity.jvi.options.DebugOption;
-import  javax.swing.*;
-import  javax.swing.border.*;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import  javax.swing.plaf.basic.BasicComboBoxEditor;
-import  javax.swing.text.*;
-import  java.awt.*;
-import  java.awt.event.*;
-import  java.beans.PropertyChangeEvent;
-import  java.beans.PropertyChangeListener;
-import  java.lang.reflect.Method;
+import java.awt.AWTKeyStroke;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.ComboBoxEditor;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JEditorPane;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.plaf.basic.BasicComboBoxEditor;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
+import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Keymap;
+import javax.swing.text.TextAction;
+
+import com.raelity.jvi.ViCmdEntry;
+import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.core.G;
+import com.raelity.jvi.core.GetChar;
+import com.raelity.jvi.core.Normal;
+import com.raelity.jvi.core.Options;
+import com.raelity.jvi.lib.MyEventListenerList;
+import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.options.DebugOption;
 
 /**
  * This class presents a editable combo box UI for picking up command entry

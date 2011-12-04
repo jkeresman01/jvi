@@ -25,6 +25,7 @@ import java.awt.KeyboardFocusManager;
 import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
 import javax.swing.JEditorPane;
 
 /**

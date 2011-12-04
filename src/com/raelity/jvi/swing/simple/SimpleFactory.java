@@ -20,12 +20,13 @@
 
 package com.raelity.jvi.swing.simple;
 
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Keymap;
+
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.swing.KeyBinding;
 import com.raelity.jvi.swing.SwingFactory;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.Keymap;
 
 /**
  *

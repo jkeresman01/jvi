@@ -20,6 +20,8 @@
 
 package com.raelity.jvi.core;
 
+import java.awt.Color;
+
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViOptionBag;
 import com.raelity.jvi.ViOutputStream;
@@ -27,7 +29,6 @@ import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.DebugOption;
 import com.raelity.jvi.options.OptUtil;
-import java.awt.Color;
 
 /**
  *  A class of globals. Most taken directly from vim code.

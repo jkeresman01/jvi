@@ -20,11 +20,13 @@
 
 package com.raelity.jvi.swing.simple;
 
+import java.awt.Container;
+
+import javax.swing.text.JTextComponent;
+
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.swing.SwingFactory;
-import java.awt.Container;
-import javax.swing.text.JTextComponent;
 
 /**
  * Basic Swing AppView. This is suitable when there is a 1-1

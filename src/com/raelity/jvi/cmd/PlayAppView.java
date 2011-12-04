@@ -20,10 +20,11 @@
 
 package com.raelity.jvi.cmd;
 
-import com.raelity.jvi.swing.simple.SimpleAppView;
-import com.raelity.jvi.swing.SwingFactory;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
+
+import com.raelity.jvi.swing.SwingFactory;
+import com.raelity.jvi.swing.simple.SimpleAppView;
 
 /**
  *

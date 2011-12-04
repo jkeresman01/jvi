@@ -20,28 +20,6 @@
 
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.ViTextView.Orientation;
-import com.raelity.jvi.core.lib.CcFlag;
-import com.raelity.jvi.core.lib.ColonCommandItem;
-import com.raelity.jvi.core.lib.Messages;
-import java.util.Collections;
-import com.raelity.jvi.options.OptUtil;
-import com.raelity.jvi.ViBadLocationException;
-import com.raelity.jvi.ViMark;
-import com.raelity.jvi.ViAppView;
-import com.raelity.jvi.ViBuffer.BIAS;
-import com.raelity.jvi.ViFactory;
-import com.raelity.jvi.ViInitialization;
-import com.raelity.jvi.ViOutputStream;
-import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.ViTextView.TAGOP;
-import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
-import com.raelity.jvi.core.ColonCommands.ColonEvent;
-import com.raelity.jvi.lib.MutableBoolean;
-import com.raelity.jvi.lib.MutableInt;
-import com.raelity.jvi.manager.AppViews;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.options.Option;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -51,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
@@ -58,7 +37,30 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+
 import org.openide.util.lookup.ServiceProvider;
+
+import com.raelity.jvi.ViAppView;
+import com.raelity.jvi.ViBadLocationException;
+import com.raelity.jvi.ViBuffer.BIAS;
+import com.raelity.jvi.ViFactory;
+import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.ViMark;
+import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.ViTextView.Orientation;
+import com.raelity.jvi.ViTextView.TAGOP;
+import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
+import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.lib.CcFlag;
+import com.raelity.jvi.core.lib.ColonCommandItem;
+import com.raelity.jvi.core.lib.Messages;
+import com.raelity.jvi.lib.MutableBoolean;
+import com.raelity.jvi.lib.MutableInt;
+import com.raelity.jvi.manager.AppViews;
+import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.options.OptUtil;
+import com.raelity.jvi.options.Option;
 
 import static java.lang.Math.min;
 

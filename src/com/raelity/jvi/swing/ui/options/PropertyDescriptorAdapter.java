@@ -19,12 +19,13 @@
  */
 package com.raelity.jvi.swing.ui.options;
 
-import com.l2fprod.common.beans.ExtendedPropertyDescriptor;
-import com.l2fprod.common.propertysheet.AbstractProperty;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
+import com.l2fprod.common.beans.ExtendedPropertyDescriptor;
+import com.l2fprod.common.propertysheet.AbstractProperty;
 
 /**
  * L2FProd's PropertyDescriptorAdapter is not public, so copy it here

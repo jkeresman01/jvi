@@ -19,61 +19,63 @@
  */
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.core.lib.PreferencesChangeMonitor;
-import com.raelity.jvi.core.lib.KeyDefs;
-import com.raelity.jvi.core.lib.NotSupportedException;
-import com.raelity.jvi.core.lib.Messages;
-import com.raelity.jvi.ViCmdEntry;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.ViCaretStyle;
-import com.raelity.jvi.ViFPOS;
-import com.raelity.jvi.ViInitialization;
-import com.raelity.jvi.ViMark;
-import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.lib.MutableBoolean;
-import com.raelity.jvi.lib.MutableInt;
-import com.raelity.jvi.ViTextView.DIR;
-import com.raelity.jvi.ViXlateKey;
-import com.raelity.jvi.lib.Wrap;
-import java.awt.event.KeyEvent;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.prefs.BackingStoreException;
-import javax.swing.text.Keymap;
-import javax.swing.KeyStroke;
-import com.raelity.text.TextUtil.MySegment;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.text.CharacterIterator;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+
+import javax.swing.KeyStroke;
+import javax.swing.text.Keymap;
+
 import org.openide.util.lookup.ServiceProvider;
 
+import com.raelity.jvi.ViCaretStyle;
+import com.raelity.jvi.ViCmdEntry;
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.ViMark;
+import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.ViTextView.DIR;
+import com.raelity.jvi.ViXlateKey;
+import com.raelity.jvi.core.lib.KeyDefs;
+import com.raelity.jvi.core.lib.Messages;
+import com.raelity.jvi.core.lib.NotSupportedException;
+import com.raelity.jvi.core.lib.PreferencesChangeMonitor;
+import com.raelity.jvi.lib.MutableBoolean;
+import com.raelity.jvi.lib.MutableInt;
+import com.raelity.jvi.lib.Wrap;
+import com.raelity.jvi.manager.ViManager;
+import com.raelity.text.TextUtil.MySegment;
+
 import static com.raelity.jvi.core.ColonCommands.*;
-import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.Edit.*;
 import static com.raelity.jvi.core.GetChar.*;
-import static com.raelity.jvi.core.lib.KeyDefs.*;
 import static com.raelity.jvi.core.Normal.*;
 import static com.raelity.jvi.core.Search.*;
 import static com.raelity.jvi.core.Util.*;
+import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.lib.KeyDefs.*;
 
 public class Misc implements ClipboardOwner {
     private static final Logger LOG = Logger.getLogger(Misc.class.getName());

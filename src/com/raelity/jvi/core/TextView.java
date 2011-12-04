@@ -21,15 +21,18 @@ package com.raelity.jvi.core;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import com.raelity.jvi.ViInitialization;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.openide.util.lookup.ServiceProvider;
-import com.raelity.jvi.manager.ViManager;
+
 import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.manager.Scheduler;
-import java.util.LinkedList;
-import java.util.List;
+import com.raelity.jvi.manager.ViManager;
+
 import static com.raelity.jvi.core.lib.Constants.*;
 
 /**

@@ -19,34 +19,32 @@
  */
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.options.Validator;
-import com.raelity.jvi.core.lib.Mappings;
-import java.util.prefs.PreferenceChangeEvent;
-import com.raelity.text.TextUtil.MySegment;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.options.DebugOption;
-import com.raelity.jvi.options.Option;
-import com.raelity.jvi.options.OptUtil;
-import com.raelity.jvi.options.SetColonCommand;
-import com.raelity.jvi.ViInitialization;
-import com.raelity.jvi.ViOutputStream;
-import com.raelity.jvi.lib.CharTab;
-import com.raelity.jvi.lib.Wrap;
+import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
-//import java.util.ArrayDeque; JDK1.6
-//import java.util.Deque; JDK1.6
-
-import java.awt.Color;
-
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.openide.util.lookup.ServiceProvider;
+
+import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.core.lib.Mappings;
+import com.raelity.jvi.lib.CharTab;
+import com.raelity.jvi.lib.Wrap;
+import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.options.DebugOption;
+import com.raelity.jvi.options.OptUtil;
+import com.raelity.jvi.options.Option;
+import com.raelity.jvi.options.SetColonCommand;
+import com.raelity.jvi.options.Validator;
+import com.raelity.text.TextUtil.MySegment;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 

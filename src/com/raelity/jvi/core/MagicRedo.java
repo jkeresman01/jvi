@@ -20,18 +20,19 @@
 
 package com.raelity.jvi.core;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.raelity.jvi.ViBadLocationException;
+import com.raelity.jvi.ViBuffer.BIAS;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViMark;
-import com.raelity.jvi.ViBuffer.BIAS;
 import com.raelity.jvi.core.lib.BufferQueue;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.text.TextUtil;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * See MagicRedoOriginal for introductory comments and discussion of issues.

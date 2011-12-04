@@ -1,9 +1,10 @@
 package com.raelity.jvi.core.lib;
 
-import com.raelity.jvi.core.ColonCommands.ColonAction;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
+
+import com.raelity.jvi.core.ColonCommands.ColonAction;
 
 /**
  * A registered command is represented by this class.

@@ -19,10 +19,11 @@
  */
 package com.raelity.jvi;
 
-import com.raelity.jvi.ViTextView.Direction;
-import com.raelity.jvi.ViTextView.Orientation;
 import java.awt.Component;
 import java.util.List;
+
+import com.raelity.jvi.ViTextView.Direction;
+import com.raelity.jvi.ViTextView.Orientation;
 
 /**
  *

@@ -20,12 +20,14 @@
 
 package com.raelity.jvi.swing;
 
-import com.raelity.jvi.ViTextView;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.swing.Action;
 import javax.swing.text.DefaultEditorKit;
+
+import com.raelity.jvi.ViTextView;
 
 /**
  * This provides default swing JTextComponent behavior that are

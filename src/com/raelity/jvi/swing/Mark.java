@@ -19,15 +19,17 @@
  */
 package com.raelity.jvi.swing;
 
-import com.raelity.jvi.ViFPOS;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.ViMark;
-import com.raelity.jvi.core.Buffer;
-import com.raelity.text.TextUtil.MySegment;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
+
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViMark;
+import com.raelity.jvi.core.Buffer;
+import com.raelity.jvi.manager.ViManager;
+import com.raelity.text.TextUtil.MySegment;
 
 /**
  * A Mark in vi specifies a row and column. The row "floats" as lines are

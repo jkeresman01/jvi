@@ -19,14 +19,20 @@
  */
 package com.raelity.jvi.cmd;
 
-import com.raelity.jvi.ViCmdEntry;
-import javax.swing.UIManager;
-import javax.swing.text.*;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 
-//import com.raelity.jvi.swing.*;
+import javax.swing.Action;
+import javax.swing.KeyStroke;
+import javax.swing.UIManager;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Keymap;
+import javax.swing.text.TextAction;
+
+import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.swing.WindowCmdEntry;
 
 public class TestText {

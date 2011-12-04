@@ -20,17 +20,8 @@
 
 package com.raelity.jvi.swing.simple;
 
-import com.raelity.jvi.core.TextView;
-import com.raelity.jvi.ViBadLocationException;
-import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.core.Edit;
-import com.raelity.jvi.core.G;
-import com.raelity.jvi.core.Misc;
-import com.raelity.jvi.core.Util;
-import com.raelity.jvi.manager.Scheduler;
-import com.raelity.jvi.swing.SwingBuffer;
-import com.raelity.jvi.swing.UndoGroupManager;
 import java.util.logging.Level;
+
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
@@ -39,6 +30,17 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
+
+import com.raelity.jvi.ViBadLocationException;
+import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.core.Edit;
+import com.raelity.jvi.core.G;
+import com.raelity.jvi.core.Misc;
+import com.raelity.jvi.core.TextView;
+import com.raelity.jvi.core.Util;
+import com.raelity.jvi.manager.Scheduler;
+import com.raelity.jvi.swing.SwingBuffer;
+import com.raelity.jvi.swing.UndoGroupManager;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 

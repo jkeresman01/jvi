@@ -20,10 +20,11 @@
 
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.ViInitialization;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.ViTextView;
 import org.openide.util.lookup.ServiceProvider;
+
+import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.manager.ViManager;
 
 /**
  * This class facilitates communications between packages jvi and jvi.core.

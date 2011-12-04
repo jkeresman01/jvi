@@ -24,21 +24,24 @@
 
 package com.raelity.jvi.swing.ui.options;
 
-import com.raelity.jvi.options.KeypadBindingBean;
-import com.raelity.jvi.options.KeyBindingBean;
-import com.l2fprod.common.propertysheet.PropertySheetPanel;
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.options.OptionsBean;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.beans.BeanInfo;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+
+import com.l2fprod.common.propertysheet.PropertySheetPanel;
+
+import com.raelity.jvi.core.Options;
+import com.raelity.jvi.options.KeyBindingBean;
+import com.raelity.jvi.options.KeypadBindingBean;
+import com.raelity.jvi.options.OptionsBean;
 
 /**
  * The module requires com.l2fprod.common...

@@ -22,6 +22,7 @@ package com.raelity.jvi;
 import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.util.List;
+
 import javax.swing.event.ChangeListener;
 
 /** This is used by vi to get command line input.

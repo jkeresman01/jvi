@@ -10,24 +10,26 @@
 package com.raelity.jvi.core;
 
 import java.awt.EventQueue;
-import com.raelity.jvi.lib.CharTab;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.ViBuffer;
-import com.raelity.jvi.ViFPOS;
-import com.raelity.jvi.ViMark;
-import com.raelity.jvi.ViOptionBag;
-import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.lib.MutableInt;
-import com.raelity.text.RegExp;
-import com.raelity.text.RegExpJava;
-import com.raelity.text.TextUtil.MySegment;
 import java.io.File;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.raelity.jvi.core.lib.Constants.*;
+import com.raelity.jvi.ViBuffer;
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViMark;
+import com.raelity.jvi.ViOptionBag;
+import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.lib.CharTab;
+import com.raelity.jvi.lib.MutableInt;
+import com.raelity.jvi.manager.ViManager;
+import com.raelity.text.RegExp;
+import com.raelity.text.RegExpJava;
+import com.raelity.text.TextUtil.MySegment;
+
 import static java.lang.Math.min;
+
+import static com.raelity.jvi.core.lib.Constants.*;
 
 /**
  * Buffer: structure that holds information about one file, primarily

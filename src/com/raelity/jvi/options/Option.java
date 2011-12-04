@@ -19,13 +19,14 @@
  */
 package com.raelity.jvi.options;
 
-import com.raelity.jvi.core.Options.Category;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+
+import com.raelity.jvi.core.Options.Category;
 
 public abstract class Option<T> {
     final Class<T> optionType;

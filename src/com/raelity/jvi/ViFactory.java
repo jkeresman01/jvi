@@ -19,18 +19,20 @@
  */
 package com.raelity.jvi;
 
-import com.raelity.jvi.core.Buffer;
-import com.raelity.jvi.core.ColonCommands;
+import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
-import java.util.Set;
-import java.util.prefs.Preferences;
-import javax.swing.Action;
-import com.raelity.jvi.ViTextView.TAGOP;
-import java.awt.Component;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.util.List;
+import java.util.Set;
+import java.util.prefs.Preferences;
+
+import javax.swing.Action;
+
+import com.raelity.jvi.ViTextView.TAGOP;
+import com.raelity.jvi.core.Buffer;
+import com.raelity.jvi.core.ColonCommands;
 
 /**
  * This provides Vi the items it needs to interface with

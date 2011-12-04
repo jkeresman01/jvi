@@ -20,28 +20,29 @@
 
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.core.lib.Messages;
-import com.raelity.jvi.ViBuffer.BIAS;
-import java.util.List;
-import com.raelity.jvi.ViFPOS;
-import com.raelity.jvi.ViMark;
-import com.raelity.jvi.ViOutputStream;
-import com.raelity.jvi.lib.MutableInt;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.text.RegExp;
-import com.raelity.text.TextUtil.MySegment;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
-import static com.raelity.jvi.core.lib.Constants.*;
+import com.raelity.jvi.ViBuffer.BIAS;
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViMark;
+import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.core.lib.Messages;
+import com.raelity.jvi.lib.MutableInt;
+import com.raelity.jvi.manager.ViManager;
+import com.raelity.text.RegExp;
+import com.raelity.text.TextUtil.MySegment;
+
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.Search.*;
 import static com.raelity.jvi.core.Util.*;
+import static com.raelity.jvi.core.lib.Constants.*;
 
 /**
  *

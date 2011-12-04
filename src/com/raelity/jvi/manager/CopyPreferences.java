@@ -1,12 +1,13 @@
 package com.raelity.jvi.manager;
 
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.options.Option;
-import com.raelity.jvi.swing.KeyBinding;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+
+import com.raelity.jvi.core.Options;
+import com.raelity.jvi.options.Option;
+import com.raelity.jvi.swing.KeyBinding;
 
 class CopyPreferences
 {

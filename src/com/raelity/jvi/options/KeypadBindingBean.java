@@ -25,7 +25,6 @@
 
 package com.raelity.jvi.options;
 
-import com.raelity.jvi.swing.*;
 import java.beans.BeanDescriptor;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
@@ -33,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.raelity.jvi.swing.KeyBinding;
 
 /**
  * Use this class to programmatically enable/disable jVi catching particular

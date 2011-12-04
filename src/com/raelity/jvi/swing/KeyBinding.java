@@ -19,37 +19,40 @@
  */
 package com.raelity.jvi.swing;
 
-import com.raelity.jvi.manager.ViManager;
 import java.awt.EventQueue;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+
 import javax.swing.Action;
+import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
-import javax.swing.KeyStroke;
-
-import com.raelity.jvi.*;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.text.TextAction;
-import org.openide.util.lookup.ServiceProvider;
-import static java.awt.event.InputEvent.SHIFT_MASK;
-import static java.awt.event.InputEvent.CTRL_MASK;
 
-import static com.raelity.jvi.core.lib.KeyDefs.*;
+import org.openide.util.lookup.ServiceProvider;
+
+import com.raelity.jvi.ViFactory;
+import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.manager.ViManager;
+
+import static java.awt.event.InputEvent.CTRL_MASK;
+import static java.awt.event.InputEvent.SHIFT_MASK;
+
 import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.lib.KeyDefs.*;
 
 public class KeyBinding {
   private static final Logger LOG = Logger.getLogger(KeyBinding.class.getName());

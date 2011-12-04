@@ -19,13 +19,14 @@
  */
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.ViFPOS;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.ViMark;
-import com.raelity.jvi.ViTextView;
 import java.io.File;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+
+import com.raelity.jvi.ViFPOS;
+import com.raelity.jvi.ViMark;
+import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.manager.ViManager;
 
 /** A mark that can be persisted. The mark is not fully functional if
  * the associated file is not opened in a window.
