@@ -454,6 +454,9 @@ public class CommandLine extends JPanel
                     KeyEvent.VK_ESCAPE, 0),
                     ACT_FINISH),
             new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                    KeyEvent.VK_CLOSE_BRACKET, InputEvent.CTRL_DOWN_MASK),
+                    ACT_FINISH),
+            new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                     '\t'),
                     ACT_TAB),
             new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
@@ -476,12 +479,15 @@ public class CommandLine extends JPanel
                     @Override
                     public void actionPerformed(ActionEvent e)
                     {
-                        // bounce the event to process the command line
+                        // Note that only '\n' as a command does anything,
+                        // other things, like ESC and Ctrl-], are ignored
+                        String actionCommand = e.getActionCommand();
+                        int modifiers = e.getModifiers();
                         ActionEvent e01 = new ActionEvent(
                                 CommandLine.this,
                                 e.getID(),
-                                e.getActionCommand(),
-                                e.getModifiers());
+                                actionCommand,
+                                modifiers);
                         fireCommandLineActionPerformed(e01);
                     }
                 },
