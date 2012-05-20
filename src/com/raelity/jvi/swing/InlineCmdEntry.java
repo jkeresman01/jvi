@@ -108,6 +108,8 @@ public class InlineCmdEntry extends CommandLine.CommandLineEntry {
     protected void prepareShutdown(){
         doneWithCommandLine = true;
         //commandLine.removeActionListener(this);
+        if(refRootPane == null)
+            return; // wasn't activate, happens if generated passthru cmd line
         JRootPane rootPane = refRootPane.get();
         refRootPane.clear();
         if(rootPane == null)

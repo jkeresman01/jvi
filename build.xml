@@ -11,6 +11,12 @@
     <description>Builds, tests, and runs the project jvi.</description>
     <import file="nbproject/build-impl.xml"/>
     <import file="nbproject/profiler-build-impl.xml"/>
+
+    <target name="-pre-init">
+        <property name="run.jvmargs"
+                  value="-Dawt.useSystemAAFontSettings=on"/>
+    </target>
+
     <!--
 
     There exist several targets which are by default empty and which can be 

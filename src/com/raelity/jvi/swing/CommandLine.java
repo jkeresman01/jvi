@@ -662,6 +662,7 @@ public class CommandLine extends JPanel
                     .removeFocusListener(focusSetSelection);
             lastCommand = "";
             if(passThru) {
+                this.tv = null; // typically done as part of finish up
                 lastCommand = initialText;
                 fireEvent(new ActionEvent(tv.getEditor(),
                         ActionEvent.ACTION_PERFORMED,
