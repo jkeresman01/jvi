@@ -415,7 +415,7 @@ public class CommandLine extends JPanel
         combo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(e.getActionCommand().equals("comboBoxEdited")) {
+                if("comboBoxEdited".equals(e.getActionCommand())) {
                     ActionEvent e01 = new ActionEvent(CommandLine.this,
                             e.getID(), "\n", e.getModifiers());
                     fireCommandLineActionPerformed(e01);
@@ -833,6 +833,16 @@ public class CommandLine extends JPanel
          */
         protected void fireEvent( ActionEvent e )
         {
+            // The action command must be present and have a character in it
+            // This isn't always the case on a MAC when an ESC is entered
+            String s = e.getActionCommand();
+            if(s == null || s.isEmpty()) {
+                // treat a poorly formed event as an ESC
+                // see http://sourceforge.net/tracker/?func=detail&atid=103653&aid=3527153&group_id=3653
+                //    ESC to exit search leaves editor in an unusable state - ID: 3527153
+                e = new ActionEvent(e.getSource(), e.getID(),
+                                    "\u001b", e.getModifiers());
+            }
             if(e.getActionCommand().charAt(0) == '\n') {
                 StringBuffer sb = new StringBuffer();
                 if( ! initialText.isEmpty()
