@@ -357,6 +357,7 @@ private static ColonEvent parseCommandGuts(String commandLine,
         //            for now just hack in the two non-alpha commands we've got
         //if( ! Util.isalpha(commandLine.charAt(sidx)))
         if( ! (Util.isalpha(commandLine.charAt(sidx))
+                || "&".equals(String.valueOf(commandLine.charAt(sidx)))
                 || "<".equals(String.valueOf(commandLine.charAt(sidx)))
                 || ">".equals(String.valueOf(commandLine.charAt(sidx)))))
         {

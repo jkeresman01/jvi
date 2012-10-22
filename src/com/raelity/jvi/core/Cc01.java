@@ -110,6 +110,7 @@ public class Cc01
         ColonCommands.register("f", "file", new FileAction(), null);
         ColonCommands.register("e", "edit", new Edit(), null);
         ColonCommands.register("s", "substitute", ACTION_substitute, null);
+        ColonCommands.register("&", "&", ACTION_substitute, null);
         ColonCommands.register("g", "global", ACTION_global, null);
         ColonCommands.register("v", "vglobal", new Vglobal(), null);
         ColonCommands.register("d", "delete", ACTION_delete, null);
@@ -791,7 +792,9 @@ public class Cc01
             if(doMove && dst.getValue() == cev.getLine2())
                 return; // 2,4 mo 4 does nothing
 
-            final int dstOffset = buf.getLineEndOffset(dst.getValue());
+            final int dstOffset = dst.getValue() == 0
+                    ? 0
+                    : buf.getLineEndOffset(dst.getValue());
             if(doMove && dstOffset >= offset1 && dstOffset < offset2) {
                 Msg.emsg("Move lines into themselves");
                 return; // BAIL
