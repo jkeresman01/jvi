@@ -155,7 +155,7 @@ public class SwingPaintCaret
                                  r00.x + r.width, r00.y + fm.getAscent());
                 }
                 g.setColor(component.getCaretColor());
-                if(!isMacRetinaBug)
+                if(!G.isCursorXorBug())
                     g.setXORMode(component.getBackground());
                 if(drawNormal) {
                     g.fillRect(r.x, r.y, r.width, r.height);
@@ -167,7 +167,7 @@ public class SwingPaintCaret
                     //     }
                     // }
                     // drawing the char over the cursor derived from NB
-                    if(isMacRetinaBug) {
+                    if(G.isCursorXorBug()) {
                         if(cursorShape == ViCaretStyle.SHAPE_BLOCK
                                 && dotChar != null
                                 && !Character.isWhitespace(dotChar[0])

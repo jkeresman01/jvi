@@ -320,6 +320,7 @@ public class G implements ViOptionBag
     public static boolean useFrame() { return useFrame; }
     public static boolean isHideVersion() { return isHideVersion; }
     public static boolean isCoordSkip() { return isCoordSkip; }
+    public static boolean isCursorXorBug() { return isCursorXorBug; }
 
     static boolean disableFontError;
     static boolean disableFontCheckSpecial;
@@ -331,5 +332,6 @@ public class G implements ViOptionBag
     static boolean redoTrack; // track redo for magic/code-completion
     static boolean pcmarkTrack; // track NB caret motions for pcmark
     static int viminfoMaxBuf; //viminfoMaxPersistedBuffersWithMarks
+    static boolean isCursorXorBug;
 
 } // end com.raelity.jvi.G

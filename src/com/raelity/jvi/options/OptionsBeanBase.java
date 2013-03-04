@@ -393,6 +393,14 @@ implements Options.EditControl {
         return ViManager.getReleaseString();
     }
 
+    public void setViCursorXorBug(boolean arg)  throws PropertyVetoException {
+        put(Options.cursorXorBug, arg);
+    }
+
+    public boolean getViCursorXorBug() {
+	return getboolean(Options.cursorXorBug);
+    }
+
     public void setViDisableFontError(boolean arg)  throws PropertyVetoException {
         put(Options.disableFontError, arg);
     }

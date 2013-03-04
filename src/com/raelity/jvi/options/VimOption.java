@@ -250,6 +250,7 @@ new VimOption("ww_tilde",    "",     Options.tildeWrapNext,   S.P_GBL, EnumSet.o
 
 new VimOption("disableFontError","", Options.disableFontError, S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 new VimOption("disableFontCheckSpecial","", Options.disableFontCheckSpecial, S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
+new VimOption("isCursorXorBug","",   Options.cursorXorBug,     S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 new VimOption("isHideVersion","",    Options.hideVersionOption,S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 new VimOption("isCoordSkip", "",     Options.coordSkip,        S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 new VimOption("pcmarkTrack", "",     Options.pcmarkTrack,      S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),

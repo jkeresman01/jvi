@@ -121,6 +121,7 @@ public final class Options {
   public static final String caretBlinkRate = "viCaretBlinkRate";
   public static final String disableFontError = "viDisableFontError";
   public static final String disableFontCheckSpecial = "viDisableFontCheckSpecial";
+  public static final String cursorXorBug = "viCursorXorBug";
 
   public static final String backspaceWrapPrevious = "viBackspaceWrapPrevious";
   public static final String hWrapPrevious = "viHWrapPrevious";
@@ -496,6 +497,15 @@ public final class Options {
             + " that are a different width from standard chars."
             + " Use this option to ignore the special chars when checking"
             + "for font size problems.");
+
+    OptUtil.createBooleanOption(cursorXorBug, false);
+    OptUtil.setupOptionDesc(Category.PLATFORM,
+                            cursorXorBug,
+                            "Mac Retina Cursor Xor Bug",
+            "By default jVi uses graphics xor when drawing the cursor."
+            + " On the Mac's Retina display there may be a problem with"
+            + " xor draw mode; the symptom is that the cursor is not"
+            + " visible. Set this option to avoid the problem.");
 
     /////////////////////////////////////////////////////////////////////
     //
