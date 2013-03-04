@@ -43,6 +43,13 @@ public class SwingPaintCaret
     ViCaretStyle cursor;
     /** width of a block cursor */
     int blockWidth = 8;
+    // -Dcom.raelity.jvi.swing.SwingPaintCaret.macRetinaIssue=true;
+    private static final boolean isMacRetinaBug = Boolean.getBoolean(
+            "com.raelity.jvi.swing.SwingPaintCaret.macRetinaIssue");
+
+    // -Dcom.raelity.jvi.swing.SwingPaintCaret.level=FINE;
+    // private static final Logger LOG = Logger.getLogger(SwingPaintCaret.class.getName());
+    private Rectangle oldRect;
 
     public SwingPaintCaret(ViCaret caret)
     {
@@ -148,22 +155,32 @@ public class SwingPaintCaret
                                  r00.x + r.width, r00.y + fm.getAscent());
                 }
                 g.setColor(component.getCaretColor());
-                g.setXORMode(component.getBackground());
+                if(!isMacRetinaBug)
+                    g.setXORMode(component.getBackground());
                 if(drawNormal) {
                     g.fillRect(r.x, r.y, r.width, r.height);
-                    // drawing the char over the cursor derived from NB
-                    // if(cursorShape == ViCaretStyle.SHAPE_BLOCK
-                    //         && dotChar != null
-                    //         && !Character.isWhitespace(dotChar[0])
-                    // ) {
-                    //     Color textBackgroundColor = component.getBackground();
-                    //     if (textBackgroundColor != null)
-                    //         g.setColor(textBackgroundColor);
-                    //     // int ascent = FontMetricsCache.getFontMetrics(afterCaretFont, c).getAscent();
-                    //     g.drawChars(dotChar, 0, 1, r.x,
-                    //             r.y + fm.getAscent());
-                    //             // r.y + editorUI.getLineAscent());
+                    // log the caret position on the canvas
+                    // if(LOG.isLoggable(Level.FINE)) {
+                    //     if(LOG.isLoggable(Level.FINEST) || !r.equals(oldRect)) {
+                    //         LOG.log(Level.FINE, "jViCaret: {0}", r);
+                    //         oldRect = r;
+                    //     }
                     // }
+                    // drawing the char over the cursor derived from NB
+                    if(isMacRetinaBug) {
+                        if(cursorShape == ViCaretStyle.SHAPE_BLOCK
+                                && dotChar != null
+                                && !Character.isWhitespace(dotChar[0])
+                                ) {
+                            Color textBackgroundColor = component.getBackground();
+                            if (textBackgroundColor != null)
+                                g.setColor(textBackgroundColor);
+                            // int ascent = FontMetricsCache.getFontMetrics(afterCaretFont, c).getAscent();
+                            g.drawChars(dotChar, 0, 1, r.x,
+                                    r.y + fm.getAscent());
+                            // r.y + editorUI.getLineAscent());
+                        }
+                    }
                 } else if(drawNotFocused)
                     g.drawRect(r.x, r.y, r.width-1, r.height-1);
                 else if(drawReadOnly) {
