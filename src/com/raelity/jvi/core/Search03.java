@@ -785,7 +785,7 @@ public class Search03
             if (Eval.do_searchpair(
                         "<[^ \t>/!]+(?:[\\n\\s][\\n[^>]]*?[^/]>|$|[\\n\\s]?>)",
                         "",
-                        "</[^>]*>", BACKWARD, "", 0, null, 0) <= 0)
+                        "</[^>]*>", BACKWARD, "", SEARCH_ISCLEAN, null, 0) <= 0)
             {
                 G.curwin.w_cursor.set(old_pos);
                 break again; //break theend;
@@ -826,7 +826,7 @@ public class Search03
         epat = String.format("</%s>\\c",
                              line.subSequence(p, cp).toString());
 
-        r = Eval.do_searchpair(spat, "", epat, FORWARD, "", 0, null, 0);
+        r = Eval.do_searchpair(spat, "", epat, FORWARD, "", SEARCH_ISCLEAN, null, 0);
         //System.err.format("html: after searchpair r: %d\n    spat '%s' epat '%s'\n", r, spat, epat);
 
         if (r < 1 || lt(G.curwin.w_cursor, old_end))

@@ -84,6 +84,8 @@ public class Eval {
         }
         if ((flags & SP_START) != 0)
             options |= SEARCH_START;
+        if((flags & SEARCH_ISCLEAN) != 0)
+            options |= SEARCH_ISCLEAN;
 
         save_cursor = G.curwin.w_cursor.copy();
         pos = G.curwin.w_cursor.copy();

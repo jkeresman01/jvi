@@ -197,6 +197,7 @@ public interface Constants {
     public static final int SEARCH_MARK  =0x200;  // set previous context mark
     public static final int SEARCH_KEEP  =0x400;  // keep previous search pattern
     public static final int SEARCH_PEEK  =0x800;  // peek for typed char, cancel search
+    public static final int SEARCH_ISCLEAN  =0x1000;  // jVi only, don't clean the pattern
 
     // Values for sub_cmd and which_pat argument for search_regcomp()
     // Also used for which_pat argument for searchit()
@@ -212,6 +213,8 @@ public interface Constants {
     public static final int SP_START	= 0x10; /* accept match at start position */
     public static final int SP_SUBPAT	= 0x20; /* return nr of matching sub-pattern */
     public static final int SP_END	= 0x40; /* leave cursor at end of match */
+    // NOTE that SEARCH_NOCLEAN doesn't overlap the SP_* flags
+    public static final int SP_XXX     = 0x1000;
 
   // Values for flags argument for findmatchlimit()
     public static final int FM_BACKWARD	= 0x01;	// search backwards

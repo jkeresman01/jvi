@@ -882,7 +882,8 @@ finished:
     } else {
       if((options & SEARCH_HIS) != 0)	// put new pattern in history
           add_to_history(HIST_SEARCH, pattern);
-      cleanPattern = cleanupPattern(pattern, embeddedVimFlags);
+      cleanPattern = cleanupPattern(pattern, embeddedVimFlags,
+                                    (options & SEARCH_ISCLEAN) != 0);
     }
 
     // jVi saves more state in spat
@@ -1000,10 +1001,15 @@ finished:
    * this last rule, then could just return if p_meta_escape was empty and
    * p_meta_equals was false.
    * </p>
+   * <p>isClean means that there is no vim style escaping;
+   * used internally by jVi since it uses clean patterns.
+   * </p>
    */
-  private static String cleanupPattern(String s, MutableInt flags) {
+  private static String cleanupPattern(String s, MutableInt flags,
+                                       boolean isClean) {
     flags.setValue(0);
-    String metacharacterEscapes = G.p_rem;
+    String metacharacterEscapes = isClean ? "" : G.p_rem;
+    boolean req = isClean ? false : G.p_req;
     StringBuilder sb = new StringBuilder();
     boolean isEscaped = false;
     boolean hasUpper = false;
@@ -1014,7 +1020,7 @@ finished:
         continue;
       }
       
-      if((c == '=') && G.p_req) {
+      if((c == '=') && req) {
         // Have an '=' and that char is used to specify an optional atom.
         // Set useEscape if the '=' needs to be escaped to mean optional.
         boolean useEscape = metacharacterEscapes.indexOf('?') >= 0;
@@ -1110,7 +1116,7 @@ finished:
 
 
     RegExp prog = search_regcomp(pattern, RE_SEARCH, pat_use,
-                                 (options & (SEARCH_HIS+SEARCH_KEEP)));
+                     (options & (SEARCH_HIS+SEARCH_KEEP+SEARCH_ISCLEAN)));
     if(prog == null) {
       if((options & SEARCH_MSG) != 0 && !rc_did_emsg)
         Msg.emsg("Invalid search string: " + mr_pattern);
