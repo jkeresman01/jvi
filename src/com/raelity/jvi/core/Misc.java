@@ -1638,7 +1638,8 @@ public class Misc implements ClipboardOwner {
     {
       int remap;
       get_yank_register(regname, false);
-      if (y_current.y_array.length == 0 || y_current.y_array[0].length() == 0)
+      if (y_current.y_size == 0 || y_current.y_array == null
+            || y_current.y_array.length == 0 || y_current.y_array[0].length() == 0)
         return FAIL;
 
       /* Disallow remaping for ":@r". */
