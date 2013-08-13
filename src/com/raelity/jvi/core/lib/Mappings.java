@@ -228,10 +228,12 @@ public final class Mappings {
             // NOTE: special look like: key1|key2|key3
             // char: [!-~&&[^\\<]] | <C-[@-_]> | <([SC]-)?(special)>
             // a line is like: noremap char char+
-            //
-            String pat = "([!-~&&[^\\\\<]])"
+
+            // to fix bug #165 add p{L} and allow all unicode chars
+            String pat = "([!-~\\p{L}&&[^\\\\<]])"
                     + "|<C-([@-_&&[^\\\\]])>"
                     + "|<(?:([SC])-)?(special)>";
+
             // Make a string of all the special words we match.
             StringBuilder sb = new StringBuilder();
             for(EqLower k : getMapCommandSpecial().keySet()) {
