@@ -1532,6 +1532,9 @@ private static class GetLiteral implements HandleNextChar
   
   static Stack<Character> replace_stack = new Stack<Character>();
   static int replace_offset = 0;
+  private static boolean is_char(char c) {
+    return c != 0 && c != '\uffff';
+  }
   
   static void replace_push(char c) {
     if (replace_stack.size() < replace_offset)	/* nothing to do */
@@ -1599,7 +1602,7 @@ private static class GetLiteral implements HandleNextChar
     int	    oldState = G.State;
     
     G.State = NORMAL;		/* don't want REPLACE here */
-    while ((cc = replace_pop()) != '\uffff') {
+    while (is_char(cc = replace_pop())) {
       Misc.ins_char(cc);
       Misc.dec_cursor();
     }
@@ -1624,7 +1627,7 @@ private static class GetLiteral implements HandleNextChar
     char    cc;
     
     cc = replace_pop();
-    if (cc != '\uffff') {
+    if (is_char(cc)) {
       Misc.pchar_cursor(cc);
       replace_pop_ins();
     } else if (cc == 0) {
