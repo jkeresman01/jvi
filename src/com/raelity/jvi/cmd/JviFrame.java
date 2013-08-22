@@ -219,8 +219,8 @@ public class JviFrame extends JFrame
         cursorStatusBar.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createBevelBorder(BevelBorder.LOWERED,Color.white,Color.white,m_color1,m_color2),
                 BorderFactory.createEmptyBorder(0,2,0,0)));
-        cursorStatusBar.setMinimumSize(new Dimension(80,4));
-        cursorStatusBar.setPreferredSize(new Dimension(80,4));
+        cursorStatusBar.setMinimumSize(new Dimension(100,4));
+        cursorStatusBar.setPreferredSize(new Dimension(100,4));
 
         statusPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createBevelBorder(BevelBorder.RAISED,Color.white,Color.white,m_color1,m_color2),

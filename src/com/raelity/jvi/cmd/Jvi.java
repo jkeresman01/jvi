@@ -133,7 +133,7 @@ public class Jvi
                 int l = root.getElementIndex(dot);
                 Element elem = root.getElement(l);
                 int col = dot - elem.getStartOffset();
-                jl.setText("" + (l+1) + "-" + col);
+                jl.setText("" + (l+1) + "-" + col + " <" + dot +">");
             }
         });
         // Center the window
