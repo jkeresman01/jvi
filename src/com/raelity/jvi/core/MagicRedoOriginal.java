@@ -178,10 +178,24 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
     //
     // markRedoTrackPosition
 
+    // See comment for same name in MagicRedo.java
+    private boolean overwriteSameChar()
+    {
+        int curPosition = G.curwin.getCaretPosition();
+        if(curPosition == redoTrackPosition + 1) {
+            G.dbgRedo.printf("MagicRedo: overwrite same char\n");
+            redoTrackPosition++;
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void charTyped(char c) {
       if(!G.redoTrack)
         return;
+      if(expectChar && overwriteSameChar())
+          return;
       removeDocAfterString = null;
       if(expectChar)
         LOG.warning("markRedoPosition ERROR: expectChar");
@@ -282,9 +296,12 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
           debugDocInsertERROR(pos, s);
         if(s.length() != 1) {
           debugDocInsertLONG(pos, s);
-          // add in the extra
-          redobuff.append(s.substring(1));
-          redoTrackPosition += s.length() - 1;
+////////////////////////////////////////// THIS DOES NOT SEEM RIGHT
+// OR MAYBE IF KNOWN CHARACTER LIKE " or '. BUT CHECK WHAT ( AND { DO.
+//        // add in the extra
+//        redobuff.append(s.substring(1));
+//        redoTrackPosition += s.length() - 1;
+////////////////////////////////////////// THIS DOES NOT SEEM RIGHT
         }
       } else {
         if(pos == redoTrackPosition && removeDocAfterString == null) {
@@ -389,8 +406,13 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
                         new Object[]{pos, redoTrackPosition, s});
     }
     private void debugDocInsertLONG(int pos, String s) {
-      LOG.log(Level.WARNING, "docInsert LONG: {0}, length {1}",
-                        new Object[]{pos, s.length()});
+      if(G.dbgRedo.getBoolean()) {
+          G.dbgRedo.printf("docInsert LONG: %d, length %d\n", pos, s.length());
+      }
+      // Since "long" insert occurs for quote chars (and others),
+      // can't issue a warning.
+      // LOG.log(Level.WARNING, "docInsert LONG: {0}, length {1}",
+      //                   new Object[]{pos, s.length()});
     }
     private void debugDocInsertMATCH_EXTRA(int pos, String s) {
       if(G.dbgRedo.getBoolean())

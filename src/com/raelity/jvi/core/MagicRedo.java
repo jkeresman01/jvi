@@ -89,7 +89,7 @@ class MagicRedo implements GetChar.ViMagicRedo
     //
     // NOTES:
     //    - If the can't track what's going on, then redobuff is considered
-    //    - unusable and no attempt is made to keep it nice.
+    //      unusable and no attempt is made to keep it nice.
     //    - expectChar could be the actual char expected, else NUL
     //    - too complicated, if this needs much more tweaking,
     //      should probably go to a state machine.
@@ -119,6 +119,10 @@ class MagicRedo implements GetChar.ViMagicRedo
     //          and then '.' would give you "lengthx()". To try to handle cases
     //          like this would have to embed special commands (uF000 range?)
     //          in the redobuff.
+    //
+    //        - Is it possible to get rid of expectChar and use
+    //          some check of State. (expectChar seems to mean
+    //          that just gota char and that docInsert is expected next)
     //
 
     private static final Logger LOG = Logger.getLogger(MagicRedo.class.getName());
@@ -163,7 +167,8 @@ class MagicRedo implements GetChar.ViMagicRedo
     private boolean didMagic; // more than just user typing happened
     private DocString preString;
     private DocString postString;
-    private int trackOffset = -1;
+
+    private int trackOffset = -1; // NOT USED!!!!!
 
     ViMark initPos;
     ViMark endPos;
@@ -183,7 +188,7 @@ class MagicRedo implements GetChar.ViMagicRedo
 
         State newState = null;
 
-        // some events operate the same no matter what
+        // some events operate the same no matter the current state
         switch(e) {
             case e_begin:
             case e_abort:
@@ -226,6 +231,12 @@ class MagicRedo implements GetChar.ViMagicRedo
                 case s_wait_doc:
                     switch(e) {
                         case e_gotc:
+                            if(overwriteSameChar(params)) {
+                                // NOTE: staying in s_wait_doc
+                                newState = State.s_wait_doc;
+                                break;
+                            }
+                            // FALLTHROUGH
                         case e_backspace:
                             newState = defaultProcessEvent(e, params);
                             // two keys in a row without a doc event,
@@ -251,20 +262,18 @@ class MagicRedo implements GetChar.ViMagicRedo
         }
 
         if(G.dbgRedo.getBoolean()) {
-          StringBuilder sb = new StringBuilder("MagicRedo stateMachine: " );
-          sb.append(e.name()).append(": ").append(state.name());
+            StringBuilder sb = new StringBuilder("MagicRedo stateMachine: " );
+            sb.append(e.name()).append(": ").append(state.name());
 
-          if(newState != null) {
-              if(newState != state)
-                  sb.append(" --> ").append(newState.name());
-              state = newState;
-          }
-          if(tag != null)
-              sb.append(" [").append(tag).append("]");
-          G.dbgRedo.println(sb.toString());
+            if(newState != null && newState != state)
+                sb.append(" --> ").append(newState.name());
+            if(tag != null)
+                sb.append(" [").append(tag).append("]");
+            G.dbgRedo.println(sb.toString());
         }
 
-        params = null;
+        if(newState != null)
+            state = newState;
     }
 
     private State defaultProcessEvent(Event e, Params params)
@@ -303,6 +312,29 @@ class MagicRedo implements GetChar.ViMagicRedo
                 throw new AssertionError();
         }
         return newState;
+    }
+
+    //
+    // This situation occurs if a key is entered and there is NO document change,
+    // the next key triggers this; so there are two keys in a row. If the caret
+    // has moved by one, then we simply assume that the typed char was already
+    // in the document and update the position by one.
+    // An example of this might be when two " (quote) are typed in a row.
+    // (Note that this case is new in some NB-7.x)
+    //
+    // If needed could keep track of the previous char typed and check if the
+    // char that we skipped over is the same (but that might be too strict,
+    // though I don't see how).
+    //
+    private boolean overwriteSameChar(Params params)
+    {
+        int curPosition = G.curwin.getCaretPosition();
+        if(curPosition == redoTrackPosition + 1) {
+            G.dbgRedo.printf("MagicRedo: overwrite same char\n");
+            redoTrackPosition++;
+            return true;
+        }
+        return false;
     }
 
     MagicRedo(BufferQueue redobuff)
@@ -346,11 +378,12 @@ class MagicRedo implements GetChar.ViMagicRedo
             preString = new DocString(initPos.getOffset() - s.length(), s);
 
             // capture chars after the initial pos
-            s = G.curbuf.getText(initPos.getOffset(), 10);
-            off = initPos.getOffset() + 11;
-            if(off >= G.curbuf.getLength())
-                off = G.curbuf.getLength();
-            postString = new DocString(off, s, true);
+            int endoff = initPos.getOffset() + 11;
+            if(endoff > G.curbuf.getLength())
+                endoff = G.curbuf.getLength();
+            int len = Math.min(10, endoff+1 - initPos.getOffset());
+            s = G.curbuf.getText(initPos.getOffset(), len);
+            postString = new DocString(endoff, s, true);
 
         } catch(ViBadLocationException ex) {
             Logger.getLogger(MagicRedo.class.getName()).log(Level.SEVERE, null,
@@ -614,11 +647,13 @@ class MagicRedo implements GetChar.ViMagicRedo
         ViManager.println("MagicRedo: preString:\n" + preString);
         ViManager.println("MagicRedo: postString:\n" + postString);
         String s = getInsertedChars();
-        if(haveInsertedChars()) {
-            ViManager.println("MagicRedo: inserted: '" + s + "'");
-        } else {
-            ViManager.println("MagicRedo: inserted: NO MATCH: '" + s + "'");
-        }
+
+        ViManager.printf("MagicRedo: inserted: %s: '%s'\n",
+                         haveInsertedChars() ? ""
+                                             : didMagic ? "NO MATCH"
+                                                        : "NOT didMagic",
+                         s
+                );
     }
 
 
@@ -676,6 +711,7 @@ class MagicRedo implements GetChar.ViMagicRedo
       if(!G.redoTrack)
         return;
       removeDocAfterString = null;
+      // if(!(State.s_wait_typed == state))  ????IS THIS OK????
       if(expectChar)
         LOG.warning("markRedoPosition ERROR: expectChar");
 
@@ -774,9 +810,12 @@ class MagicRedo implements GetChar.ViMagicRedo
           debugDocInsertERROR(pos, s);
         if(s.length() != 1) {
           debugDocInsertLONG(pos, s);
-          // add in the extra
-          redobuff.append(s.substring(1));
-          redoTrackPosition += s.length() - 1;
+////////////////////////////////////////// THIS DOES NOT SEEM RIGHT
+// OR MAYBE IF KNOWN CHARACTER LIKE " or '. BUT CHECK WHAT ( AND { DO.
+//           // add in the extra
+//           redobuff.append(s.substring(1));
+//           redoTrackPosition += s.length() - 1;
+////////////////////////////////////////// THIS DOES NOT SEEM RIGHT
         }
       } else {
         if(pos == redoTrackPosition && removeDocAfterString == null) {
@@ -881,8 +920,13 @@ class MagicRedo implements GetChar.ViMagicRedo
                         new Object[]{pos, redoTrackPosition, s});
     }
     private void debugDocInsertLONG(int pos, String s) {
-      LOG.log(Level.WARNING, "docInsert LONG: {0}, length {1}",
-                        new Object[]{pos, s.length()});
+      if(G.dbgRedo.getBoolean()) {
+          G.dbgRedo.printf("docInsert LONG: %d, length %d\n", pos, s.length());
+      }
+      // Since "long" insert occurs for quote chars (and others),
+      // can't issue a warning.
+      // LOG.log(Level.WARNING, "docInsert LONG: {0}, length {1}",
+      //                   new Object[]{pos, s.length()});
     }
     private void debugDocInsertMATCH_EXTRA(int pos, String s) {
       if(G.dbgRedo.getBoolean())
