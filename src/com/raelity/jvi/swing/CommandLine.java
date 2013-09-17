@@ -631,8 +631,21 @@ public class CommandLine extends JPanel
                         JTextComponent tc = (JTextComponent) e.getSource();
                         tc.removeFocusListener(focusSetSelection);
                         Caret c = tc.getCaret();
-                        tc.setCaretPosition(commandLine.mark);
-                        tc.moveCaretPosition(commandLine.dot);
+                        try {
+                            tc.setCaretPosition(commandLine.mark);
+                            tc.moveCaretPosition(commandLine.dot);
+                        } catch (IllegalArgumentException ex) {
+                            // sometimes get exception, see
+                            // https://netbeans.org/bugzilla/show_bug.cgi?id=223853
+                            String msg = String.format(
+                                    "mark=%d, dot=%d, caret=%d, text=%s",
+                                    commandLine.mark,
+                                    commandLine.dot,
+                                    c.getDot(),
+                                    tc.getText());
+                            new IllegalArgumentException(msg, ex)
+                                    .printStackTrace();
+                        }
                     }
                 };
             }
