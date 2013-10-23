@@ -60,6 +60,7 @@ import static com.raelity.jvi.core.Search02.*;
 import static com.raelity.jvi.core.Search03.*;
 import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.lib.Constants.FDO.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
 
 /**
@@ -864,6 +865,9 @@ middle_code:
 	    oap.motion_type = MCHAR;
 	    oap.inclusive = false;
 	    Edit.beginline(intflag);
+            if (G.fdo_flags().contains(FDO_HOR) && KeyTyped
+					       && oap.op_type == OP_NOP)
+              foldOpenCursor();
 	    break;
 
 	    /*
@@ -1816,6 +1820,28 @@ middle_code:
             op_replace(oap, cap.nchar);
 	  break;
 
+//
+// there are several places in this method that might need to consider OP_FOLD*
+//	case OP_FOLDOPEN:
+//	case OP_FOLDOPENREC:
+//	case OP_FOLDCLOSE:
+//	case OP_FOLDCLOSEREC:
+//	    G.VIsual_reselect = false;	/* don't reselect now */
+//	    opFoldRange(oap->start.lnum, oap->end.lnum,
+//		    oap->op_type == OP_FOLDOPEN
+//					    || oap->op_type == OP_FOLDOPENREC,
+//		    oap->op_type == OP_FOLDOPENREC
+//					  || oap->op_type == OP_FOLDCLOSEREC,
+//					  oap->is_VIsual);
+//	    break;
+//
+//	case OP_FOLDDEL:
+//	case OP_FOLDDELREC:
+//	    VIsual_reselect = FALSE;	/* don't reselect now */
+//	    deleteFold(oap->start.lnum, oap->end.lnum,
+//			       oap->op_type == OP_FOLDDELREC, oap->is_VIsual);
+//	    break;
+
 	default:
 	  clearopbeep(oap);
       }
@@ -2248,6 +2274,7 @@ middle_code:
     FOLDOP foldop = null;
     HSCROLL hscroll = null;
     HDIR hdir = null;
+    boolean makeVisible = false;
     switch(cap.nchar) {
       case NL:		// put curwin->w_cursor at top of screen
                         // and set cursor at the first character of that line
@@ -2269,14 +2296,39 @@ middle_code:
       case 'c':
         foldop = FOLDOP.CLOSE;
         break;
+      case 'C':
+        foldop = FOLDOP.CLOSE_R;
+        break;
       case 'o':
         foldop = FOLDOP.OPEN;
+        break;
+      case 'O':
+        foldop = FOLDOP.OPEN_R;
+        break;
+      case 'a':
+        if(G.VIsual_active)
+          end_visual_mode(); // OUCH, BUG should do it without end visual
+        if(G.curwin.hasFolding(G.curwin.w_cursor.getLine(), null, null))
+          foldop = FOLDOP.OPEN;
+        else
+          foldop = FOLDOP.CLOSE;
+        break;
+      case 'A':
+        if(G.VIsual_active)
+          end_visual_mode(); // OUCH, BUG should do it without end visual
+        if(G.curwin.hasFolding(G.curwin.w_cursor.getLine(), null, null))
+          foldop = FOLDOP.OPEN_R;
+        else
+          foldop = FOLDOP.CLOSE_R;
         break;
       case 'M':
         foldop = FOLDOP.CLOSE_ALL;
         break;
       case 'R':
         foldop = FOLDOP.OPEN_ALL;
+        break;
+      case 'v':
+        makeVisible = true;
         break;
 
       case 'h':
@@ -2315,8 +2367,29 @@ middle_code:
 	clearopbeep(oap);
         break;
     }
-    if(foldop != null) {
-      G.curwin.foldOperation(foldop);
+    if(makeVisible)
+      foldOpenCursor();
+    else if(foldop != null) {
+      // NOTE: in vim visual mode fold ops goes through pending operator
+      int start, end;
+      boolean visual_active = G.VIsual_active;
+      if(G.VIsual_active) {
+        start = G.VIsual.getLine();
+        end = G.curwin.w_cursor.getLine();
+        if(end < start) {
+          int t = start;
+          start = end;
+          end = t;
+        }
+      } else {
+        start = cap.count1;
+        end = cap.count1;
+      }
+      // endvisualmode be doing the fold to avoid bad state
+      if(G.VIsual_active)
+        end_visual_mode(); // should be using operator pending
+      G.curwin.foldOperation(foldop, start, end, visual_active);
+      clearop(ca.oap);
     } else if(hscroll != null) {
       G.curwin.hscroll(hscroll, hdir, cap.count0 != 0 ? cap.count0 : 1);
       G.curwin.w_set_curswant = true;
@@ -2721,6 +2794,9 @@ middle_code:
         G.curwin.setCaretPosition(cursor.getOffset()+1);
       }
     }
+    if (n != cap.count1 && G.fdo_flags().contains(FDO_HOR) && KeyTyped
+					       && cap.oap.op_type == OP_NOP)
+	foldOpenCursor();
   }
 
   /**
@@ -2781,6 +2857,9 @@ middle_code:
 	break;
       }
     }
+    if (n != cap.count1 && G.fdo_flags().contains(FDO_HOR) && KeyTyped
+					       && cap.oap.op_type == OP_NOP)
+	foldOpenCursor();
 
     return retval;
   }
@@ -2795,6 +2874,9 @@ middle_code:
     if (Edit.cursor_down(cap.count1 - 1, cap.oap.op_type == OP_NOP) == FAIL) {
       clearopbeep(cap.oap);
     }
+    else if (G.fdo_flags().contains(FDO_HOR) && KeyTyped
+					       && cap.oap.op_type == OP_NOP)
+      foldOpenCursor();
   }
 
   /**
@@ -2898,6 +2980,9 @@ middle_code:
       G.curwin.w_set_curswant = true;
       // NEEDSWORK: visual mode: adjust_for_sel(cap);
     }
+    if (G.fdo_flags().contains(FDO_HOR) && KeyTyped
+					       && cap.oap.op_type == OP_NOP)
+      foldOpenCursor();
   }
 
   /**
@@ -4156,6 +4241,9 @@ static private void nv_findpar(CMDARG cap, int dir)
     G.curwin.w_set_curswant = true;
     if (bck_word(cap.count1, type, false) == FAIL)
       clearopbeep(cap.oap);
+    else if (G.fdo_flags().contains(FDO_HOR) && KeyTyped
+					       && cap.oap.op_type == OP_NOP)
+      foldOpenCursor();
   }
 
   /**
@@ -4230,6 +4318,8 @@ static private void nv_findpar(CMDARG cap, int dir)
       clearopbeep(cap.oap);
     } else {
       adjust_for_sel(cap);
+      if (G.fdo_flags().contains(FDO_HOR) && KeyTyped && cap.oap.op_type == OP_NOP)
+        foldOpenCursor();
     }
   }
 
@@ -4636,6 +4726,10 @@ static private void nv_findpar(CMDARG cap, int dir)
     }
   }
 
+  static void foldOpenCursor() {
+        G.curwin.foldOpenCursor(G.curwin.w_cursor.getLine());
+  }
+
   static int u_save_cursor() { return OK; }
 
   static void start_selection() {}
@@ -4670,7 +4764,7 @@ static private void nv_findpar(CMDARG cap, int dir)
   static boolean redraw_cmdline;
   static boolean msg_didany;
   static boolean msg_nowait;
-  static boolean KeyTyped;
+  static boolean KeyTyped = true;
   static boolean msg_scroll;
   static boolean emsg_on_display;
   static boolean must_redraw;

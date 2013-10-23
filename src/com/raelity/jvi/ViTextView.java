@@ -40,7 +40,13 @@ import com.raelity.jvi.lib.MutableInt;
 
 public interface ViTextView extends ViOptionBag {
   // text fold operations
-  public enum FOLDOP { CLOSE, OPEN, CLOSE_ALL, OPEN_ALL, MAKE_VISIBLE }
+  public enum FOLDOP { CLOSE,           // zc
+                       CLOSE_R,         // zC
+                       OPEN,            // zo
+                       OPEN_R,          // zO
+                       CLOSE_ALL,       // zM
+                       OPEN_ALL,        // zR
+  }
 
   /** anonymous mark operations */
   public enum MARKOP { TOGGLE, NEXT, PREV }
@@ -233,10 +239,8 @@ public interface ViTextView extends ViOptionBag {
   public void jumpList(JLOP op, int count);
 
   /** Perform the fold operation.  */
-  public void foldOperation(FOLDOP op);
-
-  /** Perform the fold operation.  */
-  public void foldOperation(FOLDOP op, int offset);
+  public void foldOperation(FOLDOP op, int start, int end, boolean isVisual);
+  public void foldOpenCursor(int line);
 
   public void wordMatchOperation(WMOP op);
 

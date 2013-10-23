@@ -61,6 +61,13 @@ public interface Constants {
     public static final int  OP_REPLACE	= 16;	// "r"  replace chars, only Visual mode
     public static final int  OP_INSERT	= 17;	// "I"  Insert column, only Visual mode
     public static final int  OP_APPEND	= 18;	// "A"  Append column, only Visual mode
+    public static final int  OP_FOLD         = 19;	// "zf" define a fold
+    public static final int  OP_FOLDOPEN     = 20;	// "zo" open folds
+    public static final int  OP_FOLDOPENREC  = 21;	// "zO" open folds recursively
+    public static final int  OP_FOLDCLOSE    = 22;	// "zc" close folds
+    public static final int  OP_FOLDCLOSEREC = 23;	// "zC" close folds recursively
+    public static final int  OP_FOLDDEL      = 24;	// "zd" delete folds
+    public static final int  OP_FOLDDELREC   = 25;	// "zD" delete folds recursively
 
   //
   // Flags for do_put
@@ -303,6 +310,27 @@ public interface Constants {
     public static final char IM_SHIFT_LEFT_TO_PAREN = KeyDefs.K_X_COMMA;
     public static final char IM_INS_REP = KeyDefs.K_X_IM_INS_REP;
     public static final char IM_LITERAL = KeyDefs.K_X_IM_LITERAL;
+
+    public enum FDO {
+        FDO_ALL("all"),
+        FDO_BLOCK("block"),
+        FDO_HOR("hor"),
+        FDO_MARK("mark"),
+        FDO_PERCENT("percent"),
+        FDO_QUICKFIX("quickfix"),
+        FDO_SEARCH("search"),
+        FDO_TAG("tag"),
+        FDO_INSERT("insert"),
+        FDO_UNDO("undo"),
+        FDO_JUMP("jump");
+
+        private final String opt;
+        private FDO(String opt) {
+            this.opt = opt;
+        }
+
+        public String getOpt() { return opt; }
+    }
 }
 
 /*

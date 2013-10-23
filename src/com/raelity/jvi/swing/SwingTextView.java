@@ -586,8 +586,7 @@ public class SwingTextView extends TextView
     @Override
     public void setCaretPosition( int offset )
     {
-        // NEEDSWORK: what is using this?
-        editorPane.setCaretPosition(offset);
+        w_cursor.set(offset);
     }
 
 
@@ -642,17 +641,13 @@ public class SwingTextView extends TextView
 
 
     @Override
-    public void foldOperation( FOLDOP op )
+    public void foldOperation( FOLDOP op, int start, int end, boolean isVisual )
     {
         Util.beep_flush();
     }
-
 
     @Override
-    public void foldOperation( FOLDOP op, int offset )
-    {
-        Util.beep_flush();
-    }
+    public void foldOpenCursor(int line) {}
 
 
     @Override
@@ -1158,11 +1153,12 @@ public class SwingTextView extends TextView
         return ops;
     }
 
-    private class WCursor extends ViFPOS.abstractFPOS
+    // The only method not final is set(int)
+    protected class WCursor extends ViFPOS.abstractFPOS
     {
 
-    @Override
-        public boolean isValid() {
+        @Override
+        final public boolean isValid() {
             return true;
         }
 
@@ -1187,7 +1183,7 @@ public class SwingTextView extends TextView
         }
 
         @Override
-        final public void set(int offset)
+        public void set(int offset)
         {
             editorPane.setCaretPosition(offset);
         }
@@ -1214,7 +1210,7 @@ public class SwingTextView extends TextView
                 column = adjustedColumn;
             }
 
-            editorPane.setCaretPosition(startOffset + column);
+            set(startOffset + column);
         }
 
         @Override

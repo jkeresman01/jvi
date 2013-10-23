@@ -21,14 +21,20 @@
 package com.raelity.jvi.core;
 
 import java.awt.Color;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
 
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViOptionBag;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.core.lib.Constants.FDO;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.DebugOption;
 import com.raelity.jvi.options.OptUtil;
+
+import static com.raelity.jvi.core.lib.Constants.FDO.*;
 
 /**
  *  A class of globals. Most taken directly from vim code.
@@ -310,6 +316,13 @@ public class G implements ViOptionBag
     static boolean p_ww_rarrow;
     static boolean p_ww_sp;
     static boolean p_ww_tilde;
+
+    static EnumSet<FDO> fdo_flags = EnumSet.of(
+            FDO_BLOCK, FDO_HOR, FDO_MARK, FDO_PERCENT, FDO_QUICKFIX,
+            FDO_SEARCH, FDO_TAG, FDO_UNDO);
+    public static Set<FDO> fdo_flags() {
+        return Collections.unmodifiableSet(fdo_flags);
+    }
 
 
 

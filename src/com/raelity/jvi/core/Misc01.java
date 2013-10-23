@@ -69,9 +69,8 @@ public class Misc01
       int offset = G.curwin.getDocLineOffset(logicalLine);
       int bufferLine = G.curbuf.getLineNumber(offset);
       if(bufferLine != line) {
-        offset = G.curbuf.getLineStartOffset(line);
         // System.err.println("LINE " + line + "-->" + bufferLine);
-        G.curwin.foldOperation(FOLDOP.MAKE_VISIBLE, offset);
+        G.curwin.foldOpenCursor(line);
         // now that the fold is open, it should have moved on screen
         logicalLine = G.curwin.getLogicalLine(line);
       }
