@@ -22,6 +22,7 @@ package com.raelity.jvi.options;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.util.EnumSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -165,12 +166,19 @@ public abstract class Option<T> {
         //                                  + " is not a StringOption");
         return (String)value;
     }
-    
+
     public Color getColor() {
         // if(optionType != Color.class)
         //     throw new ClassCastException(this.getClass().getSimpleName()
         //                                  + " is not a ColorOption");
         return (Color)value;
+    }
+    
+    public EnumSet getEnumSet() {
+        // if(optionType != Color.class)
+        //     throw new ClassCastException(this.getClass().getSimpleName()
+        //                                  + " is not a ColorOption");
+        return (EnumSet)value;
     }
 
     final public void validate(Object o) throws PropertyVetoException {
@@ -213,11 +221,11 @@ public abstract class Option<T> {
         }
     }
 
-    static class DefaultBooleanValidator extends Validator<Boolean>
+    static class NullValidator<T> extends Validator<T>
     {
         // The default validation accepts everything
         @Override
-        public void validate(Boolean val) throws PropertyVetoException
+        public void validate(T val) throws PropertyVetoException
         {
         }
 

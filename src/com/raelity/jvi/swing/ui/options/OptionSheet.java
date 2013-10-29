@@ -27,6 +27,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyVetoException;
 import java.util.Comparator;
+import java.util.EnumSet;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -43,12 +44,12 @@ import com.l2fprod.common.swing.LookAndFeelTweaks;
 
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.options.EnumOption;
+import com.raelity.jvi.options.EnumSetOption;
 import com.raelity.jvi.options.Option;
 import com.raelity.jvi.options.VimOption;
 import com.raelity.text.XMLUtil;
 
 /**
- *
  * @author Ernie Rael <err at raelity.com>
  */
 class OptionSheet extends JPanel implements Options.EditControl {
@@ -220,11 +221,14 @@ class OptionSheet extends JPanel implements Options.EditControl {
                 if(prop.getType().equals(Color.class)) {
                     propertyEditors.registerEditor(
                             prop, new ColorPropertyEditor(prop));
-                }
-                if(opt instanceof EnumOption) {
+                } else if(opt instanceof EnumOption) {
                     ComboBoxPropertyEditor pe = new ComboBoxPropertyEditor();
                     pe.setAvailableValues(((EnumOption)opt).getAvailableValues());
                     propertyEditors.registerEditor(prop, pe);
+                } else if(opt instanceof EnumSetOption) {
+                    propertyEditors.registerEditor(prop,
+                        new EnumSetPropertyEditor(
+                            prop, ((EnumSetOption)opt).getAvailableValues()));
                 }
                 properties[i2++] = prop;
             }
@@ -260,6 +264,8 @@ class OptionSheet extends JPanel implements Options.EditControl {
                               BooleanAsCheckBoxPropertyEditor.class);
             pe.registerEditor(Color.class,
                               ColorPropertyEditor.class);
+            pe.registerEditor(EnumSet.class,
+                              EnumSetPropertyEditor.class);
             propertyEditors = pe;
         }
     }

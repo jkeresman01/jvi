@@ -26,6 +26,7 @@ package com.raelity.jvi.options;
 public class BooleanOption extends Option<Boolean> {
 
     BooleanOption(String key, boolean defaultValue) {
-        super(Boolean.class, key, defaultValue, new DefaultBooleanValidator());
+        super(Boolean.class, key, defaultValue,
+              new NullValidator<Boolean>());
     }
 }

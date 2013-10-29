@@ -279,8 +279,11 @@ public interface Constants {
     public static final char CPO_MATCH	= '%';
     public static final char CPO_STAR	= '*';	/* ":*" means ":@" */
     public static final char CPO_SPECI	= '<';	/* don't recognize <> in mappings */
+    public static final char CPO_MINUS = '-';
+
     public static final String CPO_DEFAULT = "aABceFs";
-    public static final String CPO_ALL	= "aAbBcdeEfFjJkKlLmoOprsStuwWxy$!%*<";
+
+    public static final String CPO_ALL	= "aAbBcdeEfFjJkKlLmoOprsStuwWxy$!%*<-";
   
     public static final char BS_INDENT   = 'i';
     public static final char BS_EOL      = 'o';
@@ -329,7 +332,8 @@ public interface Constants {
             this.opt = opt;
         }
 
-        public String getOpt() { return opt; }
+        @Override
+        public String toString() { return opt; }
     }
 }
 

@@ -26,6 +26,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -210,6 +211,20 @@ public class OptUtil {
     if(valid == null)
       valid = new ColorOption.DefaultColorValidator();
     ColorOption opt = new ColorOption(name, defaultValue, permitNull, valid);
+    optionsMap.put(name, opt);
+    return opt;
+  }
+
+  static public EnumSetOption createEnumSetOption(String name,
+                                                  EnumSet defaultValue,
+                                                  Class enumType,
+                                                  Validator<EnumSet> valid) {
+    if(optionsMap.get(name) != null)
+        throw new IllegalArgumentException("Option " + name + "already exists");
+    @SuppressWarnings("unchecked")
+    EnumSetOption opt = new EnumSetOption((Class<EnumSet>)defaultValue.getClass(),
+                                          enumType,
+                                          name, defaultValue, valid);
     optionsMap.put(name, opt);
     return opt;
   }

@@ -41,6 +41,7 @@ import java.beans.PropertyVetoException;
 import java.beans.SimpleBeanInfo;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -194,7 +195,7 @@ implements Options.EditControl {
                                                                String methodName,
                                                                Class clazz)
     throws IntrospectionException {
-        PropertyDescriptor d = null;
+        PropertyDescriptor d;
         Option opt = Options.getOption(optName);
         // d = new MyPropertyDescriptor(methodName, clazz);
         d = new PropertyDescriptor(methodName, clazz);
@@ -286,6 +287,7 @@ implements Options.EditControl {
     // Called before a change is made,
     // record the previous value.
     // Do nothing if a value is already recorded for this key.
+    @SuppressWarnings("unchecked")
     private void trackChange(String name, Class clazz) {
         if(changeMap.containsKey(name))
             return;
@@ -301,6 +303,8 @@ implements Options.EditControl {
             o = getColor(name);
             if(o == null)
                 o = nullColor;
+        } else if(clazz == EnumSet.class) {
+            o = EnumSet.copyOf(getEnumSet(name));
         } else assert false : "unhandled type";
         changeMap.put(name, o);
     }
@@ -324,7 +328,11 @@ implements Options.EditControl {
                 prefs.putInt(key, (Integer)o);
             } else if(o instanceof Boolean) {
                 prefs.putBoolean(key, (Boolean)o);
-            }
+            } else if(o instanceof EnumSet) {
+                EnumSetOption opt = (EnumSetOption)Options.getOption(key);
+                prefs.put(key, opt.encode((EnumSet)o));
+            } else
+                assert false : "unhandled type";
         }
     }
 
@@ -358,6 +366,17 @@ implements Options.EditControl {
         this.pcs.firePropertyChange( name, old, val );
     }
 
+    protected void put(String name, EnumSet val) throws PropertyVetoException {
+        @SuppressWarnings("unchecked")
+        EnumSet old = EnumSet.copyOf(getEnumSet(name));
+	EnumSetOption opt = (EnumSetOption)Options.getOption(name);
+        opt.validate(val);
+        this.vcs.fireVetoableChange( name, old, val );
+        trackChange(name, EnumSet.class);
+	prefs.put(name, opt.encode(val));
+        this.pcs.firePropertyChange( name, old, val );
+    }
+
     protected void put(String name, boolean val) {
         trackChange(name, Boolean.class);
 	prefs.putBoolean(name, val);
@@ -378,6 +397,11 @@ implements Options.EditControl {
         return opt.getColor();
     }
 
+    protected EnumSet getEnumSet(String name) {
+	Option opt = Options.getOption(name);
+	return opt.getEnumSet();
+    }
+
     protected boolean getboolean(String name) {
 	Option opt = Options.getOption(name);
 	return opt.getBoolean();
@@ -391,6 +415,14 @@ implements Options.EditControl {
     /** this read-only option is special cased */
     public String getJViVersion() {
         return ViManager.getReleaseString();
+    }
+
+    public void setViFoldOpen(EnumSet arg)  throws PropertyVetoException {
+        put(Options.foldOpen, arg);
+    }
+
+    public EnumSet getViFoldOpen() {
+	return getEnumSet(Options.foldOpen);
     }
 
     public void setViCursorXorBug(boolean arg)  throws PropertyVetoException {

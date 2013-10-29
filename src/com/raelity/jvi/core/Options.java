@@ -24,6 +24,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,6 +36,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.ViTextView.FOLDOP;
 import com.raelity.jvi.core.lib.Mappings;
 import com.raelity.jvi.lib.CharTab;
 import com.raelity.jvi.lib.Wrap;
@@ -47,6 +49,7 @@ import com.raelity.jvi.options.Validator;
 import com.raelity.text.TextUtil.MySegment;
 
 import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.lib.Constants.FDO.*;
 
 /**
  * Option handling from external sources.
@@ -177,6 +180,7 @@ public final class Options {
   public static final String equalAlways = "viEqualAlways";
   public static final String splitBelow = "viSplitBelow";
   public static final String splitRight = "viSplitRight";
+  public static final String foldOpen = "viFoldOpen";
 
   public static final String nrFormats = "viNrFormats";
   public static final String matchPairs = "viMatchPairs";
@@ -661,6 +665,16 @@ public final class Options {
     OptUtil.setupOptionDesc(Category.GENERAL, splitRight, "'splitright' 'spr'",
 	"When on, splitting a window will put the new window right of the"
 	+ " current one.");
+
+    G.fdo_flags = OptUtil.createEnumSetOption(foldOpen,
+            EnumSet.of(
+                FDO_BLOCK, FDO_HOR, FDO_MARK, FDO_PERCENT, FDO_QUICKFIX,
+                FDO_SEARCH, FDO_TAG, FDO_UNDO),
+            FDO.class, null);
+
+    OptUtil.setupOptionDesc(Category.GENERAL, foldOpen, "'foldopen' 'fdo'",
+          "Specifies for which type of commands folds will be opened, if the"
+        + " command moves the cursor into a closed fold.");
 
     /////////////////////////////////////////////////////////////////////
     //
