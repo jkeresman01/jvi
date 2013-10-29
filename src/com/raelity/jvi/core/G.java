@@ -148,6 +148,7 @@ public class G implements ViOptionBag
      * processing a character typed by the user
      */
     static boolean KeyTyped = true;
+    public static boolean getKeyTyped() { return KeyTyped; }
 
    /**
     * This flag is used to make auto-indent work right on lines where only a

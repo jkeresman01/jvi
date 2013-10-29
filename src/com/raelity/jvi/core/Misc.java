@@ -659,7 +659,7 @@ public class Misc implements ClipboardOwner {
       ++idx;
     }
 
-    idx = G.curwin.getFirstHiddenColumn(txt.docOffset, idx);
+    // idx = G.curwin.getFirstHiddenColumn(txt.docOffset, idx);
 
     if(reached != null) {
       // indicate if the column was reached or not

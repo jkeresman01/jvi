@@ -647,6 +647,15 @@ public class SwingTextView extends TextView
     }
 
     @Override
+    public boolean hasAnyFolding() {
+        // TODO how can this be optimized? Worth it to scan folds?
+        // could also pass in a line number, check up to there.
+
+        int lastLine = getBuffer().getLineCount();
+        return getLineMap().logicalLine(lastLine) != lastLine;
+    }
+
+    @Override
     public void foldOpenCursor(int line) {}
 
 

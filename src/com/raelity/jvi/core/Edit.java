@@ -39,6 +39,7 @@ import static com.raelity.jvi.core.Normal.*;
 import static com.raelity.jvi.core.Options.*;
 import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.lib.Constants.FDO.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
 
 public class Edit {
@@ -232,6 +233,11 @@ public class Edit {
         arrow_used = false;
         // o_eol = FALSE;
       }
+
+      // The cursor line is not in a closed fold, unless 'insertmode' is set or
+      // restarting.
+      if (!p_im && did_restart_edit == 0)
+        foldOpenCursor();
       
       int i = 0;
       if(   G.p_smd) {
@@ -290,6 +296,9 @@ normal_char:	// do "break normal_char" to insert a character
         // ....
         update_curswant();
         // .....
+
+        if(G.fdo_flags().contains(FDO_INSERT))
+          Normal.foldOpenCursor();
         
         char lastc = c; // NEEDSWORK: use of lastc not supported
         // c = GetChar.safe_vgetc();
@@ -1364,16 +1373,44 @@ private static class GetLiteral implements HandleNextChar
    * When TRUE: update topline.
    */
   public static int cursor_up(int n, boolean upd_topline) {
-    int viewLine = G.curwin.getLogicalLine(G.curwin.w_cursor.getLine());
-    if (n != 0) {
-      if (viewLine <= 1)
+    int lnum = G.curwin.w_cursor.getLine();
+    if (n > 0) {
+      if (lnum <= 1)
         return FAIL;
-      if (n >= viewLine)
-        viewLine = 1;
-      else
-        viewLine -= n;
+      if (n >= lnum)
+        lnum = 1;
+      else if(G.curwin.hasAnyFolding()) {
+        //
+        // Count each sequence of folded lines as one logical line.
+        //
+        // go to the start of the current fold
+        MutableInt mi = new MutableInt();
+        if(G.curwin.hasFolding(lnum, mi, null))
+          lnum = mi.getValue();
+        while(n-- > 0) {
+          // move up one line
+          --lnum;
+          if (lnum <= 1)
+            break;
+          // If we entered a fold, move to the beginning, unless in
+          // Insert mode or when 'foldopen' contains "all": it will open
+          // in a moment.
+          if (n > 0 || !((G.State & INSERT) != 0
+                          || (G.fdo_flags().contains(FDO_ALL))))
+          if(G.curwin.hasFolding(lnum, mi, null))
+            lnum = mi.getValue();
+        }
+        if(lnum < 1)
+          lnum = 1;
+      } else
+        lnum -= n;
     }
-    gotoLogicalLine(viewLine, -1);
+
+    ViFPOS fpos = fpos();
+    fpos.set(lnum, 0);
+    coladvance(fpos, G.curwin.w_curswant).copyTo(G.curwin.w_cursor);
+
+    gotoLine(lnum);
     return OK;
   }
 
@@ -1382,14 +1419,49 @@ private static class GetLiteral implements HandleNextChar
    * @param upd_topline When TRUE: update topline.
    */
   public static int cursor_down(int n, boolean upd_topline) {
-    int viewLine = G.curwin.getLogicalLine(G.curwin.w_cursor.getLine());
-    if (n != 0) {
-      int nline = G.curwin.getLogicalLineCount();
-      if (viewLine >= nline) { return FAIL; }
-      viewLine += n;
-      if (viewLine > nline) { viewLine = nline; }
+    ViFPOS fpos = fpos();
+    int lnum = fpos.getLine();
+    if(n > 0)
+    {
+      MutableInt last = new MutableInt();
+      // Move to last line of fold, will fail if it's the end-of-file.
+      if(G.curwin.hasFolding(lnum, null, last))
+        lnum = last.getValue();
+        // This fails if the cursor is already in the last line or would move
+        // beyond the last line and '-' is in 'cpoptions'
+        if (lnum >= G.curbuf.getLineCount()
+                || (lnum + n > G.curbuf.getLineCount()
+                    && vim_strchr(G.p_cpo, CPO_MINUS) != null))
+            return FAIL;
+        if (lnum + n >= G.curbuf.getLineCount())
+            lnum = G.curbuf.getLineCount();
+        else
+        if (G.curwin.hasAnyFolding())
+        {
+            // count each sequence of folded lines as one logical line
+            while (n-- > 0)
+            {
+                if (G.curwin.hasFolding(lnum, null, last))
+                    lnum = last.getValue() + 1;
+                else
+                    ++lnum;
+                if (lnum >= G.curbuf.getLineCount())
+                    break;
+            }
+            if (lnum > G.curbuf.getLineCount())
+                lnum = G.curbuf.getLineCount();
+        }
+        else
+            lnum += n;
+        fpos.set(lnum, 0);
     }
-    gotoLogicalLine(viewLine, -1);
+    /* try to advance to the column we want to be at */
+    coladvance(fpos, G.curwin.w_curswant).copyTo(G.curwin.w_cursor);
+    gotoLine(lnum);
+
+    // if (upd_topline)
+    //     update_topline();	/* make sure curwin->w_topline is valid */
+
     return OK;
   }
 
@@ -2461,6 +2533,8 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
   private static void ins_left() throws NotSupportedException {
     ViFPOS	tpos;
 
+    if (G.fdo_flags().contains(FDO_HOR) && G.KeyTyped)
+      foldOpenCursor();
     undisplay_dollar();
     ViFPOS cursor = G.curwin.w_cursor;
     tpos = cursor.copy();
@@ -2489,6 +2563,8 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
   private static void ins_home() throws NotSupportedException {
     ViFPOS	tpos;
 
+    if (G.fdo_flags().contains(FDO_HOR) && G.KeyTyped)
+      foldOpenCursor();
     undisplay_dollar();
     tpos = G.curwin.w_cursor.copy();
     
@@ -2504,6 +2580,8 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
   private static void ins_end() throws NotSupportedException {
     ViFPOS	tpos;
 
+    if (G.fdo_flags().contains(FDO_HOR) && G.KeyTyped)
+      foldOpenCursor();
     undisplay_dollar();
     tpos = G.curwin.w_cursor.copy();
     if ((G.mod_mask & MOD_MASK_CTRL) != 0) {
@@ -2515,6 +2593,8 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
   }
   
   private static void ins_s_left() throws NotSupportedException {
+    if (G.fdo_flags().contains(FDO_HOR) && G.KeyTyped)
+      foldOpenCursor();
     undisplay_dollar();
     
     ViFPOS cursor = G.curwin.w_cursor;
@@ -2529,6 +2609,8 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
   }
   
   private static void ins_right() throws NotSupportedException {
+    if (G.fdo_flags().contains(FDO_HOR) && G.KeyTyped)
+      foldOpenCursor();
     undisplay_dollar();
     ViFPOS cursor = G.curwin.w_cursor;
     if (Misc.gchar_cursor() != '\n') {
@@ -2554,6 +2636,8 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
   }
   
   private static void ins_s_right() throws NotSupportedException {
+    if (G.fdo_flags().contains(FDO_HOR) && G.KeyTyped)
+      foldOpenCursor();
     undisplay_dollar();
     ViFPOS cursor = G.curwin.w_cursor;
     if (cursor.getLine() < G.curbuf.getLineCount()

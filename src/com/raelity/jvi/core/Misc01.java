@@ -27,7 +27,6 @@ import java.util.logging.Level;
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViTextView.Direction;
-import com.raelity.jvi.ViTextView.FOLDOP;
 import com.raelity.jvi.ViTextView.Orientation;
 import com.raelity.jvi.ViTextView.SIZOP;
 import com.raelity.jvi.ViWindowNavigator;
@@ -58,6 +57,9 @@ public class Misc01
    * then scroll to the line and the line will be near the top
    * or bottom as needed, otherwise center the target line on the screen.
    */
+  static void gotoLine(int line) {
+    gotoLine(line, -3); // HACK -3 means don't do the coladvance
+  }
   static void gotoLine(int line, int flag) {
     gotoLine(line, flag, false);
   }
@@ -76,7 +78,6 @@ public class Misc01
       }
     }
     gotoLogicalLine(logicalLine, flag);
-    return;
   }
 
   static ViFPOS fpos()
@@ -177,7 +178,7 @@ public class Misc01
      * then scroll to the line and the line will be near the top
      * or bottom as needed, otherwise center the target line on the screen.
      */
-    static void gotoLogicalLine(int logicalLine, int flag)
+    private static void gotoLogicalLine(int logicalLine, int flag)
     {
       if ( G.dbgCoordSkip.getBoolean(Level.FINE) ) {
             G.dbgCoordSkip.println(Level.FINE, String.format(
@@ -225,14 +226,20 @@ public class Misc01
           G.curwin.setVpTopViewLine(newViewTop);
       else
           G.curwin.setVpTopLogicalLine(adjustTopLogicalLine(newTop));
+
+      //////////////////////////////////////////////////////////////////////
+      // NO-NO-NO fpos should not be done here. AND should not be logical line
+      //////////////////////////////////////////////////////////////////////
+
       ViFPOS fpos = fposLogicalLine(logicalLine);
       if(flag < 0) {
-        coladvance(fpos, G.curwin.w_curswant).copyTo(G.curwin.w_cursor);
+          // HACK. FOR NOW use -3 to indicate that no advance should be done
+          if(flag != -3)
+            coladvance(fpos, G.curwin.w_curswant).copyTo(G.curwin.w_cursor);
       } else {
-        // from nv_goto
-        beginline(fpos, flag).copyTo(G.curwin.w_cursor);
+          // from nv_goto
+          beginline(fpos, flag).copyTo(G.curwin.w_cursor);
       }
-
     }
 
     /**
@@ -376,9 +383,9 @@ public class Misc01
       int		n;
       int		room;
 
-      int newtopline = -1;
-      int newbotline = -1;
-      int newcursorline = -1;
+      // int newtopline;
+      // int newbotline;
+      // int newcursorline;
 
       final ViFPOS cursor = G.curwin.w_cursor;
 
@@ -390,10 +397,10 @@ public class Misc01
 
       validate_botline();
       room = G.curwin.getVpBlankLines();
-      newtopline = G.curwin.getVpTopLogicalLine();
-      newbotline = G.curwin.getVpBottomLogicalLine();
+      int newtopline = G.curwin.getVpTopLogicalLine();
+      int newbotline = G.curwin.getVpBottomLogicalLine();
       //COORD CHANGED: newcursorline = cursor.getLine();
-      newcursorline = G.curwin.getLogicalLine(cursor.getLine());
+      int newcursorline = G.curwin.getLogicalLine(cursor.getLine());
       if (go_down) {	    // scroll down
         while (n > 0 && newbotline <= G.curwin.getLogicalLineCount()) {
           i = plines(newtopline);
@@ -537,22 +544,18 @@ public class Misc01
      */
     static void cursor_correct() {
       // NEEDSWORK: cursor_correct: handle p_so and the rest
-      return;
     }
     static void cursor_correct(ViFPOS fpos) {
       // NEEDSWORK: cursor_correct: handle p_so and the rest
-      return;
     }
 
     static void validate_botline() {
       // NEEDSWORK: validate_botline: think this is a nop
       comp_botline();
-      return;
     }
 
     private static void comp_botline() {
       // NEEDSWORK: comp_botline: think this is a nop
-      return;
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -702,7 +705,7 @@ public class Misc01
 
     private static boolean win_jump_forw(AppViews whichViews, int n)
     {
-        boolean ok = true;
+        boolean ok;
         ok = n == 0 ? win_cycle(whichViews, FORWARD)
                     : win_jump_to(whichViews, n);
         return ok;
@@ -710,7 +713,7 @@ public class Misc01
 
     private static boolean win_jump_back(AppViews whichViews, int n)
     {
-        boolean ok = true;
+        boolean ok;
         ok = n == 0 ? win_cycle(whichViews, BACKWARD)
                     : win_jump_to(whichViews, n);
         return ok;

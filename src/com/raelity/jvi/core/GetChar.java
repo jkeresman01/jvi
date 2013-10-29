@@ -38,6 +38,7 @@ import com.raelity.text.TextUtil;
 
 import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.lib.Constants.FDO.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
 
 public class GetChar {
@@ -153,6 +154,13 @@ public class GetChar {
         // returning from event
         // only do this if no pending characters
         // but can't test for pending characters, so ....
+
+        if (G.curwin.hasAnyFolding() && !char_avail())
+        {
+            // foldCheckClose(); NICE IDEA
+            if (G.fdo_flags.contains(FDO_ALL))
+                Normal.foldOpenCursor();
+        }
 
         Misc.out_flush();
     }

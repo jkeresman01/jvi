@@ -241,6 +241,7 @@ public interface ViTextView extends ViOptionBag {
   /** Perform the fold operation.  */
   public void foldOperation(FOLDOP op, int start, int end, boolean isVisual);
   public void foldOpenCursor(int line);
+  public boolean hasAnyFolding();
 
   public void wordMatchOperation(WMOP op);
 

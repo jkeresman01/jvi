@@ -510,7 +510,7 @@ middle_code:
       if (ca.nchar == ESC)
       {
 	clearop(oap);
-	if (p_im != 0 && G.restart_edit == 0)
+	if (p_im && G.restart_edit == 0)
 	  G.restart_edit = 'a';
 	break middle_code;	// used to be goto normal_end
       }
@@ -865,7 +865,7 @@ middle_code:
 	    oap.motion_type = MCHAR;
 	    oap.inclusive = false;
 	    Edit.beginline(intflag);
-            if (G.fdo_flags().contains(FDO_HOR) && KeyTyped
+            if (G.fdo_flags().contains(FDO_HOR) && G.KeyTyped
 					       && oap.op_type == OP_NOP)
               foldOpenCursor();
 	    break;
@@ -2226,7 +2226,18 @@ middle_code:
       dist = 1;
     ViFPOS fpos = G.curwin.w_cursor.copy();
     boolean ok = G.curwin.viewLineUpDown(dir, dist, fpos);
-    // get out of any fold
+    // in vim nv_screengo is implemented line by line
+    // if(dir == DIR.BACKWARD) {
+    //   ...
+    //   // Move to the start of a closed fold.  Don't do that when
+    //   // 'foldopen' contains "all": it will open in a moment.
+    //   if (!(G.fdo_flags.contains(FDO_ALL))) {
+    //     MutableInt mi = new MutableInt();
+    //     if(G.curwin.hasFolding(fpos.getLine(), mi, null))
+    //       fpos.set(mi.getValue(), 0); // NEEDSWORK: column
+    //   }
+    //   ...
+    // }
     ViFPOS viewLineStartFpos = fpos.copy();
     G.curwin.viewLineEdge(EDGE.LEFT, viewLineStartFpos);
     int col = G.curwin.getFirstHiddenColumn(
@@ -2794,7 +2805,7 @@ middle_code:
         G.curwin.setCaretPosition(cursor.getOffset()+1);
       }
     }
-    if (n != cap.count1 && G.fdo_flags().contains(FDO_HOR) && KeyTyped
+    if (n != cap.count1 && G.fdo_flags().contains(FDO_HOR) && G.KeyTyped
 					       && cap.oap.op_type == OP_NOP)
 	foldOpenCursor();
   }
@@ -2857,7 +2868,7 @@ middle_code:
 	break;
       }
     }
-    if (n != cap.count1 && G.fdo_flags().contains(FDO_HOR) && KeyTyped
+    if (n != cap.count1 && G.fdo_flags().contains(FDO_HOR) && G.KeyTyped
 					       && cap.oap.op_type == OP_NOP)
 	foldOpenCursor();
 
@@ -2874,7 +2885,7 @@ middle_code:
     if (Edit.cursor_down(cap.count1 - 1, cap.oap.op_type == OP_NOP) == FAIL) {
       clearopbeep(cap.oap);
     }
-    else if (G.fdo_flags().contains(FDO_HOR) && KeyTyped
+    else if (G.fdo_flags().contains(FDO_HOR) && G.KeyTyped
 					       && cap.oap.op_type == OP_NOP)
       foldOpenCursor();
   }
@@ -2948,16 +2959,14 @@ middle_code:
                         opt | normal_search_standard_options);
 
       if (i == 0)
-          clearop(cap.oap);
+        clearop(cap.oap);
       else
       {
-          if (i == 2)
-              cap.oap.motion_type = MLINE;
-          // #ifdef FEAT_FOLDING
-          // if (cap->oap->op_type == OP_NOP
-          //            && (fdo_flags & FDO_SEARCH) && KeyTyped)
-          // 	    foldOpenCursor();
-          // #endif
+        if (i == 2)
+          cap.oap.motion_type = MLINE;
+        if (cap.oap.op_type == OP_NOP
+                && G.fdo_flags.contains(FDO_SEARCH) && G.KeyTyped)
+          foldOpenCursor();
       }
       // always do this since might turn off highlighting if no match found
       Options.newSearch();
@@ -2980,7 +2989,7 @@ middle_code:
       G.curwin.w_set_curswant = true;
       // NEEDSWORK: visual mode: adjust_for_sel(cap);
     }
-    if (G.fdo_flags().contains(FDO_HOR) && KeyTyped
+    if (G.fdo_flags().contains(FDO_HOR) && G.KeyTyped
 					       && cap.oap.op_type == OP_NOP)
       foldOpenCursor();
   }
@@ -2991,6 +3000,7 @@ middle_code:
   static private void nv_percent(CMDARG cap) {
 
     cap.oap.inclusive = true;
+    int lnum = G.curwin.w_cursor.getLine();
     if (cap.count0 != 0) {	    // {cnt}% : goto {cnt} percentage in file
       if (cap.count0 > 100) {
 	clearopbeep(cap.oap);
@@ -3008,9 +3018,8 @@ middle_code:
       boolean usePlatform = G.p_pbm & ViManager.getPlatformFindMatch();
       if(usePlatform) {
         ViFPOS fpos = G.curwin.w_cursor.copy();
-        int endingOffset = fpos.getOffset(); // this assumes failture
         G.curwin.findMatch();
-        endingOffset = G.curwin.getCaretPosition();
+        int endingOffset = G.curwin.getCaretPosition();
 
         if(endingOffset == fpos.getOffset()) {
           clearopbeep(cap.oap);
@@ -3027,12 +3036,16 @@ middle_code:
         } else {
           MarkOps.setpcmark();
           G.curwin.w_cursor.set(fpos);
-          //G.curwin.setCaretPosition(fpos.getOffset());
           G.curwin.w_set_curswant = true;
           adjust_for_sel(cap);
         }
       }
     }
+    if (cap.oap.op_type == OP_NOP
+	    && lnum != G.curwin.w_cursor.getLine()
+	    && G.fdo_flags.contains(FDO_PERCENT)
+	    && G.KeyTyped)
+	foldOpenCursor();
   }
 
 /**
@@ -3230,11 +3243,9 @@ nv_brackets(CMDARG cap, int dir)
 	    setpcmark();
 	    G.curwin.w_cursor.set(pos); // G.curwin.w_cursor = *pos;
 	    G.curwin.w_set_curswant = true;
-// #ifdef FEAT_FOLDING
-// 	    if ((fdo_flags & FDO_BLOCK) && KeyTyped
-// 					       && cap.oap.op_type == OP_NOP)
-// 		foldOpenCursor();
-// #endif
+   	    if (G.fdo_flags.contains(FDO_BLOCK) && G.KeyTyped
+   					       && cap.oap.op_type == OP_NOP)
+   		foldOpenCursor();
 	}
     }
 
@@ -3260,10 +3271,9 @@ nv_brackets(CMDARG cap, int dir)
 	{
 	    if (cap.oap.op_type == OP_NOP)
 		Edit.beginline(BL_WHITE | BL_FIX);
-// #ifdef FEAT_FOLDING
-// 	    if ((fdo_flags & FDO_BLOCK) && KeyTyped && cap.oap.op_type == OP_NOP)
-// 		foldOpenCursor();
-// #endif
+   	    if (G.fdo_flags.contains(FDO_BLOCK) && G.KeyTyped
+   					       && cap.oap.op_type == OP_NOP)
+   		foldOpenCursor();
 	}
     }
 
@@ -3352,7 +3362,7 @@ nv_brackets(CMDARG cap, int dir)
 //		break;
 //	    }
 //# ifdef FEAT_FOLDING
-//	if (cap.oap.op_type == OP_NOP && (fdo_flags & FDO_SEARCH) && KeyTyped)
+//	if (cap.oap.op_type == OP_NOP && (fdo_flags & FDO_SEARCH) && G.KeyTyped)
 //	    foldOpenCursor();
 //# endif
 //    }
@@ -3380,20 +3390,31 @@ nv_brackets(CMDARG cap, int dir)
 
     if (!findsent(dir, cap.count1))
       clearopbeep(cap.oap);
+    else {
+      adjust_cursor(/*cap.oap*/);
+      if (G.fdo_flags.contains(FDO_BLOCK) && G.KeyTyped
+              && cap.oap.op_type == OP_NOP)
+        foldOpenCursor();
+    }
   }
   
 /*
  * Handle the "{" and "}" commands.
  */
 
-static private void nv_findpar(CMDARG cap, int dir)
-{
-  cap.oap.motion_type = MCHAR;
-  cap.oap.inclusive = false;
-  G.curwin.w_set_curswant = true;
-  if (!findpar(cap, dir, cap.count1, NUL, false))
-    clearopbeep(cap.oap);
-}
+  static private void nv_findpar(CMDARG cap, int dir)
+  {
+    cap.oap.motion_type = MCHAR;
+    cap.oap.inclusive = false;
+    G.curwin.w_set_curswant = true;
+    if (!findpar(cap, dir, cap.count1, NUL, false))
+      clearopbeep(cap.oap);
+    else {
+      if (G.fdo_flags.contains(FDO_BLOCK) && G.KeyTyped
+              && cap.oap.op_type == OP_NOP)
+        foldOpenCursor();
+    }
+  }
 
   /**
    * Handle the "r" command.
@@ -3612,6 +3633,8 @@ static private void nv_findpar(CMDARG cap, int dir)
    */
   static private void nv_gomark(CMDARG cap, boolean flag) {
     ViMark	pos;
+    ViFPOS old_cursor = G.curwin.w_cursor.copy();
+    boolean old_KeyTyped = G.KeyTyped;
 
     pos = MarkOps.getmark(cap.nchar, (cap.oap.op_type == OP_NOP));
     //if (pos == MarkOps.otherFile)
@@ -3626,6 +3649,12 @@ static private void nv_findpar(CMDARG cap, int dir)
     } else {
       nv_cursormark(cap, flag, pos);
     }
+    if (cap.oap.op_type == OP_NOP
+	    && pos != null
+	    && (pos instanceof Filemark || !equalpos(old_cursor, pos))
+	    && G.fdo_flags.contains(FDO_MARK)
+	    && old_KeyTyped)
+	foldOpenCursor();
   }
 
   /**
@@ -3635,6 +3664,8 @@ static private void nv_findpar(CMDARG cap, int dir)
   throws NotSupportedException {
     //G.curwin.jumpList(op, cap.count1);
     ViMark	fpos;
+    int lnum = G.curwin.w_cursor.getLine();
+    boolean old_KeyTyped = G.KeyTyped;
 
     if (!checkclearopq(cap.oap)) {
       fpos = MarkOps.movemark(cap.count1);
@@ -3647,6 +3678,12 @@ static private void nv_findpar(CMDARG cap, int dir)
       } else {
 	clearopbeep(cap.oap);
       }
+      if (cap.oap.op_type == OP_NOP
+              && fpos != null
+              && (fpos instanceof Filemark || lnum != G.curwin.w_cursor.getLine())
+              && G.fdo_flags.contains(FDO_MARK)
+              && old_KeyTyped)
+          foldOpenCursor();
     }
   }
 
@@ -4220,6 +4257,10 @@ static private void nv_findpar(CMDARG cap, int dir)
     G.curwin.w_set_curswant = false;
   }
 
+  /**
+   * "G", "gg", CTRL-END, CTRL-HOME.
+   * cap->arg is TRUE for "G".
+   */
   static private void nv_goto (CMDARG cap, int lnum) {
     cap.oap.motion_type = MLINE;
     MarkOps.setpcmark();
@@ -4230,6 +4271,9 @@ static private void nv_findpar(CMDARG cap, int dir)
     lnum = lnum < 1 ? 1
             : lnum > G.curbuf.getLineCount() ? G.curbuf.getLineCount() : lnum;
     gotoLine(lnum, BL_SOL | BL_FIX);
+    if (G.fdo_flags().contains(FDO_JUMP) && G.KeyTyped
+					       && cap.oap.op_type == OP_NOP)
+      foldOpenCursor();
   }
 
   /**
@@ -4241,7 +4285,7 @@ static private void nv_findpar(CMDARG cap, int dir)
     G.curwin.w_set_curswant = true;
     if (bck_word(cap.count1, type, false) == FAIL)
       clearopbeep(cap.oap);
-    else if (G.fdo_flags().contains(FDO_HOR) && KeyTyped
+    else if (G.fdo_flags().contains(FDO_HOR) && G.KeyTyped
 					       && cap.oap.op_type == OP_NOP)
       foldOpenCursor();
   }
@@ -4318,7 +4362,8 @@ static private void nv_findpar(CMDARG cap, int dir)
       clearopbeep(cap.oap);
     } else {
       adjust_for_sel(cap);
-      if (G.fdo_flags().contains(FDO_HOR) && KeyTyped && cap.oap.op_type == OP_NOP)
+      if (G.fdo_flags().contains(FDO_HOR) && G.KeyTyped
+              && cap.oap.op_type == OP_NOP)
         foldOpenCursor();
     }
   }
@@ -4376,11 +4421,11 @@ static private void nv_findpar(CMDARG cap, int dir)
     } else if (G.curwin.hasSelection()) {
       G.curwin.clearSelection();
     } else if (cap.oap.op_type == OP_NOP && opnum == 0
-	     && cap.count0 == 0 && cap.oap.regname == 0 && p_im == 0) {
+	     && cap.count0 == 0 && cap.oap.regname == 0 && !p_im) {
       Util.vim_beep();
     }
     clearop(cap.oap);
-    if (p_im != 0 && G.restart_edit == 0) {
+    if (p_im && G.restart_edit == 0) {
       G.restart_edit = 'a';
     }
   }
@@ -4757,14 +4802,13 @@ static private void nv_findpar(CMDARG cap, int dir)
 
   //static boolean Recording;
   //static boolean Exec_reg;
-  static int p_im;
+  static boolean p_im;
   static boolean msg_didout;
   static int msg_col;
   static boolean arrow_used;
   static boolean redraw_cmdline;
   static boolean msg_didany;
   static boolean msg_nowait;
-  static boolean KeyTyped = true;
   static boolean msg_scroll;
   static boolean emsg_on_display;
   static boolean must_redraw;
