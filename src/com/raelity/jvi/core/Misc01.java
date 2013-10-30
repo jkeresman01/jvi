@@ -57,27 +57,11 @@ public class Misc01
    * then scroll to the line and the line will be near the top
    * or bottom as needed, otherwise center the target line on the screen.
    */
-  static void gotoLine(int line) {
-    gotoLine(line, -3); // HACK -3 means don't do the coladvance
-  }
-  static void gotoLine(int line, int flag) {
-    gotoLine(line, flag, false);
-  }
-  static void gotoLine(int line, int flag, boolean openFold) {
+  static void scrollToLine(int line) {
     if(line > G.curbuf.getLineCount())
         line = G.curbuf.getLineCount();
     int logicalLine = G.curwin.getLogicalLine(line);
-    if(openFold) {
-      int offset = G.curwin.getDocLineOffset(logicalLine);
-      int bufferLine = G.curbuf.getLineNumber(offset);
-      if(bufferLine != line) {
-        // System.err.println("LINE " + line + "-->" + bufferLine);
-        G.curwin.foldOpenCursor(line);
-        // now that the fold is open, it should have moved on screen
-        logicalLine = G.curwin.getLogicalLine(line);
-      }
-    }
-    gotoLogicalLine(logicalLine, flag);
+    scrollToLogicalLine(logicalLine);
   }
 
   static ViFPOS fpos()
@@ -178,12 +162,12 @@ public class Misc01
      * then scroll to the line and the line will be near the top
      * or bottom as needed, otherwise center the target line on the screen.
      */
-    private static void gotoLogicalLine(int logicalLine, int flag)
+    private static void scrollToLogicalLine(int logicalLine)
     {
       if ( G.dbgCoordSkip.getBoolean(Level.FINE) ) {
             G.dbgCoordSkip.println(Level.FINE, String.format(
-                 "gotoLogicalLine: logicalLine %d, flag 0x%x",
-                 logicalLine, flag));
+                 "gotoLogicalLine: logicalLine %d",
+                 logicalLine));
       }
       if(logicalLine < 1)
         logicalLine = 1;
@@ -226,20 +210,6 @@ public class Misc01
           G.curwin.setVpTopViewLine(newViewTop);
       else
           G.curwin.setVpTopLogicalLine(adjustTopLogicalLine(newTop));
-
-      //////////////////////////////////////////////////////////////////////
-      // NO-NO-NO fpos should not be done here. AND should not be logical line
-      //////////////////////////////////////////////////////////////////////
-
-      ViFPOS fpos = fposLogicalLine(logicalLine);
-      if(flag < 0) {
-          // HACK. FOR NOW use -3 to indicate that no advance should be done
-          if(flag != -3)
-            coladvance(fpos, G.curwin.w_curswant).copyTo(G.curwin.w_cursor);
-      } else {
-          // from nv_goto
-          beginline(fpos, flag).copyTo(G.curwin.w_cursor);
-      }
     }
 
     /**

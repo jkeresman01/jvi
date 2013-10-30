@@ -713,7 +713,7 @@ middle_code:
 	      break;
 	    }
           //case K_S_SPACE:
-            c = ' ';
+            // c = ' ';
             // FALTHROUGH
 
 	  case 'l':
@@ -2413,7 +2413,7 @@ middle_code:
     int nchar = cap.nchar;
     int target_view_line = G.curwin.getViewLine(G.curwin.w_cursor);
     boolean change_line = false;
-    int top_view_line = 0;
+    int top_view_line;
 
     if(cap.count0 != 0 && cap.count0 != target_view_line) {
       MarkOps.setpcmark();
@@ -2679,7 +2679,6 @@ middle_code:
       //do_cmdline_cmd(buf); ///// probably stuffbuf append
       throw new IllegalStateException("do_cmdline_cmd(buf)");
     }
-    return;
   }
 
   /**
@@ -2688,7 +2687,6 @@ middle_code:
   static private void nv_scroll(CMDARG cap) {
     // NOTE: always using nv_scroll_scrolloff
     nv_scroll_scrolloff(cap);
-    return;
   }
 
   static private void nv_scroll_scrolloff(CMDARG cap) {
@@ -2697,7 +2695,7 @@ middle_code:
 
     cap.oap.motion_type = MLINE;
     MarkOps.setpcmark();
-    int newcursorline = -1;
+    int newcursorline;
 
     int halfway = (G.curwin.getVpLines() - G.curwin.getVpBlankLines() + 1) / 2;
     if(cap.cmdchar == 'M') {
@@ -2926,7 +2924,6 @@ middle_code:
 
     // now that we've used/abused this field, clear it so prep_redo happy
     cap.nchar = 0;
-    return;
   }
 
   /**
@@ -3444,7 +3441,6 @@ nv_brackets(CMDARG cap, int dir)
     GetChar.stuffcharReadbuff(cap.nchar);
     GetChar.stuffcharReadbuff(ESC);
     GetChar.disableRedoTrackingOneEdit();
-    return;
   }
   
   /**
@@ -3905,7 +3901,7 @@ nv_brackets(CMDARG cap, int dir)
   static private void nv_g_cmd(CMDARG cap, StringBuilder searchbuff)
   throws NotSupportedException {
     ViFPOS tpos;
-    int t = 0;
+    int t;
     boolean flag = false;
     switch (cap.nchar) {
       /*case 'x':
@@ -4172,7 +4168,7 @@ nv_brackets(CMDARG cap, int dir)
     if (!checkclearopq(cap.oap)) {
       // if (u_save((curwin.w_cursor.lnum - (cap.cmdchar == 'O' ? 1 : 0)) .....
       // NEEDSWORK: would like the beginUndo only if actually making changes
-      boolean startEdit = false;  
+      boolean startEdit;  
       beginInsertUndo();
       try {
         startEdit = open_line(cap.cmdchar == 'O' ? BACKWARD : FORWARD,
@@ -4184,7 +4180,6 @@ nv_brackets(CMDARG cap, int dir)
             endInsertUndo();
       }
     }
-    return;
   }
   
   /*
@@ -4270,7 +4265,10 @@ nv_brackets(CMDARG cap, int dir)
         lnum = cap.count0;
     lnum = lnum < 1 ? 1
             : lnum > G.curbuf.getLineCount() ? G.curbuf.getLineCount() : lnum;
-    gotoLine(lnum, BL_SOL | BL_FIX);
+    ViFPOS fpos = fpos();
+    fpos.set(lnum, 0);
+    beginline(fpos, BL_SOL | BL_FIX).copyTo(G.curwin.w_cursor);
+    scrollToLine(lnum);
     if (G.fdo_flags().contains(FDO_JUMP) && G.KeyTyped
 					       && cap.oap.op_type == OP_NOP)
       foldOpenCursor();
@@ -4471,7 +4469,6 @@ nv_brackets(CMDARG cap, int dir)
       }
       return;
     }
-    return;
   }
 
   /**
@@ -4501,7 +4498,6 @@ nv_brackets(CMDARG cap, int dir)
         break;
     }
     Edit.edit(cap.cmdchar, false, cap.count1);
-    return;
   }
 
   static private  void	nv_object (CMDARG cap) {

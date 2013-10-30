@@ -33,6 +33,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import com.raelity.jvi.ViCmdEntry;
+import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
@@ -44,6 +45,7 @@ import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.manager.ViManager;
 
+import static com.raelity.jvi.core.Edit.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.lib.Constants.*;
@@ -344,7 +346,10 @@ private static ColonEvent parseCommandGuts(String commandLine,
             if(l == 0) {
                 l = 1;
             }
-            gotoLine(l, BL_SOL | BL_FIX);
+            ViFPOS fpos = fpos();
+            fpos.set(l, 0);
+            beginline(fpos, BL_SOL | BL_FIX).copyTo(G.curwin.w_cursor);
+            scrollToLine(l);
             return null;
         }
     }

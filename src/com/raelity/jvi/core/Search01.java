@@ -37,6 +37,7 @@ import com.raelity.jvi.manager.ViManager;
 import com.raelity.text.RegExp;
 import com.raelity.text.TextUtil.MySegment;
 
+import static com.raelity.jvi.core.Edit.*;
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
@@ -247,7 +248,7 @@ public class Search01 {
     // (unlike the 'g' command, doGlobal, not checking if lines are deleted)
 
     List<ViMark> marks = new ArrayList<ViMark>();
-    for(int lnum = cev.getLine1(); lnum <= cev.getLine2(); lnum++) {
+    for(int lnum = line1; lnum <= line2; lnum++) {
       marks.add(G.curbuf.createMark(G.curbuf.getLineStartOffset(lnum),
                                     BIAS.FORW));
     }
@@ -270,7 +271,10 @@ public class Search01 {
 
     if(! G.global_busy) {
       if(cursorLine > 0) {
-	gotoLine(cursorLine, BL_WHITE | BL_FIX, true);
+        ViFPOS fpos = fpos();
+        fpos.set(cursorLine, 0);
+        beginline(fpos, BL_SOL | BL_FIX).copyTo(G.curwin.w_cursor);
+        scrollToLine(cursorLine);
       }
       if(nSubMatch == 0) {
 	Msg.emsg(Messages.e_patnotf2 + get_search_pat());
@@ -707,7 +711,10 @@ public class Search01 {
 
 
     if(cursorLine > 0) {
-      gotoLine(cursorLine, BL_WHITE | BL_FIX, true);
+      ViFPOS fpos = fpos();
+      fpos.set(cursorLine, 0);
+      beginline(fpos, BL_SOL | BL_FIX).copyTo(G.curwin.w_cursor);
+      scrollToLine(cursorLine);
     }
     if(result != null)
       result.close();

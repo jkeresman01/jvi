@@ -352,4 +352,6 @@ public class G implements ViOptionBag
     static int viminfoMaxBuf; //viminfoMaxPersistedBuffersWithMarks
     static boolean isCursorXorBug;
 
+    public static final boolean False = false;
+
 } // end com.raelity.jvi.G

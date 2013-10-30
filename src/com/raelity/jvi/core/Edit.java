@@ -1410,7 +1410,7 @@ private static class GetLiteral implements HandleNextChar
     fpos.set(lnum, 0);
     coladvance(fpos, G.curwin.w_curswant).copyTo(G.curwin.w_cursor);
 
-    gotoLine(lnum);
+    scrollToLine(lnum);
     return OK;
   }
 
@@ -1457,7 +1457,7 @@ private static class GetLiteral implements HandleNextChar
     }
     /* try to advance to the column we want to be at */
     coladvance(fpos, G.curwin.w_curswant).copyTo(G.curwin.w_cursor);
-    gotoLine(lnum);
+    scrollToLine(lnum);
 
     // if (upd_topline)
     //     update_topline();	/* make sure curwin->w_topline is valid */

@@ -41,7 +41,6 @@ import com.raelity.text.TextUtil.MySegment;
 
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc.*;
-import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
@@ -192,7 +191,6 @@ public class Search
       getSearchCommandEntry().removeChangeListener(isListener);
       if(isListener == null)
         isListener = new SearchListener();
-      ass.searchPos = G.curwin.w_cursor.copy(); // NEEDSWORK: REMOVE ME NOW
       ass.searchTopLine = G.curwin.getVpTopDocumentLine();
       ass.didIncrSearch = false;
       getSearchCommandEntry().addChangeListener(isListener);
@@ -286,8 +284,8 @@ public class Search
       pos = G.curwin.w_cursor.copy(); // start searching from here
     ViFPOS initialPos = pos.copy();   // use with setpcmark on success (!vim)
 
-    int retval = 0; // assume not found
-    String searchstr = null;
+    int retval;
+    String searchstr;
 
     Spat spat0 = spats[0];
 
@@ -457,10 +455,7 @@ end_do_search:
     if (typeT) {
       col -= dir;
     }
-    // curwin->w_cursor.col = col;
-    G.curwin.setCaretPosition(
-		  col + G.curbuf
-			  .getLineStartOffsetFromOffset(fpos.getOffset()));
+    G.curwin.w_cursor.setColumn(col);
     return true;
   }
 
@@ -899,7 +894,7 @@ finished:
       ic = true;
     } // else FORCE_CASE_NONE
 
-    RegExp re = null;
+    RegExp re;
     // if using saved, can the re be reused?
     if(spat != null && spat.re_ic == ic) {
       re = spat.re;
@@ -1278,7 +1273,7 @@ finished:
             break;
           }
           Misc.line_breakcheck();	// stop if ctrl-C typed
-          if (false/*got_int*/)
+          if (G.False/*got_int*/)
             break;
 
           if (loop != 0 && lnum == start_pos.getLine())
@@ -1313,12 +1308,12 @@ finished:
 	    wmsg = bot_top_msg;
         }
       }
-      if (false/*got_int*/)
+      if (G.False/*got_int*/)
         break;
     } while (--count > 0 && found);   // stop after count matches or no match
 
     if (!found) {	    // did not find it
-      if (false/*got_int*/)
+      if (G.False/*got_int*/)
         searchitErrorMessage(Messages.e_interr);
       else if ((options & SEARCH_MSG) == SEARCH_MSG) {
         if (    G.p_ws)
@@ -1333,14 +1328,13 @@ finished:
     }
     search_match_len = matchend - match;
 
-    gotoLine(G.curbuf.getLineNumber(pos.getOffset()), 0, true);
     int new_pos = pos.getOffset();
     if(search_match_len == 0) {
         // search /$ puts cursor on end of line
         new_pos = G.curwin.validateCursorPosition(new_pos);
+        if(new_pos != pos.getOffset())
+          pos.set(new_pos);
     }
-    G.curwin.w_cursor.set(new_pos);
-    G.curwin.w_set_curswant = true;
     if(wmsg != null) {
       Msg.wmsg(wmsg/*, true*/);
     }
