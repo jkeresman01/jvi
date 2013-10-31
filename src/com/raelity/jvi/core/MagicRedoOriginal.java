@@ -554,6 +554,9 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
             } // END HACK ALERT
 
             if(!skip) {
+              // NOTE: This can easily happen with the "^J" NB command.
+              //       This in place rename can change multiple words
+              //       scattered around.
               if(ViManager.isDebugAtHome()) {
                 LOG.log(Level.WARNING, "redo track: remove after: {0}", ex.getMessage());
               }
