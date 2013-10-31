@@ -1,4 +1,4 @@
-<!--<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 
 <!--<!DOCTYPE html public "-//w3c//DTD HTML 4.01 transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">-->
 <!-- <!doctype html public "-//w3c//dtd html 4.0 transitional//en"> -->
@@ -68,7 +68,7 @@
 </p>
 -->
 
-<h2>jVi-1.4 Release, NB7.x only</h2>
+<h2>jVi-1.5 Release, NB7.2 and later</h2>
 
 <!--
 <b>Version 1.4.3 early access</b>
@@ -90,37 +90,81 @@
   </dd>
 </dl>
 -->
-<b>Version 1.4.9.x? - 2013/09/03</b>
-    <ul>
-      <li>
-        <a href="https://sourceforge.net/p/jvi/bugs/178/">
-        [#178] macro execution of empty register gives exception, eg: @r</a>
-      </li>
-      <li>
-        <a href="https://sourceforge.net/p/jvi/bugs/177/">
-        [#177] Problem with backspace and Replace command</a>
-      </li>
-      <li>
-        <a href="https://sourceforge.net/p/jvi/bugs/176/">
-        [#176] Problem with "." (dot) command</a>
-      </li>
-      <li>
-        <a href="https://sourceforge.net/p/jvi/bugs/174/">
-        [#174] NoClassDefFoundException caused in Netbeans on code completion (Netbeans 7.3)</a>
-      </li>
-      <li>
-        <a href="https://sourceforge.net/p/jvi/bugs/168/">
-        [#168] ESC to exit search leaves editor in an unusable state</a>
-      </li>
-      <li>
-        <a href="https://sourceforge.net/p/jvi/bugs/165/">
-        [#165] jVi cannot map the "ö"-key</a>
-      </li>
-      <li>
-        <a href="https://sourceforge.net/p/jvi/bugs/164/">
-        [#164] NB line number on/​off doesn't work after disable jVi</a>
-      </li>
-    </ul>
+<b>Version 1.5.0.x? - 2013/10/30</b>
+  <p>
+    The 1.5 release reworks the fold commands. As much as possible, they now
+    behave like the vim commands. The available commands are:
+    <span class="tt">zc</span>,
+    <span class="tt">zC</span>,
+    <span class="tt">zo</span>,
+    <span class="tt">zO</span>,
+    <span class="tt">za</span>,
+    <span class="tt">zA</span> and
+    <span class="tt">zv</span>.
+    The 'foldopen'/'fdo' option is implemented. It's in the
+    <i>General</i> tab under jVi options and its persistent value
+    can be modified there; the run time value can be changed with
+    the set command.
+    See the vim documentation for details on the commands and 'fdo' option.
+  </p>
+  <dl>
+    <dt>jVi Core</dt>
+    <dd>
+      <ul>
+        <li>
+          <a href="https://sourceforge.net/p/jvi/feature-requests/54/">
+          [#54] implement za and zA fold-commands</a>
+        </li>
+      </ul>
+    </dd>
+    <!--
+    <dt>jVi NetBeans KeyBindings</dt>
+    <dd>
+      <ul>
+        <li></li>
+        <li>
+          <a href="">
+          [#] </a>
+        </li>
+      </ul>
+    </dd>
+    -->
+    <dt>Bug fixes</dt>
+    <dd>
+      <ul>
+        <li>
+          <a href="https://sourceforge.net/p/jvi/bugs/178/">
+          [#178] macro execution of empty register gives exception, eg: @r</a>
+        </li>
+        <li>
+          <a href="https://sourceforge.net/p/jvi/bugs/177/">
+          [#177] Problem with backspace and Replace command</a>
+        </li>
+        <li>
+          <a href="https://sourceforge.net/p/jvi/bugs/176/">
+          [#176] Problem with "." (dot) command</a>
+        </li>
+        <li>
+          <a href="https://sourceforge.net/p/jvi/bugs/174/">
+          [#174] NoClassDefFoundException caused in Netbeans on code completion (Netbeans 7.3)</a>
+        </li>
+        <li>
+          <a href="https://sourceforge.net/p/jvi/bugs/168/">
+          [#168] ESC to exit search leaves editor in an unusable state</a>
+        </li>
+        <li>
+          <a href="https://sourceforge.net/p/jvi/bugs/165/">
+          [#165] jVi cannot map the "ö"-key</a>
+        </li>
+        <li>
+          <a href="https://sourceforge.net/p/jvi/bugs/164/">
+          [#164] NB line number on/​off doesn't work after disable jVi</a>
+        </li>
+      </ul>
+    </dd>
+  </dl>
+
+<h2>jVi-1.4 Release, NB7.x only</h2>
 
 <b>Version 1.4.8 - 2013/03/03</b>
   <ul>
