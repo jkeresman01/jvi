@@ -2962,7 +2962,7 @@ middle_code:
         if (i == 2)
           cap.oap.motion_type = MLINE;
         if (cap.oap.op_type == OP_NOP
-                && G.fdo_flags.contains(FDO_SEARCH) && G.KeyTyped)
+                && G.p_fdo.contains(FDO_SEARCH) && G.KeyTyped)
           foldOpenCursor();
       }
       // always do this since might turn off highlighting if no match found
@@ -3040,7 +3040,7 @@ middle_code:
     }
     if (cap.oap.op_type == OP_NOP
 	    && lnum != G.curwin.w_cursor.getLine()
-	    && G.fdo_flags.contains(FDO_PERCENT)
+	    && G.p_fdo.contains(FDO_PERCENT)
 	    && G.KeyTyped)
 	foldOpenCursor();
   }
@@ -3240,7 +3240,7 @@ nv_brackets(CMDARG cap, int dir)
 	    setpcmark();
 	    G.curwin.w_cursor.set(pos); // G.curwin.w_cursor = *pos;
 	    G.curwin.w_set_curswant = true;
-   	    if (G.fdo_flags.contains(FDO_BLOCK) && G.KeyTyped
+   	    if (G.p_fdo.contains(FDO_BLOCK) && G.KeyTyped
    					       && cap.oap.op_type == OP_NOP)
    		foldOpenCursor();
 	}
@@ -3268,7 +3268,7 @@ nv_brackets(CMDARG cap, int dir)
 	{
 	    if (cap.oap.op_type == OP_NOP)
 		Edit.beginline(BL_WHITE | BL_FIX);
-   	    if (G.fdo_flags.contains(FDO_BLOCK) && G.KeyTyped
+   	    if (G.p_fdo.contains(FDO_BLOCK) && G.KeyTyped
    					       && cap.oap.op_type == OP_NOP)
    		foldOpenCursor();
 	}
@@ -3389,7 +3389,7 @@ nv_brackets(CMDARG cap, int dir)
       clearopbeep(cap.oap);
     else {
       adjust_cursor(/*cap.oap*/);
-      if (G.fdo_flags.contains(FDO_BLOCK) && G.KeyTyped
+      if (G.p_fdo.contains(FDO_BLOCK) && G.KeyTyped
               && cap.oap.op_type == OP_NOP)
         foldOpenCursor();
     }
@@ -3407,7 +3407,7 @@ nv_brackets(CMDARG cap, int dir)
     if (!findpar(cap, dir, cap.count1, NUL, false))
       clearopbeep(cap.oap);
     else {
-      if (G.fdo_flags.contains(FDO_BLOCK) && G.KeyTyped
+      if (G.p_fdo.contains(FDO_BLOCK) && G.KeyTyped
               && cap.oap.op_type == OP_NOP)
         foldOpenCursor();
     }
@@ -3648,7 +3648,7 @@ nv_brackets(CMDARG cap, int dir)
     if (cap.oap.op_type == OP_NOP
 	    && pos != null
 	    && (pos instanceof Filemark || !equalpos(old_cursor, pos))
-	    && G.fdo_flags.contains(FDO_MARK)
+	    && G.p_fdo.contains(FDO_MARK)
 	    && old_KeyTyped)
 	foldOpenCursor();
   }
@@ -3677,7 +3677,7 @@ nv_brackets(CMDARG cap, int dir)
       if (cap.oap.op_type == OP_NOP
               && fpos != null
               && (fpos instanceof Filemark || lnum != G.curwin.w_cursor.getLine())
-              && G.fdo_flags.contains(FDO_MARK)
+              && G.p_fdo.contains(FDO_MARK)
               && old_KeyTyped)
           foldOpenCursor();
     }

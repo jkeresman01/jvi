@@ -33,7 +33,7 @@ public abstract class Option<T> {
     final Class<T> optionType;
     final protected String name;
     final protected T defaultValue;
-    final private Validator<T> validator;
+    final protected Validator<T> validator;
     private T value;
 
     private String displayName;
@@ -181,7 +181,8 @@ public abstract class Option<T> {
         return (EnumSet)value;
     }
 
-    final public void validate(Object o) throws PropertyVetoException {
+    // allow override because EnumSet allows validation of string value
+    public void validate(Object o) throws PropertyVetoException {
 
         T val;
         try {

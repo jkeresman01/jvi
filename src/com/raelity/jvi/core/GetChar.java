@@ -158,7 +158,7 @@ public class GetChar {
         if (G.curwin.hasAnyFolding() && !char_avail())
         {
             // foldCheckClose(); NICE IDEA
-            if (G.fdo_flags.contains(FDO_ALL))
+            if (G.p_fdo.contains(FDO_ALL))
                 Normal.foldOpenCursor();
         }
 

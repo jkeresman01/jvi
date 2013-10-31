@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.options;
 
+import java.beans.PropertyVetoException;
 import java.lang.ref.WeakReference;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -26,6 +27,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.raelity.jvi.core.Options;
 
 /**
  *
@@ -41,7 +44,7 @@ public class EnumSetOption extends Option<EnumSet> {
                          Validator<EnumSet> valid)
     {
         super(optionType, key, defaultValue,
-              valid != null ? valid : new NullValidator<EnumSet>());
+              valid != null ? valid : new DefaultEnumSetValidator<EnumSet>(key));
         this.enumType = enumType;
         super.initialize();
     }
@@ -147,6 +150,64 @@ public class EnumSetOption extends Option<EnumSet> {
             refNameEnumMap = new WeakReference<Map<String, Enum>>(map);
         }
         return map;
+    }
+
+    @Override
+    public void validate(Object val) throws PropertyVetoException {
+        if(validator instanceof DefaultEnumSetValidator)
+            ((DefaultEnumSetValidator)validator).validateAnyType(val);
+        else
+            super.validate(val);
+    }
+
+    /**
+     * The default EnumSetValidator gives no error if the argument
+     * is an EnumSet (unless it is the wrong type of EnumSet) since
+     * by definition it only contains valid enums.
+     *
+     * If the argument is a string, then it parses it, and checks
+     * that each value is in the enum.
+     */
+    public static class DefaultEnumSetValidator<T> extends Validator<T> {
+        final String name;
+
+        public DefaultEnumSetValidator(String name)
+        {
+            this.name = name;
+        }
+        @Override
+        public void validate(T val) throws PropertyVetoException
+        {
+            validateAnyType(val);
+        }
+
+        @SuppressWarnings("unchecked")
+        public void validateAnyType(Object val) throws PropertyVetoException
+        {
+            opt = Options.getOption(name);
+            EnumSetOption esOpt = (EnumSetOption)opt;
+            if(val instanceof EnumSet) {
+                if(val.getClass() != opt.optionType)
+                    reportPropertyVetoException(
+                            "Invalid EnumSet class: "
+                            + opt.getClass().getSimpleName(), val);
+            } else if(val instanceof String) {
+                Map<String, Enum> map = esOpt.getNameEnumMap();
+                String[] vals = ((String)val).split("[,\\s]+");
+                for(String s : vals) {
+                    Enum e = map.get(s);
+                    if(e == null) {
+                        reportPropertyVetoException(
+                                "Invalid value: " + s, val);
+                    }
+                }
+            } else {
+                reportPropertyVetoException(
+                        "Must be either EnumSet or String not "
+                        + val.getClass().getSimpleName(), val);
+            }
+        }
+
     }
 
 }

@@ -666,7 +666,7 @@ public final class Options {
 	"When on, splitting a window will put the new window right of the"
 	+ " current one.");
 
-    G.fdo_flags = OptUtil.createEnumSetOption(foldOpen,
+    /*G.p_fdo = */OptUtil.createEnumSetOption(foldOpen,
             EnumSet.of(
                 FDO_BLOCK, FDO_HOR, FDO_MARK, FDO_PERCENT, FDO_QUICKFIX,
                 FDO_SEARCH, FDO_TAG, FDO_UNDO),
@@ -977,6 +977,8 @@ public final class Options {
     setExpertHidden(readOnlyHack, true, true);
 
     OptUtil.verifyVimOptions();
+    if(ViManager.isDebugAtHome())
+      OptUtil.checkAllForSetCommand();
   }
 
   /**

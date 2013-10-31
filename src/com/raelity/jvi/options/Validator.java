@@ -32,7 +32,8 @@ public abstract class Validator<T> {
 
     public abstract void validate(T val) throws PropertyVetoException;
 
-    protected void reportPropertyVetoException(String msg, T val)
+    // val was "T val" before EnumSet
+    protected void reportPropertyVetoException(String msg, Object val)
     throws PropertyVetoException
     {
           throw new PropertyVetoException(

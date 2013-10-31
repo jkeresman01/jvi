@@ -28,8 +28,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -313,6 +315,8 @@ public class OptUtil {
         f.set(null, opt.getString());
       else if(f.getType() == Color.class)
         f.set(null, opt.getColor());
+      else if(f.getType() == EnumSet.class)
+        f.set(null, opt.getEnumSet());
       else
         throw new IllegalArgumentException("option " + opt.getName());
       if(   G.dbgOptions().getBoolean())
@@ -352,6 +356,22 @@ public class OptUtil {
       } catch(SecurityException ex) {
         Logger.getLogger(VimOption.class.getName()).log(Level.SEVERE, null,
                                                                       ex);
+      }
+    }
+  }
+
+  public static void checkAllForSetCommand() {
+    Set<String> hasSetCommand = new HashSet<String>();
+    for(VimOption vopt : VimOption.getAll()) {
+      hasSetCommand.add(vopt.getOptName());
+    }
+    System.err.println("Checking for options without set command");
+    for(Option opt : getOptions()) {
+      if(opt.getName().startsWith("viDbg"))
+        continue;
+      if(!hasSetCommand.contains(opt.getName())) {
+        System.err.println("    Option " + opt.getName() + ": NO SET COMMAND"
+                           + (opt.isHidden() ? " (HIDDEN)" : ""));
       }
     }
   }

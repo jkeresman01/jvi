@@ -22,6 +22,7 @@ package com.raelity.jvi.core;
 
 import java.awt.Color;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Set;
 
 import com.raelity.jvi.ViFPOS;
@@ -31,7 +32,6 @@ import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.lib.Constants.FDO;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.DebugOption;
-import com.raelity.jvi.options.EnumSetOption;
 import com.raelity.jvi.options.OptUtil;
 
 
@@ -323,10 +323,10 @@ public class G implements ViOptionBag
     static boolean p_ww_tilde;
 
     // static EnumSet<FDO> fdo_flags;
-    static EnumSetOption fdo_flags;
+    static EnumSet<FDO> p_fdo;
     @SuppressWarnings("unchecked")
     public static Set<FDO> fdo_flags() {
-        return Collections.unmodifiableSet(fdo_flags.getValue());
+        return Collections.unmodifiableSet(p_fdo);
     }
 
 

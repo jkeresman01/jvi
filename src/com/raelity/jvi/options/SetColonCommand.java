@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -235,6 +236,10 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         } else {
             try {
                 voptState.opt.validate(newValue);
+                // HACK. Put this here, because we want to validate the string
+                if(voptState.type == EnumSet.class) // HACK
+                    newValue = ((EnumSetOption)voptState.opt)
+                                        .decode((String)newValue);
             } catch (PropertyVetoException ex) {
                 setCommandError(ex.getMessage());
             }
@@ -406,6 +411,17 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                         if(newValue == null)
                             setCommandError("Not a color: " + voptState.inputValue);
                     }
+                } else if(voptState.type == EnumSet.class) {
+                    if(!voptState.op.isAssignOp())
+                        newValue = voptState.inputValue;
+                    else {
+                        // pretend the curValue is a string...
+                        EnumSet oldCurValue = (EnumSet)voptState.curValue;
+                        EnumSetOption esOpt = (EnumSetOption)voptState.opt;
+                        voptState.curValue = esOpt.encode(oldCurValue);
+                        newValue = doStringAssignOp(arg, vopt, voptState);
+                        voptState.curValue = oldCurValue;
+                    }
                 } else {
                     assert false : "Type " + voptState.type.getSimpleName()
                                     + " not handled";
@@ -529,6 +545,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         return newval;
     }
     
+    @SuppressWarnings("unchecked")
     private static String formatDisplayValue(VimOption vopt, Object value)
     {
         String v = "";
@@ -538,12 +555,13 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                 || value instanceof String) {
             v = "  " + vopt.fullName + "=" + value;
         } else if(value instanceof Color) {
-            if(value != null) {
-                Color c = (Color)value;
-                v = String.format("%s [r=%x,g=%x,b=%x]",
-                                  ColorOption.xformToString(c),
-                                  c.getRed(), c.getGreen(), c.getBlue());
-            }
+            Color c = (Color)value;
+            v = String.format("%s [r=%x,g=%x,b=%x]",
+                              ColorOption.xformToString(c),
+                              c.getRed(), c.getGreen(), c.getBlue());
+        } else if(value instanceof EnumSet) {
+            Option opt = Options.getOption(vopt.getOptName());
+            v = opt.getValueAsString((EnumSet)value);
         } else {
             assert false : value.getClass().getSimpleName() + " not handled";
         }
