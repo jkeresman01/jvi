@@ -569,12 +569,12 @@ implements Options.EditControl {
 	return getboolean(Options.platformTab);
     }
 
-    public void setViNrFormats(String arg)  throws PropertyVetoException {
+    public void setViNrFormats(EnumSet arg)  throws PropertyVetoException {
         put(Options.nrFormats, arg);
     }
 
-    public String getViNrFormats() {
-	return getString(Options.nrFormats);
+    public EnumSet getViNrFormats() {
+	return getEnumSet(Options.nrFormats);
     }
 
     public void setViCoordSkip(boolean arg)  throws PropertyVetoException {

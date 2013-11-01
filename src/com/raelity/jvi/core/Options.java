@@ -50,6 +50,7 @@ import com.raelity.text.TextUtil.MySegment;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Constants.FDO.*;
+import static com.raelity.jvi.core.lib.Constants.NF.*;
 
 /**
  * Option handling from external sources.
@@ -745,7 +746,8 @@ public final class Options {
             + " 'gq' and 'Q' format command. This value is substituted"
             + " for " + twMagic + " in formatprg option string.");
 
-    /*G.b_p_nf = */OptUtil.createStringOption(nrFormats, "octal,hex");
+    /*G.b_p_nf = */OptUtil.createEnumSetOption(nrFormats,
+        EnumSet.of(NF_HEX, NF_OCTAL), NF.class, null);
     OptUtil.setupOptionDesc(Category.MODIFY, nrFormats, "'nrformats' 'nf'",
             "Defines bases considered for numbers with the"
             + " 'CTRL-A' and 'CTRL-X' commands for adding to and subtracting"

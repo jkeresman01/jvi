@@ -11,6 +11,7 @@ package com.raelity.jvi.core;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.util.EnumSet;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -95,7 +96,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         b_p_sw = Options.getOption(Options.shiftWidth).getInteger();
         b_p_et = Options.getOption(Options.expandTabs).getBoolean();
         b_p_tw = Options.getOption(Options.textWidth).getInteger();
-        b_p_nf = Options.getOption(Options.nrFormats).getString();
+        b_p_nf = Options.getOption(Options.nrFormats).getEnumSet();
 
         b_p_isk = Options.getOption(Options.isKeyWord).getString();
         b_chartab = new CharTab();
@@ -145,7 +146,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     public final ViMark b_visual_end;
     public final ViMark b_last_insert;
     public char b_visual_mode;
-    public String b_p_nf;
+    public EnumSet b_p_nf;
 
     public String b_p_qe = "\\"; // NEEDSWORK: make an option
     // NOTE: Following meainingful only when internal findmatch is used.
@@ -653,7 +654,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     private boolean getcols(int lnum,
             int vcol1, int vcol2,
             MutableInt start, MutableInt end) {
-        int incr = 0;
+        int incr;
         int vcol = 0;
         int c1 = -1, c2 = -1;
         

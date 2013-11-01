@@ -75,6 +75,7 @@ import static com.raelity.jvi.core.Normal.*;
 import static com.raelity.jvi.core.Search.*;
 import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.lib.Constants.NF.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
 
 public class Misc implements ClipboardOwner {
@@ -4335,9 +4336,9 @@ op_do_addsub(char command, int Prenum1)
     boolean	negative;
     boolean	subtract;
 
-    dohex = (vim_strchr(G.curbuf.b_p_nf, 0, 'x') >= 0);	/* "heX" */
-    dooct = (vim_strchr(G.curbuf.b_p_nf, 0, 'o') >= 0);	/* "Octal" */
-    doalp = (vim_strchr(G.curbuf.b_p_nf, 0, 'p') >= 0);	/* "alPha" */
+    dohex = G.curbuf.b_p_nf.contains(NF_HEX);
+    dooct = G.curbuf.b_p_nf.contains(NF_OCTAL);
+    doalp = G.curbuf.b_p_nf.contains(NF_ALPHA);
 
     ptr = ml_get_curline();
     //RLADDSUBFIX(ptr);

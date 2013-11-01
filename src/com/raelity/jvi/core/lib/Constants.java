@@ -335,6 +335,20 @@ public interface Constants {
         @Override
         public String toString() { return opt; }
     }
+
+    public enum NF {
+        NF_HEX("hex"),
+        NF_OCTAL("octal"),
+        NF_ALPHA("alpha");
+
+        private final String opt;
+        private NF(String opt) {
+            this.opt = opt;
+        }
+
+        @Override
+        public String toString() { return opt; }
+    }
 }
 
 /*
