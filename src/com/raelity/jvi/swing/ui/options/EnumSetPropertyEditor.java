@@ -20,10 +20,9 @@
 package com.raelity.jvi.swing.ui.options;
 
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.util.EnumSet;
 
 import javax.swing.JButton;
@@ -48,25 +47,45 @@ public class EnumSetPropertyEditor extends AbstractPropertyEditor
     private boolean[] selected;
     private Object[] items;
     private EnumSet oldValue;
-    private EnumSet newValue;
     private EnumSetOption opt;
     private JPopupMenu popup;
-
-    private int drawAgain;
+    private boolean popupActive;
 
     @SuppressWarnings("unchecked")
-    public EnumSetPropertyEditor(Property property, Object[] items)
+    public EnumSetPropertyEditor(Property property)
     {
         opt = (EnumSetOption)Options.getOption(property.getName());
         editor = new EditorButton();
-        getEditor().setText("click");
         getEditor().addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
-                doPopup();
+                if(!popupActive) {
+                    startPopup();
+                } else {
+                    finishPopup();
+                }
             }
         });
-        this.items = items;
-        selected = new boolean[items.length];
+    }
+
+    private void startPopup() {
+        popupActive = true;
+        makePopup();
+        showPopup();
+    }
+
+    private void finishPopup() {
+        if(!popupActive)
+            return;
+        popupActive = false;
+        if(popup != null)
+            popup.setVisible(false);
+        EnumSet newValue = getValue();
+        // we want the editor to close, if the values are equal, then
+        // it never sees the event, so in that case...
+        EnumSetPropertyEditor.this.firePropertyChange(
+                oldValue.equals(newValue) ? null : oldValue, newValue);
+        // Since the editor seems to stay around, clean this up
+        popup = null;
     }
 
     class EditorButton extends JButton {
@@ -75,7 +94,7 @@ public class EnumSetPropertyEditor extends AbstractPropertyEditor
         public void removeNotify()
         {
             super.removeNotify();
-            System.err.println("REMOVE BUTTON");
+            finishPopup();
         }
 
     }
@@ -95,28 +114,15 @@ public class EnumSetPropertyEditor extends AbstractPropertyEditor
         return set;
     }
 
-    private void fixNewValue() {
-        newValue = getValue();
-    }
-
-    private class MyPopupMenu extends JPopupMenu {
-
-        @Override
-        public void removeNotify()
-        {
-            super.removeNotify();
-            System.err.println("removeNotify " + drawAgain);
-        }
-    }
-
     @SuppressWarnings("unchecked")
     private void makePopup() {
+        this.items = opt.getAvailableValues();
+        selected = new boolean[items.length];
         oldValue = EnumSet.copyOf(opt.getValue());
-        drawAgain = 0;
         for(int i = 0; i < items.length; i++) {
             selected[i] = oldValue.contains(items[i]);
         }
-        popup = new MyPopupMenu();
+        popup = new JPopupMenu();
         for(int i = 0; i < items.length; i++) {
             Object item = items[i];
             JCheckBoxMenuItem cb = new JCheckBoxMenuItem(
@@ -128,34 +134,23 @@ public class EnumSetPropertyEditor extends AbstractPropertyEditor
             @Override public void popupMenuCanceled(PopupMenuEvent e) {}
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                drawAgain--;
-                System.err.println("popupMenuWillBecomeInvisible " + drawAgain);
-                if(drawAgain < 0) {
-                    // fixNewValue();
-                    // EnumSetPropertyEditor.this.firePropertyChange(oldValue,
-                    //                                               newValue);
-                    // popup = null;
-                }
+                if(popupActive)
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override public void run() { showPopup(); }
+                    });
             }
             @Override public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
         });
-        popup.addKeyListener(new KeyAdapter() {
-          @Override public void keyPressed(KeyEvent e) {
-            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                fixNewValue();
-                EnumSetPropertyEditor.this.firePropertyChange(oldValue,
-                                                              newValue);
-            }
-          }
-        });
     }
 
-    private void doPopup() {
-        makePopup();
+    private void showPopup() {
+        if(popup == null)
+            return;
         Dimension sz = popup.getPreferredSize();
         sz.width = getEditor().getWidth();
         popup.setPreferredSize(sz);
-        popup.show(getEditor(), 0, 0);
+        getEditor().setText(opt.encode(getValue()));
+        popup.show(getEditor(), 0, getEditor().getHeight());
     }
 
     class MyActionListener implements ActionListener {
@@ -171,10 +166,9 @@ public class EnumSetPropertyEditor extends AbstractPropertyEditor
         {
             JCheckBoxMenuItem cb = (JCheckBoxMenuItem)e.getSource();
             selected[index] = cb.isSelected();
-            System.err.println("cb: "
-                    + cb.getText() + " " + cb.isSelected());
-            popup.show(getEditor(), 0, 0);
-            drawAgain++;
+            getEditor().setText(opt.encode(getValue()));
+            if(popupActive)
+                showPopup();
         }
 
     }

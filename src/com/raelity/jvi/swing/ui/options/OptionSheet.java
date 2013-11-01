@@ -36,6 +36,7 @@ import javax.swing.JTextArea;
 import com.l2fprod.common.beans.editor.ComboBoxPropertyEditor;
 import com.l2fprod.common.propertysheet.Property;
 import com.l2fprod.common.propertysheet.PropertyEditorRegistry;
+import com.l2fprod.common.propertysheet.PropertyRendererRegistry;
 import com.l2fprod.common.propertysheet.PropertySheet;
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
 import com.l2fprod.common.propertysheet.PropertySheetTableModel;
@@ -60,7 +61,7 @@ class OptionSheet extends JPanel implements Options.EditControl {
 
     OptionSheet(BeanInfo _bean, OptionsPanel _optionsPanel)
     {
-        createPropertyEditors();
+        createFactories();
 
         this.optionsPanel = _optionsPanel;
         this.bean = _bean;
@@ -175,6 +176,7 @@ class OptionSheet extends JPanel implements Options.EditControl {
                                              BeanInfo bean)
     {
         sheet.setEditorFactory(propertyEditors);
+        sheet.setRendererFactory(propertyRenderers);
         PropertyDescriptor[] descriptors = bean.getPropertyDescriptors();
         // count the hidden properties
         int nHidden = 0;
@@ -227,8 +229,7 @@ class OptionSheet extends JPanel implements Options.EditControl {
                     propertyEditors.registerEditor(prop, pe);
                 } else if(opt instanceof EnumSetOption) {
                     propertyEditors.registerEditor(prop,
-                        new EnumSetPropertyEditor(
-                            prop, ((EnumSetOption)opt).getAvailableValues()));
+                        new EnumSetPropertyEditor(prop));
                 }
                 properties[i2++] = prop;
             }
@@ -255,8 +256,9 @@ class OptionSheet extends JPanel implements Options.EditControl {
     }
 
     private static PropertyEditorRegistry propertyEditors;
+    private static PropertyRendererRegistry propertyRenderers;
     
-    private void createPropertyEditors() {
+    private void createFactories() {
         if(propertyEditors == null) {
             PropertyEditorRegistry pe = new PropertyEditorRegistry();
             // Add our custom editors
@@ -267,6 +269,11 @@ class OptionSheet extends JPanel implements Options.EditControl {
             pe.registerEditor(EnumSet.class,
                               EnumSetPropertyEditor.class);
             propertyEditors = pe;
+        }
+        if(propertyRenderers == null) {
+            propertyRenderers = new PropertyRendererRegistry();
+            propertyRenderers.registerRenderer(
+                    EnumSet.class, EnumSetOption.DefaultEnumSetCellRenderer.class);
         }
     }
 
