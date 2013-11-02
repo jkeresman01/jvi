@@ -31,6 +31,7 @@ import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.lib.Constants.FDO;
 import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.options.AlwaysOnDebugOption;
 import com.raelity.jvi.options.DebugOption;
 import com.raelity.jvi.options.OptUtil;
 
@@ -194,6 +195,9 @@ public class G implements ViOptionBag
     static DebugOption dbgPrefChangeMonitor;
     static DebugOption dbgOptions = OptUtil.createBootDebugOption(false);
     static DebugOption dbgFonts;
+
+    // not really a "DebugOption" but has similar output API
+    public static final AlwaysOnDebugOption dbg = new AlwaysOnDebugOption();
 
     //
     // some options are accessed from out of core

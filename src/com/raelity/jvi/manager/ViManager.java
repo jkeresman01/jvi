@@ -84,7 +84,7 @@ public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("1.5.0.x2");
+    public static final jViVersion version = new jViVersion("1.5.0.x3");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -119,9 +119,10 @@ public class ViManager
     private static Keymap normalModeKeymap;
 
     /** The features which can be disabled by the platform. */
-    private static EnumSet<ViFeature> features = EnumSet.allOf(ViFeature.class);
+    private static final EnumSet<ViFeature> features
+            = EnumSet.allOf(ViFeature.class);
 
-    private static Map<Object,Object> hackMap = new HashMap<Object,Object>();
+    private static final Map<Object,Object> hackMap = new HashMap<Object,Object>();
     public static void putHackMap(Object key, Object val) {
         hackMap.put(key, val);
     }
@@ -178,7 +179,7 @@ public class ViManager
     // NEEDSWRK: is a property needed for switch_from, to pick up active tv?
     // NEEDSWORK: property for AppWindow open/close?
 
-    private static PropertyChangeSupport pcs
+    private static final PropertyChangeSupport pcs
             = new PropertyChangeSupport(getViMan());
 
     ViManager() {} // PRIVATE
@@ -203,7 +204,7 @@ public class ViManager
         for (ViInitialization i : Lookups.forPath("jVi/init")
                                         .lookupAll(ViInitialization.class)) {
             if(isDebugAtHome())
-                System.err.println("INIT: " + i.getClass().getName());
+                G.dbg.println("INIT: " + i.getClass().getName());
             i.init();
         }
 
@@ -299,7 +300,7 @@ public class ViManager
             if(cev.getNArg() == 1) {
                 String vs = cev.getArg(1);
                 jViVersion v = new jViVersion(vs);
-                System.err.println("input=" + vs
+                G.dbg.println("input=" + vs
                                    +", version=" + v.toString()
                                    + ", vToCur=" + v.compareTo(version));
             }
@@ -532,11 +533,11 @@ public class ViManager
     /** this is assumed to be some output protected by debug consideration */
     static public void println(String s)
     {
-        System.err.println(s);
+        G.dbg.println(s);
     }
     static public void printf(String s, Object... args)
     {
-        System.err.printf(s, args);
+        G.dbg.printf(s, args);
     }
     static public void warning(String s)
     {
@@ -563,7 +564,7 @@ public class ViManager
     static public void printStack()
     {
         for(StackTraceElement e : Thread.currentThread().getStackTrace()) {
-            System.err.println(" " + e.toString());
+            G.dbg.println(" " + e.toString());
         }
     }
 
