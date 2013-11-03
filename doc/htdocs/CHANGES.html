@@ -93,7 +93,8 @@
 <b>Version 1.5.0.x? - 2013/10/30</b>
   <p>
     The 1.5 release reworks the fold commands. As much as possible, they now
-    behave like the vim commands. The available commands are:
+    behave like the vim commands, including handling a [count]
+    where applicable. The available commands are:
     <span class="tt">zc</span>,
     <span class="tt">zC</span>,
     <span class="tt">zo</span>,
@@ -102,10 +103,10 @@
     <span class="tt">zA</span> and
     <span class="tt">zv</span>.
     The 'foldopen'/'fdo' option is implemented. It's in the
-    <i>General</i> tab under jVi options and its persistent value
-    can be modified there; the run time value can be changed with
+    <i>General</i> tab under jVi options and its persistent and run time value
+    can be modified there; the run time only value can be changed with
     the set command.
-    See the vim documentation for details on the commands and 'fdo' option.
+    See documentation for details on the commands and 'fdo' option.
   </p>
   <dl>
     <dt>jVi Core</dt>
@@ -171,12 +172,12 @@
     <li>
       <a href="http://sourceforge.net/p/jvi/bugs/163/">
       [#163] Tag text objects not working?</a>
-      <br/>Failed with certain option combinations.
+      <br>Failed with certain option combinations.
     </li>
     <li>
       <a href="http://sourceforge.net/p/jvi/bugs/170/">
       [#170] Caret not visible on retina display</a>
-      <br/>Added an option, "Mac Retina Cursor Xor Bug" in platform category.
+      <br>Added an option, "Mac Retina Cursor Xor Bug" in platform category.
     </li>
   </ul>
 
@@ -252,7 +253,7 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
       <li>
         <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3408923&amp;group_id=3653&amp;atid=103653">
         [#3408923] Search Wrap Message never goes away</a>
-        <br/>Be more vim-like and always display search pattern; fixes issue.
+        <br>Be more vim-like and always display search pattern; fixes issue.
       </li>
       <li> Fix various issues around wrap and folding for
         cursor positioning and view related
@@ -284,7 +285,7 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
   <dd>
     <ul>
       <li>Implement input mode <span class="tt">Ctrl-G u</span>
-        <br/>break undo sequence, start a new change
+        <br>break undo sequence, start a new change
       </li>
       <li>Handle optional count on
         <span class="tt">gt</span> and <span class="tt">gT</span> commands.
@@ -311,7 +312,7 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
         <span class="tt">'splitbelow'</span>
         and <span class="tt">'splitright'</span> options.
 
-        <br/>
+        <br>
         <span class="tt">Ctrl-W =</span>,
         <span class="tt">Ctrl-W -</span>,
         <span class="tt">Ctrl-W _</span>,
@@ -323,7 +324,7 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
       <li>
         <span class="tt">:split</span> and
         <span class="tt">:vsplit</span> implemented.
-        <br/><span class="note">Note</span>
+        <br><span class="note">Note</span>
         that they take an optional
         <span class="tt">#number</span>
         and works with
@@ -332,23 +333,23 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
       </li>
       <li>
         Window split commands fixed from 1.4.1 to really do a split
-        <br/>The split commands, such as
+        <br>The split commands, such as
         <span class="tt">Ctrl-W s</span>
         and <span class="tt">Ctrl-W v</span>,
         split the current editor;
         The command accepts a count to specify the size of the new editor.
-        <br/><br/>To put a copy of an editor in a neighboring area
+        <br><br>To put a copy of an editor in a neighboring area
         (similar to 1.4.1 behavior), create a clone and move it.
         For example, to make a clone/copy of an editor in an existing
         area to the left, do something like
         <span class="tt">Ctrl-W Ctrl-T Ctrl-W H</span>.
-        <br/>I map <span class="tt">Ctrl-W &lt;Left&gt;</span>
+        <br>I map <span class="tt">Ctrl-W &lt;Left&gt;</span>
         to that sequence.
       </li>
       <li>
         window move commands changed from 1.4.1 if not
         a target area in the direction
-        <br/>When there is not a target in the direction,
+        <br>When there is not a target in the direction,
         the move commands, such as
         <span class="tt">Ctrl-W H</span>,
         create a new area.
@@ -387,7 +388,7 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
         <span class="tt">Ctrl-W Ctrl-S</span>,
         <span class="tt">Ctrl-W v</span>,
         <span class="tt">Ctrl-W Ctrl-V</span>,
-        <br/>The feel is like vim's split a window. Currently there must
+        <br>The feel is like vim's split a window. Currently there must
         be a neighboring target for the newly created editor.
         In the future a target will be created when needed (needs NB support).
       </li>
@@ -396,8 +397,8 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
         <span class="tt">Ctrl-W J</span>,
         <span class="tt">Ctrl-W K</span>,
         <span class="tt">Ctrl-W L</span>
-        <br/>move the current editor in the direction.
-        <br/>Note: there must be somewhere for the editor to go.
+        <br>move the current editor in the direction.
+        <br>Note: there must be somewhere for the editor to go.
       </li>
       <li><span class="tt">Ctrl-W T</span> and <span class="tt">:clon[e]</span>
         like NB's Clone Document</li>
@@ -428,7 +429,7 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
 <b>Version 1.4 - 2011/04/11</b>
 <p>
   This is the final 1.3.1 release renamed; first release since 1.2.
-  <br/>Lots of new features; major source code refactoring to simplify embedding jVi.
+  <br>Lots of new features; major source code refactoring to simplify embedding jVi.
 </p>
 <dl>
   <dt>jVi Core</dt>
@@ -458,26 +459,26 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
       <li>
         <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2019611&amp;group_id=3653&amp;atid=353653">
           [#2019611] map commands; User define key binding in Normal mode</a>
-        <br/><span class="tt">[nvop]map</span>, <span class="tt">[nvop]noremap</span>, <span class="tt">[nvop]unmap</span>
-        <br/>"Options&gt;Map Commands" for persited mappings.
+        <br><span class="tt">[nvop]map</span>, <span class="tt">[nvop]noremap</span>, <span class="tt">[nvop]unmap</span>
+        <br>"Options&gt;Map Commands" for persited mappings.
         Also work as colon commands.
-        <br/>Current mappings are displayed
+        <br>Current mappings are displayed
         with <span class="tt">:[nvop]map</span> and <span class="tt">:[nvop]map {lhs}</span>.
-        <br/>See jVi help files, <a href="vimhelp/map.txt.html">map.txt</a>.
-        <br/>
+        <br>See jVi help files, <a href="vimhelp/map.txt.html">map.txt</a>.
+        <br>
         <span class="note">Note:</span> "p" mode mappings are jVi only.
-        <br/>The <span class="tt">:pmap</span>, <span class="tt">:pnoremap</span>
+        <br>The <span class="tt">:pmap</span>, <span class="tt">:pnoremap</span>
         and <span class="tt">:punmap</span> commands are normal mode
         mappings which are active in PLATFORM-SELECTION state. Selecting
         text with the mouse produces a platform selection.
       </li>
       <li>
         <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2777608&amp;group_id=3653&amp;atid=353653">
-          [#2777608] Multiple-editor pane support (Ctrl-w)</a><br/>
+          [#2777608] Multiple-editor pane support (Ctrl-w)</a><br>
         A more accurate implementation
         of Ctrl-W window traversal commands, e.g. left/right/up/down.
         Almost all of the several traversal commands are implemented.
-        <br/>See <a href="vimhelp/windows.txt.html#window-move-cursor">
+        <br>See <a href="vimhelp/windows.txt.html#window-move-cursor">
           jVi help files, windows.txt</a>.
         All jVi editors, such as visual diff and expression evaluator,
         are included.
@@ -485,18 +486,18 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
       <li>
         <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2825295&amp;group_id=3653&amp;atid=353653">
         [#2825295] yank/put/delete Actions on the closed fold at the cursor</a>
-        <br/>Most actions on folds work, for example <span class="tt">&gt;&gt;</span>.
-        <br/>Actions on visual mode selections involving folds
+        <br>Most actions on folds work, for example <span class="tt">&gt;&gt;</span>.
+        <br>Actions on visual mode selections involving folds
         also implemented.
       </li>
       <li> Persist history for search and command entry,
         along with values for marks, filemarks and registers.
-        <br/> They persist when the program exits normally.
+        <br> They persist when the program exits normally.
       </li>
       <li>
         <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3001654&amp;group_id=3653&amp;atid=353653">
         [#3001654] Ability to use line breaks with substitute command</a>
-        <br/> Implementation allows '\r' in the replacement text.
+        <br> Implementation allows '\r' in the replacement text.
         '\n' is also allowed and maps to newline (not NULL char into doc).
       </li>
       <li>Added <span class="tt">gJ</span> and <span class="tt">g~</span> commands</li>
@@ -513,7 +514,7 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
       </li>
       <li> <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3166782&amp;group_id=3653&amp;atid=353653">
           [#3166782] iskeyword or skip to underscore?</a>
-        <br/>add option: <span class="tt">'iskeyword' 'isk'</span><br/>
+        <br>add option: <span class="tt">'iskeyword' 'isk'</span><br>
         This is a per buffer option.
         It works with <span class="tt">:set iskeyword=xxx</span> and modeline</li>
       <li>add option: <span class="tt">blinkrate</span></li>
@@ -526,7 +527,7 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
       <li>
         <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3054372&amp;group_id=3653&amp;atid=353653">
           [#3054372] Make <span class="tt">:u</span> Perform Undo Operation</a>
-        <br/>Add both <span class="tt">:undo</span> and <span class="tt">:redo</span>
+        <br>Add both <span class="tt">:undo</span> and <span class="tt">:redo</span>
       </li>
       <li>Ctrl-G in visual line mode does full line java text selections.
         Note that this changes the jVi start-end of the current visual bounds.
@@ -536,7 +537,7 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
   <dt>jVi NetBeans KeyBindings</dt>
   <dd>
     <ul>
-      <li>Colon Command Name Completion<br/>
+      <li>Colon Command Name Completion<br>
       During ":" command line entry Ctrl-Space or Ctrl-D bring up a
       completion list.
       </li>
@@ -555,7 +556,7 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
   <dd>
     <ul>
       <li>Navigation in long lines and around line wrapping.
-          <br/>Don't keep messing up horizontal scroll position.
+          <br>Don't keep messing up horizontal scroll position.
       </li>
       <li>
         <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3280820&amp;group_id=3653&amp;atid=103653">
@@ -580,9 +581,9 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
       <li>
         <a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=3018062&amp;group_id=3653&amp;atid=103653">
         [#3018062] Ranges don't work with ":global"</a>
-        <br/>Also fixed the ":global" command so that if matching lines
+        <br>Also fixed the ":global" command so that if matching lines
         are deleted, there is no attempt to operate on them.
-        <br/>In particular, something like <span class="tt">:g/pattern/d 5</span>
+        <br>In particular, something like <span class="tt">:g/pattern/d 5</span>
         does the right thing.
       </li>
       <li>Fix <span class="tt">[/</span> and <span class="tt">[*</span> when "/*" starts in column 0</li>
@@ -627,7 +628,7 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
 <h2>jVi-1.2 released</h2>
 
 <b>NB6.9 only, Version 1.3.0.x1 - 2010/02/01</b>
-<br/>
+<br>
 <b>NB6.8 only, Version 1.2.7 - 2010/02/01</b>
 
 <dl>
@@ -721,7 +722,7 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
     <ul>
       <li>In visual mode, Ctrl-G converts visual bounds to java text selection.
       Allows IDE/platform commands to operate on it.
-      <br/>&lt;ESC&gt; clears a java text selection.
+      <br>&lt;ESC&gt; clears a java text selection.
       </li>
       <li>
         <a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=2805922&amp;group_id=3653&amp;atid=353653">
@@ -750,14 +751,14 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
         <a href="http://sourceforge.net/tracker/?group_id=3653&amp;atid=353653">
         [#2777608] Multiple-editor pane support (Ctrl-w)</a>
       Only a partial fix.
-      <br/>Ctrl-W_Ctrl-W An imperfect implementation: cycles in arbitrary,
+      <br>Ctrl-W_Ctrl-W An imperfect implementation: cycles in arbitrary,
       but fixed, order.
-      <br/>
+      <br>
       There are no commands that create windows; that
       requires some NetBeans API work, at a minimum see 
         <a href="http://www.netbeans.org/issues/show_bug.cgi?id=135385">
         add attachTopComponentToSide method to WindowManager</a>.
-      <br/>
+      <br>
       <b>NOTE:</b> Users may want to reprogram NetBeans' "Close
       Window" shortcuts from <i>Ctrl-W</i> and <i>Ctrl-F4</i>
       to <i>Ctrl-W_c</i> and <i>Ctrl-W_Ctrl-C</i> for consistency and to
@@ -938,7 +939,7 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
   <dt>Bug fixes</dt>
   <dd>
     <ul>
-      <li>Work around an NB6.1 bug in undo/redo handling.<br/>
+      <li>Work around an NB6.1 bug in undo/redo handling.<br>
           <a href="http://www.netbeans.org/issues/show_bug.cgi?id=135837">
           [Issue 135837] New - NbEditorKit.undoAction misbehaves (and two undoable edit listeners)</a>
       </li>
@@ -1022,16 +1023,16 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
     <ul>
       <li>Command/Search entry window is now modal dialog
         by default. Better for MDI mode.
-        <br/>New option <span class="tt">use
+        <br>New option <span class="tt">use
         modal frame</span>, if disabled uses old technique of a glass pane.
-        <br/>Note that glass pane doesn't work well with file name completion
+        <br>Note that glass pane doesn't work well with file name completion
         popup for NetBeans.
       </li>
       <li><span class="tt">Ctrl-C</span> exits input mode<li>
       <li>Add <span class="tt">zt</span> and <span class="tt">zb</span>. Thanks to Marian P.</li>
       <li>Add <span class="tt">gt</span>, <span class="tt">gT</span>,
         <span class="tt">:tabn[ext]</span> <span class="tt">:tabp[revious]</span>, <span class="tt">:tabN[ext]</span>.
-        <br/> Traverse editor tabs.
+        <br> Traverse editor tabs.
             They hook into platform actions as available.
       </li>
     </ul>
@@ -1040,12 +1041,12 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
   <dd>
     <ul>
       <li> <span class="tt"> :mak[e] [b[uild] | c[lean] | r[ebuild] | d[oc] | de[bug] | ru[n]]
-        <br/>[ m[ain] | p[roject] | % ]</span>
-        <br/>Default is "make build main"
+        <br>[ m[ain] | p[roject] | % ]</span>
+        <br>Default is "make build main"
       </li>
       <li>NB6 beta1 only (or post 07/07/22 build).
         <span class="tt">:e#</span> supports file name completion popup of open files.
-        <br/>New option: <span class="tt">":e#" Auto Popup</span> to enable/disable.
+        <br>New option: <span class="tt">":e#" Auto Popup</span> to enable/disable.
       </li>
       <li>
         Add some refactoring commands. <span class="tt">:rfr[ename]</span> plus many more.
@@ -1054,8 +1055,8 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
       <li>Stop tracking wrapscan/ignorecase. Just ignore the NB settings.
       </li>
           <li><span class="tt">:tog[gle] [&lt;view-pane&gt;]</span>
-              <br/>&lt;view-pane&gt; ::= <span class="tt">bo[ttom] | ou[tput] | de[bug]</span>
-              <br/>Toggle visibility (show/hide) of some windows
+              <br>&lt;view-pane&gt; ::= <span class="tt">bo[ttom] | ou[tput] | de[bug]</span>
+              <br>Toggle visibility (show/hide) of some windows
           </li>
       </ul>
   </dd>
@@ -1209,14 +1210,14 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
   <dd>
     <ul>
       <li>[#1678712] Visual mode: <span class="tt">v V '&lt; '&gt; `&lt; `&gt; </span>
-        <br/>thanks to Roy van der Kuil. (not visual block yet, but on the way)
+        <br>thanks to Roy van der Kuil. (not visual block yet, but on the way)
       </li>
       <li>[#424678 ] sentence and paragraph motions: <span class="tt">{ } ( )</span>
-        <br/>thanks to Jose Alburquerque.
+        <br>thanks to Jose Alburquerque.
       </li>
       <li>[#1679153] Tag stack:
         <span class="tt">Ctrl-] [count]Ctrl-T :[count]ta[g] :tags :ts[elect]</span>
-        <br/><span class="tt">:tag</span> and <span class="tt">:tselect</span> with no arguments
+        <br><span class="tt">:tag</span> and <span class="tt">:tselect</span> with no arguments
       </li>
       <li>[#1688909] Regular, Shift and Control for Enter, Escape,
           BackSpace and Tab can be enabled for jVi handling through options.
@@ -1245,7 +1246,7 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
 <b>Version 0.8.3 03/07/07</b>
 <p>These are the changes since the snapshot release 0.8.0 which was 
     made available mid February.
-    <br/><b>Incremental search</b> and <b>:set</b> are
+    <br><b>Incremental search</b> and <b>:set</b> are
     <!-- and <b>highlight search</b> are -->
     my favorites.
 </p>
@@ -1634,7 +1635,7 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
 <!-- raelity copyright -->
 <hr>
 <address class="addr">
-  Copyright &copy; 2011 Raelity Engineering<br/>
+  Copyright &copy; 2011 Raelity Engineering<br>
   <a href="mailto:support@raelity.com">Contact Raelity Engineering</a>
 </address>
 </body>
