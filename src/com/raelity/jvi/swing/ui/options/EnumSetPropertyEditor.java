@@ -23,7 +23,10 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.EnumSet;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -59,11 +62,16 @@ public class EnumSetPropertyEditor extends AbstractPropertyEditor
             @Override public void actionPerformed(ActionEvent e) {
                 if(!popupActive) {
                     startPopup();
+                    // Need the following since under NB no action for finishup
+                    getEditor().addMouseListener(new ClickFinishPopup());
                 } else {
                     finishPopup();
                 }
             }
         });
+    }
+    private class ClickFinishPopup extends MouseAdapter {
+        @Override public void mouseClicked(MouseEvent e) { finishPopup(); }
     }
 
     private void startPopup() {
@@ -104,18 +112,24 @@ public class EnumSetPropertyEditor extends AbstractPropertyEditor
 
     @Override
     public EnumSet getValue() {
-        EnumSet set = opt.getEmpty();
+        @SuppressWarnings("unchecked")
+        Set<Enum> set = opt.getEmpty();
         for(int i = 0; i < selected.length; i++) {
             if(selected[i])
                 set.add(items[i]);
         }
-        return set;
+        return (EnumSet)set;
+    }
+
+    @SuppressWarnings("unchecked")
+    private EnumSet getOldValue() {
+        return EnumSet.copyOf(opt.getEnumSet());
     }
 
     private void makePopup() {
         this.items = opt.getAvailableValues();
         selected = new boolean[items.length];
-        oldValue = EnumSet.copyOf(opt.getEnumSet());
+        oldValue = getOldValue();
         for(int i = 0; i < items.length; i++) {
             selected[i] = oldValue.contains(items[i]);
         }
@@ -141,7 +155,7 @@ public class EnumSetPropertyEditor extends AbstractPropertyEditor
     }
 
     private void showPopup() {
-        if(popup == null)
+        if(popup == null || !getEditor().isShowing())
             return;
         Dimension sz = popup.getPreferredSize();
         sz.width = getEditor().getWidth();
