@@ -36,17 +36,19 @@ import com.raelity.jvi.core.Options;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public class EnumSetOption extends Option<EnumSet> {
-    private final Class<Enum> enumType;
+public class EnumSetOption<S extends Enum<S>>
+extends Option<EnumSet<S>>
+{
+    private final Class<S> enumType;
     static final Logger LOG = Logger.getLogger(EnumSetOption.class.getName());
-    WeakReference<Map<String,Enum>> refNameEnumMap;
+    WeakReference<Map<String,S>> refNameEnumMap;
 
-    public EnumSetOption(Class<EnumSet> optionType, Class<Enum> enumType,
-                         String key, EnumSet defaultValue,
-                         Validator<EnumSet> valid)
+    public EnumSetOption(Class<EnumSet<S>> optionType, Class<S> enumType,
+                         String key, EnumSet<S> defaultValue,
+                         Validator<EnumSet<S>> valid)
     {
         super(optionType, key, defaultValue,
-              valid != null ? valid : new DefaultEnumSetValidator<EnumSet>(key));
+              valid != null ? valid : new DefaultEnumSetValidator<S>(key));
         this.enumType = enumType;
         super.initialize();
     }
@@ -59,20 +61,19 @@ public class EnumSetOption extends Option<EnumSet> {
 
 
 
-    public boolean contains(Enum e)
+    public boolean contains(S e)
     {
         assert enumType == e.getDeclaringClass();
         return getValue().contains(e);
     }
 
-    @SuppressWarnings("unchecked")
-    public EnumSet getEmpty()
+    public EnumSet<S> getEmpty()
     {
         return EnumSet.noneOf(enumType);
     }
 
     @Override
-    final EnumSet getValueFromString(String sVal)
+    final EnumSet<S> getValueFromString(String sVal)
     {
         return decode(sVal);
     }
@@ -83,15 +84,13 @@ public class EnumSetOption extends Option<EnumSet> {
         return encode(val);
     }
 
-    @SuppressWarnings("unchecked")
-    public EnumSet decode(String input)
+    public EnumSet<S> decode(String input)
     {
-        Map<String, Enum> map = getNameEnumMap();
-        @SuppressWarnings("unchecked")
-        EnumSet set = EnumSet.noneOf(enumType);
+        Map<String, S> map = getNameEnumMap();
+        EnumSet<S> set = EnumSet.noneOf(enumType);
         String[] vals = input.split("[,\\s]+");
         for(String s : vals) {
-            Enum e = map.get(s);
+            S e = map.get(s);
             if(e != null)
                 set.add(e);
             else
@@ -129,8 +128,7 @@ public class EnumSetOption extends Option<EnumSet> {
 
     public Enum[] getAvailableValues()
     {
-        @SuppressWarnings("unchecked")
-        EnumSet set = EnumSet.allOf(enumType);
+        EnumSet<S> set = EnumSet.allOf(enumType);
         Enum[] vals = new Enum[set.size()];
         int i = 0;
         for(Object e : set) {
@@ -139,17 +137,16 @@ public class EnumSetOption extends Option<EnumSet> {
         return vals;
     }
 
-    private Map<String, Enum> getNameEnumMap() {
-        Map<String, Enum> map = refNameEnumMap == null
+    private Map<String, S> getNameEnumMap() {
+        Map<String, S> map = refNameEnumMap == null
                                 ? null : refNameEnumMap.get();
         if(map == null) {
-            @SuppressWarnings("unchecked")
-            EnumSet set = EnumSet.allOf(enumType);
-            map = new HashMap<String, Enum>(set.size());
-            for(Object e : set) {
-                map.put(e.toString(), (Enum)e);
+            EnumSet<S> set = EnumSet.allOf(enumType);
+            map = new HashMap<String, S>(set.size());
+            for(S e : set) {
+                map.put(e.toString(), e);
             }
-            refNameEnumMap = new WeakReference<Map<String, Enum>>(map);
+            refNameEnumMap = new WeakReference<Map<String, S>>(map);
         }
         return map;
     }
@@ -189,7 +186,8 @@ public class EnumSetOption extends Option<EnumSet> {
      * If the argument is a string, then it parses it, and checks
      * that each value is in the enum.
      */
-    public static class DefaultEnumSetValidator<T> extends Validator<T> {
+    public static class DefaultEnumSetValidator<S extends Enum<S>>
+    extends Validator<EnumSet<S>> {
         final String name;
 
         public DefaultEnumSetValidator(String name)
@@ -197,23 +195,23 @@ public class EnumSetOption extends Option<EnumSet> {
             this.name = name;
         }
         @Override
-        public void validate(T val) throws PropertyVetoException
+        public void validate(EnumSet<S> val) throws PropertyVetoException
         {
             validateAnyType(val);
         }
 
-        @SuppressWarnings("unchecked")
         public void validateAnyType(Object val) throws PropertyVetoException
         {
-            opt = Options.getOption(name);
-            EnumSetOption esOpt = (EnumSetOption)opt;
+            @SuppressWarnings("unchecked")
+            EnumSetOption<S> esOpt = (EnumSetOption<S>)Options.getOption(name);
+            opt = esOpt;
             if(val instanceof EnumSet) {
                 if(val.getClass() != opt.optionType)
                     reportPropertyVetoException(
                             "Invalid EnumSet class: "
                             + opt.getClass().getSimpleName(), val);
             } else if(val instanceof String) {
-                Map<String, Enum> map = esOpt.getNameEnumMap();
+                Map<String, S> map = esOpt.getNameEnumMap();
                 String[] vals = ((String)val).split("[,\\s]+");
                 for(String s : vals) {
                     Enum e = map.get(s);

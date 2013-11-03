@@ -45,13 +45,12 @@ import com.raelity.jvi.options.EnumSetOption;
 public class EnumSetPropertyEditor extends AbstractPropertyEditor
 {
     private boolean[] selected;
-    private Object[] items;
+    private Enum[] items;
     private EnumSet oldValue;
-    private EnumSetOption opt;
+    private final EnumSetOption opt;
     private JPopupMenu popup;
     private boolean popupActive;
 
-    @SuppressWarnings("unchecked")
     public EnumSetPropertyEditor(Property property)
     {
         opt = (EnumSetOption)Options.getOption(property.getName());
@@ -104,7 +103,6 @@ public class EnumSetPropertyEditor extends AbstractPropertyEditor
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public EnumSet getValue() {
         EnumSet set = opt.getEmpty();
         for(int i = 0; i < selected.length; i++) {
@@ -114,11 +112,10 @@ public class EnumSetPropertyEditor extends AbstractPropertyEditor
         return set;
     }
 
-    @SuppressWarnings("unchecked")
     private void makePopup() {
         this.items = opt.getAvailableValues();
         selected = new boolean[items.length];
-        oldValue = EnumSet.copyOf(opt.getValue());
+        oldValue = EnumSet.copyOf(opt.getEnumSet());
         for(int i = 0; i < items.length; i++) {
             selected[i] = oldValue.contains(items[i]);
         }
@@ -154,7 +151,7 @@ public class EnumSetPropertyEditor extends AbstractPropertyEditor
     }
 
     class MyActionListener implements ActionListener {
-        private int index;
+        private final int index;
 
         public MyActionListener(int index)
         {
