@@ -14,7 +14,7 @@ $SCRIPTS/filter.sh $UNFILTERED $FILTERED
 #     q
 # EOT
 #
-vim -e -s -c "helptags $(cygpath -a -m $FILTERED)" -c q
+$VIM/vim -e -s -c "helptags $(cygpath -a -m $FILTERED)" -c q
 
 mkdir -p $OUT
 mv $FILTERED/tags $OUT/tags

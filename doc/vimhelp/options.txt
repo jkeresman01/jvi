@@ -1031,6 +1031,46 @@ STOP-DOC-DEL
 	on, use CTRL-V<Tab>.  See also |:retab| and |ins-expandtab|.
 	NOTE: This option is reset when 'compatible' is set.
 
+						*'foldopen'* *'fdo'*
+'foldopen' 'fdo'	string (default: "block,hor,mark,percent,quickfix,
+							     search,tag,undo")
+			global
+			{not in Vi}
+			{not available when compiled without the |+folding|
+			feature}
+	Specifies for which type of commands folds will be opened, if the
+	command moves the cursor into a closed fold.  It is a comma separated
+	list of items.
+	NOTE: When the command is part of a mapping this option is not used.
+	Add the |zv| command to the mapping to get the same effect.
+	(rationale: the mapping may want to control opening folds itself)
+
+		item		commands ~
+		all		any
+		block		"(", "{", "[[", "[{", etc.
+		hor		horizontal movements: "l", "w", "fx", etc.
+		insert		any command in Insert mode
+		jump		far jumps: "G", "gg", etc.
+		mark		jumping to a mark: "'m", CTRL-O, etc.
+		percent		"%"
+		quickfix	":cn", ":crew", ":make", etc.
+		search		search for a pattern: "/", "n", "*", "gd", etc.
+				(not for a search pattern in a ":" command)
+				Also for |[s| and |]s|.
+		tag		jumping to a tag: ":ta", CTRL-T, etc.
+		undo		undo or redo: "u" and CTRL-R
+START-DOC-DEL
+	When a movement command is used for an operator (e.g., "dl" or "y%")
+	this option is not used.  This means the operator will include the
+	whole closed fold.
+	Note that vertical movements are not here, because it would make it
+	very difficult to move onto a closed fold.
+	In insert mode the folds containing the cursor will always be open
+	when text is inserted.
+	To close folds you can re-apply 'foldlevel' with the |zx| command or
+	set the 'foldclose' option to "all".
+STOP-DOC-DEL
+
 						*'formatprg'* *'fp'*
 'formatprg' 'fp'	string (default "")
 			global

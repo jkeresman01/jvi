@@ -27,7 +27,7 @@
 |Q_co|	change: Complex			|Q_bu|	Buffer list commands
 |Q_vi|	Visual mode			|Q_sy|	Syntax highlighting
 |Q_to|	Text objects			|Q_gu|	GUI commands
-					|Q_fo|  Folding
+				      |Q_fo|  Folding
 
 ------------------------------------------------------------------------------
 N is used to indicate an optional count that can be given before the command.
@@ -1364,6 +1364,10 @@ Context-sensitive completion on the command-line:
 |zO|		zO			open all folds under the cursor
 |zc|		zc			close one fold under the cursor
 |zC|		zC			close all folds under the cursor
+
+|za|		za			toggle open/close fold
+|zA|		zA			toggle open/close fold recursively
+|zv|		zv			view cursor line
 
 |zm|		zm			fold more: decrease 'foldlevel'
 |zM|		zM			close all folds: make 'foldlevel' zero
