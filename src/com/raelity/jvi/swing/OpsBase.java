@@ -29,6 +29,8 @@ import javax.swing.text.DefaultEditorKit;
 
 import com.raelity.jvi.ViTextView;
 
+import static java.awt.event.ActionEvent.ACTION_PERFORMED;
+
 /**
  * This provides default swing JTextComponent behavior that are
  * used by vi.
@@ -49,8 +51,6 @@ public class OpsBase implements TextOps {
 
     protected ViTextView textView;
 
-    protected OpsBase.ReusableEvent event = new ReusableEvent();
-
     protected static Map<String,Action> actionMap
             = new HashMap<String,Action>();
     
@@ -61,33 +61,30 @@ public class OpsBase implements TextOps {
 
     @Override
     public void xact(Action action) {
-        event.setSource(textView.getEditor());
-	action.actionPerformed(event);
+	xact(action, "");
     }
 
     @Override
-    public void xact(Action action, String s) {
-        event.setActionCommand(s);
-        xact(action);
+    public void xact(Action action, String command) {
+	action.actionPerformed(
+            new ActionEvent(textView.getEditor(), ACTION_PERFORMED, command));
     }
 
     @Override
-    public void xop(int op, String s) {
-        event.setActionCommand(s);
-        xop(op);
+    public void xop(int op) {
+        xop(op, "");
     }
     
     @Override
     public void xact(String actionName) {
-        Action action = findAction(actionName);
-        xact(action);
+        xact(actionName, "");
     }
 
     /**
      * Try to do something useful with the op.
      */
     @Override
-    public void xop(int op) {
+    public void xop(int op, String cmd) {
         String actionName;
         switch(op) {
             case INSERT_TEXT:
@@ -108,22 +105,22 @@ public class OpsBase implements TextOps {
             default:
 		throw new RuntimeException("Unknown op: " + op);
         }
-        xact(actionName);
+        xact(actionName, cmd);
     }
 
     protected void xact(String actionName, String cmd) {
-        event.setActionCommand(cmd);
-        xact(actionName);
+        Action action = findAction(actionName);
+        xact(action, cmd);
     }
 
     protected Action findAction(String actionName) {
         Action action = actionMap.get(actionName);
         if (action == null) {
             Action[] actions = ((SwingTextView)textView).getActions();
-            for (int i = 0; i < actions.length; i++) {
-                String name = (String)actions[i].getValue(Action.NAME);
-                if (name.equals(actionName)) {
-                    action = actions[i];
+            for(Action action1 : actions) {
+                String name = (String)action1.getValue(Action.NAME);
+                if(name.equals(actionName)) {
+                    action = action1;
                     actionMap.put(name, action);
                     break;
                 }
@@ -133,27 +130,5 @@ public class OpsBase implements TextOps {
 	    throw new RuntimeException("Action " + actionName + "not found");
 	}
         return action;
-    }
-
-    protected static class ReusableEvent extends ActionEvent {
-        private String cmd;
-
-        ReusableEvent() {
-            super("", ActionEvent.ACTION_PERFORMED, "");
-        }
-
-        @Override
-        public void setSource(Object source) {
-          this.source = source;
-        }
-
-        void setActionCommand(String cmd) {
-          this.cmd = cmd;
-        }
-
-        @Override
-        public String getActionCommand() {
-          return cmd;
-        }
     }
 }
