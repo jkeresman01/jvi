@@ -90,7 +90,31 @@
   </dd>
 </dl>
 -->
-<b>Version 1.5.0.x? - 2013/10/30</b>
+<b>Version 1.5.2 - 2013/11/01</b>
+  <dl>
+    <dt>jVi NetBeans KeyBindings</dt>
+    <dd>
+      <ul>
+        <li>add options to <span class="tt">:toggle</span> command.
+          <br><span class="tt">:toggle [ l[eft] r[ight] t[op] b[ottom] ]</span>
+          restore or minimize to the specified side, according to where
+          things are assigned.
+        </li>
+        <li>
+          Fix scrolling after <span class="tt">%</span> (brace matching)
+          command under NetBeans. Previously any out of view goto match
+          would center the target line on the screen, now if the line is
+          close (within one half of the screen) it will scroll the view
+          so the line is visible near the
+          edge of the view. Repeated <span class="tt">%</span> commands
+          are more likely to show the entire block, or at least larger
+          areas of it, on screen.
+        </li>
+      </ul>
+    </dd>
+  </dl>
+
+<b>Version 1.5.0 - 2013/11/01</b>
   <p>
     The 1.5 release reworks the fold commands. As much as possible, they now
     behave like the vim commands, including handling visual mode and a [count]
@@ -118,18 +142,6 @@
         </li>
       </ul>
     </dd>
-    <!--
-    <dt>jVi NetBeans KeyBindings</dt>
-    <dd>
-      <ul>
-        <li></li>
-        <li>
-          <a href="">
-          [#] </a>
-        </li>
-      </ul>
-    </dd>
-    -->
     <dt>Bug fixes</dt>
     <dd>
       <ul>
