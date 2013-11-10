@@ -3011,6 +3011,12 @@ middle_code:
 	Edit.beginline(BL_SOL | BL_FIX);
       }
     } else {	    // "%" : go to matching paren
+      // Invoking platform op and there is no guarentee that the
+      // cursor won't be moved around and scrolling might occur
+      // So save/restore the visible location.
+      // TODO: Make it a requirement of the match to not move viewport.
+      //       Then do save/restore in platform dependent code.
+      int startTopViewLine = G.curwin.getVpTopViewLine();
       cap.oap.motion_type = MCHAR;
       boolean usePlatform = G.p_pbm & ViManager.getPlatformFindMatch();
       if(usePlatform) {
@@ -3037,6 +3043,9 @@ middle_code:
           adjust_for_sel(cap);
         }
       }
+      // Until save/restore view location gets migrated to platform code
+      G.curwin.setVpTopViewLine(startTopViewLine);
+      scrollToLine(G.curwin.w_cursor.getLine());
     }
     if (cap.oap.op_type == OP_NOP
 	    && lnum != G.curwin.w_cursor.getLine()
