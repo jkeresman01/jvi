@@ -24,6 +24,7 @@ import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.text.TextUtil.MySegment;
 
+import static com.raelity.jvi.core.Eval.do_searchpair;
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Search.*;
@@ -322,10 +323,11 @@ public class Search03
         // When visual area is bigger than one character: Extend it.
         //
 
-    extend: do {
+extend:
+while(true) {
         if (extending || G.VIsual_active && !start_pos.equals(G.VIsual))
         {
-    //extend: original target of goto
+//extend: ORIGINAL TARGET OF GOTO
             if (start_pos.compareTo(G.VIsual) < 0)
             {
                 /*
@@ -422,7 +424,7 @@ public class Search03
         {
             start_blank = false;
             findsent(BACKWARD, 1);
-            start_pos = G.curwin.w_cursor;
+            start_pos = G.curwin.w_cursor.copy();
         }
         if (include)
             ncount = count * 2;
@@ -459,7 +461,7 @@ public class Search03
         {
             /* avoid getting stuck with "is" on a single space before a sent. */
             if (equalpos(start_pos, G.curwin.w_cursor)) {
-                extending = true; // part of goto workaround
+                extending = true; // part of goto extend workaround
                 continue extend;  // was goto extend
             }
             if (G.p_sel.charAt(0) == 'e')
@@ -479,7 +481,9 @@ public class Search03
             oap.start = start_pos;
             oap.motion_type = MCHAR;
         }
-    } while(false); // part of implementing goto extend
+
+break; // part of implementing goto extend
+}
         return OK;
     }
 
@@ -715,7 +719,7 @@ public class Search03
         ViFPOS	start_pos;
         ViFPOS	end_pos;
         ViFPOS	old_start, old_end;
-        String	spat = null, epat = null;
+        String	spat, epat;
         MySegment   line;
         int		p;
         int		cp;
@@ -775,20 +779,20 @@ public class Search03
          * Search backwards for unclosed "<aaa>".
          * Put this position in start_pos.
          */
-    again:
-    do {
+again:
+while(true) {
         for (n = 0; n < count; ++n)
         {
                       //"<[^ \t>/!]\\+\\%(\\_s\\_[^>]\\{-}[^/]>\\|$\\|\\_s\\=>\\)",
                       //"<[^ \t>/!]+(?:[\\n\\s][\\n[^>]]*?[^/]>|$|[\\n\\s]?>)",
                       //"<[^ \t>/!]+(?:\\s[^>]*?[^/]>|$|\\s?>)",
-            if (Eval.do_searchpair(
+            if (do_searchpair(
                         "<[^ \t>/!]+(?:[\\n\\s][\\n[^>]]*?[^/]>|$|[\\n\\s]?>)",
                         "",
                         "</[^>]*>", BACKWARD, "", SEARCH_ISCLEAN, null, 0) <= 0)
             {
                 G.curwin.w_cursor.set(old_pos);
-                break again; //break theend;
+                break again; //goto theend;
             }
         }
         start_pos = G.curwin.w_cursor.copy();
@@ -813,7 +817,7 @@ public class Search03
         if (len == 0)
         {
             G.curwin.w_cursor.set(old_pos);
-            break again; //break theend;
+            break again; //goto theend;
         }
         // NOTE: IGNORE CASE
         //sprintf((char *)spat, "<%.*s\\%%(\\_[^>]\\{-}[^/]>\\|>\\)\\c", len, p);
@@ -826,7 +830,7 @@ public class Search03
         epat = String.format("</%s>\\c",
                              line.subSequence(p, cp).toString());
 
-        r = Eval.do_searchpair(spat, "", epat, FORWARD, "", SEARCH_ISCLEAN, null, 0);
+        r = do_searchpair(spat, "", epat, FORWARD, "", SEARCH_ISCLEAN, null, 0);
         //System.err.format("html: after searchpair r: %d\n    spat '%s' epat '%s'\n", r, spat, epat);
 
         if (r < 1 || lt(G.curwin.w_cursor, old_end))
@@ -896,7 +900,8 @@ public class Search03
             oap.inclusive = true;
         }
         retval = OK;
-    } while(false); // theend:
+break;
+}  // theend: LABEL
 
         G.p_wsOption_set(save_p_ws);
         return retval;
