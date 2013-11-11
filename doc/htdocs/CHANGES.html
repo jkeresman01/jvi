@@ -1,8 +1,4 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-
-<!--<!DOCTYPE html public "-//w3c//DTD HTML 4.01 transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">-->
-<!-- <!doctype html public "-//w3c//dtd html 4.0 transitional//en"> -->
-
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -90,7 +86,7 @@
   </dd>
 </dl>
 -->
-<b>Version 1.5.2 - 2013/11/01</b>
+<b>Version 1.5.1.x2 - 2013/11/10</b>
   <dl>
     <dt>jVi NetBeans KeyBindings</dt>
     <dd>
@@ -98,10 +94,10 @@
         <li>add options to <span class="tt">:toggle</span> command.
           <br><span class="tt">:toggle [ l[eft] r[ight] t[op] b[ottom] ]</span>
           restore or minimize to the specified side, according to where
-          things are assigned.
+          things are assigned. Default is <span class="tt">bottom</span>.
         </li>
         <li>
-          Fix scrolling after <span class="tt">%</span> (brace matching)
+          Handle scrolling after <span class="tt">%</span> (brace matching)
           command under NetBeans. Previously any out of view goto match
           would center the target line on the screen, now if the line is
           close (within one half of the screen) it will scroll the view
@@ -109,6 +105,15 @@
           edge of the view. Repeated <span class="tt">%</span> commands
           are more likely to show the entire block, or at least larger
           areas of it, on screen.
+        </li>
+      </ul>
+    </dd>
+    <dt>Bug fixes</dt>
+    <dd>
+      <ul>
+        <li>Fix text object issue with sentences.
+          <br>Beginning of sentence,
+          before the cursor, was not getting selected.
         </li>
       </ul>
     </dd>
