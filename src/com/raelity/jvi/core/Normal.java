@@ -504,15 +504,14 @@ public class Normal {
     ViFPOS	    old_pos;		    /* cursor position before command */
     int		    old_col = G.curwin.w_curswant;
 
-middle_code:
-    do {
+normal_end: {
       G.State = NORMAL;
       if (ca.nchar == ESC)
       {
 	clearop(oap);
 	if (p_im && G.restart_edit == 0)
 	  G.restart_edit = 'a';
-	break middle_code;	// used to be goto normal_end
+	break normal_end;	// used to be goto normal_end
       }
 
       /* when 'keymodel' contains "startsel" some keys start Select/Visual mode */
@@ -848,7 +847,6 @@ middle_code:
 	  case K_S_END:
 	    if ((G.mod_mask & MOD_MASK_CTRL) != 0) {
 	      // CTRL-END = goto last line
-	      // nv_goto(oap, curbuf.b_ml.ml_line_count);
 	      nv_goto(ca, G.curbuf.getLineCount());
 	    }
 	    // FALLTHROUGH
@@ -1263,8 +1261,7 @@ middle_code:
        * Wait when a message is displayed that will be overwritten by the mode
        * ...... VISUAL MODE stuff for pause about showing message
        */
-    } while(false);
-// normal_end: this target replace by break from do {} while(0)
+} ////normal_end://// this target replace by break normal_end
 
     /*
      * Finish up after executing a Normal mode command.
@@ -4476,7 +4473,6 @@ nv_brackets(CMDARG cap, int dir)
         if(!editBusy)
           endInsertUndo();
       }
-      return;
     }
   }
 
