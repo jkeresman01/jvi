@@ -1,4 +1,4 @@
-<!-- <!doctype html public "-//w3c//dtd html 4.0 transitional//en"> -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -51,6 +51,7 @@ Communications can also be sent to
     reload catalog button; after that there are several more
     entries in the "Editing" category of the Available plugins tab. Some of the
     jVi plugins are:
+</p>
     <ul>
         <li>jVi for NetBeans</li>
         <li>jVi Help</li>
@@ -61,6 +62,7 @@ Communications can also be sent to
         <li>jVi: NB-7.0.1 patch for ...</li>
         <li>jVi: NB-7.0.1 patch for ...</li>
     </ul>
+<p>
     These are optional and patch NB itself. They will only successfully install
     into the version for which they are intended; they use a
     NetBeans implementation dependency.
@@ -92,7 +94,7 @@ Communications can also be sent to
 <p>
 <img SRC="images/NbJviCommandNameCompletion.png"
      ALT="NetBeans jVi Command Name Completion"
-     class="ImgLeft"/>
+     class="ImgLeft">
 
 In NetBeans,
 the jVi command line supports some limited completion functionality.
@@ -104,7 +106,7 @@ to control whether or not to auto popup the completion lists.
 <p>
     <img SRC="images/NbJviEditOther.png"
          ALT="NetBeans jVi Edit Other"
-         class="ImgRight"/>
+         class="ImgRight">
 
     There is command name completion as shown at the left.
     When &lt;Return&gt; is entered, the command which is highlighted
@@ -140,8 +142,8 @@ There are some Normal Mode commands that hook into NetBeans features.
             <td>toggle bookmark, previous bookmark, next bookmark</td>
         </tr>
         <tr>
-            <td><span class="tt">z{ocRM}</span></td>
-            <td>expand fold, collapse fold, expand all, collapse all</td>
+            <td><span class="tt">z{oOcCaARMv}</span></td>
+            <td>expand fold, collapse fold, toggle open/close, expand all, collapse all</td>
         </tr>
         <tr>
             <td><span class="tt">gt</span>, <span class="tt">gT</span></td>
@@ -204,7 +206,7 @@ There are some Normal Mode commands that hook into NetBeans features.
         </tr>
         <tr>
             <td><span class="tt">:ts [&lt;any-chars&gt;]</span>,
-            <br/><span class="tt">:ta &lt;any-chars&gt;</span></td>
+            <br><span class="tt">:ta &lt;any-chars&gt;</span></td>
             <td>These bring up the "Go To Class" dialog.</td>
         </tr>
         <tr>
@@ -220,10 +222,10 @@ There are some Normal Mode commands that hook into NetBeans features.
                 <span class="tt">
                     [ b[uild] | c[lean] | r[ebuild] | d[oc] | de[bug] | ru[n] ]
                 </span>
-                <br/>&lt;target&gt; ::= <span class="tt">
+                <br>&lt;target&gt; ::= <span class="tt">
                     [ m[ain] | p[roject] | % ] </span>
                 for main-project current-project current-file.
-                <br/>Default &lt;op&gt; is <span class="tt">build</span>,
+                <br>Default &lt;op&gt; is <span class="tt">build</span>,
                 default &lt;target&gt; is <span class="tt">main</span>. So entering
                 <span class="tt">:mak</span> is the same as
                 <span class="tt">:make build main</span>.
@@ -251,23 +253,16 @@ There are some Normal Mode commands that hook into NetBeans features.
             </td>
         </tr>
         <tr>
-            <td><span class="tt">:tog[gle] [&lt;view-pane&gt;]</span></td>
+            <td><span class="tt">:tog[gle] [&lt;side&gt;]</span></td>
             <td>
-                &lt;view-pane&gt; ::= <span class="tt">ou[tput]</span>
-                <br/>toggle some NetBeans' window(s) visibility; it
-                does this by docking window either into a visible mode
-                or a minimized mode. With no
-                arguments is the same as <span class="tt">output</span>.
-                <span class="tt">output</span> is the output mode.
-                <!--
-                &lt;view-pane&gt; ::= <span class="tt">bo[ttom] | ou[tput] | de[bug]</span>
-                <br/>toggle some NetBeans' window(s) visibility. With no
-                arguments is the same as <span class="tt">bottom</span>.
-                <span class="tt">output</span> is the output mode; some windows that
-                go here are Output and Usages.
-                <span class="tt">debug</span> are the debug windows.
-                <span class="tt">bottom</span> is both of output and debug.
-                -->
+                &lt;side&gt; ::=
+                <span class="tt">l[eft]</span>
+                | <span class="tt">r[ight]</span>
+                | <span class="tt">t[op]</span>
+                | <span class="tt">b[ottom]</span>
+                <br>toggle some NetBeans' window(s) visibility.
+                This operates on windows that minimize to the specified side.
+                The default, no argument, is <span class="tt">bottom</span>.
             </td>
         </tr>
     </tbody>
@@ -362,7 +357,7 @@ Note: the "<span class="tt">tabs</span>" view-pane is only available if the
 
     <img SRC="images/NbJviOptionsPanel.png"
          ALT="NetBeans jVi Options Panel"
-         class="ImgRight"/>
+         class="ImgRight">
 
 <h2 id="options" class="MainSec00Font">Options</h2>
 <p>
@@ -407,7 +402,7 @@ NetBeans.  </p>
 
     <img SRC="images/NbJviImport.png"
          ALT="NetBeans jVi Import"
-         class="ImgRight"/>
+         class="ImgRight">
 <h2 id="options-import" class="MainSec01Font">Options Import</h2>
 <p>
     After installing a new release of NetBeans, jVi's option settings
@@ -474,7 +469,7 @@ pretty good NetBeans multi-key bindings.
 <!-- raelity copyright -->
 <hr>
 <address class="addr">
-  Copyright &copy; 2011 Raelity Engineering<br/>
+  Copyright &copy; 2011 Raelity Engineering<br>
   <a href="mailto:support@raelity.com">Contact Raelity Engineering</a>
 </address>
 </body>
