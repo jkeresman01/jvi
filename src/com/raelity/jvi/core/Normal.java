@@ -2396,6 +2396,8 @@ normal_end: {
       // endvisualmode be doing the fold to avoid bad state
       if(G.VIsual_active)
         end_visual_mode(); // should be using operator pending
+      // may need scroll after expandFold operation,
+      // since there may be timing issues, do it in platform code
       G.curwin.foldOperation(foldop, start, end, visual_active);
       clearop(ca.oap);
     } else if(hscroll != null) {

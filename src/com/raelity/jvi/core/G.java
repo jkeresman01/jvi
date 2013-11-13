@@ -76,6 +76,11 @@ public class G implements ViOptionBag
 
     static Buffer curbuf; // per file options. as int,boolean
 
+    public static void scrollToLine(ViTextView tv, int line) {
+        if(tv == curwin)
+            Misc01.scrollToLine(line);
+    }
+
     /* ******************************************************************
     static boolean asyncCaretMovement = false;
 
