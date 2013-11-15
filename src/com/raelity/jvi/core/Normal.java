@@ -3654,7 +3654,7 @@ nv_brackets(CMDARG cap, int dir)
       nv_cursormark(cap, flag, pos);
     }
     if (cap.oap.op_type == OP_NOP
-	    && pos != null
+	    && pos != null && MarkOps.check_mark(pos, false) != FAIL
 	    && (pos instanceof Filemark || !equalpos(old_cursor, pos))
 	    && G.p_fdo.contains(FDO_MARK)
 	    && old_KeyTyped)
