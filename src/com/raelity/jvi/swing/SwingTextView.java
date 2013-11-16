@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.swing;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -28,7 +29,9 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
@@ -42,6 +45,7 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.JViewport;
+import javax.swing.Timer;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
@@ -345,6 +349,57 @@ public class SwingTextView extends TextView
         return editorPane;
     }
 
+    private Timer bellTimer;
+    @Override
+    public void bell()
+    {
+        if(!G.p_vb()) {
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+
+        // visual bell and time is zero means do nothing.
+        // Also don't start up another bell, if one is in progress.
+        if(G.p_vbt() == 0 || bellTimer != null)
+            return;
+
+        class BellAction implements ActionListener {
+            final Color bg;
+            final Color bgFlip;
+            final boolean wasBackgroundSet;
+            public BellAction()
+            {
+                wasBackgroundSet = editorPane.isBackgroundSet();
+                bg = editorPane.getBackground();
+                bgFlip = new Color(~bg.getRGB());
+                editorPane.setBackground(bgFlip);
+                Dimension size = editorPane.getSize();
+                editorPane.paintImmediately(0, 0, size.width, size.height);
+            }
+
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                bellTimer.stop();
+                bellTimer = null;
+
+                // Could check to see if the background has been changed,
+                // but too paranoid? If go down that rat hole,
+                // then how about if the "getBackground" isn't different
+                // but the background of a parent was changed and we're
+                // about to set the background back to null to inherit.
+                if(isShutdown()
+                        /*|| !bgFlip.equals(editorPane.getBackground())*/)
+                    return;
+                editorPane.setBackground(wasBackgroundSet ? bg : null);
+            }
+        }
+
+        // invert the background, in the action constructor
+        bellTimer = new Timer(G.p_vbt(), new BellAction());
+        bellTimer.setRepeats(false);
+        // schedule timer to flip it back
+        bellTimer.start();
+    }
 
     /**
      *  @return true if the text can be changed.

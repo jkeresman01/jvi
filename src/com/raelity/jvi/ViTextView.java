@@ -151,6 +151,9 @@ public interface ViTextView extends ViOptionBag {
   /** @return the underlying text component */
   public Component getEditor();
 
+  /** ring the bell, take visual bell options into account */
+  public void bell();
+
   //////////////////////////////////////////////////////////////////////
   //
   // Text Modification methods

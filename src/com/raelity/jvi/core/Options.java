@@ -170,6 +170,8 @@ public final class Options {
   public static final String textWidth = "viTextWidth";
   public static final String showMode = "viShowMode";
   public static final String showCommand = "viShowCommand";
+  public static final String visualBell = "viVisualBell";
+  public static final String visualBellTime = "viVisualBellTime";
 
   public static final String wrap = "viWrap";
   public static final String list = "viList";
@@ -518,6 +520,19 @@ public final class Options {
     // General Options
     //
     //
+
+    OptUtil.createBooleanOption(visualBell, false);
+    OptUtil.setupOptionDesc(Category.GENERAL, visualBell, "'visualbell' 'vb'",
+	   "Use visual bell instead of beeping.  The editor window"
+                   + " background is inverted for a period of time, "
+                   + " see 'vbt' option."
+                   + " When no beep or flash is wanted, set time to zero ");
+    OptUtil.createIntegerOption(visualBellTime, 20);
+    OptUtil.setupOptionDesc(Category.GENERAL, visualBellTime,
+                            "'visualbelltime' 'vbt'",
+	   "The duration, in milliseconds, of the 'visual bell'. If the"
+                   + " visual bell is enabled, see 'vb', and the 'vbt'"
+                   + "value is zero then there is no beep or flash.");
 
     OptUtil.createIntegerOption(scrollOff, 0);
     OptUtil.setupOptionDesc(Category.GENERAL, scrollOff, "'scrolloff' 'so'",

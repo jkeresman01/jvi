@@ -211,6 +211,8 @@ public class G implements ViOptionBag
     public static boolean p_ea() { return p_ea; }
     public static Color p_rocc() { return p_rocc; }
     public static int p_so() { return p_so; }
+    public static boolean p_vb() { return p_vb; }
+    public static int p_vbt() { return p_vbt; }
 
 
     static void p_wsOption_set(boolean f) {
@@ -317,6 +319,9 @@ public class G implements ViOptionBag
     static boolean p_to;
     // tildeop
     static boolean p_top;
+    // visualbell and it's timer length
+    static boolean p_vb;
+    static int p_vbt;
     // wrapscan
     static boolean p_ws;
 

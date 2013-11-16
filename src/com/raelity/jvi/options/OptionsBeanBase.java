@@ -66,16 +66,16 @@ public class OptionsBeanBase extends SimpleBeanInfo
 implements Options.EditControl {
     private static final
             Logger LOG = Logger.getLogger(OptionsBeanBase.class.getName());
-    private Class clazz;
-    private Options.Category category;
-    private List<String> optionsList;
-    private String displayName;
+    private final Class clazz;
+    private final Options.Category category;
+    private final List<String> optionsList;
+    private final String displayName;
     
     private final PropertyChangeSupport pcs = new PropertyChangeSupport( this );
     private final VetoableChangeSupport vcs = new VetoableChangeSupport( this ); 
     //private static String checkme = "Search Options";
 
-    private Map<String,Object> changeMap = new HashMap<String,Object>();
+    private final Map<String,Object> changeMap = new HashMap<String,Object>();
     
     /** Creates a new instance of OptionsBeanBase */
     public OptionsBeanBase(Class clazz, String displayName,
@@ -110,7 +110,7 @@ implements Options.EditControl {
         undoChanges();
     }
 
-    private OptionsListener optionsListener;
+    private final OptionsListener optionsListener;
     private class OptionsListener implements PropertyChangeListener {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
@@ -282,7 +282,7 @@ implements Options.EditControl {
     //
     //      The interface to preferences.
     //
-    private Preferences prefs = ViManager.getFactory().getPreferences();
+    private final Preferences prefs = ViManager.getFactory().getPreferences();
 
     // Called before a change is made,
     // record the previous value.
@@ -311,7 +311,7 @@ implements Options.EditControl {
 
     // Since color can be null, and a null object has no type
     // use the following specific object for a null color
-    private Color nullColor = new Color(0,0,0);
+    private final Color nullColor = new Color(0,0,0);
 
     private void undoChanges() {
         for (Map.Entry<String, Object> entry : changeMap.entrySet()) {
@@ -415,6 +415,22 @@ implements Options.EditControl {
     /** this read-only option is special cased */
     public String getJViVersion() {
         return ViManager.getReleaseString();
+    }
+
+    public void setViVisualBell(boolean arg)  throws PropertyVetoException {
+        put(Options.visualBell, arg);
+    }
+
+    public boolean getViVisualBell() {
+	return getboolean(Options.visualBell);
+    }
+
+    public void setViVisualBellTime(int arg)  throws PropertyVetoException {
+        put(Options.visualBellTime, arg);
+    }
+
+    public int getViVisualBellTime() {
+	    return getint(Options.visualBellTime);
     }
 
     public void setViFoldOpen(EnumSet arg)  throws PropertyVetoException {

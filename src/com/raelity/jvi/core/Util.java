@@ -57,7 +57,7 @@ public class Util {
    * then use beep_flush().
    */
   public static void vim_beep() {
-    Toolkit.getDefaultToolkit().beep();
+    G.curwin.bell();
   }
 
   /** 
