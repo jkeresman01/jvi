@@ -16,6 +16,8 @@
   <h2>jVi NEEDSWORK/TODO list</h2>
 
   <ul>
+    <li><a href="#Test">                   Test</a></li>
+    <li><a href="#Locking">                Document Locking</a></li>
     <li><a href="#New">                    New</a></li>
     <li><a href="#Bugs">                   Bugs</a></li>
     <li><a href="#NetBeans_Embedding">     NetBeans Embedding</a></li>
@@ -34,6 +36,18 @@
 
 
 <pre>
+<span id="Test" class="TodoSection">Test Infrastructure</span>
+  - What's needed is a Document in a JEditorPane. With that and the current
+    stuffBuf like behavior, should be easy to write tests.
+  - Define best way to set up input/expect data.
+
+
+<span id="Locking" class="TodoSection">Document Locking</span>
+  - Take a read lock during pumpChar
+  - Upgrade to write lock when modifying (probably automatic in swing document)
+  - May have special situations where want to manually upgrade to write lock.
+
+
 <span id="New" class="TodoSection">New</span>
   - set REUSE flag for tagstack stuff ^] &amp; ^t .
   - When create/open textView sync up with shares as needed;
@@ -51,6 +65,8 @@
   - after [DOWN] vm.viewLine gets called 5 times.
   - test without freezer.
   - implement fdoclose=all
+  - Work Misc.du_put to use an fpos rather than a cursor. And [do_]do_join.
+  - Check all the spots that invoke Edit.beginline on the cursor.
 
 
 <span id="Bugs" class="TodoSection">Bugs</span>
@@ -331,7 +347,7 @@
 
 <span id="Blue_Sky" class="TodoSection">Blue Sky</span>
 
-  - Multithread and document locking issues
+  - Multithread
       - Do long running ops in separate thread
       - Have the main jViThread not be the EventThread.
       - event thread used to queue keyboard input for use by jVi thread.
