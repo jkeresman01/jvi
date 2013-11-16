@@ -274,7 +274,6 @@ public class Search01 {
         ViFPOS fpos = fpos();
         fpos.set(cursorLine, 0);
         beginline(fpos, BL_SOL | BL_FIX).copyTo(G.curwin.w_cursor);
-        scrollToLine(cursorLine);
       }
       if(nSubMatch == 0) {
 	Msg.emsg(Messages.e_patnotf2 + get_search_pat());
@@ -714,7 +713,6 @@ public class Search01 {
       ViFPOS fpos = fpos();
       fpos.set(cursorLine, 0);
       beginline(fpos, BL_SOL | BL_FIX).copyTo(G.curwin.w_cursor);
-      scrollToLine(cursorLine);
     }
     if(result != null)
       result.close();

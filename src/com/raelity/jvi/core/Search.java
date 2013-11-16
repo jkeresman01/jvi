@@ -41,6 +41,7 @@ import com.raelity.text.TextUtil.MySegment;
 
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc.*;
+import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
@@ -207,7 +208,7 @@ public class Search
   
   private static void resetViewIncrementalSearch() {
     G.curwin.setVpTopLine(ass.searchTopLine);
-    G.curwin.setCaretPosition(ass.searchPos.getOffset());
+    G.curwin.w_cursor.set(ass.searchPos.getOffset());
   }
   
   private static void doIncrementalSearch() {
@@ -517,7 +518,7 @@ end_do_search:
   static int fwd_word(int count, boolean type, boolean eol) {
     ViFPOS fpos = G.curwin.w_cursor.copy();
     int rc = fwd_word(count, type, eol, fpos);
-    G.curwin.setCaretPosition(fpos.getOffset());
+    G.curwin.w_cursor.set(fpos);
     return rc;
   }
   static int fwd_word(int count, boolean type, boolean eol, ViFPOS fpos) {
@@ -580,7 +581,7 @@ end_do_search:
   static int bck_word(int count, boolean type, boolean stop) {
     ViFPOS fpos = G.curwin.w_cursor.copy();
     int rc = bck_word(count, type, stop, fpos);
-    G.curwin.setCaretPosition(fpos.getOffset());
+    G.curwin.w_cursor.set(fpos);
     return rc;
   }
   static int bck_word(int count, boolean type, boolean stop, ViFPOS fpos) {
@@ -638,7 +639,7 @@ finished_block:
   static int end_word(int count, boolean type, boolean stop, boolean empty) {
     ViFPOS fpos = G.curwin.w_cursor.copy();
     int rc = end_word(count, type, stop, empty, fpos);
-    G.curwin.setCaretPosition(fpos.getOffset());
+    G.curwin.w_cursor.set(fpos);
     return rc;
   }
   static int end_word(
@@ -701,7 +702,7 @@ finished:
   static int bckend_word(int count, boolean type, boolean eol) {
     ViFPOS fpos = G.curwin.w_cursor.copy();
     int rc = bckend_word(count, type, eol, fpos);
-    G.curwin.setCaretPosition(fpos.getOffset());
+    G.curwin.w_cursor.set(fpos);
     return rc;
   }
   static int bckend_word(int count, boolean type, boolean eol, ViFPOS fpos) {
@@ -745,7 +746,7 @@ finished:
   private static boolean skip_chars(int cclass, int dir) {
     ViFPOS fpos = G.curwin.w_cursor.copy();
     boolean rc = skip_chars(cclass, dir, fpos);
-    G.curwin.setCaretPosition(fpos.getOffset());
+    G.curwin.w_cursor.set(fpos);
     return rc;
   }
   private static boolean skip_chars(int cclass, int dir, ViFPOS fpos) {
@@ -813,7 +814,7 @@ finished:
 
   // keep last for RE_SEARCH, RE_SUBST
   // private static Spat[] spats = new Spat[] {new Spat(), new Spat()};
-  private static Spat[] spats = { new Spat(), new Spat() };
+  private static final Spat[] spats = { new Spat(), new Spat() };
 
   static public RegExp getLastRegExp() {
     return spats[last_idx].re;

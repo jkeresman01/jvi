@@ -37,6 +37,10 @@ public class PlayTextView extends SimpleTextView
     {
         super(editor);
         this.statusDisplay = sd;
+        // Make this one so that scrollToLine is called for every line
+        // change. Need this since PlayCaret overrides udpateVisual
+        // and scrollToRect is never called.
+        cursorLineMoveCheck = 1;
     }
 
     @Override

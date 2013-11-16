@@ -210,6 +210,7 @@ public class G implements ViOptionBag
     public static boolean p_pbm() { return p_pbm; }
     public static boolean p_ea() { return p_ea; }
     public static Color p_rocc() { return p_rocc; }
+    public static int p_so() { return p_so; }
 
 
     static void p_wsOption_set(boolean f) {

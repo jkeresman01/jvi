@@ -199,10 +199,7 @@ public interface ViFPOS extends Comparable<ViFPOS>
                     !this.getBuffer().equals(other.getBuffer()))) {
                 return false;
             }
-            if(this.getOffset() != other.getOffset()) {
-                return false;
-            }
-            return true;
+            return this.getOffset() == other.getOffset();
         }
 
         @Override

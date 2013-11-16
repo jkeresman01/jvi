@@ -171,7 +171,7 @@ public class Edit {
       count = new MutableInt(count_arg);
       
       // clear any selection so a character insert doesn't do more than wanted
-      G.curwin.setCaretPosition(G.curwin.getCaretPosition());
+      G.curwin.clearSelection();
       
       need_redraw = false; // GET RID OF
       did_restart_edit = G.restart_edit;
@@ -1365,7 +1365,7 @@ private static class GetLiteral implements HandleNextChar
     }
     
     G.curwin.w_set_curswant = true;
-    G.curwin.setCaretPosition(fpos.getOffset() - 1);
+    G.curwin.w_cursor.set(fpos.getOffset() - 1);
     return OK;
   }
   
@@ -1409,8 +1409,6 @@ private static class GetLiteral implements HandleNextChar
     ViFPOS fpos = fpos();
     fpos.set(lnum, 0);
     coladvance(fpos, G.curwin.w_curswant).copyTo(G.curwin.w_cursor);
-
-    scrollToLine(lnum);
     return OK;
   }
 
@@ -1457,7 +1455,6 @@ private static class GetLiteral implements HandleNextChar
     }
     /* try to advance to the column we want to be at */
     coladvance(fpos, G.curwin.w_curswant).copyTo(G.curwin.w_cursor);
-    scrollToLine(lnum);
 
     // if (upd_topline)
     //     update_topline();	/* make sure curwin->w_topline is valid */
@@ -1854,7 +1851,7 @@ private static class GetLiteral implements HandleNextChar
       //
       if(count.getValue() != 0) {
         Misc.line_breakcheck();
-        if (false/*got_int*/)
+        if (G.False/*got_int*/)
           count.setValue(0);
       }
       
@@ -1899,7 +1896,7 @@ private static class GetLiteral implements HandleNextChar
     ViFPOS fpos = G.curwin.w_cursor;
     if (fpos.getColumn() != 0
             && (G.restart_edit == 0 || Misc.gchar_pos(fpos) == '\n')) {
-      G.curwin.setCaretPosition(fpos.getOffset() - 1);
+      G.curwin.w_cursor.set(fpos.getOffset() - 1);
     }
     
     G.State = NORMAL;
@@ -1984,7 +1981,7 @@ private static class GetLiteral implements HandleNextChar
               || Misc.do_join(false, true) == FAIL) {
         Util.vim_beep();
       } else {
-        G.curwin.setCaretPosition(temp);
+        G.curwin.w_cursor.set(temp);
       }
     }
     else if (Misc.del_char(false) == FAIL)// delete char under cursor
@@ -2619,7 +2616,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
                               //#ifdef MULTI_BYTE............#endif
       G.curwin.w_set_curswant = true;
       //++curwin->w_cursor.col;
-      G.curwin.setCaretPosition(cursor.getOffset() +1);
+      G.curwin.w_cursor.set(cursor.getOffset() +1);
                               //#ifdef RIGHTLEFT............#endif
     }
     // if 'whichwrap' set for cursor in insert mode, may move the

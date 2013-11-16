@@ -178,14 +178,14 @@ public class Misc01
       // being visible, then just let it scroll, otherwise
       // center the target line
 
-      int curTop = G.curwin.getVpTopLogicalLine();
-      int vpLines = G.curwin.getVpLines();
-      int so = getScrollOff();
-      int center = curTop + vpLines / 2 - 1;
+      final int curTop = G.curwin.getVpTopLogicalLine();
+      final int vpLines = G.curwin.getVpLines();
+      final int so = getScrollOff();
+      final int center = curTop + vpLines / 2 - 1;
 
       // reduce scrollMargin, the distance from center that we will scroll
       // the screen, by amount of scrolloff.
-      int scrollMargin = vpLines - so; // max distance from center to do scroll
+      final int scrollMargin = vpLines - so; // max dist from center to do scroll
 
       int newTop = curTop;
       int newViewTop = -1; // by default don't use this
@@ -208,8 +208,10 @@ public class Misc01
       }
       if(newViewTop >= 0)
           G.curwin.setVpTopViewLine(newViewTop);
-      else
-          G.curwin.setVpTopLogicalLine(adjustTopLogicalLine(newTop));
+      else {
+          if(curTop != newTop)
+              G.curwin.setVpTopLogicalLine(adjustTopLogicalLine(newTop));
+      }
     }
 
     /**
@@ -323,7 +325,8 @@ public class Misc01
       }
 
       cursor_correct(fpos);	// NEEDSWORK: implement
-      beginline(fpos, BL_SOL | BL_FIX).copyTo(G.curwin.w_cursor);
+      beginline(fpos, BL_SOL | BL_FIX);
+      G.curwin.w_cursor.set(fpos.getOffset()); // KEEP fpos.getOffset()
       // curwin->w_valid &= ~(VALID_WCOL|VALID_WROW|VALID_VIRTCOL);
 
     /*
@@ -436,7 +439,8 @@ public class Misc01
       G.curwin.setVpTopLogicalLine(newtopline);
       ViFPOS fpos = fposLogicalLine(newcursorline);
       cursor_correct(fpos);
-      beginline(fpos, BL_SOL | BL_FIX).copyTo(G.curwin.w_cursor);
+      beginline(fpos, BL_SOL | BL_FIX);
+      G.curwin.w_cursor.set(fpos.getOffset()); // KEEP fpos.getOffset()
       update_screen(VALID);
 
     }

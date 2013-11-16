@@ -66,7 +66,6 @@ import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Misc01;
 import com.raelity.jvi.core.Options;
-import com.raelity.jvi.core.lib.KeyDefs.KeyStrokeType;
 import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.manager.ViManager;

@@ -349,7 +349,6 @@ private static ColonEvent parseCommandGuts(String commandLine,
             ViFPOS fpos = fpos();
             fpos.set(l, 0);
             beginline(fpos, BL_SOL | BL_FIX).copyTo(G.curwin.w_cursor);
-            scrollToLine(l);
             return null;
         }
     }

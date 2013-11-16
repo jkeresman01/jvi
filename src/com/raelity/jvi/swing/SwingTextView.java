@@ -607,8 +607,7 @@ public class SwingTextView extends TextView
     @Override
     public void clearSelection()
     {
-        Caret c = editorPane.getCaret();
-        c.setDot(c.getDot());
+        w_cursor.set(editorPane.getCaretPosition());
     }
 
 
@@ -1162,7 +1161,26 @@ public class SwingTextView extends TextView
         return ops;
     }
 
-    // The only method not final is set(int)
+    /**
+     * Used by WCursor to decide on scrollToLine call.
+     * Typically set in platform's text view constructor.
+     * Test is (lineMovement &gt;= cursorLIneChangeCheck)
+     * So this value is how much line movement must there be to
+     * call scrollToLine. This default of 2 means that there must
+     * be a movement of at least 2 lines to call scrollToLine,
+     * a single line move will not invoke scrollToLine. However
+     * there is an exception if ScrollOffset is more than 0.
+     * <p>
+     * NOTE: this should probably never be 0. That would mean that cursor
+     * moves on the same line would also call scrollToLine
+     * </p>
+     */
+    protected int cursorLineMoveCheck = 2;
+
+    /**
+     * Use set(fpos) and set(line, col) (and what calls them) to check
+     * for scrolling. Use set(offset) to avoid scroll check.
+     */
     protected class WCursor extends ViFPOS.abstractFPOS
     {
 
@@ -1200,6 +1218,18 @@ public class SwingTextView extends TextView
         @Override
         final public void set(int line, int column)
         {
+            // If changing line by more than cursorLineMoveCheck,
+            // make sure the jVi scroll algorithm is used.
+            // So move the viewport before changing the cursor
+            // position, so the cursor with be moved to a spot
+            // within the viewport and shouldn't be moved by
+            // any cursor update in swing/NB.
+            int lineMove = Math.abs(getLine() - line);
+            if(lineMove >= cursorLineMoveCheck
+                    || G.p_so() > 0 && lineMove > 0) {
+                G.scrollToLine(SwingTextView.this, line);
+            }
+
             //System.err.println("setPosition("+line+","+column+")");
             Element elem = getBuffer().getLineElement(line);
             int startOffset = elem.getStartOffset();
@@ -1265,8 +1295,8 @@ public class SwingTextView extends TextView
         ViManager.changeBuffer(this, e.getOldValue());
     }
 
-    private static int FIND_AT_TOP = -1;
-    private static int FIND_AT_BOT = 1;
+    private static final int FIND_AT_TOP = -1;
+    private static final int FIND_AT_BOT = 1;
     enum FindLineInView { TOP, BOT };
 
     private static DebugOption cacheTrace

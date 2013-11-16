@@ -20,16 +20,23 @@
 
 package com.raelity.jvi.cmd;
 
+import java.awt.Component;
+import java.awt.Rectangle;
 import java.util.Map;
 
+import javax.swing.text.Caret;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 
+import com.raelity.jvi.ViCaret;
 import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Buffer;
+import com.raelity.jvi.core.Options;
 import com.raelity.jvi.swing.LineMap;
 import com.raelity.jvi.swing.LineMapNoFolding;
+import com.raelity.jvi.swing.SwingCaret;
 import com.raelity.jvi.swing.SwingTextView;
 import com.raelity.jvi.swing.ViewMap;
 import com.raelity.jvi.swing.ViewMapSwitcher;
@@ -60,6 +67,41 @@ final public class PlayFactory extends SimpleFactory
         ViewMap vm = new ViewMapSwitcher(tv);
         tv.setMaps(lm, vm);
         return tv;
+    }
+
+    /**
+     * For debug, don't want the cursor moving on its own
+     * or scrolling the view.
+     */
+
+    class PlayCaret extends SwingCaret {
+
+        public PlayCaret()
+        {
+            setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
+        }
+
+        @Override
+        protected void adjustVisibility(Rectangle nloc)
+        {
+        }
+
+    }
+
+    @Override
+    public void setupCaret(Component editor)
+    {
+        JTextComponent ed = (JTextComponent)editor;
+        // install cursor if neeeded
+        Caret c = ed.getCaret();
+        if ( !(c instanceof ViCaret) ) {
+            SwingCaret caret = new PlayCaret();
+            ed.setCaret(caret);
+            caret.setDot(c.getDot());
+            int n = Options.getOption(Options.caretBlinkRate).getInteger();
+            caret.setBlinkRate(n);
+            caret.setVisible(c.isVisible());
+        }
     }
 
     @Override

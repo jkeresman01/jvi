@@ -437,7 +437,7 @@ public class Misc implements ClipboardOwner {
     int offset = fpos.getOffset();
     G.curwin.replaceString(offset, offset+1, String.valueOf(c));
     // do not change cursor position
-    G.curwin.setCaretPosition(offset);
+    G.curwin.w_cursor.set(offset);
   }
 
   /**
@@ -562,7 +562,7 @@ public class Misc implements ClipboardOwner {
       // fixpos is TRUE, we don't want to end up positioned at the NUL.
       //
       if (col > 0 && fixpos)
-        G.curwin.setCaretPosition(oldOffset -1); //--curwin->w_cursor.col;
+        G.curwin.w_cursor.set(oldOffset -1); //--curwin->w_cursor.col;
       count = oldlen - col;
       //movelen = 1;
     }
@@ -660,6 +660,7 @@ public class Misc implements ClipboardOwner {
       ++idx;
     }
 
+    // no hidden thing anymore, cursor can be inside a fold
     // idx = G.curwin.getFirstHiddenColumn(txt.docOffset, idx);
 
     if(reached != null) {
@@ -699,7 +700,7 @@ public class Misc implements ClipboardOwner {
     //           used for block mode stuff like "I" command.
     //           Doesn't seem to assert standalone
     //assert fpos.getColumn() == 0;
-    if(false) {
+    if(G.False) {
       // WRAP issue. (OR IS IT...)
       // NOTE that if fpos.col is ever not zero
       //      then the txt segment starts *before* the col
@@ -731,7 +732,7 @@ public class Misc implements ClipboardOwner {
   static int inc_cursor() {
     ViFPOS fpos = G.curwin.w_cursor.copy();
     int rc = inc(fpos);
-    G.curwin.setCaretPosition(fpos.getOffset());
+    G.curwin.w_cursor.set(fpos.getOffset()); // KEEP fpos.getOffset()
     return rc;
   }
 
@@ -815,7 +816,7 @@ public class Misc implements ClipboardOwner {
   static int dec_cursor() {
     ViFPOS fpos = G.curwin.w_cursor.copy();
     int rc = dec(fpos);
-    G.curwin.setCaretPosition(fpos.getOffset());
+    G.curwin.w_cursor.set(fpos.getOffset()); // KEEP fpos.getOffset()
     return rc;
   }
 
@@ -1309,8 +1310,8 @@ public class Misc implements ClipboardOwner {
       //assert y_size == 1 && y_size == y_array.length;
       if(y_type == MBLOCK) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < y_array.length; i++) {
-          sb.append(y_array[i]);
+        for(StringBuilder y_array1 : y_array) {
+          sb.append(y_array1);
           sb.append('\n');
         }
         return sb.toString();
@@ -1356,7 +1357,7 @@ public class Misc implements ClipboardOwner {
 
         @Override
     protected Object clone() throws CloneNotSupportedException {
-      Yankreg reg = null;
+      Yankreg reg;
       reg = (Yankreg) super.clone();
       if(y_array != null) {
         reg.y_array = y_array.clone();
@@ -1413,8 +1414,8 @@ public class Misc implements ClipboardOwner {
 
     StringSelection getStringSelection() {
       StringBuilder sb = new StringBuilder();
-      for (int i = 0; i < y_array.length; i++) {
-        sb.append(y_array[i]);
+      for(StringBuilder y_array1 : y_array) {
+        sb.append(y_array1);
         if(y_type == MBLOCK)
           sb.append('\n');
       }
@@ -2636,7 +2637,7 @@ private static int put_in_typebuf(String s, boolean colon)
 
   /** op_change is "split", save state across calls here. */
   private static class StateOpSplit {
-    private StateSplitOwner owner;
+    private final StateSplitOwner owner;
     OPARG       oap;
     block_def	bd;
     int         pre_textlen;
@@ -2665,8 +2666,8 @@ private static int put_in_typebuf(String s, boolean colon)
   static void finishOpSplit() {
     if(stateOpSplit != null) {
       switch(stateOpSplit.owner) {
-        case SPLIT_CHANGE: finishOpChange(); return;
-        case SPLIT_INSERT: finishOpInsert(); return;
+        case SPLIT_CHANGE: finishOpChange(); break;
+        case SPLIT_INSERT: finishOpInsert(); break;
       }
     }
   }
@@ -2946,11 +2947,11 @@ private static int put_in_typebuf(String s, boolean colon)
     int                 totlen = 0;
     int                 lnum;
     int                 col;
-    int                 y_type = 0;
-    int                 y_size = 0;
+    int                 y_type;
+    int                 y_size;
 
     int                 oldlen;
-    int                 y_width = 0;
+    int                 y_width;
     int                 vcol;
     int                 delcount;
     int                 incr = 0;
@@ -2959,7 +2960,7 @@ private static int put_in_typebuf(String s, boolean colon)
 
     char regname = (char)regname_;
 
-    StringBuilder[] y_array = null;
+    StringBuilder[] y_array;
 
     final ViFPOS cursor = G.curwin.w_cursor;
 
@@ -2974,7 +2975,7 @@ private static int put_in_typebuf(String s, boolean colon)
     // NEEDSWORK: do_put: there are special registers like: '%', '#', ':',...
     // if (get_spec_reg(regname, &insert_string, &allocated, TRUE))
 
-    if(false) {
+    if(G.False) {
       // This is the case where insert_string from get_spec_reg is non null
     } else {
 	get_yank_register(regname, false);
@@ -3056,7 +3057,6 @@ private static int put_in_typebuf(String s, boolean colon)
     }
 
     lnum = fpos.getLine();
-    col = fpos.getColumn();
 
     // block mode
     if (y_type == MBLOCK) {
@@ -3237,30 +3237,25 @@ private static int put_in_typebuf(String s, boolean colon)
       length = s.length();
       G.curwin.insertText(offset, s);
 
-      ViFPOS t = fpos.copy();
-      t.set(G.curbuf.getLineNumber(offset),
-            G.curbuf.getColumnNumber(offset));
-      G.curbuf.b_op_start.setMark(t);
-      t.set(G.curbuf.getLineNumber(offset + length - 1),
-            G.curbuf.getColumnNumber(offset + length - 1));
-      G.curbuf.b_op_end.setMark(t);
+      ViFPOS startFpos = G.curbuf.createFPOS(offset);
+      ViFPOS endFpos = G.curbuf.createFPOS(offset + length - 1);
+      G.curbuf.b_op_start.setMark(startFpos);
+      G.curbuf.b_op_end.setMark(endFpos);
       
       // now figure out cursor position
       if(y_type == MCHAR && y_size == 1) {
-        G.curwin.setCaretPosition(offset + length - 1);
+        G.curwin.w_cursor.set(endFpos);
       } else {
         if((flags & PUT_CURSEND) != 0) {
-          offset += length;
-          G.curwin.setCaretPosition(offset);
+          endFpos.set(endFpos.getOffset()+1);
+          G.curwin.w_cursor.set(endFpos);
           if(y_type == MLINE) {
           } else {
           }
         } else if (y_type == MLINE) {
-          offset = G.curbuf.getLineStartOffsetFromOffset(offset);
-          G.curwin.setCaretPosition(offset);
-          Edit.beginline(BL_WHITE | BL_FIX);
+          beginline(startFpos, BL_WHITE | BL_FIX).copyTo(G.curwin.w_cursor);
         } else {
-          G.curwin.setCaretPosition(offset);
+          G.curwin.w_cursor.set(startFpos);
         }
       }
     }
@@ -3317,7 +3312,7 @@ private static int put_in_typebuf(String s, boolean colon)
       }
       StringBuilder spaces = new StringBuilder();
       int nextline = G.curwin.w_cursor.getLine() + 1;
-      int lastc = 0;
+      int lastc;
 
       int offset00 = G.curbuf.getLineStartOffset(nextline);
       int offset01 = offset00 - 1; // points to the '\n' of current line
@@ -3365,7 +3360,7 @@ private static int put_in_typebuf(String s, boolean colon)
   //
 
   /** When true, allow the clipboard to be used. */
-  private static boolean clipboard_available = true;
+  private static final boolean clipboard_available = true;
   private static boolean clipboard_owned = false;
 
   static void clip_gen_set_selection() {
@@ -3378,48 +3373,47 @@ private static int put_in_typebuf(String s, boolean colon)
     }
   }
 
-  private static boolean debugClip = false;
+  private static final boolean debugClip = false;
   static void clip_get_selection() {
     if(clipboard_owned) {
       // whatever is in the clipboard, we put there. So just return.
       // NEEDSWORK: clip_get_selection, code about clipboard.start/end...
       return;
-    } else {
-      Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
-      if(debugClip) {
-        if(cb.isDataFlavorAvailable(ViManager.VimClipboard2))
-            ViManager.println("VimClip available");
-        DataFlavor dfa[] = cb.getAvailableDataFlavors();
-        Arrays.sort(dfa, new Comparator<DataFlavor>() {
-            @Override
-            public int compare(DataFlavor df1, DataFlavor df2) {
-              return df1.getMimeType().compareTo(df2.getMimeType());
-            }
-          }
-        
-        );
-        for (DataFlavor df : dfa) {
-          ViManager.println(df.getMimeType());
-        }
-      }
-      
-      Transferable trans = cb.getContents(null);
-      if(debugClip && trans.isDataFlavorSupported(ViManager.VimClipboard2)) {
-        ViManager.println("VimClip supported");
-      }
-      String s = "";
-      try {
-	s = (String)trans.getTransferData(DataFlavor.stringFlavor);
-      } catch(IOException e) {
-        Util.beep_flush();
-      } catch(UnsupportedFlavorException e) {
-        Util.beep_flush();
-      }
-      // NEEDSWORK: use a string reader and transfer to StringBuffer
-      get_yank_register('*', false);
-      // y_regs[CLIPBOARD_REGISTER].y_array = new StringBuffer(s);
-      y_regs[CLIPBOARD_REGISTER].setData(s, getClipboardType(cb));
     }
+    Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
+    if(debugClip) {
+      if(cb.isDataFlavorAvailable(ViManager.VimClipboard2))
+          ViManager.println("VimClip available");
+      DataFlavor dfa[] = cb.getAvailableDataFlavors();
+      Arrays.sort(dfa, new Comparator<DataFlavor>() {
+          @Override
+          public int compare(DataFlavor df1, DataFlavor df2) {
+            return df1.getMimeType().compareTo(df2.getMimeType());
+          }
+        }
+
+      );
+      for (DataFlavor df : dfa) {
+        ViManager.println(df.getMimeType());
+      }
+    }
+
+    Transferable trans = cb.getContents(null);
+    if(debugClip && trans.isDataFlavorSupported(ViManager.VimClipboard2)) {
+      ViManager.println("VimClip supported");
+    }
+    String s = "";
+    try {
+      s = (String)trans.getTransferData(DataFlavor.stringFlavor);
+    } catch(IOException e) {
+      Util.beep_flush();
+    } catch(UnsupportedFlavorException e) {
+      Util.beep_flush();
+    }
+    // NEEDSWORK: use a string reader and transfer to StringBuffer
+    get_yank_register('*', false);
+    // y_regs[CLIPBOARD_REGISTER].y_array = new StringBuffer(s);
+    y_regs[CLIPBOARD_REGISTER].setData(s, getClipboardType(cb));
   }
 
   private static Integer getClipboardType(Clipboard cb) {
@@ -3430,7 +3424,7 @@ private static int put_in_typebuf(String s, boolean colon)
         InputStream is = (InputStream) cb.getContents(null)
                                       .getTransferData(ViManager.VimClipboard2);
 
-        byte[] data = null;
+        byte[] data;
         data = new byte[is.available()];
         is.read(data);
         ByteBuffer bb = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
@@ -3576,10 +3570,10 @@ private static int put_in_typebuf(String s, boolean colon)
       }
     }
     
-    private static MutableInt l1 = new MutableInt();
-    private static MutableInt l2 = new MutableInt();
-    private static MutableInt r1 = new MutableInt();
-    private static MutableInt r2 = new MutableInt();
+    private static final MutableInt l1 = new MutableInt();
+    private static final MutableInt l2 = new MutableInt();
+    private static final MutableInt r1 = new MutableInt();
+    private static final MutableInt r2 = new MutableInt();
     /**
      * Get the most left and most right virtual column of pos1 and pos2.
      * Used for Visual block mode.
@@ -3651,7 +3645,6 @@ private static int put_in_typebuf(String s, boolean colon)
     
     static void update_screen(int type) {
       // NEEDSWORK: update_screen: think this is a nop
-      return;
     }
     
     static void check_for_delay(boolean check_msg_scroll) {
@@ -4201,8 +4194,8 @@ static void block_prep(OPARG oap, block_def bdp, int lnum, boolean is_del) {
 
   pstart_idx = 0;
   prev_pstart_idx = 0;
-  pend_idx = 0;
-  prev_pend_idx = 0;
+  // pend_idx = 0;
+  // prev_pend_idx = 0;
 
   while (bdp.start_vcol < oap.start_vcol && pstart_idx < pstart.length()) {
     /* Count a tab for what it's worth (if list mode not on) */
@@ -4327,7 +4320,7 @@ op_do_addsub(char command, int Prenum1)
     int		oldn;
     MySegment	ptr;
     char	c;
-    int		length = 0;		/* character length of the number */
+    int		length;		/* character length of the number */
     int		todel;
     boolean	dohex;
     boolean	dooct;
@@ -4508,10 +4501,7 @@ op_do_addsub(char command, int Prenum1)
 	{
 	    if (c < 0x100 && isalpha(c))
 	    {
-		if (isupper(c))
-		    hexupper = true;
-		else
-		    hexupper = false;
+              hexupper = isupper(c);
 	    }
 	    /* del_char() will mark line needing displaying */
 	    del_char(false);
@@ -4579,7 +4569,7 @@ op_do_addsub(char command, int Prenum1)
     static void op_insert(OPARG oap, int count1) {
       if(!valid_op_range(oap))
         return;
-      int pre_textlen = 0;
+      int pre_textlen;
       block_def   bd = new block_def();
       final ViFPOS cursor = G.curwin.w_cursor;
       int i;
@@ -4747,13 +4737,6 @@ op_do_addsub(char command, int Prenum1)
         dst.setCharAt(index++, c);
     }
     
-    private static void setLineNum(int line) {
-      //int line = G.curwin.getLineNumber(G.curwin.getCaretPosition());
-      int col = G.curbuf.getColumnNumber(G.curwin.getCaretPosition());
-      //G.curwin.setCaretPosition(G.curwin.getLineStartOffset(line)+col);
-      G.curwin.w_cursor.set(line, col);
-    }
-
     static boolean blockOpSwapText = true;
 /**
  * Insert string "s" (b_insert ? before : after) block :AKelly
@@ -4885,7 +4868,7 @@ op_do_addsub(char command, int Prenum1)
           OPARG oap, String s, boolean b_insert, block_def bdp,
           int startLine, int endLine) {
     int		p_ts;
-    int		count = 0;	// extra spaces to replace a cut TAB
+    int		count;		// extra spaces to replace a cut TAB
     int		spaces = 0;	// non-zero if cutting a TAB
     int 	offset;		// pointer along new line
     int 	s_len;		// STRLEN(s)

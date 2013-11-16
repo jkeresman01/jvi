@@ -2245,15 +2245,12 @@ normal_end: {
     return ok ? OK : FAIL;
   }
   
-  static private void nv_scroll_line(CMDARG cap, boolean is_ctrl_e) {
+  static private void nv_scroll_line(CMDARG cap, boolean up) {
     if(checkclearop(cap.oap))
       return;
-    scroll_redraw(is_ctrl_e, cap.count1);
-  }
-  
-  static private void scroll_redraw(boolean up, int count) {
     if(G.curwin.getLogicalLineCount() <= G.curwin.getVpLines())
       return;
+    int count = cap.count1;
     
     int prev_topline = G.curwin.getVpTopLogicalLine();
     int prev_lnum = G.curwin.getLogicalLine(G.curwin.w_cursor.getLine());
@@ -2273,7 +2270,8 @@ normal_end: {
     G.curwin.setVpTopLogicalLine(new_topline);
     if(new_lnum != prev_lnum) {
       ViFPOS fpos = fposLogicalLine(new_lnum);
-      coladvance(fpos, G.curwin.w_curswant).copyTo(G.curwin.w_cursor);
+      coladvance(fpos, G.curwin.w_curswant);
+      G.curwin.w_cursor.set(fpos.getOffset()); // KEEP fpos.getOffset()
     }
   }
 
@@ -2471,7 +2469,8 @@ normal_end: {
       MySegment seg = G.curbuf.getLineSegment(fpos.getLine());
       target_column = Edit.beginlineColumnIndex(seg, BL_WHITE | BL_FIX);
     }
-    coladvance(fpos, target_column).copyTo(G.curwin.w_cursor);
+    coladvance(fpos, target_column);
+    G.curwin.w_cursor.set(fpos.getOffset()); // KEEP fpos.getOffset()
   }
   
   static private void nv_colon (CMDARG cap) {
@@ -2684,11 +2683,6 @@ normal_end: {
    * Handle scrolling command 'H', 'L' and 'M'.
    */
   static private void nv_scroll(CMDARG cap) {
-    // NOTE: always using nv_scroll_scrolloff
-    nv_scroll_scrolloff(cap);
-  }
-
-  static private void nv_scroll_scrolloff(CMDARG cap) {
     int	    used = 0;
     int    n;
 
@@ -2739,7 +2733,8 @@ normal_end: {
       fposLogicalLine(fpos, newcursorline);
     }
     cursor_correct(fpos);	// correct for 'so' !!DONE ELSEWHERE!!
-    beginline(fpos, BL_SOL | BL_FIX).copyTo(G.curwin.w_cursor);
+    beginline(fpos, BL_SOL | BL_FIX);
+    G.curwin.w_cursor.set(fpos.getOffset()); // KEEP fpos.getOffset()
   }
 
   /**
@@ -4276,7 +4271,6 @@ nv_brackets(CMDARG cap, int dir)
     ViFPOS fpos = fpos();
     fpos.set(lnum, 0);
     beginline(fpos, BL_SOL | BL_FIX).copyTo(G.curwin.w_cursor);
-    scrollToLine(lnum);
     if (G.fdo_flags().contains(FDO_JUMP) && G.KeyTyped
 					       && cap.oap.op_type == OP_NOP)
       foldOpenCursor();

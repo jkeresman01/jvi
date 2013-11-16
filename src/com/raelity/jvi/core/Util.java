@@ -41,8 +41,7 @@ public class Util {
   /** position to end of line. */
   static void endLine() {
     ViFPOS fpos = G.curwin.w_cursor;
-    int offset = G.curbuf
-	      		.getLineEndOffsetFromOffset(fpos.getOffset());
+    int offset = G.curbuf.getLineEndOffsetFromOffset(fpos.getOffset());
     // assumes there is at least one char in line, could be a '\n'
     offset--;	// point at last char of line
     if(Util.getCharAt(offset) != '\n') {
