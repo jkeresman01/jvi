@@ -1446,15 +1446,12 @@ public class Misc implements ClipboardOwner {
   public static boolean valid_yank_reg(char regname, boolean writing) {
     if (regname > '~')
       return false;
-    if (       Util.isalnum(regname)
-	       || (!writing && vim_strchr("/.%#:", 0, regname) >= 0)
-	       || regname == '"'
-	       || regname == '-'
-	       || regname == '_'
-	       || regname == '*') {
-      return true;
-    }
-    return false;
+    return Util.isalnum(regname)
+            || (!writing && vim_strchr("/.%#:", 0, regname) >= 0)
+            || regname == '"'
+            || regname == '-'
+            || regname == '_'
+            || regname == '*';
   }
 
   /**
@@ -2997,7 +2994,7 @@ private static int put_in_typebuf(String s, boolean colon)
         //G.curwin.insertText(cursor.getOffset(), "\n");
         // back up the cursor so it is on the newline
         //cursor.set(tpos);
-        G.curwin.setCaretPosition(currOffset);
+        G.curwin.w_cursor.set(currOffset);
         dir = FORWARD;
       }
       if ((flags & PUT_LINE_FORWARD) != 0) {
@@ -3341,7 +3338,7 @@ private static int put_in_typebuf(String s, boolean colon)
       if(spaces.length() > 0) {
 	G.curwin.insertText(offset01, spaces.toString());
       }
-      G.curwin.setCaretPosition(offset01);
+      G.curwin.w_cursor.set(offset01);
 
       return OK;
   }

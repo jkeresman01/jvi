@@ -206,11 +206,6 @@ public interface ViTextView extends ViOptionBag {
   /** @return the offset of the text insertion caret */
   public int getMarkPosition();
 
-  /** set the caret to the indicated position. */
-  // NEEDSWORK: several situations where w_cursor.set(l,c) fits/preferable.
-  //            maybe implement w_cursor.set(int).
-  public void setCaretPosition(int offset);
-
   /** do a platform select a region of the screen */
   public void setSelection(int dot, int mark);
 

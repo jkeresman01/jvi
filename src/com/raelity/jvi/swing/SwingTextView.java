@@ -117,7 +117,7 @@ public class SwingTextView extends TextView
 
     protected ViStatusDisplay statusDisplay;
 
-    private CaretListener cursorSaveListener;
+    private final CaretListener cursorSaveListener;
     private int lastDot;
     private static int gen;
 
@@ -584,13 +584,6 @@ public class SwingTextView extends TextView
 
 
     @Override
-    public void setCaretPosition( int offset )
-    {
-        w_cursor.set(offset);
-    }
-
-
-    @Override
     public void setSelection( int dot, int mark )
     {
         Caret c = editorPane.getCaret();
@@ -687,8 +680,8 @@ public class SwingTextView extends TextView
     public void setVpTopLogicalLine( int logicalLine )
     {
         Point2D p;
-        int docLine = 1;
-        int offset = 0;
+        int docLine;
+        int offset;
         docLine = lm.docLine(logicalLine);
         offset = getBuffer().getLineStartOffset(docLine);
 
@@ -772,7 +765,7 @@ public class SwingTextView extends TextView
             int offset = fpos.getOffset();
             int lineOff;
             int col;
-            Rectangle r = null;
+            Rectangle r;
             Point pt = null;
             if(!w_p_wrap) {
                 // y position is the same for everything
@@ -1299,7 +1292,7 @@ public class SwingTextView extends TextView
     private static final int FIND_AT_BOT = 1;
     enum FindLineInView { TOP, BOT };
 
-    private static DebugOption cacheTrace
+    private static final DebugOption cacheTrace
             = (DebugOption)Options.getOption(Options.dbgCache);
 
     protected JViewport getViewport()
@@ -1573,7 +1566,7 @@ public class SwingTextView extends TextView
         Point newViewportPosition;
         Dimension newViewportExtent;
         Rectangle r;
-        int newVpLines = -1;
+        int newVpLines;
         boolean topLineChange = false;
 
         if (viewport == null) {

@@ -43,6 +43,7 @@ import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.core.Options;
+import com.raelity.jvi.core.TextView;
 import com.raelity.jvi.core.Util;
 import com.raelity.jvi.core.lib.KeyDefs;
 import com.raelity.jvi.core.lib.KeyDefs.KeyStrokeType;
@@ -63,7 +64,7 @@ public class Scheduler
     private static boolean draggingBlockMode;
     private static boolean mouseDown;
     private static boolean hasSelection;
-    private static Queue<ActionListener> keyStrokeTodo
+    private static final Queue<ActionListener> keyStrokeTodo
             = new LinkedList<ActionListener>();
 
     private Scheduler()
@@ -129,7 +130,7 @@ public class Scheduler
         Msg.smsg(getFS().getDisplayFileViewInfo(textView));
     }
 
-    private static FocusListener focusSwitcher = new FocusAdapter()
+    private static final FocusListener focusSwitcher = new FocusAdapter()
     {
         @Override
         public void focusGained(FocusEvent e)
@@ -388,18 +389,17 @@ public class Scheduler
             return;
         try {
             setJViBusy(true);
-            ViTextView tv = fact().getTextView(currentEditorPane);
+            TextView tv = (TextView)fact().getTextView(currentEditorPane);
             int pos = tv.getCaretPosition();
             int newPos = tv.validateCursorPosition(pos);
             if (pos != newPos)
-                tv.setCaretPosition(newPos);
+                tv.w_cursor.set(newPos);
             final DebugOption dbg = Options.getDebugOption(Options.dbgMouse);
             if (dbg.getBoolean())
                 dbg.println("mouseClick(" + pos + ") " +
                             MouseEvent.getModifiersExText(mev.getModifiersEx()));
                 //System.err.println(mev.getMouseModifiersText(
                 //                      mev.getModifiers()));
-            return;
         } finally {
             setJViBusy(false);
         }
@@ -448,13 +448,12 @@ public class Scheduler
                 dbg.println("mouseDrag "
                         + MouseEvent.getModifiersExText(mev.getModifiersEx()));
                 //System.err.println(mev.getMouseModifiersText(mev.getModifiers()));
-            return;
         } finally {
             setJViBusy(false);
         }
     }
 
-    private static MouseListener mouseListener = new MouseListener() {
+    private static final MouseListener mouseListener = new MouseListener() {
         @Override
         public void mouseClicked(MouseEvent e)
         {
@@ -487,7 +486,7 @@ public class Scheduler
         {
         }
     };
-    private static MouseMotionListener mouseMotionListener =
+    private static final MouseMotionListener mouseMotionListener =
             new MouseMotionListener() {
                 @Override
                 public void mouseDragged(MouseEvent e)

@@ -47,7 +47,7 @@ public class Util {
     if(Util.getCharAt(offset) != '\n') {
       offset++; // unlikely
     }
-    G.curwin.setCaretPosition(offset);
+    G.curwin.w_cursor.set(offset);
   }
 
   /**

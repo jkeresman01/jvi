@@ -1963,7 +1963,7 @@ normal_end: {
 
     /* Don't leave the cursor past the end of the line */
     if (G.curwin.w_cursor.getColumn() > 0 && Util.getChar() == '\n')
-        G.curwin.setCaretPosition(G.curwin.getCaretPosition() -1);
+        G.curwin.w_cursor.set(G.curwin.getCaretPosition() -1);
     ui_cursor_shape();
   }
 
@@ -2794,7 +2794,7 @@ normal_end: {
       } else if (past_line) {
 	// NEEDSWORK: (maybe no work) pastline always false since no select
         G.curwin.w_set_curswant = true;
-        G.curwin.setCaretPosition(cursor.getOffset()+1);
+        G.curwin.w_cursor.set(cursor.getOffset()+1);
       }
     }
     if (n != cap.count1 && G.fdo_flags().contains(FDO_HOR) && G.KeyTyped
@@ -2836,7 +2836,7 @@ normal_end: {
 	  ************************************/
 
 	  // use a different algorithm with swing document
-	  G.curwin.setCaretPosition(cursor.getOffset() - 1);
+	  G.curwin.w_cursor.set(cursor.getOffset() - 1);
 	  check_cursor_col();
           G.curwin.w_set_curswant = true;
 
@@ -2848,7 +2848,7 @@ normal_end: {
 		    || cap.oap.op_type == OP_CHANGE)
 		   && !Util.lineempty(cursor.getLine()))
 	  {
-	    G.curwin.setCaretPosition(cursor.getOffset() + 1);
+	    G.curwin.w_cursor.set(cursor.getOffset() + 1);
 	    retval = true;
 	  }
 	  continue;
@@ -4494,7 +4494,7 @@ nv_brackets(CMDARG cap, int dir)
         int offset = G.curwin.w_cursor.getOffset();
         int c = Util.getCharAt(offset);
         if(c != '\n') {
-          G.curwin.setCaretPosition(offset+1);
+          G.curwin.w_cursor.set(offset+1);
         }
         break;
     }

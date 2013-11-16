@@ -96,9 +96,9 @@ public class Search01 {
     boolean do_error = true;
 
     String pattern = null;
-    char delimiter = 0;
+    char delimiter;
     CharSequence substitution;
-    RegExp prog = null;
+    RegExp prog;
 
     // The sub command is a little weird
     // "s c" or "sub c" means use previous pattern/sub with 'c' as flags
@@ -525,8 +525,8 @@ public class Search01 {
     String cmd = cev.getArg(1);
     String cmdExec;
     String pattern = null;
-    RegExp prog = null;
-    char delim = 0;
+    RegExp prog;
+    char delim;
     char c;
     MySegment line;
     int cursorLine = 0; // set to line number of last found line
@@ -689,7 +689,6 @@ public class Search01 {
         cevAction.line2 = lnum;
       }
       if(cmdAction == Cc01.getActionPrint()) {
-        line = G.curbuf.getLineSegment(lnum);
         result.println(lnum, 0, 0);
       } else if(cmdAction == Cc01.getActionSubstitute()) {
         ColonCommands.executeCommand(cevAction);
@@ -732,7 +731,7 @@ public class Search01 {
    * REGEXP_INRANGE contains all characters which are always special in a []
    * range after '\'.
    */
-  static private String REGEXP_INRANGE = "]^-\\";
+  private static final String REGEXP_INRANGE = "]^-\\";
   /**
    * REGEXP_ABBR contains all characters which act as abbreviations after '\'.
    * These are:
@@ -742,7 +741,7 @@ public class Search01 {
    * <li> \e	- Escape (ESC).
    * <li> \b	- Backspace (Ctrl('H')).
    */
-  static private String REGEXP_ABBR = "rteb";
+  private static final String REGEXP_ABBR = "rteb";
 
   /**
    * Skip past regular expression.
@@ -756,7 +755,7 @@ public class Search01 {
    * @return index of char that terminated regexp, may be past end of string
    */
   static int skip_regexp(String s, int sidx, char dirc, boolean magic) {
-    char c = (char)0;
+    char c;
     while(sidx < s.length()) {
       c = s.charAt(sidx);
       if (c == dirc)	// found end of regexp
@@ -855,8 +854,7 @@ public class Search01 {
 
     while (count-- > 0) {
 
-found:
-      do {
+found: {
         if (Misc.gchar_pos(pos) == '\n') {
           do {
             if (Misc.inclDeclV7(pos, dir) == -1)
@@ -930,13 +928,13 @@ found:
             break;
           }
         }
-      } while (false);
+      }
 
       while (!noskip && ((c = Misc.gchar_pos(pos)) == ' ' || c== '\t'))
         if (Misc.inclV7(pos) == -1) break;
     }
     setpcmark();
-    G.curwin.setCaretPosition(pos.getOffset());
+    G.curwin.w_cursor.set(pos);
     return true;
   }
 

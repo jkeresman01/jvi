@@ -119,7 +119,6 @@ class Mark implements ViMark
             pos = buf.getDocument().createPosition(offset);
         } catch (BadLocationException ex) {
             pos = null;
-            return;
         }
     }
 
