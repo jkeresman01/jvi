@@ -100,10 +100,7 @@ public interface ViFPOS extends Comparable<ViFPOS>
         @Override
         public void set(ViFPOS fpos)
         {
-            if(fpos instanceof ViMark)
-                set(fpos.getOffset());
-            else
-                set(fpos.getLine(), fpos.getColumn());
+            set(fpos.getLine(), fpos.getColumn());
         }
 
         @Override
