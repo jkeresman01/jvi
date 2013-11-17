@@ -86,8 +86,27 @@
   </dd>
 </dl>
 -->
-<b>Version 1.5.1.x4 - 2013/11/10</b>
+<b>Version 1.5.1.x6 - 2013/11/10</b>
   <dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li>
+        <a href="http://sourceforge.net/p/jvi/feature-requests/89/">
+        [#89] turn off beep</a>
+        <br>Implement two options,
+        <span class="tt">visualbell</span>
+        and <span class="tt">visualbelltime</span>.
+        Much like vim. If vb true and vbt == 0 then no bell and no flash.
+      </li>
+      <li>Fix scrolling when target is nearby.
+        <br>If target is within half a screen, then scroll to the line
+        otherwise center it. This applies to search, goto mark and all
+        other motions. Previously, there were several situations
+        where the jVi scrolling was overriden.
+      </li>
+    </ul>
+  </dd>
     <dt>jVi NetBeans KeyBindings</dt>
     <dd>
       <ul>
@@ -98,11 +117,7 @@
         </li>
         <li>
           Handle scrolling after <span class="tt">%</span> (brace matching)
-          command under NetBeans. Previously any out of view goto match
-          would center the target line on the screen, now if the line is
-          close (within one half of the screen) it will scroll the view
-          so the line is visible near the
-          edge of the view. Repeated <span class="tt">%</span> commands
+          command under NetBeans.  Repeated <span class="tt">%</span> commands
           are more likely to show the entire block, or at least larger
           areas of it, on screen.
         </li>
@@ -146,7 +161,7 @@
     <dd>
       <ul>
         <li>
-          <a href="https://sourceforge.net/p/jvi/feature-requests/54/">
+          <a href="http://sourceforge.net/p/jvi/feature-requests/54/">
           [#54] implement za and zA fold-commands</a>
         </li>
       </ul>
@@ -155,31 +170,31 @@
     <dd>
       <ul>
         <li>
-          <a href="https://sourceforge.net/p/jvi/bugs/178/">
+          <a href="http://sourceforge.net/p/jvi/bugs/178/">
           [#178] macro execution of empty register gives exception, eg: @r</a>
         </li>
         <li>
-          <a href="https://sourceforge.net/p/jvi/bugs/177/">
+          <a href="http://sourceforge.net/p/jvi/bugs/177/">
           [#177] Problem with backspace and Replace command</a>
         </li>
         <li>
-          <a href="https://sourceforge.net/p/jvi/bugs/176/">
+          <a href="http://sourceforge.net/p/jvi/bugs/176/">
           [#176] Problem with "." (dot) command</a>
         </li>
         <li>
-          <a href="https://sourceforge.net/p/jvi/bugs/174/">
+          <a href="http://sourceforge.net/p/jvi/bugs/174/">
           [#174] NoClassDefFoundException caused in Netbeans on code completion (Netbeans 7.3)</a>
         </li>
         <li>
-          <a href="https://sourceforge.net/p/jvi/bugs/168/">
+          <a href="http://sourceforge.net/p/jvi/bugs/168/">
           [#168] ESC to exit search leaves editor in an unusable state</a>
         </li>
         <li>
-          <a href="https://sourceforge.net/p/jvi/bugs/165/">
+          <a href="http://sourceforge.net/p/jvi/bugs/165/">
           [#165] jVi cannot map the "ö"-key</a>
         </li>
         <li>
-          <a href="https://sourceforge.net/p/jvi/bugs/164/">
+          <a href="http://sourceforge.net/p/jvi/bugs/164/">
           [#164] NB line number on/​off doesn't work after disable jVi</a>
         </li>
       </ul>

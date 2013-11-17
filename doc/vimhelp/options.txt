@@ -1633,6 +1633,22 @@ STOP-DOC-DEL
 	sequence to complete.  Also used for CTRL-\ CTRL-N and CTRL-\ CTRL-G
 	when part of a command has been typed.
 
+			*'visualbell'* *'vb'* *'novisualbell'* *'novb'* *beep*
+'visualbell' 'vb'	boolean	(default off)
+			global
+			{not in Vi}
+	Use visual bell instead of beeping. The editor window background is
+	inverted for a period of time, see 'vbt' option.
+	When no beep or flash is wanted, set time to zero.
+
+						*'visualbelltime'* *'vbt'*
+'visualbelltime' 'vbt'	number	(default 20)
+			global
+			{not in all versions of Vi}
+	The time in milliseconds of the 'visual bell'. If the visual bell is
+	enabled, see 'vb', and the 'vbt' value is zero then there is no beep
+	or flash.
+
 						*'whichwrap'* *'ww'*
 'whichwrap' 'ww'	string	(Vim default: "b,s", Vi default: "")
 			global

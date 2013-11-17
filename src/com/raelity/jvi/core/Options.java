@@ -526,13 +526,13 @@ public final class Options {
 	   "Use visual bell instead of beeping.  The editor window"
                    + " background is inverted for a period of time, "
                    + " see 'vbt' option."
-                   + " When no beep or flash is wanted, set time to zero ");
+                   + " When no beep or flash is wanted, set time to zero.");
     OptUtil.createIntegerOption(visualBellTime, 20);
     OptUtil.setupOptionDesc(Category.GENERAL, visualBellTime,
                             "'visualbelltime' 'vbt'",
 	   "The duration, in milliseconds, of the 'visual bell'. If the"
                    + " visual bell is enabled, see 'vb', and the 'vbt'"
-                   + "value is zero then there is no beep or flash.");
+                   + " value is zero then there is no beep or flash.");
 
     OptUtil.createIntegerOption(scrollOff, 0);
     OptUtil.setupOptionDesc(Category.GENERAL, scrollOff, "'scrolloff' 'so'",

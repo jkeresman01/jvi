@@ -2,6 +2,13 @@
 
 . VARS.sh
 
+reportError() {
+    rc=$?
+    echo
+    echo Error $rc from $BASH_COMMAND
+}
+trap reportError ERR
+
 
 OUT=$VIMHELP_OUT
 
@@ -14,7 +21,11 @@ $SCRIPTS/filter.sh $UNFILTERED $FILTERED
 #     q
 # EOT
 #
-$VIM/vim -e -s -c "helptags $(cygpath -a -m $FILTERED)" -c q
+
+$VIM/vim --noplugin -e -s -V1 -c "helptags $(cygpath -a -m $FILTERED)" -c q
+
+# echo vim helptags returns: $?
+
 
 mkdir -p $OUT
 mv $FILTERED/tags $OUT/tags
