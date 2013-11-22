@@ -86,6 +86,7 @@ import com.raelity.jvi.core.lib.CcFlag;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.options.ColorOption;
 import com.raelity.jvi.options.DebugOption;
 import com.raelity.text.TextUtil.MySegment;
 
@@ -365,16 +366,16 @@ public class SwingTextView extends TextView
 
         class BellAction implements ActionListener {
             final Color bg;
-            final Color bgFlip;
             final boolean wasBackgroundSet;
             public BellAction()
             {
                 wasBackgroundSet = editorPane.isBackgroundSet();
                 bg = editorPane.getBackground();
-                bgFlip = new Color(~bg.getRGB());
-                editorPane.setBackground(bgFlip);
+                editorPane.setBackground(G.p_vbc() == null
+                                         ? new Color(~bg.getRGB())
+                                         : G.p_vbc());
                 Dimension size = editorPane.getSize();
-                editorPane.paintImmediately(0, 0, size.width, size.height);
+                //editorPane.paintImmediately(0, 0, size.width, size.height);
             }
 
             @Override public void actionPerformed(ActionEvent e)

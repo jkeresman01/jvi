@@ -417,6 +417,14 @@ implements Options.EditControl {
         return ViManager.getReleaseString();
     }
 
+    public void setViVisualBellColor(Color arg)  throws PropertyVetoException {
+        put(Options.visualBellColor, arg);
+    }
+
+    public Color getViVisualBellColor() {
+        return getColor(Options.visualBellColor);
+    }
+
     public void setViVisualBell(boolean arg)  throws PropertyVetoException {
         put(Options.visualBell, arg);
     }

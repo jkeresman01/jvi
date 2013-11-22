@@ -36,7 +36,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViOutputStream;
-import com.raelity.jvi.ViTextView.FOLDOP;
 import com.raelity.jvi.core.lib.Mappings;
 import com.raelity.jvi.lib.CharTab;
 import com.raelity.jvi.lib.Wrap;
@@ -66,7 +65,7 @@ public final class Options {
   private Options() {
   }
   private static Options options;
-  private static PropertyChangeSupport pcs
+  private static final PropertyChangeSupport pcs
                         = new PropertyChangeSupport(getOptions());
 
     public static interface EditControl {
@@ -172,6 +171,7 @@ public final class Options {
   public static final String showCommand = "viShowCommand";
   public static final String visualBell = "viVisualBell";
   public static final String visualBellTime = "viVisualBellTime";
+  public static final String visualBellColor = "viVisualBellColor";
 
   public static final String wrap = "viWrap";
   public static final String list = "viList";
@@ -521,7 +521,7 @@ public final class Options {
     //
     //
 
-    OptUtil.createBooleanOption(visualBell, false);
+    OptUtil.createBooleanOption(visualBell, true);
     OptUtil.setupOptionDesc(Category.GENERAL, visualBell, "'visualbell' 'vb'",
 	   "Use visual bell instead of beeping.  The editor window"
                    + " background is inverted for a period of time, "
@@ -533,6 +533,14 @@ public final class Options {
 	   "The duration, in milliseconds, of the 'visual bell'. If the"
                    + " visual bell is enabled, see 'vb', and the 'vbt'"
                    + " value is zero then there is no beep or flash.");
+
+    OptUtil.createColorOption(visualBellColor, new Color(0x41e7e7), true);
+    OptUtil.setupOptionDesc(Category.GENERAL, visualBellColor,
+                            "'visualbellcolor' 'vbc'",
+            "The color used for the visual bell, the editor's background"
+                    + " is set to this color."
+                    + " If null, then the editor's background color"
+                    + " is inverted");
 
     OptUtil.createIntegerOption(scrollOff, 0);
     OptUtil.setupOptionDesc(Category.GENERAL, scrollOff, "'scrolloff' 'so'",
@@ -923,7 +931,7 @@ public final class Options {
     boolean inWindows = ViManager.getOsVersion().isWindows();
     String defaultShell = System.getenv("SHELL");
     String defaultXQuote = "";
-    String defaultFlag = null;
+    String defaultFlag;
 
     if (defaultShell == null) {
       if (inWindows)
@@ -1086,9 +1094,7 @@ public final class Options {
     
     if(parseModeline(mlPat2, seg, lnum))
       return true;
-    if(parseModeline(mlPat1, seg, lnum))
-      return true;
-    return false;
+    return parseModeline(mlPat1, seg, lnum);
   }
   
   /** @return true if found and parsed a modeline, there may have been errors */
@@ -1126,8 +1132,7 @@ public final class Options {
                     parseError ? ViOutputStream.PRI_HIGH
                                : ViOutputStream.PRI_LOW);
       vos.println(sb.toString());
-      if(vos != null)
-        vos.close();
+      vos.close();
     }
     return true;
   }

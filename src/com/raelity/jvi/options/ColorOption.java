@@ -64,6 +64,12 @@ public class ColorOption extends Option<Color>
         return xformToString(val);
     }
 
+    /**
+     * If param is "null" and nulls are permitted, then null is returned,
+     * if "default" then return the default.
+     * @param s
+     * @return
+     */
     public final Color decode(String s)
     {
         Color color;
@@ -74,7 +80,12 @@ public class ColorOption extends Option<Color>
                 color = defaultValue;
             }
         } else {
-            color = Color.decode(s);
+            if(permitNull && "null".equals(s))
+                color = null;
+            else if("default".equals(s))
+                color = defaultValue;
+            else
+                color = Color.decode(s);
         }
         return color;
     }

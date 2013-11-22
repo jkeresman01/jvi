@@ -175,9 +175,9 @@ public abstract class Option<T> {
     }
     
     public EnumSet getEnumSet() {
-        // if(optionType != Color.class)
+        // if(optionType != EnumSet.class)
         //     throw new ClassCastException(this.getClass().getSimpleName()
-        //                                  + " is not a ColorOption");
+        //                                  + " is not a EnumSetOption");
         return (EnumSet)value;
     }
 

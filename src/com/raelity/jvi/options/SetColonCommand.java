@@ -90,7 +90,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         SUB("-="),      // -=
         ;
 
-        private String token;
+        private final String token;
 
         OP(String token) {
             this.token = token;
@@ -220,11 +220,12 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         }
         if(voptState.op == null)
             voptState.op = OP.NONE;
-        VimOption vopt = null;
+        VimOption vopt;
         vopt = VimOption.lookupUserName(voptName);
         if (vopt == null) {
             String msg = "Unknown option: " + voptName;
             setCommandError(msg);
+            return; // get rid of "possible null pointer deref" hint
         }
         if (determineOptionState(vopt, voptState) == null) {
             String msg = "Internal error: " + arg;
@@ -350,7 +351,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                 newValue =
                         voptState.op.isInv()
                         ? !((Boolean)voptState.curValue).booleanValue()
-                        : voptState.op.isNo() ? false : true;
+                        : !voptState.op.isNo();
             }
 
         } else {
@@ -393,22 +394,28 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                         newValue = doStringAssignOp(arg, vopt, voptState);
                 } else if (voptState.type == Color.class) {
                     if(!voptState.inputValue.isEmpty()) {
+                        boolean found = false;
                         try {
-                            newValue = Color.decode(voptState.inputValue);
+                            // Note, this may return null
+                            newValue = ((ColorOption)voptState.opt)
+                                    .decode(voptState.inputValue);
+                            found = true;
                         } catch(NumberFormatException ex) { }
                         if(newValue == null) {
-                            Field f = null;
+                            Field f;
                             try {
                                 // maybe it's a known color name
                                 f = Color.class.getField(voptState.inputValue);
-                                if(f.getType().equals(Color.class))
+                                if(f.getType().equals(Color.class)) {
                                     newValue = (Color)f.get(null);
+                                    found = true;
+                                }
                             } catch(IllegalArgumentException ex) {
                             } catch(IllegalAccessException ex) {
                             } catch(NoSuchFieldException ex) {
                             } catch(SecurityException ex) { }
                         }
-                        if(newValue == null)
+                        if(!found)
                             setCommandError("Not a color: " + voptState.inputValue);
                     }
                 } else if(voptState.type == EnumSet.class) {
@@ -562,6 +569,8 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         } else if(value instanceof EnumSet) {
             Option opt = Options.getOption(vopt.getOptName());
             v = opt.getValueAsString((EnumSet)value);
+        } else if(value == null) {
+            v = "null";
         } else {
             assert false : value.getClass().getSimpleName() + " not handled";
         }
@@ -579,8 +588,13 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         List<String> l2 = new ArrayList<String>();
         for (VimOption vopt : VimOption.getAllUser()) {
             VimOptionState voptState = determineOptionState(vopt, null);
-            if(all || ! voptState.curValue.toString()
-                        .equals(voptState.opt.getDefault())) {
+            boolean isDefaultValue = false;
+            if(!all) {
+                isDefaultValue = voptState.curValue == null
+                     ? voptState.opt.getDefault() == null
+                     : voptState.curValue.equals(voptState.opt.getDefault());
+            }
+            if(all || !isDefaultValue) {
                 String s = formatDisplayValue(vopt, voptState.curValue);
                 (s.length() < INC - GAP ? l : l2).add(s);
             }

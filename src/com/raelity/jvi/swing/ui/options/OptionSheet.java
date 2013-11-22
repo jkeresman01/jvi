@@ -44,6 +44,7 @@ import com.l2fprod.common.propertysheet.PropertySheetTableModel.NaturalOrderStri
 import com.l2fprod.common.swing.LookAndFeelTweaks;
 
 import com.raelity.jvi.core.Options;
+import com.raelity.jvi.options.ColorOption;
 import com.raelity.jvi.options.EnumOption;
 import com.raelity.jvi.options.EnumSetOption;
 import com.raelity.jvi.options.Option;
@@ -211,7 +212,15 @@ class OptionSheet extends JPanel implements Options.EditControl {
                         if(!vopt.isHidden())
                             sb.append("; can use \"<b>:set</b>\"");
                     }
-                    sb.append("<br/><br/>");
+                    if(opt instanceof ColorOption) {
+                        ColorOption copt = (ColorOption)opt;
+                        sb.append("<br>Buttons:");
+                        sb.append(" '<b>...</b>' color chooser");
+                        if(copt.isPermitNull())
+                            sb.append(", '<b>X</b>' use null value");
+                        sb.append(", '<b>DFLT</b>' default value");
+                    }
+                    sb.append("<br><br>");
                 }
                 String s = d.getShortDescription();
                 xmlFix.utf2xml(s, sb);
