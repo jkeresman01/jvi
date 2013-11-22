@@ -407,7 +407,7 @@ public final class Options {
     OptUtil.createColorOption(roCursorColor, Color.red, true);
     OptUtil.setupOptionDesc(Category.PLATFORM, roCursorColor, "'rocursorcolor' 'rocc'",
             "If not empty, this overrides the cursor color in a"
-            + " read only editor. With :set can use some color names.");
+            + " read only editor.");
     
     OptUtil.createBooleanOption(hideVersionOption, false);
     OptUtil.setupOptionDesc(Category.PLATFORM, hideVersionOption, "hide version",

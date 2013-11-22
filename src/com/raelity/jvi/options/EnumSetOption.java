@@ -101,7 +101,7 @@ extends Option<EnumSet<S>>
         return set;
     }
 
-    public String encode(EnumSet set)
+    public static String encode(EnumSet set)
     {
         StringBuilder sb = new StringBuilder();
 

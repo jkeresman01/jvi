@@ -210,7 +210,7 @@ class OptionSheet extends JPanel implements Options.EditControl {
                             sb.append("local to ")
                               .append(vopt.isBuf() ? "buffer" : "window");
                         if(!vopt.isHidden())
-                            sb.append("; can use \"<b>:set</b>\"");
+                            sb.append("; can use '<b>:set</b>'.");
                     }
                     if(opt instanceof ColorOption) {
                         ColorOption copt = (ColorOption)opt;
@@ -218,7 +218,11 @@ class OptionSheet extends JPanel implements Options.EditControl {
                         sb.append(" '<b>...</b>' color chooser");
                         if(copt.isPermitNull())
                             sb.append(", '<b>X</b>' use null value");
-                        sb.append(", '<b>DFLT</b>' default value");
+                        sb.append(", '<b>DFLT</b>' default value.");
+                        sb.append("<br>'<b>:set</b>' accepts 'default'");
+                        if(copt.isPermitNull())
+                            sb.append(", 'null'");
+                        sb.append(", numeric values and java color names.");
                     }
                     sb.append("<br><br>");
                 }

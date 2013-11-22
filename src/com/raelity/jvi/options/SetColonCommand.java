@@ -233,7 +233,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         }
         Object newValue = newOptionValue(arg, vopt, voptState);
         if (voptState.op.isShow()) {
-            Msg.smsg(formatDisplayValue(vopt, voptState.curValue));
+            Msg.smsg(formatDisplayValue(vopt, voptState));
         } else {
             try {
                 voptState.opt.validate(newValue);
@@ -552,29 +552,34 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         return newval;
     }
     
-    @SuppressWarnings("unchecked")
-    private static String formatDisplayValue(VimOption vopt, Object value)
+    @SuppressWarnings({"unchecked", "unchecked"})
+    private static String formatDisplayValue(VimOption vopt,
+                                             VimOptionState voptState)
     {
-        String v = "";
-        if (value instanceof Boolean) {
-            v = (((Boolean)value).booleanValue() ? "  " : "no") + vopt.fullName;
-        } else if (value instanceof Integer
-                || value instanceof String) {
-            v = "  " + vopt.fullName + "=" + value;
-        } else if(value instanceof Color) {
-            Color c = (Color)value;
-            v = String.format("%s [r=%x,g=%x,b=%x]",
-                              ColorOption.xformToString(c),
-                              c.getRed(), c.getGreen(), c.getBlue());
-        } else if(value instanceof EnumSet) {
-            Option opt = Options.getOption(vopt.getOptName());
-            v = opt.getValueAsString((EnumSet)value);
-        } else if(value == null) {
-            v = "null";
+        Object value = voptState.curValue;
+        StringBuilder sb = new StringBuilder();
+        if (boolean.class == voptState.type) {
+            sb.append(((Boolean)value).booleanValue() ? "  " : "no")
+              .append(vopt.fullName);
         } else {
-            assert false : value.getClass().getSimpleName() + " not handled";
+            sb.append("  ").append(vopt.fullName).append('=');
+            if (int.class == voptState.type
+                || String.class == voptState.type) {
+                sb.append(value);
+            } else if(Color.class == voptState.type) {
+                sb.append(voptState.opt.getValueAsString(value)); // unchecked
+                if(value != null) {
+                    Color c = (Color)value;
+                    sb.append(String.format("[r=%x,g=%x,b=%x]",
+                                        c.getRed(), c.getGreen(), c.getBlue()));
+                }
+            } else if(EnumSet.class == voptState.type) {
+                sb.append(voptState.opt.getValueAsString(value)); // unchecked
+            } else {
+                assert false : value.getClass().getSimpleName() + " not handled";
+            }
         }
-        return v;
+        return sb.toString();
     }
 
     private static final int COL = 80;
@@ -595,7 +600,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                      : voptState.curValue.equals(voptState.opt.getDefault());
             }
             if(all || !isDefaultValue) {
-                String s = formatDisplayValue(vopt, voptState.curValue);
+                String s = formatDisplayValue(vopt, voptState);
                 (s.length() < INC - GAP ? l : l2).add(s);
             }
         }

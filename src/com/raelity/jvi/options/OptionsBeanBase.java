@@ -320,17 +320,14 @@ implements Options.EditControl {
             if(o instanceof String) {
                 prefs.put(key, (String)o);
             } else if(o instanceof Color) {
-                String s = "";
-                if(o != nullColor)
-                    s = ColorOption.xformToString((Color)o);
-                prefs.put(key, s);
+                prefs.put(key, ColorOption.encode(
+                        (Color)(o != nullColor ? o : null)));
             } else if(o instanceof Integer) {
                 prefs.putInt(key, (Integer)o);
             } else if(o instanceof Boolean) {
                 prefs.putBoolean(key, (Boolean)o);
             } else if(o instanceof EnumSet) {
-                EnumSetOption opt = (EnumSetOption)Options.getOption(key);
-                prefs.put(key, opt.encode((EnumSet)o));
+                prefs.put(key, EnumSetOption.encode((EnumSet)o));
             } else
                 assert false : "unhandled type";
         }
@@ -362,7 +359,7 @@ implements Options.EditControl {
         opt.validate(val);
         this.vcs.fireVetoableChange( name, old, val );
         trackChange(name, Color.class);
-	prefs.put(name, ColorOption.xformToString(val));
+	prefs.put(name, ColorOption.encode(val));
         this.pcs.firePropertyChange( name, old, val );
     }
 

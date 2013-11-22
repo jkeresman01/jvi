@@ -61,7 +61,7 @@ public class ColorOption extends Option<Color>
     @Override
     final String getValueAsString(Color val)
     {
-        return xformToString(val);
+        return encode(val);
     }
 
     /**
@@ -92,12 +92,12 @@ public class ColorOption extends Option<Color>
 
 
 
-    public static String xformToString(Color c)
+    public static String encode(Color c)
     {
         if (c == null) {
-            return "";
+            return "null";
         }
-        return String.format("0x%x", c.getRGB() & 16777215);
+        return String.format("0x%06x", c.getRGB() & 0xffffff);
     }
 
     static class DefaultColorValidator extends Validator<Color>
