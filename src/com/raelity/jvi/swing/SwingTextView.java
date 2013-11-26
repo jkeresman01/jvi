@@ -86,7 +86,6 @@ import com.raelity.jvi.core.lib.CcFlag;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.options.ColorOption;
 import com.raelity.jvi.options.DebugOption;
 import com.raelity.text.TextUtil.MySegment;
 
@@ -376,6 +375,7 @@ public class SwingTextView extends TextView
                                          : G.p_vbc());
                 Dimension size = editorPane.getSize();
                 //editorPane.paintImmediately(0, 0, size.width, size.height);
+                startVisualBell();
             }
 
             @Override public void actionPerformed(ActionEvent e)
@@ -392,6 +392,7 @@ public class SwingTextView extends TextView
                         /*|| !bgFlip.equals(editorPane.getBackground())*/)
                     return;
                 editorPane.setBackground(wasBackgroundSet ? bg : null);
+                endVisualBell();
             }
         }
 
@@ -400,6 +401,12 @@ public class SwingTextView extends TextView
         bellTimer.setRepeats(false);
         // schedule timer to flip it back
         bellTimer.start();
+    }
+
+    protected void startVisualBell() {
+    }
+
+    protected void endVisualBell() {
     }
 
     /**
