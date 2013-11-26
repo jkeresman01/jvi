@@ -219,10 +219,12 @@ class OptionSheet extends JPanel implements Options.EditControl {
                         if(copt.isPermitNull())
                             sb.append(", '<b>X</b>' use null value");
                         sb.append(", '<b>DFLT</b>' default value.");
-                        sb.append("<br>'<b>:set</b>' accepts 'default'");
-                        if(copt.isPermitNull())
-                            sb.append(", 'null'");
-                        sb.append(", numeric values and java color names.");
+                        if(vopt != null && !vopt.isHidden()) {
+                            sb.append("<br>'<b>:set</b>' accepts 'default'");
+                            if(copt.isPermitNull())
+                                sb.append(", 'null'");
+                            sb.append(", numeric values and java color names.");
+                        }
                     }
                     sb.append("<br><br>");
                 }
@@ -303,7 +305,7 @@ class OptionSheet extends JPanel implements Options.EditControl {
 
     static Comparator propertyNameCompare = new Comparator() {
         @Override
-        @SuppressWarnings("unchecked") // STRING_COMPARATOR
+        @SuppressWarnings({"unchecked", "null"}) // STRING_COMPARATOR
         public int compare(Object o1, Object o2) {
             if (o1 instanceof Property && o2 instanceof Property) {
                 Property prop1 = (Property) o1;

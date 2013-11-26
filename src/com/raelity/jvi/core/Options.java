@@ -391,7 +391,8 @@ public final class Options {
     //createColorOption(searchFgColor, new Color(0x000000)); // black
     OptUtil.createColorOption(searchFgColor, new Color(0x000000), true);
     OptUtil.setupOptionDesc(Category.PLATFORM, searchFgColor, "'hl-search' foreground color",
-            "The color used for search highlight foreground.");
+            "The color used for search highlight foreground."
+                    + " If 'null' then use editor's foreground color");
     setExpertHidden(searchFgColor, false, false);
     
     OptUtil.createColorOption(selectColor, new Color(0xffe588), false); //a light orange
@@ -401,13 +402,14 @@ public final class Options {
     //createColorOption(selectFgColor, new Color(0x000000)); // black
     OptUtil.createColorOption(selectFgColor, null, true); // default is no color
     OptUtil.setupOptionDesc(Category.PLATFORM, selectFgColor, "'hl-visual' foreground color",
-            "The color used for a visual mode selection foreground.");
+            "The color used for a visual mode selection foreground."
+                    + " If 'null' then use editor's foreground color");
     setExpertHidden(selectFgColor, false, false);
 
     OptUtil.createColorOption(roCursorColor, Color.red, true);
     OptUtil.setupOptionDesc(Category.PLATFORM, roCursorColor, "'rocursorcolor' 'rocc'",
-            "If not empty, this overrides the cursor color in a"
-            + " read only editor.");
+            "The cursor color in a read only editor."
+                    + " If 'null' then use editor's default cursor color");
     
     OptUtil.createBooleanOption(hideVersionOption, false);
     OptUtil.setupOptionDesc(Category.PLATFORM, hideVersionOption, "hide version",
