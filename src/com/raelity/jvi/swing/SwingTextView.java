@@ -851,6 +851,7 @@ public class SwingTextView extends TextView
                         offset = Utilities.getRowEnd(ep, offset);
                     } else {
                         lineOff = w_buffer.getLineStartOffsetFromOffset(offset);
+                        assert pt != null; // to get rid of NP deref hint
                         pt.x += viewport.getExtentSize().width
                                         - (int)getMaxCharWidth();
                         offset = ep.viewToModel(pt);
