@@ -1,0 +1,11 @@
+<!description="w_cursor.set(mark)">
+
+   $tv.w_cursor.set($mark)
+:: $tv instanceof com.raelity.jvi.ViTextView
+   && $mark instanceof com.raelity.jvi.ViMark
+;;
+
+   $fpos.set($mark)
+:: $tv instanceof com.raelity.jvi.ViFPOS
+   && $mark instanceof com.raelity.jvi.ViMark
+;;

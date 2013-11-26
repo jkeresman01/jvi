@@ -1,0 +1,6 @@
+<!description="CopyTo(w_cursor)">
+
+   $fpos.copyTo($tv.w_cursor)
+:: $tv instanceof com.raelity.jvi.core.TextView
+   && $fpos instanceof com.raelity.jvi.ViFPOS
+;;

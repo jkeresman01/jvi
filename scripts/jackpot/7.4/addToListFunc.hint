@@ -1,0 +1,6 @@
+<!description="addToListFunc">
+
+   $l.add($e)
+:: $l instanceof java.util.List
+=> addToListFunc($l, $e)
+;;

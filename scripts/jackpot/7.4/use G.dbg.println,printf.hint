@@ -1,0 +1,13 @@
+<!description="use G.dbg.println,printf not ViManager">
+<?
+    import com.raelity.jvi.manager.ViManager;
+    import com.raelity.jvi.core.G;
+?>
+
+   ViManager.println($arg)
+=> G.dbg.println($arg)
+;;
+
+   ViManager.printf($args$)
+=> G.dbg.printf($args$)
+;;

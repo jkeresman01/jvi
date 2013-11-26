@@ -1,0 +1,7 @@
+<!description="w_cursor-set-fpos">
+
+   $tv.w_cursor.set($fpos.getOffset())
+:: $tv instanceof com.raelity.jvi.core.TextView
+   && $fpos instanceof com.raelity.jvi.ViFPOS
+=> $tv.w_cursor.set($fpos)
+;;

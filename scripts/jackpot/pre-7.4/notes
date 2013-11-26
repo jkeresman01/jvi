@@ -1,0 +1,107 @@
+This is not urgent, but I wanted to understand before I started forgetting details. I'm proposing a new public method in context that can be used in custom conditions.
+
+Goal is check "$opt" to restrict what fix is applied to
+
+t.A.$opt.getBoolean() :: matchesAny($_, "xxx")
+
+code-match: "A.x.getBoolean"
+
+Put a breakpoint in Matcher.matchesAny, here's what I see.
+(use var/toSearch. toSearch is the only element of ctx.getVariable(var) list)
+
+dbg> ctx.name(var)
+"getBoolean"
+dbg> toSearch.getLeaf().toString()
+"A.x.getBoolean"
+
+I don't understand how ctx.name(var) is "getBoolean", var is $_,
+
+dbg> ctx.getVariable(ctx.parent(var)).get(0).getLeaf().toString()
+"(A.x.getBoolean())"
+
+I tried doing:
+<?
+    boolean myMatch(Variable v) {
+	String s = context.getVariable(v).get(0).getLeaf().toString();
+?>
+but can't do that from a custom pattern
+
+XX PICTURE XX
+
+(NOTE: The CompilerError Button disapears if there is not an error)
+
+So, how about a public method in context like:
+
+    public String leafText(@NonNull Variable var) {
+        TreePath varPath = getSingleVariable(var);
+
+        return varPath.getLeaf().toString();
+    }
+
+which can be used in custom conditions.
+
+
+
+=============================================================================
+
+<?
+    //import t.A;
+?>
+
+'getBoolean() --> ()':
+
+t.A.$opt() :: $opt instanceof t.Option
+		&& matchName($_)
+		// && matchesAny($_, "")
+		// && parentMatches("")
+=> A.$opt // :: matchName($opt)
+;;
+
+<?
+public boolean matchName(Variable v) {
+    String name = context.name(v);
+    return
+           "p_f2".equals(name)
+    ;
+}
+?>
+
+=============================================================================
+
+t.A.$opt()
+
+In FindPatternOccurences, see
+    if(A.p_f1())
+         ^^^^ is bold
+
+For
+    context.getVariable(context.variableForName("$_"))
+has
+    TreePath with leaf: A.p_f1()
+looks like the $_ is a "method invocation"
+take note of
+    Utilities.createRefactoringElementImplementation(
+
+=============================================================================
+
+=== CHANGE A VARIABLE NAME
+=== file/test/unit/src/org/netbeans/modules/
+===     jackpot30/file/NameBoundVariablesGetSet.hint
+
+int $a;
+=>int $b; :: changeVariableName($a, $b)
+;;
+
+$a :: $a instanceof int
+=> $b :: changeVariableName($a, $b)
+;;
+
+<?
+public boolean changeVariableName(Variable v, Variable target) {
+String name = context.name(v);
+context.createRenamed(v, target, name + name);
+return true;
+}
+?>
+
+=============================================================================

@@ -1,0 +1,7 @@
+<!description="SetCaretPosition">
+
+   $win.setCaretPosition($pos)
+:: $win instanceof com.raelity.jvi.ViTextView
+   && $pos instanceof int
+=> $win.w_cursor.set($pos)
+;;

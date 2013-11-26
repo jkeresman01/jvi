@@ -1,0 +1,20 @@
+<!description="findDeclaredMethod">
+<?
+import java.lang.reflect.Method;
+?>
+
+$meths = $o.getClass().getDeclaredMethods();
+for(Method $m : $meths) {
+    if($m.getName().equals($name)) {
+        $m.setAccessible(true);
+        $target = $m;
+        break;
+    }
+}
+:: $meths instanceof Method[]
+   && $o instanceof Object
+   && $m instanceof Method
+   && $name instanceof String
+   && $target instanceof Method
+=> $target = findDeclaredMethod($o, $name);
+;;
