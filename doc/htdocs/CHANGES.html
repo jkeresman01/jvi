@@ -86,24 +86,29 @@
   </dd>
 </dl>
 -->
-<b>Version 1.5.1.x6 - 2013/11/10</b>
+<b>Version 1.5.1 - 2013/11/26</b>
   <dl>
   <dt>jVi Core</dt>
   <dd>
     <ul>
       <li>
         <a href="http://sourceforge.net/p/jvi/feature-requests/89/">
-        [#89] turn off beep</a>
-        <br>Implement two options,
-        <span class="tt">visualbell</span>
-        and <span class="tt">visualbelltime</span>.
+        [#89] turn off beep</a> (visual bell)
+        <br>Implement options,
+        <span class="tt">visualbell</span>,
+        <span class="tt">visualbelltime</span>
+        and <span class="tt">visualbellcolor</span>.
         Much like vim. If vb true and vbt == 0 then no bell and no flash.
+        The additional option
+        <span class="tt">'vbc'</span>.
+        controls the color of the flash; set it to null
+        to invert the background.
       </li>
       <li>Fix scrolling when target is nearby.
         <br>If target is within half a screen, then scroll to the line
         otherwise center it. This applies to search, goto mark and all
         other motions. Previously, there were several situations
-        where the jVi scrolling was overriden.
+        where the jVi scrolling was overriden by platform.
       </li>
     </ul>
   </dd>

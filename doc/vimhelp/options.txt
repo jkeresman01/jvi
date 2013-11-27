@@ -1638,16 +1638,23 @@ STOP-DOC-DEL
 			global
 			{not in Vi}
 	Use visual bell instead of beeping. The editor window background is
-	inverted for a period of time, see 'vbt' option.
+	inverted for a period of time, see 'vbt' and 'vbc' options.
 	When no beep or flash is wanted, set time to zero.
 
 						*'visualbelltime'* *'vbt'*
 'visualbelltime' 'vbt'	number	(default 20)
 			global
-			{not in all versions of Vi}
+			{not in Vim}
 	The time in milliseconds of the 'visual bell'. If the visual bell is
 	enabled, see 'vb', and the 'vbt' value is zero then there is no beep
 	or flash.
+
+						*'visualbellcolor'* *'vbc'*
+'visualbellcolor' 'vbc'	color	(default yes)
+			global
+			{not in Vim}
+	The editor background is set to this color for the visual bell.
+	If this is null, then the background is inverted.
 
 						*'whichwrap'* *'ww'*
 'whichwrap' 'ww'	string	(Vim default: "b,s", Vi default: "")

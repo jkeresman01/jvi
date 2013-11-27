@@ -6,7 +6,7 @@
 #       -Dcom.raelity.jvi.motd=file:///c:/a/src/jvi-dev/jvi/doc/htdocs/motd
 
 motd-version: 1
-jVi-release: 1.5.0
+jVi-release: 1.5.1
 #jVi-release-link:  http://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-7.0/nbvi-1.4.zip/download
 
 #jVi-beta: 1.5.0.x2
@@ -22,7 +22,7 @@ motd-message:
 Install "jVi for Netbeans 7.0 Update Center" with Tools>Plugins>AvailablePlugins
 (source: Plugin Portal, category: editing)
 * see CHANGES about:
-*     release 1.5.0: fold commands and fdo option
+*     1.5.x: fold commands & fdo option, smarter scrolling, visual bell option
 *     split, resize and move window commands, e.g. Ctrl-W_s, Ctrl-W_=, Ctrl-W_L
 *     multi-char {lhs} mappings, including insert mode, w/timeout options
 <EOT>

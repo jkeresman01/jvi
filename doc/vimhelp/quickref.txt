@@ -908,6 +908,8 @@ Short explanation of each option:		*option-list*
 'viminfo'	  'vi'	    use .viminfo file upon startup and exiting
 'virtualedit'	  've'	    when to use virtual editing
 'visualbell'	  'vb'	    use visual bell instead of beeping
+'visualbelltime'  'vbt'	    msec timer for bell duration
+'visualbellcolor' 'vbc'     color of visual bell, null means invert background
 'warn'			    warn for shell command when buffer was changed
 'weirdinvert'	  'wi'	    for terminals that have weird inversion method
 'whichwrap'	  'ww'	    allow specified keys to cross line boundaries

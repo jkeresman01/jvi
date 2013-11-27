@@ -259,6 +259,7 @@ class Motd
         {
             URL url = null;
             try {
+                // URI uri = new URI("file:///C:/other/mydir/myfile.txt");
                 String s = System.getProperty("com.raelity.jvi.motd");
                 if(s != null)
                     System.err.println("DEBUG MOTD: " + s);
