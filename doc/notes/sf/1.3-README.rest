@@ -4,6 +4,8 @@ In NetBeans, install "jVi for NB-7.0 Update Center",
 with Tools>Plugins>AvailablePlugins
 (source: Plugin Portal, category: editing)
 
+| **nbvi-1.5.1**
+|     - visual bell, smarter scrolling, :toggle [left|right|top|bottom]
 | **nbvi-1.5.0** NetBeans 7.2 and later 
 |     - folding - rework, add new commands: zc, zC, zo, zO, za, zA, zv. 'fdo' option.
 | **nbvi-1.4.5** fix for 7.1.1; works with 7.0. In 7.1 ":tog[gle]" minimize/restore output window group
