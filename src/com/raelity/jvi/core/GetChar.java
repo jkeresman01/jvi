@@ -155,7 +155,8 @@ public class GetChar {
         // only do this if no pending characters
         // but can't test for pending characters, so ....
 
-        if (G.curwin.hasAnyFolding() && !char_avail())
+        if (!G.curwin.isShutdown()
+                && G.curwin.hasAnyFolding() && !char_avail())
         {
             // foldCheckClose(); NICE IDEA
             if (G.p_fdo.contains(FDO_ALL))
