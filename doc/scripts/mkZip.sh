@@ -18,12 +18,14 @@ echo $name
 mkdir $name
 cp $UC/* $name
 
-/pf/WinZip/WINZIP32.EXE -min -a -r -p \
-    $(cygpath -m $(pwd)/$name.zip) $name
+jar -Mcf $name.zip $name
 
 rm $name/*.nbm
 rm $name/*
 rmdir $name
+
+### /pf/WinZip/WINZIP32.EXE -min -a -r -p \
+###     $(cygpath -m $(pwd)/$name.zip) $name
 
 # /pf/WinZip/WINZIP32.EXE -min -a \
 #     $(cygpath -m /a/src/jvi-dev/rel/nbvi-1.4.1.x2/foobar.zip) *
