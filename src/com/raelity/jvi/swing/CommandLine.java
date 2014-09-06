@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.swing;
 
+import java.awt.AWTEvent;
 import java.awt.AWTKeyStroke;
 import java.awt.Color;
 import java.awt.Component;
@@ -58,6 +59,7 @@ import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
@@ -66,6 +68,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.basic.BasicComboBoxEditor;
+import javax.swing.plaf.basic.BasicComboBoxEditor.UIResource;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultEditorKit;
@@ -138,7 +141,7 @@ public class CommandLine extends JPanel
         // see https://substance.dev.java.net/issues/show_bug.cgi?id=285
         //combo.putClientProperty(LafWidget.COMBO_BOX_NO_AUTOCOMPLETION, true);
         combo.putClientProperty("lafwidgets.comboboxNoAutoCompletion", true);
-        combo.setEditor(new BasicComboBoxEditor());
+        combo.setEditor(new MyComboBoxEditor());
         combo.setEditable(true);
         JTextComponent text
                 = (JTextComponent) combo.getEditor().getEditorComponent();
@@ -921,6 +924,90 @@ public class CommandLine extends JPanel
         }
 
     } // end inner CommandLineEntry
+
+    //////////////////////////////////////////////////////////////////////
+    //
+    // In jdk1.8 in JComboBox::actionPerformed, the following was added
+    //    ComboBoxEditor editor = getEditor();
+    //    if ((editor != null) && (e != null) && (editor == e.getSource())) {
+    // and
+    //    editor -------- "BasicComboBoxEditor"
+    //    e.getSource --- "BasicComboBoxEditor$BorderlessTextField"
+    // so nothing happens on 1.8
+    //
+    // To work around this, override fireActionPerformed in the JTextField
+    // and provide the combobox editor as the event source.
+    // (I must be missing something, else how could you ever use this...)
+    //
+    //////////////////////////////////////////////////////////////////////
+    private class MyComboBoxEditor extends BasicComboBoxEditor {
+        @Override
+        protected JTextField createEditorComponent() {
+            // borderless text field has an issue, see below
+            JTextField ed = new MyComboTextField("",9);
+            ed.setBorder(null);
+            return ed;
+        }
+    }
+
+    // Copied from BasicComboBoxEditor::BorderlessTextField
+    //          except for actionPerformed
+    private class MyComboTextField extends JTextField {
+        public MyComboTextField(String value,int n) {
+            super(value,n);
+        }
+
+        // workaround for 4530952
+        @Override
+        public void setText(String s) {
+            if (getText().equals(s)) {
+                return;
+            }
+            super.setText(s);
+        }
+
+        @Override
+        public void setBorder(Border b) {
+            if (!(b instanceof UIResource)) {
+                super.setBorder(b);
+            }
+        }
+
+        // modified to set the combobox editor as the event source
+        @Override
+        protected void fireActionPerformed() {
+            // Guaranteed to return a non-null array
+            Object[] listeners = listenerList.getListenerList();
+            int modifiers = 0;
+            AWTEvent currentEvent = EventQueue.getCurrentEvent();
+            if (currentEvent instanceof InputEvent) {
+                modifiers = ((InputEvent)currentEvent).getModifiers();
+            } else if (currentEvent instanceof ActionEvent) {
+                modifiers = ((ActionEvent)currentEvent).getModifiers();
+            }
+            ActionEvent e =
+                new ActionEvent(combo.getEditor(), ActionEvent.ACTION_PERFORMED,
+                                (myCommand != null) ? myCommand : getText(),
+                                EventQueue.getMostRecentEventTime(), modifiers);
+
+            // Process the listeners last to first, notifying
+            // those that are interested in this event
+            for (int i = listeners.length-2; i>=0; i-=2) {
+                if (listeners[i]==ActionListener.class) {
+                    ((ActionListener)listeners[i+1]).actionPerformed(e);
+                }
+            }
+        }
+
+        private String myCommand;
+        @Override
+        public void setActionCommand(String command)
+        {
+            super.setActionCommand(command);
+            myCommand = command;
+        }
+
+    }
 
 
     //////////////////////////////////////////////////////////////////////
