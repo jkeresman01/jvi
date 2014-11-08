@@ -69,11 +69,13 @@ public class KeyBindingBean  extends KeyOptionsBeanBase {
             String displayName = "Ctrl-" + keyChar;
             addDesc(vD, propertyName, displayName);
         }
-        addDesc(vD, "AaOpenBracket", "Ctrl-[    the \"real\" <ESC>");
-        addDesc(vD, "AbCloseBracket", "Ctrl-]");
-        addDesc(vD, "AcCommaOpenAngle", "Ctrl-< or Ctrl-,");
-        addDesc(vD, "AdPeriodCloseAngle", "Ctrl-> or Ctrl-.");
-        addDesc(vD, "AeCtrl_AT", "Ctrl-@");
+        addDesc(vD, "AaShiftSpace", "Shift-Space");
+        addDesc(vD, "AaCtrlSpace", "Ctrl-Space");
+        addDesc(vD, "BaOpenBracket", "Ctrl-[    the \"real\" <ESC>");
+        addDesc(vD, "BbCloseBracket", "Ctrl-]");
+        addDesc(vD, "CcCommaOpenAngle", "Ctrl-< or Ctrl-,");
+        addDesc(vD, "CdPeriodCloseAngle", "Ctrl-> or Ctrl-.");
+        addDesc(vD, "DeCtrl_AT", "Ctrl-@");
         
 	return vD.toArray(new PropertyDescriptor[0]);
     }
@@ -99,43 +101,59 @@ public class KeyBindingBean  extends KeyOptionsBeanBase {
     //      The bean getter/setter
     //
 
-    public void setAaOpenBracket(boolean arg) {
+    public void setAaShiftSpace(boolean arg) {
+        put("Shift-Space", arg);
+    }
+
+    public boolean getAaShiftSpace() {
+	return get("Shift-Space");
+    }
+
+    public void setAaCtrlSpace(boolean arg) {
+        put("Ctrl-Space", arg);
+    }
+
+    public boolean getAaCtrlSpace() {
+	return get("Ctrl-Space");
+    }
+
+    public void setBaOpenBracket(boolean arg) {
         put("Ctrl-[", arg);
     }
 
-    public boolean getAaOpenBracket() {
+    public boolean getBaOpenBracket() {
 	return get("Ctrl-[");
     }
 
-    public void setAbCloseBracket(boolean arg) {
+    public void setBbCloseBracket(boolean arg) {
         put("Ctrl-]", arg);
     }
 
-    public boolean getAbCloseBracket() {
+    public boolean getBbCloseBracket() {
 	return get("Ctrl-]");
     }
 
-    public void setAcCommaOpenAngle(boolean arg) {
+    public void setCcCommaOpenAngle(boolean arg) {
         put("Ctrl-<", arg);
     }
 
-    public boolean getAcCommaOpenAngle() {
+    public boolean getCcCommaOpenAngle() {
 	return get("Ctrl-<");
     }
 
-    public void setAdPeriodCloseAngle(boolean arg) {
+    public void setCdPeriodCloseAngle(boolean arg) {
         put("Ctrl->", arg);
     }
 
-    public boolean getAdPeriodCloseAngle() {
+    public boolean getCdPeriodCloseAngle() {
 	return get("Ctrl->");
     }
 
-    public void setAeCtrl_AT(boolean arg) {
+    public void setDeCtrl_AT(boolean arg) {
         put("Ctrl-@", arg);
     }
 
-    public boolean getAeCtrl_AT() {
+    public boolean getDeCtrl_AT() {
 	return get("Ctrl-@");
     }
 

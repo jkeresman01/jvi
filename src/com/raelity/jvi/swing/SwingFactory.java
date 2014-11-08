@@ -598,9 +598,10 @@ abstract public class SwingFactory implements ViFactory
                     boolean keep = true;
                     if ( alt || ctrl
                             || content.length() != 1
-                            || c < 0x20
+                            || c <= 0x20
                             || c == 0x7f ) {
                         // the delete key comes in as a virtual key.
+                        // the space key comes in as a virtual key. (2014)
                         // Wouldn't have thought that the 'c<0x20' was needed,
                         // <RETURN>,<BS> come in < 0x20 without the Control key
                         keep = false;

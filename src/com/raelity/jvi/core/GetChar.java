@@ -265,7 +265,7 @@ public class GetChar {
      * @param c
      * @param collectingGroupUndo
      */
-    private static void startPump(final char c,
+    private static void startPump(final int c,
                                   final boolean collectingGroupUndo)
     {
         if(!collectingGroupUndo)
@@ -283,7 +283,7 @@ public class GetChar {
     }
 
     // NEEDSWORK: old_mod_mask
-    private static char old_char;
+    private static int old_char;
 
     private static boolean isAnyChar()
     {
@@ -310,7 +310,7 @@ public class GetChar {
                     return;
                 }
                 if(old_char != NUL) {
-                    char c = old_char;
+                    int c = old_char;
                     old_char = NUL;
                     pumpChar(c);
                     continue;
@@ -319,7 +319,7 @@ public class GetChar {
                     pumpChar(stuffbuff.removeFirst());
                     continue;
                 }
-                char c = typebuf.getChar();
+                int c = typebuf.getChar();
                 // Do this again since typebuf length may have just changed.
                 if(!collectingGroupUndo
                         && (typebuf.length() > 1 // && isInsertMode()
@@ -343,10 +343,10 @@ public class GetChar {
 
     }
 
-    private static void pumpChar(char c) {
+    private static void pumpChar(int c) {
         if(c == NO_CHAR)
             return;
-        int modifiers = 0;
+        /*
         if(isVIRT(c)) {
             modifiers = c & (MOD_MASK << MODIFIER_POSITION_SHIFT);
             if(modifiers != 0) {
@@ -361,19 +361,20 @@ public class GetChar {
                 }
             }
         }
+        */
         if(Options.kd().getBoolean(Level.FINEST))
             Options.kd().println(Level.FINEST, "pumpChar: "
                     + TextUtil.debugString(String.valueOf(c))
-                    + " (" +  modifiers + ")");
-        G.setModMask(modifiers);
-        Normal.processInputChar(c, true);
+                    + " (" +  (c >> 16) + ")");
+        G.setModMask(c >> 16);
+        Normal.processInputChar((char)c, true);
     }
 
     /**
      * @return a queued character from input stream.
      * @exception RuntimeException if no characters are available
      */
-    private static char getOneChar() {
+    private static int getOneChar() {
         if(stuffbuff.hasNext()) {
             return stuffbuff.removeFirst();
         }
@@ -394,7 +395,7 @@ public class GetChar {
             if( ! char_avail()) {
                 break;
             }
-            char c = getOneChar();
+            char c = (char)getOneChar();
             if(c == NO_CHAR) // NEEDSWORK: added to workaround
                 break;       //            TypeBufMultiChar issues
 
@@ -424,7 +425,7 @@ public class GetChar {
 
     }
 
-    static void vungetc(char c) /* unget one character (can only be done once!) */
+    static void vungetc(int c) /* unget one character (can only be done once!) */
     {
         old_char = c;
         //old_mod_mask = mod_mask;

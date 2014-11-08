@@ -33,7 +33,7 @@ import com.raelity.text.TextUtil;
 
 import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
-import static com.raelity.jvi.core.lib.KeyDefs.NO_CHAR;
+import static com.raelity.jvi.core.lib.KeyDefs.*;
 
 /**
  * Like BufferQueue, but typebuf has some special requirements.
@@ -215,9 +215,9 @@ public final class TypeBufMultiCharMapping {
 
     /**
      * return a character, map as needed.
-     * @return
+     * @return lower half of int is the char, upper half is modifiers
      */
-    public char getChar()
+    public int getChar()
     {
         fWaitMapping = false;
         boolean sawMappingTimeout = fMappingTimeout;
@@ -326,7 +326,29 @@ public final class TypeBufMultiCharMapping {
             Options.kd().println(Level.FINEST, "getChar return: " +
                     TextUtil.debugString(String.valueOf(c)));
         }
-        return c;
+
+        int rval;
+        if(isVIRT(c)) {
+            int modifiers = c & (MOD_MASK << MODIFIER_POSITION_SHIFT);
+            if(modifiers != 0) {
+                c &= ~modifiers;
+                modifiers = modifiers >> MODIFIER_POSITION_SHIFT;
+
+                // if modifiers are only/exactly the shift key
+                if(modifiers == SHFT
+                        && c >= VIRT && c < VIRT + SHIFTED_VIRT_OFFSET) {
+                    // only the shift key is pressed and its one of "those".
+                    c += SHIFTED_VIRT_OFFSET;
+                }
+            }
+
+            if(c == K_SPACE)
+                c = ' ';
+            rval = c | (modifiers << 16);
+        } else
+            rval = c;
+
+        return rval;
     }
 
     public void clear()

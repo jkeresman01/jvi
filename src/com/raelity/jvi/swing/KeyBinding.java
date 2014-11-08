@@ -236,6 +236,11 @@ private static Action createKeyAction( String name, char key ) {
 
     checkUseKey(bl, "Ctrl-@",  "Ctrl-@", KeyEvent.VK_2, CTRL_MASK);
     checkUseKey(bl, "Ctrl-@",  "Ctrl-@", KeyEvent.VK_2, CTRL_MASK|SHIFT_MASK);
+
+    // Allow the various flavors of Space
+    checkUseKey(bl, "Space", KeyEvent.VK_SPACE, 0);
+    checkUseKey(bl, "Space", KeyEvent.VK_SPACE, CTRL_MASK);
+    checkUseKey(bl, "Space", KeyEvent.VK_SPACE, SHIFT_MASK);
     
     return bl;
   }
@@ -264,7 +269,7 @@ private static Action createKeyAction( String name, char key ) {
       }
   }
 
-  public static List getExtraBindingsList() {
+  private static List NOT_USED_getExtraBindingsList() {
     List<JTextComponent.KeyBinding> bl
             = new ArrayList<JTextComponent.KeyBinding>();
     // NEEDSWORK: for now just stuff all the extra bindings here
@@ -445,8 +450,7 @@ private static Action createKeyAction( String name, char key ) {
             actionsList.add(createKeyAction("ViCloseBracketKey", (char)29));
             //actionsList.add(createKeyAction("ViCtrl-CircumflexKey", (char)30));
             //actionsList.add(createKeyAction("ViCtrl-UnderscoreKey", (char)31));
-            actionsList.add(createKeyAction("ViSpaceKey",
-                                                    (char)KeyEvent.VK_SPACE));
+            actionsList.add(createKeyAction("ViSpaceKey", K_SPACE));
 
             actionsList.add(createKeyAction("ViF1Key", K_F1));
             actionsList.add(createKeyAction("ViF2Key", K_F2));
@@ -593,6 +597,9 @@ private static Action createKeyAction( String name, char key ) {
             defaultKeysFalse.add("Ctrl-Back_space");
             defaultKeysFalse.add("Shift-Tab");
             defaultKeysFalse.add("Ctrl-Tab");
+
+            defaultKeysFalse.add("Shift-Space");
+            defaultKeysFalse.add("Ctrl-Space");
             
             defaultKeysFalse.add("Shift-Undo");
             defaultKeysFalse.add("Ctrl-Undo");

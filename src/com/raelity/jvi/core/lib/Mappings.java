@@ -756,11 +756,12 @@ public final class Mappings {
             mapCommandSpecial.put(new EqLower("Return"),   '\n');
             mapCommandSpecial.put(new EqLower("Enter"),    '\n');
             mapCommandSpecial.put(new EqLower("Esc"),      '\u001b');//////////
-            mapCommandSpecial.put(new EqLower("Space"),    ' ');
             mapCommandSpecial.put(new EqLower("lt"),       '<');
             mapCommandSpecial.put(new EqLower("Bslash"),   '\\');
             mapCommandSpecial.put(new EqLower("Bar"),      '|');
             mapCommandSpecial.put(new EqLower("Del"),      '\u007f');//////////
+
+            mapCommandSpecial.put(new EqLower("Space"),    K_SPACE);
 
             mapCommandSpecial.put(new EqLower("EOL"),      '\n');
 

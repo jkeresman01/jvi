@@ -704,19 +704,17 @@ normal_end: {
 	    nv_scroll(ca);
 	    break;
 
+	  case ' ':
 	  case K_RIGHT:
-	    if ((G.mod_mask & MOD_MASK_CTRL) != 0)
+	    if ((G.mod_mask & (MOD_MASK_CTRL|MOD_MASK_SHIFT)) != 0)
 	    {
 	      oap.inclusive = false;
-	      nv_wordcmd(ca, true);
+	      nv_wordcmd(ca, (G.mod_mask & MOD_MASK_CTRL) != 0);
 	      break;
 	    }
-          //case K_S_SPACE:
-            // c = ' ';
             // FALTHROUGH
 
 	  case 'l':
-	  case ' ':
 	    nv_right(ca);
 	    break;
 

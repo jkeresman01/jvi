@@ -161,8 +161,10 @@ public class KeyDefs {
     public static final char MAP_K_X_IM_SHIFT_LEFT = 0x4a;
     public static final char MAP_K_X_IM_INS_REP = 0x4b;
     public static final char MAP_K_X_IM_LITERAL = 0x4c;
+
+    public static final char MAP_K_SPACE = 0x4d;
     
-    public static final int MAX_JAVA_KEY_MAP = 0x4c;
+    public static final int MAX_JAVA_KEY_MAP = 0x4d; //////////////////////////
     
     //public static final char MAP_K_S_UP	= MAP_K_UP + SHIFTED_VIRT_OFFSET;
     //public static final char MAP_K_S_DOWN = K_DOWN + SHIFTED_VIRT_OFFSET;
@@ -199,6 +201,8 @@ public class KeyDefs {
     // public static final char K_XF3		= KeyEvent.VK_F3 + VIRT;
     // public static final char K_XF4		= KeyEvent.VK_F4 + VIRT;
     
+    public static final char K_SPACE		= MAP_K_SPACE + VIRT;
+
     public static final char K_F1		= MAP_K_F1 + VIRT;
     public static final char K_F2		= MAP_K_F2 + VIRT;
     public static final char K_F3		= MAP_K_F3 + VIRT;

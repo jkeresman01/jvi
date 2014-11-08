@@ -1130,7 +1130,7 @@ one_char: {
 //	--allow_keys;
 //#endif
       if (nc != NUL)
-          vungetc(nc);
+          vungetc(nc | (G.getModMask() << 16));
 //    got_int = FALSE;	    /* CTRL-C typed after CTRL-V is not an interrupt */
       handleNextChar = null; // all done.
 

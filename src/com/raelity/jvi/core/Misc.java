@@ -4129,6 +4129,7 @@ private static int put_in_typebuf(String s, boolean colon)
     jk[MAP_K_KENTER] = KeyEvent.VK_ENTER;
     jk[MAP_K_X_PERIOD] = KeyEvent.VK_PERIOD;
     jk[MAP_K_X_COMMA] = KeyEvent.VK_COMMA;
+    jk[MAP_K_SPACE] = KeyEvent.VK_SPACE;
 
     return jk;
   }
