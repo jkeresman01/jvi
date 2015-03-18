@@ -23,6 +23,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 
 import org.openide.util.lookup.ServiceProvider;
 
@@ -264,7 +265,7 @@ public abstract class TextView implements ViTextView
      * Do some bookkeeping and also adjust pcmark
      * if the caret is moved by an 'external agent' (e.g. an IDE).
      *
-     * @param lastDot previos dot position
+     * @param lastDot previous dot position
      * @param dot new dot position
      * @param mark new mark position
      */
@@ -276,11 +277,14 @@ public abstract class TextView implements ViTextView
         if (!G.pcmarkTrack)
             return;
 
+        boolean magicMove = !ViManager.jViBusy() && !Scheduler.isMouseDown();
+
         int currDot = dot;
-        if (G.dbgMouse.getBoolean())
+        if (magicMove && G.dbgMouse.getBoolean(Level.INFO)
+                || G.dbgMouse.getBoolean(Level.FINE))
             G.dbgMouse.println("CaretMark: " + lastDot + " --> " + currDot
                     + " " + w_buffer.getDisplayFileName());
-        if (!ViManager.jViBusy() && !Scheduler.isMouseDown()) {
+        if (magicMove) {
             // The cursor was magcally moved and jVi had nothing to
             // do with it. (probably by an IDE or some such).
             // Record the previous location so that '' works (thanks Jose).
@@ -288,7 +292,7 @@ public abstract class TextView implements ViTextView
             int diff = Math.abs(w_buffer.getLineNumber(currDot)
                                 - w_buffer.getLineNumber(lastDot));
             if (diff > 0) {
-                if (G.dbgMouse.getBoolean())
+                if (G.dbgMouse.getBoolean(Level.INFO))
                     G.dbgMouse.println("caretUpdate: setPCMark");
                 ViFPOS fpos = w_buffer.createFPOS(lastDot);
                 MarkOps.setpcmark(this, fpos);
