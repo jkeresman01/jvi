@@ -27,7 +27,7 @@ JVI_UC=         # pick up from plugin portal update center
 UC_DIR=UC
 
 JVI_ADD="
-    $JVI_RELDIR/editor.pin/editor.pin-1.3.3/proj/updates.xml
+    $JVI_RELDIR/editor.pin/editor.pin-1.3.5/proj/updates.xml
     $JVI_RELDIR/jvi.help/jvi.help-1.0/proj/updates.xml
     $JVI_RELDIR/nb-jvi-spi/nb-jvi-spi-1.6/proj/updates.xml
     "
