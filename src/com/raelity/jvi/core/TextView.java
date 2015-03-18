@@ -45,6 +45,7 @@ import static com.raelity.jvi.core.lib.Constants.*;
  */
 public abstract class TextView implements ViTextView
 {
+    private static final int MagicMoveLineLimit = 15;
     @ServiceProvider(service=ViInitialization.class,
                      path="jVi/init",
                      position=10)
@@ -263,7 +264,9 @@ public abstract class TextView implements ViTextView
     /**
      * Notification that the caret has moved in the TextView.
      * Do some bookkeeping and also adjust pcmark
-     * if the caret is moved by an 'external agent' (e.g. an IDE).
+     * if the caret is moved by an 'external agent' (e.g. an IDE)
+     * but unfortunately, the external agent detection is difficult
+     * since NB updates the cursor with invokeLater so jViBusy is always false.
      *
      * @param lastDot previous dot position
      * @param dot new dot position
@@ -274,12 +277,18 @@ public abstract class TextView implements ViTextView
         if (G.VIsual_active && this == G.curwin)
             Normal.v_updateVisualState(this);
 
-        if (!G.pcmarkTrack)
+        // since difficult to detect magic, check dot-lastDot for quick exit
+        if (!G.pcmarkTrack || Math.abs(dot - lastDot) < 3)
             return;
 
-        boolean magicMove = !ViManager.jViBusy() && !Scheduler.isMouseDown();
-
         int currDot = dot;
+        // With updates invokeLater, limit magic loosly
+        // (around changeset 1218)
+        int diff = Math.abs(w_buffer.getLineNumber(currDot)
+                - w_buffer.getLineNumber(lastDot));
+        boolean magicMove = !ViManager.jViBusy() && !Scheduler.isMouseDown()
+                && diff > MagicMoveLineLimit;
+
         if (magicMove && G.dbgMouse.getBoolean(Level.INFO)
                 || G.dbgMouse.getBoolean(Level.FINE))
             G.dbgMouse.println("CaretMark: " + lastDot + " --> " + currDot
@@ -289,14 +298,10 @@ public abstract class TextView implements ViTextView
             // do with it. (probably by an IDE or some such).
             // Record the previous location so that '' works (thanks Jose).
 
-            int diff = Math.abs(w_buffer.getLineNumber(currDot)
-                                - w_buffer.getLineNumber(lastDot));
-            if (diff > 0) {
-                if (G.dbgMouse.getBoolean(Level.INFO))
-                    G.dbgMouse.println("caretUpdate: setPCMark");
-                ViFPOS fpos = w_buffer.createFPOS(lastDot);
-                MarkOps.setpcmark(this, fpos);
-            }
+            if (G.dbgMouse.getBoolean(Level.INFO))
+                G.dbgMouse.println("caretUpdate: setPCMark");
+            ViFPOS fpos = w_buffer.createFPOS(lastDot);
+            MarkOps.setpcmark(this, fpos);
         }
     }
 

@@ -584,6 +584,10 @@ abstract public class SwingFactory implements ViFactory
             if ( target != null && e != null ) {
                 String content = e.getActionCommand();
                 if ( content != null && content.length() > 0 ) {
+                    char c = content.charAt(0);
+                    // just get out if a ' ', now KeyAction, not CharAction
+                    if(c == ' ')
+                        return;
                     // Check whether the modifiers are OK
                     int mod = e.getModifiers();
                     boolean ctrl = ((mod & ActionEvent.CTRL_MASK) != 0);
@@ -594,7 +598,6 @@ abstract public class SwingFactory implements ViFactory
                             ? ((mod & ActionEvent.META_MASK) != 0)
                             : ((mod & ActionEvent.ALT_MASK) != 0);
 
-                    char c = content.charAt(0);
                     boolean keep = true;
                     if ( alt || ctrl
                             || content.length() != 1

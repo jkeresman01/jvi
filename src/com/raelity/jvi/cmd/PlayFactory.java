@@ -25,7 +25,6 @@ import java.awt.Rectangle;
 import java.util.Map;
 
 import javax.swing.text.Caret;
-import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 
 import com.raelity.jvi.ViCaret;
@@ -48,9 +47,9 @@ import com.raelity.jvi.swing.simple.SimpleFactory;
  */
 final public class PlayFactory extends SimpleFactory
 {
-    private ViFS fs = new PlayFS();
+    private final ViFS fs = new PlayFS();
     /** status displays for editors */
-    private Map<PlayEditorPane, JviFrame> mapJepFrame;
+    private final Map<PlayEditorPane, JviFrame> mapJepFrame;
 
     public PlayFactory(Map<PlayEditorPane, JviFrame> m) {
         mapJepFrame = m;
@@ -78,7 +77,9 @@ final public class PlayFactory extends SimpleFactory
 
         public PlayCaret()
         {
-            setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
+            // The following is good for testing that jVi keeps the caret
+            // visible. However it screws wiht isertion caret update.
+            // setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
         }
 
         @Override
