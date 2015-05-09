@@ -268,6 +268,8 @@ public class Scheduler
         if (activeCommandEntry != null)
             throw new RuntimeException("activeCommandEntry not null");
         activeCommandEntry = commandEntry;
+        Options.kd().printf("startCommandEntry: set ACE tv %s, '%s'\n",
+                            ViManager.cid(tv), initialString); //REROUTE
         boolean passThru;
         if (initialString.indexOf("\n") >= 0)
             passThru = true;
@@ -282,6 +284,7 @@ public class Scheduler
             //
             // If modal, and everything went well, then activeCommandEntry is
             // already NULL. But not modal, then it isn't null.
+            Options.kd().println("startCommandEntry: exception"); //REROUTE
             Util.vim_beep();
             LOG.log(Level.SEVERE, null, ex);
             activeCommandEntry = null;
@@ -298,6 +301,7 @@ public class Scheduler
         }
         if(activeCommandEntry == null)
             return;
+        Options.kd().println("StopCommandEntry"); //REROUTE
         internalStopCommandEntry();
     }
 
@@ -311,8 +315,8 @@ public class Scheduler
     {
         if(activeCommandEntry == null)
             return;
-        if(G.dbgEditorActivation().getBoolean())
-            G.dbgEditorActivation().println("Activation: cancel CommandEntry");
+        if(G.dbgEditorActivation().getBoolean() || Options.kd().getBoolean())
+            G.dbgEditorActivation().println("cancelCommandEntry"); //REROUTE
         internalStopCommandEntry();
     }
 

@@ -35,6 +35,7 @@ import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 
 import com.raelity.jvi.ViCmdEntry;
+import com.raelity.jvi.core.Options;
 
 /**
  * A command line entry widget that sits on the glass pane,
@@ -85,6 +86,7 @@ public class InlineCmdEntry extends CommandLine.CommandLineEntry {
 
     @Override
     public void finishActivate() {
+        Options.kd().println("InlineCommandEntry: finishActivate"); //REROUTE
         JRootPane rootPane = getRootPane();
         refRootPane = new WeakReference<JRootPane>(rootPane);
         JPanel glass = (JPanel)rootPane.getGlassPane();

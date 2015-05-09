@@ -73,6 +73,7 @@ public class ColonCommands
     private static AbbrevLookup m_commands = new AbbrevLookup();
 
     static String lastCommand;
+    static String currentCommand;
 
     /**
      *  Default constructor.
@@ -112,8 +113,9 @@ static private void colonEntryComplete( ActionEvent ev )
         // if not <CR> must be an escape, just ignore it
         if(cmd.charAt(0) == '\n') {
             if( ! commandLine.isEmpty()) {
-                lastCommand = commandLine;
+                currentCommand = commandLine;
                 executeCommand(parseCommand(commandLine));
+                lastCommand = currentCommand;
             }
         }
         closePrint();
@@ -126,6 +128,7 @@ static void doColonCommand(StringBuffer range)
 {
     ViCmdEntry cmdEntry = getColonCommandEntry();
     ViManager.getFactory().commandEntryAssist(cmdEntry, true);
+    Options.kd().println("doColonCommand --> startCommandEntry"); //REROUTE
     Scheduler.startCommandEntry(cmdEntry, ":", G.curwin, range);
 }
 
@@ -924,7 +927,7 @@ private static void makePrintStream()
         return;
     }
     printStream = ViManager.createOutputStream(
-            G.curwin, ViOutputStream.LINES, lastCommand);
+            G.curwin, ViOutputStream.LINES, currentCommand);
 }
 
 /**

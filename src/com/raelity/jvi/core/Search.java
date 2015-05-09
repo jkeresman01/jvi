@@ -156,6 +156,7 @@ public class Search
     ViCmdEntry ce = getSearchCommandEntry();
     if(ass.incrSearchActive)
         startIncrementalSearch();
+    Options.kd().println("inputSearchPattern --> startCommandEntry"); //REROUTE
     Scheduler.startCommandEntry(ce, String.valueOf(ass.dirc), G.curwin, null);
   }
 

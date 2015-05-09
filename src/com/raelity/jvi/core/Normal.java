@@ -1751,8 +1751,13 @@ normal_end: {
             runUndoable(new Runnable() {
           @Override
                 public void run() {
+                  // Seems like NB changes VpTopViewLine, so save/restore
+                  // back in '%' command discussion there's talk of moving
+                  // some of this stuff into platform...
+                  int vpTopViewLine = G.curwin.getVpTopViewLine();
                   G.curbuf.reindent(G.curwin.w_cursor.getLine(),
                                     oap.line_count);
+                  G.curwin.setVpTopViewLine(vpTopViewLine);
                 }
             });
             break;
@@ -1868,8 +1873,13 @@ normal_end: {
     runUndoable(new Runnable() {
       @Override
         public void run() {
+          // Seems like NB changes VpTopViewLine, so save/restore
+          // back in '%' command discussion there's talk of moving
+          // some of this stuff into platform...
+          int vpTopViewLine = G.curwin.getVpTopViewLine();
           G.curbuf.reformat(G.curwin.w_cursor.getLine(),
                             oap.line_count);
+          G.curwin.setVpTopViewLine(vpTopViewLine);
         }
     });
   }
@@ -3008,6 +3018,7 @@ normal_end: {
       // So save/restore the visible location.
       // TODO: Make it a requirement of the match to not move viewport.
       //       Then do save/restore in platform dependent code.
+      // NOTE: do similar save/restore in op_indent and op_format
       int startTopViewLine = G.curwin.getVpTopViewLine();
       cap.oap.motion_type = MCHAR;
       boolean usePlatform = G.p_pbm & ViManager.getPlatformFindMatch();

@@ -678,6 +678,7 @@ public class CommandLine extends JPanel
                     .removeFocusListener(focusSetSelection);
             lastCommand = "";
             if(passThru) {
+                Options.kd().println("cmdLine: activate PASSTHRU"); //REROUTE
                 this.tv = null; // typically done as part of finish up
                 lastCommand = initialText;
                 fireEvent(new ActionEvent(tv.getEditor(),

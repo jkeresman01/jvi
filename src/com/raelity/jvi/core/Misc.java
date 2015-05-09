@@ -26,6 +26,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
@@ -55,6 +56,7 @@ import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViMark;
+import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.ViTextView.DIR;
 import com.raelity.jvi.ViXlateKey;
@@ -66,6 +68,7 @@ import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.lib.Wrap;
 import com.raelity.jvi.manager.ViManager;
+import com.raelity.text.TextUtil;
 import com.raelity.text.TextUtil.MySegment;
 
 import static com.raelity.jvi.core.ColonCommands.*;
@@ -108,6 +111,8 @@ public class Misc implements ClipboardOwner {
     }
 
     private static void init() {
+        ColonCommands.register("reg", "registers", new DoRegisters(), null);
+
         PropertyChangeListener pcl = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -1152,7 +1157,9 @@ public class Misc implements ClipboardOwner {
    * @return the regname as a string
    */
   private static String getPersistableYankreg(int i) {
-    if(i <= 9)
+    if(i == -1)
+      return "\"";
+    else if(i <= 9)
       return String.valueOf((char)('0'+i));
     else if(i <= 35)
       return String.valueOf((char)('a' + i - 10));
@@ -1437,6 +1444,111 @@ public class Misc implements ClipboardOwner {
   static Yankreg y_previous = null;
   static boolean y_append;
   static Yankreg[] y_regs = new Yankreg[38];
+
+  /**
+   * print the registers
+   */
+  private static class DoRegisters extends AbstractColonAction
+  {
+    @Override
+    public void actionPerformed(ActionEvent ev) {
+      ColonEvent cev = (ColonEvent)ev;
+
+      String arg = null;
+      if(cev.getNArg() > 0)
+          arg = cev.getArgString();
+      Yankreg yb;
+
+      ViOutputStream vios = ViManager.createOutputStream(
+              null, ViOutputStream.OUTPUT, "\n--- Registers ---");
+      int columns = 120;
+      StringBuilder sb = new StringBuilder();
+      for (int i = -1; i < y_regs.length; ++i)
+      {
+        String name = getPersistableYankreg(i);
+        if (arg != null && vim_strchr(arg, name.charAt(0)) == null)
+          continue;	    /* did not ask for this register */
+        if (i == -1)
+        {
+          if (y_previous != null)
+            yb = y_previous;
+          else
+            yb = y_regs[0];
+        }
+        else
+          yb = y_regs[i];
+        String regval = null;
+        if(yb != null)
+          regval = yb.getAll();
+        if (regval != null)
+        {
+          sb.setLength(0);
+          sb.append("\"").append(name).append("   ");
+
+          int n = columns - 6;
+
+          String escaped = TextUtil.debugString(regval);
+          if(escaped.length() > n)
+            escaped = escaped.substring(0, n-1);
+          sb.append(escaped);
+          vios.println(sb.toString());
+        }
+      }
+
+      /*
+       * display last inserted text
+       */
+      do_dis(vios, sb, ".", arg, true);
+
+      /*
+       * display last command line
+       */
+      do_dis(vios, sb, ":", arg, false);
+
+      /*
+       * display current file name
+       */
+      do_dis(vios, sb, "%", arg, false);
+
+      /*
+       * display alternate file name
+       */
+      do_dis(vios, sb, "#", arg, false);
+
+      /*
+       * display last search pattern
+       */
+      do_dis(vios, sb, "/", arg, false);
+
+      // #ifdef FEAT_EVAL..
+      /*
+       * display last used expression
+       */
+      // #endif
+
+      vios.close();
+    }
+  }
+
+  private static void do_dis(ViOutputStream vios, StringBuilder sb,
+                             String regname, String arg, boolean skip_esc) {
+    if (arg != null && vim_strchr(arg, regname.charAt(0)) == null)
+      return;	    /* did not ask for this register */
+    Wrap<String> argp = new Wrap<String>();
+    boolean displayit = get_spec_reg(regname.charAt(0), argp, false);
+    if(displayit && argp.getValue() != null) {
+      sb.setLength(0);
+      sb.append("\"").append(regname).append("   ");
+
+      int columns = 120;
+      int n = columns - 6;
+      String escaped = TextUtil.debugString(argp.getValue());
+      if(escaped.length() > n)
+        escaped = escaped.substring(0, n-1);
+      sb.append(escaped);
+      vios.println(sb.toString());
+    }
+  }
 
   /**
    * Check if 'regname' is a valid name of a yank register.

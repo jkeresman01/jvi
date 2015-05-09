@@ -86,17 +86,25 @@
   </dd>
 </dl>
 -->
-<b>Version 1.5.4 DEV - 2014/11/11</b>
+<b>Version 1.5.4 DEV - 2015/05/09</b>
 <dl>
   <dt>jVi Core</dt>
   <dd>
     <ul>
+      <li>
+        <a href="http://sourceforge.net/p/jvi/feature-requests/95/">
+        [#95] :reg[ister] </a>
+        <br/> Add <span class="tt">:register</span> command.
+      </li>
       <li>
         <a href="http://sourceforge.net/p/jvi/discussion/10908/thread/001796d4/">
         Mapping Shift-Space</a>
         <br>Allow mapping of Shift-Space and Ctrl-Space.
         <br>In addition, have normal mode commands for those keystrokes
           do forward word (when not mapped of course).
+      </li>
+      <li>Improve '' (goto previous mark) when magicMark option.
+        This handles some change in some "recent" NB releases.
       </li>
     </ul>
   </dd>
@@ -111,17 +119,16 @@
       </li>
     </ul>
   </dd>
+  -->
   <dt>Bug fixes</dt>
   <dd>
     <ul>
-      <li></li>
-      <li>
-        <a href="">
-        [#] </a>
+      <li>The <span class="tt">=%</span> and <span class="tt">Q%</span> normal mode commands
+        for indent and format incorrectly scrolled the window
+        when the caret was on the closing brace.
       </li>
     </ul>
   </dd>
-  -->
 </dl>
 
 <b>Version 1.5.3 - 2014/09/06</b>
