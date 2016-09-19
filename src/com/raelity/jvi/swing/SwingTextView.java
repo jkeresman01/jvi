@@ -21,6 +21,7 @@
 package com.raelity.jvi.swing;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -45,6 +46,7 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -1923,17 +1925,15 @@ public class SwingTextView extends TextView
     };
 
     /** The container for the editor has changed. */
-    private void changeViewport(Object component)
+    private void changeViewport(Component component)
     {
-        if (viewport != null) {
+        if (null != viewport)
             viewport.removeChangeListener(vpChangeListener);
-        }
-        if (component instanceof JViewport) {
-            viewport = (JViewport) component;
+        viewport = (JViewport)(component instanceof JViewport
+                ? component
+                : SwingUtilities.getAncestorOfClass(JViewport.class, component));
+        if (null != viewport)
             viewport.addChangeListener(vpChangeListener);
-        } else {
-            viewport = null;
-        }
         changeVp(true);
     }
 
@@ -2023,7 +2023,7 @@ public class SwingTextView extends TextView
         } else if ("document".equals(p)) {
             changeDocument(e); // this assert
         } else if ("ancestor".equals(p)) {
-            changeViewport(o);
+            changeViewport((Component)o);
         }
     }
 
