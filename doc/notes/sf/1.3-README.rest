@@ -4,6 +4,7 @@ In NetBeans, install "jVi for NB-7.0 Update Center",
 with Tools>Plugins>AvailablePlugins
 (source: Plugin Portal, category: editing)
 
+| **nbvi-1.5.4** fix for NB8.2 editor hierarchy
 | **nbvi-1.5.3** fix for jdk8 JComboBox
 | **nbvi-1.5.1**
 |     - visual bell, smarter scrolling, :toggle [left|right|top|bottom]

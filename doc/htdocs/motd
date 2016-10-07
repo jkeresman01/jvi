@@ -6,7 +6,7 @@
 #       -Dcom.raelity.jvi.motd=file:///c:/a/src/jvi-dev/jvi/doc/htdocs/motd
 
 motd-version: 1
-jVi-release: 1.5.3
+jVi-release: 1.5.4
 #jVi-release-link:  http://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-7.0/nbvi-1.4.zip/download
 
 #jVi-beta: 1.5.0.x2
