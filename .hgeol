@@ -1,2 +1,5 @@
 [patterns]
+**.png = BIN
+**.nbm = BIN
+**.jar = BIN
 ** = native

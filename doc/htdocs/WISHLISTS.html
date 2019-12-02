@@ -1,7 +1,7 @@
-<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<!doctype html>
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta charset="utf-8" />
   <meta name="Author" content="Ernie Rael">
   <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; U) [Netscape]">
   <meta name="Description" content="status and documentation of jVi">
@@ -19,10 +19,10 @@ features are through the
 <a href="https://sourceforge.net/forum/forum.php?forum_id=10908" target="_top">
   Open Discussion Forum</a>, comment on an existing thread or start a new
 thread.  We also pay attention to
-<a href="https://sourceforge.net/tracker/?atid=103653&group_id=3653"
+<a href="https://sourceforge.net/tracker/?atid=103653&amp;group_id=3653"
   target="_top">
   Bug Reports</a> and
-<a href="https://sourceforge.net/tracker/?group_id=3653&atid=353653"
+<a href="https://sourceforge.net/tracker/?group_id=3653&amp;atid=353653"
   target="_top">
   Feature Requests</a>
 </p>
@@ -35,12 +35,6 @@ thread.  We also pay attention to
   <dt></dt>
   <dd>
     <ul>
-      <li>visual block mode, targeted for 1.0</li>
-      <li><tt>!</tt>, <tt>:!</tt> family of commands, targeted for 1.0</li>
-      <li>highlight search, targeted for 1.0</li>
-      <li>move cursor in input mode, targeted for 1.0</li>
-      <li>modelines option, now that there is a :set command</li>
-      <li>add more options to the :set command</li>
       <li>better mouse integration</li>
     </ul>
   </dd>
@@ -54,21 +48,18 @@ thread.  We also pay attention to
   <dt></dt>
   <dd>
     <ul>
-      <li>an undo/redo that works like vim
-        <br/>This probably requires some NetBeans API work
-      </li>
-      <li><tt>:e</tt> code completion for open and/or project files
+      <li><span class="tt">:e</span> code completion for open and/or project files
         <br/> Probably want different commands, one for open files and
         the other for general and/or project files. Maybe bring up an open file
         browser for project files.
       </li>
-      <li><tt>:make</tt>
+      <li><span class="tt">:make</span>
         <br/>Need extensions for selected project, single file, project being
         edited.
       </li>
       <li>Debug commands
         <br/>single step, run until this line, etc. I was thinking of using
-        <tt>:x</tt> to start a debug command.
+        <span class="tt">:x</span> to start a debug command.
         One "special" command I'd
         personall like to set up is "tracepoint": this is a
         breakpoint on the current line that doesn't stop any threads, but prints
@@ -77,7 +68,7 @@ thread.  We also pay attention to
         the dialog; but the caret would be positioned so that you could enter
         additional info to display
       </li>
-      <li><tt>Ctrl-W</tt> window manipulation commands
+      <li><span class="tt">Ctrl-W</span> window manipulation commands
         <br/>jVi is set up for a few these if the platform supports them. I
         haven't seen a NetBeans API for this type of functionality. I haven't
         asked yet either.
@@ -88,12 +79,12 @@ thread.  We also pay attention to
 </dl>
 
 
-<!-- raelity copyright -->
-<hr>
-<address><font size="-1">
-Copyright &copy; 2011 Raelity Engineering</font></address>
-<font size="-1"><a href="mailto:support@raelity.com">
-Contact Raelity Engineering</a></font>
+<hr/>
+<!-- copyright -->
+<address class="addr">
+  Copyright &copy; 2019 Ernie Rael<br/>
+  <a href="mailto:jvi@raelity.com">Contact jVi support</a>
+</address>
 </body>
 </html>
-<!-- vi:set sw=2: -->
+<!-- vi:set sw=2 et ts=8: -->

@@ -20,13 +20,11 @@
         <br/>Options 'equalalways', 'splitbelow' and 'splitright'
         are supported.
     </li>
-    <li>tag stack
+    <li>tag stack, text object selection, fold open/close
     </li>
     <li>visual mode, including 
-        <a href="http://jvi.sourceforge.net/javahelpset/jvi-vis_block.html">
+        <a href="http://jvi.sourceforge.net/?vis-block-help/jvi-vis_block.html">
         detailed visual block mode documentation</a> (aka RECTANGULAR EDIT)
-    </li>
-    <li>text object selection
     </li>
     <li><a href="http://jvi.sourceforge.net/?vimhelp/map.txt.html">
         map commands for user defined key mappings</a>
@@ -59,8 +57,8 @@
         reindent.
     </li>
     <li><a href="http://jvi.sourceforge.net/">Online documentation</a>
+        See <A HREF="http://jvi.sourceforge.net/?CHANGES.html">
+        Changes by release</A>
+        for an overview of later features.
     </li>
-</ul><p><i>Before NetBeans 7.0</i>, for proper  <b>undo/redo granularity</b>,
-a small, optional, jVi NetBeans patch is required. This is available
-as a download.
-</p>
+</ul>

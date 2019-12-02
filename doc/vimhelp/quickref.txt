@@ -119,11 +119,14 @@ N is used to indicate an optional count that can be given before the command.
 |#|	N  #		search backward for the identifier under the cursor
 |gstar|	N  g*		like "*", but also find partial matches
 |g#|	N  g#		like "#", but also find partial matches
+START-DOC-DEL
 |gd|	   gd		goto local declaration of identifier under the cursor
 |gD|	   gD		goto global declaration of identifier under the cursor
+STOP-DOC-DEL
 
 |pattern|		Special characters in search patterns
-
+See: https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html
+START-DOC-DEL
 			meaning		      magic   nomagic	~
 		matches any single character	.	\.
 		       matches start of line	^	^
@@ -167,10 +170,12 @@ N is used to indicate an optional count that can be given before the command.
     b[+num]	[num] identical to s[+num] above (mnemonic: begin)
     b[-num]	[num] identical to s[-num] above (mnemonic: begin)
     ;{search-command}	execute {search-command} next
+STOP-DOC-DEL
 ------------------------------------------------------------------------------
 *Q_ma*		Marks and motions
 
 |m|	   m{a-zA-Z}	mark current position with mark {a-zA-Z}
+|m.|	   m.		toggle anonymous mark on the current line
 |`a|	   `{a-z}	go to mark {a-z} within current file
 |`A|	   `{A-Z}	go to mark {A-Z} in any file
 |`0|	   `{0-9}	go to the position where Vim was previously exited
@@ -183,6 +188,8 @@ N is used to indicate an optional count that can be given before the command.
 |`.|	   `.		go to the position of the last change in this file
 |'|	   '{a-zA-Z0-9[]'"<>.}
 			same as `, but on the first non-blank in the line
+|m>|	   m>		go to the next anonymous mark
+|m<|	   m<		go to the previous anonymous mark
 |:marks|  :marks	print the active marks
 |CTRL-O|  N  CTRL-O	go to Nth older position in jump list
 |CTRL-I|  N  CTRL-I	go to Nth newer position in jump list
@@ -199,8 +206,10 @@ N is used to indicate an optional count that can be given before the command.
 |L|	N  L		go to the Nth line from the bottom, on the first
 			   non-blank
 
+START-DOC-DEL
 |go|	N  go			go to Nth byte in the buffer
 |:go|	:[range]go[to] [off]	go to [off] byte in the buffer
+STOP-DOC-DEL
 ------------------------------------------------------------------------------
 *Q_ta*		Using tags
 

@@ -1,0 +1,10 @@
+
+=== netbeans.conf
+
+ -J-Dnetbeans.logger.console=true -J-Dcom.raelity.jvi.DEBUG=true -J-Dorg.netbeans.editor.caret.offset.level=FINE -J-Dorg.netbeans.modules.editor.completion.noTabCompletion=true -J-Dnb.FileChooser.useShellFolder=false
+
+=== and think about
+-J-Dfile.encoding=UTF-8
+
+=== Hear that line.sep is dangerous for preferences
+-J-Dline.separator=LF

@@ -7,8 +7,74 @@
 
 Introduction to Vim					*ref* *reference*
 
+1. Introduction			|intro|
+START-DOC-DEL
+2. Vim on the internet		|internet|
+3. Credits			|credits|
+STOP-DOC-DEL
 4. Notation			|notation|
 5. Modes, introduction		|vim-modes-intro|
+6. Switching from mode to mode	|mode-switching|
+START-DOC-DEL
+7. The window contents		|window-contents|
+STOP-DOC-DEL
+
+==============================================================================
+1. Introduction						*intro*
+
+Vim stands for Vi IMproved.  It used to be Vi IMitation, but there are so many
+improvements that a name change was appropriate.  Vim is a text editor which
+includes almost all the commands from the Unix program "Vi" and a lot of new
+ones.  It is very useful for editing programs and other plain text.
+   All commands are given with the keyboard.  This has the advantage that you
+can keep your fingers on the keyboard and your eyes on the screen.  For those
+who want it, there is mouse support and a GUI version with scrollbars and
+menus (see |gui.txt|).
+
+An overview of this manual can be found in the file "help.txt", |help.txt|.
+It can be accessed from within Vim with the <Help> or <F1> key and with the
+|:help| command (just type ":help", without the bars or quotes).
+   The 'helpfile' option can be set to the name of the help file, in case it
+is not located in the default place.  You can jump to subjects like with tags:
+Use CTRL-] to jump to a subject under the cursor, use CTRL-T to jump back.
+
+Throughout this manual the differences between Vi and Vim are mentioned in
+curly braces, like this: {Vi does not have on-line help}.  See |vi_diff.txt|
+for a summary of the differences between Vim and Vi.
+
+This manual refers to Vim on various machines.  There may be small differences
+between different computers and terminals.  Besides the remarks given in this
+document, there is a separate document for each supported system, see
+|sys-file-list|.
+
+This manual is a reference for all the Vim commands and options.  This is not
+an introduction to the use of Vi or Vim, it gets a bit complicated here and
+there.  For beginners, there is a hands-on |tutor|.  To learn using Vim, read
+the user manual |usr_toc.txt|.
+
+							*book*
+There are many books on Vi that contain a section for beginners.  There are
+two books I can recommend:
+
+	"Vim - Vi Improved" by Steve Oualline
+
+This is the very first book completely dedicated to Vim.  It is very good for
+beginners.  The most often used commands are explained with pictures and
+examples.  The less often used commands are also explained, the more advanced
+features are summarized.  There is a comprehensive index and a quick
+reference.  Parts of this book have been included in the user manual
+|frombook|.
+Published by New Riders Publishing.  ISBN: 0735710015
+For more information try one of these:
+	http://iccf-holland.org/click5.html
+	http://www.vim.org/iccf/click5.html
+
+	"Learning the Vi editor" by Linda Lamb and Arnold Robbins
+
+This is a book about Vi that includes a chapter on Vim (in the sixth edition).
+The first steps in Vi are explained very well.  The commands that Vim adds are
+only briefly mentioned.  There is also a German translation.
+Published by O'Reilly.  ISBN: 1-56592-426-6.
 
 ==============================================================================
 4. Notation						*notation*

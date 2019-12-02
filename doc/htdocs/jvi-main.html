@@ -1,7 +1,7 @@
-<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<!doctype html>
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+  <meta charset="utf-8" />
   <meta name="Author" content="Ernie Rael"/>
   <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; U) [Netscape]"/>
   <meta name="Description" content="status and documentation of jVi"/>
@@ -10,17 +10,19 @@
 </head>
 <body>
 
-<h1 id="Introduction">jVi - vi editor clone</h1>
+<h1 id="Introduction">jVi - vi/vim editor clone</h1>
 
 <p>
 Welcome to the jVi home page. Currently this page has some random
 thoughts/comments, serve as the user documentation and get you
-<br/>to
+to
 <a href="http://sourceforge.net/projects/jvi/files/jVi-for-NetBeans"
    style="font-size: larger" target="_top">DOWNLOAD jVi for NetBeans</a>
 and <a href="#Download">jVi for JBuilder download info</a>.
-There is news and information about
-the different applications in which jVi is integrated. 
+There is information about
+integrating jVi.  Check out
+<A HREF="CHANGES.html" TARGET="mainFrame"> Changes by release</A>
+for good overview of features available with jVi.
 </p>
 <p style="font-size: larger">
 jVi is a port of a major chunk of vim to java. It is not like many IDE
@@ -33,7 +35,7 @@ metacharacters in regular expressions) or
 <span class="tt">"*2d3w</span> which deletes 6 words stashing them in the system
 clipboard or <span class="tt">y%</span> or ... And, yes, "." works.
 There is stuff missing, but if what's
-there doesn't work like vi/vim then its a bug (or a feature).
+there doesn't work like vi/vim then it's a bug (or a feature).
 </p>
 
 <img SRC="images/opts-block-tags-notes.png"
@@ -52,10 +54,12 @@ there doesn't work like vi/vim then its a bug (or a feature).
     <li>tag stack
     </li>
     <li>visual mode, including
-        <a href="javahelpset/jvi-vis_block.html">
-        detailed visual block mode documentation</a> (aka RECTANGULAR EDIT)
+        <a href="vis-block-help/jvi-vis_block.html">
+        detailed visual block mode help and 2D examples</a> 
+        aka RECTANGULAR EDIT)
     </li>
-    <li>text object selection
+    <li><a href="vimhelp/motion.txt.html#text-objects">
+            text object selection</a>
     </li>
     <li><a href="vimhelp/map.txt.html">
         map commands for user defined key mappings</a>
@@ -235,11 +239,12 @@ Version 0.7.1
         jvi-api-0.6.5.zip</a></li>
 </ul>
 
-<!-- raelity copyright -->
 <hr/>
+<!-- copyright -->
 <address class="addr">
-Copyright &copy; 2011 Raelity Engineering</address>
-<a href="mailto:support@raelity.com" class="addr">
-Contact Raelity Engineering</a>
+  Copyright &copy; 2019 Ernie Rael<br/>
+  <a href="mailto:jvi@raelity.com">Contact jVi support</a>
+</address>
 </body>
 </html>
+<!-- vi:set sw=2 et ts=8: -->

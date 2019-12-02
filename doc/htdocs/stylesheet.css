@@ -1,6 +1,8 @@
 
 /* Define colors, fonts and other style attributes here to override the defaults
  */
+img { border: 0; }
+.alignHeading { text-align: left; }
 
 /* Page background color */
 
@@ -52,11 +54,18 @@ A.note:visited {color: green; font-weight: bold}
 .TableSubHeadingColor  { background: #EEEEFF } /* Light mauve */
 .TableRowColor         { background: #FFFFFF } /* White */
 
-/* Font used in left-hand frame lists */
-.IndexTitleFont   { font-family: normal }
-/* .IndexHeadingFont { font-size: normal; font-family: normal } */
-.IndexSec00Font { font-size: 15pt; font-family: normal; font-weight: normal }
-.IndexItemFont    { font-family: normal }
+/* used in left-hand frame lists (tables) */
+.IndexTableHeader {
+    font-size: 15pt; font-family: normal; font-weight: normal;
+    white-space: nowrap;
+    text-align: left;
+}
+.IndexTable {
+    font-family: normal;
+    white-space: nowrap;
+    border: 0;
+    width: 100%
+}
 
 .addr { font-size: smaller }
 

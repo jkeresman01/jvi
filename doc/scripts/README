@@ -2,7 +2,7 @@ Make a release
         cd $jvi/rel
         mkdir nbvi-1.4.1.x3
         cd nbvi-1.4.1.x3
-        # mkCapture.sh can be used on .../build/ dir
+        # mkCapture.sh can be used on .../nbvi/build/updates/ dir
         $jd/mkCapture.sh $jviup proj
         $jd/mkREL.sh       # it picks up the basename 
         $jd/mkZip.sh
@@ -39,4 +39,4 @@ vimh_build:
 
 vimh_build: "XML builder" for <table> markup details
     #*# table:form=index:id=xxx 1:tag 17:command 33:opt:note 36:desc #*#
-    #*# stop-table #*#
+    #*# table:stop-table #*#

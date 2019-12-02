@@ -99,13 +99,27 @@ CTRL-R CTRL-P {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-P*
 CTRL-T		Insert one shiftwidth of indent at the start of the current
 		line.  The indent is always rounded to a 'shiftwidth' (this is
 		vi compatible).  {Vi: only when in indent}
+
 							*i_CTRL-D*
 CTRL-D		Delete one shiftwidth of indent at the start of the current
 		line.  The indent is always rounded to a 'shiftwidth' (this is
 		vi compatible).  {Vi: CTRL-D works only when used after
 		autoindent}
-						*	i_CTRL-E*
+
+							*i_CTRL-V*
+CTRL-V		Insert next non-digit literally.  For special keys, the
+		terminal code is inserted.  It's also possible to enter the
+		decimal, octal or hexadecimal value of a character
+		|i_CTRL-V_digit|.
+		The characters typed right after CTRL-V are not considered for
+		mapping.  {Vi: no decimal byte entry}
+
+						*i_CTRL-Q*
+CTRL-Q		Same as CTRL-V.
+
+							*i_CTRL-E*
 CTRL-E		Insert the character which is below the cursor.  {not in Vi}
+
 							*i_CTRL-Y*
 CTRL-Y		Insert the character which is above the cursor.  {not in Vi}
 		Note that for CTRL-E and CTRL-Y 'textwidth' is not used, to be
@@ -150,6 +164,31 @@ If the 'backspace' option does contain "eol" and the cursor is in column 1
 when one of the three keys is used, the current line is joined with the
 previous line.  This effectively deletes the <EOL> in front of the cursor.
 {Vi: does not cross lines, does not delete past start position of insert}
+
+						*i_CTRL-V_digit*
+With CTRL-V the decimal, octal or hexadecimal value of a character can be
+entered directly.  This way you can enter any character, except a line break
+(<NL>, value 10).  There are five ways to enter the character value:
+
+first char	mode	     max nr of chars   max value ~
+(none)		decimal		   3		255
+o or O		octal		   3		377	 (255)
+x or X		hexadecimal	   2		ff	 (255)
+u		hexadecimal	   4		ffff	 (65535)
+U		hexadecimal	   8		7fffffff (2147483647)
+
+Normally you would type the maximum number of characters.  Thus to enter a
+space (value 32) you would type <C-V>032.  You can omit the leading zero, in
+which case the character typed after the number must be a non-digit.  This
+happens for the other modes as well: As soon as you type a character that is
+invalid for the mode, the value before it will be used and the "invalid"
+character is dealt with in the normal way.
+
+If you enter a value of 10, it will end up in the file as a 0.  The 10 is a
+<NL>, which is used internally to represent the <Nul> character.  When writing
+the buffer to a file, the <NL> character is translated into <Nul>.  The <NL>
+character is written at the end of each line.  Thus if you want to insert a
+<NL> character in a file you will have to make a line break.
 
 ==============================================================================
 2. Special special keys				*ins-special-special*

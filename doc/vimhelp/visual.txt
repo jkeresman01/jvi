@@ -1,6 +1,7 @@
 *visual.txt*    For Vim version 5.6.  Last change: 2000 Jan 05
 
-(also see: http://jvi.sourceforge.net/javahelpset/jvi-vis_block.html)
+(also see Visual Block Mode help and 2D examples:
+http://jvi.sourceforge.net/vis-block-help/jvi-vis_block.html)
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 

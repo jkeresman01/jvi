@@ -1,0 +1,22 @@
+<#if licenseFirst??>
+${licenseFirst}
+</#if>
+${licensePrefix}Portions created by Ernie Rael are
+${licensePrefix}Copyright (C) ${date?date?string("yyyy")} Ernie Rael.  All Rights Reserved.
+${licensePrefix?replace(" +$", "", "r")}
+${licensePrefix}The contents of this file are subject to the Mozilla Public
+${licensePrefix}License Version 1.1 (the "License"); you may not use this file
+${licensePrefix}except in compliance with the License. You may obtain a copy of
+${licensePrefix}the License at http://www.mozilla.org/MPL/
+${licensePrefix?replace(" +$", "", "r")}
+${licensePrefix}Software distributed under the License is distributed on an "AS
+${licensePrefix}IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+${licensePrefix}implied. See the License for the specific language governing
+${licensePrefix}rights and limitations under the License.
+${licensePrefix?replace(" +$", "", "r")}
+${licensePrefix}The Original Code is jvi - vi editor clone.
+${licensePrefix?replace(" +$", "", "r")}
+${licensePrefix}Contributor(s): Ernie Rael <err@raelity.com>
+<#if licenseLast??>
+${licenseLast}
+</#if>

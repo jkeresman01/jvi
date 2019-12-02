@@ -1,0 +1,46 @@
+jvi-index.html - css cleanup
+    - IDE issue of "class xxx not found",
+      hint to add it to syle, but it's already in stylesheet
+      (do the hint, still a problem)
+
+netbeans csv editor
+
+use JLayer or somesuch to flip the arrow on the combo box? find other way.
+
+===
+=== Documentation
+===
+wierd format <head> (or missing)
+    index.html
+    jvi-index.html
+    nb-index.html
+
+doc jVi button, show in screen shot? Is there a shortcut?
+
+Use identical nb-plugin doc for website intro
+
+differences from vi/vim
+
+Does i_ctrl-U really work?
+
+doc table issue when "|xxx|" has |'s removed, spacing funny next line
+
+Intro.txt section 8 Defn of vim7, description of visuals (NB specific help?)
+
+Why doesn't CTRL-] in quickref point to tagsearch file? Also command index.
+During build, leave list of targets.
+
+quickref in detail, got to using tags. Probably should re-check all
+    Q_qf, Q_vc, ...
+
+missing commands: :tabr[ewind], :tabfir[st], :tabl[ast]
+what about :tabs
+
+index.txt, add sections 4,5. 5 is all ":" commands
+z fold commands
+
+Some info about patterns? Maybe how regex compile options derived.
+magic and pattern escaping
+
+
+
