@@ -322,6 +322,11 @@ public class Jvi
         //     dialog.pack();
         // }
         // dialog.setVisible(true);
+
+        // set owner to null so options work
+        // while document modal WindowCmdLine is active.
+        owner = null;
+
         if(dialog == null) {
             optionsPanel = new OptionsPanel(new OptionsPanel.ChangeNotify() {
                 @Override

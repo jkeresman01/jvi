@@ -108,7 +108,7 @@ public class WindowCmdEntry extends CommandLine.CommandLineEntry {
         }
 
         private CommandLineWindow(Window owner) {
-            super(owner, DEFAULT_MODALITY_TYPE);
+            super(owner, ModalityType.DOCUMENT_MODAL);
         }
     }
 }
