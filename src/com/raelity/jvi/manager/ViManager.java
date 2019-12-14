@@ -37,7 +37,6 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.text.Keymap;
 
 import org.openide.util.lookup.Lookups;
@@ -84,7 +83,7 @@ public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("1.5.4");
+    public static final jViVersion version = new jViVersion("1.5.5.x0");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -226,19 +225,12 @@ public class ViManager
 
         // Spawn to get current release info
         // Note this is async
-        Motd.get(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e)
-            {
-                motd = (Motd)e.getSource();
-            }
+        Motd.get((ChangeEvent e) -> {
+            motd = (Motd)e.getSource();
         });
 
-        getFactory().setShutdownHook(new Runnable() {
-            @Override
-            public void run() {
-                firePropertyChange(P_SHUTDOWN, null, null);
-            }
+        getFactory().setShutdownHook(() -> {
+            firePropertyChange(P_SHUTDOWN, null, null);
         });
     }
 
@@ -601,12 +593,8 @@ public class ViManager
     }
 
     static void debugMotd() {
-        Motd.get(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e)
-            {
-                ((Motd)e.getSource()).output();
-            }
+        Motd.get((ChangeEvent e) -> {
+            ((Motd)e.getSource()).output();
         });
     }
 
@@ -709,12 +697,8 @@ public class ViManager
             EventQueue.invokeLater(runnable);
         } else {
             final int decr = nPause - 1;
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run()
-                {
-                    nInvokeLater(decr, runnable);
-                }
+            EventQueue.invokeLater(() -> {
+                nInvokeLater(decr, runnable);
             });
         }
     }

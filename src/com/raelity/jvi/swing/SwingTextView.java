@@ -1859,7 +1859,7 @@ public abstract class SwingTextView extends TextView
     {
         if (null != viewport)
             viewport.removeChangeListener(vpChangeListener);
-        viewport = SwingFactory.getViewport(component);
+        viewport = (JViewport)ViManager.getFactory().getViewport(component);
         if (null != viewport)
             viewport.addChangeListener(vpChangeListener);
         changeVp(true);

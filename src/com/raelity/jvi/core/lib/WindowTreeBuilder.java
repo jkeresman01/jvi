@@ -34,12 +34,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 
 import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.ViAppView;
+import com.raelity.jvi.ViFactory;
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView.Direction;
@@ -55,7 +55,6 @@ import com.raelity.jvi.manager.ViManager;
 
 import static com.raelity.jvi.manager.ViManager.cid;
 import com.raelity.jvi.options.DebugOption;
-import com.raelity.jvi.swing.SwingFactory;
 import java.util.logging.Level;
 
 /**
@@ -441,8 +440,9 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
     protected Rectangle getNodeRectangle(Node n)
     {
         Component c = n.getPeer();
-        if(c.getParent() instanceof JViewport)
-            c = c.getParent();
+        Component viewport = ViManager.getFactory().getViewport(c);
+        if(viewport != null)
+            c = viewport;
         Rectangle r = SwingUtilities.getLocalBounds(c);
         r = SwingUtilities.convertRectangle(c, r, null);
         return r;
@@ -452,10 +452,12 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
                                                   Node n)
     {
         Component c = n.getPeer();
-        TextView tv = (TextView)ViManager.getFactory().getTextView(c);
+        ViFactory fact = ViManager.getFactory();
+        TextView tv = (TextView)fact.getTextView(c);
         Rectangle r = round(tv.getVpLocation(tv.w_cursor));
-        if(c.getParent() instanceof JViewport)
-            c = c.getParent();
+        Component viewport = fact.getViewport(c);
+        if(viewport != null)
+            c = viewport;
         r = SwingUtilities.convertRectangle(c, r, null);
         return getProjectedRectangle(orientation, r);
     }
@@ -499,11 +501,11 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
     final protected Rectangle checkGetNodeRectangle(Component _c)
     {
         Component c = _c;
-        JViewport viewport = SwingFactory.getViewport(c);
+        Component viewport = ViManager.getFactory().getViewport(c);
         if(viewport != null)
             c = viewport;
         return SwingUtilities.convertRectangle(
-                c.getParent(), c.getBounds(), SwingUtilities.getRoot(c));
+                c, SwingUtilities.getLocalBounds(c), null);
     }
 
     protected void checkSplitter(Node node) {
@@ -628,8 +630,9 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
     protected Point getLocation(Node n)
     {
         Component c = n.getPeer();
-        if(c.getParent() instanceof JViewport)
-            c = c.getParent();
+        Component viewport = ViManager.getFactory().getViewport(c);
+        if(viewport != null)
+            c = viewport;
         return c.getLocationOnScreen();
     }
 

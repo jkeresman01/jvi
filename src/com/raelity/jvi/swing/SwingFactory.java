@@ -86,22 +86,22 @@ abstract public class SwingFactory implements ViFactory
     public static final String PROP_TV = "ViTextView";
     public static final String PROP_BUF  = "ViBuffer";
     public static final String PROP_AV = "ViAppView";
-
+    
     // all doc's that have been seen.
     protected Set<Document> docSet = new WeakSet<>();
-
+    
     // This is used only when dbgEditorActivation is turned on
     protected WeakHashMap<JTextComponent, Object> editorSet = new WeakHashMap<>();
-
+    
     JDialog dialog;
     protected static SwingFactory INSTANCE;
-
+    
     private static final boolean IS_MAC = ViManager.getOsVersion().isMac();
     private MouseInputAdapter mouseAdapter;
     private KeyListener keyListener;
-
+    
     // ............
-
+    
     /**
      *  Default constructor.
      */
@@ -111,22 +111,22 @@ abstract public class SwingFactory implements ViFactory
             throw new IllegalStateException("ViFactory already exists");
         }
         captureINSTANCE();
-
+        
         // Add VimClipboard DataFlavor if not already there
         // FlavorMap fm = SystemFlavorMap.getDefaultFlavorMap();
     }
-
+    
     private void captureINSTANCE()
     {
         INSTANCE = this;
     }
-
+    
     //////////////////////////////////////////////////////////////////////
     //
     // Some swing specific things that are "factory"ish,
     // that an implementation may want to override
     //
-
+    
     /**
      * @return action suitable for default key action
      */
@@ -134,8 +134,8 @@ abstract public class SwingFactory implements ViFactory
     {
         return new EnqueCharAction(name);
     }
-
-
+    
+    
     /**
      * @return action for picking up specified key
      */
@@ -143,7 +143,7 @@ abstract public class SwingFactory implements ViFactory
     {
         return new EnqueKeyAction(name, key);
     }
-
+    
     @Override
     public ViWindowNavigator getWindowNavigator()
     {
@@ -152,23 +152,23 @@ abstract public class SwingFactory implements ViFactory
             return null;
         return new SimpleWindowTreeBuilder(avs);
     }
-
+    
     @Override
     public ViWindowNavigator getWindowNavigator(List<ViAppView> avs)
     {
         return new SimpleWindowTreeBuilder(avs);
     }
-
+    
     //////////////////////////////////////////////////////////////////////
     //
     // ViFactory for swing
     //
-
+    
     @Override
     public ViAppView getAppView(Component e) {
         return (ViAppView)((JTextComponent)e).getClientProperty(PROP_AV);
     }
-
+    
     @Override
     public Class loadClass( String name ) throws ClassNotFoundException
     {
@@ -176,7 +176,7 @@ abstract public class SwingFactory implements ViFactory
         Class c = ClassLoader.getSystemClassLoader().loadClass(name);
         return c;
     }
-
+    
     @Override
     public final ViTextView getTextView(Component ed)
     {
@@ -184,7 +184,7 @@ abstract public class SwingFactory implements ViFactory
             return null;
         return (ViTextView)(((JTextComponent)ed).getClientProperty(PROP_TV));
     }
-
+    
     @Override
     public final ViTextView createTextView(Component editor)
     {
@@ -196,16 +196,16 @@ abstract public class SwingFactory implements ViFactory
             }
             tv01 = newTextView(ed);
             attachBuffer(tv01);
-
+            
             tv01.startup();
             ed.putClientProperty(PROP_TV, tv01);
             editorSet.put(ed, null);
         }
         return tv01;
     }
-
+    
     abstract protected ViTextView newTextView( JTextComponent ed );
-
+    
     @Override
     public final Set<ViTextView> getViTextViewSet()
     {
@@ -215,14 +215,14 @@ abstract public class SwingFactory implements ViFactory
             if(tv != null)
                 s.add(tv);
         }
-
+        
         return s;
     }
-
-
+    
+    
     abstract protected Buffer createBuffer( ViTextView tv );
-
-
+    
+    
     @Override
     public Set<Buffer> getBufferSet() // NEEDSWORK: collection, list MRU?
     {
@@ -233,11 +233,11 @@ abstract public class SwingFactory implements ViFactory
                 s.add(buf);
             }
         }
-
+        
         return s;
     }
-
-
+    
+    
     @Override
     public void shutdown( Component editor )
     {
@@ -247,7 +247,7 @@ abstract public class SwingFactory implements ViFactory
             ed.putClientProperty(PROP_AV, null);
             return;
         }
-
+        
         if ( G.dbgEditorActivation().getBoolean() ) {
             G.dbgEditorActivation().println("Activation: shutdown TV");
         }
@@ -257,8 +257,8 @@ abstract public class SwingFactory implements ViFactory
         ed.putClientProperty(PROP_AV, null);
         releaseBuffer(buf);
     }
-
-
+    
+    
     @Override
     public void changeBuffer(ViTextView tv, Object _oldDoc)
     {
@@ -269,8 +269,8 @@ abstract public class SwingFactory implements ViFactory
         attachBuffer(tv);
         releaseBuffer((Buffer)oldDoc.getProperty(PROP_BUF));
     }
-
-
+    
+    
     private void attachBuffer(ViTextView tv)
     {
         Document doc = ((JTextComponent)tv.getEditor()).getDocument();
@@ -288,8 +288,8 @@ abstract public class SwingFactory implements ViFactory
         }
         tv.attachBuffer(buf);
     }
-
-
+    
+    
     private void releaseBuffer(Buffer buf)
     {
         if ( buf != null ) {
@@ -305,20 +305,20 @@ abstract public class SwingFactory implements ViFactory
             }
         }
     }
-
-
+    
+    
     @Override
     public String getPlatformSelectionDisplayName()
     {
         return "PLATFORM-SELECTION";
     }
-
+    
     @Override
     public void setShutdownHook(Runnable hook) {
         Runtime.getRuntime().addShutdownHook(new Thread(hook));
     }
-
-
+    
+    
     /**
      *  Get the glass pane for the given component, if it doesn't
      *  have an associated mouseAdapter create one and add it.
@@ -344,8 +344,8 @@ abstract public class SwingFactory implements ViFactory
         }
         return glass;
     }
-
-
+    
+    
     /**
      *  Method to establish a glass pane with the param key listener and all
      *  mouse events are blocked.
@@ -358,28 +358,28 @@ abstract public class SwingFactory implements ViFactory
         if ( mouseAdapter != null ) {
             throw new IllegalStateException("Already in modal state");
         }
-
+        
         Container glass = getModalGlassPane(G.curwin().getEditor());
         keyListener = kl;
         glass.addKeyListener(kl);
         glass.setVisible(true);
-
+        
         // disable all focus traversal
         Set<AWTKeyStroke>noKeyStroke = Collections.emptySet();
         glass.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
-                                    noKeyStroke);
+                noKeyStroke);
         glass.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
-                                    noKeyStroke);
+                noKeyStroke);
         glass.setFocusTraversalKeys(KeyboardFocusManager.DOWN_CYCLE_TRAVERSAL_KEYS,
-                                    noKeyStroke);
+                noKeyStroke);
         glass.setFocusTraversalKeys(KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS,
-                                    noKeyStroke);
+                noKeyStroke);
         glass.setFocusCycleRoot(true);
-
+        
         glass.requestFocusInWindow();
     }
-
-
+    
+    
     @Override
     public void stopGlassKeyCatch()
     {
@@ -393,7 +393,7 @@ abstract public class SwingFactory implements ViFactory
         glass.removeKeyListener(keyListener);
         mouseAdapter = null;
         keyListener = null;
-
+        
         // Back to default bahavior
         glass.setFocusCycleRoot(false);
         glass.setFocusTraversalKeys(
@@ -406,8 +406,8 @@ abstract public class SwingFactory implements ViFactory
                 KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS, null);
         G.curwin().getEditor().requestFocusInWindow();
     }
-
-
+    
+    
     @Override
     public void startModalKeyCatch( KeyListener kl )
     {
@@ -429,16 +429,16 @@ abstract public class SwingFactory implements ViFactory
         p00.translate(jc.getWidth() - (int)d00.getWidth(), jc.getHeight());
         SwingUtilities.convertPointToScreen(p00, jc.getParent());
         dialog.setLocation(p00);
-
+        
         Component glass = dialog.getGlassPane();
         glass.addKeyListener(kl);
         glass.setVisible(true);
         glass.requestFocusInWindow();
-
+        
         dialog.setVisible(true);
     }
-
-
+    
+    
     @Override
     public void stopModalKeyCatch()
     {
@@ -449,9 +449,9 @@ abstract public class SwingFactory implements ViFactory
         dialog.dispose();
         dialog = null;
     }
-
+    
     private Timer timer;
-
+    
     @Override
     public void startTimeout(int timeoutlen, ActionListener l)
     {
@@ -462,7 +462,7 @@ abstract public class SwingFactory implements ViFactory
         timer.setRepeats(false);
         timer.start();
     }
-
+    
     @Override
     public void stopTimeout(ActionListener l)
     {
@@ -471,8 +471,8 @@ abstract public class SwingFactory implements ViFactory
         timer.stop();
         timer.removeActionListener(l);
     }
-
-
+    
+    
     /**
      * Register editor pane for use with vi. Install a
      * vi cursor. This is a nop
@@ -494,8 +494,8 @@ abstract public class SwingFactory implements ViFactory
             caret.setVisible(c.isVisible());
         }
     }
-
-
+    
+    
     @Override
     public PropertyDescriptor createPropertyDescriptor(
             String optName,
@@ -506,65 +506,65 @@ abstract public class SwingFactory implements ViFactory
         return OptionsBeanBase.createPropertyDescriptor(
                 optName, methodName, clazz);
     }
-
-
+    
+    
     @Override
     public ViCmdEntry createCmdEntry( ViCmdEntry.Type type )
     {
         // ViCmdEntry cmdEntry = new DefaultCmdEntry(cmdLine);
         // return cmdEntry;
-
+        
         // use this instead so that input is grabbed. When we have a
         // cleaner and more understandable key input state machine revisit
         // this.
-
+        
         if ( G.useFrame() ) {
             return new WindowCmdEntry(type);
         } else {
             return new InlineCmdEntry(type);
         }
     }
-
-
+    
+    
     /*
     public Keymap getInsertModeKeymap()
     {
-        return KeyBinding.insertModeKeymap;
+    return KeyBinding.insertModeKeymap;
     }
-
+    
     public Keymap getNormalModeKeymap()
     {
-        return KeyBinding.normalModeKeymap;
+    return KeyBinding.normalModeKeymap;
     }
     */
-
-
+    
+    
     @Override
     public Action createInsertModeKeyAction(String name, char vkey, String desc)
     {
         return new InsertModeAction(name, vkey, desc);
     }
-
+    
     @Override
     public Action createNormalModeKeyAction(String name, int vkey, String desc)
     {
-         return null;
+        return null;
     }
-
+    
     @Override
     public ActionListener xlateKeymapAction( ActionListener act )
     {
         return act;
     }
-
+    
     @Override
     public Preferences getPreferences()
     {
         return Preferences.userRoot().node(ViManager.PREFS_ROOT);
-      //return Preferences.userNodeForPackage(Options.class);
+        //return Preferences.userNodeForPackage(Options.class);
     }
-
-
+    
+    
     /**
      * This is the default key action.
      * Ignore all Ctrl characters (which includes that troublesome Ctrl-space).
@@ -576,8 +576,8 @@ abstract public class SwingFactory implements ViFactory
         public EnqueCharAction(String name) {
             super(name);
         }
-
-
+        
+        
         @Override
         public void actionPerformed( ActionEvent e )
         {
@@ -598,7 +598,7 @@ abstract public class SwingFactory implements ViFactory
                     boolean alt = IS_MAC
                             ? ((mod & ActionEvent.META_MASK) != 0)
                             : ((mod & ActionEvent.ALT_MASK) != 0);
-
+                    
                     boolean keep = true;
                     if ( alt || ctrl
                             || content.length() != 1
@@ -610,7 +610,7 @@ abstract public class SwingFactory implements ViFactory
                         // <RETURN>,<BS> come in < 0x20 without the Control key
                         keep = false;
                     }
-
+                    
                     if ( Options.kd().getBoolean() && c >= 0x20 ) {
                         System.err.println("CharAction: "
                                 + (keep ? "" : "REJECT: ")
@@ -623,20 +623,20 @@ abstract public class SwingFactory implements ViFactory
                     }
                 } else {
                     if  ( Options.kd().getBoolean() ) {
-                      Options.kd().println("CharAction: " + e);
+                        Options.kd().println("CharAction: " + e);
                     }
                 }
             }
         }
-
+        
         @Override
         public String toString() {
             return "jVi[DKTA]";
         }
-
+        
     } // end inner class EnqueCharAction
-
-
+    
+    
     /**
      * Catch non-printing keys with this class. The constructor
      * specifies which key. The modifiers are handled by examining
@@ -646,12 +646,12 @@ abstract public class SwingFactory implements ViFactory
     public static class EnqueKeyAction extends TextAction
     {
         char basekey;
-
+        
         public EnqueKeyAction(String name, char key) {
             super(name);
             this.basekey = key;
         }
-
+        
         @Override
         public void actionPerformed( ActionEvent e )
         {
@@ -667,23 +667,23 @@ abstract public class SwingFactory implements ViFactory
             }
             Scheduler.keyStroke(target, key, mod, KeyStrokeType.KEY);
         }
-
+        
         @Override
         public String toString() {
             return getValue(Action.NAME).toString();
         }
     }
-
-
+    
+    
     private static class InsertModeAction extends TextAction
             implements ViXlateKey
     {
         char basekey;
-
+        
         public InsertModeAction(String name, char vkey, String desc) {
             super(name); // ??????????????????????
             this.basekey = vkey;
-
+            
             // if name starts with Vi and ends with Key, then put out a message
             // with the name of the key in it
             //this.putValue(Action.LONG_DESCRIPTION, desc);
@@ -691,40 +691,41 @@ abstract public class SwingFactory implements ViFactory
             //EditorActions.addBindableEditorAction(this,
             //                                      JBViKeymap.VI_EDIT_KEYMAP);
         }
-
+        
         @Override
         public void actionPerformed(ActionEvent e) {
             // NOT USED for the translation keymap
         }
-
+        
         @Override
         public char getXlateKey() {
             return basekey;
         }
-
+        
     } // end inner class InsertModeAction
-
-
+    
+    
     @Override
     public void startTagPush( ViTextView tv, String ident ) {}
-
+    
     @Override
     public void tagStack( TAGOP op, int count ) {}
-
+    
     @Override
     public void displayTags() {}
-
+    
     @Override
     public void tagDialog( ColonCommands.ColonEvent e ) {}
-
+    
     @Override
     public void commandEntryAssist(ViCmdEntry cmdEntry, boolean enable ) {}
-
-    public static JViewport getViewport(Component c) {
-        return (JViewport)(c instanceof JViewport
+    
+    @Override
+    public Component getViewport(Component c) {
+        return c instanceof JViewport
                 ? c
-                : SwingUtilities.getAncestorOfClass(JViewport.class, c));
+                : SwingUtilities.getAncestorOfClass(JViewport.class, c);
     }
-
-
+    
+    
 } // end com.raelity.jvi.swing.DefaultViFactory

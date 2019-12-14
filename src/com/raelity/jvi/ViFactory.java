@@ -36,7 +36,7 @@ import com.raelity.jvi.core.ColonCommands;
 
 /**
  * This provides Vi the items it needs to interface with
- * swing UI environment.
+ * UI environment (like swing).
  */
 public interface ViFactory
 {
@@ -88,6 +88,13 @@ public interface ViFactory
      * @return
      */
     public ViWindowNavigator getWindowNavigator(List<ViAppView> avs);
+
+    /**
+     * Get a "stable" component that contains the editor.
+     * @param ed
+     * @return return a fix bounded component
+     */
+    public Component getViewport(Component ed);
 
     /**
      * Construct a window navigator for all visible AppViews.

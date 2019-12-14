@@ -1,5 +1,6 @@
 package com.raelity.jvi.swing;
 
+import com.raelity.jvi.manager.ViManager;
 import java.awt.EventQueue;
 import java.awt.Point;
 
@@ -45,7 +46,8 @@ public class FreezeViewport implements DocumentListener, ChangeListener
         doc = (AbstractDocument)ep.getDocument();
         try {
             doc.readLock();
-            vp = (JViewport)ep.getParent(); // may throw class cast, its ok
+            // may throw class cast, its ok. Why???
+            vp = (JViewport)ViManager.getFactory().getViewport(ep);
             Element root = doc.getDefaultRootElement();
             nLine = root.getElementCount();
             // Get the offset of the first displayed char in the top line
