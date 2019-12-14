@@ -40,15 +40,17 @@ public class AlwaysOnDebugOption {
         return true;
     }
 
-    final public void println(String s)
+    final public void println(String s, Object... args)
     {
-        println(Level.SEVERE, s);
+        println(Level.SEVERE, s, args);
     }
 
-    final public void println(Level level, String s)
+    final public void println(Level level, String msg, Object... args)
     {
-        if(getBoolean(level))
+        if(getBoolean(level)) {
+            String s = args.length == 0 ? msg : String.format(msg, args);
             System.err.println(s);
+        }
     }
 
     final public void printf(String format, Object... args)

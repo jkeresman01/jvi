@@ -53,6 +53,7 @@ import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Hook;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.lib.CcFlag;
+import java.util.Map.Entry;
 
 /**
  * <p>
@@ -84,7 +85,7 @@ public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("1.5.5.x5");
+    public static final jViVersion version = new jViVersion("1.5.5.x6");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -122,7 +123,7 @@ public class ViManager
     private static final EnumSet<ViFeature> features
             = EnumSet.allOf(ViFeature.class);
 
-    private static final Map<Object,Object> hackMap = new HashMap<Object,Object>();
+    private static final Map<Object,Object> hackMap = new HashMap<>();
     public static void putHackMap(Object key, Object val) {
         hackMap.put(key, val);
     }
@@ -211,6 +212,11 @@ public class ViManager
             if(isDebugAtHome())
                 G.dbg.println("INIT: " + i.getClass().getName());
             i.init();
+        }
+        if(isDebugAtHome()) {
+            for(Entry e: hackMap.entrySet()) {
+                G.dbg.println("HACKMAP: %s %s", e.getKey(), e.getValue());
+            }
         }
 
         if(core == null)
