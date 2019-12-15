@@ -518,10 +518,12 @@ abstract public class SwingFactory implements ViFactory
         // cleaner and more understandable key input state machine revisit
         // this.
         
-        if ( G.useFrame() ) {
-            return new WindowCmdEntry(type);
-        } else {
+        Object opt = ViManager.getOptionAtStartup(Options.commandEntryFrame);
+        G.dbgOptions().println("createCmdEntry: modality: %s", opt);
+        if (Options.CEF_GLASS_PANE.equals(opt)) {
             return new InlineCmdEntry(type);
+        } else {
+            return new WindowCmdEntry(type);
         }
     }
     

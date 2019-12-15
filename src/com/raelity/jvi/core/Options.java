@@ -50,6 +50,7 @@ import com.raelity.text.TextUtil.MySegment;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Constants.FDO.*;
 import static com.raelity.jvi.core.lib.Constants.NF.*;
+import javax.swing.event.ChangeListener;
 
 /**
  * Option handling from external sources.
@@ -86,7 +87,16 @@ public final class Options {
       public void init()
       {
         Options.init();
+        if(notifyInitialized != null)
+          notifyInitialized.stateChanged(null);
       }
+    }
+
+    private static ChangeListener notifyInitialized;
+    public static void informAfterInit(ChangeListener change)
+    {
+        if(notifyInitialized == null)
+          notifyInitialized = change;
     }
 
     // Sigh, don't want public...
@@ -233,6 +243,15 @@ public final class Options {
   public static final String dbgFonts = "viDbgFonts";
 
   public static final String twMagic = "#TEXT-WIDTH#";
+
+  // some enum values
+
+  // CommandEntryFrame
+  public static final String CEF_APP_MODAL = "Application Modal";
+  public static final String CEF_DOC_MODAL = "Document Modal";
+  public static final String CEF_GLASS_PANE = "Glass Pane";
+  
+  
 
   private static boolean didInit = false;
   private static void init() {
@@ -417,10 +436,16 @@ public final class Options {
                     + " does not bring up output window.");
     setExpertHidden(hideVersionOption, true, false);
     
-    OptUtil.createBooleanOption(commandEntryFrame , true);
-    OptUtil.setupOptionDesc(Category.PLATFORM, commandEntryFrame, "use modal frame",
-               "Use modal frame for command/search entry."
-               + " Change takes affect after restart.");
+    OptUtil.createEnumStringOption(commandEntryFrame , CEF_APP_MODAL,
+            new String[] {CEF_APP_MODAL, CEF_DOC_MODAL, CEF_GLASS_PANE});
+    OptUtil.setupOptionDesc(Category.PLATFORM, commandEntryFrame,
+            "command line modality",
+            "Modality for command/search entry windows.\n"
+            + "APPLICATION MODAL is recommended.\n"
+            + "NOTE: change takes affect after restart.\n\n"
+            + "This option is provided due to problems with"
+            + " dialog modality on some OS. The third option"
+            + " uses a non modal command line on a glass pane.");
     setExpertHidden(commandEntryFrame, true, false);
     
     OptUtil.createBooleanOption(autoPopupFN, true);

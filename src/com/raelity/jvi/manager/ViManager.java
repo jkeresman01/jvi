@@ -51,6 +51,7 @@ import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Hook;
+import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.lib.CcFlag;
 
 /**
@@ -83,7 +84,7 @@ public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("1.5.5.x3");
+    public static final jViVersion version = new jViVersion("1.5.5.x5");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -199,6 +200,11 @@ public class ViManager
 
 
         ViManager.factory = factory;
+        fixupPreferences();
+
+        Options.informAfterInit((ChangeEvent e) -> {
+            setupOptionAtStartup();
+        });
 
         for (ViInitialization i : Lookups.forPath("jVi/init")
                                         .lookupAll(ViInitialization.class)) {
@@ -634,6 +640,21 @@ public class ViManager
         pcs.firePropertyChange(name, oldValue, newValue);
       }
 
+      // some changes (poorly thought out) require fixups in preferences
+      private static void fixupPreferences() {
+        Preferences prefs = getFactory().getPreferences();
+        String t = prefs.get(Options.commandEntryFrame, "xxx");
+        // if the pref hasn't been set, then nothing to do
+        if(!t.equals("xxx")) {
+            // something is set.
+            // If it is a boolean, old school, then force it back to default.
+            // Could map false to "Glass Pane", but time try modal again
+            if(t.equalsIgnoreCase("true")
+                    || t.equalsIgnoreCase("false"))
+                prefs.remove(Options.commandEntryFrame);
+        }
+      }
+
     /**
     * Copy preferences tree.
     */
@@ -724,6 +745,29 @@ public class ViManager
             }
         }
     }
+
+    private static String useFrame_ValueAtBoot;
+
+    // this is called after the options are setup
+    private static void setupOptionAtStartup() {
+        if(useFrame_ValueAtBoot != null) {
+            throw new RuntimeException("setupOptionAtBoot already set");
+        }
+        // Get the boot value of certain Options
+        useFrame_ValueAtBoot = Options.getOption(Options.commandEntryFrame)
+                .getString();
+    }
+
+    // Might be better to save the option value in
+    // WindowCmdEentry, then use it from there when
+    // creating the command line window. But this
+    // is extensible and guarenteed to preserve semantics.
+    public static Object getOptionAtStartup(String optName) {
+        if(Options.commandEntryFrame.equals(optName))
+            return useFrame_ValueAtBoot;
+        return null;
+    }
+        
 }
 
 // vi:set sw=4 ts=8:

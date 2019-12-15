@@ -31,6 +31,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import com.raelity.jvi.ViCmdEntry;
+import com.raelity.jvi.core.G;
+import com.raelity.jvi.core.Options;
+import com.raelity.jvi.manager.ViManager;
 
 /**
  * This class provides a floating CommandLine entry widget.
@@ -107,8 +110,22 @@ public class WindowCmdEntry extends CommandLine.CommandLineEntry {
             return d;
         }
 
+        private static ModalityType selectModalityType() {
+            String opt = (String)
+                    ViManager.getOptionAtStartup(Options.commandEntryFrame);
+            ModalityType type;
+            // NOTE: toolkit modal is impossible... famous last words.
+            type = opt.equals(Options.CEF_APP_MODAL)
+                    ? ModalityType.APPLICATION_MODAL
+                    : opt.equals(Options.CEF_DOC_MODAL)
+                        ? ModalityType.DOCUMENT_MODAL
+                        : ModalityType.TOOLKIT_MODAL;
+            G.dbgOptions().println("CommandLineWindow: modality: %s", type);
+            return type;
+        }
+
         private CommandLineWindow(Window owner) {
-            super(owner, ModalityType.DOCUMENT_MODAL);
+            super(owner, selectModalityType());
         }
     }
 }

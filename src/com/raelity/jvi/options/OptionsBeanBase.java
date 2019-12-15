@@ -840,12 +840,13 @@ implements Options.EditControl {
 	return getboolean(Options.showMode);
     }
 
-    public void setViCommandEntryFrameOption(boolean arg) {
+    public void setViCommandEntryFrameOption(String arg)
+    throws PropertyVetoException {
         put("viCommandEntryFrameOption", arg);
     }
 
-    public boolean getViCommandEntryFrameOption() {
-	return getboolean("viCommandEntryFrameOption");
+    public String getViCommandEntryFrameOption() {
+	return getString("viCommandEntryFrameOption");
     }
 
     public void setViBackspaceWrapPrevious(boolean arg) {
