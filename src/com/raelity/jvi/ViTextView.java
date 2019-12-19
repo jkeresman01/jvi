@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.awt.geom.Rectangle2D;
 
 import com.raelity.jvi.core.Buffer;
+import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.lib.MutableInt;
 
 
@@ -56,9 +57,6 @@ public interface ViTextView extends ViOptionBag {
 
   /** tags and tagstack operations */
   public enum TAGOP { OLDER, NEWER }
-
-  /** move to other tab */
-  public enum TABOP { NEXT_TAB, PREV_TAB }
 
   /** word match operations */
   public enum WMOP { NEXT_WORD_MATCH, PREV_WORD_MATCH }
@@ -154,6 +152,19 @@ public interface ViTextView extends ViOptionBag {
   /** ring the bell, take visual bell options into account */
   public void bell();
 
+  /** @return tab info for container holding this text editor */
+  default public ViTabInfo getTabInfo() {
+    return ViTabInfo.getDebugTabInfo();
+  };
+
+  default public void tab_move(int tabNumber, ViTabInfo ti) {
+        Msg.emsg("tab_move(%d) NIMP", tabNumber);
+  }
+
+  default public void tab_goto(int tabNumber, ViTabInfo ti) {
+        Msg.emsg("tab_goto(%d) NIMP", tabNumber);
+  }
+
   //////////////////////////////////////////////////////////////////////
   //
   // Text Modification methods
@@ -242,13 +253,6 @@ public interface ViTextView extends ViOptionBag {
   public boolean hasAnyFolding();
 
   public void wordMatchOperation(WMOP op);
-
-  /** move to other file tab.<br/>
-   * For NEXT,PREV if count == 0 then neighboring tab;
-   * if count != 0 then countTh tab, where first is one
-   */
-  public void tabOperation(TABOP op, int count);
-
 
   //
   // Without other indiation, any Vp*Line refers to lines on the screen.

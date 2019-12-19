@@ -133,6 +133,8 @@ static void executeCommand( ColonEvent cev )
 {
     if(cev != null) {
         ((ActionListener)cev.commandElement.getValue()).actionPerformed(cev);
+        if(cev.getEmsg() != null)
+            Msg.emsg(cev.getEmsg());
     }
 }
 
@@ -231,12 +233,14 @@ private static ColonEvent parseCommandGuts(String commandLine,
             // default is current line number
         cev.line2 = isExecuting ? G.curwin.w_cursor.getLine() : 1;
         sidx = skipwhite(commandLine, sidx);
+        int idxAddr = sidx;
         sidx = get_address(commandLine,
                            sidx,
                            skip,
                            lnum);
         if (sidx < 0)            // error detected
             return null; // NEEDSWORK: goto doend;
+        cev.lastAddr = commandLine.substring(idxAddr, sidx);
         // if(lnum.getValue() == 0) {
         //   lnum.setValue(1);    // NEEDSWORK: is this right?
         // }
@@ -721,6 +725,10 @@ static public class ColonEvent extends ActionEvent
     int line2;
     /** the number of addresses given */
     int addr_count;
+    /** the last addr parsed (for tab ops) */
+    String lastAddr;
+    /** If this gets set there's an error */
+    String emsg;
 
     ColonEvent(ViTextView c)
     {
@@ -752,6 +760,11 @@ static public class ColonEvent extends ActionEvent
     public int getAddrCount()
     {
         return addr_count;
+    }
+
+    public String getLastAddr()
+    {
+        return lastAddr.trim();
     }
     
     public ActionListener getAction()
@@ -842,6 +855,10 @@ static public class ColonEvent extends ActionEvent
     public String getCommandLine()
     {
         return commandLine;
+    }
+
+    public String getEmsg() {
+        return emsg;
     }
 
 } // end inner class ColonEvent

@@ -719,13 +719,6 @@ public abstract class SwingTextView extends TextView
 
 
     @Override
-    public void tabOperation( TABOP op, int count )
-    {
-        Util.beep_flush();
-    }
-
-
-    @Override
     public int getVpTopLogicalLine()
     {
         int logicalLine = lm.logicalLine(getVpTopDocumentLine());

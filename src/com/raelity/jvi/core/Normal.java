@@ -39,7 +39,6 @@ import com.raelity.jvi.ViTextView.EDGE;
 import com.raelity.jvi.ViTextView.FOLDOP;
 import com.raelity.jvi.ViTextView.HDIR;
 import com.raelity.jvi.ViTextView.HSCROLL;
-import com.raelity.jvi.ViTextView.TABOP;
 import com.raelity.jvi.ViTextView.TAGOP;
 import com.raelity.jvi.core.Misc.Yankreg;
 import com.raelity.jvi.core.lib.NotSupportedException;
@@ -4138,11 +4137,11 @@ nv_brackets(CMDARG cap, int dir)
         break;
 
     case 't':
-        G.curwin.tabOperation(TABOP.NEXT_TAB, cap.count0);
+        Cc01.gotoTabpage(cap.count0, null);
         break;
 
     case 'T':
-        G.curwin.tabOperation(TABOP.PREV_TAB, cap.count0);
+        Cc01.gotoTabpage(-cap.count1, null);
         break;
 
       default:

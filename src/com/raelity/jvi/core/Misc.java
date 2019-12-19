@@ -3940,6 +3940,10 @@ private static int put_in_typebuf(String s, boolean colon)
       int rval = 0;
       boolean isneg = false;
       
+      mi.setValue(rval);
+      if(sidx >= s.length())
+        return sidx;
+
       char v = s.charAt(sidx);
       if(v == '-' || v == '+') {
         if(v == '-') {
