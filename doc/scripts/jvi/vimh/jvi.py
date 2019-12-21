@@ -8,11 +8,11 @@ import vimh_scan as vs
 from vimh_build import VimHelpBuildHtml
 
 def usage():
-    print 'jvi.py input_dir [output_dir]'
+    print('jvi.py input_dir [output_dir]')
     exit(1)
 
 if len(sys.argv) < 2:
-    print 'must be at least one argument'
+    print('must be at least one argument')
     usage()
 
 # usage: cmd input_dir [output_dir]
@@ -31,7 +31,9 @@ if len(sys.argv) > 2:
 else:
     OUTPUT_DIR = INPUT_DIR
 
-print 'input dir:', INPUT_DIR, 'output dir:', OUTPUT_DIR
+print('input dir:', INPUT_DIR, 'output dir:', OUTPUT_DIR)
+# vimh_build::process for brief per file info
+# vimh_build::_do_filter
 
 vh.TOP_TEXT = """
 <h1>jVi help files</h1>
@@ -87,7 +89,8 @@ vs.PAT_TITLE = PAT_TITLE
 
 class JviH2H(VimH2H):
     def __init__(self, tags):
-        super(JviH2H, self).__init__(tags, VimHelpBuildHtml(tags))
+        builder = VimHelpBuildHtml(tags)
+        super(JviH2H, self).__init__(tags, builder)
 
 with open(TAGS_FILE) as f: h2h = JviH2H(f)
 
@@ -96,3 +99,8 @@ for helpfile in helpfiles:
         html = h2h.to_html(helpfile, f, False, False)
 
     with open(OUTPUT_DIR + helpfile + '.html', 'w') as f: f.write(html)
+
+# links = h2h.builder.links
+# print("=== h2h LINKS ===")
+# for tag in links.keys():
+#     print(tag, "=", links.href(tag))

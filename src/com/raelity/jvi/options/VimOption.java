@@ -66,7 +66,7 @@ public final class VimOption {
 
     static List<VimOption> getAllUser()
     {
-        List<VimOption> l = new ArrayList<VimOption>(vopts.length);
+        List<VimOption> l = new ArrayList<>(vopts.length);
         for(VimOption vopt : vopts) {
             if(vopt.f(F.HIDE) || Options.getOption(vopt.getOptName()).isHidden())
                 continue;

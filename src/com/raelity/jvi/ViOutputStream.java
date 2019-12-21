@@ -25,7 +25,7 @@ package com.raelity.jvi;
  * matching a search or result of some command execution, the output
  * is sent to a ViOutputStream.
  */
-public interface ViOutputStream {
+public interface ViOutputStream extends AutoCloseable {
   /** Indicates that the output stream is for search results */
   public static final String SEARCH = "Search";
   /** Indicates that the output stream is random lines from a file */
@@ -60,5 +60,6 @@ public interface ViOutputStream {
   /**
    * Done with the stream.
    */
+  @Override
   public void close();
 }

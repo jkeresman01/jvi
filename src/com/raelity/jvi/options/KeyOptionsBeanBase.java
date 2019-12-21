@@ -38,7 +38,7 @@ import com.raelity.jvi.swing.KeyBinding;
 public class KeyOptionsBeanBase extends SimpleBeanInfo
         implements Options.EditControl {
 
-    private Map<String,Boolean> changeMap = new HashMap<String,Boolean>();
+    private final Map<String,Boolean> changeMap = new HashMap<>();
 
     @Override
     public void cancel()

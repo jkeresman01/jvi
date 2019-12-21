@@ -90,6 +90,7 @@ final public class PlayFactory extends SimpleFactory
     }
 
     @Override
+    @SuppressWarnings("null")
     public void setupCaret(Component editor)
     {
         JTextComponent ed = (JTextComponent)editor;

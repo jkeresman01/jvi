@@ -37,9 +37,9 @@ import com.raelity.jvi.swing.SwingFactory;
  */
 public abstract class SimpleAppView implements ViAppView
 {
-    private Container c;
-    private JTextComponent e;
-    private int wnum;
+    private final Container c;
+    private final JTextComponent e;
+    private final int wnum;
 
     private static int genWNum; // for the generation of the unique nums
 

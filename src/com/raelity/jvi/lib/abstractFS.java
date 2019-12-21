@@ -56,12 +56,13 @@ abstract public class abstractFS implements ViFS
         if(true) {
             sb.append(" ").append(l).append(" line").append(Misc.plural(l));
             sb.append(" --").append(percent).append("%--");
-        } else {
-            sb.append(" line ").append(win.w_cursor.getLine());
-            sb.append(" of ").append(buf.getLineCount());
-            sb.append(" --").append(percent).append("%--");
-            sb.append(" col ").append(win.w_cursor.getColumn());
         }
+        // else {
+        //     sb.append(" line ").append(win.w_cursor.getLine());
+        //     sb.append(" of ").append(buf.getLineCount());
+        //     sb.append(" --").append(percent).append("%--");
+        //     sb.append(" col ").append(win.w_cursor.getColumn());
+        // }
         if(av != null && av.isNomad())
             sb.append(" [nomad]");
         if(!tv.isEditable())

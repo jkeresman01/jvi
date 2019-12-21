@@ -51,7 +51,7 @@ import static com.raelity.jvi.core.lib.Constants.*;
  */
 abstract public class SimpleBuffer extends SwingBuffer
 {
-    private UndoManager undoMan;
+    private final UndoManager undoMan;
 
     public SimpleBuffer(ViTextView tv)
     {

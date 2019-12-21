@@ -34,6 +34,7 @@ import javax.swing.text.TextAction;
 
 import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.swing.WindowCmdEntry;
+import javax.swing.UnsupportedLookAndFeelException;
 
 public class TestText {
   boolean packFrame = false;
@@ -64,11 +65,13 @@ public class TestText {
   }
 
   //Main method
+  @SuppressWarnings("CallToPrintStackTrace")
   public static void main(String[] args) {
     try {
       UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
     }
-    catch(Exception e) {
+    catch(ClassNotFoundException | IllegalAccessException
+            | InstantiationException | UnsupportedLookAndFeelException e) {
       e.printStackTrace();
     }
     new TestText();

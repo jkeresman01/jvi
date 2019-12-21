@@ -29,7 +29,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.core.lib.BufferQueue;
-import com.raelity.jvi.core.lib.KeyDefs;
 import com.raelity.jvi.core.lib.Mappings;
 import com.raelity.jvi.core.lib.TypeBufMultiCharMapping;
 import com.raelity.jvi.manager.ViManager;
@@ -44,7 +43,7 @@ import static com.raelity.jvi.core.lib.KeyDefs.*;
 public class GetChar {
     private static boolean block_redo = false;
     private static boolean handle_redo = false;
-    private static Option magicRedoAlgo
+    private static final Option magicRedoAlgo
             = Options.getOption(Options.magicRedoAlgorithm);
     private static String currentMagicRedoAlgo = "anal";
 
@@ -87,7 +86,7 @@ public class GetChar {
             flush_buffers(true);
     }
 
-    private static ActionListener mappingTimeout = new ActionListener() {
+    private static final ActionListener mappingTimeout = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e)
         {
@@ -244,18 +243,13 @@ public class GetChar {
             runEventQueue = 0;
             return false;
         }
-        EventQueue.invokeLater(new Runnable() {
-
-            @Override
-            public void run()
-            {
-                if(Options.kd().getBoolean())
-                    Options.kd().println("runEventQueue:" + runEventQueue);
-                if(runEventQueue > 0)
-                    runEventQueue(collectingGroupUndo);
-                else
-                    gotc(NO_CHAR, 0);
-            }
+        EventQueue.invokeLater(() -> {
+            if(Options.kd().getBoolean())
+                Options.kd().println("runEventQueue:" + runEventQueue);
+            if(runEventQueue > 0)
+                runEventQueue(collectingGroupUndo);
+            else
+                gotc(NO_CHAR, 0);
         });
         return true;
     }
@@ -271,13 +265,10 @@ public class GetChar {
         if(!collectingGroupUndo)
             pumpAllChars(collectingGroupUndo);
         else {
-            Misc.runUndoable(new Runnable() {
-                @Override
-                public void run() {
-                    if(c != NO_CHAR)
-                        pumpChar(c);
-                    pumpAllChars(collectingGroupUndo);
-                }
+            Misc.runUndoable(() -> {
+                if(c != NO_CHAR)
+                    pumpChar(c);
+                pumpAllChars(collectingGroupUndo);
             });
         }
     }
@@ -414,14 +405,12 @@ public class GetChar {
      */
     static boolean char_avail() {
         // NOTE: Look at description for vgetorpeek; there's more to add
-
-        if(stuffbuff.hasNext() || typebuf.hasNext()) {
-            return true;
-        }
-
-        return false; // would really like to check...
+        // would really like to check...
+        
+        return stuffbuff.hasNext() || typebuf.hasNext(); 
 
         // return keyInput.hasChar();
+
 
     }
 
@@ -567,12 +556,18 @@ public class GetChar {
         if(!magicRedoAlgo.getString().equals(currentMagicRedoAlgo)) {
             currentMagicRedoAlgo = magicRedoAlgo.getString();
             G.dbgRedo.printf("Switching redo to %s\n", currentMagicRedoAlgo);
-            if(currentMagicRedoAlgo.equals("anal"))
+            switch (currentMagicRedoAlgo) {
+            case "anal":
                 magicRedo = new MagicRedoOriginal(redobuff);
-            else if(currentMagicRedoAlgo.equals("guard"))
+                break;
+            case "guard":
                 magicRedo = new MagicRedo(redobuff);
-            else
-                ViManager.warning("WHAT?! magic redo algo: " + currentMagicRedoAlgo);
+                break;
+            default:
+                ViManager.warning("WHAT?! magic redo algo: "
+                        + currentMagicRedoAlgo);
+                break;
+            }
         }
         magicRedo.charTyped(NUL);
         if (!block_redo()) {

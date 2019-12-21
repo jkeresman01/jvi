@@ -30,30 +30,33 @@ public class Msg
     /**
      *  Display a status message.
      */
-    public static void smsg( String msg )
+    public static void smsg( String msg, Object ... args )
     {
         // VV_STATUSMSG
-        G.curwin.getStatusDisplay().displayStatusMessage(msg);
+        String s = args.length == 0 ? msg : String.format(msg, args);
+        G.curwin.getStatusDisplay().displayStatusMessage(s);
     }
 
 
     /**
      *  Display a warning message.
      */
-    public static void wmsg( String msg )
+    public static void wmsg( String msg, Object ... args )
     {
         // VV_STATUSMSG
-        G.curwin.getStatusDisplay().displayWarningMessage(msg);
+        String s = args.length == 0 ? msg : String.format(msg, args);
+        G.curwin.getStatusDisplay().displayWarningMessage(s);
     }
 
 
     /**
      *  Display an error message.
      */
-    public static void emsg( String msg )
+    public static void emsg( String msg, Object... args )
     {
         // VV_ERRMSG; HLF_E highlight
-        G.curwin.getStatusDisplay().displayErrorMessage(msg);
+        String s = args.length == 0 ? msg : String.format(msg, args);
+        G.curwin.getStatusDisplay().displayErrorMessage(s);
         GetChar.flush_buffers(false);
     }
 
@@ -61,9 +64,10 @@ public class Msg
     /**
      *  Display a frozen message.
      */
-    public static void fmsg( String msg )
+    public static void fmsg( String msg, Object ... args )
     {
-        G.curwin.getStatusDisplay().displayFrozenMessage(msg);
+        String s = args.length == 0 ? msg : String.format(msg, args);
+        G.curwin.getStatusDisplay().displayFrozenMessage(s);
     }
 
 

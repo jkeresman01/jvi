@@ -35,7 +35,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import com.raelity.jvi.core.G;
@@ -53,15 +52,15 @@ public class OptUtil {
     private static boolean didInit = false;
     private static Preferences prefs;
     private static PropertyChangeSupport pcs;
-    private static Map<String,Option> optionsMap = new HashMap<String,Option>();
+    private static final Map<String,Option> optionsMap = new HashMap<>();
 
-    private static List<String> platformList = new ArrayList<String>();
-    private static List<String> generalList = new ArrayList<String>();
-    private static List<String> modifyList = new ArrayList<String>();
-    private static List<String> searchList = new ArrayList<String>();
-    private static List<String> cursorWrapList = new ArrayList<String>();
-    private static List<String> processList = new ArrayList<String>();
-    private static List<String> debugList = new ArrayList<String>();
+    private static final List<String> platformList = new ArrayList<>();
+    private static final List<String> generalList = new ArrayList<>();
+    private static final List<String> modifyList = new ArrayList<>();
+    private static final List<String> searchList = new ArrayList<>();
+    private static final List<String> cursorWrapList = new ArrayList<>();
+    private static final List<String> processList = new ArrayList<>();
+    private static final List<String> debugList = new ArrayList<>();
 
     public static void init(PropertyChangeSupport pcs)
     {
@@ -76,19 +75,14 @@ public class OptUtil {
 
         prefs = ViManager.getFactory().getPreferences();
 
-        prefs.addPreferenceChangeListener(new PreferenceChangeListener()
-        {
-            @Override
-            public void preferenceChange(PreferenceChangeEvent evt)
-            {
-                Option opt = Options.getOption(evt.getKey());
-                if (opt != null) {
-                    if (evt.getNewValue() != null) {
-                        opt.preferenceChange(evt.getNewValue());
-                    }
-                }
-                Options.optionChangeFixup(opt, evt);
+        prefs.addPreferenceChangeListener((PreferenceChangeEvent evt) -> {
+          Option opt = Options.getOption(evt.getKey());
+          if (opt != null) {
+            if (evt.getNewValue() != null) {
+              opt.preferenceChange(evt.getNewValue());
             }
+          }
+          Options.optionChangeFixup(opt, evt);
         });
     }
 
@@ -133,8 +127,8 @@ public class OptUtil {
     if(optionsMap.get(name) != null)
         throw new IllegalArgumentException("Option " + name + "already exists");
     if(valid == null)
-      valid = new EnumOption.DefaultEnumValidator<String>();
-    EnumOption<String> opt = new EnumOption<String>(name, defaultValue,
+      valid = new EnumOption.DefaultEnumValidator<>();
+    EnumOption<String> opt = new EnumOption<>(name, defaultValue,
             valid, availableValues);
     optionsMap.put(name, opt);
     return opt;
@@ -191,8 +185,8 @@ public class OptUtil {
     if(optionsMap.get(name) != null)
         throw new IllegalArgumentException("Option " + name + "already exists");
     if(valid == null)
-      valid = new EnumOption.DefaultEnumValidator<Integer>();
-    EnumOption<Integer> opt = new EnumOption<Integer>(name, defaultValue,
+      valid = new EnumOption.DefaultEnumValidator<>();
+    EnumOption<Integer> opt = new EnumOption<>(name, defaultValue,
             valid, availableValues);
     optionsMap.put(name, opt);
     return opt;
@@ -321,13 +315,8 @@ public class OptUtil {
         throw new IllegalArgumentException("option " + opt.getName());
       if(   G.dbgOptions().getBoolean())
             G.dbgOptions().printf("Init G.%s to '%s'\n", vopt.getVarName(), opt.getValue());
-    } catch(IllegalArgumentException ex) {
-      Logger.getLogger(OptUtil.class.getName()).log(Level.SEVERE, null, ex);
-    } catch(IllegalAccessException ex) {
-      Logger.getLogger(OptUtil.class.getName()).log(Level.SEVERE, null, ex);
-    } catch(NoSuchFieldException ex) {
-      Logger.getLogger(OptUtil.class.getName()).log(Level.SEVERE, null, ex);
-    } catch(SecurityException ex) {
+    } catch(IllegalArgumentException | IllegalAccessException
+            | NoSuchFieldException | SecurityException ex) {
       Logger.getLogger(OptUtil.class.getName()).log(Level.SEVERE, null, ex);
     }
   }
@@ -350,18 +339,14 @@ public class OptUtil {
           opt.getString();
         if(     G.dbgOptions().getBoolean())
                 G.dbgOptions().println("VERIFY: " + vopt.getOptName());
-      } catch(NoSuchFieldException ex) {
-        Logger.getLogger(VimOption.class.getName()).log(Level.SEVERE, null,
-                                                                      ex);
-      } catch(SecurityException ex) {
-        Logger.getLogger(VimOption.class.getName()).log(Level.SEVERE, null,
-                                                                      ex);
+      } catch(NoSuchFieldException | SecurityException ex) {
+        Logger.getLogger(VimOption.class.getName()).log(Level.SEVERE, null, ex);
       }
     }
   }
 
   public static void checkAllForSetCommand() {
-    Set<String> hasSetCommand = new HashSet<String>();
+    Set<String> hasSetCommand = new HashSet<>();
     for(VimOption vopt : VimOption.getAll()) {
       hasSetCommand.add(vopt.getOptName());
     }

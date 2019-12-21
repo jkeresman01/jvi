@@ -73,6 +73,7 @@ import com.raelity.jvi.options.OptionsBeanBase;
 import com.raelity.jvi.swing.simple.SimpleWindowTreeBuilder;
 
 import static com.raelity.jvi.core.lib.KeyDefs.*;
+import javax.swing.JViewport;
 
 /**
  * This provides the Vi items to interface with standard swing JTextComponent.
@@ -87,16 +88,15 @@ abstract public class SwingFactory implements ViFactory
     public static final String PROP_AV = "ViAppView";
 
     // all doc's that have been seen.
-    protected Set<Document> docSet = new WeakSet<Document>();
+    protected Set<Document> docSet = new WeakSet<>();
 
     // This is used only when dbgEditorActivation is turned on
-    protected WeakHashMap<JTextComponent, Object> editorSet
-            = new WeakHashMap<JTextComponent, Object>();
+    protected WeakHashMap<JTextComponent, Object> editorSet = new WeakHashMap<>();
 
     JDialog dialog;
     protected static SwingFactory INSTANCE;
 
-    private static final boolean isMac = ViManager.getOsVersion().isMac();
+    private static final boolean IS_MAC = ViManager.getOsVersion().isMac();
     private MouseInputAdapter mouseAdapter;
     private KeyListener keyListener;
 
@@ -209,7 +209,7 @@ abstract public class SwingFactory implements ViFactory
     @Override
     public final Set<ViTextView> getViTextViewSet()
     {
-        Set<ViTextView> s = new HashSet<ViTextView>();
+        Set<ViTextView> s = new HashSet<>();
         for (JTextComponent ed : editorSet.keySet()) {
             ViTextView tv = (ViTextView) ed.getClientProperty(PROP_TV);
             if(tv != null)
@@ -226,7 +226,7 @@ abstract public class SwingFactory implements ViFactory
     @Override
     public Set<Buffer> getBufferSet() // NEEDSWORK: collection, list MRU?
     {
-        Set<Buffer> s = new HashSet<Buffer>();
+        Set<Buffer> s = new HashSet<>();
         for (Document doc : docSet) {
             Buffer buf = (Buffer) doc.getProperty(PROP_BUF);
             if ( buf != null ) {
@@ -479,6 +479,7 @@ abstract public class SwingFactory implements ViFactory
      * if already registered.
      */
     @Override
+    @SuppressWarnings("null")
     public void setupCaret( Component editor)
     {
         JTextComponent ed = (JTextComponent)editor;
@@ -594,7 +595,7 @@ abstract public class SwingFactory implements ViFactory
                     // On the mac, norwegian and french keyboards use Alt to do
                     // bracket characters. This replicates Apple's modification
                     // DefaultEditorKit.DefaultKeyTypedAction
-                    boolean alt = isMac
+                    boolean alt = IS_MAC
                             ? ((mod & ActionEvent.META_MASK) != 0)
                             : ((mod & ActionEvent.ALT_MASK) != 0);
 
@@ -718,6 +719,12 @@ abstract public class SwingFactory implements ViFactory
 
     @Override
     public void commandEntryAssist(ViCmdEntry cmdEntry, boolean enable ) {}
+
+    public static JViewport getViewport(Component c) {
+        return (JViewport)(c instanceof JViewport
+                ? c
+                : SwingUtilities.getAncestorOfClass(JViewport.class, c));
+    }
 
 
 } // end com.raelity.jvi.swing.DefaultViFactory

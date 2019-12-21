@@ -42,7 +42,6 @@ import java.awt.event.FocusListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -86,6 +85,7 @@ import com.raelity.jvi.core.Options;
 import com.raelity.jvi.lib.MyEventListenerList;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.DebugOption;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * This class presents a editable combo box UI for picking up command entry
@@ -145,21 +145,13 @@ public class CommandLine extends JPanel
         combo.setEditable(true);
         JTextComponent text
                 = (JTextComponent) combo.getEditor().getEditorComponent();
-        text.addPropertyChangeListener("keymap", new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if(setKeymapActive)
-                    return;
-                Object newO = evt.getNewValue();
-                Object oldO = evt.getOldValue();
-                if(newO != null) {
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            setKeymap();
-                        }
-                    });
-                }
+        text.addPropertyChangeListener("keymap", (PropertyChangeEvent evt) -> {
+            if(setKeymapActive)
+                return;
+            Object newO = evt.getNewValue();
+            Object oldO = evt.getOldValue();
+            if(newO != null) {
+                EventQueue.invokeLater(this::setKeymap);
             }
         });
 
@@ -357,7 +349,7 @@ public class CommandLine extends JPanel
 
     public List<String> getHistory()
     {
-        List<String> l = new ArrayList<String>();
+        List<String> l = new ArrayList<>();
         for(int i = 0; i < model.getSize(); i++) {
             l.add((String)model.getElementAt(i));
         }
@@ -415,14 +407,11 @@ public class CommandLine extends JPanel
 
     private void setComboDoneListener()
     {
-        combo.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if("comboBoxEdited".equals(e.getActionCommand())) {
-                    ActionEvent e01 = new ActionEvent(CommandLine.this,
-                            e.getID(), "\n", e.getModifiers());
-                    fireCommandLineActionPerformed(e01);
-                }
+        combo.addActionListener((ActionEvent e) -> {
+            if("comboBoxEdited".equals(e.getActionCommand())) {
+                ActionEvent e01 = new ActionEvent(CommandLine.this,
+                        e.getID(), "\n", e.getModifiers());
+                fireCommandLineActionPerformed(e01);
             }
         });
 
@@ -609,14 +598,7 @@ public class CommandLine extends JPanel
             commandLine = new CommandLine();
             commandLine.setupBorder();
 
-            commandLine.addActionListener(new ActionListener()
-            {
-                @Override
-                public void actionPerformed(ActionEvent e)
-                {
-                    finishUpEntry(e);
-                }
-            });
+            commandLine.addActionListener(this::finishUpEntry);
 
             commandLine.setMode(entryType == ViCmdEntry.Type.COLON ? ":" : "/");
 
@@ -1027,7 +1009,7 @@ public class CommandLine extends JPanel
     // there's anything NB specific.
     private static final class ViCommandEditor implements ComboBoxEditor
     {
-        private JEditorPane editor;
+        private final JEditorPane editor;
         //private Component component;
         private Object oldValue;
 
@@ -1047,14 +1029,11 @@ public class CommandLine extends JPanel
                 }
             });*/
             editor.addPropertyChangeListener("keymap",
-                                             new PropertyChangeListener() {
-                                                 @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (!(evt.getNewValue() instanceof FilteredKeymap)) {
-                        // We have to do this lazily, because the property change
-                        // is fired *before* the keymap is actually changed!
-                        EventQueue.invokeLater(new KeymapUpdater());
-                    }
+                    (PropertyChangeEvent evt) -> {
+                if (!(evt.getNewValue() instanceof FilteredKeymap)) {
+                    // We have to do this lazily, because the property change
+                    // is fired *before* the keymap is actually changed!
+                    EventQueue.invokeLater(new KeymapUpdater());
                 }
             });
         }
@@ -1099,7 +1078,9 @@ public class CommandLine extends JPanel
                                 new Class[]{String.class});
                         newValue = method.invoke(oldValue,
                                 new Object[] { editor.getText()});
-                    } catch (Exception ex) {
+                    } catch (IllegalAccessException | IllegalArgumentException
+                            | NoSuchMethodException | SecurityException
+                            | InvocationTargetException ex) {
                         // Fail silent and return the newValue (a String object)
                     }
                 }

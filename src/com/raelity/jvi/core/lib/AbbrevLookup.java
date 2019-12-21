@@ -32,7 +32,7 @@ import java.util.List;
  */
 public class AbbrevLookup
 {
-    private List<ColonCommandItem> list = new ArrayList<ColonCommandItem>();
+    private final List<ColonCommandItem> list = new ArrayList<>();
 
     /**
      * This method returns a read-only copy of the list.
@@ -48,7 +48,7 @@ public class AbbrevLookup
 
     public List<String> getNameList()
     {
-        List<String> l = new ArrayList<String>(list.size());
+        List<String> l = new ArrayList<>(list.size());
         for(ColonCommandItem ce : list) {
             if(Character.isLetter(ce.getName().charAt(0)))
                 l.add(ce.getName());
@@ -58,7 +58,7 @@ public class AbbrevLookup
 
     public List<String> getAbrevList()
     {
-        List<String> l = new ArrayList<String>(list.size());
+        List<String> l = new ArrayList<>(list.size());
         for(ColonCommandItem ce : list) {
             if(Character.isLetter(ce.getName().charAt(0)))
                 l.add(ce.getAbbrev());

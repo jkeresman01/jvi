@@ -58,15 +58,13 @@ public class EnumSetPropertyEditor extends AbstractPropertyEditor
     {
         opt = (EnumSetOption)Options.getOption(property.getName());
         editor = new EditorButton();
-        getEditor().addActionListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) {
-                if(!popupActive) {
-                    startPopup();
-                    // Need the following since under NB no action for finishup
-                    getEditor().addMouseListener(new ClickFinishPopup());
-                } else {
-                    finishPopup();
-                }
+        getEditor().addActionListener((ActionEvent e) -> {
+            if(!popupActive) {
+                startPopup();
+                // Need the following since under NB no action for finishup
+                getEditor().addMouseListener(new ClickFinishPopup());
+            } else {
+                finishPopup();
             }
         });
     }
@@ -146,9 +144,9 @@ public class EnumSetPropertyEditor extends AbstractPropertyEditor
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
                 if(popupActive)
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override public void run() { showPopup(); }
-                    });
+                    EventQueue.invokeLater(() -> {
+                        showPopup();
+                });
             }
             @Override public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
         });
@@ -160,7 +158,7 @@ public class EnumSetPropertyEditor extends AbstractPropertyEditor
         Dimension sz = popup.getPreferredSize();
         sz.width = getEditor().getWidth();
         popup.setPreferredSize(sz);
-        getEditor().setText(opt.encode(getValue()));
+        getEditor().setText(EnumSetOption.encode(getValue()));
         popup.show(getEditor(), 0, getEditor().getHeight());
     }
 
@@ -177,7 +175,7 @@ public class EnumSetPropertyEditor extends AbstractPropertyEditor
         {
             JCheckBoxMenuItem cb = (JCheckBoxMenuItem)e.getSource();
             selected[index] = cb.isSelected();
-            getEditor().setText(opt.encode(getValue()));
+            getEditor().setText(EnumSetOption.encode(getValue()));
             if(popupActive)
                 showPopup();
         }

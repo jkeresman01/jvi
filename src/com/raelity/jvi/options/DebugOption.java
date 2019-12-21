@@ -44,9 +44,9 @@ abstract public class DebugOption extends EnumOption<String>
 
     abstract public boolean getBoolean(Level level);
 
-    abstract public void println(String s);
+    abstract public void println(String s, Object... args);
 
-    abstract public void println(Level level, String s);
+    abstract public void println(Level level, String s, Object... args);
 
     abstract public void printf(String format, Object... args);
 

@@ -89,12 +89,8 @@ public class ColonCommands
         if ( colonCommandEntry == null ) {
             colonCommandEntry = ViManager.getFactory()
                     .createCmdEntry(ViCmdEntry.Type.COLON);
-            colonCommandEntry.addActionListener(
-                    new ActionListener() {
-                @Override
-                            public void actionPerformed(ActionEvent ev) {
-                                colonEntryComplete(ev);
-                            }
+            colonCommandEntry.addActionListener((ActionEvent ev) -> {
+                colonEntryComplete(ev);
             });
         }
         return colonCommandEntry;
@@ -427,7 +423,7 @@ private static ColonEvent parseCommandGuts(String commandLine,
     cev.bang = bang;
 
     if(sidx < commandLine.length()) {
-        cev.args = new ArrayList<String>();
+        cev.args = new ArrayList<>();
         if(flags.contains(CcFlag.NO_PARSE)) {
             // put the line (without command name) as the argument
             cev.args.add(commandLine.substring(sidx));
@@ -521,8 +517,8 @@ static int get_address(
                 }
         }
 
-        int i = 0;
-        int n = 0;
+        int i;
+        int n;
         for (;;) {
             sidx = skipwhite(s, sidx);
             if(sidx >= s.length()) {
@@ -808,7 +804,7 @@ static public class ColonEvent extends ActionEvent
      */
     public List<String> getArgs()
     {
-        return new ArrayList<String>(args);
+        return new ArrayList<>(args);
     }
 
     /** use in dummy parse to give the command name lookup match.
@@ -886,7 +882,7 @@ static public class ColonEvent extends ActionEvent
                 oa.end = new FPOS();
                 oa.end.set(oa.start.getLine() + oa.line_count - 1, 0);
                 nextArg++;
-            } catch (Exception ex) {
+            } catch (NumberFormatException ex) {
                 Msg.emsg(Messages.e_trailing);
                 oa.error = true;
             }

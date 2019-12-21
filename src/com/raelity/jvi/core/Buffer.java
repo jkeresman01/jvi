@@ -31,6 +31,7 @@ import com.raelity.text.TextUtil.MySegment;
 import static java.lang.Math.min;
 
 import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.lib.CtrlChars.*;
 
 /**
  * Buffer: structure that holds information about one file, primarily
@@ -296,13 +297,10 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     public void readOnlyError(final ViTextView tv)
     {
         Util.beep_flush();
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                tv.getStatusDisplay().displayErrorMessage(
-                        "Can not modify write protected area or file."
-                        );
-            }
+        EventQueue.invokeLater(() -> {
+            tv.getStatusDisplay().displayErrorMessage(
+                    "Can not modify write protected area or file."
+            );
         });
     }
 
@@ -484,7 +482,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
             //
             // set left/right columns
             //
-            if(visMode == (0x1f & (int)('V'))) { // block mode
+            if(visMode == CTRL_V) { // block mode
                 // comparing this to screen.c,
                 // this.start is from1,to1
                 // this.end   is from2,to2
@@ -568,12 +566,16 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         int nCol = vb.getRight() - vb.getLeft();
         String s = null;
         char visMode = vb.getVisMode();
-        if (visMode == 'v') { // char mode
+        switch (visMode) {
+        case 'v': // char mode
             s = "" + (nLine == 1 ? nCol : nLine);
-        } else if (visMode == 'V') { // line mode
+            break;
+        case 'V': // line mode
             s = "" + nLine;
-        } else if (visMode == (0x1f & (int)('V'))) { // block mode
+            break;
+        case CTRL_V: // block mode
             s = "" + nLine + "x" + nCol;
+            break;
         }
 
         return s;
@@ -604,17 +606,21 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
             return new int[] { -1, -1};
         
         int[] newHighlight = null;
-        if (vb.visMode == 'V') { // line selection mode
+        switch (vb.visMode) {
+        case 'V':
+            // line selection mode
             // make sure the entire lines are selected
             newHighlight = new int[] {
                 getLineStartOffset(vb.startLine), getLineEndOffset(vb.endLine),
                 -1, -1};
-        } else if (vb.visMode == 'v') {
+            break;
+        case 'v':
             newHighlight = new int[] { vb.startOffset, vb.endOffset, -1, -1 };
-        } else if (vb.visMode == (0x1f & 'V')) { // visual block mode
+            break;
+        case CTRL_V:
+            // visual block mode
             int startLine = getLineNumber(startOffset);
             int endLine = getLineNumber(endOffset -1);
-            
             if(vb.startLine > endLine || vb.endLine < startLine)
                 newHighlight = new int[] { -1, -1};
             else {
@@ -639,7 +645,8 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
                 newHighlight[i++] = -1;
                 newHighlight[i++] = -1;
             }
-        } else {
+            break;
+        default:
             throw new IllegalStateException("Visual mode: "+ G.VIsual_mode +" is not supported");
         }
         return newHighlight;

@@ -40,7 +40,7 @@ public class DocumentCharSequence implements CharSequence
     private static final Logger LOG
             = Logger.getLogger(DocumentCharSequence.class.getName());
 
-    private Document doc;
+    private final Document doc;
     private int start;
     private int end;
 

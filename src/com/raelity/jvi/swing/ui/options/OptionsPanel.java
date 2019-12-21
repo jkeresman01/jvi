@@ -55,8 +55,7 @@ import com.raelity.jvi.options.OptionsBean;
  */
 public class OptionsPanel extends JPanel {
     ChangeNotify changeNotify;
-    private List<Options.EditControl> optionSheets
-            = new ArrayList<Options.EditControl>();
+    private final List<Options.EditControl> optionSheets = new ArrayList<>();
     private MapCommands mapCommands;
 
     public OptionsPanel(ChangeNotify changeNotify) {

@@ -92,7 +92,9 @@ class PropertyDescriptorAdapter extends AbstractProperty {
             if(method != null) {
                 setValue(method.invoke(object, (Object[])null));
             }
-        } catch(Exception e) {
+        } catch(IllegalAccessException
+                | IllegalArgumentException
+                | InvocationTargetException e) {
             String message = "Got exception when reading property " + getName();
             if(object == null) {
                 message += ", object was 'null'";
@@ -111,11 +113,15 @@ class PropertyDescriptorAdapter extends AbstractProperty {
             if(method != null) {
                 method.invoke(object, new Object[]{getValue()});
             }
-        } catch(Exception e) {
+        } catch(IllegalAccessException
+                | IllegalArgumentException
+                | InvocationTargetException e) {
             // let PropertyVetoException go to the upper level without logging
-            if(e instanceof InvocationTargetException &&
-                    ((InvocationTargetException)e).getTargetException() instanceof PropertyVetoException) {
-                throw new RuntimeException(((InvocationTargetException)e).getTargetException());
+            if(e instanceof InvocationTargetException
+                    && ((InvocationTargetException)e).getTargetException()
+                            instanceof PropertyVetoException) {
+                throw new RuntimeException(((InvocationTargetException)e)
+                        .getTargetException());
             }
             String message = "Got exception when writing property " + getName();
             if(object == null) {

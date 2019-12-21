@@ -111,14 +111,9 @@ abstract public class SimpleTextView extends SwingTextView
     {
         if(didInit)
             return;
-        PropertyChangeListener pcl = new PropertyChangeListener()
-        {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt)
-            {
-                updateStyles();
-                reApplyHighlight();
-            }
+        PropertyChangeListener pcl = (PropertyChangeEvent evt) -> {
+            updateStyles();
+            reApplyHighlight();
         };
         Options.addPropertyChangeListener(Options.selectColor, pcl);
         Options.addPropertyChangeListener(Options.selectFgColor, pcl);
@@ -193,7 +188,7 @@ abstract public class SimpleTextView extends SwingTextView
 
     private void clearCurrentHighlights() {
         if(currentHighlights == null) {
-            currentHighlights = new HashMap<String, int[]>();
+            currentHighlights = new HashMap<>();
         }
         currentHighlights.put(Options.selectColor, new int[]{-1});
         currentHighlights.put(Options.searchColor, new int[]{-1});

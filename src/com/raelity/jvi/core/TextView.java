@@ -19,6 +19,7 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.jvi.ViAppView;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.LinkedList;
@@ -45,7 +46,7 @@ import static com.raelity.jvi.core.lib.Constants.*;
  */
 public abstract class TextView implements ViTextView
 {
-    private static final int MagicMoveLineLimit = 15;
+    private static final int MAGIC_MOVE_LINE_LIMIT = 15;
     @ServiceProvider(service=ViInitialization.class,
                      path="jVi/init",
                      position=10)
@@ -58,20 +59,17 @@ public abstract class TextView implements ViTextView
         }
     }
     private static void init() {
-        PropertyChangeListener pcl = new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                String pname = evt.getPropertyName();
-                if(pname.equals(ViManager.P_OPEN_WIN)) {
-                    if(checkOpen != null
-                            && checkOpen.fname
+        PropertyChangeListener pcl = (PropertyChangeEvent evt) -> {
+            String pname = evt.getPropertyName();
+            if(pname.equals(ViManager.P_OPEN_WIN)) {
+                if(checkOpen != null
+                        && checkOpen.fname
                                 .equals(G.curbuf.getDisplayFileName())) {
-                        G.curwin.w_cursor.set(checkOpen.offset);
-                    }
-                } else if(pname.equals(ViManager.P_SWITCH_TO_WIN)) {
-                    // There's only one chance
-                    checkOpen = null;
+                    G.curwin.w_cursor.set(checkOpen.offset);
                 }
+            } else if(pname.equals(ViManager.P_SWITCH_TO_WIN)) {
+                // There's only one chance
+                checkOpen = null;
             }
         };
         ViManager.addPropertyChangeListener(ViManager.P_OPEN_WIN, pcl);
@@ -144,7 +142,7 @@ public abstract class TextView implements ViTextView
     public int w_p_scr;
 
     //protected final int JUMPLISTSIZE = 50;
-    protected List<ViMark> w_jumplist = new LinkedList<ViMark>();
+    protected List<ViMark> w_jumplist = new LinkedList<>();
     protected int w_jumplistidx;
 
     public TextView()
@@ -181,7 +179,7 @@ public abstract class TextView implements ViTextView
         w_pcmark = null;
         w_prev_pcmark = null;
         w_buffer = null;
-        w_jumplist = new LinkedList<ViMark>();
+        w_jumplist = new LinkedList<>();
         w_jumplistidx = 0;
     }
 
@@ -287,7 +285,7 @@ public abstract class TextView implements ViTextView
         int diff = Math.abs(w_buffer.getLineNumber(currDot)
                 - w_buffer.getLineNumber(lastDot));
         boolean magicMove = !ViManager.jViBusy() && !Scheduler.isMouseDown()
-                && diff > MagicMoveLineLimit;
+                && diff > MAGIC_MOVE_LINE_LIMIT;
 
         if (magicMove && G.dbgMouse.getBoolean(Level.INFO)
                 || G.dbgMouse.getBoolean(Level.FINE))
@@ -303,6 +301,69 @@ public abstract class TextView implements ViTextView
             ViFPOS fpos = w_buffer.createFPOS(lastDot);
             MarkOps.setpcmark(this, fpos);
         }
+    }
+
+    //
+    // NEEDSWORK: the win_* should really be somewhere else?
+    // Maybe some kind of platform and/or window-manager interface?
+    //
+    // FIXME: If not separated, probably should be in TextView.
+    //
+
+    /** Quit editing window. Can close last view.
+     */
+    @Override
+    public void win_quit()
+    {
+        Msg.emsg("win_quit NIMP");
+    }
+
+
+    /** Split this window.
+     * @param n the size of the new window.
+     */
+    @Override
+    public void win_split( Direction dir, int n, ViAppView av)
+    {
+        Msg.emsg("win_split(%s, %d, %s) NIMP", dir, n, av);
+    }
+
+    @Override
+    public void win_move(Direction dir, int n)
+    {
+        Msg.emsg("win_move(%s, %d) NIMP", dir, n);
+    }
+
+    @Override
+    public void win_clone()
+    {
+        Msg.emsg("win_clone NIMP");
+    }
+
+    @Override
+    public void win_size(SIZOP op, Orientation orientation, int n)
+    {
+        Msg.emsg("win_size(%s, %s, %d) NIMP", op, orientation, n);
+    }
+
+
+    /** Close this window
+     * @param freeBuf true if the related buffer may be freed
+     */
+    @Override
+    public void win_close( boolean freeBuf )
+    {
+        Msg.emsg("win_close(%s) NIMP", freeBuf);
+    }
+
+
+    /** Close other windows
+     * @param forceit true if always hide all other windows
+     */
+    @Override
+    public void win_close_others(boolean forceit)
+    {
+        Msg.emsg("win_close_others(%s) NIMP", forceit);
     }
 
     @Override

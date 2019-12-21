@@ -113,29 +113,24 @@ class OptionSheet extends JPanel implements Options.EditControl {
         // everytime a property change, update the bean
         // (which will update the Preference which updates the option)
         PropertyChangeListener pcl;
-        pcl = new PropertyChangeListener() {
-
-            @Override
-            public void propertyChange(PropertyChangeEvent evt)
-            {
-                Property prop = (Property)evt.getSource();
-                boolean change = false;
-                try {
-                    prop.writeToObject(bean);
-                    change = true;
-                } catch(RuntimeException ex) {
-                    if(!(ex.getCause() instanceof PropertyVetoException)) {
-                        throw ex;
-                    }
-                    JOptionPane.showMessageDialog(null,
-                                                  ex.getCause().getMessage(),
-                                                  "jVi Option Error",
-                                                  JOptionPane.ERROR_MESSAGE);
-                    prop.setValue(Options.getOption(prop.getName()).getString());
+        pcl = (PropertyChangeEvent evt) -> {
+            Property prop = (Property)evt.getSource();
+            boolean change = false;
+            try {
+                prop.writeToObject(bean);
+                change = true;
+            } catch(RuntimeException ex) {
+                if(!(ex.getCause() instanceof PropertyVetoException)) {
+                    throw ex;
                 }
-                if(change && optionsPanel.changeNotify != null) {
-                    optionsPanel.changeNotify.change();
-                }
+                JOptionPane.showMessageDialog(null,
+                        ex.getCause().getMessage(),
+                        "jVi Option Error",
+                        JOptionPane.ERROR_MESSAGE);
+                prop.setValue(Options.getOption(prop.getName()).getString());
+            }
+            if(change && optionsPanel.changeNotify != null) {
+                optionsPanel.changeNotify.change();
             }
         };
         sheet.addPropertySheetChangeListener(pcl);
@@ -295,36 +290,30 @@ class OptionSheet extends JPanel implements Options.EditControl {
     private static final Comparator STRING_COMPARATOR =
             new NaturalOrderStringComparator();
 
-    static Comparator reverseStringCompare = new Comparator() {
-        @Override
-        @SuppressWarnings("unchecked") // STRING_COMPARATOR
-        public int compare(Object o1, Object o2) {
-            return - STRING_COMPARATOR.compare(o1, o2);
-        }
-    };
+    // STRING_COMPARATOR
+    static Comparator reverseStringCompare = (Comparator)
+            (Object o1, Object o2) -> - STRING_COMPARATOR.compare(o1, o2);
 
-    static Comparator propertyNameCompare = new Comparator() {
-        @Override
-        @SuppressWarnings({"unchecked", "null"}) // STRING_COMPARATOR
-        public int compare(Object o1, Object o2) {
-            if (o1 instanceof Property && o2 instanceof Property) {
-                Property prop1 = (Property) o1;
-                Property prop2 = (Property) o2;
-                if (prop1 == null) {
-                    return prop2==null?0:-1;
-                } else {
-                    return STRING_COMPARATOR.compare(
-                            prop1.getName(), prop2.getName());
-                            // prop1.getDisplayName()==null
-                            //     ? null
-                            //     : prop1.getDisplayName().toLowerCase(),
-                            // prop2.getDisplayName() == null
-                            //     ? null
-                            //     : prop2.getDisplayName().toLowerCase());
-                }
+    // STRING_COMPARATOR
+    static Comparator propertyNameCompare = (Comparator)
+            (Object o1, Object o2) -> {
+        if (o1 instanceof Property && o2 instanceof Property) {
+            Property prop1 = (Property) o1;
+            Property prop2 = (Property) o2;
+            if (prop1 == null) {
+                return prop2==null ? 0 : -1;
             } else {
-                return 0;
+                return STRING_COMPARATOR.compare(
+                        prop1.getName(), prop2.getName());
+                // prop1.getDisplayName()==null
+                //     ? null
+                //     : prop1.getDisplayName().toLowerCase(),
+                // prop2.getDisplayName() == null
+                //     ? null
+                //     : prop2.getDisplayName().toLowerCase());
             }
+        } else {
+            return 0;
         }
     };
     

@@ -75,7 +75,7 @@ implements Options.EditControl {
     private final VetoableChangeSupport vcs = new VetoableChangeSupport( this ); 
     //private static String checkme = "Search Options";
 
-    private final Map<String,Object> changeMap = new HashMap<String,Object>();
+    private final Map<String,Object> changeMap = new HashMap<>();
     
     /** Creates a new instance of OptionsBeanBase */
     public OptionsBeanBase(Class clazz, String displayName,
@@ -370,7 +370,7 @@ implements Options.EditControl {
         opt.validate(val);
         this.vcs.fireVetoableChange( name, old, val );
         trackChange(name, EnumSet.class);
-	prefs.put(name, opt.encode(val));
+	prefs.put(name, EnumSetOption.encode(val));
         this.pcs.firePropertyChange( name, old, val );
     }
 

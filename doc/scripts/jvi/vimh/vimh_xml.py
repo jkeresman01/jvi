@@ -23,7 +23,7 @@ if len(sys.argv) > 2:
 else:
     OUTPUT_DIR = INPUT_DIR
 
-print 'input dir:', INPUT_DIR, 'output dir:', OUTPUT_DIR
+print('input dir:', INPUT_DIR, 'output dir:', OUTPUT_DIR)
 
 
 TAGS_FILE = OUTPUT_DIR + 'tags'

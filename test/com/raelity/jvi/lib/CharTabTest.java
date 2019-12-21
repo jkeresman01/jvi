@@ -249,7 +249,7 @@ public class CharTabTest {
     }
     
     // @Test
-    public void testClone()
+    public void testClone() throws CloneNotSupportedException
     {
         System.out.println("clone");
         CharTab instance = new CharTab();

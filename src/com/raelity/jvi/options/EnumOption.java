@@ -26,7 +26,7 @@ import java.beans.PropertyVetoException;
  * @author Ernie Rael <err at raelity.com>
  */
 public class EnumOption<T> extends Option<T> {
-    private T[] enumValues;
+    private final T[] enumValues;
 
     @SuppressWarnings("unchecked")
     /*package*/ EnumOption(String key, T defaultValue,

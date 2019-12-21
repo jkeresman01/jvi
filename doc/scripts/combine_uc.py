@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 import vimh_gen as VG
 
 def usage():
-    print 'xxx source+ dest_dir'
+    print('xxx source+ dest_dir')
     exit(1)
 
 UPD = 'updates.xml'
@@ -35,7 +35,7 @@ def dumpStruct(x, l = 0):
         dumpStruct(e, l1)
 
 def _idump(s, l):
-    if s: print ' ' * (l*2) + s
+    if s: print(' ' * (l*2) + s)
 
 catalog_out = ET.XML(CAT)
 licenses = []
@@ -51,7 +51,7 @@ def copy_uc(src):
         catalog_out.append(m)
         nbm = m.get("distribution")
         vers = m.find("manifest").get("OpenIDE-Module-Specification-Version")
-        print "%12s %s" % (vers, nbm)
+        print("%12s %s" % (vers, nbm))
         nbms.append(nbm)
 
     # copy modules
@@ -74,7 +74,7 @@ def add_licenses():
         (name, url, idir, e) = lic
         if name in names:
             continue
-        print 'Adding license ' + name
+        print('Adding license ' + name)
         l = ET.Element("license")
         with open(os.path.join(idir, url)) as f:
             l.text = f.read()
@@ -105,13 +105,13 @@ for arg in args:
     # if UPD == fname
 
     updates = arg
-    print "===== " + arg
+    print("===== " + arg)
 
     xml = ET.parse(updates)
 
     modules = [ x for x in xml.getroot().getiterator("module") ]
 
-    print "===== modules"
+    print("===== modules")
     for m in modules:
         dumpStruct(m)
 
@@ -123,7 +123,7 @@ for arg in args:
     #for e in xml.getroot():
     #    print "    " + e.tag
 
-    print "===== struct"
+    print("===== struct")
 
     dumpStruct(xml.getroot())
 

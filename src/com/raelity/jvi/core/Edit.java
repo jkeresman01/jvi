@@ -40,6 +40,7 @@ import static com.raelity.jvi.core.Options.*;
 import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Constants.FDO.*;
+import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
 
 public class Edit {
@@ -73,7 +74,7 @@ public class Edit {
   static int did_restart_edit;
   static MutableInt count;
   static boolean doingBackspace; // HACK to assist magic redo
-  private static MutableBoolean inserted_space = new MutableBoolean(false);
+  private static final MutableBoolean inserted_space = new MutableBoolean(false);
 
   private static String last_insert;
   private static int last_insert_skip;
@@ -282,7 +283,7 @@ public class Edit {
     }
     
     // whole lot of stuff deleted
-    //	if (c == Ctrl('V') || c == Ctrl('Q'))
+    //	if (c == CTRL_V || c == CTRL_Q)
     
 normal_char:	// do "break normal_char" to insert a character
     {
@@ -305,7 +306,7 @@ normal_char:	// do "break normal_char" to insert a character
         
         // skip ctrl-\ ctrlN to normal mode
         // NEEDSWORK: ctrl-V ctrl-Q
-	if (c == ctrl('V') || c == ctrl('Q')) {
+	if (c == CTRL_V || c == CTRL_Q) {
           ins_ctrl_v();
           return;
         }
@@ -328,10 +329,10 @@ normal_char:	// do "break normal_char" to insert a character
             Misc.ui_cursor_shape();	// may show different cursor shape
             break;
             
-            // case Ctrl('X'):	    // Enter ctrl-x mode
+            // case CTRL_X:	    // Enter ctrl-x mode
             // case K_SELECT:	    // end of Select mode mapping - ignore
-            // case Ctrl('Z'):	    // suspend when 'insertmode' set
-            // case Ctrl('O'):	    // execute one command
+            // case CTRL_Z:	    // suspend when 'insertmode' set
+            // case CTRL_O:	    // execute one command
             // case K_HELP:
             // case K_F1:
             // case K_XF1:
@@ -343,12 +344,12 @@ normal_char:	// do "break normal_char" to insert a character
             //
             // case K_ZERO:
             // case NUL:
-            // case Ctrl('A'):
+            // case CTRL_A:
             
           case NUL:                     // Ctrl-@
-          case 0x1f & (int)('A'):	// Ctrl
-	    if (stuff_inserted(NUL, 1, (c == Util.ctrl('A'))) == FAIL
-                    && c != Util.ctrl('A') /*&& !G.p_im*/ )
+          case CTRL_A:	// Ctrl
+	    if (stuff_inserted(NUL, 1, (c == CTRL_A)) == FAIL
+                    && c != CTRL_A /*&& !G.p_im*/ )
             {
               doESCkey = true; //goto doESCkey;		/* quit insert mode */
               break;
@@ -357,25 +358,25 @@ normal_char:	// do "break normal_char" to insert a character
             break;
 
             // insert the contents of a register
-          case 0x1f & (int)('R'):	// Ctrl
+          case CTRL_R:	// Ctrl
             ins_reg();
             inserted_space.setValue(false);
             break;
 
           // commands starting with CTRL-G
-          case 0x1f & (int)('G'):       // Ctrl
+          case CTRL_G:       // Ctrl
             ins_ctrl_g();
             break;
             
             // Make indent one shiftwidth smaller.
           case IM_SHIFT_LEFT:
-            //case 0x1f & (int)('D'):	// Ctrl
+            //case CTRL_D:	// Ctrl
             dir = BACKWARD;
             // FALLTHROUGH
             
             // Make indent one shiftwidth greater.
           case IM_SHIFT_RIGHT:
-            //case 0x1f & (int)('T'):	// Ctrl
+            //case CTRL_T:	// Ctrl
             ins_shift(c, lastc, dir);
             // need_redraw = TRUE;
             inserted_space.setValue(false);
@@ -415,19 +416,19 @@ normal_char:	// do "break normal_char" to insert a character
             // FALLTHROUGH
             
           case K_BS:
-          case 0x1f & (int)('H'):	// Ctrl
+          case CTRL_H:
             did_backspace = ins_bs(c, BACKSPACE_CHAR, inserted_space);
             // need_redraw = TRUE;
             break;
             
             // delete word before the cursor
-          case 0x1f & (int)('W'):	// Ctrl
+          case CTRL_W:
             did_backspace = ins_bs(c, BACKSPACE_WORD, inserted_space);
             // need_redraw = TRUE;
             break;
            
             // delete all inserted text in current line
-          case 0x1f & (int)('U'):	// Ctrl
+          case CTRL_U:
             did_backspace = ins_bs(c, BACKSPACE_LINE, inserted_space);
             // need_redraw = TRUE;
             inserted_space.setValue(false);
@@ -529,20 +530,20 @@ normal_char:	// do "break normal_char" to insert a character
             inserted_space.setValue(false);
             break;
             
-            // case Ctrl('K'): // Enter digraph
-            // case Ctrl(']'): // Tag name completion after ^X
-            // case Ctrl('F'): // File name completion after ^X
-            // case Ctrl('L'): // Whole line completion after ^X
+            // case CTRL_K: // Enter digraph
+            // case ctrl_]: // Tag name completion after ^X
+            // case CTRL_F: // File name completion after ^X
+            // case CTRL_L: // Whole line completion after ^X
 
-          case 0x1f & 'P': // Do previous pattern completion
-          case 0x1f & 'N': // Do next pattern completion
+          case CTRL_P: // Do previous pattern completion
+          case CTRL_N: // Do next pattern completion
             ins_complete(c);
             break normal_char;
 
-          case 0x1f & 'Y': // copy from previous line or scroll down
-          case 0x1f & 'E': // copy from next line	   or scroll up
+          case CTRL_Y: // copy from previous line or scroll down
+          case CTRL_E: // copy from next line	   or scroll up
             c = ins_copychar(G.curwin.w_cursor.getLine()
-                             + (c == (0x1f & (int)'Y') ? -1 : 1));
+                             + (c == CTRL_Y ? -1 : 1));
             break normal_char;
             
             //case K_S_SPACE:
@@ -557,7 +558,7 @@ normal_char:	// do "break normal_char" to insert a character
             // break;
             //FALLTHROUGH
             
-            // case 0x1f & (int)('C'):	// Ctrl
+            // case CTRL_C:
             // when 'insertmode' set, and not halfway a mapping, don't leave
             // Insert mode.
             // REMOVE insertmode stuff
@@ -568,7 +569,7 @@ normal_char:	// do "break normal_char" to insert a character
             /* **** this is the code moved to default case ****
             if (ins_esc(count, need_redraw, cmdchar)) {
               Normal.editBusy = false;
-              // return (c == (0x1f & (int)('O')));
+              // return (c == (CTRL_O));
             }
             return;
              */
@@ -581,7 +582,7 @@ normal_char:	// do "break normal_char" to insert a character
               //  // This is the identical code as <ESC>
               //  if (ins_esc(count, need_redraw, cmdchar)) {
               //    Normal.editBusy = false;
-              //    // return (c == (0x1f & (int)('O')));
+              //    // return (c == (CTRL_O));
               //  }
               //  return;
               doESCkey = true;
@@ -633,7 +634,6 @@ normal_char:	// do "break normal_char" to insert a character
       inserted_space.setValue(false);
 
     //continue edit_loop;
-    return;
   }
   
   private static boolean isExitInputMode(int c) {
@@ -643,11 +643,11 @@ normal_char:	// do "break normal_char" to insert a character
             
     switch(c) {
       case ESC:
-      case 0x1f & (int)('C'):	// Ctrl
-      case 0x1f & (int)('O'):	// Ctrl
-      case 0x1f & (int)('L'):	// Ctrl
-      case 0x1f & (int)('Q'):	// Ctrl
-      case 0x1f & (int)(']'):	// Ctrl
+      case CTRL_C:
+      case CTRL_O:
+      case CTRL_L:
+      case CTRL_Q:
+      case CTRL_RightBracket:
         return true;
       default:
         return false;
@@ -666,9 +666,9 @@ private static void ins_ctrl_v()
     if(true) //if (redrawing() && !char_avail())
 	edit_putchar('^', true);
     //AppendToRedobuff((char_u *)CTRL_V_STR);	/* CTRL-V */
-    AppendCharToRedobuff(ctrl('V'));	/* CTRL-V */
+    AppendCharToRedobuff(CTRL_V);	/* CTRL-V */
 
-    add_to_showcmd(ctrl('V'));
+    add_to_showcmd(CTRL_V);
 
     //c = get_literal();
     handleNextChar = new GetCtrlV();
@@ -684,7 +684,7 @@ private static void ins_literal() // based on ins_ctrl_v
     edit_putchar('^', true);
     AppendCharToRedobuff(IM_LITERAL);
 
-    add_to_showcmd(ctrl('V')); // close enough
+    add_to_showcmd(CTRL_V); // close enough
 
     handleNextChar = new GetLiteral();
 }
@@ -974,9 +974,9 @@ private static void edit_clearPutchar()
    */
   private static void ins_complete(char c) {
     ViTextView.WMOP op = null;
-    if(c == (0x1f & 'N'))
+    if(c == CTRL_N)
       op = ViTextView.WMOP.NEXT_WORD_MATCH;
-    else if(c == (0x1f & 'P'))
+    else if(c == CTRL_P)
       op = ViTextView.WMOP.PREV_WORD_MATCH;
     if(op != null)
       G.curwin.wordMatchOperation(op);
@@ -1036,14 +1036,23 @@ one_char: {
           if(first_char) {
             first_char = false;
             boolean firstCharIsMode = true;
-            if (nc == 'x' || nc == 'X')
-                hex = true;
-            else if (nc == 'o' || nc == 'O')
-                octal = true;
-            else if (nc == 'u' /*|| nc == 'U'*/) // at most 16 bits, no 'U'
-              unicode = nc;
-            else
-              firstCharIsMode = false;
+                switch (nc) {
+                case 'x':
+                case 'X':
+                  hex = true;
+                  break;
+                case 'o':
+                case 'O':
+                  octal = true;
+                  break;
+                // at most 16 bits, no 'U'
+                case 'u' /*|| nc == 'U'*/:
+                  unicode = nc;
+                  break;
+                default:
+                  firstCharIsMode = false;
+                  break;
+                }
             if(firstCharIsMode)
               return NUL;
           }
@@ -1488,7 +1497,7 @@ private static class GetLiteral implements HandleNextChar
     //
     last_ptr = (esc_ptr ? esc_ptr : ptr + STRLEN(ptr)) - 1;
     if (last_ptr >= ptr && (*last_ptr == '0' || *last_ptr == '^')
-	    && (no_esc || (*ptr == Ctrl('D') && count > 1)))
+	    && (no_esc || (*ptr == CTRL_D) && count > 1)))
     {
 	last = *last_ptr;
 	*last_ptr = NUL;
@@ -1529,18 +1538,21 @@ private static class GetLiteral implements HandleNextChar
   static void checkForStuffReadbuf(String s, String op)
   throws NotSupportedException {
     String msg = null;
-    if(false) {
-      String pat = String.format(".*[\\x%02d\\x%02d\\x%02d].*",
-                                 0x1f&'R', 0x1f&'A', 0);
-      if(s.matches(pat)) {
-        msg = "Potentially recursive operation";
-      }
-    } else {
-      if(s.indexOf(0x1f&'R') >= 0
-              || s.indexOf(0x1f&'A') >= 0
+    // if(false) {
+    //   String pat = String.format(".*[\\x%02d\\x%02d\\x%02d].*",
+    //                              CTRL_R, ctrl_A, 0);
+    //   if(s.matches(pat)) {
+    //     msg = "Potentially recursive operation";
+    //   }
+    // }
+    // else {
+
+      if(s.indexOf(CTRL_R) >= 0
+              || s.indexOf(CTRL_A) >= 0
               || s.indexOf(0) >= 0)
         msg = op + ": potentially recursive operation";
-    }
+
+    // }
     if(msg != null) {
       Msg.emsg(msg);
       vim_beep();
@@ -1611,7 +1623,7 @@ private static class GetLiteral implements HandleNextChar
     // NEEDSWORK: maintain stack as an array of chars,
     // if (replace_stack_len <= replace_stack_nr).... extend stack..
     int idx = replace_stack.size() - replace_offset;
-    replace_stack.add(idx, new Character(c));
+    replace_stack.add(idx, c);
   }
   
   /**
@@ -1624,7 +1636,7 @@ private static class GetLiteral implements HandleNextChar
          ++replace_offset) {
       
       --idx;
-      char item = replace_stack.get(idx).charValue();
+      char item = replace_stack.get(idx);
       if(item == NUL) {
         break;
       }
@@ -1640,10 +1652,10 @@ private static class GetLiteral implements HandleNextChar
    */
   private static char replace_pop() {
     // vr_virtcol = MAXCOL;
-    if(replace_stack.size() == 0) {
+    if(replace_stack.isEmpty()) {
       return '\uffff';
     }
-    return replace_stack.pop().charValue();
+    return replace_stack.pop();
   }
   
   /**
@@ -1655,7 +1667,7 @@ private static class GetLiteral implements HandleNextChar
     int	    i;
     
     for (i = replace_stack.size(); --i >= 0; ) {
-      if (replace_stack.get(i).charValue() == NUL && off-- <= 0) {
+      if (replace_stack.get(i) == NUL && off-- <= 0) {
         replace_stack.remove(i);
         return;
       }
@@ -1718,8 +1730,8 @@ private static class GetLiteral implements HandleNextChar
       if(true) // if (redrawing() && !char_avail())
       {
           edit_putchar('"', true);
-          //add_to_showcmd_c(ctrl('R'));
-          add_to_showcmd(ctrl('R'));
+          //add_to_showcmd_c(CTRL_R);
+          add_to_showcmd(CTRL_R);
       }
 
   //#ifdef USE_ON_FLY_SCROLL...
@@ -1746,9 +1758,9 @@ private static class GetLiteral implements HandleNextChar
 
       ++G.no_mapping;
       if (literally == NUL
-              && (regname == ctrl('R')
-                  || regname == ctrl('O')
-                  || regname == ctrl('P')))
+              && (regname == CTRL_R
+                  || regname == CTRL_O
+                  || regname == CTRL_P))
       {
           /* Get a third key for literal register insertion */
           literally = regname;
@@ -1761,15 +1773,15 @@ private static class GetLiteral implements HandleNextChar
 
 //  #ifdef WANT_EVAL.....
 
-     if (literally == ctrl('O') || literally == ctrl('P'))
+     if (literally == CTRL_O || literally == CTRL_P)
      {
          /* Append the command to the redo buffer. */
-         AppendCharToRedobuff(ctrl('R'));
+         AppendCharToRedobuff(CTRL_R);
          AppendCharToRedobuff(literally);
          AppendCharToRedobuff(regname);
 
          do_put(regname, BACKWARD, 1,
-              (literally == ctrl('P') ? PUT_FIXINDENT : 0) | PUT_CURSEND);
+              (literally == CTRL_P ? PUT_FIXINDENT : 0) | PUT_CURSEND);
      }
      else if (Misc.insert_reg(regname, literally != 0) == FAIL) {
         vim_beep();
@@ -1794,8 +1806,8 @@ private static class GetLiteral implements HandleNextChar
   {
       if(true) // if (redrawing() && !char_avail())
       {
-          //add_to_showcmd_c(ctrl('R'));
-          add_to_showcmd(ctrl('G'));
+          //add_to_showcmd_c(CTRL_R);
+          add_to_showcmd(CTRL_G);
       }
 
   //#ifdef USE_ON_FLY_SCROLL...
@@ -2000,7 +2012,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
 {
     int   	lnum;
     char	cc;
-    int		temp = 0;	    /* init for GCC */
+    int		temp;
     boolean     tBool = false;
     int 	mincol;
     boolean	did_backspace = false;
@@ -2365,7 +2377,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
     {
 	//char_u		seg.charAt(ptr), *saved_line = null;
         MySegment       seg;
-        int             ptr = 0;
+        int             ptr;
         //int             saved_line = 0;
 	ViFPOS		fpos;
 	ViFPOS		cursor;

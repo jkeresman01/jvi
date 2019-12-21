@@ -107,4 +107,16 @@ class Cursor implements ViCaretStyle {
 	      && blinkoff == c.blinkoff
 	      && highlightId == c.highlightId;
   }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + this.shape;
+        hash = 37 * hash + this.percentage;
+        hash = 37 * hash + this.blinkwait;
+        hash = 37 * hash + this.blinkon;
+        hash = 37 * hash + this.blinkoff;
+        hash = 37 * hash + this.highlightId;
+        return hash;
+    }
 }

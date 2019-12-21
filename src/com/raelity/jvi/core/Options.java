@@ -281,7 +281,7 @@ public final class Options {
             @Override
               public void validate(String val) throws PropertyVetoException {
 
-                Wrap<String> emsg = new Wrap<String>("");
+                Wrap<String> emsg = new Wrap<>("");
                 if(null == Mappings.parseMapCommands(val, emsg)) {
                   reportPropertyVetoException(emsg.getValue(), val);
                 }
@@ -1128,13 +1128,13 @@ public final class Options {
       }
     } finally {
       String fn = G.curbuf.getDisplayFileName();
-      ViOutputStream vos = ViManager.createOutputStream(G.curwin,
-                    ViOutputStream.OUTPUT,
-                    "In " + fn + ":" + lnum + " process modeline: " + mline,
-                    parseError ? ViOutputStream.PRI_HIGH
-                               : ViOutputStream.PRI_LOW);
-      vos.println(sb.toString());
-      vos.close();
+      try (ViOutputStream vos = ViManager.createOutputStream(
+              G.curwin, ViOutputStream.OUTPUT,
+              "In " + fn + ":" + lnum + " process modeline: " + mline,
+              parseError ? ViOutputStream.PRI_HIGH
+                      : ViOutputStream.PRI_LOW)) {
+        vos.println(sb.toString());
+      }
     }
     return true;
   }
@@ -1173,12 +1173,9 @@ public final class Options {
       }
     });
 
-    addPropertyChangeListener(ignoreCase, new PropertyChangeListener() {
-      @Override
-      public void propertyChange(PropertyChangeEvent evt) {
-        if(G.curwin != null) {
-          ViManager.updateHighlightSearchState();
-        }
+    addPropertyChangeListener(ignoreCase, (PropertyChangeEvent evt) -> {
+      if(G.curwin != null) {
+        ViManager.updateHighlightSearchState();
       }
     });
   }

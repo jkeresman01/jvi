@@ -25,7 +25,6 @@ import java.io.File;
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViBuffer;
 import com.raelity.jvi.ViFPOS;
-import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.swing.simple.SimpleFS;

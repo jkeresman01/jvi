@@ -23,7 +23,6 @@ package com.raelity.jvi.manager;
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -83,11 +82,9 @@ public enum AppViews
     NOMAD,
     ALL; // ACTIVE + NOMAD
 
-    private static List<ViAppView> avs =
-            new ArrayList<ViAppView>();
-    private static List<ViAppView> avsMRU =
-            new ArrayList<ViAppView>();
-    private static Set<ViAppView> avsNomads = new WeakSet<ViAppView>();
+    private static final List<ViAppView> avs = new ArrayList<>();
+    private static final List<ViAppView> avsMRU = new ArrayList<>();
+    private static final Set<ViAppView> avsNomads = new WeakSet<>();
     private static ViAppView avCurrentlyActive;
     private static ViAppView keepMru;
 
@@ -109,13 +106,8 @@ public enum AppViews
 
     private static void init()
     {
-        ColonCommands.register("dumpJvi", "dumpJvi", new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                System.err.println(AppViews.dump(null).toString());
-            }
+        ColonCommands.register("dumpJvi", "dumpJvi", (ActionEvent e) -> {
+            System.err.println(AppViews.dump(null).toString());
         }, EnumSet.of(CcFlag.DBG));
     }
 
@@ -297,16 +289,16 @@ public enum AppViews
         List<ViAppView> l = null;
         switch (which) {
             case ACTIVE:
-                l = new ArrayList<ViAppView>(avs);
+                l = new ArrayList<>(avs);
                 break;
             case MRU:
-                l = new ArrayList<ViAppView>(avsMRU);
+                l = new ArrayList<>(avsMRU);
                 break;
             case NOMAD:
-                l = new ArrayList<ViAppView>(avsNomads);
+                l = new ArrayList<>(avsNomads);
                 break;
             case ALL:
-                l = new ArrayList<ViAppView>();
+                l = new ArrayList<>();
                 l.addAll(getList(ACTIVE));
                 l.addAll(getList(NOMAD));
                 break;
@@ -407,8 +399,7 @@ public enum AppViews
 
     private static class BuffersList
     {
-
-        List<WeakReference> l = new ArrayList<WeakReference>();
+        List<WeakReference> l = new ArrayList<>();
     }
 
     /**

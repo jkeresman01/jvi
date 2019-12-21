@@ -51,10 +51,10 @@ import com.raelity.jvi.core.G;
 public final class PreferencesChangeMonitor {
     private boolean change;
     private boolean freeze;
-    private PreferenceChangeListener prefListener;
-    private NodeChangeListener nodeListener;
-    private Map<String, ParentListener> parentListeners;
-    private Set<ParentChild> parentChilds = new HashSet<ParentChild>();
+    private final PreferenceChangeListener prefListener;
+    private final NodeChangeListener nodeListener;
+    private final Map<String, ParentListener> parentListeners;
+    private final Set<ParentChild> parentChilds = new HashSet<>();
 
     private static final boolean ENABLE_HACK = true;
     private boolean hack;
@@ -67,7 +67,7 @@ public final class PreferencesChangeMonitor {
     {
         prefListener = new PrefCheckListener();
         nodeListener = new NodeCheckListener();
-        parentListeners = new HashMap<String, ParentListener>(2);
+        parentListeners = new HashMap<>(2);
     }
 
     public static void setFileHack(FileHack fileHack)
@@ -230,8 +230,7 @@ public final class PreferencesChangeMonitor {
                     }
                 }
             }
-            catch (IllegalArgumentException ex) {}
-            catch (IllegalStateException ex) {}
+            catch (IllegalArgumentException | IllegalStateException ex) {}
         }
     }
 
@@ -251,8 +250,7 @@ public final class PreferencesChangeMonitor {
                     }
                 }
             }
-            catch(IllegalArgumentException ex) { }
-            catch(IllegalStateException ex) { }
+            catch(IllegalArgumentException | IllegalStateException ex) { }
 
             for(String name : prefs.childrenNames()) {
                 recursiveCheck(remove, prefs.node(name));
@@ -265,7 +263,7 @@ public final class PreferencesChangeMonitor {
     private class ParentListener
     implements NodeChangeListener
     {
-        private String child;
+        private final String child;
 
         public ParentListener(String child)
         {

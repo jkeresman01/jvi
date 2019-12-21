@@ -60,8 +60,7 @@ class Motd
     private String linkBeta;
 
     // following could be a list of pairs of link:text
-    List<OutputHandler> outputList =
-            new ArrayList<OutputHandler>(5);
+    List<OutputHandler> outputList = new ArrayList<>(5);
 
     static void get(ChangeListener change)
     {
@@ -152,42 +151,42 @@ class Motd
             return;
         }
         outputNetworkInfo = true;
-        ViOutputStream vios =
-                ViManager.createOutputStream(null, ViOutputStream.OUTPUT,
-                                             "jVi Version Information", priority);
-        String tagCurrent = "";
-        String hasNewer = null;
-        if (latestRelease != null && latestRelease.isValid())
-            if (latestRelease.compareTo(ViManager.version) > 0)
-                hasNewer = "Newer release available: " + latestRelease;
-            else if (latestRelease.compareTo(ViManager.version) == 0)
-                tagCurrent = " (This is the latest release)";
-            else {
-                // In this else, should be able to assert that !isRelease()
-                if (ViManager.version.isDevelopment())
-                    tagCurrent = " (development release)";
-            }
-        vios.println("Running: " + ViManager.getReleaseString() + tagCurrent);
-        if (hasNewer != null) {
-            if(linkRelease != null)
-                vios.printlnLink(linkRelease, hasNewer);
-            else
-                vios.println(hasNewer);
-        }
-        if (latestBeta != null && latestBeta.isValid())
-            if (latestBeta.compareTo(ViManager.version) > 0) {
-                String betaMsg = "Beta or release candidate available: "
-                                      + latestBeta;
-                if(linkBeta != null)
-                    vios.printlnLink(linkBeta, betaMsg);
+        try (ViOutputStream vios = ViManager.createOutputStream(
+                null, ViOutputStream.OUTPUT,
+                "jVi Version Information", priority)) {
+            String tagCurrent = "";
+            String hasNewer = null;
+            if (latestRelease != null && latestRelease.isValid())
+                if (latestRelease.compareTo(ViManager.version) > 0)
+                    hasNewer = "Newer release available: " + latestRelease;
+                else if (latestRelease.compareTo(ViManager.version) == 0)
+                    tagCurrent = " (This is the latest release)";
+                else {
+                    // In this else, should be able to assert that !isRelease()
+                    if (ViManager.version.isDevelopment())
+                        tagCurrent = " (development release)";
+                }
+            vios.println("Running: " + ViManager.getReleaseString() + tagCurrent);
+            if (hasNewer != null) {
+                if(linkRelease != null)
+                    vios.printlnLink(linkRelease, hasNewer);
                 else
-                    vios.println(betaMsg);
+                    vios.println(hasNewer);
             }
-        for (int i = 0; i < outputList.size(); i++) {
-            OutputHandler outputHandler = outputList.get(i);
-            outputHandler.output(vios);
+            if (latestBeta != null && latestBeta.isValid())
+                if (latestBeta.compareTo(ViManager.version) > 0) {
+                    String betaMsg = "Beta or release candidate available: "
+                            + latestBeta;
+                    if(linkBeta != null)
+                        vios.printlnLink(linkBeta, betaMsg);
+                    else
+                        vios.println(betaMsg);
+                }
+            for (int i = 0; i < outputList.size(); i++) {
+                OutputHandler outputHandler = outputList.get(i);
+                outputHandler.output(vios);
+            }
         }
-        vios.close();
     }
 
     private interface OutputHandler
@@ -248,7 +247,7 @@ class Motd
     {
         private static final int BUF_LEN = 1024;
         private static final int MAX_MSG = 8 * 1024;
-        private ChangeListener change;
+        private final ChangeListener change;
 
         GetMotd(ChangeListener change) {
             this.change = change;
@@ -267,9 +266,7 @@ class Motd
                     s = "http://jvi.sourceforge.net/motd";
                 URI uri = new URI(s);
                 url = uri.toURL();
-            } catch (MalformedURLException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            } catch (URISyntaxException ex) {
+            } catch (MalformedURLException | URISyntaxException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
             if(url == null)
@@ -281,21 +278,22 @@ class Motd
             // So use a simple algorithm.
             try {
                 URLConnection c = url.openConnection();
-                InputStream in = c.getInputStream();
-                byte b[] = new byte[BUF_LEN];
-                ByteBuffer bb = ByteBuffer.wrap(b);
-                StringBuilder sb = new StringBuilder();
-                Charset cset = Charset.forName("US-ASCII");
-                int n;
-                int total = 0;
-                while((n = in.read(b)) > 0 && total < MAX_MSG) {
-                    bb.position(0);
-                    bb.limit(n);
-                    CharBuffer cb = cset.decode(bb);
-                    sb.append(cb.toString());
-                    total += n;
+                StringBuilder sb;
+                try (InputStream in = c.getInputStream()) {
+                    byte b[] = new byte[BUF_LEN];
+                    ByteBuffer bb = ByteBuffer.wrap(b);
+                    sb = new StringBuilder();
+                    Charset cset = Charset.forName("US-ASCII");
+                    int n;
+                    int total = 0;
+                    while((n = in.read(b)) > 0 && total < MAX_MSG) {
+                        bb.position(0);
+                        bb.limit(n);
+                        CharBuffer cb = cset.decode(bb);
+                        sb.append(cb.toString());
+                        total += n;
+                    }
                 }
-                in.close();
 
                 change.stateChanged(new ChangeEvent(new Motd(sb.toString())));
             } catch (IOException ex) {

@@ -1,0 +1,7 @@
+Typically a single file is opertated on.
+
+Under here (test directory) create build/tin.
+
+Copy the file to test into 'tin' then run testDoc.sh
+
+

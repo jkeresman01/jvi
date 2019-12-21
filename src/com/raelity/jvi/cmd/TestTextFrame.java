@@ -36,6 +36,7 @@ public class TestTextFrame extends JFrame {
   JEditorPane jEditorPane1 = new JEditorPane();
 
   //Construct the frame
+  @SuppressWarnings("CallToPrintStackTrace")
   public TestTextFrame() {
     enableEvents(AWTEvent.WINDOW_EVENT_MASK);
     try {

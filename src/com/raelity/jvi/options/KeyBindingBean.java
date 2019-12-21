@@ -61,7 +61,7 @@ public class KeyBindingBean  extends KeyOptionsBeanBase {
     
     @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
-        List<PropertyDescriptor> vD = new ArrayList<PropertyDescriptor>();
+        final List<PropertyDescriptor> vD = new ArrayList<>();
         
 	for(char c = 'A'; c <= 'Z'; c++) {
             String keyChar = String.valueOf(c);

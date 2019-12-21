@@ -53,8 +53,8 @@ public class Eval {
     )
     {
         SaveCpo	save_cpo;
-        String	pat, pat2 = null, pat3 = null;
-        int		retval = 0;
+        String	pat, pat2, pat3;
+        int	retval = 0;
         ViFPOS	pos;
         ViFPOS	firstpos;
         ViFPOS	foundpos;

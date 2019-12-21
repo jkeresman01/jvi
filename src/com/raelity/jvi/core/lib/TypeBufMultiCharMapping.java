@@ -50,7 +50,7 @@ import static com.raelity.jvi.core.lib.KeyDefs.*;
 public final class TypeBufMultiCharMapping {
     private static final Logger LOG = Logger.getLogger(TypeBufMultiCharMapping.class.getName());
 
-    private Mappings mappings;
+    private final Mappings mappings;
     private ArrayDeque<Integer> buf;
     private int nMappings;
     private int capacity;
@@ -353,7 +353,7 @@ public final class TypeBufMultiCharMapping {
 
     public void clear()
     {
-        buf = new ArrayDeque<Integer>(250);
+        buf = new ArrayDeque<>(250);
         capacity = 0;
         fMappingTimeout = false;
         fWaitMapping = false;

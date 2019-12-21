@@ -110,7 +110,7 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
     private boolean expectChar;
     private boolean disableTrackingOneEdit;
     // afterBuff, characters added after the current insert position
-    private BufferQueue afterBuff = new BufferQueue();
+    private final BufferQueue afterBuff = new BufferQueue();
 
     // See docRemove() method for details of the removeDocXxx variables
     // The variable remvoeDocAfterString also acts as a flag. It is non-null
@@ -507,6 +507,7 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
             redobuff.append(BS);
         }
     }
+
     private boolean
     didDocRemoveAfterTrackPosition(int pos, int len, String removedText) {
       if(pos + len > redoTrackPosition) {  // goes past insertion point
@@ -544,13 +545,12 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
             // HACK ALERT
             StackTraceElement[] stack = ex.getStackTrace();
             boolean skip = false;
-            for (int i = 0; i < stack.length; i++) {
-              String e = stack[i].toString();
-              if(stack[i].toString().contains("form.JavaCodeGenerator")) {
-                skip = true;
-                break;
-              }
-
+            for (StackTraceElement stack1 : stack) {
+                String e = stack1.toString();
+                if (stack1.toString().contains("form.JavaCodeGenerator")) {
+                    skip = true;
+                    break;
+                }
             } // END HACK ALERT
 
             if(!skip) {

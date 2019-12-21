@@ -40,7 +40,7 @@ import java.util.logging.Logger;
 public class RegExpFactory {
   private static final
           Logger LOG = Logger.getLogger(RegExpFactory.class.getName());
-  protected static List<String> reImp = new ArrayList<String>(5);
+  final protected static List<String> reImp = new ArrayList<String>(5);
 
   static {
     reImp.add("com.raelity.text.RegExpJava");
@@ -221,7 +221,8 @@ public class RegExpFactory {
 	load(reImp.get(i));
 
 	return true;
-      } catch (Throwable e) {}
+      } catch (ClassCastException | ClassNotFoundException | IllegalArgumentException
+              | NoSuchMethodException | SecurityException e) {}
     }
 
     return false;
@@ -258,7 +259,7 @@ public class RegExpFactory {
     try {
       Method t = cls.getMethod("canInstantiate", new Class[0]);
 
-      if (!((Boolean) t.invoke(null, new Object[0])).booleanValue()) {
+      if (!((Boolean) t.invoke(null, new Object[0]))) {
 	throw new Exception();
       }
 
@@ -280,8 +281,6 @@ public class RegExpFactory {
     //   System.err.println("reClassName = " + reClassName );
     //   System.err.println("reDisplayName = " + reDisplayName );
     // }
-
-    return;
   }
 
   // debug
@@ -311,13 +310,12 @@ public class RegExpFactory {
       "(?e=#)^([+-]?)(#d*)$", "1", null,
       "(?e=#)^([+-]?)(#d*)$", "-1", null,
       "xyz", "abc", null,
-      "#w+", "hello", new Character('#'),
+      "#w+", "hello", '#',
       "([abc]+)([def]+)([ghi]+)?([jkl]+)z*", "xxaaeekkzzzzzzz", null,
       "(?e=#)#s+(#w)+#s", "       how       ", null,
       "(?e=#)#s(\\\\)(##)(#w+)", " \\\\#hi(*&^^%", null,
       "#s(\\\\)(##)(#w+)", " \\\\#hi(*&^^%", null,
-      "#s(\\\\)(##)(#w+)", " \\\\#hi(*&^^%", new Character('#')
-    };
+      "#s(\\\\)(##)(#w+)", " \\\\#hi(*&^^%", '#'};
 
     test1("com.raelity.text.RegExpJava", testInput);
     test1("com.raelity.text.RegExpGNU", testInput);
@@ -344,7 +342,9 @@ public class RegExpFactory {
 
     try {
       load(cls);
-    } catch (Exception e) {
+    } catch (ClassCastException | ClassNotFoundException
+            | IllegalArgumentException | NoSuchMethodException
+            | SecurityException e) {
       LOG.log(Level.SEVERE, null, e);
 
       return;
@@ -364,12 +364,12 @@ public class RegExpFactory {
       RegExp re = create();
 
       if (c != null) {
-	re.setEscape(c.charValue());
+	re.setEscape(c);
       }
 
       try {
 	re.compile(pattern);
-      } catch (Throwable e) {
+      } catch (RegExpPatternError e) {
         LOG.log(Level.SEVERE, null, e);
 
 	return;

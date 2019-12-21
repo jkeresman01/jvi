@@ -8,14 +8,14 @@ fi
 
 src=$1
 dst=$2
-echo $src $dst
+# echo $src $dst
 
 mkdir -p $dst
 
 for i in $src/*txt
 do
     base=${i##*/}
-    echo $i $dst/$base
+    # echo $i $dst/$base
     awk '
         /^START-DOC-DEL/,/^STOP-DOC-DEL/ {next}
         /^DOC-DEL/ {next}

@@ -3,15 +3,21 @@ Working with jVi options
   - General
     . options are persisted to the Preferences data base
     . Option.java is the base class for all options.
-    . Currently ther are four types of options, BooleanOption, IntegerOption,
-      StringOption and ColorOption.
+    . Currently the types of options are:
+        BooleanOption, // checkbox
+        IntegerOption,
+        StringOption,
+        ColorOption,
+        EnumStringOption,EnumIntegerOption, // combo box select 1 of N
+        EnumSetOption, // list of checkboxes, select any of N
     . listen to changes to options by doing
       Options.getOptions().addPropertyChangeListener(optName, listener)
 
   - Adding an option
     . If needed, in G.java define pointer to the option, e.g. G.p_opt_name
       Otherwise option can be found with Options.getOption(optName)
-    . In Option.java
+
+    . In Options.java
       - define the name of the option
 
         public static final String report = "viReport";
@@ -39,9 +45,29 @@ Working with jVi options
       - In OptionsBeanBase.java define the getter/setter for the option
         Typically add new get/set right after getJViVersion()
 
-        public void setViShowMode(boolean arg) { put(Options.showMode, arg); }
+        For example:
+              public void setViShowMode(boolean arg)
+                  { put(Options.showMode, arg); }
+              public boolean getViShowMode()
+                  { return getboolean(Options.showMode); }
+        Note that there can be property change listeners on the Bean.
 
-        public boolean getViShowMode() { return getboolean(Options.showMode); }
+    . Option Scope
+      There are three types of options with a common naming scheme
+          global   p_xxx 
+          window w_p_xxx
+          buffer b_p_xxx
+      In jvi.core Buffer.java and TextView.java each have a method named
+      "firstGo()". It is called once to set initial values. Further value
+      changes, either through the set command or the options dialog, are
+      propogated to the java variables using reflection.
+
+    . VimOption.java
+      Add an entry in VimOption.java.
+      Every option has an entry in the VimOption[] table which defines
+      the scope of the option and the options name used to set the value
+      through reflection. See SetColonCommand.java if you're curious.
+
 
   - Adding a new category of options.
     A category of options is represented by a list of option names.
@@ -76,3 +102,4 @@ Working with jVi options
         We need to override the put methods because NetBeans doesn't handle
         a bean's PropertyVetoException (I think that's a NetBeans bug).
 
+    vim: set sw=2:

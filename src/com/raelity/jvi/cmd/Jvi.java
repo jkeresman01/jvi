@@ -29,7 +29,6 @@ import java.awt.Frame;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,7 +38,6 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
@@ -121,20 +119,15 @@ public class Jvi
         }
 
         final JLabel jl = frame.getCursorStatusBar();
-        editor.addCaretListener(new CaretListener()
-        {
-            @Override
-            public void caretUpdate(CaretEvent e)
-            {
-                JTextComponent jtc = (JTextComponent)e.getSource();
-                Document doc = jtc.getDocument();
-                int dot = e.getDot();
-                Element root = doc.getDefaultRootElement();
-                int l = root.getElementIndex(dot);
-                Element elem = root.getElement(l);
-                int col = dot - elem.getStartOffset();
-                jl.setText("" + (l+1) + "-" + col + " <" + dot +">");
-            }
+        editor.addCaretListener((CaretEvent e) -> {
+            JTextComponent jtc = (JTextComponent)e.getSource();
+            Document doc = jtc.getDocument();
+            int dot = e.getDot();
+            Element root = doc.getDefaultRootElement();
+            int l = root.getElementIndex(dot);
+            Element elem = root.getElement(l);
+            int col = dot - elem.getStartOffset();
+            jl.setText("" + (l+1) + "-" + col + " <" + dot +">");
         });
         // Center the window
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -208,7 +201,7 @@ public class Jvi
     /**
      *  Main method.
      */
-    @SuppressWarnings("CallToThreadDumpStack")
+    @SuppressWarnings({"CallToThreadDumpStack", "CallToPrintStackTrace"})
     public static void main( String[] args )
     {
         try {
@@ -226,38 +219,31 @@ public class Jvi
         ViManager.setViFactory(new PlayFactory(mapJepFrame));
 
         try {
-            ViManager.runInDispatch(true, new Runnable() {
-                    @Override
-                    public void run() {
-                        Toolkit.getDefaultToolkit().setDynamicLayout(true);
-                        m_frame1 = makeFrame();
-                        m_frame1.optionsButton.addActionListener(
-                        new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                try {
-                                    showOptionsDialog(m_frame1);
-                                } catch (Exception ex) {
-                                    ex.printStackTrace();
-                                }
-                            }
-                        });
-                        setupFrame(m_frame1);
-                        JEditorPane editor1 = m_frame1.getEditor();
-                        editor1.getDocument().putProperty(
-                                Document.TitleProperty, "DebugFileName");
-                        if ( make2Frames ) {
-                            m_frame2 = makeFrame();
-                            JEditorPane editor2 = m_frame2.getEditor();
-                            editor2.setDocument(editor1.getDocument());
-                            // since same document, can't have different name
-                            //editor2.getDocument().putProperty(
-                            //        Document.TitleProperty, "FileInFrame2");
-                            setupFrame(m_frame2);
-                        }
-                        editor1.requestFocusInWindow();
+            ViManager.runInDispatch(true, () -> {
+                Toolkit.getDefaultToolkit().setDynamicLayout(true);
+                m_frame1 = makeFrame();
+                m_frame1.optionsButton.addActionListener((ActionEvent e) -> {
+                    try {
+                        showOptionsDialog(m_frame1);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
                     }
                 });
+                setupFrame(m_frame1);
+                JEditorPane editor1 = m_frame1.getEditor();
+                editor1.getDocument().putProperty(
+                        Document.TitleProperty, "DebugFileName");
+                if ( make2Frames ) {
+                    m_frame2 = makeFrame();
+                    JEditorPane editor2 = m_frame2.getEditor();
+                    editor2.setDocument(editor1.getDocument());
+                    // since same document, can't have different name
+                    //editor2.getDocument().putProperty(
+                    //        Document.TitleProperty, "FileInFrame2");
+                    setupFrame(m_frame2);
+                }
+                editor1.requestFocusInWindow();
+            });
         } catch( Exception e ) {
             e.printStackTrace();
             //System.err.println( e.getClass().getName()
@@ -266,15 +252,12 @@ public class Jvi
 
         // invoke and wait to make sure widget is fully drawn.
         try {
-            ViManager.runInDispatch(true, new Runnable() {
-                    @Override
-                    public void run() {
-                        PlayFactory.installKeymap(m_frame1.getEditor());
-                        if ( make2Frames ) {
-                            PlayFactory.installKeymap(m_frame2.getEditor());
-                        }
-                    }
-                });
+            ViManager.runInDispatch(true, () -> {
+                PlayFactory.installKeymap(m_frame1.getEditor());
+                if ( make2Frames ) {
+                    PlayFactory.installKeymap(m_frame2.getEditor());
+                }
+            });
         } catch( Exception e ) {
             e.printStackTrace();
             //System.err.println( e.getClass().getName()
@@ -328,12 +311,8 @@ public class Jvi
         owner = null;
 
         if(dialog == null) {
-            optionsPanel = new OptionsPanel(new OptionsPanel.ChangeNotify() {
-                @Override
-                public void change()
-                {
-                    System.err.println("Property Change");
-                }
+            optionsPanel = new OptionsPanel(() -> {
+                System.err.println("Property Change");
             });
             dialog = new MyPropertySheetDialog(optionsPanel, owner, "jVi Options");
             dialog.getBanner().setVisible(false);

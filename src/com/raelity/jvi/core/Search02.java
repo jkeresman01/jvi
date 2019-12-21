@@ -136,7 +136,7 @@ public class Search02 {
             comment_dir = dir;
             if (initc == '/')
                 ignore_cend = true;
-            backwards = (dir == FORWARD) ? false : true;
+            backwards = (dir != FORWARD);
             initc = NUL;
         }
         else if (initc != '#' && initc != NUL)

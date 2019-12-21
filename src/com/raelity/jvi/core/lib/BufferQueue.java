@@ -25,7 +25,7 @@ package com.raelity.jvi.core.lib;
  * @author Ernie Rael <err at raelity.com>
  */
 public final class BufferQueue implements CharSequence {
-    private StringBuilder buf = new StringBuilder();
+    private final StringBuilder buf = new StringBuilder();
 
     public void setLength(int length)
     {

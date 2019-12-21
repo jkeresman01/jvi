@@ -38,7 +38,7 @@ public class TextUtil {
      * for the delimeters, " \t\n\r".
      */
     public static List<String> tokens(String s) {
-        List<String> word = new ArrayList<String>();
+        List<String> word = new ArrayList<>();
         StringTokenizer parse = new StringTokenizer(s);
         while(parse.hasMoreElements()) {
             word.add(parse.nextToken());
@@ -50,7 +50,7 @@ public class TextUtil {
      * to delineate the words.
      */
     public static List<String> tokens(String s, String separators) {
-        List<String> word = new ArrayList<String>();
+        List<String> word = new ArrayList<>();
         StringTokenizer parse = new StringTokenizer(s, separators);
         while(parse.hasMoreElements()) {
             word.add(parse.nextToken());

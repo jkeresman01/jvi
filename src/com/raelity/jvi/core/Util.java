@@ -19,7 +19,6 @@
  */
 package com.raelity.jvi.core;
 
-import java.awt.Toolkit;
 import java.text.CharacterIterator;
 
 import com.raelity.jvi.ViCmdEntry;

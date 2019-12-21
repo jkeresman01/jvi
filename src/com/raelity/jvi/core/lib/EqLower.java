@@ -28,7 +28,7 @@ import java.util.Locale;
  * @author Ernie Rael <err at raelity.com>
  */
 public class EqLower {
-    private String s;
+    private final String s;
 
     public EqLower(String s)
     {

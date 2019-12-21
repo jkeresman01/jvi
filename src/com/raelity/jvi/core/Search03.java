@@ -1393,7 +1393,7 @@ break;
     //#ifdef FEAT_MBYTE...
         if (pPrevcol != null)
             pPrevcol.setValue(col);
-        return (col >= 0 && linep.charAt(col) == ch) ? true : false;
+        return col >= 0 && linep.charAt(col) == ch;
     }
 
     static boolean linewhite(int /*linenr_t*/ lnum) {

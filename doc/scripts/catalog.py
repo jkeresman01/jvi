@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 import vimh_gen as VG
 
 def usage():
-    print 'xxx catalog.xml*'
+    print('xxx catalog.xml*')
     exit(1)
 
 args = sys.argv[1:]
@@ -23,7 +23,7 @@ def dumpStruct(x, l = 0):
         dumpStruct(e, l1)
 
 def _idump(s, l):
-    if s: print ' ' * (l*2) + s
+    if s: print(' ' * (l*2) + s)
 
 def print_catalog(src):
     (input_dir, fname) = os.path.split(src)
@@ -32,12 +32,12 @@ def print_catalog(src):
     for m in modules:
         nbm = m.get("distribution")
         vers = m.find("manifest").get("OpenIDE-Module-Specification-Version")
-        print "%12s %s" % (vers, nbm)
+        print("%12s %s" % (vers, nbm))
 
 for catalog in args:
-    print
+    print()
     print (catalog)
     print_catalog(catalog)
 
-print
+print()
 

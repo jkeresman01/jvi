@@ -302,12 +302,7 @@ abstract public class SwingBuffer extends Buffer
         return new BiasMark(offset, bias);
     }
     
-    static final Position INVALID_MARK_LINE = new Position() {
-        @Override
-        public int getOffset() {
-            return 0;
-        }
-    };
+    static final Position INVALID_MARK_LINE = () -> 0;
     
     //////////////////////////////////////////////////////////////////////
     //
@@ -353,7 +348,7 @@ abstract public class SwingBuffer extends Buffer
     }
     
     /** the segment cache */
-    private PositionSegment segment = new PositionSegment();
+    private final PositionSegment segment = new PositionSegment();
     // private Segment tempSegment = new Segment();
 
     @Override
@@ -410,7 +405,7 @@ abstract public class SwingBuffer extends Buffer
         return new DocumentCharSequence(getDocument(), start, end);
     }
     
-    private ElemCache elemCache = new ElemCache();
+    private final ElemCache elemCache = new ElemCache();
     /** the element cache */
     private Element element;
     /** the line number corresponding to the element cache (0 based). */
@@ -476,7 +471,7 @@ abstract public class SwingBuffer extends Buffer
             // If not in insert mode, then no magic redo tracking
             if(!Util.isInsertMode())
                 return;
-            String s = "";
+            String s;
 
             if(ViManager.getFactory().isEnabled()) {
                 // magic redo tracking
@@ -484,7 +479,7 @@ abstract public class SwingBuffer extends Buffer
                 try {
                     s = getDocument().getText(e.getOffset(), e.getLength());
                     docInsert(e.getOffset(), s);
-                } catch (Exception ex) {
+                } catch (BadLocationException ex) {
                     LOG.log(Level.SEVERE, null, ex);
                 }
             }

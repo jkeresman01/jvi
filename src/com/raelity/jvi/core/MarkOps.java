@@ -72,7 +72,7 @@ class MarkOps
 
     private static Filemark namedfm[] = new Filemark[26];
 
-    private static List<String> oldPersistedBufferMarks = new ArrayList<String>();
+    // private static List<String> oldPersistedBufferMarks = new ArrayList<>();
 
     /** This constant indicates mark is in other file. */
     final static FPOS otherFile = new FPOS();
@@ -100,46 +100,51 @@ class MarkOps
         ColonCommands.register("marks", "marks", new DoMarks(), null);
         ColonCommands.register("delm", "delmarks", new ExDelmarks(), null);
 
-        PropertyChangeListener pcl = new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                String pname = evt.getPropertyName();
-                if(pname.equals(ViManager.P_OPEN_WIN)) {
-                    openWin((ViTextView)evt.getNewValue());
-                } else if(pname.equals(ViManager.P_CLOSE_WIN)) {
-                    closeWin((ViTextView)evt.getOldValue());
-                } else if(pname.equals(ViManager.P_OPEN_BUF)) {
-                    BufferMarksPersist.restore((Buffer)evt.getNewValue());
-                } else if(pname.equals(ViManager.P_CLOSE_BUF)) {
-                    if(!marksImportCheck.isChange()) {
-                        marksImportCheck.setFreeze(true);
-                        try {
-                            BufferMarksPersist.persist((Buffer)evt.getOldValue());
-                        } finally {
-                            marksImportCheck.setFreeze(false);
-                        }
-                    } else {
-                        LOG.info("jVi marks imported (buffer close)");
+        PropertyChangeListener pcl = (PropertyChangeEvent evt) -> {
+            String pname = evt.getPropertyName();
+            switch (pname) {
+            case ViManager.P_OPEN_WIN:
+                openWin((ViTextView)evt.getNewValue());
+                break;
+            case ViManager.P_CLOSE_WIN:
+                closeWin((ViTextView)evt.getOldValue());
+                break;
+            case ViManager.P_OPEN_BUF:
+                BufferMarksPersist.restore((Buffer)evt.getNewValue());
+                break;
+            case ViManager.P_CLOSE_BUF:
+                if(!marksImportCheck.isChange()) {
+                    marksImportCheck.setFreeze(true);
+                    try {
+                        BufferMarksPersist.persist((Buffer)evt.getOldValue());
+                    } finally {
+                        marksImportCheck.setFreeze(false);
                     }
-                } else if(pname.equals(ViManager.P_BOOT)) {
-                    BufferMarksPersist.read_viminfo();
-                    read_viminfo_filemarks();
-                    startImportCheck();
-                } else if(pname.equals(ViManager.P_SHUTDOWN)) {
-                    filemarksImportCheck.stopAll();
-                    marksImportCheck.stopAll();
-
-                    if(!filemarksImportCheck.isChange()) {
-                        write_viminfo_filemarks();
-                    } else {
-                        LOG.info("jVi filemarks imported");
-                    }
-                    if(!marksImportCheck.isChange()) {
-                        BufferMarksPersist.write_viminfo();
-                    } else {
-                        LOG.info("jVi marks imported");
-                    }
+                } else {
+                    LOG.info("jVi marks imported (buffer close)");
                 }
+                break;
+            case ViManager.P_BOOT:
+                BufferMarksPersist.read_viminfo();
+                read_viminfo_filemarks();
+                startImportCheck();
+                break;
+            case ViManager.P_SHUTDOWN:
+                filemarksImportCheck.stopAll();
+                marksImportCheck.stopAll();
+                if(!filemarksImportCheck.isChange()) {
+                    write_viminfo_filemarks();
+                } else {
+                    LOG.info("jVi filemarks imported");
+                }
+                if(!marksImportCheck.isChange()) {
+                    BufferMarksPersist.write_viminfo();
+                } else {
+                    LOG.info("jVi marks imported");
+                }
+                break;
+            default:
+                break;
             }
         };
         ViManager.addPropertyChangeListener(ViManager.P_BOOT, pcl);
@@ -313,10 +318,10 @@ class MarkOps
             G.curwin.w_jumplistidx += count;
 
             ViMark mark = G.curwin.w_jumplist.get(G.curwin.w_jumplistidx);
-            if(false /*mark.isSomeOtherFile()*/) {
-                // ...
-                return null; // return otherFile;
-            }
+            // if(false /*mark.isSomeOtherFile()*/) {
+            //     // ...
+            //     return null; // return otherFile;
+            // }
             return mark;
         }
     }
@@ -346,8 +351,8 @@ class MarkOps
                 return startp;
             if (check_mark(endp, false) == FAIL)
                 return endp;
-            boolean isLtName = c == '<' ? true : false;
-            boolean isLtValue = startp.compareTo(endp) < 0 ? true : false;
+            boolean isLtName = c == '<';
+            boolean isLtValue = startp.compareTo(endp) < 0;
             m = isLtName == isLtValue ? startp : endp;
             /*
              * For Visual line mode, set mark at begin or end of line
@@ -421,32 +426,31 @@ class MarkOps
     static void do_jumps()
     {
         cleanup_jumplist();
-        ViOutputStream vios = ViManager.createOutputStream(
-                null, ViOutputStream.OUTPUT, "Jump List");
-
-        vios.println(" jump line  col file/text");
-        for(int i = 0; i < G.curwin.w_jumplist.size(); i++) {
-            ViMark mark = G.curwin.w_jumplist.get(i);
-            if(check_mark(mark, false) == OK) {
-                String name;
-                // name = fm_getname(&curwin->w_jumplist[i], 16);
-                name = "filename";
-                if(name == null)
-                    continue;
-                MySegment seg = G.curbuf.getLineSegment(mark.getLine());
-                String lineText = seg.subSequence(0, seg.length()-1).toString();
-                vios.println(String.format("%c %2d %5d %4d %s",
-                      i == G.curwin.w_jumplistidx ? '>' : ' ',
-                      i > G.curwin.w_jumplistidx ? i - G.curwin.w_jumplistidx
-                                                 :  G.curwin.w_jumplistidx -i,
-                      mark.getLine(),
-                      mark.getColumn(),
-                      lineText.trim()));
+        try (ViOutputStream vios = ViManager.createOutputStream(
+                null, ViOutputStream.OUTPUT, "Jump List")) {
+            vios.println(" jump line  col file/text");
+            for(int i = 0; i < G.curwin.w_jumplist.size(); i++) {
+                ViMark mark = G.curwin.w_jumplist.get(i);
+                if(check_mark(mark, false) == OK) {
+                    String name;
+                    // name = fm_getname(&curwin->w_jumplist[i], 16);
+                    name = "filename";
+                    // if(name == null)
+                    //     continue;
+                    MySegment seg = G.curbuf.getLineSegment(mark.getLine());
+                    String lineText = seg.subSequence(0, seg.length()-1).toString();
+                    vios.println(String.format("%c %2d %5d %4d %s",
+                            i == G.curwin.w_jumplistidx ? '>' : ' ',
+                            i > G.curwin.w_jumplistidx ? i - G.curwin.w_jumplistidx
+                                    :  G.curwin.w_jumplistidx -i,
+                            mark.getLine(),
+                            mark.getColumn(),
+                            lineText.trim()));
+                }
             }
+            if(G.curwin.w_jumplistidx == G.curwin.w_jumplist.size())
+                vios.println(">");
         }
-        if(G.curwin.w_jumplistidx == G.curwin.w_jumplist.size())
-            vios.println(">");
-        vios.close();
     }
 
     /**
@@ -618,8 +622,8 @@ class MarkOps
      * Used mainly when trashing the entire buffer during ":e" type commands
      */
     static void clrallmarks(Buffer buf) {
-        for (int i = 0; i < buf.b_namedm.length; i++) {
-            buf.b_namedm[i].invalidate();
+        for (ViMark b_namedm : buf.b_namedm) {
+            b_namedm.invalidate();
         }
         buf.b_op_start.invalidate();		/* start/end op mark cleared */
         buf.b_op_end.invalidate();
@@ -665,7 +669,8 @@ class MarkOps
                 boolean digit = Util.isdigit(arg.charAt(p));
                 if (lower || digit || Util.isupper(arg.charAt(p)))
                 {
-                    char from = 0, to = 0;
+                    char from;
+                    char to = 0;
                     if (p + 1 < arg.length() && arg.charAt(p+1) == '-')
                     {
                         // clear range of marks
@@ -946,7 +951,7 @@ class MarkOps
             // Simply toss out any bufs that cause issues.
             try {
                 String[] bufTags = prefs.childrenNames(); // existing bufs
-                Set<String> names = new HashSet<String>();
+                Set<String> names = new HashSet<>();
                 // following holds bufs in MRU order
                 BufferMarks[] bms = new BufferMarks[bufTags.length];
                 LOG.log(Level.FINER, "persisted file count: {0}",

@@ -247,7 +247,7 @@ public class Search01 {
     // Mark the beginning of each line in case extra lines are added
     // (unlike the 'g' command, doGlobal, not checking if lines are deleted)
 
-    List<ViMark> marks = new ArrayList<ViMark>();
+    List<ViMark> marks = new ArrayList<>();
     for(int lnum = line1; lnum <= line2; lnum++) {
       marks.add(G.curbuf.createMark(G.curbuf.getLineStartOffset(lnum),
                                     BIAS.FORW));
@@ -639,10 +639,10 @@ public class Search01 {
     
     substFlags = null;
 
-    List<ViMark> marks = new ArrayList<ViMark>();
+    List<ViMark> marks = new ArrayList<>();
     List<String> debugInfo = null;
     if(G.dbgSearch.getBoolean())
-      debugInfo = new ArrayList<String>();
+      debugInfo = new ArrayList<>();
 
     // Set up two marks for each line, first char and after newline.
     // Use two marks/line to detect if a line is deleted.
@@ -804,32 +804,34 @@ public class Search01 {
       if(c == ']') {
         break;
       }
-      if (c == '-') {
+      switch (c) {
+      case '-':
         ++sidx;
         if(sidx < s.length() && (c = s.charAt(sidx)) != ']') {
           ++sidx;
         }
-      }
-      else if (c == '\\') {
+        break;
+      case '\\':
         if(sidx+1 < s.length()) {
           char c2 = s.charAt(sidx+1);
           if(vim_strchr(REGEXP_INRANGE, 0, c2) >= 0
-             || (!cpo_lit && vim_strchr(REGEXP_ABBR, 0, c2) >= 0)) {
+                  || (!cpo_lit && vim_strchr(REGEXP_ABBR, 0, c2) >= 0)) {
             sidx += 2;
           }
         }
-      }
-      else if (c == '[')
-      {
+        break;
+      case '[':
         MutableInt mi = new MutableInt(sidx);
         if (skip_class_name(s, mi) == null) {
           ++sidx; /* It was not a class name */
         } else {
           sidx = mi.getValue();
         }
-      }
-      else
+        break;
+      default:
         ++sidx;
+        break;
+      }
     }
 
     return sidx;

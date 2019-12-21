@@ -22,7 +22,6 @@ package com.raelity.jvi.core;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
@@ -80,7 +79,7 @@ private static final Logger LOG = Logger.getLogger(CcBang.class.getName());
 
     static String lastBangCommand = null;
 
-    private static ColonAction ACTION_bang = new BangAction();
+    private static final ColonAction ACTION_bang = new BangAction();
 
     private CcBang()
     {
@@ -211,7 +210,7 @@ public static class BangAction extends AbstractColonAction
 
         coord = null;
         if(!fOK) {
-            return;
+            // return;
         }
     }
 
@@ -274,11 +273,7 @@ public static class BangAction extends AbstractColonAction
 
     private boolean escaped(int index, StringBuilder sb)
     {
-        if (index == 0 || sb.charAt(index - 1) != '\\') {
-            return false;
-        } else {
-            return true;
-        }
+        return index != 0 && sb.charAt(index - 1) == '\\';
     }
 
     private String commandLineToString(List<String> cl)
@@ -301,7 +296,7 @@ public static class BangAction extends AbstractColonAction
     {
         boolean isFilter = (evt.getAddrCount() > 0);
 
-        ArrayList<String> shellCommandLine = new ArrayList<String>(3);
+        ArrayList<String> shellCommandLine = new ArrayList<>(3);
         String shellXQuote = G.p_sxq;
 
         shellCommandLine.add(G.p_sh);
@@ -460,8 +455,8 @@ private static class FilterThreadCoordinator
         startLine = oa.start.getLine();
         lastLine = oa.end.getLine();
 
-        fromDoc = new ArrayBlockingQueue<String>(QLEN);
-        toDoc = new ArrayBlockingQueue<String>(QLEN);
+        fromDoc = new ArrayBlockingQueue<>(QLEN);
+        toDoc = new ArrayBlockingQueue<>(QLEN);
     }
 
     void finish(final boolean fOK)
@@ -469,11 +464,8 @@ private static class FilterThreadCoordinator
         if(EventQueue.isDispatchThread()) {
             ba.finishBangCommand(fOK);
         } else {
-            EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        ba.finishBangCommand(fOK);
-                    }
+            EventQueue.invokeLater(() -> {
+                ba.finishBangCommand(fOK);
             });
         }
     }
@@ -620,7 +612,7 @@ private static class ProcessWriterThread extends FilterThread
     public void writeToProcess()
     {
         currWriterLine = coord.startLine;
-        String data = null;
+        String data;
         try {
             while(!isProblem()) {
                 data = coord.fromDoc.take();
@@ -638,9 +630,7 @@ private static class ProcessWriterThread extends FilterThread
             }
             writer.close();
             writer = null;
-        } catch (InterruptedException ex) {
-            exception = ex;
-        } catch (IOException ex) {
+        } catch (InterruptedException | IOException ex) {
             exception = ex;
         }
         if (dbg.getBoolean()) {
@@ -709,7 +699,7 @@ private static class ProcessReaderThread extends FilterThread
     private void readFromProcess()
     {
         currReaderLine = coord.startLine;
-        String data = null;
+        String data;
         try {
             while(!isProblem()) {
                 data = reader.readLine();
@@ -733,9 +723,7 @@ private static class ProcessReaderThread extends FilterThread
             coord.toDoc.put(DONE);
             reader.close();
             reader = null;
-        } catch (InterruptedException ex) {
-            exception = ex;
-        } catch (IOException ex) {
+        } catch (InterruptedException | IOException ex) {
             exception = ex;
         }
     }
@@ -808,14 +796,11 @@ private static class DocumentThread extends FilterThread
     public void runUnderTimer()
     {
         assert(!isThread);
-        timer = new Timer(coord.WAIT, new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    assert(EventQueue.isDispatchThread());
-                    if(timer != null) {
-                        doServiceUnderTimer();
-                    }
-                }
+        timer = new Timer(FilterThreadCoordinator.WAIT, (ActionEvent e) -> {
+            assert(EventQueue.isDispatchThread());
+            if(timer != null) {
+                doServiceUnderTimer();
+            }
         });
         timer.setRepeats(false);
 
@@ -823,8 +808,6 @@ private static class DocumentThread extends FilterThread
         docWriteLine = coord.startLine;
 
         doServiceUnderTimer();
-
-        return;
     }
 
     private void finishUnderTimer()
@@ -867,7 +850,7 @@ private static class DocumentThread extends FilterThread
     public boolean readDocument()
     {
         boolean didSomething = false;
-        String data = null;
+        String data;
         if(docReadLine <= coord.lastLine) {
             if (dbg.getBoolean()) {
                     dbg.println("!: rwDoc: try read doc");
@@ -899,7 +882,7 @@ private static class DocumentThread extends FilterThread
     public boolean writeDocument()
     {
         boolean didSomething = false;
-        String data = null;
+        String data;
         if(!docWriteDone) {
             if (dbg.getBoolean())
                 dbg.println("!: rwDoc: try write doc " + debugCounter++);
@@ -959,21 +942,18 @@ private static class DocumentThread extends FilterThread
             return;
         }
 
-        Misc.runUndoable(new Runnable() {
-                @Override
-            public void run() {
-                Buffer buf = win.w_buffer;
-                int startOffset = buf.getLineStartOffset(coord.startLine);
-                int endOffset = buf.getLineEndOffset(coord.lastLine);
-                if(endOffset > buf.getLength()) {
-                    // replacing last line, but the '\n' is not part of file
-                    endOffset = buf.getLength();
-                    // if replacement text end in '\n', then strip it.
-                    if(sb.length() > 0 && sb.charAt(sb.length() - 1) == '\n')
-                        sb.setLength(sb.length()-1);
-                }
-                buf.replaceString(startOffset, endOffset, sb.toString());
+        Misc.runUndoable(() -> {
+            Buffer buf = win.w_buffer;
+            int startOffset = buf.getLineStartOffset(coord.startLine);
+            int endOffset = buf.getLineEndOffset(coord.lastLine);
+            if(endOffset > buf.getLength()) {
+                // replacing last line, but the '\n' is not part of file
+                endOffset = buf.getLength();
+                // if replacement text end in '\n', then strip it.
+                if(sb.length() > 0 && sb.charAt(sb.length() - 1) == '\n')
+                    sb.setLength(sb.length()-1);
             }
+            buf.replaceString(startOffset, endOffset, sb.toString());
         });
 
     }
@@ -1258,13 +1238,14 @@ private static abstract class FilterThread extends Thread
     {
         super(filterType);
         this.coord = coord;
-        if(false) {
-            // low priority a bit
-            int pri = getPriority() -1;
-            if(pri >= MIN_PRIORITY) {
-                setPriority(pri);
-            }
-        }
+
+        // if(false) {
+        //     // low priority a bit
+        //     int pri = getPriority() -1;
+        //     if(pri >= MIN_PRIORITY) {
+        //         setPriority(pri);
+        //     }
+        // }
     }
 
     protected void dumpState()
@@ -1297,18 +1278,15 @@ private static abstract class FilterThread extends Thread
     @Override
     public void run()
     {
-        setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-                @Override
-                public void uncaughtException(Thread t, Throwable e) {
-                    FilterThread thisThread = (FilterThread) t;
-                    if(thisThread.uncaughtException != null) {
-                        return;
-                    }
-                    thisThread.uncaughtException = e;
-                    LOG.log(Level.SEVERE, null, e);
-                    cleanup();
-                }
-            });
+        setUncaughtExceptionHandler((Thread t, Throwable e) -> {
+            FilterThread thisThread = (FilterThread) t;
+            if(thisThread.uncaughtException != null) {
+                return;
+            }
+            thisThread.uncaughtException = e;
+            LOG.log(Level.SEVERE, null, e);
+            cleanup();
+        });
 
         doTask();
         doTaskCleanup();

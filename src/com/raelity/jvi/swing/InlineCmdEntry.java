@@ -88,7 +88,7 @@ public class InlineCmdEntry extends CommandLine.CommandLineEntry {
     public void finishActivate() {
         Options.kd().println("InlineCommandEntry: finishActivate"); //REROUTE
         JRootPane rootPane = getRootPane();
-        refRootPane = new WeakReference<JRootPane>(rootPane);
+        refRootPane = new WeakReference<>(rootPane);
         JPanel glass = (JPanel)rootPane.getGlassPane();
 
         button = rootPane.getDefaultButton();

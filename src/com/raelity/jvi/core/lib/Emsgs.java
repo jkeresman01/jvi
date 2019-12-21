@@ -26,7 +26,7 @@ package com.raelity.jvi.core.lib;
  * @author Ernie Rael <err at raelity.com>
  */
 public class Emsgs {
-    private StringBuilder sb;
+    private final StringBuilder sb;
     private int lnum;
 
     public Emsgs()

@@ -28,7 +28,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 
 import javax.swing.AbstractButton;
@@ -69,7 +68,7 @@ public class JviFrame extends JFrame
     /**
      * Construct the frame.
      */
-    @SuppressWarnings("CallToThreadDumpStack")
+    @SuppressWarnings({"CallToThreadDumpStack", "CallToPrintStackTrace"})
     public JviFrame()
     {
         enableEvents(AWTEvent.WINDOW_EVENT_MASK);
@@ -78,7 +77,8 @@ public class JviFrame extends JFrame
             statusDisplay = new PlayStatusDisplay(generalStatusBar, strokeStatusBar,
                                               modeStatusBar);
         } catch ( Exception e ) {
-            System.err.println( e.getClass().getName() + " thrown by JviFrame():  " + e.getMessage() );
+            System.err.println( e.getClass().getName()
+                    + " thrown by JviFrame():  " + e.getMessage() );
             e.printStackTrace();
         }
     }
@@ -113,6 +113,7 @@ public class JviFrame extends JFrame
     /**
      *  Component initialization.
      */
+    @SuppressWarnings("DeadBranch")
     private void jbInit() throws Exception
     {
         ImageIcon image1 = new ImageIcon(JviFrame.class.getResource("openFile.gif"));
@@ -130,22 +131,12 @@ public class JviFrame extends JFrame
         menuFile.setText("File");
         JMenuItem menuFileExit = new JMenuItem();
         menuFileExit.setText("Exit");
-        menuFileExit.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                fileExit_actionPerformed(e);
-            }
-        });
+        menuFileExit.addActionListener(this::fileExit_actionPerformed);
         JMenu menuHelp = new JMenu();
         menuHelp.setText("Help");
         JMenuItem menuHelpAbout = new JMenuItem();
         menuHelpAbout.setText("About");
-        menuHelpAbout.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                helpAbout_actionPerformed(e);
-            }
-        });
+        menuHelpAbout.addActionListener(this::helpAbout_actionPerformed);
         JButton jButton1 = new JButton(image1);
         jButton1.setToolTipText("Open File");
 
@@ -163,12 +154,8 @@ public class JviFrame extends JFrame
             //jviButton.setContentAreaFilled(false);
             jviButton.setFocusPainted(false);
             jviButton.setPreferredSize(new Dimension(24, 24));
-            jviButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e)
-                {
-                    editorPane.setEditable(jviButton.isSelected());
-                }
+            jviButton.addActionListener((ActionEvent e) -> {
+                editorPane.setEditable(jviButton.isSelected());
             });
         } else {
             jviButton = new JButton(jvi_off);
@@ -176,12 +163,8 @@ public class JviFrame extends JFrame
             //jviButton.setContentAreaFilled(false);
             jviButton.setFocusPainted(false);
             jviButton.setPreferredSize(new Dimension(24, 24));
-            jviButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e)
-                {
-                    jviButton.setSelected(!jviButton.isSelected());
-                }
+            jviButton.addActionListener((ActionEvent e) -> {
+                jviButton.setSelected(!jviButton.isSelected());
             });
         }
         System.err.println("jviButton UI: "

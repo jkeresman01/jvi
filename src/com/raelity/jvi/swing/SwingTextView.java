@@ -46,7 +46,6 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.JViewport;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -80,7 +79,6 @@ import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.core.Edit;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Misc;
-import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.TextView;
 import com.raelity.jvi.core.Util;
@@ -105,7 +103,7 @@ import static com.raelity.jvi.core.lib.Constants.*;
  *  source, then an externalChange message is sent to vi.
  *  </p>
  */
-public class SwingTextView extends TextView
+public abstract class SwingTextView extends TextView
         implements ViTextView, PropertyChangeListener
 {
     protected static final
@@ -153,14 +151,11 @@ public class SwingTextView extends TextView
         this.editorPane = editorPane;
         w_num = ++genNum;
 
-        cursorSaveListener = new CaretListener() {
-            @Override
-            public void caretUpdate(CaretEvent ce) {
-                if(!ViManager.getFactory().isEnabled())
-                    return;
-                cursorMoveDetected(lastDot, ce.getDot(), ce.getMark());
-                lastDot = ce.getDot();
-            }
+        cursorSaveListener = (CaretEvent ce) -> {
+            if(!ViManager.getFactory().isEnabled())
+                return;
+            cursorMoveDetected(lastDot, ce.getDot(), ce.getMark());
+            lastDot = ce.getDot();
         };
     }
 
@@ -1148,67 +1143,6 @@ public class SwingTextView extends TextView
         }
     }
 
-    //
-    // NEEDSWORK: the win_* should really be somewhere else?
-    // Maybe some kind of platform and/or window-manager interface?
-    //
-
-    /** Quit editing window. Can close last view.
-     */
-    @Override
-    public void win_quit()
-    {
-        Msg.emsg("win_quit not implemented");
-    }
-
-
-    /** Split this window.
-     * @param n the size of the new window.
-     */
-    @Override
-    public void win_split( Direction dir, int n, ViAppView av)
-    {
-        Msg.emsg("win_split not implemented");
-    }
-
-    @Override
-    public void win_move(Direction dir, int n)
-    {
-        Msg.emsg("win_move not implemented");
-    }
-
-    @Override
-    public void win_clone()
-    {
-        Msg.emsg("win_clone not implemented");
-    }
-
-    @Override
-    public void win_size(SIZOP op, Orientation orientation, int n)
-    {
-        Msg.emsg("win_size not implemented");
-    }
-
-
-    /** Close this window
-     * @param freeBuf true if the related buffer may be freed
-     */
-    @Override
-    public void win_close( boolean freeBuf )
-    {
-        Msg.emsg("win_close not implemented");
-    }
-
-
-    /** Close other windows
-     * @param forceit true if always hide all other windows
-     */
-    @Override
-    public void win_close_others(boolean forceit)
-    {
-        Msg.emsg("win_close_others not implemented");
-    }
-
     @Override
     public ViStatusDisplay getStatusDisplay()
     {
@@ -1916,12 +1850,8 @@ public class SwingTextView extends TextView
         fillLinePositions();
     }
 
-    final private ChangeListener vpChangeListener = new ChangeListener() {
-        @Override
-        public void stateChanged(ChangeEvent e)
-        {
-            changeVp(false);
-        }
+    final private ChangeListener vpChangeListener = (ChangeEvent e) -> {
+        changeVp(false);
     };
 
     /** The container for the editor has changed. */
@@ -1929,9 +1859,7 @@ public class SwingTextView extends TextView
     {
         if (null != viewport)
             viewport.removeChangeListener(vpChangeListener);
-        viewport = (JViewport)(component instanceof JViewport
-                ? component
-                : SwingUtilities.getAncestorOfClass(JViewport.class, component));
+        viewport = SwingFactory.getViewport(component);
         if (null != viewport)
             viewport.addChangeListener(vpChangeListener);
         changeVp(true);
@@ -2018,12 +1946,16 @@ public class SwingTextView extends TextView
     {
         String p = e.getPropertyName();
         Object o = e.getNewValue();
-        if ("font".equals(p)) {
-            changeFont((Font) o);
-        } else if ("document".equals(p)) {
-            changeDocument(e); // this assert
-        } else if ("ancestor".equals(p)) {
-            changeViewport((Component)o);
+        if (null != p) switch (p) {
+            case "font":
+                changeFont((Font) o);
+                break;
+            case "document":
+                changeDocument(e); // this assert
+                break;
+            case "ancestor":
+                changeViewport((Component)o);
+                break;
         }
     }
 

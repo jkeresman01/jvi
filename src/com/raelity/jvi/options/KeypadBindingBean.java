@@ -62,7 +62,7 @@ public BeanDescriptor getBeanDescriptor() {
     @Override
     public PropertyDescriptor[] getPropertyDescriptors()
     {
-        List<PropertyDescriptor> vD = new ArrayList<PropertyDescriptor>();
+        final List<PropertyDescriptor> vD = new ArrayList<>();
         for (String key : KeyBinding.getKeypadNames()) {
             addDesc(vD, key, "");
             addDesc(vD, key, "Ctrl");
@@ -81,18 +81,23 @@ public BeanDescriptor getBeanDescriptor() {
         // Want things to display nicely ordered, unmodifed keys followed by
         // Ctrl-, then by Shift-. And want the arrow keys to be together.
         // So preface names with something to control sorting
-        if(   key.equals("Up")
-           || key.equals("Down")
-           || key.equals("Left")
-           || key.equals("Right"))
+        switch (key) {
+        case "Up":
+        case "Down":
+        case "Left":
+        case "Right":
             key = "AAf" + key;
-        else if(   key.equals("Enter")
-                || key.equals("Escape")
-                || key.equals("Back_space")
-                || key.equals("Tab"))
+            break;
+        case "Enter":
+        case "Escape":
+        case "Back_space":
+        case "Tab":
             key = "AAb" + key;
-        else
+            break;
+        default:
             key = "AAj" + key;
+            break;
+        }
         String propertyName = mod.length() == 0 ? key : mod + "_" + key;
         try {
             d = new PropertyDescriptor(propertyName, KeypadBindingBean.class);

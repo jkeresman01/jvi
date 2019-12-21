@@ -1,25 +1,62 @@
-jvi-index.html - css cleanup
-    - IDE issue of "class xxx not found",
-      hint to add it to syle, but it's already in stylesheet
-      (do the hint, still a problem)
+
+what about :tabs, various tab close commands
 
 netbeans csv editor
 
+continue magic redo work, typeing that '"' on '"' at end screws up '.'.
+
+===
+===
+
 use JLayer or somesuch to flip the arrow on the combo box? find other way.
+
+?rework colon commands parser bringing it closer to modern vim
+
+:log command, logsys[out|err] messages.log. logjvi jVi output
+
+===
+=== important doc adds
+===
+
+NB tips/tricks, ^G/v bounce, put in jVi quickstart
+
+    working with code completion, to/from normal mode (nb depend on changes)
+    html example
+         xxx ab|cd xxx    ### '|' is cursor
+         viw    ### vis mode abcd using text object
+         <^G>   ### convert to java platform select
+         <alt-return>   ### bring up hints
+         <ret>          ### surround with tag code template
+         ### at this point in normal mode, need to get into input mode
+         ### to change tag type.
+
+    Use :cn,:cp after "find usages" or "/some search/gp
 
 ===
 === Documentation
 ===
+
+investigate use of sass/less css replace/extend
+
+Why doesn't CTRL-] in quickref point to tagsearch file? Also command index.
+During build, leave list of targets.
+
 wierd format <head> (or missing)
     index.html
     jvi-index.html
     nb-index.html
+
+
+To jvi website help, add help search box
 
 doc jVi button, show in screen shot? Is there a shortcut?
 
 Use identical nb-plugin doc for website intro
 
 differences from vi/vim
+features not found in vim, check jvi-main.html
+
+jvi wishlist, into todo doc
 
 Does i_ctrl-U really work?
 
@@ -27,14 +64,8 @@ doc table issue when "|xxx|" has |'s removed, spacing funny next line
 
 Intro.txt section 8 Defn of vim7, description of visuals (NB specific help?)
 
-Why doesn't CTRL-] in quickref point to tagsearch file? Also command index.
-During build, leave list of targets.
-
 quickref in detail, got to using tags. Probably should re-check all
     Q_qf, Q_vc, ...
-
-missing commands: :tabr[ewind], :tabfir[st], :tabl[ast]
-what about :tabs
 
 index.txt, add sections 4,5. 5 is all ":" commands
 z fold commands

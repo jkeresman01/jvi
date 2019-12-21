@@ -9,6 +9,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
@@ -60,7 +61,7 @@ public class FreezeViewport implements DocumentListener, ChangeListener
             pos = doc.createPosition(offset);
             setupDocListener();
             //vp.addChangeListener(this); // debug info
-        } catch (Exception ex) {
+        } catch (BadLocationException ex) {
             // Note: did not start listener
         } finally {
             doc.readUnlock();
@@ -89,10 +90,9 @@ public class FreezeViewport implements DocumentListener, ChangeListener
             Point pt = ep.modelToView(offset).getLocation();
             pt.translate(-pt.x, 0); // x <-- 0, leave a few pixels to left
             vp.setViewPosition(pt);
-        } catch (Exception ex) {
+        } catch (BadLocationException ex) {
             stop();
         }
-        return;
     }
 
     private void handleChange(DocumentEvent e)
@@ -118,14 +118,9 @@ public class FreezeViewport implements DocumentListener, ChangeListener
             adjustViewport(offset);
             //System.err.println("handleChange: adjust in dispatch");
         } else {
-            EventQueue.invokeLater(new Runnable() {
-
-                @Override
-                public void run()
-                {
-                    adjustViewport(offset);
-                    //System.err.println("handleChange: adjust later");
-                }
+            EventQueue.invokeLater(() -> {
+                adjustViewport(offset);
+                //System.err.println("handleChange: adjust later");
             });
         }
     }

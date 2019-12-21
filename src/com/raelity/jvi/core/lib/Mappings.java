@@ -23,7 +23,6 @@ import java.awt.event.ActionEvent;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -56,8 +55,7 @@ import static com.raelity.jvi.core.lib.KeyDefs.*;
 public final class Mappings {
     private static Mappings INSTANCE;
 
-    private Map<Character, List<Mapping>> mappings
-            = new HashMap<Character, List<Mapping>>();
+    private final Map<Character, List<Mapping>> mappings = new HashMap<>();
     private static WeakReference<List<Mapping>> refDefaultMappings;
     private static WeakReference<Map<EqLower, Character>> refMapCommandSpecial;
     private static WeakReference<Map<Character, String>> refReverseMapCommandSpecial;
@@ -83,7 +81,7 @@ public final class Mappings {
 
     private void initMappings()
     {
-        Wrap<String> emsg = new Wrap<String>();
+        Wrap<String> emsg = new Wrap<>();
         List<Mapping> mapCommands = Mappings.parseMapCommands(
                 OptUtil.getOption(Options.mapCommands).getString(),
                 emsg);
@@ -158,14 +156,14 @@ public final class Mappings {
     private static Character tranlateMapCommandChar(
             Matcher m, boolean is_rhs, String orig, Emsgs emsg)
     {
-        if(false) {
-            ViManager.println("region: '"
-                    +  orig.substring(m.start())
-                    + "' match: '" + m.group() + "'");
-            for(int i = 1; i <= m.groupCount(); i++) {
-                ViManager.println("\t" + m.group(i));
-            }
-        }
+        // if(false) {
+        //     ViManager.println("region: '"
+        //             +  orig.substring(m.start())
+        //             + "' match: '" + m.group() + "'");
+        //     for(int i = 1; i <= m.groupCount(); i++) {
+        //         ViManager.println("\t" + m.group(i));
+        //     }
+        // }
 
         // the groups in mapSeqPattern
         final int g_char = 1;
@@ -185,14 +183,20 @@ public final class Mappings {
             s = m.group(g_modif);
 
             if(s != null) {
-                if(s.equals("C") || s.equals("c")) {
+                switch (s) {
+                case "C":
+                case "c":
                     modifiers |= CTRL;
-                } else if(s.equals("S") || s.equals("s")) {
+                    break;
+                case "S":
+                case "s":
                     modifiers |= SHFT;
-                } else {
+                    break;
+                default:
                     Logger.getLogger(GetChar.class.getName())
                             .log(Level.SEVERE, null,
-                            new Exception("unknown modifier: " + s));
+                                    new Exception("unknown modifier: " + s));
+                    break;
                 }
                 if(isVIRT(c)) {
                     c |= (modifiers << MODIFIER_POSITION_SHIFT);
@@ -245,7 +249,7 @@ public final class Mappings {
 
             Pattern mapCharsPattern = Pattern.compile(pat, Pattern.CASE_INSENSITIVE);
             mapCharsMatcher = mapCharsPattern.matcher("");
-            refMapCharsMatcher = new WeakReference<Matcher>(mapCharsMatcher);
+            refMapCharsMatcher = new WeakReference<>(mapCharsMatcher);
         }
         return mapCharsMatcher;
     }
@@ -261,7 +265,7 @@ public final class Mappings {
     {
         String cmd = cmdp.getValue();
         int p = 0;
-        int mode = 0;
+        int mode;
         char modec = cmd.charAt(p++);
         if (modec == 'i')
             mode = INSERT;				   /* :imap */
@@ -353,7 +357,7 @@ public final class Mappings {
         }
 
         String originalCmd = cmd;
-        Wrap<String> cmdp = new Wrap<String>(cmd);
+        Wrap<String> cmdp = new Wrap<>(cmd);
         int mode = parseMapMode(cmdp, false);
         cmd = cmdp.getValue();
         int maptype = (cmd.charAt(0) == 'n') ? 2 : cmd.charAt(0) == 'u' ? 1 : 0;
@@ -415,7 +419,7 @@ public final class Mappings {
      */
     public static String parseMapCommands(String input)
     {
-        Wrap<String>emsg = new Wrap<String>("");
+        Wrap<String>emsg = new Wrap<>("");
         parseMapCommands(input, emsg);
         return emsg.getValue();
     }
@@ -424,7 +428,7 @@ public final class Mappings {
                                                  Wrap<String>p_emsg)
     {
         Matcher matcher = getMapCharsMatcher(); // just holds a reference
-        List<Mapping> mapCommands = new ArrayList<Mapping>();
+        List<Mapping> mapCommands = new ArrayList<>();
 
         Emsgs emsg = new Emsgs();
 
@@ -453,13 +457,11 @@ public final class Mappings {
 
         Matcher matcher = getMapCharsMatcher();
         matcher.reset(field);
-        boolean ok = false;
+        boolean ok;
 
         int idx = 0;
         do {
-            if(false) {
-                ViManager.println("checking: '" + field.substring(idx) + "'");
-            }
+            // ViManager.println("checking: '" + field.substring(idx) + "'");
             ok = false;
             if(matcher.find() && idx == matcher.start()) {
                 Character c = tranlateMapCommandChar(matcher, true, field, emsg);
@@ -487,13 +489,8 @@ public final class Mappings {
             Msg.smsg("No mapping found");
             return;
         }
-        Collections.sort(lM, new Comparator<Mapping>() {
-            @Override
-            public int compare(Mapping o1, Mapping o2)
-            {
-                return o1.lhs.compareTo(o2.lhs);
-            }
-        });
+        Collections.sort(lM,
+                (Mapping o1, Mapping o2) -> o1.lhs.compareTo(o2.lhs));
 
         StringBuilder sb = new StringBuilder();
         ViOutputStream vios = ViManager.createOutputStream(
@@ -512,7 +509,7 @@ public final class Mappings {
     /** for print mappings */
     private static List<Mapping> getMappings(List<Mapping> origM, int mode)
     {
-        List<Mapping> lM = new ArrayList<Mapping>();
+        List<Mapping> lM = new ArrayList<>();
         if(origM != null) {
             for(Mapping m : origM) {
                 if((m.mode & mode) != 0)
@@ -525,7 +522,7 @@ public final class Mappings {
     /** for print mappings */
     private List<Mapping> getMappings(String lhs, int mode)
     {
-        List<Mapping> lM = new ArrayList<Mapping>();
+        List<Mapping> lM = new ArrayList<>();
         if(lhs != null) {
             for(Mapping m : getMappings(mappings.get(lhs.charAt(0)), mode)) {
                 if(m.lhs.startsWith(lhs)) {
@@ -596,7 +593,7 @@ public final class Mappings {
         if(lM == null) {
             if(unmap)
                 return;
-            mappings.put(c, (lM = new ArrayList<Mapping>()));
+            mappings.put(c, (lM = new ArrayList<>()));
         }
 
         // remove any mappings that the new mapping replaces
@@ -634,7 +631,6 @@ public final class Mappings {
         }
         if(!unmap)
             lM.add(newMapping);
-        return;
     }
 
     Mapping getMapping(TypeBufPeek peek, int state, MutableBoolean maybe)
@@ -700,9 +696,8 @@ public final class Mappings {
 
         if(refDefaultMappings == null
                 || (defaultMappings = refDefaultMappings.get()) == null) {
-            defaultMappings = new ArrayList<Mapping>();
-            refDefaultMappings
-                    = new WeakReference<List<Mapping>>(defaultMappings);
+            defaultMappings = new ArrayList<>();
+            refDefaultMappings = new WeakReference<>(defaultMappings);
 
             // defaultMappings.put('x', new Mapping(lhs, rhs, mode, noremap));
         }
@@ -720,9 +715,9 @@ public final class Mappings {
                 || (reverseMapCommandSpecial = refReverseMapCommandSpecial.get())
                 == null) {
             Map<EqLower, Character> smap = getMapCommandSpecial();
-            reverseMapCommandSpecial = new HashMap<Character, String>(smap.size());
-            refReverseMapCommandSpecial = new WeakReference<
-                    Map<Character, String>>(reverseMapCommandSpecial);
+            reverseMapCommandSpecial = new HashMap<>(smap.size());
+            refReverseMapCommandSpecial
+                    = new WeakReference<>(reverseMapCommandSpecial);
 
             for(Map.Entry<EqLower, Character> entry : smap.entrySet()) {
                 reverseMapCommandSpecial.put(entry.getValue(),
@@ -743,9 +738,8 @@ public final class Mappings {
 
         if(refMapCommandSpecial == null
                 || (mapCommandSpecial = refMapCommandSpecial.get()) == null) {
-            mapCommandSpecial = new HashMap<EqLower, Character>(30 + 30);
-            refMapCommandSpecial = new WeakReference<Map<EqLower, Character>>
-                    (mapCommandSpecial);
+            mapCommandSpecial = new HashMap<>(30 + 30);
+            refMapCommandSpecial = new WeakReference<> (mapCommandSpecial);
 
             mapCommandSpecial.put(new EqLower("Nul"),      '\n');
             mapCommandSpecial.put(new EqLower("BS"),       '\b');//////////////

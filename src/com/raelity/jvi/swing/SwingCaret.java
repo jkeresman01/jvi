@@ -27,7 +27,6 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 
@@ -55,12 +54,8 @@ public class SwingCaret extends DefaultCaret implements ViCaret
     {
         super();
         viDelegate = new SwingPaintCaret(this);
-        addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e)
-            {
-                Scheduler.cursorChange(SwingCaret.this);
-            }
+        addChangeListener((ChangeEvent e) -> {
+            Scheduler.cursorChange(SwingCaret.this);
         });
 
         Preferences prefs = ViManager.getFactory().getPreferences();
@@ -69,15 +64,11 @@ public class SwingCaret extends DefaultCaret implements ViCaret
     }
 
     private final PreferenceChangeListener prefsListener
-            = new PreferenceChangeListener() {
-        @Override
-        public void preferenceChange(PreferenceChangeEvent evt)
-        {
-            if(evt.getKey().equals(Options.caretBlinkRate)) {
-                int n = Options.getOption(Options.caretBlinkRate).getInteger();
-                setBlinkRate(n);
-            }
-        }
+            = (PreferenceChangeEvent evt) -> {
+                if(evt.getKey().equals(Options.caretBlinkRate)) {
+                    int n = Options.getOption(Options.caretBlinkRate).getInteger();
+                    setBlinkRate(n);
+                }
     };
 
     @Override

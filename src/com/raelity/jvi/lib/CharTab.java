@@ -128,7 +128,7 @@ public class CharTab implements Cloneable {
     }
 
     @Override
-    public CharTab clone() {
+    public CharTab clone() throws CloneNotSupportedException {
         CharTab o = null;
         try {
             o = (CharTab)super.clone();
@@ -177,7 +177,7 @@ public class CharTab implements Cloneable {
 
     private char getCharValue(String s, MutableInt mi) {
         int p = mi.getValue();
-        char c = 0;
+        char c;
 
         if (isdigit(s.charAt(p))) {
             c = getdigits(s, mi);

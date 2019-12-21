@@ -1,0 +1,34 @@
+
+tag		char	      note action in Normal mode	~
+------------------------------------------------------------------------------
+#*# table:form=index:label=normal-index 1:tag 17:command 33:opt:note 36:desc #*#
+|CTRL-X|	CTRL-X		2  add N to number at/after cursor
+|CTRL-E|	CTRL-E CTRL-E	   stuff for ctrl e,
+				   (between first and second)
+				   second line with CTRL-E stuff
+				   third line of stuff for ctrl e
+
+
+#*# table:form=ref:label=other-index 1:command 2:extra-or 25:desc #*#
+							*CTRL-E*
+CTRL-E			Scroll window [count] lines downwards in the buffer.
+			Mnemonic: Extra lines.
+
+							*CTRL-D*
+CTRL-D			Scroll window Downwards in the buffer.  The number of
+			lines comes from the 'scroll' option (default: half a
+			screen).  If [count] given, first set 'scroll' option
+
+
+#*#table:stop-table #*#
+
+				 *'expandtab'* *'et'* *'noexpandtab'* *'noet'*
+'expandtab' 'et'	boolean	(default off)
+			local to buffer
+			{not in Vi}
+	In Insert mode: Use the appropriate number of spaces to insert a
+	<Tab>.  Spaces are used in indents with the '>' and '<' commands and
+	when 'autoindent' is on.  To insert a real tab when 'expandtab' is
+	on, use CTRL-V<Tab>.  See also |:retab| and |ins-expandtab|.
+	NOTE: This option is reset when 'compatible' is set.
+

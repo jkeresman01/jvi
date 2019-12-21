@@ -1,7 +1,7 @@
 import re
 import cgi
 import xml.etree.ElementTree as ET
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from collections import namedtuple
 import vimh_scan as vs
 import vimh_gen as VG
@@ -19,29 +19,29 @@ import vimh_gen as VG
 # Note: there is a link type of 'hidden', much like a token
 #
 
-SET_PRE     = set(('header',
-                   'ruler',
-                   'graphic',
-                   'section',
-                   'title',
-                   'example'))
+SET_PRE     = {'header',
+               'ruler',
+               'graphic',
+               'section',
+               'title',
+               'example'}
 
-SET_WORD    = set(('pipe',
-                   'star',
-                   'opt',
-                   'ctrl',
-                   'special',
-                   'note',
-                   'url',
-                   'word',
-                   'chars'))
+SET_WORD    = {'pipe',
+               'star',
+               'opt',
+               'ctrl',
+               'special',
+               'note',
+               'url',
+               'word',
+               'chars'}
 
-SET_NL      = set(('newline',
-                   'blankline'))
+SET_NL      = {'newline',
+               'blankline'}
 
-SET_CONTROL = set(('markup',
-                   'start_line',
-                   'start_file'))
+SET_CONTROL = {'markup',
+               'start_line',
+               'start_file'}
 
 SET_OTHER   = set(('eof'))
 
@@ -92,7 +92,7 @@ class VimHelpBuildBase(object):
     def _do_filter(self, data):
         if not data.f_needs_filter_scan:
             return
-        print '***** do filtering *****'
+        #print('***** do filtering *****')
         # convert deque to list
         token_data = list(data)
 
@@ -144,9 +144,9 @@ class VimHelpBuildBase(object):
         data.extend(token_data)
 
     def process(self, data):
-        print '      first entry:', data[0]
-        print 'number of entries:', len(data)
-        print '       last entry:', data[-1]
+        #print('      first entry:', data[0])
+        #print('number of entries:', len(data))
+        #print('       last entry:', data[-1])
 
         # handle scan output filtering
         self._do_filter(data)
@@ -159,8 +159,8 @@ class VimHelpBuildBase(object):
         return self.out
 
     def error(self, info):
-        print "%s at %s:%d '%s'" \
-                % (info, self.filename, self.lnum, self.input_line)
+        print("%s at %s:%d '%s'" \
+                % (info, self.filename, self.lnum, self.input_line))
 
 RE_TAGLINE = re.compile(r'(\S+)\s+(\S+)')
 
@@ -196,7 +196,7 @@ class Links(dict):
         if link is not None:
             # this is a known link from the tags file
             if style and style != link.style and style != 'pipe':
-                print 'LINK STYLE MISMATCH'
+                print('LINK STYLE MISMATCH')
             pass
         elif style is not None:
             # not a known link, but a style was specified
@@ -339,7 +339,7 @@ class XmlLinks(Links):
             ### print "maplink-1a: '%s' '%s' '%s'" % (vim_tag, link.__dict__, style)
             # this is a known link from the tags file
             if style and style != link.style and style != 'pipe':
-                print 'LINK STYLE MISMATCH'
+                print('LINK STYLE MISMATCH')
             # this is weird logic, since MISMATCH is never printed,
             # seems the idea is that, use link.style unless 'link' is
             # argument, in which case make it a 'pipe'
@@ -619,7 +619,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
     def get_token_col_idx(self, pos):
         cpos = self.globalish_cpos
         col = len(cpos) - 1 # assume token in last col
-        for i in xrange(len(cpos) - 1):
+        for i in range(len(cpos) - 1):
             if cpos[i] <= pos < cpos[i+1]:
                 col = i
                 break
@@ -629,18 +629,18 @@ class VimHelpBuildXml(VimHelpBuildBase):
         cpos = [ x[0]-1 for x in self.cur_table.vh_cols]
         self.globalish_cpos = cpos
         self.globalish_after_blank_line = False
-        print '=== CPOS ===', cpos
+        print('=== CPOS ===', cpos)
 
         tr = None
         self.cur_table_row = tr
         # use an index into t_data, since may need to do lookahead
-        for idx in xrange(len(self.t_data)):
+        for idx in range(len(self.t_data)):
             token, stuff, pos = self.t_data[idx]
             if self.t_ops.check_start_table_row(idx) or tr is None:
                 if tr is not None:
                     self.cur_table.append(tr)
                 tr = make_elem('tr')
-                td = [ make_sub_elem(tr, 'td') for x in xrange(len(cpos))]
+                td = [ make_sub_elem(tr, 'td') for x in range(len(cpos))]
                 self.cur_table_row = tr
             if MAP_TY[token] == TY_EOL:
                 for x in td:
@@ -684,7 +684,7 @@ def parse_table_markup(table):
         # convert info to list of list items: int-col , 'arg2', 'arg3', ...
         t02 = [x.split(':') for x in  column_info.split()]
         t02 = [ [int(x[0]),] + x[1:] for x in t02 ]
-    print 'markup:', (markup, t01, t02)
+    print('markup:', (markup, t01, t02))
     table.vh_markup = t01
     table.vh_cols = t02
 
@@ -718,7 +718,7 @@ class HtmlLinks(Links):
         if not link : return None
         if not hasattr(link, 'link_plain'):
             part1 = '<a href="' + link.filename + '.html#' + \
-                    urllib.quote_plus(vim_tag) + '"'
+                    urllib.parse.quote_plus(vim_tag) + '"'
             part2 = '>' + cgi.escape(vim_tag) + '</a>'
             link.link_pipe = part1 \
                     + ' class="' + self.styles['link'] + '"' + part2
@@ -746,6 +746,14 @@ class HtmlLinks(Links):
             # not know link, no class specifed, just return it
             return cgi.escape(vim_tag)
 
+    def href(self, vim_tag, css_class = None):
+        link = self[vim_tag]
+        if not link : return None
+        if not hasattr(link, 'link_plain'):
+            return "not_referenced"
+        # links were created, 
+        return link.filename + '.html#' + urllib.parse.quote_plus(vim_tag)
+
 
 class VimHelpBuildHtml(VimHelpBuildBase):
 
@@ -764,7 +772,7 @@ class VimHelpBuildHtml(VimHelpBuildBase):
             self.out.append(self.links.maplink(chars, 'link'))
         elif 'star' == token:
             vim_tag = chars
-            self.out.append('<a name="' + urllib.quote_plus(vim_tag) +
+            self.out.append('<a name="' + urllib.parse.quote_plus(vim_tag) +
                     '" class="t">' + cgi.escape(vim_tag) + '</a>')
         elif 'opt' == token:
             self.out.append(self.links.maplink(chars, 'opt'))
@@ -791,8 +799,10 @@ class VimHelpBuildHtml(VimHelpBuildBase):
         elif 'word' == token:
             self.out.append(self.links.maplink(chars))
         elif 'example' == token:
+            # Removed \n from end of following Dec 20, 2019
+            # Wonder why it was there?
             self.out.append('<span class="e">' + cgi.escape(chars) +
-                    '</span>\n')
+                    '</span>')
         elif 'section' == token:
             # NOTE: WHY NOT cgi.escape?????
             self.out.append(r'<span class="c">' + chars + '</span>')
@@ -808,5 +818,5 @@ class VimHelpBuildHtml(VimHelpBuildBase):
             self.out.append('\n')
         elif 'eof' == token:
             pass
-        else: print 'ERROR: unknown token "' + token + '"'
+        else: print('ERROR: unknown token "' + token + '"')
 

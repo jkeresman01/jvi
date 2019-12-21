@@ -33,7 +33,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import javax.swing.Action;
@@ -57,7 +56,7 @@ import static com.raelity.jvi.core.lib.KeyDefs.*;
 public class KeyBinding {
   private static final Logger LOG = Logger.getLogger(KeyBinding.class.getName());
   public static final String KEY_BINDINGS = "KeyBinding";
-  private static Preferences prefs = ViManager.getFactory()
+  private static final Preferences prefs = ViManager.getFactory()
                                 .getPreferences().node(ViManager.PREFS_KEYS);
 
     @ServiceProvider(service=ViInitialization.class,
@@ -101,20 +100,17 @@ private static Action createKeyAction( String name, char key ) {
 
   private static void init() {
       createSubKeymaps();
-      prefs.addPreferenceChangeListener(new PreferenceChangeListener() {
-          @Override
-          public void preferenceChange(PreferenceChangeEvent evt) {
-              if(EventQueue.isDispatchThread())
-                updateKeymap.run();
-              else
-                EventQueue.invokeLater(updateKeymap);
-          }
+      prefs.addPreferenceChangeListener((PreferenceChangeEvent evt) -> {
+          if(EventQueue.isDispatchThread())
+              updateKeymap.run();
+          else
+              EventQueue.invokeLater(updateKeymap);
       });
       // make sure "knownKeys" is filled in
       getBindingsListInternal();
   }
   
-    private static Runnable updateKeymap = new Runnable() {
+    private static final Runnable updateKeymap = new Runnable() {
         @Override
         public void run() {
             bindingList = null; // force recalculation
@@ -270,8 +266,7 @@ private static Action createKeyAction( String name, char key ) {
   }
 
   private static List NOT_USED_getExtraBindingsList() {
-    List<JTextComponent.KeyBinding> bl
-            = new ArrayList<JTextComponent.KeyBinding>();
+    List<JTextComponent.KeyBinding> bl = new ArrayList<>();
     // NEEDSWORK: for now just stuff all the extra bindings here
 
 
@@ -298,8 +293,7 @@ private static Action createKeyAction( String name, char key ) {
   }
 
   public static List<JTextComponent.KeyBinding> getFunctionKeyBindingsList() {
-    List<JTextComponent.KeyBinding> bl
-            = new ArrayList<JTextComponent.KeyBinding>();
+    List<JTextComponent.KeyBinding> bl = new ArrayList<>();
 
     //
     // Function keys
@@ -387,7 +381,7 @@ private static Action createKeyAction( String name, char key ) {
     }
     
     private static List<Action> createActionList() {
-        List<Action> actionsList = new ArrayList<Action>();
+        List<Action> actionsList = new ArrayList<>();
         try {
             ViFactory factory = ViManager.getFactory();
             actionsList.add(createKeyAction("ViUpKey", K_UP));
@@ -484,8 +478,7 @@ private static Action createKeyAction( String name, char key ) {
 
   public static List<JTextComponent.KeyBinding> getInsertModeBindingsList() {
 
-    List<JTextComponent.KeyBinding> bl
-            = new ArrayList<JTextComponent.KeyBinding>();
+    List<JTextComponent.KeyBinding> bl = new ArrayList<>();
 
     bl.add(createKeyBinding(
 		   KeyEvent.VK_PERIOD, CTRL_MASK,
@@ -563,18 +556,17 @@ private static Action createKeyAction( String name, char key ) {
     public static Set<String> getKeypadNames() {
         return Collections.unmodifiableSet(keypadNameMap.keySet());
     }
-    static private HashMap<String,Integer> keypadNameMap
-            = new HashMap<String,Integer>();
+    private static final HashMap<String,Integer> keypadNameMap = new HashMap<>();
     
-    static private KeyBindingPrefs keyBindingPrefs = new KeyBindingPrefs();
+    private static final KeyBindingPrefs keyBindingPrefs = new KeyBindingPrefs();
     //
     // NOTE: DO NOT CHANGE THESE.
     // Since these are the Preferences defaults,
     // if they are changed, then they might change the user's bindings.
     //
     static private class KeyBindingPrefs {
-        private Set<String> defaultKeysFalse = new HashSet<String>();
-        private Set<String> knownKeys = new HashSet<String>();
+        private final Set<String> defaultKeysFalse = new HashSet<>();
+        private final Set<String> knownKeys = new HashSet<>();
         KeyBindingPrefs() {
             defaultKeysFalse.add("Ctrl-[");
             
@@ -650,7 +642,7 @@ private static Action createKeyAction( String name, char key ) {
   // But they're static!
   //
 
-  private static PropertyChangeSupport pcs
+  private static final PropertyChangeSupport pcs
                         = new PropertyChangeSupport(getInstance());
   
   public static void addPropertyChangeListener( PropertyChangeListener listener )

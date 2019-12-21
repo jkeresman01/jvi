@@ -1,24 +1,8 @@
-#default
-\.orig$
-\.orig\..*$
-\.chg\..*$
-\.rej$
-\.conflict\~$
-\.pyc$
-
-#adapted from NetBeans' .hgignore
-~$
-(^|/)build$
+# adapted from NetBeans' .hgignore
 (^|/)dist$
 (^|/)nbproject/private$
 (^|/)nbproject/sqe.properties$
 (^|/)nbproject/findbugs.settings$
 (^|/)test/(coverage|lib|results|work)$
-derby\.log
-\.class$
 \.DS_Store$
-\.tmp\.$
-\.swp$
-^tags$
 /gensrc$
-^hs_err_pid[0-9]*\.log

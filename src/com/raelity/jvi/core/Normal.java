@@ -60,6 +60,7 @@ import static com.raelity.jvi.core.Search02.*;
 import static com.raelity.jvi.core.Search03.*;
 import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.core.lib.Constants.FDO.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
 
@@ -307,17 +308,18 @@ public class Normal {
        * If a mapping was started in Visual or Select mode, remember the length
        * ...... REMOVED, put old_mapped_len = 0 above
        */
-
-      if (c == NUL)
-        c = K_ZERO;
-      else if (c == K_KMULTIPLY)  /* K_KMULTIPLY is same as '*' */
-        c = '*';
-      else if (c == K_KMINUS)	/* K_KMINUS is same as '-' */
-        c = '-';
-      else if (c == K_KPLUS)	/* K_KPLUS is same as '+' */
-        c = '+';
-      else if (c == K_KDIVIDE)	/* K_KDIVIDE is same as '/' */
-        c = '/';
+      switch (c) {
+      case NUL:
+        c = K_ZERO; break;
+      case K_KMULTIPLY: /* K_KMULTIPLY is same as '*' */
+        c = '*'; break;
+      case K_KMINUS: /* K_KMINUS is same as '-' */
+        c = '-'; break;
+      case K_KPLUS: /* K_KPLUS is same as '+' */
+        c = '+'; break;
+      case K_KDIVIDE: /* K_KDIVIDE is same as '/' */
+        c = '/'; break;
+      }
 
       /*
        * In Visual/Select mode, a few keys are handled in a special way.
@@ -374,7 +376,7 @@ public class Normal {
         //
         // If we got CTRL-W there may be a/another count
         //
-        if (c == Util.ctrl('W') && !ctrl_w && oap.op_type == OP_NOP)
+        if (c == CTRL_W && !ctrl_w && oap.op_type == OP_NOP)
         {
           ctrl_w = true;
           opnum = ca.count0;		// remember first count
@@ -425,7 +427,7 @@ public class Normal {
     //
     if (ctrl_w) {
       ca.nchar = ca.cmdchar;
-      ca.cmdchar = Util.ctrl('W');
+      ca.cmdchar = CTRL_W;
     } else {
       if(!pickupExtraChar) {
         // check if additional char needed
@@ -573,19 +575,19 @@ normal_end: {
 	    /*
 	     * 1: Screen positioning commands
 	     */
-	  case 0x1f & (int)('D'):	// Ctrl
-	  case 0x1f & (int)('U'):	// Ctrl
+	  case CTRL_D:
+	  case CTRL_U:
 	    nv_halfpage(ca);
 	    break;
 
-	  case 0x1f & (int)('B'):	// Ctrl
+	  case CTRL_B:
 	  case K_S_UP:
 	  case K_PAGEUP:
 	    // case K_KPAGEUP:
 	    dir = BACKWARD;
 	    // FALLTHROUGH
 
-	  case 0x1f & (int)('F'):	// Ctrl
+	  case CTRL_F:
 	  case K_S_DOWN:
 	  case K_PAGEDOWN:
 	  // case K_KPAGEDOWN:
@@ -602,11 +604,11 @@ normal_end: {
             }
 	    break;
 
-	  case 0x1f & (int)('E'):	// Ctrl
+	  case CTRL_E:
 	    flag = true;
 	    // FALLTHROUGH
 
-	  case 0x1f & (int)('Y'):	// Ctrl
+	  case CTRL_Y:
 	    nv_scroll_line(ca, flag);
 	    break;
 
@@ -645,7 +647,7 @@ normal_end: {
 	      do_help(null);
 	    break;
 
-	  case 0x1f & (int)('L'):	// Ctrl
+	  case CTRL_L:
 	    notSup("update_screen");
 	    if (!checkclearop(oap))
 	    {
@@ -653,11 +655,11 @@ normal_end: {
 	    }
 	    break;
 
-	  case 0x1f & (int)('G'):	// Ctrl
+	  case CTRL_G:
 	    nv_ctrlg(ca);
 	    break;
 
-	  case K_CCIRCM:	 // CTRL-^, short for ":e #"
+	  case CTRL_UpArrow:	 // short for ":e #"
 	    notImp(":e #");
 	    if (!checkclearopq(oap))
 	      buflist_getfile(ca.count0, 0,
@@ -673,7 +675,7 @@ normal_end: {
 	    ca.cmdchar = '#';
 	    //FALLTHROUGH
 
-	  case 0x1f & (int)(']'):   // :ta to current identifier 	// Ctrl
+	  case CTRL_RightBracket:   // :ta to current identifier
 	  case 'K':		    // run program for current identifier
 	  case '*':		    // / to current identifier or string
 	  case K_KMULTIPLY:	    // same as '*'
@@ -683,7 +685,7 @@ normal_end: {
 	    nv_ident(ca, searchbuff);
 	    break;
 
-	  case 0x1f & (int)('T'):    // backwards in tag stack	// Ctrl
+	  case CTRL_T:    // backwards in tag stack
 	    if (!checkclearopq(oap)) {
               // do_tag((char_u *)"", DT_POP, (int)ca.count1, FALSE, TRUE);
               ViManager.getFactory().tagStack(TAGOP.OLDER, ca.count1);
@@ -735,7 +737,7 @@ normal_end: {
             // FALTHROUGH
 
 	  case K_BS:
-	  case 0x1f & (int)('H'):	// Ctrl
+	  case CTRL_H:
 	    if (G.VIsual_active && G.VIsual_select)
 	    {
 	      ca.cmdchar = 'x';	// BS key behaves like 'x' in Select mode
@@ -752,7 +754,7 @@ normal_end: {
 
 	  case 'k':
 	  case K_UP:
-	  case 0x1f & (int)('P'):	// Ctrl
+	  case CTRL_P:
 	    oap.motion_type = MLINE;
 	    if (Edit.cursor_up(ca.count1, oap.op_type == OP_NOP) == FAIL)
 	      clearopbeep(oap);
@@ -769,8 +771,8 @@ normal_end: {
 
 	  case 'j':
 	  case K_DOWN:
-	  case 0x1f & (int)('N'):	// Ctrl
-	  case NL:	// 0x1f & (int)('J')
+	  case CTRL_N:
+	  case CTRL_J:
 	    oap.motion_type = MLINE;
 	    //if (G.curwin.cursor_down(ca.count1, oap.op_type == OP_NOP) == FAIL)
 	    if (Edit.cursor_down(ca.count1, oap.op_type == OP_NOP) == FAIL)
@@ -986,7 +988,7 @@ normal_end: {
 	    }
 	    break;
 
-	  case 0x1f & (int)('R'):	/* undo undo */	// Ctrl
+	  case CTRL_R:	/* undo undo */
 	    if (!checkclearopq(oap))
 	    {
 	      u_redo(ca.count1);
@@ -1011,8 +1013,8 @@ normal_end: {
 	    nv_put(ca);
 	    break;
 
-	  case 0x1f & (int)('A'):	    /* add to number */	// Ctrl
-	  case 0x1f & (int)('X'):	    /* subtract from number */	// Ctrl
+	  case CTRL_A:	    /* add to number */
+	  case CTRL_X:	    /* subtract from number */
 	    if (!checkclearopq(oap)
                     && do_addsub(ca.cmdchar, ca.count1) == OK)
 	      prep_redo_cmd(ca);
@@ -1127,7 +1129,7 @@ normal_end: {
 	    nv_gomark(ca, flag);
 	    break;
 
-	  case 0x1f & (int)('O'):	// Ctrl
+	  case CTRL_O:
 	    /* switch from Select to Visual mode for one command */
 	    if (G.VIsual_active && G.VIsual_select)
 	    {
@@ -1139,7 +1141,7 @@ normal_end: {
 	    }
             ca.count1 = - ca.count1;    // goto older pcmark
 
-	  case 0x1f & (int)('I'):	// goto newer pcmark
+	  case CTRL_I:	// goto newer pcmark
           case K_TAB:
 	    nv_pcmark(ca);
 	    break;
@@ -1156,15 +1158,15 @@ normal_end: {
 	    /*
 	     * 11. Visual
 	     */
-	  case 0x1f & (int)('Q'):	// Ctrl
+	  case CTRL_Q:
             // Treat like Ctrl-V, so ^V is available for paste
-            ca.cmdchar = Util.ctrl('V');
+            ca.cmdchar = CTRL_V;
 	  case 'v':
 	  case 'V':
-	  case 0x1f & (int)('V'):	// Ctrl
+	  case CTRL_V:
             if(ca.cmdchar == 'v' && !hasF(ViFeature.VisualCharMode)
                || ca.cmdchar == 'V' && !hasF(ViFeature.VisualLineMode)
-               || ca.cmdchar == Util.ctrl('V')
+               || ca.cmdchar == CTRL_V
                     && !hasF(ViFeature.VisualBlockMode)) {
               notImp(String.valueOf(ca.cmdchar));
             }
@@ -1176,7 +1178,7 @@ normal_end: {
 	     * 12. Suspend
 	     */
 
-	  case 0x1f & (int)('Z'):	// Ctrl
+	  case CTRL_Z:
 	    notSup("ctrl-z");
 	    clearop(oap);
 	    if (G.VIsual_active)
@@ -1188,7 +1190,7 @@ normal_end: {
 	     * 13. Window commands
 	     */
 
-	  case 0x1f & (int)('W'):	// Ctrl
+	  case CTRL_W:
 	    if (!checkclearop(oap))
 	      Misc01.do_window(ca.nchar, ca.count0); // everything is in window.c
 	    break;
@@ -1219,12 +1221,12 @@ normal_end: {
 	     * 17. The end
 	     */
 	    /* CTRL-\ CTRL-N goes to Normal mode: a no-op */
-	  case 0x1f & (int)('\\'):	// Ctrl
+	  case CTRL_Backslash:
 	    notSup("normal");
 	    nv_normal(ca);
 	    break;
 
-	  case 0x1f & (int)('C'):	// Ctrl
+	  case CTRL_C:
 	    G.restart_edit = 0;
 	    /*FALLTHROUGH*/
 
@@ -1477,7 +1479,7 @@ normal_end: {
       oap.line_count = oap.end.getLine() - oap.start.getLine() + 1;
 
       if (G.VIsual_active || G.redo_VIsual_busy) {
-          if (G.VIsual_mode == Util.ctrl('V'))  /* block mode */
+          if (G.VIsual_mode == CTRL_V)  /* block mode */
           {
               int start, end;
               MutableInt miStart = new MutableInt(), miEnd = new MutableInt();
@@ -1539,7 +1541,7 @@ normal_end: {
               resel_VIsual_mode = G.VIsual_mode;
               if (  G.curwin.w_curswant == MAXCOL)
                   resel_VIsual_col = MAXCOL;
-              else if (G.VIsual_mode == Util.ctrl('V'))
+              else if (G.VIsual_mode == CTRL_V)
                   resel_VIsual_col = oap.end_vcol - oap.start_vcol + 1;
               else if (oap.line_count > 1)
                   resel_VIsual_col = oap.end.getColumn();
@@ -1570,7 +1572,7 @@ normal_end: {
               oap.motion_type = MLINE;
           else {
               oap.motion_type = MCHAR;
-              if (G.VIsual_mode != Util.ctrl('V')
+              if (G.VIsual_mode != CTRL_V
                         && Util.ml_get_pos(oap.end).current() == '\n') {
                   oap.inclusive = false;
                   // Try to include the newline, unless it's an operator
@@ -1664,12 +1666,9 @@ normal_end: {
       {
 	case OP_LSHIFT:
         case OP_RSHIFT:
-          runUndoable(new Runnable() {
-        @Override
-              public void run() {
-                op_shift(oap, true, oap.is_VIsual ? cap.count1 : 1);
-              }
-          });
+          runUndoable(() -> {
+            op_shift(oap, true, oap.is_VIsual ? cap.count1 : 1);
+      });
 	  break;
 
 	case OP_JOIN_NS:
@@ -1682,11 +1681,8 @@ normal_end: {
 	      G.curbuf.getLineCount()) {
 	    Util.beep_flush();
 	  } else {
-            runUndoable(new Runnable() {
-          @Override
-                public void run() {
-                  do_do_join(oap.line_count, oap.op_type == OP_JOIN, true);
-                }
+            runUndoable(() -> {
+              do_do_join(oap.line_count, oap.op_type == OP_JOIN, true);
             });
 	  }
 	  break;
@@ -1696,11 +1692,8 @@ normal_end: {
 	  if (empty_region_error)
 	    Util.vim_beep();
 	  else {
-            runUndoable(new Runnable() {
-          @Override
-                public void run() {
-                  op_delete(oap);
-                }
+            runUndoable(() -> {
+              op_delete(oap);
             });
 	  }
 	  break;
@@ -1748,17 +1741,14 @@ normal_end: {
 
           // If 'equalprg' is empty, do the indenting internally.
           if(oap.op_type == OP_INDENT && G.p_ep.isEmpty()) {
-            runUndoable(new Runnable() {
-          @Override
-                public void run() {
-                  // Seems like NB changes VpTopViewLine, so save/restore
-                  // back in '%' command discussion there's talk of moving
-                  // some of this stuff into platform...
-                  int vpTopViewLine = G.curwin.getVpTopViewLine();
-                  G.curbuf.reindent(G.curwin.w_cursor.getLine(),
-                                    oap.line_count);
-                  G.curwin.setVpTopViewLine(vpTopViewLine);
-                }
+            runUndoable(() -> {
+              // Seems like NB changes VpTopViewLine, so save/restore
+              // back in '%' command discussion there's talk of moving
+              // some of this stuff into platform...
+              int vpTopViewLine = G.curwin.getVpTopViewLine();
+              G.curbuf.reindent(G.curwin.w_cursor.getLine(),
+                      oap.line_count);
+              G.curwin.setVpTopViewLine(vpTopViewLine);
             });
             break;
           }
@@ -1772,12 +1762,9 @@ normal_end: {
 	  if (empty_region_error)
 	    Util.vim_beep();
 	  else {
-            runUndoable(new Runnable() {
-          @Override
-                public void run() {
-                  op_tilde(oap);
-                  check_cursor_col();
-                }
+            runUndoable(() -> {
+              op_tilde(oap);
+              check_cursor_col();
             });
           }
 	  break;
@@ -1870,17 +1857,14 @@ normal_end: {
 
   static void op_format(final OPARG oap)  {
     // NEESDWORK: hook into platform's format (if available)
-    runUndoable(new Runnable() {
-      @Override
-        public void run() {
-          // Seems like NB changes VpTopViewLine, so save/restore
-          // back in '%' command discussion there's talk of moving
-          // some of this stuff into platform...
-          int vpTopViewLine = G.curwin.getVpTopViewLine();
-          G.curbuf.reformat(G.curwin.w_cursor.getLine(),
-                            oap.line_count);
-          G.curwin.setVpTopViewLine(vpTopViewLine);
-        }
+    runUndoable(() -> {
+      // Seems like NB changes VpTopViewLine, so save/restore
+      // back in '%' command discussion there's talk of moving
+      // some of this stuff into platform...
+      int vpTopViewLine = G.curwin.getVpTopViewLine();
+      G.curbuf.reformat(G.curwin.w_cursor.getLine(),
+              oap.line_count);
+      G.curwin.setVpTopViewLine(vpTopViewLine);
     });
   }
   
@@ -2578,7 +2562,7 @@ normal_end: {
     //
     // The "]", "CTRL-]" and "K" commands accept an argument in Visual mode.
     //
-    if (cmdchar == ']' || cmdchar == Util.ctrl(']') || cmdchar == 'K')
+    if (cmdchar == ']' || cmdchar == CTRL_RightBracket || cmdchar == 'K')
     {
       // ################ notImp("nv_ident subset");  
       if (G.VIsual_active)	// :ta to visual highlighted text
@@ -2638,7 +2622,7 @@ normal_end: {
         G.no_smartcase = true;
         break;
         
-      case 0x1f & (int)(']'):   // Ctrl-]
+      case CTRL_RightBracket:
         // give the environment a chance at it
         // pass in the extracted identifier,
         // though system probably looks under cursor
@@ -2828,7 +2812,7 @@ normal_end: {
 	//	   CURS_LEFT wraps to previous line if 'whichwrap' has '<'.
 	//
 	if (       (((cap.cmdchar == K_BS
-		      || cap.cmdchar == Util.ctrl('H'))
+		      || cap.cmdchar == CTRL_H)
 		     && G.p_ww_bs)
 		    || (cap.cmdchar == 'h'
 			&& G.p_ww_h)
@@ -3462,7 +3446,7 @@ nv_brackets(CMDARG cap, int dir)
   static private  void	v_swap_corners (CMDARG cap) {
 
     final ViFPOS cursor = G.curwin.w_cursor;
-    if ((cap.cmdchar == 'O') && G.VIsual_mode == Util.ctrl('V'))
+    if ((cap.cmdchar == 'O') && G.VIsual_mode == CTRL_V)
     {
         MutableInt left = new MutableInt();
         MutableInt right = new MutableInt();
@@ -3485,7 +3469,7 @@ nv_brackets(CMDARG cap, int dir)
             G.curwin.updateCurswant(cursor, left.getValue());
         }
     }
-    if (cap.cmdchar != 'O' || G.VIsual_mode != Util.ctrl('V'))
+    if (cap.cmdchar != 'O' || G.VIsual_mode != CTRL_V)
     {
         ViFPOS old_cursor = cursor.copy();
         cursor.set(G.VIsual);
@@ -3551,27 +3535,24 @@ nv_brackets(CMDARG cap, int dir)
     if (u_save_cursor() == FAIL)
       return;
 
-    runUndoable(new Runnable() {
-      @Override
-        public void run() {
-          for (int n = cap.count1; n > 0; --n) {
-            swapchar(cap.oap.op_type,G.curwin.w_cursor);
-            inc_cursor();
-            if (gchar_cursor() == '\n') {
-              if (      G.p_ww_tilde
+    runUndoable(() -> {
+      for (int n = cap.count1; n > 0; --n) {
+        swapchar(cap.oap.op_type,G.curwin.w_cursor);
+        inc_cursor();
+        if (gchar_cursor() == '\n') {
+          if (      G.p_ww_tilde
                   && G.curwin.w_cursor.getLine() < G.curbuf.getLineCount())
-              {
-                G.curwin.w_cursor.set(G.curwin.w_cursor.getLine() + 1, 0);
-                // redraw_curbuf_later(NOT_VALID);
-              }
-              else
-                break;
-            }
+          {
+            G.curwin.w_cursor.set(G.curwin.w_cursor.getLine() + 1, 0);
+            // redraw_curbuf_later(NOT_VALID);
           }
-
-          adjust_cursor();
-          G.curwin.w_set_curswant = true;
+          else
+            break;
         }
+      }
+      
+      adjust_cursor();
+      G.curwin.w_set_curswant = true;
     });
     // changed();
 
@@ -3608,7 +3589,7 @@ nv_brackets(CMDARG cap, int dir)
      * the end of the line, and "C" replaces til EOL */
     if (Character.isUpperCase(cap.cmdchar))
     {
-       if (G.VIsual_mode != Util.ctrl('V'))
+       if (G.VIsual_mode != CTRL_V)
            G.VIsual_mode = 'V';
        else if (cap.cmdchar == 'C' || cap.cmdchar == 'D')
             G.curwin.updateCurswant(null, MAXCOL);
@@ -3677,7 +3658,7 @@ nv_brackets(CMDARG cap, int dir)
 
     if (!checkclearopq(cap.oap)) {
       fpos = MarkOps.movemark(cap.count1);
-      if (fpos == MarkOps.otherFile) {      /* jump to other file */
+      if (fpos == MarkOps.otherFile) {      // jump to other file
         notSup("nv_pcmark other file");
 	G.curwin.w_set_curswant = true;
 	adjust_cursor();
@@ -3776,7 +3757,7 @@ nv_brackets(CMDARG cap, int dir)
                   G.curwin.updateCurswant(null, MAXCOL);
                   coladvance(MAXCOL);
               }
-              else if (G.VIsual_mode == Util.ctrl('V'))
+              else if (G.VIsual_mode == CTRL_V)
               {
                   //TODO: FIXME_VISUAL BLOCK MODE
                   //validate_virtcol();
@@ -4624,12 +4605,12 @@ nv_brackets(CMDARG cap, int dir)
    */
   static private void nv_halfpage(CMDARG cap) {
     final ViFPOS cursor = G.curwin.w_cursor;
-    if ((cap.cmdchar == Util.ctrl('U') && cursor.getLine() == 1)
-	|| (cap.cmdchar == Util.ctrl('D')
+    if ((cap.cmdchar == CTRL_U && cursor.getLine() == 1)
+	|| (cap.cmdchar == CTRL_D
 	    && cursor.getLine() == G.curbuf.getLineCount()))
       clearopbeep(cap.oap);
     else if (!checkclearop(cap.oap)) {
-      halfpage(cap.cmdchar == Util.ctrl('D'), cap.count0);
+      halfpage(cap.cmdchar == CTRL_D, cap.count0);
     }
   }
 
@@ -4649,11 +4630,8 @@ nv_brackets(CMDARG cap, int dir)
       {
 	prep_redo(cap.oap.regname, cap.count0,
 		  NUL, cap.cmdchar, NUL, cap.nchar);
-        runUndoable(new Runnable() {
-          @Override
-            public void run() {
-              do_do_join(cap.count0, cap.nchar == NUL, true);
-            }
+        runUndoable(() -> {
+          do_do_join(cap.count0, cap.nchar == NUL, true);
         });
       }
     }
@@ -4668,111 +4646,108 @@ nv_brackets(CMDARG cap, int dir)
       //#ifdef FEAT_DIFF ... #endif
       clearopbeep(cap.oap);
     } else {
-      runUndoable(new Runnable() {
-        @Override
-          public void run() {
-            char regname = 0;
-            Yankreg reg1 = null, reg2 = null;
-            boolean empty = false;
-            boolean was_visual = false;
-            int dir;
-            int flags = 0;
-            final ViFPOS cursor = G.curwin.w_cursor;
+      runUndoable(() -> {
+        char regname = 0;
+        Yankreg reg1 = null, reg2 = null;
+        boolean empty = false;
+        boolean was_visual = false;
+        int dir;
+        int flags = 0;
+        final ViFPOS cursor = G.curwin.w_cursor;
 
-            dir = (cap.cmdchar == 'P'
-                    || (cap.cmdchar == 'g' && cap.nchar == 'P'))
-                    ? BACKWARD : FORWARD;
-            prep_redo_cmd(cap);
-            if (cap.cmdchar == 'g')
-              flags |= PUT_CURSEND;
+        dir = (cap.cmdchar == 'P'
+                || (cap.cmdchar == 'g' && cap.nchar == 'P'))
+                ? BACKWARD : FORWARD;
+        prep_redo_cmd(cap);
+        if (cap.cmdchar == 'g')
+          flags |= PUT_CURSEND;
 
-            try { // this is so that yank regsiter is lost
-              if (G.VIsual_active) {
-                // Putting in Visual mode: The put text replaces the selected
-                // text.  First delete the selected text, then put the new text.
-                // Need to save and restore the registers that the delete
-                // overwrites if the old contents is being put.
-                was_visual = true;
-                regname = cap.oap.regname;
-                regname = adjust_clip_reg(regname);
-                if (regname == 0 || Util.isdigit(regname)
+        try { // this is so that yank regsiter is lost
+          if (G.VIsual_active) {
+            // Putting in Visual mode: The put text replaces the selected
+            // text.  First delete the selected text, then put the new text.
+            // Need to save and restore the registers that the delete
+            // overwrites if the old contents is being put.
+            was_visual = true;
+            regname = cap.oap.regname;
+            regname = adjust_clip_reg(regname);
+            if (regname == 0 || Util.isdigit(regname)
                     || (    G.p_cb && (regname == '*' || regname == '+'))) {
-                  // the delete is going to overwrite the register we want to
-                  // put, save it first.
-                  reg1 = get_register(regname, true);
-                }
-
-                /* Now delete the selected text. */
-                cap.cmdchar = 'd';
-                cap.nchar = NUL;
-                cap.oap.regname = NUL;
-                nv_operator(cap);
-                try {
-                  do_pending_operator(cap, 0, false);
-                } catch(Exception e) {
-                  LOG.log(Level.SEVERE, "do_pending_operator", e);
-                }
-                //empty = (G.curbuf.b_ml.ml_flags.empty);
-
-                /* delete PUT_LINE_BACKWARD; */
-                cap.oap.regname = regname;
-
-                if (reg1 != null) {
-                  // Delete probably changed the register we want to put, save
-                  // it first. Then put back what was there before the delete.
-                  reg2 = get_register(regname, false);
-                  put_register(regname, reg1);
-                }
-
-                // When deleted a linewise Visual area, put the register as
-                // lines to avoid it joined with the next line.  When deletion
-                // was characterwise, split a line when putting lines. */
-                if (G.VIsual_mode == 'V')
-                  flags |= PUT_LINE;
-                else if (G.VIsual_mode == 'v')
-                  flags |= PUT_LINE_SPLIT;
-                if (G.VIsual_mode == Util.ctrl('V') && dir == FORWARD)
-                  flags |= PUT_LINE_FORWARD;
-                dir = BACKWARD;
-                if (   (G.VIsual_mode != 'V'
-                        && cursor.getColumn() < G.curbuf.b_op_start.getColumn())
+              // the delete is going to overwrite the register we want to
+              // put, save it first.
+              reg1 = get_register(regname, true);
+            }
+            
+            /* Now delete the selected text. */
+            cap.cmdchar = 'd';
+            cap.nchar = NUL;
+            cap.oap.regname = NUL;
+            nv_operator(cap);
+            try {
+              do_pending_operator(cap, 0, false);
+            } catch(Exception e) {
+              LOG.log(Level.SEVERE, "do_pending_operator", e);
+            }
+            //empty = (G.curbuf.b_ml.ml_flags.empty);
+            
+            /* delete PUT_LINE_BACKWARD; */
+            cap.oap.regname = regname;
+            
+            if (reg1 != null) {
+              // Delete probably changed the register we want to put, save
+              // it first. Then put back what was there before the delete.
+              reg2 = get_register(regname, false);
+              put_register(regname, reg1);
+            }
+            
+            // When deleted a linewise Visual area, put the register as
+            // lines to avoid it joined with the next line.  When deletion
+            // was characterwise, split a line when putting lines. */
+            if (G.VIsual_mode == 'V')
+              flags |= PUT_LINE;
+            else if (G.VIsual_mode == 'v')
+              flags |= PUT_LINE_SPLIT;
+            if (G.VIsual_mode == CTRL_V && dir == FORWARD)
+              flags |= PUT_LINE_FORWARD;
+            dir = BACKWARD;
+            if (   (G.VIsual_mode != 'V'
+                    && cursor.getColumn() < G.curbuf.b_op_start.getColumn())
                     || (G.VIsual_mode == 'V'
-                        && cursor.getLine() < G.curbuf.b_op_start.getLine()))
-                  // cursor is at the end of the line or end of file, put
-                  // forward.
-                  dir = FORWARD;
-              }
-              do_put(cap.oap.regname, dir, cap.count1, flags);
-
-            } finally {
-              // If a register was saved, put it back now.
-              if (reg2 != null)
-                put_register(regname, reg2);
-            }
-
-            // What to reselect with "gv"?  Selecting the just put text seems to
-            // be the most useful, since the original text was removed.
-            if (was_visual) {
-              G.curbuf.b_visual_start.setMark(G.curbuf.b_op_start);
-              G.curbuf.b_visual_end.setMark(G.curbuf.b_op_end);
-            }
-
-            // When all lines were selected and deleted do_put() leaves an empty
-            // line that needs to be deleted now.
-    //	if (empty && Util.ml_get(G.curbuf.b_ml.ml_line_count).charAt(0) == NUL)
-    //	{
-    //	    ml_delete(G.curbuf.b_ml.ml_line_count, true);
-    //
-    //	    /* If the cursor was in that line, move it to the end of the last
-    //	     * line. */
-    //	    if (G.curwin.getWCursor().getLine() > G.curbuf.b_ml.ml_line_count)
-    //	    {
-    //		G.curwin.getWCursor().setLine(G.curbuf.b_ml.ml_line_count);
-    //		coladvance(MAXCOL);
-    //	    }
-    //	}
-            //auto_format(false, true);
+                    && cursor.getLine() < G.curbuf.b_op_start.getLine()))
+              // cursor is at the end of the line or end of file, put
+              // forward.
+              dir = FORWARD;
           }
+          do_put(cap.oap.regname, dir, cap.count1, flags);
+          
+        } finally {
+          // If a register was saved, put it back now.
+          if (reg2 != null)
+            put_register(regname, reg2);
+        }
+
+        // What to reselect with "gv"?  Selecting the just put text seems to
+        // be the most useful, since the original text was removed.
+        if (was_visual) {
+          G.curbuf.b_visual_start.setMark(G.curbuf.b_op_start);
+          G.curbuf.b_visual_end.setMark(G.curbuf.b_op_end);
+        }
+        
+        // When all lines were selected and deleted do_put() leaves an empty
+        // line that needs to be deleted now.
+        //	if (empty && Util.ml_get(G.curbuf.b_ml.ml_line_count).charAt(0) == NUL)
+        //	{
+        //	    ml_delete(G.curbuf.b_ml.ml_line_count, true);
+        //
+        //	    /* If the cursor was in that line, move it to the end of the last
+        //	     * line. */
+        //	    if (G.curwin.getWCursor().getLine() > G.curbuf.b_ml.ml_line_count)
+        //	    {
+        //		G.curwin.getWCursor().setLine(G.curbuf.b_ml.ml_line_count);
+        //		coladvance(MAXCOL);
+        //	    }
+        //	}
+        //auto_format(false, true);
       });
     }
   }
@@ -4937,7 +4912,7 @@ nv_brackets(CMDARG cap, int dir)
     if(!debug) {
       if(G.VIsual_active) {
         String category = null;
-        if(G.VIsual_mode == Util.ctrl('V')
+        if(G.VIsual_mode == CTRL_V
             && vim_strchr("<>", 0, op) >= 0) {
           category = "block";
         }

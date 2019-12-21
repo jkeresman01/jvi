@@ -76,7 +76,7 @@ class DataWrapper(object):
         self.data = data
 
     def append(self, d):
-        print d
+        print(d)
         self.data.append(d)
 
 class VimHelpScanner:

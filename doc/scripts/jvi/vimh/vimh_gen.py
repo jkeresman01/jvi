@@ -2,7 +2,7 @@
 import os, sys
 import re
 import xml.etree.ElementTree as ET
-from StringIO import StringIO
+from io import StringIO
 import vimh_build as VB
 
 #
@@ -91,7 +91,9 @@ def sb_get_txt_table_row(tr, sb):
     col_text = []
     for td in tr:
         col_text.append(get_txt(td).split('\n'))
-    t = zip(*col_text)
+    t = list(zip(*col_text))
+    # NEEDSWORK: possible to get rid of "list(...)"?
+    # maybe use map
     for i in range(len(t)):
         t[i] = ''.join(t[i])
     # # get rid of the line. it is there because split('\n') added it
@@ -104,7 +106,7 @@ def sb_get_txt_table_row(tr, sb):
 def fix_line_ending(s, end):
     l = s.split('\n')
     started = False
-    for i in reversed(xrange(len(l))):
+    for i in reversed(range(len(l))):
         if len(l[i]) > 0:
             started = True
         if started:
@@ -157,7 +159,7 @@ def remove_nl(td):
                 cur_tail.tail += t
         else:
             cur_tail = e
-    for i in reversed(xrange(len(td))):
+    for i in reversed(range(len(td))):
         if 'nl' == td[i].tag:
             del td[i]
 
@@ -176,7 +178,7 @@ def fix_whitespace(e):
                 cur_tail.tail += t
         else:
             cur_tail = e01
-    for i in reversed(xrange(len(e))):
+    for i in reversed(range(len(e))):
         if 'nl' == e[i].tag:
             del e[i]
 
@@ -210,7 +212,7 @@ def fix_vim_table_columns(table):
 def fix_table_index(table):
     tag_idx = find_table_column(table, 'tag')
     command_idx = find_table_column(table, 'command')
-    print 'FIXUP TABLE: index', (table.get('label'), tag_idx, command_idx)
+    print('FIXUP TABLE: index', (table.get('label'), tag_idx, command_idx))
     if tag_idx < 0 or command_idx < 0:
         return
     new_col = None
@@ -220,7 +222,7 @@ def fix_table_index(table):
         ### XS.dump_table_row_elements(tr)
         cmd = tr[command_idx]
         if link is None or link.tag != 'link' or link.get('t', '') != 'pipe':
-            print 'fix_table_index 02: NOT LINK-PIPE: ', (get_txt(tr),)
+            print('fix_table_index 02: NOT LINK-PIPE: ', (get_txt(tr),))
             pass
         else:
             # modify the link
@@ -243,7 +245,7 @@ def fix_table_ref(table):
     command_idx = find_table_column(table, 'command')
     desc_idx = find_table_column(table, 'desc')
     extra_or_idx = find_table_column(table, 'extra-or')
-    print 'FIXUP TABLE: ref', (table.get('label'), command_idx, desc_idx)
+    print('FIXUP TABLE: ref', (table.get('label'), command_idx, desc_idx))
     if command_idx >= 0:
         for tr in table:
             fix_table_ref_command(tr[command_idx])
@@ -286,7 +288,7 @@ def fix_table_ref_desc(td):
             break
         anchors.append(e)
     if not any_anchor and len(anchors) > 0:
-        print '===== INPUT FILE PROBLEM ====='
+        print('===== INPUT FILE PROBLEM =====')
         edump(td)
 
     td_anchor = VB.make_elem('td')
@@ -321,7 +323,7 @@ def edump(x, l = 0):
     _idump(x.tail,l)
 
 def _idump(s, l):
-    if s: print ' ' * (l*2) + s
+    if s: print(' ' * (l*2) + s)
 
 def _edump1(e, l, closetag=False):
     if not ET.iselement(e):
@@ -340,7 +342,7 @@ def _edump1(e, l, closetag=False):
     return f_closed
 
 def dump_table(table):
-    print 'table:'
+    print('table:')
     for tr in table:
         dump_table_row(tr)
 
@@ -349,40 +351,40 @@ def dump_table_row(tr):
 
     return
 
-    print '  tr:'
+    print('  tr:')
     for td in tr:
         text = get_content(td)
         text2 = get_txt(td)
         l = [x.get('t') for x in td]
         s = set(l)
-        print '    tda1: "%s"' % (re.sub('\n', r'\\n', text),)
+        print('    tda1: "%s"' % (re.sub('\n', r'\\n', text),))
         # print '    tda2: "%s"' % (re.sub('\n', r'\\n', text2),)
         # print '      :', text.split('\n')
-        print '    td:', [ x.strip() for x in text.split('\n') ]
-        print '      :', s, l
+        print('    td:', [ x.strip() for x in text.split('\n') ])
+        print('      :', s, l)
 
 def dump_element(e):
     text = re.sub('\n', r'\\n', e.text)
     tail = re.sub('\n', r'\\n', e.tail)
-    print '      <%s>"%s" : "%s" ' % (e.tag, text, tail)
+    print('      <%s>"%s" : "%s" ' % (e.tag, text, tail))
 
 def dump_table_row_elements(tr):
-    print '  tre:'
+    print('  tre:')
     for td in tr:
         dump_table_row_data_elements(td)
 
 def dump_table_row_data_elements(td):
     text = re.sub('\n', r'\\n', td.text)
     tail = re.sub('\n', r'\\n', td.tail)
-    print '    td: "%s" : "%s"' % (text, tail)
+    print('    td: "%s" : "%s"' % (text, tail))
     for d in td:
         dump_element(d)
 
 def dump_table_ascii(table):
-    print 'table: ====='
+    print('table: =====')
     for tr in table:
         dump_table_row_ascii(tr)
-    print 'end-table: ====='
+    print('end-table: =====')
 
 def dump_table_row_ascii(tr):
     ### print '  tr:'
@@ -390,14 +392,16 @@ def dump_table_row_ascii(tr):
     for td in tr:
         # col_text.append(get_content(td).split('\n'))
         col_text.append(get_txt(td).split('\n'))
-    t = zip(*col_text)
+    t = list(zip(*col_text))
+    # NEEDSWORK: ditto. possible to get rid of "list(...)"?
+    # maybe use map
     for i in range(len(t)):
         t[i] = ''.join(t[i])
     # get rid of the line. it is there because split('\n') added it
     if len(t[-1]) == 0: t = t[:-1]
     for s in t:
         if len(s) == 0: s = '---'
-        print s
+        print(s)
 
 
 ###################################################################
@@ -410,8 +414,8 @@ def dump_table_row_ascii(tr):
 OUTPUT_FORMATS = ('txt', 'html', 'flex', 'tables')
 
 def usage():
-    print ( sys.argv[0]
-            + ' (' + '|'.join(OUTPUT_FORMATS) + ') input_dir [output_dir]')
+    print(( sys.argv[0]
+            + ' (' + '|'.join(OUTPUT_FORMATS) + ') input_dir [output_dir]'))
     exit(1)
 
 def gen_tables(xml):
@@ -433,7 +437,7 @@ def runit():
     global INPUT_DIR, OUTPUT_DIR
 
     if len(sys.argv) < 3:
-        print 'must be at least two arguments'
+        print('must be at least two arguments')
         usage()
 
     # if output_dir not present, use input_dir
@@ -441,7 +445,7 @@ def runit():
 
     output_format = sys.argv[1]
     if output_format not in OUTPUT_FORMATS:
-        print 'unknown output format:', output_format
+        print('unknown output format:', output_format)
         usage()
 
     INPUT_DIR = sys.argv[2]
@@ -456,15 +460,15 @@ def runit():
     else:
         OUTPUT_DIR = INPUT_DIR
 
-    print 'input dir:', INPUT_DIR, 'output dir:', OUTPUT_DIR
+    print('input dir:', INPUT_DIR, 'output dir:', OUTPUT_DIR)
 
     xmlfiles = [ x for x in os.listdir(INPUT_DIR) if x.endswith('.txt.xml') ]
 
-    print 'xmlfiles:', xmlfiles
+    print('xmlfiles:', xmlfiles)
 
 
     for xmlfile in xmlfiles:
-        print 'PROCESSING:', xmlfile
+        print('PROCESSING:', xmlfile)
         xml = VB.read_xml_file(INPUT_DIR + xmlfile)
 
         if 'txt' == output_format:
@@ -478,7 +482,7 @@ def runit():
             with open(OUTPUT_DIR + xmlfile + '.' + output_format, 'w') as f:
                 out.write(f)
         else:
-            print 'not handled: "%s"' % (output_format,)
+            print('not handled: "%s"' % (output_format,))
             exit(1)
 
 #####

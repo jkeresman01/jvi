@@ -21,7 +21,6 @@ package com.raelity.jvi.swing.ui.options;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
@@ -66,40 +65,25 @@ public class ColorPropertyEditor extends AbstractPropertyEditor {
         editor = new JPanel(new PercentLayout(PercentLayout.HORIZONTAL, 0));
         ((JPanel)editor).add("*", label = new ColorCellRenderer());
         label.setOpaque(false);
-        ((JPanel)editor).add(button =
-                ComponentFactory.Helper.getFactory().createMiniButton());
-        button.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                selectColor();
-            }
+        ((JPanel)editor).add(
+                button = ComponentFactory.Helper.getFactory().createMiniButton());
+        button.addActionListener((ActionEvent e) -> {
+            selectColor();
         });
         if((flags & SHOW_NULL) != 0) {
-            ((JPanel)editor).add(button =
-                    ComponentFactory.Helper.getFactory().createMiniButton());
+            ((JPanel)editor).add(button
+                    = ComponentFactory.Helper.getFactory().createMiniButton());
             button.setText("X");
-            button.addActionListener(new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e)
-                {
-                    selectNull();
-                }
+            button.addActionListener((ActionEvent e) -> {
+                selectNull();
             });
         }
         if((flags & SHOW_DFLT) != 0 && property != null) {
-            ((JPanel)editor).add(button =
-                    ComponentFactory.Helper.getFactory().createMiniButton());
+            ((JPanel)editor).add(button
+                    = ComponentFactory.Helper.getFactory().createMiniButton());
             button.setText("DFLT");
-            button.addActionListener(new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e)
-                {
-                    selectDefault();
-                }
+            button.addActionListener((ActionEvent e) -> {
+                selectDefault();
             });
         }
         ((JPanel)editor).setOpaque(false);

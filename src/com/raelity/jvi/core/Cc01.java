@@ -456,11 +456,8 @@ public class Cc01
         @Override
         public void actionPerformed(final ActionEvent ev)
         {
-            Misc.runUndoable(new Runnable() {
-                @Override
-                public void run() {
-                    Search01.substitute((ColonEvent)ev);
-                }
+            Misc.runUndoable(() -> {
+                Search01.substitute((ColonEvent)ev);
             });
         }
     };
@@ -474,12 +471,9 @@ public class Cc01
         
         @Override
         public void actionPerformed(final ActionEvent ev) {
-            Misc.runUndoable(new Runnable() {
-                @Override
-                public void run() {
-                    Search01.global((ColonEvent)ev);
-                    Options.newSearch();
-                }
+            Misc.runUndoable(() -> {
+                Search01.global((ColonEvent)ev);
+                Options.newSearch();
             });
         }
     };
@@ -493,12 +487,9 @@ public class Cc01
         
         @Override
         public void actionPerformed(final ActionEvent ev) {
-            Misc.runUndoable(new Runnable() {
-                @Override
-                public void run() {
-                    Search01.global((ColonEvent)ev);
-                    Options.newSearch();
-                }
+            Misc.runUndoable(() -> {
+                Search01.global((ColonEvent)ev);
+                Options.newSearch();
             });
         }
     };
@@ -509,18 +500,18 @@ public class Cc01
         */
     private static class Buffers implements ActionListener
     {
-        @Override
-        public void actionPerformed(ActionEvent e)
-        {
-            ViOutputStream osa = ViManager.createOutputStream(
-                    null, ViOutputStream.OUTPUT,
-                    "=== MRU (:n :N :e#-<digit>) ===                "
-                    + "=== activation (:e#<digit> ===");
+    @Override
+    public void actionPerformed(ActionEvent e)
+    {
+        try (ViOutputStream osa = ViManager.createOutputStream(
+                null, ViOutputStream.OUTPUT,
+                "=== MRU (:n :N :e#-<digit>) ===                "
+                        + "=== activation (:e#<digit> ===")) {
             int i = 0;
             ViAppView cur = AppViews.relativeMruAppView(0);
             ViAppView prev = AppViews.getMruAppView(1);
-
-            List<String> outputData = new ArrayList<String>();
+            
+            List<String> outputData = new ArrayList<>();
             ViFactory factory = ViManager.getFactory();
             List<ViAppView> l1 = AppViews.getList(AppViews.MRU);
             List<ViAppView> l2 = AppViews.getList(AppViews.ACTIVE);
@@ -534,12 +525,14 @@ public class Cc01
                 outputData.add(String.format(
                         " %2d %c %-40s %3d %c %s",
                         i,
-                        cur != null && cur.equals(o1) ? '%'
-                        : prev != null && prev.equals(o1) ? '#' : ' ',
-                        o1 != null ? factory.getFS().getDisplayFileName(o1) : "",
+                        cur != null && cur.equals(o1)
+                                ? '%'
+                                : prev != null && prev.equals(o1) ? '#' : ' ',
+                        o1 != null
+                                ? factory.getFS().getDisplayFileName(o1) : "",
                         w2,
                         cur != null && cur.equals(o2) ? '%'
-                        : prev != null && prev.equals(o2) ? '#' : ' ',
+                                : prev != null && prev.equals(o2) ? '#' : ' ',
                         o2 != null ? factory.getFS().getDisplayFileName(o2) : ""));
                 i++;
             }
@@ -547,8 +540,8 @@ public class Cc01
             for(int i01 = outputData.size() -1; i01 >= 0; i01--) {
                 osa.println(outputData.get(i01));
             }
-            osa.close();
         }
+    }
     };
 
     /**
@@ -681,12 +674,8 @@ public class Cc01
             final OPARG oa = ColonCommands.setupExop(cev, true);
             if(!oa.error) {
                 oa.op_type = OP_DELETE;
-                Misc.runUndoable(new Runnable() {
-                    @Override
-                    public void run()
-                    {
-                        Misc.op_delete(oa);
-                    }
+                Misc.runUndoable(() -> {
+                    Misc.op_delete(oa);
                 });
             }
         }
@@ -743,12 +732,8 @@ public class Cc01
             final int amount = cev.getInputCommandName().length();
             if(!oa.error) {
                 oa.op_type = op;
-                Misc.runUndoable(new Runnable() {
-                    @Override
-                    public void run()
-                    {
-                        Misc.op_shift(oa, false, amount);
-                    }
+                Misc.runUndoable(() -> {
+                    Misc.op_shift(oa, false, amount);
                 });
             }
         }
@@ -756,76 +741,72 @@ public class Cc01
 
     private static class moveCopy extends AbstractColonAction
     {
-        private boolean doMove;
-        moveCopy(boolean doMove)
-        {
-            this.doMove = doMove;
+    private final boolean doMove;
+    moveCopy(boolean doMove)
+    {
+        this.doMove = doMove;
+    }
+
+    @Override
+    public EnumSet<CcFlag> getFlags()
+    {
+        return EnumSet.of(CcFlag.RANGE);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e)
+    {
+        ColonEvent cev = (ColonEvent) e;
+        ViTextView tv = cev.getViTextView();
+        final Buffer buf = tv.getBuffer();
+        if(cev.getLine1() > buf.getLineCount()
+                || cev.getLine2() > buf.getLineCount()) {
+            Msg.emsg(Messages.e_invrange);
+            return; // BAIL
+        }
+        final int offset1 = buf.getLineStartOffset(cev.getLine1());
+        final int offset2 = buf.getLineEndOffset(cev.getLine2());
+        // get the destination line number
+        MutableInt dst = new MutableInt();
+        if(cev.getNArg() < 1
+              || ColonCommands.get_address(cev.getArg(1), 0, false, dst) < 0
+              || dst.getValue() > buf.getLineCount()) {
+            Msg.emsg(Messages.e_invaddr);
+            return; // BAIL
+        }
+        if(doMove && dst.getValue() == cev.getLine2())
+            return; // 2,4 mo 4 does nothing
+
+        final int dstOffset = dst.getValue() == 0
+                ? 0
+                : buf.getLineEndOffset(dst.getValue());
+        if(doMove && dstOffset >= offset1 && dstOffset < offset2) {
+            Msg.emsg("Move lines into themselves");
+            return; // BAIL
         }
 
-        @Override
-        public EnumSet<CcFlag> getFlags()
-        {
-            return EnumSet.of(CcFlag.RANGE);
-        }
+        // If at the end of the file, then can't delete the final
+        // '\n' on a move, so back up the range by a character
+        final int atEndAdjust = cev.getLine2() == buf.getLineCount() ? 1 : 0;
 
-        @Override
-        public void actionPerformed(ActionEvent e)
-        {
-            ColonEvent cev = (ColonEvent) e;
-            ViTextView tv = cev.getViTextView();
-            final Buffer buf = tv.getBuffer();
-            if(cev.getLine1() > buf.getLineCount()
-                    || cev.getLine2() > buf.getLineCount()) {
-                Msg.emsg(Messages.e_invrange);
-                return; // BAIL
-            }
-            final int offset1 = buf.getLineStartOffset(cev.getLine1());
-            final int offset2 = buf.getLineEndOffset(cev.getLine2());
-            // get the destination line number
-            MutableInt dst = new MutableInt();
-            if(cev.getNArg() < 1
-                  || ColonCommands.get_address(cev.getArg(1), 0, false, dst) < 0
-                  || dst.getValue() > buf.getLineCount()) {
-                Msg.emsg(Messages.e_invaddr);
-                return; // BAIL
-            }
-            if(doMove && dst.getValue() == cev.getLine2())
-                return; // 2,4 mo 4 does nothing
-
-            final int dstOffset = dst.getValue() == 0
-                    ? 0
-                    : buf.getLineEndOffset(dst.getValue());
-            if(doMove && dstOffset >= offset1 && dstOffset < offset2) {
-                Msg.emsg("Move lines into themselves");
-                return; // BAIL
-            }
-
-            // If at the end of the file, then can't delete the final
-            // '\n' on a move, so back up the range by a character
-            final int atEndAdjust = cev.getLine2() == buf.getLineCount() ? 1 : 0;
-
-            // track postions for later delete
-            Misc.runUndoable(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        ViMark pos1 = doMove
-                                ? buf.createMark(offset1, BIAS.FORW) : null;
-                        ViMark pos2 = doMove
-                                ? buf.createMark(offset2, BIAS.FORW) : null;
-                        String s = buf.getText(offset1, offset2 - offset1);
-                        buf.insertText(dstOffset, s);
-                        if(doMove) {
-                            buf.deleteChar(pos1.getOffset() - atEndAdjust,
-                                            pos2.getOffset() - atEndAdjust);
-                        }
-                    } catch (ViBadLocationException ex) {
-                        LOG.log(Level.SEVERE, null, ex);
-                    }
+        // track postions for later delete
+        Misc.runUndoable(() -> {
+            try {
+                ViMark pos1 = doMove
+                        ? buf.createMark(offset1, BIAS.FORW) : null;
+                ViMark pos2 = doMove
+                        ? buf.createMark(offset2, BIAS.FORW) : null;
+                String s = buf.getText(offset1, offset2 - offset1);
+                buf.insertText(dstOffset, s);
+                if(doMove) {
+                    buf.deleteChar(pos1.getOffset() - atEndAdjust,
+                            pos2.getOffset() - atEndAdjust);
                 }
-            });
-        }
-
+            } catch (ViBadLocationException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        });
+    }
     }
 
     private static class TestGlassKeys implements ActionListener {
@@ -900,44 +881,36 @@ private static void addDebugColonCommands()
     // Some debug commands
     //
     ColonCommands.register("dumpPreferences", "dumpPreferences",
-                           new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
+            (ActionEvent e) -> {
         try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             ViManager.getFactory().getPreferences().exportSubtree(os);
-            ViOutputStream vios = ViManager.createOutputStream(
-                    null, ViOutputStream.OUTPUT, "Preferences");
-            vios.println(os.toString());
-            vios.close();
+            try (ViOutputStream vios = ViManager.createOutputStream(
+                    null, ViOutputStream.OUTPUT, "Preferences")) {
+                vios.println(os.toString());
+            }
 
-        } catch (BackingStoreException ex) {
+        } catch (BackingStoreException | IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        }
         }
     },  EnumSet.of(CcFlag.DBG, CcFlag.NO_ARGS));
     ColonCommands.register("optionsDelete", "optionsDelete",
-        new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    Preferences prefs = ViManager.getFactory().getPreferences();
-                    String keys[] = prefs.keys();
-                    for (String key : keys) {
-                        prefs.remove(key);
-                    }
-                    prefs = prefs.node(ViManager.PREFS_KEYS);
-                    keys = prefs.keys();
-                    for (String key : keys) {
-                        prefs.remove(key);
-                    }
-                } catch (BackingStoreException ex) {
-                    LOG.log(Level.SEVERE, null, ex);
-                }
+            (ActionEvent e) -> {
+        try {
+            Preferences prefs = ViManager.getFactory().getPreferences();
+            String keys[] = prefs.keys();
+            for (String key : keys) {
+                prefs.remove(key);
             }
-        },  EnumSet.of(CcFlag.DBG));
+            prefs = prefs.node(ViManager.PREFS_KEYS);
+            keys = prefs.keys();
+            for (String key : keys) {
+                prefs.remove(key);
+            }
+        } catch (BackingStoreException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+    },  EnumSet.of(CcFlag.DBG));
     ColonCommands.register("optionDelete", "optionDelete",
         new ColonCommands.AbstractColonAction() {
             @Override
@@ -989,41 +962,34 @@ private static void addDebugColonCommands()
                 }
             }, EnumSet.of(CcFlag.DBG));
     ColonCommands.register("dumpCommands", "dumpCommands",
-                           new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            ViOutputStream vios = ViManager.createOutputStream(
-                    null, ViOutputStream.OUTPUT, "Dump Commands");
+            (ActionEvent e) -> {
+        try (ViOutputStream vios = ViManager.createOutputStream(
+                null, ViOutputStream.OUTPUT, "Dump Commands")) {
             for(ColonCommandItem cci : ColonCommands.getList()) {
                 vios.println(String.format("\t%s%s%s",
-                    cci.getDisplayName(),
-                    cci.getFlags().contains(CcFlag.DBG) ? " debug" : "",
-                    cci.getFlags().contains(CcFlag.DEPRECATED) ? " deprec" : "",
-                    cci.getFlags().contains(CcFlag.NO_ARGS) ? "" : " ..."
-                    ));
+                        cci.getDisplayName(),
+                        cci.getFlags().contains(CcFlag.DBG) ? " debug" : "",
+                        cci.getFlags().contains(CcFlag.DEPRECATED) ? " deprec" : "",
+                        cci.getFlags().contains(CcFlag.NO_ARGS) ? "" : " ..."
+                ));
             }
-            vios.close();
         }
     },  EnumSet.of(CcFlag.DBG, CcFlag.NO_ARGS));
-    ColonCommands.register("dumpOptions", "dumpOptions", new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            ViOutputStream vios = ViManager.createOutputStream(
-                    null, ViOutputStream.OUTPUT, "Dump Options");
+    ColonCommands.register("dumpOptions", "dumpOptions",
+            (ActionEvent e) -> {
+        try (ViOutputStream vios = ViManager.createOutputStream(
+                null, ViOutputStream.OUTPUT, "Dump Options")) {
             // sort by display name
-            Comparator<Option> comp = new Comparator<Option>() {
-                @Override public int compare(Option o1, Option o2)
-                { return o1.getDisplayName().compareTo(o2.getDisplayName()); }
-            };
-            List<Option> opts = new ArrayList<Option>(OptUtil.getOptions());
+            Comparator<Option> comp = (Option o1, Option o2)
+                    -> o1.getDisplayName().compareTo(o2.getDisplayName());
+            List<Option> opts = new ArrayList<>(OptUtil.getOptions());
             Collections.sort(opts, comp);
             for(Option opt : opts) {
                 vios.println(String.format("\t%s (%s) [%s]",
-                                           opt.getDisplayName(),
-                                           opt.getCategory(),
-                                           opt.getName()));
+                        opt.getDisplayName(),
+                        opt.getCategory(),
+                        opt.getName()));
             }
-            vios.close();
         }
     },  EnumSet.of(CcFlag.DBG, CcFlag.NO_ARGS));
 

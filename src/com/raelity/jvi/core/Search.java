@@ -21,7 +21,6 @@ package com.raelity.jvi.core;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -41,7 +40,6 @@ import com.raelity.text.TextUtil.MySegment;
 
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc.*;
-import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
@@ -89,12 +87,7 @@ public class Search
     if(searchCommandEntry == null) {
       searchCommandEntry = ViManager.getFactory()
                             .createCmdEntry(ViCmdEntry.Type.SEARCH);
-      searchCommandEntry.addActionListener(
-        new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent ev) {
-            searchEntryComplete(ev);
-          }   });
+      searchCommandEntry.addActionListener(Search::searchEntryComplete);
     }
     return searchCommandEntry;
   }
@@ -167,13 +160,7 @@ public class Search
   }
   
   private static void laterDoIncrementalSearch() {
-    EventQueue.invokeLater(new Runnable() {
-      @Override
-      public void run()
-      {
-        doIncrementalSearch();
-      }
-    });
+    EventQueue.invokeLater(Search::doIncrementalSearch);
   }
 
   private static class SearchListener implements ChangeListener

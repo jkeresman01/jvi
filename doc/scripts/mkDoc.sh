@@ -30,6 +30,10 @@ $VIM/vim --noplugin -e -s -V1 -c "helptags $(cygpath -a -m $FILTERED)" -c q
 mkdir -p $OUT
 mv $FILTERED/tags $OUT/tags
 
-python jvi.py $FILTERED $OUT
+# for t.sh
+#       touch ../build-/tout/tags
+#       python jvi/vimh/jvi.py ../build-/tin ../build-/tout
+
+python jvi/vimh/jvi.py $FILTERED $OUT
 cp $VIM_CSS/*.css $OUT
 

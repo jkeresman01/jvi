@@ -39,7 +39,6 @@ import java.nio.ByteOrder;
 import java.text.CharacterIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,6 +78,7 @@ import static com.raelity.jvi.core.Search.*;
 import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Constants.NF.*;
+import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
 
 public class Misc implements ClipboardOwner {
@@ -113,39 +113,40 @@ public class Misc implements ClipboardOwner {
     private static void init() {
         ColonCommands.register("reg", "registers", new DoRegisters(), null);
 
-        PropertyChangeListener pcl = new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                String pname = evt.getPropertyName();
-                if(pname.equals(ViManager.P_BOOT)) {
-                    read_viminfo_registers();
-                    read_viminfo_search();
-                    read_viminfo_command();
-                    startImportCheck();
-                } else if(pname.equals(ViManager.P_LATE_INIT)) {
-                    javaKeyMap = initJavaKeyMap();
-                } else if(pname.equals(ViManager.P_SHUTDOWN)) {
-                    registersImportCheck.stopAll();
-                    searchImportCheck.stopAll();
-                    commandsImportCheck.stopAll();
+        PropertyChangeListener pcl = (PropertyChangeEvent evt) -> {
+          String pname = evt.getPropertyName();
+          switch (pname) {
+          case ViManager.P_BOOT:
+            read_viminfo_registers();
+            read_viminfo_search();
+            read_viminfo_command();
+            startImportCheck();
+            break;
+          case ViManager.P_LATE_INIT:
+            javaKeyMap = initJavaKeyMap();
+            break;
+          case ViManager.P_SHUTDOWN:
+            registersImportCheck.stopAll();
+            searchImportCheck.stopAll();
+            commandsImportCheck.stopAll();
 
-                    if(!registersImportCheck.isChange()) {
-                        write_viminfo_registers();
-                    } else {
-                        LOG.info("jVi registers imported");
-                    }
-                    if(!searchImportCheck.isChange()) {
-                        write_viminfo_search();
-                    } else {
-                        LOG.info("jVi search history imported");
-                    }
-                    if(!commandsImportCheck.isChange()) {
-                        write_viminfo_command();
-                    } else {
-                        LOG.info("jVi commmand history imported");
-                    }
-                }
+            if(!registersImportCheck.isChange()) {
+              write_viminfo_registers();
+            } else {
+              LOG.info("jVi registers imported");
             }
+            if(!searchImportCheck.isChange()) {
+              write_viminfo_search();
+            } else {
+              LOG.info("jVi search history imported");
+            }
+            if(!commandsImportCheck.isChange()) {
+              write_viminfo_command();
+            } else {
+              LOG.info("jVi commmand history imported");
+            }
+            break;
+          }
         };
         ViManager.addPropertyChangeListener(ViManager.P_BOOT, pcl);
         ViManager.addPropertyChangeListener(ViManager.P_LATE_INIT, pcl);
@@ -188,13 +189,19 @@ public class Misc implements ClipboardOwner {
       int	    count = 0;
 
       int ptr = seg.offset;
-      for ( ; ptr < seg.offset + seg.count; ++ptr) {
-	  if (seg.array[ptr] == TAB)    // count a tab for what it is worth
-	      count += G.curbuf.b_p_ts - (count % G.curbuf.b_p_ts);
-	  else if (seg.array[ptr] == ' ')
-	      ++count;		// count a space for one
-	  else
-	      break;
+      OUTER:
+      for (; ptr < seg.offset + seg.count; ++ptr) {
+        switch (seg.array[ptr]) {
+        // count a tab for what it is worth
+        case TAB:
+          count += G.curbuf.b_p_ts - (count % G.curbuf.b_p_ts);
+          break;
+        case ' ':
+          ++count;		// count a space for one
+          break;
+        default:
+          break OUTER;
+        }
       }
       return count;
   }
@@ -253,15 +260,21 @@ public class Misc implements ClipboardOwner {
     
     // ptr = seg.offset;
     //ptr++;
-    for ( ; ptr < seg.offset + seg.count; ++ptr) {
-      if (seg.array[ptr] == '(') {
-	found = true;
-	break;
-      } else if (seg.array[ptr] == TAB)    // count a tab for what it is worth
-	count += G.curbuf.b_p_ts - (count % G.curbuf.b_p_ts);
-      else
-	++count;
-    }
+      OUTER:
+      for (; ptr < seg.offset + seg.count; ++ptr) {
+        switch (seg.array[ptr]) {
+        case '(':
+          found = true;
+          break OUTER;
+        case TAB:
+          // count a tab for what it is worth
+          count += G.curbuf.b_p_ts - (count % G.curbuf.b_p_ts);
+          break;
+        default:
+          ++count;
+          break;
+        }
+      }
     return found ? count : -1;
   }
   
@@ -470,10 +483,7 @@ public class Misc implements ClipboardOwner {
       MySegment seg = G.curbuf.getLineSegment(G.curwin.w_cursor.getLine());
       for(col = 0; vim_iswhite(seg.array[seg.offset + col]); ++col);
 
-      if (col >= G.curwin.w_cursor.getColumn() + extra)
-          return true;
-      else
-          return false;
+      return col >= G.curwin.w_cursor.getColumn() + extra;
   }
 
   public static String plural(int n) {
@@ -516,15 +526,22 @@ public class Misc implements ClipboardOwner {
 
   private static String mapCtrlv(char c)
   {
-    // should also do stuff like
-    // change an input F1 key to "<F1>"
-    // Doesn't look like you can put a '\r' into a document?
-    if(c == K_TAB || c == K_S_TAB)
-      c = '\t';
-    else if(c == K_KENTER || c == CR)
-      c = 13;  // carriage return
-    else if(c == NL)
-      c = 10; // newline
+      // should also do stuff like
+      // change an input F1 key to "<F1>"
+      // Doesn't look like you can put a '\r' into a document?
+      switch (c) {
+      case K_TAB:
+      case K_S_TAB:
+        c = '\t';
+        break;
+      case K_KENTER:
+      case CR:
+        c = 13;  // carriage return
+        break;
+      case NL:
+        c = 10; // newline
+        break;
+      }
 
     return String.valueOf(c);
   }
@@ -1249,7 +1266,7 @@ public class Misc implements ClipboardOwner {
 
   private static List<String> readList(String nodeName)
   {
-    List<String> l = new ArrayList<String>();
+    List<String> l = new ArrayList<>();
     try {
       Preferences prefs = ViManager.getFactory().getPreferences().node(nodeName);
       int nKey = prefs.keys().length;
@@ -1381,7 +1398,7 @@ public class Misc implements ClipboardOwner {
         int startOffset = 0;
         int endOffset;
         int lines = 0;
-        List<StringBuilder> l = new ArrayList<StringBuilder>();
+        List<StringBuilder> l = new ArrayList<>();
         while((endOffset = s.indexOf('\n', startOffset)) >= 0) {
           StringBuilder sb
                   = new StringBuilder(s.subSequence(startOffset, endOffset));
@@ -1459,74 +1476,73 @@ public class Misc implements ClipboardOwner {
           arg = cev.getArgString();
       Yankreg yb;
 
-      ViOutputStream vios = ViManager.createOutputStream(
-              null, ViOutputStream.OUTPUT, "\n--- Registers ---");
-      int columns = 120;
-      StringBuilder sb = new StringBuilder();
-      for (int i = -1; i < y_regs.length; ++i)
-      {
-        String name = getPersistableYankreg(i);
-        if (arg != null && vim_strchr(arg, name.charAt(0)) == null)
-          continue;	    /* did not ask for this register */
-        if (i == -1)
+      try (ViOutputStream vios = ViManager.createOutputStream(
+              null, ViOutputStream.OUTPUT, "\n--- Registers ---")) {
+        int columns = 120;
+        StringBuilder sb = new StringBuilder();
+        for (int i = -1; i < y_regs.length; ++i)
         {
-          if (y_previous != null)
-            yb = y_previous;
+          String name = getPersistableYankreg(i);
+          if (arg != null && vim_strchr(arg, name.charAt(0)) == null)
+            continue;	    /* did not ask for this register */
+          if (i == -1)
+          {
+            if (y_previous != null)
+              yb = y_previous;
+            else
+              yb = y_regs[0];
+          }
           else
-            yb = y_regs[0];
+            yb = y_regs[i];
+          String regval = null;
+          if(yb != null)
+            regval = yb.getAll();
+          if (regval != null)
+          {
+            sb.setLength(0);
+            sb.append("\"").append(name).append("   ");
+            
+            int n = columns - 6;
+            
+            String escaped = TextUtil.debugString(regval);
+            if(escaped.length() > n)
+              escaped = escaped.substring(0, n-1);
+            sb.append(escaped);
+            vios.println(sb.toString());
+          }
         }
-        else
-          yb = y_regs[i];
-        String regval = null;
-        if(yb != null)
-          regval = yb.getAll();
-        if (regval != null)
-        {
-          sb.setLength(0);
-          sb.append("\"").append(name).append("   ");
 
-          int n = columns - 6;
+        /*
+         * display last inserted text
+         */
+        do_dis(vios, sb, ".", arg, true);
 
-          String escaped = TextUtil.debugString(regval);
-          if(escaped.length() > n)
-            escaped = escaped.substring(0, n-1);
-          sb.append(escaped);
-          vios.println(sb.toString());
-        }
+        /*
+         * display last command line
+         */
+        do_dis(vios, sb, ":", arg, false);
+
+        /*
+         * display current file name
+         */
+        do_dis(vios, sb, "%", arg, false);
+
+        /*
+         * display alternate file name
+         */
+        do_dis(vios, sb, "#", arg, false);
+
+        /*
+         * display last search pattern
+         */
+        do_dis(vios, sb, "/", arg, false);
+
+        // #ifdef FEAT_EVAL..
+        /*
+         * display last used expression
+         */
+        // #endif
       }
-
-      /*
-       * display last inserted text
-       */
-      do_dis(vios, sb, ".", arg, true);
-
-      /*
-       * display last command line
-       */
-      do_dis(vios, sb, ":", arg, false);
-
-      /*
-       * display current file name
-       */
-      do_dis(vios, sb, "%", arg, false);
-
-      /*
-       * display alternate file name
-       */
-      do_dis(vios, sb, "#", arg, false);
-
-      /*
-       * display last search pattern
-       */
-      do_dis(vios, sb, "/", arg, false);
-
-      // #ifdef FEAT_EVAL..
-      /*
-       * display last used expression
-       */
-      // #endif
-
-      vios.close();
     }
   }
 
@@ -1534,7 +1550,7 @@ public class Misc implements ClipboardOwner {
                              String regname, String arg, boolean skip_esc) {
     if (arg != null && vim_strchr(arg, regname.charAt(0)) == null)
       return;	    /* did not ask for this register */
-    Wrap<String> argp = new Wrap<String>();
+    Wrap<String> argp = new Wrap<>();
     boolean displayit = get_spec_reg(regname.charAt(0), argp, false);
     if(displayit && argp.getValue() != null) {
       sb.setLength(0);
@@ -1720,76 +1736,76 @@ public class Misc implements ClipboardOwner {
     if (regname == '_')			// black hole: don't stuff anything
       return OK;
 
-    if (regname == ':')			// use last command line
-    {
-      return FAIL; // NEEDSWORK: do_execreg ':'
-      /* ****************************************************************
-      !!! s = ColonCommands.lastCommand; // s = last_cmdline;
-      if (last_cmdline == NULL)
-      {
+      switch (regname) {
+      // use last command line
+      case ':':
+        return FAIL; // NEEDSWORK: do_execreg ':'
+        /* ****************************************************************
+        !!! s = ColonCommands.lastCommand; // s = last_cmdline;
+        if (last_cmdline == NULL)
+        {
         EMSG(e_nolastcmd);
         return FAIL;
-      }
-      vim_free(new_last_cmdline); // don't keep the cmdline containing @:
-      new_last_cmdline = NULL;
-      retval = put_in_typebuf(last_cmdline, TRUE);
-      ****************************************************************/
-    }
-    else if (regname == '.')		// use last inserted text
-    {
-      String s = get_last_insert_save();
-      if (s == null || s.length() == 0)
-      {
-        Msg.emsg(Messages.e_noinstext);
-        return FAIL;
-      }
-      retval = put_in_typebuf(s, colon);
-    }
-    else
-    {
-      int remap;
-      get_yank_register(regname, false);
-      if (y_current.y_size == 0 || y_current.y_array == null
-            || y_current.y_array.length == 0 || y_current.y_array[0].length() == 0)
-        return FAIL;
+        }
+        vim_free(new_last_cmdline); // don't keep the cmdline containing @:
+        new_last_cmdline = NULL;
+        retval = put_in_typebuf(last_cmdline, TRUE);
+        ****************************************************************/
+      case '.':
+        // use last inserted text
+        String s = get_last_insert_save();
+        if (s == null || s.length() == 0)
+        {
+          Msg.emsg(Messages.e_noinstext);
+          return FAIL;
+        }
+        retval = put_in_typebuf(s, colon);
+        break;
+      default:
+        int remap;
+        get_yank_register(regname, false);
+        if (y_current.y_size == 0 || y_current.y_array == null
+                || y_current.y_array.length == 0 || y_current.y_array[0].length() == 0)
+          return FAIL;
 
-      /* Disallow remaping for ":@r". */
-      remap = colon ? -1 : 0;
+        /* Disallow remaping for ":@r". */
+        remap = colon ? -1 : 0;
 
-      //
-      // Insert lines into typeahead buffer, from last one to first one.
-      //
-      /* ****************************************************************
-      for (i = y_current.y_size; --i >= 0; )
-      {
+        //
+        // Insert lines into typeahead buffer, from last one to first one.
+        //
+        /* ****************************************************************
+        for (i = y_current.y_size; --i >= 0; )
+        {
         // insert newline between lines and after last line if type is MLINE
         if (y_current.y_type == MLINE || i < y_current.y_size - 1
-            || addcr)
+        || addcr)
         {
-          if (ins_typebuf("\n", remap, 0, true) == FAIL)
-            return FAIL;
+        if (ins_typebuf("\n", remap, 0, true) == FAIL)
+        return FAIL;
         }
         if (ins_typebuf(y_current.y_array[i], remap, 0, true) == FAIL)
-          return FAIL;
-        if (colon && ins_typebuf(":", remap, 0, true) == FAIL)
-          return FAIL;
-      }
-      ****************************************************************/
-      // Just roll our own for jvi
-      StringBuilder sb = new StringBuilder(y_current.y_array[0]);
-      if(y_current.y_type == MLINE || addcr) {
-        if(sb.length() == 0 || sb.charAt(sb.length()-1) != '\n') {
-          sb.append('\n');
-        }
-      }
-      //
-      // NEEDSWORK: if(colon) put ":" begin of each line
-      //
-      if(ins_typebuf_redo(sb, remap, 0, true) == FAIL) {
         return FAIL;
+        if (colon && ins_typebuf(":", remap, 0, true) == FAIL)
+        return FAIL;
+        }
+        ****************************************************************/
+        // Just roll our own for jvi
+        StringBuilder sb = new StringBuilder(y_current.y_array[0]);
+        if(y_current.y_type == MLINE || addcr) {
+          if(sb.length() == 0 || sb.charAt(sb.length()-1) != '\n') {
+            sb.append('\n');
+          }
+        }
+        //
+        // NEEDSWORK: if(colon) put ":" begin of each line
+        //
+        if(ins_typebuf_redo(sb, remap, 0, true) == FAIL) {
+          return FAIL;
+        }
+        G.Exec_reg = true;	// disable the 'q' command
+        break;
       }
-      G.Exec_reg = true;	// disable the 'q' command
-    }
     return retval;
   }
 
@@ -1877,7 +1893,7 @@ private static int put_in_typebuf(String s, boolean colon)
     if (regname != NUL && !valid_yank_reg(regname, false))
 	return FAIL;
 
-    Wrap<String> pArg = new Wrap<String>();
+    Wrap<String> pArg = new Wrap<>();
     if (regname == '*')
     {
 	if (!clipboard_available)
@@ -2018,13 +2034,13 @@ private static int put_in_typebuf(String s, boolean colon)
 
 //  #ifdef FILE_IN_PATH...
 
-          case 0x1f & 'W':  // ctrl      // word under cursor
-          case 0x1f & 'A':  // ctrl      // WORD (mnemonic All) under cursor
+          case CTRL_W:  // word under cursor
+          case CTRL_A:  // WORD (mnemonic All) under cursor
               if (!errmsg)
                   return false;
               MutableInt mi = new MutableInt();
               CharacterIterator ci
-                      = find_ident_under_cursor(mi, regname == ctrl('W')
+                      = find_ident_under_cursor(mi, regname == CTRL_W
                                      ?  (FIND_IDENT|FIND_STRING) : FIND_STRING);
               cnt = mi.getValue();
               argp.setValue(cnt > 0 ? ci.toString() : null);
@@ -2415,11 +2431,8 @@ private static int put_in_typebuf(String s, boolean colon)
     
   public static int op_replace(final OPARG oap, final char c) {
     final MutableInt rval = new MutableInt();
-    Misc.runUndoable(new Runnable() {
-        @Override
-        public void run() {
-          rval.setValue(op_replace7(oap, c)); // from vim7
-        }
+    Misc.runUndoable(() -> {
+      rval.setValue(op_replace7(oap, c)); // from vim7
     });
     return rval.getValue();
   }
@@ -3494,14 +3507,8 @@ private static int put_in_typebuf(String s, boolean colon)
       if(cb.isDataFlavorAvailable(ViManager.VimClipboard2))
           ViManager.println("VimClip available");
       DataFlavor dfa[] = cb.getAvailableDataFlavors();
-      Arrays.sort(dfa, new Comparator<DataFlavor>() {
-          @Override
-          public int compare(DataFlavor df1, DataFlavor df2) {
-            return df1.getMimeType().compareTo(df2.getMimeType());
-          }
-        }
-
-      );
+      Arrays.sort(dfa, (DataFlavor df1, DataFlavor df2)
+              -> df1.getMimeType().compareTo(df2.getMimeType()));
       for (DataFlavor df : dfa) {
         ViManager.println(df.getMimeType());
       }
@@ -3514,9 +3521,7 @@ private static int put_in_typebuf(String s, boolean colon)
     String s = "";
     try {
       s = (String)trans.getTransferData(DataFlavor.stringFlavor);
-    } catch(IOException e) {
-      Util.beep_flush();
-    } catch(UnsupportedFlavorException e) {
+    } catch(IOException | UnsupportedFlavorException e) {
       Util.beep_flush();
     }
     // NEEDSWORK: use a string reader and transfer to StringBuffer
@@ -3542,8 +3547,9 @@ private static int put_in_typebuf(String s, boolean colon)
         int ucslen = bb.getInt();
         int rawlen = bb.getInt();
         return type;
-      } catch (UnsupportedFlavorException ex) { LOG.log(Level.SEVERE, null, ex);
-      } catch (IOException ex) { LOG.log(Level.SEVERE, null, ex); }
+      } catch (UnsupportedFlavorException | IOException ex) {
+        LOG.log(Level.SEVERE, null, ex);
+      }
     }
     return null;
   }
@@ -3562,7 +3568,7 @@ private static int put_in_typebuf(String s, boolean colon)
   ////////////////////////////////////////////////////////////////////////////
   //
     
-    /**
+    /*
      * For the current character offset in the current line,
      * calculate the virtual offset. That is the offset if
      * tabs are expanded. I *think* this is equivelent to getvcolStart(int).
@@ -3570,9 +3576,9 @@ private static int put_in_typebuf(String s, boolean colon)
      * @deprecated
      * use getvcol(ViTextView, ViFPOS, MutableInt, MutableInt, MutableInt)
      */
-    static int getvcol() {
-      return getvcol(G.curwin.w_cursor.getColumn());
-    }
+    // static int getvcol() {
+    //   return getvcol(G.curwin.w_cursor.getColumn());
+    // }
     
     /**
      * This method returns the start vcol of param for current line
@@ -3729,7 +3735,7 @@ private static int put_in_typebuf(String s, boolean colon)
             else mode = Edit.VI_MODE_VISUAL;
             
             // It may be "VISUAL BLOCK" or "VISUAl LINE"
-            if (G.VIsual_mode == Util.ctrl('V'))
+            if (G.VIsual_mode == CTRL_V)
               mode += " " + Edit.VI_MODE_BLOCK;
             else if (G.VIsual_mode == 'V')
               mode += " " + Edit.VI_MODE_LINE;
@@ -4339,12 +4345,15 @@ static void block_prep(OPARG oap, block_def bdp, int lnum, boolean is_del) {
     if (bdp.end_vcol > oap.end_vcol) // it's all in one character
     {
       bdp.is_oneChar = true;
-      if (oap.op_type == OP_INSERT)
+      switch (oap.op_type) {
+      case OP_INSERT:
         bdp.endspaces = bdp.start_char_vcols - bdp.startspaces;
-      else if (oap.op_type == OP_APPEND) {
+        break;
+      case OP_APPEND:
         bdp.startspaces += oap.end_vcol - oap.start_vcol + 1;
         bdp.endspaces = bdp.start_char_vcols - bdp.startspaces;
-      } else {
+        break;
+      default:
         bdp.startspaces = oap.end_vcol - oap.start_vcol + 1;
         if (is_del && oap.op_type != OP_LSHIFT) {
           // just putting the sum of those two into
@@ -4354,6 +4363,7 @@ static void block_prep(OPARG oap, block_def bdp, int lnum, boolean is_del) {
                   - (bdp.start_vcol - oap.start_vcol);
           bdp.endspaces = bdp.end_vcol - oap.end_vcol - 1;
         }
+        break;
       }
     } else {
       prev_pend_idx = pend_idx;
@@ -4410,11 +4420,8 @@ static int
 do_addsub(final char command, final int Prenum1)
 {
     final MutableInt rval = new MutableInt();
-    Misc.runUndoable(new Runnable() {
-        @Override
-        public void run() {
-          rval.setValue(op_do_addsub(command, Prenum1));
-        }
+    Misc.runUndoable(() -> {
+      rval.setValue(op_do_addsub(command, Prenum1));
     });
     return rval.getValue();
 }
@@ -4503,7 +4510,7 @@ op_do_addsub(char command, int Prenum1)
     if (doalp && ascii_isalpha(firstdigit))
     {
 	/* decrement or increment alphabetic character */
-	if (command == Util.ctrl('x'))
+	if (command == CTRL_X)
 	{
 	    if (CharOrd(firstdigit) < Prenum1)
 	    {
@@ -4561,7 +4568,7 @@ op_do_addsub(char command, int Prenum1)
 
 	/* add or subtract */
 	subtract = false;
-	if (command == Util.ctrl('x'))
+	if (command == CTRL_X)
 	    subtract ^= true;
 	if (negative)
 	    subtract ^= true;

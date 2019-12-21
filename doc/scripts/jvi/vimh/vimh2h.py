@@ -93,7 +93,11 @@ class VimH2H(object):
 
         tokens = my_deque()
         self.parser.parse(filename, contents, tokens, include_faq)
+        #print("================ TOKENS: \n")
+        #for t in tokens:
+        #    print("    ", t)
         ##### print 'NEEDS FILTERING:', tokens.f_needs_filter_scan
+
         self.builder.process(tokens)
 
         result = ''.join(self.builder.get_output())

@@ -36,17 +36,12 @@ public class BooleanAsCheckBoxPropertyEditor extends AbstractPropertyEditor {
     {
         editor = new JCheckBox();
         ((JCheckBox)editor).setOpaque(false);
-        ((JCheckBox)editor).addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                firePropertyChange(((JCheckBox)editor).isSelected()
+        ((JCheckBox)editor).addActionListener((ActionEvent e) -> {
+            firePropertyChange(((JCheckBox)editor).isSelected()
                         ? Boolean.FALSE : Boolean.TRUE,
-                                   ((JCheckBox)editor).isSelected() ? Boolean.TRUE
-                        : Boolean.FALSE);
-                ((JCheckBox)editor).transferFocus();
-            }
+                    ((JCheckBox)editor).isSelected()
+                            ? Boolean.TRUE : Boolean.FALSE);
+            ((JCheckBox)editor).transferFocus();
         });
     }
 

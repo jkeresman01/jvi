@@ -76,7 +76,7 @@ class Mark implements ViMark
         } else {
             // adapted from FPOS.set
             if (fpos.getLine() > buf.getLineCount()) {
-                this.pos = buf.INVALID_MARK_LINE;
+                this.pos = SwingBuffer.INVALID_MARK_LINE;
             } else {
                 int column = fpos.getColumn();
                 int startOffset = buf.getLineStartOffset(fpos.getLine());
@@ -153,7 +153,7 @@ class Mark implements ViMark
     public int getLine()
     {
         checkMarkUsable();
-        if (this.pos == buf.INVALID_MARK_LINE) {
+        if (this.pos == SwingBuffer.INVALID_MARK_LINE) {
             return buf.getLineCount() + 1;
         }
         return buf.getLineNumber(getDocOffset());
@@ -163,7 +163,7 @@ class Mark implements ViMark
     public int getColumn()
     {
         checkMarkUsable();
-        if (this.pos == buf.INVALID_MARK_LINE) {
+        if (this.pos == SwingBuffer.INVALID_MARK_LINE) {
             return 0;
         }
         MySegment seg = buf.getLineSegment(getLine());
@@ -175,7 +175,7 @@ class Mark implements ViMark
     public int getOffset()
     {
         checkMarkUsable();
-        if (this.pos == buf.INVALID_MARK_LINE) {
+        if (this.pos == SwingBuffer.INVALID_MARK_LINE) {
             return Integer.MAX_VALUE;
         }
         return buf.getLineStartOffsetFromOffset(getDocOffset()) + getColumn();

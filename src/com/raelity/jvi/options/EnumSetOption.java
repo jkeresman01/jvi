@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 import com.l2fprod.common.swing.renderer.DefaultCellRenderer;
 
 import com.raelity.jvi.core.Options;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  *
@@ -142,11 +143,11 @@ extends Option<EnumSet<S>>
                                 ? null : refNameEnumMap.get();
         if(map == null) {
             EnumSet<S> set = EnumSet.allOf(enumType);
-            map = new HashMap<String, S>(set.size());
+            map = new HashMap<>(set.size());
             for(S e : set) {
                 map.put(e.toString(), e);
             }
-            refNameEnumMap = new WeakReference<Map<String, S>>(map);
+            refNameEnumMap = new WeakReference<>(map);
         }
         return map;
     }
@@ -200,7 +201,7 @@ extends Option<EnumSet<S>>
             validateAnyType(val);
         }
 
-        public void validateAnyType(Object val) throws PropertyVetoException
+        public void validateAnyType(@NonNull Object val) throws PropertyVetoException
         {
             @SuppressWarnings("unchecked")
             EnumSetOption<S> esOpt = (EnumSetOption<S>)Options.getOption(name);

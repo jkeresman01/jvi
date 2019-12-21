@@ -364,7 +364,7 @@ class MagicRedo implements GetChar.ViMagicRedo
         preString = null;
         postString = null;
         try {
-            String s = null;
+            String s;
 
             // capture chars before the initial pos
             int off = initPos.getOffset() - 50;
@@ -414,11 +414,8 @@ class MagicRedo implements GetChar.ViMagicRedo
 
     private boolean haveInsertedChars()
     {
-        if(didMagic && state == State.s_off
-                && preString.match() && postString.match())
-            return true;
-        else
-            return false;
+        return didMagic && state == State.s_off
+                && preString.match() && postString.match();
     }
 
     private String getInsertedChars()
@@ -1057,13 +1054,12 @@ class MagicRedo implements GetChar.ViMagicRedo
             // HACK ALERT
             StackTraceElement[] stack = ex.getStackTrace();
             boolean skip = false;
-            for (int i = 0; i < stack.length; i++) {
-              String e = stack[i].toString();
-              if(stack[i].toString().contains("form.JavaCodeGenerator")) {
-                skip = true;
-                break;
-              }
-
+            for (StackTraceElement stack1 : stack) {
+                String e = stack1.toString();
+                if (stack1.toString().contains("form.JavaCodeGenerator")) {
+                    skip = true;
+                    break;
+                }
             } // END HACK ALERT
 
             if(!skip) {

@@ -33,9 +33,9 @@ import com.raelity.jvi.manager.ViManager;
  */
 public class PlayStatusDisplay implements ViStatusDisplay
 {
-    private JLabel generalStatus;
-    private JLabel strokeStatus;
-    private JLabel modeStatus;
+    private final JLabel generalStatus;
+    private final JLabel strokeStatus;
+    private final JLabel modeStatus;
     private boolean fFrozen;
     private int scrollCount;
 
@@ -144,12 +144,9 @@ public class PlayStatusDisplay implements ViStatusDisplay
             s00 = " "; // need this to keep the status bar from collapsing
         }
         final String s01 = s00;
-        ViManager.runInDispatch(false,
-                                new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        l00.setText(s01);
-                                    } });
+        ViManager.runInDispatch(false, () -> {
+            l00.setText(s01);
+        });
     }
 
 

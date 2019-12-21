@@ -48,11 +48,15 @@ import com.raelity.jvi.ViWindowNavigator;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
-import com.raelity.jvi.core.G;
+import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.TextView;
+import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.ViManager;
 
 import static com.raelity.jvi.manager.ViManager.cid;
+import com.raelity.jvi.options.DebugOption;
+import com.raelity.jvi.swing.SwingFactory;
+import java.util.logging.Level;
 
 /**
  * The vim algorithm for traversing windows with the ^W_^W style commands is
@@ -70,28 +74,35 @@ import static com.raelity.jvi.manager.ViManager.cid;
  * @author Ernie Rael <err at raelity.com>
  */
 public abstract class WindowTreeBuilder implements ViWindowNavigator {
-    private Set<ViAppView> toDo = new HashSet<ViAppView>();
-    private List<ViAppView> sorted = new ArrayList<ViAppView>();
-    private List<Node> roots = new ArrayList<Node>();
+    private Set<ViAppView> toDo = new HashSet<>();
+    private List<ViAppView> sorted = new ArrayList<>();
+    private List<Node> roots = new ArrayList<>();
     private boolean didTreeInit;
+    protected final DebugOption dbg;
 
     public WindowTreeBuilder(List<ViAppView> avs)
     {
+        dbg = (DebugOption)Options.getOption(Options.dbgWindowTreeBuilder);
         toDo.addAll(avs);
     }
 
     protected void initTree()
     {
-        if(didTreeInit)
+        if(didTreeInit) {
+            dbg.println(Level.FINE, "initTree: didTreeInit");
             return;
+        }
+
         didTreeInit = true;
 
         while(!toDo.isEmpty()) {
             Component c = windowForAppView(toDo.iterator().next());
             //allComps(c);
             Node root = buildTree(c);
-            if(G.dbgWindowTreeBuilder().getBoolean()) G.dbgWindowTreeBuilder().println(dumpTree(root).toString());
-            assert root != null;
+            if(dbg.getBoolean()) {
+                dbg.println(dumpTree(root).toString());
+                checkTreeRoot(root);
+            }
             if(root == null)
                 break;
             roots.add(root);
@@ -100,7 +111,6 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         assert toDo.isEmpty();
 
         sortRoots(); // top-to-bottom then left-to-right
-
         for (Node root : roots) {
             addToSorted(root);
         }
@@ -197,11 +207,11 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
 
             Rectangle cursorProjection = getProjectedCursorRectangle(
                                     dir.getOrientation(), currentNode);
-            if(G.dbgWindowTreeBuilder().getBoolean()) {
-                G.dbgWindowTreeBuilder().println("\ncurrentNode:" + dbgName(currentNode) + " "
+            if(dbg.getBoolean()) {
+                dbg.println("\ncurrentNode:" + dbgName(currentNode) + " "
                                   + getProjectedRectangle(dir.getOrientation(), currentNode));
-                G.dbgWindowTreeBuilder().println("cursor: " + cursorProjection);
-                G.dbgWindowTreeBuilder().println("jump Targets");
+                dbg.println("cursor: " + cursorProjection);
+                dbg.println("jump Targets");
                 for(Node n1 : nodes) {
                     System.err.println(dbgName(n1) + " "
                             + getProjectedRectangle(dir.getOrientation(), n1));
@@ -450,6 +460,83 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         return getProjectedRectangle(orientation, r);
     }
 
+    // ====================================================================
+
+    protected boolean checkTreeFailure;
+    private boolean checkTreeRoot(Node node)
+    {
+        checkTreeFailure = false;
+        checkTree(node);
+        return checkTreeFailure;
+    }
+
+    private void checkTree(Node n)
+    {
+        traverse(n,
+                 new Visitor()
+                 {
+                     @Override
+                     void visit(Node node)
+                     {
+                         if(node.isSplitter()) {
+                             checkSplitter(node);
+                         } else {
+                             checkEditor(node);
+                         }
+                     }
+                 });
+    }
+
+    protected void checkEditor(Node node) {
+    }
+
+    final protected Rectangle checkGetNodeRectangle(Node n)
+    {
+        return checkGetNodeRectangle(n.getPeer());
+    }
+
+    @SuppressWarnings("null")
+    final protected Rectangle checkGetNodeRectangle(Component _c)
+    {
+        Component c = _c;
+        JViewport viewport = SwingFactory.getViewport(c);
+        if(viewport != null)
+            c = viewport;
+        return SwingUtilities.convertRectangle(
+                c.getParent(), c.getBounds(), SwingUtilities.getRoot(c));
+    }
+
+    protected void checkSplitter(Node node) {
+        // Pos must be monotonic increasing
+        final Component root = SwingUtilities.getRoot(node.getPeer());
+        final Rectangle rootRect = root.getBounds();
+        rootRect.x = 0; rootRect.y = 0; // This is the base of all children
+        dbg.println("CheckTree: Root(%s) %s", cid(root), root.getBounds());
+        MutableInt lastChildPos = new MutableInt(-1);
+        final boolean isLeftRight = node.getOrientation()
+                == Orientation.LEFT_RIGHT;
+        node.getChildren().forEach((child) -> {
+            // CHECK SwingUtilities.isDescendingFrom?
+            Rectangle r = checkGetNodeRectangle(child);
+            dbg.println("CheckTree: Child(%s) %s", cid(child.getPeer()), r);
+            if(!rootRect.contains(r)) {
+                checkTreeFailure = true;
+                dbg.println("CheckTree: ERROR: %s doesn't contain %s",
+                        cid(root), cid(child));
+            }
+            int childPos = isLeftRight ? r.x : r.y;
+            if(childPos > lastChildPos.getValue()) {
+                lastChildPos.setValue(childPos);
+            } else {
+                checkTreeFailure = true;
+                dbg.println("CheckTree: ERROR: childPos(%d) <= prev(%d)",
+                        childPos, lastChildPos.getValue());
+            }
+        });
+    }
+
+    // ====================================================================
+
     private StringBuilder dumpTree()
     {
         StringBuilder sb = new StringBuilder();
@@ -457,7 +544,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         return sb;
     }
 
-    private void dumpTree(StringBuilder sb)
+    private void dumpTree(final StringBuilder sb)
     {
         for (Node node : roots) {
             sb.append("WindowTree for ").append(cid(node)).append('\n');
@@ -486,6 +573,8 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
                  });
     }
 
+    // ====================================================================
+
     private void addToSorted(Node n)
     {
         traverse(n, new Visitor()
@@ -510,8 +599,8 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         List<Node> ns = null; // only create if more than one child
         if(c instanceof Container) {
             Component components[] = ((Container)c).getComponents();
-            for (int i = 0; i < components.length; i++) {
-                Node n01 = buildTree(components[i]);
+            for (Component component : components) {
+                Node n01 = buildTree(component);
                 if(n01 != null) {
                     // avoid creating the array if possible
                     if(child == null && ns == null)
@@ -520,7 +609,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
                         // There's more than one child.
                         // Note order in component is maintained
                         if(ns == null)
-                            ns = new ArrayList<Node>(2);
+                            ns = new ArrayList<>(2);
                         if(child != null) {
                             ns.add(child);
                             child = null;
@@ -553,21 +642,16 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
     private void sortRoots()
     {
         //Collections.sort(roots, new CompareNodeLocations());
-        Collections.sort(roots, new Comparator<Node>()
-        {
-            @Override
-            public int compare(Node n1, Node n2)
-            {
-                // NEEDSWORK: use TOP LEVEL WINDOW location
-                Point w1 = getWindowLocation(n1.getPeer());
-                Point w2 = getWindowLocation(n2.getPeer());
-
-                int rv;
-                rv = w1.x != w2.x ? w1.x - w2.x : w1.y - w2.y;
-                // System.err.format("Comp rv %d\n    %s%s\n    %s%s\n",
-                //         rv, this, w1, o, w2);
-                return rv;
-            }
+        Collections.sort(roots, (Node n1, Node n2) -> {
+            // NEEDSWORK: use TOP LEVEL WINDOW location
+            Point w1 = getWindowLocation(n1.getPeer());
+            Point w2 = getWindowLocation(n2.getPeer());
+            
+            int rv;
+            rv = w1.x != w2.x ? w1.x - w2.x : w1.y - w2.y;
+            // System.err.format("Comp rv %d\n    %s%s\n    %s%s\n",
+            //         rv, this, w1, o, w2);
+            return rv;
         });
     }
 
@@ -602,8 +686,8 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
             ViManager.println("FOUND ONE");//return c;
         if(c instanceof Container) {
             Component components[] = ((Container)c).getComponents();
-            for (int i = 0; i < components.length; i++) {
-                Component c01 = allComps(components[i]);
+            for (Component component : components) {
+                Component c01 = allComps(component);
                 if(c01 != null)
                     return c01;
             }
@@ -889,7 +973,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
     {
         private boolean isEditor;
         private Orientation orientation;
-        private Component peer;
+        private final Component peer;
         Node parent;
         private List<Node> children;
 
@@ -908,6 +992,8 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
             for (Node child : children) {
                 child.parent = this;
             }
+            if(children.isEmpty())
+                dbg.println("WindowTreeBuilder: Splitter has no children");
         }
 
         public boolean isEditor()
@@ -991,7 +1077,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         // of the jump within the window targetNode we are jumping into.
         // For example, if jump UP then
         // in the group above pick the DOWN window.
-        List<Node> jumpTargets = new ArrayList<Node>();
+        List<Node> jumpTargets = new ArrayList<>();
         treeDownFindJumpTarget(dir.getOpposite(), to, jumpTargets);
         return jumpTargets;
     }
@@ -1011,12 +1097,12 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
             Node parent = node.getParent();
             if(parent == null)
                 break;
-            if(G.dbgWindowTreeBuilder().getBoolean())G.dbgWindowTreeBuilder().println("treeUp: " + dbgName(node));
+            if(dbg.getBoolean())dbg.println("treeUp: " + dbgName(node));
             if((found = pickSiblingForJump(dir, node)) != null)
                 break;
             node = parent;
         }
-        if(G.dbgWindowTreeBuilder().getBoolean())G.dbgWindowTreeBuilder().println("treeUp found: " + dbgName(found));
+        if(dbg.getBoolean())dbg.println("treeUp found: " + dbgName(found));
         return found;
     }
 
@@ -1080,7 +1166,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
      */
     private boolean towardsFirst(Direction dir)
     {
-        return dir == Direction.LEFT || dir == Direction.UP ? true : false;
+        return dir == Direction.LEFT || dir == Direction.UP;
     }
 
     protected void dumpWinAction(ActionEvent e, StringBuilder sb, boolean verbose)

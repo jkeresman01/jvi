@@ -144,7 +144,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
             displayOptions(eventArgs);
             return;
         }
-        LinkedList<String> args = new LinkedList<String>();
+        LinkedList<String> args = new LinkedList<>();
         // copy eventArgs into args, with possible fixup
         // ":set sw =4" is allowed, so if something starts with "="
         // then append it to the previous element
@@ -159,13 +159,9 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         for (String arg : args) {
             try {
                 parseSetOption(arg);
-            } catch (SetCommandException ex) {
-                // error message given
-                return;
-            } catch (IllegalAccessException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-                return;
-            } catch (IllegalArgumentException ex) {
+            } catch (SetCommandException | IllegalAccessException
+                    | IllegalArgumentException ex) {
+                // error message also given for SetCommandException
                 LOG.log(Level.SEVERE, null, ex);
                 return;
             }
@@ -269,14 +265,12 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
             split[2] = m.group(3);
             OP op = null;
             String sop = m.group(2);
-            if("=".equals(sop)) {
-                op = OP.ASS;
-            } else if("+=".equals(sop)) {
-                op = OP.ADD;
-            } else if("-=".equals(sop)) {
-                op = OP.SUB;
-            } else if("^=".equals(sop)) {
-                op = OP.PRE;
+            if(null != sop) switch (sop) {
+            case "=": op = OP.ASS; break;
+            case "+=": op = OP.ADD; break;
+            case "-=": op = OP.SUB; break;
+            case "^=": op = OP.PRE; break;
+            default: break;
             }
             split[1] = op;
 
@@ -316,13 +310,8 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
             voptState.f.setAccessible(true);
             voptState.type = voptState.f.getType();
             voptState.curValue = voptState.f.get(voptState.bag);
-        } catch(NoSuchFieldException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        } catch(SecurityException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        } catch(IllegalArgumentException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        } catch(IllegalAccessException ex) {
+        } catch(NoSuchFieldException | SecurityException
+                | IllegalArgumentException | IllegalAccessException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
 
@@ -350,7 +339,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
             if (!voptState.op.isShow()) {
                 newValue =
                         voptState.op.isInv()
-                        ? !((Boolean)voptState.curValue).booleanValue()
+                        ? !((Boolean)voptState.curValue)
                         : !voptState.op.isNo();
             }
 
@@ -410,10 +399,11 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                                     newValue = (Color)f.get(null);
                                     found = true;
                                 }
-                            } catch(IllegalArgumentException ex) {
-                            } catch(IllegalAccessException ex) {
-                            } catch(NoSuchFieldException ex) {
-                            } catch(SecurityException ex) { }
+                            } catch(IllegalArgumentException
+                                    | IllegalAccessException
+                                    | NoSuchFieldException
+                                    | SecurityException ex) {
+                            }
                         }
                         if(!found)
                             setCommandError("Not a color: " + voptState.inputValue);
@@ -425,7 +415,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                         // pretend the curValue is a string...
                         EnumSet oldCurValue = (EnumSet)voptState.curValue;
                         EnumSetOption esOpt = (EnumSetOption)voptState.opt;
-                        voptState.curValue = esOpt.encode(oldCurValue);
+                        voptState.curValue = EnumSetOption.encode(oldCurValue);
                         newValue = doStringAssignOp(arg, vopt, voptState);
                         voptState.curValue = oldCurValue;
                     }
@@ -559,7 +549,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         Object value = voptState.curValue;
         StringBuilder sb = new StringBuilder();
         if (boolean.class == voptState.type) {
-            sb.append(((Boolean)value).booleanValue() ? "  " : "no")
+            sb.append(((Boolean)value) ? "  " : "no")
               .append(vopt.fullName);
         } else {
             sb.append("  ").append(vopt.fullName).append('=');
@@ -589,8 +579,8 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     private static void displayOptions(List<String> eventArgs)
     {
         boolean all = eventArgs.size() == 1 && "all".equals(eventArgs.get(0));
-        List<String> l = new ArrayList<String>(50);
-        List<String> l2 = new ArrayList<String>();
+        List<String> l = new ArrayList<>(50);
+        List<String> l2 = new ArrayList<>();
         for (VimOption vopt : VimOption.getAllUser()) {
             VimOptionState voptState = determineOptionState(vopt, null);
             boolean isDefaultValue = false;
@@ -604,30 +594,29 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                 (s.length() < INC - GAP ? l : l2).add(s);
             }
         }
-        ViOutputStream osa =
-                ViManager.createOutputStream(null, ViOutputStream.OUTPUT, null);
-        int cols = COL / INC;
-        int rows = (l.size() + cols - 1) / cols;
-        StringBuilder sb = new StringBuilder(85);
-        osa.println("");
-
-        for(int row = 0; row < rows; row++) {
-            for(int i = row; i < l.size(); i += rows) {
-                String s = l.get(i);
-                sb.append(s);
-                for(int j = s.length(); j < INC; j++) {
-                    sb.append(' ');
+        try (ViOutputStream osa = ViManager.createOutputStream(
+                        null, ViOutputStream.OUTPUT, null)) {
+            int cols = COL / INC;
+            int rows = (l.size() + cols - 1) / cols;
+            StringBuilder sb = new StringBuilder(85);
+            osa.println("");
+            
+            for(int row = 0; row < rows; row++) {
+                for(int i = row; i < l.size(); i += rows) {
+                    String s = l.get(i);
+                    sb.append(s);
+                    for(int j = s.length(); j < INC; j++) {
+                        sb.append(' ');
+                    }
                 }
+                osa.println(sb.toString());
+                sb.setLength(0);
             }
-            osa.println(sb.toString());
-            sb.setLength(0);
+            
+            for(String s : l2) {
+                osa.println(s);
+            }
         }
-
-        for(String s : l2) {
-            osa.println(s);
-        }
-
-        osa.close();
     }
     
     /**
@@ -680,9 +669,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         VimOptionState voptState = determineOptionState(vopt, null);
         try {
             voptState.f.set(bag, voptState.curValue);
-        } catch (IllegalArgumentException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
+        } catch (IllegalArgumentException | IllegalAccessException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
     }

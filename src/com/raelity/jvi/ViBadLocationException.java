@@ -26,6 +26,7 @@ package com.raelity.jvi;
  * @author Ernie Rael <err at raelity.com>
  */
 public class ViBadLocationException extends Exception {
+    final private int offs;
     /**
      * Creates a new ViBadLocationException object.
      * 
@@ -51,6 +52,4 @@ public class ViBadLocationException extends Exception {
     public int offsetRequested() {
 	return offs;
     }
-
-    private int offs;
 }

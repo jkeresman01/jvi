@@ -36,7 +36,7 @@ public class RegExpPatternError extends Error {
   // Everything's handled by the new Java 1.4 throwable architeture
   // Simply delegate the constructors.
   
-  private int index;
+  private final int index;
 
   RegExpPatternError(String msg, int idx, Throwable cause) {
     super(msg, cause);

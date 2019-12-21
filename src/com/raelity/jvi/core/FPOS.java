@@ -68,7 +68,7 @@ class FPOS extends ViFPOS.abstractFPOS
      */
     FPOS(Buffer buf)
     {
-        rBuf = new WeakReference<Buffer>(buf);
+        rBuf = new WeakReference<>(buf);
     }
 
     /** Used to make a copy. */

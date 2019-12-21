@@ -37,6 +37,7 @@ import com.raelity.jvi.manager.ViManager;
 import static com.raelity.jvi.core.Edit.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
 
 /**
@@ -550,7 +551,7 @@ public class Misc01
                 win_size(SIZOP.ADJUST, Orientation.UP_DOWN, Prenum, false);
                 break;
             case '_':
-            case '_' & 0x1f:            // Ctrl
+            case CTRL_Underbar:
                 win_size(SIZOP.SET, Orientation.UP_DOWN, Prenum, false);
                 break;
             case '<':
@@ -566,18 +567,18 @@ public class Misc01
             // split current window in two parts
             case 'S':
             case 's':
-            case 'S' & 0x1f:          // Ctrl
+            case CTRL_S:
                 win_split(Orientation.UP_DOWN, Prenum, null);
                 break;
 
             case 'v':
-            case 'V' & 0x1f:          // Ctrl
+            case CTRL_V:
                 win_split(Orientation.LEFT_RIGHT, Prenum, null);
                 break;
 
             // close current window
             case 'c':
-            case 'C' & 0x1f:
+            case CTRL_C:
                 GetChar.stuffReadbuff(":close\n");
                 break;
 
@@ -589,13 +590,13 @@ public class Misc01
                 break;
 
             // quit current window */
-            case 'Q' & 0x1f:
+            case CTRL_Q:
             case 'q':
                 G.curwin.win_quit();
                 break;
 
             // cursor to next window with wrap around
-            case 'W' & 0x1f:
+            case CTRL_W:
             case 'w':
                 ok = win_jump_forw(AppViews.ALL, Prenum);
                 break;
@@ -606,7 +607,7 @@ public class Misc01
                 break;
 
             // cursor to next nomadic editor with wrap around
-            case 'E' & 0x1f:
+            case CTRL_E:
             case 'e':
                 ok = win_jump_forw(AppViews.NOMAD, Prenum);
                 break;
@@ -622,14 +623,14 @@ public class Misc01
 
             // cursor to window below
             case K_DOWN:
-            case 'J' & 0x1f:
+            case CTRL_J:
             case 'j':
                 ok = win_jump(Direction.DOWN, Prenum);
                 break;
 
             // cursor to window above
             case K_UP:
-            case 'K' & 0x1f:
+            case CTRL_K:
             case 'k':
                 ok = win_jump(Direction.UP, Prenum);
                 break;
@@ -637,33 +638,33 @@ public class Misc01
             // cursor to left window
             case K_LEFT:
             case K_BS:
-            case 'H' & 0x1f:
+            case CTRL_H:
             case 'h':
                 ok = win_jump(Direction.LEFT, Prenum);
                 break;
 
             // cursor to right window
             case K_RIGHT:
-            case 'L' & 0x1f:
+            case CTRL_L:
             case 'l':
                 ok = win_jump(Direction.RIGHT, Prenum);
                 break;
 
             // cursor to top-left window
             case 't':
-            case 'T' & 0x1f:
+            case CTRL_T:
                 ok = win_jump_to(AppViews.ALL, 1); // firstwin
                 break;
 
             // cursor to bottom-right window
             case 'b':
-            case 'B' & 0x1f:
+            case CTRL_B:
                 ok = win_jump_to(AppViews.ALL, Integer.MAX_VALUE); // lastwin
                 break;
 
             // cursor to last accessed (previous) window
             case 'p':
-            case 'P' & 0x1f:
+            case CTRL_P:
                 // Handle like :e#
                 ViAppView av = AppViews.getMruAppView(1);
                 ok = av != null ? ViManager.getFS().edit(av, false) : false;

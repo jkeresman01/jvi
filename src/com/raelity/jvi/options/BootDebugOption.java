@@ -58,31 +58,32 @@ public class BootDebugOption extends DebugOption {
     }
 
     @Override
-    public void println(String s)
+    public void println(String msg, Object... args)
     {
-        if(v)
-            System.err.println(s);
+        if(!v)
+            return;
+        String s = args.length == 0 ? msg : String.format(msg, args);
+        System.err.println(s);
     }
 
     @Override
-    public void println(Level level, String s)
+    public void println(Level level, String msg, Object... args)
     {
-        if(v)
-            System.err.println(s);
+        println(msg, args);
     }
 
     @Override
     public void printf(String format, Object... args)
     {
-        if(v)
-            System.err.printf(format, args);
+        if(!v)
+            return;
+        System.err.printf(format, args);
     }
 
     @Override
     public void printf(Level level, String format, Object... args)
     {
-        if(v)
-            System.err.printf(format, args);
+        printf(format, args);
     }
 
     @Override
