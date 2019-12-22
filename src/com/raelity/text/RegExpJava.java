@@ -68,7 +68,7 @@ public class RegExpJava extends RegExp
     public boolean search(String input, int start) {
         Matcher m = pat.matcher(input);
         matched = m.find();
-        result = new RegExpResultJava(matched ? m : null);
+        result = new RegExpResultJava(m, matched);
         return matched;
     }
 
@@ -80,7 +80,7 @@ public class RegExpJava extends RegExp
         m.useAnchoringBounds(false); //so /^ only matches beginning of line
         //m.useTransparentBounds(true);
         matched = m.find();
-        result = new RegExpResultJava(matched ? m : null);
+        result = new RegExpResultJava(m, matched);
         //System.err.println(matched ? " FOUND: " + start(0) + "," + stop(0):"");
         if(start(0) >= start + len) {
             //System.err.println("OUCH");

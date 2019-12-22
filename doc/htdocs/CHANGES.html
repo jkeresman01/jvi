@@ -87,15 +87,25 @@
   <dd>
     <ul>
       <li>
+        In <span class="tt">:substitute</span>,
+        avoid NPE when impossible backref or no match backref.
+      </li>
+      <li>
+        In <span class="tt">Ctrl-W</span> navigation avoid NPE when no splitter
+        or single TC in splitter.
+      </li>
+      <li>
         Rework font check handling. Avoid message about special chars
         when option "no check special chars".
       </li>
       <li>
         Fix command line completion handling
-        when alternating between a command name and e#.
+        when dynamically alternating between a <span class="tt">:command</span>
+        name and <span class="tt">:e#</span>.
       </li>
       <li>
-        Ctrl-W navigation commands can mess up. Change introduced in NB 8.2
+        <span class="tt">Ctrl-W</span> navigation commands can mess up.
+        Change introduced in NB 8.2
         and mostly accommodated; but this one slipped by.
       </li>
       <li>

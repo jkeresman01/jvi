@@ -313,7 +313,7 @@ public class Search01 {
    * @param hasEscape if true, then escape processing is needed on <i>subs</i>.
    * @return number of changes on the line
    */
-  static int substitute_line(RegExp prog,
+  private static int substitute_line(RegExp prog,
                              int lnum,
                              MutableInt flags,
                              CharSequence subs)
@@ -430,7 +430,7 @@ public class Search01 {
    * @param sb append substitution to here
    * @param subs substitution string, contains escape characters
    */
-  static CharSequence translateSubstitution(RegExp prog,
+  private static CharSequence translateSubstitution(RegExp prog,
                                    MySegment line,
                                    StringBuffer sb,
                                    CharSequence subs)
@@ -467,7 +467,9 @@ public class Search01 {
               case '8':
               case '9':
                 int group = c - '0';
-                sb.append(line.array, prog.start(group), prog.length(group));
+                // as vim, impossible backref or backref didn't match are empty
+                if(group <= prog.nGroup() && prog.group(group) != null)
+                  sb.append(line.array, prog.start(group), prog.length(group));
                 break;
               case 'n':
                 // Treat \n like \r, add a newline to the file.
