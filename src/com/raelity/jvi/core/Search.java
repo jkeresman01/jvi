@@ -43,6 +43,8 @@ import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Searching, regexp and substitution.
@@ -964,6 +966,20 @@ finished:
   }
 
   private static final int ESCAPED_FLAG = 0x10000;
+  final public static String VERY_MAGIC = "";
+  final public static String MAGIC         = "()|+?{";
+  final public static String NO_MAGIC      = MAGIC + ".*[";
+  final public static String VERY_NO_MAGIC = NO_MAGIC + "^$";
+
+  final private static Map<String, String> magicMap = getMagicMap();
+  final private static Map<String, String> getMagicMap() {
+    Map<String, String> map = new HashMap<>(4);
+    map.put("vm", VERY_MAGIC);
+    map.put("m", MAGIC);
+    map.put("nm", NO_MAGIC);
+    map.put("vnm", VERY_NO_MAGIC);
+    return map;
+  }
   /**
    * Change metacharacter escaping of input pattern to match
    * the perl5 requirements. Do this because non-standard metachars
@@ -992,55 +1008,91 @@ finished:
   private static String cleanupPattern(String s, MutableInt flags,
                                        boolean isClean) {
     flags.setValue(0);
-    String metacharacterEscapes = isClean ? "" : G.p_rem;
-    boolean req = isClean ? false : G.p_req;
     StringBuilder sb = new StringBuilder();
-    boolean isEscaped = false;
-    boolean hasUpper = false;
+    boolean isEscaped = false; // set when '\' found, applies to next char
+
+    String metacharacterEscapes;
+    if(isClean)
+      metacharacterEscapes = "";
+    else
+      metacharacterEscapes = magicMap.get(G.p_magic);
+
+    // boolean escapeQuestion = metacharacterEscapes.indexOf('?') >= 0;
+
     for(int in = 0; in < s.length(); in++) {
       char c = s.charAt(in);
       if( ! isEscaped && c == '\\') {
         isEscaped = true;
         continue;
       }
-      
-      if((c == '=') && req) {
-        // Have an '=' and that char is used to specify an optional atom.
-        // Set useEscape if the '=' needs to be escaped to mean optional.
-        boolean useEscape = metacharacterEscapes.indexOf('?') >= 0;
-        if(isEscaped && useEscape
-           || !isEscaped && !useEscape) {
-          // the '=' is intened to indicated an optional atom,
-          // convert it to a '?'
-          c = '?';
+      CHAR: {
+        // if((c == '=') && req)
+        //   c = possiblyConvertEqualToQuestion(isEscaped, escapeQuestion);
+        if(metacharacterEscapes.indexOf(c) >= 0) { // metachar gets escaped
+          // reverse of what was seen
+          if( ! isEscaped) {
+            sb.append("\\");
+          }
+          sb.append(c);
+          break CHAR;
         }
-      }
-      if(metacharacterEscapes.indexOf(c) >= 0) { // metachar gets escaped
-        // reverse of what was seen
-        if( ! isEscaped) {
-          sb.append("\\");
+        if(isEscaped) { // can/should probably add ' && !isClean'. \<,\> ???
+          // check if it's special for pattern handling
+          switch(c) {
+          case '<':
+          case '>':
+            sb.append("\\b");
+            break CHAR;
+          case 'c':
+            flags.setBits(FORCE_CASE_IGNORE);
+            break CHAR;
+          case 'C':
+            flags.setBits(FORCE_CASE_EXACT);
+            break CHAR;
+          case 'v':
+            metacharacterEscapes = magicMap.get(Options.MESC_VERY_MAGIC);
+            break CHAR;
+          case 'm':
+            metacharacterEscapes = magicMap.get(Options.MESC_MAGIC);
+            break CHAR;
+          case 'M':
+            metacharacterEscapes = magicMap.get(Options.MESC_NO_MAGIC);
+            break CHAR;
+          case 'V':
+            metacharacterEscapes = magicMap.get(Options.MESC_VERY_NO_MAGIC);
+            break CHAR;
+          }
+          // FALL THROUGH
         }
-        sb.append(c);
-      } else if(isEscaped && (c == '<' || c == '>')) {
-        sb.append("\\b");
-      } else if(isEscaped && c == 'c') {
-        flags.setBits(FORCE_CASE_IGNORE);
-      } else if(isEscaped && c == 'C') {
-        flags.setBits(FORCE_CASE_EXACT);
-      } else {
-        // pass through what was seen
+        // pass through what was seen, possibly escaped
         if(isEscaped) {
           sb.append("\\");
         } else {
-            if(Character.isUpperCase(c))
-                flags.setBits(HAS_UPPER);
+          // do clean patterns take advantage of this?
+          if(Character.isUpperCase(c))
+            flags.setBits(HAS_UPPER);
         }
         sb.append(c);
       }
       isEscaped = false;
     }
+    System.err.printf("PATTERN: magic: %s, in %s, out %s\n", G.p_magic, s, sb);
     return sb.toString();
   }
+
+  // private static char possiblyConvertEqualToQuestion(
+  //         boolean isEscaped, boolean escapeQuestion) {
+  //   // Have an '=' and that char is used to specify an optional atom.
+  //   // Set useEscape if the '=' needs to be escaped to mean optional.
+  //   //boolean useEscape = metacharacterEscapes.indexOf('?') >= 0;
+  //   if(isEscaped && escapeQuestion
+  //           || !isEscaped && !escapeQuestion) {
+  //     // the '=' is intened to indicated an optional atom,
+  //     // convert it to a '?'
+  //     return '?';
+  //   }
+  //   return '='; // don't change it
+  // }
 
   static String top_bot_msg = "search hit TOP, continuing at BOTTOM";
   static String bot_top_msg = "search hit BOTTOM, continuing at TOP";

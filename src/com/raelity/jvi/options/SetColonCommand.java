@@ -159,8 +159,9 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         for (String arg : args) {
             try {
                 parseSetOption(arg);
-            } catch (SetCommandException | IllegalAccessException
-                    | IllegalArgumentException ex) {
+            } catch (SetCommandException ex) {
+                return;
+            } catch( IllegalAccessException | IllegalArgumentException ex) {
                 // error message also given for SetCommandException
                 LOG.log(Level.SEVERE, null, ex);
                 return;

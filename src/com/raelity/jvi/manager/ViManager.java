@@ -52,6 +52,7 @@ import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Hook;
 import com.raelity.jvi.core.Options;
+import com.raelity.jvi.core.Search;
 import com.raelity.jvi.core.lib.CcFlag;
 import java.util.Map.Entry;
 
@@ -85,7 +86,7 @@ public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("1.5.5.x8");
+    public static final jViVersion version = new jViVersion("1.5.6.x0");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -649,15 +650,39 @@ public class ViManager
       // some changes (poorly thought out) require fixups in preferences
       private static void fixupPreferences() {
         Preferences prefs = getFactory().getPreferences();
-        String t = prefs.get(Options.commandEntryFrame, "xxx");
+
+        String t = prefs.get(Options.commandEntryFrame, "xyzzy");
         // if the pref hasn't been set, then nothing to do
-        if(!t.equals("xxx")) {
+        if(!t.equals("xyzzy")) {
             // something is set.
             // If it is a boolean, old school, then force it back to default.
             // Could map false to "Glass Pane", but time try modal again
             if(t.equalsIgnoreCase("true")
                     || t.equalsIgnoreCase("false"))
                 prefs.remove(Options.commandEntryFrame);
+        }
+
+        // If metaEscape was never set, then nothing to do.
+        // The default for Options.magic will be used
+        t = prefs.get(Options.metaEscape, "xyzzy");
+        if(!t.equals("xyzzy")) {
+            // boolean equalsMetaEscape = true;
+            // metaEscape was set by the user
+
+            // If the string is shorter than default,
+            // then assume very magic. Otherwise let
+            // the default kick in
+            if(t.length() < Search.MAGIC.length()) {
+                // assume very magic
+                prefs.put(Options.magic, Options.MESC_VERY_MAGIC);
+            }
+            // else if(!t.equals(Search.MAGIC)) {
+            //     for(int i = 0; i < t.length(); i++) {
+            //         if(!Search.MAGIC.contains(t.substring(i, i+1)))
+            //             equalsMetaEscape = false;
+            //     }
+            // }
+            prefs.remove(Options.metaEscape); // should never get here again
         }
       }
 

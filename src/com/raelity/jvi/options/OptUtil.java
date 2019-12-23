@@ -330,6 +330,8 @@ public class OptUtil {
         // G should have something with the var name
         // and the types should match
         Option opt = OptUtil.getOption(vopt.getOptName());
+        if(     G.dbgOptions().getBoolean())
+                G.dbgOptions().println("VERIFY: " + vopt.getOptName());
         Field f = G.class.getDeclaredField(vopt.getVarName());
         if(f.getType() == int.class)
           opt.getInteger();
@@ -337,8 +339,6 @@ public class OptUtil {
           opt.getBoolean();
         else if(f.getType() == String.class)
           opt.getString();
-        if(     G.dbgOptions().getBoolean())
-                G.dbgOptions().println("VERIFY: " + vopt.getOptName());
       } catch(NoSuchFieldException | SecurityException ex) {
         Logger.getLogger(VimOption.class.getName()).log(Level.SEVERE, null, ex);
       }

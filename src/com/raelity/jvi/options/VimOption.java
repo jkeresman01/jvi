@@ -210,8 +210,6 @@ new VimOption("modelines",   "mls",  Options.modelines,       S.P_GBL, nullF),
 new VimOption("number",      "nu",   Options.number,          S.P_WIN, nullF),
 new VimOption("nrformats",   "nf",   Options.nrFormats,       S.P_BUF, EnumSet.of(F.COMMA, F.NODUP)),
 new VimOption("platformbrace","pbm", Options.platformBraceMatch,S.P_GBL,EnumSet.of(F.HIDE)),
-new VimOption("remetaescape","rem",  Options.metaEscape,      S.P_GBL, EnumSet.of(F.FLAGLIST)),
-new VimOption("remetaequals","req",  Options.metaEquals,      S.P_GBL, EnumSet.of(F.HIDE)),
 new VimOption("report",      "",     Options.report,          S.P_GBL, nullF),
 new VimOption("rocursorcolor","rocc",Options.roCursorColor,   S.P_GBL, nullF),
 new VimOption("scroll",      "scr",  Options.scroll,          S.P_WIN, nullF),
@@ -263,6 +261,7 @@ new VimOption("readOnlyHack","",     Options.readOnlyHack,     S.P_GBL, EnumSet.
 new VimOption("redoTrack",   "",     Options.redoTrack,        S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 new VimOption("useFrame",    "",     Options.commandEntryFrame,S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 new VimOption("viminfoMaxBuf","",    Options.persistedBufMarks,S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
+new VimOption("magic",   "magic",    Options.magic,            S.P_GBL, nullF),
 };
 
 
@@ -271,7 +270,7 @@ new VimOption("viminfoMaxBuf","",    Options.persistedBufMarks,S.P_GBL, EnumSet.
             = new HashMap<String, VimOption>(capacity(vopts.length));
     final private static Map<String, VimOption> mapVarName
             = new HashMap<String, VimOption>(capacity(vopts.length));
-
+    
     final private static Map<String, VimOption> mapUserName
             = new HashMap<String, VimOption>(capacity(2 * vopts.length));
     static {
@@ -283,7 +282,11 @@ new VimOption("viminfoMaxBuf","",    Options.persistedBufMarks,S.P_GBL, EnumSet.
 
             assert !mapUserName.containsKey(vopt.getFullName());
             mapUserName.put(vopt.getFullName(), vopt);
-            if(!vopt.getShortName().isEmpty()) {
+            if(!vopt.getShortName().isEmpty()
+                    && !vopt.getFullName().equals(vopt.getShortName())) {
+                if(mapUserName.containsKey(vopt.getShortName())) {
+                    System.err.println("VimOption VERIFY: " + vopt.getShortName());
+                }
                 assert !mapUserName.containsKey(vopt.getShortName());
                 mapUserName.put(vopt.getShortName(), vopt);
             }

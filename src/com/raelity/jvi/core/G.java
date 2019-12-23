@@ -268,6 +268,8 @@ public class G implements ViOptionBag
     static boolean p_is;
     // joinspaces, 2 spaces after .?!
     static boolean p_js;
+    // search magic
+    static String p_magic;
     // modeline
     static boolean p_ml;
     // modelines

@@ -414,6 +414,15 @@ implements Options.EditControl {
         return ViManager.getReleaseString();
     }
 
+    public void setViAaSearchMagic(String arg)
+    throws PropertyVetoException {
+        put(Options.magic, arg);
+    }
+
+    public String getViAaSearchMagic() {
+	return getString(Options.magic);
+    }
+
     public void setViVisualBellColor(Color arg)  throws PropertyVetoException {
         put(Options.visualBellColor, arg);
     }
@@ -967,22 +976,6 @@ implements Options.EditControl {
 
     public boolean getViWrapScan() {
 	return getboolean("viWrapScan");
-    }
-
-    public void setViMetaEquals(boolean arg) {
-        put("viMetaEquals", arg);
-    }
-
-    public boolean getViMetaEquals() {
-	return getboolean("viMetaEquals");
-    }
-
-    public void setViMetaEscape(String arg) throws PropertyVetoException {
-        put("viMetaEscape", arg);
-    }
-
-    public String getViMetaEscape() {
-	return getString("viMetaEscape");
     }
 
     public void setViIgnoreCase(boolean arg) {

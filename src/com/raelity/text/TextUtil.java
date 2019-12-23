@@ -33,6 +33,10 @@ import javax.swing.text.Segment;
 public class TextUtil {
     
     private TextUtil() { }
+
+    public static String sf(String fmt, Object... args) {
+        return String.format(fmt, args);
+    }
     
     /** Split a string into a vector of words. White space is used
      * for the delimeters, " \t\n\r".

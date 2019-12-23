@@ -50,6 +50,7 @@ import com.raelity.text.TextUtil.MySegment;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Constants.FDO.*;
 import static com.raelity.jvi.core.lib.Constants.NF.*;
+import static com.raelity.text.TextUtil.sf;
 import javax.swing.event.ChangeListener;
 
 /**
@@ -157,6 +158,7 @@ public final class Options {
   public static final String wrapScan = "viWrapScan";
   public static final String isKeyWord = "viIsKeyWord";
 
+  public static final String magic = "viAaSearchMagic";
   public static final String metaEquals = "viMetaEquals";
   public static final String metaEscape = "viMetaEscape";
   public static final String incrSearch = "viIncrSearch";
@@ -251,6 +253,15 @@ public final class Options {
   public static final String CEF_DOC_MODAL = "Document Modal";
   public static final String CEF_GLASS_PANE = "Glass Pane";
   
+  public static final String MSG_VERY_MAGIC = "Very Magic";
+  public static final String MSG_MAGIC = "Magic";
+  public static final String MSG_NO_MAGIC = "No Magic";
+  public static final String MSG_VERY_NO_MAGIC = "Very No Magic";
+  
+  public static final String MESC_VERY_MAGIC = "vm";
+  public static final String MESC_MAGIC = "m";
+  public static final String MESC_NO_MAGIC = "nm";
+  public static final String MESC_VERY_NO_MAGIC = "vnm";
   
 
   private static boolean didInit = false;
@@ -451,16 +462,22 @@ public final class Options {
     OptUtil.createBooleanOption(autoPopupFN, true);
     OptUtil.setupOptionDesc(Category.PLATFORM, autoPopupFN,
                             "\":e#\" Completion Auto Popup",
-               "When doing \":\" command line entry, if \"e#\" is"
-               + " entered then automatically popup a file"
-               + " name completion window.");
+                "When doing \":\" command line entry, if \"e#\" is"
+                + " entered then automatically popup a file"
+                + " name completion window."
+                + "\n\nNOTE: Otherwise use Ctrl-D, and/or platform specific"
+                + " key sequence, to pop up the completion window."
+    );
     
     OptUtil.createBooleanOption(autoPopupCcName, true);
     OptUtil.setupOptionDesc(Category.PLATFORM, autoPopupCcName,
                             "\":\" Command Completion Auto Popup",
-               "After doing \":\" for command line entry,"
-               + " automatically popup command"
-               + " name completion.");
+                "After doing \":\" for command line entry,"
+                + " automatically popup command"
+                + " name completion."
+                + "\n\nNOTE: Otherwise use Ctrl-D, and/or platform specific"
+                + " key sequence, to pop up the completion window."
+    );
     setExpertHidden(autoPopupCcName, false, false);
 
     OptUtil.createBooleanOption(coordSkip, true);
@@ -810,6 +827,28 @@ public final class Options {
     // Vi searching options
     //
     //
+    
+    final String fmtMagic
+            = "\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0%s - %s: %s\n";
+    OptUtil.createEnumStringOption(magic , MESC_MAGIC,
+            new String[] {MESC_VERY_MAGIC, MESC_MAGIC,
+              MESC_NO_MAGIC, MESC_VERY_NO_MAGIC});
+    OptUtil.setupOptionDesc(Category.SEARCH, magic,
+            "Search magic",
+            " NOTE: Use \\v, \\m, \\M, \\V within a pattern"
+            + " to switch handling for that pattern."
+            + " This option specifies which characters need to be escaped in"
+            + " a search (regular expression) pattern by default.\n"
+            + sf(fmtMagic, MESC_VERY_MAGIC, MSG_VERY_MAGIC,
+                    "None - pass through to reg exp engine")
+            + sf(fmtMagic, MESC_MAGIC, MSG_MAGIC,
+                    Search.MAGIC)
+            + sf(fmtMagic, MESC_NO_MAGIC, MSG_NO_MAGIC,
+                    Search.NO_MAGIC)
+            + sf(fmtMagic, MESC_VERY_NO_MAGIC, MSG_VERY_NO_MAGIC,
+                    Search.VERY_NO_MAGIC)
+            + "See jVi pattern docs for more information."
+    );
 
     OptUtil.createBooleanOption(incrSearch, true);
     OptUtil.setupOptionDesc(Category.SEARCH, incrSearch, "'incsearch' 'is'",
@@ -852,35 +891,8 @@ public final class Options {
 		  "Use the platform/IDE for brace matching"
                   + " and match highlighting. This may enable additional"
                   + " match characters, words and features.");
+    setExpertHidden(platformBraceMatch, true, false);
     
-    OptUtil.createBooleanOption(metaEquals, true);
-    OptUtil.setupOptionDesc(Category.SEARCH, metaEquals, "'reMetaEquals' 'req'",
-            "In a regular expression allow"
-            + " '=', in addition to '?', to indicate an optional atom.");
-    setExpertHidden(metaEquals, true, false);
-
-    OptUtil.createStringOption(metaEscape, G.metaEscapeDefault,
-            new Validator<String>() {
-            @Override
-              public void validate(String val) throws PropertyVetoException {
-		for(int i = 0; i < val.length(); i++) {
-		  if(G.metaEscapeAll.indexOf(val.charAt(i)) < 0) {
-                    reportPropertyVetoException(
-                             "Only characters from '" + G.metaEscapeAll
-                             + "' are RE metacharacters."
-                             + " Not '" + val.substring(i,i+1) + "'.",
-                             val);
-		  }
-		}
-              }
-            });
-    OptUtil.setupOptionDesc(Category.SEARCH, metaEscape, "'reMetaEscape' 'rem'",
-            "Regular expression metacharacters requiring escape;"
-            + " Any of: '(', ')', '|', '+', '?', '{'."
-            + " By default vim requires escape, '\\', for these characters."
-            + "\njVi only.");
-    setExpertHidden(metaEscape, true, false);
-
     OptUtil.createStringOption(isKeyWord, "@,48-57,_,192-255",
             new Validator<String>() {
             @Override

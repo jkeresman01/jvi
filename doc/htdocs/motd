@@ -6,7 +6,7 @@
 #       -Dcom.raelity.jvi.motd=file:///c:/a/src/jvi-dev/jvi/doc/htdocs/motd
 
 motd-version: 1
-jVi-release: 1.5.4
+jVi-release: 1.6
 #jVi-release-link:  http://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-7.0/nbvi-1.4.zip/download
 
 #jVi-beta: 1.5.0.x2
@@ -19,9 +19,14 @@ jVi-download-target: http://sourceforge.net/projects/jvi/files/jvi/
 # They are displayed in the order they are given.
 # There may be any number of lines before the <EOT>
 motd-message:
-Install "jVi for Netbeans 7.0 Update Center" with Tools>Plugins>AvailablePlugins
-(source: Plugin Portal, category: editing)
-* see CHANGES about:
+Install "jVi for Netbeans Update Center" Plugin (NB-11.0 and later)
+<EOT>
+motd-link: http://jvi.sourceforge.net/?CHANGES.html
+See jVi recent features and CHANGES at website including
+<EOT>
+#* see CHANGES about:
+motd-message:
+*     1.6.x: :tab* commands, magic option and \v,\m... for searching
 *     1.5.x: fold commands & fdo option, smarter scrolling, visual bell option
 *     split, resize and move window commands, e.g. Ctrl-W_s, Ctrl-W_=, Ctrl-W_L
 *     multi-char {lhs} mappings, including insert mode, w/timeout options
@@ -34,9 +39,9 @@ Install "jVi for Netbeans 7.0 Update Center" with Tools>Plugins>AvailablePlugins
 # * http://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-7.0/eaUC/catalog.xml.gz
 # <EOT>
 
-motd-link: http://jvi.sourceforge.net/?CHANGES.html
-See jVi recent features and CHANGES at website.
-<EOT>
+#motd-link: http://jvi.sourceforge.net/?CHANGES.html
+#See jVi recent features and CHANGES at website
+#<EOT>
 
 motd-link: https://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/
 All jVi download files
