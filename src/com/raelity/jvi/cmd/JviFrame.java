@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.cmd;
 
+import com.raelity.jvi.ViTextView.Orientation;
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -40,7 +41,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.border.BevelBorder;
@@ -53,10 +53,8 @@ public class JviFrame extends JFrame
      */
     public static boolean SystemExitOnCloseFrame = true;
 
-    protected PlayEditorPane editorPane;
-    protected JScrollPane scrollPane;
     protected JButton optionsButton;
-    protected AbstractButton jviButton;
+    AbstractButton jviButton;
     protected JLabel generalStatusBar, strokeStatusBar, modeStatusBar;
     protected JLabel cursorStatusBar;
     protected PlayStatusDisplay statusDisplay;
@@ -81,24 +79,6 @@ public class JviFrame extends JFrame
                     + " thrown by JviFrame():  " + e.getMessage() );
             e.printStackTrace();
         }
-    }
-
-
-    /**
-     *  Return the PlayEditorPane used by this JviFrame.
-     */
-    public PlayEditorPane getEditor()
-    {
-        return editorPane;
-    }
-
-
-    /**
-     *  Return the JScrollPane used by this JviFrame's editor.
-     */
-    public JScrollPane getScrollPane()
-    {
-        return scrollPane;
     }
 
     public PlayStatusDisplay getStatusDisplay() {
@@ -154,9 +134,8 @@ public class JviFrame extends JFrame
             //jviButton.setContentAreaFilled(false);
             jviButton.setFocusPainted(false);
             jviButton.setPreferredSize(new Dimension(24, 24));
-            jviButton.addActionListener((ActionEvent e) -> {
-                editorPane.setEditable(jviButton.isSelected());
-            });
+            // was: ()->editorPane.setEditable(jviButton.isSelected());
+            jviButton.addActionListener(Util::setCurrentEditable);
         } else {
             jviButton = new JButton(jvi_off);
             jviButton.setSelectedIcon(jvi_on);
@@ -172,8 +151,8 @@ public class JviFrame extends JFrame
         System.err.println("jviButton isContentAreaFilled: "
                 + jviButton.isContentAreaFilled());
 
-        JPanel jPanel1 = new JPanel();
-        jPanel1.setLayout(new BorderLayout());
+        JPanel mainPanel = new MainPanel();
+        mainPanel.setLayout(new BorderLayout());
         JPanel statusPanel = new JPanel();
         statusPanel.setLayout(new GridBagLayout());
 
@@ -208,8 +187,6 @@ public class JviFrame extends JFrame
         statusPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createBevelBorder(BevelBorder.RAISED,Color.white,Color.white,m_color1,m_color2),
                 BorderFactory.createEmptyBorder(2,0,2,0)));
-        editorPane = new PlayEditorPane();
-        editorPane.setText(SampleText.txt02);
         JToolBar toolBar = new JToolBar();
         toolBar.add(jButton1);
         toolBar.add(jButton2);
@@ -223,11 +200,17 @@ public class JviFrame extends JFrame
         menuBar1.add(menuHelp);
         this.setJMenuBar(menuBar1);
         contentPane.add(toolBar, BorderLayout.NORTH);
-        contentPane.add(jPanel1, BorderLayout.CENTER);
-        scrollPane = new JScrollPane();
-        jPanel1.add(scrollPane, BorderLayout.CENTER);
-        scrollPane.getViewport().add(editorPane, null);
-        jPanel1.add(statusPanel, BorderLayout.SOUTH);
+        contentPane.add(mainPanel, BorderLayout.CENTER);
+        PlayEditorContainer editorC1 = new PlayEditorContainer(this);
+        if(false) {
+            PlayEditorContainer editorC2 = new PlayEditorContainer(this);
+            PlaySplitter sp = new PlaySplitter(Orientation.LEFT_RIGHT,
+                    editorC1, editorC2);
+            mainPanel.add(sp, BorderLayout.CENTER);
+        } else {
+            mainPanel.add(editorC1, BorderLayout.CENTER);
+        }
+        mainPanel.add(statusPanel, BorderLayout.SOUTH);
         statusPanel.add(generalStatusBar, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 111, 0));
         statusPanel.add(strokeStatusBar, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,

@@ -43,6 +43,11 @@ public class PlayFS extends SimpleFS
     {
     }
 
+    @Override
+    public String getDisplayFileName(ViAppView av) {
+        return "File:" + av.getWNum();
+    }
+
 
     @Override
     public boolean isModified( ViBuffer buf )
@@ -92,7 +97,7 @@ public class PlayFS extends SimpleFS
     @Override
     public boolean edit(ViAppView av, boolean force)
     {
-        Msg.emsg("edit(av{" + av + "}) not implemented");
+        av.getEditor().requestFocusInWindow();
         return true;
     }
 

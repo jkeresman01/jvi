@@ -463,8 +463,20 @@ public class Cc01
         @Override
         public void actionPerformed(ActionEvent ev) {
             ColonEvent cev = (ColonEvent)ev;
-            // NEEDSWORK: win_close_others: forceit....
-            cev.getViTextView().win_close_others(false);
+            // NEEDSWORK: forceit....
+
+            List<ViAppView> avs = AppViews.getList(AppViews.ACTIVE);
+
+            ViFactory fact = ViManager.getFactory();
+            ViAppView avCur = fact.getAppView(cev.getViTextView().getEditor());
+            
+            for(ViAppView av :avs) {
+                if(!av.equals(avCur)) {
+                    ViTextView tv = fact.getTextView(av);
+                    tv.win_close(false);
+                }
+
+            }
         }};
 
     private static class Wall implements ActionListener {

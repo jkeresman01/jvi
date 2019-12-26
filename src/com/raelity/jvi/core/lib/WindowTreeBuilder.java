@@ -174,14 +174,6 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
     //     return s;
     // }
 
-
-
-    @Override
-    final public ViAppView getTarget(Direction dir, ViAppView fromAv, int n)
-    {
-        return getTarget(dir, fromAv, n, false);
-    }
-
     @Override
     final public ViAppView getTarget(
             Direction dir, ViAppView fromAv, int n, boolean mustTouch)
@@ -274,6 +266,19 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         Node currentNode = findNode(av);
         if(currentNode == null)
             return null;
+        Node n = currentNode.getParent();
+        if(n == null)
+            return null;
+        assert n.isSplitter();
+        return new MySplitterNode(n, n.getChildren().indexOf(currentNode));
+    }
+
+    @Override
+    public SplitterNode getParentSplitter(SplitterNode sn)
+    {
+        initTree();
+        // get the orinal node to traverse up the tree
+        Node currentNode = ((MySplitterNode)sn).node;
         Node n = currentNode.getParent();
         if(n == null)
             return null;
@@ -733,19 +738,33 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
      */
     protected abstract ViAppView getAppView(Component c);
 
-    protected Node createEditorNode(Component peer)
-    {
+    protected Node newNode(Component peer) {
         return new Node(peer);
     }
 
-    /** assumes children are in order */
-    protected Node createSplitNode(Component peer, List<Node> children)
-    {
-        Orientation orientation = Orientation.LEFT_RIGHT; // any default
-        if(children != null && children.size() >= 2)
-            orientation = calcSplitterOrientation(
-                    peer, children.get(0), children.get(1));
+    protected Node newNode(Orientation orientation,
+                           Component peer, List<Node> children) {
         return new Node(orientation, peer, children);
+    }
+
+    Node createEditorNode(Component peer)
+    {
+        return newNode(peer);
+    }
+
+    Node createSplitNode(Component peer, List<Node> children)
+    {
+        Orientation orientation = calcSplitterOrientation(
+                            peer, children.get(0), children.get(1));
+        if(children.size() >= 2) {
+            final boolean isLeftRight = orientation == Orientation.LEFT_RIGHT;
+            Collections.sort(children, (Node n01, Node n02) -> {
+                Point p1 = getLocation(n01);
+                Point p2 = getLocation(n02);
+                return isLeftRight ? p1.x - p2.x : p1.y - p2.y;
+            });
+        }
+        return newNode(orientation, peer, children);
     }
 
     /**
@@ -1042,9 +1061,12 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
               .append(',').append(r.y)
               .append(',').append(r.width)
               .append(',').append(r.height).append(']');
-            if(!isEditor())
+            if(isEditor()) {
+                sb.append(" ").append(dbgName(this));
+            } else {
                 sb.append(getOrientation() == Orientation.LEFT_RIGHT
-                                    ? " LeftRight" : " TopBottom");
+                        ? " LeftRight" : " TopBottom");
+            }
             return sb.toString();
         }
 
@@ -1179,11 +1201,22 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         }
         initTree();
         dumpTree(sb);
-        ViOutputStream vios
+        if(verbose) {
+            List<ViAppView> avs = getList();
+            for(ViAppView av : avs) {
+                sb.append(av.toString()).append(" ");
+                dumpExtra(sb, av);
+                sb.append('\n');
+            }
+        }
+        try (ViOutputStream vios
                 = ViManager.createOutputStream(null, ViOutputStream.OUTPUT,
-                                               "Dump Window Hierarchy");
-        vios.println(sb.toString());
-        vios.close();
+                                               "Dump Window Hierarchy")) {
+            vios.println(sb.toString());
+        }
+    }
+
+    protected void dumpExtra(StringBuilder sb, ViAppView av) {
     }
 
     private static class DumpWin extends AbstractColonAction {

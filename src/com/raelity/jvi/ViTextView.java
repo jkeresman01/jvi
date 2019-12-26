@@ -489,14 +489,10 @@ public interface ViTextView extends ViOptionBag {
   public void win_size(SIZOP op, Orientation orientation, int n);
 
   /** Close this window. Does not close last view.
+   * NOTE: freeBuf not used, no jVi concept of hidden buffers
    * @param freeBuf true if the related buffer may be freed
    */
   public void win_close(boolean freeBuf);
-
-  /** Close other windows
-   * @param forceit true if always hide all other windows
-   */
-  public void win_close_others(boolean forceit);
 
   /** Handle displayable editor state changes */
   public ViStatusDisplay getStatusDisplay();

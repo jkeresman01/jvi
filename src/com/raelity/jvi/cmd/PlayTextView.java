@@ -20,11 +20,13 @@
 
 package com.raelity.jvi.cmd;
 
+import com.raelity.jvi.ViAppView;
 import javax.swing.JScrollPane;
 import javax.swing.text.JTextComponent;
 
 import com.raelity.jvi.ViStatusDisplay;
 import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.swing.simple.SimpleTextView;
 
 /**
@@ -66,11 +68,40 @@ public class PlayTextView extends SimpleTextView
 
     private void updateWrapOption()
     {
-        JviFrame frame = Jvi.mapJepFrame.get(getEditor());
+        PlayAppView av = (PlayAppView) ViManager.getFactory().getAppView(editorPane);
         getEditor().lineWrap = w_p_wrap;
-        frame.scrollPane.setHorizontalScrollBarPolicy(
+        av.getContainer().setHorizontalScrollBarPolicy(
                 w_p_wrap ? JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
                          : JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     }
 
+    @Override
+    public void win_close(boolean freeBuf)
+    {
+        PlayAppView av = (PlayAppView) getAppView();
+        Util.winClose(av);
+    }
+
+    @Override
+    public void win_quit()
+    {
+        win_close(false);
+    }
+    
+
+    @Override
+    public void win_split(Direction dir, int n, ViAppView avNew_) {
+        PlayAppView av = (PlayAppView) getAppView();
+        PlayAppView avNew = (PlayAppView) avNew_;
+        if(avNew == null) {
+            // create a new editor/buffer to put in the other side of new splitter
+            PlayEditorContainer edC
+                    = new PlayEditorContainer((JviFrame) av.getFrame());
+            avNew = (PlayAppView) ViManager.getFactory()
+                    .getAppView(edC.getEditor());
+        }
+        Util.winSplit(av, dir, n, avNew);
+    }
+
+    
 }

@@ -40,6 +40,7 @@ public interface ViWindowNavigator
      * @return app views in order for sequential Ctrl-W traversal
      */
     public List<ViAppView> getList();
+    
 
     /**
      * Select an AppView as the target for Ctrl-W window motion commands
@@ -56,13 +57,22 @@ public interface ViWindowNavigator
     public ViAppView getTarget(Direction dir, ViAppView fromAv,
                                int n, boolean mustTouch);
 
-    public ViAppView getTarget(Direction dir, ViAppView fromAv, int n);
+    // actually would like to make this final
+    default ViAppView getTarget(Direction dir, ViAppView fromAv, int n) {
+        return getTarget(dir, fromAv, n, false);
+    }
 
     /**
      * Get the splitter that contains the av;
      * av is used to set the targetIndex.
      */
     public SplitterNode getParentSplitter(ViAppView av);
+
+    /**
+     * Get the splitter that contains the splitter;
+     * Returns null if not in a splitter.
+     */
+    public SplitterNode getParentSplitter(SplitterNode sn);
 
     /**
      * Get the splitter that contains the av;

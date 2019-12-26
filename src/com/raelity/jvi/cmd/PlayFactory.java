@@ -20,9 +20,9 @@
 
 package com.raelity.jvi.cmd;
 
+import com.raelity.jvi.ViAppView;
 import java.awt.Component;
 import java.awt.Rectangle;
-import java.util.Map;
 
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
@@ -40,6 +40,7 @@ import com.raelity.jvi.swing.SwingTextView;
 import com.raelity.jvi.swing.ViewMap;
 import com.raelity.jvi.swing.ViewMapSwitcher;
 import com.raelity.jvi.swing.simple.SimpleFactory;
+import javax.swing.text.Document;
 
 /**
  *
@@ -49,18 +50,18 @@ final public class PlayFactory extends SimpleFactory
 {
     private final ViFS fs = new PlayFS();
     /** status displays for editors */
-    private final Map<PlayEditorPane, JviFrame> mapJepFrame;
 
-    public PlayFactory(Map<PlayEditorPane, JviFrame> m) {
-        mapJepFrame = m;
+    public PlayFactory() {
     }
 
     @Override
     protected ViTextView newTextView( JTextComponent editor )
     {
+        JviFrame frame = (JviFrame)((PlayAppView)getAppView(editor)).getFrame();
         @SuppressWarnings("element-type-mismatch")
         SwingTextView tv = new PlayTextView(
-                editor, mapJepFrame.get(editor).getStatusDisplay());
+                editor, frame.getStatusDisplay());
+
         LineMap lm = new LineMapNoFolding(tv);
         //ViewMap vm = new SwingViewMapWrapFontFixed(tv);
         ViewMap vm = new ViewMapSwitcher(tv);
@@ -109,7 +110,11 @@ final public class PlayFactory extends SimpleFactory
     @Override
     protected Buffer createBuffer( ViTextView tv )
     {
-        return new PlayBuffer(tv);
+        PlayBuffer buf = new PlayBuffer(tv);
+        ViAppView av = getAppView(tv.getEditor());
+        buf.getDocument().putProperty(Document.TitleProperty,
+                "File:" + av.getWNum());
+        return buf;
     }
 
     @Override

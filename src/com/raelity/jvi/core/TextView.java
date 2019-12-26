@@ -346,7 +346,6 @@ public abstract class TextView implements ViTextView
         Msg.emsg("win_size(%s, %s, %d) NIMP", op, orientation, n);
     }
 
-
     /** Close this window
      * @param freeBuf true if the related buffer may be freed
      */
@@ -354,16 +353,6 @@ public abstract class TextView implements ViTextView
     public void win_close( boolean freeBuf )
     {
         Msg.emsg("win_close(%s) NIMP", freeBuf);
-    }
-
-
-    /** Close other windows
-     * @param forceit true if always hide all other windows
-     */
-    @Override
-    public void win_close_others(boolean forceit)
-    {
-        Msg.emsg("win_close_others(%s) NIMP", forceit);
     }
 
     @Override

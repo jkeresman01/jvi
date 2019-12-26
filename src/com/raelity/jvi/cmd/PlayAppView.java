@@ -20,11 +20,12 @@
 
 package com.raelity.jvi.cmd;
 
+import com.raelity.jvi.swing.SwingFactory;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 
-import com.raelity.jvi.swing.SwingFactory;
 import com.raelity.jvi.swing.simple.SimpleAppView;
+import javax.swing.JScrollPane;
 
 /**
  *
@@ -32,18 +33,22 @@ import com.raelity.jvi.swing.simple.SimpleAppView;
  */
 public class PlayAppView extends SimpleAppView
 {
+    JFrame frame;
     @SuppressWarnings("LeakingThisInConstructor")
-    public PlayAppView(JFrame f, JEditorPane ep)
+    public PlayAppView(JFrame f, PlayEditorContainer editorC)
     {
-        super(f, ep);
-        // For convenience, in case want to get from JFrame-->AppView.
-        // In this play app, a JFrame has one and only one editor.
-        f.getRootPane().putClientProperty(SwingFactory.PROP_AV, this);
+        super(editorC, editorC.getEditor());
+        this.frame = f;
+        editorC.getEditor().putClientProperty(SwingFactory.PROP_AV, this);
+    }
+
+    public PlayEditorContainer getContainer() {
+        return (PlayEditorContainer) getAppContainer();
     }
 
     /** Note this is not part of the ViAppView interface */
     public JFrame getFrame() {
-        return (JFrame)super.getAppContainer();
+        return frame;
     }
 
     @Override
