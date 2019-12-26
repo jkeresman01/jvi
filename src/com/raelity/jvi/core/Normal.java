@@ -2521,7 +2521,21 @@ normal_end: {
       }
       G.curwin.setSelection(textDot, textMark);
     }
-    else if (!checkclearop(cap.oap))
+    else if (G.curwin.hasSelection())
+    {
+      // NEEDSWORK:     Save cmdchar/state for flipping between visual/select
+      //                but need to clear it when selection goes away.
+      //                When clear, start with char mode.
+      //                BUT, when selection better to use 'v','V','^V'
+      //                and just go where you want to be
+      // This code taken from the end of nv_visual 
+      char cmd = 'v'; // cap.cmdchar
+      n_start_visual_mode(cmd);
+      /* update the screen cursor position */
+      convertSelectionToVisual();
+      v_updateVisualState();
+      ui_cursor_shape();
+    } else if (!checkclearop(cap.oap))
       Msg.smsg(ViManager.getFS().getDisplayFileViewInfo(G.curwin));
   }
 
