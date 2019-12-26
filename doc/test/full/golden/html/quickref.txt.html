@@ -1,0 +1,1070 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Vim: quickref.txt</title>
+<!--[if IE]>
+<link rel="stylesheet" href="vimhelp-ie.css" type="text/css">
+<![endif]-->
+<!--[if !IE]>-->
+<link rel="stylesheet" href="vimhelp.css" type="text/css">
+<!--<![endif]-->
+</head>
+<body>
+<div id="d1">
+<pre id="sp">                                                                                </pre>
+<div id="d2">
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<div id="d3">
+<pre>
+<a name="quickref.txt" class="t">quickref.txt</a>  For Vim version 7.0.  Last change: 2006 Apr 30
+
+
+                  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+                            Quick <a href="intro.txt.html#reference" class="d">reference</a> guide
+
+                                                         <a name="quickref" class="t">quickref</a> <a name="Contents" class="t">Contents</a>
+<span class="h"> tag      subject                        tag      subject       </span>
+<a href="help.txt.html#Q_ct" class="l">Q_ct</a>  list of help files              <a href="quickref.txt.html#Q_re" class="l">Q_re</a>  Repeating commands
+<a href="quickref.txt.html#Q_lr" class="l">Q_lr</a>  motion: Left-right              <a href="quickref.txt.html#Q_km" class="l">Q_km</a>  Key <a href="map.txt.html#mapping" class="d">mapping</a>
+<a href="quickref.txt.html#Q_ud" class="l">Q_ud</a>  motion: Up-down                 <a href="quickref.txt.html#Q_ab" class="l">Q_ab</a>  Abbreviations
+<a href="quickref.txt.html#Q_tm" class="l">Q_tm</a>  motion: Text object             <a href="quickref.txt.html#Q_op" class="l">Q_op</a>  Options
+<a href="quickref.txt.html#Q_pa" class="l">Q_pa</a>  motion: <a href="pattern.txt.html#Pattern" class="d">Pattern</a> searches        <a href="quickref.txt.html#Q_ur" class="l">Q_ur</a>  Undo/Redo commands
+<a href="quickref.txt.html#Q_ma" class="l">Q_ma</a>  motion: Marks                   <a href="quickref.txt.html#Q_et" class="l">Q_et</a>  External commands
+<a href="quickref.txt.html#Q_vm" class="l">Q_vm</a>  motion: Various                 <a href="quickref.txt.html#Q_qf" class="l">Q_qf</a>  Quickfix commands
+<a href="quickref.txt.html#Q_ta" class="l">Q_ta</a>  motion: Using <a href="tagsearch.txt.html#tags" class="d">tags</a>              <a href="quickref.txt.html#Q_vc" class="l">Q_vc</a>  Various commands
+<a href="quickref.txt.html#Q_sc" class="l">Q_sc</a>  Scrolling                       <a href="quickref.txt.html#Q_ce" class="l">Q_ce</a>  Ex: Command-line editing
+<a href="quickref.txt.html#Q_in" class="l">Q_in</a>  insert: Inserting text          <a href="quickref.txt.html#Q_ra" class="l">Q_ra</a>  Ex: Ranges
+<a href="quickref.txt.html#Q_ai" class="l">Q_ai</a>  insert: Keys                    <a href="quickref.txt.html#Q_ex" class="l">Q_ex</a>  Ex: Special characters
+<a href="quickref.txt.html#Q_ss" class="l">Q_ss</a>  insert: Special keys            <a href="quickref.txt.html#Q_st" class="l">Q_st</a>  Starting VIM
+<a href="quickref.txt.html#Q_di" class="l">Q_di</a>  insert: Digraphs                <a href="quickref.txt.html#Q_ed" class="l">Q_ed</a>  Editing <a href="insert.txt.html#a" class="d">a</a> file
+<a href="quickref.txt.html#Q_si" class="l">Q_si</a>  insert: Special inserts         <a href="quickref.txt.html#Q_fl" class="l">Q_fl</a>  Using the argument list
+<a href="quickref.txt.html#Q_de" class="l">Q_de</a>  change: Deleting text           <a href="quickref.txt.html#Q_wq" class="l">Q_wq</a>  Writing and quitting
+<a href="quickref.txt.html#Q_cm" class="l">Q_cm</a>  change: Copying and moving      <a href="quickref.txt.html#Q_ac" class="l">Q_ac</a>  Automatic commands
+<a href="quickref.txt.html#Q_ch" class="l">Q_ch</a>  change: Changing text           <a href="quickref.txt.html#Q_wi" class="l">Q_wi</a>  Multi-window commands
+<a href="quickref.txt.html#Q_co" class="l">Q_co</a>  change: Complex                 <a href="quickref.txt.html#Q_bu" class="l">Q_bu</a>  Buffer list commands
+<a href="quickref.txt.html#Q_vi" class="l">Q_vi</a>  <a href="visual.txt.html#Visual" class="d">Visual</a> mode                     <a href="quickref.txt.html#Q_sy" class="l">Q_sy</a>  Syntax highlighting
+<a href="quickref.txt.html#Q_to" class="l">Q_to</a>  Text <a href="index.txt.html#objects" class="d">objects</a>                    <a href="quickref.txt.html#Q_gu" class="l">Q_gu</a>  GUI commands
+                                      <a href="quickref.txt.html#Q_fo" class="l">Q_fo</a>  <a href="fold.txt.html#Folding" class="d">Folding</a>
+
+<span class="h">------------------------------------------------------------------------------</span>
+<a href="pattern.txt.html#N" class="d">N</a> <a href="motion.txt.html#is" class="d">is</a> used to indicate an optional <a href="intro.txt.html#count" class="d">count</a> that can be given before the command.
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_lr" class="t">Q_lr</a>          Left-right motions
+
+<a href="motion.txt.html#h" class="l">h</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#h" class="d">h</a>            left (also: <a href="motion.txt.html#CTRL-H" class="k">CTRL-H</a><a href="motion.txt.html#%2C" class="d">,</a> <a href="motion.txt.html#%3CBS%3E" class="s">&lt;BS&gt;</a><a href="motion.txt.html#%2C" class="d">,</a> or <a href="motion.txt.html#%3CLeft%3E" class="s">&lt;Left&gt;</a> key)
+<a href="motion.txt.html#l" class="l">l</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#l" class="d">l</a>            right (also: <a href="motion.txt.html#%3CSpace%3E" class="s">&lt;Space&gt;</a> or <a href="motion.txt.html#%3CRight%3E" class="s">&lt;Right&gt;</a> key)
+<a href="motion.txt.html#0" class="l">0</a>        <a href="motion.txt.html#0" class="d">0</a>            to first character in the line (also: <a href="motion.txt.html#%3CHome%3E" class="s">&lt;Home&gt;</a> key)
+<a href="motion.txt.html#%5E" class="l">^</a>        <a href="motion.txt.html#%5E" class="d">^</a>            to first non-blank character in the line
+<a href="motion.txt.html#%24" class="l">$</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%24" class="d">$</a>            to the last character in the line (N-1 lines lower)
+                           (also: <a href="motion.txt.html#%3CEnd%3E" class="s">&lt;End&gt;</a> key)
+<a href="motion.txt.html#g0" class="l">g0</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#g0" class="d">g0</a>           to first character in screen line (differs from "<a href="motion.txt.html#0" class="d">0</a>"
+                           when lines wrap)
+<a href="motion.txt.html#g%5E" class="l">g^</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#g%5E" class="d">g^</a>           to first non-blank character in screen line (differs
+                           from "<a href="motion.txt.html#%5E" class="d">^</a>" when lines wrap)
+<a href="motion.txt.html#g%24" class="l">g$</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#g%24" class="d">g$</a>           to last character in screen line (differs from "<a href="motion.txt.html#%24" class="d">$</a>"
+                           when lines wrap)
+<a href="motion.txt.html#gm" class="l">gm</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#gm" class="d">gm</a>           to middle of the screen line
+<a href="motion.txt.html#bar" class="l">bar</a>   <a href="pattern.txt.html#N" class="d">N</a>  |            to column <a href="pattern.txt.html#N" class="d">N</a> (default: 1)
+<a href="motion.txt.html#f" class="l">f</a>     <a href="pattern.txt.html#N" class="d">N</a>  f{char}      to the Nth occurrence of <span class="s">{char}</span> to the right
+<a href="motion.txt.html#F" class="l">F</a>     <a href="pattern.txt.html#N" class="d">N</a>  F{char}      to the Nth occurrence of <span class="s">{char}</span> to the left
+<a href="motion.txt.html#t" class="l">t</a>     <a href="pattern.txt.html#N" class="d">N</a>  t{char}      till before the Nth occurrence of <span class="s">{char}</span> to the right
+<a href="motion.txt.html#T" class="l">T</a>     <a href="pattern.txt.html#N" class="d">N</a>  T{char}      till before the Nth occurrence of <span class="s">{char}</span> to the left
+<a href="motion.txt.html#%3B" class="l">;</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%3B" class="d">;</a>            repeat the last "<a href="motion.txt.html#f" class="d">f</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="motion.txt.html#F" class="d">F</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="motion.txt.html#t" class="d">t</a>"<a href="motion.txt.html#%2C" class="d">,</a> or "<a href="motion.txt.html#T" class="d">T</a>" <a href="pattern.txt.html#N" class="d">N</a> times
+<a href="motion.txt.html#%2C" class="l">,</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%2C" class="d">,</a>            repeat the last "<a href="motion.txt.html#f" class="d">f</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="motion.txt.html#F" class="d">F</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="motion.txt.html#t" class="d">t</a>"<a href="motion.txt.html#%2C" class="d">,</a> or "<a href="motion.txt.html#T" class="d">T</a>" <a href="pattern.txt.html#N" class="d">N</a> times in
+                           opposite direction
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_ud" class="t">Q_ud</a>          Up-down motions
+
+<a href="motion.txt.html#k" class="l">k</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#k" class="d">k</a>            up <a href="pattern.txt.html#N" class="d">N</a> lines (also: <a href="motion.txt.html#CTRL-P" class="k">CTRL-P</a> and <a href="motion.txt.html#%3CUp%3E" class="s">&lt;Up&gt;</a><a href="motion.txt.html#%29" class="d">)</a>
+<a href="motion.txt.html#j" class="l">j</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#j" class="d">j</a>            down <a href="pattern.txt.html#N" class="d">N</a> lines (also: <a href="motion.txt.html#CTRL-J" class="k">CTRL-J</a><a href="motion.txt.html#%2C" class="d">,</a> <a href="motion.txt.html#CTRL-N" class="k">CTRL-N</a><a href="motion.txt.html#%2C" class="d">,</a> <a href="motion.txt.html#%3CNL%3E" class="s">&lt;NL&gt;</a><a href="motion.txt.html#%2C" class="d">,</a> and <a href="motion.txt.html#%3CDown%3E" class="s">&lt;Down&gt;</a><a href="motion.txt.html#%29" class="d">)</a>
+<a href="motion.txt.html#-" class="l">-</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#-" class="d">-</a>            up <a href="pattern.txt.html#N" class="d">N</a> lines, on the first non-blank character
+<a href="motion.txt.html#%2B" class="l">+</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%2B" class="d">+</a>            down <a href="pattern.txt.html#N" class="d">N</a> lines, on the first non-blank character (also:
+                           <a href="motion.txt.html#CTRL-M" class="k">CTRL-M</a> and <a href="motion.txt.html#%3CCR%3E" class="s">&lt;CR&gt;</a><a href="motion.txt.html#%29" class="d">)</a>
+<a href="motion.txt.html#_" class="l">_</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#_" class="d">_</a>            down N-1 lines, on the first non-blank character
+<a href="motion.txt.html#G" class="l">G</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#G" class="d">G</a>            goto line <a href="pattern.txt.html#N" class="d">N</a> (default: last line), on the first
+                           non-blank character
+<a href="motion.txt.html#gg" class="l">gg</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#gg" class="d">gg</a>           goto line <a href="pattern.txt.html#N" class="d">N</a> (default: first line), on the first
+                           non-blank character
+<a href="motion.txt.html#N%25" class="l">N%</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%25" class="d">%</a>            goto line <a href="pattern.txt.html#N" class="d">N</a> percentage down in the file.  <a href="pattern.txt.html#N" class="d">N</a> must be
+                           given, otherwise <a href="motion.txt.html#it" class="d">it</a> <a href="motion.txt.html#is" class="d">is</a> the <a href="motion.txt.html#%25" class="l">%</a> command.
+<a href="motion.txt.html#gk" class="l">gk</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#gk" class="d">gk</a>           up <a href="pattern.txt.html#N" class="d">N</a> screen lines (differs from "<a href="motion.txt.html#k" class="d">k</a>" when line wraps)
+<a href="motion.txt.html#gj" class="l">gj</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#gj" class="d">gj</a>           down <a href="pattern.txt.html#N" class="d">N</a> screen lines (differs from "<a href="motion.txt.html#j" class="d">j</a>" when line wraps)
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_tm" class="t">Q_tm</a>          Text object motions
+
+<a href="motion.txt.html#w" class="l">w</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#w" class="d">w</a>            <a href="pattern.txt.html#N" class="d">N</a> words forward
+<a href="motion.txt.html#W" class="l">W</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#W" class="d">W</a>            <a href="pattern.txt.html#N" class="d">N</a> blank-separated <a href="motion.txt.html#WORD" class="l">WORD</a><a href="change.txt.html#s" class="d">s</a> forward
+<a href="motion.txt.html#e" class="l">e</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#e" class="d">e</a>            forward to the end of the Nth <a href="motion.txt.html#word" class="d">word</a>
+<a href="motion.txt.html#E" class="l">E</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#E" class="d">E</a>            forward to the end of the Nth blank-separated <a href="motion.txt.html#WORD" class="l">WORD</a>
+<a href="motion.txt.html#b" class="l">b</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#b" class="d">b</a>            <a href="pattern.txt.html#N" class="d">N</a> words backward
+<a href="motion.txt.html#B" class="l">B</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#B" class="d">B</a>            <a href="pattern.txt.html#N" class="d">N</a> blank-separated <a href="motion.txt.html#WORD" class="l">WORD</a><a href="change.txt.html#s" class="d">s</a> backward
+<a href="motion.txt.html#ge" class="l">ge</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#ge" class="d">ge</a>           backward to the end of the Nth <a href="motion.txt.html#word" class="d">word</a>
+<a href="motion.txt.html#gE" class="l">gE</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#gE" class="d">gE</a>           backward to the end of the Nth blank-separated <a href="motion.txt.html#WORD" class="l">WORD</a>
+
+<a href="motion.txt.html#%29" class="l">)</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%29" class="d">)</a>            <a href="pattern.txt.html#N" class="d">N</a> sentences forward
+<a href="motion.txt.html#%28" class="l">(</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%28" class="d">(</a>            <a href="pattern.txt.html#N" class="d">N</a> sentences backward
+<a href="motion.txt.html#%7D" class="l">}</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%7D" class="d">}</a>            <a href="pattern.txt.html#N" class="d">N</a> paragraphs forward
+<a href="motion.txt.html#%7B" class="l">{</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%7B" class="d">{</a>            <a href="pattern.txt.html#N" class="d">N</a> paragraphs backward
+<a href="motion.txt.html#%5D%5D" class="l">]]</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%5D%5D" class="d">]]</a>           <a href="pattern.txt.html#N" class="d">N</a> sections forward, <a href="motion.txt.html#at" class="d">at</a> start of section
+<a href="motion.txt.html#%5B%5B" class="l">[[</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%5B%5B" class="d">[[</a>           <a href="pattern.txt.html#N" class="d">N</a> sections backward, <a href="motion.txt.html#at" class="d">at</a> start of section
+<a href="motion.txt.html#%5D%5B" class="l">][</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%5D%5B" class="d">][</a>           <a href="pattern.txt.html#N" class="d">N</a> sections forward, <a href="motion.txt.html#at" class="d">at</a> end of section
+<a href="motion.txt.html#%5B%5D" class="l">[]</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%5B%5D" class="d">[]</a>           <a href="pattern.txt.html#N" class="d">N</a> sections backward, <a href="motion.txt.html#at" class="d">at</a> end of section
+<a href="motion.txt.html#%5B%28" class="l">[(</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%5B%28" class="d">[(</a>           <a href="pattern.txt.html#N" class="d">N</a> times back to unclosed '('
+<a href="motion.txt.html#%5B%7B" class="l">[{</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%5B%7B" class="d">[{</a>           <a href="pattern.txt.html#N" class="d">N</a> times back to unclosed '{'
+<a href="motion.txt.html#%5Bm" class="l">[m</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%5Bm" class="d">[m</a>           <a href="pattern.txt.html#N" class="d">N</a> times back to start of method (for Java)
+<a href="motion.txt.html#%5BM" class="l">[M</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%5BM" class="d">[M</a>           <a href="pattern.txt.html#N" class="d">N</a> times back to end of method (for Java)
+<a href="motion.txt.html#%5D%29" class="l">])</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%5D%29" class="d">])</a>           <a href="pattern.txt.html#N" class="d">N</a> times forward to unclosed ')'
+<a href="motion.txt.html#%5D%7D" class="l">]}</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%5D%7D" class="d">]}</a>           <a href="pattern.txt.html#N" class="d">N</a> times forward to unclosed '}'
+<a href="motion.txt.html#%5Dm" class="l">]m</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%5Dm" class="d">]m</a>           <a href="pattern.txt.html#N" class="d">N</a> times forward to start of method (for Java)
+<a href="motion.txt.html#%5DM" class="l">]M</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%5DM" class="d">]M</a>           <a href="pattern.txt.html#N" class="d">N</a> times forward to end of method (for Java)
+<a href="motion.txt.html#%5B%23" class="l">[#</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%5B%23" class="d">[#</a>           <a href="pattern.txt.html#N" class="d">N</a> times back to unclosed "#if" or "#else"
+<a href="motion.txt.html#%5D%23" class="l">]#</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#%5D%23" class="d">]#</a>           <a href="pattern.txt.html#N" class="d">N</a> times forward to unclosed "#else" or "#endif"
+<a href="motion.txt.html#%5Bstar" class="l">[star</a> <a href="pattern.txt.html#N" class="d">N</a>  <a href="index.txt.html#%5B" class="d">[</a>*           <a href="pattern.txt.html#N" class="d">N</a> times back to start of comment "<a href="pattern.txt.html#%2F" class="d">/</a>*"
+<a href="motion.txt.html#%5Dstar" class="l">]star</a> <a href="pattern.txt.html#N" class="d">N</a>  <a href="index.txt.html#%5D" class="d">]</a>*           <a href="pattern.txt.html#N" class="d">N</a> times forward to end of comment "*<a href="pattern.txt.html#%2F" class="d">/</a>"
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_pa" class="t">Q_pa</a>          <a href="pattern.txt.html#Pattern" class="d">Pattern</a> searches
+
+<a href="pattern.txt.html#%2F" class="l">/</a>     <a href="pattern.txt.html#N" class="d">N</a>  /{pattern}[/[offset]]&lt;CR&gt;
+                        search forward for the Nth occurrence of <span class="s">{pattern}</span>
+<a href="pattern.txt.html#%3F" class="l">?</a>     <a href="pattern.txt.html#N" class="d">N</a>  ?{pattern}[?[offset]]&lt;CR&gt;
+                        search backward for the Nth occurrence of <span class="s">{pattern}</span>
+<a href="pattern.txt.html#%2F%3CCR%3E" class="l">/&lt;CR&gt;</a> <a href="pattern.txt.html#N" class="d">N</a>  <a href="pattern.txt.html#%2F%3CCR%3E" class="d">/&lt;CR&gt;</a>        repeat last search, in the forward direction
+<a href="pattern.txt.html#%3F%3CCR%3E" class="l">?&lt;CR&gt;</a> <a href="pattern.txt.html#N" class="d">N</a>  <a href="pattern.txt.html#%3F%3CCR%3E" class="d">?&lt;CR&gt;</a>        repeat last search, in the backward direction
+<a href="pattern.txt.html#n" class="l">n</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="pattern.txt.html#n" class="d">n</a>            repeat last search
+<a href="pattern.txt.html#N" class="l">N</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="pattern.txt.html#N" class="d">N</a>            repeat last search, in opposite direction
+<a href="pattern.txt.html#star" class="l">star</a>  <a href="pattern.txt.html#N" class="d">N</a>  *            search forward for the identifier under the cursor
+<a href="pattern.txt.html#%23" class="l">#</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="pattern.txt.html#%23" class="d">#</a>            search backward for the identifier under the cursor
+<a href="pattern.txt.html#gstar" class="l">gstar</a> <a href="pattern.txt.html#N" class="d">N</a>  <a href="index.txt.html#g" class="d">g</a>*           like "*"<a href="motion.txt.html#%2C" class="d">,</a> but also find partial matches
+<a href="pattern.txt.html#g%23" class="l">g#</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="pattern.txt.html#g%23" class="d">g#</a>           like "<a href="pattern.txt.html#%23" class="d">#</a>"<a href="motion.txt.html#%2C" class="d">,</a> but also find partial matches
+
+<a href="pattern.txt.html#pattern" class="l">pattern</a>               Special characters in search patterns
+See: <a class="u" href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html">https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html</a>
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_ma" class="t">Q_ma</a>          Marks and motions
+
+<a href="motion.txt.html#m" class="l">m</a>        m{a-zA-Z}    <a href="motion.txt.html#mark" class="d">mark</a> current position with <a href="motion.txt.html#mark" class="d">mark</a> <span class="s">{a-zA-Z}</span>
+<a href="motion.txt.html#m." class="l">m.</a>       <a href="motion.txt.html#m." class="d">m.</a>           <a href="options.txt.html#toggle" class="d">toggle</a> anonymous <a href="motion.txt.html#mark" class="d">mark</a> on the current line
+<a href="motion.txt.html#%60a" class="l">`a</a>       `{a-z}       go to <a href="motion.txt.html#mark" class="d">mark</a> <span class="s">{a-z}</span> within current file
+<a href="motion.txt.html#%60A" class="l">`A</a>       `{A-Z}       go to <a href="motion.txt.html#mark" class="d">mark</a> <span class="s">{A-Z}</span> in any file
+<a href="motion.txt.html#%600" class="l">`0</a>       `{0-9}       go to the position where Vim was previously exited
+<a href="motion.txt.html#%60%60" class="l">``</a>       <a href="motion.txt.html#%60%60" class="d">``</a>           go to the position before the last jump
+<span class="l">`quote</span>   <a href="motion.txt.html#%60" class="d">`</a>"           go to the position when last editing this file
+<a href="motion.txt.html#%60%5B" class="l">`[</a>       <a href="motion.txt.html#%60%5B" class="d">`[</a>           go to the start of the previously operated or <a href="change.txt.html#put" class="d">put</a> text
+<a href="motion.txt.html#%60%5D" class="l">`]</a>       <a href="motion.txt.html#%60%5D" class="d">`]</a>           go to the end of the previously operated or <a href="change.txt.html#put" class="d">put</a> text
+<a href="motion.txt.html#%60%3C" class="l">`&lt;</a>       <a href="motion.txt.html#%60%3C" class="d">`&lt;</a>           go to the start of the (previous) <a href="visual.txt.html#Visual" class="d">Visual</a> area
+<a href="motion.txt.html#%60%3E" class="l">`&gt;</a>       <a href="motion.txt.html#%60%3E" class="d">`&gt;</a>           go to the end of the (previous) <a href="visual.txt.html#Visual" class="d">Visual</a> area
+<span class="l">`.</span>       `.           go to the position of the last change in this file
+<a href="motion.txt.html#%27" class="l">'</a>        '{a-zA-Z0-9[]'"<span class="s">&lt;&gt;</span>.}
+                        same <a href="motion.txt.html#as" class="d">as</a> `, but on the first non-blank in the line
+<a href="motion.txt.html#m%3E" class="l">m&gt;</a>       <a href="motion.txt.html#m%3E" class="d">m&gt;</a>           go to the next anonymous <a href="motion.txt.html#mark" class="d">mark</a>
+<a href="motion.txt.html#m%3C" class="l">m&lt;</a>       <a href="motion.txt.html#m%3C" class="d">m&lt;</a>           go to the previous anonymous <a href="motion.txt.html#mark" class="d">mark</a>
+<a href="motion.txt.html#%3Amarks" class="l">:marks</a>  <a href="motion.txt.html#%3Amarks" class="d">:marks</a>        print the active marks
+<a href="motion.txt.html#CTRL-O" class="l">CTRL-O</a>  <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#CTRL-O" class="k">CTRL-O</a>     go to Nth older position in jump list
+<a href="motion.txt.html#CTRL-I" class="l">CTRL-I</a>  <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#CTRL-I" class="k">CTRL-I</a>     go to Nth newer position in jump list
+<a href="motion.txt.html#%3Aju" class="l">:ju</a>     :ju[mps]      print the jump list
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_vm" class="t">Q_vm</a>          Various motions
+
+<a href="motion.txt.html#%25" class="l">%</a>        <a href="motion.txt.html#%25" class="d">%</a>            find the next brace, bracket, comment, or "#if"<a href="pattern.txt.html#%2F" class="d">/</a>
+                           "#else"<a href="pattern.txt.html#%2F" class="d">/</a>"#endif" in this line and go to its match
+<a href="motion.txt.html#H" class="l">H</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#H" class="d">H</a>            go to the Nth line in the window, on the first
+                           non-blank
+<a href="motion.txt.html#M" class="l">M</a>        <a href="motion.txt.html#M" class="d">M</a>            go to the middle line in the window, on the first
+                           non-blank
+<a href="motion.txt.html#L" class="l">L</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#L" class="d">L</a>            go to the Nth line from the bottom, on the first
+                           non-blank
+
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_ta" class="t">Q_ta</a>          Using <a href="tagsearch.txt.html#tags" class="d">tags</a>
+
+<a href="tagsearch.txt.html#%3Ata" class="l">:ta</a>      :ta[g][!] <span class="s">{tag}</span>      Jump to tag <span class="s">{tag}</span>
+<a href="tagsearch.txt.html#%3Ata" class="l">:ta</a>      :[count]ta[g][!]     Jump to <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a>'th newer tag in tag list
+<span class="l">CTRL-]</span>      <span class="k">CTRL-]</span>            Jump to the tag under cursor, unless changes
+                                   have been made
+<span class="l">:ts</span>      :ts[elect][!] <span class="s">[tag]</span>  List matching <a href="tagsearch.txt.html#tags" class="d">tags</a> and select one to jump to
+<span class="l">:tjump</span>   :tj[ump][!] <span class="s">[tag]</span>    Jump to tag <span class="s">[tag]</span> or select from list when
+                                   there are multiple matches
+<span class="l">:ltag</span>    :lt[ag][!] <span class="s">[tag]</span>     Jump to tag <span class="s">[tag]</span> and add matching <a href="tagsearch.txt.html#tags" class="d">tags</a> to the
+                                   location list.
+
+<a href="tagsearch.txt.html#%3Atags" class="l">:tags</a>    <a href="tagsearch.txt.html#%3Atags" class="d">:tags</a>                Print tag list
+<a href="tagsearch.txt.html#CTRL-T" class="l">CTRL-T</a>   <a href="pattern.txt.html#N" class="d">N</a>  <a href="tagsearch.txt.html#CTRL-T" class="k">CTRL-T</a>            Jump back from Nth older tag in tag list
+<a href="tagsearch.txt.html#%3Apo" class="l">:po</a>      :[count]po[p][!]     Jump back from <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a>'th older tag in tag list
+<span class="l">:tnext</span>   :[count]tn[ext][!]   Jump to <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a>'th next matching tag
+<span class="l">:tp</span>      :[count]tp[revious][!] Jump to <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a>'th previous matching tag
+<span class="l">:tr</span>      :[count]tr[ewind][!] Jump to <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a>'th matching tag
+<span class="l">:tl</span>      :tl[ast][!]          Jump to last matching tag
+
+<span class="l">:ptag</span>    :pt[ag] <span class="s">{tag}</span>        open <a href="insert.txt.html#a" class="d">a</a> preview window to show tag <span class="s">{tag}</span>
+<span class="l">CTRL-W_}</span>     <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#%7D" class="d">}</a>         like <span class="k">CTRL-]</span> but show tag in preview window
+<span class="l">:pts</span>     :pts[elect]          like ":tselect" but show tag in preview window
+<span class="l">:ptjump</span>  :ptj[ump]            like ":tjump" but show tag in preview window
+<span class="l">:pclose</span>  :pc[lose]            close tag preview window
+<span class="l">CTRL-W_z</span>     <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="scroll.txt.html#z" class="d">z</a>         close tag preview window
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_sc" class="t">Q_sc</a>          Scrolling
+
+<a href="scroll.txt.html#CTRL-E" class="l">CTRL-E</a>        <a href="pattern.txt.html#N" class="d">N</a>  <a href="scroll.txt.html#CTRL-E" class="k">CTRL-E</a>       window <a href="pattern.txt.html#N" class="d">N</a> lines downwards (default: 1)
+<a href="scroll.txt.html#CTRL-D" class="l">CTRL-D</a>        <a href="pattern.txt.html#N" class="d">N</a>  <a href="scroll.txt.html#CTRL-D" class="k">CTRL-D</a>       window <a href="pattern.txt.html#N" class="d">N</a> lines Downwards (default: 1/2 window)
+<a href="scroll.txt.html#CTRL-F" class="l">CTRL-F</a>        <a href="pattern.txt.html#N" class="d">N</a>  <a href="scroll.txt.html#CTRL-F" class="k">CTRL-F</a>       window <a href="pattern.txt.html#N" class="d">N</a> pages Forwards (downwards)
+<a href="scroll.txt.html#CTRL-Y" class="l">CTRL-Y</a>        <a href="pattern.txt.html#N" class="d">N</a>  <a href="scroll.txt.html#CTRL-Y" class="k">CTRL-Y</a>       window <a href="pattern.txt.html#N" class="d">N</a> lines upwards (default: 1)
+<a href="scroll.txt.html#CTRL-U" class="l">CTRL-U</a>        <a href="pattern.txt.html#N" class="d">N</a>  <a href="scroll.txt.html#CTRL-U" class="k">CTRL-U</a>       window <a href="pattern.txt.html#N" class="d">N</a> lines Upwards (default: 1/2 window)
+<a href="scroll.txt.html#CTRL-B" class="l">CTRL-B</a>        <a href="pattern.txt.html#N" class="d">N</a>  <a href="scroll.txt.html#CTRL-B" class="k">CTRL-B</a>       window <a href="pattern.txt.html#N" class="d">N</a> pages Backwards (upwards)
+<a href="scroll.txt.html#z%3CCR%3E" class="l">z&lt;CR&gt;</a>            <a href="scroll.txt.html#z%3CCR%3E" class="d">z&lt;CR&gt;</a> or <a href="scroll.txt.html#zt" class="d">zt</a>  redraw, current line <a href="motion.txt.html#at" class="d">at</a> top of window
+<a href="scroll.txt.html#z." class="l">z.</a>               <a href="scroll.txt.html#z." class="d">z.</a>    or <a href="scroll.txt.html#zz" class="d">zz</a>  redraw, current line <a href="motion.txt.html#at" class="d">at</a> center of window
+<a href="scroll.txt.html#z-" class="l">z-</a>               <a href="scroll.txt.html#z-" class="d">z-</a>    or <a href="scroll.txt.html#zb" class="d">zb</a>  redraw, current line <a href="motion.txt.html#at" class="d">at</a> bottom of window
+
+These only work when <a href="options.txt.html#%27wrap%27" class="o">'wrap'</a> <a href="motion.txt.html#is" class="d">is</a> off:
+<a href="scroll.txt.html#zh" class="l">zh</a>            <a href="pattern.txt.html#N" class="d">N</a>  <a href="scroll.txt.html#zh" class="d">zh</a>           scroll screen <a href="pattern.txt.html#N" class="d">N</a> characters to the right
+<a href="scroll.txt.html#zl" class="l">zl</a>            <a href="pattern.txt.html#N" class="d">N</a>  <a href="scroll.txt.html#zl" class="d">zl</a>           scroll screen <a href="pattern.txt.html#N" class="d">N</a> characters to the left
+<a href="scroll.txt.html#zH" class="l">zH</a>            <a href="pattern.txt.html#N" class="d">N</a>  <a href="scroll.txt.html#zH" class="d">zH</a>           scroll screen half <a href="insert.txt.html#a" class="d">a</a> screenwidth to the right
+<a href="scroll.txt.html#zL" class="l">zL</a>            <a href="pattern.txt.html#N" class="d">N</a>  <a href="scroll.txt.html#zL" class="d">zL</a>           scroll screen half <a href="insert.txt.html#a" class="d">a</a> screenwidth to the left
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_in" class="t">Q_in</a>          Inserting text
+
+<a href="insert.txt.html#a" class="l">a</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="insert.txt.html#a" class="d">a</a>    append text after the cursor (N times)
+<a href="insert.txt.html#A" class="l">A</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="insert.txt.html#A" class="d">A</a>    append text <a href="motion.txt.html#at" class="d">at</a> the end of the line (N times)
+<a href="insert.txt.html#i" class="l">i</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="insert.txt.html#i" class="d">i</a>    <a href="insert.txt.html#insert" class="d">insert</a> text before the cursor (N times) (also: <a href="insert.txt.html#%3CInsert%3E" class="s">&lt;Insert&gt;</a><a href="motion.txt.html#%29" class="d">)</a>
+<a href="insert.txt.html#I" class="l">I</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="insert.txt.html#I" class="d">I</a>    <a href="insert.txt.html#insert" class="d">insert</a> text before the first non-blank in the line (N times)
+<span class="l">gI</span>    <a href="pattern.txt.html#N" class="d">N</a>  gI   <a href="insert.txt.html#insert" class="d">insert</a> text in column 1 (N times)
+<a href="insert.txt.html#o" class="l">o</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="insert.txt.html#o" class="d">o</a>    open <a href="insert.txt.html#a" class="d">a</a> new line below the current line, append text (N times)
+<a href="insert.txt.html#O" class="l">O</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="insert.txt.html#O" class="d">O</a>    open <a href="insert.txt.html#a" class="d">a</a> new line above the current line, append text (N times)
+<span class="l">:startinsert</span>  :star[tinsert][!]  start <a href="insert.txt.html#Insert" class="d">Insert</a> mode, append when [!] used
+<span class="l">:startreplace</span> :startr[eplace][!]  start <a href="insert.txt.html#Replace" class="d">Replace</a> mode, <a href="motion.txt.html#at" class="d">at</a> EOL when [!] used
+
+in <a href="visual.txt.html#Visual" class="d">Visual</a> block mode:
+<a href="visual.txt.html#v_b_I" class="l">v_b_I</a>    <a href="insert.txt.html#I" class="d">I</a>    <a href="insert.txt.html#insert" class="d">insert</a> the same text in front of all the selected lines
+<a href="visual.txt.html#v_b_A" class="l">v_b_A</a>    <a href="insert.txt.html#A" class="d">A</a>    append the same text after all the selected lines
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_ai" class="t">Q_ai</a>          <a href="insert.txt.html#Insert" class="d">Insert</a> mode keys
+
+<a href="index.txt.html#insert-index" class="l">insert-index</a>  alphabetical <a href="index.txt.html#index" class="d">index</a> of <a href="insert.txt.html#Insert" class="d">Insert</a> mode commands
+
+leaving <a href="insert.txt.html#Insert" class="d">Insert</a> mode:
+<a href="insert.txt.html#i_%3CEsc%3E" class="l">i_&lt;Esc&gt;</a>       <span class="s">&lt;Esc&gt;</span>             end <a href="insert.txt.html#Insert" class="d">Insert</a> mode, back to <a href="intro.txt.html#Normal" class="d">Normal</a> mode
+<span class="l">i_CTRL-C</span>      <span class="k">CTRL-C</span>            like <span class="s">&lt;Esc&gt;</span><a href="motion.txt.html#%2C" class="d">,</a> but do not use an abbreviation
+<span class="l">i_CTRL-O</span>      <a href="motion.txt.html#CTRL-O" class="k">CTRL-O</a> <span class="s">{command}</span>  execute <span class="s">{command}</span> and return to <a href="insert.txt.html#Insert" class="d">Insert</a> mode
+
+moving around:
+<a href="insert.txt.html#i_%3CUp%3E" class="l">i_&lt;Up&gt;</a>        cursor keys       move cursor left/right/up/down
+<a href="insert.txt.html#i_%3CS-Left%3E" class="l">i_&lt;S-Left&gt;</a>    shift-left/right  one <a href="motion.txt.html#word" class="d">word</a> left/right
+<span class="l">i_&lt;S-Up&gt;</span>      shift-up/down     one screenful backward/forward
+<a href="insert.txt.html#i_%3CEnd%3E" class="l">i_&lt;End&gt;</a>       <a href="motion.txt.html#%3CEnd%3E" class="s">&lt;End&gt;</a>             cursor after last character in the line
+<a href="insert.txt.html#i_%3CHome%3E" class="l">i_&lt;Home&gt;</a>      <a href="motion.txt.html#%3CHome%3E" class="s">&lt;Home&gt;</a>            cursor to first character in the line
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_ss" class="t">Q_ss</a>          Special keys in <a href="insert.txt.html#Insert" class="d">Insert</a> mode
+
+<a href="insert.txt.html#i_CTRL-V" class="l">i_CTRL-V</a>      <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a> <span class="s">{char}</span>..   <a href="insert.txt.html#insert" class="d">insert</a> character literally, or enter decimal
+                                     byte value
+<a href="insert.txt.html#i_%3CNL%3E" class="l">i_&lt;NL&gt;</a>        <a href="motion.txt.html#%3CNL%3E" class="s">&lt;NL&gt;</a> or <a href="motion.txt.html#%3CCR%3E" class="s">&lt;CR&gt;</a> or <a href="motion.txt.html#CTRL-M" class="k">CTRL-M</a> or <a href="motion.txt.html#CTRL-J" class="k">CTRL-J</a>
+                                  begin new line
+<a href="insert.txt.html#i_CTRL-E" class="l">i_CTRL-E</a>      <a href="scroll.txt.html#CTRL-E" class="k">CTRL-E</a>            <a href="insert.txt.html#insert" class="d">insert</a> the character from below the cursor
+<a href="insert.txt.html#i_CTRL-Y" class="l">i_CTRL-Y</a>      <a href="scroll.txt.html#CTRL-Y" class="k">CTRL-Y</a>            <a href="insert.txt.html#insert" class="d">insert</a> the character from above the cursor
+
+<a href="insert.txt.html#i_CTRL-A" class="l">i_CTRL-A</a>      <a href="change.txt.html#CTRL-A" class="k">CTRL-A</a>            <a href="insert.txt.html#insert" class="d">insert</a> previously inserted text
+<a href="insert.txt.html#i_CTRL-%40" class="l">i_CTRL-@</a>      <span class="k">CTRL-@</span>            <a href="insert.txt.html#insert" class="d">insert</a> previously inserted text and stop
+                                     <a href="insert.txt.html#Insert" class="d">Insert</a> mode
+<a href="insert.txt.html#i_CTRL-R" class="l">i_CTRL-R</a>      <a href="undo.txt.html#CTRL-R" class="k">CTRL-R</a> <span class="s">{0-9a-z%#:.-="}</span>  <a href="insert.txt.html#insert" class="d">insert</a> the contents of <a href="insert.txt.html#a" class="d">a</a> register
+
+<a href="insert.txt.html#i_CTRL-N" class="l">i_CTRL-N</a>      <a href="motion.txt.html#CTRL-N" class="k">CTRL-N</a>            <a href="insert.txt.html#insert" class="d">insert</a> next match of identifier before the
+                                     cursor
+<a href="insert.txt.html#i_CTRL-P" class="l">i_CTRL-P</a>      <a href="motion.txt.html#CTRL-P" class="k">CTRL-P</a>            <a href="insert.txt.html#insert" class="d">insert</a> previous match of identifier before
+                                     the cursor
+<span class="l">i_CTRL-X</span>      <a href="change.txt.html#CTRL-X" class="k">CTRL-X</a> ...        complete the <a href="motion.txt.html#word" class="d">word</a> before the cursor in
+                                     various ways
+
+<a href="insert.txt.html#i_%3CBS%3E" class="l">i_&lt;BS&gt;</a>        <a href="motion.txt.html#%3CBS%3E" class="s">&lt;BS&gt;</a> or <a href="motion.txt.html#CTRL-H" class="k">CTRL-H</a>    delete the character before the cursor
+<a href="insert.txt.html#i_%3CDel%3E" class="l">i_&lt;Del&gt;</a>       <a href="change.txt.html#%3CDel%3E" class="s">&lt;Del&gt;</a>             delete the character under the cursor
+<a href="insert.txt.html#i_CTRL-W" class="l">i_CTRL-W</a>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a>            delete <a href="motion.txt.html#word" class="d">word</a> before the cursor
+<a href="insert.txt.html#i_CTRL-U" class="l">i_CTRL-U</a>      <a href="scroll.txt.html#CTRL-U" class="k">CTRL-U</a>            delete all entered characters in the current
+                                     line
+<a href="insert.txt.html#i_CTRL-T" class="l">i_CTRL-T</a>      <a href="tagsearch.txt.html#CTRL-T" class="k">CTRL-T</a>            <a href="insert.txt.html#insert" class="d">insert</a> one shiftwidth of indent in front of
+                                       the current line
+<a href="insert.txt.html#i_CTRL-D" class="l">i_CTRL-D</a>      <a href="scroll.txt.html#CTRL-D" class="k">CTRL-D</a>            delete one shiftwidth of indent in front of
+                                     the current line
+<span class="l">i_0_CTRL-D</span>    <a href="motion.txt.html#0" class="d">0</a> <a href="scroll.txt.html#CTRL-D" class="k">CTRL-D</a>          delete all indent in the current line
+<span class="l">i_^_CTRL-D</span>    <a href="motion.txt.html#%5E" class="d">^</a> <a href="scroll.txt.html#CTRL-D" class="k">CTRL-D</a>          delete all indent in the current line,
+                                     restore indent in next line
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_di" class="t">Q_di</a>          Digraphs
+
+<span class="l">:dig</span>     :dig[raphs]          show current list of digraphs
+<span class="l">:dig</span>     :dig[raphs] <span class="s">{char1}</span><span class="s">{char2}</span> <span class="s">{number}</span> ...
+                                add digraph(s) to the list
+
+In <a href="insert.txt.html#Insert" class="d">Insert</a> or Command-line mode:
+<span class="l">i_CTRL-K</span>      <span class="k">CTRL-K</span> <span class="s">{char1}</span> <span class="s">{char2}</span>
+                                  enter digraph
+<span class="l">i_digraph</span>     <span class="s">{char1}</span> <a href="motion.txt.html#%3CBS%3E" class="s">&lt;BS&gt;</a> <span class="s">{char2}</span>
+                                  enter digraph if <span class="o">'digraph'</span> option set
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_si" class="t">Q_si</a>          Special inserts
+
+<span class="l">:r</span>       :r <span class="s">[file]</span>       <a href="insert.txt.html#insert" class="d">insert</a> the contents of <span class="s">[file]</span> below the cursor
+<span class="l">:r!</span>      :r! <span class="s">{command}</span>   <a href="insert.txt.html#insert" class="d">insert</a> the standard output of <span class="s">{command}</span> below the
+                              cursor
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_de" class="t">Q_de</a>          Deleting text
+
+<a href="change.txt.html#x" class="l">x</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#x" class="d">x</a>            delete <a href="pattern.txt.html#N" class="d">N</a> characters under and after the cursor
+<a href="change.txt.html#%3CDel%3E" class="l">&lt;Del&gt;</a> <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#%3CDel%3E" class="s">&lt;Del&gt;</a>        delete <a href="pattern.txt.html#N" class="d">N</a> characters under and after the cursor
+<a href="change.txt.html#X" class="l">X</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#X" class="d">X</a>            delete <a href="pattern.txt.html#N" class="d">N</a> characters before the cursor
+<a href="change.txt.html#d" class="l">d</a>     <a href="pattern.txt.html#N" class="d">N</a>  d{motion}    delete the text that <a href="motion.txt.html#is" class="d">is</a> moved over with <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a>
+<a href="change.txt.html#v_d" class="l">v_d</a>   <span class="s">{visual}</span><a href="change.txt.html#d" class="d">d</a>       delete the highlighted text
+<a href="change.txt.html#dd" class="l">dd</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#dd" class="d">dd</a>           delete <a href="pattern.txt.html#N" class="d">N</a> lines
+<a href="change.txt.html#D" class="l">D</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#D" class="d">D</a>            delete to the end of the line (and N-1 more lines)
+<a href="change.txt.html#J" class="l">J</a>     <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#J" class="d">J</a>            join N-1 lines (delete <span class="s">&lt;EOL&gt;</span>s)
+<a href="change.txt.html#v_J" class="l">v_J</a>   <span class="s">{visual}</span><a href="change.txt.html#J" class="d">J</a>       join the highlighted lines
+<a href="change.txt.html#gJ" class="l">gJ</a>    <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#gJ" class="d">gJ</a>           like "<a href="change.txt.html#J" class="d">J</a>"<a href="motion.txt.html#%2C" class="d">,</a> but without <a href="insert.txt.html#inserting" class="d">inserting</a> spaces
+<a href="change.txt.html#v_gJ" class="l">v_gJ</a>  <span class="s">{visual}</span><a href="change.txt.html#gJ" class="d">gJ</a>      like "<span class="s">{visual}</span><a href="change.txt.html#J" class="d">J</a>"<a href="motion.txt.html#%2C" class="d">,</a> but without <a href="insert.txt.html#inserting" class="d">inserting</a> spaces
+<a href="change.txt.html#%3Ad" class="l">:d</a>    :[range]d [x]   delete <span class="s">[range]</span> lines [into register x]
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_cm" class="t">Q_cm</a>          Copying and moving text
+
+<a href="change.txt.html#quote" class="l">quote</a>   "<span class="s">{char}</span>       use register <span class="s">{char}</span> for the next delete, yank, or <a href="change.txt.html#put" class="d">put</a>
+<a href="change.txt.html#%3Areg" class="l">:reg</a>    <a href="change.txt.html#%3Areg" class="d">:reg</a>          show the contents of all <a href="change.txt.html#registers" class="d">registers</a>
+<a href="change.txt.html#%3Areg" class="l">:reg</a>    <a href="change.txt.html#%3Areg" class="d">:reg</a> <span class="s">{arg}</span>    show the contents of <a href="change.txt.html#registers" class="d">registers</a> mentioned in <span class="s">{arg}</span>
+<a href="change.txt.html#y" class="l">y</a>       <a href="pattern.txt.html#N" class="d">N</a>  y{motion}  <a href="change.txt.html#yank" class="d">yank</a> the text moved over with <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a> into <a href="insert.txt.html#a" class="d">a</a> register
+<a href="change.txt.html#v_y" class="l">v_y</a>        <span class="s">{visual}</span><a href="change.txt.html#y" class="d">y</a>  <a href="change.txt.html#yank" class="d">yank</a> the highlighted text into <a href="insert.txt.html#a" class="d">a</a> register
+<a href="change.txt.html#yy" class="l">yy</a>      <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#yy" class="d">yy</a>         <a href="change.txt.html#yank" class="d">yank</a> <a href="pattern.txt.html#N" class="d">N</a> lines into <a href="insert.txt.html#a" class="d">a</a> register
+<a href="change.txt.html#Y" class="l">Y</a>       <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#Y" class="d">Y</a>          <a href="change.txt.html#yank" class="d">yank</a> <a href="pattern.txt.html#N" class="d">N</a> lines into <a href="insert.txt.html#a" class="d">a</a> register
+<a href="change.txt.html#p" class="l">p</a>       <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#p" class="d">p</a>          <a href="change.txt.html#put" class="d">put</a> <a href="insert.txt.html#a" class="d">a</a> register after the cursor position (N times)
+<a href="change.txt.html#P" class="l">P</a>       <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#P" class="d">P</a>          <a href="change.txt.html#put" class="d">put</a> <a href="insert.txt.html#a" class="d">a</a> register before the cursor position (N times)
+<span class="l">]p</span>      <a href="pattern.txt.html#N" class="d">N</a>  ]p         like p, but adjust indent to current line
+<span class="l">[p</span>      <a href="pattern.txt.html#N" class="d">N</a>  [p         like P, but adjust indent to current line
+<a href="change.txt.html#gp" class="l">gp</a>      <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#gp" class="d">gp</a>         like p, but leave cursor after the new text
+<a href="change.txt.html#gP" class="l">gP</a>      <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#gP" class="d">gP</a>         like P, but leave cursor after the new text
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_ch" class="t">Q_ch</a>          Changing text
+
+<a href="change.txt.html#r" class="l">r</a>       <a href="pattern.txt.html#N" class="d">N</a>  r{char}    replace <a href="pattern.txt.html#N" class="d">N</a> characters with <span class="s">{char}</span>
+<span class="l">gr</span>      <a href="pattern.txt.html#N" class="d">N</a>  gr{char}   replace <a href="pattern.txt.html#N" class="d">N</a> characters without affecting layout
+<a href="change.txt.html#R" class="l">R</a>       <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#R" class="d">R</a>          enter <a href="insert.txt.html#Replace" class="d">Replace</a> mode (repeat the entered text <a href="pattern.txt.html#N" class="d">N</a> times)
+<span class="l">gR</span>      <a href="pattern.txt.html#N" class="d">N</a>  gR         enter virtual <a href="insert.txt.html#Replace" class="d">Replace</a> mode: Like <a href="insert.txt.html#Replace" class="d">Replace</a> mode but
+                           without affecting layout
+<a href="visual.txt.html#v_b_r" class="l">v_b_r</a>   <span class="s">{visual}</span>r{char}
+                        in <a href="visual.txt.html#Visual" class="d">Visual</a> block mode: <a href="insert.txt.html#Replace" class="d">Replace</a> each char of the
+                           selected text with <span class="s">{char}</span>
+
+        (change <a href="change.txt.html#%3D" class="d">=</a> delete text and enter <a href="insert.txt.html#Insert" class="d">Insert</a> mode)
+<a href="change.txt.html#c" class="l">c</a>       <a href="pattern.txt.html#N" class="d">N</a>  c{motion}  change the text that <a href="motion.txt.html#is" class="d">is</a> moved over with <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a>
+<a href="change.txt.html#v_c" class="l">v_c</a>        <span class="s">{visual}</span><a href="change.txt.html#c" class="d">c</a>  change the highlighted text
+<a href="change.txt.html#cc" class="l">cc</a>      <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#cc" class="d">cc</a>         change <a href="pattern.txt.html#N" class="d">N</a> lines
+<a href="change.txt.html#S" class="l">S</a>       <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#S" class="d">S</a>          change <a href="pattern.txt.html#N" class="d">N</a> lines
+<a href="change.txt.html#C" class="l">C</a>       <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#C" class="d">C</a>          change to the end of the line (and N-1 more lines)
+<a href="change.txt.html#s" class="l">s</a>       <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#s" class="d">s</a>          change <a href="pattern.txt.html#N" class="d">N</a> characters
+<a href="visual.txt.html#v_b_c" class="l">v_b_c</a>      <span class="s">{visual}</span><a href="change.txt.html#c" class="d">c</a>  in <a href="visual.txt.html#Visual" class="d">Visual</a> block mode: Change each of the selected
+                           lines with the entered text
+<a href="visual.txt.html#v_b_C" class="l">v_b_C</a>      <span class="s">{visual}</span><a href="change.txt.html#C" class="d">C</a>  in <a href="visual.txt.html#Visual" class="d">Visual</a> block mode: Change each of the selected
+                           lines until end-of-line with the entered text
+
+<a href="change.txt.html#%7E" class="l">~</a>       <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#%7E" class="d">~</a>          switch <a href="change.txt.html#case" class="d">case</a> for <a href="pattern.txt.html#N" class="d">N</a> characters and advance cursor
+<a href="change.txt.html#v_%7E" class="l">v_~</a>        <span class="s">{visual}</span><a href="change.txt.html#%7E" class="d">~</a>  switch <a href="change.txt.html#case" class="d">case</a> for highlighted text
+<a href="change.txt.html#v_u" class="l">v_u</a>        <span class="s">{visual}</span><a href="undo.txt.html#u" class="d">u</a>  make highlighted text <a href="change.txt.html#lowercase" class="d">lowercase</a>
+<a href="change.txt.html#v_U" class="l">v_U</a>        <span class="s">{visual}</span>U  make highlighted text <a href="change.txt.html#uppercase" class="d">uppercase</a>
+<a href="change.txt.html#g%7E" class="l">g~</a>         g~{motion} switch <a href="change.txt.html#case" class="d">case</a> for the text that <a href="motion.txt.html#is" class="d">is</a> moved over with
+                           <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a>
+<a href="change.txt.html#gu" class="l">gu</a>         gu{motion} make the text that <a href="motion.txt.html#is" class="d">is</a> moved over with <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a>
+                           <a href="change.txt.html#lowercase" class="d">lowercase</a>
+<a href="change.txt.html#gU" class="l">gU</a>         gU{motion} make the text that <a href="motion.txt.html#is" class="d">is</a> moved over with <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a>
+                           <a href="change.txt.html#uppercase" class="d">uppercase</a>
+<span class="l">v_g?</span>       <span class="s">{visual}</span>g? perform rot13 encoding on highlighted text
+<span class="l">g?</span>         g?{motion} perform rot13 encoding on the text that <a href="motion.txt.html#is" class="d">is</a> moved over
+                           with <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a>
+
+<a href="change.txt.html#CTRL-A" class="l">CTRL-A</a>  <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#CTRL-A" class="k">CTRL-A</a>     add <a href="pattern.txt.html#N" class="d">N</a> to the number <a href="motion.txt.html#at" class="d">at</a> or after the cursor
+<a href="change.txt.html#CTRL-X" class="l">CTRL-X</a>  <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#CTRL-X" class="k">CTRL-X</a>     subtract <a href="pattern.txt.html#N" class="d">N</a> from the number <a href="motion.txt.html#at" class="d">at</a> or after the cursor
+
+<a href="change.txt.html#%3C" class="l">&lt;</a>       <a href="pattern.txt.html#N" class="d">N</a>  &lt;{motion}  move the lines that are moved over with <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a> one
+                           shiftwidth left
+<a href="change.txt.html#%3C%3C" class="l">&lt;&lt;</a>      <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#%3C%3C" class="d">&lt;&lt;</a>         move <a href="pattern.txt.html#N" class="d">N</a> lines one shiftwidth left
+<a href="change.txt.html#%3E" class="l">&gt;</a>       <a href="pattern.txt.html#N" class="d">N</a>  &gt;{motion}  move the lines that are moved over with <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a> one
+                           shiftwidth right
+<a href="change.txt.html#%3E%3E" class="l">&gt;&gt;</a>      <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#%3E%3E" class="d">&gt;&gt;</a>         move <a href="pattern.txt.html#N" class="d">N</a> lines one shiftwidth right
+<span class="l">gq</span>      <a href="pattern.txt.html#N" class="d">N</a>  gq{motion} format the lines that are moved over with <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a> to
+                           <a href="options.txt.html#%27textwidth%27" class="o">'textwidth'</a> length
+<span class="l">:ce</span>     :[range]ce[nter] <span class="s">[width]</span>
+                        center the lines in <span class="s">[range]</span>
+<span class="l">:le</span>     :[range]le[ft] <span class="s">[indent]</span>
+                        left-align the lines in <span class="s">[range]</span> (with <span class="s">[indent]</span><a href="motion.txt.html#%29" class="d">)</a>
+<span class="l">:ri</span>     :[range]ri[ght] <span class="s">[width]</span>
+                        right-align the lines in <span class="s">[range]</span>
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_co" class="t">Q_co</a>          Complex changes
+
+<a href="change.txt.html#%21" class="l">!</a>        <a href="pattern.txt.html#N" class="d">N</a>  !{motion}{command}&lt;CR&gt;
+                        <a href="change.txt.html#filter" class="d">filter</a> the lines that are moved over through <span class="s">{command}</span>
+<a href="change.txt.html#%21%21" class="l">!!</a>       <a href="pattern.txt.html#N" class="d">N</a>  !!{command}&lt;CR&gt;
+                        <a href="change.txt.html#filter" class="d">filter</a> <a href="pattern.txt.html#N" class="d">N</a> lines through <span class="s">{command}</span>
+<a href="change.txt.html#v_%21" class="l">v_!</a>         <span class="s">{visual}</span>!{command}&lt;CR&gt;
+                        <a href="change.txt.html#filter" class="d">filter</a> the highlighted lines through <span class="s">{command}</span>
+<a href="change.txt.html#%3Arange%21" class="l">:range!</a>  :[range]! <span class="s">{command}</span><a href="motion.txt.html#%3CCR%3E" class="s">&lt;CR&gt;</a>
+                        <a href="change.txt.html#filter" class="d">filter</a> <span class="s">[range]</span> lines through <span class="s">{command}</span>
+<a href="change.txt.html#%3D" class="l">=</a>        <a href="pattern.txt.html#N" class="d">N</a>  ={motion}
+                        <a href="change.txt.html#filter" class="d">filter</a> the lines that are moved over through <a href="options.txt.html#%27equalprg%27" class="o">'equalprg'</a>
+<a href="change.txt.html#%3D%3D" class="l">==</a>       <a href="pattern.txt.html#N" class="d">N</a>  <a href="change.txt.html#%3D%3D" class="d">==</a>        <a href="change.txt.html#filter" class="d">filter</a> <a href="pattern.txt.html#N" class="d">N</a> lines through <a href="options.txt.html#%27equalprg%27" class="o">'equalprg'</a>
+<a href="change.txt.html#v_%3D" class="l">v_=</a>         <span class="s">{visual}</span><a href="change.txt.html#%3D" class="d">=</a>
+                        <a href="change.txt.html#filter" class="d">filter</a> the highlighted lines through <a href="options.txt.html#%27equalprg%27" class="o">'equalprg'</a>
+<a href="change.txt.html#%3As" class="l">:s</a>       :[range]s[ubstitute]/{pattern}/{string}/[g][c]
+                        substitute <span class="s">{pattern}</span> by <span class="s">{string}</span> in <span class="s">[range]</span> lines;
+                           with [g], replace all occurrences of <span class="s">{pattern}</span><a href="motion.txt.html#%3B" class="d">;</a>
+                           with [c], confirm each replacement
+<a href="change.txt.html#%3As" class="l">:s</a>       :[range]s[ubstitute] [g][c]
+                        repeat previous "<a href="change.txt.html#%3As" class="d">:s</a>" with new range and <a href="options.txt.html#options" class="d">options</a>
+<span class="l">&amp;</span>           &amp;         Repeat previous "<a href="change.txt.html#%3As" class="d">:s</a>" on current line without <a href="options.txt.html#options" class="d">options</a>
+<span class="l">:ret</span>     :[range]ret[ab][!] <span class="s">[tabstop]</span>
+                        set <a href="options.txt.html#%27tabstop%27" class="o">'tabstop'</a> to new value and adjust white space
+                           accordingly
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_vi" class="t">Q_vi</a>          <a href="visual.txt.html#Visual" class="d">Visual</a> mode
+
+<a href="index.txt.html#visual-index" class="l">visual-index</a>  list of <a href="visual.txt.html#Visual" class="d">Visual</a> mode commands.
+
+<a href="visual.txt.html#v" class="l">v</a>        <a href="visual.txt.html#v" class="d">v</a>            start highlighting characters  <a href="motion.txt.html#%7D" class="d">}</a>  move cursor and use
+<a href="visual.txt.html#V" class="l">V</a>        <a href="visual.txt.html#V" class="d">V</a>            start highlighting <a href="motion.txt.html#linewise" class="d">linewise</a>    <a href="motion.txt.html#%7D" class="d">}</a>  <a href="motion.txt.html#operator" class="d">operator</a> to affect
+<a href="visual.txt.html#CTRL-V" class="l">CTRL-V</a>   <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a>       start highlighting blockwise   <a href="motion.txt.html#%7D" class="d">}</a>  highlighted text
+<a href="visual.txt.html#v_o" class="l">v_o</a>      <a href="insert.txt.html#o" class="d">o</a>            exchange cursor position with start of highlighting
+<a href="visual.txt.html#gv" class="l">gv</a>       <a href="visual.txt.html#gv" class="d">gv</a>           start highlighting on previous visual area
+<a href="visual.txt.html#v_v" class="l">v_v</a>      <a href="visual.txt.html#v" class="d">v</a>            highlight characters or stop highlighting
+<a href="visual.txt.html#v_V" class="l">v_V</a>      <a href="visual.txt.html#V" class="d">V</a>            highlight <a href="motion.txt.html#linewise" class="d">linewise</a> or stop highlighting
+<a href="visual.txt.html#v_CTRL-V" class="l">v_CTRL-V</a> <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a>       highlight blockwise or stop highlighting
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_to" class="t">Q_to</a>          Text <a href="index.txt.html#objects" class="d">objects</a> (only in <a href="visual.txt.html#Visual" class="d">Visual</a> mode or after an operator)
+
+<a href="motion.txt.html#v_aw" class="l">v_aw</a>  <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#aw" class="d">aw</a>           Select "<a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#word" class="d">word</a>"
+<a href="motion.txt.html#v_iw" class="l">v_iw</a>  <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#iw" class="d">iw</a>           Select "inner <a href="motion.txt.html#word" class="d">word</a>"
+<a href="motion.txt.html#v_aW" class="l">v_aW</a>  <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#aW" class="d">aW</a>           Select "<a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#WORD" class="l">WORD</a>"
+<a href="motion.txt.html#v_iW" class="l">v_iW</a>  <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#iW" class="d">iW</a>           Select "inner <a href="motion.txt.html#WORD" class="l">WORD</a>"
+<a href="motion.txt.html#v_as" class="l">v_as</a>  <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#as" class="d">as</a>           Select "<a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#sentence" class="d">sentence</a>"
+<a href="motion.txt.html#v_is" class="l">v_is</a>  <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#is" class="d">is</a>           Select "inner <a href="motion.txt.html#sentence" class="d">sentence</a>"
+<a href="motion.txt.html#v_ap" class="l">v_ap</a>  <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#ap" class="d">ap</a>           Select "<a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#paragraph" class="d">paragraph</a>"
+<a href="motion.txt.html#v_ip" class="l">v_ip</a>  <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#ip" class="d">ip</a>           Select "inner <a href="motion.txt.html#paragraph" class="d">paragraph</a>"
+<a href="motion.txt.html#v_ab" class="l">v_ab</a>  <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#ab" class="d">ab</a>           Select "<a href="insert.txt.html#a" class="d">a</a> block" (from "<a href="motion.txt.html#%5B%28" class="d">[(</a>" to "<a href="motion.txt.html#%5D%29" class="d">])</a>"<a href="motion.txt.html#%29" class="d">)</a>
+<a href="motion.txt.html#v_ib" class="l">v_ib</a>  <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#ib" class="d">ib</a>           Select "inner block" (from "<a href="motion.txt.html#%5B%28" class="d">[(</a>" to "<a href="motion.txt.html#%5D%29" class="d">])</a>"<a href="motion.txt.html#%29" class="d">)</a>
+<a href="motion.txt.html#v_aB" class="l">v_aB</a>  <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#aB" class="d">aB</a>           Select "<a href="insert.txt.html#a" class="d">a</a> Block" (from "<a href="motion.txt.html#%5B%7B" class="d">[{</a>" to "<a href="motion.txt.html#%5D%7D" class="d">]}</a>"<a href="motion.txt.html#%29" class="d">)</a>
+<a href="motion.txt.html#v_iB" class="l">v_iB</a>  <a href="pattern.txt.html#N" class="d">N</a>  <a href="motion.txt.html#iB" class="d">iB</a>           Select "inner Block" (from "<a href="motion.txt.html#%5B%7B" class="d">[{</a>" to "<a href="motion.txt.html#%5D%7D" class="d">]}</a>"<a href="motion.txt.html#%29" class="d">)</a>
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_re" class="t">Q_re</a>          Repeating commands
+
+<a href="repeat.txt.html#." class="l">.</a>        <a href="pattern.txt.html#N" class="d">N</a>  <a href="repeat.txt.html#." class="d">.</a>         repeat last change (with <a href="intro.txt.html#count" class="d">count</a> replaced with N)
+<a href="repeat.txt.html#q" class="l">q</a>           q{a-z}    record typed characters into register <span class="s">{a-z}</span>
+<a href="repeat.txt.html#q" class="l">q</a>           q{A-Z}    record typed characters, appended to register <span class="s">{a-z}</span>
+<a href="repeat.txt.html#q" class="l">q</a>           <a href="repeat.txt.html#q" class="d">q</a>         stop <a href="repeat.txt.html#recording" class="d">recording</a>
+<a href="repeat.txt.html#%40" class="l">@</a>        <a href="pattern.txt.html#N" class="d">N</a>  @{a-z}    execute the contents of register <span class="s">{a-z}</span> (N times)
+<a href="repeat.txt.html#%40%40" class="l">@@</a>       <a href="pattern.txt.html#N" class="d">N</a>  <a href="repeat.txt.html#%40%40" class="d">@@</a>           repeat previous @{a-z} (N times)
+<span class="l">:@</span>       :@{a-z}      execute the contents of register <span class="s">{a-z}</span> <a href="motion.txt.html#as" class="d">as</a> an Ex
+                           command
+<span class="l">:@@</span>      :@@          repeat previous :@{a-z}
+<span class="l">:g</span>       :[range]g[lobal]/{pattern}/[cmd]
+                        Execute Ex command <span class="s">[cmd]</span> (default: ":p"<a href="motion.txt.html#%29" class="d">)</a> on the lines
+                           within <span class="s">[range]</span> where <span class="s">{pattern}</span> matches.
+<span class="l">:g</span>       :[range]g[lobal]!/{pattern}/[cmd]
+                        Execute Ex command <span class="s">[cmd]</span> (default: ":p"<a href="motion.txt.html#%29" class="d">)</a> on the lines
+                           within <span class="s">[range]</span> where <span class="s">{pattern}</span> does NOT match.
+<span class="l">:so</span>      :so[urce] <span class="s">{file}</span>
+                        Read Ex commands from <span class="s">{file}</span><a href="repeat.txt.html#." class="d">.</a>
+<span class="l">:so</span>      :so[urce]! <span class="s">{file}</span>
+                        Read Vim commands from <span class="s">{file}</span><a href="repeat.txt.html#." class="d">.</a>
+<span class="l">:sl</span>      :sl[eep] <span class="s">[sec]</span>
+                        don't do anything for <span class="s">[sec]</span> seconds
+<span class="l">gs</span>       <a href="pattern.txt.html#N" class="d">N</a>  gs        Goto Sleep for <a href="pattern.txt.html#N" class="d">N</a> seconds
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_km" class="t">Q_km</a>          Key <a href="map.txt.html#mapping" class="d">mapping</a>
+
+<a href="map.txt.html#%3Amap" class="l">:map</a>       :ma[p] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a>   Map <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> to <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a> in <a href="intro.txt.html#Normal" class="d">Normal</a> and <a href="visual.txt.html#Visual" class="d">Visual</a>
+                                     mode.
+<span class="l">:map!</span>      :ma[p]! <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a>  Map <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> to <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a> in <a href="insert.txt.html#Insert" class="d">Insert</a> and Command-line
+                                     mode.
+<a href="map.txt.html#%3Anoremap" class="l">:noremap</a>   :no[remap][!] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a>
+                                  Same <a href="motion.txt.html#as" class="d">as</a> "<a href="map.txt.html#%3Amap" class="d">:map</a>"<a href="motion.txt.html#%2C" class="d">,</a> no remapping for this <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a>
+<a href="map.txt.html#%3Aunmap" class="l">:unmap</a>     :unm[ap] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a>       Remove the <a href="map.txt.html#mapping" class="d">mapping</a> of <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> for <a href="intro.txt.html#Normal" class="d">Normal</a> and
+                                     <a href="visual.txt.html#Visual" class="d">Visual</a> mode.
+<span class="l">:unmap!</span>    :unm[ap]! <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a>      Remove the <a href="map.txt.html#mapping" class="d">mapping</a> of <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> for <a href="insert.txt.html#Insert" class="d">Insert</a> and
+                                     Command-line mode.
+<a href="map.txt.html#%3Amap_l" class="l">:map_l</a>     :ma[p] <span class="s">[lhs]</span>         List mappings (starting with <span class="s">[lhs]</span><a href="motion.txt.html#%29" class="d">)</a> for
+                                     <a href="intro.txt.html#Normal" class="d">Normal</a> and <a href="visual.txt.html#Visual" class="d">Visual</a> mode.
+<span class="l">:map_l!</span>    :ma[p]! <span class="s">[lhs]</span>        List mappings (starting with <span class="s">[lhs]</span><a href="motion.txt.html#%29" class="d">)</a> for
+                                     <a href="insert.txt.html#Insert" class="d">Insert</a> and Command-line mode.
+<span class="l">:cmap</span>      :cmap/:cunmap/:cnoremap
+                                  like ":map!"<a href="pattern.txt.html#%2F" class="d">/</a>":unmap!"<a href="pattern.txt.html#%2F" class="d">/</a>":noremap!" but for
+                                     Command-line mode only
+<span class="l">:imap</span>      :imap/:iunmap/:inoremap
+                                  like ":map!"<a href="pattern.txt.html#%2F" class="d">/</a>":unmap!"<a href="pattern.txt.html#%2F" class="d">/</a>":noremap!" but for
+                                     <a href="insert.txt.html#Insert" class="d">Insert</a> mode only
+<a href="map.txt.html#%3Anmap" class="l">:nmap</a>      :nmap/:nunmap/:nnoremap
+                                  like "<a href="map.txt.html#%3Amap" class="d">:map</a>"<a href="pattern.txt.html#%2F" class="d">/</a>"<a href="map.txt.html#%3Aunmap" class="d">:unmap</a>"<a href="pattern.txt.html#%2F" class="d">/</a>"<a href="map.txt.html#%3Anoremap" class="d">:noremap</a>" but for
+                                     <a href="intro.txt.html#Normal" class="d">Normal</a> mode only
+<a href="map.txt.html#%3Avmap" class="l">:vmap</a>      :vmap/:vunmap/:vnoremap
+                                  like "<a href="map.txt.html#%3Amap" class="d">:map</a>"<a href="pattern.txt.html#%2F" class="d">/</a>"<a href="map.txt.html#%3Aunmap" class="d">:unmap</a>"<a href="pattern.txt.html#%2F" class="d">/</a>"<a href="map.txt.html#%3Anoremap" class="d">:noremap</a>" but for
+                                     <a href="visual.txt.html#Visual" class="d">Visual</a> mode only
+<a href="map.txt.html#%3Aomap" class="l">:omap</a>      :omap/:ounmap/:onoremap
+                                  like "<a href="map.txt.html#%3Amap" class="d">:map</a>"<a href="pattern.txt.html#%2F" class="d">/</a>"<a href="map.txt.html#%3Aunmap" class="d">:unmap</a>"<a href="pattern.txt.html#%2F" class="d">/</a>"<a href="map.txt.html#%3Anoremap" class="d">:noremap</a>" but only for
+                                     when an <a href="motion.txt.html#operator" class="d">operator</a> <a href="motion.txt.html#is" class="d">is</a> pending
+<span class="l">:mapc</span>      :mapc[lear]          remove mappings for <a href="intro.txt.html#Normal" class="d">Normal</a> and <a href="visual.txt.html#Visual" class="d">Visual</a> mode
+<span class="l">:mapc</span>      :mapc[lear]!         remove mappings for <a href="insert.txt.html#Insert" class="d">Insert</a> and Cmdline mode
+<span class="l">:imapc</span>     :imapc[lear]         remove mappings for <a href="insert.txt.html#Insert" class="d">Insert</a> mode
+<span class="l">:vmapc</span>     :vmapc[lear]         remove mappings for <a href="visual.txt.html#Visual" class="d">Visual</a> mode
+<span class="l">:omapc</span>     :omapc[lear]         remove mappings for <a href="intro.txt.html#Operator-pending" class="d">Operator-pending</a> mode
+<span class="l">:nmapc</span>     :nmapc[lear]         remove mappings for <a href="intro.txt.html#Normal" class="d">Normal</a> mode
+<span class="l">:cmapc</span>     :cmapc[lear]         remove mappings for Cmdline mode
+<span class="l">:mkexrc</span>    :mk[exrc][!] <span class="s">[file]</span>  write current mappings, abbreviations, and
+                                     settings to <span class="s">[file]</span> (default: ".exrc"<a href="motion.txt.html#%3B" class="d">;</a>
+                                     use <a href="change.txt.html#%21" class="d">!</a> to overwrite)
+<span class="l">:mkvimrc</span>   :mkv[imrc][!] <span class="s">[file]</span>
+                                  same <a href="motion.txt.html#as" class="d">as</a> ":mkexrc"<a href="motion.txt.html#%2C" class="d">,</a> but with default ".vimrc"
+<span class="l">:mksession</span> :mks[ession][!] <span class="s">[file]</span>
+                                  like ":mkvimrc"<a href="motion.txt.html#%2C" class="d">,</a> but store current files,
+                                     windows, etc. too, to be able to continue
+                                     this session later.
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_ab" class="t">Q_ab</a>          Abbreviations
+
+<span class="l">:abbreviate</span>   :ab[breviate] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a>  add abbreviation for <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> to <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a>
+<span class="l">:abbreviate</span>   :ab[breviate] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a>        show abbr's that start with <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a>
+<span class="l">:abbreviate</span>   :ab[breviate]              show all abbreviations
+<span class="l">:unabbreviate</span> :una[bbreviate] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a>      remove abbreviation for <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a>
+<span class="l">:noreabbrev</span>   :norea[bbrev] <span class="s">[lhs]</span> <span class="s">[rhs]</span>  like ":ab"<a href="motion.txt.html#%2C" class="d">,</a> but don't remap <span class="s">[rhs]</span>
+<span class="l">:iabbrev</span>      :iab/:iunab/:inoreab       like ":ab"<a href="motion.txt.html#%2C" class="d">,</a> but only for <a href="insert.txt.html#Insert" class="d">Insert</a> mode
+<span class="l">:cabbrev</span>      :cab/:cunab/:cnoreab       like ":ab"<a href="motion.txt.html#%2C" class="d">,</a> but only for
+                                                Command-line mode
+<span class="l">:abclear</span>      :abc[lear]                 remove all abbreviations
+<span class="l">:cabclear</span>     :cabc[lear]                remove all abbr's for Cmdline mode
+<span class="l">:iabclear</span>     :iabc[lear]                remove all abbr's for <a href="insert.txt.html#Insert" class="d">Insert</a> mode
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_op" class="t">Q_op</a>          Options
+
+<a href="options.txt.html#%3Aset" class="l">:set</a>          :se[t]                    Show all modified options.
+<a href="options.txt.html#%3Aset" class="l">:set</a>          :se[t] all                Show all non-termcap options.
+<a href="options.txt.html#%3Aset" class="l">:set</a>          :se[t] termcap            Show all termcap options.
+<a href="options.txt.html#%3Aset" class="l">:set</a>          :se[t] <span class="s">{option}</span>           Set <a href="options.txt.html#boolean" class="d">boolean</a> option (switch <a href="motion.txt.html#it" class="d">it</a> on),
+                                          show string or number option.
+<a href="options.txt.html#%3Aset" class="l">:set</a>          :se[t] no{option}         Reset <a href="options.txt.html#boolean" class="d">boolean</a> option (switch <a href="motion.txt.html#it" class="d">it</a> off).
+<a href="options.txt.html#%3Aset" class="l">:set</a>          :se[t] inv{option}        invert <a href="options.txt.html#boolean" class="d">boolean</a> option.
+<a href="options.txt.html#%3Aset" class="l">:set</a>          :se[t] <span class="s">{option}</span>={value}   Set string/number option to <span class="s">{value}</span><a href="repeat.txt.html#." class="d">.</a>
+<a href="options.txt.html#%3Aset" class="l">:set</a>          :se[t] <span class="s">{option}</span>+={value}  append <span class="s">{value}</span> to string option, add
+                                          <span class="s">{value}</span> to number option
+<a href="options.txt.html#%3Aset" class="l">:set</a>          :se[t] <span class="s">{option}</span>-={value}  remove <span class="s">{value}</span> to string option,
+                                          subtract <span class="s">{value}</span> from number option
+<a href="options.txt.html#%3Aset" class="l">:set</a>          :se[t] <span class="s">{option}</span><a href="pattern.txt.html#%3F" class="d">?</a>          Show value of <span class="s">{option}</span><a href="repeat.txt.html#." class="d">.</a>
+<a href="options.txt.html#%3Aset" class="l">:set</a>          :se[t] <span class="s">{option}</span>&amp;          Reset <span class="s">{option}</span> to its default value.
+
+<span class="l">:setlocal</span>     :setl[ocal]               like "<a href="options.txt.html#%3Aset" class="d">:set</a>" but set the local value
+                                          for <a href="options.txt.html#options" class="d">options</a> that have one
+<span class="l">:setglobal</span>    :setg[lobal]              like "<a href="options.txt.html#%3Aset" class="d">:set</a>" but set the global value
+                                          of <a href="insert.txt.html#a" class="d">a</a> local option
+
+<span class="l">:fix</span>          :fix[del]                 Set value of <span class="o">'t_kD'</span> according to
+                                          value of <span class="o">'t_kb'</span><a href="repeat.txt.html#." class="d">.</a>
+<span class="l">:options</span>      :opt[ions]                Open <a href="insert.txt.html#a" class="d">a</a> new window to view and set
+                                          options, grouped by functionality,
+                                          <a href="insert.txt.html#a" class="d">a</a> one line explanation and links to
+                                          the help.
+
+Short explanation of each option:               <a name="option-list" class="t">option-list</a>
+<a href="options.txt.html#%27backspace%27" class="o">'backspace'</a>       <a href="options.txt.html#%27bs%27" class="o">'bs'</a>      how backspace works <a href="motion.txt.html#at" class="d">at</a> start of line
+<a href="options.txt.html#%27clipboard%27" class="o">'clipboard'</a>       <a href="options.txt.html#%27cb%27" class="o">'cb'</a>      use the clipboard <a href="motion.txt.html#as" class="d">as</a> the unnamed register
+<a href="options.txt.html#%27cpoptions%27" class="o">'cpoptions'</a>       <a href="options.txt.html#%27cpo%27" class="o">'cpo'</a>     flags for Vi-compatible behavior
+<span class="o">'eadirection'</span>     <span class="o">'ead'</span>     in which direction <a href="options.txt.html#%27equalalways%27" class="o">'equalalways'</a> works
+<a href="options.txt.html#%27equalalways%27" class="o">'equalalways'</a>     <a href="options.txt.html#%27ea%27" class="o">'ea'</a>      <a href="windows.txt.html#windows" class="d">windows</a> are automatically made the same size
+<a href="options.txt.html#%27equalprg%27" class="o">'equalprg'</a>        <a href="options.txt.html#%27ep%27" class="o">'ep'</a>      external program to use for "<a href="change.txt.html#%3D" class="d">=</a>" command
+<a href="options.txt.html#%27expandtab%27" class="o">'expandtab'</a>       <a href="options.txt.html#%27et%27" class="o">'et'</a>      use spaces when <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a> <a href="motion.txt.html#is" class="d">is</a> inserted
+<a href="options.txt.html#%27foldopen%27" class="o">'foldopen'</a>        <a href="options.txt.html#%27fdo%27" class="o">'fdo'</a>     for which commands <a href="insert.txt.html#a" class="d">a</a> fold will be opened
+<a href="options.txt.html#%27formatprg%27" class="o">'formatprg'</a>       <a href="options.txt.html#%27fp%27" class="o">'fp'</a>      name of external program used with "gq" command
+<a href="options.txt.html#%27hlsearch%27" class="o">'hlsearch'</a>        <a href="options.txt.html#%27hls%27" class="o">'hls'</a>     highlight matches with last search <a href="pattern.txt.html#pattern" class="d">pattern</a>
+<a href="options.txt.html#%27ignorecase%27" class="o">'ignorecase'</a>      <a href="options.txt.html#%27ic%27" class="o">'ic'</a>      ignore <a href="change.txt.html#case" class="d">case</a> in search patterns
+<a href="options.txt.html#%27incsearch%27" class="o">'incsearch'</a>       <a href="options.txt.html#%27is%27" class="o">'is'</a>      highlight match while typing search <a href="pattern.txt.html#pattern" class="d">pattern</a>
+<a href="options.txt.html#%27iskeyword%27" class="o">'iskeyword'</a>       <a href="options.txt.html#%27isk%27" class="o">'isk'</a>     characters included in keywords
+<a href="options.txt.html#%27joinspaces%27" class="o">'joinspaces'</a>      <a href="options.txt.html#%27js%27" class="o">'js'</a>      two spaces after <a href="insert.txt.html#a" class="d">a</a> period with <a href="insert.txt.html#a" class="d">a</a> join command
+<a href="options.txt.html#%27linebreak%27" class="o">'linebreak'</a>       <a href="options.txt.html#%27lbr%27" class="o">'lbr'</a>     wrap long lines <a href="motion.txt.html#at" class="d">at</a> <a href="insert.txt.html#a" class="d">a</a> blank
+<a href="options.txt.html#%27modeline%27" class="o">'modeline'</a>        <a href="options.txt.html#%27ml%27" class="o">'ml'</a>      recognize modelines <a href="motion.txt.html#at" class="d">at</a> start or end of file
+<a href="options.txt.html#%27modelines%27" class="o">'modelines'</a>       <a href="options.txt.html#%27mls%27" class="o">'mls'</a>     number of lines checked for modelines
+<a href="options.txt.html#%27nrformats%27" class="o">'nrformats'</a>       <a href="options.txt.html#%27nf%27" class="o">'nf'</a>      number formats recognized for <a href="change.txt.html#CTRL-A" class="k">CTRL-A</a> command
+<a href="options.txt.html#%27number%27" class="o">'number'</a>          <a href="options.txt.html#%27nu%27" class="o">'nu'</a>      print the line number in front of each line
+<a href="options.txt.html#%27report%27" class="o">'report'</a>                    threshold for reporting nr. of lines changed
+<a href="options.txt.html#%27scroll%27" class="o">'scroll'</a>          <a href="options.txt.html#%27scr%27" class="o">'scr'</a>     lines to scroll with <a href="scroll.txt.html#CTRL-U" class="k">CTRL-U</a> and <a href="scroll.txt.html#CTRL-D" class="k">CTRL-D</a>
+<a href="options.txt.html#%27scrolloff%27" class="o">'scrolloff'</a>       <a href="options.txt.html#%27so%27" class="o">'so'</a>      minimum nr. of lines above and below cursor
+<a href="options.txt.html#%27selection%27" class="o">'selection'</a>       <a href="options.txt.html#%27sel%27" class="o">'sel'</a>     what type of selection to use
+<a href="options.txt.html#%27shell%27" class="o">'shell'</a>           <a href="options.txt.html#%27sh%27" class="o">'sh'</a>      name of shell to use for external commands
+<a href="options.txt.html#%27shellcmdflag%27" class="o">'shellcmdflag'</a>    <a href="options.txt.html#%27shcf%27" class="o">'shcf'</a>    flag to shell to execute one command
+<a href="options.txt.html#%27shellslash%27" class="o">'shellslash'</a>      <a href="options.txt.html#%27ssl%27" class="o">'ssl'</a>     use forward slash for shell file names
+<a href="options.txt.html#%27shellxquote%27" class="o">'shellxquote'</a>     <a href="options.txt.html#%27sxq%27" class="o">'sxq'</a>     like <span class="o">'shellquote'</span><a href="motion.txt.html#%2C" class="d">,</a> but include redirection
+<a href="options.txt.html#%27shiftround%27" class="o">'shiftround'</a>      <a href="options.txt.html#%27sr%27" class="o">'sr'</a>      round indent to multiple of shiftwidth
+<a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a>      <a href="options.txt.html#%27sw%27" class="o">'sw'</a>      number of spaces to use for (auto)indent step
+<a href="options.txt.html#%27showcmd%27" class="o">'showcmd'</a>         <a href="options.txt.html#%27sc%27" class="o">'sc'</a>      show (partial) command in status line
+<a href="options.txt.html#%27showmode%27" class="o">'showmode'</a>        <a href="options.txt.html#%27smd%27" class="o">'smd'</a>     message on status line to show current mode
+<a href="options.txt.html#%27smartcase%27" class="o">'smartcase'</a>       <a href="options.txt.html#%27scs%27" class="o">'scs'</a>     no ignore <a href="change.txt.html#case" class="d">case</a> when <a href="pattern.txt.html#pattern" class="d">pattern</a> has <a href="change.txt.html#uppercase" class="d">uppercase</a>
+<span class="o">'smarttab'</span>        <span class="o">'sta'</span>     use <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a> when <a href="insert.txt.html#inserting" class="d">inserting</a> <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a>
+<a href="options.txt.html#%27softtabstop%27" class="o">'softtabstop'</a>     <a href="options.txt.html#%27sts%27" class="o">'sts'</a>     number of spaces that <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a> uses while editing
+<a href="options.txt.html#%27splitbelow%27" class="o">'splitbelow'</a>      <a href="options.txt.html#%27sb%27" class="o">'sb'</a>      new window from split <a href="motion.txt.html#is" class="d">is</a> below the current one
+<a href="options.txt.html#%27splitright%27" class="o">'splitright'</a>      <a href="options.txt.html#%27spr%27" class="o">'spr'</a>     new window <a href="motion.txt.html#is" class="d">is</a> <a href="change.txt.html#put" class="d">put</a> right of the current one
+<a href="options.txt.html#%27startofline%27" class="o">'startofline'</a>     <a href="options.txt.html#%27sol%27" class="o">'sol'</a>     commands move cursor to first blank in line
+<a href="options.txt.html#%27tabstop%27" class="o">'tabstop'</a>         <a href="options.txt.html#%27ts%27" class="o">'ts'</a>      number of spaces that <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a> in file uses
+<a href="options.txt.html#%27textwidth%27" class="o">'textwidth'</a>       <a href="options.txt.html#%27tw%27" class="o">'tw'</a>      maximum width of text that <a href="motion.txt.html#is" class="d">is</a> being inserted
+<a href="options.txt.html#%27tildeop%27" class="o">'tildeop'</a>         <a href="options.txt.html#%27top%27" class="o">'top'</a>     tilde command "<a href="change.txt.html#%7E" class="d">~</a>" behaves like an <a href="motion.txt.html#operator" class="d">operator</a>
+<a href="options.txt.html#%27timeout%27" class="o">'timeout'</a>         <a href="options.txt.html#%27to%27" class="o">'to'</a>      time out on mappings and key codes
+<a href="options.txt.html#%27timeoutlen%27" class="o">'timeoutlen'</a>      <a href="options.txt.html#%27tm%27" class="o">'tm'</a>      time out time in milliseconds
+<a href="options.txt.html#%27visualbell%27" class="o">'visualbell'</a>      <a href="options.txt.html#%27vb%27" class="o">'vb'</a>      use visual bell instead of beeping
+<a href="options.txt.html#%27visualbelltime%27" class="o">'visualbelltime'</a>  <a href="options.txt.html#%27vbt%27" class="o">'vbt'</a>     msec timer for bell duration
+<a href="options.txt.html#%27visualbellcolor%27" class="o">'visualbellcolor'</a> <a href="options.txt.html#%27vbc%27" class="o">'vbc'</a>     color of visual bell, null means invert background
+<a href="options.txt.html#%27whichwrap%27" class="o">'whichwrap'</a>       <a href="options.txt.html#%27ww%27" class="o">'ww'</a>      allow specified keys to cross line boundaries
+<a href="options.txt.html#%27wrap%27" class="o">'wrap'</a>                      long lines wrap and continue on the next line
+<a href="options.txt.html#%27wrapscan%27" class="o">'wrapscan'</a>        <a href="options.txt.html#%27ws%27" class="o">'ws'</a>      searches wrap around the end of the file
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_ur" class="t">Q_ur</a>          Undo/Redo commands
+
+<a href="undo.txt.html#u" class="l">u</a>       <a href="pattern.txt.html#N" class="d">N</a>  <a href="undo.txt.html#u" class="d">u</a>          <a href="undo.txt.html#undo" class="d">undo</a> last <a href="pattern.txt.html#N" class="d">N</a> changes
+<a href="undo.txt.html#CTRL-R" class="l">CTRL-R</a>  <a href="pattern.txt.html#N" class="d">N</a>  <a href="undo.txt.html#CTRL-R" class="k">CTRL-R</a>     <a href="undo.txt.html#redo" class="d">redo</a> last <a href="pattern.txt.html#N" class="d">N</a> undone changes
+<span class="l">U</span>          U          restore last changed line
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_et" class="t">Q_et</a>          External commands
+
+<span class="l">:shell</span>        :sh[ell]        start <a href="insert.txt.html#a" class="d">a</a> shell
+<span class="l">:!</span>            :!{command}     execute <span class="s">{command}</span> with <a href="insert.txt.html#a" class="d">a</a> shell
+<span class="l">K</span>                K            lookup keyword under the cursor with
+                                   <span class="o">'keywordprg'</span> program (default: "man"<a href="motion.txt.html#%29" class="d">)</a>
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_qf" class="t">Q_qf</a>          Quickfix commands
+
+<span class="l">:cc</span>           :cc <span class="s">[nr]</span>        display error <span class="s">[nr]</span> (default <a href="motion.txt.html#is" class="d">is</a> the same again)
+<span class="l">:cnext</span>        :cn             display the next error
+<span class="l">:cprevious</span>    :cp             display the previous error
+<span class="l">:clist</span>        :cl             list all errors
+<span class="l">:cfile</span>        :cf             read errors from the file <span class="o">'errorfile'</span>
+<span class="l">:cgetbuffer</span>   :cgetb          like :cbuffer but don't jump to the first error
+<span class="l">:cgetfile</span>     :cg             like :cfile but don't jump to the first error
+<span class="l">:cgetexpr</span>     :cgete          like :cexpr but don't jump to the first error
+<span class="l">:caddfile</span>     :caddf          add errors from the error file to the current
+                                   quickfix list
+<span class="l">:caddexpr</span>     :cad            add errors from an expression to the current
+                                   quickfix list
+<span class="l">:cbuffer</span>      :cb             read errors from text in <a href="insert.txt.html#a" class="d">a</a> buffer
+<span class="l">:cexpr</span>        :cex            read errors from an expression
+<span class="l">:cquit</span>        :cq             quit without writing and return error code (to
+                                   the compiler)
+<span class="l">:make</span>         :make <span class="s">[args]</span>    start make, read errors, and jump to first
+                                   error
+<span class="l">:grep</span>         :gr[ep] <span class="s">[args]</span>  execute <span class="o">'grepprg'</span> to find matches and jump to
+                                   the first one.
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_vc" class="t">Q_vc</a>          Various commands
+
+<span class="l">CTRL-L</span>           <span class="k">CTRL-L</span>       Clear and redraw the screen.
+<span class="l">CTRL-G</span>           <span class="k">CTRL-G</span>       show current file name (with path) and cursor
+                                   position
+<span class="l">ga</span>               ga           show ascii value of character under cursor in
+                                   decimal, hex, and octal
+<span class="l">g8</span>               g8           for utf-8 encoding: show byte sequence for
+                                   character under cursor in hex.
+<span class="l">g_CTRL-G</span>         <a href="index.txt.html#g" class="d">g</a> <span class="k">CTRL-G</span>     show cursor column, line, and character
+                                   position
+<span class="l">CTRL-C</span>           <span class="k">CTRL-C</span>       during searches: Interrupt the search
+<span class="l">dos-CTRL-Break</span>   <a href="scroll.txt.html#CTRL-B" class="k">CTRL-B</a>reak   MS-DOS: during searches: Interrupt the search
+<a href="change.txt.html#%3CDel%3E" class="l">&lt;Del&gt;</a>            <a href="change.txt.html#%3CDel%3E" class="s">&lt;Del&gt;</a>        while entering <a href="insert.txt.html#a" class="d">a</a> count: delete last character
+<span class="l">:version</span>      :ve[rsion]      show version information
+<span class="l">:mode</span>         :mode <a href="pattern.txt.html#N" class="d">N</a>         MS-DOS: set screen mode to <a href="pattern.txt.html#N" class="d">N</a> (number, C80,
+                                   C4350, etc.)
+<span class="l">:normal</span>       :norm[al][!] <span class="s">{commands}</span>
+                                Execute <a href="intro.txt.html#Normal" class="d">Normal</a> mode commands.
+<span class="l">Q</span>             Q               switch to "Ex" mode
+
+<span class="l">:redir</span>        :redir &gt;{file}          redirect messages to <span class="s">{file}</span>
+<span class="l">:silent</span>       :silent[!] <span class="s">{command}</span>    execute <span class="s">{command}</span> silently
+<span class="l">:confirm</span>      :confirm <span class="s">{command}</span>      quit, write, etc., asking about
+                                        unsaved changes or read-only files.
+<span class="l">:browse</span>       :browse <span class="s">{command}</span>       open/read/write file, using <a href="insert.txt.html#a" class="d">a</a>
+                                        file selection dialog
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_ce" class="t">Q_ce</a>          Command-line editing
+
+<span class="l">c_&lt;Esc&gt;</span>       <span class="s">&lt;Esc&gt;</span>              abandon command-line (if <span class="o">'wildchar'</span> <a href="motion.txt.html#is" class="d">is</a>
+                                      <span class="s">&lt;Esc&gt;</span><a href="motion.txt.html#%2C" class="d">,</a> type <a href="motion.txt.html#it" class="d">it</a> twice)
+
+<span class="l">c_CTRL-V</span>      <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a> <span class="s">{char}</span>      <a href="insert.txt.html#insert" class="d">insert</a> <span class="s">{char}</span> literally
+<span class="l">c_CTRL-V</span>      <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a> <span class="s">{number}</span>    enter decimal value of character (up to
+                                      three digits)
+<span class="l">c_CTRL-K</span>      <span class="k">CTRL-K</span> <span class="s">{char1}</span> <span class="s">{char2}</span>
+                                   enter digraph (See <a href="quickref.txt.html#Q_di" class="l">Q_di</a><a href="motion.txt.html#%29" class="d">)</a>
+<span class="l">c_CTRL-R</span>      <a href="undo.txt.html#CTRL-R" class="k">CTRL-R</a> <span class="s">{0-9a-z"%#:-=}</span>
+                                   <a href="insert.txt.html#insert" class="d">insert</a> the contents of <a href="insert.txt.html#a" class="d">a</a> register
+
+<span class="l">c_&lt;Left&gt;</span>      <a href="motion.txt.html#%3CLeft%3E" class="s">&lt;Left&gt;</a>/&lt;Right&gt;     cursor left/right
+<span class="l">c_&lt;S-Left&gt;</span>    <a href="motion.txt.html#%3CS-Left%3E" class="s">&lt;S-Left&gt;</a>/&lt;S-Right&gt; cursor one <a href="motion.txt.html#word" class="d">word</a> left/right
+<span class="l">c_CTRL-B</span>      <a href="scroll.txt.html#CTRL-B" class="k">CTRL-B</a>/CTRL-E      cursor to beginning/end of command-line
+
+<span class="l">c_&lt;BS&gt;</span>        <a href="motion.txt.html#%3CBS%3E" class="s">&lt;BS&gt;</a>               delete the character in front of the cursor
+<span class="l">c_&lt;Del&gt;</span>       <a href="change.txt.html#%3CDel%3E" class="s">&lt;Del&gt;</a>              delete the character under the cursor
+<span class="l">c_CTRL-W</span>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a>             delete the <a href="motion.txt.html#word" class="d">word</a> in front of the cursor
+<span class="l">c_CTRL-U</span>      <a href="scroll.txt.html#CTRL-U" class="k">CTRL-U</a>             remove all characters
+
+<span class="l">c_&lt;Up&gt;</span>        <a href="motion.txt.html#%3CUp%3E" class="s">&lt;Up&gt;</a>/&lt;Down&gt;        recall older/newer command-line that starts
+                                      with current command
+<span class="l">c_&lt;S-Up&gt;</span>      <a href="scroll.txt.html#%3CS-Up%3E" class="s">&lt;S-Up&gt;</a>/&lt;S-Down&gt;    recall older/newer command-line from history
+<span class="l">:history</span>      :his[tory]         show older command-lines
+
+Context-sensitive completion on the command-line:
+
+<span class="l">c_wildchar</span>    <span class="o">'wildchar'</span>  (default: <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a><a href="motion.txt.html#%29" class="d">)</a>
+                                do completion on the <a href="pattern.txt.html#pattern" class="d">pattern</a> in front of the
+                                   cursor.  If there are multiple matches,
+                                   <a href="options.txt.html#beep" class="d">beep</a> and show the first one; further
+                                   <span class="o">'wildchar'</span> will show the next ones.
+<span class="l">c_CTRL-D</span>      <a href="scroll.txt.html#CTRL-D" class="k">CTRL-D</a>          list all names that match the <a href="pattern.txt.html#pattern" class="d">pattern</a> in
+                                   front of the cursor
+<span class="l">c_CTRL-A</span>      <a href="change.txt.html#CTRL-A" class="k">CTRL-A</a>          <a href="insert.txt.html#insert" class="d">insert</a> all names that match <a href="pattern.txt.html#pattern" class="d">pattern</a> in front
+                                   of cursor
+<span class="l">c_CTRL-L</span>      <span class="k">CTRL-L</span>          <a href="insert.txt.html#insert" class="d">insert</a> longest common part of names that
+                                   match <a href="pattern.txt.html#pattern" class="d">pattern</a>
+<span class="l">c_CTRL-N</span>      <a href="motion.txt.html#CTRL-N" class="k">CTRL-N</a>          after <span class="o">'wildchar'</span> with multiple matches: go
+                                   to next match
+<span class="l">c_CTRL-P</span>      <a href="motion.txt.html#CTRL-P" class="k">CTRL-P</a>          after <span class="o">'wildchar'</span> with multiple matches: go
+                                   to previous match
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_ra" class="t">Q_ra</a>          Ex ranges
+
+<span class="l">:range</span>        <a href="motion.txt.html#%2C" class="d">,</a>               separates two line numbers
+<span class="l">:range</span>        <a href="motion.txt.html#%3B" class="d">;</a>               idem, set cursor to the first line number
+                                before interpreting the second one
+
+<span class="l">:range</span>        <span class="s">{number}</span>        an absolute line number
+<span class="l">:range</span>        <a href="repeat.txt.html#." class="d">.</a>               the current line
+<span class="l">:range</span>        <a href="motion.txt.html#%24" class="d">$</a>               the last line in the file
+<span class="l">:range</span>        <a href="motion.txt.html#%25" class="d">%</a>               equal to 1,$ (the entire file)
+<span class="l">:range</span>        *               equal to '&lt;,'&gt; (visual area)
+<span class="l">:range</span>        't              position of <a href="motion.txt.html#mark" class="d">mark</a> <a href="motion.txt.html#t" class="d">t</a>
+<span class="l">:range</span>        /{pattern}[/]   the next line where <span class="s">{pattern}</span> matches
+<span class="l">:range</span>        ?{pattern}[?]   the previous line where <span class="s">{pattern}</span> matches
+
+<span class="l">:range</span>        +[num]          add <span class="s">[num]</span> to the preceding line number
+                                   (default: 1)
+<span class="l">:range</span>        -[num]          subtract <span class="s">[num]</span> from the preceding line
+                                   number (default: 1)
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_ex" class="t">Q_ex</a>          Special Ex characters
+
+<span class="l">:bar</span>      |           separates two commands (not for ":global" and ":!"<a href="motion.txt.html#%29" class="d">)</a>
+<span class="l">:quote</span>    "           begins comment
+
+<span class="l">:_%</span>       <a href="motion.txt.html#%25" class="d">%</a>           current file name (only where <a href="insert.txt.html#a" class="d">a</a> file name <a href="motion.txt.html#is" class="d">is</a> expected)
+<span class="l">:_#</span>       #[num]      <a href="index.txt.html#alternate" class="d">alternate</a> file name <span class="s">[num]</span> (only where <a href="insert.txt.html#a" class="d">a</a> file name <a href="motion.txt.html#is" class="d">is</a>
+                           expected)
+        <span class="n">Note:</span> The next four are typed literally; these are not special keys!
+<span class="l">:&lt;cword&gt;</span>  <span class="s">&lt;cword&gt;</span>     <a href="motion.txt.html#word" class="d">word</a> under the cursor (only where <a href="insert.txt.html#a" class="d">a</a> file name <a href="motion.txt.html#is" class="d">is</a>
+                           expected)
+<span class="l">:&lt;cWORD&gt;</span>  <span class="s">&lt;cWORD&gt;</span>     <a href="motion.txt.html#WORD" class="d">WORD</a> under the cursor (only where <a href="insert.txt.html#a" class="d">a</a> file name <a href="motion.txt.html#is" class="d">is</a>
+                           expected) (see <a href="motion.txt.html#WORD" class="l">WORD</a><a href="motion.txt.html#%29" class="d">)</a>
+<span class="l">:&lt;cfile&gt;</span>  <span class="s">&lt;cfile&gt;</span>     file name under the cursor (only where <a href="insert.txt.html#a" class="d">a</a> file name <a href="motion.txt.html#is" class="d">is</a>
+                           expected)
+<span class="l">:&lt;afile&gt;</span>  <span class="s">&lt;afile&gt;</span>     file name for autocommand (only where <a href="insert.txt.html#a" class="d">a</a> file name <a href="motion.txt.html#is" class="d">is</a>
+                           expected)
+<span class="l">:&lt;sfile&gt;</span>  <span class="s">&lt;sfile&gt;</span>     file name of <a href="insert.txt.html#a" class="d">a</a> ":source"<a href="change.txt.html#d" class="d">d</a> file, within that file (only
+                           where <a href="insert.txt.html#a" class="d">a</a> file name <a href="motion.txt.html#is" class="d">is</a> expected)
+
+                After "<a href="motion.txt.html#%25" class="d">%</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="pattern.txt.html#%23" class="d">#</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<span class="s">&lt;cfile&gt;</span>"<a href="motion.txt.html#%2C" class="d">,</a> "<span class="s">&lt;sfile&gt;</span>" or "<span class="s">&lt;afile&gt;</span>"
+                <span class="l">::p</span>       :p          full path
+                <span class="l">::h</span>       :h          head (file name removed)
+                <span class="l">::t</span>       <a href="change.txt.html#%3At" class="d">:t</a>          tail (file name only)
+                <span class="l">::r</span>       :r          root (extension removed)
+                <span class="l">::e</span>       :e          extension
+                <span class="l">::s</span>       :s/{pat}/{repl}/    substitute <span class="s">{pat}</span> with <span class="s">{repl}</span>
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_st" class="t">Q_st</a>          Starting VIM
+
+<span class="l">-vim</span>     vim <span class="s">[options]</span>                start editing with an empty buffer
+<span class="l">-file</span>    vim <span class="s">[options]</span> <span class="s">{file}</span> ..      start editing one or more files
+<span class="l">--</span>       vim <span class="s">[options]</span> <a href="motion.txt.html#-" class="d">-</a>              read file from stdin
+<span class="l">-tag</span>     vim <span class="s">[options]</span> -t <span class="s">{tag}</span>       edit the file associated with <span class="s">{tag}</span>
+<span class="l">-qf</span>      vim <span class="s">[options]</span> -q <span class="s">[fname]</span>     start editing in QuickFix mode,
+                                           display the first error
+
+        Most useful Vim arguments (for full list see <span class="l">startup-options</span><a href="motion.txt.html#%29" class="d">)</a>
+
+<span class="l">-gui</span>  -g                  start GUI (also allows other options)
+
+<span class="l">-+</span>    +[num]              <a href="change.txt.html#put" class="d">put</a> the cursor <a href="motion.txt.html#at" class="d">at</a> line <span class="s">[num]</span> (default: last line)
+<span class="l">-+c</span>   +{command}          execute <span class="s">{command}</span> after loading the file
+<span class="l">-+/</span>   +/{pat} <span class="s">{file}</span> ..   <a href="change.txt.html#put" class="d">put</a> the cursor <a href="motion.txt.html#at" class="d">at</a> the first occurrence of <span class="s">{pat}</span>
+<span class="l">-v</span>    -v                  Vi mode, start ex in <a href="intro.txt.html#Normal" class="d">Normal</a> mode
+<span class="l">-e</span>    -e                  Ex mode, start vim in Ex mode
+<span class="l">-R</span>    -R                  Read-only mode, implies -n
+<span class="l">-m</span>    -m                  modifications not allowed (resets <span class="o">'write'</span> option)
+<span class="l">-d</span>    -d                  diff mode <span class="l">diff</span>
+<span class="l">-b</span>    -b                  binary mode
+<span class="l">-l</span>    -l                  lisp mode
+<span class="l">-A</span>    -A                  Arabic mode ('arabic' <a href="motion.txt.html#is" class="d">is</a> set)
+<span class="l">-F</span>    -F                  Farsi mode ('fkmap' and <span class="o">'rightleft'</span> are set)
+<span class="l">-H</span>    -H                  Hebrew mode ('hkmap' and <span class="o">'rightleft'</span> are set)
+<span class="l">-V</span>    -V                  Verbose, give informative messages
+<span class="l">-C</span>    -C                  Compatible, set the <span class="o">'compatible'</span> option
+<span class="l">-N</span>    -N                  Nocompatible, reset the <span class="o">'compatible'</span> option
+<span class="l">-r</span>    -r                  give list of swap files
+<span class="l">-r</span>    -r <span class="s">{file}</span> ..        recover aborted edit session
+<span class="l">-n</span>    -n                  do not create <a href="insert.txt.html#a" class="d">a</a> swap file
+<span class="l">-o</span>    -o <span class="s">[num]</span>            open <span class="s">[num]</span> <a href="windows.txt.html#windows" class="d">windows</a> (default: one for each file)
+<span class="l">-f</span>    -f                  GUI: foreground process, don't fork
+                            Amiga: do not restart VIM to open <a href="insert.txt.html#a" class="d">a</a> window (for
+                                e.g., mail)
+<span class="l">-s</span>    -s <span class="s">{scriptin}</span>       first read commands from the file <span class="s">{scriptin}</span>
+<span class="l">-w</span>    -w <span class="s">{scriptout}</span>      write typed chars to file <span class="s">{scriptout}</span> (append)
+<span class="l">-W</span>    -W <span class="s">{scriptout}</span>      write typed chars to file <span class="s">{scriptout}</span> (overwrite)
+<span class="l">-T</span>    -T <span class="s">{terminal}</span>       set terminal name
+<span class="l">-d</span>    -d <span class="s">{device}</span>         Amiga: open <span class="s">{device}</span> to be used <a href="motion.txt.html#as" class="d">as</a> <a href="insert.txt.html#a" class="d">a</a> console
+<span class="l">-u</span>    -u <span class="s">{vimrc}</span>          read inits from <span class="s">{vimrc}</span> instead of other inits
+<span class="l">-U</span>    -U <span class="s">{gvimrc}</span>         idem, for when starting the GUI
+<span class="l">-i</span>    -i <span class="s">{viminfo}</span>        read info from <span class="s">{viminfo}</span> instead of other files
+<span class="l">---</span>   --                  end of options, other arguments are file names
+<span class="l">--help</span>    --help          show list of arguments and exit
+<span class="l">--version</span> --version       show version info and exit
+<span class="l">--</span>    <a href="motion.txt.html#-" class="d">-</a>                   Read file from stdin.
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_ed" class="t">Q_ed</a>          Editing <a href="insert.txt.html#a" class="d">a</a> file
+
+           Without !: Fail if changes has been made to the current buffer.
+              With !: Discard any changes to the current buffer.
+<span class="l">:edit_f</span>  :e[dit][!] <span class="s">{file}</span>    Edit <span class="s">{file}</span><a href="repeat.txt.html#." class="d">.</a>
+<span class="l">:edit</span>    :e[dit][!]           Reload the current file.
+<span class="l">:enew</span>    :ene[w][!]           Edit <a href="insert.txt.html#a" class="d">a</a> new, unnamed buffer.
+<span class="l">:find</span>    :fin[d][!] <span class="s">{file}</span>    Find <span class="s">{file}</span> in <span class="o">'path'</span> and edit it.
+
+<span class="l">CTRL-^</span>   <a href="pattern.txt.html#N" class="d">N</a>   <span class="k">CTRL-^</span>           Edit <a href="index.txt.html#alternate" class="d">alternate</a> file <a href="pattern.txt.html#N" class="d">N</a> (equivalent to ":e #N").
+<span class="l">gf</span>           gf  or ]f        Edit the file whose name <a href="motion.txt.html#is" class="d">is</a> under the cursor
+<span class="l">:pwd</span>     :pwd                 Print the current directory name.
+<span class="l">:cd</span>      :cd <span class="s">[path]</span>           Change the current directory to <span class="s">[path]</span><a href="repeat.txt.html#." class="d">.</a>
+<span class="l">:cd-</span>     :cd <a href="motion.txt.html#-" class="d">-</a>                Back to previous current directory.
+<span class="l">:file</span>    :f[ile]              Print the current file name and the cursor
+                                   position.
+<span class="l">:file</span>    :f[ile] <span class="s">{name}</span>       Set the current file name to <span class="s">{name}</span><a href="repeat.txt.html#." class="d">.</a>
+<span class="l">:files</span>   :files               Show <a href="index.txt.html#alternate" class="d">alternate</a> file names.
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_fl" class="t">Q_fl</a>          Using the argument list                 <span class="l">argument-list</span>
+
+<span class="l">:args</span>    :ar[gs]              Print the argument list, with the current file
+                                   in "<a href="motion.txt.html#%5B%5D" class="d">[]</a>"<a href="repeat.txt.html#." class="d">.</a>
+<span class="l">:all</span>     :all  or :sall       Open <a href="insert.txt.html#a" class="d">a</a> window for every file in the arg list.
+<span class="l">:wn</span>      :wn[ext][!]          Write file and edit next file.
+<span class="l">:wn</span>      :wn[ext][!] <span class="s">{file}</span>   Write to <span class="s">{file}</span> and edit next file, unless
+                                   <span class="s">{file}</span> exists.  With !, overwrite existing
+                                   file.
+<span class="l">:wN</span>      :wN[ext][!] <span class="s">[file]</span>   Write file and edit previous file.
+
+<span class="h">             in current window    in new window </span>
+<span class="l">:argument</span>  :argu[ment] <a href="pattern.txt.html#N" class="d">N</a>        :sar[gument] <a href="pattern.txt.html#N" class="d">N</a>        Edit file <a href="pattern.txt.html#N" class="d">N</a>
+<span class="l">:next</span>      :n[ext]              :sn[ext]              Edit next file
+<span class="l">:next_f</span>    :n[ext] <span class="s">{arglist}</span>    :sn[ext] <span class="s">{arglist}</span>    define new arg list
+                                                           and edit first file
+<span class="l">:Next</span>      :N[ext]              :sN[ext]              Edit previous file
+<span class="l">:first</span>     :fir[st]             :sfir[st]             Edit first file
+<span class="l">:last</span>      :la[st]              :sla[st]              Edit last file
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_wq" class="t">Q_wq</a>          Writing and quitting
+
+<span class="l">:w</span>      :[range]w[rite][!]            Write to the current file.
+<span class="l">:w_f</span>    :[range]w[rite] <span class="s">{file}</span>        Write to <span class="s">{file}</span><a href="motion.txt.html#%2C" class="d">,</a> unless <a href="motion.txt.html#it" class="d">it</a> already
+                                           exists.
+<span class="l">:w_f</span>    :[range]w[rite]! <span class="s">{file}</span>       Write to <span class="s">{file}</span><a href="repeat.txt.html#." class="d">.</a>  Overwrite an existing
+                                           file.
+<span class="l">:w_a</span>    :[range]w[rite][!] <a href="change.txt.html#%3E%3E" class="d">&gt;&gt;</a>         Append to the current file.
+<span class="l">:w_a</span>    :[range]w[rite][!] <a href="change.txt.html#%3E%3E" class="d">&gt;&gt;</a> <span class="s">{file}</span>  Append to <span class="s">{file}</span><a href="repeat.txt.html#." class="d">.</a>
+<span class="l">:w_c</span>    :[range]w[rite] !{cmd}        Execute <span class="s">{cmd}</span> with <span class="s">[range]</span> lines <a href="motion.txt.html#as" class="d">as</a>
+                                           standard input.
+<span class="l">:up</span>     :[range]up[date][!]           write to current file if modified
+<a href="windows.txt.html#%3Awall" class="l">:wall</a>   :wa[ll][!]                    write all changed <a href="windows.txt.html#buffers" class="d">buffers</a>
+
+<span class="l">:q</span>      :q[uit]               Quit current buffer, unless changes have been
+                                   made.  Exit Vim when there are no other
+                                   non-help <a href="windows.txt.html#buffers" class="d">buffers</a>
+<span class="l">:q</span>      :q[uit]!              Quit current buffer always, discard any
+                                   changes.  Exit Vim when there are no other
+                                   non-help <a href="windows.txt.html#buffers" class="d">buffers</a>
+<span class="l">:qa</span>     :qa[ll]               Exit Vim, unless changes have been made.
+<span class="l">:qa</span>     :qa[ll]!              Exit Vim always, discard any changes.
+<span class="l">:cq</span>     :cq                   Quit without writing and return error code.
+
+<span class="l">:wq</span>     :wq[!]                Write the current file and exit.
+<span class="l">:wq</span>     :wq[!] <span class="s">{file}</span>         Write to <span class="s">{file}</span> and exit.
+<span class="l">:xit</span>    :x[it][!] <span class="s">[file]</span>      Like ":wq" but write only when changes have
+                                   been made
+<span class="l">ZZ</span>         ZZ                 Same <a href="motion.txt.html#as" class="d">as</a> ":x"<a href="repeat.txt.html#." class="d">.</a>
+<span class="l">ZQ</span>         ZQ                 Same <a href="motion.txt.html#as" class="d">as</a> ":q!"<a href="repeat.txt.html#." class="d">.</a>
+<span class="l">:xall</span>   :xa[ll][!]  or :wqall[!]
+                                Write all changed <a href="windows.txt.html#buffers" class="d">buffers</a> and exit
+
+<span class="l">:stop</span>   :st[op][!]            Suspend VIM or start new shell.  If <span class="o">'aw'</span> option
+                                   <a href="motion.txt.html#is" class="d">is</a> set and [!] not given write the buffer.
+<span class="l">CTRL-Z</span>     <span class="k">CTRL-Z</span>             Same <a href="motion.txt.html#as" class="d">as</a> ":stop"
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_ac" class="t">Q_ac</a>          Automatic Commands
+
+<span class="l">viminfo-file</span>  Read registers, marks, history <a href="motion.txt.html#at" class="d">at</a> startup, save when exiting.
+
+<span class="l">:rviminfo</span>     :rv[iminfo] <span class="s">[file]</span>      Read info from viminfo file <span class="s">[file]</span>
+<span class="l">:rviminfo</span>     :rv[iminfo]! <span class="s">[file]</span>     idem, overwrite existing info
+<span class="l">:wviminfo</span>     :wv[iminfo] <span class="s">[file]</span>      Add info to viminfo file <span class="s">[file]</span>
+<span class="l">:wviminfo</span>     :wv[iminfo]! <span class="s">[file]</span>     Write info to viminfo file <span class="s">[file]</span>
+
+<a href="options.txt.html#modeline" class="l">modeline</a>      Automatic option setting when editing <a href="insert.txt.html#a" class="d">a</a> file
+
+<a href="options.txt.html#modeline" class="l">modeline</a>      vim:{set-arg}: ..       In the first and last lines of the
+                                        file (see <a href="options.txt.html#%27ml%27" class="o">'ml'</a> option), <span class="s">{set-arg}</span> <a href="motion.txt.html#is" class="d">is</a>
+                                        given <a href="motion.txt.html#as" class="d">as</a> an argument to "<a href="options.txt.html#%3Aset" class="d">:set</a>"
+
+<span class="l">autocommand</span>   Automatic execution of commands on certain events.
+
+<span class="l">:autocmd</span>      :au                     List all autocommands
+<span class="l">:autocmd</span>      :au <span class="s">{event}</span>             List all autocommands for <span class="s">{event}</span>
+<span class="l">:autocmd</span>      :au <span class="s">{event}</span> <span class="s">{pat}</span>       List all autocommands for <span class="s">{event}</span> with
+                                        <span class="s">{pat}</span>
+<span class="l">:autocmd</span>      :au <span class="s">{event}</span> <span class="s">{pat}</span> <span class="s">{cmd}</span> Enter new autocommands for <span class="s">{event}</span>
+                                        with <span class="s">{pat}</span>
+<span class="l">:autocmd</span>      :au!                    Remove all autocommands
+<span class="l">:autocmd</span>      :au! <span class="s">{event}</span>            Remove all autocommands for <span class="s">{event}</span>
+<span class="l">:autocmd</span>      :au! * <span class="s">{pat}</span>            Remove all autocommands for <span class="s">{pat}</span>
+<span class="l">:autocmd</span>      :au! <span class="s">{event}</span> <span class="s">{pat}</span>      Remove all autocommands for <span class="s">{event}</span>
+                                        with <span class="s">{pat}</span>
+<span class="l">:autocmd</span>      :au! <span class="s">{event}</span> <span class="s">{pat}</span> <span class="s">{cmd}</span>  Remove all autocommands for <span class="s">{event}</span>
+                                        with <span class="s">{pat}</span> and enter new one
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_wi" class="t">Q_wi</a>          Multi-window commands
+
+<a href="windows.txt.html#CTRL-W_s" class="l">CTRL-W_s</a>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="change.txt.html#s" class="d">s</a>  or  <a href="windows.txt.html#%3Asplit" class="d">:split</a>    Split window into two parts
+<span class="l">:split_f</span>      <a href="windows.txt.html#%3Asplit" class="d">:split</a> <span class="s">{file}</span>           Split window and edit <span class="s">{file}</span> in one of
+                                           them
+<a href="windows.txt.html#%3Avsplit" class="l">:vsplit</a>       <a href="windows.txt.html#%3Avsplit" class="d">:vsplit</a> <span class="s">{file}</span>          Same, but split vertically
+<span class="l">:vertical</span>     :vertical <span class="s">{cmd}</span>         Make <span class="s">{cmd}</span> split vertically
+
+<span class="l">:sfind</span>        :sf[ind] <span class="s">{file}</span>         Split window, find <span class="s">{file}</span> in <span class="o">'path'</span>
+                                           and edit it.
+<span class="l">CTRL-W_]</span>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="index.txt.html#%5D" class="d">]</a>                Split window and jump to tag under
+                                           cursor
+<span class="l">CTRL-W_f</span>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#f" class="d">f</a>                Split window and edit file name under
+                                           the cursor
+<span class="l">CTRL-W_^</span>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#%5E" class="d">^</a>                Split window and edit <a href="index.txt.html#alternate" class="d">alternate</a> file
+<span class="l">CTRL-W_n</span>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="pattern.txt.html#n" class="d">n</a>  or  :new      Create new empty window
+<span class="l">CTRL-W_q</span>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="repeat.txt.html#q" class="d">q</a>  or  :q[uit]   Quit editing and close window
+<a href="windows.txt.html#CTRL-W_c" class="l">CTRL-W_c</a>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="change.txt.html#c" class="d">c</a>  or  :cl[ose]  Make buffer hidden and close window
+<a href="windows.txt.html#CTRL-W_o" class="l">CTRL-W_o</a>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="insert.txt.html#o" class="d">o</a>  or  :on[ly]   Make current window only one on the
+                                           screen
+
+<a href="windows.txt.html#CTRL-W_j" class="l">CTRL-W_j</a>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#j" class="d">j</a>                Move cursor to window below
+<a href="windows.txt.html#CTRL-W_k" class="l">CTRL-W_k</a>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#k" class="d">k</a>                Move cursor to window above
+<a href="windows.txt.html#CTRL-W_CTRL-W" class="l">CTRL-W_CTRL-W</a> <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a>           Move cursor to window below (wrap)
+<a href="windows.txt.html#CTRL-W_W" class="l">CTRL-W_W</a>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#W" class="d">W</a>                Move cursor to window above (wrap)
+<a href="windows.txt.html#CTRL-W_t" class="l">CTRL-W_t</a>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#t" class="d">t</a>                Move cursor to top window
+<a href="windows.txt.html#CTRL-W_b" class="l">CTRL-W_b</a>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#b" class="d">b</a>                Move cursor to bottom window
+<a href="windows.txt.html#CTRL-W_p" class="l">CTRL-W_p</a>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="change.txt.html#p" class="d">p</a>                Move cursor to previous active window
+
+<span class="l">CTRL-W_r</span>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="change.txt.html#r" class="d">r</a>                Rotate <a href="windows.txt.html#windows" class="d">windows</a> downwards
+<span class="l">CTRL-W_R</span>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="change.txt.html#R" class="d">R</a>                Rotate <a href="windows.txt.html#windows" class="d">windows</a> upwards
+<span class="l">CTRL-W_x</span>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="change.txt.html#x" class="d">x</a>                Exchange current window with next one
+
+<a href="windows.txt.html#CTRL-W_%3D" class="l">CTRL-W_=</a>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="change.txt.html#%3D" class="d">=</a>                Make all <a href="windows.txt.html#windows" class="d">windows</a> equal height
+<a href="windows.txt.html#CTRL-W_-" class="l">CTRL-W_-</a>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#-" class="d">-</a>                Decrease current window height
+<a href="windows.txt.html#CTRL-W_%2B" class="l">CTRL-W_+</a>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#%2B" class="d">+</a>                Increase current window height
+<a href="windows.txt.html#CTRL-W__" class="l">CTRL-W__</a>      <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#_" class="d">_</a>                Set current window height (default:
+                                           very high)
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_bu" class="t">Q_bu</a>          Buffer list commands
+
+<span class="l">:buffers</span>      :buffers  or  :files    list all known buffer and file names
+
+<span class="l">:ball</span>         :ball     or  :sball    edit all args/buffers
+<span class="l">:unhide</span>       :unhide   or  :sunhide  edit all loaded <a href="windows.txt.html#buffers" class="d">buffers</a>
+
+<span class="l">:badd</span>         :badd <span class="s">{fname}</span>           add file name <span class="s">{fname}</span> to the list
+<span class="l">:bunload</span>      :bunload[!] [N]         unload buffer [N] from memory
+<span class="l">:bdelete</span>      :bdelete[!] [N]         unload buffer [N] and delete <a href="motion.txt.html#it" class="d">it</a> from
+                                           the buffer list
+
+<span class="h">              in current window   in new window </span>
+<span class="l">:buffer</span>     :[N]buffer [N]      :[N]sbuffer [N]     to arg/buf <a href="pattern.txt.html#N" class="d">N</a>
+<span class="l">:bnext</span>      :[N]bnext [N]       :[N]sbnext [N]      to Nth next arg/buf
+<span class="l">:bNext</span>      :[N]bNext [N]       :[N]sbNext [N]      to Nth previous arg/buf
+<span class="l">:bprevious</span>  :[N]bprevious [N]   :[N]sbprevious [N]  to Nth previous arg/buf
+<span class="l">:bfirst</span>     :bfirst             :sbfirst            to first arg/buf
+<span class="l">:blast</span>      :blast              :sblast             to last arg/buf
+<span class="l">:bmodified</span>  :[N]bmod [N]        :[N]sbmod [N]       to Nth modified buf
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_sy" class="t">Q_sy</a>          Syntax Highlighting
+
+<span class="l">:syn-on</span>       :syntax on              start using syntax highlighting
+<span class="l">:syn-off</span>      :syntax off             stop using syntax highlighting
+
+<span class="l">:syn-keyword</span>  :syntax keyword <span class="s">{group-name}</span> <span class="s">{keyword}</span> ..
+                                        add <a href="insert.txt.html#a" class="d">a</a> syntax keyword item
+<span class="l">:syn-match</span>    :syntax match <span class="s">{group-name}</span> <span class="s">{pattern}</span> ...
+                                        add syntax match item
+<span class="l">:syn-region</span>   :syntax region <span class="s">{group-name}</span> <span class="s">{pattern}</span> ...
+                                        add syntax region item
+<span class="l">:syn-sync</span>     :syntax sync [ccomment | lines <span class="s">{N}</span> | ...]
+                                        tell syntax how to sync
+<span class="l">:syntax</span>       :syntax <span class="s">[list]</span>          list current syntax items
+<span class="l">:syn-clear</span>    :syntax clear           clear all syntax info
+
+<span class="l">:highlight</span>    :highlight clear        clear all highlight info
+<span class="l">:highlight</span>    :highlight <span class="s">{group-name}</span> <span class="s">{key}</span>={arg} ..
+                                        set highlighting for <span class="s">{group-name}</span>
+
+<span class="l">:filetype</span>     :filetype on            switch on file type detection, without
+                                        syntax highlighting
+<span class="l">:filetype</span>     :filetype plugin indent on
+                                        switch on file type detection, with
+                                        automatic indenting and settings
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_gu" class="t">Q_gu</a>          GUI commands
+
+<span class="l">:gui</span>          :gui                    UNIX: start the GUI
+<span class="l">:gui</span>          :gui <span class="s">{fname}</span> ..         idem, and edit <span class="s">{fname}</span> ..
+
+<span class="l">:menu</span>         :menu                   list all menus
+<span class="l">:menu</span>         :menu <span class="s">{mpath}</span>           list menus starting with <span class="s">{mpath}</span>
+<span class="l">:menu</span>         :menu <span class="s">{mpath}</span> <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a>     add menu <span class="s">{mpath}</span><a href="motion.txt.html#%2C" class="d">,</a> giving <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a>
+<span class="l">:menu</span>         :menu <span class="s">{pri}</span> <span class="s">{mpath}</span> <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a>
+                                        idem, with priorities <span class="s">{pri}</span>
+<span class="l">:menu</span>         :menu ToolBar.{name} <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a>
+                                        add toolbar item, giving <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a>
+<span class="l">:tmenu</span>        :tmenu <span class="s">{mpath}</span> <span class="s">{text}</span>   add tooltip to menu <span class="s">{mpath}</span>
+<span class="l">:unmenu</span>       :unmenu <span class="s">{mpath}</span>         remove menu <span class="s">{mpath}</span>
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="Q_fo" class="t">Q_fo</a>          <a href="fold.txt.html#Folding" class="d">Folding</a>
+
+<span class="l">'foldmethod'</span>  set foldmethod=manual   manual <a href="fold.txt.html#folding" class="d">folding</a>
+                set foldmethod=indent   <a href="fold.txt.html#folding" class="d">folding</a> by indent
+                set foldmethod=expr     <a href="fold.txt.html#folding" class="d">folding</a> by <span class="o">'foldexpr'</span>
+                set foldmethod=syntax   <a href="fold.txt.html#folding" class="d">folding</a> by syntax regions
+                set foldmethod=marker   <a href="fold.txt.html#folding" class="d">folding</a> by <span class="o">'foldmarkers'</span>
+
+<span class="l">zf</span>            zf{motion}              operator: Define <a href="insert.txt.html#a" class="d">a</a> fold manually
+<span class="l">:fold</span>         :{range}fold            define <a href="insert.txt.html#a" class="d">a</a> fold for <span class="s">{range}</span> lines
+<span class="l">zd</span>            zd                      delete one fold under the cursor
+<span class="l">zD</span>            zD                      delete all folds under the cursor
+
+<a href="fold.txt.html#zo" class="l">zo</a>            <a href="fold.txt.html#zo" class="d">zo</a>                      open one fold under the cursor
+<a href="fold.txt.html#zO" class="l">zO</a>            <a href="fold.txt.html#zO" class="d">zO</a>                      open all folds under the cursor
+<a href="fold.txt.html#zc" class="l">zc</a>            <a href="fold.txt.html#zc" class="d">zc</a>                      close one fold under the cursor
+<a href="fold.txt.html#zC" class="l">zC</a>            <a href="fold.txt.html#zC" class="d">zC</a>                      close all folds under the cursor
+
+<a href="fold.txt.html#za" class="l">za</a>            <a href="fold.txt.html#za" class="d">za</a>                      <a href="options.txt.html#toggle" class="d">toggle</a> open/close fold
+<a href="fold.txt.html#zA" class="l">zA</a>            <a href="fold.txt.html#zA" class="d">zA</a>                      <a href="options.txt.html#toggle" class="d">toggle</a> open/close fold recursively
+<a href="fold.txt.html#zv" class="l">zv</a>            <a href="fold.txt.html#zv" class="d">zv</a>                      view cursor line
+
+<span class="l">zm</span>            zm                      fold more: decrease <span class="o">'foldlevel'</span>
+<a href="fold.txt.html#zM" class="l">zM</a>            <a href="fold.txt.html#zM" class="d">zM</a>                      close all folds: make <span class="o">'foldlevel'</span> zero
+<span class="l">zr</span>            zr                      reduce folding: increase <span class="o">'foldlevel'</span>
+<a href="fold.txt.html#zR" class="l">zR</a>            <a href="fold.txt.html#zR" class="d">zR</a>                      open all folds: make <span class="o">'foldlevel'</span> max.
+
+<span class="l">zn</span>            zn                      fold none: reset <span class="o">'foldenable'</span>
+<span class="l">zN</span>            zN                      fold normal set <span class="o">'foldenable'</span>
+<span class="l">zi</span>            zi                      invert <span class="o">'foldenable'</span>
+
+ vim:tw=78:ts=8:sw=8:noet:
+
+</pre>
+</div>
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<p id="footer">These help files are maintained with thanks
+to Carlo Teubner for his vimhelp to html work.</p>
+
+</div>
+</div>
+</body></html>

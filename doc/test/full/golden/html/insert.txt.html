@@ -1,0 +1,337 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Vim: insert.txt</title>
+<!--[if IE]>
+<link rel="stylesheet" href="vimhelp-ie.css" type="text/css">
+<![endif]-->
+<!--[if !IE]>-->
+<link rel="stylesheet" href="vimhelp.css" type="text/css">
+<!--<![endif]-->
+</head>
+<body>
+<div id="d1">
+<pre id="sp">                                                                                </pre>
+<div id="d2">
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<div id="d3">
+<pre>
+<a name="insert.txt" class="t">insert.txt</a>    For Vim version 5.6.  Last change: 2000 Jan 09
+
+
+                  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+                                                <a name="Insert" class="t">Insert</a> <a name="Insert-mode" class="t">Insert-mode</a>
+Inserting and <a href="change.txt.html#replacing" class="d">replacing</a> text                            <a name="mode-ins-repl" class="t">mode-ins-repl</a>
+
+Most of this file <a href="motion.txt.html#is" class="d">is</a> about <a href="insert.txt.html#Insert" class="d">Insert</a> and <a href="insert.txt.html#Replace" class="d">Replace</a> mode.  At the end are <a href="insert.txt.html#a" class="d">a</a> few
+commands for <a href="insert.txt.html#inserting" class="d">inserting</a> text in other ways.
+
+1. Special keys                                         <a href="insert.txt.html#ins-special-keys" class="l">ins-special-keys</a>
+2. Special special keys                                 <a href="insert.txt.html#ins-special-special" class="l">ins-special-special</a>
+4. <a href="options.txt.html#%27expandtab%27" class="o">'expandtab'</a><a href="motion.txt.html#%2C" class="d">,</a> <span class="o">'smarttab'</span> and <a href="options.txt.html#%27softtabstop%27" class="o">'softtabstop'</a>  <a href="options.txt.html#options" class="d">options</a>   <a href="insert.txt.html#ins-expandtab" class="l">ins-expandtab</a>
+5. <a href="insert.txt.html#Replace" class="d">Replace</a> mode                                         <a href="insert.txt.html#Replace-mode" class="l">Replace-mode</a>
+8. <a href="insert.txt.html#Insert" class="d">Insert</a> mode commands                                 <a href="insert.txt.html#inserting" class="l">inserting</a>
+
+<span class="h">==============================================================================</span>
+1. Special keys                                         <a name="ins-special-keys" class="t">ins-special-keys</a>
+
+In <a href="insert.txt.html#Insert" class="d">Insert</a> and <a href="insert.txt.html#Replace" class="d">Replace</a> mode, the following characters have <a href="insert.txt.html#a" class="d">a</a> special meaning;
+other characters are inserted directly.
+
+<span class="n">NOTE:</span> in <a href="insert.txt.html#insert" class="d">insert</a> mode, any unused control character takes you out of input mode.
+
+<span class="h">char            action  </span>
+<span class="h">-----------------------------------------------------------------------</span>
+                                                <a name="i_CTRL-%5B" class="t">i_CTRL-[</a> <a name="i_%3CEsc%3E" class="t">i_&lt;Esc&gt;</a>
+<span class="s">&lt;Esc&gt;</span>      or   End <a href="insert.txt.html#insert" class="d">insert</a> or <a href="insert.txt.html#Replace" class="d">Replace</a> mode, go back to <a href="intro.txt.html#Normal" class="d">Normal</a> mode.  Finish
+<span class="k">CTRL-[</span>          abbreviation.
+                                                <a name="i_CTRL-%40" class="t">i_CTRL-@</a>
+<span class="k">CTRL-@</span>          <a href="insert.txt.html#Insert" class="d">Insert</a> previously inserted text and stop insert.  {Vi: only
+                when typed <a href="motion.txt.html#as" class="d">as</a> first char, only up to 128 chars}
+                                                <a name="i_CTRL-A" class="t">i_CTRL-A</a>
+<a href="change.txt.html#CTRL-A" class="k">CTRL-A</a>          <a href="insert.txt.html#Insert" class="d">Insert</a> previously inserted text.  <span class="s">{not in Vi}</span>
+                                                <a name="i_CTRL-H" class="t">i_CTRL-H</a> <a name="i_%3CBS%3E" class="t">i_&lt;BS&gt;</a>
+<a href="motion.txt.html#%3CBS%3E" class="s">&lt;BS&gt;</a>       or   Delete the character before the cursor (see <a href="insert.txt.html#i_backspacing" class="l">i_backspacing</a>
+<a href="motion.txt.html#CTRL-H" class="k">CTRL-H</a>          about joining lines).
+                <span class="s">{Vi: does not delete autoindents}</span>
+                                                <a name="i_%3CDel%3E" class="t">i_&lt;Del&gt;</a>
+<a href="change.txt.html#%3CDel%3E" class="s">&lt;Del&gt;</a>           Delete the character under the cursor.  If the cursor <a href="motion.txt.html#is" class="d">is</a> <a href="motion.txt.html#at" class="d">at</a>
+                the end of the line, and the <a href="options.txt.html#%27backspace%27" class="o">'backspace'</a> option includes
+                "eol"<a href="motion.txt.html#%2C" class="d">,</a> delete the <span class="s">&lt;EOL&gt;</span><a href="motion.txt.html#%3B" class="d">;</a> the next line <a href="motion.txt.html#is" class="d">is</a> appended after the
+                current one.
+                See <span class="l">:fixdel</span> if your <a href="change.txt.html#%3CDel%3E" class="s">&lt;Del&gt;</a> key does not do what you want.
+                <span class="s">{not in Vi}</span>
+                                                <a name="i_CTRL-W" class="t">i_CTRL-W</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a>          Delete the <a href="motion.txt.html#word" class="d">word</a> before the cursor (see <a href="insert.txt.html#i_backspacing" class="l">i_backspacing</a> about
+                joining lines).  See the section "<a href="motion.txt.html#word" class="d">word</a> motions"<a href="motion.txt.html#%2C" class="d">,</a>
+                <a href="motion.txt.html#word-motions" class="l">word-motions</a><a href="motion.txt.html#%2C" class="d">,</a> for the definition of <a href="insert.txt.html#a" class="d">a</a> word.
+                                                <a name="i_CTRL-U" class="t">i_CTRL-U</a>
+<a href="scroll.txt.html#CTRL-U" class="k">CTRL-U</a>          Delete all entered characters in the current line (see
+                <a href="insert.txt.html#i_backspacing" class="l">i_backspacing</a> about joining lines).
+
+                                                <a name="i_CTRL-I" class="t">i_CTRL-I</a> <a name="i_%3CTab%3E" class="t">i_&lt;Tab&gt;</a>
+<a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a>      or   <a href="insert.txt.html#Insert" class="d">Insert</a> <a href="insert.txt.html#a" class="d">a</a> tab.  If the <a href="options.txt.html#%27expandtab%27" class="o">'expandtab'</a> option <a href="motion.txt.html#is" class="d">is</a> on, the
+<a href="motion.txt.html#CTRL-I" class="k">CTRL-I</a>          equivalent number of spaces <a href="motion.txt.html#is" class="d">is</a> inserted. Also see the
+                <a href="options.txt.html#%27softtabstop%27" class="o">'softtabstop'</a> option.
+
+<a href="motion.txt.html#%3CNL%3E" class="s">&lt;NL&gt;</a>       or                                   <a name="i_CTRL-J" class="t">i_CTRL-J</a> <a name="i_%3CNL%3E" class="t">i_&lt;NL&gt;</a>
+<a href="motion.txt.html#CTRL-J" class="k">CTRL-J</a>          Begin new line.
+
+<a href="motion.txt.html#%3CCR%3E" class="s">&lt;CR&gt;</a>       or                                   <a name="i_CTRL-M" class="t">i_CTRL-M</a> <a name="i_%3CCR%3E" class="t">i_&lt;CR&gt;</a>
+<a href="motion.txt.html#CTRL-M" class="k">CTRL-M</a>          Begin new line.
+                                                <a name="i_CTRL-N" class="t">i_CTRL-N</a>
+<a href="motion.txt.html#CTRL-N" class="k">CTRL-N</a>          Find next match for words that start with the
+                keyword in front of the cursor, looking in places
+                specified with the <span class="o">'complete'</span> option.  The found
+                keyword <a href="motion.txt.html#is" class="d">is</a> inserted in front of the cursor.
+
+                                                <a name="i_CTRL-P" class="t">i_CTRL-P</a>
+<a href="motion.txt.html#CTRL-P" class="k">CTRL-P</a>          Find previous match for words that start with the
+                keyword in front of the cursor, looking in places
+                specified with the <span class="o">'complete'</span> option.  The found
+                keyword <a href="motion.txt.html#is" class="d">is</a> inserted in front of the cursor.
+
+<a href="undo.txt.html#CTRL-R" class="k">CTRL-R</a> <span class="s">{0-9a-z"%#*+:.-=}</span>                                        <a name="i_CTRL-R" class="t">i_CTRL-R</a>
+                <a href="insert.txt.html#Insert" class="d">Insert</a> the contents of <a href="insert.txt.html#a" class="d">a</a> register.  Between typing <a href="undo.txt.html#CTRL-R" class="k">CTRL-R</a> and
+                the second character, <a href="motion.txt.html#%27" class="d">'</a>"<a href="motion.txt.html#%27" class="d">'</a> will be displayed to indicate that
+                you are expected to enter the name of <a href="insert.txt.html#a" class="d">a</a> register.
+                The text <a href="motion.txt.html#is" class="d">is</a> inserted <a href="motion.txt.html#as" class="d">as</a> if you typed it.
+
+<a href="undo.txt.html#CTRL-R" class="k">CTRL-R</a> <a href="undo.txt.html#CTRL-R" class="k">CTRL-R</a> <span class="s">{0-9a-z"%#*+/:.-=}</span>                        <a name="i_CTRL-R_CTRL-R" class="t">i_CTRL-R_CTRL-R</a>
+                <a href="insert.txt.html#Insert" class="d">Insert</a> the contents of <a href="insert.txt.html#a" class="d">a</a> register.  Works like using <a href="insert.txt.html#a" class="d">a</a> single
+                <a href="undo.txt.html#CTRL-R" class="k">CTRL-R</a><a href="motion.txt.html#%2C" class="d">,</a> but the text <a href="motion.txt.html#is" class="d">is</a> inserted literally, not <a href="motion.txt.html#as" class="d">as</a> if typed.
+                <span class="s">{not in Vi}</span>
+
+<a href="undo.txt.html#CTRL-R" class="k">CTRL-R</a> <a href="motion.txt.html#CTRL-O" class="k">CTRL-O</a> <span class="s">{0-9a-z"%#*+/:.-=}</span>                        <a name="i_CTRL-R_CTRL-O" class="t">i_CTRL-R_CTRL-O</a>
+                <a href="insert.txt.html#Insert" class="d">Insert</a> the contents of <a href="insert.txt.html#a" class="d">a</a> register literally and don't
+                auto-indent.
+
+<a href="undo.txt.html#CTRL-R" class="k">CTRL-R</a> <a href="motion.txt.html#CTRL-P" class="k">CTRL-P</a> <span class="s">{0-9a-z"%#*+/:.-=}</span>                        <a name="i_CTRL-R_CTRL-P" class="t">i_CTRL-R_CTRL-P</a>
+                <a href="insert.txt.html#Insert" class="d">Insert</a> the contents of <a href="insert.txt.html#a" class="d">a</a> register literally and fix the
+                indent.
+
+                                                        <a name="i_CTRL-T" class="t">i_CTRL-T</a>
+<a href="tagsearch.txt.html#CTRL-T" class="k">CTRL-T</a>          <a href="insert.txt.html#Insert" class="d">Insert</a> one shiftwidth of indent <a href="motion.txt.html#at" class="d">at</a> the start of the current
+                line.  The indent <a href="motion.txt.html#is" class="d">is</a> always rounded to <a href="insert.txt.html#a" class="d">a</a> <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a> (this <a href="motion.txt.html#is" class="d">is</a>
+                vi compatible).  <span class="s">{Vi: only when in indent}</span>
+
+                                                        <a name="i_CTRL-D" class="t">i_CTRL-D</a>
+<a href="scroll.txt.html#CTRL-D" class="k">CTRL-D</a>          Delete one shiftwidth of indent <a href="motion.txt.html#at" class="d">at</a> the start of the current
+                line.  The indent <a href="motion.txt.html#is" class="d">is</a> always rounded to <a href="insert.txt.html#a" class="d">a</a> <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a> (this <a href="motion.txt.html#is" class="d">is</a>
+                vi compatible).  {Vi: <a href="scroll.txt.html#CTRL-D" class="k">CTRL-D</a> works only when used after
+                autoindent}
+
+                                                        <a name="i_CTRL-V" class="t">i_CTRL-V</a>
+<a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a>          <a href="insert.txt.html#Insert" class="d">Insert</a> next non-digit literally.  For special keys, the
+                terminal code <a href="motion.txt.html#is" class="d">is</a> inserted.  It's also possible to enter the
+                decimal, octal or hexadecimal value of <a href="insert.txt.html#a" class="d">a</a> character
+                <a href="insert.txt.html#i_CTRL-V_digit" class="l">i_CTRL-V_digit</a><a href="repeat.txt.html#." class="d">.</a>
+                The characters typed right after <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a> are not considered for
+                mapping.  <span class="s">{Vi: no decimal byte entry}</span>
+
+                                                <a name="i_CTRL-Q" class="t">i_CTRL-Q</a>
+<span class="k">CTRL-Q</span>          Same <a href="motion.txt.html#as" class="d">as</a> <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a><a href="repeat.txt.html#." class="d">.</a>
+
+                                                        <a name="i_CTRL-E" class="t">i_CTRL-E</a>
+<a href="scroll.txt.html#CTRL-E" class="k">CTRL-E</a>          <a href="insert.txt.html#Insert" class="d">Insert</a> the character which <a href="motion.txt.html#is" class="d">is</a> below the cursor.  <span class="s">{not in Vi}</span>
+
+                                                        <a name="i_CTRL-Y" class="t">i_CTRL-Y</a>
+<a href="scroll.txt.html#CTRL-Y" class="k">CTRL-Y</a>          <a href="insert.txt.html#Insert" class="d">Insert</a> the character which <a href="motion.txt.html#is" class="d">is</a> above the cursor.  <span class="s">{not in Vi}</span>
+                <span class="n">Note</span> that for <a href="scroll.txt.html#CTRL-E" class="k">CTRL-E</a> and <a href="scroll.txt.html#CTRL-Y" class="k">CTRL-Y</a> <a href="options.txt.html#%27textwidth%27" class="o">'textwidth'</a> <a href="motion.txt.html#is" class="d">is</a> not used, to be
+                able to copy characters from <a href="insert.txt.html#a" class="d">a</a> long line.
+
+                                                        <a name="i_%3CInsert%3E" class="t">i_&lt;Insert&gt;</a>
+<a href="insert.txt.html#%3CInsert%3E" class="s">&lt;Insert&gt;</a>        Toggle between <a href="insert.txt.html#insert" class="d">insert</a> and replace mode.  <span class="s">{not in Vi}</span>
+
+                                                        <a name="i_CTRL-%3E" class="t">i_CTRL-&gt;</a>
+<span class="k">CTRL-&gt;</span>     or   Align first non white character of current line with next
+<span class="k">CTRL-.</span>          parenthesis (column-wise) in previous line by <a href="insert.txt.html#inserting" class="d">inserting</a> indent
+                into current line.  Usefull for aligning arguments of <a href="insert.txt.html#a" class="d">a</a>
+                function call. Also anchors to first character of previous
+                line. Think Ctrl-&gt; for shift-like behavior. <span class="s">{jVi only}</span>
+
+                                                        <a name="i_CTRL-%3C" class="t">i_CTRL-&lt;</a>
+<span class="k">CTRL-&lt;</span>     or   Align first non white character of current line with previous
+<span class="k">CTRL-,</span>          parenthesis (column-wise) in previous line by removing indent
+                from current line.  Usefull for aligning arguments of <a href="insert.txt.html#a" class="d">a</a>
+                function call. Also anchors to first character of previous
+                line. Think Ctrl-&lt; for shift-like behavior. <span class="s">{jVi only}</span>
+<span class="h">-----------------------------------------------------------------------</span>
+
+                                                <a name="i_backspacing" class="t">i_backspacing</a>
+The effect of the <a href="motion.txt.html#%3CBS%3E" class="s">&lt;BS&gt;</a><a href="motion.txt.html#%2C" class="d">,</a> <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a><a href="motion.txt.html#%2C" class="d">,</a> and <a href="scroll.txt.html#CTRL-U" class="k">CTRL-U</a> depend on the <a href="options.txt.html#%27backspace%27" class="o">'backspace'</a> option
+(unless <span class="o">'revins'</span> <a href="motion.txt.html#is" class="d">is</a> set).  This <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> comma separated list of items:
+
+<span class="h">item        action </span>
+indent      allow backspacing over autoindent
+eol         allow backspacing over end-of-line (join lines)
+start       allow backspacing over the start position of insert; <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> and
+            <a href="scroll.txt.html#CTRL-U" class="k">CTRL-U</a> stop once <a href="motion.txt.html#at" class="d">at</a> the start position
+(NOTE: jVi only support "<a href="motion.txt.html#0" class="d">0</a>"<a href="motion.txt.html#%2C" class="d">,</a> "1" and "2"<a href="motion.txt.html#%29" class="d">)</a>
+
+When <a href="options.txt.html#%27backspace%27" class="o">'backspace'</a> <a href="motion.txt.html#is" class="d">is</a> empty, Vi compatible backspacing <a href="motion.txt.html#is" class="d">is</a> used.  You cannot
+backspace over autoindent, before column 1 or before where <a href="insert.txt.html#insert" class="d">insert</a> started.
+
+For backwards compatibility the values "<a href="motion.txt.html#0" class="d">0</a>"<a href="motion.txt.html#%2C" class="d">,</a> "1" and "2" are also allowed, see
+<a href="options.txt.html#%27backspace%27" class="l">'backspace'</a><a href="repeat.txt.html#." class="d">.</a>
+
+If the <a href="options.txt.html#%27backspace%27" class="o">'backspace'</a> option does contain "eol" and the cursor <a href="motion.txt.html#is" class="d">is</a> in column 1
+when one of the three keys <a href="motion.txt.html#is" class="d">is</a> used, the current line <a href="motion.txt.html#is" class="d">is</a> joined with the
+previous line.  This effectively deletes the <span class="s">&lt;EOL&gt;</span> in front of the cursor.
+<span class="s">{Vi: does not cross lines, does not delete past start position of insert}</span>
+
+                                                <a name="i_CTRL-V_digit" class="t">i_CTRL-V_digit</a>
+With <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a> the decimal, octal or hexadecimal value of <a href="insert.txt.html#a" class="d">a</a> character can be
+entered directly.  This way you can enter any character, except <a href="insert.txt.html#a" class="d">a</a> line break
+(&lt;NL&gt;, value 10).  There are five ways to enter the character value:
+
+<span class="h">first char      mode         max nr of chars   max value </span>
+(none)          decimal            3            255
+<a href="insert.txt.html#o" class="d">o</a> or <a href="insert.txt.html#O" class="d">O</a>          octal              3            377      (255)
+<a href="change.txt.html#x" class="d">x</a> or <a href="change.txt.html#X" class="d">X</a>          hexadecimal        2            ff       (255)
+<a href="undo.txt.html#u" class="d">u</a>               hexadecimal        4            ffff     (65535)
+U               hexadecimal        8            7fffffff (2147483647)
+
+Normally you would type the maximum number of characters.  Thus to enter <a href="insert.txt.html#a" class="d">a</a>
+space (value 32) you would type <span class="s">&lt;C-V&gt;</span>032.  You can omit the leading zero, in
+which <a href="change.txt.html#case" class="d">case</a> the character typed after the number must be <a href="insert.txt.html#a" class="d">a</a> non-digit.  This
+happens for the other modes <a href="motion.txt.html#as" class="d">as</a> well: As soon <a href="motion.txt.html#as" class="d">as</a> you type <a href="insert.txt.html#a" class="d">a</a> character that <a href="motion.txt.html#is" class="d">is</a>
+invalid for the mode, the value before <a href="motion.txt.html#it" class="d">it</a> will be used and the "invalid"
+character <a href="motion.txt.html#is" class="d">is</a> dealt with in the normal way.
+
+If you enter <a href="insert.txt.html#a" class="d">a</a> value of 10, <a href="motion.txt.html#it" class="d">it</a> will end up in the file <a href="motion.txt.html#as" class="d">as</a> <a href="insert.txt.html#a" class="d">a</a> 0.  The 10 <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a>
+<a href="motion.txt.html#%3CNL%3E" class="s">&lt;NL&gt;</a><a href="motion.txt.html#%2C" class="d">,</a> which <a href="motion.txt.html#is" class="d">is</a> used internally to represent the <span class="s">&lt;Nul&gt;</span> character.  When writing
+the buffer to <a href="insert.txt.html#a" class="d">a</a> file, the <a href="motion.txt.html#%3CNL%3E" class="s">&lt;NL&gt;</a> character <a href="motion.txt.html#is" class="d">is</a> translated into <span class="s">&lt;Nul&gt;</span><a href="repeat.txt.html#." class="d">.</a>  The <a href="motion.txt.html#%3CNL%3E" class="s">&lt;NL&gt;</a>
+character <a href="motion.txt.html#is" class="d">is</a> written <a href="motion.txt.html#at" class="d">at</a> the end of each line.  Thus if you want to <a href="insert.txt.html#insert" class="d">insert</a> <a href="insert.txt.html#a" class="d">a</a>
+<a href="motion.txt.html#%3CNL%3E" class="s">&lt;NL&gt;</a> character in <a href="insert.txt.html#a" class="d">a</a> file you will have to make <a href="insert.txt.html#a" class="d">a</a> line break.
+
+<span class="h">==============================================================================</span>
+2. Special special keys                         <a name="ins-special-special" class="t">ins-special-special</a>
+
+The following keys are special.  They stop the current insert, do something,
+and then restart insertion.  This means you can do something without getting
+out of <a href="insert.txt.html#Insert" class="d">Insert</a> mode.  This <a href="motion.txt.html#is" class="d">is</a> very handy if you prefer to use the <a href="insert.txt.html#Insert" class="d">Insert</a> mode
+all the time, just like editors that don't have <a href="insert.txt.html#a" class="d">a</a> separate <a href="intro.txt.html#Normal" class="d">Normal</a> mode.  You
+may also want to set the <a href="options.txt.html#%27backspace%27" class="o">'backspace'</a> option to "indent,eol,start" and set the
+<span class="o">'insertmode'</span> option. (NOTE: jVi does not support <span class="o">'insertmode'</span> option)
+
+The changes (inserted or deleted characters) before and after these keys can
+be undone separately.  Only the last change can be redone and always behaves
+like an "<a href="insert.txt.html#i" class="d">i</a>" command.
+
+<span class="h">char            action  </span>
+<span class="h">-----------------------------------------------------------------------</span>
+ <a href="motion.txt.html#%3CUp%3E" class="s">&lt;Up&gt;</a>            cursor one line up                           <a name="i_%3CUp%3E" class="t">i_&lt;Up&gt;</a>
+ <a href="motion.txt.html#%3CDown%3E" class="s">&lt;Down&gt;</a>          cursor one line down                         <a name="i_%3CDown%3E" class="t">i_&lt;Down&gt;</a>
+ <a href="motion.txt.html#%3CLeft%3E" class="s">&lt;Left&gt;</a>          cursor one character left                    <a name="i_%3CLeft%3E" class="t">i_&lt;Left&gt;</a>
+ <a href="motion.txt.html#%3CRight%3E" class="s">&lt;Right&gt;</a>         cursor one character right                   <a name="i_%3CRight%3E" class="t">i_&lt;Right&gt;</a>
+ <a href="motion.txt.html#%3CS-Left%3E" class="s">&lt;S-Left&gt;</a>        cursor one <a href="motion.txt.html#word" class="d">word</a> back (like "<a href="motion.txt.html#b" class="d">b</a>" command)      <a name="i_%3CS-Left%3E" class="t">i_&lt;S-Left&gt;</a>
+ <a href="motion.txt.html#%3CC-Left%3E" class="s">&lt;C-Left&gt;</a>        cursor one <a href="motion.txt.html#word" class="d">word</a> back (like "<a href="motion.txt.html#b" class="d">b</a>" command)      <a name="i_%3CC-Left%3E" class="t">i_&lt;C-Left&gt;</a>
+ <a href="motion.txt.html#%3CS-Right%3E" class="s">&lt;S-Right&gt;</a>       cursor one <a href="motion.txt.html#word" class="d">word</a> forward (like "<a href="motion.txt.html#w" class="d">w</a>" command)   <a name="i_%3CS-Right%3E" class="t">i_&lt;S-Right&gt;</a>
+ <a href="motion.txt.html#%3CC-Right%3E" class="s">&lt;C-Right&gt;</a>       cursor one <a href="motion.txt.html#word" class="d">word</a> forward (like "<a href="motion.txt.html#w" class="d">w</a>" command)   <a name="i_%3CC-Right%3E" class="t">i_&lt;C-Right&gt;</a>
+ <a href="motion.txt.html#%3CHome%3E" class="s">&lt;Home&gt;</a>          cursor to first char in the line             <a name="i_%3CHome%3E" class="t">i_&lt;Home&gt;</a>
+ <a href="motion.txt.html#%3CEnd%3E" class="s">&lt;End&gt;</a>           cursor to after last char in the line        <a name="i_%3CEnd%3E" class="t">i_&lt;End&gt;</a>
+ <a href="motion.txt.html#%3CC-Home%3E" class="s">&lt;C-Home&gt;</a>        cursor to first char in the file             <a name="i_%3CC-Home%3E" class="t">i_&lt;C-Home&gt;</a>
+ <a href="motion.txt.html#%3CC-End%3E" class="s">&lt;C-End&gt;</a>         cursor to after last char in the file        <a name="i_%3CC-End%3E" class="t">i_&lt;C-End&gt;</a>
+ <span class="k">CTRL-G</span> <a href="undo.txt.html#u" class="d">u</a>        break <a href="undo.txt.html#undo" class="d">undo</a> sequence, start new change        <a name="i_CTRL-G_u" class="t">i_CTRL-G_u</a>
+<span class="h">-----------------------------------------------------------------------</span>
+
+When the <a href="options.txt.html#%27whichwrap%27" class="o">'whichwrap'</a> option <a href="motion.txt.html#is" class="d">is</a> set appropriately, the <a href="motion.txt.html#%3CLeft%3E" class="s">&lt;Left&gt;</a> and <a href="motion.txt.html#%3CRight%3E" class="s">&lt;Right&gt;</a>
+keys on the first/last character in the line make the cursor wrap to the
+previous/next line.
+
+<span class="h">==============================================================================</span>
+4. <a href="options.txt.html#%27expandtab%27" class="o">'expandtab'</a>                                          <a name="ins-expandtab" class="t">ins-expandtab</a>
+
+If the <a href="options.txt.html#%27expandtab%27" class="o">'expandtab'</a> option <a href="motion.txt.html#is" class="d">is</a> on, spaces will be used to fill the amount of
+whitespace of the tab.  If you want to enter <a href="insert.txt.html#a" class="d">a</a> real <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a><a href="motion.txt.html#%2C" class="d">,</a> type <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a> first.
+The <a href="options.txt.html#%27expandtab%27" class="o">'expandtab'</a> option <a href="motion.txt.html#is" class="d">is</a> off by default.  <span class="n">Note</span> that in <a href="insert.txt.html#Replace" class="d">Replace</a> mode, <a href="insert.txt.html#a" class="d">a</a> single
+character <a href="motion.txt.html#is" class="d">is</a> replaced with several spaces.  The result of this <a href="motion.txt.html#is" class="d">is</a> that the
+number of characters in the line increases.  Backspacing will delete one
+space <a href="motion.txt.html#at" class="d">at</a> <a href="insert.txt.html#a" class="d">a</a> time.  The original character will be <a href="change.txt.html#put" class="d">put</a> back for only one space
+that you backspace over (the last one).  {Vi does not have the <a href="options.txt.html#%27expandtab%27" class="o">'expandtab'</a>
+option}
+
+<span class="n">NOTE:</span> in jVi the platform does <a href="insert.txt.html#a" class="d">a</a> lot of the tab handling. Platform docs should
+be referenced.
+
+
+<span class="h">==============================================================================</span>
+5. <a href="insert.txt.html#Replace" class="d">Replace</a> mode                         <a name="Replace" class="t">Replace</a> <a name="Replace-mode" class="t">Replace-mode</a> <a name="mode-replace" class="t">mode-replace</a>
+
+Enter <a href="insert.txt.html#Replace" class="d">Replace</a> mode with the "<a href="change.txt.html#R" class="d">R</a>" command in normal mode.
+
+In <a href="insert.txt.html#Replace" class="d">Replace</a> mode, one character in the line <a href="motion.txt.html#is" class="d">is</a> deleted for every character you
+type.  If there <a href="motion.txt.html#is" class="d">is</a> no character to delete (at the end of the line), the
+typed character <a href="motion.txt.html#is" class="d">is</a> appended (as in <a href="insert.txt.html#Insert" class="d">Insert</a> mode).  Thus the number of
+characters in <a href="insert.txt.html#a" class="d">a</a> line stays the same until you get to the end of the line.
+If <a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#%3CNL%3E" class="s">&lt;NL&gt;</a> <a href="motion.txt.html#is" class="d">is</a> typed, <a href="insert.txt.html#a" class="d">a</a> line break <a href="motion.txt.html#is" class="d">is</a> inserted and no character <a href="motion.txt.html#is" class="d">is</a> deleted.
+
+Be careful with <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a> characters.  If you type <a href="insert.txt.html#a" class="d">a</a> normal printing character in
+its place, the number of characters <a href="motion.txt.html#is" class="d">is</a> still the same, but the number of
+columns will become smaller.
+
+If you delete characters in <a href="insert.txt.html#Replace" class="d">Replace</a> mode (with <a href="motion.txt.html#%3CBS%3E" class="s">&lt;BS&gt;</a><a href="motion.txt.html#%2C" class="d">,</a> <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a><a href="motion.txt.html#%2C" class="d">,</a> or <a href="scroll.txt.html#CTRL-U" class="k">CTRL-U</a>), what
+happens <a href="motion.txt.html#is" class="d">is</a> that you delete the changes.  The characters that were replaced
+are restored.  If you had typed past the existing text, the characters you
+added are deleted.  This <a href="motion.txt.html#is" class="d">is</a> effectively <a href="insert.txt.html#a" class="d">a</a> character-at-a-time undo.
+
+If the <a href="options.txt.html#%27expandtab%27" class="o">'expandtab'</a> option <a href="motion.txt.html#is" class="d">is</a> on, <a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a> will replace one character with
+several spaces.  The result of this <a href="motion.txt.html#is" class="d">is</a> that the number of characters in the
+line increases.  Backspacing will delete one space <a href="motion.txt.html#at" class="d">at</a> <a href="insert.txt.html#a" class="d">a</a> time.  The original
+character will be <a href="change.txt.html#put" class="d">put</a> back for only one space that you backspace over (the
+last one).  <span class="s">{Vi does not have the 'expandtab' option}</span>
+
+<span class="h">==============================================================================</span>
+8. <a href="insert.txt.html#Insert" class="d">Insert</a> mode commands                                 <a name="inserting" class="t">inserting</a>
+
+The following commands can be used to <a href="insert.txt.html#insert" class="d">insert</a> new text into the buffer.  They
+can all be undone and repeated with the "<a href="repeat.txt.html#." class="d">.</a>" command.
+
+                                                        <a name="a" class="t">a</a>
+<a href="insert.txt.html#a" class="d">a</a>                       Append text after the cursor <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> times.
+
+                                                        <a name="A" class="t">A</a>
+<a href="insert.txt.html#A" class="d">A</a>                       Append text <a href="motion.txt.html#at" class="d">at</a> the end of the line <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> times.
+
+<span class="s">&lt;insert&gt;</span>        or                              <a name="i" class="t">i</a> <a name="insert" class="t">insert</a> <a name="%3CInsert%3E" class="t">&lt;Insert&gt;</a>
+<a href="insert.txt.html#i" class="d">i</a>                       <a href="insert.txt.html#Insert" class="d">Insert</a> text before the cursor <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> times.
+
+                                                        <a name="I" class="t">I</a>
+<a href="insert.txt.html#I" class="d">I</a>                       <a href="insert.txt.html#Insert" class="d">Insert</a> text before the first non-blank in the line
+                        <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> times.
+
+                                                        <a name="o" class="t">o</a>
+<a href="insert.txt.html#o" class="d">o</a>                       Begin <a href="insert.txt.html#a" class="d">a</a> new line below the cursor and <a href="insert.txt.html#insert" class="d">insert</a> text,
+                        repeat <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> times.
+                        <span class="s">{Vi: blank [count] screen lines}</span>
+
+                                                        <a name="O" class="t">O</a>
+<a href="insert.txt.html#O" class="d">O</a>                       Begin <a href="insert.txt.html#a" class="d">a</a> new line above the cursor and <a href="insert.txt.html#insert" class="d">insert</a> text,
+                        repeat <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> times.
+                        <span class="s">{Vi: blank [count] screen lines}</span>
+
+These commands are used to start <a href="insert.txt.html#inserting" class="d">inserting</a> text.  You can end <a href="insert.txt.html#insert" class="d">insert</a> mode with
+<span class="s">&lt;Esc&gt;</span><a href="repeat.txt.html#." class="d">.</a>  See <a href="insert.txt.html#mode-ins-repl" class="l">mode-ins-repl</a> for the other special characters in <a href="insert.txt.html#Insert" class="d">Insert</a> mode.
+the effect of <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> takes place after <a href="insert.txt.html#insert" class="d">insert</a> mode <a href="motion.txt.html#is" class="d">is</a> exited.
+
+When <span class="o">'autoindent'</span> <a href="motion.txt.html#is" class="d">is</a> on, the indent for <a href="insert.txt.html#a" class="d">a</a> new line <a href="motion.txt.html#is" class="d">is</a> obtained from the
+previous line. 
+
+<span class="n">NOTE:</span> in jVi the platform does <a href="insert.txt.html#a" class="d">a</a> lot of the <a href="insert.txt.html#insert" class="d">insert</a> new line handling.
+      Platform docs should be referenced.
+
+ vim:tw=78:ts=8:sw=8:noet:
+
+</pre>
+</div>
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<p id="footer">These help files are maintained with thanks
+to Carlo Teubner for his vimhelp to html work.</p>
+
+</div>
+</div>
+</body></html>

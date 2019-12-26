@@ -1,0 +1,86 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Vim: undo.txt</title>
+<!--[if IE]>
+<link rel="stylesheet" href="vimhelp-ie.css" type="text/css">
+<![endif]-->
+<!--[if !IE]>-->
+<link rel="stylesheet" href="vimhelp.css" type="text/css">
+<!--<![endif]-->
+</head>
+<body>
+<div id="d1">
+<pre id="sp">                                                                                </pre>
+<div id="d2">
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<div id="d3">
+<pre>
+<a name="undo.txt" class="t">undo.txt</a>      For Vim version 5.6.  Last change: 1999 Dec 21
+
+
+                  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+Undo and <a href="undo.txt.html#redo" class="d">redo</a>                                           <a name="undo-redo" class="t">undo-redo</a>
+
+1. Undo and <a href="undo.txt.html#redo" class="d">redo</a> commands       <a href="undo.txt.html#undo-commands" class="l">undo-commands</a>
+3. Remarks about <a href="undo.txt.html#undo" class="d">undo</a>           <a href="undo.txt.html#undo-remarks" class="l">undo-remarks</a>
+
+<span class="h">==============================================================================</span>
+1. Undo and <a href="undo.txt.html#redo" class="d">redo</a> commands                               <a name="undo-commands" class="t">undo-commands</a>
+
+<a href="undo.txt.html#%3CUndo%3E" class="s">&lt;Undo&gt;</a>          or                                      <a name="undo" class="t">undo</a> <a name="%3CUndo%3E" class="t">&lt;Undo&gt;</a> <a name="u" class="t">u</a>
+<a href="undo.txt.html#u" class="d">u</a>                       Undo <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> changes.  <span class="s">{Vi: only one level}</span>
+
+                                                        <a name="%3Au" class="t">:u</a> <a name="%3Aun" class="t">:un</a> <a name="%3Aundo" class="t">:undo</a>
+:u[ndo]                 Undo one change.  <span class="s">{Vi: only one level}</span>
+
+                                                        <a name="CTRL-R" class="t">CTRL-R</a>
+<a href="undo.txt.html#CTRL-R" class="k">CTRL-R</a>                  Redo <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> changes which were undone.  {Vi: redraw
+                        screen}
+
+                                                        <a name="%3Ared" class="t">:red</a> <a name="%3Aredo" class="t">:redo</a> <a name="redo" class="t">redo</a>
+:red[o]                 Redo one change which was undone.  <span class="s">{Vi: no redo}</span>
+
+The last changes are remembered.  You can use the <a href="undo.txt.html#undo" class="d">undo</a> and <a href="undo.txt.html#redo" class="d">redo</a> commands above
+to revert the text to how <a href="motion.txt.html#it" class="d">it</a> was before each change.  You can also apply the
+changes again, getting back the text before the undo.
+
+<span class="h">==============================================================================</span>
+3. Remarks about <a href="undo.txt.html#undo" class="d">undo</a>                                   <a name="undo-remarks" class="t">undo-remarks</a>
+
+The numbered <a href="change.txt.html#registers" class="d">registers</a> can also be used for undoing deletes.  Each time you
+delete text, <a href="motion.txt.html#it" class="d">it</a> <a href="motion.txt.html#is" class="d">is</a> <a href="change.txt.html#put" class="d">put</a> into register "1.  The contents of register "1 are
+shifted to "2, etc.  The contents of register "9 are lost.  You can now get
+back the most recent deleted text with the <a href="change.txt.html#put" class="d">put</a> command: <a href="motion.txt.html#%27" class="d">'</a>"1P'.  (also, if the
+deleted text was the result of the last delete or copy operation, 'P' or 'p'
+also works <a href="motion.txt.html#as" class="d">as</a> this puts the contents of the unnamed register).  You can get
+back the text of three deletes ago with <a href="motion.txt.html#%27" class="d">'</a>"3P'.
+
+If you want to get back more than one part of deleted text, you can use <a href="insert.txt.html#a" class="d">a</a>
+special feature of the repeat command "<a href="repeat.txt.html#." class="d">.</a>"<a href="repeat.txt.html#." class="d">.</a>  It will increase the number of the
+register used.  So if you first do ""1P"<a href="motion.txt.html#%2C" class="d">,</a> the following "<a href="repeat.txt.html#." class="d">.</a>" will result in <a href="insert.txt.html#a" class="d">a</a>
+<a href="motion.txt.html#%27" class="d">'</a>"2P'.  Repeating this will result in all numbered <a href="change.txt.html#registers" class="d">registers</a> being inserted.
+
+Example:        If you deleted text with 'dd....' <a href="motion.txt.html#it" class="d">it</a> can be restored with
+                <a href="motion.txt.html#%27" class="d">'</a>"1P....'.
+
+If you don't know in which register the deleted text is, you can use the
+<a href="change.txt.html#%3Adisplay" class="d">:display</a> command.  An alternative <a href="motion.txt.html#is" class="d">is</a> to try the first register with <a href="motion.txt.html#%27" class="d">'</a>"1P', and
+if <a href="motion.txt.html#it" class="d">it</a> <a href="motion.txt.html#is" class="d">is</a> not what you want do 'u.'.  This will remove the contents of the
+first put, and repeat the <a href="change.txt.html#put" class="d">put</a> command for the second register.  Repeat the
+'u.' until you got what you want.
+
+ vim:tw=78:ts=8:sw=8:noet:
+
+</pre>
+</div>
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<p id="footer">These help files are maintained with thanks
+to Carlo Teubner for his vimhelp to html work.</p>
+
+</div>
+</div>
+</body></html>

@@ -1,0 +1,386 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Vim: visual.txt</title>
+<!--[if IE]>
+<link rel="stylesheet" href="vimhelp-ie.css" type="text/css">
+<![endif]-->
+<!--[if !IE]>-->
+<link rel="stylesheet" href="vimhelp.css" type="text/css">
+<!--<![endif]-->
+</head>
+<body>
+<div id="d1">
+<pre id="sp">                                                                                </pre>
+<div id="d2">
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<div id="d3">
+<pre>
+<a name="visual.txt" class="t">visual.txt</a>    For Vim version 5.6.  Last change: 2000 Jan 05
+
+(also see <a href="visual.txt.html#Visual" class="d">Visual</a> Block Mode help and 2D examples:
+<a class="u" href="http://jvi.sourceforge.net/vis-block-help/jvi-vis_block.html">http://jvi.sourceforge.net/vis-block-help/jvi-vis_block.html</a><a href="motion.txt.html#%29" class="d">)</a>
+
+                  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+<a href="visual.txt.html#Visual" class="d">Visual</a> mode                             <a name="Visual" class="t">Visual</a> <a name="Visual-mode" class="t">Visual-mode</a> <a name="visual-mode" class="t">visual-mode</a>
+
+<a href="visual.txt.html#Visual" class="d">Visual</a> mode <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> flexible and easy way to select <a href="insert.txt.html#a" class="d">a</a> piece of text for an
+operator.  It <a href="motion.txt.html#is" class="d">is</a> the only way to select <a href="insert.txt.html#a" class="d">a</a> block of text.
+
+1. Using <a href="visual.txt.html#Visual" class="d">Visual</a> mode                    <a href="visual.txt.html#visual-use" class="l">visual-use</a>
+2. Starting and stopping <a href="visual.txt.html#Visual" class="d">Visual</a> mode    <a href="visual.txt.html#visual-start" class="l">visual-start</a>
+3. Changing the <a href="visual.txt.html#Visual" class="d">Visual</a> area             <a href="visual.txt.html#visual-change" class="l">visual-change</a>
+4. Operating on the <a href="visual.txt.html#Visual" class="d">Visual</a> area         <a href="visual.txt.html#visual-operators" class="l">visual-operators</a>
+5. Blockwise operators                  <a href="visual.txt.html#blockwise-operators" class="l">blockwise-operators</a>
+6. Repeating                            <a href="visual.txt.html#visual-repeat" class="l">visual-repeat</a>
+7. Examples                             <a href="visual.txt.html#visual-examples" class="l">visual-examples</a>
+8. Select mode                          <span class="l">Select-mode</span>
+
+{Vi has no <a href="visual.txt.html#Visual" class="d">Visual</a> mode, the name "visual" <a href="motion.txt.html#is" class="d">is</a> used for <a href="intro.txt.html#Normal" class="d">Normal</a> mode, to
+distinguish <a href="motion.txt.html#it" class="d">it</a> from Ex mode}
+
+<span class="h">==============================================================================</span>
+1. Using <a href="visual.txt.html#Visual" class="d">Visual</a> mode                                    <a name="visual-use" class="t">visual-use</a>
+
+Using <a href="visual.txt.html#Visual" class="d">Visual</a> mode consists of three parts:
+1. <a href="motion.txt.html#Mark" class="d">Mark</a> the start of the text with "<a href="visual.txt.html#v" class="d">v</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="visual.txt.html#V" class="d">V</a>" or <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a><a href="repeat.txt.html#." class="d">.</a>
+   The character under the cursor will be used <a href="motion.txt.html#as" class="d">as</a> the start.
+2. Move to the end of the text.
+   The text from the start of the <a href="visual.txt.html#Visual" class="d">Visual</a> mode up to and including the
+   character under the cursor <a href="motion.txt.html#is" class="d">is</a> highlighted.
+3. Hit an operator.
+   The highlighted characters will be operated upon.
+
+The <span class="o">'highlight'</span> option can be used to set the display mode to use for
+highlighting in <a href="visual.txt.html#Visual" class="d">Visual</a> mode.
+
+With "<a href="visual.txt.html#v" class="d">v</a>" the text before the start position and after the end position will
+not be highlighted.  However, All <a href="change.txt.html#uppercase" class="d">uppercase</a> and non-alpha operators, except
+"<a href="change.txt.html#%7E" class="d">~</a>"<a href="motion.txt.html#%2C" class="d">,</a> will work on whole lines anyway.  See the list of operators below.
+
+                                                        <a name="visual-block" class="t">visual-block</a>
+With <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a> (blockwise <a href="visual.txt.html#Visual" class="d">Visual</a> mode) the highlighted text will be <a href="insert.txt.html#a" class="d">a</a> rectangle
+between start position and the cursor.  However, some operators work on whole
+lines anyway (see the list below).  The change and substitute operators will
+delete the highlighted text and then start insertion <a href="motion.txt.html#at" class="d">at</a> the top left
+position.
+
+<span class="h">==============================================================================</span>
+2. Starting and stopping <a href="visual.txt.html#Visual" class="d">Visual</a> mode                    <a name="visual-start" class="t">visual-start</a>
+
+                                                <a name="v" class="t">v</a> <a name="characterwise-visual" class="t">characterwise-visual</a>
+<a href="visual.txt.html#v" class="d">v</a>                       start <a href="visual.txt.html#Visual" class="d">Visual</a> mode per character.
+
+                                                <a name="V" class="t">V</a> <a name="linewise-visual" class="t">linewise-visual</a>
+<a href="visual.txt.html#V" class="d">V</a>                       start <a href="visual.txt.html#Visual" class="d">Visual</a> mode linewise.
+
+                                                <a name="CTRL-V" class="t">CTRL-V</a> <a name="blockwise-visual" class="t">blockwise-visual</a>
+<a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a>                  start <a href="visual.txt.html#Visual" class="d">Visual</a> mode blockwise.  <span class="n">Note:</span> Under Windows
+                        <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a> could be mapped to paste text, <a href="motion.txt.html#it" class="d">it</a> doesn't work
+                        to start <a href="visual.txt.html#Visual" class="d">Visual</a> mode then, see <span class="l">CTRL-V-alternative</span><a href="repeat.txt.html#." class="d">.</a>
+
+If you use <span class="s">&lt;Esc&gt;</span><a href="motion.txt.html#%2C" class="d">,</a> click the left mouse button or use any command that
+does <a href="insert.txt.html#a" class="d">a</a> jump to another buffer while in <a href="visual.txt.html#Visual" class="d">Visual</a> mode, the highlighting stops
+and no text <a href="motion.txt.html#is" class="d">is</a> affected.  Also when you hit "<a href="visual.txt.html#v" class="d">v</a>" in <a href="motion.txt.html#characterwise" class="d">characterwise</a> <a href="visual.txt.html#Visual" class="d">Visual</a> mode,
+"<a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a>" in blockwise <a href="visual.txt.html#Visual" class="d">Visual</a> mode or "<a href="visual.txt.html#V" class="d">V</a>" in <a href="motion.txt.html#linewise" class="d">linewise</a> <a href="visual.txt.html#Visual" class="d">Visual</a> mode.
+
+              new mode after typing:            <a name="v_v" class="t">v_v</a> <a name="v_CTRL-V" class="t">v_CTRL-V</a> <a name="v_V" class="t">v_V</a>
+<span class="h">old mode             "v"              "CTRL-V"               "V"        </span>
+
+<a href="intro.txt.html#Normal" class="d">Normal</a>              <a href="visual.txt.html#Visual" class="d">Visual</a>         blockwise <a href="visual.txt.html#Visual" class="d">Visual</a>       <a href="motion.txt.html#linewise" class="d">linewise</a> <a href="visual.txt.html#Visual" class="d">Visual</a>
+<a href="visual.txt.html#Visual" class="d">Visual</a>              <a href="intro.txt.html#Normal" class="d">Normal</a>         blockwise <a href="visual.txt.html#Visual" class="d">Visual</a>       <a href="motion.txt.html#linewise" class="d">linewise</a> <a href="visual.txt.html#Visual" class="d">Visual</a>
+blockwise <a href="visual.txt.html#Visual" class="d">Visual</a>    <a href="visual.txt.html#Visual" class="d">Visual</a>         <a href="intro.txt.html#Normal" class="d">Normal</a>                 <a href="motion.txt.html#linewise" class="d">linewise</a> <a href="visual.txt.html#Visual" class="d">Visual</a>
+<a href="motion.txt.html#linewise" class="d">linewise</a> <a href="visual.txt.html#Visual" class="d">Visual</a>     <a href="visual.txt.html#Visual" class="d">Visual</a>         blockwise <a href="visual.txt.html#Visual" class="d">Visual</a>       <a href="intro.txt.html#Normal" class="d">Normal</a>
+
+                                                        <a name="gv" class="t">gv</a> <a name="v_gv" class="t">v_gv</a>
+<a href="visual.txt.html#gv" class="d">gv</a>                      Start <a href="visual.txt.html#Visual" class="d">Visual</a> mode with the same area <a href="motion.txt.html#as" class="d">as</a> the previous
+                        area and the same mode.  In <a href="visual.txt.html#Visual" class="d">Visual</a> mode the current and
+                        the previous <a href="visual.txt.html#Visual" class="d">Visual</a> area are exchanged.
+
+
+                        <span class="n">Note:</span> when <span class="o">'mousemodel'</span> <a href="motion.txt.html#is" class="d">is</a> set to "popup"<a href="motion.txt.html#%2C" class="d">,</a>
+                        <span class="s">&lt;S-LeftMouse&gt;</span> has to be used instead of <span class="s">&lt;RightMouse&gt;</span><a href="repeat.txt.html#." class="d">.</a>
+
+                                                        <a name="%3CLeftRelease%3E" class="t">&lt;LeftRelease&gt;</a>
+
+If <a href="visual.txt.html#Visual" class="d">Visual</a> mode <a href="motion.txt.html#is" class="d">is</a> not active and the "<a href="visual.txt.html#v" class="d">v</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="visual.txt.html#V" class="d">V</a>" or <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a> <a href="motion.txt.html#is" class="d">is</a> preceded with <a href="insert.txt.html#a" class="d">a</a>
+count, the size of the previously highlighted area <a href="motion.txt.html#is" class="d">is</a> used for <a href="insert.txt.html#a" class="d">a</a> start.  You
+can then move the end of the highlighted area and give an operator.  The type
+of the old area <a href="motion.txt.html#is" class="d">is</a> used (character, line or blockwise).
+<a href="motion.txt.html#-" class="d">-</a> Linewise <a href="visual.txt.html#Visual" class="d">Visual</a> mode: The number of lines <a href="motion.txt.html#is" class="d">is</a> multiplied with the count.
+<a href="motion.txt.html#-" class="d">-</a> Blockwise <a href="visual.txt.html#Visual" class="d">Visual</a> mode: The number of lines and columns <a href="motion.txt.html#is" class="d">is</a> multiplied with
+  the count.
+<a href="motion.txt.html#-" class="d">-</a> <a href="intro.txt.html#Normal" class="d">Normal</a> <a href="visual.txt.html#Visual" class="d">Visual</a> mode within one line: The number of characters <a href="motion.txt.html#is" class="d">is</a> multiplied
+  with the count.
+<a href="motion.txt.html#-" class="d">-</a> <a href="intro.txt.html#Normal" class="d">Normal</a> <a href="visual.txt.html#Visual" class="d">Visual</a> mode with several lines: The number of lines <a href="motion.txt.html#is" class="d">is</a> multiplied
+  with the count, in the last line the same number of characters <a href="motion.txt.html#is" class="d">is</a> used <a href="motion.txt.html#as" class="d">as</a>
+  in the last line in the previously highlighted area.
+The start of the text <a href="motion.txt.html#is" class="d">is</a> the Cursor position.  If the "<a href="motion.txt.html#%24" class="d">$</a>" command was used <a href="motion.txt.html#as" class="d">as</a>
+one of the last commands to extend the highlighted text, the area will be
+extended to the rightmost column of the longest line.
+
+If you want to highlight exactly the same area <a href="motion.txt.html#as" class="d">as</a> the last time, you can use
+"<a href="visual.txt.html#gv" class="d">gv</a>" <a href="visual.txt.html#gv" class="l">gv</a> <a href="visual.txt.html#v_gv" class="l">v_gv</a><a href="repeat.txt.html#." class="d">.</a>
+
+<span class="h">==============================================================================</span>
+3. Changing the <a href="visual.txt.html#Visual" class="d">Visual</a> area                             <a name="visual-change" class="t">visual-change</a>
+
+                                                        <a name="v_o" class="t">v_o</a>
+<a href="insert.txt.html#o" class="d">o</a>                       Go to Other end of highlighted text: The current
+                        cursor position becomes the start of the highlighted
+                        text and the cursor <a href="motion.txt.html#is" class="d">is</a> moved to the other end of the
+                        highlighted text.  The highlighted area remains the
+                        same.
+
+                                                        <a name="v_O" class="t">v_O</a>
+<a href="insert.txt.html#O" class="d">O</a>                       Go to Other end of highlighted text.  This <a href="motion.txt.html#is" class="d">is</a> like
+                        "<a href="insert.txt.html#o" class="d">o</a>"<a href="motion.txt.html#%2C" class="d">,</a> but in <a href="visual.txt.html#Visual" class="d">Visual</a> block mode the cursor moves to the
+                        other corner in the same line.  When the corner <a href="motion.txt.html#is" class="d">is</a> <a href="motion.txt.html#at" class="d">at</a>
+                        <a href="insert.txt.html#a" class="d">a</a> character that occupies more than one position on
+                        the screen (e.g., <a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a>), the highlighted text may
+                        change.
+
+                                                        <a name="v_%24" class="t">v_$</a>
+When the "<a href="motion.txt.html#%24" class="d">$</a>" command <a href="motion.txt.html#is" class="d">is</a> used with blockwise <a href="visual.txt.html#Visual" class="d">Visual</a> mode, the right end of the
+highlighted text will be determined by the longest highlighted line.  This
+stops when <a href="insert.txt.html#a" class="d">a</a> motion command <a href="motion.txt.html#is" class="d">is</a> used that does not move straight up or down.
+
+For moving the end of the block many commands can be used, but you cannot
+use Ex commands, commands that make changes or abandon the file.  Commands
+(starting with) ".pPiIaAO&amp;"<a href="motion.txt.html#%2C" class="d">,</a> <span class="k">CTRL-^</span><a href="motion.txt.html#%2C" class="d">,</a> "Z"<a href="motion.txt.html#%2C" class="d">,</a> <span class="k">CTRL-]</span><a href="motion.txt.html#%2C" class="d">,</a> <a href="tagsearch.txt.html#CTRL-T" class="k">CTRL-T</a><a href="motion.txt.html#%2C" class="d">,</a> <a href="undo.txt.html#CTRL-R" class="k">CTRL-R</a><a href="motion.txt.html#%2C" class="d">,</a> <a href="motion.txt.html#CTRL-I" class="k">CTRL-I</a>
+and <a href="motion.txt.html#CTRL-O" class="k">CTRL-O</a> cause <a href="insert.txt.html#a" class="d">a</a> <a href="options.txt.html#beep" class="d">beep</a> and <a href="visual.txt.html#Visual" class="d">Visual</a> mode continues.
+
+
+<span class="h">==============================================================================</span>
+4. Operating on the <a href="visual.txt.html#Visual" class="d">Visual</a> area                         <a name="visual-operators" class="t">visual-operators</a>
+
+LEGEND FOR THE FIRST COLUMN:    " " works
+                                "<a href="motion.txt.html#e" class="d">e</a>" works if platform support, eg an IDE
+                                "<a href="repeat.txt.html#." class="d">.</a>" future support, may be partial
+                                "<a href="change.txt.html#x" class="d">x</a>" not supported or planned (but plans change)
+
+The operators that can be used are:
+        <a href="change.txt.html#%7E" class="d">~</a>       switch <a href="change.txt.html#case" class="d">case</a>                                     <a href="change.txt.html#v_%7E" class="l">v_~</a>
+        <a href="change.txt.html#d" class="d">d</a>       delete                                          <a href="change.txt.html#v_d" class="l">v_d</a>
+        <a href="change.txt.html#c" class="d">c</a>       change (4)                                      <a href="change.txt.html#v_c" class="l">v_c</a>
+        <a href="change.txt.html#y" class="d">y</a>       <a href="change.txt.html#yank" class="d">yank</a>                                            <a href="change.txt.html#v_y" class="l">v_y</a>
+<a href="repeat.txt.html#." class="d">.</a>       <a href="change.txt.html#%3E" class="d">&gt;</a>       shift right (4)                                 <a href="change.txt.html#v_%3E" class="l">v_&gt;</a>
+<a href="repeat.txt.html#." class="d">.</a>       <a href="change.txt.html#%3C" class="d">&lt;</a>       shift left (4)                                  <a href="change.txt.html#v_%3C" class="l">v_&lt;</a>
+        <a href="change.txt.html#%21" class="d">!</a>       <a href="change.txt.html#filter" class="d">filter</a> through external command (1)             <a href="change.txt.html#v_%21" class="l">v_!</a>
+        <a href="change.txt.html#%3D" class="d">=</a>       <a href="change.txt.html#filter" class="d">filter</a> through <a href="options.txt.html#%27equalprg%27" class="o">'equalprg'</a> option command (1)    <a href="change.txt.html#v_%3D" class="l">v_=</a>
+        gq      format lines to <a href="options.txt.html#%27textwidth%27" class="o">'textwidth'</a> length (1)          <span class="l">v_gq</span>
+
+The <a href="index.txt.html#objects" class="d">objects</a> that can be used are:
+<a href="repeat.txt.html#." class="d">.</a>       <a href="motion.txt.html#aw" class="d">aw</a>      <a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#word" class="d">word</a> (with white space)                       <a href="motion.txt.html#v_aw" class="l">v_aw</a>
+<a href="repeat.txt.html#." class="d">.</a>       <a href="motion.txt.html#iw" class="d">iw</a>      inner <a href="motion.txt.html#word" class="d">word</a>                                      <a href="motion.txt.html#v_iw" class="l">v_iw</a>
+<a href="repeat.txt.html#." class="d">.</a>       <a href="motion.txt.html#aW" class="d">aW</a>      <a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#WORD" class="d">WORD</a> (with white space)                       <a href="motion.txt.html#v_aW" class="l">v_aW</a>
+<a href="repeat.txt.html#." class="d">.</a>       <a href="motion.txt.html#iW" class="d">iW</a>      inner <a href="motion.txt.html#WORD" class="d">WORD</a>                                      <a href="motion.txt.html#v_iW" class="l">v_iW</a>
+<a href="repeat.txt.html#." class="d">.</a>       <a href="motion.txt.html#as" class="d">as</a>      <a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#sentence" class="d">sentence</a> (with white space)                   <a href="motion.txt.html#v_as" class="l">v_as</a>
+<a href="repeat.txt.html#." class="d">.</a>       <a href="motion.txt.html#is" class="d">is</a>      inner <a href="motion.txt.html#sentence" class="d">sentence</a>                                  <a href="motion.txt.html#v_is" class="l">v_is</a>
+        <a href="motion.txt.html#ap" class="d">ap</a>      <a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#paragraph" class="d">paragraph</a> (with white space)                  <a href="motion.txt.html#v_ap" class="l">v_ap</a>
+        <a href="motion.txt.html#ip" class="d">ip</a>      inner <a href="motion.txt.html#paragraph" class="d">paragraph</a>                                 <a href="motion.txt.html#v_ip" class="l">v_ip</a>
+<a href="repeat.txt.html#." class="d">.</a>       <a href="motion.txt.html#ab" class="d">ab</a>      <a href="insert.txt.html#a" class="d">a</a> () block (with braces)                        <a href="motion.txt.html#v_ab" class="l">v_ab</a>
+<a href="repeat.txt.html#." class="d">.</a>       <a href="motion.txt.html#ib" class="d">ib</a>      inner () block                                  <a href="motion.txt.html#v_ib" class="l">v_ib</a>
+<a href="repeat.txt.html#." class="d">.</a>       <a href="motion.txt.html#aB" class="d">aB</a>      <a href="insert.txt.html#a" class="d">a</a> <a href="intro.txt.html#%7B%7D" class="s">{}</a> block (with brackets)                      <a href="motion.txt.html#v_aB" class="l">v_aB</a>
+<a href="repeat.txt.html#." class="d">.</a>       <a href="motion.txt.html#iB" class="d">iB</a>      inner <a href="intro.txt.html#%7B%7D" class="s">{}</a> block                                  <a href="motion.txt.html#v_iB" class="l">v_iB</a>
+
+Additionally the following commands can be used:
+        :       start ex command for highlighted lines (1)      <span class="l">v_:</span>
+        <a href="change.txt.html#r" class="d">r</a>       change (4)                                      <a href="change.txt.html#v_r" class="l">v_r</a>
+        <a href="change.txt.html#s" class="d">s</a>       change                                          <a href="change.txt.html#v_s" class="l">v_s</a>
+        <a href="change.txt.html#C" class="d">C</a>       change (2)(4)                                   <a href="change.txt.html#v_C" class="l">v_C</a>
+        <a href="change.txt.html#S" class="d">S</a>       change (2)                                      <a href="change.txt.html#v_S" class="l">v_S</a>
+        <a href="change.txt.html#R" class="d">R</a>       change (2)                                      <a href="change.txt.html#v_R" class="l">v_R</a>
+        <a href="change.txt.html#x" class="d">x</a>       delete                                          <a href="change.txt.html#v_x" class="l">v_x</a>
+        <a href="change.txt.html#D" class="d">D</a>       delete (3)                                      <a href="change.txt.html#v_D" class="l">v_D</a>
+        <a href="change.txt.html#X" class="d">X</a>       delete (2)                                      <a href="change.txt.html#v_X" class="l">v_X</a>
+        <a href="change.txt.html#Y" class="d">Y</a>       <a href="change.txt.html#yank" class="d">yank</a> (2)                                        <a href="change.txt.html#v_Y" class="l">v_Y</a>
+        <a href="change.txt.html#p" class="d">p</a>       <a href="change.txt.html#put" class="d">put</a>                                             <span class="l">v_p</span>
+        <a href="change.txt.html#J" class="d">J</a>       join (1)                                        <a href="change.txt.html#v_J" class="l">v_J</a>
+        U       make <a href="change.txt.html#uppercase" class="d">uppercase</a>                                  <a href="change.txt.html#v_U" class="l">v_U</a>
+        <a href="undo.txt.html#u" class="d">u</a>       make <a href="change.txt.html#lowercase" class="d">lowercase</a>                                  <a href="change.txt.html#v_u" class="l">v_u</a>
+<a href="repeat.txt.html#." class="d">.</a>       ^]      find tag                                        <a href="tagsearch.txt.html#v_CTRL-%5D" class="l">v_CTRL-]</a>
+        <a href="insert.txt.html#I" class="d">I</a>       block <a href="insert.txt.html#insert" class="d">insert</a>                                    <a href="visual.txt.html#v_b_I" class="l">v_b_I</a>
+        <a href="insert.txt.html#A" class="d">A</a>       block append                                    <a href="visual.txt.html#v_b_A" class="l">v_b_A</a>
+
+(1): Always whole lines, see <a href="visual.txt.html#%3Avisual_example" class="l">:visual_example</a><a href="repeat.txt.html#." class="d">.</a>
+(2): Whole lines when not using <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a><a href="repeat.txt.html#." class="d">.</a>
+(3): Whole lines when not using <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a><a href="motion.txt.html#%2C" class="d">,</a> delete until the end of the line when
+     using <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a><a href="repeat.txt.html#." class="d">.</a>
+(4): When using <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a> operates on the block only.
+
+If you want to give <a href="insert.txt.html#a" class="d">a</a> <a href="intro.txt.html#count" class="d">count</a> to the command, do this just before typing the
+<a href="motion.txt.html#operator" class="d">operator</a> character: "v{move-around}3&gt;" (move lines 3 indents to the right).
+
+                                                        <a name="%7Bmove-around%7D" class="t">{move-around}</a>
+The <a href="visual.txt.html#%7Bmove-around%7D" class="s">{move-around}</a> <a href="motion.txt.html#is" class="d">is</a> any sequence of movement commands.  <span class="n">Note</span> the difference
+with <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a><a href="motion.txt.html#%2C" class="d">,</a> which <a href="motion.txt.html#is" class="d">is</a> only ONE movement command.
+
+<span class="h">==============================================================================</span>
+5. Blockwise operators                                  <a name="blockwise-operators" class="t">blockwise-operators</a>
+
+<span class="s">{not available when compiled without the |+visualextra| feature}</span>
+
+Visual-block <a href="insert.txt.html#Insert" class="d">Insert</a>                                             <a name="v_b_I" class="t">v_b_I</a>
+With <a href="insert.txt.html#a" class="d">a</a> blockwise selection, Istring&lt;ESC&gt; will <a href="insert.txt.html#insert" class="d">insert</a> string <a href="motion.txt.html#at" class="d">at</a> the start of
+block on every line of the block, provided that the line extends into the
+block. TABs are split to retain visual columns.
+See <a href="visual.txt.html#v_b_I_example" class="l">v_b_I_example</a><a href="repeat.txt.html#." class="d">.</a>
+
+Visual-block Append                                             <a name="v_b_A" class="t">v_b_A</a>
+With <a href="insert.txt.html#a" class="d">a</a> blockwise selection, Astring&lt;ESC&gt; will append string to the end of
+block on every line of the block. There <a href="motion.txt.html#is" class="d">is</a> some differing behavior where the
+block RHS <a href="motion.txt.html#is" class="d">is</a> not straight, due to different line lengths.
+
+a. Block was created with <span class="s">&lt;C-v&gt;</span><a href="motion.txt.html#%24" class="d">$</a>
+    In this <a href="change.txt.html#case" class="d">case</a> the string <a href="motion.txt.html#is" class="d">is</a> appended to the end of each line.
+b. Block was created with <span class="s">&lt;C-v&gt;</span><a href="visual.txt.html#%7Bmove-around%7D" class="s">{move-around}</a>
+    In this <a href="change.txt.html#case" class="d">case</a> the string <a href="motion.txt.html#is" class="d">is</a> appended to the end of the block on each
+    line which extends into the block, and whitespace <a href="motion.txt.html#is" class="d">is</a> inserted to pad to
+    the end-of-block column.
+See <a href="visual.txt.html#v_b_A_example" class="l">v_b_A_example</a><a href="repeat.txt.html#." class="d">.</a>
+
+Visual-block change                                             <a name="v_b_c" class="t">v_b_c</a>
+All selected text in the block will be replaced by the same text string.  When
+using "<a href="change.txt.html#c" class="d">c</a>" the selected text <a href="motion.txt.html#is" class="d">is</a> deleted and <a href="insert.txt.html#Insert" class="d">Insert</a> mode started.  You can then
+enter text (without <a href="insert.txt.html#a" class="d">a</a> line break).  When you hit <span class="s">&lt;Esc&gt;</span><a href="motion.txt.html#%2C" class="d">,</a> the same string <a href="motion.txt.html#is" class="d">is</a>
+inserted in all previously selected lines.
+
+Visual-block Change                                             <a name="v_b_C" class="t">v_b_C</a>
+Like using "<a href="change.txt.html#c" class="d">c</a>"<a href="motion.txt.html#%2C" class="d">,</a> but the selection <a href="motion.txt.html#is" class="d">is</a> extended until the end of the line for
+all lines.
+
+                                                                <a name="v_b_%3C" class="t">v_b_&lt;</a>
+Visual-block Shift              <span class="s">{ NOT in jVi }</span>                  <a name="v_b_%3E" class="t">v_b_&gt;</a>
+The block <a href="motion.txt.html#is" class="d">is</a> shifted by <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a><a href="repeat.txt.html#." class="d">.</a> The RHS of the block <a href="motion.txt.html#is" class="d">is</a> irrelevant. The
+LHS of the block determines the point from which to apply <a href="insert.txt.html#a" class="d">a</a> right shift, and
+padding includes TABs optimally according to <a href="options.txt.html#%27ts%27" class="o">'ts'</a> and <a href="options.txt.html#%27et%27" class="o">'et'</a><a href="repeat.txt.html#." class="d">.</a> The LHS of the
+block determines the point upto which to shift left.
+    <span class="n">Note:</span> <a href="change.txt.html#v_%3C" class="d">v_&lt;</a> padding <a href="motion.txt.html#is" class="d">is</a> buggy if the <a href="visual.txt.html#Visual" class="d">Visual</a> Block starts and ends in the same
+    TAB. (Vim 5.4c).
+See <a href="visual.txt.html#v_b_%3E_example" class="l">v_b_&gt;_example</a><a href="repeat.txt.html#." class="d">.</a>
+See <a href="visual.txt.html#v_b_%3C_example" class="l">v_b_&lt;_example</a><a href="repeat.txt.html#." class="d">.</a>
+
+Visual-block <a href="insert.txt.html#Replace" class="d">Replace</a>                                            <a name="v_b_r" class="t">v_b_r</a>
+Every screen char in the highlighted region <a href="motion.txt.html#is" class="d">is</a> replaced with the same char, ie
+TABs are split and the virtual whitespace <a href="motion.txt.html#is" class="d">is</a> replaced, maintaining screen
+layout.
+See <a href="visual.txt.html#v_b_r_example" class="l">v_b_r_example</a><a href="repeat.txt.html#." class="d">.</a>
+
+
+<span class="h">==============================================================================</span>
+6. Repeating                                            <a name="visual-repeat" class="t">visual-repeat</a>
+
+When <a href="repeat.txt.html#repeating" class="d">repeating</a> <a href="insert.txt.html#a" class="d">a</a> <a href="visual.txt.html#Visual" class="d">Visual</a> mode operator, the <a href="motion.txt.html#operator" class="d">operator</a> will be applied to the
+same amount of text <a href="motion.txt.html#as" class="d">as</a> the last time:
+<a href="motion.txt.html#-" class="d">-</a> Linewise <a href="visual.txt.html#Visual" class="d">Visual</a> mode: The same number of lines.
+<a href="motion.txt.html#-" class="d">-</a> Blockwise <a href="visual.txt.html#Visual" class="d">Visual</a> mode: The same number of lines and columns.
+<a href="motion.txt.html#-" class="d">-</a> <a href="intro.txt.html#Normal" class="d">Normal</a> <a href="visual.txt.html#Visual" class="d">Visual</a> mode within one line: The same number of characters.
+<a href="motion.txt.html#-" class="d">-</a> <a href="intro.txt.html#Normal" class="d">Normal</a> <a href="visual.txt.html#Visual" class="d">Visual</a> mode with several lines: The same number of lines, in the
+  last line the same number of characters <a href="motion.txt.html#as" class="d">as</a> in the last line the last time.
+The start of the text <a href="motion.txt.html#is" class="d">is</a> the Cursor position.  If the "<a href="motion.txt.html#%24" class="d">$</a>" command was used <a href="motion.txt.html#as" class="d">as</a>
+one of the last commands to extend the highlighted text, the <a href="repeat.txt.html#repeating" class="d">repeating</a> will
+be applied up to the rightmost column of the longest line.
+
+
+<span class="h">==============================================================================</span>
+7. Examples                                             <a name="visual-examples" class="t">visual-examples</a>
+
+                                                        <a name="%3Avisual_example" class="t">:visual_example</a>
+Currently the ":" command works on whole lines only.  When you select part of
+<a href="insert.txt.html#a" class="d">a</a> line, doing something like ":!date" will replace the whole line.  If you
+want only part of the line to be replaced you will have to make <a href="insert.txt.html#a" class="d">a</a> <a href="map.txt.html#mapping" class="d">mapping</a> for
+it.  In <a href="insert.txt.html#a" class="d">a</a> future release ":" may work on partial lines.
+
+Here <a href="motion.txt.html#is" class="d">is</a> an example, to replace the selected text with the output of "date":
+<a href="change.txt.html#%3E" class="d">&gt;</a>       <a href="map.txt.html#%3Avmap" class="d">:vmap</a> _a <span class="s">&lt;Esc&gt;</span>`&gt;a&lt;CR&gt;&lt;Esc&gt;`&lt;i&lt;CR&gt;&lt;Esc&gt;!!date&lt;CR&gt;kJJ
+
+(In the <span class="s">&lt;&gt;</span> <a href="intro.txt.html#notation" class="d">notation</a> <span class="l">&lt;&gt;</span><a href="motion.txt.html#%2C" class="d">,</a> when typing <a href="motion.txt.html#it" class="d">it</a> you should type <a href="motion.txt.html#it" class="d">it</a> literally; you
+need to remove the 'B' and '&lt;' flags from <a href="options.txt.html#%27cpoptions%27" class="o">'cpoptions'</a><a href="motion.txt.html#%29" class="d">)</a>
+
+What this does is:
+<span class="s">&lt;Esc&gt;</span>           stop <a href="visual.txt.html#Visual" class="d">Visual</a> mode
+<a href="motion.txt.html#%60%3E" class="d">`&gt;</a>              go to the end of the <a href="visual.txt.html#Visual" class="d">Visual</a> area
+a&lt;CR&gt;&lt;Esc&gt;      break the line after the <a href="visual.txt.html#Visual" class="d">Visual</a> area
+<a href="motion.txt.html#%60%3C" class="d">`&lt;</a>              jump to the start of the <a href="visual.txt.html#Visual" class="d">Visual</a> area
+i&lt;CR&gt;&lt;Esc&gt;      break the line before the <a href="visual.txt.html#Visual" class="d">Visual</a> area
+!!date&lt;CR&gt;      <a href="change.txt.html#filter" class="d">filter</a> the <a href="visual.txt.html#Visual" class="d">Visual</a> text through date
+kJJ             Join the lines back together
+
+                                                        <a name="visual-search" class="t">visual-search</a>
+Here <a href="motion.txt.html#is" class="d">is</a> an idea for <a href="insert.txt.html#a" class="d">a</a> <a href="map.txt.html#mapping" class="d">mapping</a> that makes <a href="motion.txt.html#it" class="d">it</a> possible to do <a href="insert.txt.html#a" class="d">a</a> search for the
+selected text:
+<a href="change.txt.html#%3E" class="d">&gt;</a>       <a href="map.txt.html#%3Avmap" class="d">:vmap</a> <a href="change.txt.html#X" class="d">X</a> y/&lt;C-R&gt;"<a href="motion.txt.html#%3CCR%3E" class="s">&lt;CR&gt;</a>
+
+(In the <span class="s">&lt;&gt;</span> <a href="intro.txt.html#notation" class="d">notation</a> <span class="l">&lt;&gt;</span><a href="motion.txt.html#%2C" class="d">,</a> when typing <a href="motion.txt.html#it" class="d">it</a> you should type <a href="motion.txt.html#it" class="d">it</a> literally; you
+need to remove the 'B' and '&lt;' flags from <a href="options.txt.html#%27cpoptions%27" class="o">'cpoptions'</a><a href="motion.txt.html#%29" class="d">)</a>
+
+<span class="n">Note</span> that special characters (like '.' and <a href="motion.txt.html#%27" class="d">'</a>*') will cause problems.
+
+Visual-block Examples                                   <a name="blockwise-examples" class="t">blockwise-examples</a>
+With the following text, <a href="insert.txt.html#I" class="d">I</a> will indicate the commands to produce the block and
+the results below. In all cases, the cursor begins on the 'a' in the first
+line if the test text.
+The following <a href="options.txt.html#modeline" class="d">modeline</a> settings are assumed :ts=8:sw=4:
+
+It will be helpful to
+<a href="options.txt.html#%3Aset" class="d">:set</a> hls
+/&lt;TAB&gt;
+where <span class="s">&lt;TAB&gt;</span> ia <a href="insert.txt.html#a" class="d">a</a> real TAB. This helps visualise the operations.
+
+The test text is:
+
+abcdefghijklmnopqrstuvwxyz
+abc             defghijklmnopqrstuvwxyz
+abcdef  ghi             jklmnopqrstuvwxyz
+abcdefghijklmnopqrstuvwxyz
+
+1. fo&lt;C-v&gt;3jISTRING&lt;ESC&gt;                                        <a name="v_b_I_example" class="t">v_b_I_example</a>
+
+abcdefghijklmnSTRINGopqrstuvwxyz
+abc           STRING  defghijklmnopqrstuvwxyz
+abcdef  ghi   STRING    jklmnopqrstuvwxyz
+abcdefghijklmnSTRINGopqrstuvwxyz
+
+2. fo&lt;C-v&gt;3j$ASTRING&lt;ESC&gt;                                       <a name="v_b_A_example" class="t">v_b_A_example</a>
+
+abcdefghijklmnopqrstuvwxyzSTRING
+abc             defghijklmnopqrstuvwxyzSTRING
+abcdef  ghi             jklmnopqrstuvwxyzSTRING
+abcdefghijklmnopqrstuvwxyzSTRING
+
+3. fo&lt;C-v&gt;3j3l&lt;..                                               <a name="v_b_%3C_example" class="t">v_b_&lt;_example</a>
+
+abcdefghijklmnopqrstuvwxyz
+abc           defghijklmnopqrstuvwxyz
+abcdef  ghi   jklmnopqrstuvwxyz
+abcdefghijklmnopqrstuvwxyz
+
+4. fo&lt;C-v&gt;3j&gt;..                                                 <a name="v_b_%3E_example" class="t">v_b_&gt;_example</a>
+
+abcdefghijklmn            opqrstuvwxyz
+abc                         defghijklmnopqrstuvwxyz
+abcdef  ghi                         jklmnopqrstuvwxyz
+abcdefghijklmn            opqrstuvwxyz
+
+5. fo&lt;C-v&gt;5l3jrX                                                <a name="v_b_r_example" class="t">v_b_r_example</a>
+
+abcdefghijklmnXXXXXXuvwxyz
+abc           XXXXXXhijklmnopqrstuvwxyz
+abcdef  ghi   XXXXXX    jklmnopqrstuvwxyz
+abcdefghijklmnXXXXXXuvwxyz
+
+ vim:tw=78:ts=8:sw=8:noet:
+
+</pre>
+</div>
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<p id="footer">These help files are maintained with thanks
+to Carlo Teubner for his vimhelp to html work.</p>
+
+</div>
+</div>
+</body></html>

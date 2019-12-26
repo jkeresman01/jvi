@@ -1,0 +1,689 @@
+*change.txt*    For Vim version 5.6.  Last change: 1999 Dec 21
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+This file describes commands that delete or change text.  In this context,
+changing text means deleting the text and replacing it with other text using
+one command.  You can undo all of these commands.  You can repeat the non-Ex
+commands with the "." command.
+
+1. Deleting text		|deleting|
+2. Delete and insert		|delete-insert|
+3. Simple changes		|simple-change|		*changing*
+4. Complex changes		|complex-change|
+   4.1 Filter commands		   |filter|
+   4.2 Substitute		   |:substitute|
+5. Copying and moving text	|copy-move|
+
+For inserting text see |insert.txt|.
+
+==============================================================================
+1. Deleting text					*deleting*
+
+#*# table:form=ref:label=deleting 1:command 10:extra-or 25:desc #*#
+["x]<Del>	or					*<Del>* *x* *dl*
+["x]x			Delete [count] characters under and after the cursor
+			[into register x] (not linewise).  Does the same as
+			"dl".  See |:fixdel| if the <Del> key does not do what
+			you want.  See |'whichwrap'| for deleting the <EOL>
+			(join lines).  {Vi does not support <Del>}
+
+							*X* *dh*
+["x]X			Delete [count] characters before the cursor [into
+			register x] (not linewise).  Does the same as "dh".
+			Also see |'whichwrap'|.
+
+							*d*
+["x]d{motion}		Delete text that {motion} moves over [into register
+			x].  See below for exceptions.
+
+							*dd*
+["x]dd			Delete [count] lines [into register x] (linewise).
+
+							*D*
+["x]D			Delete the characters under the cursor until the end
+			of the line and [count]-1 more lines [into register
+			x]; synonym for d$ (not linewise).
+
+{Visual}["x]x	or					*v_x* *v_d* *v_<Del>*
+{Visual}["x]d   or
+{Visual}["x]<Del>	Delete the highlighted text [into register x] (for
+			{Visual} see |Visual-mode|).  {not in Vi}
+
+{Visual}["x]X	or					*v_X* *v_D* *v_b_D*
+{Visual}["x]D		Delete the highlighted lines [into register x] (for
+			{Visual} see |Visual-mode|).  In Visual block mode,
+			"D" deletes the highlighted text plus all text until
+			the end of the line.  {not in Vi}
+
+						*:d* *:de* *:del* *:delete*
+:[range]d[elete] [x]	Delete [range] lines (default: current line) [into
+			register x].
+
+:[range]d[elete] [x] {count}
+			Delete {count} lines, starting with [range]
+			(default: current line |cmdline-ranges|) [into
+			register x].
+#*#table:stop-table #*#
+
+These commands delete text.  You can repeat them with the "." command
+(except ":d") and undo them.  Use Visual mode to delete blocks of text.  See
+|registers| for an explanation of registers.
+
+An exception for the d{motion} command: If the motion is not linewise, the
+start and end of the motion are not in the same line, and there are only
+blanks before the start and after the end of the motion, the delete becomes
+linewise.  This means that the delete also removes the line of blanks that you
+might expect to remain.
+
+Trying to delete an empty region of text (e.g., "d0" in the first column)
+is an error when 'cpoptions' includes the 'E' flag.
+
+#*# table:form=ref:label=FIXME 1:command 3:extra-or 25:desc #*#
+							*J*
+J			Join [count] lines, with a minimum of two lines.
+			Remove the indent and insert up to two spaces (see
+			below).
+
+							*v_J*
+{Visual}J		Join the highlighted lines, with a minimum of two
+			lines.  Remove the indent and insert up to two spaces
+			(see below).  {not in Vi}
+
+							*gJ*
+gJ			Join [count] lines, with a minimum of two lines.
+			Don't insert or remove any spaces.  {not in Vi}
+
+							*v_gJ*
+{Visual}gJ		Join the highlighted lines, with a minimum of two
+			lines.  Don't insert or remove any spaces.  {not in
+			Vi}
+#*#table:stop-table #*#
+
+These commands delete the <EOL> between lines.  This has the effect of joining
+multiple lines into one line.  You can repeat these commands (except ":j") and
+undo them.
+
+These commands, except "gJ", insert one space in place of the <EOL> unless
+there is trailing white space or the next line starts with a ')'.  These
+commands, except "gJ", delete any leading white space on the next line.  If
+the 'joinspaces' option is on, these commands insert two spaces after a '.',
+'!' or '?' (but if 'cpoptions' includes the 'j' flag, they insert two spaces
+only after a '.').
+
+
+==============================================================================
+2. Delete and insert				*delete-insert* *replacing*
+
+#*# table:form=ref:label=delete-insert 1:command 10:extra-or 25:desc #*#
+							*R*
+R			Enter Replace mode: Each character you type replaces
+			an existing character, starting with the character
+			under the cursor.  Repeat the entered text [count]-1
+			times.  See |Replace-mode| for more details.
+
+							*c*
+["x]c{motion}		Delete {motion} text [into register x] and start
+			insert.  When  'cpoptions' includes the 'E' flag and
+			there is no text to delete (e.g., with "cTx" when the
+			cursor is just after an 'x'), an error occurs and
+			insert mode does not start (this is Vi compatible).
+			When  'cpoptions' does not include the 'E' flag, the
+			"c" command always starts insert mode, even if there
+			is no text to delete.
+
+							*cc*
+["x]cc			Delete [count] lines [into register x] and start
+			insert (linewise).  If 'autoindent' is on, preserve
+			the indent of the first line.
+
+							*C*
+["x]C			Delete from the cursor position to the end of the
+			line and [count]-1 more lines [into register x], and
+			start insert.  Synonym for c$ (not linewise).
+
+							*s*
+["x]s			Delete [count] characters [into register x] and start
+			insert (s stands for Substitute).  Synonym for "cl"
+			(not linewise).
+
+							*S*
+["x]S			Delete [count] lines [into register x] and start
+			insert.  Synonym for "cc" (linewise).
+
+{Visual}["x]c	or					*v_c* *v_s*
+{Visual}["x]s		Delete the highlighted text [into register x] and
+			start insert (for {Visual} see |Visual-mode|).  {not
+			in Vi}
+
+							*v_r*
+{Visual}["x]r{char}	Replace all selected characters by {char}.
+
+							*v_C*
+{Visual}["x]C		Delete the highlighted lines [into register x] and
+			start insert.  In Visual block mode it works
+			differently |v_b_C|.  {not in Vi}
+							*v_S*
+{Visual}["x]S		Delete the highlighted lines [into register x] and
+			start insert (for {Visual} see |Visual-mode|).  {not
+			in Vi}
+							*v_R*
+{Visual}["x]R		Currently just like {Visual}["x]S.  In a next version
+			it might work differently. {not in Vi}
+#*#table:stop-table #*#
+
+Notes:
+- You can end Insert and Replace mode with <Esc>.
+- See the section "Insert and Replace mode" |mode-ins-repl| for the other
+  special characters in these modes.
+- The effect of [count] takes place after Vim exits Insert or Replace mode.
+- When the 'cpoptions' option contains '$' and the change is within one line,
+  Vim continues to show the text to be deleted and puts a '$' at the last
+  deleted character.
+
+See |registers| for an explanation of registers.
+
+Replace mode is just like Insert mode, except that every character you enter
+deletes one character.  If you reach the end of a line, Vim appends any
+further characters (just like Insert mode).  In Replace mode, the backspace
+key restores the original text (if there was any).  (See section "Insert and
+Replace mode" |mode-ins-repl|).
+
+						*cw* *cW*
+Special case: "cw" and "cW" work the same as "ce" and "cE" if the cursor is
+on a non-blank.  This is because Vim interprets "cw" as change-word, and a
+word does not include the following white space.  {Vi: "cw" when on a blank
+followed by other blanks changes only the first blank; this is probably a
+bug, because "dw" deletes all the blanks}
+
+If you prefer "cw" to include the space after a word, use this mapping: >
+	:map cw dwi
+Or use "caw" (see |aw|).
+
+==============================================================================
+3. Simple changes					*simple-change*
+
+#*# table:form=ref:label=simple-change 1:command 10:extra-or 25:desc #*#
+							*r*
+r{char}			Replace the character under the cursor with {char}.
+			If {char} is a <CR> or <NL>, a line break replaces the
+			character.  To replace with a real <CR>, use CTRL-V
+			<CR>.  CTRL-V <NL> replaces with a <Nul>.  {Vi: CTRL-V
+			<CR> still replaces with a line break, cannot replace
+			something with a <CR>} If you give a [count], Vim
+			replaces [count] characters with [count] {char}s.
+			When {char} is a <CR> or <NL>, however, Vim inserts
+			only one <CR>: "5r<CR>" replaces five characters with
+			a single line break.  When {char} is a <CR> or <NL>,
+			Vim performs autoindenting.  This works just like
+			deleting the characters that are replaced and then
+			doing "i<CR><Esc>".
+#*#table:stop-table #*#
+
+
+						*case*
+The following commands change the case of letters.
+
+#*# table:form=ref:label=case 1:command 10:extra-or 25:desc #*#
+							*~*
+~			'notildeop' option: Switch case of the character
+			under the cursor and move the cursor to the right.
+			If a [count] is given, do that many characters.
+			{Vi: no count}
+							*~{motion}*
+~{motion}		'tildeop' option: switch case of {motion} text.
+			{Vi: tilde cannot be used as an operator}
+
+							*g~*
+g~{motion}		Switch case of {motion} text. {not in Vi}
+
+g~g~							*g~g~* *g~~*
+g~~			Switch case of current line. {not in Vi}.
+
+							*v_~*
+{Visual}~		Switch case of highlighted text (for {Visual} see
+			|Visual-mode|). {not in Vi}
+
+							*v_U*
+{Visual}U		Make highlighted text uppercase (for {Visual} see
+			|Visual-mode|). {not in Vi}
+
+							*gU* *uppercase*
+gU{motion}		Make {motion} text uppercase. {not in Vi}
+			Example: >
+				:map! <C-F> <Esc>gUiw`]a
+<			This works in Insert mode: press CTRL-F to make the
+			word before the cursor uppercase.  Handy to type
+			words in lowercase and then make them uppercase.
+
+
+gUgU							*gUgU* *gUU*
+gUU			Make current line uppercase. {not in Vi}.
+
+							*v_u*
+{Visual}u		Make highlighted text lowercase (for {Visual} see
+			|Visual-mode|).  {not in Vi}
+
+							*gu* *lowercase*
+gu{motion}		Make {motion} text lowercase. {not in Vi}
+
+gugu							*gugu* *guu*
+guu			Make current line lowercase. {not in Vi}.
+#*#table:stop-table #*#
+
+
+Adding and subtracting ~
+#*# table:form=ref 1:command 10:extra-or 25:desc #*#
+							*CTRL-A*
+CTRL-A			Add [count] to the number or alphabetic character at
+			or after the cursor.  {not in Vi}
+
+							*CTRL-X*
+CTRL-X			Subtract [count] from the number or alphabetic
+			character at or after the cursor.  {not in Vi}
+#*#table:stop-table #*#
+
+The CTRL-A and CTRL-X commands work for (signed) decimal numbers, unsigned
+octal and hexadecimal numbers and alphabetic characters.  This depends on the
+'nrformats' option.
+- When 'nrformats' includes "octal", Vim considers numbers starting with a '0'
+  to be octal, unless the number includes a '8' or '9'.  Other numbers are
+  decimal and may have a preceding minus sign.
+  If the cursor is on a number, the commands apply to that number; otherwise
+  Vim uses the number to the right of the cursor.
+- When 'nrformats' includes "hex", Vim assumes numbers starting with '0x' or
+  '0X' are hexadecimal.  The case of the rightmost letter in the number
+  determines the case of the resulting hexadecimal number.  If there is no
+  letter in the current number, Vim uses the previously detected case.
+- When 'nrformats' includes "alpha", Vim will change the alphabetic character
+  under or after the cursor.  This is useful to make lists with an alphabetic
+  index.
+
+For numbers with leading zeros (including all octal and hexadecimal numbers),
+Vim preserves the number of characters in the number when possible.  CTRL-A on
+"0077" results in "0100", CTRL-X on "0x100" results in "0x0ff".
+There is one exception: When a number that starts with a zero is found not to
+be octal (it contains a '8' or '9'), but 'nrformats' does include "octal",
+leading zeros are removed to avoid that the result may be recognized as an
+octal number.
+
+Note that when 'nrformats' includes "octal", decimal numbers with leading
+zeros cause mistakes, because they can be confused with octal numbers.
+
+The CTRL-A command is very useful in a macro.  Example: Use the following
+steps to make a numbered list.
+
+1. Create the first list entry, make sure it starts with a number.
+2. qa	     - start recording into register 'a'
+3. Y	     - yank the entry
+4. p	     - put a copy of the entry below the first one
+5. CTRL-A    - increment the number
+6. q	     - stop recording
+7. <count>@a - repeat the yank, put and increment <count> times
+
+
+SHIFTING LINES LEFT OR RIGHT				*shift-left-right*
+
+#*# table:form=ref:label=shift-left-right 1:command 25:desc #*#
+							*<*
+<{motion}		Shift {motion} lines one 'shiftwidth' leftwards.
+
+							*<<*
+<<			Shift [count] lines one 'shiftwidth' leftwards.
+
+							*v_<*
+{Visual}[count]<	Shift the highlighted lines [count] 'shiftwidth'
+			leftwards (for {Visual} see |Visual-mode|).  {not in
+			Vi}
+
+							*>*
+ >{motion}		Shift {motion} lines one 'shiftwidth' rightwards.
+
+							*>>*
+ >>			Shift [count] lines one 'shiftwidth' rightwards.
+
+							*v_>*
+{Visual}[count]>	Shift the highlighted lines [count] 'shiftwidth'
+			rightwards (for {Visual} see |Visual-mode|).  {not in
+			Vi}
+
+							*:<*
+:[range]<		Shift [range] lines one 'shiftwidth' left.  Repeat '<'
+			for shifting multiple 'shiftwidth's.
+
+:[range]< {count}	Shift {count} lines one 'shiftwidth' left, starting
+			with [range] (default current line |cmdline-ranges|).
+			Repeat '<' for shifting multiple 'shiftwidth's.
+
+							*:>*
+:[range]> [flags]	Shift {count} [range] lines one 'shiftwidth' right.
+			Repeat '>' for shifting multiple 'shiftwidth's.
+			See |ex-flags| for [flags].
+
+:[range]> {count} [flags]
+			Shift {count} lines one 'shiftwidth' right, starting
+			with [range] (default current line |cmdline-ranges|).
+			Repeat '>' for shifting multiple 'shiftwidth's.
+			See |ex-flags| for [flags].
+#*#table:stop-table #*#
+
+The ">" and "<" commands are handy for changing the indentation within
+programs.  Use the 'shiftwidth' option to set the size of the white space
+which these commands insert or delete.  Normally the 'shiftwidth' option is 8,
+but you can set it to, say, 3 to make smaller indents.  The shift leftwards
+stops when there is no indent.  The shift right does not affect empty lines.
+
+If the 'shiftround' option is on, the indent is rounded to a multiple of
+'shiftwidth'.
+
+When the 'expandtab' option is off (this is the default) Vim uses <Tab>s as
+much as possible to make the indent.  You can use ">><<" to replace an indent
+made out of spaces with the same indent made out of <Tab>s (and a few spaces
+if necessary).  If the 'expandtab' option is on, Vim uses only spaces.  Then
+you can use ">><<" to replace <Tab>s in the indent by spaces (or use
+":retab!").
+
+To move a line several 'shiftwidth's, use Visual mode or the ":" commands.
+For example: >
+	Vjj4>		move three lines 4 indents to the right
+	:<<<		move current line 3 indents to the left
+	:>> 5		move 5 lines 2 indents to the right
+	:5>>		move line 5 2 indents to the right
+
+==============================================================================
+4. Complex changes					*complex-change*
+
+4.1 Filter commands					*filter*
+
+A filter is a program that accepts text at standard input, changes it in some
+way, and sends it to standard output.  You can use the commands below to send
+some text through a filter, so that it is replace by the filter output.
+Examples of filters are "sort", which sorts lines alphabetically, and
+"indent", which formats C program files (you need a version of indent that
+works like a filter; not all versions do).  The 'shell' option specifies the
+shell Vim uses to execute the filter command (See also the 'shelltype'
+option).  You can repeat filter commands with ".".  Vim does not recognize a
+comment (starting with '"') after the ":!" command.
+
+See the end of the Colon Commands reference doc for a list of
+available filename-modifiers.
+
+#*# table:form=ref:label=filter 1:command 3:extra-or 25:desc #*#
+							*!*
+!{motion}{filter}	Filter {motion} text through the external program
+			{filter}.
+
+							*!!*
+!!{filter}		Filter [count] lines through the external program
+			{filter}.
+
+							*v_!*
+{Visual}!{filter}	Filter the highlighted lines through the external
+			program {filter} (for {Visual} see |Visual-mode|).
+			{not in Vi}
+
+:{range}![!]{filter} [!][arg]				*:range!*
+			Filter {range} lines through the external program
+			{filter}.  Vim replaces the optional bangs with the
+			latest given command and appends the optional [arg].
+			Vim saves the output of the filter command in a
+			temporary file and then reads the file into the
+			buffer.
+
+							*=*
+={motion}		Filter {motion} lines through the external program
+			given with the 'equalprg' option.  When the 'equalprg'
+			option is empty (this is the default), use the
+			internal formatting function to set the indent of each
+			line |C-indenting|.
+
+							*==*
+==			Filter [count] lines through the external program
+			given with the 'equalprg' option.  When the 'equalprg'
+			option is empty (this is the default), use the
+			internal formatting function |C-indenting|.
+
+							*v_=*
+{Visual}=		Filter the highlighted lines through the external
+			program given with the 'equalprg' option.  When the
+			'equalprg' option is empty (this is the default),
+			use the internal formatting function |C-indenting|.
+			(for {Visual} see |Visual-mode|).  {not in Vi}
+#*#table:stop-table #*#
+
+
+4.2 Substitute						*:substitute*
+					                *:s* *:su*
+:[range]s[ubstitute]/{pattern}/{string}/[c][e][g][p][r][i][I] [count]
+			For each line in [range] replace a match of {pattern}
+			with {string}.  See |:s_flags| for the flags.
+
+							*:s_flags*
+The arguments that you can use for the substitute commands:
+[c]	Confirm each substitution.  Vim positions the cursor on the matching
+	string.  You can type:				*:s_c*
+	    'y'	    to substitute this match
+	    'l'	    to substitute this match and then quit ("last")
+	    'n'	    to skip this match
+	    <Esc>   to skip this match
+	    'a'	    to substitute this and all remaining matches {not in Vi}
+	    'q'	    to quit substituting {not in Vi}
+	    CTRL-E  to scroll the screen up {not in Vi}
+	    CTRL-Y  to scroll the screen down {not in Vi}.
+[g]	Replace all occurrences in the line.  Without this argument,
+	replacement occurs only for the first occurrence in each line.  If
+	the 'edcompatible' option is on, Vim remembers this flag and toggles
+	it each time you use it, but resets it when you give a new search
+	pattern.  If the 'gdefault' option is on, this flag is on by default
+	and the [g] argument switches it off.
+[p]	Print the line containing the last substitute.
+
+If the {pattern} for the substitute command is empty, the command uses the
+pattern from the last substitute or ":global" command.
+
+For compatibility with Vi these two exceptions are allowed:
+"\/{string}/" and "\?{string}?" do the same as "//{string}/r".
+"\&{string}&" does the same as "//{string}/".
+
+Instead of the '/' which surrounds the pattern and replacement string, you
+can use any other character, but not an alphanumeric character, '\', '"' or
+'|'.  This is useful if you want to include a '/' in the search pattern or
+replacement string.  Example:
+>	:s+/+//+
+
+						*sub-replace-special*
+Some characters in {string} have a special meaning:
+
+
+magic		  action    ~
+  &		  replaced with the whole matched pattern	     *s/\&*
+ \&		  replaced with &
+      \0	  replaced with the whole matched pattern	   *\0* *s/\0*
+      \1	  replaced with the matched pattern in the first
+		  pair of ()					     *s/\1*
+      \2	  replaced with the matched pattern in the second
+		  pair of ()					     *s/\2*
+      ..	  ..						     *s/\3*
+      \9	  replaced with the matched pattern in the ninth
+		  pair of ()					     *s/\9*
+      \r	  split line in two at this point		     *s/\r*
+      \n	  idem						     *s/\n*
+      \b	  insert a <BS>					     *s/\b*
+      \t	  insert a <Tab>				     *s/\t*
+      \\	  insert a single backslash			     *s/\\*
+      \x	  where x is any character not mentioned above:
+		  Reserved for future expansion
+
+
+
+==============================================================================
+5. Copying and moving text				*copy-move*
+
+#*# table:form=ref:label=copy-move 1:command 10:extra-or 25:desc #*#
+							*quote*
+"{a-zA-Z0-9.%#:-"}	Use register {a-zA-Z0-9.%#:-"} for next delete, yank
+			or put (use uppercase character to append with
+			delete and yank) ({.%#:} only work with put).
+
+							*:reg* *:registers*
+:reg[isters]		Display the contents of all numbered and named
+			registers.  If a register is written to for |:redir|
+			it will not be listed.
+			{not in Vi}
+
+
+:reg[isters] {arg}	Display the contents of the numbered and named
+			registers that are mentioned in {arg}.  For example:
+				:dis 1a
+ 			to display registers '1' and 'a'.  Spaces are allowed
+			in {arg}.  {not in Vi}
+
+							*:di* *:display*
+:di[splay] [arg]	Same as :registers.  {not in Vi}
+
+							*y* *yank*
+["x]y{motion}		Yank {motion} text [into register x].  When no
+			characters are to be yanked (e.g., "y0" in column 1),
+			this is an error when 'cpoptions' includes the 'E'
+			flag.
+
+							*yy*
+["x]yy			Yank [count] lines [into register x] (linewise).
+
+							*Y*
+["x]Y			yank [count] lines [into register x] (synonym for
+			yy, linewise).  If you like "Y" to work from the
+			cursor to the end of line (which is more logical,
+			but not Vi-compatible) use ":map Y y$".
+
+							*v_y*
+{Visual}["x]y		Yank the highlighted text [into register x] (for
+			{Visual} see |Visual-mode|).  {not in Vi}
+
+							*v_Y*
+{Visual}["x]Y		Yank the highlighted lines [into register x] (for
+			{Visual} see |Visual-mode|).  {not in Vi}
+
+							*:y* *:yank*
+:[range]y[ank] [x]	Yank [range] lines [into register x].
+
+:[range]y[ank] [x] {count}
+			Yank {count} lines, starting with last line number
+			in [range] (default: current line |cmdline-ranges|),
+			[into register x].
+
+							*p* *put*
+["x]p			Put the text [from register x] after the cursor
+			[count] times.  {Vi: no count}
+
+["x]P		    or					*P* *<MiddleMouse>*
+["x]<MiddleMouse>	Put the text [from register x] before the cursor
+			[count] times.  Using the mouse only works when
+			'mouse' contains 'n' or 'a'.  {Vi: no count}
+
+							*gp*
+["x]gp			Just like "p", but leave the cursor just after the new
+			text.  {not in Vi}
+
+							*gP*
+["x]gP			Just like "P", but leave the cursor just after the new
+			text.  {not in Vi}
+#*#table:stop-table #*#
+
+You can use these commands to copy text from one place to another.  Do this
+by first getting the text into a register with a yank, delete or change
+command, then inserting the register contents with a put command.  You can
+also use these commands to move text from one file to another, because Vim
+preserves all registers when changing buffers (the CTRL-^ command is a quick
+way to toggle between two files).
+
+				*linewise-register* *characterwise-register*
+You can repeat the put commands with "." (except for :put) and undo them.  If
+the command that was used to get the text into the register was linewise, Vim
+inserts the text below ("p") or above ("P") the line where the cursor is.
+Otherwise Vim inserts the text after ("p") or before ("P") the cursor.  With
+the ":put" command, Vim always inserts the text in the next line.  You can
+exchange two characters with the command sequence "xp".  You can exchange two
+lines with the command sequence "ddp".  You can exchange two words with the
+command sequence "deep" (start with the cursor in the blank space before the
+first word).  You can use the "']" or "`]" command after the put command to
+move the cursor to the end of the inserted text, or use "'[" or "`[" to move
+the cursor to the start.
+
+Note that after a yank command, Vim leaves the cursor on the first yanked
+character that is closest to the start of the buffer.  This means that "yl"
+doesn't move the cursor, but "yh" moves the cursor one character left.
+Rationale:	In Vi the "y" command followed by a backwards motion would
+		sometimes not move the cursor to the first yanked character,
+		because redisplaying was skipped.  In Vim it always moves to
+		the first character, as specified by Posix.
+
+There are nine types of registers:			*registers*
+1. The unnamed register ""
+2. 10 numbered registers "0 to "9
+4. 26 named registers "a to "z or "A to "Z
+7. The selection register "*
+8. The black hole register "_
+
+1. Unnamed register ""				*quote_quote* *quotequote*
+Vim fills this register with text deleted with the "d", "c", "s", "x" commands
+or copied with the yank "y" command, regardless of whether or not a specific
+register was used (e.g.  "xdd).  An exception is the '_' register: "_dd does
+not store the deleted text in any register.  Vim uses the contents of this
+register for any put command (p or P) which does not specify a register.
+Additionally you can access it with the name '"'.  This means you have to type
+two double quotes.  {Vi: register contents are lost when changing files, no
+'"'}
+
+2. Numbered registers "0 to "9		*quote_number* *quote0*	*quote1*
+					*quote2* *quote3* *quote4* *quote9*
+Vim fills these registers with text from yank and delete commands.  Numbered
+register 0 contains the text from the most recent yank command, unless the
+command specified another register with ["x].  Numbered register 1 contains
+the text deleted by the most recent delete or change command, unless the
+command specified another register or the text is less than one line (Vim puts
+text deleted with "x" or "dw" in the small delete register).  With each
+successive deletion or change, Vim shifts the previous contents of register 1
+into register 2, 2 into 3, and so forth, losing the previous contents of
+register 9.  {Vi: numbered register contents are lost when changing files;
+register 0 does not exist}
+
+4. Named registers "a to "z or "A to "Z			*quote_alpha* *quotea*
+Vim fills these registers only when you say so.  Specify them as lowercase
+letters to replace their previous contents or as uppercase letters to append
+to their previous contents.
+
+7. Selection register "*
+Use this register for storing and retrieving the selected text for the GUI.
+See |quotestar|.  When the clipboard is not available or not working, the
+unnamed register is used instead.  {not in Vi}
+
+8. Black hole register "_				*quote_*
+When writing to this register, nothing happens.  This can be used to delete
+text without affecting the normal registers.  When reading from this register,
+nothing is returned.  {not in Vi}
+
+If you use a put command without specifying a register, Vim uses the register
+that was last filled (this is also the contents of the unnamed register).  If
+you are confused, use the ":dis" command to find out what Vim will put (this
+command displays all named and numbered registers; the unnamed register is
+labelled '"').
+
+The next three commands always work on whole lines.
+
+#*# table:form=ref 1:command 10:extra-or 25:desc #*#
+:[range]co[py] {address}				*:co* *:copy*
+			Copy the lines given by [range] to below the line
+			given by {address}.
+
+							*:t*
+:t			Synonym for copy.
+
+:[range]m[ove] {address}			*:m* *:mo* *:move* *E134*
+			Move the lines given by [range] to below the line
+			given by {address}.
+#*#table:stop-table #*#
+
+ vim:tw=78:ts=8:sw=8:noet:

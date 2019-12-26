@@ -29,21 +29,21 @@ def sb_get_txt(e, sb):
     style = e.get('t')
     s = e.text
 
-    if 'table' == tag:
+    if tag == 'table':
         s = sb_get_txt_table(e, sb)
         return
     elif tag in ('nl', 'br'):
         # these have a '\n' as a tail
         pass
-    elif 'pipe' == style:
+    elif style == 'pipe':
         s = '|' + s + '|'
-    elif 'star' == style:
+    elif style == 'star':
         s = '*' + s + '*'
-    elif 'header' == style:
+    elif style == 'header':
         s = fix_line_ending(s, '~')
-    elif 'graphic' == style:
+    elif style == 'graphic':
         s = fix_line_ending(s, ' `')
-    elif 'example' == style:
+    elif style == 'example':
         # TODO: This isn't quite right.
         # TODO: Use of embedded '<nl/>' really makes this not right.
         #       Need to do something like: (assume s_text, s_tail)
@@ -53,7 +53,7 @@ def sb_get_txt(e, sb):
         #       or maybe on entry (hmm, the 'if' probably not needed)
         #       looses the append to single string buffer model.
         #               s_children = ''
-        #               if 'pre' == tag:
+        #               if tag == 'pre':
         #                       s_children = get_children_text(e)
         #           then in this 'example' case
         #               s = ' >' + s + s_children + '<'
@@ -74,7 +74,7 @@ def get_txt_table(table):
     return sb.getvalue()
 
 def sb_get_txt_table(table, sb):
-    assert 'table' == table.tag
+    assert table.tag == 'table'
     m = table.get('markup')
     if m is not None:
         sb.write('#*#' + m + '#*#\n')
@@ -139,7 +139,7 @@ def sb_get_content(e, sb):
 def find_table_column(table, label):
     col_idx = -1
     i = 0
-    for x in table.vh_cols:
+    for x in table.get('vh_cols'):
         if label in x:
             col_idx = i
             break
@@ -151,7 +151,7 @@ def find_table_column(table, label):
 def remove_nl(td):
     cur_tail = None
     for e in td:
-        if 'nl' == e.tag:
+        if e.tag == 'nl':
             t = re.sub('\n', ' ', e.tail)
             if cur_tail is None:
                 td.text += t
@@ -160,7 +160,7 @@ def remove_nl(td):
         else:
             cur_tail = e
     for i in reversed(range(len(td))):
-        if 'nl' == td[i].tag:
+        if td[i].tag == 'nl':
             del td[i]
 
 ##
@@ -170,7 +170,7 @@ def fix_whitespace(e):
     cur_tail = None
     for e01 in e:
         fix_whitespace(e01)
-        if 'nl' == e01.tag:
+        if e01.tag == 'nl':
             t = re.sub('\n', ' ', e01.tail)
             if cur_tail is None:
                 e.text += t
@@ -179,7 +179,7 @@ def fix_whitespace(e):
         else:
             cur_tail = e01
     for i in reversed(range(len(e))):
-        if 'nl' == e[i].tag:
+        if e[i].tag == 'nl':
             del e[i]
 
     if e.text != '': e.text = RE_CLEANSPACE.sub(' ', e.text)
@@ -203,10 +203,10 @@ def fix_whitespace(e):
 #         May start with one or more lines of <anchor>s.
 #         NOTE: A new column is inserted, first column, from the anchors.
 def fix_vim_table_columns(table):
-    if 'index' == table.get('form'):
+    if table.get('form') == 'index':
         fix_table_index(table)
         pass
-    elif 'ref' == table.get('form'):
+    elif table.get('form') == 'ref':
         fix_table_ref(table)
 
 def fix_table_index(table):
@@ -259,7 +259,7 @@ def fix_table_ref(table):
 def fix_table_ref_command(td):
     t = td.text
     for e in td:
-        if 'nl' == e.tag:
+        if e.tag == 'nl':
             if not t.isspace():
                 e.tag = 'br'
             t = ''
@@ -271,11 +271,11 @@ def fix_table_ref_desc(td):
     any_anchor = False
     anchors = []
     for e in td:
-        if 'anchor' == e.tag:
+        if e.tag == 'anchor':
             saw_anchor = True
             any_anchor = True
             t += e.tail
-        elif 'nl' == e.tag:
+        elif e.tag == 'nl':
             if saw_anchor:
                 e.tag = 'br'
                 saw_anchor = False
@@ -283,7 +283,7 @@ def fix_table_ref_desc(td):
         else:
             t += get_txt(e)
         if len(t) > 0 and not t.isspace():
-            if 'br' == e.tag:
+            if e.tag == 'br':
                 anchors.append(e)
             break
         anchors.append(e)
@@ -335,7 +335,7 @@ def _edump1(e, l, closetag=False):
         f_closed = (e.text is None or e.text == '') and len(e) == 0
         end = '/>' if f_closed else '>'
         s1 = '<'+e.tag
-        s2 = ' '.join([k + '="' + v + '"' for (k,v) in e.items()])
+        s2 = ' '.join([k + '="' + str(v) + '"' for (k,v) in e.items()])
         if s2: s1 += ' ' + s2
         s1 += end
         _idump(s1, l)
@@ -471,12 +471,12 @@ def runit():
         print('PROCESSING:', xmlfile)
         xml = VB.read_xml_file(INPUT_DIR + xmlfile)
 
-        if 'txt' == output_format:
+        if output_format == 'txt':
             txt = VG.get_txt(xml.getroot())
 
             with open(OUTPUT_DIR + xmlfile + '.' + output_format, 'w') as f:
                 f.write(txt)
-        elif 'tables' == output_format:
+        elif output_format == 'tables':
             fix_tables(xml)
             out = gen_tables(xml)
             with open(OUTPUT_DIR + xmlfile + '.' + output_format, 'w') as f:

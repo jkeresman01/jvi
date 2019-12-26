@@ -1,0 +1,212 @@
+*windows.txt*   For Vim version 5.6.  Last change: 1999 Dec 21
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+Editing with multiple windows and buffers.		*windows* *buffers*
+
+The commands which have been added to use multiple windows and buffers are
+explained here.  Additionally, there are explanations for commands that work
+differently when used in combination with more than one window.
+
+3.  Opening and closing a window	|opening-window|
+4.  Moving cursor to other windows	|window-move-cursor|
+5.  Moving windows around			|window-moving|
+6.  Window resizing				|window-resize|
+8.  Writing with multiple buffers	|buffer-write|
+
+{Vi does not have any of these commands}
+
+==============================================================================
+3. Opening and closing a window				*opening-window*
+
+CTRL-W s						*CTRL-W_s*
+CTRL-W S						*CTRL-W_S*
+CTRL-W CTRL-S						*CTRL-W_CTRL-S*
+:[N]sp[lit] [+cmd] [file]				*:sp* *:split*
+		Split current window in two.  The result is two viewports on
+		the same file.  Make new window N high (default is to use half
+		the height of the current window).  Reduces the current window
+		height to create room (and others, if the 'equalalways' option
+		is set and 'eadirection' isn't "hor").
+
+CTRL-W CTRL-V						*CTRL-W_CTRL-V*
+CTRL-W v						*CTRL-W_v*
+:[N]vs[plit] [++opt] [+cmd] [file]			*:vs* *:vsplit*
+		Like |:split|, but split vertically.  If 'equalalways' is set
+		and 'eadirection' isn't "ver" the windows will be spread out
+		horizontally, unless a width was specified.
+		Note: In other places CTRL-Q does the same as CTRL-V, but here
+		it doesn't!
+
+Closing a window
+----------------
+
+CTRL-W c					*CTRL-W_c* *:clo* *:close*
+:clo[se][!]	Close current window.  When the 'hidden' option is set, or
+		when the buffer was changed and the [!] is used, the buffer
+		becomes hidden (unless there is another window editing it).
+		This command fails when:
+		- There is only one window on the screen.
+		- When 'hidden' is not set, [!] is not used, the buffer has
+		  changes, and there is no other window on this buffer.
+		Changes to the buffer are not written and won't get lost, so
+		this is a "safe" command.
+
+CTRL-W o						*CTRL-W_o*
+CTRL-W CTRL-O					*CTRL-W_CTRL-O* *:on* *:only*
+:on[ly][!]	Make the current window the only one on the screen.  All other
+		windows are closed.
+		When the 'hidden' option is set, all buffers in closed windows
+		become hidden.
+		When 'hidden' is not set, and the 'autowrite' option is set,
+		modified buffers are written.  Otherwise, windows that have
+		buffers that are modified are not removed, unless the [!] is
+		given, then they become hidden.  But modified buffers are
+		never abandoned, so changes cannot get lost.
+
+==============================================================================
+4. Moving cursor to other windows			*window-move-cursor*
+
+CTRL-W <Down>					*CTRL-W_<Down>*
+CTRL-W CTRL-J					*CTRL-W_CTRL-J* *CTRL-W_j*
+CTRL-W j	Move cursor to Nth window below current one.  Uses the cursor
+		position to select between alternatives.
+
+CTRL-W <Up>					*CTRL-W_<Up>*
+CTRL-W CTRL-K					*CTRL-W_CTRL-K* *CTRL-W_k*
+CTRL-W k	Move cursor to Nth window above current one.  Uses the cursor
+		position to select between alternatives.
+
+CTRL-W <Left>					*CTRL-W_<Left>*
+CTRL-W CTRL-H					*CTRL-W_CTRL-H*
+CTRL-W <BS>					*CTRL-W_<BS>* *CTRL-W_h*
+CTRL-W h	Move cursor to Nth window left of current one.  Uses the
+		cursor position to select between alternatives.
+
+CTRL-W <Right>					*CTRL-W_<Right>*
+CTRL-W CTRL-L					*CTRL-W_CTRL-L* *CTRL-W_l*
+CTRL-W l	Move cursor to Nth window right of current one.  Uses the
+		cursor position to select between alternatives.
+
+CTRL-W w					*CTRL-W_w* *CTRL-W_CTRL-W*
+CTRL-W CTRL-W	Without count: move cursor to window below/right of the
+		current one.  If there is no window below or right, go to
+		top-left window.
+		With count: go to Nth window (windows are numbered from
+		top-left to bottom-right).  To obtain the window number see
+		|bufwinnr()| and |winnr()|.  When N is larger than the number
+		of windows go to the last window.
+
+						*CTRL-W_W*
+CTRL-W W	Without count: move cursor to window above/left of current
+		one.  If there is no window above or left, go to bottom-right
+		window.  With count: go to Nth window, like with CTRL-W w.
+
+CTRL-W t					*CTRL-W_t* *CTRL-W_CTRL-T*
+CTRL-W CTRL-T	Move cursor to top-left window.
+
+CTRL-W b					*CTRL-W_b* *CTRL-W_CTRL-B*
+CTRL-W CTRL-B	Move cursor to bottom-right window.
+
+CTRL-W p					*CTRL-W_p* *CTRL-W_CTRL-P*
+CTRL-W CTRL-P	Go to previous (last accessed) window.
+
+==============================================================================
+5. Moving windows around				*window-moving*
+
+The following commands can be used to change the window layout.  For example,
+when there are two vertically split windows, CTRL-W K will change that in
+horizontally split windows.  CTRL-W H does it the other way around.
+
+NOTE: jVi typically has different semantics for CTRL-W [HJKL].
+There are two cases to consider:
+    1) when the window is at the edge of the area that contains editors.
+    2) when there is an editor in the direction specified.
+1) is as described here. For 2) the current editor is moved and becomes
+a tab in the neighboring area.
+
+						*CTRL-W_K*
+CTRL-W K	Move the current window to be at the very top, using the full
+		width of the screen.  This works like closing the current
+		window and then creating another one with ":topleft split",
+		except that the current window contents is used for the new
+		window.
+
+						*CTRL-W_J*
+CTRL-W J	Move the current window to be at the very bottom, using the
+		full width of the screen.  This works like closing the current
+		window and then creating another one with ":botright split",
+		except that the current window contents is used for the new
+		window.
+
+						*CTRL-W_H*
+CTRL-W H	Move the current window to be at the far left, using the
+		full height of the screen.  This works like closing the
+		current window and then creating another one with
+		":vert topleft split", except that the current window contents
+		is used for the new window.
+		{not available when compiled without the +vertsplit feature}
+
+						*CTRL-W_L*
+CTRL-W L	Move the current window to be at the far right, using the full
+		height of the screen.  This works like closing the
+		current window and then creating another one with
+		":vert botright split", except that the current window
+		contents is used for the new window.
+		{not available when compiled without the +vertsplit feature}
+
+						*CTRL-W_T*
+CTRL-W T	Create a clone in a separate tab of the current editor.
+
+==============================================================================
+6. Window resizing					*window-resize*
+
+						*CTRL-W_=*
+CTRL-W =	Make all windows (almost) equally high and wide, but use
+		'winheight' and 'winwidth' for the current window.
+
+:res[ize] -N					*:res* *:resize* *CTRL-W_-*
+CTRL-W -	Decrease current window height by N (default 1).
+		If used after 'vertical': decrease width by N.
+
+:res[ize] +N					*CTRL-W_+*
+CTRL-W +	Increase current window height by N (default 1).
+		If used after 'vertical': increase width by N.
+
+:res[ize] [N]
+CTRL-W CTRL-_					*CTRL-W_CTRL-_* *CTRL-W__*
+CTRL-W _	Set current window height to N (default: highest possible).
+
+z{nr}<CR>	Set current window height to {nr}.
+
+						*CTRL-W_<*
+CTRL-W <	Decrease current window width by N (default 1).
+
+						*CTRL-W_>*
+CTRL-W >	Increase current window width by N (default 1).
+
+:vertical res[ize] [N]			*:vertical-resize* *CTRL-W_bar*
+CTRL-W |	Set current window width to N (default: widest possible).
+
+When the option 'equalalways' ('ea') is set, all the windows are automatically
+made the same size after splitting or closing a window.  If you don't set this
+option, splitting a window will reduce the size of the current window and
+leave the other windows the same.  When closing a window, the extra lines are
+given to the window above it.
+
+The 'eadirection' option limits the direction in which the 'equalalways'
+option is applied.  The default "both" resizes in both directions.  When the
+value is "ver" only the heights of windows are equalized.  Use this when you
+have manually resized a vertically split window and want to keep this width.
+Likewise, "hor" causes only the widths of windows to be equalized.
+
+==============================================================================
+8. Writing with multiple buffers			*buffer-write*
+
+							*:wa* *:wall*
+:wa[ll]		Write all changed buffers.  Buffers without a file name or
+		which are readonly are not written.
+
+ vim:tw=78:ts=8:sw=8:noet:

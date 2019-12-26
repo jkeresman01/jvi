@@ -1,0 +1,81 @@
+*fold.txt*      For Vim version 7.0.  Last change: 2006 Mar 29
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+Folding						*Folding* *folding*
+
+jVi supports several of the fold open/close commands.
+The 'foldopen' option is supported.
+The 'foldenable' and 'foldlevel' options are not supported.
+
+2. Fold commands	|fold-commands|
+3. Fold options		|fold-options|
+4. Behavior of folds	|fold-behavior|
+
+{Vi has no Folding}
+{not available when compiled without the +folding feature}
+
+==============================================================================
+2. Fold commands				*fold-commands* *E490*
+
+All folding commands start with "z".  Hint: the "z" looks like a folded piece
+of paper, if you look at it from the side.
+
+
+OPENING AND CLOSING FOLDS ~
+
+#*# table:form=ref:label=fold-commands 1:command 3:extra-or 17:desc #*#
+							*zo*
+zo		Open one fold under the cursor.  When a count is given, that
+		many folds deep will be opened.  In Visual mode one level of
+		folds is opened for all lines in the selected area.
+
+							*zO*
+zO		Open all folds under the cursor recursively.  Folds that don't
+		contain the cursor line are unchanged.
+		In Visual mode it opens all folds that are in the selected
+		area, also those that are only partly selected.
+
+							*zc*
+zc		Close one fold under the cursor.  When a count is given, that
+		many folds deep are closed.  In Visual mode one level of folds
+		is closed for all lines in the selected area.
+		'foldenable' will be set.
+
+							*zC*
+zC		Close all folds under the cursor recursively.  Folds that
+		don't contain the cursor line are unchanged.
+		In Visual mode it closes all folds that are in the selected
+		area, also those that are only partly selected.
+		'foldenable' will be set.
+
+							*za*
+za		When on a closed fold: open it.  When folds are nested, you
+		may have to use "za" several times.  When a count is given,
+		that many closed folds are opened.
+		When on an open fold: close it and set 'foldenable'.  This
+		will only close one level, since using "za" again will open
+		the fold.  When a count is given that many folds will be
+		closed (that's not the same as repeating "za" that many
+		times).
+
+							*zA*
+zA		When on a closed fold: open it recursively.
+		When on an open fold: close it recursively and set
+		'foldenable'.
+
+							*zv*
+zv		View cursor line: Open just enough folds to make the line in
+		which the cursor is located not folded.
+
+							*zM*
+zM		Close all folds. This folds M-ore and M-ore.
+
+							*zR*
+zR		Open all folds. This R-educes folds until none left.
+#*#table:stop-table #*#
+
+==============================================================================
+ vim:tw=78:ts=8:sw=8:noet:

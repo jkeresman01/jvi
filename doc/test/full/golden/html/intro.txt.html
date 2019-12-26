@@ -1,0 +1,244 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Vim: intro.txt</title>
+<!--[if IE]>
+<link rel="stylesheet" href="vimhelp-ie.css" type="text/css">
+<![endif]-->
+<!--[if !IE]>-->
+<link rel="stylesheet" href="vimhelp.css" type="text/css">
+<!--<![endif]-->
+</head>
+<body>
+<div id="d1">
+<pre id="sp">                                                                                </pre>
+<div id="d2">
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<div id="d3">
+<pre>
+<a name="intro.txt" class="t">intro.txt</a>     For Vim version 5.6.  Last change: 2000 Jan 10
+
+
+                  Excerpts from
+                  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+Introduction to Vim                                     <a name="ref" class="t">ref</a> <a name="reference" class="t">reference</a>
+
+1. Introduction                 <a href="intro.txt.html#intro" class="l">intro</a>
+4. Notation                     <a href="intro.txt.html#notation" class="l">notation</a>
+5. Modes, introduction          <a href="intro.txt.html#vim-modes-intro" class="l">vim-modes-intro</a>
+6. Switching from mode to mode  <a href="intro.txt.html#mode-switching" class="l">mode-switching</a>
+
+<span class="h">==============================================================================</span>
+1. Introduction                                         <a name="intro" class="t">intro</a>
+
+Vim stands for Vi IMproved.  It used to be Vi IMitation, but there are so many
+improvements that <a href="insert.txt.html#a" class="d">a</a> name change was appropriate.  Vim <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> text editor which
+includes almost all the commands from the Unix program "Vi" and <a href="insert.txt.html#a" class="d">a</a> lot of new
+ones.  It <a href="motion.txt.html#is" class="d">is</a> very useful for editing programs and other plain text.
+   All commands are given with the keyboard.  This has the advantage that you
+can keep your fingers on the keyboard and your eyes on the screen.  For those
+who want it, there <a href="motion.txt.html#is" class="d">is</a> mouse support and <a href="insert.txt.html#a" class="d">a</a> GUI version with scrollbars and
+menus (see <span class="l">gui.txt</span>).
+
+An overview of this manual can be found in the file "<a href="help.txt.html#help.txt" class="d">help.txt</a>"<a href="motion.txt.html#%2C" class="d">,</a> <a href="help.txt.html" class="l">help.txt</a><a href="repeat.txt.html#." class="d">.</a>
+It can be accessed from within Vim with the <span class="s">&lt;Help&gt;</span> or <span class="s">&lt;F1&gt;</span> key and with the
+<span class="l">:help</span> command (just type ":help"<a href="motion.txt.html#%2C" class="d">,</a> without the <a href="help.txt.html#bars" class="d">bars</a> or quotes).
+   The <span class="o">'helpfile'</span> option can be set to the name of the help file, in <a href="change.txt.html#case" class="d">case</a> <a href="motion.txt.html#it" class="d">it</a>
+<a href="motion.txt.html#is" class="d">is</a> not located in the default place.  You can jump to subjects like with tags:
+Use <span class="k">CTRL-]</span> to jump to <a href="insert.txt.html#a" class="d">a</a> subject under the cursor, use <a href="tagsearch.txt.html#CTRL-T" class="k">CTRL-T</a> to jump back.
+
+Throughout this manual the differences between Vi and Vim are mentioned in
+curly braces, like this: <span class="s">{Vi does not have on-line help}</span><a href="repeat.txt.html#." class="d">.</a>  See <span class="l">vi_diff.txt</span>
+for <a href="insert.txt.html#a" class="d">a</a> summary of the differences between Vim and Vi.
+
+This manual refers to Vim on various machines.  There may be small differences
+between different computers and terminals.  Besides the remarks given in this
+document, there <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> separate document for each supported system, see
+<span class="l">sys-file-list</span><a href="repeat.txt.html#." class="d">.</a>
+
+This manual <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> <a href="intro.txt.html#reference" class="d">reference</a> for all the Vim commands and options.  This <a href="motion.txt.html#is" class="d">is</a> not
+an introduction to the use of Vi or Vim, <a href="motion.txt.html#it" class="d">it</a> gets <a href="insert.txt.html#a" class="d">a</a> bit complicated here and
+there.  For beginners, there <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> hands-on <span class="l">tutor</span><a href="repeat.txt.html#." class="d">.</a>  To learn using Vim, read
+the user manual <span class="l">usr_toc.txt</span><a href="repeat.txt.html#." class="d">.</a>
+
+                                                        <a name="book" class="t">book</a>
+There are many books on Vi that contain <a href="insert.txt.html#a" class="d">a</a> section for beginners.  There are
+two books <a href="insert.txt.html#I" class="d">I</a> can recommend:
+
+        "Vim <a href="motion.txt.html#-" class="d">-</a> Vi Improved" by Steve Oualline
+
+This <a href="motion.txt.html#is" class="d">is</a> the very first <a href="intro.txt.html#book" class="d">book</a> completely dedicated to Vim.  It <a href="motion.txt.html#is" class="d">is</a> very good for
+beginners.  The most often used commands are explained with pictures and
+examples.  The less often used commands are also explained, the more advanced
+features are summarized.  There <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> comprehensive <a href="index.txt.html#index" class="d">index</a> and <a href="insert.txt.html#a" class="d">a</a> quick
+reference.  Parts of this <a href="intro.txt.html#book" class="d">book</a> have been included in the user manual
+<span class="l">frombook</span><a href="repeat.txt.html#." class="d">.</a>
+Published by New Riders Publishing.  ISBN: 0735710015
+For more information try one of these:
+        <a class="u" href="http://iccf-holland.org/click5.html">http://iccf-holland.org/click5.html</a>
+        <a class="u" href="http://www.vim.org/iccf/click5.html">http://www.vim.org/iccf/click5.html</a>
+
+        "Learning the Vi editor" by Linda Lamb and Arnold Robbins
+
+This <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> <a href="intro.txt.html#book" class="d">book</a> about Vi that includes <a href="insert.txt.html#a" class="d">a</a> chapter on Vim (in the sixth edition).
+The first steps in Vi are explained very well.  The commands that Vim adds are
+only briefly mentioned.  There <a href="motion.txt.html#is" class="d">is</a> also <a href="insert.txt.html#a" class="d">a</a> German translation.
+Published by O'Reilly.  ISBN: 1-56592-426-6.
+
+<span class="h">==============================================================================</span>
+4. Notation                                             <a name="notation" class="t">notation</a>
+
+When syntax highlighting <a href="motion.txt.html#is" class="d">is</a> used to read this, text that <a href="motion.txt.html#is" class="d">is</a> not typed
+literally <a href="motion.txt.html#is" class="d">is</a> often highlighted with the Special group.  These are items in [],
+<a href="intro.txt.html#%7B%7D" class="s">{}</a> and <span class="s">&lt;&gt;</span><a href="motion.txt.html#%2C" class="d">,</a> and <a href="change.txt.html#CTRL-X" class="k">CTRL-X</a><a href="repeat.txt.html#." class="d">.</a>
+
+<a href="motion.txt.html#%5B%5D" class="d">[]</a>              Characters in square brackets are optional.
+
+                                                        <a name="count" class="t">count</a> <a name="%5Bcount%5D" class="t">[count]</a>
+<a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a>         An optional number that may precede the command to multiply
+                or iterate the command.  If no number <a href="motion.txt.html#is" class="d">is</a> given, <a href="insert.txt.html#a" class="d">a</a> <a href="intro.txt.html#count" class="d">count</a> of one
+                <a href="motion.txt.html#is" class="d">is</a> used, unless otherwise noted.  <span class="n">Note</span> that in this manual the
+                <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> <a href="motion.txt.html#is" class="d">is</a> not mentioned in the description of the command,
+                but only in the explanation.  This was done to make the
+                commands easier to look up.  If the <a href="options.txt.html#%27showcmd%27" class="o">'showcmd'</a> option <a href="motion.txt.html#is" class="d">is</a> on,
+                the (partially) entered <a href="intro.txt.html#count" class="d">count</a> <a href="motion.txt.html#is" class="d">is</a> shown <a href="motion.txt.html#at" class="d">at</a> the bottom of the
+                window.  You can use <a href="change.txt.html#%3CDel%3E" class="s">&lt;Del&gt;</a> to erase the last digit <a href="motion.txt.html#%28" class="d">(</a><span class="l">N&lt;Del&gt;</span>).
+
+                                                        <a name="%5Bquotex%5D" class="t">[quotex]</a>
+<a href="index.txt.html#%5B" class="d">[</a>"x]            An optional register designation where text can be stored.
+                See <a href="change.txt.html#registers" class="l">registers</a><a href="repeat.txt.html#." class="d">.</a>  The <a href="change.txt.html#x" class="d">x</a> <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> single character between 'a' and
+                'z' or 'A' and 'Z' or <a href="motion.txt.html#%27" class="d">'</a>"', and in some cases (with the <a href="change.txt.html#put" class="d">put</a>
+                command) between '0' and '9', '%', '#', ':' or '.'. The
+                <a href="change.txt.html#uppercase" class="d">uppercase</a> and lower <a href="change.txt.html#case" class="d">case</a> letter designate the same register,
+                but the lower <a href="change.txt.html#case" class="d">case</a> letter <a href="motion.txt.html#is" class="d">is</a> used to overwrite the previous
+                register contents, while the <a href="change.txt.html#uppercase" class="d">uppercase</a> letter <a href="motion.txt.html#is" class="d">is</a> used to
+                append to the previous register contents. Without the ""<a href="change.txt.html#x" class="d">x</a>" or
+                with """" the stored text <a href="motion.txt.html#is" class="d">is</a> <a href="change.txt.html#put" class="d">put</a> into the unnamed register.
+
+                                                        <a name="%7B%7D" class="t">{}</a>
+<a href="intro.txt.html#%7B%7D" class="s">{}</a>              Curly braces denote parts of the command which must appear,
+                but which can take <a href="insert.txt.html#a" class="d">a</a> number of different values.  The
+                differences between Vim and Vi are also given in curly braces
+                (this will be clear from the context).
+
+                                                        <a name="%7Bmotion%7D" class="t">{motion}</a>
+<a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a>        <a href="insert.txt.html#A" class="d">A</a> command that moves the cursor.  See the list <a href="motion.txt.html#at" class="d">at</a>
+                <a href="motion.txt.html" class="l">motion.txt</a><a href="repeat.txt.html#." class="d">.</a>  This <a href="motion.txt.html#is" class="d">is</a> used after an <a href="motion.txt.html#operator" class="d">operator</a> command
+                <a href="motion.txt.html#operator" class="l">operator</a> to move over the text that <a href="motion.txt.html#is" class="d">is</a> to be operated upon.
+                If the motion includes <a href="insert.txt.html#a" class="d">a</a> <a href="intro.txt.html#count" class="d">count</a> and the <a href="motion.txt.html#operator" class="d">operator</a> also had <a href="insert.txt.html#a" class="d">a</a>
+                count, the two counts are multiplied.  For example: "2d3w"
+                deletes six words.  The motion can also be <a href="insert.txt.html#a" class="d">a</a> mouse click.  The
+                mouse <a href="motion.txt.html#is" class="d">is</a> currently only supported for MS-DOS, Win32, Linux
+                console with GPM and xterm under Unix.  The "<a href="map.txt.html#%3Aomap" class="d">:omap</a>" command
+                can be used to map characters while an <a href="motion.txt.html#operator" class="d">operator</a> <a href="motion.txt.html#is" class="d">is</a> pending.
+
+                                                        <a name="%3Ccharacter%3E" class="t">&lt;character&gt;</a>
+<a href="intro.txt.html#%3Ccharacter%3E" class="s">&lt;character&gt;</a>     <a href="insert.txt.html#A" class="d">A</a> special character from the table below, optionally with
+                modifiers, or <a href="insert.txt.html#a" class="d">a</a> single ASCII character with modifiers.
+
+                                                        <a name="%27character%27" class="t">'character'</a>
+'c'             <a href="insert.txt.html#A" class="d">A</a> single ASCII character.
+
+                                                        <a name="CTRL-%7Bchar%7D" class="t">CTRL-{char}</a>
+<span class="k">CTRL-</span><span class="s">{char}</span>     <span class="s">{char}</span> typed <a href="motion.txt.html#as" class="d">as</a> <a href="insert.txt.html#a" class="d">a</a> control character; that is, typing <span class="s">{char}</span>
+                while holding the CTRL key down.  The <a href="change.txt.html#case" class="d">case</a> of <span class="s">{char}</span> does not
+                matter; thus <a href="change.txt.html#CTRL-A" class="k">CTRL-A</a> and <span class="k">CTRL-a</span> are equivalent.  But on some
+                terminals, using the SHIFT key will produce another code,
+                don't use <a href="motion.txt.html#it" class="d">it</a> then.
+
+                                                        <a name="%27option%27" class="t">'option'</a>
+<a href="intro.txt.html#%27option%27" class="o">'option'</a>        An option, or parameter, that can be set to <a href="insert.txt.html#a" class="d">a</a> value, <a href="motion.txt.html#is" class="d">is</a>
+                enclosed in single quotes.  See <a href="options.txt.html#options" class="l">options</a><a href="repeat.txt.html#." class="d">.</a>
+
+                                                        <a name="quotecommandquote" class="t">quotecommandquote</a>
+"command"       <a href="insert.txt.html#A" class="d">A</a> <a href="intro.txt.html#reference" class="d">reference</a> to <a href="insert.txt.html#a" class="d">a</a> command that you can type <a href="motion.txt.html#is" class="d">is</a> enclosed in
+                double quotes.
+
+<span class="h">==============================================================================</span>
+5. Modes, introduction                          <a name="vim-modes-intro" class="t">vim-modes-intro</a> <a name="vim-modes" class="t">vim-modes</a>
+
+Vim has six BASIC modes:
+
+                                        <a name="Normal" class="t">Normal</a> <a name="Normal-mode" class="t">Normal-mode</a> <a name="command-mode" class="t">command-mode</a>
+<a href="intro.txt.html#Normal" class="d">Normal</a> mode             In <a href="intro.txt.html#Normal" class="d">Normal</a> mode you can enter all the normal editor
+                        commands.  If you start the editor you are in this
+                        mode (unless you have set the <span class="o">'insertmode'</span> option,
+                        see below).  This <a href="motion.txt.html#is" class="d">is</a> also known <a href="motion.txt.html#as" class="d">as</a> command mode.
+
+<a href="visual.txt.html#Visual" class="d">Visual</a> mode             This <a href="motion.txt.html#is" class="d">is</a> like <a href="intro.txt.html#Normal" class="d">Normal</a> mode, but the movement commands
+                        extend <a href="insert.txt.html#a" class="d">a</a> highlighted area.  When <a href="insert.txt.html#a" class="d">a</a> non-movement
+                        command <a href="motion.txt.html#is" class="d">is</a> used, <a href="motion.txt.html#it" class="d">it</a> <a href="motion.txt.html#is" class="d">is</a> executed for the highlighted
+                        area.  See <a href="visual.txt.html#Visual-mode" class="l">Visual-mode</a><a href="repeat.txt.html#." class="d">.</a>
+                        If the <a href="options.txt.html#%27showmode%27" class="o">'showmode'</a> option <a href="motion.txt.html#is" class="d">is</a> on "-- VISUAL --" <a href="motion.txt.html#is" class="d">is</a> shown
+                        <a href="motion.txt.html#at" class="d">at</a> the bottom of the window.
+
+<a href="insert.txt.html#Insert" class="d">Insert</a> mode             In <a href="insert.txt.html#Insert" class="d">Insert</a> mode the text you type <a href="motion.txt.html#is" class="d">is</a> inserted into the
+                        buffer.  See <a href="insert.txt.html#Insert-mode" class="l">Insert-mode</a><a href="repeat.txt.html#." class="d">.</a>
+                        If the <a href="options.txt.html#%27showmode%27" class="o">'showmode'</a> option <a href="motion.txt.html#is" class="d">is</a> on "-- INSERT --" <a href="motion.txt.html#is" class="d">is</a> shown
+                        <a href="motion.txt.html#at" class="d">at</a> the bottom of the window.
+
+Command-line mode  or   In Command-line mode (also called Cmdline mode) you
+Cmdline mode            can enter one line of text <a href="motion.txt.html#at" class="d">at</a> the bottom of the
+                        window.  This <a href="motion.txt.html#is" class="d">is</a> for the Ex commands, ":"<a href="motion.txt.html#%2C" class="d">,</a> the <a href="pattern.txt.html#pattern" class="d">pattern</a>
+                        search commands, "<a href="pattern.txt.html#%3F" class="d">?</a>" and "<a href="pattern.txt.html#%2F" class="d">/</a>"<a href="motion.txt.html#%2C" class="d">,</a> and the <a href="change.txt.html#filter" class="d">filter</a> command,
+                        "<a href="change.txt.html#%21" class="d">!</a>"<a href="repeat.txt.html#." class="d">.</a>  <span class="l">Cmdline-mode</span>
+
+There are five ADDITIONAL modes:
+
+                                <a name="Operator-pending" class="t">Operator-pending</a> <a name="Operator-pending-mode" class="t">Operator-pending-mode</a>
+<a href="intro.txt.html#Operator-pending" class="d">Operator-pending</a> mode   This <a href="motion.txt.html#is" class="d">is</a> like <a href="intro.txt.html#Normal" class="d">Normal</a> mode, but after an <a href="motion.txt.html#operator" class="d">operator</a>
+                        command has started, and Vim <a href="motion.txt.html#is" class="d">is</a> waiting for <a href="insert.txt.html#a" class="d">a</a> <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a>
+                        to specify the text that the <a href="motion.txt.html#operator" class="d">operator</a> will work on.
+
+<a href="insert.txt.html#Replace" class="d">Replace</a> mode            <a href="insert.txt.html#Replace" class="d">Replace</a> mode <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> special <a href="change.txt.html#case" class="d">case</a> of <a href="insert.txt.html#Insert" class="d">Insert</a> mode.  You
+                        can do the same things <a href="motion.txt.html#as" class="d">as</a> in <a href="insert.txt.html#Insert" class="d">Insert</a> mode, but for
+                        each character you enter, one character of the existing
+                        text <a href="motion.txt.html#is" class="d">is</a> deleted.  See <a href="insert.txt.html#Replace-mode" class="l">Replace-mode</a><a href="repeat.txt.html#." class="d">.</a>
+                        If the <a href="options.txt.html#%27showmode%27" class="o">'showmode'</a> option <a href="motion.txt.html#is" class="d">is</a> on "-- REPLACE --" <a href="motion.txt.html#is" class="d">is</a>
+                        shown <a href="motion.txt.html#at" class="d">at</a> the bottom of the window.
+
+<span class="h">==============================================================================</span>
+6. Switching from mode to mode                          <a name="mode-switching" class="t">mode-switching</a>
+
+If for any reason you do not know which mode you are in, you can always get
+back to <a href="intro.txt.html#Normal" class="d">Normal</a> mode by typing <span class="s">&lt;Esc&gt;</span> twice.  You will know you are back in
+<a href="intro.txt.html#Normal" class="d">Normal</a> mode when you see the screen flash or hear the bell after you type
+<span class="s">&lt;Esc&gt;</span><a href="repeat.txt.html#." class="d">.</a>  This doesn't work for Ex mode, use ":visual"<a href="repeat.txt.html#." class="d">.</a>
+
+                                                        <a name="i_esc" class="t">i_esc</a>
+                TO mode                                 
+                <a href="intro.txt.html#Normal" class="d">Normal</a>  <a href="visual.txt.html#Visual" class="d">Visual</a>  <a href="insert.txt.html#Insert" class="d">Insert</a>    <a href="insert.txt.html#Replace" class="d">Replace</a>   Cmd-line
+FROM mode                                                   
+<a href="intro.txt.html#Normal" class="d">Normal</a>                  <a href="visual.txt.html#v" class="d">v</a> <a href="visual.txt.html#V" class="d">V</a> ^V   *1         <a href="change.txt.html#R" class="d">R</a>       : <a href="pattern.txt.html#%2F" class="d">/</a> <a href="pattern.txt.html#%3F" class="d">?</a> <a href="change.txt.html#%21" class="d">!</a> 
+<a href="visual.txt.html#Visual" class="d">Visual</a>           *2              <a href="change.txt.html#c" class="d">c</a> <a href="change.txt.html#C" class="d">C</a>        --        :     
+<a href="insert.txt.html#Insert" class="d">Insert</a>           <span class="s">&lt;Esc&gt;</span>    --              <a href="insert.txt.html#%3CInsert%3E" class="s">&lt;Insert&gt;</a>    --    
+<a href="insert.txt.html#Replace" class="d">Replace</a>          <span class="s">&lt;Esc&gt;</span>    --    <a href="insert.txt.html#%3CInsert%3E" class="s">&lt;Insert&gt;</a>              --    
+Command-line     *3       --     :start     --              
+
+<a href="motion.txt.html#-" class="d">-</a>  NA
+-- not possible
+
+*1 Go from <a href="intro.txt.html#Normal" class="d">Normal</a> mode to <a href="insert.txt.html#Insert" class="d">Insert</a> mode by giving the command "<a href="insert.txt.html#i" class="d">i</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="insert.txt.html#I" class="d">I</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="insert.txt.html#a" class="d">a</a>"<a href="motion.txt.html#%2C" class="d">,</a>
+   "<a href="insert.txt.html#A" class="d">A</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="insert.txt.html#o" class="d">o</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="insert.txt.html#O" class="d">O</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="change.txt.html#c" class="d">c</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="change.txt.html#C" class="d">C</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="change.txt.html#s" class="d">s</a>" or <a href="change.txt.html#S" class="d">S</a>"<a href="repeat.txt.html#." class="d">.</a>
+*2 Go from <a href="visual.txt.html#Visual" class="d">Visual</a> mode to <a href="intro.txt.html#Normal" class="d">Normal</a> mode by giving <a href="insert.txt.html#a" class="d">a</a> non-movement command, which
+   causes the command to be executed, or by hitting <span class="s">&lt;Esc&gt;</span> "<a href="visual.txt.html#v" class="d">v</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="visual.txt.html#V" class="d">V</a>" or "<a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a>"
+   (see <a href="visual.txt.html#v_v" class="l">v_v</a>), which just stops <a href="visual.txt.html#Visual" class="d">Visual</a> mode without side effects.
+*3 Go from Command-line mode to <a href="intro.txt.html#Normal" class="d">Normal</a> mode by:
+   <a href="motion.txt.html#-" class="d">-</a> Hitting <a href="motion.txt.html#%3CCR%3E" class="s">&lt;CR&gt;</a> or <a href="motion.txt.html#%3CNL%3E" class="s">&lt;NL&gt;</a><a href="motion.txt.html#%2C" class="d">,</a> which causes the entered command to be executed.
+   <a href="motion.txt.html#-" class="d">-</a> Hitting <span class="k">CTRL-C</span> or <span class="s">&lt;Esc&gt;</span><a href="motion.txt.html#%2C" class="d">,</a> which quits the command-line without executing
+     the command.
+
+ vim:tw=78:ts=8:sw=8:noet:
+
+</pre>
+</div>
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<p id="footer">These help files are maintained with thanks
+to Carlo Teubner for his vimhelp to html work.</p>
+
+</div>
+</div>
+</body></html>

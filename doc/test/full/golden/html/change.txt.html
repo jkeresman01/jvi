@@ -1,0 +1,698 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Vim: change.txt</title>
+<!--[if IE]>
+<link rel="stylesheet" href="vimhelp-ie.css" type="text/css">
+<![endif]-->
+<!--[if !IE]>-->
+<link rel="stylesheet" href="vimhelp.css" type="text/css">
+<!--<![endif]-->
+</head>
+<body>
+<div id="d1">
+<pre id="sp">                                                                                </pre>
+<div id="d2">
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<div id="d3">
+<pre>
+<a name="change.txt" class="t">change.txt</a>    For Vim version 5.6.  Last change: 1999 Dec 21
+
+
+                  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+This file describes commands that delete or change text.  In this context,
+<a href="change.txt.html#changing" class="d">changing</a> text means <a href="change.txt.html#deleting" class="d">deleting</a> the text and <a href="change.txt.html#replacing" class="d">replacing</a> <a href="motion.txt.html#it" class="d">it</a> with other text using
+one command.  You can <a href="undo.txt.html#undo" class="d">undo</a> all of these commands.  You can repeat the non-Ex
+commands with the "<a href="repeat.txt.html#." class="d">.</a>" command.
+
+1. Deleting text                <a href="change.txt.html#deleting" class="l">deleting</a>
+2. Delete and <a href="insert.txt.html#insert" class="d">insert</a>            <a href="change.txt.html#delete-insert" class="l">delete-insert</a>
+3. Simple changes               <a href="change.txt.html#simple-change" class="l">simple-change</a>         <a name="changing" class="t">changing</a>
+4. Complex changes              <a href="change.txt.html#complex-change" class="l">complex-change</a>
+   4.1 Filter commands             <a href="change.txt.html#filter" class="l">filter</a>
+   4.2 Substitute                  <a href="change.txt.html#%3Asubstitute" class="l">:substitute</a>
+5. Copying and moving text      <a href="change.txt.html#copy-move" class="l">copy-move</a>
+
+For <a href="insert.txt.html#inserting" class="d">inserting</a> text see <a href="insert.txt.html" class="l">insert.txt</a><a href="repeat.txt.html#." class="d">.</a>
+
+<span class="h">==============================================================================</span>
+1. Deleting text                                        <a name="deleting" class="t">deleting</a>
+
+<a href="index.txt.html#%5B" class="d">[</a>"x]&lt;Del&gt;       or                                      <a name="%3CDel%3E" class="t">&lt;Del&gt;</a> <a name="x" class="t">x</a> <a name="dl" class="t">dl</a>
+<a href="index.txt.html#%5B" class="d">[</a>"x]x                   Delete <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> characters under and after the cursor
+                        [into register x] (not linewise).  Does the same <a href="motion.txt.html#as" class="d">as</a>
+                        "<a href="change.txt.html#dl" class="d">dl</a>"<a href="repeat.txt.html#." class="d">.</a>  See <span class="l">:fixdel</span> if the <a href="change.txt.html#%3CDel%3E" class="s">&lt;Del&gt;</a> key does not do what
+                        you want.  See <a href="options.txt.html#%27whichwrap%27" class="l">'whichwrap'</a> for <a href="change.txt.html#deleting" class="d">deleting</a> the <span class="s">&lt;EOL&gt;</span>
+                        (join lines).  <span class="s">{Vi does not support &lt;Del&gt;}</span>
+
+                                                        <a name="X" class="t">X</a> <a name="dh" class="t">dh</a>
+<a href="index.txt.html#%5B" class="d">[</a>"x]X                   Delete <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> characters before the cursor [into
+                        register x] (not linewise).  Does the same <a href="motion.txt.html#as" class="d">as</a> "<a href="change.txt.html#dh" class="d">dh</a>"<a href="repeat.txt.html#." class="d">.</a>
+                        Also see <a href="options.txt.html#%27whichwrap%27" class="l">'whichwrap'</a><a href="repeat.txt.html#." class="d">.</a>
+
+                                                        <a name="d" class="t">d</a>
+<a href="index.txt.html#%5B" class="d">[</a>"x]d{motion}           Delete text that <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a> moves over [into register
+                        x].  See below for exceptions.
+
+                                                        <a name="dd" class="t">dd</a>
+<a href="index.txt.html#%5B" class="d">[</a>"x]dd                  Delete <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> lines [into register x] (linewise).
+
+                                                        <a name="D" class="t">D</a>
+<a href="index.txt.html#%5B" class="d">[</a>"x]D                   Delete the characters under the cursor until the end
+                        of the line and <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a>-1 more lines [into register
+                        x]; synonym for d$ (not linewise).
+
+<span class="s">{Visual}</span><a href="index.txt.html#%5B" class="d">[</a>"x]x   or                                      <a name="v_x" class="t">v_x</a> <a name="v_d" class="t">v_d</a> <a name="v_%3CDel%3E" class="t">v_&lt;Del&gt;</a>
+<span class="s">{Visual}</span><a href="index.txt.html#%5B" class="d">[</a>"x]d   or
+<span class="s">{Visual}</span><a href="index.txt.html#%5B" class="d">[</a>"x]&lt;Del&gt;       Delete the highlighted text [into register x] (for
+                        <span class="s">{Visual}</span> see <a href="visual.txt.html#Visual-mode" class="l">Visual-mode</a>).  <span class="s">{not in Vi}</span>
+
+<span class="s">{Visual}</span><a href="index.txt.html#%5B" class="d">[</a>"x]X   or                                      <a name="v_X" class="t">v_X</a> <a name="v_D" class="t">v_D</a> <a name="v_b_D" class="t">v_b_D</a>
+<span class="s">{Visual}</span><a href="index.txt.html#%5B" class="d">[</a>"x]D           Delete the highlighted lines [into register x] (for
+                        <span class="s">{Visual}</span> see <a href="visual.txt.html#Visual-mode" class="l">Visual-mode</a>).  In <a href="visual.txt.html#Visual" class="d">Visual</a> block mode,
+                        "<a href="change.txt.html#D" class="d">D</a>" deletes the highlighted text plus all text until
+                        the end of the line.  <span class="s">{not in Vi}</span>
+
+                                                <a name="%3Ad" class="t">:d</a> <a name="%3Ade" class="t">:de</a> <a name="%3Adel" class="t">:del</a> <a name="%3Adelete" class="t">:delete</a>
+:[range]d[elete] [x]    Delete <span class="s">[range]</span> lines (default: current line) [into
+                        register x].
+
+:[range]d[elete] [x] <span class="s">{count}</span>
+                        Delete <span class="s">{count}</span> lines, starting with <span class="s">[range]</span>
+                        (default: current line <span class="l">cmdline-ranges</span><a href="motion.txt.html#%29" class="d">)</a> [into
+                        register x].
+
+These commands delete text.  You can repeat them with the "<a href="repeat.txt.html#." class="d">.</a>" command
+(except "<a href="change.txt.html#%3Ad" class="d">:d</a>"<a href="motion.txt.html#%29" class="d">)</a> and <a href="undo.txt.html#undo" class="d">undo</a> them.  Use <a href="visual.txt.html#Visual" class="d">Visual</a> mode to delete blocks of text.  See
+<a href="change.txt.html#registers" class="l">registers</a> for an explanation of registers.
+
+An exception for the d{motion} command: If the motion <a href="motion.txt.html#is" class="d">is</a> not linewise, the
+start and end of the motion are not in the same line, and there are only
+blanks before the start and after the end of the motion, the delete becomes
+linewise.  This means that the delete also removes the line of blanks that you
+might expect to remain.
+
+Trying to delete an empty region of text (e.g., "d0" in the first column)
+<a href="motion.txt.html#is" class="d">is</a> an error when <a href="options.txt.html#%27cpoptions%27" class="o">'cpoptions'</a> includes the 'E' flag.
+
+                                                        <a name="J" class="t">J</a>
+<a href="change.txt.html#J" class="d">J</a>                       Join <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> lines, with <a href="insert.txt.html#a" class="d">a</a> minimum of two lines.
+                        Remove the indent and <a href="insert.txt.html#insert" class="d">insert</a> up to two spaces (see
+                        below).
+
+                                                        <a name="v_J" class="t">v_J</a>
+<span class="s">{Visual}</span><a href="change.txt.html#J" class="d">J</a>               Join the highlighted lines, with <a href="insert.txt.html#a" class="d">a</a> minimum of two
+                        lines.  Remove the indent and <a href="insert.txt.html#insert" class="d">insert</a> up to two spaces
+                        (see below).  <span class="s">{not in Vi}</span>
+
+                                                        <a name="gJ" class="t">gJ</a>
+<a href="change.txt.html#gJ" class="d">gJ</a>                      Join <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> lines, with <a href="insert.txt.html#a" class="d">a</a> minimum of two lines.
+                        Don't <a href="insert.txt.html#insert" class="d">insert</a> or remove any spaces.  <span class="s">{not in Vi}</span>
+
+                                                        <a name="v_gJ" class="t">v_gJ</a>
+<span class="s">{Visual}</span><a href="change.txt.html#gJ" class="d">gJ</a>              Join the highlighted lines, with <a href="insert.txt.html#a" class="d">a</a> minimum of two
+                        lines.  Don't <a href="insert.txt.html#insert" class="d">insert</a> or remove any spaces.  {not in
+                        Vi}
+
+These commands delete the <span class="s">&lt;EOL&gt;</span> between lines.  This has the effect of joining
+multiple lines into one line.  You can repeat these commands (except ":j"<a href="motion.txt.html#%29" class="d">)</a> and
+<a href="undo.txt.html#undo" class="d">undo</a> them.
+
+These commands, except "<a href="change.txt.html#gJ" class="d">gJ</a>"<a href="motion.txt.html#%2C" class="d">,</a> <a href="insert.txt.html#insert" class="d">insert</a> one space in place of the <span class="s">&lt;EOL&gt;</span> unless
+there <a href="motion.txt.html#is" class="d">is</a> trailing white space or the next line starts with <a href="insert.txt.html#a" class="d">a</a> ')'.  These
+commands, except "<a href="change.txt.html#gJ" class="d">gJ</a>"<a href="motion.txt.html#%2C" class="d">,</a> delete any leading white space on the next line.  If
+the <a href="options.txt.html#%27joinspaces%27" class="o">'joinspaces'</a> option <a href="motion.txt.html#is" class="d">is</a> on, these commands <a href="insert.txt.html#insert" class="d">insert</a> two spaces after <a href="insert.txt.html#a" class="d">a</a> '.',
+'!' or '?' (but if <a href="options.txt.html#%27cpoptions%27" class="o">'cpoptions'</a> includes the 'j' flag, they <a href="insert.txt.html#insert" class="d">insert</a> two spaces
+only after <a href="insert.txt.html#a" class="d">a</a> '.').
+
+
+<span class="h">==============================================================================</span>
+2. Delete and <a href="insert.txt.html#insert" class="d">insert</a>                            <a name="delete-insert" class="t">delete-insert</a> <a name="replacing" class="t">replacing</a>
+
+                                                        <a name="R" class="t">R</a>
+<a href="change.txt.html#R" class="d">R</a>                       Enter <a href="insert.txt.html#Replace" class="d">Replace</a> mode: Each character you type replaces
+                        an existing character, starting with the character
+                        under the cursor.  Repeat the entered text <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a>-1
+                        times.  See <a href="insert.txt.html#Replace-mode" class="l">Replace-mode</a> for more details.
+
+                                                        <a name="c" class="t">c</a>
+<a href="index.txt.html#%5B" class="d">[</a>"x]c{motion}           Delete <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a> text [into register x] and start
+                        insert.  When  <a href="options.txt.html#%27cpoptions%27" class="o">'cpoptions'</a> includes the 'E' flag and
+                        there <a href="motion.txt.html#is" class="d">is</a> no text to delete (e.g., with "cTx" when the
+                        cursor <a href="motion.txt.html#is" class="d">is</a> just after an 'x'), an error occurs and
+                        <a href="insert.txt.html#insert" class="d">insert</a> mode does not start (this <a href="motion.txt.html#is" class="d">is</a> Vi compatible).
+                        When  <a href="options.txt.html#%27cpoptions%27" class="o">'cpoptions'</a> does not include the 'E' flag, the
+                        "<a href="change.txt.html#c" class="d">c</a>" command always starts <a href="insert.txt.html#insert" class="d">insert</a> mode, even if there
+                        <a href="motion.txt.html#is" class="d">is</a> no text to delete.
+
+                                                        <a name="cc" class="t">cc</a>
+<a href="index.txt.html#%5B" class="d">[</a>"x]cc                  Delete <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> lines [into register x] and start
+                        <a href="insert.txt.html#insert" class="d">insert</a> (linewise).  If <span class="o">'autoindent'</span> <a href="motion.txt.html#is" class="d">is</a> on, preserve
+                        the indent of the first line.
+
+                                                        <a name="C" class="t">C</a>
+<a href="index.txt.html#%5B" class="d">[</a>"x]C                   Delete from the cursor position to the end of the
+                        line and <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a>-1 more lines [into register x], and
+                        start insert.  Synonym for c$ (not linewise).
+
+                                                        <a name="s" class="t">s</a>
+<a href="index.txt.html#%5B" class="d">[</a>"x]s                   Delete <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> characters [into register x] and start
+                        <a href="insert.txt.html#insert" class="d">insert</a> (s stands for Substitute).  Synonym for "cl"
+                        (not linewise).
+
+                                                        <a name="S" class="t">S</a>
+<a href="index.txt.html#%5B" class="d">[</a>"x]S                   Delete <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> lines [into register x] and start
+                        insert.  Synonym for "<a href="change.txt.html#cc" class="d">cc</a>" (linewise).
+
+<span class="s">{Visual}</span><a href="index.txt.html#%5B" class="d">[</a>"x]c   or                                      <a name="v_c" class="t">v_c</a> <a name="v_s" class="t">v_s</a>
+<span class="s">{Visual}</span><a href="index.txt.html#%5B" class="d">[</a>"x]s           Delete the highlighted text [into register x] and
+                        start <a href="insert.txt.html#insert" class="d">insert</a> (for <span class="s">{Visual}</span> see <a href="visual.txt.html#Visual-mode" class="l">Visual-mode</a>).  {not
+                        in Vi}
+
+                                                        <a name="v_r" class="t">v_r</a>
+<span class="s">{Visual}</span><a href="index.txt.html#%5B" class="d">[</a>"x]r{char}     <a href="insert.txt.html#Replace" class="d">Replace</a> all selected characters by <span class="s">{char}</span><a href="repeat.txt.html#." class="d">.</a>
+
+                                                        <a name="v_C" class="t">v_C</a>
+<span class="s">{Visual}</span><a href="index.txt.html#%5B" class="d">[</a>"x]C           Delete the highlighted lines [into register x] and
+                        start insert.  In <a href="visual.txt.html#Visual" class="d">Visual</a> block mode <a href="motion.txt.html#it" class="d">it</a> works
+                        differently <a href="visual.txt.html#v_b_C" class="l">v_b_C</a><a href="repeat.txt.html#." class="d">.</a>  <span class="s">{not in Vi}</span>
+                                                        <a name="v_S" class="t">v_S</a>
+<span class="s">{Visual}</span><a href="index.txt.html#%5B" class="d">[</a>"x]S           Delete the highlighted lines [into register x] and
+                        start <a href="insert.txt.html#insert" class="d">insert</a> (for <span class="s">{Visual}</span> see <a href="visual.txt.html#Visual-mode" class="l">Visual-mode</a>).  {not
+                        in Vi}
+                                                        <a name="v_R" class="t">v_R</a>
+<span class="s">{Visual}</span><a href="index.txt.html#%5B" class="d">[</a>"x]R           Currently just like <span class="s">{Visual}</span><a href="index.txt.html#%5B" class="d">[</a>"x]S.  In <a href="insert.txt.html#a" class="d">a</a> next version
+                        <a href="motion.txt.html#it" class="d">it</a> might work differently. <span class="s">{not in Vi}</span>
+
+<span class="n">Notes:</span>
+<a href="motion.txt.html#-" class="d">-</a> You can end <a href="insert.txt.html#Insert" class="d">Insert</a> and <a href="insert.txt.html#Replace" class="d">Replace</a> mode with <span class="s">&lt;Esc&gt;</span><a href="repeat.txt.html#." class="d">.</a>
+<a href="motion.txt.html#-" class="d">-</a> See the section "<a href="insert.txt.html#Insert" class="d">Insert</a> and <a href="insert.txt.html#Replace" class="d">Replace</a> mode" <a href="insert.txt.html#mode-ins-repl" class="l">mode-ins-repl</a> for the other
+  special characters in these modes.
+<a href="motion.txt.html#-" class="d">-</a> The effect of <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> takes place after Vim exits <a href="insert.txt.html#Insert" class="d">Insert</a> or <a href="insert.txt.html#Replace" class="d">Replace</a> mode.
+<a href="motion.txt.html#-" class="d">-</a> When the <a href="options.txt.html#%27cpoptions%27" class="o">'cpoptions'</a> option contains '$' and the change <a href="motion.txt.html#is" class="d">is</a> within one line,
+  Vim continues to show the text to be deleted and puts <a href="insert.txt.html#a" class="d">a</a> '$' <a href="motion.txt.html#at" class="d">at</a> the last
+  deleted character.
+
+See <a href="change.txt.html#registers" class="l">registers</a> for an explanation of registers.
+
+<a href="insert.txt.html#Replace" class="d">Replace</a> mode <a href="motion.txt.html#is" class="d">is</a> just like <a href="insert.txt.html#Insert" class="d">Insert</a> mode, except that every character you enter
+deletes one character.  If you reach the end of <a href="insert.txt.html#a" class="d">a</a> line, Vim appends any
+further characters (just like <a href="insert.txt.html#Insert" class="d">Insert</a> mode).  In <a href="insert.txt.html#Replace" class="d">Replace</a> mode, the backspace
+key restores the original text (if there was any).  (See section "<a href="insert.txt.html#Insert" class="d">Insert</a> and
+<a href="insert.txt.html#Replace" class="d">Replace</a> mode" <a href="insert.txt.html#mode-ins-repl" class="l">mode-ins-repl</a>).
+
+                                                <a name="cw" class="t">cw</a> <a name="cW" class="t">cW</a>
+Special case: "<a href="change.txt.html#cw" class="d">cw</a>" and "<a href="change.txt.html#cW" class="d">cW</a>" work the same <a href="motion.txt.html#as" class="d">as</a> "ce" and "cE" if the cursor <a href="motion.txt.html#is" class="d">is</a>
+on <a href="insert.txt.html#a" class="d">a</a> non-blank.  This <a href="motion.txt.html#is" class="d">is</a> because Vim interprets "<a href="change.txt.html#cw" class="d">cw</a>" <a href="motion.txt.html#as" class="d">as</a> change-word, and <a href="insert.txt.html#a" class="d">a</a>
+<a href="motion.txt.html#word" class="d">word</a> does not include the following white space.  {Vi: "<a href="change.txt.html#cw" class="d">cw</a>" when on <a href="insert.txt.html#a" class="d">a</a> blank
+followed by other blanks changes only the first blank; this <a href="motion.txt.html#is" class="d">is</a> probably <a href="insert.txt.html#a" class="d">a</a>
+bug, because "dw" deletes all the blanks}
+
+If you prefer "<a href="change.txt.html#cw" class="d">cw</a>" to include the space after <a href="insert.txt.html#a" class="d">a</a> word, use this mapping: 
+<span class="e">        :map cw dwi</span>
+Or use "caw" (see <a href="motion.txt.html#aw" class="l">aw</a>).
+
+<span class="h">==============================================================================</span>
+3. Simple changes                                       <a name="simple-change" class="t">simple-change</a>
+
+                                                        <a name="r" class="t">r</a>
+r{char}                 <a href="insert.txt.html#Replace" class="d">Replace</a> the character under the cursor with <span class="s">{char}</span><a href="repeat.txt.html#." class="d">.</a>
+                        If <span class="s">{char}</span> <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#%3CCR%3E" class="s">&lt;CR&gt;</a> or <a href="motion.txt.html#%3CNL%3E" class="s">&lt;NL&gt;</a><a href="motion.txt.html#%2C" class="d">,</a> <a href="insert.txt.html#a" class="d">a</a> line break replaces the
+                        character.  To replace with <a href="insert.txt.html#a" class="d">a</a> real <a href="motion.txt.html#%3CCR%3E" class="s">&lt;CR&gt;</a><a href="motion.txt.html#%2C" class="d">,</a> use <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a>
+                        <a href="motion.txt.html#%3CCR%3E" class="s">&lt;CR&gt;</a><a href="repeat.txt.html#." class="d">.</a>  <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a> <a href="motion.txt.html#%3CNL%3E" class="s">&lt;NL&gt;</a> replaces with <a href="insert.txt.html#a" class="d">a</a> <span class="s">&lt;Nul&gt;</span><a href="repeat.txt.html#." class="d">.</a>  {Vi: <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a>
+                        <a href="motion.txt.html#%3CCR%3E" class="s">&lt;CR&gt;</a> still replaces with <a href="insert.txt.html#a" class="d">a</a> line break, cannot replace
+                        something with <a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#%3CCR%3E" class="s">&lt;CR&gt;</a><a href="motion.txt.html#%7D" class="d">}</a> If you give <a href="insert.txt.html#a" class="d">a</a> <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a><a href="motion.txt.html#%2C" class="d">,</a> Vim
+                        replaces <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> characters with <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> <span class="s">{char}</span>s.
+                        When <span class="s">{char}</span> <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#%3CCR%3E" class="s">&lt;CR&gt;</a> or <a href="motion.txt.html#%3CNL%3E" class="s">&lt;NL&gt;</a><a href="motion.txt.html#%2C" class="d">,</a> however, Vim inserts
+                        only one <a href="motion.txt.html#%3CCR%3E" class="s">&lt;CR&gt;</a>: "5r&lt;CR&gt;" replaces five characters with
+                        <a href="insert.txt.html#a" class="d">a</a> single line break.  When <span class="s">{char}</span> <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#%3CCR%3E" class="s">&lt;CR&gt;</a> or <a href="motion.txt.html#%3CNL%3E" class="s">&lt;NL&gt;</a><a href="motion.txt.html#%2C" class="d">,</a>
+                        Vim performs autoindenting.  This works just like
+                        <a href="change.txt.html#deleting" class="d">deleting</a> the characters that are replaced and then
+                        doing "i&lt;CR&gt;&lt;Esc&gt;"<a href="repeat.txt.html#." class="d">.</a>
+
+
+                                                <a name="case" class="t">case</a>
+The following commands change the <a href="change.txt.html#case" class="d">case</a> of letters.
+
+                                                        <a name="%7E" class="t">~</a>
+<a href="change.txt.html#%7E" class="d">~</a>                       <a href="options.txt.html#%27notildeop%27" class="o">'notildeop'</a> option: Switch <a href="change.txt.html#case" class="d">case</a> of the character
+                        under the cursor and move the cursor to the right.
+                        If <a href="insert.txt.html#a" class="d">a</a> <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> <a href="motion.txt.html#is" class="d">is</a> given, do that many characters.
+                        <span class="s">{Vi: no count}</span>
+                                                        <a name="%7E%7Bmotion%7D" class="t">~{motion}</a>
+<a href="change.txt.html#%7E%7Bmotion%7D" class="d">~{motion}</a>               <a href="options.txt.html#%27tildeop%27" class="o">'tildeop'</a> option: switch <a href="change.txt.html#case" class="d">case</a> of <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a> text.
+                        <span class="s">{Vi: tilde cannot be used as an operator}</span>
+
+                                                        <a name="g%7E" class="t">g~</a>
+g~{motion}              Switch <a href="change.txt.html#case" class="d">case</a> of <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a> text. <span class="s">{not in Vi}</span>
+
+<a href="change.txt.html#g%7Eg%7E" class="d">g~g~</a>                                                    <a name="g%7Eg%7E" class="t">g~g~</a> <a name="g%7E%7E" class="t">g~~</a>
+<a href="change.txt.html#g%7E%7E" class="d">g~~</a>                     Switch <a href="change.txt.html#case" class="d">case</a> of current line. <span class="s">{not in Vi}</span><a href="repeat.txt.html#." class="d">.</a>
+
+                                                        <a name="v_%7E" class="t">v_~</a>
+<span class="s">{Visual}</span><a href="change.txt.html#%7E" class="d">~</a>               Switch <a href="change.txt.html#case" class="d">case</a> of highlighted text (for <span class="s">{Visual}</span> see
+                        <a href="visual.txt.html#Visual-mode" class="l">Visual-mode</a>). <span class="s">{not in Vi}</span>
+
+                                                        <a name="v_U" class="t">v_U</a>
+<span class="s">{Visual}</span>U               Make highlighted text <a href="change.txt.html#uppercase" class="d">uppercase</a> (for <span class="s">{Visual}</span> see
+                        <a href="visual.txt.html#Visual-mode" class="l">Visual-mode</a>). <span class="s">{not in Vi}</span>
+
+                                                        <a name="gU" class="t">gU</a> <a name="uppercase" class="t">uppercase</a>
+gU{motion}              Make <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a> text uppercase. <span class="s">{not in Vi}</span>
+                        Example: 
+<span class="e">                                :map! &lt;C-F&gt; &lt;Esc&gt;gUiw`]a</span>
+                       This works in <a href="insert.txt.html#Insert" class="d">Insert</a> mode: press <a href="scroll.txt.html#CTRL-F" class="k">CTRL-F</a> to make the
+                        <a href="motion.txt.html#word" class="d">word</a> before the cursor uppercase.  Handy to type
+                        words in <a href="change.txt.html#lowercase" class="d">lowercase</a> and then make them uppercase.
+
+
+<a href="change.txt.html#gUgU" class="d">gUgU</a>                                                    <a name="gUgU" class="t">gUgU</a> <a name="gUU" class="t">gUU</a>
+<a href="change.txt.html#gUU" class="d">gUU</a>                     Make current line uppercase. <span class="s">{not in Vi}</span><a href="repeat.txt.html#." class="d">.</a>
+
+                                                        <a name="v_u" class="t">v_u</a>
+<span class="s">{Visual}</span><a href="undo.txt.html#u" class="d">u</a>               Make highlighted text <a href="change.txt.html#lowercase" class="d">lowercase</a> (for <span class="s">{Visual}</span> see
+                        <a href="visual.txt.html#Visual-mode" class="l">Visual-mode</a>).  <span class="s">{not in Vi}</span>
+
+                                                        <a name="gu" class="t">gu</a> <a name="lowercase" class="t">lowercase</a>
+gu{motion}              Make <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a> text lowercase. <span class="s">{not in Vi}</span>
+
+<a href="change.txt.html#gugu" class="d">gugu</a>                                                    <a name="gugu" class="t">gugu</a> <a name="guu" class="t">guu</a>
+<a href="change.txt.html#guu" class="d">guu</a>                     Make current line lowercase. <span class="s">{not in Vi}</span><a href="repeat.txt.html#." class="d">.</a>
+
+
+<span class="h">Adding and subtracting </span>
+                                                        <a name="CTRL-A" class="t">CTRL-A</a>
+<a href="change.txt.html#CTRL-A" class="k">CTRL-A</a>                  Add <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> to the number or alphabetic character <a href="motion.txt.html#at" class="d">at</a>
+                        or after the cursor.  <span class="s">{not in Vi}</span>
+
+                                                        <a name="CTRL-X" class="t">CTRL-X</a>
+<a href="change.txt.html#CTRL-X" class="k">CTRL-X</a>                  Subtract <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> from the number or alphabetic
+                        character <a href="motion.txt.html#at" class="d">at</a> or after the cursor.  <span class="s">{not in Vi}</span>
+
+The <a href="change.txt.html#CTRL-A" class="k">CTRL-A</a> and <a href="change.txt.html#CTRL-X" class="k">CTRL-X</a> commands work for (signed) decimal numbers, unsigned
+octal and hexadecimal numbers and alphabetic characters.  This depends on the
+<a href="options.txt.html#%27nrformats%27" class="o">'nrformats'</a> option.
+<a href="motion.txt.html#-" class="d">-</a> When <a href="options.txt.html#%27nrformats%27" class="o">'nrformats'</a> includes "octal"<a href="motion.txt.html#%2C" class="d">,</a> Vim considers numbers starting with <a href="insert.txt.html#a" class="d">a</a> '0'
+  to be octal, unless the number includes <a href="insert.txt.html#a" class="d">a</a> '8' or '9'.  Other numbers are
+  decimal and may have <a href="insert.txt.html#a" class="d">a</a> preceding minus sign.
+  If the cursor <a href="motion.txt.html#is" class="d">is</a> on <a href="insert.txt.html#a" class="d">a</a> number, the commands apply to that number; otherwise
+  Vim uses the number to the right of the cursor.
+<a href="motion.txt.html#-" class="d">-</a> When <a href="options.txt.html#%27nrformats%27" class="o">'nrformats'</a> includes "hex"<a href="motion.txt.html#%2C" class="d">,</a> Vim assumes numbers starting with '0x' or
+  '0X' are hexadecimal.  The <a href="change.txt.html#case" class="d">case</a> of the rightmost letter in the number
+  determines the <a href="change.txt.html#case" class="d">case</a> of the resulting hexadecimal number.  If there <a href="motion.txt.html#is" class="d">is</a> no
+  letter in the current number, Vim uses the previously detected case.
+<a href="motion.txt.html#-" class="d">-</a> When <a href="options.txt.html#%27nrformats%27" class="o">'nrformats'</a> includes "alpha"<a href="motion.txt.html#%2C" class="d">,</a> Vim will change the alphabetic character
+  under or after the cursor.  This <a href="motion.txt.html#is" class="d">is</a> useful to make lists with an alphabetic
+  index.
+
+For numbers with leading zeros (including all octal and hexadecimal numbers),
+Vim preserves the number of characters in the number when possible.  <a href="change.txt.html#CTRL-A" class="k">CTRL-A</a> on
+"0077" results in "0100"<a href="motion.txt.html#%2C" class="d">,</a> <a href="change.txt.html#CTRL-X" class="k">CTRL-X</a> on "0x100" results in "0x0ff"<a href="repeat.txt.html#." class="d">.</a>
+There <a href="motion.txt.html#is" class="d">is</a> one exception: When <a href="insert.txt.html#a" class="d">a</a> number that starts with <a href="insert.txt.html#a" class="d">a</a> zero <a href="motion.txt.html#is" class="d">is</a> found not to
+be octal (it contains <a href="insert.txt.html#a" class="d">a</a> '8' or '9'), but <a href="options.txt.html#%27nrformats%27" class="o">'nrformats'</a> does include "octal"<a href="motion.txt.html#%2C" class="d">,</a>
+leading zeros are removed to avoid that the result may be recognized <a href="motion.txt.html#as" class="d">as</a> an
+octal number.
+
+<span class="n">Note</span> that when <a href="options.txt.html#%27nrformats%27" class="o">'nrformats'</a> includes "octal"<a href="motion.txt.html#%2C" class="d">,</a> decimal numbers with leading
+zeros cause mistakes, because they can be confused with octal numbers.
+
+The <a href="change.txt.html#CTRL-A" class="k">CTRL-A</a> command <a href="motion.txt.html#is" class="d">is</a> very useful in <a href="insert.txt.html#a" class="d">a</a> macro.  Example: Use the following
+steps to make <a href="insert.txt.html#a" class="d">a</a> numbered list.
+
+1. Create the first list entry, make sure <a href="motion.txt.html#it" class="d">it</a> starts with <a href="insert.txt.html#a" class="d">a</a> number.
+2. qa        <a href="motion.txt.html#-" class="d">-</a> start <a href="repeat.txt.html#recording" class="d">recording</a> into register 'a'
+3. <a href="change.txt.html#Y" class="d">Y</a>         <a href="motion.txt.html#-" class="d">-</a> <a href="change.txt.html#yank" class="d">yank</a> the entry
+4. <a href="change.txt.html#p" class="d">p</a>         <a href="motion.txt.html#-" class="d">-</a> <a href="change.txt.html#put" class="d">put</a> <a href="insert.txt.html#a" class="d">a</a> copy of the entry below the first one
+5. <a href="change.txt.html#CTRL-A" class="k">CTRL-A</a>    <a href="motion.txt.html#-" class="d">-</a> increment the number
+6. <a href="repeat.txt.html#q" class="d">q</a>         <a href="motion.txt.html#-" class="d">-</a> stop <a href="repeat.txt.html#recording" class="d">recording</a>
+7. <span class="s">&lt;count&gt;</span>@a <a href="motion.txt.html#-" class="d">-</a> repeat the yank, <a href="change.txt.html#put" class="d">put</a> and increment <span class="s">&lt;count&gt;</span> times
+
+
+<span class="c">SHIFTING LINES LEFT OR RIGHT                           </span> <a name="shift-left-right" class="t">shift-left-right</a>
+
+                                                        <a name="%3C" class="t">&lt;</a>
+&lt;{motion}               Shift <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a> lines one <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a> leftwards.
+
+                                                        <a name="%3C%3C" class="t">&lt;&lt;</a>
+<a href="change.txt.html#%3C%3C" class="d">&lt;&lt;</a>                      Shift <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> lines one <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a> leftwards.
+
+                                                        <a name="v_%3C" class="t">v_&lt;</a>
+<span class="s">{Visual}</span><a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a><a href="change.txt.html#%3C" class="d">&lt;</a>        Shift the highlighted lines <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a>
+                        leftwards (for <span class="s">{Visual}</span> see <a href="visual.txt.html#Visual-mode" class="l">Visual-mode</a>).  {not in
+                        Vi}
+
+                                                        <a name="%3E" class="t">&gt;</a>
+ &gt;{motion}              Shift <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a> lines one <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a> rightwards.
+
+                                                        <a name="%3E%3E" class="t">&gt;&gt;</a>
+ <a href="change.txt.html#%3E%3E" class="d">&gt;&gt;</a>                     Shift <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> lines one <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a> rightwards.
+
+                                                        <a name="v_%3E" class="t">v_&gt;</a>
+<span class="s">{Visual}</span><a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a><a href="change.txt.html#%3E" class="d">&gt;</a>        Shift the highlighted lines <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a>
+                        rightwards (for <span class="s">{Visual}</span> see <a href="visual.txt.html#Visual-mode" class="l">Visual-mode</a>).  {not in
+                        Vi}
+
+                                                        <a name="%3A%3C" class="t">:&lt;</a>
+:[range]&lt;               Shift <span class="s">[range]</span> lines one <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a> left.  Repeat '&lt;'
+                        for shifting multiple <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a>s.
+
+:[range]&lt; <span class="s">{count}</span>       Shift <span class="s">{count}</span> lines one <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a> left, starting
+                        with <span class="s">[range]</span> (default current line <span class="l">cmdline-ranges</span>).
+                        Repeat '&lt;' for shifting multiple <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a>s.
+
+                                                        <a name="%3A%3E" class="t">:&gt;</a>
+:[range]&gt; <span class="s">[flags]</span>       Shift <span class="s">{count}</span> <span class="s">[range]</span> lines one <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a> right.
+                        Repeat '&gt;' for shifting multiple <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a>s.
+                        See <span class="l">ex-flags</span> for <span class="s">[flags]</span><a href="repeat.txt.html#." class="d">.</a>
+
+:[range]&gt; <span class="s">{count}</span> <span class="s">[flags]</span>
+                        Shift <span class="s">{count}</span> lines one <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a> right, starting
+                        with <span class="s">[range]</span> (default current line <span class="l">cmdline-ranges</span>).
+                        Repeat '&gt;' for shifting multiple <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a>s.
+                        See <span class="l">ex-flags</span> for <span class="s">[flags]</span><a href="repeat.txt.html#." class="d">.</a>
+
+The "<a href="change.txt.html#%3E" class="d">&gt;</a>" and "<a href="change.txt.html#%3C" class="d">&lt;</a>" commands are handy for <a href="change.txt.html#changing" class="d">changing</a> the indentation within
+programs.  Use the <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a> option to set the size of the white space
+which these commands <a href="insert.txt.html#insert" class="d">insert</a> or delete.  Normally the <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a> option <a href="motion.txt.html#is" class="d">is</a> 8,
+but you can set <a href="motion.txt.html#it" class="d">it</a> to, say, 3 to make smaller indents.  The shift leftwards
+stops when there <a href="motion.txt.html#is" class="d">is</a> no indent.  The shift right does not affect empty lines.
+
+If the <a href="options.txt.html#%27shiftround%27" class="o">'shiftround'</a> option <a href="motion.txt.html#is" class="d">is</a> on, the indent <a href="motion.txt.html#is" class="d">is</a> rounded to <a href="insert.txt.html#a" class="d">a</a> multiple of
+<a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a><a href="repeat.txt.html#." class="d">.</a>
+
+When the <a href="options.txt.html#%27expandtab%27" class="o">'expandtab'</a> option <a href="motion.txt.html#is" class="d">is</a> off (this <a href="motion.txt.html#is" class="d">is</a> the default) Vim uses <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a><a href="change.txt.html#s" class="d">s</a> <a href="motion.txt.html#as" class="d">as</a>
+much <a href="motion.txt.html#as" class="d">as</a> possible to make the indent.  You can use "&gt;&gt;&lt;&lt;" to replace an indent
+made out of spaces with the same indent made out of <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a><a href="change.txt.html#s" class="d">s</a> (and <a href="insert.txt.html#a" class="d">a</a> few spaces
+if necessary).  If the <a href="options.txt.html#%27expandtab%27" class="o">'expandtab'</a> option <a href="motion.txt.html#is" class="d">is</a> on, Vim uses only spaces.  Then
+you can use "&gt;&gt;&lt;&lt;" to replace <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a><a href="change.txt.html#s" class="d">s</a> in the indent by spaces (or use
+":retab!").
+
+To move <a href="insert.txt.html#a" class="d">a</a> line several <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a>s, use <a href="visual.txt.html#Visual" class="d">Visual</a> mode or the ":" commands.
+For example: 
+<span class="e">        Vjj4&gt;           move three lines 4 indents to the right</span>
+<span class="e">        :&lt;&lt;&lt;            move current line 3 indents to the left</span>
+<span class="e">        :&gt;&gt; 5           move 5 lines 2 indents to the right</span>
+<span class="e">        :5&gt;&gt;            move line 5 2 indents to the right</span>
+
+<span class="h">==============================================================================</span>
+4. Complex changes                                      <a name="complex-change" class="t">complex-change</a>
+
+4.1 Filter commands                                     <a name="filter" class="t">filter</a>
+
+<a href="insert.txt.html#A" class="d">A</a> <a href="change.txt.html#filter" class="d">filter</a> <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> program that accepts text <a href="motion.txt.html#at" class="d">at</a> standard input, changes <a href="motion.txt.html#it" class="d">it</a> in some
+way, and sends <a href="motion.txt.html#it" class="d">it</a> to standard output.  You can use the commands below to send
+some text through <a href="insert.txt.html#a" class="d">a</a> filter, so that <a href="motion.txt.html#it" class="d">it</a> <a href="motion.txt.html#is" class="d">is</a> replace by the <a href="change.txt.html#filter" class="d">filter</a> output.
+Examples of filters are "sort"<a href="motion.txt.html#%2C" class="d">,</a> which sorts lines alphabetically, and
+"indent"<a href="motion.txt.html#%2C" class="d">,</a> which formats <a href="change.txt.html#C" class="d">C</a> program files (you need <a href="insert.txt.html#a" class="d">a</a> version of indent that
+works like <a href="insert.txt.html#a" class="d">a</a> filter; not all versions do).  The <a href="options.txt.html#%27shell%27" class="o">'shell'</a> option specifies the
+shell Vim uses to execute the <a href="change.txt.html#filter" class="d">filter</a> command (See also the <span class="o">'shelltype'</span>
+option).  You can repeat <a href="change.txt.html#filter" class="d">filter</a> commands with "<a href="repeat.txt.html#." class="d">.</a>"<a href="repeat.txt.html#." class="d">.</a>  Vim does not recognize <a href="insert.txt.html#a" class="d">a</a>
+comment (starting with <a href="motion.txt.html#%27" class="d">'</a>"') after the ":!" command.
+
+See the end of the Colon Commands <a href="intro.txt.html#reference" class="d">reference</a> doc for <a href="insert.txt.html#a" class="d">a</a> list of
+available filename-modifiers.
+
+                                                        <a name="%21" class="t">!</a>
+!{motion}{filter}       Filter <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a> text through the external program
+                        <span class="s">{filter}</span><a href="repeat.txt.html#." class="d">.</a>
+
+                                                        <a name="%21%21" class="t">!!</a>
+!!{filter}              Filter <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> lines through the external program
+                        <span class="s">{filter}</span><a href="repeat.txt.html#." class="d">.</a>
+
+                                                        <a name="v_%21" class="t">v_!</a>
+<span class="s">{Visual}</span>!{filter}       Filter the highlighted lines through the external
+                        program <span class="s">{filter}</span> (for <span class="s">{Visual}</span> see <a href="visual.txt.html#Visual-mode" class="l">Visual-mode</a>).
+                        <span class="s">{not in Vi}</span>
+
+:{range}![!]{filter} [!][arg]                           <a name="%3Arange%21" class="t">:range!</a>
+                        Filter <span class="s">{range}</span> lines through the external program
+                        <span class="s">{filter}</span><a href="repeat.txt.html#." class="d">.</a>  Vim replaces the optional bangs with the
+                        latest given command and appends the optional <span class="s">[arg]</span><a href="repeat.txt.html#." class="d">.</a>
+                        Vim saves the output of the <a href="change.txt.html#filter" class="d">filter</a> command in <a href="insert.txt.html#a" class="d">a</a>
+                        temporary file and then reads the file into the
+                        buffer.
+
+                                                        <a name="%3D" class="t">=</a>
+={motion}               Filter <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a> lines through the external program
+                        given with the <a href="options.txt.html#%27equalprg%27" class="o">'equalprg'</a> option.  When the <a href="options.txt.html#%27equalprg%27" class="o">'equalprg'</a>
+                        option <a href="motion.txt.html#is" class="d">is</a> empty (this <a href="motion.txt.html#is" class="d">is</a> the default), use the
+                        internal formatting function to set the indent of each
+                        line <span class="l">C-indenting</span><a href="repeat.txt.html#." class="d">.</a>
+
+                                                        <a name="%3D%3D" class="t">==</a>
+<a href="change.txt.html#%3D%3D" class="d">==</a>                      Filter <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> lines through the external program
+                        given with the <a href="options.txt.html#%27equalprg%27" class="o">'equalprg'</a> option.  When the <a href="options.txt.html#%27equalprg%27" class="o">'equalprg'</a>
+                        option <a href="motion.txt.html#is" class="d">is</a> empty (this <a href="motion.txt.html#is" class="d">is</a> the default), use the
+                        internal formatting function <span class="l">C-indenting</span><a href="repeat.txt.html#." class="d">.</a>
+
+                                                        <a name="v_%3D" class="t">v_=</a>
+<span class="s">{Visual}</span><a href="change.txt.html#%3D" class="d">=</a>               Filter the highlighted lines through the external
+                        program given with the <a href="options.txt.html#%27equalprg%27" class="o">'equalprg'</a> option.  When the
+                        <a href="options.txt.html#%27equalprg%27" class="o">'equalprg'</a> option <a href="motion.txt.html#is" class="d">is</a> empty (this <a href="motion.txt.html#is" class="d">is</a> the default),
+                        use the internal formatting function <span class="l">C-indenting</span><a href="repeat.txt.html#." class="d">.</a>
+                        (for <span class="s">{Visual}</span> see <a href="visual.txt.html#Visual-mode" class="l">Visual-mode</a>).  <span class="s">{not in Vi}</span>
+
+
+4.2 Substitute                                          <a name="%3Asubstitute" class="t">:substitute</a>
+                                                        <a name="%3As" class="t">:s</a> <a name="%3Asu" class="t">:su</a>
+:[range]s[ubstitute]/{pattern}/{string}/[c][e][g][p][r][i][I] <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a>
+                        For each line in <span class="s">[range]</span> replace <a href="insert.txt.html#a" class="d">a</a> match of <span class="s">{pattern}</span>
+                        with <span class="s">{string}</span><a href="repeat.txt.html#." class="d">.</a>  See <a href="change.txt.html#%3As_flags" class="l">:s_flags</a> for the flags.
+
+                                                        <a name="%3As_flags" class="t">:s_flags</a>
+The arguments that you can use for the substitute commands:
+[c]     Confirm each substitution.  Vim positions the cursor on the matching
+        string.  You can type:                          <a name="%3As_c" class="t">:s_c</a>
+            'y'     to substitute this match
+            'l'     to substitute this match and then quit <a href="motion.txt.html#%28" class="d">(</a>"last"<a href="motion.txt.html#%29" class="d">)</a>
+            'n'     to skip this match
+            <span class="s">&lt;Esc&gt;</span>   to skip this match
+            'a'     to substitute this and all remaining matches <span class="s">{not in Vi}</span>
+            'q'     to quit substituting <span class="s">{not in Vi}</span>
+            <a href="scroll.txt.html#CTRL-E" class="k">CTRL-E</a>  to scroll the screen up <span class="s">{not in Vi}</span>
+            <a href="scroll.txt.html#CTRL-Y" class="k">CTRL-Y</a>  to scroll the screen down <span class="s">{not in Vi}</span><a href="repeat.txt.html#." class="d">.</a>
+[g]     <a href="insert.txt.html#Replace" class="d">Replace</a> all occurrences in the line.  Without this argument,
+        replacement occurs only for the first occurrence in each line.  If
+        the <span class="o">'edcompatible'</span> option <a href="motion.txt.html#is" class="d">is</a> on, Vim remembers this flag and toggles
+        <a href="motion.txt.html#it" class="d">it</a> each time you use it, but resets <a href="motion.txt.html#it" class="d">it</a> when you give <a href="insert.txt.html#a" class="d">a</a> new search
+        pattern.  If the <span class="o">'gdefault'</span> option <a href="motion.txt.html#is" class="d">is</a> on, this flag <a href="motion.txt.html#is" class="d">is</a> on by default
+        and the [g] argument switches <a href="motion.txt.html#it" class="d">it</a> off.
+[p]     Print the line containing the last substitute.
+
+If the <span class="s">{pattern}</span> for the substitute command <a href="motion.txt.html#is" class="d">is</a> empty, the command uses the
+<a href="pattern.txt.html#pattern" class="d">pattern</a> from the last substitute or ":global" command.
+
+For compatibility with Vi these two exceptions are allowed:
+"\/{string}/" and "\?{string}?" do the same <a href="motion.txt.html#as" class="d">as</a> "//{string}/r"<a href="repeat.txt.html#." class="d">.</a>
+"\&amp;{string}&amp;" does the same <a href="motion.txt.html#as" class="d">as</a> "//{string}/"<a href="repeat.txt.html#." class="d">.</a>
+
+Instead of the '/' which surrounds the <a href="pattern.txt.html#pattern" class="d">pattern</a> and replacement string, you
+can use any other character, but not an alphanumeric character, '\', <a href="motion.txt.html#%27" class="d">'</a>"<a href="motion.txt.html#%27" class="d">'</a> or
+<a href="motion.txt.html#%27" class="d">'</a>|'.  This <a href="motion.txt.html#is" class="d">is</a> useful if you want to include <a href="insert.txt.html#a" class="d">a</a> '/' in the search <a href="pattern.txt.html#pattern" class="d">pattern</a> or
+replacement string.  Example:
+<a href="change.txt.html#%3E" class="d">&gt;</a>       :s+/+//+
+
+                                                <a name="sub-replace-special" class="t">sub-replace-special</a>
+Some characters in <span class="s">{string}</span> have <a href="insert.txt.html#a" class="d">a</a> special meaning:
+
+
+<span class="h">magic             action    </span>
+  &amp;               replaced with the whole matched <a href="pattern.txt.html#pattern" class="d">pattern</a>            <a name="s%2F%5C%26" class="t">s/\&amp;</a>
+ \&amp;               replaced with &amp;
+      <a href="change.txt.html#%5C0" class="d">\0</a>          replaced with the whole matched <a href="pattern.txt.html#pattern" class="d">pattern</a>          <a name="%5C0" class="t">\0</a> <a name="s%2F%5C0" class="t">s/\0</a>
+      \1          replaced with the matched <a href="pattern.txt.html#pattern" class="d">pattern</a> in the first
+                  pair of ()                                         <a name="s%2F%5C1" class="t">s/\1</a>
+      \2          replaced with the matched <a href="pattern.txt.html#pattern" class="d">pattern</a> in the second
+                  pair of ()                                         <a name="s%2F%5C2" class="t">s/\2</a>
+      ..          ..                                                 <a name="s%2F%5C3" class="t">s/\3</a>
+      \9          replaced with the matched <a href="pattern.txt.html#pattern" class="d">pattern</a> in the ninth
+                  pair of ()                                         <a name="s%2F%5C9" class="t">s/\9</a>
+      \r          split line in two <a href="motion.txt.html#at" class="d">at</a> this point                    <a name="s%2F%5Cr" class="t">s/\r</a>
+      \n          idem                                               <a name="s%2F%5Cn" class="t">s/\n</a>
+      \b          <a href="insert.txt.html#insert" class="d">insert</a> <a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#%3CBS%3E" class="s">&lt;BS&gt;</a>                                      <a name="s%2F%5Cb" class="t">s/\b</a>
+      \t          <a href="insert.txt.html#insert" class="d">insert</a> <a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a>                                     <a name="s%2F%5Ct" class="t">s/\t</a>
+      \\          <a href="insert.txt.html#insert" class="d">insert</a> <a href="insert.txt.html#a" class="d">a</a> single backslash                          <a name="s%2F%5C%5C" class="t">s/\\</a>
+      \x          where <a href="change.txt.html#x" class="d">x</a> <a href="motion.txt.html#is" class="d">is</a> any character not mentioned above:
+                  Reserved for future expansion
+
+
+
+<span class="h">==============================================================================</span>
+5. Copying and moving text                              <a name="copy-move" class="t">copy-move</a>
+
+                                                        <a name="quote" class="t">quote</a>
+"<span class="s">{a-zA-Z0-9.%#:-"}</span>      Use register <span class="s">{a-zA-Z0-9.%#:-"}</span> for next delete, <a href="change.txt.html#yank" class="d">yank</a>
+                        or <a href="change.txt.html#put" class="d">put</a> (use <a href="change.txt.html#uppercase" class="d">uppercase</a> character to append with
+                        delete and yank) ({.%#:} only work with put).
+
+                                                        <a name="%3Areg" class="t">:reg</a> <a name="%3Aregisters" class="t">:registers</a>
+:reg[isters]            Display the contents of all numbered and named
+                        registers.  If <a href="insert.txt.html#a" class="d">a</a> register <a href="motion.txt.html#is" class="d">is</a> written to for <span class="l">:redir</span>
+                        <a href="motion.txt.html#it" class="d">it</a> will not be listed.
+                        <span class="s">{not in Vi}</span>
+
+
+:reg[isters] <span class="s">{arg}</span>      Display the contents of the numbered and named
+                        <a href="change.txt.html#registers" class="d">registers</a> that are mentioned in <span class="s">{arg}</span><a href="repeat.txt.html#." class="d">.</a>  For example:
+                                :dis 1a
+                        to display <a href="change.txt.html#registers" class="d">registers</a> '1' and 'a'.  Spaces are allowed
+                        in <span class="s">{arg}</span><a href="repeat.txt.html#." class="d">.</a>  <span class="s">{not in Vi}</span>
+
+                                                        <a name="%3Adi" class="t">:di</a> <a name="%3Adisplay" class="t">:display</a>
+:di[splay] <span class="s">[arg]</span>        Same <a href="motion.txt.html#as" class="d">as</a> :registers.  <span class="s">{not in Vi}</span>
+
+                                                        <a name="y" class="t">y</a> <a name="yank" class="t">yank</a>
+<a href="index.txt.html#%5B" class="d">[</a>"x]y{motion}           Yank <a href="intro.txt.html#%7Bmotion%7D" class="s">{motion}</a> text [into register x].  When no
+                        characters are to be yanked (e.g., "y0" in column 1),
+                        this <a href="motion.txt.html#is" class="d">is</a> an error when <a href="options.txt.html#%27cpoptions%27" class="o">'cpoptions'</a> includes the 'E'
+                        flag.
+
+                                                        <a name="yy" class="t">yy</a>
+<a href="index.txt.html#%5B" class="d">[</a>"x]yy                  Yank <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> lines [into register x] (linewise).
+
+                                                        <a name="Y" class="t">Y</a>
+<a href="index.txt.html#%5B" class="d">[</a>"x]Y                   <a href="change.txt.html#yank" class="d">yank</a> <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> lines [into register x] (synonym for
+                        yy, linewise).  If you like "<a href="change.txt.html#Y" class="d">Y</a>" to work from the
+                        cursor to the end of line (which <a href="motion.txt.html#is" class="d">is</a> more logical,
+                        but not Vi-compatible) use "<a href="map.txt.html#%3Amap" class="d">:map</a> <a href="change.txt.html#Y" class="d">Y</a> y$"<a href="repeat.txt.html#." class="d">.</a>
+
+                                                        <a name="v_y" class="t">v_y</a>
+<span class="s">{Visual}</span><a href="index.txt.html#%5B" class="d">[</a>"x]y           Yank the highlighted text [into register x] (for
+                        <span class="s">{Visual}</span> see <a href="visual.txt.html#Visual-mode" class="l">Visual-mode</a>).  <span class="s">{not in Vi}</span>
+
+                                                        <a name="v_Y" class="t">v_Y</a>
+<span class="s">{Visual}</span><a href="index.txt.html#%5B" class="d">[</a>"x]Y           Yank the highlighted lines [into register x] (for
+                        <span class="s">{Visual}</span> see <a href="visual.txt.html#Visual-mode" class="l">Visual-mode</a>).  <span class="s">{not in Vi}</span>
+
+                                                        <a name="%3Ay" class="t">:y</a> <a name="%3Ayank" class="t">:yank</a>
+:[range]y[ank] [x]      Yank <span class="s">[range]</span> lines [into register x].
+
+:[range]y[ank] [x] <span class="s">{count}</span>
+                        Yank <span class="s">{count}</span> lines, starting with last line number
+                        in <span class="s">[range]</span> (default: current line <span class="l">cmdline-ranges</span>),
+                        [into register x].
+
+                                                        <a name="p" class="t">p</a> <a name="put" class="t">put</a>
+<a href="index.txt.html#%5B" class="d">[</a>"x]p                   Put the text [from register x] after the cursor
+                        <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> times.  <span class="s">{Vi: no count}</span>
+
+<a href="index.txt.html#%5B" class="d">[</a>"x]P               or                                  <a name="P" class="t">P</a> <a name="%3CMiddleMouse%3E" class="t">&lt;MiddleMouse&gt;</a>
+<a href="index.txt.html#%5B" class="d">[</a>"x]&lt;MiddleMouse&gt;       Put the text [from register x] before the cursor
+                        <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> times.  Using the mouse only works when
+                        <span class="o">'mouse'</span> contains 'n' or 'a'.  <span class="s">{Vi: no count}</span>
+
+                                                        <a name="gp" class="t">gp</a>
+<a href="index.txt.html#%5B" class="d">[</a>"x]gp                  Just like "<a href="change.txt.html#p" class="d">p</a>"<a href="motion.txt.html#%2C" class="d">,</a> but leave the cursor just after the new
+                        text.  <span class="s">{not in Vi}</span>
+
+                                                        <a name="gP" class="t">gP</a>
+<a href="index.txt.html#%5B" class="d">[</a>"x]gP                  Just like "<a href="change.txt.html#P" class="d">P</a>"<a href="motion.txt.html#%2C" class="d">,</a> but leave the cursor just after the new
+                        text.  <span class="s">{not in Vi}</span>
+
+You can use these commands to copy text from one place to another.  Do this
+by first getting the text into <a href="insert.txt.html#a" class="d">a</a> register with <a href="insert.txt.html#a" class="d">a</a> yank, delete or change
+command, then <a href="insert.txt.html#inserting" class="d">inserting</a> the register contents with <a href="insert.txt.html#a" class="d">a</a> <a href="change.txt.html#put" class="d">put</a> command.  You can
+also use these commands to move text from one file to another, because Vim
+preserves all <a href="change.txt.html#registers" class="d">registers</a> when <a href="change.txt.html#changing" class="d">changing</a> <a href="windows.txt.html#buffers" class="d">buffers</a> (the <span class="k">CTRL-^</span> command <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> quick
+way to <a href="options.txt.html#toggle" class="d">toggle</a> between two files).
+
+                                <a name="linewise-register" class="t">linewise-register</a> <a name="characterwise-register" class="t">characterwise-register</a>
+You can repeat the <a href="change.txt.html#put" class="d">put</a> commands with "<a href="repeat.txt.html#." class="d">.</a>" (except for :put) and <a href="undo.txt.html#undo" class="d">undo</a> them.  If
+the command that was used to get the text into the register was linewise, Vim
+inserts the text below <a href="motion.txt.html#%28" class="d">(</a>"<a href="change.txt.html#p" class="d">p</a>"<a href="motion.txt.html#%29" class="d">)</a> or above <a href="motion.txt.html#%28" class="d">(</a>"<a href="change.txt.html#P" class="d">P</a>"<a href="motion.txt.html#%29" class="d">)</a> the line where the cursor is.
+Otherwise Vim inserts the text after <a href="motion.txt.html#%28" class="d">(</a>"<a href="change.txt.html#p" class="d">p</a>"<a href="motion.txt.html#%29" class="d">)</a> or before <a href="motion.txt.html#%28" class="d">(</a>"<a href="change.txt.html#P" class="d">P</a>"<a href="motion.txt.html#%29" class="d">)</a> the cursor.  With
+the ":put" command, Vim always inserts the text in the next line.  You can
+exchange two characters with the command sequence "xp"<a href="repeat.txt.html#." class="d">.</a>  You can exchange two
+lines with the command sequence "ddp"<a href="repeat.txt.html#." class="d">.</a>  You can exchange two words with the
+command sequence "deep" (start with the cursor in the blank space before the
+first word).  You can use the "<a href="motion.txt.html#%27%5D" class="d">']</a>" or "<a href="motion.txt.html#%60%5D" class="d">`]</a>" command after the <a href="change.txt.html#put" class="d">put</a> command to
+move the cursor to the end of the inserted text, or use "<a href="motion.txt.html#%27%5B" class="d">'[</a>" or "<a href="motion.txt.html#%60%5B" class="d">`[</a>" to move
+the cursor to the start.
+
+<span class="n">Note</span> that after <a href="insert.txt.html#a" class="d">a</a> <a href="change.txt.html#yank" class="d">yank</a> command, Vim leaves the cursor on the first yanked
+character that <a href="motion.txt.html#is" class="d">is</a> closest to the start of the buffer.  This means that "yl"
+doesn't move the cursor, but "yh" moves the cursor one character left.
+Rationale:      In Vi the "<a href="change.txt.html#y" class="d">y</a>" command followed by <a href="insert.txt.html#a" class="d">a</a> backwards motion would
+                sometimes not move the cursor to the first yanked character,
+                because redisplaying was skipped.  In Vim <a href="motion.txt.html#it" class="d">it</a> always moves to
+                the first character, <a href="motion.txt.html#as" class="d">as</a> specified by Posix.
+
+There are nine types of registers:                      <a name="registers" class="t">registers</a>
+1. The unnamed register ""
+2. 10 numbered <a href="change.txt.html#registers" class="d">registers</a> "<a href="motion.txt.html#0" class="d">0</a> to "9
+4. 26 named <a href="change.txt.html#registers" class="d">registers</a> "<a href="insert.txt.html#a" class="d">a</a> to "<a href="scroll.txt.html#z" class="d">z</a> or "<a href="insert.txt.html#A" class="d">A</a> to "Z
+7. The selection register "*
+8. The black hole register "<a href="motion.txt.html#_" class="d">_</a>
+
+1. Unnamed register ""                          <a name="quote_quote" class="t">quote_quote</a> <a name="quotequote" class="t">quotequote</a>
+Vim fills this register with text deleted with the "<a href="change.txt.html#d" class="d">d</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="change.txt.html#c" class="d">c</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="change.txt.html#s" class="d">s</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="change.txt.html#x" class="d">x</a>" commands
+or copied with the <a href="change.txt.html#yank" class="d">yank</a> "<a href="change.txt.html#y" class="d">y</a>" command, regardless of whether or not <a href="insert.txt.html#a" class="d">a</a> specific
+register was used (e.g.  "xdd).  An exception <a href="motion.txt.html#is" class="d">is</a> the '_' register: "_dd does
+not store the deleted text in any register.  Vim uses the contents of this
+register for any <a href="change.txt.html#put" class="d">put</a> command (p or P) which does not specify <a href="insert.txt.html#a" class="d">a</a> register.
+Additionally you can access <a href="motion.txt.html#it" class="d">it</a> with the name <a href="motion.txt.html#%27" class="d">'</a>"'.  This means you have to type
+two double quotes.  {Vi: register contents are lost when <a href="change.txt.html#changing" class="d">changing</a> files, no
+<a href="motion.txt.html#%27" class="d">'</a>"'}
+
+2. Numbered <a href="change.txt.html#registers" class="d">registers</a> "<a href="motion.txt.html#0" class="d">0</a> to "9          <a name="quote_number" class="t">quote_number</a> <a name="quote0" class="t">quote0</a> <a name="quote1" class="t">quote1</a>
+                                        <a name="quote2" class="t">quote2</a> <a name="quote3" class="t">quote3</a> <a name="quote4" class="t">quote4</a> <a name="quote9" class="t">quote9</a>
+Vim fills these <a href="change.txt.html#registers" class="d">registers</a> with text from <a href="change.txt.html#yank" class="d">yank</a> and delete commands.  Numbered
+register <a href="motion.txt.html#0" class="d">0</a> contains the text from the most recent <a href="change.txt.html#yank" class="d">yank</a> command, unless the
+command specified another register with <a href="index.txt.html#%5B" class="d">[</a>"x].  Numbered register 1 contains
+the text deleted by the most recent delete or change command, unless the
+command specified another register or the text <a href="motion.txt.html#is" class="d">is</a> less than one line (Vim puts
+text deleted with "<a href="change.txt.html#x" class="d">x</a>" or "dw" in the small delete register).  With each
+successive deletion or change, Vim shifts the previous contents of register 1
+into register 2, 2 into 3, and so forth, losing the previous contents of
+register 9.  {Vi: numbered register contents are lost when <a href="change.txt.html#changing" class="d">changing</a> files;
+register <a href="motion.txt.html#0" class="d">0</a> does not exist}
+
+4. Named <a href="change.txt.html#registers" class="d">registers</a> "<a href="insert.txt.html#a" class="d">a</a> to "<a href="scroll.txt.html#z" class="d">z</a> or "<a href="insert.txt.html#A" class="d">A</a> to "Z                 <a name="quote_alpha" class="t">quote_alpha</a> <a name="quotea" class="t">quotea</a>
+Vim fills these <a href="change.txt.html#registers" class="d">registers</a> only when you say so.  Specify them <a href="motion.txt.html#as" class="d">as</a> <a href="change.txt.html#lowercase" class="d">lowercase</a>
+letters to replace their previous contents or <a href="motion.txt.html#as" class="d">as</a> <a href="change.txt.html#uppercase" class="d">uppercase</a> letters to append
+to their previous contents.
+
+7. Selection register "*
+Use this register for storing and retrieving the selected text for the GUI.
+See <span class="l">quotestar</span><a href="repeat.txt.html#." class="d">.</a>  When the clipboard <a href="motion.txt.html#is" class="d">is</a> not available or not working, the
+unnamed register <a href="motion.txt.html#is" class="d">is</a> used instead.  <span class="s">{not in Vi}</span>
+
+8. Black hole register "<a href="motion.txt.html#_" class="d">_</a>                               <a name="quote_" class="t">quote_</a>
+When writing to this register, nothing happens.  This can be used to delete
+text without affecting the normal registers.  When reading from this register,
+nothing <a href="motion.txt.html#is" class="d">is</a> returned.  <span class="s">{not in Vi}</span>
+
+If you use <a href="insert.txt.html#a" class="d">a</a> <a href="change.txt.html#put" class="d">put</a> command without specifying <a href="insert.txt.html#a" class="d">a</a> register, Vim uses the register
+that was last filled (this <a href="motion.txt.html#is" class="d">is</a> also the contents of the unnamed register).  If
+you are confused, use the ":dis" command to find out what Vim will <a href="change.txt.html#put" class="d">put</a> (this
+command displays all named and numbered registers; the unnamed register <a href="motion.txt.html#is" class="d">is</a>
+labelled <a href="motion.txt.html#%27" class="d">'</a>"').
+
+The next three commands always work on whole lines.
+
+:[range]co[py] <span class="s">{address}</span>                                <a name="%3Aco" class="t">:co</a> <a name="%3Acopy" class="t">:copy</a>
+                        Copy the lines given by <span class="s">[range]</span> to below the line
+                        given by <span class="s">{address}</span><a href="repeat.txt.html#." class="d">.</a>
+
+                                                        <a name="%3At" class="t">:t</a>
+<a href="change.txt.html#%3At" class="d">:t</a>                      Synonym for copy.
+
+:[range]m[ove] <span class="s">{address}</span>                        <a name="%3Am" class="t">:m</a> <a name="%3Amo" class="t">:mo</a> <a name="%3Amove" class="t">:move</a> <a name="E134" class="t">E134</a>
+                        Move the lines given by <span class="s">[range]</span> to below the line
+                        given by <span class="s">{address}</span><a href="repeat.txt.html#." class="d">.</a>
+
+ vim:tw=78:ts=8:sw=8:noet:
+
+</pre>
+</div>
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<p id="footer">These help files are maintained with thanks
+to Carlo Teubner for his vimhelp to html work.</p>
+
+</div>
+</div>
+</body></html>

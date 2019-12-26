@@ -85,9 +85,9 @@ class VimHelpBuildBase(object):
     def _put_token(self, token_data):
         """token_data is (token, chars, col)."""
         token, chars, col = token_data
-        if 'markup' == token: self._markup(chars)
-        elif 'start_file' == token: self._start_file(chars)
-        elif 'start_line' == token: self._start_line(chars, col)
+        if token == 'markup': self._markup(chars)
+        elif token == 'start_file': self._start_file(chars)
+        elif token == 'start_line': self._start_line(chars, col)
 
     def _do_filter(self, data):
         if not data.f_needs_filter_scan:
@@ -109,7 +109,7 @@ class VimHelpBuildBase(object):
                     ty = MAP_TY[token]
                     if (ty == TY_EOF):
                         break
-                    if ('markup' == token
+                    if (token == 'markup'
                             and match_basic_markup(chars, vs.STR_STOP_FILTER)):
                         ischecking = False
                         break
@@ -125,14 +125,14 @@ class VimHelpBuildBase(object):
                         continue
                     elif (ty == TY_WORD
                             and self.links.islink(chars)
-                            and ('pipe' == token or 'opt' == token)):
+                            and (token == 'pipe' or token == 'opt')):
                         ##### print 'SET has_link', token_data[tnum]
                         has_link = True
                     tnum += 1
             else:
                 # find our kind of markup
                 while (tnum < len(token_data)
-                        and 'markup' != token_data[tnum][0]):
+                        and token_data[tnum][0] != 'markup'):
                     tnum += 1
                 if (tnum < len(token_data)
                         and match_basic_markup(token_data[tnum][1],
@@ -283,7 +283,7 @@ def read_xml_file(fname):
             #       Note that the parse_table can be removed and still crashes.
             if e.text is None: e.text = ''
             if e.tail is None: e.tail = ''
-            if 'table' == e.tag:
+            if e.tag == 'table':
                 parse_table_markup(e)
         # Note: 'e' is the last element and the root of the tree
         xml = ET.ElementTree(e)
@@ -292,7 +292,7 @@ def read_xml_file(fname):
         for e in xml.getroot().getiterator():
             if e.text is None: e.text = ''
             if e.tail is None: e.tail = ''
-            if 'table' == e.tag:
+            if e.tag == 'table':
                 parse_table_markup(e)
     return xml
 
@@ -343,7 +343,7 @@ class XmlLinks(Links):
             # this is weird logic, since MISMATCH is never printed,
             # seems the idea is that, use link.style unless 'link' is
             # argument, in which case make it a 'pipe'
-            style = 'pipe' if 'pipe' == style else link.style
+            style = 'pipe' if style == 'pipe' else link.style
             style = {'t':style, 'filename':link.filename, 'linkto':vim_tag}
             elem_tag = 'link'
         elif style is not None:
@@ -383,10 +383,16 @@ class VimHelpBuildXml(VimHelpBuildBase):
         ### print 'start_line:', self.lnum, self.input_line
 
     def _markup(self, markup):
-        handled = self.check_table_markup(markup)
+        t01 = parse_basic_markup(markup)
+        handled = False
+        if t01[0] == 'table':
+            handled = self.check_table_markup(markup, t01)
+        elif t01[0] == 'filter-scan' or t01[0] == 'stop-filter-scan':
+            handled = True
 
         if not handled:
-            self.error('UNKNOWN MARKUP COMMAND ' + cmd)
+            print('markup: ', markup)
+            self.error('UNKNOWN MARKUP COMMAND ' + markup)
         pass
 
     def _put_token(self, token_data):
@@ -451,7 +457,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
 
     def do_add_stuff(self, stuff, e = None):
         """Add plain text or an element to current paragraph."""
-        if '\n' == stuff:
+        if stuff == '\n':
             stuff = make_elem('nl')
             stuff.tail = '\n'
         if e is None:
@@ -494,9 +500,8 @@ class VimHelpBuildXml(VimHelpBuildBase):
                                                self.check_start_table_row_ref)
                          }
 
-    def check_table_markup(self, markup):
-        t01 = parse_basic_markup(markup)
-        if 'table' != t01[0]:
+    def check_table_markup(self, markup, t01):
+        if t01[0] != 'table':
             return False
         if 'stop-table' in t01:
             self.check_finish_table(TY_CONTROL, ('markup', 'stop-table', 0))
@@ -575,9 +580,9 @@ class VimHelpBuildXml(VimHelpBuildBase):
         consume_token = False
         if ty == TY_EOF:
             finish_table = True
-        elif 'ruler' == token_data[0]:
+        elif token_data[0] == 'ruler':
             finish_table = True
-        elif 'markup' == token_data[0] and 'stop-table' == token_data[1]:
+        elif token_data[0] == 'markup' and token_data[1] == 'stop-table':
             finish_table, consume_token = (True, True)
         return (finish_table, consume_token)
 
@@ -592,7 +597,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
         if self.t_ref_table_extra_or_col >= 0 and self.cur_table_row is not None:
             tr = self.cur_table_row
             l = VG.get_content(tr[self.t_ref_table_extra_or_col]).split('\n')
-            if len(l) > 1 and 'or' == l[-2].strip():
+            if len(l) > 1 and l[-2].strip() == 'or':
                 # advance past this line, will never return true
                 new_entry_ok = False
         new_entry = False
@@ -626,7 +631,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
         return col
 
     def build_table(self):
-        cpos = [ x[0]-1 for x in self.cur_table.vh_cols]
+        cpos = [ x[0]-1 for x in self.cur_table.get('vh_cols')]
         self.globalish_cpos = cpos
         self.globalish_after_blank_line = False
         print('=== CPOS ===', cpos)
@@ -648,7 +653,7 @@ class VimHelpBuildXml(VimHelpBuildBase):
             else:
                 col = self.get_token_col_idx(pos)
                 self.do_add_stuff(stuff, td[col])
-            self.globalish_after_blank_line = 'blankline' == token
+            self.globalish_after_blank_line = token == 'blankline'
         if tr is not None: self.cur_table.append(tr)
         self.globalish_cpos = None
         self.globalish_after_blank_line = None
@@ -670,7 +675,7 @@ def match_basic_markup(markup, t1, t2 = None):
 #
 # Also using vh_markup to add element attrs to table.
 def parse_table_markup(table):
-    if getattr(table, 'vh_markup', None) is not None:
+    if table.get('vh_markup') is not None:
         return
 
     markup = table.get('markup')
@@ -684,9 +689,9 @@ def parse_table_markup(table):
         # convert info to list of list items: int-col , 'arg2', 'arg3', ...
         t02 = [x.split(':') for x in  column_info.split()]
         t02 = [ [int(x[0]),] + x[1:] for x in t02 ]
-    print('markup:', (markup, t01, t02))
-    table.vh_markup = t01
-    table.vh_cols = t02
+    print(f'markup: {markup}\n    {t01}\n    {t02}')
+    table.set('vh_markup', t01)
+    table.set('vh_cols', t02)
 
     # add each attribute, unless it is already set
     for k,v in [ x.split('=', 1) for x in t01[1:] if x.find('=') >= 0 ]:
@@ -768,46 +773,46 @@ class VimHelpBuildHtml(VimHelpBuildBase):
             super(VimHelpBuildHtml, self)._put_token(token_data)
             return
         ##### print (MAP_TY[token], token_data)
-        if 'pipe' == token:
+        if token == 'pipe':
             self.out.append(self.links.maplink(chars, 'link'))
-        elif 'star' == token:
+        elif token == 'star':
             vim_tag = chars
             self.out.append('<a name="' + urllib.parse.quote_plus(vim_tag) +
                     '" class="t">' + cgi.escape(vim_tag) + '</a>')
-        elif 'opt' == token:
+        elif token == 'opt':
             self.out.append(self.links.maplink(chars, 'opt'))
-        elif 'ctrl' == token:
+        elif token == 'ctrl':
             self.out.append(self.links.maplink(chars, 'ctrl'))
-        elif 'special' == token:
+        elif token == 'special':
             self.out.append(self.links.maplink(chars, 'special'))
-        elif 'title' == token:
+        elif token == 'title':
             self.out.append('<span class="i">' +
                     cgi.escape(chars) + '</span>')
-        elif 'note' == token:
+        elif token == 'note':
             self.out.append('<span class="n">' +
                     cgi.escape(chars) + '</span>')
-        elif 'ruler' == token:
+        elif token == 'ruler':
             self.out.append('<span class="h">' + chars + '</span>')
-        elif 'header' == token:
+        elif token == 'header':
             self.out.append('<span class="h">' +
                     cgi.escape(chars) + '</span>')
-        elif 'graphic' == token:
+        elif token == 'graphic':
             self.out.append(cgi.escape(chars))
-        elif 'url' == token:
+        elif token == 'url':
             self.out.append('<a class="u" href="' + chars + '">' +
                     cgi.escape(chars) + '</a>')
-        elif 'word' == token:
+        elif token == 'word':
             self.out.append(self.links.maplink(chars))
-        elif 'example' == token:
+        elif token == 'example':
             # Removed \n from end of following Dec 20, 2019
             # Wonder why it was there?
             self.out.append('<span class="e">' + cgi.escape(chars) +
                     '</span>')
-        elif 'section' == token:
+        elif token == 'section':
             # NOTE: WHY NOT cgi.escape?????
             self.out.append(r'<span class="c">' + chars + '</span>')
             ### print self.filename + ': section: "' + chars +'"'
-        elif 'chars' == token:
+        elif token == 'chars':
             if not chars.isspace():
                 ###print '"%s" %s:"%s" NOT ISSPACE' \
                 ###        % (chars,self.filename, self.input_line)
@@ -816,7 +821,7 @@ class VimHelpBuildHtml(VimHelpBuildBase):
             self.out.append(cgi.escape(chars))
         elif token in ('newline', 'blankline'):
             self.out.append('\n')
-        elif 'eof' == token:
+        elif token == 'eof':
             pass
         else: print('ERROR: unknown token "' + token + '"')
 

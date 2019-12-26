@@ -1,0 +1,598 @@
+*index.txt*	For Vim version 7.0.  Last change: 2006 May 04
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+								*index*
+This file contains a list of all commands for each mode, with a tag and a
+short description.  The lists are sorted on ASCII value.
+
+Tip: When looking for certain functionality, use a search command.  E.g.,
+to look for deleting something, use: "/delete".
+
+1. Insert mode				|insert-index|
+2. Normal mode				|normal-index|
+   2.1. Text objects			|objects|
+   2.2. Window commands			|CTRL-W|
+   2.3. Square bracket commands		|[|
+   2.4. Commands starting with 'g'	|g|
+3. Visual mode				|visual-index|
+
+NOTE: there may be platform specific procedures
+to block user specified keys from jVi.
+
+==============================================================================
+1. Insert mode						*insert-index*
+
+tag		char		action	~
+-----------------------------------------------------------------------
+#*# table:form=index:label=insert-index 1:tag 17:command 33:desc #*#
+|i_CTRL-@|	CTRL-@		insert previously inserted text and stop
+				insert
+|i_CTRL-A|	CTRL-A		insert previously inserted text
+|i_CTRL-D|	CTRL-D		delete one shiftwidth of indent in the current
+				line
+|i_CTRL-E|	CTRL-E		insert the character which is below the cursor
+|i_<BS>|	<BS>		delete character before the cursor
+|i_CTRL-H|	CTRL-H		same as <BS>
+|i_<Tab>|	<Tab>		insert a <Tab> character
+|i_CTRL-I|	CTRL-I		same as <Tab>
+|i_<NL>|	<NL>		same as <CR>
+|i_CTRL-J|	CTRL-J		same as <CR>
+|i_<CR>|	<CR>		begin new line
+|i_CTRL-M|	CTRL-M		same as <CR>
+|i_CTRL-N|	CTRL-N		find next match for keyword in front of the
+				cursor
+|i_CTRL-P|	CTRL-P		find previous match for keyword in front of
+				the cursor
+|i_CTRL-Q|	CTRL-Q		same as CTRL-V (used for terminal control flow)
+|i_CTRL-R|	CTRL-R {0-9a-z"%#*:=}
+				insert the contents of a register
+|i_CTRL-R_CTRL-R| CTRL-R CTRL-R {0-9a-z"%#*:=}
+				insert the contents of a register literally
+|i_CTRL-R_CTRL-O| CTRL-R CTRL-O {0-9a-z"%#*:=}
+				insert the contents of a register literally
+				and don't auto-indent
+|i_CTRL-R_CTRL-P| CTRL-R CTRL-P {0-9a-z"%#*:=}
+				insert the contents of a register literally
+				and fix indent.
+|i_CTRL-T|	CTRL-T		insert one shiftwidth of indent in current
+				line
+|i_CTRL-U|	CTRL-U		delete all entered characters in the current
+				line
+|i_CTRL-V|	CTRL-V {char}	insert next non-digit literally
+|i_CTRL-V_digit| CTRL-V {number} insert three digit decimal number as a single
+				byte.
+|i_CTRL-W|	CTRL-W		delete word before the cursor
+|i_CTRL-Y|	CTRL-Y		insert the character which is above the cursor
+|i_<Esc>|	<Esc>		end insert mode (unless 'insertmode' set)
+|i_CTRL-[|	CTRL-[		same as <Esc>
+|i_<Del>|	<Del>		delete character under the cursor
+|i_CTRL->|	CTRL->		adjust indent to next paren in previous line,
+		CTRL-.		think shift right to paren
+|i_CTRL-<|	CTRL-<		adjust indent to prev paren in previous line,
+		CTRL-,		think shift left to paren
+
+		Meta characters (0x80 to 0xff, 128 to 255)
+				not used
+
+|i_<Left>|	<Left>		cursor one character left
+|i_<S-Left>|	<S-Left>	cursor one word left
+|i_<C-Left>|	<C-Left>	cursor one word left
+|i_<Right>|	<Right>		cursor one character right
+|i_<S-Right>|	<S-Right>	cursor one word right
+|i_<C-Right>|	<C-Right>	cursor one word right
+|i_<Up>|	<Up>		cursor one line up
+|i_<Down>|	<Down>		cursor one line down
+|i_<Home>|	<Home>		cursor to start of line
+|i_<C-Home>|	<C-Home>	cursor to start of file
+|i_<End>|	<End>		cursor past end of line
+|i_<C-End>|	<C-End>		cursor past end of file
+|i_<Insert>|	<Insert>	toggle Insert/Replace mode
+
+==============================================================================
+2. Normal mode						*normal-index*
+
+CHAR	 any non-blank character
+WORD	 any sequences of non-blank characters
+N	 a number entered before the command
+{motion} a cursor movement command
+Nmove	 the text that is moved over with a {motion}
+SECTION	 a section that possibly starts with '}' instead of '{'
+
+note: 1 = cursor movement command; 2 = can be undone/redone
+
+tag		char	      note action in Normal mode	~
+------------------------------------------------------------------------------
+#*# table:form=index:label=normal-index 1:tag 17:command 33:opt-note 36:desc #*#
+		CTRL-@		   not used
+|CTRL-A|	CTRL-A		2  add N to number at/after cursor
+|CTRL-B|	CTRL-B		1  scroll N screens Backwards
+|CTRL-D|	CTRL-D		   scroll Down N lines (default: half a screen)
+|CTRL-E|	CTRL-E		   scroll N lines upwards (N lines Extra)
+|CTRL-F|	CTRL-F		1  scroll N screens Forward
+|CTRL-G|	CTRL-G		   display current file name and position
+|<BS>|		<BS>		1  same as "h"
+|CTRL-H|	CTRL-H		1  same as "h"
+|<Tab>|		<Tab>		1  go to N newer entry in jump list
+|CTRL-I|	CTRL-I		1  same as <Tab>
+|<NL>|		<NL>		1  same as "j"
+|CTRL-J|	CTRL-J		1  same as "j"
+		CTRL-K		   not used
+|<CR>|		<CR>		1  cursor to the first CHAR N lines lower
+|CTRL-M|	CTRL-M>		1  same as <CR>
+|CTRL-N|	CTRL-N		1  same as "j"
+|CTRL-O|	CTRL-O		1  go to N older entry in jump list
+|CTRL-P|	CTRL-P		1  cursor N lines upward
+|CTRL-Q|	CTRL-Q		   start blockwise Visual mode (dup of CTRL-V)
+|CTRL-R|	CTRL-R		2  redo changes which were undone with 'u'
+		CTRL-S		   (used for terminal control flow)
+|CTRL-T|	CTRL-T		   jump to N older Tag in tag list
+|CTRL-U|	CTRL-U		   scroll N lines Upwards (default: half a
+				   screen)
+|CTRL-V|	CTRL-V		   start blockwise Visual mode
+|CTRL-W|	CTRL-W {char}	   window commands, see |CTRL-W|
+|CTRL-X|	CTRL-X		2  subtract N from number at/after cursor
+|CTRL-Y|	CTRL-Y		   scroll N lines downwards
+		CTRL-[ <Esc>	   not used
+		CTRL-\ not_CTRL-N  not used
+|CTRL-]|	CTRL-]		   :ta to ident under cursor
+		CTRL-_		   not used
+|<Space>|	<Space>		1  same as "l"
+|!|		!{motion}{filter}
+				2  filter Nmove text through the {filter}
+				   command
+|!!|		!!{filter}	2  filter N lines through the {filter} command
+|quote|		"{a-zA-Z0-9.%#:-"}  use buffer {a-zA-Z0-9.%#:-"} for next
+				   delete, yank or put (upper case to append)
+				   ({.%#:} only work with put)
+|#|		#		1  search backward for the Nth occurrence of
+				   the ident under the cursor
+|$|		$		1  cursor to the end of Nth next line
+|%|		%		1  find the next (curly/square) bracket on
+				   this line and go to its match, or go to
+				   matching comment bracket, or go to matching
+				   preprocessor directive.
+|N%|		{count}%	1  go to N percentage in the file
+|'|		'{a-zA-Z0-9}	1  cursor to the first CHAR on the line with
+				   mark {a-zA-Z0-9}
+|''|		''		1  cursor to the first CHAR of the line where
+				   the cursor was before the latest jump.
+|'<|		'<		1  cursor to the first CHAR of the line where
+				   highlighted area starts/started in the
+				   current buffer.
+|'>|		'>		1  cursor to the first CHAR of the line where
+				   highlighted area ends/ended in the current
+				   buffer.
+|'[|		'[		1  cursor to the first CHAR on the line of the
+				   start of last operated text or start of
+				   putted text
+|']|		']		1  cursor to the first CHAR on the line of the
+				   end of last operated text or end of putted
+				   text
+|(|		(		1  cursor N sentences backward
+|)|		)		1  cursor N sentences forward
+|star|		*		1  search forward for the Nth occurrence of
+				   the ident under the cursor
+|+|		+		1  cursor to the first CHAR N lines lower
+|,|		,		1  repeat latest f, t, F or T in opposite
+				   direction N times
+|-|		-		1  cursor to the first CHAR N lines higher
+|.|		.		2  repeat last change with count replaced with
+				   N
+|/|		/{pattern}<CR>	1  search forward for the Nth occurrence of
+				   {pattern}
+|/<CR>|		/<CR>		1  search forward for {pattern} of last search
+|count|		0		1  cursor to the first char of the line
+|count|		1		   prepend to command to give a count
+|count|		2			"
+|count|		3			"
+|count|		4			"
+|count|		5			"
+|count|		6			"
+|count|		7			"
+|count|		8			"
+|count|		9			"
+|:|		:		   start entering an Ex command
+|N:|		{count}:	   start entering an Ex command with range
+				   from current line to N lines down
+|;|		;		1  repeat latest f, t, F or T N times
+|<|		<{motion}	2  shift Nmove lines one 'shiftwidth'
+				   leftwards
+|<<|		<<		2  shift N lines one 'shiftwidth' leftwards
+|=|		={motion}	2  filter Nmove lines through "indent"
+|==|		==		2  filter N lines through "indent"
+|>|		>{motion}	2  shift Nmove lines one 'shiftwidth'
+				   rightwards
+|>>|		>>		2  shift N lines one 'shiftwidth' rightwards
+|?|		?{pattern}<CR>	1  search backward for the Nth previous
+				   occurrence of {pattern}
+|?<CR>|		?<CR>		1  search backward for {pattern} of last search
+|@|		@{a-z}		2  execute the contents of named buffer {a-z}
+				   N times
+|@@|		@@		2  repeat the previous @{a-z} N times
+|A|		A		2  append text after the end of the line N times
+|B|		B		1  cursor N WORDS backward
+|C|		["x]C		2  change from the cursor position to the end
+				   of the line, and N-1 more lines [into
+				   buffer x]; synonym for "c$"
+|D|		["x]D		2  delete the characters under the cursor
+				   until the end of the line and N-1 more
+				   lines [into buffer x]; synonym for "d$"
+|E|		E		1  cursor forward to the end of WORD N
+|F|		F{char}		1  cursor to the Nth occurrence of {char} to
+				   the left
+|G|		G		1  cursor to line N, default last line
+|H|		H		1  cursor to line N from top of screen
+|I|		I		2  insert text before the first CHAR on the
+				   line N times
+|J|		J		2  Join N lines; default is 2
+				   'keywordprg'
+|L|		L		1  cursor to line N from bottom of screen
+|M|		M		1  cursor to middle line of screen
+|N|		N		1  repeat the latest '/' or '?' N times in
+				   opposite direction
+|O|		O		2  begin a new line above the cursor and
+				   insert text, repeat N times
+|P|		["x]P		2  put the text [from buffer x] before the
+				   cursor N times
+|Q|		Q		   format Nmove text
+|R|		R		2  enter replace mode: overtype existing
+				   characters, repeat the entered text N-1
+				   times
+|S|		["x]S		2  delete N lines [into buffer x] and start
+				   insert; synonym for "^cc" or "0cc",
+				   depending on autoindent
+|T|		T{char}		1  cursor till after Nth occurrence of {char}
+				   to the left
+|V|		V		   start linewise Visual mode
+|W|		W		1  cursor N WORDS forward
+|X|		["x]X		2  delete N characters before the cursor [into
+				   buffer x]
+|Y|		["x]Y		   yank N lines [into buffer x]; synonym for
+				   "yy"
+|[|		[{char}		   square bracket command (see below)
+		\		   not used
+|]|		]{char}		   square bracket command (see below)
+|^|		^		1  cursor to the first CHAR of the line
+|_|		_		1  cursor to the first CHAR N - 1 lines lower
+|`|		`{a-zA-Z0-9}	1  cursor to the mark {a-zA-Z0-9}
+|`<|		`<		1  cursor to the start of the highlighted area
+|`>|		`>		1  cursor to the end of the highlighted area
+|`[|		`[		1  cursor to the start of last operated text
+				   or start of putted text
+|`]|		`]		1  cursor to the end of last operated text or
+				   end of putted text
+|``|		``		1  cursor to the position before latest jump
+|a|		a		2  append text after the cursor N times
+|b|		b		1  cursor N words backward
+|c|		["x]c{motion}	2  delete Nmove text [into buffer x] and start
+				   insert
+|cc|		["x]cc		2  delete N lines [into buffer x] and start
+				   insert
+|d|		["x]d{motion}	2  delete Nmove text [into buffer x]
+|dd|		["x]dd		2  delete N lines [into buffer x]
+|e|		e		1  cursor forward to the end of word N
+|f|		f{char}		1  cursor to Nth occurrence of {char} to the
+				   right
+|g|		g{char}		   extended commands, see below
+|h|		h		1  cursor N chars to the left
+|i|		i		2  insert text before the cursor N times
+|j|		j		1  cursor N lines downward
+|k|		k		1  cursor N lines upward
+|l|		l		1  cursor N chars to the right
+|m|		m{A-Za-z}	   set mark {A-Za-z} at cursor position
+		m{.<>}		   anonymous mark {toggle-set, go-prev, go-next}
+				   {jVi only anonymous marks}
+|n|		n		1  repeat the latest '/' or '?' N times
+|o|		o		2  begin a new line below the cursor and
+				   insert text, repeat N times
+|p|		["x]p		2  put the text [from register x] after the
+				   cursor N times
+|q|		q{0-9a-zA-Z"}	   record typed characters into named register
+				   {0-9a-zA-Z"} (upper case to append)
+|q|		q		   (while recording) stops recording
+|r|		r{char}		2  replace N chars with {char}
+|s|		["x]s		2  (substitute) delete N characters [into
+				   buffer x] and start insert
+|t|		t{char}		1  cursor till before Nth occurrence of {char}
+				   to the right
+|u|		u		2  undo changes
+|v|		v		   start characterwise Visual mode
+|w|		w		1  cursor N words forward
+|x|		["x]x		2  delete N characters under and after the
+				   cursor [into buffer x]
+|y|		["x]y{motion}	   yank Nmove text [into buffer x]
+|yy|		["x]yy		   yank N lines [into buffer x]
+|z<CR>|		z<CR>		   redraw, cursor line to top of window,
+				   cursor on first non-blank
+|z.|		z.		   redraw, cursor line to center of window,
+				   cursor on first non-blank
+|z-|		z-		   redraw, cursor line at bottom of window,
+				   cursor on first non-blank
+|zb|		zb		   redraw, cursor line at bottom of window
+|zt|		zt		   redraw, cursor line at top of window
+|zz|		zz		   redraw, cursor line at center of window
+|{|		{		1  cursor N paragraphs backward
+|bar|		|		1  cursor to column N
+|}|		}		1  cursor N paragraphs forward
+|~|		~		2  'tildeop' off: switch case of N characters
+				   under cursor and move the cursor N
+				   characters to the right
+|~|		~{motion}	   'tildeop' on: switch case of Nmove text
+|<C-End>|	<C-End>		1  same as "G"
+|<C-Home>|	<C-Home>	1  same as "gg"
+|<C-Left>|	<C-Left>	1  same as "b"
+|<C-Right>|	<C-Right>	1  same as "w"
+|<Del>|		["x]<Del>	2  same as "x"
+|<Down>|	<Down>		1  same as "j"
+|<End>|		<End>		1  same as "$"
+|<Home>|	<Home>		1  same as "0"
+|<Insert>|	<Insert>	2  same as "i"
+|<Left>|	<Left>		1  same as "h"
+|<LeftMouse>|	<LeftMouse>	1  move cursor to the mouse click position
+|<PageDown>|	<PageDown>	   same as CTRL-F
+|<PageUp>|	<PageUp>	   same as CTRL-B
+|<Right>|	<Right>		1  same as "l"
+|<S-Down>|	<S-Down>	1  same as CTRL-F
+|<S-Left>|	<S-Left>	1  same as "b"
+|<S-Right>|	<S-Right>	1  same as "w"
+|<S-Up>|	<S-Up>		1  same as CTRL-B
+|<Undo>|	<Undo>		2  same as "u"
+|<Up>|		<Up>		1  same as "k"
+
+==============================================================================
+2.1 Text objects						*objects*
+
+These can be used after an operator or in Visual mode to select an object.
+
+tag		command		   action in Normal mode	~
+------------------------------------------------------------------------------
+#*# table:form=index:label=objects 1:tag 17:command 36:desc #*#
+|v_a(|		a(		   same as ab
+|v_a)|		a)		   same as ab
+|v_a<|		a<		   "a <>" from '<' to the matching '>'
+|v_a>|		a>		   same as a<
+|v_aB|		aB		   "a Block" from "[{" to "]}" (with brackets)
+|v_aW|		aW		   "a WORD" (with white space)
+|v_a[|		a[		   "a []" from '[' to the matching ']'
+|v_a]|		a]		   same as a[
+|v_ab|		ab		   "a block" from "[(" to "])" (with braces)
+|v_ap|		ap		   "a paragraph" (with white space)
+|v_as|		as		   "a sentence" (with white space)
+|v_aw|		aw		   "a word" (with white space)
+|v_a{|		a{		   same as aB
+|v_a}|		a}		   same as aB
+|v_i(|		i(		   same as ib
+|v_i)|		i)		   same as ib
+|v_i<|		i<		   "inner <>" from '<' to the matching '>'
+|v_i>|		i>		   same as i<
+|v_iB|		iB		   "inner Block" from "[{" and "]}"
+|v_iW|		iW		   "inner WORD"
+|v_i[|		i[		   "inner []" from '[' to the matching ']'
+|v_i]|		i]		   same as i[
+|v_ib|		ib		   "inner block" from "[(" to "])"
+|v_ip|		ip		   "inner paragraph"
+|v_is|		is		   "inner sentence"
+|v_iw|		iw		   "inner word"
+|v_i{|		i{		   same as iB
+|v_i}|		i}		   same as iB
+
+==============================================================================
+2.2 Window commands						*CTRL-W*
+
+tag		command		   action in Normal mode	~
+------------------------------------------------------------------------------
+#*# table:form=index:label=CTRL-W 1:tag 17:command 36:desc #*#
+|CTRL-W_CTRL-B|	CTRL-W CTRL-B	   same as "CTRL-W b"
+|CTRL-W_CTRL-C|	CTRL-W CTRL-C	   same as "CTRL-W c"
+|CTRL-W_CTRL-E|	CTRL-W CTRL-E	   same as "CTRL-W e" {jVi only}
+|CTRL-W_CTRL-H|	CTRL-W CTRL-H	   same as "CTRL-W h"
+|CTRL-W_CTRL-J|	CTRL-W CTRL-J	   same as "CTRL-W j"
+|CTRL-W_CTRL-K|	CTRL-W CTRL-K	   same as "CTRL-W k"
+|CTRL-W_CTRL-L|	CTRL-W CTRL-L	   same as "CTRL-W l"
+|CTRL-W_CTRL-O|	CTRL-W CTRL-O	   same as "CTRL-W o"
+|CTRL-W_CTRL-P|	CTRL-W CTRL-P	   same as "CTRL-W p"
+|CTRL-W_CTRL-Q|	CTRL-W CTRL-Q	   same as "CTRL-W q"
+|CTRL-W_CTRL-T|	CTRL-W CTRL-T	    same as "CTRL-W t"
+|CTRL-W_CTRL-V| CTRL-W CTRL-V	    same as "CTRL-W v"
+|CTRL-W_CTRL-W|	CTRL-W CTRL-W	    same as "CTRL-W w"
+|CTRL-W_CTRL-_|	CTRL-W CTRL-_	   same as "CTRL-W _"
+|CTRL-W_+|	CTRL-W +	   increase current window height N lines
+|CTRL-W_-|	CTRL-W -	   decrease current window height N lines
+|CTRL-W_<|	CTRL-W <	   decrease current window width N columns
+|CTRL-W_=|	CTRL-W =	   make all windows the same height
+|CTRL-W_>|	CTRL-W >	   increase current window width N columns
+|CTRL-W_H|	CTRL-W H	   move current window to the far left
+|CTRL-W_J|	CTRL-W J	   move current window to the very bottom
+|CTRL-W_K|	CTRL-W K	   move current window to the very top
+|CTRL-W_L|	CTRL-W L	   move current window to the far right
+|CTRL-W_S|	CTRL-W S	   same as "CTRL-W s"
+|CTRL-W__|	CTRL-W _	   set current window height to N (default:
+				   very high)
+|CTRL-W_b|	CTRL-W b	   go to bottom window
+|CTRL-W_c|	CTRL-W c	   close current window (like |:close|)
+|CTRL-W_e|	CTRL-W e	   go to Nth next window in *alternate* set
+				   of windows (those without associated files)
+				   {jVi only}
+|CTRL-W_h|	CTRL-W h	   go to Nth left window (stop at first window)
+						   identifier under the cursor
+|CTRL-W_j|	CTRL-W j	   go N windows down (stop at last window)
+|CTRL-W_k|	CTRL-W k	   go N windows up (stop at first window)
+|CTRL-W_l|	CTRL-W l	   go to Nth right window (stop at last window)
+|CTRL-W_o|	CTRL-W o	   close all but current window (like |:only|)
+|CTRL-W_p|	CTRL-W p	   go to previous (last accessed) window
+|CTRL-W_q|	CTRL-W q	   quit current window (like |:quit|)
+|CTRL-W_s|	CTRL-W s	   split current window in two parts, new
+				   window N lines high
+|CTRL-W_t|	CTRL-W t	   go to top window
+|CTRL-W_v|	CTRL-W v	    split current window vertically, new window
+				   N lines wide
+|CTRL-W_w|	CTRL-W w	   go to N next window (wrap around)
+|CTRL-W_<Down>| CTRL-W <Down>	   same as "CTRL-W j"
+|CTRL-W_<Up>|	CTRL-W <Up>	   same as "CTRL-W k"
+|CTRL-W_<Left>| CTRL-W <Left>	   same as "CTRL-W h"
+|CTRL-W_<Right>| CTRL-W <Right>    same as "CTRL-W l"
+
+==============================================================================
+2.3 Square bracket commands					*[* *]*
+
+
+ tag		char	      note action in Normal mode	~
+------------------------------------------------------------------------------
+#*# table:form=index:label=][ 1:tag 17:command 33:opt-note 36:desc #*#
+|[#|		[#		1  cursor to N previous unmatched #if, #else
+				   or #ifdef
+				   non-blank
+|[(|		[(		1  cursor N times back to unmatched '('
+|[star|		[*		1  same as "[/"
+|[/|		[/		1  cursor to N previous start of a C comment
+|[[|		[[		1  cursor N sections backward
+|[]|		[]		1  cursor N SECTIONS backward
+|[M|		[M		1  cursor N times back to end of method
+|[m|		[m		1  cursor N times back to start of method
+				   function
+|[{|		[{		1  cursor N times back to unmatched '{'
+|]#|		]#		1  cursor to N next unmatched #endif or #else
+|])|		])		1  cursor N times forward to unmatched ')'
+|]star|		]*		1  same as "]/"
+|]/|		]/		1  cursor to N next end of a C comment
+|][|		][		1  cursor N SECTIONS forward
+|]]|		]]		1  cursor N sections forward
+|]M|		]M		1  cursor N times forward to end of method
+|]m|		]m		1  cursor N times forward to start of method
+				   function
+|]}|		]}		1  cursor N times forward to unmatched '}'
+
+==============================================================================
+2.4 Commands starting with 'g'						*g*
+
+tag		char	      note action in Normal mode	~
+------------------------------------------------------------------------------
+#*# table:form=index:label=g 1:tag 17:command 33:opt-note 36:desc #*#
+|g#|		g#		1  like "#", but without using "\<" and "\>"
+|g$|		g$		1  when 'wrap' off go to rightmost character of
+				   the current line that is on the screen;
+				   when 'wrap' on go to the rightmost character
+				   of the current screen line
+|gstar|		g*		1  like "*", but without using "\<" and "\>"
+|g0|		g0		1  when 'wrap' off go to leftmost character of
+				   the current line that is on the screen;
+				   when 'wrap' on go to the leftmost character
+				   of the current screen line
+|gE|		gE		1  go backwards to the end of the previous
+				   WORD
+|gP|		["x]gP		2  put the text [from register x] before the
+				   cursor N times, leave the cursor after it
+|gT|		gT		   Go to the previous tab page; wraps around.
+|g^|		g^		1  when 'wrap' off go to leftmost non-white
+				   character of the current line that is on
+				   the screen; when 'wrap' on go to the
+				   leftmost non-white character of the current
+				   screen line
+|ge|		ge		1  go backwards to the end of the previous
+				   word
+|gg|		gg		1  cursor to line N, default first line
+|gi|		gi		2  like "i", but first move to the |'^| mark
+|gj|		gj		1  like "j", but when 'wrap' on go N screen
+				   lines down
+|gk|		gk		1  like "k", but when 'wrap' on go N screen
+				   lines up
+|gm|		gm		1  go to character at middle of the screenline
+|gp|		["x]gp		2  put the text [from register x] after the
+				   cursor N times, leave the cursor after it
+|gq|		gq{motion}	2  format Nmove text
+|gt|		gt		   Go to the next tab page; wraps around.
+|gv|		gv		   reselect the previous Visual area
+
+==============================================================================
+3. Visual mode						*visual-index*
+
+Most commands in Visual mode are the same as in Normal mode. The ones listed
+here are those that are different.
+
+tag		command	      note action in Visual mode	~
+------------------------------------------------------------------------------
+#*# table:form=index:label=visual-index 1:tag 17:command 33:opt-note 36:desc #*#
+|v_CTRL-G|	CTRL-G		   convert visual mode to java text selection
+				   VIM: toggle between Visual and Select mode
+|v_CTRL-V|	CTRL-V		   make Visual mode blockwise or stop Visual
+				   mode
+|v_!|		!{filter}	2  filter the highlighted lines through the
+				   external command {filter}
+|v_:|		:		   start a command-line with the highlighted
+				   lines as a range
+|v_<|		<		2  shift the highlighted lines one
+				   'shiftwidth' left
+|v_=|		=		2  filter the highlighted lines through the
+				   external program given with the 'equalprg'
+				   option
+|v_>|		>		2  shift the highlighted lines one
+				   'shiftwidth' right
+|v_b_A|		A		2  block mode: append same text in all lines,
+				   after the highlighted area
+|v_C|		C		2  delete the highlighted lines and start
+				   insert
+|v_D|		D		2  delete the highlighted lines
+|v_b_I|		I		2  block mode: insert same text in all lines,
+				   before the highlighted area
+|v_J|		J		2  join the highlighted lines
+|v_K|		K		   run 'keywordprg' on the highlighted area
+|v_O|		O		   Move horizontally to other corner of area.
+		Q		   does not start Ex mode
+|v_R|		R		2  delete the highlighted lines and start
+				   insert
+|v_S|		S		2  delete the highlighted lines and start
+				   insert
+|v_U|		U		2  make highlighted area uppercase
+|v_V|		V		   make Visual mode linewise or stop Visual
+				   mode
+|v_X|		X		2  delete the highlighted lines
+|v_Y|		Y		   yank the highlighted lines
+|v_a(|		a(		   same as ab
+|v_a)|		a)		   same as ab
+|v_a<|		a<		   extend highlighted area with a <> block
+|v_a>|		a>		   same as a<
+|v_aB|		aB		   extend highlighted area with a {} block
+|v_aW|		aW		   extend highlighted area with "a WORD"
+|v_a[|		a[		   extend highlighted area with a [] block
+|v_a]|		a]		   same as a[
+|v_ab|		ab		   extend highlighted area with a () block
+|v_ap|		ap		   extend highlighted area with a paragraph
+|v_as|		as		   extend highlighted area with a sentence
+|v_aw|		aw		   extend highlighted area with "a word"
+|v_a{|		a{		   same as aB
+|v_a}|		a}		   same as aB
+|v_c|		c		2  delete highlighted area and start insert
+|v_d|		d		2  delete highlighted area
+|v_gJ|		gJ		2  join the highlighted lines without
+				   inserting spaces
+|v_gq|		gq		2  format the highlighted lines
+|v_gv|		gv		   exchange current and previous highlighted
+				   area
+|v_i(|		i(		   same as ib
+|v_i)|		i)		   same as ib
+|v_i<|		i<		   extend highlighted area with inner <> block
+|v_i>|		i>		   same as i<
+|v_iB|		iB		   extend highlighted area with inner {} block
+|v_iW|		iW		   extend highlighted area with "inner WORD"
+|v_i[|		i[		   extend highlighted area with inner [] block
+|v_i]|		i]		   same as i[
+|v_ib|		ib		   extend highlighted area with inner () block
+|v_ip|		ip		   extend highlighted area with inner paragraph
+|v_is|		is		   extend highlighted area with inner sentence
+|v_iw|		iw		   extend highlighted area with "inner word"
+|v_i{|		i{		   same as iB
+|v_i}|		i}		   same as iB
+|v_o|		o		   move cursor to other corner of area
+|v_r|		r		2  delete highlighted area and start insert
+|v_s|		s		2  delete highlighted area and start insert
+|v_u|		u		2  make highlighted area lowercase
+|v_v|		v		   make Visual mode characterwise or stop
+				   Visual mode
+|v_x|		x		2  delete the highlighted area
+|v_y|		y		   yank the highlighted area
+|v_~|		~		2  swap case for the highlighted area
+
+ vim:tw=78:ts=8:sw=8:noet:

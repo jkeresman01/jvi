@@ -1,0 +1,241 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Vim: windows.txt</title>
+<!--[if IE]>
+<link rel="stylesheet" href="vimhelp-ie.css" type="text/css">
+<![endif]-->
+<!--[if !IE]>-->
+<link rel="stylesheet" href="vimhelp.css" type="text/css">
+<!--<![endif]-->
+</head>
+<body>
+<div id="d1">
+<pre id="sp">                                                                                </pre>
+<div id="d2">
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<div id="d3">
+<pre>
+<a name="windows.txt" class="t">windows.txt</a>   For Vim version 5.6.  Last change: 1999 Dec 21
+
+
+                  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+Editing with multiple <a href="windows.txt.html#windows" class="d">windows</a> and buffers.              <a name="windows" class="t">windows</a> <a name="buffers" class="t">buffers</a>
+
+The commands which have been added to use multiple <a href="windows.txt.html#windows" class="d">windows</a> and <a href="windows.txt.html#buffers" class="d">buffers</a> are
+explained here.  Additionally, there are explanations for commands that work
+differently when used in combination with more than one window.
+
+3.  Opening and closing <a href="insert.txt.html#a" class="d">a</a> window        <a href="windows.txt.html#opening-window" class="l">opening-window</a>
+4.  Moving cursor to other <a href="windows.txt.html#windows" class="d">windows</a>      <a href="windows.txt.html#window-move-cursor" class="l">window-move-cursor</a>
+5.  Moving <a href="windows.txt.html#windows" class="d">windows</a> around                       <a href="windows.txt.html#window-moving" class="l">window-moving</a>
+6.  Window resizing                             <a href="windows.txt.html#window-resize" class="l">window-resize</a>
+8.  Writing with multiple <a href="windows.txt.html#buffers" class="d">buffers</a>       <a href="windows.txt.html#buffer-write" class="l">buffer-write</a>
+
+<span class="s">{Vi does not have any of these commands}</span>
+
+<span class="h">==============================================================================</span>
+3. Opening and closing <a href="insert.txt.html#a" class="d">a</a> window                         <a name="opening-window" class="t">opening-window</a>
+
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="change.txt.html#s" class="d">s</a>                                                <a name="CTRL-W_s" class="t">CTRL-W_s</a>
+<span class="c">CTRL-W S                                               </span> <a name="CTRL-W_S" class="t">CTRL-W_S</a>
+<span class="c">CTRL-W CTRL-S                                          </span> <a name="CTRL-W_CTRL-S" class="t">CTRL-W_CTRL-S</a>
+:[N]sp[lit] <span class="s">[+cmd]</span> <span class="s">[file]</span>                               <a name="%3Asp" class="t">:sp</a> <a name="%3Asplit" class="t">:split</a>
+                Split current window in two.  The result <a href="motion.txt.html#is" class="d">is</a> two viewports on
+                the same file.  Make new window <a href="pattern.txt.html#N" class="d">N</a> high (default <a href="motion.txt.html#is" class="d">is</a> to use half
+                the height of the current window).  Reduces the current window
+                height to create room (and others, if the <a href="options.txt.html#%27equalalways%27" class="o">'equalalways'</a> option
+                <a href="motion.txt.html#is" class="d">is</a> set and <span class="o">'eadirection'</span> isn't "hor").
+
+<span class="c">CTRL-W CTRL-V                                          </span> <a name="CTRL-W_CTRL-V" class="t">CTRL-W_CTRL-V</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="visual.txt.html#v" class="d">v</a>                                                <a name="CTRL-W_v" class="t">CTRL-W_v</a>
+:[N]vs[plit] <span class="s">[++opt]</span> <span class="s">[+cmd]</span> <span class="s">[file]</span>                      <a name="%3Avs" class="t">:vs</a> <a name="%3Avsplit" class="t">:vsplit</a>
+                Like <a href="windows.txt.html#%3Asplit" class="l">:split</a><a href="motion.txt.html#%2C" class="d">,</a> but split vertically.  If <a href="options.txt.html#%27equalalways%27" class="o">'equalalways'</a> <a href="motion.txt.html#is" class="d">is</a> set
+                and <span class="o">'eadirection'</span> isn't "ver" the <a href="windows.txt.html#windows" class="d">windows</a> will be spread out
+                horizontally, unless <a href="insert.txt.html#a" class="d">a</a> width was specified.
+                <span class="n">Note:</span> In other places <span class="k">CTRL-Q</span> does the same <a href="motion.txt.html#as" class="d">as</a> <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a><a href="motion.txt.html#%2C" class="d">,</a> but here
+                <a href="motion.txt.html#it" class="d">it</a> doesn't!
+
+Closing <a href="insert.txt.html#a" class="d">a</a> window
+<span class="h">----------------</span>
+
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="change.txt.html#c" class="d">c</a>                                        <a name="CTRL-W_c" class="t">CTRL-W_c</a> <a name="%3Aclo" class="t">:clo</a> <a name="%3Aclose" class="t">:close</a>
+:clo[se][!]     Close current window.  When the <span class="o">'hidden'</span> option <a href="motion.txt.html#is" class="d">is</a> set, or
+                when the buffer was changed and the [!] <a href="motion.txt.html#is" class="d">is</a> used, the buffer
+                becomes hidden (unless there <a href="motion.txt.html#is" class="d">is</a> another window editing it).
+                This command fails when:
+                <a href="motion.txt.html#-" class="d">-</a> There <a href="motion.txt.html#is" class="d">is</a> only one window on the screen.
+                <a href="motion.txt.html#-" class="d">-</a> When <span class="o">'hidden'</span> <a href="motion.txt.html#is" class="d">is</a> not set, [!] <a href="motion.txt.html#is" class="d">is</a> not used, the buffer has
+                  changes, and there <a href="motion.txt.html#is" class="d">is</a> no other window on this buffer.
+                Changes to the buffer are not written and won't get lost, so
+                this <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> "safe" command.
+
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="insert.txt.html#o" class="d">o</a>                                                <a name="CTRL-W_o" class="t">CTRL-W_o</a>
+<span class="c">CTRL-W CTRL-O                                  </span> <a name="CTRL-W_CTRL-O" class="t">CTRL-W_CTRL-O</a> <a name="%3Aon" class="t">:on</a> <a name="%3Aonly" class="t">:only</a>
+:on[ly][!]      Make the current window the only one on the screen.  All other
+                <a href="windows.txt.html#windows" class="d">windows</a> are closed.
+                When the <span class="o">'hidden'</span> option <a href="motion.txt.html#is" class="d">is</a> set, all <a href="windows.txt.html#buffers" class="d">buffers</a> in closed <a href="windows.txt.html#windows" class="d">windows</a>
+                become hidden.
+                When <span class="o">'hidden'</span> <a href="motion.txt.html#is" class="d">is</a> not set, and the <span class="o">'autowrite'</span> option <a href="motion.txt.html#is" class="d">is</a> set,
+                modified <a href="windows.txt.html#buffers" class="d">buffers</a> are written.  Otherwise, <a href="windows.txt.html#windows" class="d">windows</a> that have
+                <a href="windows.txt.html#buffers" class="d">buffers</a> that are modified are not removed, unless the [!] <a href="motion.txt.html#is" class="d">is</a>
+                given, then they become hidden.  But modified <a href="windows.txt.html#buffers" class="d">buffers</a> are
+                never abandoned, so changes cannot get lost.
+
+<span class="h">==============================================================================</span>
+4. Moving cursor to other <a href="windows.txt.html#windows" class="d">windows</a>                       <a name="window-move-cursor" class="t">window-move-cursor</a>
+
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#%3CDown%3E" class="s">&lt;Down&gt;</a>                                   <a name="CTRL-W_%3CDown%3E" class="t">CTRL-W_&lt;Down&gt;</a>
+<span class="c">CTRL-W CTRL-J                                  </span> <a name="CTRL-W_CTRL-J" class="t">CTRL-W_CTRL-J</a> <a name="CTRL-W_j" class="t">CTRL-W_j</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#j" class="d">j</a>        Move cursor to Nth window below current one.  Uses the cursor
+                position to select between alternatives.
+
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#%3CUp%3E" class="s">&lt;Up&gt;</a>                                     <a name="CTRL-W_%3CUp%3E" class="t">CTRL-W_&lt;Up&gt;</a>
+<span class="c">CTRL-W CTRL-K                                  </span> <a name="CTRL-W_CTRL-K" class="t">CTRL-W_CTRL-K</a> <a name="CTRL-W_k" class="t">CTRL-W_k</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#k" class="d">k</a>        Move cursor to Nth window above current one.  Uses the cursor
+                position to select between alternatives.
+
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#%3CLeft%3E" class="s">&lt;Left&gt;</a>                                   <a name="CTRL-W_%3CLeft%3E" class="t">CTRL-W_&lt;Left&gt;</a>
+<span class="c">CTRL-W CTRL-H                                  </span> <a name="CTRL-W_CTRL-H" class="t">CTRL-W_CTRL-H</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#%3CBS%3E" class="s">&lt;BS&gt;</a>                                     <a name="CTRL-W_%3CBS%3E" class="t">CTRL-W_&lt;BS&gt;</a> <a name="CTRL-W_h" class="t">CTRL-W_h</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#h" class="d">h</a>        Move cursor to Nth window left of current one.  Uses the
+                cursor position to select between alternatives.
+
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#%3CRight%3E" class="s">&lt;Right&gt;</a>                                  <a name="CTRL-W_%3CRight%3E" class="t">CTRL-W_&lt;Right&gt;</a>
+<span class="c">CTRL-W CTRL-L                                  </span> <a name="CTRL-W_CTRL-L" class="t">CTRL-W_CTRL-L</a> <a name="CTRL-W_l" class="t">CTRL-W_l</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#l" class="d">l</a>        Move cursor to Nth window right of current one.  Uses the
+                cursor position to select between alternatives.
+
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#w" class="d">w</a>                                        <a name="CTRL-W_w" class="t">CTRL-W_w</a> <a name="CTRL-W_CTRL-W" class="t">CTRL-W_CTRL-W</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a>   Without count: move cursor to window below/right of the
+                current one.  If there <a href="motion.txt.html#is" class="d">is</a> no window below or right, go to
+                top-left window.
+                With count: go to Nth window (windows are numbered from
+                top-left to bottom-right).  To obtain the window number see
+                <span class="l">bufwinnr()</span> and <span class="l">winnr()</span><a href="repeat.txt.html#." class="d">.</a>  When <a href="pattern.txt.html#N" class="d">N</a> <a href="motion.txt.html#is" class="d">is</a> larger than the number
+                of <a href="windows.txt.html#windows" class="d">windows</a> go to the last window.
+
+                                                <a name="CTRL-W_W" class="t">CTRL-W_W</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#W" class="d">W</a>        Without count: move cursor to window above/left of current
+                one.  If there <a href="motion.txt.html#is" class="d">is</a> no window above or left, go to bottom-right
+                window.  With count: go to Nth window, like with <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> w.
+
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#t" class="d">t</a>                                        <a name="CTRL-W_t" class="t">CTRL-W_t</a> <a name="CTRL-W_CTRL-T" class="t">CTRL-W_CTRL-T</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="tagsearch.txt.html#CTRL-T" class="k">CTRL-T</a>   Move cursor to top-left window.
+
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#b" class="d">b</a>                                        <a name="CTRL-W_b" class="t">CTRL-W_b</a> <a name="CTRL-W_CTRL-B" class="t">CTRL-W_CTRL-B</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="scroll.txt.html#CTRL-B" class="k">CTRL-B</a>   Move cursor to bottom-right window.
+
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="change.txt.html#p" class="d">p</a>                                        <a name="CTRL-W_p" class="t">CTRL-W_p</a> <a name="CTRL-W_CTRL-P" class="t">CTRL-W_CTRL-P</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#CTRL-P" class="k">CTRL-P</a>   Go to previous (last accessed) window.
+
+<span class="h">==============================================================================</span>
+5. Moving <a href="windows.txt.html#windows" class="d">windows</a> around                                <a name="window-moving" class="t">window-moving</a>
+
+The following commands can be used to change the window layout.  For example,
+when there are two vertically split windows, <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> K will change that in
+horizontally split windows.  <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#H" class="d">H</a> does <a href="motion.txt.html#it" class="d">it</a> the other way around.
+
+<span class="n">NOTE:</span> jVi typically has different semantics for <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <span class="s">[HJKL]</span><a href="repeat.txt.html#." class="d">.</a>
+There are two cases to consider:
+    1) when the window <a href="motion.txt.html#is" class="d">is</a> <a href="motion.txt.html#at" class="d">at</a> the edge of the area that contains editors.
+    2) when there <a href="motion.txt.html#is" class="d">is</a> an editor in the direction specified.
+1) <a href="motion.txt.html#is" class="d">is</a> <a href="motion.txt.html#as" class="d">as</a> described here. For 2) the current editor <a href="motion.txt.html#is" class="d">is</a> moved and becomes
+<a href="insert.txt.html#a" class="d">a</a> tab in the neighboring area.
+
+                                                <a name="CTRL-W_K" class="t">CTRL-W_K</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> K        Move the current window to be <a href="motion.txt.html#at" class="d">at</a> the very top, using the full
+                width of the screen.  This works like closing the current
+                window and then creating another one with ":topleft split"<a href="motion.txt.html#%2C" class="d">,</a>
+                except that the current window contents <a href="motion.txt.html#is" class="d">is</a> used for the new
+                window.
+
+                                                <a name="CTRL-W_J" class="t">CTRL-W_J</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="change.txt.html#J" class="d">J</a>        Move the current window to be <a href="motion.txt.html#at" class="d">at</a> the very bottom, using the
+                full width of the screen.  This works like closing the current
+                window and then creating another one with ":botright split"<a href="motion.txt.html#%2C" class="d">,</a>
+                except that the current window contents <a href="motion.txt.html#is" class="d">is</a> used for the new
+                window.
+
+                                                <a name="CTRL-W_H" class="t">CTRL-W_H</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#H" class="d">H</a>        Move the current window to be <a href="motion.txt.html#at" class="d">at</a> the far left, using the
+                full height of the screen.  This works like closing the
+                current window and then creating another one with
+                ":vert topleft split"<a href="motion.txt.html#%2C" class="d">,</a> except that the current window contents
+                <a href="motion.txt.html#is" class="d">is</a> used for the new window.
+                <span class="s">{not available when compiled without the +vertsplit feature}</span>
+
+                                                <a name="CTRL-W_L" class="t">CTRL-W_L</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#L" class="d">L</a>        Move the current window to be <a href="motion.txt.html#at" class="d">at</a> the far right, using the full
+                height of the screen.  This works like closing the
+                current window and then creating another one with
+                ":vert botright split"<a href="motion.txt.html#%2C" class="d">,</a> except that the current window
+                contents <a href="motion.txt.html#is" class="d">is</a> used for the new window.
+                <span class="s">{not available when compiled without the +vertsplit feature}</span>
+
+                                                <a name="CTRL-W_T" class="t">CTRL-W_T</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#T" class="d">T</a>        Create <a href="insert.txt.html#a" class="d">a</a> clone in <a href="insert.txt.html#a" class="d">a</a> separate tab of the current editor.
+
+<span class="h">==============================================================================</span>
+6. Window resizing                                      <a name="window-resize" class="t">window-resize</a>
+
+                                                <a name="CTRL-W_%3D" class="t">CTRL-W_=</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="change.txt.html#%3D" class="d">=</a>        Make all <a href="windows.txt.html#windows" class="d">windows</a> (almost) equally high and wide, but use
+                <span class="o">'winheight'</span> and <span class="o">'winwidth'</span> for the current window.
+
+:res[ize] -N                                    <a name="%3Ares" class="t">:res</a> <a name="%3Aresize" class="t">:resize</a> <a name="CTRL-W_-" class="t">CTRL-W_-</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#-" class="d">-</a>        Decrease current window height by <a href="pattern.txt.html#N" class="d">N</a> (default 1).
+                If used after <span class="o">'vertical'</span>: decrease width by N.
+
+:res[ize] +N                                    <a name="CTRL-W_%2B" class="t">CTRL-W_+</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#%2B" class="d">+</a>        Increase current window height by <a href="pattern.txt.html#N" class="d">N</a> (default 1).
+                If used after <span class="o">'vertical'</span>: increase width by N.
+
+:res[ize] [N]
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <span class="k">CTRL-_</span>                                   <a name="CTRL-W_CTRL-_" class="t">CTRL-W_CTRL-_</a> <a name="CTRL-W__" class="t">CTRL-W__</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="motion.txt.html#_" class="d">_</a>        Set current window height to <a href="pattern.txt.html#N" class="d">N</a> (default: highest possible).
+
+z{nr}&lt;CR&gt;       Set current window height to <span class="s">{nr}</span><a href="repeat.txt.html#." class="d">.</a>
+
+                                                <a name="CTRL-W_%3C" class="t">CTRL-W_&lt;</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="change.txt.html#%3C" class="d">&lt;</a>        Decrease current window width by <a href="pattern.txt.html#N" class="d">N</a> (default 1).
+
+                                                <a name="CTRL-W_%3E" class="t">CTRL-W_&gt;</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> <a href="change.txt.html#%3E" class="d">&gt;</a>        Increase current window width by <a href="pattern.txt.html#N" class="d">N</a> (default 1).
+
+:vertical res[ize] [N]                  <a name="%3Avertical-resize" class="t">:vertical-resize</a> <a name="CTRL-W_bar" class="t">CTRL-W_bar</a>
+<a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> |        Set current window width to <a href="pattern.txt.html#N" class="d">N</a> (default: widest possible).
+
+When the option <a href="options.txt.html#%27equalalways%27" class="o">'equalalways'</a> ('ea') <a href="motion.txt.html#is" class="d">is</a> set, all the <a href="windows.txt.html#windows" class="d">windows</a> are automatically
+made the same size after splitting or closing <a href="insert.txt.html#a" class="d">a</a> window.  If you don't set this
+option, splitting <a href="insert.txt.html#a" class="d">a</a> window will reduce the size of the current window and
+leave the other <a href="windows.txt.html#windows" class="d">windows</a> the same.  When closing <a href="insert.txt.html#a" class="d">a</a> window, the extra lines are
+given to the window above it.
+
+The <span class="o">'eadirection'</span> option limits the direction in which the <a href="options.txt.html#%27equalalways%27" class="o">'equalalways'</a>
+option <a href="motion.txt.html#is" class="d">is</a> applied.  The default "both" resizes in both directions.  When the
+value <a href="motion.txt.html#is" class="d">is</a> "ver" only the heights of <a href="windows.txt.html#windows" class="d">windows</a> are equalized.  Use this when you
+have manually resized <a href="insert.txt.html#a" class="d">a</a> vertically split window and want to keep this width.
+Likewise, "hor" causes only the widths of <a href="windows.txt.html#windows" class="d">windows</a> to be equalized.
+
+<span class="h">==============================================================================</span>
+8. Writing with multiple <a href="windows.txt.html#buffers" class="d">buffers</a>                        <a name="buffer-write" class="t">buffer-write</a>
+
+                                                        <a name="%3Awa" class="t">:wa</a> <a name="%3Awall" class="t">:wall</a>
+:wa[ll]         Write all changed buffers.  Buffers without <a href="insert.txt.html#a" class="d">a</a> file name or
+                which are readonly are not written.
+
+ vim:tw=78:ts=8:sw=8:noet:
+
+</pre>
+</div>
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<p id="footer">These help files are maintained with thanks
+to Carlo Teubner for his vimhelp to html work.</p>
+
+</div>
+</div>
+</body></html>

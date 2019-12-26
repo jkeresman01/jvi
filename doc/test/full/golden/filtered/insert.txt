@@ -1,0 +1,312 @@
+*insert.txt*    For Vim version 5.6.  Last change: 2000 Jan 09
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+						*Insert* *Insert-mode*
+Inserting and replacing text				*mode-ins-repl*
+
+Most of this file is about Insert and Replace mode.  At the end are a few
+commands for inserting text in other ways.
+
+1. Special keys						|ins-special-keys|
+2. Special special keys					|ins-special-special|
+4. 'expandtab', 'smarttab' and 'softtabstop'  options	|ins-expandtab|
+5. Replace mode						|Replace-mode|
+8. Insert mode commands					|inserting|
+
+==============================================================================
+1. Special keys						*ins-special-keys*
+
+In Insert and Replace mode, the following characters have a special meaning;
+other characters are inserted directly.
+
+NOTE: in insert mode, any unused control character takes you out of input mode.
+
+char		action	~
+-----------------------------------------------------------------------
+#*# table:form=ref:label=ins-special-keys 1:command 12:extra-or 17:desc #*#
+						*i_CTRL-[* *i_<Esc>*
+<Esc>	   or	End insert or Replace mode, go back to Normal mode.  Finish
+CTRL-[		abbreviation.
+						*i_CTRL-@*
+CTRL-@		Insert previously inserted text and stop insert.  {Vi: only
+		when typed as first char, only up to 128 chars}
+						*i_CTRL-A*
+CTRL-A		Insert previously inserted text.  {not in Vi}
+						*i_CTRL-H* *i_<BS>*
+<BS>	   or	Delete the character before the cursor (see |i_backspacing|
+CTRL-H		about joining lines).
+		{Vi: does not delete autoindents}
+						*i_<Del>*
+<Del>		Delete the character under the cursor.  If the cursor is at
+		the end of the line, and the 'backspace' option includes
+		"eol", delete the <EOL>; the next line is appended after the
+		current one.
+		See |:fixdel| if your <Del> key does not do what you want.
+		{not in Vi}
+						*i_CTRL-W*
+CTRL-W		Delete the word before the cursor (see |i_backspacing| about
+		joining lines).  See the section "word motions",
+		|word-motions|, for the definition of a word.
+						*i_CTRL-U*
+CTRL-U		Delete all entered characters in the current line (see
+		|i_backspacing| about joining lines).
+
+						*i_CTRL-I* *i_<Tab>*
+<Tab>	   or	Insert a tab.  If the 'expandtab' option is on, the
+CTRL-I		equivalent number of spaces is inserted. Also see the
+                'softtabstop' option.
+
+<NL>	   or					*i_CTRL-J* *i_<NL>*
+CTRL-J		Begin new line.
+
+<CR>	   or					*i_CTRL-M* *i_<CR>*
+CTRL-M		Begin new line.
+						*i_CTRL-N*
+CTRL-N		Find next match for words that start with the
+		keyword in front of the cursor, looking in places
+		specified with the 'complete' option.  The found
+		keyword is inserted in front of the cursor.
+
+						*i_CTRL-P*
+CTRL-P		Find previous match for words that start with the
+		keyword in front of the cursor, looking in places
+		specified with the 'complete' option.  The found
+		keyword is inserted in front of the cursor.
+
+CTRL-R {0-9a-z"%#*+:.-=}					*i_CTRL-R*
+		Insert the contents of a register.  Between typing CTRL-R and
+		the second character, '"' will be displayed to indicate that
+		you are expected to enter the name of a register.
+		The text is inserted as if you typed it.
+
+CTRL-R CTRL-R {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-R*
+		Insert the contents of a register.  Works like using a single
+		CTRL-R, but the text is inserted literally, not as if typed.
+		{not in Vi}
+
+CTRL-R CTRL-O {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-O*
+		Insert the contents of a register literally and don't
+		auto-indent.
+
+CTRL-R CTRL-P {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-P*
+		Insert the contents of a register literally and fix the
+		indent.
+
+							*i_CTRL-T*
+CTRL-T		Insert one shiftwidth of indent at the start of the current
+		line.  The indent is always rounded to a 'shiftwidth' (this is
+		vi compatible).  {Vi: only when in indent}
+
+							*i_CTRL-D*
+CTRL-D		Delete one shiftwidth of indent at the start of the current
+		line.  The indent is always rounded to a 'shiftwidth' (this is
+		vi compatible).  {Vi: CTRL-D works only when used after
+		autoindent}
+
+							*i_CTRL-V*
+CTRL-V		Insert next non-digit literally.  For special keys, the
+		terminal code is inserted.  It's also possible to enter the
+		decimal, octal or hexadecimal value of a character
+		|i_CTRL-V_digit|.
+		The characters typed right after CTRL-V are not considered for
+		mapping.  {Vi: no decimal byte entry}
+
+						*i_CTRL-Q*
+CTRL-Q		Same as CTRL-V.
+
+							*i_CTRL-E*
+CTRL-E		Insert the character which is below the cursor.  {not in Vi}
+
+							*i_CTRL-Y*
+CTRL-Y		Insert the character which is above the cursor.  {not in Vi}
+		Note that for CTRL-E and CTRL-Y 'textwidth' is not used, to be
+		able to copy characters from a long line.
+
+							*i_<Insert>*
+<Insert>	Toggle between insert and replace mode.  {not in Vi}
+
+							*i_CTRL->*
+CTRL->	   or	Align first non white character of current line with next
+CTRL-.		parenthesis (column-wise) in previous line by inserting indent
+		into current line.  Usefull for aligning arguments of a
+		function call. Also anchors to first character of previous
+		line. Think Ctrl-> for shift-like behavior. {jVi only}
+
+							*i_CTRL-<*
+CTRL-<	   or	Align first non white character of current line with previous
+CTRL-,		parenthesis (column-wise) in previous line by removing indent
+		from current line.  Usefull for aligning arguments of a
+		function call. Also anchors to first character of previous
+		line. Think Ctrl-< for shift-like behavior. {jVi only}
+-----------------------------------------------------------------------
+
+						*i_backspacing*
+The effect of the <BS>, CTRL-W, and CTRL-U depend on the 'backspace' option
+(unless 'revins' is set).  This is a comma separated list of items:
+
+item	    action ~
+indent	    allow backspacing over autoindent
+eol	    allow backspacing over end-of-line (join lines)
+start	    allow backspacing over the start position of insert; CTRL-W and
+	    CTRL-U stop once at the start position
+(NOTE: jVi only support "0", "1" and "2")
+
+When 'backspace' is empty, Vi compatible backspacing is used.  You cannot
+backspace over autoindent, before column 1 or before where insert started.
+
+For backwards compatibility the values "0", "1" and "2" are also allowed, see
+|'backspace'|.
+
+If the 'backspace' option does contain "eol" and the cursor is in column 1
+when one of the three keys is used, the current line is joined with the
+previous line.  This effectively deletes the <EOL> in front of the cursor.
+{Vi: does not cross lines, does not delete past start position of insert}
+
+						*i_CTRL-V_digit*
+With CTRL-V the decimal, octal or hexadecimal value of a character can be
+entered directly.  This way you can enter any character, except a line break
+(<NL>, value 10).  There are five ways to enter the character value:
+
+first char	mode	     max nr of chars   max value ~
+(none)		decimal		   3		255
+o or O		octal		   3		377	 (255)
+x or X		hexadecimal	   2		ff	 (255)
+u		hexadecimal	   4		ffff	 (65535)
+U		hexadecimal	   8		7fffffff (2147483647)
+
+Normally you would type the maximum number of characters.  Thus to enter a
+space (value 32) you would type <C-V>032.  You can omit the leading zero, in
+which case the character typed after the number must be a non-digit.  This
+happens for the other modes as well: As soon as you type a character that is
+invalid for the mode, the value before it will be used and the "invalid"
+character is dealt with in the normal way.
+
+If you enter a value of 10, it will end up in the file as a 0.  The 10 is a
+<NL>, which is used internally to represent the <Nul> character.  When writing
+the buffer to a file, the <NL> character is translated into <Nul>.  The <NL>
+character is written at the end of each line.  Thus if you want to insert a
+<NL> character in a file you will have to make a line break.
+
+==============================================================================
+2. Special special keys				*ins-special-special*
+
+The following keys are special.  They stop the current insert, do something,
+and then restart insertion.  This means you can do something without getting
+out of Insert mode.  This is very handy if you prefer to use the Insert mode
+all the time, just like editors that don't have a separate Normal mode.  You
+may also want to set the 'backspace' option to "indent,eol,start" and set the
+'insertmode' option. (NOTE: jVi does not support 'insertmode' option)
+
+The changes (inserted or deleted characters) before and after these keys can
+be undone separately.  Only the last change can be redone and always behaves
+like an "i" command.
+
+char		action	~
+-----------------------------------------------------------------------
+#*# table:form=ref:label=ins-special-special 1:command 18:desc 63:target#*#
+ <Up>            cursor one line up                           *i_<Up>*
+ <Down>          cursor one line down                         *i_<Down>*
+ <Left>          cursor one character left                    *i_<Left>*
+ <Right>         cursor one character right                   *i_<Right>*
+ <S-Left>        cursor one word back (like "b" command)      *i_<S-Left>*
+ <C-Left>        cursor one word back (like "b" command)      *i_<C-Left>*
+ <S-Right>       cursor one word forward (like "w" command)   *i_<S-Right>*
+ <C-Right>       cursor one word forward (like "w" command)   *i_<C-Right>*
+ <Home>          cursor to first char in the line             *i_<Home>*
+ <End>           cursor to after last char in the line        *i_<End>*
+ <C-Home>        cursor to first char in the file             *i_<C-Home>*
+ <C-End>         cursor to after last char in the file        *i_<C-End>*
+ CTRL-G u        break undo sequence, start new change        *i_CTRL-G_u*
+-----------------------------------------------------------------------
+
+When the 'whichwrap' option is set appropriately, the <Left> and <Right>
+keys on the first/last character in the line make the cursor wrap to the
+previous/next line.
+
+==============================================================================
+4. 'expandtab'                                      	*ins-expandtab*
+
+If the 'expandtab' option is on, spaces will be used to fill the amount of
+whitespace of the tab.  If you want to enter a real <Tab>, type CTRL-V first.
+The 'expandtab' option is off by default.  Note that in Replace mode, a single
+character is replaced with several spaces.  The result of this is that the
+number of characters in the line increases.  Backspacing will delete one
+space at a time.  The original character will be put back for only one space
+that you backspace over (the last one).  {Vi does not have the 'expandtab'
+option}
+
+NOTE: in jVi the platform does a lot of the tab handling. Platform docs should
+be referenced.
+
+
+==============================================================================
+5. Replace mode				*Replace* *Replace-mode* *mode-replace*
+
+Enter Replace mode with the "R" command in normal mode.
+
+In Replace mode, one character in the line is deleted for every character you
+type.  If there is no character to delete (at the end of the line), the
+typed character is appended (as in Insert mode).  Thus the number of
+characters in a line stays the same until you get to the end of the line.
+If a <NL> is typed, a line break is inserted and no character is deleted.
+
+Be careful with <Tab> characters.  If you type a normal printing character in
+its place, the number of characters is still the same, but the number of
+columns will become smaller.
+
+If you delete characters in Replace mode (with <BS>, CTRL-W, or CTRL-U), what
+happens is that you delete the changes.  The characters that were replaced
+are restored.  If you had typed past the existing text, the characters you
+added are deleted.  This is effectively a character-at-a-time undo.
+
+If the 'expandtab' option is on, a <Tab> will replace one character with
+several spaces.  The result of this is that the number of characters in the
+line increases.  Backspacing will delete one space at a time.  The original
+character will be put back for only one space that you backspace over (the
+last one).  {Vi does not have the 'expandtab' option}
+
+==============================================================================
+8. Insert mode commands					*inserting*
+
+The following commands can be used to insert new text into the buffer.  They
+can all be undone and repeated with the "." command.
+
+#*# table:form=ref:label=inserting 1:command 17:extra-or 25:desc #*#
+							*a*
+a			Append text after the cursor [count] times.
+
+							*A*
+A			Append text at the end of the line [count] times.
+
+<insert>	or				*i* *insert* *<Insert>*
+i			Insert text before the cursor [count] times.
+
+							*I*
+I			Insert text before the first non-blank in the line
+			[count] times.
+
+							*o*
+o			Begin a new line below the cursor and insert text,
+			repeat [count] times.
+			{Vi: blank [count] screen lines}
+
+							*O*
+O			Begin a new line above the cursor and insert text,
+			repeat [count] times.
+			{Vi: blank [count] screen lines}
+#*#table:stop-table #*#
+
+These commands are used to start inserting text.  You can end insert mode with
+<Esc>.  See |mode-ins-repl| for the other special characters in Insert mode.
+the effect of [count] takes place after insert mode is exited.
+
+When 'autoindent' is on, the indent for a new line is obtained from the
+previous line. 
+
+NOTE: in jVi the platform does a lot of the insert new line handling.
+      Platform docs should be referenced.
+
+ vim:tw=78:ts=8:sw=8:noet:

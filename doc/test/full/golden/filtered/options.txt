@@ -1,0 +1,814 @@
+*options.txt*	For Vim version 7.0.  Last change: 2006 May 04
+
+
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
+
+
+Options							*options*
+
+1. Setting options			|set-option|
+2. Automatically setting options	|auto-setting|
+3. Options summary			|option-summary|
+
+For an overview of options see help.txt |option-list|.
+
+Vim has a number of internal variables and switches which can be set to
+achieve special effects.  These options come in three forms:
+	boolean		can only be on or off		*boolean* *toggle*
+	number		has a numeric value
+	string		has a string value
+
+==============================================================================
+1. Setting options					*set-option* *E764*
+
+							*:se* *:set*
+:se[t]			Show all options that differ from their default value.
+
+:se[t] all		Show all but terminal options.
+
+:se[t] termcap		Show all terminal options.  Note that in the GUI the
+			key codes are not shown, because they are generated
+			internally and can't be changed.  Changing the terminal
+			codes in the GUI is not useful either...
+
+								*E518* *E519*
+:se[t] {option}?	Show value of {option}.
+
+:se[t] {option}		Toggle option: set, switch it on.
+			Number option: show value.
+			String option: show value.
+
+:se[t] no{option}	Toggle option: Reset, switch it off.
+
+:se[t] {option}!   or
+:se[t] inv{option}	Toggle option: Invert value. {not in Vi}
+
+				*:set-default* *:set-&* *:set-&vi* *:set-&vim*
+:se[t] {option}&	Reset option to its default value.#-#  May depend on the#-#
+
+						*:set-args* *E487* *E521*
+:se[t] {option}={value}		or
+:se[t] {option}:{value}
+			Set string or number option to {value}.
+			For numeric options the value can be given in decimal,
+			hex (preceded with 0x) or octal (preceded with '0')
+			(hex and octal are only available for machines which
+			have the strtol() function).
+			The old value can be inserted by typing 'wildchar' (by
+			default this is a <Tab> or CTRL-E if 'compatible' is
+			set).  See |cmdline-completion|.
+			White space between {option} and '=' is allowed and
+			will be ignored.  White space between '=' and {value}
+			is not allowed.
+			See |option-backslash| for using white space and
+			backslashes in {value}.
+
+:se[t] {option}+={value}				*:set+=*
+			Add the {value} to a number option, or append the
+			{value} to a string option.  When the option is a
+			comma separated list, a comma is added, unless the
+			value was empty.
+			If the option is a list of flags, superfluous flags
+			are removed.  When adding a flag that was already
+			present the option value doesn't change.
+			Also see |:set-args| above.
+			{not in Vi}
+
+:se[t] {option}^={value}				*:set^=*
+			Multiply the {value} to a number option, or prepend
+			the {value} to a string option.  When the option is a
+			comma separated list, a comma is added, unless the
+			value was empty.
+			Also see |:set-args| above.
+			{not in Vi}
+
+:se[t] {option}-={value}				*:set-=*
+			Subtract the {value} from a number option, or remove
+			the {value} from a string option, if it is there.
+			If the {value} is not found in a string option, there
+			is no error or warning.  When the option is a comma
+			separated list, a comma is deleted, unless the option
+			becomes empty.
+			When the option is a list of flags, {value} must be
+			exactly as they appear in the option.  Remove flags
+			one by one to avoid problems.
+			Also see |:set-args| above.
+			{not in Vi}
+
+The {option} arguments to ":set" may be repeated.  For example: >
+	:set ai nosi sw=3 ts=3
+If you make an error in one of the arguments, an error message will be given
+and the following arguments will be ignored.
+
+				*add-option-flags* *remove-option-flags*
+				*E539* *E550* *E551* *E552*
+Some options are a list of flags.  When you want to add a flag to such an
+option, without changing the existing ones, you can do it like this: >
+   :set guioptions+=a
+Remove a flag from an option like this: >
+   :set guioptions-=a
+This removes the 'a' flag from 'guioptions'.
+Note that you should add or remove one flag at a time.  If 'guioptions' has
+the value "ab", using "set guioptions-=ba" won't work, because the string "ba"
+doesn't appear.
+
+==============================================================================
+2. Automatically setting options			*auto-setting*
+
+Besides changing options with the ":set" command, there are three alternatives
+to set options automatically for one or more files:
+
+1. When starting Vim initializations are read from various places.  See
+   |initialization|.  Most of them are performed for all editing sessions,
+   and some of them depend on the directory where Vim is started.
+   You can create an initialization file with |:mkvimrc|, |:mkview| and
+   |:mksession|.
+2. If you start editing a new file, the automatic commands are executed.
+   This can be used to set options for files matching a particular pattern and
+   many other things.  See |autocommand|.
+3. If you start editing a new file, and the 'modeline' option is on, a
+   number of lines at the beginning and end of the file are checked for
+   modelines.  This is explained here.
+
+					*modeline* *vim:* *vi:* *ex:* *E520*
+There are two forms of modelines.  The first form:
+	[text]{white}{vi:|vim:|ex:}[white]{options}
+
+[text]		any text or empty
+{white}		at least one blank character (<Space> or <Tab>)
+{vi:|vim:|ex:}	the string "vi:", "vim:" or "ex:"
+[white]		optional white space
+{options}	a list of option settings, separated with white space or ':',
+		where each part between ':' is the argument for a ":set"
+		command
+
+Example:
+   vi:noai:sw=3 ts=6 ~
+
+The second form (this is compatible with some versions of Vi):
+
+	[text]{white}{vi:|vim:|ex:}[white]se[t] {options}:[text]
+
+[text]		any text or empty
+{white}		at least one blank character (<Space> or <Tab>)
+{vi:|vim:|ex:}	the string "vi:", "vim:" or "ex:"
+[white]		optional white space
+se[t]		the string "set " or "se " (note the space)
+{options}	a list of options, separated with white space, which is the
+		argument for a ":set" command
+:		a colon
+[text]		any text or empty
+
+Example:
+   /* vim: set ai tw=75: */ ~
+
+The white space before {vi:|vim:|ex:} is required.  This minimizes the chance
+that a normal word like "lex:" is caught.  There is one exception: "vi:" and
+"vim:" can also be at the start of the line (for compatibility with version
+3.0).  Using "ex:" at the start of the line will be ignored (this could be
+short for "example:").
+
+							*modeline-local*
+The options are set like with ":setlocal": The new value only applies to the
+buffer and window that contain the file.  Although it's possible to set global
+options from a modeline, this is unusual.  If you have two windows open and
+the files in it set the same global option to a different value, the result
+depends on which one was opened last.
+
+
+The number of lines that are checked can be set with the 'modelines' option.
+If 'modeline' is off or 'modelines' is 0 no lines are checked.
+
+==============================================================================
+3. Options summary					*option-summary*
+
+In the list below all the options are mentioned with their full name and with
+an abbreviation if there is one.  Both forms may be used.
+
+In this document when a boolean option is "set" that means that ":set option"
+is entered.  When an option is "reset", ":set nooption" is used.
+
+For some options there are two default values: The "Vim default", which is
+used when 'compatible' is not set, and the "Vi default", which is used when
+'compatible' is set.
+
+Most options are the same in all windows and buffers.  There are a few that
+are specific to how the text is presented in a window.  These can be set to a
+different value in each window.  For example the 'list' option can be set in
+one window and reset in another for the same text, giving both types of view
+at the same time.  There are a few options that are specific to a certain
+file.  These can have a different value for each file or buffer.  For example
+the 'textwidth' option can be 78 for a normal text file and 0 for a C
+program.
+
+	global			one option for all buffers and windows
+	local to window		each window has its own copy of this option
+	local to buffer		each buffer has its own copy of this option
+
+When creating a new window the option values from the currently active window
+are used as a default value for the window-specific options.  For the
+buffer-specific options this depends on the 's' and 'S' flags in the
+'cpoptions' option.  If 's' is included (which is the default) the values for
+buffer options are copied from the currently active buffer when a buffer is
+first entered.  If 'S' is present the options are copied each time the buffer
+is entered, this is almost like having global options.  If 's' and 'S' are not
+present, the options are copied from the currently active buffer when the
+buffer is created.
+
+Hidden options						*hidden-options*
+
+Not all options are supported in all versions.  This depends on the supported
+features and sometimes on the system.  A remark about this is in curly braces
+below.  When an option is not supported it may still be set without getting an
+error, this is called a hidden option.  You can't get the value of a hidden
+option though, it is not stored.
+
+To test if option "foo" can be used with ":set" use something like this: >
+	if exists('&foo')
+This also returns true for a hidden option.  To test if option "foo" is really
+supported use something like this: >
+	if exists('+foo')
+<
+							*E355*
+A jump table for the options with a short description can be found at |Q_op|.
+
+							*'backspace'* *'bs'*
+'backspace' 'bs'	string	(default "")
+			global
+			{not in Vi}
+	Influences the working of <BS>, <Del>, CTRL-W and CTRL-U in Insert
+	mode.  This is a list of items, separated by commas.  Each item allows
+	a way to backspace over something:
+	value	effect	~
+	indent	allow backspacing over autoindent
+	eol	allow backspacing over line breaks (join lines)
+	start	allow backspacing over the start of insert; CTRL-W and CTRL-U
+		stop once at the start of insert.
+
+	When the value is empty, Vi compatible backspacing is used.
+
+	For backwards compatibility with version 5.4 and earlier:
+	value	effect	~
+	  0	same as ":set backspace=" (Vi compatible)
+	  1	same as ":set backspace=indent,eol"
+	  2	same as ":set backspace=indent,eol,start"
+
+						*'clipboard'* *'cb'*
+'clipboard' 'cb'	string	(default "autoselect,exclude:cons\|linux"
+						  for X-windows, "" otherwise)
+			global
+
+	unnamed		When included, Vim will use the clipboard register '*'
+			for all yank, delete, change and put operations which
+			would normally go to the unnamed register.  When a
+			register is explicitly specified, it will always be
+			used regardless of whether "unnamed" is in 'clipboard'
+			or not.  The clipboard register can always be
+			explicitly accessed using the "* notation.  Also see
+			|gui-clipboard|.
+
+						*'cpoptions'* *'cpo'*
+'cpoptions' 'cpo'	string	(Vim default: "aABceFs",
+				 Vi default:  all flags)
+			global
+								*cpo-w*
+		w	When using "cw" on a blank character, only change one
+			character and not all blanks until the start of the
+			next word.
+
+
+			     *'equalalways'* *'ea'* *'noequalalways'* *'noea'*
+'equalalways' 'ea'	boolean	(default on)
+			global
+			{not in Vi}
+	When on, all the windows are automatically made the same size after
+	splitting or closing a window.  This also happens the moment the
+	option is switched on.  When off, splitting a window will reduce the
+	size of the current window and leave the other windows the same.  When
+	closing a window the extra lines are given to the window next to it
+	(depending on 'splitbelow' and 'splitright').
+
+						*'equalprg'* *'ep'*
+'equalprg' 'ep'		string	(default "")
+			global or local to buffer |global-local|
+			{not in Vi}
+	External program to use for "=" command.  When this option is empty
+	the internal formatting functions are used ('lisp', 'cindent' or
+	'indentexpr').
+	Environment variables are expanded |:set_env|.  See |option-backslash|
+	about including spaces and backslashes.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+
+				 *'expandtab'* *'et'* *'noexpandtab'* *'noet'*
+'expandtab' 'et'	boolean	(default off)
+			local to buffer
+			{not in Vi}
+	In Insert mode: Use the appropriate number of spaces to insert a
+	<Tab>.  Spaces are used in indents with the '>' and '<' commands and
+	when 'autoindent' is on.  To insert a real tab when 'expandtab' is
+	on, use CTRL-V<Tab>.  See also |:retab| and |ins-expandtab|.
+	NOTE: This option is reset when 'compatible' is set.
+
+						*'foldopen'* *'fdo'*
+'foldopen' 'fdo'	string (default: "block,hor,mark,percent,quickfix,
+							     search,tag,undo")
+			global
+			{not in Vi}
+			{not available when compiled without the |+folding|
+			feature}
+	Specifies for which type of commands folds will be opened, if the
+	command moves the cursor into a closed fold.  It is a comma separated
+	list of items.
+	NOTE: When the command is part of a mapping this option is not used.
+	Add the |zv| command to the mapping to get the same effect.
+	(rationale: the mapping may want to control opening folds itself)
+
+		item		commands ~
+		all		any
+		block		"(", "{", "[[", "[{", etc.
+		hor		horizontal movements: "l", "w", "fx", etc.
+		insert		any command in Insert mode
+		jump		far jumps: "G", "gg", etc.
+		mark		jumping to a mark: "'m", CTRL-O, etc.
+		percent		"%"
+		quickfix	":cn", ":crew", ":make", etc.
+		search		search for a pattern: "/", "n", "*", "gd", etc.
+				(not for a search pattern in a ":" command)
+				Also for |[s| and |]s|.
+		tag		jumping to a tag: ":ta", CTRL-T, etc.
+		undo		undo or redo: "u" and CTRL-R
+
+						*'formatprg'* *'fp'*
+'formatprg' 'fp'	string (default "")
+			global
+			{not in Vi}
+	The name of an external program that will be used to format the lines
+	selected with the |gq| operator.  The program must take the input on
+	stdin and produce the output on stdout.  The Unix program "fmt" is
+	such a program.
+	If the 'formatexpr' option is not empty it will be used instead.
+	Otherwise, if 'formatprg' option is an empty string, the internal
+	format function will be used |C-indenting|.
+	Environment variables are expanded |:set_env|.  See |option-backslash|
+	about including spaces and backslashes.
+	The expression may be evaluated in the |sandbox|, see
+	|sandbox-option|.
+
+				 *'hlsearch'* *'hls'* *'nohlsearch'* *'nohls'*
+'hlsearch' 'hls'	boolean	(default off)
+			global
+	When there is a previous search pattern, highlight all its matches.
+	The type of highlighting used can be set with the 'l' occasion in the
+	'highlight' option.  This uses the "Search" highlight group by
+	default.  Note that only the matching text is highlighted, any offsets
+	are not applied.
+	See also: 'incsearch' and |:match|.
+	When you get bored looking at the highlighted matches, you can turn it
+	off with |:nohlsearch|.  As soon as you use a search command, the
+	highlighting comes back.
+
+			*'ignorecase'* *'ic'* *'noignorecase'* *'noic'*
+'ignorecase' 'ic'	boolean	(default off)
+			global
+	Ignore case in search patterns.  Also used when searching in the tags
+	file.
+	Also see 'smartcase'.
+	Can be overruled by using "\c" or "\C" in the pattern, see
+	|/ignorecase|.
+
+				 *'incsearch'* *'is'* *'noincsearch'* *'nois'*
+'incsearch' 'is'	boolean	(default off)
+			global
+			{not in Vi}
+			{not available when compiled without the
+			|+extra_search| feature}
+	While typing a search command, show where the pattern, as it was typed
+	so far, matches.  The matched string is highlighted.  If the pattern
+	is invalid or not found, nothing is shown.  The screen will be updated
+	often, this is only useful on fast terminals.
+	Note that the match will be shown, but the cursor will return to its
+	original position when no match is found and when pressing <Esc>.  You
+	still need to finish the search command with <Enter> to move the
+	cursor to the match.
+
+						*'iskeyword'* *'isk'*
+'iskeyword' 'isk'	string (Vim default for MS-DOS and Win32:
+					    "@,48-57,_,128-167,224-235"
+				   otherwise:  "@,48-57,_,192-255"
+				Vi default: "@,48-57,_")
+			local to buffer
+			{not in Vi}
+	Keywords are used in searching and recognizing with many commands:
+	"w", "*", "[i", etc.  It is also used for "\k" in a |pattern|.  See
+	'isfname' for a description of the format of this option.  For C
+	programs you could use "a-z,A-Z,48-57,_,.,-,>".
+
+			*'joinspaces'* *'js'* *'nojoinspaces'* *'nojs'*
+'joinspaces' 'js'	boolean	(default on)
+			global
+			{not in Vi}
+	Insert two spaces after a '.', '?' and '!' with a join command.
+	When 'cpoptions' includes the 'j' flag, only do this after a '.'.
+	Otherwise only one space is inserted.
+	NOTE: This option is set when 'compatible' is set.
+
+			*'linebreak'* *'lbr'* *'nolinebreak'* *'nolbr'*
+'linebreak' 'lbr'	boolean	(default off)
+			local to window
+			{not in Vi}
+			{not available when compiled without the  |+linebreak|
+			feature}
+	If on Vim will wrap long lines at a character in 'breakat' rather
+	than at the last character that fits on the screen.  Unlike
+	'wrapmargin' and 'textwidth', this does not insert <EOL>s in the file,
+	it only affects the way the file is displayed, not its contents.  The
+	value of 'showbreak' is used to put in front of wrapped lines.
+	This option is not used when the 'wrap' option is off or 'list' is on.
+	Note that <Tab> characters after an <EOL> are mostly not displayed
+	with the right amount of white space.
+
+				   *'modeline'* *'ml'* *'nomodeline'* *'noml'*
+'modeline' 'ml'		boolean	(Vim default: on, Vi default: off)
+			local to buffer
+						*'modelines'* *'mls'*
+'modelines' 'mls'	number	(default 5)
+			global
+			{not in Vi}
+	If 'modeline' is on 'modelines' gives the number of lines that is
+	checked for set commands.  If 'modeline' is off or 'modelines' is zero
+	no lines are checked.  See |modeline|.
+	NOTE: 'modeline' is set to the Vi default value when 'compatible' is
+	set and to the Vim default value when 'compatible' is reset.
+
+							*'nrformats'* *'nf'*
+'nrformats' 'nf'	string	(default "octal,hex")
+			local to buffer
+			{not in Vi}
+	This defines what bases Vim will consider for numbers when using the
+	CTRL-A and CTRL-X commands for adding to and subtracting from a number
+	respectively; see |CTRL-A| for more info on these commands.
+	alpha	If included, single alphabetical characters will be
+		incremented or decremented.  This is useful for a list with a
+		letter index a), b), etc.
+	octal	If included, numbers that start with a zero will be considered
+		to be octal.  Example: Using CTRL-A on "007" results in "010".
+	hex	If included, numbers starting with "0x" or "0X" will be
+		considered to be hexadecimal.  Example: Using CTRL-X on
+		"0x100" results in "0x0ff".
+	Numbers which simply begin with a digit in the range 1-9 are always
+	considered decimal.  This also happens for numbers that are not
+	recognized as octal or hex.
+
+				*'number'* *'nu'* *'nonumber'* *'nonu'*
+'number' 'nu'		boolean	(default off)
+			local to window
+	Print the line number in front of each line.  When the 'n' option is
+	excluded from 'cpoptions' a wrapped line will not use the column of
+	line numbers (this is the default when 'compatible' isn't set).
+	The 'numberwidth' option can be used to set the room used for the line
+	number.
+	When a long, wrapped line doesn't start with the first character, '-'
+	characters are put before the number.
+	See |hl-LineNr| for the highlighting used for the number.
+
+						*'report'*
+'report'		number	(default 2)
+			global
+	Threshold for reporting number of lines changed.  When the number of
+	changed lines is more than 'report' a message will be given for most
+	":" commands.  If you want it always, set 'report' to 0.
+	For the ":substitute" command the number of substitutions is used
+	instead of the number of lines.
+
+						*'scroll'* *'scr'*
+'scroll' 'scr'		number	(default: half the window height)
+			local to window
+	Number of lines to scroll with CTRL-U and CTRL-D commands.  Will be
+	set to half the number of lines in the window when the window size
+	changes.  If you give a count to the CTRL-U or CTRL-D command it will
+	be used as the new value for 'scroll'.  Reset to half the window
+	height with ":set scroll=0".   {Vi is a bit different: 'scroll' gives
+	the number of screen lines instead of file lines, makes a difference
+	when lines wrap}
+
+						*'scrolloff'* *'so'*
+'scrolloff' 'so'	number	(default 0)
+			global
+			{not in Vi}
+	Minimal number of screen lines to keep above and below the cursor.
+	This will make some context visible around where you are working.  If
+	you set it to a very large value (999) the cursor line will always be
+	in the middle of the window (except at the start or end of the file or
+	when long lines wrap).
+	For scrolling horizontally see 'sidescrolloff'.
+	NOTE: This option is set to 0 when 'compatible' is set.
+
+						*'selection'* *'sel'*
+'selection' 'sel'	string	(default "inclusive")
+			global
+			{not in Vi}
+	This option defines the behavior of the selection.  It is only used
+	in Visual and Select mode.
+	Possible values:
+	   value	past line     inclusive ~
+	   old		   no		yes
+	   inclusive	   yes		yes
+	   exclusive	   yes		no
+	"past line" means that the cursor is allowed to be positioned one
+	character past the line.
+	"inclusive" means that the last character of the selection is included
+	in an operation.  For example, when "x" is used to delete the
+	selection.
+	Note that when "exclusive" is used and selecting from the end
+	backwards,#-# you cannot include the last character of a line, when #-#
+
+						*'shell'* *'sh'* *E91*
+'shell' 'sh'		string	(default $SHELL or "sh",
+					MS-DOS and Win32: "command.com" or
+					"cmd.exe", OS/2: "cmd")
+			global
+	Name of the shell to use for ! and :! commands.  When changing the
+	value also check these options: 'shelltype', 'shellpipe', 'shellslash'
+	'shellredir', 'shellquote', 'shellxquote' and 'shellcmdflag'.
+	It is allowed to give an argument to the command, e.g.  "csh -f".
+	See |option-backslash| about including spaces and backslashes.
+	Environment variables are expanded |:set_env|.
+	If the name of the shell contains a space, you might need to enclose
+	it in quotes.  Example: >
+		:set shell=\"c:\program\ files\unix\sh.exe\"\ -f
+<	Note the backslash before each quote (to avoid starting a comment) and
+	each space (to avoid ending the option value).  Also note that the
+	"-f" is not inside the quotes, because it is not part of the command
+	name.  And Vim automagically recognizes the backslashes that are path
+	separators.
+
+						*'shellcmdflag'* *'shcf'*
+'shellcmdflag' 'shcf'	string	(default: "-c", MS-DOS and Win32, when 'shell'
+					does not contain "sh" somewhere: "/c")
+			global
+			{not in Vi}
+	Flag passed to the shell to execute "!" and ":!" commands; e.g.,
+	"bash.exe -c ls" or "command.com /c dir".#-#  For the MS-DOS-like #-#
+
+			*'shellslash'* *'ssl'* *'noshellslash'* *'nossl'*
+'shellslash' 'ssl'	boolean	(default off)
+			global
+			{not in Vi} {only for MSDOS, MS-Windows and OS/2}
+	When set, a forward slash is used when expanding file names.  This is
+	useful when a Unix-like shell is used instead of command.com or
+	cmd.exe.  Backward slashes can still be typed, but they are changed to
+	forward slashes by Vim.
+						*'shellxquote'* *'sxq'*
+'shellxquote' 'sxq'	string	(default: "";
+					for Win32, when 'shell' contains "sh"
+					somewhere: "\""
+					for Unix, when using system(): "\"")
+			global
+			{not in Vi}
+	Quoting character(s), put around the command passed to the shell, for
+	the "!" and ":!" commands.  Includes the redirection.  See
+	'shellquote' to exclude the redirection.  It's probably not useful
+	to set both options.
+	This is an empty string by default.  Known to be useful for
+	third-party shells when using the Win32 version, such as the MKS Korn
+	Shell or bash, where it should be "\"".  The default is adjusted
+	according the value of 'shell', to reduce the need to set this option
+	by the user.  See |dos-shell|.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+
+			*'shiftround'* *'sr'* *'noshiftround'* *'nosr'*
+'shiftround' 'sr'	boolean	(default off)
+			global
+			{not in Vi}
+	Round indent to multiple of 'shiftwidth'.  Applies to > and <
+	commands.  CTRL-T and CTRL-D in Insert mode always round the indent to
+	a multiple of 'shiftwidth' (this is Vi compatible).
+
+						*'shiftwidth'* *'sw'*
+'shiftwidth' 'sw'	number	(default 8)
+			local to buffer
+	Number of spaces to use for each step of (auto)indent.  Used for
+	|'cindent'|, |>>|, |<<|, etc.
+
+				     *'showcmd'* *'sc'* *'noshowcmd'* *'nosc'*
+'showcmd' 'sc'		boolean	(Vim default: on, off for Unix, Vi default:
+				 off)
+			global
+			{not in Vi}
+			{not available when compiled without the
+			|+cmdline_info| feature}
+	Show (partial) command in status line.  Set this option off if your
+	terminal is slow.
+	In Visual mode the size of the selected area is shown:
+	- When selecting characters within a line, the number of characters.
+	- When selecting more than one line, the number of lines.
+	- When selecting a block, the size in screen characters: linesxcolumns.
+	NOTE: This option is set to the Vi default value when 'compatible' is
+	set and to the Vim default value when 'compatible' is reset.
+
+				 *'showmode'* *'smd'* *'noshowmode'* *'nosmd'*
+'showmode' 'smd'	boolean	(Vim default: on, Vi default: off)
+			global
+	If in Insert, Replace or Visual mode put a message on the last line.
+
+			*'smartcase'* *'scs'* *'nosmartcase'* *'noscs'*
+'smartcase' 'scs'	boolean	(default off)
+			global
+			{not in Vi}
+	Override the 'ignorecase' option if the search pattern contains upper
+	case characters.  Only used when the search pattern is typed and
+	'ignorecase' option is on.  Used for the commands "/", "?", "n", "N",
+	":g" and ":s".  Not used for "*", "#", "gd", tag search, etc..  After
+	"*" and "#" you can make 'smartcase' used by doing a "/" command,
+	recalling the search pattern from history and hitting <Enter>.
+	NOTE: This option is reset when 'compatible' is set.
+
+					*'softtabstop'* *'sts'*
+'softtabstop' 'sts'	number	(default 0)
+			local to buffer
+			{not in Vi}
+	Number of spaces that a <Tab> counts for while performing editing
+	operations, like inserting a <Tab> or using <BS>.  It "feels" like
+	<Tab>s are being inserted, while in fact a mix of spaces and <Tab>s is
+	used.  This is useful to keep the 'ts' setting at its standard value
+	of 8, while being able to edit like it is set to 'sts'.  However,
+	commands like "x" still work on the actual characters.
+	When 'sts' is zero, this feature is off.
+	'softtabstop' is set to 0 when the 'paste' option is set.
+	See also |ins-expandtab|.  When 'expandtab' is not set, the number of
+	spaces is minimized by using <Tab>s.
+	The 'L' flag in 'cpoptions' changes how tabs are used when 'list' is
+	set.
+	NOTE: This option is set to 0 when 'compatible' is set.
+
+			*'splitbelow'* *'sb'* *'nosplitbelow'* *'nosb'*
+'splitbelow' 'sb'	boolean	(default off)
+			global
+			{not in Vi}
+	When on, splitting a window will put the new window below the current
+	one. |:split|
+
+			*'splitright'* *'spr'* *'nosplitright'* *'nospr'*
+'splitright' 'spr'	boolean	(default off)
+			global
+			{not in Vi}
+	When on, splitting a window will put the new window right of the
+	current one. |:vsplit|
+
+			   *'startofline'* *'sol'* *'nostartofline'* *'nosol'*
+'startofline' 'sol'	boolean	(default on)
+			global
+			{not in Vi}
+	When "on" the commands listed below move the cursor to the first
+	non-blank of the line.  When off the cursor is kept in the same column
+	(if possible).  This applies to the commands: CTRL-D, CTRL-U, CTRL-B,
+	CTRL-F, "G", "H", "M", "L", gg, and to the commands "d", "<<" and ">>"
+	with a linewise operator, with "%" with a count and to buffer changing
+	commands (CTRL-^, :bnext, :bNext, etc.).  Also for an Ex command that
+	only has a line number, e.g., ":25" or ":+".
+	In case of buffer changing commands the cursor is placed at the column
+	where it was the last time the buffer was edited.
+	NOTE: This option is set when 'compatible' is set.
+
+						*'tabstop'* *'ts'*
+'tabstop' 'ts'		number	(default 8)
+			local to buffer
+	Number of spaces that a <Tab> in the file counts for.  Also see
+	|:retab| command, and 'softtabstop' option.
+
+	Note: Setting 'tabstop' to any other value than 8 can make your file
+	appear wrong in many places (e.g., when printing it).
+
+	There are four main ways to use tabs in Vim:
+	1. Always keep 'tabstop' at 8, set 'softtabstop' and 'shiftwidth' to 4
+	   (or 3 or whatever you prefer) and use 'noexpandtab'.  Then Vim
+	   will use a mix of tabs and spaces, but typing Tab and BS will
+	   behave like a tab appears every 4 (or 3) characters.
+	2. Set 'tabstop' and 'shiftwidth' to whatever you prefer and use
+	   'expandtab'.  This way you will always insert spaces.  The
+	   formatting will never be messed up when 'tabstop' is changed.
+	3. Set 'tabstop' and 'shiftwidth' to whatever you prefer and use a
+	   |modeline| to set these values when editing the file again.  Only
+	   works when using Vim to edit the file.
+	4. Always set 'tabstop' and 'shiftwidth' to the same value, and
+	   'noexpandtab'.  This should then work (for initial indents only)
+	   for any tabstop setting that people use.  It might be nice to have
+	   tabs after the first non-blank inserted as spaces if you do this
+	   though.  Otherwise aligned comments will be wrong when 'tabstop' is
+	   changed.
+
+						*'textwidth'* *'tw'*
+'textwidth' 'tw'	number	(default 0)
+			local to buffer
+			{not in Vi}
+	Maximum width of text that is being inserted.  A longer line will be
+	broken after white space to get this width.  A zero value disables
+	this.  'textwidth' is set to 0 when the 'paste' option is set.  When
+	'textwidth' is zero, 'wrapmargin' may be used.  See also
+	'formatoptions' and |ins-textwidth|.
+	When 'formatexpr' is set it will be used to break the line.
+	NOTE: This option is set to 0 when 'compatible' is set.
+
+			     *'tildeop'* *'top'* *'notildeop'* *'notop'*
+'tildeop' 'top'		boolean	(default off)
+			global
+			{not in Vi}
+	When on: The tilde command "~" behaves like an operator.
+	NOTE: This option is reset when 'compatible' is set.
+
+				*'timeout'* *'to'* *'notimeout'* *'noto'*
+'timeout' 'to'		boolean (default on)
+			global
+	This option determine the behavior when part of a
+	mapped key sequence has been received:
+
+	'timeout'	action	~
+	   off		do not time out
+	   on		time out on :mappings
+
+	If option is off, jVi will wait until either the complete
+	mapping has been received, or it is clear that there
+	is no mapping for the received characters.  For
+	example: if you have mapped "vl" and Vim has received 'v', the next
+	character is needed to see if the 'v' is followed by an 'l'.
+	When the options is on, Vim will wait for about 1 second for
+	the next character to arrive.  After that the already received
+	characters are interpreted as single characters.  The waiting time can
+	be changed with the 'timeoutlen' option.
+
+						*'timeoutlen'* *'tm'*
+'timeoutlen' 'tm'	number	(default 1000)
+			global
+			{not in all versions of Vi}
+	The time in milliseconds that is waited for a mapped key
+	sequence to complete.  Also used for CTRL-\ CTRL-N and CTRL-\ CTRL-G
+	when part of a command has been typed.
+
+			*'visualbell'* *'vb'* *'novisualbell'* *'novb'* *beep*
+'visualbell' 'vb'	boolean	(default off)
+			global
+			{not in Vi}
+	Use visual bell instead of beeping. The editor window background is
+	inverted for a period of time, see 'vbt' and 'vbc' options.
+	When no beep or flash is wanted, set time to zero.
+
+						*'visualbelltime'* *'vbt'*
+'visualbelltime' 'vbt'	number	(default 20)
+			global
+			{not in Vim}
+	The time in milliseconds of the 'visual bell'. If the visual bell is
+	enabled, see 'vb', and the 'vbt' value is zero then there is no beep
+	or flash.
+
+						*'visualbellcolor'* *'vbc'*
+'visualbellcolor' 'vbc'	color	(default yes)
+			global
+			{not in Vim}
+	The editor background is set to this color for the visual bell.
+	If this is null, then the background is inverted.
+
+						*'whichwrap'* *'ww'*
+'whichwrap' 'ww'	string	(Vim default: "b,s", Vi default: "")
+			global
+			{not in Vi}
+	Allow specified keys that move the cursor left/right to move to the
+	previous/next line when the cursor is on the first/last character in
+	the line.  Concatenate characters to allow this for these keys:
+		char   key	  mode	~
+		 b    <BS>	 Normal and Visual
+		 s    <Space>	 Normal and Visual
+		 h    "h"	 Normal and Visual (not recommended)
+		 l    "l"	 Normal and Visual (not recommended)
+		 <    <Left>	 Normal and Visual
+		 >    <Right>	 Normal and Visual
+		 ~    "~"	 Normal
+		 [    <Left>	 Insert and Replace
+		 ]    <Right>	 Insert and Replace
+
+						*'wrap'* *'nowrap'*
+'wrap'			boolean	(default on)
+			local to window
+			{not in Vi}
+	This option changes how text is displayed.  It doesn't change the text
+	in the buffer, see 'textwidth' for that.
+	When on, lines longer than the width of the window will wrap and
+	displaying continues on the next line.  When off lines will not wrap
+	and only part of long lines will be displayed.  When the cursor is
+	moved to a part that is not shown, the screen will scroll
+	horizontally.
+	The line will be broken in the middle of a word if necessary.  See
+	'linebreak' to get the break at a word boundary.
+	To make scrolling horizontally a bit more useful, try this: >
+		:set sidescroll=5
+		:set listchars+=precedes:<,extends:>
+<	See 'sidescroll', 'listchars' and |wrap-off|.
+
+				   *'wrapscan'* *'ws'* *'nowrapscan'* *'nows'*
+'wrapscan' 'ws'		boolean	(default on)			*E384* *E385*
+			global
+	Searches wrap around the end of the file.  Also applies to |]s| and
+	|[s|, searching for spelling mistakes.
+
+ vim:tw=78:ts=8:sw=8:noet:

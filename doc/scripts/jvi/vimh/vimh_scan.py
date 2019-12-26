@@ -61,11 +61,11 @@ STR_STOP_SKIP  = 'STOP-DOC-DEL'
 def _trim_token(token_data):
     """Take out extra characters from the token."""
     token, chars, col = token_data
-    if 'pipe' == token or 'star' == token:
+    if token == 'pipe' or token == 'star':
         chars = chars[1:-1]
-    elif 'header' == token:
+    elif token == 'header':
         chars = chars[:-1]
-    elif 'graphic' == token:
+    elif token == 'graphic':
         chars = chars[:-2]
     else:
         return token_data

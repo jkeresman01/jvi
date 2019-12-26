@@ -1,0 +1,91 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Vim: repeat.txt</title>
+<!--[if IE]>
+<link rel="stylesheet" href="vimhelp-ie.css" type="text/css">
+<![endif]-->
+<!--[if !IE]>-->
+<link rel="stylesheet" href="vimhelp.css" type="text/css">
+<!--<![endif]-->
+</head>
+<body>
+<div id="d1">
+<pre id="sp">                                                                                </pre>
+<div id="d2">
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<div id="d3">
+<pre>
+<a name="repeat.txt" class="t">repeat.txt</a>    For Vim version 5.6.  Last change: 1999 Oct 02
+
+
+                  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+Repeating commands                                      <a name="repeating" class="t">repeating</a>
+
+1. Single repeats       <a href="repeat.txt.html#single-repeat" class="l">single-repeat</a>
+3. Complex repeats      <a href="repeat.txt.html#complex-repeat" class="l">complex-repeat</a>
+
+<span class="h">==============================================================================</span>
+1. Single repeats                                       <a name="single-repeat" class="t">single-repeat</a>
+
+                                                        <a name="." class="t">.</a>
+<a href="repeat.txt.html#." class="d">.</a>                       Repeat last change, with <a href="intro.txt.html#count" class="d">count</a> replaced with <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a><a href="repeat.txt.html#." class="d">.</a>
+                        Also repeat <a href="insert.txt.html#a" class="d">a</a> <a href="change.txt.html#yank" class="d">yank</a> command, when the 'y' flag <a href="motion.txt.html#is" class="d">is</a>
+                        included in <a href="options.txt.html#%27cpoptions%27" class="o">'cpoptions'</a><a href="repeat.txt.html#." class="d">.</a>
+
+Simple changes can be repeated with the "<a href="repeat.txt.html#." class="d">.</a>" command.  Without <a href="insert.txt.html#a" class="d">a</a> count, the
+<a href="intro.txt.html#count" class="d">count</a> of the last change <a href="motion.txt.html#is" class="d">is</a> used.  If you enter <a href="insert.txt.html#a" class="d">a</a> count, <a href="motion.txt.html#it" class="d">it</a> will replace the
+last one.  If the last change included <a href="insert.txt.html#a" class="d">a</a> specification of <a href="insert.txt.html#a" class="d">a</a> numbered register,
+the register number will be incremented.  See <a href="undo.txt.html#undo-redo" class="l">undo-redo</a> for an example how
+to use this.  <span class="n">Note</span> that when <a href="repeat.txt.html#repeating" class="d">repeating</a> <a href="insert.txt.html#a" class="d">a</a> command that used <a href="insert.txt.html#a" class="d">a</a> <a href="visual.txt.html#Visual" class="d">Visual</a> selection,
+the same SIZE of area <a href="motion.txt.html#is" class="d">is</a> used, see <a href="visual.txt.html#visual-repeat" class="l">visual-repeat</a><a href="repeat.txt.html#." class="d">.</a>
+
+<span class="h">==============================================================================</span>
+3. Complex repeats                                      <a name="complex-repeat" class="t">complex-repeat</a>
+
+                                                        <a name="q" class="t">q</a> <a name="recording" class="t">recording</a>
+q{0-9a-zA-Z"<a href="motion.txt.html#%7D" class="d">}</a>           Record typed characters into register <span class="s">{0-9a-zA-Z"}</span>
+                        (uppercase to append).  The 'q' command <a href="motion.txt.html#is" class="d">is</a> disabled
+                        while executing <a href="insert.txt.html#a" class="d">a</a> register, and <a href="motion.txt.html#it" class="d">it</a> doesn't work inside
+                        <a href="insert.txt.html#a" class="d">a</a> mapping.  <span class="s">{Vi: no recording}</span>
+
+<a href="repeat.txt.html#q" class="d">q</a>                       Stops recording.  (Implementation note: The 'q' that
+                        stops <a href="repeat.txt.html#recording" class="d">recording</a> <a href="motion.txt.html#is" class="d">is</a> not stored in the register, unless
+                        <a href="motion.txt.html#it" class="d">it</a> was the result of <a href="insert.txt.html#a" class="d">a</a> mapping)  <span class="s">{Vi: no recording}</span>
+
+                                                        <a name="%40" class="t">@</a>
+@{0-9a-z".=*<a href="motion.txt.html#%7D" class="d">}</a>           Execute the contents of register <span class="s">{0-9a-z".=*}</span> <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a>
+                        times.  <span class="n">Note</span> that register '%' (name of the current
+                        file) and '#' (name of the <a href="index.txt.html#alternate" class="d">alternate</a> file) cannot be
+                        used.  For "@=" you are prompted to enter an
+                        expression.  The result of the expression <a href="motion.txt.html#is" class="d">is</a> then
+                        executed.  See also <span class="l">@:</span><a href="repeat.txt.html#." class="d">.</a>  <span class="s">{Vi: only named registers}</span>
+
+                                                        <a name="%40%40" class="t">@@</a>
+<a href="repeat.txt.html#%40%40" class="d">@@</a>                      Repeat the previous @{0-9a-z":*<a href="motion.txt.html#%7D" class="d">}</a> <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> times.
+
+All commands and command sequences can be repeated by putting them in <a href="insert.txt.html#a" class="d">a</a> named
+register and then executing it.  There are two ways to get the commands in the
+register:
+<a href="motion.txt.html#-" class="d">-</a> Use the record command "<a href="repeat.txt.html#q" class="d">q</a>"<a href="repeat.txt.html#." class="d">.</a>  You type the commands once, and while they are
+  being executed they are stored in <a href="insert.txt.html#a" class="d">a</a> register.  Easy, because you can see
+  what you are doing.  If you make <a href="insert.txt.html#a" class="d">a</a> mistake, "<a href="change.txt.html#p" class="d">p</a>"ut the register into the
+  file, edit the command sequence, and then delete <a href="motion.txt.html#it" class="d">it</a> into the register
+  again.  You can continue <a href="repeat.txt.html#recording" class="d">recording</a> by appending to the register (use an
+  <a href="change.txt.html#uppercase" class="d">uppercase</a> letter).
+<a href="motion.txt.html#-" class="d">-</a> Delete or <a href="change.txt.html#yank" class="d">yank</a> the command sequence into the register.
+
+ vim:tw=78:ts=8:sw=8:noet:
+
+</pre>
+</div>
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<p id="footer">These help files are maintained with thanks
+to Carlo Teubner for his vimhelp to html work.</p>
+
+</div>
+</div>
+</body></html>
