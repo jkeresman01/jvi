@@ -43,7 +43,6 @@ import org.openide.util.lookup.ServiceProvider;
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViBadLocationException;
 import com.raelity.jvi.ViBuffer.BIAS;
-import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViFactory;
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViMark;
@@ -158,6 +157,10 @@ public class Cc01
                                new SplitAction(Orientation.LEFT_RIGHT), null);
 
         // tab handling
+        ColonCommands.register("tabc", "tabclose",
+                               new Tabclose(), null);
+        ColonCommands.register("tabo", "tabonly",
+                               new Tabonly(), null);
         ColonCommands.register("tabm", "tabmove",
                                new Tabmove(), null);
         ColonCommands.register("tabn", "tabnext",
@@ -191,11 +194,10 @@ public class Cc01
 
     /**
      * This is derived from get_tabpage_arg in ex_docmd.c
-     * in recent vim releases. The main difference is that
+     * in recent vim releases (vim8.x). The main difference is that
      * the string range is handled here. The parsing code prefers
      * an argument, but uses the range otherwise.
      * @param cev
-     * @param tabCmd
      * @param ti
      * @return 
      */
@@ -221,7 +223,9 @@ public class Cc01
         // The only thing not the same is the '.' in ":.tabmove" (a no-op)
         // so special case
         if(usingRange && ".".equals(s) &&
-                ("tabmove".equals(tabCmd) || "tabnext".equals(tabCmd))) {
+                ("tabmove".equals(tabCmd)
+                || "tabnext".equals(tabCmd)
+                || "tabclose".equals(tabCmd))) {
             tab_number = ti.getCurNr(); // move to same location
         } else if(!s.isEmpty()) {
             // something to parse
@@ -285,6 +289,63 @@ public class Cc01
         return tab_number;
     }
 
+    private static class Tabclose extends AbstractColonAction {
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.RANGE);
+        }
+        
+        @Override
+        public void actionPerformed(final ActionEvent ev)
+        {
+            ColonEvent cev = (ColonEvent)ev;
+            ViTabInfo ti = G.curwin.getTabInfo();
+            int tab_number = getTabpageArg(cev, ti);
+
+            if(Options.getDebugOption(Options.dbgEditorActivation)
+                    .getBoolean(Level.INFO))
+                Msg.smsg("tabclose(%d)", tab_number);
+            if(cev.getEmsg() == null) {
+                if(ti.getLastNr() <= 1) {
+                    cev.emsg = Messages.e_lasttab;
+                } else {
+                    ti.getAppView(tab_number).close(false);
+                }
+            }
+        }
+    }
+
+    private static class Tabonly extends AbstractColonAction {
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.RANGE);
+        }
+        
+        @Override
+        public void actionPerformed(final ActionEvent ev)
+        {
+            ColonEvent cev = (ColonEvent)ev;
+            ViTabInfo ti = G.curwin.getTabInfo();
+            int tab_number = getTabpageArg(cev, ti);
+
+            if(Options.getDebugOption(Options.dbgEditorActivation)
+                    .getBoolean(Level.INFO))
+                Msg.smsg("tabonly(%d)", tab_number);
+            if(cev.getEmsg() == null) {
+                if(ti.getLastNr() <= 1) {
+                    cev.emsg = Messages.e_lasttab;
+                } else {
+                    for (int i = 1; i <= ti.getLastNr(); i++) {
+                        if(i != tab_number)
+                            ti.getAppView(i).close(false);
+                    }
+                }
+            }
+        }
+    }
+
     private static class Tabmove extends AbstractColonAction {
         @Override
         public EnumSet<CcFlag> getFlags()
@@ -301,7 +362,7 @@ public class Cc01
             if(cev.getEmsg() == null)
                 G.curwin.tab_move(idx, ti);
         }
-    };
+    }
 
     private static class Tabnext extends AbstractColonAction {
         @Override
@@ -359,7 +420,7 @@ public class Cc01
                     gotoTabpage(tab_number, null);
             }
         }
-    };
+    }
 
     /**
      * @param n 1 is first tab
@@ -458,7 +519,7 @@ public class Cc01
             ColonEvent cev = (ColonEvent)ev;
             // NEEDSWORK: win_close: hidden, need_hide....
             cev.getViTextView().win_close(false);
-        }};
+        }}
 
     private static class Only implements ActionListener {
         @Override
@@ -474,7 +535,7 @@ public class Cc01
             for(ViAppView av :avs)
                 if(!av.equals(avCur))
                     av.close(false);
-        }};
+        }}
 
     private static class Wall implements ActionListener {
         @Override
@@ -488,7 +549,7 @@ public class Cc01
             ColonEvent cev = (ColonEvent)ev;
             Msg.smsg(ViManager.getFS()
                     .getDisplayFileViewInfo(cev.getViTextView()));
-        }};
+        }}
 
     private static boolean do_write(ColonEvent cev)
     {

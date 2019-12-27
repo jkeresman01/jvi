@@ -115,6 +115,7 @@ CTRL-W gf	Open a new tab page and edit the file name under the cursor.
 CTRL-W gF	Open a new tab page and edit the file name under the cursor
 		and jump to the line number following the file name.
 		See |CTRL-W_gF|.
+STOP-DOC-DEL
 
 CLOSING A TAB PAGE:
 
@@ -175,7 +176,6 @@ something else.
 				    " one
 		    :tabonly 1	    " close all tab pages except the first one
 		    :tabonly $	    " close all tab pages except the last one
-STOP-DOC-DEL
 
 
 SWITCHING TO ANOTHER TAB PAGE:

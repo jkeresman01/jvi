@@ -62,8 +62,9 @@ public ViAppView getAppView(int tab_number) {
 static ViTabInfo getDebugTabInfo() {
     List<ViAppView> l = new ArrayList<>();
     // make it a 6 element list
-    l.add(null); l.add(null); l.add(null);
-    l.add(null); l.add(null); l.add(null);
+    l.add(new DebugAppView()); l.add(new DebugAppView());
+    l.add(new DebugAppView()); l.add(new DebugAppView());
+    l.add(new DebugAppView()); l.add(new DebugAppView());
     return new ViTabInfo(l, 3);
 }
 
@@ -71,22 +72,27 @@ private static class DebugAppView implements ViAppView {
 
         @Override
         public Component getEditor() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return null;
         }
 
         @Override
         public boolean isShowing() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return false;
         }
 
         @Override
         public boolean isNomad() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return false;
         }
 
         @Override
         public int getWNum() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return 1;
+        }
+
+        @Override
+        public boolean close(boolean what) {
+            return false;
         }
     }
 }
