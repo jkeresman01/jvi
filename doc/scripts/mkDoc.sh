@@ -16,24 +16,11 @@ OUT=$VIMHELP_OUT
 #
 $SCRIPTS/filter.sh $UNFILTERED $FILTERED
 
-# vim -e -s << EOT
-#     helptags $(cygpath -a -m ../vimhelp/)
-#     q
-# EOT
-#
-
 $VIM/vim --noplugin -e -s -V1 -c "helptags $(cygpath -a -m $FILTERED)" -c q
-
-# echo vim helptags returns: $?
-
 
 mkdir -p $OUT
 mv $FILTERED/tags $OUT/tags
 
-# for t.sh
-#       touch ../build-/tout/tags
-#       python jvi/vimh/jvi.py ../build-/tin ../build-/tout
-
-python jvi/vimh/jvi.py $FILTERED $OUT
+vimh $FILTERED $OUT
 cp $VIM_CSS/*.css $OUT
 

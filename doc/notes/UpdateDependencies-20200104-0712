@@ -1,0 +1,156 @@
+Fri, Jan 03, 2020 11:13:39 PM
+
+warning: had to upgrade dependencies for module org.netbeans.modules.jvi:
+added = [
+    module org.netbeans.api.templates > 1.0,
+    module org.openide.filesystems.nb,
+    module org.openide.filesystems.compat8,
+    module org.netbeans.modules.editor.document > 1.0
+] removed = [];
+details: [
+    Separation of desktop and cleanup,
+    Templates API has been separated into its own module.,
+    The old editor settings and completion APIs have been deprecated,
+    see http://wiki.netbeans.org/EditorSettingsUpgrade
+    and update your module.
+]
+
+updated org.netbeans.modules.editor
+    from 1.55.0.5.11.3
+    to 1.91.1.6.3.23.55
+updated org.netbeans.modules.editor.lib
+    from 3.4.0.11.3
+    to 4.11.1.23.3.55
+
+Then had to manually add org.netbeans.modules.editor.document
+
+Warning: org.netbeans.modules.jvi lacks a unit test dependency on org.netbeans.libs.junit4; using default dependencies for compatibility
+
+
+
+        <code-name-base>org.netbeans.modules.editor</code-name-base>
+            <release-version>3</release-version>
+            <specification-version>1.91.1.6.3.23.55</specification-version>
+        was:
+            <specification-version>1.55.0.5.11.3</specification-version>
+
+
+
+
+        <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
+            <release-version>3</release-version>
+            <specification-version>4.11.1.23.3.55</specification-version>
+        was:
+            <specification-version>3.4.0.11.3</specification-version>
+
+========================================================================
+warning: had to upgrade dependencies for module org.netbeans.modules.jvi:
+added = [
+    module org.netbeans.api.templates > 1.0,
+    module org.openide.filesystems.nb,
+    module org.openide.filesystems.compat8
+] removed = [];
+details: [
+    Separation of desktop and cleanup,
+    Templates API has been separated into its own module.
+]
+
+
+updated org.openide.filesystems
+    to 9.14.1
+
+    jvi has
+        <code-name-base>org.openide.filesystems</code-name-base>
+            <specification-version>7.13.1.1.1</specification-version>
+    and there is 
+        platform/openide.filesystems/module-auto-deps.xml
+            <transformationgroup>
+                <description>Separation of desktop and cleanup</description>
+                <transformation>
+                    <trigger-dependency type="older">
+                        <module-dependency codenamebase
+                            ="org.openide.filesystems" spec="9.0"/>
+                    </trigger-dependency>
+                    <implies>
+                        <result>
+                            <module-dependency codenamebase
+                                ="org.openide.filesystems.nb"/>
+                            <module-dependency codenamebase
+                                ="org.openide.filesystems.compat8"/>
+                        </result>
+                    </implies>
+                </transformation>
+            </transformationgroup>
+========================================================================
+
+warning: had to upgrade dependencies for module org.netbeans.modules.jvi:
+added = [
+    module org.netbeans.api.templates > 1.0
+] removed = [];
+details: [Templates API has been separated into its own module.]
+
+updated org.openide.loaders
+    from 5.9.22
+    to 7.71.1
+
+
+            <transformationgroup>
+                <description>Templates API has been separated into
+                                its own module.</description>
+                <transformation>
+                    <trigger-dependency type="older">
+                        <module-dependency codenamebase
+                            ="org.openide.loaders" spec="7.61"/>
+                    </trigger-dependency>
+                    <implies>
+                        <result>
+                            <module-dependency codenamebase
+                                ="org.netbeans.api.templates" spec="1.0"/>
+                        </result>
+                    </implies>
+                </transformation>
+            </transformationgroup>
+
+
+
+===================================================================
+
+
+ files="./ide/api.xml/module-auto-deps.xml
+> ./ide/csl.api/module-auto-deps.xml
+> ./ide/db/module-auto-deps.xml
+> ./ide/editor/module-auto-deps.xml
+> ./ide/editor.indent/module-auto-deps.xml
+> ./ide/editor.lib/module-auto-deps.xml
+> ./ide/editor.lib2/module-auto-deps.xml
+> ./ide/editor.settings.storage/module-auto-deps.xml
+> ./ide/ide.kit/module-auto-deps.xml
+> ./ide/options.editor/module-auto-deps.xml
+> ./ide/parsing.api/module-auto-deps.xml
+> ./ide/project.ant/module-auto-deps.xml
+> ./ide/project.libraries/module-auto-deps.xml
+> ./ide/projectapi/module-auto-deps.xml
+> ./ide/projectuiapi/module-auto-deps.xml
+> ./ide/spi.palette/module-auto-deps.xml
+> ./ide/xml.catalog/module-auto-deps.xml
+> ./ide/xml.text/module-auto-deps.xml
+> ./java/api.debugger.jpda/module-auto-deps.xml
+> ./java/api.java/module-auto-deps.xml
+> ./java/java.platform/module-auto-deps.xml
+> ./java/java.project/module-auto-deps.xml
+> ./java/java.source/module-auto-deps.xml
+> ./platform/api.progress/module-auto-deps.xml
+> ./platform/core.startup/module-auto-deps.xml
+> ./platform/masterfs/module-auto-deps.xml
+> ./platform/o.n.core/module-auto-deps.xml
+> ./platform/openide.execution/module-auto-deps.xml
+> ./platform/openide.explorer/module-auto-deps.xml
+> ./platform/openide.filesystems/module-auto-deps.xml
+> ./platform/openide.loaders/module-auto-deps.xml
+> ./platform/openide.modules/module-auto-deps.xml
+> ./platform/openide.nodes/module-auto-deps.xml
+> ./platform/openide.text/module-auto-deps.xml
+> ./platform/openide.util/module-auto-deps.xml
+> ./platform/options.api/module-auto-deps.xml
+> ./platform/queries/module-auto-deps.xml
+> "

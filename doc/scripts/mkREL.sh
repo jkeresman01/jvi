@@ -18,7 +18,7 @@ UC_MIRROR=/z/jvi/frs/jVi-for-NetBeans
 
 JVI_VERSIONDIR=$JVI_RELDIR/$JVI_VERSION
 
-NB_VERSION=NetBeans-7.0
+NB_VERSION=NetBeans-11-and-later
 
 JVI_MAIN=$JVI_VERSIONDIR/proj/updates.xml
 JVI_UC=         # pick up from plugin portal update center
@@ -28,8 +28,7 @@ UC_DIR=UC
 
 JVI_ADD="
     $JVI_RELDIR/editor.pin/editor.pin-1.3.5/proj/updates.xml
-    $JVI_RELDIR/jvi.help/jvi.help-1.0/proj/updates.xml
-    $JVI_RELDIR/nb-jvi-spi/nb-jvi-spi-1.6/proj/updates.xml
+    $JVI_RELDIR/nb-jvi-spi/nb-jvi-spi-1.7.1/proj/updates.xml
     "
 
 OUT=$JVI_VERSIONDIR/build-uc
@@ -37,11 +36,9 @@ OUT=$JVI_VERSIONDIR/build-uc
 GUTS=$OUT/cat-guts
 CATALOG=$OUT/catalog.xml
 
-SCRIPTS_DIR=$jd
-
 mkdir -p $OUT
 # Turn several modules into update center. $GUTS is the catalog.
-python $SCRIPTS_DIR/combine_uc.py $JVI_MAIN $JVI_UC $JVI_ADD $OUT
+combine_uc $JVI_MAIN $JVI_UC $JVI_ADD $OUT
 
 echo '<?xml version="1.0" encoding="UTF-8"?>' > $CATALOG
 echo '<!DOCTYPE module_updates PUBLIC "-//NetBeans//DTD Autoupdate Catalog 2.6//EN" "http://www.netbeans.org/dtds/autoupdate-catalog-2_6.dtd">' >> $CATALOG
@@ -63,9 +60,6 @@ echo ========= $UC =========
 
 FILES=
 
-# don't abort on error since the cmp might fail
-set +e
-
 for i in *
 do
     echo ===== $i
@@ -81,8 +75,6 @@ do
         FILES="$FILES $i"
     fi
 done
-
-set -e
 
 cd $SAVE_DIR
 
