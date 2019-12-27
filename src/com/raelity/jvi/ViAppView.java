@@ -20,6 +20,8 @@
 
 package com.raelity.jvi;
 
+import com.raelity.jvi.core.Msg;
+import com.raelity.jvi.manager.ViManager;
 import java.awt.Component;
 
 /**
@@ -90,4 +92,22 @@ public interface ViAppView
      */
     public int getWNum();
 
+    /**
+     * tv.win_close has a problem.In NB if you close an editor
+     * that has never been displayed, all you've got is a TC, no tv
+     * @param what probably forcit, or something about the buffer
+     * @return false if this refused to close
+     */
+    default public boolean close(boolean what) {
+        ViTextView tv = ViManager.getFactory().getTextView(getEditor());
+        if(tv != null) {
+            // NEEDSWORK: win_close this return true/false
+            tv.win_close(what);
+            return true;
+        }
+
+        Msg.emsg("DEFAULT AV.CLOSE FAILED: %s",
+                ViManager.getFS().getDisplayFileName(this));
+        return false;
+    }
 }

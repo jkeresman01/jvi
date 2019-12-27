@@ -1076,7 +1076,8 @@ finished:
       }
       isEscaped = false;
     }
-    System.err.printf("PATTERN: magic: %s, in %s, out %s\n", G.p_magic, s, sb);
+    Options.getDebugOption(Options.dbgSearch) .printf(Level.INFO,
+            "PATTERN: magic: %s, in %s, out %s\n", G.p_magic, s, sb);
     return sb.toString();
   }
 

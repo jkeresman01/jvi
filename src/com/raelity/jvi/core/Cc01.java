@@ -43,6 +43,7 @@ import org.openide.util.lookup.ServiceProvider;
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViBadLocationException;
 import com.raelity.jvi.ViBuffer.BIAS;
+import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViFactory;
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViMark;
@@ -467,16 +468,12 @@ public class Cc01
 
             List<ViAppView> avs = AppViews.getList(AppViews.ACTIVE);
 
-            ViFactory fact = ViManager.getFactory();
-            ViAppView avCur = fact.getAppView(cev.getViTextView().getEditor());
+            ViAppView avCur = ViManager.getFactory()
+                    .getAppView(cev.getViTextView().getEditor());
             
-            for(ViAppView av :avs) {
-                if(!av.equals(avCur)) {
-                    ViTextView tv = fact.getTextView(av);
-                    tv.win_close(false);
-                }
-
-            }
+            for(ViAppView av :avs)
+                if(!av.equals(avCur))
+                    av.close(false);
         }};
 
     private static class Wall implements ActionListener {
