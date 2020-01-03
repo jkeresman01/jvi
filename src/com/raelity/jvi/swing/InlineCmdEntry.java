@@ -56,7 +56,7 @@ import com.raelity.jvi.core.Options;
  * BTW, the problem might also be fixable using
  * KeyboardFocusManager/KeyEventDispatch.
  */
-public class InlineCmdEntry extends CommandLine.CommandLineEntry {
+public class InlineCmdEntry extends CommandLineEntry {
     private MouseListener mouseListener;
     private boolean doneWithCommandLine;
     WeakReference<JRootPane> refRootPane;

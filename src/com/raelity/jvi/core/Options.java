@@ -69,6 +69,9 @@ public final class Options {
   private static Options options;
   private static final PropertyChangeSupport pcs
                         = new PropertyChangeSupport(getOptions());
+  // includes the set command
+  private static final PropertyChangeSupport pcsSET
+                        = new PropertyChangeSupport(getOptions());
 
     public static interface EditControl {
         /** starting edit */
@@ -185,6 +188,8 @@ public final class Options {
   public static final String visualBellTime = "viVisualBellTime";
   public static final String visualBellColor = "viVisualBellColor";
 
+  public static final String history = "viHistory";
+
   public static final String wrap = "viWrap";
   public static final String list = "viList";
   public static final String lineBreak = "viLineBreak";
@@ -271,7 +276,7 @@ public final class Options {
     }
     didInit = true;
 
-    OptUtil.init(pcs);
+    OptUtil.init(pcs, pcsSET);
 
     // Since this is used to debug options, put it first
 
@@ -565,6 +570,22 @@ public final class Options {
     //
     //
 
+    OptUtil.createIntegerOption(history, 50, new Validator<Integer>() {
+              @Override
+              public void validate(Integer val) throws PropertyVetoException {
+                  if(val < 0 || val > 1000) {
+                    reportPropertyVetoException(
+		         "Only 0 - 1000 allowed. Not '" + val + "'.", val);
+                  }
+              }
+            });
+    OptUtil.setupOptionDesc(Category.GENERAL, history,
+                            "'history' 'hi'",
+            "A history of ':' commands, and a history of previous search"
+          + " patterns is remembered.  This option decides how many entries"
+          + " may be stored in each of these histories (see |cmdline-editing|)."
+          + "\nThe maximum value is 1000.");
+
     OptUtil.createBooleanOption(visualBell, true);
     OptUtil.setupOptionDesc(Category.GENERAL, visualBell, "'visualbell' 'vb'",
 	   "Use visual bell instead of beeping.  The editor window"
@@ -644,6 +665,7 @@ public final class Options {
     OptUtil.setupOptionDesc(Category.GENERAL, unnamedClipboard,
                "'clipboard' 'cb' (unnamed)",
                "use clipboard for unamed yank, delete and put");
+    setExpertHidden(unnamedClipboard, true, false);
 
     OptUtil.createBooleanOption(notStartOfLine, false);
     OptUtil.setupOptionDesc(Category.GENERAL, notStartOfLine, "(not)'startofline' (not)'sol'",
@@ -1097,6 +1119,33 @@ public final class Options {
                                                   PropertyChangeListener l)
   {
     pcs.removePropertyChangeListener(p, l);
+  }
+
+
+  // These are listeners that want to also hear about changes
+  // from the set command, in addition to dialog/preferences.
+  public static void addPropertyChangeListenerSET(
+          PropertyChangeListener listener )
+  {
+    pcsSET.addPropertyChangeListener( listener );
+  }
+
+  public static void removePropertyChangeListenerSET(
+          PropertyChangeListener listener )
+  {
+    pcsSET.removePropertyChangeListener( listener );
+  }
+  
+  public static void addPropertyChangeListenerSET(String p,
+                                                  PropertyChangeListener l)
+  {
+    pcsSET.addPropertyChangeListener(p, l);
+  }
+
+  public static void removePropertyChangeListenerSET(String p,
+                                                     PropertyChangeListener l)
+  {
+    pcsSET.removePropertyChangeListener(p, l);
   }
   
   private static Pattern mlPat1;

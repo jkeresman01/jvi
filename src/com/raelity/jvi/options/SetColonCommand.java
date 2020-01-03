@@ -247,10 +247,16 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                                   vopt.isGlobal() ? "G." : "",
                                   vopt.getVarName(), newValue);
             }
+            Object oldValue = null;
+            if(vopt.isGlobal())
+                oldValue = voptState.f.get(voptState.bag);
             voptState.f.set(voptState.bag, newValue);
             // NEEDSWORK: call some method if a global is set?
             if (vopt.isLocal()) {
                 voptState.bag.viOptionSet(G.curwin(), vopt.varName);
+            } else if(vopt.isGlobal()) {
+                OptUtil.firePropertyChangeSET(vopt.getOptName(),
+                                              oldValue, newValue);
             }
         }
     }

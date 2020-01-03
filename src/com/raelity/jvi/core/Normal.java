@@ -57,6 +57,7 @@ import static com.raelity.jvi.core.Search.*;
 import static com.raelity.jvi.core.Search01.*;
 import static com.raelity.jvi.core.Search02.*;
 import static com.raelity.jvi.core.Search03.*;
+import static com.raelity.jvi.core.TabPages.gotoTabpage;
 import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
@@ -4151,11 +4152,11 @@ nv_brackets(CMDARG cap, int dir)
         break;
 
     case 't':
-        Cc01.gotoTabpage(cap.count0, null);
+        gotoTabpage(cap.count0, null);
         break;
 
     case 'T':
-        Cc01.gotoTabpage(-cap.count1, null);
+        gotoTabpage(-cap.count1, null);
         break;
 
       default:

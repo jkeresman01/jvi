@@ -414,6 +414,16 @@ implements Options.EditControl {
         return ViManager.getReleaseString();
     }
 
+    public void setViHistory(int arg)
+            throws PropertyVetoException {
+        put(Options.history, arg);
+    }
+
+    public int getViHistory() {
+        return getint(Options.history);
+    }
+
+
     public void setViAaSearchMagic(String arg)
     throws PropertyVetoException {
         put(Options.magic, arg);

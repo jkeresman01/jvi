@@ -199,4 +199,8 @@ public interface ViFactory
     public void tagDialog(ColonCommands.ColonEvent e);
 
     public void commandEntryAssist(ViCmdEntry cmdEntry, boolean enable);
+
+    default public boolean commandEntryAssistBusy(ViCmdEntry cmdEntry) {
+        return false;
+    }
 }

@@ -1736,76 +1736,76 @@ public class Misc implements ClipboardOwner {
     if (regname == '_')			// black hole: don't stuff anything
       return OK;
 
-      switch (regname) {
-      // use last command line
-      case ':':
-        return FAIL; // NEEDSWORK: do_execreg ':'
-        /* ****************************************************************
-        !!! s = ColonCommands.lastCommand; // s = last_cmdline;
-        if (last_cmdline == NULL)
-        {
-        EMSG(e_nolastcmd);
-        return FAIL;
-        }
-        vim_free(new_last_cmdline); // don't keep the cmdline containing @:
-        new_last_cmdline = NULL;
-        retval = put_in_typebuf(last_cmdline, TRUE);
-        ****************************************************************/
-      case '.':
-        // use last inserted text
-        String s = get_last_insert_save();
-        if (s == null || s.length() == 0)
-        {
-          Msg.emsg(Messages.e_noinstext);
-          return FAIL;
-        }
-        retval = put_in_typebuf(s, colon);
-        break;
-      default:
-        int remap;
-        get_yank_register(regname, false);
-        if (y_current.y_size == 0 || y_current.y_array == null
-                || y_current.y_array.length == 0 || y_current.y_array[0].length() == 0)
-          return FAIL;
-
-        /* Disallow remaping for ":@r". */
-        remap = colon ? -1 : 0;
-
-        //
-        // Insert lines into typeahead buffer, from last one to first one.
-        //
-        /* ****************************************************************
-        for (i = y_current.y_size; --i >= 0; )
-        {
-        // insert newline between lines and after last line if type is MLINE
-        if (y_current.y_type == MLINE || i < y_current.y_size - 1
-        || addcr)
-        {
-        if (ins_typebuf("\n", remap, 0, true) == FAIL)
-        return FAIL;
-        }
-        if (ins_typebuf(y_current.y_array[i], remap, 0, true) == FAIL)
-        return FAIL;
-        if (colon && ins_typebuf(":", remap, 0, true) == FAIL)
-        return FAIL;
-        }
-        ****************************************************************/
-        // Just roll our own for jvi
-        StringBuilder sb = new StringBuilder(y_current.y_array[0]);
-        if(y_current.y_type == MLINE || addcr) {
-          if(sb.length() == 0 || sb.charAt(sb.length()-1) != '\n') {
-            sb.append('\n');
-          }
-        }
-        //
-        // NEEDSWORK: if(colon) put ":" begin of each line
-        //
-        if(ins_typebuf_redo(sb, remap, 0, true) == FAIL) {
-          return FAIL;
-        }
-        G.Exec_reg = true;	// disable the 'q' command
-        break;
+    switch (regname) {
+    // use last command line
+    case ':':
+      return FAIL; // NEEDSWORK: do_execreg ':'
+      /* ****************************************************************
+      !!! s = ColonCommands.lastCommand; // s = last_cmdline;
+      if (last_cmdline == NULL)
+      {
+      EMSG(e_nolastcmd);
+      return FAIL;
       }
+      vim_free(new_last_cmdline); // don't keep the cmdline containing @:
+      new_last_cmdline = NULL;
+      retval = put_in_typebuf(last_cmdline, TRUE);
+      ****************************************************************/
+    case '.':
+      // use last inserted text
+      String s = get_last_insert_save();
+      if (s == null || s.length() == 0)
+      {
+        Msg.emsg(Messages.e_noinstext);
+        return FAIL;
+      }
+      retval = put_in_typebuf(s, colon);
+      break;
+    default:
+      int remap;
+      get_yank_register(regname, false);
+      if (y_current.y_size == 0 || y_current.y_array == null
+              || y_current.y_array.length == 0 || y_current.y_array[0].length() == 0)
+        return FAIL;
+
+      /* Disallow remaping for ":@r". */
+      remap = colon ? -1 : 0;
+
+      //
+      // Insert lines into typeahead buffer, from last one to first one.
+      //
+      /* ****************************************************************
+      for (i = y_current.y_size; --i >= 0; )
+      {
+      // insert newline between lines and after last line if type is MLINE
+      if (y_current.y_type == MLINE || i < y_current.y_size - 1
+      || addcr)
+      {
+      if (ins_typebuf("\n", remap, 0, true) == FAIL)
+      return FAIL;
+      }
+      if (ins_typebuf(y_current.y_array[i], remap, 0, true) == FAIL)
+      return FAIL;
+      if (colon && ins_typebuf(":", remap, 0, true) == FAIL)
+      return FAIL;
+      }
+      ****************************************************************/
+      // Just roll our own for jvi
+      StringBuilder sb = new StringBuilder(y_current.y_array[0]);
+      if(y_current.y_type == MLINE || addcr) {
+        if(sb.length() == 0 || sb.charAt(sb.length()-1) != '\n') {
+          sb.append('\n');
+        }
+      }
+      //
+      // NEEDSWORK: if(colon) put ":" begin of each line
+      //
+      if(ins_typebuf_redo(sb, remap, 0, true) == FAIL) {
+        return FAIL;
+      }
+      G.Exec_reg = true;	// disable the 'q' command
+      break;
+    }
     return retval;
   }
 
@@ -3440,7 +3440,7 @@ private static int put_in_typebuf(String s, boolean colon)
       int offset01 = offset00 - 1; // points to the '\n' of current line
 
       MySegment seg = G.curbuf.getLineSegment(nextline);
-      int offset02 = offset00 + skipwhite(seg);
+      int offset02 = offset00 + skipwhite(seg, 0);
       int nextc = Util.getCharAt(offset02);
 
       if(insert_space) {
@@ -3893,24 +3893,19 @@ private static int put_in_typebuf(String s, boolean colon)
     /**
      * Skip over ' ' and '\t', return index, relative to
      * seg.offset, of next non-white.
+     * 
+     * NOTE: CHAR ITER
      */
-    static int skipwhite(MySegment seg) {
-      return skipwhite(seg, 0);
-    }
-    static int skipwhite(MySegment seg, int idx) {
-      for(; idx < seg.count; idx++) {
-        if(!vim_iswhite(seg.array[seg.offset + idx]))
-          return idx;
-      }
-      /*NOTREACHED*/
-      throw new RuntimeException("no newline?");
+    static void skipwhite(MySegment seg) {
+      while(vim_iswhite(seg.current()))
+        seg.next();
     }
     
     /**
      * Skip over ' ' and '\t', return index next non-white.
      * This is only used for specialized parsing, not part of main vi engine.
      */
-    static int skipwhite(String str, int idx) {
+    static int skipwhite(CharSequence str, int idx) {
       for(; idx < str.length(); idx++) {
         if( ! vim_iswhite(str.charAt(idx))) {
           return idx;

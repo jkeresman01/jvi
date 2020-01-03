@@ -262,6 +262,7 @@ new VimOption("redoTrack",   "",     Options.redoTrack,        S.P_GBL, EnumSet.
 new VimOption("useFrame",    "",     Options.commandEntryFrame,S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 new VimOption("viminfoMaxBuf","",    Options.persistedBufMarks,S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 new VimOption("magic",   "magic",    Options.magic,            S.P_GBL, nullF),
+new VimOption("history", "hi",       Options.history,          S.P_GBL, nullF),
 };
 
 

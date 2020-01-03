@@ -107,6 +107,10 @@ public class G implements ViOptionBag
     static boolean Recording;
     static boolean Exec_reg;      // true when executing a register
 
+    // history length
+    static int p_hi;
+    public static int p_hi() { return p_hi; }
+
     // for the global command
     static boolean global_busy;
     ViOutputStream global_output;

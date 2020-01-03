@@ -1166,6 +1166,17 @@ START-DOC-DEL
 	See |highlight-default| for the default highlight groups.
 STOP-DOC-DEL
 
+						*'history'* *'hi'*
+'history' 'hi'		number	(Vim default: 50, Vi default: 0,
+						 set to 200 in |defaults.vim|)
+			global
+	A history of ":" commands, and a history of previous search patterns
+	is remembered.  This option decides how many entries may be stored in
+	each of these histories (see |cmdline-editing|).
+	The maximum value is 10000.
+	NOTE: This option is set to the Vi default value when 'compatible' is
+	set and to the Vim default value when 'compatible' is reset.
+
 				 *'hlsearch'* *'hls'* *'nohlsearch'* *'nohls'*
 'hlsearch' 'hls'	boolean	(default off)
 			global

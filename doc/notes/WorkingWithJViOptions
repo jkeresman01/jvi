@@ -46,11 +46,29 @@ Working with jVi options
         Typically add new get/set right after getJViVersion()
 
         For example:
+        There is in Optins.java
+              public static final String showMode = "viShowMode";
+        In OptionsBeanBase.java
               public void setViShowMode(boolean arg)
                   { put(Options.showMode, arg); }
               public boolean getViShowMode()
                   { return getboolean(Options.showMode); }
-        Note that there can be property change listeners on the Bean.
+        Required that the method name be the same as the option name,
+        with the option name capitalized, like putOptionName(...)
+
+        Note that there can be property change listeners on an option.
+
+        To catch when the preference changes. This is when
+        the change is done through dialog and persisted to disk.
+                  Options.addPropertyChangeListener(
+                          Options.history, (evt) -> trimList());
+
+        To catch both SET command of global and through dialog use
+                  Options.addPropertyChangeListenerSET(
+                          Options.history, (evt) -> trimList());
+
+        Local options have an independent mechanism.
+        See SetColonCommand
 
     . Option Scope
       There are three types of options with a common naming scheme

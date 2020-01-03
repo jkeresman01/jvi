@@ -24,6 +24,7 @@ import java.text.CharacterIterator;
 import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.lib.MutableInt;
+import com.raelity.text.StringSegment;
 import com.raelity.text.TextUtil.MySegment;
 
 import static com.raelity.jvi.core.lib.Constants.*;
@@ -285,6 +286,8 @@ public class Util {
   {
     if(s1.length() > n)
       s1 = s1.substring(0, n);
+    if(s2.length() > n)
+      s2 = s2.substring(0, n);
     return s1.compareTo(s2);
   }
 
@@ -292,6 +295,15 @@ public class Util {
   {
     String s1 = seg.subSequence(i, seg.count).toString();
     return strncmp(s1, s2, n);
+  }
+
+  static int strnicmp(StringSegment ss1, String s2, int n)
+  {
+    String s1 = ss1.length() > n ? ss1.substring(0, n) : ss1.toString();
+    if(s2.length() > n)
+      s2 = s2.substring(0, n);
+    return s1.compareToIgnoreCase(s2);
+
   }
 
 /*
@@ -409,6 +421,16 @@ vim_str2nr(MySegment seg, int start,
     }
     if (unptr != null)
 	unptr.setValue(un);//*unptr = un;
+}
+
+static void
+vim_str2nr(String str, int start,
+           MutableInt hexp, MutableInt len,
+           int dooct, int dohex,
+           MutableInt nptr, MutableInt unptr)
+{
+  StringSegment seg = new StringSegment(str);
+  vim_str2nr(seg, start, hexp, len, dooct, dohex, nptr, unptr);
 }
 
 /**

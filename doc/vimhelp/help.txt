@@ -116,7 +116,7 @@ DOC-DEL |various.txt|	various remaining commands
 DOC-DEL |recover.txt|	recovering from a crash
 
 Advanced editing ~
-DOC-DEL |cmdline.txt|	Command-line editing
+|cmdline.txt|	Command-line editing
 |options.txt|	description of all options
 |pattern.txt|	regexp patterns and search commands
 |map.txt|	key mapping and abbreviations

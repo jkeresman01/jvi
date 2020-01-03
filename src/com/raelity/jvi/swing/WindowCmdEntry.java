@@ -41,7 +41,7 @@ import com.raelity.jvi.manager.ViManager;
  * The window close button is disabled. <ESC> or <CR> must be
  * used to dismiss it.
  */
-public class WindowCmdEntry extends CommandLine.CommandLineEntry {
+public class WindowCmdEntry extends CommandLineEntry {
     /** valid while active taking input */
     private CommandLineWindow commandLineWindow;
     // NEEDSWORK: WindowCmdEntry: on frame dispose, dispose of window

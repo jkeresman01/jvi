@@ -72,7 +72,18 @@
   <dd>
     <ul>
       <li>
-        Search <span class="tt">magic</span> option,
+        Bring command line up/down arrows and command/search handling 
+        in line with vim. In the command line, the UP arrow goes towards
+        previous commands or search patterns.
+        Add <span class="tt">'history'</span> option for size of history
+        and <span class="tt">:history</span> command with full vim syntax.
+        For example <span class="tt">:history / -5,</span>
+        shows the last five search patterns.
+        <br/>
+        See documentation in cmdline.txt.
+      </li>
+      <li>
+        Search <span class="tt">'magic'</span> option,
         either
         "<span class="tt">vm</span>",
         "<span class="tt">m</span>",
@@ -97,7 +108,7 @@
       <li>
         For command line entry window, allow two modality options introduced
         in java 1.6. Continue to allow glass pane. Note this is only provided
-        for cases where OS handling of dialogs causes problems
+        for cases where default OS handling of dialogs causes problems
       </li>
     </ul>
   </dd>

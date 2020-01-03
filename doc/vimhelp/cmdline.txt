@@ -1,0 +1,384 @@
+*cmdline.txt*   For Vim version 8.2.  Last change: 2019 Nov 26
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+				*Cmdline-mode* *Command-line-mode*
+Command-line mode		*Cmdline* *Command-line* *mode-cmdline* *:*
+
+Command-line mode is used to enter Ex commands (":"), search patterns
+("/" and "?"), and filter commands ("!").
+
+Basic command line editing is explained in chapter 20 of the user manual
+|usr_20.txt|.
+
+1. Command-line editing		|cmdline-editing|
+2. Command-line completion	|cmdline-completion|
+START-DOC-DEL
+3. Ex command-lines		|cmdline-lines|
+4. Ex command-line ranges	|cmdline-ranges|
+5. Ex command-line flags	|ex-flags|
+6. Ex special characters	|cmdline-special|
+7. Command-line window		|cmdline-window|
+STOP-DOC-DEL
+
+==============================================================================
+1. Command-line editing					*cmdline-editing*
+
+Normally characters are inserted in front of the cursor position.  You can
+move around in the command-line with the left and right cursor keys.  With the
+<Insert> key, you can toggle between inserting and overstriking characters.
+START-DOC-DEL
+
+Note that if your keyboard does not have working cursor keys or any of the
+other special keys, you can use ":cnoremap" to define another key for them.
+For example, to define tcsh style editing keys:		*tcsh-style*  >
+	:cnoremap <C-A> <Home>
+	:cnoremap <C-F> <Right>
+	:cnoremap <C-B> <Left>
+	:cnoremap <Esc>b <S-Left>
+	:cnoremap <Esc>f <S-Right>
+(<> notation |<>|; type all this literally)
+
+							*cmdline-too-long*
+When the command line is getting longer than what fits on the screen, only the
+part that fits will be shown.  The cursor can only move in this visible part,
+thus you cannot edit beyond that.
+STOP-DOC-DEL
+
+						*cmdline-history* *history*
+The command-lines that you enter are remembered in a history table.  You can
+recall them with the up and down cursor keys.  There are actually five
+history tables:
+- one for ':' commands
+- one for search strings
+START-DOC-DEL
+- one for expressions
+- one for input lines, typed for the |input()| function.
+- one for debug mode commands
+STOP-DOC-DEL
+These are completely separate.  Each history can only be accessed when
+entering the same type of line.
+Use the 'history' option to set the number of lines that are remembered
+(default: 50).
+Notes:
+- When you enter a command-line that is exactly the same as an older one, the
+  old one is removed (to avoid repeated commands moving older commands out of
+  the history).
+- Only commands that are typed are remembered.  Ones that completely come from
+  mappings are not put in the history.
+- All searches are put in the search history, including the ones that come
+  from commands like "*" and "#".  But for a mapping, only the last search is
+  remembered (to avoid that long mappings trash the history).
+
+
+START-DOC-DEL
+
+There is an automatic completion of names on the command-line; see
+|cmdline-completion|.
+
+							*c_CTRL-V*
+CTRL-V		Insert next non-digit literally.  Up to three digits form the
+		decimal value of a single byte.  The non-digit and the three
+		digits are not considered for mapping.  This works the same
+		way as in Insert mode (see above, |i_CTRL-V|).
+		Note: Under Windows CTRL-V is often mapped to paste text.
+		Use CTRL-Q instead then.
+		When |modifyOtherKeys| is enabled then special Escape sequence
+		is converted back to what it was without |modifyOtherKeys|,
+		unless the Shift key is also pressed.
+							*c_CTRL-Q*
+CTRL-Q		Same as CTRL-V.  But with some terminals it is used for
+		control flow, it doesn't work then.
+
+CTRL-SHIFT-V				*c_CTRL-SHIFT-V* *c_CTRL-SHIFT-Q*
+CTRL-SHIFT-Q	Works just like CTRL-V, unless |modifyOtherKeys| is active,
+		then it inserts the Escape sequence for a key with modifiers.
+
+							*c_<Left>* *c_Left*
+<Left>		cursor left
+							*c_<Right>* *c_Right*
+<Right>		cursor right
+							*c_<S-Left>*
+<S-Left> or <C-Left>					*c_<C-Left>*
+		cursor one WORD left
+							*c_<S-Right>*
+<S-Right> or <C-Right>					*c_<C-Right>*
+		cursor one WORD right
+CTRL-B or <Home>				*c_CTRL-B* *c_<Home>* *c_Home*
+		cursor to beginning of command-line
+CTRL-E or <End>					*c_CTRL-E* *c_<End>* *c_End*
+		cursor to end of command-line
+
+							*c_<LeftMouse>*
+<LeftMouse>	Move the cursor to the position of the mouse click.
+
+							*c_<MiddleMouse>*
+<MiddleMouse>	Paste the contents of the clipboard (for X11 the primary
+		selection).  This is similar to using CTRL-R *, but no CR
+		characters are inserted between lines.
+
+CTRL-H						*c_<BS>* *c_CTRL-H* *c_BS*
+<BS>		Delete the character in front of the cursor (see |:fixdel| if
+		your <BS> key does not do what you want).
+							*c_<Del>* *c_Del*
+<Del>		Delete the character under the cursor (at end of line:
+		character before the cursor) (see |:fixdel| if your <Del>
+		key does not do what you want).
+							*c_CTRL-W*
+CTRL-W		Delete the |word| before the cursor.  This depends on the
+		'iskeyword' option.
+							*c_CTRL-U*
+CTRL-U		Remove all characters between the cursor position and
+		the beginning of the line.  Previous versions of vim
+		deleted all characters on the line.  If that is the
+		preferred behavior, add the following to your .vimrc: >
+			:cnoremap <C-U> <C-E><C-U>
+<
+						*c_<Insert>* *c_Insert*
+<Insert>	Toggle between insert and overstrike.
+
+{char1} <BS> {char2}	or				*c_digraph*
+CTRL-K {char1} {char2}					*c_CTRL-K*
+		enter digraph (see |digraphs|).  When {char1} is a special
+		key, the code for that key is inserted in <> form.
+
+CTRL-R {register}					*c_CTRL-R* *c_<C-R>*
+		Insert the contents of a numbered or named register.  Between
+		typing CTRL-R and the second character '"' will be displayed
+		to indicate that you are expected to enter the name of a
+		register.
+		The text is inserted as if you typed it, but mappings and
+		abbreviations are not used.  Command-line completion through
+		'wildchar' is not triggered though.  And characters that end
+		the command line are inserted literally (<Esc>, <CR>, <NL>,
+		<C-C>).  A <BS> or CTRL-W could still end the command line
+		though, and remaining characters will then be interpreted in
+		another mode, which might not be what you intended.
+		Special registers:
+			'"'	the unnamed register, containing the text of
+				the last delete or yank
+			'%'	the current file name
+			'#'	the alternate file name
+			'*'	the clipboard contents (X11: primary selection)
+			'+'	the clipboard contents
+			'/'	the last search pattern
+			':'	the last command-line
+			'-'	the last small (less than a line) delete
+			'.'	the last inserted text
+							*c_CTRL-R_=*
+			'='	the expression register: you are prompted to
+				enter an expression (see |expression|)
+				(doesn't work at the expression prompt; some
+				things such as changing the buffer or current
+				window are not allowed to avoid side effects)
+				When the result is a |List| the items are used
+				as lines.  They can have line breaks inside
+				too.
+				When the result is a Float it's automatically
+				converted to a String.
+		See |registers| about registers.
+		Implementation detail: When using the |expression| register
+		and invoking setcmdpos(), this sets the position before
+		inserting the resulting string.  Use CTRL-R CTRL-R to set the
+		position afterwards.
+
+CTRL-R CTRL-F				*c_CTRL-R_CTRL-F* *c_<C-R>_<C-F>*
+CTRL-R CTRL-P				*c_CTRL-R_CTRL-P* *c_<C-R>_<C-P>*
+CTRL-R CTRL-W				*c_CTRL-R_CTRL-W* *c_<C-R>_<C-W>*
+CTRL-R CTRL-A				*c_CTRL-R_CTRL-A* *c_<C-R>_<C-A>*
+CTRL-R CTRL-L				*c_CTRL-R_CTRL-L* *c_<C-R>_<C-L>*
+		Insert the object under the cursor:
+			CTRL-F	the Filename under the cursor
+			CTRL-P	the Filename under the cursor, expanded with
+				'path' as in |gf|
+			CTRL-W	the Word under the cursor
+			CTRL-A	the WORD under the cursor; see |WORD|
+			CTRL-L	the line under the cursor
+
+		When 'incsearch' is set the cursor position at the end of the
+		currently displayed match is used.  With CTRL-W the part of
+		the word that was already typed is not inserted again.
+
+		CTRL-F and CTRL-P: {only when |+file_in_path| feature is
+		included}
+
+					*c_CTRL-R_CTRL-R* *c_<C-R>_<C-R>*
+					*c_CTRL-R_CTRL-O* *c_<C-R>_<C-O>*
+CTRL-R CTRL-R {register CTRL-F CTRL-P CTRL-W CTRL-A CTRL-L}
+CTRL-R CTRL-O {register CTRL-F CTRL-P CTRL-W CTRL-A CTRL-L}
+		Insert register or object under the cursor.  Works like
+		|c_CTRL-R| but inserts the text literally.  For example, if
+		register a contains "xy^Hz" (where ^H is a backspace),
+		"CTRL-R a" will insert "xz" while "CTRL-R CTRL-R a" will
+		insert "xy^Hz".
+
+CTRL-\ e {expr}						*c_CTRL-\_e*
+		Evaluate {expr} and replace the whole command line with the
+		result.  You will be prompted for the expression, type <Enter>
+		to finish it.  It's most useful in mappings though.  See
+		|expression|.
+		See |c_CTRL-R_=| for inserting the result of an expression.
+		Useful functions are |getcmdtype()|, |getcmdline()| and
+		|getcmdpos()|.
+		The cursor position is unchanged, except when the cursor was
+		at the end of the line, then it stays at the end.
+		|setcmdpos()| can be used to set the cursor position.
+		The |sandbox| is used for evaluating the expression to avoid
+		nasty side effects.
+		Example: >
+			:cmap <F7> <C-\>eAppendSome()<CR>
+			:func AppendSome()
+			   :let cmd = getcmdline() . " Some()"
+			   :" place the cursor on the )
+			   :call setcmdpos(strlen(cmd))
+			   :return cmd
+			:endfunc
+<		This doesn't work recursively, thus not when already editing
+		an expression.  But it is possible to use in a mapping.
+
+							*c_CTRL-Y*
+CTRL-Y		When there is a modeless selection, copy the selection into
+		the clipboard. |modeless-selection|
+		If there is no selection CTRL-Y is inserted as a character.
+
+CTRL-M or CTRL-J		*c_CTRL-M* *c_CTRL-J* *c_<NL>* *c_<CR>* *c_CR*
+<CR> or <NL>	start entered command
+
+CTRL-[						*c_CTRL-[* *c_<Esc>* *c_Esc*
+<Esc>		When typed and 'x' not present in 'cpoptions', quit
+		Command-line mode without executing.  In macros or when 'x'
+		present in 'cpoptions', start entered command.
+		Note: If your <Esc> key is hard to hit on your keyboard, train
+		yourself to use CTRL-[.
+							*c_CTRL-C*
+CTRL-C		quit command-line without executing
+STOP-DOC-DEL
+
+							*c_<Up>* *c_Up*
+<Up>		recall older command-line from history, whose beginning
+		matches the current command-line (see below).
+START-DOC-DEL
+		{not available when compiled without the |+cmdline_hist|
+		feature}
+STOP-DOC-DEL
+							*c_<Down>* *c_Down*
+<Down>		recall more recent command-line from history, whose beginning
+		matches the current command-line (see below).
+START-DOC-DEL
+		{not available when compiled without the |+cmdline_hist|
+		feature}
+
+							*c_<S-Up>* *c_<PageUp>*
+<S-Up> or <PageUp>
+		recall older command-line from history
+		{not available when compiled without the |+cmdline_hist|
+		feature}
+						*c_<S-Down>* *c_<PageDown>*
+<S-Down> or <PageDown>
+		recall more recent command-line from history
+		{not available when compiled without the |+cmdline_hist|
+		feature}
+
+CTRL-D		command-line completion (see |cmdline-completion|)
+'wildchar' option
+		command-line completion (see |cmdline-completion|)
+CTRL-N		command-line completion (see |cmdline-completion|)
+CTRL-P		command-line completion (see |cmdline-completion|)
+CTRL-A		command-line completion (see |cmdline-completion|)
+CTRL-L		command-line completion (see |cmdline-completion|)
+
+							*c_CTRL-_*
+CTRL-_		a - switch between Hebrew and English keyboard mode, which is
+		private to the command-line and not related to hkmap.
+		This is useful when Hebrew text entry is required in the
+		command-line, searches, abbreviations, etc.  Applies only if
+		Vim is compiled with the |+rightleft| feature and the
+		'allowrevins' option is set.
+		See |rileft.txt|.
+
+		b - switch between Farsi and English keyboard mode, which is
+		private to the command-line and not related to fkmap.  In
+		Farsi keyboard mode the characters are inserted in reverse
+		insert manner.  This is useful when Farsi text entry is
+		required in the command-line, searches, abbreviations, etc.
+		Applies only if Vim is compiled with the |+farsi| feature.
+		See |farsi.txt|.
+
+							*c_CTRL-^*
+CTRL-^		Toggle the use of language |:lmap| mappings and/or Input
+		Method.
+		When typing a pattern for a search command and 'imsearch' is
+		not -1, VAL is the value of 'imsearch', otherwise VAL is the
+		value of 'iminsert'.
+		When language mappings are defined:
+		- If VAL is 1 (langmap mappings used) it becomes 0 (no langmap
+		  mappings used).
+		- If VAL was not 1 it becomes 1, thus langmap mappings are
+		  enabled.
+		When no language mappings are defined:
+		- If VAL is 2 (Input Method is used) it becomes 0 (no input
+		  method used)
+		- If VAL has another value it becomes 2, thus the Input Method
+		  is enabled.
+		These language mappings are normally used to type characters
+		that are different from what the keyboard produces.  The
+		'keymap' option can be used to install a whole number of them.
+		When entering a command line, langmap mappings are switched
+		off, since you are expected to type a command.  After
+		switching it on with CTRL-^, the new state is not used again
+		for the next command or Search pattern.
+
+						*c_CTRL-]*
+CTRL-]		Trigger abbreviation, without inserting a character.
+
+For Emacs-style editing on the command-line see |emacs-keys|.
+STOP-DOC-DEL
+
+The <Up> and <Down> keys take the current command-line as a search string.
+The beginning of the next/previous command-lines are compared with this
+string.  The first line that matches is the new command-line.  When typing
+these two keys repeatedly, the same string is used again.  For example, this
+can be used to find the previous substitute command: Type ":s" and then <Up>.
+The same could be done by typing <S-Up> a number of times until the desired
+command-line is shown.  (Note: the shifted arrow keys do not work on all
+terminals)
+							*:his* *:history*
+:his[tory]	Print the history of last entered commands.
+START-DOC-DEL
+		{not available when compiled without the |+cmdline_hist|
+		feature}
+STOP-DOC-DEL
+
+:his[tory] [{name}] [{first}][, [{last}]]
+		List the contents of history {name} which can be:
+		c[md]	 or :		command-line history
+		s[earch] or / or ?	search string history
+START-DOC-DEL
+		e[xpr]	 or =		expression register history
+		i[nput]	 or @		input line history
+		d[ebug]	 or >		debug command history
+STOP-DOC-DEL
+		a[ll]			all of the above
+
+		If the numbers {first} and/or {last} are given, the respective
+		range of entries from a history is listed.  These numbers can
+		be specified in the following form:
+							*:history-indexing*
+		A positive number represents the absolute index of an entry
+		as it is given in the first column of a :history listing.
+		This number remains fixed even if other entries are deleted.
+
+		A negative number means the relative position of an entry,
+		counted from the newest entry (which has index -1) backwards.
+
+		Examples:
+		List entries 6 to 12 from the search history: >
+			:history / 6,12
+<
+		List the penultimate entry from all histories: >
+			:history all -2
+<
+		List the most recent two entries from all histories: >
+			:history all -2,

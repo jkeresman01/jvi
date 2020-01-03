@@ -52,6 +52,7 @@ public class OptUtil {
     private static boolean didInit = false;
     private static Preferences prefs;
     private static PropertyChangeSupport pcs;
+    private static PropertyChangeSupport pcsSET;
     private static final Map<String,Option> optionsMap = new HashMap<>();
 
     private static final List<String> platformList = new ArrayList<>();
@@ -62,7 +63,8 @@ public class OptUtil {
     private static final List<String> processList = new ArrayList<>();
     private static final List<String> debugList = new ArrayList<>();
 
-    public static void init(PropertyChangeSupport pcs)
+    public static void init(PropertyChangeSupport pcs,
+                            PropertyChangeSupport pcsSET)
     {
         if (didInit) {
             return;
@@ -70,6 +72,7 @@ public class OptUtil {
         didInit = true;
 
         OptUtil.pcs = pcs;
+        OptUtil.pcsSET = pcsSET;
 
         platformList.add("jViVersion"); // HACK - just doit
 
@@ -93,7 +96,14 @@ public class OptUtil {
 
   /** This should only be used from Option and its subclasses */
   static void firePropertyChange(String name, Object oldValue, Object newValue) {
+    pcsSET.firePropertyChange(name, oldValue, newValue);
     pcs.firePropertyChange(name, oldValue, newValue);
+  }
+
+  /** This should only be used from SetColonCommand */
+  static void firePropertyChangeSET(
+          String name, Object oldValue, Object newValue) {
+    pcsSET.firePropertyChange(name, oldValue, newValue);
   }
 
 
