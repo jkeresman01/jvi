@@ -1,0 +1,104 @@
+
+> On Nov 18, 2019, at 11:27, Ernie Rael <err@raelity.com> wrote:
+>
+> Greetings,
+>
+> It's been over 5 years, but I am again going to work with NetBeans source, do some pull requests... It is now on github. I've never used git. I used hggit to clone the repo; then made a github fork, moved my path to my fork. Cool, so far seems OK.
+>
+> Now I'm looking at the NB docs and see stuff like "then do 'git config --global user.name "John Doe"' " and also a cmd for email. The 'git remote add upstream ...' so I can submit PULL REQUESTS certainly has me confused.
+
+You can use your clone directly to contribute. The Mercurial equivalent of the `git remote add upstream ...` command they list is adding another entry under [paths] in your .hg/hgrc (the config file in the your local clone). So you'd end up with something like:
+
+[paths]
+default = git+ssh://git@github.com/yourusername/netbeans.git
+upstream = git+ssh://git@github.com/apache/netbeans.git
+
+And then you can pull from either:
+
+$ hg pull           # or `hg pull default` -- pulls from your fork on GitHub
+$ hg pull upstream  # pull from the canonical repo
+
+When the NetBeans instructions tell you to create a Git _branch_, you'll want to create a Mercurial _bookmark_. You can then do your work and commit, then push that bookmark to your fork and open a pull request. In other words:
+
+$ hg pull upstream
+$ hg update master        
+$ hg bookmark mybranch    # equiv. to `git checkout -b mybranch`
+...make your changes...
+$ hg commit -m '[NETBEANS-XXXX]'
+$ hg push -r mybranch     # equiv. to `git push [-u] origin mybranch`
+
+Note that hg-git currently has some warts around rewriting history locally -- there are workarounds but it's not a smooth experience. As long as you don't rewrite (i.e. rebase, amend, histedit, etc.) any changes you've already pushed, you'll be okay.
+
+> I'm considering using git to clone my github fork to local, then point my current hggit clone to the local github clone. The idea is that I might want to do stuff (NB docs) locally before pushing to github. Is this needed and/or a good idea?
+
+Nah, as I've described above you can pretty well eliminate the extra local clone -- after all that's what hg-git does internally anyway!
+
+> -ernie
+>
+> PS. I recall years ago seeing somewhere about running git and hg commands both in the same clone, but that seems fraught with danger.
+
+Yeah, I'd recommend against trying that.
+
+pacem in terris / мир / शान्ति / ‎‫سَلاَم‬ / 平和
+Kevin R. Bullock
+
+
+===================================================================
+
+
+Many thanks Kevin. Your response will be a dog eared reference for me.
+
+I already had a path for NB which I experimented with 'hg in' and 'hg pull'. I changed the name to upstream for doc (and memory trigger). And your workflow example is invaluable, especially that bookmark/branch.
+
+You use netbeans.git, I don't have the ".git" extension. Is there some magic, or is it a naming convention?
+
+The example has 'hg push -r mybranch', why not '... -B mybranch'? I guess they're equivalent in this case.
+
+When you say
+
+   hg-git [has issues so] ... don't rewrite ... changes you've already
+   pushed
+
+I think of pushing a change, then needing to revise it after review and wanting to 'hg squash'. Should I wait till (not if, when) that happens? Are there things I can do beforehand to minimize potential problems? Or maybe some light reading so those workarounds don't come as a total shock:-)
+
+-ernie 
+
+
+===================================================================
+
+On Mon, Nov 18, 2019 at 1:32 PM Ernie Rael <err@raelity.com> wrote:
+>
+> You use netbeans.git, I don't have the ".git" extension. Is there some
+> magic, or is it a naming convention?
+
+I think that's magic on the github side. I believe the URL will go to
+the same place with or without the .git.
+
+> The example has 'hg push -r mybranch', why not '... -B mybranch'? I
+> guess they're equivalent in this case.
+
+I think the only difference would normally be that -B would push the
+bookmark metadata itself, but it seems like even `hg push -r .`
+informs the git server of the active bookmark name, so they seem
+equivalent?
+
+>
+> When you say
+>
+>     hg-git [has issues so] ... don't rewrite ... changes you've already
+>     pushed
+>
+> I think of pushing a change, then needing to revise it after review and
+> wanting to 'hg squash'. Should I wait till (not if, when) that happens?
+> Are there things I can do beforehand to minimize potential problems? Or
+> maybe some light reading so those workarounds don't come as a total shock:-)
+
+Kevin will have to answer that. I *thought* I had been fine pushing
+updated changesets to a github pull request, and having it replace the
+originals a la git push -f. I can certainly imagine problems once the
+PR has been merged into master. You will need to use -f to push the
+updates, same as with git. I just tried a very basic test, and it
+worked ok. (It was just one change on a new bookmark, amended and
+force-pushed after creating a PR.)
+
+

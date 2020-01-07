@@ -39,7 +39,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,6 +56,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Element;
@@ -89,10 +92,12 @@ import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.DebugOption;
 import com.raelity.text.TextUtil.MySegment;
 
+import static java.awt.event.ActionEvent.ACTION_PERFORMED;
 import static java.lang.Math.abs;
 import static java.lang.Math.round;
 
 import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.text.TextUtil.sf;
 
 /**
  *  Presents a swing editor interface for use with vi. There is
@@ -110,13 +115,15 @@ public abstract class SwingTextView extends TextView
             Logger LOG = Logger.getLogger(SwingTextView.class.getName());
     private static int genNum; // unique/invariant window id;
 
+    protected static Map<String,Action> actionMap
+            = new HashMap<String,Action>();
+
     protected int w_num;
 
     private LineMap lm;
     private ViewMap vm;
 
     protected JTextComponent editorPane;
-    protected TextOps ops;
     protected TextView window;
 
     protected ViStatusDisplay statusDisplay;
@@ -311,12 +318,8 @@ public abstract class SwingTextView extends TextView
     @Override
     public void attach()
     {
-        if ( ops == null ) {
-            createOps();
-        }
-        if ( G.dbgEditorActivation().getBoolean() ) {
-            G.dbgEditorActivation().println("TV.attach: " + editorPane.hashCode());
-        }
+        G.dbgEditorActivation().println(
+                ()->sf("TV.attach: %s", editorPane.hashCode()));
         attachMore();
     }
 
@@ -328,17 +331,6 @@ public abstract class SwingTextView extends TextView
 
         Scheduler.detached(editorPane);
     }
-
-
-    /**
-     *  Create methods to invoke and interact with editor pane actions.
-     *  May override for custom editor panes.
-     */
-    protected void createOps()
-    {
-        ops = new Ops(this);
-    }
-
 
     @Override
     public JTextComponent getEditor()
@@ -430,6 +422,39 @@ public abstract class SwingTextView extends TextView
     //            must be used to get proper autoindent handling.
     //
 
+    protected Action findAction(String actionName) {
+        Action action = actionMap.get(actionName);
+        if (action == null) {
+            Action[] actions = getActions();
+            for(Action action1 : actions) {
+                String name = (String)action1.getValue(Action.NAME);
+                if(name.equals(actionName)) {
+                    action = action1;
+                    actionMap.put(name, action);
+                    break;
+                }
+            }
+        }
+
+        return action;
+    }
+
+    @Override
+    public void xact(String actionName)
+    {
+        xact(actionName, "");
+    }
+
+    final protected void xact(String actionName, String cmd)
+    {
+        Action act = findAction(actionName);
+        if(act == null)
+            throw new IllegalArgumentException(
+                    "Action " + actionName + "not found");
+	act.actionPerformed(
+            new ActionEvent(getEditor(), ACTION_PERFORMED, cmd));
+    }
+
     @Override
     public void insertNewLine()
     {
@@ -437,7 +462,7 @@ public abstract class SwingTextView extends TextView
             Util.beep_flush();
             return;
         }
-        ops.xop(TextOps.INSERT_NEW_LINE); // NEEDSWORK: xop throws no exception
+        xact(DefaultEditorKit.insertBreakAction);
     }
 
     @Override
@@ -447,7 +472,7 @@ public abstract class SwingTextView extends TextView
             Util.beep_flush();
             return;
         }
-        ops.xop(TextOps.INSERT_TAB); // NEEDSWORK: xop throws no exception
+        xact(DefaultEditorKit.insertTabAction);
     }
 
 
@@ -477,7 +502,7 @@ public abstract class SwingTextView extends TextView
             Util.beep_flush();
             return;
         }
-        ops.xop(TextOps.DELETE_PREVIOUS_CHAR); // NEEDSWORK: xop throws no exception
+        xact(DefaultEditorKit.deletePrevCharAction);
     }
 
 
@@ -515,7 +540,7 @@ public abstract class SwingTextView extends TextView
             Util.vim_beep();
             return;
         }
-        ops.xop(TextOps.KEY_TYPED, String.valueOf(c)); // NEEDSWORK: xop throws no exception
+        xact(DefaultEditorKit.defaultKeyTypedAction, String.valueOf(c));
     }
 
 
@@ -1140,11 +1165,6 @@ public abstract class SwingTextView extends TextView
     public ViStatusDisplay getStatusDisplay()
     {
         return statusDisplay;
-    }
-
-    public TextOps getOps()
-    {
-        return ops;
     }
 
     /**

@@ -70,7 +70,7 @@ import java.util.Map.Entry;
  * activateAppView</li>
  * </ul>
  */
-public class ViManager
+final public class ViManager
 {
     private static final Logger LOG = Logger.getLogger(ViManager.class.getName());
 
@@ -86,7 +86,7 @@ public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("1.6.0.x2");
+    public static final jViVersion version = new jViVersion("1.6.0.x5");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -184,7 +184,7 @@ public class ViManager
     private static final PropertyChangeSupport pcs
             = new PropertyChangeSupport(getViMan());
 
-    ViManager() {} // PRIVATE
+    private ViManager() {}
     private static ViManager viMan;
     private static ViManager getViMan() {
         if(viMan == null)

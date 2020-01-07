@@ -171,6 +171,9 @@ public interface ViTextView extends ViOptionBag {
   // They all fail if !isEditable
   //
 
+  /** convenience method */
+  public void xact(String actionName);
+
   /** Can the editor text be changed */
   public boolean isEditable();
 

@@ -48,6 +48,8 @@ public class FreezeViewport implements DocumentListener, ChangeListener
             doc.readLock();
             // may throw class cast, its ok. Why???
             vp = (JViewport)ViManager.getFactory().getViewport(ep);
+            if(vp == null)
+                return;
             Element root = doc.getDefaultRootElement();
             nLine = root.getElementCount();
             // Get the offset of the first displayed char in the top line
