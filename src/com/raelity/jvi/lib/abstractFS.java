@@ -20,6 +20,10 @@
 
 package com.raelity.jvi.lib;
 
+import java.awt.Component;
+
+import javax.swing.text.JTextComponent;
+
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViBuffer;
 import com.raelity.jvi.ViFS;
@@ -27,6 +31,7 @@ import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.Misc;
 import com.raelity.jvi.core.TextView;
+import com.raelity.jvi.manager.*;
 
 /**
  *
@@ -79,5 +84,17 @@ abstract public class abstractFS implements ViFS
         sb.append(" ").append(buf.getLength()).append("C");
         return sb.toString();
   }
+
+    @Override
+    public String getDisplayFileName(Component c)
+    {
+        if(c instanceof JTextComponent) {
+            JTextComponent ed = (JTextComponent)c;
+            ViAppView av = ViManager.getFactory().getAppView(ed);
+            if(av != null)
+                return getDisplayFileName(av);
+        }
+        return c != null ? c.getClass().getSimpleName() : "NULL";
+    }
 
 }

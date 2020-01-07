@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.options;
 
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -51,6 +52,30 @@ abstract public class DebugOption extends EnumOption<String>
     abstract public void printf(String format, Object... args);
 
     abstract public void printf(Level level, String format, Object... args);
+
+    public void println(Supplier<String> sup)
+    {
+        if(getBoolean())
+            println(sup.get());
+    }
+
+    public void println(Level level, Supplier<String> sup)
+    {
+        if(getBoolean(level))
+            println(level, sup.get());
+    }
+
+    public void printf(Supplier<String> sup)
+    {
+        if(getBoolean())
+            printf(sup.get());
+    }
+
+    public void printf(Level level, Supplier<String> sup)
+    {
+        if(getBoolean(level))
+            printf(level, sup.get());
+    }
 
     abstract public Logger getLogger();
 

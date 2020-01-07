@@ -20,6 +20,7 @@
 
 package com.raelity.jvi;
 
+import java.awt.Component;
 import java.io.File;
 
 /**
@@ -31,6 +32,8 @@ public interface ViFS
     public String getDisplayFileName( ViBuffer buf );
 
     public String getDisplayFileName( ViAppView av );
+
+    public String getDisplayFileName( Component c );
 
     public String getDisplayFileNameAndSize(ViBuffer buf);
 

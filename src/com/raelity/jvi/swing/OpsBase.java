@@ -23,6 +23,7 @@ package com.raelity.jvi.swing;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.swing.Action;
 import javax.swing.text.DefaultEditorKit;
@@ -30,6 +31,8 @@ import javax.swing.text.DefaultEditorKit;
 import com.raelity.jvi.ViTextView;
 
 import static java.awt.event.ActionEvent.ACTION_PERFORMED;
+
+import static com.raelity.text.TextUtil.sf;
 
 /**
  * This provides default swing JTextComponent behavior that are
@@ -47,7 +50,9 @@ import static java.awt.event.ActionEvent.ACTION_PERFORMED;
  *
  * @author erra
  */
-public class OpsBase implements TextOps {
+public class OpsBase implements TextOps
+{
+    private static final Logger LOG = Logger.getLogger(OpsBase.class.getName());
 
     protected ViTextView textView;
 
@@ -69,10 +74,27 @@ public class OpsBase implements TextOps {
 	action.actionPerformed(
             new ActionEvent(textView.getEditor(), ACTION_PERFORMED, command));
     }
-
+    
     @Override
     public void xop(int op) {
-        xop(op, "");
+        String actionName;
+        switch(op) {
+        case INSERT_NEW_LINE:
+            actionName = DefaultEditorKit.insertBreakAction;
+            break;
+        case INSERT_TAB:
+            actionName = DefaultEditorKit.insertTabAction;
+            break;
+        case DELETE_PREVIOUS_CHAR:
+            actionName = DefaultEditorKit.deletePrevCharAction;
+            break;
+        default:
+            IllegalArgumentException x = new IllegalArgumentException();
+            LOG.severe(()->sf("xop(%d): \n%s", op, x));
+            return;
+            
+        }
+        xact(actionName);
     }
     
     @Override
@@ -82,6 +104,7 @@ public class OpsBase implements TextOps {
 
     /**
      * Try to do something useful with the op.
+     * NEEDSWORK: seems like only KEY_TYPED is ever used.
      */
     @Override
     public void xop(int op, String cmd) {

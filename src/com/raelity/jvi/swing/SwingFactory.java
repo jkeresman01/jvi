@@ -43,6 +43,7 @@ import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JDialog;
 import javax.swing.JRootPane;
+import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
@@ -53,27 +54,15 @@ import javax.swing.text.TextAction;
 
 import org.openide.util.WeakSet;
 
-import com.raelity.jvi.ViAppView;
-import com.raelity.jvi.ViCaret;
-import com.raelity.jvi.ViCmdEntry;
-import com.raelity.jvi.ViFactory;
-import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.ViTextView.TAGOP;
-import com.raelity.jvi.ViWindowNavigator;
-import com.raelity.jvi.ViXlateKey;
-import com.raelity.jvi.core.Buffer;
-import com.raelity.jvi.core.ColonCommands;
-import com.raelity.jvi.core.G;
-import com.raelity.jvi.core.Misc01;
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.manager.AppViews;
-import com.raelity.jvi.manager.Scheduler;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.options.OptionsBeanBase;
-import com.raelity.jvi.swing.simple.SimpleWindowTreeBuilder;
+import com.raelity.jvi.*;
+import com.raelity.jvi.core.*;
+import com.raelity.jvi.core.lib.KeyDefs.KeyStrokeType;
+import com.raelity.jvi.manager.*;
+import com.raelity.jvi.options.*;
+import com.raelity.jvi.swing.simple.*;
 
-import static com.raelity.jvi.core.lib.KeyDefs.*;
-import javax.swing.JViewport;
+import static com.raelity.jvi.core.lib.KeyDefs.VIRT;
 
 /**
  * This provides the Vi items to interface with standard swing JTextComponent.
