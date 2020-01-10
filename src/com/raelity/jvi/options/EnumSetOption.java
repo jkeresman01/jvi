@@ -28,9 +28,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.l2fprod.common.swing.renderer.DefaultCellRenderer;
-
 import com.raelity.jvi.core.Options;
+
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
@@ -158,25 +157,6 @@ extends Option<EnumSet<S>>
             ((DefaultEnumSetValidator)validator).validateAnyType(val);
         else
             super.validate(val);
-    }
-
-    public static class DefaultEnumSetCellRenderer extends DefaultCellRenderer {
-
-        @Override
-        protected String convertToString(Object value)
-        {
-            // be paranoid and check for the [ and ]
-            String s = value.toString();
-            if(value instanceof EnumSet
-                    && s.startsWith("[")
-                    && s.endsWith("]")) {
-                // strip off the '[' and ']'
-                return s.substring(1, s.length()-1);
-            } else {
-                // impossible since must be enum set
-                return super.convertToString(value);
-            }
-        }
     }
 
     /**

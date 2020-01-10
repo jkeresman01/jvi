@@ -283,7 +283,7 @@ class OptionSheet extends JPanel implements Options.EditControl {
         if(propertyRenderers == null) {
             propertyRenderers = new PropertyRendererRegistry();
             propertyRenderers.registerRenderer(
-                    EnumSet.class, EnumSetOption.DefaultEnumSetCellRenderer.class);
+                    EnumSet.class, DefaultEnumSetCellRenderer.class);
         }
     }
 
