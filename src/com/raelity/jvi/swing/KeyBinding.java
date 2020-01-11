@@ -179,8 +179,7 @@ private static Action createKeyAction( String name, char key ) {
             
 
   /**
-   * Return an ArrayList of bindings. This can be modified without
-   * affecting the backing list.
+   * Return an ArrayList of bindings.
    */
   public static List<JTextComponent.KeyBinding> getBindingsList() {
       return Collections.unmodifiableList(getBindingsListInternal());

@@ -148,7 +148,8 @@ class OptionSheet extends JPanel implements Options.EditControl {
     @Override
     public void ok()
     {
-        // option sheet persists as you go, so nothing to do
+        // Now's the time to persist the changes
+        ((Options.EditControl)bean).ok();
     }
 
     // back out the changes

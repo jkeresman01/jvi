@@ -27,6 +27,7 @@ package com.raelity.jvi.swing.ui.options;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.beans.BeanInfo;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,10 +55,12 @@ import com.raelity.jvi.options.OptionsBean;
  * @author erra
  */
 public class OptionsPanel extends JPanel {
+    private static final long serialVersionUID = 1L;
     ChangeNotify changeNotify;
     private final List<Options.EditControl> optionSheets = new ArrayList<>();
     private MapCommands mapCommands;
 
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     public OptionsPanel(ChangeNotify changeNotify) {
         this.changeNotify = changeNotify;
         setLayout(new BorderLayout());
@@ -67,6 +70,10 @@ public class OptionsPanel extends JPanel {
 
     public void load()
     {
+        if(!EventQueue.isDispatchThread()) {
+            EventQueue.invokeLater(() -> load());
+            return;
+        }
         // read property values from backing store
         // and prepare for a new property edit op
         for (Options.EditControl optionSheet : optionSheets) {
@@ -76,6 +83,11 @@ public class OptionsPanel extends JPanel {
 
     public void ok()
     {
+        if(!EventQueue.isDispatchThread()) {
+            EventQueue.invokeLater(() -> ok());
+            return;
+        }
+        // Now's the time to persist the changes
         // accept the edits
         for (Options.EditControl optionSheet : optionSheets) {
             optionSheet.ok();

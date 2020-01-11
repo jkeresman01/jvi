@@ -53,6 +53,9 @@ import org.openide.util.WeakListeners;
 
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.options.OptUtil.OptionChangeHandler;
+
+import static com.raelity.jvi.manager.ViManager.getFactory;
 
 /**
  * Base class for jVi options beans. This method contains the read/write methods
@@ -63,26 +66,29 @@ import com.raelity.jvi.manager.ViManager;
  * @author erra
  */
 public class OptionsBeanBase extends SimpleBeanInfo
-implements Options.EditControl {
+implements Options.EditControl
+{
     private static final
             Logger LOG = Logger.getLogger(OptionsBeanBase.class.getName());
     private final Class clazz;
-    private final Options.Category category;
     private final List<String> optionsList;
     private final String displayName;
     
-    private final PropertyChangeSupport pcs = new PropertyChangeSupport( this );
-    private final VetoableChangeSupport vcs = new VetoableChangeSupport( this ); 
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final VetoableChangeSupport vcs = new VetoableChangeSupport(this);
     //private static String checkme = "Search Options";
+    private final OptionChangeHandler optionChangeHandler;
 
-    private final Map<String,Object> changeMap = new HashMap<>();
+    //private final Map<String,Object> changeMap = new HashMap<>();
     
     /** Creates a new instance of OptionsBeanBase */
     public OptionsBeanBase(Class clazz, String displayName,
-                           Options.Category category) {
+                           Options.Category category)
+    {
+        this.optionChangeHandler
+                = new OptionChangeHandler(pcs, getFactory().getPreferences());
         this.clazz = clazz;
         this.displayName = displayName;
-        this.category = category;
         this.optionsList = Options.getOptionList(category);
 
         optionsListener = new OptionsListener();
@@ -94,20 +100,23 @@ implements Options.EditControl {
     }
 
     @Override
-    public void start() {
-        // no changes so far
-        changeMap.clear();
+    public void start()
+    {
+        optionChangeHandler.clear();
     }
 
     @Override
     public void ok()
     {
-        // nothing to do since edits persist as you go
+        // Now's the time to persist the changes
+        optionChangeHandler.applyChanges();
+        optionChangeHandler.clear();
     }
 
     @Override
-    public void cancel() {
-        undoChanges();
+    public void cancel()
+    {
+        optionChangeHandler.clear();
     }
 
     private final OptionsListener optionsListener;
@@ -126,38 +135,6 @@ implements Options.EditControl {
         return new ThisBeanDescriptor();
     }
 
-    /*
-    private class MyPropertyDescriptor extends PropertyDescriptor {
-        public MyPropertyDescriptor(String propertyName, Method readMethod, Method writeMethod)
-                throws IntrospectionException {
-            super(propertyName, readMethod, writeMethod);
-        }
-
-        public MyPropertyDescriptor(String propertyName, Class<?> beanClass, String readMethodName, String writeMethodName)
-                throws IntrospectionException {
-            super(propertyName, beanClass, readMethodName, writeMethodName);
-        }
-
-        public MyPropertyDescriptor(String propertyName, Class<?> beanClass)
-                throws IntrospectionException {
-            super(propertyName, beanClass);
-        }
-
-        @Override
-        public PropertyEditor createPropertyEditor(Object bean) {
-            //return new PropertyEditorWithDefaultButton(getPropertyType());
-            return super.createPropertyEditor(bean);
-        }
-
-        @Override
-        public Class<?> getPropertyEditorClass() {
-            if(getPropertyType().equals(boolean.class))
-                return BooleanPropertyEditorWithDefaultButton.class;
-            return super.getPropertyEditorClass();
-        }
-    }
-    */
-
     @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
 	PropertyDescriptor[] descriptors
@@ -168,8 +145,6 @@ implements Options.EditControl {
             PropertyDescriptor d;
             if(name.equals("jViVersion")) {
                 try {
-                    // d = new MyPropertyDescriptor(name, clazz,
-                    //         "getJViVersion", null);
                     d = new PropertyDescriptor(name, clazz,
                             "getJViVersion", null);
                 } catch (IntrospectionException ex) {
@@ -179,7 +154,7 @@ implements Options.EditControl {
                 d.setDisplayName("jVi Version");
             } else {
                 try {
-                    d = ViManager.getFactory()
+                    d = getFactory()
                             .createPropertyDescriptor(name, name, clazz);
                 } catch (IntrospectionException ex) {
                     LOG.log(Level.SEVERE, null, ex);
@@ -211,23 +186,6 @@ implements Options.EditControl {
         }
         return d;
     }
-    
-    /* This doesn't work. wonder why?
-    public static Image getJViLogo(int type) {
-        if (type == BeanInfo.ICON_COLOR_16x16
-                || type == BeanInfo.ICON_MONO_16x16) {
-            if (icon == null)
-                icon = Toolkit.getDefaultToolkit().getImage(
-                            "/com/raelity/jvi/resources/jViLogo.png");
-            return icon;
-        } else {
-            if (icon32 == null)
-                icon = Toolkit.getDefaultToolkit().createImage(
-                            "/com/raelity/jvi/resources/jViLogo32.png");
-            return icon32;
-        }
-    }
-     */
     
     private static Image icon, icon32;
     @Override
@@ -278,128 +236,66 @@ implements Options.EditControl {
     {
         this.vcs.addVetoableChangeListener( listener );
     } 
-    
-    //
-    //      The interface to preferences.
-    //
-    private final Preferences prefs = ViManager.getFactory().getPreferences();
 
-    // Called before a change is made,
-    // record the previous value.
-    // Do nothing if a value is already recorded for this key.
-    @SuppressWarnings("unchecked")
-    private void trackChange(String name, Class clazz) {
-        if(changeMap.containsKey(name))
-            return;
-
-        Object o = null;
-        if(clazz == String.class) {
-            o = getString(name);
-        } else if(clazz == Integer.class) {
-            o = getint(name);
-        } else if(clazz == Boolean.class) {
-            o = getboolean(name);
-        } else if(clazz == Color.class) {
-            o = getColor(name);
-            if(o == null)
-                o = nullColor;
-        } else if(clazz == EnumSet.class) {
-            o = EnumSet.copyOf(getEnumSet(name));
-        } else assert false : "unhandled type";
-        changeMap.put(name, o);
-    }
-
-    // Since color can be null, and a null object has no type
-    // use the following specific object for a null color
-    private final Color nullColor = new Color(0,0,0);
-
-    private void undoChanges() {
-        for (Map.Entry<String, Object> entry : changeMap.entrySet()) {
-            String key = entry.getKey();
-            Object o = entry.getValue();
-            if(o instanceof String) {
-                prefs.put(key, (String)o);
-            } else if(o instanceof Color) {
-                prefs.put(key, ColorOption.encode(
-                        (Color)(o != nullColor ? o : null)));
-            } else if(o instanceof Integer) {
-                prefs.putInt(key, (Integer)o);
-            } else if(o instanceof Boolean) {
-                prefs.putBoolean(key, (Boolean)o);
-            } else if(o instanceof EnumSet) {
-                prefs.put(key, EnumSetOption.encode((EnumSet)o));
-            } else
-                assert false : "unhandled type";
-        }
-    }
-
-    protected void put(String name, String val) throws PropertyVetoException {
+    final protected void put(String name, String val) throws PropertyVetoException {
         String old = getString(name);
 	Option opt = Options.getOption(name);
         opt.validate(val);
         this.vcs.fireVetoableChange( name, old, val );
-        trackChange(name, String.class);
-	prefs.put(name, val);
-        this.pcs.firePropertyChange( name, old, val );
+        optionChangeHandler.changeOption(name, old, val);
     }
 
-    protected void put(String name, int val) throws PropertyVetoException {
+    final protected void put(String name, int val) throws PropertyVetoException {
         int old = getint(name);
 	Option opt = Options.getOption(name);
         opt.validate(val);
         this.vcs.fireVetoableChange( name, old, val );
-        trackChange(name, Integer.class);
-	prefs.putInt(name, val);
-        this.pcs.firePropertyChange( name, old, val );
+        optionChangeHandler.changeOption(name, old, (Integer)val);
     }
 
-    protected void put(String name, Color val) throws PropertyVetoException {
+    final protected void put(String name, Color val) throws PropertyVetoException {
         Color old = getColor(name);
 	ColorOption opt = (ColorOption)Options.getOption(name);
         opt.validate(val);
         this.vcs.fireVetoableChange( name, old, val );
-        trackChange(name, Color.class);
-	prefs.put(name, ColorOption.encode(val));
-        this.pcs.firePropertyChange( name, old, val );
+        optionChangeHandler.changeOption(name, old, val);
     }
 
-    protected void put(String name, EnumSet val) throws PropertyVetoException {
+    final protected void put(String name, EnumSet val) throws PropertyVetoException {
         @SuppressWarnings("unchecked")
         EnumSet old = EnumSet.copyOf(getEnumSet(name));
 	EnumSetOption opt = (EnumSetOption)Options.getOption(name);
         opt.validate(val);
         this.vcs.fireVetoableChange( name, old, val );
-        trackChange(name, EnumSet.class);
-	prefs.put(name, EnumSetOption.encode(val));
-        this.pcs.firePropertyChange( name, old, val );
+        optionChangeHandler.changeOption(name, old, val);
     }
 
-    protected void put(String name, boolean val) {
-        trackChange(name, Boolean.class);
-	prefs.putBoolean(name, val);
+    final protected void put(String name, boolean val) {
+        boolean old = getboolean(name);
+        optionChangeHandler.changeOption(name, old, val);
     }
 
-    protected String getString(String name) {
+    final protected String getString(String name) {
 	Option opt = Options.getOption(name);
 	return opt.getString();
     }
 
-    protected int getint(String name) {
+    final protected int getint(String name) {
 	Option opt = Options.getOption(name);
 	return opt.getInteger();
     }
 
-    protected Color getColor(String name) {
+    final protected Color getColor(String name) {
 	Option opt = (ColorOption) Options.getOption(name);
         return opt.getColor();
     }
 
-    protected EnumSet getEnumSet(String name) {
+    final protected EnumSet getEnumSet(String name) {
 	Option opt = Options.getOption(name);
 	return opt.getEnumSet();
     }
 
-    protected boolean getboolean(String name) {
+    final protected boolean getboolean(String name) {
 	Option opt = Options.getOption(name);
 	return opt.getBoolean();
     }
@@ -1220,89 +1116,6 @@ implements Options.EditControl {
 	return getString(Options.dbgRedo);
     }
 
-    /*
-    //
-    // PropertyEditors
-    //
-
-    public static class BooleanPropertyEditorWithDefaultButton
-    extends PropertyEditorWithDefaultButton {
-
-        public BooleanPropertyEditorWithDefaultButton() {
-            super(boolean.class);
-        }
-
-    }
-
-    public static class PropertyEditorWithDefaultButton
-    extends PropertyEditorSupport
-    implements PropertyChangeListener {
-        PropertyEditor delegateEditor;
-
-        public PropertyEditorWithDefaultButton(Class propertyType) {
-            super();
-            // get the editor for the specified class
-            delegateEditor = PropertyEditorManager.findEditor(propertyType);
-            delegateEditor.addPropertyChangeListener(this);
-        }
-
-        public void paintValue(Graphics gfx, Rectangle box) {
-            delegateEditor.paintValue(gfx, box);
-        }
-
-        public boolean isPaintable() {
-            return delegateEditor.isPaintable();
-        }
-
-        //
-        // pass on property changes from delegate
-        //
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            firePropertyChange();
-        }
-
-        //
-        // delegate most real work
-        //
-
-        // public void setSource(Object source) {
-        //     pes.setSource(source);
-        // }
-
-        // public Object getSource() {
-        //     return pes.getSource();
-        // }
-
-        public void setValue(Object value) {
-            delegateEditor.setValue(value);
-        }
-
-        public void setAsText(String text) throws IllegalArgumentException {
-            delegateEditor.setAsText(text);
-        }
-
-        public Object getValue() {
-            return delegateEditor.getValue();
-        }
-
-        public String[] getTags() {
-            return delegateEditor.getTags();
-        }
-
-        public String getAsText() {
-            return delegateEditor.getAsText();
-        }
-
-        public boolean supportsCustomEditor() {
-            return delegateEditor.supportsCustomEditor();
-        }
-
-        public Component getCustomEditor() {
-            return delegateEditor.getCustomEditor();
-        }
-    }
-    */
 }
 
 // vi: sw=4 et

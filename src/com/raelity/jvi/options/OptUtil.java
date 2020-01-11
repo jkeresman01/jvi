@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,6 +42,7 @@ import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.Options.Category;
 import com.raelity.jvi.manager.ViManager;
+
 
 /**
  * static methods to create options and populate option categories.
@@ -253,6 +255,7 @@ public class OptUtil {
       case CURSOR_WRAP: catList = cursorWrapList; break;
       case PROCESS:     catList = processList; break;
       case DEBUG:       catList = debugList; break;
+      case NONE:        catList = new ArrayList<>(0); break;
     }
     return Collections.unmodifiableList(catList);
   }
@@ -267,6 +270,7 @@ public class OptUtil {
       case CURSOR_WRAP: catList = cursorWrapList; break;
       case PROCESS:     catList = processList; break;
       case DEBUG:       catList = debugList; break;
+      case NONE:        catList = new ArrayList<>(0); break;
     }
     return catList;
   }
@@ -373,6 +377,77 @@ public class OptUtil {
 
   private OptUtil()
   {
+  }
+  
+  static public class OptionChangeHandler
+  {
+
+  private static class Change
+  {
+  public Change(Object oldVal, Object newVal)
+  {
+    this.oldVal = oldVal;
+    this.newVal = newVal;
+  }
+  
+  Object oldVal;
+  Object newVal;
+  }
+  
+  // Since color can be null, and a null object has no type
+  // use the following specific object for a null color
+  final static Color nullColor = new Color(0,0,0);
+  private final PropertyChangeSupport pcs;
+  private final Preferences prefs;
+  private final Map<String, Change> map = new HashMap<>();
+
+  OptionChangeHandler(PropertyChangeSupport pcs, Preferences prefs)
+  {
+    this.pcs = pcs;
+    this.prefs = prefs;
+  }
+  
+  void clear()
+  {
+    map.clear();
+  }
+  
+  void changeOption(String name, Object oldVal, Object newVal)
+  {
+    Change ch = map.get(name);
+    if(ch == null) {
+      ch = new Change(oldVal, newVal);
+      map.put(name, ch);
+    } else {
+      // assert oldVal.equals(ch.oldVal);
+      ch.newVal = newVal;
+    }
+  }
+  
+  void applyChanges()
+  {
+    for(Entry<String, Change> entry : map.entrySet()) {
+      String key = entry.getKey();
+      Change ch = entry.getValue();
+      
+      if(ch.newVal instanceof String) {
+        prefs.put(key, (String)ch.newVal);
+      } else if(ch.newVal instanceof Color) {
+        prefs.put(key, ColorOption.encode(
+                (Color)(ch.newVal != nullColor ? ch.newVal : null)));
+      } else if(ch.newVal instanceof Integer) {
+        prefs.putInt(key, (Integer)ch.newVal);
+      } else if(ch.newVal instanceof Boolean) {
+        prefs.putBoolean(key, (Boolean)ch.newVal);
+      } else if(ch.newVal instanceof EnumSet) {
+        prefs.put(key, EnumSetOption.encode((EnumSet)ch.newVal));
+      } else
+        assert false : "unhandled type";
+      
+      if(pcs != null)
+        pcs.firePropertyChange(key, ch.newVal, ch.oldVal);
+    }
+  }
   }
 }
 

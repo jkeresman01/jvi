@@ -59,10 +59,12 @@ import com.raelity.text.XMLUtil;
  * @author Ernie Rael <err at raelity.com>
  */
 public class MapCommands extends javax.swing.JPanel
-implements Options.EditControl {
+implements Options.EditControl
+{
+    private static final long serialVersionUID = 1L;
     private final OptionsPanel optionsPanel;
     private final StringOption opt;
-    private OptionsBean.General bean;
+    private final OptionsBean.None bean;
     private static final String statusCurrent = "saved mappings";
     private static final String statusModified = "modified mappings";
     private static final String statusError = "failed mappings ";
@@ -78,7 +80,7 @@ implements Options.EditControl {
         initComponents();
         this.optionsPanel = optionsPanel;
         opt = (StringOption)OptUtil.getOption(optName);
-        bean = new OptionsBean.General();
+        bean = new OptionsBean.None();
         mappings.getDocument().addDocumentListener(
                 WeakListeners.document(listen, mappings.getDocument()));
         mappings.addCaretListener(WeakListeners.create(
@@ -119,6 +121,8 @@ implements Options.EditControl {
     @Override
     public void start()
     {
+        bean.start();
+
         // read property values from backing store
         // and prepare for a new property edit op
 
@@ -150,8 +154,7 @@ implements Options.EditControl {
         description.setCaretPosition(0);
     }
 
-    @Override
-    public void ok()
+    private void setOption()
     {
         lastSetMappings = mappings.getText();
         if(opt.getValue().equals(lastSetMappings))
@@ -166,15 +169,28 @@ implements Options.EditControl {
                         ? ex.getCause().getMessage()
                         : ex.getMessage());
         }
+        setChange(change);
+    }
+
+    private void setChange(boolean change)
+    {
         if(change && optionsPanel.changeNotify != null) {
             optionsPanel.changeNotify.change();
         }
     }
 
     @Override
+    public void ok()
+    {
+        // Now's the time to persist the changes
+        setOption();
+        bean.ok();
+    }
+
+    @Override
     public void cancel()
     {
-        // nothing to undo
+        bean.cancel();
     }
 
     private void setStatus(boolean defaultError)
@@ -189,19 +205,18 @@ implements Options.EditControl {
             } else {
                 status.setForeground(Color.black);
                 status.setText(statusModified);
+                setChange(true);
             }
         }
     }
 
     private void showError(String msg)
     {
-        ViOutputStream vios
-                = ViManager.createOutputStream(null,
-                                               ViOutputStream.LINES,
-                                               OUTPUT_TITLE,
-                                               ViOutputStream.PRI_HIGH);
-        vios.println(msg);
-        vios.close();
+        try (ViOutputStream vios = ViManager.createOutputStream(
+                null, ViOutputStream.LINES,
+                OUTPUT_TITLE, ViOutputStream.PRI_HIGH)) {
+            vios.println(msg);
+        }
         JOptionPane.showMessageDialog(
                 null,
                 "Parse failed."
@@ -233,6 +248,7 @@ implements Options.EditControl {
                     "Parse succeeded",
                     DIALOG_TITLE,
                     JOptionPane.INFORMATION_MESSAGE);
+            setOption();
             setStatus(false);
         }
         mappings.requestFocusInWindow();

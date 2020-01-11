@@ -23,65 +23,61 @@ package com.raelity.jvi.options;
 import java.awt.Image;
 import java.beans.BeanInfo;
 import java.beans.SimpleBeanInfo;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.prefs.Preferences;
 
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.options.OptUtil.OptionChangeHandler;
 import com.raelity.jvi.swing.KeyBinding;
+
+import static com.raelity.jvi.manager.ViManager.getFactory;
 
 /**
  *
  * @author erra
  */
 public class KeyOptionsBeanBase extends SimpleBeanInfo
-        implements Options.EditControl {
+implements Options.EditControl
+{
+    private final OptionChangeHandler optionChangeHandler;
+    final protected Preferences prefs;
 
-    private final Map<String,Boolean> changeMap = new HashMap<>();
+
+
+    public KeyOptionsBeanBase()
+    {
+        this.prefs = getFactory()
+                .getPreferences().node(ViManager.PREFS_KEYS);
+        this.optionChangeHandler = new OptionChangeHandler(null, this.prefs);
+    }
+
 
     @Override
     public void cancel()
     {
-        for (Map.Entry<String, Boolean> entry : changeMap.entrySet()) {
-            String key = entry.getKey();
-            Boolean b = entry.getValue();
-            prefs.putBoolean(key, b);
-        }
+        optionChangeHandler.clear();
     }
 
     @Override
     public void ok()
     {
-        // nothing to do since edits persist as you go
+        // Now's the time to persist the changes
+        optionChangeHandler.applyChanges();
+        optionChangeHandler.clear();
     }
 
     @Override
     public void start()
     {
-        // no changes so far
-        changeMap.clear();
+        optionChangeHandler.clear();
     }
 
-    protected Preferences prefs = ViManager.getFactory()
-                                .getPreferences().node(ViManager.PREFS_KEYS);
-
     protected void put(String name, boolean val) {
-        trackChange(name);
-        prefs.putBoolean(name, val);
+        optionChangeHandler.changeOption(name, get(name), val);
     }
 
     protected boolean get(String name) {
         return prefs.getBoolean(name, KeyBinding.getCatchKeyDefault(name));
-    }
-
-    // Called before a change is made,
-    // record the previous value.
-    // Do nothing if a value is already recorded for this key.
-    private void trackChange(String name) {
-        if(changeMap.containsKey(name))
-            return;
-        changeMap.put(name, get(name));
     }
 
     private static Image icon, icon32;

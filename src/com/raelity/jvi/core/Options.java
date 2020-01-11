@@ -124,7 +124,7 @@ public final class Options {
    * by category when presenting an options editor.
    */
   public enum Category { PLATFORM, GENERAL, MODIFY, SEARCH, CURSOR_WRAP,
-                         PROCESS, DEBUG }
+                         PROCESS, DEBUG, NONE }
   
   public static final String commandEntryFrame = "viCommandEntryFrameOption";
   public static final String redoTrack = "viRedoTrack";

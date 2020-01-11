@@ -52,6 +52,12 @@ public class OptionsBean {
                 Options.Category.PROCESS);
 	}
     }
+    
+    static public class None extends OptionsBeanBase {
+	public None() {
+	    super(None.class, "None Options", Options.Category.NONE);
+        }
+    }
 
     static public class Debug extends OptionsBeanBase {
 	
