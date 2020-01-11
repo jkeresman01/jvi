@@ -20,6 +20,8 @@
 
 package com.raelity.jvi;
 
+import com.raelity.text.TextUtil;
+
 /**
  * When jVi wants to output multi-line information, for example lines
  * matching a search or result of some command execution, the output
@@ -52,10 +54,20 @@ public interface ViOutputStream extends AutoCloseable {
    */
   public void println(String s);
 
+  default public void println(String fmt, Object ... args)
+  {
+      println(String.format(fmt, args));
+  }
+
   /**
    *  a "link" to the output stream
    */
   public void printlnLink(String link, String text);
+
+  default public void printlnLink(String link, String fmt, Object ... text)
+  {
+      printlnLink(link, String.format(fmt, text));
+  }
   
   /**
    * Done with the stream.

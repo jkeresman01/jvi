@@ -45,7 +45,7 @@ public class PlayFS extends SimpleFS
 
     @Override
     public String getDisplayFileName(ViAppView av) {
-        return "File:" + av.getWNum();
+        return "File:" + av.getWinID();
     }
 
 

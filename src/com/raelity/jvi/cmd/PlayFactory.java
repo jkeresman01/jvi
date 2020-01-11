@@ -113,7 +113,7 @@ final public class PlayFactory extends SimpleFactory
         PlayBuffer buf = new PlayBuffer(tv);
         ViAppView av = getAppView(tv.getEditor());
         buf.getDocument().putProperty(Document.TitleProperty,
-                "File:" + av.getWNum());
+                "File:" + av.getWinID());
         return buf;
     }
 

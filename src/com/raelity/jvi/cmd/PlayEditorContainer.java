@@ -47,7 +47,7 @@ public class PlayEditorContainer extends JScrollPane
         PlayAppView av = new PlayAppView(f, this);
         AppViews.open(av, "playEditorComponent");
 
-        switch (av.getWNum()) {
+        switch (av.getWinID()) {
         case 1:
             editor.setText(SampleText.txt01);
             break;
@@ -58,8 +58,8 @@ public class PlayEditorContainer extends JScrollPane
             StringBuilder sb = new StringBuilder();
             String t = "aaaaaaaaa\n";
             for(int i = 0; i < 10; i++) {
-                char c = (char) ('A' + ((av.getWNum() - 1 + i) % 26));
-                sb.append(av.getWNum()).append(" - ")
+                char c = (char) ('A' + ((av.getWinID() - 1 + i) % 26));
+                sb.append(av.getWinID()).append(" - ")
                         .append(t.replace('a', c));
             }
             editor.setText(sb.toString());

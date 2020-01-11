@@ -155,8 +155,6 @@ public class Cc01
         ColonCommands.register("vs", "vsplit",
                                new SplitAction(Orientation.LEFT_RIGHT), null);
 
-
-
         addDebugColonCommands();
     }
 
@@ -389,7 +387,7 @@ public class Cc01
      * @return
      */
     static ViAppView parseFileNumber(List<String> args,
-                                        MutableBoolean reportedError)
+                                     MutableBoolean reportedError)
     {
         ViAppView av = null;
 
@@ -397,13 +395,13 @@ public class Cc01
         if(args.size() >= 1 && args.get(0).charAt(0) == '#') {
             boolean error = false;
 
-            String stringWindowNumber = args.get(0).substring(1);
+            String stringWindowID = args.get(0).substring(1);
             args.remove(0);
-            if(stringWindowNumber.isEmpty() && args.size() > 0) {
-                stringWindowNumber = args.get(0);
+            if(stringWindowID.isEmpty() && args.size() > 0) {
+                stringWindowID = args.get(0);
                 args.remove(0);
             }
-            av = convertFileNumber(stringWindowNumber, reportedError);
+            av = convertFileNumber(stringWindowID, reportedError);
         }
 
         return av;
@@ -412,20 +410,20 @@ public class Cc01
     /**
      * Convert the string number into an AppView. Positive numbers are
      * window number; negative are index into mru list.
-     * @param stringWindowNumber
+     * @param stringWindowID
      * @param reportedError set to true if an error was reported
      * @return av or null if bad parse
      */
-    static ViAppView convertFileNumber(String stringWindowNumber,
+    static ViAppView convertFileNumber(String stringWindowID,
                                        MutableBoolean reportedError)
     {
         ViAppView av = null;
         boolean error = false;
 
-        int windowNumber = -1;
-        if(!error && !stringWindowNumber.isEmpty()) {
+        int windowID = -1;
+        if(!error && !stringWindowID.isEmpty()) {
             try {
-                windowNumber = Integer.parseInt(stringWindowNumber);
+                windowID = Integer.parseInt(stringWindowID);
             } catch(NumberFormatException ex) {
                 error = true;
             }
@@ -438,20 +436,20 @@ public class Cc01
             // Look up the appView. If i >= 0 then find app view
             // with window that matches that number (standard vim).
             // If i < 0 then use it to index into the mru list.
-            if(windowNumber >= 0) {
+            if(windowID >= 0) {
                 for (ViAppView av1 : AppViews.getList(AppViews.ACTIVE)) {
-                    if(windowNumber == av1.getWNum()) {
+                    if(windowID == av1.getWinID()) {
                         av = av1;
                         break;
                     }
                 }
             } else {
-                av = AppViews.getMruAppView(-windowNumber);
+                av = AppViews.getMruAppView(-windowID);
             }
             if(av == null) {
                 reportedError.setValue(true);
                 Msg.emsg("No alternate file name to substitute for '#"
-                        + windowNumber + "'");
+                        + windowID + "'");
             }
         }
         return av;
@@ -532,7 +530,7 @@ public class Cc01
                 //ViAppView o2 = AppViews.getAppView(i+1);
                 ViAppView o1 = l1.get(i);
                 ViAppView o2 = l2.get(i);
-                int w2 = o2.getWNum();
+                int w2 = o2.getWinID();
                 outputData.add(String.format(
                         " %2d %c %-40s %3d %c %s",
                         i,
@@ -1003,6 +1001,29 @@ private static void addDebugColonCommands()
             }
         }
     },  EnumSet.of(CcFlag.DBG, CcFlag.NO_ARGS));
+
+    ColonCommands.register("echolog", "echolog",
+        new ColonCommands.AbstractColonAction() {
+            @Override
+            public void actionPerformed(ActionEvent ev) {
+                ColonEvent cev = (ColonEvent)ev;
+                                              
+                System.err.println(cev.getCommandLine());
+            }
+    }, EnumSet.of(CcFlag.DBG));
+
+    ColonCommands.register("echoout", "echoout",
+        new ColonCommands.AbstractColonAction() {
+            @Override
+            public void actionPerformed(ActionEvent ev) {
+                ColonEvent cev = (ColonEvent)ev;
+
+                try (ViOutputStream osa = ViManager.createOutputStream(
+                        null, ViOutputStream.OUTPUT, null)) {
+                    osa.println(cev.getCommandLine());
+            }
+        }
+    }, EnumSet.of(CcFlag.DBG));
 
 } // end
 }

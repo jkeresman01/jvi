@@ -17,8 +17,14 @@ public class OptionsBean {
     
     static public class General extends OptionsBeanBase {
 	public General() {
-	    super(General.class, "General Options",
-		  Options.Category.GENERAL);
+	    super(General.class, "General Options", Options.Category.GENERAL);
+        }
+    }
+    
+    static public class Windows extends OptionsBeanBase {
+	public Windows() {
+	    super(Windows.class, "Window Options and Display",
+                                 Options.Category.WINDOW);
         }
     }
     

@@ -26,6 +26,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,13 +58,8 @@ public class OptUtil {
     private static PropertyChangeSupport pcsSET;
     private static final Map<String,Option> optionsMap = new HashMap<>();
 
-    private static final List<String> platformList = new ArrayList<>();
-    private static final List<String> generalList = new ArrayList<>();
-    private static final List<String> modifyList = new ArrayList<>();
-    private static final List<String> searchList = new ArrayList<>();
-    private static final List<String> cursorWrapList = new ArrayList<>();
-    private static final List<String> processList = new ArrayList<>();
-    private static final List<String> debugList = new ArrayList<>();
+    private static final Map<Category, List<String>> categoryLists
+            = new EnumMap<>(Category.class);
 
     public static void init(PropertyChangeSupport pcs,
                             PropertyChangeSupport pcsSET)
@@ -76,7 +72,8 @@ public class OptUtil {
         OptUtil.pcs = pcs;
         OptUtil.pcsSET = pcsSET;
 
-        platformList.add("jViVersion"); // HACK - just doit
+        // HACK - just doit
+        getWritableOptionList(Category.PLATFORM).add("jViVersion");
 
         prefs = ViManager.getFactory().getPreferences();
 
@@ -246,31 +243,15 @@ public class OptUtil {
   }
 
   public static List<String> getOptionList(Category category) {
-    List<String> catList = null;
-    switch(category) {
-      case PLATFORM:    catList = platformList; break;
-      case GENERAL:     catList = generalList; break;
-      case MODIFY:      catList = modifyList; break;
-      case SEARCH:      catList = searchList; break;
-      case CURSOR_WRAP: catList = cursorWrapList; break;
-      case PROCESS:     catList = processList; break;
-      case DEBUG:       catList = debugList; break;
-      case NONE:        catList = new ArrayList<>(0); break;
-    }
-    return Collections.unmodifiableList(catList);
+    return Collections.unmodifiableList(getWritableOptionList(category));
   }
 
   private static List<String> getWritableOptionList(Category category) {
-    List<String> catList = null;
-    switch(category) {
-      case PLATFORM:    catList = platformList; break;
-      case GENERAL:     catList = generalList; break;
-      case MODIFY:      catList = modifyList; break;
-      case SEARCH:      catList = searchList; break;
-      case CURSOR_WRAP: catList = cursorWrapList; break;
-      case PROCESS:     catList = processList; break;
-      case DEBUG:       catList = debugList; break;
-      case NONE:        catList = new ArrayList<>(0); break;
+    List<String> catList = categoryLists.get(category);
+    if(catList == null) {
+      catList = category != Category.NONE
+                ? new ArrayList<>() : Collections.emptyList();
+      categoryLists.put(category, catList);
     }
     return catList;
   }

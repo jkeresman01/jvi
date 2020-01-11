@@ -132,6 +132,7 @@ public class OptionsPanel extends JPanel {
         tabs.setTabPlacement(JTabbedPane.LEFT);
         addTab(tabs, "Platform", new OptionsBean.Platform());
         addTab(tabs, "General", new OptionsBean.General());
+        addTab(tabs, "Windows", new OptionsBean.Windows());
         addTab(tabs, "Search", new OptionsBean.Search());
         addTab(tabs, "Buffer Modifications", new OptionsBean.Modify());
         addTab(tabs, "Cursor Line Wrap", new OptionsBean.CursorWrap());

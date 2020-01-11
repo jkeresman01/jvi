@@ -52,11 +52,12 @@ import static java.awt.event.InputEvent.SHIFT_MASK;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
+import static com.raelity.jvi.manager.ViManager.getFactory;
 
 public class KeyBinding {
   private static final Logger LOG = Logger.getLogger(KeyBinding.class.getName());
   public static final String KEY_BINDINGS = "KeyBinding";
-  private static final Preferences prefs = ViManager.getFactory()
+  private static final Preferences prefs = getFactory()
                                 .getPreferences().node(ViManager.PREFS_KEYS);
 
     @ServiceProvider(service=ViInitialization.class,
@@ -83,13 +84,8 @@ public class KeyBinding {
   private KeyBinding() {
   }
 
-  private static Action createCharAction(String name) {
-    return ((SwingFactory)ViManager.getFactory())
-            .createCharAction(name);
-  }
-
 private static Action createKeyAction( String name, char key ) {
-    return ((SwingFactory)ViManager.getFactory())
+    return ((SwingFactory)getFactory())
             .createKeyAction(name, key);
 
 }
@@ -124,7 +120,7 @@ private static Action createKeyAction( String name, char key ) {
 
    public static Keymap getKeymap(String nm) {
     Keymap keymap = JTextComponent.addKeymap(nm, null);
-    keymap.setDefaultAction(createCharAction(enqueKeyAction));
+    keymap.setDefaultAction(((SwingFactory)getFactory()).getDefaultAction());
     JTextComponent.loadKeymap(keymap, getBindings(), getActions());
     createSubKeymaps();
     return keymap;
@@ -143,10 +139,6 @@ private static Action createKeyAction( String name, char key ) {
 			      actions);
     // This is here only for convenience, it may be overridden.
     ViManager.setInsertModeKeymap(insertModeKeymap);
-  }
-
-  public static Action getDefaultAction() {
-    return createCharAction(enqueKeyAction);
   }
 
   /** Modify the keymap <code>km00</code> by removing any keystrokes
@@ -382,7 +374,7 @@ private static Action createKeyAction( String name, char key ) {
     private static List<Action> createActionList() {
         List<Action> actionsList = new ArrayList<>();
         try {
-            ViFactory factory = ViManager.getFactory();
+            ViFactory factory = getFactory();
             actionsList.add(createKeyAction("ViUpKey", K_UP));
             actionsList.add(createKeyAction("ViDownKey", K_DOWN));
             actionsList.add(createKeyAction("ViLeftKey", K_LEFT));
@@ -500,7 +492,7 @@ private static Action createKeyAction( String name, char key ) {
   public static Action[] getInsertModeActions() {
     Action[] localActions = null;
     try {
-      ViFactory factory = ViManager.getFactory();
+      ViFactory factory = getFactory();
       localActions = new Action[] {
 	  factory.createInsertModeKeyAction("ViInsert_shiftRight",
 		     IM_SHIFT_RIGHT,

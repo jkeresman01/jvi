@@ -86,7 +86,7 @@ private static class DebugAppView implements ViAppView {
         }
 
         @Override
-        public int getWNum() {
+        public int getWinID() {
             return 1;
         }
 

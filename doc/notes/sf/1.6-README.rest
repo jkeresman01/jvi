@@ -1,0 +1,21 @@
+See `CHANGES <http://jvi.sourceforge.net/?CHANGES.html>`_ for per release
+feature and fix information and details.
+In NetBeans, install "jVi for NB Update Center",
+with Tools>Plugins>AvailablePlugins
+(source: Plugin Portal, category: editing)
+
+| **nbvi-1.6** NetBeans 11.0 and later
+|     - :tabmove, :tabclose, :tabonly; vim-8.x tab command syntax/features
+|     - search 'magic' options; \v,\m, \M, \V in patterns
+|     - :history, 'history', history up/down arrows and matching
+| **nbvi-1.5.4** :register command, mapping Shft-space, Ctrl-space
+| **nbvi-1.5.3** fix for jdk8 JComboBox
+| **nbvi-1.5.1**
+|     - visual bell, smarter scrolling, :toggle [left|right|top|bottom]
+| **nbvi-1.5.0** NetBeans 7.2 and later 
+|     - folding - rework, add new commands: zc, zC, zo, zO, za, zA, zv. 'fdo' option.
+| **nbvi-1.4.5** fix for 7.1.1; works with 7.0. In 7.1 ":tog[gle]" minimize/restore output window group
+| **nbvi-1.4.3** try ":set all", other minor features and fixes
+| **nbvi-1.4.2** ^W split, resize, move window commands
+| **nbvi-1.4.1** multi-char {lhs} map-commands with 'timeout' options
+

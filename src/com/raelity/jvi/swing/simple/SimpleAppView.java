@@ -64,7 +64,7 @@ public abstract class SimpleAppView implements ViAppView
     }
 
     @Override
-    public int getWNum()
+    public int getWinID()
     {
         return wnum;
     }

@@ -1,0 +1,30 @@
+# base on https://central.sonatype.org/pages/apache-maven.html
+# the release step generates, signs and uploads all kinds of artifacts
+# 
+
+mvn -P source-and-javadoc package
+mvn -P release-sign-artifacts verify
+
+### mvn clean deploy
+mvn clean
+mvn -P release deploy
+
+# with autoReleaseAfterClose false, can do the release in pieces
+# AFTER ABOVE deploy, either complete the release or drop it
+    mvn nexus-staging:release
+    mvn nexus-staging:drop
+
+# wonder what the following does
+mvn versions:set -DnewVersion=1.2.3
+
+
+
+# After the deploy, if autoReleaseAfterClose is false,
+# go to oss.sonatype.org and log in
+# The stuff from the deploy is in "Staging Repositories"
+# After the nexus-staging:release, Staging Repos is empty
+# Look in "Repositories" then "Public Repositories"
+
+
+
+# At sonatype.org, can log in, get to sonatype.com

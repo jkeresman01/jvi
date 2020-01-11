@@ -90,20 +90,27 @@ Working with jVi options
   - Adding a new category of options.
     A category of options is represented by a list of option names.
 
-    . In Options.java define the category
-
-      static List<String>cursorWrapList = new ArrayList<String>();
+    . In Options.java define the category by adding it to "enum Category".
+      setupOptionDesc(category, optName, shortdesc, longdesc) adds the opiton
+      to the category list. Use OptUtil.getOptionList(category) to get list.
 
     . In OptionsBean.java define a tiny class for the category. This class is
       a subclass of OptionsBeanBase.
 
       static public class Search extends OptionsBeanBase {
           public Search() {
-              super(Search.class, "Search Options", Options.searchList);
+              super(Search.class, "Search Options", Options.Category.SEARCH);
           } }
 
       The arguments to the superclass are the class itself, the name of the
-      category for UI display and the List<Strign> defined in previous step.
+      category for UI display and the enum Category from previous step.
+
+    . In OptionsPanel.getTabbedOptions add an instance of the class created
+      in the previous step.
+
+          addTab(tabs, "Search", new OptionsBean.Search());
+
+      This is the order that the tabs appear in the dialog.
 
     . For NetBeans add the new category to NbOptionsNode.java
 

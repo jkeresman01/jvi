@@ -123,7 +123,7 @@ public final class Options {
    * Options are grouped into categories. Typically a UI groups the options
    * by category when presenting an options editor.
    */
-  public enum Category { PLATFORM, GENERAL, MODIFY, SEARCH, CURSOR_WRAP,
+  public enum Category { PLATFORM, GENERAL, WINDOW, MODIFY, SEARCH, CURSOR_WRAP,
                          PROCESS, DEBUG, NONE }
   
   public static final String commandEntryFrame = "viCommandEntryFrameOption";
@@ -586,27 +586,6 @@ public final class Options {
           + " may be stored in each of these histories (see |cmdline-editing|)."
           + "\nThe maximum value is 1000.");
 
-    OptUtil.createBooleanOption(visualBell, true);
-    OptUtil.setupOptionDesc(Category.GENERAL, visualBell, "'visualbell' 'vb'",
-	   "Use visual bell instead of beeping.  The editor window"
-                   + " background is inverted for a period of time, "
-                   + " see 'vbt' option."
-                   + " When no beep or flash is wanted, set time to zero.");
-    OptUtil.createIntegerOption(visualBellTime, 20);
-    OptUtil.setupOptionDesc(Category.GENERAL, visualBellTime,
-                            "'visualbelltime' 'vbt'",
-	   "The duration, in milliseconds, of the 'visual bell'. If the"
-                   + " visual bell is enabled, see 'vb', and the 'vbt'"
-                   + " value is zero then there is no beep or flash.");
-
-    OptUtil.createColorOption(visualBellColor, new Color(0x41e7e7), true);
-    OptUtil.setupOptionDesc(Category.GENERAL, visualBellColor,
-                            "'visualbellcolor' 'vbc'",
-            "The color used for the visual bell, the editor's background"
-                    + " is set to this color."
-                    + " If null, then the editor's background color"
-                    + " is inverted");
-
     OptUtil.createIntegerOption(scrollOff, 0);
     OptUtil.setupOptionDesc(Category.GENERAL, scrollOff, "'scrolloff' 'so'",
            "visible context around cursor (scrolloff)"
@@ -703,32 +682,6 @@ public final class Options {
             + " started. Possible values: 'mouse', key' or 'cmd'");
     setExpertHidden(selectMode, true, true);
 
-    OptUtil.createBooleanOption(wrap, true);
-    OptUtil.setupOptionDesc(Category.GENERAL, wrap, "'wrap'",
-          "This option changes how text is displayed."
-          + " When on, lines longer than the width of the window will"
-          + " wrap and displaying continues on the next line.  When off"
-          + " lines will not wrap and only part of long lines will"
-          + " be displayed."
-          + "\n\n"
-          + "The line will be broken in the middle of a word if necessary."
-          + " See 'linebreak' to get the break at a word boundary."
-            );
-
-    OptUtil.createBooleanOption(lineBreak, false);
-    OptUtil.setupOptionDesc(Category.GENERAL, lineBreak, "'linebreak' 'lbr'",
-          "If on Vim will wrap long lines at a word boundary rather"
-          + " than at the last character that fits on the screen.");
-
-    OptUtil.createBooleanOption(number, false);
-    OptUtil.setupOptionDesc(Category.GENERAL, number, "'number' 'nu'",
-          "Print the line number in front of each line.");
-
-    OptUtil.createBooleanOption(list, false);
-    OptUtil.setupOptionDesc(Category.GENERAL, list, "'list'",
-          "List mode. Useful to see the difference between tabs"
-            + " and spaces and for trailing blanks.");
-
     OptUtil.createBooleanOption(timeout, true);
     OptUtil.setupOptionDesc(Category.GENERAL, timeout, "'timeout' 'to'",
           "Enables timeout when part of a mapped key sequence has been"
@@ -741,21 +694,6 @@ public final class Options {
           "The time in milliseconds that is waited for a mapped"
             + " key sequence to complete.");
 
-    OptUtil.createBooleanOption(equalAlways, true);
-    OptUtil.setupOptionDesc(Category.GENERAL, equalAlways, "'equalalways' 'ea'",
-        "When on, all the windows are automatically made the same size after"
-	+ " splitting or closing a window.");
-
-    OptUtil.createBooleanOption(splitBelow, false);
-    OptUtil.setupOptionDesc(Category.GENERAL, splitBelow, "'splitbelow' 'sb'",
-	"When on, splitting a window will put the new window below the current"
-	+ " one.");
-
-    OptUtil.createBooleanOption(splitRight, false);
-    OptUtil.setupOptionDesc(Category.GENERAL, splitRight, "'splitright' 'spr'",
-	"When on, splitting a window will put the new window right of the"
-	+ " current one.");
-
     /*G.p_fdo = */OptUtil.createEnumSetOption(foldOpen,
             EnumSet.of(
                 FDO_BLOCK, FDO_HOR, FDO_MARK, FDO_PERCENT, FDO_QUICKFIX,
@@ -765,6 +703,77 @@ public final class Options {
     OptUtil.setupOptionDesc(Category.GENERAL, foldOpen, "'foldopen' 'fdo'",
           "Specifies for which type of commands folds will be opened, if the"
         + " command moves the cursor into a closed fold.");
+
+    /////////////////////////////////////////////////////////////////////
+    //
+    //
+    // Window Options
+    //
+    //
+
+    OptUtil.createBooleanOption(wrap, true);
+    OptUtil.setupOptionDesc(Category.WINDOW, wrap, "'wrap'",
+          "This option changes how text is displayed."
+          + " When on, lines longer than the width of the window will"
+          + " wrap and displaying continues on the next line.  When off"
+          + " lines will not wrap and only part of long lines will"
+          + " be displayed."
+          + "\n\n"
+          + "The line will be broken in the middle of a word if necessary."
+          + " See 'linebreak' to get the break at a word boundary."
+            );
+
+    OptUtil.createBooleanOption(lineBreak, false);
+    OptUtil.setupOptionDesc(Category.WINDOW, lineBreak, "'linebreak' 'lbr'",
+          "If on Vim will wrap long lines at a word boundary rather"
+          + " than at the last character that fits on the screen.");
+
+    OptUtil.createBooleanOption(visualBell, true);
+    OptUtil.setupOptionDesc(Category.WINDOW, visualBell, "'visualbell' 'vb'",
+	   "Use visual bell instead of beeping.  The editor window"
+                   + " background is inverted for a period of time, "
+                   + " see 'vbt' option."
+                   + " When no beep or flash is wanted, set time to zero.");
+
+    OptUtil.createIntegerOption(visualBellTime, 20);
+    OptUtil.setupOptionDesc(Category.WINDOW, visualBellTime,
+                            "'visualbelltime' 'vbt'",
+	   "The duration, in milliseconds, of the 'visual bell'. If the"
+                   + " visual bell is enabled, see 'vb', and the 'vbt'"
+                   + " value is zero then there is no beep or flash.");
+
+    OptUtil.createColorOption(visualBellColor, new Color(0x41e7e7), true);
+    OptUtil.setupOptionDesc(Category.WINDOW, visualBellColor,
+                            "'visualbellcolor' 'vbc'",
+            "The color used for the visual bell, the editor's background"
+                    + " is set to this color."
+                    + " If null, then the editor's background color"
+                    + " is inverted");
+
+    OptUtil.createBooleanOption(number, false);
+    OptUtil.setupOptionDesc(Category.WINDOW, number, "'number' 'nu'",
+          "Print the line number in front of each line.");
+
+    OptUtil.createBooleanOption(list, false);
+    OptUtil.setupOptionDesc(Category.WINDOW, list, "'list'",
+          "List mode. Useful to see the difference between tabs"
+            + " and spaces and for trailing blanks.");
+
+    OptUtil.createBooleanOption(equalAlways, true);
+    OptUtil.setupOptionDesc(Category.WINDOW, equalAlways, "'equalalways' 'ea'",
+        "When on, all the windows are automatically made the same size after"
+	+ " splitting or closing a window.");
+
+    OptUtil.createBooleanOption(splitBelow, false);
+    OptUtil.setupOptionDesc(Category.WINDOW, splitBelow, "'splitbelow' 'sb'",
+	"When on, splitting a window will put the new window below the current"
+	+ " one.");
+
+    OptUtil.createBooleanOption(splitRight, false);
+    OptUtil.setupOptionDesc(Category.WINDOW, splitRight, "'splitright' 'spr'",
+	"When on, splitting a window will put the new window right of the"
+	+ " current one.");
+
 
     /////////////////////////////////////////////////////////////////////
     //

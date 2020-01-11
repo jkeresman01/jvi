@@ -48,6 +48,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.text.Caret;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
@@ -75,6 +76,8 @@ abstract public class SwingFactory implements ViFactory
     public static final String PROP_TV = "ViTextView";
     public static final String PROP_BUF  = "ViBuffer";
     public static final String PROP_AV = "ViAppView";
+    // the following can be null'd to force creation of a new action
+    protected Action defaultAction;
     
     // all doc's that have been seen.
     protected Set<Document> docSet = new WeakSet<>();
@@ -115,6 +118,18 @@ abstract public class SwingFactory implements ViFactory
     // Some swing specific things that are "factory"ish,
     // that an implementation may want to override
     //
+
+    /**
+     * The default action is typically shared.
+     * @return 
+     */
+    public Action getDefaultAction()
+    {
+        if(defaultAction == null)
+            defaultAction = createCharAction(
+                    DefaultEditorKit.defaultKeyTypedAction);
+        return defaultAction;
+    }
     
     /**
      * @return action suitable for default key action

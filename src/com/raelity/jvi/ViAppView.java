@@ -90,7 +90,7 @@ public interface ViAppView
      *
      * @return the invariant number of the editor or less than 0 for unknown
      */
-    public int getWNum();
+    public int getWinID();
 
     /**
      * tv.win_close has a problem.In NB if you close an editor
