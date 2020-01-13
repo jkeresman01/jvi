@@ -140,8 +140,16 @@ final public class ViManager
 
     private static Boolean isDebugAtHome;
     public static boolean isDebugAtHome() {
-        if(isDebugAtHome == null)
+        if(isDebugAtHome == null) {
             isDebugAtHome = Boolean.getBoolean(DEBUG_AT_HOME);
+            if(isDebugAtHome) {
+                if(System.getProperty("com.raelity.jvi.motd") == null) {
+                    System.setProperty("com.raelity.jvi.motd",
+                                       "file:///C:/a/src/jvi-dev/work/motd");
+                }
+
+            }
+        }
         return isDebugAtHome;
     }
     /**

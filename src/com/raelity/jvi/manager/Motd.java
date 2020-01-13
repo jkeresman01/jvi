@@ -1,5 +1,6 @@
 package com.raelity.jvi.manager;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -260,8 +261,13 @@ class Motd
             try {
                 // URI uri = new URI("file:///C:/other/mydir/myfile.txt");
                 String s = System.getProperty("com.raelity.jvi.motd");
-                if(s != null)
+                if(s != null) {
                     System.err.println("DEBUG MOTD: " + s);
+                    File file = new File(new URI(s));
+                    System.err.println("DEBUG MOTD: " + file);
+                    if(!file.canRead())
+                        s = null;
+                }
                 if(s == null)
                     s = "http://jvi.sourceforge.net/motd";
                 URI uri = new URI(s);
