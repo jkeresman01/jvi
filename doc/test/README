@@ -1,7 +1,24 @@
 Typically a single file is opertated on.
+The "full" directory has a snapshot of all the vim help files
 
-Under here (test directory) create build/tin.
+run "testDoc.sh test_name" or "testXml.sh test_name"
 
-Copy the file to test into 'tin' then run testDoc.sh
+the "full" test files added on 12/24/19, just after magic
 
+=== Directory structure example
 
+    test_name/
+        input/
+            *.txt
+        golden/
+            filtered/
+                *.txt
+            html/
+                *.txt.html
+            xml/
+        build/
+            filtered/
+                *.txt
+            html/
+                *.txt.html
+            xml/

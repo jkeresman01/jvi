@@ -1,0 +1,189 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Vim: scroll.txt</title>
+<!--[if IE]>
+<link rel="stylesheet" href="vimhelp-ie.css" type="text/css">
+<![endif]-->
+<!--[if !IE]>-->
+<link rel="stylesheet" href="vimhelp.css" type="text/css">
+<!--<![endif]-->
+</head>
+<body>
+<div id="d1">
+<pre id="sp">                                                                                </pre>
+<div id="d2">
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<div id="d3">
+<pre>
+<a name="scroll.txt" class="t">scroll.txt</a>    For Vim version 5.6.  Last change: 1999 Dec 08
+
+
+                  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+Scrolling                                               <a name="scrolling" class="t">scrolling</a>
+
+These commands move the contents of the window.  If the cursor position <a href="motion.txt.html#is" class="d">is</a>
+moved off of the window, the cursor <a href="motion.txt.html#is" class="d">is</a> moved onto the window (with
+<a href="options.txt.html#%27scrolloff%27" class="o">'scrolloff'</a> screen lines around it).  <a href="insert.txt.html#A" class="d">A</a> page <a href="motion.txt.html#is" class="d">is</a> the number of lines in the
+window minus two.  The mnemonics for these commands may be <a href="insert.txt.html#a" class="d">a</a> bit confusing.
+Remember that the commands refer to moving the window (the part of the buffer
+that you see) upwards or downwards in the buffer.  When the window moves
+upwards in the buffer, the text in the window moves downwards on your screen.
+
+1. Scrolling downwards          <a href="scroll.txt.html#scroll-down" class="l">scroll-down</a>
+2. Scrolling upwards            <a href="scroll.txt.html#scroll-up" class="l">scroll-up</a>
+3. Scrolling relative to cursor <a href="scroll.txt.html#scroll-cursor" class="l">scroll-cursor</a>
+4. Scrolling horizontally       <a href="scroll.txt.html#scroll-horizontal" class="l">scroll-horizontal</a>
+
+<span class="h">==============================================================================</span>
+1. Scrolling downwards                                  <a name="scroll-down" class="t">scroll-down</a>
+
+The following commands move the edit window (the part of the buffer that you
+see) downwards (this means that more lines downwards in the text buffer can be
+seen):
+
+                                                        <a name="CTRL-E" class="t">CTRL-E</a>
+<a href="scroll.txt.html#CTRL-E" class="k">CTRL-E</a>                  Scroll window <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> lines downwards in the buffer.
+                        Mnemonic: Extra lines.
+
+                                                        <a name="CTRL-D" class="t">CTRL-D</a>
+<a href="scroll.txt.html#CTRL-D" class="k">CTRL-D</a>                  Scroll window Downwards in the buffer.  The number of
+                        lines comes from the <a href="options.txt.html#%27scroll%27" class="o">'scroll'</a> option (default: half <a href="insert.txt.html#a" class="d">a</a>
+                        screen).  If <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> given, first set <a href="options.txt.html#%27scroll%27" class="o">'scroll'</a> option
+                        to <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a><a href="repeat.txt.html#." class="d">.</a>  The cursor <a href="motion.txt.html#is" class="d">is</a> moved the same number of
+                        lines down in the file (if possible; when lines wrap
+                        and when hitting the end of the file there may be <a href="insert.txt.html#a" class="d">a</a>
+                        difference).  When the cursor <a href="motion.txt.html#is" class="d">is</a> on the last line of
+                        the buffer nothing happens and <a href="insert.txt.html#a" class="d">a</a> <a href="options.txt.html#beep" class="d">beep</a> <a href="motion.txt.html#is" class="d">is</a> produced.
+                        See also <a href="options.txt.html#%27startofline%27" class="o">'startofline'</a> option.
+                        {difference from <a href="options.txt.html#vi%3A" class="d">vi:</a> Vim scrolls <a href="options.txt.html#%27scroll%27" class="o">'scroll'</a> screen
+                        lines, instead of file lines; makes <a href="insert.txt.html#a" class="d">a</a> difference when
+                        lines wrap}
+
+<a href="scroll.txt.html#%3CS-Down%3E" class="s">&lt;S-Down&gt;</a>        or                              <a name="%3CS-Down%3E" class="t">&lt;S-Down&gt;</a> <a name="%3CkPageDown%3E" class="t">&lt;kPageDown&gt;</a>
+<a href="scroll.txt.html#%3CPageDown%3E" class="s">&lt;PageDown&gt;</a>      or                              <a name="%3CPageDown%3E" class="t">&lt;PageDown&gt;</a> <a name="CTRL-F" class="t">CTRL-F</a>
+<a href="scroll.txt.html#CTRL-F" class="k">CTRL-F</a>                  Scroll window <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> pages Forwards (downwards) in
+                        the buffer.  See also <a href="options.txt.html#%27startofline%27" class="o">'startofline'</a> option.
+
+<span class="h">==============================================================================</span>
+2. Scrolling upwards                                    <a name="scroll-up" class="t">scroll-up</a>
+
+The following commands move the edit window (the part of the buffer that you
+see) upwards (this means that more lines upwards in the text buffer can be
+seen):
+
+                                                        <a name="CTRL-Y" class="t">CTRL-Y</a>
+<a href="scroll.txt.html#CTRL-Y" class="k">CTRL-Y</a>                  Scroll window <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> lines upwards in the buffer.
+
+                                                        <a name="CTRL-U" class="t">CTRL-U</a>
+<a href="scroll.txt.html#CTRL-U" class="k">CTRL-U</a>                  Scroll window Upwards in the buffer.  The number of
+                        lines comes from the <a href="options.txt.html#%27scroll%27" class="o">'scroll'</a> option (default: half <a href="insert.txt.html#a" class="d">a</a>
+                        screen).  If <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> given, first set the <a href="options.txt.html#%27scroll%27" class="o">'scroll'</a>
+                        option to <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a><a href="repeat.txt.html#." class="d">.</a>  The cursor <a href="motion.txt.html#is" class="d">is</a> moved the same
+                        number of lines up in the file (if possible; when
+                        lines wrap and when hitting the end of the file there
+                        may be <a href="insert.txt.html#a" class="d">a</a> difference).  When the cursor <a href="motion.txt.html#is" class="d">is</a> on the first
+                        line of the buffer nothing happens and <a href="insert.txt.html#a" class="d">a</a> <a href="options.txt.html#beep" class="d">beep</a> <a href="motion.txt.html#is" class="d">is</a>
+                        produced.  See also <a href="options.txt.html#%27startofline%27" class="o">'startofline'</a> option.
+                        {difference from <a href="options.txt.html#vi%3A" class="d">vi:</a> Vim scrolls <a href="options.txt.html#%27scroll%27" class="o">'scroll'</a> screen
+                        lines, instead of file lines; makes <a href="insert.txt.html#a" class="d">a</a> difference when
+                        lines wrap}
+
+<a href="scroll.txt.html#%3CS-Up%3E" class="s">&lt;S-Up&gt;</a>          or                                      <a name="%3CS-Up%3E" class="t">&lt;S-Up&gt;</a> <a name="%3CkPageUp%3E" class="t">&lt;kPageUp&gt;</a>
+<a href="scroll.txt.html#%3CPageUp%3E" class="s">&lt;PageUp&gt;</a>        or                                      <a name="%3CPageUp%3E" class="t">&lt;PageUp&gt;</a> <a name="CTRL-B" class="t">CTRL-B</a>
+<a href="scroll.txt.html#CTRL-B" class="k">CTRL-B</a>                  Scroll window <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> pages Backwards (upwards) in the
+                        buffer.  See also <a href="options.txt.html#%27startofline%27" class="o">'startofline'</a> option.
+
+<span class="h">==============================================================================</span>
+3. Scrolling relative to cursor                         <a name="scroll-cursor" class="t">scroll-cursor</a>
+
+The following commands reposition the edit window (the part of the buffer that
+you see) while keeping the cursor on the same line:
+
+                                                        <a name="z" class="t">z</a> <a name="z%3CCR%3E" class="t">z&lt;CR&gt;</a>
+<a href="scroll.txt.html#z%3CCR%3E" class="d">z&lt;CR&gt;</a>                   Redraw, line <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> <a href="motion.txt.html#at" class="d">at</a> top of window (default
+                        cursor line).  Put cursor <a href="motion.txt.html#at" class="d">at</a> first non-blank in the
+                        line.
+
+                                                        <a name="zt" class="t">zt</a>
+<a href="scroll.txt.html#zt" class="d">zt</a>                      Like "<a href="scroll.txt.html#z%3CCR%3E" class="d">z&lt;CR&gt;</a>"<a href="motion.txt.html#%2C" class="d">,</a> but leave the cursor in the same
+                        column.  <span class="s">{not in Vi}</span>
+
+                                                        <a name="z." class="t">z.</a>
+<a href="scroll.txt.html#z." class="d">z.</a>                      Redraw, line <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> <a href="motion.txt.html#at" class="d">at</a> center of window (default
+                        cursor line).  Put cursor <a href="motion.txt.html#at" class="d">at</a> first non-blank in the
+                        line.
+
+                                                        <a name="zz" class="t">zz</a>
+<a href="scroll.txt.html#zz" class="d">zz</a>                      Like "<a href="scroll.txt.html#z." class="d">z.</a>"<a href="motion.txt.html#%2C" class="d">,</a> but leave the cursor in the same column.
+                        <span class="s">{not in Vi}</span>
+
+                                                        <a name="z-" class="t">z-</a>
+<a href="scroll.txt.html#z-" class="d">z-</a>                      Redraw, line <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> <a href="motion.txt.html#at" class="d">at</a> bottom of window (default
+                        cursor line).  Put cursor <a href="motion.txt.html#at" class="d">at</a> first non-blank in the
+                        line.
+
+                                                        <a name="zb" class="t">zb</a>
+<a href="scroll.txt.html#zb" class="d">zb</a>                      Like "<a href="scroll.txt.html#z-" class="d">z-</a>"<a href="motion.txt.html#%2C" class="d">,</a> but leave the cursor in the same column.
+                        <span class="s">{not in Vi}</span>
+
+<span class="h">==============================================================================</span>
+4. Scrolling horizontally                               <a name="scroll-horizontal" class="t">scroll-horizontal</a>
+
+For the following four commands the cursor follows the screen.  If the
+character that the cursor <a href="motion.txt.html#is" class="d">is</a> on <a href="motion.txt.html#is" class="d">is</a> moved off the screen, the cursor <a href="motion.txt.html#is" class="d">is</a> moved
+to the closest character that <a href="motion.txt.html#is" class="d">is</a> on the screen.  The value of <span class="o">'sidescroll'</span> <a href="motion.txt.html#is" class="d">is</a>
+not used.
+
+<a href="scroll.txt.html#z%3CRight%3E" class="d">z&lt;Right&gt;</a>    or                                          <a name="zl" class="t">zl</a> <a name="z%3CRight%3E" class="t">z&lt;Right&gt;</a>
+<a href="scroll.txt.html#zl" class="d">zl</a>                      Move the view on the text <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> characters to the
+                        right, thus scroll the text <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> characters to the
+                        left.  This only works when <a href="options.txt.html#%27wrap%27" class="o">'wrap'</a> <a href="motion.txt.html#is" class="d">is</a> off.  {not in
+                        Vi}
+
+<a href="scroll.txt.html#z%3CLeft%3E" class="d">z&lt;Left&gt;</a>      or                                         <a name="zh" class="t">zh</a> <a name="z%3CLeft%3E" class="t">z&lt;Left&gt;</a>
+<a href="scroll.txt.html#zh" class="d">zh</a>                      Move the view on the text <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> characters to the
+                        left, thus scroll the text <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> characters to the
+                        right.  This only works when <a href="options.txt.html#%27wrap%27" class="o">'wrap'</a> <a href="motion.txt.html#is" class="d">is</a> off.  {not in
+                        Vi}
+
+                                                        <a name="zL" class="t">zL</a>
+<a href="scroll.txt.html#zL" class="d">zL</a>                      Move the view on the text half <a href="insert.txt.html#a" class="d">a</a> screenwidth to the
+                        right, thus scroll the text half <a href="insert.txt.html#a" class="d">a</a> screenwidth to the
+                        left.  This only works when <a href="options.txt.html#%27wrap%27" class="o">'wrap'</a> <a href="motion.txt.html#is" class="d">is</a> off.  {not in
+                        Vi}
+
+                                                        <a name="zH" class="t">zH</a>
+<a href="scroll.txt.html#zH" class="d">zH</a>                      Move the view on the text half <a href="insert.txt.html#a" class="d">a</a> screenwidth to the
+                        left, thus scroll the text half <a href="insert.txt.html#a" class="d">a</a> screenwidth to the
+                        right.  This only works when <a href="options.txt.html#%27wrap%27" class="o">'wrap'</a> <a href="motion.txt.html#is" class="d">is</a> off.  {not in
+                        Vi}
+
+For the following two commands the cursor <a href="motion.txt.html#is" class="d">is</a> not moved in the text, only the
+text scrolls on the screen.
+
+                                                        <a name="zs" class="t">zs</a>
+<a href="scroll.txt.html#zs" class="d">zs</a>                      Scroll the text horizontally to position the cursor
+                        <a href="motion.txt.html#at" class="d">at</a> the start (left side) of the screen.  This only
+                        works when <a href="options.txt.html#%27wrap%27" class="o">'wrap'</a> <a href="motion.txt.html#is" class="d">is</a> off.  <span class="s">{not in Vi}</span>
+
+                                                        <a name="ze" class="t">ze</a>
+<a href="scroll.txt.html#ze" class="d">ze</a>                      Scroll the text horizontally to position the cursor
+                        <a href="motion.txt.html#at" class="d">at</a> the end (right side) of the screen.  This only
+                        works when <a href="options.txt.html#%27wrap%27" class="o">'wrap'</a> <a href="motion.txt.html#is" class="d">is</a> off.  <span class="s">{not in Vi}</span>
+
+
+ vim:tw=78:ts=8:sw=8:noet:
+
+</pre>
+</div>
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<p id="footer">These help files are maintained with thanks
+to Carlo Teubner for his vimhelp to html work.</p>
+
+</div>
+</div>
+</body></html>

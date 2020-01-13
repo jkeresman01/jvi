@@ -1,0 +1,210 @@
+*pattern.txt*   For Vim version 5.6.  Last change: 1999 Oct 27
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+Patterns and search commands				*pattern-searches*
+
+1. Search commands		|search-commands|
+2. The definition of a pattern	|search-pattern|
+   See: https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html
+3. Magic			|/magic|
+
+==============================================================================
+1. Search commands					*search-commands*
+
+							*/*
+/{pattern}[/]<CR>	Search forward for the [count]'th occurrence of
+			{pattern} (exclusive).
+
+							*/<CR>*
+/<CR>			Search forward for the [count]'th latest used
+			pattern |last-pattern| with latest used |{offset}|.
+
+							*?*
+?{pattern}[?]<CR>	Search backward for the [count]'th previous
+			occurrence of {pattern} (exclusive).
+
+							*?<CR>*
+?<CR>			Search backward for the [count]'th latest used
+			pattern |last-pattern| with latest used |{offset}|.
+
+							*n*
+n			Repeat the latest "/" or "?" [count] times.
+			|last-pattern| {Vi: no count}
+
+							*N*
+N			Repeat the latest "/" or "?" [count] times in
+			opposite direction. |last-pattern| {Vi: no count}
+
+							*star*
+*			Search forward for the [count]'th occurrence of the
+			word nearest to the cursor.  The word used for the
+			search is the first of:
+				1. the keyword under the cursor |'iskeyword'|
+				2. the first keyword after the cursor, in the
+				   current line
+				3. the non-blank word under the cursor
+				4. the first non-blank word after the cursor,
+				   in the current line
+			Only whole keywords are searched for, like with the
+			command "/\<keyword\>".  (exclusive)  {not in Vi}
+
+							*#*
+#			Same as "*", but search backward.  #-#The pound sign#-#
+			#-#Vim (<BS> is CTRL-H or a real backspace).  #-#{not in Vi}
+
+							*gstar*
+g*			Like "*", but don't put "\<" and "\>" around the word.
+			This makes the search also find matches that are not a
+			whole word.  {not in Vi}
+
+							*g#*
+g#			Like "#", but don't put "\<" and "\>" around the word.
+			This makes the search also find matches that are not a
+			whole word.  {not in Vi}
+
+							*:noh* *:nohlsearch*
+:noh[lsearch]		Stop the highlighting for the 'hlsearch' option.  It
+			is automatically turned back on when using a search
+			command, or setting the 'hlsearch' option.
+			This command doesn't work in an autocommand, because
+			the highlighting state is saved and restored when
+			executing autocommands |autocmd-searchpat|.
+
+While typing the search pattern the current match will be shown if the
+'incsearch' option is on.  Remember that you still have to finish the search
+command with <CR> to actually position the cursor at the displayed match.  Or
+use <Esc> to abandon the search.
+
+All matches for the last used search pattern will be highlighted if you set
+the 'hlsearch' option.  This can be suspended with the |:nohlsearch| command.
+
+							*last-pattern*
+The last used pattern and offset are remembered.  They can be used to repeat
+the search, possibly in another direction or with another count.  Note that
+two patterns are remembered: One for 'normal' search commands and one for the
+substitute command ":s".  Each time an empty pattern is given, the previously
+used pattern is used.
+
+The 'magic' option sticks with the last used pattern.  If you change 'magic',
+this will not change how the last used pattern will be interpreted.
+The 'ignorecase' option does not do this.  When 'ignorecase' is changed, it
+will result in the pattern to match other text.
+
+All matches for the last used search pattern will be highlighted if you set
+the 'hlsearch' option.
+
+In Vi the ":tag" command sets the last search pattern when the tag is searched
+for.  In Vim this is not done, the previous search pattern is still remembered,
+unless the 't' flag is present in 'cpoptions'.  The search pattern is always
+put in the search history.
+
+If the 'wrapscan' option is on (which is the default), searches wrap around
+the end of the buffer.  If 'wrapscan' is not set, the backward search stops
+at the beginning and the forward search stops at the end of the buffer.  If
+'wrapscan' is set and the pattern was not found the error message "pattern
+not found" is given, and the cursor will not be moved.  If 'wrapscan' is not
+set the message becomes "search hit BOTTOM without match" when searching
+forward, or "search hit TOP without match" when searching backward.  If
+wrapscan is set and the search wraps around the end of the file the message
+"search hit TOP, continuing at BOTTOM" or "search hit BOTTOM, continuing at
+TOP" is given when searching backwards or forwards respectively.  This can be
+switched off by setting the 's' flag in the 'shortmess' option.  The highlight
+method 'w' is used for this message (default: standout).
+
+							*search-range*
+You cannot limit the search command "/" to a certain range of lines.  A trick
+to do this anyway is to use the ":substitute" command with the 'c' flag.
+Example:
+>  :.,300s/Pattern//gc
+This command will search from the cursor position until line 300 for
+"Pattern".  At the match, you will be asked to type a character.  Type 'q' to
+stop at this match, type 'n' to find the next match.
+
+The "*", "#", "g*" and "g#" commands look for a word near the cursor in this
+order, the first one that is found is used:
+- The keyword currently under the cursor.
+- The first keyword to the right of the cursor, in the same line.
+- The WORD currently under the cursor.
+- The first WORD to the right of the cursor, in the same line.
+The keyword may only contain letters and characters in 'iskeyword'.
+The WORD may contain any non-blanks (<Tab>s and/or <Space>s).
+Note that if you type with ten fingers, the characters are easy to remember:
+the "#" is under your left hand middle finger (search to the left and up) and
+the "*" is under your right hand middle finger (search to the right and down).
+
+==============================================================================
+2. The definition of a pattern		*search-pattern* *pattern* *[pattern]*
+					*regular-expression* *regexp* *Pattern*
+
+Patterns use java's internal regex engine. jVi has options for which
+characters in a search pattern need to be escaped, Options>Search>reMetaEscape.
+Set this option to an empty string and no escapes needed for regex patterns.
+
+Java patterns are much like perl5 and use the perl5 notation. For details
+see: https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html
+
+If the 'ignorecase' option is on, the case of letters is ignored.  'smartcase'
+can be set to ignore case when the pattern contains uppercase letters.
+
+The options to override ignorecase can be anywhere in the pattern and
+affect the entire pattern.
+|/\c|	\c	\c	ignore case, do not use the 'ignorecase' option
+|/\C|	\C	\C	match case, do not use the 'ignorecase' option
+
+      magic   nomagic	matches ~
+|/\m|	\m	\m	'magic' on for the following chars in the pattern
+|/\M|	\M	\M	'magic' off for the following chars in the pattern
+|/\v|	\v	\v	the following chars in the pattern are "very magic"
+|/\V|	\V	\V	the following chars in the pattern are "very nomagic"
+
+The escapes '\<' and '\>' are translated to '\b' (word boundary).
+
+==============================================================================
+3. Magic							*/magic*
+
+Some characters in the pattern are taken literally.  They match with the same
+character in the text.  When preceded with a backslash however, these
+characters get a special meaning.
+
+Other characters have a special meaning without a backslash.  They need to be
+preceded with a backslash to match literally.
+
+If a character is taken literally or not depends on the 'magic' option and the
+items mentioned next.
+							*/\m* */\M*
+Use of "\m" makes the pattern after it be interpreted as if 'magic' is set,
+ignoring the actual value of the 'magic' option.
+Use of "\M" makes the pattern after it be interpreted as if 'nomagic' is used.
+							*/\v* */\V*
+Use of "\v" means that after it, all ASCII characters except '0'-'9', 'a'-'z',
+'A'-'Z' and '_' have special meaning: "very magic"
+
+Use of "\V" means that after it, only a backslash and terminating character
+(usually / or ?) have special meaning: "very nomagic"
+
+Examples:
+after:	  \v	   \m	    \M	     \V		matches ~
+		'magic' 'nomagic'
+	  $	   $	    $	     \$		matches end-of-line
+	  .	   .	    \.	     \.		matches any character
+	  *	   *	    \*	     \*		any number of the previous atom
+	  ~	   ~	    \~	     \~		latest substitute string
+	  ()	   \(\)     \(\)     \(\)	grouping into an atom
+	  |	   \|	    \|	     \|		separating alternatives
+	  \a	   \a	    \a	     \a		alphabetic character
+	  \\	   \\	    \\	     \\		literal backslash
+	  \.	   \.	    .	     .		literal dot
+	  \{	   {	    {	     {		literal '{'
+	  a	   a	    a	     a		literal 'a'
+
+{only Vim supports \m, \M, \v and \V}
+
+It is recommended to always keep the 'magic' option at the default setting,
+which is 'magic'.  This avoids portability problems.  To make a pattern immune
+to the 'magic' option being set or not, put "\m" or "\M" at the start of the
+pattern.
+
+ vim:tw=78:ts=8:sw=8:

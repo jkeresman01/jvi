@@ -1,0 +1,843 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Vim: options.txt</title>
+<!--[if IE]>
+<link rel="stylesheet" href="vimhelp-ie.css" type="text/css">
+<![endif]-->
+<!--[if !IE]>-->
+<link rel="stylesheet" href="vimhelp.css" type="text/css">
+<!--<![endif]-->
+</head>
+<body>
+<div id="d1">
+<pre id="sp">                                                                                </pre>
+<div id="d2">
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<div id="d3">
+<pre>
+<a name="options.txt" class="t">options.txt</a>   For Vim version 7.0.  Last change: 2006 May 04
+
+
+                  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+Options                                                 <a name="options" class="t">options</a>
+
+1. Setting <a href="options.txt.html#options" class="d">options</a>                      <a href="options.txt.html#set-option" class="l">set-option</a>
+2. Automatically setting <a href="options.txt.html#options" class="d">options</a>        <a href="options.txt.html#auto-setting" class="l">auto-setting</a>
+3. Options summary                      <a href="options.txt.html#option-summary" class="l">option-summary</a>
+
+For an overview of <a href="options.txt.html#options" class="d">options</a> see <a href="help.txt.html#help.txt" class="d">help.txt</a> <a href="quickref.txt.html#option-list" class="l">option-list</a><a href="repeat.txt.html#." class="d">.</a>
+
+Vim has <a href="insert.txt.html#a" class="d">a</a> number of internal variables and switches which can be set to
+achieve special effects.  These <a href="options.txt.html#options" class="d">options</a> come in three forms:
+        <a href="options.txt.html#boolean" class="d">boolean</a>         can only be on or off           <a name="boolean" class="t">boolean</a> <a name="toggle" class="t">toggle</a>
+        number          has <a href="insert.txt.html#a" class="d">a</a> numeric value
+        string          has <a href="insert.txt.html#a" class="d">a</a> string value
+
+<span class="h">==============================================================================</span>
+1. Setting <a href="options.txt.html#options" class="d">options</a>                                      <a name="set-option" class="t">set-option</a> <a name="E764" class="t">E764</a>
+
+                                                        <a name="%3Ase" class="t">:se</a> <a name="%3Aset" class="t">:set</a>
+:se[t]                  Show all <a href="options.txt.html#options" class="d">options</a> that differ from their default value.
+
+:se[t] all              Show all but terminal options.
+
+:se[t] termcap          Show all terminal options.  <span class="n">Note</span> that in the GUI the
+                        key codes are not shown, because they are generated
+                        internally and can't be changed.  Changing the terminal
+                        codes in the GUI <a href="motion.txt.html#is" class="d">is</a> not useful either...
+
+                                                                <a name="E518" class="t">E518</a> <a name="E519" class="t">E519</a>
+:se[t] <span class="s">{option}</span><a href="pattern.txt.html#%3F" class="d">?</a>        Show value of <span class="s">{option}</span><a href="repeat.txt.html#." class="d">.</a>
+
+:se[t] <span class="s">{option}</span>         Toggle option: set, switch <a href="motion.txt.html#it" class="d">it</a> on.
+                        Number option: show value.
+                        String option: show value.
+
+:se[t] no{option}       Toggle option: Reset, switch <a href="motion.txt.html#it" class="d">it</a> off.
+
+:se[t] <span class="s">{option}</span><a href="change.txt.html#%21" class="d">!</a>   or
+:se[t] inv{option}      Toggle option: Invert value. <span class="s">{not in Vi}</span>
+
+                                <a name="%3Aset-default" class="t">:set-default</a> <a name="%3Aset-%26" class="t">:set-&amp;</a> <a name="%3Aset-%26vi" class="t">:set-&amp;vi</a> <a name="%3Aset-%26vim" class="t">:set-&amp;vim</a>
+:se[t] <span class="s">{option}</span>&amp;        Reset option to its default value.
+
+                                                <a name="%3Aset-args" class="t">:set-args</a> <a name="E487" class="t">E487</a> <a name="E521" class="t">E521</a>
+:se[t] <span class="s">{option}</span>={value}         or
+:se[t] <span class="s">{option}</span>:{value}
+                        Set string or number option to <span class="s">{value}</span><a href="repeat.txt.html#." class="d">.</a>
+                        For numeric <a href="options.txt.html#options" class="d">options</a> the value can be given in decimal,
+                        hex (preceded with 0x) or octal (preceded with '0')
+                        (hex and octal are only available for machines which
+                        have the strtol() function).
+                        The old value can be inserted by typing <span class="o">'wildchar'</span> (by
+                        default this <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a> or <a href="scroll.txt.html#CTRL-E" class="k">CTRL-E</a> if <span class="o">'compatible'</span> <a href="motion.txt.html#is" class="d">is</a>
+                        set).  See <span class="l">cmdline-completion</span><a href="repeat.txt.html#." class="d">.</a>
+                        White space between <span class="s">{option}</span> and '=' <a href="motion.txt.html#is" class="d">is</a> allowed and
+                        will be ignored.  White space between '=' and <span class="s">{value}</span>
+                        <a href="motion.txt.html#is" class="d">is</a> not allowed.
+                        See <span class="l">option-backslash</span> for using white space and
+                        backslashes in <span class="s">{value}</span><a href="repeat.txt.html#." class="d">.</a>
+
+:se[t] <span class="s">{option}</span>+={value}                                <a name="%3Aset%2B%3D" class="t">:set+=</a>
+                        Add the <span class="s">{value}</span> to <a href="insert.txt.html#a" class="d">a</a> number option, or append the
+                        <span class="s">{value}</span> to <a href="insert.txt.html#a" class="d">a</a> string option.  When the option <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a>
+                        comma separated list, <a href="insert.txt.html#a" class="d">a</a> comma <a href="motion.txt.html#is" class="d">is</a> added, unless the
+                        value was empty.
+                        If the option <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> list of flags, superfluous flags
+                        are removed.  When adding <a href="insert.txt.html#a" class="d">a</a> flag that was already
+                        present the option value doesn't change.
+                        Also see <a href="options.txt.html#%3Aset-args" class="l">:set-args</a> above.
+                        <span class="s">{not in Vi}</span>
+
+:se[t] <span class="s">{option}</span>^={value}                                <a name="%3Aset%5E%3D" class="t">:set^=</a>
+                        Multiply the <span class="s">{value}</span> to <a href="insert.txt.html#a" class="d">a</a> number option, or prepend
+                        the <span class="s">{value}</span> to <a href="insert.txt.html#a" class="d">a</a> string option.  When the option <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a>
+                        comma separated list, <a href="insert.txt.html#a" class="d">a</a> comma <a href="motion.txt.html#is" class="d">is</a> added, unless the
+                        value was empty.
+                        Also see <a href="options.txt.html#%3Aset-args" class="l">:set-args</a> above.
+                        <span class="s">{not in Vi}</span>
+
+:se[t] <span class="s">{option}</span>-={value}                                <a name="%3Aset-%3D" class="t">:set-=</a>
+                        Subtract the <span class="s">{value}</span> from <a href="insert.txt.html#a" class="d">a</a> number option, or remove
+                        the <span class="s">{value}</span> from <a href="insert.txt.html#a" class="d">a</a> string option, if <a href="motion.txt.html#it" class="d">it</a> <a href="motion.txt.html#is" class="d">is</a> there.
+                        If the <span class="s">{value}</span> <a href="motion.txt.html#is" class="d">is</a> not found in <a href="insert.txt.html#a" class="d">a</a> string option, there
+                        <a href="motion.txt.html#is" class="d">is</a> no error or warning.  When the option <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> comma
+                        separated list, <a href="insert.txt.html#a" class="d">a</a> comma <a href="motion.txt.html#is" class="d">is</a> deleted, unless the option
+                        becomes empty.
+                        When the option <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> list of flags, <span class="s">{value}</span> must be
+                        exactly <a href="motion.txt.html#as" class="d">as</a> they appear in the option.  Remove flags
+                        one by one to avoid problems.
+                        Also see <a href="options.txt.html#%3Aset-args" class="l">:set-args</a> above.
+                        <span class="s">{not in Vi}</span>
+
+The <span class="s">{option}</span> arguments to "<a href="options.txt.html#%3Aset" class="d">:set</a>" may be repeated.  For example: 
+<span class="e">        :set ai nosi sw=3 ts=3</span>
+If you make an error in one of the arguments, an error message will be given
+and the following arguments will be ignored.
+
+                                <a name="add-option-flags" class="t">add-option-flags</a> <a name="remove-option-flags" class="t">remove-option-flags</a>
+                                <a name="E539" class="t">E539</a> <a name="E550" class="t">E550</a> <a name="E551" class="t">E551</a> <a name="E552" class="t">E552</a>
+Some <a href="options.txt.html#options" class="d">options</a> are <a href="insert.txt.html#a" class="d">a</a> list of flags.  When you want to add <a href="insert.txt.html#a" class="d">a</a> flag to such an
+option, without <a href="change.txt.html#changing" class="d">changing</a> the existing ones, you can do <a href="motion.txt.html#it" class="d">it</a> like this: 
+<span class="e">   :set guioptions+=a</span>
+Remove <a href="insert.txt.html#a" class="d">a</a> flag from an option like this: 
+<span class="e">   :set guioptions-=a</span>
+This removes the 'a' flag from <span class="o">'guioptions'</span><a href="repeat.txt.html#." class="d">.</a>
+<span class="n">Note</span> that you should add or remove one flag <a href="motion.txt.html#at" class="d">at</a> <a href="insert.txt.html#a" class="d">a</a> time.  If <span class="o">'guioptions'</span> has
+the value "<a href="motion.txt.html#ab" class="d">ab</a>"<a href="motion.txt.html#%2C" class="d">,</a> using "set guioptions-=ba" won't work, because the string "ba"
+doesn't appear.
+
+<span class="h">==============================================================================</span>
+2. Automatically setting <a href="options.txt.html#options" class="d">options</a>                        <a name="auto-setting" class="t">auto-setting</a>
+
+Besides <a href="change.txt.html#changing" class="d">changing</a> <a href="options.txt.html#options" class="d">options</a> with the "<a href="options.txt.html#%3Aset" class="d">:set</a>" command, there are three alternatives
+to set <a href="options.txt.html#options" class="d">options</a> automatically for one or more files:
+
+1. When starting Vim initializations are read from various places.  See
+   <span class="l">initialization</span><a href="repeat.txt.html#." class="d">.</a>  Most of them are performed for all editing sessions,
+   and some of them depend on the directory where Vim <a href="motion.txt.html#is" class="d">is</a> started.
+   You can create an initialization file with <span class="l">:mkvimrc</span><a href="motion.txt.html#%2C" class="d">,</a> <span class="l">:mkview</span> and
+   <span class="l">:mksession</span><a href="repeat.txt.html#." class="d">.</a>
+2. If you start editing <a href="insert.txt.html#a" class="d">a</a> new file, the automatic commands are executed.
+   This can be used to set <a href="options.txt.html#options" class="d">options</a> for files matching <a href="insert.txt.html#a" class="d">a</a> particular <a href="pattern.txt.html#pattern" class="d">pattern</a> and
+   many other things.  See <span class="l">autocommand</span><a href="repeat.txt.html#." class="d">.</a>
+3. If you start editing <a href="insert.txt.html#a" class="d">a</a> new file, and the <a href="options.txt.html#%27modeline%27" class="o">'modeline'</a> option <a href="motion.txt.html#is" class="d">is</a> on, <a href="insert.txt.html#a" class="d">a</a>
+   number of lines <a href="motion.txt.html#at" class="d">at</a> the beginning and end of the file are checked for
+   modelines.  This <a href="motion.txt.html#is" class="d">is</a> explained here.
+
+                                        <a name="modeline" class="t">modeline</a> <a name="vim%3A" class="t">vim:</a> <a name="vi%3A" class="t">vi:</a> <a name="ex%3A" class="t">ex:</a> <a name="E520" class="t">E520</a>
+There are two forms of modelines.  The first form:
+        <span class="s">[text]</span><span class="s">{white}</span><span class="s">{vi:|vim:|ex:}</span>[white]{options}
+
+[text]          any text or empty
+<span class="s">{white}</span>         <a href="motion.txt.html#at" class="d">at</a> least one blank character (&lt;Space&gt; or <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a><a href="motion.txt.html#%29" class="d">)</a>
+<span class="s">{vi:|vim:|ex:}</span>  the string "<a href="options.txt.html#vi%3A" class="d">vi:</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="options.txt.html#vim%3A" class="d">vim:</a>" or "<a href="options.txt.html#ex%3A" class="d">ex:</a>"
+[white]         optional white space
+<span class="s">{options}</span>       <a href="insert.txt.html#a" class="d">a</a> list of option settings, separated with white space or ':',
+                where each part between ':' <a href="motion.txt.html#is" class="d">is</a> the argument for <a href="insert.txt.html#a" class="d">a</a> "<a href="options.txt.html#%3Aset" class="d">:set</a>"
+                command
+
+Example:
+<span class="h">   vi:noai:sw=3 ts=6 </span>
+
+The second form (this <a href="motion.txt.html#is" class="d">is</a> compatible with some versions of Vi):
+
+        <span class="s">[text]</span><span class="s">{white}</span><span class="s">{vi:|vim:|ex:}</span>[white]se[t] <span class="s">{options}</span>:[text]
+
+[text]          any text or empty
+<span class="s">{white}</span>         <a href="motion.txt.html#at" class="d">at</a> least one blank character (&lt;Space&gt; or <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a><a href="motion.txt.html#%29" class="d">)</a>
+<span class="s">{vi:|vim:|ex:}</span>  the string "<a href="options.txt.html#vi%3A" class="d">vi:</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="options.txt.html#vim%3A" class="d">vim:</a>" or "<a href="options.txt.html#ex%3A" class="d">ex:</a>"
+[white]         optional white space
+se[t]           the string "set " or "se " (note the space)
+<span class="s">{options}</span>       <a href="insert.txt.html#a" class="d">a</a> list of options, separated with white space, which <a href="motion.txt.html#is" class="d">is</a> the
+                argument for <a href="insert.txt.html#a" class="d">a</a> "<a href="options.txt.html#%3Aset" class="d">:set</a>" command
+:               <a href="insert.txt.html#a" class="d">a</a> colon
+[text]          any text or empty
+
+Example:
+<span class="h">   /* vim: set ai tw=75: */ </span>
+
+The white space before <span class="s">{vi:|vim:|ex:}</span> <a href="motion.txt.html#is" class="d">is</a> required.  This minimizes the chance
+that <a href="insert.txt.html#a" class="d">a</a> normal <a href="motion.txt.html#word" class="d">word</a> like "lex:" <a href="motion.txt.html#is" class="d">is</a> caught.  There <a href="motion.txt.html#is" class="d">is</a> one exception: "<a href="options.txt.html#vi%3A" class="d">vi:</a>" and
+"<a href="options.txt.html#vim%3A" class="d">vim:</a>" can also be <a href="motion.txt.html#at" class="d">at</a> the start of the line (for compatibility with version
+3.0).  Using "<a href="options.txt.html#ex%3A" class="d">ex:</a>" <a href="motion.txt.html#at" class="d">at</a> the start of the line will be ignored (this could be
+short for "example:").
+
+                                                        <a name="modeline-local" class="t">modeline-local</a>
+The <a href="options.txt.html#options" class="d">options</a> are set like with ":setlocal": The new value only applies to the
+buffer and window that contain the file.  Although it's possible to set global
+<a href="options.txt.html#options" class="d">options</a> from <a href="insert.txt.html#a" class="d">a</a> modeline, this <a href="motion.txt.html#is" class="d">is</a> unusual.  If you have two <a href="windows.txt.html#windows" class="d">windows</a> open and
+the files in <a href="motion.txt.html#it" class="d">it</a> set the same global option to <a href="insert.txt.html#a" class="d">a</a> different value, the result
+depends on which one was opened last.
+
+
+The number of lines that are checked can be set with the <a href="options.txt.html#%27modelines%27" class="o">'modelines'</a> option.
+If <a href="options.txt.html#%27modeline%27" class="o">'modeline'</a> <a href="motion.txt.html#is" class="d">is</a> off or <a href="options.txt.html#%27modelines%27" class="o">'modelines'</a> <a href="motion.txt.html#is" class="d">is</a> <a href="motion.txt.html#0" class="d">0</a> no lines are checked.
+
+<span class="h">==============================================================================</span>
+3. Options summary                                      <a name="option-summary" class="t">option-summary</a>
+
+In the list below all the <a href="options.txt.html#options" class="d">options</a> are mentioned with their full name and with
+an abbreviation if there <a href="motion.txt.html#is" class="d">is</a> one.  Both forms may be used.
+
+In this document when <a href="insert.txt.html#a" class="d">a</a> <a href="options.txt.html#boolean" class="d">boolean</a> option <a href="motion.txt.html#is" class="d">is</a> "set" that means that "<a href="options.txt.html#%3Aset" class="d">:set</a> option"
+<a href="motion.txt.html#is" class="d">is</a> entered.  When an option <a href="motion.txt.html#is" class="d">is</a> "reset"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="options.txt.html#%3Aset" class="d">:set</a> nooption" <a href="motion.txt.html#is" class="d">is</a> used.
+
+For some <a href="options.txt.html#options" class="d">options</a> there are two default values: The "Vim default"<a href="motion.txt.html#%2C" class="d">,</a> which <a href="motion.txt.html#is" class="d">is</a>
+used when <span class="o">'compatible'</span> <a href="motion.txt.html#is" class="d">is</a> not set, and the "Vi default"<a href="motion.txt.html#%2C" class="d">,</a> which <a href="motion.txt.html#is" class="d">is</a> used when
+<span class="o">'compatible'</span> <a href="motion.txt.html#is" class="d">is</a> set.
+
+Most <a href="options.txt.html#options" class="d">options</a> are the same in all <a href="windows.txt.html#windows" class="d">windows</a> and buffers.  There are <a href="insert.txt.html#a" class="d">a</a> few that
+are specific to how the text <a href="motion.txt.html#is" class="d">is</a> presented in <a href="insert.txt.html#a" class="d">a</a> window.  These can be set to <a href="insert.txt.html#a" class="d">a</a>
+different value in each window.  For example the <span class="o">'list'</span> option can be set in
+one window and reset in another for the same text, giving both types of view
+<a href="motion.txt.html#at" class="d">at</a> the same time.  There are <a href="insert.txt.html#a" class="d">a</a> few <a href="options.txt.html#options" class="d">options</a> that are specific to <a href="insert.txt.html#a" class="d">a</a> certain
+file.  These can have <a href="insert.txt.html#a" class="d">a</a> different value for each file or buffer.  For example
+the <a href="options.txt.html#%27textwidth%27" class="o">'textwidth'</a> option can be 78 for <a href="insert.txt.html#a" class="d">a</a> normal text file and <a href="motion.txt.html#0" class="d">0</a> for <a href="insert.txt.html#a" class="d">a</a> <a href="change.txt.html#C" class="d">C</a>
+program.
+
+        global                  one option for all <a href="windows.txt.html#buffers" class="d">buffers</a> and <a href="windows.txt.html#windows" class="d">windows</a>
+        local to window         each window has its own copy of this option
+        local to buffer         each buffer has its own copy of this option
+
+When creating <a href="insert.txt.html#a" class="d">a</a> new window the option values from the currently active window
+are used <a href="motion.txt.html#as" class="d">as</a> <a href="insert.txt.html#a" class="d">a</a> default value for the window-specific options.  For the
+buffer-specific <a href="options.txt.html#options" class="d">options</a> this depends on the 's' and 'S' flags in the
+<a href="options.txt.html#%27cpoptions%27" class="o">'cpoptions'</a> option.  If 's' <a href="motion.txt.html#is" class="d">is</a> included (which <a href="motion.txt.html#is" class="d">is</a> the default) the values for
+buffer <a href="options.txt.html#options" class="d">options</a> are copied from the currently active buffer when <a href="insert.txt.html#a" class="d">a</a> buffer <a href="motion.txt.html#is" class="d">is</a>
+first entered.  If 'S' <a href="motion.txt.html#is" class="d">is</a> present the <a href="options.txt.html#options" class="d">options</a> are copied each time the buffer
+<a href="motion.txt.html#is" class="d">is</a> entered, this <a href="motion.txt.html#is" class="d">is</a> almost like having global options.  If 's' and 'S' are not
+present, the <a href="options.txt.html#options" class="d">options</a> are copied from the currently active buffer when the
+buffer <a href="motion.txt.html#is" class="d">is</a> created.
+
+Hidden <a href="options.txt.html#options" class="d">options</a>                                          <a name="hidden-options" class="t">hidden-options</a>
+
+Not all <a href="options.txt.html#options" class="d">options</a> are supported in all versions.  This depends on the supported
+features and sometimes on the system.  <a href="insert.txt.html#A" class="d">A</a> remark about this <a href="motion.txt.html#is" class="d">is</a> in curly braces
+below.  When an option <a href="motion.txt.html#is" class="d">is</a> not supported <a href="motion.txt.html#it" class="d">it</a> may still be set without getting an
+error, this <a href="motion.txt.html#is" class="d">is</a> called <a href="insert.txt.html#a" class="d">a</a> hidden option.  You can't get the value of <a href="insert.txt.html#a" class="d">a</a> hidden
+option though, <a href="motion.txt.html#it" class="d">it</a> <a href="motion.txt.html#is" class="d">is</a> not stored.
+
+To test if option "foo" can be used with "<a href="options.txt.html#%3Aset" class="d">:set</a>" use something like this: 
+<span class="e">        if exists('&amp;foo')</span>
+This also returns true for <a href="insert.txt.html#a" class="d">a</a> hidden option.  To test if option "foo" <a href="motion.txt.html#is" class="d">is</a> really
+supported use something like this: 
+<span class="e">        if exists('+foo')</span>
+
+                                                        <a name="E355" class="t">E355</a>
+<a href="insert.txt.html#A" class="d">A</a> jump table for the <a href="options.txt.html#options" class="d">options</a> with <a href="insert.txt.html#a" class="d">a</a> short description can be found <a href="motion.txt.html#at" class="d">at</a> <a href="quickref.txt.html#Q_op" class="l">Q_op</a><a href="repeat.txt.html#." class="d">.</a>
+
+                                                        <a name="%27backspace%27" class="t">'backspace'</a> <a name="%27bs%27" class="t">'bs'</a>
+<a href="options.txt.html#%27backspace%27" class="o">'backspace'</a> <a href="options.txt.html#%27bs%27" class="o">'bs'</a>        string  (default ""<a href="motion.txt.html#%29" class="d">)</a>
+                        global
+                        <span class="s">{not in Vi}</span>
+        Influences the working of <a href="motion.txt.html#%3CBS%3E" class="s">&lt;BS&gt;</a><a href="motion.txt.html#%2C" class="d">,</a> <a href="change.txt.html#%3CDel%3E" class="s">&lt;Del&gt;</a><a href="motion.txt.html#%2C" class="d">,</a> <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> and <a href="scroll.txt.html#CTRL-U" class="k">CTRL-U</a> in <a href="insert.txt.html#Insert" class="d">Insert</a>
+        mode.  This <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> list of items, separated by commas.  Each item allows
+        <a href="insert.txt.html#a" class="d">a</a> way to backspace over something:
+<span class="h">        value   effect  </span>
+        indent  allow backspacing over autoindent
+        eol     allow backspacing over line breaks (join lines)
+        start   allow backspacing over the start of insert; <a href="index.txt.html#CTRL-W" class="k">CTRL-W</a> and <a href="scroll.txt.html#CTRL-U" class="k">CTRL-U</a>
+                stop once <a href="motion.txt.html#at" class="d">at</a> the start of insert.
+
+        When the value <a href="motion.txt.html#is" class="d">is</a> empty, Vi compatible backspacing <a href="motion.txt.html#is" class="d">is</a> used.
+
+        For backwards compatibility with version 5.4 and earlier:
+<span class="h">        value   effect  </span>
+          <a href="motion.txt.html#0" class="d">0</a>     same <a href="motion.txt.html#as" class="d">as</a> "<a href="options.txt.html#%3Aset" class="d">:set</a> backspace=" (Vi compatible)
+          1     same <a href="motion.txt.html#as" class="d">as</a> "<a href="options.txt.html#%3Aset" class="d">:set</a> backspace=indent,eol"
+          2     same <a href="motion.txt.html#as" class="d">as</a> "<a href="options.txt.html#%3Aset" class="d">:set</a> backspace=indent,eol,start"
+
+                                                <a name="%27clipboard%27" class="t">'clipboard'</a> <a name="%27cb%27" class="t">'cb'</a>
+<a href="options.txt.html#%27clipboard%27" class="o">'clipboard'</a> <a href="options.txt.html#%27cb%27" class="o">'cb'</a>        string  (default "autoselect,exclude:cons\|linux"
+                                                  for X-windows, "" otherwise)
+                        global
+
+        unnamed         When included, Vim will use the clipboard register <a href="motion.txt.html#%27" class="d">'</a>*<a href="motion.txt.html#%27" class="d">'</a>
+                        for all yank, delete, change and <a href="change.txt.html#put" class="d">put</a> operations which
+                        would normally go to the unnamed register.  When <a href="insert.txt.html#a" class="d">a</a>
+                        register <a href="motion.txt.html#is" class="d">is</a> explicitly specified, <a href="motion.txt.html#it" class="d">it</a> will always be
+                        used regardless of whether "unnamed" <a href="motion.txt.html#is" class="d">is</a> in <a href="options.txt.html#%27clipboard%27" class="o">'clipboard'</a>
+                        or not.  The clipboard register can always be
+                        explicitly accessed using the "* notation.  Also see
+                        <span class="l">gui-clipboard</span><a href="repeat.txt.html#." class="d">.</a>
+
+                                                <a name="%27cpoptions%27" class="t">'cpoptions'</a> <a name="%27cpo%27" class="t">'cpo'</a>
+<a href="options.txt.html#%27cpoptions%27" class="o">'cpoptions'</a> <a href="options.txt.html#%27cpo%27" class="o">'cpo'</a>       string  (Vim default: "aABceFs"<a href="motion.txt.html#%2C" class="d">,</a>
+                                 Vi default:  all flags)
+                        global
+                                                                <a name="cpo-w" class="t">cpo-w</a>
+                <a href="motion.txt.html#w" class="d">w</a>       When using "<a href="change.txt.html#cw" class="d">cw</a>" on <a href="insert.txt.html#a" class="d">a</a> blank character, only change one
+                        character and not all blanks until the start of the
+                        next word.
+
+
+                             <a name="%27equalalways%27" class="t">'equalalways'</a> <a name="%27ea%27" class="t">'ea'</a> <a name="%27noequalalways%27" class="t">'noequalalways'</a> <a name="%27noea%27" class="t">'noea'</a>
+<a href="options.txt.html#%27equalalways%27" class="o">'equalalways'</a> <a href="options.txt.html#%27ea%27" class="o">'ea'</a>      <a href="options.txt.html#boolean" class="d">boolean</a> (default on)
+                        global
+                        <span class="s">{not in Vi}</span>
+        When on, all the <a href="windows.txt.html#windows" class="d">windows</a> are automatically made the same size after
+        splitting or closing <a href="insert.txt.html#a" class="d">a</a> window.  This also happens the moment the
+        option <a href="motion.txt.html#is" class="d">is</a> switched on.  When off, splitting <a href="insert.txt.html#a" class="d">a</a> window will reduce the
+        size of the current window and leave the other <a href="windows.txt.html#windows" class="d">windows</a> the same.  When
+        closing <a href="insert.txt.html#a" class="d">a</a> window the extra lines are given to the window next to <a href="motion.txt.html#it" class="d">it</a>
+        (depending on <a href="options.txt.html#%27splitbelow%27" class="o">'splitbelow'</a> and <a href="options.txt.html#%27splitright%27" class="o">'splitright'</a>).
+
+                                                <a name="%27equalprg%27" class="t">'equalprg'</a> <a name="%27ep%27" class="t">'ep'</a>
+<a href="options.txt.html#%27equalprg%27" class="o">'equalprg'</a> <a href="options.txt.html#%27ep%27" class="o">'ep'</a>         string  (default ""<a href="motion.txt.html#%29" class="d">)</a>
+                        global or local to buffer <span class="l">global-local</span>
+                        <span class="s">{not in Vi}</span>
+        External program to use for "<a href="change.txt.html#%3D" class="d">=</a>" command.  When this option <a href="motion.txt.html#is" class="d">is</a> empty
+        the internal formatting functions are used ('lisp', <span class="o">'cindent'</span> or
+        <span class="o">'indentexpr'</span>).
+        Environment variables are expanded <span class="l">:set_env</span><a href="repeat.txt.html#." class="d">.</a>  See <span class="l">option-backslash</span>
+        about including spaces and backslashes.
+        This option cannot be set from <a href="insert.txt.html#a" class="d">a</a> <a href="options.txt.html#modeline" class="l">modeline</a> or in the <span class="l">sandbox</span><a href="motion.txt.html#%2C" class="d">,</a> for
+        security reasons.
+
+                                 <a name="%27expandtab%27" class="t">'expandtab'</a> <a name="%27et%27" class="t">'et'</a> <a name="%27noexpandtab%27" class="t">'noexpandtab'</a> <a name="%27noet%27" class="t">'noet'</a>
+<a href="options.txt.html#%27expandtab%27" class="o">'expandtab'</a> <a href="options.txt.html#%27et%27" class="o">'et'</a>        <a href="options.txt.html#boolean" class="d">boolean</a> (default off)
+                        local to buffer
+                        <span class="s">{not in Vi}</span>
+        In <a href="insert.txt.html#Insert" class="d">Insert</a> mode: Use the appropriate number of spaces to <a href="insert.txt.html#insert" class="d">insert</a> <a href="insert.txt.html#a" class="d">a</a>
+        <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a><a href="repeat.txt.html#." class="d">.</a>  Spaces are used in indents with the '&gt;' and '&lt;' commands and
+        when <span class="o">'autoindent'</span> <a href="motion.txt.html#is" class="d">is</a> on.  To <a href="insert.txt.html#insert" class="d">insert</a> <a href="insert.txt.html#a" class="d">a</a> real tab when <a href="options.txt.html#%27expandtab%27" class="o">'expandtab'</a> <a href="motion.txt.html#is" class="d">is</a>
+        on, use <a href="visual.txt.html#CTRL-V" class="k">CTRL-V</a><a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a><a href="repeat.txt.html#." class="d">.</a>  See also <span class="l">:retab</span> and <a href="insert.txt.html#ins-expandtab" class="l">ins-expandtab</a><a href="repeat.txt.html#." class="d">.</a>
+        <span class="n">NOTE:</span> This option <a href="motion.txt.html#is" class="d">is</a> reset when <span class="o">'compatible'</span> <a href="motion.txt.html#is" class="d">is</a> set.
+
+                                                <a name="%27foldopen%27" class="t">'foldopen'</a> <a name="%27fdo%27" class="t">'fdo'</a>
+<a href="options.txt.html#%27foldopen%27" class="o">'foldopen'</a> <a href="options.txt.html#%27fdo%27" class="o">'fdo'</a>        string (default: "block,hor,mark,percent,quickfix,
+                                                             search,tag,undo"<a href="motion.txt.html#%29" class="d">)</a>
+                        global
+                        <span class="s">{not in Vi}</span>
+                        {not available when compiled without the <span class="l">+folding</span>
+                        feature}
+        Specifies for which type of commands folds will be opened, if the
+        command moves the cursor into <a href="insert.txt.html#a" class="d">a</a> closed fold.  It <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> comma separated
+        list of items.
+        <span class="n">NOTE:</span> When the command <a href="motion.txt.html#is" class="d">is</a> part of <a href="insert.txt.html#a" class="d">a</a> <a href="map.txt.html#mapping" class="d">mapping</a> this option <a href="motion.txt.html#is" class="d">is</a> not used.
+        Add the <a href="fold.txt.html#zv" class="l">zv</a> command to the <a href="map.txt.html#mapping" class="d">mapping</a> to get the same effect.
+        (rationale: the <a href="map.txt.html#mapping" class="d">mapping</a> may want to control opening folds itself)
+
+<span class="h">                item            commands </span>
+                all             any
+                block           "<a href="motion.txt.html#%28" class="d">(</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="motion.txt.html#%7B" class="d">{</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="motion.txt.html#%5B%5B" class="d">[[</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="motion.txt.html#%5B%7B" class="d">[{</a>"<a href="motion.txt.html#%2C" class="d">,</a> etc.
+                hor             horizontal movements: "<a href="motion.txt.html#l" class="d">l</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="motion.txt.html#w" class="d">w</a>"<a href="motion.txt.html#%2C" class="d">,</a> "fx"<a href="motion.txt.html#%2C" class="d">,</a> etc.
+                <a href="insert.txt.html#insert" class="d">insert</a>          any command in <a href="insert.txt.html#Insert" class="d">Insert</a> mode
+                jump            far jumps: "<a href="motion.txt.html#G" class="d">G</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="motion.txt.html#gg" class="d">gg</a>"<a href="motion.txt.html#%2C" class="d">,</a> etc.
+                <a href="motion.txt.html#mark" class="d">mark</a>            jumping to <a href="insert.txt.html#a" class="d">a</a> mark: "'m"<a href="motion.txt.html#%2C" class="d">,</a> <a href="motion.txt.html#CTRL-O" class="k">CTRL-O</a><a href="motion.txt.html#%2C" class="d">,</a> etc.
+                percent         "<a href="motion.txt.html#%25" class="d">%</a>"
+                quickfix        ":cn"<a href="motion.txt.html#%2C" class="d">,</a> ":crew"<a href="motion.txt.html#%2C" class="d">,</a> ":make"<a href="motion.txt.html#%2C" class="d">,</a> etc.
+                search          search for <a href="insert.txt.html#a" class="d">a</a> pattern: "<a href="pattern.txt.html#%2F" class="d">/</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="pattern.txt.html#n" class="d">n</a>"<a href="motion.txt.html#%2C" class="d">,</a> "*"<a href="motion.txt.html#%2C" class="d">,</a> "gd"<a href="motion.txt.html#%2C" class="d">,</a> etc.
+                                (not for <a href="insert.txt.html#a" class="d">a</a> search <a href="pattern.txt.html#pattern" class="d">pattern</a> in <a href="insert.txt.html#a" class="d">a</a> ":" command)
+                                Also for <span class="l">[s</span> and <span class="l">]s</span><a href="repeat.txt.html#." class="d">.</a>
+                tag             jumping to <a href="insert.txt.html#a" class="d">a</a> tag: "<a href="tagsearch.txt.html#%3Ata" class="d">:ta</a>"<a href="motion.txt.html#%2C" class="d">,</a> <a href="tagsearch.txt.html#CTRL-T" class="k">CTRL-T</a><a href="motion.txt.html#%2C" class="d">,</a> etc.
+                <a href="undo.txt.html#undo" class="d">undo</a>            <a href="undo.txt.html#undo" class="d">undo</a> or redo: "<a href="undo.txt.html#u" class="d">u</a>" and <a href="undo.txt.html#CTRL-R" class="k">CTRL-R</a>
+
+                                                <a name="%27formatprg%27" class="t">'formatprg'</a> <a name="%27fp%27" class="t">'fp'</a>
+<a href="options.txt.html#%27formatprg%27" class="o">'formatprg'</a> <a href="options.txt.html#%27fp%27" class="o">'fp'</a>        string (default ""<a href="motion.txt.html#%29" class="d">)</a>
+                        global
+                        <span class="s">{not in Vi}</span>
+        The name of an external program that will be used to format the lines
+        selected with the <span class="l">gq</span> operator.  The program must take the input on
+        stdin and produce the output on stdout.  The Unix program "fmt" <a href="motion.txt.html#is" class="d">is</a>
+        such <a href="insert.txt.html#a" class="d">a</a> program.
+        If the <span class="o">'formatexpr'</span> option <a href="motion.txt.html#is" class="d">is</a> not empty <a href="motion.txt.html#it" class="d">it</a> will be used instead.
+        Otherwise, if <a href="options.txt.html#%27formatprg%27" class="o">'formatprg'</a> option <a href="motion.txt.html#is" class="d">is</a> an empty string, the internal
+        format function will be used <span class="l">C-indenting</span><a href="repeat.txt.html#." class="d">.</a>
+        Environment variables are expanded <span class="l">:set_env</span><a href="repeat.txt.html#." class="d">.</a>  See <span class="l">option-backslash</span>
+        about including spaces and backslashes.
+        The expression may be evaluated in the <span class="l">sandbox</span><a href="motion.txt.html#%2C" class="d">,</a> see
+        <span class="l">sandbox-option</span><a href="repeat.txt.html#." class="d">.</a>
+
+                                 <a name="%27hlsearch%27" class="t">'hlsearch'</a> <a name="%27hls%27" class="t">'hls'</a> <a name="%27nohlsearch%27" class="t">'nohlsearch'</a> <a name="%27nohls%27" class="t">'nohls'</a>
+<a href="options.txt.html#%27hlsearch%27" class="o">'hlsearch'</a> <a href="options.txt.html#%27hls%27" class="o">'hls'</a>        <a href="options.txt.html#boolean" class="d">boolean</a> (default off)
+                        global
+        When there <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> previous search pattern, highlight all its matches.
+        The type of highlighting used can be set with the 'l' occasion in the
+        <span class="o">'highlight'</span> option.  This uses the "Search" highlight group by
+        default.  <span class="n">Note</span> that only the matching text <a href="motion.txt.html#is" class="d">is</a> highlighted, any offsets
+        are not applied.
+        See also: <a href="options.txt.html#%27incsearch%27" class="o">'incsearch'</a> and <span class="l">:match</span><a href="repeat.txt.html#." class="d">.</a>
+        When you get bored looking <a href="motion.txt.html#at" class="d">at</a> the highlighted matches, you can turn <a href="motion.txt.html#it" class="d">it</a>
+        off with <a href="pattern.txt.html#%3Anohlsearch" class="l">:nohlsearch</a><a href="repeat.txt.html#." class="d">.</a>  As soon <a href="motion.txt.html#as" class="d">as</a> you use <a href="insert.txt.html#a" class="d">a</a> search command, the
+        highlighting comes back.
+
+                        <a name="%27ignorecase%27" class="t">'ignorecase'</a> <a name="%27ic%27" class="t">'ic'</a> <a name="%27noignorecase%27" class="t">'noignorecase'</a> <a name="%27noic%27" class="t">'noic'</a>
+<a href="options.txt.html#%27ignorecase%27" class="o">'ignorecase'</a> <a href="options.txt.html#%27ic%27" class="o">'ic'</a>       <a href="options.txt.html#boolean" class="d">boolean</a> (default off)
+                        global
+        Ignore <a href="change.txt.html#case" class="d">case</a> in search patterns.  Also used when searching in the <a href="tagsearch.txt.html#tags" class="d">tags</a>
+        file.
+        Also see <a href="options.txt.html#%27smartcase%27" class="o">'smartcase'</a><a href="repeat.txt.html#." class="d">.</a>
+        Can be overruled by using "\c" or "\C" in the pattern, see
+        <span class="l">/ignorecase</span><a href="repeat.txt.html#." class="d">.</a>
+
+                                 <a name="%27incsearch%27" class="t">'incsearch'</a> <a name="%27is%27" class="t">'is'</a> <a name="%27noincsearch%27" class="t">'noincsearch'</a> <a name="%27nois%27" class="t">'nois'</a>
+<a href="options.txt.html#%27incsearch%27" class="o">'incsearch'</a> <a href="options.txt.html#%27is%27" class="o">'is'</a>        <a href="options.txt.html#boolean" class="d">boolean</a> (default off)
+                        global
+                        <span class="s">{not in Vi}</span>
+                        {not available when compiled without the
+                        <span class="l">+extra_search</span> feature}
+        While typing <a href="insert.txt.html#a" class="d">a</a> search command, show where the pattern, <a href="motion.txt.html#as" class="d">as</a> <a href="motion.txt.html#it" class="d">it</a> was typed
+        so far, matches.  The matched string <a href="motion.txt.html#is" class="d">is</a> highlighted.  If the <a href="pattern.txt.html#pattern" class="d">pattern</a>
+        <a href="motion.txt.html#is" class="d">is</a> invalid or not found, nothing <a href="motion.txt.html#is" class="d">is</a> shown.  The screen will be updated
+        often, this <a href="motion.txt.html#is" class="d">is</a> only useful on fast terminals.
+        <span class="n">Note</span> that the match will be shown, but the cursor will return to its
+        original position when no match <a href="motion.txt.html#is" class="d">is</a> found and when pressing <span class="s">&lt;Esc&gt;</span><a href="repeat.txt.html#." class="d">.</a>  You
+        still need to finish the search command with <span class="s">&lt;Enter&gt;</span> to move the
+        cursor to the match.
+
+                                                <a name="%27iskeyword%27" class="t">'iskeyword'</a> <a name="%27isk%27" class="t">'isk'</a>
+<a href="options.txt.html#%27iskeyword%27" class="o">'iskeyword'</a> <a href="options.txt.html#%27isk%27" class="o">'isk'</a>       string (Vim default for MS-DOS and Win32:
+                                            "@,48-57,_,128-167,224-235"
+                                   otherwise:  "@,48-57,_,192-255"
+                                Vi default: "@,48-57,_"<a href="motion.txt.html#%29" class="d">)</a>
+                        local to buffer
+                        <span class="s">{not in Vi}</span>
+        Keywords are used in searching and recognizing with many commands:
+        "<a href="motion.txt.html#w" class="d">w</a>"<a href="motion.txt.html#%2C" class="d">,</a> "*"<a href="motion.txt.html#%2C" class="d">,</a> "[i"<a href="motion.txt.html#%2C" class="d">,</a> etc.  It <a href="motion.txt.html#is" class="d">is</a> also used for "\k" in <a href="insert.txt.html#a" class="d">a</a> <a href="pattern.txt.html#pattern" class="l">pattern</a><a href="repeat.txt.html#." class="d">.</a>  See
+        <span class="o">'isfname'</span> for <a href="insert.txt.html#a" class="d">a</a> description of the format of this option.  For <a href="change.txt.html#C" class="d">C</a>
+        programs you could use "a-z,A-Z,48-57,_,.,-,&gt;"<a href="repeat.txt.html#." class="d">.</a>
+
+                        <a name="%27joinspaces%27" class="t">'joinspaces'</a> <a name="%27js%27" class="t">'js'</a> <a name="%27nojoinspaces%27" class="t">'nojoinspaces'</a> <a name="%27nojs%27" class="t">'nojs'</a>
+<a href="options.txt.html#%27joinspaces%27" class="o">'joinspaces'</a> <a href="options.txt.html#%27js%27" class="o">'js'</a>       <a href="options.txt.html#boolean" class="d">boolean</a> (default on)
+                        global
+                        <span class="s">{not in Vi}</span>
+        <a href="insert.txt.html#Insert" class="d">Insert</a> two spaces after <a href="insert.txt.html#a" class="d">a</a> '.', '?' and '!' with <a href="insert.txt.html#a" class="d">a</a> join command.
+        When <a href="options.txt.html#%27cpoptions%27" class="o">'cpoptions'</a> includes the 'j' flag, only do this after <a href="insert.txt.html#a" class="d">a</a> '.'.
+        Otherwise only one space <a href="motion.txt.html#is" class="d">is</a> inserted.
+        <span class="n">NOTE:</span> This option <a href="motion.txt.html#is" class="d">is</a> set when <span class="o">'compatible'</span> <a href="motion.txt.html#is" class="d">is</a> set.
+
+                        <a name="%27linebreak%27" class="t">'linebreak'</a> <a name="%27lbr%27" class="t">'lbr'</a> <a name="%27nolinebreak%27" class="t">'nolinebreak'</a> <a name="%27nolbr%27" class="t">'nolbr'</a>
+<a href="options.txt.html#%27linebreak%27" class="o">'linebreak'</a> <a href="options.txt.html#%27lbr%27" class="o">'lbr'</a>       <a href="options.txt.html#boolean" class="d">boolean</a> (default off)
+                        local to window
+                        <span class="s">{not in Vi}</span>
+                        {not available when compiled without the  <span class="l">+linebreak</span>
+                        feature}
+        If on Vim will wrap long lines <a href="motion.txt.html#at" class="d">at</a> <a href="insert.txt.html#a" class="d">a</a> character in <span class="o">'breakat'</span> rather
+        than <a href="motion.txt.html#at" class="d">at</a> the last character that fits on the screen.  Unlike
+        <span class="o">'wrapmargin'</span> and <a href="options.txt.html#%27textwidth%27" class="o">'textwidth'</a><a href="motion.txt.html#%2C" class="d">,</a> this does not <a href="insert.txt.html#insert" class="d">insert</a> <span class="s">&lt;EOL&gt;</span><a href="change.txt.html#s" class="d">s</a> in the file,
+        <a href="motion.txt.html#it" class="d">it</a> only affects the way the file <a href="motion.txt.html#is" class="d">is</a> displayed, not its contents.  The
+        value of <span class="o">'showbreak'</span> <a href="motion.txt.html#is" class="d">is</a> used to <a href="change.txt.html#put" class="d">put</a> in front of wrapped lines.
+        This option <a href="motion.txt.html#is" class="d">is</a> not used when the <a href="options.txt.html#%27wrap%27" class="o">'wrap'</a> option <a href="motion.txt.html#is" class="d">is</a> off or <span class="o">'list'</span> <a href="motion.txt.html#is" class="d">is</a> on.
+        <span class="n">Note</span> that <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a> characters after an <span class="s">&lt;EOL&gt;</span> are mostly not displayed
+        with the right amount of white space.
+
+                                   <a name="%27modeline%27" class="t">'modeline'</a> <a name="%27ml%27" class="t">'ml'</a> <a name="%27nomodeline%27" class="t">'nomodeline'</a> <a name="%27noml%27" class="t">'noml'</a>
+<a href="options.txt.html#%27modeline%27" class="o">'modeline'</a> <a href="options.txt.html#%27ml%27" class="o">'ml'</a>         <a href="options.txt.html#boolean" class="d">boolean</a> (Vim default: on, Vi default: off)
+                        local to buffer
+                                                <a name="%27modelines%27" class="t">'modelines'</a> <a name="%27mls%27" class="t">'mls'</a>
+<a href="options.txt.html#%27modelines%27" class="o">'modelines'</a> <a href="options.txt.html#%27mls%27" class="o">'mls'</a>       number  (default 5)
+                        global
+                        <span class="s">{not in Vi}</span>
+        If <a href="options.txt.html#%27modeline%27" class="o">'modeline'</a> <a href="motion.txt.html#is" class="d">is</a> on <a href="options.txt.html#%27modelines%27" class="o">'modelines'</a> gives the number of lines that <a href="motion.txt.html#is" class="d">is</a>
+        checked for set commands.  If <a href="options.txt.html#%27modeline%27" class="o">'modeline'</a> <a href="motion.txt.html#is" class="d">is</a> off or <a href="options.txt.html#%27modelines%27" class="o">'modelines'</a> <a href="motion.txt.html#is" class="d">is</a> zero
+        no lines are checked.  See <a href="options.txt.html#modeline" class="l">modeline</a><a href="repeat.txt.html#." class="d">.</a>
+        <span class="n">NOTE:</span> <a href="options.txt.html#%27modeline%27" class="o">'modeline'</a> <a href="motion.txt.html#is" class="d">is</a> set to the Vi default value when <span class="o">'compatible'</span> <a href="motion.txt.html#is" class="d">is</a>
+        set and to the Vim default value when <span class="o">'compatible'</span> <a href="motion.txt.html#is" class="d">is</a> reset.
+
+                                                        <a name="%27nrformats%27" class="t">'nrformats'</a> <a name="%27nf%27" class="t">'nf'</a>
+<a href="options.txt.html#%27nrformats%27" class="o">'nrformats'</a> <a href="options.txt.html#%27nf%27" class="o">'nf'</a>        string  (default "octal,hex"<a href="motion.txt.html#%29" class="d">)</a>
+                        local to buffer
+                        <span class="s">{not in Vi}</span>
+        This defines what bases Vim will consider for numbers when using the
+        <a href="change.txt.html#CTRL-A" class="k">CTRL-A</a> and <a href="change.txt.html#CTRL-X" class="k">CTRL-X</a> commands for adding to and subtracting from <a href="insert.txt.html#a" class="d">a</a> number
+        respectively; see <a href="change.txt.html#CTRL-A" class="l">CTRL-A</a> for more info on these commands.
+        alpha   If included, single alphabetical characters will be
+                incremented or decremented.  This <a href="motion.txt.html#is" class="d">is</a> useful for <a href="insert.txt.html#a" class="d">a</a> list with <a href="insert.txt.html#a" class="d">a</a>
+                letter <a href="index.txt.html#index" class="d">index</a> a), b), etc.
+        octal   If included, numbers that start with <a href="insert.txt.html#a" class="d">a</a> zero will be considered
+                to be octal.  Example: Using <a href="change.txt.html#CTRL-A" class="k">CTRL-A</a> on "007" results in "010"<a href="repeat.txt.html#." class="d">.</a>
+        hex     If included, numbers starting with "0x" or "0X" will be
+                considered to be hexadecimal.  Example: Using <a href="change.txt.html#CTRL-X" class="k">CTRL-X</a> on
+                "0x100" results in "0x0ff"<a href="repeat.txt.html#." class="d">.</a>
+        Numbers which simply begin with <a href="insert.txt.html#a" class="d">a</a> digit in the range 1-9 are always
+        considered decimal.  This also happens for numbers that are not
+        recognized <a href="motion.txt.html#as" class="d">as</a> octal or hex.
+
+                                <a name="%27number%27" class="t">'number'</a> <a name="%27nu%27" class="t">'nu'</a> <a name="%27nonumber%27" class="t">'nonumber'</a> <a name="%27nonu%27" class="t">'nonu'</a>
+<a href="options.txt.html#%27number%27" class="o">'number'</a> <a href="options.txt.html#%27nu%27" class="o">'nu'</a>           <a href="options.txt.html#boolean" class="d">boolean</a> (default off)
+                        local to window
+        Print the line number in front of each line.  When the 'n' option <a href="motion.txt.html#is" class="d">is</a>
+        excluded from <a href="options.txt.html#%27cpoptions%27" class="o">'cpoptions'</a> <a href="insert.txt.html#a" class="d">a</a> wrapped line will not use the column of
+        line numbers (this <a href="motion.txt.html#is" class="d">is</a> the default when <span class="o">'compatible'</span> isn't set).
+        The <span class="o">'numberwidth'</span> option can be used to set the room used for the line
+        number.
+        When <a href="insert.txt.html#a" class="d">a</a> long, wrapped line doesn't start with the first character, '-'
+        characters are <a href="change.txt.html#put" class="d">put</a> before the number.
+        See <span class="l">hl-LineNr</span> for the highlighting used for the number.
+
+                                                <a name="%27report%27" class="t">'report'</a>
+<a href="options.txt.html#%27report%27" class="o">'report'</a>                number  (default 2)
+                        global
+        Threshold for reporting number of lines changed.  When the number of
+        changed lines <a href="motion.txt.html#is" class="d">is</a> more than <a href="options.txt.html#%27report%27" class="o">'report'</a> <a href="insert.txt.html#a" class="d">a</a> message will be given for most
+        ":" commands.  If you want <a href="motion.txt.html#it" class="d">it</a> always, set <a href="options.txt.html#%27report%27" class="o">'report'</a> to 0.
+        For the "<a href="change.txt.html#%3Asubstitute" class="d">:substitute</a>" command the number of substitutions <a href="motion.txt.html#is" class="d">is</a> used
+        instead of the number of lines.
+
+                                                <a name="%27scroll%27" class="t">'scroll'</a> <a name="%27scr%27" class="t">'scr'</a>
+<a href="options.txt.html#%27scroll%27" class="o">'scroll'</a> <a href="options.txt.html#%27scr%27" class="o">'scr'</a>          number  (default: half the window height)
+                        local to window
+        Number of lines to scroll with <a href="scroll.txt.html#CTRL-U" class="k">CTRL-U</a> and <a href="scroll.txt.html#CTRL-D" class="k">CTRL-D</a> commands.  Will be
+        set to half the number of lines in the window when the window size
+        changes.  If you give <a href="insert.txt.html#a" class="d">a</a> <a href="intro.txt.html#count" class="d">count</a> to the <a href="scroll.txt.html#CTRL-U" class="k">CTRL-U</a> or <a href="scroll.txt.html#CTRL-D" class="k">CTRL-D</a> command <a href="motion.txt.html#it" class="d">it</a> will
+        be used <a href="motion.txt.html#as" class="d">as</a> the new value for <a href="options.txt.html#%27scroll%27" class="o">'scroll'</a><a href="repeat.txt.html#." class="d">.</a>  Reset to half the window
+        height with "<a href="options.txt.html#%3Aset" class="d">:set</a> scroll=0"<a href="repeat.txt.html#." class="d">.</a>   {Vi <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> bit different: <a href="options.txt.html#%27scroll%27" class="o">'scroll'</a> gives
+        the number of screen lines instead of file lines, makes <a href="insert.txt.html#a" class="d">a</a> difference
+        when lines wrap}
+
+                                                <a name="%27scrolloff%27" class="t">'scrolloff'</a> <a name="%27so%27" class="t">'so'</a>
+<a href="options.txt.html#%27scrolloff%27" class="o">'scrolloff'</a> <a href="options.txt.html#%27so%27" class="o">'so'</a>        number  (default 0)
+                        global
+                        <span class="s">{not in Vi}</span>
+        Minimal number of screen lines to keep above and below the cursor.
+        This will make some context visible around where you are working.  If
+        you set <a href="motion.txt.html#it" class="d">it</a> to <a href="insert.txt.html#a" class="d">a</a> very large value (999) the cursor line will always be
+        in the middle of the window (except <a href="motion.txt.html#at" class="d">at</a> the start or end of the file or
+        when long lines wrap).
+        For <a href="scroll.txt.html#scrolling" class="d">scrolling</a> horizontally see <span class="o">'sidescrolloff'</span><a href="repeat.txt.html#." class="d">.</a>
+        <span class="n">NOTE:</span> This option <a href="motion.txt.html#is" class="d">is</a> set to <a href="motion.txt.html#0" class="d">0</a> when <span class="o">'compatible'</span> <a href="motion.txt.html#is" class="d">is</a> set.
+
+                                                <a name="%27selection%27" class="t">'selection'</a> <a name="%27sel%27" class="t">'sel'</a>
+<a href="options.txt.html#%27selection%27" class="o">'selection'</a> <a href="options.txt.html#%27sel%27" class="o">'sel'</a>       string  (default "inclusive"<a href="motion.txt.html#%29" class="d">)</a>
+                        global
+                        <span class="s">{not in Vi}</span>
+        This option defines the behavior of the selection.  It <a href="motion.txt.html#is" class="d">is</a> only used
+        in <a href="visual.txt.html#Visual" class="d">Visual</a> and Select mode.
+        Possible values:
+<span class="h">           value        past line     inclusive </span>
+           old             no           yes
+           inclusive       yes          yes
+           exclusive       yes          no
+        "past line" means that the cursor <a href="motion.txt.html#is" class="d">is</a> allowed to be positioned one
+        character past the line.
+        "inclusive" means that the last character of the selection <a href="motion.txt.html#is" class="d">is</a> included
+        in an operation.  For example, when "<a href="change.txt.html#x" class="d">x</a>" <a href="motion.txt.html#is" class="d">is</a> used to delete the
+        selection.
+        <span class="n">Note</span> that when "exclusive" <a href="motion.txt.html#is" class="d">is</a> used and selecting from the end
+        backwards,
+
+                                                <a name="%27shell%27" class="t">'shell'</a> <a name="%27sh%27" class="t">'sh'</a> <a name="E91" class="t">E91</a>
+<a href="options.txt.html#%27shell%27" class="o">'shell'</a> <a href="options.txt.html#%27sh%27" class="o">'sh'</a>            string  (default $SHELL or "sh"<a href="motion.txt.html#%2C" class="d">,</a>
+                                        MS-DOS and Win32: "command.com" or
+                                        "cmd.exe"<a href="motion.txt.html#%2C" class="d">,</a> OS/2: "cmd"<a href="motion.txt.html#%29" class="d">)</a>
+                        global
+        Name of the shell to use for <a href="change.txt.html#%21" class="d">!</a> and :! commands.  When <a href="change.txt.html#changing" class="d">changing</a> the
+        value also check these options: <span class="o">'shelltype'</span><a href="motion.txt.html#%2C" class="d">,</a> <span class="o">'shellpipe'</span><a href="motion.txt.html#%2C" class="d">,</a> <a href="options.txt.html#%27shellslash%27" class="o">'shellslash'</a>
+        <span class="o">'shellredir'</span><a href="motion.txt.html#%2C" class="d">,</a> <span class="o">'shellquote'</span><a href="motion.txt.html#%2C" class="d">,</a> <a href="options.txt.html#%27shellxquote%27" class="o">'shellxquote'</a> and <a href="options.txt.html#%27shellcmdflag%27" class="o">'shellcmdflag'</a><a href="repeat.txt.html#." class="d">.</a>
+        It <a href="motion.txt.html#is" class="d">is</a> allowed to give an argument to the command, e.g.  "csh -f"<a href="repeat.txt.html#." class="d">.</a>
+        See <span class="l">option-backslash</span> about including spaces and backslashes.
+        Environment variables are expanded <span class="l">:set_env</span><a href="repeat.txt.html#." class="d">.</a>
+        If the name of the shell contains <a href="insert.txt.html#a" class="d">a</a> space, you might need to enclose
+        <a href="motion.txt.html#it" class="d">it</a> in quotes.  Example: 
+<span class="e">                :set shell=\"c:\program\ files\unix\sh.exe\"\ -f</span>
+       <span class="n">Note</span> the backslash before each <a href="change.txt.html#quote" class="d">quote</a> (to avoid starting <a href="insert.txt.html#a" class="d">a</a> comment) and
+        each space (to avoid ending the option value).  Also note that the
+        "-f" <a href="motion.txt.html#is" class="d">is</a> not inside the quotes, because <a href="motion.txt.html#it" class="d">it</a> <a href="motion.txt.html#is" class="d">is</a> not part of the command
+        name.  And Vim automagically recognizes the backslashes that are path
+        separators.
+
+                                                <a name="%27shellcmdflag%27" class="t">'shellcmdflag'</a> <a name="%27shcf%27" class="t">'shcf'</a>
+<a href="options.txt.html#%27shellcmdflag%27" class="o">'shellcmdflag'</a> <a href="options.txt.html#%27shcf%27" class="o">'shcf'</a>   string  (default: "-c"<a href="motion.txt.html#%2C" class="d">,</a> MS-DOS and Win32, when <a href="options.txt.html#%27shell%27" class="o">'shell'</a>
+                                        does not contain "sh" somewhere: "/c"<a href="motion.txt.html#%29" class="d">)</a>
+                        global
+                        <span class="s">{not in Vi}</span>
+        Flag passed to the shell to execute "<a href="change.txt.html#%21" class="d">!</a>" and ":!" commands; e.g.,
+        "bash.exe -c ls" or "command.com /c dir"<a href="repeat.txt.html#." class="d">.</a>
+
+                        <a name="%27shellslash%27" class="t">'shellslash'</a> <a name="%27ssl%27" class="t">'ssl'</a> <a name="%27noshellslash%27" class="t">'noshellslash'</a> <a name="%27nossl%27" class="t">'nossl'</a>
+<a href="options.txt.html#%27shellslash%27" class="o">'shellslash'</a> <a href="options.txt.html#%27ssl%27" class="o">'ssl'</a>      <a href="options.txt.html#boolean" class="d">boolean</a> (default off)
+                        global
+                        <span class="s">{not in Vi}</span> <span class="s">{only for MSDOS, MS-Windows and OS/2}</span>
+        When set, <a href="insert.txt.html#a" class="d">a</a> forward slash <a href="motion.txt.html#is" class="d">is</a> used when expanding file names.  This <a href="motion.txt.html#is" class="d">is</a>
+        useful when <a href="insert.txt.html#a" class="d">a</a> Unix-like shell <a href="motion.txt.html#is" class="d">is</a> used instead of command.com or
+        cmd.exe.  Backward slashes can still be typed, but they are changed to
+        forward slashes by Vim.
+                                                <a name="%27shellxquote%27" class="t">'shellxquote'</a> <a name="%27sxq%27" class="t">'sxq'</a>
+<a href="options.txt.html#%27shellxquote%27" class="o">'shellxquote'</a> <a href="options.txt.html#%27sxq%27" class="o">'sxq'</a>     string  (default: ""<a href="motion.txt.html#%3B" class="d">;</a>
+                                        for Win32, when <a href="options.txt.html#%27shell%27" class="o">'shell'</a> contains "sh"
+                                        somewhere: "\""
+                                        for Unix, when using system(): "\""<a href="motion.txt.html#%29" class="d">)</a>
+                        global
+                        <span class="s">{not in Vi}</span>
+        Quoting character(s), <a href="change.txt.html#put" class="d">put</a> around the command passed to the shell, for
+        the "<a href="change.txt.html#%21" class="d">!</a>" and ":!" commands.  Includes the redirection.  See
+        <span class="o">'shellquote'</span> to exclude the redirection.  It's probably not useful
+        to set both options.
+        This <a href="motion.txt.html#is" class="d">is</a> an empty string by default.  Known to be useful for
+        third-party shells when using the Win32 version, such <a href="motion.txt.html#as" class="d">as</a> the MKS Korn
+        Shell or bash, where <a href="motion.txt.html#it" class="d">it</a> should be "\""<a href="repeat.txt.html#." class="d">.</a>  The default <a href="motion.txt.html#is" class="d">is</a> adjusted
+        according the value of <a href="options.txt.html#%27shell%27" class="o">'shell'</a><a href="motion.txt.html#%2C" class="d">,</a> to reduce the need to set this option
+        by the user.  See <span class="l">dos-shell</span><a href="repeat.txt.html#." class="d">.</a>
+        This option cannot be set from <a href="insert.txt.html#a" class="d">a</a> <a href="options.txt.html#modeline" class="l">modeline</a> or in the <span class="l">sandbox</span><a href="motion.txt.html#%2C" class="d">,</a> for
+        security reasons.
+
+                        <a name="%27shiftround%27" class="t">'shiftround'</a> <a name="%27sr%27" class="t">'sr'</a> <a name="%27noshiftround%27" class="t">'noshiftround'</a> <a name="%27nosr%27" class="t">'nosr'</a>
+<a href="options.txt.html#%27shiftround%27" class="o">'shiftround'</a> <a href="options.txt.html#%27sr%27" class="o">'sr'</a>       <a href="options.txt.html#boolean" class="d">boolean</a> (default off)
+                        global
+                        <span class="s">{not in Vi}</span>
+        Round indent to multiple of <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a><a href="repeat.txt.html#." class="d">.</a>  Applies to <a href="change.txt.html#%3E" class="d">&gt;</a> and <a href="change.txt.html#%3C" class="d">&lt;</a>
+        commands.  <a href="tagsearch.txt.html#CTRL-T" class="k">CTRL-T</a> and <a href="scroll.txt.html#CTRL-D" class="k">CTRL-D</a> in <a href="insert.txt.html#Insert" class="d">Insert</a> mode always round the indent to
+        <a href="insert.txt.html#a" class="d">a</a> multiple of <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a> (this <a href="motion.txt.html#is" class="d">is</a> Vi compatible).
+
+                                                <a name="%27shiftwidth%27" class="t">'shiftwidth'</a> <a name="%27sw%27" class="t">'sw'</a>
+<a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a> <a href="options.txt.html#%27sw%27" class="o">'sw'</a>       number  (default 8)
+                        local to buffer
+        Number of spaces to use for each step of (auto)indent.  Used for
+        <span class="l">'cindent'</span><a href="motion.txt.html#%2C" class="d">,</a> <a href="change.txt.html#%3E%3E" class="l">&gt;&gt;</a><a href="motion.txt.html#%2C" class="d">,</a> <a href="change.txt.html#%3C%3C" class="l">&lt;&lt;</a><a href="motion.txt.html#%2C" class="d">,</a> etc.
+
+                                     <a name="%27showcmd%27" class="t">'showcmd'</a> <a name="%27sc%27" class="t">'sc'</a> <a name="%27noshowcmd%27" class="t">'noshowcmd'</a> <a name="%27nosc%27" class="t">'nosc'</a>
+<a href="options.txt.html#%27showcmd%27" class="o">'showcmd'</a> <a href="options.txt.html#%27sc%27" class="o">'sc'</a>          <a href="options.txt.html#boolean" class="d">boolean</a> (Vim default: on, off for Unix, Vi default:
+                                 off)
+                        global
+                        <span class="s">{not in Vi}</span>
+                        {not available when compiled without the
+                        <span class="l">+cmdline_info</span> feature}
+        Show (partial) command in status line.  Set this option off if your
+        terminal <a href="motion.txt.html#is" class="d">is</a> slow.
+        In <a href="visual.txt.html#Visual" class="d">Visual</a> mode the size of the selected area <a href="motion.txt.html#is" class="d">is</a> shown:
+        <a href="motion.txt.html#-" class="d">-</a> When selecting characters within <a href="insert.txt.html#a" class="d">a</a> line, the number of characters.
+        <a href="motion.txt.html#-" class="d">-</a> When selecting more than one line, the number of lines.
+        <a href="motion.txt.html#-" class="d">-</a> When selecting <a href="insert.txt.html#a" class="d">a</a> block, the size in screen characters: linesxcolumns.
+        <span class="n">NOTE:</span> This option <a href="motion.txt.html#is" class="d">is</a> set to the Vi default value when <span class="o">'compatible'</span> <a href="motion.txt.html#is" class="d">is</a>
+        set and to the Vim default value when <span class="o">'compatible'</span> <a href="motion.txt.html#is" class="d">is</a> reset.
+
+                                 <a name="%27showmode%27" class="t">'showmode'</a> <a name="%27smd%27" class="t">'smd'</a> <a name="%27noshowmode%27" class="t">'noshowmode'</a> <a name="%27nosmd%27" class="t">'nosmd'</a>
+<a href="options.txt.html#%27showmode%27" class="o">'showmode'</a> <a href="options.txt.html#%27smd%27" class="o">'smd'</a>        <a href="options.txt.html#boolean" class="d">boolean</a> (Vim default: on, Vi default: off)
+                        global
+        If in Insert, <a href="insert.txt.html#Replace" class="d">Replace</a> or <a href="visual.txt.html#Visual" class="d">Visual</a> mode <a href="change.txt.html#put" class="d">put</a> <a href="insert.txt.html#a" class="d">a</a> message on the last line.
+
+                        <a name="%27smartcase%27" class="t">'smartcase'</a> <a name="%27scs%27" class="t">'scs'</a> <a name="%27nosmartcase%27" class="t">'nosmartcase'</a> <a name="%27noscs%27" class="t">'noscs'</a>
+<a href="options.txt.html#%27smartcase%27" class="o">'smartcase'</a> <a href="options.txt.html#%27scs%27" class="o">'scs'</a>       <a href="options.txt.html#boolean" class="d">boolean</a> (default off)
+                        global
+                        <span class="s">{not in Vi}</span>
+        Override the <a href="options.txt.html#%27ignorecase%27" class="o">'ignorecase'</a> option if the search <a href="pattern.txt.html#pattern" class="d">pattern</a> contains upper
+        <a href="change.txt.html#case" class="d">case</a> characters.  Only used when the search <a href="pattern.txt.html#pattern" class="d">pattern</a> <a href="motion.txt.html#is" class="d">is</a> typed and
+        <a href="options.txt.html#%27ignorecase%27" class="o">'ignorecase'</a> option <a href="motion.txt.html#is" class="d">is</a> on.  Used for the commands "<a href="pattern.txt.html#%2F" class="d">/</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="pattern.txt.html#%3F" class="d">?</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="pattern.txt.html#n" class="d">n</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="pattern.txt.html#N" class="d">N</a>"<a href="motion.txt.html#%2C" class="d">,</a>
+        ":g" and "<a href="change.txt.html#%3As" class="d">:s</a>"<a href="repeat.txt.html#." class="d">.</a>  Not used for "*"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="pattern.txt.html#%23" class="d">#</a>"<a href="motion.txt.html#%2C" class="d">,</a> "gd"<a href="motion.txt.html#%2C" class="d">,</a> tag search, etc..  After
+        "*" and "<a href="pattern.txt.html#%23" class="d">#</a>" you can make <a href="options.txt.html#%27smartcase%27" class="o">'smartcase'</a> used by doing <a href="insert.txt.html#a" class="d">a</a> "<a href="pattern.txt.html#%2F" class="d">/</a>" command,
+        recalling the search <a href="pattern.txt.html#pattern" class="d">pattern</a> from history and hitting <span class="s">&lt;Enter&gt;</span><a href="repeat.txt.html#." class="d">.</a>
+        <span class="n">NOTE:</span> This option <a href="motion.txt.html#is" class="d">is</a> reset when <span class="o">'compatible'</span> <a href="motion.txt.html#is" class="d">is</a> set.
+
+                                        <a name="%27softtabstop%27" class="t">'softtabstop'</a> <a name="%27sts%27" class="t">'sts'</a>
+<a href="options.txt.html#%27softtabstop%27" class="o">'softtabstop'</a> <a href="options.txt.html#%27sts%27" class="o">'sts'</a>     number  (default 0)
+                        local to buffer
+                        <span class="s">{not in Vi}</span>
+        Number of spaces that <a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a> counts for while performing editing
+        operations, like <a href="insert.txt.html#inserting" class="d">inserting</a> <a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a> or using <a href="motion.txt.html#%3CBS%3E" class="s">&lt;BS&gt;</a><a href="repeat.txt.html#." class="d">.</a>  It "feels" like
+        <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a><a href="change.txt.html#s" class="d">s</a> are being inserted, while in fact <a href="insert.txt.html#a" class="d">a</a> mix of spaces and <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a><a href="change.txt.html#s" class="d">s</a> <a href="motion.txt.html#is" class="d">is</a>
+        used.  This <a href="motion.txt.html#is" class="d">is</a> useful to keep the <a href="options.txt.html#%27ts%27" class="o">'ts'</a> setting <a href="motion.txt.html#at" class="d">at</a> its standard value
+        of 8, while being able to edit like <a href="motion.txt.html#it" class="d">it</a> <a href="motion.txt.html#is" class="d">is</a> set to <a href="options.txt.html#%27sts%27" class="o">'sts'</a><a href="repeat.txt.html#." class="d">.</a>  However,
+        commands like "<a href="change.txt.html#x" class="d">x</a>" still work on the actual characters.
+        When <a href="options.txt.html#%27sts%27" class="o">'sts'</a> <a href="motion.txt.html#is" class="d">is</a> zero, this feature <a href="motion.txt.html#is" class="d">is</a> off.
+        <a href="options.txt.html#%27softtabstop%27" class="o">'softtabstop'</a> <a href="motion.txt.html#is" class="d">is</a> set to <a href="motion.txt.html#0" class="d">0</a> when the <span class="o">'paste'</span> option <a href="motion.txt.html#is" class="d">is</a> set.
+        See also <a href="insert.txt.html#ins-expandtab" class="l">ins-expandtab</a><a href="repeat.txt.html#." class="d">.</a>  When <a href="options.txt.html#%27expandtab%27" class="o">'expandtab'</a> <a href="motion.txt.html#is" class="d">is</a> not set, the number of
+        spaces <a href="motion.txt.html#is" class="d">is</a> minimized by using <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a>s.
+        The 'L' flag in <a href="options.txt.html#%27cpoptions%27" class="o">'cpoptions'</a> changes how tabs are used when <span class="o">'list'</span> <a href="motion.txt.html#is" class="d">is</a>
+        set.
+        <span class="n">NOTE:</span> This option <a href="motion.txt.html#is" class="d">is</a> set to <a href="motion.txt.html#0" class="d">0</a> when <span class="o">'compatible'</span> <a href="motion.txt.html#is" class="d">is</a> set.
+
+                        <a name="%27splitbelow%27" class="t">'splitbelow'</a> <a name="%27sb%27" class="t">'sb'</a> <a name="%27nosplitbelow%27" class="t">'nosplitbelow'</a> <a name="%27nosb%27" class="t">'nosb'</a>
+<a href="options.txt.html#%27splitbelow%27" class="o">'splitbelow'</a> <a href="options.txt.html#%27sb%27" class="o">'sb'</a>       <a href="options.txt.html#boolean" class="d">boolean</a> (default off)
+                        global
+                        <span class="s">{not in Vi}</span>
+        When on, splitting <a href="insert.txt.html#a" class="d">a</a> window will <a href="change.txt.html#put" class="d">put</a> the new window below the current
+        one. <a href="windows.txt.html#%3Asplit" class="l">:split</a>
+
+                        <a name="%27splitright%27" class="t">'splitright'</a> <a name="%27spr%27" class="t">'spr'</a> <a name="%27nosplitright%27" class="t">'nosplitright'</a> <a name="%27nospr%27" class="t">'nospr'</a>
+<a href="options.txt.html#%27splitright%27" class="o">'splitright'</a> <a href="options.txt.html#%27spr%27" class="o">'spr'</a>      <a href="options.txt.html#boolean" class="d">boolean</a> (default off)
+                        global
+                        <span class="s">{not in Vi}</span>
+        When on, splitting <a href="insert.txt.html#a" class="d">a</a> window will <a href="change.txt.html#put" class="d">put</a> the new window right of the
+        current one. <a href="windows.txt.html#%3Avsplit" class="l">:vsplit</a>
+
+                           <a name="%27startofline%27" class="t">'startofline'</a> <a name="%27sol%27" class="t">'sol'</a> <a name="%27nostartofline%27" class="t">'nostartofline'</a> <a name="%27nosol%27" class="t">'nosol'</a>
+<a href="options.txt.html#%27startofline%27" class="o">'startofline'</a> <a href="options.txt.html#%27sol%27" class="o">'sol'</a>     <a href="options.txt.html#boolean" class="d">boolean</a> (default on)
+                        global
+                        <span class="s">{not in Vi}</span>
+        When "on" the commands listed below move the cursor to the first
+        non-blank of the line.  When off the cursor <a href="motion.txt.html#is" class="d">is</a> kept in the same column
+        (if possible).  This applies to the commands: <a href="scroll.txt.html#CTRL-D" class="k">CTRL-D</a><a href="motion.txt.html#%2C" class="d">,</a> <a href="scroll.txt.html#CTRL-U" class="k">CTRL-U</a><a href="motion.txt.html#%2C" class="d">,</a> <a href="scroll.txt.html#CTRL-B" class="k">CTRL-B</a><a href="motion.txt.html#%2C" class="d">,</a>
+        <a href="scroll.txt.html#CTRL-F" class="k">CTRL-F</a><a href="motion.txt.html#%2C" class="d">,</a> "<a href="motion.txt.html#G" class="d">G</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="motion.txt.html#H" class="d">H</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="motion.txt.html#M" class="d">M</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="motion.txt.html#L" class="d">L</a>"<a href="motion.txt.html#%2C" class="d">,</a> gg, and to the commands "<a href="change.txt.html#d" class="d">d</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<span class="s">&lt;&lt;" and "&gt;</span><a href="change.txt.html#%3E" class="d">&gt;</a>"
+        with <a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#linewise" class="d">linewise</a> operator, with "<a href="motion.txt.html#%25" class="d">%</a>" with <a href="insert.txt.html#a" class="d">a</a> <a href="intro.txt.html#count" class="d">count</a> and to buffer <a href="change.txt.html#changing" class="d">changing</a>
+        commands (CTRL-^, :bnext, :bNext, etc.).  Also for an Ex command that
+        only has <a href="insert.txt.html#a" class="d">a</a> line number, e.g., ":25" or ":+"<a href="repeat.txt.html#." class="d">.</a>
+        In <a href="change.txt.html#case" class="d">case</a> of buffer <a href="change.txt.html#changing" class="d">changing</a> commands the cursor <a href="motion.txt.html#is" class="d">is</a> placed <a href="motion.txt.html#at" class="d">at</a> the column
+        where <a href="motion.txt.html#it" class="d">it</a> was the last time the buffer was edited.
+        <span class="n">NOTE:</span> This option <a href="motion.txt.html#is" class="d">is</a> set when <span class="o">'compatible'</span> <a href="motion.txt.html#is" class="d">is</a> set.
+
+                                                <a name="%27tabstop%27" class="t">'tabstop'</a> <a name="%27ts%27" class="t">'ts'</a>
+<a href="options.txt.html#%27tabstop%27" class="o">'tabstop'</a> <a href="options.txt.html#%27ts%27" class="o">'ts'</a>          number  (default 8)
+                        local to buffer
+        Number of spaces that <a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a> in the file counts for.  Also see
+        <span class="l">:retab</span> command, and <a href="options.txt.html#%27softtabstop%27" class="o">'softtabstop'</a> option.
+
+        <span class="n">Note:</span> Setting <a href="options.txt.html#%27tabstop%27" class="o">'tabstop'</a> to any other value than 8 can make your file
+        appear wrong in many places (e.g., when printing it).
+
+        There are four main ways to use tabs in Vim:
+        1. Always keep <a href="options.txt.html#%27tabstop%27" class="o">'tabstop'</a> <a href="motion.txt.html#at" class="d">at</a> 8, set <a href="options.txt.html#%27softtabstop%27" class="o">'softtabstop'</a> and <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a> to 4
+           (or 3 or whatever you prefer) and use <a href="options.txt.html#%27noexpandtab%27" class="o">'noexpandtab'</a><a href="repeat.txt.html#." class="d">.</a>  Then Vim
+           will use <a href="insert.txt.html#a" class="d">a</a> mix of tabs and spaces, but typing Tab and BS will
+           behave like <a href="insert.txt.html#a" class="d">a</a> tab appears every 4 (or 3) characters.
+        2. Set <a href="options.txt.html#%27tabstop%27" class="o">'tabstop'</a> and <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a> to whatever you prefer and use
+           <a href="options.txt.html#%27expandtab%27" class="o">'expandtab'</a><a href="repeat.txt.html#." class="d">.</a>  This way you will always <a href="insert.txt.html#insert" class="d">insert</a> spaces.  The
+           formatting will never be messed up when <a href="options.txt.html#%27tabstop%27" class="o">'tabstop'</a> <a href="motion.txt.html#is" class="d">is</a> changed.
+        3. Set <a href="options.txt.html#%27tabstop%27" class="o">'tabstop'</a> and <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a> to whatever you prefer and use <a href="insert.txt.html#a" class="d">a</a>
+           <a href="options.txt.html#modeline" class="l">modeline</a> to set these values when editing the file again.  Only
+           works when using Vim to edit the file.
+        4. Always set <a href="options.txt.html#%27tabstop%27" class="o">'tabstop'</a> and <a href="options.txt.html#%27shiftwidth%27" class="o">'shiftwidth'</a> to the same value, and
+           <a href="options.txt.html#%27noexpandtab%27" class="o">'noexpandtab'</a><a href="repeat.txt.html#." class="d">.</a>  This should then work (for initial indents only)
+           for any tabstop setting that people use.  It might be nice to have
+           tabs after the first non-blank inserted <a href="motion.txt.html#as" class="d">as</a> spaces if you do this
+           though.  Otherwise aligned comments will be wrong when <a href="options.txt.html#%27tabstop%27" class="o">'tabstop'</a> <a href="motion.txt.html#is" class="d">is</a>
+           changed.
+
+                                                <a name="%27textwidth%27" class="t">'textwidth'</a> <a name="%27tw%27" class="t">'tw'</a>
+<a href="options.txt.html#%27textwidth%27" class="o">'textwidth'</a> <a href="options.txt.html#%27tw%27" class="o">'tw'</a>        number  (default 0)
+                        local to buffer
+                        <span class="s">{not in Vi}</span>
+        Maximum width of text that <a href="motion.txt.html#is" class="d">is</a> being inserted.  <a href="insert.txt.html#A" class="d">A</a> longer line will be
+        broken after white space to get this width.  <a href="insert.txt.html#A" class="d">A</a> zero value disables
+        this.  <a href="options.txt.html#%27textwidth%27" class="o">'textwidth'</a> <a href="motion.txt.html#is" class="d">is</a> set to <a href="motion.txt.html#0" class="d">0</a> when the <span class="o">'paste'</span> option <a href="motion.txt.html#is" class="d">is</a> set.  When
+        <a href="options.txt.html#%27textwidth%27" class="o">'textwidth'</a> <a href="motion.txt.html#is" class="d">is</a> zero, <span class="o">'wrapmargin'</span> may be used.  See also
+        <span class="o">'formatoptions'</span> and <span class="l">ins-textwidth</span><a href="repeat.txt.html#." class="d">.</a>
+        When <span class="o">'formatexpr'</span> <a href="motion.txt.html#is" class="d">is</a> set <a href="motion.txt.html#it" class="d">it</a> will be used to break the line.
+        <span class="n">NOTE:</span> This option <a href="motion.txt.html#is" class="d">is</a> set to <a href="motion.txt.html#0" class="d">0</a> when <span class="o">'compatible'</span> <a href="motion.txt.html#is" class="d">is</a> set.
+
+                             <a name="%27tildeop%27" class="t">'tildeop'</a> <a name="%27top%27" class="t">'top'</a> <a name="%27notildeop%27" class="t">'notildeop'</a> <a name="%27notop%27" class="t">'notop'</a>
+<a href="options.txt.html#%27tildeop%27" class="o">'tildeop'</a> <a href="options.txt.html#%27top%27" class="o">'top'</a>         <a href="options.txt.html#boolean" class="d">boolean</a> (default off)
+                        global
+                        <span class="s">{not in Vi}</span>
+        When on: The tilde command "<a href="change.txt.html#%7E" class="d">~</a>" behaves like an operator.
+        <span class="n">NOTE:</span> This option <a href="motion.txt.html#is" class="d">is</a> reset when <span class="o">'compatible'</span> <a href="motion.txt.html#is" class="d">is</a> set.
+
+                                <a name="%27timeout%27" class="t">'timeout'</a> <a name="%27to%27" class="t">'to'</a> <a name="%27notimeout%27" class="t">'notimeout'</a> <a name="%27noto%27" class="t">'noto'</a>
+<a href="options.txt.html#%27timeout%27" class="o">'timeout'</a> <a href="options.txt.html#%27to%27" class="o">'to'</a>          <a href="options.txt.html#boolean" class="d">boolean</a> (default on)
+                        global
+        This option determine the behavior when part of <a href="insert.txt.html#a" class="d">a</a>
+        mapped key sequence has been received:
+
+<span class="h">        'timeout'       action  </span>
+           off          do not time out
+           on           time out on :mappings
+
+        If option <a href="motion.txt.html#is" class="d">is</a> off, jVi will wait until either the complete
+        <a href="map.txt.html#mapping" class="d">mapping</a> has been received, or <a href="motion.txt.html#it" class="d">it</a> <a href="motion.txt.html#is" class="d">is</a> clear that there
+        <a href="motion.txt.html#is" class="d">is</a> no <a href="map.txt.html#mapping" class="d">mapping</a> for the received characters.  For
+        example: if you have mapped "vl" and Vim has received 'v', the next
+        character <a href="motion.txt.html#is" class="d">is</a> needed to see if the 'v' <a href="motion.txt.html#is" class="d">is</a> followed by an 'l'.
+        When the <a href="options.txt.html#options" class="d">options</a> <a href="motion.txt.html#is" class="d">is</a> on, Vim will wait for about 1 second for
+        the next character to arrive.  After that the already received
+        characters are interpreted <a href="motion.txt.html#as" class="d">as</a> single characters.  The waiting time can
+        be changed with the <a href="options.txt.html#%27timeoutlen%27" class="o">'timeoutlen'</a> option.
+
+                                                <a name="%27timeoutlen%27" class="t">'timeoutlen'</a> <a name="%27tm%27" class="t">'tm'</a>
+<a href="options.txt.html#%27timeoutlen%27" class="o">'timeoutlen'</a> <a href="options.txt.html#%27tm%27" class="o">'tm'</a>       number  (default 1000)
+                        global
+                        <span class="s">{not in all versions of Vi}</span>
+        The time in milliseconds that <a href="motion.txt.html#is" class="d">is</a> waited for <a href="insert.txt.html#a" class="d">a</a> mapped key
+        sequence to complete.  Also used for <span class="k">CTRL-</span>\ <a href="motion.txt.html#CTRL-N" class="k">CTRL-N</a> and <span class="k">CTRL-</span>\ <span class="k">CTRL-G</span>
+        when part of <a href="insert.txt.html#a" class="d">a</a> command has been typed.
+
+                        <a name="%27visualbell%27" class="t">'visualbell'</a> <a name="%27vb%27" class="t">'vb'</a> <a name="%27novisualbell%27" class="t">'novisualbell'</a> <a name="%27novb%27" class="t">'novb'</a> <a name="beep" class="t">beep</a>
+<a href="options.txt.html#%27visualbell%27" class="o">'visualbell'</a> <a href="options.txt.html#%27vb%27" class="o">'vb'</a>       <a href="options.txt.html#boolean" class="d">boolean</a> (default off)
+                        global
+                        <span class="s">{not in Vi}</span>
+        Use visual bell instead of beeping. The editor window background <a href="motion.txt.html#is" class="d">is</a>
+        inverted for <a href="insert.txt.html#a" class="d">a</a> period of time, see <a href="options.txt.html#%27vbt%27" class="o">'vbt'</a> and <a href="options.txt.html#%27vbc%27" class="o">'vbc'</a> options.
+        When no <a href="options.txt.html#beep" class="d">beep</a> or flash <a href="motion.txt.html#is" class="d">is</a> wanted, set time to zero.
+
+                                                <a name="%27visualbelltime%27" class="t">'visualbelltime'</a> <a name="%27vbt%27" class="t">'vbt'</a>
+<a href="options.txt.html#%27visualbelltime%27" class="o">'visualbelltime'</a> <a href="options.txt.html#%27vbt%27" class="o">'vbt'</a>  number  (default 20)
+                        global
+                        <span class="s">{not in Vim}</span>
+        The time in milliseconds of the 'visual bell'. If the visual bell <a href="motion.txt.html#is" class="d">is</a>
+        enabled, see <a href="options.txt.html#%27vb%27" class="o">'vb'</a><a href="motion.txt.html#%2C" class="d">,</a> and the <a href="options.txt.html#%27vbt%27" class="o">'vbt'</a> value <a href="motion.txt.html#is" class="d">is</a> zero then there <a href="motion.txt.html#is" class="d">is</a> no <a href="options.txt.html#beep" class="d">beep</a>
+        or flash.
+
+                                                <a name="%27visualbellcolor%27" class="t">'visualbellcolor'</a> <a name="%27vbc%27" class="t">'vbc'</a>
+<a href="options.txt.html#%27visualbellcolor%27" class="o">'visualbellcolor'</a> <a href="options.txt.html#%27vbc%27" class="o">'vbc'</a> color   (default yes)
+                        global
+                        <span class="s">{not in Vim}</span>
+        The editor background <a href="motion.txt.html#is" class="d">is</a> set to this color for the visual bell.
+        If this <a href="motion.txt.html#is" class="d">is</a> null, then the background <a href="motion.txt.html#is" class="d">is</a> inverted.
+
+                                                <a name="%27whichwrap%27" class="t">'whichwrap'</a> <a name="%27ww%27" class="t">'ww'</a>
+<a href="options.txt.html#%27whichwrap%27" class="o">'whichwrap'</a> <a href="options.txt.html#%27ww%27" class="o">'ww'</a>        string  (Vim default: "b,s"<a href="motion.txt.html#%2C" class="d">,</a> Vi default: ""<a href="motion.txt.html#%29" class="d">)</a>
+                        global
+                        <span class="s">{not in Vi}</span>
+        Allow specified keys that move the cursor left/right to move to the
+        previous/next line when the cursor <a href="motion.txt.html#is" class="d">is</a> on the first/last character in
+        the line.  Concatenate characters to allow this for these keys:
+<span class="h">                char   key        mode  </span>
+                 <a href="motion.txt.html#b" class="d">b</a>    <a href="motion.txt.html#%3CBS%3E" class="s">&lt;BS&gt;</a>       <a href="intro.txt.html#Normal" class="d">Normal</a> and <a href="visual.txt.html#Visual" class="d">Visual</a>
+                 <a href="change.txt.html#s" class="d">s</a>    <a href="motion.txt.html#%3CSpace%3E" class="s">&lt;Space&gt;</a>    <a href="intro.txt.html#Normal" class="d">Normal</a> and <a href="visual.txt.html#Visual" class="d">Visual</a>
+                 <a href="motion.txt.html#h" class="d">h</a>    "<a href="motion.txt.html#h" class="d">h</a>"        <a href="intro.txt.html#Normal" class="d">Normal</a> and <a href="visual.txt.html#Visual" class="d">Visual</a> (not recommended)
+                 <a href="motion.txt.html#l" class="d">l</a>    "<a href="motion.txt.html#l" class="d">l</a>"        <a href="intro.txt.html#Normal" class="d">Normal</a> and <a href="visual.txt.html#Visual" class="d">Visual</a> (not recommended)
+                 <span class="s">&lt;    &lt;Left&gt;</span>     <a href="intro.txt.html#Normal" class="d">Normal</a> and <a href="visual.txt.html#Visual" class="d">Visual</a>
+                 <a href="change.txt.html#%3E" class="d">&gt;</a>    <a href="motion.txt.html#%3CRight%3E" class="s">&lt;Right&gt;</a>    <a href="intro.txt.html#Normal" class="d">Normal</a> and <a href="visual.txt.html#Visual" class="d">Visual</a>
+                 <a href="change.txt.html#%7E" class="d">~</a>    "<a href="change.txt.html#%7E" class="d">~</a>"        <a href="intro.txt.html#Normal" class="d">Normal</a>
+                 <a href="index.txt.html#%5B" class="d">[</a>    <a href="motion.txt.html#%3CLeft%3E" class="s">&lt;Left&gt;</a>     <a href="insert.txt.html#Insert" class="d">Insert</a> and <a href="insert.txt.html#Replace" class="d">Replace</a>
+                 <a href="index.txt.html#%5D" class="d">]</a>    <a href="motion.txt.html#%3CRight%3E" class="s">&lt;Right&gt;</a>    <a href="insert.txt.html#Insert" class="d">Insert</a> and <a href="insert.txt.html#Replace" class="d">Replace</a>
+
+                                                <a name="%27wrap%27" class="t">'wrap'</a> <a name="%27nowrap%27" class="t">'nowrap'</a>
+<a href="options.txt.html#%27wrap%27" class="o">'wrap'</a>                  <a href="options.txt.html#boolean" class="d">boolean</a> (default on)
+                        local to window
+                        <span class="s">{not in Vi}</span>
+        This option changes how text <a href="motion.txt.html#is" class="d">is</a> displayed.  It doesn't change the text
+        in the buffer, see <a href="options.txt.html#%27textwidth%27" class="o">'textwidth'</a> for that.
+        When on, lines longer than the width of the window will wrap and
+        displaying continues on the next line.  When off lines will not wrap
+        and only part of long lines will be displayed.  When the cursor <a href="motion.txt.html#is" class="d">is</a>
+        moved to <a href="insert.txt.html#a" class="d">a</a> part that <a href="motion.txt.html#is" class="d">is</a> not shown, the screen will scroll
+        horizontally.
+        The line will be broken in the middle of <a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#word" class="d">word</a> if necessary.  See
+        <a href="options.txt.html#%27linebreak%27" class="o">'linebreak'</a> to get the break <a href="motion.txt.html#at" class="d">at</a> <a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#word" class="d">word</a> boundary.
+        To make <a href="scroll.txt.html#scrolling" class="d">scrolling</a> horizontally <a href="insert.txt.html#a" class="d">a</a> bit more useful, try this: 
+<span class="e">                :set sidescroll=5</span>
+<span class="e">                :set listchars+=precedes:&lt;,extends:&gt;</span>
+       See <span class="o">'sidescroll'</span><a href="motion.txt.html#%2C" class="d">,</a> <span class="o">'listchars'</span> and <span class="l">wrap-off</span><a href="repeat.txt.html#." class="d">.</a>
+
+                                   <a name="%27wrapscan%27" class="t">'wrapscan'</a> <a name="%27ws%27" class="t">'ws'</a> <a name="%27nowrapscan%27" class="t">'nowrapscan'</a> <a name="%27nows%27" class="t">'nows'</a>
+<a href="options.txt.html#%27wrapscan%27" class="o">'wrapscan'</a> <a href="options.txt.html#%27ws%27" class="o">'ws'</a>         <a href="options.txt.html#boolean" class="d">boolean</a> (default on)                    <a name="E384" class="t">E384</a> <a name="E385" class="t">E385</a>
+                        global
+        Searches wrap around the end of the file.  Also applies to <span class="l">]s</span> and
+        <span class="l">[s</span><a href="motion.txt.html#%2C" class="d">,</a> searching for spelling mistakes.
+
+ vim:tw=78:ts=8:sw=8:noet:
+
+</pre>
+</div>
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<p id="footer">These help files are maintained with thanks
+to Carlo Teubner for his vimhelp to html work.</p>
+
+</div>
+</div>
+</body></html>

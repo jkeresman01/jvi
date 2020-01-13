@@ -1,0 +1,148 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Vim: tabpage.txt</title>
+<!--[if IE]>
+<link rel="stylesheet" href="vimhelp-ie.css" type="text/css">
+<![endif]-->
+<!--[if !IE]>-->
+<link rel="stylesheet" href="vimhelp.css" type="text/css">
+<!--<![endif]-->
+</head>
+<body>
+<div id="d1">
+<pre id="sp">                                                                                </pre>
+<div id="d2">
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<div id="d3">
+<pre>
+<a name="tabpage.txt" class="t">tabpage.txt</a>   For Vim version 8.2.  Last change: 2019 May 05
+
+
+                  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+Editing with <a href="windows.txt.html#windows" class="d">windows</a> in multiple tab pages.             <a name="tab-page" class="t">tab-page</a> <a name="tabpage" class="t">tabpage</a>
+
+The commands which have been added to use multiple tab pages are explained
+here.  Additionally, there are explanations for commands that work differently
+when used in combination with more than one tab page.
+
+1. Introduction                 <a href="tabpage.txt.html#tab-page-intro" class="l">tab-page-intro</a>
+2. Commands                     <a href="tabpage.txt.html#tab-page-commands" class="l">tab-page-commands</a>
+
+{not able to use multiple tab pages when the <span class="l">+windows</span> feature was disabled
+<a href="motion.txt.html#at" class="d">at</a> compile time}
+
+<span class="h">==============================================================================</span>
+1. Introduction                                         <a name="tab-page-intro" class="t">tab-page-intro</a>
+
+<a href="insert.txt.html#A" class="d">A</a> tab page holds one or more windows.  You can easily switch between tab
+pages, so that you have several collections of <a href="windows.txt.html#windows" class="d">windows</a> to work on different
+things.
+
+Usually you will see <a href="insert.txt.html#a" class="d">a</a> list of labels <a href="motion.txt.html#at" class="d">at</a> the top of the Vim window, one for
+each tab page.  With the mouse you can click on the label to jump to that tab
+page.  There are other ways to move between tab pages, see below.
+
+Tabs are also <a href="insert.txt.html#a" class="d">a</a> nice way to edit <a href="insert.txt.html#a" class="d">a</a> buffer temporarily without <a href="change.txt.html#changing" class="d">changing</a> the
+current window layout.  Open <a href="insert.txt.html#a" class="d">a</a> new tab page, do whatever you want to do and
+close the tab page.
+
+<span class="h">==============================================================================</span>
+2. Commands                                             <a name="tab-page-commands" class="t">tab-page-commands</a>
+
+
+SWITCHING TO ANOTHER TAB PAGE:
+
+Using the mouse: If the tab page line <a href="motion.txt.html#is" class="d">is</a> displayed you can click in <a href="insert.txt.html#a" class="d">a</a> tab page
+label to switch to that tab page.  Click where there <a href="motion.txt.html#is" class="d">is</a> no label to go to the
+next tab page.  <span class="l">'tabline'</span>
+
+:tabn[ext]                              <a name="%3Atabn" class="t">:tabn</a> <a name="%3Atabnext" class="t">:tabnext</a> <a name="gt" class="t">gt</a>
+<a href="tabpage.txt.html#%3CC-PageDown%3E" class="s">&lt;C-PageDown&gt;</a>                            <a name="CTRL-%3CPageDown%3E" class="t">CTRL-&lt;PageDown&gt;</a> <a name="%3CC-PageDown%3E" class="t">&lt;C-PageDown&gt;</a>
+<a href="tabpage.txt.html#gt" class="d">gt</a>                                      <a name="i_CTRL-%3CPageDown%3E" class="t">i_CTRL-&lt;PageDown&gt;</a> <a name="i_%3CC-PageDown%3E" class="t">i_&lt;C-PageDown&gt;</a>
+                Go to the next tab page.  Wraps around from the last to the
+                first one.
+
+:{count}tabn[ext]
+:tabn[ext] <span class="s">{count}</span>
+                Go to tab page <span class="s">{count}</span><a href="repeat.txt.html#." class="d">.</a>  The first tab page has number one. 
+<span class="e">                    :-tabnext   " go to the previous tab page</span>
+<span class="e">                    :+tabnext   " go to the next tab page</span>
+<span class="e">                    :+2tabnext  " go to the two next tab page</span>
+<span class="e">                    :1tabnext   " go to the first tab page</span>
+<span class="e">                    :$tabnext   " go to the last tab page</span>
+<span class="e">                    :tabnext $  " as above</span>
+<span class="e">                    :tabnext -  " go to the previous tab page</span>
+<span class="e">                    :tabnext -1 " as above</span>
+<span class="e">                    :tabnext +  " go to the next tab page</span>
+<span class="e">                    :tabnext +1 " as above</span>
+
+<span class="s">{count}</span><a href="tabpage.txt.html#%3CC-PageDown%3E" class="s">&lt;C-PageDown&gt;</a>
+<span class="s">{count}</span><a href="tabpage.txt.html#gt" class="d">gt</a>       Go to tab page <span class="s">{count}</span><a href="repeat.txt.html#." class="d">.</a>  The first tab page has number one.
+
+
+:tabp[revious]                          <a name="%3Atabp" class="t">:tabp</a> <a name="%3Atabprevious" class="t">:tabprevious</a> <a name="gT" class="t">gT</a> <a name="%3AtabN" class="t">:tabN</a>
+:tabN[ext]                              <a name="%3AtabNext" class="t">:tabNext</a> <a name="CTRL-%3CPageUp%3E" class="t">CTRL-&lt;PageUp&gt;</a>
+<a href="tabpage.txt.html#%3CC-PageUp%3E" class="s">&lt;C-PageUp&gt;</a>                       <a name="%3CC-PageUp%3E" class="t">&lt;C-PageUp&gt;</a> <a name="i_CTRL-%3CPageUp%3E" class="t">i_CTRL-&lt;PageUp&gt;</a> <a name="i_%3CC-PageUp%3E" class="t">i_&lt;C-PageUp&gt;</a>
+<a href="tabpage.txt.html#gT" class="d">gT</a>              Go to the previous tab page.  Wraps around from the first one
+                to the last one.
+
+:tabp[revious] <span class="s">{count}</span>
+:tabN[ext] <span class="s">{count}</span>
+<span class="s">{count}</span><a href="tabpage.txt.html#%3CC-PageUp%3E" class="s">&lt;C-PageUp&gt;</a>
+<span class="s">{count}</span><a href="tabpage.txt.html#gT" class="d">gT</a>       Go <span class="s">{count}</span> tab pages back.  Wraps around from the first one
+                to the last one.  <span class="n">Note</span> that the use of <span class="s">{count}</span> <a href="motion.txt.html#is" class="d">is</a> different
+                from <a href="tabpage.txt.html#%3Atabnext" class="l">:tabnext</a><a href="motion.txt.html#%2C" class="d">,</a> where <a href="motion.txt.html#it" class="d">it</a> <a href="motion.txt.html#is" class="d">is</a> used <a href="motion.txt.html#as" class="d">as</a> the tab page number.
+
+:tabr[ewind]                    <a name="%3Atabfir" class="t">:tabfir</a> <a name="%3Atabfirst" class="t">:tabfirst</a> <a name="%3Atabr" class="t">:tabr</a> <a name="%3Atabrewind" class="t">:tabrewind</a>
+:tabfir[st]     Go to the first tab page.
+
+                                                        <a name="%3Atabl" class="t">:tabl</a> <a name="%3Atablast" class="t">:tablast</a>
+:tabl[ast]      Go to the last tab page.
+
+
+REORDERING TAB PAGES:
+
+:tabm[ove] [N]                                          <a name="%3Atabm" class="t">:tabm</a> <a name="%3Atabmove" class="t">:tabmove</a>
+:[N]tabm[ove]
+                Move the current tab page to after tab page N.  Use zero to
+                make the current tab page the first one.  <a href="pattern.txt.html#N" class="d">N</a> <a href="motion.txt.html#is" class="d">is</a> counted before
+                the move, thus if the second tab <a href="motion.txt.html#is" class="d">is</a> the current one,
+                `:tabmove 1` and `:tabmove 2`  have no effect.
+                Without <a href="pattern.txt.html#N" class="d">N</a> the tab page <a href="motion.txt.html#is" class="d">is</a> made the last one. 
+<span class="e">                    :.tabmove   " do nothing</span>
+<span class="e">                    :-tabmove   " move the tab page to the left</span>
+<span class="e">                    :+tabmove   " move the tab page to the right</span>
+<span class="e">                    :0tabmove   " move the tab page to the beginning of the tab</span>
+<span class="e">                                " list</span>
+<span class="e">                    :tabmove 0  " as above</span>
+<span class="e">                    :tabmove    " move the tab page to the last</span>
+<span class="e">                    :$tabmove   " as above</span>
+<span class="e">                    :tabmove $  " as above</span>
+
+:tabm[ove] +[N]
+:tabm[ove] -[N]
+                Move the current tab page <a href="pattern.txt.html#N" class="d">N</a> places to the right (with +) or to
+                the left (with -). 
+<span class="e">                    :tabmove -  " move the tab page to the left</span>
+<span class="e">                    :tabmove -1 " as above</span>
+<span class="e">                    :tabmove +  " move the tab page to the right</span>
+<span class="e">                    :tabmove +1 " as above</span>
+
+
+<span class="n">Note</span> that although <a href="motion.txt.html#it" class="d">it</a> <a href="motion.txt.html#is" class="d">is</a> possible to move <a href="insert.txt.html#a" class="d">a</a> tab behind the N-th one by using
+:Ntabmove. And move <a href="motion.txt.html#it" class="d">it</a> by <a href="pattern.txt.html#N" class="d">N</a> places by using :+Ntabmove. For clarification what
++N means in this context see <span class="l">[range]</span><a href="repeat.txt.html#." class="d">.</a>
+
+</pre>
+</div>
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<p id="footer">These help files are maintained with thanks
+to Carlo Teubner for his vimhelp to html work.</p>
+
+</div>
+</div>
+</body></html>

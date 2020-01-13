@@ -1,0 +1,240 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Vim: map.txt</title>
+<!--[if IE]>
+<link rel="stylesheet" href="vimhelp-ie.css" type="text/css">
+<![endif]-->
+<!--[if !IE]>-->
+<link rel="stylesheet" href="vimhelp.css" type="text/css">
+<!--<![endif]-->
+</head>
+<body>
+<div id="d1">
+<pre id="sp">                                                                                </pre>
+<div id="d2">
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<div id="d3">
+<pre>
+<a name="map.txt" class="t">map.txt</a>       For Vim version 7.3.  Last change: 2010 Nov 10
+
+
+                  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+Key mapping, abbreviations and user-defined commands.
+
+This subject <a href="motion.txt.html#is" class="d">is</a> introduced in sections <span class="l">05.3</span><a href="motion.txt.html#%2C" class="d">,</a> <span class="l">24.7</span> and <span class="l">40.1</span> of the user
+manual.
+
+1. Key <a href="map.txt.html#mapping" class="d">mapping</a>                  <a href="map.txt.html#key-mapping" class="l">key-mapping</a>
+   1.1 MAP COMMANDS                     <a href="map.txt.html#%3Amap-commands" class="l">:map-commands</a>
+   1.3 Mapping and modes                <a href="map.txt.html#%3Amap-modes" class="l">:map-modes</a>
+   1.4 Listing mappings                 <a href="map.txt.html#map-listing" class="l">map-listing</a>
+   1.5 Mapping special keys             <a href="map.txt.html#%3Amap-special-keys" class="l">:map-special-keys</a>
+
+<span class="n">NOTE:</span> only nvoip mode mappings are supported (currently)
+      normal, visual, operator-pending, <a href="insert.txt.html#insert" class="d">insert</a> PLATFORM-SELECT mode
+
+<span class="n">NOTE:</span> jVi supports additional map commands, :pmap, :pnoremap, :punmap.
+      These are normal mode, they are valid when PLATFORM-SELECT <a href="motion.txt.html#is" class="d">is</a> the
+      displayed mode, for example the mouse <a href="motion.txt.html#is" class="d">is</a> used to make <a href="insert.txt.html#a" class="d">a</a> selection.
+          <a href="map.txt.html#%3Apnoremap" class="d">:pnoremap</a> <a href="change.txt.html#y" class="d">y</a> vy
+          <a href="map.txt.html#%3Apnoremap" class="d">:pnoremap</a> <a href="change.txt.html#p" class="d">p</a> vp
+      map <a href="change.txt.html#yank" class="d">yank</a> and <a href="change.txt.html#put" class="d">put</a> to work with the mouse selection
+
+<span class="h">==============================================================================</span>
+1. Key <a href="map.txt.html#mapping" class="d">mapping</a>                          <a name="key-mapping" class="t">key-mapping</a> <a name="mapping" class="t">mapping</a> <a name="macro" class="t">macro</a>
+
+Key <a href="map.txt.html#mapping" class="d">mapping</a> <a href="motion.txt.html#is" class="d">is</a> used to change the meaning of typed keys.  The most common use
+<a href="motion.txt.html#is" class="d">is</a> to define <a href="insert.txt.html#a" class="d">a</a> sequence commands for <a href="insert.txt.html#a" class="d">a</a> function key.  Example: 
+<span class="e">        :map &lt;PageUp&gt; &lt;C-U&gt;</span>
+<span class="e">        :map Y y$</span>
+
+1.1 MAP COMMANDS                                        <a name="%3Amap-commands" class="t">:map-commands</a>
+
+There are commands to enter new mappings, remove mappings and list mappings.
+See <a href="map.txt.html#map-overview" class="l">map-overview</a> for the various forms of "map" and their relationships with
+modes.
+
+<a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a>   means left-hand-side    <a name="%7Blhs%7D" class="t">{lhs}</a>
+<a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a>   means right-hand-side   <a name="%7Brhs%7D" class="t">{rhs}</a>
+
+<a href="map.txt.html#%3Amap" class="d">:map</a>    <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a>             <a href="map.txt.html#mapmode-nvo" class="l">mapmode-nvo</a>           <a name="%3Amap" class="t">:map</a>
+:nm[ap] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a>             <a href="map.txt.html#mapmode-n" class="l">mapmode-n</a>             <a name="%3Anm" class="t">:nm</a> <a name="%3Anmap" class="t">:nmap</a>
+:vm[ap] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a>             <a href="map.txt.html#mapmode-v" class="l">mapmode-v</a>             <a name="%3Avm" class="t">:vm</a> <a name="%3Avmap" class="t">:vmap</a>
+:om[ap] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a>             <a href="map.txt.html#mapmode-o" class="l">mapmode-o</a>             <a name="%3Aom" class="t">:om</a> <a name="%3Aomap" class="t">:omap</a>
+:pm[ap] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a>             <a href="map.txt.html#mapmode-p" class="l">mapmode-p</a>             <a name="%3Apm" class="t">:pm</a> <a name="%3Apmap" class="t">:pmap</a>
+                        Map the key sequence <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> to <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a> for the modes
+                        where the map command applies.  The result, including
+                        <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a><a href="motion.txt.html#%2C" class="d">,</a> <a href="motion.txt.html#is" class="d">is</a> then further scanned for mappings.  This
+                        allows for nested and recursive use of mappings.
+
+
+:no[remap]  <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a>         <a href="map.txt.html#mapmode-nvo" class="l">mapmode-nvo</a>           <a name="%3Ano" class="t">:no</a>  <a name="%3Anoremap" class="t">:noremap</a>
+:nn[oremap] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a>         <a href="map.txt.html#mapmode-n" class="l">mapmode-n</a>             <a name="%3Ann" class="t">:nn</a>  <a name="%3Annoremap" class="t">:nnoremap</a>
+:vn[oremap] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a>         <a href="map.txt.html#mapmode-v" class="l">mapmode-v</a>             <a name="%3Avn" class="t">:vn</a>  <a name="%3Avnoremap" class="t">:vnoremap</a>
+:ono[remap] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a>         <a href="map.txt.html#mapmode-o" class="l">mapmode-o</a>             <a name="%3Aono" class="t">:ono</a> <a name="%3Aonoremap" class="t">:onoremap</a>
+:pn[oremap] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a>         <a href="map.txt.html#mapmode-p" class="l">mapmode-p</a>             <a name="%3Apn" class="t">:pn</a>  <a name="%3Apnoremap" class="t">:pnoremap</a>
+                        Map the key sequence <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> to <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a> for the modes
+                        where the map command applies.  Disallow <a href="map.txt.html#mapping" class="d">mapping</a> of
+                        <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a><a href="motion.txt.html#%2C" class="d">,</a> to avoid nested and recursive mappings.  Often
+                        used to redefine <a href="insert.txt.html#a" class="d">a</a> command.  <span class="s">{not in Vi}</span>
+
+
+:unm[ap]  <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a>                 <a href="map.txt.html#mapmode-nvo" class="l">mapmode-nvo</a>           <a name="%3Aunm" class="t">:unm</a>  <a name="%3Aunmap" class="t">:unmap</a>
+:nun[map] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a>                 <a href="map.txt.html#mapmode-n" class="l">mapmode-n</a>             <a name="%3Anun" class="t">:nun</a>  <a name="%3Anunmap" class="t">:nunmap</a>
+:vu[nmap] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a>                 <a href="map.txt.html#mapmode-v" class="l">mapmode-v</a>             <a name="%3Avu" class="t">:vu</a>   <a name="%3Avunmap" class="t">:vunmap</a>
+:ou[nmap] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a>                 <a href="map.txt.html#mapmode-o" class="l">mapmode-o</a>             <a name="%3Aou" class="t">:ou</a>   <a name="%3Aounmap" class="t">:ounmap</a>
+:pun[map] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a>                 <a href="map.txt.html#mapmode-p" class="l">mapmode-p</a>             <a name="%3Apun" class="t">:pun</a>  <a name="%3Apunmap" class="t">:punmap</a>
+                        Remove the <a href="map.txt.html#mapping" class="d">mapping</a> of <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> for the modes where the
+                        map command applies.  The <a href="map.txt.html#mapping" class="d">mapping</a> may remain defined
+                        for other modes where <a href="motion.txt.html#it" class="d">it</a> applies.
+
+<a href="map.txt.html#%3Amap" class="d">:map</a>                            <a href="map.txt.html#mapmode-nvo" class="l">mapmode-nvo</a>
+:nm[ap]                         <a href="map.txt.html#mapmode-n" class="l">mapmode-n</a>
+:vm[ap]                         <a href="map.txt.html#mapmode-v" class="l">mapmode-v</a>
+:om[ap]                         <a href="map.txt.html#mapmode-o" class="l">mapmode-o</a>
+:pm[ap]                         <a href="map.txt.html#mapmode-p" class="l">mapmode-p</a>
+                        List all key mappings for the modes where the map
+                        command applies.  <span class="n">Note</span> that "<a href="map.txt.html#%3Amap" class="d">:map</a>" and ":map!" are
+                        used most often, because they include the other modes.
+
+<a href="map.txt.html#%3Amap" class="d">:map</a>    <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a>                   <a href="map.txt.html#mapmode-nvo" class="l">mapmode-nvo</a>           <a name="%3Amap_l" class="t">:map_l</a>
+:nm[ap] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a>                   <a href="map.txt.html#mapmode-n" class="l">mapmode-n</a>             <a name="%3Anmap_l" class="t">:nmap_l</a>
+:vm[ap] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a>                   <a href="map.txt.html#mapmode-v" class="l">mapmode-v</a>             <a name="%3Avmap_l" class="t">:vmap_l</a>
+:om[ap] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a>                   <a href="map.txt.html#mapmode-o" class="l">mapmode-o</a>             <a name="%3Aomap_l" class="t">:omap_l</a>
+:pm[ap] <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a>                   <a href="map.txt.html#mapmode-p" class="l">mapmode-p</a>             <a name="%3Apmap_l" class="t">:pmap_l</a>
+                        List the key mappings for the key sequences starting
+                        with <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> in the modes where the map command applies.
+                        <span class="s">{not in Vi}</span>
+
+These commands are used to map <a href="insert.txt.html#a" class="d">a</a> key or key sequence to <a href="insert.txt.html#a" class="d">a</a> string of
+characters.  You can use this to <a href="change.txt.html#put" class="d">put</a> command sequences under function keys,
+translate one key into another, etc.  See <span class="l">:mkexrc</span> for how to save and
+restore the current mappings.
+
+
+1.3 MAPPING AND MODES                                   <a name="%3Amap-modes" class="t">:map-modes</a>
+                <a name="mapmode-nvo" class="t">mapmode-nvo</a> <a name="mapmode-n" class="t">mapmode-n</a> <a name="mapmode-v" class="t">mapmode-v</a> <a name="mapmode-o" class="t">mapmode-o</a> <a name="mapmode-p" class="t">mapmode-p</a>
+
+There are six sets of mappings
+<a href="motion.txt.html#-" class="d">-</a> For <a href="intro.txt.html#Normal" class="d">Normal</a> mode: When typing commands.
+<a href="motion.txt.html#-" class="d">-</a> For <a href="visual.txt.html#Visual" class="d">Visual</a> mode: When typing commands while the <a href="visual.txt.html#Visual" class="d">Visual</a> area <a href="motion.txt.html#is" class="d">is</a> highlighted.
+<a href="motion.txt.html#-" class="d">-</a> For <a href="intro.txt.html#Operator-pending" class="d">Operator-pending</a> mode: When an <a href="motion.txt.html#operator" class="d">operator</a> <a href="motion.txt.html#is" class="d">is</a> pending (after "<a href="change.txt.html#d" class="d">d</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="change.txt.html#y" class="d">y</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="change.txt.html#c" class="d">c</a>"<a href="motion.txt.html#%2C" class="d">,</a>
+  etc.).  See below: <a href="map.txt.html#omap-info" class="l">omap-info</a><a href="repeat.txt.html#." class="d">.</a>
+<a href="motion.txt.html#-" class="d">-</a> For PLATFORM-SELECT mode: when there <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> mouse selection <span class="s">{jVi only}</span>
+
+Special case: While typing <a href="insert.txt.html#a" class="d">a</a> <a href="intro.txt.html#count" class="d">count</a> for <a href="insert.txt.html#a" class="d">a</a> command in <a href="intro.txt.html#Normal" class="d">Normal</a> mode, <a href="map.txt.html#mapping" class="d">mapping</a> zero
+<a href="motion.txt.html#is" class="d">is</a> disabled.  This makes <a href="motion.txt.html#it" class="d">it</a> possible to map zero without making <a href="motion.txt.html#it" class="d">it</a> impossible
+to type <a href="insert.txt.html#a" class="d">a</a> <a href="intro.txt.html#count" class="d">count</a> with <a href="insert.txt.html#a" class="d">a</a> zero.
+
+                                                <a name="map-overview" class="t">map-overview</a> <a name="map-modes" class="t">map-modes</a>
+Overview of which map command works in which mode:
+
+<span class="h">    commands:                                 modes: </span>
+<span class="h">                                       Normal  Visual+Select  Operator-pending </span>
+<a href="map.txt.html#%3Amap" class="d">:map</a>   <a href="map.txt.html#%3Anoremap" class="d">:noremap</a>   <a href="map.txt.html#%3Aunmap" class="d">:unmap</a>   :mapclear     yes        yes            yes
+<a href="map.txt.html#%3Anmap" class="d">:nmap</a>  <a href="map.txt.html#%3Annoremap" class="d">:nnoremap</a>  <a href="map.txt.html#%3Anunmap" class="d">:nunmap</a>  :nmapclear    yes         <a href="motion.txt.html#-" class="d">-</a>              <a href="motion.txt.html#-" class="d">-</a>
+<a href="map.txt.html#%3Avmap" class="d">:vmap</a>  <a href="map.txt.html#%3Avnoremap" class="d">:vnoremap</a>  <a href="map.txt.html#%3Avunmap" class="d">:vunmap</a>  :vmapclear     <a href="motion.txt.html#-" class="d">-</a>         yes             <a href="motion.txt.html#-" class="d">-</a>
+<a href="map.txt.html#%3Aomap" class="d">:omap</a>  <a href="map.txt.html#%3Aonoremap" class="d">:onoremap</a>  <a href="map.txt.html#%3Aounmap" class="d">:ounmap</a>  :omapclear     <a href="motion.txt.html#-" class="d">-</a>          <a href="motion.txt.html#-" class="d">-</a>             yes
+
+<a href="map.txt.html#%3Anunmap" class="d">:nunmap</a> can also be used outside of <a href="insert.txt.html#a" class="d">a</a> monastery.
+
+The original Vi did not have separate mappings for
+Normal/Visual/Operator-pending mode and for Insert/Command-line mode.
+Therefore the "<a href="map.txt.html#%3Amap" class="d">:map</a>" and ":map!" commands enter and display mappings for
+several modes.  In Vim you can use the "<a href="map.txt.html#%3Anmap" class="d">:nmap</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="map.txt.html#%3Avmap" class="d">:vmap</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="map.txt.html#%3Aomap" class="d">:omap</a>"<a href="motion.txt.html#%2C" class="d">,</a> ":cmap" and
+":imap" commands to enter mappings for each mode separately.
+
+                                                        <a name="omap-info" class="t">omap-info</a>
+<a href="intro.txt.html#Operator-pending" class="d">Operator-pending</a> mappings can be used to define <a href="insert.txt.html#a" class="d">a</a> movement command that can be
+used with any operator.  Simple example: "<a href="map.txt.html#%3Aomap" class="d">:omap</a> <a href="motion.txt.html#%7B" class="d">{</a> <a href="motion.txt.html#w" class="d">w</a>" makes "y{" work like "yw"
+and "d{" like "dw"<a href="repeat.txt.html#." class="d">.</a>
+
+To enter <a href="insert.txt.html#a" class="d">a</a> <a href="map.txt.html#mapping" class="d">mapping</a> for <a href="intro.txt.html#Normal" class="d">Normal</a> and <a href="visual.txt.html#Visual" class="d">Visual</a> mode, but not <a href="intro.txt.html#Operator-pending" class="d">Operator-pending</a> mode,
+first define <a href="motion.txt.html#it" class="d">it</a> for all three modes, then unmap <a href="motion.txt.html#it" class="d">it</a> for <a href="intro.txt.html#Operator-pending" class="d">Operator-pending</a> mode:
+        <a href="map.txt.html#%3Amap" class="d">:map</a>    xx something-difficult
+        <a href="map.txt.html#%3Aounmap" class="d">:ounmap</a> xx
+Likewise for <a href="insert.txt.html#a" class="d">a</a> <a href="map.txt.html#mapping" class="d">mapping</a> for <a href="visual.txt.html#Visual" class="d">Visual</a> and <a href="intro.txt.html#Operator-pending" class="d">Operator-pending</a> mode or <a href="intro.txt.html#Normal" class="d">Normal</a> and
+<a href="intro.txt.html#Operator-pending" class="d">Operator-pending</a> mode.
+
+
+1.4 LISTING MAPPINGS                                    <a name="map-listing" class="t">map-listing</a>
+
+When listing mappings the characters in the first two columns are:
+
+<span class="h">      CHAR      MODE    </span>
+     <a href="motion.txt.html#%3CSpace%3E" class="s">&lt;Space&gt;</a>    Normal, Visual, Select and <a href="intro.txt.html#Operator-pending" class="d">Operator-pending</a>
+        <a href="pattern.txt.html#n" class="d">n</a>       <a href="intro.txt.html#Normal" class="d">Normal</a>
+        <a href="visual.txt.html#v" class="d">v</a>       <a href="visual.txt.html#Visual" class="d">Visual</a> and Select
+        <a href="change.txt.html#s" class="d">s</a>       Select
+        <a href="change.txt.html#x" class="d">x</a>       <a href="visual.txt.html#Visual" class="d">Visual</a>
+        <a href="insert.txt.html#o" class="d">o</a>       <a href="intro.txt.html#Operator-pending" class="d">Operator-pending</a>
+        <a href="change.txt.html#%21" class="d">!</a>       <a href="insert.txt.html#Insert" class="d">Insert</a> and Command-line
+        <a href="insert.txt.html#i" class="d">i</a>       <a href="insert.txt.html#Insert" class="d">Insert</a>
+        <a href="motion.txt.html#l" class="d">l</a>       ":lmap" mappings for Insert, Command-line and Lang-Arg
+        <a href="change.txt.html#c" class="d">c</a>       Command-line
+
+Just before the <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a> <a href="insert.txt.html#a" class="d">a</a> special character can appear:
+        *       indicates that <a href="motion.txt.html#it" class="d">it</a> <a href="motion.txt.html#is" class="d">is</a> not remappable
+        &amp;       indicates that only script-local mappings are remappable
+        <a href="repeat.txt.html#%40" class="d">@</a>       indicates <a href="insert.txt.html#a" class="d">a</a> buffer-local <a href="map.txt.html#mapping" class="d">mapping</a>
+
+Everything from the first non-blank after <a href="map.txt.html#%7Blhs%7D" class="s">{lhs}</a> up to the end of the line
+(or <a href="motion.txt.html#%27" class="d">'</a>|') <a href="motion.txt.html#is" class="d">is</a> considered to be part of <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a><a href="repeat.txt.html#." class="d">.</a>  This allows the <a href="map.txt.html#%7Brhs%7D" class="s">{rhs}</a> to end
+with <a href="insert.txt.html#a" class="d">a</a> space.
+
+<span class="n">Note:</span> When using mappings for <a href="visual.txt.html#Visual" class="d">Visual</a> mode, you can use the "<a href="motion.txt.html#%27%3C" class="d">'&lt;</a>" mark, which
+<a href="motion.txt.html#is" class="d">is</a> the start of the last selected <a href="visual.txt.html#Visual" class="d">Visual</a> area in the current buffer <a href="motion.txt.html#%27%3C" class="l">'&lt;</a><a href="repeat.txt.html#." class="d">.</a>
+
+
+1.5 MAPPING SPECIAL KEYS                                <a name="%3Amap-special-keys" class="t">:map-special-keys</a>
+
+jVi currently supports the following special keys. This will likely expand.
+There may be semantic/incompatible changes <a href="motion.txt.html#as" class="d">as</a> well.
+
+      <span class="s">&lt;Nul&gt;</span>     '\n'
+      <a href="motion.txt.html#%3CBS%3E" class="s">&lt;BS&gt;</a>      '\b'
+      <a href="motion.txt.html#%3CTab%3E" class="s">&lt;Tab&gt;</a>     '\t'
+      <a href="motion.txt.html#%3CNL%3E" class="s">&lt;NL&gt;</a>      '\n'
+      <span class="s">&lt;FF&gt;</span>      '\f'
+      <a href="motion.txt.html#%3CCR%3E" class="s">&lt;CR&gt;</a>      '\n'
+      <span class="s">&lt;Return&gt;</span>  '\n'
+      <span class="s">&lt;Enter&gt;</span>   '\n'
+      <span class="s">&lt;Esc&gt;</span>     '\u001b'
+      <a href="motion.txt.html#%3CSpace%3E" class="s">&lt;Space&gt;</a>   <a href="motion.txt.html#%27" class="d">'</a> <a href="motion.txt.html#%27" class="d">'</a>
+      <span class="s">&lt;lt&gt;</span>      '&lt;'
+      <span class="s">&lt;Bslash&gt;</span>  '\\'
+      <span class="s">&lt;Bar&gt;</span>     <a href="motion.txt.html#%27" class="d">'</a>|<a href="motion.txt.html#%27" class="d">'</a>
+      <a href="change.txt.html#%3CDel%3E" class="s">&lt;Del&gt;</a>     '\u007f'
+
+      <span class="s">&lt;EOL&gt;</span>     '\n'
+
+The control/shifted versions can be mapped <a href="motion.txt.html#as" class="d">as</a> <span class="s">&lt;C-special&gt;</span>/&lt;S-special&gt;.
+
+      <a href="motion.txt.html#%3CUp%3E" class="s">&lt;Up&gt;</a>
+      <a href="motion.txt.html#%3CDown%3E" class="s">&lt;Down&gt;</a>
+      <a href="motion.txt.html#%3CLeft%3E" class="s">&lt;Left&gt;</a>
+      <a href="motion.txt.html#%3CRight%3E" class="s">&lt;Right&gt;</a>
+
+      <span class="s">&lt;Help&gt;</span>
+      <a href="undo.txt.html#%3CUndo%3E" class="s">&lt;Undo&gt;</a>
+      <a href="insert.txt.html#%3CInsert%3E" class="s">&lt;Insert&gt;</a>
+      <a href="motion.txt.html#%3CHome%3E" class="s">&lt;Home&gt;</a>
+      <a href="motion.txt.html#%3CEnd%3E" class="s">&lt;End&gt;</a>
+      <a href="scroll.txt.html#%3CPageUp%3E" class="s">&lt;PageUp&gt;</a>
+      <a href="scroll.txt.html#%3CPageDown%3E" class="s">&lt;PageDown&gt;</a>
+
+ vim:tw=78:ts=8:sw=8:noet:
+
+</pre>
+</div>
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<p id="footer">These help files are maintained with thanks
+to Carlo Teubner for his vimhelp to html work.</p>
+
+</div>
+</div>
+</body></html>

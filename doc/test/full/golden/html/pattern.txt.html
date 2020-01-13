@@ -1,0 +1,239 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Vim: pattern.txt</title>
+<!--[if IE]>
+<link rel="stylesheet" href="vimhelp-ie.css" type="text/css">
+<![endif]-->
+<!--[if !IE]>-->
+<link rel="stylesheet" href="vimhelp.css" type="text/css">
+<!--<![endif]-->
+</head>
+<body>
+<div id="d1">
+<pre id="sp">                                                                                </pre>
+<div id="d2">
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<div id="d3">
+<pre>
+<a name="pattern.txt" class="t">pattern.txt</a>   For Vim version 5.6.  Last change: 1999 Oct 27
+
+
+                  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+Patterns and search commands                            <a name="pattern-searches" class="t">pattern-searches</a>
+
+1. Search commands              <a href="pattern.txt.html#search-commands" class="l">search-commands</a>
+2. The definition of <a href="insert.txt.html#a" class="d">a</a> <a href="pattern.txt.html#pattern" class="d">pattern</a>  <a href="pattern.txt.html#search-pattern" class="l">search-pattern</a>
+   See: <a class="u" href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html">https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html</a>
+3. Magic                        <a href="pattern.txt.html#%2Fmagic" class="l">/magic</a>
+
+<span class="h">==============================================================================</span>
+1. Search commands                                      <a name="search-commands" class="t">search-commands</a>
+
+                                                        <a name="%2F" class="t">/</a>
+/{pattern}[/]&lt;CR&gt;       Search forward for the <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a>'th occurrence of
+                        <span class="s">{pattern}</span> (exclusive).
+
+                                                        <a name="%2F%3CCR%3E" class="t">/&lt;CR&gt;</a>
+<a href="pattern.txt.html#%2F%3CCR%3E" class="d">/&lt;CR&gt;</a>                   Search forward for the <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a>'th latest used
+                        <a href="pattern.txt.html#pattern" class="d">pattern</a> <a href="pattern.txt.html#last-pattern" class="l">last-pattern</a> with latest used <span class="l">{offset}</span><a href="repeat.txt.html#." class="d">.</a>
+
+                                                        <a name="%3F" class="t">?</a>
+?{pattern}[?]&lt;CR&gt;       Search backward for the <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a>'th previous
+                        occurrence of <span class="s">{pattern}</span> (exclusive).
+
+                                                        <a name="%3F%3CCR%3E" class="t">?&lt;CR&gt;</a>
+<a href="pattern.txt.html#%3F%3CCR%3E" class="d">?&lt;CR&gt;</a>                   Search backward for the <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a>'th latest used
+                        <a href="pattern.txt.html#pattern" class="d">pattern</a> <a href="pattern.txt.html#last-pattern" class="l">last-pattern</a> with latest used <span class="l">{offset}</span><a href="repeat.txt.html#." class="d">.</a>
+
+                                                        <a name="n" class="t">n</a>
+<a href="pattern.txt.html#n" class="d">n</a>                       Repeat the latest "<a href="pattern.txt.html#%2F" class="d">/</a>" or "<a href="pattern.txt.html#%3F" class="d">?</a>" <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> times.
+                        <a href="pattern.txt.html#last-pattern" class="l">last-pattern</a> <span class="s">{Vi: no count}</span>
+
+                                                        <a name="N" class="t">N</a>
+<a href="pattern.txt.html#N" class="d">N</a>                       Repeat the latest "<a href="pattern.txt.html#%2F" class="d">/</a>" or "<a href="pattern.txt.html#%3F" class="d">?</a>" <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a> times in
+                        opposite direction. <a href="pattern.txt.html#last-pattern" class="l">last-pattern</a> <span class="s">{Vi: no count}</span>
+
+                                                        <a name="star" class="t">star</a>
+*                       Search forward for the <a href="intro.txt.html#%5Bcount%5D" class="s">[count]</a>'th occurrence of the
+                        <a href="motion.txt.html#word" class="d">word</a> nearest to the cursor.  The <a href="motion.txt.html#word" class="d">word</a> used for the
+                        search <a href="motion.txt.html#is" class="d">is</a> the first of:
+                                1. the keyword under the cursor <a href="options.txt.html#%27iskeyword%27" class="l">'iskeyword'</a>
+                                2. the first keyword after the cursor, in the
+                                   current line
+                                3. the non-blank <a href="motion.txt.html#word" class="d">word</a> under the cursor
+                                4. the first non-blank <a href="motion.txt.html#word" class="d">word</a> after the cursor,
+                                   in the current line
+                        Only whole keywords are searched for, like with the
+                        command "/\&lt;keyword\&gt;"<a href="repeat.txt.html#." class="d">.</a>  (exclusive)  <span class="s">{not in Vi}</span>
+
+                                                        <a name="%23" class="t">#</a>
+<a href="pattern.txt.html#%23" class="d">#</a>                       Same <a href="motion.txt.html#as" class="d">as</a> "*"<a href="motion.txt.html#%2C" class="d">,</a> but search backward.  
+                        <span class="s">{not in Vi}</span>
+
+                                                        <a name="gstar" class="t">gstar</a>
+<a href="index.txt.html#g" class="d">g</a>*                      Like "*"<a href="motion.txt.html#%2C" class="d">,</a> but don't <a href="change.txt.html#put" class="d">put</a> "\&lt;" and "\&gt;" around the word.
+                        This makes the search also find matches that are not <a href="insert.txt.html#a" class="d">a</a>
+                        whole word.  <span class="s">{not in Vi}</span>
+
+                                                        <a name="g%23" class="t">g#</a>
+<a href="pattern.txt.html#g%23" class="d">g#</a>                      Like "<a href="pattern.txt.html#%23" class="d">#</a>"<a href="motion.txt.html#%2C" class="d">,</a> but don't <a href="change.txt.html#put" class="d">put</a> "\&lt;" and "\&gt;" around the word.
+                        This makes the search also find matches that are not <a href="insert.txt.html#a" class="d">a</a>
+                        whole word.  <span class="s">{not in Vi}</span>
+
+                                                        <a name="%3Anoh" class="t">:noh</a> <a name="%3Anohlsearch" class="t">:nohlsearch</a>
+:noh[lsearch]           Stop the highlighting for the <a href="options.txt.html#%27hlsearch%27" class="o">'hlsearch'</a> option.  It
+                        <a href="motion.txt.html#is" class="d">is</a> automatically turned back on when using <a href="insert.txt.html#a" class="d">a</a> search
+                        command, or setting the <a href="options.txt.html#%27hlsearch%27" class="o">'hlsearch'</a> option.
+                        This command doesn't work in an autocommand, because
+                        the highlighting state <a href="motion.txt.html#is" class="d">is</a> saved and restored when
+                        executing autocommands <span class="l">autocmd-searchpat</span><a href="repeat.txt.html#." class="d">.</a>
+
+While typing the search <a href="pattern.txt.html#pattern" class="d">pattern</a> the current match will be shown if the
+<a href="options.txt.html#%27incsearch%27" class="o">'incsearch'</a> option <a href="motion.txt.html#is" class="d">is</a> on.  Remember that you still have to finish the search
+command with <a href="motion.txt.html#%3CCR%3E" class="s">&lt;CR&gt;</a> to actually position the cursor <a href="motion.txt.html#at" class="d">at</a> the displayed match.  Or
+use <span class="s">&lt;Esc&gt;</span> to abandon the search.
+
+All matches for the last used search <a href="pattern.txt.html#pattern" class="d">pattern</a> will be highlighted if you set
+the <a href="options.txt.html#%27hlsearch%27" class="o">'hlsearch'</a> option.  This can be suspended with the <a href="pattern.txt.html#%3Anohlsearch" class="l">:nohlsearch</a> command.
+
+                                                        <a name="last-pattern" class="t">last-pattern</a>
+The last used <a href="pattern.txt.html#pattern" class="d">pattern</a> and offset are remembered.  They can be used to repeat
+the search, possibly in another direction or with another count.  <span class="n">Note</span> that
+two patterns are remembered: One for <span class="o">'normal'</span> search commands and one for the
+substitute command "<a href="change.txt.html#%3As" class="d">:s</a>"<a href="repeat.txt.html#." class="d">.</a>  Each time an empty <a href="pattern.txt.html#pattern" class="d">pattern</a> <a href="motion.txt.html#is" class="d">is</a> given, the previously
+used <a href="pattern.txt.html#pattern" class="d">pattern</a> <a href="motion.txt.html#is" class="d">is</a> used.
+
+The <span class="o">'magic'</span> option sticks with the last used pattern.  If you change <span class="o">'magic'</span><a href="motion.txt.html#%2C" class="d">,</a>
+this will not change how the last used <a href="pattern.txt.html#pattern" class="d">pattern</a> will be interpreted.
+The <a href="options.txt.html#%27ignorecase%27" class="o">'ignorecase'</a> option does not do this.  When <a href="options.txt.html#%27ignorecase%27" class="o">'ignorecase'</a> <a href="motion.txt.html#is" class="d">is</a> changed, <a href="motion.txt.html#it" class="d">it</a>
+will result in the <a href="pattern.txt.html#pattern" class="d">pattern</a> to match other text.
+
+All matches for the last used search <a href="pattern.txt.html#pattern" class="d">pattern</a> will be highlighted if you set
+the <a href="options.txt.html#%27hlsearch%27" class="o">'hlsearch'</a> option.
+
+In Vi the "<a href="tagsearch.txt.html#%3Atag" class="d">:tag</a>" command sets the last search <a href="pattern.txt.html#pattern" class="d">pattern</a> when the tag <a href="motion.txt.html#is" class="d">is</a> searched
+for.  In Vim this <a href="motion.txt.html#is" class="d">is</a> not done, the previous search <a href="pattern.txt.html#pattern" class="d">pattern</a> <a href="motion.txt.html#is" class="d">is</a> still remembered,
+unless the 't' flag <a href="motion.txt.html#is" class="d">is</a> present in <a href="options.txt.html#%27cpoptions%27" class="o">'cpoptions'</a><a href="repeat.txt.html#." class="d">.</a>  The search <a href="pattern.txt.html#pattern" class="d">pattern</a> <a href="motion.txt.html#is" class="d">is</a> always
+<a href="change.txt.html#put" class="d">put</a> in the search history.
+
+If the <a href="options.txt.html#%27wrapscan%27" class="o">'wrapscan'</a> option <a href="motion.txt.html#is" class="d">is</a> on (which <a href="motion.txt.html#is" class="d">is</a> the default), searches wrap around
+the end of the buffer.  If <a href="options.txt.html#%27wrapscan%27" class="o">'wrapscan'</a> <a href="motion.txt.html#is" class="d">is</a> not set, the backward search stops
+<a href="motion.txt.html#at" class="d">at</a> the beginning and the forward search stops <a href="motion.txt.html#at" class="d">at</a> the end of the buffer.  If
+<a href="options.txt.html#%27wrapscan%27" class="o">'wrapscan'</a> <a href="motion.txt.html#is" class="d">is</a> set and the <a href="pattern.txt.html#pattern" class="d">pattern</a> was not found the error message "<a href="pattern.txt.html#pattern" class="d">pattern</a>
+not found" <a href="motion.txt.html#is" class="d">is</a> given, and the cursor will not be moved.  If <a href="options.txt.html#%27wrapscan%27" class="o">'wrapscan'</a> <a href="motion.txt.html#is" class="d">is</a> not
+set the message becomes "search hit BOTTOM without match" when searching
+forward, or "search hit TOP without match" when searching backward.  If
+wrapscan <a href="motion.txt.html#is" class="d">is</a> set and the search wraps around the end of the file the message
+"search hit TOP, continuing <a href="motion.txt.html#at" class="d">at</a> BOTTOM" or "search hit BOTTOM, continuing <a href="motion.txt.html#at" class="d">at</a>
+TOP" <a href="motion.txt.html#is" class="d">is</a> given when searching backwards or forwards respectively.  This can be
+switched off by setting the 's' flag in the <span class="o">'shortmess'</span> option.  The highlight
+method 'w' <a href="motion.txt.html#is" class="d">is</a> used for this message (default: standout).
+
+                                                        <a name="search-range" class="t">search-range</a>
+You cannot limit the search command "<a href="pattern.txt.html#%2F" class="d">/</a>" to <a href="insert.txt.html#a" class="d">a</a> certain range of lines.  <a href="insert.txt.html#A" class="d">A</a> trick
+to do this anyway <a href="motion.txt.html#is" class="d">is</a> to use the "<a href="change.txt.html#%3Asubstitute" class="d">:substitute</a>" command with the 'c' flag.
+Example:
+<a href="change.txt.html#%3E" class="d">&gt;</a>  :.,300s/Pattern//gc
+This command will search from the cursor position until line 300 for
+"<a href="pattern.txt.html#Pattern" class="d">Pattern</a>"<a href="repeat.txt.html#." class="d">.</a>  At the match, you will be asked to type <a href="insert.txt.html#a" class="d">a</a> character.  Type 'q' to
+stop <a href="motion.txt.html#at" class="d">at</a> this match, type 'n' to find the next match.
+
+The "*"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="pattern.txt.html#%23" class="d">#</a>"<a href="motion.txt.html#%2C" class="d">,</a> "<a href="index.txt.html#g" class="d">g</a>*" and "<a href="pattern.txt.html#g%23" class="d">g#</a>" commands look for <a href="insert.txt.html#a" class="d">a</a> <a href="motion.txt.html#word" class="d">word</a> near the cursor in this
+order, the first one that <a href="motion.txt.html#is" class="d">is</a> found <a href="motion.txt.html#is" class="d">is</a> used:
+<a href="motion.txt.html#-" class="d">-</a> The keyword currently under the cursor.
+<a href="motion.txt.html#-" class="d">-</a> The first keyword to the right of the cursor, in the same line.
+<a href="motion.txt.html#-" class="d">-</a> The <a href="motion.txt.html#WORD" class="d">WORD</a> currently under the cursor.
+<a href="motion.txt.html#-" class="d">-</a> The first <a href="motion.txt.html#WORD" class="d">WORD</a> to the right of the cursor, in the same line.
+The keyword may only contain letters and characters in <a href="options.txt.html#%27iskeyword%27" class="o">'iskeyword'</a><a href="repeat.txt.html#." class="d">.</a>
+The <a href="motion.txt.html#WORD" class="d">WORD</a> may contain any non-blanks (&lt;Tab&gt;s and/or <a href="motion.txt.html#%3CSpace%3E" class="s">&lt;Space&gt;</a>s).
+<span class="n">Note</span> that if you type with ten fingers, the characters are easy to remember:
+the "<a href="pattern.txt.html#%23" class="d">#</a>" <a href="motion.txt.html#is" class="d">is</a> under your left hand middle finger (search to the left and up) and
+the "*" <a href="motion.txt.html#is" class="d">is</a> under your right hand middle finger (search to the right and down).
+
+<span class="h">==============================================================================</span>
+2. The definition of <a href="insert.txt.html#a" class="d">a</a> <a href="pattern.txt.html#pattern" class="d">pattern</a>          <a name="search-pattern" class="t">search-pattern</a> <a name="pattern" class="t">pattern</a> <a name="%5Bpattern%5D" class="t">[pattern]</a>
+                                        <a name="regular-expression" class="t">regular-expression</a> <a name="regexp" class="t">regexp</a> <a name="Pattern" class="t">Pattern</a>
+
+Patterns use java's internal regex engine. jVi has <a href="options.txt.html#options" class="d">options</a> for which
+characters in <a href="insert.txt.html#a" class="d">a</a> search <a href="pattern.txt.html#pattern" class="d">pattern</a> need to be escaped, Options&gt;Search&gt;reMetaEscape.
+Set this option to an empty string and no escapes needed for regex patterns.
+
+Java patterns are much like perl5 and use the perl5 notation. For details
+see: <a class="u" href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html">https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html</a>
+
+If the <a href="options.txt.html#%27ignorecase%27" class="o">'ignorecase'</a> option <a href="motion.txt.html#is" class="d">is</a> on, the <a href="change.txt.html#case" class="d">case</a> of letters <a href="motion.txt.html#is" class="d">is</a> ignored.  <a href="options.txt.html#%27smartcase%27" class="o">'smartcase'</a>
+can be set to ignore <a href="change.txt.html#case" class="d">case</a> when the <a href="pattern.txt.html#pattern" class="d">pattern</a> contains <a href="change.txt.html#uppercase" class="d">uppercase</a> letters.
+
+The <a href="options.txt.html#options" class="d">options</a> to override ignorecase can be anywhere in the <a href="pattern.txt.html#pattern" class="d">pattern</a> and
+affect the entire pattern.
+<span class="l">/\c</span>   \c      \c      ignore case, do not use the <a href="options.txt.html#%27ignorecase%27" class="o">'ignorecase'</a> option
+<span class="l">/\C</span>   \C      \C      match case, do not use the <a href="options.txt.html#%27ignorecase%27" class="o">'ignorecase'</a> option
+
+<span class="h">      magic   nomagic   matches </span>
+<a href="pattern.txt.html#%2F%5Cm" class="l">/\m</a>   \m      \m      <span class="o">'magic'</span> on for the following chars in the <a href="pattern.txt.html#pattern" class="d">pattern</a>
+<a href="pattern.txt.html#%2F%5CM" class="l">/\M</a>   \M      \M      <span class="o">'magic'</span> off for the following chars in the <a href="pattern.txt.html#pattern" class="d">pattern</a>
+<a href="pattern.txt.html#%2F%5Cv" class="l">/\v</a>   \v      \v      the following chars in the <a href="pattern.txt.html#pattern" class="d">pattern</a> are "very magic"
+<a href="pattern.txt.html#%2F%5CV" class="l">/\V</a>   \V      \V      the following chars in the <a href="pattern.txt.html#pattern" class="d">pattern</a> are "very nomagic"
+
+The escapes '\&lt;' and '\&gt;' are translated to '\b' (word boundary).
+
+<span class="h">==============================================================================</span>
+3. Magic                                                        <a name="%2Fmagic" class="t">/magic</a>
+
+Some characters in the <a href="pattern.txt.html#pattern" class="d">pattern</a> are taken literally.  They match with the same
+character in the text.  When preceded with <a href="insert.txt.html#a" class="d">a</a> backslash however, these
+characters get <a href="insert.txt.html#a" class="d">a</a> special meaning.
+
+Other characters have <a href="insert.txt.html#a" class="d">a</a> special meaning without <a href="insert.txt.html#a" class="d">a</a> backslash.  They need to be
+preceded with <a href="insert.txt.html#a" class="d">a</a> backslash to match literally.
+
+If <a href="insert.txt.html#a" class="d">a</a> character <a href="motion.txt.html#is" class="d">is</a> taken literally or not depends on the <span class="o">'magic'</span> option and the
+items mentioned next.
+                                                        <a name="%2F%5Cm" class="t">/\m</a> <a name="%2F%5CM" class="t">/\M</a>
+Use of "\m" makes the <a href="pattern.txt.html#pattern" class="d">pattern</a> after <a href="motion.txt.html#it" class="d">it</a> be interpreted <a href="motion.txt.html#as" class="d">as</a> if <span class="o">'magic'</span> <a href="motion.txt.html#is" class="d">is</a> set,
+ignoring the actual value of the <span class="o">'magic'</span> option.
+Use of "\M" makes the <a href="pattern.txt.html#pattern" class="d">pattern</a> after <a href="motion.txt.html#it" class="d">it</a> be interpreted <a href="motion.txt.html#as" class="d">as</a> if <span class="o">'nomagic'</span> <a href="motion.txt.html#is" class="d">is</a> used.
+                                                        <a name="%2F%5Cv" class="t">/\v</a> <a name="%2F%5CV" class="t">/\V</a>
+Use of "\v" means that after it, all ASCII characters except '0'-'9', 'a'-'z',
+'A'-'Z' and '_' have special meaning: "very magic"
+
+Use of "\V" means that after it, only <a href="insert.txt.html#a" class="d">a</a> backslash and terminating character
+(usually <a href="pattern.txt.html#%2F" class="d">/</a> or ?) have special meaning: "very nomagic"
+
+Examples:
+<span class="h">after:    \v       \m       \M       \V         matches </span>
+                <span class="o">'magic'</span> <span class="o">'nomagic'</span>
+          <a href="motion.txt.html#%24" class="d">$</a>        <a href="motion.txt.html#%24" class="d">$</a>        <a href="motion.txt.html#%24" class="d">$</a>        \$         matches end-of-line
+          <a href="repeat.txt.html#." class="d">.</a>        <a href="repeat.txt.html#." class="d">.</a>        \.       \.         matches any character
+          *        *        \*       \*         any number of the previous atom
+          <a href="change.txt.html#%7E" class="d">~</a>        <a href="change.txt.html#%7E" class="d">~</a>        \~       \~         latest substitute string
+          ()       \(\)     \(\)     \(\)       grouping into an atom
+          |        \|       \|       \|         separating alternatives
+          \a       \a       \a       \a         alphabetic character
+          \\       \\       \\       \\         literal backslash
+          \.       \.       <a href="repeat.txt.html#." class="d">.</a>        <a href="repeat.txt.html#." class="d">.</a>          literal dot
+          \{       <a href="motion.txt.html#%7B" class="d">{</a>        <a href="motion.txt.html#%7B" class="d">{</a>        <a href="motion.txt.html#%7B" class="d">{</a>          literal '{'
+          <a href="insert.txt.html#a" class="d">a</a>        <a href="insert.txt.html#a" class="d">a</a>        <a href="insert.txt.html#a" class="d">a</a>        <a href="insert.txt.html#a" class="d">a</a>          literal 'a'
+
+<span class="s">{only Vim supports \m, \M, \v and \V}</span>
+
+It <a href="motion.txt.html#is" class="d">is</a> recommended to always keep the <span class="o">'magic'</span> option <a href="motion.txt.html#at" class="d">at</a> the default setting,
+which <a href="motion.txt.html#is" class="d">is</a> <span class="o">'magic'</span><a href="repeat.txt.html#." class="d">.</a>  This avoids portability problems.  To make <a href="insert.txt.html#a" class="d">a</a> <a href="pattern.txt.html#pattern" class="d">pattern</a> immune
+to the <span class="o">'magic'</span> option being set or not, <a href="change.txt.html#put" class="d">put</a> "\m" or "\M" <a href="motion.txt.html#at" class="d">at</a> the start of the
+pattern.
+
+ vim:tw=78:ts=8:sw=8:
+
+</pre>
+</div>
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<p id="footer">These help files are maintained with thanks
+to Carlo Teubner for his vimhelp to html work.</p>
+
+</div>
+</div>
+</body></html>

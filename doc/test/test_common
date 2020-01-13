@@ -1,0 +1,44 @@
+#!/usr/bin/bash
+
+SCRIPTS=$jvi/jvi/doc/scripts
+curdir=$(pwd)
+tdir=$tname
+
+UNFILTERED=$tdir/input
+FILTERED=$tdir/build/filtered
+OUT=$tdir/build/$test_type
+
+if (($# < 1)); then
+    echo "must specify a argument" 2>&1
+    exit 1
+fi
+
+if [[ -z "$tname" ]]; then
+    echo "must specify an non empty argument" 2>&1
+    exit 1
+fi
+
+if [[ ! -d $tdir ]]; then
+    echo "'$tdir' does not exist 2>&1
+    exit 1
+fi
+if [[ ! -d $UNFILTERED ]]; then
+    echo "'$UNFILTERED' does not exist 2>&1
+    exit 1
+fi
+if [[ ! -d $tdir/golden ]]; then
+    echo "'$tdir/golden' does not exist" 2>&1
+    exit 1
+fi
+
+if [[ -d $tdir/build ]]; then
+    rm -r $tdir/build
+fi
+
+$SCRIPTS/filter.sh $UNFILTERED $FILTERED
+
+$VIM/vim --noplugin -e -s -V1 -c "helptags $(cygpath -a -m $FILTERED)" -c q
+# echo vim helptags returns: $?
+
+mkdir -p $OUT
+mv $FILTERED/tags $OUT/tags

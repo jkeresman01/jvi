@@ -1,0 +1,117 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Vim: help.txt</title>
+<!--[if IE]>
+<link rel="stylesheet" href="vimhelp-ie.css" type="text/css">
+<![endif]-->
+<!--[if !IE]>-->
+<link rel="stylesheet" href="vimhelp.css" type="text/css">
+<!--<![endif]-->
+</head>
+<body>
+<div id="d1">
+<pre id="sp">                                                                                </pre>
+<div id="d2">
+
+<h1>jVi help files</h1>
+<p class="fix-width">This is an HTML version of the
+<a href="http:http://jvi.sourceforge.net/" target="_blank">jVi</a> help pages.
+They are almost entirely copied from the <a href="http://www.vim.org/"
+target="_blank">Vim</a> help pages. Those familiar with the vim help pages 
+will notice that there is much less information here; that is because jVi
+has fewer features and is not as fully documented.
+</p>
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<div id="d3">
+<pre>
+<a name="help.txt" class="t">help.txt</a>      For <span class="i">jVi version 1.3.1.</span>  Last change: 2010 Dec 27
+
+                    <span class="i">JVI REFERENCE - main help file</span>
+                                                                         <a href="motion.txt.html#k" class="d">k</a>
+      Move around:  Use the cursor keys, or "<a href="motion.txt.html#h" class="d">h</a>" to go left,            <a href="motion.txt.html#h" class="d">h</a>   <a href="motion.txt.html#l" class="d">l</a>
+                    "<a href="motion.txt.html#j" class="d">j</a>" to go down, "<a href="motion.txt.html#k" class="d">k</a>" to go up, "<a href="motion.txt.html#l" class="d">l</a>" to go right.       <a href="motion.txt.html#j" class="d">j</a>
+Close this window:  Use ":q&lt;Enter&gt;"<a href="repeat.txt.html#." class="d">.</a>
+   Get out of Vim:  Use ":qa!&lt;Enter&gt;" (careful, all changes are lost!).
+
+Jump to <a href="insert.txt.html#a" class="d">a</a> subject:  Position the cursor on <a href="insert.txt.html#a" class="d">a</a> tag (e.g. <a href="help.txt.html#bars" class="l">bars</a><a href="motion.txt.html#%29" class="d">)</a> and hit <span class="k">CTRL-]</span><a href="repeat.txt.html#." class="d">.</a>
+   With the mouse:  "<a href="options.txt.html#%3Aset" class="d">:set</a> mouse=a" to enable the mouse (in xterm or GUI).
+                    Double-click the left mouse button on <a href="insert.txt.html#a" class="d">a</a> tag, e.g. <a href="help.txt.html#bars" class="l">bars</a><a href="repeat.txt.html#." class="d">.</a>
+        Jump back:  Type <a href="tagsearch.txt.html#CTRL-T" class="k">CTRL-T</a> or <a href="motion.txt.html#CTRL-O" class="k">CTRL-O</a> (repeat to go further back).
+
+Get specific help:  It <a href="motion.txt.html#is" class="d">is</a> possible to go directly to whatever you want help
+                    on, by giving an argument to the <span class="l">:help</span> command.
+                    It <a href="motion.txt.html#is" class="d">is</a> possible to further specify the context:
+                                                        <a name="help-context" class="t">help-context</a>
+<span class="h">                          WHAT                  PREPEND    EXAMPLE      </span>
+                      <a href="intro.txt.html#Normal" class="d">Normal</a> mode command      (nothing)   :help <a href="change.txt.html#x" class="d">x</a>
+                      <a href="visual.txt.html#Visual" class="d">Visual</a> mode command         v_       :help <a href="change.txt.html#v_u" class="d">v_u</a>
+                      <a href="insert.txt.html#Insert" class="d">Insert</a> mode command         i_       :help <a href="insert.txt.html#i_%3CEsc%3E" class="d">i_&lt;Esc&gt;</a>
+                      Command-line command        :        :help :quit
+                      Command-line editing        c_       :help c_&lt;Del&gt;
+                      Vim command argument        <a href="motion.txt.html#-" class="d">-</a>        :help -r
+                      Option                      <a href="motion.txt.html#%27" class="d">'</a>        :help <a href="options.txt.html#%27textwidth%27" class="o">'textwidth'</a>
+  Search for help:  Type ":help <a href="motion.txt.html#word" class="d">word</a>"<a href="motion.txt.html#%2C" class="d">,</a> then hit <a href="scroll.txt.html#CTRL-D" class="k">CTRL-D</a> to see matching
+                    help entries for "<a href="motion.txt.html#word" class="d">word</a>"<a href="repeat.txt.html#." class="d">.</a>
+
+VIM stands for Vi IMproved.  Most of VIM was made by Bram Moolenaar, but only
+through the help of many others.  See <span class="l">credits</span><a href="repeat.txt.html#." class="d">.</a>
+<span class="h">------------------------------------------------------------------------------</span>
+                                                <a name="doc-file-list" class="t">doc-file-list</a> <a name="Q_ct" class="t">Q_ct</a>
+BASIC:
+<a href="quickref.txt.html#quickref" class="l">quickref</a>      Overview of the most common commands you will use
+<a href="uganda.txt.html#iccf" class="l">iccf</a>          Helping poor children in <a href="uganda.txt.html#Uganda" class="d">Uganda</a>
+
+
+REFERENCE MANUAL: These files explain every detail of Vim.      <a name="reference_toc" class="t">reference_toc</a>
+
+<span class="h">General subjects </span>
+<a href="intro.txt.html" class="l">intro.txt</a>     general introduction to Vim; <a href="intro.txt.html#notation" class="d">notation</a> used in help files
+<a href="help.txt.html" class="l">help.txt</a>      overview and quick <a href="intro.txt.html#reference" class="d">reference</a> (this file)
+<a href="index.txt.html" class="l">index.txt</a>     alphabetical <a href="index.txt.html#index" class="d">index</a> of all commands
+<span class="l">help-tags</span>     all the <a href="tagsearch.txt.html#tags" class="d">tags</a> you can jump to (index of tags)
+<a href="uganda.txt.html" class="l">uganda.txt</a>    Vim distribution conditions and what to do with your money
+
+<span class="h">Basic editing </span>
+<a href="motion.txt.html" class="l">motion.txt</a>    commands for moving around
+<a href="scroll.txt.html" class="l">scroll.txt</a>    <a href="scroll.txt.html#scrolling" class="d">scrolling</a> the text in the window
+<a href="insert.txt.html" class="l">insert.txt</a>    <a href="insert.txt.html#Insert" class="d">Insert</a> and <a href="insert.txt.html#Replace" class="d">Replace</a> mode
+<a href="change.txt.html" class="l">change.txt</a>    <a href="change.txt.html#deleting" class="d">deleting</a> and <a href="change.txt.html#replacing" class="d">replacing</a> text
+<a href="undo.txt.html" class="l">undo.txt</a>      Undo and Redo
+<a href="repeat.txt.html" class="l">repeat.txt</a>    <a href="repeat.txt.html#repeating" class="d">repeating</a> commands, Vim scripts and debugging
+<a href="visual.txt.html" class="l">visual.txt</a>    using the <a href="visual.txt.html#Visual" class="d">Visual</a> mode (selecting <a href="insert.txt.html#a" class="d">a</a> text area)
+
+<span class="h">Advanced editing </span>
+<a href="options.txt.html" class="l">options.txt</a>   description of all <a href="options.txt.html#options" class="d">options</a>
+<a href="pattern.txt.html" class="l">pattern.txt</a>   <a href="pattern.txt.html#regexp" class="d">regexp</a> patterns and search commands
+<a href="map.txt.html" class="l">map.txt</a>       key <a href="map.txt.html#mapping" class="d">mapping</a> and abbreviations
+<a href="tagsearch.txt.html" class="l">tagsearch.txt</a> <a href="tagsearch.txt.html#tags" class="d">tags</a> and special searches
+<a href="windows.txt.html" class="l">windows.txt</a>   commands for using multiple <a href="windows.txt.html#windows" class="d">windows</a> and <a href="windows.txt.html#buffers" class="d">buffers</a>
+<a href="tabpage.txt.html" class="l">tabpage.txt</a>   commands for using multiple tab pages
+<a href="fold.txt.html" class="l">fold.txt</a>      hide (fold) ranges of lines
+
+<span class="h">------------------------------------------------------------------------------</span>
+<a name="bars" class="t">bars</a>          Bars example
+
+Now that you've jumped here with <span class="k">CTRL-]</span> or <a href="insert.txt.html#a" class="d">a</a> double mouse click, you can use
+<a href="tagsearch.txt.html#CTRL-T" class="k">CTRL-T</a><a href="motion.txt.html#%2C" class="d">,</a> <a href="motion.txt.html#CTRL-O" class="k">CTRL-O</a><a href="motion.txt.html#%2C" class="d">,</a> g&lt;RightMouse&gt;, or <span class="s">&lt;C-RightMouse&gt;</span> to go back to where you were.
+
+<span class="n">Note</span> that <a href="tagsearch.txt.html#tags" class="d">tags</a> are within | characters, but when highlighting <a href="motion.txt.html#is" class="d">is</a> enabled these
+are hidden.  That makes <a href="motion.txt.html#it" class="d">it</a> easier to read <a href="insert.txt.html#a" class="d">a</a> command.
+
+Anyway, you can use <span class="k">CTRL-]</span> on any word, also when <a href="motion.txt.html#it" class="d">it</a> <a href="motion.txt.html#is" class="d">is</a> not within |<a href="motion.txt.html#%2C" class="d">,</a> and Vim
+will try to find help for it.
+
+<span class="h">------------------------------------------------------------------------------</span>
+ vim:tw=78:ts=8:sw=8:noet:
+
+</pre>
+</div>
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<p id="footer">These help files are maintained with thanks
+to Carlo Teubner for his vimhelp to html work.</p>
+
+</div>
+</div>
+</body></html>

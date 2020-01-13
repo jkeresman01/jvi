@@ -21,9 +21,11 @@ jVi-download-target: http://sourceforge.net/projects/jvi/files/jvi/
 motd-message:
 Install "jVi for Netbeans Update Center" Plugin (NB-11.0 and later)
 <EOT>
+
 motd-link: http://jvi.sourceforge.net/?CHANGES.html
 See jVi recent features and CHANGES at website including
 <EOT>
+
 #* see CHANGES about:
 motd-message:
 *     1.6.x: :tab* commands; magic option and \v,\m... for searching

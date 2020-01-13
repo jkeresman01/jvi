@@ -1,0 +1,122 @@
+*index.txt*	${jvi-version-title}
+
+
+                  ${reference-manual}
+*'aleph'* *'altkeymap'*
+*and*
+
+#*# filter-scan:ref#*#
+'aleph'		  'al'	    ASCII code of the letter Aleph (Hebrew)
+   'allowrevins'	  'ari'     allow CTRL-_ in Insert and Command-line mode
+   'altkeymap'	  'akm'     for default second language (Farsi/Hebrew)
+'ambiwidth'	  'ambw'    what to do with Unicode chars of ambiguous width
+#*# stop-filter-scan#*#
+
+START-DOC-DEL
+#*# table:form=ref:label=vim-modes:todo=table-handling 1:command 19:extra-or 25:desc #*#
+					*Normal* *Normal-mode* *command-mode*
+Normal mode		In Normal mode you can enter all the normal editor
+			commands.  If you start the editor you are in this
+
+Visual mode		This is like Normal mode, but the movement commands
+			extend a highlighted area.  When a non-movement
+
+Insert mode		In Insert mode the text you type is inserted into the
+			buffer.  See |Insert-mode|.
+
+Command-line mode  or	In Command-line mode (also called Cmdline mode) you
+Cmdline mode		can enter one line of text at the bottom of the
+			window.  This is for the Ex commands, ":", the pattern
+#*#table:stop-table #*#
+
+
+
+#*# table:form=ref:label=word-motions 1:command 3:extra-or 25:desc #*#
+<S-Right>	or					*<S-Right>* *w*
+w			[count] words forward (exclusive).
+#*#table:stop-table #*#
+STOP-DOC-DEL
+
+START-DOC-DEL
+								*index*
+This file contains a list of all commands for each mode, with a tag and a
+short description.  The lists are sorted on ASCII value.
+
+This is a paragraph following a paragraph.
+It has two lines
+
+1. Insert mode				|insert-index|
+
+STOP-DOC-DEL
+FooBar
+Foo#+#PLUS1 markup#+#Bar#+#PLUS2 markup#+#Baz
+Foo#*#STAR markup #*#Bar
+
+
+LEGEND FOR THE FIRST COLUMN:	" " works
+				"e" works if platform support, eg an IDE
+				"." future support, may be partial
+				"x" not supported or planned (but plans change)
+
+
+
+
+
+
+
+
+NOTE: there may be platform specific methods
+to block user specified keys from jVi. >
+		An example
+		of two lines
+<
+							*{motion}*
+{motion}	A command that moves the cursor.  See the list at
+
+==============================================================================
+==============================================================================
+1. Insert mode						*insert-index*
+
+tag		char		action	~
+-----------------------------------------------------------------------
+#*# table:form=index:label=insert-index 1:tag 17:command 33:opt:note 36:desc #*#
+ 		CTRL-@		   not used
+|CTRL-A|	CTRL-A CTRL-B	2  add N to number at/after cursor
+------------------------------------------------------------------------------
+
+
+==============================================================================
+2. Normal mode						*normal-index*
+
+#*# table:form=simple:label=a-legend 1 10 #*#
+N	 a number entered before the command
+{motion} a cursor movement command
+SECTION	 a section that possibly starts with '}' instead of '{'
+
+tag		char	      note action in Normal mode	~
+------------------------------------------------------------------------------
+#*# table:form=index:label=normal-index 1:tag 17:command 33:opt:note 36:desc #*#
+|CTRL-X|	CTRL-X		2  add N to number at/after cursor
+|CTRL-E|	CTRL-E CTRL-E	   stuff for ctrl e,
+				   (between first and second)
+				   second line with CTRL-E stuff
+				   third line of stuff for ctrl e
+
+
+#*# table:form=ref:label=other-index 1:command 2:extra-or 25:desc #*#
+							*CTRL-E*
+CTRL-E			Scroll window [count] lines downwards in the buffer.
+			Mnemonic: Extra lines.
+
+							*CTRL-D*
+CTRL-D			Scroll window Downwards in the buffer.  The number of
+			lines comes from the 'scroll' option (default: half a
+			screen).  If [count] given, first set 'scroll' option
+
+<S-Down>	or				*<S-Down>* *<kPageDown>*
+<PageDown>	or				*<PageDown>* *CTRL-F*
+CTRL-F			Scroll window [count] pages Forwards (downwards) in
+			the buffer.  See also 'startofline' option.
+
+#*#table:stop-table #*#
+

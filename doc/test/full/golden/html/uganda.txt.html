@@ -1,0 +1,325 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Vim: uganda.txt</title>
+<!--[if IE]>
+<link rel="stylesheet" href="vimhelp-ie.css" type="text/css">
+<![endif]-->
+<!--[if !IE]>-->
+<link rel="stylesheet" href="vimhelp.css" type="text/css">
+<!--<![endif]-->
+</head>
+<body>
+<div id="d1">
+<pre id="sp">                                                                                </pre>
+<div id="d2">
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<div id="d3">
+<pre>
+<a name="uganda.txt" class="t">uganda.txt</a>    For Vim version 7.0.  Last change: 2006 Apr 24
+
+
+                  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+                        <a name="uganda" class="t">uganda</a> <a name="Uganda" class="t">Uganda</a> <a name="copying" class="t">copying</a> <a name="copyright" class="t">copyright</a> <a name="license" class="t">license</a>
+SUMMARY
+                                                                <a name="iccf" class="t">iccf</a> <a name="ICCF" class="t">ICCF</a>
+Vim <a href="motion.txt.html#is" class="d">is</a> Charityware.  You can use and copy <a href="motion.txt.html#it" class="d">it</a> <a href="motion.txt.html#as" class="d">as</a> much <a href="motion.txt.html#as" class="d">as</a> you like, but you are
+encouraged to make <a href="insert.txt.html#a" class="d">a</a> donation for needy children in Uganda.  Please see <a href="uganda.txt.html#kcc" class="l">kcc</a>
+below or visit the <a href="uganda.txt.html#ICCF" class="d">ICCF</a> web site, available <a href="motion.txt.html#at" class="d">at</a> these URLs:
+
+        <a class="u" href="http://iccf-holland.org/">http://iccf-holland.org/</a>
+        <a class="u" href="http://www.vim.org/iccf/">http://www.vim.org/iccf/</a>
+
+You can also sponsor the development of Vim.  Vim sponsors can vote for
+features.  See <span class="l">sponsor</span><a href="repeat.txt.html#." class="d">.</a>  The money goes to <a href="uganda.txt.html#Uganda" class="d">Uganda</a> anyway.
+
+The Open Publication License applies to the Vim documentation, see
+<span class="l">manual-copyright</span><a href="repeat.txt.html#." class="d">.</a>
+
+<span class="h">=== begin of license ===</span>
+
+VIM LICENSE
+
+I)  There are no restrictions on distributing unmodified copies of Vim except
+    that they must include this <a href="uganda.txt.html#license" class="d">license</a> text.  You can also distribute
+    unmodified parts of Vim, likewise unrestricted except that they must
+    include this <a href="uganda.txt.html#license" class="d">license</a> text.  You are also allowed to include executables
+    that you made from the unmodified Vim sources, plus your own usage
+    examples and Vim scripts.
+
+II) It <a href="motion.txt.html#is" class="d">is</a> allowed to distribute <a href="insert.txt.html#a" class="d">a</a> modified (or extended) version of Vim,
+    including executables and/or source code, when the following four
+    conditions are met:
+    1) This <a href="uganda.txt.html#license" class="d">license</a> text must be included unmodified.
+    2) The modified Vim must be distributed in one of the following five ways:
+       <a href="motion.txt.html#a%29" class="d">a)</a> If you make changes to Vim yourself, you must clearly describe in
+          the distribution how to contact you.  When the maintainer asks you
+          (in any way) for <a href="insert.txt.html#a" class="d">a</a> copy of the modified Vim you distributed, you
+          must make your changes, including source code, available to the
+          maintainer without fee.  The maintainer reserves the right to
+          include your changes in the official version of Vim.  What the
+          maintainer will do with your changes and under what <a href="uganda.txt.html#license" class="d">license</a> they
+          will be distributed <a href="motion.txt.html#is" class="d">is</a> negotiable.  If there has been no negotiation
+          then this license, or <a href="insert.txt.html#a" class="d">a</a> later version, also applies to your changes.
+          The current maintainer <a href="motion.txt.html#is" class="d">is</a> Bram Moolenaar <span class="s">&lt;Bram@vim.org&gt;</span><a href="repeat.txt.html#." class="d">.</a>  If this
+          changes <a href="motion.txt.html#it" class="d">it</a> will be announced in appropriate places (most likely
+          vim.sf.net, www.vim.org and/or comp.editors).  When <a href="motion.txt.html#it" class="d">it</a> <a href="motion.txt.html#is" class="d">is</a> completely
+          impossible to contact the maintainer, the obligation to send him
+          your changes ceases.  Once the maintainer has confirmed that he has
+          received your changes they will not have to be sent again.
+       b) If you have received <a href="insert.txt.html#a" class="d">a</a> modified Vim that was distributed <a href="motion.txt.html#as" class="d">as</a>
+          mentioned under <a href="motion.txt.html#a%29" class="d">a)</a> you are allowed to further distribute <a href="motion.txt.html#it" class="d">it</a>
+          unmodified, <a href="motion.txt.html#as" class="d">as</a> mentioned <a href="motion.txt.html#at" class="d">at</a> I).  If you make additional changes the
+          text under <a href="motion.txt.html#a%29" class="d">a)</a> applies to those changes.
+       c) Provide all the changes, including source code, with every copy of
+          the modified Vim you distribute.  This may be done in the form of <a href="insert.txt.html#a" class="d">a</a>
+          context diff.  You can choose what <a href="uganda.txt.html#license" class="d">license</a> to use for new code you
+          add.  The changes and their <a href="uganda.txt.html#license" class="d">license</a> must not restrict others from
+          making their own changes to the official version of Vim.
+       d) When you have <a href="insert.txt.html#a" class="d">a</a> modified Vim which includes changes <a href="motion.txt.html#as" class="d">as</a> mentioned
+          under c), you can distribute <a href="motion.txt.html#it" class="d">it</a> without the source code for the
+          changes if the following three conditions are met:
+          <a href="motion.txt.html#-" class="d">-</a> The <a href="uganda.txt.html#license" class="d">license</a> that applies to the changes permits you to distribute
+            the changes to the Vim maintainer without fee or restriction, and
+            permits the Vim maintainer to include the changes in the official
+            version of Vim without fee or restriction.
+          <a href="motion.txt.html#-" class="d">-</a> You keep the changes for <a href="motion.txt.html#at" class="d">at</a> least three years after last
+            distributing the corresponding modified Vim.  When the maintainer
+            or someone who you distributed the modified Vim to asks you (in
+            any way) for the changes within this period, you must make them
+            available to him.
+          <a href="motion.txt.html#-" class="d">-</a> You clearly describe in the distribution how to contact you.  This
+            contact information must remain valid for <a href="motion.txt.html#at" class="d">at</a> least three years
+            after last distributing the corresponding modified Vim, or <a href="motion.txt.html#as" class="d">as</a> long
+            <a href="motion.txt.html#as" class="d">as</a> possible.
+       e) When the GNU General Public License (GPL) applies to the changes,
+          you can distribute the modified Vim under the GNU GPL version 2 or
+          any later version.
+    3) <a href="insert.txt.html#A" class="d">A</a> message must be added, <a href="motion.txt.html#at" class="d">at</a> least in the output of the ":version"
+       command and in the <a href="intro.txt.html#intro" class="d">intro</a> screen, such that the user of the modified Vim
+       <a href="motion.txt.html#is" class="d">is</a> able to see that <a href="motion.txt.html#it" class="d">it</a> was modified.  When distributing <a href="motion.txt.html#as" class="d">as</a> mentioned
+       under 2)e) adding the message <a href="motion.txt.html#is" class="d">is</a> only required for <a href="motion.txt.html#as" class="d">as</a> far <a href="motion.txt.html#as" class="d">as</a> this does
+       not conflict with the <a href="uganda.txt.html#license" class="d">license</a> used for the changes.
+    4) The contact information <a href="motion.txt.html#as" class="d">as</a> required under 2)a) and 2)d) must not be
+       removed or changed, except that the person himself can make
+       corrections.
+
+III) If you distribute <a href="insert.txt.html#a" class="d">a</a> modified version of Vim, you are encouraged to use
+     the Vim <a href="uganda.txt.html#license" class="d">license</a> for your changes and make them available to the
+     maintainer, including the source code.  The preferred way to do this <a href="motion.txt.html#is" class="d">is</a>
+     by e-mail or by uploading the files to <a href="insert.txt.html#a" class="d">a</a> server and e-mailing the URL.
+     If the number of changes <a href="motion.txt.html#is" class="d">is</a> small (e.g., <a href="insert.txt.html#a" class="d">a</a> modified Makefile) e-mailing <a href="insert.txt.html#a" class="d">a</a>
+     context diff will do.  The e-mail address to be used <a href="motion.txt.html#is" class="d">is</a>
+     <span class="s">&lt;maintainer@vim.org&gt;</span>
+
+IV)  It <a href="motion.txt.html#is" class="d">is</a> not allowed to remove this <a href="uganda.txt.html#license" class="d">license</a> from the distribution of the Vim
+     sources, parts of <a href="motion.txt.html#it" class="d">it</a> or from <a href="insert.txt.html#a" class="d">a</a> modified version.  You may use this
+     <a href="uganda.txt.html#license" class="d">license</a> for previous Vim releases instead of the <a href="uganda.txt.html#license" class="d">license</a> that they came
+     with, <a href="motion.txt.html#at" class="d">at</a> your option.
+
+<span class="h">=== end of license ===</span>
+
+<span class="n">Note:</span>
+
+<a href="motion.txt.html#-" class="d">-</a> If you are happy with Vim, please express that by reading the rest of this
+  file and consider helping needy children in Uganda.
+
+<a href="motion.txt.html#-" class="d">-</a> If you want to support further Vim development consider becoming <a href="insert.txt.html#a" class="d">a</a>
+  <span class="l">sponsor</span><a href="repeat.txt.html#." class="d">.</a>  The money goes to <a href="uganda.txt.html#Uganda" class="d">Uganda</a> anyway.
+
+<a href="motion.txt.html#-" class="d">-</a> According to Richard Stallman the Vim <a href="uganda.txt.html#license" class="d">license</a> <a href="motion.txt.html#is" class="d">is</a> GNU GPL compatible.
+  <a href="insert.txt.html#A" class="d">A</a> few minor changes have been made since he checked it, but that should not
+  make <a href="insert.txt.html#a" class="d">a</a> difference.
+
+<a href="motion.txt.html#-" class="d">-</a> If you link Vim with <a href="insert.txt.html#a" class="d">a</a> library that goes under the GNU GPL, this limits
+  further distribution to the GNU GPL.  Also when you didn't actually change
+  anything in Vim.
+
+<a href="motion.txt.html#-" class="d">-</a> Once <a href="insert.txt.html#a" class="d">a</a> change <a href="motion.txt.html#is" class="d">is</a> included that goes under the GNU GPL, this forces all
+  further changes to also be made under the GNU GPL or <a href="insert.txt.html#a" class="d">a</a> compatible license.
+
+<a href="motion.txt.html#-" class="d">-</a> If you distribute <a href="insert.txt.html#a" class="d">a</a> modified version of Vim, you can include your name and
+  contact information with the "--with-modified-by" configure argument or the
+  MODIFIED_BY define.
+
+<span class="h">==============================================================================</span>
+Kibaale Children's Centre                                               <a name="kcc" class="t">kcc</a>
+
+Kibaale Children's Centre (KCC) <a href="motion.txt.html#is" class="d">is</a> located in Kibaale, <a href="insert.txt.html#a" class="d">a</a> small town in the
+south of Uganda, near Tanzania, in East Africa.  The area <a href="motion.txt.html#is" class="d">is</a> known <a href="motion.txt.html#as" class="d">as</a> Rakai
+District.  The population <a href="motion.txt.html#is" class="d">is</a> mostly farmers.  Although people are poor, there
+<a href="motion.txt.html#is" class="d">is</a> enough food.  But this district <a href="motion.txt.html#is" class="d">is</a> suffering from AIDS more than any other
+part of the world.  Some say that <a href="motion.txt.html#it" class="d">it</a> started there.  Estimations are that 10
+to 30% of the Ugandans are infected with HIV.  Because parents die, there are
+many orphans.  In this district about 60,000 children have lost one or both
+parents, out of <a href="insert.txt.html#a" class="d">a</a> population of 350,000.  And this <a href="motion.txt.html#is" class="d">is</a> still continuing.
+
+The children need <a href="insert.txt.html#a" class="d">a</a> lot of help.  The KCC <a href="motion.txt.html#is" class="d">is</a> working hard to provide the needy
+with food, medical care and education.  Food and medical care to keep them
+healthy now, and education so that they can take care of themselves in the
+future.  KCC works on <a href="insert.txt.html#a" class="d">a</a> Christian base, but help <a href="motion.txt.html#is" class="d">is</a> given to children of any
+religion.
+
+The key to solving the problems in this area <a href="motion.txt.html#is" class="d">is</a> education.  This has been
+neglected in the past years with president Idi Amin and the following civil
+wars.  Now that the government <a href="motion.txt.html#is" class="d">is</a> stable again, the children and parents have
+to learn how to take care of themselves and how to avoid infections.  There <a href="motion.txt.html#is" class="d">is</a>
+also help for people who are ill and hungry, but the primary goal <a href="motion.txt.html#is" class="d">is</a> to
+prevent people from getting ill and to teach them how to grow healthy food.
+
+Most of the orphans are living in an extended family.  An uncle or older
+sister <a href="motion.txt.html#is" class="d">is</a> taking care of them.  Because these families are big and the income
+(if any) <a href="motion.txt.html#is" class="d">is</a> low, <a href="insert.txt.html#a" class="d">a</a> child <a href="motion.txt.html#is" class="d">is</a> lucky if <a href="motion.txt.html#it" class="d">it</a> gets healthy food.  Clothes, medical
+care and schooling <a href="motion.txt.html#is" class="d">is</a> beyond its reach.  To help these needy children, <a href="insert.txt.html#a" class="d">a</a>
+sponsorship program was <a href="change.txt.html#put" class="d">put</a> into place.  <a href="insert.txt.html#A" class="d">A</a> child can be financially adopted.
+For <a href="insert.txt.html#a" class="d">a</a> few dollars <a href="insert.txt.html#a" class="d">a</a> month KCC sees to <a href="motion.txt.html#it" class="d">it</a> that the child gets indispensable
+items, <a href="motion.txt.html#is" class="d">is</a> healthy, goes to school and KCC takes care of anything else that
+needs to be done for the child and the family that supports it.
+
+Besides helping the child directly, the environment where the child grows up
+needs to be improved.  KCC helps schools to improve their teaching methods.
+There <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> demonstration school <a href="motion.txt.html#at" class="d">at</a> the centre and teacher trainings are given.
+Health workers are being trained, hygiene education <a href="motion.txt.html#is" class="d">is</a> carried out and
+households are stimulated to build <a href="insert.txt.html#a" class="d">a</a> proper latrine.  <a href="insert.txt.html#I" class="d">I</a> helped setting up <a href="insert.txt.html#a" class="d">a</a>
+production site for cement slabs.  These are used to build <a href="insert.txt.html#a" class="d">a</a> good latrine.
+They are sold below cost price.
+
+There <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> small clinic <a href="motion.txt.html#at" class="d">at</a> the project, which provides children and their
+family with medical help.  When needed, transport to <a href="insert.txt.html#a" class="d">a</a> hospital <a href="motion.txt.html#is" class="d">is</a> offered.
+Immunization programs are carried out and help <a href="motion.txt.html#is" class="d">is</a> provided when an epidemic <a href="motion.txt.html#is" class="d">is</a>
+breaking out (measles and cholera have been <a href="insert.txt.html#a" class="d">a</a> problem).
+                                                        <a name="donate" class="t">donate</a>
+Summer 1994 to summer 1995 <a href="insert.txt.html#I" class="d">I</a> spent <a href="insert.txt.html#a" class="d">a</a> whole year <a href="motion.txt.html#at" class="d">at</a> the centre, working <a href="motion.txt.html#as" class="d">as</a> <a href="insert.txt.html#a" class="d">a</a>
+volunteer.  <a href="insert.txt.html#I" class="d">I</a> have helped to expand the centre and worked in the area of water
+and sanitation.  <a href="insert.txt.html#I" class="d">I</a> learned that the help that the KCC provides really helps.
+Now that I'm back in Holland, <a href="insert.txt.html#I" class="d">I</a> would like to continue supporting KCC.  To do
+this I'm raising funds and organizing the sponsorship program.  Please
+consider one of these possibilities:
+
+1.  Sponsor <a href="insert.txt.html#a" class="d">a</a> child in primary school: 17 euro <a href="insert.txt.html#a" class="d">a</a> month (or more).
+2.  Sponsor <a href="insert.txt.html#a" class="d">a</a> child in secondary school: 25 euro <a href="insert.txt.html#a" class="d">a</a> month (or more).
+3.  Sponsor the clinic: Any amount <a href="insert.txt.html#a" class="d">a</a> month or quarter
+4.  <a href="insert.txt.html#A" class="d">A</a> one-time donation
+
+Compared with other organizations that do child sponsorship the amounts are
+very low.  This <a href="motion.txt.html#is" class="d">is</a> because the money goes directly to the centre.  Less than
+5% <a href="motion.txt.html#is" class="d">is</a> used for administration.  This <a href="motion.txt.html#is" class="d">is</a> possible because this <a href="motion.txt.html#is" class="d">is</a> <a href="insert.txt.html#a" class="d">a</a> small
+organization that works with volunteers.  If you would like to sponsor <a href="insert.txt.html#a" class="d">a</a>
+child, you should have the intention to do this for <a href="motion.txt.html#at" class="d">at</a> least one year.
+
+How do you know that the money will be spent right?  First of all you have my
+personal guarantee <a href="motion.txt.html#as" class="d">as</a> the author of Vim.  <a href="insert.txt.html#I" class="d">I</a> trust the people that are working
+<a href="motion.txt.html#at" class="d">at</a> the centre, <a href="insert.txt.html#I" class="d">I</a> know them personally.  Further more, the centre <a href="motion.txt.html#is" class="d">is</a>
+co-sponsored and inspected by World Vision, Save the Children Fund and
+International Child Care Fund.  The centre <a href="motion.txt.html#is" class="d">is</a> visited about once <a href="insert.txt.html#a" class="d">a</a> year to
+check the progress (at our own cost).  <a href="insert.txt.html#I" class="d">I</a> have visited the centre myself in
+1996, 1998, 2000, 2001 and 2003.  The visit reports are on the <a href="uganda.txt.html#ICCF" class="d">ICCF</a> web site.
+
+If you have any further questions, send me e-mail: <span class="s">&lt;Bram@vim.org&gt;</span><a href="repeat.txt.html#." class="d">.</a>
+
+The address of the centre is:
+                        Kibaale Children's Centre
+                        p.o. box 1658
+                        Masaka, Uganda, East Africa
+
+Sending money:                                          <a name="iccf-donations" class="t">iccf-donations</a>
+
+Check the <a href="uganda.txt.html#ICCF" class="d">ICCF</a> web site for the latest information!  See <a href="uganda.txt.html#iccf" class="l">iccf</a> for the URL.
+
+
+USA:            The methods mentioned below can be used.  Alternatively, you
+                can send <a href="insert.txt.html#a" class="d">a</a> check to the Nehemiah Group Outreach Society
+                (NGOS).  This will reduce banking costs and you can get an IRS
+                tax receipt.  The NGOS forwards the funds directly to the
+                Kibaale project in Uganda.  Checks must be made payable to
+                NGOS but please note on the check "donation Kibaale"<a href="repeat.txt.html#." class="d">.</a>  Mail
+                checks to:
+                        NGOS
+                        P.O. Box 50862
+                        Indianapolis, IN 45250
+                Questions regarding the Nehemiah Group Outreach Society (NGOS)
+                should be directed to: Ross deMerchant, Executive Director <a href="motion.txt.html#-" class="d">-</a>
+                r.demerchant AT sbcglobal DOT net.
+                For sponsoring <a href="insert.txt.html#a" class="d">a</a> child contact KCF in Canada (see below) and
+                send the check to NGOS in Indianapolis.
+
+Canada:         Contact Kibaale Children's Fund (KCF) in Surrey, Canada.  They
+                take care of the Canadian sponsors for the children in
+                Kibaale.  KCF forwards 100% of the money to the project in
+                Uganda.  You can send them <a href="insert.txt.html#a" class="d">a</a> one time donation directly.
+                Please send me <a href="insert.txt.html#a" class="d">a</a> note so that <a href="insert.txt.html#I" class="d">I</a> know what has been donated
+                because of Vim.  Ask KCF for information about sponsorship.
+                        Kibaale Children's Fund c/o Pacific Academy
+                        10238-168 Street
+                        Surrey, B.C. V4N 1Z4
+                        Canada
+                        Phone: 604-581-5353
+                If you make <a href="insert.txt.html#a" class="d">a</a> donation to Kibaale Children's Fund (KCF) you
+                will receive <a href="insert.txt.html#a" class="d">a</a> tax receipt which can be submitted with your
+                tax return.
+
+Holland:        Transfer to the account of "Stichting <a href="uganda.txt.html#ICCF" class="d">ICCF</a> Holland" in Venlo.
+                This will allow for tax deduction if you live in Holland.
+                        Postbank, nr. 4548774
+
+Germany:        It <a href="motion.txt.html#is" class="d">is</a> possible to make donations that allow for <a href="insert.txt.html#a" class="d">a</a> tax return.
+                Check the <a href="uganda.txt.html#ICCF" class="d">ICCF</a> web site for the latest information:
+                        <a class="u" href="http://iccf-holland.org/germany.html">http://iccf-holland.org/germany.html</a>
+
+World:          Use <a href="insert.txt.html#a" class="d">a</a> postal money order.  That should be possible from any
+                country, mostly from the post office.  Use this name (which <a href="motion.txt.html#is" class="d">is</a>
+                in my passport): "Abraham Moolenaar"<a href="repeat.txt.html#." class="d">.</a>  Use Euro for the
+                currency if possible.
+
+Europe:         Use <a href="insert.txt.html#a" class="d">a</a> bank transfer if possible.  Your bank should have <a href="insert.txt.html#a" class="d">a</a> form
+                that you can use for this.  See "Others" below for the swift
+                code and IBAN number.
+                Any other method should work.  Ask for information about
+                sponsorship.
+
+Credit Card:    You can use PayPal to send money with <a href="insert.txt.html#a" class="d">a</a> Credit card.  This <a href="motion.txt.html#is" class="d">is</a>
+                the most widely used Internet based payment system.  It's
+                really simple to use.  Use this link to find more info:
+                    <a class="u" href="https://www.paypal.com/affil/pal=Bram%40iccf-holland.org">https://www.paypal.com/affil/pal=Bram%40iccf-holland.org</a>
+                The e-mail address for sending the money to is:
+                    Bram@iccf-holland.org
+                For amounts above 400 Euro ($500) sending <a href="insert.txt.html#a" class="d">a</a> check <a href="motion.txt.html#is" class="d">is</a>
+                preferred.
+
+Others:         Transfer to one of these accounts if possible:
+                    Postbank, account 4548774
+                                Swift code: INGB NL 2A
+                                IBAN: NL47 PSTB 0004 5487 74
+                        under the name "stichting <a href="uganda.txt.html#ICCF" class="d">ICCF</a> Holland"<a href="motion.txt.html#%2C" class="d">,</a> Venlo
+                    If that doesn't work:
+                    Rabobank Venlo, account 3765.05.117
+                                Swift code: RABO NL 2U
+                        under the name "Bram Moolenaar"<a href="motion.txt.html#%2C" class="d">,</a> Venlo
+                Otherwise, send <a href="insert.txt.html#a" class="d">a</a> check in euro or US dollars to the address
+                below.  Minimal amount: $70 (my bank does not accept smaller
+                amounts for foreign check, sorry)
+
+Address to send checks to:
+                        stichting <a href="uganda.txt.html#ICCF" class="d">ICCF</a> Holland
+                        Bram Moolenaar
+                        Molenstraat 2
+                        2161 HP Lisse
+                        The Netherlands
+
+This address <a href="motion.txt.html#is" class="d">is</a> expected to be valid for <a href="insert.txt.html#a" class="d">a</a> long time.  The address in Venlo
+will not be valid after June 2006.
+
+ vim:tw=78:ts=8:sw=8:noet:
+
+</pre>
+</div>
+<p> Quick links: <a href="help.txt.html">help overview</a> &middot; <a href="quickref.txt.html">quick reference</a> &middot; <a href="help.txt.html#reference_toc">reference manual toc</a> &middot; <a href="index.txt.html">command index</a></p>
+<p id="footer">These help files are maintained with thanks
+to Carlo Teubner for his vimhelp to html work.</p>
+
+</div>
+</div>
+</body></html>
