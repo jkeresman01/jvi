@@ -71,6 +71,8 @@ import com.raelity.jvi.ViCmdEntry.HistEntry;
 import com.raelity.jvi.core.*;
 import com.raelity.jvi.manager.*;
 
+import static com.raelity.text.TextUtil.sf;
+
 /**
  * This class presents a editable combo box UI for picking up command entry
  * data. A mode, usually a single character like "?" or ":", can be
@@ -82,6 +84,7 @@ import com.raelity.jvi.manager.*;
  * through the focus manager. But ultimately need to subclass the
  * editor component to handle it.
  */
+@SuppressWarnings("serial")
 public final class CommandLine extends JPanel
 {
     private static final boolean flip = true;
@@ -98,6 +101,7 @@ public final class CommandLine extends JPanel
     private String findHistoryPrefix = "";
     private boolean inUpDown = false;
     private boolean afterComboEnd = false;
+    private boolean waitingToFire = false; // MORE HACKING
     private int dot;
     private int mark;
     private static final String ACT_FINISH = "vi-command-finish";
@@ -187,13 +191,15 @@ public final class CommandLine extends JPanel
         combo.setFont(srcFont);
     }
 
-
     /**
      *  This is used to initialize the text of the combo box, needed so that
      *  characters entered before the combo box gets focus are not lost.
      */
     public void init( String s )
     {
+        waitingToFire = true;
+        if(combo.getItemCount() > 0)
+            combo.setSelectedIndex(flipComboIndex(0));
         dot = mark = 0;
         // set combo index to the end ????????? should already be there
         setFindHistoryPrefix(s);
@@ -270,25 +276,6 @@ public final class CommandLine extends JPanel
         }
         this.setBorder(border1);
     }
-
-
-    /**
-     *  This is used when the combo box is going to be displayed.
-     *  A blank line is put at the head of the list. This blank is
-     *  automatically removed when the user completes the action.
-     */
-    public void clear()
-    {
-        if ( G.p_hi() == 0 ) {
-            getTextComponent().setText("");
-            return;
-        }
-        flipPushComboItem(nullEntry);
-
-        // ??? prevent re-execute last command on <CR>
-        getTextComponent().setText("");
-    }
-
 
     public void takeFocus( boolean flag )
     {
@@ -380,7 +367,7 @@ public final class CommandLine extends JPanel
     {
         List<String> l = new ArrayList<>(combo.getItemCount());
         for(int i = 0; i < combo.getItemCount(); i++) {
-            l.add((String) combo.getItemAt(flipComboIndex(i)).hisstr);
+            l.add(combo.getItemAt(flipComboIndex(i)).hisstr);
         }
         return l;
     }
@@ -394,8 +381,7 @@ public final class CommandLine extends JPanel
         }
         return l;
     }
-
-    HistEntry nullEntry = new HistEntry("");
+    
     int histEntryIndex = 0;
 
     /**
@@ -407,12 +393,11 @@ public final class CommandLine extends JPanel
         if ( G.p_hi() == 0 ) {
             return;
         }
-        // remove the empty-blank element
-        combo.removeItem(nullEntry);
-        // if the empty-blank string was selected we're done
+        // if the empty string was selected we're done
         if(command.isEmpty()) {
             return;
         }
+        // save the command in the history
         HistEntry he = new HistEntry(command, ++histEntryIndex);
         combo.removeItem(he);
         flipPushComboItem(he);
@@ -556,7 +541,15 @@ public final class CommandLine extends JPanel
      */
     protected void fireCommandLineActionPerformed( ActionEvent e )
     {
+        // only run this once, sometimes get event from combo and keys
+        if(!waitingToFire)
+            return;
+        waitingToFire = false;
         String command = getTextComponent().getText();
+
+        // Maintain LRU history
+        makeTop(command);
+        combo.hidePopup();
 
         // Guaranteed to return a non-null array
         Object[] listeners = listenerList.getListenerList();
@@ -568,11 +561,6 @@ public final class CommandLine extends JPanel
                 ((ActionListener)listeners[i+1]).actionPerformed(e);
             }
         }
-
-        // Maintain the LRU history, do this after the notifying completion
-        // to avoid document events relating to the following actions
-        makeTop(command);
-        combo.hidePopup();
     }
 
 
@@ -630,9 +618,9 @@ public final class CommandLine extends JPanel
                 {
                     if(!inUpDown)
                         setFindHistoryPrefix(ed.getText());
-                    if(dbgKeys.getBoolean(Level.FINE))
-                        dbgKeys.printf("insert: inUpDown %b, text '%s'\n",
-                                inUpDown, ed.getText());
+                    dbgKeys.printf(Level.FINER, ()->sf(
+                                   "insert: inUpDown %b, text '%s'\n",
+                                   inUpDown, ed.getText()));
                 }
 
                 @Override
@@ -640,9 +628,9 @@ public final class CommandLine extends JPanel
                 {
                     if(!inUpDown)
                         setFindHistoryPrefix(ed.getText());
-                    if(dbgKeys.getBoolean(Level.FINE))
-                        dbgKeys.printf("remove: inUpDown %b, text '%s'\n",
-                                inUpDown, ed.getText());
+                    dbgKeys.printf(Level.FINER, ()->sf(
+                                   "remove: inUpDown %b, text '%s'\n",
+                                   inUpDown, ed.getText()));
                 }
 
                 @Override
@@ -671,6 +659,9 @@ public final class CommandLine extends JPanel
                 && (e.getKeyCode() == KeyEvent.VK_UP
                     || e.getKeyCode() == KeyEvent.VK_DOWN)) {
             try {
+                dbgKeys.printf(Level.FINE, ()->sf(
+                        "processKeyEvent idx %d, find %s\n",
+                        combo.getSelectedIndex(), findHistoryPrefix));
                 inUpDown = true;
                 int dir = e.getKeyCode() == KeyEvent.VK_UP ? -1 : +1;
                 boolean toNewer = flip ? dir > 0 : dir < 0;
@@ -703,7 +694,7 @@ public final class CommandLine extends JPanel
                 }
                 afterComboEnd = false;
                 while(curIdx >= 0 && curIdx < combo.getItemCount()) {
-                    if(((HistEntry)combo.getItemAt(curIdx)).hisstr
+                    if(combo.getItemAt(curIdx).hisstr
                             .startsWith(findHistoryPrefix)) {
                         combo.setSelectedIndex(curIdx);
                         return;
@@ -783,6 +774,23 @@ public final class CommandLine extends JPanel
         super.setActionCommand(command);
         myCommand = command;
     }
+    }
+
+    String cstat()
+    {
+        return cstat("");
+    }
+    String cstat(String tag)
+    {
+        int i = combo.getSelectedIndex();
+        int n = combo.getItemCount();
+        String item = i >= 0 && i < n ? combo.getItemAt(i).hisstr : "OOB";
+        String last = n > 0 ? combo.getItemAt(combo.getItemCount()-1).hisstr : "---";
+
+        String s = sf("%s: n %d, i %d, item '%s', last '%s'\n",
+                      tag, n, i, item, last);
+        System.err.printf(s);
+        return s;
     }
 
 } // end com.raelity.jvi.swing.CommandLine

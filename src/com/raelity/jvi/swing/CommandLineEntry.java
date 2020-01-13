@@ -286,8 +286,6 @@ public abstract class CommandLineEntry implements ViCmdEntry
             fireEvent(e);
         } catch (Exception ex) {
             CommandLine.LOG.log(Level.SEVERE, null, ex);
-        } finally {
-            commandLine.clear();
         }
     }
 
