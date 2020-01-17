@@ -58,6 +58,17 @@ abstract public class SwingBuffer extends Buffer
         super(tv);
         doc = ((JTextComponent)tv.getEditor()).getDocument();
         startDocumentEvents();
+
+        // An empty buffer gets a
+        // com.raelity.jvi.ViMark$MarkException: Uninitialized Mark
+        // after: vp
+        // because b_op_ pointers never get set.
+        // They are typically set in the yank/delete that's part
+        // of the setup for the 'p' put command in 'vp'.
+        // There's probably a bug somewhere,
+        // but instead of fixing the bug...
+        b_op_start.setMark(createFPOS(0));
+        b_op_end.setMark(createFPOS(0));
     }
 
     @Override
