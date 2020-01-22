@@ -36,6 +36,7 @@ below.
 			tag stack.
 			{ident} can be a regexp pattern, see |tag-regexp|.
 
+							*CTRL-]*
 CTRL-]			Same as ":tag {ident}", where {ident} is the keyword
 			under or after cursor.  {Vi: identifier after the
 			cursor}

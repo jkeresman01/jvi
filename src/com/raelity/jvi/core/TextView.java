@@ -20,6 +20,7 @@
 package com.raelity.jvi.core;
 
 import com.raelity.jvi.ViAppView;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.LinkedList;
@@ -34,6 +35,7 @@ import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.options.*;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 
@@ -204,9 +206,9 @@ public abstract class TextView implements ViTextView
     }
 
     @Override
-    public void viOptionSet(ViTextView tv, String name)
+    public void viOptionSet(ViTextView tv, VimOption vopt)
     {
-        if("w_p_scr".equals(name)) {
+        if("w_p_scr".equals(vopt.getVarName())) {
             if(w_p_scr == 0)
                 viewSizeChange(); // set to half window size
         }

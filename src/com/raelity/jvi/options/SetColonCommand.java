@@ -233,7 +233,11 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
             Msg.smsg(formatDisplayValue(vopt, voptState));
         } else {
             try {
+                // first try global validation
                 voptState.opt.validate(newValue);
+                // and then local validation
+                voptState.bag.viOptionValidate(G.curwin(), vopt, newValue);
+
                 // HACK. Put this here, because we want to validate the string
                 if(voptState.type == EnumSet.class) // HACK
                     newValue = ((EnumSetOption)voptState.opt)
@@ -253,7 +257,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
             voptState.f.set(voptState.bag, newValue);
             // NEEDSWORK: call some method if a global is set?
             if (vopt.isLocal()) {
-                voptState.bag.viOptionSet(G.curwin(), vopt.varName);
+                voptState.bag.viOptionSet(G.curwin(), vopt);
             } else if(vopt.isGlobal()) {
                 OptUtil.firePropertyChangeSET(vopt.getOptName(),
                                               oldValue, newValue);

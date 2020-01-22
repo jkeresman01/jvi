@@ -24,6 +24,7 @@ import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.lib.CharTab;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.options.*;
 import com.raelity.text.RegExp;
 import com.raelity.text.RegExpJava;
 import com.raelity.text.TextUtil.MySegment;
@@ -113,8 +114,8 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     }
 
     @Override
-    public void viOptionSet(ViTextView tv, String name) {
-        if("b_p_isk".equals(name)) {
+    public void viOptionSet(ViTextView tv, VimOption vopt) {
+        if("b_p_isk".equals(vopt.getVarName())) {
             b_chartab.init(b_p_isk);
         }
     }

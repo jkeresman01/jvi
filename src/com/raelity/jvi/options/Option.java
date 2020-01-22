@@ -29,6 +29,8 @@ import java.util.prefs.Preferences;
 
 import com.raelity.jvi.core.Options.Category;
 
+import static com.raelity.jvi.manager.ViManager.getFactory;
+
 public abstract class Option<T> {
     final Class<T> optionType;
     final protected String name;
@@ -195,6 +197,7 @@ public abstract class Option<T> {
                                           this.getValue(), o));
         }
         validator.validate(val);
+        getFactory().validate(name, val);
     }
 
     /** default validator ensures that val greaterthan or equal to zero. */

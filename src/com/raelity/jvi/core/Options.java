@@ -51,7 +51,17 @@ import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Constants.FDO.*;
 import static com.raelity.jvi.core.lib.Constants.NF.*;
 import static com.raelity.text.TextUtil.sf;
+
 import javax.swing.event.ChangeListener;
+
+import static com.raelity.jvi.options.OptUtil.createBooleanOption;
+import static com.raelity.jvi.options.OptUtil.createColorOption;
+import static com.raelity.jvi.options.OptUtil.createDebugOption;
+import static com.raelity.jvi.options.OptUtil.createEnumStringOption;
+import static com.raelity.jvi.options.OptUtil.createIntegerOption;
+import static com.raelity.jvi.options.OptUtil.createStringOption;
+import static com.raelity.jvi.options.OptUtil.setupOptionDesc;
+import static com.raelity.jvi.options.OptUtil.setExpertHidden;
 
 /**
  * Option handling from external sources.
@@ -125,6 +135,8 @@ public final class Options {
    */
   public enum Category { PLATFORM, GENERAL, WINDOW, MODIFY, SEARCH, CURSOR_WRAP,
                          PROCESS, DEBUG, NONE }
+
+  public static final String perProjectSupport = "viPerProjectSupport";
   
   public static final String commandEntryFrame = "viCommandEntryFrameOption";
   public static final String redoTrack = "viRedoTrack";
@@ -280,19 +292,19 @@ public final class Options {
 
     // Since this is used to debug options, put it first
 
-    G.dbgOptions = OptUtil.createDebugOption(dbgOptions);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgOptions, "debug options set", "");
+    G.dbgOptions = createDebugOption(dbgOptions);
+    setupOptionDesc(Category.DEBUG, dbgOptions, "debug options set", "");
     
     // Some options that do not appear in the dialog property sheets.
 
-    OptUtil.createIntegerOption(scroll, 0);
-    OptUtil.setupOptionDesc(null, scroll, "'scroll' 'scr'", "");
+    createIntegerOption(scroll, 0);
+    setupOptionDesc(null, scroll, "'scroll' 'scr'", "");
 
     //
     // Put this in GENERAL, but mark it hidden.
     // It is handled very specially.
     //
-    OptUtil.createStringOption(mapCommands,
+    createStringOption(mapCommands,
               ""
             + "\" These two mappings, which apply to PLATFORM-SELECT only,"
             + "\n\" get 'y' and 'p' to work with the mouse selection."
@@ -322,7 +334,7 @@ public final class Options {
                 }
               }
             });
-    OptUtil.setupOptionDesc(Category.GENERAL, mapCommands, "Map Commands",
+    setupOptionDesc(Category.GENERAL, mapCommands, "Map Commands",
             "map-cmd {lhs} {rhs}"
             + "\n[nvop]map, [nvop]noremap and [nvop]unmap commands supported"
             + " (only normal mode mappings)."
@@ -346,56 +358,56 @@ public final class Options {
 
     // debug options first
 
-    G.dbgEditorActivation = OptUtil.createDebugOption(dbgEditorActivation);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgEditorActivation, "debug activation",
+    G.dbgEditorActivation = createDebugOption(dbgEditorActivation);
+    setupOptionDesc(Category.DEBUG, dbgEditorActivation, "debug activation",
                "Output info about editor switching between files/windows");
 
-    kd = OptUtil.createDebugOption(dbgKeyStrokes);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgKeyStrokes, "debug KeyStrokes",
+    kd = createDebugOption(dbgKeyStrokes);
+    setupOptionDesc(Category.DEBUG, dbgKeyStrokes, "debug KeyStrokes",
                "Output info for each keystroke");
 
-    G.dbgRedo = OptUtil.createDebugOption(dbgRedo);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgRedo, "debug redo buffer",
+    G.dbgRedo = createDebugOption(dbgRedo);
+    setupOptionDesc(Category.DEBUG, dbgRedo, "debug redo buffer",
                "Output info on magic/tracking changes to redo buffer");
 
-    OptUtil.createDebugOption(dbgCache);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgCache, "debug cache",
+    createDebugOption(dbgCache);
+    setupOptionDesc(Category.DEBUG, dbgCache, "debug cache",
                "Output info on text/doc cache");
 
-    OptUtil.createDebugOption(dbgBang);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgBang, "debug \"!\" cmds",
+    createDebugOption(dbgBang);
+    setupOptionDesc(Category.DEBUG, dbgBang, "debug \"!\" cmds",
                "Output info about external processes");
 
-    OptUtil.createDebugOption(dbgBangData);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgBangData, "debug \"!\" cmds data",
+    createDebugOption(dbgBangData);
+    setupOptionDesc(Category.DEBUG, dbgBangData, "debug \"!\" cmds data",
                "Output data tranfers external processes");
 
-    OptUtil.createDebugOption(dbgCompletion);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgCompletion, "debug Completion",
+    createDebugOption(dbgCompletion);
+    setupOptionDesc(Category.DEBUG, dbgCompletion, "debug Completion",
                "Output info on completion, eg FileName.");
 
-    G.dbgMouse = OptUtil.createDebugOption(dbgMouse);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgMouse, "debug mouse events",
+    G.dbgMouse = createDebugOption(dbgMouse);
+    setupOptionDesc(Category.DEBUG, dbgMouse, "debug mouse events",
                "Output info about mouse events");
 
-    G.dbgCoordSkip = OptUtil.createDebugOption(dbgCoordSkip);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgCoordSkip,
+    G.dbgCoordSkip = createDebugOption(dbgCoordSkip);
+    setupOptionDesc(Category.DEBUG, dbgCoordSkip,
                             "debug coordinate skip", "");
 
-    G.dbgUndo = OptUtil.createDebugOption(dbgUndo);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgUndo, "debug undo begin/end", "");
+    G.dbgUndo = createDebugOption(dbgUndo);
+    setupOptionDesc(Category.DEBUG, dbgUndo, "debug undo begin/end", "");
 
-    G.dbgSearch = OptUtil.createDebugOption(dbgSearch);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgSearch, "debug search", "");
+    G.dbgSearch = createDebugOption(dbgSearch);
+    setupOptionDesc(Category.DEBUG, dbgSearch, "debug search", "");
 
-    G.dbgWindowTreeBuilder = OptUtil.createDebugOption(dbgWindowTreeBuilder);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgWindowTreeBuilder, "debug window tree builder", "");
+    G.dbgWindowTreeBuilder = createDebugOption(dbgWindowTreeBuilder);
+    setupOptionDesc(Category.DEBUG, dbgWindowTreeBuilder, "debug window tree builder", "");
 
-    G.dbgPrefChangeMonitor = OptUtil.createDebugOption(dbgPrefChangeMonitor);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgPrefChangeMonitor, "debug pref change monitor", "");
+    G.dbgPrefChangeMonitor = createDebugOption(dbgPrefChangeMonitor);
+    setupOptionDesc(Category.DEBUG, dbgPrefChangeMonitor, "debug pref change monitor", "");
 
-    G.dbgFonts = OptUtil.createDebugOption(dbgFonts);
-    OptUtil.setupOptionDesc(Category.DEBUG, dbgFonts, "debug font issues", "");
+    G.dbgFonts = createDebugOption(dbgFonts);
+    setupOptionDesc(Category.DEBUG, dbgFonts, "debug font issues", "");
     
     /////////////////////////////////////////////////////////////////////
     //
@@ -406,55 +418,69 @@ public final class Options {
     
     // platformList.add("jViVersion"); // hard coded in OptUtil.init
 
-    OptUtil.createBooleanOption(redoTrack, true);
-    OptUtil.setupOptionDesc(Category.PLATFORM, redoTrack, "\".\" magic redo tracking",
+    createBooleanOption(perProjectSupport, true);
+    setupOptionDesc(Category.PLATFORM, perProjectSupport,
+                    "Support \"Project specific options\"",
+                    "In NetBeans' project properties, under \"Formatting\","
+                    + " there is a \"Use project specific options\""
+                    + " radio button."
+                    + " When this jVi option is enabled and"
+                    + " \"Use project specific options\" is enabled,"
+                    + " some of the per project"
+                    + " settings override the jVi settings;"
+                    + " these are 'expandtab', 'shiftwidth'"
+                    + " and 'tabstop'");
+    setExpertHidden(perProjectSupport, true, false);
+
+    createBooleanOption(redoTrack, true);
+    setupOptionDesc(Category.PLATFORM, redoTrack, "\".\" magic redo tracking",
                     "Track magic document changes during input"
                     + " mode for the \".\" commnad. These"
                     + " changes are often the result of IDE code completion");
 
-    OptUtil.createBooleanOption(pcmarkTrack, true);
-    OptUtil.setupOptionDesc(Category.PLATFORM, pcmarkTrack,
+    createBooleanOption(pcmarkTrack, true);
+    setupOptionDesc(Category.PLATFORM, pcmarkTrack,
                     "\"``\" magic pcmark tracking", "Track magic cursor "
                     + " movments for the \"``\" command. These movement are"
                     + " often the result of IDE actions invoked external"
                     + " to jVi.");
 
-    OptUtil.createColorOption(searchColor, new Color(0xffb442), false); //a light orange
-    OptUtil.setupOptionDesc(Category.PLATFORM, searchColor, "'hl-search' color",
+    createColorOption(searchColor, new Color(0xffb442), false); //a light orange
+    setupOptionDesc(Category.PLATFORM, searchColor, "'hl-search' color",
             "The color used for search highlight.");
 
     //createColorOption(searchFgColor, new Color(0x000000)); // black
-    OptUtil.createColorOption(searchFgColor, new Color(0x000000), true);
-    OptUtil.setupOptionDesc(Category.PLATFORM, searchFgColor, "'hl-search' foreground color",
+    createColorOption(searchFgColor, new Color(0x000000), true);
+    setupOptionDesc(Category.PLATFORM, searchFgColor, "'hl-search' foreground color",
             "The color used for search highlight foreground."
                     + " If 'null' then use editor's foreground color");
     setExpertHidden(searchFgColor, false, false);
     
-    OptUtil.createColorOption(selectColor, new Color(0xffe588), false); //a light orange
-    OptUtil.setupOptionDesc(Category.PLATFORM, selectColor, "'hl-visual' color",
+    createColorOption(selectColor, new Color(0xffe588), false); //a light orange
+    setupOptionDesc(Category.PLATFORM, selectColor, "'hl-visual' color",
             "The color used for a visual mode selection.");
 
     //createColorOption(selectFgColor, new Color(0x000000)); // black
-    OptUtil.createColorOption(selectFgColor, null, true); // default is no color
-    OptUtil.setupOptionDesc(Category.PLATFORM, selectFgColor, "'hl-visual' foreground color",
+    createColorOption(selectFgColor, null, true); // default is no color
+    setupOptionDesc(Category.PLATFORM, selectFgColor, "'hl-visual' foreground color",
             "The color used for a visual mode selection foreground."
                     + " If 'null' then use editor's foreground color");
     setExpertHidden(selectFgColor, false, false);
 
-    OptUtil.createColorOption(roCursorColor, Color.red, true);
-    OptUtil.setupOptionDesc(Category.PLATFORM, roCursorColor, "'rocursorcolor' 'rocc'",
+    createColorOption(roCursorColor, Color.red, true);
+    setupOptionDesc(Category.PLATFORM, roCursorColor, "'rocursorcolor' 'rocc'",
             "The cursor color in a read only editor."
                     + " If 'null' then use editor's default cursor color");
     
-    OptUtil.createBooleanOption(hideVersionOption, false);
-    OptUtil.setupOptionDesc(Category.PLATFORM, hideVersionOption, "hide version",
+    createBooleanOption(hideVersionOption, false);
+    setupOptionDesc(Category.PLATFORM, hideVersionOption, "hide version",
                     "When true, display of initial version information"
                     + " does not bring up output window.");
     setExpertHidden(hideVersionOption, true, false);
     
-    OptUtil.createEnumStringOption(commandEntryFrame , CEF_APP_MODAL,
+    createEnumStringOption(commandEntryFrame , CEF_APP_MODAL,
             new String[] {CEF_APP_MODAL, CEF_DOC_MODAL, CEF_GLASS_PANE});
-    OptUtil.setupOptionDesc(Category.PLATFORM, commandEntryFrame,
+    setupOptionDesc(Category.PLATFORM, commandEntryFrame,
             "command line modality",
             "Modality for command/search entry windows.\n"
             + "APPLICATION MODAL is recommended.\n"
@@ -464,8 +490,8 @@ public final class Options {
             + " uses a non modal command line on a glass pane.");
     setExpertHidden(commandEntryFrame, true, false);
     
-    OptUtil.createBooleanOption(autoPopupFN, true);
-    OptUtil.setupOptionDesc(Category.PLATFORM, autoPopupFN,
+    createBooleanOption(autoPopupFN, true);
+    setupOptionDesc(Category.PLATFORM, autoPopupFN,
                             "\":e#\" Completion Auto Popup",
                 "When doing \":\" command line entry, if \"e#\" is"
                 + " entered then automatically popup a file"
@@ -474,8 +500,8 @@ public final class Options {
                 + " key sequence, to pop up the completion window."
     );
     
-    OptUtil.createBooleanOption(autoPopupCcName, true);
-    OptUtil.setupOptionDesc(Category.PLATFORM, autoPopupCcName,
+    createBooleanOption(autoPopupCcName, true);
+    setupOptionDesc(Category.PLATFORM, autoPopupCcName,
                             "\":\" Command Completion Auto Popup",
                 "After doing \":\" for command line entry,"
                 + " automatically popup command"
@@ -485,15 +511,15 @@ public final class Options {
     );
     setExpertHidden(autoPopupCcName, false, false);
 
-    OptUtil.createBooleanOption(coordSkip, true);
-    OptUtil.setupOptionDesc(Category.PLATFORM, coordSkip, "Code Folding Compatible",
+    createBooleanOption(coordSkip, true);
+    setupOptionDesc(Category.PLATFORM, coordSkip, "Code Folding Compatible",
             "When false revert some navigation algorithms, e.g. ^F,"
             + " to pre code folding behavior. A just in case option;"
             + " if needed, please file a bug report.");
     setExpertHidden(coordSkip, true, false);
 
-    OptUtil.createBooleanOption(platformPreferences, false);
-    OptUtil.setupOptionDesc(Category.PLATFORM, platformPreferences,
+    createBooleanOption(platformPreferences, false);
+    setupOptionDesc(Category.PLATFORM, platformPreferences,
                     "Store init (\"vimrc\") with Platform",
                     "Store user preferences/options in platform location."
                     + " Change occurs after next application startup."
@@ -503,8 +529,8 @@ public final class Options {
                     + " are not propogated to the other.");
     setExpertHidden(platformPreferences, true, true);
 
-    OptUtil.createBooleanOption(platformTab, false);
-    OptUtil.setupOptionDesc(Category.PLATFORM, platformTab,
+    createBooleanOption(platformTab, false);
+    setupOptionDesc(Category.PLATFORM, platformTab,
             "Use the platform's TAB handling",
             "When false, jVi processes the TAB character according"
             + " to the expandtab and softtabstop options. Otherwise"
@@ -513,9 +539,9 @@ public final class Options {
             + " in the jVi tab handling.");
     setExpertHidden(platformTab, true, false);
 
-    OptUtil.createEnumStringOption(magicRedoAlgorithm, "anal",
+    createEnumStringOption(magicRedoAlgorithm, "anal",
             new String[] {"anal", "guard"});
-    OptUtil.setupOptionDesc(Category.PLATFORM,
+    setupOptionDesc(Category.PLATFORM,
                             magicRedoAlgorithm, "magic redo algorithm",
             "Which algorithm to use to capture code completion"
             + " changes for use in a subsequent '.' (redo) command."
@@ -531,21 +557,21 @@ public final class Options {
             + " line cases better; simpler algorithm.");
     setExpertHidden(magicRedoAlgorithm, true, false);
 
-    OptUtil.createIntegerOption(caretBlinkRate, 300);
-    OptUtil.setupOptionDesc(Category.PLATFORM,
+    createIntegerOption(caretBlinkRate, 300);
+    setupOptionDesc(Category.PLATFORM,
                             caretBlinkRate, "caret blink rate",
             "This determines if and how fast the caret blinks."
             + " If this is zero the caret will not blink");
 
-    OptUtil.createBooleanOption(disableFontError, false);
-    OptUtil.setupOptionDesc(Category.PLATFORM,
+    createBooleanOption(disableFontError, false);
+    setupOptionDesc(Category.PLATFORM,
                             disableFontError, "Font Check disable Problem Dialog",
             "If a font size problem is detected, don't bring up a dialog."
             + " No matter how this is set, the error is reported in"
             + " the output window");
 
-    OptUtil.createBooleanOption(disableFontCheckSpecial, true);
-    OptUtil.setupOptionDesc(Category.PLATFORM,
+    createBooleanOption(disableFontCheckSpecial, true);
+    setupOptionDesc(Category.PLATFORM,
                             disableFontCheckSpecial,
                             "Font Check ignore special chars",
             "By default all characters are used to determine font width."
@@ -554,8 +580,8 @@ public final class Options {
             + " Use this option to ignore the special chars when checking"
             + "for font size problems.");
 
-    OptUtil.createBooleanOption(cursorXorBug, false);
-    OptUtil.setupOptionDesc(Category.PLATFORM,
+    createBooleanOption(cursorXorBug, false);
+    setupOptionDesc(Category.PLATFORM,
                             cursorXorBug,
                             "Mac Retina Cursor Xor Bug",
             "By default jVi uses graphics xor when drawing the cursor."
@@ -570,7 +596,7 @@ public final class Options {
     //
     //
 
-    OptUtil.createIntegerOption(history, 50, new Validator<Integer>() {
+    createIntegerOption(history, 50, new Validator<Integer>() {
               @Override
               public void validate(Integer val) throws PropertyVetoException {
                   if(val < 0 || val > 1000) {
@@ -579,15 +605,15 @@ public final class Options {
                   }
               }
             });
-    OptUtil.setupOptionDesc(Category.GENERAL, history,
+    setupOptionDesc(Category.GENERAL, history,
                             "'history' 'hi'",
             "A history of ':' commands, and a history of previous search"
           + " patterns is remembered.  This option decides how many entries"
           + " may be stored in each of these histories (see |cmdline-editing|)."
           + "\nThe maximum value is 1000.");
 
-    OptUtil.createIntegerOption(scrollOff, 0);
-    OptUtil.setupOptionDesc(Category.GENERAL, scrollOff, "'scrolloff' 'so'",
+    createIntegerOption(scrollOff, 0);
+    setupOptionDesc(Category.GENERAL, scrollOff, "'scrolloff' 'so'",
            "visible context around cursor (scrolloff)"
             + "	Minimal number of screen lines to keep above and below the"
             + " cursor. This will make some context visible around where you"
@@ -595,8 +621,8 @@ public final class Options {
             + " cursor line will always be in the middle of the window"
             + " (except at the start or end of the file)");
 
-    OptUtil.createIntegerOption(sideScroll, 0);
-    OptUtil.setupOptionDesc(Category.GENERAL, sideScroll, "'sidescroll' 'ss'",
+    createIntegerOption(sideScroll, 0);
+    setupOptionDesc(Category.GENERAL, sideScroll, "'sidescroll' 'ss'",
             "The minimal number of columns to scroll horizontally.  Used"
             + "only when the 'wrap' option is off and the cursor is moved"
             + "off of the screen. When it is zero the cursor will be put"
@@ -604,54 +630,54 @@ public final class Options {
             + "Not used for \"zh\" and \"zl\" commands.");
     setExpertHidden(sideScroll, false, true);
 
-    OptUtil.createIntegerOption(sideScrollOff, 0);
-    OptUtil.setupOptionDesc(Category.GENERAL, sideScrollOff, "'sidescrolloff' 'siso'",
+    createIntegerOption(sideScrollOff, 0);
+    setupOptionDesc(Category.GENERAL, sideScrollOff, "'sidescrolloff' 'siso'",
             "The minimal number of screen columns to keep to the left and"
             + "to the right of the cursor if 'nowrap' is set.");
     setExpertHidden(sideScrollOff, false, true);
     
-    OptUtil.createBooleanOption(showMode, true);
-    OptUtil.setupOptionDesc(Category.GENERAL, showMode, "'showmode' 'smd'",
+    createBooleanOption(showMode, true);
+    setupOptionDesc(Category.GENERAL, showMode, "'showmode' 'smd'",
             "If in Insert or Replace mode display that information.");
     
-    OptUtil.createBooleanOption(showCommand, true);
-    OptUtil.setupOptionDesc(Category.GENERAL, showCommand, "'showcmd' 'sc'",
+    createBooleanOption(showCommand, true);
+    setupOptionDesc(Category.GENERAL, showCommand, "'showcmd' 'sc'",
             "Show (partial) command in status line.");
 
-    OptUtil.createIntegerOption(report, 2);
-    OptUtil.setupOptionDesc(Category.GENERAL, report, "'report'",
+    createIntegerOption(report, 2);
+    setupOptionDesc(Category.GENERAL, report, "'report'",
             "Threshold for reporting number of lines changed.  When the"
             + " number of changed lines is more than 'report' a message will"
             + " be given for most \":\" commands.  If you want it always, set"
             + " 'report' to 0.  For the \":substitute\" command the number of"
             + " substitutions is used instead of the number of lines.");
     
-    OptUtil.createBooleanOption(modeline, true);
-    OptUtil.setupOptionDesc(Category.GENERAL, modeline, "'modeline' 'ml'",
+    createBooleanOption(modeline, true);
+    setupOptionDesc(Category.GENERAL, modeline, "'modeline' 'ml'",
             "Enable/disable modelines option."
             + "\n[text]{white}{vi:|vim:|ex:}[white]{options}"
             + "\n\u00a0\u00a0\u00a0\u00a0example: vi:noai:sw=3 ts=6"
             + "\n[text]{white}{vi:|vim:|ex:}[white]se[t] {options}:[text]"
             + "\n\u00a0\u00a0\u00a0\u00a0example: /* vim: set ai tw=75: */");
     
-    OptUtil.createIntegerOption(modelines, 5);
-    OptUtil.setupOptionDesc(Category.GENERAL, modelines, "'modelines' 'mls'",
+    createIntegerOption(modelines, 5);
+    setupOptionDesc(Category.GENERAL, modelines, "'modelines' 'mls'",
 	    " If 'modeline' is on 'modelines' gives the number of lines"
             + " that is checked for set commands.  If 'modeline' is off"
             + " or 'modelines' is zero no lines are checked.");
 
-    OptUtil.createBooleanOption(unnamedClipboard, false);
-    OptUtil.setupOptionDesc(Category.GENERAL, unnamedClipboard,
+    createBooleanOption(unnamedClipboard, false);
+    setupOptionDesc(Category.GENERAL, unnamedClipboard,
                "'clipboard' 'cb' (unnamed)",
                "use clipboard for unamed yank, delete and put");
     setExpertHidden(unnamedClipboard, true, false);
 
-    OptUtil.createBooleanOption(notStartOfLine, false);
-    OptUtil.setupOptionDesc(Category.GENERAL, notStartOfLine, "(not)'startofline' (not)'sol'",
+    createBooleanOption(notStartOfLine, false);
+    setupOptionDesc(Category.GENERAL, notStartOfLine, "(not)'startofline' (not)'sol'",
                "After motion try to keep column position."
             + " NOTE: state is opposite of vim.");
 
-    OptUtil.createIntegerOption(
+    createIntegerOption(
             persistedBufMarks, 25, new Validator<Integer>() {
               @Override
               public void validate(Integer val) throws PropertyVetoException {
@@ -662,35 +688,35 @@ public final class Options {
                   }
               }
             });
-    OptUtil.setupOptionDesc(Category.GENERAL, persistedBufMarks, "max persisted buf-marks",
+    setupOptionDesc(Category.GENERAL, persistedBufMarks, "max persisted buf-marks",
             "Maximum number of previously edited files for which the marks"
 	  + " are remembered. Set to 0 and no marks are persisted.");
 
-    OptUtil.createEnumStringOption(selection, "inclusive",
+    createEnumStringOption(selection, "inclusive",
             new String[] {"old", "inclusive", "exclusive"});
-    OptUtil.setupOptionDesc(Category.GENERAL, selection, "'selection' 'sel'",
+    setupOptionDesc(Category.GENERAL, selection, "'selection' 'sel'",
             "This option defines the behavior of the selection."
             + " It is only used in Visual and Select mode."
             + "Possible values: 'old', 'inclusive', 'exclusive'");
     setExpertHidden(selection, false, false);
     
-    OptUtil.createEnumStringOption(selectMode, "",
+    createEnumStringOption(selectMode, "",
             new String[] {"mouse", "key", "cmd"});
-    OptUtil.setupOptionDesc(Category.GENERAL, selectMode, "'selectmode' 'slm'",
+    setupOptionDesc(Category.GENERAL, selectMode, "'selectmode' 'slm'",
             "This is a comma separated list of words, which specifies when to"
             + " start Select mode instead of Visual mode, when a selection is"
             + " started. Possible values: 'mouse', key' or 'cmd'");
     setExpertHidden(selectMode, true, true);
 
-    OptUtil.createBooleanOption(timeout, true);
-    OptUtil.setupOptionDesc(Category.GENERAL, timeout, "'timeout' 'to'",
+    createBooleanOption(timeout, true);
+    setupOptionDesc(Category.GENERAL, timeout, "'timeout' 'to'",
           "Enables timeout when part of a mapped key sequence has been"
             + " received. After that the already received"
             + " characters are interpreted as single characters. "
             + " The waiting time can be changed with the 'timeoutlen' option.");
 
-    OptUtil.createIntegerOption(timeoutlen, 1000);
-    OptUtil.setupOptionDesc(Category.GENERAL, timeoutlen, "'timeoutlen' 'tm'",
+    createIntegerOption(timeoutlen, 1000);
+    setupOptionDesc(Category.GENERAL, timeoutlen, "'timeoutlen' 'tm'",
           "The time in milliseconds that is waited for a mapped"
             + " key sequence to complete.");
 
@@ -700,7 +726,7 @@ public final class Options {
                 FDO_SEARCH, FDO_TAG, FDO_UNDO),
             FDO.class, null);
 
-    OptUtil.setupOptionDesc(Category.GENERAL, foldOpen, "'foldopen' 'fdo'",
+    setupOptionDesc(Category.GENERAL, foldOpen, "'foldopen' 'fdo'",
           "Specifies for which type of commands folds will be opened, if the"
         + " command moves the cursor into a closed fold.");
 
@@ -711,8 +737,8 @@ public final class Options {
     //
     //
 
-    OptUtil.createBooleanOption(wrap, true);
-    OptUtil.setupOptionDesc(Category.WINDOW, wrap, "'wrap'",
+    createBooleanOption(wrap, true);
+    setupOptionDesc(Category.WINDOW, wrap, "'wrap'",
           "This option changes how text is displayed."
           + " When on, lines longer than the width of the window will"
           + " wrap and displaying continues on the next line.  When off"
@@ -723,54 +749,54 @@ public final class Options {
           + " See 'linebreak' to get the break at a word boundary."
             );
 
-    OptUtil.createBooleanOption(lineBreak, false);
-    OptUtil.setupOptionDesc(Category.WINDOW, lineBreak, "'linebreak' 'lbr'",
+    createBooleanOption(lineBreak, false);
+    setupOptionDesc(Category.WINDOW, lineBreak, "'linebreak' 'lbr'",
           "If on Vim will wrap long lines at a word boundary rather"
           + " than at the last character that fits on the screen.");
 
-    OptUtil.createBooleanOption(visualBell, true);
-    OptUtil.setupOptionDesc(Category.WINDOW, visualBell, "'visualbell' 'vb'",
+    createBooleanOption(visualBell, true);
+    setupOptionDesc(Category.WINDOW, visualBell, "'visualbell' 'vb'",
 	   "Use visual bell instead of beeping.  The editor window"
                    + " background is inverted for a period of time, "
                    + " see 'vbt' option."
                    + " When no beep or flash is wanted, set time to zero.");
 
-    OptUtil.createIntegerOption(visualBellTime, 20);
-    OptUtil.setupOptionDesc(Category.WINDOW, visualBellTime,
+    createIntegerOption(visualBellTime, 20);
+    setupOptionDesc(Category.WINDOW, visualBellTime,
                             "'visualbelltime' 'vbt'",
 	   "The duration, in milliseconds, of the 'visual bell'. If the"
                    + " visual bell is enabled, see 'vb', and the 'vbt'"
                    + " value is zero then there is no beep or flash.");
 
-    OptUtil.createColorOption(visualBellColor, new Color(0x41e7e7), true);
-    OptUtil.setupOptionDesc(Category.WINDOW, visualBellColor,
+    createColorOption(visualBellColor, new Color(0x41e7e7), true);
+    setupOptionDesc(Category.WINDOW, visualBellColor,
                             "'visualbellcolor' 'vbc'",
             "The color used for the visual bell, the editor's background"
                     + " is set to this color."
                     + " If null, then the editor's background color"
                     + " is inverted");
 
-    OptUtil.createBooleanOption(number, false);
-    OptUtil.setupOptionDesc(Category.WINDOW, number, "'number' 'nu'",
+    createBooleanOption(number, false);
+    setupOptionDesc(Category.WINDOW, number, "'number' 'nu'",
           "Print the line number in front of each line.");
 
-    OptUtil.createBooleanOption(list, false);
-    OptUtil.setupOptionDesc(Category.WINDOW, list, "'list'",
+    createBooleanOption(list, false);
+    setupOptionDesc(Category.WINDOW, list, "'list'",
           "List mode. Useful to see the difference between tabs"
             + " and spaces and for trailing blanks.");
 
-    OptUtil.createBooleanOption(equalAlways, true);
-    OptUtil.setupOptionDesc(Category.WINDOW, equalAlways, "'equalalways' 'ea'",
+    createBooleanOption(equalAlways, true);
+    setupOptionDesc(Category.WINDOW, equalAlways, "'equalalways' 'ea'",
         "When on, all the windows are automatically made the same size after"
 	+ " splitting or closing a window.");
 
-    OptUtil.createBooleanOption(splitBelow, false);
-    OptUtil.setupOptionDesc(Category.WINDOW, splitBelow, "'splitbelow' 'sb'",
+    createBooleanOption(splitBelow, false);
+    setupOptionDesc(Category.WINDOW, splitBelow, "'splitbelow' 'sb'",
 	"When on, splitting a window will put the new window below the current"
 	+ " one.");
 
-    OptUtil.createBooleanOption(splitRight, false);
-    OptUtil.setupOptionDesc(Category.WINDOW, splitRight, "'splitright' 'spr'",
+    createBooleanOption(splitRight, false);
+    setupOptionDesc(Category.WINDOW, splitRight, "'splitright' 'spr'",
 	"When on, splitting a window will put the new window right of the"
 	+ " current one.");
 
@@ -782,24 +808,24 @@ public final class Options {
     //
     //
 
-    OptUtil.createBooleanOption(tildeOperator, false);
-    OptUtil.setupOptionDesc(Category.MODIFY, tildeOperator , "'tildeop' 'top'",
+    createBooleanOption(tildeOperator, false);
+    setupOptionDesc(Category.MODIFY, tildeOperator , "'tildeop' 'top'",
                "tilde \"~\" acts like an operator, e.g. \"~w\" works");
 
-    OptUtil.createBooleanOption(changeWordBlanks, true);
-    OptUtil.setupOptionDesc(Category.MODIFY, changeWordBlanks, "'cpoptions' 'cpo' \"w\"",
+    createBooleanOption(changeWordBlanks, true);
+    setupOptionDesc(Category.MODIFY, changeWordBlanks, "'cpoptions' 'cpo' \"w\"",
                "\"cw\" affects sequential white space");
 
-    OptUtil.createBooleanOption(joinSpaces, true);
-    OptUtil.setupOptionDesc(Category.MODIFY, joinSpaces, "'joinspaces' 'js'",
+    createBooleanOption(joinSpaces, true);
+    setupOptionDesc(Category.MODIFY, joinSpaces, "'joinspaces' 'js'",
                "\"J\" inserts two spaces after a \".\", \"?\" or \"!\"");
 
-    OptUtil.createBooleanOption(shiftRound, false);
-    OptUtil.setupOptionDesc(Category.MODIFY, shiftRound, "'shiftround' 'sr'",
+    createBooleanOption(shiftRound, false);
+    setupOptionDesc(Category.MODIFY, shiftRound, "'shiftround' 'sr'",
                "\"<\" and \">\" round indent to multiple of shiftwidth");
 
     OptUtil.createEnumIntegerOption(backspace, 0, new Integer[] { 0, 1, 2});
-    OptUtil.setupOptionDesc(Category.MODIFY, backspace, "'backspace' 'bs'",
+    setupOptionDesc(Category.MODIFY, backspace, "'backspace' 'bs'",
             "Influences the working of <BS>, <Del> during insert."
             + "\n  0 - no special handling."
             + "\n  1 - allow backspace over <EOL>."
@@ -810,23 +836,23 @@ public final class Options {
     // per buffer options are accessed through curbuf.
     //
     
-    /*G.b_p_et = */OptUtil.createBooleanOption(expandTabs, false);
-    OptUtil.setupOptionDesc(Category.MODIFY, expandTabs, "'expandtab' 'et'",
+    /*G.b_p_et = */createBooleanOption(expandTabs, false);
+    setupOptionDesc(Category.MODIFY, expandTabs, "'expandtab' 'et'",
            "In Insert mode: Use the appropriate number of spaces to"
            + " insert a <Tab>. Spaces are used in indents with the '>' and"
            + " '<' commands.");
 
-    /*G.b_p_sw = */OptUtil.createIntegerOption(shiftWidth, 8);
-    OptUtil.setupOptionDesc(Category.MODIFY, shiftWidth, "'shiftwidth' 'sw'",
+    /*G.b_p_sw = */createIntegerOption(shiftWidth, 8);
+    setupOptionDesc(Category.MODIFY, shiftWidth, "'shiftwidth' 'sw'",
             "Number of spaces to use for each step of indent. Used for '>>',"
             + " '<<', etc.");
 
-    /*G.b_p_ts = */OptUtil.createIntegerOption(tabStop, 8);
-    OptUtil.setupOptionDesc(Category.MODIFY, tabStop, "'tabstop' 'ts'",
+    /*G.b_p_ts = */createIntegerOption(tabStop, 8);
+    setupOptionDesc(Category.MODIFY, tabStop, "'tabstop' 'ts'",
             "Number of spaces that a <Tab> in the file counts for.");
 
-    /*G.b_p_sts = */OptUtil.createIntegerOption(softTabStop, 0);
-    OptUtil.setupOptionDesc(Category.MODIFY, softTabStop, "'softtabstop' 'sts'",
+    /*G.b_p_sts = */createIntegerOption(softTabStop, 0);
+    setupOptionDesc(Category.MODIFY, softTabStop, "'softtabstop' 'sts'",
             "Number of spaces that a <Tab> in the file counts for"
             + " while performing editing operations,"
             + " like inserting a <Tab> or using <BS>."
@@ -838,15 +864,15 @@ public final class Options {
             + " 'softtabstop' position."
             );
 
-    /*G.b_p_xx = */OptUtil.createIntegerOption(textWidth, 79);
-    OptUtil.setupOptionDesc(Category.MODIFY, textWidth, "'textwidth' 'tw'",
+    /*G.b_p_xx = */createIntegerOption(textWidth, 79);
+    setupOptionDesc(Category.MODIFY, textWidth, "'textwidth' 'tw'",
             "This option currently only used in conjunction with the"
             + " 'gq' and 'Q' format command. This value is substituted"
             + " for " + twMagic + " in formatprg option string.");
 
     /*G.b_p_nf = */OptUtil.createEnumSetOption(nrFormats,
         EnumSet.of(NF_HEX, NF_OCTAL), NF.class, null);
-    OptUtil.setupOptionDesc(Category.MODIFY, nrFormats, "'nrformats' 'nf'",
+    setupOptionDesc(Category.MODIFY, nrFormats, "'nrformats' 'nf'",
             "Defines bases considered for numbers with the"
             + " 'CTRL-A' and 'CTRL-X' commands for adding to and subtracting"
             + " from a number respectively. Value is comma separated list;"
@@ -861,10 +887,10 @@ public final class Options {
     
     final String fmtMagic
             = "\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0%s - %s: %s\n";
-    OptUtil.createEnumStringOption(magic , MESC_MAGIC,
+    createEnumStringOption(magic , MESC_MAGIC,
             new String[] {MESC_VERY_MAGIC, MESC_MAGIC,
               MESC_NO_MAGIC, MESC_VERY_NO_MAGIC});
-    OptUtil.setupOptionDesc(Category.SEARCH, magic,
+    setupOptionDesc(Category.SEARCH, magic,
             "Search magic",
             " NOTE: Use \\v, \\m, \\M, \\V within a pattern"
             + " to switch handling for that pattern."
@@ -881,50 +907,50 @@ public final class Options {
             + "See jVi pattern docs for more information."
     );
 
-    OptUtil.createBooleanOption(incrSearch, true);
-    OptUtil.setupOptionDesc(Category.SEARCH, incrSearch, "'incsearch' 'is'",
+    createBooleanOption(incrSearch, true);
+    setupOptionDesc(Category.SEARCH, incrSearch, "'incsearch' 'is'",
             "While typing a search command, show where the pattern, as it was"
             + " typed so far, matches. If invalid pattern, no match"
             + " or abort then the screen returns to its original location."
             + " You still need to finish the search with"
             + " <ENTER> or abort it with <ESC>.");
     
-    OptUtil.createBooleanOption(highlightSearch, true);
-    OptUtil.setupOptionDesc(Category.SEARCH, highlightSearch, "'hlsearch' 'hls'",
+    createBooleanOption(highlightSearch, true);
+    setupOptionDesc(Category.SEARCH, highlightSearch, "'hlsearch' 'hls'",
                     "When there is a previous search pattern, highlight"
                     + " all its matches");
 
-    OptUtil.createBooleanOption(ignoreCase, false);
-    OptUtil.setupOptionDesc(Category.SEARCH, ignoreCase, "'ignorecase' 'ic'",
+    createBooleanOption(ignoreCase, false);
+    setupOptionDesc(Category.SEARCH, ignoreCase, "'ignorecase' 'ic'",
             "Ignore case in search patterns.");
     
-    OptUtil.createBooleanOption(smartCase, false);
-    OptUtil.setupOptionDesc(Category.SEARCH, smartCase, "'smartcase' 'scs'",
+    createBooleanOption(smartCase, false);
+    setupOptionDesc(Category.SEARCH, smartCase, "'smartcase' 'scs'",
             "Override the 'ignorecase' option if the search pattern"
             + " contains upper case characters.");
 
-    OptUtil.createBooleanOption(wrapScan, true);
-    OptUtil.setupOptionDesc(Category.SEARCH, wrapScan, "'wrapscan' 'ws'",
+    createBooleanOption(wrapScan, true);
+    setupOptionDesc(Category.SEARCH, wrapScan, "'wrapscan' 'ws'",
                "Searches wrap around the end of the file.");
 
-    OptUtil.createBooleanOption(searchFromEnd, true);
-    OptUtil.setupOptionDesc(Category.SEARCH, searchFromEnd, "'cpoptions' 'cpo' \"c\"",
+    createBooleanOption(searchFromEnd, true);
+    setupOptionDesc(Category.SEARCH, searchFromEnd, "'cpoptions' 'cpo' \"c\"",
                "search continues at end of match");
 
-    OptUtil.createBooleanOption(endOfSentence, false);
-    OptUtil.setupOptionDesc(Category.SEARCH, endOfSentence, "'cpoptions' 'cpo' \"j\"",
+    createBooleanOption(endOfSentence, false);
+    setupOptionDesc(Category.SEARCH, endOfSentence, "'cpoptions' 'cpo' \"j\"",
 		  "A sentence has to be followed by two spaces after"
                 + " the '.', '!' or '?'.  A <Tab> is not recognized as"
                 + " white space.");
 
-    OptUtil.createBooleanOption(platformBraceMatch, true);
-    OptUtil.setupOptionDesc(Category.SEARCH, platformBraceMatch, "Platform Brace Matching",
+    createBooleanOption(platformBraceMatch, true);
+    setupOptionDesc(Category.SEARCH, platformBraceMatch, "Platform Brace Matching",
 		  "Use the platform/IDE for brace matching"
                   + " and match highlighting. This may enable additional"
                   + " match characters, words and features.");
     setExpertHidden(platformBraceMatch, true, false);
     
-    OptUtil.createStringOption(isKeyWord, "@,48-57,_,192-255",
+    createStringOption(isKeyWord, "@,48-57,_,192-255",
             new Validator<String>() {
             @Override
               public void validate(String val) throws PropertyVetoException {
@@ -935,7 +961,7 @@ public final class Options {
                 }
               }
             });
-    OptUtil.setupOptionDesc(Category.SEARCH, isKeyWord, "'iskeyword' 'isk'",
+    setupOptionDesc(Category.SEARCH, isKeyWord, "'iskeyword' 'isk'",
               "Keywords are used in searching and recognizing with many commands:"
             + " \"w\", \"*\", etc. See vim docs for more info."
             + " The \":set iskeyword=xxx\" command is per buffer"
@@ -947,48 +973,48 @@ public final class Options {
     // Vi cursor wrap options
     //
     //
-    OptUtil.createBooleanOption(backspaceWrapPrevious, true);
-    OptUtil.setupOptionDesc(Category.CURSOR_WRAP, backspaceWrapPrevious,
+    createBooleanOption(backspaceWrapPrevious, true);
+    setupOptionDesc(Category.CURSOR_WRAP, backspaceWrapPrevious,
                "'whichwrap' 'ww'  b - <BS>",
                "<backspace> wraps to previous line");
 
-    OptUtil.createBooleanOption(hWrapPrevious, false);
-    OptUtil.setupOptionDesc(Category.CURSOR_WRAP, hWrapPrevious,
+    createBooleanOption(hWrapPrevious, false);
+    setupOptionDesc(Category.CURSOR_WRAP, hWrapPrevious,
                "'whichwrap' 'ww'  h - \"h\"",
                "\"h\" wraps to previous line (not recommended, see vim doc)");
 
-    OptUtil.createBooleanOption(leftWrapPrevious, false);
-    OptUtil.setupOptionDesc(Category.CURSOR_WRAP, leftWrapPrevious,
+    createBooleanOption(leftWrapPrevious, false);
+    setupOptionDesc(Category.CURSOR_WRAP, leftWrapPrevious,
                "'whichwrap' 'ww'  < - <Left>",
                "<left> wraps to previous line");
 
-    OptUtil.createBooleanOption(spaceWrapNext, true);
-    OptUtil.setupOptionDesc(Category.CURSOR_WRAP, spaceWrapNext,
+    createBooleanOption(spaceWrapNext, true);
+    setupOptionDesc(Category.CURSOR_WRAP, spaceWrapNext,
                "'whichwrap' 'ww'  s - <Space>",
                "<space> wraps to next line");
 
-    OptUtil.createBooleanOption(lWrapNext, false);
-    OptUtil.setupOptionDesc(Category.CURSOR_WRAP, lWrapNext,
+    createBooleanOption(lWrapNext, false);
+    setupOptionDesc(Category.CURSOR_WRAP, lWrapNext,
                "'whichwrap' 'ww'  l - \"l\"",
                "\"l\" wraps to next line (not recommended, see vim doc)");
 
-    OptUtil.createBooleanOption(rightWrapNext, false);
-    OptUtil.setupOptionDesc(Category.CURSOR_WRAP, rightWrapNext,
+    createBooleanOption(rightWrapNext, false);
+    setupOptionDesc(Category.CURSOR_WRAP, rightWrapNext,
                "'whichwrap' 'ww'  > - <Right>",
                "<right> wraps to next line");
 
-    OptUtil.createBooleanOption(tildeWrapNext, false);
-    OptUtil.setupOptionDesc(Category.CURSOR_WRAP, tildeWrapNext,
+    createBooleanOption(tildeWrapNext, false);
+    setupOptionDesc(Category.CURSOR_WRAP, tildeWrapNext,
                "'whichwrap' 'ww'  ~ - \"~\"",
                "\"~\" wraps to next line");
 
-    OptUtil.createBooleanOption(insertLeftWrapPrevious, false);
-    OptUtil.setupOptionDesc(Category.CURSOR_WRAP, insertLeftWrapPrevious,
+    createBooleanOption(insertLeftWrapPrevious, false);
+    setupOptionDesc(Category.CURSOR_WRAP, insertLeftWrapPrevious,
                "'whichwrap' 'ww'  [ - <Left>",
                "in Insert Mode <Left> wraps to previous line");
 
-    OptUtil.createBooleanOption(insertRightWrapNext, false);
-    OptUtil.setupOptionDesc(Category.CURSOR_WRAP, insertRightWrapNext,
+    createBooleanOption(insertRightWrapNext, false);
+    setupOptionDesc(Category.CURSOR_WRAP, insertRightWrapNext,
                "'whichwrap' 'ww'  ] - <Right>",
                "in Insert Mode <Right> wraps to next line");
 
@@ -1018,39 +1044,39 @@ public final class Options {
     else
       defaultFlag = "/c";
 
-    OptUtil.createStringOption(shell, defaultShell);
-    OptUtil.setupOptionDesc(Category.PROCESS, shell, "'shell' 'sh'",
+    createStringOption(shell, defaultShell);
+    setupOptionDesc(Category.PROCESS, shell, "'shell' 'sh'",
             "Name of shell to use for ! and :! commands.  (default $SHELL " +
             "or \"sh\", MS-DOS and Win32: \"command.com\" or \"cmd.exe\").  " +
             "When changing also check 'shellcmndflag'.");
 
-    OptUtil.createStringOption(shellCmdFlag, defaultFlag);
-    OptUtil.setupOptionDesc(Category.PROCESS, shellCmdFlag, "'shellcmdflag' 'shcf'",
+    createStringOption(shellCmdFlag, defaultFlag);
+    setupOptionDesc(Category.PROCESS, shellCmdFlag, "'shellcmdflag' 'shcf'",
             "Flag passed to shell to execute \"!\" and \":!\" commands; " +
             "e.g., \"bash.exe -c ls\" or \"command.com /c dir\" (default: " +
             "\"-c\", MS-DOS and Win32, when 'shell' does not contain \"sh\" " +
             "somewhere: \"/c\").");
 
-    OptUtil.createStringOption(shellXQuote, defaultXQuote);
-    OptUtil.setupOptionDesc(Category.PROCESS, shellXQuote, "'shellxquote' 'sxq'",
+    createStringOption(shellXQuote, defaultXQuote);
+    setupOptionDesc(Category.PROCESS, shellXQuote, "'shellxquote' 'sxq'",
             "Quoting character(s), put around the commands passed to the " +
             "shell, for the \"!\" and \":!\" commands (default: \"\"; for " +
             "Win32, when 'shell' contains \"sh\" somewhere: \"\\\"\").");
     
-    OptUtil.createBooleanOption(shellSlash, false);
-    OptUtil.setupOptionDesc(Category.PROCESS, shellSlash, "'shellslash' 'ssl'",
+    createBooleanOption(shellSlash, false);
+    setupOptionDesc(Category.PROCESS, shellSlash, "'shellslash' 'ssl'",
             "When set, a forward slash is used when expanding file names." +
             "This is useful when a Unix-like shell is used instead of " +
             "command.com or cmd.exe.");
     
-    OptUtil.createStringOption(equalProgram, "");
-    OptUtil.setupOptionDesc(Category.PROCESS, equalProgram, "'equalprg' 'ep'",
+    createStringOption(equalProgram, "");
+    setupOptionDesc(Category.PROCESS, equalProgram, "'equalprg' 'ep'",
             "External program to use for \"=\" command (default \"\").  " +
             "When this option is empty the internal formatting functions " +
             "are used.");
 
-    OptUtil.createStringOption(formatProgram, "");
-    OptUtil.setupOptionDesc(Category.PROCESS, formatProgram, "'formatprg' 'fp'",
+    createStringOption(formatProgram, "");
+    setupOptionDesc(Category.PROCESS, formatProgram, "'formatprg' 'fp'",
             "External program to use for \"qq\" or \"Q\" command (default \"\")."
           + " When this option is empty the internal formatting functions"
           + " are used."
@@ -1063,8 +1089,8 @@ public final class Options {
 
     /////////////////////////////////////////////////////////////////////
     //
-    OptUtil.createBooleanOption(readOnlyHack, true);
-    OptUtil.setupOptionDesc(Category.DEBUG, readOnlyHack, "enable read only hack",
+    createBooleanOption(readOnlyHack, true);
+    setupOptionDesc(Category.DEBUG, readOnlyHack, "enable read only hack",
             "A Java implementation issue, restricts the characters that jVi"
             + " recieves for a read only file. Enabling this, changes the file"
             + " editor mode to read/write so that the file can be viewed"
@@ -1096,11 +1122,6 @@ public final class Options {
    */
   public static List<String> getOptionList(Category category) {
     return OptUtil.getOptionList(category);
-  }
-
-  public static void setExpertHidden(String optionName,
-                                      boolean fExpert, boolean fHidden) {
-    OptUtil.setExpertHidden(optionName, fExpert, fHidden);
   }
   
   //

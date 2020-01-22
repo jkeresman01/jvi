@@ -89,7 +89,7 @@ import com.raelity.jvi.core.lib.CcFlag;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.options.DebugOption;
+import com.raelity.jvi.options.*;
 import com.raelity.text.TextUtil.MySegment;
 
 import static java.awt.event.ActionEvent.ACTION_PERFORMED;
@@ -286,9 +286,9 @@ public abstract class SwingTextView extends TextView
 
 
     @Override
-    public void viOptionSet( ViTextView tv, String name )
+    public void viOptionSet( ViTextView tv, VimOption vopt)
     {
-        super.viOptionSet(tv, name);
+        super.viOptionSet(tv, vopt);
     }
 
 

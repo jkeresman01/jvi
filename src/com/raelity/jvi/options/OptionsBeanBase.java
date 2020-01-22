@@ -42,12 +42,9 @@ import java.beans.SimpleBeanInfo;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 
 import org.openide.util.WeakListeners;
 
@@ -308,6 +305,14 @@ implements Options.EditControl
     /** this read-only option is special cased */
     public String getJViVersion() {
         return ViManager.getReleaseString();
+    }
+
+    public void setViPerProjectSupport(boolean arg)  throws PropertyVetoException {
+        put(Options.perProjectSupport, arg);
+    }
+
+    public boolean getViPerProjectSupport() {
+	return getboolean(Options.perProjectSupport);
     }
 
     public void setViHistory(int arg)

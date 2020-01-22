@@ -24,6 +24,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
+import java.beans.PropertyVetoException;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
@@ -177,6 +178,16 @@ public interface ViFactory
             String methodName,
             Class clazz)
             throws IntrospectionException;
+
+    /**
+     * Give the platform a last chance to deny an option change.
+     * NEEDSWORK: might be nice to provide for registration of validators.
+     * @param optName the name Options.xxx
+     * @param val the new val
+     * @throws PropertyVetoException 
+     */
+    default public void validate(String optName, Object val)
+    throws PropertyVetoException { }
 
     /**
      * A command entry object will be created if needed.

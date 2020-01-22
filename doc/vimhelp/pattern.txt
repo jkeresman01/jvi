@@ -268,7 +268,7 @@ affect the entire pattern.
 |/\v|	\v	\v	the following chars in the pattern are "very magic"
 |/\V|	\V	\V	the following chars in the pattern are "very nomagic"
 
-The escapes '\<' and '\>' are translated to '\b' (word boundary).
+The escapes '\<' and '\>' are translated to '\b' (word boundary). {jVi only}
 
 ==============================================================================
 3. Magic							*/magic*

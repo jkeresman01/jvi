@@ -59,14 +59,9 @@
   - PositionsBag vs OffsetsBag for HighlightsLayer. Currently both blockmode
     and search highlighters are OffsetsBag. Maybe search should be positions?
   - For ins_ctrl_g() do no_mappings dance.
-  - NB undo and code completion issues, in progress
-    Bug 150251 - Too high granularity of undo history
-                 when undoing CC (Ctrl+Enter)
   - after [DOWN] vm.viewLine gets called 5 times.
   - test without freezer.
   - implement fdoclose=all
-  - Work Misc.du_put to use an fpos rather than a cursor. And [do_]do_join.
-  - Check all the spots that invoke Edit.beginline on the cursor.
 
 
 <span id="Bugs" class="TodoSection">Bugs</span>
@@ -119,10 +114,8 @@
     Following is (may be) related:
         - Adding an multi-key binding doesn't remove single key binding.
           There a bug filed a while ago
-  - C:\a\src\jvi-dev\nbvi\src\org\netbeans\modules\jvi\impl\NbOps.java:31:
-    warning: [deprecation] org.netbeans.editor.BaseKit.DefaultKeyTypedAction
-    in org.netbeans.editor.BaseKit has been deprecated
-  * find out how to catch/bypass the dialog ESC handling, so that jVi
+  - Consider org.netbeans.spi.editor.typinghooks in editor lib 2,
+  - find out how to catch/bypass the dialog ESC handling, so that jVi
     operates more comfortably in a dialog.
     - It does work in some dialogs, for example "new watch" seems to
       have a keybinding for ESC, when jVi not active ESC dismisses that
@@ -135,7 +128,6 @@
 
 <span id="NetBeans_Platform_Bugs" class="TodoSection">NetBeans Platform Bugs</span>
   - editor focus lost after next diff action changes file
-  - can't see cursor in left side diff
   - in NB's diff window, delete-a-diff (make two side the same) and the next
     diff is offscreen. Hit the "next-diff" button, and a diff is skipped.
   - See umbrella bug for jVi in NetBeans
@@ -275,44 +267,19 @@
 <span id="Options" class="TodoSection">Options</span>
   - vim's :options command (brings up dialog)
   - Have "DEFAULT" button for all options/properties
-  - Make the G.xxx globals private types; when opt.setValue reflect the
-    new value into the primitive.
-    then change all references to G.xxx to xxx() (note use static import)
-    and the primitive xxx can be private, so it would be impossible to modify
-    it except by modifying the Option or through a set command.
-    - :set command should not change the Option, but should ask the option
-      to reflect the value. Might want a dialog of global options that are 
-      different in memory, and allow you to selectively persist some of them.
-  - Option validate as part of save (or something like that).
-    Issue really comes up with map-cmd, want to convert the string option
-    into a data structure. The data structure is mostly built by the
-    validate process.
-    - the Option could have a validateSet combo method which invokes the
-      validator (which can stash something into the option), then poll for
-      veto's, then finish, maybe using the stash. Might simply want to get
-      hold of the stash in a pref-change listener.
-    - may want to associate a method/action assoc with the option.
-      this might be an alternative to this discussion or in addition to.
-      Currently need to use pref listener.
   - Tool tips in property dialog
 
 
 <span id="Cleanup" class="TodoSection">Cleanup</span>
-  - fpos.getMark()? fpos.verify() throw special exception.
-  - make TextView.w_cursor a simple fpos,
-    do an "update" when exitting key event
-    NOTE: this may not be viable, maybe could be made to work if
-    doc change and cursor move events invalidate it
   - Consider getting rid of 
         Misc.xlateViKey(ViManager.getInsertModeKeymap(), c, G.getModMask())
     would just handle ^T (or whatever) in the redobuf? Other issues?
     ^&lt; and ^&gt; might be a problem.
-  - abstractFS - getAppView by #, - getDisplay.... WHAT TO DO WITH THEM
   - test numbered marks
   - command entry to
       - bypass widget completely when possible
       - handle all input and manipulate combo box directly
-  - Misc.do_put still needs some work.
+      - just get rid of combo through history handling... in progress 2020/01/19
   - Reduce public methods
     - in ViMan there's all the mouse stuff is public. Create a class which
       bounces to them and give it to Caret impl, then they can be private.
@@ -330,8 +297,6 @@
   - jViFeature handling. Make more things features. Separate file/class?
   - in ViTextView there is replaceString,deleteChar,insertText
     should be in Buffer
-  - Explicitly activate options on buffer/textview creation?
-    The "firstgo" seems hokey.
 
 
 <span id="Performance" class="TodoSection">Performance</span>

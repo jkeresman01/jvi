@@ -16,7 +16,7 @@ OUT=$VIMHELP_OUT
 #
 $SCRIPTS/filter.sh $UNFILTERED $FILTERED
 
-$VIM/vim --noplugin -e -s -V1 -c "helptags $(cygpath -a -m $FILTERED)" -c q
+$XVIM/vim --noplugin -e -s -V1 -c "helptags $(cygpath -a -m $FILTERED)" -c q
 
 mkdir -p $OUT
 mv $FILTERED/tags $OUT/tags

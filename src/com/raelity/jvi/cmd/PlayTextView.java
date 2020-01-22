@@ -21,12 +21,14 @@
 package com.raelity.jvi.cmd;
 
 import com.raelity.jvi.ViAppView;
+
 import javax.swing.JScrollPane;
 import javax.swing.text.JTextComponent;
 
 import com.raelity.jvi.ViStatusDisplay;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.options.*;
 import com.raelity.jvi.swing.simple.SimpleTextView;
 
 /**
@@ -46,9 +48,9 @@ public class PlayTextView extends SimpleTextView
     }
 
     @Override
-    public void viOptionSet(ViTextView tv, String name) {
-        super.viOptionSet(tv, name);
-        if("w_p_wrap".equals(name)) {
+    public void viOptionSet(ViTextView tv, VimOption vopt) {
+        super.viOptionSet(tv, vopt);
+        if("w_p_wrap".equals(vopt.getVarName())) {
             updateWrapOption();
         }
     }

@@ -31,9 +31,7 @@ import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.lib.Constants.FDO;
 import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.options.AlwaysOnDebugOption;
-import com.raelity.jvi.options.DebugOption;
-import com.raelity.jvi.options.OptUtil;
+import com.raelity.jvi.options.*;
 
 
 /**
@@ -48,7 +46,8 @@ public class G implements ViOptionBag
     private static final G INSTANCE = new G();
     public static G get() { return INSTANCE; }
     private G() {}
-    @Override public void viOptionSet(ViTextView tv, String name) { assert false; }
+    @Override public void viOptionSet(
+            ViTextView tv, VimOption vopt) { assert false; }
     @Override public void activateOptions(ViTextView tv) { assert false; }
 
     /**

@@ -13,3 +13,7 @@
 =============================================================
 
 ant -Dcluster.config=basic build-nozip
+
+
+
+ant -Dcluster.config=full -Dpermit.jdk9.builds=true

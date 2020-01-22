@@ -9,6 +9,11 @@
 
 package com.raelity.jvi;
 
+import java.beans.PropertyVetoException;
+
+import com.raelity.jvi.core.*;
+import com.raelity.jvi.options.*;
+
 /**
  * Interface for classes that have vim options, i.e. ViTextView and Buffer
  * aka {@link G#curwin} and {@link G#curbuf}; these are per document and per
@@ -36,8 +41,13 @@ package com.raelity.jvi;
 public interface ViOptionBag {
     
     /** The set command used to change an option */
-    public void viOptionSet(ViTextView tv, String name);
+    public void viOptionSet(ViTextView tv, VimOption vopt);
     
     /** This is invoked when switchto bag's associated editor. */
     public void activateOptions(ViTextView tv);
+
+    /** Allow a local option bag, for example a buffer, to veto the change. */
+    default public void viOptionValidate(ViTextView tv, VimOption vopt, Object val)
+    throws PropertyVetoException
+    { }
 }

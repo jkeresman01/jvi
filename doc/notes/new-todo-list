@@ -1,6 +1,4 @@
 
-what about :tabs, various tab close commands
-
 netbeans csv editor
 
 continue magic redo work, typeing that '"' on '"' at end screws up '.'.
@@ -11,8 +9,6 @@ continue magic redo work, typeing that '"' on '"' at end screws up '.'.
 use JLayer or somesuch to flip the arrow on the combo box? find other way.
 
 ?rework colon commands parser bringing it closer to modern vim
-
-:log command, logsys[out|err] messages.log. logjvi jVi output
 
 ===
 === important doc adds
@@ -38,13 +34,9 @@ NB tips/tricks, ^G/v bounce, put in jVi quickstart
 
 investigate use of sass/less css replace/extend
 
-Why doesn't CTRL-] in quickref point to tagsearch file? Also command index.
-During build, leave list of targets.
+Also command index.  During build, leave list of targets.
 
-wierd format <head> (or missing)
-    index.html
-    jvi-index.html
-    nb-index.html
+Stop using frames
 
 
 To jvi website help, add help search box

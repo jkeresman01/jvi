@@ -11,7 +11,6 @@
 <body>
 
 
-
 <h1>jVi in NetBeans</h1>
 <h2 id="intro" class="MainSec00Font">Introduction</h2>
 
@@ -22,11 +21,11 @@
 </p>
 <p>
 <b> Log bugs at
-    <a href="http://sourceforge.net/bugs/?group_id=3653" target="_top">
+    <a href="https://sourceforge.net/p/jvi/bugs/" target="_blank">
 jVi Bug Tracking</a>.</b>
 Please include both the <b>jVi version number</b> and the
 <b>NetBeans version number</b>,
-e.g. NB5.5, when reporting problems.
+e.g. NB11.2, when reporting problems.
 Get the version of jVi with the <span class="tt">:version</span> command,
 also the version of jVi in use is displayed on the
 <i>jVi Options and Configuration</i> editing option property page..
@@ -34,7 +33,7 @@ also the version of jVi in use is displayed on the
 <p>
 
 Discuss your issues, problems and/or requests at
-<a href="http://sourceforge.net/forum/forum.php?forum_id=10908">
+<a href="https://sourceforge.net/p/jvi/discussion/" target="_blank">
 jVi Open Discussion Forum</a>.
 This is a good way to indicate what you'd like to see in jVi for NetBeans.
 
@@ -44,8 +43,12 @@ Communications can also be sent to
 <h2 id="install" class="MainSec00Font">Installation</h2>
 <p>
     Start by
-    installing the <em>jVi for NB-7.0 Update Center</em>
-    from <em>Tools &gt; Plugins &gt; Available Plugins</em>.
+    installing the <em>jVi for NB Update Center</em>
+    Check <em>Tools &gt; Plugins &gt; Available Plugins</em>.
+    If not found there, you can download it from the NetBeans
+    plugin portal,
+    <a href="http://netbeans-vm.apache.org/pluginportal/" target="_blank">
+      currently found here</a>.
     After the Update Center is installed, pause
     while the catalog for jVi is downloaded, you may need to press the
     reload catalog button; after that there are several more
@@ -54,19 +57,8 @@ Communications can also be sent to
 </p>
     <ul>
         <li>jVi for NetBeans</li>
-        <li>jVi Help</li>
         <li>Editor Pin (standalone and jVi)</li>
     </ul>
-    There <em>may</em> also be some plugins like:
-    <ul>
-        <li>jVi: NB-7.0.1 patch for ...</li>
-        <li>jVi: NB-7.0.1 patch for ...</li>
-    </ul>
-<p>
-    These are optional and patch NB itself. They will only successfully install
-    into the version for which they are intended; they use a
-    NetBeans implementation dependency.
-</p>
 <p>
     jVi can also be installed by
     <a href="http://sourceforge.net/projects/jvi/files/jVi-for-NetBeans"
@@ -82,10 +74,20 @@ Communications can also be sent to
     Looking at <a href="CHANGES.html">recent changes to jVi</a>
     is useful for getting an idea of the features in jVi.
 </p>
-<p>For proper <b>undo/redo granularity</b> there is a
-<a href="https://sourceforge.net/project/platformdownload.php?group_id=3653">
-    small patch for NetBeans</a>.
-    <span class="note">NOTE:</span> not needed for NetBeans 7.
+
+<h2 id="per-project-settings" class="MainSec00Font">Per Project Settings</h2>
+<p>
+NetBeans has optional per project settings which are used for source code
+formatting. Since jVi 1.6.1 this is some support for this; in particular,
+if this support is enabled in both NetBeans and jVi, then
+shiftwidth, tabstop and expand tabs are taken from NetBeans rather
+than jVi options. When these NetBeans options are changed, any 
+<b>currently displayed file</b> will not immediately get the new values.
+Simply switch
+to another file and then back and the new values are in effect. Other
+open files properly get the new values. The problem is that
+jVi is unable to get notification
+of the value changes.
 </p>
 
 
@@ -160,7 +162,8 @@ There are some Normal Mode commands that hook into NetBeans features.
     <tbody>
         <tr>
             <td><span class="tt">:se[t]</span></td>
-            <td>See <a href="COLON_COMMANDS">Colon Commands</a> for
+            <td>See <a href="vimhelp/options.txt.html#set-option">
+                Colon Commands</a> for
                 information on available options. See <a href="#options">
                 Netbeans options information</a> for platform interactions
                 of the <span class="tt">sw</span>, <span class="tt">et</span>,
@@ -434,6 +437,7 @@ Methods</i> dialog. And of course there's ^C, ^X and ^V. The Ctrl-J starts some
 pretty good NetBeans multi-key bindings.
 </p>
 
+<!--
 <h2 id="custom" class="MainSec00Font">Customization</h2>
 <p>
     Here is an example for adding a simple ":" command that takes no arguments.
@@ -465,6 +469,7 @@ pretty good NetBeans multi-key bindings.
     }
 </code>
     </pre>
+-->
 
 <hr/>
 <!-- raelity copyright -->

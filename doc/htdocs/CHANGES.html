@@ -66,7 +66,28 @@
 
 <h2>jVi-1.6 Release, NB11.0 and later</h2>
 
-<b>Version 1.6.0 DEV - 2020/xx/yy</b>
+<b>Version 1.6.1 DEV - 202x/yy/zz</b>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+    </ul>
+  </dd>
+  <dt>jVi NetBeans</dt>
+  <dd>
+    <ul>
+      <li>
+        Improve interoperability with NetBeans' project properties'
+        "Formatting>Use project specific options". There is a jVi
+        option "Support Project specific options". When both of the jVi and
+        NetBeans options are enabled, 'shiftwidth', 'tabstop' and expandtab'
+        are taken from NetBeans' per project settings.
+      </li>
+    </ul>
+  </dd>
+</dl>
+
+<b>Version 1.6.0 - 2020/01/13</b>
 <dl>
   <dt>jVi Core</dt>
   <dd>
@@ -80,7 +101,8 @@
         For example <span class="tt">:history / -5,</span>
         shows the last five search patterns.
         <br/>
-        See documentation in cmdline.txt.
+        See <a href="vimhelp/cmdline.txt.html">cmdline.txt</a>
+        <a href="vimhelp/cmdline.txt.html#cmdline-editing">command-line</a> editing
       </li>
       <li>
         Search <span class="tt">'magic'</span> option,
@@ -97,6 +119,9 @@
         "<span class="tt">"\M"</span>,
         "<span class="tt">"\V"</span> in a pattern
         to inline switch magic is supported.
+        <br/>
+        See <a href="vimhelp/pattern.txt.html">pattern.txt</a>
+        <a href="vimhelp/pattern.txt.html#%2Fmagic">/magic</a>
       </li>
       <li>
         Add several tab commands, including
@@ -104,6 +129,9 @@
         and <span class="tt">:tabonly</span>;
         handle modern capabilities 
         and syntax for tab commands which was first introduced in vim8.
+        <br/>
+        See <a href="vimhelp/tabpage.txt.html">tabpage.txt</a>
+        <a href="vimhelp/tabpage.txt.html#tab-page-commands">tab-page-commands</a>
       </li>
       <li>
         For command line entry window, allow two modality options introduced
@@ -151,7 +179,7 @@
         and mostly accommodated; but this one slipped by.
       </li>
       <li>
-        <a target="_top" href="https://sourceforge.net/p/jvi/feature-requests/107/">
+        <a target="_blank" href="https://sourceforge.net/p/jvi/feature-requests/107/">
         [#107 feature] join apache netbeans </a>
         <br/> A jVi update center is available on both the netbeans portal and
         and the apache portal.
@@ -168,18 +196,18 @@
   <dd>
     <ul>
       <li>
-        <a target="_top" href="http://sourceforge.net/p/jvi/bugs/190/">
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/190/">
         [#190] Several features don't work with Netbeans 8.2 RC</a>
         <br/>Avoid NPE due to change in editor hierarchy.
         Thanks to William Headrick for the fix.
       </li>
       <li>
-        <a target="_top" href="http://sourceforge.net/p/jvi/feature-requests/95/">
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/95/">
         [#95] :reg[ister] </a>
         <br/> Add <span class="tt">:register</span> command.
       </li>
       <li>
-        <a target="_top" href="http://sourceforge.net/p/jvi/discussion/10908/thread/001796d4/">
+        <a target="_blank" href="http://sourceforge.net/p/jvi/discussion/10908/thread/001796d4/">
         Mapping Shift-Space</a>
         <br>Allow mapping of Shift-Space and Ctrl-Space.
         <br>In addition, have normal mode commands for those keystrokes
@@ -219,7 +247,7 @@
   <dd>
     <ul>
       <li>
-        <a target="_top" href="http://sourceforge.net/p/jvi/bugs/182/">
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/182/">
         [#182] JRE 8 breaks command and search entry</a>
       </li>
     </ul>
@@ -231,7 +259,7 @@
   <dd>
     <ul>
       <li>
-        <a target="_top" href="http://netbeans.org/bugzilla/show_bug.cgi?id=240804">
+        <a target="_blank" href="http://bz.apache.org/netbeans/show_bug.cgi?id=240804">
         [#240804] ":quit" NullPointerException at com.raelity.jvi.swing.SwingBuffer.getLineCount</a>
       </li>
     </ul>
@@ -243,7 +271,7 @@
   <dd>
     <ul>
       <li>
-        <a href="http://sourceforge.net/p/jvi/feature-requests/89/">
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/89/">
         [#89] turn off beep</a> (visual bell)
         <br>Implement options,
         <span class="tt">visualbell</span>,
@@ -317,7 +345,7 @@
     <dd>
       <ul>
         <li>
-          <a href="http://sourceforge.net/p/jvi/feature-requests/54/">
+          <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/54/">
           [#54] implement za and zA fold-commands</a>
         </li>
       </ul>
@@ -326,31 +354,31 @@
     <dd>
       <ul>
         <li>
-          <a href="http://sourceforge.net/p/jvi/bugs/178/">
+          <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/178/">
           [#178] macro execution of empty register gives exception, eg: @r</a>
         </li>
         <li>
-          <a href="http://sourceforge.net/p/jvi/bugs/177/">
+          <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/177/">
           [#177] Problem with backspace and Replace command</a>
         </li>
         <li>
-          <a href="http://sourceforge.net/p/jvi/bugs/176/">
+          <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/176/">
           [#176] Problem with "." (dot) command</a>
         </li>
         <li>
-          <a href="http://sourceforge.net/p/jvi/bugs/174/">
+          <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/174/">
           [#174] NoClassDefFoundException caused in Netbeans on code completion (Netbeans 7.3)</a>
         </li>
         <li>
-          <a href="http://sourceforge.net/p/jvi/bugs/168/">
+          <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/168/">
           [#168] ESC to exit search leaves editor in an unusable state</a>
         </li>
         <li>
-          <a href="http://sourceforge.net/p/jvi/bugs/165/">
+          <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/165/">
           [#165] jVi cannot map the "ö"-key</a>
         </li>
         <li>
-          <a href="http://sourceforge.net/p/jvi/bugs/164/">
+          <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/164/">
           [#164] NB line number on/off doesn't work after disable jVi</a>
         </li>
       </ul>
@@ -362,12 +390,12 @@
 <b>Version 1.4.8 - 2013/03/03</b>
   <ul>
     <li>
-      <a href="http://sourceforge.net/p/jvi/bugs/163/">
+      <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/163/">
       [#163] Tag text objects not working?</a>
       <br>Failed with certain option combinations.
     </li>
     <li>
-      <a href="http://sourceforge.net/p/jvi/bugs/170/">
+      <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/170/">
       [#170] Caret not visible on retina display</a>
       <br>Added an option, "Mac Retina Cursor Xor Bug" in platform category.
     </li>
@@ -376,12 +404,12 @@
 <b>Version 1.4.7 - 2012/10/22</b>
   <ul>
     <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3577401&amp;group_id=3653&amp;atid=103653">
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/171">
         [#3577401] Can't move/copy lines before line 1</a>
     </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3576622&amp;group_id=3653&amp;atid=353653">
-        [#3576622] ampersand not working for repeating last :s command</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/97">
+        [#97] ampersand not working for repeating last :s command</a>
       </li>
   </ul>
 
@@ -391,14 +419,14 @@
       fix mapping of ":" commands.
     </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3527153&amp;group_id=3653&amp;atid=103653">
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/168">
         [#3527153] MAC/OSX ESC to exit search leaves editor in an unusable state</a>
       </li>
   </ul>
 
 <b>Version 1.4.5 - 2011/12/12 </b>
 <p>
-NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
+NetBeans 7.1 <a target="_blank" href="http://bz.apache.org/netbeans/show_bug.cgi?id=205835">
   Bug 205835</a> can lose edits; a variety of jVi commands run into this.
   jVi-1.4.5 disables itself if it detects module versions with the bug, AFAICT.
   The bug is scheduled to be fixed in NB-7.1.1; sometime around January/February.
@@ -443,8 +471,8 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
   <dd>
     <ul>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3408923&amp;group_id=3653&amp;atid=103653">
-        [#3408923] Search Wrap Message never goes away</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/149">
+        [#149] Search Wrap Message never goes away</a>
         <br>Be more vim-like and always display search pattern; fixes issue.
       </li>
       <li> Fix various issues around wrap and folding for
@@ -483,8 +511,8 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
         <span class="tt">gt</span> and <span class="tt">gT</span> commands.
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3304144&amp;group_id=3653&amp;atid=353653">
-        [#3304144] smartcase option support</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/81">
+        [#81] smartcase option support</a>
       </li>
       <li>With <span class="tt">:g</span> command,
         handle vi/vim undocumented pattern selection feature.
@@ -606,13 +634,13 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
   <dd>
     <ul>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3298660&amp;group_id=3653&amp;atid=103653">
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/xxx">
         [#3298660] multi-line substitute with new lines,
         like <span class="tt">%s/;/{\n\n}\n/</span>, messes up</a>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3293348&amp;group_id=3653&amp;atid=103653">
-        [#3293348] jump to line number via :&lt;digit&gt; fails if command completion</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/143">
+        [#143] jump to line number via :&lt;digit&gt; fails if command completion</a>
       </li>
     </ul>
   </dd>
@@ -649,8 +677,8 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
       </li>
       <li><span class="tt">:set list</span></li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2019611&amp;group_id=3653&amp;atid=353653">
-          [#2019611] map commands; User define key binding in Normal mode</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/37">
+          [#37] map commands; User define key binding in Normal mode</a>
         <br><span class="tt">[nvop]map</span>, <span class="tt">[nvop]noremap</span>, <span class="tt">[nvop]unmap</span>
         <br>"Options&gt;Map Commands" for persited mappings.
         Also work as colon commands.
@@ -665,8 +693,8 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
         text with the mouse produces a platform selection.
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2777608&amp;group_id=3653&amp;atid=353653">
-          [#2777608] Multiple-editor pane support (Ctrl-w)</a><br>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/44">
+          [#44] Multiple-editor pane support (Ctrl-w)</a><br>
         A more accurate implementation
         of Ctrl-W window traversal commands, e.g. left/right/up/down.
         Almost all of the several traversal commands are implemented.
@@ -676,8 +704,8 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
         are included.
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2825295&amp;group_id=3653&amp;atid=353653">
-        [#2825295] yank/put/delete Actions on the closed fold at the cursor</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/67">
+        [#67] yank/put/delete Actions on the closed fold at the cursor</a>
         <br>Most actions on folds work, for example <span class="tt">&gt;&gt;</span>.
         <br>Actions on visual mode selections involving folds
         also implemented.
@@ -687,7 +715,7 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
         <br> They persist when the program exits normally.
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3001654&amp;group_id=3653&amp;atid=353653">
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/xxx">
         [#3001654] Ability to use line breaks with substitute command</a>
         <br> Implementation allows '\r' in the replacement text.
         '\n' is also allowed and maps to newline (not NULL char into doc).
@@ -704,21 +732,21 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
             default. Use <span class="tt">:set all</span> to see all settable options</li>
         </ul>
       </li>
-      <li> <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3166782&amp;group_id=3653&amp;atid=353653">
-          [#3166782] iskeyword or skip to underscore?</a>
+      <li> <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/69">
+          [#69] iskeyword or skip to underscore?</a>
         <br>add option: <span class="tt">'iskeyword' 'isk'</span><br>
         This is a per buffer option.
-        It works with <span class="tt">:set iskeyword=xxx</span> and modeline</li>
+        It works with <span class="tt">:set iskeyword=xyzzy</span> and modeline</li>
       <li>add option: <span class="tt">blinkrate</span></li>
       <li><span class="tt">:set scroll=0</span> accepted to reset to half window height</li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2977160&amp;group_id=3653&amp;atid=353653">
-          [#2977160] <span class="tt">:set wrapscan command</span></a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/62">
+          [#62] <span class="tt">:set wrapscan command</span></a>
       </li>
       <li>In jVi options dialog, each option displays default value</li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3054372&amp;group_id=3653&amp;atid=353653">
-          [#3054372] Make <span class="tt">:u</span> Perform Undo Operation</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/66">
+          [#66] Make <span class="tt">:u</span> Perform Undo Operation</a>
         <br>Add both <span class="tt">:undo</span> and <span class="tt">:redo</span>
       </li>
       <li>Ctrl-G in visual line mode does full line java text selections.
@@ -751,28 +779,28 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
           <br>Don't keep messing up horizontal scroll position.
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3280820&amp;group_id=3653&amp;atid=103653">
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/xxx">
         [#3280820] exit ": mode" on BS on empty line</a>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3271587&amp;group_id=3653&amp;atid=103653">
-        [#3271587] jvi Icon doesn't update</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/129">
+        [#129] jvi Icon doesn't update</a>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3273859&amp;group_id=3653&amp;atid=103653">
-          [#3273859] undo bug with <span class="tt">@</span> (execute register contents)</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/130">
+          [#130] undo bug with <span class="tt">@</span> (execute register contents)</a>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3280820&amp;group_id=3653&amp;atid=103653">
-        [#3280820] exit ": mode" on BS on empty line</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/136">
+        [#136] exit ": mode" on BS on empty line</a>
       </li>
       <li>
-        <a href="">
-        [#3258663] clipboard option doesn't work</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/125">
+        [#125] clipboard option doesn't work</a>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=3018062&amp;group_id=3653&amp;atid=103653">
-        [#3018062] Ranges don't work with ":global"</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/117">
+        [#117] Ranges don't work with ":global"</a>
         <br>Also fixed the ":global" command so that if matching lines
         are deleted, there is no attempt to operate on them.
         <br>In particular, something like <span class="tt">:g/pattern/d 5</span>
@@ -780,32 +808,32 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
       </li>
       <li>Fix <span class="tt">[/</span> and <span class="tt">[*</span> when "/*" starts in column 0</li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3074904&amp;group_id=3653&amp;atid=103653">
-        [#3074904] Cursor Position off by one when jVi turned off</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/121">
+        [#121] Cursor Position off by one when jVi turned off</a>
       </li>
       <li>Handle insert mode Ctrl-W and Ctrl-U properly
         for '.' redo command.</li>
       <li>
-        <a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=3196343&amp;group_id=3653&amp;atid=103653">
-        [#3196343] ggVG= throws exception</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/124">
+        [#124] ggVG= throws exception</a>
       </li>
       <li> fixes for commands for line wrap like up,down,^D,^U,^F,^B,H,M,L
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3093239&amp;group_id=3653&amp;atid=103653">
-        [#3093239] cursor backspaces when jVi turned off</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/121">
+        [#121] cursor backspaces when jVi turned off</a>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3032783&amp;group_id=3653&amp;atid=103653">
-        [#3032783] Wrong cursor after search</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/118">
+        [#118] Wrong cursor after search</a>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3006347&amp;group_id=3653&amp;atid=103653">
-        [#3006347] IllegalStateException when executing ":e!"</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/116">
+        [#116] IllegalStateException when executing ":e!"</a>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2925219&amp;group_id=3653&amp;atid=103653">
-        [#2925219] Nullpointer exception</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/109">
+        [#109] Nullpointer exception</a>
       </li>
     </ul>
   </dd>
@@ -828,12 +856,12 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
   <dd>
     <ul>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2832400&amp;group_id=3653&amp;atid=353653">
-        [#2832400] Xml/Html Tag text-object </a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/163">
+        [#163] Xml/Html Tag text-object </a>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=1829295&amp;group_id=3653&amp;atid=353653">
-        [#1829295] [ ] Brace/paren/other navigation.</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/29">
+        [#29] [ ] Brace/paren/other navigation.</a>
       Implemented:
         <span class="tt">[m</span>, <span class="tt">]m</span>, <span class="tt">[M</span>, <span class="tt">]M</span>,
         <span class="tt">[{</span>, <span class="tt">[(</span>, <span class="tt">]}</span>, <span class="tt">])</span>,
@@ -842,8 +870,8 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
         <span class="tt">[[</span>, <span class="tt">[]</span>, <span class="tt">]]</span>, <span class="tt">][</span>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2833497&amp;group_id=3653&amp;atid=353653">
-          [#2833497] Save macros</a>.
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/53">
+          [#53] Save macros</a>.
           Persist named yank/put registers/buffers, e.g. <span class="tt">"a</span>, between sessions. (only if size under 1K)
       </li>
       <li>Implement filemarks, aka upper case marks,
@@ -854,7 +882,7 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
         General option to control max number of persisted buffer-marks.
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2929586&amp;group_id=3653&amp;atid=353653">
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/xxx">
           [#2929586] <span class="tt">:[range]&lt;</span> command missing</a>
         Implement shift [range] lines one 'shiftwidth' left. Repeat '&lt;' for shifting multiple 'shiftwidth's.
       </li>
@@ -866,8 +894,8 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
     <ul>
       <li></li>
       <li>
-        <a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=2931204&amp;group_id=3653&amp;atid=353653">
-          [#2931204] code formatting in visual mode in NB 6.8</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/84">
+          [#84] code formatting in visual mode in NB 6.8</a>
         Hook 'Q' and 'gq' commands to NetBeans' reformat action.
       </li>
       <li>In input mode put TAB character directly into file (assuming
@@ -882,16 +910,16 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
       is <span class="tt">"exclusive"</span>.
         </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2922216&amp;group_id=3653&amp;atid=103653">
-        [#2922216] The options panel is so wide ...</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/106">
+        [#106] The options panel is so wide ...</a>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2865050&amp;group_id=3653&amp;atid=103653">
-          [#2865050] <span class="tt">cw</span>, change word, command and accented chars </a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/103">
+          [#103] <span class="tt">cw</span>, change word, command and accented chars </a>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=2936394&amp;group_id=3653&amp;atid=103653">
-        [#2936394] mouse-drive selection not taking last character on the line</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/110">
+        [#110] mouse-drive selection not taking last character on the line</a>
       </li>
       <li>don't open output window unlesss <span class="tt">p</span>
           (as in g//s///p) is used</li>
@@ -900,8 +928,8 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
       <li>fix bug in execution of <span class="tt">:make</span> command (NB)</li>
       <li>tweak code that prevents visible clone editor from scrolling for nb6.8.</li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2922313&amp;group_id=3653&amp;atid=103653">
-        [#2922313] exception: didDocRemoveAfterTrackPosition</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/107">
+        [#107] exception: didDocRemoveAfterTrackPosition</a>
       </li>
     </ul>
   </dd>
@@ -917,8 +945,8 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
       <br>&lt;ESC&gt; clears a java text selection.
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=2805922&amp;group_id=3653&amp;atid=353653">
-          [#2805922] Please implement softtabstop option</a>.
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/48">
+          [#48] Please implement softtabstop option</a>.
       A per buffer option, works with modeline. This change also
       implements most (all?) of the vim logic related to expandtabs rather than
       passing it off to the platform. When 'et' is false and 'sts'
@@ -927,12 +955,12 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
       remove multiple spaces. See vim's doc.
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2779250&amp;group_id=3653&amp;atid=353653">
-        [#2779250] i_ctrl-a (insert mode command)</a> Also implement i_ctrl-@.
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/45">
+        [#45] i_ctrl-a (insert mode command)</a> Also implement i_ctrl-@.
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=1726929&amp;group_id=3653&amp;atid=353653">
-        [#1726929] i_CTRL_R to paste buffer content</a> including the i_Ctrl-R sub-commands.
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/22">
+        [#22] i_CTRL_R to paste buffer content</a> including the i_Ctrl-R sub-commands.
       </li>
     </ul>
   </dd>
@@ -940,15 +968,15 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
   <dd>
     <ul>
       <li>
-        <a href="http://sourceforge.net/tracker/?group_id=3653&amp;atid=353653">
-        [#2777608] Multiple-editor pane support (Ctrl-w)</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/44">
+        [#44] Multiple-editor pane support (Ctrl-w)</a>
       Only a partial fix.
       <br>Ctrl-W_Ctrl-W An imperfect implementation: cycles in arbitrary,
       but fixed, order.
       <br>
       There are no commands that create windows; that
       requires some NetBeans API work, at a minimum see 
-        <a href="http://www.netbeans.org/issues/show_bug.cgi?id=135385">
+        <a target="_blank" href="http://bz.apache.org/netbeans/issues/show_bug.cgi?id=135385">
         add attachTopComponentToSide method to WindowManager</a>.
       <br>
       <b>NOTE:</b> Users may want to reprogram NetBeans' "Close
@@ -971,19 +999,19 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
   <dd>
     <ul>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2816171&amp;group_id=3653&amp;atid=103653">
-        [#2816171] NB6.7 empty file bottom not supported</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/97">
+        [#97] NB6.7 empty file bottom not supported</a>
       </li>
       <li>Clean up and fix some problems with "magic-redo" (gets '.' to work
       better after code completion).</li>
       <li>Fix '.' problem with backspace introduced by 'sts' option in beta1.</li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2808635&amp;group_id=3653&amp;atid=103653">
-        [#2808635] Unable to edit preferences on Mac OS X</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/96">
+        [#96] Unable to edit preferences on Mac OS X</a>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2808634&amp;group_id=3653&amp;atid=103653">
-        [#2808634] Warning message in logs and an error 6.7</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/95">
+        [#95] Warning message in logs and an error 6.7</a>
       </li>
     </ul>
   </dd>
@@ -999,8 +1027,8 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
         <span class="tt">I</span>, <span class="tt">A</span>, <span class="tt">x</span>, <span class="tt">D</span>, <span class="tt">r</span>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2777562&amp;group_id=3653&amp;atid=353653">
-        [#2777562] ge and gE don't work</a> Also implemented g* and g#.
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/43">
+        [#43] ge and gE don't work</a> Also implemented g* and g#.
       </li>
     </ul>
   </dd>
@@ -1016,8 +1044,8 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
       <li>Clean up behavior of "<span class="tt">:tog[gle]</span>" command</li>
       <li>Set <span class="tt">`[</span> and <span class="tt">`]</span> properly after an insert operation</li>
       <li>
-        <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=2783881&amp;group_id=3653&amp;atid=103653">
-        [#2783881] Refactor colon commands with netbeans 6.7-beta don't work</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/94">
+        [#94] Refactor colon commands with netbeans 6.7-beta don't work</a>
       </li>
     </ul>
   </dd>
@@ -1029,12 +1057,12 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
   <dd>
     <ul>
       <li>
-        <a href="http://sourceforge.net/tracker2/?func=detail&amp;aid=1976163&amp;group_id=3653&amp;atid=353653">
-        [#1976163] Implement CTRL+A and CTRL+X</a> (command mode)
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/34">
+        [#34] Implement CTRL+A and CTRL+X</a> (command mode)
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker2/?func=detail&amp;aid=1703043&amp;group_id=3653&amp;atid=353653">
-        [#1703043] Support for Ctrl-U and Ctrl-W</a> (input mode)
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/19">
+        [#19] Support for Ctrl-U and Ctrl-W</a> (input mode)
       </li>
     </ul>
   </dd>
@@ -1045,8 +1073,8 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
           the 1.2.3 release. So much for a simple quick fix for NB6.7.
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker2/?func=detail&amp;aid=2636118&amp;group_id=3653&amp;atid=103653">
-        [#2636118] jVi doesn't work in NetBeans 6.7</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/93">
+        [#93] jVi doesn't work in NetBeans 6.7</a>
       </li>
     </ul>
   </dd>
@@ -1058,23 +1086,23 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
   <dd>
     <ul>
       <li>
-        <a href="http://sourceforge.net/tracker2/?func=detail&amp;aid=2339621&amp;group_id=3653&amp;atid=353653">
-        [#2339621] ci", di}, yi) commands... Text Object Selection</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/41">
+        [#41] ci", di}, yi) commands... Text Object Selection</a>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker2/?func=detail&amp;aid=2166561&amp;group_id=3653&amp;atid=353653">
-        [#2166561] gU/u</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/39">
+        [#39] gU/u</a>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker2/?func=detail&amp;aid=2118243&amp;group_id=3653&amp;atid=353653">
-        [#2118243] Add mapping for Ctrl-Q to start block select mode</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/38">
+        [#38] Add mapping for Ctrl-Q to start block select mode</a>
       </li>
       <li>Jump list. Includes <span class="tt">:ju[mps]</span>, <span class="tt">Ctrl-O</span> and <span class="tt">Ctrl-I</span></li>
-      <li><a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=232351&amp;group_id=3653&amp;atid=353653">
-        [#232351] copy/move operations on marked block aren't implemented</a>
+      <li><a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/1">
+        [#1] copy/move operations on marked block aren't implemented</a>
       </li>
-      <li><a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=436544&amp;group_id=3653&amp;atid=353653">
-        [ 436544 ] yank doesn\'t work with colon commands</a>
+      <li><a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/6">
+        [#6] yank doesn\'t work with colon commands</a>
       </li>
     </ul>
   </dd>
@@ -1082,43 +1110,43 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
   <dd>
     <ul>
       <li>
-        <a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=2388723&amp;group_id=3653&amp;atid=103653">
-        [#2388723] IDE hangs when pasting text to the find-textfield (linux only)</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/92">
+        [#92] IDE hangs when pasting text to the find-textfield (linux only)</a>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker2/?func=detail&amp;aid=2018514&amp;group_id=3653&amp;atid=103653">
-        [#2018514] SIOOBE during editing in GetChar.docRemoveInternal</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/81">
+        [#81] SIOOBE during editing in GetChar.docRemoveInternal</a>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker2/?func=detail&amp;aid=2191596&amp;group_id=3653&amp;atid=103653">
-        [#2191596] Unable to autogen code from Ctrl+Space</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/89">
+        [#89] Unable to autogen code from Ctrl+Space</a>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker2/?func=detail&amp;aid=2200316&amp;group_id=3653&amp;atid=103653">
-        [#2200316] The Repeat command fails when search pattern</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/91">
+        [#91] The Repeat command fails when search pattern</a>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker2/?func=detail&amp;aid=2200322&amp;group_id=3653&amp;atid=353653">
-        [#2200322] paste command doesn't accept numbers</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/40">
+        [#40] paste command doesn't accept numbers</a>
       </li>
       <li>
-        <a href="http://www.netbeans.org/issues/show_bug.cgi?id=150199">
+        <a target="_blank" href="http://bz.apache.org/netbeans/show_bug.cgi?id=150199">
         [NetBeans Issue 150199] [jVi] AssertionError: Start offset must be less than or equal to the end offset. startOffset = 0, endOffset = -1</a>
       </li>
 
-      <li><a href="http://sourceforge.net/tracker2/?func=detail&amp;aid=2130840&amp;group_id=3653&amp;atid=103653">
-        [#2130840] JVIEnable action not showing in the available keybindings</a>
+      <li><a target="_blank" href="http://sourceforge.net/p/jvi/bugs/88">
+        [#88] JVIEnable action not showing in the available keybindings</a>
       </li>
-      <li><a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=2014322&amp;group_id=3653&amp;atid=103653">
-        [#2014322] Does not work with Netbeans 6.5</a>
-      </li>
-      <li>
-        <a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=2015265&amp;group_id=3653&amp;atid=103653">
-        [#2015265] Exception when going to a line # outside the file range</a>
+      <li><a target="_blank" href="http://sourceforge.net/p/jvi/bugs/78">
+        [#78] Does not work with Netbeans 6.5</a>
       </li>
       <li>
-        <a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=2016745&amp;group_id=3653&amp;atid=103653">
-          [#2016745] assert while in diff editor</a>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/79">
+        [#79] Exception when going to a line # outside the file range</a>
+      </li>
+      <li>
+        <a target="_blank" href="http://sourceforge.net/p/jvi/bugs/80">
+          [#80] assert while in diff editor</a>
       </li>
     </ul>
   </dd>
@@ -1132,7 +1160,7 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
   <dd>
     <ul>
       <li>Work around an NB6.1 bug in undo/redo handling.<br>
-          <a href="http://www.netbeans.org/issues/show_bug.cgi?id=135837">
+          <a target="_blank" href="http://bz.apache.org/netbeans/show_bug.cgi?id=135837">
           [Issue 135837] New - NbEditorKit.undoAction misbehaves (and two undoable edit listeners)</a>
       </li>
     </ul>
@@ -1144,8 +1172,8 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
   <dt>Bug fixes</dt>
   <dd>
     <ul>
-      <li><a href="http://sourceforge.net/tracker/?func=detail&amp;atid=353653&amp;aid=1941326&amp;group_id=3653">
-        [#1941326] substitute in selected block (MAC ONLY)</a>
+      <li><a target="_blank" href="http://sourceforge.net/p/jvi/feature-requests/32">
+        [#32] substitute in selected block (MAC ONLY)</a>
       </li>
     </ul>
   </dd>
@@ -1156,13 +1184,13 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
   <dt>Bug fixes</dt>
   <dd>
     <ul>
-      <li><a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=1914140&amp;group_id=3653&amp;atid=103653">
-        [#1914140] Visual mode highlighting broken after jVi re-enable</a>
+      <li><a target="_blank" href="http://sourceforge.net/p/jvi/bugs/76">
+        [#76] Visual mode highlighting broken after jVi re-enable</a>
       </li>
       <li>Fix interactions when extending visual mode selection with
       searching and incremental searching.</li>
-      <li><a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=1693415&amp;group_id=3653&amp;atid=103653">
-        [#1693415] jVi doesn't work well with protected text</a></li>
+      <li><a target="_blank" href="http://sourceforge.net/p/jvi/bugs/53">
+        [#53] jVi doesn't work well with protected text</a></li>
       <li>handle interactions where "O"/"o" open new line commands
       would open folds, or fail because they were next to guarded areas.</li>
       <li>1.1.4.x2 don't get confused when attempts to modify guarded
@@ -1659,7 +1687,7 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
       <li>JBuilder4 supported</li>
       <li>JBuilder4 only: if
         <a href="http://www.users.fast.net/~jpmcgrath/cosmetics/"
-	target="_top">Cosmetics</a> open tool is loaded, then there is
+	target="_blank">Cosmetics</a> open tool is loaded, then there is
 	a command ":tog[gle] tab[s]".
       </li>
     </ul>
@@ -1671,7 +1699,7 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
       <li>114281: JBuilder: in insert mode if the user enters a tab
 	character the UseTabs Option should be followed. See
         <a href="http://sourceforge.net/bugs/?func=detailbug&amp;bug_id=114281&amp;group_id=3653"
-	target="_top"> Bug Report</a> for details.
+	target="_blank"> Bug Report</a> for details.
     </ul>
     </dd>
 </dl>
@@ -1769,7 +1797,7 @@ NetBeans 7.1 <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=205835">
     <li> JB fix: ":q" in split window only closes current window, not node/tab.
     <li> fix: C-End, C-Home, C-Left, C-Right
     <li> All problems reported at
-         <a href="http://sourceforge.net/bugs/?group_id=3653" target="_top">
+         <a href="http://sourceforge.net/bugs/?group_id=3653" target="_blank">
          jVi Bug Tracking</a> closed.
     </ul>
   </dd>
