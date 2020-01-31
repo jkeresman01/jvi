@@ -278,7 +278,7 @@ public class G implements ViOptionBag
     // modelines
     static int p_mls;
     // startofline
-    static boolean p_notsol;
+    static boolean p_sol;
     // use PlatformBraceMatch
     static boolean p_pbm;
     // metacharacters escaped

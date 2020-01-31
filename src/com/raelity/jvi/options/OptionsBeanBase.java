@@ -314,6 +314,15 @@ implements Options.EditControl
     public boolean getViCursorInView() {
 	return getboolean(Options.cursorInView);
     }
+
+    public void setViStartOfLine(boolean arg) {
+        put("viStartOfLine", arg);
+    }
+
+    public boolean getViStartOfLine() {
+	return getboolean("viStartOfLine");
+    }
+
     public void setViPerProjectSupport(boolean arg)  throws PropertyVetoException {
         put(Options.perProjectSupport, arg);
     }
@@ -854,14 +863,6 @@ implements Options.EditControl
 
     public boolean getViShiftRound() {
 	return getboolean("viShiftRound");
-    }
-
-    public void setViNotStartOfLine(boolean arg) {
-        put("viNotStartOfLine", arg);
-    }
-
-    public boolean getViNotStartOfLine() {
-	return getboolean("viNotStartOfLine");
     }
 
     public void setViChangeWordBlanks(boolean arg) {

@@ -86,7 +86,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("1.6.1.x1");
+    public static final jViVersion version = new jViVersion("1.6.1.beta1");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -696,6 +696,14 @@ final public class ViManager
             //     }
             // }
             prefs.remove(Options.metaEscape); // should never get here again
+        }
+        t = prefs.get(Options.notStartOfLine, "xyzzy");
+        if(!t.equals("xyzzy")) {
+            // The backwards option is set.
+            // The correct option is the opposite state, so...
+            boolean notsol = prefs.getBoolean(Options.notStartOfLine, true);
+            prefs.putBoolean(Options.startOfLine, !notsol);
+            prefs.remove(Options.notStartOfLine);
         }
       }
 

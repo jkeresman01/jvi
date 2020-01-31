@@ -1299,7 +1299,7 @@ private static class GetLiteral implements HandleNextChar
    */
   public static int beginlineColumnIndex(MySegment txt, int flags) {
     int index;
-    if ((flags & BL_SOL) != 0 && G.p_notsol) {
+    if ((flags & BL_SOL) != 0 && !G.p_sol) {
       index = Misc.coladvanceColumnIndex(G.curwin.w_curswant, txt);
     } else {
       index = 0;

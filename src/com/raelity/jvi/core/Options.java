@@ -165,7 +165,8 @@ public final class Options {
   public static final String unnamedClipboard = "viUnnamedClipboard";
   public static final String joinSpaces = "viJoinSpaces";
   public static final String shiftRound = "viShiftRound";
-  public static final String notStartOfLine = "viNotStartOfLine";
+  public static final String startOfLine = "viStartOfLine";
+  public static final String notStartOfLine = "viNotStartOfLine"; // NOT AN OPTION
   public static final String changeWordBlanks = "viChangeWordBlanks";
   public static final String tildeOperator = "viTildeOperator";
   public static final String searchFromEnd = "viSearchFromEnd";
@@ -175,7 +176,7 @@ public final class Options {
 
   public static final String magic = "viAaSearchMagic";
   public static final String metaEquals = "viMetaEquals";
-  public static final String metaEscape = "viMetaEscape";
+  public static final String metaEscape = "viMetaEscape"; // NOT AN OPTION
   public static final String incrSearch = "viIncrSearch";
   public static final String highlightSearch = "viHighlightSearch";
 
@@ -674,10 +675,19 @@ public final class Options {
                "use clipboard for unamed yank, delete and put");
     setExpertHidden(unnamedClipboard, true, false);
 
-    createBooleanOption(notStartOfLine, false);
-    setupOptionDesc(Category.GENERAL, notStartOfLine, "(not)'startofline' (not)'sol'",
-               "After motion try to keep column position."
-            + " NOTE: state is opposite of vim.");
+    createBooleanOption(startOfLine, true);
+    setupOptionDesc(Category.GENERAL, startOfLine, "'startofline' 'sol'",
+        "When \"on\" the commands listed below move the cursor to the first"
+	+ "non-blank of the line.  When off the cursor is kept in the same column"
+	+ "(if possible).  This applies to the commands: CTRL-D, CTRL-U, CTRL-B,"
+	+ "CTRL-F, \"G\", \"H\", \"M\", \"L\","
+        + " gg, and to the commands \"d\", \"<<\" and \">>\""
+	+ "with a linewise operator, with \"%\" with a count and to buffer changing"
+	+ "commands (CTRL-^, :bnext, :bNext, etc.).  Also for an Ex command that"
+	+ "only has a line number, e.g., \":25\" or \":+\"."
+	+ "In case of buffer changing commands the cursor is placed at the column"
+	+ "where it was the last time the buffer was edited."
+               );
 
     createIntegerOption(
             persistedBufMarks, 25, new Validator<Integer>() {

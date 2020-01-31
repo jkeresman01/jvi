@@ -1838,7 +1838,7 @@ normal_end: {
 	/*
 	 * if 'sol' not set, go back to old column for some commands
 	 */
-	if (    G.p_notsol && oap.motion_type == MLINE
+	if (    !G.p_sol && oap.motion_type == MLINE
             && !oap.end_adjusted
 	    && (oap.op_type == OP_LSHIFT || oap.op_type == OP_RSHIFT
 		|| oap.op_type == OP_DELETE)) {
@@ -2704,8 +2704,8 @@ normal_end: {
     boolean afterBottom = curViewLine > G.curwin.getVpBottomViewLine() - so - 2;
     if(!beforeTop && !afterBottom)
       return;
-    boolean save_p_notsol = G.p_notsol;
-    G.p_notsol = true;
+    boolean save_p_sol = G.p_sol;
+    G.p_sol = false;
     G.keepingCursorInView = true;
     try {
       if(beforeTop)
@@ -2713,7 +2713,7 @@ normal_end: {
       else
         nv_scroll('L', 1);
     } finally {
-      G.p_notsol = save_p_notsol;
+      G.p_sol = save_p_sol;
       G.keepingCursorInView = false;
     }
   }
