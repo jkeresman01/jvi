@@ -280,6 +280,8 @@ public abstract class TextView implements ViTextView
         // since difficult to detect magic, check dot-lastDot for quick exit
         if (!G.pcmarkTrack || Math.abs(dot - lastDot) < 3)
             return;
+        if(G.keepingCursorInView) // external scrolling doesn't affect pcmark
+            return;
 
         int currDot = dot;
         // With updates invokeLater, limit magic loosly

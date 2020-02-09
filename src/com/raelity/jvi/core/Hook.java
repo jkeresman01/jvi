@@ -72,6 +72,10 @@ public class Hook
         Normal.abortVisualMode();
     }
 
+    public void keepCursorInView(ViTextView tv) {
+        Normal.keepCursorInView(tv);
+    }
+
     public void switchTo(ViTextView tv, Buffer buf)
     {
         G.switchTo(tv, buf);

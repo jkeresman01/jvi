@@ -450,6 +450,12 @@ public interface ViTextView extends ViOptionBag {
   /** @return true if this text view is shutdown */
   public boolean isShutdown();
 
+  /**
+   * Possible to invoke jvi core from "outside",
+   * must check if text view is ready.
+   */
+  public boolean isReady();
+
   /** Change the cursor shape */
   public void updateCursor(ViCaretStyle cursor);
 

@@ -235,7 +235,7 @@ class MarkOps
 
     static void setpcmark(ViTextView tv, ViFPOS fpos)
     {
-        if (G.global_busy) {
+        if (G.global_busy || G.keepingCursorInView) {
             return;
         }
 

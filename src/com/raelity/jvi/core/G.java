@@ -331,6 +331,8 @@ public class G implements ViOptionBag
     static Color p_vbc;
     // wrapscan
     static boolean p_ws;
+    // keep cursor in view
+    static boolean p_civ;
 
     // static String p_ww = "bshl<>[]"; // b,s
     // options for whichwrap: p_ww_bs, ...
@@ -371,6 +373,7 @@ public class G implements ViOptionBag
     static boolean isCoordSkip;
     static boolean redoTrack; // track redo for magic/code-completion
     static boolean pcmarkTrack; // track NB caret motions for pcmark
+    static boolean keepingCursorInView; // true while actually doing this
     static int viminfoMaxBuf; //viminfoMaxPersistedBuffersWithMarks
     static boolean isCursorXorBug;
 

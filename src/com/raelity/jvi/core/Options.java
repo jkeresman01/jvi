@@ -199,6 +199,7 @@ public final class Options {
   public static final String visualBell = "viVisualBell";
   public static final String visualBellTime = "viVisualBellTime";
   public static final String visualBellColor = "viVisualBellColor";
+  public static final String cursorInView = "viCursorInView";
 
   public static final String history = "viHistory";
 
@@ -441,7 +442,8 @@ public final class Options {
     createBooleanOption(pcmarkTrack, true);
     setupOptionDesc(Category.PLATFORM, pcmarkTrack,
                     "\"``\" magic pcmark tracking", "Track magic cursor "
-                    + " movments for the \"``\" command. These movement are"
+                    + " movments for use by the \"``\" and \"''\" commands."
+                    + " These movement are"
                     + " often the result of IDE actions invoked external"
                     + " to jVi.");
 
@@ -799,6 +801,13 @@ public final class Options {
     setupOptionDesc(Category.WINDOW, splitRight, "'splitright' 'spr'",
 	"When on, splitting a window will put the new window right of the"
 	+ " current one.");
+
+    createBooleanOption(cursorInView, true);
+    setupOptionDesc(Category.WINDOW, cursorInView,
+        "'cursorinview' 'civ'",
+	"When on, follow the vim behavior;"
+        + " if the scrollbar or scrollwheel change the view, when this option"
+        + " is on the cursor is moved to stay in the view.");
 
 
     /////////////////////////////////////////////////////////////////////

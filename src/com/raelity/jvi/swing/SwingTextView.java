@@ -133,6 +133,8 @@ public abstract class SwingTextView extends TextView
     private static int gen;
 
     private static boolean didInit;
+    private boolean isShuttingDown;
+
     @ServiceProvider(service=ViInitialization.class,
                      path="jVi/init",
                      position=10)
@@ -266,6 +268,8 @@ public abstract class SwingTextView extends TextView
 
         super.shutdown();
 
+        isShuttingDown = true;
+
         shutdownMore();
         Scheduler.detached(editorPane);
         editorPane = null;
@@ -276,6 +280,17 @@ public abstract class SwingTextView extends TextView
     public boolean isShutdown()
     {
         return editorPane == null;
+    }
+
+    @Override
+    public boolean isReady()
+    {
+        if(isShutdown() || isShuttingDown || viewport == null)
+            return false;
+        Rectangle bounds = editorPane.getBounds();
+        if(bounds.width == 0 || bounds.height == 0)
+            return false;
+        return true;
     }
 
 

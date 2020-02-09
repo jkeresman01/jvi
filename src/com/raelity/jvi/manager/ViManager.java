@@ -86,7 +86,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("1.6.0");
+    public static final jViVersion version = new jViVersion("1.6.1.x1");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -528,7 +528,10 @@ final public class ViManager
         }
     }
 
-    /** The viewport has changed or scrolled, clear messages*/
+    /**
+     * The viewport has changed or scrolled, clear messages
+     * and make sure cursor stays in view.
+     */
     public static void viewMoveChange(ViTextView textView)
     {
         if(G.curwin() == null) {
@@ -536,6 +539,8 @@ final public class ViManager
             // but G.curwin is not set yet. See switchTo(Component editor)
             return;
         }
+        if(textView.isReady())
+            core.keepCursorInView(textView);
         G.curwin().getStatusDisplay().scrolling();
     }
 

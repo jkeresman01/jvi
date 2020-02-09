@@ -1315,6 +1315,7 @@ normal_end: {
   /**
    * Handle an operator after visual mode or when the movement is finished
    */
+  @SuppressWarnings("fallthrough")
   static void do_pending_operator(final CMDARG cap,
 			   StringBuilder searchbuff,
 			   MutableBoolean command_busy,
@@ -2686,18 +2687,54 @@ normal_end: {
   }
 
   /**
+   * Expected that this only gets invoked
+   * due to external changes; for example, view port moves by scroll wheel.
+   * 
+   * Do 'H', or 'L' if cursor out of view/bounds.
+   */
+  static void keepCursorInView(ViTextView tv) {
+    // This is only invoked when jvi is not handling keystroke
+    if(!G.p_civ || ViManager.jViBusy() || G.curwin != tv
+            || G.curwin == null || G.curbuf == null)
+      return;
+
+    int so = getScrollOff();
+    int curViewLine = G.curwin.getViewLine(G.curwin.w_cursor);
+    boolean beforeTop = curViewLine < G.curwin.getVpTopViewLine() + so;
+    boolean afterBottom = curViewLine > G.curwin.getVpBottomViewLine() - so - 2;
+    if(!beforeTop && !afterBottom)
+      return;
+    boolean save_p_notsol = G.p_notsol;
+    G.p_notsol = true;
+    G.keepingCursorInView = true;
+    try {
+      if(beforeTop)
+        nv_scroll('H', 1);
+      else
+        nv_scroll('L', 1);
+    } finally {
+      G.p_notsol = save_p_notsol;
+      G.keepingCursorInView = false;
+    }
+  }
+
+  /**
    * Handle scrolling command 'H', 'L' and 'M'.
    */
   static private void nv_scroll(CMDARG cap) {
+    cap.oap.motion_type = MLINE;
+    nv_scroll(cap.cmdchar, cap.count1);
+  }
+
+  static private void nv_scroll(char cap_cmdchar, int cap_count1) {
     int	    used = 0;
     int    n;
 
-    cap.oap.motion_type = MLINE;
     MarkOps.setpcmark();
     int newcursorline;
 
     int halfway = (G.curwin.getVpLines() - G.curwin.getVpBlankLines() + 1) / 2;
-    if(cap.cmdchar == 'M') {
+    if(cap_cmdchar == 'M') {
       int topline = G.curwin.getVpTopLogicalLine();
       int line_count = G.curwin.getLogicalLineCount();
       validate_botline();	    // make sure w_empty_rows is valid
@@ -2710,16 +2747,16 @@ normal_end: {
       if (newcursorline > line_count)
 	newcursorline = line_count;
     } else {
-      // cap.cmdchar == 'H' or 'L'
+      // cap_cmdchar == 'H' or 'L'
       //validate_botline(); 'L' // make sure curwin.w_botline is valid
       int so = getScrollOff();
       int adjust = so;
-      if(cap.count1 -1 > so) {
-	adjust = cap.count1 -1;
+      if(cap_count1 -1 > so) {
+	adjust = cap_count1 -1;
       }
       if(adjust > halfway)
         adjust = halfway;
-      if (cap.cmdchar == 'L') {
+      if (cap_cmdchar == 'L') {
 	newcursorline = G.curwin.getVpBottomViewLine() - 1 - adjust;
 	if(newcursorline < G.curwin.getVpTopViewLine() + so) {
 	  newcursorline = G.curwin.getVpTopViewLine() + so;
@@ -2738,7 +2775,7 @@ normal_end: {
     if(newcursorline > 0) {
       fposLogicalLine(fpos, newcursorline);
     }
-    cursor_correct(fpos);	// correct for 'so' !!DONE ELSEWHERE!!
+    // cursor_correct(fpos);	// correct for 'so' !!DONE ELSEWHERE!!
     beginline(fpos, BL_SOL | BL_FIX);
     G.curwin.w_cursor.set(fpos.getOffset()); // KEEP fpos.getOffset()
   }
@@ -3905,6 +3942,7 @@ nv_brackets(CMDARG cap, int dir)
     }
   }
 
+  @SuppressWarnings("fallthrough")
   static private void nv_g_cmd(CMDARG cap, StringBuilder searchbuff)
   throws NotSupportedException {
     ViFPOS tpos;

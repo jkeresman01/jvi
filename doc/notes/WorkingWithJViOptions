@@ -26,7 +26,7 @@ Working with jVi options
 
       - create the option and default value; assign to global if needed
 
-        G.p_report = createIntegerOption(report, 2);
+        G.p_report = createIntegerOption(report, 2); // RARELY DONE
 
         There is an optional third argument to createXxxOptions, this argument
         is a validator. If not provided, then any value suitable for the type

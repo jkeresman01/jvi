@@ -307,6 +307,13 @@ implements Options.EditControl
         return ViManager.getReleaseString();
     }
 
+    public void setViCursorInView(boolean arg) {
+        put(Options.cursorInView, arg);
+    }
+
+    public boolean getViCursorInView() {
+	return getboolean(Options.cursorInView);
+    }
     public void setViPerProjectSupport(boolean arg)  throws PropertyVetoException {
         put(Options.perProjectSupport, arg);
     }

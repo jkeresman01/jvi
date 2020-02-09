@@ -6,6 +6,9 @@ continue magic redo work, typeing that '"' on '"' at end screws up '.'.
 ===
 ===
 
+
+FoldHierarchy locking?
+
 use JLayer or somesuch to flip the arrow on the combo box? find other way.
 
 ?rework colon commands parser bringing it closer to modern vim

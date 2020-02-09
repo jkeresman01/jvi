@@ -71,16 +71,38 @@
   <dt>jVi Core</dt>
   <dd>
     <ul>
+      <li>
+        Change the wrongly named <span class=tt>'notsol'</span>
+        option to <span class='tt'>'sol'</span> matching vim.
+        The user preference is maintained.
+      </li>
+      <li>
+        When using the scrollbar or the scroll wheel,
+        move the cursor so it stays in the view; this matches vim behavior.
+        New option
+        <span class='tt'>'cursorinview'</span>/<span class='tt'>'civ'</span>.
+        Set to false to maintain cursor position,
+        even if cursor goes out of view;
+        this is the old (non-vim) behavior.
+      </li>
     </ul>
   </dd>
   <dt>jVi NetBeans</dt>
   <dd>
     <ul>
       <li>
-        Improve interoperability with NetBeans' project properties'
-        "Formatting>Use project specific options". There is a jVi
-        option "Support Project specific options". When both of the jVi and
-        NetBeans options are enabled, 'shiftwidth', 'tabstop' and expandtab'
+        Improve interoperability with per project properties
+        found in NetBeans'
+        <span class='tt'>Project &gt; Properties &gt;
+          Formatting &gt; Use project specific options</span>.
+        There is a jVi
+        option
+        <span class='tt'>support "Project specific options"</span>.
+        When both of the jVi and
+        NetBeans options are enabled,
+        <span class='tt'>'shiftwidth'</span>,
+        <span class='tt'>'tabstop'</span>,
+        and <span class='tt'>'expandtab'</span>
         are taken from NetBeans' per project settings.
       </li>
     </ul>
