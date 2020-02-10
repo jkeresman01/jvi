@@ -26,6 +26,7 @@ import com.raelity.jvi.core.Normal;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.lib.MyEventListenerList;
 import com.raelity.jvi.manager.ViManager;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -39,6 +40,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.List;
 import java.util.logging.Level;
+
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -47,6 +49,11 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
+
+import com.raelity.jvi.options.*;
+
+import static com.raelity.jvi.lib.LibUtil.dumpEvent;
+import static com.raelity.text.TextUtil.sf;
 
 // inner classes ...........................................................
 
@@ -57,7 +64,7 @@ import javax.swing.text.JTextComponent;
  */
 public abstract class CommandLineEntry implements ViCmdEntry
 {
-
+    private static DebugOption dbg = Options.getDebugOption(Options.dbgSearch);
     /** result of last entry */
     protected String lastCommand;
     protected MyEventListenerList ell = new MyEventListenerList();
@@ -315,7 +322,22 @@ public abstract class CommandLineEntry implements ViCmdEntry
             sb.append('\n');
             GetChar.userInput(new String(sb));
         }
-        ell.fire(ActionListener.class, e);
+        final ActionEvent fev = e;
+        dbg.printf(() -> sf("CLINE: fireEvent: %s: %s\n",
+                            ActionListener.class, dumpEvent(fev)));
+        fireEllEvent(ActionListener.class, fev);
+    }
+
+    private void fireEllEvent(Class<?> clazz, ActionEvent e)
+    {
+        if(commandLine.isFiringEvents())
+            ell.fire(clazz, e);
+    }
+
+    private void fireEllEvent(Class<?> clazz, ChangeEvent e)
+    {
+        if(commandLine.isFiringEvents())
+            ell.fire(clazz, e);
     }
 
     @Override
@@ -337,13 +359,15 @@ public abstract class CommandLineEntry implements ViCmdEntry
     @Override
     public void insertUpdate(DocumentEvent e)
     {
-        ell.fire(ChangeListener.class, new ChangeEvent(getTextComponent()));
+        dbg.printf(() -> sf("CLINE: insertUpdate: %s\n", getTextComponent().getText()));
+        fireEllEvent(ChangeListener.class, new ChangeEvent(getTextComponent()));
     }
 
     @Override
     public void removeUpdate(DocumentEvent e)
     {
-        ell.fire(ChangeListener.class, new ChangeEvent(getTextComponent()));
+        dbg.printf(() -> sf("CLINE: removeUpdate: %s\n", getTextComponent().getText()));
+        fireEllEvent(ChangeListener.class, new ChangeEvent(getTextComponent()));
     }
 
     @Override
@@ -355,6 +379,7 @@ public abstract class CommandLineEntry implements ViCmdEntry
     @Override
     public void addChangeListener(ChangeListener l)
     {
+        dbg.printf(() -> sf("CLINE: addChangeListener: count %d\n", ell.getListenerCount(ChangeListener.class)));
         if (ell.getListenerCount(ChangeListener.class) == 0) {
             dl = new DocListener();
             getTextComponent().getDocument().addDocumentListener(dl);

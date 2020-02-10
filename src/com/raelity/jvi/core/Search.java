@@ -43,8 +43,15 @@ import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
+
 import java.util.HashMap;
 import java.util.Map;
+
+import com.raelity.jvi.options.*;
+
+import static com.raelity.jvi.lib.LibUtil.dumpChangeEvent;
+import static com.raelity.jvi.lib.LibUtil.dumpEvent;
+import static com.raelity.text.TextUtil.sf;
 
 /**
  * Searching, regexp and substitution.
@@ -55,6 +62,7 @@ public class Search
   private Search() { }
 
   private static final Logger LOG = Logger.getLogger(Search.class.getName());
+  private static DebugOption dbg = Options.getDebugOption(Options.dbgSearch);
 
   ///////////////////////////////////////////////////////////////////////
   //
@@ -100,6 +108,7 @@ public class Search
 
   static private void searchEntryComplete(ActionEvent ev) {
     try {
+      dbg.printf(() -> sf("SEARCH: searchEntryComplete: %s\n", dumpEvent(ev)));
       Hook.setJViBusy(true);
       String cmd = ev.getActionCommand();
       boolean acceptIncr = false;
@@ -170,6 +179,8 @@ public class Search
     @Override
     public void stateChanged(ChangeEvent e)
     {
+      dbg.printf(() -> sf("ISEARCH: stateChanged --> laterDoIncrementalSearch: %s\n",
+                          dumpChangeEvent(e)));
       laterDoIncrementalSearch();
     }
   }
@@ -179,6 +190,7 @@ public class Search
   private static void startIncrementalSearch() {
       // funny aborts might leave one...
       // NEEDSWORK: Might want to use a weak listen as well
+      dbg.println("ISEARCH: startIncrementalSearch");
       getSearchCommandEntry().removeChangeListener(isListener);
       if(isListener == null)
         isListener = new SearchListener();
@@ -202,6 +214,7 @@ public class Search
   }
   
   private static void doIncrementalSearch() {
+    dbg.println("ISEARCH: doIncrementalSearch");
     Hook.setJViBusy(true);
     try {
       String pattern = getSearchCommandEntry().getCurrentEntry();
@@ -271,6 +284,7 @@ public class Search
                        OPARG oap, char dirc, String pat,
                        int count, int options)
   {
+    dbg.printf("SEARCH: do_search: %s\n", pos);
     if(pos == null)
       pos = G.curwin.w_cursor.copy(); // start searching from here
     ViFPOS initialPos = pos.copy();   // use with setpcmark on success (!vim)
@@ -1076,8 +1090,8 @@ finished:
       }
       isEscaped = false;
     }
-    Options.getDebugOption(Options.dbgSearch) .printf(Level.INFO,
-            "PATTERN: magic: %s, in %s, out %s\n", G.p_magic, s, sb);
+    dbg.printf(Level.INFO,
+               "PATTERN: magic: %s, in %s, out %s\n", G.p_magic, s, sb);
     return sb.toString();
   }
 

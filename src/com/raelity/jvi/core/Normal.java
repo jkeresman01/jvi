@@ -2950,6 +2950,8 @@ normal_end: {
                                || cap.nchar == K_X_SEARCH_CANCEL
                                || cap.nchar == K_X_SEARCH_FINISH;
 
+    Options.getDebugOption(Options.dbgSearch)
+            .printf("SEARCH: nv_search_finish: %x\n", (int)cap.nchar);
     if(cap.nchar == K_X_SEARCH_CANCEL) {
       Msg.clearMsg();
       clearop(oap);

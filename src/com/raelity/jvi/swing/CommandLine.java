@@ -71,6 +71,7 @@ import com.raelity.jvi.ViCmdEntry.HistEntry;
 import com.raelity.jvi.core.*;
 import com.raelity.jvi.manager.*;
 
+import static com.raelity.jvi.lib.LibUtil.dumpEvent;
 import static com.raelity.text.TextUtil.sf;
 
 /**
@@ -90,6 +91,7 @@ public final class CommandLine extends JPanel
     private static final boolean flip = true;
     static final Logger LOG
             = Logger.getLogger(CommandLine.class.getName());
+    private static DebugOption dbg = Options.getDebugOption(Options.dbgSearch);
     static public final int DEFAULT_HISTORY_SIZE = 50;
     static public final String COMMAND_LINE_KEYMAP = "viCommandLine";
     private final JLabel modeLabel = new JLabel();
@@ -101,7 +103,7 @@ public final class CommandLine extends JPanel
     private String findHistoryPrefix = "";
     private boolean inUpDown = false;
     private boolean afterComboEnd = false;
-    private boolean waitingToFire = false; // MORE HACKING
+    private boolean commandLineFiringEvents = false; // MORE HACKING
     private int dot;
     private int mark;
     private static final String ACT_FINISH = "vi-command-finish";
@@ -197,13 +199,15 @@ public final class CommandLine extends JPanel
      */
     public void init( String s )
     {
-        waitingToFire = true;
+        commandLineFiringEvents = true;
+        dbg.printf("CLINE: init: commandLineFiringEvents true\n");
         if(combo.getItemCount() > 0)
             combo.setSelectedIndex(flipComboIndex(0));
         dot = mark = 0;
         // set combo index to the end ????????? should already be there
         setFindHistoryPrefix(s);
         afterComboEnd = true;
+        dbg.printf("CLINE: init: middle: s=%s\n", s);
         if ( s.length() == 0 ) {
             JTextComponent tc = getTextComponent();
             int len = tc.getText().length();
@@ -222,6 +226,8 @@ public final class CommandLine extends JPanel
                 doc.insertString(0, s, null);
             } catch ( BadLocationException ex ) { }
         }
+        dbg.printf(() -> sf("CLINE: init: end: text=%s\n",
+                            getTextComponent().getText()));
     }
 
     private void setFindHistoryPrefix(String s) {
@@ -533,6 +539,9 @@ public final class CommandLine extends JPanel
         return localActions;
     }
 
+    boolean isFiringEvents() {
+        return commandLineFiringEvents;
+    }
 
     /**
      * Deliver event to command line listener;
@@ -542,25 +551,32 @@ public final class CommandLine extends JPanel
     protected void fireCommandLineActionPerformed( ActionEvent e )
     {
         // only run this once, sometimes get event from combo and keys
-        if(!waitingToFire)
+        dbg.printf(() -> sf("CLINE: fireCommandLineActionPerformed: %s\n",
+                          dumpEvent(e)));
+        if(!commandLineFiringEvents)
             return;
-        waitingToFire = false;
+
+        commandLineFiringEvents = false;
         String command = getTextComponent().getText();
+        dbg.printf("CLINE: commandLineFiringEvents false cmd=%s\n", command);
 
         // Maintain LRU history
         makeTop(command);
         combo.hidePopup();
 
-        // Guaranteed to return a non-null array
-        Object[] listeners = listenerList.getListenerList();
-
+        // turned off events for makeTop...
+        dbg.printf("CLINE: commandLineFiringEvents true for finishing events\n");
+        commandLineFiringEvents = true;
         // Process the listeners last to first, notifying
         // those that are interested in this event
+        Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length-2; i>=0; i-=2) {
             if (listeners[i]==ActionListener.class) {
                 ((ActionListener)listeners[i+1]).actionPerformed(e);
             }
         }
+        commandLineFiringEvents = false;
+        dbg.printf("CLINE: commandLineFiringEvents false until next time\n");
     }
 
 
@@ -572,6 +588,7 @@ public final class CommandLine extends JPanel
      */
     public synchronized void addActionListener( ActionListener l )
     {
+        dbg.println(() -> sf("CLINE: addAddActionListener: %s", l));
         listenerList.add(ActionListener.class, l);
     }
 
@@ -584,6 +601,7 @@ public final class CommandLine extends JPanel
      */
     public synchronized void removeActionListener( ActionListener l )
     {
+        dbg.println(() -> sf("CLINE: removeAddActionListener: %s", l));
         listenerList.remove(ActionListener.class, l);
     }
 
@@ -728,6 +746,7 @@ public final class CommandLine extends JPanel
     // workaround for 4530952
     @Override
     public void setText(String s) {
+        dbg.printf(() -> sf("CLINE: setText %s -->%s\n", getText(), s));
         if (getText().equals(s)) {
             return;
         }
@@ -758,6 +777,7 @@ public final class CommandLine extends JPanel
                             (myCommand != null) ? myCommand : getText(),
                             EventQueue.getMostRecentEventTime(), modifiers);
 
+        dbg.printf(() -> sf("CLINE: fireActionPerformed: %s\n", dumpEvent(e)));
         // Process the listeners last to first, notifying
         // those that are interested in this event
         for (int i = listeners.length-2; i>=0; i-=2) {
