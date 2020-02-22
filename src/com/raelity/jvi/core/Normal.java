@@ -2697,6 +2697,14 @@ normal_end: {
     if(!G.p_civ || ViManager.jViBusy() || G.curwin != tv
             || G.curwin == null || G.curbuf == null)
       return;
+    if(G.keepingCursorInView) {
+      // if there is less than 1 line height in the viewport,
+      // when nv_scroll sets the cursor position (last line of method)
+      // it causes a viewpoint change which gets us back here. StackOverflow.
+      // BTW, in fillLinePositions newVpLines is zero when this happens.
+      // Defensively, fix it here.
+      return;
+    }
 
     int so = getScrollOff();
     int curViewLine = G.curwin.getViewLine(G.curwin.w_cursor);

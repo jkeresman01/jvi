@@ -816,8 +816,10 @@ public final class Options {
     setupOptionDesc(Category.WINDOW, cursorInView,
         "'cursorinview' 'civ'",
 	"When on, follow the vim behavior;"
-        + " if the scrollbar or scrollwheel change the view, when this option"
-        + " is on the cursor is moved to stay in the view.");
+        + " if the scrollbar or scrollwheel change the view"
+        + " move the cursor to keep it visible in the view."
+        + " When this option is off allow the cursor"
+        + " to scroll out of view");
 
 
     /////////////////////////////////////////////////////////////////////

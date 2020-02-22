@@ -9,8 +9,8 @@ motd-version: 1
 jVi-release: 1.6.0
 #jVi-release-link:  https://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-11-and-later/nbvi-1.6.0.zip/download
 
-jVi-beta: 1.6.1.beta1
-jVi-beta-link: https://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-11-and-later/nbvi-1.6.1.beta1.zip/download
+jVi-beta: 1.6.1.beta2
+jVi-beta-link: https://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-11-and-later/nbvi-1.6.1.beta2.zip/download
 #jVi-beta-link: http://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-7.0/nbvi-1.5.0.x2.zip/download
 
 # Following used when a new release (probably pre-1.2.6.beat2)
