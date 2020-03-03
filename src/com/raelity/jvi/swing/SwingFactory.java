@@ -728,9 +728,10 @@ abstract public class SwingFactory implements ViFactory
     
     @Override
     public Component getViewport(Component c) {
-        return c instanceof JViewport
-                ? c
-                : SwingUtilities.getAncestorOfClass(JViewport.class, c);
+        if(c instanceof JViewport)
+            return c;
+        Component t = SwingUtilities.getAncestorOfClass(JViewport.class, c);
+        return t != null ? t : c;
     }
     
     
