@@ -56,7 +56,7 @@ public class OptUtil {
     private static Preferences prefs;
     private static PropertyChangeSupport pcs;
     private static PropertyChangeSupport pcsSET;
-    private static final Map<String,Option> optionsMap = new HashMap<>();
+    private static final Map<String,Option<?>> optionsMap = new HashMap<>();
 
     private static final Map<Category, List<String>> categoryLists
             = new EnumMap<>(Category.class);
@@ -78,7 +78,7 @@ public class OptUtil {
         prefs = ViManager.getFactory().getPreferences();
 
         prefs.addPreferenceChangeListener((PreferenceChangeEvent evt) -> {
-          Option opt = Options.getOption(evt.getKey());
+          Option<?> opt = Options.getOption(evt.getKey());
           if (opt != null) {
             if (evt.getNewValue() != null) {
               opt.preferenceChange(evt.getNewValue());
@@ -203,16 +203,25 @@ public class OptUtil {
 
   static public ColorOption createColorOption(String name,
                                               Color defaultValue,
-                                              boolean permitNull) {
-      return createColorOption(name, defaultValue, permitNull, null);
+                                              boolean permitNull,
+                                              boolean initNull) {
+      ColorOption opt = createColorOption(
+              name, defaultValue, permitNull, initNull, null);
+      // only initNull if hasn't been set in preferences
+      // if(initNull && getPrefs().get(name, "xyzzy").equals("xyzzy"))
+      return opt;
   }
 
   static public ColorOption createColorOption(String name,
                                               Color defaultValue,
                                               boolean permitNull,
+                                              boolean initNull,
                                               Validator<Color> valid) {
     if(optionsMap.get(name) != null)
         throw new IllegalArgumentException("Option " + name + "already exists");
+    if(initNull && OptUtil.getPrefs().get(name, "xyzzy").equals("xyzzy")) {
+      OptUtil.getPrefs().put(name, "null");
+    }
     if(valid == null)
       valid = new ColorOption.DefaultColorValidator();
     ColorOption opt = new ColorOption(name, defaultValue, permitNull, valid);
@@ -220,25 +229,25 @@ public class OptUtil {
     return opt;
   }
 
-  static public EnumSetOption createEnumSetOption(String name,
-                                                  EnumSet defaultValue,
-                                                  Class enumType,
-                                                  Validator<EnumSet> valid) {
+  static public EnumSetOption<?> createEnumSetOption(String name,
+                                                  EnumSet<?> defaultValue,
+                                                  Class<?> enumType,
+                                                  Validator<EnumSet<?>> valid) {
     if(optionsMap.get(name) != null)
         throw new IllegalArgumentException("Option " + name + "already exists");
     @SuppressWarnings("unchecked")
-    EnumSetOption opt = new EnumSetOption((Class<EnumSet>)defaultValue.getClass(),
+    EnumSetOption<?> opt = new EnumSetOption((Class<EnumSet>)defaultValue.getClass(),
                                           enumType,
                                           name, defaultValue, valid);
     optionsMap.put(name, opt);
     return opt;
   }
 
-  public static Option getOption(String name) {
+  public static Option<?> getOption(String name) {
     return optionsMap.get(name);
   }
 
-  public static Collection<Option> getOptions() {
+  public static Collection<Option<?>> getOptions() {
     return Collections.unmodifiableCollection(optionsMap.values());
   }
 
@@ -266,7 +275,7 @@ public class OptUtil {
     List<String> optionsGroup = null;
     if(category != null)
         optionsGroup = getWritableOptionList(category);
-    Option opt = optionsMap.get(name);
+    Option<?> opt = optionsMap.get(name);
     if(opt != null) {
       opt.setCategory(category);
       if(optionsGroup != null) {
@@ -279,16 +288,25 @@ public class OptUtil {
     }
   }
 
+  public static void setupPlatformDesc(String name, String desc) {
+    Option<?> opt = optionsMap.get(name);
+    if(opt != null) {
+      opt.setDescPlatform(desc);
+    } else {
+      throw new Error("Unknown option: " + name);
+    }
+  }
+
   public static void setExpertHidden(String optionName,
                                       boolean fExpert, boolean fHidden) {
-    Option opt = optionsMap.get(optionName);
+    Option<?> opt = optionsMap.get(optionName);
     if(opt != null) {
       opt.setExpert(fExpert);
       opt.setHidden(fHidden);
     }
   }
 
-  static void intializeGlobalOptionMemoryValue(Option opt)
+  static void intializeGlobalOptionMemoryValue(Option<?> opt)
   {
     VimOption vopt = VimOption.get(opt.getName());
     if(vopt == null || !vopt.isGlobal())
@@ -324,7 +342,7 @@ public class OptUtil {
         // The option should exist
         // G should have something with the var name
         // and the types should match
-        Option opt = OptUtil.getOption(vopt.getOptName());
+        Option<?> opt = OptUtil.getOption(vopt.getOptName());
         if(     G.dbgOptions().getBoolean())
                 G.dbgOptions().println("VERIFY: " + vopt.getOptName());
         Field f = G.class.getDeclaredField(vopt.getVarName());
@@ -346,7 +364,7 @@ public class OptUtil {
       hasSetCommand.add(vopt.getOptName());
     }
     System.err.println("Checking for options without set command");
-    for(Option opt : getOptions()) {
+    for(Option<?> opt : getOptions()) {
       if(opt.getName().startsWith("viDbg"))
         continue;
       if(!hasSetCommand.contains(opt.getName())) {
@@ -365,12 +383,14 @@ public class OptUtil {
 
   private static class Change
   {
-  public Change(Object oldVal, Object newVal)
+  public Change(String type, Object oldVal, Object newVal)
   {
+    this.type = type;
     this.oldVal = oldVal;
     this.newVal = newVal;
   }
   
+  String type;
   Object oldVal;
   Object newVal;
   }
@@ -393,11 +413,11 @@ public class OptUtil {
     map.clear();
   }
   
-  void changeOption(String name, Object oldVal, Object newVal)
+  void changeOption(String name, String type, Object oldVal, Object newVal)
   {
     Change ch = map.get(name);
     if(ch == null) {
-      ch = new Change(oldVal, newVal);
+      ch = new Change(type, oldVal, newVal);
       map.put(name, ch);
     } else {
       // assert oldVal.equals(ch.oldVal);
@@ -411,19 +431,26 @@ public class OptUtil {
       String key = entry.getKey();
       Change ch = entry.getValue();
       
-      if(ch.newVal instanceof String) {
+      switch(ch.type)
+      {
+      case "String":
         prefs.put(key, (String)ch.newVal);
-      } else if(ch.newVal instanceof Color) {
-        prefs.put(key, ColorOption.encode(
-                (Color)(ch.newVal != nullColor ? ch.newVal : null)));
-      } else if(ch.newVal instanceof Integer) {
+        break;
+      case "Color":
+        prefs.put(key, ColorOption.encode((Color)ch.newVal));
+        break;
+      case "Integer":
         prefs.putInt(key, (Integer)ch.newVal);
-      } else if(ch.newVal instanceof Boolean) {
+        break;
+      case "Boolean":
         prefs.putBoolean(key, (Boolean)ch.newVal);
-      } else if(ch.newVal instanceof EnumSet) {
+        break;
+      case "EnumSet":
         prefs.put(key, EnumSetOption.encode((EnumSet)ch.newVal));
-      } else
+        break;
+      default:
         assert false : "unhandled type";
+      }
       
       if(pcs != null)
         pcs.firePropertyChange(key, ch.newVal, ch.oldVal);

@@ -41,6 +41,8 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 
+import com.l2fprod.common.swing.LookAndFeelTweaks;
+
 import org.openide.util.WeakListeners;
 
 import com.raelity.jvi.ViOutputStream;
@@ -70,6 +72,8 @@ implements Options.EditControl
     private static final String statusError = "failed mappings ";
     private static final String DIALOG_TITLE = "jVi Mappings Parse Status";
     private static final String OUTPUT_TITLE = "Mappings Errors";
+    private final Color statusForegroundDefault;
+    private final Color statusForegroundError;
 
     private static String lastSetMappings;
 
@@ -85,6 +89,13 @@ implements Options.EditControl
                 WeakListeners.document(listen, mappings.getDocument()));
         mappings.addCaretListener(WeakListeners.create(
                 CaretListener.class, caretListener, mappings));
+
+        LookAndFeelTweaks.htmlize(description);
+        statusForegroundDefault = status.getForeground();
+        Color color = (Color)UIManager.getDefaults().get("nb.errorForeground");
+        if(color == null)
+            color = Color.red;
+        statusForegroundError = color;
     }
 
     private String getMapContentType()
@@ -196,14 +207,14 @@ implements Options.EditControl
     private void setStatus(boolean defaultError)
     {
         if(opt.getValue().equals(mappings.getText())) {
-            status.setForeground(Color.black);
+            status.setForeground(statusForegroundDefault);
             status.setText(statusCurrent);
         } else {
             if(defaultError) {
-                status.setForeground(Color.red);
+                status.setForeground(statusForegroundError);
                 status.setText(statusError);
             } else {
-                status.setForeground(Color.black);
+                status.setForeground(statusForegroundDefault);
                 status.setText(statusModified);
                 setChange(true);
             }

@@ -191,12 +191,21 @@ class OptionSheet extends JPanel implements Options.EditControl {
             if(!descriptors[i].isHidden()) {
                 // xmlify the description
                 PropertyDescriptor d = descriptors[i];
-                Option opt = Options.getOption(d.getName());
+                Option<?> opt = Options.getOption(d.getName());
                 VimOption vopt = VimOption.get(d.getName());
                 sb.setLength(0);
                 if(opt != null) {
-                    sb.append("Default: '<b>").
-                            append(opt.getDefault()).append("</b>'");
+                    sb.append("Default: '<b>");
+                    if(opt instanceof ColorOption) {
+                        Color color = (Color)opt.getDefault();
+                        sb.append(color == null
+                                  ? "X"
+                                  : String.format("#%06x", color.getRGB() & 0xffffff));
+                    }
+                    else
+                        sb.append(opt.getDefault());
+                    sb.append("</b>'");
+
                     sb.append("; ").append(d.getPropertyType().getSimpleName());
                     if(vopt != null) {
                         sb.append("; ");
@@ -213,8 +222,8 @@ class OptionSheet extends JPanel implements Options.EditControl {
                         sb.append("<br>Buttons:");
                         sb.append(" '<b>...</b>' color chooser");
                         if(copt.isPermitNull())
-                            sb.append(", '<b>X</b>' use null value");
-                        sb.append(", '<b>DFLT</b>' default value.");
+                            sb.append(", '<b>X</b>' use platform/null value");
+                        sb.append(", '<b>DFLT</b>' use default value.");
                         if(vopt != null && !vopt.isHidden()) {
                             sb.append("<br>'<b>:set</b>' accepts 'default'");
                             if(copt.isPermitNull())

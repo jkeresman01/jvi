@@ -73,7 +73,7 @@ implements Options.EditControl
     }
 
     protected void put(String name, boolean val) {
-        optionChangeHandler.changeOption(name, get(name), val);
+        optionChangeHandler.changeOption(name, "Boolean", get(name), val);
     }
 
     protected boolean get(String name) {

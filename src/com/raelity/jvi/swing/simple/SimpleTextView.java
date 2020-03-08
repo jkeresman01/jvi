@@ -20,14 +20,16 @@
 
 package com.raelity.jvi.swing.simple;
 
-import java.awt.Color;
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
@@ -43,10 +45,19 @@ import com.raelity.jvi.swing.SwingTextView;
  */
 abstract public class SimpleTextView extends SwingTextView
 {
+    private int dummy;
 
     public SimpleTextView(JTextComponent editorPane)
     {
         super(editorPane);
+    }
+
+    private void checkEDT(boolean known) {
+        if(EventQueue.isDispatchThread())
+            return;
+        if(known)
+            return;
+        dummy++;
     }
 
     /**
@@ -55,6 +66,7 @@ abstract public class SimpleTextView extends SwingTextView
     @Override
     public void updateHighlightSearchState()
     {
+        //checkEDT(false);
         if(!(editorPane.getDocument() instanceof StyledDocument))
                 return;
         setupStyles();
@@ -71,6 +83,7 @@ abstract public class SimpleTextView extends SwingTextView
     @Override
     public void updateVisualState()
     {
+        //checkEDT(false);
         if(!(editorPane.getDocument() instanceof StyledDocument))
                 return;
         setupStyles();
@@ -106,15 +119,29 @@ abstract public class SimpleTextView extends SwingTextView
 
     private static final String NO_HIGHLIGHT = "ViNoHighlight";
 
-    boolean didInit;
+    private boolean didHlInit;
+    AtomicBoolean needsWakeup = new AtomicBoolean(true);
     private void hlInit()
     {
-        if(didInit)
+        if(didHlInit)
             return;
+        didHlInit = true;
+
         PropertyChangeListener pcl = (PropertyChangeEvent evt) -> {
-            updateStyles();
-            reApplyHighlight();
+            boolean doWakeup = needsWakeup.getAndSet(false);
+            if(doWakeup) {
+                Runnable runInEDT = () -> {
+                    needsWakeup.set(true);
+                    updateStyles();
+                    reApplyHighlight();
+                };
+                if(EventQueue.isDispatchThread())
+                    runInEDT.run();
+                else
+                    EventQueue.invokeLater(runInEDT);
+            }
         };
+
         Options.addPropertyChangeListener(Options.selectColor, pcl);
         Options.addPropertyChangeListener(Options.selectFgColor, pcl);
         Options.addPropertyChangeListener(Options.searchColor, pcl);
@@ -134,29 +161,38 @@ abstract public class SimpleTextView extends SwingTextView
         }
     }
 
+    private void dumpColors(String tag, AttributeSet attr)
+    {
+        System.err.printf("%-15s: fg %06x, bg %06x\n", tag,
+                          StyleConstants.getForeground(attr).getRGB()&0xffffff,
+                          StyleConstants.getBackground(attr).getRGB()&0xffffff);
+    }
+
+    private void updateStyle(String optName, String tag)
+    {
+                        //System.err.printf("=== updateStyles %s ===\n", tag);
+        SimpleAttributeSet optionColors, defaultColors;
+
+        StyledDocument sdoc = (StyledDocument)editorPane.getDocument();
+        Style s = sdoc.getStyle(optName);
+                                //dumpColors(tag + " style1", s);
+        optionColors = getOptionColors(optName);
+        defaultColors = getDefaultColors(optName);
+                                //dumpColors(tag + " option", optionColors);
+                                //dumpColors(tag + " default", defaultColors);
+
+        // could do parent thing: s --> option --> default
+        s.addAttributes(defaultColors);
+        s.addAttributes(optionColors);
+                                //dumpColors(tag + " style2", s);
+    }
+
     private void updateStyles()
     {
-        StyledDocument sdoc = (StyledDocument)editorPane.getDocument();
-        Style s;
+        //checkEDT(true); // PREFS THREAD
+        updateStyle(Options.selectColor, "visual");
+        updateStyle(Options.searchColor, "search");
 
-        s = sdoc.getStyle(Options.selectColor);
-        Color color;
-        color = Options.getOption(Options.selectColor).getColor();
-        StyleConstants.setBackground(s, color);
-        color = Options.getOption(Options.selectFgColor).getColor();
-        if(color != null)
-            StyleConstants.setForeground(s, color);
-        else
-            s.removeAttribute(StyleConstants.Foreground);
-
-        s = sdoc.getStyle(Options.searchColor);
-        color = Options.getOption(Options.searchColor).getColor();
-        StyleConstants.setBackground(s, color);
-        color = Options.getOption(Options.searchFgColor).getColor();
-        if(color != null)
-            StyleConstants.setForeground(s, color);
-        else
-            s.removeAttribute(StyleConstants.Foreground);
     }
 
     private boolean isEmpty(int[] a)
@@ -209,6 +245,7 @@ abstract public class SimpleTextView extends SwingTextView
 
     private void applyCurentHighlights()
     {
+        //checkEDT(true); //PREFS THREAD
         StyledDocument sdoc = (StyledDocument)editorPane.getDocument();
 
         // simply redraw everything
@@ -224,7 +261,11 @@ abstract public class SimpleTextView extends SwingTextView
 
     private void applyHighlight(int[] blocks, AttributeSet as)
     {
+        // NOTE: non parent resolution attribute set seems required here
+        //System.err.println("RUN: applyHighlight");
         //System.err.println("HIGHLIGHT: " + dumpBlocks(blocks) + " " + as);
+        //checkEDT(true); // PREFS THREAD
+
         StyledDocument document = (StyledDocument)editorPane.getDocument();
         for (int i = 0; i < blocks.length; i += 2) {
             int start = blocks[i];

@@ -48,11 +48,12 @@ import com.raelity.jvi.options.EnumSetOption;
 public class EnumSetPropertyEditor extends AbstractPropertyEditor
 {
     private boolean[] selected;
-    private Enum[] items;
-    private EnumSet oldValue;
-    private final EnumSetOption opt;
+    private Enum<?>[] items;
+    private EnumSet<?> oldValue;
+    private final EnumSetOption<?> opt;
     private JPopupMenu popup;
     private boolean popupActive;
+    private Object lastGoodValue;
 
     public EnumSetPropertyEditor(Property property)
     {
@@ -84,7 +85,7 @@ public class EnumSetPropertyEditor extends AbstractPropertyEditor
         popupActive = false;
         if(popup != null)
             popup.setVisible(false);
-        EnumSet newValue = getValue();
+        EnumSet<?> newValue = getValue();
         // we want the editor to close, if the values are equal, then
         // it never sees the event, so in that case...
         EnumSetPropertyEditor.this.firePropertyChange(
@@ -109,9 +110,9 @@ public class EnumSetPropertyEditor extends AbstractPropertyEditor
     }
 
     @Override
-    public EnumSet getValue() {
+    public EnumSet<?> getValue() {
         @SuppressWarnings("unchecked")
-        Set<Enum> set = opt.getEmpty();
+        Set set = opt.getEmpty();
         for(int i = 0; i < selected.length; i++) {
             if(selected[i])
                 set.add(items[i]);
@@ -119,15 +120,16 @@ public class EnumSetPropertyEditor extends AbstractPropertyEditor
         return (EnumSet)set;
     }
 
-    @SuppressWarnings("unchecked")
-    private EnumSet getOldValue() {
-        return EnumSet.copyOf(opt.getEnumSet());
+    @Override
+    public void setValue(Object value)
+    {
+        lastGoodValue = value;
     }
 
     private void makePopup() {
         this.items = opt.getAvailableValues();
         selected = new boolean[items.length];
-        oldValue = getOldValue();
+        oldValue = (EnumSet<?>)lastGoodValue;
         for(int i = 0; i < items.length; i++) {
             selected[i] = oldValue.contains(items[i]);
         }

@@ -28,3 +28,14 @@ mvn versions:set -DnewVersion=1.2.3
 
 
 # At sonatype.org, can log in, get to sonatype.com
+
+
+# and some general stuff
+
+# get artifacts into specified directory
+# deprecated
+mvn dependency:get -Dartifact=org.openjfx:javafx-graphics:13:jar:win -Ddest=./
+# use two commands to get the stuff
+mvn dependency:get -Dartifact=org.openjfx:javafx-graphics:13:jar:win
+mvn dependency:copy -Dartifact=org.openjfx:javafx-graphics:13:jar:win \
+    -DoutputDirectory=.

@@ -21,6 +21,7 @@
 package com.raelity.jvi.swing;
 
 import java.awt.AWTKeyStroke;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -33,9 +34,13 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.prefs.Preferences;
@@ -46,6 +51,7 @@ import javax.swing.JRootPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.UIManager;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultEditorKit;
@@ -58,6 +64,7 @@ import org.openide.util.WeakSet;
 import com.raelity.jvi.ViTextView.TAGOP;
 import com.raelity.jvi.*;
 import com.raelity.jvi.core.*;
+import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.core.lib.KeyDefs.KeyStrokeType;
 import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
@@ -111,6 +118,9 @@ abstract public class SwingFactory implements ViFactory
     private void captureINSTANCE()
     {
         INSTANCE = this;
+
+        ColonCommands.register("dumpUIColors", "dumpUIColors", new DumpUIColors(),
+                               EnumSet.of(CcFlag.DBG));
     }
     
     //////////////////////////////////////////////////////////////////////
@@ -121,7 +131,7 @@ abstract public class SwingFactory implements ViFactory
 
     /**
      * The default action is typically shared.
-     * @return 
+     * @return
      */
     public Action getDefaultAction()
     {
@@ -174,10 +184,10 @@ abstract public class SwingFactory implements ViFactory
     }
     
     @Override
-    public Class loadClass( String name ) throws ClassNotFoundException
+    public Class<?> loadClass( String name ) throws ClassNotFoundException
     {
         // NEEDSWORK: should this be systemclassloader or this's class loader???
-        Class c = ClassLoader.getSystemClassLoader().loadClass(name);
+        Class<?> c = ClassLoader.getSystemClassLoader().loadClass(name);
         return c;
     }
     
@@ -733,6 +743,44 @@ abstract public class SwingFactory implements ViFactory
         Component t = SwingUtilities.getAncestorOfClass(JViewport.class, c);
         return t != null ? t : c;
     }
+
+    static List<Entry<String,Color>> getUIColors()
+    {
+        List<Entry<String,Color>> rval = new ArrayList<>();
+        
+        Set<Entry<Object, Object>> entries = UIManager.getDefaults().entrySet();
+        for (Entry<Object, Object> entry : entries)
+        {
+            if (entry.getValue() instanceof Color)
+            {
+                rval.add(new AbstractMap.SimpleEntry<>(
+                         (String)entry.getKey(), (Color)entry.getValue()));
+            }
+        }
+        return rval;
+    }
     
+    private static class DumpUIColors implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            List<Entry<String, Color>> uiColors = getUIColors();
+            
+            // sort the color keys
+            uiColors.sort((e1, e2) -> e1.getKey().compareTo(e2.getKey()));
+
+            // print the "name color" for all UI
+            System.err.println("LookAndFeelName: "
+                    + UIManager.getLookAndFeel().getName());
+            System.err.println("LookAndFeelID: "
+                    + UIManager.getLookAndFeel().getID());
+            for (Entry<String, Color> entry : uiColors)
+            {
+                System.err.printf("%-50s %08x\n",
+                                  entry.getKey(), entry.getValue().getRGB());
+            }
+        }
+    }
     
 } // end com.raelity.jvi.swing.DefaultViFactory

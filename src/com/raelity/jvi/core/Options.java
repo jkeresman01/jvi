@@ -115,7 +115,7 @@ public final class Options {
 
     // Sigh, don't want public...
     // invoked from OptUtil
-    public static void optionChangeFixup(Option opt, PreferenceChangeEvent evt)
+    public static void optionChangeFixup(Option<?> opt, PreferenceChangeEvent evt)
     {
       if(evt.getKey().equals(mapCommands)) {
         GetChar.reinitMappings();
@@ -281,7 +281,6 @@ public final class Options {
   public static final String MESC_MAGIC = "m";
   public static final String MESC_NO_MAGIC = "nm";
   public static final String MESC_VERY_NO_MAGIC = "vnm";
-  
 
   private static boolean didInit = false;
   private static void init() {
@@ -448,29 +447,39 @@ public final class Options {
                     + " often the result of IDE actions invoked external"
                     + " to jVi.");
 
-    createColorOption(searchColor, new Color(0xffb442), false); //a light orange
-    setupOptionDesc(Category.PLATFORM, searchColor, "'hl-search' color",
-            "The color used for search highlight.");
 
-    //createColorOption(searchFgColor, new Color(0x000000)); // black
-    createColorOption(searchFgColor, new Color(0x000000), true);
+  
+  String NOTE_USE_LOOKANDFEEL =
+          "\nNOTE: press 'X', then the platform"
+          + " LookAndFeel/component provides the value.";
+
+    createColorOption(searchColor, new Color(0xffb442), true, true); //a light orange
+    setupOptionDesc(Category.PLATFORM, searchColor, "'hl-search' background color",
+            "The background color used for search highlight."
+                    + NOTE_USE_LOOKANDFEEL
+    );
+
+    createColorOption(searchFgColor, new Color(0x000000), true, true);
     setupOptionDesc(Category.PLATFORM, searchFgColor, "'hl-search' foreground color",
-            "The color used for search highlight foreground."
-                    + " If 'null' then use editor's foreground color");
+            "The character color used for search highlight."
+                    + NOTE_USE_LOOKANDFEEL
+    );
     setExpertHidden(searchFgColor, false, false);
     
-    createColorOption(selectColor, new Color(0xffe588), false); //a light orange
-    setupOptionDesc(Category.PLATFORM, selectColor, "'hl-visual' color",
-            "The color used for a visual mode selection.");
+    createColorOption(selectColor, new Color(0xffe588), true, true); //a light orange
+    setupOptionDesc(Category.PLATFORM, selectColor, "'hl-visual' background color",
+            "The background color used for a visual mode selection."
+                    + NOTE_USE_LOOKANDFEEL
+    );
 
-    //createColorOption(selectFgColor, new Color(0x000000)); // black
-    createColorOption(selectFgColor, null, true); // default is no color
+    createColorOption(selectFgColor, new Color(0x000000), true, true);
     setupOptionDesc(Category.PLATFORM, selectFgColor, "'hl-visual' foreground color",
-            "The color used for a visual mode selection foreground."
-                    + " If 'null' then use editor's foreground color");
+            "The character color used for a visual mode selection foreground."
+                    + NOTE_USE_LOOKANDFEEL
+    );
     setExpertHidden(selectFgColor, false, false);
 
-    createColorOption(roCursorColor, Color.red, true);
+    createColorOption(roCursorColor, Color.red, true, false);
     setupOptionDesc(Category.PLATFORM, roCursorColor, "'rocursorcolor' 'rocc'",
             "The cursor color in a read only editor."
                     + " If 'null' then use editor's default cursor color");
@@ -780,7 +789,7 @@ public final class Options {
                    + " visual bell is enabled, see 'vb', and the 'vbt'"
                    + " value is zero then there is no beep or flash.");
 
-    createColorOption(visualBellColor, new Color(0x41e7e7), true);
+    createColorOption(visualBellColor, new Color(0x41e7e7), true, false);
     setupOptionDesc(Category.WINDOW, visualBellColor,
                             "'visualbellcolor' 'vbc'",
             "The color used for the visual bell, the editor's background"
@@ -1128,7 +1137,7 @@ public final class Options {
    * @param name option name
    * @return option
    */
-  public static Option getOption(String name) {
+  public static Option<?> getOption(String name) {
     return OptUtil.getOption(name);
   }
 
@@ -1275,7 +1284,7 @@ public final class Options {
     }
     return true;
   }
-  
+
   //////////////////////////////////////////////////////////////////////
   //
   // can_bs is in option in vim

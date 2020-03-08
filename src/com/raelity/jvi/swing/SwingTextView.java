@@ -54,6 +54,7 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultEditorKit;
@@ -62,6 +63,8 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 import javax.swing.text.Utilities;
 import javax.swing.text.View;
 
@@ -135,6 +138,11 @@ public abstract class SwingTextView extends TextView
     private static boolean didInit;
     private boolean isShuttingDown;
 
+    final static public Option<?> searchFgColorOption = Options.getOption(Options.searchFgColor);
+    final static public Option<?> searchBgColorOption = Options.getOption(Options.searchColor);
+    final static public Option<?> visualFgColorOption = Options.getOption(Options.selectFgColor);
+    final static public Option<?> visualBgColorOption = Options.getOption(Options.selectColor);
+
     @ServiceProvider(service=ViInitialization.class,
                      path="jVi/init",
                      position=10)
@@ -166,6 +174,80 @@ public abstract class SwingTextView extends TextView
             cursorMoveDetected(lastDot, ce.getDot(), ce.getMark());
             lastDot = ce.getDot();
         };
+    }
+
+    /** The colors as set in the options return fg/bg colors*/
+    public static SimpleAttributeSet getOptionColors(String optionName)
+    {
+        Color fgColor;
+        Color bgColor;
+        switch(optionName)
+        {
+        case Options.searchFgColor:
+        case Options.searchColor:
+            // hl-search
+            fgColor = searchFgColorOption.getColor();
+            bgColor = searchBgColorOption.getColor();
+            break;
+        case Options.selectFgColor:
+        case Options.selectColor:
+            // hl-visual
+            fgColor = visualFgColorOption.getColor();
+            bgColor = visualBgColorOption.getColor();
+            break;
+        default:
+            assert(false) : "getColors: not a Fg color option name";
+            return new SimpleAttributeSet();
+        }
+
+        SimpleAttributeSet attrs = new SimpleAttributeSet();
+        if(fgColor != null)
+            StyleConstants.setForeground(attrs, fgColor);
+        if(bgColor != null)
+            StyleConstants.setBackground(attrs, bgColor);
+        return attrs;
+    }
+
+    /** The default colors as set in the options return fg/bg colors*/
+    public static SimpleAttributeSet getDefaultColors(String optionName)
+    {
+        Color fgColor;
+        Color bgColor;
+        switch(optionName)
+        {
+        case Options.searchFgColor:
+        case Options.searchColor:
+            // hl-search
+            fgColor = (Color)searchFgColorOption.getDefault();
+            bgColor = (Color)searchBgColorOption.getDefault();
+            break;
+        case Options.selectFgColor:
+        case Options.selectColor:
+            // hl-visual
+            fgColor = (Color)visualFgColorOption.getDefault();
+            bgColor = (Color)visualBgColorOption.getDefault();
+            break;
+        default:
+            assert(false) : "getColors: not a Fg color option name";
+            return new SimpleAttributeSet();
+        }
+
+        SimpleAttributeSet attrs = new SimpleAttributeSet();
+        if(fgColor != null)
+            StyleConstants.setForeground(attrs, fgColor);
+        if(bgColor != null)
+            StyleConstants.setBackground(attrs, bgColor);
+        return attrs;
+    }
+
+    /**
+     * Get the indicated fg/bg color pair for this TextView.
+     *
+     * @param optionName the color of interest, either fg or bg
+     * @return AttributeSet that contains the fg/bg pair of colors
+     */
+    public AttributeSet getColors(String optionName) {
+        return getOptionColors(optionName);
     }
 
     public void setMaps(LineMap lm, ViewMap vm)

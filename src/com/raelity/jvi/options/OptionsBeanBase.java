@@ -67,7 +67,7 @@ implements Options.EditControl
 {
     private static final
             Logger LOG = Logger.getLogger(OptionsBeanBase.class.getName());
-    private final Class clazz;
+    private final Class<?> clazz;
     private final List<String> optionsList;
     private final String displayName;
     
@@ -79,7 +79,7 @@ implements Options.EditControl
     //private final Map<String,Object> changeMap = new HashMap<>();
     
     /** Creates a new instance of OptionsBeanBase */
-    public OptionsBeanBase(Class clazz, String displayName,
+    public OptionsBeanBase(Class<?> clazz, String displayName,
                            Options.Category category)
     {
         this.optionChangeHandler
@@ -165,10 +165,10 @@ implements Options.EditControl
 
     public static  PropertyDescriptor createPropertyDescriptor(String optName,
                                                                String methodName,
-                                                               Class clazz)
+                                                               Class<?> clazz)
     throws IntrospectionException {
         PropertyDescriptor d;
-        Option opt = Options.getOption(optName);
+        Option<?> opt = Options.getOption(optName);
         // d = new MyPropertyDescriptor(methodName, clazz);
         d = new PropertyDescriptor(methodName, clazz);
         d.setDisplayName(opt.getDisplayName());
@@ -236,18 +236,18 @@ implements Options.EditControl
 
     final protected void put(String name, String val) throws PropertyVetoException {
         String old = getString(name);
-	Option opt = Options.getOption(name);
+	Option<?> opt = Options.getOption(name);
         opt.validate(val);
         this.vcs.fireVetoableChange( name, old, val );
-        optionChangeHandler.changeOption(name, old, val);
+        optionChangeHandler.changeOption(name, "String", old, val);
     }
 
     final protected void put(String name, int val) throws PropertyVetoException {
         int old = getint(name);
-	Option opt = Options.getOption(name);
+	Option<?> opt = Options.getOption(name);
         opt.validate(val);
         this.vcs.fireVetoableChange( name, old, val );
-        optionChangeHandler.changeOption(name, old, (Integer)val);
+        optionChangeHandler.changeOption(name, "Integer", old, (Integer)val);
     }
 
     final protected void put(String name, Color val) throws PropertyVetoException {
@@ -255,45 +255,45 @@ implements Options.EditControl
 	ColorOption opt = (ColorOption)Options.getOption(name);
         opt.validate(val);
         this.vcs.fireVetoableChange( name, old, val );
-        optionChangeHandler.changeOption(name, old, val);
+        optionChangeHandler.changeOption(name, "Color", old, val);
     }
 
-    final protected void put(String name, EnumSet val) throws PropertyVetoException {
+    final protected void put(String name, EnumSet<?> val) throws PropertyVetoException {
         @SuppressWarnings("unchecked")
-        EnumSet old = EnumSet.copyOf(getEnumSet(name));
-	EnumSetOption opt = (EnumSetOption)Options.getOption(name);
+        EnumSet<?> old = EnumSet.copyOf(getEnumSet(name));
+	EnumSetOption<?> opt = (EnumSetOption)Options.getOption(name);
         opt.validate(val);
         this.vcs.fireVetoableChange( name, old, val );
-        optionChangeHandler.changeOption(name, old, val);
+        optionChangeHandler.changeOption(name, "EnumSet", old, val);
     }
 
     final protected void put(String name, boolean val) {
         boolean old = getboolean(name);
-        optionChangeHandler.changeOption(name, old, val);
+        optionChangeHandler.changeOption(name, "Boolean", old, val);
     }
 
     final protected String getString(String name) {
-	Option opt = Options.getOption(name);
+	Option<?> opt = Options.getOption(name);
 	return opt.getString();
     }
 
     final protected int getint(String name) {
-	Option opt = Options.getOption(name);
+	Option<?> opt = Options.getOption(name);
 	return opt.getInteger();
     }
 
     final protected Color getColor(String name) {
-	Option opt = (ColorOption) Options.getOption(name);
+	Option<?> opt = (ColorOption) Options.getOption(name);
         return opt.getColor();
     }
 
-    final protected EnumSet getEnumSet(String name) {
-	Option opt = Options.getOption(name);
+    final protected EnumSet<?> getEnumSet(String name) {
+	Option<?> opt = Options.getOption(name);
 	return opt.getEnumSet();
     }
 
     final protected boolean getboolean(String name) {
-	Option opt = Options.getOption(name);
+	Option<?> opt = Options.getOption(name);
 	return opt.getBoolean();
     }
     
@@ -374,11 +374,11 @@ implements Options.EditControl
 	    return getint(Options.visualBellTime);
     }
 
-    public void setViFoldOpen(EnumSet arg)  throws PropertyVetoException {
+    public void setViFoldOpen(EnumSet<?> arg)  throws PropertyVetoException {
         put(Options.foldOpen, arg);
     }
 
-    public EnumSet getViFoldOpen() {
+    public EnumSet<?> getViFoldOpen() {
 	return getEnumSet(Options.foldOpen);
     }
 
@@ -526,11 +526,11 @@ implements Options.EditControl
 	return getboolean(Options.platformTab);
     }
 
-    public void setViNrFormats(EnumSet arg)  throws PropertyVetoException {
+    public void setViNrFormats(EnumSet<?> arg)  throws PropertyVetoException {
         put(Options.nrFormats, arg);
     }
 
-    public EnumSet getViNrFormats() {
+    public EnumSet<?> getViNrFormats() {
 	return getEnumSet(Options.nrFormats);
     }
 

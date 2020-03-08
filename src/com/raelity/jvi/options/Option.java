@@ -31,6 +31,10 @@ import com.raelity.jvi.core.Options.Category;
 
 import static com.raelity.jvi.manager.ViManager.getFactory;
 
+//
+// NEEDSWORK: If returning a reference, should be readonly
+//
+
 public abstract class Option<T> {
     final Class<T> optionType;
     final protected String name;
@@ -40,6 +44,7 @@ public abstract class Option<T> {
 
     private String displayName;
     private String desc;
+    private String descPlatform;
     private boolean fExpert;
     private boolean fHidden;
     private Category category;
@@ -138,6 +143,18 @@ public abstract class Option<T> {
         return optionType.cast(o);
     }
 
+    public boolean isNull()
+    {
+        return value == null;
+    }
+
+    public boolean isDefault()
+    {
+        if(value == null)
+            return defaultValue == null;
+        return value.equals(defaultValue);
+    }
+
     //////////////////////////////////////////////////////////////////////
 
     private boolean isBaseType()
@@ -176,7 +193,7 @@ public abstract class Option<T> {
         return (Color)value;
     }
     
-    public EnumSet getEnumSet() {
+    public EnumSet<?> getEnumSet() {
         // if(optionType != EnumSet.class)
         //     throw new ClassCastException(this.getClass().getSimpleName()
         //                                  + " is not a EnumSetOption");
@@ -244,7 +261,9 @@ public abstract class Option<T> {
     }
 
     final public String getDesc() {
-	return desc;
+        if(descPlatform == null)
+            return desc;
+        return desc + "\n\n" + descPlatform;
     }
 
     final public String getDisplayName() {
@@ -284,6 +303,14 @@ public abstract class Option<T> {
         this.desc = desc;
     }
 
+    final public void setDescPlatform(String descPlatform)
+    {
+        if (this.descPlatform != null) {
+            throw new Error("option: " + name + " already has a description.");
+        }
+        this.descPlatform = descPlatform;
+    }
+
     final public void setDisplayName(String displayName)
     {
         if (this.displayName != null) {
@@ -299,6 +326,13 @@ public abstract class Option<T> {
         }
         this.category = category;
     }
+
+    @Override
+    public String toString()
+    {
+        return name + ":" + value;
+    }
+
 }
 
 // vi: sw=4 et

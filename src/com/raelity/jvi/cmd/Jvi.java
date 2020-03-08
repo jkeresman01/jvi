@@ -21,40 +21,29 @@
 package com.raelity.jvi.cmd;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Frame;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.util.HashMap;
-import java.util.Map;
 
-import javax.swing.JEditorPane;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
-import javax.swing.event.CaretEvent;
-import javax.swing.text.Document;
-import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.TabSet;
-import javax.swing.text.TabStop;
 
 import com.l2fprod.common.propertysheet.PropertySheetDialog;
+
 import com.raelity.jvi.ViAppView;
-import com.raelity.jvi.ViTextView;
 
 import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.swing.ui.options.OptionsPanel;
-import java.awt.Component;
+
 import java.util.List;
+
+import org.openide.util.lookup.ServiceProvider;
+
+import com.raelity.jvi.*;
+import com.raelity.jvi.core.*;
+import com.raelity.jvi.options.*;
 
 /**
  * The following are the hooks into jVi used in this class.
@@ -80,6 +69,24 @@ public class Jvi
     public static boolean make2Frames = false;
 
     private static int nFrame = 0;              // total frame count
+
+        // CAN'T USE THIS, IT GETS INCLUDED IN NORMAL JVI
+        // SHOULD PUT jVi DEBUG INTO /test/ I GUESS
+        // @ServiceProvider(service=ViInitialization.class,
+        //         path="jVi/init",
+        //         position=3)
+        // so just call (new Init()).init() it directly
+        public static class Init implements ViInitialization
+        {
+        @Override
+        public void init()
+        {
+            OptUtil.setupPlatformDesc(Options.searchColor, "Testline1\nTestLine2");
+            OptUtil.setupPlatformDesc(Options.searchFgColor, "Testline4\nTestLine3");
+            OptUtil.setupPlatformDesc(Options.selectColor, "Testline1\nTestLine2");
+            OptUtil.setupPlatformDesc(Options.selectFgColor, "Testline4\nTestLine3");
+        }
+        }
 
     /**
      *  Construct the frame-based application.
@@ -146,6 +153,7 @@ public class Jvi
                 PlayAppView av = (PlayAppView)avs.get(0);
                 JTextComponent ed = av.getEditor();
                 ed.requestFocusInWindow();
+                (new Init()).init();
             });
         } catch( Exception e ) {
             e.printStackTrace();
