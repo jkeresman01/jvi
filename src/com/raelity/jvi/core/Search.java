@@ -84,6 +84,7 @@ public class Search
     private int searchCount;
     private int searchOptions;
     private char dirc;
+    private RegExp lastRE;
 
     char dirc() { return dirc; }
     int searchOptions() { return searchOptions; }
@@ -92,6 +93,13 @@ public class Search
   }
 
   static final ActiveSearchState ass = new ActiveSearchState();
+
+  // HACK
+  static void startupInitializePattern(String pattern) {
+    System.err.println("pattern: " + pattern);
+    RegExp re = search_regcomp(pattern, 0, 0, 0);
+    lastMatchingRE = re;
+  }
 
   static ViCmdEntry getSearchCommandEntry() {
     if(searchCommandEntry == null) {
@@ -131,9 +139,10 @@ public class Search
       
       if(acceptIncr)
         GetChar.fakeGotcPickupExtraChar(K_X_INCR_SEARCH_DONE);
-      else if(cancel)
+      else if(cancel) {
+        lastMatchingRE = ass.lastRE;
         GetChar.fakeGotcPickupExtraChar(K_X_SEARCH_CANCEL);
-      else
+      } else
         GetChar.fakeGotcPickupExtraChar(K_X_SEARCH_FINISH);
     } finally {
       Hook.setJViBusy(false);
@@ -156,18 +165,13 @@ public class Search
     ass.searchOptions = options;
     ass.dirc = (char)cmdchar;
     ass.incrSearchActive = G.p_is;
+    ass.lastRE = getLastMatchingRegExp();
     
     ViCmdEntry ce = getSearchCommandEntry();
     if(ass.incrSearchActive)
         startIncrementalSearch();
     Options.kd().println("inputSearchPattern --> startCommandEntry"); //REROUTE
     Scheduler.startCommandEntry(ce, String.valueOf(ass.dirc), G.curwin, null);
-  }
-
-  // This is used to grab the pattern after search complete, for redoBuffer.
-  // or for use in Search01
-  static String last_search_pat() {
-    return spats[last_idx].pat;
   }
   
   private static void laterDoIncrementalSearch() {
@@ -220,6 +224,7 @@ public class Search
       String pattern = getSearchCommandEntry().getCurrentEntry();
       
       if(pattern.isEmpty()) {
+        lastMatchingRE = null;
         resetViewIncrementalSearch();
         return;
       }
@@ -243,6 +248,7 @@ public class Search
     } finally {
       try {
         Normal.v_updateVisualState();
+        ViManager.updateHighlightSearchState();
       } finally {
         Hook.setJViBusy(false);
       }
@@ -820,8 +826,14 @@ finished:
   // private static Spat[] spats = new Spat[] {new Spat(), new Spat()};
   private static final Spat[] spats = { new Spat(), new Spat() };
 
-  static public RegExp getLastRegExp() {
-    return spats[last_idx].re;
+  // This is used to grab the pattern after search complete, for redoBuffer.
+  // or for use in Search01
+  static String last_search_pat() {
+    return spats[last_idx].pat;
+  }
+
+  static public RegExp getLastMatchingRegExp() {
+    return lastMatchingRE;
   }
 
   private static int last_idx;
@@ -1114,6 +1126,8 @@ finished:
 
   // HACK: who uses this?
   private static int search_match_len;
+  // HACK: used by incr search
+  private static RegExp lastMatchingRE;
 
   /**
    * lowest level search function.
@@ -1212,7 +1226,9 @@ finished:
           MySegment seg = G.curbuf.getLineSegment(lnum);
                                                 // NEEDSWORK: AT_BOL == TRUE
           //System.err.println("line: " + lnum);
+          lastMatchingRE = null;
           if(prog.search(seg.array, seg.offset, seg.count)) {
+            lastMatchingRE = prog;
             match = prog.start(0) - seg.offset; // column index
             matchend = prog.stop(0) - seg.offset;
             submatch = first_submatch(prog);

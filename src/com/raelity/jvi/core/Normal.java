@@ -2963,6 +2963,7 @@ normal_end: {
     if(cap.nchar == K_X_SEARCH_CANCEL) {
       Msg.clearMsg();
       clearop(oap);
+      ViManager.updateHighlightSearchState();
       return;
     }
 

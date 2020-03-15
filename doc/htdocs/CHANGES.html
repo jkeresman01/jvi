@@ -72,6 +72,28 @@
   <dd>
     <ul>
       <li>
+        Feature/Fix: compatibility with dark LookAndFeel/PlatformColors.<br/>
+        When the jVi option colors, for <b>highlight search</b>
+        and <b>visual mode</b>,
+        are set to null the colors are inherited from the platform. 
+        In NetBeans, they specifically come from<br/>
+        <span class='tt'>Menu&gt;Tools&gt;Options&gt;Fonts&amp;Colors&gt;Highlighting
+        </span>.<br/>
+        In that dialog you can set different colors for each
+        <span class='tt'>Profile:</span>. jVi maps
+        <span class='tt'>Highlight Search</span> to jVi's highlight search
+        and <span class='tt'>Incremental Search</span> to jVi's visual mode.
+      </li>
+      <li>
+        Feature/Fix: with <span class='tt'>'hlsearch'</span>
+        and <span class='tt'>'incsearch'</span>
+        show all matches as you type.
+      </li>
+      <li>
+        Restore/use previous search pattern for highlight after escape/quit
+        search.
+      </li>
+      <li>
         Change the wrongly named <span class=tt>'notsol'</span>
         option to <span class='tt'>'sol'</span> matching vim.
         The user preference is maintained.
@@ -118,6 +140,12 @@
       <li>
         Fix intermittent incremental search problem introduced
         with command line rework for history commands in 1.6.0.
+      </li>
+      <li>
+        Fix some minor issues introduced by the fix for jVi options
+        not going into effect until
+        after the Apply/OK buttons. Only Color and EnumSet options
+        were affected.
       </li>
     </ul>
   </dd>

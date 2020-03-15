@@ -1246,6 +1246,8 @@ public class Misc implements ClipboardOwner {
 
   private static void read_viminfo_search() {
     List<String> l = readList(PREF_SEARCH);
+    // HACK
+    Search.startupInitializePattern(l.get(0));
     getSearchCommandEntry().setHistory(l);
   }
 

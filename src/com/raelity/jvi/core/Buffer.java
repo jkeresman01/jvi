@@ -11,6 +11,7 @@ package com.raelity.jvi.core;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -698,28 +699,27 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     // Highlight Search
     //
     
-    MySegment highlightSearchSegment = new MySegment();
     int[] highlightSearchBlocks = new int[2];
     MutableInt highlightSearchIndex = new MutableInt();
     
     public int[] getHighlightSearchBlocks(int startOffset, int endOffset) {
-        Pattern highlightSearchPattern = null;
-        highlightSearchBlocks = new int[20];
-        RegExp re = Search.getLastRegExp();
+        Pattern pattern = null;
+        highlightSearchBlocks = new int[50];
+        RegExp re = Search.getLastMatchingRegExp();
         if(re instanceof RegExpJava) {
             // NEEDSWORK: speed the following up
-            highlightSearchPattern = ((RegExpJava)re).getPattern();
+            pattern = ((RegExpJava)re).getPattern();
         }
 
         highlightSearchIndex.setValue(0);
-        if(highlightSearchPattern != null && Options.doHighlightSearch()) {
+        if(pattern != null && Options.doHighlightSearch()) {
             int len = getLength();
             if(startOffset > len)
                 startOffset = len;
             if(endOffset > len)
                 endOffset = len;
-            getSegment(startOffset, endOffset - startOffset, highlightSearchSegment);
-            Matcher m = highlightSearchPattern.matcher(highlightSearchSegment);
+            CharSequence s = getDocumentCharSequence(startOffset, endOffset);
+            Matcher m = pattern.matcher(s);
             while(m.find()) {
                 highlightSearchBlocks = addBlock(highlightSearchIndex,
                                                  highlightSearchBlocks,
@@ -733,13 +733,8 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     protected final int[] addBlock(MutableInt idx, int[] blocks,
             int start, int end) {
         int i = idx.getValue();
-        if(i + 2 > blocks.length) {
-            // Arrays.copyOf introduced in 1.6
-            // blocks = Arrays.copyOf(blocks, blocks.length +20);
-            int[] t = new int[blocks.length + 20];
-            System.arraycopy(blocks, 0, t, 0, blocks.length);
-            blocks = t;
-        }
+        if(i + 2 > blocks.length)
+            blocks = Arrays.copyOf(blocks, blocks.length +50);
         blocks[i] = start;
         blocks[i+1] = end;
         idx.setValue(i + 2);
