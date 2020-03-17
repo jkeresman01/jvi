@@ -215,7 +215,39 @@ final public class ViManager
         Options.informAfterInit((ChangeEvent e) -> {
             setupOptionAtStartup();
         });
-
+        // As of Mon Mar 16 10:10:19 PDT 2020
+        //
+        // 1 - 
+        //      Hook
+        // 2 - 
+        //      Options
+        // 3 - 
+        //      nb/NbOptions
+        // 4 - 
+        // 5 - 
+        //      nb/HighlightsExecutor - initialize executor
+        // 6 - 
+        // 7 - 
+        //      KeyBinding - inits tables...
+        // 8 - 
+        //      nb/KeyBindings - initializes a pcl on KeyBinding
+        // 9 - 
+        // 10 - COLON COMMANDS, PCL
+        //      nb/Module - add listener  NEEDSWORK: move options stuff around
+        //      Cc01 - register lots of colon commands
+        //      CcBang - register lots of colon commands
+        //      CommandHistory - register a colon command
+        //      WindowTreeBuilder - colon command
+        //      MarkOps - colon commands, pcl
+        //      Misc - colon command, pcl
+        //      TabPages - colon commands
+        //      TextView - pcl
+        //      AppViews - colon commands
+        //      SetColonCommand - colon command
+        //      SwingTextView - colon command
+        //100 - 
+        //      GetChar - mappings
+        //
         for (ViInitialization i : Lookups.forPath("jVi/init")
                                         .lookupAll(ViInitialization.class)) {
             if(isDebugAtHome())

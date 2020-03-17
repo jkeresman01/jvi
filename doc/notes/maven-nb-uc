@@ -32,6 +32,9 @@ mvn versions:set -DnewVersion=1.2.3
 
 # and some general stuff
 
+#if needed
+mvn clean package nbm:nbm -Dkeystorepass=XXXX ### private.properties
+
 # get artifacts into specified directory
 # deprecated
 mvn dependency:get -Dartifact=org.openjfx:javafx-graphics:13:jar:win -Ddest=./

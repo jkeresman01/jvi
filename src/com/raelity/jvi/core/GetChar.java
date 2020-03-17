@@ -54,9 +54,7 @@ public class GetChar {
     {
     }
 
-    @ServiceProvider(service=ViInitialization.class,
-                     path="jVi/init",
-                     position=100)
+    @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=100)
     public static class Init implements ViInitialization
     {
         @Override

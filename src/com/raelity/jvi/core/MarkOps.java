@@ -84,9 +84,7 @@ class MarkOps
     {
     }
 
-    @ServiceProvider(service=ViInitialization.class,
-                     path="jVi/init",
-                     position=10)
+    @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=10)
     public static class Init implements ViInitialization
     {
         @Override

@@ -74,9 +74,7 @@ public class Cc01
 {
     private static final Logger LOG = Logger.getLogger(Cc01.class.getName());
 
-    @ServiceProvider(service=ViInitialization.class,
-                     path="jVi/init",
-                     position=10)
+    @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=10)
     public static class Init implements ViInitialization
     {
         @Override

@@ -115,12 +115,10 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         }
     }
 
-    private static boolean didInit;
-    @ServiceProvider(service=ViInitialization.class,
-                     path="jVi/init",
-                     position=10)
+    @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=10)
     public static class Init implements ViInitialization
     {
+        private static boolean didInit;
         @Override
         public void init()
         {

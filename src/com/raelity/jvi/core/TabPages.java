@@ -39,9 +39,7 @@ import static com.raelity.jvi.core.Util.beep_flush;
  */
 public class TabPages
 {
-@ServiceProvider(service=ViInitialization.class,
-        path="jVi/init",
-        position=10)
+@ServiceProvider(service=ViInitialization.class, path="jVi/init", position=10)
 public static class Init implements ViInitialization
 {
 @Override

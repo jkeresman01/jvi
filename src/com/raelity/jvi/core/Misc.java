@@ -98,9 +98,7 @@ public class Misc implements ClipboardOwner {
     // "misc1.c"
     //
 
-    @ServiceProvider(service=ViInitialization.class,
-                     path="jVi/init",
-                     position=10)
+    @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=10)
     public static class Init implements ViInitialization
     {
         @Override
@@ -1246,8 +1244,6 @@ public class Misc implements ClipboardOwner {
 
   private static void read_viminfo_search() {
     List<String> l = readList(PREF_SEARCH);
-    // HACK
-    Search.startupInitializePattern(l.get(0));
     getSearchCommandEntry().setHistory(l);
   }
 

@@ -53,17 +53,15 @@ import static com.raelity.text.TextUtil.sf;
  */
 public class CommandHistory
 {
-@ServiceProvider(service=ViInitialization.class,
-        path="jVi/init",
-        position=10)
-public static class Init implements ViInitialization
-{
-@Override
-public void init()
-{
-    CommandHistory.init();
-}
-}
+@ServiceProvider(service=ViInitialization.class, path="jVi/init", position=10)
+    public static class Init implements ViInitialization
+    {
+    @Override
+    public void init()
+    {
+        CommandHistory.init();
+    }
+    }
 
 private CommandHistory() {}
 

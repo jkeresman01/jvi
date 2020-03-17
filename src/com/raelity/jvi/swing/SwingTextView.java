@@ -143,9 +143,7 @@ public abstract class SwingTextView extends TextView
     final static public Option<?> visualFgColorOption = Options.getOption(Options.selectFgColor);
     final static public Option<?> visualBgColorOption = Options.getOption(Options.selectColor);
 
-    @ServiceProvider(service=ViInitialization.class,
-                     path="jVi/init",
-                     position=10)
+    @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=10)
     public static class Init implements ViInitialization
     {
         @Override

@@ -92,9 +92,7 @@ public final class Options {
         public void cancel();
     }
 
-    @ServiceProvider(service=ViInitialization.class,
-                     path="jVi/init",
-                     position=2)
+    @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=2)
     public static class Init implements ViInitialization
     {
       @Override
