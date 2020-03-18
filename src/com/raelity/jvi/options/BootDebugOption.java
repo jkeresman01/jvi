@@ -63,7 +63,7 @@ public class BootDebugOption extends DebugOption {
         if(!v)
             return;
         String s = args.length == 0 ? msg : String.format(msg, args);
-        System.err.println(s);
+        doPrintln(s);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class BootDebugOption extends DebugOption {
     {
         if(!v)
             return;
-        System.err.printf(format, args);
+        doPrintf(format, args);
     }
 
     @Override

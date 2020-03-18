@@ -97,7 +97,7 @@ public class ConcreteDebugOption extends DebugOption
         if(!getBoolean(level))
             return;
         String s = args.length == 0 ? msg : String.format(msg, args);
-        System.err.println(s);
+        doPrintln(s);
     }
 
     @Override
@@ -111,7 +111,7 @@ public class ConcreteDebugOption extends DebugOption
     final public void printf(Level level, String format, Object... args)
     {
         if(getBoolean(level))
-            System.err.printf(format, args);
+            doPrintf(format, args);
     }
 
     @Override
