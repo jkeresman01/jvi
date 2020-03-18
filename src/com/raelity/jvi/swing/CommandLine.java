@@ -680,6 +680,8 @@ public final class CommandLine extends JPanel
                 dbgKeys.printf(Level.FINE, ()->sf(
                         "processKeyEvent idx %d, find %s\n",
                         combo.getSelectedIndex(), findHistoryPrefix));
+                if(combo.getItemCount() <= 0)
+                    return;
                 inUpDown = true;
                 int dir = e.getKeyCode() == KeyEvent.VK_UP ? -1 : +1;
                 boolean toNewer = flip ? dir > 0 : dir < 0;

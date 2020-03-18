@@ -96,9 +96,10 @@ public class Search
 
   // HACK
   static void startupInitializePattern(String pattern) {
-    System.err.println("pattern: " + pattern);
-    RegExp re = search_regcomp(pattern, 0, 0, 0);
-    lastMatchingRE = re;
+    if(pattern != null) {
+      RegExp re = search_regcomp(pattern, 0, 0, 0);
+      lastMatchingRE = re;
+    }
   }
 
   static ViCmdEntry getSearchCommandEntry() {

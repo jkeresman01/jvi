@@ -95,6 +95,10 @@ public class EnumSetPropertyEditor extends AbstractPropertyEditor
     }
 
     class EditorButton extends JButton {
+        public EditorButton()
+        {
+            setHorizontalAlignment(LEFT);
+        }
 
         @Override
         public void removeNotify()
