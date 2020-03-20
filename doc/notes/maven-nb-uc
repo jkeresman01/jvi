@@ -42,3 +42,6 @@ mvn dependency:get -Dartifact=org.openjfx:javafx-graphics:13:jar:win -Ddest=./
 mvn dependency:get -Dartifact=org.openjfx:javafx-graphics:13:jar:win
 mvn dependency:copy -Dartifact=org.openjfx:javafx-graphics:13:jar:win \
     -DoutputDirectory=.
+
+# for archetypes local install
+mvn clean install
