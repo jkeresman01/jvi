@@ -189,16 +189,19 @@ public final class VimOption {
 
 
 final private static VimOption[] vopts = new VimOption[]{
+    // SORTED ALPHABETICALLY, BEFORE F.HIDE
 new VimOption("backspace",   "bs",   backspace,       S.P_GBL, nullF),
 new VimOption("clipboard",   "cb",   unnamedClipboard,S.P_GBL, nullF),
 new VimOption("cpo_j",       "",     endOfSentence,   S.P_GBL, EnumSet.of(F.HIDE)),
 new VimOption("cpo_search",  "",     searchFromEnd,   S.P_GBL, EnumSet.of(F.HIDE)),
 new VimOption("cpo_w",       "",     changeWordBlanks,S.P_GBL, EnumSet.of(F.HIDE)),
+new VimOption("cursorinview","civ",  cursorInView,    S.P_GBL, nullF),
 new VimOption("equalalways", "ea",   equalAlways,     S.P_GBL, nullF),
 new VimOption("equalprg",    "ep",   equalProgram,    S.P_GBL, nullF),
 new VimOption("expandtab",   "et",   expandTabs,      S.P_BUF, nullF),
 new VimOption("foldopen",    "fdo",  foldOpen,        S.P_GBL, EnumSet.of(F.COMMA, F.NODUP)),
 new VimOption("formatprg",   "fp",   formatProgram,   S.P_GBL, nullF),
+new VimOption("history",     "hi",   history,         S.P_GBL, nullF),
 new VimOption("hlsearch",    "hls",  highlightSearch, S.P_GBL, nullF),
 new VimOption("ignorecase",  "ic",   ignoreCase,      S.P_GBL, nullF),
 new VimOption("incsearch",   "is",   incrSearch,      S.P_GBL, nullF),
@@ -206,6 +209,7 @@ new VimOption("iskeyword",   "isk",  isKeyWord,       S.P_BUF, EnumSet.of(F.COMM
 new VimOption("joinspaces",  "js",   joinSpaces,      S.P_GBL, nullF),
 new VimOption("linebreak",   "lbr",  lineBreak,       S.P_WIN, nullF),
 new VimOption("list",        "",     list,            S.P_WIN, nullF),
+new VimOption("magic",       "magic",magic,           S.P_GBL, nullF),
 new VimOption("modeline",    "ml",   modeline,        S.P_GBL, nullF),
 new VimOption("modelines",   "mls",  modelines,       S.P_GBL, nullF),
 new VimOption("number",      "nu",   number,          S.P_WIN, nullF),
@@ -242,6 +246,7 @@ new VimOption("visualbellcolor","vbc",visualBellColor,S.P_GBL, nullF),
 new VimOption("visualbelltime","vbt",visualBellTime,  S.P_GBL, nullF),
 new VimOption("wrap",        "",     wrap,            S.P_WIN, nullF),
 new VimOption("wrapscan",    "ws",   wrapScan,        S.P_GBL, nullF),
+    // SORTED ALPHABETICALLY, BEFORE F.HIDE
 new VimOption("ww_bs",       "",     backspaceWrapPrevious,S.P_GBL, EnumSet.of(F.HIDE)),
 new VimOption("ww_h",        "",     hWrapPrevious,   S.P_GBL, EnumSet.of(F.HIDE)),
 new VimOption("ww_i_left",   "",     insertLeftWrapPrevious,S.P_GBL, EnumSet.of(F.HIDE)),
@@ -251,19 +256,17 @@ new VimOption("ww_larrow",   "",     leftWrapPrevious,S.P_GBL, EnumSet.of(F.HIDE
 new VimOption("ww_rarrow",   "",     rightWrapNext,   S.P_GBL, EnumSet.of(F.HIDE)),
 new VimOption("ww_sp",       "",     spaceWrapNext,   S.P_GBL, EnumSet.of(F.HIDE)),
 new VimOption("ww_tilde",    "",     tildeWrapNext,   S.P_GBL, EnumSet.of(F.HIDE)),
-new VimOption("disableFontError","", disableFontError, S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
+new VimOption("disableFontError","", disableFontError,S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 new VimOption("disableFontCheckSpecial","", disableFontCheckSpecial, S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
-new VimOption("isCursorXorBug","",   cursorXorBug,     S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
+new VimOption("isCursorXorBug","",   cursorXorBug,    S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 new VimOption("isHideVersion","",    hideVersionOption,S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
-new VimOption("isCoordSkip", "",     coordSkip,        S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
-new VimOption("pcmarkTrack", "",     pcmarkTrack,      S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
-new VimOption("readOnlyHack","",     readOnlyHack,     S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
-new VimOption("redoTrack",   "",     redoTrack,        S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
+new VimOption("isCoordSkip", "",     coordSkip,       S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
+new VimOption("pcmarkTrack", "",     pcmarkTrack,     S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
+new VimOption("readOnlyHack","",     readOnlyHack,    S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
+new VimOption("redoTrack",   "",     redoTrack,       S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 new VimOption("useFrame",    "",     commandEntryFrame,S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 new VimOption("viminfoMaxBuf","",    persistedBufMarks,S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
-new VimOption("magic",   "magic",    magic,            S.P_GBL, nullF),
-new VimOption("history", "hi",       history,          S.P_GBL, nullF),
-new VimOption("cursorinview", "civ", cursorInView,     S.P_GBL, nullF),
+    // SORTED ALPHABETICALLY, BEFORE F.HIDE
 };
 
 

@@ -1009,6 +1009,14 @@ START-DOC-DEL
 	'winfixheight'.
 STOP-DOC-DEL
 
+						*'cursorinview'* *'civ'*
+'cursorinview' 'civ'	boolean	(default on)
+			global
+			{not in Vim}
+	When on, follow the vim behavior; if the scrollbar or scrollwheel change
+	the view move the cursor to keep it visible in the view. When this
+	option is off allow the cursor to scroll out of view
+
 						*'equalprg'* *'ep'*
 'equalprg' 'ep'		string	(default "")
 			global or local to buffer |global-local|

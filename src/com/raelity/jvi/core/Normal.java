@@ -49,6 +49,8 @@ import com.raelity.jvi.swing.KeyBinding;
 import com.raelity.text.TextUtil;
 import com.raelity.text.TextUtil.MySegment;
 
+import static java.text.CharacterIterator.DONE;
+
 import static com.raelity.jvi.core.Edit.*;
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc.*;
@@ -4117,6 +4119,33 @@ nv_brackets(CMDARG cap, int dir)
           break;
         }
 
+      case '_':
+        {
+          // "g_": to the last non-blank character in the line or <count> lines
+          // downward.
+          cap.oap.motion_type = MCHAR;
+          cap.oap.inclusive = true;
+          G.curwin.updateCurswant(null, MAXCOL);
+          if (cursor_down(cap.count1 - 1, cap.oap.op_type == OP_NOP) == FAIL)
+            clearopbeep(cap.oap);
+          else
+          {
+            CharacterIterator ptrSeg = ml_get_cursor();
+            char c = ptrSeg.current();
+            
+            // In Visual mode we may end up after the line (or an empty line).
+            if(c == DONE || c == '\n')
+              c = ptrSeg.previous();
+            
+            // Decrease the cursor column until it's on a non-blank.
+            while(c != DONE && vim_iswhite(c))
+              c = ptrSeg.previous();
+            G.curwin.w_cursor.setColumn(ptrSeg.getIndex() - ptrSeg.getBeginIndex());
+            G.curwin.w_set_curswant = true;
+          }
+          break;
+        }
+        
       case '$':
       case K_END:
         {

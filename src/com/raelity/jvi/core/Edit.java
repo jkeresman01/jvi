@@ -1434,33 +1434,33 @@ private static class GetLiteral implements HandleNextChar
       // Move to last line of fold, will fail if it's the end-of-file.
       if(G.curwin.hasFolding(lnum, null, last))
         lnum = last.getValue();
-        // This fails if the cursor is already in the last line or would move
-        // beyond the last line and '-' is in 'cpoptions'
-        if (lnum >= G.curbuf.getLineCount()
-                || (lnum + n > G.curbuf.getLineCount()
-                    && vim_strchr(G.p_cpo, CPO_MINUS) != null))
-            return FAIL;
-        if (lnum + n >= G.curbuf.getLineCount())
-            lnum = G.curbuf.getLineCount();
-        else
+      // This fails if the cursor is already in the last line or would move
+      // beyond the last line and '-' is in 'cpoptions'
+      if (lnum >= G.curbuf.getLineCount()
+              || (lnum + n > G.curbuf.getLineCount()
+                  && vim_strchr(G.p_cpo, CPO_MINUS) != null))
+        return FAIL;
+      if (lnum + n >= G.curbuf.getLineCount())
+        lnum = G.curbuf.getLineCount();
+      else
         if (G.curwin.hasAnyFolding())
         {
-            // count each sequence of folded lines as one logical line
-            while (n-- > 0)
-            {
-                if (G.curwin.hasFolding(lnum, null, last))
-                    lnum = last.getValue() + 1;
-                else
-                    ++lnum;
-                if (lnum >= G.curbuf.getLineCount())
-                    break;
-            }
-            if (lnum > G.curbuf.getLineCount())
-                lnum = G.curbuf.getLineCount();
+          // count each sequence of folded lines as one logical line
+          while (n-- > 0)
+          {
+            if (G.curwin.hasFolding(lnum, null, last))
+              lnum = last.getValue() + 1;
+            else
+              ++lnum;
+            if (lnum >= G.curbuf.getLineCount())
+              break;
+          }
+          if (lnum > G.curbuf.getLineCount())
+            lnum = G.curbuf.getLineCount();
         }
         else
-            lnum += n;
-        fpos.set(lnum, 0);
+          lnum += n;
+      fpos.set(lnum, 0);
     }
     /* try to advance to the column we want to be at */
     coladvance(fpos, G.curwin.w_curswant).copyTo(G.curwin.w_cursor);

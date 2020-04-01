@@ -33,7 +33,11 @@ mvn versions:set -DnewVersion=1.2.3
 # and some general stuff
 
 #if needed
+
 mvn clean package nbm:nbm -Dkeystorepass=XXXX ### private.properties
+mvn -P release clean deploy -Dkeystorepass=XXXX
+            mvn nexus-staging:release
+            mvn nexus-staging:drop
 
 # get artifacts into specified directory
 # deprecated
