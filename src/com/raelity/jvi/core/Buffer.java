@@ -684,7 +684,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
                 c1 = col;
             if(c2 < 0 && (vcol2 -1) < vcol)
                 c2 = col + 1;
-            if(c1 >= 0 && c2 >= 0 || c == '\n')
+            if(c1 >= 0 && c2 >= 0 || c == '\n') // DONE
                 break;
         }
         if(start != null)

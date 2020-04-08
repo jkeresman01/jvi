@@ -49,3 +49,6 @@ mvn dependency:copy -Dartifact=org.openjfx:javafx-graphics:13:jar:win \
 
 # for archetypes local install
 mvn clean install
+
+# goals and configuration
+mvn help:describe -Dplugin=org.openjfx:javafx-maven-plugin -Ddetail=true

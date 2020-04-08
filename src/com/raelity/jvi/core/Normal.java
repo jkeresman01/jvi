@@ -1512,11 +1512,11 @@ normal_end: {
             {
                 //curwin.w_cursor.col = MAXCOL;
                 // Can't set the cursor to MAXCOL (well you can, but...)
-                // Use an fpos and set it to the \n for the each iteration
+                // Use an fpos and set it to the \n for the each iteration // DONE
                 ViFPOS fpos = cursor.copy(); // doesn't use cursor line/col
                 oap.end_vcol = 0;
                 for (int l = oap.start.getLine(); l <= oap.end.getLine(); l++) {
-                  fpos.set(l, Util.lineLength(l));
+                  fpos.set(l, Util.lineLength(l)); // DONE
                   getvcol(G.curwin, fpos, null, null, miEnd);
                   end = miEnd.getValue();
                   if (end > oap.end_vcol)
@@ -1576,7 +1576,7 @@ normal_end: {
           else {
               oap.motion_type = MCHAR;
               if (G.VIsual_mode != CTRL_V
-                        && Util.ml_get_pos(oap.end).current() == '\n') {
+                        && Util.ml_get_pos(oap.end).current() == '\n') { // DONE
                   oap.inclusive = false;
                   // Try to include the newline, unless it's an operator
                   // that works on lines only
@@ -1618,7 +1618,7 @@ normal_end: {
       oap.empty = (oap.motion_type == MCHAR
 	       && (!oap.inclusive
 		   || (oap.op_type == OP_YANK
-		       && gchar_pos(oap.end) == '\n'))
+		       && gchar_pos(oap.end) == '\n')) // DONE
 	       && oap.start.equals(oap.end));
       /*
        * For delete, change and yank, it's an error to operate on an
@@ -1957,7 +1957,7 @@ normal_end: {
     v_updateVisualState();
 
     /* Don't leave the cursor past the end of the line */
-    if (G.curwin.w_cursor.getColumn() > 0 && Util.getChar() == '\n')
+    if (G.curwin.w_cursor.getColumn() > 0 && Util.getChar() == '\n') // DONE
         G.curwin.w_cursor.set(G.curwin.getCaretPosition() -1);
     ui_cursor_shape();
   }
@@ -1993,7 +1993,7 @@ normal_end: {
       // skip to start of identifier/string
       ///
       col = G.curwin.w_cursor.getColumn();
-      while (seg.array[col + seg.offset] != '\n'
+      while (seg.array[col + seg.offset] != '\n' // DONE
              && (i == 0
                  ? !vim_iswordc(seg.array[col + seg.offset])
                  : vim_iswhite(seg.array[col + seg.offset])))
@@ -2024,7 +2024,7 @@ normal_end: {
     //
     // didn't find an identifier or string
     ///
-    if (seg.array[col + seg.offset] == '\n'
+    if (seg.array[col + seg.offset] == '\n' // DONE
         || (!vim_iswordc(seg.array[col + seg.offset]) && i == 0))
     {
       if ((find_type & FIND_STRING) != 0)
@@ -2042,7 +2042,7 @@ normal_end: {
     int len = 0;
     while (i == 0
            ? vim_iswordc(seg.array[len + col + seg.offset])
-           : (seg.array[len + col + seg.offset] != '\n'
+           : (seg.array[len + col + seg.offset] != '\n' // DONE
               && !vim_iswhite(seg.array[len + col + seg.offset])))
     {
       ++len;
@@ -2804,7 +2804,7 @@ normal_end: {
       final ViFPOS cursor = G.curwin.w_cursor;
       MySegment seg = G.curbuf.getLineSegment(cursor.getLine());
       if ((!past_line && Edit.oneright() == FAIL)
-	    || (past_line && seg.array[cursor.getColumn()+seg.offset] == '\n')
+	    || (past_line && seg.array[cursor.getColumn()+seg.offset] == '\n') // DONE
 	  )
       {
 
@@ -3603,7 +3603,7 @@ nv_brackets(CMDARG cap, int dir)
       for (int n = cap.count1; n > 0; --n) {
         swapchar(cap.oap.op_type,G.curwin.w_cursor);
         inc_cursor();
-        if (gchar_cursor() == '\n') {
+        if (gchar_cursor() == '\n') { // DONE
           if (      G.p_ww_tilde
                   && G.curwin.w_cursor.getLine() < G.curbuf.getLineCount())
           {
@@ -4138,7 +4138,7 @@ nv_brackets(CMDARG cap, int dir)
             char c = ptrSeg.current();
             
             // In Visual mode we may end up after the line (or an empty line).
-            if(c == DONE || c == '\n')
+            if(c == DONE || c == '\n') // DONE
               c = ptrSeg.previous();
             
             // Decrease the cursor column until it's on a non-blank.
@@ -4167,7 +4167,7 @@ nv_brackets(CMDARG cap, int dir)
           // Back up the cursor off of a newline unless one of
           // - empty line
           // - visual mode and 'selection' is not "old"
-          if(gchar_pos(fpos) == '\n'
+          if(gchar_pos(fpos) == '\n' // DONE
                   && !(fpos.getColumn() == 0
                        || (G.VIsual_active && G.p_sel.charAt(0) != 'o')))
             fpos.decColumn();
@@ -4394,7 +4394,7 @@ nv_brackets(CMDARG cap, int dir)
     //
     if (!word_end && cap.oap.op_type == OP_CHANGE) {
       c = gchar_cursor();
-      if (c != '\n') {			/* not an empty line */
+      if (c != '\n') {			/* not an empty line */ // DONE
 	if (vim_iswhite(c)) {
 	  //
 	  // Reproduce a funny Vi behaviour: "cw" on a blank only
@@ -4439,7 +4439,7 @@ nv_brackets(CMDARG cap, int dir)
 
     // Don't leave the cursor on the NUL past a line
     if (G.curwin.w_cursor.getColumn() != 0
-		&& gchar_cursor() == '\n') {
+		&& gchar_cursor() == '\n') { // DONE
       dec_cursor();
       cap.oap.inclusive = true;
     }
@@ -4461,7 +4461,7 @@ nv_brackets(CMDARG cap, int dir)
       if (G.VIsual_active
           && cap.oap.inclusive
           && G.p_sel.charAt(0) == 'e'
-          && gchar_cursor() != '\n')
+          && gchar_cursor() != '\n') // DONE
        {
           G.curwin.w_cursor.incColumn();
           cap.oap.inclusive = false;
@@ -4579,7 +4579,7 @@ nv_brackets(CMDARG cap, int dir)
       case 'a':	/* "a"ppend is like "i"nsert on the next character. */
         int offset = G.curwin.w_cursor.getOffset();
         int c = Util.getCharAt(offset);
-        if(c != '\n') {
+        if(c != '\n') { // DONE
           G.curwin.w_cursor.set(offset+1);
         }
         break;

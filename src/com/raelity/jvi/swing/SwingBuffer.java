@@ -395,8 +395,8 @@ abstract public class SwingBuffer extends Buffer
             if(cacheTrace.getBoolean())cacheTrace.println("Hit seg: " + line);
         }
         //return segment;
-        MySegment s = new MySegment(segment);
-        s.first();
+        MySegment s = new MySegment(segment); // CLONE
+        s.first(); // CLONE
         return s;
     }
     

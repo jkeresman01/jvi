@@ -385,7 +385,7 @@ public interface ViTextView extends ViOptionBag {
    * For the line with fpos, calculate the character position in the screen row.
    * The resulting position stays on the same scren line. This is
    * relevant when the fpos is on a wrapped line.
-   * Note that upon return fpos may point to a '\n'.
+   * Note that upon return fpos may point to a '\n'. // DONE
    * The fpos specifies the
    * starting position and is modified to return the final position;
    * the actual screen cursor is not moved directly.

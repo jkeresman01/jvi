@@ -81,6 +81,7 @@ import static com.raelity.jvi.core.lib.Constants.NF.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
 
+// DONE lots of \n in this file
 public class Misc implements ClipboardOwner {
     private static final Logger LOG = Logger.getLogger(Misc.class.getName());
     private static final ClipboardOwner clipOwner = new Misc();
@@ -495,7 +496,7 @@ public class Misc implements ClipboardOwner {
     int extra;
     char curChar = 0;
 
-    if (G.State != REPLACE || (curChar = Util.getChar()) == '\n')
+    if (G.State != REPLACE || (curChar = Util.getChar()) == '\n') // DONE
 	extra = 1;
     else
 	extra = 0;
@@ -552,7 +553,7 @@ public class Misc implements ClipboardOwner {
     ViFPOS fpos = G.curwin.w_cursor;
 
     // Can't do anything when the cursor is on the NUL after the line.
-    if(Util.getChar() == '\n') {
+    if(Util.getChar() == '\n') { // DONE
       return FAIL;
     }
 
@@ -663,7 +664,7 @@ public class Misc implements ClipboardOwner {
     char c;
     while (col <= wcol
 	   && idx < txt.count - 1
-	   && (c = txt.array[ptr]) != '\n')
+	   && (c = txt.array[ptr]) != '\n') // DONE
     {
       ++idx;
       /* Count a tab for what it's worth (if list mode not on) */
@@ -782,7 +783,7 @@ public class Misc implements ClipboardOwner {
     int currLine = lp.getLine();
     char c0 = Misc.gchar_pos(lp);
 
-    if(c0 != '\n')    // still within line, move to next char (may be newline)
+    if(c0 != '\n')    // still within line, move to next char (may be newline) // DONE
     {
       // #ifdef FEAT_MBYTE ... #endif
 
@@ -792,7 +793,7 @@ public class Misc implements ClipboardOwner {
 	         lp->coladd = 0;
          #endif */
 
-      return Misc.gchar_pos(lp) != '\n' ? 0 : 2;
+      return Misc.gchar_pos(lp) != '\n' ? 0 : 2; // DONE
     }
     if(currLine != G.curbuf.getLineCount())  // there is a next line
     {
@@ -954,6 +955,7 @@ public class Misc implements ClipboardOwner {
     if (len == 0) {
       col = 0;
     } else if (col >= len) {
+      // DONE
       // adjust len to ignore trailing newline
       // MUST_HAVE_NL
       // if(seg.array[seg.offset + len - 1] == '\n') { len--; }
@@ -1088,7 +1090,7 @@ public class Misc implements ClipboardOwner {
     for (i = oap.line_count; --i >= 0; ) {
       fpos.set(line, 0);
       first_char = gchar_pos(fpos);
-      if (first_char != '\n') {	// empty line
+      if (first_char != '\n') {	// empty line // DONE
 	shift_line(oap.op_type == OP_LSHIFT, G.p_sr, amount, fpos);
       }
       line++;
@@ -1337,7 +1339,7 @@ public class Misc implements ClipboardOwner {
         StringBuilder sb = new StringBuilder();
         for(StringBuilder y_array1 : y_array) {
           sb.append(y_array1);
-          sb.append('\n');
+          sb.append('\n'); // DONE
         }
         return sb.toString();
       }
@@ -1400,7 +1402,7 @@ public class Misc implements ClipboardOwner {
         int endOffset;
         int lines = 0;
         List<StringBuilder> l = new ArrayList<>();
-        while((endOffset = s.indexOf('\n', startOffset)) >= 0) {
+        while((endOffset = s.indexOf('\n', startOffset)) >= 0) { // DONE
           StringBuilder sb
                   = new StringBuilder(s.subSequence(startOffset, endOffset));
           l.add(sb);
@@ -1421,7 +1423,7 @@ public class Misc implements ClipboardOwner {
         y_width = 0;
         int offset = 0;
         int lines = 0;
-        while((offset = s.indexOf('\n', offset)) >= 0) {
+        while((offset = s.indexOf('\n', offset)) >= 0) { // DONE
           offset++;	// for next time through the loop
           lines++;
         }
@@ -1442,7 +1444,7 @@ public class Misc implements ClipboardOwner {
       for(StringBuilder y_array1 : y_array) {
         sb.append(y_array1);
         if(y_type == MBLOCK)
-          sb.append('\n');
+          sb.append('\n'); // DONE
       }
       return new StringSelection(sb.toString());
     }
@@ -1794,8 +1796,8 @@ public class Misc implements ClipboardOwner {
       // Just roll our own for jvi
       StringBuilder sb = new StringBuilder(y_current.y_array[0]);
       if(y_current.y_type == MLINE || addcr) {
-        if(sb.length() == 0 || sb.charAt(sb.length()-1) != '\n') {
-          sb.append('\n');
+        if(sb.length() == 0 || sb.charAt(sb.length()-1) != '\n') { // DONE
+          sb.append('\n'); // DONE
         }
       }
       //
@@ -1815,7 +1817,7 @@ private static int put_in_typebuf(String s, boolean colon)
     int		retval = OK;
 
     if (colon)
-	retval = ins_typebuf_redo("\n", FALSE, 0, true);
+	retval = ins_typebuf_redo("\n", FALSE, 0, true); // DONE
     if (retval == OK)
 	retval = ins_typebuf_redo(s, FALSE, 0, true);
     if (colon && retval == OK)
@@ -1946,7 +1948,7 @@ private static int put_in_typebuf(String s, boolean colon)
                   // y_type is MLINE.
                   //
                   if (y_current.y_type == MLINE || i < y_current.y_size - 1)
-                      stuffcharReadbuff('\n');
+                      stuffcharReadbuff('\n'); // DONE
               }
             } else {
               String s = y_current.get(0);
@@ -2112,7 +2114,7 @@ private static int put_in_typebuf(String s, boolean colon)
 	       && oap.op_type == OP_DELETE
 			 //&& *ml_get(oap.start.lnum) == NUL
 	       && Util.getCharAt(G.curbuf.getLineStartOffset(
-                                            oap.start.getLine())) == '\n')
+                                            oap.start.getLine())) == '\n') // DONE
     {
       //
       // It's an error to operate on an empty region, when 'E' inclucded in
@@ -2307,7 +2309,7 @@ private static int put_in_typebuf(String s, boolean colon)
     }
 
     // delete the trailing '\n'
-    sb.deleteCharAt(sb.length()-1);
+    sb.deleteCharAt(sb.length()-1); // DONE
     G.curbuf.replaceString(startOffset, endOffset-1, sb.toString());
 
     // do the final line
@@ -2378,7 +2380,7 @@ private static int put_in_typebuf(String s, boolean colon)
         oldp = Util.ml_get(lnum);
         newp = new StringBuilder();
         //newp = alloc_check((unsigned)STRLEN(oldp) + 1 - n);
-        newp.setLength(oldp.length() - 1 - n); // -1 '\n', no +1 for '\n'
+        newp.setLength(oldp.length() - 1 - n); // -1 '\n', no +1 for '\n' // DONE
         // copy up to deleted part
         mch_memmove(newp, 0, oldp, 0, bd.textcol);
         // insert spaces
@@ -2467,7 +2469,7 @@ private static int put_in_typebuf(String s, boolean colon)
         dec(oap.end);
       
       while(fpos.compareTo(oap.end) <= 0) {
-        if (gchar_pos(fpos) != '\n') {
+        if (gchar_pos(fpos) != '\n') { // DONE
           // #ifdef FEAT_MBYTE ... #endif
           pchar(fpos, c);
         }
@@ -2548,13 +2550,13 @@ private static int put_in_typebuf(String s, boolean colon)
         // copy the part after the changed part
         sb.append(oldBuf, bd.textcol + bd.textlen, oldBuf.length());
       } else {
-        sb.append('\n');
+        sb.append('\n'); // DONE
       }
     }
 
     // All done with the big chunk.
     // delete the trailing '\n'
-    sb.deleteCharAt(sb.length()-1);
+    sb.deleteCharAt(sb.length()-1); // DONE
     G.curbuf.replaceString(startOffset, endOffset-1, sb.toString());
 
     ++endLine;
@@ -2622,11 +2624,11 @@ private static int put_in_typebuf(String s, boolean colon)
         //oldBuf = Util.ml_get(fpos.getLine());
         oldBuf = Util.ml_get(lnum);
         oldp = 0;
-        oldlen = oldBuf.length() - 1; //excluce the \n
+        oldlen = oldBuf.length() - 1; //excluce the \n // DONE
         //newp = alloc_check((unsigned)STRLEN(oldp) + 1 + n);
         // -1 in setlength to ignore \n, don't need +1 since no null at end
         newBuf = new StringBuilder();
-        newBuf.setLength(oldlen + n);
+        newBuf.setLength(oldlen + n); // DONE
 
         // too much sometimes gets allocated with the setLength,
         // but the correct number of chars gets copied, keep track of that.
@@ -2643,7 +2645,7 @@ private static int put_in_typebuf(String s, boolean colon)
           // insert post-spaces
           copy_spaces(newBuf, STRLEN(newBuf), bd.endspaces);
           // copy the part after the changed part, -1 to exclude \n
-          int tCount = (oldBuf.length() - 1) - oldp; // STRLEN(oldp) +1
+          int tCount = (oldBuf.length() - 1) - oldp; // STRLEN(oldp) +1 // DONE
           mch_memmove(newBuf, STRLEN(newBuf), oldBuf, oldp, tCount);
         }
         // delete trailing nulls, vim alloc extra when tabs (seen with gdb)
@@ -2863,7 +2865,7 @@ private static int put_in_typebuf(String s, boolean colon)
             int oldp_idx = 0;
             // newp = alloc_check((unsigned)(STRLEN(oldp) + ins_len + 1));
             newp = new StringBuilder();
-            newp.setLength(oldp.length() - 1 + ins_len); // -1 for '\n'
+            newp.setLength(oldp.length() - 1 + ins_len); // -1 for '\n' // DONE
             // copy up to block start
             mch_memmove(newp, 0, oldp, oldp_idx, bd.textcol);
             offset = bd.textcol;
@@ -3000,7 +3002,7 @@ private static int put_in_typebuf(String s, boolean colon)
       int length = end - start;
       StringBuilder reg = y_current.y_array[0];
       MySegment seg = G.curbuf.getSegment(start, length, null);
-      reg.append(seg.array, seg.offset, seg.count);
+      reg.append(seg.array, seg.offset, seg.count); // DONE
       // bug #1724053 visual mode not capture \n after '$'
       // I guess the oap.inclusive should be trusted.
       // if(yanktype == MCHAR && length > 0
@@ -3116,7 +3118,7 @@ private static int put_in_typebuf(String s, boolean colon)
         // Lots of code was replaced by the following.
         // G.curwin.insertChar('\n');
         int currOffset = cursor.getOffset();
-        G.curwin.insertNewLine();
+        G.curwin.insertNewLine(); // DONE
         //G.curwin.insertText(cursor.getOffset(), "\n");
         // back up the cursor so it is on the newline
         //cursor.set(tpos);
@@ -3150,7 +3152,7 @@ private static int put_in_typebuf(String s, boolean colon)
     if(y_type == MCHAR) {
       if(dir == FORWARD) {
 	// increment position, unless pointing at new line
-	if(Util.getCharAt(offset) != '\n') {
+	if(Util.getCharAt(offset) != '\n') { // DONE
 	  offset++;
 	}
       }
@@ -3191,7 +3193,7 @@ private static int put_in_typebuf(String s, boolean colon)
       
       MutableInt mi1 = new MutableInt();
       MutableInt mi2 = new MutableInt();
-      if (dir == FORWARD && c != '\n') {
+      if (dir == FORWARD && c != '\n') { // DONE
         getvcol(G.curwin, cursor, null, null, mi1);
         col = mi1.getValue();
 
@@ -3218,13 +3220,13 @@ private static int put_in_typebuf(String s, boolean colon)
         // add a new line
         if(line > G.curbuf.getLineCount()) {
           G.curwin.insertText(
-                  G.curbuf.getLineEndOffset(G.curbuf.getLineCount()), "\n");
+                  G.curbuf.getLineEndOffset(G.curbuf.getLineCount()), "\n"); // DONE
         }
         // get the old line and advance to the position to insert at
         oldp = Util.ml_get(line);
-        oldlen = oldp.length() - 1; // -1 to ignore '\n'
+        oldlen = oldp.length() - 1; // -1 to ignore '\n' // DONE
         
-        for (ptr_idx = 0; vcol < col && (c = oldp.charAt(ptr_idx)) != '\n'; ) {
+        for (ptr_idx = 0; vcol < col && (c = oldp.charAt(ptr_idx)) != '\n'; ) { // DONE
           // Count a tab for what it's worth (if list mode not on)
           incr = lbr_chartabsize(c, vcol);
           vcol += incr;
@@ -3232,7 +3234,7 @@ private static int put_in_typebuf(String s, boolean colon)
         }
         bd.textcol = ptr_idx;
 
-        shortline = vcol < col || (vcol == col && c == '\n');
+        shortline = vcol < col || (vcol == col && c == '\n'); // DONE
 
         if (vcol < col) // line too short, padd with spaces
         {
@@ -3348,8 +3350,8 @@ private static int put_in_typebuf(String s, boolean colon)
       // NEEDSWORK: HACK for PUT_LINE flag, NOTE: should not need to do
       // (flags&PUT_LINE)!=0 since all MLINE should be terminated by \n
       if(y_type == MLINE // && (flags & PUT_LINE) != 0
-         && s.length() != 0 && s.charAt(s.length()-1) != '\n')
-        s += '\n';
+              && s.length() != 0 && s.charAt(s.length()-1) != '\n') // DONE
+        s += '\n'; // DONE
       if(count > 1) {
         StringBuilder sb = new StringBuilder(s);
         do {
@@ -3438,7 +3440,7 @@ private static int put_in_typebuf(String s, boolean colon)
       int lastc;
 
       int offset00 = G.curbuf.getLineStartOffset(nextline);
-      int offset01 = offset00 - 1; // points to the '\n' of current line
+      int offset01 = offset00 - 1; // points to the '\n' of current line // DONE
 
       MySegment seg = G.curbuf.getLineSegment(nextline);
       int offset02 = offset00 + skipwhite(seg, 0);
@@ -3447,12 +3449,12 @@ private static int put_in_typebuf(String s, boolean colon)
       if(insert_space) {
 	if(offset01 > 0) {
 	  // there's a char before first line's '\n'
-	  lastc = Util.getCharAt(offset01 - 1); // last char of line
+	  lastc = Util.getCharAt(offset01 - 1); // last char of line // DONE
 	} else {
 	  // at begin file, say lastc is a newline
-	  lastc = '\n';
+	  lastc = '\n'; // DONE
 	}
-	if(nextc != ')' && lastc != ' ' && lastc != TAB && lastc != '\n') {
+	if(nextc != ')' && lastc != ' ' && lastc != TAB && lastc != '\n') { // DONE
 	  spaces.append(' ');
 	  if(   G.p_js && (lastc == '.' || lastc == '?'
                                      || lastc =='!')) {
@@ -3594,7 +3596,7 @@ private static int put_in_typebuf(String s, boolean colon)
       char c;
       while (idx < endCol - 1
               && idx < seg.count - 1
-              && (c = seg.array[ptr]) != '\n') {
+              && (c = seg.array[ptr]) != '\n') { // DONE
         ++idx;
         /* Count a tab for what it's worth (if list mode not on) */
         vcol += lbr_chartabsize(c, vcol);
@@ -3655,7 +3657,7 @@ private static int put_in_typebuf(String s, boolean colon)
       for (int col = fpos.getColumn(), ptr = seg.offset; ; --col, ++ptr) {
         c = seg.array[ptr];
         // make sure we don't go past the end of the line
-        if (c == '\n') {
+        if (c == '\n') { // DONE
           incr = 1;	// NUL at end of line only takes one column
           break;
         }
@@ -4482,7 +4484,7 @@ op_do_addsub(char command, int Prenum1)
 	col = G.curwin.w_cursor.getColumn();
 
 	while (col < ptr.length()
-                && ptr.charAt(col) != '\n'
+                && ptr.charAt(col) != '\n' // DONE
 		&& !isdigit(ptr.charAt(col))
 		&& !(doalp && ascii_isalpha(ptr.charAt(col))))
 	    ++col;
@@ -4723,7 +4725,7 @@ op_do_addsub(char command, int Prenum1)
           G.curwin.w_set_curswant = true;
           int tcol = cursor.getColumn();
           MySegment seg = Util.ml_get_curline();
-          while (seg.array[seg.offset + tcol] != '\n'
+          while (seg.array[seg.offset + tcol] != '\n' // DONE
                   && (tcol < bd.textcol + bd.textlen))
             tcol++;
           cursor.setColumn(tcol);
@@ -4964,7 +4966,7 @@ op_do_addsub(char command, int Prenum1)
 
     // All done with the big chunk.
     // delete the trailing '\n'
-    sb.deleteCharAt(sb.length()-1);
+    sb.deleteCharAt(sb.length()-1); // DONE
     G.curbuf.replaceString(startOffset, endOffset-1, sb.toString());
 
     // do the last line

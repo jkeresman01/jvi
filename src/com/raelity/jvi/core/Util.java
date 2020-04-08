@@ -44,7 +44,7 @@ public class Util {
     int offset = G.curbuf.getLineEndOffsetFromOffset(fpos.getOffset());
     // assumes there is at least one char in line, could be a '\n'
     offset--;	// point at last char of line
-    if(Util.getCharAt(offset) != '\n') {
+    if(Util.getCharAt(offset) != '\n') { // DONE
       offset++; // unlikely
     }
     G.curwin.w_cursor.set(offset);
@@ -215,7 +215,7 @@ public class Util {
    */
   static CharacterIterator ml_get_pos(ViFPOS pos) {
     MySegment seg = G.curbuf.getLineSegment(pos.getLine());
-    seg.setIndex(seg.offset + pos.getColumn());
+    seg.setIndex(seg.offset + pos.getColumn()); // DONE
     return seg;
   }
 
@@ -230,7 +230,7 @@ public class Util {
   }
 
   public static MySegment truncateNewline(MySegment seg) {
-      assert(seg.array[seg.offset + seg.count - 1] == '\n');
+      assert(seg.array[seg.offset + seg.count - 1] == '\n'); // DONE
       return new MySegment(seg.array, seg.offset, seg.count - 1, seg.docOffset);
   }
 
@@ -252,7 +252,7 @@ public class Util {
   /** is the indicated line empty? */
   static boolean lineempty(int lnum) {
     MySegment seg = G.curbuf.getLineSegment(lnum);
-    return seg.count == 0 || seg.array[seg.offset] == '\n';
+    return seg.count == 0 || seg.array[seg.offset] == '\n'; // DONE
   }
   
   static boolean bufempty() {
@@ -267,7 +267,7 @@ public class Util {
   static char getCharAt(int offset) {
     MySegment seg = new MySegment();
     G.curbuf.getSegment(offset, 1, seg);
-    return seg.count > 0 ? seg.array[seg.offset] : 0;
+    return seg.count > 0 ? seg.array[seg.offset] : 0; // DONE ??
   }
 
   /** flush map and typeahead buffers and give a warning for an error */

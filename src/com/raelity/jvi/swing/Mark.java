@@ -113,7 +113,7 @@ class Mark implements ViMark
             } else {
                 atZero = false;
                 // adjust offset for LEFT-BIAS, but don't change the line
-                if(getChar(offset - 1) != '\n')
+                if(getChar(offset - 1) != '\n') // DONE
                     --offset;
             }
             pos = buf.getDocument().createPosition(offset);
@@ -130,7 +130,7 @@ class Mark implements ViMark
             // (notice that we subtracted one when we set it)
             // UNLESS pointing at a newline; do not change lines.
             offset = pos.getOffset();
-            if(getChar(offset) != '\n')
+            if(getChar(offset) != '\n') // DONE
                 offset += 1;
         }
         return offset;
@@ -140,7 +140,7 @@ class Mark implements ViMark
     {
         // It is "impossible" to get the exception since we're based on pos
         // but default to '\n'; that will avoid adjusting the offset
-        char c = '\n';
+        char c = '\n'; // DONE
         try {
             c = buf.getDocument().getText(offset, 1).charAt(0);
         } catch(BadLocationException ex) {

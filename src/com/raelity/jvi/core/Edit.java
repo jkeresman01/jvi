@@ -43,6 +43,7 @@ import static com.raelity.jvi.core.lib.Constants.FDO.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
 
+// DONE could be null char rather than \n
 public class Edit {
   
   public static final String VI_MODE_COMMAND = "";
@@ -1306,7 +1307,7 @@ private static class GetLiteral implements HandleNextChar
       if((flags & (BL_WHITE | BL_SOL)) != 0) {
         for(int ptr = txt.offset
                 ; Misc.vim_iswhite(txt.array[ptr])
-                && !(((flags & BL_FIX) != 0) && txt.array[ptr+1] == '\n')
+                && !(((flags & BL_FIX) != 0) && txt.array[ptr+1] == '\n') // DONE
                 ; ++ptr) {
           ++index;
         }
@@ -1355,8 +1356,8 @@ private static class GetLiteral implements HandleNextChar
     int lnum = fpos.getLine();
     int col = fpos.getColumn();
     MySegment seg = G.curbuf.getLineSegment(lnum);
-    if(seg.array[seg.offset + col++] == '\n'	// not possible, maybe if input?
-            || seg.array[seg.offset + col] == '\n'
+    if(seg.array[seg.offset + col++] == '\n'	// not possible, maybe if input? // DONE
+            || seg.array[seg.offset + col] == '\n' // DONE
             || col >= seg.count - 1) {
       return FAIL;
     }
@@ -1907,7 +1908,7 @@ private static class GetLiteral implements HandleNextChar
     // NEEDSWORK: fixup cursor after insert
     ViFPOS fpos = G.curwin.w_cursor;
     if (fpos.getColumn() != 0
-            && (G.restart_edit == 0 || Misc.gchar_pos(fpos) == '\n')) {
+            && (G.restart_edit == 0 || Misc.gchar_pos(fpos) == '\n')) { // DONE
       G.curwin.w_cursor.set(fpos.getOffset() - 1);
     }
     

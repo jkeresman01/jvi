@@ -507,7 +507,7 @@ end_do_search:
     char    c;
 
     c = gchar_pos(fpos);
-    if (c == ' ' || c == '\t' || c == '\n')
+    if (c == ' ' || c == '\t' || c == '\n') // DONE
       return 0;
 
     if (Misc.vim_iswordc(c))
@@ -570,7 +570,7 @@ end_do_search:
 	// We'll stop if we land on a blank line
 	//
 	if(fpos.getColumn() == 0
-	   	&& gchar_pos(fpos) == '\n') {
+	   	&& gchar_pos(fpos) == '\n') { // DONE
 	  break;
 	}
 

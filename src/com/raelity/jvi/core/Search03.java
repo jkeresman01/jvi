@@ -806,7 +806,7 @@ while(true) {
         p = line.getIndex() - line.getBeginIndex();
         //for (cp = p; *cp != NUL && *cp != '>' && !vim_iswhite(*cp); mb_ptr_adv(cp))
         for (cp = p;
-             line.charAt(cp) != '\n'
+             line.charAt(cp) != '\n' // DONE
                   && cp < line.length() // this is defensive, not needed
                   && line.charAt(cp) != '>'
                   && !vim_iswhite(line.charAt(cp));
@@ -1399,6 +1399,6 @@ break;
     static boolean linewhite(int /*linenr_t*/ lnum) {
         MySegment seg = ml_get(lnum);
         int idx = Misc.skipwhite(seg, 0);
-        return seg.array[seg.offset + idx] == '\n';
+        return seg.array[seg.offset + idx] == '\n'; // DONE
     }
 }

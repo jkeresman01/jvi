@@ -859,11 +859,11 @@ public class Search01 {
     while (count-- > 0) {
 
 found: {
-        if (Misc.gchar_pos(pos) == '\n') {
+        if (Misc.gchar_pos(pos) == '\n') { // DONE
           do {
             if (Misc.inclDeclV7(pos, dir) == -1)
               break;
-          } while (Misc.gchar_pos(pos) == '\n');
+          } while (Misc.gchar_pos(pos) == '\n'); // DONE
 
           if (dir == FORWARD)
             break found;
@@ -903,7 +903,7 @@ found: {
 
         for (;;) {
           c = Misc.gchar_pos(pos);
-          if (c == '\n' ||
+          if (c == '\n' || // DONE
             (pos.getColumn() == 0 && startPS(pos.getLine(), NUL, false))) {
             if (dir == BACKWARD && pos.getLine() != startlnum)
               pos.set(pos.getLine() + 1, 0);
@@ -916,11 +916,11 @@ found: {
                 break;
             while (vim_strchr(")]\"'", 0, (c = Misc.gchar_pos(tpos))) >= 0);
 
-            if (i == -1 || (!cpo_J && (c == ' ' || c == '\t')) || c == '\n'
+            if (i == -1 || (!cpo_J && (c == ' ' || c == '\t')) || c == '\n' // DONE
                 || (cpo_J && (c == ' ' && Misc.inc(tpos) >= 0
                     && Misc.gchar_pos(tpos) == ' '))) {
               pos = tpos;
-              if (Misc.gchar_pos(pos) == '\n') // skip '\n' at EOL
+              if (Misc.gchar_pos(pos) == '\n') // skip '\n' at EOL // DONE
                 Misc.inc(pos);
               break;
             }
@@ -1066,7 +1066,7 @@ found: {
   static boolean startPS(int /*linenr_t*/lnum, int para, boolean both) {
     MySegment seg = ml_get(lnum);
     // if seg.count == 1, then only a \n, ie empty line
-    char s = seg.count > 1 ? seg.array[seg.offset] : 0;
+    char s = seg.count > 1 ? seg.array[seg.offset] : 0; // DONE
     // '\f' is formfeed, oh well, it doesn't hurt to be here
     if (s == para || s == '\f' || (both && s == '}'))
       return true;

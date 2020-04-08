@@ -249,10 +249,10 @@ public abstract class TextView implements ViTextView
     public int validateCursorPosition(int offset)
     {
         w_set_curswant = true; // NEEDSWORK: keep this?
-        if (Util.getCharAt(offset) == '\n' && (G.State & INSERT) == 0) {
+        if (Util.getCharAt(offset) == '\n' && (G.State & INSERT) == 0) { // DONE
             // Sitting on a newline and not in insert mode
             // back the cursor up (unless previous char is a newline)
-            if (offset > 0 && Util.getCharAt(offset - 1) != '\n') {
+            if (offset > 0 && Util.getCharAt(offset - 1) != '\n') { // DONE
                 --offset;
             }
         }
