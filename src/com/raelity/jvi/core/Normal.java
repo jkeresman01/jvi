@@ -3981,6 +3981,10 @@ nv_brackets(CMDARG cap, int dir)
       // "gv": Reselect the previous Visual area.  If Visual already active,
       // exchange previous and current Visual area.
       //
+      case '>':
+        // FOR DEBUG
+        GetChar.stuffReadbuff(":>>>\n");
+        break;
       case 'v':
         if (checkclearop(oap))
             break;
