@@ -1,0 +1,6 @@
+'et'	links.txt	/*'et'*
+'expandtab'	links.txt	/*'expandtab'*
+'noet'	links.txt	/*'noet'*
+'noexpandtab'	links.txt	/*'noexpandtab'*
+CTRL-D	links.txt	/*CTRL-D*
+CTRL-E	links.txt	/*CTRL-E*

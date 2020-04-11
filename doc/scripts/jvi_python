@@ -1,0 +1,19 @@
+#!/usr/bin/bash
+
+# Should be invoked as: jvi_python $(realpath $0) "$@"
+# start up python commands used to work with jvi stuff
+
+dir=${1%/*}
+name=${1##*/}
+
+shift 1
+
+if [[ -d $dir/python_stuff ]]; then
+    jvipy=$dir/python_stuff/jvi
+else
+    jvipy=$dir/jvi
+fi
+
+#export PYTHONPATH=$jvipy/vimh:$jvipy
+export PYTHONPATH=$jvipy/vimh
+python $jvipy/$name.py "$@"

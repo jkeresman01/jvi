@@ -7,6 +7,8 @@ test_type=html
 
 python $jvi/jvi/doc/scripts/jvi/vimh/jvi.py $FILTERED $OUT
 
+mv $OUT/tags $OUT/golden-tags
+
 diff -r -q -l $tdir/golden $tdir/build
 rc=$?
 if ((rc)); then

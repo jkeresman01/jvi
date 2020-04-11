@@ -1,0 +1,4 @@
+#!/usr/bin/bash
+
+jvi_python $(realpath $0) "$@"
+

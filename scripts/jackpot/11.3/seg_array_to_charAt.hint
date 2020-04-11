@@ -1,0 +1,15 @@
+<!description="seg.array TO seg.charAt">
+
+    $seg.array[$val + $seg.offset]
+::
+    $seg instanceof javax.swing.text.Segment
+=>
+    $seg.charAt($val)
+;;
+
+    $seg.array[$seg.offset + $val]
+::
+    $seg instanceof javax.swing.text.Segment
+=>
+    $seg.charAt($val)
+;;

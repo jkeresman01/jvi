@@ -37,7 +37,7 @@ fi
 
 $SCRIPTS/filter.sh $UNFILTERED $FILTERED
 
-$VIM/vim --noplugin -e -s -V1 -c "helptags $(cygpath -a -m $FILTERED)" -c q
+vim --noplugin -e -s -V1 -c "helptags $(cygpath -a -m $FILTERED)" -c q
 # echo vim helptags returns: $?
 
 mkdir -p $OUT

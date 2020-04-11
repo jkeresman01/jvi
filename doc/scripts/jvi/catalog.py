@@ -5,7 +5,7 @@ import shutil
 import collections
 #import StringIO
 import xml.etree.ElementTree as ET
-import vimh_gen as VG
+#import vimh_gen as VG
 
 def usage():
     print('xxx catalog.xml*')
@@ -28,11 +28,14 @@ def _idump(s, l):
 def print_catalog(src):
     (input_dir, fname) = os.path.split(src)
     xml = ET.parse(src)
-    modules = [ x for x in xml.getroot().getiterator("module") ]
+    modules = [ x for x in xml.getroot().iter("module") ]
     for m in modules:
-        nbm = m.get("distribution")
-        vers = m.find("manifest").get("OpenIDE-Module-Specification-Version")
-        print("%12s %s" % (vers, nbm))
+        #nbm = m.get("distribution")
+        manifest = m.find("manifest")
+        name = manifest.get("OpenIDE-Module-Name")
+        vers = manifest.get("OpenIDE-Module-Specification-Version")
+        #print("%12s %s" % (vers, nbm))
+        print("%12s %s" % (vers, name))
 
 for catalog in args:
     print()

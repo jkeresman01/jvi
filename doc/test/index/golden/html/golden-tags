@@ -1,0 +1,13 @@
+'aleph'	index.txt	/*'aleph'*
+'altkeymap'	index.txt	/*'altkeymap'*
+<PageDown>	index.txt	/*<PageDown>*
+<S-Down>	index.txt	/*<S-Down>*
+<kPageDown>	index.txt	/*<kPageDown>*
+CTRL-D	index.txt	/*CTRL-D*
+CTRL-E	index.txt	/*CTRL-E*
+CTRL-F	index.txt	/*CTRL-F*
+and	index.txt	/*and*
+index.txt	index.txt	/*index.txt*
+insert-index	index.txt	/*insert-index*
+normal-index	index.txt	/*normal-index*
+{motion}	index.txt	/*{motion}*
