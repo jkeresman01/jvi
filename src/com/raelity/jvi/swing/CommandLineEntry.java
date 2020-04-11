@@ -72,6 +72,7 @@ public abstract class CommandLineEntry implements ViCmdEntry
     protected CommandLine commandLine;
     protected ViTextView tv;
     protected String initialText;
+    private boolean forceEvents;
 
     CommandLineEntry(ViCmdEntry.Type type)
     {
@@ -137,8 +138,13 @@ public abstract class CommandLineEntry implements ViCmdEntry
             Options.kd().println("cmdLine: activate PASSTHRU"); //REROUTE
             this.tv = null; // typically done as part of finish up
             lastCommand = initialText;
-            fireEvent(new ActionEvent(tv.getEditor(),
-                                      ActionEvent.ACTION_PERFORMED, "\n"));
+            forceEvents = true; // The HACK goes on
+            try {
+                fireEvent(new ActionEvent(tv.getEditor(),
+                                          ActionEvent.ACTION_PERFORMED, "\n"));
+            } finally {
+                forceEvents = false;
+            }
             commandLine.makeTop(initialText);
             return;
         }
@@ -330,7 +336,7 @@ public abstract class CommandLineEntry implements ViCmdEntry
 
     private void fireEllEvent(Class<?> clazz, ActionEvent e)
     {
-        if(commandLine.isFiringEvents())
+        if(forceEvents || commandLine.isFiringEvents())
             ell.fire(clazz, e);
     }
 
