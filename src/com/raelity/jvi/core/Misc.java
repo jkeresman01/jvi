@@ -3897,9 +3897,11 @@ private static int put_in_typebuf(String s, boolean colon)
      * 
      * NOTE: CHAR ITER
      */
-    static void skipwhite(MySegment seg) {
-      while(vim_iswhite(seg.current()))
-        seg.next();
+    @SuppressWarnings("empty-statement")
+    static void skipwhite(CharacterIterator seg) {
+      if(!vim_iswhite(seg.current()))
+        return;
+      while(vim_iswhite(seg.next()));
     }
     
     /**
