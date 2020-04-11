@@ -25,7 +25,7 @@ import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.text.StringSegment;
-import com.raelity.text.TextUtil.MySegment;
+import com.raelity.text.MySegment;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 

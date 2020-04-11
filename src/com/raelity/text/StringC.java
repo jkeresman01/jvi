@@ -27,12 +27,11 @@ import java.text.StringCharacterIterator;
  * This is essentially a wrapped StringCharacterIterator, but that's final...
  * It's extended, to either return Null or DONE.
  * The "C" is for the language; return (char)0 instead of DONE.
- */
-
-/**
- *
+ * @deprecated Use StringSegment
  * @author err
  */
+
+@Deprecated
 public class StringC implements CharacterIterator
 {
     final private StringCharacterIterator si;

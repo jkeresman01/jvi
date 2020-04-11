@@ -28,7 +28,7 @@ import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.*;
 import com.raelity.text.RegExp;
 import com.raelity.text.RegExpJava;
-import com.raelity.text.TextUtil.MySegment;
+import com.raelity.text.MySegment;
 
 import static java.lang.Math.min;
 

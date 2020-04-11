@@ -30,7 +30,7 @@ package com.raelity.jvi;
 
 import java.io.File;
 
-import com.raelity.text.TextUtil.MySegment;
+import com.raelity.text.MySegment;
 
 /**
  * TODO: throw ViBadLocationException in all doc mod methods.

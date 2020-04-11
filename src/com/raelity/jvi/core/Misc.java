@@ -68,7 +68,7 @@ import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.lib.Wrap;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.text.TextUtil;
-import com.raelity.text.TextUtil.MySegment;
+import com.raelity.text.MySegment;
 
 import static com.raelity.jvi.core.ColonCommands.*;
 import static com.raelity.jvi.core.Edit.*;

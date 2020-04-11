@@ -36,7 +36,7 @@ import com.raelity.jvi.manager.ViManager;
 import com.raelity.text.RegExp;
 import com.raelity.text.RegExpFactory;
 import com.raelity.text.RegExpPatternError;
-import com.raelity.text.TextUtil.MySegment;
+import com.raelity.text.MySegment;
 
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc.*;

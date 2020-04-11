@@ -51,7 +51,7 @@ import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.core.lib.CcFlag;
 import com.raelity.jvi.core.lib.PreferencesChangeMonitor;
 import com.raelity.jvi.manager.ViManager;
-import com.raelity.text.TextUtil.MySegment;
+import com.raelity.text.MySegment;
 
 import static com.raelity.jvi.ViTextView.MARKOP.NEXT;
 import static com.raelity.jvi.ViTextView.MARKOP.PREV;

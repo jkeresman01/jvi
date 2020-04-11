@@ -128,46 +128,5 @@ public class TextUtil {
         return sb.toString();
     }
     
-    /**
-     * Also keep "docOffset" which is the offset in the document
-     * of the start of the segment; -1 implies not known.
-     */
-    public static class MySegment extends Segment {
-        public int docOffset;
-        
-        public MySegment() {
-            super();
-            docOffset = -1;
-        }
-        
-        public MySegment(MySegment seg) {
-            super(seg.array, seg.offset, seg.count);
-            docOffset =  seg.docOffset;
-        }
-        
-        public MySegment(char[] array, int offset, int count, int docOffset) {
-            super(array, offset, count);
-            this.docOffset = docOffset;
-        }
-        
-        @Override
-        public CharSequence subSequence(int start, int end) {
-            if (start < 0) {
-                throw new StringIndexOutOfBoundsException(start);
-            }
-            if (end > count) {
-                throw new StringIndexOutOfBoundsException(end);
-            }
-            if (start > end) {
-                throw new StringIndexOutOfBoundsException(end - start);
-            }
-            MySegment segment = new MySegment();
-            segment.array = this.array;
-            segment.offset = this.offset + start;
-            segment.count = end - start;
-            segment.docOffset = this.docOffset + start;
-            return segment;
-        }
-    }
 
 }

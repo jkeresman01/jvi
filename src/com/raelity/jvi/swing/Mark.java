@@ -29,7 +29,7 @@ import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.manager.ViManager;
-import com.raelity.text.TextUtil.MySegment;
+import com.raelity.text.MySegment;
 
 /**
  * A Mark in vi specifies a row and column. The row "floats" as lines are

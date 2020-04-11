@@ -21,7 +21,7 @@
 package com.raelity.jvi.core;
 
 import com.raelity.jvi.ViFPOS;
-import com.raelity.text.TextUtil.MySegment;
+import com.raelity.text.MySegment;
 
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Search03.*;

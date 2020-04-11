@@ -35,7 +35,7 @@ import com.raelity.jvi.core.lib.Messages;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.text.RegExp;
-import com.raelity.text.TextUtil.MySegment;
+import com.raelity.text.MySegment;
 
 import static com.raelity.jvi.core.Edit.*;
 import static com.raelity.jvi.core.MarkOps.*;

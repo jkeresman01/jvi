@@ -47,7 +47,7 @@ import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.swing.KeyBinding;
 import com.raelity.text.TextUtil;
-import com.raelity.text.TextUtil.MySegment;
+import com.raelity.text.MySegment;
 
 import static java.text.CharacterIterator.DONE;
 

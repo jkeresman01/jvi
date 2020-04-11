@@ -32,7 +32,7 @@ import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.Util;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.DebugOption;
-import com.raelity.text.TextUtil.MySegment;
+import com.raelity.text.MySegment;
 
 /**
  * The swing implementation of jVi's ViBuffer.

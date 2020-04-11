@@ -4,8 +4,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import com.raelity.text.TextUtil.MySegment;
-
 public class RegExpJava extends RegExp
 {
     public RegExpJava() {

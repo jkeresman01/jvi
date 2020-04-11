@@ -93,7 +93,7 @@ import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.*;
-import com.raelity.text.TextUtil.MySegment;
+import com.raelity.text.MySegment;
 
 import static java.awt.event.ActionEvent.ACTION_PERFORMED;
 import static java.lang.Math.abs;

@@ -45,7 +45,7 @@ import com.raelity.jvi.options.OptUtil;
 import com.raelity.jvi.options.Option;
 import com.raelity.jvi.options.SetColonCommand;
 import com.raelity.jvi.options.Validator;
-import com.raelity.text.TextUtil.MySegment;
+import com.raelity.text.MySegment;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Constants.FDO.*;
