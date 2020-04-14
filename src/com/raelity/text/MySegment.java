@@ -22,8 +22,18 @@ package com.raelity.text;
 import javax.swing.text.Segment;
 
 /**
- * Also keep "docOffset" which is the offset in the document
+ * Some "enhancements" to the standard Segment.
+ * In jVi MySegment is typically represents one line of text in the document.
+ * 
+ * Keep "docOffset" which is the offset in the document
  * of the start of the segment; -1 implies not known.
+ * 
+ * There is a MySegment(String) constructor, which has slightly different
+ * behavior. In particular, the charIterator returns NUL instead of DONE;
+ * and charAt(length()) return the doneChar instead of an exception.
+ * 
+ * Some additional methods:
+ * - charIterator: atEnd()
  * 
  * Apr 1 2020
  * Copy *everything* from Segment. Well, almost everything, not partial-return;
@@ -67,7 +77,7 @@ public class MySegment extends Segment
         pos = offset;
     }
 
-    public char getDoneChar()
+    final public char getDoneChar()
     {
         return doneChar;
     }

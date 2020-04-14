@@ -365,7 +365,7 @@ public static class BangAction extends AbstractColonAction
         BufferedReader br;
         ViOutputStream vos;
         br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-        vos = ViManager.createOutputStream(null, ViOutputStream.OUTPUT, cmd);
+        vos = ViManager.createOutputStream(cmd);
 
         coord.simpleExecuteThread = new SimpleExecuteThread(coord, vos, br);
 

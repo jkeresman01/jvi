@@ -25,6 +25,7 @@ import java.awt.event.KeyListener;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyVetoException;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
@@ -41,7 +42,7 @@ import com.raelity.jvi.core.ColonCommands;
  */
 public interface ViFactory
 {
-    public Class loadClass(String name) throws ClassNotFoundException;
+    public Class<?> loadClass(String name) throws ClassNotFoundException;
 
     /** jVi can be disabled. This means that its keymap and cursor should
      * not be installed, which is mostly platform dependent.
@@ -116,17 +117,16 @@ public interface ViFactory
 
     public void setShutdownHook(Runnable hook);
 
-    /** create an output stream for some kind of results.
-     *  @param type Should be a constant from ViOutputStream,
-     *          e.g. ViOutputStream.SEARCH.
-     *  @param info qualifier for the output stream, e.g. search pattern.
-     * @param priority 0 - 10 where 0 is lowest priority, 5 is normal,
-     *        0-2 is low, don't raise window.
+    /**
+     * create an output stream for some kind of results.
+     * @param tv
+     * @param type Should be a constant from ViOutputStream,
+     *         e.g. ViOutputStream.SEARCH.
+     * @param info qualifier for the output stream, e.g. search pattern.
+     * @param flags 
      */
     public ViOutputStream createOutputStream(ViTextView tv,
-            Object type,
-            Object info,
-            int priority);
+            Object type, Object info, EnumSet<ViOutputStream.FLAGS> flags);
 
     public void startGlassKeyCatch(KeyListener kl);
     public void stopGlassKeyCatch();
@@ -176,7 +176,7 @@ public interface ViFactory
      */
     public PropertyDescriptor createPropertyDescriptor(String optName,
             String methodName,
-            Class clazz)
+            Class<?> clazz)
             throws IntrospectionException;
 
     /**
@@ -213,5 +213,17 @@ public interface ViFactory
 
     default public boolean commandEntryAssistBusy(ViCmdEntry cmdEntry) {
         return false;
+    }
+
+    /**
+     * platform context wants to execute a jvi command.
+     * After activating the text view with the platform,
+     * execute the runnable.
+     * 
+     * @param tv If null, use curwin
+     * @param r  execute this
+     */
+    default void platformRequestsCommand(ViTextView tv, Runnable r) {
+        r.run();
     }
 }

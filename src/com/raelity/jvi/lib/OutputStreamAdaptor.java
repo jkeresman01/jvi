@@ -20,30 +20,32 @@
 
 package com.raelity.jvi.lib;
 
+import java.io.PrintWriter;
+import java.io.Writer;
+
 import com.raelity.jvi.ViOutputStream;
 
 /**
  * Use this class instead of the interface, to make it easier to
  * augment the interface in a compatible way.
  */
-public class OutputStreamAdaptor implements ViOutputStream {
+abstract public class OutputStreamAdaptor
+extends PrintWriter
+implements ViOutputStream
+{
 
-  public OutputStreamAdaptor() {
-  }
+public OutputStreamAdaptor(Writer writer, boolean autoFlush)
+{
+    super(writer, autoFlush);
+}
 
-    @Override
-  public void println(int line, int col, int length) {
-  }
+@Override
+public void close()
+{
+    try {
+        super.close();
+    } catch(Exception ex) {
+    }
+}
 
-    @Override
-  public void println(String s) {
-  }
-
-    @Override
-  public void printlnLink(String link, String text) {
-  }
-
-    @Override
-  public void close() {
-  }
 }

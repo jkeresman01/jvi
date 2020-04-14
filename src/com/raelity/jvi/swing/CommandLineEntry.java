@@ -38,10 +38,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.util.List;
 import java.util.logging.Level;
 
-import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -50,6 +48,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 
+import com.raelity.jvi.core.CommandHistory.HistoryContext;
 import com.raelity.jvi.options.*;
 
 import static com.raelity.jvi.lib.LibUtil.dumpEvent;
@@ -64,12 +63,12 @@ import static com.raelity.text.TextUtil.sf;
  */
 public abstract class CommandLineEntry implements ViCmdEntry
 {
-    private static DebugOption dbg = Options.getDebugOption(Options.dbgSearch);
+    private static final DebugOption dbg = Options.getDebugOption(Options.dbgSearch);
     /** result of last entry */
     protected String lastCommand;
     protected MyEventListenerList ell = new MyEventListenerList();
     protected ViCmdEntry.Type entryType;
-    protected CommandLine commandLine;
+    protected AbstractCommandLine commandLine;
     protected ViTextView tv;
     protected String initialText;
     private boolean forceEvents;
@@ -77,8 +76,9 @@ public abstract class CommandLineEntry implements ViCmdEntry
     CommandLineEntry(ViCmdEntry.Type type)
     {
         entryType = type;
-        commandLine = new CommandLine();
-        commandLine.setupBorder();
+        //commandLine = new CommandLine();
+        commandLine = !(Boolean)ViManager.getOptionAtStartup(Options.comboCommandLine)
+                            ? new CommandLine() : new CommandLineCombo();
         commandLine.addActionListener(this::finishUpEntry);
         commandLine.setMode(entryType == ViCmdEntry.Type.COLON ? ":" : "/");
         if (ViManager.getOsVersion().isMac()) {
@@ -96,15 +96,18 @@ public abstract class CommandLineEntry implements ViCmdEntry
                     JTextComponent tc = (JTextComponent) e.getSource();
                     tc.removeFocusListener(focusSetSelection);
                     Caret c = tc.getCaret();
+                    int[] macFixup = commandLine.getMacFixupDotMark();
+                    int dot = macFixup[0];
+                    int mark = macFixup[1];
                     try {
-                        tc.setCaretPosition(commandLine.getMark());
-                        tc.moveCaretPosition(commandLine.getDot());
+                        tc.setCaretPosition(mark);
+                        tc.moveCaretPosition(dot);
                     } catch (IllegalArgumentException ex) {
                         // sometimes get exception, see
                         // https://netbeans.org/bugzilla/show_bug.cgi?id=223853
                         String msg = String.format(
                                 "mark=%d, dot=%d, caret=%d, text=%s",
-                                commandLine.getMark(), commandLine.getDot(),
+                                mark, dot,
                                 c.getDot(), tc.getText());
                         CommandLine.LOG.info(msg);
                         // new IllegalArgumentException(msg, ex)
@@ -157,9 +160,9 @@ public abstract class CommandLineEntry implements ViCmdEntry
     }
 
     @Override
-    public void setHistory(List<String> l)
+    public void setHistory(HistoryContext ctx)
     {
-        commandLine.SetHistory(l);
+        commandLine.SetHistory(ctx);
     }
 
     @Override
@@ -167,19 +170,6 @@ public abstract class CommandLineEntry implements ViCmdEntry
     {
         commandLine.makeTop(s);
     }
-
-    @Override
-    public List<String> getHistory()
-    {
-        return commandLine.getHistory();
-    }
-
-    @Override
-    public List<HistEntry> getHistEntrys()
-    {
-        return commandLine.getHistEntrys();
-    }
-
 
     /**
      *  When the command line gets focus, there's some work to do
@@ -259,11 +249,6 @@ public abstract class CommandLineEntry implements ViCmdEntry
         }
         lastCommand = "";
         shutdownEntry(true);
-    }
-
-    public JLabel getModeLabel()
-    {
-        return commandLine.getModeLabel();
     }
 
     @Override

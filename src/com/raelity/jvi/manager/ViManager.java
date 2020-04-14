@@ -54,7 +54,12 @@ import com.raelity.jvi.core.Hook;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.Search;
 import com.raelity.jvi.core.lib.CcFlag;
+
 import java.util.Map.Entry;
+
+import com.raelity.jvi.ViOutputStream.COLOR;
+
+import static com.raelity.jvi.ViOutputStream.FLAGS;
 
 /**
  * <p>
@@ -86,7 +91,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("1.6.2.x1");
+    public static final jViVersion version = new jViVersion("1.6.2.x2");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -270,6 +275,8 @@ final public class ViManager
                                new DebugMotdCommand(), EnumSet.of(CcFlag.DBG));
         ColonCommands.register("debugVersion", "debugVersion",
                                new DebugVersionCommand(), null);
+        ColonCommands.register("debugOutputStyles", "debugOutputStyles",
+                               new DebugOutputStyles(), null);
 
 
         firePropertyChange(P_BOOT, null, null);
@@ -352,6 +359,26 @@ final public class ViManager
         }
 
     }
+    static class DebugOutputStyles implements ActionListener
+    {
+        @Override
+        public void actionPerformed(ActionEvent ev)
+        {
+            Runnable r = () -> System.err.println("click");
+            try (ViOutputStream os = ViManager.createOutputStream(null)) {
+                os.println("plain ALL CAPS And More");
+                os.println("plain ALL CAPS And More success", COLOR.SUCCESS);
+                os.println("plain ALL CAPS And More warning", COLOR.WARNING);
+                os.println("plain ALL CAPS And More failure", COLOR.FAILURE);
+                os.println("plain ALL CAPS And More debug", COLOR.DEBUG);
+                os.println("link link ALL CAPS And More", r);
+                os.println("link ALL CAPS And More success", r, COLOR.SUCCESS);
+                os.println("link ALL CAPS And More warning", r, COLOR.WARNING);
+                os.println("link ALL CAPS And More failure", r, COLOR.FAILURE);
+                os.println("link ALL CAPS And More debug", r, COLOR.DEBUG);
+            }
+        }
+    };
 
     /**
      * Disable the feature.
@@ -513,21 +540,18 @@ final public class ViManager
     }
 
     public static ViOutputStream createOutputStream(
-            ViTextView tv,
-            Object type,
             Object info)
     {
-        return factory.createOutputStream(tv, type, info,
-                ViOutputStream.PRI_NORMAL);
+        return factory.createOutputStream(null, ViOutputStream.MAIN, info,
+                EnumSet.of(FLAGS.NEW_NO, FLAGS.RAISE_YES, FLAGS.CLEAR_NO));
     }
 
+    //EnumSet.of(FLAGS.NEW_YES, FLAGS.RAISE_YES, FLAGS.CLEAR_NO));
+
     public static ViOutputStream createOutputStream(
-            ViTextView tv,
-            Object type,
-            Object info,
-            int priority)
+            ViTextView tv, Object type, Object info, EnumSet<FLAGS> flags)
     {
-        return factory.createOutputStream(tv, type, info, priority);
+        return factory.createOutputStream(tv, type, info, flags);
     }
 
     /** update visible textviews */
@@ -831,6 +855,7 @@ final public class ViManager
     }
 
     private static String useFrame_ValueAtBoot;
+    private static boolean comboCommandLine_ValueAtBoot;
 
     // this is called after the options are setup
     private static void setupOptionAtStartup() {
@@ -840,6 +865,8 @@ final public class ViManager
         // Get the boot value of certain Options
         useFrame_ValueAtBoot = Options.getOption(Options.commandEntryFrame)
                 .getString();
+        comboCommandLine_ValueAtBoot = Options.getOption(
+                Options.comboCommandLine).getBoolean();
     }
 
     // Might be better to save the option value in
@@ -847,9 +874,14 @@ final public class ViManager
     // creating the command line window. But this
     // is extensible and guarenteed to preserve semantics.
     public static Object getOptionAtStartup(String optName) {
-        if(Options.commandEntryFrame.equals(optName))
+        switch(optName) {
+        case Options.commandEntryFrame:
             return useFrame_ValueAtBoot;
-        return null;
+        case Options.comboCommandLine:
+            return comboCommandLine_ValueAtBoot;
+        default:
+            return null;
+        }
     }
         
 }

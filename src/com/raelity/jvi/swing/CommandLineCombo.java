@@ -20,6 +20,7 @@
 
 package com.raelity.jvi.swing;
 
+import java.awt.AWTEvent;
 import java.awt.AWTKeyStroke;
 import java.awt.Color;
 import java.awt.Component;
@@ -34,6 +35,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 import java.util.logging.Level;
@@ -41,12 +43,16 @@ import java.util.logging.Logger;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.plaf.basic.BasicComboBoxEditor;
+import javax.swing.plaf.basic.BasicComboBoxEditor.UIResource;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
@@ -68,7 +74,7 @@ import static com.raelity.jvi.lib.LibUtil.dumpEvent;
 import static com.raelity.text.TextUtil.sf;
 
 /**
- * This class presents a editable text field for picking up command entry
+ * This class presents a editable combo box UI for picking up command entry
  * data. A mode, usually a single character like "?" or ":", can be
  * set for display. This UI supports the maintenance of a history of commands.
  * This component builds a keymap through which the action events are
@@ -79,15 +85,17 @@ import static com.raelity.text.TextUtil.sf;
  * editor component to handle it.
  */
 @SuppressWarnings("serial")
-public final class CommandLine extends AbstractCommandLine
+public final class CommandLineCombo extends AbstractCommandLine
 {
+    private static final boolean flip = true;
     static final Logger LOG
-            = Logger.getLogger(CommandLine.class.getName());
+            = Logger.getLogger(CommandLineCombo.class.getName());
     private static final DebugOption dbg = Options.getDebugOption(Options.dbgSearch);
     private final JLabel modeLabel = new JLabel();
-    private final JTextField text = getNewTextField();
+    private final JComboBox<String> combo = new JComboBox<>();
     private final GridBagLayout gridBagLayout1 = new GridBagLayout();
     private String mode;
+    private Border border1;
     boolean setKeymapActive;
     private boolean inUpDown = false;
     private boolean commandLineFiringEvents = false; // MORE HACKING
@@ -98,10 +106,22 @@ public final class CommandLine extends AbstractCommandLine
     private static final String ACT_BACK_SPACE = "vi-command-backspace";
     static final DebugOption dbgKeys
             = Options.getDebugOption(Options.dbgKeyStrokes);
-    private HistoryContext ctx;
+    HistoryContext ctx;
 
-    public CommandLine()
+
+
+    // ............
+
+
+    public CommandLineCombo()
     {
+        // see https://substance.dev.java.net/issues/show_bug.cgi?id=285
+        //combo.putClientProperty(LafWidget.COMBO_BOX_NO_AUTOCOMPLETION, true);
+        combo.putClientProperty("lafwidgets.comboboxNoAutoCompletion", true);
+        combo.setEditor(new MyComboBoxEditor());
+        combo.setEditable(true);
+        JTextComponent text
+                = (JTextComponent) combo.getEditor().getEditorComponent();
         text.addPropertyChangeListener("keymap", (PropertyChangeEvent evt) -> {
             if(setKeymapActive)
                 return;
@@ -113,14 +133,7 @@ public final class CommandLine extends AbstractCommandLine
         });
 
         try {
-            modeLabel.setText("");
-            this.setLayout(gridBagLayout1);
-            this.add(modeLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.NONE,
-                    new Insets(0, 0, 0, 0), 0, 0));
-            this.add(text, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+            jbInit();
         } catch ( Exception ex ) {
             LOG.log(Level.SEVERE, null, ex);
         }
@@ -128,10 +141,13 @@ public final class CommandLine extends AbstractCommandLine
         modeLabel.setFont(new Font("Monospaced",
                                    Font.BOLD,
                                    font.getSize()));
-        font = text.getFont();
-        text.setFont(new Font("Monospaced", font.getStyle(), font.getSize()));
+        font = combo.getFont();
+        combo.setFont(new Font("Monospaced",
+                               font.getStyle(),
+                               font.getSize()));
 
         setMode(" ");
+        setComboDoneListener();
         setKeymap();
         // allow tabs to be entered into text field
         Component c = getTextComponent();
@@ -140,9 +156,9 @@ public final class CommandLine extends AbstractCommandLine
                 KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, set);
         c.setFocusTraversalKeys(
                 KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, set);
-        //setupBorder();
-        this.setBorder(BorderFactory.createLineBorder(Color.black, 2));
-
+        Options.addPropertyChangeListenerSET(
+                Options.history, (evt) -> sizeChange(evt));
+        setupBorder();
     }
 
     @Override
@@ -155,13 +171,12 @@ public final class CommandLine extends AbstractCommandLine
     public void setupFont(Font srcFont)
     {
         modeLabel.setFont(srcFont.deriveFont(Font.BOLD));
-        text.setFont(srcFont);
+        combo.setFont(srcFont);
     }
 
     /**
-     * This is used to initialize the text, needed so that
-     * characters entered before it gets focus are not lost.
-     * And then there's passthru.
+     *  This is used to initialize the text of the combo box, needed so that
+     *  characters entered before the combo box gets focus are not lost.
      */
     @Override
     public void init( String s )
@@ -169,17 +184,25 @@ public final class CommandLine extends AbstractCommandLine
         InitialHistoryItem initalState = ctx.init();
         commandLineFiringEvents = true;
         dbg.printf("CLINE: init: commandLineFiringEvents true\n");
+        if(combo.getItemCount() > 0)
+            combo.setSelectedIndex(flipComboIndex(0));
         dot = mark = 0;
+        // set combo index to the end ????????? should already be there
+        setFindHistoryPrefix(s);
         dbg.printf("CLINE: init: middle: s=%s\n", s);
         if ( s.length() == 0 ) {
             JTextComponent tc = getTextComponent();
             String t = initalState.getInitialItem();
+            if(!tc.getText().equals(t))
+                System.err.println("COMBO NOT EQUAL");
             tc.setText(t);
-            if(t.length() > 0 && initalState.isAtBeginning()) {
+            int len = tc.getText().length();
+            if(len > 0) {
+                tc.setCaretPosition(0);
+                tc.moveCaretPosition(len);
                 mark = 0;
-                dot = t.length();
-                tc.setCaretPosition(mark);
-                tc.moveCaretPosition(dot);
+                dot = len;
+                //System.err.println("Selection length = " + len);
             }
         } else {
             try {
@@ -191,12 +214,11 @@ public final class CommandLine extends AbstractCommandLine
         }
         dbg.printf(() -> sf("CLINE: init: end: text=%s\n",
                             getTextComponent().getText()));
-
-        setFindHistoryPrefix(s);
     }
 
     private void setFindHistoryPrefix(String s) {
         ctx.setFilter(s);
+        //findHistoryPrefix = s;
     }
 
 
@@ -224,15 +246,37 @@ public final class CommandLine extends AbstractCommandLine
         }
     }
 
+
+    private void jbInit() throws Exception
+    {
+        modeLabel.setText("");
+        this.setLayout(gridBagLayout1);
+        this.add(modeLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                GridBagConstraints.CENTER, GridBagConstraints.NONE,
+                new Insets(0, 0, 0, 0), 0, 0));
+        this.add(combo, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,
+                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                new Insets(0, 0, 0, 0), 0, 0));
+    }
+
+
+    private void setupBorder()
+    {
+        if(border1 == null) {
+            border1 = BorderFactory.createLineBorder(Color.black, 2);
+        }
+        this.setBorder(border1);
+    }
+
     @Override
     public void takeFocus( boolean flag )
     {
         if ( flag ) {
-            text.setEnabled(true);
+            combo.setEnabled(true);
             // NEEDSWORK: FOCUS: use requestFocusInWindow()
-            text.requestFocus();
+            getTextComponent().requestFocus();
         } else {
-            text.setEnabled(false);
+            combo.setEnabled(false);
         }
     }
 
@@ -261,17 +305,45 @@ public final class CommandLine extends AbstractCommandLine
     @Override
     final JTextComponent getTextComponent()
     {
-        return text;
+        Component c = combo.getEditor().getEditorComponent();
+        return (JTextComponent)c;
     }
 
     /**
-     * Install the associated history.
+     * Push the command to the head/top of the list
+     * @param command 
+     */
+    private void flipPushComboItem(String command) {
+        if(flip) {
+            combo.addItem(command);
+        } else {
+            combo.insertItemAt(command, 0);
+        }
+    }
+
+    private int flipComboIndex(int i) {
+        return flip ? combo.getItemCount() -1 -i : i;
+    }
+
+    /**
+     * This installs the history list.
      */
     @Override
     public void SetHistory(HistoryContext ctx)
     {
         this.ctx = ctx;
         ctx.init();
+        ArrayList<String> l = new ArrayList<>();
+        String s;
+        while((s = ctx.next()) != null)
+            l.add(s);
+        if(flip)
+            Collections.reverse(l);
+        combo.removeAllItems();
+        for(String item: l) {
+            combo.addItem(item);
+        }
+        combo.setSelectedIndex(flipComboIndex(0));
     }
     
     int histEntryIndex = 0;
@@ -283,13 +355,48 @@ public final class CommandLine extends AbstractCommandLine
     @Override
     public void makeTop( String command )
     {
+        if ( G.p_hi() == 0 ) {
+            return;
+        }
         // if the empty string was selected we're done
         if(command.isEmpty()) {
             return;
         }
         // save the command in the history
+        //HistEntry he = new HistEntry(command, ++histEntryIndex);
+        combo.removeItem(command);
+        flipPushComboItem(command);
+        combo.setSelectedIndex(flipComboIndex(0));
         ctx.push(command);
+        trimList();
     }
+
+    private void sizeChange(PropertyChangeEvent evt)
+    {
+        trimList();
+    }
+
+    private void trimList()
+    {
+        while(combo.getItemCount() > G.p_hi()) {
+            // remove the last item
+            combo.removeItemAt(flipComboIndex(combo.getItemCount() - 1));
+        }
+    }
+
+
+    private void setComboDoneListener()
+    {
+        combo.addActionListener((ActionEvent e) -> {
+            if("comboBoxEdited".equals(e.getActionCommand())) {
+                ActionEvent e01 = new ActionEvent(CommandLineCombo.this,
+                        e.getID(), "\n", e.getModifiers());
+                fireCommandLineActionPerformed(e01);
+            }
+        });
+
+    }
+
 
     /**
      * Return and <ESC> fire events and update the history list.
@@ -314,9 +421,6 @@ public final class CommandLine extends AbstractCommandLine
         JTextComponent.KeyBinding[] bindings = {
             new JTextComponent.KeyBinding(
                     EXECUTE_KEY,
-                    ACT_FINISH),
-            new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
-                    KeyEvent.VK_ENTER, 0),
                     ACT_FINISH),
             new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                     KeyEvent.VK_ESCAPE, 0),
@@ -352,7 +456,7 @@ public final class CommandLine extends AbstractCommandLine
                         String actionCommand = e.getActionCommand();
                         int modifiers = e.getModifiers();
                         ActionEvent e01 = new ActionEvent(
-                                CommandLine.this,
+                                CommandLineCombo.this,
                                 e.getID(),
                                 actionCommand,
                                 modifiers);
@@ -419,22 +523,20 @@ public final class CommandLine extends AbstractCommandLine
 
         // Maintain LRU history
         makeTop(command);
+        combo.hidePopup();
 
         // turned off events for makeTop...
         dbg.printf("CLINE: commandLineFiringEvents true for finishing events\n");
+        commandLineFiringEvents = true;
         // Process the listeners last to first, notifying
         // those that are interested in this event
-        commandLineFiringEvents = true;
-        try {
-            Object[] listeners = listenerList.getListenerList();
-            for (int i = listeners.length-2; i>=0; i-=2) {
-                if (listeners[i]==ActionListener.class) {
-                    ((ActionListener)listeners[i+1]).actionPerformed(e);
-                }
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = listeners.length-2; i>=0; i-=2) {
+            if (listeners[i]==ActionListener.class) {
+                ((ActionListener)listeners[i+1]).actionPerformed(e);
             }
-        } finally {
-            commandLineFiringEvents = false;
         }
+        commandLineFiringEvents = false;
         dbg.printf("CLINE: commandLineFiringEvents false until next time\n");
     }
 
@@ -469,49 +571,66 @@ public final class CommandLine extends AbstractCommandLine
 
 // inner classes ...........................................................
 
+    //////////////////////////////////////////////////////////////////////
+    //
+    // In jdk1.8 in JComboBox::actionPerformed, the following was added
+    //    ComboBoxEditor editor = getEditor();
+    //    if ((editor != null) && (e != null) && (editor == e.getSource())) {
+    // and
+    //    editor -------- "BasicComboBoxEditor"
+    //    e.getSource --- "BasicComboBoxEditor$BorderlessTextField"
+    // so nothing happens on 1.8
+    //
+    // To work around this, override fireActionPerformed in the JTextField
+    // and provide the combobox editor as the event source.
+    // (I must be missing something, else how could you ever use this...)
+    //
+    //////////////////////////////////////////////////////////////////////
+    private class MyComboBoxEditor extends BasicComboBoxEditor {
+        @Override
+        protected JTextField createEditorComponent() {
+            // borderless text field has an issue, see below
+            JTextField ed = new MyComboTextField("",9);
+            ed.setBorder(null);
+            ed.getDocument().addDocumentListener(new DocumentListener()
+            {
+                @Override
+                public void insertUpdate(DocumentEvent e)
+                {
+                    if(!inUpDown) {
+                        setFindHistoryPrefix(ed.getText());
+                    }
+                    dbgKeys.printf(Level.FINER, ()->sf(
+                                   "insert: inUpDown %b, text '%s'\n",
+                                   inUpDown, ed.getText()));
+                }
 
-    private JTextField getNewTextField()
-    {
-        JTextField ed = new CommandLineTextField("",9);
-        ed.setBorder(null);
-        ed.getDocument().addDocumentListener(new DocumentListener()
-        {
-            @Override
-            public void insertUpdate(DocumentEvent e)
-            {
-                if(!inUpDown) {
-                    setFindHistoryPrefix(ed.getText());
-                }
-                dbgKeys.printf(Level.FINER, ()->sf(
-                        "insert: inUpDown %b, text '%s'\n",
+                @Override
+                public void removeUpdate(DocumentEvent e)
+                {
+                    if(!inUpDown) {
+                        setFindHistoryPrefix(ed.getText());
+                    }
+                    dbgKeys.printf(Level.FINER, ()->sf(
+                                   "remove: inUpDown %b, text '%s'\n",
                                    inUpDown, ed.getText()));
-            }
-            
-            @Override
-            public void removeUpdate(DocumentEvent e)
-            {
-                if(!inUpDown) {
-                    setFindHistoryPrefix(ed.getText());
                 }
-                dbgKeys.printf(Level.FINER, ()->sf(
-                        "remove: inUpDown %b, text '%s'\n",
-                                   inUpDown, ed.getText()));
-            }
-            
-            @Override
-            public void changedUpdate(DocumentEvent e)
-            {
-            }
-        });
-        return ed;
+
+                @Override
+                public void changedUpdate(DocumentEvent e)
+                {
+                }
+            });
+            return ed;
+        }
     }
 
     // Copied from BasicComboBoxEditor::BorderlessTextField
     //          except for actionPerformed
-    private class CommandLineTextField extends JTextField
+    private class MyComboTextField extends JTextField
     {
 
-    public CommandLineTextField(String value,int n) {
+    public MyComboTextField(String value,int n) {
         super(value,n);
     }
 
@@ -523,6 +642,11 @@ public final class CommandLine extends AbstractCommandLine
                 && (e.getKeyCode() == KeyEvent.VK_UP
                     || e.getKeyCode() == KeyEvent.VK_DOWN)) {
             try {
+                dbgKeys.printf(Level.FINE, ()->sf(
+                        "processKeyEvent idx %d, find %s\n",
+                        combo.getSelectedIndex(), ctx.getFilter()));
+                if(combo.getItemCount() <= 0)
+                    return;
                 inUpDown = true;
                 String val;
                 if(e.getKeyCode() == KeyEvent.VK_UP) {
@@ -531,10 +655,21 @@ public final class CommandLine extends AbstractCommandLine
                     val = ctx.prev();
                 }
 
+                if(combo.isPopupVisible() == false) {
+                    if(val == null) {
+                        SwingUtilities.invokeLater(() -> Util.beep_flush());
+                        return;
+                    }
+                    SwingUtilities.invokeLater(() -> combo.showPopup());
+                }
                 // there's only one shot at using a selection, to late now...
                 setCaretPosition(getCaretPosition()); // clear any selection
                 if(val != null) {
-                    setText(val);
+                    if(ctx.atTop()) {
+                        setText(val);
+                        SwingUtilities.invokeLater(() -> combo.hidePopup());
+                    }else
+                        combo.setSelectedItem(val);
                     return;
                 }
                 SwingUtilities.invokeLater(() -> Util.beep_flush());
@@ -545,6 +680,75 @@ public final class CommandLine extends AbstractCommandLine
         }
         super.processKeyEvent(e);
     }
-    } // end commandLineTextField
+        
+    // workaround for 4530952
+    @Override
+    public void setText(String s) {
+        dbg.printf(() -> sf("CLINE: setText %s -->%s\n", getText(), s));
+        if (getText().equals(s)) {
+            return;
+        }
+        super.setText(s);
+    }
 
-}
+    @Override
+    public void setBorder(Border b) {
+        if (!(b instanceof UIResource)) {
+            super.setBorder(b);
+        }
+    }
+
+    // modified to set the combobox editor as the event source
+    @Override
+    protected void fireActionPerformed() {
+        // Guaranteed to return a non-null array
+        Object[] listeners = listenerList.getListenerList();
+        int modifiers = 0;
+        AWTEvent currentEvent = EventQueue.getCurrentEvent();
+        if (currentEvent instanceof InputEvent) {
+            modifiers = ((InputEvent)currentEvent).getModifiers();
+        } else if (currentEvent instanceof ActionEvent) {
+            modifiers = ((ActionEvent)currentEvent).getModifiers();
+        }
+        ActionEvent e =
+            new ActionEvent(combo.getEditor(), ActionEvent.ACTION_PERFORMED,
+                            (myCommand != null) ? myCommand : getText(),
+                            EventQueue.getMostRecentEventTime(), modifiers);
+
+        dbg.printf(() -> sf("CLINE: fireActionPerformed: %s\n", dumpEvent(e)));
+        // Process the listeners last to first, notifying
+        // those that are interested in this event
+        for (int i = listeners.length-2; i>=0; i-=2) {
+            if (listeners[i]==ActionListener.class) {
+                ((ActionListener)listeners[i+1]).actionPerformed(e);
+            }
+        }
+    }
+
+    private String myCommand;
+    @Override
+    public void setActionCommand(String command)
+    {
+        super.setActionCommand(command);
+        myCommand = command;
+    }
+    }
+
+    String cstat()
+    {
+        return cstat("");
+    }
+    String cstat(String tag)
+    {
+        int i = combo.getSelectedIndex();
+        int n = combo.getItemCount();
+        String item = i >= 0 && i < n ? combo.getItemAt(i) : "OOB";
+        String last = n > 0 ? combo.getItemAt(combo.getItemCount()-1) : "---";
+
+        String s = sf("%s: n %d, i %d, item '%s', last '%s'\n",
+                      tag, n, i, item, last);
+        System.err.printf(s);
+        return s;
+    }
+
+} // end com.raelity.jvi.swing.CommandLine

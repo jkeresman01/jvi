@@ -21,8 +21,10 @@
 package com.raelity.jvi.cmd;
 
 import com.raelity.jvi.ViAppView;
+
 import java.awt.Component;
 import java.awt.Rectangle;
+import java.util.EnumSet;
 
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
@@ -40,6 +42,7 @@ import com.raelity.jvi.swing.SwingTextView;
 import com.raelity.jvi.swing.ViewMap;
 import com.raelity.jvi.swing.ViewMapSwitcher;
 import com.raelity.jvi.swing.simple.SimpleFactory;
+
 import javax.swing.text.Document;
 
 /**
@@ -125,14 +128,12 @@ final public class PlayFactory extends SimpleFactory
 
     @Override
     public ViOutputStream createOutputStream(
-            ViTextView tv,
-            Object type,
-            Object info,
-            int priority )
+            ViTextView tv, Object type, Object info,
+            EnumSet<ViOutputStream.FLAGS> flags)
     {
         return new PlayOutputStream(
                 tv, type.toString(),
-                info == null ? null : info.toString() );
+                info == null ? null : info.toString(), flags);
     }
 
 }

@@ -192,6 +192,7 @@ final private static VimOption[] vopts = new VimOption[]{
     // SORTED ALPHABETICALLY, BEFORE F.HIDE
 new VimOption("backspace",   "bs",   backspace,       S.P_GBL, nullF),
 new VimOption("clipboard",   "cb",   unnamedClipboard,S.P_GBL, nullF),
+new VimOption("comboCommandLine","", comboCommandLine,S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 new VimOption("cpo_j",       "",     endOfSentence,   S.P_GBL, EnumSet.of(F.HIDE)),
 new VimOption("cpo_search",  "",     searchFromEnd,   S.P_GBL, EnumSet.of(F.HIDE)),
 new VimOption("cpo_w",       "",     changeWordBlanks,S.P_GBL, EnumSet.of(F.HIDE)),

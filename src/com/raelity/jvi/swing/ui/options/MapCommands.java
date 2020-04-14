@@ -30,6 +30,7 @@ package com.raelity.jvi.swing.ui.options;
 
 import java.awt.Color;
 import java.beans.PropertyVetoException;
+import java.util.EnumSet;
 
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
@@ -46,6 +47,8 @@ import com.l2fprod.common.swing.LookAndFeelTweaks;
 import org.openide.util.WeakListeners;
 
 import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.ViOutputStream.COLOR;
+import com.raelity.jvi.ViOutputStream.FLAGS;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.lib.Mappings;
 import com.raelity.jvi.manager.ViManager;
@@ -223,10 +226,9 @@ implements Options.EditControl
 
     private void showError(String msg)
     {
-        try (ViOutputStream vios = ViManager.createOutputStream(
-                null, ViOutputStream.LINES,
-                OUTPUT_TITLE, ViOutputStream.PRI_HIGH)) {
-            vios.println(msg);
+        try (ViOutputStream vios = ViManager.createOutputStream(null, ViOutputStream.LINES,
+                OUTPUT_TITLE, EnumSet.of(FLAGS.RAISE_YES))) {
+            vios.println(msg, COLOR.FAILURE);
         }
         JOptionPane.showMessageDialog(
                 null,

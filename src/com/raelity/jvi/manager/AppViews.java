@@ -112,6 +112,9 @@ public enum AppViews
     /**
      * The application invokes this whenever a file becomes selected
      * in the specified container. This also serves as an open.
+     * 
+     * FROM: Scheduler
+     * 
      * @param appView AppView that is getting focus for editing.
      * Editor may be null, may be a nomad.
      */
@@ -124,7 +127,7 @@ public enum AppViews
      * @param appView AppView
      * @param tag String used in debug messages.
      */
-    /*package*/ static void activate(ViAppView av, String tag)
+    private static void activate(ViAppView av, String tag)
     {
         if(av.equals(avCurrentlyActive))
             return;
@@ -150,6 +153,7 @@ public enum AppViews
             Msg.smsg(fact().getFS().getDisplayFileViewInfo(tv));
     }
 
+    /** FROM: NB-Module */
     public static void deactivate(ViAppView av)
     {
         if(av.equals(avCurrentlyActive))
@@ -161,11 +165,12 @@ public enum AppViews
      * The associated jVi state is put into normal mode.
      * @param av appView loosing focus.
      */
-    /*package*/ static void deactivateCurrent()
+    private static void deactivateCurrent()
     {
         deactivateCurrent(false);
     }
 
+    /** FROM: Scheduler */
     /*package*/ static void deactivateCurrent(boolean force)
     {
         if(!force && avCurrentlyActive == null)
@@ -185,6 +190,8 @@ public enum AppViews
     /**
      * The applications invokes this method when a file is completely
      * removed from a container or should be forgotten by jVi.
+     * 
+     * FROM: jVi.Util, NB-Module
      */
     public static void close(ViAppView av)
     {
@@ -217,6 +224,8 @@ public enum AppViews
      * This makes the
      * editor available to certain commands. If the app view is already in the
      * lists then this is a nop.
+     * 
+     * FROM: NbAppView, PlayEditorContainer
      *
      * @param av app view to add.
      * @param tag used in debug output, may be null
@@ -279,6 +288,9 @@ public enum AppViews
 
     /**
      * A shallow copy of the specified list.
+     * 
+     * FROM: jVi all over
+     * 
      * @param which the list to copy
      * @return
      */
@@ -306,6 +318,9 @@ public enum AppViews
 
     /**
      * determine the index in the list of the current app view.
+     * 
+     * FROM: Misc01
+     * 
      * @param avs
      * @return -1 if current not in list, else the index
      */
@@ -326,6 +341,7 @@ public enum AppViews
         return idx;
     }
 
+    /** FROM: NOT USED */
     public static ViAppView currentAppView(List<ViAppView> avs)
     {
         int idx = -1;
@@ -343,6 +359,9 @@ public enum AppViews
 
     /**
      * Fetch the Nth buffer, 0 to N-1, from the Mru list.
+     * 
+     * FROM: Misc01, Cc01, Util, NbTextView
+     * 
      * @return the buffer, else null if i is out of bounds.
      */
     public static ViAppView getMruAppView(int i)
@@ -374,6 +393,7 @@ public enum AppViews
         return avsMRU.get(idx);
     }
 
+    /** FROM: Cc01 */
     public static ViAppView relativeMruAppView(int i)
     {
         return relativeMruAppView(avCurrentlyActive, i);
@@ -382,6 +402,9 @@ public enum AppViews
     /**
      * Request that the next activation does not re-order the mru list if the
      * activated object is the argument.
+     * 
+     * FROM: Cc01
+     * Sounds like a kludge
      */
     public static void keepMruAfterActivation(ViAppView av)
     {
@@ -390,6 +413,7 @@ public enum AppViews
         keepMru = av;
     }
 
+    /** FROM: NOT USED */
     public static boolean isKnown(ViAppView av)
     {
         return avs.contains(av);
@@ -403,6 +427,9 @@ public enum AppViews
     /**
      * The window upper-left to lower-right sort. If the ViApView
      * implement comparable, then that is used for the sort order.
+     * 
+     * FROM: Misc01
+     * 
      * @param avs
      */
     public static void sortAppView(List<ViAppView> avs)
@@ -434,6 +461,7 @@ public enum AppViews
         return ViManager.isFactoryLoaded();
     }
 
+    /** FROM: NB-Module, :dumpJvi */
     public static StringBuilder dump(StringBuilder ps)
     {
         if(ps == null)

@@ -36,6 +36,7 @@ import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.ViOutputStream.FLAGS;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.lib.AbbrevLookup;
 import com.raelity.jvi.core.lib.CcFlag;
@@ -940,7 +941,8 @@ private static void makePrintStream()
         return;
     }
     printStream = ViManager.createOutputStream(
-            G.curwin, ViOutputStream.LINES, currentCommand);
+            G.curwin, ViOutputStream.LINES, currentCommand,
+            EnumSet.of(FLAGS.NEW_YES, FLAGS.RAISE_YES, FLAGS.CLEAR_NO));
 }
 
 /**

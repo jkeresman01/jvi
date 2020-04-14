@@ -1208,8 +1208,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
             }
         }
         try (ViOutputStream vios
-                = ViManager.createOutputStream(null, ViOutputStream.OUTPUT,
-                                               "Dump Window Hierarchy")) {
+                = ViManager.createOutputStream("Dump Window Hierarchy")) {
             vios.println(sb.toString());
         }
     }

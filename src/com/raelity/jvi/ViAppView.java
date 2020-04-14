@@ -110,4 +110,18 @@ public interface ViAppView
                 ViManager.getFS().getDisplayFileName(this));
         return false;
     }
+
+    /**
+     * The platform should get the jVi container ready for action;
+     * then execute the runnable.
+     * 
+     * Usually prep for running jVi command from external trigger,
+     * like clicking on a history element in an IO window.
+     * 
+     * @param tv If null, use curwin.
+     * @param r run this after activation
+     * @return false if can not attempt activation, or if it fails;
+     * true does not mean it succeeded.
+     */
+    default public boolean requestPlatformActivation() { return true; }
 }

@@ -603,8 +603,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                 (s.length() < INC - GAP ? l : l2).add(s);
             }
         }
-        try (ViOutputStream osa = ViManager.createOutputStream(
-                        null, ViOutputStream.OUTPUT, null)) {
+        try (ViOutputStream osa = ViManager.createOutputStream(null)) {
             int cols = COL / INC;
             int rows = (l.size() + cols - 1) / cols;
             StringBuilder sb = new StringBuilder(85);

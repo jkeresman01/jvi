@@ -89,12 +89,13 @@ public class WindowCmdEntry extends CommandLineEntry {
         commandLineWindow.setVisible(false);
     }
     
-    /**
+    /**;
      * A Dialog that holds a CommandLine, no decoration.
      */
+    @SuppressWarnings("serial")
     private static class CommandLineWindow extends JDialog {
 
-        static private CommandLineWindow get(CommandLine commandLine,
+        static private CommandLineWindow get(AbstractCommandLine commandLine,
                                    Window owner,
                                    String title)
         {

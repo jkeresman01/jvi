@@ -367,6 +367,7 @@ public class G implements ViOptionBag
     static boolean disableFontError;
     static boolean disableFontCheckSpecial;
     static String useFrame;
+    static boolean comboCommandLine;
     static boolean usePlatformInsertTab;
     static boolean readOnlyHack;
     static boolean isHideVersion;

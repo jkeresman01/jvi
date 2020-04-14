@@ -511,7 +511,6 @@ public class Cc01
     public void actionPerformed(ActionEvent e)
     {
         try (ViOutputStream osa = ViManager.createOutputStream(
-                null, ViOutputStream.OUTPUT,
                 "=== MRU (:n :N :e#-<digit>) ===                "
                         + "=== activation (:e#<digit> ===")) {
             int i = 0;
@@ -892,8 +891,7 @@ private static void addDebugColonCommands()
         try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             ViManager.getFactory().getPreferences().exportSubtree(os);
-            try (ViOutputStream vios = ViManager.createOutputStream(
-                    null, ViOutputStream.OUTPUT, "Preferences")) {
+            try (ViOutputStream vios = ViManager.createOutputStream("Preferences")) {
                 vios.println(os.toString());
             }
 
@@ -970,8 +968,7 @@ private static void addDebugColonCommands()
             }, EnumSet.of(CcFlag.DBG));
     ColonCommands.register("dumpCommands", "dumpCommands",
             (ActionEvent e) -> {
-        try (ViOutputStream vios = ViManager.createOutputStream(
-                null, ViOutputStream.OUTPUT, "Dump Commands")) {
+        try (ViOutputStream vios = ViManager.createOutputStream("Dump Commands")) {
             for(ColonCommandItem cci : ColonCommands.getList()) {
                 vios.println(String.format("\t%s%s%s",
                         cci.getDisplayName(),
@@ -984,14 +981,13 @@ private static void addDebugColonCommands()
     },  EnumSet.of(CcFlag.DBG, CcFlag.NO_ARGS));
     ColonCommands.register("dumpOptions", "dumpOptions",
             (ActionEvent e) -> {
-        try (ViOutputStream vios = ViManager.createOutputStream(
-                null, ViOutputStream.OUTPUT, "Dump Options")) {
+        try (ViOutputStream vios = ViManager.createOutputStream("Dump Options")) {
             // sort by display name
-            Comparator<Option> comp = (Option o1, Option o2)
+            Comparator<Option<?>> comp = (Option<?> o1, Option<?> o2)
                     -> o1.getDisplayName().compareTo(o2.getDisplayName());
-            List<Option> opts = new ArrayList<>(OptUtil.getOptions());
+            List<Option<?>> opts = new ArrayList<>(OptUtil.getOptions());
             Collections.sort(opts, comp);
-            for(Option opt : opts) {
+            for(Option<?> opt : opts) {
                 vios.println(String.format("\t%s (%s) [%s]",
                         opt.getDisplayName(),
                         opt.getCategory(),
@@ -1016,8 +1012,7 @@ private static void addDebugColonCommands()
             public void actionPerformed(ActionEvent ev) {
                 ColonEvent cev = (ColonEvent)ev;
 
-                try (ViOutputStream osa = ViManager.createOutputStream(
-                        null, ViOutputStream.OUTPUT, null)) {
+                try (ViOutputStream osa = ViManager.createOutputStream(null)) {
                     osa.println(cev.getCommandLine());
             }
         }

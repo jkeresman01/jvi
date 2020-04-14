@@ -28,15 +28,15 @@ package com.raelity.text;
  * 
  * This should have been around in jVi forever...
  * 
- * @deprecated Use MySegment(String)
- * 
  * @author err
  */
 final public class StringSegment extends MySegment
 {
 
 /**
- * The whole string which is virtually null terminated
+ * The whole string which is virtually null terminated.
+ * This is convenience class for new Segment(String); when used it is guaranteed
+ * that getDoneChar() == NUL, and that charAt(length()) return doneChar.
  */
 public StringSegment(String s)
 {

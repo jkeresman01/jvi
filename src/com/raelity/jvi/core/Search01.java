@@ -24,6 +24,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -31,6 +32,7 @@ import com.raelity.jvi.ViBuffer.BIAS;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.ViOutputStream.FLAGS;
 import com.raelity.jvi.core.lib.Messages;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.ViManager;
@@ -629,9 +631,9 @@ public class Search01 {
     
     ViOutputStream result = null;
     if(cmdAction == Cc01.getActionPrint()) {
-      result = ViManager.createOutputStream(G.curwin,
-                                            ViOutputStream.SEARCH,
-                                            get_search_pat());
+      result = ViManager.createOutputStream(G.curwin, ViOutputStream.SEARCH,
+              get_search_pat(),
+              EnumSet.of(FLAGS.NEW_YES, FLAGS.RAISE_YES, FLAGS.CLEAR_NO));
     } else {
       // Assume it will be handled by the command
       //result = ViManager.createOutputStream(G.curwin,

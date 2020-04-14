@@ -35,6 +35,7 @@ import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.Option;
 import com.raelity.text.TextUtil;
 
+import static com.raelity.jvi.core.Hook.setJViBusy;
 import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Constants.FDO.*;
@@ -43,7 +44,7 @@ import static com.raelity.jvi.core.lib.KeyDefs.*;
 public class GetChar {
     private static boolean block_redo = false;
     private static boolean handle_redo = false;
-    private static final Option magicRedoAlgo
+    private static final Option<?> magicRedoAlgo
             = Options.getOption(Options.magicRedoAlgorithm);
     private static String currentMagicRedoAlgo = "anal";
 
@@ -89,9 +90,52 @@ public class GetChar {
         public void actionPerformed(ActionEvent e)
         {
             typebuf.mappingTimeout();
-            gotc(NO_CHAR, 0);
+            gotc(NO_CHAR, 0, false);
         }
     };
+
+    private static Object externalArgs;
+    static Object getExternalArgs() {
+        Object o = externalArgs;
+        externalArgs = null;
+        return o;
+    }
+
+    /**
+     * Run a command that came from out of the blue.
+     * For example, clicking on a history item in output window.
+     * 
+     * This is taken from Scheduler.keyStroke. May want this code to be
+     * in Scheduler.
+     * 
+     * @param command 
+     */
+    static void externalCommand(String command, Object args) {
+        if(G.curwin() == null)
+            return;
+        // CHECKME: G.curwin().getEditor().requestFocusInWindow();
+        stuffReadbuff(command);
+        // CHECKME:
+        // if(activeCommandEntry == null) // don't check when reroute character
+        //     verifyNotBusy();
+        assert externalArgs == null;
+        externalArgs = args;
+        try {
+            setJViBusy(true);
+            // switchTo(G.curwin);
+            // if (rerouteChar(key, modifier, ksType))
+            //     return;
+            // if(!keyStrokeTodo.isEmpty() && G.curwin() != null)
+            //     runKeyStrokeTodo();
+            // getCore().gotc(key, modifier, false);
+            gotc(NO_CHAR, 0, true);
+        } finally {
+            externalArgs = null; // only get one shot
+            setJViBusy(false);
+        }
+        if (G.curwin() != null)
+            G.curwin().getStatusDisplay().refresh();
+    }
 
     /** An input char from the user has been received.
      * Implement the key into 16 bit mapping defined in KeyDefs.
@@ -103,9 +147,11 @@ public class GetChar {
      * E000-E07f range, and put the K_UP type keys in the E080 range.
      * </p>
      */
-    static void gotc(char key, int modifier)
+    static void gotc(char key, int modifier, boolean externalCommand)
     {
-        assert stuffbuff.length() == 0;
+        // external command means it's ok for there to be chars in stuffbuf
+        assert externalCommand && key == NO_CHAR
+                || !externalCommand && stuffbuff.length() == 0;
         //assert typebuf.length();// NO MORE, WITH mutli-char mappings
 
         if(typebuf.getPartialMatch() != null) {
@@ -247,7 +293,7 @@ public class GetChar {
             if(runEventQueue > 0)
                 runEventQueue(collectingGroupUndo);
             else
-                gotc(NO_CHAR, 0);
+                gotc(NO_CHAR, 0, false);
         });
         return true;
     }

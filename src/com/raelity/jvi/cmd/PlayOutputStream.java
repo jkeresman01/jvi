@@ -20,48 +20,75 @@
 
 package com.raelity.jvi.cmd;
 
-import com.raelity.jvi.ViTextView;
+import java.io.StringWriter;
+import java.util.EnumSet;
+
+import com.raelity.jvi.*;
 import com.raelity.jvi.lib.OutputStreamAdaptor;
+
+import static com.raelity.text.TextUtil.sf;
 
 public class PlayOutputStream extends OutputStreamAdaptor {
   String type;
   String info;
   ViTextView tv;
+  EnumSet<ViOutputStream.FLAGS> flags;
 
-  public PlayOutputStream(ViTextView tv, String type, String info) {
+  private static class MyStringWriter extends StringWriter {
+    public MyStringWriter()
+    {
+      super(60);
+    }
+
+    @Override
+    public void flush()
+    {
+      super.flush();
+      String s = getBuffer().toString();
+      getBuffer().setLength(0);
+      System.err.print(s);
+    }
+  }
+
+  public PlayOutputStream(ViTextView tv, String type, String info, EnumSet<ViOutputStream.FLAGS> flags) {
+    super(new MyStringWriter(), true);
     this.type = type;
     this.info = info;
     this.tv = tv;
+    this.flags = flags;
     
     String fName = tv != null ? tv.getBuffer().getDisplayFileName() : "no-file";
-    System.err.println("ViOutputStream: type: " + type
+    System.err.println("vios: type: " + type
                        + ", file: " + fName
+                       + ", flags: " + flags.toString()
                        + ", info: \n"
                        + "                " + info);
   }
 
-    @Override
+  @Override
   public void println(int line, int offset, int length) {
-    System.err.println("ViOutputStream: " + type + ", " + info + ": "
-                       + "line: " + line + ", "
-                       + "offset: " + offset + ", "
-                       + "length: " + length
-		       );
-  }
-
-    @Override
-  public void println(String s) {
-    System.err.println("ViOutputStream: " + s);
+    super.println("vios: " + type + ", " + info + ": "
+                  + "line: " + line + ", "
+                  + "offset: " + offset + ", "
+                  + "length: " + length
+		  );
   }
 
   @Override
-  public void printlnLink(String link, String text) {
-    System.err.format("ViOutputStream: %s, %s: link: %s, text: %s",
-                      type, info, link, text);
+  public void println(String s) {
+    super.println("vios: " + s);
   }
 
-    @Override
-  public void close() {
+  @Override
+  public void printlnLink(String text, String link) {
+    super.println(sf("vios: %s, %s: link: %s, text: %s",
+                      type, info, link, text));
+  }
+
+  @Override
+  public void printLink(String text, String link) {
+    super.print(sf("vios: %s, %s: link: %s, text: %s",
+                      type, info, link, text));
   }
 }
 

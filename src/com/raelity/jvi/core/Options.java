@@ -24,6 +24,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.logging.Level;
@@ -53,6 +54,9 @@ import static com.raelity.jvi.core.lib.Constants.NF.*;
 import static com.raelity.text.TextUtil.sf;
 
 import javax.swing.event.ChangeListener;
+
+import com.raelity.jvi.ViOutputStream.COLOR;
+import com.raelity.jvi.ViOutputStream.FLAGS;
 
 import static com.raelity.jvi.options.OptUtil.createBooleanOption;
 import static com.raelity.jvi.options.OptUtil.createColorOption;
@@ -131,7 +135,7 @@ public final class Options {
    * Options are grouped into categories. Typically a UI groups the options
    * by category when presenting an options editor.
    */
-  public enum Category { PLATFORM, GENERAL, WINDOW, MODIFY, SEARCH, CURSOR_WRAP,
+  public enum Category { PLATFORM, GENERAL, WINDOW, COLORS, SEARCH, MODIFY, CURSOR_WRAP,
                          PROCESS, DEBUG, NONE }
 
   public static final String perProjectSupport = "viPerProjectSupport";
@@ -149,6 +153,13 @@ public final class Options {
   public static final String disableFontError = "viDisableFontError";
   public static final String disableFontCheckSpecial = "viDisableFontCheckSpecial";
   public static final String cursorXorBug = "viCursorXorBug";
+  public static final String comboCommandLine = "viComboCommandLine";
+
+  public static final String selectColor = "viSelectColor";
+  public static final String selectFgColor = "viSelectFgColor";
+  public static final String searchColor = "viSearchColor";
+  public static final String searchFgColor = "viSearchFgColor";
+  public static final String roCursorColor = "viRoCursorColor";
 
   public static final String backspaceWrapPrevious = "viBackspaceWrapPrevious";
   public static final String hWrapPrevious = "viHWrapPrevious";
@@ -223,11 +234,6 @@ public final class Options {
   
   public static final String selection = "viSelection";
   public static final String selectMode = "viSelectMode";
-  public static final String selectColor = "viSelectColor";
-  public static final String selectFgColor = "viSelectFgColor";
-  public static final String searchColor = "viSearchColor";
-  public static final String searchFgColor = "viSearchFgColor";
-  public static final String roCursorColor = "viRoCursorColor";
 
   public static final String equalProgram = "viEqualProgram";
   public static final String formatProgram = "viFormatProgram";
@@ -444,43 +450,6 @@ public final class Options {
                     + " These movement are"
                     + " often the result of IDE actions invoked external"
                     + " to jVi.");
-
-
-  
-  String NOTE_USE_LOOKANDFEEL =
-          "\nNOTE: press 'X', then the platform"
-          + " LookAndFeel/component provides the value.";
-
-    createColorOption(searchColor, new Color(0xffb442), true, true); //a light orange
-    setupOptionDesc(Category.PLATFORM, searchColor, "'hl-search' background color",
-            "The background color used for search highlight."
-                    + NOTE_USE_LOOKANDFEEL
-    );
-
-    createColorOption(searchFgColor, new Color(0x000000), true, true);
-    setupOptionDesc(Category.PLATFORM, searchFgColor, "'hl-search' foreground color",
-            "The character color used for search highlight."
-                    + NOTE_USE_LOOKANDFEEL
-    );
-    setExpertHidden(searchFgColor, false, false);
-    
-    createColorOption(selectColor, new Color(0xffe588), true, true); //a light orange
-    setupOptionDesc(Category.PLATFORM, selectColor, "'hl-visual' background color",
-            "The background color used for a visual mode selection."
-                    + NOTE_USE_LOOKANDFEEL
-    );
-
-    createColorOption(selectFgColor, new Color(0x000000), true, true);
-    setupOptionDesc(Category.PLATFORM, selectFgColor, "'hl-visual' foreground color",
-            "The character color used for a visual mode selection foreground."
-                    + NOTE_USE_LOOKANDFEEL
-    );
-    setExpertHidden(selectFgColor, false, false);
-
-    createColorOption(roCursorColor, Color.red, true, false);
-    setupOptionDesc(Category.PLATFORM, roCursorColor, "'rocursorcolor' 'rocc'",
-            "The cursor color in a read only editor."
-                    + " If 'null' then use editor's default cursor color");
     
     createBooleanOption(hideVersionOption, false);
     setupOptionDesc(Category.PLATFORM, hideVersionOption, "hide version",
@@ -598,6 +567,56 @@ public final class Options {
             + " On the Mac's Retina display there may be a problem with"
             + " xor draw mode; the symptom is that the cursor is not"
             + " visible. Set this option to avoid the problem.");
+
+    /////////////////////////////////////////////////////////////////////
+    //
+    //
+    // Colors Options
+    //
+    //
+  
+  String NOTE_USE_LOOKANDFEEL =
+          "\nNOTE: press 'X', then the platform"
+          + " LookAndFeel/component provides the value.";
+
+    createColorOption(searchColor, new Color(0xffb442), true, true); //a light orange
+    setupOptionDesc(Category.COLORS, searchColor, "'hl-search' background color",
+            "The background color used for search highlight."
+                    + NOTE_USE_LOOKANDFEEL
+    );
+
+    createColorOption(searchFgColor, new Color(0x000000), true, true);
+    setupOptionDesc(Category.COLORS, searchFgColor, "'hl-search' foreground color",
+            "The character color used for search highlight."
+                    + NOTE_USE_LOOKANDFEEL
+    );
+    setExpertHidden(searchFgColor, false, false);
+    
+    createColorOption(selectColor, new Color(0xffe588), true, true); //a light orange
+    setupOptionDesc(Category.COLORS, selectColor, "'hl-visual' background color",
+            "The background color used for a visual mode selection."
+                    + NOTE_USE_LOOKANDFEEL
+    );
+
+    createColorOption(selectFgColor, new Color(0x000000), true, true);
+    setupOptionDesc(Category.COLORS, selectFgColor, "'hl-visual' foreground color",
+            "The character color used for a visual mode selection foreground."
+                    + NOTE_USE_LOOKANDFEEL
+    );
+    setExpertHidden(selectFgColor, false, false);
+
+    createColorOption(roCursorColor, Color.red, true, false);
+    setupOptionDesc(Category.COLORS, roCursorColor, "'rocursorcolor' 'rocc'",
+            "The cursor color in a read only editor."
+                    + " If 'null' then use editor's default cursor color");
+
+    createColorOption(visualBellColor, new Color(0x41e7e7), true, false);
+    setupOptionDesc(Category.COLORS, visualBellColor,
+                            "'visualbellcolor' 'vbc'",
+            "The color used for the visual bell, the editor's background"
+                    + " is set to this color."
+                    + " If null, then the editor's background color"
+                    + " is inverted");
 
     /////////////////////////////////////////////////////////////////////
     //
@@ -749,6 +768,19 @@ public final class Options {
           "Specifies for which type of commands folds will be opened, if the"
         + " command moves the cursor into a closed fold.");
 
+    createBooleanOption(comboCommandLine, false);
+    setupOptionDesc(Category.GENERAL,
+                            comboCommandLine,
+                            "Use combo box command line",
+            "DEPRECATED; combo will be removed in the future."
+            + "\nOptions change takes effect on next restart."
+            + "\n\nWith the introduction of the ':history' command and the"
+            + " capability to click on list items to bring them up on"
+            + " the command line, along with up/down/search-match"
+            + " the combo box is going away; it is too complicated and"
+            + " difficult to maintain.");
+    setExpertHidden(comboCommandLine, true, false);
+
     /////////////////////////////////////////////////////////////////////
     //
     //
@@ -786,14 +818,6 @@ public final class Options {
 	   "The duration, in milliseconds, of the 'visual bell'. If the"
                    + " visual bell is enabled, see 'vb', and the 'vbt'"
                    + " value is zero then there is no beep or flash.");
-
-    createColorOption(visualBellColor, new Color(0x41e7e7), true, false);
-    setupOptionDesc(Category.WINDOW, visualBellColor,
-                            "'visualbellcolor' 'vbc'",
-            "The color used for the visual bell, the editor's background"
-                    + " is set to this color."
-                    + " If null, then the editor's background color"
-                    + " is inverted");
 
     createBooleanOption(number, false);
     setupOptionDesc(Category.WINDOW, number, "'number' 'nu'",
@@ -1250,7 +1274,7 @@ public final class Options {
       return false;
     boolean parseError = false;
     String mline = m.group(1);
-    StringBuilder sb = new StringBuilder();
+    List<String> results = new ArrayList<>();
     try {
       String[] args = mline.split("[:\\s]");
       for (String arg : args) {
@@ -1262,22 +1286,27 @@ public final class Options {
         } catch (IllegalAccessException ex) {
           LOG.log(Level.SEVERE, null, ex);
         }
-        if(sb.length() != 0)
-          sb.append('\n');
         if(!msg.isEmpty()) {
-          sb.append("Error: ").append(msg);
+          results.add("Error: " + msg);
           parseError = true;
         } else
-          sb.append("   OK: ").append(arg);
+          results.add("   OK: " + arg);
       }
     } finally {
+      
+      EnumSet<FLAGS> flags = EnumSet.noneOf(FLAGS.class);
+      if(parseError)
+        flags.add(FLAGS.RAISE_YES);
       String fn = G.curbuf.getDisplayFileName();
-      try (ViOutputStream vos = ViManager.createOutputStream(
-              G.curwin, ViOutputStream.OUTPUT,
+      try (ViOutputStream vos = ViManager.createOutputStream(G.curwin, ViOutputStream.MAIN,
               "In " + fn + ":" + lnum + " process modeline: " + mline,
-              parseError ? ViOutputStream.PRI_HIGH
-                      : ViOutputStream.PRI_LOW)) {
-        vos.println(sb.toString());
+              flags)) {
+        for(String s : results) {
+          if(s.startsWith("Error:"))
+            vos.println(s, COLOR.FAILURE);
+          else
+            vos.println(s);
+        }
       }
     }
     return true;

@@ -12,6 +12,7 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,6 +23,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.ViOutputStream.COLOR;
+import com.raelity.jvi.ViOutputStream.FLAGS;
 import com.raelity.jvi.core.G;
 
 /**
@@ -131,57 +134,60 @@ class Motd
             return;
         if (outputBasicInfo && !valid)
             return;
-        output(G.isHideVersion() ? ViOutputStream.PRI_LOW
-                : ViOutputStream.PRI_NORMAL);
+        EnumSet<FLAGS> flags = EnumSet.noneOf(FLAGS.class);
+        flags.add(G.isHideVersion() ? FLAGS.RAISE_NO : FLAGS.RAISE_YES);
+        output(flags);
     }
 
     void output()
     {
-        output(ViOutputStream.PRI_NORMAL);
+        output(EnumSet.of(FLAGS.RAISE_YES));
     }
 
-    void output(int priority)
+    void output(EnumSet<FLAGS> flags)
     {
         if (!valid) {
             ViOutputStream vios =
-                    ViManager.createOutputStream(null, ViOutputStream.OUTPUT,
+                    ViManager.createOutputStream(null, ViOutputStream.MAIN,
                                                  ViManager.getReleaseString(),
-                                                 priority);
+                                                 flags);
             vios.close();
             outputBasicInfo = true;
             return;
         }
         outputNetworkInfo = true;
-        try (ViOutputStream vios = ViManager.createOutputStream(
-                null, ViOutputStream.OUTPUT,
-                "jVi Version Information", priority)) {
-            String tagCurrent = "";
-            String hasNewer = null;
+        try (ViOutputStream vios = ViManager.createOutputStream(null, ViOutputStream.MAIN,
+                "jVi Version Information", flags)) {
+            boolean needNL = true;
+            vios.print("Running: " + ViManager.getReleaseString());
             if (latestRelease != null && latestRelease.isValid())
-                if (latestRelease.compareTo(ViManager.version) > 0)
-                    hasNewer = "Newer release available: " + latestRelease;
-                else if (latestRelease.compareTo(ViManager.version) == 0)
-                    tagCurrent = " (This is the latest release)";
-                else {
-                    // In this else, should be able to assert that !isRelease()
-                    if (ViManager.version.isDevelopment())
-                        tagCurrent = " (development release)";
+                if (latestRelease.compareTo(ViManager.version) > 0) {
+                    vios.print("; ");
+                    vios.print("newer release available ", COLOR.WARNING);
+                    if(linkRelease != null) {
+                        vios.printlnLink(latestRelease.toString(), linkRelease);
+                        needNL = false;
+                    }
+                } else if (latestRelease.compareTo(ViManager.version) == 0) {
+                    vios.print("; ");
+                    vios.println("this is the latest release", COLOR.SUCCESS);
+                    needNL = false;
+                } else {
+                    if (ViManager.version.isDevelopment()) {
+                        vios.print("; ");
+                        vios.println("development release", COLOR.DEBUG);
+                        needNL = false;
+                    }
                 }
-            vios.println("Running: " + ViManager.getReleaseString() + tagCurrent);
-            if (hasNewer != null) {
-                if(linkRelease != null)
-                    vios.printlnLink(linkRelease, hasNewer);
-                else
-                    vios.println(hasNewer);
-            }
+            if(needNL)
+                vios.println("");
             if (latestBeta != null && latestBeta.isValid())
                 if (latestBeta.compareTo(ViManager.version) > 0) {
-                    String betaMsg = "Beta or release candidate available: "
-                            + latestBeta;
+                    vios.print("Beta or release candidate available: ", COLOR.DEBUG);
                     if(linkBeta != null)
-                        vios.printlnLink(linkBeta, betaMsg);
+                        vios.printlnLink(latestBeta.toString(), linkBeta);
                     else
-                        vios.println(betaMsg);
+                        vios.println(latestBeta.toString());
                 }
             for (int i = 0; i < outputList.size(); i++) {
                 OutputHandler outputHandler = outputList.get(i);
@@ -234,7 +240,7 @@ class Motd
         @Override
         public void output(ViOutputStream vios)
         {
-            vios.printlnLink(link, text);
+            vios.printlnLink(text, link);
         }
 
         @Override

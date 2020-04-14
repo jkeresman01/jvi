@@ -16,6 +16,7 @@ Working with jVi options
   - Adding an option
     . If needed, in G.java define pointer to the option, e.g. G.p_opt_name
       Otherwise option can be found with Options.getOption(optName)
+      and G.opt_name is defined and possibly not used.
 
     . In Options.java
       - define the name of the option

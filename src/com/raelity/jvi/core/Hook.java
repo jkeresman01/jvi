@@ -85,9 +85,9 @@ public class Hook
         Misc.showmode();
     }
 
-    public void gotc(char key, int modifier)
+    public void gotc(char key, int modifier, boolean stuffbufok)
     {
-        GetChar.gotc(key, modifier);
+        GetChar.gotc(key, modifier, stuffbufok);
     }
 
     public void flush_buffers(boolean typeahead)

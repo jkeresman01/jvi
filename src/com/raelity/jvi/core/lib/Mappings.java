@@ -493,17 +493,16 @@ public final class Mappings {
                 (Mapping o1, Mapping o2) -> o1.lhs.compareTo(o2.lhs));
 
         StringBuilder sb = new StringBuilder();
-        ViOutputStream vios = ViManager.createOutputStream(
-                null, ViOutputStream.OUTPUT, "mappings");
-        for(Mapping m : lM) {
-            vios.println(String.format("%-3s %-8s %c %s",
-                                       Mapping.modeString(m.mode, false),
-                                       mappingString(m.lhs),
-                                       m.noremap ? Character.valueOf('*')
-                                                 : Character.valueOf(' '),
-                                       mappingString(m.rhs)));
+        try (ViOutputStream vios = ViManager.createOutputStream("mappings")) {
+            for(Mapping m : lM) {
+                vios.println(String.format("%-3s %-8s %c %s",
+                                           Mapping.modeString(m.mode, false),
+                                           mappingString(m.lhs),
+                                           m.noremap ? Character.valueOf('*')
+                                                     : Character.valueOf(' '),
+                                           mappingString(m.rhs)));
+            }
         }
-        vios.close();
     }
 
     /** for print mappings */

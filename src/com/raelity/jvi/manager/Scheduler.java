@@ -188,6 +188,7 @@ public class Scheduler
         }
     }
 
+    // CHECKME use Runnable instead of action listener
     public static void putKeyStrokeTodo(ActionListener act)
     {
         keyStrokeTodo.add(act);
@@ -217,7 +218,7 @@ public class Scheduler
                 return;
             if(!keyStrokeTodo.isEmpty() && G.curwin() != null)
                 runKeyStrokeTodo();
-            getCore().gotc(key, modifier);
+            getCore().gotc(key, modifier, false);
         } finally {
             setJViBusy(false);
         }

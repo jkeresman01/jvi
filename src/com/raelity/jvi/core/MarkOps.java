@@ -424,8 +424,7 @@ class MarkOps
     static void do_jumps()
     {
         cleanup_jumplist();
-        try (ViOutputStream vios = ViManager.createOutputStream(
-                null, ViOutputStream.OUTPUT, "Jump List")) {
+        try (ViOutputStream vios = ViManager.createOutputStream("Jump List")) {
             vios.println(" jump line  col file/text");
             for(int i = 0; i < G.curwin.w_jumplist.size(); i++) {
                 ViMark mark = G.curwin.w_jumplist.get(i);
@@ -593,8 +592,7 @@ class MarkOps
             if(!did_title) {
                 /* Highlight title */
                 String heading = "\nmark line  col file/text";
-                svios = ViManager.createOutputStream(
-                        null, ViOutputStream.OUTPUT, heading);
+                svios = ViManager.createOutputStream(heading);
                 did_title = true;
             }
             if (true /*!got_int*/)

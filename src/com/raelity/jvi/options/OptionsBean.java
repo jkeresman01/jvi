@@ -15,6 +15,12 @@ public class OptionsBean {
         }
     }
     
+    static public class Colors extends OptionsBeanBase {
+	public Colors() {
+	    super(Colors.class, "Colors Options", Options.Category.COLORS);
+        }
+    }
+    
     static public class General extends OptionsBeanBase {
 	public General() {
 	    super(General.class, "General Options", Options.Category.GENERAL);

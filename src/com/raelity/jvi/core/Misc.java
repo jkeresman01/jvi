@@ -39,7 +39,9 @@ import java.nio.ByteOrder;
 import java.text.CharacterIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -51,7 +53,6 @@ import javax.swing.text.Keymap;
 import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.ViCaretStyle;
-import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViMark;
@@ -59,6 +60,7 @@ import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.ViTextView.DIR;
 import com.raelity.jvi.ViXlateKey;
+import com.raelity.jvi.core.CommandHistory.HistoryContext;
 import com.raelity.jvi.core.lib.KeyDefs;
 import com.raelity.jvi.core.lib.Messages;
 import com.raelity.jvi.core.lib.NotSupportedException;
@@ -1245,44 +1247,51 @@ public class Misc implements ClipboardOwner {
   }
 
   private static void read_viminfo_search() {
-    List<String> l = readList(PREF_SEARCH);
+    List<String> l = readHistoryList(PREF_SEARCH);
     // HACK
     if(!l.isEmpty())
       Search.startupInitializePattern(l.get(0));
-    getSearchCommandEntry().setHistory(l);
+    HistoryContext hc = CommandHistory.SEARCH.initHistory(l);
+    getSearchCommandEntry().setHistory(hc);
   }
 
   private static void read_viminfo_command() {
-    List<String> l = readList(PREF_COMMANDS);
-    getColonCommandEntry().setHistory(l);
+    List<String> l = readHistoryList(PREF_COMMANDS);
+    HistoryContext hc = CommandHistory.COLON.initHistory(l);
+    getColonCommandEntry().setHistory(hc);
   }
 
   private static void write_viminfo_search() {
-    ViCmdEntry ce = getSearchCommandEntry();
-    writeList(PREF_SEARCH, ce.getHistory());
+    List<String> l = CommandHistory.SEARCH.getHistory();
+    writeList(PREF_SEARCH, l);
   }
 
   private static void write_viminfo_command() {
-    ViCmdEntry ce = getColonCommandEntry();
-    writeList(PREF_COMMANDS, ce.getHistory());
+    List<String> l = CommandHistory.COLON.getHistory();
+    writeList(PREF_COMMANDS, l);
   }
 
-  private static List<String> readList(String nodeName)
+  private static List<String> readHistoryList(String nodeName)
   {
     List<String> l = new ArrayList<>();
+    Set<String> check = new HashSet<>();
     try {
       Preferences prefs = ViManager.getFactory().getPreferences().node(nodeName);
       int nKey = prefs.keys().length;
       for(int i = 1; i <= nKey; i++) {
         String s = prefs.get("" + i, "");
-        if(!s.isEmpty())
-          l.add(s);
+        if(!s.isEmpty()) {
+          // avoid duplicates,
+          // though they should never have gotten in there in the first place.
+          if(check.add(s))
+            l.add(s);
+        }
       }
     } catch(BackingStoreException ex) {
       LOG.log(Level.SEVERE, null, ex);
     }
     return l;
-  }
+    }
 
   private static void writeList(String nodeName, List<String> l)
   {
@@ -1479,8 +1488,7 @@ public class Misc implements ClipboardOwner {
           arg = cev.getArgString();
       Yankreg yb;
 
-      try (ViOutputStream vios = ViManager.createOutputStream(
-              null, ViOutputStream.OUTPUT, "\n--- Registers ---")) {
+      try (ViOutputStream vios = ViManager.createOutputStream("\n--- Registers ---")) {
         int columns = 120;
         StringBuilder sb = new StringBuilder();
         for (int i = -1; i < y_regs.length; ++i)
