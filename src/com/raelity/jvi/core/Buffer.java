@@ -671,7 +671,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         MySegment seg = getLineSegment(lnum);
         int col = 0;
         for (int ptr = seg.offset; ; ++ptr, ++col) {
-            char c = seg.array[ptr];
+            char c = seg.atPtr(ptr);
             // A tab gets expanded, depending on the current column
             if (c == TAB)
                 incr = ts - (vcol % ts);

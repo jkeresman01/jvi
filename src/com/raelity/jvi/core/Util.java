@@ -230,7 +230,7 @@ public class Util {
   }
 
   public static MySegment truncateNewline(MySegment seg) {
-      assert(seg.array[seg.offset + seg.count - 1] == '\n'); // DONE
+      assert(seg.fetch(seg.count - 1) == '\n'); // DONE
       return new MySegment(seg.array, seg.offset, seg.count - 1, seg.docOffset);
   }
 
@@ -252,7 +252,7 @@ public class Util {
   /** is the indicated line empty? */
   static boolean lineempty(int lnum) {
     MySegment seg = G.curbuf.getLineSegment(lnum);
-    return seg.count == 0 || seg.array[seg.offset] == '\n'; // DONE
+    return seg.count == 0 || seg.fetch(0) == '\n'; // DONE
   }
   
   static boolean bufempty() {
@@ -267,7 +267,7 @@ public class Util {
   static char getCharAt(int offset) {
     MySegment seg = new MySegment();
     G.curbuf.getSegment(offset, 1, seg);
-    return seg.count > 0 ? seg.array[seg.offset] : 0; // DONE ??
+    return seg.count > 0 ? seg.fetch(0) : 0; // DONE ??
   }
 
   /** flush map and typeahead buffers and give a warning for an error */

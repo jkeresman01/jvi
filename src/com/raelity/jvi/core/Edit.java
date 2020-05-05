@@ -1306,8 +1306,8 @@ private static class GetLiteral implements HandleNextChar
       index = 0;
       if((flags & (BL_WHITE | BL_SOL)) != 0) {
         for(int ptr = txt.offset
-                ; Misc.vim_iswhite(txt.array[ptr])
-                && !(((flags & BL_FIX) != 0) && txt.array[ptr+1] == '\n') // DONE
+                ; Misc.vim_iswhite(txt.atPtr(ptr))
+                && !(((flags & BL_FIX) != 0) && txt.atPtr(ptr+1) == '\n') // DONE
                 ; ++ptr) {
           ++index;
         }
@@ -1356,8 +1356,8 @@ private static class GetLiteral implements HandleNextChar
     int lnum = fpos.getLine();
     int col = fpos.getColumn();
     MySegment seg = G.curbuf.getLineSegment(lnum);
-    if(seg.array[seg.offset + col++] == '\n'	// not possible, maybe if input? // DONE
-            || seg.array[seg.offset + col] == '\n' // DONE
+    if(seg.fetch(col++) == '\n'	// not possible, maybe if input? // DONE
+            || seg.fetch(col) == '\n' // DONE
             || col >= seg.count - 1) {
       return FAIL;
     }
@@ -2476,7 +2476,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
 	    {
 		//mch_memmove(ptr, ptr + i, STRLEN(ptr + i) + 1);
                 for(int j = 0; ptr + i + j < seg.count; j++) {
-                    seg.array[ptr + j] = seg.array[ptr + i + j];
+                    seg.array[ptr + j] = seg.atPtr(ptr + i + j);
                 }
 		/* correct replace stack. */
 		if (G.State == REPLACE)
@@ -2499,7 +2499,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
 		/* Insert each char in saved_line from changed_col to
 		 * ptr-cursor */
 		while (change_col < cursor.getColumn())
-		    ins_char(seg.array[change_col++]);
+		    ins_char(seg.atPtr(change_col++));
 	    }
 	}
 
@@ -2753,12 +2753,12 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
     MutableInt mi = new MutableInt();
     getvcol(G.curwin, G.curwin.w_cursor, null, mi, null);
     int virtcol = mi.getValue();
-    while (temp < virtcol && seg.array[ptr] != '\n')
-      temp += Misc.lbr_chartabsize(seg.array[ptr++], temp);
+    while (temp < virtcol && seg.atPtr(ptr) != '\n')
+      temp += Misc.lbr_chartabsize(seg.atPtr(ptr++), temp);
     
     if (temp > virtcol)
       --ptr;
-    if ((c = seg.array[ptr]) == '\n') {
+    if ((c = seg.atPtr(ptr)) == '\n') {
       Util.vim_beep();
       c = 0;
     }

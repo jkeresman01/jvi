@@ -1068,7 +1068,7 @@ found: {
   static boolean startPS(int /*linenr_t*/lnum, int para, boolean both) {
     MySegment seg = ml_get(lnum);
     // if seg.count == 1, then only a \n, ie empty line
-    char s = seg.count > 1 ? seg.array[seg.offset] : 0; // DONE
+    char s = seg.count > 1 ? seg.fetch(0) : 0; // DONE
     // '\f' is formfeed, oh well, it doesn't hurt to be here
     if (s == para || s == '\f' || (both && s == '}'))
       return true;

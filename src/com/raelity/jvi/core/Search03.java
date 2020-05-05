@@ -1399,6 +1399,6 @@ break;
     static boolean linewhite(int /*linenr_t*/ lnum) {
         MySegment seg = ml_get(lnum);
         int idx = Misc.skipwhite(seg, 0);
-        return seg.array[seg.offset + idx] == '\n'; // DONE
+        return seg.fetch(idx) == '\n'; // DONE
     }
 }

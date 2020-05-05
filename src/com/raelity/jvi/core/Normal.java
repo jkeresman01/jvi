@@ -1993,10 +1993,10 @@ normal_end: {
       // skip to start of identifier/string
       ///
       col = G.curwin.w_cursor.getColumn();
-      while (seg.array[col + seg.offset] != '\n' // DONE
+      while (seg.fetch(col) != '\n' // DONE
              && (i == 0
-                 ? !vim_iswordc(seg.array[col + seg.offset])
-                 : vim_iswhite(seg.array[col + seg.offset])))
+                 ? !vim_iswordc(seg.fetch(col))
+                 : vim_iswhite(seg.fetch(col))))
         ++col;
 
       //
@@ -2007,10 +2007,10 @@ normal_end: {
       ///
       while (col > 0
              && (i == 0
-                ? vim_iswordc(seg.array[col - 1 + seg.offset])
-                : (!vim_iswhite(seg.array[col - 1 + seg.offset])
+                ? vim_iswordc(seg.fetch(col - 1))
+                : (!vim_iswhite(seg.fetch(col - 1))
                    && (!((find_type & FIND_IDENT) != 0)
-                       || !vim_iswordc(seg.array[col - 1 + seg.offset])))))
+                       || !vim_iswordc(seg.fetch(col - 1))))))
         --col;
 
       //
@@ -2018,14 +2018,14 @@ normal_end: {
       // stop searching.
       ///
       if (!((find_type & FIND_STRING) != 0)
-          || vim_iswordc(seg.array[col + seg.offset]))
+          || vim_iswordc(seg.fetch(col)))
         break;
     }
     //
     // didn't find an identifier or string
     ///
-    if (seg.array[col + seg.offset] == '\n' // DONE
-        || (!vim_iswordc(seg.array[col + seg.offset]) && i == 0))
+    if (seg.fetch(col) == '\n' // DONE
+        || (!vim_iswordc(seg.fetch(col)) && i == 0))
     {
       if ((find_type & FIND_STRING) != 0)
         Msg.emsg("No string under cursor");
@@ -2041,9 +2041,9 @@ normal_end: {
 
     int len = 0;
     while (i == 0
-           ? vim_iswordc(seg.array[len + col + seg.offset])
-           : (seg.array[len + col + seg.offset] != '\n' // DONE
-              && !vim_iswhite(seg.array[len + col + seg.offset])))
+           ? vim_iswordc(seg.fetch(len + col))
+           : (seg.fetch(len + col) != '\n' // DONE
+              && !vim_iswhite(seg.fetch(len + col))))
     {
       ++len;
     }
@@ -2804,7 +2804,7 @@ normal_end: {
       final ViFPOS cursor = G.curwin.w_cursor;
       MySegment seg = G.curbuf.getLineSegment(cursor.getLine());
       if ((!past_line && Edit.oneright() == FAIL)
-	    || (past_line && seg.array[cursor.getColumn()+seg.offset] == '\n') // DONE
+	    || (past_line && seg.fetch(cursor.getColumn()) == '\n') // DONE
 	  )
       {
 

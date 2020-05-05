@@ -460,7 +460,7 @@ end_do_search:
       {
 	if ((col += dir) < 0 || col >= len)
 	  return false;
-	if (seg.array[seg.offset + col] == c)
+	if (seg.fetch(col) == c)
 	  break;
       }
     }

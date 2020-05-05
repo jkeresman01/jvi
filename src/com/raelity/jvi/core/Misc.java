@@ -192,7 +192,7 @@ public class Misc implements ClipboardOwner {
       int ptr = seg.offset;
       OUTER:
       for (; ptr < seg.offset + seg.count; ++ptr) {
-        switch (seg.array[ptr]) {
+        switch (seg.atPtr(ptr)) {
         // count a tab for what it is worth
         case TAB:
           count += G.curbuf.b_p_ts - (count % G.curbuf.b_p_ts);
@@ -243,11 +243,11 @@ public class Misc implements ClipboardOwner {
       if(count >= fromIndent) {
 	break;
       }
-      if (seg.array[ptr] == '(') {
+      if (seg.atPtr(ptr) == '(') {
 	// keep track of last paren seen
 	prev_paren = count;
       }
-      if (seg.array[ptr] == TAB) {  // count a tab for what it is worth
+      if (seg.atPtr(ptr) == TAB) {  // count a tab for what it is worth
 	count += G.curbuf.b_p_ts - (count % G.curbuf.b_p_ts);
       } else {
 	++count;
@@ -263,7 +263,7 @@ public class Misc implements ClipboardOwner {
     //ptr++;
       OUTER:
       for (; ptr < seg.offset + seg.count; ++ptr) {
-        switch (seg.array[ptr]) {
+        switch (seg.atPtr(ptr)) {
         case '(':
           found = true;
           break OUTER;
@@ -307,11 +307,11 @@ public class Misc implements ClipboardOwner {
       if(count >= fromIndent) {
 	break;
       }
-      if(seg.array[ptr] != ' ' && seg.array[ptr] != TAB) {
+      if(seg.atPtr(ptr) != ' ' && seg.atPtr(ptr) != TAB) {
           non_blank = count;
           break;
       }
-      if (seg.array[ptr] == TAB) {  // count a tab for what it is worth
+      if (seg.atPtr(ptr) == TAB) {  // count a tab for what it is worth
 	count += G.curbuf.b_p_ts - (count % G.curbuf.b_p_ts);
       } else {
 	++count;
@@ -324,11 +324,11 @@ public class Misc implements ClipboardOwner {
     }
     
     for ( ; ptr < seg.offset + seg.count; ++ptr) {
-      if(seg.array[ptr] != ' ' && seg.array[ptr] != TAB) {
+      if(seg.atPtr(ptr) != ' ' && seg.atPtr(ptr) != TAB) {
 	found = true;
 	break;
       }
-      if (seg.array[ptr] == TAB)    // count a tab for what it is worth
+      if (seg.atPtr(ptr) == TAB)    // count a tab for what it is worth
 	count += G.curbuf.b_p_ts - (count % G.curbuf.b_p_ts);
       else
 	++count;
@@ -360,7 +360,7 @@ public class Misc implements ClipboardOwner {
     MySegment seg = G.curbuf.getLineSegment(fpos.getLine());
     if (del_first) {		    // delete old indent
       // vim_iswhite() is a define!
-      while(vim_iswhite(seg.array[col + seg.offset])) {
+      while(vim_iswhite(seg.fetch(col))) {
 	col++;
       }
       // col is char past last whitespace
@@ -482,7 +482,7 @@ public class Misc implements ClipboardOwner {
       int	col;
 
       MySegment seg = G.curbuf.getLineSegment(G.curwin.w_cursor.getLine());
-      for(col = 0; vim_iswhite(seg.array[seg.offset + col]); ++col);
+      for(col = 0; vim_iswhite(seg.fetch(col)); ++col);
 
       return col >= G.curwin.w_cursor.getColumn() + extra;
   }
@@ -666,7 +666,7 @@ public class Misc implements ClipboardOwner {
     char c;
     while (col <= wcol
 	   && idx < txt.count - 1
-	   && (c = txt.array[ptr]) != '\n') // DONE
+	   && (c = txt.atPtr(ptr)) != '\n') // DONE
     {
       ++idx;
       /* Count a tab for what it's worth (if list mode not on) */
@@ -3604,7 +3604,7 @@ private static int put_in_typebuf(String s, boolean colon)
       char c;
       while (idx < endCol - 1
               && idx < seg.count - 1
-              && (c = seg.array[ptr]) != '\n') { // DONE
+              && (c = seg.atPtr(ptr)) != '\n') { // DONE
         ++idx;
         /* Count a tab for what it's worth (if list mode not on) */
         vcol += lbr_chartabsize(c, vcol);
@@ -3663,7 +3663,7 @@ private static int put_in_typebuf(String s, boolean colon)
       int ts = buf.b_p_ts;
       MySegment seg = buf.getLineSegment(fpos.getLine());
       for (int col = fpos.getColumn(), ptr = seg.offset; ; --col, ++ptr) {
-        c = seg.array[ptr];
+        c = seg.atPtr(ptr);
         // make sure we don't go past the end of the line
         if (c == '\n') { // DONE
           incr = 1;	// NUL at end of line only takes one column
@@ -4733,7 +4733,7 @@ op_do_addsub(char command, int Prenum1)
           G.curwin.w_set_curswant = true;
           int tcol = cursor.getColumn();
           MySegment seg = Util.ml_get_curline();
-          while (seg.array[seg.offset + tcol] != '\n' // DONE
+          while (seg.fetch(tcol) != '\n' // DONE
                   && (tcol < bd.textcol + bd.textlen))
             tcol++;
           cursor.setColumn(tcol);

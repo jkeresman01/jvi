@@ -600,7 +600,7 @@ public class Search02 {
             {
             case NUL:
                 /* at end of line without trailing backslash, reset inquote */
-                if (pos_col == 0 || linep.array[linep.offset + pos_col - 1] != '\\')
+                if (pos_col == 0 || linep.fetch(pos_col - 1) != '\\')
                 {
                     inquote = false;
                     start_in_quotes = FALSE;
