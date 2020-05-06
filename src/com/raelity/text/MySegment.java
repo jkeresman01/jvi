@@ -46,6 +46,14 @@ public class MySegment extends Segment
     /** 0 or 1; when one there's a magic doneChar */
     private int charAtCheatOffset;
     private int pos;
+    private boolean wOK;
+
+    static public MySegment getWritable(char[] chars)
+    {
+        MySegment seg = new MySegment(chars, 0, chars.length, -1);
+        seg.wOK = true;
+        return seg;
+    }
 
     public MySegment()
     {
@@ -263,9 +271,22 @@ public class MySegment extends Segment
      * <br/><br/>
      * NOTE: doneChar NOT HANDLED
      */
-    final public char atPtr(int position) {
+    final public char r(int position) {
         assert !((position < offset) || (position >= offset + count));
         return array[position];
+    }
+
+    /**
+     * Direct access relative to array start, put bounds check in an assert.
+     * Replaces seg.array[ptr].
+     * <br/><br/>
+     * NOTE: doneChar NOT HANDLED
+     */
+    final public void w(int position, char c) {
+        assert wOK && !((position < offset) || (position >= offset + count));
+        if(!wOK)
+            return;
+        array[position] = c;
     }
 
     // --- CharSequence methods -------------------------------------

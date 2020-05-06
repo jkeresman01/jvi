@@ -192,7 +192,7 @@ public class Misc implements ClipboardOwner {
       int ptr = seg.offset;
       OUTER:
       for (; ptr < seg.offset + seg.count; ++ptr) {
-        switch (seg.atPtr(ptr)) {
+        switch (seg.r(ptr)) {
         // count a tab for what it is worth
         case TAB:
           count += G.curbuf.b_p_ts - (count % G.curbuf.b_p_ts);
@@ -243,11 +243,11 @@ public class Misc implements ClipboardOwner {
       if(count >= fromIndent) {
 	break;
       }
-      if (seg.atPtr(ptr) == '(') {
+      if (seg.r(ptr) == '(') {
 	// keep track of last paren seen
 	prev_paren = count;
       }
-      if (seg.atPtr(ptr) == TAB) {  // count a tab for what it is worth
+      if (seg.r(ptr) == TAB) {  // count a tab for what it is worth
 	count += G.curbuf.b_p_ts - (count % G.curbuf.b_p_ts);
       } else {
 	++count;
@@ -263,7 +263,7 @@ public class Misc implements ClipboardOwner {
     //ptr++;
       OUTER:
       for (; ptr < seg.offset + seg.count; ++ptr) {
-        switch (seg.atPtr(ptr)) {
+        switch (seg.r(ptr)) {
         case '(':
           found = true;
           break OUTER;
@@ -307,11 +307,11 @@ public class Misc implements ClipboardOwner {
       if(count >= fromIndent) {
 	break;
       }
-      if(seg.atPtr(ptr) != ' ' && seg.atPtr(ptr) != TAB) {
+      if(seg.r(ptr) != ' ' && seg.r(ptr) != TAB) {
           non_blank = count;
           break;
       }
-      if (seg.atPtr(ptr) == TAB) {  // count a tab for what it is worth
+      if (seg.r(ptr) == TAB) {  // count a tab for what it is worth
 	count += G.curbuf.b_p_ts - (count % G.curbuf.b_p_ts);
       } else {
 	++count;
@@ -324,11 +324,11 @@ public class Misc implements ClipboardOwner {
     }
     
     for ( ; ptr < seg.offset + seg.count; ++ptr) {
-      if(seg.atPtr(ptr) != ' ' && seg.atPtr(ptr) != TAB) {
+      if(seg.r(ptr) != ' ' && seg.r(ptr) != TAB) {
 	found = true;
 	break;
       }
-      if (seg.atPtr(ptr) == TAB)    // count a tab for what it is worth
+      if (seg.r(ptr) == TAB)    // count a tab for what it is worth
 	count += G.curbuf.b_p_ts - (count % G.curbuf.b_p_ts);
       else
 	++count;
@@ -666,7 +666,7 @@ public class Misc implements ClipboardOwner {
     char c;
     while (col <= wcol
 	   && idx < txt.count - 1
-	   && (c = txt.atPtr(ptr)) != '\n') // DONE
+	   && (c = txt.r(ptr)) != '\n') // DONE
     {
       ++idx;
       /* Count a tab for what it's worth (if list mode not on) */
@@ -3604,7 +3604,7 @@ private static int put_in_typebuf(String s, boolean colon)
       char c;
       while (idx < endCol - 1
               && idx < seg.count - 1
-              && (c = seg.atPtr(ptr)) != '\n') { // DONE
+              && (c = seg.r(ptr)) != '\n') { // DONE
         ++idx;
         /* Count a tab for what it's worth (if list mode not on) */
         vcol += lbr_chartabsize(c, vcol);
@@ -3663,7 +3663,7 @@ private static int put_in_typebuf(String s, boolean colon)
       int ts = buf.b_p_ts;
       MySegment seg = buf.getLineSegment(fpos.getLine());
       for (int col = fpos.getColumn(), ptr = seg.offset; ; --col, ++ptr) {
-        c = seg.atPtr(ptr);
+        c = seg.r(ptr);
         // make sure we don't go past the end of the line
         if (c == '\n') { // DONE
           incr = 1;	// NUL at end of line only takes one column

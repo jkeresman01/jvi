@@ -412,13 +412,13 @@ public void testGetPtr()
     // first char
     int off = 0;
     char expResult = base.charAt(off);
-    char result = instance.atPtr(ptr + off);
+    char result = instance.r(ptr + off);
     assertEquals(expResult, result);
 
     // last char
     off = count - 1;
     expResult = base.charAt(off);
-    result = instance.atPtr(ptr + off);
+    result = instance.r(ptr + off);
     assertEquals(expResult, result);
 
     // before first char
@@ -426,14 +426,14 @@ public void testGetPtr()
     @SuppressWarnings("ThrowableResultIgnored")
     AssertionError assertThrows
             = assertThrows(java.lang.AssertionError.class,
-                           () -> instance.atPtr(ptr + off1));
+                           () -> instance.r(ptr + off1));
 
     // after last char
     int off2 = count;
     @SuppressWarnings("ThrowableResultIgnored")
     AssertionError assertThrows1
             = assertThrows(java.lang.AssertionError.class,
-                           () -> instance.atPtr(ptr + off2));
+                           () -> instance.r(ptr + off2));
     assertEquals(expResult, result);
 }
 
