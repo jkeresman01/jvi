@@ -1,0 +1,91 @@
+<!description="DebugOption remove extra getBoolean when already supplier
+if(opt.getBoolean()) { opt.print(()--sf(); } to opt.print(()--sf())">
+
+// ONE
+// no level on either
+
+    if($opt.getBoolean()) $opt.println($a);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $a instanceof java.util.function.Supplier
+=>
+    $opt.println($a);
+;;
+
+
+    if($opt.getBoolean()) $opt.printf($a);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $a instanceof java.util.function.Supplier
+=>
+    $opt.printf($a);
+;;
+
+
+// TWO
+// level on getBoolean(), not on print
+
+    if($opt.getBoolean($level)) $opt.println($a);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && $a instanceof java.util.function.Supplier
+=>
+    $opt.println($level, $a);
+;;
+
+
+    if($opt.getBoolean($level)) $opt.printf($a);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && $a instanceof java.util.function.Supplier
+=>
+    $opt.printf($level, $a);
+;;
+
+
+// THREE
+// unlikely; no level on getBoolean(), level on print
+
+    if($opt.getBoolean()) $opt.println($level, $a);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && $a instanceof java.util.function.Supplier
+=>
+    $opt.println($level, $a);
+;;
+
+
+    if($opt.getBoolean()) $opt.printf($level, $a);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && $a instanceof java.util.function.Supplier
+=>
+    $opt.printf($level, $a);
+;;
+
+
+// FOUR
+// level on both
+
+    if($opt.getBoolean($level)) $opt.println($level, $a);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && $a instanceof java.util.function.Supplier
+=>
+    $opt.println($level, $a);
+;;
+
+
+    if($opt.getBoolean($level)) $opt.printf($level, $a);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && $a instanceof java.util.function.Supplier
+=>
+    $opt.printf($level, $a);
+;;

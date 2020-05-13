@@ -1,0 +1,65 @@
+<?
+    import java.util.Collection;
+    import javax.lang.model.element.ElementKind;
+?>
+
+<!description="DebugOption find two or more arg print
+and some args are not simple, METHOD or CONSTRUCTOR.
+Put it in a supplier. ">
+
+
+    $opt.println($level, $fmt, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && notSimple($args$)
+=>
+    $opt.println($level, () -> sf($fmt, $args$));
+;;
+
+
+    $opt.printf($level, $fmt, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && notSimple($args$)
+=>
+    $opt.printf($level, () -> sf($fmt, $args$));
+;;
+
+
+    $opt.println($fmt, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $fmt instanceof String
+ && notSimple($args$)
+=>
+    $opt.println(() -> sf($fmt, $args$));
+;;
+
+
+    $opt.printf($fmt, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $fmt instanceof String
+ && notSimple($args$)
+=>
+    $opt.printf(() -> sf($fmt, $args$));
+;;
+
+<?
+public boolean notSimple(Variable v) {
+    // one or more args
+    if(((Collection)context.getIndexedVariables(v)).size() == 0)
+        return false;
+    // includes complex (not simple)
+    for(Variable x : context.getIndexedVariables(v)) {
+	ElementKind e = context.elementKind(x);
+	if(e != null && (e.equals(ElementKind.METHOD)
+			 || e.equals(ElementKind.CONSTRUCTOR))) {
+            return true;
+	}
+    }
+    return false;
+}
+?>

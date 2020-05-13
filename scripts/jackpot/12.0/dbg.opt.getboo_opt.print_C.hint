@@ -1,0 +1,122 @@
+<?
+    import java.util.Collection;
+    import javax.lang.model.element.ElementKind;
+?>
+
+<!description="DebugOption remove extra getBoolean use sf()
+if(opt.getBoolean()) { opt.print... }
+Multiple arg case, use sf(). Should already be taken care of.  ">
+
+// ONE
+// no level on either
+
+    if($opt.getBoolean()) $opt.println($fmt, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $fmt instanceof String
+ && notSimple($args$)
+=>
+    $opt.println(() -> sf($fmt, $args$));
+;;
+
+
+    if($opt.getBoolean()) $opt.printf($fmt, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $fmt instanceof String
+ && notSimple($args$)
+=>
+    $opt.printf(() -> sf($fmt, $args$));
+;;
+
+
+// TWO
+// level on getBoolean(), not on print
+
+    if($opt.getBoolean($level)) $opt.println($fmt, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && $fmt instanceof String
+ && notSimple($args$)
+=>
+    $opt.println($level, () -> sf($fmt, $args$));
+;;
+
+
+    if($opt.getBoolean($level)) $opt.printf($fmt, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && $fmt instanceof String
+ && notSimple($args$)
+=>
+    $opt.printf($level, () -> sf($fmt, $args$));
+;;
+
+
+// THREE
+// unlikely; no level on getBoolean(), level on print
+
+    if($opt.getBoolean()) $opt.println($level, $fmt, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && $fmt instanceof String
+ && notSimple($args$)
+=>
+    $opt.println($level, () -> sf($fmt, $args$));
+;;
+
+
+    if($opt.getBoolean()) $opt.printf($level, $fmt, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && $fmt instanceof String
+ && notSimple($args$)
+=>
+    $opt.printf($level, () -> sf($fmt, $args$));
+;;
+
+
+// FOUR
+// level on both
+
+    if($opt.getBoolean($level)) $opt.println($level, $fmt, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && $fmt instanceof String
+ && notSimple($args$)
+=>
+    $opt.println($level, () -> sf($fmt, $args$));
+;;
+
+
+    if($opt.getBoolean($level)) $opt.printf($level, $fmt, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && $fmt instanceof String
+ && notSimple($args$)
+=>
+    $opt.printf($level, () -> sf($fmt, $args$));
+;;
+
+<?
+public boolean notSimple(Variable v) {
+    // one or more args
+    if(((Collection)context.getIndexedVariables(v)).size() == 0)
+        return false;
+    // includes complex (not simple)
+    for(Variable x : context.getIndexedVariables(v)) {
+	ElementKind e = context.elementKind(x);
+	if(e != null && (e.equals(ElementKind.METHOD)
+			 || e.equals(ElementKind.CONSTRUCTOR))) {
+            return true;
+	}
+    }
+    return false;
+}
+?>

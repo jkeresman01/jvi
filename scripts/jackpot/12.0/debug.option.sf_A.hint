@@ -1,0 +1,40 @@
+<!description="DebugOption using supplier sf().
+Find string concatenation cases.">
+
+
+    $opt.println($level, $string + $stuff);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && $string instanceof String
+=>
+    $opt.println($level, () -> sf($string + $stuff));
+;;
+
+
+    $opt.printf($level, $string + $stuff);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && $string instanceof String
+=>
+    $opt.printf($level, () -> sf($string + $stuff));
+;;
+
+
+    $opt.println($string + $stuff);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $string instanceof String
+=>
+    $opt.println(() -> sf($string + $stuff));
+;;
+
+
+    $opt.printf($string + $stuff);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $string instanceof String
+=>
+    $opt.printf(() -> sf($string + $stuff));
+;;

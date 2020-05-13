@@ -1,0 +1,30 @@
+<!description="DebugOption remove extra getBoolean use sf()
+if(opt.getBoolean()) { opt.print... }
+special case level1 != level
+">
+
+
+// FOUR
+// unlikely; level on both; use the level on the print
+// should use the lowest level
+
+    if($opt.getBoolean($level1)) $opt.println($level, $fmt, $str1, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && $level1 instanceof java.util.logging.Level
+ && $fmt instanceof String
+=>
+    $opt.println($level, () -> sf($fmt, $str1, $args$));
+;;
+
+
+    if($opt.getBoolean($level1)) $opt.printf($level, $fmt, $str1, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && $level1 instanceof java.util.logging.Level
+ && $fmt instanceof String
+=>
+    $opt.printf($level, () -> sf($fmt, $str1, $args$));
+;;

@@ -1,0 +1,8 @@
+<!description="seg.array TO seg.charAt;
+find special cases, use after regualar hints">
+
+    $seg.array[$val]
+::
+    $seg instanceof javax.swing.text.Segment
+;;
+

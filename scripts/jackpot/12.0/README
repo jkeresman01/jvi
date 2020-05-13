@@ -1,0 +1,66 @@
+
+==> debug.option.sf_A.hint <==
+<!description="DebugOption using supplier sf().
+Find string concatenation cases.">
+
+==> debug.option.sf_B.hint <==
+<!description="DebugOption find method returning string.
+Put it in a message supplier.">
+
+==> debug.option.sf_C.hint <==
+<!description="DebugOption find two or more arg print
+and some args are not simple, METHOD or CONSTRUCTOR.
+Put it in a supplier. ">
+
+==> debug.option.sup1.hint <==
+<!description="DebugOption remove extra extraneous sf() in supplier.
+opt.print(()--sf($str, $args$) to opt.print(()--str) when $args$ empty">
+
+
+==> dbg.opt.getboo_opt.print_A.hint <==
+<!description="DebugOption remove unneeded getBoolean.
+if(opt.getBoolean()) opt.print($str);
+Singe arg case generally doesn't need '() -- sf($str)'.  ">
+
+==> dbg.opt.getboo_opt.print_B.hint <==
+<!description="DebugOption remove extra getBoolean when already supplier
+if(opt.getBoolean()) { opt.print(()--sf(); } to opt.print(()--sf())">
+
+==> dbg.opt.getboo_opt.print_C.hint <==
+<!description="DebugOption remove extra getBoolean use sf()
+if(opt.getBoolean()) { opt.print... }
+Multiple arg case, use sf(). Should already be taken care of.  ">
+
+
+
+==> dbg.opt.getboo_opt.print_A1.hint <==
+<!description="DebugOption remove unneeded getBoolean.
+if(opt.getBoolean()) opt.print($str);
+Singe arg case generally doesn't need '() -- sf($str)'.
+Special consideration with level1 != level.  ">
+
+==> dbg.opt.getboo_opt.print_B1.hint <==
+<!description="DebugOption remove extra getBoolean use sf()
+if(opt.getBoolean()) { opt.print... }
+special case level1 != level ">
+
+==> dbg.opt.getboo_opt.print_C1.hint <==
+<!description="DebugOption remove extra getBoolean use sf()
+if(opt.getBoolean()) { opt.print... }
+special case level1 != level ">
+
+
+
+==> seg_array_to_charAt.hint <==
+<!description="seg.array TO seg.charAt">
+
+==> seg_array_to_charAt_A.hint <==
+<!description="find seg.array with seg in index expression">
+
+==> seg_array_to_charAt_B.hint <==
+<!description="Ptr hints only use when seg.offset usage fixed/gone">
+
+==> seg_array_to_charAt2.hint <==
+<!description="seg.array TO seg.charAt;
+find special cases, use after regualar hints">
+

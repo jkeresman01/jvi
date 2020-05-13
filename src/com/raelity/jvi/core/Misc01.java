@@ -39,6 +39,7 @@ import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
+import static com.raelity.text.TextUtil.sf;
 
 /**
  * do_window is some stuff from window.c and related.
@@ -763,6 +764,8 @@ public class Misc01
 
     private static void win_move(Direction direction, int n)
     {
+        Options.getDebugOption(Options.dbgWindowTreeBuilder)
+                .println(() -> sf("win_move(%s, %d) NIMP", direction, n));
         G.curwin.win_move(direction, n);
     }
 
@@ -780,6 +783,9 @@ public class Misc01
             case SAME:
                 break;
         }
+        final int nFinal = n;
+        Options.getDebugOption(Options.dbgWindowTreeBuilder)
+                .println(() -> sf("win_size(%s, %s, %d)", op, o, nFinal));
         G.curwin.win_size(op, o, n);
     }
 

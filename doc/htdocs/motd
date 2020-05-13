@@ -29,7 +29,7 @@ See jVi recent features and CHANGES at website including
 #* see CHANGES about:
 motd-message:
 *     1.6.x: :tab* commands; magic option and \v,\m... for searching
-*            :history, 'history', history up/down arrows and matching
+*            :history clickable output, 'history', history up/down arrows and matching
 *     1.5.x: fold commands & fdo option, smarter scrolling, visual bell option
 *     split, resize and move window commands, e.g. Ctrl-W_s, Ctrl-W_=, Ctrl-W_L
 *     multi-char {lhs} mappings, including insert mode, w/timeout options

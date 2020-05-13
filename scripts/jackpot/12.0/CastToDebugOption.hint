@@ -1,0 +1,6 @@
+<!description="CastToDebugOption">
+
+    (com.raelity.jvi.options.DebugOption)com.raelity.jvi.core.Options.getOption($val)
+// :: $T instanceof com.raelity.jvi.core.Options
+ => Options.getDebugOption($val)
+;;

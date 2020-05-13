@@ -1,0 +1,49 @@
+<?
+    import java.util.Collection;
+?>
+
+<!description="DebugOption remove extra extraneous sf() in supplier.
+opt.print(()--sf($str, $args$) to opt.print(()--str) when $args$ empty">
+
+    $opt.println($level, () -> com.raelity.text.TextUtil.sf($str, $args$))
+ ::
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && emptyVargs($args$)
+ =>
+    $opt.println($level, () -> $str)
+;;
+
+
+    $opt.printf($level, () -> com.raelity.text.TextUtil.sf($str, $args$))
+ ::
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && emptyVargs($args$)
+ =>
+    $opt.printf($level, () -> $str)
+;;
+
+
+
+    $opt.println(() -> com.raelity.text.TextUtil.sf($str, $args$))
+ ::
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && emptyVargs($args$)
+ =>
+    $opt.println(() -> $str)
+;;
+
+
+    $opt.printf(() -> com.raelity.text.TextUtil.sf($str, $args$))
+ ::
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && emptyVargs($args$)
+ =>
+    $opt.printf(() -> $str)
+;;
+
+
+<?
+public boolean emptyVargs(Variable v) {
+    return ((Collection)context.getIndexedVariables(v)).size() == 0;
+}
+?>

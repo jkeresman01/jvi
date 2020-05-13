@@ -1,0 +1,21 @@
+=== Logging
+
+Exceptions.printStackTrace
+Exceptions.attachSeverity
+
+org.netbeans.core.NotifyExcPanel.notify
+    shallNotify - algorithm in here
+    Unlikely that anything under WARNING gets dialog
+        int minAlert = Integer.getInteger(
+            "netbeans.exception.alert.min.level", 900); // NOI18N
+        int minReport = Integer.getInteger(
+            "netbeans.exception.report.min.level", defReport); // NOI18N
+
+    "AWT-EventQueue-0"
+	at org.netbeans.core.NotifyExcPanel.notify(NotifyExcPanel.java:266)
+	at org.netbeans.core.NbErrorManager.publish(NbErrorManager.java:71)
+	at org.netbeans.core.startup.TopLogging$LookupDel.publish(TopLogging.java:428)
+	at java.util.logging.Logger.log(Logger.java:979)
+	at java.util.logging.Logger.doLog(Logger.java:1006)
+	at java.util.logging.Logger.log(Logger.java:1117)
+	at org.openide.util.Exceptions.printStackTrace(Exceptions.java:192)

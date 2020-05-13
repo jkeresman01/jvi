@@ -1,0 +1,58 @@
+<?
+    import java.util.Collection;
+?>
+
+<!description="DebugOption find method returning string.
+Put it in a message supplier.">
+
+
+    $opt.println($level, $fmt, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && $fmt instanceof String
+ && elementKindMatches($fmt, ElementKind.METHOD)
+ && checkCountVargs($args$)
+=>
+    $opt.println($level, () -> $fmt);
+;;
+
+
+    $opt.printf($level, $fmt, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && $fmt instanceof String
+ && elementKindMatches($fmt, ElementKind.METHOD)
+ && checkCountVargs($args$)
+=>
+    $opt.printf($level, () -> $fmt);
+;;
+
+
+    $opt.println($fmt, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $fmt instanceof String
+ && elementKindMatches($fmt, ElementKind.METHOD)
+ && checkCountVargs($args$)
+=>
+    $opt.println(() -> $fmt);
+;;
+
+
+    $opt.printf($fmt, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $fmt instanceof String
+ && elementKindMatches($fmt, ElementKind.METHOD)
+ && checkCountVargs($args$)
+=>
+    $opt.printf(() -> $fmt);
+;;
+
+<?
+public boolean checkCountVargs(Variable v) {
+    return ((Collection)context.getIndexedVariables(v)).size() == 0;
+}
+?>

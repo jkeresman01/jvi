@@ -43,7 +43,8 @@ public class MySegment extends Segment
 {
     public int docOffset;
     protected char doneChar = DONE;
-    protected boolean charAtCheatFlag;
+    /** 0 or 1; when one there's a magic doneChar */
+    private int charAtCheatOffset;
     private int pos;
 
     public MySegment()
@@ -62,7 +63,7 @@ public class MySegment extends Segment
     {
         this(str.toCharArray(), 0, str.length(), -1);
         setReturnNull(true);
-        charAtCheatFlag = true;
+        charAtCheatOffset = 1;
     }
 
     public MySegment(MySegment seg)
@@ -111,10 +112,6 @@ public class MySegment extends Segment
         return "";
     }
 
-    private char fetchChar(int i) {
-        return array[i];
-    }
-
     // --- CharacterIterator methods -------------------------------------
 
     /**
@@ -128,7 +125,7 @@ public class MySegment extends Segment
     public char first() {
         pos = offset;
         if (count != 0) {
-            return fetchChar(pos);
+            return array[pos];
         }
         return doneChar;
     }
@@ -145,7 +142,7 @@ public class MySegment extends Segment
         pos = offset + count;
         if (count != 0) {
             pos -= 1;
-            return fetchChar(pos);
+            return array[pos];
         }
         return doneChar;
     }
@@ -160,7 +157,7 @@ public class MySegment extends Segment
     @Override
     public char current() {
         if (count != 0 && pos < offset + count) {
-            return fetchChar(pos);
+            return array[pos];
         }
         return doneChar;
     }
@@ -219,7 +216,7 @@ public class MySegment extends Segment
         }
         pos = position;
         if ((pos != end) && (count != 0)) {
-            return fetchChar(pos);
+            return array[pos];
         }
         return doneChar;
     }
@@ -260,7 +257,29 @@ public class MySegment extends Segment
         return count == 0 || pos >= offset + count;
     }
 
+    /**
+     * Direct access relative to array start, put bounds check in an assert.
+     * Replaces seg.array[ptr].
+     * <br/><br/>
+     * NOTE: doneChar NOT HANDLED
+     */
+    final public char atPtr(int position) {
+        assert !((position < offset) || (position >= offset + count));
+        return array[position];
+    }
+
     // --- CharSequence methods -------------------------------------
+
+    /**
+     * Direct access relative to offset, put bounds check in an assert.
+     * Replaces seg.array[index + seg.offset].
+     * <br/><br/>
+     * NOTE: doneChar NOT HANDLED
+     */
+    final public char fetch(int index) {
+        assert !(index < 0 || index >= count);
+        return array[offset + index];
+    }
 
     /**
      * {@inheritDoc}
@@ -268,20 +287,9 @@ public class MySegment extends Segment
      */
     @Override
     public char charAt(int index) {
-        if(charAtCheatFlag) {
-            if (index < 0
-                    || index > count) {
-                throw new StringIndexOutOfBoundsException(index);
-            }
-            if(index == count)
-                return doneChar;
-        } else {
-            if (index < 0
-                    || index >= count) {
-                throw new StringIndexOutOfBoundsException(index);
-            }
-        }
-        return fetchChar(offset + index);
+        if(index < 0 || index >= count + charAtCheatOffset)
+            throw new StringIndexOutOfBoundsException(index);
+        return index != count ? array[offset + index] : doneChar;
     }
 
     /**

@@ -1,0 +1,109 @@
+<?
+    import java.util.Collection;
+?>
+
+<!description="DebugOption remove unneeded getBoolean.
+if(opt.getBoolean()) opt.print($str);
+Singe arg case generally doesn't need '() -- sf($str)'.
+">
+
+// ONE
+// no level on either
+
+    if($opt.getBoolean()) $opt.println($str, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && emptyVargs($args$)
+=>
+    $opt.println($str);
+;;
+
+
+    if($opt.getBoolean()) $opt.printf($str, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && emptyVargs($args$)
+=>
+    $opt.printf($str);
+;;
+
+
+// TWO
+// level on getBoolean(), not on print
+
+    if($opt.getBoolean($level)) $opt.println($str, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && emptyVargs($args$)
+=>
+    $opt.println($level, $str);
+;;
+
+
+    if($opt.getBoolean($level)) $opt.printf($str, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && emptyVargs($args$)
+=>
+    $opt.printf($level, $str);
+;;
+
+
+// THREE
+// unlikely; no level on getBoolean(), level on print
+
+    if($opt.getBoolean()) $opt.println($level, $str, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && emptyVargs($args$)
+=>
+    $opt.println($level, $str);
+;;
+
+
+    if($opt.getBoolean()) $opt.printf($level, $str, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && emptyVargs($args$)
+=>
+    $opt.printf($level, $str);
+;;
+
+
+// FOUR
+// same level on both
+
+    if($opt.getBoolean($level)) $opt.println($level, $str, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && emptyVargs($args$)
+=>
+    $opt.println($level, $str);
+;;
+
+
+    if($opt.getBoolean($level)) $opt.printf($level, $str, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && emptyVargs($args$)
+=>
+    $opt.printf($level, $str);
+;;
+
+
+<?
+public boolean emptyVargs(Variable v) {
+    return ((Collection)context.getIndexedVariables(v)).size() == 0;
+    // int n = 0;
+    // for(Variable iv : context.getIndexedVariables(v))
+    //     n++;
+    // return n == 0;
+    // return !context.getIndexedVariables(v).iterator().hasNext();
+}
+?>

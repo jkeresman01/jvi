@@ -1,0 +1,23 @@
+<?
+    import java.util.Collection;
+    import javax.lang.model.element.ElementKind;
+?>
+
+
+
+<?
+public boolean notSimple(Variable v) {
+    // one or more args
+    if(((Collection)context.getIndexedVariables(v)).size() == 0)
+        return false;
+    // includes complex (not simple)
+    for(Variable x : context.getIndexedVariables(v)) {
+	ElementKind e = context.elementKind(x);
+	if(e != null && (e.equals(ElementKind.METHOD)
+			 || e.equals(ElementKind.CONSTRUCTOR))) {
+            return true;
+	}
+    }
+    return false;
+}
+?>

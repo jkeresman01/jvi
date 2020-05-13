@@ -260,7 +260,7 @@ final public class ViManager
             i.init();
         }
         if(isDebugAtHome()) {
-            for(Entry e: hackMap.entrySet()) {
+            for(Entry<Object,Object> e: hackMap.entrySet()) {
                 G.dbg.println("HACKMAP: %s %s", e.getKey(), e.getValue());
             }
         }

@@ -4,12 +4,19 @@
 ::
     $seg instanceof javax.swing.text.Segment
 =>
-    $seg.charAt($val)
+    $seg.fetch($val)
 ;;
 
     $seg.array[$seg.offset + $val]
 ::
     $seg instanceof javax.swing.text.Segment
 =>
-    $seg.charAt($val)
+    $seg.fetch($val)
+;;
+
+    $seg.array[$seg.offset]
+::
+    $seg instanceof javax.swing.text.Segment
+=>
+    $seg.fetch(0)
 ;;

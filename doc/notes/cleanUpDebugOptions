@@ -1,0 +1,47 @@
+
+
+0 - CastToDebugOption.hint
+
+all the following have a manual look/see
+
+1 - => SUPPLIER; string concatenation 
+    opt.print("a" + ....) => opt.print(() ->sf(...))
+    debug.option.sf_A.hint
+
+2 - => SUPPLIER; opt.print method returning string
+    opt.print(f()) => opt.print(() -> f())
+    debug.option.sf_B.hint
+
+3 - extra opt.getBoo(), simple string arg
+    if(opt.getBoo()) opt.print($str) => opt.print($str)
+    dbg.opt.getboo_opt.print_A.hint
+
+4 - => SUPPLIER; format string and at least one arg, and not simple vargs
+    opt.print($f, $a$) => opt.print(() -> sf($f,$a$))
+    debug.option.sf_C.hint
+
+5 - extra opt.getBoo() with SUPPLIER, if "inner loop", don't convert
+    if(opt.getBoo()) opt.print(() -> sf()) => opt.print(() -> sf())
+    dbg.opt.getboo_opt.print_B.hint
+
+
+
+
+x - => SUPPLIER; extra opt.getBoo(), should already be transformed
+    more of a check/investigate
+
+    if(opt.getBoo()) opt.print($f, $s, $a$) => opt.print(() -> sf($f,$s,$a$))
+    COPY OF dbg..._A with "xxx > 1"
+        dbg.opt.getboo_opt.print_C.hint
+
+
+investigate
+    dbg.opt.getboo_opt.print_A1.hint
+    dbg.opt.getboo_opt.print_B1.hint
+    dbg.opt.getboo_opt.print_C1.hint
+
+
+After 0,1,2,3,4,5
+
+Look at all examples of opt.getBoo()
+    - particularly stuff like: if(xxx && opt.getBoo()) opt.print()

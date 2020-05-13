@@ -1,0 +1,7 @@
+<!description="find seg.array with seg in index expression">
+
+    $seg.array[$val]
+::
+    $seg instanceof javax.swing.text.Segment
+ && referencedIn($seg, $val)
+;;

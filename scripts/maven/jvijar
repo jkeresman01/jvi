@@ -1,0 +1,12 @@
+#!/usr/bin/bash
+
+file=$jvi/jvi/dist/jvi.jar
+version=0.0.1
+
+mvn install:install-file \
+   -Dfile=$file \
+   -DgroupId=com.raelity.jvi \
+   -DartifactId=jvi \
+   -Dversion=$version \
+   -Dpackaging=jar \
+   -DgeneratePom=true

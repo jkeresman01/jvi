@@ -1,0 +1,8 @@
+<!description="Ptr hints only use when seg.offset usage fixed/gone">
+
+    $seg.array[$val]
+::
+    $seg instanceof javax.swing.text.Segment
+ && !inClass("com.raelity.text.MySegment")
+=>  $seg.warning($val)
+;;

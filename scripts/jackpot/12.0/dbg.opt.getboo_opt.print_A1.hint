@@ -1,0 +1,26 @@
+<!description="DebugOption remove unneeded getBoolean.
+if(opt.getBoolean()) opt.print($str);
+Singe arg case generally doesn't need '() -- sf($str)'.
+Special consideration with level1 != level.
+">
+
+// FOUR
+// unlikely; level on both; use the level on the print
+// should use the lowest level
+
+    if($opt.getBoolean($level1)) $opt.println($level, $str, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && $level1 instanceof java.util.logging.Level
+ && emptyVargs($args$)
+;;
+
+
+    if($opt.getBoolean($level1)) $opt.printf($level, $str, $args$);
+:: 
+    $opt instanceof com.raelity.jvi.options.DebugOption
+ && $level instanceof java.util.logging.Level
+ && $level1 instanceof java.util.logging.Level
+ && emptyVargs($args$)
+;;

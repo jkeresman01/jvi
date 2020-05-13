@@ -399,6 +399,81 @@ public void testGetIndex()
     assertEquals(expResult, result);
 }
 
+/**
+ * Test specialized direct access
+ */
+@Test
+public void testGetPtr()
+{
+    System.out.println("getPtr");
+    MySegment instance = getSegment();
+    int ptr = instance.getBeginIndex();
+
+    // first char
+    int off = 0;
+    char expResult = base.charAt(off);
+    char result = instance.atPtr(ptr + off);
+    assertEquals(expResult, result);
+
+    // last char
+    off = count - 1;
+    expResult = base.charAt(off);
+    result = instance.atPtr(ptr + off);
+    assertEquals(expResult, result);
+
+    // before first char
+    int off1 = -1;
+    @SuppressWarnings("ThrowableResultIgnored")
+    AssertionError assertThrows
+            = assertThrows(java.lang.AssertionError.class,
+                           () -> instance.atPtr(ptr + off1));
+
+    // after last char
+    int off2 = count;
+    @SuppressWarnings("ThrowableResultIgnored")
+    AssertionError assertThrows1
+            = assertThrows(java.lang.AssertionError.class,
+                           () -> instance.atPtr(ptr + off2));
+    assertEquals(expResult, result);
+}
+
+/**
+ * Test specialized direct access
+ */
+@Test
+public void testFetch()
+{
+    System.out.println("fetch");
+    MySegment instance = getSegment();
+
+    // first char
+    int off = 0;
+    char expResult = base.charAt(off);
+    char result = instance.fetch(off);
+    assertEquals(expResult, result);
+
+    // last char
+    off = count - 1;
+    expResult = base.charAt(off);
+    result = instance.fetch(off);
+    assertEquals(expResult, result);
+
+    // before first char
+    int off1 = -1;
+    @SuppressWarnings("ThrowableResultIgnored")
+    AssertionError assertThrows
+            = assertThrows(java.lang.AssertionError.class,
+                           () -> instance.fetch(off1));
+
+    // after last char
+    int off2 = count;
+    @SuppressWarnings("ThrowableResultIgnored")
+    AssertionError assertThrows1
+            = assertThrows(java.lang.AssertionError.class,
+                           () -> instance.fetch(off2));
+    assertEquals(expResult, result);
+}
+
 // getBeginIndex, gets used a lot
 // clone, tested as part of subsequence testing;
 

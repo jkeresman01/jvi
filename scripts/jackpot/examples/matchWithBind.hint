@@ -1,0 +1,68 @@
+<?
+    import java.util.Collection;
+    import java.util.Set;
+    import javax.lang.model.element.Modifier;
+    import javax.lang.model.element.ElementKind;
+    import javax.lang.model.type.TypeKind;
+?>
+
+<!description="varg">
+
+
+    $opt.printf(() -> String.format($str, $args$))
+::
+    $opt instanceof play.NewClass
+ && emptyVargs($args$)
+=>
+    $opt.printf1(() -> $str)
+;;
+
+
+    $opt.printf($sup)
+::
+    $opt instanceof play.NewClass
+ && $sup instanceof java.util.function.Supplier
+ && matchesWithBind($sup, "() -> String.format($str, $args$)")
+ && emptyVargs($args$)
+ =>
+    $opt.printf2(() -> $str)
+;;
+
+
+<?
+    public boolean foo(Variable v) { return true; }
+public boolean simpleArgs(Variable v) {
+    boolean simple = true;
+    for(Variable x : context.getIndexedVariables(v)) {
+	Set<Modifier> m = context.modifiers(x);
+	ElementKind e = context.elementKind(x);
+	TypeKind t = context.typeKind(x);
+	String n = context.name(x);
+	System.err.printf("J: name=%s, type=%s, kind=%s, mods=%s\n",
+			  n, t, e, m);
+	if(e != null && (e.equals(ElementKind.METHOD)
+			 || e.equals(ElementKind.CONSTRUCTOR))) {
+	    simple = false;
+	    if(false) {
+		break;
+	    } else {
+		System.err.println("NOT SIMPLE");
+	    }
+	}
+    }
+    System.err.println("JACKPOT: simple="+simple);
+    return simple;
+}
+public boolean emptyVargs(Variable v) {
+    int n = 0;
+    for(Variable iv : context.getIndexedVariables(v))
+        n++;
+    n = ((Collection)context.getIndexedVariables(v)).size();
+    boolean b = n == 0;
+    System.err.println("JACKPOT: b="+b+" sz="+n);
+    return b;
+
+    //return !context.getIndexedVariables(v).iterator().hasNext();
+}
+?>
+

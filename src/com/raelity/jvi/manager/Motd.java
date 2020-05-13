@@ -8,6 +8,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -157,8 +158,9 @@ class Motd
         }
         outputNetworkInfo = true;
         try (ViOutputStream vios = ViManager.createOutputStream(null, ViOutputStream.MAIN,
-                "jVi Version Information", flags)) {
+                null, flags)) {
             boolean needNL = true;
+            vios.print("jVi Info, ");
             vios.print("Running: " + ViManager.getReleaseString());
             if (latestRelease != null && latestRelease.isValid())
                 if (latestRelease.compareTo(ViManager.version) > 0) {
@@ -293,7 +295,9 @@ class Motd
                 StringBuilder sb;
                 try (InputStream in = c.getInputStream()) {
                     byte b[] = new byte[BUF_LEN];
-                    ByteBuffer bb = ByteBuffer.wrap(b);
+                    // workaround jdk 9+ compiler issue, call it a Buffer
+                    // https://github.com/apache/felix/pull/114
+                    Buffer bb = ByteBuffer.wrap(b);
                     sb = new StringBuilder();
                     Charset cset = Charset.forName("US-ASCII");
                     int n;
@@ -301,7 +305,7 @@ class Motd
                     while((n = in.read(b)) > 0 && total < MAX_MSG) {
                         bb.position(0);
                         bb.limit(n);
-                        CharBuffer cb = cset.decode(bb);
+                        CharBuffer cb = cset.decode((ByteBuffer)bb);
                         sb.append(cb.toString());
                         total += n;
                     }
