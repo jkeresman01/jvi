@@ -165,7 +165,7 @@ class Motd
             if (latestRelease != null && latestRelease.isValid())
                 if (latestRelease.compareTo(ViManager.version) > 0) {
                     vios.print("; ");
-                    vios.print("newer release available ", COLOR.WARNING);
+                    vios.print("newer release available ", COLOR.FAILURE);
                     if(linkRelease != null) {
                         vios.printlnLink(latestRelease.toString(), linkRelease);
                         needNL = false;
