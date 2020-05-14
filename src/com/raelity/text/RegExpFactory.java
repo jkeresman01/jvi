@@ -21,6 +21,7 @@
 
 package com.raelity.text;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,7 @@ public class RegExpFactory {
    * The <i>reClass</i> variable holds the <b>Class</b> which
    * is vended.
    */
-  protected static Class    reClass = null;
+  protected static Class<?>    reClass = null;
 
   /**
    * The name of the class that is being vended.
@@ -142,20 +143,16 @@ public class RegExpFactory {
     RegExp regexp;
 
     try {
-      regexp = (RegExp) reClass.newInstance();
+      regexp = (RegExp)reClass.getDeclaredConstructor().newInstance();
 
       if (compflag) {
 	regexp.compile(pattern);
       }
-    } catch (IllegalAccessException e) {
-      throw new NoClassDefFoundError("IllegalAccessException really.");
-    } catch (InstantiationException e) {
-      throw new NoClassDefFoundError("InstantiationException really.");
+    } catch (IllegalAccessException | InstantiationException |
+            NoSuchMethodException | SecurityException |
+            IllegalArgumentException | InvocationTargetException e) {
+        throw (NoClassDefFoundError)new NoClassDefFoundError().initCause(e);
     }
-
-    // catch(NoSuchMethodException e) {
-    // throw new NoClassDefFoundError("NoSuchMethodException really.");
-    // }
     return regexp;
   }
 
@@ -245,7 +242,7 @@ public class RegExpFactory {
 	  throws ClassNotFoundException, IllegalArgumentException,
 		 ClassCastException, NoSuchMethodException,
 		 SecurityException {
-    Class cls = Class.forName(reClassName);  // may throw
+    Class<?> cls = Class.forName(reClassName);  // may throw
 
     // Must be a subclass of RegExp
     if (!com.raelity.text.RegExp.class.isAssignableFrom(cls)) {
@@ -257,16 +254,16 @@ public class RegExpFactory {
     String bString;
 
     try {
-      Method t = cls.getMethod("canInstantiate", new Class[0]);
+      Method t = cls.getMethod("canInstantiate", new Class<?>[0]);
 
       if (!((Boolean) t.invoke(null, new Object[0]))) {
 	throw new Exception();
       }
 
-      t = cls.getMethod("getAdaptedName", new Class[0]);
+      t = cls.getMethod("getAdaptedName", new Class<?>[0]);
       aString = (String) t.invoke(null, new Object[0]);
 
-      t = cls.getMethod("getDisplayName", new Class[0]);
+      t = cls.getMethod("getDisplayName", new Class<?>[0]);
       bString = (String) t.invoke(null, new Object[0]);
     } catch (Exception e) {
       throw new ClassNotFoundException(reClassName + " can not instantiate");

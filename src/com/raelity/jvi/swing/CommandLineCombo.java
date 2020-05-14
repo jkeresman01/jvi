@@ -706,7 +706,11 @@ public final class CommandLineCombo extends AbstractCommandLine
         int modifiers = 0;
         AWTEvent currentEvent = EventQueue.getCurrentEvent();
         if (currentEvent instanceof InputEvent) {
-            modifiers = ((InputEvent)currentEvent).getModifiers();
+            InputEvent iev = (InputEvent)currentEvent;
+            if(iev.isAltDown())     modifiers |= ActionEvent.ALT_MASK;
+            if(iev.isControlDown()) modifiers |= ActionEvent.CTRL_MASK;
+            if(iev.isShiftDown())   modifiers |= ActionEvent.SHIFT_MASK;
+            if(iev.isMetaDown())    modifiers |= ActionEvent.META_MASK;
         } else if (currentEvent instanceof ActionEvent) {
             modifiers = ((ActionEvent)currentEvent).getModifiers();
         }

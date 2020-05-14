@@ -349,22 +349,18 @@ abstract public class SwingBuffer extends Buffer
         return elemCache;
     }
     
-    private class PositionSegment extends MySegment {
-        /** The line number of the segment. The first line is numbered at 1.
-         * This is negative if the
-         * segment does not correspond to a single line.
-         */
-        public int line;
-    }
-    
-    /** the segment cache */
-    private final PositionSegment segment = new PositionSegment();
-    // private Segment tempSegment = new Segment();
+    /**
+     * The segment cache data. Only used to clone.
+     * count == 0 implies invalid. The cache tag is segment_line.
+     */
+    private final MySegment segment = new MySegment();
+    /** The line number of the segment. The first line is numbered at 1. */
+    private int segment_line;
 
     @Override
     final public int getLineLength(int line) {
         int len;
-        if(cacheDisabled || segment.count == 0 || segment.line != line) {
+        if(cacheDisabled || segment.count == 0 || segment_line != line) {
             Element elem = getLineElement(line);
             len = elem.getEndOffset() - elem.getStartOffset();
         } else {
@@ -374,10 +370,10 @@ abstract public class SwingBuffer extends Buffer
         return len < 1 ? 0 : len - 1;
     }
     
-    /** @return the positionsegment for the indicated line */
+    /** @return the segment for the indicated line */
     @Override
     final public MySegment getLineSegment(int line) {
-        if(cacheDisabled || segment.count == 0 || segment.line != line) {
+        if(cacheDisabled || segment.count == 0 || segment_line != line) {
             if(cacheTrace.getBoolean())cacheTrace.println("Miss seg: " + line);
             try {
                 Element elem = getLineElement(line);
@@ -385,7 +381,8 @@ abstract public class SwingBuffer extends Buffer
                         elem.getEndOffset() - elem.getStartOffset(),
                         segment);
                 segment.docOffset = elem.getStartOffset();
-                segment.line = line;
+                segment_line = line;
+                segment.first();
             } catch(BadLocationException ex) {
                 segment.count = 0;
                 LOG.log(Level.SEVERE, null, ex);
@@ -393,9 +390,7 @@ abstract public class SwingBuffer extends Buffer
         } else {
             if(cacheTrace.getBoolean())cacheTrace.println("Hit seg: " + line);
         }
-        //return segment;
-        MySegment s = new MySegment(segment); // CLONE
-        s.first(); // CLONE
+        MySegment s = (MySegment)segment.clone();
         return s;
     }
     

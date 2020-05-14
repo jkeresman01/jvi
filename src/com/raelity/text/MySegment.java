@@ -39,7 +39,7 @@ import javax.swing.text.Segment;
  * Copy *everything* from Segment. Well, almost everything, not partial-return;
  * Use array, offset, count.
  */
-public class MySegment extends Segment
+public class MySegment extends Segment //implements Cloneable
 {
     public int docOffset;
     protected char doneChar = DONE;
