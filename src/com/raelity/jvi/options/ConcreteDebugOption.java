@@ -31,7 +31,7 @@ import java.util.logging.Logger;
  * 
  * @author Ernie Rael <err at raelity.com>
  */
-public class ConcreteDebugOption extends DebugOption
+final public class ConcreteDebugOption extends DebugOption
 {
     @SuppressWarnings("NonConstantLogger")
     private final Logger logger;
@@ -81,37 +81,6 @@ public class ConcreteDebugOption extends DebugOption
     final public boolean getBoolean(Level level)
     {
         return logger.isLoggable(level);
-    }
-
-    @Override
-    final public void println(String s, Object... args)
-    {
-        if(!getBoolean())
-            return;
-        println(Level.SEVERE, s, args);
-    }
-
-    @Override
-    final public void println(Level level, String msg, Object... args)
-    {
-        if(!getBoolean(level))
-            return;
-        String s = args.length == 0 ? msg : String.format(msg, args);
-        doPrintln(s);
-    }
-
-    @Override
-    final public void printf(String format, Object... args)
-    {
-        if(getBoolean())
-            printf(Level.SEVERE, format, args);
-    }
-
-    @Override
-    final public void printf(Level level, String format, Object... args)
-    {
-        if(getBoolean(level))
-            doPrintf(format, args);
     }
 
     @Override

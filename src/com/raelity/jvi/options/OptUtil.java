@@ -39,11 +39,11 @@ import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.Preferences;
 
-import com.raelity.jvi.core.G;
-import com.raelity.jvi.core.Options;
+import com.raelity.jvi.core.*;
 import com.raelity.jvi.core.Options.Category;
-import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.manager.*;
 
+import static com.raelity.text.TextUtil.sf;
 
 /**
  * static methods to create options and populate option categories.
@@ -326,8 +326,8 @@ public class OptUtil {
         f.set(null, opt.getEnumSet());
       else
         throw new IllegalArgumentException("option " + opt.getName());
-      if(   G.dbgOptions().getBoolean())
-            G.dbgOptions().printf("Init G.%s to '%s'\n", vopt.getVarName(), opt.getValue());
+      G.dbgOptions() .printf(() ->
+              sf("Init G.%s to '%s'\n", vopt.getVarName(), opt.getValue()));
     } catch(IllegalArgumentException | IllegalAccessException
             | NoSuchFieldException | SecurityException ex) {
       Logger.getLogger(OptUtil.class.getName()).log(Level.SEVERE, null, ex);
@@ -343,8 +343,7 @@ public class OptUtil {
         // G should have something with the var name
         // and the types should match
         Option<?> opt = OptUtil.getOption(vopt.getOptName());
-        if(     G.dbgOptions().getBoolean())
-                G.dbgOptions().println("VERIFY: " + vopt.getOptName());
+        G.dbgOptions().println(() -> "VERIFY: " + vopt.getOptName());
         Field f = G.class.getDeclaredField(vopt.getVarName());
         if(f.getType() == int.class)
           opt.getInteger();

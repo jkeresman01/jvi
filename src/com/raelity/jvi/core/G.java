@@ -25,14 +25,12 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
-import com.raelity.jvi.ViFPOS;
-import com.raelity.jvi.ViOptionBag;
-import com.raelity.jvi.ViOutputStream;
-import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.*;
 import com.raelity.jvi.core.lib.Constants.FDO;
-import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
 
+import static com.raelity.text.TextUtil.sf;
 
 /**
  *  A class of globals. Most taken directly from vim code.
@@ -55,9 +53,8 @@ public class G implements ViOptionBag
      */
     static void switchTo( ViTextView tv, Buffer buf )
     {
-        if(curwin == tv && curbuf != buf
-                && dbgEditorActivation.getBoolean()) {
-            dbgEditorActivation.println("Activation: changeBuffer tv "
+        if(curwin == tv && curbuf != buf) {
+            dbgEditorActivation.println(() -> "Activation: changeBuffer tv "
                     + ViManager.cid(tv) + " buf " + ViManager.cid(buf));
         }
         curwin = (TextView)tv;

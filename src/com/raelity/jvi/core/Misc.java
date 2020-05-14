@@ -82,6 +82,7 @@ import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Constants.NF.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
+import static com.raelity.text.TextUtil.sf;
 
 // DONE lots of \n in this file
 public class Misc implements ClipboardOwner {
@@ -4037,10 +4038,8 @@ private static int put_in_typebuf(String s, boolean colon)
     }
 
     private static void debugUndo(String tag) {
-        if(!G.dbgUndo.getBoolean())
-            return;
-        G.dbgUndo.printf("%s: nesting: %d, inInsert: %d\n",
-                         tag, undoNesting, insertUndoNesting);
+      G.dbgUndo.printf(() -> sf("%s: nesting: %d, inInsert: %d\n",
+                                tag, undoNesting, insertUndoNesting));
     }
 
     public static void runUndoable(Runnable r) {

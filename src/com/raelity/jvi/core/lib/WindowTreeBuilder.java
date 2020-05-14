@@ -56,6 +56,7 @@ import com.raelity.jvi.manager.ViManager;
 import static com.raelity.jvi.manager.ViManager.cid;
 import com.raelity.jvi.options.DebugOption;
 import java.util.logging.Level;
+import static com.raelity.text.TextUtil.sf;
 
 /**
  * The vim algorithm for traversing windows with the ^W_^W style commands is
@@ -81,7 +82,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
 
     public WindowTreeBuilder(List<ViAppView> avs)
     {
-        dbg = (DebugOption)Options.getOption(Options.dbgWindowTreeBuilder);
+        dbg = Options.getDebugOption(Options.dbgWindowTreeBuilder);
         toDo.addAll(avs);
     }
 
@@ -99,7 +100,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
             //allComps(c);
             Node root = buildTree(c);
             if(dbg.getBoolean()) {
-                dbg.println(dumpTree(root).toString());
+                dbg.println(() -> dumpTree(root).toString());
                 checkTreeRoot(root);
             }
             if(root == null)
@@ -198,7 +199,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
                                     dir.getOrientation(), currentNode);
             if(dbg.getBoolean()) {
                 dbg.println("\ncurrentNode:" + dbgName(currentNode) + " "
-                                  + getProjectedRectangle(dir.getOrientation(), currentNode));
+                        + getProjectedRectangle(dir.getOrientation(), currentNode));
                 dbg.println("cursor: " + cursorProjection);
                 dbg.println("jump Targets");
                 for(Node n1 : nodes) {
@@ -516,26 +517,30 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         final Component root = SwingUtilities.getRoot(node.getPeer());
         final Rectangle rootRect = root.getBounds();
         rootRect.x = 0; rootRect.y = 0; // This is the base of all children
-        dbg.println("CheckTree: Root(%s) %s", cid(root), root.getBounds());
+        dbg.println(() ->
+              sf("CheckTree: Root(%s) %s", cid(root), root.getBounds()));
         MutableInt lastChildPos = new MutableInt(-1);
         final boolean isLeftRight = node.getOrientation()
                 == Orientation.LEFT_RIGHT;
         node.getChildren().forEach((child) -> {
             // CHECK SwingUtilities.isDescendingFrom?
             Rectangle r = checkGetNodeRectangle(child);
-            dbg.println("CheckTree: Child(%s) %s", cid(child.getPeer()), r);
+            dbg.println(() ->
+                sf("CheckTree: Child(%s) %s", cid(child.getPeer()), r));
             if(!rootRect.contains(r)) {
                 checkTreeFailure = true;
-                dbg.println("CheckTree: ERROR: %s doesn't contain %s",
-                        cid(root), cid(child));
+                dbg.println(() ->
+                  sf("CheckTree: ERROR: %s doesn't contain %s", cid(root),
+                                                                cid(child)));
             }
             int childPos = isLeftRight ? r.x : r.y;
             if(childPos > lastChildPos.getValue()) {
                 lastChildPos.setValue(childPos);
             } else {
                 checkTreeFailure = true;
-                dbg.println("CheckTree: ERROR: childPos(%d) <= prev(%d)",
-                        childPos, lastChildPos.getValue());
+                dbg.println(() ->
+                  sf("CheckTree: ERROR: childPos(%d) <= prev(%d)", childPos,
+                                                                   lastChildPos.getValue()));
             }
         });
     }
@@ -1120,12 +1125,14 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
             Node parent = node.getParent();
             if(parent == null)
                 break;
-            if(dbg.getBoolean())dbg.println("treeUp: " + dbgName(node));
+            final Node nodeF = node;
+            dbg.println(() -> "treeUp: " + dbgName(nodeF));
             if((found = pickSiblingForJump(dir, node)) != null)
                 break;
             node = parent;
         }
-        if(dbg.getBoolean())dbg.println("treeUp found: " + dbgName(found));
+        final Node foundF = found;
+        dbg.println(() -> "treeUp found: " + dbgName(foundF));
         return found;
     }
 

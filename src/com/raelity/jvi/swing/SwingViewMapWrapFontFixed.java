@@ -29,6 +29,8 @@ import javax.swing.text.BadLocationException;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.core.G;
 
+import static com.raelity.text.TextUtil.sf;
+
 /**
  *
  * @author Ernie Rael <err at raelity.com>
@@ -54,11 +56,10 @@ public class SwingViewMapWrapFontFixed implements ViewMap
           int offset = tv.getBuffer().getLineStartOffset(docLine);
           Rectangle2D lineRect = tv.modelToView(offset);
           viewLine = tv.countViewLines(lineRect, tv.getRect0());
-          if ( G.dbgCoordSkip().getBoolean(Level.FINER) ) {
-                G.dbgCoordSkip().println(Level.FINER, String.format(
-                      "\tviewLine(fixed): %d, line1: %d:%g, line %d:%g",
-                      viewLine, 1, tv.getPoint0().getY(), docLine, lineRect.getY()));
-          }
+          int viewLineF = viewLine;
+          G.dbgCoordSkip().println(Level.FINER, () ->
+                  sf("\tviewLine(fixed): %d, line1: %d:%g, line %d:%g",
+                     viewLineF, 1, tv.getPoint0().getY(), docLine, lineRect.getY()));
         } catch (BadLocationException ex) {
             //Logger.getLogger(SwingTextView.class.getName()).log(Level.SEVERE, null, ex);
         }

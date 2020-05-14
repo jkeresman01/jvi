@@ -196,9 +196,7 @@ public class Normal {
     newChunk = true;
     willStartNewChunk();
     if(editBusy) {
-      if (  Options.kd().getBoolean() ) {
-          Options.kd().println("resetCommand: EditBusy");
-      }
+        Options.kd().println("resetCommand: EditBusy");
       // Make sure redo buf is usable if edit interrupted
       //    an alternative is to "GetChar.ResetRedobuff()",
       //    instead of "App...; editCom...;", then no redo is possible

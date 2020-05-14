@@ -19,8 +19,6 @@
  */
 package com.raelity.jvi.core;
 
-import com.raelity.jvi.ViAppView;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.LinkedList;
@@ -29,15 +27,12 @@ import java.util.logging.Level;
 
 import org.openide.util.lookup.ServiceProvider;
 
-import com.raelity.jvi.ViFPOS;
-import com.raelity.jvi.ViInitialization;
-import com.raelity.jvi.ViMark;
-import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.manager.Scheduler;
-import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.*;
+import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
 
 import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.text.TextUtil.sf;
 
 /**
  * This represents the core functionality of a vim window.
@@ -186,17 +181,16 @@ public abstract class TextView implements ViTextView
     @Override
     public void shutdown()
     {
-        if ( G.dbgEditorActivation.getBoolean() ) {
-            if(w_buffer.getShare() == 1) {
-                G.dbgEditorActivation.println("TV.shutdown: LAST CLOSE");
-            }
+        if(w_buffer.getShare() == 1) {
+            G.dbgEditorActivation.println("TV.shutdown: LAST CLOSE");
         }
     }
 
     @Override
     public void activateOptions(ViTextView tv) {
-        if(G.dbgEditorActivation.getBoolean() && getAppView().isNomad())
+        if(getAppView().isNomad()) {
             G.dbgEditorActivation.println("ACTIVATING OPTIONS FOR NOMAD");
+        }
         if(!didFirstInit) {
             firstGo();
             didFirstInit = true;
@@ -291,15 +285,13 @@ public abstract class TextView implements ViTextView
 
         if (magicMove && G.dbgMouse.getBoolean(Level.INFO)
                 || G.dbgMouse.getBoolean(Level.FINE))
-            G.dbgMouse.println("CaretMark: " + lastDot + " --> " + currDot
+            G.dbgMouse.println(() -> "CaretMark: " + lastDot + " --> " + currDot
                     + " " + w_buffer.getDisplayFileName());
         if (magicMove) {
             // The cursor was magcally moved and jVi had nothing to
             // do with it. (probably by an IDE or some such).
             // Record the previous location so that '' works (thanks Jose).
-
-            if (G.dbgMouse.getBoolean(Level.INFO))
-                G.dbgMouse.println("caretUpdate: setPCMark");
+            G.dbgMouse.println(Level.INFO, "caretUpdate: setPCMark");
             ViFPOS fpos = w_buffer.createFPOS(lastDot);
             MarkOps.setpcmark(this, fpos);
         }

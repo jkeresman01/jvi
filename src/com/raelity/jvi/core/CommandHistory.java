@@ -242,8 +242,9 @@ private static void processHistoryCommand(String command,
     boolean ok = get_list_range(arg, p_hisidx1, p_hisidx2);
     
     dbgKeys.printf(Level.FINE, "history types: %s\n", whichones);
-    dbgKeys.printf(Level.FINE, "list_range: %b, %d,%d\n",
-                                   ok, p_hisidx1.getValue(), p_hisidx2.getValue());
+    dbgKeys.printf(Level.FINE, () ->
+          sf("list_range: %b, %d,%d\n", ok, p_hisidx1.getValue(),
+                                            p_hisidx2.getValue()));
     if(!ok || !arg.atEnd()) {
         emsg(Messages.e_trailing);
         return;

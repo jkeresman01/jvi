@@ -166,11 +166,9 @@ public class Misc01
      */
     private static void scrollToLogicalLine(int logicalLine)
     {
-      if ( G.dbgCoordSkip.getBoolean(Level.FINE) ) {
-            G.dbgCoordSkip.println(Level.FINE, String.format(
-                 "gotoLogicalLine: logicalLine %d",
-                 logicalLine));
-      }
+      int logicalLineF = logicalLine;
+      G.dbgCoordSkip.println(Level.FINE, () ->
+              sf("gotoLogicalLine: logicalLine %d", logicalLineF));
       if(logicalLine < 1)
         logicalLine = 1;
       if(logicalLine > G.curwin.getLogicalLineCount())
@@ -783,9 +781,9 @@ public class Misc01
             case SAME:
                 break;
         }
-        final int nFinal = n;
+        final int nF = n;
         Options.getDebugOption(Options.dbgWindowTreeBuilder)
-                .println(() -> sf("win_size(%s, %s, %d)", op, o, nFinal));
+                .println(() -> sf("win_size(%s, %s, %d)", op, o, nF));
         G.curwin.win_size(op, o, n);
     }
 

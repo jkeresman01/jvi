@@ -27,12 +27,10 @@ import java.util.logging.Logger;
 
 import org.openide.util.lookup.ServiceProvider;
 
-import com.raelity.jvi.ViInitialization;
-import com.raelity.jvi.core.lib.BufferQueue;
-import com.raelity.jvi.core.lib.Mappings;
-import com.raelity.jvi.core.lib.TypeBufMultiCharMapping;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.options.Option;
+import com.raelity.jvi.*;
+import com.raelity.jvi.core.lib.*;
+import com.raelity.jvi.manager.*;
+import com.raelity.jvi.options.*;
 import com.raelity.text.TextUtil;
 
 import static com.raelity.jvi.core.Hook.setJViBusy;
@@ -40,6 +38,7 @@ import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Constants.FDO.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
+import static com.raelity.text.TextUtil.sf;
 
 public class GetChar {
     private static boolean block_redo = false;
@@ -282,14 +281,13 @@ public class GetChar {
         if(runEventQueue > 0)
             --runEventQueue;
         if(/*collectingGroupUndo ||*/ !isAnyChar() || (G.State & NORMAL) == 0) {
-            if(Options.kd().getBoolean())
-                Options.kd().println("runEventQueue:" + runEventQueue + " SKIP");
+            Options.kd().println(() ->
+                    "runEventQueue:" + runEventQueue + " SKIP");
             runEventQueue = 0;
             return false;
         }
         EventQueue.invokeLater(() -> {
-            if(Options.kd().getBoolean())
-                Options.kd().println("runEventQueue:" + runEventQueue);
+            Options.kd().println(() -> "runEventQueue:" + runEventQueue);
             if(runEventQueue > 0)
                 runEventQueue(collectingGroupUndo);
             else
@@ -383,24 +381,22 @@ public class GetChar {
             return;
         /*
         if(isVIRT(c)) {
-            modifiers = c & (MOD_MASK << MODIFIER_POSITION_SHIFT);
-            if(modifiers != 0) {
-                c &= ~modifiers;
-                modifiers = modifiers >> MODIFIER_POSITION_SHIFT;
-
-                // if modifiers are only/exactly the shift key
-                if(modifiers == SHFT
-                        && c >= VIRT && c <= VIRT + 0x0f) {
-                    // only the shift key is pressed and its one of "those".
-                    c += SHIFTED_VIRT_OFFSET;
-                }
-            }
+        modifiers = c & (MOD_MASK << MODIFIER_POSITION_SHIFT);
+        if(modifiers != 0) {
+        c &= ~modifiers;
+        modifiers = modifiers >> MODIFIER_POSITION_SHIFT;
+        // if modifiers are only/exactly the shift key
+        if(modifiers == SHFT
+        && c >= VIRT && c <= VIRT + 0x0f) {
+        // only the shift key is pressed and its one of "those".
+        c += SHIFTED_VIRT_OFFSET;
         }
-        */
-        if(Options.kd().getBoolean(Level.FINEST))
-            Options.kd().println(Level.FINEST, "pumpChar: "
-                    + TextUtil.debugString(String.valueOf(c))
-                    + " (" +  (c >> 16) + ")");
+        }
+        }
+         */
+        Options.kd().println(Level.FINEST, () ->
+                "pumpChar: " + TextUtil.debugString(String.valueOf(c))
+                        + " (" +  (c >> 16) + ")");
         G.setModMask(c >> 16);
         Normal.processInputChar((char)c, true);
     }
@@ -819,9 +815,8 @@ public class GetChar {
         stuffbuff.append(c);
         copy_redo(old_redo);
         handle_redo = true;
-        if(G.dbgRedo.getBoolean())
-            G.dbgRedo.println("stuffbuff = '"
-                    + TextUtil.debugString(stuffbuff)+ "'");
+        G.dbgRedo.println(() -> "stuffbuff = '"
+                + TextUtil.debugString(stuffbuff) + "'");
         return OK;
     }
 

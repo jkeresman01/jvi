@@ -45,22 +45,44 @@ abstract public class DebugOption extends EnumOption<String>
 
     abstract public boolean getBoolean(Level level);
 
-    abstract public void println(String s, Object... args);
-
-    abstract public void println(Level level, String s, Object... args);
-
-    abstract public void printf(String format, Object... args);
-
-    abstract public void printf(Level level, String format, Object... args);
-
-    protected void doPrintln(String s)
+    protected void doPrintln(String fmt, Object... args)
     {
-        System.err.println(s);
+        if(args.length == 0)
+            System.err.println(fmt);
+        else
+            System.err.println(String.format(fmt, args));
     }
 
     protected void doPrintf(String fmt, Object... args)
     {
-        System.err.printf(fmt, args);
+        if(args.length == 0)
+            System.err.print(fmt);
+        else
+            System.err.printf(fmt, args);
+    }
+
+    public void println(String s, Object... args)
+    {
+        if(getBoolean())
+            doPrintln(s, args);
+    }
+
+    public void println(Level level, String s, Object... args)
+    {
+        if(getBoolean(level))
+            doPrintln(s, args);
+    }
+
+    public void printf(String format, Object... args)
+    {
+        if(getBoolean())
+            doPrintf(format, args);
+    }
+
+    public void printf(Level level, String format, Object... args)
+    {
+        if(getBoolean(level))
+            doPrintf(format, args);
     }
 
     public void println(Supplier<String> sup)
@@ -78,13 +100,13 @@ abstract public class DebugOption extends EnumOption<String>
     public void printf(Supplier<String> sup)
     {
         if(getBoolean())
-            doPrintf("%s", sup.get());
+            doPrintf(sup.get());
     }
 
     public void printf(Level level, Supplier<String> sup)
     {
         if(getBoolean(level))
-            doPrintf("%s", sup.get());
+            doPrintf(sup.get());
     }
 
     abstract public Logger getLogger();

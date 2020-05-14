@@ -277,9 +277,8 @@ public abstract class CommandLineEntry implements ViCmdEntry
             }
             // END VISUAL REPAINT HACK
             lastCommand = commandLine.getCommand();
-            if (CommandLine.dbgKeys.getBoolean()) {
-                CommandLine.dbgKeys.println("CommandAction: '" + lastCommand + "'");
-            }
+            CommandLine.dbgKeys.println(() ->
+                    "CommandAction: '" + lastCommand + "'");
             shutdownEntry(false);
             fireEvent(e);
         } catch (Exception ex) {

@@ -46,6 +46,7 @@ import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.Search.*;
 import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.text.TextUtil.sf;
 
 /**
  *
@@ -677,11 +678,9 @@ public class Search01 {
 
       // skip lines deleted by ":global" actions so far
       if(m.getOffset() == mEnd.getOffset()) {
-        if(G.dbgSearch.getBoolean()) {
-          ViFPOS fpos = G.curbuf.createFPOS(m.getOffset());
-          G.dbgSearch.printf(":global: line deleted after %d: %s\n",
-                             fpos.getLine(), debugText);
-        }
+        String debugTextF = debugText;
+        G.dbgSearch.printf(() -> sf(":global: line deleted after %d: %s\n",
+                     G.curbuf.createFPOS(m.getOffset()).getLine(), debugTextF));
         continue;
       }
 

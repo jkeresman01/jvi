@@ -47,6 +47,7 @@ import com.raelity.text.TextUtil;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
+import static com.raelity.text.TextUtil.sf;
 
 /**
  *
@@ -401,10 +402,8 @@ public final class Mappings {
 
         if(emsg.length() == initialEmsgs) {
             Mapping mapping = new Mapping(lhs, rhs, mode, maptype == 2);
-            if(Options.kd().getBoolean()) {
-                Options.kd().println("parseMapCommand: " + line
-                        + ": " + mapping);
-            }
+            Options.kd().println(() ->
+                    "parseMapCommand: " + line + ": " + mapping);
             return mapping;
         } else {
             Options.kd().printf("parseMapCommand: %s: error\n", line);

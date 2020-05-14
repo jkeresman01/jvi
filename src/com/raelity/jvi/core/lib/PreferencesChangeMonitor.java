@@ -34,6 +34,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import com.raelity.jvi.core.G;
+import static com.raelity.text.TextUtil.sf;
 
 /**
  * Monitor preferences subtrees for creation and/or changes.
@@ -125,19 +126,15 @@ public final class PreferencesChangeMonitor {
                         if(!fileHack.hasKeyValue(hackBase, child,
                                                  HACK_KEY, hackValue)) {
                             change = true;
-                            if(G.dbgPrefChangeMonitor().getBoolean()) {
-                                G.dbgPrefChangeMonitor().println("PREF CHANGE: "
-                                        + "HACK in " + path);
-                            }
+                            G.dbgPrefChangeMonitor().println(() ->
+                                    "PREF CHANGE: " + "HACK in " + path);
                         }
                     } else {
                         Preferences p = hackBase.node(child);
                         if(!p.get(HACK_KEY, "").equals(hackValue)) {
                             change = true;
-                            if(G.dbgPrefChangeMonitor().getBoolean()) {
-                                G.dbgPrefChangeMonitor().println("PREF CHANGE: "
-                                        + "HACK in " + p.absolutePath());
-                            }
+                            G.dbgPrefChangeMonitor().println(() ->
+                                    "PREF CHANGE: " + "HACK in " + p.absolutePath());
                         }
                     }
                 }
@@ -156,9 +153,7 @@ public final class PreferencesChangeMonitor {
         if(!freeze)
             change = true;
         else
-            if(G.dbgPrefChangeMonitor().getBoolean()) {
-                G.dbgPrefChangeMonitor().println("CHANGE FROZEN:");
-            }
+            G.dbgPrefChangeMonitor().println("CHANGE FROZEN:");
     }
 
     /**
@@ -223,11 +218,9 @@ public final class PreferencesChangeMonitor {
                     parent.removeNodeChangeListener(pl);
                 } else {
                     parent.addNodeChangeListener(pl);
-                    if(G.dbgPrefChangeMonitor().getBoolean()) {
-                        G.dbgPrefChangeMonitor().println("PARENT START CHECKING: "
-                                + child + " in "
-                                + parent.absolutePath());
-                    }
+                    G.dbgPrefChangeMonitor().println(() ->
+                            "PARENT START CHECKING: "
+                                    + child + " in " + parent.absolutePath());
                 }
             }
             catch (IllegalArgumentException | IllegalStateException ex) {}
@@ -244,10 +237,8 @@ public final class PreferencesChangeMonitor {
                 } else {
                     prefs.addPreferenceChangeListener(prefListener);
                     prefs.addNodeChangeListener(nodeListener);
-                    if(G.dbgPrefChangeMonitor().getBoolean()) {
-                        G.dbgPrefChangeMonitor().println("START CHECKING: "
-                                + prefs.absolutePath());
-                    }
+                    G.dbgPrefChangeMonitor().println(() ->
+                            "START CHECKING: " + prefs.absolutePath());
                 }
             }
             catch(IllegalArgumentException | IllegalStateException ex) { }
@@ -275,17 +266,15 @@ public final class PreferencesChangeMonitor {
         {
             if(evt.getChild().name().equals(child)) {
                 changeDetected();
-                if(G.dbgPrefChangeMonitor().getBoolean()) {
-                    G.dbgPrefChangeMonitor().println("PARENT NODE CHANGE: childAdded: "
-                            + evt.getChild().name()
-                            + " in " + evt.getParent().absolutePath());
-                }
+                G.dbgPrefChangeMonitor().println(() ->
+                        "PARENT NODE CHANGE: childAdded: "
+                                + evt.getChild().name()
+                                + " in " + evt.getParent().absolutePath());
             } else
-                if(G.dbgPrefChangeMonitor().getBoolean()) {
-                    G.dbgPrefChangeMonitor().println("PARENT NODE CHANGE IGNORED: childAdded: "
-                            + evt.getChild().name()
-                            + " in " + evt.getParent().absolutePath());
-                }
+                G.dbgPrefChangeMonitor().println(() ->
+                        "PARENT NODE CHANGE IGNORED: childAdded: "
+                                + evt.getChild().name()
+                                + " in " + evt.getParent().absolutePath());
         }
 
         @Override
@@ -293,17 +282,15 @@ public final class PreferencesChangeMonitor {
         {
             if(evt.getChild().name().equals(child)) {
                 changeDetected();
-                if(G.dbgPrefChangeMonitor().getBoolean()) {
-                    G.dbgPrefChangeMonitor().println("PARENT NODE CHANGE: childRemoved: "
-                            + evt.getChild().name()
-                            + " in " + evt.getParent().absolutePath());
-                }
+                G.dbgPrefChangeMonitor().println(() ->
+                        "PARENT NODE CHANGE: childRemoved: "
+                                + evt.getChild().name()
+                                + " in " + evt.getParent().absolutePath());
             } else
-                if(G.dbgPrefChangeMonitor().getBoolean()) {
-                    G.dbgPrefChangeMonitor().println("PARENT NODE CHANGE IGNORED: childRemoved: "
-                            + evt.getChild().name()
-                            + " in " + evt.getParent().absolutePath());
-                }
+                G.dbgPrefChangeMonitor().println(() ->
+                        "PARENT NODE CHANGE IGNORED: childRemoved: "
+                                + evt.getChild().name()
+                                + " in " + evt.getParent().absolutePath());
         }
 
     }
@@ -315,22 +302,18 @@ public final class PreferencesChangeMonitor {
         public void childAdded(NodeChangeEvent evt)
         {
             changeDetected();
-            if(G.dbgPrefChangeMonitor().getBoolean()) {
-                G.dbgPrefChangeMonitor().println("NODE CHANGE: childAdded: "
-                        + evt.getChild().name()
-                        + " in " + evt.getParent().absolutePath());
-            }
+            G.dbgPrefChangeMonitor() .println(() ->
+                    "NODE CHANGE: childAdded: " + evt.getChild().name()
+                            + " in " + evt.getParent().absolutePath());
         }
 
         @Override
         public void childRemoved(NodeChangeEvent evt)
         {
             changeDetected();
-            if(G.dbgPrefChangeMonitor().getBoolean()) {
-                G.dbgPrefChangeMonitor().println("NODE CHANGE: childRemoved: "
-                        + evt.getChild().name()
-                        + " in " + evt.getParent().absolutePath());
-            }
+            G.dbgPrefChangeMonitor().println(() ->
+                    "NODE CHANGE: childRemoved: " + evt.getChild().name()
+                            + " in " + evt.getParent().absolutePath());
         }
 
     }
@@ -342,11 +325,8 @@ public final class PreferencesChangeMonitor {
         public void preferenceChange(PreferenceChangeEvent evt)
         {
             changeDetected();
-            if(G.dbgPrefChangeMonitor().getBoolean()) {
-                G.dbgPrefChangeMonitor().println("PREF CHANGE: "
-                        + evt.getKey()
-                        + " in " + evt.getNode().absolutePath());
-            }
+            G.dbgPrefChangeMonitor().println(() -> "PREF CHANGE: "
+                    + evt.getKey() + " in " + evt.getNode().absolutePath());
         }
     }
 

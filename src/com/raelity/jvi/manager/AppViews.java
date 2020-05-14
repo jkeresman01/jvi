@@ -136,10 +136,11 @@ public enum AppViews
         Scheduler.cancelCommandEntry();
 
         Component ed = av.getEditor();
-        if (fact() != null && G.dbgEditorActivation().getBoolean())
-            G.dbgEditorActivation().println("Activation: AppViews.activate: " + tag +
-                    " " + ViManager.cid(ed) + " " + ViManager.cid(av) + " " +
-                    fact().getFS().getDisplayFileName(av));
+        if (fact() != null) {
+            G.dbgEditorActivation().println(() -> "Activation: AppViews.activate: "
+                    + tag + " " + ViManager.cid(ed) + " " + ViManager.cid(av)
+                    + " " + fact().getFS().getDisplayFileName(av));
+        }
         ViAppView keep = keepMru;
         keepMru = null;
         avCurrentlyActive = av;
@@ -176,8 +177,9 @@ public enum AppViews
         if(!force && avCurrentlyActive == null)
             return;
         Scheduler.cancelCommandEntry();
-        if (fact() != null && G.dbgEditorActivation().getBoolean())
+        if (fact() != null) {
             G.dbgEditorActivation().println("Activation: AppViews.deactivateCurrent: ");
+        }
             //System.err.println("Activation: avs.deactivateCurent: " +
             //        " " + ViManager.cid(av) + fact().getFS().getDisplayFileName(av));
         if (hasFact() && Scheduler.getCurrentEditor() != null) {
@@ -196,11 +198,10 @@ public enum AppViews
     public static void close(ViAppView av)
     {
         Component ed = av.getEditor();
-        if (fact() != null && G.dbgEditorActivation().getBoolean()) {
-            String fname = fact().getFS().getDisplayFileName(av);
-            G.dbgEditorActivation().println("Activation: AppViews.close: " +
-                    (ed == null ? "(no shutdown) " : "")
-                    + fname + " " + ViManager.cid(ed));
+        if (fact() != null) {
+            G.dbgEditorActivation().println(() -> "Activation: AppViews.close: "
+                    + (ed == null ? "(no shutdown) " : "")
+                    + fact().getFS().getDisplayFileName(av) + " " + ViManager.cid(ed));
         }
         ViTextView tv = fact().getTextView(ed);
         if (tv != null) {
@@ -245,10 +246,13 @@ public enum AppViews
         if (nothingToDo)
             return;
         Component ed = av.getEditor();
-        if (fact() != null && G.dbgEditorActivation().getBoolean())
-            G.dbgEditorActivation().println("Activation: AppViews.open: " + tag +
-                    " " + ViManager.cid(ed) + " " + ViManager.cid(av) + " " +
-                    fact().getFS().getDisplayFileName(av)); // the av is added to the end of the MRU
+        if (fact() != null) {
+            // the av is added to the end of the MRU
+            String tagF = tag;
+            G.dbgEditorActivation().println(() -> "Activation: AppViews.open: "
+                    + tagF + " " + ViManager.cid(ed) + " " + ViManager.cid(av)
+                    + " " + fact().getFS().getDisplayFileName(av));
+        }
         if (!av.isNomad()) {
             if (!avsMRU.contains(av))
                 avsMRU.add(av);
@@ -377,9 +381,11 @@ public enum AppViews
      */
     private static ViAppView relativeMruAppView(ViAppView av, int i)
     {
-        if (fact() != null && G.dbgEditorActivation().getBoolean())
-            G.dbgEditorActivation().println("Activation: AppViews.relativeMruAppView: " +
-                    fact().getFS().getDisplayFileName(av));
+        if (fact() != null) {
+            G.dbgEditorActivation().println(() ->
+                    "Activation: AppViews.relativeMruAppView: "
+                            + fact().getFS().getDisplayFileName(av));
+        }
         if (avsMRU.isEmpty())
             return null;
         int idx = avsMRU.indexOf(av);

@@ -34,6 +34,7 @@ import com.raelity.text.TextUtil;
 import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
+import static com.raelity.text.TextUtil.sf;
 
 /**
  * Like BufferQueue, but typebuf has some special requirements.
@@ -308,10 +309,8 @@ public final class TypeBufMultiCharMapping {
                     // matches something so far
                     if(!sawMappingTimeout) {
                         fWaitMapping = true;
-                        if(Options.kd().getBoolean(Level.FINEST)) {
-                            Options.kd().println(Level.FINEST, "getChar partial match: " +
-                                    partialMatch);
-                        }
+                        Options.kd().println(Level.FINEST, () ->
+                                "getChar partial match: " + partialMatch);
                         c = NO_CHAR;
                         needsRemove = false;
                     }
@@ -322,10 +321,9 @@ public final class TypeBufMultiCharMapping {
         } // end while(true)
         if(needsRemove)
             buf.removeFirst();
-        if(Options.kd().getBoolean(Level.FINEST)) {
-            Options.kd().println(Level.FINEST, "getChar return: " +
-                    TextUtil.debugString(String.valueOf(c)));
-        }
+        final char cF = c;
+        Options.kd().println(Level.FINEST, () ->
+                "getChar return: " + TextUtil.debugString(String.valueOf(cF)));
 
         int rval;
         if(isVIRT(c)) {

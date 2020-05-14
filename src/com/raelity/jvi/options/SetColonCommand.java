@@ -16,20 +16,13 @@ import java.util.regex.Pattern;
 
 import org.openide.util.lookup.ServiceProvider;
 
-import com.raelity.jvi.ViBuffer;
-import com.raelity.jvi.ViInitialization;
-import com.raelity.jvi.ViOptionBag;
-import com.raelity.jvi.ViOutputStream;
-import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.core.ColonCommands;
+import com.raelity.jvi.*;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
-import com.raelity.jvi.core.G;
-import com.raelity.jvi.core.Msg;
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.core.TextView;
-import com.raelity.jvi.core.Util;
-import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.core.*;
+import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.VimOption.F;
+
+import static com.raelity.text.TextUtil.sf;
 
 /**
  * Implement ":se[t]".
@@ -244,11 +237,9 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                 setCommandError(ex.getMessage());
             }
 
-            if(G.dbgOptions().getBoolean()) {
-                G.dbgOptions().printf("SET %s%s to '%s'\n",
-                                  vopt.isGlobal() ? "G." : "",
-                                  vopt.getVarName(), newValue);
-            }
+            Object newValueF = newValue;
+            G.dbgOptions().printf(() -> sf("SET %s%s to '%s'\n",
+                    vopt.isGlobal() ? "G." : "", vopt.getVarName(), newValueF));
             Object oldValue = null;
             if(vopt.isGlobal())
                 oldValue = voptState.f.get(voptState.bag);
@@ -648,8 +639,8 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         for(ViTextView tv01 : ViManager.getFactory().getViTextViewSet()) {
             if(tv01.getBuffer() != buf || tv01 == tv)
                 continue;
-            if(G.dbgOptions().getBoolean())
-                G.dbgOptions().println("syncInstances: " + varName + " in " + tv01);
+            G.dbgOptions().println(() ->
+                    "syncInstances: " + varName + " in " + tv01);
             setLocalOption(tv01, vopt);
         }
     }
@@ -663,10 +654,8 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
                     ? ViManager.getFactory().getViTextViewSet()
                     : ViManager.getFactory().getBufferSet();
             for(ViOptionBag bag : set) {
-                if(G.dbgOptions().getBoolean()) {
-                    G.dbgOptions().printf("syncInstances: %s in %s\n",
-                                      varName, bag);
-                }
+                G.dbgOptions().printf(() -> sf("syncInstances: %s in %s\n",
+                                               varName, bag));
                 setLocalOption(bag, vopt);
             }
         }

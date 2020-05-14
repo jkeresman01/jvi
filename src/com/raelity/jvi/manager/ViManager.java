@@ -58,6 +58,7 @@ import com.raelity.jvi.core.lib.CcFlag;
 import java.util.Map.Entry;
 
 import com.raelity.jvi.ViOutputStream.COLOR;
+import com.raelity.jvi.options.*;
 
 import static com.raelity.jvi.ViOutputStream.FLAGS;
 
@@ -91,7 +92,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("1.6.2.x2");
+    public static final jViVersion version = new jViVersion("1.6.2.alpha3");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -325,6 +326,16 @@ final public class ViManager
         @Override
         public void actionPerformed(ActionEvent ev)
         {
+            // DebugOption x = Options.getDebugOption(Options.dbgBang);
+            // x.println("one");
+            // x.println("%s %s %s", "one", "two", "three");
+            // x.printf("oneNL\n");
+            // x.printf("%s %s %sNL\n", "one", "two", "three");
+            // x.println(Level.INFO, "one");
+            // x.println(Level.INFO, "%s %s %s", "one", "two", "three");
+            // x.printf(Level.INFO, "oneNL\n");
+            // x.printf(Level.INFO, "%s %s %sNL\n", "one", "two", "three");
+
             ViManager.motd.output();
         }
     };

@@ -23,13 +23,13 @@ package com.raelity.jvi.core;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.raelity.jvi.core.lib.BufferQueue;
-import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.core.lib.*;
+import com.raelity.jvi.manager.*;
 import com.raelity.text.TextUtil;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
-
+import static com.raelity.text.TextUtil.sf;
 /**
  *
  * @author Ernie Rael <err at raelity.com>
@@ -123,8 +123,7 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
 
     MagicRedoOriginal(BufferQueue redobuff)
     {
-        if(G.dbgRedo.getBoolean())
-            G.dbgRedo.printf("CONSTRUCT redo: MagicRedoOriginal\n");
+        G.dbgRedo.printf("CONSTRUCT redo: MagicRedoOriginal\n");
         this.redobuff = redobuff;
     }
 
@@ -143,10 +142,9 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
     public void initRedoTrackingPosition() {
       expectChar = false;
       redoTrackPosition = G.curwin.getCaretPosition();
-      if(G.dbgRedo.getBoolean())
-        G.dbgRedo.printf("initRedoTrackingPosition %d '%s'\n",
-                          redoTrackPosition,
-                          TextUtil.debugString(redobuff.toString()));
+      G.dbgRedo.printf(() ->
+              sf("initRedoTrackingPosition %d '%s'\n", redoTrackPosition,
+                                                       TextUtil.debugString(redobuff.toString())));
     }
 
     private boolean notTracking() {
@@ -160,11 +158,10 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
       if(redoTrackPosition >= 0) {
         int prevRedoTrackPosition = redoTrackPosition;
         redoTrackPosition = G.curwin.getCaretPosition();
-        if(G.dbgRedo.getBoolean())
-            G.dbgRedo.printf("markRedoTrackPositionBackspace %d --> %d '%s'\n",
-                            prevRedoTrackPosition,
-                            redoTrackPosition,
-                            TextUtil.debugString(redobuff.toString()));
+        G.dbgRedo.printf(() ->
+                sf("markRedoTrackPositionBackspace %d --> %d '%s'\n",
+                   prevRedoTrackPosition, redoTrackPosition,
+                   TextUtil.debugString(redobuff.toString())));
       }
     }
 
@@ -253,21 +250,16 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
     }
     // assist for markRedoTrackPosition
     private void debugMarkRedoTrackPositionSKIP(int skip, String before) {
-      if(G.dbgRedo.getBoolean())
-        G.dbgRedo.printf("markRedoPosition SKIP[%d]: %s[%d] --> %s[%d]\n",
-                          skip,
-                          before, before.length(),
-                          afterBuff, afterBuff.length());
+        G.dbgRedo.printf(() ->
+                sf("markRedoPosition SKIP[%d]: %s[%d] --> %s[%d]\n", skip, before,
+                                                                         before.length(), afterBuff, afterBuff.length()));
     }
     // assist for markRedoTrackPosition
     private void
     debugMarkRedoTrackPosition(int prevRedoTrackPosition, char c) {
-      if(G.dbgRedo.getBoolean())
-        G.dbgRedo.printf("markRedoPosition %d --> %d '%c' '%s'\n",
-                          prevRedoTrackPosition,
-                          redoTrackPosition,
-                          c,
-                          TextUtil.debugString(redobuff.toString()));
+        G.dbgRedo.printf(() ->
+                sf("markRedoPosition %d --> %d '%c' '%s'\n", prevRedoTrackPosition,
+                                                           redoTrackPosition, c, TextUtil.debugString(redobuff.toString())));
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -386,62 +378,54 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
       return false;
     }
     private void debugDocInsert(int pos, String s) {
-      if(G.dbgRedo.getBoolean())
-          G.dbgRedo.printf("docInsert: pos %d, %d, '%s'\n",
-                            pos, s.length(), TextUtil.debugString(s));
+        G.dbgRedo.printf(() ->
+                sf("docInsert: pos %d, %d, '%s'\n", pos, s.length(),
+                                                       TextUtil.debugString(s)));
     }
     private void debugDocInsertMATCH_BEFORE() {
-      if(G.dbgRedo.getBoolean())
-        G.dbgRedo.printf("docInsert MATCH BEFORE '%s'\n",
-                          TextUtil.debugString(removeDocBeforeInsstart));
+        G.dbgRedo.printf(() ->
+                sf("docInsert MATCH BEFORE '%s'\n",
+                 TextUtil.debugString(removeDocBeforeInsstart)));
     }
     private void debugDocInsertMATCH_EXPECTED(int pos, String s) {
-      if(G.dbgRedo.getBoolean()) {
-            G.dbgRedo.println("docInsert MATCH expected " + pos
-                           + (s.length() > 1 ? " LENGTH: " + s.length() : ""));
-      }
+        G.dbgRedo.println(() -> "docInsert MATCH expected " + pos +
+                (s.length() > 1 ? " LENGTH: " + s.length() : ""));
     }
     private void debugDocInsertERROR(int pos, String s) {
       LOG.log(Level.WARNING, "docInsert ERROR: pos {0}, redoPosition {1}, '{2}'",
                         new Object[]{pos, redoTrackPosition, s});
     }
     private void debugDocInsertLONG(int pos, String s) {
-      if(G.dbgRedo.getBoolean()) {
-          G.dbgRedo.printf("docInsert LONG: %d, length %d\n", pos, s.length());
-      }
-      // Since "long" insert occurs for quote chars (and others),
-      // can't issue a warning.
-      // LOG.log(Level.WARNING, "docInsert LONG: {0}, length {1}",
-      //                   new Object[]{pos, s.length()});
+        G.dbgRedo.printf(() ->
+                sf("docInsert LONG: %d, length %d\n", pos, s.length()));
+        // Since "long" insert occurs for quote chars (and others),
+        // can't issue a warning.
+        // LOG.log(Level.WARNING, "docInsert LONG: {0}, length {1}",
+        //                   new Object[]{pos, s.length()});
     }
     private void debugDocInsertMATCH_EXTRA(int pos, String s) {
-      if(G.dbgRedo.getBoolean())
-        G.dbgRedo.printf("docInsert MATCH EXTRA: %d '%s'\n",
-                          pos, TextUtil.debugString(s));
+        G.dbgRedo.printf(() ->
+                sf("docInsert MATCH EXTRA: %d '%s'\n", pos,
+                                                     TextUtil.debugString(s)));
     }
     private void debugDocInsertNO_MATCH() {
-      if(G.dbgRedo.getBoolean())
-        G.dbgRedo.printf("docInsert: NO MATCH redoPosition %d, redobuff %s[%d]"
-                          + " afterBuff %s[%d]\n",
-                          redoTrackPosition,
-                          redobuff, redobuff.length(),
-                          afterBuff, afterBuff.length());
+        G.dbgRedo.printf(() ->
+                sf("docInsert: NO MATCH redoPosition %d, redobuff %s[%d]"
+                        + " afterBuff %s[%d]\n", redoTrackPosition, redobuff,
+                        redobuff.length(), afterBuff, afterBuff.length()));
     }
     private void debugDocInsertWARP(int warpDistance) {
-      if(G.dbgRedo.getBoolean())
-          G.dbgRedo.printf("docInsert: WARP %d, redobuff %s[%d]"
-                            + " afterBuff %s[%d]\n",
-                            warpDistance,
-                            redobuff, redobuff.length(),
-                            afterBuff, afterBuff.length());
+        G.dbgRedo.printf(() ->
+                sf("docInsert: WARP %d, redobuff %s[%d]"
+                        + " afterBuff %s[%d]\n", warpDistance, redobuff,
+                        redobuff.length(), afterBuff, afterBuff.length()));
     }
     private void debugDocInsertMATCH_REMOVE_EXTRA(int pos, String t) {
-      if(G.dbgRedo.getBoolean())
-          G.dbgRedo.printf("docInsert MATCH REMOVE/EXTRA:"
-                             + " %d, '%s' / '%s'\n",
-                             pos,
-                             TextUtil.debugString(removeDocAfterString),
-                             TextUtil.debugString(t));
+        G.dbgRedo.printf(() ->
+                sf("docInsert MATCH REMOVE/EXTRA:"
+                        + " %d, '%s' / '%s'\n", pos,
+                        TextUtil.debugString(removeDocAfterString),
+                        TextUtil.debugString(t)));
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -572,17 +556,18 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
       if(G.dbgRedo.getBoolean()) {
         int insstart = Edit.getInsstart() != null
                 ? Edit.getInsstart().getOffset() : -1;
-            G.dbgRedo.printf("docRemove: pos %d, %d, '%s', track %d, insstart %d\n",
-                          pos, len, TextUtil.debugString(removedText),
-                          redoTrackPosition, insstart);
+            G.dbgRedo.printf(() ->
+                sf("docRemove: pos %d, %d, '%s', track %d, insstart %d\n", pos,
+                                                                           len, TextUtil.debugString(removedText), redoTrackPosition,
+                                                                           insstart));
       }
     }
     private void debugDocRemoveBEFORE_INSSTART() {
-      if(G.dbgRedo.getBoolean()) G.dbgRedo.printf("docRemove BEFORE INSSTART: '%s'\n",
-                          TextUtil.debugString(removeDocBeforeInsstart));
+        G.dbgRedo.printf(() ->
+                sf("docRemove BEFORE INSSTART: '%s'\n",
+                 TextUtil.debugString(removeDocBeforeInsstart)));
     }
     private void debugDocRemoveBEFORE_INSSTART_NO_MATCH() {
-      if(G.dbgRedo.getBoolean())
         G.dbgRedo.printf("docRemove BEFORE INSSTART NO MATCH\n");
     }
     private void debugDocRemoveMATCH(int pos, int len) {
@@ -593,13 +578,11 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
                   redoTrackPosition, pos, len);
     }
     private void debugDocRemoveREMOVE_AFTER(int nBefore) {
-      if(G.dbgRedo.getBoolean())
-        G.dbgRedo.println("docRemove REMOVE AFTER,"
-                           + " nBefore: " + nBefore
-                           + " AfterString: '" + removeDocAfterString + "'");
+        G.dbgRedo.println(() -> "docRemove REMOVE AFTER,"
+                + " nBefore: " + nBefore
+                + " AfterString: '" + removeDocAfterString + "'");
     }
     private void debugDocRemoveNO_MATCH() {
-      if(G.dbgRedo.getBoolean())
         G.dbgRedo.println("docRemove NO MATCH");
     }
 
@@ -625,7 +608,7 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
 
     private boolean doingBackspace() {
       if(Edit.doingBackspace) {
-        if(G.dbgRedo.getBoolean()) G.dbgRedo.println("doing BACKSPACE");
+          G.dbgRedo.println("doing BACKSPACE");
         return true;
       }
       return false;
@@ -633,8 +616,7 @@ class MagicRedoOriginal implements GetChar.ViMagicRedo
 
     private void debug(String s)
     {
-        if(G.dbgRedo.getBoolean())
-          G.dbgRedo.println(s);
+        G.dbgRedo.println(s);
     }
 
     private void nop() {}

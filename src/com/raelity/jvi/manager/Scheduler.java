@@ -34,22 +34,14 @@ import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.raelity.jvi.ViAppView;
-import com.raelity.jvi.ViCaret;
-import com.raelity.jvi.ViCmdEntry;
-import com.raelity.jvi.ViFactory;
-import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.core.Buffer;
-import com.raelity.jvi.core.G;
-import com.raelity.jvi.core.Msg;
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.core.TextView;
-import com.raelity.jvi.core.Util;
-import com.raelity.jvi.core.lib.KeyDefs;
+import com.raelity.jvi.*;
+import com.raelity.jvi.core.*;
+import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.core.lib.KeyDefs.KeyStrokeType;
-import com.raelity.jvi.options.DebugOption;
+import com.raelity.jvi.options.*;
 
 import static com.raelity.jvi.manager.ViManager.*;
+import static com.raelity.text.TextUtil.sf;
 
 /**
  *
@@ -95,11 +87,9 @@ public class Scheduler
         Buffer buf = textView.getBuffer();
         fact().setupCaret(editor); // make sure has the right caret
         textView.attach();
-        if (G.dbgEditorActivation().getBoolean()) {
-            G.dbgEditorActivation().println("Activation: ViManager.SWITCHTO: "
-                    + (fNewTextView ? "NEW: " : "") + cid(editor)
-                    + " " + buf.getDisplayFileName() + " " + ViManager.cid(buf));
-        }
+        G.dbgEditorActivation().println(() -> "Activation: ViManager.SWITCHTO: "
+                + (fNewTextView ? "NEW: " : "") + cid(editor)
+                + " " + buf.getDisplayFileName() + " " + ViManager.cid(buf));
         if (currentEditorPane != null) {
             getCore().abortVisualMode();
             // MOVED ABOVE: currentTv = mayCreateTextView(currentEditorPane);
@@ -158,8 +148,10 @@ public class Scheduler
     public static void register(Component c)
     {
         if(c != null) {
-            if (fact() != null && G.dbgEditorActivation().getBoolean())
-                G.dbgEditorActivation().println("Activation: Scheduler.register: " + cid(c));
+            if (fact() != null) {
+                G.dbgEditorActivation().println(() ->
+                        "Activation: Scheduler.register: " + cid(c));
+            }
             c.removeFocusListener(focusSwitcher);
             c.addFocusListener(focusSwitcher);
         }
@@ -182,8 +174,8 @@ public class Scheduler
     public static void detached(Component ed)
     {
         if (currentEditorPane == ed) {
-            if (G.dbgEditorActivation().getBoolean())
-                G.dbgEditorActivation().println("Activation: ViManager.detached " + cid(ed));
+            G.dbgEditorActivation().println(() ->
+                    "Activation: ViManager.detached " + cid(ed));
             currentEditorPane = null;
         }
     }
@@ -240,8 +232,7 @@ public class Scheduler
         // Probably just checking for CHAR would be good enough
         if ((c & 0xf000) != KeyDefs.VIRT && ksType == KeyStrokeType.CHAR)
             if (c >= 32 && c != 127) {
-                if (Options.kd().getBoolean())
-                    Options.kd().println("rerouteChar");
+                Options.kd().println("rerouteChar");
                 activeCommandEntry.append(c);
             }
         return true;
@@ -269,8 +260,10 @@ public class Scheduler
         if (activeCommandEntry != null)
             throw new RuntimeException("activeCommandEntry not null");
         activeCommandEntry = commandEntry;
-        Options.kd().printf("startCommandEntry: set ACE tv %s, '%s'\n",
-                            ViManager.cid(tv), initialString); //REROUTE
+        StringBuffer initialStringF = initialString;
+        Options.kd().printf(() ->
+              sf("startCommandEntry: set ACE tv %s, '%s'\n", ViManager.cid(tv),
+                                                             initialStringF)); //REROUTE
         boolean passThru;
         if (initialString.indexOf("\n") >= 0)
             passThru = true;
@@ -362,9 +355,9 @@ public class Scheduler
             if ((mev.getModifiersEx() & mask) != 0)
                 mouseDown = true;
             final DebugOption dbg = Options.getDebugOption(Options.dbgMouse);
-            if (dbg.getBoolean(Level.FINE))
-                dbg.println("mousePress: " + (mouseDown ? "down " : "up ") +
-                            MouseEvent.getModifiersExText(mev.getModifiersEx()));
+            dbg.println(Level.FINE, () ->
+                    "mousePress: " + (mouseDown ? "down " : "up ")
+                            + MouseEvent.getModifiersExText(mev.getModifiersEx()));
                 //System.err.println(mev.getMouseModifiersText(
                 //                      mev.getModifiers()));
             getCore().flush_buffers(true);
@@ -400,9 +393,8 @@ public class Scheduler
             if (pos != newPos)
                 tv.w_cursor.set(newPos);
             final DebugOption dbg = Options.getDebugOption(Options.dbgMouse);
-            if (dbg.getBoolean(Level.FINE))
-                dbg.println("mouseClick(" + pos + ") " +
-                            MouseEvent.getModifiersExText(mev.getModifiersEx()));
+            dbg.println(Level.FINE, () -> "mouseClick(" + pos + ") "
+                    + MouseEvent.getModifiersExText(mev.getModifiersEx()));
                 //System.err.println(mev.getMouseModifiersText(
                 //                      mev.getModifiers()));
         } finally {
@@ -420,9 +412,8 @@ public class Scheduler
             if ((mev.getModifiersEx() & mask) == 0)
                 mouseDown = false;
             final DebugOption dbg = Options.getDebugOption(Options.dbgMouse);
-            if (dbg.getBoolean(Level.FINE))
-                dbg.println("mouseRelease: " +
-                            MouseEvent.getModifiersExText(mev.getModifiersEx()));
+            dbg.println(Level.FINE, () -> "mouseRelease: "
+                    + MouseEvent.getModifiersExText(mev.getModifiersEx()));
                 //System.err.println(mev.getMouseModifiersText(
                 //                      mev.getModifiers()));
         } finally {
@@ -449,9 +440,8 @@ public class Scheduler
             //   Misc.showmode();
             // }
             final DebugOption dbg = Options.getDebugOption(Options.dbgMouse);
-            if (dbg.getBoolean(Level.FINE))
-                dbg.println("mouseDrag "
-                        + MouseEvent.getModifiersExText(mev.getModifiersEx()));
+            dbg.println(Level.FINE, () -> "mouseDrag "
+                    + MouseEvent.getModifiersExText(mev.getModifiersEx()));
                 //System.err.println(mev.getMouseModifiersText(mev.getModifiers()));
         } finally {
             setJViBusy(false);

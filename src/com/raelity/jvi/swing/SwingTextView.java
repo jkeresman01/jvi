@@ -70,28 +70,12 @@ import javax.swing.text.View;
 
 import org.openide.util.lookup.ServiceProvider;
 
-import com.raelity.jvi.ViAppView;
-import com.raelity.jvi.ViBuffer;
-import com.raelity.jvi.ViCaret;
-import com.raelity.jvi.ViCaretStyle;
-import com.raelity.jvi.ViFPOS;
-import com.raelity.jvi.ViInitialization;
-import com.raelity.jvi.ViMark;
-import com.raelity.jvi.ViStatusDisplay;
-import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.core.Buffer;
-import com.raelity.jvi.core.ColonCommands;
+import com.raelity.jvi.*;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
-import com.raelity.jvi.core.Edit;
-import com.raelity.jvi.core.G;
-import com.raelity.jvi.core.Misc;
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.core.TextView;
-import com.raelity.jvi.core.Util;
-import com.raelity.jvi.core.lib.CcFlag;
-import com.raelity.jvi.lib.MutableInt;
-import com.raelity.jvi.manager.Scheduler;
-import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.core.*;
+import com.raelity.jvi.core.lib.*;
+import com.raelity.jvi.lib.*;
+import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
 import com.raelity.text.MySegment;
 
@@ -842,9 +826,8 @@ public abstract class SwingTextView extends TextView
     public int getVpTopLogicalLine()
     {
         int logicalLine = lm.logicalLine(getVpTopDocumentLine());
-        if ( G.dbgCoordSkip().getBoolean(Level.FINEST) ) {
-            G.dbgCoordSkip().println(Level.FINEST, "getVpTopLogicalLine: " + logicalLine);
-        }
+        G.dbgCoordSkip().println(Level.FINEST, () ->
+                "getVpTopLogicalLine: " + logicalLine);
         return logicalLine;
     }
 
@@ -876,9 +859,9 @@ public abstract class SwingTextView extends TextView
         int ll01 = getLogicalLineCount();
         if(logicalLine > ll01)
             logicalLine = ll01 + 1; // past last line
-        if(G.dbgCoordSkip().getBoolean(Level.FINEST)) {
-            G.dbgCoordSkip().println(Level.FINEST, "getViewBottomLogicalLine: " + logicalLine);
-        }
+        final int logicalLineF = logicalLine;
+        G.dbgCoordSkip().println(Level.FINEST, () ->
+                "getViewBottomLogicalLine: " + logicalLineF);
         return logicalLine; // NEEDSWORK: line past full line, see getViewBottomLine
     }
 
@@ -887,9 +870,8 @@ public abstract class SwingTextView extends TextView
     public int getLogicalLineCount()
     {
         int logicalLine = lm.logicalLine(getBuffer().getLineCount());
-        if ( G.dbgCoordSkip().getBoolean(Level.FINEST) ) {
-            G.dbgCoordSkip().println(Level.FINEST, "getLogicalLineCount: " + logicalLine);
-        }
+        G.dbgCoordSkip().println(Level.FINEST, () ->
+                "getLogicalLineCount: " + logicalLine);
         return logicalLine;
     }
 
@@ -903,9 +885,8 @@ public abstract class SwingTextView extends TextView
             docLine = getBuffer().getLineCount();
         }
         int logicalLine = lm.logicalLine(docLine);
-        if ( G.dbgCoordSkip().getBoolean(Level.FINE) ) {
-            G.dbgCoordSkip().println(Level.FINE, "getLogicalLine: " + logicalLine);
-        }
+        G.dbgCoordSkip().println(Level.FINE, () ->
+                "getLogicalLine: " + logicalLine);
         return logicalLine;
     }
 
@@ -1389,9 +1370,7 @@ public abstract class SwingTextView extends TextView
     //
 
     protected void changeDocument(PropertyChangeEvent e) {
-        if (cacheTrace.getBoolean()) {
-            cacheTrace.println("doc switch: ");
-        }
+        cacheTrace.println("doc switch: ");
         super.detachBuffer();
         ViManager.changeBuffer(this, e.getOldValue());
     }
@@ -1401,7 +1380,7 @@ public abstract class SwingTextView extends TextView
     enum FindLineInView { TOP, BOT };
 
     private static final DebugOption cacheTrace
-            = (DebugOption)Options.getOption(Options.dbgCache);
+            = Options.getDebugOption(Options.dbgCache);
 
     protected JViewport getViewport()
     {
@@ -1988,10 +1967,8 @@ public abstract class SwingTextView extends TextView
      */
     private void attachMore()
     {
-        if (G.dbgEditorActivation().getBoolean()) {
-            G.dbgEditorActivation().println("TVCache: attach: "
-                               + (editorPane == null ? 0 : editorPane.hashCode()));
-        }
+        G.dbgEditorActivation().println(() -> "TVCache: attach: " +
+                (editorPane == null ? 0 : editorPane.hashCode()));
         if (freezer != null) {
             freezer.stop();
             freezer = null;
@@ -2013,10 +1990,8 @@ public abstract class SwingTextView extends TextView
     /** Disassociate from the observed components. */
     private void detachMore()
     {
-        if (G.dbgEditorActivation().getBoolean()) {
-            G.dbgEditorActivation().println("TVCache: detach: "
-                               + (editorPane == null ? "" : editorPane.hashCode()));
-        }
+        G.dbgEditorActivation().println(() -> "TVCache: detach: " +
+                (editorPane == null ? "" : editorPane.hashCode()));
         if (editorPane == null) {
             return;
         }

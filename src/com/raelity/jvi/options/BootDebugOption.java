@@ -26,7 +26,7 @@ import java.util.logging.Logger;
  *
  * @author Ernie Rael <err at raelity.com>
  */
-public class BootDebugOption extends DebugOption {
+final public class BootDebugOption extends DebugOption {
     public boolean v;
 
     BootDebugOption(boolean v)
@@ -55,35 +55,6 @@ public class BootDebugOption extends DebugOption {
     public boolean getBoolean(Level level)
     {
         return v;
-    }
-
-    @Override
-    public void println(String msg, Object... args)
-    {
-        if(!v)
-            return;
-        String s = args.length == 0 ? msg : String.format(msg, args);
-        doPrintln(s);
-    }
-
-    @Override
-    public void println(Level level, String msg, Object... args)
-    {
-        println(msg, args);
-    }
-
-    @Override
-    public void printf(String format, Object... args)
-    {
-        if(!v)
-            return;
-        doPrintf(format, args);
-    }
-
-    @Override
-    public void printf(Level level, String format, Object... args)
-    {
-        printf(format, args);
     }
 
     @Override

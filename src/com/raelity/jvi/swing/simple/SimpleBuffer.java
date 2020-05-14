@@ -43,6 +43,7 @@ import com.raelity.jvi.swing.SwingBuffer;
 import com.raelity.jvi.swing.UndoGroupManager;
 
 import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.text.TextUtil.sf;
 
 /**
  * Add undo group handling to basic swing buffer.
@@ -230,14 +231,13 @@ abstract public class SimpleBuffer extends SwingBuffer
                             text = getDocument().getText(info.offset, info.length);
                     } catch(BadLocationException ex) {
                     }
-                    G.dbgUndo().printf(Level.FINEST,
-                      "afterUR: after  off=%d, col=%d\n"
-                    + "         change off=%d, len=%d, insert=%b\n"
-                    + "         text='%s'\n",
-                            tv.w_cursor.getOffset(), tv.w_cursor.getColumn(),
-                            info.offset, info.length, info.isInsert,
-                            text
-                            );
+                    String textF = text;
+                    G.dbgUndo().printf(Level.FINEST, () ->
+                          sf("afterUR: after  off=%d, col=%d\n"
+                                  + "         change off=%d, len=%d, insert=%b\n"
+                                  + "         text='%s'\n", tv.w_cursor.getOffset(),
+                                  tv.w_cursor.getColumn(), info.offset, info.length,
+                                  info.isInsert, textF));
                 }
                 // Only adjust the cursor if undo/redo left the cursor on col 0;
                 // not entirely correct, but...

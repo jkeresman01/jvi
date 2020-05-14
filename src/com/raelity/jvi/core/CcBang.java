@@ -42,15 +42,15 @@ import javax.swing.Timer;
 
 import org.openide.util.lookup.ServiceProvider;
 
-import com.raelity.jvi.ViInitialization;
-import com.raelity.jvi.ViOutputStream;
-import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.*;
 import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
 import com.raelity.jvi.core.ColonCommands.ColonAction;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
-import com.raelity.jvi.core.lib.CcFlag;
-import com.raelity.jvi.manager.ViManager;
-import com.raelity.jvi.options.DebugOption;
+import com.raelity.jvi.core.lib.*;
+import com.raelity.jvi.manager.*;
+import com.raelity.jvi.options.*;
+
+import static com.raelity.text.TextUtil.sf;
 
 /**
  *
@@ -86,7 +86,7 @@ private static final Logger LOG = Logger.getLogger(CcBang.class.getName());
 public static class BangAction extends AbstractColonAction
 {
     FilterThreadCoordinator coord = null;
-    DebugOption dbg = (DebugOption)Options.getOption(Options.dbgBang);
+    DebugOption dbg = Options.getDebugOption(Options.dbgBang);
 
         @Override
         public EnumSet<CcFlag> getFlags()
@@ -105,18 +105,15 @@ public static class BangAction extends AbstractColonAction
         int nArgs = evt.getNArg();
         boolean isFilter = (evt.getAddrCount() > 0);
 
-        if (dbg.getBoolean()) {
-                dbg.println("!: Original command: '" + evt.getArgString() + "'");
-        }
+        dbg.println(() -> "!: Original command: '" + evt.getArgString() + "'");
         StringBuilder arg = new StringBuilder(evt.getArgString());
         arg = parseBang(arg);
         if (arg == null) {
             Msg.emsg("No previous command");
             return;
         }
-        if (dbg.getBoolean()) {
-                dbg.println("!: Substitution '" + arg + "'");
-        }
+        StringBuilder argFinal = arg;
+        dbg.println(() -> "!: Substitution '" + argFinal + "'");
 
         if (nArgs >= 1) {
             String cmd = arg.toString();
@@ -128,16 +125,13 @@ public static class BangAction extends AbstractColonAction
         } else {
             lastBangCommand = "";
         }
-        if (dbg.getBoolean()) {
-                dbg.println("!: Last command saved '" + lastBangCommand + "'");
-        }
+        String lastBangCommandFinal = lastBangCommand;
+        dbg.println(() -> "!: Last command saved '" + lastBangCommandFinal + "'");
     }
 
     private void joinThread(Thread t)
     {
-        if(dbg.getBoolean()) {
-                dbg.println("!: joining thread " + t.getName());
-        }
+        dbg.println(() -> "!: joining thread " + t.getName());
         if(t.isAlive()) {
             t.interrupt();
             try {
@@ -165,9 +159,7 @@ public static class BangAction extends AbstractColonAction
             try {
                 int exit = coord.process.exitValue();
             } catch(IllegalThreadStateException ex) {
-                if(dbg.getBoolean()) {
-                        dbg.println("!: destroying process");
-                }
+                dbg.println("!: destroying process");
                 coord.process.destroy();
             }
             if(coord.simpleExecuteThread != null) {
@@ -301,10 +293,7 @@ public static class BangAction extends AbstractColonAction
         shellCommandLine.add(G.p_shcf);
         shellCommandLine.add(shellXQuote + commandLine + shellXQuote);
 
-        if (dbg.getBoolean()) {
-                dbg.println(
-                    "!: ProcessBuilder: '" + shellCommandLine + "'");
-        }
+        dbg.println(() -> "!: ProcessBuilder: '" + shellCommandLine + "'");
 
         ProcessBuilder pb = new ProcessBuilder(shellCommandLine);
         pb.redirectErrorStream(true);
@@ -341,10 +330,7 @@ public static class BangAction extends AbstractColonAction
             });
 
         // start the thread(s)
-
-        if (dbg.getBoolean()) {
-                dbg.println("!: starting threads");
-        }
+        dbg.println("!: starting threads");
 
         String fullCommand = commandLineToString(shellCommandLine);
         if (isFilter) {
@@ -471,7 +457,7 @@ private static class FilterThreadCoordinator
     public void dumpState()
     {
         Options.getDebugOption(Options.dbgBang)
-            .println("startLine " + startLine + ", lastLine = " + lastLine );
+            .println(() -> "startLine " + startLine + ", lastLine = " + lastLine);
     }
 
 } // end inner class
@@ -533,16 +519,13 @@ private static class SimpleExecuteThread extends FilterThread
     @Override
     void doTask()
     {
-        String line;
         try {
             while(!isProblem()) {
-                line = reader.readLine();
+                final String line = reader.readLine();
                 if(line == null) {
                     break;
                 }
-                if (dbgData.getBoolean()) {
-                        dbgData.println("!: Writing '" + line + "' to ViOutputStream");
-                }
+                dbgData.println(() -> "!: Writing '" + line + "' to ViOutputStream");
                 vos.println(line);
             }
             reader.close();
@@ -575,9 +558,9 @@ private static class ProcessWriterThread extends FilterThread
     @Override
     public void dumpState()
     {
-        dbg.println("currWriterLine " + currWriterLine
+        dbg.println(() -> "currWriterLine " + currWriterLine
                 + ", wroteFirstLineToProcess " + wroteFirstLineToProcess
-                + ", reachedEndOfLines " + reachedEndOfLines );
+                + ", reachedEndOfLines " + reachedEndOfLines);
         super.dumpState();
     }
 
@@ -610,19 +593,16 @@ private static class ProcessWriterThread extends FilterThread
     public void writeToProcess()
     {
         currWriterLine = coord.startLine;
-        String data;
         try {
             while(!isProblem()) {
-                data = coord.fromDoc.take();
+                String data = coord.fromDoc.take();
                 if(DONE.equals(data)) {
                     break;
                 }
                 writer.write(data);
-                if (dbgData.getBoolean()) {
-                    // NEEDSWORK: why trim(), use Text.formDebugDString
-                        dbgData.println("!: Writer #" + currWriterLine
-                            + ": '" + data.trim() + "'");
-                }
+                // NEEDSWORK: why trim(), use Text.formDebugDString
+                dbgData.println(() -> "!: Writer #" + currWriterLine
+                        + ": '" + data.trim() + "'");
                 currWriterLine++;
                 wroteFirstLineToProcess = true;
             }
@@ -631,9 +611,7 @@ private static class ProcessWriterThread extends FilterThread
         } catch (InterruptedException | IOException ex) {
             exception = ex;
         }
-        if (dbg.getBoolean()) {
-                dbg.println("!: Wrote all lines needed to process");
-        }
+        dbg.println("!: Wrote all lines needed to process");
         if(!isProblem()) {
             reachedEndOfLines = true;
         }
@@ -661,10 +639,9 @@ private static class ProcessReaderThread extends FilterThread
     @Override
     public void dumpState()
     {
-        dbg.println("currReaderLine " + currReaderLine
+        dbg.println(() -> "currReaderLine " + currReaderLine
                 + ", wroteFirstLineToFile " + wroteFirstLineToFile
-                + ", reachedEndOfProcessOutput "
-                + reachedEndOfProcessOutput );
+                + ", reachedEndOfProcessOutput " + reachedEndOfProcessOutput);
         super.dumpState();
     }
 
@@ -697,24 +674,19 @@ private static class ProcessReaderThread extends FilterThread
     private void readFromProcess()
     {
         currReaderLine = coord.startLine;
-        String data;
         try {
             while(!isProblem()) {
-                data = reader.readLine();
+                String data = reader.readLine();
                 if (data == null) {
                     if (wroteFirstLineToFile && !isInterrupted()) {
                         reachedEndOfProcessOutput = true;
                     }
-                    if (dbg.getBoolean()) {
-                            dbg.println("!: end of process read data");
-                    }
+                    dbg.println("!: end of process read data");
                     break;
                 }
-                if (dbgData.getBoolean()) {
-                    // NEEDSWORK: why trim(), use Text.formDebugString
-                        dbgData.println("!: Reader #" + currReaderLine
-                            + ": '" + data.trim() + "'");
-                }
+                // NEEDSWORK: why trim(), use Text.formDebugString
+                dbgData.println(() -> "!: Reader #" + currReaderLine
+                        + ": '" + data.trim() + "'");
                 coord.toDoc.put(data);
                 currReaderLine++;
             }
@@ -848,30 +820,23 @@ private static class DocumentThread extends FilterThread
     public boolean readDocument()
     {
         boolean didSomething = false;
-        String data;
         if(docReadLine <= coord.lastLine) {
-            if (dbg.getBoolean()) {
-                    dbg.println("!: rwDoc: try read doc");
-            }
+            dbg.println("!: rwDoc: try read doc");
             while(!isProblem() && docReadLine <= coord.lastLine) {
                 int docLine = docReadLine;
-                data =    win.w_buffer.getLineSegment(docLine).toString();
+                String data = win.w_buffer.getLineSegment(docLine).toString();
                 if(!coord.fromDoc.offer(data)) {
                     break;
                 }
-                if (dbgData.getBoolean()) {
-                        dbgData.println("!: fromDoc #" + docReadLine + "," + docLine
-                            + ": '" + data.trim() + "'");
-                }
+                dbgData.println(() -> "!: fromDoc #" + docReadLine + "," + docLine
+                        + ": '" + data.trim() + "'");
                 docReadLine++;
                 didSomething = true;
             }
         } else {
             if(!docReadDone && coord.fromDoc.offer(DONE)) {
                 docReadDone = true;
-                if (dbg.getBoolean()) {
-                        dbg.println("!: rwDoc: docReadDONE");
-                }
+                dbg.println("!: rwDoc: docReadDONE");
             }
         }
         return didSomething;
@@ -880,28 +845,22 @@ private static class DocumentThread extends FilterThread
     public boolean writeDocument()
     {
         boolean didSomething = false;
-        String data;
         if(!docWriteDone) {
-            if (dbg.getBoolean())
-                dbg.println("!: rwDoc: try write doc " + debugCounter++);
+            dbg.println(() -> "!: rwDoc: try write doc " + debugCounter++);
             while(!isProblem()) {
-                data = coord.toDoc.poll();
+                String data = coord.toDoc.poll();
                 if(data == null) {
                     break;
                 }
                 if(DONE.equals(data)) {
                     docWriteDone = true;
-                    if (dbg.getBoolean()) {
-                            dbg.println("!: rwDoc: docWriteDONE");
-                    }
+                    dbg.println("!: rwDoc: docWriteDONE");
                     break;
                 }
                 sb.append(data);
                 sb.append('\n');
-                if (dbgData.getBoolean()) {
-                        dbgData.println("!: toDoc #" + docWriteLine + ": '"
-                            + data.trim() + "'");
-                }
+                dbgData.println(() -> "!: toDoc #" + docWriteLine + ": '"
+                        + data.trim() + "'");
                 didSomething = true;
             }
         }
@@ -911,7 +870,7 @@ private static class DocumentThread extends FilterThread
     @Override
     public void dumpState()
     {
-        dbg.println("docReadDone " + docReadDone
+        dbg.println(() -> "docReadDone " + docReadDone
                 + ", docReadLine " + docReadLine
                 + ", docWriteDone " + docWriteDone
                 + ", docWriteLine " + docWriteLine);
@@ -932,9 +891,7 @@ private static class DocumentThread extends FilterThread
         if(docReadDone && docReadLine <= coord.lastLine) {
             throw new IllegalStateException();
         }
-        if (dbg.getBoolean()) {
-                dbg.println("!: checking doc CLEANUP");
-        }
+        dbg.println("!: checking doc CLEANUP");
         // don't run the document cleanup if there are issues
         if(isProblem()) {
             return;
@@ -1228,9 +1185,8 @@ private static abstract class FilterThread extends Thread
     protected boolean error;
     protected boolean interrupted;
 
-    protected DebugOption dbg = (DebugOption)Options.getOption(Options.dbgBang);
-    protected DebugOption dbgData
-            = (DebugOption)Options.getOption(Options.dbgBangData);
+    protected DebugOption dbg = Options.getDebugOption(Options.dbgBang);
+    protected DebugOption dbgData = Options.getDebugOption(Options.dbgBangData);
 
     public FilterThread(String filterType, FilterThreadCoordinator coord)
     {
@@ -1301,17 +1257,13 @@ private static abstract class FilterThread extends Thread
         }
 
         if(error) {
-            if (dbg.getBoolean()) {
-                    dbg.println("!: error in " + getName());
-            }
+            dbg.println(() -> "!: error in " + getName());
             cleanup();
         }
 
         if(isInterrupted()) {
             interrupted = true;
-            if (dbg.getBoolean()) {
-                    dbg.println("!: cleanup in " + getName());
-            }
+            dbg.println(() -> "!: cleanup in " + getName());
             cleanup();
         }
 

@@ -322,8 +322,7 @@ abstract public class SwingBuffer extends Buffer
     
     final static private boolean cacheDisabled = false;
     
-    public static DebugOption cacheTrace
-            = (DebugOption)Options.getOption(Options.dbgCache);
+    public static DebugOption cacheTrace = Options.getDebugOption(Options.dbgCache);
     
     /** @return the element index from root which contains the offset */
     protected int getElemIndex(int offset) {
