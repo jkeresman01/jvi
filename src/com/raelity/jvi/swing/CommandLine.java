@@ -59,7 +59,6 @@ import com.raelity.jvi.core.Util;
 import com.raelity.jvi.options.DebugOption;
 
 
-import com.raelity.jvi.core.*;
 import com.raelity.jvi.core.CommandHistory.HistoryContext;
 import com.raelity.jvi.core.CommandHistory.InitialHistoryItem;
 import com.raelity.jvi.manager.*;
@@ -168,12 +167,17 @@ public final class CommandLine extends AbstractCommandLine
     {
         InitialHistoryItem initalState = ctx.init();
         commandLineFiringEvents = true;
-        dbg.printf("CLINE: init: commandLineFiringEvents true\n");
+        dbg.printf("CLINE: init: s=%s, commandLineFiringEvents true\n", s);
         dot = mark = 0;
-        dbg.printf("CLINE: init: middle: s=%s\n", s);
         if ( s.length() == 0 ) {
             JTextComponent tc = getTextComponent();
-            String t = initalState.getInitialItem();
+            String t = "";
+            if(mode.equals(":") || !initalState.isAtBeginning()) {
+                // Only put previous value in text field if colon command,
+                // or if selected from history;
+                // this avoids an unintended search.
+                t = initalState.getInitialItem();
+            }
             tc.setText(t);
             if(t.length() > 0 && initalState.isAtBeginning()) {
                 mark = 0;
