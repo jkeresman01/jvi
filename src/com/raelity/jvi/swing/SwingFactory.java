@@ -733,7 +733,7 @@ abstract public class SwingFactory implements ViFactory
         if(c instanceof JViewport)
             return c;
         Component t = SwingUtilities.getAncestorOfClass(JViewport.class, c);
-        return t != null ? t : c;
+        return t != null ? t : null;
     }
 
     static List<Entry<String,Color>> getUIColors()

@@ -1983,7 +1983,7 @@ public abstract class SwingTextView extends TextView
         editorPane.addPropertyChangeListener("document", this);
         editorPane.addPropertyChangeListener("ancestor", this);
         changeFont(editorPane.getFont());
-        changeViewport(editorPane.getParent());
+        changeViewport(editorPane);
     }
     boolean hasListeners = false;
 
