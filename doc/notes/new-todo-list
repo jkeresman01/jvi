@@ -1,4 +1,14 @@
 
+Q of runnables for next AppView, take a look at normal.nv_gomark.
+Trace shows that fold init happens after things settle down.
+May want to breakpoint at ide/editor.fold.nbui/src/org/netbeans
+                /modules/editor/fold/ui/FoldViewFactory.java
+
+Synchro - G.curwin() via Manager/scheduler
+        - visual mode state
+        - run more/most of jVi under doc lock
+        - chekc non edt access to edPane
+
 performance of text search, include highlight search getDocumentCharSequence
 
 netbeans csv editor

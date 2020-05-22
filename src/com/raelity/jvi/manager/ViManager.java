@@ -57,10 +57,13 @@ import com.raelity.jvi.core.lib.CcFlag;
 
 import java.util.Map.Entry;
 
+import org.openide.util.Exceptions;
+
 import com.raelity.jvi.ViOutputStream.COLOR;
-import com.raelity.jvi.options.*;
+import com.raelity.text.TextUtil;
 
 import static com.raelity.jvi.ViOutputStream.FLAGS;
+import static com.raelity.text.TextUtil.sf;
 
 /**
  * <p>
@@ -92,7 +95,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("1.6.2.alpha3");
+    public static final jViVersion version = new jViVersion("1.6.2.x5");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -167,6 +170,10 @@ final public class ViManager
      * This is invoked well after boot, just before edit operations. */
     public static final String P_LATE_INIT = "jViLateInit";
     /**
+     * jVi might shutdown. old/new are null.
+     * This can happen more than once. */
+    public static final String P_PRE_SHUTDOWN = "jViPreShutdown";
+    /**
      * jVi is closing up shop for the day. old/new are null */
     public static final String P_SHUTDOWN = "jViShutdown";
     /**
@@ -233,8 +240,10 @@ final public class ViManager
         // 5 - 
         //      nb/HighlightsExecutor - initialize executor
         // 6 - 
+        //      MarkOps - colon commands, pcl
         // 7 - 
         //      KeyBinding - inits tables...
+        //      Filemarks
         // 8 - 
         //      nb/KeyBindings - initializes a pcl on KeyBinding
         // 9 - 
@@ -244,7 +253,6 @@ final public class ViManager
         //      CcBang - register lots of colon commands
         //      CommandHistory - register a colon command
         //      WindowTreeBuilder - colon command
-        //      MarkOps - colon commands, pcl
         //      Misc - colon command, pcl
         //      TabPages - colon commands
         //      TextView - pcl
@@ -277,7 +285,9 @@ final public class ViManager
         ColonCommands.register("debugVersion", "debugVersion",
                                new DebugVersionCommand(), null);
         ColonCommands.register("debugOutputStyles", "debugOutputStyles",
-                               new DebugOutputStyles(), null);
+                               new DebugOutputStyles(), EnumSet.of(CcFlag.DBG));
+        ColonCommands.register("isDebugAtHome", "isDebugAtHome",
+                               new IsDebugAtHome(), null);
 
 
         firePropertyChange(P_BOOT, null, null);
@@ -293,6 +303,11 @@ final public class ViManager
         getFactory().setShutdownHook(() -> {
             firePropertyChange(P_SHUTDOWN, null, null);
         });
+    }
+
+    public static void preShutdownCheck()
+    {
+            firePropertyChange(P_PRE_SHUTDOWN, null, null);
     }
 
     public static boolean isFactoryLoaded()
@@ -335,6 +350,19 @@ final public class ViManager
             // x.println(Level.INFO, "%s %s %s", "one", "two", "three");
             // x.printf(Level.INFO, "oneNL\n");
             // x.printf(Level.INFO, "%s %s %sNL\n", "one", "two", "three");
+            // LOG.log(Level.SEVERE, "don't leave me here");
+
+            if(false) {
+                throw new RuntimeException("runtime exception");
+            }
+            if(false) {
+                Throwable t = new Throwable("some throwable");
+                Exceptions.attachSeverity(t, Level.SEVERE);
+                Exceptions.attachMessage(t, "some attached message");
+                Exceptions.printStackTrace(t);
+                // Dialog d = new Dialog((Frame)null);
+                // d.show();
+            }
 
             ViManager.motd.output();
         }
@@ -390,6 +418,30 @@ final public class ViManager
             }
         }
     };
+
+    static class IsDebugAtHome extends ColonCommands.AbstractColonAction
+    {
+
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.DBG);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            ColonCommands.ColonEvent cev = (ColonCommands.ColonEvent)e;
+            if(cev.getNArg() == 1) {
+                String s = cev.getArg(1);
+                isDebugAtHome = s.toLowerCase().startsWith("y");
+            }
+            try (ViOutputStream os = ViManager.createOutputStream(null)) {
+                os.println(TextUtil.sf("isDebugAtHome=%s", isDebugAtHome()));
+            }
+        }
+
+    }
 
     /**
      * Disable the feature.
@@ -831,14 +883,18 @@ final public class ViManager
 
     public static void nInvokeLater(int nPause, final Runnable runnable)
     {
+        nInvokeLater("", nPause, runnable);
+    }
+
+    public static void nInvokeLater(String tag, int nPause, final Runnable runnable)
+    {
+        G.dbgEditorActivation().println(() -> sf("nInvokeLater %s: nPause %d",
+                nPause <= 0 ? "run" : "later", nPause));
         if(nPause <= 0) {
             runnable.run();
-        } else if(nPause == 1) {
-            EventQueue.invokeLater(runnable);
         } else {
-            final int decr = nPause - 1;
             EventQueue.invokeLater(() -> {
-                nInvokeLater(decr, runnable);
+                nInvokeLater(nPause-1, runnable);
             });
         }
     }

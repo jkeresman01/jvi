@@ -23,6 +23,8 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.event.ChangeEvent;
 
+import com.raelity.jvi.core.*;
+
 import static com.raelity.text.TextUtil.sf;
 
 /**
@@ -31,6 +33,19 @@ import static com.raelity.text.TextUtil.sf;
  */
 public class LibUtil
 {
+private LibUtil() {}
+static LibUtil INSTANCE;
+private boolean aTrue;
+private boolean aFalse;
+
+public static LibUtil getDefault() {
+    if(INSTANCE == null) {
+        INSTANCE = new LibUtil();
+        INSTANCE.aFalse = false;
+        INSTANCE.aTrue = true;
+    }
+    return INSTANCE;
+}
 
 public static String dumpEvent(ActionEvent e)
 {
@@ -42,5 +57,9 @@ public static String dumpEvent(ActionEvent e)
 public static String dumpChangeEvent(ChangeEvent e) {
     return sf("on %s", e.getSource().getClass().getSimpleName());
 }
+
+public static boolean getTrue() { return getDefault().aTrue; }
+
+public static boolean getFalse() { return getDefault().aFalse; }
 
 }

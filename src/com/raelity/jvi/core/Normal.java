@@ -26,6 +26,8 @@
  */
 package com.raelity.jvi.core;
 
+import java.awt.EventQueue;
+import java.io.File;
 import java.text.CharacterIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,6 +67,7 @@ import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.core.lib.Constants.FDO.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
+import static com.raelity.text.TextUtil.sf;
 
 /**
  * Contains the main routine for processing characters in command mode.
@@ -3691,12 +3694,27 @@ nv_brackets(CMDARG cap, int dir)
     //if (pos == MarkOps.otherFile)
     if (pos instanceof Filemark)
     {	    /* jumped to other file */
-      if (flag) {
-	check_cursor_lnumBeginline(BL_WHITE | BL_FIX);
-	// Edit.beginline(BL_WHITE | BL_FIX);
-      } else {
-	adjust_cursor();
-      }
+      // In NB we have started the change to another file,
+      // and NB has a variety of things to finish, like activation, folding.
+      // Try to do the fixup later. Verify some things are as expected.
+      // Folding still interferes with this.
+
+      String targetFileName = ((Filemark)pos).getFile().getAbsolutePath();
+      // Note: observationally, 2 is required for things to settle.
+      // This gets us past activation.
+      ViManager.nInvokeLater("nv_gomark", 2, () -> {
+        File f;
+        if(G.curwin != null && (f = G.curwin.getBuffer().getFile()) != null) {
+          if(targetFileName.equals(f.getAbsolutePath())) {
+            if (flag) {
+              check_cursor_lnumBeginline(BL_WHITE | BL_FIX);
+              // Edit.beginline(BL_WHITE | BL_FIX);
+            } else {
+              adjust_cursor();
+            }
+          }
+        }
+      });
     } else {
       nv_cursormark(cap, flag, pos);
     }

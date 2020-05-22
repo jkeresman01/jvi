@@ -266,6 +266,7 @@ public final class Options {
   public static final String dbgWindowTreeBuilder = "viDbgWindowTreeBuilder";
   public static final String dbgPrefChangeMonitor = "viDbgPrefChangeMonitor";
   public static final String dbgFonts = "viDbgFonts";
+  public static final String dbgMarks = "viDbgMarks";
 
   public static final String twMagic = "#TEXT-WIDTH#";
 
@@ -413,6 +414,9 @@ public final class Options {
 
     G.dbgFonts = createDebugOption(dbgFonts);
     setupOptionDesc(Category.DEBUG, dbgFonts, "debug font issues", "");
+
+    G.dbgMarks = createDebugOption(dbgMarks);
+    setupOptionDesc(Category.DEBUG, dbgMarks, "debug marks", "");
     
     /////////////////////////////////////////////////////////////////////
     //

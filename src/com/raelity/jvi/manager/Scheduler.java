@@ -328,11 +328,13 @@ public class Scheduler
 
     public static void cursorChange(ViCaret caret)
     {
-        if (G.curwin() == null)
+        if (G.curwin() == null) {
             return;
+        }
         boolean nowSelection = caret.getDot() != caret.getMark();
-        if (hasSelection == nowSelection)
+        if (hasSelection == nowSelection) {
             return;
+        }
         getCore().uiCursorAndModeAdjust();
         hasSelection = nowSelection;
     }

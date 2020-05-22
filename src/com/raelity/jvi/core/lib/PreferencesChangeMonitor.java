@@ -19,7 +19,6 @@
  */
 package com.raelity.jvi.core.lib;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -34,19 +33,31 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import com.raelity.jvi.core.G;
+
 import static com.raelity.text.TextUtil.sf;
 
 /**
  * Monitor preferences subtrees for creation and/or changes.
  * startMonitoring can be called multiple times to monitor several trees.
  * <p/>
- * Set variable DUMP to true for ViManager/System.err output.
+ * This detects changes made through the prefs interface. Because of the
+ * async nature of prefs change notifications , this can detect changes,
+ * but it is impossible to make "safe" changes, see internalChange(runnable).
+ * Using prefs.flush() does not help; the changes may be sync'd
+ * but the notificaitons are still async.
+ * <p/>
+ * I suppose it is possible to Q up all changes and resolve them with
+ * incoming notifications, but what a PITA.
  * <p/>
  * NEEDSWORK:   if a change is detected, then remove listeners right away.
  * <p/>
  * NEEDSWORK:   could track all startChecking stopChecking args and
  *              have a clear/reset method does stopChecking as needed.
  *              I suppose could put that in a finalize...
+ * NEEDSWORK:   or use weak listeners
+ * 
+ * @see PreferencesImportMonitor
+ * 
  * @author Ernie Rael <err at raelity.com>
  */
 public final class PreferencesChangeMonitor {
@@ -57,25 +68,11 @@ public final class PreferencesChangeMonitor {
     private final Map<String, ParentListener> parentListeners;
     private final Set<ParentChild> parentChilds = new HashSet<>();
 
-    private static final boolean ENABLE_HACK = true;
-    private boolean hack;
-    private Preferences hackBase;
-    private String hackValue;
-    private static final String HACK_KEY = "IMPORT_CHECK_HACK";
-    private static FileHack fileHack;
-
     private PreferencesChangeMonitor()
     {
         prefListener = new PrefCheckListener();
         nodeListener = new NodeCheckListener();
         parentListeners = new HashMap<>(2);
-    }
-
-    public static void setFileHack(FileHack fileHack)
-        { PreferencesChangeMonitor.fileHack = fileHack; }
-    public interface FileHack {
-        public boolean hasKeyValue(Preferences prefs, String child,
-                                   String key, String val);
     }
 
     /**
@@ -86,18 +83,10 @@ public final class PreferencesChangeMonitor {
     public static PreferencesChangeMonitor getMonitor(Preferences parent,
                                                       String child)
     {
+        G.dbgPrefChangeMonitor().println(Level.CONFIG, () ->
+                sf("PCM: getMonitor %s / %s", parent != null ? parent.name() : "null",
+                                              child != null ? child : "null"));
         PreferencesChangeMonitor checker = new PreferencesChangeMonitor();
-
-        if(ENABLE_HACK) {
-            // Use tricks to detect nb import.
-            // This has the unfortunate side effect of creating any child
-            // node that we are monitoring.
-            // <p/>
-            assert checker.hackBase == null || checker.hackBase == parent;
-            checker.hack = true;
-            checker.hackBase = parent;
-            checker.hackValue = new Date().toString();
-        }
 
         if(parent != null)
             checker.startMonitoring(parent, child);
@@ -116,44 +105,27 @@ public final class PreferencesChangeMonitor {
 
     public boolean isChange()
     {
-        if(ENABLE_HACK) {
-            if(hack) {
-                for(String path : parentListeners.keySet()) {
-                    // +1 in following for '/' serarator
-                    String child = path.substring(
-                            hackBase.absolutePath().length()+1);
-                    if(fileHack != null) {
-                        if(!fileHack.hasKeyValue(hackBase, child,
-                                                 HACK_KEY, hackValue)) {
-                            change = true;
-                            G.dbgPrefChangeMonitor().println(() ->
-                                    "PREF CHANGE: " + "HACK in " + path);
-                        }
-                    } else {
-                        Preferences p = hackBase.node(child);
-                        if(!p.get(HACK_KEY, "").equals(hackValue)) {
-                            change = true;
-                            G.dbgPrefChangeMonitor().println(() ->
-                                    "PREF CHANGE: " + "HACK in " + p.absolutePath());
-                        }
-                    }
-                }
-            }
-        }
         return change;
     }
 
-    public void setFreeze(boolean freeze)
+    /** run something that is allowed to make a change */
+    public void internalChange(Runnable run)
     {
-        this.freeze = freeze;
+        freeze = true;
+        try {
+            run.run();
+        } finally {
+            freeze = false;
+        }
     }
 
     private void changeDetected()
     {
-        if(!freeze)
+        if(!freeze) {
             change = true;
-        else
-            G.dbgPrefChangeMonitor().println("CHANGE FROZEN:");
+            G.dbgPrefChangeMonitor().println("PCM: CHANGE:");
+        } else
+            G.dbgPrefChangeMonitor().println("PCM: CHANGE FROZEN:");
     }
 
     /**
@@ -198,15 +170,6 @@ public final class PreferencesChangeMonitor {
                              String child)
     {
         String childPath = parent.absolutePath() + "/" + child;
-        if(ENABLE_HACK) {
-            if(hack) {
-                assert childPath.startsWith(hackBase.absolutePath());
-                if(!remove) {
-                    Preferences p = parent.node(child);
-                    p.put(HACK_KEY, hackValue);
-                }
-            }
-        }
         ParentListener pl = parentListeners.get(childPath);
         if(pl == null && !remove) {
             pl = new ParentListener(child);
@@ -219,7 +182,7 @@ public final class PreferencesChangeMonitor {
                 } else {
                     parent.addNodeChangeListener(pl);
                     G.dbgPrefChangeMonitor().println(() ->
-                            "PARENT START CHECKING: "
+                            "PCM: PARENT START CHECKING: "
                                     + child + " in " + parent.absolutePath());
                 }
             }
@@ -238,7 +201,7 @@ public final class PreferencesChangeMonitor {
                     prefs.addPreferenceChangeListener(prefListener);
                     prefs.addNodeChangeListener(nodeListener);
                     G.dbgPrefChangeMonitor().println(() ->
-                            "START CHECKING: " + prefs.absolutePath());
+                            "PCM: START CHECKING: " + prefs.absolutePath());
                 }
             }
             catch(IllegalArgumentException | IllegalStateException ex) { }
@@ -267,12 +230,12 @@ public final class PreferencesChangeMonitor {
             if(evt.getChild().name().equals(child)) {
                 changeDetected();
                 G.dbgPrefChangeMonitor().println(() ->
-                        "PARENT NODE CHANGE: childAdded: "
+                        "PCM: PARENT NODE CHANGE: childAdded: "
                                 + evt.getChild().name()
                                 + " in " + evt.getParent().absolutePath());
             } else
                 G.dbgPrefChangeMonitor().println(() ->
-                        "PARENT NODE CHANGE IGNORED: childAdded: "
+                        "PCM: PARENT NODE CHANGE IGNORED: childAdded: "
                                 + evt.getChild().name()
                                 + " in " + evt.getParent().absolutePath());
         }
@@ -283,12 +246,12 @@ public final class PreferencesChangeMonitor {
             if(evt.getChild().name().equals(child)) {
                 changeDetected();
                 G.dbgPrefChangeMonitor().println(() ->
-                        "PARENT NODE CHANGE: childRemoved: "
+                        "PCM: PARENT NODE CHANGE: childRemoved: "
                                 + evt.getChild().name()
                                 + " in " + evt.getParent().absolutePath());
             } else
                 G.dbgPrefChangeMonitor().println(() ->
-                        "PARENT NODE CHANGE IGNORED: childRemoved: "
+                        "PCM: PARENT NODE CHANGE IGNORED: childRemoved: "
                                 + evt.getChild().name()
                                 + " in " + evt.getParent().absolutePath());
         }
@@ -303,7 +266,7 @@ public final class PreferencesChangeMonitor {
         {
             changeDetected();
             G.dbgPrefChangeMonitor() .println(() ->
-                    "NODE CHANGE: childAdded: " + evt.getChild().name()
+                    "PCM: NODE CHANGE: childAdded: " + evt.getChild().name()
                             + " in " + evt.getParent().absolutePath());
         }
 
@@ -312,7 +275,7 @@ public final class PreferencesChangeMonitor {
         {
             changeDetected();
             G.dbgPrefChangeMonitor().println(() ->
-                    "NODE CHANGE: childRemoved: " + evt.getChild().name()
+                    "PCM: NODE CHANGE: childRemoved: " + evt.getChild().name()
                             + " in " + evt.getParent().absolutePath());
         }
 
@@ -325,7 +288,7 @@ public final class PreferencesChangeMonitor {
         public void preferenceChange(PreferenceChangeEvent evt)
         {
             changeDetected();
-            G.dbgPrefChangeMonitor().println(() -> "PREF CHANGE: "
+            G.dbgPrefChangeMonitor().println(() -> "PCM: PREF CHANGE: "
                     + evt.getKey() + " in " + evt.getNode().absolutePath());
         }
     }

@@ -126,6 +126,24 @@ class FPOS extends ViFPOS.abstractFPOS
 
     public void set(Buffer buf, int line, int column)
     {
+        set(buf, line, column, false);
+    }
+
+    /**
+     * Set the position with line/col; typically these args
+     * are expected to be within range.
+     * If column is out of range for the given line then give an error unless
+     * wantAdjust is true. In any case, line/col are constrained
+     * to be within bouds for given buf.
+     * 
+     * @param buf line/col computed for buf
+     * @param line
+     * @param column
+     * @param wantAdjust false means that line/col are expected to be
+     *                  in valid range
+     */
+    public void set(Buffer buf, int line, int column, boolean wantAdjust)
+    {
         verify(buf);
         int startOffset = buf.getLineStartOffset(line);
         int endOffset = buf.getLineEndOffset(line);
@@ -138,7 +156,7 @@ class FPOS extends ViFPOS.abstractFPOS
         }
 
         if (adjustedColumn >= 0) {
-            if(column != Constants.MAXCOL)
+            if(!wantAdjust && column != Constants.MAXCOL)
                 ViManager.dumpStack("line " + line + ", column " + column
                                     + ", length " + (endOffset - startOffset));
             column = adjustedColumn;

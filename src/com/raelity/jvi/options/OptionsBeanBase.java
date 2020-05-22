@@ -307,6 +307,14 @@ implements Options.EditControl
         return ViManager.getReleaseString();
     }
 
+    public void setViDbgMarks(String arg)  throws PropertyVetoException {
+        put(Options.dbgMarks, arg);
+    }
+
+    public String getViDbgMarks() {
+	return getString(Options.dbgMarks);
+    }
+
     public void setViComboCommandLine(boolean arg) {
         put(Options.comboCommandLine, arg);
     }

@@ -38,6 +38,8 @@ import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.swing.ui.options.OptionsPanel;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openide.util.lookup.ServiceProvider;
 
@@ -62,6 +64,9 @@ import com.raelity.jvi.options.*;
  */
 public class Jvi
 {
+    // keep a reference to this so we can set it's level...
+    private static Logger exceptionsLogger
+            = Logger.getLogger(org.openide.util.Exceptions.class.getName());
     /** If true, pack resulting UI. */
     public static boolean packFrame   = true;
 
@@ -135,6 +140,9 @@ public class Jvi
         if ( args.length > 0 ) {
             make2Frames = true;
         }
+
+        Logger rootLogger = Logger.getLogger("");
+        exceptionsLogger.setLevel(Level.INFO);
 
         ViManager.setViFactory(new PlayFactory());
 

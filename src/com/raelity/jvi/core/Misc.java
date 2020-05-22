@@ -61,10 +61,7 @@ import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.ViTextView.DIR;
 import com.raelity.jvi.ViXlateKey;
 import com.raelity.jvi.core.CommandHistory.HistoryContext;
-import com.raelity.jvi.core.lib.KeyDefs;
-import com.raelity.jvi.core.lib.Messages;
-import com.raelity.jvi.core.lib.NotSupportedException;
-import com.raelity.jvi.core.lib.PreferencesChangeMonitor;
+import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.lib.Wrap;
@@ -91,9 +88,9 @@ public class Misc implements ClipboardOwner {
     private static final String PREF_REGISTERS = "registers";
     private static final String PREF_SEARCH = "search";
     private static final String PREF_COMMANDS = "commands";
-    private static PreferencesChangeMonitor registersImportCheck;
-    private static PreferencesChangeMonitor searchImportCheck;
-    private static PreferencesChangeMonitor commandsImportCheck;
+    private static PreferencesImportMonitor registersImportCheck;
+    private static PreferencesImportMonitor searchImportCheck;
+    private static PreferencesImportMonitor commandsImportCheck;
 
     private Misc() {}
 
@@ -128,9 +125,6 @@ public class Misc implements ClipboardOwner {
             javaKeyMap = initJavaKeyMap();
             break;
           case ViManager.P_SHUTDOWN:
-            registersImportCheck.stopAll();
-            searchImportCheck.stopAll();
-            commandsImportCheck.stopAll();
 
             if(!registersImportCheck.isChange()) {
               write_viminfo_registers();
@@ -157,11 +151,11 @@ public class Misc implements ClipboardOwner {
 
     private static void startImportCheck()
     {
-        commandsImportCheck = PreferencesChangeMonitor.getMonitor(
+        commandsImportCheck = PreferencesImportMonitor.getMonitor(
                 ViManager.getFactory().getPreferences(), PREF_COMMANDS);
-        searchImportCheck = PreferencesChangeMonitor.getMonitor(
+        searchImportCheck = PreferencesImportMonitor.getMonitor(
                 ViManager.getFactory().getPreferences(), PREF_SEARCH);
-        registersImportCheck = PreferencesChangeMonitor.getMonitor(
+        registersImportCheck = PreferencesImportMonitor.getMonitor(
                 ViManager.getFactory().getPreferences(), PREF_REGISTERS);
     }
 

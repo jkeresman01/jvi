@@ -48,8 +48,7 @@ import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.ViTextView.MARKOP;
 import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
-import com.raelity.jvi.core.lib.CcFlag;
-import com.raelity.jvi.core.lib.PreferencesChangeMonitor;
+import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.text.MySegment;
 
@@ -59,6 +58,7 @@ import static com.raelity.jvi.ViTextView.MARKOP.TOGGLE;
 import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Messages.*;
+import static com.raelity.jvi.manager.ViManager.getFactory;
 
 /**
  * Keep track of vi marks.
@@ -68,23 +68,19 @@ class MarkOps
     private static final Logger LOG = Logger.getLogger(MarkOps.class.getName());
 
     private static final String PREF_MARKS = "marks";
-    private static final String PREF_FILEMARKS = "filemarks";
-
-    private static Filemark namedfm[] = new Filemark[26];
 
     // private static List<String> oldPersistedBufferMarks = new ArrayList<>();
 
     /** This constant indicates mark is in other file. */
     final static FPOS otherFile = new FPOS();
 
-    private static PreferencesChangeMonitor marksImportCheck;
-    private static PreferencesChangeMonitor filemarksImportCheck;
+    private static PreferencesImportMonitor marksImportCheck;
 
     private MarkOps()
     {
     }
 
-    @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=10)
+    @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=6)
     public static class Init implements ViInitialization
     {
         @Override
@@ -95,46 +91,28 @@ class MarkOps
     }
 
     private static void init() {
+
         ColonCommands.register("marks", "marks", new DoMarks(), null);
         ColonCommands.register("delm", "delmarks", new ExDelmarks(), null);
 
         PropertyChangeListener pcl = (PropertyChangeEvent evt) -> {
             String pname = evt.getPropertyName();
             switch (pname) {
-            case ViManager.P_OPEN_WIN:
-                openWin((ViTextView)evt.getNewValue());
-                break;
-            case ViManager.P_CLOSE_WIN:
-                closeWin((ViTextView)evt.getOldValue());
-                break;
             case ViManager.P_OPEN_BUF:
                 BufferMarksPersist.restore((Buffer)evt.getNewValue());
                 break;
             case ViManager.P_CLOSE_BUF:
                 if(!marksImportCheck.isChange()) {
-                    marksImportCheck.setFreeze(true);
-                    try {
                         BufferMarksPersist.persist((Buffer)evt.getOldValue());
-                    } finally {
-                        marksImportCheck.setFreeze(false);
-                    }
                 } else {
                     LOG.info("jVi marks imported (buffer close)");
                 }
                 break;
             case ViManager.P_BOOT:
                 BufferMarksPersist.read_viminfo();
-                read_viminfo_filemarks();
                 startImportCheck();
                 break;
             case ViManager.P_SHUTDOWN:
-                filemarksImportCheck.stopAll();
-                marksImportCheck.stopAll();
-                if(!filemarksImportCheck.isChange()) {
-                    write_viminfo_filemarks();
-                } else {
-                    LOG.info("jVi filemarks imported");
-                }
                 if(!marksImportCheck.isChange()) {
                     BufferMarksPersist.write_viminfo();
                 } else {
@@ -147,8 +125,6 @@ class MarkOps
         };
         ViManager.addPropertyChangeListener(ViManager.P_BOOT, pcl);
         ViManager.addPropertyChangeListener(ViManager.P_SHUTDOWN, pcl);
-        ViManager.addPropertyChangeListener(ViManager.P_OPEN_WIN, pcl);
-        ViManager.addPropertyChangeListener(ViManager.P_CLOSE_WIN, pcl);
         ViManager.addPropertyChangeListener(ViManager.P_OPEN_BUF, pcl);
         ViManager.addPropertyChangeListener(ViManager.P_CLOSE_BUF, pcl);
 
@@ -158,17 +134,17 @@ class MarkOps
 
     private static void startImportCheck()
     {
-        marksImportCheck = PreferencesChangeMonitor.getMonitor(
-                ViManager.getFactory().getPreferences(), PREF_MARKS);
-        filemarksImportCheck = PreferencesChangeMonitor.getMonitor(
-                ViManager.getFactory().getPreferences(), PREF_FILEMARKS);
+        marksImportCheck = PreferencesImportMonitor.getMonitor(
+                getFactory().getPreferences(), PREF_MARKS);
+        try {
+            getFactory().getPreferences().flush();
+        } catch(BackingStoreException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
     }
 
     /** Set the indicated mark to the current cursor position;
      * if anonymous mark characters, then handle that.
-     * <b>NEEDSWORK:</b><ul>
-     * <li>Only handle lower case marks.
-     * </ul>
      */
     static int setmark(char c, int count)
     {
@@ -204,15 +180,14 @@ class MarkOps
             return OK;
         }
 
-        if (Util.isupper(c)) {	// NEEDSWORK: upper case marks
+        if (Util.isupper(c)) {
             if(G.curwin.getAppView().isNomad()) {
                 Msg.emsg("Can not 'mark' a nomadic editor");
                 return FAIL;
             }
-            int i = c - 'A';
             ViMark mark = G.curbuf.createMark(null);
             mark.setMark(G.curwin.w_cursor);
-            namedfm[i] = new Filemark(mark, G.curwin);
+            Filemark.create(String.valueOf(c), mark);
             return OK;
         }
         return FAIL;
@@ -370,15 +345,18 @@ class MarkOps
             int i = c - 'a';
             m = G.curbuf.b_namedm[i];
         } else if(Util.isupper(c) /* || Util.isdigit(c) */) { // named file mark
-            Filemark fm = namedfm[c - 'A'];
+            Filemark fm = Filemark.get(String.valueOf(c));
             if(fm != null) {
                 File f = G.curbuf.getFile();
                 if(changefile || f != null && f.equals(fm.getFile()))
                     // set force to true so non exist files are opened (as vim)
-                    ViManager.getFactory().getFS().edit(fm.getFile(), true, fm);
+                    getFactory().getFS().edit(fm.getFile(), true, fm);
                 else
                     fm = null;
             }
+            // NOTE: work done with returned mark is dubious.
+            // although doc is available, after getFS.edit()
+            // the TopComponent has not been switched to.
             m = fm;
         }
         return m;
@@ -511,8 +489,8 @@ class MarkOps
             for(int i = 0; i < G.curbuf.b_namedm.length; i++)
                 show_one_mark((char)(i+'a'), arg, G.curbuf.b_namedm[i],
                               null, true);
-            for (int i = 0; i < namedfm.length; i++) {
-                Filemark fm = namedfm[i];
+            for (char markName = 'A'; markName <= 'Z'; markName++) {
+                Filemark fm = Filemark.get(String.valueOf(markName));
                 String name;
                 if(fm == null) {
                     name = null;
@@ -520,9 +498,11 @@ class MarkOps
                     name = fm_getname(fm, 15);
                 else
                     name = fm.getFile().getPath();
-                if(name != null)
-                    show_one_mark((char)(i+'A'), arg, fm, name,
+                if(name != null) {
+                    assert fm != null;
+                    show_one_mark(markName, arg, fm, name,
                             fm.getBuffer() == G.curbuf);
+                }
             }
             //show_one_mark('"', arg, G.curbuf.b_last_cursor, null, true);
             show_one_mark('[', arg, G.curbuf.b_op_start, null, true);
@@ -698,7 +678,7 @@ class MarkOps
                             //    n = i - '0' + NMARKS;
                             //else
                                 n = i - 'A';
-                            namedfm[n] = null;
+                            Filemark.deleteMark(String.valueOf((char)i));
                         }
                     }
                 }
@@ -720,61 +700,12 @@ class MarkOps
         }
     }
 
-    private static void openWin(ViTextView tv) {
-        File f = tv.getBuffer().getFile();
-        // Check if any filemarks match the file and/or window being opened.
-        // Create a real mark for the file.
-        for (Filemark fm : namedfm) {
-            if (fm != null) {
-                fm.startup(f, tv);
-            }
-        }
-    }
-
-    private static void closeWin(ViTextView tv) {
-        // capture line/col type info for a filemark
-        for (Filemark fm : namedfm) {
-            if (fm != null) {
-                fm.shutdown(tv);
-            }
-        }
-    }
-
-    private static String markName(int i) {
-        return String.valueOf((char)('A'+i));
-    }
-
     static final String FNAME = "fName";
     //static final String BUFTAG = "buftag";
     static final String BUF = "buf";
     static final String OFFSET = "offset";
     static final String LINE = "line";
     static final String COL = "col";
-
-    private static void read_viminfo_filemarks()
-    {
-        Preferences prefs = ViManager.getFactory()
-                .getPreferences().node(PREF_FILEMARKS);
-        for (int i = 0; i < namedfm.length; i++) {
-            Filemark fm = Filemark.read_viminfo_filemark(prefs, markName(i));
-            if(fm != null)
-                namedfm[i] = fm;
-        }
-    }
-
-    private static void write_viminfo_filemarks()
-    {
-        Preferences prefs = ViManager.getFactory()
-                .getPreferences().node(PREF_FILEMARKS);
-        for (int i = 0; i < namedfm.length; i++) {
-            Filemark.write_viminfo_filemark(prefs, markName(i), namedfm[i]);
-        }
-        try {
-            prefs.flush();
-        } catch (BackingStoreException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        }
-    }
 
     /**
      * The named marks, a-z plus a few, for a buffer are persisted between
@@ -800,8 +731,7 @@ class MarkOps
         static List<String> next = new LinkedList<String>();
         static List<String> cleanup = new ArrayList<String>();
 
-        static Preferences prefs
-                = ViManager.getFactory().getPreferences().node(PREF_MARKS);
+        static Preferences prefs = getFactory().getPreferences().node(PREF_MARKS);
 
         private BufferMarksPersist()
         {
@@ -1007,7 +937,7 @@ class MarkOps
         {
             try {
                 LOG.fine("write_viminfo entry");
-                for (Buffer buf : ViManager.getFactory().getBufferSet()) {
+                for (Buffer buf : getFactory().getBufferSet()) {
                     persist(buf);
                 }
                 int max = G.viminfoMaxBuf;
