@@ -60,6 +60,8 @@ import java.util.Map.Entry;
 import org.openide.util.Exceptions;
 
 import com.raelity.jvi.ViOutputStream.COLOR;
+import com.raelity.jvi.lib.*;
+import com.raelity.jvi.options.*;
 import com.raelity.text.TextUtil;
 
 import static com.raelity.jvi.ViOutputStream.FLAGS;
@@ -95,7 +97,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("1.6.2.x5");
+    public static final jViVersion version = new jViVersion("1.6.2.alpha5");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -288,6 +290,8 @@ final public class ViManager
                                new DebugOutputStyles(), EnumSet.of(CcFlag.DBG));
         ColonCommands.register("isDebugAtHome", "isDebugAtHome",
                                new IsDebugAtHome(), null);
+        ColonCommands.register("debugDebug", "debugDebug",
+                               new DebugDebug(), null);
 
 
         firePropertyChange(P_BOOT, null, null);
@@ -341,32 +345,11 @@ final public class ViManager
         @Override
         public void actionPerformed(ActionEvent ev)
         {
-            // DebugOption x = Options.getDebugOption(Options.dbgBang);
-            // x.println("one");
-            // x.println("%s %s %s", "one", "two", "three");
-            // x.printf("oneNL\n");
-            // x.printf("%s %s %sNL\n", "one", "two", "three");
-            // x.println(Level.INFO, "one");
-            // x.println(Level.INFO, "%s %s %s", "one", "two", "three");
-            // x.printf(Level.INFO, "oneNL\n");
-            // x.printf(Level.INFO, "%s %s %sNL\n", "one", "two", "three");
-            // LOG.log(Level.SEVERE, "don't leave me here");
-
-            if(false) {
-                throw new RuntimeException("runtime exception");
-            }
-            if(false) {
-                Throwable t = new Throwable("some throwable");
-                Exceptions.attachSeverity(t, Level.SEVERE);
-                Exceptions.attachMessage(t, "some attached message");
-                Exceptions.printStackTrace(t);
-                // Dialog d = new Dialog((Frame)null);
-                // d.show();
-            }
 
             ViManager.motd.output();
         }
     };
+
     static class DebugMotdCommand implements ActionListener //ACTION_debugMotd = new ActionListener()
     {
         @Override
@@ -375,6 +358,7 @@ final public class ViManager
             ViManager.debugMotd();
         }
     };
+
     static class DebugVersionCommand extends ColonCommands.AbstractColonAction
     {
 
@@ -398,6 +382,7 @@ final public class ViManager
         }
 
     }
+
     static class DebugOutputStyles implements ActionListener
     {
         @Override
@@ -418,6 +403,81 @@ final public class ViManager
             }
         }
     };
+
+    /**
+     * Some random things to play with the debugging infrastructure.
+     * The map can be modified through the debugger,
+     * or by providing parm=value on the command line.
+     * Typically value is an integer.
+     */
+    private static final Map<String, Object> debugDebugDiddling = new HashMap<>();
+
+    /** Typically done from the debugger.  */
+    static void debugSetParam(String s, Object o)
+    {
+        debugDebugDiddling.put(s, o);
+    }
+
+    static class DebugDebug extends ColonCommands.AbstractColonAction
+    {
+
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.DBG);
+        }
+
+        @Override
+        @SuppressWarnings("ThrowableResultIgnored")
+        public void actionPerformed(ActionEvent e)
+        {
+            if(debugDebugDiddling.isEmpty()) {
+                debugDebugDiddling.put("which", 0); // which case to run
+                debugDebugDiddling.put("level", Level.WARNING.intValue());
+                debugDebugDiddling.put("local", "false"); // use localalized message
+            }
+            ColonCommands.ColonEvent cev = (ColonCommands.ColonEvent)e;
+            if(cev.getNArg() > 0) {
+                // parse out parm=value on the command line,
+                // do map.put(parm, converted-value)
+                // which = Integer.parseInt(value)
+            }
+            int which = (Integer)debugDebugDiddling.get("which");
+            Level level = Level.parse(""+(Integer)debugDebugDiddling.get("level"));
+            boolean local = Boolean.parseBoolean((String)debugDebugDiddling.get("local"));
+
+            switch(which) {
+            case 0: 
+                Throwable t = new Throwable("some throwable");
+                Throwable t1 = Exceptions.attachSeverity(t, level);
+                if(local) {
+                    // using attach localized message, only the attached message is displayed
+                    Throwable t2 = Exceptions.attachLocalizedMessage(t, "some attached message");
+                } else {
+                    Throwable t2 = Exceptions.attachMessage(t, "some attached message");
+                }
+                String s = Exceptions.findLocalizedMessage(t);
+                Exceptions.printStackTrace(t);
+                // Dialog d = new Dialog((Frame)null);
+                // d.show();
+                break;
+            case 1:
+                throw new RuntimeException("runtime exception");
+            case 2:
+                DebugOption x = Options.getDebugOption(Options.dbgBang);
+                x.println("one");
+                x.println("%s %s %s", "one", "two", "three");
+                x.printf("oneNL\n");
+                x.printf("%s %s %sNL\n", "one", "two", "three");
+                x.println(Level.INFO, "one");
+                x.println(Level.INFO, "%s %s %s", "one", "two", "three");
+                x.printf(Level.INFO, "oneNL\n");
+                x.printf(Level.INFO, "%s %s %sNL\n", "one", "two", "three");
+                LOG.log(Level.SEVERE, "don't leave me here");
+            }
+        }
+
+    }
 
     static class IsDebugAtHome extends ColonCommands.AbstractColonAction
     {

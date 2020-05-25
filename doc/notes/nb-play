@@ -1,7 +1,32 @@
 === Logging
 
+rootLogger - handlers
+    1 - platfor/core.startup/DispatchingHandler
+        delegate: org.netbeans.core.startup.logging.MessagesHandler@21409709
+    2 - platfor/core.startup/DispatchingHandler
+        delagate: java.util.logging.StreamHandler@709da0bf
+    3 - platfor/core.startup/TopLogging$LookupDel <<<<<<<<<<<<<
+    4 - org.netbeans.modules.uihandler.UIHandler@39bbb804
+
+- platform/openide.util/Exceptions annotates
+    then finally LOG.log(level, null, t)
+- platform/core.startup/TopLogging$LookupDel handler which passes off
+    to all registered (via serviceprovider) handlers. In particular
+- platform/o.n.core/NbErrorManager isa handler. It diddles level
+    and creates an exception record for
+- platform/o.n.core/NotifyExcPanel.notify. If shallNotify it does
+    invokeLater which builds the dialog acc'd to exception record.
+- and don't forget 1973
+
+
+    Experimentally SEVERE/WARNING get dialog
+
 Exceptions.printStackTrace
 Exceptions.attachSeverity
+
+platform/o.n.core
+    @org.openide.util.lookup.ServiceProvider(service=java.util.logging.Handler.class)
+    public final class NbErrorManager extends Handler {
 
 org.netbeans.core.NotifyExcPanel.notify
     shallNotify - algorithm in here
