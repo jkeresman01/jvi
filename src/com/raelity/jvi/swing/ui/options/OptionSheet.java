@@ -29,6 +29,7 @@ import java.beans.PropertyVetoException;
 import java.util.Comparator;
 import java.util.EnumSet;
 
+import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
@@ -245,6 +246,7 @@ class OptionSheet extends JPanel implements Options.EditControl {
                             prop, new ColorPropertyEditor(prop));
                 } else if(opt instanceof EnumOption) {
                     ComboBoxPropertyEditor pe = new ComboBoxPropertyEditor();
+                    ((JComboBox)pe.getCustomEditor()).setMaximumRowCount(10);
                     pe.setAvailableValues(((EnumOption)opt).getAvailableValues());
                     propertyEditors.registerEditor(prop, pe);
                 } else if(opt instanceof EnumSetOption) {
