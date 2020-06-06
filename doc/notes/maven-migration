@@ -1,3 +1,4 @@
+mvn dependency:tree
 
 === local file into repository
 

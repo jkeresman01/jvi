@@ -1,0 +1,17 @@
+
+        This plugin <b>installs an update center</b> so that jVi,
+        vi/vim clone, can be installed.
+        After installing this plugin, from the Plugins Manager
+        <ol><li>
+                select the "Available Plugins" tab.<br /><em>And then you may need to click
+                "Check for Newest".</em>
+            </li>
+            <li>
+                From the Editing category select
+                <ul><li>"jVi for NetBeans"</li>
+                    <li>"Editor Pin" (optional)</li>
+                </ul></li>
+            <li>
+                install jVi
+            </li>
+        </ol>
