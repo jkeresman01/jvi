@@ -28,7 +28,7 @@ UC_DIR=UC
 
 JVI_ADD="
     $JVI_RELDIR/editor.pin/editor.pin-1.3.5/proj/updates.xml
-    $JVI_RELDIR/nb-jvi-spi/nb-jvi-spi-1.7.2/proj/updates.xml
+    $JVI_RELDIR/nb-jvi-spi/nb-jvi-spi-1.8/proj/updates.xml
     "
 
 OUT=$JVI_VERSIONDIR/build-uc
