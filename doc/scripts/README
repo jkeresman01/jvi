@@ -3,6 +3,7 @@ Make a release
         mkdir nbvi-1.4.1.x3
         cd nbvi-1.4.1.x3
         # mkCapture.sh can be used on .../nbvi/build/updates/ dir
+        # $jd/mkCapture.sh $jvi/nbvi/NB-jVi-SPI/build/ proj
         $jd/mkCapture.sh $jviup proj
         $jd/mkREL.sh       # it picks up the basename 
         $jd/mkZip.sh
