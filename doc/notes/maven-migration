@@ -1,5 +1,10 @@
 mvn dependency:tree
 
+mvn versions:set -DnewVersion=2.50.1-SNAPSHOT
+mvn versions:revert
+mvn versions:commit
+
+
 === local file into repository
 
     https://stackoverflow.com/questions/4955635/how-to-add-local-jar-files-to-a-maven-project

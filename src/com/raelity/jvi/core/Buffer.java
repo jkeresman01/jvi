@@ -149,7 +149,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     public final ViMark b_visual_end;
     public final ViMark b_last_insert;
     public char b_visual_mode;
-    public EnumSet b_p_nf;
+    public EnumSet<?> b_p_nf;
 
     public String b_p_qe = "\\"; // NEEDSWORK: make an option
     // NOTE: Following meainingful only when internal findmatch is used.
@@ -698,49 +698,57 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     //
     // Highlight Search
     //
-    
-    int[] highlightSearchBlocks = new int[2];
-    MutableInt highlightSearchIndex = new MutableInt();
-    
+
     public int[] getHighlightSearchBlocks(int startOffset, int endOffset) {
-        Pattern pattern = null;
-        highlightSearchBlocks = new int[50];
-        RegExp re = Search.getLastMatchingRegExp();
-        if(re instanceof RegExpJava) {
-            // NEEDSWORK: speed the following up
-            pattern = ((RegExpJava)re).getPattern();
+        return new GetHighlightSearchBlocks(startOffset, endOffset).get();
+    }
+
+    private class GetHighlightSearchBlocks {
+        int startOffset;
+        int endOffset;
+        int[] blocks;
+        int idx;
+        
+        private GetHighlightSearchBlocks(int startOffset, int endOffset)
+        {
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+            blocks = new int[50];
+            idx = 0;
+        }
+        
+        private int[] get() {
+            Pattern pattern = null;
+            RegExp re = Search.getLastMatchingRegExp();
+            if(re instanceof RegExpJava) {
+                pattern = ((RegExpJava)re).getPattern();
+            }
+
+            if(pattern != null && Options.doHighlightSearch()) {
+                int len = getLength();
+                if(startOffset > len)
+                    startOffset = len;
+                if(endOffset > len)
+                    endOffset = len;
+                CharSequence s = getDocumentCharSequence(startOffset, endOffset);
+                Matcher m = pattern.matcher(s);
+                while(m.find()) {
+                    addBlock(m.start() + startOffset, m.end() + startOffset);
+                }
+            }
+            addBlock(-1, -1);
+            return blocks;
+        }
+        
+        private void addBlock(int start, int end) {
+            if(idx + 2 > blocks.length)
+                blocks = Arrays.copyOf(blocks, blocks.length +50);
+            blocks[idx++] = start;
+            blocks[idx++] = end;
         }
 
-        highlightSearchIndex.setValue(0);
-        if(pattern != null && Options.doHighlightSearch()) {
-            int len = getLength();
-            if(startOffset > len)
-                startOffset = len;
-            if(endOffset > len)
-                endOffset = len;
-            CharSequence s = getDocumentCharSequence(startOffset, endOffset);
-            Matcher m = pattern.matcher(s);
-            while(m.find()) {
-                highlightSearchBlocks = addBlock(highlightSearchIndex,
-                                                 highlightSearchBlocks,
-                                                 m.start() + startOffset,
-                                                 m.end() + startOffset);
-            }
-        }
-        return addBlock(highlightSearchIndex, highlightSearchBlocks, -1, -1);
     }
-    
-    protected final int[] addBlock(MutableInt idx, int[] blocks,
-            int start, int end) {
-        int i = idx.getValue();
-        if(i + 2 > blocks.length)
-            blocks = Arrays.copyOf(blocks, blocks.length +50);
-        blocks[i] = start;
-        blocks[i+1] = end;
-        idx.setValue(i + 2);
-        return blocks;
-    }
-    
+
     public static void dumpBlocks(String tag, int[] b) {
         System.err.print(tag + ":");
         for(int i = 0; i < b.length; i += 2)

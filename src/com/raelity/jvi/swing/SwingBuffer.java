@@ -176,7 +176,7 @@ abstract public class SwingBuffer extends Buffer
      * Use the document in default implementation.
      * @return Swing Document backing this EditorPane */
     @Override
-    public Document getDocument() {
+    final public Document getDocument() {
         return doc;
     }
 
