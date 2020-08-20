@@ -1247,7 +1247,7 @@ public final class Options {
       return;
     int lnum;
     int lcount = G.curbuf.getLineCount();
-    for(lnum = 1; lnum < lcount && lnum <= mls; lnum++) {
+    for(lnum = 1; lnum <= lcount && lnum <= mls; lnum++) {
       if(checkModeline(lnum))
         mls = 0;
     }

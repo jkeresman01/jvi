@@ -196,7 +196,7 @@ public class Util {
    * having to check for error everywhere).
    */
   static MySegment ml_get(int lnum) {
-    MySegment seg = new MySegment(G.curbuf.getLineSegment(lnum));
+    MySegment seg = G.curbuf.getLineSegment(lnum);
     return seg;
   }
   
