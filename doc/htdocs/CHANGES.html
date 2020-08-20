@@ -72,6 +72,43 @@
 <b>Version 1.6.3 DEV - 202?/??/??</b>
 -->
 
+<b>Version 1.6.4 - 2020/08/xx</b>
+<p>
+  Search and VisualMode highlighting are now only calculated for the
+  text areas displayed on the screen and the results are cached.
+  You shouldn't normally notice, except perhaps on huge files.
+</p>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li>
+        Fix minor <span class="tt">modelines</span> issue.
+        If <span class="tt">modeline</span> was last line of tiny file
+        it would be missed.
+      </li>
+    </ul>
+  </dd>
+</dl>
+<dl>
+  <dt>jVi NetBeans KeyBindings</dt>
+  <dd>
+    <ul>
+      <li>
+        The <span class="tt">set ts=&lt;number&gt;</span> command
+        now visually takes effect immediately.
+      </li>
+      <li>
+        In unusual instances, like <span class='tt'>Customize Code</span>
+        in the forms editor, jVi wouldn't allow some editing.
+      </li>
+      <li>
+        Improve Search and VisualMode highlighting performance.
+      </li>
+    </ul>
+  </dd>
+</dl>
+
 <b>Version 1.6.3 - 2020/06/12</b>
 <p>This release is primarily to correct a nasty flaw
   in 1.6.2 distribution packaging.

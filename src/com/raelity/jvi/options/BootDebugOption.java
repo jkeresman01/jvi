@@ -29,7 +29,7 @@ import java.util.logging.Logger;
 final public class BootDebugOption extends DebugOption {
     public boolean v;
 
-    BootDebugOption(boolean v)
+    public BootDebugOption(boolean v)
     {
         super(null, null, new DefaultEnumValidator<String>(), new String[0]);
         this.v = v;
