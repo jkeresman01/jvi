@@ -2419,16 +2419,33 @@ private static int put_in_typebuf(String s, boolean colon)
       // System.err.println("SWITCH END<-->START");
     }
 
+    //
     // check for guarded regions,
-    // just check the first char position of each line
-    for(int line = start.getLine(), endLine = Math.min(end.getLine(),
-                                                       G.curbuf.getLineCount());
-            line <= endLine; line++) {
-      //System.err.println("CHECK LINE: " + line);
-      if(!Edit.canEdit(G.curwin, G.curbuf, G.curbuf.getLineStartOffset(line))) {
-        isValid = false;
-        //System.err.println("INVLID LINE: " + line);
-        break;
+    //
+    int line = start.getLine();
+    int endLine = Math.min(end.getLine(), G.curbuf.getLineCount());
+
+    if(line == endLine) {
+      // EXPERIMENTAL
+      // the range is within a single line
+      int endOffset = end.getOffset() - (oap.inclusive ? 0 : 1);
+      int startOffset = start.getOffset();
+      if(endOffset < startOffset)
+        endOffset = startOffset;
+      isValid = Edit.canEdit(G.curwin, G.curbuf, startOffset, endOffset);
+    } else {
+      // just check the first char position of each line
+      // NEEDSWORK: this may not be 100% reliable.
+      //      Consider in a gui form the code customizer dialog
+      //      has lines which are parially guarded.
+      //      In real life, don't think there's an issue.
+      for(; line <= endLine; line++) {
+        //System.err.println("CHECK LINE: " + line);
+        if(!Edit.canEdit(G.curwin, G.curbuf, G.curbuf.getLineStartOffset(line))) {
+          isValid = false;
+          //System.err.println("INVLID LINE: " + line);
+          break;
+        }
       }
     }
 

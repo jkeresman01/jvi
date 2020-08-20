@@ -131,11 +131,33 @@ public class Edit {
   }
 
   public static boolean canEdit(final ViTextView tv, ViBuffer buf, int offset) {
+    // This version, single offset argument, is used extensively
+    // so don't botther invoking the two arg version from here.
     if(buf.isGuarded(offset) || !tv.isEditable()) {
       buf.readOnlyError(tv);
       return false;
     }
     return true;
+  }
+
+  public static boolean canEdit(final ViTextView tv, ViBuffer buf,
+                                int startOffset, int endOffsetIncluded) {
+    if(startOffset == endOffsetIncluded)
+      return canEdit(tv, buf, startOffset);
+    boolean editOK = true;
+    if(!tv.isEditable())
+      editOK = false;
+    else {
+      for(int i = startOffset; i <= endOffsetIncluded; i++) {
+        if(buf.isGuarded(i)) {
+          buf.readOnlyError(tv);
+          editOK = false;
+        }
+      }
+    }
+    if(!editOK)
+      buf.readOnlyError(tv);
+    return editOK;
   }
 
   /**
