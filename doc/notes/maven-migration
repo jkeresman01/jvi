@@ -4,6 +4,10 @@ mvn versions:set -DnewVersion=2.50.1-SNAPSHOT
 mvn versions:revert
 mvn versions:commit
 
+=== available versions
+    just read the metadata
+    https://repo1.maven.org/maven2/org/openjfx/javafx/maven-metadata.xml
+
 
 === local file into repository
 

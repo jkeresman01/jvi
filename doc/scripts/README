@@ -41,3 +41,15 @@ vimh_build:
 vimh_build: "XML builder" for <table> markup details
     #*# table:form=index:id=xxx 1:tag 17:command 33:opt:note 36:desc #*#
     #*# table:stop-table #*#
+
+
+###
+###
+###
+python  issue
+
+py3 - cgi.escape not found
+    add "import html" under "import cgi"
+    and then change "cgi.escape" to "html.escape"
+
+    And this escapes a lot more, changes golden files.
