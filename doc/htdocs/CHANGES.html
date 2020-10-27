@@ -73,6 +73,12 @@
 -->
 
 <b>Version 1.6.5 - 2020/11/xx</b>
+<p>
+  There've been long standing issues with VisualMode highlighting
+  around multiple views of the same file. Including behavior when switching
+  from one window to another with the same buffer.
+  This relase corrects those issues; it behaves like vim.
+</p>
 <dl>
   <dt>jVi Core</dt>
   <dd>
@@ -82,6 +88,9 @@
         [#87 No ctrl+r in search] </a>
         <br/> In the command line, both '/' and ':', handle Ctrl-R
         to insert normal and special registers. See vim docs.
+      </li>
+      <li>
+        Correctly show visual mode highlighting across multiple windows.
       </li>
     </ul>
   </dd>

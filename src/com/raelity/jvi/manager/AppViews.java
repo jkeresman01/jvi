@@ -147,11 +147,15 @@ public enum AppViews
         if (!(avs.contains(keep) && av.equals(keep)))
             adjustMru(av); // adjust since keepMru not in effect
 
+        // NEEDSWORK: not sure this is quite right.
+        //          what if curwin and tv have different displayers
         if (G.curwin() != null)
             G.curwin().getStatusDisplay().refresh();
         ViTextView tv = fact().getTextView(av);
-        if(tv != null)
+        if(tv != null) {
+            // NEEDSWORK: which window's status displayer is used by Msg...
             Msg.smsg(fact().getFS().getDisplayFileViewInfo(tv));
+        }
     }
 
     /** FROM: NB-Module */
@@ -423,11 +427,6 @@ public enum AppViews
     public static boolean isKnown(ViAppView av)
     {
         return avs.contains(av);
-    }
-
-    private static class BuffersList
-    {
-        List<WeakReference> l = new ArrayList<>();
     }
 
     /**

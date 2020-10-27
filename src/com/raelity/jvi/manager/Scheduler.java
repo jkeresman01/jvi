@@ -91,14 +91,11 @@ public class Scheduler
                 + (fNewTextView ? "NEW: " : "") + cid(editor)
                 + " " + buf.getDisplayFileName() + " " + ViManager.cid(buf));
         if (currentEditorPane != null) {
-            getCore().abortVisualMode();
-            // MOVED ABOVE: currentTv = mayCreateTextView(currentEditorPane);
-            // Freeze and/or detach listeners from previous active view
             currentTv.detach();
         }
 
         currentEditorPane = editor;
-        getCore().switchTo(textView, buf);
+        getCore().switchTo(textView, buf, false);
         getCore().resetCommand(false); // Means something first time window switched to
         buf.activateOptions(textView);
         textView.activateOptions(textView);
@@ -117,7 +114,8 @@ public class Scheduler
                                currentTv == null ? null : currentTv.getBuffer(),
                                textView.getBuffer());
         firePropertyChange(P_SWITCH_TO_WIN, currentTv, textView);
-        Msg.smsg(getFS().getDisplayFileViewInfo(textView));
+
+        getCore().switchTo(textView, buf, true);
     }
 
     private static final FocusListener focusSwitcher = new FocusAdapter()
@@ -137,7 +135,8 @@ public class Scheduler
     static void changeBuffer(ViTextView tv)
     {
         if(G.curwin() == tv)
-            getCore().switchTo(tv, tv.getBuffer());
+            getCore().switchTo(tv, tv.getBuffer(), false);
+            getCore().switchTo(tv, tv.getBuffer(), true);
     }
 
     // NEEDSWORK: register should not be public. This is public because of the

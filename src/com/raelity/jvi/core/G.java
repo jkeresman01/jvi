@@ -30,7 +30,9 @@ import com.raelity.jvi.core.lib.Constants.FDO;
 import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
 
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.core.Misc01.getVisibleAppViews;
+import static com.raelity.jvi.core.Normal.end_visual_mode;
+import static com.raelity.jvi.manager.ViManager.getFactory;
 
 /**
  *  A class of globals. Most taken directly from vim code.
@@ -50,15 +52,58 @@ public class G implements ViOptionBag
 
     /**
      *  Set the current editor.
+     * 
+     * During a window switch, this is called twice. Once during
+     * the switch and once after it's done.
      */
-    static void switchTo( ViTextView tv, Buffer buf )
+    static void switchTo( ViTextView _tv, Buffer buf, boolean lastCall )
     {
+        if(lastCall) {
+            Normal.displayVisualBounds();
+            updateTextViewsVisual(true);
+            return;
+        }
+
+
+        TextView tv = (TextView)_tv;
         if(curwin == tv && curbuf != buf) {
             dbgEditorActivation.println(() -> "Activation: changeBuffer tv "
                     + ViManager.cid(tv) + " buf " + ViManager.cid(buf));
         }
-        curwin = (TextView)tv;
+
+        if(curwin != null && curbuf != null) {
+            if(VIsual_active) {
+                // switch away from visually active
+                if(buf == curbuf) {
+                    // Switching windows, but we've got the same buffer,
+                    // so stay in visual mode.
+                    // Keep the cursor the same
+                    tv.w_cursor.set(curwin.w_cursor);
+                    tv.w_set_curswant = true;
+                    
+                } else {
+                    // different textView and buffer
+                    // save visual state for previous like an ESC
+                    // see Normal.abortVisualMode
+                    end_visual_mode(false);	// stop Visual
+                    curwin.w_set_curswant = true;
+                    
+                    //G.VIsual_buffer = null;
+                }
+            }
+        }
+
+        curwin = tv;
         curbuf = buf;
+    }
+
+    static void updateTextViewsVisual(boolean doAllVisible) {
+        for(ViAppView av : getVisibleAppViews(AppViews.ACTIVE)) {
+            // Update any other windows that display this buffer
+            ViTextView tv = getFactory().getTextView(av);
+            if(tv != null && (doAllVisible || tv != G.curwin && tv.getBuffer() == G.curbuf))
+                tv.updateVisualState();
+        }
     }
 
     public static void setModMask( int mod_mask ) { G.mod_mask = mod_mask; }

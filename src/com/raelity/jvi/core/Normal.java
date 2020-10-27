@@ -26,16 +26,12 @@
  */
 package com.raelity.jvi.core;
 
-import java.awt.EventQueue;
 import java.io.File;
 import java.text.CharacterIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.raelity.jvi.ViFPOS;
-import com.raelity.jvi.ViFeature;
-import com.raelity.jvi.ViMark;
-import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.*;
 import com.raelity.jvi.ViTextView.DIR;
 import com.raelity.jvi.ViTextView.EDGE;
 import com.raelity.jvi.ViTextView.FOLDOP;
@@ -46,7 +42,7 @@ import com.raelity.jvi.core.Misc.Yankreg;
 import com.raelity.jvi.core.lib.NotSupportedException;
 import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.MutableInt;
-import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.manager.*;
 import com.raelity.jvi.swing.KeyBinding;
 import com.raelity.text.TextUtil;
 import com.raelity.text.MySegment;
@@ -54,6 +50,10 @@ import com.raelity.text.MySegment;
 import static java.text.CharacterIterator.DONE;
 
 import static com.raelity.jvi.core.Edit.*;
+import static com.raelity.jvi.core.G.VIsual_active;
+import static com.raelity.jvi.core.G.curbuf;
+import static com.raelity.jvi.core.G.curwin;
+import static com.raelity.jvi.core.G.updateTextViewsVisual;
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
@@ -67,7 +67,7 @@ import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.core.lib.Constants.FDO.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.manager.ViManager.getFactory;
 
 /**
  * Contains the main routine for processing characters in command mode.
@@ -691,7 +691,7 @@ normal_end: {
 	  case CTRL_T:    // backwards in tag stack
 	    if (!checkclearopq(oap)) {
               // do_tag((char_u *)"", DT_POP, (int)ca.count1, FALSE, TRUE);
-              ViManager.getFactory().tagStack(TAGOP.OLDER, ca.count1);
+              getFactory().tagStack(TAGOP.OLDER, ca.count1);
             }
 	    break;
 
@@ -1928,6 +1928,9 @@ normal_end: {
   }
 
   static void end_visual_mode() {
+    end_visual_mode(true);
+  }
+  static void end_visual_mode(boolean updateVisualState) {
 // #ifdef USE_CLIPBOARD
     /*
      * If we are using the clipboard, then remember what was selected in case
@@ -1955,7 +1958,8 @@ normal_end: {
 
     if (G.p_smd)
         G.clear_cmdline = true;/* unshow visual mode later */
-    v_updateVisualState();
+    if(updateVisualState)
+      v_updateVisualState();
 
     /* Don't leave the cursor past the end of the line */
     if (G.curwin.w_cursor.getColumn() > 0 && Util.getChar() == '\n') // DONE
@@ -2135,8 +2139,6 @@ normal_end: {
 
     if (!G.p_sc)
       return;
-    if(G.VIsual_active)
-      return;
 
     showcmd_buf.setLength(0);
 
@@ -2204,6 +2206,11 @@ normal_end: {
     showcmd_buf.append(s).append(" ");
     setCommandCharacters(showcmd_buf.toString());
     out_flush();
+  }
+
+  public static void displayVisualBounds() {
+      curwin.getStatusDisplay().displayVisualBounds(
+              VIsual_active ? curbuf.getVisualSelectStateString() : "");
   }
 
   /**
@@ -3553,9 +3560,11 @@ nv_brackets(CMDARG cap, int dir)
       G.curbuf.clearVisualState();
     }
     
-    displaySelectState(G.curbuf.getVisualSelectStateString());
+    displayVisualBounds();
     
     G.curwin.updateVisualState();
+
+    updateTextViewsVisual(false);
   }
   
   /**
@@ -4063,6 +4072,7 @@ nv_brackets(CMDARG cap, int dir)
             update_curbuf(NOT_VALID);
             showmode();
             ui_cursor_shape();
+            G.curwin.w_set_curswant = true;
         }
         break;
 

@@ -74,9 +74,16 @@ public class Hook
         Normal.keepCursorInView(tv);
     }
 
-    public void switchTo(ViTextView tv, Buffer buf)
+    /**
+     * During a window switch, this is called twice. Once during
+     * the switch and once after it's done.
+     * @param tv
+     * @param buf
+     * @param lastCall true indicates the switch is complete
+     */
+    public void switchTo(ViTextView tv, Buffer buf, boolean lastCall)
     {
-        G.switchTo(tv, buf);
+        G.switchTo(tv, buf, lastCall);
     }
 
     public void uiCursorAndModeAdjust()

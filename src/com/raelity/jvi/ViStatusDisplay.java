@@ -32,6 +32,9 @@ public interface ViStatusDisplay {
   /** Output chitchat, VV_STATUSMSG */
   public void displayStatusMessage(String msg);
 
+  /** visual mode bounds */
+  default public void displayVisualBounds(String msg) {};
+
   /** Output warning chitchat */
   public void displayErrorMessage(String msg);
 

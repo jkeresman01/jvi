@@ -96,10 +96,12 @@ CTRL-SHIFT-V				*c_CTRL-SHIFT-V* *c_CTRL-SHIFT-Q*
 CTRL-SHIFT-Q	Works just like CTRL-V, unless |modifyOtherKeys| is active,
 		then it inserts the Escape sequence for a key with modifiers.
 
+STOP-DOC-DEL
 							*c_<Left>* *c_Left*
 <Left>		cursor left
 							*c_<Right>* *c_Right*
 <Right>		cursor right
+START-DOC-DEL
 							*c_<S-Left>*
 <S-Left> or <C-Left>					*c_<C-Left>*
 		cursor one WORD left
@@ -111,9 +113,20 @@ CTRL-B or <Home>				*c_CTRL-B* *c_<Home>* *c_Home*
 CTRL-E or <End>					*c_CTRL-E* *c_<End>* *c_End*
 		cursor to end of command-line
 
+STOP-DOC-DEL
+        	        				*c_<C-Left>*
+<C-Left>	cursor one WORD left
+	        	               			*c_<C-Right>*
+<C-Right>	cursor one WORD right
+		                        		*c_<Home>* *c_Home*
+<Home>		cursor to beginning of command-line
+					                *c_<End>* *c_End*
+<End>		cursor to end of command-line
+
 							*c_<LeftMouse>*
 <LeftMouse>	Move the cursor to the position of the mouse click.
 
+START-DOC-DEL
 							*c_<MiddleMouse>*
 <MiddleMouse>	Paste the contents of the clipboard (for X11 the primary
 		selection).  This is similar to using CTRL-R *, but no CR
@@ -144,6 +157,7 @@ CTRL-K {char1} {char2}					*c_CTRL-K*
 		enter digraph (see |digraphs|).  When {char1} is a special
 		key, the code for that key is inserted in <> form.
 
+STOP-DOC-DEL
 CTRL-R {register}					*c_CTRL-R* *c_<C-R>*
 		Insert the contents of a numbered or named register.  Between
 		typing CTRL-R and the second character '"' will be displayed
@@ -151,11 +165,18 @@ CTRL-R {register}					*c_CTRL-R* *c_<C-R>*
 		register.
 		The text is inserted as if you typed it, but mappings and
 		abbreviations are not used.  Command-line completion through
-		'wildchar' is not triggered though.  And characters that end
+		'wildchar' is not triggered though.
+
+                With jVi, characters less than space are filtered out; so no
+                <Esc>, <CR>, <NL>, or any other control characters can be
+                entered. But java, so utf-16 is handled.
+START-DOC-DEL
+ And characters that end
 		the command line are inserted literally (<Esc>, <CR>, <NL>,
 		<C-C>).  A <BS> or CTRL-W could still end the command line
 		though, and remaining characters will then be interpreted in
 		another mode, which might not be what you intended.
+STOP-DOC-DEL
 		Special registers:
 			'"'	the unnamed register, containing the text of
 				the last delete or yank
@@ -167,6 +188,8 @@ CTRL-R {register}					*c_CTRL-R* *c_<C-R>*
 			':'	the last command-line
 			'-'	the last small (less than a line) delete
 			'.'	the last inserted text
+
+START-DOC-DEL
 							*c_CTRL-R_=*
 			'='	the expression register: you are prompted to
 				enter an expression (see |expression|)

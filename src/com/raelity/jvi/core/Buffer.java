@@ -32,8 +32,15 @@ import com.raelity.text.MySegment;
 
 import static java.lang.Math.min;
 
+import static com.raelity.jvi.core.G.VIsual;
+import static com.raelity.jvi.core.G.VIsual_active;
+import static com.raelity.jvi.core.G.VIsual_mode;
+import static com.raelity.jvi.core.G.curbuf;
+import static com.raelity.jvi.core.G.curwin;
+import static com.raelity.jvi.core.G.drawSavedVisualBounds;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
+import static com.raelity.text.TextUtil.sf;
 
 /**
  * Buffer: structure that holds information about one file, primarily
@@ -418,6 +425,10 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         private int wantRight; // either MAXCOL or same as right
         private boolean valid; // the class may not hold valid info
 
+        public boolean isValid() {
+            return valid;
+        }
+
         public char getVisMode() {
             return visMode;
         }
@@ -461,7 +472,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
 
         //void init(char visMode, ViFPOS startPos, ViFPOS cursorPos) {
         public void init(char visMode, ViFPOS startPos, ViFPOS cursorPos,
-                         boolean wantMax, Buffer buf, ViTextView win) {
+                         boolean wantMax, Buffer buf, ViTextView tv) {
             ViFPOS start, end; // start.offset less than end.offset
             
             this.visMode = visMode;
@@ -473,13 +484,21 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
                 start = cursorPos;
                 end = startPos;
             }
-            // VISUAL FOLD HANDLING
-            Normal.foldAdjustVisual(win, buf, start, end);
-            startOffset = start.getOffset();
-            endOffset = end.getOffset();
             
             startLine = start.getLine();
             endLine = end.getLine();
+            int nLines = buf.getLineCount();
+            if(startLine >= nLines || endLine >= nLines) {
+                LOG.severe(sf("tv %s, buf %s, n=%d, start=%d, end=%d",
+                        tv, buf, nLines, startLine, endLine));
+                valid = false;
+                return;
+            }
+
+            // VISUAL FOLD HANDLING
+            Normal.foldAdjustVisual(tv, buf, start, end);
+            startOffset = start.getOffset();
+            endOffset = end.getOffset();
             
             //
             // set left/right columns
@@ -539,19 +558,20 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         getVisualBounds().clear();
     }
 
-    VisualBounds calcCurrentVisualBounds()
-    {
-        // VISUAL FOLD HANDLING
-        assert this == G.curbuf;
-        if(!G.VIsual_active) {
-            return null;
-        }
-        VisualBounds vb = getVisualBounds();
-        
-        vb.init(G.VIsual_mode, G.VIsual, G.curwin.w_cursor.copy(),
-                G.curwin.w_curswant == MAXCOL, G.curbuf, G.curwin);
-        return vb;
-    }
+    // NOT USED?
+    // VisualBounds calcCurrentVisualBounds()
+    // {
+    //     // VISUAL FOLD HANDLING
+    //     assert this == G.curbuf;
+    //     if(!G.VIsual_active || this != G.curbuf) {
+    //         return null;
+    //     }
+    //     VisualBounds vb = getVisualBounds();
+    //     
+    //     vb.init(G.VIsual_mode, G.VIsual, G.curwin.w_cursor.copy(),
+    //             G.curwin.w_curswant == MAXCOL, G.curbuf, G.curwin);
+    //     return vb;
+    // }
 
     String getVisualSelectStateString() {
         assert this == G.curbuf;
@@ -584,16 +604,19 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     }
 
     @Override
-    public int[] getVisualSelectBlocks(ViTextView tv,
+    public int[] getVisualSelectBlocks(ViTextView _tv,
                                        int startOffset, int endOffset) {
-        TextView win = (TextView) tv;
+        TextView tv = (TextView) _tv;
         VisualBounds vb = getVisualBounds();
-        if (G.drawSavedVisualBounds) {
+        if(curbuf != this) {
+            return new int[] {-1, -1};
+        }
+        if (drawSavedVisualBounds) {
             vb.init(b_visual_mode, b_visual_start, b_visual_end,
-                    false, this, win);
-        } else if(G.VIsual_active) {
-            vb.init(G.VIsual_mode, G.VIsual, win.w_cursor.copy(),
-                    ((TextView)tv).w_curswant == MAXCOL, this, win);
+                    false, this, tv);
+        } else if(VIsual_active) {
+            vb.init(VIsual_mode, VIsual, curwin.w_cursor,
+                    curwin.w_curswant == MAXCOL, this, tv);
         } else {
             vb.clear();
         }
@@ -604,7 +627,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     public int[] calculateVisualBlocks(VisualBounds vb,
             int startOffset,
             int endOffset) {
-        if(!vb.valid)
+        if(!vb.isValid())
             return new int[] { -1, -1};
         
         int[] newHighlight = null;
