@@ -718,8 +718,14 @@ final public class ViManager
             // but G.curwin is not set yet. See switchTo(Component editor)
             return;
         }
-        if(textView.isReady())
-            core.keepCursorInView(textView);
+        if(factory.isEnabled()) {
+            // Nov-2020 add isEnabled check; needed because keepCursorInView,
+            // which was added earlier this year, touches too much stuff.
+            // This seems like the right point to cut off responding,
+            // the stuff before we get here records state info.
+            if(textView.isReady())
+                core.keepCursorInView(textView);
+        }
         G.curwin().getStatusDisplay().scrolling();
     }
 
