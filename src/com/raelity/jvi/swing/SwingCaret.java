@@ -27,6 +27,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import javax.swing.event.ChangeEvent;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 
@@ -86,6 +87,8 @@ public class SwingCaret extends DefaultCaret implements ViCaret
     @Override
     protected synchronized void damage(Rectangle r)
     {
+
+        viDelegate.adjustCaretBounds(r, getDotChar(), true);
         if (viDelegate.damage(this, r)) {
             repaint();
         }
@@ -106,6 +109,15 @@ public class SwingCaret extends DefaultCaret implements ViCaret
         repaint();
     }
 
+    private char[] getDotChar() {
+        char[] dotChar = new char[1];
+        try {
+            dotChar[0] = getTextComponent().getText(getDot(), 1).charAt(0);
+        } catch(BadLocationException ex) {
+        }
+        return dotChar;
+    }
+
     /**
      * Render the caret as specified by the cursor.
      * <br/>
@@ -115,7 +127,7 @@ public class SwingCaret extends DefaultCaret implements ViCaret
     @Override
     public void paint(Graphics g)
     {
-        viDelegate.paint(g, isVisible(), null, getTextComponent());
+        viDelegate.paint(g, isVisible(), getDotChar(), getTextComponent());
     }
 
     @Override

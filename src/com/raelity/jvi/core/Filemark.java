@@ -406,6 +406,8 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
 
     /** debug ... */
     static void checkFM(String markName, Filemark fm) {
+        if(true)
+            return;
         if(!ViManager.isDebugAtHome())
             return;
         if(!markName.equals("A"))
