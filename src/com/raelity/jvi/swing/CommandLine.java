@@ -43,15 +43,20 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 import javax.swing.text.TextAction;
 
 import com.raelity.jvi.core.Options;
@@ -61,8 +66,10 @@ import com.raelity.jvi.options.DebugOption;
 
 import com.raelity.jvi.core.CommandHistory.HistoryContext;
 import com.raelity.jvi.core.CommandHistory.InitialHistoryItem;
+import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.manager.*;
 
+import static com.raelity.jvi.core.Util.beep_flush;
 import static com.raelity.jvi.lib.LibUtil.dumpEvent;
 import static com.raelity.text.TextUtil.sf;
 
@@ -84,7 +91,7 @@ public final class CommandLine extends AbstractCommandLine
             = Logger.getLogger(CommandLine.class.getName());
     private static final DebugOption dbg = Options.getDebugOption(Options.dbgSearch);
     private final JLabel modeLabel = new JLabel();
-    private final JTextField text = getNewTextField();
+    private final CommandLineTextField text = getNewTextField();
     private final GridBagLayout gridBagLayout1 = new GridBagLayout();
     private String mode;
     boolean setKeymapActive;
@@ -98,6 +105,7 @@ public final class CommandLine extends AbstractCommandLine
     static final DebugOption dbgKeys
             = Options.getDebugOption(Options.dbgKeyStrokes);
     private HistoryContext ctx;
+    private int gotCtrlR;
 
     public CommandLine()
     {
@@ -166,6 +174,7 @@ public final class CommandLine extends AbstractCommandLine
     public void init( String s )
     {
         InitialHistoryItem initalState = ctx.init();
+        gotCtrlR = -1;
         commandLineFiringEvents = true;
         dbg.printf("CLINE: init: s=%s, commandLineFiringEvents true\n", s);
         dot = mark = 0;
@@ -326,7 +335,10 @@ public final class CommandLine extends AbstractCommandLine
                     KeyEvent.VK_ESCAPE, 0),
                     ACT_FINISH),
             new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
-                    KeyEvent.VK_CLOSE_BRACKET, InputEvent.CTRL_DOWN_MASK),
+                    KeyEvent.VK_OPEN_BRACKET, InputEvent.CTRL_DOWN_MASK),
+                    ACT_FINISH),
+            new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
+                    KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK),
                     ACT_FINISH),
             new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                     '\t'),
@@ -474,9 +486,9 @@ public final class CommandLine extends AbstractCommandLine
 // inner classes ...........................................................
 
 
-    private JTextField getNewTextField()
+    private CommandLineTextField getNewTextField()
     {
-        JTextField ed = new CommandLineTextField("",9);
+        CommandLineTextField ed = new CommandLineTextField("",9);
         ed.setBorder(null);
         ed.getDocument().addDocumentListener(new DocumentListener()
         {
@@ -509,42 +521,105 @@ public final class CommandLine extends AbstractCommandLine
         });
         return ed;
     }
+    final static StyleContext context = StyleContext.getDefaultStyleContext();
+    final static AttributeSet attrRed = context.addAttribute(
+            context.getEmptySet(), StyleConstants.Foreground, Color.RED);
 
-    // Copied from BasicComboBoxEditor::BorderlessTextField
-    //          except for actionPerformed
-    private class CommandLineTextField extends JTextField
+    private class CommandLineTextField extends JTextField // JTextPane
     {
+    StringBuffer sb = new StringBuffer();
+
+    Color fg;
+    private void saveColorFg() {
+        Object o = this;
+        if(!(o instanceof JTextPane)) {
+            fg = getForeground();
+            setForeground(Color.RED);
+        }
+    }
+    private void restorFg() {
+        Object o = this;
+        if(!(o instanceof JTextPane)) {
+            setForeground(fg);
+        }
+    }
 
     public CommandLineTextField(String value,int n) {
-        super(value,n);
+        super(value, n);
+        //super(new DefaultStyledDocument());
+        //setText("");
     }
 
     @Override
     protected void processKeyEvent(KeyEvent e)
     {
-        if(!ViManager.getFactory().commandEntryAssistBusy(null)
-                && e.getID() == KeyEvent.KEY_PRESSED
-                && (e.getKeyCode() == KeyEvent.VK_UP
-                    || e.getKeyCode() == KeyEvent.VK_DOWN)) {
-            try {
-                inUpDown = true;
-                String val;
-                if(e.getKeyCode() == KeyEvent.VK_UP) {
-                    val = ctx.next();
-                } else {
-                    val = ctx.prev();
-                }
-
-                // there's only one shot at using a selection, to late now...
-                setCaretPosition(getCaretPosition()); // clear any selection
-                if(val != null) {
-                    setText(val);
+        if(!ViManager.getFactory().commandEntryAssistBusy(null)) {
+            if(e.getID() == KeyEvent.KEY_TYPED) {
+                if(gotCtrlR >= 0) {
+                    Document doc = getDocument();
+                    if(doc != null) {
+                        try {
+                            restorFg();
+                            doc.remove(gotCtrlR, 1);
+                            String s = ctx.get_register(e.getKeyChar());
+                            if(s != null) {
+                                sb.setLength(0);
+                                for(int i = 0; i < s.length(); i++) {
+                                    char c = s.charAt(i);
+                                    if(c >= ' ')
+                                        sb.append(c);
+                                }
+                                doc.insertString(gotCtrlR, sb.toString() , null);
+                            } else
+                                EventQueue.invokeLater(() -> beep_flush());
+                        } catch(BadLocationException ex) {
+                                EventQueue.invokeLater(() -> beep_flush());
+                        }
+                    }
+                    gotCtrlR = -1;
                     return;
                 }
-                SwingUtilities.invokeLater(() -> Util.beep_flush());
+                if(e.getKeyChar() == CtrlChars.CTRL_R) {
+                    Document doc = getDocument();
+                    if(doc != null) {
+                        try {
+                            int temp = getCaretPosition();
+                            saveColorFg();
+                            doc.insertString(temp, "\"", attrRed);
+                            setCaretPosition(temp);
+                            gotCtrlR = temp;
+                        } catch(BadLocationException ex) {
+                            EventQueue.invokeLater(() -> beep_flush());
+                        }
+                    }
+                    return;
+                }
+            }
+            if(gotCtrlR >= 0)
                 return;
-            } finally {
-                inUpDown = false;
+            if (e.getID() == KeyEvent.KEY_PRESSED
+                    && (e.getKeyCode() == KeyEvent.VK_UP
+                        || e.getKeyCode() == KeyEvent.VK_DOWN)) {
+                try {
+                    inUpDown = true;
+                    String val;
+                    if(e.getKeyCode() == KeyEvent.VK_UP) {
+                        val = ctx.next();
+                    } else {
+                        val = ctx.prev();
+                    }
+                    
+                    // there's only one shot at using a selection, to late now...
+                    setCaretPosition(getCaretPosition()); // clear any selection
+                    if(val != null) {
+                        setText(val);
+                        return;
+                    }
+                    SwingUtilities.invokeLater(() -> Util.beep_flush());
+                    return;
+                } finally {
+                    inUpDown = false;
+                }
             }
         }
         super.processKeyEvent(e);

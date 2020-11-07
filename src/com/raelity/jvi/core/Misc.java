@@ -1347,7 +1347,11 @@ public class Misc implements ClipboardOwner {
         }
         return sb.toString();
       }
-      else return y_array[0].toString();
+      else {
+        if (y_size == 0 || y_array == null || y_array[0] == null)
+          return "";
+        return y_array[0].toString();
+      }
     }
 
     void clear() {

@@ -670,7 +670,6 @@ normal_char:	// do "break normal_char" to insert a character
       case CTRL_O:
       case CTRL_L:
       case CTRL_Q:
-      case CTRL_RightBracket:
         return true;
       default:
         return false;

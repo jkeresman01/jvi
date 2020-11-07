@@ -37,6 +37,7 @@ import com.raelity.jvi.*;
 import com.raelity.jvi.ViOutputStream.FLAGS;
 import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.Misc.Yankreg;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.ViManager;
@@ -505,6 +506,20 @@ private static HistoryActionArgs getHistoryActionArgs()
     abstract HistEntry test_next();
     abstract HistEntry test_prev();
     abstract HistEntry test_current();
+
+    public String get_register(char regname) {
+        String val = null;
+        if(regname >= 'a' && regname <= 'z') {
+            Yankreg reg = Misc.get_register(regname, true);
+            if (reg.y_size != 0 && reg.y_array != null)
+                val = reg.getAll();
+        } else {
+            Wrap<String> pArg = new Wrap<>();
+            if(Misc.get_spec_reg(regname, pArg, false))
+                val = pArg.getValue();
+        }
+        return val;
+    }
     }
 
     /**
