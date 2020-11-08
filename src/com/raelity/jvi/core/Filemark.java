@@ -406,11 +406,11 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
 
     /** debug ... */
     static void checkFM(String markName, Filemark fm) {
-        if(true)
+        if(false)
             return;
         if(!ViManager.isDebugAtHome())
             return;
-        if(!markName.equals("A"))
+        if(!markName.equals("V"))
             return;
         try {
             if(fm.line <= 1) {
