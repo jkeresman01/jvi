@@ -68,6 +68,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.Utilities;
 import javax.swing.text.View;
 
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.*;
@@ -1128,6 +1129,146 @@ public abstract class SwingTextView extends TextView
         return w;
     }
 
+    private int sign(double d) {
+        return d < 0 ? -1 : d > 0 ? +1 : 0;
+    }
+
+            
+    /**
+     * jvi: adjust by number of pixels between edge of window
+     * offset is the first char in the row
+     */
+    private double adjustEdgePixelOffset(int offset) throws BadLocationException {
+        //
+        // NEEDSWORKL: what about bi-dir?
+        //
+        Rectangle2D rStart = getEditor().modelToView(offset);
+        return rStart.getX();
+    }
+
+    /**
+     * Borrowed heavily form Utilities.getPositionAbove/Below
+     *
+     * Standard getPositionAbove returns offset of the character whose
+     * *start* is closest to the start of view_curswant.
+     * This is easily wrong when position directly above
+     * is a tab. If closer to the end of the tab, then
+     * the character after the tab is selected.
+     *
+     * I think it's an assumption that otherwise could affect results:
+     * We're working with a rectangular layout, all lines start in same
+     * column pixel position.
+     *
+     * NOTE: x is from the beginning of the text,
+     *       not necessarily the beginning of the window
+     * 
+     * @param offs doc offset within the line we are moving from, typically current offset
+     * @param x target pixel offset
+     * @return
+     * @throws BadLocationException 
+     */
+    private final int getPositionAbove(int offs, double x)
+    throws BadLocationException
+    {
+        JTextComponent c = getEditor();
+        // lastOffs end of previous row
+        int lastOffs = Utilities.getRowStart(c, offs) - 1;
+        if (lastOffs < 0) {
+            return -1;
+        }
+        x += adjustEdgePixelOffset(lastOffs+1);
+
+        double bestSpan = Integer.MAX_VALUE;
+        double y = 0;
+        Rectangle2D r = null;
+        // jvi: pixelDirection < 0 if x pos gets smaller as offset gets smaller
+        int pixelDirection = 0;
+        if (lastOffs >= 0) {
+            r = c.modelToView(lastOffs);
+            y = r.getY();
+            // jvi: Compute the direction that decreasing offset
+            // goes in. Not sure this is needed, but bi-dir?
+            int decreasedOffset = lastOffs - 1;
+            if(decreasedOffset >= 0) {
+                Rectangle2D rDecreased = c.modelToView(decreasedOffset);
+                pixelDirection = sign(rDecreased.getX() - r.getX());
+            }
+        }
+        int firstGoodOffset = -1;
+        while ((r != null) && (y == r.getY())) {
+            // jvi: find the first offset that is the "correct side"
+            int signDiff = sign(r.getX() - x);
+            if (firstGoodOffset < 0 && (signDiff == 0 || signDiff == pixelDirection)) {
+                firstGoodOffset = lastOffs;
+                break;
+            }
+            double span = Math.abs(r.getX() - x);
+            if (span < bestSpan) {
+                offs = lastOffs;
+                bestSpan = span;
+            }
+            lastOffs -= 1;
+
+            if ((lastOffs >= 0)) {
+                r = c.modelToView(lastOffs);
+            } else {
+                r = null;
+            }
+        }
+        return firstGoodOffset >= 0 ? firstGoodOffset : offs;
+    }
+
+    private final int getPositionBelow(int offs, double x)
+    throws BadLocationException
+    {
+        JTextComponent c = getEditor();
+        int lastOffs = Utilities.getRowEnd(c, offs) + 1;
+        if (lastOffs <= 0) {
+            return -1;
+        }
+        double bestSpan = Integer.MAX_VALUE;
+        int n = c.getDocument().getLength();
+        x += (lastOffs <= n ? adjustEdgePixelOffset(lastOffs) : 0);
+
+        double y = 0;
+        Rectangle2D r = null;
+        int pixelDirection = 0;
+        if (lastOffs <= n) {
+            r = c.modelToView(lastOffs);
+            y = r.getY();
+            // jvi: Compute the direction that increasing offset
+            // goes in. Not sure this is needed, but bi-dir?
+            int increasedOffset = lastOffs + 1;
+            if(increasedOffset <= n) {
+                Rectangle2D rIncreased = c.modelToView(increasedOffset);
+                pixelDirection = sign(rIncreased.getX() - r.getX());
+            }
+        }
+        int beforeBadOffset = -1;
+        while ((r != null) && (y == r.getY())) {
+            // jvi: in this case, keep stashing the offset,
+            //      until we go past the 'x' boundary.
+            if (sign(r.getX() - x) == pixelDirection) {
+                break;
+            } else {
+                beforeBadOffset = lastOffs;
+            }
+            double span = Math.abs(x - r.getX());
+            if (span < bestSpan) {
+                offs = lastOffs;
+                bestSpan = span;
+            }
+            lastOffs += 1;
+
+            if (lastOffs <= n) {
+                r = c.modelToView(lastOffs);
+            } else {
+                r = null;
+            }
+        }
+        return beforeBadOffset >= 0 ? beforeBadOffset : offs;
+    }
+
     @Override
     public boolean viewLineUpDown(DIR dir, int distance, ViFPOS fpos)
     {
@@ -1136,23 +1277,21 @@ public abstract class SwingTextView extends TextView
 
         int view_curswant = vwFromW(fpos, w_curswant);
 
-        int x = roundint(view_curswant * getMaxCharWidth());
         int limit = -1;
 
         while(distance-- > 0) {
+            // NOTE on getMaxCharWidth(), expect a fixed width (mono) font.
+            int pixelOffset = roundint(view_curswant * getMaxCharWidth());
             int offset;
             try {
                 if(dir == DIR.BACKWARD) {
-                    offset = Utilities.getPositionAbove(
-                            getEditor(), fpos.getOffset(), x);
+                    offset = getPositionAbove(fpos.getOffset(), pixelOffset);
                     limit = 1;
                 } else { // DIR.FORWARD
-                    offset = Utilities.getPositionBelow(
-                            getEditor(), fpos.getOffset(), x);
+                    offset = getPositionBelow(fpos.getOffset(), pixelOffset);
                     limit = getBuffer().getLineCount();
                 }
             } catch (BadLocationException ex) {
-                LOG.log(Level.SEVERE, null, ex);
                 offset = -1;
             }
             if(offset < 0) {

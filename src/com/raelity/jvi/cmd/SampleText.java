@@ -27,6 +27,9 @@ package com.raelity.jvi.cmd;
 public class SampleText {
     static String txt01 =
   ""
++ "01234567012345670123456701234567\n"
++ "\t\t\t\t\n"
++ "01234567012345670123456701234567\n"
 + "one\n"
 + "two\n"
 + "three\n"
