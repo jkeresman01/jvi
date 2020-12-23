@@ -13,7 +13,7 @@ set -e
 JVI_VERSION=$(basename $(pwd))
 echo Createing update center $JVI_VERSION
 
-JVI_RELDIR=/a/src/jvi-dev/rel
+JVI_RELDIR=$jvis/rel
 UC_MIRROR=/z/jvi/frs/jVi-for-NetBeans
 
 JVI_VERSIONDIR=$JVI_RELDIR/$JVI_VERSION

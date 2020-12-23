@@ -43,7 +43,7 @@ licenses = []
 def copy_uc(src):
     (input_dir, fname) = os.path.split(src)
     xml = ET.parse(src)
-    modules = [ x for x in xml.getroot().getiterator("module") ]
+    modules = [ x for x in xml.getroot().iter("module") ]
 
     # add modules to the catalog; collect nbm names
     nbms = []
@@ -60,7 +60,7 @@ def copy_uc(src):
         shutil.copy(os.path.join(input_dir, nbm), uc_out_dir)
 
     # stash list of (name, url, base_dir, license_element)
-    for l in xml.getroot().getiterator("license"):
+    for l in xml.getroot().iter("license"):
         name = l.get("name")
         url = l.get("url")
         # saving the element, 'l', in following is "just in case"
@@ -109,7 +109,7 @@ for arg in args:
 
     xml = ET.parse(updates)
 
-    modules = [ x for x in xml.getroot().getiterator("module") ]
+    modules = [ x for x in xml.getroot().iter("module") ]
 
     print("===== modules")
     for m in modules:
