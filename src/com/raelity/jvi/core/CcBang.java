@@ -29,6 +29,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.text.CharacterIterator;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -40,6 +42,7 @@ import java.util.logging.Logger;
 
 import javax.swing.Timer;
 
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.*;
@@ -50,7 +53,9 @@ import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
 
-import static com.raelity.text.TextUtil.sf;
+import static java.nio.file.Files.isDirectory;
+import static java.nio.file.Files.isExecutable;
+
 
 /**
  *
@@ -60,28 +65,103 @@ public class CcBang
 {
 private static final Logger LOG = Logger.getLogger(CcBang.class.getName());
 
+/**
+ * The "virtual" cwd used for running ":!" commands.
+ * This should always be the result of toRealPath for consistency.
+ */
+private static Path cwd;
+
     @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=10)
     public static class Init implements ViInitialization
     {
+    @Override
+    public void init()
+    {
+        CcBang.init();
+    }
+    }
+
+private static void init()
+{
+    ColonCommands.register("!", "!", ACTION_bang, null);
+    ColonCommands.register("pw", "pwd", new Pwd(), null);
+    ColonCommands.register("cd", "cd", new Cd(), null);
+
+    Path tPath = FileSystems.getDefault().getPath("");
+    try {
+        cwd = tPath.toRealPath();
+    } catch(IOException ex) {
+        Exceptions.printStackTrace(ex);
+        // Oh well, we'll settle for this. Should never happen
+        cwd = tPath.toAbsolutePath();
+    }
+}
+
+    private static class Pwd extends AbstractColonAction
+    {
         @Override
-        public void init()
+        public void actionPerformed(ActionEvent e)
         {
-            CcBang.init();
+            ColonEvent cev = (ColonEvent) e;
+
+            if(cev.getNArg() != 0) {
+                Msg.emsg(Messages.e_trailing);
+                return;
+            }
+            Msg.smsg(cwd.toString());
         }
     }
 
-    private static void init()
+    private static class Cd extends AbstractColonAction
     {
-        ColonCommands.register("!", "!", ACTION_bang, null);
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            // The vim cmd use bang in strange circumstances
+            return EnumSet.of(CcFlag.BANG);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            ColonEvent cev = (ColonEvent) e;
+            
+            if(cev.getNArg() != 1) {
+                Msg.emsg("Takes exactly one argument.");
+                return;
+            }
+            setCwd(cev.getArg(1), true);
+        }
     }
 
-    static String lastBangCommand = null;
-
-    private static final ColonAction ACTION_bang = new BangAction();
-
-    private CcBang()
-    {
+private static boolean setCwd(String dir, boolean display)
+{
+    String exMsg = "";
+    try {
+        Path path = cwd.resolve(dir).toRealPath();
+        if (isDirectory(path) && isExecutable(path)) {
+            cwd = path;
+            if (display)
+                Msg.smsg(cwd.toString());
+            return true;
+        }
+    } catch(IOException ex) {
+        exMsg = ": " + ex.getLocalizedMessage();
+        // Exceptions.printStackTrace(ex);
     }
+    if (display)
+        Msg.emsg(String.format("Can't find directory '%s'%s", dir, exMsg));
+    return false;
+}
+
+
+static String lastBangCommand = null;
+
+private static final ColonAction ACTION_bang = new BangAction();
+
+private CcBang()
+{
+}
 
 public static class BangAction extends AbstractColonAction
 {
@@ -297,6 +377,7 @@ public static class BangAction extends AbstractColonAction
 
         ProcessBuilder pb = new ProcessBuilder(shellCommandLine);
         pb.redirectErrorStream(true);
+        pb.directory(cwd.toFile());
 
         Process p;
         try {
