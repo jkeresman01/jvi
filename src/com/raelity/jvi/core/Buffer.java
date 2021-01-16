@@ -488,7 +488,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
             startLine = start.getLine();
             endLine = end.getLine();
             int nLines = buf.getLineCount();
-            if(startLine >= nLines || endLine >= nLines) {
+            if(startLine > nLines || endLine > nLines) {
                 LOG.severe(sf("tv %s, buf %s, n=%d, start=%d, end=%d",
                         tv, buf, nLines, startLine, endLine));
                 valid = false;
