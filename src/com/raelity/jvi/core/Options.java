@@ -475,8 +475,9 @@ public final class Options {
     
     createBooleanOption(autoPopupFN, true);
     setupOptionDesc(Category.PLATFORM, autoPopupFN,
-                            "\":e#\" Completion Auto Popup",
-                "When doing \":\" command line entry, if \"e#\" is"
+                            "\":e [#|fname]\" Completion Auto Popup",
+                "When doing \":\" command line entry, if \"e#\""
+                + " or \"e fNameChar\" is"
                 + " entered then automatically popup a file"
                 + " name completion window."
                 + "\n\nNOTE: Otherwise use Ctrl-D, and/or platform specific"

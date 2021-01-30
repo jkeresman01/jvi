@@ -117,8 +117,8 @@ private static void init()
         @Override
         public EnumSet<CcFlag> getFlags()
         {
-            // The vim cmd use bang in strange circumstances
-            return EnumSet.of(CcFlag.BANG);
+            // The vim cd cmd use bang in strange circumstances, allow it, ignore it
+            return EnumSet.of(CcFlag.BANG, CcFlag.COMPL_FN);
         }
 
         @Override
@@ -133,6 +133,10 @@ private static void init()
             setCwd(cev.getArg(1), true);
         }
     }
+
+public static Path getCwd() {
+    return cwd;
+}
 
 private static boolean setCwd(String dir, boolean display)
 {

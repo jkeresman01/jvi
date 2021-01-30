@@ -27,6 +27,8 @@ import java.awt.event.KeyEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -63,6 +65,7 @@ import com.raelity.jvi.options.*;
 
 import static java.lang.Math.min;
 
+import static com.raelity.jvi.core.CcBang.getCwd;
 import static com.raelity.jvi.core.Util.beep_flush;
 import static com.raelity.jvi.core.lib.Constants.*;
 
@@ -365,7 +368,8 @@ public class Cc01
                     ViManager.getFS().edit(av, cev.isBang());
             } else if (args.size() == 1) {
                 String fName = args.get(0);
-                ViManager.getFS().edit(new File(fName), cev.isBang(), null);
+                Path path = getCwd().resolve(fName);
+                ViManager.getFS().edit(path.toFile(), cev.isBang(), null);
             } else
                 reportUsage = true;
             if(reportUsage)
