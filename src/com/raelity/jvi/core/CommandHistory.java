@@ -44,6 +44,7 @@ import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.*;
 import com.raelity.text.StringSegment;
 
+import static com.raelity.jvi.core.Misc.get_register_value;
 import static com.raelity.jvi.core.Msg.*;
 import static com.raelity.jvi.core.Misc.skipwhite;
 import static com.raelity.jvi.core.Util.beep_flush;
@@ -508,17 +509,7 @@ private static HistoryActionArgs getHistoryActionArgs()
     abstract HistEntry test_current();
 
     public String get_register(char regname) {
-        String val = null;
-        if(regname >= 'a' && regname <= 'z') {
-            Yankreg reg = Misc.get_register(regname, true);
-            if (reg.y_size != 0 && reg.y_array != null)
-                val = reg.getAll();
-        } else {
-            Wrap<String> pArg = new Wrap<>();
-            if(Misc.get_spec_reg(regname, pArg, false))
-                val = pArg.getValue();
-        }
-        return val;
+        return get_register_value(regname);
     }
     }
 

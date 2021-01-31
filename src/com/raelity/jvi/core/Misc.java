@@ -1645,6 +1645,32 @@ public class Misc implements ClipboardOwner {
     return reg;
   }
 
+  /**
+   * Return the value, as a string, of the named register;
+   * these are for i_^R, wonder if they are grouped/used like this elsewhere
+   * @param name register name
+   * @return the string value
+   */
+  static String get_register_value(char regname) {
+        String val = null;
+        if (regname == '*') {
+          if (!clipboard_available)
+            regname = 0;
+          else
+            clip_get_selection();	/* may fill * register */
+        }
+        if(regname >= 'a' && regname <= 'z' || "\"-*\000".indexOf(regname) >= 0) {
+            Yankreg reg = get_register(regname, true);
+            if (reg.y_size != 0 && reg.y_array != null)
+                val = reg.getAll();
+        } else if ("%/:.".indexOf(regname) >= 0) {
+            Wrap<String> pArg = new Wrap<>();
+            if(get_spec_reg(regname, pArg, false))
+                val = pArg.getValue();
+        }
+        return val;
+  }
+
 /**
  * Put "reg" into register "name".  Free any previous contents.
  */
