@@ -37,6 +37,9 @@ import com.raelity.jvi.ViCaret;
 import com.raelity.jvi.ViCaretStyle;
 import com.raelity.jvi.core.G;
 
+// TABS:
+//	x	x	x	x	x	x	
+
 /**
  * This handles the VI behavior of a caret, drawing the caret is
  * the big deal.

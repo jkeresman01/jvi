@@ -38,10 +38,7 @@ import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.swing.ui.options.OptionsPanel;
 
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.*;
 import com.raelity.jvi.cmd.nb.*;
@@ -50,10 +47,10 @@ import com.raelity.jvi.options.*;
 
 /**
  * The following are the hooks into jVi used in this class.
- * <br/>The AppViews one is optional.
- * <br/>The statusDisplay is for single line output.
- * <br/>Note that bulk output via PlayOutputStream goes to System.err.
- * <br/>Following are some key hookups.
+ * <br>The AppViews one is optional.
+ * <br>The statusDisplay is for single line output.
+ * <br>Note that bulk output via PlayOutputStream goes to System.err.
+ * <br>Following are some key hookups.
  * <pre>
  *      ViManager.setViFactory(new PlayFactory());
  *      AppViews.open(new PlayAppView(f, editor), "Jvi.setupFrame");
@@ -96,11 +93,13 @@ public class Jvi
 
     /**
      *  Construct the frame-based application.
+     * @return 
      */
     public static JviFrame makeFrame()
     {
         JviFrame frame = new JviFrame();
         nFrame++;
+        //frame.setLocationByPlatform(true);
 
         if ( packFrame ) {
             frame.pack();
@@ -108,7 +107,7 @@ public class Jvi
             frame.validate();
         }
 
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        Dimension screenSize = UIUtil.getScreenBounds().getSize();
         Dimension frameSize = frame.getSize();
         if (frameSize.height > screenSize.height) {
             frameSize.height = screenSize.height;
@@ -117,19 +116,25 @@ public class Jvi
             frameSize.width = screenSize.width;
         }
         int offset = (nFrame -1) * 50;
+        // looks like this is centering more or less
         frame.setLocation((screenSize.width - frameSize.width) / 2 + offset,
                          (screenSize.height - frameSize.height) / 2 + offset);
+        UIUtil.translateToScreen(frame);
         frame.setVisible(true);
         return frame;
     }
 
-
     /**
      *  Main method.
+     * @param args
      */
     @SuppressWarnings({"CallToThreadDumpStack", "CallToPrintStackTrace"})
     public static void main( String[] args )
     {
+        // java.awt.Window.locationByPlatform
+        // "true"
+        // Window.setLocationRelativeTo
+        System.setProperty("java.awt.Window.locationByPlatform", "true");
         try {
           // UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
           // System.err.println("SETTING LOOK AND FEEL");
@@ -237,6 +242,7 @@ public class Jvi
             dialog.setDialogMode(dialog.OK_CANCEL_DIALOG);
             dialog.pack();
             dialog.centerOnScreen();
+            UIUtil.translateToScreen(dialog);
         }
         if(!dialog.isVisible()) {
             optionsPanel.load();
