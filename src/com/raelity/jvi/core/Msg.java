@@ -29,45 +29,70 @@ public class Msg
 
     /**
      *  Display a status message.
+     * @param msg
+     * @param args
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static void smsg( String msg, Object ... args )
     {
         // VV_STATUSMSG
         String s = args.length == 0 ? msg : String.format(msg, args);
-        G.curwin.getStatusDisplay().displayStatusMessage(s);
+        if(ok())
+            G.curwin.getStatusDisplay().displayStatusMessage(s);
+        else
+            System.err.println("jVi: STATUS: " + s);
     }
 
 
     /**
      *  Display a warning message.
+     * @param msg
+     * @param args
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static void wmsg( String msg, Object ... args )
     {
         // VV_STATUSMSG
         String s = args.length == 0 ? msg : String.format(msg, args);
-        G.curwin.getStatusDisplay().displayWarningMessage(s);
+        if(ok())
+            G.curwin.getStatusDisplay().displayWarningMessage(s);
+        else
+            System.err.println("jVi: WARN: " + s);
     }
 
 
     /**
      *  Display an error message.
+     * @param msg
+     * @param args
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static void emsg( String msg, Object... args )
     {
         // VV_ERRMSG; HLF_E highlight
         String s = args.length == 0 ? msg : String.format(msg, args);
-        G.curwin.getStatusDisplay().displayErrorMessage(s);
-        GetChar.flush_buffers(false);
+        if(ok()) {
+            G.curwin.getStatusDisplay().displayErrorMessage(s);
+            GetChar.flush_buffers(false);
+        }
+        else
+            System.err.println("jVi: ERROR: " + s);
     }
 
 
     /**
      *  Display a frozen message.
+     * @param msg
+     * @param args
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static void fmsg( String msg, Object ... args )
     {
         String s = args.length == 0 ? msg : String.format(msg, args);
-        G.curwin.getStatusDisplay().displayFrozenMessage(s);
+        if(ok())
+            G.curwin.getStatusDisplay().displayFrozenMessage(s);
+        else
+            System.err.println("jVi MSG: " + s);
     }
 
 
@@ -76,12 +101,17 @@ public class Msg
      */
     public static void clearMsg()
     {
-        G.curwin.getStatusDisplay().clearMessage();
+        if(ok())
+            G.curwin.getStatusDisplay().clearMessage();
     }
 
     private Msg()
     {
     }
 
+    private static boolean ok()
+    {
+        return G.curwin != null && G.curwin.getStatusDisplay() != null;
+    }
 
 } // end

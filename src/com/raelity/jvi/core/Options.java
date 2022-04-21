@@ -564,14 +564,15 @@ public final class Options {
             + " Use this option to ignore the special chars when checking"
             + "for font size problems.");
 
-    createBooleanOption(cursorXorBug, false);
+    createBooleanOption(cursorXorBug, true);
     setupOptionDesc(Category.PLATFORM,
                             cursorXorBug,
-                            "Mac Retina Cursor Xor Bug",
-            "By default jVi uses graphics xor when drawing the cursor."
-            + " On the Mac's Retina display there may be a problem with"
+                            "Disable Cursor Xor",
+            "jVi can use graphics xor when drawing the cursor."
+            + " On several systems there is a problem with"
             + " xor draw mode; the symptom is that the cursor is not"
-            + " visible. Set this option to avoid the problem.");
+            + " visible. Set this option to false to use xor mode.");
+    setExpertHidden(cursorXorBug, true, false);
 
     /////////////////////////////////////////////////////////////////////
     //

@@ -294,14 +294,17 @@ public class SwingPaintCaret
         adjustCaretBounds(bounds, dotChar, pad);
     }
 
-    public void adjustCaretBounds(Rectangle bounds, char[] dotChar, boolean pad)
+    public Rectangle adjustCaretBounds(Rectangle bounds, char[] dotChar, boolean pad)
     {
         CurrentCaretState ccs = new CurrentCaretState(dotChar[0], bounds, pad);
         Rectangle newBounds = ccs.getBounds();
-        bounds.x = newBounds.x;
-        bounds.y = newBounds.y;
-        bounds.width = newBounds.width;
-        bounds.height = newBounds.height;
+        if(bounds != null) {
+            bounds.x = newBounds.x;
+            bounds.y = newBounds.y;
+            bounds.width = newBounds.width;
+            bounds.height = newBounds.height;
+        }
+        return newBounds;
     }
 
     private class CurrentCaretState

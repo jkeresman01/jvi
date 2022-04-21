@@ -97,7 +97,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("1.6.6.x4");
+    public static final jViVersion version = new jViVersion("2.0.0.x1");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -156,7 +156,7 @@ final public class ViManager
             if(isDebugAtHome) {
                 if(System.getProperty("com.raelity.jvi.motd") == null) {
                     System.setProperty("com.raelity.jvi.motd",
-                                       "file:///C:/a/src/jvi-dev/work/motd");
+                                       "file:///src/jvi-dev/work/motd");
                 }
 
             }
