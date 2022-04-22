@@ -64,14 +64,18 @@
 </p>
 -->
 <!--
-<b>Version 1.6.x DEV - 202?/??/??</b>
+<b>Version 2.0.1 DEV - 2022/04/??</b>
 -->
 
-<h2>jVi-1.6 Release, NB11.0 and later</h2>
-<!--
-<b>Version 1.6.3 DEV - 202?/??/??</b>
--->
-<b>Version 1.6.6 DEV - 2021/02/??</b>
+
+<h2>jVi-2.0 Release, NB-12/JDK-11 and later</h2>
+<p>
+  jVi is compiled with JDK-11. As good an excuse as any to bump major.
+  <br/>Visit <a target="_top" href="https://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-11-and-later/"> NB-11 JDK-8 and later</a>
+  for older releases.
+</p>
+
+<b>Version 2.0 - 2022/05/02</b>
 <dl>
   <dt>jVi Core</dt>
   <dd>
@@ -79,7 +83,8 @@
       <li>
         Add <span class="tt">:cd</span>
         and <span class="tt">:pwd</span> commands.
-        They are used for <span class="tt">:!</span> command execution.
+        They are used for <span class="tt">:!</span> and
+        <span class="tt">:e fname</span> command execution.
       </li>
     </ul>
   </dd>
@@ -99,9 +104,26 @@
       <li>
         Add missing registers to those handled by Ctrl-R on the command line.
       </li>
+      <li>
+        <a target="_top" href="https://sourceforge.net/p/jvi/support-requests/4/">
+        [sup #4] jvi suddenly quit working in Netbeans 12.0 </a>
+        <br/>During startup, while restoring seach command from previous session,
+        a bad regular expression causes an re compile exception.
+        jVi was not prepared to output so early, NPE.
+        <p>
+          Fix the jVi output methods to use System.err when things aren't ready.
+        </p>
+      </li>
+      <li>
+        Disable cursor xor drawing by default. Screws up on most systems.
+        Keep option, but move it to <span class="tt">Expert</span>.
+      </li>
     </ul>
   </dd>
 </dl>
+
+
+<h2>jVi-1.6 Release, NB11.0 and later</h2>
 
 <b>Version 1.6.5 - 2020/12/22</b>
 <p>
@@ -357,17 +379,17 @@
       <li>
         Search <span class="tt">'magic'</span> option,
         either
-        "<span class="tt">vm</span>",
-        "<span class="tt">m</span>",
-        "<span class="tt">nm</span>", and
-        "<span class="tt">vnm</span>"
+        <span class="tt">vm</span>,
+        <span class="tt">m</span>,
+        <span class="tt">nm</span>, and
+        <span class="tt">vnm</span>
         (for very magic, magic, no magic, very no magic)
         rather than boolean.
         Embedding
-        "<span class="tt">"\v"</span>,
-        "<span class="tt">"\m"</span>,
-        "<span class="tt">"\M"</span>,
-        "<span class="tt">"\V"</span> in a pattern
+        <span class="tt">\v</span>,
+        <span class="tt">\m</span>,
+        <span class="tt">\M</span>,
+        <span class="tt">\V</span> in a pattern
         to inline switch magic is supported.
         <br/>
         See <a href="vimhelp/pattern.txt.html">pattern.txt</a>
@@ -2105,7 +2127,7 @@ NetBeans 7.1 <a target="_blank" href="http://bz.apache.org/netbeans/show_bug.cgi
 <hr/>
 <!-- copyright -->
 <address class="addr">
-  Copyright &copy; 2019 Ernie Rael<br/>
+  Copyright &copy; 2022 Ernie Rael<br/>
   <a href="mailto:jvi@raelity.com">Contact jVi support</a>
 </address>
 </body>

@@ -18,26 +18,4 @@ UC_OUT=$BUILD/update-center
 
 UC_MIRROR=/z/jvi/frs/jVi-for-NetBeans
 
-# only for dirs, ln -s EXIST_DIR LINK_DIR, WIN7 permission issues
-# symlink_dir EXIST LINK
-symlink_dir() {
-    if [[ ! -d "$1" ]]; then
-        echo symlink_dir: "$1" is not a directory
-        echo "    "symlink_dir EXIST_DIR LINK_DIR
-        return 1
-    fi
-    if [[ -z "$2" ]]; then
-        echo symlink_dir: LINK_DIR not specified
-        echo "    "symlink_dir EXIST_DIR LINK_DIR
-        return 1
-    fi
-    if [[ -e "$2" ]]; then
-        echo symlink_dir: "$2" already exists
-        echo "    "symlink_dir EXIST_DIR LINK_DIR
-        return 1
-    fi
-    #ln -s "$1" "$2"
-    junction $(cygpath -w "$2") $(cygpath -w "$1")
-}
-
 set -e

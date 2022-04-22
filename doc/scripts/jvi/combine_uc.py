@@ -14,7 +14,7 @@ def usage():
 UPD = 'updates.xml'
 GUTS = 'cat-guts'
 CAT = """
-<module_updates timestamp="07/05/09/5/2/2011">
+<module_updates timestamp="07/04/11/5/2/2022">
 </module_updates>
 """
 

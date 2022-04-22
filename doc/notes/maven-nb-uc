@@ -6,6 +6,15 @@ mvn -P source-and-javadoc package
 mvn -P release-sign-artifacts verify
 
 ### mvn clean deploy
+###     Fri Apr 22 03:06:37 AM PDT 2022
+###     weird failure in deploy using jdk-17
+###       (injected-nexus-deploy) on project nbupdatecenter-jdk11:
+###       Execution injected-nexus-deploy of goal
+###       org.sonatype.plugins:nexus-staging-maven-plugin:1.6.8:
+###       deploy failed: An API incompatibility was encountered while
+###       executing org.sonatype.plugins:nexus-staging-maven-plugin:1.6.8:
+###       deploy: java.lang.ExceptionInInitializerError: null
+###     JAVA_HOME=/ref/openjdk/jdk-11.0.2 mvn -P release deploy
 mvn clean
 mvn -P release deploy
 

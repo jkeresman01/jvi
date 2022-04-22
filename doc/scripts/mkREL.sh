@@ -13,12 +13,12 @@ set -e
 JVI_VERSION=$(basename $(pwd))
 echo Createing update center $JVI_VERSION
 
-JVI_RELDIR=$jvis/rel
+JVI_RELDIR=$jvi/rel
 UC_MIRROR=/z/jvi/frs/jVi-for-NetBeans
 
 JVI_VERSIONDIR=$JVI_RELDIR/$JVI_VERSION
 
-NB_VERSION=NetBeans-11-and-later
+NB_VERSION=NetBeans-12_JDK-11
 
 JVI_MAIN=$JVI_VERSIONDIR/proj/updates.xml
 JVI_UC=         # pick up from plugin portal update center
@@ -27,8 +27,8 @@ JVI_UC=         # pick up from plugin portal update center
 UC_DIR=UC
 
 JVI_ADD="
-    $JVI_RELDIR/editor.pin/editor.pin-1.3.5/proj/updates.xml
-    $JVI_RELDIR/nb-jvi-spi/nb-jvi-spi-1.8/proj/updates.xml
+    $JVI_RELDIR/editor.pin/editor.pin-2.0/proj/updates.xml
+    $JVI_RELDIR/nb-jvi-spi/nb-jvi-spi-2.0/proj/updates.xml
     "
 
 OUT=$JVI_VERSIONDIR/build-uc
@@ -41,8 +41,7 @@ mkdir -p $OUT
 combine_uc $JVI_MAIN $JVI_UC $JVI_ADD $OUT
 
 echo '<?xml version="1.0" encoding="UTF-8"?>' > $CATALOG
-echo '<!DOCTYPE module_updates PUBLIC "-//NetBeans//DTD Autoupdate Catalog 2.6//EN" "http://www.netbeans.org/dtds/autoupdate-catalog-2_6.dtd">' >> $CATALOG
-
+echo '<!DOCTYPE module_updates PUBLIC "-//NetBeans//DTD Autoupdate Catalog 2.8//EN" "https://netbeans.apache.org/dtds/autoupdate-catalog-2_8.dtd">' >> $CATALOG
 cat $GUTS >> $CATALOG
 rm $GUTS
 

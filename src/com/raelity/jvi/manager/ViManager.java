@@ -97,7 +97,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("2.0.0.x1");
+    public static final jViVersion version = new jViVersion("2.0.0");
 
     private static com.raelity.jvi.core.Hook core;
 

@@ -1,5 +1,8 @@
 #!/usr/bin/bash
 
+CMD=${0##*/}
+DIR=${0%/*}
+
 srcdir=$1
 dstdir=$2
 
@@ -9,7 +12,7 @@ do
     if [[ ! -e $i ]]
     then
         echo not found: $i
-        echo ABORT: $(basename $0)
+        echo ABORT: $CMD
         exit 1
     fi
 done

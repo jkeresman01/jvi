@@ -8,6 +8,9 @@ If needed, manually install a jVi update center into NetBeans with Plugins>Setti
 
 http://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-11-and-later/UC/catalog.xml.gz
 
+| **nbvi-2.0.0** JDK-11
+|     - :cd, :pwd, :e path-name
+|     - With :cd and :e use Ctrl-D for directory and filename completion popup
 | **nbvi-1.6.5** Fix VisualMode highlighting acts like vim when multiple views of same file and switching views.
 |     - Handle Ctrl-R in command line
 |     - Fix issues drawing caret over TAB
