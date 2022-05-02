@@ -298,6 +298,9 @@ public class SwingPaintCaret
     {
         CurrentCaretState ccs = new CurrentCaretState(dotChar[0], bounds, pad);
         Rectangle newBounds = ccs.getBounds();
+        if(newBounds == null)
+            return bounds; // can't do anything
+
         if(bounds != null) {
             bounds.x = newBounds.x;
             bounds.y = newBounds.y;
@@ -316,6 +319,8 @@ public class SwingPaintCaret
         CurrentCaretState(char c, Rectangle _bounds, boolean pad)
         {
             this.jtc = (JTextComponent)caret.getTextComponent();
+            if(this.jtc == null)
+                return; // too eary, probably from NbCaret.install
             this.c = c;
             bounds = (Rectangle)(_bounds != null ? _bounds
                           : findBounds(caret.getDot())).clone();
