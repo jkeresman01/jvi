@@ -24,6 +24,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.HeadlessException;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 
@@ -107,7 +108,7 @@ public class Jvi
             frame.validate();
         }
 
-        Dimension screenSize = UIUtil.getScreenBounds().getSize();
+        Dimension screenSize = UIUtil.getPrefScreenBounds().getSize();
         Dimension frameSize = frame.getSize();
         if (frameSize.height > screenSize.height) {
             frameSize.height = screenSize.height;
@@ -119,7 +120,7 @@ public class Jvi
         // looks like this is centering more or less
         frame.setLocation((screenSize.width - frameSize.width) / 2 + offset,
                          (screenSize.height - frameSize.height) / 2 + offset);
-        UIUtil.translateToScreen(frame);
+        UIUtil.translateToPrefScreen(frame);
         frame.setVisible(true);
         return frame;
     }
@@ -224,6 +225,7 @@ public class Jvi
 
         // set owner to null so options work
         // while document modal WindowCmdLine is active.
+        Point target = owner != null ? owner.getLocation() : null;
         owner = null;
 
         if(dialog == null) {
@@ -242,8 +244,9 @@ public class Jvi
             dialog.setDialogMode(dialog.OK_CANCEL_DIALOG);
             dialog.pack();
             dialog.centerOnScreen();
-            UIUtil.translateToScreen(dialog);
         }
+        UIUtil.translateToPrefScreen(dialog, target);
+        // TODO: what is the following about?
         if(!dialog.isVisible()) {
             optionsPanel.load();
         }

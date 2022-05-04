@@ -40,61 +40,105 @@ import java.awt.Window;
  */
 public class UIUtil
 {
+private UIUtil() {}
+
+private static boolean isVirtual;
+private static Rectangle virtualBounds;
+
+static
+{
+	initVirtualParams();
+}
+
+public static boolean isVirtualEnvironment()
+{
+	return isVirtual;
+}
 
 /**
  * @return default graphics configuration of the preferred device
  */
-public static GraphicsConfiguration getGraphicsConfiguration()
+public static GraphicsConfiguration getPrefGraphicsConfiguration()
 {
-    return getGraphicsDev().getDefaultConfiguration();
+    return getPrefGraphicsDev().getDefaultConfiguration();
 }
 
 /** Using the location of the Window, if it is not on the preferred screen,
  * then translate it to the preferred screen.
  * @param window 
  */
-public static void translateToScreen(Window window)
+public static void translateToPrefScreen(Window window)
 {
-    Rectangle screenBounds = getScreenBounds();
-    Point loc = window.getLocation();
-    if(!screenBounds.contains(loc)) {
-        loc.translate(screenBounds.x, screenBounds.y);
-        window.setLocation(loc);
-    }
+    window.setLocation(translateToPrefScreen(window.getLocation()));
+}
+
+/** If Window is not on the same screen as target,
+ * then translate Window to target's screen.
+ * @param window 
+ * @param target 
+ */
+public static void translateToPrefScreen(Window window, Point target)
+{
+    if(target == null)
+        return;
+    window.setLocation(translateToScreen(window.getLocation(), target));
 }
 
 /** If the location is not on the preferred screen,
- * then translate it to the preferred screen.
- * @param location a point on the screen
+ * then translate it (the same object) to the preferred screen.
+ * @param location a point on the scre
+ * @return return for convenience, same object as argument
  */
-public static void translateToScreen(Point location)
+public static Point translateToPrefScreen(Point location)
 {
-    Rectangle screenBounds = getScreenBounds();
+    Rectangle screenBounds = getPrefScreenBounds();
     if(!screenBounds.contains(location)) {
-        location.translate(screenBounds.x, screenBounds.y);
+        Rectangle locScreenBounds = getGraphicsConfiguration(location).getBounds();
+        location.translate(screenBounds.x - locScreenBounds.x,
+                           screenBounds.y - locScreenBounds.y);
     }
+    return location;
+}
+
+/** If location is not on the same screen as
+ * the target then translate it (the same object) to the target's screen.
+ * @param location move this point to the target screen
+ * @param target used to find destination screen
+ * @return return for convenience, same object as argument
+ */
+public static Point translateToScreen(Point location, Point target)
+{
+    if(target == null)
+        return location;
+    Rectangle screenBounds = getGraphicsConfiguration(target).getBounds();
+    if(!screenBounds.contains(location)) {
+        Rectangle locScreenBounds = getGraphicsConfiguration(location).getBounds();
+        location.translate(screenBounds.x - locScreenBounds.x,
+                           screenBounds.y - locScreenBounds.y);
+    }
+    return location;
 }
 
 /**
  * @return screen bounds of the preferred device
  */
-public static Rectangle getScreenBounds()
+public static Rectangle getPrefScreenBounds()
 {
-    return getGraphicsConfiguration().getBounds();
+    return getPrefGraphicsConfiguration().getBounds();
 }
 
 /**
  * Center the window on the preferred screen.
  * @param window 
  */
-public static void centerOnScreen(Window window) {
+public static void centerOnPrefScreen(Window window) {
     //Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     //Rectangle screenBounds = Jvi.getScreenBounds();
-    Dimension screenSize = getScreenBounds().getSize();
+    Dimension screenSize = getPrefScreenBounds().getSize();
     Dimension size = window.getSize();
     window.setLocation((screenSize.width - size.width) / 2,
                 (screenSize.height - size.height) / 2);
-    translateToScreen(window);
+    translateToPrefScreen(window);
 }
 
 /** the preferred graphics device */
@@ -106,7 +150,7 @@ private static GraphicsDevice preferredGraphicsDevice = null;
  * and return that device; otherwise return the default screen device.
  * @return
  */
-public static GraphicsDevice getGraphicsDev()
+public static GraphicsDevice getPrefGraphicsDev()
 {
     if(preferredGraphicsDevice == null) {
         int screenIdx;
@@ -126,6 +170,41 @@ public static GraphicsDevice getGraphicsDev()
                     .getLocalGraphicsEnvironment().getDefaultScreenDevice();
     }
     return preferredGraphicsDevice;
+}
+
+/**
+ * Check each screen Device finding the defaultConfiguration that
+ * contains the given point.
+ * @param location
+ * @return 
+ */
+public static GraphicsConfiguration getGraphicsConfiguration(Point location)
+{
+	GraphicsDevice[] gs = GraphicsEnvironment.getLocalGraphicsEnvironment()
+			.getScreenDevices();
+	for (GraphicsDevice gd : gs) {
+		GraphicsConfiguration config = gd.getDefaultConfiguration();
+		if(config.getBounds().contains(location))
+			return config;
+	}
+	return GraphicsEnvironment.getLocalGraphicsEnvironment()
+			.getDefaultScreenDevice().getDefaultConfiguration();
+}
+
+private static void initVirtualParams()
+{
+	Point zeroPoint = new Point();
+	virtualBounds = new Rectangle();
+	GraphicsEnvironment ge = GraphicsEnvironment.
+			getLocalGraphicsEnvironment();
+	GraphicsDevice[] gs = ge.getScreenDevices();
+	for (GraphicsDevice gd : gs) {
+		for (GraphicsConfiguration gc : gd.getConfigurations()) {
+			if(!gc.getBounds().getLocation().equals(zeroPoint))
+				isVirtual = true;
+			virtualBounds = virtualBounds.union(gc.getBounds());
+		}
+	}
 }
 
 /* ************************************
