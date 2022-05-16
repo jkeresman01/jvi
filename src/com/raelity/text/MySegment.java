@@ -28,9 +28,11 @@ import javax.swing.text.Segment;
  * Keep "docOffset" which is the offset in the document
  * of the start of the segment; -1 implies not known.
  * 
- * There is a MySegment(String) constructor, which has slightly different
- * behavior. In particular, the charIterator returns NUL instead of DONE;
- * and charAt(length()) return the doneChar instead of an exception.
+ * There is a MySegment(String) constructor which converts the string to
+ * an array. This has slightly different behavior
+ * In particular, charAt(length()) returns doneChar instead of an exception.
+ * Use the subclass {@link StringSegment} and doneChar is NUL instead
+ * of char 0xffff;
  * 
  * Some additional methods:
  * - charIterator: atEnd()
@@ -69,8 +71,10 @@ public class MySegment extends Segment //implements Cloneable
      */
     public MySegment(String str)
     {
+        // TODO: implementation that doesn't copy the string
         this(str.toCharArray(), 0, str.length(), -1);
-        setReturnNull(true);
+        // When this constructor is used, use DONE not NUL.
+        // Subclass, like StringSegment, can override with setReturnNull().
         charAtCheatOffset = 1;
     }
 

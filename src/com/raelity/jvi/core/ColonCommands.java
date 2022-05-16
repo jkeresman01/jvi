@@ -24,31 +24,32 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
-import com.raelity.jvi.ViCmdEntry;
-import com.raelity.jvi.ViFPOS;
-import com.raelity.jvi.ViMark;
-import com.raelity.jvi.ViOutputStream;
+import com.raelity.jvi.*;
 import com.raelity.jvi.ViOutputStream.FLAGS;
-import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.lib.AbbrevLookup;
 import com.raelity.jvi.core.lib.CcFlag;
 import com.raelity.jvi.core.lib.ColonCommandItem;
 import com.raelity.jvi.core.lib.Messages;
-import com.raelity.jvi.lib.MutableInt;
-import com.raelity.jvi.manager.Scheduler;
-import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.lib.*;
+import com.raelity.jvi.manager.*;
+import com.raelity.text.StringSegment;
 
+import static com.raelity.jvi.core.CcBang.lastBangCommand;
 import static com.raelity.jvi.core.Edit.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
+import static com.raelity.jvi.core.Util.isdigit;
+import static com.raelity.jvi.core.Util.vim_str2nr;
 import static com.raelity.jvi.core.lib.Constants.*;
 
 /**
@@ -82,6 +83,8 @@ public class ColonCommands
     private ColonCommands()
     {
     }
+    private static void eatme(Object... o) { Objects.isNull(o); }
+    static { eatme(LOG); }
 
     private static ViCmdEntry colonCommandEntry;
 
@@ -201,6 +204,7 @@ private static ColonEvent parseCommandGuts(String commandLine,
     MutableInt lnum = new MutableInt(0);
     boolean skip = !isExecuting; // skip mark lookup in get_address
     cev.commandLine = commandLine;
+    cev.commandLineRaw = commandLine;
 
     //
     // 3. parse a range specifier of the form: addr [,addr] [;addr] ..
@@ -364,6 +368,7 @@ private static ColonEvent parseCommandGuts(String commandLine,
         // NEEDSWORK: commands can be more than just alpha chars
         //            for now just hack in the two non-alpha commands we've got
         //if( ! Util.isalpha(commandLine.charAt(sidx)))
+        //NOTE: might use vim_strchr("&<>")
         if( ! (Util.isalpha(commandLine.charAt(sidx))
                 || "&".equals(String.valueOf(commandLine.charAt(sidx)))
                 || "<".equals(String.valueOf(commandLine.charAt(sidx)))
@@ -427,18 +432,34 @@ private static ColonEvent parseCommandGuts(String commandLine,
     cev.command = cci.getName();
     cev.bang = bang;
 
+    if(isExecuting && flags.contains(CcFlag.XFILE)) {
+        // expand starting at first char after command
+        // may point to "!" (insane). If XFILE, don't use CcFlags.BANG I guess.
+        StringSegment cmd = new StringSegment(commandLine);
+        cmd.setIndex(cev.iArgString);
+        StringBuilder sb = new StringBuilder(commandLine.substring(0, cev.iArgString));
+        sb = expand_filename(cmd, cci, sb);
+        if(sb == null)
+            return null;
+        commandLine = sb.toString();
+        cev.commandLine = commandLine;
+    }
+
+    // When isExecuting is false, should always parse since don't know what
+    // the completion code might be looking for.
+
     if(sidx < commandLine.length()) {
-        cev.args = new ArrayList<>();
         if(flags.contains(CcFlag.NO_PARSE)) {
-            // put the line (without command name) as the argument
+            // Put the line (without command name) as the argument.
+            // But probably will get picked up with getArgString.
+            // Should require that if NO_PARSE.
+            cev.args = new ArrayList<>();
             cev.args.add(commandLine.substring(sidx));
-        } else {
-            // NEEDSWORK: more efficient command line parse tokenizer
-            // parse the command into tokens
-            StringTokenizer toks = new StringTokenizer(commandLine.substring(sidx));
-            while(toks.hasMoreTokens()) {
-                cev.args.add(toks.nextToken());
-            }
+        }
+        if(!isExecuting || !flags.contains(CcFlag.NO_PARSE)) {
+            // TODO: get rid of this
+            String cmdlineargs = commandLine.substring(sidx);
+            cev.args = Arrays.asList(cmdlineargs.split("\\s+"));
         }
     }
 
@@ -454,6 +475,101 @@ public static ColonEvent parseCommandNoExec(String commandLine)
 static ColonEvent parseCommand(String commandLine)
 {
     return parseCommandGuts(commandLine, true);
+}
+
+static StringBuilder expand_filename(StringSegment cmd,
+                                     ColonCommandItem cci, StringBuilder sb)
+{
+    //StringBuilder cmd = new StringBuilder();
+    //StringSegment cmd = new StringSegment(command_line);
+    if(sb == null)
+        sb = new StringBuilder();
+    boolean appendit;
+    boolean is_escaped;
+    for(char c = cmd.current(); !cmd.atEnd(); c = cmd.next()) {
+        appendit = true;
+        is_escaped = false;
+        if(c == '\\') {
+            if(cmd.next() == NUL)
+                cmd.previous();
+            else {
+                c = cmd.current();
+                is_escaped = true;
+            }
+        }
+        switch(c) {
+        case '!':
+            if (is_escaped) {
+                break;
+            } else {
+                // replace this ! by last command, if it exists
+                if (lastBangCommand != null) {
+                    sb.append(lastBangCommand);
+                    appendit = false;
+                } else {
+                    Msg.emsg("No previous command");
+                    return null;
+                }
+            }
+            break;
+            
+        case '%':
+        case '#':
+            if(is_escaped){
+                break;
+            }
+            // replace %/# by the filename
+            // current() is the '%' or '#'
+            appendit = false;
+            cmd.next(); // a possible modifier
+            
+            int av_idx = 0; // assume '%'
+            Path path = null;
+            String estr = null;
+            // Handle: "#<digits>" and "#-<digit>"
+            if (c == '#') {
+                av_idx = -1; // assume only entered '#'
+                char tchar = cmd.current();
+                if(tchar == '-' || isdigit(tchar)) {
+                    int number_idx = cmd.getIndex();
+                    MutableInt p_len = new MutableInt();
+                    MutableInt p_num = new MutableInt();
+                    vim_str2nr(cmd, number_idx, null,
+                               p_len, 0, 0, p_num, null);
+                    // if only '-', then not a number
+                    if(!(tchar == '-' && p_len.getValue() == 1)) {
+                        cmd.setIndex(number_idx + p_len.getValue());
+                        av_idx = p_num.getValue();
+                    }
+                    // grab the string now (easier debug)
+                    // -1 to include the '#'
+                    estr = cmd.substring(number_idx - 1, cmd.getIndex());
+                }
+            }
+            
+            ViAppView av = AppViews.getAppView(av_idx);
+            if(av != null)
+                path = ViManager.getFactory().getFS().getPath(av);
+            if(path == null) {
+                if(estr == null)
+                    estr = String.valueOf(c);
+                Msg.emsg("No file name to substitue for '%s'", estr);
+                return null;
+            }
+            
+            Wrap<Path> fnamep = new Wrap<>();
+            FilePath.modify_fname(cmd, path, fnamep);
+            cmd.previous(); // the last char handled
+            sb.append(fnamep.getValue().toString());
+            break;
+
+        default:
+                break;
+        } // end switch
+        if(appendit)
+            sb.append(c);
+    }
+    return sb;
 }
 
 /**
@@ -713,6 +829,8 @@ static public class ColonEvent extends ActionEvent
     /** indicates that the command word has a trailing "!" */
     boolean bang;
     /** command line as entered */
+    String commandLineRaw;
+    /** command line as expanded */
     String commandLine;
     /** index of the command args in the original string */
     private int iArgString;
@@ -856,6 +974,11 @@ static public class ColonEvent extends ActionEvent
     public String getCommandLine()
     {
         return commandLine;
+    }
+
+    public String getCommandLineRaw()
+    {
+        return commandLineRaw;
     }
 
     public String getEmsg() {

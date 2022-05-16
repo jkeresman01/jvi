@@ -38,6 +38,8 @@ public enum CcFlag {
     RANGE,
     /** supports '#' file name completion */
     COMPL_FN,
+    /** expand %,# */
+    XFILE,
     ;
 }
 

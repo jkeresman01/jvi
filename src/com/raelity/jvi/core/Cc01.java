@@ -25,9 +25,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +33,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -65,9 +64,10 @@ import com.raelity.jvi.options.*;
 
 import static java.lang.Math.min;
 
-import static com.raelity.jvi.core.CcBang.getCwd;
 import static com.raelity.jvi.core.Util.beep_flush;
 import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.FilePath.*;
+import static com.raelity.text.TextUtil.sf;
 
 /**
  *
@@ -76,6 +76,7 @@ import static com.raelity.jvi.core.lib.Constants.*;
 public class Cc01
 {
     private static final Logger LOG = Logger.getLogger(Cc01.class.getName());
+    private static void eatme(Object... o) { Objects.isNull(o); }
 
     @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=10)
     public static class Init implements ViInitialization
@@ -349,31 +350,22 @@ public class Cc01
         @Override
         public EnumSet<CcFlag> getFlags()
         {
-            return EnumSet.of(CcFlag.BANG, CcFlag.COMPL_FN);
+            return EnumSet.of(CcFlag.BANG, CcFlag.COMPL_FN,
+                              CcFlag.XFILE);
         }
 
         @Override
         public void actionPerformed(ActionEvent ev)
         {
             ColonEvent cev = (ColonEvent)ev;
-            boolean reportUsage = false;
             List<String> args = cev.getArgs();
-            MutableBoolean reportedError = new MutableBoolean();
-            if(args.size() >= 1 && args.get(0).charAt(0) == '#') {
-                ViAppView av = parseFileNumber(args, reportedError);
-                if(!args.isEmpty() && !reportedError.getValue()) {
-                    reportUsage = true;
-                }
-                if(av != null)
-                    ViManager.getFS().edit(av, cev.isBang());
-            } else if (args.size() == 1) {
+
+            if (args.size() == 1) {
                 String fName = args.get(0);
-                Path path = getCwd().resolve(fName);
-                ViManager.getFS().edit(path.toFile(), cev.isBang(), null);
+                Path path = getPath(fName);
+                ViManager.getFS().edit(path, cev.isBang(), null);
             } else
-                reportUsage = true;
-            if(reportUsage)
-                Msg.emsg(":edit only accepts '# <WinNum>' or '<fname>'");
+                Msg.emsg(":edit - one arg: <fname>, '%', '#<digits>' with filename-modifiers");
         }
     };
 
@@ -395,11 +387,11 @@ public class Cc01
 
         assert args.size() >= 1 && args.get(0).charAt(0) == '#';
         if(args.size() >= 1 && args.get(0).charAt(0) == '#') {
-            boolean error = false;
+            //boolean error = false;
 
             String stringWindowID = args.get(0).substring(1);
             args.remove(0);
-            if(stringWindowID.isEmpty() && args.size() > 0) {
+            if(stringWindowID.isEmpty() && !args.isEmpty()) {
                 stringWindowID = args.get(0);
                 args.remove(0);
             }
@@ -518,7 +510,7 @@ public class Cc01
                 "=== MRU (:n :N :e#-<digit>) ===                "
                         + "=== activation (:e#<digit> ===")) {
             int i = 0;
-            ViAppView cur = AppViews.relativeMruAppView(0);
+            ViAppView curav = AppViews.relativeMruAppView(0);
             ViAppView prev = AppViews.getMruAppView(1);
             
             List<String> outputData = new ArrayList<>();
@@ -529,21 +521,17 @@ public class Cc01
             while(i < l1.size()) {
                 //ViAppView o1 = AppViews.getMruAppView(i);
                 //ViAppView o2 = AppViews.getAppView(i+1);
-                ViAppView o1 = l1.get(i);
-                ViAppView o2 = l2.get(i);
-                int w2 = o2.getWinID();
-                outputData.add(String.format(
-                        " %2d %c %-40s %3d %c %s",
-                        i,
-                        cur != null && cur.equals(o1)
-                                ? '%'
-                                : prev != null && prev.equals(o1) ? '#' : ' ',
-                        o1 != null
-                                ? factory.getFS().getDisplayFileName(o1) : "",
-                        w2,
-                        cur != null && cur.equals(o2) ? '%'
-                                : prev != null && prev.equals(o2) ? '#' : ' ',
-                        o2 != null ? factory.getFS().getDisplayFileName(o2) : ""));
+                ViAppView av1 = l1.get(i);
+                ViAppView av2 = l2.get(i);
+                int w2 = av2.getWinID();
+                outputData.add(
+                    sf(" %2d %c %-40s %3d %c %s",
+                    i,
+                    av1.equals(curav) ? '%' : av1.equals(prev) ? '#' : ' ',
+                    factory.getFS().getDisplayFileName(av1),
+                    w2,
+                    av2.equals(curav) ? '%' : av2.equals(prev) ? '#' : ' ',
+                    factory.getFS().getDisplayFileName(av2)));
                 i++;
             }
             // print in reverse order, MRU visible if scrolling
@@ -638,9 +626,10 @@ public class Cc01
                 Msg.emsg(Messages.e_trailing);
                 return;
             }
-            int count = 1;
-            if(ce.getAddrCount() == 1)
-                count = ce.getLine2();
+            // Wonder what this is for?
+            //int count = 1;
+            //if(ce.getAddrCount() == 1)
+            //    count = ce.getLine2();
             ViManager.getFactory().tagDialog(ce);
         }
     };
@@ -809,6 +798,7 @@ public class Cc01
                 String s = buf.getText(offset1, offset2 - offset1);
                 buf.insertText(dstOffset, s);
                 if(doMove) {
+                    assert(pos1 != null && pos2 != null);
                     buf.deleteChar(pos1.getOffset() - atEndAdjust,
                             pos2.getOffset() - atEndAdjust);
                 }
@@ -932,6 +922,7 @@ private static void addDebugColonCommands()
                 }
                 String key = cev.getArg(1);
                 Option opt = Options.getOption(key);
+                eatme(opt);
                 if(Options.getOption(key) == null) {
                     Msg.emsg("No such option: " + key);
                     return;
@@ -951,25 +942,25 @@ private static void addDebugColonCommands()
             }
         }, EnumSet.of(CcFlag.DBG));
     ColonCommands.register("disabledCommand", "disabledCommand",
-            new ColonCommands.AbstractColonAction() {
+        new ColonCommands.AbstractColonAction() {
 
-            @Override
-            public boolean isEnabled()
-            {
-                return false;
-            }
-
-            @Override
-            public EnumSet<CcFlag> getFlags()
-            {
-                return EnumSet.of(CcFlag.NO_ARGS);
-            }
-                
-            @Override
-                public void actionPerformed(ActionEvent ev) {
-                    Msg.emsg("***** executing !isEnabled command *****");
-                }
-            }, EnumSet.of(CcFlag.DBG));
+        @Override
+        public boolean isEnabled()
+        {
+            return false;
+        }
+        
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.NO_ARGS);
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            Msg.emsg("***** executing !isEnabled command *****");
+        }
+    }, EnumSet.of(CcFlag.DBG));
     ColonCommands.register("dumpCommands", "dumpCommands",
             (ActionEvent e) -> {
         try (ViOutputStream vios = ViManager.createOutputStream("Dump Commands")) {
@@ -1003,14 +994,38 @@ private static void addDebugColonCommands()
     ColonCommands.register("echolog", "echolog",
         new ColonCommands.AbstractColonAction() {
             @Override
+            @SuppressWarnings("UseOfSystemOutOrSystemErr")
             public void actionPerformed(ActionEvent ev) {
                 ColonEvent cev = (ColonEvent)ev;
                                               
                 System.err.println(cev.getCommandLine());
             }
-    }, EnumSet.of(CcFlag.DBG));
+    }, EnumSet.of(CcFlag.DBG, CcFlag.XFILE));
 
-    ColonCommands.register("echoout", "echoout",
+    // all the msg Q to the log
+    ColonCommands.register("echologm", "echologmsg",
+        new ColonCommands.AbstractColonAction() {
+            @Override
+            public void actionPerformed(ActionEvent ev) {
+                ColonEvent cev = (ColonEvent)ev;
+                eatme(cev);
+                Msg.nmsg("'echologmsg' Not Implemented");
+        }
+    }, EnumSet.of(CcFlag.DBG, CcFlag.XFILE));
+
+    // to status line, not msg Q
+    ColonCommands.register("ec", "echo",
+        new ColonCommands.AbstractColonAction() {
+            @Override
+            public void actionPerformed(ActionEvent ev) {
+                ColonEvent cev = (ColonEvent)ev;
+
+                Msg.nmsg(cev.getArgString());
+        }
+    }, EnumSet.of(CcFlag.DBG, CcFlag.XFILE));
+
+    // to output window
+    ColonCommands.register("echoo", "echoout",
         new ColonCommands.AbstractColonAction() {
             @Override
             public void actionPerformed(ActionEvent ev) {
@@ -1018,9 +1033,20 @@ private static void addDebugColonCommands()
 
                 try (ViOutputStream osa = ViManager.createOutputStream(null)) {
                     osa.println(cev.getCommandLine());
-            }
+                }
         }
-    }, EnumSet.of(CcFlag.DBG));
+    }, EnumSet.of(CcFlag.DBG, CcFlag.XFILE));
+
+    // to status line and msg Q
+    ColonCommands.register("echom", "echomsg",
+        new ColonCommands.AbstractColonAction() {
+            @Override
+            public void actionPerformed(ActionEvent ev) {
+                ColonEvent cev = (ColonEvent)ev;
+
+                Msg.smsg(cev.getArgString());
+        }
+    }, EnumSet.of(CcFlag.DBG, CcFlag.XFILE));
 
 } // end
 }

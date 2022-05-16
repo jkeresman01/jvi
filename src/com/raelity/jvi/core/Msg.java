@@ -28,6 +28,22 @@ public class Msg
 {
 
     /**
+     *  Display a status message, but do not put it into the msg Q.
+     * @param msg
+     * @param args
+     */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
+    public static void nmsg( String msg, Object ... args )
+    {
+        // VV_STATUSMSG
+        String s = args.length == 0 ? msg : String.format(msg, args);
+        if(ok())
+            G.curwin.getStatusDisplay().displayStatusMessage(s);
+        else
+            System.err.println("jVi: STATUS: " + s);
+    }
+
+    /**
      *  Display a status message.
      * @param msg
      * @param args

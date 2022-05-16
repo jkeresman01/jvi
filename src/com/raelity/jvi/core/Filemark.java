@@ -226,6 +226,9 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
     private void unhookup(Buffer buf) {
         dbg.printf(Level.FINEST, () -> sf("FM: unhookup %s\n", dump(this)));
         assert isActiveFilemark() && mark.getBuffer() == buf;
+        //TODO: could this be where the filemark is lost?
+        //TODO: why is this here? Rename? No conditional?
+        //TODO: multiple open of same file?
         f = buf.getFile().getAbsoluteFile(); // maybe a rename happened
         persist();
         mark = null;

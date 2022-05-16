@@ -350,7 +350,7 @@ class MarkOps
                 File f = G.curbuf.getFile();
                 if(changefile || f != null && f.equals(fm.getFile()))
                     // set force to true so non exist files are opened (as vim)
-                    getFactory().getFS().edit(fm.getFile(), true, fm);
+                    getFactory().getFS().edit(fm.getFile().toPath(), true, fm);
                 else
                     fm = null;
             }

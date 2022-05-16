@@ -37,7 +37,6 @@ import com.raelity.jvi.*;
 import com.raelity.jvi.ViOutputStream.FLAGS;
 import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
-import com.raelity.jvi.core.Misc.Yankreg;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.ViManager;
@@ -81,10 +80,12 @@ SEARCH("search");
     }
 
 private static void init() {
-    ColonCommands.register("his", "history", new History(), null);
+    ColonCommands.register("his", "history", new History(),
+                           EnumSet.of(CcFlag.NO_PARSE));
     Options.addPropertyChangeListenerSET(
             Options.history, (evt) -> historySizeChange(evt));
 }
+private static void eatme(Object o) { Objects.isNull(o); }
 
 private HistoryContext history;
 final String commonName;
@@ -116,6 +117,7 @@ List<String> getHistory()
 
 private static void historySizeChange(PropertyChangeEvent evt)
 {
+    eatme(evt);
     EventQueue.invokeLater(() -> historySizeChange());
 }
 
@@ -296,6 +298,7 @@ private static void processHistoryOutputCommand(String command)
                 int current = pCurrentIndex.getValue();
                 String s = he.getCmd();
                 int idx = he.getIndex();
+                eatme(idx);
                 os.print(sf("%c%6d  ",
                               he.getIndex() == current ? '>' : ' ',
                               he.getIndex()));
@@ -309,7 +312,7 @@ private static void processHistoryOutputCommand(String command)
 
 private static void invokeHistoryAction(int idx, CommandHistory which, String command)
 {
-    System.err.println(sf("CLICK %s: %d", which, idx));
+    //System.err.println(sf("CLICK %s: %d", which, idx));
     if(ViManager.jViBusy()) {
         ViManager.dumpStack();
         return;

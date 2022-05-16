@@ -22,6 +22,7 @@ package com.raelity.jvi;
 
 import java.awt.Component;
 import java.io.File;
+import java.nio.file.Path;
 
 /**
  * jVi's interactions with files are funnelled through this interface.
@@ -38,6 +39,9 @@ public interface ViFS
     public String getDisplayFileNameAndSize(ViBuffer buf);
 
     public String getDisplayFileViewInfo(ViTextView tv);
+
+    // May return null
+    public Path getPath(ViAppView av);
 
 
     /**
@@ -98,7 +102,7 @@ public interface ViFS
      * @param force If a '!' was used with the command, then force is true.
      * @param fpos initial cursor position, may be null.
      */
-    public void edit(File file, boolean force, ViFPOS fpos);
+    public void edit(Path file, boolean force, ViFPOS fpos);
 
 
 } // end com.raelity.jvi.ViFS

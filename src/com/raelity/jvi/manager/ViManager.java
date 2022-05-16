@@ -56,11 +56,11 @@ import com.raelity.jvi.core.Search;
 import com.raelity.jvi.core.lib.CcFlag;
 
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import org.openide.util.Exceptions;
 
 import com.raelity.jvi.ViOutputStream.COLOR;
-import com.raelity.jvi.lib.*;
 import com.raelity.jvi.options.*;
 import com.raelity.text.TextUtil;
 
@@ -84,6 +84,7 @@ import static com.raelity.text.TextUtil.sf;
 final public class ViManager
 {
     private static final Logger LOG = Logger.getLogger(ViManager.class.getName());
+    private static void eatme(Object... o) { Objects.isNull(o); }
 
     //
     // Note the use of "9" for the "final" release
@@ -97,7 +98,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("2.0.2");
+    public static final jViVersion version = new jViVersion("2.0.3.x2");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -234,7 +235,7 @@ final public class ViManager
         //
         // 1 - 
         //      Hook
-        // 2 - 
+        // 2 -  FilePath
         //      Options
         // 3 - 
         //      nb/NbOptions
@@ -388,6 +389,7 @@ final public class ViManager
         @Override
         public void actionPerformed(ActionEvent ev)
         {
+            @SuppressWarnings("UseOfSystemOutOrSystemErr")
             Runnable r = () -> System.err.println("click");
             try (ViOutputStream os = ViManager.createOutputStream(null)) {
                 os.println("plain ALL CAPS And More");
@@ -450,13 +452,15 @@ final public class ViManager
             case 0: 
                 Throwable t = new Throwable("some throwable");
                 Throwable t1 = Exceptions.attachSeverity(t, level);
+                Throwable t2;
                 if(local) {
                     // using attach localized message, only the attached message is displayed
-                    Throwable t2 = Exceptions.attachLocalizedMessage(t, "some attached message");
+                    t2 = Exceptions.attachLocalizedMessage(t, "some attached message");
                 } else {
-                    Throwable t2 = Exceptions.attachMessage(t, "some attached message");
+                    t2 = Exceptions.attachMessage(t, "some attached message");
                 }
                 String s = Exceptions.findLocalizedMessage(t);
+                eatme(t1, t2, s);
                 Exceptions.printStackTrace(t);
                 // Dialog d = new Dialog((Frame)null);
                 // d.show();
@@ -900,6 +904,7 @@ final public class ViManager
                                 boolean clearDst)
     {
         CopyPreferences p = new CopyPreferences(dst, src, clearDst);
+        eatme(p);
     }
 
     private static class RunLatched implements Runnable

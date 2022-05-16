@@ -41,6 +41,7 @@ final public class StringSegment extends MySegment
 public StringSegment(String s)
 {
     super(s);
+    setReturnNull(true);
 }
 
     @Override

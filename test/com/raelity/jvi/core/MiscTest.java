@@ -19,12 +19,6 @@
 
 package com.raelity.jvi.core;
 
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.Transferable;
-import java.text.CharacterIterator;
-
-import javax.swing.KeyStroke;
-import javax.swing.text.Keymap;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -36,10 +30,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.raelity.jvi.*;
-import com.raelity.jvi.core.Misc.Yankreg;
-import com.raelity.jvi.core.Misc.block_def;
-import com.raelity.jvi.lib.*;
 import com.raelity.text.MySegment;
 import com.raelity.text.StringSegment;
 
@@ -60,6 +50,8 @@ private static final String  MY_SEG = "MySegment";
 private static final String  STR_SEG = "StringSegment";
 private static final String DEF = "0123456789";
 
+// TODO: FIX PARAMETERIZED TESTS
+
 // @Parameters(name = "{0}/{1}")
 // public static Object[][] data() {
 //     return new Object[][] {
@@ -71,6 +63,7 @@ private static final String DEF = "0123456789";
 public MiscTest()
 {
     testType = MY_SEG;
+    //testType = STR_SEG;
     subseq = "normal";
 }
 
@@ -159,6 +152,7 @@ private static final int POS3 = 2;
  */
 @Test
 @Parameters(method = "stringNonWhite")
+@SuppressWarnings("UseOfSystemOutOrSystemErr")
 public void testSkipwhite_CharacterIterator(String input, int[] stop)
 {
     System.out.println("skipwhite_CharacterIterator");
@@ -202,6 +196,7 @@ public void testSkipwhite_CharacterIterator(String input, int[] stop)
  */
 @Test
 @Parameters(method = "stringNonWhite")
+@SuppressWarnings("UseOfSystemOutOrSystemErr")
 public void testSkipwhite_CharSequence_int(String input, int[] stop)
 {
     System.out.println("skipwhite_CharSequence_int");

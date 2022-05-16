@@ -29,12 +29,11 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
 import java.text.CharacterIterator;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
@@ -42,7 +41,6 @@ import java.util.logging.Logger;
 
 import javax.swing.Timer;
 
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.*;
@@ -53,8 +51,8 @@ import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
 
-import static java.nio.file.Files.isDirectory;
-import static java.nio.file.Files.isExecutable;
+import static com.raelity.jvi.core.Util.*;
+
 
 
 /**
@@ -64,12 +62,6 @@ import static java.nio.file.Files.isExecutable;
 public class CcBang
 {
 private static final Logger LOG = Logger.getLogger(CcBang.class.getName());
-
-/**
- * The "virtual" cwd used for running ":!" commands.
- * This should always be the result of toRealPath for consistency.
- */
-private static Path cwd;
 
     @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=10)
     public static class Init implements ViInitialization
@@ -83,80 +75,10 @@ private static Path cwd;
 
 private static void init()
 {
-    ColonCommands.register("!", "!", ACTION_bang, null);
-    ColonCommands.register("pw", "pwd", new Pwd(), null);
-    ColonCommands.register("cd", "cd", new Cd(), null);
-
-    Path tPath = FileSystems.getDefault().getPath("");
-    try {
-        cwd = tPath.toRealPath();
-    } catch(IOException ex) {
-        Exceptions.printStackTrace(ex);
-        // Oh well, we'll settle for this. Should never happen
-        cwd = tPath.toAbsolutePath();
-    }
+    ColonCommands.register("!", "!", ACTION_bang,
+                           EnumSet.of(CcFlag.XFILE, CcFlag.NO_PARSE));
 }
-
-    private static class Pwd extends AbstractColonAction
-    {
-        @Override
-        public void actionPerformed(ActionEvent e)
-        {
-            ColonEvent cev = (ColonEvent) e;
-
-            if(cev.getNArg() != 0) {
-                Msg.emsg(Messages.e_trailing);
-                return;
-            }
-            Msg.smsg(cwd.toString());
-        }
-    }
-
-    private static class Cd extends AbstractColonAction
-    {
-        @Override
-        public EnumSet<CcFlag> getFlags()
-        {
-            // The vim cd cmd use bang in strange circumstances, allow it, ignore it
-            return EnumSet.of(CcFlag.BANG, CcFlag.COMPL_FN);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e)
-        {
-            ColonEvent cev = (ColonEvent) e;
-            
-            if(cev.getNArg() != 1) {
-                Msg.emsg("Takes exactly one argument.");
-                return;
-            }
-            setCwd(cev.getArg(1), true);
-        }
-    }
-
-public static Path getCwd() {
-    return cwd;
-}
-
-private static boolean setCwd(String dir, boolean display)
-{
-    String exMsg = "";
-    try {
-        Path path = cwd.resolve(dir).toRealPath();
-        if (isDirectory(path) && isExecutable(path)) {
-            cwd = path;
-            if (display)
-                Msg.smsg(cwd.toString());
-            return true;
-        }
-    } catch(IOException ex) {
-        exMsg = ": " + ex.getLocalizedMessage();
-        // Exceptions.printStackTrace(ex);
-    }
-    if (display)
-        Msg.emsg(String.format("Can't find directory '%s'%s", dir, exMsg));
-    return false;
-}
+private static void eatme(Object o) { Objects.isNull(o); }
 
 
 static String lastBangCommand = null;
@@ -166,6 +88,9 @@ private static final ColonAction ACTION_bang = new BangAction();
 private CcBang()
 {
 }
+
+private static int last_exit;
+public static int getLastExit() { return last_exit; }
 
 public static class BangAction extends AbstractColonAction
 {
@@ -187,20 +112,23 @@ public static class BangAction extends AbstractColonAction
         }
         ColonEvent evt = (ColonEvent)ev;
         int nArgs = evt.getNArg();
-        boolean isFilter = (evt.getAddrCount() > 0);
+        //boolean isFilter = (evt.getAddrCount() > 0);
 
-        dbg.println(() -> "!: Original command: '" + evt.getArgString() + "'");
-        StringBuilder arg = new StringBuilder(evt.getArgString());
-        arg = parseBang(arg);
-        if (arg == null) {
-            Msg.emsg("No previous command");
-            return;
-        }
-        StringBuilder argFinal = arg;
-        dbg.println(() -> "!: Substitution '" + argFinal + "'");
+        //dbg.println(() -> "!: Original command: '" + evt.getArgString() + "'");
+        ////StringBuilder arg = new StringBuilder(evt.getArgString());
+        //StringBuilder arg;
+        //arg = parseBang(evt.getArgString());
+        //if (arg == null) {
+        //    return;
+        //}
+        //StringBuilder argFinal = arg;
+        //dbg.println(() -> "!: Substitution '" + argFinal + "'");
+        dbg.println(() -> "!: Original cmdLine: '" + evt.getCommandLineRaw()+ "'");
+        dbg.println(() -> "!: Substitution '" + evt.getArgString() + "'");
 
         if (nArgs >= 1) {
-            String cmd = arg.toString();
+            //String cmd = arg.toString();
+            String cmd = evt.getArgString();
             doBangCommand(evt, cmd);
             if(coord == null) {
                 return;
@@ -241,7 +169,7 @@ public static class BangAction extends AbstractColonAction
             // NEEDSWORK: set write to process thread to not bother cleaning up
             // set flag in coord so we get a rollback undo
             try {
-                int exit = coord.process.exitValue();
+                last_exit = coord.process.exitValue();
             } catch(IllegalThreadStateException ex) {
                 dbg.println("!: destroying process");
                 coord.process.destroy();
@@ -288,68 +216,6 @@ public static class BangAction extends AbstractColonAction
         }
     }
 
-    private StringBuilder parseBang(StringBuilder sb)
-    {
-        StringBuilder newsb = new StringBuilder();
-        int index = 0;
-        while(index < sb.length()) {
-            char c = sb.charAt(index);
-            switch(c) {
-
-                case '!':
-                    if (escaped(index, sb)) {
-                        // looking at "!" following a "\"
-                        // means we already appended a \ to newsb
-                        // so we replace it by !
-                        newsb.setCharAt(newsb.length() - 1, '!');
-                    } else {
-                        // replace this ! by last command, if it exists
-                        if (lastBangCommand != null) {
-                            newsb.append(lastBangCommand);
-                        } else {
-                            return null; // Error, no last command
-                        }
-                    }
-                    index++;
-                    break;
-
-                case '%':
-                    if(escaped(index, sb)){
-                        // Again, replace the last \ with %
-                        newsb.setCharAt(newsb.length() - 1, '%');
-                        index++;
-                    } else {
-                        // replace % by the filename
-                        // watch for the filename modifiers ':x'
-                        //
-                        // NEESDWORK: filename-modifiers not handled in vim compatible way
-                        // Not all file modifiers are supported and only one is allowed,
-                        // allowing multiple will require rework here and getFileName.
-                        //
-                        if(index+2 < sb.length() && sb.charAt(index+1) == ':'){
-                            newsb.append(G.curbuf.modifyFilename(sb.charAt(index+2)));
-                            index += 3;
-                        } else {
-                            newsb.append(G.curbuf.modifyFilename(' '));
-                            index++;
-                        }
-                    }
-                    break;
-
-                default:
-                    newsb.append(c);
-                    index++;
-
-            } // end switch
-        }
-        return newsb;
-    }
-
-    private boolean escaped(int index, StringBuilder sb)
-    {
-        return index != 0 && sb.charAt(index - 1) == '\\';
-    }
-
     private String commandLineToString(List<String> cl)
     {
         int nArgs = cl.size();
@@ -381,7 +247,7 @@ public static class BangAction extends AbstractColonAction
 
         ProcessBuilder pb = new ProcessBuilder(shellCommandLine);
         pb.redirectErrorStream(true);
-        pb.directory(cwd.toFile());
+        pb.directory(FilePath.getCwd().toFile());
 
         Process p;
         try {
@@ -409,7 +275,7 @@ public static class BangAction extends AbstractColonAction
                             && e.isControlDown()) {
                         finishBangCommand(false);
                     } else {
-                        Util.beep_flush();
+                        beep_flush();
                     }
                 }
             });
@@ -432,6 +298,7 @@ public static class BangAction extends AbstractColonAction
             Process p,
             String cmd )
     {
+        eatme(evt);
 
         BufferedReader br;
         ViOutputStream vos;
@@ -468,6 +335,7 @@ public static class BangAction extends AbstractColonAction
             Process p,
             String cmd )
     {
+        eatme(cmd);
         // NEEDSWORK: set up a thread group???
 
         BufferedReader br;
@@ -565,9 +433,11 @@ private static class SimpleExecuteThread extends FilterThread
     }
 
     @Override
+    @SuppressWarnings("CallToThreadRun")
     public void run()
     {
         super.run();
+        // Is this needed here? 
         coord.finish(true);
     }
 
@@ -999,251 +869,6 @@ private static class DocumentThread extends FilterThread
     }
 
 } // end
-
-/////////////////////////////
-//
-// non-string builder version
-//
-//private static class OriginalDocumentThread extends FilterThread
-//{
-//    int docReadLine;
-//    boolean docReadDone;
-//
-//    int docWriteLine;
-//    boolean docWriteDone;
-//
-//    int linesDelta;
-//    Window win;
-//
-//    int debugCounter;
-//
-//    // timer is used as a flag, when null work is done
-//    Timer timer;
-//    boolean isThread;
-//    boolean interruptFlag;
-//    boolean inUndo;
-//
-//    protected boolean didCleanup;
-//
-//    OriginalDocumentThread(FilterThreadCoordinator coord, ViTextView tv)
-//    {
-//        super(RW_DOC, coord);
-//        win = (Window)tv;
-//    }
-//
-//    @Override
-//    public void run()
-//    {
-//        assert(false);
-//    }
-//
-//    @Override
-//    public void interrupt()
-//    {
-//        interruptFlag = true;
-//    }
-//
-//    @Override
-//    public boolean isInterrupted()
-//    {
-//        return interruptFlag;
-//    }
-//
-//    public void runUnderTimer()
-//    {
-//        assert(!isThread);
-//        timer = new Timer(coord.WAIT, new ActionListener() {
-//                public void actionPerformed(ActionEvent e) {
-//                    assert(EventQueue.isDispatchThread());
-//                    if(timer != null) {
-//                        doServiceUnderTimer();
-//                    }
-//                }
-//        });
-//        timer.setRepeats(false);
-//
-//        docReadLine = coord.startLine;
-//        docWriteLine = coord.startLine;
-//
-//        inUndo = true;
-//        Misc.beginUndo();
-//
-//        doServiceUnderTimer();
-//
-//        return;
-//    }
-//
-//    private void finishUnderTimer()
-//    {
-//        if(!docReadDone) {
-//            cleanup(); // like "10000!!date"
-//        }
-//
-//        doTaskCleanup();
-//
-//        if(inUndo) {
-//            Misc.endUndo();
-//        }
-//
-//        coord.finish(true);
-//    }
-//
-//    private void doServiceUnderTimer()
-//    {
-//        boolean didSomething;
-//
-//        try {
-//            do {
-//                didSomething = readDocument();
-//                didSomething |= writeDocument();
-//            } while(didSomething && !isProblem() && !docWriteDone);
-//        } catch(Throwable t) {
-//            exception = t;
-//        }
-//
-//        if(!isProblem() && !docWriteDone) {
-//            timer.start();
-//        } else {
-//            finishUnderTimer();
-//        }
-//    }
-//
-//    @Override
-//    void doTask()
-//    {
-//    }
-//
-//    private void deleteLine(int line)
-//    {
-//        deleteLines(line, line);
-//    }
-//
-//    private void deleteLines(int startLine, int endLine)
-//    {
-//        int startOffset = win.w_buffer.getLineStartOffset(startLine);
-//        int endOffset = win.w_buffer.getLineEndOffset(endLine);
-//        int docLength = win.getEditorComponent().getDocument().getLength();
-//        if(endOffset > docLength) {
-//            endOffset = docLength;
-//        }
-//        win.deleteChar(startOffset, endOffset);
-//    }
-//
-//    public boolean readDocument()
-//    {
-//        boolean didSomething = false;
-//        String data = null;
-//        if(docReadLine <= coord.lastLine) {
-//            if (dbg.value) {
-//                System.err.println("!: rwDoc: try read doc");
-//            }
-//            while(!isProblem() && docReadLine <= coord.lastLine) {
-//                int docLine = docReadLine + linesDelta;
-//                data =    win.w_buffer.getLineSegment(docLine).toString();
-//                if(!coord.fromDoc.offer(data)) {
-//                    break;
-//                }
-//                deleteLine(docLine);
-//                if (dbgData.value) {
-//                    System.err.println("!: fromDoc #" + docReadLine + "," + docLine
-//                            + ": '" + data.trim() + "'");
-//                }
-//                docReadLine++;
-//                linesDelta--;
-//                didSomething = true;
-//            }
-//        } else {
-//            if(!docReadDone && coord.fromDoc.offer(DONE)) {
-//                docReadDone = true;
-//                if (dbg.value) {
-//                    System.err.println("!: rwDoc: docReadDONE");
-//                }
-//            }
-//        }
-//        return didSomething;
-//    }
-//
-//    public boolean writeDocument()
-//    {
-//        boolean didSomething = false;
-//        String data = null;
-//        if(!docWriteDone) {
-//            if (dbg.value)
-//                System.err.println("!: rwDoc: try write doc " + debugCounter++);
-//            while(!isProblem()) {
-//                data = coord.toDoc.poll();
-//                if(data == null) {
-//                    break;
-//                }
-//                if(DONE.equals(data)) {
-//                    docWriteDone = true;
-//                    if (dbg.value) {
-//                        System.err.println("!: rwDoc: docWriteDONE");
-//                    }
-//                    break;
-//                }
-//                int offset = win.w_buffer.getLineStartOffset(docWriteLine);
-//                win.insertText(offset, data);
-//                offset += data.length();
-//                win.insertText(offset, "\n");
-//                if (dbgData.value) {
-//                    System.err.println("!: toDoc #" + docWriteLine + ": '"
-//                            + data.trim() + "'");
-//                }
-//                docWriteLine++;
-//                linesDelta++;
-//                didSomething = true;
-//            }
-//        }
-//        return didSomething;
-//    }
-//
-//    @Override
-//    public void dumpState()
-//    {
-//        System.err.println("docReadDone " + docReadDone
-//                + ", docReadLine " + docReadLine
-//                + ", docWriteDone " + docWriteDone
-//                + ", docWriteLine " + docWriteLine
-//                + ", linesDelta " + linesDelta);
-//        super.dumpState();
-//    }
-//
-//    @Override
-//    void cleanup()
-//    {
-//        if(didCleanup) {
-//            return;
-//        }
-//        didCleanup = true;
-//        if (dbg.value) {
-//            dumpState();
-//        }
-//
-//        if(docReadDone && docReadLine <= coord.lastLine) {
-//            throw new IllegalStateException();
-//        }
-//        if (dbg.value) {
-//            System.err.println("!: checking doc CLEANUP");
-//        }
-//        // don't run the document cleanup if there are issues
-//        if(isProblem()) {
-//            return;
-//        }
-//
-//        // do one big delete
-//        int line1, line2;
-//        line1 = docReadLine + linesDelta;
-//        line2 = coord.lastLine + linesDelta;
-//        if (dbg.value) {
-//            System.err.println("!: CLEANUP: fromDoc #"
-//                    + docReadLine + ":" + coord.lastLine
-//                    + ", " + line1 + ":" + line2);
-//        }
-//        deleteLines(line1, line2);
-//    }
-//
-//} // end
 
 
 /** Base class for Bang command threads.

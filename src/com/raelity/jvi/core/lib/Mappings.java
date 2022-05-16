@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -97,29 +98,31 @@ public final class Mappings {
     {
         ColonCommands.AbstractColonAction cmd = new MapColonCommand();
 
-        // EnumSet.of(CcFlag.NO_PARSE)
+        EnumSet<CcFlag> flags = EnumSet.of(CcFlag.NO_PARSE);
+        // need to investigate possible effects on NB completion,
+        // there's that parseCommandNoExec thing.
+        //EnumSet<CcFlag> flags = null;
 
-        ColonCommands.register("map", "map",  cmd, null);
-        ColonCommands.register("nm",  "nmap", cmd, null);
-        ColonCommands.register("vm",  "vmap", cmd, null);
-        ColonCommands.register("om",  "omap", cmd, null);
-        ColonCommands.register("pm",  "pmap", cmd, null);
-        ColonCommands.register("im",  "imap", cmd, null);
+        ColonCommands.register("map", "map",  cmd, flags);
+        ColonCommands.register("nm",  "nmap", cmd, flags);
+        ColonCommands.register("vm",  "vmap", cmd, flags);
+        ColonCommands.register("om",  "omap", cmd, flags);
+        ColonCommands.register("pm",  "pmap", cmd, flags);
+        ColonCommands.register("im",  "imap", cmd, flags);
 
-        ColonCommands.register("no",  "noremap",  cmd, null);
-        ColonCommands.register("nn",  "nnoremap", cmd, null);
-        ColonCommands.register("vn",  "vnoremap", cmd, null);
-        ColonCommands.register("ono", "onoremap", cmd, null);
-        ColonCommands.register("pn",  "pnoremap", cmd, null);
-        ColonCommands.register("ino", "inoremap", cmd, null);
+        ColonCommands.register("no",  "noremap",  cmd, flags);
+        ColonCommands.register("nn",  "nnoremap", cmd, flags);
+        ColonCommands.register("vn",  "vnoremap", cmd, flags);
+        ColonCommands.register("ono", "onoremap", cmd, flags);
+        ColonCommands.register("pn",  "pnoremap", cmd, flags);
+        ColonCommands.register("ino", "inoremap", cmd, flags);
 
-        ColonCommands.register("unm", "unmap",  cmd, null);
-        ColonCommands.register("nun", "nunmap", cmd, null);
-        ColonCommands.register("vu",  "vunmap", cmd, null);
-        ColonCommands.register("ou",  "ounmap", cmd, null);
-        ColonCommands.register("pun", "punmap", cmd, null);
-        ColonCommands.register("iu",  "iunmap", cmd, null);
-
+        ColonCommands.register("unm", "unmap",  cmd, flags);
+        ColonCommands.register("nun", "nunmap", cmd, flags);
+        ColonCommands.register("vu",  "vunmap", cmd, flags);
+        ColonCommands.register("ou",  "ounmap", cmd, flags);
+        ColonCommands.register("pun", "punmap", cmd, flags);
+        ColonCommands.register("iu",  "iunmap", cmd, flags);
     }
 
     private class MapColonCommand

@@ -71,8 +71,12 @@ def add_licenses():
     # assume all have url (not inline)
     names = set()
     for lic in licenses:
+        #print(f'Check license {lic}')
         (name, url, idir, e) = lic
         if name in names:
+            continue
+        if not url:
+            # assume it's already embedded (maven)
             continue
         print('Adding license ' + name)
         l = ET.Element("license")

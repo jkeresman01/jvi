@@ -16,6 +16,7 @@ public final class ColonCommandItem implements Comparable<ColonCommandItem> {
     private final String name;
     private final Object value;
     private final EnumSet<CcFlag> flags;
+    private final Cmd cmd;
 
     public ColonCommandItem(String abbrev)
     {
@@ -31,6 +32,7 @@ public final class ColonCommandItem implements Comparable<ColonCommandItem> {
         if(flags == null)
             flags = EnumSet.noneOf(CcFlag.class);
         this.flags = flags;
+        cmd = Cmd.findCmd(abbrev);
     }
 
     /**
@@ -63,6 +65,11 @@ public final class ColonCommandItem implements Comparable<ColonCommandItem> {
     public String getName()
     {
         return name;
+    }
+
+    public Cmd getCmd()
+    {
+        return cmd;
     }
 
     public String getDisplayName()

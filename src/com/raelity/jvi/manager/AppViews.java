@@ -23,7 +23,6 @@ package com.raelity.jvi.manager;
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -102,11 +101,13 @@ public enum AppViews
         }
     }
 
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     private static void init()
     {
         ColonCommands.register("dumpJvi", "dumpJvi", (ActionEvent e) -> {
             System.err.println(AppViews.dump(null).toString());
         }, EnumSet.of(CcFlag.DBG));
+        getLocation(null); // shut up the not-used warning
     }
 
     /**
@@ -352,8 +353,6 @@ public enum AppViews
     /** FROM: NOT USED */
     public static ViAppView currentAppView(List<ViAppView> avs)
     {
-        int idx = -1;
-        int i = 0;
         for (ViAppView av : avs) {
             if(av.getEditor() != null
                     && av.getEditor().equals(Scheduler.getCurrentEditor())
@@ -363,6 +362,32 @@ public enum AppViews
             }
         }
         return null;
+    }
+
+    /**
+     * A convenience method to easily support '%', '#',
+     * '#&lt;digits&gt;', '#-&lt;digits&gt;'; 0 is the current av,
+     * greater than 0 is buffer number, less than 0 is MRU.
+     * @param id
+     * @return null if not found, else the indicated appview
+     */
+    public static ViAppView getAppView(int id)
+    {
+        ViAppView av = null;
+        if(id == 0)
+            av = relativeMruAppView(0);
+        else if(id > 0) {
+            for (ViAppView av1 : avs) {
+                if(id == av1.getWinID()) {
+                    av = av1;
+                    break;
+                }
+            }
+        } else {
+            av = getMruAppView(-id);
+        }
+        
+        return av;
     }
 
     /**
@@ -404,6 +429,7 @@ public enum AppViews
     }
 
     /** FROM: Cc01 */
+    // WHY IS relativeMruAppView(0) used for '%'?
     public static ViAppView relativeMruAppView(int i)
     {
         return relativeMruAppView(avCurrentlyActive, i);
@@ -447,6 +473,8 @@ public enum AppViews
 
     private static Point getLocation(ViAppView av)
     {
+        if(av == null)
+            return null;
         Point p;
         if(av.getEditor() != null) {
             p = av.getEditor().getLocationOnScreen();

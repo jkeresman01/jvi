@@ -10,7 +10,6 @@
 package com.raelity.jvi.core;
 
 import java.awt.EventQueue;
-import java.io.File;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.logging.Logger;
@@ -201,74 +200,6 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
         return ViManager.getFactory().getFS().getDisplayFileName(this);
     }
 
-    
-    /**
-     * In the future, to support multiple file modifiers, could take a File
-     * as an argument, and return a File. Or take a String which is the list
-     * of options.
-     *
-     * VIM: ":help filename-modifiers"
-     * 
-     * NEEDSWORK: missing options, only one option handled
-     */
-    @SuppressWarnings("fallthrough")
-    @Override
-    public String modifyFilename(char option) {
-        File fi = getFile();
-        String filename = "";
-        if(fi != null) {
-            switch (option) {
-            case 'p':
-                filename = fi.getAbsolutePath();
-                break;
-            case 'e':
-            {
-                String s = fi.getName(); // last component of name
-                int idx = s.lastIndexOf('.');
-                filename = idx > 0 && idx != s.length() - 1
-                            ? s.substring(idx + 1)
-                            : s;
-                break;
-            }
-            case 'r':
-            {
-                String parent = fi.getParent();
-                String s = fi.getName(); // last component of name
-                int idx = s.lastIndexOf('.');
-                // if has a '.' and its not the first character
-                if(idx > 0)
-                    s = s.substring(0,idx);
-                filename = parent == null
-                            ? s
-                            : parent + File.separator + s;
-                break;
-            }
-            case 't':
-                filename = fi.getName();
-                break;
-            case 'h':
-                if(fi.isAbsolute()) {
-                    filename = fi.getParent();
-                    break;
-                }
-                // FALLTHROUGH
-            case ' ':
-                filename = fi.getPath();
-                break;
-            default:
-                filename = fi.getPath()
-                        + ":" + new String(new char[] {option});
-                break;
-            }
-            
-            if(G.p_ssl){
-                // Shellslash is on, replace \ with /
-                filename = filename.replace('\\','/');
-            }
-        }
-        return filename;
-    }
-    
     //////////////////////////////////////////////////////////////////////
     //
     //
@@ -772,6 +703,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
 
     }
 
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static void dumpBlocks(String tag, int[] b) {
         System.err.print(tag + ":");
         for(int i = 0; i < b.length; i += 2)

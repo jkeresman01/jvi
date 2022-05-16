@@ -21,6 +21,8 @@
 package com.raelity.jvi.cmd;
 
 import java.io.File;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViBuffer;
@@ -41,6 +43,12 @@ public class PlayFS extends SimpleFS
      */
     public PlayFS()
     {
+    }
+
+    @Override
+    public Path getPath(ViAppView av)
+    {
+        return FileSystems.getDefault().getPath("/tmp/test.file");
     }
 
     @Override
@@ -103,7 +111,7 @@ public class PlayFS extends SimpleFS
 
 
     @Override
-    public void edit(File f, boolean force, ViFPOS fpos )
+    public void edit(Path f, boolean force, ViFPOS fpos)
     {
         Msg.emsg("edit(File{" + f + "}, force, fpos) not implemented");
     }

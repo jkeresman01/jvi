@@ -82,7 +82,7 @@ public interface ViAppView
     public boolean isNomad();
 
     /** Get the unique/invariant integer identifier of the editor/window
-     * associated with the av.
+     * associated with the av; poorly named, it's the buffer.
      * When the app first opens an editor it should derive this number.
      * This number is used in jVi commands such as ":e#!number!"
      *

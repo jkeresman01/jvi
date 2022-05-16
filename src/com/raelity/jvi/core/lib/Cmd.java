@@ -1,6 +1,6 @@
 /*
  * Portions created by Ernie Rael are
- * Copyright (C) 2020 Ernie Rael.  All Rights Reserved.
+ * Copyright (C) 2022 Ernie Rael.  All Rights Reserved.
  *
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -17,34 +17,37 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
-package com.raelity.jvi.lib;
+package com.raelity.jvi.core.lib;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.event.ChangeEvent;
-
-//import com.raelity.jvi.core.*;
-
-import static com.raelity.text.TextUtil.sf;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
  * @author err
  */
-public class LibUtil
+public enum Cmd
 {
-private LibUtil() {}
+BANG("!");
 
-public static String dumpEvent(ActionEvent e)
+private static Map<String, Cmd> cmds;
+
+@SuppressWarnings("LeakingThisInConstructor")
+private Cmd(String abbrev)
 {
-    return sf("cmd=%s on %s",
-              e.getActionCommand(), e.getSource().getClass().getSimpleName());
-    
+    stash(abbrev, this);
 }
 
-public static String dumpChangeEvent(ChangeEvent e) {
-    return sf("on %s", e.getSource().getClass().getSimpleName());
+private static void stash(String abbrev, Cmd cmd)
+{
+    if(cmds == null)
+        cmds = new HashMap<>(100);
+    cmds.put(abbrev, cmd);
 }
 
+static Cmd findCmd(String abbrev)
+{
+    return cmds.get(abbrev);
+}
 
 }

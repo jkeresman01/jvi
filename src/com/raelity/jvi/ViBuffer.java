@@ -30,6 +30,7 @@ package com.raelity.jvi;
 
 import java.io.File;
 
+import com.raelity.jvi.core.*;
 import com.raelity.text.MySegment;
 
 /**
@@ -179,15 +180,13 @@ public interface ViBuffer {
     public String getDisplayFileName();
 
     /**
-     * In the future, to support multiple file modifiers, could take a File
-     * as an argument, and return a File. Or take a String which is the list
-     * of options.
-     *
-     * VIM: ":help filename-modifiers"
-     *
-     * NEEDSWORK: missing options, only one option handled
+     * DO NOT INVOKE
+     * @param option
+     * @return 
+     * @deprecated use {@link FilePath#modifyFilename(com.raelity.text.StringSegment, java.nio.file.Path, com.raelity.jvi.lib.Wrap) } which handles modifiers correctly.
      */
-    public String modifyFilename(char option);
+    @Deprecated
+    default public String modifyFilename(char option) { return null; }
 
     /**
      * This method provides a {@linkplain File} for the buffer.
