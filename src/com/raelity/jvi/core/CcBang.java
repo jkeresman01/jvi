@@ -32,10 +32,11 @@ import java.io.OutputStreamWriter;
 import java.text.CharacterIterator;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,11 +53,19 @@ import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
 
 import static com.raelity.jvi.core.Util.*;
+import static com.raelity.text.TextUtil.*;
 
 
 
 /**
- *
+ * TODO: unit test. only win.buf.getsegment to deal with
+ * <p>
+ * NOTE: writing to the process can easily have an acceptable exception,
+ * for example: ":.!date" writes a line to the date command, though the date
+ * command does not read standard input, and if the date command finishes
+ * before the write or close exceptions occur.
+ * </p>
+ * 
  * @author Ernie Rael <err at raelity.com>
  */
 public class CcBang
@@ -95,8 +104,8 @@ public static int getLastExit() { return last_exit; }
 public static class BangAction extends AbstractColonAction
 {
     FilterThreadCoordinator coord = null;
+    Future<Integer> exitValue;
     DebugOption dbg = Options.getDebugOption(Options.dbgBang);
-
         @Override
         public EnumSet<CcFlag> getFlags()
         {
@@ -112,19 +121,7 @@ public static class BangAction extends AbstractColonAction
         }
         ColonEvent evt = (ColonEvent)ev;
         int nArgs = evt.getNArg();
-        //boolean isFilter = (evt.getAddrCount() > 0);
-
-        //dbg.println(() -> "!: Original command: '" + evt.getArgString() + "'");
-        ////StringBuilder arg = new StringBuilder(evt.getArgString());
-        //StringBuilder arg;
-        //arg = parseBang(evt.getArgString());
-        //if (arg == null) {
-        //    return;
-        //}
-        //StringBuilder argFinal = arg;
-        //dbg.println(() -> "!: Substitution '" + argFinal + "'");
-        dbg.println(() -> "!: Original cmdLine: '" + evt.getCommandLineRaw()+ "'");
-        dbg.println(() -> "!: Substitution '" + evt.getArgString() + "'");
+        dbg.println(() -> "!: cmdLine '" + evt.getArgString() + "'");
 
         if (nArgs >= 1) {
             //String cmd = arg.toString();
@@ -141,17 +138,17 @@ public static class BangAction extends AbstractColonAction
         dbg.println(() -> "!: Last command saved '" + lastBangCommandFinal + "'");
     }
 
-    private void joinThread(Thread t)
+    private void joinThread(FilterThread t)
     {
         dbg.println(() -> "!: joining thread " + t.getName());
         if(t.isAlive()) {
-            t.interrupt();
+            t.interrupt("joinThread");
             try {
                 t.join(50);
             } catch (InterruptedException ex) {
             }
             if(t.isAlive()) {
-                LOG.log(Level.WARNING, "Thread {0} won''t die", t.getName());
+                LOG.warning(() -> sf("Thread %s won't die", t.getName()));
             }
         }
     }
@@ -161,25 +158,27 @@ public static class BangAction extends AbstractColonAction
         assert(EventQueue.isDispatchThread());
         if(coord == null)
             return;
-        //System.err.println("!: DONE :!" + (!fOK ? " ABORT" : ""));
+        coord.exitting = true;
+        dbg.println(() -> sf("!: finishBangCommand: %s, alive: %s",
+                             !fOK ? " ABORT" : "OK", coord.process.isAlive()));
         ViManager.getFactory().stopGlassKeyCatch();
         Msg.wmsg("");
-
-        if(!fOK) {
-            // NEEDSWORK: set write to process thread to not bother cleaning up
-            // set flag in coord so we get a rollback undo
-            try {
-                last_exit = coord.process.exitValue();
-            } catch(IllegalThreadStateException ex) {
-                dbg.println("!: destroying process");
+        
+        try {
+            if(coord.process.isAlive()) {
+                dbg.println("!: finishBangCommand: destroying process");
                 coord.process.destroy();
             }
+            last_exit = exitValue.get();
+        } catch(InterruptedException|ExecutionException ex) { }
+
+        if(!fOK) {
             if(coord.simpleExecuteThread != null) {
-                coord.simpleExecuteThread.interrupt();
+                coord.simpleExecuteThread.interrupt("finishBangCommand");
             } else {
-                coord.documentThread.interrupt();
-                coord.readFromProcessThread.interrupt();
-                coord.writeToProcessThread.interrupt();
+                coord.documentThread.interrupt("finishBangCommand");
+                coord.readFromProcessThread.interrupt("finishBangCommand");
+                coord.writeToProcessThread.interrupt("finishBangCommand");
             }
         }
 
@@ -211,25 +210,6 @@ public static class BangAction extends AbstractColonAction
         */
 
         coord = null;
-        if(!fOK) {
-            // return;
-        }
-    }
-
-    private String commandLineToString(List<String> cl)
-    {
-        int nArgs = cl.size();
-        StringBuilder result = new StringBuilder();
-
-        if (nArgs > 0) {
-            result.append(cl.get(0));
-        }
-
-        for (int i = 1; i < nArgs; i++) {
-            result.append(' ').append(cl.get(i));
-        }
-
-        return result.toString();
     }
 
     private boolean doBangCommand(ColonEvent evt, String commandLine)
@@ -252,6 +232,11 @@ public static class BangAction extends AbstractColonAction
         Process p;
         try {
             p = pb.start();
+            exitValue = p.onExit().thenApply(p1 -> {
+                int ev = p1.exitValue();
+                dbg.println(() -> sf("!: Bang process: exit 0x%x", ev));
+                return ev;
+            });
         } catch (IOException ex) {
             String s = ex.getMessage();
             Msg.emsg(s == null || s.equals("") ? "exec failed" : s);
@@ -273,7 +258,8 @@ public static class BangAction extends AbstractColonAction
                     e.consume();
                     if(e.getKeyChar() == (KeyEvent.VK_C & 0x1f)
                             && e.isControlDown()) {
-                        finishBangCommand(false);
+                        dbg.println(() -> "!: Ctrl-C");
+                        coord.process.destroy();
                     } else {
                         beep_flush();
                     }
@@ -283,7 +269,7 @@ public static class BangAction extends AbstractColonAction
         // start the thread(s)
         dbg.println("!: starting threads");
 
-        String fullCommand = commandLineToString(shellCommandLine);
+        String fullCommand = String.join(" ", shellCommandLine);
         if (isFilter) {
             outputFromProcessToFile(evt, p, fullCommand);
         } else {
@@ -321,14 +307,11 @@ public static class BangAction extends AbstractColonAction
         * The document thread puts data from document to fromDoc BlockingQueue and
         * takes data from toDoc BlockingQueue and puts it into the document. Each
         * of the other threads passes data between a BlockingQueue and
-        * the process.
+        * the process. NOTE: r/w doc is not a thread, timer in EDT.
         * <p>
         * This could be done with a single thread if the process streams had a
         * timeout interface.
-        *<p/><p>
-        * NEEDSWORK: work with larger chunks at a time.
-        * In particular, insert/delete large chunks to/from document;
-        * this might descrease the memory requirements for undo/redo.
+        *<p/>
         */
     private void outputFromProcessToFile(
             ColonEvent evt,
@@ -348,9 +331,9 @@ public static class BangAction extends AbstractColonAction
         coord.documentThread = new DocumentThread(coord, evt.getViTextView());
 
         //coord.documentThread.start();
-        coord.documentThread.runUnderTimer();
         coord.writeToProcessThread.start();
         coord.readFromProcessThread.start();
+        coord.documentThread.runUnderTimer();
     }
 
 } // end inner class BangAction
@@ -368,6 +351,7 @@ private static class FilterThreadCoordinator
     public static final int QLEN = 100; // size of to/from doc q's'
     int startLine;
     int lastLine;
+    boolean exitting;
 
     BlockingQueue<String> fromDoc;
     BlockingQueue<String> toDoc;
@@ -392,25 +376,22 @@ private static class FilterThreadCoordinator
         startLine = oa.start.getLine();
         lastLine = oa.end.getLine();
 
-        fromDoc = new ArrayBlockingQueue<>(QLEN);
-        toDoc = new ArrayBlockingQueue<>(QLEN);
+        fromDoc = new LinkedBlockingQueue<>(QLEN);
+        toDoc = new LinkedBlockingQueue<>(QLEN);
     }
 
+    void finish(final Thread thread)
+    {
+    }
     void finish(final boolean fOK)
     {
-        if(EventQueue.isDispatchThread()) {
-            ba.finishBangCommand(fOK);
-        } else {
-            EventQueue.invokeLater(() -> {
-                ba.finishBangCommand(fOK);
-            });
-        }
+        ViManager.runInDispatch(false, () -> ba.finishBangCommand(fOK) );
     }
 
     public void dumpState()
     {
         Options.getDebugOption(Options.dbgBang)
-            .println(() -> "startLine " + startLine + ", lastLine = " + lastLine);
+            .println(() -> "dump: startLine " + startLine + ", lastLine = " + lastLine);
     }
 
 } // end inner class
@@ -513,7 +494,7 @@ private static class ProcessWriterThread extends FilterThread
     @Override
     public void dumpState()
     {
-        dbg.println(() -> "currWriterLine " + currWriterLine
+        dbg.println(() -> "dump: currWriterLine " + currWriterLine
                 + ", wroteFirstLineToProcess " + wroteFirstLineToProcess
                 + ", reachedEndOfLines " + reachedEndOfLines);
         super.dumpState();
@@ -533,7 +514,6 @@ private static class ProcessWriterThread extends FilterThread
             try {
                 writer.close();
             } catch (IOException ex) {
-                LOG.log(Level.SEVERE, null, ex);
             }
             writer = null;
         }
@@ -549,7 +529,7 @@ private static class ProcessWriterThread extends FilterThread
     {
         currWriterLine = coord.startLine;
         try {
-            while(!isProblem()) {
+            while(!isProblem() && coord.process.isAlive()) {
                 String data = coord.fromDoc.take();
                 if(DONE.equals(data)) {
                     break;
@@ -594,7 +574,7 @@ private static class ProcessReaderThread extends FilterThread
     @Override
     public void dumpState()
     {
-        dbg.println(() -> "currReaderLine " + currReaderLine
+        dbg.println(() -> "dump: currReaderLine " + currReaderLine
                 + ", wroteFirstLineToFile " + wroteFirstLineToFile
                 + ", reachedEndOfProcessOutput " + reachedEndOfProcessOutput);
         super.dumpState();
@@ -614,7 +594,7 @@ private static class ProcessReaderThread extends FilterThread
             try {
                 reader.close();
             } catch (IOException ex) {
-                LOG.log(Level.SEVERE, null, ex);
+                // LOG.log(Level.SEVERE, null, ex);
             }
             reader = null;
         }
@@ -657,21 +637,18 @@ private static class ProcessReaderThread extends FilterThread
 
 
 /**
- *  This thread both reads and writes to the document.
- *  EXCEPT, IT IS NOT REALLY A THREAD anymore. It extends FilterThread
- *  because it is interfaced to like one. But now it runs under a timer as
- *  part of the event dispatch thread, this avoid locking issues
- *  between read/write the document and display.
+ * This both reads and writes to the document; it works to keep the
+ * fromDoc blocking Q full and the toDoc blocking Q empty.
+ * IT IS NOT A THREAD. It extends FilterThread
+ * because it is interfaced to like one for historical reasons.
+ * But now it runs under a timer as
+ * part of the event dispatch thread, this avoid locking issues
+ * between read/write the document and display.
  * <p>
  * Read one line at a time from the document and write it to a Queue for the
- * write to process q. Read a line at a time from the read from process q and
+ * writeToProcess q. Read a line at a time from the readFromProcess q and
  * build up a large string with the process output. When the process completes
  * and all the data is gathered do a single op to the document.
- * </p><p>
- * Note that OriginalDocumentThread below does a line at a time into or out
- * of the document. But to allow all document mods to be done in a single
- * Runnable that strategy has problems with the current threading model,
- * where all mods are done in the event dispatch thread.
  * </p>
  */
 private static class DocumentThread extends FilterThread
@@ -738,6 +715,7 @@ private static class DocumentThread extends FilterThread
     private void finishUnderTimer()
     {
         if(!docReadDone) {
+            // cleanup writes to the document
             cleanup(); // like "10000!!date"
         }
 
@@ -757,6 +735,16 @@ private static class DocumentThread extends FilterThread
             } while(didSomething && !isProblem() && !docWriteDone);
         } catch(Throwable t) {
             exception = t;
+        }
+        if(!coord.process.isAlive()) {
+            if(!docReadDone) {
+                docReadDone = true;
+                dbg.println(() -> "readDocument: terminated");
+            }
+            if(coord.toDoc.isEmpty() && !coord.readFromProcessThread.isAlive()) {
+                docWriteDone = true;
+                dbg.println(() -> "writeDocument: empty+terminated");
+            }
         }
 
         if(!isProblem() && !docWriteDone) {
@@ -825,7 +813,7 @@ private static class DocumentThread extends FilterThread
     @Override
     public void dumpState()
     {
-        dbg.println(() -> "docReadDone " + docReadDone
+        dbg.println(() -> "dump: docReadDone " + docReadDone
                 + ", docReadLine " + docReadLine
                 + ", docWriteDone " + docWriteDone
                 + ", docWriteLine " + docWriteLine);
@@ -843,8 +831,10 @@ private static class DocumentThread extends FilterThread
             dumpState();
         }
 
+        // Check that all the lines from doc were read.
         if(docReadDone && docReadLine <= coord.lastLine) {
-            throw new IllegalStateException();
+            dbg.println(() -> sf("!: %s: lines not read: %d, should be %d",
+                                 docReadLine, coord.lastLine));
         }
         dbg.println("!: checking doc CLEANUP");
         // don't run the document cleanup if there are issues
@@ -863,6 +853,9 @@ private static class DocumentThread extends FilterThread
                 if(sb.length() > 0 && sb.charAt(sb.length() - 1) == '\n')
                     sb.setLength(sb.length()-1);
             }
+            int endOffsetFinal = endOffset;
+            dbg.println(() -> sf("!: UpdateDoc: replace [%d,%d) with %d chars",
+                                 startOffset, endOffsetFinal, sb.length()));
             buf.replaceString(startOffset, endOffset, sb.toString());
         });
 
@@ -880,13 +873,12 @@ private static class DocumentThread extends FilterThread
     */
 private static abstract class FilterThread extends Thread
 {
-    public static final String READ_PROCESS = "FilterReadProcess";
-    public static final String WRITE_PROCESS = "FilterWriteProcess";
-    public static final String RW_DOC = "FilterDocument";
-    public static final String SIMPLE_EXECUTE = "SimpleCommandExecute";
+    static final String READ_PROCESS = "FilterReadProcess";
+    static final String WRITE_PROCESS = "FilterWriteProcess";
+    static final String RW_DOC = "FilterDocument";
+    static final String SIMPLE_EXECUTE = "SimpleCommandExecute";
 
-    public static final String DONE
-            = new String(new char[] {CharacterIterator.DONE});
+    static final String DONE = String.valueOf(CharacterIterator.DONE);
 
     protected FilterThreadCoordinator coord;
 
@@ -915,16 +907,16 @@ private static abstract class FilterThread extends Thread
     protected void dumpState()
     {
         if(exception != null) {
-            dbg.println("exception: " + exception.getMessage());
+            dbg.println("dump: exception: " + exception.getMessage());
         }
         if(uncaughtException != null) {
-            dbg.println("uncaughtException: " + uncaughtException.getMessage());
+            dbg.println("dump: uncaughtException: " + uncaughtException.getMessage());
         }
         if(error) {
-            dbg.println("error: " + error);
+            dbg.println("dump: error: " + error);
         }
         if(interrupted) {
-            dbg.println("interrupted: " + interrupted);
+            dbg.println("dump: interrupted: " + interrupted);
         }
         coord.dumpState();
     }
@@ -936,7 +928,7 @@ private static abstract class FilterThread extends Thread
 
     boolean isProblem()
     {
-        return isInterrupted() || error || exception != null;
+        return error || exception != null || uncaughtException != null;
     }
 
     @Override
@@ -956,32 +948,52 @@ private static abstract class FilterThread extends Thread
         doTaskCleanup();
     }
 
+    // TODO:
+    //      cleanup/coord.finish(): shouldn't always be called?
     public void doTaskCleanup()
     {
         if(exception != null) {
-            if (dbg.getBoolean()) {
-                LOG.log(Level.SEVERE,
-                        "!: Exception in " + getName() , exception);
-            }
+            dbg.println(() -> sf("!: task cleanup: %s: exception: %s",
+                            getName() , exception.toString()));
             cleanup();
         }
 
         if(error) {
-            dbg.println(() -> "!: error in " + getName());
+            dbg.println(() -> sf("!: task cleanup: %s: error", getName()));
             cleanup();
         }
 
         if(isInterrupted()) {
             interrupted = true;
-            dbg.println(() -> "!: cleanup in " + getName());
+            dbg.println(() -> sf("!: task cleanup: %s: isInterrupted", getName()));
             cleanup();
         }
 
         if(isProblem()) {
+            dbg.println(() -> sf("!: task cleanup: %s: isProblem(): finish", getName()));
+
+            coord.finish(this);
+
+            // TODO: get rid of this, this thread terminating is detected
             coord.finish(false);
         }
     }
 
+    public void interrupt(String tag)
+    {
+        dbg.println(() -> sf("!: task cleanup: interrupt %s by %s", getName(), tag));
+        super.interrupt();
+    }
+    
+    void debugSleep(int ms)
+    {
+        try {
+            sleep(ms);
+        } catch(InterruptedException ex) {
+            dbg.println(() -> "!: debugSleep interrupted");
+        }
+    }
+    
 } // end inner class FilterThread
 
 }
