@@ -98,7 +98,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("2.0.3.x2");
+    public static final jViVersion version = new jViVersion("2.0.3.x3");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -237,6 +237,7 @@ final public class ViManager
         //      Hook
         // 2 -  FilePath
         //      Options
+        //      Msg
         // 3 - 
         //      nb/NbOptions
         // 4 - 

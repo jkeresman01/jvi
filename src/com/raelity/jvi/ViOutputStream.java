@@ -94,81 +94,11 @@ public void printlnLink(String text, String link);
 
 public void printLink(String text, String link);
 
-// default public void println(String s, Consumer<ActionEvent> consumer)
-// {
-//     println(s);
-// }
-
-// ===== PrintWriter Methods =====
-
-
-// PrintWriter append(CharSequence csq);
-// 
-// PrintWriter append(CharSequence csq, int start, int end);
-// 
-// PrintWriter append(char c);
-// 
-// boolean checkError();
-
 @Override
 void close();
 
-// void flush();
-// 
-// PrintWriter format(String format, Object... args);
-// 
-// PrintWriter format(Locale l, String format, Object... args);
-// 
-// void print(boolean b);
-// 
-// void print(char c);
-// 
-// void print(int i);
-// 
-// void print(long l);
-// 
-// void print(float f);
-// 
-// void print(double d);
-// 
-// void print(char[] s);
-
 void print(String s);
 
-// void print(Object obj);
-// 
-// PrintWriter printf(String format, Object... args);
-// 
-// PrintWriter printf(Locale l, String format, Object... args);
-// 
-// void println();
-// 
-// void println(boolean x);
-// 
-// void println(char x);
-// 
-// void println(int x);
-// 
-// void println(long x);
-// 
-// void println(float x);
-// 
-// void println(double x);
-// 
-// void println(char[] x);
-
 void println(String x);
-
-// void println(Object x);
-// 
-// void write(int c);
-// 
-// void write(char[] buf, int off, int len);
-// 
-// void write(char[] buf);
-// 
-// void write(String s, int off, int len);
-// 
-// void write(String s);
 
 }

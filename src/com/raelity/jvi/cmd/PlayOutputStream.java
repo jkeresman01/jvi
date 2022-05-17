@@ -41,6 +41,7 @@ public class PlayOutputStream extends OutputStreamAdaptor {
     }
 
     @Override
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public void flush()
     {
       super.flush();
@@ -50,6 +51,7 @@ public class PlayOutputStream extends OutputStreamAdaptor {
     }
   }
 
+  @SuppressWarnings("UseOfSystemOutOrSystemErr")
   public PlayOutputStream(ViTextView tv, String type, String info, EnumSet<ViOutputStream.FLAGS> flags) {
     super(new MyStringWriter(), true);
     this.type = type;
@@ -77,6 +79,21 @@ public class PlayOutputStream extends OutputStreamAdaptor {
   @Override
   public void println(String s) {
     super.println("vios: " + s);
+  }
+
+  @Override
+  public void println(String s, COLOR c) {
+    super.println(sf("vios: %s (%s)", s, c.toString()));
+  }
+
+  @Override
+  public void print(String s) {
+    super.print("vios: " + s);
+  }
+
+  @Override
+  public void print(String s, COLOR c) {
+    super.print(sf("vios: %s (%s)", s, c.toString()));
   }
 
   @Override

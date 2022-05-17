@@ -20,12 +20,52 @@
 
 package com.raelity.jvi.core;
 
+import java.awt.event.ActionEvent;
+import java.util.EnumSet;
+
+import com.google.common.collect.EvictingQueue;
+import com.google.common.collect.Iterables;
+
+import org.openide.util.lookup.ServiceProvider;
+
+import com.raelity.jvi.*;
+import com.raelity.jvi.ViOutputStream.COLOR;
+import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
+import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.lib.*;
+import com.raelity.jvi.manager.*;
+
+import static com.raelity.jvi.core.lib.Messages.*;
+
 /**
  * A utility class for displaying messages and status
  * within the current window's status bar.
  */
-public class Msg
+public enum Msg
 {
+    STAT(null),
+    WARN(COLOR.WARNING),
+    ERR(COLOR.FAILURE);
+
+    COLOR color;
+    private Msg(COLOR c) {
+        color = c;
+    }
+
+    @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=2)
+    public static class Init implements ViInitialization
+    {
+    @Override
+    public void init()
+    {
+        Msg.init();
+    }
+    }
+
+    private static void init()
+    {
+        ColonCommands.register("mes", "messages", new Messages(), null);
+    }
 
     /**
      *  Display a status message, but do not put it into the msg Q.
@@ -53,6 +93,7 @@ public class Msg
     {
         // VV_STATUSMSG
         String s = args.length == 0 ? msg : String.format(msg, args);
+        add(STAT, s);
         if(ok())
             G.curwin.getStatusDisplay().displayStatusMessage(s);
         else
@@ -70,6 +111,7 @@ public class Msg
     {
         // VV_STATUSMSG
         String s = args.length == 0 ? msg : String.format(msg, args);
+        add(WARN, s);
         if(ok())
             G.curwin.getStatusDisplay().displayWarningMessage(s);
         else
@@ -87,6 +129,7 @@ public class Msg
     {
         // VV_ERRMSG; HLF_E highlight
         String s = args.length == 0 ? msg : String.format(msg, args);
+        add(ERR, s);
         if(ok()) {
             G.curwin.getStatusDisplay().displayErrorMessage(s);
             GetChar.flush_buffers(false);
@@ -128,6 +171,98 @@ public class Msg
     private static boolean ok()
     {
         return G.curwin != null && G.curwin.getStatusDisplay() != null;
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    //
+    // The message Q and its commands
+
+    private static void add(Msg t, String m)
+    {
+        msgq.add(new MsgItem(t, m));
+    }
+
+    static class MsgItem {
+    final Msg type;
+    final String msg;
+    
+    MsgItem(Msg type, String msg)
+    {
+        this.type = type;
+        this.msg = msg;
+    }
+    }
+    private static final EvictingQueue<MsgItem> msgq = EvictingQueue.create(200);
+
+    /**
+     * Goal is to show tailCount most recent entries in msgQ.
+     * Calculate how many to skip.
+     * 
+     * @param tailCount target to show
+     * @return how many to skip
+     */
+    private static int skipCount(int nDisplay)
+    {
+        int nQ = msgq.size();
+        return nDisplay >= nQ ? 0 : nQ - nDisplay;
+    }
+
+    /** Messages to output window */
+    private static class Messages extends AbstractColonAction
+    {
+        @Override
+        public EnumSet<CcFlag> getFlags()
+        {
+            return EnumSet.of(CcFlag.RANGE);
+        }
+
+    @Override
+    public void actionPerformed(ActionEvent ev) {
+        ColonEvent cev = (ColonEvent)ev;
+
+        int nDisplay;
+        if(cev.getAddrCount() == 0)
+            nDisplay = msgq.size();
+        else
+            nDisplay = cev.getLine1();
+
+        if(cev.getNArg() > 1) {
+            emsg(e_trailing);
+            return;
+        }
+        if(cev.getNArg() == 1) {
+            if(!cev.getArg(1).equals("clear")) {
+                emsg(e_invarg);
+                return;
+            }
+            // take messages out of the Q
+            int sk = skipCount(nDisplay);
+            if(sk == msgq.size())
+                msgq.clear();
+            else
+                for(int i = sk; i > 0; i--) {
+                    msgq.poll();
+                }
+            return;
+        }
+
+        try (ViOutputStream vios = ViManager.createOutputStream(null)) {
+            for(MsgItem mi : Iterables.skip(msgq, skipCount(nDisplay))) {
+                if(mi.type.color == null)
+                    vios.println(mi.msg);
+                else
+                    vios.println(mi.msg, mi.type.color);
+            }
+        }
+    }
+    }
+
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
+    static void dump(int n)
+    {
+        for(MsgItem mi : Iterables.skip(msgq, skipCount(n))) {
+            System.out.println(mi.type + "   " + mi.msg);
+        }
     }
 
 } // end

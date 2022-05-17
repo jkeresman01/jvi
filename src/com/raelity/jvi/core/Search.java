@@ -352,7 +352,7 @@ end_do_search:
           p = spats[last_idx].pat;
         else
           p = searchstr;
-        Msg.smsg(String.valueOf(dirc) + p);
+        Msg.nmsg(String.valueOf(dirc) + p);
       }
 
       int rc = searchit(null, pos,
