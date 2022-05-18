@@ -75,6 +75,87 @@
   for older releases.
 </p>
 
+<b>Version 2.0.4+ - 2022/xx/xx</b>
+<dl>
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li>
+        <span class="tt">~</span> can be used when specifying a path. For
+        example: <span class="tt">:e ~/homefile</span>
+        or <span class="tt">:cd ~/.config</span>.
+      </li>
+      <li>
+        <p>
+          Added all
+          <a href="vimhelp/cmdline.txt.html#filename-modifiers">
+            filename-modifiers</a>,
+          except for <span class="tt">:8</span>, <span class="tt">:s</span>,
+          and <span class="tt">:S</span>.
+          They can be use with the
+          the <span class="tt">:cd</span>, <span class="tt">:e</span>,
+          <span class="tt">:!</span>,
+          and <span class="tt">echo</span> commands, and more.
+        </p>
+        For example: <span class="tt">:e #5:h/xxx.java</span> opens
+        the file xxx.java in the same directory as <span class="tt">#5</span>
+        in the <span class="tt">:ls</span> list.
+        Another way is
+        <ul>
+          <li><span class="tt">:cd #5:h</span></li>
+          <li><span class="tt">:!ls -C x*</span></li>
+          <li><span class="tt">:e xxx.java</span></li>
+        </ul>
+        using file name completion as needed.
+      </li>
+      <li>
+        <span class="tt"><a href="vimhelp/message.txt.html">
+            :messages</a></span>.
+      </li>
+      <li>
+        When displaying a filename use a path; could be
+        <span class="tt">~</span>, or <span class="tt">/</span>,
+        or <span class="tt">current directory</span> relative.
+        Follow vim's rules.
+      </li>
+      <li>
+        The <span class="tt">:ls</span> command now prints a single column
+        since the filename could be much longer. Use
+        <span class="tt">:ls2</span> to get both the
+        <span class="tt">MRU</span> and <span class="tt">activation</span>
+        lists side by side with file's short name.
+      </li>
+    </ul>
+  </dd>
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li>
+        Fixed race condition in <span class="tt">:!</span>
+        command when used with a range, for example
+        <span class="tt">:.!date</span>, and the executing command did not need
+        any input. True filter commands using both stdin and stdout, like 
+        <span class="tt">'&lt;,'&gt;!sort</span>, should not have been
+        affected by the problem.
+      </li>
+      <li>
+        Fix (hopefully) a long standing obscure/rare bug where a
+        file mark gets mysteriously set to first line of its file.
+        Rework file marks, make the object immutable. 
+      </li>
+      <li>
+        Fix unexpected scroll in other window of same file as editing.
+        <p>
+          While editing a file in one window, and then manually scrolling
+          the other window of the same file without selecting that other
+          window (using the scroll wheel), the scrolled window could
+          jump back to its original position.
+        </p>
+      </li>
+    </ul>
+  </dd>
+</dl>
+
 <b>Version 2.0.2 - 2022/05/02</b>
 <dl>
   <dt>Bug fixes</dt>

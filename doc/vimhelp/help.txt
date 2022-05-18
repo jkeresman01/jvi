@@ -33,10 +33,13 @@ through the help of many others.  See |credits|.
 						*doc-file-list* *Q_ct*
 BASIC:
 |quickref|	Overview of the most common commands you will use
-START-DOC-DEL |tutor|		30 minutes training course for beginners
-STOP-DOC-DEL |copying|	About copyrights
+START-DOC-DEL
+|tutor|		30 minutes training course for beginners
+|copying|	About copyrights
+STOP-DOC-DEL
 |iccf|		Helping poor children in Uganda
-START-DOC-DEL |sponsor|	Sponsor Vim development, become a registered Vim user
+START-DOC-DEL
+|sponsor|	Sponsor Vim development, become a registered Vim user
 |www|		Vim on the World Wide Web
 |bugs|		Where to send bug reports
 
@@ -82,7 +85,8 @@ Tuning Vim ~
 |usr_45.txt|  Select your language
 
 Making Vim Run ~
-STOP-DOC-DEL |usr_90.txt|  Installing Vim
+|usr_90.txt|  Installing Vim
+STOP-DOC-DEL
 
 
 REFERENCE MANUAL: These files explain every detail of Vim.	*reference_toc*
@@ -92,9 +96,13 @@ General subjects ~
 |help.txt|	overview and quick reference (this file)
 |index.txt|	alphabetical index of all commands
 |help-tags|	all the tags you can jump to (index of tags)
-START-DOC-DEL |howto.txt|	how to do the most common editing tasks
+START-DOC-DEL
+|howto.txt|	how to do the most common editing tasks
 |tips.txt|	various tips on using Vim
+|usr_90.txt|  Installing Vim
+STOP-DOC-DEL
 |message.txt|	(error) messages and explanations
+START-DOC-DEL
 |quotes.txt|	remarks from users of Vim
 |todo.txt|	known problems and desired extensions
 |develop.txt|	development of Vim
@@ -124,15 +132,18 @@ Advanced editing ~
 DOC-DEL |quickfix.txt|	commands for a quick edit-compile-fix cycle
 |windows.txt|	commands for using multiple windows and buffers
 |tabpage.txt|	commands for using multiple tab pages
-START-DOC-DEL |syntax.txt|	syntax highlighting
+START-DOC-DEL
+|syntax.txt|	syntax highlighting
 |spell.txt|	spell checking
 |diff.txt|	working with two or three versions of the same file
 |autocmd.txt|	automatically executing commands on an event
 |filetype.txt|	settings done specifically for a type of file
-STOP-DOC-DEL |eval.txt|	expression evaluation, conditional commands
+|eval.txt|	expression evaluation, conditional commands
+STOP-DOC-DEL
 |fold.txt|	hide (fold) ranges of lines
 
-START-DOC-DEL Special issues ~
+START-DOC-DEL
+Special issues ~
 |print.txt|	printing
 |remote.txt|	using Vim as a server or client
 |term.txt|	using different terminals and mice
