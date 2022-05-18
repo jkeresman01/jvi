@@ -98,7 +98,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("2.0.3.x3");
+    public static final jViVersion version = new jViVersion("2.0.3.x6");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -847,7 +847,13 @@ final public class ViManager
 
       /*package*/ static void firePropertyChange(
               String name, Object oldValue, Object newValue) {
-        pcs.firePropertyChange(name, oldValue, newValue);
+          try {
+            pcs.firePropertyChange(name, oldValue, newValue);
+          } catch (Exception ex) {
+              // Bad actor, try to contain the damage
+              Exceptions.printStackTrace(ex);
+          }
+            
       }
 
       // some changes (poorly thought out) require fixups in preferences

@@ -117,6 +117,8 @@ public interface ViFactory
 
     public void setShutdownHook(Runnable hook);
 
+    default public boolean hasPreShutdownHook() { return false; }
+
     /**
      * create an output stream for some kind of results.
      * @param tv

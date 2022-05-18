@@ -21,9 +21,13 @@ package com.raelity.jvi.core;
 
 import java.lang.ref.WeakReference;
 
+import org.openide.util.Exceptions;
+
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.core.lib.Constants;
 import com.raelity.jvi.manager.ViManager;
+
+import static com.raelity.text.TextUtil.sf;
 
 /**
  * Buffer position, accessable as line number, 1 based, and column, 0 based.
@@ -57,6 +61,7 @@ class FPOS extends ViFPOS.abstractFPOS
         this(G.curbuf);
     }
 
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     FPOS(int line, int col)
     {
         this(G.curbuf);
@@ -142,9 +147,20 @@ class FPOS extends ViFPOS.abstractFPOS
      * @param wantAdjust false means that line/col are expected to be
      *                  in valid range
      */
+    @SuppressWarnings("CallToPrintStackTrace")
     public void set(Buffer buf, int line, int column, boolean wantAdjust)
     {
         verify(buf);
+        if(line > buf.getLineCount()) {
+            if(!wantAdjust) {
+                Throwable t = new Throwable(sf("FPOS.set(%s, %d, %d, %b) nLine: %d",
+                                            buf, line, column, wantAdjust,
+                                            buf.getLineCount()));
+                Exceptions.printStackTrace(t);
+            }
+            // pin it to the last line
+            line = buf.getLineCount();
+        }
         int startOffset = buf.getLineStartOffset(line);
         int endOffset = buf.getLineEndOffset(line);
         int adjustedColumn = -1;
