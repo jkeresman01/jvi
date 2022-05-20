@@ -850,7 +850,7 @@ public class Cc01
         @Override
         public void actionPerformed(ActionEvent e)
         {
-            G.curwin.win_clone();
+            Misc01.win_clone();
         }
     }
 
@@ -921,7 +921,7 @@ private static void addDebugColonCommands()
                     return;
                 }
                 String key = cev.getArg(1);
-                Option opt = Options.getOption(key);
+                Option<?> opt = Options.getOption(key);
                 eatme(opt);
                 if(Options.getOption(key) == null) {
                     Msg.emsg("No such option: " + key);

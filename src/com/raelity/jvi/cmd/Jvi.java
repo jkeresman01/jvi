@@ -20,6 +20,8 @@
 
 package com.raelity.jvi.cmd;
 
+import com.raelity.jvi.lib.UIUtil;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -66,6 +68,9 @@ public class Jvi
     // keep a reference to this so we can set it's level...
     // private static Logger exceptionsLogger
     //         = Logger.getLogger(org.openide.util.Exceptions.class.getName());
+
+    static Frame mainWindow;
+
     /** If true, pack resulting UI. */
     public static boolean packFrame   = true;
 
@@ -129,7 +134,7 @@ public class Jvi
      *  Main method.
      * @param args
      */
-    @SuppressWarnings({"CallToThreadDumpStack", "CallToPrintStackTrace"})
+    @SuppressWarnings({"CallToThreadDumpStack", "CallToPrintStackTrace", "UseOfSystemOutOrSystemErr"})
     public static void main( String[] args )
     {
         // java.awt.Window.locationByPlatform
@@ -160,6 +165,7 @@ public class Jvi
             ViManager.runInDispatch(true, () -> {
                 Toolkit.getDefaultToolkit().setDynamicLayout(true);
                 JviFrame frame = makeFrame();
+                mainWindow = frame;
                 frame.optionsButton.addActionListener((ActionEvent e) -> {
                     try {
                         showOptionsDialog(frame);
@@ -186,6 +192,7 @@ public class Jvi
     static private MyPropertySheetDialog dialog;
     static private OptionsPanel optionsPanel;
 
+    @SuppressWarnings("serial")
     static class MyPropertySheetDialog extends PropertySheetDialog {
         OptionsPanel op;
 

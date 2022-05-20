@@ -1,5 +1,5 @@
 /*
- * The contents of this file are subject to the Mozilla Public
+* The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of
  * the License at http://www.mozilla.org/MPL/
@@ -30,6 +30,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,6 +41,9 @@ import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.core.lib.KeyDefs.KeyStrokeType;
 import com.raelity.jvi.options.*;
 
+import static java.util.logging.Level.*;
+
+import static com.raelity.jvi.core.G.dbgEditorActivation;
 import static com.raelity.jvi.manager.ViManager.*;
 import static com.raelity.text.TextUtil.sf;
 
@@ -57,7 +61,8 @@ public class Scheduler
     private static boolean mouseDown;
     private static boolean hasSelection;
     private static final Queue<ActionListener> keyStrokeTodo
-            = new LinkedList<ActionListener>();
+            = new LinkedList<>();
+    private static void eatme(Object... o) { Objects.isNull(o); }
 
     private Scheduler()
     {
@@ -76,21 +81,25 @@ public class Scheduler
         AppViews.deactivateCurrent(true);
 
         draggingBlockMode = false;
+        eatme(draggingBlockMode);
         ViTextView currentTv = null;
         if (currentEditorPane != null) {
             currentTv = mayCreateTextView(currentEditorPane);
-            firePropertyChange(P_SWITCH_FROM_WIN, currentTv, null);
+            firePropertyChange(P_SWITCH_FROM_TV, currentTv, null);
         }
 
         boolean fNewTextView = fact().getTextView(editor) == null;
+        boolean fNewBuffer = fact().getBuffer(editor) == null;
         ViTextView textView = mayCreateTextView(editor);
         Buffer buf = textView.getBuffer();
         fact().setupCaret(editor); // make sure has the right caret
         textView.attach();
-        G.dbgEditorActivation().println(() -> "Activation: ViManager.SWITCHTO: "
+        dbgEditorActivation().println(INFO, () ->
+                "Activation: ViManager.SWITCHTO: "
                 + (fNewTextView ? "NEW: " : "") + cid(editor)
                 + " " + buf.getDisplayFileName() + " " + ViManager.cid(buf));
         if (currentEditorPane != null) {
+            assert currentTv != null;
             currentTv.detach();
         }
 
@@ -105,15 +114,15 @@ public class Scheduler
         AppViews.activate(av);
 
         if (fNewTextView) {
-            firePropertyChange(P_OPEN_WIN, currentTv, textView);
+            firePropertyChange(P_OPEN_TV, currentTv, textView);
             editor.addMouseListener(mouseListener);
             editor.addMouseMotionListener(mouseMotionListener);
         }
-        if (textView.getBuffer().singleShare())
+        if (fNewBuffer)
             firePropertyChange(P_OPEN_BUF,
                                currentTv == null ? null : currentTv.getBuffer(),
                                textView.getBuffer());
-        firePropertyChange(P_SWITCH_TO_WIN, currentTv, textView);
+        firePropertyChange(P_SWITCH_TO_TV, currentTv, textView);
 
         getCore().switchTo(textView, buf, true);
     }
@@ -134,9 +143,10 @@ public class Scheduler
 
     static void changeBuffer(ViTextView tv)
     {
-        if(G.curwin() == tv)
+        if(G.curwin() == tv) {
             getCore().switchTo(tv, tv.getBuffer(), false);
             getCore().switchTo(tv, tv.getBuffer(), true);
+        }
     }
 
     // NEEDSWORK: register should not be public. This is public because of the
@@ -148,7 +158,7 @@ public class Scheduler
     {
         if(c != null) {
             if (fact() != null) {
-                G.dbgEditorActivation().println(() ->
+                dbgEditorActivation().println(CONFIG, () ->
                         "Activation: Scheduler.register: " + cid(c));
             }
             c.removeFocusListener(focusSwitcher);
@@ -173,7 +183,7 @@ public class Scheduler
     public static void detached(Component ed)
     {
         if (currentEditorPane == ed) {
-            G.dbgEditorActivation().println(() ->
+            dbgEditorActivation().println(INFO, () ->
                     "Activation: ViManager.detached " + cid(ed));
             currentEditorPane = null;
         }
@@ -308,8 +318,7 @@ public class Scheduler
     {
         if(activeCommandEntry == null)
             return;
-        if(G.dbgEditorActivation().getBoolean() || Options.kd().getBoolean())
-            G.dbgEditorActivation().println("cancelCommandEntry"); //REROUTE
+        dbgEditorActivation().println(CONFIG, "cancelCommandEntry"); //REROUTE
         internalStopCommandEntry();
     }
 

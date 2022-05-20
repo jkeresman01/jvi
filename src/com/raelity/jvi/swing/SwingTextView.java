@@ -42,6 +42,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,7 +69,6 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.Utilities;
 import javax.swing.text.View;
 
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.*;
@@ -102,9 +102,10 @@ public abstract class SwingTextView extends TextView
     protected static final
             Logger LOG = Logger.getLogger(SwingTextView.class.getName());
     private static int genNum; // unique/invariant window id;
+    private static void eatme(Object... o) { Objects.isNull(o); }
 
     protected static Map<String,Action> actionMap
-            = new HashMap<String,Action>();
+            = new HashMap<>();
 
     protected int w_num;
 
@@ -136,10 +137,11 @@ public abstract class SwingTextView extends TextView
         {
             if(didInit)
                 return;
+            didInit = true;
             ColonCommands.register("dumpLineMap", "dumpLineMap",
                                    new DumpLineMap(),
                                    EnumSet.of(CcFlag.DBG, CcFlag.NO_ARGS));
-            didInit = true;
+            eatme(gen);
         }
     }
 
@@ -353,9 +355,7 @@ public abstract class SwingTextView extends TextView
         if(isShutdown() || isShuttingDown || viewport == null)
             return false;
         Rectangle bounds = editorPane.getBounds();
-        if(bounds.width == 0 || bounds.height == 0)
-            return false;
-        return true;
+        return !(bounds.width == 0 || bounds.height == 0);
     }
 
 
@@ -442,7 +442,7 @@ public abstract class SwingTextView extends TextView
                 editorPane.setBackground(G.p_vbc() == null
                                          ? new Color(~bg.getRGB())
                                          : G.p_vbc());
-                Dimension size = editorPane.getSize();
+                //Dimension size = editorPane.getSize();
                 //editorPane.paintImmediately(0, 0, size.width, size.height);
                 startVisualBell();
             }
@@ -1167,7 +1167,7 @@ public abstract class SwingTextView extends TextView
      * @return
      * @throws BadLocationException 
      */
-    private final int getPositionAbove(int offs, double x)
+    private int getPositionAbove(int offs, double x)
     throws BadLocationException
     {
         JTextComponent c = getEditor();
@@ -1218,7 +1218,7 @@ public abstract class SwingTextView extends TextView
         return firstGoodOffset >= 0 ? firstGoodOffset : offs;
     }
 
-    private final int getPositionBelow(int offs, double x)
+    private int getPositionBelow(int offs, double x)
     throws BadLocationException
     {
         JTextComponent c = getEditor();
@@ -1339,7 +1339,7 @@ public abstract class SwingTextView extends TextView
     {
         if(!lm.isFolding())
             return colIdx;
-        JTextComponent c = getEditor();
+        //JTextComponent c = getEditor();
         int col = 0;
         {
             try {
@@ -1534,6 +1534,7 @@ public abstract class SwingTextView extends TextView
 
     private Rectangle2D getCharRect(int docLine, int offset)
     {
+        eatme(docLine);
         Rectangle2D r = new Rectangle2D.Double(0, 0, 8, 15); // arbitrary
         try {
             r = modelToView(offset);
@@ -1706,7 +1707,7 @@ public abstract class SwingTextView extends TextView
         int offset = getBuffer().getLength() - 1;
         if(offset < 0)
             return 1;
-        Rectangle2D lrect;
+        //Rectangle2D lrect;
         ViFPOS fpos = getBuffer().createFPOS(offset);
         return getViewLine(fpos);
     }
@@ -1791,7 +1792,7 @@ public abstract class SwingTextView extends TextView
     {
         Point newViewportPosition;
         Dimension newViewportExtent;
-        Rectangle r;
+        //Rectangle r;
         int newVpLines;
         boolean topLineChange = false;
 
@@ -2071,6 +2072,7 @@ public abstract class SwingTextView extends TextView
 
     private void changeFont(Font f)
     {
+        eatme(f);
         //rect0 = null;
 
         fillLinePositions();

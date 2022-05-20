@@ -58,6 +58,12 @@ final public class PlayFactory extends SimpleFactory
     }
 
     @Override
+    public Component getMainWindow()
+    {
+        return Jvi.mainWindow;
+    }
+
+    @Override
     protected ViTextView newTextView( JTextComponent editor )
     {
         JviFrame frame = (JviFrame)((PlayAppView)getAppView(editor)).getFrame();

@@ -50,6 +50,8 @@ import java.util.prefs.Preferences;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
 
+import com.google.common.eventbus.Subscribe;
+
 import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.ViCaretStyle;
@@ -65,7 +67,7 @@ import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.lib.Wrap;
-import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.manager.*;
 import com.raelity.text.TextUtil;
 import com.raelity.text.MySegment;
 
@@ -111,42 +113,43 @@ public class Misc implements ClipboardOwner {
 
     private static void init() {
         ColonCommands.register("reg", "registers", new DoRegisters(), null);
+        ViEvent.getBus().register(new EventHandlers());
+    }
 
-        PropertyChangeListener pcl = (PropertyChangeEvent evt) -> {
-          String pname = evt.getPropertyName();
-          switch (pname) {
-          case ViManager.P_BOOT:
-            read_viminfo_registers();
-            read_viminfo_search();
-            read_viminfo_command();
-            startImportCheck();
-            break;
-          case ViManager.P_LATE_INIT:
-            javaKeyMap = initJavaKeyMap();
-            break;
-          case ViManager.P_SHUTDOWN:
+    private static class EventHandlers
+    {
 
-            if(!registersImportCheck.isChange()) {
-              write_viminfo_registers();
-            } else {
-              LOG.info("jVi registers imported");
-            }
-            if(!searchImportCheck.isChange()) {
-              write_viminfo_search();
-            } else {
-              LOG.info("jVi search history imported");
-            }
-            if(!commandsImportCheck.isChange()) {
-              write_viminfo_command();
-            } else {
-              LOG.info("jVi commmand history imported");
-            }
-            break;
-          }
-        };
-        ViManager.addPropertyChangeListener(ViManager.P_BOOT, pcl);
-        ViManager.addPropertyChangeListener(ViManager.P_LATE_INIT, pcl);
-        ViManager.addPropertyChangeListener(ViManager.P_SHUTDOWN, pcl);
+    @Subscribe
+    public void boot(ViEvent.Boot ev) {
+      read_viminfo_registers();
+      read_viminfo_search();
+      read_viminfo_command();
+      startImportCheck();
+    }
+
+    @Subscribe
+    public void lateInit(ViEvent.LateInit ev) {
+      javaKeyMap = initJavaKeyMap();
+    }
+
+    @Subscribe
+    public void shutdown(ViEvent.Shutdown ev) {
+      if(!registersImportCheck.isChange()) {
+        write_viminfo_registers();
+      } else {
+        LOG.info("jVi registers imported");
+      }
+      if(!searchImportCheck.isChange()) {
+        write_viminfo_search();
+      } else {
+        LOG.info("jVi search history imported");
+      }
+      if(!commandsImportCheck.isChange()) {
+        write_viminfo_command();
+      } else {
+        LOG.info("jVi commmand history imported");
+      }
+    }
     }
 
     private static void startImportCheck()

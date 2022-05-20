@@ -17,7 +17,7 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
-package com.raelity.jvi.cmd;
+package com.raelity.jvi.lib;
 
 import java.awt.Dimension;
 import java.awt.GraphicsConfiguration;

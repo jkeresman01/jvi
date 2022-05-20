@@ -123,10 +123,6 @@ public class CharTab implements Cloneable {
         return spec;
     }
 
-    private BitSet getTableClone() {
-        return (BitSet)table.clone();
-    }
-
     @Override
     public CharTab clone() throws CloneNotSupportedException {
         CharTab o = null;

@@ -19,8 +19,6 @@
  */
 package com.raelity.jvi.core;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.logging.Logger;
 import java.util.Map.Entry;
@@ -29,6 +27,8 @@ import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
 
+import com.google.common.eventbus.Subscribe;
+
 import org.openide.util.Exceptions;
 
 import org.openide.util.lookup.ServiceProvider;
@@ -36,11 +36,12 @@ import org.openide.util.lookup.ServiceProvider;
 import com.raelity.jvi.*;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.*;
-import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
 
 import static java.util.logging.Level.*;
 
+import static com.raelity.jvi.manager.ViManager.dialogEx;
 import static com.raelity.jvi.manager.ViManager.getFS;
 import static com.raelity.jvi.manager.ViManager.getFactory;
 import static com.raelity.text.TextUtil.sf;
@@ -69,7 +70,8 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
             if(didInit)
                 return;
             didInit = true;
-            Filemark.init();
+            dbg = Options.getDebugOption(Options.dbgMarks);
+            ViEvent.getBus().register(new EventHandlers());
         }
     }
 
@@ -79,57 +81,6 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
     private static Preferences prefsFM;
     private static final ValueMap<String, Filemark> map
             = new ValueHashMap<>((Filemark fm) -> fm.getMarkName(), 26);
-
-    private static void init()
-    {
-        dbg = Options.getDebugOption(Options.dbgMarks);
-
-        PropertyChangeListener pcl = (PropertyChangeEvent evt) -> {
-            String pname = evt.getPropertyName();
-            switch (pname) {
-            case ViManager.P_OPEN_BUF:
-                openBuf((Buffer)evt.getNewValue());
-                break;
-            case ViManager.P_CLOSE_BUF:
-                closeBuf((Buffer)evt.getOldValue());
-                break;
-            case ViManager.P_BOOT:
-                prefsFM = getFactory().getPreferences().node(PREF_FILEMARKS);
-                filemarksImportCheck = PreferencesImportMonitor.getMonitor(
-                        getFactory().getPreferences(), PREF_FILEMARKS);
-                read_viminfo_filemarks();
-                break;
-            case ViManager.P_SHUTDOWN:
-                if(getFactory().hasPreShutdownHook())
-                    break;
-                // fallthrough
-            case ViManager.P_PRE_SHUTDOWN:
-                if(!filemarksImportCheck.isChange()) {
-                    write_viminfo_filemarks();
-                } else {
-                    dbg.println(INFO, "FM: jVi filemarks imported");
-                }
-                break;
-            default:
-                break;
-            }
-        };
-        ViManager.addPropertyChangeListener(ViManager.P_BOOT, pcl);
-        ViManager.addPropertyChangeListener(ViManager.P_PRE_SHUTDOWN, pcl);
-        ViManager.addPropertyChangeListener(ViManager.P_SHUTDOWN, pcl);
-        ViManager.addPropertyChangeListener(ViManager.P_OPEN_BUF, pcl);
-        ViManager.addPropertyChangeListener(ViManager.P_CLOSE_BUF, pcl);
-    }
-
-    // immutable
-    final private String markName;
-    final private ViMark mark;
-
-    // These fields are only to shadow prefs while mark is null since no buf
-    final private File f;
-    final private int line;
-    final private int col;
-    final private int offset;
 
     static Filemark create(String markName, ViMark mark)
     {
@@ -152,32 +103,6 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
         Filemark fm = map.get(markName);
         checkFM(markName, fm);
         return fm;
-    }
-
-    private static void read_viminfo_filemarks() {
-        try {
-            for(String markName : prefsFM.childrenNames()) {
-                Filemark fm = read_viminfo_filemark(markName);
-                if(fm != null) {
-                    map.put(fm);
-                }
-            }
-        } catch(BackingStoreException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    private static void write_viminfo_filemarks() {
-        dbg.printf(INFO, "FM: write filemarks\n");
-        // could delete stuff that isn't in the map
-        for(Filemark fm : map.values()) {
-            fm.persist();
-        }
-    }
-
-    private static boolean isValidMarkName(String markName) {
-        return markName.length() == 1
-                && markName.charAt(0) >= 'A' && markName.charAt(0) <= 'Z';
     }
 
     static void deleteMark(String markName) {
@@ -204,9 +129,58 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
         }
     }
 
+    private static class EventHandlers
+    {
+
+    @Subscribe
+    public void read_viminfo_filemarks(ViEvent.Boot ev) {
+        dbg.println(INFO, () -> "FM: " + ev);
+        prefsFM = getFactory().getPreferences().node(PREF_FILEMARKS);
+        filemarksImportCheck = PreferencesImportMonitor.getMonitor(
+                getFactory().getPreferences(), PREF_FILEMARKS);
+
+        try {
+            for(String markName : prefsFM.childrenNames()) {
+                Filemark fm = read_viminfo_filemark(markName);
+                if(fm != null) {
+                    map.put(fm);
+                }
+            }
+        } catch(BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    @Subscribe
+    public void shutdown(ViEvent.Shutdown ev) {
+        dbg.println(INFO, () -> "FM: " + ev);
+        if(getFactory().hasPreShutdown())
+            return;
+        write_viminfo_filemarks(null);
+    }
+
+    @Subscribe
+    public void write_viminfo_filemarks(ViEvent.PreShutdown ev) {
+        dbg.println(INFO, () -> "FM: " + ev);
+        if(filemarksImportCheck.isChange()) {
+            dbg.println(INFO, "FM: jVi filemarks imported");
+            return;
+        }
+
+        dbg.printf(INFO, "FM: write filemarks\n");
+        // could delete stuff that isn't in the map
+        for(Filemark fm : map.values()) {
+            fm.persist();
+        }
+    }
+
     /** Spin through the filemarks and hook from buffer if found.
      */
-    private static void openBuf(Buffer buf) {
+    @Subscribe
+    public void openBuf(ViEvent.OpenBuf ev) {
+        dbg.println(INFO, () -> "FM: " + ev);
+        Buffer buf = ev.getBuf();
+
         dbg.printf(FINEST, () -> sf("FM: openBuf %s\n",
                    getFS().getDisplayFileName(buf)));
         // might be some sort of nomad
@@ -234,7 +208,11 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
 
     /** Spin through the filemarks and unhook from buffer if found.
      */
-    private static void closeBuf(Buffer buf) {
+    @Subscribe
+    public void closeBuf(ViEvent.CloseBuf ev) {
+        dbg.println(INFO, () -> "FM: " + ev);
+        Buffer buf = ev.getBuf();
+
         dbg.printf(FINEST, () -> sf("FM: closeBuf %s\n",
                    getFS().getDisplayFileName(buf)));
         for(Entry<String, Filemark> entry : map.entrySet()) {
@@ -243,7 +221,19 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
             assert key.equals(fm.markName);
             checkFM(key, fm);
             Filemark dumpFm = fm;
-            if(fm.mark.getBuffer().equals(buf) && !fm.isActiveFilemark()) {
+            if(ViManager.isDebugAtHome()) {
+                if(!fm.f.isAbsolute())
+                    dbg.printf(SEVERE, () -> sf(
+                        "FM: close ERROR: NOT ABSOLUTE: fm.f %s\n", dump(dumpFm)));
+                if(!buf.getFile().isAbsolute())
+                    dbg.printf(SEVERE, () -> sf(
+                        "FM: close ERROR: NOT ABSOLUTE: buf %s\n", dump(dumpFm)));
+                if(fm.isActiveFilemark()
+                            && !fm.mark.getBuffer().getFile().isAbsolute())
+                    dbg.printf(SEVERE, () -> sf(
+                        "FM: close ERROR: NOT ABSOLUTE: fm %s\n", dump(dumpFm)));
+            }
+            if(!fm.isActiveFilemark() && fm.f.equals(buf.getFile())) {
                 // This is impossible, the filemark is for this buf
                 // but it is not active.
                 dbg.printf(SEVERE, () -> sf("FM: close ERROR: buffer not active%s\n",
@@ -267,6 +257,8 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
         }
     }
 
+    } // EventHandler
+
     private static Filemark read_viminfo_filemark(String markName)
     throws BackingStoreException {
         if (!prefsFM.nodeExists(markName))
@@ -275,7 +267,7 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
 
         // set the node for the specific filemark
         Preferences prefs = prefsFM.node(markName);
-        dbg.printf(CONFIG, () -> sf("FM: Read viminfo prefs %s\n", dump(prefs)));
+        dbg.printf(CONFIG, () -> sf("FM: Read viminfo %s\n", dump(prefs)));
 
         String fName = prefs.get(MarkOps.FNAME, null);
         int l = prefs.getInt(MarkOps.LINE, -1);
@@ -288,8 +280,13 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
         File f = new File(fName);
         Filemark fm = new Filemark(markName, f, l, c, o);
         checkFM(markName, fm);
-        dbg.printf(CONFIG, () -> sf("FM: Read viminfo fm %s\n", dump(fm)));
+        dbg.printf(CONFIG, () -> sf("FM: Read viminfo %s\n", dump(fm)));
         return fm;
+    }
+
+    private static boolean isValidMarkName(String markName) {
+        return markName.length() == 1
+                && markName.charAt(0) >= 'A' && markName.charAt(0) <= 'Z';
     }
 
     /**
@@ -331,11 +328,10 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
 
     private static String dump(Preferences prefs)
     {
-        return dump("pFM", prefs.name(),
-                    prefs.get(MarkOps.FNAME, "null"),
-                    prefs.getInt(MarkOps.LINE, -1),
-                    prefs.getInt(MarkOps.COL, -1),
-                    prefs.getInt(MarkOps.OFFSET, -1));
+        return dump("FM-prefs", prefs.name(), prefs.get(MarkOps.FNAME, "null"),
+                    dump(prefs.getInt(MarkOps.LINE, -1),
+                         prefs.getInt(MarkOps.COL, -1),
+                         prefs.getInt(MarkOps.OFFSET, -1)));
     }
 
     private static String dump(Filemark fm)
@@ -343,24 +339,36 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
         if(fm == null)
             return " FM: null";
         String fName = fm.f != null ? fm.f.getAbsolutePath() : "null";
-        return dump(" FM", fm.markName, fName, fm.line, fm.col, fm.offset);
+        if(fm.isActiveFilemark())
+            return dump("FM-activ", fm.markName, fName,
+                        dump(fm.getLine(), fm.getColumn(), fm.getOffset())
+                        + " " + dump(fm.line, fm.col, fm.offset));
+        else
+            return dump("FM-inact", fm.markName, fName,
+                        dump(fm.line, fm.col, fm.offset));
     }
 
     private static String dump(String tag, String markName,
-                               String fName, int line, int col, int offset)
+                               String fName, String vals)
     {
-        return sf("%s:%s (%d,%d,%d) n:%s",
-                  tag, markName, line, col, offset, fName);
+        return sf("%s:%s %s n:%s",
+                  tag, markName, vals, fName);
+    }
+
+    private static String dump(int line, int col, int offset)
+    {
+        return sf("(%d,%d,%d)", line, col, offset);
     }
 
     static void reportIssueFM(String tag, Filemark fm, Throwable t) {
         if(t != null)
-            Exceptions.printStackTrace(t);
+            Exceptions.printStackTrace(dialogEx(t));
         Preferences prefs = prefsFM.node(fm.markName);
         String msg = sf("FM: ISSUE %s\n    %s\n    %s\n",
                                           tag, dump(fm), dump(prefs));
         dbg.printf(SEVERE, msg);
-        JOptionPane.showMessageDialog(null, msg, "Filemark problem",
+        JOptionPane.showMessageDialog(getFactory().getMainWindow(),
+                                      msg, "Filemark problem",
                                       JOptionPane.ERROR_MESSAGE);
     }
 
@@ -395,6 +403,15 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
     // The Filemark object
     //
 
+    final private String markName;
+    final private ViMark mark;
+
+    // These fields are only to shadow prefs while mark is null since no buf
+    final private File f;
+    final private int line;
+    final private int col;
+    final private int offset;
+
     @SuppressWarnings("LeakingThisInConstructor")
     private Filemark(String markName, File f, ViMark mark,
                      int line, int col, int offset) {
@@ -414,7 +431,8 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
     }
 
     /** Create an invalid filemark, no mark; typically from preferences. */
-    private Filemark(String markName, File f, int line, int col, int offset) { this(markName, f, null, line, col, offset);
+    private Filemark(String markName, File f, int line, int col, int offset) {
+        this(markName, f, null, line, col, offset);
     }
 
     /**
@@ -437,8 +455,7 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
                 return;
             }
         }
-        dbg.printf(CONFIG, () -> sf("FM: persist valid=%b %s\n",
-                                    isActiveFM, dump(this)));
+        dbg.printf(CONFIG, () -> sf("FM: persist %s\n", dump(this)));
         if(!compareShadow(this, prefs)) {
             // in-core vs in-prefs are different, so update the prefs.
             dbg.printf(CONFIG, () -> sf("FM: persist prev pref %s\n",

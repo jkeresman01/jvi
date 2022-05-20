@@ -52,6 +52,8 @@ public interface ViFactory
      */
     public boolean isEnabled();
 
+    public Component getMainWindow();
+
     public ViAppView getAppView(Component editor);
 
     /** Return a TextView, create one if it doesn't already exist */
@@ -59,6 +61,9 @@ public interface ViFactory
 
     /** @return null if TextView does not exist */
     public ViTextView getTextView(Component editor);
+
+    /** @return null if Buffer does not exist for editor's doc */
+    public ViBuffer getBuffer(Component editor);
 
     public ViTextView getTextView(ViAppView av);
 
@@ -117,7 +122,7 @@ public interface ViFactory
 
     public void setShutdownHook(Runnable hook);
 
-    default public boolean hasPreShutdownHook() { return false; }
+    default public boolean hasPreShutdown() { return false; }
 
     /**
      * create an output stream for some kind of results.

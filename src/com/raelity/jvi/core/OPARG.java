@@ -52,7 +52,7 @@ public class OPARG implements Cloneable
     }
 
     @Override
-    public Object clone() throws CloneNotSupportedException
+    public OPARG clone() throws CloneNotSupportedException
     {
         OPARG dest;
         dest = (OPARG) super.clone();
@@ -67,7 +67,7 @@ public class OPARG implements Cloneable
      */
     public OPARG copy() {
         try {
-            return (OPARG) clone();
+            return clone();
         } catch (CloneNotSupportedException ex) {
         }
         return null;

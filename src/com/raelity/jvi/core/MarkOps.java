@@ -20,8 +20,6 @@
 package com.raelity.jvi.core;
 
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -31,12 +29,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+
+import com.google.common.eventbus.Subscribe;
 
 import org.openide.util.lookup.ServiceProvider;
 
@@ -49,7 +50,7 @@ import com.raelity.jvi.ViTextView.MARKOP;
 import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.core.lib.*;
-import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.manager.*;
 import com.raelity.text.MySegment;
 
 import static com.raelity.jvi.ViTextView.MARKOP.NEXT;
@@ -65,6 +66,7 @@ import static com.raelity.jvi.manager.ViManager.getFactory;
  */
 class MarkOps
 {
+    private static void eatme(Object... o) { Objects.isNull(o); }
     private static final Logger LOG = Logger.getLogger(MarkOps.class.getName());
 
     private static final String PREF_MARKS = "marks";
@@ -95,41 +97,7 @@ class MarkOps
         ColonCommands.register("marks", "marks", new DoMarks(), null);
         ColonCommands.register("delm", "delmarks", new ExDelmarks(), null);
 
-        PropertyChangeListener pcl = (PropertyChangeEvent evt) -> {
-            String pname = evt.getPropertyName();
-            switch (pname) {
-            case ViManager.P_OPEN_BUF:
-                BufferMarksPersist.restore((Buffer)evt.getNewValue());
-                break;
-            case ViManager.P_CLOSE_BUF:
-                if(!marksImportCheck.isChange()) {
-                        BufferMarksPersist.persist((Buffer)evt.getOldValue());
-                } else {
-                    LOG.info("jVi marks imported (buffer close)");
-                }
-                break;
-            case ViManager.P_BOOT:
-                BufferMarksPersist.read_viminfo();
-                startImportCheck();
-                break;
-            case ViManager.P_SHUTDOWN:
-                if(!marksImportCheck.isChange()) {
-                    BufferMarksPersist.write_viminfo();
-                } else {
-                    LOG.info("jVi marks imported");
-                }
-                break;
-            default:
-                break;
-            }
-        };
-        ViManager.addPropertyChangeListener(ViManager.P_BOOT, pcl);
-        ViManager.addPropertyChangeListener(ViManager.P_SHUTDOWN, pcl);
-        ViManager.addPropertyChangeListener(ViManager.P_OPEN_BUF, pcl);
-        ViManager.addPropertyChangeListener(ViManager.P_CLOSE_BUF, pcl);
-
-        // if(ViManager.isDebugAtHome())
-        //     LOG.setLevel(Level.FINE);
+        ViEvent.getBus().register(new BufferMarksPersist.EventHandlers());
     }
 
     private static void startImportCheck()
@@ -407,11 +375,6 @@ class MarkOps
             for(int i = 0; i < G.curwin.w_jumplist.size(); i++) {
                 ViMark mark = G.curwin.w_jumplist.get(i);
                 if(check_mark(mark, false) == OK) {
-                    String name;
-                    // name = fm_getname(&curwin->w_jumplist[i], 16);
-                    name = "filename";
-                    // if(name == null)
-                    //     continue;
                     MySegment seg = G.curbuf.getLineSegment(mark.getLine());
                     String lineText = seg.subSequence(0, seg.length()-1).toString();
                     vios.println(String.format("%c %2d %5d %4d %s",
@@ -532,6 +495,7 @@ class MarkOps
      */
     private static String mark_line(ViFPOS mp, int lead_len) {
         String s;
+        eatme(lead_len);
         if(mp instanceof Filemark && mp.getBuffer() == null
                 || mp.getOffset() > mp.getBuffer().getLength())
             return "-invalid-";
@@ -678,6 +642,7 @@ class MarkOps
                             //    n = i - '0' + NMARKS;
                             //else
                                 n = i - 'A';
+                            eatme(n);
                             Filemark.deleteMark(String.valueOf((char)i));
                         }
                     }
@@ -724,12 +689,12 @@ class MarkOps
         private static final String INDEX = "index";
 
         /** All the BufferMarks being tracked. Key'd by file name. */
-        static Map<String, BufferMarks> all = new HashMap<String, BufferMarks>();
+        static Map<String, BufferMarks> all = new HashMap<>();
         /** The BufferMarks read during startup in MRU order */
-        static List<String> prev = new LinkedList<String>();
+        static List<String> prev = new LinkedList<>();
         /** The BufferMarks persisted from this session in MRU order */
-        static List<String> next = new LinkedList<String>();
-        static List<String> cleanup = new ArrayList<String>();
+        static List<String> next = new LinkedList<>();
+        static List<String> cleanup = new ArrayList<>();
 
         static Preferences prefs = getFactory().getPreferences().node(PREF_MARKS);
 
@@ -785,9 +750,30 @@ class MarkOps
             }
         }
 
-        /** persist the marks for the buffer */
-        static void persist(Buffer buf)
+        /** EventBus listeners */
+        private static class EventHandlers
         {
+
+        @Subscribe
+        public void startup_read_marks(ViEvent.Boot ev) {
+            read_viminfo();
+            startImportCheck();
+        }
+
+        /** persist the marks for the buffer */
+        @Subscribe
+        public void persistBufHandler(ViEvent.CloseBuf ev)
+        {
+            if(marksImportCheck.isChange()) {
+                LOG.info("jVi marks imported (buffer close)");
+                return;
+            }
+            persist(ev.getBuf());
+        }
+
+        private void persist(Buffer buf)
+        {
+
             if(buf.getFile() == null)
                 return;
             LOG.log(Level.FINE, "persist {0}", buf.getFile().getAbsolutePath());
@@ -829,8 +815,10 @@ class MarkOps
         }
 
         /** put the previously saved marks into the buffer */
-        static void restore(Buffer buf)
+        @Subscribe
+        public void restore(ViEvent.OpenBuf ev)
         {
+            Buffer buf = ev.getBuf();
             if(buf.getFile() == null)
                 return;
             try {
@@ -858,8 +846,8 @@ class MarkOps
                     if (!Util.islower(c)) {
                         continue;
                     }
-                    // NEEDSWORK: use line/col for persisted marks?
-                    ViFPOS fpos = buf.createFPOS(mi.offset);
+                    FPOS fpos = new FPOS(buf);
+                    fpos.set(buf, mi.line, mi.col, true);
                     buf.getMark(c).setMark(fpos);
                 }
             } catch (BackingStoreException ex) {
@@ -868,9 +856,9 @@ class MarkOps
         }
 
         /** read all the buffer mark stuff */
-        static void read_viminfo()
+        private void read_viminfo()
         {
-            if(prev.size() > 0)
+            if(!prev.isEmpty())
                 return; // only do it once
             // If all is correct, then the indexes for the bm are in the
             // range 1-n. If not then MRU info is lost.
@@ -933,7 +921,8 @@ class MarkOps
          * Update all the indexes for any buffers that have been persisted.
          * First persist buffers that are still be open.
          */
-        static void write_viminfo()
+        @Subscribe
+        public void write_viminfo(ViEvent.Shutdown ev)
         {
             try {
                 LOG.fine("write_viminfo entry");
@@ -966,6 +955,8 @@ class MarkOps
                 LOG.log(Level.SEVERE, null, ex);
             }
         }
+
+        } // EventHandlers
 
         // NOTE: index <= 0 means remove the associated data.
         private static void writeIndex(String name, int index)

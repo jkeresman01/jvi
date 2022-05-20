@@ -25,8 +25,6 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.SystemFlavorMap;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,13 +56,18 @@ import com.raelity.jvi.core.lib.CcFlag;
 import java.util.Map.Entry;
 import java.util.Objects;
 
+import javax.swing.JOptionPane;
+
 import org.openide.util.Exceptions;
 
 import com.raelity.jvi.ViOutputStream.COLOR;
 import com.raelity.jvi.options.*;
 import com.raelity.text.TextUtil;
 
+import static java.util.logging.Level.*;
+
 import static com.raelity.jvi.ViOutputStream.FLAGS;
+import static com.raelity.jvi.core.G.dbgEditorActivation;
 import static com.raelity.text.TextUtil.sf;
 
 /**
@@ -98,7 +101,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("2.0.3.x6");
+    public static final jViVersion version = new jViVersion("2.0.3.x8");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -187,35 +190,25 @@ final public class ViManager
      * closing a Buffer. old is Buffer, new is null */
     public static final String P_CLOSE_BUF = "jViCloseBuf";
     /**
-     * A new window/editor pane to work with.
+     * A newly created window/editor pane to work with.
      * new/old are ViTextView, old may be null (first window) */
-    public static final String P_OPEN_WIN = "jViOpenWin";
+    public static final String P_OPEN_TV = "jViOpenWin";
     /**
      * closing a TextView. old is ViTextView, new is null */
-    public static final String P_CLOSE_WIN = "jViCloseWin";
+    public static final String P_CLOSE_TV = "jViCloseWin";
     /**
      * about to switch away from "old", new is null. */
-    public static final String P_SWITCH_FROM_WIN = "jViSwitchingWin";
+    public static final String P_SWITCH_FROM_TV = "jViSwitchingWin";
     /**
      * change the current TextView. new/old are TextView. This event happens
      * after the switch, so the old tv is not really usable.
      * This property is the last to change when related P_OPEN_WIN, P_CLOSE_WIN */
-    public static final String P_SWITCH_TO_WIN = "jViSwitchWin";
+    public static final String P_SWITCH_TO_TV = "jViSwitchWin";
 
     // NEEDSWRK: is a property needed for switch_from, to pick up active tv?
     // NEEDSWORK: property for AppWindow open/close?
 
-    private static final PropertyChangeSupport pcs
-            = new PropertyChangeSupport(getViMan());
-
     private ViManager() {}
-    private static ViManager viMan;
-    private static ViManager getViMan() {
-        if(viMan == null)
-            viMan = new ViManager();
-        return viMan;
-    }
-
 
     public static void setViFactory(ViFactory factory)
     {
@@ -421,6 +414,12 @@ final public class ViManager
         debugDebugDiddling.put(s, o);
     }
 
+    public static final Level DIALOG = Level.parse("1001");
+
+    public static Throwable dialogEx(Throwable t) {
+        return Exceptions.attachSeverity(t, DIALOG);
+    }
+
     static class DebugDebug extends ColonCommands.AbstractColonAction
     {
 
@@ -436,7 +435,8 @@ final public class ViManager
         {
             if(debugDebugDiddling.isEmpty()) {
                 debugDebugDiddling.put("which", 0); // which case to run
-                debugDebugDiddling.put("level", Level.WARNING.intValue());
+                //debugDebugDiddling.put("level", Level.WARNING.intValue());
+                debugDebugDiddling.put("level", DIALOG.intValue());
                 debugDebugDiddling.put("local", "false"); // use localalized message
             }
             ColonCommands.ColonEvent cev = (ColonCommands.ColonEvent)e;
@@ -479,10 +479,29 @@ final public class ViManager
                 x.printf(Level.INFO, "oneNL\n");
                 x.printf(Level.INFO, "%s %s %sNL\n", "one", "two", "three");
                 LOG.log(Level.SEVERE, "don't leave me here");
+                break;
+            case 3:
+                JOptionPane.showMessageDialog(getFactory().getMainWindow(),
+                                              "random message...",
+                                              "Random Title",
+                                              JOptionPane.ERROR_MESSAGE);
+                break;
             }
         }
 
     }
+
+    static int MessageDialog() {
+        //JOptionPane pane = new JOptionPane(arguments);
+        //pane.set.Xxxx(...); // Configure
+        //JDialog dialog = pane.createDialog(parentComponent, title);
+        //dialog.setVisible(true);
+        //Object selectedValue = pane.getValue();
+        //if(selectedValue == null)
+        //    return CLOSED_OPTION;
+        return 0;
+    }
+
 
     static class IsDebugAtHome extends ColonCommands.AbstractColonAction
     {
@@ -813,53 +832,24 @@ final public class ViManager
             ((Motd)e.getSource()).output();
         });
     }
-
-      //
-      // Look like a good bean
-      // But they're static!
-      //
-
-    /** This should typically be used from a {@link ViInitialization} */
-      public static void addPropertyChangeListener(
-              PropertyChangeListener listener )
-      {
-        pcs.addPropertyChangeListener( listener );
-      }
-
-    /** This should typically be used from a {@link ViInitialization} */
-      public static void addPropertyChangeListener(String p,
-                                                   PropertyChangeListener l)
-      {
-        pcs.addPropertyChangeListener(p, l);
-      }
-
-      public static void removePropertyChangeListener(
-              PropertyChangeListener listener )
-      {
-        pcs.removePropertyChangeListener( listener );
-      }
-
-      public static void removePropertyChangeListener(String p,
-                                                      PropertyChangeListener l)
-      {
-        pcs.removePropertyChangeListener(p, l);
-      }
-
-      /*package*/ static void firePropertyChange(
-              String name, Object oldValue, Object newValue) {
-          try {
-            pcs.firePropertyChange(name, oldValue, newValue);
-          } catch (Exception ex) {
-              // Bad actor, try to contain the damage
-              Exceptions.printStackTrace(ex);
-          }
-            
-      }
-
-      // some changes (poorly thought out) require fixups in preferences
-      private static void fixupPreferences() {
+    
+    /*package*/ static void firePropertyChange(
+            String name, Object oldValue, Object newValue) {
+        try {
+            ViEvent ev = ViEvent.get(name, oldValue, newValue);
+            dbgEditorActivation().println(INFO, () -> "FIRE: " + ev);
+            ViEvent.fire(ev);
+        } catch (Exception ex) {
+            // Bad actor, try to contain the damage
+            Exceptions.printStackTrace(ex);
+        }
+        
+    }
+    
+    // some changes (poorly thought out) require fixups in preferences
+    private static void fixupPreferences() {
         Preferences prefs = getFactory().getPreferences();
-
+        
         String t = prefs.get(Options.commandEntryFrame, "xyzzy");
         // if the pref hasn't been set, then nothing to do
         if(!t.equals("xyzzy")) {
@@ -870,14 +860,14 @@ final public class ViManager
                     || t.equalsIgnoreCase("false"))
                 prefs.remove(Options.commandEntryFrame);
         }
-
+        
         // If metaEscape was never set, then nothing to do.
         // The default for Options.magic will be used
         t = prefs.get(Options.metaEscape, "xyzzy");
         if(!t.equals("xyzzy")) {
             // boolean equalsMetaEscape = true;
             // metaEscape was set by the user
-
+            
             // If the string is shorter than default,
             // then assume very magic. Otherwise let
             // the default kick in
@@ -901,8 +891,8 @@ final public class ViManager
             prefs.putBoolean(Options.startOfLine, !notsol);
             prefs.remove(Options.notStartOfLine);
         }
-      }
-
+    }
+    
     /**
     * Copy preferences tree.
     */
@@ -966,7 +956,7 @@ final public class ViManager
 
     public static void nInvokeLater(String tag, int nPause, final Runnable runnable)
     {
-        G.dbgEditorActivation().println(() -> sf("nInvokeLater %s: nPause %d",
+        dbgEditorActivation().println(FINE, () -> sf("nInvokeLater %s: nPause %d",
                 nPause <= 0 ? "run" : "later", nPause));
         if(nPause <= 0) {
             runnable.run();

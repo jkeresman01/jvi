@@ -210,7 +210,7 @@ public enum AppViews
         }
         ViTextView tv = fact().getTextView(ed);
         if (tv != null) {
-            ViManager.firePropertyChange(ViManager.P_CLOSE_WIN, tv, null);
+            ViManager.firePropertyChange(ViManager.P_CLOSE_TV, tv, null);
             if (tv.getBuffer().singleShare())
                 ViManager.firePropertyChange(
                         ViManager.P_CLOSE_BUF, tv.getBuffer(), null);

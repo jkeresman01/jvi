@@ -45,6 +45,7 @@ import com.l2fprod.common.propertysheet.PropertySheetTableModel.NaturalOrderStri
 import com.l2fprod.common.swing.LookAndFeelTweaks;
 
 import com.raelity.jvi.core.Options;
+import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.ColorOption;
 import com.raelity.jvi.options.EnumOption;
 import com.raelity.jvi.options.EnumSetOption;
@@ -124,7 +125,8 @@ class OptionSheet extends JPanel implements Options.EditControl {
                 if(!(ex.getCause() instanceof PropertyVetoException)) {
                     throw ex;
                 }
-                JOptionPane.showMessageDialog(null,
+                JOptionPane.showMessageDialog(
+                        ViManager.getFactory().getMainWindow(),
                         ex.getCause().getMessage(),
                         "jVi Option Error",
                         JOptionPane.ERROR_MESSAGE);

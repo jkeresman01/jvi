@@ -231,7 +231,7 @@ implements Options.EditControl
             vios.println(msg, COLOR.FAILURE);
         }
         JOptionPane.showMessageDialog(
-                null,
+                ViManager.getFactory().getMainWindow(),
                 "Parse failed."
                 + "\n"
                 + "\nSee \""
@@ -257,7 +257,7 @@ implements Options.EditControl
             setStatus(true);
         } else {
             JOptionPane.showMessageDialog(
-                    null,
+                    ViManager.getFactory().getMainWindow(),
                     "Parse succeeded",
                     DIALOG_TITLE,
                     JOptionPane.INFORMATION_MESSAGE);

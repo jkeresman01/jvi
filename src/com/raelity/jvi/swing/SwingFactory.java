@@ -70,7 +70,9 @@ import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
 import com.raelity.jvi.swing.simple.*;
 
+import static com.raelity.jvi.core.G.dbgEditorActivation;
 import static com.raelity.jvi.core.lib.KeyDefs.VIRT;
+import static java.util.logging.Level.*;
 
 /**
  * This provides the Vi items to interface with standard swing JTextComponent.
@@ -179,11 +181,6 @@ abstract public class SwingFactory implements ViFactory
     //
     
     @Override
-    public ViAppView getAppView(Component e) {
-        return (ViAppView)((JTextComponent)e).getClientProperty(PROP_AV);
-    }
-    
-    @Override
     public Class<?> loadClass( String name ) throws ClassNotFoundException
     {
         // NEEDSWORK: should this be systemclassloader or this's class loader???
@@ -198,6 +195,8 @@ abstract public class SwingFactory implements ViFactory
             return null;
         return (ViTextView)(((JTextComponent)ed).getClientProperty(PROP_TV));
     }
+
+
     
     @Override
     public final ViTextView createTextView(Component editor)
@@ -205,7 +204,7 @@ abstract public class SwingFactory implements ViFactory
         JTextComponent ed = (JTextComponent)editor;
         ViTextView tv01 = (ViTextView)ed.getClientProperty(PROP_TV);
         if ( tv01 == null ) {
-            G.dbgEditorActivation().println("Activation: getViTextView: create");
+            dbgEditorActivation().println(INFO, "Activation: getViTextView: create");
             tv01 = newTextView(ed);
             attachBuffer(tv01);
             
@@ -251,33 +250,25 @@ abstract public class SwingFactory implements ViFactory
     
     
     @Override
-    public void shutdown( Component editor )
-    {
-        JTextComponent ed = (JTextComponent)editor;
-        ViTextView tv = (ViTextView)ed.getClientProperty(PROP_TV);
-        if ( tv == null ) {
-            ed.putClientProperty(PROP_AV, null);
-            return;
-        }
-        
-        G.dbgEditorActivation().println("Activation: shutdown TV");
-        Buffer buf = tv.getBuffer();
-        tv.shutdown();
-        ed.putClientProperty(PROP_TV, null);
-        ed.putClientProperty(PROP_AV, null);
-        releaseBuffer(buf);
-    }
-    
-    
-    @Override
     public void changeBuffer(ViTextView tv, Object _oldDoc)
     {
+        // don't think this ever happens
         Document oldDoc = (Document) _oldDoc;
-        G.dbgEditorActivation().println("Activation: changeBuffer");
+        dbgEditorActivation().println(SEVERE, "Activation: changeBuffer");
         attachBuffer(tv);
         releaseBuffer((Buffer)oldDoc.getProperty(PROP_BUF));
     }
     
+
+    @Override
+    public ViBuffer getBuffer(Component ed) {
+        if(ed == null)
+            return null;
+        Document doc = ((JTextComponent)ed).getDocument();
+        if(doc != null)
+            return (Buffer)doc.getProperty(PROP_BUF);
+        return null;
+    }
     
     private void attachBuffer(ViTextView tv)
     {
@@ -321,6 +312,31 @@ abstract public class SwingFactory implements ViFactory
         return "PLATFORM-SELECTION";
     }
     
+    
+    @Override
+    public ViAppView getAppView(Component e) {
+        return (ViAppView)((JTextComponent)e).getClientProperty(PROP_AV);
+    }
+    
+    @Override
+    public void shutdown( Component editor )
+    {
+        JTextComponent ed = (JTextComponent)editor;
+        ViTextView tv = (ViTextView)ed.getClientProperty(PROP_TV);
+        if ( tv == null ) {
+            ed.putClientProperty(PROP_AV, null);
+            return;
+        }
+        
+        dbgEditorActivation().println(CONFIG, "Activation: shutdown TV");
+        Buffer buf = tv.getBuffer();
+        tv.shutdown();
+        ed.putClientProperty(PROP_TV, null);
+        ed.putClientProperty(PROP_AV, null);
+        releaseBuffer(buf);
+    }
+
+
     @Override
     public void setShutdownHook(Runnable hook) {
         Runtime.getRuntime().addShutdownHook(new Thread(hook));
@@ -621,9 +637,10 @@ abstract public class SwingFactory implements ViFactory
                         keep = false;
                     }
                     
-                    if ( Options.kd().getBoolean() && c >= 0x20 ) {
-                        System.err.println("CharAction: "
-                                + (keep ? "" : "REJECT: ")
+                    if (c >= 0x20 ) {
+                        boolean fkeep = keep;
+                        Options.kd().println(() -> "CharAction: "
+                                + (fkeep ? "" : "REJECT: ")
                                 + "'" + content + "' "
                                 + String.format("%x", (int)c)
                                 + "(" + (int)c + ") " + mod);
@@ -755,6 +772,7 @@ abstract public class SwingFactory implements ViFactory
     private static class DumpUIColors implements ActionListener {
 
         @Override
+        @SuppressWarnings("UseOfSystemOutOrSystemErr")
         public void actionPerformed(ActionEvent e)
         {
             List<Entry<String, Color>> uiColors = getUIColors();

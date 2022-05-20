@@ -752,8 +752,8 @@ public class Misc01
     static void win_split(Orientation orientation, int n, ViAppView av)
     {
         if(av == null)
-            TextView.setExpectedNewActivation(G.curbuf.getDisplayFileName(),
-                                              G.curwin.w_cursor.getOffset());
+            TextView.setExpectedNewActivation(
+                    G.curbuf.getFile(), G.curwin.w_cursor.getOffset());
         Direction dir = orientation == Orientation.LEFT_RIGHT
                     ? (G.p_spr ? Direction.RIGHT : Direction.LEFT)
                     : (G.p_sb ? Direction.DOWN : Direction.UP);
@@ -787,10 +787,10 @@ public class Misc01
         G.curwin.win_size(op, o, n);
     }
 
-    private static void win_clone()
+    static void win_clone()
     {
         TextView.setExpectedNewActivation(
-                G.curbuf.getDisplayFileName(), G.curwin.w_cursor.getOffset());
+                G.curbuf.getFile(), G.curwin.w_cursor.getOffset());
         G.curwin.win_clone();
     }
 

@@ -9,10 +9,12 @@ DIR=${0%/*}
 # like $jvi/nbvi/jvi-lib
 srcdir=$1
 # proj (in a dir under $jvi/rel)
-dstdir=$2
+dstdir=${2:-proj}
 
-if [[ $# -ne 2 || ( -z "$srcdir" || -z "$dstdir" ) ]]; then
-    echo "Must specify a source and destination"
+echo "s:" $srcdir "d:" $dstdir
+
+if [[ $# -gt 2 || ( -z "$srcdir" || -z "$dstdir" ) ]]; then
+    echo "Must have a source and destination"
     exit 1
 fi
 

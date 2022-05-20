@@ -19,11 +19,12 @@
  */
 package com.raelity.jvi.core;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
+
+import com.google.common.eventbus.Subscribe;
 
 import org.openide.util.lookup.ServiceProvider;
 
@@ -31,8 +32,10 @@ import com.raelity.jvi.*;
 import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
 
+import static com.raelity.jvi.core.G.dbgEditorActivation;
 import static com.raelity.jvi.core.lib.Constants.*;
-import static com.raelity.text.TextUtil.sf;
+
+import static java.util.logging.Level.*;
 
 /**
  * This represents the core functionality of a vim window.
@@ -50,48 +53,48 @@ public abstract class TextView implements ViTextView
         @Override
         public void init()
         {
-            TextView.init();
+            nnao = new NextNewActivationOffset();
+            ViEvent.getBus().register(nnao);
         }
     }
-    private static void init() {
-        PropertyChangeListener pcl = (PropertyChangeEvent evt) -> {
-            String pname = evt.getPropertyName();
-            if(pname.equals(ViManager.P_OPEN_WIN)) {
-                if(checkOpen != null
-                        && checkOpen.fname
-                                .equals(G.curbuf.getDisplayFileName())) {
-                    G.curwin.w_cursor.set(checkOpen.offset);
-                }
-            } else if(pname.equals(ViManager.P_SWITCH_TO_WIN)) {
-                // There's only one chance
-                checkOpen = null;
-            }
-        };
-        ViManager.addPropertyChangeListener(ViManager.P_OPEN_WIN, pcl);
-        ViManager.addPropertyChangeListener(ViManager.P_SWITCH_TO_WIN, pcl);
-    }
-    private static class ExpectedNewActivation {
-        private String fname;
-        private int offset;
 
-        public ExpectedNewActivation(String fname, int offset)
-        {
-            this.fname = fname;
-            this.offset = offset;
-        }
+    private static NextNewActivationOffset nnao;
 
-    }
-    private static ExpectedNewActivation checkOpen;
     /**
      * Use this to signal that the next activation should be for a
      * new text view. Sets the line number for the newly opened window.
      * If next activation doesn't meet the conditions, then nothing happens.
+     * spit/clone.
      */
-    static void setExpectedNewActivation(String fname, int offset)
+
+    static void setExpectedNewActivation(File fi, int offset)
     {
-        checkOpen = new ExpectedNewActivation(fname, offset);
+        nnao.fi = fi;
+        nnao.offset = offset;
     }
 
+    /** Newly opened TV set the position; after split/clone.
+     * TODO: Does it matter if it's new? Just use swithToTv? */
+    private static class NextNewActivationOffset
+    {
+    private File fi; // null mean not pending
+    private int offset;
+
+    @Subscribe
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
+    void check(ViEvent.OpenTv ev) {
+        if(fi != null && fi.equals(G.curbuf.getFile())) {
+            System.err.println("NextNewActivationOffset" + ev + offset);
+            G.curwin.w_cursor.set(offset);
+            fi = null;
+        }
+    }
+
+    @Subscribe
+    void clear(ViEvent.SwitchToTv ev) {
+        fi = null;
+    }
+    }
 
 
     protected Buffer w_buffer;
@@ -182,14 +185,14 @@ public abstract class TextView implements ViTextView
     public void shutdown()
     {
         if(w_buffer.getShare() == 1) {
-            G.dbgEditorActivation.println("TV.shutdown: LAST CLOSE");
+            dbgEditorActivation.println(INFO, "TV.shutdown: LAST CLOSE");
         }
     }
 
     @Override
     public void activateOptions(ViTextView tv) {
         if(getAppView().isNomad()) {
-            G.dbgEditorActivation.println("ACTIVATING OPTIONS FOR NOMAD");
+            G.dbgEditorActivation.println(CONFIG, "ACTIVATING OPTIONS FOR NOMAD");
         }
         if(!didFirstInit) {
             firstGo();
