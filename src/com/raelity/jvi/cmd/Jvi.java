@@ -137,6 +137,10 @@ public class Jvi
     @SuppressWarnings({"CallToThreadDumpStack", "CallToPrintStackTrace", "UseOfSystemOutOrSystemErr"})
     public static void main( String[] args )
     {
+        if(null == UIUtil.setPrefGraphicsDev("foobar")
+                && null == UIUtil.setPrefGraphicsDev("jvi")
+                && null == UIUtil.setPrefGraphicsDev("NETBEANS_PREFERRED_SCREEN"))
+            UIUtil.setPrefGraphicsDev("JAVA_PREFERRED_SCREEN");
         // java.awt.Window.locationByPlatform
         // "true"
         // Window.setLocationRelativeTo
@@ -221,7 +225,7 @@ public class Jvi
 
     }
 
-    @SuppressWarnings("static-access")
+    @SuppressWarnings({"static-access", "UseOfSystemOutOrSystemErr"})
     static void showOptionsDialog(Frame owner) {
         // if(dialog == null) {
         //     dialog = new JDialog(owner, "jVi Options");

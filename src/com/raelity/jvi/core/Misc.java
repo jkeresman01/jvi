@@ -29,8 +29,6 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -95,6 +94,7 @@ public class Misc implements ClipboardOwner {
     private static PreferencesImportMonitor commandsImportCheck;
 
     private Misc() {}
+    private static void eatme(Object... o) { Objects.isNull(o); }
 
     //////////////////////////////////////////////////////////////////
     //
@@ -349,7 +349,7 @@ public class Misc implements ClipboardOwner {
   /** NOTE: fpos must be in curwin */
   static void set_indent(int size, boolean del_first, ViFPOS fpos) {
     int		oldstate = G.State;
-    int		c;
+    //int		c;
 
     fpos.verify(G.curbuf);
     G.State = INSERT;		    // don't want REPLACE for State
@@ -1067,7 +1067,7 @@ public class Misc implements ClipboardOwner {
   static void op_shift(OPARG oap, boolean curs_top, int amount) {
     int	    i;
     char    first_char;
-    int	    block_col = 0;
+    //int	    block_col = 0;
 
     int	    line;
 
@@ -1561,6 +1561,7 @@ public class Misc implements ClipboardOwner {
 
   private static void do_dis(ViOutputStream vios, StringBuilder sb,
                              String regname, String arg, boolean skip_esc) {
+    eatme(skip_esc);
     if (arg != null && vim_strchr(arg, regname.charAt(0)) == null)
       return;	    /* did not ask for this register */
     Wrap<String> argp = new Wrap<>();
@@ -2103,6 +2104,7 @@ private static int put_in_typebuf(String s, boolean colon)
     ViFPOS              opStartPos = null;
     ViFPOS              opEndPos = null;
 
+    eatme(did_yank);
     /*
     if (curbuf.b_ml.ml_flags & ML_EMPTY)	    // nothing to do
       return OK;
@@ -2201,6 +2203,7 @@ private static int put_in_typebuf(String s, boolean colon)
       if (oap.regname == 0 && op_yank(oap, true, false) == OK) {
 	did_yank = true;
       }
+      eatme(did_yank);
 
       /* **********************************
        NEEDSWORK: op_delete, yank failed, ask continue anyway
@@ -3243,6 +3246,7 @@ private static int put_in_typebuf(String s, boolean colon)
 
       char c = gchar_pos(cursor);
       int endcol2 = 0;
+      eatme(endcol2);
       
       MutableInt mi1 = new MutableInt();
       MutableInt mi2 = new MutableInt();
@@ -3256,6 +3260,7 @@ private static int put_in_typebuf(String s, boolean colon)
         getvcol(G.curwin, cursor, mi1, null, mi2);
         col = mi1.getValue();
         endcol2 = mi2.getValue();
+        eatme(endcol2);
       }
       
       bd = new block_def();
@@ -3624,46 +3629,11 @@ private static int put_in_typebuf(String s, boolean colon)
   ////////////////////////////////////////////////////////////////////////////
   //
     
-    /*
-     * For the current character offset in the current line,
-     * calculate the virtual offset. That is the offset if
-     * tabs are expanded. I *think* this is equivelent to getvcolStart(int).
-     *
-     * @deprecated
-     * use getvcol(ViTextView, ViFPOS, MutableInt, MutableInt, MutableInt)
-     */
-    // static int getvcol() {
-    //   return getvcol(G.curwin.w_cursor.getColumn());
-    // }
-    
-    /**
-     * This method returns the start vcol of param for current line
-     * @deprecated
-     * use getvcol(ViTextView, ViFPOS, MutableInt, MutableInt, MutableInt)
-     */
-    static int getvcol(int endCol) {
-      int vcol = 0;
-      MySegment seg = G.curbuf.getLineSegment(G.curwin.w_cursor.getLine());
-      int ptr = seg.offset;
-      int idx = -1;
-      char c;
-      while (idx < endCol - 1
-              && idx < seg.count - 1
-              && (c = seg.r(ptr)) != '\n') { // DONE
-        ++idx;
-        /* Count a tab for what it's worth (if list mode not on) */
-        vcol += lbr_chartabsize(c, vcol);
-        ++ptr;
-      }
-      return vcol;
-    }
-    
-  /*static void getvcol(ViFPOS fpos,
-                      MutableInt start,
-                      MutableInt cursor,
-                      MutableInt end) {
-    getvcol(G.curwin, fpos, start, cursor, end);
-  }*/
+    //
+    // For the current character offset in the current line,
+    // calculate the virtual offset. That is the offset if
+    // tabs are expanded. I *think* this is equivelent to getvcolStart(int).
+    //
     
     /**
      * Get virtual column number of pos.
@@ -3771,6 +3741,7 @@ private static int put_in_typebuf(String s, boolean colon)
     static int showmode()       {
       String mode = Edit.VI_MODE_COMMAND;
       int length = 0;
+      eatme(length);
       boolean do_mode = (true/*G.p_smd*/
               && ((G.State & INSERT) != 0 || G.restart_edit != 0
               || G.VIsual_active));
@@ -4810,13 +4781,13 @@ op_do_addsub(char command, int Prenum1)
       int         pre_textlen = stateOpSplit.pre_textlen;
       StateOpSplit.release();
       
-      int		offset;
-      int		linenr;
+      //int		offset;
+      //int		linenr;
       int		ins_len;
       CharSequence	firstline;
       String      ins_text;
-      StringBuilder newp;
-      MySegment   oldp;
+      //StringBuilder newp;
+      //MySegment   oldp;
       
       
   /* if user has moved off this line, we don't know what to do, so do
@@ -4937,6 +4908,7 @@ op_do_addsub(char command, int Prenum1)
     MySegment   oldp;           // new, old lines
     int		oldstate = G.State;
 
+    eatme(count);
     int lnum = oap.start.getLine() + 1; // frist line done by edit
     int endLine = oap.end.getLine() - 1; // don't do last line in this loop
 
@@ -4983,6 +4955,7 @@ op_do_addsub(char command, int Prenum1)
           offset = bdp.textcol + bdp.textlen;
         }
       }
+      eatme(count);
 
       //if(spaces == 0) {
       //  // No splitting or padding going on, can simply insert the string.

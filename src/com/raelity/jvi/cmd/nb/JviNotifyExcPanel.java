@@ -36,6 +36,8 @@ import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import com.raelity.jvi.lib.*;
+
 
 /**
  * In NB, this is a JPanel in the dialog; as an instance, it manages
@@ -243,6 +245,7 @@ public class JviNotifyExcPanel extends JPanel
             JDialog dialog = optPane.createDialog(null, "Exception");
             if(!dialog.isResizable())
                 dialog.setResizable(true);
+            UIUtil.translateToPrefScreen(dialog);
             dialog.setVisible(true);
         } else {
             JOptionPane.showMessageDialog(null, INSTANCE);

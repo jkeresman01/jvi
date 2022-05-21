@@ -30,12 +30,15 @@ import java.awt.Window;
 /**
  * Support methods for multiscreen environments that operate on the
  * preferred screen.
+ * <p>
  * The default screen
  * can be specified by the environment variable: "JAVA_PREFERRED_SCREEN".
  * If the environment variable is not present or out of bound, the
  * default is used.
- * <br>
- * Single screen should work fine.
+ * </p>
+ * See {@link #setPrefGraphicsDev(java.lang.String) }
+ * or {@link #setPrefGraphicsDev(int) } to set the preferred graphics device
+ * used by these methods.
  * @author err
  */
 public class UIUtil
@@ -144,7 +147,7 @@ public static void centerOnPrefScreen(Window window) {
 /** the preferred graphics device */
 private static GraphicsDevice preferredGraphicsDevice = null;
 /**
- * If there's an environment variable ,
+ * If there's an environment variable "JAVA_PREFERRED_SCREEN",
  * then use that as an index into
  * {@link GraphicsEnvironment#getLocalGraphicsEnvironment()#getScreenDevices()}
  * and return that device; otherwise return the default screen device.
@@ -153,23 +156,62 @@ private static GraphicsDevice preferredGraphicsDevice = null;
 public static GraphicsDevice getPrefGraphicsDev()
 {
     if(preferredGraphicsDevice == null) {
-        int screenIdx;
-        String sint = System.getenv("JAVA_PREFERRED_SCREEN");
-        if(sint != null) {
-            try {
-                screenIdx = Integer.parseInt(sint);
-                GraphicsDevice[] devs = GraphicsEnvironment
-                        .getLocalGraphicsEnvironment().getScreenDevices();
-                if(screenIdx >= 0 && screenIdx < devs.length)
-                    preferredGraphicsDevice = devs[screenIdx];
-            } catch(NumberFormatException ex) {
-            }
-        }
-        if(preferredGraphicsDevice == null)
+        GraphicsDevice gdev = setPrefGraphicsDev("JAVA_PREFERRED_SCREEN");
+        if(gdev == null)
             preferredGraphicsDevice = GraphicsEnvironment
                     .getLocalGraphicsEnvironment().getDefaultScreenDevice();
     }
     return preferredGraphicsDevice;
+}
+
+/**
+ * This sets the preferred graphics device, use by the methods in this class,
+ * according the value of the specified environment variable.
+ * If null is returned, then the existing preferred device is not changed.
+ * @param envVar check this environment variable's value
+ * @return updated preferred graphics dev or null if bad argument
+ */
+public static GraphicsDevice setPrefGraphicsDev(String envVar)
+{
+    GraphicsDevice gdev = null;
+    
+    int screenIdx;
+    String sint = System.getenv(envVar);
+    if(sint != null) {
+        try {
+            screenIdx = Integer.parseInt(sint);
+            gdev = setPrefGraphicsDev(screenIdx);
+        } catch(NumberFormatException ex) {
+        }
+    }
+
+    return gdev;
+}
+
+/**
+ * This returns null if the screen is not found.
+ * @param screenIdx look for this screen
+ * @return graphics dev or null if bad argument
+ */
+/**
+ * This sets the preferred graphics device, use by the methods in this class,
+ * according the specified value.
+ * If null is returned, then the existing preferred device is not changed.
+ * @param screenIdx look for this screen device index.
+ * @return updated preferred graphics dev or null if bad argument
+ */
+public static GraphicsDevice setPrefGraphicsDev(int screenIdx)
+{
+    GraphicsDevice gdev = null;
+    
+    GraphicsDevice[] devs = GraphicsEnvironment
+            .getLocalGraphicsEnvironment().getScreenDevices();
+    if(screenIdx >= 0 && screenIdx < devs.length)
+        gdev = devs[screenIdx];
+    if(gdev != null)
+        preferredGraphicsDevice = gdev;
+
+    return gdev;
 }
 
 /**

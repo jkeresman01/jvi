@@ -25,6 +25,8 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.SystemFlavorMap;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,6 +59,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
 
 import org.openide.util.Exceptions;
 
@@ -101,7 +104,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("2.0.3.x8");
+    public static final jViVersion version = new jViVersion("2.0.4.x1");
 
     private static com.raelity.jvi.core.Hook core;
 
