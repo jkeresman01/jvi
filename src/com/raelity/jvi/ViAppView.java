@@ -22,6 +22,7 @@ package com.raelity.jvi;
 
 import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.manager.ViManager;
+
 import java.awt.Component;
 
 /**

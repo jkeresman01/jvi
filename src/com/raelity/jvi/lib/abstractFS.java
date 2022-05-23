@@ -20,9 +20,6 @@
 
 package com.raelity.jvi.lib;
 
-import java.awt.Component;
-
-import javax.swing.text.JTextComponent;
 
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViBuffer;
@@ -31,7 +28,6 @@ import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.Misc;
 import com.raelity.jvi.core.TextView;
-import com.raelity.jvi.manager.*;
 
 /**
  *
@@ -40,11 +36,9 @@ import com.raelity.jvi.manager.*;
 abstract public class abstractFS implements ViFS
 {
 
-    //
-    // NEEDSWORK: this is static and app independent
-    //
     @Override
-    public String getDisplayFileViewInfo(ViTextView tv) {
+    public final String getDisplayFileViewInfo(ViTextView tv)
+    {
         ViAppView av = tv.getAppView();
         Buffer buf = tv.getBuffer();
         TextView win = (TextView)tv;
@@ -79,22 +73,9 @@ abstract public class abstractFS implements ViFS
     public String getDisplayFileNameAndSize(ViBuffer buf) {
         StringBuilder sb = new StringBuilder();
         sb.append("\"").append(buf.getDisplayFileName()).append("\"");
-        int l = buf.getLineCount();
         sb.append(" ").append(buf.getLineCount()).append("L, ");
         sb.append(" ").append(buf.getLength()).append("C");
         return sb.toString();
   }
-
-    @Override
-    public String getDisplayFileName(Component c)
-    {
-        if(c instanceof JTextComponent) {
-            JTextComponent ed = (JTextComponent)c;
-            ViAppView av = ViManager.getFactory().getAppView(ed);
-            if(av != null)
-                return getDisplayFileName(av);
-        }
-        return c != null ? c.getClass().getSimpleName() : "NULL";
-    }
 
 }

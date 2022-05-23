@@ -41,7 +41,9 @@ import static java.nio.file.Files.isDirectory;
 import static java.nio.file.Files.isExecutable;
 
 /**
- * Vim has filepath.c::modify_fname
+ * Path manipulation ala vim, handles "~/..." and curdir via cd command.
+ * If there are poorly formed paths encountered, put an error, return "/tmp"
+ * Vim has filepath.c::modify_fname, 
  * @author err
  */
 public class FilePath
@@ -115,7 +117,7 @@ private static void init()
     }
 
 /**
- * The "virtual" cwd used for running ":!" commands.
+ * The "virtual" cwd used for running ":!" commands, relative paths.
  * This should always be the result of toRealPath for consistency.
  */
 private static Path cwd;
@@ -139,28 +141,79 @@ private static Path getCheckPathFS(String s)
     return path;
 }
 
-public static Path getPath(String s)
+/**
+ * Find and return the path as display in vim when ^G, :f, :ls.
+ * The rules seem to be:
+ * <p>
+ * If the file is under the home directory:
+ * <ol>
+ * <li>if curdir is root, use ~/...</li>
+ * <li>if file starts with curdir, display relative to curdir</li>
+ * <li>otherwise, file does not start with curdir, use ~/...</li>
+ * </ol>
+ * If the file is under curdir:
+ * <ol>
+ * <li>if curdir is root, use full path</li>
+ * <li>if file starts with curdir, display relative to curdir</li>
+ * <li>otherwise, file does not start with curdir, use full path</li>
+ * </ol>
+ * </p>
+ * @param _path
+ * @return 
+ */
+public static Path getVimPath(Path _path)
 {
-    Path path = getCheckPathFS(s);
-    if(path.startsWith(tilde)) {
-        Path in_home = getHomeDir();
-        if(path.getNameCount() > 1)
-            in_home = in_home.resolve(path.subpath(1, path.getNameCount()));
-        path = in_home;
-    }
-    if(!path.isAbsolute()) {
-        // do it again, make a path relative to curdir
-        // TODO: this may be nonsense. A non absolute may be
-        //       just the components, and what they're under
-        //       is figured out at a later time.
-        //       It does track the filesystem.
+    // In vim, doing: ":e ~/play/../foobar" doesn't normalize.
+    // Sigh, getVimPath *does* normalize.
 
-        path = cwd.resolve(path).toAbsolutePath().normalize();
-        if(path.startsWith(cwd))
-            path = cwd.relativize(path);
+    // start with an absolute path
+    Path path = getAbsolutePath(_path).normalize();
+    if(path.startsWith(getHomeDir())) {
+        if(cwd.getRoot().equals(cwd) || !path.startsWith(cwd))
+            return tilde.resolve(getHomeDir().relativize(path));
+        return cwd.relativize(path);
+    } else if(path.startsWith(cwd) && !cwd.getRoot().equals(cwd)) {
+        return cwd.relativize(path);
     }
     return path;
 }
+
+public static Path getVimPath(String s)
+{
+    return getVimPath(getCheckPathFS(s));
+}
+
+// /**
+//  * Find the absolute path.
+//  * @param path
+//  * @return 
+//  */
+// public static Path getPath(Path path)
+// {
+//     if(path.startsWith(tilde)) {
+//         Path in_home = getHomeDir();
+//         if(path.getNameCount() > 1)
+//             in_home = in_home.resolve(path.subpath(1, path.getNameCount()));
+//         path = in_home;
+//     }
+//     if(!path.isAbsolute()) {
+//         // do it again, make a path relative to curdir
+//         // TODO: this may be nonsense. A non absolute may be
+//         //       just the components, and what they're under
+//         //       is figured out at a later time.
+//         //       It does track the filesystem.
+// 
+//         path = cwd.resolve(path).toAbsolutePath().normalize();
+//         if(path.startsWith(cwd))
+//             path = cwd.relativize(path);
+//     }
+//     return path;
+// }
+// 
+// public static Path getPath(String s)
+// {
+//     return getPath(getCheckPathFS(s));
+// }
 
 public static Path getRealPath(Path path, LinkOption... option)
 throws IOException
@@ -186,16 +239,24 @@ public static boolean isAbsolutePath(Path path)
     return path.isAbsolute() || path.startsWith(tilde);
 }
 
+private static String userhomeproperty = null;
+private static Path userhome = null;
 public static Path getHomeDir()
 {
-    Path path = FileSystems.getDefault().getPath(System.getProperty("user.home"));
-    if(!path.isAbsolute()) {
-        path = FileSystems.getDefault().getPath("/tmp");
-        Msg.emsg("'user.home' must be absolute path, not '%s'",
+    String prop = System.getProperty("user.home");
+    if(prop == null) prop = "/tmp"; // impossible
+    if(!prop.equals(userhomeproperty)) {
+        Path path = FileSystems.getDefault().getPath(prop);
+        if(!path.isAbsolute()) {
+            path = FileSystems.getDefault().getPath("/tmp");
+            Msg.emsg("'user.home' must be absolute path, not '%s'",
                  System.getProperty("user.home"));
+        }
+        userhomeproperty = prop;
+        userhome = path;
     }
                 
-    return path;
+    return userhome;
 }
 
 public static Path getTildePath(String s)
@@ -210,7 +271,8 @@ private static String doCwd(String dst_dir, boolean display, Object... junk)
     String exMsg = "";
     Path path;
 
-    path = getPath(dst_dir);
+    //path = getPath(dst_dir);
+    path = getAbsolutePath(getVimPath(dst_dir));
 
     if(!path.isAbsolute())
         path = cwd.resolve(path);

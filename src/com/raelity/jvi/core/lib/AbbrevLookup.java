@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * This is a lookup table where the key can be abbreviated. It is convenient
@@ -33,6 +34,7 @@ import java.util.List;
 public class AbbrevLookup
 {
     private final List<ColonCommandItem> list = new ArrayList<>();
+    private final Set<Cmd> exactCommand = EnumSet.noneOf(Cmd.class);
 
     /**
      * This method returns a read-only copy of the list.
@@ -91,9 +93,9 @@ public class AbbrevLookup
                     + "' is already registered");
         }
         // spin through the list insuring command name not in use
-        Iterator iter = list.iterator();
+        Iterator<ColonCommandItem> iter = list.iterator();
         while( iter.hasNext() ) {
-            if  ( ((ColonCommandItem)iter.next()).getName().equals(name) ) {
+            if  ( iter.next().getName().equals(name) ) {
                 throw new IllegalArgumentException("The name '" + abbrev
                         + "' is already registered");
             }
@@ -102,9 +104,12 @@ public class AbbrevLookup
             throw new IllegalArgumentException("'" + name + "' does not start with '"
                     + abbrev + "'");
         }
+        ColonCommandItem cci = new ColonCommandItem(abbrev, name, value, flags);
+        if(name.equals(abbrev) && cci.getCmd() != null)
+            exactCommand.add(cci.getCmd());
         // turn idx into something that can be used for insertion into list
         idx = -idx - 1;
-        list.add(idx, new ColonCommandItem(abbrev, name, value, flags));
+        list.add(idx, cci);
     }
 
 
@@ -145,9 +150,9 @@ public class AbbrevLookup
         if ( cidx < 0 ) {
             cidx = -cidx - 1;
         }
-        Iterator iter = list.listIterator(cidx);
+        Iterator<ColonCommandItem> iter = list.listIterator(cidx);
         while ( iter.hasNext() ) {
-            ColonCommandItem ce01 = (ColonCommandItem)iter.next();
+            ColonCommandItem ce01 = iter.next();
             if ( ce01.getAbbrev().compareTo(nextChar) >= 0 ) {
                 break; // not in list
             }
@@ -157,6 +162,16 @@ public class AbbrevLookup
             }
         }
         return ce;
+    }
+
+    /** A command is "exact" if abbrev equals name
+     * and has an associated Cmd enum.
+     * @param command
+     * @return 
+     */
+    public boolean hasExactCommand(String command)
+    {
+        return exactCommand.contains(Cmd.findCmd(command));
     }
 
     /**

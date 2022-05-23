@@ -67,8 +67,18 @@ public static void tearDownClass()
 {
 }
 
-String initCurDir = "/tmp/randomdirTEST";
-String initHomeDir = "/tmp/homedirTEST";
+static Path getPath(String s)
+{
+    return FilePath.getVimPath(s);
+}
+
+static Path getRegularPath(String s)
+{
+    return FileSystems.getDefault().getPath(s).normalize();
+}
+
+String initCurDir = "/tmp/xxx/randomdirTEST";
+String initHomeDir = "/tmp/roothome/homedirTEST";
 
 String saved_home_dir;
 //@BeforeEach
@@ -148,28 +158,67 @@ public void testSetCwd()
     setCwdTEST("~/", false);
     result = setCwdTEST("hd1/./hd2/../../..", false);
     assertEquals("", result);
-    assertEquals("/tmp", getCwd().toString());
+    assertEquals(getRegularPath(initHomeDir + "/..").toString(),
+                 getCwd().toString());
+    //assertEquals("/tmp", getCwd().toString());
 }
 
 /**
- * Test of getPath method, of class FilePath.
+ * Test of getVimPath method, of class FilePath.
  */
 @Test
 @SuppressWarnings("UseOfSystemOutOrSystemErr")
-public void testGetPath()
+public void testGetVimPath_String()
 {
-    System.out.println("getPath");
-    assertEquals(initCurDir, getAbsolutePath(getPath("")).toString());
-    assertEquals(initCurDir + "/foo/bar", getAbsolutePath(getPath("foo/bar")).toString());
+    System.out.println("getVimPath");
 
-    assertEquals(initHomeDir, getPath("~").toString());
-    assertEquals(initHomeDir + "/foo", getPath("~/foo").toString());
-    assertEquals(initHomeDir + "/foo/bar", getPath("~/foo/bar").toString());
+    assertEquals("~", getVimPath(getRegularPath(initHomeDir)).toString());
+    assertEquals("~/foo", getVimPath(getRegularPath(initHomeDir + "/foo")).toString());
+    assertEquals(getRegularPath(initHomeDir + "/..").toString(),
+                 getVimPath(getRegularPath(initHomeDir + "/..")).toString());
 
-    assertEquals("", getPath("foo/..").toString());
-    assertEquals("/tmp", getPath("foo/../..").toString());
-    assertEquals(initCurDir, getAbsolutePath(getPath("x/y/../..")).toString());
+    assertEquals(initCurDir, getAbsolutePath(getVimPath("")).toString());
+    assertEquals(initCurDir + "/foo/bar", getAbsolutePath(getVimPath("foo/bar")).toString());
+    assertEquals("",
+                 getVimPath(getRegularPath(initCurDir)).toString());
+    assertEquals("foo/bar",
+                 getVimPath(getRegularPath(initCurDir + "/foo/bar")).toString());
+    setCwdTEST(getRegularPath("/").toString(), false);
+    assertEquals(initCurDir + "/foo/bar",
+                 getVimPath(getRegularPath(initCurDir + "/foo/bar")).toString());
+    
+    // homedir/cd1/foo displays differently depending on where you're sitting
+    setCwdTEST(initHomeDir + "cd1/cd2", false);
+    assertEquals("~/cd1/foo",
+                 getVimPath(getRegularPath(initHomeDir + "/cd1/foo")).toString());
+    setCwdTEST(initHomeDir, false);
+    assertEquals("cd1/foo",
+                 getVimPath(getRegularPath(initHomeDir + "/cd1/foo")).toString());
+    setCwdTEST(getRegularPath("/").toString(), false);
+    assertEquals("~/cd1/foo",
+                 getVimPath(getRegularPath(initHomeDir + "/cd1/foo")).toString());
 }
+
+// /**
+//  * Test of getPath method, of class FilePath.
+//  */
+// @Test
+// @SuppressWarnings("UseOfSystemOutOrSystemErr")
+// public void testGetPath()
+// {
+//     System.out.println("getPath");
+//     assertEquals(initCurDir, getAbsolutePath(FilePath.getPath("")).toString());
+//     assertEquals(initCurDir + "/foo/bar", getAbsolutePath(FilePath.getPath("foo/bar")).toString());
+// 
+//     assertEquals(initHomeDir, FilePath.getPath("~").toString());
+//     assertEquals(initHomeDir + "/foo", FilePath.getPath("~/foo").toString());
+//     assertEquals(initHomeDir + "/foo/bar", FilePath.getPath("~/foo/bar").toString());
+// 
+//     assertEquals("", FilePath.getPath("foo/..").toString());
+//     assertEquals(getRegularPath(initCurDir + "/..").toString(),
+//                  FilePath.getPath("foo/../..").toString());
+//     assertEquals(initCurDir, getAbsolutePath(FilePath.getPath("x/y/../..")).toString());
+// }
 
 /**
  * Test of getCwd method, of class FilePath.

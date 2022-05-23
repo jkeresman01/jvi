@@ -20,7 +20,9 @@
 
 package com.raelity.jvi.swing.simple;
 
+import java.awt.Component;
 import java.io.File;
+import java.nio.file.Path;
 
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -28,6 +30,7 @@ import javax.swing.text.JTextComponent;
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViBuffer;
 import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.core.*;
 import com.raelity.jvi.lib.abstractFS;
 import com.raelity.jvi.manager.ViManager;
 
@@ -48,6 +51,10 @@ abstract public class SimpleFS extends abstractFS
     @Override
     public String getDisplayFileName(ViAppView av)
     {
+        Path path = getPath(av);
+        if(path != null)
+            // Vim display name
+            return FilePath.getVimPath(path).toString();
         JTextComponent ep = (JTextComponent)av.getEditor();
         if (ep != null) {
             ViTextView tv = ViManager.getFactory().getTextView(ep);
@@ -61,6 +68,18 @@ abstract public class SimpleFS extends abstractFS
     }
 
     @Override
+    public String getDisplayFileName(Component c)
+    {
+        if(c instanceof JTextComponent) {
+            JTextComponent ed = (JTextComponent)c;
+            ViAppView av = ViManager.getFactory().getAppView(ed);
+            if(av != null)
+                return getDisplayFileName(av);
+        }
+        return c != null ? c.getClass().getSimpleName() : "NULL";
+    }
+
+    @Override
     public String getDisplayFileName(ViBuffer buf)
     {
         String fname = null;
@@ -71,7 +90,7 @@ abstract public class SimpleFS extends abstractFS
                 fname = o.toString();
         }
         assert fname != null;
-        return fname != null ? fname : "file_name_unknown_from_buf";
+        return fname;
     }
 
 }

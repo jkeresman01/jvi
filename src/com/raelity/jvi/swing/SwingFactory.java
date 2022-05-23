@@ -524,7 +524,7 @@ abstract public class SwingFactory implements ViFactory
     public PropertyDescriptor createPropertyDescriptor(
             String optName,
             String methodName,
-            Class clazz )
+            Class<?> clazz )
             throws IntrospectionException
     {
         return OptionsBeanBase.createPropertyDescriptor(
@@ -597,6 +597,7 @@ abstract public class SwingFactory implements ViFactory
      * Control characters of interest are picked up as key-press events
      * in {link #EnqKeyAction}.
      */
+    @SuppressWarnings("serial")
     public static class EnqueCharAction extends TextAction
     {
         public EnqueCharAction(String name) {
@@ -668,6 +669,7 @@ abstract public class SwingFactory implements ViFactory
      * the event and added to the key. Recieved characters are placed
      * on the vi input Q.
      */
+    @SuppressWarnings("serial")
     public static class EnqueKeyAction extends TextAction
     {
         char basekey;
@@ -700,6 +702,7 @@ abstract public class SwingFactory implements ViFactory
     }
     
     
+    @SuppressWarnings("serial")
     private static class InsertModeAction extends TextAction
             implements ViXlateKey
     {

@@ -20,7 +20,6 @@
 
 package com.raelity.jvi.cmd;
 
-import com.raelity.jvi.ViAppView;
 
 import java.awt.Component;
 import java.awt.Rectangle;
@@ -43,7 +42,6 @@ import com.raelity.jvi.swing.ViewMap;
 import com.raelity.jvi.swing.ViewMapSwitcher;
 import com.raelity.jvi.swing.simple.SimpleFactory;
 
-import javax.swing.text.Document;
 
 /**
  *
@@ -83,7 +81,8 @@ final public class PlayFactory extends SimpleFactory
      * or scrolling the view.
      */
 
-    class PlayCaret extends SwingCaret {
+    @SuppressWarnings("serial")
+class PlayCaret extends SwingCaret {
 
         public PlayCaret()
         {
@@ -120,9 +119,6 @@ final public class PlayFactory extends SimpleFactory
     protected Buffer createBuffer( ViTextView tv )
     {
         PlayBuffer buf = new PlayBuffer(tv);
-        ViAppView av = getAppView(tv.getEditor());
-        buf.getDocument().putProperty(Document.TitleProperty,
-                "File:" + av.getWinID());
         return buf;
     }
 

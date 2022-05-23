@@ -20,15 +20,16 @@
 
 package com.raelity.jvi.cmd;
 
-import java.io.File;
-import java.nio.file.FileSystems;
 import java.nio.file.Path;
+
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViBuffer;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.core.Msg;
+import com.raelity.jvi.core.*;
 import com.raelity.jvi.swing.simple.SimpleFS;
 
 /**
@@ -48,12 +49,10 @@ public class PlayFS extends SimpleFS
     @Override
     public Path getPath(ViAppView av)
     {
-        return FileSystems.getDefault().getPath("/tmp/test.file");
-    }
-
-    @Override
-    public String getDisplayFileName(ViAppView av) {
-        return "File:" + av.getWinID();
+        Document doc = null;
+        if(av.getEditor() != null)
+            doc = ((JTextComponent)av.getEditor()).getDocument();
+        return doc != null ? (Path)doc.getProperty(Document.TitleProperty) : null;
     }
 
 

@@ -29,6 +29,7 @@ import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.nio.file.FileSystems;
 
 import javax.swing.text.JTextComponent;
 
@@ -42,6 +43,8 @@ import com.raelity.jvi.swing.ui.options.OptionsPanel;
 
 import java.util.List;
 import java.util.logging.Logger;
+
+import javax.swing.text.Document;
 
 import com.raelity.jvi.*;
 import com.raelity.jvi.cmd.nb.*;
@@ -180,6 +183,9 @@ public class Jvi
                 List<ViAppView> avs = AppViews.getList(AppViews.ACTIVE);
                 PlayAppView av = (PlayAppView)avs.get(0);
                 JTextComponent ed = av.getEditor();
+                Document doc = ed.getDocument();
+                doc.putProperty(Document.TitleProperty, FileSystems
+                        .getDefault().getPath("/tmp/test.file"));
                 ed.requestFocusInWindow();
                 (new Init()).init();
             });

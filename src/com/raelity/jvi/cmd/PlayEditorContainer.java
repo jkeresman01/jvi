@@ -35,6 +35,7 @@ import javax.swing.text.JTextComponent;
  * An editor is packaged with it's scrollpane
  * @author err
  */
+@SuppressWarnings("serial")
 public class PlayEditorContainer extends JScrollPane
 {
     private final PlayEditorPane editor;

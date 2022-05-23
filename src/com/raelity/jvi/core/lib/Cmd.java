@@ -28,21 +28,24 @@ import java.util.Map;
  */
 public enum Cmd
 {
-BANG("!");
+BANG("!"),
+LS2("ls2"),
+BUFFERS2("buffers2"),
+FILES2("files2"),
+;
 
 private static Map<String, Cmd> cmds;
 
-@SuppressWarnings("LeakingThisInConstructor")
 private Cmd(String abbrev)
 {
-    stash(abbrev, this);
+    stash(abbrev);
 }
 
-private static void stash(String abbrev, Cmd cmd)
+private void stash(String abbrev)
 {
     if(cmds == null)
-        cmds = new HashMap<>(100);
-    cmds.put(abbrev, cmd);
+        cmds = new HashMap<>(16);
+    cmds.put(abbrev, this);
 }
 
 static Cmd findCmd(String abbrev)

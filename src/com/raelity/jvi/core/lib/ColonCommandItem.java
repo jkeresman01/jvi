@@ -6,6 +6,8 @@ import java.util.Set;
 
 import com.raelity.jvi.core.ColonCommands.ColonAction;
 
+import static com.raelity.text.TextUtil.sf;
+
 /**
  * A registered command is represented by this class.
  * Comparison and equality is based on the command abbreviation.
@@ -115,4 +117,13 @@ public final class ColonCommandItem implements Comparable<ColonCommandItem> {
         hash = 29 * hash + (this.abbrev != null ? this.abbrev.hashCode() : 0);
         return hash;
     }
+
+    @Override
+    public String toString()
+    {
+        return sf("cci{%s, %s}", abbrev, name);
+        //return "ColonCommandItem{" + "abbrev=" + abbrev + ", name=" + name +
+        //        ", value=" + value + ", flags=" + flags + ", cmd=" + cmd + '}';
+    }
+
 }

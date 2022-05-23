@@ -45,6 +45,7 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.border.BevelBorder;
 
+@SuppressWarnings("serial")
 public class JviFrame extends JFrame
 {
     /**
@@ -66,7 +67,7 @@ public class JviFrame extends JFrame
     /**
      * Construct the frame.
      */
-    @SuppressWarnings({"CallToThreadDumpStack", "CallToPrintStackTrace"})
+    @SuppressWarnings({"CallToThreadDumpStack", "CallToPrintStackTrace", "UseOfSystemOutOrSystemErr"})
     public JviFrame()
     {
         enableEvents(AWTEvent.WINDOW_EVENT_MASK);

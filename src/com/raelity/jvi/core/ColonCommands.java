@@ -374,6 +374,21 @@ private static ColonEvent parseCommandGuts(String commandLine,
                 || "<".equals(String.valueOf(commandLine.charAt(sidx)))
                 || ">".equals(String.valueOf(commandLine.charAt(sidx)))))
         {
+            // HACK. Deal with "ls2" and such, when written, digits could
+            // not be in a command name. The digit became the first argument.
+            // It may be that this "feature" is never used, in which case
+            // it would be OK to just include digits.
+            //
+            // But, at this time, rather than risk a strangeness,
+            // check if including a digit, produces a command name.
+            // Thus a string ending in a single digit might be a command
+
+            char c01 = commandLine.charAt(sidx);
+            if(Util.isdigit(c01)) {
+                String t = commandLine.substring(sidx01, sidx+1);
+                if(m_commands.hasExactCommand(t))
+                    sidx++;
+            }
             break;
         }
     }
@@ -813,7 +828,8 @@ public abstract static class AbstractColonAction implements ColonAction
     * white space separated. The command word finishes with the first
     * non-alpha character. So "e#" and "e #" are parsed the same.
     */
-static public class ColonEvent extends ActionEvent
+    @SuppressWarnings("serial")
+    static public class ColonEvent extends ActionEvent
 {
     // NEEDSWORK: ColonEvent Add stuff for getting at command arguments
     /** The expanded command word */

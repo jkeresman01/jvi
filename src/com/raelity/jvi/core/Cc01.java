@@ -109,6 +109,11 @@ public class Cc01
         ColonCommands.register("buffers","buffers", alBuffers, null);
         ColonCommands.register("ls","ls", alBuffers, null);
 
+        ActionListener alBuffers2 = new Buffers2();
+        ColonCommands.register("files2","files2", alBuffers2, null);
+        ColonCommands.register("buffers2","buffers2", alBuffers2, null);
+        ColonCommands.register("ls2","ls2", alBuffers2, null);
+
         ColonCommands.register("f", "file", new FileAction(), null);
         ColonCommands.register("e", "edit", new Edit(), null);
         ColonCommands.register("s", "substitute", ACTION_substitute, null);
@@ -362,7 +367,7 @@ public class Cc01
 
             if (args.size() == 1) {
                 String fName = args.get(0);
-                Path path = getPath(fName);
+                Path path = getVimPath(fName);
                 ViManager.getFS().edit(path, cev.isBang(), null);
             } else
                 Msg.emsg(":edit - one arg: <fname>, '%', '#<digits>' with filename-modifiers");
@@ -497,11 +502,10 @@ public class Cc01
         }
     };
 
-    /** This is the default buffers,files,ls command. The platform specific code
-        * may chose to open this, or implement their own, possibly using
-        * popup gui components.
-        */
-    private static class Buffers implements ActionListener
+    /** This is the default buffers2,files2,ls2 command.
+     *  Name and two columns: MRU and normal.
+     */
+    private static class Buffers2 implements ActionListener
     {
     @Override
     public void actionPerformed(ActionEvent e)
@@ -528,15 +532,42 @@ public class Cc01
                     sf(" %2d %c %-40s %3d %c %s",
                     i,
                     av1.equals(curav) ? '%' : av1.equals(prev) ? '#' : ' ',
-                    factory.getFS().getDisplayFileName(av1),
+                    factory.getFS().getDisplayFileName(av1, true),
                     w2,
                     av2.equals(curav) ? '%' : av2.equals(prev) ? '#' : ' ',
-                    factory.getFS().getDisplayFileName(av2)));
+                    factory.getFS().getDisplayFileName(av2, true)));
                 i++;
             }
             // print in reverse order, MRU visible if scrolling
             for(int i01 = outputData.size() -1; i01 >= 0; i01--) {
                 osa.println(outputData.get(i01));
+            }
+        }
+    }
+    };
+
+    /** This is the default buffers,files,ls command. The platform specific code
+     * may chose to use this, or implement their own, possibly using
+     * popup gui components.
+     */
+    private static class Buffers implements ActionListener
+    {
+    @Override
+    public void actionPerformed(ActionEvent e)
+    {
+        try (ViOutputStream osa = ViManager.createOutputStream(null)) {
+            int i = 0;
+            ViAppView curav = AppViews.relativeMruAppView(0);
+            ViAppView prev = AppViews.getMruAppView(1);
+            
+            ViFactory factory = ViManager.getFactory();
+            List<ViAppView> l = AppViews.getList(AppViews.ACTIVE);
+            while(i < l.size()) {
+                ViAppView av = l.get(i);
+                osa.println(sf("%3d %c %s", av.getWinID(),
+                    av.equals(curav) ? '%' : av.equals(prev) ? '#' : ' ',
+                    factory.getFS().getDisplayFileName(av)));
+                i++;
             }
         }
     }
