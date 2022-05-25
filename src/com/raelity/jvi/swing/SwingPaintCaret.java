@@ -26,7 +26,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.awt.geom.Ellipse2D;
 
 import javax.swing.text.BadLocationException;
@@ -52,12 +51,12 @@ public class SwingPaintCaret
     /** width of a block cursor */
     int blockWidth = 8;
     // -Dcom.raelity.jvi.swing.SwingPaintCaret.macRetinaIssue=true;
-    private static final boolean isMacRetinaBug = Boolean.getBoolean(
-            "com.raelity.jvi.swing.SwingPaintCaret.macRetinaIssue");
+    //private static final boolean isMacRetinaBug = Boolean.getBoolean(
+    //        "com.raelity.jvi.swing.SwingPaintCaret.macRetinaIssue");
 
     // -Dcom.raelity.jvi.swing.SwingPaintCaret.level=FINE;
     // private static final Logger LOG = Logger.getLogger(SwingPaintCaret.class.getName());
-    private Rectangle oldRect;
+    //private Rectangle oldRect;
 
     public SwingPaintCaret(ViCaret caret)
     {
@@ -108,28 +107,28 @@ public class SwingPaintCaret
         return false;
     }
 
-    private void fixupHints(Graphics g)
-    {
-        if(false)
-            return;
-        Graphics2D g2d = (Graphics2D)g;
-        RenderingHints cur = g2d.getRenderingHints();
-        RenderingHints h = new RenderingHints(RenderingHints.KEY_RENDERING,
-                                              RenderingHints.VALUE_RENDER_QUALITY);
-        h.put(RenderingHints.KEY_ANTIALIASING,
-              RenderingHints.VALUE_ANTIALIAS_ON);
-        h.put(RenderingHints.KEY_DITHERING,
-              RenderingHints.VALUE_DITHER_ENABLE);
-        h.put(RenderingHints.KEY_INTERPOLATION,
-              RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-        h.put(RenderingHints.KEY_ALPHA_INTERPOLATION,
-              RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-        h.put(RenderingHints.KEY_COLOR_RENDERING,
-              RenderingHints.VALUE_COLOR_RENDER_QUALITY);
-        h.put(RenderingHints.KEY_STROKE_CONTROL,
-              RenderingHints.VALUE_STROKE_NORMALIZE);
-        g2d.setRenderingHints(h);
-    }
+    //private void fixupHints(Graphics g)
+    //{
+    //    if(false)
+    //        return;
+    //    Graphics2D g2d = (Graphics2D)g;
+    //    RenderingHints cur = g2d.getRenderingHints();
+    //    RenderingHints h = new RenderingHints(RenderingHints.KEY_RENDERING,
+    //                                          RenderingHints.VALUE_RENDER_QUALITY);
+    //    h.put(RenderingHints.KEY_ANTIALIASING,
+    //          RenderingHints.VALUE_ANTIALIAS_ON);
+    //    h.put(RenderingHints.KEY_DITHERING,
+    //          RenderingHints.VALUE_DITHER_ENABLE);
+    //    h.put(RenderingHints.KEY_INTERPOLATION,
+    //          RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+    //    h.put(RenderingHints.KEY_ALPHA_INTERPOLATION,
+    //          RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+    //    h.put(RenderingHints.KEY_COLOR_RENDERING,
+    //          RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+    //    h.put(RenderingHints.KEY_STROKE_CONTROL,
+    //          RenderingHints.VALUE_STROKE_NORMALIZE);
+    //    g2d.setRenderingHints(h);
+    //}
 
     /**
      * Render the caret as specified by the cursor.
@@ -155,8 +154,8 @@ public class SwingPaintCaret
             // NEEDSWORK: COULD USE dotChar in following
             blockWidth = fm.charWidth('.');		// assume all the same width
             try {
-                Rectangle r = component.getUI().modelToView(
-                        component, dot);
+                Rectangle r = component.getUI().modelToView2D(
+                        component, dot, Bias.Forward).getBounds();
                 CurrentCaretState ccs = new CurrentCaretState(dotChar[0], r, false);
                 Rectangle overwritingRectangle = null;
                 char overwritingChar = 0;
@@ -195,6 +194,7 @@ public class SwingPaintCaret
                 if(overwritingChar != 0 && cursorShape == ViCaretStyle.SHAPE_VER) {
                     g.setColor(component.getBackground());
                     g.setFont(g.getFont().deriveFont(Font.BOLD));
+                    assert overwritingRectangle != null;
                     g.fillRect(overwritingRectangle.x + r.width, overwritingRectangle.y,
                                blockWidth - r.width, fm.getAscent());
                     //g.setColor(component.getForeground());
@@ -314,7 +314,7 @@ public class SwingPaintCaret
     {
         private char c;
         private Rectangle bounds; // a clone of modelToView results
-        private JTextComponent jtc;
+        private final JTextComponent jtc;
         
         CurrentCaretState(char c, Rectangle _bounds, boolean pad)
         {
@@ -333,7 +333,7 @@ public class SwingPaintCaret
         private Rectangle findBounds(int offset) {
             Rectangle r = null;
             try {
-                r = jtc.getUI().modelToView(jtc, offset, Bias.Forward);
+                r = jtc.getUI().modelToView2D(jtc, offset, Bias.Forward).getBounds();
             } catch(BadLocationException ex) {
             }
             return r;

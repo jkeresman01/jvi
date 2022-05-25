@@ -1,8 +1,10 @@
 package com.raelity.jvi.swing;
 
 import com.raelity.jvi.manager.ViManager;
+
 import java.awt.EventQueue;
 import java.awt.Point;
+import java.util.Objects;
 
 import javax.swing.JViewport;
 import javax.swing.event.ChangeEvent;
@@ -14,6 +16,12 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+
+import org.openide.util.Exceptions;
+
+import com.raelity.jvi.lib.*;
+
+import static com.raelity.text.TextUtil.sf;
 
 /**
  * Stabilize (do not allow scrolling) the JViewport displaying
@@ -28,13 +36,15 @@ import javax.swing.text.Position;
  */
 public class FreezeViewport implements DocumentListener, ChangeListener
 {
-
     private JTextComponent ep;
     private JViewport vp;
     private AbstractDocument doc;
-    private Position pos;
+    private Position frozenMark;
     private int topLine;
     private int nLine;
+    private boolean doc_busy;
+
+    private static void eatme(Object... o) { Objects.isNull(o); }
 
     public FreezeViewport(JTextComponent ep)
     {
@@ -46,25 +56,13 @@ public class FreezeViewport implements DocumentListener, ChangeListener
         doc = (AbstractDocument)ep.getDocument();
         try {
             doc.readLock();
-            // may throw class cast, its ok. Why???
             vp = (JViewport)ViManager.getFactory().getViewport(ep);
             if(vp == null)
                 return;
             Element root = doc.getDefaultRootElement();
             nLine = root.getElementCount();
-            // Get the offset of the first displayed char in the top line
-            Point pt = vp.getViewPosition();
-            int offset = ep.viewToModel(pt);
-            // Determine the line number of the top displayed line
-            topLine = root.getElementIndex(offset);
-            //System.err.format("FreezeViewport: top %d\n", topLine);
-            // Note. offset may not be first char, due to horiz scroll
-            // make offset the first char of the line
-            offset = root.getElement(topLine).getStartOffset();
-            // Get marker to offset in the document
-            pos = doc.createPosition(offset);
-            setupDocListener();
-            //vp.addChangeListener(this); // debug info
+            vpCapturePinLocation();
+            setupListeners();
         } catch (BadLocationException ex) {
             // Note: did not start listener
         } finally {
@@ -72,9 +70,129 @@ public class FreezeViewport implements DocumentListener, ChangeListener
         }
     }
 
-    private void setupDocListener()
+    /** Pin visible top line to top of the viewpoint.
+     * Calculate values to freeze the top line.
+     */
+    private void vpCapturePinLocation() throws BadLocationException
+    {
+        topLine = vpCalcTopLine(null);
+        int offset = doc.getDefaultRootElement().getElement(topLine).getStartOffset();
+        // Get marker to offset in the document.
+        // This is the pin.
+        frozenMark = doc.createPosition(offset);
+    }
+    
+    /** Return calculated/current top line of viewport.
+     * Optionally return the offset of the top line's first visible char;
+     * may not be first char of line when horizontal scroll.
+     */
+    private int vpCalcTopLine(MutableInt resultOffset)
+    {
+        Point pt = vp.getViewPosition();
+        int offset = ep.viewToModel2D(pt);
+        if(resultOffset != null)
+            resultOffset.setValue(offset);
+        return doc.getDefaultRootElement().getElementIndex(offset);
+    }
+
+    private int lastEvent;
+    /**
+     * Prevent frozen/idle viewport from visibly scrolling.
+     * Brings viewport back to frozen mark.
+     * Called from document event.
+     * Gets done after returning from the listener.
+     * @param offset 
+     */
+    private void vpReposition(int targetLine)
+    {
+        // https://stackoverflow.com/questions/3953208/value-change-listener-to-jtextfield
+        // But, that article does the work on the first "later" action.
+        // This does the work on the last "later" action,
+        // to easily use targetLine and in case timing matters.
+        final int myevent = ++lastEvent;
+        EventQueue.invokeLater(() -> {
+            if(myevent != lastEvent) {
+                dbgOut(sf("vp repo skip %d", myevent));
+                return;
+            }
+
+            try {
+                int offset = doc.getDefaultRootElement()
+                        .getElement(targetLine).getStartOffset();
+                Point pt = ep.modelToView2D(offset).getBounds().getLocation();
+                pt.translate(-pt.x, 0); // leaves a few pixels to left
+                vp.setViewPosition(pt);
+
+                dbgOut(sf("vp repo: %s", vpDebugPos()));
+                doc_busy = false;
+            } catch (BadLocationException ex) {
+                stop();
+            }
+        });
+    }
+
+    /** Keep the top line pinned in the viewport.
+     * If this doc event would cause a scroll, correct for it.
+     */
+    private void docChangeEvent(DocumentEvent e)
+    {
+        // Note while in listener document can't change, no read lock
+        Element root = doc.getDefaultRootElement();
+        int newNumLine = root.getElementCount();
+        // return if line count unchanged or changed after our mark
+        if (nLine == newNumLine || e.getOffset() > frozenMark.getOffset()) {
+            dbgOut(sf("doc event: no effect"));
+            return;
+        }
+        nLine = newNumLine;
+        int newTopLine = root.getElementIndex(frozenMark.getOffset());
+        if (topLine == newTopLine) {
+            dbgOut(sf("doc event: same line position"));
+            return;
+        }
+        topLine = newTopLine;
+        // make a move
+        doc_busy = true;
+        dbgOut(sf("doc evt: %s", vpDebugPos()));
+        vpReposition(topLine);
+    }
+
+    private void vpChangeEvent(ChangeEvent e)
+    {
+        eatme(e);
+        dbgOut(sf("vp chng: %s", vpDebugPos()));
+        if(doc_busy)
+            return;
+        int prevTopLine = topLine;
+        try {
+            vpCapturePinLocation();
+            if(topLine != prevTopLine)
+                dbgOut(sf("vp chng: adjusting topLine" ));
+        } catch(BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private String vpDebugPos()
+    {
+        MutableInt mi = new MutableInt();
+        int calc = vpCalcTopLine(mi);
+        return sf("%d: %3s top=%d calc=%d off=%d mark=%d",
+                  lastEvent, doc_busy ? "bsy" : "", topLine,
+                  calc, mi.getValue(), frozenMark.getOffset());
+    }
+
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
+    private void dbgOut(String s)
+    {
+        if(Boolean.FALSE)
+            System.err.println(s);
+    }
+
+    private void setupListeners()
     {
         doc.addDocumentListener(this);
+        vp.addChangeListener(this);
     }
 
     public void stop()
@@ -87,58 +205,18 @@ public class FreezeViewport implements DocumentListener, ChangeListener
         }
     }
 
-    private void adjustViewport(int offset)
-    {
-        // Might be able to use info from DocumentEvent to optimize
-        try {
-            Point pt = ep.modelToView(offset).getLocation();
-            pt.translate(-pt.x, 0); // x <-- 0, leave a few pixels to left
-            vp.setViewPosition(pt);
-        } catch (BadLocationException ex) {
-            stop();
-        }
-    }
-
-    private void handleChange(DocumentEvent e)
-    {
-        // Note while in listener document can't change, no read lock
-        Element root = doc.getDefaultRootElement();
-        int newNumLine = root.getElementCount();
-        // return if line count unchanged or changed after our mark
-        if (nLine == newNumLine || e.getOffset() > pos.getOffset()) {
-            return;
-        }
-        nLine = newNumLine;
-        int newTopLine = root.getElementIndex(pos.getOffset());
-        //System.err.format("handleChange: old %d new %d\n", topLine, newTopLine);
-        if (topLine == newTopLine) {
-            return;
-        }
-        topLine = newTopLine;
-        // make a move
-        final int offset = root.getElement(topLine).getStartOffset();
-        if (false && EventQueue.isDispatchThread()) {
-            // false needed NB6.8
-            adjustViewport(offset);
-            //System.err.println("handleChange: adjust in dispatch");
-        } else {
-            EventQueue.invokeLater(() -> {
-                adjustViewport(offset);
-                //System.err.println("handleChange: adjust later");
-            });
-        }
-    }
+    // Document listener
 
     @Override
     public void insertUpdate(DocumentEvent e)
     {
-        handleChange(e);
+        docChangeEvent(e);
     }
 
     @Override
     public void removeUpdate(DocumentEvent e)
     {
-        handleChange(e);
+        docChangeEvent(e);
     }
 
     @Override
@@ -146,13 +224,11 @@ public class FreezeViewport implements DocumentListener, ChangeListener
     {
     }
 
+    // Viewport state change
+
     @Override
     public void stateChanged(ChangeEvent e)
     {
-        Point pt = vp.getViewPosition();
-        int offset = ep.viewToModel(pt);
-        Element root = doc.getDefaultRootElement();
-        int topl = root.getElementIndex(offset);
-        System.err.println("Viewport stateChanged: top line " + topl);
+        vpChangeEvent(e);
     }
 }

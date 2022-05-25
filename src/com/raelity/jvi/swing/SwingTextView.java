@@ -924,7 +924,7 @@ public abstract class SwingTextView extends TextView
             Point pt = null;
             if(!w_p_wrap) {
                 // y position is the same for everything
-                r = ep.modelToView(fpos.getOffset());
+                r = ep.modelToView2D(fpos.getOffset()).getBounds();
                 // and put x at the viewport edge
                 pt = new Point(viewport.getViewPosition().x, r.y + r.height/2);
             }
@@ -933,7 +933,7 @@ public abstract class SwingTextView extends TextView
                     if(w_p_wrap) {
                         offset = Utilities.getRowStart(ep, offset);
                     } else {
-                        offset = ep.viewToModel(pt);
+                        offset = ep.viewToModel2D(pt);
                     }
                     break;
 
@@ -946,8 +946,8 @@ public abstract class SwingTextView extends TextView
                         assert pt != null; // to get rid of NP deref hint
                         pt.x += viewport.getExtentSize().width
                                         - (int)getMaxCharWidth();
-                        offset = ep.viewToModel(pt);
-                        r = ep.modelToView(offset);
+                        offset = ep.viewToModel2D(pt);
+                        r = ep.modelToView2D(offset).getBounds();
                         if(r.width == 0)
                             // these things usually come back as zero,
                             // I guess the offset is the position between chars
@@ -1013,7 +1013,7 @@ public abstract class SwingTextView extends TextView
             if(HSCROLL.HALF == op) {
                 count = (int)((viewportExtent.width / getMaxCharWidth())/2);
             } else if(HSCROLL.CURSOR == op) {
-                cRect = ep.modelToView(fpos.getOffset());
+                cRect = ep.modelToView2D(fpos.getOffset()).getBounds();
                 cRect.width = (int)getMaxCharWidth();
                 if(HDIR.LEFT == hdir) {
                     count = (int)((viewportPosition.x + viewportExtent.width
@@ -1040,7 +1040,7 @@ public abstract class SwingTextView extends TextView
 
             viewport.setViewPosition(pt);
             // make sure the cursor is visible
-            cRect = ep.modelToView(fpos.getOffset());
+            cRect = ep.modelToView2D(fpos.getOffset()).getBounds();
             cRect.width = (int)getMaxCharWidth();
             Rectangle vRect = viewport.getViewRect();
             if(!vRect.contains(cRect)) {
@@ -1142,7 +1142,7 @@ public abstract class SwingTextView extends TextView
         //
         // NEEDSWORKL: what about bi-dir?
         //
-        Rectangle2D rStart = getEditor().modelToView(offset);
+        Rectangle2D rStart = getEditor().modelToView2D(offset);
         return rStart.getX();
     }
 
@@ -1184,13 +1184,13 @@ public abstract class SwingTextView extends TextView
         // jvi: pixelDirection < 0 if x pos gets smaller as offset gets smaller
         int pixelDirection = 0;
         if (lastOffs >= 0) {
-            r = c.modelToView(lastOffs);
+            r = c.modelToView2D(lastOffs);
             y = r.getY();
             // jvi: Compute the direction that decreasing offset
             // goes in. Not sure this is needed, but bi-dir?
             int decreasedOffset = lastOffs - 1;
             if(decreasedOffset >= 0) {
-                Rectangle2D rDecreased = c.modelToView(decreasedOffset);
+                Rectangle2D rDecreased = c.modelToView2D(decreasedOffset);
                 pixelDirection = sign(rDecreased.getX() - r.getX());
             }
         }
@@ -1210,7 +1210,7 @@ public abstract class SwingTextView extends TextView
             lastOffs -= 1;
 
             if ((lastOffs >= 0)) {
-                r = c.modelToView(lastOffs);
+                r = c.modelToView2D(lastOffs);
             } else {
                 r = null;
             }
@@ -1234,13 +1234,13 @@ public abstract class SwingTextView extends TextView
         Rectangle2D r = null;
         int pixelDirection = 0;
         if (lastOffs <= n) {
-            r = c.modelToView(lastOffs);
+            r = c.modelToView2D(lastOffs);
             y = r.getY();
             // jvi: Compute the direction that increasing offset
             // goes in. Not sure this is needed, but bi-dir?
             int increasedOffset = lastOffs + 1;
             if(increasedOffset <= n) {
-                Rectangle2D rIncreased = c.modelToView(increasedOffset);
+                Rectangle2D rIncreased = c.modelToView2D(increasedOffset);
                 pixelDirection = sign(rIncreased.getX() - r.getX());
             }
         }
@@ -1261,7 +1261,7 @@ public abstract class SwingTextView extends TextView
             lastOffs += 1;
 
             if (lastOffs <= n) {
-                r = c.modelToView(lastOffs);
+                r = c.modelToView2D(lastOffs);
             } else {
                 r = null;
             }
@@ -1355,12 +1355,6 @@ public abstract class SwingTextView extends TextView
             }
         }
         return col;
-    }
-
-
-    private Element getLineElement( int lnum )
-    {
-        return getBuffer().getLineElement(lnum);
     }
 
 
@@ -1788,6 +1782,7 @@ public abstract class SwingTextView extends TextView
         return getVpLines();
     }
 
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     private void fillLinePositions()
     {
         Point newViewportPosition;
@@ -1843,7 +1838,8 @@ public abstract class SwingTextView extends TextView
         viewportPosition = newViewportPosition;
         viewportExtent = newViewportExtent;
 
-        // System.err.println(vpParams());
+        if(Boolean.FALSE)
+            System.err.println(vpParams());
 
         if (sizeChange) {
             viewSizeChange();
