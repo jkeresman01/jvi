@@ -108,7 +108,7 @@ public interface ViAppView
         }
 
         Msg.emsg("DEFAULT AV.CLOSE FAILED: %s",
-                ViManager.getFS().getDisplayFileName(this));
+                ViManager.getFS().getDisplayPath(this));
         return false;
     }
 

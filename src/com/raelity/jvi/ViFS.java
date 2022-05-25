@@ -31,27 +31,33 @@ import com.raelity.jvi.core.*;
 public interface ViFS
 {
 
-public String getDisplayFileName( ViAppView av );
+// May return null
+public Path getPath(ViAppView av);
+
+public String getDisplayPath( ViAppView av );
+
+// the buf version is like a backup
+public String getDisplayPath( ViBuffer buf );
 
 // Have this here, rather than having caller handle it,
 // is so that 'shortmess' can be implemented more easily in the future.
 default String getDisplayFileName(ViAppView av, boolean shortname)
 {
-    String fn = getDisplayFileName(av);
+    String fn = ViFS.this.getDisplayPath(av);
     return shortname ? FilePath.getName(fn) : fn;
 }
-
-// the buf version is like a backup
-public String getDisplayFileName( ViBuffer buf );
-
-public String getDisplayFileName( Component c );
 
 public String getDisplayFileNameAndSize(ViBuffer buf);
 
 public String getDisplayFileViewInfo(ViTextView tv);
 
-// May return null
-public Path getPath(ViAppView av);
+
+default String getDebugFileName( ViBuffer buf )
+{
+    return getDisplayPath(buf);
+}
+
+public String getDebugFileName( Component c );
 
 
 /**

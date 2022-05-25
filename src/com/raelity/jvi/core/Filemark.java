@@ -182,7 +182,7 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
         Buffer buf = ev.getBuf();
 
         dbg.printf(FINEST, () -> sf("FM: openBuf %s\n",
-                   getFS().getDisplayFileName(buf)));
+                   getFS().getDebugFileName(buf)));
         // might be some sort of nomad
         if(buf.getFile() == null)
             return;
@@ -214,7 +214,7 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
         Buffer buf = ev.getBuf();
 
         dbg.printf(FINEST, () -> sf("FM: closeBuf %s\n",
-                   getFS().getDisplayFileName(buf)));
+                   getFS().getDebugFileName(buf)));
         for(Entry<String, Filemark> entry : map.entrySet()) {
             String key = entry.getKey();
             Filemark fm = entry.getValue();

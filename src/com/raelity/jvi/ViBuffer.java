@@ -30,7 +30,6 @@ package com.raelity.jvi;
 
 import java.io.File;
 
-import com.raelity.jvi.core.*;
 import com.raelity.text.MySegment;
 
 /**
@@ -177,16 +176,16 @@ public interface ViBuffer {
      * Uses ViFS to get the info.
      * @return
      */
-    public String getDisplayFileName();
+    public String getDisplayPath();
 
     /**
-     * DO NOT INVOKE
-     * @param option
-     * @return 
-     * @deprecated use {@link FilePath#modifyFilename(com.raelity.text.StringSegment, java.nio.file.Path, com.raelity.jvi.lib.Wrap) } which handles modifiers correctly.
+     * For debug messages
+     * @return
      */
-    @Deprecated
-    default public String modifyFilename(char option) { return null; }
+    default String getDebugFileName()
+    {
+        return getDisplayPath();
+    }
 
     /**
      * This method provides a {@linkplain File} for the buffer.

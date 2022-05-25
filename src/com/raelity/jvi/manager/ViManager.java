@@ -90,7 +90,7 @@ import static com.raelity.text.TextUtil.sf;
 final public class ViManager
 {
     private static final Logger LOG = Logger.getLogger(ViManager.class.getName());
-    private static void eatme(Object... o) { Objects.isNull(o); }
+    public static void eatme(Object... o) { Objects.isNull(o); }
 
     //
     // Note the use of "9" for the "final" release
@@ -104,7 +104,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("2.0.4.x4");
+    public static final jViVersion version = new jViVersion("2.0.4.x5");
 
     private static com.raelity.jvi.core.Hook core;
 

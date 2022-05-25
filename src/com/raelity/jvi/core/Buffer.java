@@ -196,8 +196,8 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
 
 
     @Override
-    final public String getDisplayFileName() {
-        return ViManager.getFactory().getFS().getDisplayFileName(this);
+    final public String getDisplayPath() {
+        return ViManager.getFactory().getFS().getDisplayPath(this);
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -714,7 +714,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag {
     @Override
     public String toString()
     {
-        return "Buffer{" + getDisplayFileName() + '}';
+        return "Buffer{" + getDebugFileName() + '}';
     }
     
 }

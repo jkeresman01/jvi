@@ -59,7 +59,7 @@ public class PlayOutputStream extends OutputStreamAdaptor {
     this.tv = tv;
     this.flags = flags;
     
-    String fName = tv != null ? tv.getBuffer().getDisplayFileName() : "no-file";
+    String fName = tv != null ? tv.getBuffer().getDebugFileName() : "no-file";
     System.err.println("vios: type: " + type
                        + ", file: " + fName
                        + ", flags: " + flags.toString()

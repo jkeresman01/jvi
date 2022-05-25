@@ -49,7 +49,7 @@ abstract public class SimpleFS extends abstractFS
     }
 
     @Override
-    public String getDisplayFileName(ViAppView av)
+    public String getDisplayPath(ViAppView av)
     {
         Path path = getPath(av);
         if(path != null)
@@ -58,8 +58,8 @@ abstract public class SimpleFS extends abstractFS
         JTextComponent ep = (JTextComponent)av.getEditor();
         if (ep != null) {
             ViTextView tv = ViManager.getFactory().getTextView(ep);
-            if (tv != null)
-                return getDisplayFileName(tv.getBuffer());
+            if (tv != null && tv.getBuffer() != null)
+                return tv.getBuffer().getDisplayPath();
         }
         // NEEDSWORK: triggered by com.raelity.jvi.cmd.Jvi.setupFrame debug
 
@@ -68,19 +68,19 @@ abstract public class SimpleFS extends abstractFS
     }
 
     @Override
-    public String getDisplayFileName(Component c)
+    public String getDebugFileName(Component c)
     {
         if(c instanceof JTextComponent) {
             JTextComponent ed = (JTextComponent)c;
             ViAppView av = ViManager.getFactory().getAppView(ed);
             if(av != null)
-                return getDisplayFileName(av);
+                return getDisplayPath(av);
         }
         return c != null ? c.getClass().getSimpleName() : "NULL";
     }
 
     @Override
-    public String getDisplayFileName(ViBuffer buf)
+    public String getDisplayPath(ViBuffer buf)
     {
         String fname = null;
         Document doc = (Document)buf.getDocument();

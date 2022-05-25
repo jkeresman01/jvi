@@ -1303,7 +1303,7 @@ public final class Options {
       EnumSet<FLAGS> flags = EnumSet.noneOf(FLAGS.class);
       if(parseError)
         flags.add(FLAGS.RAISE_YES);
-      String fn = G.curbuf.getDisplayFileName();
+      String fn = G.curbuf.getDisplayPath();
       try (ViOutputStream vos = ViManager.createOutputStream(G.curwin, ViOutputStream.MAIN,
               "In " + fn + ":" + lnum + " process modeline: " + mline,
               flags)) {

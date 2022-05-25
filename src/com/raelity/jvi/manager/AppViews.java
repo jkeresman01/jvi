@@ -140,7 +140,7 @@ public enum AppViews
         if (fact() != null) {
             G.dbgEditorActivation().println(() -> "Activation: AppViews.activate: "
                     + tag + " " + ViManager.cid(ed) + " " + ViManager.cid(av)
-                    + " " + fact().getFS().getDisplayFileName(av));
+                    + " " + fact().getFS().getDisplayPath(av));
         }
         ViAppView keep = keepMru;
         keepMru = null;
@@ -206,7 +206,7 @@ public enum AppViews
         if (fact() != null) {
             G.dbgEditorActivation().println(() -> "Activation: AppViews.close: "
                     + (ed == null ? "(no shutdown) " : "")
-                    + fact().getFS().getDisplayFileName(av) + " " + ViManager.cid(ed));
+                    + fact().getFS().getDisplayPath(av) + " " + ViManager.cid(ed));
         }
         ViTextView tv = fact().getTextView(ed);
         if (tv != null) {
@@ -256,7 +256,7 @@ public enum AppViews
             String tagF = tag;
             G.dbgEditorActivation().println(() -> "Activation: AppViews.open: "
                     + tagF + " " + ViManager.cid(ed) + " " + ViManager.cid(av)
-                    + " " + fact().getFS().getDisplayFileName(av));
+                    + " " + fact().getFS().getDisplayPath(av));
         }
         if (!av.isNomad()) {
             if (!avsMRU.contains(av))
@@ -413,7 +413,7 @@ public enum AppViews
         if (fact() != null) {
             G.dbgEditorActivation().println(() ->
                     "Activation: AppViews.relativeMruAppView: "
-                            + fact().getFS().getDisplayFileName(av));
+                            + fact().getFS().getDisplayPath(av));
         }
         if (avsMRU.isEmpty())
             return null;
@@ -503,16 +503,16 @@ public enum AppViews
         ps.append("currentEditorPane = ")
           .append(G.curwin() == null
                   ? "null"
-                  : G.curwin().getBuffer().getDisplayFileName()).append('\n');
+                  : G.curwin().getBuffer().getDebugFileName()).append('\n');
         ps.append("factory = ").append(fact()).append('\n');
         ps.append("AppViews: ").append(avs.size()).append('\n');
         for (ViAppView av : avs) {
-            ps.append("\t").append(fact().getFS().getDisplayFileName(av))
+            ps.append("\t").append(fact().getFS().getDisplayPath(av))
               .append(", ").append(av.getClass().getSimpleName()).append('\n');
         }
         ps.append("AppViewsMRU: ").append(avsMRU.size()).append('\n');
         for (ViAppView av : avsMRU) {
-            ps.append("\t").append(fact().getFS().getDisplayFileName(av))
+            ps.append("\t").append(fact().getFS().getDisplayPath(av))
               .append(", ").append(av.getClass().getSimpleName()).append('\n');
         }
         ps.append("currentlyActive: ");
@@ -520,20 +520,20 @@ public enum AppViews
             ps.append("none");
         else
             ps.append("")
-              .append(fact().getFS().getDisplayFileName(avCurrentlyActive))
+              .append(fact().getFS().getDisplayPath(avCurrentlyActive))
               .append(", ").append(avCurrentlyActive.getClass().getSimpleName());
         ps.append('\n');
         ps.append("keepMru: ");
         if(keepMru == null)
             ps.append("none");
         else
-            ps.append("").append(fact().getFS().getDisplayFileName(keepMru))
+            ps.append("").append(fact().getFS().getDisplayPath(keepMru))
               .append(", ").append(keepMru.getClass().getSimpleName());
         ps.append('\n');
         Set<ViTextView> tvSet = fact().getViTextViewSet();
         ps.append("TextViewSet: ").append(tvSet.size()).append('\n');
         for (ViTextView tv : tvSet) {
-            ps.append("\t").append(tv.getBuffer().getDisplayFileName()).append('\n');
+            ps.append("\t").append(tv.getBuffer().getDebugFileName()).append('\n');
         }
         Set<Buffer> bufSet = fact().getBufferSet();
         ps.append("BufferSet: ").append(bufSet.size()).append('\n');
@@ -541,12 +541,12 @@ public enum AppViews
             if (buf == null)
                 ps.append("null-buf").append('\n');
             else
-                ps.append("\t").append(fact().getFS().getDisplayFileName(buf))
+                ps.append("\t").append(buf.getDebugFileName())
                   .append(", share: ").append(buf.getShare()).append('\n');
         }
         ps.append("AppViewNomads: ").append(avsNomads.size()).append('\n');
         for(ViAppView av : avsNomads) {
-            ps.append("\t").append(fact().getFS().getDisplayFileName(av))
+            ps.append("\t").append(fact().getFS().getDisplayPath(av))
               .append(", ").append(av.getClass().getSimpleName()).append('\n');
         }
         return ps;

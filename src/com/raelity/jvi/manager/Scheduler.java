@@ -97,7 +97,7 @@ public class Scheduler
         dbgEditorActivation().println(INFO, () ->
                 "Activation: ViManager.SWITCHTO: "
                 + (fNewTextView ? "NEW: " : "") + cid(editor)
-                + " " + buf.getDisplayFileName() + " " + ViManager.cid(buf));
+                + " " + buf.getDebugFileName() + " " + ViManager.cid(buf));
         if (currentEditorPane != null) {
             assert currentTv != null;
             currentTv.detach();

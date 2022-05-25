@@ -289,7 +289,7 @@ public abstract class TextView implements ViTextView
         if (magicMove && G.dbgMouse.getBoolean(Level.INFO)
                 || G.dbgMouse.getBoolean(Level.FINE))
             G.dbgMouse.println(() -> "CaretMark: " + lastDot + " --> " + currDot
-                    + " " + w_buffer.getDisplayFileName());
+                    + " " + w_buffer.getDebugFileName());
         if (magicMove) {
             // The cursor was magcally moved and jVi had nothing to
             // do with it. (probably by an IDE or some such).
@@ -355,7 +355,7 @@ public abstract class TextView implements ViTextView
     @Override
     public String toString()
     {
-        String fn = getBuffer() != null ? getBuffer().getDisplayFileName() : null;
+        String fn = getBuffer() != null ? getBuffer().getDebugFileName() : null;
         return "TextView{" + fn + '}';
     }
 }

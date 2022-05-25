@@ -44,7 +44,7 @@ abstract public class abstractFS implements ViFS
         TextView win = (TextView)tv;
         StringBuilder sb = new StringBuilder();
         sb.append("\"")
-          .append(av != null ? getDisplayFileName(av) : getDisplayFileName(buf))
+          .append(av != null ? getDisplayPath(av) : getDisplayPath(buf))
           .append("\"");
         if(isModified(buf))
             sb.append(" [Modified]");
@@ -72,7 +72,7 @@ abstract public class abstractFS implements ViFS
     @Override
     public String getDisplayFileNameAndSize(ViBuffer buf) {
         StringBuilder sb = new StringBuilder();
-        sb.append("\"").append(buf.getDisplayFileName()).append("\"");
+        sb.append("\"").append(buf.getDisplayPath()).append("\"");
         sb.append(" ").append(buf.getLineCount()).append("L, ");
         sb.append(" ").append(buf.getLength()).append("C");
         return sb.toString();

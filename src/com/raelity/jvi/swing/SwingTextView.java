@@ -277,7 +277,7 @@ public abstract class SwingTextView extends TextView
             List<Action> l2 = Arrays.asList((editorPane).getActions());
             if(!l1.equals(l2))
                 LOG.log(Level.SEVERE, null, new Throwable(
-                        "different actions: " + getBuffer().getDisplayFileName()));
+                        "different actions: " + getBuffer().getDebugFileName()));
         }
 
         return editorPane.getActions();
@@ -289,7 +289,7 @@ public abstract class SwingTextView extends TextView
             EditorKit kit2 = editorPane.getUI().getEditorKit(editorPane);
             if(!kit1.equals(kit2))
                 LOG.log(Level.SEVERE, null, new Throwable(
-                        "different kit" + getBuffer().getDisplayFileName()));
+                        "different kit" + getBuffer().getDebugFileName()));
         }
 
         return editorPane.getUI().getEditorKit(editorPane);

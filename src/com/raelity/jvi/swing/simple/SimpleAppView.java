@@ -90,7 +90,7 @@ public abstract class SimpleAppView implements ViAppView
     @Override
     public String toString()
     {
-        return ViManager.getFS().getDisplayFileName(this);
+        return ViManager.getFS().getDisplayPath(this);
     }
 
 }

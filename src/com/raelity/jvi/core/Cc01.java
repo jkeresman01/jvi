@@ -566,7 +566,7 @@ public class Cc01
                 ViAppView av = l.get(i);
                 osa.println(sf("%3d %c %s", av.getWinID(),
                     av.equals(curav) ? '%' : av.equals(prev) ? '#' : ' ',
-                    factory.getFS().getDisplayFileName(av)));
+                    factory.getFS().getDisplayPath(av)));
                 i++;
             }
         }
