@@ -207,19 +207,58 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
     }
 
     /** Spin through the filemarks and unhook from buffer if found.
+     * NOTE: the closeBuf event seems to be too late occasionally;
+     * All the marks have offset 0. Use switch from tv
      */
     @Subscribe
-    public void closeBuf(ViEvent.CloseBuf ev) {
-        dbg.println(INFO, () -> "FM: " + ev);
-        Buffer buf = ev.getBuf();
+    public void leavingTv(ViEvent.SwitchFromTv ev) {
+        Buffer buf = ev.getTv().getBuffer();
+        persistBuf(buf, ev);
+    }
 
-        dbg.printf(FINEST, () -> sf("FM: closeBuf %s\n",
-                   getFS().getDebugFileName(buf)));
+    /** Spin through the filemarks and unhook from buffer if found.
+     * NOTE: In NB the closeBuf event does not have a valid doc.
+     * All the marks have offset 0. Use switch from tv
+     */
+    @Subscribe
+    public void writeBuf(ViEvent.DirtyBuf ev) {
+        if(ev.isDirty())
+            return;
+        Buffer buf = ev.getBuf();
+        persistBuf(buf, ev);
+    }
+    
+
+    /** Spin through the filemarks and unhook from buffer if found.
+     * NOTE: In NB the closeBuf event does not have a valid doc.
+     * Occasionally all the marks have offset 0. Use switch from tv and write.
+     */
+    public void closeBuf(ViEvent.CloseBuf ev) {
+        Buffer buf = ev.getBuf();
+        persistBuf(buf, ev);
+    }
+
+
+    /** Spin through the filemarks and unhook from buffer if found. */
+    private void persistBuf(Buffer buf, ViEvent ev)
+    {
+        if(filemarksImportCheck.isChange()) {
+            dbg.println(INFO, "FM: jVi filemarks imported");
+            return;
+        }
+        dbg.println(INFO, () -> sf("FM: (act:%s) %s",
+                                   buf != null ? buf.isActive() : "NONE",
+                                   ev));
+        if(buf == null)
+            return;
+
         for(Entry<String, Filemark> entry : map.entrySet()) {
             String key = entry.getKey();
             Filemark fm = entry.getValue();
             assert key.equals(fm.markName);
             checkFM(key, fm);
+            if(!buf.isActive())
+                continue;
             Filemark dumpFm = fm;
             if(ViManager.isDebugAtHome()) {
                 if(!fm.f.isAbsolute())
@@ -376,7 +415,7 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
     static void checkFM(String markName, Filemark fm) {
         if(fm == null || Boolean.FALSE)
             return;
-        if(!ViManager.isDebugAtHome())
+        if(!ViManager.isDebugAtHome() || !dbg.getBoolean())
             return;
         if(Boolean.FALSE && !markName.equals("V"))
             return;

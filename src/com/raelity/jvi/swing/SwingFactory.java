@@ -72,7 +72,9 @@ import com.raelity.jvi.swing.simple.*;
 
 import static com.raelity.jvi.core.G.dbgEditorActivation;
 import static com.raelity.jvi.core.lib.KeyDefs.VIRT;
+
 import static java.util.logging.Level.*;
+
 
 /**
  * This provides the Vi items to interface with standard swing JTextComponent.
@@ -287,7 +289,6 @@ abstract public class SwingFactory implements ViFactory
         }
         tv.attachBuffer(buf);
     }
-    
     
     private void releaseBuffer(Buffer buf)
     {

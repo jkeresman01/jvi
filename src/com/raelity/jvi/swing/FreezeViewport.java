@@ -21,6 +21,7 @@ import org.openide.util.Exceptions;
 
 import com.raelity.jvi.lib.*;
 
+import static com.raelity.jvi.manager.ViManager.eatme;
 import static com.raelity.text.TextUtil.sf;
 
 /**
@@ -44,7 +45,6 @@ public class FreezeViewport implements DocumentListener, ChangeListener
     private int nLine;
     private boolean doc_busy;
 
-    private static void eatme(Object... o) { Objects.isNull(o); }
 
     public FreezeViewport(JTextComponent ep)
     {

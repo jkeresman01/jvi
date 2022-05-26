@@ -49,10 +49,22 @@ public class PlayFS extends SimpleFS
     @Override
     public Path getPath(ViAppView av)
     {
-        Document doc = null;
         if(av.getEditor() != null)
-            doc = ((JTextComponent)av.getEditor()).getDocument();
-        return doc != null ? (Path)doc.getProperty(Document.TitleProperty) : null;
+            return getPath(((JTextComponent)av.getEditor()).getDocument());
+        return null;
+    }
+
+    public Path getPath(ViBuffer buf)
+    {
+        return getPath((Document)buf.getDocument());
+    }
+
+    private Path getPath(Document doc)
+    {
+        if(doc == null)
+            return null;
+        return (Path)doc.getProperty(Document.TitleProperty);
+
     }
 
 

@@ -25,8 +25,6 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.SystemFlavorMap;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,7 +57,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
 
 import org.openide.util.Exceptions;
 
@@ -104,7 +101,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("2.0.4.x5");
+    public static final jViVersion version = new jViVersion("2.0.4.x6");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -192,6 +189,9 @@ final public class ViManager
     /**
      * closing a Buffer. old is Buffer, new is null */
     public static final String P_CLOSE_BUF = "jViCloseBuf";
+    /**
+     * Buffer written. new is Buffer. */
+    public static final String P_DIRTY_BUF = "jViDirtyBuf";
     /**
      * A newly created window/editor pane to work with.
      * new/old are ViTextView, old may be null (first window) */
@@ -836,16 +836,17 @@ final public class ViManager
         });
     }
     
-    /*package*/ static void firePropertyChange(
-            String name, Object oldValue, Object newValue) {
-        try {
-            ViEvent ev = ViEvent.get(name, oldValue, newValue);
+    /*was: package*/
+    public static void firePropertyChange(ViEvent ev) {
             dbgEditorActivation().println(INFO, () -> "FIRE: " + ev);
             ViEvent.fire(ev);
-        } catch (Exception ex) {
-            // Bad actor, try to contain the damage
-            Exceptions.printStackTrace(ex);
-        }
+        
+    }
+    
+    /*was: package*/
+    public static void firePropertyChange(
+            String name, Object oldValue, Object newValue) {
+            firePropertyChange(ViEvent.get(name, oldValue, newValue));
         
     }
     

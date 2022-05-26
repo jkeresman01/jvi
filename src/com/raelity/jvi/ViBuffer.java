@@ -43,6 +43,8 @@ public interface ViBuffer {
     
     /** @return opaque FileObject backing this Buffer */
     public Object getDocument();
+
+    public boolean isActive();
     
     /** Replace indicated region with string */
     public void replaceString(int start, int end, String s);

@@ -27,6 +27,7 @@ import com.google.common.eventbus.SubscriberExceptionHandler;
 
 import org.openide.util.Exceptions;
 
+import com.raelity.jvi.*;
 import com.raelity.jvi.core.*;
 
 import static com.raelity.jvi.manager.ViManager.*;
@@ -61,19 +62,21 @@ import static com.raelity.jvi.manager.ViManager.*;
  * </p>
  * @author err
  */
+@SuppressWarnings("serial")
 public class ViEvent extends PropertyChangeEvent
 {
 private static final EventBus bus = new EventBus(new ExHandler());
 private static final String esource = "ViEventSource";
 
-private static class ExHandler implements SubscriberExceptionHandler {
-@Override
-public void handleException(Throwable ex, SubscriberExceptionContext ctx)
-{
-    Exceptions.printStackTrace(ex);
-}
+    private static class ExHandler implements SubscriberExceptionHandler {
+    @Override
+    @SuppressWarnings("serial")
+    public void handleException(Throwable ex, SubscriberExceptionContext ctx)
+    {
+        Exceptions.printStackTrace(ex);
+    }
 
-}
+    }
 
 public static EventBus getBus()
 {
@@ -86,30 +89,31 @@ public static void fire(ViEvent ev)
 }
 
 private ViEvent(String propertyName,
-               Object oldValue, Object newValue)
+                Object oldValue, Object newValue)
 {
     super(esource, propertyName, oldValue, newValue);
 }
 
-public static ViEvent get(String name, Object oldv, Object newv)
-{
-    ViEvent ev;
-    switch(name) {
-    case P_BOOT:            ev = new Boot(name, oldv, newv); break;
-    case P_LATE_INIT:       ev = new LateInit(name, oldv, newv); break;
-    case P_PRE_SHUTDOWN:    ev = new PreShutdown(name, oldv, newv); break;
-    case P_SHUTDOWN:        ev = new Shutdown(name, oldv, newv); break;
-    case P_OPEN_BUF:        ev = new OpenBuf(name, oldv, newv); break;
-    case P_CLOSE_BUF:       ev = new CloseBuf(name, oldv, newv); break;
-    case P_OPEN_TV:         ev = new OpenTv(name, oldv, newv); break;
-    case P_CLOSE_TV:        ev = new CloseTv(name, oldv, newv); break;
-    case P_SWITCH_FROM_TV:  ev = new SwitchFromTv(name, oldv, newv); break;
-    case P_SWITCH_TO_TV:    ev = new SwitchToTv(name, oldv, newv); break;
-    default:
-        throw new IllegalArgumentException("ViEvent.get(" + name + ")");
+    /** this is transition aid */
+    public static ViEvent get(String name, Object oldv, Object newv)
+    {
+        ViEvent ev;
+        switch(name) {
+        case P_BOOT:            ev = new Boot(name, oldv, newv); break;
+        case P_LATE_INIT:       ev = new LateInit(name, oldv, newv); break;
+        case P_PRE_SHUTDOWN:    ev = new PreShutdown(name, oldv, newv); break;
+        case P_SHUTDOWN:        ev = new Shutdown(name, oldv, newv); break;
+        case P_OPEN_BUF:        ev = new OpenBuf(name, oldv, newv); break;
+        case P_CLOSE_BUF:       ev = new CloseBuf(name, oldv, newv); break;
+        case P_OPEN_TV:         ev = new OpenTv(name, oldv, newv); break;
+        case P_CLOSE_TV:        ev = new CloseTv(name, oldv, newv); break;
+        case P_SWITCH_FROM_TV:  ev = new SwitchFromTv(name, oldv, newv); break;
+        case P_SWITCH_TO_TV:    ev = new SwitchToTv(name, oldv, newv); break;
+        default:
+                throw new IllegalArgumentException("ViEvent.get(" + name + ")");
+        }
+        return ev;
     }
-    return ev;
-}
 
     public static class Boot extends ViEvent {
     public Boot(String propertyName, Object oldValue, Object newValue)
@@ -163,6 +167,23 @@ public static ViEvent get(String name, Object oldv, Object newv)
     }
     }
 
+    /** Event when transitions dirty state */
+    public static class DirtyBuf extends ViEvent {
+    public DirtyBuf(ViBuffer buf, boolean isDirty)
+    {
+        super(P_DIRTY_BUF, !isDirty, isDirty);
+        source = buf;
+    }
+    public Buffer getBuf()
+    {
+        return (Buffer)source;
+    }
+    public Boolean isDirty()
+    {
+        return (Boolean)getNewValue();
+    }
+    }
+
     public static class OpenTv extends ViEvent {
     public OpenTv(String propertyName, Object oldValue, Object newValue)
     {
@@ -207,4 +228,16 @@ public static ViEvent get(String name, Object oldv, Object newv)
     }
     }
 
+@Override
+public String toString() {
+    String ov = ViManager.getFactory().getFS().getDisplayPath(getOldValue());
+    String nv = ViManager.getFactory().getFS().getDisplayPath(getNewValue());
+    ov = ov != null ? ov : "" + getOldValue();
+    nv = nv != null ? nv : "" + getNewValue();
+    StringBuilder sb = new StringBuilder("ViEvent$")
+            .append(getClass().getSimpleName());
+    sb.append("; old=").append(ov);
+    sb.append("; new=").append(nv);
+    return sb.append("]").toString();
+}
 }

@@ -85,6 +85,7 @@ import static java.lang.Math.abs;
 import static java.lang.Math.round;
 
 import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.manager.ViManager.eatme;
 import static com.raelity.text.TextUtil.sf;
 
 /**
@@ -102,7 +103,6 @@ public abstract class SwingTextView extends TextView
     protected static final
             Logger LOG = Logger.getLogger(SwingTextView.class.getName());
     private static int genNum; // unique/invariant window id;
-    private static void eatme(Object... o) { Objects.isNull(o); }
 
     protected static Map<String,Action> actionMap
             = new HashMap<>();

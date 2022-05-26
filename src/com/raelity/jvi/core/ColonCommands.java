@@ -30,7 +30,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -51,6 +50,7 @@ import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.Util.isdigit;
 import static com.raelity.jvi.core.Util.vim_str2nr;
 import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.manager.ViManager.eatme;
 
 /**
  * This class handles registration, command input, parsing, dispatching
@@ -83,7 +83,6 @@ public class ColonCommands
     private ColonCommands()
     {
     }
-    private static void eatme(Object... o) { Objects.isNull(o); }
     static { eatme(LOG); }
 
     private static ViCmdEntry colonCommandEntry;

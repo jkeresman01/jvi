@@ -32,7 +32,6 @@ import java.io.OutputStreamWriter;
 import java.text.CharacterIterator;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -53,6 +52,7 @@ import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
 
 import static com.raelity.jvi.core.Util.*;
+import static com.raelity.jvi.manager.ViManager.eatme;
 import static com.raelity.text.TextUtil.*;
 
 
@@ -87,7 +87,6 @@ private static void init()
     ColonCommands.register("!", "!", ACTION_bang,
                            EnumSet.of(CcFlag.XFILE, CcFlag.NO_PARSE));
 }
-private static void eatme(Object o) { Objects.isNull(o); }
 
 
 static String lastBangCommand = null;

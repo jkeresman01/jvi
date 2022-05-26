@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -80,6 +79,7 @@ import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Constants.NF.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
+import static com.raelity.jvi.manager.ViManager.eatme;
 import static com.raelity.text.TextUtil.sf;
 
 // DONE lots of \n in this file
@@ -94,7 +94,6 @@ public class Misc implements ClipboardOwner {
     private static PreferencesImportMonitor commandsImportCheck;
 
     private Misc() {}
-    private static void eatme(Object... o) { Objects.isNull(o); }
 
     //////////////////////////////////////////////////////////////////
     //

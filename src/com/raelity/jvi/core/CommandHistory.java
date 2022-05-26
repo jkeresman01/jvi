@@ -53,6 +53,7 @@ import static com.raelity.jvi.core.Util.strnicmp;
 import static com.raelity.jvi.core.Util.vim_str2nr;
 import static com.raelity.jvi.core.Util.vim_strchr;
 import static com.raelity.jvi.core.lib.Constants.NUL;
+import static com.raelity.jvi.manager.ViManager.eatme;
 import static com.raelity.text.TextUtil.sf;
 import static com.raelity.jvi.manager.ViManager.getFactory;
 
@@ -85,7 +86,6 @@ private static void init() {
     Options.addPropertyChangeListenerSET(
             Options.history, (evt) -> historySizeChange(evt));
 }
-private static void eatme(Object o) { Objects.isNull(o); }
 
 private HistoryContext history;
 final String commonName;

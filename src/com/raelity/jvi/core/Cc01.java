@@ -33,7 +33,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -67,6 +66,7 @@ import static java.lang.Math.min;
 import static com.raelity.jvi.core.Util.beep_flush;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.FilePath.*;
+import static com.raelity.jvi.manager.ViManager.eatme;
 import static com.raelity.text.TextUtil.sf;
 
 /**
@@ -76,7 +76,6 @@ import static com.raelity.text.TextUtil.sf;
 public class Cc01
 {
     private static final Logger LOG = Logger.getLogger(Cc01.class.getName());
-    private static void eatme(Object... o) { Objects.isNull(o); }
 
     @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=10)
     public static class Init implements ViInitialization

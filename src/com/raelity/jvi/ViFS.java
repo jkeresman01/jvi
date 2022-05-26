@@ -34,10 +34,10 @@ public interface ViFS
 // May return null
 public Path getPath(ViAppView av);
 
-public String getDisplayPath( ViAppView av );
 
-// the buf version is like a backup
-public String getDisplayPath( ViBuffer buf );
+// Only av, buf, tv need be supported.
+// Should be 'av', the rest are backups.
+public String getDisplayPath(Object o);
 
 // Have this here, rather than having caller handle it,
 // is so that 'shortmess' can be implemented more easily in the future.

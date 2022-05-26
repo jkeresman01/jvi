@@ -49,7 +49,20 @@ abstract public class SimpleFS extends abstractFS
     }
 
     @Override
-    public String getDisplayPath(ViAppView av)
+    public String getDisplayPath(Object o)
+    {
+        if(o instanceof ViAppView)
+            return getDisplayPath((ViAppView) o);
+        else if(o instanceof ViBuffer)
+            return getDisplayPath((ViBuffer) o);
+        else if(o instanceof ViTextView)
+            return getDisplayPath(((ViTextView) o).getBuffer());
+        else
+            return null;
+    }
+
+
+    private String getDisplayPath(ViAppView av)
     {
         Path path = getPath(av);
         if(path != null)
@@ -67,20 +80,7 @@ abstract public class SimpleFS extends abstractFS
         return "file_name_unkown_from_appview";
     }
 
-    @Override
-    public String getDebugFileName(Component c)
-    {
-        if(c instanceof JTextComponent) {
-            JTextComponent ed = (JTextComponent)c;
-            ViAppView av = ViManager.getFactory().getAppView(ed);
-            if(av != null)
-                return getDisplayPath(av);
-        }
-        return c != null ? c.getClass().getSimpleName() : "NULL";
-    }
-
-    @Override
-    public String getDisplayPath(ViBuffer buf)
+    private String getDisplayPath(ViBuffer buf)
     {
         String fname = null;
         Document doc = (Document)buf.getDocument();
@@ -91,6 +91,18 @@ abstract public class SimpleFS extends abstractFS
         }
         assert fname != null;
         return fname;
+    }
+
+    @Override
+    public String getDebugFileName(Component c)
+    {
+        if(c instanceof JTextComponent) {
+            JTextComponent ed = (JTextComponent)c;
+            ViAppView av = ViManager.getFactory().getAppView(ed);
+            if(av != null)
+                return getDisplayPath(av);
+        }
+        return c != null ? c.getClass().getSimpleName() : "NULL";
     }
 
 }
