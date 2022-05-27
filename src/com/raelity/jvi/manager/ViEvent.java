@@ -70,9 +70,11 @@ private static final String esource = "ViEventSource";
 
     private static class ExHandler implements SubscriberExceptionHandler {
     @Override
-    @SuppressWarnings("serial")
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public void handleException(Throwable ex, SubscriberExceptionContext ctx)
     {
+        System.err.println("ViEvent: handleException:");
+        System.err.println(ctx.toString());
         Exceptions.printStackTrace(ex);
     }
 
@@ -225,6 +227,14 @@ private ViEvent(String propertyName,
     public TextView getTv()
     {
         return (TextView)getNewValue();
+    }
+    }
+
+    /** Event from Normal:processInputChar */
+    public static class ProcessInput extends ViEvent {
+    public ProcessInput()
+    {
+        super(P_PROCESS_INPUT, null, null);
     }
     }
 

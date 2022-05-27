@@ -49,7 +49,8 @@ import static com.raelity.text.TextUtil.sf;
  *
  * @author erra
  */
-public abstract class Buffer implements ViBuffer, ViOptionBag {
+public abstract class Buffer implements ViBuffer, ViOptionBag
+{
     private static final Logger LOG = Logger.getLogger(Buffer.class.getName());
 
     /** Each buffer gets a unique and invariant number */

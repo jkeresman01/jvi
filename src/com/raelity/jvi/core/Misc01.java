@@ -20,9 +20,12 @@
 
 package com.raelity.jvi.core;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
+
+import com.google.common.eventbus.Subscribe;
 
 import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViFPOS;
@@ -31,8 +34,7 @@ import com.raelity.jvi.ViTextView.Orientation;
 import com.raelity.jvi.ViTextView.SIZOP;
 import com.raelity.jvi.ViWindowNavigator;
 import com.raelity.jvi.lib.MutableInt;
-import com.raelity.jvi.manager.AppViews;
-import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.manager.*;
 
 import static com.raelity.jvi.core.Edit.*;
 import static com.raelity.jvi.core.Misc.*;
@@ -752,7 +754,7 @@ public class Misc01
     static void win_split(Orientation orientation, int n, ViAppView av)
     {
         if(av == null)
-            TextView.setExpectedNewActivation(
+            setExpectedNewActivation(
                     G.curbuf.getFile(), G.curwin.w_cursor.getOffset());
         Direction dir = orientation == Orientation.LEFT_RIGHT
                     ? (G.p_spr ? Direction.RIGHT : Direction.LEFT)
@@ -789,9 +791,49 @@ public class Misc01
 
     static void win_clone()
     {
-        TextView.setExpectedNewActivation(
+        setExpectedNewActivation(
                 G.curbuf.getFile(), G.curwin.w_cursor.getOffset());
         G.curwin.win_clone();
+    }
+
+    /**
+     * Use this when the next text view activation is for a new text view.
+     * Sets the line number for the newly opened window.
+     * If next activation doesn't meet the conditions, then nothing happens.
+     * spit/clone.
+     */
+
+    private static void setExpectedNewActivation(File fi, int offset)
+    {
+        ViEvent.getBus().register(new NextNewActivationOffset(fi, offset));
+    }
+   
+    /** Newly opened TV set the position; after split/clone.
+     */
+    private static class NextNewActivationOffset
+    {
+    private final File fi;
+    private final int offset;
+    
+    public NextNewActivationOffset(File fi, int offset)
+    {
+        this.fi = fi;
+        this.offset = offset;
+    }
+    
+    @Subscribe
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
+    void check(ViEvent.OpenTv ev) {
+        if(fi.equals(G.curbuf.getFile()))
+            G.curwin.w_cursor.set(offset);
+        ViEvent.getBus().unregister(this);
+    }
+
+    // Get rid of this if it's still around.
+    @Subscribe
+    void clear(ViEvent.SwitchToTv ev) {
+        ViEvent.getBus().unregister(this);
+    }
     }
 
     private static boolean win_jump(Direction direction, int n)

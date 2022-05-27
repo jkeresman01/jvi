@@ -71,8 +71,21 @@ class MarkOps
 
     // private static List<String> oldPersistedBufferMarks = new ArrayList<>();
 
-    /** This constant indicates mark is in other file. */
-    final static FPOS otherFile = new FPOS();
+    /** This constant indicates mark is in other file. o is the FM. */
+    final static SpecialMark otherFile = new SpecialMark();
+    final static SpecialMark errorMark = new SpecialMark();
+        /** This class indicates special case situation. */
+        static class SpecialMark extends FPOS implements ViMark {
+        ViFPOS o; // to embed some kind of mark
+        int flag; // and some other info
+
+        @Override public int getLine() { return flag; }
+        @Override public int getOffset() { return -1; } // equals fail
+
+        @Override public void setMark(ViFPOS fpos) { }
+        @Override public void invalidate() { }
+        @Override public int getOriginalColumnDelta() { return 0; }
+        }
 
     private static PreferencesImportMonitor marksImportCheck;
     private static BufferMarksPersist.EventHandlers bufferMarkPersistINSTANCE;
@@ -275,7 +288,7 @@ class MarkOps
      *	  NULL if there is no mark called 'c'.
      *	  -1 if mark is in other file (only if changefile is TRUE)
      */
-    static ViMark getmark(char c, boolean changefile)
+    static ViMark getmark(char c, boolean changefileOK)
     {
         ViMark m = null;
         if (c == '\'' || c == '`') {
@@ -315,18 +328,32 @@ class MarkOps
             m = G.curbuf.b_namedm[i];
         } else if(Util.isupper(c) /* || Util.isdigit(c) */) { // named file mark
             Filemark fm = Filemark.get(String.valueOf(c));
-            if(fm != null) {
-                File f = G.curbuf.getFile();
-                if(changefile || f != null && f.equals(fm.getFile()))
-                    // set force to true so non exist files are opened (as vim)
-                    getFactory().getFS().edit(fm.getFile().toPath(), true, fm);
-                else
-                    fm = null;
+            File f = G.curbuf.getFile();
+            if(fm != null && f != null) {
+                ViMark result;
+                if(!f.equals(fm.getFile())) {
+                    if(changefileOK) {
+                        boolean ok = getFactory().getFS()
+                                .edit(fm.getFile().toPath(), false, null);
+                        if(ok) {
+                            otherFile.o = fm; // started transition to fm
+                            result = otherFile;
+                        } else {
+                            errorMark.flag = -1; // error, can't open file
+                            result = errorMark;
+                        }
+                    } else {
+                        errorMark.flag = 0; // fm in different file, !changefileOK
+                        result = errorMark;
+                    }
+                } else
+                    // in same file, treat fm like a regular mark
+                    result = fm;
+
+                // NOTE: after getFS.edit() in progress switch to file.
+                //m = fm;
+                m = result;
             }
-            // NOTE: work done with returned mark is dubious.
-            // although doc is available, after getFS.edit()
-            // the TopComponent has not been switched to.
-            m = fm;
         }
         return m;
     }
@@ -356,7 +383,13 @@ class MarkOps
             msg = e_umark;
         } else if(!mark.isValid()) {
             msg = e_marknotset;
-        }else {
+        } else if(mark.getLine() <= 0) {
+            // lnum is negative if mark is in another file can can't get that
+            // file, error message already give then.
+            if(mark.getLine() < 0)
+                return FAIL;
+            msg = e_marknotset;
+        } else {
             try {
                 if (mark.getLine() > G.curbuf.getLineCount()) {
                     msg = e_markinval;

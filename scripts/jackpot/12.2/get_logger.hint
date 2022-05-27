@@ -1,0 +1,13 @@
+<?
+import org.apache.logging.log4j.LogManager;
+import com.nqadmin.swingset.utils.SSUtils;
+?>
+
+"getLogger()":
+   LogManager.getLogger()
+=> SSUtils.getLogger()
+;;
+
+"getLogger(args...)":
+   LogManager.getLogger($arg, $rest$)
+;;

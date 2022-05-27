@@ -31,6 +31,8 @@ import java.text.CharacterIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.common.eventbus.Subscribe;
+
 import com.raelity.jvi.*;
 import com.raelity.jvi.ViTextView.DIR;
 import com.raelity.jvi.ViTextView.EDGE;
@@ -67,6 +69,7 @@ import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.core.lib.Constants.FDO.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
+import static com.raelity.jvi.manager.ViManager.eatme;
 import static com.raelity.jvi.manager.ViManager.getFactory;
 
 /**
@@ -84,7 +87,8 @@ import static com.raelity.jvi.manager.ViManager.getFactory;
  * <br/>v_*(): functions called to handle Visual mode commands.
  */
 
-public class Normal {
+public class Normal
+{
   private static final Logger LOG = Logger.getLogger(Normal.class.getName());
 
   // for normal_cmd() use, stuff that was declared static in the function
@@ -158,8 +162,13 @@ public class Normal {
    * </p>
    */
 
+  static boolean requestProcessInputEvent;
   static public void processInputChar(char c, boolean toplevel) {
     try {
+      if(requestProcessInputEvent) {
+        ViManager.firePropertyChange(new ViEvent.ProcessInput());
+        requestProcessInputEvent = false;
+      }
       if(editBusy) {
         // NEEDSWORK: if exception from edit, turn edit off and finishupEdit
         Edit.edit(c, false, 0);
@@ -539,6 +548,7 @@ normal_end: {
       msg_didout = false;    /* don't scroll screen up for normal command */
       msg_col = 0;
       old_pos = G.curwin.w_cursor.copy();/* remember cursor was */
+      eatme(old_pos);
 
       /*
        * Generally speaking, every command below should either clear any pending
@@ -1249,7 +1259,7 @@ normal_end: {
 
         // if we didn't start or finish an operator, reset oap.regname;
         // unless we need it later.
-        if (!G.finish_op && oap.op_type == 0 &&
+        if (!G.finish_op && oap.op_type == OP_NOP &&
             vim_strchr("\"DCYSsXx.", 0, ca.cmdchar) < 0)
           oap.regname = 0;
 
@@ -2222,6 +2232,7 @@ normal_end: {
    */
   static private int nv_screengo(OPARG oap, DIR dir, int dist)
   {
+    eatme(oap);
     if(dist == 0)
       dist = 1;
     ViFPOS fpos = G.curwin.w_cursor.copy();
@@ -2415,6 +2426,7 @@ normal_end: {
     boolean change_line = false;
     int top_view_line;
 
+    eatme(change_line);
     if(cap.count0 != 0 && cap.count0 != target_view_line) {
       MarkOps.setpcmark();
       if(cap.count0 > G.curbuf.getLineCount()) {
@@ -2560,6 +2572,7 @@ normal_end: {
   static private void nv_ident (CMDARG cap, StringBuilder searchp)
                                throws NotSupportedException
   {
+    eatme(searchp);
     CharacterIterator     ptrSeg = null;
     int		n = 0;		// init for GCC
     char	cmdchar;
@@ -2570,6 +2583,7 @@ normal_end: {
     
     MutableInt  mi = new MutableInt(0);
     boolean     fDoingSearch = false;
+    eatme(fDoingSearch);
     StringBuilder sb = new StringBuilder();
 
 
@@ -2955,6 +2969,7 @@ normal_end: {
   static private void nv_search(CMDARG cap,
                                 StringBuilder searchp,
                                 boolean dont_set_mark) {
+    eatme(searchp);
     // NOTE: in newer vim, nv_search does a small dance,
     //       then calls normal_search.
     
@@ -2967,6 +2982,7 @@ normal_end: {
                         assert cap.nchar == K_X_INCR_SEARCH_DONE
                                || cap.nchar == K_X_SEARCH_CANCEL
                                || cap.nchar == K_X_SEARCH_FINISH;
+    eatme(searchp);
 
     Options.getDebugOption(Options.dbgSearch)
             .printf("SEARCH: nv_search_finish: %x\n", (int)cap.nchar);
@@ -3694,40 +3710,54 @@ nv_brackets(CMDARG cap, int dir)
   /**
    * Handle "'" and "`" commands.
    */
-  static private void nv_gomark(CMDARG cap, boolean flag) {
+  static private void nv_gomark(CMDARG cap, boolean jumpBL) {
     ViMark	pos;
     ViFPOS old_cursor = G.curwin.w_cursor.copy();
     boolean old_KeyTyped = G.KeyTyped;
 
-    pos = MarkOps.getmark(cap.nchar, (cap.oap.op_type == OP_NOP));
+    pos = getmark(cap.nchar, (cap.oap.op_type == OP_NOP));
     //if (pos == MarkOps.otherFile)
-    if (pos instanceof Filemark)
-    {	    /* jumped to other file */
-      // In NB we have started the change to another file,
-      // and NB has a variety of things to finish, like activation, folding.
-      // Try to do the fixup later. Verify some things are as expected.
-      // Folding still interferes with this.
+    if (pos == otherFile) {
+      // Jumped to another textview or evan a non-open file,
+      // switch is in progress. Capture enough info to complete
+      // the operation through an event after switch to other file.
 
-      String targetFileName = ((Filemark)pos).getFile().getAbsolutePath();
-      // Note: observationally, 2 is required for things to settle.
-      // This gets us past activation.
-      ViManager.nInvokeLater("nv_gomark", 2, () -> {
-        File f;
-        if(G.curwin != null && (f = G.curwin.getBuffer().getFile()) != null) {
-          if(targetFileName.equals(f.getAbsolutePath())) {
-            if (flag) {
+      ViMark fmpos = (ViMark)otherFile.o;
+      File targetFile = ((Filemark)fmpos).getFile();
+      boolean isOP_NOP = cap.oap.op_type == OP_NOP;
+
+      requestProcessInputEvent = true;
+      ViEvent.getBus().register(new Object()
+      {
+        @Subscribe public void nv_gomark_filemark_finish(ViEvent.SwitchToTv ev)
+        {
+          ViEvent.getBus().unregister(this);
+          if(targetFile.equals(G.curbuf.getFile())) {
+            G.curwin.w_cursor.set(fmpos);
+            if (jumpBL) {
               check_cursor_lnumBeginline(BL_WHITE | BL_FIX);
               // Edit.beginline(BL_WHITE | BL_FIX);
             } else {
               adjust_cursor();
             }
+            nv_gomark_check_fold_open(isOP_NOP, fmpos, old_cursor, old_KeyTyped);
           }
         }
+        @Subscribe public void stopChecking(ViEvent.ProcessInput ev)
+        { ViEvent.getBus().unregister(this); }
       });
-    } else {
-      nv_cursormark(cap, flag, pos);
-    }
-    if (cap.oap.op_type == OP_NOP
+      return;
+    } else
+      nv_cursormark(cap, jumpBL, pos);
+    nv_gomark_check_fold_open(cap.oap.op_type == OP_NOP,
+                              pos, old_cursor, old_KeyTyped);
+  }
+  private static void nv_gomark_check_fold_open(boolean isOP_NOP,
+                                                ViMark pos,
+                                                ViFPOS old_cursor,
+                                                boolean old_KeyTyped)
+  {
+    if (isOP_NOP
 	    && pos != null && MarkOps.check_mark(pos, false) != FAIL
 	    && (pos instanceof Filemark || !equalpos(old_cursor, pos))
 	    && G.p_fdo.contains(FDO_MARK)
@@ -4280,6 +4310,7 @@ nv_brackets(CMDARG cap, int dir)
   {
 
     ViFPOS fpos = G.curwin.w_cursor;
+    eatme(fpos);
     if (!checkclearopq(cap.oap)) {
       // if (u_save((curwin.w_cursor.lnum - (cap.cmdchar == 'O' ? 1 : 0)) .....
       // NEEDSWORK: would like the beginUndo only if actually making changes
@@ -4762,6 +4793,7 @@ nv_brackets(CMDARG cap, int dir)
   /**
    * "P", "gP", "p" and "gp" commands.
    */
+  @SuppressWarnings("UseSpecificCatch")
   static private void nv_put(final CMDARG cap) {
     
     if (cap.oap.op_type != OP_NOP) {
@@ -4772,6 +4804,7 @@ nv_brackets(CMDARG cap, int dir)
         char regname = 0;
         Yankreg reg1 = null, reg2 = null;
         boolean empty = false;
+        eatme(empty);
         boolean was_visual = false;
         int dir;
         int flags = 0;
@@ -4931,7 +4964,7 @@ nv_brackets(CMDARG cap, int dir)
   static int	resel_VIsual_col;	/* nr of cols or end col */
 
 
-  static private  void	nv_normal (CMDARG cap) {}
+  static private  void	nv_normal (CMDARG cap) {eatme(cap);}
   static void do_exmode() {}
   static void update_screen(boolean flag) {}
   static void update_screen(int flag) {}

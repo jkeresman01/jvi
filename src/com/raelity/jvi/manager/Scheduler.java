@@ -30,7 +30,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.LinkedList;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,7 +61,6 @@ public class Scheduler
     private static boolean hasSelection;
     private static final Queue<ActionListener> keyStrokeTodo
             = new LinkedList<>();
-    private static void eatme(Object... o) { Objects.isNull(o); }
 
     private Scheduler()
     {
@@ -104,6 +102,7 @@ public class Scheduler
         }
 
         currentEditorPane = editor;
+        // change curwin/curbuf
         getCore().switchTo(textView, buf, false);
         getCore().resetCommand(false); // Means something first time window switched to
         buf.activateOptions(textView);
@@ -113,17 +112,22 @@ public class Scheduler
         ViAppView av = fact().getAppView(editor);
         AppViews.activate(av);
 
+        // all switched up, notify 
         if (fNewTextView) {
-            firePropertyChange(P_OPEN_TV, currentTv, textView);
             editor.addMouseListener(mouseListener);
             editor.addMouseMotionListener(mouseMotionListener);
+            firePropertyChange(P_OPEN_TV, currentTv, textView);
         }
         if (fNewBuffer)
             firePropertyChange(P_OPEN_BUF,
                                currentTv == null ? null : currentTv.getBuffer(),
                                textView.getBuffer());
+
         firePropertyChange(P_SWITCH_TO_TV, currentTv, textView);
 
+        // This final switchTo does some visual mode display stuff,
+        // curbuf/curwin are already the new values.
+        // But maybe it should be before the event notification?
         getCore().switchTo(textView, buf, true);
     }
 

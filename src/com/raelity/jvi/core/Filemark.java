@@ -413,7 +413,7 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
 
     /** debug ... */
     static void checkFM(String markName, Filemark fm) {
-        if(fm == null || Boolean.FALSE)
+        if(fm == null)
             return;
         if(!ViManager.isDebugAtHome() || !dbg.getBoolean())
             return;

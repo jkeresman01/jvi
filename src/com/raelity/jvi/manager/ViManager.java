@@ -101,7 +101,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("2.0.4.x6");
+    public static final jViVersion version = new jViVersion("2.0.4.x7");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -207,6 +207,11 @@ final public class ViManager
      * after the switch, so the old tv is not really usable.
      * This property is the last to change when related P_OPEN_WIN, P_CLOSE_WIN */
     public static final String P_SWITCH_TO_TV = "jViSwitchWin";
+    /**
+     * An input character is starting process;
+     * see Normal.processInputChar() for the special usage.
+     */
+    public static final String P_PROCESS_INPUT = "jViProcessInput";
 
     // NEEDSWRK: is a property needed for switch_from, to pick up active tv?
     // NEEDSWORK: property for AppWindow open/close?

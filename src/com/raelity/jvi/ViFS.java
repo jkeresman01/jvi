@@ -107,18 +107,19 @@ public boolean writeAll( boolean force );
 public boolean edit(ViAppView av, boolean force);
 
 /**
- * Edit the specified file. The platform may need to create an edtior view
- * and read the file into the editor.
- *
- * The fpos may be null in which case typically the cursor is positioned
- * at the first position in the file. The fpos may be out of bounds, in
- * which case something in the neighborhood can be selected.
+ * Edit the specified file.The platform may need to create an edtior view
+ and read the file into the editor. The fpos may be null in which case typically the cursor is positioned
+ at the first position in the file. The fpos may be out of bounds, in
+ which case something in the neighborhood can be selected.
  *
  * @param file
  * @param force If a '!' was used with the command, then force is true.
  * @param fpos initial cursor position, may be null.
+ * @return true if edit started (may not finish). If false, msg was output.
  */
-public void edit(Path file, boolean force, ViFPOS fpos);
+public boolean edit(Path file, boolean force, ViFPOS fpos);
+
+//public boolean open(Path file, boolean force, ViFPOS fpos);
 
 
 } // end com.raelity.jvi.ViFS

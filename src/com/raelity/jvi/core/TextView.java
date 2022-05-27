@@ -53,47 +53,7 @@ public abstract class TextView implements ViTextView
         @Override
         public void init()
         {
-            nnao = new NextNewActivationOffset();
-            ViEvent.getBus().register(nnao);
         }
-    }
-
-    private static NextNewActivationOffset nnao;
-
-    /**
-     * Use this to signal that the next activation should be for a
-     * new text view. Sets the line number for the newly opened window.
-     * If next activation doesn't meet the conditions, then nothing happens.
-     * spit/clone.
-     */
-
-    static void setExpectedNewActivation(File fi, int offset)
-    {
-        nnao.fi = fi;
-        nnao.offset = offset;
-    }
-
-    /** Newly opened TV set the position; after split/clone.
-     * TODO: Does it matter if it's new? Just use swithToTv? */
-    private static class NextNewActivationOffset
-    {
-    private File fi; // null mean not pending
-    private int offset;
-
-    @Subscribe
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
-    void check(ViEvent.OpenTv ev) {
-        if(fi != null && fi.equals(G.curbuf.getFile())) {
-            System.err.println("NextNewActivationOffset" + ev + offset);
-            G.curwin.w_cursor.set(offset);
-            fi = null;
-        }
-    }
-
-    @Subscribe
-    void clear(ViEvent.SwitchToTv ev) {
-        fi = null;
-    }
     }
 
 

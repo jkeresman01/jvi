@@ -122,9 +122,10 @@ public class PlayFS extends SimpleFS
 
 
     @Override
-    public void edit(Path f, boolean force, ViFPOS fpos)
+    public boolean edit(Path f, boolean force, ViFPOS fpos)
     {
         Msg.emsg("edit(File{" + f + "}, force, fpos) not implemented");
+        return false;
     }
 
 
