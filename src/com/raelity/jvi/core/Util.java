@@ -317,7 +317,6 @@ public class Util {
  * If "len" is not null, the length of the number in characters is returned.
  * If "nptr" is not null, the signed result is returned in it.
  * If "unptr" is not null, the unsigned result is returned in it.
- * If "unptr" is not null, the unsigned result is returned in it.
  * If "dooct" is non-zero recognize octal numbers, when > 1 always assume
  * octal number.
  * If "dohex" is non-zero recognize hex numbers, when > 1 always assume
@@ -423,15 +422,42 @@ vim_str2nr(MySegment seg, int start,
 	unptr.setValue(un);//*unptr = un;
 }
 
-static void
-vim_str2nr(String str, int start,
-           MutableInt hexp, MutableInt len,
-           int dooct, int dohex,
-           MutableInt nptr, MutableInt unptr)
+/**
+ * Simplified version: parses a decimal number, return an int,
+ * advance segment past parsed characters.
+ * MIN_VALUE returned if char not a number, can also check if segments
+ * index has moved.
+ * @param seg
+ * @return parsed integer, Integer.MIN_VALUE if chars not a number
+ */
+static int
+vim_str2nr(StringSegment seg)
 {
-  StringSegment seg = new StringSegment(str);
-  vim_str2nr(seg, start, hexp, len, dooct, dohex, nptr, unptr);
+  MutableInt p_len = new MutableInt();
+  MutableInt p_num = new MutableInt();
+  int start_parse_idx = seg.getIndex();
+  int result = Integer.MIN_VALUE;
+
+  char tchar = seg.current();
+  vim_str2nr(seg, start_parse_idx, null, p_len, 0, 0, p_num, null);
+    // if only '-', then not a number
+    if(!(tchar == '-' && p_len.getValue() == 1)) {
+      seg.setIndex(start_parse_idx + p_len.getValue());
+      result = p_num.getValue();
+    }
+
+  return result;
 }
+
+//static void
+//vim_str2nr(String str, int start,
+//           MutableInt hexp, MutableInt len,
+//           int dooct, int dohex,
+//           MutableInt nptr, MutableInt unptr)
+//{
+//  StringSegment seg = new StringSegment(str);
+//  vim_str2nr(seg, start, hexp, len, dooct, dohex, nptr, unptr);
+//}
 
 /**
  * Return the value of a single hex character.

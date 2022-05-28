@@ -104,7 +104,7 @@ public class Scheduler
         currentEditorPane = editor;
         // change curwin/curbuf
         getCore().switchTo(textView, buf, false);
-        getCore().resetCommand(false); // Means something first time window switched to
+        getCore().resetCommand(false); // fresh start in Normal process input
         buf.activateOptions(textView);
         textView.activateOptions(textView);
         setHasSelection(); // a HACK

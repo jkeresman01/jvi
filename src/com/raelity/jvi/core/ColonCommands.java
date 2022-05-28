@@ -537,6 +537,7 @@ static StringBuilder expand_filename(StringSegment cmd,
             appendit = false;
             cmd.next(); // a possible modifier
             
+            int parse_idx = cmd.getIndex();
             int av_idx = 0; // assume '%'
             Path path = null;
             String estr = null;
@@ -545,19 +546,9 @@ static StringBuilder expand_filename(StringSegment cmd,
                 av_idx = -1; // assume only entered '#'
                 char tchar = cmd.current();
                 if(tchar == '-' || isdigit(tchar)) {
-                    int number_idx = cmd.getIndex();
-                    MutableInt p_len = new MutableInt();
-                    MutableInt p_num = new MutableInt();
-                    vim_str2nr(cmd, number_idx, null,
-                               p_len, 0, 0, p_num, null);
-                    // if only '-', then not a number
-                    if(!(tchar == '-' && p_len.getValue() == 1)) {
-                        cmd.setIndex(number_idx + p_len.getValue());
-                        av_idx = p_num.getValue();
-                    }
-                    // grab the string now (easier debug)
-                    // -1 to include the '#'
-                    estr = cmd.substring(number_idx - 1, cmd.getIndex());
+                    int tint = vim_str2nr(cmd);
+                    if(cmd.getIndex() != parse_idx)
+                        av_idx = tint;
                 }
             }
             
@@ -566,7 +557,8 @@ static StringBuilder expand_filename(StringSegment cmd,
                 path = ViManager.getFactory().getFS().getPath(av);
             if(path == null) {
                 if(estr == null)
-                    estr = String.valueOf(c);
+                    // -1 to include the '%'/'#'
+                    estr = cmd.substring(parse_idx - 1, cmd.getIndex());
                 Msg.emsg("No file name to substitue for '%s'", estr);
                 return null;
             }
@@ -576,6 +568,7 @@ static StringBuilder expand_filename(StringSegment cmd,
             cmd.previous(); // the last char handled
             sb.append(fnamep.getValue().toString());
             break;
+
 
         default:
                 break;

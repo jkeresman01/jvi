@@ -59,10 +59,12 @@ public abstract class Buffer implements ViBuffer, ViOptionBag
     private boolean didFirstInit;
     
     private int share; // the number of text views sharing this buffer
-    public int getShare() { return share; }
+    final public int getShare() { return share; }
+    final public boolean singleShare() { return share == 1; }
+    /** if override, must call super */
     public void addShare() { share++; }
+    /** if override, must call super */
     public void removeShare() { share--; }
-    public boolean singleShare() { return share == 1; }
     
     /** Creates a new instance of Buffer, initialize values from Options.
      * NOTE: tv is not completely "constructed".
@@ -119,6 +121,12 @@ public abstract class Buffer implements ViBuffer, ViOptionBag
         // modeline
         //
         Options.processModelines();
+    }
+
+    @Override
+    public boolean isActive()
+    {
+        return getShare() > 0;
     }
 
     @Override

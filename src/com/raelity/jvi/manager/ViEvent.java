@@ -184,6 +184,13 @@ private ViEvent(String propertyName,
     {
         return (Boolean)getNewValue();
     }
+    
+    @Override
+    String customEventInfo()
+    {
+        return "; " + ViManager.getFactory().getFS().getDisplayPath(getBuf());
+    }
+                
     }
 
     public static class OpenTv extends ViEvent {
@@ -238,8 +245,14 @@ private ViEvent(String propertyName,
     }
     }
 
+String customEventInfo()
+{
+    return "";
+}
+
 @Override
-public String toString() {
+public String toString()
+{
     String ov = ViManager.getFactory().getFS().getDisplayPath(getOldValue());
     String nv = ViManager.getFactory().getFS().getDisplayPath(getNewValue());
     ov = ov != null ? ov : "" + getOldValue();
@@ -248,6 +261,6 @@ public String toString() {
             .append(getClass().getSimpleName());
     sb.append("; old=").append(ov);
     sb.append("; new=").append(nv);
-    return sb.append("]").toString();
+    return sb.append(customEventInfo()).toString();
 }
 }

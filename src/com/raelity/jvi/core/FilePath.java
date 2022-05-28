@@ -163,8 +163,8 @@ private static Path getCheckPathFS(String s)
  */
 public static Path getVimPath(Path _path)
 {
-    // In vim, doing: ":e ~/play/../foobar" doesn't normalize.
-    // Sigh, getVimPath *does* normalize.
+    // In vim, doing: ":e ~/play/../foobar" doesn't normalize; sigh.
+    // getVimPath *does* normalize.
 
     // start with an absolute path
     Path path = getAbsolutePath(_path).normalize();
