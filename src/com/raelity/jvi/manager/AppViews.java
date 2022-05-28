@@ -111,7 +111,32 @@ public enum AppViews
     }
 
     /**
-     * The application invokes this whenever a file becomes selected
+     * The application invokes this whenever a file becomes active
+     * in the specified container. Typically, by this time activate
+     * has been called from the scheduler, and this a no-op.
+     * It sets current av active if the scheduler agrees.
+     * <p>
+     * This is needed because the application can invoke deactivate on current,
+     * and the scheduler does not change it's concept of current.
+     * </p>
+     * 
+     * FROM: NB-module
+     * 
+     * @param appView AppView that is getting focus for editing.
+     * Editor may be null, may be a nomad.
+     */
+    public static void activateCurrent(ViAppView av)
+    {
+        // Only do anything if this av is already first in MRU list
+        if (hasFact()
+                && Scheduler.getCurrentEditor() == av.getEditor()
+                && !avsMRU.isEmpty() && avsMRU.get(0).equals(av)
+                && avCurrentlyActive == null)
+            avCurrentlyActive = av;
+    }
+
+    /**
+     * The scheduler invokes this whenever a file becomes selected
      * in the specified container. This also serves as an open.
      * 
      * FROM: Scheduler

@@ -58,6 +58,8 @@ import java.util.Objects;
 
 import javax.swing.JOptionPane;
 
+import com.google.common.eventbus.Subscribe;
+
 import org.openide.util.Exceptions;
 
 import com.raelity.jvi.ViOutputStream.COLOR;
@@ -101,7 +103,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("2.0.4.x8");
+    public static final jViVersion version = new jViVersion("2.0.5.x1");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -493,6 +495,14 @@ final public class ViManager
                                               "random message...",
                                               "Random Title",
                                               JOptionPane.ERROR_MESSAGE);
+                break;
+            case 4:
+                ViEvent.getBus().register(new Object() {
+                @Subscribe public void doit(ViEvent.ProcessInput ev) {
+                    ViEvent.getBus().unregister(this);
+                    Objects.requireNonNull(null); }}
+                );
+                firePropertyChange(new ViEvent.ProcessInput());
                 break;
             }
         }

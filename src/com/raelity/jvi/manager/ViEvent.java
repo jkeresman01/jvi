@@ -74,7 +74,10 @@ private static final String esource = "ViEventSource";
     public void handleException(Throwable ex, SubscriberExceptionContext ctx)
     {
         System.err.println("ViEvent: handleException:");
-        System.err.println(ctx.toString());
+        System.err.println("    " + ctx.getEventBus());
+        System.err.println("    " + ctx.getEvent());
+        System.err.println("    " + ctx.getSubscriber());
+        System.err.println("    " + ctx.getSubscriberMethod());
         Exceptions.printStackTrace(ex);
     }
 
