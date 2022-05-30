@@ -41,6 +41,7 @@ import java.awt.event.FocusListener;
 import java.util.logging.Level;
 
 import javax.swing.SwingUtilities;
+import javax.swing.event.CaretEvent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -158,6 +159,16 @@ public abstract class CommandLineEntry implements ViCmdEntry
         commandLine.getTextComponent().addFocusListener(focusSetSelection);
         finishActivate();
     }
+
+    @Override
+    public void fireSpecialEvent(Class<?> target, Object event, String msg)
+    {
+        // TODO: if JTextComponent
+        // TODO: verify caretevent
+        commandLine.fireCaretEvent((CaretEvent)event);
+    }
+
+    
 
     @Override
     public void setHistory(HistoryContext ctx)

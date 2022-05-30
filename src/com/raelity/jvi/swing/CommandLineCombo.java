@@ -49,6 +49,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
+import javax.swing.event.CaretEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.basic.BasicComboBoxEditor;
@@ -71,6 +72,7 @@ import com.raelity.jvi.core.CommandHistory.InitialHistoryItem;
 import com.raelity.jvi.manager.*;
 
 import static com.raelity.jvi.lib.LibUtil.dumpEvent;
+import static com.raelity.jvi.manager.ViManager.eatme;
 import static com.raelity.text.TextUtil.sf;
 
 /**
@@ -109,6 +111,12 @@ public final class CommandLineCombo extends AbstractCommandLine
     HistoryContext ctx;
 
 
+    @Override
+    void fireCaretEvent(CaretEvent event)
+    {
+        // commandlinecombo is deprecated...
+    }
+
 
     // ............
 
@@ -127,6 +135,7 @@ public final class CommandLineCombo extends AbstractCommandLine
                 return;
             Object newO = evt.getNewValue();
             Object oldO = evt.getOldValue();
+            eatme(oldO);
             if(newO != null) {
                 EventQueue.invokeLater(this::setKeymap);
             }
@@ -179,6 +188,7 @@ public final class CommandLineCombo extends AbstractCommandLine
      *  characters entered before the combo box gets focus are not lost.
      */
     @Override
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public void init( String s )
     {
         InitialHistoryItem initalState = ctx.init();
@@ -373,6 +383,7 @@ public final class CommandLineCombo extends AbstractCommandLine
 
     private void sizeChange(PropertyChangeEvent evt)
     {
+        eatme(evt);
         trimList();
     }
 
@@ -742,6 +753,7 @@ public final class CommandLineCombo extends AbstractCommandLine
     {
         return cstat("");
     }
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     String cstat(String tag)
     {
         int i = combo.getSelectedIndex();

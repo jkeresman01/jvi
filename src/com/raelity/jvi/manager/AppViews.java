@@ -23,18 +23,18 @@ package com.raelity.jvi.manager;
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import org.openide.util.WeakSet;
 import org.openide.util.lookup.ServiceProvider;
 
-import com.raelity.jvi.ViAppView;
-import com.raelity.jvi.ViFactory;
-import com.raelity.jvi.ViInitialization;
-import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.*;
 import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.ColonCommands;
 import com.raelity.jvi.core.G;
@@ -81,8 +81,9 @@ public enum AppViews
     NOMAD,
     ALL; // ACTIVE + NOMAD
 
-    private static final List<ViAppView> avs = new ArrayList<>();
-    private static final List<ViAppView> avsMRU = new ArrayList<>();
+    private static final List<ViAppView> avs = new LinkedList<>();
+    private static final List<ViAppView> avsMRU = new LinkedList<>();
+    private static final List<String> avsClosedMRU = new LinkedList<>();
     private static final Set<ViAppView> avsNomads = new WeakSet<>();
     private static ViAppView avCurrentlyActive;
     private static ViAppView keepMru;
@@ -167,6 +168,7 @@ public enum AppViews
                     + tag + " " + ViManager.cid(ed) + " " + ViManager.cid(av)
                     + " " + fact().getFS().getDisplayPath(av));
         }
+        removeClosedMRU(av);
         ViAppView keep = keepMru;
         keepMru = null;
         avCurrentlyActive = av;
@@ -236,9 +238,11 @@ public enum AppViews
         ViTextView tv = fact().getTextView(ed);
         if (tv != null) {
             ViManager.firePropertyChange(ViManager.P_CLOSE_TV, tv, null);
-            if (tv.getBuffer().singleShare())
+            if (tv.getBuffer().singleShare()) {
+                addClosedMRU(av);
                 ViManager.firePropertyChange(
                         ViManager.P_CLOSE_BUF, tv.getBuffer(), null);
+            }
         }
         assert (hasFact());
         if (hasFact() && ed != null)
@@ -248,6 +252,36 @@ public enum AppViews
         avsMRU.remove(av);
         avs.remove(av);
         avsNomads.remove(av);
+    }
+
+    private static void addClosedMRU(ViAppView av)
+    {
+        ViTextView tv = fact().getTextView(av.getEditor());
+        if(tv != null) {
+            File fi = tv.getBuffer().getFile();
+            if(fi != null) {
+                String fname = fi.getAbsolutePath();
+                avsClosedMRU.remove(fname);
+                avsClosedMRU.add(0, fname);
+            }
+        }
+    }
+
+    public static List<String> getClosedMRU()
+    {
+        return Collections.unmodifiableList(avsClosedMRU);
+    }
+
+    private static void removeClosedMRU(ViAppView av)
+    {
+        ViTextView tv = fact().getTextView(av.getEditor());
+        if(tv != null) {
+            File fi = tv.getBuffer().getFile();
+            if(fi != null) {
+                String fname = fi.getAbsolutePath();
+                avsClosedMRU.remove(fname);
+            }
+        }
     }
 
     /**

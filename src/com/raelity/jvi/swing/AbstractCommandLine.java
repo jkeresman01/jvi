@@ -26,6 +26,7 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
+import javax.swing.event.CaretEvent;
 import javax.swing.text.JTextComponent;
 
 import com.raelity.jvi.core.CommandHistory.HistoryContext;
@@ -92,6 +93,8 @@ extends JPanel
      * @param l the action listener
      */
     abstract void addActionListener(ActionListener l);
+
+    abstract void fireCaretEvent(CaretEvent event);
 
     /**
      * Removes the specified action listener so that it no longer

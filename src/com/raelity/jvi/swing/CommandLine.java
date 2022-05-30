@@ -46,12 +46,12 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.event.CaretEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
-import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
@@ -71,6 +71,7 @@ import com.raelity.jvi.manager.*;
 
 import static com.raelity.jvi.core.Util.beep_flush;
 import static com.raelity.jvi.lib.LibUtil.dumpEvent;
+import static com.raelity.jvi.manager.ViManager.eatme;
 import static com.raelity.text.TextUtil.sf;
 
 /**
@@ -114,6 +115,7 @@ public final class CommandLine extends AbstractCommandLine
                 return;
             Object newO = evt.getNewValue();
             Object oldO = evt.getOldValue();
+            eatme(oldO);
             if(newO != null) {
                 EventQueue.invokeLater(this::setKeymap);
             }
@@ -150,6 +152,15 @@ public final class CommandLine extends AbstractCommandLine
         //setupBorder();
         this.setBorder(BorderFactory.createLineBorder(Color.black, 2));
 
+    }
+
+    /** this event sends the current values, should be a no-op,
+     * but NB completion uses a caret event to refresh the list. */
+    @Override
+    public void fireCaretEvent(CaretEvent event)
+    {
+        JTextComponent jtc = getTextComponent();
+        ((CommandLineTextField)jtc).fireCaretUpdate(event);
     }
 
     @Override
@@ -548,6 +559,12 @@ public final class CommandLine extends AbstractCommandLine
         super(value, n);
         //super(new DefaultStyledDocument());
         //setText("");
+    }
+    
+    @Override
+    protected void fireCaretUpdate(CaretEvent e)
+    {
+        super.fireCaretUpdate(e);
     }
 
     @Override

@@ -21,11 +21,9 @@ package com.raelity.jvi;
 
 import java.awt.Component;
 import java.awt.event.ActionListener;
-import java.util.List;
 
 import javax.swing.event.ChangeListener;
 
-import com.raelity.jvi.core.CommandHistory.HistEntry;
 import com.raelity.jvi.core.CommandHistory.HistoryContext;
 
 /** This is used by vi to get command line input.
@@ -82,6 +80,12 @@ public interface ViCmdEntry {
      * Retrieve the component used for the data entry.
      */
     public Component getTextComponent();
+
+    /**
+     * Poke listeners, platform dependent; the idea is to let the
+     * entry widget alert platform to do something.
+     */
+    public void fireSpecialEvent(Class<?> target, Object event, String msg);
 
     /**
      * Make the string the most recent in the history
