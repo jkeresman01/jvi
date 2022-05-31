@@ -127,6 +127,18 @@
       </li>
     </ul>
   </dd>
+  <dt>jVi NetBeans KeyBindings</dt>
+  <dd>
+    <ul>
+      <li>
+        Save a list of closed files. Use <span class="tt">:e*</span>
+        to access that list with code completion. When completion
+        is displayed, use
+        <span class="tt">Ctrl-D</span> or <span class="tt">Ctrl-Space</span>
+        to change the sort between MRU and alphabetically.
+      </li>
+    </ul>
+  </dd>
   <dt>Bug fixes</dt>
   <dd>
     <ul>
@@ -139,9 +151,9 @@
         affected by the problem.
       </li>
       <li>
-        Fix (hopefully) a long standing obscure/rare bug where a
-        file mark gets mysteriously set to first line of its file.
-        Rework file marks, make the object immutable. 
+        Fix a long standing obscure/rare bug where a
+        <span class="tt">mark</span> or <span class="tt">filemark</span>
+        gets mysteriously set to first line of its file.
       </li>
       <li>
         Fix unexpected scroll in other window of same file as editing.
@@ -151,6 +163,10 @@
           window (using the scroll wheel), the scrolled window could
           jump back to its original position.
         </p>
+      </li>
+      <li>
+        Using a <span class="tt">filemark</span> (upper case mark)
+        didn't leave the cursor placed correctly when switching windows.
       </li>
     </ul>
   </dd>
