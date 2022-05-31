@@ -139,10 +139,9 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
         // copy eventArgs into args, with possible fixup
         // ":set sw =4" is allowed, so if something starts with "="
         // then append it to the previous element
-        int j = 0;
         for (int i = 0; i < eventArgs.size(); i++) {
             String arg = eventArgs.get(i);
-            if (arg.startsWith("=") && args.size() > 0) {
+            if (arg.startsWith("=") && !args.isEmpty()) {
                 arg = args.removeLast() + arg;
             }
             args.addLast(arg);

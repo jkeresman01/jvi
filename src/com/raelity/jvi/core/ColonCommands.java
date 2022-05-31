@@ -466,14 +466,16 @@ private static ColonEvent parseCommandGuts(String commandLine,
         if(flags.contains(CcFlag.NO_PARSE)) {
             // Put the line (without command name) as the argument.
             // But probably will get picked up with getArgString.
-            // Should require that if NO_PARSE.
+            // TODO: Should require that if NO_PARSE.
             cev.args = new ArrayList<>();
             cev.args.add(commandLine.substring(sidx));
         }
         if(!isExecuting || !flags.contains(CcFlag.NO_PARSE)) {
             // TODO: get rid of this
             String cmdlineargs = commandLine.substring(sidx);
-            cev.args = Arrays.asList(cmdlineargs.split("\\s+"));
+            cev.args = cmdlineargs.isBlank() ? Collections.emptyList()
+                      : Arrays.asList(cmdlineargs.split("\\s+"));
+        } else {
         }
     }
 
@@ -838,6 +840,8 @@ public abstract static class AbstractColonAction implements ColonAction
     boolean bang;
     /** command line as entered */
     String commandLineRaw;
+    /** the command arguments of the raw command line*/
+    List<String> argsRaw;
     /** command line as expanded */
     String commandLine;
     /** index of the command args in the original string */
@@ -944,7 +948,39 @@ public abstract static class AbstractColonAction implements ColonAction
      */
     public List<String> getArgs()
     {
-        return new ArrayList<>(args);
+        return Collections.unmodifiableList(args);
+    }
+    
+    /**
+     * Fetch list of command arguments parsed from commandLineRaw.
+     */
+    public List<String> getArgsRaw()
+    {
+        if(argsRaw == null) {
+            String cmdlineargs = commandLineRaw.substring(iArgString);
+            argsRaw = cmdlineargs.isBlank() ? Collections.emptyList()
+                      : Arrays.asList(cmdlineargs.split("\\s+"));
+        }
+        return Collections.unmodifiableList(argsRaw);
+    }
+    
+    /**
+     * @return the number of arguments, not including command name.
+     */
+    public int getNArgRaw()
+    {
+        return getArgsRaw().size();
+    }
+    
+    /**
+     * Fetch an argument.
+     * @return the nth argument, n == 0 is the expanded command name.
+     */
+    public String getArgRaw( int n )
+    {
+        return n == 0
+                ? command
+                : getArgsRaw().get(n-1) ;
     }
 
     /** use in dummy parse to give the command name lookup match.

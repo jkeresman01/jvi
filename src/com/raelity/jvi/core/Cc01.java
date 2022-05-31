@@ -328,7 +328,7 @@ public class Cc01
             ColonEvent cev = (ColonEvent)e;
             int n = cev.getAddrCount() == 0 ? 0 : cev.getLine2();
             boolean reportUsage = false;
-            List<String> args = cev.getArgs();
+            List<String> args = new ArrayList<>(cev.getArgsRaw());
             MutableBoolean reportedError = new MutableBoolean();
             if(args.size() >= 1 && args.get(0).charAt(0) == '#') {
                 ViAppView av = parseFileNumber(args, reportedError);
@@ -362,14 +362,24 @@ public class Cc01
         public void actionPerformed(ActionEvent ev)
         {
             ColonEvent cev = (ColonEvent)ev;
-            List<String> args = cev.getArgs();
-
-            if (args.size() == 1) {
-                String fName = args.get(0);
+            boolean reportUsage = false;
+            List<String> argsraw = new ArrayList<>(cev.getArgsRaw());
+            MutableBoolean reportedError = new MutableBoolean();
+            if(!argsraw.isEmpty() && argsraw.get(0).charAt(0) == '#') {
+                ViAppView av = parseFileNumber(argsraw, reportedError);
+                if(!argsraw.isEmpty() && !reportedError.getValue()) {
+                    reportUsage = true;
+                }
+                if(av != null)
+                    ViManager.getFS().edit(av, cev.isBang());
+            } else if (cev.getNArg() == 1) {
+                String fName = cev.getArg(1);
                 Path path = getVimPath(fName);
                 ViManager.getFS().edit(path, cev.isBang(), null);
             } else
-                Msg.emsg(":edit - one arg: <fname>, '%', '#<digits>' with filename-modifiers");
+                reportUsage = true;
+            if(reportUsage)
+                Msg.emsg(":edit only accepts '#[-]<digits>' or '<fname>'");
         }
     };
 
@@ -390,9 +400,7 @@ public class Cc01
         ViAppView av = null;
 
         assert args.size() >= 1 && args.get(0).charAt(0) == '#';
-        if(args.size() >= 1 && args.get(0).charAt(0) == '#') {
-            //boolean error = false;
-
+        if(!args.isEmpty() && args.get(0).charAt(0) == '#') {
             String stringWindowID = args.get(0).substring(1);
             args.remove(0);
             if(stringWindowID.isEmpty() && !args.isEmpty()) {
