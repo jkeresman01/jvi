@@ -24,9 +24,7 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.openide.util.Exceptions;
 
-import static java.util.logging.Level.SEVERE;
 
 /**
  * This jVi option is for debug, based on enum of logger level.
@@ -48,17 +46,6 @@ abstract public class DebugOption extends EnumOption<String>
     abstract public Boolean getBoolean();
 
     abstract public boolean getBoolean(Level level);
-
-    public void exception(String fmt, Object... args)
-    {
-        String msg = args.length == 0 ? fmt : String.format(fmt, args);
-        Exceptions.printStackTrace(new Throwable(msg));
-    }
-
-    public void exception(Supplier<String> sup)
-    {
-        Exceptions.printStackTrace(new Throwable(sup.get()));
-    }
 
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     protected void doPrintln(String fmt, Object... args)

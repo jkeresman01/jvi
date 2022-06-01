@@ -24,6 +24,7 @@ import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.manager.ViManager;
 
 import java.awt.Component;
+import java.nio.file.Path;
 
 /**
  * This is a handle for a platform edit window.
@@ -68,6 +69,9 @@ public interface ViAppView
      * @return the editor component, may be null.
      */
     public Component getEditor();
+
+    /** @return the associated, may be null */
+    public Path getPath();
 
     /**
      * Like Component.isShowing().

@@ -20,10 +20,14 @@
 
 package com.raelity.jvi.core;
 
+import java.util.List;
+
 import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.core.lib.*;
+import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.ViManager;
 
 /**
@@ -64,6 +68,18 @@ public class Hook
     //
     // the instance methods
     //
+
+    public List<String> readPrefsList(String nodeName,
+                                      Wrap<PreferencesImportMonitor> pImportMonitor)
+    {
+        return Misc.readPrefsList(nodeName, pImportMonitor);
+    }
+
+    public void writePrefsList(String nodeName, List<String> l,
+                               PreferencesImportMonitor importMonitor)
+    {
+        Misc.writePrefsList(nodeName, l, importMonitor);
+    }
 
     public void abortVisualMode()
     {

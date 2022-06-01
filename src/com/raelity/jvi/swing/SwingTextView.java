@@ -68,6 +68,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.Utilities;
 import javax.swing.text.View;
 
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.*;
@@ -1885,7 +1886,7 @@ public abstract class SwingTextView extends TextView
         if(s != null)
             r = s.getBounds2D();
         else {
-            G.dbgCoordSkip().exception("SwingTextView:modelToView: null shape");
+            Exceptions.printStackTrace(new Throwable("SwingTextView:modelToView: null shape"));
             r = new Rectangle(4,4,1,1);
         }
         // (0,3,300,300).contains(3,3,0,17) because of the 0 width (jdk1.5 at least)

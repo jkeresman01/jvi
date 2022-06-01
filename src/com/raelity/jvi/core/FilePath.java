@@ -161,7 +161,15 @@ private static Path getCheckPathFS(String s)
  * @param _path
  * @return 
  */
+@Deprecated
 public static Path getVimPath(Path _path)
+{
+    // TODO: make this an absolute path
+    return getVimPathOriginal(_path);
+}
+
+/** should be private, but need to convert tests */
+static Path getVimPathOriginal(Path _path)
 {
     // In vim, doing: ":e ~/play/../foobar" doesn't normalize; sigh.
     // getVimPath *does* normalize.
@@ -180,7 +188,13 @@ public static Path getVimPath(Path _path)
 
 public static Path getVimPath(String s)
 {
-    return getVimPath(getCheckPathFS(s));
+    return getVimPathOriginal(getCheckPathFS(s));
+    //return getAbsolutePath(getVimPathOriginal(getCheckPathFS(s)));
+}
+
+public static String getVimDisplayPath(Path path)
+{
+    return getVimPathOriginal(path).toString();
 }
 
 // /**
@@ -221,6 +235,7 @@ throws IOException
     return getAbsolutePath(path).toRealPath(option);
 }
 
+/** return absolute path without normalization (getVimPath does normalization) */
 public static Path getAbsolutePath(Path path)
 {
     if(path.isAbsolute())
@@ -232,6 +247,11 @@ public static Path getAbsolutePath(Path path)
         return tpath;
     }
     return cwd.resolve(path);
+}
+
+public static Path getAbsolutePath(String s)
+{
+    return getAbsolutePath(getCheckPathFS(s));
 }
 
 public static boolean isAbsolutePath(Path path)
@@ -468,6 +488,18 @@ static int modify_fname(StringSegment modifiers, Path path, Wrap<Path> fnamep)
 public static String getBaseName(String filename)
 {
     return removeExtension(getName(filename));
+}
+
+public static boolean isSeparator(char c)
+{
+    return c == '/' || c == '\\';
+}
+
+public static boolean endsWithSeparator(String fname) {
+    if(fname.isEmpty())
+        return false;
+    char c = fname.charAt(fname.length()-1);
+    return isSeparator(c);
 }
 
 public static int indexOfLastSeparator(String filename)

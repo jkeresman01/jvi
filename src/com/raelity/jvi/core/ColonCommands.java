@@ -957,7 +957,7 @@ public abstract static class AbstractColonAction implements ColonAction
     public List<String> getArgsRaw()
     {
         if(argsRaw == null) {
-            String cmdlineargs = commandLineRaw.substring(iArgString);
+            String cmdlineargs = commandLineRaw.substring(iArgString).trim();
             argsRaw = cmdlineargs.isBlank() ? Collections.emptyList()
                       : Arrays.asList(cmdlineargs.split("\\s+"));
         }

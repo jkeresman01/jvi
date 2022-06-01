@@ -20,11 +20,14 @@
 
 package com.raelity.jvi.cmd;
 
+import java.nio.file.Path;
+
 import com.raelity.jvi.swing.SwingFactory;
 
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 
+import com.raelity.jvi.manager.*;
 import com.raelity.jvi.swing.simple.SimpleAppView;
 
 /**
@@ -55,6 +58,12 @@ public class PlayAppView extends SimpleAppView
     public JEditorPane getEditor()
     {
         return (JEditorPane)super.getEditor();
+    }
+
+    @Override
+    public Path getPath()
+    {
+        return ViManager.getFS().getPath(this);
     }
 
     @Override

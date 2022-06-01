@@ -161,6 +161,25 @@ public class Misc implements ClipboardOwner {
                 ViManager.getFactory().getPreferences(), PREF_REGISTERS);
     }
 
+    static List<String> readPrefsList(String nodeName,
+                                      Wrap<PreferencesImportMonitor> pImportMonitor)
+    {
+      List<String> l = readList(nodeName);
+      pImportMonitor.setValue(PreferencesImportMonitor.getMonitor(
+              ViManager.getFactory().getPreferences(), nodeName));
+      return l;
+    }
+
+    static void writePrefsList(String nodeName, List<String> l,
+                               PreferencesImportMonitor importMonitor)
+    {
+      if(!importMonitor.isChange()) {
+        writeList(nodeName, l);
+      } else {
+        LOG.info(sf("jVi %s imported", nodeName));
+      }
+    }
+
   /**
    * count the size of the indent in the current line
    */
@@ -1244,7 +1263,7 @@ public class Misc implements ClipboardOwner {
   }
 
   private static void read_viminfo_search() {
-    List<String> l = readHistoryList(PREF_SEARCH);
+    List<String> l = readList(PREF_SEARCH);
     // HACK
     if(!l.isEmpty())
       Search.startupInitializePattern(l.get(0));
@@ -1253,7 +1272,7 @@ public class Misc implements ClipboardOwner {
   }
 
   private static void read_viminfo_command() {
-    List<String> l = readHistoryList(PREF_COMMANDS);
+    List<String> l = readList(PREF_COMMANDS);
     HistoryContext hc = CommandHistory.COLON.initHistory(l);
     getColonCommandEntry().setHistory(hc);
   }
@@ -1268,7 +1287,8 @@ public class Misc implements ClipboardOwner {
     writeList(PREF_COMMANDS, l);
   }
 
-  private static List<String> readHistoryList(String nodeName)
+  /** Read an order list from prefs; no dups. */
+  private static List<String> readList(String nodeName)
   {
     List<String> l = new ArrayList<>();
     Set<String> check = new HashSet<>();
@@ -1290,6 +1310,7 @@ public class Misc implements ClipboardOwner {
     return l;
     }
 
+  /** Write an ordered list to prefs. */
   private static void writeList(String nodeName, List<String> l)
   {
     try {

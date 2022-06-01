@@ -23,7 +23,7 @@ package com.raelity.jvi.manager;
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -31,15 +31,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.eventbus.Subscribe;
+
 import org.openide.util.WeakSet;
 import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.*;
-import com.raelity.jvi.core.Buffer;
-import com.raelity.jvi.core.ColonCommands;
-import com.raelity.jvi.core.G;
-import com.raelity.jvi.core.Msg;
-import com.raelity.jvi.core.lib.CcFlag;
+import com.raelity.jvi.core.*;
+import com.raelity.jvi.core.lib.*;
+import com.raelity.jvi.lib.*;
 
 /**
  * These static methods are used by the platform to inform jVi of the state
@@ -81,12 +81,18 @@ public enum AppViews
     NOMAD,
     ALL; // ACTIVE + NOMAD
 
+    private static final String PREF_CLOSEDFILES = "closedfiles";
+    private static final Wrap<PreferencesImportMonitor> pClosedfilesImportCheck = new Wrap<>();
+
     private static final List<ViAppView> avs = new LinkedList<>();
     private static final List<ViAppView> avsMRU = new LinkedList<>();
-    private static final List<String> avsClosedMRU = new LinkedList<>();
+    private static final LinkedList<String> avsClosedMRU = new LinkedList<>();
     private static final Set<ViAppView> avsNomads = new WeakSet<>();
     private static ViAppView avCurrentlyActive;
     private static ViAppView keepMru;
+
+    // TODO: max closed should be an option
+    private static final int nMaxClosed = 200;
 
     @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=10)
     public static class Init implements ViInitialization
@@ -109,6 +115,23 @@ public enum AppViews
             System.err.println(AppViews.dump(null).toString());
         }, EnumSet.of(CcFlag.DBG));
         getLocation(null); // shut up the not-used warning
+
+        ViEvent.getBus().register(new Object() {
+            @Subscribe
+            public void readClosedMRU(ViEvent.Boot ev)
+            {
+                Hook hook = ViManager.getCore();
+                avsClosedMRU.addAll(hook.readPrefsList(PREF_CLOSEDFILES,
+                                                pClosedfilesImportCheck));
+            }
+            @Subscribe
+            public void writeClosedMRU(ViEvent.Shutdown ev)
+            {
+                Hook hook = ViManager.getCore();
+                hook.writePrefsList(PREF_CLOSEDFILES, avsClosedMRU,
+                                    pClosedfilesImportCheck.getValue());
+            }
+        });
     }
 
     /**
@@ -129,7 +152,7 @@ public enum AppViews
     public static void activateCurrent(ViAppView av)
     {
         // Only do anything if this av is already first in MRU list
-        if (hasFact()
+        if (fact() != null
                 && Scheduler.getCurrentEditor() == av.getEditor()
                 && !avsMRU.isEmpty() && avsMRU.get(0).equals(av)
                 && avCurrentlyActive == null)
@@ -214,7 +237,7 @@ public enum AppViews
         }
             //System.err.println("Activation: avs.deactivateCurent: " +
             //        " " + ViManager.cid(av) + fact().getFS().getDisplayFileName(av));
-        if (hasFact() && Scheduler.getCurrentEditor() != null) {
+        if (fact() != null && Scheduler.getCurrentEditor() != null) {
             ViManager.exitInputMode(); // NEEDSWORK: relates AppView to Editor
             G.curwin().getStatusDisplay().clearDisplay();
         }
@@ -234,18 +257,17 @@ public enum AppViews
             G.dbgEditorActivation().println(() -> "Activation: AppViews.close: "
                     + (ed == null ? "(no shutdown) " : "")
                     + fact().getFS().getDisplayPath(av) + " " + ViManager.cid(ed));
-        }
-        ViTextView tv = fact().getTextView(ed);
-        if (tv != null) {
-            ViManager.firePropertyChange(ViManager.P_CLOSE_TV, tv, null);
-            if (tv.getBuffer().singleShare()) {
-                addClosedMRU(av);
-                ViManager.firePropertyChange(
-                        ViManager.P_CLOSE_BUF, tv.getBuffer(), null);
+            ViTextView tv = fact().getTextView(ed);
+            if (tv != null) {
+                ViManager.firePropertyChange(ViManager.P_CLOSE_TV, tv, null);
+                if (tv.getBuffer().singleShare())
+                    ViManager.firePropertyChange(
+                            ViManager.P_CLOSE_BUF, tv.getBuffer(), null);
             }
         }
-        assert (hasFact());
-        if (hasFact() && ed != null)
+        addClosedMRU(av);
+        assert (fact() != null);
+        if (fact() != null && ed != null)
             fact().shutdown(ed);
         if (av.equals(avCurrentlyActive))
             avCurrentlyActive = null;
@@ -256,14 +278,14 @@ public enum AppViews
 
     private static void addClosedMRU(ViAppView av)
     {
-        ViTextView tv = fact().getTextView(av.getEditor());
-        if(tv != null) {
-            File fi = tv.getBuffer().getFile();
-            if(fi != null) {
-                String fname = fi.getAbsolutePath();
-                avsClosedMRU.remove(fname);
-                avsClosedMRU.add(0, fname);
-            }
+        Path path = av.getPath();
+        if(path != null) {
+            // TODO: av.getPath must always return absolute path
+            String fname = FilePath.getAbsolutePath(path).toString();
+            avsClosedMRU.remove(fname);
+            avsClosedMRU.add(0, fname);
+            while(avsClosedMRU.size() > nMaxClosed)
+                avsClosedMRU.removeLast();
         }
     }
 
@@ -274,13 +296,11 @@ public enum AppViews
 
     private static void removeClosedMRU(ViAppView av)
     {
-        ViTextView tv = fact().getTextView(av.getEditor());
-        if(tv != null) {
-            File fi = tv.getBuffer().getFile();
-            if(fi != null) {
-                String fname = fi.getAbsolutePath();
-                avsClosedMRU.remove(fname);
-            }
+        Path path = av.getPath();
+        if(path != null) {
+            // TODO: av.getPath must always return absolute path
+            String fname = FilePath.getAbsolutePath(path).toString();
+            avsClosedMRU.remove(fname);
         }
     }
 
@@ -545,12 +565,6 @@ public enum AppViews
     private static ViFactory fact()
     {
         return ViManager.getFactory();
-    }
-
-    // Is the factory loaded
-    private static boolean hasFact()
-    {
-        return ViManager.isFactoryLoaded();
     }
 
     /** FROM: NB-Module, :dumpJvi */

@@ -30,7 +30,7 @@ JVI_ADD="
     $JVI_RELDIR/editor.pin/editor.pin-2.0/proj/updates.xml
     $JVI_RELDIR/nb-jvi-spi/nb-jvi-spi-2.0/proj/updates.xml
     $JVI_RELDIR/yenta/api-1.2-SNAPSHOT/proj/updates.xml
-    $JVI_RELDIR/jvi-lib/jvi-lib-1.0-SNAPSHOT/proj/updates.xml
+    $JVI_RELDIR/jvi-lib/jvi-lib-1.0.1/proj/updates.xml
     "
 
 OUT=$JVI_VERSIONDIR/build-uc

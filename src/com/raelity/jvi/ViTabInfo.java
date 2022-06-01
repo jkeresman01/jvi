@@ -19,6 +19,7 @@
 package com.raelity.jvi;
 
 import java.awt.Component;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,29 +71,35 @@ static ViTabInfo getDebugTabInfo() {
 
 private static class DebugAppView implements ViAppView {
 
-        @Override
-        public Component getEditor() {
-            return null;
-        }
+@Override
+public Component getEditor() {
+    return null;
+}
 
-        @Override
-        public boolean isShowing() {
-            return false;
-        }
+@Override
+public Path getPath()
+{
+    return null;
+}
 
-        @Override
-        public boolean isNomad() {
-            return false;
-        }
+@Override
+public boolean isShowing() {
+    return false;
+}
 
-        @Override
-        public int getWinID() {
-            return 1;
-        }
+@Override
+public boolean isNomad() {
+    return false;
+}
 
-        @Override
-        public boolean close(boolean what) {
-            return false;
-        }
-    }
+@Override
+public int getWinID() {
+    return 1;
+}
+
+@Override
+public boolean close(boolean what) {
+    return false;
+}
+}
 }

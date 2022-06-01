@@ -164,39 +164,39 @@ public void testSetCwd()
 }
 
 /**
- * Test of getVimPath method, of class FilePath.
+ * Test of getVimPathOriginal method, of class FilePath.
  */
 @Test
 @SuppressWarnings("UseOfSystemOutOrSystemErr")
-public void testGetVimPath_String()
+public void testGetVimPathOriginal()
 {
     System.out.println("getVimPath");
 
-    assertEquals("~", getVimPath(getRegularPath(initHomeDir)).toString());
-    assertEquals("~/foo", getVimPath(getRegularPath(initHomeDir + "/foo")).toString());
+    assertEquals("~", getVimPathOriginal(getRegularPath(initHomeDir)).toString());
+    assertEquals("~/foo", getVimPathOriginal(getRegularPath(initHomeDir + "/foo")).toString());
     assertEquals(getRegularPath(initHomeDir + "/..").toString(),
-                 getVimPath(getRegularPath(initHomeDir + "/..")).toString());
+                 getVimPathOriginal(getRegularPath(initHomeDir + "/..")).toString());
 
     assertEquals(initCurDir, getAbsolutePath(getVimPath("")).toString());
     assertEquals(initCurDir + "/foo/bar", getAbsolutePath(getVimPath("foo/bar")).toString());
     assertEquals("",
-                 getVimPath(getRegularPath(initCurDir)).toString());
+                 getVimPathOriginal(getRegularPath(initCurDir)).toString());
     assertEquals("foo/bar",
-                 getVimPath(getRegularPath(initCurDir + "/foo/bar")).toString());
+                 getVimPathOriginal(getRegularPath(initCurDir + "/foo/bar")).toString());
     setCwdTEST(getRegularPath("/").toString(), false);
     assertEquals(initCurDir + "/foo/bar",
-                 getVimPath(getRegularPath(initCurDir + "/foo/bar")).toString());
+                 getVimPathOriginal(getRegularPath(initCurDir + "/foo/bar")).toString());
     
     // homedir/cd1/foo displays differently depending on where you're sitting
     setCwdTEST(initHomeDir + "cd1/cd2", false);
     assertEquals("~/cd1/foo",
-                 getVimPath(getRegularPath(initHomeDir + "/cd1/foo")).toString());
+                 getVimPathOriginal(getRegularPath(initHomeDir + "/cd1/foo")).toString());
     setCwdTEST(initHomeDir, false);
     assertEquals("cd1/foo",
-                 getVimPath(getRegularPath(initHomeDir + "/cd1/foo")).toString());
+                 getVimPathOriginal(getRegularPath(initHomeDir + "/cd1/foo")).toString());
     setCwdTEST(getRegularPath("/").toString(), false);
     assertEquals("~/cd1/foo",
-                 getVimPath(getRegularPath(initHomeDir + "/cd1/foo")).toString());
+                 getVimPathOriginal(getRegularPath(initHomeDir + "/cd1/foo")).toString());
 }
 
 // /**
