@@ -42,7 +42,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -1882,7 +1881,13 @@ public abstract class SwingTextView extends TextView
     {
         Shape s = modelToView(
                 getEditor(), offset, Position.Bias.Forward);
-        Rectangle2D r = s.getBounds2D();
+        Rectangle2D r;
+        if(s != null)
+            r = s.getBounds2D();
+        else {
+            G.dbgCoordSkip().exception("SwingTextView:modelToView: null shape");
+            r = new Rectangle(4,4,1,1);
+        }
         // (0,3,300,300).contains(3,3,0,17) because of the 0 width (jdk1.5 at least)
         // so... make sure there is some width
         if (r.getWidth() == 0) {

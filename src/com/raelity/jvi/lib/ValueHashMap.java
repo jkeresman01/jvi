@@ -19,11 +19,8 @@
 
 package com.raelity.jvi.lib;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -38,9 +35,9 @@ implements ValueMap<K, V>
     private static final long serialVersionUID = 1L;
     private final Function<V,K> keyFunction;
 
-    public ValueHashMap(Function<V, K> keyFunction, int i)
+    public ValueHashMap(Function<V, K> keyFunction, int initialCapacity)
     {
-        super(i);
+        super(initialCapacity);
         this.keyFunction = keyFunction;
     }
 
@@ -50,12 +47,12 @@ implements ValueMap<K, V>
     }
 
     // FIX
-    private ValueHashMap(Function<V, K> keyFunction,
-                        Map<? extends K, ? extends V> map)
-    {
-        super(map);
-        this.keyFunction = keyFunction;
-    }
+    // private ValueHashMap(Function<V, K> keyFunction,
+    //                     Map<? extends K, ? extends V> map)
+    // {
+    //     super(map);
+    //     this.keyFunction = keyFunction;
+    // }
 
     @Override
     public V put(V value)

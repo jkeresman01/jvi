@@ -81,7 +81,7 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
     private static Preferences prefsFM;
     private static final ValueMap<String, Filemark> map
             = new ValueHashMap<>((Filemark fm) -> fm.getMarkName(), 26);
-
+    
     static Filemark create(String markName, ViMark mark)
     {
         assert isValidMarkName(markName);
@@ -198,7 +198,7 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
                 newFm.persist();
                 if(!compareShadow(fm, newFm.mark))
                     // fpos changed while file not open
-                    dbg.printf(WARNING, () -> sf("FM: hookup re-boundary %s\n",
+                    dbg.printf(SEVERE, () -> sf("FM: hookup re-boundary %s\n",
                                                  dump(fm)));
                 dbg.printf(CONFIG, () -> sf("FM: hookup buf %s\n", dump(newFm)));
             }
@@ -257,40 +257,43 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
             Filemark fm = entry.getValue();
             assert key.equals(fm.markName);
             checkFM(key, fm);
-            if(!buf.isActive())
-                continue;
-            Filemark dumpFm = fm;
+
             if(ViManager.isDebugAtHome()) {
+                if(!buf.isActive() && !(ev instanceof ViEvent.CloseBuf))
+                    dbg.printf(SEVERE, () -> sf(
+                        "FM: close ERROR: NOT CLOSE and inactive buffer: fm.f %s\n",
+                        dump(fm)));
                 if(!fm.f.isAbsolute())
                     dbg.printf(SEVERE, () -> sf(
-                        "FM: close ERROR: NOT ABSOLUTE: fm.f %s\n", dump(dumpFm)));
+                        "FM: close ERROR: NOT ABSOLUTE: fm.f %s\n", dump(fm)));
                 if(!buf.getFile().isAbsolute())
                     dbg.printf(SEVERE, () -> sf(
-                        "FM: close ERROR: NOT ABSOLUTE: buf %s\n", dump(dumpFm)));
-                if(fm.isActiveFilemark()
+                        "FM: close ERROR: NOT ABSOLUTE: buf %s\n", dump(fm)));
+                if(fm.isActiveFilemark() && buf.isActive()
                             && !fm.mark.getBuffer().getFile().isAbsolute())
                     dbg.printf(SEVERE, () -> sf(
-                        "FM: close ERROR: NOT ABSOLUTE: fm %s\n", dump(dumpFm)));
+                        "FM: close ERROR: NOT ABSOLUTE: fm %s\n", dump(fm)));
             }
             if(!fm.isActiveFilemark() && fm.f.equals(buf.getFile())) {
                 // This is impossible, the filemark is for this buf
                 // but it is not active.
                 dbg.printf(SEVERE, () -> sf("FM: close ERROR: buffer not active%s\n",
-                                            dump(dumpFm)));
+                                            dump(fm)));
             }
-            if(fm.isActiveFilemark() && fm.mark.getBuffer().equals(buf)) {
-                dbg.printf(FINEST, () -> sf("FM: unhookup %s\n", dump(dumpFm)));
-                if(!compareShadow(fm, fm.mark)) {
-                    // Make the Filemark inactive, null mark.
-                    Filemark newFm = new Filemark(
-                            fm.markName,
-                            fm.mark.getBuffer().getFile(),
-                            fm.mark.getLine(), fm.mark.getColumn(),
-                            fm.mark.getOffset());
-                    entry.setValue(newFm);
-                    fm = newFm;
+            if(fm.isActiveFilemark() && fm.getBuffer().equals(buf)
+                    || fm.getFile().equals(buf.getFile())) {
+                if(ev instanceof ViEvent.CloseBuf) {
+                    // persist an FM going inactive
+                    // NOTE: in CloseBuf, use location in fm (not mark)
+                    dbg.printf(FINER, () -> sf("FM: unhookup %s\n", dump(fm)));
+                    if(fm.isActiveFilemark() || !compareShadow(fm))
+                        entry.setValue(new Filemark(fm, buf.getFile()));
+                } else {
+                    // filemark is staying active
+                    if(!compareShadow(fm, fm.mark))
+                        entry.setValue(new Filemark(fm.markName, fm.mark));
                 }
-                fm.persist();
+                entry.getValue().persist();
             }
             checkFM(key, fm);
         }
@@ -339,16 +342,6 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
         return mark;
     }
 
-    // compare shadowed values in fm to prefs values
-    // NOTE: if isActiveFM, probably should have checked against mark first
-    private static boolean compareShadow(Filemark fm, Preferences prefs) {
-        String fName = prefs.get(MarkOps.FNAME, null);
-        int l = prefs.getInt(MarkOps.LINE, -1);
-        int c = prefs.getInt(MarkOps.COL, -1);
-        int o = prefs.getInt(MarkOps.OFFSET, -1);
-        return compare(fm, fName, l, c, o);
-    }
-
     // compare shadowed values in fm to mark values
     private static boolean compareShadow(Filemark fm, ViMark mark) {
         if(mark == null)
@@ -357,6 +350,21 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
         int l = mark.getLine();
         int c = mark.getColumn();
         int o = mark.getOffset();
+        return compare(fm, fName, l, c, o);
+    }
+
+    // compare shadowed values in fm to prefs values
+    private static boolean compareShadow(Filemark fm) {
+        return compareShadow(fm, prefsFM.node(fm.markName));
+    }
+
+    // compare shadowed values in fm to prefs values
+    // NOTE: if isActiveFM, probably should have checked against mark first
+    private static boolean compareShadow(Filemark fm, Preferences prefs) {
+        String fName = prefs.get(MarkOps.FNAME, null);
+        int l = prefs.getInt(MarkOps.LINE, -1);
+        int c = prefs.getInt(MarkOps.COL, -1);
+        int o = prefs.getInt(MarkOps.OFFSET, -1);
         return compare(fm, fName, l, c, o);
     }
 
@@ -463,13 +471,18 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
         checkFM(markName, this);
     }
 
-    /** create a valid filemark */
+    /** create an active filemark */
     private Filemark(String markName, ViMark mark) {
         this(markName, mark.getBuffer().getFile(), mark,
              mark.getLine(), mark.getColumn(), mark.getOffset());
     }
 
-    /** Create an invalid filemark, no mark; typically from preferences. */
+    /** create an inactive filemark based on the shadow values. */
+    private Filemark(Filemark fm, File fi) {
+        this(fm.markName, fi, null, fm.line, fm.col, fm.offset);
+    }
+
+    /** Create an inactive filemark, no mark; typically from preferences. */
     private Filemark(String markName, File f, int line, int col, int offset) {
         this(markName, f, null, line, col, offset);
     }
@@ -479,25 +492,24 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
      * from the mark.
      */
     private void persist() {
-        Preferences prefs = prefsFM.node(markName);
-        boolean isActiveFM = isActiveFilemark();
-        if(isActiveFM) {
+        if(isActiveFilemark()) {
             // the fm shadow vals should be equal to the mark values
             // otherwise persist should not have been called.
             //assert compareShadow(this, this.mark);
             if(!compareShadow(this, this.mark)) {
                 dbg.printf(SEVERE, () -> sf("FM: persist shadow!=mark valid=%b %s\n",
-                                            isActiveFM, dump(this)));
+                                            isActiveFilemark(), dump(this)));
                 LOG.severe(() -> sf("FM: persist shadow!=mark valid=%b %s\n",
-                                    isActiveFM, dump(this)));
+                                    isActiveFilemark(), dump(this)));
                 Exceptions.printStackTrace(new Throwable("persist"));
                 return;
             }
         }
         dbg.printf(CONFIG, () -> sf("FM: persist %s\n", dump(this)));
+        Preferences prefs = prefsFM.node(markName);
         if(!compareShadow(this, prefs)) {
             // in-core vs in-prefs are different, so update the prefs.
-            dbg.printf(CONFIG, () -> sf("FM: persist prev pref %s\n",
+            dbg.printf(FINE, () -> sf("FM: persist prev pref %s\n",
                                         dump(prefs)));
             prefs.put(MarkOps.FNAME, f.getAbsolutePath());
             prefs.putInt(MarkOps.LINE, getLine());
