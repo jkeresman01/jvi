@@ -556,7 +556,7 @@ static StringBuilder expand_filename(StringSegment cmd,
             
             ViAppView av = AppViews.getAppView(av_idx);
             if(av != null)
-                path = ViManager.getFactory().getFS().getPath(av);
+                path = FilePath.getVimPath(av.getPath());
             if(path == null) {
                 if(estr == null)
                     // -1 to include the '%'/'#'

@@ -44,6 +44,12 @@ import static java.nio.file.Files.isExecutable;
  * Path manipulation ala vim, handles "~/..." and curdir via cd command.
  * If there are poorly formed paths encountered, put an error, return "/tmp"
  * Vim has filepath.c::modify_fname, 
+ * <p>
+ * It is expected that paths used throughout the system are absolute,
+ * as returned by getPath. String tilde and relative path names are returned
+ * by {@link #getVimDisplayPath(java.nio.file.Path) }.
+ * {@link #getVimPath(java.nio.file.Path) } is for special situations
+ * </p>
  * @author err
  */
 public class FilePath
@@ -353,10 +359,11 @@ static int modify_fname(StringSegment modifiers, Path path, Wrap<Path> fnamep)
     int valid = 0;
     boolean do_tilde = false;
     
-    // multiple modifies can be used, only in order
+    // multiple modifies can be used, only in certain order. See vim docs.
     char option;
     boolean try_stuff = modifiers.current() == ':';
 
+    // label only used for for break, never continue
     main: if(try_stuff) do {
         option = modifiers.next(); used_modifier = false;
         

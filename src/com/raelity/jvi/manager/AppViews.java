@@ -283,7 +283,7 @@ public enum AppViews
             // TODO: av.getPath must always return absolute path
             String fname = FilePath.getAbsolutePath(path).toString();
             avsClosedMRU.remove(fname);
-            avsClosedMRU.add(0, fname);
+            avsClosedMRU.addFirst(fname);
             while(avsClosedMRU.size() > nMaxClosed)
                 avsClosedMRU.removeLast();
         }

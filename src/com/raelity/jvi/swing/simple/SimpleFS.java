@@ -67,7 +67,7 @@ abstract public class SimpleFS extends abstractFS
         Path path = getPath(av);
         if(path != null)
             // Vim display name
-            return FilePath.getVimPath(path).toString();
+            return FilePath.getVimDisplayPath(path);
         JTextComponent ep = (JTextComponent)av.getEditor();
         if (ep != null) {
             ViTextView tv = ViManager.getFactory().getTextView(ep);

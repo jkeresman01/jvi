@@ -251,6 +251,8 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
                                    ev));
         if(buf == null)
             return;
+        if(buf.getFile() == null) // something in a zip file
+            return;
 
         for(Entry<String, Filemark> entry : map.entrySet()) {
             String key = entry.getKey();
