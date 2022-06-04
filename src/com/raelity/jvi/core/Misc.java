@@ -60,7 +60,6 @@ import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.ViTextView.DIR;
 import com.raelity.jvi.ViXlateKey;
-import com.raelity.jvi.core.CommandHistory.HistoryContext;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.MutableInt;
@@ -87,11 +86,7 @@ public class Misc implements ClipboardOwner {
     private static final Logger LOG = Logger.getLogger(Misc.class.getName());
     private static final ClipboardOwner clipOwner = new Misc();
     private static final String PREF_REGISTERS = "registers";
-    private static final String PREF_SEARCH = "search";
-    private static final String PREF_COMMANDS = "commands";
     private static PreferencesImportMonitor registersImportCheck;
-    private static PreferencesImportMonitor searchImportCheck;
-    private static PreferencesImportMonitor commandsImportCheck;
 
     private Misc() {}
 
@@ -121,9 +116,8 @@ public class Misc implements ClipboardOwner {
     @Subscribe
     public void boot(ViEvent.Boot ev) {
       read_viminfo_registers();
-      read_viminfo_search();
-      read_viminfo_command();
-      startImportCheck();
+      registersImportCheck = PreferencesImportMonitor.getMonitor(
+              ViManager.getFactory().getPreferences(), PREF_REGISTERS);
     }
 
     @Subscribe
@@ -138,27 +132,7 @@ public class Misc implements ClipboardOwner {
       } else {
         LOG.info("jVi registers imported");
       }
-      if(!searchImportCheck.isChange()) {
-        write_viminfo_search();
-      } else {
-        LOG.info("jVi search history imported");
-      }
-      if(!commandsImportCheck.isChange()) {
-        write_viminfo_command();
-      } else {
-        LOG.info("jVi commmand history imported");
-      }
     }
-    }
-
-    private static void startImportCheck()
-    {
-        commandsImportCheck = PreferencesImportMonitor.getMonitor(
-                ViManager.getFactory().getPreferences(), PREF_COMMANDS);
-        searchImportCheck = PreferencesImportMonitor.getMonitor(
-                ViManager.getFactory().getPreferences(), PREF_SEARCH);
-        registersImportCheck = PreferencesImportMonitor.getMonitor(
-                ViManager.getFactory().getPreferences(), PREF_REGISTERS);
     }
 
     static List<String> readPrefsList(String nodeName,
@@ -1260,31 +1234,6 @@ public class Misc implements ClipboardOwner {
         //Logger.getLogger(Misc.class.getName()).log(Level.SEVERE, null, ex);
       }
     }
-  }
-
-  private static void read_viminfo_search() {
-    List<String> l = readList(PREF_SEARCH);
-    // HACK
-    if(!l.isEmpty())
-      Search.startupInitializePattern(l.get(0));
-    HistoryContext hc = CommandHistory.SEARCH.initHistory(l);
-    getSearchCommandEntry().setHistory(hc);
-  }
-
-  private static void read_viminfo_command() {
-    List<String> l = readList(PREF_COMMANDS);
-    HistoryContext hc = CommandHistory.COLON.initHistory(l);
-    getColonCommandEntry().setHistory(hc);
-  }
-
-  private static void write_viminfo_search() {
-    List<String> l = CommandHistory.SEARCH.getHistory();
-    writeList(PREF_SEARCH, l);
-  }
-
-  private static void write_viminfo_command() {
-    List<String> l = CommandHistory.COLON.getHistory();
-    writeList(PREF_COMMANDS, l);
   }
 
   /** Read an order list from prefs; no dups. */
@@ -3224,7 +3173,7 @@ private static int put_in_typebuf(String s, boolean colon)
     ViFPOS fpos = cursor.copy();
     int offset = fpos.getOffset();
     int length;
-    int new_offset;
+    //int new_offset;
     if(y_type == MCHAR) {
       if(dir == FORWARD) {
 	// increment position, unless pointing at new line

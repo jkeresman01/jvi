@@ -31,6 +31,8 @@ import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.logging.Level;
 
+import com.google.common.eventbus.Subscribe;
+
 import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.*;
@@ -39,13 +41,15 @@ import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.*;
-import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
 import com.raelity.text.StringSegment;
 
 import static com.raelity.jvi.core.Misc.get_register_value;
+import static com.raelity.jvi.core.Misc.readPrefsList;
 import static com.raelity.jvi.core.Msg.*;
 import static com.raelity.jvi.core.Misc.skipwhite;
+import static com.raelity.jvi.core.Misc.writePrefsList;
 import static com.raelity.jvi.core.Util.beep_flush;
 import static com.raelity.jvi.core.Util.isalpha;
 import static com.raelity.jvi.core.Util.isdigit;
@@ -66,6 +70,11 @@ public enum CommandHistory
 COLON("cmd"),
 SEARCH("search");
 
+private static final String PREF_SEARCH = "search";
+private static final String PREF_COMMANDS = "commands";
+private static final Wrap<PreferencesImportMonitor> pSearchImportCheck = new Wrap<>();
+private static final Wrap<PreferencesImportMonitor> pCommandsImportCheck = new Wrap<>();
+
     @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=10)
     public static class Init implements ViInitialization
     {
@@ -85,6 +94,32 @@ private static void init() {
                            EnumSet.of(CcFlag.NO_PARSE));
     Options.addPropertyChangeListenerSET(
             Options.history, (evt) -> historySizeChange(evt));
+    ViEvent.getBus().register(new Object() {
+        @Subscribe
+        public void readHistories(ViEvent.Boot ev)
+        {
+            
+            List<String> l = readPrefsList(PREF_SEARCH, pSearchImportCheck);
+            // HACK
+            if(!l.isEmpty())
+                Search.startupInitializePattern(l.get(0));
+            HistoryContext hc = SEARCH.initHistory(l);
+            Search.getSearchCommandEntry().setHistory(hc);
+            
+            l = readPrefsList(PREF_COMMANDS, pCommandsImportCheck);
+            hc = COLON.initHistory(l);
+            ColonCommands.getColonCommandEntry().setHistory(hc);
+        }
+        @Subscribe
+        public void writeHistories(ViEvent.Shutdown ev)
+        {
+            List<String> l = SEARCH.getHistory();
+            writePrefsList(PREF_SEARCH, l, pSearchImportCheck.getValue());
+
+            l = COLON.getHistory();
+            writePrefsList(PREF_COMMANDS, l, pCommandsImportCheck.getValue());
+        }
+    });
 }
 
 private HistoryContext history;
