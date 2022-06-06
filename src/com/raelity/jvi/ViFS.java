@@ -31,7 +31,7 @@ import com.raelity.jvi.core.*;
 public interface ViFS
 {
 
-// May return null
+/** Absolute path, may return null. */
 public Path getPath(ViAppView av);
 
 
@@ -44,7 +44,7 @@ public String getDisplayPath(Object o);
 default String getDisplayFileName(ViAppView av, boolean shortname)
 {
     String fn = ViFS.this.getDisplayPath(av);
-    return shortname ? FilePath.getName(fn) : fn;
+    return shortname ? FilePath.getFileNameString(fn) : fn;
 }
 
 public String getDisplayFileNameAndSize(ViBuffer buf);

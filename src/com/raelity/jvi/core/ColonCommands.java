@@ -543,8 +543,6 @@ static StringBuilder expand_filename(StringSegment cmd,
             
             int parse_idx = cmd.getIndex();
             int av_idx = 0; // assume '%'
-            Path path = null;
-            String estr = null;
             // Handle: "#<digits>" and "#-<digit>"
             if (c == '#') {
                 av_idx = -1; // assume only entered '#'
@@ -557,12 +555,20 @@ static StringBuilder expand_filename(StringSegment cmd,
             }
             
             ViAppView av = AppViews.getAppView(av_idx);
+            Path path = null;
+            String estr = null;
             if(av != null)
-                path = FilePath.getVimPath(av.getPath());
+                path = av.getPath();
             if(path == null) {
+                // -1 to include the '%'/'#'
+                String fnShortcut = cmd.substring(parse_idx - 1, cmd.getIndex());
+                if(av != null) {
+                    // An av without a path, pass the shortcut on
+                    sb.append(fnShortcut);
+                    break;
+                }
                 if(estr == null)
-                    // -1 to include the '%'/'#'
-                    estr = cmd.substring(parse_idx - 1, cmd.getIndex());
+                    estr = fnShortcut;
                 Msg.emsg("No file name to substitue for '%s'", estr);
                 return null;
             }

@@ -374,7 +374,7 @@ public class Cc01
                     ViManager.getFS().edit(av, cev.isBang());
             } else if (cev.getNArg() == 1) {
                 String fName = cev.getArg(1);
-                Path path = getVimPath(fName);
+                Path path = getPath(fName);
                 ViManager.getFS().edit(path, cev.isBang(), null);
             } else
                 reportUsage = true;

@@ -30,7 +30,7 @@ public interface ViOutputStream extends AutoCloseable
 {
 /** Indicates that the output stream is for search results */
 public static final String SEARCH = "Search";
-/** Indicates that the output stream is random lines from a file */
+/** Indicates that the output stream is random lines of stuff */
 public static final String LINES = "Text";
 /**
  * Indicates that the output stream is command state information.

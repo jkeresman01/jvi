@@ -167,15 +167,14 @@ private static Path getCheckPathFS(String s)
  * @param _path
  * @return 
  */
-@Deprecated
-public static Path getVimPath(Path _path)
+private static Path getVimPath(Path _path)
 {
     // TODO: make this an absolute path
-    return getVimPathOriginal(_path);
+    return getVimPathTesting(_path);
 }
 
 /** should be private, but need to convert tests */
-static Path getVimPathOriginal(Path _path)
+static Path getVimPathTesting(Path _path)
 {
     // In vim, doing: ":e ~/play/../foobar" doesn't normalize; sigh.
     // getVimPath *does* normalize.
@@ -192,15 +191,48 @@ static Path getVimPathOriginal(Path _path)
     return path;
 }
 
-public static Path getVimPath(String s)
+private static Path getVimPath(String s)
 {
-    return getVimPathOriginal(getCheckPathFS(s));
+    return getVimPathTesting(getCheckPathFS(s));
     //return getAbsolutePath(getVimPathOriginal(getCheckPathFS(s)));
 }
 
+/** should be private, but need to convert tests */
+static Path getVimPathTesting(String s)
+{
+    return getVimPathTesting(getCheckPathFS(s));
+    //return getAbsolutePath(getVimPathOriginal(getCheckPathFS(s)));
+}
+
+/** return absolute path, handle ~/... */
+public static Path getPath(String s)
+{
+    return getAbsolutePath(getVimPathTesting(getCheckPathFS(s)));
+}
+
+/** name may start with tilde */
 public static String getVimDisplayPath(Path path)
 {
-    return getVimPathOriginal(path).toString();
+    return getVimPathTesting(path).toString();
+}
+
+/** 
+ * Split vim path into parent and file typically for display.
+ * Either the parent or file might be "?" when path is not a regular
+ * file or it has no parent.
+ * @return array of two elements, [0]-parent, [1]-file
+ */
+public static String[] getParentAndFileNameString(Path _path)
+{
+    if(_path == null || _path.getNameCount() == 0)
+        return new String[] {"?", "?"};
+
+    String res[] = new String[2];
+    Path path = getVimPath(_path);
+    Path tpath = path.getParent();
+    res[0] = tpath != null ? tpath.toString() : "?";
+    res[1] = path.getFileName().toString();
+    return res;
 }
 
 // /**
@@ -297,8 +329,7 @@ private static String doCwd(String dst_dir, boolean display, Object... junk)
     String exMsg = "";
     Path path;
 
-    //path = getPath(dst_dir);
-    path = getAbsolutePath(getVimPath(dst_dir));
+    path = getPath(dst_dir);
 
     if(!path.isAbsolute())
         path = cwd.resolve(path);
@@ -352,8 +383,9 @@ public static int VALID_HEAD = 2;
  * @param mod_count return number of characters processed
  * @return some kind of vim status info: VALID_PATH and/or VALID_HEAD
  */
-static int modify_fname(StringSegment modifiers, Path path, Wrap<Path> fnamep)
+static int modify_fname(StringSegment modifiers, Path _path, Wrap<Path> fnamep)
 {
+    Path path = getVimPath(_path);
     Path new_path = path.resolve("");
     boolean used_modifier = true;
     int valid = 0;
@@ -448,7 +480,7 @@ static int modify_fname(StringSegment modifiers, Path path, Wrap<Path> fnamep)
                         extension_idx = -1;
                 } else {    // 'r'
                     did_r = true;
-                    String root = removeExtension(str_name);
+                    String root = removeExtensionString(str_name);
                     if(!root.isEmpty())
                         str_name = root;
                 }
@@ -492,10 +524,10 @@ static int modify_fname(StringSegment modifiers, Path path, Wrap<Path> fnamep)
     return valid;
 }
 
-public static String getBaseName(String filename)
-{
-    return removeExtension(getName(filename));
-}
+/////////////////////////////////////////////////////////////////////////////
+//
+// String based methods operate on string paths
+//
 
 public static boolean isSeparator(char c)
 {
@@ -520,7 +552,12 @@ public static int indexOfLastSeparator(String filename)
     }
 }
 
-public static String getName(String filename)
+public static String getBaseNameString(String filename)
+{
+    return removeExtensionString(getFileNameString(filename));
+}
+
+public static String getFileNameString(String filename)
 {
     if(filename == null) {
         return null;
@@ -530,7 +567,7 @@ public static String getName(String filename)
     }
 }
 
-public static String removeExtension(String filename)
+public static String removeExtensionString(String filename)
 {
     if(filename == null) {
         return null;

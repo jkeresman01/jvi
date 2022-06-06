@@ -573,6 +573,7 @@ public enum AppViews
         if(ps == null)
             ps = new StringBuilder(200);
         ps.append("-----------------------------------").append('\n');
+        ps.append("CWD: ").append(FilePath.getCwd()).append('\n');
         ps.append("currentEditorPane = ")
           .append(G.curwin() == null
                   ? "null"

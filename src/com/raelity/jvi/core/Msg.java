@@ -30,6 +30,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.*;
 import com.raelity.jvi.ViOutputStream.COLOR;
+import com.raelity.jvi.ViOutputStream.FLAGS;
 import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
 import com.raelity.jvi.core.ColonCommands.ColonEvent;
 import com.raelity.jvi.core.lib.*;
@@ -164,10 +165,6 @@ public enum Msg
             G.curwin.getStatusDisplay().clearMessage();
     }
 
-    private Msg()
-    {
-    }
-
     private static boolean ok()
     {
         return G.curwin != null && G.curwin.getStatusDisplay() != null;
@@ -246,7 +243,9 @@ public enum Msg
             return;
         }
 
-        try (ViOutputStream vios = ViManager.createOutputStream(null)) {
+        try (ViOutputStream vios = ViManager.createOutputStream(
+                null, ViOutputStream.LINES, "Messages",
+                EnumSet.of(FLAGS.NEW_NO, FLAGS.RAISE_YES, FLAGS.CLEAR_YES))) {
             for(MsgItem mi : Iterables.skip(msgq, skipCount(nDisplay))) {
                 if(mi.type.color == null)
                     vios.println(mi.msg);

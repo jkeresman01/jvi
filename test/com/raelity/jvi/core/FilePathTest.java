@@ -69,7 +69,7 @@ public static void tearDownClass()
 
 static Path getPath(String s)
 {
-    return FilePath.getVimPath(s);
+    return FilePath.getVimPathTesting(s);
 }
 
 static Path getRegularPath(String s)
@@ -172,31 +172,31 @@ public void testGetVimPathOriginal()
 {
     System.out.println("getVimPath");
 
-    assertEquals("~", getVimPathOriginal(getRegularPath(initHomeDir)).toString());
-    assertEquals("~/foo", getVimPathOriginal(getRegularPath(initHomeDir + "/foo")).toString());
+    assertEquals("~", getVimPathTesting(getRegularPath(initHomeDir)).toString());
+    assertEquals("~/foo", getVimPathTesting(getRegularPath(initHomeDir + "/foo")).toString());
     assertEquals(getRegularPath(initHomeDir + "/..").toString(),
-                 getVimPathOriginal(getRegularPath(initHomeDir + "/..")).toString());
+                 getVimPathTesting(getRegularPath(initHomeDir + "/..")).toString());
 
-    assertEquals(initCurDir, getAbsolutePath(getVimPath("")).toString());
-    assertEquals(initCurDir + "/foo/bar", getAbsolutePath(getVimPath("foo/bar")).toString());
+    assertEquals(initCurDir, getAbsolutePath(getVimPathTesting("")).toString());
+    assertEquals(initCurDir + "/foo/bar", getAbsolutePath(getVimPathTesting("foo/bar")).toString());
     assertEquals("",
-                 getVimPathOriginal(getRegularPath(initCurDir)).toString());
+                 getVimPathTesting(getRegularPath(initCurDir)).toString());
     assertEquals("foo/bar",
-                 getVimPathOriginal(getRegularPath(initCurDir + "/foo/bar")).toString());
+                 getVimPathTesting(getRegularPath(initCurDir + "/foo/bar")).toString());
     setCwdTEST(getRegularPath("/").toString(), false);
     assertEquals(initCurDir + "/foo/bar",
-                 getVimPathOriginal(getRegularPath(initCurDir + "/foo/bar")).toString());
+                 getVimPathTesting(getRegularPath(initCurDir + "/foo/bar")).toString());
     
     // homedir/cd1/foo displays differently depending on where you're sitting
     setCwdTEST(initHomeDir + "cd1/cd2", false);
     assertEquals("~/cd1/foo",
-                 getVimPathOriginal(getRegularPath(initHomeDir + "/cd1/foo")).toString());
+                 getVimPathTesting(getRegularPath(initHomeDir + "/cd1/foo")).toString());
     setCwdTEST(initHomeDir, false);
     assertEquals("cd1/foo",
-                 getVimPathOriginal(getRegularPath(initHomeDir + "/cd1/foo")).toString());
+                 getVimPathTesting(getRegularPath(initHomeDir + "/cd1/foo")).toString());
     setCwdTEST(getRegularPath("/").toString(), false);
     assertEquals("~/cd1/foo",
-                 getVimPathOriginal(getRegularPath(initHomeDir + "/cd1/foo")).toString());
+                 getVimPathTesting(getRegularPath(initHomeDir + "/cd1/foo")).toString());
 }
 
 // /**
@@ -860,7 +860,7 @@ public void testGetRealPath()
 public void testGetBaseName()
 {
     System.out.println("getBaseName");
-    assertEquals("b.c", getBaseName("/a/b.c.d"));
+    assertEquals("b.c", getBaseNameString("/a/b.c.d"));
 }
 
 /**
@@ -883,9 +883,9 @@ public void testIndexOfLastSeparator()
 public void testGetName()
 {
     System.out.println("getName");
-    assertEquals("a.b", getName("/a.b"));
-    assertEquals("", getName("/a.b/c/"));
-    assertEquals(".", getName("/a.b/."));
+    assertEquals("a.b", getFileNameString("/a.b"));
+    assertEquals("", getFileNameString("/a.b/c/"));
+    assertEquals(".", getFileNameString("/a.b/."));
 }
 
 /**
@@ -896,8 +896,8 @@ public void testGetName()
 public void testRemoveExtension()
 {
     System.out.println("removeExtension");
-    assertEquals("/a", removeExtension("/a.b"));
-    assertEquals("/a.b/foo", removeExtension("/a.b/foo"));
+    assertEquals("/a", removeExtensionString("/a.b"));
+    assertEquals("/a.b/foo", removeExtensionString("/a.b/foo"));
 }
 
 /**
