@@ -40,16 +40,16 @@ import com.raelity.text.StringSegment;
 import static org.junit.Assert.*;
 //import static org.junit.jupiter.api.Assertions.*;
 
-import static com.raelity.jvi.core.FilePath.*;
+import static com.raelity.jvi.core.VimPath.*;
 
 /**
  *
  * @author err
  */
-public class FilePathTest
+public class VimPathTest
 {
 
-public FilePathTest()
+public VimPathTest()
 {
     //System.err.println("THIS IS A TEST IN FILEPATHTEST");
 }
@@ -69,7 +69,7 @@ public static void tearDownClass()
 
 static Path getPath(String s)
 {
-    return FilePath.getVimPathTesting(s);
+    return VimPath.getVimPathTesting(s);
 }
 
 static Path getRegularPath(String s)

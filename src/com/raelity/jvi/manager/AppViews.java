@@ -280,8 +280,7 @@ public enum AppViews
     {
         Path path = av.getPath();
         if(path != null) {
-            // TODO: av.getPath must always return absolute path
-            String fname = FilePath.getAbsolutePath(path).toString();
+            String fname = path.toString();
             avsClosedMRU.remove(fname);
             avsClosedMRU.addFirst(fname);
             while(avsClosedMRU.size() > nMaxClosed)
@@ -298,8 +297,7 @@ public enum AppViews
     {
         Path path = av.getPath();
         if(path != null) {
-            // TODO: av.getPath must always return absolute path
-            String fname = FilePath.getAbsolutePath(path).toString();
+            String fname = path.toString();
             avsClosedMRU.remove(fname);
         }
     }
@@ -573,7 +571,7 @@ public enum AppViews
         if(ps == null)
             ps = new StringBuilder(200);
         ps.append("-----------------------------------").append('\n');
-        ps.append("CWD: ").append(FilePath.getCwd()).append('\n');
+        ps.append("CWD: ").append(VimPath.getCwd()).append('\n');
         ps.append("currentEditorPane = ")
           .append(G.curwin() == null
                   ? "null"

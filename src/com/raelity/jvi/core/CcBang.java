@@ -226,7 +226,7 @@ public static class BangAction extends AbstractColonAction
 
         ProcessBuilder pb = new ProcessBuilder(shellCommandLine);
         pb.redirectErrorStream(true);
-        pb.directory(FilePath.getCwd().toFile());
+        pb.directory(VimPath.getCwd().toFile());
 
         Process p;
         try {

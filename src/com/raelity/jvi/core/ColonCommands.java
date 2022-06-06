@@ -574,7 +574,7 @@ static StringBuilder expand_filename(StringSegment cmd,
             }
             
             Wrap<Path> fnamep = new Wrap<>();
-            FilePath.modify_fname(cmd, path, fnamep);
+            VimPath.modify_fname(cmd, path, fnamep);
             cmd.previous(); // the last char handled
             sb.append(fnamep.getValue().toString());
             break;

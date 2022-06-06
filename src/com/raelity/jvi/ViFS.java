@@ -44,7 +44,7 @@ public String getDisplayPath(Object o);
 default String getDisplayFileName(ViAppView av, boolean shortname)
 {
     String fn = ViFS.this.getDisplayPath(av);
-    return shortname ? FilePath.getFileNameString(fn) : fn;
+    return shortname ? VimPath.getFileNameString(fn) : fn;
 }
 
 public String getDisplayFileNameAndSize(ViBuffer buf);

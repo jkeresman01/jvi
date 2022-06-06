@@ -33,7 +33,7 @@ import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
-import static com.raelity.jvi.core.FilePath.getCwd;
+import static com.raelity.jvi.core.VimPath.getCwd;
 
 /**
  * NOT USED, jVi should use methods in FilePath.

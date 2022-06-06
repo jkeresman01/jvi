@@ -52,10 +52,10 @@ import static java.nio.file.Files.isExecutable;
  * </p>
  * @author err
  */
-public class FilePath
+public class VimPath
 {
 
-private FilePath() { }
+private VimPath() { }
 
     @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=2)
     public static class Init implements ViInitialization
@@ -63,7 +63,7 @@ private FilePath() { }
     @Override
     public void init()
     {
-        FilePath.init();
+        VimPath.init();
     }
     }
 
