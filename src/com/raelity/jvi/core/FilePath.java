@@ -169,13 +169,6 @@ private static Path getCheckPathFS(String s)
  */
 private static Path getVimPath(Path _path)
 {
-    // TODO: make this an absolute path
-    return getVimPathTesting(_path);
-}
-
-/** should be private, but need to convert tests */
-static Path getVimPathTesting(Path _path)
-{
     // In vim, doing: ":e ~/play/../foobar" doesn't normalize; sigh.
     // getVimPath *does* normalize.
 
@@ -191,17 +184,21 @@ static Path getVimPathTesting(Path _path)
     return path;
 }
 
+static Path getVimPathTesting(Path _path)
+{
+    // TODO: make this an absolute path
+    return getVimPath(_path);
+}
+
 private static Path getVimPath(String s)
 {
-    return getVimPathTesting(getCheckPathFS(s));
-    //return getAbsolutePath(getVimPathOriginal(getCheckPathFS(s)));
+    return getVimPath(getCheckPathFS(s));
 }
 
 /** should be private, but need to convert tests */
 static Path getVimPathTesting(String s)
 {
-    return getVimPathTesting(getCheckPathFS(s));
-    //return getAbsolutePath(getVimPathOriginal(getCheckPathFS(s)));
+    return getVimPath(s);
 }
 
 /** return absolute path, handle ~/... */
