@@ -307,6 +307,22 @@ implements Options.EditControl
         return ViManager.getReleaseString();
     }
 
+    public void setViClosedFiles(int arg) throws PropertyVetoException {
+        put(Options.closedFiles, arg);
+    }
+
+    public int getViClosedFiles() {
+	return getint(Options.closedFiles);
+    }
+
+    public void setViTabCompletionPrefix(boolean arg) {
+        put(Options.tabCompletionPrefix, arg);
+    }
+
+    public boolean getViTabCompletionPrefix() {
+	return getboolean(Options.tabCompletionPrefix);
+    }
+
     public void setViDbgMarks(String arg)  throws PropertyVetoException {
         put(Options.dbgMarks, arg);
     }

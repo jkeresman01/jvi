@@ -357,6 +357,7 @@ public class OptUtil {
     }
   }
 
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
   public static void checkAllForSetCommand() {
     Set<String> hasSetCommand = new HashSet<>();
     for(VimOption vopt : VimOption.getAll()) {

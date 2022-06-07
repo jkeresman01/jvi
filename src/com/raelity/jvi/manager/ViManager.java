@@ -1003,6 +1003,7 @@ final public class ViManager
 
     private static String useFrame_ValueAtBoot;
     private static boolean comboCommandLine_ValueAtBoot;
+    private static boolean tabCompletionPrefix_ValueAtBoot;
 
     // this is called after the options are setup
     private static void setupOptionAtStartup() {
@@ -1014,6 +1015,15 @@ final public class ViManager
                 .getString();
         comboCommandLine_ValueAtBoot = Options.getOption(
                 Options.comboCommandLine).getBoolean();
+        // tabCompletionPrefix_ValueAtBoot = Options.getOption(
+        //         Options.tabCompletionPrefix).getBoolean();
+        // if(tabCompletionPrefix_ValueAtBoot) {
+        //     // If the option isn't set, don't do anything.
+        //     // In that case, it might be overriden in config file.
+        //     System.setProperty(
+        //             "org.netbeans.modules.editor.completion.noTabCompletion",
+        //             "true");
+        // }
     }
 
     // Might be better to save the option value in
@@ -1026,6 +1036,8 @@ final public class ViManager
             return useFrame_ValueAtBoot;
         case Options.comboCommandLine:
             return comboCommandLine_ValueAtBoot;
+        //case Options.tabCompletionPrefix:
+        //    return tabCompletionPrefix_ValueAtBoot;
         default:
             return null;
         }

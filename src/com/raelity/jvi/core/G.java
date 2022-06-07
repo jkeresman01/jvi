@@ -232,6 +232,7 @@ public class G implements ViOptionBag
     public static DebugOption dbgCoordSkip()
         { return dbgCoordSkip; }
     public static DebugOption dbgFonts()
+            
         { return dbgFonts; }
     //
     static DebugOption dbgEditorActivation;
@@ -260,6 +261,7 @@ public class G implements ViOptionBag
     public static boolean p_vb() { return p_vb; }
     public static int p_vbt() { return p_vbt; }
     public static Color p_vbc() { return p_vbc; }
+    public static int p_closedfiles() { return p_closedfiles; }
 
 
     static void p_wsOption_set(boolean f) {
@@ -376,6 +378,9 @@ public class G implements ViOptionBag
     static boolean p_ws;
     // keep cursor in view
     static boolean p_civ;
+    // closed files
+    static int p_closedfiles;
+    static boolean tabCompletionPrefix;
 
     // static String p_ww = "bshl<>[]"; // b,s
     // options for whichwrap: p_ww_bs, ...

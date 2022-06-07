@@ -59,6 +59,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     {
     }
     
+    @SuppressWarnings("serial")
     public static class SetCommandException extends Exception
     {
         

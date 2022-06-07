@@ -28,11 +28,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.raelity.jvi.core.Options;
+import com.raelity.jvi.core.*;
+
 import static com.raelity.jvi.core.Options.*;
 
 /**
- *
+ * TODO: I see no evidence that the array actually should be sorted.
+ *       Get rid of the must be sorted notes.
  * @author Ernie Rael <err at raelity.com>
  */
 public final class VimOption {
@@ -192,6 +194,7 @@ final private static VimOption[] vopts = new VimOption[]{
     // SORTED ALPHABETICALLY, BEFORE F.HIDE
 new VimOption("backspace",   "bs",   backspace,       S.P_GBL, nullF),
 new VimOption("clipboard",   "cb",   unnamedClipboard,S.P_GBL, nullF),
+new VimOption("closedfiles", "",     closedFiles, S.P_GBL, nullF),
 new VimOption("comboCommandLine","", comboCommandLine,S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 new VimOption("cpo_j",       "",     endOfSentence,   S.P_GBL, EnumSet.of(F.HIDE)),
 new VimOption("cpo_search",  "",     searchFromEnd,   S.P_GBL, EnumSet.of(F.HIDE)),
@@ -237,6 +240,7 @@ new VimOption("softtabstop", "sts",  softTabStop,     S.P_BUF, nullF),
 new VimOption("splitbelow",  "sb",   splitBelow,      S.P_GBL, nullF),
 new VimOption("splitright",  "spr",  splitRight,      S.P_GBL, nullF),
 new VimOption("startofline", "sol",  startOfLine,     S.P_GBL, nullF),
+new VimOption("tabCompletionPrefix","",tabCompletionPrefix, S.P_GBL, EnumSet.of(F.HIDE, F.VERBATIM)),
 new VimOption("tabstop",     "ts",   tabStop,         S.P_BUF, nullF),
 new VimOption("textwidth",   "tw",   textWidth,       S.P_BUF, nullF),
 new VimOption("tildeop",     "top",  tildeOperator,   S.P_GBL, nullF),
@@ -273,12 +277,15 @@ new VimOption("viminfoMaxBuf","",    persistedBufMarks,S.P_GBL, EnumSet.of(F.HID
 
     private static int capacity(int c) { return (int)(c / .75) + 3; }
     final private static Map<String, VimOption> mapOptionName
-            = new HashMap<String, VimOption>(capacity(vopts.length));
+            = new HashMap<>(capacity(vopts.length));
     final private static Map<String, VimOption> mapVarName
-            = new HashMap<String, VimOption>(capacity(vopts.length));
+            = new HashMap<>(capacity(vopts.length));
     
+    // both long/short name are in here
     final private static Map<String, VimOption> mapUserName
-            = new HashMap<String, VimOption>(capacity(2 * vopts.length));
+            = new HashMap<>(capacity(2 * vopts.length));
+
+    // Set the maps up, verify things are as expected.
     static {
         for(VimOption vopt : vopts) {
             assert !mapOptionName.containsKey(vopt.getOptName());
@@ -291,7 +298,7 @@ new VimOption("viminfoMaxBuf","",    persistedBufMarks,S.P_GBL, EnumSet.of(F.HID
             if(!vopt.getShortName().isEmpty()
                     && !vopt.getFullName().equals(vopt.getShortName())) {
                 if(mapUserName.containsKey(vopt.getShortName())) {
-                    System.err.println("VimOption VERIFY: " + vopt.getShortName());
+                    G.dbg.println("VimOption VERIFY: " + vopt.getShortName());
                 }
                 assert !mapUserName.containsKey(vopt.getShortName());
                 mapUserName.put(vopt.getShortName(), vopt);

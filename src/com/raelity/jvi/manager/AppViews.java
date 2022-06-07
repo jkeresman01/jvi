@@ -59,14 +59,14 @@ import com.raelity.jvi.lib.*;
  * If the same document is editted in two windows, then
  * there are two of these.
  * <ul>
- * <li>{@link #open(AppView, String)}<br/>
+ * <li>{@link #open(AppView, String)}<br>
  * Add the appView to jVi's lists of known editors.
  * </li>
- * <li>{@link #deactivate}(appView)<br/>
+ * <li>{@link #deactivate}(appView)<br>
  * Inform jVi that the currently active editor is going quiet. Typically some
  * other part fo the application gets focus.
  * </li>
- * <li>{@link #close}(appView)<br/>
+ * <li>{@link #close}(appView)<br>
  * The applications invokes this method when a file is completely
  * removed from a container or should be forgotten by jVi.
  * </li>
@@ -90,9 +90,6 @@ public enum AppViews
     private static final Set<ViAppView> avsNomads = new WeakSet<>();
     private static ViAppView avCurrentlyActive;
     private static ViAppView keepMru;
-
-    // TODO: max closed should be an option
-    private static final int nMaxClosed = 200;
 
     @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=10)
     public static class Init implements ViInitialization
@@ -123,10 +120,12 @@ public enum AppViews
                 Hook hook = ViManager.getCore();
                 avsClosedMRU.addAll(hook.readPrefsList(PREF_CLOSEDFILES,
                                                 pClosedfilesImportCheck));
+                trimClosedMRU();
             }
             @Subscribe
             public void writeClosedMRU(ViEvent.Shutdown ev)
             {
+                trimClosedMRU();
                 Hook hook = ViManager.getCore();
                 hook.writePrefsList(PREF_CLOSEDFILES, avsClosedMRU,
                                     pClosedfilesImportCheck.getValue());
@@ -283,8 +282,7 @@ public enum AppViews
             String fname = path.toString();
             avsClosedMRU.remove(fname);
             avsClosedMRU.addFirst(fname);
-            while(avsClosedMRU.size() > nMaxClosed)
-                avsClosedMRU.removeLast();
+            trimClosedMRU();
         }
     }
 
@@ -300,6 +298,12 @@ public enum AppViews
             String fname = path.toString();
             avsClosedMRU.remove(fname);
         }
+    }
+
+    private static void trimClosedMRU()
+    {
+        while(avsClosedMRU.size() > G.p_closedfiles())
+            avsClosedMRU.removeLast();
     }
 
     /**

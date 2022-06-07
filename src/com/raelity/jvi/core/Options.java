@@ -250,6 +250,9 @@ public final class Options {
   public static final String readOnlyHack = "viReadOnlyHack";
   public static final String classicUndoOption = "viClassicUndo";
   public static final String hideVersionOption = "viHideVersion";
+
+  public static final String tabCompletionPrefix = "viTabCompletionPrefix";
+  public static final String closedFiles = "viClosedFiles";
   
   public static final String dbgRedo = "viDbgRedo";
   public static final String dbgKeyStrokes = "viDbgKeyStrokes";
@@ -574,6 +577,20 @@ public final class Options {
             + " visible. Set this option to false to use xor mode.");
     setExpertHidden(cursorXorBug, true, false);
 
+    createBooleanOption(tabCompletionPrefix, true);
+    setupOptionDesc(Category.PLATFORM,
+                            tabCompletionPrefix,
+                            "TAB inserts common prefix",
+            "This option doesn't work (yet), in the meantime add\n" +
+            "-J-Dorg.netbeans.modules.editor.completion.noTabCompletion=true"
+            + "\nin netbeans.conf\n\n" +
+            "Use the TAB character during command line completion"
+            + " to complete the common prefix from the list. Otherwise,"
+            + " TAB may finish/close the completion list popup.\n\n"
+            + "NOTE: change takes affect after restart."
+            );
+    setExpertHidden(tabCompletionPrefix, false, false);
+
     /////////////////////////////////////////////////////////////////////
     //
     //
@@ -640,12 +657,27 @@ public final class Options {
                   }
               }
             });
-    setupOptionDesc(Category.GENERAL, history,
-                            "'history' 'hi'",
+    setupOptionDesc(Category.GENERAL, history, "'history' 'hi'",
             "A history of ':' commands, and a history of previous search"
           + " patterns is remembered.  This option decides how many entries"
           + " may be stored in each of these histories (see |cmdline-editing|)."
-          + "\nThe maximum value is 1000.");
+          + "\n\nThe maximum value is 1000.");
+
+    createIntegerOption(closedFiles, 200, new Validator<Integer>() {
+              @Override
+              public void validate(Integer val) throws PropertyVetoException {
+                  if(val < 0 || val > 1000) {
+                    reportPropertyVetoException(
+		         "Only 0 - 1000 allowed. Not '" + val + "'.", val);
+                  }
+              }
+            });
+    setupOptionDesc(Category.GENERAL, closedFiles, "'closedfiles'",
+            "An MRU sorted list of closed files, used by the 'e*' command,"
+          + " is remembered between sessions."
+          + "  This option determines how many entries"
+          + " to persist to/from backing store."
+          + "\n\nThe maximum value is 1000.");
 
     createIntegerOption(scrollOff, 0);
     setupOptionDesc(Category.GENERAL, scrollOff, "'scrolloff' 'so'",
