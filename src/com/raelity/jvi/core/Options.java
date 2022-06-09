@@ -806,18 +806,18 @@ public final class Options {
           "Specifies for which type of commands folds will be opened, if the"
         + " command moves the cursor into a closed fold.");
 
-    createBooleanOption(comboCommandLine, false);
-    setupOptionDesc(Category.GENERAL,
-                            comboCommandLine,
-                            "Use combo box command line",
-            "DEPRECATED; combo will be removed in the future."
-            + "\nOptions change takes effect on next restart."
-            + "\n\nWith the introduction of the ':history' command and the"
-            + " capability to click on list items to bring them up on"
-            + " the command line, along with up/down/search-match"
-            + " the combo box is going away; it is too complicated and"
-            + " difficult to maintain.");
-    setExpertHidden(comboCommandLine, true, false);
+    // createBooleanOption(comboCommandLine, false);
+    // setupOptionDesc(Category.GENERAL,
+    //                         comboCommandLine,
+    //                         "Use combo box command line",
+    //         "DEPRECATED; combo will be removed in the future."
+    //         + "\nOptions change takes effect on next restart."
+    //         + "\n\nWith the introduction of the ':history' command and the"
+    //         + " capability to click on list items to bring them up on"
+    //         + " the command line, along with up/down/search-match"
+    //         + " the combo box is going away; it is too complicated and"
+    //         + " difficult to maintain.");
+    // setExpertHidden(comboCommandLine, true, false);
 
     /////////////////////////////////////////////////////////////////////
     //

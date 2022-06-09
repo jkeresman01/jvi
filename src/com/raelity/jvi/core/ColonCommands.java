@@ -127,7 +127,7 @@ static void doColonCommand(StringBuffer range)
 {
     ViCmdEntry cmdEntry = getColonCommandEntry();
     // Disable completion with combo.
-    if(!Options.getOption(Options.comboCommandLine).getBoolean())
+    //if(!Options.getOption(Options.comboCommandLine).getBoolean())
         ViManager.getFactory().commandEntryAssist(cmdEntry, true);
     Options.kd().println("doColonCommand --> startCommandEntry"); //REROUTE
     Scheduler.startCommandEntry(cmdEntry, ":", G.curwin, range);

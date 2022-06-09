@@ -1013,8 +1013,9 @@ final public class ViManager
         // Get the boot value of certain Options
         useFrame_ValueAtBoot = Options.getOption(Options.commandEntryFrame)
                 .getString();
-        comboCommandLine_ValueAtBoot = Options.getOption(
-                Options.comboCommandLine).getBoolean();
+        //comboCommandLine_ValueAtBoot = Options.getOption(
+        //        Options.comboCommandLine).getBoolean();
+
         // tabCompletionPrefix_ValueAtBoot = Options.getOption(
         //         Options.tabCompletionPrefix).getBoolean();
         // if(tabCompletionPrefix_ValueAtBoot) {

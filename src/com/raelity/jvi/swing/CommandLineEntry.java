@@ -78,8 +78,9 @@ public abstract class CommandLineEntry implements ViCmdEntry
     {
         entryType = type;
         //commandLine = new CommandLine();
-        commandLine = !(Boolean)ViManager.getOptionAtStartup(Options.comboCommandLine)
-                            ? new CommandLine() : new CommandLineCombo();
+        //commandLine = !(Boolean)ViManager.getOptionAtStartup(Options.comboCommandLine)
+        //                    ? new CommandLine() : new CommandLineCombo();
+        commandLine = new CommandLine();
         commandLine.addActionListener(this::finishUpEntry);
         commandLine.setMode(entryType == ViCmdEntry.Type.COLON ? ":" : "/");
         if (ViManager.getOsVersion().isMac()) {
