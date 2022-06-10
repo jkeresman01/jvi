@@ -62,9 +62,11 @@ import static com.raelity.text.TextUtil.sf;
 /**
  * Keep track of vi marks.
  */
+@SuppressWarnings("ClassWithMultipleLoggers")
 class MarkOps
 {
     private static final Logger LOG = Logger.getLogger(MarkOps.class.getName());
+    private static final Logger CARET_OFFSET_LOG = Logger.getLogger("org.netbeans.editor.caret.offset");
     //static { LOG.setLevel(ALL); }
 
     private static final String PREF_MARKS = "marks";
@@ -478,6 +480,8 @@ class MarkOps
                 : win.w_jumplist.indexOf(indexedMark);
     }
 
+    private static StringBuilder tsb;
+    private static boolean showOff;
     /**
      * print the marks
      */
@@ -486,6 +490,8 @@ class MarkOps
         @Override
         public void actionPerformed(ActionEvent ev) {
             ColonEvent cev = (ColonEvent)ev;
+            tsb = new StringBuilder(100);
+            showOff = CARET_OFFSET_LOG.isLoggable(FINE);
 
             String arg = null;
             if(cev.getNArg() > 0)
@@ -517,6 +523,7 @@ class MarkOps
             show_one_mark('<', arg, G.curbuf.b_visual_start, null, true);
             show_one_mark('>', arg, G.curbuf.b_visual_end, null, true);
             show_one_mark(MySegment.DONE, arg, null, null, false);
+            tsb = null;
         }
     }
 
@@ -568,7 +575,7 @@ class MarkOps
                 if(arg == null)
                     Msg.smsg("No marks set");
                 else
-                    Msg.emsg("No marks mastching \"" + arg + "\"");
+                    Msg.emsg("No marks matching \"" + arg + "\"");
             }
         }
         else if((arg == null || vim_strchr(arg, 0, c) >= 0)
@@ -577,23 +584,25 @@ class MarkOps
                 && (p instanceof Filemark || p.isValid())) {
             if(!did_title) {
                 /* Highlight title */
-                String heading = "\nmark line  col file/text";
-                svios = ViManager.createOutputStream(heading);
+                tsb.setLength(0);
+                tsb.append("\nmark line  col ");
+                if(showOff)
+                    tsb.append("   off ");
+                tsb.append("file/text");
+                svios = ViManager.createOutputStream(tsb.toString());
                 did_title = true;
             }
             if (true /*!got_int*/)
             {
-                String s = String.format(" %c %6d %4d ",
-                        c, p.getLine(), p.getColumn());
+                tsb.setLength(0);
+                tsb.append(sf(" %c %6d %4d ", c, p.getLine(), p.getColumn()));
+                if(showOff)
+                    tsb.append(sf("%6d ", p.getOffset()));
                 if (name == null && current)
-                {
                     name = mark_line(p, 15);
-                }
                 if (name != null)
-                {
-                    s += name;
-                }
-                svios.println(s);
+                    tsb.append(name);
+                svios.println(tsb.toString());
             }
         }
     }

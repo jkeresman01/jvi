@@ -22,19 +22,23 @@ motd-message:
 Install "jVi Update Center JDK-11"
 <EOT>
 
+motd-link: https://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/
+All jVi download files, including zip releases.
+<EOT>
+
 motd-link: http://jvi.sourceforge.net/?CHANGES.html
 See jVi recent features and CHANGES at website including
 <EOT>
 
 #* see CHANGES about:
 motd-message:
-*     2.0.x: :cd, :pwd for :!cmd and :e fname. :cd and :e have Ctrl-D for path completion popup
+*     2.0.x: :cd, :pwd for :!cmd and :e ~/d/f. :e %:h:h/fname. All filename-modifiers.
+*            :cd and :e have Ctrl-D for path completion popup. :messages. 
+*            :e* Ctrl-D for closed files, repeat Ctrl-D for different sorting.
 *     1.6.x: Ctrl-R on command line. Visual mode and multiple views of a file.
 *            :tab* commands; magic option and \v,\m... for searching
 *            :history clickable output, 'history', history up/down arrows and matching
-*     1.5.x: fold commands & fdo option, smarter scrolling, visual bell option
-*     split, resize and move window commands, e.g. Ctrl-W_s, Ctrl-W_=, Ctrl-W_L
-*     multi-char {lhs} mappings, including insert mode, w/timeout options
+*     split, resize and move window commands; multi-char {lhs} mappings; visual bell
 <EOT>
 
 # motd-message:
@@ -47,10 +51,6 @@ motd-message:
 #motd-link: http://jvi.sourceforge.net/?CHANGES.html
 #See jVi recent features and CHANGES at website
 #<EOT>
-
-motd-link: https://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/
-All jVi download files
-<EOT>
 
 # After 1.2.6.beta2 the following is a way to output a message
 #motd-message:

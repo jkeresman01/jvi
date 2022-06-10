@@ -116,7 +116,7 @@ class Mark implements ViMark
                 if(getChar(offset - 1) != '\n') // DONE
                     --offset;
             }
-            pos = buf.getDocument().createPosition(offset);
+            pos = buf.createPositionSwing(offset);
         } catch (BadLocationException ex) {
             pos = null;
         }

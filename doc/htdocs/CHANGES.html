@@ -68,6 +68,20 @@
 -->
 
 
+<h2>Summary of major feature additions</h2>
+<pre>
+   2.0.x: :cd, :pwd for :!cmd and :e ~/d/f. :e %:h:h/fname. All filename-modifiers.
+          :cd and :e have Ctrl-D for path completion popup. :messages. 
+          :e* Ctrl-D for closed files, repeat Ctrl-D for different sorting.
+   1.6.x: Ctrl-R on command line. Visual mode and multiple views of a file.
+          :tab* commands; magic option and \v,\m... for searching
+          :history clickable output, 'history', history up/down arrows and matching
+   1.5.x: fold commands & fdo option, smarter scrolling, visual bell option
+   1.4.x: split, resize and move window commands, e.g. Ctrl-W_s, Ctrl-W_=, Ctrl-W_L
+          multi-char {lhs} mappings, including insert mode, w/timeout options
+</pre>
+
+
 <h2>jVi-2.0 Release, NB-12/JDK-11 and later</h2>
 <p>
   jVi is compiled with JDK-11. As good an excuse as any to bump major.
@@ -75,7 +89,7 @@
   for older releases.
 </p>
 
-<b>Version 2.0.4+ - 2022/xx/xx</b>
+<b>Version 2.0.6+ - 2022/xx/xx</b>
 <dl>
   <dt>jVi Core</dt>
   <dd>
@@ -125,6 +139,11 @@
         <span class="tt">MRU</span> and <span class="tt">activation</span>
         lists side by side with file's short name.
       </li>
+      <li>Remove the deprecated (and difficult to maintain)
+        <span class="tt">'Use combo box command Line'</span> option.
+        Instead, use the up/down arrow keys along with the
+        <span class="tt">:history</span> command.
+      </li>
     </ul>
   </dd>
   <dt>jVi NetBeans KeyBindings</dt>
@@ -155,6 +174,11 @@
         Fix a long standing obscure/rare bug where a
         <span class="tt">mark</span> or <span class="tt">filemark</span>
         gets mysteriously set to first line of its file.
+        <p>
+          When NetBeans sends de-activation event for a TopComponent, an
+          associated editor's document is considered invalid; accesses to
+          it usally produce correct results and no errors are indicated.
+        </p>
       </li>
       <li>
         Fix unexpected scroll in other window of same file as editing.
@@ -168,6 +192,10 @@
       <li>
         Using a <span class="tt">filemark</span> (upper case mark)
         didn't leave the cursor placed correctly when switching windows.
+      </li>
+      <li>
+        After reload due to external file change, marks and filemarks could be
+        set to offset 0.
       </li>
     </ul>
   </dd>

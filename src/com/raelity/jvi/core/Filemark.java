@@ -169,7 +169,12 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
 
         dbg.printf(INFO, "FM: write filemarks\n");
         // could delete stuff that isn't in the map
-        for(Filemark fm : map.values()) {
+        for(Filemark tfm : map.values()) {
+            Filemark fm = tfm;
+            if(fm.isActiveFilemark() && !compareShadow(fm, fm.mark)) {
+                dbg.printf(WARNING, () -> sf("FM: shutdown external change %s\n", dump(tfm)));
+                fm = new Filemark(fm.markName, fm.mark);
+            }
             fm.persist();
         }
     }

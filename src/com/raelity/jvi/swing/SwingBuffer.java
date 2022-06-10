@@ -58,6 +58,12 @@ abstract public class SwingBuffer extends Buffer
         super(tv);
         doc = ((JTextComponent)tv.getEditor()).getDocument();
         startDocumentEvents();
+    }
+
+    @Override
+    protected void firstGo()
+    {
+        super.firstGo();
 
         // An empty buffer gets a
         // com.raelity.jvi.ViMark$MarkException: Uninitialized Mark
@@ -70,6 +76,8 @@ abstract public class SwingBuffer extends Buffer
         b_op_start.setMark(createFPOS(0));
         b_op_end.setMark(createFPOS(0));
     }
+
+
 
     @Override
     public void removeShare() {
@@ -298,6 +306,16 @@ abstract public class SwingBuffer extends Buffer
     //
     // Marks
     //
+
+    protected Position createPositionSwing(int offs) throws BadLocationException
+    {
+        return getDocument().createPosition(offs);
+    }
+
+    protected Position getStartPositionSwing()
+    {
+        return getDocument().getStartPosition();
+    }
     
     @Override
     public ViMark createMark(ViFPOS fpos) {
@@ -665,11 +683,11 @@ abstract public class SwingBuffer extends Buffer
                     else
                         --offset;
                 }
-                p = getDocument().createPosition(offset);
+                p = createPositionSwing(offset);
             } catch(BadLocationException ex) {
                 Logger.getLogger(SwingBuffer.class.getName()).
                         log(Level.SEVERE, null, ex);
-                p = getDocument().getStartPosition();
+                p = getStartPositionSwing();
             }
             this.bias = bias;
         }

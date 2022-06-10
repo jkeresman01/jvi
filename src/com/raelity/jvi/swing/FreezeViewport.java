@@ -40,6 +40,7 @@ public class FreezeViewport implements DocumentListener, ChangeListener
     private JTextComponent ep;
     private JViewport vp;
     private AbstractDocument doc;
+    private SwingBuffer buf;
     private Position frozenMark;
     private int topLine;
     private int nLine;
@@ -53,6 +54,9 @@ public class FreezeViewport implements DocumentListener, ChangeListener
         if (!(o instanceof AbstractDocument)) {
             return;
         }
+        buf = (SwingBuffer)ViManager.getFactory().getBuffer(ep);
+        if(buf == null)
+            return;
         doc = (AbstractDocument)ep.getDocument();
         try {
             doc.readLock();
@@ -79,7 +83,8 @@ public class FreezeViewport implements DocumentListener, ChangeListener
         int offset = doc.getDefaultRootElement().getElement(topLine).getStartOffset();
         // Get marker to offset in the document.
         // This is the pin.
-        frozenMark = doc.createPosition(offset);
+        // TODO: use NB position
+        frozenMark = buf.createPositionSwing(offset);
     }
     
     /** Return calculated/current top line of viewport.
