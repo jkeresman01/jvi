@@ -102,14 +102,14 @@ public class XMLUtil {
      * @param javaStr the Java string to be transformed into XML text.  If
      *      the string is <tt>null</tt>, then <tt>null</tt> is returned.
      * @return the XML version of <tt>javaStr</tt>.
-     * @see #utf2xml( String, StringBuffer )
+     * @see #utf2xml( String, StringBuilder )
      */
     public String utf2xml(String javaStr)
     {
         if(javaStr == null) {
             return null;
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         utf2xml(javaStr, sb);
         return sb.toString();
     }
@@ -168,12 +168,12 @@ public class XMLUtil {
      *
      * @param javaStr the Java string to be transformed into XML text. If
      *      it is <tt>null</tt>, then the text "null" is appended to the
-     * @param output the StringBuffer to send the transformed XML into.
+     * @param output the StringBuilder to send the transformed XML into.
      */
-    public void utf2xml(String javaStr, StringBuffer output)
+    public void utf2xml(String javaStr, StringBuilder output)
     {
         if(output == null) {
-            throw new IllegalArgumentException("No null StringBuffer");
+            throw new IllegalArgumentException("No null StringBuilder");
         }
         if(javaStr == null) {
             // original:

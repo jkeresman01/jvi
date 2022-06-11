@@ -93,7 +93,7 @@ public class Mapping {
 
     /**
      * verbose mean can return "nvo" other wise that is return as ""
-     * @return the number of characters added to the StringBuffer
+     * @return the string
      */
     static String modeString(int mode, boolean verbose)
     {

@@ -1398,7 +1398,7 @@ public class Misc implements ClipboardOwner {
 
         y_width--;  // WISH I NEW WHY THIS IS NEEDED, see vim's str_to_reg
         
-        //y_array[0] = new StringBuffer(s);
+        //y_array[0] = new StringBuilder(s);
       } else {
         y_width = 0;
         int offset = 0;
@@ -3089,7 +3089,7 @@ private static int put_in_typebuf(String s, boolean colon)
    */
   public static void do_put(int regname_, int dir, int count, int flags)
   {
-    //StringBuffer        ptr;
+    //StringBuilder        ptr;
     int                 ptr_idx;
     MySegment           oldp;
     StringBuilder        newp;
@@ -3554,9 +3554,9 @@ private static int put_in_typebuf(String s, boolean colon)
     } catch(IOException | UnsupportedFlavorException e) {
       Util.beep_flush();
     }
-    // NEEDSWORK: use a string reader and transfer to StringBuffer
+    // NEEDSWORK: use a string reader and transfer to StringBuilder
     get_yank_register('*', false);
-    // y_regs[CLIPBOARD_REGISTER].y_array = new StringBuffer(s);
+    // y_regs[CLIPBOARD_REGISTER].y_array = new StringBuilder(s);
     y_regs[CLIPBOARD_REGISTER].setData(s, getClipboardType(cb));
   }
 

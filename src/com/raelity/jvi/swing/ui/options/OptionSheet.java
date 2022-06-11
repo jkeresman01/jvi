@@ -187,7 +187,7 @@ class OptionSheet extends JPanel implements Options.EditControl {
         }
         // exclude the hidden properties
         Property[] properties = new Property[descriptors.length - nHidden];
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         XMLUtil xmlFix =
                 new XMLUtil(IN_RANGE_INVALID_CR, IN_RANGE_VALID_CR);
         for(int i = 0, i2 = 0, c = descriptors.length; i < c; i++) {

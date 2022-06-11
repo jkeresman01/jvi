@@ -1883,7 +1883,7 @@ normal_end: {
   }
   
   static private  void	op_colon (OPARG oap) {
-      StringBuffer range = new StringBuffer();
+      StringBuilder range = new StringBuilder();
       if(oap.is_VIsual) {
         range.append("'<,'>");
       } else {
@@ -2141,8 +2141,8 @@ normal_end: {
   // Kind of messy.
   //
 
-  static StringBuffer showcmd_buf = new StringBuffer();
-  static StringBuffer old_showcmd_buf = new StringBuffer();
+  static StringBuilder showcmd_buf = new StringBuilder();
+  static StringBuilder old_showcmd_buf = new StringBuilder();
   //static boolean showcmd_is_clear = true;
 
   static void clear_showcmd() {
@@ -2496,7 +2496,7 @@ normal_end: {
        nv_operator(cap);
     } else if( ! checkclearop(cap.oap)) {
       // translate "count:" into ":.,.+(count - 1)"
-      StringBuffer range = new StringBuffer();
+      StringBuilder range = new StringBuilder();
       if(cap.count0 != 0) {
         range.append(".");
         // since count1 != 0, then probably > 0. Oh well, just like vim

@@ -123,7 +123,7 @@ static private void colonEntryComplete( ActionEvent ev )
     }
 }
 
-static void doColonCommand(StringBuffer range)
+static void doColonCommand(StringBuilder range)
 {
     ViCmdEntry cmdEntry = getColonCommandEntry();
     // Disable completion with combo.

@@ -538,7 +538,7 @@ public final class CommandLine extends AbstractCommandLine
 
     private class CommandLineTextField extends JTextField // JTextPane
     {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
 
     Color fg;
     private void saveColorFg() {

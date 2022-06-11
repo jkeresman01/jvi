@@ -315,7 +315,7 @@ public abstract class CommandLineEntry implements ViCmdEntry
                                 "\u001b", e.getModifiers());
         }
         if (e.getActionCommand().charAt(0) == '\n') {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             if (!initialText.isEmpty() && lastCommand.startsWith(initialText)) {
                 sb.append(lastCommand.substring(initialText.length()));
             } else {

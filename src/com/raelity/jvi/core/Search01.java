@@ -240,7 +240,7 @@ public class Search01 {
 
     int line1 = cev.getLine1();
     int line2 = cev.getLine2();
-    StringBuffer sb;
+    StringBuilder sb;
     if(! G.global_busy) {
       nSubLine = 0;
       nSubMatch = 0;
@@ -323,7 +323,7 @@ public class Search01 {
   {
     MySegment seg = G.curbuf.getLineSegment(lnum);
 
-    StringBuffer sb = null;
+    StringBuilder sb = null;
     int lookColumnOffset = 0;
     int lastMatchColumn = -1;
     int countChanges = 0;
@@ -384,7 +384,7 @@ public class Search01 {
       lookColumnOffset = prog.stop(0) - seg.offset;
       if(modalResponse != 'n' && modalResponse != 'q') {
         if(sb == null) { // match and do substitute, make sure there's a buffer
-          sb = new StringBuffer();
+          sb = new StringBuilder();
         }
         CharSequence changedData = flags.testAnyBits(SUBST_ESCAPE)
                                 ? translateSubstitution(prog, seg, sb, subs)
@@ -435,7 +435,7 @@ public class Search01 {
    */
   private static CharSequence translateSubstitution(RegExp prog,
                                    MySegment line,
-                                   StringBuffer sb,
+                                   StringBuilder sb,
                                    CharSequence subs)
   {
     int i = 0;

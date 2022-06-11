@@ -265,15 +265,15 @@ public class Scheduler
      */
     public static void startCommandEntry(ViCmdEntry commandEntry, String mode,
                                          ViTextView tv,
-                                         StringBuffer initialString)
+                                         StringBuilder initialString)
     {
         Msg.clearMsg();
         if (initialString == null)
-            initialString = new StringBuffer();
+            initialString = new StringBuilder();
         if (activeCommandEntry != null)
             throw new RuntimeException("activeCommandEntry not null");
         activeCommandEntry = commandEntry;
-        StringBuffer initialStringF = initialString;
+        StringBuilder initialStringF = initialString;
         Options.kd().printf(() ->
               sf("startCommandEntry: set ACE tv %s, '%s'\n", ViManager.cid(tv),
                                                              initialStringF)); //REROUTE

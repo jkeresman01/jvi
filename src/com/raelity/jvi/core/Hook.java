@@ -118,7 +118,7 @@ public class Hook
         GetChar.flush_buffers(typeahead);
     }
 
-    public boolean getRecordedLine(StringBuffer sb)
+    public boolean getRecordedLine(StringBuilder sb)
     {
         return GetChar.getRecordedLine(sb);
     }

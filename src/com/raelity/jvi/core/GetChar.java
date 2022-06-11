@@ -420,7 +420,7 @@ public class GetChar {
      * the CR. If the input stream empties, just return what was available.
      * @return true when a CR was encountered, else false
      */
-    static boolean getRecordedLine(StringBuffer sb) {
+    static boolean getRecordedLine(StringBuilder sb) {
         boolean hasCR = false;
         while(true) {
             if( ! char_avail()) {
