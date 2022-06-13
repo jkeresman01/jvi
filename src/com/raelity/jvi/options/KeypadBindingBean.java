@@ -69,13 +69,11 @@ public BeanDescriptor getBeanDescriptor() {
             addDesc(vD, key, "Shift");
         }
         
-	return vD.toArray(new PropertyDescriptor[0]);
+	return vD.toArray(PropertyDescriptor[]::new);
     }
     
     private void addDesc(List<PropertyDescriptor> vD, String key, String mod)
     {
-	int i = 0;
-
         PropertyDescriptor d;
         String displayName = mod.length() == 0 ? key : mod + "-" + key;
         // Want things to display nicely ordered, unmodifed keys followed by

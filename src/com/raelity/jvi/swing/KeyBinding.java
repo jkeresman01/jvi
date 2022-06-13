@@ -90,7 +90,7 @@ private static Action createKeyAction( String name, char key ) {
   
   public static boolean notImpDebug = false;
 
-  static final String enqueKeyAction = "enque-key";
+  //static final String enqueKeyAction = "enque-key";
 
   private static void init() {
       createSubKeymaps();
@@ -160,7 +160,7 @@ private static Action createKeyAction( String name, char key ) {
    */
   public static JTextComponent.KeyBinding[] getBindings() {
     List<JTextComponent.KeyBinding> l = getBindingsListInternal();
-    return l.toArray(new JTextComponent.KeyBinding[l.size()]);
+    return l.toArray(JTextComponent.KeyBinding[]::new);
   }
   
   // NEEDSWORK: when bindings change, need to NULL this list
@@ -181,7 +181,7 @@ private static Action createKeyAction( String name, char key ) {
     if(bindingList != null) {
         return bindingList;
     }
-    bindingList = new ArrayList<JTextComponent.KeyBinding>();
+    bindingList = new ArrayList<>();
     List<JTextComponent.KeyBinding> bl = bindingList;
 
     //
@@ -346,7 +346,7 @@ private static Action createKeyAction( String name, char key ) {
      */
     private static Action[] getActions() {
       List<Action> l = getActionsListInternal();
-      return l.toArray(new Action[l.size()]);
+      return l.toArray(Action[]::new);
     }
   
     private static List<Action> actionList;
@@ -372,7 +372,6 @@ private static Action createKeyAction( String name, char key ) {
     private static List<Action> createActionList() {
         List<Action> actionsList = new ArrayList<>();
         try {
-            ViFactory factory = getFactory();
             actionsList.add(createKeyAction("ViUpKey", K_UP));
             actionsList.add(createKeyAction("ViDownKey", K_DOWN));
             actionsList.add(createKeyAction("ViLeftKey", K_LEFT));
@@ -451,7 +450,7 @@ private static Action createKeyAction( String name, char key ) {
             LOG.log(Level.SEVERE, null, e);
         }
 
-        actionsMap = new HashMap<String, Action>();
+        actionsMap = new HashMap<>();
         for(Action a : actionsList) {
             TextAction ta = (TextAction) a;
             actionsMap.put((String) ta.getValue(Action.NAME), a);
@@ -462,7 +461,7 @@ private static Action createKeyAction( String name, char key ) {
   
   public static JTextComponent.KeyBinding[] getInsertModeBindings() {
     List<JTextComponent.KeyBinding> l = getInsertModeBindingsList();
-    return l.toArray(new JTextComponent.KeyBinding[l.size()]);
+    return l.toArray(JTextComponent.KeyBinding[]::new);
   }
 
   public static List<JTextComponent.KeyBinding> getInsertModeBindingsList() {
