@@ -1,17 +1,21 @@
 See `CHANGES <http://jvi.sourceforge.net/?CHANGES.html>`_ for per release
 feature and fix information and details.
-In NetBeans, install "jVi for NB Update Center",
+In NetBeans, install "jVi Update Center JDK-11",
 with Tools>Plugins>AvailablePlugins
 (source: Plugin Portal, category: editing)
 
 If needed, manually install a jVi update center into NetBeans with Plugins>Settings>Add, use the URL:
 
-http://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-11-and-later/UC/catalog.xml.gz
+https://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-12_JDK-11/UC/catalog.xml.gz
 
+| **nbvi-2.0.6**
+|     - "~/..." with :cd, :e ; like vim display filenames relative to ~, cdir, /.
+|     - :messages; all filename-modifiers: :h, :t, :p, ...
+|     - :e* Ctrl-D for closed files, repeat Ctrl-D for different sorting.
 | **nbvi-2.0.0** JDK-11
 |     - :cd, :pwd, :e path-name
 |     - With :cd and :e use Ctrl-D for directory and filename completion popup
-| **nbvi-1.6.5** Fix VisualMode highlighting acts like vim when multiple views of same file and switching views.
+| **nbvi-1.6.5** Fix VisualMode highlighting to act like vim when multiple views of same file and switching views.
 |     - Handle Ctrl-R in command line
 |     - Fix issues drawing caret over TAB
 | **nbvi-1.6.4** Search/VisualMode higlighting performance improvement
