@@ -227,7 +227,7 @@ public static String[] getParentAndFileNameString(Path _path)
     String res[] = new String[2];
     Path path = getVimPath(_path);
     Path tpath = path.getParent();
-    res[0] = tpath != null ? tpath.toString() : "?";
+    res[0] = tpath != null ? tpath.toString() : "";
     res[1] = path.getFileName().toString();
     return res;
 }
