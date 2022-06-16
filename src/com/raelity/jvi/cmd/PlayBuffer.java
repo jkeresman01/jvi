@@ -38,6 +38,12 @@ public class PlayBuffer extends SimpleBuffer
     }
 
     @Override
+    public boolean isDirty()
+    {
+        return true;
+    }
+
+    @Override
     public File getFile()
     {
         return new File("/tmp/test.file");

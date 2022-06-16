@@ -45,6 +45,8 @@ public interface ViBuffer {
     public Object getDocument();
 
     public boolean isActive();
+
+    public boolean isDirty();
     
     /** Replace indicated region with string */
     public void replaceString(int start, int end, String s);
