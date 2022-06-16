@@ -57,6 +57,7 @@ import javax.swing.text.Caret;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.PlainDocument;
 import javax.swing.text.TextAction;
 
 import org.openide.util.WeakSet;
@@ -550,6 +551,12 @@ abstract public class SwingFactory implements ViFactory
         } else {
             return new WindowCmdEntry(type);
         }
+    }
+
+    // TODO: get rid of this, incorporate into createCmdEntry, builder pattern DOC
+    public Document createCmdEntryDoc()
+    {
+        return new PlainDocument();
     }
     
     

@@ -556,11 +556,13 @@ public final class CommandLine extends AbstractCommandLine
     }
 
     public CommandLineTextField(String value,int n) {
-        super(value, n);
+        // TODO: get rid of this, incorporate into createCmdEntry, builder pattern DOC
+        super(((SwingFactory)ViManager.getFactory()).createCmdEntryDoc(),
+              value, n);
         //super(new DefaultStyledDocument());
         //setText("");
     }
-    
+
     @Override
     protected void fireCaretUpdate(CaretEvent e)
     {
