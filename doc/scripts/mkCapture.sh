@@ -18,6 +18,12 @@ if [[ $# -gt 2 || ( -z "$srcdir" || -z "$dstdir" ) ]]; then
     exit 1
 fi
 
+report_error() {
+    echo $1
+    echo ABORT: $CMD
+    exit 1
+}
+
 Main() {
 
     local -i is_mvn=0
@@ -44,6 +50,9 @@ Main() {
         # must be ant based, find a directory with both updates.xml
         # and licenses
         updx=$(find $srcdir/build -name updates.xml)
+        if [[ -z "$updx" ]]; then
+            report_error "Not found: $srcdir/build/.../updates.xml"
+        fi
         updx=${updx%/*}
         FILES="$updx/updates.xml $updx/*.nbm $updx/licenses"
         is_mvn=0
@@ -54,9 +63,7 @@ Main() {
     do
         if [[ ! -e $i ]]
         then
-            echo not found: $i
-            echo ABORT: $CMD
-            exit 1
+            report_error "Not found: $i"
         fi
     done
 

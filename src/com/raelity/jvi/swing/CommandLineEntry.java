@@ -234,8 +234,11 @@ public abstract class CommandLineEntry implements ViCmdEntry
         Rectangle pos = jc.getBounds(); // become bounds for commmand entry
         pos.translate(0, jc.getHeight()); // just beneath component
         pos.height = d00.height;
-        // trim the width
-        pos.width = Math.min(500, jc.getWidth());
+        // should be mono font, 'w' and '.' same width
+        JTextComponent t = commandLine.getTextComponent();
+        int charWidth = t.getFontMetrics(t.getFont()).charWidth('w');
+        // full width of editor, but at least 80 columns
+        pos.width = Math.max(charWidth * 80, jc.getWidth());
         // now translate bounds so relative to root pane
         Point p00 = SwingUtilities.convertPoint(jc.getParent(), pos.x, pos.y, root);
         pos.setLocation(p00);
