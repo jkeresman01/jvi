@@ -40,7 +40,7 @@ import com.raelity.jvi.ViTextView.FOLDOP;
 import com.raelity.jvi.ViTextView.HDIR;
 import com.raelity.jvi.ViTextView.HSCROLL;
 import com.raelity.jvi.ViTextView.TAGOP;
-import com.raelity.jvi.core.Misc.Yankreg;
+import com.raelity.jvi.core.Ops.Yankreg;
 import com.raelity.jvi.core.lib.NotSupportedException;
 import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.MutableInt;
@@ -59,6 +59,7 @@ import static com.raelity.jvi.core.G.updateTextViewsVisual;
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
+import static com.raelity.jvi.core.Ops.*;
 import static com.raelity.jvi.core.Search.*;
 import static com.raelity.jvi.core.Search01.*;
 import static com.raelity.jvi.core.Search02.*;
@@ -4966,8 +4967,8 @@ nv_brackets(CMDARG cap, int dir)
 
   static private  void	nv_normal (CMDARG cap) {eatme(cap);}
   static void do_exmode() {}
-  static void update_screen(boolean flag) {}
-  static void update_screen(int flag) {}
+  //static void update_screen(boolean flag) {}
+  //static void update_screen(int flag) {}
 
 
 

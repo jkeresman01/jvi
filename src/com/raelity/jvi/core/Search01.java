@@ -43,6 +43,7 @@ import static com.raelity.jvi.core.Edit.*;
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
+import static com.raelity.jvi.core.Ops.op_delete;
 import static com.raelity.jvi.core.Search.*;
 import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
@@ -700,7 +701,7 @@ public class Search01 {
       } else if(cmdAction == Cc01.getActionDelete()) {
         OPARG oa = ColonCommands.setupExop(cevAction, true);
         oa.op_type = OP_DELETE;
-        Misc.op_delete(oa);
+        op_delete(oa);
       } else if(cmdAction == Cc01.getActionGlobal()) {
         Msg.emsg("Cannot do :global recursively");
         return;

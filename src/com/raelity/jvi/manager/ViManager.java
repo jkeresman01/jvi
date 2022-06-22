@@ -21,8 +21,6 @@ package com.raelity.jvi.manager;
 
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.SystemFlavorMap;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EnumSet;
@@ -103,7 +101,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("2.0.7.x1");
+    public static final jViVersion version = new jViVersion("2.0.7.x3");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -111,10 +109,6 @@ final public class ViManager
 
     public static final String PREFS_ROOT = "com/raelity/jvi";
     public static final String PREFS_KEYS = "KeyBindings";
-
-    public static final String VIM_CLIPBOARD = "VimClipboard";
-    public static final String VIM_CLIPBOARD2 = "VimClipboard2";
-    public static final String VIM_CLIPBOARD_RAW = "VimRawBytes";
 
     public enum OsVersion
     {
@@ -582,31 +576,6 @@ final public class ViManager
         if (o == null)
             return "(null)";
         return Integer.toHexString(System.identityHashCode(o));
-    }
-
-    // public static final DataFlavor VimClipboard
-    //         = addVimClipboard(VIM_CLIPBOARD);
-    public static final DataFlavor VimClipboard2
-            = addVimClipboard(VIM_CLIPBOARD2);
-    // public static final DataFlavor VimRawBytes
-    //         = addVimClipboard(VIM_CLIPBOARD_RAW);
-
-    private static DataFlavor addVimClipboard(String cbName)
-    {
-        DataFlavor df = null;
-        SystemFlavorMap sfm
-                = (SystemFlavorMap)SystemFlavorMap.getDefaultFlavorMap();
-        try {
-            df = new DataFlavor("application/"
-                    + cbName
-                    + "; class=java.io.InputStream");
-        } catch (ClassNotFoundException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        }
-
-        sfm.addFlavorForUnencodedNative(cbName, df);
-        sfm.addUnencodedNativeForFlavor(df, cbName);
-        return df;
     }
 
     private static int jViBusy;

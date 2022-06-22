@@ -35,6 +35,7 @@ import com.raelity.text.MySegment;
 import static com.raelity.jvi.core.GetChar.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
+import static com.raelity.jvi.core.Ops.*;
 import static com.raelity.jvi.core.Normal.*;
 import static com.raelity.jvi.core.Options.*;
 import static com.raelity.jvi.core.Util.*;
@@ -818,7 +819,7 @@ private static void edit_clearPutchar()
     if (type == INDENT_SET)
       Misc.set_indent(amount, true);
     else
-      Misc.shift_line(type == INDENT_DEC, round, 1);
+      shift_line(type == INDENT_DEC, round, 1);
     insstart_less -= G.curwin.w_cursor.getColumn();
     
     //
@@ -1805,7 +1806,7 @@ private static class GetLiteral implements HandleNextChar
          do_put(regname, BACKWARD, 1,
               (literally == CTRL_P ? PUT_FIXINDENT : 0) | PUT_CURSEND);
      }
-     else if (Misc.insert_reg(regname, literally != 0) == FAIL) {
+     else if (insert_reg(regname, literally != 0) == FAIL) {
         vim_beep();
         //need_redraw = TRUE;	/* remove the '"' */
       }
@@ -2012,7 +2013,7 @@ private static class GetLiteral implements HandleNextChar
     {
       temp = G.curwin.w_cursor.getOffset();
       if (!Options.can_bs(BS_EOL)		// only if "eol" included
-              || Misc.do_join(false, true) == FAIL) {
+              || do_join(false, true) == FAIL) {
         Util.vim_beep();
       } else {
         G.curwin.w_cursor.set(temp);

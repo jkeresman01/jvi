@@ -47,6 +47,7 @@ import static com.raelity.jvi.core.CcBang.lastBangCommand;
 import static com.raelity.jvi.core.Edit.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
+import static com.raelity.jvi.core.Ops.*;
 import static com.raelity.jvi.core.Util.isdigit;
 import static com.raelity.jvi.core.Util.vim_str2nr;
 import static com.raelity.jvi.core.lib.Constants.*;

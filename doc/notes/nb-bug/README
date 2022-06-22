@@ -1,0 +1,7 @@
+Some bugs from the old bugzilla
+
+Bug 179047 - jVi integration 
+    https://bz.apache.org/netbeans/show_bug.cgi?id=179047
+
+Bug 198657 - APIs to work with Modes (implement jVi window split/move/... commands) 
+    https://bz.apache.org/netbeans/show_bug.cgi?id=198657

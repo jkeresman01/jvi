@@ -65,6 +65,7 @@ import static java.lang.Math.min;
 
 import static com.raelity.jvi.core.Util.beep_flush;
 import static com.raelity.jvi.core.lib.Constants.*;
+import static com.raelity.jvi.core.Ops.*;
 import static com.raelity.jvi.core.VimPath.*;
 import static com.raelity.jvi.manager.ViManager.eatme;
 import static com.raelity.text.TextUtil.sf;
@@ -712,7 +713,7 @@ public class Cc01
             if(!oa.error) {
                 oa.op_type = OP_DELETE;
                 Misc.runUndoable(() -> {
-                    Misc.op_delete(oa);
+                    op_delete(oa);
                 });
             }
         }
@@ -735,7 +736,7 @@ public class Cc01
             OPARG oa = ColonCommands.setupExop((ColonEvent)ev, true);
             if(!oa.error) {
                 oa.op_type = OP_YANK;
-                Misc.op_yank(oa, false, true);
+                op_yank(oa, false, true);
             }
         }
     };
@@ -770,7 +771,7 @@ public class Cc01
             if(!oa.error) {
                 oa.op_type = op;
                 Misc.runUndoable(() -> {
-                    Misc.op_shift(oa, false, amount);
+                    op_shift(oa, false, amount);
                 });
             }
         }
