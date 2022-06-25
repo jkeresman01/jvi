@@ -385,7 +385,7 @@ public abstract class SwingTextView extends TextView
     @Override
     public final SwingBuffer getBuffer()
     {
-        return (SwingBuffer) w_buffer;
+        return (SwingBuffer)ViManager.getFactory().getBuffer(getEditor());
     }
 
 

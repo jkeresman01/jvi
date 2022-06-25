@@ -62,8 +62,9 @@ public interface ViFactory
     /** @return null if TextView does not exist */
     public ViTextView getTextView(Component editor);
 
-    /** @return null if Buffer does not exist for editor's doc */
-    public ViBuffer getBuffer(Component editor);
+    /** Obj may be editor, or document.
+     * @return null if Buffer does not exist for doc */
+    public ViBuffer getBuffer(Object obj);
 
     public ViTextView getTextView(ViAppView av);
 

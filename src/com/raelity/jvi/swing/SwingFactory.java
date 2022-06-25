@@ -263,14 +263,19 @@ abstract public class SwingFactory implements ViFactory
     }
     
 
+    /** for either JTextComponent or Document */
     @Override
-    public ViBuffer getBuffer(Component ed) {
-        if(ed == null)
+    public ViBuffer getBuffer(Object obj) {
+        if(obj == null)
             return null;
-        Document doc = ((JTextComponent)ed).getDocument();
-        if(doc != null)
-            return (Buffer)doc.getProperty(PROP_BUF);
-        return null;
+        Document doc;
+        if(obj instanceof JTextComponent)
+            doc = ((JTextComponent)obj).getDocument();
+        else if(obj instanceof Document)
+            doc = (Document)obj;
+        else
+            return null;
+        return (Buffer)doc.getProperty(PROP_BUF);
     }
     
     private void attachBuffer(ViTextView tv)
