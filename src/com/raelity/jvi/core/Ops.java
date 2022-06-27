@@ -19,7 +19,6 @@
  */
 package com.raelity.jvi.core;
 
-import java.awt.AWTPermission;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
@@ -36,7 +35,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
-import java.security.Permission;
 import java.text.CharacterIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,7 +60,6 @@ import com.raelity.jvi.manager.*;
 import com.raelity.text.TextUtil;
 import com.raelity.text.MySegment;
 
-import static com.raelity.jvi.core.ExCommands.*;
 import static com.raelity.jvi.core.Edit.*;
 import static com.raelity.jvi.core.GetChar.*;
 import static com.raelity.jvi.core.Misc.*;
@@ -3418,7 +3415,7 @@ op_do_addsub(char command, int Prenum1)
            : JviClipboard.NO_CB;
   }
 
-    private static final Permission PERM_CLIP = new AWTPermission("accessClipboard");
+    //private static final Permission PERM_CLIP = new AWTPermission("accessClipboard");
 
     /** either systemClipboard or systemSelection */
     private enum JviClipboard implements ClipboardOwner {
@@ -3428,17 +3425,17 @@ op_do_addsub(char command, int Prenum1)
 
       private static boolean permOK()
       {
-        SecurityManager sm = System.getSecurityManager();
-        if(sm != null) {
-          //Object context = sm.getSecurityContext();
-          try {
-            //sm.checkPermission(PERM_CLIP, context);
-            sm.checkPermission(PERM_CLIP);
-            return true;
-          } catch(SecurityException ex) {
-            return false;
-          }
-        }
+        //SecurityManager sm = System.getSecurityManager();
+        //if(sm != null) {
+        //  //Object context = sm.getSecurityContext();
+        //  try {
+        //    //sm.checkPermission(PERM_CLIP, context);
+        //    sm.checkPermission(PERM_CLIP);
+        //    return true;
+        //  } catch(SecurityException ex) {
+        //    return false;
+        //  }
+        //}
         return true;
       }
 
