@@ -40,12 +40,12 @@ import com.raelity.jvi.core.Options;
 /**
  * A command line entry widget that sits on the glass pane,
  * instead of a modal dialog; the modal dialog is preferred.
- * This widget can avoid problems with interpreter bugs,
+ * This widget can avoid problems with jvm bugs/issues,
  * particularly on early linux interpreters, around 2002.
  *
  * There is some funny business with the rootPane and its defaultButton.
- * This is because with the glass pane usage, when InlineCmdEntry.java
- * is used doing something like ":ls[RETURN]" or searching
+ * This is because with the glass pane usage, 
+ * doing something like ":ls[RETURN]" or searching
  * it ends up activating the default button.
  * The dialog goes away before the command line fires completion, otherwise
  * the completion event would be consumed and prevent the default button
@@ -56,15 +56,15 @@ import com.raelity.jvi.core.Options;
  * BTW, the problem might also be fixable using
  * KeyboardFocusManager/KeyEventDispatch.
  */
-public class InlineCmdEntry extends CommandLineEntry {
+public class GlassCmdEntry extends CommandLineEntry {
     private MouseListener mouseListener;
     private boolean doneWithCommandLine;
     WeakReference<JRootPane> refRootPane;
     JButton button;
-    public InlineCmdEntry(){
+    public GlassCmdEntry(){
         this(ViCmdEntry.Type.COLON);
     }
-    public InlineCmdEntry(ViCmdEntry.Type type){
+    public GlassCmdEntry(ViCmdEntry.Type type){
         super(type);
 
         // rather than screwing with the FocusTraversalPolicy,
@@ -79,7 +79,7 @@ public class InlineCmdEntry extends CommandLineEntry {
         mouseListener = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent evt) {
-                commandLine.getToolkit().beep();
+                commandLine.get().getToolkit().beep();
             }
         };
     }
@@ -94,7 +94,7 @@ public class InlineCmdEntry extends CommandLineEntry {
         button = rootPane.getDefaultButton();
         rootPane.setDefaultButton(null);
 
-        commandLine.setBounds(positionCommandEntry(glass, commandLine));
+        commandLine.get().setBounds(positionCommandEntry(glass, commandLine.get()));
         if(glass.getLayout() != null) {
             glass.setLayout(null);
         }
@@ -102,7 +102,7 @@ public class InlineCmdEntry extends CommandLineEntry {
         glass.addMouseListener(mouseListener);
         // by placing p.add(commandLine) after the p.setVisible
         // a blanking and redraw of the combo box is avoided.
-        glass.add(commandLine);
+        glass.add(commandLine.get());
         doneWithCommandLine = false;
         commandLine.takeFocus(true);
     };
@@ -122,11 +122,11 @@ public class InlineCmdEntry extends CommandLineEntry {
         JPanel glass = (JPanel)rootPane.getGlassPane();
         glass.removeMouseListener(mouseListener);
         glass.setVisible(false);
-        glass.remove(commandLine);
+        glass.remove(commandLine.get());
         
         // repaint area around entry right now so it looks faster
         JComponent jc = (JComponent)rootPane.getContentPane();
-        Rectangle pos = commandLine.getBounds();
+        Rectangle pos = commandLine.get().getBounds();
         Point p00 = SwingUtilities.convertPoint(glass,
                 pos.x, pos.y, jc);
         pos.setLocation(p00);

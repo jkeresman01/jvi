@@ -24,7 +24,6 @@ import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.GetChar;
 import com.raelity.jvi.core.Normal;
 import com.raelity.jvi.core.Options;
-import com.raelity.jvi.lib.MyEventListenerList;
 import com.raelity.jvi.manager.ViManager;
 
 import java.awt.Component;
@@ -33,26 +32,26 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 
+import com.google.common.eventbus.Subscribe;
+
 import com.raelity.jvi.core.CommandHistory.HistoryContext;
 import com.raelity.jvi.options.*;
 
-import static com.raelity.jvi.lib.LibUtil.dumpEvent;
+import static java.util.logging.Level.*;
+
+import static com.raelity.jvi.core.lib.Constants.ESC_STR;
 import static com.raelity.text.TextUtil.sf;
 
 // inner classes ...........................................................
@@ -64,25 +63,36 @@ import static com.raelity.text.TextUtil.sf;
  */
 public abstract class CommandLineEntry implements ViCmdEntry
 {
+    static final Logger LOG
+            = Logger.getLogger(CommandLineEntry.class.getName());
     private static final DebugOption dbg = Options.getDebugOption(Options.dbgSearch);
+    static final DebugOption dbgKeys
+            = Options.getDebugOption(Options.dbgKeyStrokes);
+
+    final SwingCommandLine commandLine;
+
     /** result of last entry */
     protected String lastCommand;
-    protected MyEventListenerList ell = new MyEventListenerList();
-    protected ViCmdEntry.Type entryType;
-    protected AbstractCommandLine commandLine;
     protected ViTextView tv;
     protected String initialText;
     private boolean forceEvents;
 
     CommandLineEntry(ViCmdEntry.Type type)
     {
-        entryType = type;
-        //commandLine = new CommandLine();
-        //commandLine = !(Boolean)ViManager.getOptionAtStartup(Options.comboCommandLine)
-        //                    ? new CommandLine() : new CommandLineCombo();
-        commandLine = new CommandLine();
-        commandLine.addActionListener(this::finishUpEntry);
-        commandLine.setMode(entryType == ViCmdEntry.Type.COLON ? ":" : "/");
+        commandLine = SwingCommandLine.getNewDefault();
+        commandLine.setMode(type == ViCmdEntry.Type.COLON ? ":" : "/");
+        getTextComponent().getDocument().addDocumentListener(dl);
+
+        ViCmdEntry.getEventBus().register(new Object()
+        {
+            @Subscribe public void commandLineDone(
+                    SwingCommandLine.CommandLineComplete ev)
+            {
+                if(ev.getSource() == commandLine)
+                    finishUpEntry(ev);
+            }
+        });
+
         if (ViManager.getOsVersion().isMac()) {
             // MAC needs a little TLC since the selection is changed
             // in JTextComponent after adding text and before focusGained
@@ -111,20 +121,13 @@ public abstract class CommandLineEntry implements ViCmdEntry
                                 "mark=%d, dot=%d, caret=%d, text=%s",
                                 mark, dot,
                                 c.getDot(), tc.getText());
-                        CommandLine.LOG.info(msg);
+                        LOG.info(msg);
                         // new IllegalArgumentException(msg, ex)
                         //         .printStackTrace();
                     }
                 }
             };
         }
-    }
-    
-    /** ViCmdEntry interface */
-    @Override
-    public final void activate(String mode, ViTextView parent)
-    {
-        activate(mode, parent, "", false);
     }
 
     /**
@@ -145,8 +148,7 @@ public abstract class CommandLineEntry implements ViCmdEntry
             lastCommand = initialText;
             forceEvents = true; // The HACK goes on
             try {
-                fireEvent(new ActionEvent(tv.getEditor(),
-                                          ActionEvent.ACTION_PERFORMED, "\n"));
+                fireActionEvent("\n");
             } finally {
                 forceEvents = false;
             }
@@ -162,7 +164,7 @@ public abstract class CommandLineEntry implements ViCmdEntry
     }
 
     @Override
-    public void fireSpecialEvent(Class<?> target, Object event, String msg)
+    public void firePlatformEvent(Class<?> target, Object event, String msg)
     {
         // TODO: if JTextComponent
         // TODO: verify caretevent
@@ -193,8 +195,7 @@ public abstract class CommandLineEntry implements ViCmdEntry
     public void append(char c)
     {
         if (c == '\n') {
-            fireEvent(new ActionEvent(tv.getEditor(),
-                                      ActionEvent.ACTION_PERFORMED, "\n"));
+            fireActionEvent("\n");
         } else {
             commandLine.append(c);
         }
@@ -267,18 +268,27 @@ public abstract class CommandLineEntry implements ViCmdEntry
     }
 
     @Override
-    public JTextComponent getTextComponent()
+    public final JTextComponent getTextComponent()
     {
         return commandLine.getTextComponent();
     }
 
-    public void finishUpEntry(ActionEvent e)
+    @Override
+    public String getCurrentEntry()
+    {
+        return getTextComponent().getText();
+    }
+
+    public void finishUpEntry(SwingCommandLine.CommandLineComplete ev)
+    {
+        dbg.printf(INFO, () -> sf("CMDLINE: finishUpEntry: %s\n", ev.toString()));
+        finishUpEntry(ev.getActionCommand());
+    }
+
+    public void finishUpEntry(String actionCommand)
     {
         if (tv == null) {
-            // There are cases where there are both
-            //    CommandLine$SimpleEvent.actionPerformed
-            // and
-            //    CommandLine$2.actionPerformed (JComboBox.fireActionEvent)
+            // protect against extra component events
             return;
         }
         try {
@@ -292,32 +302,29 @@ public abstract class CommandLineEntry implements ViCmdEntry
             }
             // END VISUAL REPAINT HACK
             lastCommand = commandLine.getCommand();
-            CommandLine.dbgKeys.println(() ->
-                    "CommandAction: '" + lastCommand + "'");
+            dbgKeys.println(() -> "CommandAction: '" + lastCommand + "'");
             shutdownEntry(false);
-            fireEvent(e);
+
+            if (actionCommand == null || actionCommand.isEmpty()) {
+                // MAC issue; handle a poorly formed event as an ESC.
+                // ESC to exit search leaves editor in an unusable state
+                // https://sourceforge.net/p/jvi/bugs/168/
+                actionCommand = ESC_STR;
+            }
+            handleGetCharRecording(actionCommand);
+            fireActionEvent(actionCommand);
         } catch (Exception ex) {
-            CommandLine.LOG.log(Level.SEVERE, null, ex);
+            LOG.log(SEVERE, null, ex);
         }
     }
 
-    /** Send the event If it is a successful entry, a CR, then
+    /** If a successful entry, a CR, then
      * record the input. Note that initial Text is not part of
      * the recorded input.
      */
-    protected void fireEvent(ActionEvent e)
+    private void handleGetCharRecording(String actionCommand)
     {
-        // The action command must be present and have a character in it
-        // This isn't always the case on a MAC when an ESC is entered
-        String s = e.getActionCommand();
-        if (s == null || s.isEmpty()) {
-            // treat a poorly formed event as an ESC
-            // see http://sourceforge.net/tracker/?func=detail&atid=103653&aid=3527153&group_id=3653
-            //    ESC to exit search leaves editor in an unusable state - ID: 3527153
-            e = new ActionEvent(e.getSource(), e.getID(),
-                                "\u001b", e.getModifiers());
-        }
-        if (e.getActionCommand().charAt(0) == '\n') {
+        if (actionCommand.charAt(0) == '\n') {
             StringBuilder sb = new StringBuilder();
             if (!initialText.isEmpty() && lastCommand.startsWith(initialText)) {
                 sb.append(lastCommand.substring(initialText.length()));
@@ -327,85 +334,50 @@ public abstract class CommandLineEntry implements ViCmdEntry
             sb.append('\n');
             GetChar.userInput(new String(sb));
         }
-        final ActionEvent fev = e;
-        dbg.printf(() -> sf("CLINE: fireEvent: %s: %s\n",
-                            ActionListener.class, dumpEvent(fev)));
-        fireEllEvent(ActionListener.class, fev);
     }
 
-    private void fireEllEvent(Class<?> clazz, ActionEvent e)
+    private void fireActionEvent(String actionCommand)
     {
         if(forceEvents || commandLine.isFiringEvents())
-            ell.fire(clazz, e);
+            ViCmdEntry.getEventBus().post(
+                    new CmdEntryCompleteImpl(actionCommand, commandLine.getMode()));
     }
 
-    private void fireEllEvent(Class<?> clazz, ChangeEvent e)
+    private void fireTextChange()
     {
-        if(commandLine.isFiringEvents())
-            ell.fire(clazz, e);
+        ViCmdEntry.getEventBus().post(
+                new ViCmdEntry.CmdEntryChange(getTextComponent()));
     }
+    private final DocumentListener dl = new DocListener();
 
-    @Override
-    public void addActionListener(ActionListener l)
-    {
-        ell.add(ActionListener.class, l);
-    }
+        private class DocListener implements DocumentListener
+        {
 
-    @Override
-    public void removeActionListener(ActionListener l)
-    {
-        ell.remove(ActionListener.class, l);
-    }
-    private DocumentListener dl;
-
-    private class DocListener implements DocumentListener
-    {
-
-    @Override
-    public void insertUpdate(DocumentEvent e)
-    {
-        dbg.printf(() -> sf("CLINE: insertUpdate: %s\n", getTextComponent().getText()));
-        fireEllEvent(ChangeListener.class, new ChangeEvent(getTextComponent()));
-    }
-
-    @Override
-    public void removeUpdate(DocumentEvent e)
-    {
-        dbg.printf(() -> sf("CLINE: removeUpdate: %s\n", getTextComponent().getText()));
-        fireEllEvent(ChangeListener.class, new ChangeEvent(getTextComponent()));
-    }
-
-    @Override
-    public void changedUpdate(DocumentEvent e)
-    {
-    }
-    }
-
-    @Override
-    public void addChangeListener(ChangeListener l)
-    {
-        dbg.printf(() -> sf("CLINE: addChangeListener: count %d\n", ell.getListenerCount(ChangeListener.class)));
-        if (ell.getListenerCount(ChangeListener.class) == 0) {
-            dl = new DocListener();
-            getTextComponent().getDocument().addDocumentListener(dl);
+        @Override
+        public void insertUpdate(DocumentEvent e)
+        {
+            dbg.printf(FINE, () -> sf("CLINE: insertUpdate: %s\n", getTextComponent().getText()));
+            fireTextChange();
         }
-        ell.add(ChangeListener.class, l);
-    }
 
-    @Override
-    public void removeChangeListener(ChangeListener l)
-    {
-        ell.remove(ChangeListener.class, l);
-        if (ell.getListenerCount(ChangeListener.class) == 0) {
-            getTextComponent().getDocument().removeDocumentListener(dl);
-            dl = null;
+        @Override
+        public void removeUpdate(DocumentEvent e)
+        {
+            dbg.printf(FINE, () -> sf("CLINE: removeUpdate: %s\n", getTextComponent().getText()));
+            fireTextChange();
         }
-    }
 
-    @Override
-    public String getCurrentEntry()
-    {
-        return getTextComponent().getText();
-    }
-    
+        @Override
+        public void changedUpdate(DocumentEvent e)
+        {
+        }
+        } // END CLASS
+
+        private class CmdEntryCompleteImpl extends CmdEntryComplete
+        {
+        public CmdEntryCompleteImpl(String actionCommand, String tag)
+        {
+            super(CommandLineEntry.this, actionCommand, tag);
+        }
+        } // END CLASS
 } // end inner CommandLineEntry

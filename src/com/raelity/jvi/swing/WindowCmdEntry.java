@@ -37,20 +37,17 @@ import com.raelity.jvi.manager.ViManager;
 
 /**
  * This class provides a floating CommandLine entry widget.
- * A separate window must be allocated for each browser.
- * The window close button is disabled. <ESC> or <CR> must be
- * used to dismiss it.
+ * A separate window is allocated for each use: cmd vs search.
+ * The window close button is disabled.
+ * {@literal <ESC> or <CR>} must be used to dismiss it.
  */
-public class WindowCmdEntry extends CommandLineEntry {
+class WindowCmdEntry extends CommandLineEntry {
     /** valid while active taking input */
     private CommandLineWindow commandLineWindow;
     // NEEDSWORK: WindowCmdEntry: on frame dispose, dispose of window
     
-    String title;
-    
     public WindowCmdEntry(ViCmdEntry.Type type) {
         super(type);
-        title = type == ViCmdEntry.Type.SEARCH ? "Search Pattern" : "Command";
     }
     
     /**
@@ -61,12 +58,12 @@ public class WindowCmdEntry extends CommandLineEntry {
         Window root = SwingUtilities.getWindowAncestor(tv.getEditor());
         if(commandLineWindow == null || commandLineWindow.getOwner() != root) {
             if(commandLineWindow != null) {
-                commandLineWindow.remove(commandLine);
+                commandLineWindow.remove(commandLine.get());
                 commandLineWindow.dispose();
                 commandLineWindow = null;
             }
             //JDialog.setDefaultLookAndFeelDecorated(false);
-            commandLineWindow = CommandLineWindow.get(commandLine, root, title);
+            commandLineWindow = CommandLineWindow.get(commandLine, root);
             //JDialog.setDefaultLookAndFeelDecorated(true);
         }
 
@@ -95,9 +92,8 @@ public class WindowCmdEntry extends CommandLineEntry {
     @SuppressWarnings("serial")
     private static class CommandLineWindow extends JDialog {
 
-        static private CommandLineWindow get(AbstractCommandLine commandLine,
-                                   Window owner,
-                                   String title)
+        static private CommandLineWindow get(SwingCommandLine commandLine,
+                                   Window owner)
         {
             if(!(owner instanceof Frame || owner instanceof Dialog))
                 owner = null; // e.g. owner is a JWindow, only Frame,Dialog ok
@@ -105,7 +101,7 @@ public class WindowCmdEntry extends CommandLineEntry {
             CommandLineWindow d = new CommandLineWindow(owner);
 
             d.setUndecorated(true);
-            d.add(commandLine, BorderLayout.NORTH);
+            d.add(commandLine.get(), BorderLayout.NORTH);
             d.pack();
             d.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
             return d;

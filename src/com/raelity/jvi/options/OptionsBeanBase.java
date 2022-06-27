@@ -331,14 +331,6 @@ implements Options.EditControl
 	return getString(Options.dbgMarks);
     }
 
-    public void setViComboCommandLine(boolean arg) {
-        put(Options.comboCommandLine, arg);
-    }
-
-    public boolean getViComboCommandLine() {
-	return getboolean(Options.comboCommandLine);
-    }
-
     public void setViCursorInView(boolean arg) {
         put(Options.cursorInView, arg);
     }

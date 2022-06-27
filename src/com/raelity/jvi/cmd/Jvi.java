@@ -44,6 +44,8 @@ import com.raelity.jvi.swing.ui.options.OptionsPanel;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.text.Document;
 
 import com.raelity.jvi.*;
@@ -140,6 +142,10 @@ public class Jvi
     @SuppressWarnings({"CallToThreadDumpStack", "CallToPrintStackTrace", "UseOfSystemOutOrSystemErr"})
     public static void main( String[] args )
     {
+        for(LookAndFeelInfo lookAndFeel : UIManager.getInstalledLookAndFeels()) {
+            System.err.println("L&F: " + lookAndFeel.getName());
+        }
+
         if(null == UIUtil.setPrefGraphicsDev("foobar")
                 && null == UIUtil.setPrefGraphicsDev("jvi")
                 && null == UIUtil.setPrefGraphicsDev("NETBEANS_PREFERRED_SCREEN"))

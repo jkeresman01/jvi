@@ -153,7 +153,6 @@ public final class Options {
   public static final String disableFontError = "viDisableFontError";
   public static final String disableFontCheckSpecial = "viDisableFontCheckSpecial";
   public static final String cursorXorBug = "viCursorXorBug";
-  public static final String comboCommandLine = "viComboCommandLine";
 
   public static final String selectColor = "viSelectColor";
   public static final String selectFgColor = "viSelectFgColor";
@@ -805,19 +804,6 @@ public final class Options {
     setupOptionDesc(Category.GENERAL, foldOpen, "'foldopen' 'fdo'",
           "Specifies for which type of commands folds will be opened, if the"
         + " command moves the cursor into a closed fold.");
-
-    // createBooleanOption(comboCommandLine, false);
-    // setupOptionDesc(Category.GENERAL,
-    //                         comboCommandLine,
-    //                         "Use combo box command line",
-    //         "DEPRECATED; combo will be removed in the future."
-    //         + "\nOptions change takes effect on next restart."
-    //         + "\n\nWith the introduction of the ':history' command and the"
-    //         + " capability to click on list items to bring them up on"
-    //         + " the command line, along with up/down/search-match"
-    //         + " the combo box is going away; it is too complicated and"
-    //         + " difficult to maintain.");
-    // setExpertHidden(comboCommandLine, true, false);
 
     /////////////////////////////////////////////////////////////////////
     //

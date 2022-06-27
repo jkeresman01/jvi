@@ -20,12 +20,7 @@
 package com.raelity.jvi.core;
 
 import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.ViFPOS;
@@ -38,19 +33,21 @@ import com.raelity.text.RegExpFactory;
 import com.raelity.text.RegExpPatternError;
 import com.raelity.text.MySegment;
 
+import static java.util.logging.Level.*;
+
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
 
-import java.util.HashMap;
 import java.util.Map;
+
+import com.google.common.eventbus.Subscribe;
 
 import com.raelity.jvi.options.*;
 
-import static com.raelity.jvi.lib.LibUtil.dumpChangeEvent;
-import static com.raelity.jvi.lib.LibUtil.dumpEvent;
+import static com.raelity.jvi.manager.ViManager.eatme;
 import static com.raelity.text.TextUtil.sf;
 
 /**
@@ -62,7 +59,7 @@ public class Search
   private Search() { }
 
   private static final Logger LOG = Logger.getLogger(Search.class.getName());
-  private static DebugOption dbg = Options.getDebugOption(Options.dbgSearch);
+  static final DebugOption dbg = Options.getDebugOption(Options.dbgSearch);
 
   ///////////////////////////////////////////////////////////////////////
   //
@@ -100,13 +97,22 @@ public class Search
       RegExp re = search_regcomp(pattern, 0, 0, 0);
       lastMatchingRE = re;
     }
+    eatme(ESCAPED_FLAG);
   }
 
   static ViCmdEntry getSearchCommandEntry() {
     if(searchCommandEntry == null) {
       searchCommandEntry = ViManager.getFactory()
                             .createCmdEntry(ViCmdEntry.Type.SEARCH);
-      searchCommandEntry.addActionListener(Search::searchEntryComplete);
+      ViCmdEntry.getEventBus().register(new Object()
+      {
+        @Subscribe
+        public void entryComplete(ViCmdEntry.CmdEntryComplete ev)
+        {
+          if(ev.getSource() == searchCommandEntry)
+            searchEntryComplete(ev.getActionCommand(), ev);
+        }
+      });
     }
     return searchCommandEntry;
   }
@@ -115,11 +121,10 @@ public class Search
       return getSearchCommandEntry().getCommand();
   }
 
-  static private void searchEntryComplete(ActionEvent ev) {
+  static private void searchEntryComplete(String cmd, Object ev) {
     try {
-      dbg.printf(() -> sf("SEARCH: searchEntryComplete: %s\n", dumpEvent(ev)));
+      dbg.printf(INFO, () -> sf("SEARCH: searchEntryComplete: %s\n", ev.toString()));
       Hook.setJViBusy(true);
-      String cmd = ev.getActionCommand();
       boolean acceptIncr = false;
       boolean cancel = false;
       
@@ -158,7 +163,6 @@ public class Search
    * are like vim's do_search.
    */
   static void inputSearchPattern(CMDARG cap, int count, int options) {
-    String mode = "";
     int cmdchar = cap.cmdchar;
 
     ass.searchPos = G.curwin.w_cursor.copy();
@@ -175,37 +179,34 @@ public class Search
     Scheduler.startCommandEntry(ce, String.valueOf(ass.dirc), G.curwin, null);
   }
   
-  private static void laterDoIncrementalSearch() {
-    EventQueue.invokeLater(Search::doIncrementalSearch);
-  }
-
-  private static class SearchListener implements ChangeListener
+  private static Object isListener;
+  private static void removeIsListener()
   {
-    @Override
-    public void stateChanged(ChangeEvent e)
-    {
-      dbg.printf(() -> sf("ISEARCH: stateChanged --> laterDoIncrementalSearch: %s\n",
-                          dumpChangeEvent(e)));
-      laterDoIncrementalSearch();
+    if(isListener != null) {
+      ViCmdEntry.getEventBus().unregister(isListener);
+      isListener = null;
     }
   }
-
-  private static SearchListener isListener;
 
   private static void startIncrementalSearch() {
       // funny aborts might leave one...
       // NEEDSWORK: Might want to use a weak listen as well
-      dbg.println("ISEARCH: startIncrementalSearch");
-      getSearchCommandEntry().removeChangeListener(isListener);
-      if(isListener == null)
-        isListener = new SearchListener();
+      dbg.println(INFO, "ISEARCH: startIncrementalSearch");
+      removeIsListener();
       ass.searchTopLine = G.curwin.getVpTopDocumentLine();
       ass.didIncrSearch = false;
-      getSearchCommandEntry().addChangeListener(isListener);
+      isListener = new Object() {
+        @Subscribe public void incrSearchChar(ViCmdEntry.CmdEntryChange ev)
+        {
+          if(ev.getSource() == getSearchCommandEntry().getTextComponent())
+            EventQueue.invokeLater(Search::doIncrementalSearch);
+        }
+      };
+      ViCmdEntry.getEventBus().register(isListener);
   }
   
   private static void stopIncrementalSearch(boolean accept) {
-      getSearchCommandEntry().removeChangeListener(isListener);
+      removeIsListener();
 
       G.curwin.clearSelection(); // since it is used by incr search
       
@@ -219,7 +220,7 @@ public class Search
   }
   
   private static void doIncrementalSearch() {
-    dbg.println("ISEARCH: doIncrementalSearch");
+    dbg.println(FINE, "ISEARCH: doIncrementalSearch");
     Hook.setJViBusy(true);
     try {
       String pattern = getSearchCommandEntry().getCurrentEntry();
@@ -245,7 +246,7 @@ public class Search
         searchitErrorMessage(null);
       }
     } catch(Exception ex) {
-        LOG.log(Level.SEVERE, null, ex);
+        LOG.log(SEVERE, null, ex);
     } finally {
       try {
         Normal.v_updateVisualState();
@@ -291,7 +292,7 @@ public class Search
                        OPARG oap, char dirc, String pat,
                        int count, int options)
   {
-    dbg.printf("SEARCH: do_search: %s\n", pos);
+    dbg.printf(FINE, "SEARCH: do_search: %s\n", pos);
     if(pos == null)
       pos = G.curwin.w_cursor.copy(); // start searching from here
     ViFPOS initialPos = pos.copy();   // use with setpcmark on success (!vim)
@@ -998,15 +999,18 @@ finished:
   final public static String NO_MAGIC      = MAGIC + ".*[";
   final public static String VERY_NO_MAGIC = NO_MAGIC + "^$";
 
-  final private static Map<String, String> magicMap = getMagicMap();
-  final private static Map<String, String> getMagicMap() {
-    Map<String, String> map = new HashMap<>(4);
-    map.put("vm", VERY_MAGIC);
-    map.put("m", MAGIC);
-    map.put("nm", NO_MAGIC);
-    map.put("vnm", VERY_NO_MAGIC);
-    return map;
-  }
+  /** Chars that are escaped for a particular magic mode.
+   * For example, VERY_MAGIC passes everything to java's RE engine;
+   * MAGIC escapes {@literal '(', '|'} and such, so these characterss, often
+   * found in programming languages, are
+   * not used in regex pattern syntax.
+   */
+  final private static Map<String, String> magicMap = Map.of(
+    "vm", VERY_MAGIC,
+    "m", MAGIC,
+    "nm", NO_MAGIC,
+    "vnm", VERY_NO_MAGIC
+  );
   /**
    * Change metacharacter escaping of input pattern to match
    * the perl5 requirements. Do this because non-standard metachars
@@ -1103,8 +1107,7 @@ finished:
       }
       isEscaped = false;
     }
-    dbg.printf(Level.INFO,
-               "PATTERN: magic: %s, in %s, out %s\n", G.p_magic, s, sb);
+    dbg.printf(FINE, "PATTERN: magic: %s, in %s, out %s\n", G.p_magic, s, sb);
     return sb.toString();
   }
 

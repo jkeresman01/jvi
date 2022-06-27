@@ -971,7 +971,6 @@ final public class ViManager
     }
 
     private static String useFrame_ValueAtBoot;
-    private static boolean comboCommandLine_ValueAtBoot;
     private static boolean tabCompletionPrefix_ValueAtBoot;
 
     // this is called after the options are setup
@@ -982,8 +981,6 @@ final public class ViManager
         // Get the boot value of certain Options
         useFrame_ValueAtBoot = Options.getOption(Options.commandEntryFrame)
                 .getString();
-        //comboCommandLine_ValueAtBoot = Options.getOption(
-        //        Options.comboCommandLine).getBoolean();
 
         // tabCompletionPrefix_ValueAtBoot = Options.getOption(
         //         Options.tabCompletionPrefix).getBoolean();
@@ -1004,8 +1001,6 @@ final public class ViManager
         switch(optName) {
         case Options.commandEntryFrame:
             return useFrame_ValueAtBoot;
-        case Options.comboCommandLine:
-            return comboCommandLine_ValueAtBoot;
         //case Options.tabCompletionPrefix:
         //    return tabCompletionPrefix_ValueAtBoot;
         default:

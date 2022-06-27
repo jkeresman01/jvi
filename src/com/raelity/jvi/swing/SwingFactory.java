@@ -542,17 +542,10 @@ abstract public class SwingFactory implements ViFactory
     @Override
     public ViCmdEntry createCmdEntry( ViCmdEntry.Type type )
     {
-        // ViCmdEntry cmdEntry = new DefaultCmdEntry(cmdLine);
-        // return cmdEntry;
-        
-        // use this instead so that input is grabbed. When we have a
-        // cleaner and more understandable key input state machine revisit
-        // this.
-        
         Object opt = ViManager.getOptionAtStartup(Options.commandEntryFrame);
         G.dbgOptions().println("createCmdEntry: modality: %s", opt);
         if (Options.CEF_GLASS_PANE.equals(opt)) {
-            return new InlineCmdEntry(type);
+            return new GlassCmdEntry(type);
         } else {
             return new WindowCmdEntry(type);
         }
@@ -610,7 +603,7 @@ abstract public class SwingFactory implements ViFactory
      * Control characters of interest are picked up as key-press events
      * in {link #EnqKeyAction}.
      */
-    @SuppressWarnings("serial")
+    @SuppressWarnings({"serial", "CloneableImplementsClone"})
     public static class EnqueCharAction extends TextAction
     {
         public EnqueCharAction(String name) {
@@ -682,7 +675,7 @@ abstract public class SwingFactory implements ViFactory
      * the event and added to the key. Recieved characters are placed
      * on the vi input Q.
      */
-    @SuppressWarnings("serial")
+    @SuppressWarnings({"serial", "CloneableImplementsClone"})
     public static class EnqueKeyAction extends TextAction
     {
         char basekey;
@@ -715,7 +708,7 @@ abstract public class SwingFactory implements ViFactory
     }
     
     
-    @SuppressWarnings("serial")
+    @SuppressWarnings({"serial", "CloneableImplementsClone"})
     private static class InsertModeAction extends TextAction
             implements ViXlateKey
     {

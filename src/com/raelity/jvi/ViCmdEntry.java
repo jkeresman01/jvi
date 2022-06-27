@@ -24,7 +24,16 @@ import java.awt.event.ActionListener;
 
 import javax.swing.event.ChangeListener;
 
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.SubscriberExceptionContext;
+import com.google.common.eventbus.SubscriberExceptionHandler;
+
+import org.openide.util.Exceptions;
+
 import com.raelity.jvi.core.CommandHistory.HistoryContext;
+import com.raelity.text.TextUtil;
+
+import static com.raelity.text.TextUtil.sf;
 
 /** This is used by vi to get command line input.
  * An LRU history of commands should be maintained, though this history
@@ -43,11 +52,6 @@ public interface ViCmdEntry {
     enum Type { SEARCH, COLON }
     static public final int SEARCH_ENTRY = 1;
     static public final int COLON_ENTRY = 2;
-
-    /** Start command entry.
-     * The mode can be used to label the entry field.
-     */
-    public void activate(String mode, ViTextView parent);
 
     /** Start command entry.
      * The mode can be used to label the entry field.
@@ -85,7 +89,7 @@ public interface ViCmdEntry {
      * Poke listeners, platform dependent; the idea is to let the
      * entry widget alert platform to do something.
      */
-    public void fireSpecialEvent(Class<?> target, Object event, String msg);
+    public void firePlatformEvent(Class<?> target, Object event, String msg);
 
     /**
      * Make the string the most recent in the history
@@ -97,20 +101,103 @@ public interface ViCmdEntry {
      */
     public void setHistory(HistoryContext ctx);
 
-    /** When command entry is complete, this listener is invoked.
-     * The event is the key event that stopped entry, either a
-     * &lt;CR&gt; or an &lt;ESC&gt;.
-     * Only a single listener is needed.
-     */
-    public void addActionListener(ActionListener l);
-
-    public void removeActionListener(ActionListener l);
-
-    //
-    // The following provide monitoring entry input per character
-    //
-
-    public void addChangeListener(ChangeListener l);
-    public void removeChangeListener(ChangeListener l);
+    /** the current entry */
     public String getCurrentEntry();
+
+    /**
+     * Command lines share an event bus.
+     * @return event bus for command lines
+     */
+
+    static final EventBus eventBus = new EventBus(new ExHandler());
+    static EventBus getEventBus()
+    {
+        return eventBus;
+    }
+
+        /**
+         * Post this when CmdEntry is finished.
+         */
+        public abstract static class CmdEntryComplete extends AbstractComplete
+        {
+        public CmdEntryComplete(ViCmdEntry source, String actionCommand, String tag)
+        {
+            super(source, actionCommand, tag);
+        }
+
+        @Override
+        public ViCmdEntry getSource()
+        {
+            return (ViCmdEntry)super.getSource();
+        }
+        } // END CLASS
+
+        /** Post when text of the command line changes;
+         *  event source is {@link #getTextComponent() }.
+         */
+        public static class CmdEntryChange extends Event
+        {
+        public CmdEntryChange(Object source)
+        {
+            super(source);
+        }
+        } // END CLASS
+
+        public abstract static class AbstractComplete extends Event
+        {
+        private final String actionCommand;
+        private final String tag;
+        public AbstractComplete(Object source, String actionCommand, String tag)
+        {
+            super(source);
+            this.actionCommand = actionCommand;
+            this.tag = tag;
+        }
+
+        /** typically a "\n" or {@literal "<ESC>"} */
+        public String getActionCommand()
+        {
+            return actionCommand;
+        }
+
+        @Override
+        public String toString()
+        {
+            return sf("Complete{%s:%s %s}",
+                      getSource().getClass().getSimpleName(),
+                      tag != null ? " '" + tag + "':" : "",
+                      TextUtil.debugString(actionCommand));
+        }
+
+        } // END CLASS
+
+        public static class Event
+        {
+        private final Object source;
+        
+        public Event(Object source)
+        {
+            this.source = source;
+        }
+    
+        public Object getSource()
+        {
+            return source;
+        }
+        } // END CLASS
+
+        static class ExHandler implements SubscriberExceptionHandler
+        {
+        @Override
+        @SuppressWarnings("UseOfSystemOutOrSystemErr")
+        public void handleException(Throwable ex, SubscriberExceptionContext ctx)
+        {
+            System.err.println("ViCmdEntry.Event: handleException:");
+            System.err.println("    " + ctx.getEventBus());
+            System.err.println("    " + ctx.getEvent());
+            System.err.println("    " + ctx.getSubscriber());
+            System.err.println("    " + ctx.getSubscriberMethod());
+            Exceptions.printStackTrace(ex);
+        }
+        }
 }

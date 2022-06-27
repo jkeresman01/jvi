@@ -30,18 +30,18 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.util.Collections;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
@@ -59,6 +59,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.TextAction;
 
+import com.raelity.jvi.*;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.Util;
 import com.raelity.jvi.options.DebugOption;
@@ -69,8 +70,9 @@ import com.raelity.jvi.core.CommandHistory.InitialHistoryItem;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.manager.*;
 
+import static java.util.logging.Level.*;
+
 import static com.raelity.jvi.core.Util.beep_flush;
-import static com.raelity.jvi.lib.LibUtil.dumpEvent;
 import static com.raelity.jvi.manager.ViManager.eatme;
 import static com.raelity.text.TextUtil.sf;
 
@@ -86,10 +88,25 @@ import static com.raelity.text.TextUtil.sf;
  * editor component to handle it.
  */
 @SuppressWarnings("serial")
-public final class CommandLine extends AbstractCommandLine
+final class SimpleCommandLine
+extends JPanel
+implements SwingCommandLine
 {
+    //public static String COMMAND_LINE_KEYMAP = "viCommandLine";
+    ///**
+    // *  This is not intended to match an actual keystroke, it is used
+    // *  to register an action that can be used externally.
+    // */
+    //public static KeyStroke EXECUTE_KEY
+    //        = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,
+    //                                 InputEvent.SHIFT_DOWN_MASK |
+    //        InputEvent.ALT_DOWN_MASK | InputEvent.META_DOWN_MASK |
+    //        InputEvent.CTRL_DOWN_MASK | InputEvent.BUTTON1_DOWN_MASK |
+    //        InputEvent.BUTTON2_DOWN_MASK | InputEvent.BUTTON3_DOWN_MASK);
+
+
     static final Logger LOG
-            = Logger.getLogger(CommandLine.class.getName());
+            = Logger.getLogger(SimpleCommandLine.class.getName());
     private static final DebugOption dbg = Options.getDebugOption(Options.dbgSearch);
     private final JLabel modeLabel = new JLabel();
     private final CommandLineTextField text = getNewTextField();
@@ -108,7 +125,7 @@ public final class CommandLine extends AbstractCommandLine
     private HistoryContext ctx;
     private int gotCtrlR;
 
-    public CommandLine()
+    public SimpleCommandLine()
     {
         text.addPropertyChangeListener("keymap", (PropertyChangeEvent evt) -> {
             if(setKeymapActive)
@@ -131,7 +148,7 @@ public final class CommandLine extends AbstractCommandLine
                     GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
                     new Insets(0, 0, 0, 0), 0, 0));
         } catch ( Exception ex ) {
-            LOG.log(Level.SEVERE, null, ex);
+            LOG.log(SEVERE, null, ex);
         }
         Font font = modeLabel.getFont();
         modeLabel.setFont(new Font("Monospaced",
@@ -154,6 +171,12 @@ public final class CommandLine extends AbstractCommandLine
 
     }
 
+    @Override
+    public JComponent get()
+    {
+        return this;
+    }
+
     /** this event sends the current values, should be a no-op,
      * but NB completion uses a caret event to refresh the list. */
     @Override
@@ -163,12 +186,14 @@ public final class CommandLine extends AbstractCommandLine
         ((CommandLineTextField)jtc).fireCaretUpdate(event);
     }
 
+    /** mac bug fixup */
     @Override
     public int[] getMacFixupDotMark()
     {
         return new int[] { dot, mark };
     }
 
+    /** Label with single character: ":", "/", "?" */
     @Override
     public void setupFont(Font srcFont)
     {
@@ -187,7 +212,7 @@ public final class CommandLine extends AbstractCommandLine
         InitialHistoryItem initalState = ctx.init();
         gotCtrlR = -1;
         commandLineFiringEvents = true;
-        dbg.printf("CLINE: init: s=%s, commandLineFiringEvents true\n", s);
+        dbg.printf(FINE, "CLINE: init: s=%s, commandLineFiringEvents true\n", s);
         dot = mark = 0;
         if ( s.length() == 0 ) {
             JTextComponent tc = getTextComponent();
@@ -213,7 +238,7 @@ public final class CommandLine extends AbstractCommandLine
                 doc.insertString(0, s, null);
             } catch ( BadLocationException ex ) { }
         }
-        dbg.printf(() -> sf("CLINE: init: end: text=%s\n",
+        dbg.printf(FINE, () -> sf("CLINE: init: end: text=%s\n",
                             getTextComponent().getText()));
 
         setFindHistoryPrefix(s);
@@ -276,14 +301,20 @@ public final class CommandLine extends AbstractCommandLine
      *  This sets the mode of the command line, e.g. ":" or "?".
      */
     @Override
-    void setMode( String newMode )
+    public void setMode( String newMode )
     {
         mode = newMode;
         modeLabel.setText(" " + mode + " ");
     }
 
     @Override
-    final JTextComponent getTextComponent()
+    public String getMode()
+    {
+        return mode;
+    }
+
+    @Override
+    final public  JTextComponent getTextComponent()
     {
         return text;
     }
@@ -298,8 +329,6 @@ public final class CommandLine extends AbstractCommandLine
         ctx.init();
     }
     
-    int histEntryIndex = 0;
-
     /**
      *  Make the argument command the top of the list.
      *  First remove it.
@@ -307,6 +336,12 @@ public final class CommandLine extends AbstractCommandLine
     @Override
     public void makeTop( String command )
     {
+        // TODO: Could do this from CommandLineEntry directly to history.
+        //       Then get rid of makeTop in SwingCommandLine.
+        //       Would have to put the command string in event.
+        //       Then history would be read only from commandLine
+        //       (but note search prefix informs history)
+
         // if the empty string was selected we're done
         if(command.isEmpty()) {
             return;
@@ -375,15 +410,9 @@ public final class CommandLine extends AbstractCommandLine
                     public void actionPerformed(ActionEvent e)
                     {
                         // Note that only '\n' as a command does anything,
-                        // other things, like ESC and Ctrl-], are ignored
+                        // other things, like ESC and Ctrl-[, are ignored
                         String actionCommand = e.getActionCommand();
-                        int modifiers = e.getModifiers();
-                        ActionEvent e01 = new ActionEvent(
-                                CommandLine.this,
-                                e.getID(),
-                                actionCommand,
-                                modifiers);
-                        fireCommandLineActionPerformed(e01);
+                        commandLineComplete(actionCommand);
                     }
                 },
                 new TextAction(ACT_TAB) {
@@ -417,85 +446,52 @@ public final class CommandLine extends AbstractCommandLine
                 },
             };
         } catch(Throwable e) {
-            LOG.log(Level.SEVERE, null, e);
+            LOG.log(SEVERE, null, e);
         }
         return localActions;
     }
 
     @Override
-    boolean isFiringEvents() {
+    public boolean isFiringEvents() {
         return commandLineFiringEvents;
     }
 
+
     /**
-     * Deliver event to command line listener;
-     * This is expected to complete the command
+     * Fire event which is expected to complete the command.
      * Do some maintenance on the LRU history.
      */
-    protected void fireCommandLineActionPerformed( ActionEvent e )
+    protected void commandLineComplete(String eventCommand)
     {
         // only run this once, sometimes get event from combo and keys
-        dbg.printf(() -> sf("CLINE: fireCommandLineActionPerformed: %s\n",
-                          dumpEvent(e)));
+        dbg.printf(FINE, () -> sf("CLINE: fireCommandLineActionPerformed: %s\n",
+                          eventCommand));
         if(!commandLineFiringEvents)
             return;
 
-        commandLineFiringEvents = false;
         String command = getTextComponent().getText();
-        dbg.printf("CLINE: commandLineFiringEvents false cmd=%s\n", command);
+        dbg.printf(FINE, () -> sf("CLINE: commandLineFiringEvents false cmd=%s\n", command));
+        // turn off events for makeTop
+        commandLineFiringEvents = false;
 
         // Maintain LRU history
         makeTop(command);
 
-        // turned off events for makeTop...
-        dbg.printf("CLINE: commandLineFiringEvents true for finishing events\n");
-        // Process the listeners last to first, notifying
-        // those that are interested in this event
+        // back from makeTop, events back on
+        dbg.printf(FINE, "CLINE: commandLineFiringEvents true for finishing events\n");
         commandLineFiringEvents = true;
+
         try {
-            Object[] listeners = listenerList.getListenerList();
-            for (int i = listeners.length-2; i>=0; i-=2) {
-                if (listeners[i]==ActionListener.class) {
-                    ((ActionListener)listeners[i+1]).actionPerformed(e);
-                }
-            }
+            // post commandLineComplete this, eventCommand
+            ViCmdEntry.getEventBus().post( new SwingCommandLine
+                    .CommandLineComplete(this, eventCommand, mode));
         } finally {
             commandLineFiringEvents = false;
         }
-        dbg.printf("CLINE: commandLineFiringEvents false until next time\n");
+        dbg.printf(FINE, "CLINE: commandLineFiringEvents false until next time\n");
     }
-
-
-    /**
-     * Adds the specified action listener to receive
-     * action events from this textfield.
-     *
-     * @param l the action listener
-     */
-    @Override
-    public synchronized void addActionListener( ActionListener l )
-    {
-        dbg.println(() -> sf("CLINE: addAddActionListener: %s", l));
-        listenerList.add(ActionListener.class, l);
-    }
-
-
-    /**
-     * Removes the specified action listener so that it no longer
-     * receives action events from this textfield.
-     *
-     * @param l the action listener
-     */
-    @Override
-    public synchronized void removeActionListener( ActionListener l )
-    {
-        dbg.println(() -> sf("CLINE: removeAddActionListener: %s", l));
-        listenerList.remove(ActionListener.class, l);
-    }
-
 
 // inner classes ...........................................................
-
 
     private CommandLineTextField getNewTextField()
     {
@@ -509,7 +505,7 @@ public final class CommandLine extends AbstractCommandLine
                 if(!inUpDown) {
                     setFindHistoryPrefix(ed.getText());
                 }
-                dbgKeys.printf(Level.FINER, ()->sf(
+                dbgKeys.printf(FINER, ()->sf(
                         "insert: inUpDown %b, text '%s'\n",
                                    inUpDown, ed.getText()));
             }
@@ -520,7 +516,7 @@ public final class CommandLine extends AbstractCommandLine
                 if(!inUpDown) {
                     setFindHistoryPrefix(ed.getText());
                 }
-                dbgKeys.printf(Level.FINER, ()->sf(
+                dbgKeys.printf(FINER, ()->sf(
                         "remove: inUpDown %b, text '%s'\n",
                                    inUpDown, ed.getText()));
             }
@@ -532,6 +528,7 @@ public final class CommandLine extends AbstractCommandLine
         });
         return ed;
     }
+
     final static StyleContext context = StyleContext.getDefaultStyleContext();
     final static AttributeSet attrRed = context.addAttribute(
             context.getEmptySet(), StyleConstants.Foreground, Color.RED);
@@ -555,7 +552,7 @@ public final class CommandLine extends AbstractCommandLine
         }
     }
 
-    public CommandLineTextField(String value,int n) {
+    CommandLineTextField(String value,int n) {
         // TODO: get rid of this, incorporate into createCmdEntry, builder pattern DOC
         super(((SwingFactory)ViManager.getFactory()).createCmdEntryDoc(),
               value, n);
@@ -643,6 +640,6 @@ public final class CommandLine extends AbstractCommandLine
         }
         super.processKeyEvent(e);
     }
-    } // end commandLineTextField
+    } // END CLASS commandLineTextField
 
 }

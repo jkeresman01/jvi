@@ -33,15 +33,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import com.google.common.eventbus.Subscribe;
+
 import com.raelity.jvi.*;
 import com.raelity.jvi.ViOutputStream.FLAGS;
-import com.raelity.jvi.core.lib.AbbrevLookup;
 import com.raelity.jvi.core.lib.CcFlag;
 import com.raelity.jvi.core.lib.ColonCommandItem;
 import com.raelity.jvi.core.lib.Messages;
 import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.*;
 import com.raelity.text.StringSegment;
+
+import static java.util.logging.Level.*;
 
 import static com.raelity.jvi.core.CcBang.lastBangCommand;
 import static com.raelity.jvi.core.Edit.*;
@@ -52,6 +55,8 @@ import static com.raelity.jvi.core.Util.isdigit;
 import static com.raelity.jvi.core.Util.vim_str2nr;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.manager.ViManager.eatme;
+
+import static com.raelity.text.TextUtil.sf;
 
 /**
  * This class handles registration, command input, parsing, dispatching
@@ -73,7 +78,16 @@ import static com.raelity.jvi.manager.ViManager.eatme;
 public class ColonCommands
 {
     private static final Logger LOG = Logger.getLogger(ColonCommands.class.getName());
-    private static AbbrevLookup m_commands = new AbbrevLookup();
+    //private static AbbrevLookup m_commands = new AbbrevLookup();
+
+    //////////////////////////////////////////////////////////////////////////
+    //
+    // NOTE: This can be invoked very early because of ColonCommands.register.
+    //       Something like static dbg = Options.getDebugOptions fails.
+    //
+    // Created Commands.java register, m_commands, AbrevLookup, ...
+    // that imports almost nothing need to figure out how to use it cleanly.
+    //
 
     static String lastCommand;
     static String currentCommand;
@@ -93,23 +107,31 @@ public class ColonCommands
         if ( colonCommandEntry == null ) {
             colonCommandEntry = ViManager.getFactory()
                     .createCmdEntry(ViCmdEntry.Type.COLON);
-            colonCommandEntry.addActionListener((ActionEvent ev) -> {
-                colonEntryComplete(ev);
+            ViCmdEntry.getEventBus().register(new Object()
+            {
+                @Subscribe
+                public void entryComplete(ViCmdEntry.CmdEntryComplete ev)
+                {
+                    if(ev.getSource() == colonCommandEntry)
+                        colonEntryComplete(ev.getActionCommand(), ev);
+                }
             });
         }
         return colonCommandEntry;
     }
 
 
-static private void colonEntryComplete( ActionEvent ev )
+static private void colonEntryComplete(String cmd, Object ev)
 {
     try {
+        // TODO: make dbg local static after Commands.register called directly
+        Search.dbg.printf(INFO, () -> sf("COLON: colonEntryComplete: %s \n", ev.toString()));
         Hook.setJViBusy(true);
 
         ViManager.getFactory().commandEntryAssist(getColonCommandEntry(),false);
         Scheduler.stopCommandEntry(getColonCommandEntry());
-        String commandLine = colonCommandEntry.getCommand();
-        String cmd = ev.getActionCommand();
+        String commandLine = getColonCommandEntry().getCommand();
+        //String cmd = ev.getActionCommand();
         // if not <CR> must be an escape, just ignore it
         if(cmd.charAt(0) == '\n') {
             if( ! commandLine.isEmpty()) {
@@ -127,9 +149,7 @@ static private void colonEntryComplete( ActionEvent ev )
 static void doColonCommand(StringBuilder range)
 {
     ViCmdEntry cmdEntry = getColonCommandEntry();
-    // Disable completion with combo.
-    //if(!Options.getOption(Options.comboCommandLine).getBoolean())
-        ViManager.getFactory().commandEntryAssist(cmdEntry, true);
+    ViManager.getFactory().commandEntryAssist(cmdEntry, true);
     Options.kd().println("doColonCommand --> startCommandEntry"); //REROUTE
     Scheduler.startCommandEntry(cmdEntry, ":", G.curwin, range);
 }
@@ -388,7 +408,7 @@ private static ColonEvent parseCommandGuts(String commandLine,
             char c01 = commandLine.charAt(sidx);
             if(Util.isdigit(c01)) {
                 String t = commandLine.substring(sidx01, sidx+1);
-                if(m_commands.hasExactCommand(t))
+                if(Commands.hasExactCommand(t))
                     sidx++;
             }
             break;
@@ -409,7 +429,7 @@ private static ColonEvent parseCommandGuts(String commandLine,
     cev.iArgString = sidx02;
     ColonCommandItem cci;
     if(isExecuting) {
-        cci = m_commands.lookupCommand(command);
+        cci = Commands.lookupCommand(command);
         if(cci == null) {
             Msg.emsg("Not an editor command: " + command);
             Util.beep_flush();
@@ -417,7 +437,7 @@ private static ColonEvent parseCommandGuts(String commandLine,
         }
     } else {
         // create a dummy so parse will complete ok and have useful info
-        ColonCommandItem cciReal = m_commands.lookupCommand(command);
+        ColonCommandItem cciReal = Commands.lookupCommand(command);
         cev.dummyParserCommand = cciReal != null ? cciReal.getName() : "";
         cci = createDummyColonCommandItem(cciReal);
     }
@@ -708,17 +728,17 @@ static int get_address(
  */
 static public List<ColonCommandItem> getList()
 {
-    return m_commands.getList();
+    return Commands.getList();
 }
 
 static public List<String> getNameList()
 {
-    return m_commands.getNameList();
+    return Commands.getNameList();
 }
 
 static public List<String> getAbrevList()
 {
-    return m_commands.getAbrevList();
+    return Commands.getAbrevList();
 }
 
 /**
@@ -728,7 +748,7 @@ static public List<String> getAbrevList()
  */
 static public String getFullCommandName(String cmd)
 {
-    ColonCommandItem cci = m_commands.lookupCommand(cmd);
+    ColonCommandItem cci = Commands.lookupCommand(cmd);
     return cci == null ? null : cci.getName();
 }
 
@@ -752,15 +772,7 @@ static public String getFullCommandName(String cmd)
 public static void register( String abbrev, String name, ActionListener l,
                             Set<CcFlag> flags )
 {
-    EnumSet<CcFlag> newFlags = EnumSet.noneOf(CcFlag.class);
-    if(flags != null)
-        newFlags.addAll(flags);
-    if(l instanceof ColonAction) {
-        newFlags.addAll(((ColonAction)l).getFlags());
-    } else {
-        newFlags.add(CcFlag.NO_ARGS);
-    }
-    m_commands.add(abbrev, name, l, newFlags);
+    Commands.register(abbrev, name, l, flags);
 }
 
 /**
@@ -770,7 +782,7 @@ public static void register( String abbrev, String name, ActionListener l,
     */
 public static boolean deregister( String abbrev )
 {
-    return m_commands.remove(abbrev);
+    return Commands.deregister(abbrev);
 }
 
 /**
@@ -1122,13 +1134,13 @@ private static void makePrintStream()
 }
 
 /**
-    * Output a string to the current text window.
-    */
-static void outputPrint(String s)
-{
-    makePrintStream();
-    printStream.println(s);
-}
+ * Output a string to the current text window.
+ */
+//static void outputPrint(String s)
+//{
+//    makePrintStream();
+//    printStream.println(s);
+//}
 
 /**
     * Output the specified document line to the current text window.
