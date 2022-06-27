@@ -45,17 +45,22 @@ import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView.Direction;
 import com.raelity.jvi.ViTextView.Orientation;
 import com.raelity.jvi.ViWindowNavigator;
-import com.raelity.jvi.core.ColonCommands;
-import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
-import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.ExCommands;
+import com.raelity.jvi.core.Commands.AbstractColonAction;
+import com.raelity.jvi.core.Commands.ColonEvent;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.TextView;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.ViManager;
 
 import static com.raelity.jvi.manager.ViManager.cid;
+
 import com.raelity.jvi.options.DebugOption;
+
 import java.util.logging.Level;
+
+import com.raelity.jvi.core.*;
+
 import static com.raelity.text.TextUtil.sf;
 
 /**
@@ -125,7 +130,7 @@ public abstract class WindowTreeBuilder implements ViWindowNavigator {
         {
             if(didInit)
                 return;
-            ColonCommands.register("dumpWin", "dumpWindowHierarchy",
+            Commands.register("dumpWin", "dumpWindowHierarchy",
                                    new DumpWin(),
                                    EnumSet.of(CcFlag.DBG));
             didInit = true;

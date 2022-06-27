@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
-import com.raelity.jvi.core.ColonCommands.ColonAction;
+import com.raelity.jvi.core.Commands.ColonAction;
 
 import static com.raelity.text.TextUtil.sf;
 

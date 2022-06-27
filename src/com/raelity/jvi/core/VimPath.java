@@ -31,8 +31,8 @@ import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.*;
-import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
-import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.Commands.AbstractColonAction;
+import com.raelity.jvi.core.Commands.ColonEvent;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.*;
 import com.raelity.text.StringSegment;
@@ -69,8 +69,8 @@ private VimPath() { }
 
 private static void init()
 {
-    ColonCommands.register("pw", "pwd", new Pwd(), null);
-    ColonCommands.register("cd", "cd", new Cd(), null);
+    Commands.register("pw", "pwd", new Pwd(), null);
+    Commands.register("cd", "cd", new Cd(), null);
 
     Path path = FileSystems.getDefault().getPath("");
     cwd = path.toAbsolutePath();

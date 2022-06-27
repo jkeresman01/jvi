@@ -31,8 +31,8 @@ import org.openide.util.lookup.ServiceProvider;
 import com.raelity.jvi.*;
 import com.raelity.jvi.ViOutputStream.COLOR;
 import com.raelity.jvi.ViOutputStream.FLAGS;
-import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
-import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.Commands.AbstractColonAction;
+import com.raelity.jvi.core.Commands.ColonEvent;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.manager.*;
 
@@ -65,7 +65,7 @@ public enum Msg
 
     private static void init()
     {
-        ColonCommands.register("mes", "messages", new Messages(), null);
+        Commands.register("mes", "messages", new Messages(), null);
     }
 
     /**

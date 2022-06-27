@@ -1,0 +1,33 @@
+<?
+import com.raelity.jvi.core.Commands;
+import com.raelity.jvi.core.ColonCommands;
+?>
+
+"Commands.register()":
+   ColonCommands.register($args$)
+=> Commands.register($args$)
+;;
+
+   ColonCommands.deregister($arg)
+=> Commands.deregister($arg)
+;;
+
+   ColonCommands.lookupCommand($arg)
+=> Commands.lookupCommand($arg)
+;;
+
+   ColonCommands.hasExactCommand($arg)
+=> Commands.hasExactCommand($arg)
+;;
+
+   ColonCommands.getList()
+=> Commands.getList()
+;;
+
+   ColonCommands.getNameList()
+=> Commands.getNameList()
+;;
+
+   ColonCommands.getAbrevList()
+=> Commands.getAbrevList()
+;;

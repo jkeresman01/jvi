@@ -65,6 +65,7 @@ import org.openide.util.WeakSet;
 import com.raelity.jvi.ViTextView.TAGOP;
 import com.raelity.jvi.*;
 import com.raelity.jvi.core.*;
+import com.raelity.jvi.core.Commands.ColonEvent;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.core.lib.KeyDefs.KeyStrokeType;
 import com.raelity.jvi.manager.*;
@@ -124,7 +125,7 @@ abstract public class SwingFactory implements ViFactory
     {
         INSTANCE = this;
 
-        ColonCommands.register("dumpUIColors", "dumpUIColors", new DumpUIColors(),
+        Commands.register("dumpUIColors", "dumpUIColors", new DumpUIColors(),
                                EnumSet.of(CcFlag.DBG));
     }
     
@@ -336,7 +337,7 @@ abstract public class SwingFactory implements ViFactory
         }
         
         dbgEditorActivation().println(CONFIG, "Activation: shutdown TV");
-        Buffer buf = tv.getBuffer();
+        Buffer buf = (Buffer)tv.getBuffer();
         tv.shutdown();
         ed.putClientProperty(PROP_TV, null);
         ed.putClientProperty(PROP_AV, null);
@@ -749,7 +750,7 @@ abstract public class SwingFactory implements ViFactory
     public void displayTags() {}
     
     @Override
-    public void tagDialog( ColonCommands.ColonEvent e ) {}
+    public void tagDialog( ColonEvent e ) {}
     
     @Override
     public void commandEntryAssist(ViCmdEntry cmdEntry, boolean enable ) {}

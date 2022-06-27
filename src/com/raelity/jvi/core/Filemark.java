@@ -217,7 +217,7 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
      */
     @Subscribe
     public void leavingTv(ViEvent.SwitchFromTv ev) {
-        Buffer buf = ev.getTv().getBuffer();
+        ViBuffer buf = ev.getTv().getBuffer();
         persistBuf(buf, ev);
     }
 
@@ -245,7 +245,7 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
 
 
     /** Spin through the filemarks and unhook from buffer if found. */
-    private void persistBuf(Buffer buf, ViEvent ev)
+    private void persistBuf(ViBuffer buf, ViEvent ev)
     {
         if(filemarksImportCheck.isChange()) {
             dbg.println(INFO, "FM: jVi filemarks imported");

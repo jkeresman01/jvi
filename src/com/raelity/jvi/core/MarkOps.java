@@ -41,8 +41,8 @@ import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.*;
 import com.raelity.jvi.ViTextView.MARKOP;
-import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
-import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.Commands.AbstractColonAction;
+import com.raelity.jvi.core.Commands.ColonEvent;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.manager.*;
 import com.raelity.text.MySegment;
@@ -108,8 +108,8 @@ class MarkOps
 
     private static void init() {
 
-        ColonCommands.register("marks", "marks", new DoMarks(), null);
-        ColonCommands.register("delm", "delmarks", new ExDelmarks(), null);
+        Commands.register("marks", "marks", new DoMarks(), null);
+        Commands.register("delm", "delmarks", new ExDelmarks(), null);
 
         bufferMarkPersistINSTANCE = new BufferMarksPersist.EventHandlers();
         ViEvent.getBus().register(bufferMarkPersistINSTANCE);
@@ -822,7 +822,7 @@ class MarkOps
         @Subscribe
         public void leaveTv(ViEvent.SwitchFromTv ev)
         {
-            Buffer buf = ev.getTv().getBuffer();
+            ViBuffer buf = ev.getTv().getBuffer();
             if(buf != null)
                 persist(buf, ev, null);
         }
@@ -843,7 +843,7 @@ class MarkOps
             persist(ev.getBuf(), ev, null);
         }
 
-        private void persist(Buffer buf, ViEvent ev, Character markName)
+        private void persist(ViBuffer buf, ViEvent ev, Character markName)
         {
         if(marksImportCheck.isChange()) {
             LOG.info(() -> sf("jVi marks imported: %s", ev));
@@ -1101,7 +1101,7 @@ class MarkOps
         }
 
         private static void writeBufferMarks(BufferMarksHeader bmh,
-                                             Buffer buf,
+                                             ViBuffer buf,
                                              Character markName)
                 throws BackingStoreException
         {

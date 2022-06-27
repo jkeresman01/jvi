@@ -44,7 +44,7 @@ import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Buffer;
-import com.raelity.jvi.core.ColonCommands;
+import com.raelity.jvi.core.ExCommands;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Hook;
 import com.raelity.jvi.core.Options;
@@ -61,6 +61,9 @@ import com.google.common.eventbus.Subscribe;
 import org.openide.util.Exceptions;
 
 import com.raelity.jvi.ViOutputStream.COLOR;
+import com.raelity.jvi.core.*;
+import com.raelity.jvi.core.Commands.AbstractColonAction;
+import com.raelity.jvi.core.Commands.ColonEvent;
 import com.raelity.jvi.options.*;
 import com.raelity.text.TextUtil;
 
@@ -279,18 +282,18 @@ final public class ViManager
             throw new RuntimeException("NetBeans Bug 192496");
         assert core != null;
 
-        ColonCommands.register("ve", "version",
-                               new VersionCommand(), null);
-        ColonCommands.register("debugMotd", "debugMotd",
-                               new DebugMotdCommand(), EnumSet.of(CcFlag.DBG));
-        ColonCommands.register("debugVersion", "debugVersion",
-                               new DebugVersionCommand(), null);
-        ColonCommands.register("debugOutputStyles", "debugOutputStyles",
-                               new DebugOutputStyles(), EnumSet.of(CcFlag.DBG));
-        ColonCommands.register("isDebugAtHome", "isDebugAtHome",
-                               new IsDebugAtHome(), null);
-        ColonCommands.register("debugDebug", "debugDebug",
-                               new DebugDebug(), null);
+        Commands.register("ve", "version",
+                          new VersionCommand(), null);
+        Commands.register("debugMotd", "debugMotd",
+                          new DebugMotdCommand(), EnumSet.of(CcFlag.DBG));
+        Commands.register("debugVersion", "debugVersion",
+                          new DebugVersionCommand(), null);
+        Commands.register("debugOutputStyles", "debugOutputStyles",
+                          new DebugOutputStyles(), EnumSet.of(CcFlag.DBG));
+        Commands.register("isDebugAtHome", "isDebugAtHome",
+                          new IsDebugAtHome(), null);
+        Commands.register("debugDebug", "debugDebug",
+                          new DebugDebug(), null);
 
 
         firePropertyChange(P_BOOT, null, null);
@@ -358,7 +361,7 @@ final public class ViManager
         }
     };
 
-    static class DebugVersionCommand extends ColonCommands.AbstractColonAction
+    static class DebugVersionCommand extends AbstractColonAction
     {
 
         @Override
@@ -370,7 +373,7 @@ final public class ViManager
         @Override
         public void actionPerformed(ActionEvent e)
         {
-            ColonCommands.ColonEvent cev = (ColonCommands.ColonEvent)e;
+            ColonEvent cev = (ColonEvent)e;
             if(cev.getNArg() == 1) {
                 String vs = cev.getArg(1);
                 jViVersion v = new jViVersion(vs);
@@ -424,7 +427,7 @@ final public class ViManager
         return Exceptions.attachSeverity(t, DIALOG);
     }
 
-    static class DebugDebug extends ColonCommands.AbstractColonAction
+    static class DebugDebug extends AbstractColonAction
     {
 
         @Override
@@ -443,7 +446,7 @@ final public class ViManager
                 debugDebugDiddling.put("level", DIALOG.intValue());
                 debugDebugDiddling.put("local", "false"); // use localalized message
             }
-            ColonCommands.ColonEvent cev = (ColonCommands.ColonEvent)e;
+            ColonEvent cev = (ColonEvent)e;
             if(cev.getNArg() > 0) {
                 // parse out parm=value on the command line,
                 // do map.put(parm, converted-value)
@@ -515,7 +518,7 @@ final public class ViManager
     }
 
 
-    static class IsDebugAtHome extends ColonCommands.AbstractColonAction
+    static class IsDebugAtHome extends AbstractColonAction
     {
 
         @Override
@@ -527,7 +530,7 @@ final public class ViManager
         @Override
         public void actionPerformed(ActionEvent e)
         {
-            ColonCommands.ColonEvent cev = (ColonCommands.ColonEvent)e;
+            ColonEvent cev = (ColonEvent)e;
             if(cev.getNArg() == 1) {
                 String s = cev.getArg(1);
                 isDebugAtHome = s.toLowerCase().startsWith("y");

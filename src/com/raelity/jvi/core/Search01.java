@@ -33,6 +33,7 @@ import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViOutputStream.FLAGS;
+import com.raelity.jvi.core.Commands.ColonEvent;
 import com.raelity.jvi.core.lib.Messages;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.ViManager;
@@ -87,7 +88,7 @@ public class Search01 {
    *
    * The usual escapes are supported as described in the regexp docs.
    */
-  static void substitute(ColonCommands.ColonEvent cev)
+  static void substitute(ColonEvent cev)
   {
     boolean newFlags = false;
     if(!G.global_busy || substFlags == null) {
@@ -267,7 +268,7 @@ public class Search01 {
         cursorLine = i;  // keep track of last line changed
         nSubLine++;
         if(substFlags.testAnyBits(SUBST_PRINT)) {
-          ColonCommands.outputPrint(i, 0, 0);
+          ExCommands.outputPrint(i, 0, 0);
         }
       }
 
@@ -509,7 +510,7 @@ public class Search01 {
    * Only do print for now.
    */
 
-  static void global(ColonCommands.ColonEvent cev) {
+  static void global(ColonEvent cev) {
     G.global_busy = true;
     try {
       doGlobal(cev);
@@ -519,7 +520,7 @@ public class Search01 {
     }
   }
   
-  static void doGlobal(ColonCommands.ColonEvent cev) {
+  static void doGlobal(ColonEvent cev) {
     if(cev.getNArg() != 1) {
       Msg.emsg("global takes an argument (FOR NOW)");
       return;
@@ -602,13 +603,13 @@ public class Search01 {
     // figure out what command to execute for all the indicated lines
     
     ActionListener cmdAction = null;
-    ColonCommands.ColonEvent cevAction = null;
+    ColonEvent cevAction = null;
 
     if(cmdExec.isEmpty()) {
       // if no command specified then "p" command
       cmdAction = Cc01.getActionPrint();
     } else {
-      cevAction = ColonCommands.parseCommand(cmdExec);
+      cevAction = ExCommands.parseCommand(cmdExec);
       if(cevAction != null) {
 	cmdAction = cevAction.getAction();
       }
@@ -695,11 +696,11 @@ public class Search01 {
       if(cmdAction == Cc01.getActionPrint()) {
         result.println(lnum, 0, 0);
       } else if(cmdAction == Cc01.getActionSubstitute()) {
-        ColonCommands.executeCommand(cevAction);
+        ExCommands.executeCommand(cevAction);
         if(substFlags != null && substFlags.testAnyBits(SUBST_QUIT))
           break;
       } else if(cmdAction == Cc01.getActionDelete()) {
-        OPARG oa = ColonCommands.setupExop(cevAction, true);
+        OPARG oa = ExCommands.setupExop(cevAction, true);
         oa.op_type = OP_DELETE;
         op_delete(oa);
       } else if(cmdAction == Cc01.getActionGlobal()) {

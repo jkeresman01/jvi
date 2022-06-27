@@ -17,8 +17,9 @@ import java.util.regex.Pattern;
 import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.*;
-import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.Commands.ColonEvent;
 import com.raelity.jvi.core.*;
+import com.raelity.jvi.core.Commands.AbstractColonAction;
 import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.VimOption.F;
 
@@ -35,7 +36,7 @@ import static com.raelity.text.TextUtil.sf;
  * In some cases, due to platform limitation, the same variable must be
  * set in all the instances, syncAllInstances(var) does that.
  */
-public class SetColonCommand extends ColonCommands.AbstractColonAction
+public class SetColonCommand extends AbstractColonAction
 {
     private static final
             Logger LOG = Logger.getLogger(SetColonCommand.class.getName());
@@ -52,7 +53,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
     
     private static void init()
     {
-        ColonCommands.register("se", "set", new SetColonCommand(), null);
+        Commands.register("se", "set", new SetColonCommand(), null);
     }
 
     private SetColonCommand()
@@ -295,7 +296,7 @@ public class SetColonCommand extends ColonCommands.AbstractColonAction
 
         voptState.bag = vopt.isGlobal()
                 ? G.get()
-                : vopt.isWin() ? G.curwin() : G.curwin().getBuffer();
+                : vopt.isWin() ? G.curwin() : ((Buffer)G.curwin().getBuffer());
         try {
             //
             // NEEDSWORK: Clean up getField/getDeclaredField.

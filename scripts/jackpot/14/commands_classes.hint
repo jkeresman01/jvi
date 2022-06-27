@@ -1,0 +1,17 @@
+<?
+import com.raelity.jvi.core.Commands;
+import com.raelity.jvi.core.ColonCommands;
+?>
+
+"Commands sub classes":
+   ColonCommands.ColonAction
+=> com.raelity.jvi.core.Commands.ColonAction
+;;
+
+   ColonCommands.AbstractColonAction
+=> com.raelity.jvi.core.Commands.AbstractColonAction
+;;
+
+   ColonCommands.ColonEvent
+=> com.raelity.jvi.core.Commands.ColonEvent
+;;

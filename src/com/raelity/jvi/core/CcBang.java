@@ -44,9 +44,9 @@ import javax.swing.Timer;
 import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.*;
-import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
-import com.raelity.jvi.core.ColonCommands.ColonAction;
-import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.Commands.AbstractColonAction;
+import com.raelity.jvi.core.Commands.ColonAction;
+import com.raelity.jvi.core.Commands.ColonEvent;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
@@ -84,7 +84,7 @@ private static final Logger LOG = Logger.getLogger(CcBang.class.getName());
 
 private static void init()
 {
-    ColonCommands.register("!", "!", ACTION_bang,
+    Commands.register("!", "!", ACTION_bang,
                            EnumSet.of(CcFlag.XFILE, CcFlag.NO_PARSE));
 }
 
@@ -245,7 +245,7 @@ public static class BangAction extends AbstractColonAction
         // Got a process, setup coord, start modal operation
 
         coord = new FilterThreadCoordinator(
-                this, ColonCommands.setupExop(evt, false), p);
+                this, ExCommands.setupExop(evt, false), p);
 
         // NEEDSWORK: put this where it can be repeated
         coord.statusMessage = "Enter 'Ctrl-C' to ABORT";

@@ -34,11 +34,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.raelity.jvi.ViOutputStream;
-import com.raelity.jvi.core.ColonCommands;
-import com.raelity.jvi.core.ColonCommands.ColonEvent;
-import com.raelity.jvi.core.GetChar;
-import com.raelity.jvi.core.Msg;
-import com.raelity.jvi.core.Options;
+import com.raelity.jvi.core.*;
+import com.raelity.jvi.core.Commands.AbstractColonAction;
+import com.raelity.jvi.core.Commands.ColonEvent;
 import com.raelity.jvi.core.lib.TypeBufMultiCharMapping.TypeBufPeek;
 import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.Wrap;
@@ -96,37 +94,37 @@ public final class Mappings {
 
     private void registerCommands()
     {
-        ColonCommands.AbstractColonAction cmd = new MapColonCommand();
+        AbstractColonAction cmd = new MapColonCommand();
 
         EnumSet<CcFlag> flags = EnumSet.of(CcFlag.NO_PARSE);
         // need to investigate possible effects on NB completion,
         // there's that parseCommandNoExec thing.
         //EnumSet<CcFlag> flags = null;
 
-        ColonCommands.register("map", "map",  cmd, flags);
-        ColonCommands.register("nm",  "nmap", cmd, flags);
-        ColonCommands.register("vm",  "vmap", cmd, flags);
-        ColonCommands.register("om",  "omap", cmd, flags);
-        ColonCommands.register("pm",  "pmap", cmd, flags);
-        ColonCommands.register("im",  "imap", cmd, flags);
+        Commands.register("map", "map",  cmd, flags);
+        Commands.register("nm",  "nmap", cmd, flags);
+        Commands.register("vm",  "vmap", cmd, flags);
+        Commands.register("om",  "omap", cmd, flags);
+        Commands.register("pm",  "pmap", cmd, flags);
+        Commands.register("im",  "imap", cmd, flags);
 
-        ColonCommands.register("no",  "noremap",  cmd, flags);
-        ColonCommands.register("nn",  "nnoremap", cmd, flags);
-        ColonCommands.register("vn",  "vnoremap", cmd, flags);
-        ColonCommands.register("ono", "onoremap", cmd, flags);
-        ColonCommands.register("pn",  "pnoremap", cmd, flags);
-        ColonCommands.register("ino", "inoremap", cmd, flags);
+        Commands.register("no",  "noremap",  cmd, flags);
+        Commands.register("nn",  "nnoremap", cmd, flags);
+        Commands.register("vn",  "vnoremap", cmd, flags);
+        Commands.register("ono", "onoremap", cmd, flags);
+        Commands.register("pn",  "pnoremap", cmd, flags);
+        Commands.register("ino", "inoremap", cmd, flags);
 
-        ColonCommands.register("unm", "unmap",  cmd, flags);
-        ColonCommands.register("nun", "nunmap", cmd, flags);
-        ColonCommands.register("vu",  "vunmap", cmd, flags);
-        ColonCommands.register("ou",  "ounmap", cmd, flags);
-        ColonCommands.register("pun", "punmap", cmd, flags);
-        ColonCommands.register("iu",  "iunmap", cmd, flags);
+        Commands.register("unm", "unmap",  cmd, flags);
+        Commands.register("nun", "nunmap", cmd, flags);
+        Commands.register("vu",  "vunmap", cmd, flags);
+        Commands.register("ou",  "ounmap", cmd, flags);
+        Commands.register("pun", "punmap", cmd, flags);
+        Commands.register("iu",  "iunmap", cmd, flags);
     }
 
     private class MapColonCommand
-    extends ColonCommands.AbstractColonAction
+    extends AbstractColonAction
     {
         @Override
         public void actionPerformed(ActionEvent e)
@@ -355,7 +353,7 @@ public final class Mappings {
 
         // NEEDSWORK: forceit/'!' handling
         String cmd = fields.get(0);
-        if(!supportedMapCommand(ColonCommands.getFullCommandName(cmd))) {
+        if(!supportedMapCommand(ExCommands.getFullCommandName(cmd))) {
             emsg.error().append("\"").append(cmd).append("\" command not supported\n");
             return null;
         }

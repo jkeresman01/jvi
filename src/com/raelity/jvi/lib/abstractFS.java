@@ -25,7 +25,6 @@ import com.raelity.jvi.ViAppView;
 import com.raelity.jvi.ViBuffer;
 import com.raelity.jvi.ViFS;
 import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.core.Buffer;
 import com.raelity.jvi.core.Misc;
 import com.raelity.jvi.core.TextView;
 
@@ -40,7 +39,7 @@ abstract public class abstractFS implements ViFS
     public final String getDisplayFileViewInfo(ViTextView tv)
     {
         ViAppView av = tv.getAppView();
-        Buffer buf = tv.getBuffer();
+        ViBuffer buf = tv.getBuffer();
         TextView win = (TextView)tv;
         StringBuilder sb = new StringBuilder();
         sb.append("\"")

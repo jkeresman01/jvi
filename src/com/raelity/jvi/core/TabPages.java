@@ -26,8 +26,8 @@ import java.util.logging.Level;
 import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.*;
-import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
-import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.Commands.AbstractColonAction;
+import com.raelity.jvi.core.Commands.ColonEvent;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.*;
 
@@ -54,24 +54,15 @@ private TabPages() {}
 private static void init()
 {
     // tab handling
-    ColonCommands.register("tabc", "tabclose",
-                           new Tabclose(), null);
-    ColonCommands.register("tabo", "tabonly",
-                           new Tabonly(), null);
-    ColonCommands.register("tabm", "tabmove",
-                           new Tabmove(), null);
-    ColonCommands.register("tabn", "tabnext",
-                           new Tabnext(), null);
-    ColonCommands.register("tabp", "tabprevious",
-                           new Tabnext(), null);
-    ColonCommands.register("tabN", "tabNext",
-                           new Tabnext(), null);
-    ColonCommands.register("tabfir", "tabfirst",
-                           new Tabnext(), null);
-    ColonCommands.register("tabr", "tabrewind",
-                           new Tabnext(), null);
-    ColonCommands.register("tabl", "tablast",
-                           new Tabnext(), null);
+    Commands.register("tabc", "tabclose",    new Tabclose(), null);
+    Commands.register("tabo", "tabonly",     new Tabonly(), null);
+    Commands.register("tabm", "tabmove",     new Tabmove(), null);
+    Commands.register("tabn", "tabnext",     new Tabnext(), null);
+    Commands.register("tabp", "tabprevious", new Tabnext(), null);
+    Commands.register("tabN", "tabNext",     new Tabnext(), null);
+    Commands.register("tabfir", "tabfirst",  new Tabnext(), null);
+    Commands.register("tabr", "tabrewind",   new Tabnext(), null);
+    Commands.register("tabl", "tablast",     new Tabnext(), null);
 }
 /**
  * This is derived from get_tabpage_arg in ex_docmd.c
@@ -195,7 +186,7 @@ public void actionPerformed(final ActionEvent ev)
         }
     }
 }
-}
+    }
 
 private static class Tabonly extends AbstractColonAction {
 @Override
@@ -225,7 +216,7 @@ public void actionPerformed(final ActionEvent ev)
         }
     }
 }
-}
+    }
 
 private static class Tabmove extends AbstractColonAction {
 @Override
@@ -243,7 +234,7 @@ public void actionPerformed(final ActionEvent ev)
     if(cev.getEmsg() == null)
         G.curwin.tab_move(idx, ti);
 }
-}
+    }
 
 private static class Tabnext extends AbstractColonAction {
 @Override
@@ -301,7 +292,7 @@ public void actionPerformed(final ActionEvent ev)
             gotoTabpage(tab_number, null);
     }
 }
-}
+    }
 
 /**
  * @param n 1 is first tab

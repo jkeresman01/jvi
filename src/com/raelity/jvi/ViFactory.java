@@ -34,7 +34,8 @@ import javax.swing.Action;
 
 import com.raelity.jvi.ViTextView.TAGOP;
 import com.raelity.jvi.core.Buffer;
-import com.raelity.jvi.core.ColonCommands;
+import com.raelity.jvi.core.ExCommands;
+import com.raelity.jvi.core.Commands.ColonEvent;
 
 /**
  * This provides Vi the items it needs to interface with
@@ -215,7 +216,7 @@ public interface ViFactory
 
     public void displayTags();
 
-    public void tagDialog(ColonCommands.ColonEvent e);
+    public void tagDialog(ColonEvent e);
 
     public void commandEntryAssist(ViCmdEntry cmdEntry, boolean enable);
 

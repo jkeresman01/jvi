@@ -40,18 +40,12 @@ import java.util.prefs.Preferences;
 
 import org.openide.util.lookup.ServiceProvider;
 
-import com.raelity.jvi.ViAppView;
-import com.raelity.jvi.ViBadLocationException;
+import com.raelity.jvi.*;
 import com.raelity.jvi.ViBuffer.BIAS;
-import com.raelity.jvi.ViFactory;
-import com.raelity.jvi.ViInitialization;
-import com.raelity.jvi.ViMark;
-import com.raelity.jvi.ViOutputStream;
-import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.ViTextView.Orientation;
 import com.raelity.jvi.ViTextView.TAGOP;
-import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
-import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.Commands.AbstractColonAction;
+import com.raelity.jvi.core.Commands.ColonEvent;
 import com.raelity.jvi.core.lib.CcFlag;
 import com.raelity.jvi.core.lib.ColonCommandItem;
 import com.raelity.jvi.core.lib.Messages;
@@ -92,74 +86,74 @@ public class Cc01
 
     private static void init()
     {
-        ColonCommands.register("n", "next", new Next(true), null);
+        Commands.register("n", "next", new Next(true), null);
         ActionListener alNext= new Next(false);
-        ColonCommands.register("N", "Next", alNext, null);
-        ColonCommands.register("prev", "previous", alNext, null);
-        ColonCommands.register("clo", "close", new Close(), null);
-        ColonCommands.register("on", "only", new Only(), null);
+        Commands.register("N", "Next", alNext, null);
+        Commands.register("prev", "previous", alNext, null);
+        Commands.register("clo", "close", new Close(), null);
+        Commands.register("on", "only", new Only(), null);
 
-        ColonCommands.register("q", "quit", new Quit(), null);
-        ColonCommands.register("w", "write", new Write(), null);
-        ColonCommands.register("wq", "wq", new Wq(), null);
-        ColonCommands.register("wa", "wall", new Wall(), null);
+        Commands.register("q", "quit", new Quit(), null);
+        Commands.register("w", "write", new Write(), null);
+        Commands.register("wq", "wq", new Wq(), null);
+        Commands.register("wa", "wall", new Wall(), null);
 
         ActionListener alBuffers = new Buffers();
-        ColonCommands.register("files","files", alBuffers, null);
-        ColonCommands.register("buffers","buffers", alBuffers, null);
-        ColonCommands.register("ls","ls", alBuffers, null);
+        Commands.register("files","files", alBuffers, null);
+        Commands.register("buffers","buffers", alBuffers, null);
+        Commands.register("ls","ls", alBuffers, null);
 
         ActionListener alBuffers2 = new Buffers2();
-        ColonCommands.register("files2","files2", alBuffers2, null);
-        ColonCommands.register("buffers2","buffers2", alBuffers2, null);
-        ColonCommands.register("ls2","ls2", alBuffers2, null);
+        Commands.register("files2","files2", alBuffers2, null);
+        Commands.register("buffers2","buffers2", alBuffers2, null);
+        Commands.register("ls2","ls2", alBuffers2, null);
 
-        ColonCommands.register("f", "file", new FileAction(), null);
-        ColonCommands.register("e", "edit", new Edit(), null);
-        ColonCommands.register("s", "substitute", ACTION_substitute, null);
-        ColonCommands.register("&", "&", ACTION_substitute, null);
-        ColonCommands.register("g", "global", ACTION_global, null);
-        ColonCommands.register("v", "vglobal", new Vglobal(), null);
-        ColonCommands.register("d", "delete", ACTION_delete, null);
-        ColonCommands.register("p", "print", ACTION_print, null);
+        Commands.register("f", "file", new FileAction(), null);
+        Commands.register("e", "edit", new Edit(), null);
+        Commands.register("s", "substitute", ACTION_substitute, null);
+        Commands.register("&", "&", ACTION_substitute, null);
+        Commands.register("g", "global", ACTION_global, null);
+        Commands.register("v", "vglobal", new Vglobal(), null);
+        Commands.register("d", "delete", ACTION_delete, null);
+        Commands.register("p", "print", ACTION_print, null);
 
-        ColonCommands.register("ju", "jumps", new Jumps(), null);
+        Commands.register("ju", "jumps", new Jumps(), null);
 
-        ColonCommands.register("ta", "tag", new Tag(), null);
-        ColonCommands.register("tags", "tags", new Tags(), null);
-        ColonCommands.register("ts", "tselect", new Tselect(), null);
-        ColonCommands.register("po", "pop", new Pop(), null);
+        Commands.register("ta", "tag", new Tag(), null);
+        Commands.register("tags", "tags", new Tags(), null);
+        Commands.register("ts", "tselect", new Tselect(), null);
+        Commands.register("po", "pop", new Pop(), null);
 
-        ColonCommands.register("noh", "nohlsearch", new Nohlsearch(), null);
+        Commands.register("noh", "nohlsearch", new Nohlsearch(), null);
 
-        ColonCommands.register("testGlassKeys", "testGlassKeys",
+        Commands.register("testGlassKeys", "testGlassKeys",
                                new TestGlassKeys(),
                                EnumSet.of(CcFlag.DBG));
-        ColonCommands.register("testModalKeys", "testModalKeys",
+        Commands.register("testModalKeys", "testModalKeys",
                                new TestModalKeys(),
                                EnumSet.of(CcFlag.DBG));
 
-        ColonCommands.register("y", "yank", ACTION_yank, null);
+        Commands.register("y", "yank", ACTION_yank, null);
         // not pretty, limit the number of shifts...
-        ColonCommands.register(">", ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",
+        Commands.register(">", ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",
                                new ShiftAction(OP_RSHIFT),
                                null);
-        ColonCommands.register("<", "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<",
+        Commands.register("<", "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<",
                                new ShiftAction(OP_LSHIFT),
                                null);
 
-        ColonCommands.register("m", "move", new moveCopy(true), null);
+        Commands.register("m", "move", new moveCopy(true), null);
         ActionListener alCopy = new moveCopy(false);
-        ColonCommands.register("co", "copy", alCopy, null);
-        ColonCommands.register("t", "t", alCopy, null);
-        ColonCommands.register("u", "undo", new Undo(), null);
-        ColonCommands.register("red", "redo", new Redo(), null);
+        Commands.register("co", "copy", alCopy, null);
+        Commands.register("t", "t", alCopy, null);
+        Commands.register("u", "undo", new Undo(), null);
+        Commands.register("red", "redo", new Redo(), null);
 
         // clone an editor
-        ColonCommands.register("clon", "clone", new CloneAction(), null);
-        ColonCommands.register("sp", "split",
+        Commands.register("clon", "clone", new CloneAction(), null);
+        Commands.register("sp", "split",
                                new SplitAction(Orientation.UP_DOWN), null);
-        ColonCommands.register("vs", "vsplit",
+        Commands.register("vs", "vsplit",
                                new SplitAction(Orientation.LEFT_RIGHT), null);
 
         addDebugColonCommands();
@@ -709,7 +703,7 @@ public class Cc01
         public void actionPerformed(ActionEvent ev)
         {
             ColonEvent cev = (ColonEvent)ev;
-            final OPARG oa = ColonCommands.setupExop(cev, true);
+            final OPARG oa = ExCommands.setupExop(cev, true);
             if(!oa.error) {
                 oa.op_type = OP_DELETE;
                 Misc.runUndoable(() -> {
@@ -733,7 +727,7 @@ public class Cc01
         @Override
         public void actionPerformed(ActionEvent ev)
         {
-            OPARG oa = ColonCommands.setupExop((ColonEvent)ev, true);
+            OPARG oa = ExCommands.setupExop((ColonEvent)ev, true);
             if(!oa.error) {
                 oa.op_type = OP_YANK;
                 op_yank(oa, false, true);
@@ -766,7 +760,7 @@ public class Cc01
         public void actionPerformed(ActionEvent ev)
         {
             ColonEvent cev = (ColonEvent)ev;
-            final OPARG oa = ColonCommands.setupExop(cev, true);
+            final OPARG oa = ExCommands.setupExop(cev, true);
             final int amount = cev.getInputCommandName().length();
             if(!oa.error) {
                 oa.op_type = op;
@@ -796,7 +790,7 @@ public class Cc01
     {
         ColonEvent cev = (ColonEvent) e;
         ViTextView tv = cev.getViTextView();
-        final Buffer buf = tv.getBuffer();
+        final ViBuffer buf = tv.getBuffer();
         if(cev.getLine1() > buf.getLineCount()
                 || cev.getLine2() > buf.getLineCount()) {
             Msg.emsg(Messages.e_invrange);
@@ -807,7 +801,7 @@ public class Cc01
         // get the destination line number
         MutableInt dst = new MutableInt();
         if(cev.getNArg() < 1
-              || ColonCommands.get_address(cev.getArg(1), 0, false, dst) < 0
+              || ExCommands.get_address(cev.getArg(1), 0, false, dst) < 0
               || dst.getValue() > buf.getLineCount()) {
             Msg.emsg(Messages.e_invaddr);
             return; // BAIL
@@ -919,7 +913,7 @@ private static void addDebugColonCommands()
     //
     // Some debug commands
     //
-    ColonCommands.register("dumpPreferences", "dumpPreferences",
+    Commands.register("dumpPreferences", "dumpPreferences",
             (ActionEvent e) -> {
         try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -932,7 +926,7 @@ private static void addDebugColonCommands()
             LOG.log(Level.SEVERE, null, ex);
         }
     },  EnumSet.of(CcFlag.DBG, CcFlag.NO_ARGS));
-    ColonCommands.register("optionsDelete", "optionsDelete",
+    Commands.register("optionsDelete", "optionsDelete",
             (ActionEvent e) -> {
         try {
             Preferences prefs = ViManager.getFactory().getPreferences();
@@ -949,8 +943,8 @@ private static void addDebugColonCommands()
             LOG.log(Level.SEVERE, null, ex);
         }
     },  EnumSet.of(CcFlag.DBG));
-    ColonCommands.register("optionDelete", "optionDelete",
-        new ColonCommands.AbstractColonAction() {
+    Commands.register("optionDelete", "optionDelete",
+        new AbstractColonAction() {
             @Override
             public void actionPerformed(ActionEvent ev) {
                 ColonEvent cev = (ColonEvent) ev;
@@ -980,8 +974,8 @@ private static void addDebugColonCommands()
                 }
             }
         }, EnumSet.of(CcFlag.DBG));
-    ColonCommands.register("disabledCommand", "disabledCommand",
-        new ColonCommands.AbstractColonAction() {
+    Commands.register("disabledCommand", "disabledCommand",
+        new AbstractColonAction() {
 
         @Override
         public boolean isEnabled()
@@ -1000,10 +994,10 @@ private static void addDebugColonCommands()
             Msg.emsg("***** executing !isEnabled command *****");
         }
     }, EnumSet.of(CcFlag.DBG));
-    ColonCommands.register("dumpCommands", "dumpCommands",
+    Commands.register("dumpCommands", "dumpCommands",
             (ActionEvent e) -> {
         try (ViOutputStream vios = ViManager.createOutputStream("Dump Commands")) {
-            for(ColonCommandItem cci : ColonCommands.getList()) {
+            for(ColonCommandItem cci : Commands.getList()) {
                 vios.println(String.format("\t%s%s%s",
                         cci.getDisplayName(),
                         cci.getFlags().contains(CcFlag.DBG) ? " debug" : "",
@@ -1013,7 +1007,7 @@ private static void addDebugColonCommands()
             }
         }
     },  EnumSet.of(CcFlag.DBG, CcFlag.NO_ARGS));
-    ColonCommands.register("dumpOptions", "dumpOptions",
+    Commands.register("dumpOptions", "dumpOptions",
             (ActionEvent e) -> {
         try (ViOutputStream vios = ViManager.createOutputStream("Dump Options")) {
             // sort by display name
@@ -1030,8 +1024,8 @@ private static void addDebugColonCommands()
         }
     },  EnumSet.of(CcFlag.DBG, CcFlag.NO_ARGS));
 
-    ColonCommands.register("echolog", "echolog",
-        new ColonCommands.AbstractColonAction() {
+    Commands.register("echolog", "echolog",
+        new AbstractColonAction() {
             @Override
             @SuppressWarnings("UseOfSystemOutOrSystemErr")
             public void actionPerformed(ActionEvent ev) {
@@ -1042,8 +1036,8 @@ private static void addDebugColonCommands()
     }, EnumSet.of(CcFlag.DBG, CcFlag.XFILE));
 
     // all the msg Q to the log
-    ColonCommands.register("echologm", "echologmsg",
-        new ColonCommands.AbstractColonAction() {
+    Commands.register("echologm", "echologmsg",
+        new AbstractColonAction() {
             @Override
             public void actionPerformed(ActionEvent ev) {
                 ColonEvent cev = (ColonEvent)ev;
@@ -1053,8 +1047,8 @@ private static void addDebugColonCommands()
     }, EnumSet.of(CcFlag.DBG, CcFlag.XFILE));
 
     // to status line, not msg Q
-    ColonCommands.register("ec", "echo",
-        new ColonCommands.AbstractColonAction() {
+    Commands.register("ec", "echo",
+        new AbstractColonAction() {
             @Override
             public void actionPerformed(ActionEvent ev) {
                 ColonEvent cev = (ColonEvent)ev;
@@ -1064,8 +1058,8 @@ private static void addDebugColonCommands()
     }, EnumSet.of(CcFlag.DBG, CcFlag.XFILE));
 
     // to output window
-    ColonCommands.register("echoo", "echoout",
-        new ColonCommands.AbstractColonAction() {
+    Commands.register("echoo", "echoout",
+        new AbstractColonAction() {
             @Override
             public void actionPerformed(ActionEvent ev) {
                 ColonEvent cev = (ColonEvent)ev;
@@ -1077,8 +1071,8 @@ private static void addDebugColonCommands()
     }, EnumSet.of(CcFlag.DBG, CcFlag.XFILE));
 
     // to status line and msg Q
-    ColonCommands.register("echom", "echomsg",
-        new ColonCommands.AbstractColonAction() {
+    Commands.register("echom", "echomsg",
+        new AbstractColonAction() {
             @Override
             public void actionPerformed(ActionEvent ev) {
                 ColonEvent cev = (ColonEvent)ev;

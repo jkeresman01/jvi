@@ -22,7 +22,7 @@ package com.raelity.jvi;
 import java.awt.Component;
 import java.awt.geom.Rectangle2D;
 
-import com.raelity.jvi.core.Buffer;
+import com.raelity.jvi.ViBuffer;
 import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.lib.MutableInt;
 
@@ -144,7 +144,7 @@ public interface ViTextView extends ViOptionBag {
   public ViAppView getAppView();
 
   /** @return the associated Buffer */
-  public Buffer getBuffer();
+  public ViBuffer getBuffer();
 
   /** @return the underlying text component */
   public Component getEditor();
@@ -442,7 +442,7 @@ public interface ViTextView extends ViOptionBag {
   public void startup();
 
   /** attach Buffer to the text view */
-  public void attachBuffer(Buffer buf);
+  public void attachBuffer(ViBuffer buf);
 
   /** going away, do any remaining cleanup */
   public void shutdown();

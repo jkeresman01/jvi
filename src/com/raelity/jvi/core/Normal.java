@@ -1935,7 +1935,7 @@ normal_end: {
         range.append(fmt).append("\n");
     }
       
-    ColonCommands.doColonCommand(range);
+    ExCommands.doColonCommand(range);
   }
 
   static void end_visual_mode() {
@@ -2506,7 +2506,7 @@ normal_end: {
           range.append(cap.count0-1);
         }
       }
-      ColonCommands.doColonCommand(range);
+      ExCommands.doColonCommand(range);
     }
   }
 

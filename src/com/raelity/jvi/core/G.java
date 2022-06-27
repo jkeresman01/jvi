@@ -56,7 +56,7 @@ public class G implements ViOptionBag
      * During a window switch, this is called twice. Once during
      * the switch and once after it's done.
      */
-    static void switchTo( ViTextView _tv, Buffer buf, boolean lastCall )
+    static void switchTo( ViTextView _tv, ViBuffer buf, boolean lastCall )
     {
         if(lastCall) {
             Normal.displayVisualBounds();
@@ -94,7 +94,7 @@ public class G implements ViOptionBag
         }
 
         curwin = tv;
-        curbuf = buf;
+        curbuf = (Buffer)buf;
     }
 
     static void updateTextViewsVisual(boolean doAllVisible) {

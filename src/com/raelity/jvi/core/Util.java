@@ -493,7 +493,7 @@ static void add_to_history(int histype, String new_entry)
 {
   ViCmdEntry ce = histype == HIST_SEARCH
           ? Search.getSearchCommandEntry()
-          : ColonCommands.getColonCommandEntry();
+          : ExCommands.getColonCommandEntry();
   ce.makeTop(new_entry);
 }
 

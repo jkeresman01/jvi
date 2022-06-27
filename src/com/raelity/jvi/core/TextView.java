@@ -19,12 +19,9 @@
  */
 package com.raelity.jvi.core;
 
-import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
-
-import com.google.common.eventbus.Subscribe;
 
 import org.openide.util.lookup.ServiceProvider;
 
@@ -122,11 +119,11 @@ public abstract class TextView implements ViTextView
     }
 
     @Override
-    public void attachBuffer( Buffer buf )
+    public void attachBuffer( ViBuffer buf )
     {
         if(this.w_buffer != null)
             ViManager.dumpStack();
-        this.w_buffer = buf;
+        this.w_buffer = (Buffer)buf;
 
         w_pcmark = buf.createMark(null);
         w_prev_pcmark = buf.createMark(null);

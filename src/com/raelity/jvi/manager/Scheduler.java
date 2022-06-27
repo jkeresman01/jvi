@@ -89,7 +89,7 @@ public class Scheduler
         boolean fNewTextView = fact().getTextView(editor) == null;
         boolean fNewBuffer = fact().getBuffer(editor) == null;
         ViTextView textView = mayCreateTextView(editor);
-        Buffer buf = textView.getBuffer();
+        Buffer buf = (Buffer)textView.getBuffer();
         fact().setupCaret(editor); // make sure has the right caret
         textView.attach();
         dbgEditorActivation().println(INFO, () ->

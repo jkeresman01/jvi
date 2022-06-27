@@ -62,7 +62,7 @@ import com.raelity.jvi.manager.*;
 import com.raelity.text.TextUtil;
 import com.raelity.text.MySegment;
 
-import static com.raelity.jvi.core.ColonCommands.*;
+import static com.raelity.jvi.core.ExCommands.*;
 import static com.raelity.jvi.core.Edit.*;
 import static com.raelity.jvi.core.GetChar.*;
 import static com.raelity.jvi.core.Misc.*;
@@ -98,7 +98,7 @@ public class Ops {
     }
 
     private static void init() {
-        ColonCommands.register("reg", "registers", new DoRegisters(), null);
+        Commands.register("reg", "registers", new DoRegisters(), null);
         ViEvent.getBus().register(new EventHandlers());
     }
 
@@ -383,11 +383,11 @@ public class Ops {
   /**
    * print the registers
    */
-  private static class DoRegisters extends AbstractColonAction
+  private static class DoRegisters extends Commands.AbstractColonAction
   {
     @Override
     public void actionPerformed(ActionEvent ev) {
-      ColonEvent cev = (ColonEvent)ev;
+            Commands.ColonEvent cev = (Commands.ColonEvent)ev;
 
       String arg = null;
       if(cev.getNArg() > 0)
@@ -1059,7 +1059,7 @@ private static int put_in_typebuf(String s, boolean colon)
 //  #ifdef WANT_EVAL...
 
           case ':':		/* last command line */
-              s = ColonCommands.lastCommand; // s = last_cmdline;
+              s = ExCommands.lastCommand; // s = last_cmdline;
               if (s == null && errmsg)
                   Msg.emsg(Messages.e_nolastcmd);
               argp.setValue(s);

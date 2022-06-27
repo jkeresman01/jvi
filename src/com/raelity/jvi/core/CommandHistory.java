@@ -37,8 +37,8 @@ import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.*;
 import com.raelity.jvi.ViOutputStream.FLAGS;
-import com.raelity.jvi.core.ColonCommands.AbstractColonAction;
-import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.Commands.AbstractColonAction;
+import com.raelity.jvi.core.Commands.ColonEvent;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.*;
@@ -90,7 +90,7 @@ private static final Wrap<PreferencesImportMonitor> pCommandsImportCheck = new W
     }
 
 private static void init() {
-    ColonCommands.register("his", "history", new History(),
+    Commands.register("his", "history", new History(),
                            EnumSet.of(CcFlag.NO_PARSE));
     Options.addPropertyChangeListenerSET(
             Options.history, (evt) -> historySizeChange(evt));
@@ -108,7 +108,7 @@ private static void init() {
             
             l = readPrefsList(PREF_COMMANDS, pCommandsImportCheck);
             hc = COLON.initHistory(l);
-            ColonCommands.getColonCommandEntry().setHistory(hc);
+            ExCommands.getColonCommandEntry().setHistory(hc);
         }
         @Subscribe
         public void writeHistories(ViEvent.Shutdown ev)

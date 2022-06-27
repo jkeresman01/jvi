@@ -72,8 +72,9 @@ import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.*;
-import com.raelity.jvi.core.ColonCommands.ColonEvent;
+import com.raelity.jvi.core.Commands.ColonEvent;
 import com.raelity.jvi.core.*;
+import com.raelity.jvi.core.Commands.AbstractColonAction;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.*;
@@ -138,7 +139,7 @@ public abstract class SwingTextView extends TextView
             if(didInit)
                 return;
             didInit = true;
-            ColonCommands.register("dumpLineMap", "dumpLineMap",
+            Commands.register("dumpLineMap", "dumpLineMap",
                                    new DumpLineMap(),
                                    EnumSet.of(CcFlag.DBG, CcFlag.NO_ARGS));
             eatme(gen);
@@ -253,7 +254,7 @@ public abstract class SwingTextView extends TextView
         return this.vm;
     }
 
-    private static class DumpLineMap extends ColonCommands.AbstractColonAction
+    private static class DumpLineMap extends AbstractColonAction
     {
         @Override
         public void actionPerformed(ActionEvent ev)

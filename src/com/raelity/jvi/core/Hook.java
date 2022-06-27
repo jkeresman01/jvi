@@ -24,8 +24,7 @@ import java.util.List;
 
 import org.openide.util.lookup.ServiceProvider;
 
-import com.raelity.jvi.ViInitialization;
-import com.raelity.jvi.ViTextView;
+import com.raelity.jvi.*;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.ViManager;
@@ -97,7 +96,7 @@ public class Hook
      * @param buf
      * @param lastCall true indicates the switch is complete
      */
-    public void switchTo(ViTextView tv, Buffer buf, boolean lastCall)
+    public void switchTo(ViTextView tv, ViBuffer buf, boolean lastCall)
     {
         G.switchTo(tv, buf, lastCall);
     }
