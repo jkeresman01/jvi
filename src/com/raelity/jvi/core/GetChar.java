@@ -25,6 +25,8 @@ import java.awt.event.ActionListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.common.eventbus.Subscribe;
+
 import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.*;
@@ -38,7 +40,6 @@ import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Constants.FDO.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
-import static com.raelity.text.TextUtil.sf;
 
 public class GetChar {
     private static boolean block_redo = false;
@@ -60,8 +61,16 @@ public class GetChar {
         @Override
         public void init()
         {
-            mappings = new Mappings();
+            mappings = Mappings.get();
             typebuf = new TypeBufMultiCharMapping(mappings);
+
+            OptUtil.getEventBus().register(new Object() {
+              @Subscribe public void mapCommandsChange(
+                      OptUtil.OptionChangeOptionEvent ev) {
+                if(Options.mapCommands.equals(ev.getName()))
+                  reinitMappings();
+              }
+            });
         }
     }
 

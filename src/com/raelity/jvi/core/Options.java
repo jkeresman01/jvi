@@ -20,16 +20,12 @@
 package com.raelity.jvi.core;
 
 import java.awt.Color;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.PreferenceChangeEvent;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,7 +49,7 @@ import static com.raelity.jvi.core.lib.Constants.FDO.*;
 import static com.raelity.jvi.core.lib.Constants.NF.*;
 import static com.raelity.text.TextUtil.sf;
 
-import javax.swing.event.ChangeListener;
+import com.google.common.eventbus.Subscribe;
 
 import com.raelity.jvi.ViOutputStream.COLOR;
 import com.raelity.jvi.ViOutputStream.FLAGS;
@@ -80,12 +76,6 @@ public final class Options {
   private static final Logger LOG = Logger.getLogger(Options.class.getName());
   private Options() {
   }
-  private static Options options;
-  private static final PropertyChangeSupport pcs
-                        = new PropertyChangeSupport(getOptions());
-  // includes the set command
-  private static final PropertyChangeSupport pcsSET
-                        = new PropertyChangeSupport(getOptions());
 
     public static interface EditControl {
         /** starting edit */
@@ -102,34 +92,13 @@ public final class Options {
       @Override
       public void init()
       {
-        Options.init();
-        if(notifyInitialized != null)
-          notifyInitialized.stateChanged(null);
-      }
-    }
 
-    private static ChangeListener notifyInitialized;
-    public static void informAfterInit(ChangeListener change)
-    {
-        if(notifyInitialized == null)
-          notifyInitialized = change;
-    }
-
-    // Sigh, don't want public...
-    // invoked from OptUtil
-    public static void optionChangeFixup(Option<?> opt, PreferenceChangeEvent evt)
-    {
-      if(evt.getKey().equals(mapCommands)) {
-        GetChar.reinitMappings();
+        OptUtil.init();
+        Options.init(); // enable option events
+        OptUtil.go();
+        OptUtil.firePropertyChange(new OptUtil.OptionsInitializedEvent());
       }
     }
-  
-  static Options getOptions() {
-      if(options == null) {
-          options = new Options();
-      }
-      return options;
-  }
 
   /**
    * Options are grouped into categories. Typically a UI groups the options
@@ -295,8 +264,6 @@ public final class Options {
       return;
     }
     didInit = true;
-
-    OptUtil.init(pcs, pcsSET);
 
     // Since this is used to debug options, put it first
 
@@ -1176,7 +1143,7 @@ public final class Options {
     OptUtil.verifyVimOptions();
     if(ViManager.isDebugAtHome())
       OptUtil.checkAllForSetCommand();
-  }
+  } // END init
 
   /**
    * Get the named option.
@@ -1198,60 +1165,6 @@ public final class Options {
    */
   public static List<String> getOptionList(Category category) {
     return OptUtil.getOptionList(category);
-  }
-  
-  //
-  // Look like a good bean
-  // But they're static!
-  //
-  
-  public static void addPropertyChangeListener( PropertyChangeListener listener )
-  {
-    pcs.addPropertyChangeListener( listener );
-  }
-
-  public static void removePropertyChangeListener( PropertyChangeListener listener )
-  {
-    pcs.removePropertyChangeListener( listener );
-  }
-  
-  public static void addPropertyChangeListener(String p,
-                                               PropertyChangeListener l)
-  {
-    pcs.addPropertyChangeListener(p, l);
-  }
-
-  public static void removePropertyChangeListener(String p,
-                                                  PropertyChangeListener l)
-  {
-    pcs.removePropertyChangeListener(p, l);
-  }
-
-
-  // These are listeners that want to also hear about changes
-  // from the set command, in addition to dialog/preferences.
-  public static void addPropertyChangeListenerSET(
-          PropertyChangeListener listener )
-  {
-    pcsSET.addPropertyChangeListener( listener );
-  }
-
-  public static void removePropertyChangeListenerSET(
-          PropertyChangeListener listener )
-  {
-    pcsSET.removePropertyChangeListener( listener );
-  }
-  
-  public static void addPropertyChangeListenerSET(String p,
-                                                  PropertyChangeListener l)
-  {
-    pcsSET.addPropertyChangeListener(p, l);
-  }
-
-  public static void removePropertyChangeListenerSET(String p,
-                                                     PropertyChangeListener l)
-  {
-    pcsSET.removePropertyChangeListener(p, l);
   }
   
   private static Pattern mlPat1;
@@ -1355,26 +1268,20 @@ public final class Options {
   //////////////////////////////////////////////////////////////////////
   //
   // Whether or not to highlight depends on a mix of things.
-  // Handle the logic here.
+  // Handle some of the logic here.
   
-  static boolean nohDisableHighlight;
+  private static boolean nohDisableHighlight;
   
   static {
-    addPropertyChangeListener(highlightSearch, new PropertyChangeListener() {
-      @Override
-      public void propertyChange(PropertyChangeEvent evt) {
-        if(G.curwin != null) {
-          nohDisableHighlight = false;
-          ViManager.updateHighlightSearchState();
-        }
-      }
-    });
-
-    addPropertyChangeListener(ignoreCase, (PropertyChangeEvent evt) -> {
-      if(G.curwin != null) {
-        ViManager.updateHighlightSearchState();
-      }
-    });
+    OptUtil.getEventBus().register(new Object() {
+      @Subscribe public void searchOptions(OptUtil.OptionChangeGlobalEvent ev) {
+        switch(ev.getName()) {
+        case Options.highlightSearch:
+        case Options.ignoreCase:
+          if(G.curwin != null)
+            ViManager.updateHighlightSearchState();
+          break;
+        } } });
   }
   
   public static boolean doHighlightSearch() {
@@ -1397,8 +1304,8 @@ public final class Options {
   // This option is used a lot, make it fast
   //
 
-  static DebugOption kd;
-  public static DebugOption kd() {
+  private static DebugOption kd;
+  public static final DebugOption kd() {
     return kd;
   }
 }

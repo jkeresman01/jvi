@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.EnumSet;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -35,6 +36,28 @@ import static com.raelity.jvi.manager.ViManager.getFactory;
 // NEEDSWORK: If returning a reference, should be readonly
 //
 
+/**
+ * Base class for a jVi option. Currently supported, include gui display, types
+ * are int, boolean, string, color, enumSet, enumString. An option may
+ * have a validator attached which can throw PropertyVetoException.
+ * An option has additional information, desc, display name, ...
+ * See {@link Options}, {@link OptUtil}.
+ * <p>
+ * Note that this method has concrete implementations of get for each type,
+ * they produce class cast exception. Typically use:
+ * <pre>
+ * {@code 
+ * Option<?> opt = Options.getOption(name);
+ * opt.getColor(); // cast exception if not a color
+ * }
+ * </pre>
+ * 
+ * @author err
+ * @param <T> option type
+ */
+//
+// Sealed class to limit who can extend?
+//
 public abstract class Option<T> {
     final Class<T> optionType;
     final protected String name;
@@ -49,7 +72,7 @@ public abstract class Option<T> {
     private boolean fHidden;
     private Category category;
     
-    private boolean fPropogate; // used in logic, not part of option type
+    private boolean fPropogateToPref; // used in logic, not part of option type
 
     // NOTE: can not deduce optionType from defaultValue since
     //       color allows null.
@@ -83,32 +106,35 @@ public abstract class Option<T> {
     {
         T oldValue = value;
         value = newValue;
+        //if(Objects.equals(newValue, oldValue))
+        //    return;
         propogate();
-        OptUtil.firePropertyChange(name, oldValue, newValue);
+        OptUtil.firePropertyChange(new OptUtil.OptionChangeOptionEvent(
+                name, oldValue, newValue));
     }
 
     private void propogate() {
-	if(fPropogate) {
+	if(fPropogateToPref)
             OptUtil.getPrefs().put(name, getValueAsString(value));
-	}
+        // TODO: Is it better to initialize memory before setting preference?
         OptUtil.intializeGlobalOptionMemoryValue(this);
     }
 
     /**
      * SetValue from String without propagating.
      * The preferences data base has changed, stay in sync.
-     * Do not propagate change back to data base.
+     * Do not propagate change back to preferences data base.
      * <p/>
      * This is invoked by a preferences change listener
      * as well as the initialize method.
      */
     final void preferenceChange(String newValue) {
-	fPropogate = false;
+	fPropogateToPref = false;
         try {
 	    //System.err.println("preferenceChange " + name + ": " + newValue);
             setValueFromString(newValue);
         } finally {
-	    fPropogate = true;
+	    fPropogateToPref = true;
         }
     }
 
@@ -165,38 +191,24 @@ public abstract class Option<T> {
     }
     
     public Integer getInteger() {
-        // if(optionType != Integer.class)
-        //     throw new ClassCastException(this.getClass().getSimpleName()
-        //                                  + " is not an IntegerOption");
         return (Integer)value;
     }
 
     // NEEDSWORK: should be final, except for DebugOption
+    // sealed?
     public Boolean getBoolean() {
-        // if(optionType != Boolean.class)
-        //     throw new ClassCastException(this.getClass().getSimpleName()
-        //                                  + " is not a BooleanOption");
         return (Boolean)value;
     }
     
     public String getString() {
-        // if(optionType != String.class)
-        //     throw new ClassCastException(this.getClass().getSimpleName()
-        //                                  + " is not a StringOption");
         return (String)value;
     }
 
     public Color getColor() {
-        // if(optionType != Color.class)
-        //     throw new ClassCastException(this.getClass().getSimpleName()
-        //                                  + " is not a ColorOption");
         return (Color)value;
     }
     
     public EnumSet<?> getEnumSet() {
-        // if(optionType != EnumSet.class)
-        //     throw new ClassCastException(this.getClass().getSimpleName()
-        //                                  + " is not a EnumSetOption");
         return (EnumSet)value;
     }
 

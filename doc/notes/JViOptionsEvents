@@ -1,0 +1,100 @@
+
+Dialog updates preference
+    does OptUtil.OptionChangeHandler.applyChanges,
+        writes prefs
+        Fires an OptionChangeDialogEvent (unused).
+OptUtil listens to prefs does option set value
+Option setValue
+    ChangeGlobalEvent
+    ChangeOptionEvent
+Set command
+    ChangeGlobalEvent
+
+Events generation:
+    - OptionsBeanBase does not fire events
+      (it used to have pcs, vcs(vetoable) which were not used)
+    - Option.java ::setValue
+      propogate(): prefs.put(), OptUtil.initializeGlobal...() fires mem change
+      fires opt change
+      (old: OptUtil fires for Options registered events, pcs, pcsSET)
+    - ":set" command
+      fires mem change
+    - validators may throw Veto, the jVi infrastructure
+      catches that, propogates it to cancel jVi option change.
+      No events/exceptions visible to jVi (other than option handling).
+    - NB: OptionsPanel fires a property change event on NB
+      conditional: PROP_CHANGE, always PROP_VALID
+      See jViOptionsPanelController
+    - OptionSheet.java
+      catches event from l2f...PropertySheetPanel to invoke writeToObject
+
+Survey
+    monitoring:
+        - mem change
+        - opt change
+        - preference changes
+    option access:
+        - getOption
+
+The l2f dialog does not change values in response to the set command.
+dialog change preferences.
+
+??? Both set command and dialog change in memory value.
+
+
+Set command changes G.p_hi (for history), does not change option value
+Set command does not change preference.
+
+So, code should use/check G.p_some_opt, this is changed by both
+dialog and set command.
+
+Should only use opt = Options.getOption(name) for debug options
+or otherwise not in G.
+
+jvi/swing/ui/options
+====================
+
+OptionSheet.java
+    l2f...PropertySheetPanel sheet
+    ...
+    pcl = (evt) ->
+        // MyPropAdapt in following, as seen in debugger
+        { prop = evt.getSource(); ...; prop.writeToObject(bean); ... }
+    sheet.addPropertySheetChangeListener(pcl)
+
+PropertyDescriptorAdapter.java extends l2f...AbstractProperty
+
+    java.beans.PropertyDescriptor descriptor;
+    ...
+    public void writeToObject(Object object)
+        method = descriptor.getWriteMethod(); // method in OptionsBeanBase
+        method.invoke(Object, new Object[]{getValue()};
+
+OptionsBeanBase.java
+    ...
+    put(String name, int val)
+        int old = getint(name);
+	Option<?> opt = Options.getOption(name);
+        opt.validate(val);
+        this.vcs.fireVetoableChange( name, old, val );
+        optionChangeHandler.changeOption(name, "Integer", old, (Integer)val);
+
+======================================================================
+
+Options.java add
+
+======================================================================
+
+
+OptionsBeanBase listens listens to Options.addPropertyChangeListener
+
+OptUtil.applyChanges - loops through changes made in dialog
+    - write to prefs
+    - pcs.firePropertyChange (note pcs is from Options)     
+        OptionsBeanBase.this.pcs.firePropertyChange(evt)
+            (pcs events seems not to be used)
+
+
+
+
+

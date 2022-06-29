@@ -20,17 +20,11 @@
 package com.raelity.jvi;
 
 import java.awt.Component;
-import java.awt.event.ActionListener;
-
-import javax.swing.event.ChangeListener;
 
 import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.SubscriberExceptionContext;
-import com.google.common.eventbus.SubscriberExceptionHandler;
-
-import org.openide.util.Exceptions;
 
 import com.raelity.jvi.core.CommandHistory.HistoryContext;
+import com.raelity.jvi.manager.*;
 import com.raelity.text.TextUtil;
 
 import static com.raelity.text.TextUtil.sf;
@@ -109,7 +103,8 @@ public interface ViCmdEntry {
      * @return event bus for command lines
      */
 
-    static final EventBus eventBus = new EventBus(new ExHandler());
+    static final EventBus eventBus
+            = new EventBus(new ViEvent.ExHandler("ViCmdEntry.Event: handleException:"));
     static EventBus getEventBus()
     {
         return eventBus;
@@ -185,19 +180,4 @@ public interface ViCmdEntry {
             return source;
         }
         } // END CLASS
-
-        static class ExHandler implements SubscriberExceptionHandler
-        {
-        @Override
-        @SuppressWarnings("UseOfSystemOutOrSystemErr")
-        public void handleException(Throwable ex, SubscriberExceptionContext ctx)
-        {
-            System.err.println("ViCmdEntry.Event: handleException:");
-            System.err.println("    " + ctx.getEventBus());
-            System.err.println("    " + ctx.getEvent());
-            System.err.println("    " + ctx.getSubscriber());
-            System.err.println("    " + ctx.getSubscriberMethod());
-            Exceptions.printStackTrace(ex);
-        }
-        }
 }

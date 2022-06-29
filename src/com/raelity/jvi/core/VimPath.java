@@ -57,7 +57,7 @@ public class VimPath
 
 private VimPath() { }
 
-    @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=2)
+    @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=3)
     public static class Init implements ViInitialization
     {
     @Override

@@ -44,6 +44,8 @@ import com.raelity.jvi.swing.ui.options.OptionsPanel;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.text.Document;
@@ -205,7 +207,7 @@ public class Jvi
         // wait for frame to exit, so JUnitTest won't kill it
     }
 
-    static private MyPropertySheetDialog dialog;
+    static private JDialog dialog;
     static private OptionsPanel optionsPanel;
 
     @SuppressWarnings("serial")
@@ -252,21 +254,8 @@ public class Jvi
         owner = null;
 
         if(dialog == null) {
-            optionsPanel = new OptionsPanel(() -> {
-                System.err.println("Property Change");
-            });
-            dialog = new MyPropertySheetDialog(optionsPanel, owner, "jVi Options");
-            dialog.getBanner().setVisible(false);
-            dialog.getContentPane().add(optionsPanel, BorderLayout.EAST);
-            //dialog.getContentPane().add(optionsPanel, BorderLayout.CENTER);
-
-            // dialog.getButtonPane().add(new JButton("Default ALL"));
-            // dialog.getButtonPane().add(new JButton("Set Default"));
-
-            //dialog.setDialogMode(dialog.CLOSE_DIALOG);
-            dialog.setDialogMode(dialog.OK_CANCEL_DIALOG);
-            dialog.pack();
-            dialog.centerOnScreen();
+            //dialog = getL2fDialog(owner);
+            dialog = getOkApplyCancelDialog(owner);
         }
         UIUtil.translateToPrefScreen(dialog, target);
         // TODO: what is the following about?
@@ -274,6 +263,36 @@ public class Jvi
             optionsPanel.load();
         }
         dialog.setVisible(true);
+    }
+
+    static JDialog getOkApplyCancelDialog(Frame owner)
+    {
+        OptionsDialog dlg = new OptionsDialog(owner);
+        optionsPanel = dlg.optionsPanel;
+        dlg.pack();
+        return dlg;
+    }
+
+    static JDialog getL2fDialog(Frame owner)
+    {
+        optionsPanel = new OptionsPanel(() -> {
+            System.err.println("Property Change");
+        });
+        MyPropertySheetDialog dlg
+                = new MyPropertySheetDialog(optionsPanel, owner, "jVi Options");
+        dlg.getBanner().setVisible(false);
+        dlg.getContentPane().add(optionsPanel, BorderLayout.EAST);
+        //dlg.getContentPane().add(optionsPanel, BorderLayout.CENTER);
+        
+        // dlg.getButtonPane().add(new JButton("Default ALL"));
+        // dlg.getButtonPane().add(new JButton("Set Default"));
+        
+        //dlg.setDialogMode(dlg.CLOSE_DIALOG);
+        dlg.setDialogMode(dlg.OK_CANCEL_DIALOG);
+        dlg.pack();
+        dlg.centerOnScreen();
+
+        return dlg;
     }
 
 } // end com.raelity.jvi.cmd.Jvi;

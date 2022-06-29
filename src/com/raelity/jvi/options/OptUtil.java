@@ -21,7 +21,6 @@
 package com.raelity.jvi.options;
 
 import java.awt.Color;
-import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,15 +33,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.logging.Level;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.Preferences;
+
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.SubscriberExceptionHandler;
 
 import com.raelity.jvi.core.*;
 import com.raelity.jvi.core.Options.Category;
 import com.raelity.jvi.manager.*;
 
+import static java.util.logging.Level.*;
+
+import static com.raelity.jvi.manager.ViManager.runInDispatch;
 import static com.raelity.text.TextUtil.sf;
 
 /**
@@ -51,41 +56,42 @@ import static com.raelity.text.TextUtil.sf;
  * @author Ernie Rael <err at raelity.com>
  */
 public class OptUtil {
-
     private static boolean didInit = false;
+    private static boolean started = false;
     private static Preferences prefs;
-    private static PropertyChangeSupport pcs;
-    private static PropertyChangeSupport pcsSET;
     private static final Map<String,Option<?>> optionsMap = new HashMap<>();
 
     private static final Map<Category, List<String>> categoryLists
             = new EnumMap<>(Category.class);
 
-    public static void init(PropertyChangeSupport pcs,
-                            PropertyChangeSupport pcsSET)
+    public static void init()
     {
         if (didInit) {
             return;
         }
         didInit = true;
 
-        OptUtil.pcs = pcs;
-        OptUtil.pcsSET = pcsSET;
-
         // HACK - just doit
         getWritableOptionList(Category.PLATFORM).add("jViVersion");
 
         prefs = ViManager.getFactory().getPreferences();
 
+        // Pref change updates options; do it on EDT.
         prefs.addPreferenceChangeListener((PreferenceChangeEvent evt) -> {
           Option<?> opt = Options.getOption(evt.getKey());
           if (opt != null) {
             if (evt.getNewValue() != null) {
+              // THIS CAUSES PROPERTY SHEET TO BACKUP TO OLD VALUE
+              //runInDispatch(false, () -> opt.preferenceChange(evt.getNewValue()));
               opt.preferenceChange(evt.getNewValue());
             }
           }
-          Options.optionChangeFixup(opt, evt);
         });
+    }
+
+    public static void go()
+    {
+      started = true;
     }
 
     static Preferences getPrefs()
@@ -93,16 +99,9 @@ public class OptUtil {
         return prefs;
     }
 
-  /** This should only be used from Option and its subclasses */
-  static void firePropertyChange(String name, Object oldValue, Object newValue) {
-    pcsSET.firePropertyChange(name, oldValue, newValue);
-    pcs.firePropertyChange(name, oldValue, newValue);
-  }
-
-  /** This should only be used from SetColonCommand */
-  static void firePropertyChangeSET(
-          String name, Object oldValue, Object newValue) {
-    pcsSET.firePropertyChange(name, oldValue, newValue);
+  public static void firePropertyChange(OptionChangeEvent ev)
+  {
+    getEventBus().post(ev);
   }
 
 
@@ -155,8 +154,8 @@ public class OptUtil {
     return opt;
   }
 
-  static public BooleanOption createBooleanOption(String name,
-                                                  boolean defaultValue) {
+  static public BooleanOption createBooleanOption(String name, boolean defaultValue)
+  {
     if(optionsMap.get(name) != null)
         throw new IllegalArgumentException("Option " + name + "already exists");
     BooleanOption opt = new BooleanOption(name, defaultValue);
@@ -164,14 +163,13 @@ public class OptUtil {
     return opt;
   }
 
-  static public IntegerOption createIntegerOption(String name,
-                                                  int defaultValue) {
+  static public IntegerOption createIntegerOption(String name, int defaultValue) {
       return createIntegerOption(name, defaultValue, null);
   }
 
-  static public IntegerOption createIntegerOption(String name,
-                                                  int defaultValue,
-                                                  Validator<Integer> valid) {
+  static public IntegerOption createIntegerOption(
+          String name, int defaultValue, Validator<Integer> valid)
+  {
     if(optionsMap.get(name) != null)
         throw new IllegalArgumentException("Option " + name + "already exists");
     if(valid == null)
@@ -314,23 +312,23 @@ public class OptUtil {
     try {
       Field f = G.class.getDeclaredField(vopt.getVarName());
       f.setAccessible(true);
-      if(f.getType() == int.class)
-        f.setInt(null, opt.getInteger());
-      else if(f.getType() == boolean.class)
-        f.setBoolean(null, opt.getBoolean());
-      else if(f.getType() == String.class)
-        f.set(null, opt.getString());
-      else if(f.getType() == Color.class)
-        f.set(null, opt.getColor());
-      else if(f.getType() == EnumSet.class)
-        f.set(null, opt.getEnumSet());
+      Object oldValue = f.get(null);
+      if(f.getType() == int.class
+              || f.getType() == boolean.class
+              || f.getType() == String.class
+              || f.getType() == Color.class
+              || f.getType() == EnumSet.class)
+        f.set(null, opt.getValue());
       else
         throw new IllegalArgumentException("option " + opt.getName());
-      G.dbgOptions() .printf(() ->
+
+      G.dbgOptions().printf(() ->
               sf("Init G.%s to '%s'\n", vopt.getVarName(), opt.getValue()));
+      firePropertyChange(new OptionChangeGlobalEvent(
+              opt.getName(), oldValue, opt.getValue()));
     } catch(IllegalArgumentException | IllegalAccessException
             | NoSuchFieldException | SecurityException ex) {
-      Logger.getLogger(OptUtil.class.getName()).log(Level.SEVERE, null, ex);
+      Logger.getLogger(OptUtil.class.getName()).log(SEVERE, null, ex);
     }
   }
 
@@ -352,7 +350,7 @@ public class OptUtil {
         else if(f.getType() == String.class)
           opt.getString();
       } catch(NoSuchFieldException | SecurityException ex) {
-        Logger.getLogger(VimOption.class.getName()).log(Level.SEVERE, null, ex);
+        Logger.getLogger(VimOption.class.getName()).log(SEVERE, null, ex);
       }
     }
   }
@@ -377,86 +375,213 @@ public class OptUtil {
   private OptUtil()
   {
   }
-  
-  static public class OptionChangeHandler
-  {
 
-  private static class Change
-  {
-  public Change(String type, Object oldVal, Object newVal)
-  {
-    this.type = type;
-    this.oldVal = oldVal;
-    this.newVal = newVal;
-  }
-  
-  String type;
-  Object oldVal;
-  Object newVal;
-  }
-  
-  // Since color can be null, and a null object has no type
-  // use the following specific object for a null color
-  final static Color nullColor = new Color(0,0,0);
-  private final PropertyChangeSupport pcs;
-  private final Preferences prefs;
-  private final Map<String, Change> map = new HashMap<>();
+    /** This class queues up changes from the options dialog;
+     * the OK/Apply buttons typically commit the changes.
+     */
+    static public class OptionChangeHandler
+    {
 
-  OptionChangeHandler(PropertyChangeSupport pcs, Preferences prefs)
-  {
-    this.pcs = pcs;
-    this.prefs = prefs;
-  }
-  
-  void clear()
-  {
-    map.clear();
-  }
-  
-  void changeOption(String name, String type, Object oldVal, Object newVal)
-  {
-    Change ch = map.get(name);
-    if(ch == null) {
-      ch = new Change(type, oldVal, newVal);
-      map.put(name, ch);
-    } else {
-      // assert oldVal.equals(ch.oldVal);
-      ch.newVal = newVal;
-    }
-  }
-  
-  void applyChanges()
-  {
-    for(Entry<String, Change> entry : map.entrySet()) {
-      String key = entry.getKey();
-      Change ch = entry.getValue();
-      
-      switch(ch.type)
+      private static class Change
       {
-      case "String":
-        prefs.put(key, (String)ch.newVal);
-        break;
-      case "Color":
-        prefs.put(key, ColorOption.encode((Color)ch.newVal));
-        break;
-      case "Integer":
-        prefs.putInt(key, (Integer)ch.newVal);
-        break;
-      case "Boolean":
-        prefs.putBoolean(key, (Boolean)ch.newVal);
-        break;
-      case "EnumSet":
-        prefs.put(key, EnumSetOption.encode((EnumSet)ch.newVal));
-        break;
-      default:
-        assert false : "unhandled type";
+      private Change(String type, Object oldVal)
+      {
+        this.type = type;
+        this.oldVal = oldVal;
       }
       
-      if(pcs != null)
-        pcs.firePropertyChange(key, ch.newVal, ch.oldVal);
+      private final String type;
+      private final Object oldVal;
+      private Object newVal;
+      }
+
+    private final Map<String, Change> map = new HashMap<>();
+    
+    private final Preferences prefs;
+
+    OptionChangeHandler(Preferences prefs)
+    {
+      this.prefs = prefs;
     }
+    
+    void clear()
+    {
+      map.clear();
+    }
+    
+    void changeOption(String name, String type, Object oldVal, Object newVal)
+    {
+      Change ch = map.computeIfAbsent(name, (k) -> new Change(type, oldVal));
+      ch.newVal = newVal;
+    }
+    
+    //
+    // TODO: make this applyChangesAndClear
+    //       guess there's no reason to copy the map and clear it under lock.
+    //
+    //////////////////////////////////////////////////////////////////////
+    //
+    // MUST CHANGE THE OPTION FROM HERE
+    // Do option.setValue from here; then icheck oldval==newval.
+    //
+    void applyChanges()
+    {
+      for(Entry<String, Change> entry : map.entrySet()) {
+        String key = entry.getKey();
+        Change ch = entry.getValue();
+        
+        switch(ch.type)
+        {
+        case "String":
+          prefs.put(key, (String)ch.newVal);
+          break;
+        case "Color":
+          prefs.put(key, ColorOption.encode((Color)ch.newVal));
+          break;
+        case "Integer":
+          prefs.putInt(key, (Integer)ch.newVal);
+          break;
+        case "Boolean":
+          prefs.putBoolean(key, (Boolean)ch.newVal);
+          break;
+        case "EnumSet":
+          prefs.put(key, EnumSetOption.encode((EnumSet)ch.newVal));
+          break;
+        default:
+          assert false : "unhandled type";
+        }
+        
+        // This is probably not used
+        getEventBus().post(new OptionChangeDialogEvent(key, ch.oldVal, ch.newVal));
+      }
+    }
+    }
+
+  ////////////////////////////////////////////////////////////////////////
+  //
+  // Events about Options
+  //
+
+    private static class ReportPostEventBus extends EventBus
+    {
+    private final Consumer<Object> reportPost;
+    
+    public ReportPostEventBus(SubscriberExceptionHandler exceptionHandler,
+                              Consumer<Object> reportPost)
+    {
+      super(exceptionHandler);
+      this.reportPost = reportPost;
+    }
+    
+    @Override
+    public void post(Object ev)
+    {
+      if(!started)
+        return;
+      reportPost.accept(ev);
+      runInDispatch(false, () -> super.post(ev));
+    }
+    } // END CLASS ReportPostEventBus
+
+  private static EventBus bus;
+  /** All events on this bus are dispatched on the EDT. */
+  public static EventBus getEventBus()
+  {
+    if(bus == null)
+      bus = new ReportPostEventBus(
+              new ViEvent.ExHandler("OptionEvent: handleException:"),
+              (Object ev) -> G.dbgOptions().printf(CONFIG, () ->
+                      sf("FIRE:Option: %s\n", ev.toString())));
+    return bus;
   }
-  }
+
+  // TODO: event for buf/win local? See SetColonCommand
+
+    /** not used if pcs.fire not used.
+     * Maybe should call it apply/Change/prefs or something; see applyChanges. */
+    static public class OptionChangeDialogEvent extends AbstractOptionChangeEvent
+    {
+    public OptionChangeDialogEvent(String name, Object oldValue, Object newValue)
+    {
+      super(name, oldValue, newValue);
+    }
+    } // END CLASS OptionChangeDialogEvent
+
+    /** option is changed in memory, G.xxx.
+     * What about non global options, win/buf?????????????????????
+     */
+    static public class OptionChangeGlobalEvent extends AbstractOptionChangeEvent
+    {
+    public OptionChangeGlobalEvent(String name, Object oldValue, Object newValue)
+    {
+      super(name, oldValue, newValue);
+    }
+    } // END CLASS OptionChangeSetEvent
+
+    /** {@literal Option<>} changed value. */
+    static public class OptionChangeOptionEvent extends AbstractOptionChangeEvent
+    {
+    public OptionChangeOptionEvent(String name, Object oldValue, Object newValue)
+    {
+      super(name, oldValue, newValue);
+    }
+    } // END CLASS OptionChangeSetEvent
+
+    static public class OptionsInitializedEvent implements OptionChangeEvent
+    {
+    @Override
+    public String toString()
+    {
+      return sf("Option{%s:}", this.getClass().getSimpleName());
+    }
+    }
+
+    /** Tag for option related events. */
+    static public interface OptionChangeEvent
+    {
+    }
+
+    /** base class for option change events */
+    public static class AbstractOptionChangeEvent implements OptionChangeEvent
+    {
+    private final String name;
+    private final Object oldValue;
+    private final Object newValue;
+    
+    public AbstractOptionChangeEvent(String name, Object oldValue, Object newValue)
+    {
+      this.name = name;
+      this.oldValue = oldValue;
+      this.newValue = newValue;
+    }
+    
+    public String getName()
+    {
+      return name;
+    }
+    
+    public Object getOldValue()
+    {
+      return oldValue;
+    }
+    
+    public Object getNewValue()
+    {
+      return newValue;
+    }
+    
+    @Override
+    public String toString()
+    {
+      //return sf("Option{%s: %s: new=%s}",
+      //          this.getClass().getSimpleName(),
+      //          name, newValue);
+      return sf("Option{%s: %s: old=%s, new=%s}",
+                this.getClass().getSimpleName(),
+                name, oldValue, newValue);
+    }
+    
+    } // END CLASS OptionChangeEvent
 }
 
 // vi: sw=2 et

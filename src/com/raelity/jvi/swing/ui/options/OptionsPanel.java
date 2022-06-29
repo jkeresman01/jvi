@@ -17,10 +17,6 @@
  *
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package com.raelity.jvi.swing.ui.options;
 
@@ -44,18 +40,17 @@ import com.raelity.jvi.options.KeyBindingBean;
 import com.raelity.jvi.options.KeypadBindingBean;
 import com.raelity.jvi.options.OptionsBean;
 
+import static com.raelity.jvi.manager.ViManager.eatme;
+
 /**
  * The module requires com.l2fprod.common...
  * see http://common.l2fprod.com/ Only the jar l2fprod-common-sheet.jar is
  * needed.
  * 
- * NOTE: this file can simply be excluded from compilation and everything
- * will work fine since it is invoked through reflection.
- * 
  * @author erra
  */
+@SuppressWarnings("serial")
 public class OptionsPanel extends JPanel {
-    private static final long serialVersionUID = 1L;
     ChangeNotify changeNotify;
     private final List<Options.EditControl> optionSheets = new ArrayList<>();
     private MapCommands mapCommands;
@@ -171,6 +166,7 @@ public class OptionsPanel extends JPanel {
                 int newLoc = h - 120;
                 sp.setDividerLocation(newLoc);
                 double d = sp.getResizeWeight();
+                eatme(d);
                 sp.setResizeWeight(.65);
                 //sp.invalidate();
 

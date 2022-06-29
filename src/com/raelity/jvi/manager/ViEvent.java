@@ -65,23 +65,29 @@ import static com.raelity.jvi.manager.ViManager.*;
 @SuppressWarnings("serial")
 public class ViEvent extends PropertyChangeEvent
 {
-private static final EventBus bus = new EventBus(new ExHandler());
+private static final EventBus bus = new EventBus(new ExHandler("ViEvent: handleException:"));
 private static final String esource = "ViEventSource";
 
-    private static class ExHandler implements SubscriberExceptionHandler {
+    public static class ExHandler implements SubscriberExceptionHandler
+    {
+    protected final String tag;
+    public ExHandler(String tag)
+    {
+        this.tag = tag;
+    }
+
     @Override
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public void handleException(Throwable ex, SubscriberExceptionContext ctx)
     {
-        System.err.println("ViEvent: handleException:");
+        System.err.println(tag);
         System.err.println("    " + ctx.getEventBus());
         System.err.println("    " + ctx.getEvent());
         System.err.println("    " + ctx.getSubscriber());
         System.err.println("    " + ctx.getSubscriberMethod());
         Exceptions.printStackTrace(ex);
     }
-
-    }
+    } // END CLASS ExHandler
 
 public static EventBus getBus()
 {

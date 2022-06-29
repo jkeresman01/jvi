@@ -228,17 +228,22 @@ final public class ViManager
         ViManager.factory = factory;
         fixupPreferences();
 
-        Options.informAfterInit((ChangeEvent e) -> {
-            setupOptionAtStartup();
-        });
+        OptUtil.getEventBus().register(new Object() {
+            @Subscribe public void weHaveOptions(OptUtil.OptionsInitializedEvent ev) {
+                setupOptionAtStartup();
+            } });
+
         // As of Mon Mar 16 10:10:19 PDT 2020
+        // As of Thu Jun 30 04:05:42 PM PDT 2022
+        //          only options at level 2
         //
         // 1 - 
         //      Hook
-        // 2 -  FilePath
+        // 2 -
         //      Options
-        //      Msg
         // 3 - 
+        //      VimPath
+        //      Msg
         //      nb/NbOptions
         // 4 - 
         // 5 - 

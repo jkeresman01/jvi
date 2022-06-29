@@ -40,6 +40,7 @@ import com.raelity.jvi.*;
 import com.raelity.jvi.core.*;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.*;
+import com.raelity.jvi.options.*;
 
 /**
  * These static methods are used by the platform to inform jVi of the state
@@ -112,6 +113,12 @@ public enum AppViews
             System.err.println(AppViews.dump(null).toString());
         }, EnumSet.of(CcFlag.DBG));
         getLocation(null); // shut up the not-used warning
+
+        OptUtil.getEventBus().register(new Object() {
+            @Subscribe public void closedfiles(OptUtil.OptionChangeGlobalEvent ev) {
+                if(Options.closedFiles.equals(ev.getName()))
+                    trimClosedMRU();
+            } });
 
         ViEvent.getBus().register(new Object() {
             @Subscribe

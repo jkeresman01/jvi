@@ -33,6 +33,7 @@ import com.l2fprod.common.propertysheet.AbstractProperty;
  *
  * @author Ernie Rael <err at raelity.com>
  */
+@SuppressWarnings("serial")
 class PropertyDescriptorAdapter extends AbstractProperty {
     protected PropertyDescriptor descriptor;
 
@@ -70,12 +71,13 @@ class PropertyDescriptorAdapter extends AbstractProperty {
     }
 
     @Override
-    public Class getType()
+    public Class<?> getType()
     {
         return descriptor.getPropertyType();
     }
 
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public Object clone()
     {
         PropertyDescriptorAdapter clone =

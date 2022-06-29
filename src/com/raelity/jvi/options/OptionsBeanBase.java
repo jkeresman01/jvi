@@ -33,20 +33,15 @@ import java.awt.Image;
 import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyVetoException;
 import java.beans.SimpleBeanInfo;
-import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.openide.util.WeakListeners;
 
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.manager.ViManager;
@@ -71,9 +66,6 @@ implements Options.EditControl
     private final List<String> optionsList;
     private final String displayName;
     
-    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private final VetoableChangeSupport vcs = new VetoableChangeSupport(this);
-    //private static String checkme = "Search Options";
     private final OptionChangeHandler optionChangeHandler;
 
     //private final Map<String,Object> changeMap = new HashMap<>();
@@ -83,17 +75,10 @@ implements Options.EditControl
                            Options.Category category)
     {
         this.optionChangeHandler
-                = new OptionChangeHandler(pcs, getFactory().getPreferences());
+                = new OptionChangeHandler(getFactory().getPreferences());
         this.clazz = clazz;
         this.displayName = displayName;
         this.optionsList = Options.getOptionList(category);
-
-        optionsListener = new OptionsListener();
-        //Options.addPropertyChangeListener(new OptionsListener());
-        Options.addPropertyChangeListener(
-                WeakListeners.propertyChange(optionsListener, Options.class));
-        //if(checkme.equals(displayName))
-        //    System.err.println("CONSTRUCT: " + displayName);
     }
 
     @Override
@@ -114,17 +99,6 @@ implements Options.EditControl
     public void cancel()
     {
         optionChangeHandler.clear();
-    }
-
-    private final OptionsListener optionsListener;
-    private class OptionsListener implements PropertyChangeListener {
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if(optionsList.contains(evt.getPropertyName())) {
-                //System.err.println("Fire: " + evt.getPropertyName());
-                OptionsBeanBase.this.pcs.firePropertyChange(evt);
-            }
-        }
     }
     
     @Override
@@ -209,36 +183,11 @@ implements Options.EditControl
 	    return displayName;
         }
     }
-    
-    //
-    // Look like a good bean
-    //
-    
-    public void addPropertyChangeListener( PropertyChangeListener listener )
-    {
-        this.pcs.addPropertyChangeListener( listener );
-    }
-
-    public void removePropertyChangeListener( PropertyChangeListener listener )
-    {
-        this.pcs.removePropertyChangeListener( listener );
-    }
-    
-    public void addVetoableChangeListener( VetoableChangeListener listener )
-    {
-        this.vcs.addVetoableChangeListener( listener );
-    }
-
-    public void removeVetoableChangeListener( VetoableChangeListener listener )
-    {
-        this.vcs.addVetoableChangeListener( listener );
-    } 
 
     final protected void put(String name, String val) throws PropertyVetoException {
         String old = getString(name);
 	Option<?> opt = Options.getOption(name);
         opt.validate(val);
-        this.vcs.fireVetoableChange( name, old, val );
         optionChangeHandler.changeOption(name, "String", old, val);
     }
 
@@ -246,7 +195,6 @@ implements Options.EditControl
         int old = getint(name);
 	Option<?> opt = Options.getOption(name);
         opt.validate(val);
-        this.vcs.fireVetoableChange( name, old, val );
         optionChangeHandler.changeOption(name, "Integer", old, (Integer)val);
     }
 
@@ -254,7 +202,6 @@ implements Options.EditControl
         Color old = getColor(name);
 	ColorOption opt = (ColorOption)Options.getOption(name);
         opt.validate(val);
-        this.vcs.fireVetoableChange( name, old, val );
         optionChangeHandler.changeOption(name, "Color", old, val);
     }
 
@@ -263,7 +210,6 @@ implements Options.EditControl
         EnumSet<?> old = EnumSet.copyOf(getEnumSet(name));
 	EnumSetOption<?> opt = (EnumSetOption)Options.getOption(name);
         opt.validate(val);
-        this.vcs.fireVetoableChange( name, old, val );
         optionChangeHandler.changeOption(name, "EnumSet", old, val);
     }
 

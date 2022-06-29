@@ -20,7 +20,6 @@ package com.raelity.jvi.core;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -92,8 +91,11 @@ private static final Wrap<PreferencesImportMonitor> pCommandsImportCheck = new W
 private static void init() {
     Commands.register("his", "history", new History(),
                            EnumSet.of(CcFlag.NO_PARSE));
-    Options.addPropertyChangeListenerSET(
-            Options.history, (evt) -> historySizeChange(evt));
+    OptUtil.getEventBus().register(new Object() {
+        @Subscribe public void historyOption(OptUtil.OptionChangeGlobalEvent ev) {
+            if(Options.history.equals(ev.getName()))
+                handleHistorySizeChange();
+        } });
     ViEvent.getBus().register(new Object() {
         @Subscribe
         public void readHistories(ViEvent.Boot ev)
@@ -113,6 +115,7 @@ private static void init() {
         @Subscribe
         public void writeHistories(ViEvent.Shutdown ev)
         {
+            handleHistorySizeChange(); // Just in case
             List<String> l = SEARCH.getHistory();
             writePrefsList(PREF_SEARCH, l, pSearchImportCheck.getValue());
 
@@ -120,6 +123,20 @@ private static void init() {
             writePrefsList(PREF_COMMANDS, l, pCommandsImportCheck.getValue());
         }
     });
+}
+
+public void eatmeTest1(HistoryContext hc)
+{
+    hc.test_current();
+    hc.test_next();
+    hc.test_prev();
+}
+
+public void eatmeTest2(HistoryContextArrayList hc)
+{
+    hc.test_current();
+    hc.test_next();
+    hc.test_prev();
 }
 
 private HistoryContext history;
@@ -150,13 +167,7 @@ List<String> getHistory()
     return l;
 }
 
-private static void historySizeChange(PropertyChangeEvent evt)
-{
-    eatme(evt);
-    EventQueue.invokeLater(() -> historySizeChange());
-}
-
-private static void historySizeChange()
+private static void handleHistorySizeChange()
 {
     COLON.history.trim();
     SEARCH.history.trim();
@@ -368,6 +379,7 @@ private static void invokeHistoryAction(int idx, CommandHistory which, String co
         this.which = which;
         this.index = idx;
         this.command = command;
+        eatme(this.which);
     }
     }
 
@@ -492,7 +504,7 @@ private static HistoryActionArgs getHistoryActionArgs()
         return new HistoryContextArrayList(which);
     }
     
-    public HistoryContext(CommandHistory which)
+    private HistoryContext(CommandHistory which)
     {
         this.which = which;
     }
@@ -564,7 +576,7 @@ private static HistoryActionArgs getHistoryActionArgs()
      *      travers up/down the history list
      *      push() // selected or new entry
      */
-    public final static class HistoryContextArrayList extends HistoryContext
+    final static class HistoryContextArrayList extends HistoryContext
     {
     private final ArrayList<HistEntry> history;
     private int histPushCount;
@@ -718,6 +730,7 @@ private static HistoryActionArgs getHistoryActionArgs()
         return filter;
     }
 
+    // TODO: REMOVE ???
     @Override
     void trim()
     {
@@ -738,12 +751,14 @@ private static HistoryActionArgs getHistoryActionArgs()
         }
     }
 
+    // TODO: REMOVE ???
     @Override
     List<HistEntry> getHistEntryList()
     {
         return Collections.unmodifiableList(history);
     }
     
+    // REMOVE ???
     @Override
     void copyList(List<String> l)
     {
@@ -839,259 +854,5 @@ private static HistoryActionArgs getHistoryActionArgs()
         return null;
     }
     }
-
-    // /** Use a listIterator to traverse the list */
-    // public final static class HistoryContextArrayListIterator extends HistoryContext
-    // {
-    // private final ArrayList<HistEntry> history;
-    // /** main ListIterator, for implementation of next/prev */
-    // enum dir { ITER_PREV, ITER_NEXT }
-    // private ListIterator<HistEntry> mainIter;
-    // private dir lastDir;
-    // private int lastIndex;
-    // private HistEntry lastEntry;
-
-    // private int histPushCount;
-    // private String filter;
-    // private final boolean checkState = true;
-    // private boolean ready = false;
-
-
-    // // THIS SEEMS TO BE A LOST CAUSE...
-    // // THE FILTER FUNCTION COULD WORK IF THE ITERATOR COULD BE CLONED
-    // //
-    // // List backwards.
-    // // next/prev go in opposite direction from what might be expected.
-    // // next presents successively old items, prev newer items.
-    // // It's more like a stack with the requirement of accessing stuff
-    // // in the middle bi-directionally.
-    // //
-    // // There's some state checking; all it verifies is thats
-    // // a push() must be followed by init(); multiple push ok.
-    // // There are many other times init must be called.
-    // //
-    // // Track
-    // //
-    // HistoryContextArrayListIterator()
-    // {
-    //     this.history = new ArrayList<>(G.p_hi + 4);
-    // }
-
-    // /**
-    //  * Set up such that current() is empty string.
-    //  * And next returns the last  push.
-    //  */
-    // @Override
-    // public void init()
-    // {
-    //                                             if(checkState) ready = true;
-    //     trim();
-    //     lastIndex = history.size();
-    //     setFilter("");
-    // }
-
-    // /**
-    //  * Set the most recent item.
-    //  * @param cmd put this at the top of stack
-    //  */
-    // @Override
-    // public void push(String cmd)
-    // {
-    //     HistEntry he = new HistEntry(cmd, ++histPushCount);
-    //     remove(he);
-    //     history.add(he);
-    //     trim();
-    //     initIterator();
-    //                                             if(checkState) ready = false;
-    // }
-
-    // @Override
-    // public String lastPush()
-    // {
-    //     if(history.isEmpty())
-    //         return null;
-    //     return history.get(history.size() -1).hisstr;
-    // }
-
-    // @Override
-    // public boolean atTop()
-    // {
-    //     return lastIndex == history.size();
-    // }
-
-    // @Override
-    // public String current()
-    // {
-    //                                             if(checkState) someAction();
-    //     assert !(lastIndex > history.size() || lastIndex < 0);
-    //     if(lastIndex > history.size() || lastIndex < 0)
-    //         return null; // impossible
-    //     if(lastIndex == history.size())
-    //         return filter;
-    //     return lastEntry.hisstr;
-    // }
-
-    // /**
-    //  * @return the next item that startsWith filter
-    //  */
-    // @Override
-    // public String next()
-    // {
-    //                                             if(checkState) someAction();
-    //     return iterPrev();
-    // }
-    // 
-    // /**
-    //  * @return the previous item that startsWith filter
-    //  */
-    // @Override
-    // public String prev()
-    // {
-    //                                             if(checkState) someAction();
-    //     return iterNext();
-    // }
-
-    // @Override
-    // public void setFilter(String filter)
-    // {
-    //                                             if(checkState) someAction();
-    //     this.filter = filter;
-    // }
-
-    // @Override
-    // public String getFilter()
-    // {
-    //     return filter;
-    // }
-
-    // @Override
-    // void trim()
-    // {
-    //     trim(G.p_hi);
-    // }
-
-    // @Override
-    // int size()
-    // {
-    //     return history.size();
-    // }
-
-    // // remove oldest items until length
-    // private void trim(int len)
-    // {
-    //     while(history.size() > len) {
-    //         history.remove(0);
-    //         mainIter = null;
-    //     }
-    // }
-
-    // @Override
-    // List<HistEntry> getHistEntryList()
-    // {
-    //     return Collections.unmodifiableList(history);
-    // }
-    // 
-    // @Override
-    // void copyList(List<String> l)
-    // {
-    //     ListIterator<HistEntry> iter = history.listIterator(history.size());
-    //     l.clear();
-    //     while(iter.hasPrevious())
-    //         l.add(iter.previous().getCmd());
-    // }
-
-    // String iterPrev()
-    // {
-    //     if(mainIter == null)
-    //         initIterator();
-    //     if(lastDir != ITER_PREV) {
-    //         //mainIter.previous();
-    //         lastDir = ITER_PREV;
-    //     }
-    //     int idx = mainIter.previousIndex();
-    //     if(idx < 0) {
-    //         assert lastIndex == 0;
-    //         ////////
-    //     }
-    //     lastEntry = mainIter.previous();
-    //     return null;
-    // }
-
-    // String iterNext()
-    // {
-    //     if(mainIter == null)
-    //         initIterator();
-    //     if(lastDir != ITER_NEXT) {
-    //         mainIter.next();
-    //         lastDir = ITER_NEXT;
-    //     }
-    //     return null;
-    // }
-
-    // void initIterator()
-    // {
-    //     mainIter = history.listIterator(history.size());
-    //     lastDir = ITER_NEXT;
-    //     lastIndex = history.size();
-    //     lastEntry = null;
-    // }
-
-    // private void someAction()
-    // {
-    //     if(ready == false)
-    //         throw new IllegalStateException("command history not ready");
-    // }
-
-    // /**
-    //  * Typically if an element is found it is recent.
-    //  * So start at the end. Doesn't help with cache pre-fetch,
-    //  * hope for long lines.
-    //  */
-    // private void remove(HistEntry he)
-    // {
-    //     // Collection.remove(he); Could optim by find nearest to iter or begin or end
-    //     // use fromEnd 
-    //     history.remove(he);
-    //     mainIter = null;
-    //     // String s = he.hisstr;
-    //     // for(int i = history.size() - 1; i > 0; i--) {
-    //     //     if(s.equals(history.get(i).hisstr)) {
-    //     //         history.remove(i);
-    //     //         return;
-    //     //     }
-    //     // }
-    // }
-
-    // @Override
-    // HistEntry test_next()
-    // {
-    //     String next = next();
-    //     if(next == null)
-    //         return null;
-    //     return history.get(lastIndex);
-    // }
-
-    // @Override
-    // HistEntry test_prev()
-    // {
-    //     String prev = prev();
-    //     if(prev == null)
-    //         return null;
-    //     if(lastIndex == history.size())
-    //         return new HistEntry(prev);
-    //     return history.get(lastIndex);
-    // }
-
-    // @Override
-    // HistEntry test_current()
-    // {
-    //     int idx = lastIndex;
-    //     if(idx >= 0 && idx < history.size())
-    //         return history.get(idx);
-    //     if(lastIndex == history.size())
-    //         return new HistEntry(filter);
-    //     return null;
-    // }
-    // }
 
 }

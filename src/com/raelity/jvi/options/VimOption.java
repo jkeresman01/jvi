@@ -33,6 +33,15 @@ import com.raelity.jvi.core.*;
 import static com.raelity.jvi.core.Options.*;
 
 /**
+ * Almost all options have special handling to propogate values
+ * to memory: globals p_ in G., buf b_ in Buffer, w_ in textview;
+ * these options are in this table. The Set command generally works
+ * with these options.
+ * Some options are always referenced by {@literal Option<?> opt = getOption();}
+ * and they do not have an in memory value; they do not appear in this table and
+ * are only changed with the Options dialog.
+ * DebugOptions are the primary
+ * <p>
  * TODO: I see no evidence that the array actually should be sorted.
  *       Get rid of the must be sorted notes.
  * @author Ernie Rael <err at raelity.com>

@@ -34,7 +34,11 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-import com.raelity.jvi.core.Options;
+import com.google.common.eventbus.Subscribe;
+
+import com.raelity.jvi.core.*;
+import com.raelity.jvi.manager.*;
+import com.raelity.jvi.options.*;
 import com.raelity.jvi.swing.SwingTextView;
 
 /**
@@ -126,26 +130,43 @@ abstract public class SimpleTextView extends SwingTextView
         if(didHlInit)
             return;
         didHlInit = true;
+        OptUtil.getEventBus().register(new Object() {
+            @Subscribe public void highlightOptionsEvents(
+                    OptUtil.OptionChangeOptionEvent ev) {
+                // compare to NbOptions
+                boolean searchStuff = false;
+                boolean selectStuff = false;
+                switch(ev.getName()) {
+                case Options.searchColor:
+                case Options.searchFgColor:
+                    searchStuff = true;
+                    break;
+                case Options.selectColor:
+                case Options.selectFgColor:
+                    selectStuff = true;
+                    break;
+                }
 
-        PropertyChangeListener pcl = (PropertyChangeEvent evt) -> {
-            boolean doWakeup = needsWakeup.getAndSet(false);
-            if(doWakeup) {
-                Runnable runInEDT = () -> {
-                    needsWakeup.set(true);
-                    updateStyles();
-                    reApplyHighlight();
-                };
-                if(EventQueue.isDispatchThread())
-                    runInEDT.run();
-                else
-                    EventQueue.invokeLater(runInEDT);
-            }
-        };
-
-        Options.addPropertyChangeListener(Options.selectColor, pcl);
-        Options.addPropertyChangeListener(Options.selectFgColor, pcl);
-        Options.addPropertyChangeListener(Options.searchColor, pcl);
-        Options.addPropertyChangeListener(Options.searchFgColor, pcl);
+                boolean finalSearchStuff = searchStuff;
+                boolean finalSelectStuff = selectStuff;
+                if(searchStuff | selectStuff) {
+                    boolean doWakeup = needsWakeup.getAndSet(false);
+                    if(doWakeup) {
+                        ViManager.runInDispatch(false,() -> {
+                            needsWakeup.set(true);
+                            updateStyles();
+                            reApplyHighlight();
+                            if(finalSearchStuff)
+                                ViManager.updateHighlightSearchState();
+                            if(finalSelectStuff) {
+                                TextView tv = G.curwin();
+                                if(tv != null)
+                                    tv.updateVisualState();
+                            }
+                        });
+                    }
+                }
+            } });
     }
 
     private void setupStyles()

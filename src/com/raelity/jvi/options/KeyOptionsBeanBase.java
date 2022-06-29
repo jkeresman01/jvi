@@ -48,7 +48,7 @@ implements Options.EditControl
     {
         this.prefs = getFactory()
                 .getPreferences().node(ViManager.PREFS_KEYS);
-        this.optionChangeHandler = new OptionChangeHandler(null, this.prefs);
+        this.optionChangeHandler = new OptionChangeHandler(this.prefs);
     }
 
 

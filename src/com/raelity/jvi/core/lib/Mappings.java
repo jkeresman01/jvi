@@ -46,10 +46,9 @@ import com.raelity.text.TextUtil;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
-import static com.raelity.text.TextUtil.sf;
 
 /**
- *
+ * Note that class is created/handled by GetChar.
  * @author Ernie Rael <err at raelity.com>
  */
 public final class Mappings {
@@ -60,18 +59,26 @@ public final class Mappings {
     private static WeakReference<Map<EqLower, Character>> refMapCommandSpecial;
     private static WeakReference<Map<Character, String>> refReverseMapCommandSpecial;
 
+    // Too bad this is public, belongs to getchar
+    public static Mappings get()
+    {
+        if(INSTANCE == null)
+            INSTANCE = new Mappings();
+        else
+            throw new IllegalStateException("Only one get allowed");
+        return INSTANCE;
+    }
+
     /**
      * Only the first created Mappings will register itself as the
      * colon commands. If there is some reason to create another
      * Mappings then it will not be initialized with either the
      * default mappings or the user specified options; see reinitMappings.
      */
-    public Mappings()
+    private Mappings()
     {
-        if(INSTANCE == null) {
-            registerCommands();
-            initMappings();
-        }
+        registerCommands();
+        initMappings();
     }
 
     public void reinitMappings()
