@@ -28,9 +28,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
+import com.raelity.jvi.core.*;
 import com.raelity.jvi.core.Options.Category;
 
+import static java.util.logging.Level.FINE;
+
 import static com.raelity.jvi.manager.ViManager.getFactory;
+import static com.raelity.text.TextUtil.sf;
 
 //
 // NEEDSWORK: If returning a reference, should be readonly
@@ -97,27 +101,49 @@ public abstract class Option<T> {
         preferenceChange(OptUtil.getPrefs().get(name, getValueAsString(defaultValue)));
     }
 
-    final public T getValue() {
+    synchronized final public T getValue() {
         return value;
     }
 
     /** If overridden, should invoke super.setValue */
     void setValue(T newValue)
     {
-        T oldValue = value;
-        value = newValue;
-        //if(Objects.equals(newValue, oldValue))
-        //    return;
-        propogate();
-        OptUtil.firePropertyChange(new OptUtil.OptionChangeOptionEvent(
-                name, oldValue, newValue));
+        syncSetValue(newValue);
+        OptUtil.qRun();
     }
 
+    private synchronized void syncSetValue(T newValue)
+    {
+        G.dbgOptions().println(FINE, () -> sf("setValue: " + name));
+        T oldValue = value;
+        if(Objects.equals(newValue, oldValue)) {
+            G.dbgOptions().println(FINE, () -> sf("Option setValue: no change"));
+            return;
+        }
+        value = newValue;
+        OptUtil.qPut(new OptUtil.OptionChangeOptionEvent(name, oldValue, newValue));
+        propogate();
+    }
+
+    // NOTE: the synchro lock should be held before invoking this method.
     private void propogate() {
-	if(fPropogateToPref)
-            OptUtil.getPrefs().put(name, getValueAsString(value));
-        // TODO: Is it better to initialize memory before setting preference?
-        OptUtil.intializeGlobalOptionMemoryValue(this);
+        OptUtil.qPut(OptUtil.intializeGlobalOptionMemoryValue(this));
+	if(fPropogateToPref) {
+            String sval = getValueAsString(value); // capture value
+            OptUtil.qPut(() -> OptUtil.getPrefs().put(name, sval));
+        }
+    }
+
+    /**
+     * Cast and setValue; used when property is set from dialog.
+     * When the pref change fires, the object should be equal,
+     * so nothing happens.
+     * @throws ClassCastException
+     */
+
+    final void castSetValue(Object val)
+    {
+        setValue(optionType.cast(val));
     }
 
     /**
@@ -125,22 +151,20 @@ public abstract class Option<T> {
      * The preferences data base has changed, stay in sync.
      * Do not propagate change back to preferences data base.
      * <p/>
-     * This is invoked by a preferences change listener
+     * This is invoked by a preferences change listener (OptUtil)
      * as well as the initialize method.
      */
     final void preferenceChange(String newValue) {
+        syncPreferenceChange(newValue);
+    }
+
+    synchronized final void syncPreferenceChange(String newValue) {
 	fPropogateToPref = false;
         try {
-	    //System.err.println("preferenceChange " + name + ": " + newValue);
-            setValueFromString(newValue);
+            setValue(getValueFromString(newValue));
         } finally {
 	    fPropogateToPref = true;
         }
-    }
-
-    private void setValueFromString(String sVal)
-    {
-        setValue(getValueFromString(sVal));
     }
 
     String getValueAsString(T val)

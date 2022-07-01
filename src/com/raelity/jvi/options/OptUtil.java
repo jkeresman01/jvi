@@ -32,7 +32,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -60,6 +62,8 @@ public class OptUtil {
     private static boolean started = false;
     private static Preferences prefs;
     private static final Map<String,Option<?>> optionsMap = new HashMap<>();
+    /** use this to avoid firing event while holding Option synchro lock. */
+    private static final Queue<Runnable> toRun = new ConcurrentLinkedQueue<>();
 
     private static final Map<Category, List<String>> categoryLists
             = new EnumMap<>(Category.class);
@@ -81,8 +85,8 @@ public class OptUtil {
           Option<?> opt = Options.getOption(evt.getKey());
           if (opt != null) {
             if (evt.getNewValue() != null) {
-              // THIS CAUSES PROPERTY SHEET TO BACKUP TO OLD VALUE
-              //runInDispatch(false, () -> opt.preferenceChange(evt.getNewValue()));
+              G.dbgOptions().printf(FINE, () ->
+                      sf("Option: pref change: %s %s\n", evt.getKey(), evt.getNewValue()));
               opt.preferenceChange(evt.getNewValue());
             }
           }
@@ -102,6 +106,30 @@ public class OptUtil {
   public static void firePropertyChange(OptionChangeEvent ev)
   {
     getEventBus().post(ev);
+  }
+
+  static void qPut(Runnable r)
+  {
+    if(started && r != null)
+      toRun.offer(r);
+  }
+
+  static void qPut(OptionChangeEvent ev)
+  {
+    if(started && ev != null)
+      qPut(() -> firePropertyChange(ev));
+  }
+
+  static void qRun()
+  {
+    Runnable r;
+    while(toRun.peek() != null) {
+      synchronized(toRun) {
+        r = toRun.poll();
+        if(r != null)
+          runInDispatch(false, r);
+      }
+    }
   }
 
 
@@ -304,11 +332,11 @@ public class OptUtil {
     }
   }
 
-  static void intializeGlobalOptionMemoryValue(Option<?> opt)
+  static OptionChangeEvent intializeGlobalOptionMemoryValue(Option<?> opt)
   {
     VimOption vopt = VimOption.get(opt.getName());
     if(vopt == null || !vopt.isGlobal())
-      return;
+      return null;
     try {
       Field f = G.class.getDeclaredField(vopt.getVarName());
       f.setAccessible(true);
@@ -324,12 +352,12 @@ public class OptUtil {
 
       G.dbgOptions().printf(() ->
               sf("Init G.%s to '%s'\n", vopt.getVarName(), opt.getValue()));
-      firePropertyChange(new OptionChangeGlobalEvent(
-              opt.getName(), oldValue, opt.getValue()));
+      return new OptionChangeGlobalEvent(opt.getName(), oldValue, opt.getValue());
     } catch(IllegalArgumentException | IllegalAccessException
             | NoSuchFieldException | SecurityException ex) {
       Logger.getLogger(OptUtil.class.getName()).log(SEVERE, null, ex);
     }
+    return null;
   }
 
   public static void verifyVimOptions() {
@@ -376,7 +404,7 @@ public class OptUtil {
   {
   }
 
-    /** This class queues up changes from the options dialog;
+    /** This class collects potential changes from the options dialog;
      * the OK/Apply buttons typically commit the changes.
      */
     static public class OptionChangeHandler
@@ -384,78 +412,53 @@ public class OptUtil {
 
       private static class Change
       {
-      private Change(String type, Object oldVal)
+      private Change(Object oldVal)
       {
-        this.type = type;
         this.oldVal = oldVal;
       }
       
-      private final String type;
       private final Object oldVal;
       private Object newVal;
       }
 
     private final Map<String, Change> map = new HashMap<>();
     
-    private final Preferences prefs;
-
-    OptionChangeHandler(Preferences prefs)
+    OptionChangeHandler()
     {
-      this.prefs = prefs;
     }
     
+    /** Forget/cancel pending changes. */
     void clear()
     {
       map.clear();
     }
     
-    void changeOption(String name, String type, Object oldVal, Object newVal)
+    /** Proposed change from dialog. */
+    void changeOption(String name, Object oldVal, Object newVal)
     {
-      Change ch = map.computeIfAbsent(name, (k) -> new Change(type, oldVal));
+      Change ch = map.computeIfAbsent(name, (k) -> new Change(oldVal));
       ch.newVal = newVal;
     }
-    
-    //
-    // TODO: make this applyChangesAndClear
-    //       guess there's no reason to copy the map and clear it under lock.
-    //
-    //////////////////////////////////////////////////////////////////////
-    //
-    // MUST CHANGE THE OPTION FROM HERE
-    // Do option.setValue from here; then icheck oldval==newval.
-    //
+
+    /**
+     * The pending changes are accepted, change the options,
+     * propagate to preferences. Clear pending changes.
+     */
     void applyChanges()
     {
       for(Entry<String, Change> entry : map.entrySet()) {
         String key = entry.getKey();
         Change ch = entry.getValue();
-        
-        switch(ch.type)
-        {
-        case "String":
-          prefs.put(key, (String)ch.newVal);
-          break;
-        case "Color":
-          prefs.put(key, ColorOption.encode((Color)ch.newVal));
-          break;
-        case "Integer":
-          prefs.putInt(key, (Integer)ch.newVal);
-          break;
-        case "Boolean":
-          prefs.putBoolean(key, (Boolean)ch.newVal);
-          break;
-        case "EnumSet":
-          prefs.put(key, EnumSetOption.encode((EnumSet)ch.newVal));
-          break;
-        default:
-          assert false : "unhandled type";
-        }
+
+        Option<?> opt = Options.getOption(key);
+        opt.castSetValue(ch.newVal);
         
         // This is probably not used
         getEventBus().post(new OptionChangeDialogEvent(key, ch.oldVal, ch.newVal));
       }
+      clear();
     }
-    }
+    } // END CLASS OptionChangeHandler
 
   ////////////////////////////////////////////////////////////////////////
   //
@@ -508,7 +511,10 @@ public class OptUtil {
     } // END CLASS OptionChangeDialogEvent
 
     /** option is changed in memory, G.xxx.
-     * What about non global options, win/buf?????????????????????
+     * <p>
+     * ?????????????????????
+     * What about non global options, win/buf, see SetColonCommand.
+     * 
      */
     static public class OptionChangeGlobalEvent extends AbstractOptionChangeEvent
     {
@@ -534,7 +540,7 @@ public class OptUtil {
     {
       return sf("Option{%s:}", this.getClass().getSimpleName());
     }
-    }
+    } // END CLASS OptionsInitializedEvent 
 
     /** Tag for option related events. */
     static public interface OptionChangeEvent
@@ -581,7 +587,7 @@ public class OptUtil {
                 name, oldValue, newValue);
     }
     
-    } // END CLASS OptionChangeEvent
+    } // END CLASS AbstractOptionChangeEvent
 }
 
 // vi: sw=2 et

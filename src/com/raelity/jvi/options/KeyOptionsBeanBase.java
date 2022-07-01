@@ -48,7 +48,7 @@ implements Options.EditControl
     {
         this.prefs = getFactory()
                 .getPreferences().node(ViManager.PREFS_KEYS);
-        this.optionChangeHandler = new OptionChangeHandler(this.prefs);
+        this.optionChangeHandler = new OptionChangeHandler();
     }
 
 
@@ -63,7 +63,6 @@ implements Options.EditControl
     {
         // Now's the time to persist the changes
         optionChangeHandler.applyChanges();
-        optionChangeHandler.clear();
     }
 
     @Override
@@ -73,7 +72,7 @@ implements Options.EditControl
     }
 
     protected void put(String name, boolean val) {
-        optionChangeHandler.changeOption(name, "Boolean", get(name), val);
+        optionChangeHandler.changeOption(name, get(name), val);
     }
 
     protected boolean get(String name) {

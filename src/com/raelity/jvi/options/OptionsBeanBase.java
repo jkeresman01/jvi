@@ -33,11 +33,9 @@ import java.awt.Image;
 import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
-import java.beans.PropertyChangeSupport;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyVetoException;
 import java.beans.SimpleBeanInfo;
-import java.beans.VetoableChangeSupport;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.logging.Level;
@@ -74,8 +72,7 @@ implements Options.EditControl
     public OptionsBeanBase(Class<?> clazz, String displayName,
                            Options.Category category)
     {
-        this.optionChangeHandler
-                = new OptionChangeHandler(getFactory().getPreferences());
+        this.optionChangeHandler = new OptionChangeHandler();
         this.clazz = clazz;
         this.displayName = displayName;
         this.optionsList = Options.getOptionList(category);
@@ -92,7 +89,6 @@ implements Options.EditControl
     {
         // Now's the time to persist the changes
         optionChangeHandler.applyChanges();
-        optionChangeHandler.clear();
     }
 
     @Override
@@ -188,21 +184,21 @@ implements Options.EditControl
         String old = getString(name);
 	Option<?> opt = Options.getOption(name);
         opt.validate(val);
-        optionChangeHandler.changeOption(name, "String", old, val);
+        optionChangeHandler.changeOption(name, old, val);
     }
 
     final protected void put(String name, int val) throws PropertyVetoException {
         int old = getint(name);
 	Option<?> opt = Options.getOption(name);
         opt.validate(val);
-        optionChangeHandler.changeOption(name, "Integer", old, (Integer)val);
+        optionChangeHandler.changeOption(name, old, (Integer)val);
     }
 
     final protected void put(String name, Color val) throws PropertyVetoException {
         Color old = getColor(name);
 	ColorOption opt = (ColorOption)Options.getOption(name);
         opt.validate(val);
-        optionChangeHandler.changeOption(name, "Color", old, val);
+        optionChangeHandler.changeOption(name, old, val);
     }
 
     final protected void put(String name, EnumSet<?> val) throws PropertyVetoException {
@@ -210,12 +206,12 @@ implements Options.EditControl
         EnumSet<?> old = EnumSet.copyOf(getEnumSet(name));
 	EnumSetOption<?> opt = (EnumSetOption)Options.getOption(name);
         opt.validate(val);
-        optionChangeHandler.changeOption(name, "EnumSet", old, val);
+        optionChangeHandler.changeOption(name, old, val);
     }
 
     final protected void put(String name, boolean val) {
         boolean old = getboolean(name);
-        optionChangeHandler.changeOption(name, "Boolean", old, val);
+        optionChangeHandler.changeOption(name, old, val);
     }
 
     final protected String getString(String name) {

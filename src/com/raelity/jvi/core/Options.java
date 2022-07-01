@@ -566,7 +566,7 @@ public final class Options {
   
   String NOTE_USE_LOOKANDFEEL =
           "\nNOTE: press 'X', then the platform"
-          + " LookAndFeel/component provides the value.";
+          + " LookAndFeel/component provides the value as follows:";
 
     createColorOption(searchColor, new Color(0xffb442), true, true); //a light orange
     setupOptionDesc(Category.COLORS, searchColor, "'hl-search' background color",

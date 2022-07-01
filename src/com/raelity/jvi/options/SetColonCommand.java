@@ -23,6 +23,9 @@ import com.raelity.jvi.core.Commands.AbstractColonAction;
 import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.VimOption.F;
 
+import static java.util.logging.Level.CONFIG;
+import static java.util.logging.Level.FINE;
+
 import static com.raelity.text.TextUtil.sf;
 
 /**
@@ -239,13 +242,13 @@ public class SetColonCommand extends AbstractColonAction
             }
 
             Object newValueF = newValue;
-            G.dbgOptions().printf(() -> sf("SET %s%s to '%s'\n",
+            G.dbgOptions().printf(CONFIG, () -> sf("SET %s%s to '%s'\n",
                     vopt.isGlobal() ? "G." : "", vopt.getVarName(), newValueF));
             Object oldValue = null;
             if(vopt.isGlobal())
                 oldValue = voptState.f.get(voptState.bag);
             voptState.f.set(voptState.bag, newValue);
-            // NEEDSWORK: call some method if a global is set?
+            // NEEDSWORK: fire something if local is set?
             if (vopt.isLocal()) {
                 voptState.bag.viOptionSet(G.curwin(), vopt);
             } else if(vopt.isGlobal()) {
@@ -640,7 +643,7 @@ public class SetColonCommand extends AbstractColonAction
         for(ViTextView tv01 : ViManager.getFactory().getViTextViewSet()) {
             if(tv01.getBuffer() != buf || tv01 == tv)
                 continue;
-            G.dbgOptions().println(() ->
+            G.dbgOptions().println(FINE, () ->
                     "syncInstances: " + varName + " in " + tv01);
             setLocalOption(tv01, vopt);
         }
@@ -655,7 +658,7 @@ public class SetColonCommand extends AbstractColonAction
                     ? ViManager.getFactory().getViTextViewSet()
                     : ViManager.getFactory().getBufferSet();
             for(ViOptionBag bag : set) {
-                G.dbgOptions().printf(() -> sf("syncInstances: %s in %s\n",
+                G.dbgOptions().printf(Level.FINE, () -> sf("syncInstances: %s in %s\n",
                                                varName, bag));
                 setLocalOption(bag, vopt);
             }
