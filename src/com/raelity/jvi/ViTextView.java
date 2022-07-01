@@ -22,7 +22,6 @@ package com.raelity.jvi;
 import java.awt.Component;
 import java.awt.geom.Rectangle2D;
 
-import com.raelity.jvi.ViBuffer;
 import com.raelity.jvi.core.Msg;
 import com.raelity.jvi.lib.MutableInt;
 
@@ -150,7 +149,7 @@ public interface ViTextView extends ViOptionBag {
   public Component getEditor();
 
   /** ring the bell, take visual bell options into account */
-  public void bell();
+  public void visual_bell();
 
   /** @return tab info for container holding this text editor */
   default public ViTabInfo getTabInfo() {

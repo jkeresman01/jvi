@@ -249,6 +249,14 @@ implements Options.EditControl
         return ViManager.getReleaseString();
     }
 
+    public void setViDbgBeep(String arg)  throws PropertyVetoException {
+        put(Options.dbgBeep, arg);
+    }
+
+    public String getViDbgBeep() {
+	return getString(Options.dbgBeep);
+    }
+
     public void setViClosedFiles(int arg) throws PropertyVetoException {
         put(Options.closedFiles, arg);
     }

@@ -238,6 +238,7 @@ public final class Options {
   public static final String dbgPrefChangeMonitor = "viDbgPrefChangeMonitor";
   public static final String dbgFonts = "viDbgFonts";
   public static final String dbgMarks = "viDbgMarks";
+  public static final String dbgBeep = "viDbgBeep";
 
   public static final String twMagic = "#TEXT-WIDTH#";
 
@@ -386,6 +387,9 @@ public final class Options {
 
     G.dbgMarks = createDebugOption(dbgMarks);
     setupOptionDesc(Category.DEBUG, dbgMarks, "debug marks", "");
+
+    G.dbgBeep = createDebugOption(dbgBeep);
+    setupOptionDesc(Category.DEBUG, dbgBeep, "debug beep outputs stack", "");
     
     /////////////////////////////////////////////////////////////////////
     //

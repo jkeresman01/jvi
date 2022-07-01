@@ -247,6 +247,7 @@ public class G implements ViOptionBag
     static DebugOption dbgOptions = OptUtil.createBootDebugOption(false);
     static DebugOption dbgFonts;
     static DebugOption dbgMarks;
+    static DebugOption dbgBeep;
 
     // not really a "DebugOption" but has similar output API
     public static final AlwaysOnDebugOption dbg = new AlwaysOnDebugOption();

@@ -19,7 +19,10 @@
  */
 package com.raelity.jvi.core;
 
+import java.awt.Toolkit;
 import java.text.CharacterIterator;
+
+import org.openide.util.Exceptions;
 
 import com.raelity.jvi.ViCmdEntry;
 import com.raelity.jvi.ViFPOS;
@@ -51,13 +54,19 @@ public class Util {
   }
 
   /**
-   * "ring the bell", by default use the Toolkit's beep.
+   * "ring the bell", if the G.p_vb is set then visual bell.
    * <p/>
    * Note: if there's an error and the typeahead buffer should be flushed
    * then use beep_flush().
    */
   public static void vim_beep() {
-    G.curwin.bell();
+    if(Options.getDebugOption(Options.dbgBeep).getBoolean())
+      Exceptions.printStackTrace(new Exception("BEEP"));
+    if(!G.p_vb() || G.curwin == null) {
+      Toolkit.getDefaultToolkit().beep();
+      return;
+    }
+    G.curwin.visual_bell();
   }
 
   /** 

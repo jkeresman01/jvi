@@ -11,7 +11,11 @@ Working with jVi options
         EnumStringOption,EnumIntegerOption, // combo box select 1 of N
         EnumSetOption, // list of checkboxes, select any of N
     . listen to changes to options by doing
-      Options.getOptions().addPropertyChangeListener(optName, listener)
+        OptUtil.getEventBus().register
+          // G.p_xxx changed, dialog and/or :set command
+            @Subscribe public void f(OptUtil.OptionChangeGlobalEvent ev) {...}
+          // Option<> changed; done by dialog
+            @Subscribe public void f(OptUtil.OptionChangeOptionEvent ev) {...}
 
   - Adding an option
     . If needed, in G.java define pointer to the option, e.g. G.p_opt_name
@@ -43,33 +47,32 @@ Working with jVi options
 
         setExpertHidden(optName, expertFlag, hiddenFlag);
 
-      - In OptionsBeanBase.java define the getter/setter for the option
-        Typically add new get/set right after getJViVersion()
+    . In OptionsBeanBase.java define the getter/setter for the option
+      Typically add new get/set right after getJViVersion()
 
-        For example:
-        There is in Optins.java
-              public static final String showMode = "viShowMode";
-        In OptionsBeanBase.java
-              public void setViShowMode(boolean arg)
-                  { put(Options.showMode, arg); }
-              public boolean getViShowMode()
-                  { return getboolean(Options.showMode); }
-        Required that the method name be the same as the option name,
-        with the option name capitalized, like putOptionName(...)
+      For example:
+      There is in Options.java
+            public static final String showMode = "viShowMode";
+      In OptionsBeanBase.java
+            public void setViShowMode(boolean arg)
+                { put(Options.showMode, arg); }
+            public boolean getViShowMode()
+                { return getboolean(Options.showMode); }
+      Required that the method name be the same as the option name,
+      with the option name capitalized, like putOptionName(...)
 
-        Note that there can be property change listeners on an option.
+      Note that option changes are broadcast over OptUtil.getEventBus().
 
-        To catch when the preference changes. This is when
-        the change is done through dialog and persisted to disk.
-                  Options.addPropertyChangeListener(
-                          Options.history, (evt) -> trimList());
+      To catch when the preference/Option<> changes. This is when
+      the change is done through dialog and persisted to Option<>/disk.
+          @Subscribe OptionChangeOptionEvent
 
-        To catch both SET command of global and through dialog use
-                  Options.addPropertyChangeListenerSET(
-                          Options.history, (evt) -> trimList());
+      To catch when :set command changes G.p_xx, for both SET command
+      of global and through dialog use
+          @Subscribe OptionChangeGlobalEvent
 
-        Local options have an independent mechanism.
-        See SetColonCommand
+      Local options have an independent mechanism.
+      See SetColonCommand
 
     . Option Scope
       There are three types of options with a common naming scheme
@@ -82,8 +85,8 @@ Working with jVi options
       propogated to the java variables using reflection.
 
     . VimOption.java
-      Add an entry in VimOption.java.
-      Every option has an entry in the VimOption[] table which defines
+      Add an entry in VimOption.java so option works with :set command.
+      An entry in the VimOption[] table defines
       the scope of the option and the options name used to set the value
       through reflection. See SetColonCommand.java if you're curious.
 

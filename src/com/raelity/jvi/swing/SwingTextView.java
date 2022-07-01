@@ -421,13 +421,8 @@ public abstract class SwingTextView extends TextView
 
     private Timer bellTimer;
     @Override
-    public void bell()
+    public void visual_bell()
     {
-        if(!G.p_vb()) {
-            Toolkit.getDefaultToolkit().beep();
-            return;
-        }
-
         // visual bell and time is zero means do nothing.
         // Also don't start up another bell, if one is in progress.
         if(G.p_vbt() == 0 || bellTimer != null)
