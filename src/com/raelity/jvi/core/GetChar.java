@@ -40,6 +40,7 @@ import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Constants.FDO.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
+import static com.raelity.jvi.manager.ViManager.eatme;
 
 public class GetChar {
     private static boolean block_redo = false;
@@ -575,6 +576,7 @@ public class GetChar {
      *	just look whether there is a character available.
      */
 
+    static { vgetorpeek(false); }
     static boolean vgetorpeek(boolean advance) {
         // Just a place holder for the above comment for now
         return false;
@@ -745,6 +747,7 @@ public class GetChar {
      * @param old_redo if TRUE, use old_redobuff instead of redobuff
      */
     static private char read_redo(boolean init, boolean old_redo) {
+        eatme(old_redo);
         if(init) {
             if(redobuff.hasNext() == false) {
                 return FAIL;
@@ -767,6 +770,7 @@ public class GetChar {
      * <p>NOTE: old_redo ignored</p>
      */
     static private void copy_redo(boolean old_redo) {
+        eatme(old_redo);
         stuffReadbuff(redobuff.substring(redobuff_idx));
     }
 
@@ -915,8 +919,10 @@ public class GetChar {
         return ins_typebuf(String.valueOf(c), 0, typebuf.length(), false);
     }
 
+    static { del_typebuf(-1, -1); }
     static void del_typebuf(int len, int offset)
     {
+        if(len < 0) return; // eatme
         typebuf.delete(offset, offset + len);
     }
 

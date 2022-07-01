@@ -43,6 +43,7 @@ import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
 import com.raelity.text.StringSegment;
+import com.raelity.text.TextUtil;
 
 import static java.util.logging.Level.*;
 
@@ -486,9 +487,7 @@ private static Commands.ColonEvent parseCommandGuts(String commandLine,
         }
         if(!isExecuting || !flags.contains(CcFlag.NO_PARSE)) {
             // TODO: get rid of this
-            String cmdlineargs = commandLine.substring(sidx);
-            cev.args = cmdlineargs.isBlank() ? Collections.emptyList()
-                      : Arrays.asList(cmdlineargs.split("\\s+"));
+            cev.args = TextUtil.tokens(commandLine.substring(sidx));
         } else {
         }
     }

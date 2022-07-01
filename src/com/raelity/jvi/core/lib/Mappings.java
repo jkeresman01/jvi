@@ -46,6 +46,7 @@ import com.raelity.text.TextUtil;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
+import static com.raelity.jvi.manager.ViManager.eatme;
 
 /**
  * Note that class is created/handled by GetChar.
@@ -173,6 +174,7 @@ public final class Mappings {
         //         ViManager.println("\t" + m.group(i));
         //     }
         // }
+        eatme(is_rhs, orig);
 
         // the groups in mapSeqPattern
         final int g_char = 1;
@@ -346,12 +348,15 @@ public final class Mappings {
      */
     static Mapping parseMapCommand(String line, Emsgs emsg, boolean printOk)
     {
-        Matcher matcher = getMapCharsMatcher(); // just holds a reference
+        Matcher matcher = getMapCharsMatcher(); // holds a strong refereence
+        eatme(matcher);
         int initialEmsgs = emsg.length();
 
         List<String> fields = TextUtil.tokens(line);
 
-        if(fields.isEmpty() || fields.get(0).startsWith("\""))
+        if(fields.isEmpty()
+                || fields.get(0).startsWith("\"")
+                || fields.get(0).startsWith("#"))
             return null;
         if(fields.size() > 3) {
             emsg.error().append("too many fields\n");
@@ -434,7 +439,8 @@ public final class Mappings {
     public static List<Mapping> parseMapCommands(String input,
                                                  Wrap<String>p_emsg)
     {
-        Matcher matcher = getMapCharsMatcher(); // just holds a reference
+        Matcher matcher = getMapCharsMatcher(); // hold a strong reference
+        eatme(matcher);
         List<Mapping> mapCommands = new ArrayList<>();
 
         Emsgs emsg = new Emsgs();
@@ -499,7 +505,6 @@ public final class Mappings {
         Collections.sort(lM,
                 (Mapping o1, Mapping o2) -> o1.lhs.compareTo(o2.lhs));
 
-        StringBuilder sb = new StringBuilder();
         try (ViOutputStream vios = ViManager.createOutputStream("mappings")) {
             for(Mapping m : lM) {
                 vios.println(String.format("%-3s %-8s %c %s",

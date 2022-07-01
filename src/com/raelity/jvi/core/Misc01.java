@@ -823,7 +823,7 @@ public class Misc01
     
     @Subscribe
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
-    void check(ViEvent.OpenTv ev) {
+    public void check(ViEvent.OpenTv ev) {
         if(fi.equals(G.curbuf.getFile()))
             G.curwin.w_cursor.set(offset);
         ViEvent.getBus().unregister(this);
@@ -831,10 +831,10 @@ public class Misc01
 
     // Get rid of this if it's still around.
     @Subscribe
-    void clear(ViEvent.SwitchToTv ev) {
+    public void clear(ViEvent.SwitchToTv ev) {
         ViEvent.getBus().unregister(this);
     }
-    }
+    } // END CLASS NextNewActivationOffset
 
     private static boolean win_jump(Direction direction, int n)
     {

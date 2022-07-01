@@ -92,6 +92,7 @@ public class Misc {
     @Subscribe
     public void lateInit(ViEvent.LateInit ev) {
       javaKeyMap = initJavaKeyMap();
+      ViEvent.getBus().unregister(this);
     }
     }
 

@@ -33,7 +33,7 @@ import com.raelity.jvi.core.lib.CcFlag;
 import com.raelity.jvi.core.lib.ColonCommandItem;
 
 /**
- *
+ * Data structures for defining and registering colon commands.
  * @author err
  */
 public class Commands

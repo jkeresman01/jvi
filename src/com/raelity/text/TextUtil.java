@@ -22,6 +22,8 @@ package com.raelity.text;
 
 import java.text.CharacterIterator;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -38,30 +40,34 @@ public class TextUtil {
         return args.length == 0 ? fmt : String.format(fmt, args);
     }
     
-    /** Split a string into a vector of words. White space is used
-     * for the delimeters, " \t\n\r".
+    /** Split a string into a list of words. White space,
+     * '\s+', delimets the words. A blank string return
+     * and empty list.
      */
     public static List<String> tokens(String s) {
-        List<String> word = new ArrayList<>();
-        StringTokenizer parse = new StringTokenizer(s);
-        while(parse.hasMoreElements()) {
-            word.add(parse.nextToken());
-        }
-        return word;
+        //return s.isBlank()?List.copyOf():Arrays.asList(s.trim().split("\\s+"));
+
+        // Do it this slightly more complicated way,
+        // so there's only one expression for what is a blank.
+        String[] split = s.split("\\s+");
+        if(split.length > 0 && split[0].isEmpty())
+            split = Arrays.copyOfRange(split, 1, split.length);
+        return Arrays.asList(split);
     }
     
-    /** Split a string into a vector of words, using <i>separarators</i>
-     * to delineate the words.
-     */
-    public static List<String> tokens(String s, String separators) {
-        List<String> word = new ArrayList<>();
-        StringTokenizer parse = new StringTokenizer(s, separators);
-        while(parse.hasMoreElements()) {
-            word.add(parse.nextToken());
-        }
-        return word;
-    }
+    // /** Split a string into a vector of words, using <i>separarators</i>
+    //  * to delineate the words.
+    //  */
+    // public static List<String> tokens(String s, String separators) {
+    //     List<String> word = new ArrayList<>();
+    //     StringTokenizer parse = new StringTokenizer(s, separators);
+    //     while(parse.hasMoreElements()) {
+    //         word.add(parse.nextToken());
+    //     }
+    //     return word;
+    // }
     
+    /** Return a String of the characters from getBeginIndex/getEndIndex */
     public static String toString(CharacterIterator ci) {
         int i0 = ci.getBeginIndex();
         int i1 = ci.getEndIndex();
@@ -76,6 +82,7 @@ public class TextUtil {
         }
     }
     
+    /** Return a String of the characters of index for len */
     public static String toString(CharacterIterator ci, int index, int len) {
         int i0 = ci.getBeginIndex();
         int i1 = ci.getEndIndex();
