@@ -88,7 +88,7 @@ import static com.raelity.text.TextUtil.sf;
  * editor component to handle it.
  */
 @SuppressWarnings("serial")
-final class SimpleCommandLine
+final class BasicCommandLine
 extends JPanel
 implements SwingCommandLine
 {
@@ -106,7 +106,7 @@ implements SwingCommandLine
 
 
     static final Logger LOG
-            = Logger.getLogger(SimpleCommandLine.class.getName());
+            = Logger.getLogger(BasicCommandLine.class.getName());
     private static final DebugOption dbg = Options.getDebugOption(Options.dbgSearch);
     private final JLabel modeLabel = new JLabel();
     private final CommandLineTextField text = getNewTextField();
@@ -125,7 +125,7 @@ implements SwingCommandLine
     private HistoryContext ctx;
     private int gotCtrlR;
 
-    public SimpleCommandLine()
+    public BasicCommandLine()
     {
         text.addPropertyChangeListener("keymap", (PropertyChangeEvent evt) -> {
             if(setKeymapActive)
