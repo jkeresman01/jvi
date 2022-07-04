@@ -109,7 +109,7 @@ class WindowCmdEntry extends CommandLineEntry {
 
         private static ModalityType selectModalityType() {
             String opt = (String)
-                    ViManager.getOptionAtStartup(Options.commandEntryFrame);
+                    ViManager.getStartupOnlyOption(Options.commandEntryFrame);
             ModalityType type;
             // NOTE: toolkit modal is impossible... famous last words.
             type = opt.equals(Options.CEF_APP_MODAL)

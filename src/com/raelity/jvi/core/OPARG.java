@@ -30,6 +30,8 @@ public class OPARG implements Cloneable
     int	    op_type;		/* current pending operator type */
     char    regname;		/* register to use for the operator */
     int	    motion_type;	/* type of the current cursor motion */
+    boolean use_reg_one;	/* TRUE if delete uses reg 1 even when not
+				   linewise */
     boolean inclusive;		/* TRUE if char motion is inclusive (only
 				   valid when motion_type is MCHAR */
     boolean end_adjusted;	/* backuped b_op_end one char (only used by
@@ -49,6 +51,7 @@ public class OPARG implements Cloneable
     public void clearop() {
       op_type = Constants.OP_NOP;
       regname = 0;
+      use_reg_one = false;
     }
 
     @Override

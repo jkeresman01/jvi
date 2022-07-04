@@ -26,8 +26,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -117,7 +115,7 @@ static private void colonEntryComplete(String cmd, Object ev)
 {
     try {
         // TODO: make dbg local static after Commands.register called directly
-        Search.dbg.printf(INFO, () -> sf("COLON: colonEntryComplete: %s \n", ev.toString()));
+        dbg.printf(INFO, () -> sf("COLON: colonEntryComplete: %s \n", ev.toString()));
         Hook.setJViBusy(true);
 
         ViManager.getFactory().commandEntryAssist(getColonCommandEntry(),false);

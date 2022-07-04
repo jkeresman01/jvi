@@ -230,7 +230,7 @@ final public class ViManager
 
         OptUtil.getEventBus().register(new Object() {
             @Subscribe public void weHaveOptions(OptUtil.OptionsInitializedEvent ev) {
-                setupOptionAtStartup();
+                setupStartupOnlyOption();
             } });
 
         // As of Mon Mar 16 10:10:19 PDT 2020
@@ -301,6 +301,7 @@ final public class ViManager
                           new DebugDebug(), null);
 
 
+        OptUtil.firePropertyChange(new OptUtil.OptionsInitializedEvent());
         firePropertyChange(P_BOOT, null, null);
 
         // Add the vim clipboards
@@ -979,16 +980,17 @@ final public class ViManager
         }
     }
 
-    private static String useFrame_ValueAtBoot;
-    private static boolean tabCompletionPrefix_ValueAtBoot;
+    private static String useFrame_StartupOnlyOption;
+    private static boolean tabCompletionPrefix_StartupOnlyOption;
 
-    // this is called after the options are setup
-    private static void setupOptionAtStartup() {
-        if(useFrame_ValueAtBoot != null) {
+    /** Record options that require a restart.
+     */
+    private static void setupStartupOnlyOption() {
+        if(useFrame_StartupOnlyOption != null) {
             throw new RuntimeException("setupOptionAtBoot already set");
         }
         // Get the boot value of certain Options
-        useFrame_ValueAtBoot = Options.getOption(Options.commandEntryFrame)
+        useFrame_StartupOnlyOption = Options.getOption(Options.commandEntryFrame)
                 .getString();
 
         // tabCompletionPrefix_ValueAtBoot = Options.getOption(
@@ -1006,10 +1008,10 @@ final public class ViManager
     // WindowCmdEentry, then use it from there when
     // creating the command line window. But this
     // is extensible and guarenteed to preserve semantics.
-    public static Object getOptionAtStartup(String optName) {
+    public static Object getStartupOnlyOption(String optName) {
         switch(optName) {
         case Options.commandEntryFrame:
-            return useFrame_ValueAtBoot;
+            return useFrame_StartupOnlyOption;
         //case Options.tabCompletionPrefix:
         //    return tabCompletionPrefix_ValueAtBoot;
         default:

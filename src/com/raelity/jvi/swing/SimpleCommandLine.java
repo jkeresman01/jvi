@@ -201,6 +201,8 @@ implements SwingCommandLine
         text.setFont(srcFont);
     }
 
+    @SuppressWarnings("FieldMayBeFinal")
+    private static boolean selectInitialColonCommand = true;
     /**
      * This is used to initialize the text, needed so that
      * characters entered before it gets focus are not lost.
@@ -217,7 +219,8 @@ implements SwingCommandLine
         if ( s.length() == 0 ) {
             JTextComponent tc = getTextComponent();
             String t = "";
-            if(mode.equals(":") || !initalState.isAtBeginning()) {
+            if(mode.equals(":") && selectInitialColonCommand
+                    || !initalState.isAtBeginning()) {
                 // Only put previous value in text field if colon command,
                 // or if selected from history;
                 // this avoids an unintended search.
@@ -578,7 +581,7 @@ implements SwingCommandLine
                             restorFg();
                             doc.remove(gotCtrlR, 1);
                             String s = ctx.get_register(e.getKeyChar());
-                            if(s != null) {
+                            if(s != null && !s.isEmpty()) {
                                 sb.setLength(0);
                                 for(int i = 0; i < s.length(); i++) {
                                     char c = s.charAt(i);

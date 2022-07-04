@@ -3094,6 +3094,7 @@ normal_end: {
       // NOTE: do similar save/restore in op_indent and op_format
       int startTopViewLine = G.curwin.getVpTopViewLine();
       cap.oap.motion_type = MCHAR;
+      // cap.oap.use_reg_one = true;
       boolean usePlatform = G.p_pbm & ViManager.getPlatformFindMatch();
       if(usePlatform) {
         ViFPOS fpos = G.curwin.w_cursor.copy();
@@ -3456,12 +3457,13 @@ nv_brackets(CMDARG cap, int dir)
 }
   
   /*
- * Handle "(" and ")" commands.
- */
+   * Handle "(" and ")" commands.
+   */
  
   static private void nv_brace(CMDARG cap, int dir) {
 
     cap.oap.motion_type = MCHAR;
+    // cap.oap.use_reg_one = true;
 
     if (cap.cmdchar == ')')
       cap.oap.inclusive = false;
@@ -3488,6 +3490,7 @@ nv_brackets(CMDARG cap, int dir)
   {
     cap.oap.motion_type = MCHAR;
     cap.oap.inclusive = false;
+    // cap.oap.use_reg_one = true;
     G.curwin.w_set_curswant = true;
     if (!findpar(cap, dir, cap.count1, NUL, false))
       clearopbeep(cap.oap);
@@ -3666,7 +3669,9 @@ nv_brackets(CMDARG cap, int dir)
         adjust_cursor();
     }
     cap.oap.motion_type = flag ? MLINE : MCHAR;
-    cap.oap.inclusive = false;		/* ignored if not MCHAR */
+    if(cap.cmdchar == '`')
+      eatme(); // cap.oap.use_reg_one = true;
+    cap.oap.inclusive = false;		// ignored if not MCHAR
     G.curwin.w_set_curswant = true;
   }
   
@@ -3676,8 +3681,8 @@ nv_brackets(CMDARG cap, int dir)
   static private  void	v_visop (CMDARG cap) {
       String trans = "YyDdCcxdXdAAIIrr";
 
-    /* Uppercase means linewise, except in block mode, then "D" deletes till
-     * the end of the line, and "C" replaces til EOL */
+    // Uppercase means linewise, except in block mode, then "D" deletes till
+    // the end of the line, and "C" replaces til EOL
     if (Character.isUpperCase(cap.cmdchar))
     {
        if (G.VIsual_mode != CTRL_V)
@@ -4828,7 +4833,7 @@ nv_brackets(CMDARG cap, int dir)
             regname = cap.oap.regname;
             regname = adjust_clip_reg(regname);
             if (regname == 0 || Util.isdigit(regname)
-                    || (    G.p_cb && (regname == '*' || regname == '+'))) {
+                    || (G.clip_unnamed && Ops.isCbName(regname))) {
               // the delete is going to overwrite the register we want to
               // put, save it first.
               reg1 = get_register(regname, true);

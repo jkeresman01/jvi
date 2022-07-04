@@ -94,9 +94,9 @@ public final class Options {
       {
 
         OptUtil.init();
-        Options.init(); // enable option events
+        Options.init(); // Create all the options
         OptUtil.go();
-        OptUtil.firePropertyChange(new OptUtil.OptionsInitializedEvent());
+        ready = true;
       }
     }
 
@@ -259,6 +259,12 @@ public final class Options {
   public static final String MESC_NO_MAGIC = "nm";
   public static final String MESC_VERY_NO_MAGIC = "vnm";
 
+  public static boolean isReady()
+  {
+    return ready;
+  }
+
+  private static boolean ready = false;
   private static boolean didInit = false;
   private static void init() {
     if(didInit) {
@@ -706,7 +712,7 @@ public final class Options {
     createBooleanOption(unnamedClipboard, false);
     setupOptionDesc(Category.GENERAL, unnamedClipboard,
                "'clipboard' 'cb' (unnamed)",
-               "use clipboard for unamed yank, delete and put");
+               "use clipboard for unnamed yank, delete and put");
     setExpertHidden(unnamedClipboard, true, false);
 
     createBooleanOption(startOfLine, true);

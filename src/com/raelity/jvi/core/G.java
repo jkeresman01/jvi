@@ -296,6 +296,7 @@ public class G implements ViOptionBag
     // backspace over start of insert, and more
     static int p_bs;
     // clipboard, treat as boolean for 'unnamed'
+    //static EnumSet<Clipboard> p_cb;
     static boolean p_cb;
     // sentence search two spaces
     static boolean p_cpo_j;
@@ -416,7 +417,6 @@ public class G implements ViOptionBag
     static boolean disableFontError;
     static boolean disableFontCheckSpecial;
     static String useFrame;
-    static boolean comboCommandLine;
     static boolean usePlatformInsertTab;
     static boolean readOnlyHack;
     static boolean isHideVersion;
@@ -428,5 +428,10 @@ public class G implements ViOptionBag
     static boolean isCursorXorBug;
 
     public static final boolean False = false;
+
+    // clipboard related, derives from p_cb
+    static boolean clip_unnamed;
+    static boolean clip_unnamed_plus;
+    static final boolean clip_autoselect = false;
 
 } // end com.raelity.jvi.G

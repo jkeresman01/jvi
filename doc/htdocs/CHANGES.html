@@ -89,7 +89,19 @@
   for older releases.
 </p>
 
-<b>Version 2.0.6 - 2022/06/14</b>
+<b>Version 2.0.7+ - 2022/09/??</b>
+<p>
+  Since I was running on windows I didn't realize the clipboard handling was
+  not right on unix.
+  It's fixed jVi to match vim, handling both
+  <span class="tt">"*</span> and <span class="tt">"+</span>.
+  That is incompatible with how it used to be.
+  An Option could be added if this change is too much of a problem.
+</p>
+<p>
+  In addition, <span class="tt">clipboard=unnamed</span>
+  should work as expected.
+</p>
 <dl>
   <dt>jVi Core</dt>
   <dd>
@@ -99,7 +111,14 @@
         and selection <span class="tt">*</span>.
       </li>
       <li>
-        Stretch command line to width of it's editor.
+        The <span class="tt">Map Commands</span> option input
+        accepts both <span class="tt">#</span> and
+        <span class="tt">"</span> for comments. A small
+        nod to vim9script.
+      </li>
+      <li>
+        Stretch command line to width of it's editor;
+        but always at least 80 characters.
       </li>
     </ul>
   </dd>

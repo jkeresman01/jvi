@@ -38,9 +38,9 @@ import java.nio.charset.CoderResult;
 import java.text.CharacterIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -57,7 +57,7 @@ import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.lib.Wrap;
 import com.raelity.jvi.manager.*;
-import com.raelity.text.TextUtil;
+import com.raelity.jvi.options.*;
 import com.raelity.text.MySegment;
 
 import static com.raelity.jvi.core.Edit.*;
@@ -70,7 +70,7 @@ import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Constants.NF.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.manager.ViManager.eatme;
-import static com.raelity.text.TextUtil.debugString;
+import static com.raelity.text.TextUtil.*;
 
 public class Ops {
     private static final Logger LOG = Logger.getLogger(Ops.class.getName());
@@ -126,7 +126,7 @@ public class Ops {
   private static void read_viminfo_registers() {
     Preferences prefsRegs = ViManager.getFactory()
             .getPreferences().node(PREF_REGISTERS);
-    for(int i = 0; i < y_regs.length; i++) {
+    for(int i = 0; i < y_regs.size(); i++) {
       try {
         String regname = String.valueOf(get_register_name(i));
         if(regname.equals("-") || isCbName(regname.charAt(0)))
@@ -151,17 +151,17 @@ public class Ops {
   private static void write_viminfo_registers() {
     Preferences prefsRegs = ViManager.getFactory()
             .getPreferences().node(PREF_REGISTERS);
-    for(int i = 0; i < y_regs.length; i++) {
+    for(int i = 0; i < y_regs.size(); i++) {
       String regname = String.valueOf(get_register_name(i));
       if(regname.equals("-") || isCbName(regname.charAt(0)))
         continue;
-      Yankreg reg = y_regs[i];
-      String regval = null;
+      Yankreg reg = y_regs.get(i);
+      String regval = "";
       if(reg != null) {
         regval = reg.getAll();
       }
       try {
-        if(regval == null || regval.length() == 0 || regval.length() > 1024) {
+        if(regval.isEmpty() || regval.length() > 1024) {
             if (prefsRegs.nodeExists(regname)) {
               prefsRegs.node(regname).removeNode();
             }
@@ -184,18 +184,40 @@ public class Ops {
   //   1..9 = number registers, for deletes
   // 10..35 = named registers
   //     36 = delete register (-)
-  //     37 = Clipboard register (+).
-  //     38 = Selection register (*).
+  //     37 = Selection register (*).
+  //     38 = Clipboard register (+).
   //
   static final int DELETION_REGISTER = 36;   // array index to yankreg
-  static final int CLIPBOARD_REGISTER = 37;  // array index to yankreg
-  static final int SELECTION_REGISTER = 38;  // array index to yankreg
-  static final int LAST_REGISTER = SELECTION_REGISTER;
+  static final int STAR_REGISTER = 37;  // array index to yankreg
+  static final int PLUS_REGISTER = 38;  // array index to yankreg
+  static final int LAST_REGISTER = PLUS_REGISTER;
   static Yankreg y_current = null;
   static Yankreg y_previous = null;
   static boolean y_append;
-  static final Yankreg[] y_regs = new Yankreg[LAST_REGISTER + 1];
-  static final List<Yankreg> y_regs_as_list = Arrays.asList(y_regs);
+  // y_regs_as_arry should *never* be modified, here only for debug
+  static final Yankreg[] y_regs_as_array = initialYankRegs();
+  static final List<Yankreg> y_regs = Collections.unmodifiableList(Arrays.asList(y_regs_as_array));
+
+  /** allocate all the named registers. Some simplification */
+  static Yankreg[] initialYankRegs()
+  {
+    Yankreg[] regs = new Yankreg[LAST_REGISTER + 1];
+
+    for(int i = 0; i < regs.length; i++) {
+      regs[i] = new Yankreg(get_register_name(i));
+    }
+    return regs;
+  }
+
+  final static boolean isStarRegister(Yankreg yreg)
+  {
+    return yreg == y_regs.get(STAR_REGISTER);
+  }
+
+  final static boolean isPlusRegister(Yankreg yreg)
+  {
+    return yreg == y_regs.get(PLUS_REGISTER);
+  }
 
   /**
    * Sadly the yankbuf's are not code compatible
@@ -209,27 +231,43 @@ public class Ops {
    * <br/> Although not code compatible, the code for
    * put operations is pretty simple.
    */
-  static class Yankreg implements Cloneable {
+  // TODO: clean up since "know" that y_array is never null,
+  //       and has at least one StringBuilder i.e. y_array[0].method is OK.
+  final static class Yankreg {
+    final char y_name;
     // NEEDSWORK: init to null when private
-    StringBuilder[] y_array = new StringBuilder[1];
+    StringBuilder[] y_array = new StringBuilder[] { new StringBuilder() };
 
     // NOTE: if a field is added, make sure to fixup this.set(Yankreg)
     int y_size;
     int y_type;
     int y_width;
 
+    public Yankreg()
+    {
+      this((char)0);
+    }
+
+    public Yankreg(char y_name)
+    {
+      this.y_name = y_name;
+    }
+
     /** @return the indexed line, index starts at 0 */
     String get(int i) {
       return y_array[i].toString();
     }
 
-    /** @deprectated
+    boolean isEmpty() {
+      return y_type != MBLOCK
+              && (y_size == 0 || y_array == null || y_array.length == 0
+                  || y_array[0] == null || y_array[0].isEmpty()); 
+    }
+
+    /**
      * @return all the contents as a single string
      */
     String getAll() {
-      //assert false;
-      //assert y_type != MBLOCK;
-      //assert y_size == 1 && y_size == y_array.length;
       if(y_type == MBLOCK) {
         StringBuilder sb = new StringBuilder();
         for(StringBuilder y_array1 : y_array) {
@@ -244,28 +282,22 @@ public class Ops {
         return y_array[0].toString();
       }
     }
-
-    // void clear() {
-    //   y_array = null;
-    // }
+    
+    void clear() {
+      y_size = 0;
+      y_type = 0;
+      // NEEDSWORK: init to null when private
+      y_array = new StringBuilder[] { new StringBuilder() };
+    }
 
     /**
      * Return a yankreg with the same contents as this yankreg. If fCopy is
-     * set then create a copy of the string data; if clear then move the data
+     * set then create a copy of the string data, otherwise copy the data
      * and clear the data in the original.
      */
     Yankreg copy(boolean fCopy) {
-      Yankreg reg = null;
-      if(fCopy) {
-        try {
-          reg = (Yankreg)this.clone();
-        } catch (CloneNotSupportedException ex) {
-          LOG.log(Level.SEVERE, null, ex);
-        }
-      } else {
-        reg = new Yankreg();
-        reg.set(this);
-      }
+      Yankreg reg = new Yankreg();
+      reg.set(this, fCopy);
       return reg;
     }
 
@@ -273,25 +305,30 @@ public class Ops {
      * Move the contents of the argument Yankreg into this and clear the
      * argument reg's data.
      */
-    void set(Yankreg reg) {
+    void set(Yankreg reg, boolean keepSourceData) {
       y_size = reg.y_size;
       y_type = reg.y_type;
       y_width = reg.y_width;
       y_array = reg.y_array;
-      reg.y_array = new StringBuilder[1]; // NEEDSWORK: init to null when private
-    }
-
-        @Override
-    protected Object clone() throws CloneNotSupportedException {
-      Yankreg reg;
-      reg = (Yankreg) super.clone();
-      if(y_array != null) {
-        reg.y_array = y_array.clone();
-        for(int i = 0; i < y_array.length; i++)
-          reg.y_array[i] = y_array[i] == null
-                            ? null : new StringBuilder(y_array[i]);
+      if(reg.y_array == null)
+        y_array = null;
+      else {
+        if(keepSourceData) {
+          // copy the stuff
+          y_array = new StringBuilder[reg.y_array.length];
+          for(int i = 0; i < reg.y_array.length; i++)
+            y_array[i] = reg.y_array[i] == null
+                       ? null : new StringBuilder(reg.y_array[i]);
+        } else {
+          y_array = reg.y_array;
+          //for(int i = 0; i < reg.y_array.length; i++)
+          //  y_array[i] = reg.y_array[i] == null
+          //             ? null : new StringBuilder(reg.y_array[i]);
+        }
       }
-      return reg;
+      if(!keepSourceData) {
+        reg.clear();
+      }
     }
 
     void setData(String s, Integer type) {
@@ -310,8 +347,7 @@ public class Ops {
           startOffset = endOffset + 1;
           lines++;
         }
-        y_array = new StringBuilder[0];
-        y_array = l.toArray(y_array);
+        y_array = l.toArray(StringBuilder[]::new);
         y_type = MBLOCK;
         y_size = lines;
 
@@ -333,10 +369,18 @@ public class Ops {
           y_type = MCHAR;
           y_size = 1;
         }
-        
         y_array[0] = new StringBuilder(s);
       }
     }
+
+    @Override
+    public String toString()
+    {
+      String s = getAll();
+      return sf("Yankreg{'%c' %d \"%s\"}", y_name, y_type,
+                debugString(s.length() > 25 ? (s.substring(0, 25) + "...") : s));
+    }
+
   }
     
   static class block_def {
@@ -390,26 +434,31 @@ public class Ops {
       if(cev.getNArg() > 0)
           arg = cev.getArgString();
       Yankreg yb;
+      char name;
 
       try (ViOutputStream vios = ViManager.createOutputStream("\nType Name Content")) {
         StringBuilder sb = new StringBuilder();
-        for (int i = -1; i < y_regs.length; ++i) {
-          char name = get_register_name(i);
-          if (arg != null && vim_strchr(arg, name) == null)
-            continue;	    /* did not ask for this register */
-          name = adjust_clip_reg(name);
-          may_get_selection(name);
-          if (i == -1) {
+        for (int i = -1; i < y_regs.size(); ++i) {
+          if(i == -1) {
+            name = get_register_name(i);
             if (y_previous != null)
               yb = y_previous;
             else
-              yb = y_regs[0];
-          } else
-            yb = y_regs[i];
-          String regval = null;
+              yb = y_regs.get(0);
+          } else {
+            yb = y_regs.get(i);
+            name = yb.y_name;
+          }
+          if (arg != null && vim_strchr(arg, name) == null)
+            continue;	    /* did not ask for this register */
+          name = adjust_clip_reg(name);
+          if(name == 0)
+            continue;
+          may_get_selection(name);
+          String regval = "";
           if(yb != null)
             regval = yb.getAll();
-          if (regval != null) {
+          if (!regval.isEmpty()) {
             assert yb != null;
             char type = yb.y_type == MBLOCK ? 'b'
                         : yb.y_type == MLINE ? 'l'
@@ -452,7 +501,7 @@ public class Ops {
             .append("\"").append(regname).append("   ");
 
     int n = regCmdFormatColumns - 6;
-    String escaped = TextUtil.debugString(value);
+    String escaped = debugString(value);
     if(escaped.length() > n)
       escaped = escaped.substring(0, n-1);
     sb.append(escaped);
@@ -623,23 +672,51 @@ public class Ops {
     //   i = SELECTION_REGISTER;
     else		/* not 0-9, a-z, A-Z or '-': use register 0 */
       i = 0;
-    y_current = y_regs[i];
-    if(y_current == null) {
-      y_current = new Yankreg();
-      y_regs[i] = y_current;
-    }
+    y_current = y_regs.get(i);
     if (writing)	/* remember the register we write into for do_put() */
       y_previous = y_current;
+  }
+
+  /*
+   * When "regname" is a clipboard register, obtain the selection.  If it's not
+   * available return zero, otherwise return "regname".
+   */
+  // return zero if specified yankreg name is not a usable clipboard
+  static char may_get_selection(char c)
+  {
+    JviClipboard cb = name2Cb(c);
+    if(!isValidCb(cb))
+      return 0;
+    cb.clip_get_selection();
+    return c;
   }
 
 /**
  * Obtain the contents of a "normal" register. The register is made empty.
  * The returned pointer has allocated memory, use put_register() later.
+ * <p>
+ * Note that this creates a floating Yankreg;
+ * it is not referenced by y_regs.
+ * 
  * @param name the register of which to make a copy
  * @param copy make a copy, if FALSE make register empty.
  * @return the register copy
  */
   static Yankreg get_register(char name, boolean copy) {
+    // Don't do the following clipboard stuff,
+    // because jVi doesn't do a sync of seclection/visual.
+    // The platform may sync java selection to selection clipboard
+// #ifdef FEAT_CLIPBOARD
+//     /* When Visual area changed, may have to update selection.  Obtain the
+//      * selection too. */
+//     if (name == '*' && clip_star.available)
+//     {
+// 	if (clip_isautosel())
+// 	    clip_update_selection();
+// 	may_get_selection(name);
+//     }
+// #endif
+
     get_yank_register(name, false);
     Yankreg reg = y_current.copy(copy);
     return reg;
@@ -652,40 +729,31 @@ public class Ops {
    * @return the string value
    */
   static String get_register_value(char regname) {
-        String val = null;
-        if(isCbName(regname))
-          regname = may_get_selection(regname);
-        //if (regname == '*') {
-        //  if (clipboard_available)
-        //    clip_get_selection();	/* may fill clip register */
-        //  else
-        //    regname = 0;
-        //}
-
-        if(regname >= 'a' && regname <= 'z' || "\"-+*\000".indexOf(regname) >= 0) {
-            Yankreg reg = get_register(regname, true);
-            if (reg.y_size != 0 && reg.y_array != null)
-                val = reg.getAll();
-        } else if ("%/:.".indexOf(regname) >= 0) {
-            Wrap<String> pArg = new Wrap<>();
-            if(get_spec_reg(regname, pArg, false))
-                val = pArg.getValue();
-        }
-        return val;
+    String val = null;
+    if(isCbName(regname))
+      regname = may_get_selection(regname);
+    
+    if(regname >= 'a' && regname <= 'z' || "\"-+*\000".indexOf(regname) >= 0) {
+      Yankreg reg = get_register(regname, true);
+      if (reg.y_size != 0 && reg.y_array != null)
+        val = reg.getAll();
+    } else if ("%/:.".indexOf(regname) >= 0) {
+      Wrap<String> pArg = new Wrap<>();
+      if(get_spec_reg(regname, pArg, false))
+        val = pArg.getValue();
+    }
+    return val;
   }
 
 /**
- * Put "reg" into register "name".  Free any previous contents.
+ * Put "reg" into register "name".  Free any previous contents and "reg".
  */
   static void put_register(char name, Yankreg reg) {
     get_yank_register(name, false);
-    y_current.set(reg);
+    y_current.set(reg, false); // reg's data/pointers is cleared.
 
-    //
-    // #### compare to ops.c
-    //
-    // following check y_current is clipboard or selection
-    // may_set_selection();
+    /* Send text written to clipboard register to the clipboard. */
+    may_set_selection();
   }
 
   static char	do_record_regname;
@@ -809,8 +877,7 @@ public class Ops {
     default:
       int remap;
       get_yank_register(regname, false);
-      if (y_current.y_size == 0 || y_current.y_array == null
-              || y_current.y_array.length == 0 || y_current.y_array[0].length() == 0)
+      if(y_current.isEmpty())
         return FAIL;
 
       /* Disallow remaping for ":@r". */
@@ -871,26 +938,7 @@ private static int put_in_typebuf(String s, boolean colon)
    * Free up storage associated with current yank buffer.
    */
   static void free_yank_all() {
-    if(y_current.y_array.length != 0) {
-      y_current.y_array = new StringBuilder[1];
-      y_current.y_array[0] = new StringBuilder();
-    }
-  }
-
-  /**
-   * Shift yank registers for a delete; make register 1 current.
-   */
-  static void shiftYank() {
-    int n;
-    // GC: y_current = y_regs[9];
-    // GC: free_yank_all();			// free register nine
-    for (n = 9; n > 1; --n)
-      y_regs[n] = y_regs[n - 1];
-
-    //y_regs[1].y_array = NULL;		// set register one to empty
-    y_regs[1] = null;
-    // y_previous = y_current = y_regs[1];
-    get_yank_register('1', true);
+    y_current.clear();
   }
 
   /**
@@ -904,19 +952,10 @@ private static int put_in_typebuf(String s, boolean colon)
   static char adjust_clip_reg(char rp)
   {
     // If no reg. specified, and "unnamed" is in 'clipboard', use '*' reg.
-    if (rp == 0 && G.p_cb)
+    if (rp == 0 && G.clip_unnamed)
       rp = '*';
-    //
-    // #### compare to ops.c
-    //
-    // HANDLE UNNAMED
-    //
     if(isCbName(rp) && !isValidCb(name2Cb(rp)))
       rp = 0;
-    //if(rp == '+')
-    //  rp = '*';
-    //if (!clipboard_available && rp == '*')
-    //  rp = 0;
     return rp;
   }
 
@@ -973,10 +1012,7 @@ private static int put_in_typebuf(String s, boolean colon)
     else				/* name or number register */
     {
 	get_yank_register(regname, false);
-	//if (y_current->y_array == NULL)
-        if (y_current.y_array.length == 0
-                || y_current.y_array[0] == null
-                || y_current.y_array[0].length() == 0)
+        if(y_current.isEmpty())
 	    retval = FAIL;
 	else
 	{
@@ -1121,7 +1157,7 @@ private static int put_in_typebuf(String s, boolean colon)
     }
 
     // If no register specified, and "unnamed" in 'clipboard', use * register
-    if (oap.regname == 0 && G.p_cb)
+    if (oap.regname == 0 && G.clip_unnamed)
       oap.regname = '*';
     oap.regname = adjust_clip_reg(oap.regname);
     //if (!clipboard_available && oap.regname == '*')
@@ -1152,10 +1188,10 @@ private static int put_in_typebuf(String s, boolean colon)
     // Note: For the change operator it is ok.
     //
     if (       oap.motion_type == MCHAR
-	       && oap.line_count == 1
-	       && oap.op_type == OP_DELETE
-			 //&& *ml_get(oap.start.lnum) == NUL
-	       && Util.getCharAt(G.curbuf.getLineStartOffset(
+	    && oap.line_count == 1
+	    && oap.op_type == OP_DELETE
+	  //&& *ml_get(oap.start.lnum) == NUL
+	    && Util.getCharAt(G.curbuf.getLineStartOffset(
                                             oap.start.getLine())) == '\n') // DONE
     {
       //
@@ -1194,19 +1230,31 @@ private static int put_in_typebuf(String s, boolean colon)
       // delete contains a line break, or when a regname has been specified!
       //
       if (oap.regname != 0 || oap.motion_type == MLINE
-	  || oap.line_count > 1)
+	  || oap.line_count > 1 || oap.use_reg_one)
       {
-	shiftYank();
-	oap.regname = 0;
-      } else if (oap.regname == 0) {		// yank into unnamed register
+        for (int n = 9; n > 1; --n)
+          y_regs.get(n).set(y_regs.get(n - 1), false);
+        y_previous = y_current = y_regs.get(1);
+        y_regs.get(1).clear();
+        if(op_yank(oap, true, false) == OK)
+          did_yank = true;
+      }
+
+      // Yank into small delete register when no register specified and the
+      // delete is within one line.
+      // NOTE: the clipboard check in the following is from vim9
+      if (G.clip_unnamed && oap.regname == '*'
+              || G.clip_unnamed_plus && oap.regname == '+'
+              || oap.regname == 0 && oap.motion_type != MLINE
+                                    && oap.line_count == 1) {
+        // yank into unnamed register
 	oap.regname = '-';		// use special delete register
 	get_yank_register(oap.regname, true);
+        if(op_yank(oap, true, false) == OK)
+          did_yank = true;
 	oap.regname = 0;
       }
 
-      if (oap.regname == 0 && op_yank(oap, true, false) == OK) {
-	did_yank = true;
-      }
       eatme(did_yank);
 
       /* **********************************
@@ -1977,16 +2025,7 @@ private static int put_in_typebuf(String s, boolean colon)
     if (oap.regname == '_')	    // black hole: nothing to do
 	return OK;
 
-    //
-    // xxxdd;
-    //
-
-    // // If no register specified, and "unnamed" in 'clipboard', use * register
-    // if (!deleting && oap.regname == 0 && G.p_cb)
-    //     oap.regname = '*';
-    // if (!clipboard_available && oap.regname == '*')
-    //     oap.regname = 0;
-    if(!isValidCb(name2Cb(oap.regname)))
+    if(isCbName(oap.regname) && !isValidCb(name2Cb(oap.regname)))
       oap.regname = 0;
 
     if (!deleting)		    // op_delete() already set y_current
@@ -1994,7 +2033,8 @@ private static int put_in_typebuf(String s, boolean colon)
 
     curr = y_current;
 				    // append to existing contents
-    if (y_append && y_current.y_array != null) {
+    if (y_append && !y_current.isEmpty()) {
+      y_current = new Yankreg();
 	// y_current = new Yankreg(); // NEEDSWORK: just append to y_current
     } else {
 	free_yank_all();	    // free previously yanked lines
@@ -2108,22 +2148,37 @@ private static int put_in_typebuf(String s, boolean colon)
     G.curbuf.b_op_start.setMark(op_start);
     G.curbuf.b_op_end.setMark(op_end);
 
-    //
-    // If we were yanking to the clipboard register, send result to clipboard.
-    //
-    // #### compare to ops.c
-    // In ops.c there is checking for unnamed handling, and something
-    // about auto-select
-    //
-    may_set_selection(y_regs_as_list.indexOf(curr));
-    //if (curr == y_regs[CLIPBOARD_REGISTER] && clipboard_available)
-    //{
-    //    // clip_own_selection();
-    //    clip_gen_set_selection();
-    //}
+    
+    // If we were yanking to the '*' register, send result to clipboard.
+    // If no register was specified, and "unnamed" in 'clipboard', make a copy
+    // to the '*' register.
 
+    if(isValidCb(name2Cb('*'))
+            && (isStarRegister(curr)
+                || (!deleting && oap.regname == 0 && G.clip_unnamed))) {
+      if(!isStarRegister(curr))
+        /* Copy the text from register 0 to the clipboard register. */
+        copy_yank_reg(y_regs.get(STAR_REGISTER));
+      JviClipboard.STAR.clip_gen_set_selection();
+    } else if(isPlusRegister(curr) && isValidCb(name2Cb('+'))) {
+      JviClipboard.PLUS.clip_gen_set_selection();
+      if(!G.clip_autoselect) {
+        copy_yank_reg(y_regs.get(STAR_REGISTER));
+        JviClipboard.STAR.clip_gen_set_selection();
+      }
+    }
     return OK;
   }
+
+  // copy_yank_reg is #ifdef FEAT_CLIPBOARD
+  /*
+   * Make a copy of the y_current register to register "reg".
+   */
+  static void copy_yank_reg(Yankreg reg)
+  {
+    reg.set(y_current, true);
+  }
+
 
   /**
    * put contents of register "regname" into the text.
@@ -3334,56 +3389,63 @@ op_do_addsub(char command, int Prenum1)
   // Clipboard stuff
   //
 
-  /** vim uses y_current, or inlines stuff like end of op_yank/curr */
-  static void may_set_selection(int idx)
-  {
-    idx2Cb(idx).clip_gen_set_selection();
+  static {
+    OptUtil.getEventBus().register(new Object() {
+      @Subscribe public void parseClipboardOption(OptUtil.OptionsInitializedEvent ev) {
+        G.dbg.println("PARSE CLIPBOARD: " + G.p_cb);
+        G.clip_unnamed = G.p_cb;
+      }
+      @Subscribe public void checkClipboardOption(OptUtil.OptionChangeGlobalEvent ev) {
+        if(Options.unnamedClipboard.equals(ev.getName()))
+          parseClipboardOption(null);
+      }
+    });
   }
 
-  /** return zero if specified yankreg name is not a usable clipboard */
-  static char may_get_selection(char c)
+  static void may_set_selection()
   {
-    JviClipboard cb = name2Cb(c);
-    if(!isValidCb(cb))
-      return 0;
-    cb.clip_get_selection();
-    return c;
+    if(isStarRegister(y_current))
+      JviClipboard.STAR.clip_gen_set_selection();
+    else if(isPlusRegister(y_current))
+      JviClipboard.PLUS.clip_gen_set_selection();
   }
 
   /** is the the specified yankreg index a usable clipboard */
   static boolean isCbIdx(int idx)
   {
-    return idx == JviClipboard.CLIPBOARD.yank_reg_idx
-            || idx == JviClipboard.SELECTION.yank_reg_idx;
+    return idx == JviClipboard.STAR.yank_reg_idx
+            || idx == JviClipboard.PLUS.yank_reg_idx;
   }
 
   /** is the the specified yank reg name a clipboard */
   static boolean isCbName(char c)
   {
-    return c == JviClipboard.CLIPBOARD.regname
-            || c == JviClipboard.SELECTION.regname;
+    return c == JviClipboard.STAR.regname
+            || c == JviClipboard.PLUS.regname;
   }
 
   /** convert clipboard yankreg idx to yankreg name */
   static char idx2CbName(int idx)
   {
-    return idx == JviClipboard.CLIPBOARD.yank_reg_idx
-                ? JviClipboard.CLIPBOARD.regname
-           : idx == JviClipboard.SELECTION.yank_reg_idx
-                ? JviClipboard.SELECTION.regname
+    return idx == JviClipboard.STAR.yank_reg_idx
+                ? JviClipboard.STAR.regname
+           : idx == JviClipboard.PLUS.yank_reg_idx
+                ? JviClipboard.PLUS.regname
            : 0;
   }
 
   /** convert clipboard yankreg name to yankreg idx */
   static int name2CbIdx(char c)
   {
-    return c == JviClipboard.CLIPBOARD.regname
-                ? JviClipboard.CLIPBOARD.yank_reg_idx
-           : c == JviClipboard.SELECTION.regname
-                ? JviClipboard.SELECTION.yank_reg_idx
+    return c == JviClipboard.STAR.regname
+                ? JviClipboard.STAR.yank_reg_idx
+           : c == JviClipboard.PLUS.regname
+                ? JviClipboard.PLUS.yank_reg_idx
            : 0;
   }
 
+  //////////////////////////////////////////////////////////////////////
+  //
   // The above methods work on clipboard names and indexes. They do not
   // check if the clipboard is actually available.
 
@@ -3401,26 +3463,26 @@ op_do_addsub(char command, int Prenum1)
    * or clipboard is not available. */
   static JviClipboard name2Cb(char regname)
   {
-    return JviClipboard.CLIPBOARD.name2cbCheck(regname) ? JviClipboard.CLIPBOARD
-           : JviClipboard.SELECTION.name2cbCheck(regname) ? JviClipboard.SELECTION
+    return JviClipboard.STAR.name2cbCheck(regname) ? JviClipboard.STAR
+           : JviClipboard.PLUS.name2cbCheck(regname) ? JviClipboard.PLUS
            : JviClipboard.NO_CB;
   }
 
   /** return clipboard for idx, else null if not valid idx
    * or clipboard is not available. */
-  static JviClipboard idx2Cb(int idx)
-  {
-    return JviClipboard.CLIPBOARD.idx2cbCheck(idx) ? JviClipboard.CLIPBOARD
-           : JviClipboard.SELECTION.idx2cbCheck(idx) ? JviClipboard.SELECTION
-           : JviClipboard.NO_CB;
-  }
+  // static JviClipboard idx2Cb(int idx)
+  // {
+  //   return JviClipboard.STAR.idx2cbCheck(idx) ? JviClipboard.STAR
+  //          : JviClipboard.PLUS.idx2cbCheck(idx) ? JviClipboard.PLUS
+  //          : JviClipboard.NO_CB;
+  // }
 
     //private static final Permission PERM_CLIP = new AWTPermission("accessClipboard");
 
     /** either systemClipboard or systemSelection */
     private enum JviClipboard implements ClipboardOwner {
-      CLIPBOARD(CLIPBOARD_REGISTER, '+', (tk) -> tk.getSystemClipboard()),
-      SELECTION(SELECTION_REGISTER, '*', (tk) -> tk.getSystemSelection()),
+      STAR(STAR_REGISTER, '*', (tk) -> tk.getSystemSelection()),
+      PLUS(PLUS_REGISTER, '+', (tk) -> tk.getSystemClipboard()),
       NO_CB(-1, '\uffff', (tk) -> null);
 
       private static boolean permOK()
@@ -3450,7 +3512,6 @@ op_do_addsub(char command, int Prenum1)
         this.yank_reg_idx = yank_reg_idx;
         this.regname = regname;
         this.toCb = toCb;
-        // If the security manager is changed, then avail could be stale
         avail = permOK() && getClipboard() != null;
       }
 
@@ -3475,8 +3536,11 @@ op_do_addsub(char command, int Prenum1)
         Clipboard cb = getClipboard();
         if(cb == null)
           return;
-        Yankreg y_reg = y_regs[yank_reg_idx];
-        Transferable trans = new StringAndVimSelection((byte)y_reg.y_type, y_reg.getAll());
+        Yankreg y_reg = y_regs.get(yank_reg_idx);
+        String all = y_reg.getAll();
+        if(all.isEmpty())
+          return;
+        Transferable trans = new StringAndVimSelection((byte)y_reg.y_type, all);
         synchronized(this) {
           LOG.fine("clipboard: clip_gen_set_selection");
           cb.setContents(trans, this);
@@ -3484,7 +3548,8 @@ op_do_addsub(char command, int Prenum1)
         }
       }
 
-      private static final boolean debugClip = true;
+      @SuppressWarnings("FieldMayBeFinal")
+      private static boolean debugClip = true;
       private static final boolean ignoreOwner = true;
       private void clip_get_selection() {
         if(!isValidCb(this))
@@ -3497,46 +3562,51 @@ op_do_addsub(char command, int Prenum1)
         Clipboard cb = getClipboard();
         if(cb == null)
           return;
-        DataFlavor dfa[];
+        DataFlavor dfa[] = cb.getAvailableDataFlavors();
         if(debugClip) {
           if(hasVimFlavor(cb))
             ViManager.println("VimClip available");
-          dfa = cb.getAvailableDataFlavors();
           Arrays.sort(dfa, (DataFlavor df1, DataFlavor df2)
                   -> df1.getMimeType().compareTo(df2.getMimeType()));
           int i = 0;
-          ViManager.printf("\n=====================\n\n");
-          for (DataFlavor df : dfa)
-            ViManager.printf("%2d %s\n", i++, df.getMimeType());
+          ViManager.printf("===================== %d flavors\n", dfa.length);
+          for(int j = 0; j < dfa.length && j < 5; j++) {
+            DataFlavor df = dfa[j];
+            ViManager.printf("%4d %s\n", i++, df.getMimeType());
+          }
         }
-
         String stringData = null;
         Integer type = null;
-        if(hasVimFlavor(cb)) {
-          Object[] data = getClipboardData(cb);
-          if(data != null) {
-            type = (Integer)data[0];
-            stringData = (String)data[1];
+        if(dfa == null || dfa.length == 0) {
+          LOG.warning(() -> sf("Clipboard-%s: no data flavors", this));
+          stringData = "";
+        } else {
+          if(hasVimFlavor(cb)) {
+            Object[] data = getClipboardData(cb);
+            if(data != null) {
+              type = (Integer)data[0];
+              stringData = (String)data[1];
+            }
           }
-        }
-        if(stringData == null) {
-          try {
-            // leave type null, let it get figured out
-            stringData = (String)cb.getData(DataFlavor.stringFlavor);
-          } catch(UnsupportedFlavorException | IOException ex) {
-            //Exceptions.printStackTrace(ex);
-            Util.beep_flush();
+          if(stringData == null) {
+            try {
+              // leave type null, let it get figured out
+              stringData = (String)cb.getData(DataFlavor.stringFlavor);
+            } catch(UnsupportedFlavorException | IOException ex) {
+              LOG.warning(() -> sf("Clipboard-%s: no stringFlavor", this));
+            }
           }
+          if(debugClip)
+            ViManager.printf("clipboard-%s: vimclip: %b, type %s, val='%s'\n",
+                           this,
+                           hasVimFlavor(cb),
+                           type, debugString(stringData));
         }
-        ViManager.printf("%s: vimclip: %b, type %s, val='%s'\n",
-                          this.toString(),
-                          hasVimFlavor(cb),
-                          type, debugString(stringData));
 
         get_yank_register(regname, false);
         // y_regs[CLIPBOARD_REGISTER].y_array = new StringBuilder(s);
         if(stringData != null)
-          y_regs[yank_reg_idx].setData(stringData, type);
+          y_regs.get(yank_reg_idx).setData(stringData, type);
       }
 
       // return[0]:type, return[1]:string
@@ -3588,7 +3658,7 @@ op_do_addsub(char command, int Prenum1)
               return new Object[] { type, stringData };
           } catch (UnsupportedFlavorException | IOException ex) {
             Util.beep_flush();
-            //LOG.log(Level.SEVERE, null, ex);
+            LOG.warning(() -> sf("Clipboard-%s: getClipboardData: %s", ex.getMessage()));
           }
         }
         return null;

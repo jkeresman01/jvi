@@ -543,7 +543,7 @@ abstract public class SwingFactory implements ViFactory
     @Override
     public ViCmdEntry createCmdEntry( ViCmdEntry.Type type )
     {
-        Object opt = ViManager.getOptionAtStartup(Options.commandEntryFrame);
+        Object opt = ViManager.getStartupOnlyOption(Options.commandEntryFrame);
         G.dbgOptions().println("createCmdEntry: modality: %s", opt);
         if (Options.CEF_GLASS_PANE.equals(opt)) {
             return new GlassCmdEntry(type);

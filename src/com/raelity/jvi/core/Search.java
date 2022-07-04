@@ -762,6 +762,7 @@ finished:
     return rc;
   }
   private static boolean skip_chars(int cclass, int dir, ViFPOS fpos) {
+    if(Boolean.FALSE) skip_chars(0, 0); // eatme
     while (cls(fpos) == cclass)
       if ((dir == FORWARD ? inc(fpos) : dec(fpos)) == -1)
 	return true;
