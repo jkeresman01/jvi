@@ -336,6 +336,34 @@ public interface Constants {
         public String toString() { return opt; }
     }
 
+    /** SelectInitialCommandLine */
+    public enum SICL {
+        EMPTY("empty"),
+        COMMAND("command"),
+        SELECTED("selected");
+        private final String opt;
+        private SICL(String opt)
+        {
+            this.opt = opt;
+        }
+
+        @Override
+        public String toString() { return opt; }
+    }
+
+    public enum CB {
+        UNNAMED("unnamed"),
+        UNNAMEDPLUS("unnamedplus");
+
+        private final String opt;
+        private CB(String opt) {
+            this.opt = opt;
+        }
+
+        @Override
+        public String toString() { return opt; }
+    }
+
     public enum NF {
         NF_HEX("hex"),
         NF_OCTAL("octal"),

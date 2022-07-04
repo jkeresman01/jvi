@@ -44,7 +44,6 @@ import com.raelity.jvi.ViInitialization;
 import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.Buffer;
-import com.raelity.jvi.core.ExCommands;
 import com.raelity.jvi.core.G;
 import com.raelity.jvi.core.Hook;
 import com.raelity.jvi.core.Options;
@@ -104,7 +103,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("2.0.7.x6");
+    public static final jViVersion version = new jViVersion("2.0.7.x7");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -421,6 +420,8 @@ final public class ViManager
      */
     private static final Map<String, Object> debugDebugDiddling = new HashMap<>();
 
+    static { if(Boolean.FALSE) debugSetParam(null, null); /* eatme */ }
+
     /** Typically done from the debugger.  */
     static void debugSetParam(String s, Object o)
     {
@@ -513,6 +514,7 @@ final public class ViManager
 
     }
 
+    static { if(Boolean.FALSE) MessageDialog(); /* eatme */ }
     static int MessageDialog() {
         //JOptionPane pane = new JOptionPane(arguments);
         //pane.set.Xxxx(...); // Configure
@@ -983,7 +985,7 @@ final public class ViManager
     private static String useFrame_StartupOnlyOption;
     private static boolean tabCompletionPrefix_StartupOnlyOption;
 
-    /** Record options that require a restart.
+    /** Keep track of options that require a restart.
      */
     private static void setupStartupOnlyOption() {
         if(useFrame_StartupOnlyOption != null) {

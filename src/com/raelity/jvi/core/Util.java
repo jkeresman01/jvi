@@ -196,7 +196,7 @@ public class Util {
     return c < 'a' ? c - 'A' : c - 'a';
   }
 
-  static boolean vim_isprintc(char c) { return false; }
+  //static boolean vim_isprintc(char c) { return false; }
 
   /**
    * get a pointer to a (read-only copy of a) line.
@@ -315,10 +315,11 @@ public class Util {
 
   }
 
-/*
+/**
  * Convert a string into a long and/or unsigned long, taking care of
  * hexadecimal and octal numbers.  Accepts a '-' sign.
  * If "hexp" is not null, returns a flag to indicate the type of the number:
+ * <pre>
  *  0	    decimal
  *  '0'	    octal
  *  'X'	    hex
@@ -330,6 +331,7 @@ public class Util {
  * octal number.
  * If "dohex" is non-zero recognize hex numbers, when > 1 always assume
  * hex number.
+ * </pre>
  */
 //    void
 //vim_str2nr(start, hexp, len, dooct, dohex, nptr, unptr)
@@ -359,7 +361,7 @@ vim_str2nr(MySegment seg, int start,
 	++ptr;
     }
 
-    /* Recognize hex and octal. */
+    // Recognize hex and octal.
     if (seg.charAt(ptr+0) == '0' && seg.charAt(ptr+1) != '8' && seg.charAt(ptr+1) != '9')
     {
 	hex = seg.charAt(ptr+1);

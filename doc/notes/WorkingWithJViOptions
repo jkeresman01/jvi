@@ -18,9 +18,14 @@ Working with jVi options
             @Subscribe public void f(OptUtil.OptionChangeOptionEvent ev) {...}
 
   - Adding an option
+    Typically touch these three files
+        Options.java
+        OptionsBeanBase.java
+        VimOption.java (if used with :set command)
     . If needed, in G.java define pointer to the option, e.g. G.p_opt_name
       Otherwise option can be found with Options.getOption(optName)
-      and G.opt_name is defined and possibly not used.
+      and G.opt_name is defined and possibly not used. This is needed
+      if there's an entry in VimOption to use with :set command.
 
     . In Options.java
       - define the name of the option
@@ -74,6 +79,12 @@ Working with jVi options
       Local options have an independent mechanism.
       See SetColonCommand
 
+    . VimOption.java
+      Add an entry in VimOption.java so option works with :set command.
+      An entry in the VimOption[] table defines
+      the scope of the option and the options name used to set the value
+      through reflection. See SetColonCommand.java if you're curious.
+
     . Option Scope
       There are three types of options with a common naming scheme
           global   p_xxx 
@@ -83,12 +94,6 @@ Working with jVi options
       "firstGo()". It is called once to set initial values. Further value
       changes, either through the set command or the options dialog, are
       propogated to the java variables using reflection.
-
-    . VimOption.java
-      Add an entry in VimOption.java so option works with :set command.
-      An entry in the VimOption[] table defines
-      the scope of the option and the options name used to set the value
-      through reflection. See SetColonCommand.java if you're curious.
 
 
   - Adding a new category of options.

@@ -249,6 +249,22 @@ implements Options.EditControl
         return ViManager.getReleaseString();
     }
 
+    public void setViClipboard(EnumSet<?> arg)  throws PropertyVetoException {
+        put(Options.clipboard, arg);
+    }
+
+    public EnumSet<?> getViClipboard() {
+	return getEnumSet(Options.clipboard);
+    }
+
+    public void setViSelInitComLine(String arg)  throws PropertyVetoException {
+        put(Options.selInitComLine, arg);
+    }
+
+    public String getViSelInitComLine() {
+	return getString(Options.selInitComLine);
+    }
+
     public void setViDbgBeep(String arg)  throws PropertyVetoException {
         put(Options.dbgBeep, arg);
     }
@@ -813,14 +829,6 @@ implements Options.EditControl
 
     public boolean getViTildeWrapNext() {
 	return getboolean("viTildeWrapNext");
-    }
-
-    public void setViUnnamedClipboard(boolean arg) {
-        put("viUnnamedClipboard", arg);
-    }
-
-    public boolean getViUnnamedClipboard() {
-	return getboolean("viUnnamedClipboard");
     }
 
     public void setViJoinSpaces(boolean arg) {

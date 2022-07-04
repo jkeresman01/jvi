@@ -68,10 +68,12 @@ import com.raelity.jvi.options.DebugOption;
 import com.raelity.jvi.core.CommandHistory.HistoryContext;
 import com.raelity.jvi.core.CommandHistory.InitialHistoryItem;
 import com.raelity.jvi.core.lib.*;
+import com.raelity.jvi.core.lib.Constants.SICL;
 import com.raelity.jvi.manager.*;
 
 import static java.util.logging.Level.*;
 
+import static com.raelity.jvi.core.G.p_sicl;
 import static com.raelity.jvi.core.Util.beep_flush;
 import static com.raelity.jvi.manager.ViManager.eatme;
 import static com.raelity.text.TextUtil.sf;
@@ -202,7 +204,6 @@ implements SwingCommandLine
     }
 
     @SuppressWarnings("FieldMayBeFinal")
-    private static boolean selectInitialColonCommand = true;
     /**
      * This is used to initialize the text, needed so that
      * characters entered before it gets focus are not lost.
@@ -217,9 +218,10 @@ implements SwingCommandLine
         dbg.printf(FINE, "CLINE: init: s=%s, commandLineFiringEvents true\n", s);
         dot = mark = 0;
         if ( s.length() == 0 ) {
+            SICL sicl = p_sicl();
             JTextComponent tc = getTextComponent();
             String t = "";
-            if(mode.equals(":") && selectInitialColonCommand
+            if(mode.equals(":") && sicl != SICL.EMPTY
                     || !initalState.isAtBeginning()) {
                 // Only put previous value in text field if colon command,
                 // or if selected from history;
@@ -227,7 +229,8 @@ implements SwingCommandLine
                 t = initalState.getInitialItem();
             }
             tc.setText(t);
-            if(t.length() > 0 && initalState.isAtBeginning()) {
+            if(t.length() > 0 && initalState.isAtBeginning()
+                    && sicl == SICL.SELECTED) {
                 mark = 0;
                 dot = t.length();
                 tc.setCaretPosition(mark);

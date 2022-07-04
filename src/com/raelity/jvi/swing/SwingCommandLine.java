@@ -38,7 +38,7 @@ interface SwingCommandLine extends CommandLineKeys
 {
     static SwingCommandLine getNewDefault()
     {
-        return new SimpleCommandLine();
+        return new BasicCommandLine();
     }
 
     // typically: get() { return this; }

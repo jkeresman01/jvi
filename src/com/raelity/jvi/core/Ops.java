@@ -952,7 +952,7 @@ private static int put_in_typebuf(String s, boolean colon)
   static char adjust_clip_reg(char rp)
   {
     // If no reg. specified, and "unnamed" is in 'clipboard', use '*' reg.
-    if (rp == 0 && G.clip_unnamed)
+    if (rp == 0 && G.p_cb.contains(CB.UNNAMED))
       rp = '*';
     if(isCbName(rp) && !isValidCb(name2Cb(rp)))
       rp = 0;
@@ -1157,7 +1157,7 @@ private static int put_in_typebuf(String s, boolean colon)
     }
 
     // If no register specified, and "unnamed" in 'clipboard', use * register
-    if (oap.regname == 0 && G.clip_unnamed)
+    if (oap.regname == 0 && G.p_cb.contains(CB.UNNAMED))
       oap.regname = '*';
     oap.regname = adjust_clip_reg(oap.regname);
     //if (!clipboard_available && oap.regname == '*')
@@ -1243,7 +1243,7 @@ private static int put_in_typebuf(String s, boolean colon)
       // Yank into small delete register when no register specified and the
       // delete is within one line.
       // NOTE: the clipboard check in the following is from vim9
-      if (G.clip_unnamed && oap.regname == '*'
+      if (G.p_cb.contains(CB.UNNAMED) && oap.regname == '*'
               || G.clip_unnamed_plus && oap.regname == '+'
               || oap.regname == 0 && oap.motion_type != MLINE
                                     && oap.line_count == 1) {
@@ -2155,7 +2155,7 @@ private static int put_in_typebuf(String s, boolean colon)
 
     if(isValidCb(name2Cb('*'))
             && (isStarRegister(curr)
-                || (!deleting && oap.regname == 0 && G.clip_unnamed))) {
+                || (!deleting && oap.regname == 0 && G.p_cb.contains(CB.UNNAMED)))) {
       if(!isStarRegister(curr))
         /* Copy the text from register 0 to the clipboard register. */
         copy_yank_reg(y_regs.get(STAR_REGISTER));
@@ -3389,18 +3389,18 @@ op_do_addsub(char command, int Prenum1)
   // Clipboard stuff
   //
 
-  static {
-    OptUtil.getEventBus().register(new Object() {
-      @Subscribe public void parseClipboardOption(OptUtil.OptionsInitializedEvent ev) {
-        G.dbg.println("PARSE CLIPBOARD: " + G.p_cb);
-        G.clip_unnamed = G.p_cb;
-      }
-      @Subscribe public void checkClipboardOption(OptUtil.OptionChangeGlobalEvent ev) {
-        if(Options.unnamedClipboard.equals(ev.getName()))
-          parseClipboardOption(null);
-      }
-    });
-  }
+  //static {
+  //  OptUtil.getEventBus().register(new Object() {
+  //    @Subscribe public void parseClipboardOption(OptUtil.OptionsInitializedEvent ev) {
+  //      G.dbg.println("PARSE CLIPBOARD: " + G.p_cb);
+  //      G.clip_unnamed = G.p_cb;
+  //    }
+  //    @Subscribe public void checkClipboardOption(OptUtil.OptionChangeGlobalEvent ev) {
+  //      if(Options.unnamedClipboard.equals(ev.getName()))
+  //        parseClipboardOption(null);
+  //    }
+  //  });
+  //}
 
   static void may_set_selection()
   {

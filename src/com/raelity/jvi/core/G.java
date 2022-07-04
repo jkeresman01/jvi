@@ -26,7 +26,9 @@ import java.util.EnumSet;
 import java.util.Set;
 
 import com.raelity.jvi.*;
+import com.raelity.jvi.core.lib.Constants.CB;
 import com.raelity.jvi.core.lib.Constants.FDO;
+import com.raelity.jvi.core.lib.Constants.SICL;
 import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
 
@@ -296,8 +298,8 @@ public class G implements ViOptionBag
     // backspace over start of insert, and more
     static int p_bs;
     // clipboard, treat as boolean for 'unnamed'
-    //static EnumSet<Clipboard> p_cb;
-    static boolean p_cb;
+    static EnumSet<CB> p_cb;
+    //static boolean p_cb;
     // sentence search two spaces
     static boolean p_cpo_j;
     // continue search from end of match
@@ -402,6 +404,15 @@ public class G implements ViOptionBag
     public static Set<FDO> fdo_flags() {
         return Collections.unmodifiableSet(p_fdo);
     }
+
+    // Two variables because don't handle an enum as an option
+    static String p_sicl;
+    public static SICL p_sicl() {
+        for(SICL sicc : SICL.values())
+            if(sicc.toString().equals(p_sicl))
+                return sicc;
+        return null;
+    };
 
 
 

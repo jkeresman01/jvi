@@ -57,6 +57,7 @@ import com.raelity.jvi.ViOutputStream.FLAGS;
 import static com.raelity.jvi.options.OptUtil.createBooleanOption;
 import static com.raelity.jvi.options.OptUtil.createColorOption;
 import static com.raelity.jvi.options.OptUtil.createDebugOption;
+import static com.raelity.jvi.options.OptUtil.createEnumSetOption;
 import static com.raelity.jvi.options.OptUtil.createEnumStringOption;
 import static com.raelity.jvi.options.OptUtil.createIntegerOption;
 import static com.raelity.jvi.options.OptUtil.createStringOption;
@@ -140,6 +141,7 @@ public final class Options {
   public static final String insertRightWrapNext = "viInsertRightWrapNext";
 
   public static final String unnamedClipboard = "viUnnamedClipboard";
+  public static final String clipboard = "viClipboard";
   public static final String joinSpaces = "viJoinSpaces";
   public static final String shiftRound = "viShiftRound";
   public static final String startOfLine = "viStartOfLine";
@@ -221,6 +223,7 @@ public final class Options {
 
   public static final String tabCompletionPrefix = "viTabCompletionPrefix";
   public static final String closedFiles = "viClosedFiles";
+  public static final String selInitComLine = "viSelInitComLine";
   
   public static final String dbgRedo = "viDbgRedo";
   public static final String dbgKeyStrokes = "viDbgKeyStrokes";
@@ -263,6 +266,8 @@ public final class Options {
   {
     return ready;
   }
+
+    private static String space4 = "\u00a0\u00a0\u00a0\u00a0";
 
   private static boolean ready = false;
   private static boolean didInit = false;
@@ -405,6 +410,23 @@ public final class Options {
     //
     
     // platformList.add("jViVersion"); // hard coded in OptUtil.init
+
+
+    createEnumStringOption(selInitComLine, SICL.EMPTY.toString(),
+                new String[] {SICL.EMPTY.toString(),
+                              SICL.COMMAND.toString(),
+                              SICL.SELECTED.toString()});
+    setupOptionDesc(Category.PLATFORM, selInitComLine,
+                    "Select Initial CommandLine 'sicl'",
+                    "This controls the initial content of the command line.\n"
+                  + space4 + "empty - an empty command line window\n"
+                  + space4 + "command - the last executed command\n"
+                  + space4 + "selected - select the last executed command\n"
+                  + "With \"selected\" ENTER executes the last command; "
+                  + " a key entry starts a new command and replaces the"
+                  + " last command. With \"empty\" or \"command\""
+                  + "the selection clipboard is not modified."
+    );
 
     createBooleanOption(perProjectSupport, true);
     setupOptionDesc(Category.PLATFORM, perProjectSupport,
@@ -709,11 +731,10 @@ public final class Options {
             + " that is checked for set commands.  If 'modeline' is off"
             + " or 'modelines' is zero no lines are checked.");
 
-    createBooleanOption(unnamedClipboard, false);
-    setupOptionDesc(Category.GENERAL, unnamedClipboard,
-               "'clipboard' 'cb' (unnamed)",
-               "use clipboard for unnamed yank, delete and put");
-    setExpertHidden(unnamedClipboard, true, false);
+    createEnumSetOption(clipboard, EnumSet.noneOf(CB.class), CB.class, null);
+    setupOptionDesc(Category.GENERAL, clipboard,
+               "'clipboard' 'cb'",
+               "use unnamed/unnamedplus clipboard for yank, delete, put");
 
     createBooleanOption(startOfLine, true);
     setupOptionDesc(Category.GENERAL, startOfLine, "'startofline' 'sol'",
@@ -772,7 +793,7 @@ public final class Options {
           "The time in milliseconds that is waited for a mapped"
             + " key sequence to complete.");
 
-    /*G.p_fdo = */OptUtil.createEnumSetOption(foldOpen,
+    createEnumSetOption(foldOpen,
             EnumSet.of(
                 FDO_BLOCK, FDO_HOR, FDO_MARK, FDO_PERCENT, FDO_QUICKFIX,
                 FDO_SEARCH, FDO_TAG, FDO_UNDO),
@@ -917,13 +938,13 @@ public final class Options {
             + " 'softtabstop' position."
             );
 
-    /*G.b_p_xx = */createIntegerOption(textWidth, 79);
+    createIntegerOption(textWidth, 79);
     setupOptionDesc(Category.MODIFY, textWidth, "'textwidth' 'tw'",
             "This option currently only used in conjunction with the"
             + " 'gq' and 'Q' format command. This value is substituted"
             + " for " + twMagic + " in formatprg option string.");
 
-    /*G.b_p_nf = */OptUtil.createEnumSetOption(nrFormats,
+    createEnumSetOption(nrFormats,
         EnumSet.of(NF_HEX, NF_OCTAL), NF.class, null);
     setupOptionDesc(Category.MODIFY, nrFormats, "'nrformats' 'nf'",
             "Defines bases considered for numbers with the"

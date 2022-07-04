@@ -150,6 +150,11 @@ public class OptUtil {
     return opt;
   }
 
+  //
+  // TODO: createEnumOption - works from an enum
+  //       createEnumOption(name, default, Enum)
+  //
+
   static public EnumOption<String> createEnumStringOption(String name,
                                                  String defaultValue,
                                                  String [] availableValues) {
