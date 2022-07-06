@@ -249,6 +249,14 @@ implements Options.EditControl
         return ViManager.getReleaseString();
     }
 
+    public void setViDbgOps(String arg)  throws PropertyVetoException {
+        put(Options.dbgOps, arg);
+    }
+
+    public String getViDbgOps() {
+	return getString(Options.dbgOps);
+    }
+
     public void setViClipboard(EnumSet<?> arg)  throws PropertyVetoException {
         put(Options.clipboard, arg);
     }

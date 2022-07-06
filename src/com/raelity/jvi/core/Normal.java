@@ -1346,6 +1346,8 @@ normal_end: {
     final ViFPOS cursor = G.curwin.w_cursor;
 
 
+    // The following is all about clip_auto_select I think
+    // See vim9
 //#if defined(USE_CLIPBOARD) && !defined(MSWIN)
     /*
      * Yank the visual area into the GUI selection register before we operate
@@ -3024,7 +3026,7 @@ normal_end: {
   ) {
       cap.oap.motion_type = MCHAR;
       cap.oap.inclusive = false;
-      // cap.oap.use_reg_one = true;
+      cap.oap.use_reg_one = true;
       G.curwin.w_set_curswant = true;
 
       int i = do_search(pos, cap.oap, dir, pat, cap.count1,
@@ -3094,7 +3096,7 @@ normal_end: {
       // NOTE: do similar save/restore in op_indent and op_format
       int startTopViewLine = G.curwin.getVpTopViewLine();
       cap.oap.motion_type = MCHAR;
-      // cap.oap.use_reg_one = true;
+      cap.oap.use_reg_one = true;
       boolean usePlatform = G.p_pbm & ViManager.getPlatformFindMatch();
       if(usePlatform) {
         ViFPOS fpos = G.curwin.w_cursor.copy();
@@ -3463,7 +3465,7 @@ nv_brackets(CMDARG cap, int dir)
   static private void nv_brace(CMDARG cap, int dir) {
 
     cap.oap.motion_type = MCHAR;
-    // cap.oap.use_reg_one = true;
+    cap.oap.use_reg_one = true;
 
     if (cap.cmdchar == ')')
       cap.oap.inclusive = false;
@@ -3490,7 +3492,7 @@ nv_brackets(CMDARG cap, int dir)
   {
     cap.oap.motion_type = MCHAR;
     cap.oap.inclusive = false;
-    // cap.oap.use_reg_one = true;
+    cap.oap.use_reg_one = true;
     G.curwin.w_set_curswant = true;
     if (!findpar(cap, dir, cap.count1, NUL, false))
       clearopbeep(cap.oap);
@@ -3670,7 +3672,7 @@ nv_brackets(CMDARG cap, int dir)
     }
     cap.oap.motion_type = flag ? MLINE : MCHAR;
     if(cap.cmdchar == '`')
-      eatme(); // cap.oap.use_reg_one = true;
+      cap.oap.use_reg_one = true;
     cap.oap.inclusive = false;		// ignored if not MCHAR
     G.curwin.w_set_curswant = true;
   }
@@ -4832,8 +4834,8 @@ nv_brackets(CMDARG cap, int dir)
             was_visual = true;
             regname = cap.oap.regname;
             regname = adjust_clip_reg(regname);
-            if (regname == 0 || Util.isdigit(regname)
-                    || (G.clip_unnamed && Ops.isCbName(regname))) {
+            if (regname == 0 || regname == '"' || Util.isdigit(regname)
+                    || (Ops.cbOptHasUnnamed() && Ops.isCbName(regname))) {
               // the delete is going to overwrite the register we want to
               // put, save it first.
               reg1 = get_register(regname, true);

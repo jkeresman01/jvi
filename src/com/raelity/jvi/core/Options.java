@@ -242,6 +242,7 @@ public final class Options {
   public static final String dbgFonts = "viDbgFonts";
   public static final String dbgMarks = "viDbgMarks";
   public static final String dbgBeep = "viDbgBeep";
+  public static final String dbgOps = "viDbgOps";
 
   public static final String twMagic = "#TEXT-WIDTH#";
 
@@ -401,6 +402,9 @@ public final class Options {
 
     G.dbgBeep = createDebugOption(dbgBeep);
     setupOptionDesc(Category.DEBUG, dbgBeep, "debug beep outputs stack", "");
+
+    G.dbgOps = createDebugOption(dbgOps);
+    setupOptionDesc(Category.DEBUG, dbgOps, "debug ops/clip/registers", "");
     
     /////////////////////////////////////////////////////////////////////
     //
@@ -422,10 +426,14 @@ public final class Options {
                   + space4 + "empty - an empty command line window\n"
                   + space4 + "command - the last executed command\n"
                   + space4 + "selected - select the last executed command\n"
-                  + "With \"selected\" ENTER executes the last command; "
-                  + " a key entry starts a new command and replaces the"
-                  + " last command. With \"empty\" or \"command\""
+                  + "With \"command\" or \"selected\", pressing ENTER"
+                  + " executes the last command."
+                  + " With \"selected\" a key entry replaces the selection"
+                  + " and starts a new command"
+                  + " With \"empty\" or \"command\""
                   + "the selection clipboard is not modified."
+                  + " With \"empty\", when the command line comes up,"
+                  + " pressing up arrow shows the previous command."
     );
 
     createBooleanOption(perProjectSupport, true);
@@ -1283,6 +1291,7 @@ public final class Options {
   //////////////////////////////////////////////////////////////////////
   //
   // can_bs is in option in vim
+  // and other random option checks
   //
   
   static boolean can_bs(char what) {

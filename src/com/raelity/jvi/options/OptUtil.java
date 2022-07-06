@@ -98,6 +98,11 @@ public class OptUtil {
       started = true;
     }
 
+    public static boolean isStarted()
+    {
+      return started;
+    }
+
     static Preferences getPrefs()
     {
         return prefs;

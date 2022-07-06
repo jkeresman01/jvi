@@ -39,14 +39,18 @@ import java.text.CharacterIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
+import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.ViFPOS;
@@ -60,6 +64,8 @@ import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
 import com.raelity.text.MySegment;
 
+import static java.util.logging.Level.*;
+
 import static com.raelity.jvi.core.Edit.*;
 import static com.raelity.jvi.core.GetChar.*;
 import static com.raelity.jvi.core.Misc.*;
@@ -72,10 +78,12 @@ import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.manager.ViManager.eatme;
 import static com.raelity.text.TextUtil.*;
 
-public class Ops {
+public class Ops
+{
     private static final Logger LOG = Logger.getLogger(Ops.class.getName());
     private static final String PREF_REGISTERS = "registers";
     private static PreferencesImportMonitor registersImportCheck;
+    private static DebugOption dbg = G.dbgOps;
 
     private Ops() {}
 
@@ -97,6 +105,8 @@ public class Ops {
     private static void init() {
         Commands.register("reg", "registers", new DoRegisters(), null);
         ViEvent.getBus().register(new EventHandlers());
+        if(JviClipboard.ignoreOwner)
+          Exceptions.printStackTrace(new Exception("ignoreOwner"));
     }
 
     private static class EventHandlers
@@ -645,6 +655,7 @@ public class Ops {
    * If regname is 0 and writing, use register 0
    * If regname is 0 and reading, use previous register
    */
+  // IN VIM9 THIS RETURNS A BOOLEAN
   static void get_yank_register(char regname, boolean writing) {
     char	    i;
 
@@ -703,19 +714,20 @@ public class Ops {
  * @return the register copy
  */
   static Yankreg get_register(char name, boolean copy) {
-    // Don't do the following clipboard stuff,
-    // because jVi doesn't do a sync of seclection/visual.
-    // The platform may sync java selection to selection clipboard
-// #ifdef FEAT_CLIPBOARD
-//     /* When Visual area changed, may have to update selection.  Obtain the
-//      * selection too. */
-//     if (name == '*' && clip_star.available)
-//     {
-// 	if (clip_isautosel())
-// 	    clip_update_selection();
-// 	may_get_selection(name);
-//     }
-// #endif
+    // When Visual area changed, may have to update selection.  Obtain the
+    //selection too.
+    if (name == '*' && clip_star.avail)
+    {
+      //if (clip_autoselect_star)
+      //  clip_star.clip_update_selection();
+      may_get_selection(name);
+    }
+    if (name == '+' && clip_plus.avail)
+    {
+      //if (clip_autoselect_plus)
+      //  clip_plus.clip_update_selection();
+      may_get_selection(name);
+    }
 
     get_yank_register(name, false);
     Yankreg reg = y_current.copy(copy);
@@ -951,9 +963,13 @@ private static int put_in_typebuf(String s, boolean colon)
    */
   static char adjust_clip_reg(char rp)
   {
-    // If no reg. specified, and "unnamed" is in 'clipboard', use '*' reg.
-    if (rp == 0 && G.p_cb.contains(CB.UNNAMED))
-      rp = '*';
+    if(rp == 0 && !clip_unnamed_union.isEmpty())
+    {
+      // simplified from vim9 (I hope)
+      if(!clip_unnamed.isEmpty())
+        rp = (clip_unnamed_union.contains(CB.UNNAMEDPLUS) && clip_plus.avail)
+             ? '+' : '*';
+    }
     if(isCbName(rp) && !isValidCb(name2Cb(rp)))
       rp = 0;
     return rp;
@@ -984,19 +1000,11 @@ private static int put_in_typebuf(String s, boolean colon)
     if (regname != NUL && !valid_yank_reg(regname, false))
 	return FAIL;
 
-    //if (regname == '*')
-    //{
-    //    if (!clipboard_available)
-    //        regname = 0;
-    //    else
-    //        clip_get_selection();	/* may fill * register */
-    //}
     regname = may_get_selection(regname);
 
     Wrap<String> pArg = new Wrap<>();
-    if (regname == '.')	{	// insert last inserted text
+    if (regname == '.')                 // insert last inserted text
 	retval = stuff_inserted(NUL, 1, true);
-    }
     else if (get_spec_reg(regname, pArg, true))
     {
         String arg = pArg.getValue();
@@ -1111,7 +1119,7 @@ private static int put_in_typebuf(String s, boolean colon)
                   Msg.emsg(Messages.e_noinstext);
               return true;
 
-//  #ifdef FILE_IN_PATH...
+//  #ifdef FEAT_SEARCHPATH...
 
           case CTRL_W:  // word under cursor
           case CTRL_A:  // WORD (mnemonic All) under cursor
@@ -1156,12 +1164,7 @@ private static int put_in_typebuf(String s, boolean colon)
       return true;
     }
 
-    // If no register specified, and "unnamed" in 'clipboard', use * register
-    if (oap.regname == 0 && G.p_cb.contains(CB.UNNAMED))
-      oap.regname = '*';
     oap.regname = adjust_clip_reg(oap.regname);
-    //if (!clipboard_available && oap.regname == '*')
-    //  oap.regname = 0;
 
     //
     // NEEDSWORK: op_delete: Imitate strange Vi: If the delete spans ....
@@ -1229,11 +1232,11 @@ private static int put_in_typebuf(String s, boolean colon)
       // Put deleted text into register 1 and shift number registers if the
       // delete contains a line break, or when a regname has been specified!
       //
-      if (oap.regname != 0 || oap.motion_type == MLINE
-	  || oap.line_count > 1 || oap.use_reg_one)
+      if (oap.motion_type == MLINE || oap.line_count > 1 || oap.use_reg_one)
       {
         for (int n = 9; n > 1; --n)
           y_regs.get(n).set(y_regs.get(n - 1), false);
+        // TODO: some y_append stuff in vim9
         y_previous = y_current = y_regs.get(1);
         y_regs.get(1).clear();
         if(op_yank(oap, true, false) == OK)
@@ -1242,11 +1245,9 @@ private static int put_in_typebuf(String s, boolean colon)
 
       // Yank into small delete register when no register specified and the
       // delete is within one line.
-      // NOTE: the clipboard check in the following is from vim9
-      if (G.p_cb.contains(CB.UNNAMED) && oap.regname == '*'
-              || G.clip_unnamed_plus && oap.regname == '+'
-              || oap.regname == 0 && oap.motion_type != MLINE
-                                    && oap.line_count == 1) {
+      // NOTE: this clipboard check is from vim9
+      if ((isUnnamed(oap.regname) || oap.regname == 0)
+              && oap.motion_type != MLINE && oap.line_count == 1) {
         // yank into unnamed register
 	oap.regname = '-';		// use special delete register
 	get_yank_register(oap.regname, true);
@@ -1991,13 +1992,12 @@ private static int put_in_typebuf(String s, boolean colon)
   }
 
   /**
-   * Yank the text between curwin->w_cursor and startpos into a yank register.
+   * Yank the text between oap->start and oap->end into a yank register.
    * If we are to append (uppercase register), we first yank into a new yank
    * register and then concatenate the old and the new one (so we keep the old
    * one in case of out-of-memory).
    * <br><b>NEEDSWORK:</b><ul>
    * <li>An unfaithful and lazy port of yanking off.
-   * <li>No block mode.
    * </ul>
    *
    * @return FAIL for failure, OK otherwise
@@ -2153,18 +2153,40 @@ private static int put_in_typebuf(String s, boolean colon)
     // If no register was specified, and "unnamed" in 'clipboard', make a copy
     // to the '*' register.
 
-    if(isValidCb(name2Cb('*'))
+    boolean did_star = false;
+    if(clip_star.avail
             && (isStarRegister(curr)
-                || (!deleting && oap.regname == 0 && G.p_cb.contains(CB.UNNAMED)))) {
+                || (!deleting && oap.regname == 0
+                      && clip_unnamed_union.contains(CB.UNNAMED))))
+    {
       if(!isStarRegister(curr))
-        /* Copy the text from register 0 to the clipboard register. */
+        // Copy the text from register 0 to the clipboard register.
         copy_yank_reg(y_regs.get(STAR_REGISTER));
-      JviClipboard.STAR.clip_gen_set_selection();
-    } else if(isPlusRegister(curr) && isValidCb(name2Cb('+'))) {
-      JviClipboard.PLUS.clip_gen_set_selection();
-      if(!G.clip_autoselect) {
+      clip_star.clip_gen_set_selection();
+      did_star = true;
+    }
+
+    // If we were yanking to the '+' register, send result to selection.
+    // Also copy to the '*' register, in case auto-select is off.  But not when
+    // 'clipboard' has "unnamedplus" and not "unnamed".
+    // I THINK THERE'S A MISSING !deleting
+    if(clip_plus.avail
+            && (isPlusRegister(curr)
+                || (!deleting && oap.regname == 0
+                    && clip_unnamed_union.contains(CB.UNNAMEDPLUS))))
+    {
+      if(!isPlusRegister(curr))
+        copy_yank_reg(y_regs.get(PLUS_REGISTER));
+      clip_plus.clip_gen_set_selection();
+
+      if(!clip_autoselect_star
+              && !clip_autoselect_plus
+              && !(clip_unnamed_union.contains(CB.UNNAMEDPLUS)
+                  && clip_unnamed_union.size() == 1)
+              && !did_star
+              && isPlusRegister(curr)) {
         copy_yank_reg(y_regs.get(STAR_REGISTER));
-        JviClipboard.STAR.clip_gen_set_selection();
+        clip_star.clip_gen_set_selection();
       }
     }
     return OK;
@@ -2186,6 +2208,7 @@ private static int put_in_typebuf(String s, boolean colon)
    * flags: PUT_FIXINDENT	make indent look nice
    *	  PUT_CURSEND	leave cursor after end of new text
    *
+   * PUT_LINE   not supported (i'm just putting this comment in)
    * FIX_INDENT not supported, used by mouse and bracket print, [p
    */
   public static void do_put(int regname_, int dir, int count, int flags)
@@ -2229,6 +2252,7 @@ private static int put_in_typebuf(String s, boolean colon)
 
     if(G.False) {
       // This is the case where insert_string from get_spec_reg is non null
+      // TODO: SPECIAL REGS NOT SUPPORTED
     } else {
 	get_yank_register(regname, false);
 
@@ -3388,19 +3412,51 @@ op_do_addsub(char command, int Prenum1)
   //
   // Clipboard stuff
   //
+  static EnumSet<CB> unnamed_only = EnumSet.of(CB.UNNAMED, CB.UNNAMEDPLUS);
+  static {
+    OptUtil.getEventBus().register(new Object() {
+      @Subscribe public void parseClipboardOption(OptUtil.OptionsInitializedEvent ev) {
+        clip_unnamed.clear();
+        clip_unnamed.addAll(Sets.intersection(G.p_cb, unnamed_only));
+        dbg.println(CONFIG, () -> sf("ClipOption: clip_unnamed: %s", clip_unnamed));
+      }
+      @Subscribe public void checkClipboardOption(OptUtil.OptionChangeGlobalEvent ev) {
+        if(Options.clipboard.equals(ev.getName()))
+          parseClipboardOption(null);
+      }
+    });
+  }
 
-  //static {
-  //  OptUtil.getEventBus().register(new Object() {
-  //    @Subscribe public void parseClipboardOption(OptUtil.OptionsInitializedEvent ev) {
-  //      G.dbg.println("PARSE CLIPBOARD: " + G.p_cb);
-  //      G.clip_unnamed = G.p_cb;
-  //    }
-  //    @Subscribe public void checkClipboardOption(OptUtil.OptionChangeGlobalEvent ev) {
-  //      if(Options.unnamedClipboard.equals(ev.getName()))
-  //        parseClipboardOption(null);
-  //    }
-  //  });
-  //}
+  static final JviClipboard clip_star = JviClipboard.STAR;
+  static final JviClipboard clip_plus = JviClipboard.PLUS;
+
+  private static final Set<CB> clip_unnamed = EnumSet.noneOf(CB.class);
+  private static final Set<CB> clip_unnamed_saved = EnumSet.noneOf(CB.class);
+  private static final Set<CB> clip_unnamed_union
+          = Sets.union(clip_unnamed, clip_unnamed_saved);
+
+  /** just for similar looking code */
+  static final boolean clip_autoselect_plus = false;
+  static final boolean clip_autoselect_star = false;
+
+  private static final String UTF8 = "utf-8";
+
+  static public boolean cbOptHasUnnamed() {
+    return clip_unnamed.contains(CB.UNNAMED) || clip_unnamed.contains(CB.UNNAMEDPLUS);
+
+  }
+
+  static public boolean isUnnamed(char name)
+  {
+    return name == '*' && clip_unnamed.contains(CB.UNNAMED)
+            || name == '+' && clip_unnamed.contains(CB.UNNAMEDPLUS);
+  }
+
+  static public boolean isUnnamedOrUnnamedSaved()
+  {
+    return clip_unnamed_union.contains(CB.UNNAMED)
+            || clip_unnamed_union.contains(CB.UNNAMEDPLUS);
+  }
 
   static void may_set_selection()
   {
@@ -3531,6 +3587,7 @@ op_do_addsub(char command, int Prenum1)
       }
 
       private void clip_gen_set_selection() {
+        dbg.println(CONFIG, () -> sf("Ops: clip_gen_set_selection: %s", this));
         if(!isValidCb(this))
           return;
         Clipboard cb = getClipboard();
@@ -3549,21 +3606,26 @@ op_do_addsub(char command, int Prenum1)
       }
 
       @SuppressWarnings("FieldMayBeFinal")
-      private static boolean debugClip = true;
       private static final boolean ignoreOwner = true;
       private void clip_get_selection() {
+        dbg.println(CONFIG, () -> sf("Ops: clip_get_selection: %s", this));
         if(!isValidCb(this))
           return;
         if(clipboard_owned && !ignoreOwner) {
           // whatever is in the clipboard, we put there. So just return.
           // NEEDSWORK: clip_get_selection, code about clipboard.start/end...
+
+          // TODO:
+          //clip_free_selection(cb/this);
+          // Try to get selected text from another window
+          //clip_gen_request_selection(cb/this);
           return;
         }
         Clipboard cb = getClipboard();
         if(cb == null)
           return;
         DataFlavor dfa[] = cb.getAvailableDataFlavors();
-        if(debugClip) {
+        if(dbg.getBoolean(FINE)) {
           if(hasVimFlavor(cb))
             ViManager.println("VimClip available");
           Arrays.sort(dfa, (DataFlavor df1, DataFlavor df2)
@@ -3596,7 +3658,7 @@ op_do_addsub(char command, int Prenum1)
               LOG.warning(() -> sf("Clipboard-%s: no stringFlavor", this));
             }
           }
-          if(debugClip)
+          if(dbg.getBoolean(FINE))
             ViManager.printf("clipboard-%s: vimclip: %b, type %s, val='%s'\n",
                            this,
                            hasVimFlavor(cb),
@@ -3674,88 +3736,91 @@ op_do_addsub(char command, int Prenum1)
           LOG.fine("clipboard: lostOwnership");
         }
       }
-    }
 
-    private static final String UTF8 = "utf-8";
-    static class StringAndVimSelection extends StringSelection
-    {
-    private final byte type;
+      class StringAndVimSelection extends StringSelection
+      {
+      private final byte type;
 
-    public StringAndVimSelection(byte type, String data)
-    {
-      super(data);
-      this.type = type;
-    }
-
-    private ByteBuffer allocBuf(CharsetEncoder ce, String stringData, boolean max)
-    {
-      int nData = max
-                  ? (int)Math.ceil((ce.averageBytesPerChar() + .1) * stringData.length())
-                  : (int)Math.ceil(ce.maxBytesPerChar() * stringData.length()) + 10;
-      return ByteBuffer.allocate(1 + UTF8.length() + 1 + nData);
-    }
-
-    @Override
-    public Object getTransferData(DataFlavor flavor)
-    throws UnsupportedFlavorException, IOException
-    {
-      if(VIM_CLIPBOARD.equals(flavor.getHumanPresentableName())) {
-        String stringData = (String)super.getTransferData(DataFlavor.stringFlavor);
-        CharsetEncoder ce = Charset.forName(UTF8).newEncoder();
-        ByteBuffer buf = allocBuf(ce, stringData, false);
-        for(int i = 0; i < 2; i++) {
-          buf.put(type);
-          buf.put(UTF8.getBytes(UTF8));
-          buf.put((byte)0);
-          CoderResult rc = ce.encode(CharBuffer.wrap(stringData), buf, true);
-          if(!rc.isError()) {
-            if(ByteBuffer.class.equals(flavor.getRepresentationClass())) {
-              // return this as read only
-              buf.limit(buf.position());
-              buf.rewind();
-              return buf.asReadOnlyBuffer();
-            } else if(byte[].class.equals(flavor.getRepresentationClass())) {
-              // create and return a byte array
-              if(buf.hasArray()) {
-                byte[] b = new byte[buf.position()];
-                buf.rewind();
-                buf.get(b);
-                return b;
-              } else
-                break; // impossible
-            }
-          }
-          if(i == 0 && rc.isOverflow()) { // over first time through, try again.
-            if(ByteBuffer.class.equals(flavor.getRepresentationClass())) {
-            }
-            buf = allocBuf(ce, stringData, true);
-          }
-        }
-        throw new IOException("Can not encode data");
+      public StringAndVimSelection(byte type, String data)
+      {
+        super(data);
+        this.type = type;
       }
-      return super.getTransferData(flavor);
-    }
 
-    @Override
-    public boolean isDataFlavorSupported(DataFlavor flavor)
-    {
-      if(VIM_CLIPBOARD.equals(flavor.getHumanPresentableName()))
-        return true;
-      return super.isDataFlavorSupported(flavor);
-    }
+      private ByteBuffer allocBuf(CharsetEncoder ce, String stringData, boolean max)
+      {
+        int nData = max
+                    ? (int)Math.ceil((ce.averageBytesPerChar() + .1) * stringData.length())
+                    : (int)Math.ceil(ce.maxBytesPerChar() * stringData.length()) + 10;
+        return ByteBuffer.allocate(1 + UTF8.length() + 1 + nData);
+      }
 
-    @Override
-    public DataFlavor[] getTransferDataFlavors()
-    {
-      DataFlavor[] fs = super.getTransferDataFlavors();
-      final int nVim = 2;
-      DataFlavor[] result = new DataFlavor[fs.length + nVim];
-      result[0] = VimClipboardByteArray;
-      result[1] = VimClipboardByteBuffer;
-      System.arraycopy(fs, 0, result, nVim, fs.length);
-      return result;
-    }
-    }
+      @Override
+      public Object getTransferData(DataFlavor flavor)
+      throws UnsupportedFlavorException, IOException
+      {
+        dbg.println(CONFIG, () -> sf("Ops: getTransferData: %s: isVim %b: name %s: %s",
+                    JviClipboard.this, VIM_CLIPBOARD.equals(flavor.getHumanPresentableName()),
+                    flavor.getHumanPresentableName(), flavor));
+        if(VIM_CLIPBOARD.equals(flavor.getHumanPresentableName())) {
+          String stringData = (String)super.getTransferData(DataFlavor.stringFlavor);
+          CharsetEncoder ce = Charset.forName(UTF8).newEncoder();
+          ByteBuffer buf = allocBuf(ce, stringData, false);
+          for(int i = 0; i < 2; i++) {
+            buf.put(type);
+            buf.put(UTF8.getBytes(UTF8));
+            buf.put((byte)0);
+            CoderResult rc = ce.encode(CharBuffer.wrap(stringData), buf, true);
+            if(!rc.isError()) {
+              if(ByteBuffer.class.equals(flavor.getRepresentationClass())) {
+                // return this as read only
+                buf.limit(buf.position());
+                buf.rewind();
+                return buf.asReadOnlyBuffer();
+              } else if(byte[].class.equals(flavor.getRepresentationClass())) {
+                // create and return a byte array
+                if(buf.hasArray()) {
+                  byte[] b = new byte[buf.position()];
+                  buf.rewind();
+                  buf.get(b);
+                  return b;
+                } else
+                  break; // impossible
+              }
+            }
+            dbg.println(INFO, () -> sf("Ops: getTransferData: RETRY bigger buf "));
+            if(i == 0 && rc.isOverflow()) { // over first time through, try again.
+              if(ByteBuffer.class.equals(flavor.getRepresentationClass())) {
+              }
+              buf = allocBuf(ce, stringData, true);
+            }
+          }
+          throw new IOException("Can not encode data");
+        }
+        return super.getTransferData(flavor);
+      }
+
+      @Override
+      public boolean isDataFlavorSupported(DataFlavor flavor)
+      {
+        if(VIM_CLIPBOARD.equals(flavor.getHumanPresentableName()))
+          return true;
+        return super.isDataFlavorSupported(flavor);
+      }
+
+      @Override
+      public DataFlavor[] getTransferDataFlavors()
+      {
+        DataFlavor[] fs = super.getTransferDataFlavors();
+        final int nVim = 2;
+        DataFlavor[] result = new DataFlavor[fs.length + nVim];
+        result[0] = VimClipboardByteArray;
+        result[1] = VimClipboardByteBuffer;
+        System.arraycopy(fs, 0, result, nVim, fs.length);
+        return result;
+      }
+      } // END CLASS StringAndVimSelection
+    } // END ENUM JviClipboard
 
     // not public until jdk-13
     static ByteBuffer sliceSim(ByteBuffer buf, int index, int length)

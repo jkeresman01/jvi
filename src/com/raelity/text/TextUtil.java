@@ -21,11 +21,9 @@
 package com.raelity.text;
 
 import java.text.CharacterIterator;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.StringTokenizer;
+import java.util.Set;
 
 import javax.swing.text.Segment;
 
@@ -38,6 +36,20 @@ public class TextUtil {
 
     public static String sf(String fmt, Object... args) {
         return args.length == 0 ? fmt : String.format(fmt, args);
+    }
+
+    public static String toString(Set<?> set)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append('[');
+        int i = 0;
+        for(Object object : set) {
+            sb.append(object.toString()).append(',');
+            if(++i >= 5)
+                break;
+        }
+        sb.append(']');
+        return sb.toString();
     }
     
     /** Split a string into a list of words. White space,
@@ -86,14 +98,17 @@ public class TextUtil {
     public static String toString(CharacterIterator ci, int index, int len) {
         int i0 = ci.getBeginIndex();
         int i1 = ci.getEndIndex();
+        int initidx = ci.getIndex();
         if(ci instanceof Segment) {
             Segment seg = (Segment)ci;
             return new String(seg.array, index, len);
         } else {
             StringBuilder sb = new StringBuilder();
             for(char c = ci.setIndex(index);
-                    ci.getIndex() < index + len; c = ci.next())
+                    c != CharacterIterator.DONE
+                    && ci.getIndex() < index + len; c = ci.next())
                 sb.append(c);
+            ci.setIndex(initidx);
             return sb.toString();
         }
     }

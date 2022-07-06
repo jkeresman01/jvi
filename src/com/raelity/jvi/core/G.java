@@ -250,6 +250,7 @@ public class G implements ViOptionBag
     static DebugOption dbgFonts;
     static DebugOption dbgMarks;
     static DebugOption dbgBeep;
+    static DebugOption dbgOps;
 
     // not really a "DebugOption" but has similar output API
     public static final AlwaysOnDebugOption dbg = new AlwaysOnDebugOption();
@@ -439,10 +440,4 @@ public class G implements ViOptionBag
     static boolean isCursorXorBug;
 
     public static final boolean False = false;
-
-    // clipboard related, derives from p_cb
-    static boolean clip_unnamed;
-    static boolean clip_unnamed_plus;
-    static final boolean clip_autoselect = false;
-
 } // end com.raelity.jvi.G
