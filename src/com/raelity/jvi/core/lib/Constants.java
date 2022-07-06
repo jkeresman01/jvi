@@ -353,7 +353,7 @@ public interface Constants {
 
     public enum CB {
         UNNAMED("unnamed"),
-        UNNAMEDPLUS("unnamedplus");
+        UNNAMED_PLUS("unnamedplus");
 
         private final String opt;
         private CB(String opt) {

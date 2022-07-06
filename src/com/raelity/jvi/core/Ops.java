@@ -677,10 +677,6 @@ public class Ops
     // When clipboard is not available, use register 0 instead of '*'/'+'
     else if(isValidCb(name2Cb(regname)))
       i = (char)name2CbIdx(regname);
-    // } else if (clipboard_available && regname == '*') {
-    //   i = CLIPBOARD_REGISTER;
-    // } else if (clipboard_available && regname == '*') {
-    //   i = SELECTION_REGISTER;
     else		/* not 0-9, a-z, A-Z or '-': use register 0 */
       i = 0;
     y_current = y_regs.get(i);
@@ -965,10 +961,16 @@ private static int put_in_typebuf(String s, boolean colon)
   {
     if(rp == 0 && !clip_unnamed_union.isEmpty())
     {
-      // simplified from vim9 (I hope)
+      //// simplified from vim9 (I hope)
+      //if(!clip_unnamed.isEmpty())
+      //  rp = (clip_unnamed_union.contains(CB.UNNAMEDPLUS) && clip_plus.avail)
+      //       ? '+' : '*';
       if(!clip_unnamed.isEmpty())
-        rp = (clip_unnamed_union.contains(CB.UNNAMEDPLUS) && clip_plus.avail)
-             ? '+' : '*';
+        rp = clip_unnamed.contains(CB.UNNAMED_PLUS) && clip_plus.avail
+                ? '+' : '*';
+      else
+        rp = clip_unnamed_saved.contains(CB.UNNAMED_PLUS) && clip_plus.avail
+                ? '+' : '*';
     }
     if(isCbName(rp) && !isValidCb(name2Cb(rp)))
       rp = 0;
@@ -2002,7 +2004,8 @@ private static int put_in_typebuf(String s, boolean colon)
    *
    * @return FAIL for failure, OK otherwise
    */
-  public static int op_yank(OPARG oap, boolean deleting, boolean mess) {
+  public static int op_yank(OPARG oap, boolean deleting, boolean mess)
+  {
     int		y_idx = 0;		// index in y_array[]
     Yankreg		curr;		// copy of y_current
     // char_u		**new_ptr;
@@ -2168,12 +2171,12 @@ private static int put_in_typebuf(String s, boolean colon)
 
     // If we were yanking to the '+' register, send result to selection.
     // Also copy to the '*' register, in case auto-select is off.  But not when
-    // 'clipboard' has "unnamedplus" and not "unnamed".
-    // I THINK THERE'S A MISSING !deleting
+    // 'clipboard' has "unnamedplus" and not "unnamed"; and not when
+    // deleting and both "unnamedplus" and "unnamed".
     if(clip_plus.avail
             && (isPlusRegister(curr)
                 || (!deleting && oap.regname == 0
-                    && clip_unnamed_union.contains(CB.UNNAMEDPLUS))))
+                    && clip_unnamed_union.contains(CB.UNNAMED_PLUS))))
     {
       if(!isPlusRegister(curr))
         copy_yank_reg(y_regs.get(PLUS_REGISTER));
@@ -2181,8 +2184,9 @@ private static int put_in_typebuf(String s, boolean colon)
 
       if(!clip_autoselect_star
               && !clip_autoselect_plus
-              && !(clip_unnamed_union.contains(CB.UNNAMEDPLUS)
+              && !(clip_unnamed_union.contains(CB.UNNAMED_PLUS)
                   && clip_unnamed_union.size() == 1)
+              && !(deleting && clip_unnamed_union.equals(unnamed_all))
               && !did_star
               && isPlusRegister(curr)) {
         copy_yank_reg(y_regs.get(STAR_REGISTER));
@@ -3412,12 +3416,11 @@ op_do_addsub(char command, int Prenum1)
   //
   // Clipboard stuff
   //
-  static EnumSet<CB> unnamed_only = EnumSet.of(CB.UNNAMED, CB.UNNAMEDPLUS);
   static {
     OptionEvent.getEventBus().register(new Object() {
       @Subscribe public void parseClipboardOption(OptionEvent.Initialized ev) {
         clip_unnamed.clear();
-        clip_unnamed.addAll(Sets.intersection(G.p_cb, unnamed_only));
+        clip_unnamed.addAll(Sets.intersection(G.p_cb, unnamed_all));
         dbg.println(CONFIG, () -> sf("ClipOption: clip_unnamed: %s", clip_unnamed));
       }
       @Subscribe public void checkClipboardOption(OptionEvent.Global ev) {
@@ -3430,6 +3433,7 @@ op_do_addsub(char command, int Prenum1)
   static final JviClipboard clip_star = JviClipboard.STAR;
   static final JviClipboard clip_plus = JviClipboard.PLUS;
 
+  static EnumSet<CB> unnamed_all = EnumSet.of(CB.UNNAMED, CB.UNNAMED_PLUS);
   private static final Set<CB> clip_unnamed = EnumSet.noneOf(CB.class);
   private static final Set<CB> clip_unnamed_saved = EnumSet.noneOf(CB.class);
   private static final Set<CB> clip_unnamed_union
@@ -3442,20 +3446,20 @@ op_do_addsub(char command, int Prenum1)
   private static final String UTF8 = "utf-8";
 
   static public boolean cbOptHasUnnamed() {
-    return clip_unnamed.contains(CB.UNNAMED) || clip_unnamed.contains(CB.UNNAMEDPLUS);
+    return clip_unnamed.contains(CB.UNNAMED) || clip_unnamed.contains(CB.UNNAMED_PLUS);
 
   }
 
   static public boolean isUnnamed(char name)
   {
     return name == '*' && clip_unnamed.contains(CB.UNNAMED)
-            || name == '+' && clip_unnamed.contains(CB.UNNAMEDPLUS);
+            || name == '+' && clip_unnamed.contains(CB.UNNAMED_PLUS);
   }
 
   static public boolean isUnnamedOrUnnamedSaved()
   {
     return clip_unnamed_union.contains(CB.UNNAMED)
-            || clip_unnamed_union.contains(CB.UNNAMEDPLUS);
+            || clip_unnamed_union.contains(CB.UNNAMED_PLUS);
   }
 
   static void may_set_selection()
