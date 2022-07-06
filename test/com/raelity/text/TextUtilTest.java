@@ -100,4 +100,40 @@ public void testTokens()
     System.err.println("done: " + result);
     // TODO review the generated test code and remove the default call to fail.
 }
+
+@Test
+@SuppressWarnings("UseOfSystemOutOrSystemErr")
+public void testTokens_2args()
+{
+    System.out.println("tokens_2args");
+    List<String> expResult;
+    List<String> result;
+    expResult = List.of("one", "two", "three");
+    result = TextUtil.tokens("one, two three", "[,\\s]+");
+    assertEquals(expResult, result);
+
+    result = TextUtil.tokens(", \n", "[,\\s]+");
+    assertEquals(List.of(), result);
+
+    result = TextUtil.tokens("one,\ntwo,\nthree", "[,\\s]+");
+    assertEquals(expResult, result);
+
+    result = TextUtil.tokens("\none\ntwo\nthree\n", "[,\\s]+");
+    assertEquals(expResult, result);
+
+    result = TextUtil.tokens("one", "[,\\s]+");
+    assertEquals(List.of("one"), result);
+
+    result = TextUtil.tokens(",one", "[,\\s]+");
+    assertEquals(List.of("one"), result);
+
+    result = TextUtil.tokens("one,", "[,\\s]+");
+    assertEquals(List.of("one"), result);
+
+    result = TextUtil.tokens(" ,\n one  \n,  two  \n  three , \n  ", "[,\\s]+");
+    assertEquals(expResult, result);
+
+    System.err.println("done: " + result);
+    // TODO review the generated test code and remove the default call to fail.
+}
 }

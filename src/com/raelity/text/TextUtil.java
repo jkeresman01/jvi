@@ -53,31 +53,29 @@ public class TextUtil {
     }
     
     /** Split a string into a list of words. White space,
-     * '\s+', delimets the words. A blank string return
-     * and empty list.
+     * '\s+', delimets the words.
+     * A blank string returns and empty list.
+     * The list may be empty, but no element is empty.
      */
     public static List<String> tokens(String s) {
+        return tokens(s, "\\s+");
+    }
+    
+    /** Split a string into a list of words. using <i>separarators</i>
+     * to delineate the words.
+     * A blank string, or a string with only separators, returns and empty list.
+     * The list may be empty, but no element is empty.
+     */
+    public static List<String> tokens(String s, String separators) {
         //return s.isBlank()?List.copyOf():Arrays.asList(s.trim().split("\\s+"));
 
         // Do it this slightly more complicated way,
         // so there's only one expression for what is a blank.
-        String[] split = s.split("\\s+");
+        String[] split = s.split(separators);
         if(split.length > 0 && split[0].isEmpty())
             split = Arrays.copyOfRange(split, 1, split.length);
         return Arrays.asList(split);
     }
-    
-    // /** Split a string into a vector of words, using <i>separarators</i>
-    //  * to delineate the words.
-    //  */
-    // public static List<String> tokens(String s, String separators) {
-    //     List<String> word = new ArrayList<>();
-    //     StringTokenizer parse = new StringTokenizer(s, separators);
-    //     while(parse.hasMoreElements()) {
-    //         word.add(parse.nextToken());
-    //     }
-    //     return word;
-    // }
     
     /** Return a String of the characters from getBeginIndex/getEndIndex */
     public static String toString(CharacterIterator ci) {

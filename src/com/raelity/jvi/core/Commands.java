@@ -31,6 +31,7 @@ import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.lib.AbbrevLookup;
 import com.raelity.jvi.core.lib.CcFlag;
 import com.raelity.jvi.core.lib.ColonCommandItem;
+import com.raelity.text.TextUtil;
 
 /**
  * Data structures for defining and registering colon commands.
@@ -310,9 +311,7 @@ private Commands()
     public List<String> getArgsRaw()
     {
         if(argsRaw == null) {
-            String cmdlineargs = commandLineRaw.substring(iArgString).trim();
-            argsRaw = cmdlineargs.isBlank() ? Collections.emptyList()
-                          : Arrays.asList(cmdlineargs.split("\\s+"));
+            argsRaw = TextUtil.tokens(commandLineRaw.substring(iArgString));
         }
         return Collections.unmodifiableList(argsRaw);
     }

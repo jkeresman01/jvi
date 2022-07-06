@@ -24,6 +24,7 @@ import java.lang.ref.WeakReference;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,6 +32,8 @@ import java.util.logging.Logger;
 import com.raelity.jvi.core.Options;
 
 import org.netbeans.api.annotations.common.NonNull;
+
+import com.raelity.text.TextUtil;
 
 /**
  *
@@ -51,6 +54,16 @@ extends Option<EnumSet<S>>
               valid != null ? valid : new DefaultEnumSetValidator<S>(key));
         this.enumType = enumType;
         super.initialize();
+        clean();
+    }
+
+    private void clean()
+    {
+        if(Boolean.FALSE) {
+            initialize();
+            getValueFromString("");
+            getValueAsString(null);
+        }
     }
 
     @Override
@@ -88,7 +101,7 @@ extends Option<EnumSet<S>>
     {
         Map<String, S> map = getNameEnumMap();
         EnumSet<S> set = EnumSet.noneOf(enumType);
-        String[] vals = input.split("[,\\s]+");
+        List<String>vals = TextUtil.tokens(input, "[,\\s]+");
         for(String s : vals) {
             S e = map.get(s);
             if(e != null)
@@ -101,11 +114,11 @@ extends Option<EnumSet<S>>
         return set;
     }
 
-    public static String encode(EnumSet set)
+    public static String encode(EnumSet<?> set)
     {
         StringBuilder sb = new StringBuilder();
 
-        for(Iterator it = set.iterator(); it.hasNext();) {
+        for(Iterator<?> it = set.iterator(); it.hasNext();) {
             Object e = it.next();
             sb.append(e.toString());
             if(it.hasNext())
@@ -117,7 +130,7 @@ extends Option<EnumSet<S>>
 
     private String[] getAllStringValues()
     {
-        Enum[] eVals = getAvailableValues();
+        Enum<?>[] eVals = getAvailableValues();
         String[] sVals = new String[eVals.length];
 
         for(int i = 0; i < eVals.length; i++) {
@@ -126,10 +139,10 @@ extends Option<EnumSet<S>>
         return sVals;
     }
 
-    public Enum[] getAvailableValues()
+    public Enum<?>[] getAvailableValues()
     {
         EnumSet<S> set = EnumSet.allOf(enumType);
-        Enum[] vals = new Enum[set.size()];
+        Enum<?>[] vals = new Enum<?>[set.size()];
         int i = 0;
         for(Object e : set) {
             vals[i++] = (Enum)e;
@@ -193,9 +206,9 @@ extends Option<EnumSet<S>>
                             + opt.getClass().getSimpleName(), val);
             } else if(val instanceof String) {
                 Map<String, S> map = esOpt.getNameEnumMap();
-                String[] vals = ((String)val).split("[,\\s]+");
+                List<String>vals = TextUtil.tokens((String)val, "[,\\s]+");
                 for(String s : vals) {
-                    Enum e = map.get(s);
+                    Enum<?> e = map.get(s);
                     if(e == null) {
                         reportPropertyVetoException(
                                 "Invalid value: " + s, val);
