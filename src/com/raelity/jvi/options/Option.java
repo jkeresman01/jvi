@@ -109,7 +109,7 @@ public abstract class Option<T> {
     void setValue(T newValue)
     {
         syncSetValue(newValue);
-        OptUtil.qRun();
+        OptionEvent.qRun();
     }
 
     private synchronized void syncSetValue(T newValue)
@@ -121,16 +121,16 @@ public abstract class Option<T> {
             return;
         }
         value = newValue;
-        OptUtil.qPut(new OptUtil.OptionChangeOptionEvent(name, oldValue, newValue));
+        OptionEvent.qPut(new OptionEvent.Option(name, oldValue, newValue));
         propogate();
     }
 
     // NOTE: the synchro lock should be held before invoking this method.
     private void propogate() {
-        OptUtil.qPut(OptUtil.intializeGlobalOptionMemoryValue(this));
+        OptionEvent.qPut(OptUtil.intializeGlobalOptionMemoryValue(this));
 	if(fPropogateToPref) {
             String sval = getValueAsString(value); // capture value
-            OptUtil.qPut(() -> OptUtil.getPrefs().put(name, sval));
+            OptionEvent.qPut(() -> OptUtil.getPrefs().put(name, sval));
         }
     }
 

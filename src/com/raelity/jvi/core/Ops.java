@@ -3414,13 +3414,13 @@ op_do_addsub(char command, int Prenum1)
   //
   static EnumSet<CB> unnamed_only = EnumSet.of(CB.UNNAMED, CB.UNNAMEDPLUS);
   static {
-    OptUtil.getEventBus().register(new Object() {
-      @Subscribe public void parseClipboardOption(OptUtil.OptionsInitializedEvent ev) {
+    OptionEvent.getEventBus().register(new Object() {
+      @Subscribe public void parseClipboardOption(OptionEvent.Initialized ev) {
         clip_unnamed.clear();
         clip_unnamed.addAll(Sets.intersection(G.p_cb, unnamed_only));
         dbg.println(CONFIG, () -> sf("ClipOption: clip_unnamed: %s", clip_unnamed));
       }
-      @Subscribe public void checkClipboardOption(OptUtil.OptionChangeGlobalEvent ev) {
+      @Subscribe public void checkClipboardOption(OptionEvent.Global ev) {
         if(Options.clipboard.equals(ev.getName()))
           parseClipboardOption(null);
       }

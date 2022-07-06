@@ -23,9 +23,12 @@ import java.awt.Component;
 
 import com.google.common.eventbus.EventBus;
 
+import com.raelity.jvi.core.*;
 import com.raelity.jvi.core.CommandHistory.HistoryContext;
-import com.raelity.jvi.manager.*;
+import com.raelity.jvi.manager.ViEvent.ReportPostEventBus;
 import com.raelity.text.TextUtil;
+
+import static java.util.logging.Level.CONFIG;
 
 import static com.raelity.text.TextUtil.sf;
 
@@ -104,7 +107,14 @@ public interface ViCmdEntry {
      */
 
     static final EventBus eventBus
-            = new EventBus(new ViEvent.ExHandler("ViCmdEntry.Event: handleException:"));
+            = new ReportPostEventBus(
+                    "ViCmdEntry.Event: handleException:",
+                    (Object ev) -> {
+                        G.dbgSearch().printf(CONFIG, () ->
+                            sf("FIRE:CmdEntry: %s\n", ev.toString()));
+                            return true;
+                    }
+            );
     static EventBus getEventBus()
     {
         return eventBus;

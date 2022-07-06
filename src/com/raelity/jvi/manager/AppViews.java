@@ -114,8 +114,8 @@ public enum AppViews
         }, EnumSet.of(CcFlag.DBG));
         getLocation(null); // shut up the not-used warning
 
-        OptUtil.getEventBus().register(new Object() {
-            @Subscribe public void closedfiles(OptUtil.OptionChangeGlobalEvent ev) {
+        OptionEvent.getEventBus().register(new Object() {
+            @Subscribe public void closedfiles(OptionEvent.Global ev) {
                 if(Options.closedFiles.equals(ev.getName()))
                     trimClosedMRU();
             } });

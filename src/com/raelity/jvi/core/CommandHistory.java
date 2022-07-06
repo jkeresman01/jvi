@@ -91,8 +91,8 @@ private static final Wrap<PreferencesImportMonitor> pCommandsImportCheck = new W
 private static void init() {
     Commands.register("his", "history", new History(),
                            EnumSet.of(CcFlag.NO_PARSE));
-    OptUtil.getEventBus().register(new Object() {
-        @Subscribe public void historyOption(OptUtil.OptionChangeGlobalEvent ev) {
+    OptionEvent.getEventBus().register(new Object() {
+        @Subscribe public void historyOption(OptionEvent.Global ev) {
             if(Options.history.equals(ev.getName()))
                 handleHistorySizeChange();
         } });

@@ -32,16 +32,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.Preferences;
-
-import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.SubscriberExceptionHandler;
 
 import com.raelity.jvi.core.*;
 import com.raelity.jvi.core.Options.Category;
@@ -49,7 +43,6 @@ import com.raelity.jvi.manager.*;
 
 import static java.util.logging.Level.*;
 
-import static com.raelity.jvi.manager.ViManager.runInDispatch;
 import static com.raelity.text.TextUtil.sf;
 
 /**
@@ -63,7 +56,6 @@ public class OptUtil {
     private static Preferences prefs;
     private static final Map<String,Option<?>> optionsMap = new HashMap<>();
     /** use this to avoid firing event while holding Option synchro lock. */
-    private static final Queue<Runnable> toRun = new ConcurrentLinkedQueue<>();
 
     private static final Map<Category, List<String>> categoryLists
             = new EnumMap<>(Category.class);
@@ -107,36 +99,6 @@ public class OptUtil {
     {
         return prefs;
     }
-
-  public static void firePropertyChange(OptionChangeEvent ev)
-  {
-    getEventBus().post(ev);
-  }
-
-  static void qPut(Runnable r)
-  {
-    if(started && r != null)
-      toRun.offer(r);
-  }
-
-  static void qPut(OptionChangeEvent ev)
-  {
-    if(started && ev != null)
-      qPut(() -> firePropertyChange(ev));
-  }
-
-  static void qRun()
-  {
-    Runnable r;
-    while(toRun.peek() != null) {
-      synchronized(toRun) {
-        r = toRun.poll();
-        if(r != null)
-          runInDispatch(false, r);
-      }
-    }
-  }
-
 
   static public StringOption createStringOption(String name,
                                                  String defaultValue) {
@@ -342,7 +304,7 @@ public class OptUtil {
     }
   }
 
-  static OptionChangeEvent intializeGlobalOptionMemoryValue(Option<?> opt)
+  static OptionEvent.Change intializeGlobalOptionMemoryValue(Option<?> opt)
   {
     VimOption vopt = VimOption.get(opt.getName());
     if(vopt == null || !vopt.isGlobal())
@@ -362,7 +324,7 @@ public class OptUtil {
 
       G.dbgOptions().printf(() ->
               sf("Init G.%s to '%s'\n", vopt.getVarName(), opt.getValue()));
-      return new OptionChangeGlobalEvent(opt.getName(), oldValue, opt.getValue());
+      return new OptionEvent.Global(opt.getName(), oldValue, opt.getValue());
     } catch(IllegalArgumentException | IllegalAccessException
             | NoSuchFieldException | SecurityException ex) {
       Logger.getLogger(OptUtil.class.getName()).log(SEVERE, null, ex);
@@ -464,140 +426,11 @@ public class OptUtil {
         opt.castSetValue(ch.newVal);
         
         // This is probably not used
-        getEventBus().post(new OptionChangeDialogEvent(key, ch.oldVal, ch.newVal));
+        OptionEvent.getEventBus().post(new OptionEvent.Dialog(key, ch.oldVal, ch.newVal));
       }
       clear();
     }
     } // END CLASS OptionChangeHandler
-
-  ////////////////////////////////////////////////////////////////////////
-  //
-  // Events about Options
-  //
-
-    private static class ReportPostEventBus extends EventBus
-    {
-    private final Consumer<Object> reportPost;
-    
-    public ReportPostEventBus(SubscriberExceptionHandler exceptionHandler,
-                              Consumer<Object> reportPost)
-    {
-      super(exceptionHandler);
-      this.reportPost = reportPost;
-    }
-    
-    @Override
-    public void post(Object ev)
-    {
-      if(!started)
-        return;
-      reportPost.accept(ev);
-      runInDispatch(false, () -> super.post(ev));
-    }
-    } // END CLASS ReportPostEventBus
-
-  private static EventBus bus;
-  /** All events on this bus are dispatched on the EDT. */
-  public static EventBus getEventBus()
-  {
-    if(bus == null)
-      bus = new ReportPostEventBus(
-              new ViEvent.ExHandler("OptionEvent: handleException:"),
-              (Object ev) -> G.dbgOptions().printf(CONFIG, () ->
-                      sf("FIRE:Option: %s\n", ev.toString())));
-    return bus;
-  }
-
-  // TODO: event for buf/win local? See SetColonCommand
-
-    /** not used if pcs.fire not used.
-     * Maybe should call it apply/Change/prefs or something; see applyChanges. */
-    static public class OptionChangeDialogEvent extends AbstractOptionChangeEvent
-    {
-    public OptionChangeDialogEvent(String name, Object oldValue, Object newValue)
-    {
-      super(name, oldValue, newValue);
-    }
-    } // END CLASS OptionChangeDialogEvent
-
-    /** option is changed in memory, G.xxx.
-     * <p>
-     * ?????????????????????
-     * What about non global options, win/buf, see SetColonCommand.
-     * 
-     */
-    static public class OptionChangeGlobalEvent extends AbstractOptionChangeEvent
-    {
-    public OptionChangeGlobalEvent(String name, Object oldValue, Object newValue)
-    {
-      super(name, oldValue, newValue);
-    }
-    } // END CLASS OptionChangeSetEvent
-
-    /** {@literal Option<>} changed value. */
-    static public class OptionChangeOptionEvent extends AbstractOptionChangeEvent
-    {
-    public OptionChangeOptionEvent(String name, Object oldValue, Object newValue)
-    {
-      super(name, oldValue, newValue);
-    }
-    } // END CLASS OptionChangeSetEvent
-
-    static public class OptionsInitializedEvent implements OptionChangeEvent
-    {
-    @Override
-    public String toString()
-    {
-      return sf("Option{%s:}", this.getClass().getSimpleName());
-    }
-    } // END CLASS OptionsInitializedEvent 
-
-    /** Tag for option related events. */
-    static public interface OptionChangeEvent
-    {
-    }
-
-    /** base class for option change events */
-    public static class AbstractOptionChangeEvent implements OptionChangeEvent
-    {
-    private final String name;
-    private final Object oldValue;
-    private final Object newValue;
-    
-    public AbstractOptionChangeEvent(String name, Object oldValue, Object newValue)
-    {
-      this.name = name;
-      this.oldValue = oldValue;
-      this.newValue = newValue;
-    }
-    
-    public String getName()
-    {
-      return name;
-    }
-    
-    public Object getOldValue()
-    {
-      return oldValue;
-    }
-    
-    public Object getNewValue()
-    {
-      return newValue;
-    }
-    
-    @Override
-    public String toString()
-    {
-      //return sf("Option{%s: %s: new=%s}",
-      //          this.getClass().getSimpleName(),
-      //          name, newValue);
-      return sf("Option{%s: %s: old=%s, new=%s}",
-                this.getClass().getSimpleName(),
-                name, oldValue, newValue);
-    }
-    
-    } // END CLASS AbstractOptionChangeEvent
 }
 
 // vi: sw=2 et

@@ -130,9 +130,9 @@ abstract public class SimpleTextView extends SwingTextView
         if(didHlInit)
             return;
         didHlInit = true;
-        OptUtil.getEventBus().register(new Object() {
+        OptionEvent.getEventBus().register(new Object() {
             @Subscribe public void highlightOptionsEvents(
-                    OptUtil.OptionChangeOptionEvent ev) {
+                    OptionEvent.Option ev) {
                 // compare to NbOptions
                 boolean searchStuff = false;
                 boolean selectStuff = false;

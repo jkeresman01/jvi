@@ -53,6 +53,7 @@ import com.google.common.eventbus.Subscribe;
 
 import com.raelity.jvi.ViOutputStream.COLOR;
 import com.raelity.jvi.ViOutputStream.FLAGS;
+import com.raelity.jvi.options.*;
 
 import static com.raelity.jvi.options.OptUtil.createBooleanOption;
 import static com.raelity.jvi.options.OptUtil.createColorOption;
@@ -268,7 +269,7 @@ public final class Options {
     return ready;
   }
 
-    private static String space4 = "\u00a0\u00a0\u00a0\u00a0";
+  private static final String space4 = "\u00a0\u00a0\u00a0\u00a0";
 
   private static boolean ready = false;
   private static boolean didInit = false;
@@ -1313,8 +1314,8 @@ public final class Options {
   private static boolean nohDisableHighlight;
   
   static {
-    OptUtil.getEventBus().register(new Object() {
-      @Subscribe public void searchOptions(OptUtil.OptionChangeGlobalEvent ev) {
+    OptionEvent.getEventBus().register(new Object() {
+      @Subscribe public void searchOptions(OptionEvent.Global ev) {
         switch(ev.getName()) {
         case Options.highlightSearch:
         case Options.ignoreCase:

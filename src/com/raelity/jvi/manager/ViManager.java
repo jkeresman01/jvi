@@ -227,8 +227,8 @@ final public class ViManager
         ViManager.factory = factory;
         fixupPreferences();
 
-        OptUtil.getEventBus().register(new Object() {
-            @Subscribe public void weHaveOptions(OptUtil.OptionsInitializedEvent ev) {
+        OptionEvent.getEventBus().register(new Object() {
+            @Subscribe public void weHaveOptions(OptionEvent.Initialized ev) {
                 setupStartupOnlyOption();
             } });
 
@@ -300,7 +300,7 @@ final public class ViManager
                           new DebugDebug(), null);
 
 
-        OptUtil.firePropertyChange(new OptUtil.OptionsInitializedEvent());
+        OptionEvent.firePropertyChange(new OptionEvent.Initialized());
         firePropertyChange(P_BOOT, null, null);
 
         // Add the vim clipboards

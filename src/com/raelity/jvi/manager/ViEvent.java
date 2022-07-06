@@ -20,6 +20,7 @@
 package com.raelity.jvi.manager;
 
 import java.beans.PropertyChangeEvent;
+import java.util.function.Function;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.SubscriberExceptionContext;
@@ -67,6 +68,56 @@ public class ViEvent extends PropertyChangeEvent
 {
 private static final EventBus bus = new EventBus(new ExHandler("ViEvent: handleException:"));
 private static final String esource = "ViEventSource";
+
+
+    /**
+     * An event bus that installs an exception handler and takes a function
+     * that can stop the post and/or report the event about to be posted.
+     * By default event are dispatched in the EventQueue, there is an alternate
+     * constructor to dispatch in the thread that does the post.
+     */
+    public static class ReportPostEventBus extends EventBus
+    {
+    private final Function<Object, Boolean> reportPost;
+    private final boolean useEDT;
+    
+    /**
+     * Create an event bus; reportPost returns true to post the event
+     * and may output a message that the event is being posted.
+     * Events are posted in the EDT
+     * @param tag used when reporting an exception
+     * @param reportPost controls the posting, may output msg
+     */
+    public ReportPostEventBus(String tag, Function<Object, Boolean> reportPost)
+    {
+        this(tag, reportPost, true);
+    }
+    
+    /**
+     * 
+     * @param tag used when reporting an exception
+     * @param reportPost controls the posting, may output msg
+     * @param useEDT if true, events are posted in the EDT
+     */
+    public ReportPostEventBus(String tag, Function<Object, Boolean> reportPost,
+                              boolean useEDT)
+    {
+        super(new ViEvent.ExHandler(tag));
+        this.reportPost = reportPost;
+        this.useEDT = useEDT;
+    }
+    
+    @Override
+    public void post(Object ev)
+    {
+      if(!reportPost.apply(ev))
+          return;
+      if(useEDT)
+          runInDispatch(false, () -> super.post(ev));
+      else
+          super.post(ev);
+    }
+    } // END CLASS ReportPostEventBus
 
     public static class ExHandler implements SubscriberExceptionHandler
     {

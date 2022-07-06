@@ -234,8 +234,9 @@ public class G implements ViOptionBag
     public static DebugOption dbgCoordSkip()
         { return dbgCoordSkip; }
     public static DebugOption dbgFonts()
-            
         { return dbgFonts; }
+    public static DebugOption dbgSearch()
+        { return dbgSearch; }
     //
     static DebugOption dbgEditorActivation;
     static DebugOption dbgCoordSkip;

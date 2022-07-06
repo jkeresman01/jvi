@@ -65,9 +65,8 @@ public class GetChar {
             mappings = Mappings.get();
             typebuf = new TypeBufMultiCharMapping(mappings);
 
-            OptUtil.getEventBus().register(new Object() {
-              @Subscribe public void mapCommandsChange(
-                      OptUtil.OptionChangeOptionEvent ev) {
+            OptionEvent.getEventBus().register(new Object() {
+              @Subscribe public void mapCommandsChange(OptionEvent.Option ev) {
                 if(Options.mapCommands.equals(ev.getName()))
                   reinitMappings();
               }
