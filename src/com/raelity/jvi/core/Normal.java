@@ -83,9 +83,9 @@ import static com.raelity.jvi.manager.ViManager.getFactory;
  * Here is a partial list of changes.
  * </p>
  *
- * <br/>nv_*(): functions called to handle Normal and Visual mode commands.
- * <br/>n_*(): functions called to handle Normal mode commands.
- * <br/>v_*(): functions called to handle Visual mode commands.
+ * <br>nv_*(): functions called to handle Normal and Visual mode commands.
+ * <br>n_*(): functions called to handle Normal mode commands.
+ * <br>v_*(): functions called to handle Visual mode commands.
  */
 
 public class Normal
@@ -94,8 +94,8 @@ public class Normal
 
   // for normal_cmd() use, stuff that was declared static in the function
   static int	opnum = 0;		    /* count before an operator */
-  static int   restart_VIsual_select = 0;
-  static int   old_mapped_len = 0;
+  static int   restart_VIsual_select = 0; // eatme
+  static int   old_mapped_len = 0; // eatme
 
   private static boolean cursorShapeHACK;
   
@@ -186,7 +186,7 @@ public class Normal
           }
         }
       } else {
-        normal_cmd(c, toplevel);
+        normal_cmd(c, oapProcessInputChar, toplevel);
         if(!editBusy && newChunk) {
           willStartNewChunk();
         }
@@ -205,7 +205,9 @@ public class Normal
   }
 
   static public void resetCommand(boolean flush) {
-    oap.clearop();
+    if(Boolean.FALSE)
+      eatme(restart_VIsual_select, old_mapped_len, mapped_len);
+    oapProcessInputChar.clearop();
     newChunk = true;
     willStartNewChunk();
     if(editBusy) {
@@ -233,14 +235,14 @@ public class Normal
    * of normal just before getting a character. Only the stuff with
    * global implications needs to be put here.
    */
-  static void willStartNewChunk() {
+  private static void willStartNewChunk() {
     //
     // If there is an operator pending, then the command we take this time
     // will terminate it. Finish_op tells us to finish the operation before
     // returning this time (unless the operation was cancelled).
     //
     boolean tflag = G.finish_op;
-    G.finish_op = (oap.op_type != OP_NOP);
+    G.finish_op = (oapProcessInputChar.op_type != OP_NOP);
     if (G.finish_op != tflag) {
       ui_cursor_shape();	/* may show different cursor shape */
     }
@@ -248,11 +250,12 @@ public class Normal
     G.State = NORMAL_BUSY;
   }
 
-  static OPARG oap = new OPARG();
-  static CMDARG	    ca; 	   /* command arguments */
-  static boolean    ctrl_w;	   /* got CTRL-W command */
-  static boolean    need_flushbuf; /* need to call out_flush() */
-  static int	    mapped_len;
+  // TODO: ca/oap should not be static, it should only come from ca.
+  private static CMDARG	    caProcessInputChar; /* command arguments */
+  private static final OPARG oapProcessInputChar = new OPARG();
+  private static boolean    ctrl_w;	   /* got CTRL-W command */
+  private static boolean    need_flushbuf; /* need to call out_flush() */
+  private static int	    mapped_len; // eatme
 
   /**
    * normal
@@ -286,20 +289,37 @@ public class Normal
    */
 
   @SuppressWarnings("fallthrough")
-  static public void normal_cmd(char c, boolean toplevel) {
+  static public void normal_cmd(char c, final OPARG oap, boolean toplevel) {
                                         //NEEDSWORK: toplevel NOT USED
 
     update_curswant();	// in vim called just before calling normal_cmd
+    CMDARG ca;
 
-    if(newChunk) {
+    //
+    // ca/oap caProcessInputChar/oapProcessInputChar handling.
+    // The idea is to only use the
+    // processInputChar static values here at the entry to normal,
+    // otherwise the values should be passed around.
+    // There are parts of vim where it dummy's up ca/oa and
+    // calls stuff... Not there yet.
+    //
+    if(!newChunk) {
+      need_flushbuf = add_to_showcmd(c);
+      ca = caProcessInputChar; // THIS IS THE ONLY READ OF caProcessInputChar
+    } else {
+      // This branch is the start of operations as though
+      // normal command is called from main_loop (IIUC);
+      // note the ca = new CMDARG; in vim vim_memset(&ca, 0...
+      CMDARG t = new CMDARG();
+      caProcessInputChar = t;
+      ca = t;
+      ca.oap = oap;
+
       newChunk = false;
       lookForDigit = true;
       G.no_zero_mapping++;
       pickupExtraChar = false;
       firstTimeHere01 = true;
-      ca = new CMDARG();
-      // vim_memset(&ca, 0, sizeof(ca)); cleared when created
-      ca.oap = oap;
 
       ctrl_w = false;
       need_flushbuf = false;
@@ -318,9 +338,9 @@ public class Normal
       old_mapped_len = 0;
 
       /*
-       * If a mapping was started in Visual or Select mode, remember the length
-       * ...... REMOVED, put old_mapped_len = 0 above
-       */
+      * If a mapping was started in Visual or Select mode, remember the length
+      * ...... REMOVED, put old_mapped_len = 0 above
+      */
       switch (c) {
       case NUL:
         c = K_ZERO; break;
@@ -335,10 +355,10 @@ public class Normal
       }
 
       /*
-       * In Visual/Select mode, a few keys are handled in a special way.
-       * ........ REMOVED
-       */
-
+      * In Visual/Select mode, a few keys are handled in a special way.
+      * ........ REMOVED
+      */
+      
       // Don't set need flush for the first char of a command.
       // This will prevent single char commands from being displayed.
       // need_flushbuf = add_to_showcmd(c);
@@ -349,8 +369,6 @@ public class Normal
         // first char of a new command
         add_to_showcmd(c);
       }
-    } else {
-      need_flushbuf = add_to_showcmd(c);
     }
 
 
@@ -1265,11 +1283,15 @@ normal_end: {
           oap.regname = 0;
 
         // If an operation is pending, handle it...
-        do_pending_operator(ca, searchbuff, null,
-                            old_col, false, dont_adjust_op_end);
+        do_pending_operator(ca, old_col, false,
+                            searchbuff, null, dont_adjust_op_end);
       } catch(NotSupportedException e) {
 	clearopbeep(oap);
       }
+
+      /*
+       * Wait when a message is displayed that will be overwritten by the mode
+       * ...... VISUAL MODE stuff for pause about showing message
 
       /*
        * Wait when a message is displayed that will be overwritten by the mode
@@ -1324,22 +1346,19 @@ normal_end: {
 
   static void do_pending_operator(CMDARG cap, int old_col, boolean gui_yank)
         throws NotSupportedException {
-    do_pending_operator(cap, null, null, old_col, gui_yank, true);
+    do_pending_operator(cap, old_col, gui_yank, null, null, true);
   }
   /**
    * Handle an operator after visual mode or when the movement is finished
    */
   @SuppressWarnings("fallthrough")
-  static void do_pending_operator(final CMDARG cap,
-			   StringBuilder searchbuff,
-			   MutableBoolean command_busy,
-			   int old_col,
-			   boolean gui_yank,
-			   boolean dont_adjust_op_end)
+  static void do_pending_operator(final CMDARG cap, int old_col, boolean gui_yank,
+                                  StringBuilder searchbuff,
+                                  MutableBoolean command_busy,
+                                  boolean dont_adjust_op_end)
   throws NotSupportedException
   {
-    //final OPARG	oap = cap.oap;
-    assert oap == cap.oap;
+    final OPARG oap = cap.oap;
 
     ViFPOS	old_cursor;
     boolean	empty_region_error;
@@ -2387,7 +2406,7 @@ normal_end: {
         break;
           
       default:
-	clearopbeep(oap);
+	clearopbeep(cap.oap);
         break;
     }
     if(makeVisible)
@@ -2414,7 +2433,7 @@ normal_end: {
       // may need scroll after expandFold operation,
       // since there may be timing issues, do it in platform code
       G.curwin.foldOperation(foldop, start, end, visual_active);
-      clearop(ca.oap);
+      clearop(cap.oap);
     } else if(hscroll != null) {
       G.curwin.hscroll(hscroll, hdir, cap.count0 != 0 ? cap.count0 : 1);
       G.curwin.w_set_curswant = true;
@@ -2991,7 +3010,7 @@ normal_end: {
             .printf("SEARCH: nv_search_finish: %x\n", (int)cap.nchar);
     if(cap.nchar == K_X_SEARCH_CANCEL) {
       Msg.clearMsg();
-      clearop(oap);
+      clearop(cap.oap);
       ViManager.updateHighlightSearchState();
       return;
     }
@@ -4021,6 +4040,7 @@ nv_brackets(CMDARG cap, int dir)
   @SuppressWarnings("fallthrough")
   static private void nv_g_cmd(CMDARG cap, StringBuilder searchbuff)
   throws NotSupportedException {
+    final OPARG oap = cap.oap;
     ViFPOS tpos;
     int t;
     boolean flag = false;

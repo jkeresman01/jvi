@@ -19,7 +19,6 @@
 
 package com.raelity.text;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.After;

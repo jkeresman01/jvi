@@ -22,7 +22,7 @@ package com.raelity.jvi.core;
 /**
  * Arguments for Normal mode commands.
  */
-class CMDARG implements Cloneable
+class CMDARG // implements Cloneable
 {
   OPARG  oap;		/* Operator arguments */
   char   prechar;	/* prefix character (optional, always 'g') */
@@ -32,21 +32,21 @@ class CMDARG implements Cloneable
   int    count0;	/* count, default 0 */
   int    count1;	/* count, default 1 */
 
-  @Override
-  public CMDARG clone() throws CloneNotSupportedException
-  {
-      CMDARG dest = (CMDARG)super.clone();
-      dest.oap = oap.clone();
-      return dest;
-  }
+  //@Override
+  //public CMDARG clone() throws CloneNotSupportedException
+  //{
+  //    CMDARG dest = (CMDARG)super.clone();
+  //    dest.oap = oap.clone();
+  //    return dest;
+  //}
 
-  public CMDARG copy() {
-      try {
-          return clone();
-      } catch(CloneNotSupportedException ex) {
-      }
-      return null;
-  }
+  //public CMDARG copy() {
+  //    try {
+  //        return clone();
+  //    } catch(CloneNotSupportedException ex) {
+  //    }
+  //    return null;
+  //}
 
     @Override
   public String toString() {
