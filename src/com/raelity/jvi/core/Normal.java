@@ -2689,7 +2689,7 @@ normal_end: {
         // though system probably looks under cursor
         G.curwin.w_cursor.set(G.curwin.w_cursor.getLine(),
                               ptrSeg.getIndex() - ptrSeg.getBeginIndex());
-	G.curwin.jumpDefinition(TextUtil.toString(ptrSeg, ptrSeg.getIndex(), n));
+	G.curwin.jumpDefinition(TextUtil.toString(ptrSeg, n));
         return;
 
       //case 'K':

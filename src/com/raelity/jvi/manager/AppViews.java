@@ -454,7 +454,8 @@ public enum AppViews
 
     /**
      * A convenience method to easily support '%', '#',
-     * '#&lt;digits&gt;', '#-&lt;digits&gt;'; 0 is the current av,
+     * {@literal '#<digits>;'}, {@literal '#-<digits>'};
+     * 0 is the current av,
      * greater than 0 is buffer number, less than 0 is MRU.
      * @param id
      * @return null if not found, else the indicated appview

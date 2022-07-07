@@ -504,6 +504,19 @@ static Commands.ColonEvent parseCommand(String commandLine)
     return parseCommandGuts(commandLine, true);
 }
 
+static String getaltfname(boolean errmsg)
+{
+    ViAppView av = AppViews.getAppView(-1);
+    String fname = "";
+    if(av != null) {
+        Path path = null;
+        path = av.getPath();
+        if(path != null)
+            fname = VimPath.getVimDisplayPath(path);
+    }
+    return fname;
+}
+
 static StringBuilder expand_filename(StringSegment cmd,
                                      ColonCommandItem cci, StringBuilder sb)
 {

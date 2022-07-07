@@ -184,7 +184,7 @@ private static Path getVimPath(Path _path)
     return path;
 }
 
-static Path getVimPathTesting(Path _path)
+public static Path getVimPathTesting(Path _path)
 {
     // TODO: make this an absolute path
     return getVimPath(_path);
@@ -195,8 +195,7 @@ private static Path getVimPath(String s)
     return getVimPath(getCheckPathFS(s));
 }
 
-/** should be private, but need to convert tests */
-static Path getVimPathTesting(String s)
+public static Path getVimPathTesting(String s)
 {
     return getVimPath(s);
 }
@@ -204,13 +203,13 @@ static Path getVimPathTesting(String s)
 /** return absolute path, handle ~/... */
 public static Path getPath(String s)
 {
-    return getAbsolutePath(getVimPathTesting(getCheckPathFS(s)));
+    return getAbsolutePath(getVimPath(getCheckPathFS(s)));
 }
 
 /** name may start with tilde */
 public static String getVimDisplayPath(Path path)
 {
-    return getVimPathTesting(path).toString();
+    return getVimPath(path).toString();
 }
 
 /** 

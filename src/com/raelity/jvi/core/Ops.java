@@ -63,10 +63,12 @@ import com.raelity.jvi.lib.Wrap;
 import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
 import com.raelity.text.MySegment;
+import com.raelity.text.TextUtil;
 
 import static java.util.logging.Level.*;
 
 import static com.raelity.jvi.core.Edit.*;
+import static com.raelity.jvi.core.ExCommands.getaltfname;
 import static com.raelity.jvi.core.GetChar.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Normal.*;
@@ -745,9 +747,10 @@ public class Ops
       Yankreg reg = get_register(regname, true);
       if (reg.y_size != 0 && reg.y_array != null)
         val = reg.getAll();
-    } else if ("%/:.".indexOf(regname) >= 0) {
+    } else {
+      //else if ("%/:.".indexOf(regname) >= 0) {
       Wrap<String> pArg = new Wrap<>();
-      if(get_spec_reg(regname, pArg, false))
+      if(get_spec_reg(regname, pArg, true))
         val = pArg.getValue();
     }
     return val;
@@ -1095,9 +1098,9 @@ private static int put_in_typebuf(String s, boolean colon)
               argp.setValue(G.curbuf.getFile().getPath());
               return true;
 
-//          case '#':		/* alternate file name */
-//              argp.setValue(getaltfname(errmsg));	/* may give emsg if not set */
-//              return true;
+          case '#':		/* alternate file name */
+              argp.setValue(getaltfname(errmsg));	/* may give emsg if not set */
+              return true;
 
 //  #ifdef WANT_EVAL...
 
@@ -1132,10 +1135,18 @@ private static int put_in_typebuf(String s, boolean colon)
                       = find_ident_under_cursor(mi, regname == CTRL_W
                                      ?  (FIND_IDENT|FIND_STRING) : FIND_STRING);
               cnt = mi.getValue();
-              argp.setValue(cnt > 0 ? ci.toString() : null);
+              argp.setValue(cnt > 0 ? TextUtil.toString(ci, cnt) : null);
               return true;
 
-          case '_':		/* black hole: always empty */
+          case CTRL_L:		// Line under cursor
+              if (!errmsg)
+                  return false;
+              MySegment seg = ml_get_buf(G.curwin.w_buffer,
+                                         G.curwin.w_cursor.getLine());
+              argp.setValue(TextUtil.toString(seg));
+              return true;
+
+          case '_':		// black hole: always empty
               argp.setValue("");
               return true;
       }
@@ -3865,3 +3876,4 @@ op_do_addsub(char command, int Prenum1)
 }
 
 // vi: sw=2 ts=8
+

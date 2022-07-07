@@ -205,8 +205,17 @@ public class Util {
    * having to check for error everywhere).
    */
   static MySegment ml_get(int lnum) {
-    MySegment seg = G.curbuf.getLineSegment(lnum);
-    return seg;
+    return ml_get_buf(G.curbuf, lnum);
+  }
+
+  /**
+   * get a pointer to a (read-only copy of a) line.
+   *
+   * On failure an error message is given and IObuff is returned (to avoid
+   * having to check for error everywhere).
+   */
+  static MySegment ml_get_buf(Buffer buf, int lnum) {
+    return buf.getLineSegment(lnum);
   }
   
   static MySegment ml_get_curline() {

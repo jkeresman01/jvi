@@ -77,34 +77,48 @@ public class TextUtil {
         return Arrays.asList(split);
     }
     
-    /** Return a String of the characters from getBeginIndex/getEndIndex */
+    /**
+     * Return a String of the characters from getBeginIndex/getEndIndex;
+     * ignore a terminating newline.
+     * The argument is assumed to be a single line of text, possibly with
+     * a terminating newline.
+     * A newline may terminate the operation, independent of length.
+     * So a String with a
+     * newline in the middle produces unpredictable results.
+     */
     public static String toString(CharacterIterator ci) {
-        int i0 = ci.getBeginIndex();
-        int i1 = ci.getEndIndex();
-        if(ci instanceof Segment) {
+        int initidx = ci.getIndex();
+        if(ci instanceof MySegment) {
+            int endidx = ci.getEndIndex();
+            if(endidx - initidx <= 0)
+                return "";
             Segment seg = (Segment)ci;
-            return new String(seg.array, i0, i1 - i0);
+            if(seg.array[endidx-1] == '\n')
+                endidx--;
+            return new String(seg.array, initidx, endidx - initidx);
         } else {
             StringBuilder sb = new StringBuilder();
-            for(char c = ci.first(); c != CharacterIterator.DONE; c = ci.next())
+            for(char c = ci.first(); c != '\n' && c != CharacterIterator.DONE; c = ci.next())
                 sb.append(c);
+            ci.setIndex(initidx);
             return sb.toString();
         }
     }
     
-    /** Return a String of the characters of index for len */
-    public static String toString(CharacterIterator ci, int index, int len) {
-        int i0 = ci.getBeginIndex();
-        int i1 = ci.getEndIndex();
+    /** Return a String from the characterIterator;
+     * start at iterators current position, beginIndex,
+     * for the specified length.
+     */
+    public static String toString(CharacterIterator ci, int len) {
         int initidx = ci.getIndex();
         if(ci instanceof Segment) {
             Segment seg = (Segment)ci;
-            return new String(seg.array, index, len);
+            return new String(seg.array, initidx, len);
         } else {
             StringBuilder sb = new StringBuilder();
-            for(char c = ci.setIndex(index);
+            for(char c = ci.setIndex(initidx);
                     c != CharacterIterator.DONE
-                    && ci.getIndex() < index + len; c = ci.next())
+                    && ci.getIndex() < initidx + len; c = ci.next())
                 sb.append(c);
             ci.setIndex(initidx);
             return sb.toString();

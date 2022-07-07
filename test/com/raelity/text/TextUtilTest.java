@@ -19,6 +19,7 @@
 
 package com.raelity.text;
 
+import java.text.StringCharacterIterator;
 import java.util.List;
 
 import org.junit.After;
@@ -58,6 +59,29 @@ public void setUp()
 @After
 public void tearDown()
 {
+}
+
+@Test
+@SuppressWarnings("UseOfSystemOutOrSystemErr")
+public void testtoString_1arg()
+{
+    System.out.println("toString_1arg");
+    String base = "one";
+
+    assertEquals("", TextUtil.toString(new StringCharacterIterator("")));
+    assertEquals("", TextUtil.toString(new StringCharacterIterator("" + "\n")));
+
+    assertEquals(base, TextUtil.toString(new StringCharacterIterator(base)));
+    assertEquals(base, TextUtil.toString(new StringCharacterIterator(base + "\n")));
+
+    assertEquals("", TextUtil.toString(new MySegment("")));
+    assertEquals("", TextUtil.toString(new MySegment("" + "\n")));
+
+    assertEquals(base, TextUtil.toString(new MySegment(base)));
+    assertEquals(base, TextUtil.toString(new MySegment(base + "\n")));
+
+    assertEquals(base, TextUtil.toString(new StringSegment(base)));
+    assertEquals(base, TextUtil.toString(new StringSegment(base + "\n")));
 }
 
 
