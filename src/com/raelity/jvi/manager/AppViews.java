@@ -20,16 +20,20 @@
 
 package com.raelity.jvi.manager;
 
+import com.raelity.jvi.lib.MRU;
+
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import com.google.common.eventbus.Subscribe;
 
@@ -87,7 +91,8 @@ public enum AppViews
 
     private static final List<ViAppView> avs = new LinkedList<>();
     private static final List<ViAppView> avsMRU = new LinkedList<>();
-    private static final LinkedList<String> avsClosedMRU = new LinkedList<>();
+    private static final MRU<String> avsClosedMRU
+            = com.raelity.jvi.lib.MRU.getSetMRU(() -> G.p_closedfiles());
     private static final Set<ViAppView> avsNomads = new WeakSet<>();
     private static ViAppView avCurrentlyActive;
     private static ViAppView keepMru;
@@ -117,7 +122,7 @@ public enum AppViews
         OptionEvent.getEventBus().register(new Object() {
             @Subscribe public void closedfiles(OptionEvent.Global ev) {
                 if(Options.closedFiles.equals(ev.getName()))
-                    trimClosedMRU();
+                    avsClosedMRU.trim();
             } });
 
         ViEvent.getBus().register(new Object() {
@@ -125,20 +130,52 @@ public enum AppViews
             public void readClosedMRU(ViEvent.Boot ev)
             {
                 Hook hook = ViManager.getCore();
-                avsClosedMRU.addAll(hook.readPrefsList(PREF_CLOSEDFILES,
-                                                pClosedfilesImportCheck));
-                trimClosedMRU();
+                List<String> l = hook.readPrefsList(PREF_CLOSEDFILES,
+                                                    pClosedfilesImportCheck);
+                avsClosedMRU.initialize(l);
+                avsClosedMRU.trim();
+                if(!l.isEmpty())
+                    new Thread(new CheckExists(l)).start();
             }
             @Subscribe
             public void writeClosedMRU(ViEvent.Shutdown ev)
             {
-                trimClosedMRU();
+                avsClosedMRU.trim();
                 Hook hook = ViManager.getCore();
-                hook.writePrefsList(PREF_CLOSEDFILES, avsClosedMRU,
+                hook.writePrefsList(PREF_CLOSEDFILES,
+                                    avsClosedMRU.closingIterator(),
                                     pClosedfilesImportCheck.getValue());
             }
         });
     }
+
+    /**
+     * Remove items from the closed files list if they no longer exist.
+     */
+    private static class CheckExists implements Runnable
+    {
+    private final Collection<String> fnames;
+    
+    public CheckExists(Collection<String> fnames)
+    {
+        this.fnames = fnames;
+    }
+    
+    @Override
+    public void run()
+    {
+        int nRemoved = 0;
+        for(String fname : fnames) {
+            Path path = VimPath.getAbsolutePath(fname);
+            if(!Files.exists(path)) {
+                //System.err.printf("AppViews: removing %s from list\n", fname);
+                avsClosedMRU.removeItem(fname);
+                nRemoved++;
+            }
+        }
+        G.dbg.printf("AppViews closed list: %d files no longer exist.\n", nRemoved);
+    }
+    } // END CLASS CheckExists
 
     /**
      * The application invokes this whenever a file becomes active
@@ -287,15 +324,8 @@ public enum AppViews
         Path path = av.getPath();
         if(path != null) {
             String fname = path.toString();
-            avsClosedMRU.remove(fname);
-            avsClosedMRU.addFirst(fname);
-            trimClosedMRU();
+            avsClosedMRU.addItem(fname);
         }
-    }
-
-    public static List<String> getClosedMRU()
-    {
-        return Collections.unmodifiableList(avsClosedMRU);
     }
 
     private static void removeClosedMRU(ViAppView av)
@@ -303,14 +333,14 @@ public enum AppViews
         Path path = av.getPath();
         if(path != null) {
             String fname = path.toString();
-            avsClosedMRU.remove(fname);
+            avsClosedMRU.removeItem(fname);
         }
     }
 
-    private static void trimClosedMRU()
+    /** Note: the closed list may be locked during this operation */
+    public static void forEachClosedfile(Consumer<String> action)
     {
-        while(avsClosedMRU.size() > G.p_closedfiles())
-            avsClosedMRU.removeLast();
+        avsClosedMRU.forEach(action);
     }
 
     /**

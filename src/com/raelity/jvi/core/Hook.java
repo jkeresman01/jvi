@@ -20,6 +20,8 @@
 
 package com.raelity.jvi.core;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import org.openide.util.lookup.ServiceProvider;
@@ -74,10 +76,16 @@ public class Hook
         return Misc.readPrefsList(nodeName, pImportMonitor);
     }
 
-    public void writePrefsList(String nodeName, List<String> l,
+    public void writePrefsList(String nodeName, Collection<String> l,
                                PreferencesImportMonitor importMonitor)
     {
         Misc.writePrefsList(nodeName, l, importMonitor);
+    }
+
+    public void writePrefsList(String nodeName, Iterator<String> it,
+                               PreferencesImportMonitor importMonitor)
+    {
+        Misc.writePrefsList(nodeName, it, importMonitor);
     }
 
     public void abortVisualMode()

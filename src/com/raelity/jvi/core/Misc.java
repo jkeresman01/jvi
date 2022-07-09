@@ -24,7 +24,9 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.text.CharacterIterator;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -105,14 +107,20 @@ public class Misc {
       return l;
     }
 
-    static void writePrefsList(String nodeName, List<String> l,
+    static void writePrefsList(String nodeName, Iterator<String> it,
                                PreferencesImportMonitor importMonitor)
     {
       if(!importMonitor.isChange()) {
-        writeList(nodeName, l);
+        writeList(nodeName, it);
       } else {
         LOG.info(sf("jVi %s imported", nodeName));
       }
+    }
+
+    static void writePrefsList(String nodeName, Collection<String> l,
+                               PreferencesImportMonitor importMonitor)
+    {
+      writePrefsList(nodeName, l.iterator(), importMonitor);
     }
 
   /**
@@ -1032,15 +1040,15 @@ public class Misc {
     }
 
   /** Write an ordered list to prefs. */
-  private static void writeList(String nodeName, List<String> l)
+  private static void writeList(String nodeName, Iterator<String> it)
   {
     try {
       Preferences prefs = ViManager.getFactory().getPreferences().node(nodeName);
       prefs.removeNode();
       prefs = ViManager.getFactory().getPreferences().node(nodeName);
       int i = 1;
-      for(String s : l) {
-        prefs.put("" + i, s);
+      while(it.hasNext()) {
+        prefs.put("" + i, it.next());
         i++;
       }
       prefs.flush();
