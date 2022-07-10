@@ -44,7 +44,7 @@ import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
 import com.raelity.text.StringSegment;
 
-import static com.raelity.jvi.core.Ops.get_register_value;
+import static com.raelity.jvi.core.Register.get_register_value;
 import static com.raelity.jvi.core.Misc.readPrefsList;
 import static com.raelity.jvi.core.Msg.*;
 import static com.raelity.jvi.core.Misc.skipwhite;

@@ -60,6 +60,7 @@ import static java.lang.Math.min;
 import static com.raelity.jvi.core.Util.beep_flush;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.Ops.*;
+import static com.raelity.jvi.core.Register.*;
 import static com.raelity.jvi.core.VimPath.*;
 import static com.raelity.jvi.manager.ViManager.eatme;
 import static com.raelity.text.TextUtil.sf;

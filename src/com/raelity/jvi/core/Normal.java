@@ -40,7 +40,7 @@ import com.raelity.jvi.ViTextView.FOLDOP;
 import com.raelity.jvi.ViTextView.HDIR;
 import com.raelity.jvi.ViTextView.HSCROLL;
 import com.raelity.jvi.ViTextView.TAGOP;
-import com.raelity.jvi.core.Ops.Yankreg;
+import com.raelity.jvi.core.Register.Yankreg;
 import com.raelity.jvi.core.lib.NotSupportedException;
 import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.MutableInt;
@@ -56,10 +56,14 @@ import static com.raelity.jvi.core.G.VIsual_active;
 import static com.raelity.jvi.core.G.curbuf;
 import static com.raelity.jvi.core.G.curwin;
 import static com.raelity.jvi.core.G.updateTextViewsVisual;
+import static com.raelity.jvi.core.JviClipboard.adjust_clip_reg;
+import static com.raelity.jvi.core.JviClipboard.cbOptHasUnnamed;
+import static com.raelity.jvi.core.JviClipboard.isCbName;
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.Ops.*;
+import static com.raelity.jvi.core.Register.*;
 import static com.raelity.jvi.core.Search.*;
 import static com.raelity.jvi.core.Search01.*;
 import static com.raelity.jvi.core.Search02.*;
@@ -4855,7 +4859,7 @@ nv_brackets(CMDARG cap, int dir)
             regname = cap.oap.regname;
             regname = adjust_clip_reg(regname);
             if (regname == 0 || regname == '"' || Util.isdigit(regname)
-                    || (Ops.cbOptHasUnnamed() && Ops.isCbName(regname))) {
+                    || (cbOptHasUnnamed() && isCbName(regname))) {
               // the delete is going to overwrite the register we want to
               // put, save it first.
               reg1 = get_register(regname, true);
