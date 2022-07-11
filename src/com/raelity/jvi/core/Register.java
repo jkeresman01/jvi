@@ -30,6 +30,7 @@ import java.util.prefs.Preferences;
 
 import com.google.common.eventbus.Subscribe;
 
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.*;
@@ -227,7 +228,10 @@ final static boolean isPlusRegister(Yankreg yreg)
     // NOTE: if a field is added, make sure to fixup this.set(Yankreg)
     //
     // NEEDSWORK: init to null when private
-    private StringBuilder[] y_array = new StringBuilder[] { new StringBuilder() };
+    //private StringBuilder[] y_array = new StringBuilder[] { new StringBuilder() };
+
+    // Default is list with single empty element.
+    private ArrayList<String> y_array;
     private int y_size;
     private byte y_type;
     private int y_width;
@@ -240,12 +244,23 @@ final static boolean isPlusRegister(Yankreg yreg)
     public Yankreg(char y_name)
     {
         this.y_name = y_name;
+        init_y_array();
+    }
+
+    private void init_y_array()
+    {
+        // If the list is "big", start with a new one
+        if(y_array == null || y_array.size() > 50)
+            y_array = new ArrayList<>(10);
+        else
+            y_array.clear();
+        y_array.add("");
     }
     
     /** @return the indexed line, index starts at 0 */
     @Deprecated
     String get(int i) {
-        return y_array[i].toString();
+        return y_array.get(i);
     }
 
     byte getType()
@@ -256,8 +271,10 @@ final static boolean isPlusRegister(Yankreg yreg)
     boolean isEmpty() {
         //return y_type != MBLOCK
         // maybe last is getAll().isEmpty
-        return y_size == 0 || y_array == null || y_array.length == 0
-                || y_array[0] == null || y_array[0].isEmpty();
+        //return y_size == 0 || y_array == null || y_array.length == 0
+        //        || y_array[0] == null || y_array[0].isEmpty();
+        return y_size == 0 || y_array == null || y_array.isEmpty()
+                || y_array.get(0).isEmpty();
     }
     
     /**
@@ -267,24 +284,27 @@ final static boolean isPlusRegister(Yankreg yreg)
     String getAll() {
         if(y_type == MBLOCK) {
             StringBuilder sb = new StringBuilder();
-            for(StringBuilder y_array1 : y_array) {
-                sb.append(y_array1);
+            //for(StringBuilder y_array1 : y_array) {
+            for(String s : y_array) {
+                sb.append(s);
                 sb.append('\n'); // DONE
             }
             return sb.toString();
         }
         else {
-            if (y_size == 0 || y_array == null || y_array[0] == null)
+            if (isEmpty())
                 return "";
-            return y_array[0].toString();
+            return y_array.get(0);
         }
     }
     
+    // Default is list with single empty element.
     void clear() {
         y_size = 0;
         y_type = 0;
         // NEEDSWORK: init to null when private
-        y_array = new StringBuilder[] { new StringBuilder() };
+        //y_array = new StringBuilder[] { new StringBuilder() };
+        init_y_array();
     }
     
     /**
@@ -298,10 +318,12 @@ final static boolean isPlusRegister(Yankreg yreg)
         return reg;
     }
 
-    // TODO: what should this really look like to be widely usable
+    // TODO: What should this really look like to be widely usable?
+    //       THIS ONLY APPENDS TO first element of y_array
     void append(String s)
     {
-        y_array[0].append(s);
+        //y_array[0].append(s);
+        y_array.set(0, y_array.get(0) + s);
     }
     
     /**
@@ -312,24 +334,22 @@ final static boolean isPlusRegister(Yankreg yreg)
         y_size = reg.y_size;
         y_type = reg.y_type;
         y_width = reg.y_width;
-        y_array = reg.y_array;
-        if(reg.y_array == null)
-            y_array = null;
-        else {
-            if(keepSourceData) {
-                // copy the stuff
-                y_array = new StringBuilder[reg.y_array.length];
-                for(int i = 0; i < reg.y_array.length; i++)
-                    y_array[i] = reg.y_array[i] == null
-                         ? null : new StringBuilder(reg.y_array[i]);
-            } else {
-                y_array = reg.y_array;
-                //for(int i = 0; i < reg.y_array.length; i++)
-                //  y_array[i] = reg.y_array[i] == null
-                //             ? null : new StringBuilder(reg.y_array[i]);
-            }
-        }
-        if(!keepSourceData) {
+        //y_array = reg.y_array;
+
+        assert reg.y_array != null;
+        if(keepSourceData) {
+            // copy the stuff
+            @SuppressWarnings("unchecked")
+            ArrayList<String> t = (ArrayList<String>)reg.y_array.clone();
+            y_array = t;
+            //y_array = new ArrayList<>(reg.y_array.size());
+            //for(int i = 0; i < reg.y_array.size(); i++)
+            //    y_array.add(reg.y_array.get(i));
+        } else {
+            //for(int i = 0; i < reg.y_array.length; i++)
+            //  y_array[i] = reg.y_array[i] == null
+            //             ? null : new StringBuilder(reg.y_array[i]);
+            y_array = reg.y_array;
             reg.clear();
         }
     }
@@ -343,17 +363,16 @@ final static boolean isPlusRegister(Yankreg yreg)
             int startOffset = 0;
             int endOffset;
             int lines = 0;
-            List<StringBuilder> l = new ArrayList<>();
+            ArrayList<String> l = new ArrayList<>();
             while((endOffset = s.indexOf('\n', startOffset)) >= 0) { // DONE
-                StringBuilder sb
-                        = new StringBuilder(s.subSequence(startOffset, endOffset));
-                l.add(sb);
-                if(sb.length() > y_width)
-                    y_width = sb.length();
+                String string = s.substring(startOffset, endOffset);
+                l.add(string);
+                if(string.length() > y_width)
+                    y_width = string.length();
                 startOffset = endOffset + 1;
                 lines++;
             }
-            y_array = l.toArray(StringBuilder[]::new);
+            y_array = l;
             y_type = MBLOCK;
             y_size = lines;
             
@@ -375,16 +394,22 @@ final static boolean isPlusRegister(Yankreg yreg)
                 y_type = MCHAR;
                 y_size = 1;
             }
-            y_array[0] = new StringBuilder(s);
+            init_y_array();
+            y_array.set(0, s);
+            //y_array[0] = new StringBuilder(s);
         }
     }
     
     @Override
     public String toString()
     {
+        final int limit = 30;
         String s = getAll();
-        return sf("Yankreg{'%c' %d \"%s\"}", y_name, y_type,
-                                                   debugString(s.length() > 25 ? (s.substring(0, 25) + "...") : s));
+        return sf("Yankreg{'%c' %d (%d,%d) [%s] \"%s\"}",
+                  y_name, y_type, y_width, y_size,
+                  y_array == null ? y_array : y_array.size(),
+                  debugString(s.length() > limit
+                              ? (s.substring(0, limit) + "...") : s));
     }
     
     }
@@ -1035,7 +1060,7 @@ static void free_yank_all()
  */
 public static int op_yank(OPARG oap, boolean deleting, boolean mess)
 {
-    int			y_idx = 0;	// index in y_arrayCCC[]
+    //int			y_idx = 0;	// index in y_arrayCCC[]
     Yankreg		curr;		// copy of y_current
     // char_u		**new_ptr;
     int			lnum;		// current line number
@@ -1110,7 +1135,7 @@ public static int op_yank(OPARG oap, boolean deleting, boolean mess)
         
         if (  G.curwin.w_curswant == MAXCOL && y_current.y_width > 0)
             y_current.y_width--;
-        y_current.y_array = new StringBuilder[yanklines];
+        y_current.y_array = new ArrayList<>(yankendlnum - lnum + 2);
         bd = new block_def();
         for ( ; lnum <= yankendlnum; ++lnum)
         {
@@ -1119,7 +1144,7 @@ public static int op_yank(OPARG oap, boolean deleting, boolean mess)
             pnew = new StringBuilder();
             pnew.setLength(bd.startspaces + bd.endspaces + bd.textlen);
             int pnew_idx = 0;
-            y_current.y_array[y_idx++] = pnew;
+            //y_current.y_array[y_idx++] = pnew;
             
             copy_spaces(pnew, pnew_idx, bd.startspaces);
             pnew_idx += bd.startspaces;
@@ -1129,6 +1154,7 @@ public static int op_yank(OPARG oap, boolean deleting, boolean mess)
             pnew_idx += bd.textlen;
             
             copy_spaces(pnew, pnew_idx, bd.endspaces);
+            y_current.y_array.add(pnew.toString());
         }
     } else {
         int start;
@@ -1141,11 +1167,17 @@ public static int op_yank(OPARG oap, boolean deleting, boolean mess)
             end = oap.end.getOffset() + (oap.inclusive ? 1 : 0);
         }
         int length = end - start;
-        StringBuilder reg = y_current.y_array[0];
+        //StringBuilder reg = y_current.y_array[0];
         MySegment seg = G.curbuf.getSegment(start, length, null);
 
         // MCHAR/MLINE save the yank, may be an append
-        reg.append(seg.array, seg.offset, seg.count); // DONE
+        //reg.append(seg.array, seg.offset, seg.count); // DONE
+
+        if(y_current.y_array.size() > 1)
+            Exceptions.printStackTrace(new Exception("Yankreg not size() 1"));
+        y_current.y_array.set(0, new String(seg.array, seg.offset, seg.count));
+
+
         // bug #1724053 visual mode not capture \n after '$'
         // I guess the oap.inclusive should be trusted.
         // if(yanktype == MCHAR && length > 0
@@ -1191,10 +1223,9 @@ public static int op_yank(OPARG oap, boolean deleting, boolean mess)
     // to the '*' register.
     
     boolean did_star = false;
-    if(clip_star.avail
-            && (isStarRegister(curr)
+    if(clip_star.avail && (isStarRegister(curr)
             || (!deleting && oap.regname == 0
-            && clip_unnamed_union.contains(CB.UNNAMED))))
+                && clip_unnamed_union.contains(CB.UNNAMED))))
     {
         if(!isStarRegister(curr))
             // Copy the text from register 0 to the clipboard register.
@@ -1207,10 +1238,9 @@ public static int op_yank(OPARG oap, boolean deleting, boolean mess)
     // Also copy to the '*' register, in case auto-select is off.  But not when
     // 'clipboard' has "unnamedplus" and not "unnamed"; and not when
     // deleting and both "unnamedplus" and "unnamed".
-    if(clip_plus.avail
-            && (isPlusRegister(curr)
+    if(clip_plus.avail && (isPlusRegister(curr)
             || (!deleting && oap.regname == 0
-            && clip_unnamed_union.contains(CB.UNNAMED_PLUS))))
+                && clip_unnamed_union.contains(CB.UNNAMED_PLUS))))
     {
         if(!isPlusRegister(curr))
             copy_yank_reg(y_regs.get(PLUS_REGISTER));
@@ -1272,7 +1302,7 @@ public static void do_put(int regname_, int dir, int count, int flags)
     
     char regname = (char)regname_;
     
-    StringBuilder[] l_y_array;
+    ArrayList<String> l_y_array;
     
     final ViFPOS cursor = G.curwin.w_cursor;
     
@@ -1327,7 +1357,7 @@ public static void do_put(int regname_, int dir, int count, int flags)
     if ((flags & PUT_LINE) != 0) // :put command or "p" in Visual line mode.
         l_y_type = MLINE;
     
-    if (l_y_size == 0 || l_y_array == null) {
+    if (l_y_size == 0 || l_y_array.get(0).isEmpty()) {
         Msg.emsg("Nothing in register "
                 + (regname == 0 ? "\"" : transchar(regname)));
         return;
@@ -1444,12 +1474,12 @@ public static void do_put(int regname_, int dir, int count, int flags)
                 }
             }
             
-            yanklen = l_y_array[i].length();//STRLEN(y_array[i]);
+            yanklen = l_y_array.get(i).length();//STRLEN(y_array[i]);
             
             // calculate number of spaces required to fill right side of block
             spaces = l_y_width + 1;
             for (j = 0; j < yanklen; j++)
-                spaces -= lbr_chartabsize(l_y_array[i].charAt(j), 0);
+                spaces -= lbr_chartabsize(l_y_array.get(i).charAt(j), 0);
             if (spaces < 0)
                 spaces = 0;
             
@@ -1468,7 +1498,7 @@ public static void do_put(int regname_, int dir, int count, int flags)
             ptr_idx += bd.startspaces;
             // insert the new text
             for (j = 0; j < count; ++j) {
-                mch_memmove(newp, ptr_idx, l_y_array[i], 0, yanklen);
+                mch_memmove(newp, ptr_idx, l_y_array.get(i), 0, yanklen);
                 ptr_idx += yanklen;
                 
                 // insert block's trailing spaces only if there's text behind
@@ -1483,7 +1513,7 @@ public static void do_put(int regname_, int dir, int count, int flags)
             // move the text after the cursor to the end of the line.
             // '- 1' in following because don't want newline
             mch_memmove(newp, ptr_idx, oldp, bd.textcol + delcount,
-                                         (oldlen - bd.textcol - delcount + 1 - 1));
+                        (oldlen - bd.textcol - delcount + 1 - 1));
             newp.setLength(STRLEN(newp));
             Util.ml_replace(line, newp);
             
@@ -1537,7 +1567,7 @@ public static void do_put(int regname_, int dir, int count, int flags)
 //            update_screen(VALID_TO_CURSCHAR);
 
     } else { // not block mode, fpos still in efect
-        String s = l_y_array[0].toString();
+        String s = l_y_array.get(0);
         // NEEDSWORK: HACK for PUT_LINE flag, NOTE: should not need to do
         // (flags&PUT_LINE)!=0 since all MLINE should be terminated by \n
         if(l_y_type == MLINE // && (flags & PUT_LINE) != 0
