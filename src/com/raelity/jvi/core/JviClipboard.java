@@ -283,7 +283,7 @@ import static com.raelity.text.TextUtil.sf;
      String all = y_reg.getAll();
      if(all.isEmpty())
          return;
-     Transferable trans = new StringAndVimSelection((byte)y_reg.y_type, all);
+     Transferable trans = new StringAndVimSelection(y_reg.getType(), all);
      synchronized(this) {
          LOG.fine("clipboard: clip_gen_set_selection");
          cb.setContents(trans, this);
@@ -353,8 +353,10 @@ import static com.raelity.text.TextUtil.sf;
                              TextUtil.debugString(stringData)); }
      get_yank_register(regname, false);
      // y_regs[CLIPBOARD_REGISTER].y_array = new StringBuilder(s);
-     if(stringData != null)
-         y_regs.get(yank_reg_idx).setData(stringData, type);
+     if(stringData != null) {
+         byte byte_type = type == null ? 0 : type.byteValue();
+         y_regs.get(yank_reg_idx).setData(stringData, byte_type);
+     }
  }
  
 // return[0]:type, return[1]:string
