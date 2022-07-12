@@ -363,9 +363,10 @@ private static Commands.ColonEvent parseCommandGuts(String commandLine,
         // no command, but if a number was entered then goto that line
         if(isExecuting && cev.getAddrCount() > 0) {
             int l = cev.getLine1();
-            if(l == 0) {
+            if(l < 1) {
                 l = 1;
-            }
+            } else if(l > G.curbuf.getLineCount())
+                l = G.curbuf.getLineCount();
             ViFPOS fpos = fpos();
             fpos.set(l, 0);
             beginline(fpos, BL_SOL | BL_FIX).copyTo(G.curwin.w_cursor);

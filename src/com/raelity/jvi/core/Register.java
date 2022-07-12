@@ -24,7 +24,9 @@ import java.text.CharacterIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -176,12 +178,10 @@ static final int LAST_REGISTER = PLUS_REGISTER;
 private static Yankreg y_current = null;
 private static Yankreg y_previous = null;
 private static boolean y_append;
-// y_regs_as_arry should *never* be modified, here only for debug
-//static final Yankreg[] y_regs_as_array = initialYankRegs();
 static final List<Yankreg> y_regs = Collections.unmodifiableList(Arrays.asList(initialYankRegs()));
 
 /** allocate all the named registers. Some simplification */
-static Yankreg[] initialYankRegs()
+private static Yankreg[] initialYankRegs()
 {
     Yankreg[] regs = new Yankreg[LAST_REGISTER + 1];
     
@@ -207,32 +207,18 @@ final static boolean isPlusRegister(Yankreg yreg)
 }
     
     /**
-     * Sadly the yankbuf's are not code compatible
-     * except for MBLOCK.
-     * <br/>For MLINE and MCHAR there is a single
-     * string, even if multiple lines, and the string
-     * has embedded '\n'. The y_size is the number of
-     * lines, but y_array is only one element,
-     * unless block mode. The
-     * difference between MLINE and MCHAR is the
-     * terminating '\n'.
-     * <br/> Although not code compatible, the code for
-     * put operations is pretty simple.
+     * A Yankreg is essentially an array/list of text extracted
+     * from the editor document. There are methods for manipulating
+     * the array and adding/removing text.
      */
-    // TODO: clean up since "know" that y_array is never null,
-    //       and has at least one StringBuilder i.e. y_arrayCCC[0].method is OK.
     final static class Yankreg
     {
     final char y_name;
-    //
-    // NOTE: if a field is added, make sure to fixup this.set(Yankreg)
-    //
-    // NEEDSWORK: init to null when private
-    //private StringBuilder[] y_array = new StringBuilder[] { new StringBuilder() };
 
-    // Default is list with single empty element.
-    private ArrayList<String> y_array;
-    private int y_size;
+    // NOTE: if a field is added, make sure to fixup this.set(Yankreg)
+
+    /** This field is cast as ArrayList */
+    private List<String> y_array;
     private byte y_type;
     private int y_width;
     
@@ -244,23 +230,52 @@ final static boolean isPlusRegister(Yankreg yreg)
     public Yankreg(char y_name)
     {
         this.y_name = y_name;
-        init_y_array();
-    }
-
-    private void init_y_array()
-    {
-        // If the list is "big", start with a new one
-        if(y_array == null || y_array.size() > 50)
-            y_array = new ArrayList<>(10);
-        else
-            y_array.clear();
-        y_array.add("");
     }
     
-    /** @return the indexed line, index starts at 0 */
-    @Deprecated
-    String get(int i) {
-        return y_array.get(i);
+    // Default is list with single empty element.
+    private void clear() {
+        y_type = 0;
+        y_width = 0;
+        y_array = null;
+    }
+
+    /** Setup empty List with capacity for nLines */
+    private void alloc(int nLines)
+    {
+        init_y_array(nLines);
+    }
+
+    /** Leave the list elements intact, but make sure there's room for more */
+    private void realloc(int nLines)
+    {
+        if(y_array == null)
+            y_array = new ArrayList<>(nLines + 5);
+        else
+            ((ArrayList<String>)y_array).ensureCapacity(nLines + 5);
+    }
+
+    /** add an empty storage list with capacity for specified nLines. */
+    private void init_y_array(int nLines)
+    {
+        // If the list is "big", start with a new one
+        if(y_array == null || y_array.size() > nLines + 50)
+            y_array = new ArrayList<>(nLines + 5);
+        else {
+            y_array.clear();
+            realloc(nLines);
+        }
+    }
+
+    private List<String> getArray()
+    {
+        if(y_array == null)
+            init_y_array(0);
+        return y_array;
+    }
+
+    int getSize()
+    {
+        return y_array == null ? 0 : y_array.size();
     }
 
     byte getType()
@@ -269,150 +284,139 @@ final static boolean isPlusRegister(Yankreg yreg)
     }
     
     boolean isEmpty() {
-        //return y_type != MBLOCK
-        // maybe last is getAll().isEmpty
-        //return y_size == 0 || y_array == null || y_array.length == 0
-        //        || y_array[0] == null || y_array[0].isEmpty();
-        return y_size == 0 || y_array == null || y_array.isEmpty()
-                || y_array.get(0).isEmpty();
+        return y_array == null || y_array.isEmpty();
     }
     
     /**
-     * @return all the contents as a single string
+     * Append '\n' to each line, except the last; if not MCHAR
+     * then also append '\n' at the end.
+     * @return all the contents as a single string, empty string if empty.
      */
-    // TODO:
-    String getAll() {
-        if(y_type == MBLOCK) {
-            StringBuilder sb = new StringBuilder();
-            //for(StringBuilder y_array1 : y_array) {
-            for(String s : y_array) {
-                sb.append(s);
+    String getAll()
+    {
+        if(isEmpty())
+            return "";
+
+        ListIterator<String> it = y_array.listIterator();
+        StringBuilder sb = new StringBuilder();
+
+        while(it.hasNext()) {
+            sb.append(it.next());
+            if(it.hasNext())
                 sb.append('\n'); // DONE
-            }
-            return sb.toString();
         }
-        else {
-            if (isEmpty())
-                return "";
-            return y_array.get(0);
-        }
+        if(y_type != MCHAR)
+                sb.append('\n'); // DONE
+        return sb.toString();
     }
-    
-    // Default is list with single empty element.
-    void clear() {
-        y_size = 0;
-        y_type = 0;
-        // NEEDSWORK: init to null when private
-        //y_array = new StringBuilder[] { new StringBuilder() };
-        init_y_array();
+
+    /** append to last element */
+    private void append(String s)
+    {
+        getArray();
+        if(y_array.isEmpty())
+            y_array.add(s);
+        else {
+            int idx = y_array.size() - 1;   // last line in yreg
+            y_array.set(idx, y_array.get(idx) + s);
+        }
     }
     
     /**
      * Return a yankreg with the same contents as this yankreg. If fCopy is
      * set then create a copy of the string data, otherwise copy the data
      * and clear the data in the original.
+     * <p>
+     * readOnly has meaning only if fCopy is true.
      */
-    Yankreg copy(boolean fCopy) {
+    private Yankreg copy(boolean fCopy, boolean readOnly) {
         Yankreg reg = new Yankreg();
-        reg.set(this, fCopy);
+        reg.set(this, fCopy, readOnly);
         return reg;
-    }
-
-    // TODO: What should this really look like to be widely usable?
-    //       THIS ONLY APPENDS TO first element of y_array
-    void append(String s)
-    {
-        //y_array[0].append(s);
-        y_array.set(0, y_array.get(0) + s);
     }
     
     /**
      * Move the contents of the argument Yankreg into this and clear the
-     * argument reg's data.
+     * argument reg's data if keepSourceData is false.
      */
-    void set(Yankreg reg, boolean keepSourceData) {
-        y_size = reg.y_size;
+    private void set(Yankreg reg, boolean keepSourceData) {
+        set(reg, keepSourceData, false);
+    }
+
+    /**
+     * Move the contents of the argument Yankreg into this and clear the
+     * argument reg's data.
+     * <p>
+     * readOnly has meaning only if fCopy is true.
+     */
+    private void set(Yankreg reg, boolean keepSourceData, boolean readOnly) {
         y_type = reg.y_type;
         y_width = reg.y_width;
-        //y_array = reg.y_array;
 
         assert reg.y_array != null;
         if(keepSourceData) {
-            // copy the stuff
-            @SuppressWarnings("unchecked")
-            ArrayList<String> t = (ArrayList<String>)reg.y_array.clone();
+            List<String> t;
+            if(readOnly)
+                t = Collections.<String>unmodifiableList(reg.y_array);
+            else {
+                // copy the stuff
+                @SuppressWarnings("unchecked")
+                List<String> t1 = (List<String>)
+                        ((ArrayList<String>)reg.y_array).clone();
+                t = t1;
+            }
             y_array = t;
-            //y_array = new ArrayList<>(reg.y_array.size());
-            //for(int i = 0; i < reg.y_array.size(); i++)
-            //    y_array.add(reg.y_array.get(i));
         } else {
-            //for(int i = 0; i < reg.y_array.length; i++)
-            //  y_array[i] = reg.y_array[i] == null
-            //             ? null : new StringBuilder(reg.y_array[i]);
             y_array = reg.y_array;
             reg.clear();
         }
     }
-    
-    // TODO: Use _type, if >= 0, to force that type,
-    //       or maybe have a force flag.
-    void setData(String s, int _type) {
+
+    // Split the text into an array of lines/String.
+    // Also used by Clipboard.
+    void setData(CharSequence seg, int _type) {
         byte type = (byte)_type;
-        if(type == MBLOCK) {
-            y_width = 0;
-            int startOffset = 0;
-            int endOffset;
-            int lines = 0;
-            ArrayList<String> l = new ArrayList<>();
-            while((endOffset = s.indexOf('\n', startOffset)) >= 0) { // DONE
-                String string = s.substring(startOffset, endOffset);
-                l.add(string);
-                if(string.length() > y_width)
-                    y_width = string.length();
-                startOffset = endOffset + 1;
-                lines++;
-            }
-            y_array = l;
-            y_type = MBLOCK;
-            y_size = lines;
-            
-            y_width--;  // WISH I NEW WHY THIS IS NEEDED, see vim's str_to_reg
-            
-            //y_array[0] = new StringBuilder(s);
-        } else {
-            y_width = 0;
-            int offset = 0;
-            int lines = 0;
-            while((offset = s.indexOf('\n', offset)) >= 0) { // DONE
-                offset++;	// for next time through the loop
-                lines++;
-            }
-            if(lines > 0) {
-                y_type = MLINE;
-                y_size = lines;
-            } else {
-                y_type = MCHAR;
-                y_size = 1;
-            }
-            init_y_array();
-            y_array.set(0, s);
-            //y_array[0] = new StringBuilder(s);
+        List<String> l = getArray();
+        l.clear();
+        int idx = 0; 
+        int startIndex;
+        int twidth = 0;
+        //int lines = 0;
+        while(idx < seg.length()) {
+            startIndex = idx;
+            while(idx < seg.length() && seg.charAt(idx) != '\n')
+                idx++;
+            l.add(seg.subSequence(startIndex, idx).toString());
+            //lines++;
+            if(idx - startIndex > twidth)
+                twidth = idx - startIndex;
+            idx++;
         }
+
+        y_array = l;
+        y_type = type;
+            
+        twidth--;  // WISH I NEW WHY THIS IS NEEDED, see vim's str_to_reg
+
+        if(type == MBLOCK)
+            y_width = twidth;
+        else
+            y_width = 0;
     }
-    
+
     @Override
     public String toString()
     {
         final int limit = 30;
         String s = getAll();
-        return sf("Yankreg{'%c' %d (%d,%d) [%s] \"%s\"}",
-                  y_name, y_type, y_width, y_size,
+        return sf("Yankreg{'%c' %d (%d,@%s) \"%s\"}",
+                  y_name, y_type, y_width,
                   y_array == null ? y_array : y_array.size(),
                   debugString(s.length() > limit
                               ? (s.substring(0, limit) + "...") : s));
     }
     
-    }
+    } // END CLASS Yankreg ==================================================
 
 /**
  * Map yankreg index to regname string, this is like an inverse mapping
@@ -617,7 +621,8 @@ static Yankreg get_register(char name, boolean copy)
     }
     
     get_yank_register(name, false);
-    Yankreg reg = y_current.copy(copy);
+    // readonly for following?
+    Yankreg reg = y_current.copy(copy, false);
     return reg;
 }
 
@@ -723,18 +728,11 @@ static private int stuff_yank(char regname, String s)
         return OK;
     }
     get_yank_register(regname, true);
-    if (y_append) {
-        //y_current.y_array[0].append(s);
+    if (y_append && !y_current.isEmpty()) {
         y_current.append(s);
     } else {
         free_yank_all();
-        //y_current.y_array[0].append(s);
-        // TODO: should setData have a "force" flag?
-        y_current.setData(s, MCHAR);
-
-        //y_current.append(s);
-        //y_current.y_size = 1;
-        //y_current.y_type = MCHAR;  // (orig comment)used to be MLINE, why?
+        y_current.setData(s, MCHAR); // used to be MLINE, why? (vim comment)
     }
     return OK;
 }
@@ -816,20 +814,21 @@ static int do_execreg(char regname, boolean colon, boolean addcr)
         }
         ****************************************************************/
         // Just roll our own for jvi
-        StringBuilder sb = new StringBuilder(y_current.get(0));
-        if(y_current.y_type == MLINE || addcr) {
-            if(sb.length() == 0 || sb.charAt(sb.length()-1) != '\n') { // DONE
-                sb.append('\n'); // DONE
+        String s1 = y_current.getAll();
+        if(addcr) {
+            if(s1.length() == 0 || s1.charAt(s1.length()-1) != '\n') { // DONE
+                s1 += '\n'; // DONE
             }
         }
         //
         // NEEDSWORK: if(colon) put ":" begin of each line
         //
-        if(ins_typebuf_redo(sb, remap, 0, true) == FAIL) {
+        if(ins_typebuf_redo(s1, remap, 0, true) == FAIL) {
             return FAIL;
         }
         G.Exec_reg = true;	// disable the 'q' command
         break;
+
     }
     return retval;
 }
@@ -856,7 +855,6 @@ private static int put_in_typebuf(String s, boolean colon)
 static int insert_reg(char regname, boolean literally)
         throws NotSupportedException
 {
-    int         i;
     int		retval = OK;
     
     //    /*
@@ -872,7 +870,8 @@ static int insert_reg(char regname, boolean literally)
     if (regname != NUL && !valid_yank_reg(regname, false))
         return FAIL;
     
-    regname = may_get_selection(regname);
+    if(isCbName(regname))
+        regname = may_get_selection(regname);
     
     Wrap<String> pArg = new Wrap<>();
     if (regname == '.')                 // insert last inserted text
@@ -889,41 +888,27 @@ static int insert_reg(char regname, boolean literally)
             stuffReadbuff(arg);
         }
     }
-    else				/* name or number register */
+    else				// name or number register
     {
+        // IN VIM9 THIS RETURNS A BOOLEAN USED TO SET LITERALLY
         get_yank_register(regname, false);
         if(y_current.isEmpty())
             retval = FAIL;
         else
         {
-            // Sadly the yankbuf's are not code compatible
-            // except for MBLOCK
-            if(y_current.y_type == MBLOCK) {
-                // THIS LOOP IS THE ORIGINAL CODE
-                for (i = 0; i < y_current.y_size; ++i)
-                {
-                    String s = y_current.get(i);
-                    if (literally)
-                        stuffescaped(s);
-                    else {
-                        Edit.checkForStuffReadbuf(s, "i_CTRL-R");
-                        stuffReadbuff(s);
-                    }
-                    //
-                    // Insert a newline between lines and after last line if
-                    // y_type is MLINE.
-                    //
-                    if (y_current.y_type == MLINE || i < y_current.y_size - 1)
-                        stuffcharReadbuff('\n'); // DONE
-                }
-            } else {
-                String s = y_current.get(0);
+            for(Iterator<String> it = y_current.getArray().iterator();
+                    it.hasNext();) {
+                String s = it.next();
                 if (literally)
                     stuffescaped(s);
                 else {
                     Edit.checkForStuffReadbuf(s, "i_CTRL-R");
                     stuffReadbuff(s);
                 }
+                // Insert a newline between lines and after last line if
+                // y_type is MLINE.
+                if (y_current.y_type == MLINE || it.hasNext())
+                    stuffcharReadbuff('\n');
             }
         }
     }
@@ -1091,11 +1076,7 @@ public static int op_yank(OPARG oap, boolean deleting, boolean mess)
     curr = y_current;
     // append to existing contents
     if (y_append && !y_current.isEmpty()) {
-        // vim creates a new yankreg, copies to that,
-        // then appends that to the old one.
-        // jVi just appends a string to the old one.
-        // That might have corner cases that are not being handled.
-        // y_current = new Yankreg(); // NEEDSWORK: just append to y_current
+        y_current = new Yankreg();
     } else {
         free_yank_all();	    // free previously yanked lines
     }
@@ -1117,25 +1098,19 @@ public static int op_yank(OPARG oap, boolean deleting, boolean mess)
         --yanklines;
     }
     
-    y_current.y_size = yanklines;
+    y_current.alloc(yanklines);
     y_current.y_type = yanktype;   // set the yank register type
     y_current.y_width = 0;
-    // y_current.y_arrayCCC = (char_u **)lalloc_clear.......
-    // if (y_current.y_arrayCCC == NULL) { y_current = curr; return FAIL; }
     
     lnum = oap.start.getLine();
     
-    //
-    // Visual block mode
-    //
     if (oap.block_mode) {
-        // block mode deleted
+        // Visual block mode
         y_current.y_type = MBLOCK;        /* set the yank register type */
         y_current.y_width = oap.end_vcol - oap.start_vcol;
         
         if (  G.curwin.w_curswant == MAXCOL && y_current.y_width > 0)
             y_current.y_width--;
-        y_current.y_array = new ArrayList<>(yankendlnum - lnum + 2);
         bd = new block_def();
         for ( ; lnum <= yankendlnum; ++lnum)
         {
@@ -1144,7 +1119,6 @@ public static int op_yank(OPARG oap, boolean deleting, boolean mess)
             pnew = new StringBuilder();
             pnew.setLength(bd.startspaces + bd.endspaces + bd.textlen);
             int pnew_idx = 0;
-            //y_current.y_array[y_idx++] = pnew;
             
             copy_spaces(pnew, pnew_idx, bd.startspaces);
             pnew_idx += bd.startspaces;
@@ -1167,16 +1141,12 @@ public static int op_yank(OPARG oap, boolean deleting, boolean mess)
             end = oap.end.getOffset() + (oap.inclusive ? 1 : 0);
         }
         int length = end - start;
-        //StringBuilder reg = y_current.y_array[0];
         MySegment seg = G.curbuf.getSegment(start, length, null);
 
-        // MCHAR/MLINE save the yank, may be an append
-        //reg.append(seg.array, seg.offset, seg.count); // DONE
-
-        if(y_current.y_array.size() > 1)
+        if(!y_current.isEmpty())
             Exceptions.printStackTrace(new Exception("Yankreg not size() 1"));
-        y_current.y_array.set(0, new String(seg.array, seg.offset, seg.count));
-
+        // MCHAR/MLINE save the yank, may be an append
+        y_current.setData(seg, yanktype);
 
         // bug #1724053 visual mode not capture \n after '$'
         // I guess the oap.inclusive should be trusted.
@@ -1185,10 +1155,27 @@ public static int op_yank(OPARG oap, boolean deleting, boolean mess)
         //   reg.deleteCharAt(reg.length()-1);
         // }
     }
-    
-    // NEEDSWORK: if lines are made an array in the yank buffer
-    //            then in some cases must append the current
-    //            yank to the previous contents of yank buffer
+
+    if(curr != y_current) {
+        if (yanktype == MLINE)	// MLINE overrides MCHAR and MBLOCK
+            curr.y_type = MLINE;
+
+        int y_idx;      // index into new block
+	// Concatenate the last line of the old block with the first line of
+	// the new block, unless being Vi compatible.
+        // jVi: don't consider vi compat
+	//if (curr->y_type == MCHAR && vim_strchr(p_cpo, CPO_REGAPPEND) == NULL)
+	if (curr.y_type == MCHAR)
+	{
+            curr.append(y_current.y_array.get(0));
+            y_idx = 1;
+        } else
+            y_idx = 0;
+        // add any remaining lines from y_current to curr
+        curr.y_array.addAll(y_current.y_array.subList(y_idx, y_current.getSize()));
+
+        y_current = curr;
+    }
     
     if (mess)			// Display message about yank?
     {
@@ -1216,7 +1203,6 @@ public static int op_yank(OPARG oap, boolean deleting, boolean mess)
     }
     G.curbuf.b_op_start.setMark(op_start);
     G.curbuf.b_op_end.setMark(op_end);
-    
     
     // If we were yanking to the '*' register, send result to clipboard.
     // If no register was specified, and "unnamed" in 'clipboard', make a copy
@@ -1262,8 +1248,8 @@ public static int op_yank(OPARG oap, boolean deleting, boolean mess)
 
 // copy_yank_reg is #ifdef FEAT_CLIPBOARD
 /*
-* Make a copy of the y_current register to register "reg".
-*/
+ * Make a copy of the y_current register to register "reg".
+ */
 static void copy_yank_reg(Yankreg reg)
 {
     reg.set(y_current, true);
@@ -1289,11 +1275,8 @@ public static void do_put(int regname_, int dir, int count, int flags)
     int                 totlen = 0;
     int                 lnum;
     int                 col;
-    int                 l_y_type;
-    int                 l_y_size;
     
     int                 oldlen;
-    int                 l_y_width;
     int                 vcol;
     int                 delcount;
     int                 incr = 0;
@@ -1302,45 +1285,38 @@ public static void do_put(int regname_, int dir, int count, int flags)
     
     char regname = (char)regname_;
     
-    ArrayList<String> l_y_array;
-    
     final ViFPOS cursor = G.curwin.w_cursor;
     
-    // extra ?
     int			old_lcount = G.curbuf.getLineCount();
     
     // Adjust register name for "unnamed" in 'clipboard'.
     regname = adjust_clip_reg(regname);
-    //if (regname == '*')
-    //clip_get_selection();
     may_get_selection(regname);
     
     // NEEDSWORK: do_put: there are special registers like: '%', '#', ':',...
     // if (get_spec_reg(regname, &insert_string, &allocated, TRUE))
     
+    Yankreg yreg;
     if(G.False) {
         // This is the case where insert_string from get_spec_reg is non null
         // TODO: SPECIAL REGS NOT SUPPORTED
+
+        // IF want to support this, need to deal with yreg.
+        yreg = null;
     } else {
         get_yank_register(regname, false);
-        
-        l_y_type = y_current.y_type;
-        l_y_width = y_current.y_width;
-        l_y_size = y_current.y_size;
-        l_y_array = y_current.y_array;
+
+        yreg = y_current.copy(true, true);
     }
     
-    if (l_y_type == MLINE) {
+    assert yreg != null;
+    if (yreg.y_type == MLINE) {
         if ((flags & PUT_LINE_SPLIT) != 0) {
             // "p" or "P" in Visual mode: split the lines to put the text in
             // between.
             // Lots of code was replaced by the following.
-            // G.curwin.insertChar('\n');
             int currOffset = cursor.getOffset();
             G.curwin.insertNewLine(); // DONE
-            //G.curwin.insertText(cursor.getOffset(), "\n");
-            // back up the cursor so it is on the newline
-            //cursor.set(tpos);
             G.curwin.w_cursor.set(currOffset);
             dir = FORWARD;
         }
@@ -1355,27 +1331,26 @@ public static void do_put(int regname_, int dir, int count, int flags)
     }
     
     if ((flags & PUT_LINE) != 0) // :put command or "p" in Visual line mode.
-        l_y_type = MLINE;
+        yreg.y_type = MLINE;
     
-    if (l_y_size == 0 || l_y_array.get(0).isEmpty()) {
+    if (yreg.isEmpty()) {
         Msg.emsg("Nothing in register "
                 + (regname == 0 ? "\"" : transchar(regname)));
         return;
     }
     
-    
     ViFPOS fpos = cursor.copy();
     int offset = fpos.getOffset();
     int length;
     //int new_offset;
-    if(l_y_type == MCHAR) {
+    if(yreg.y_type == MCHAR) {
         if(dir == FORWARD) {
             // increment position, unless pointing at new line
             if(Util.getCharAt(offset) != '\n') { // DONE
                 offset++;
             }
         }
-    } else if(l_y_type == MLINE) {
+    } else if(yreg.y_type == MLINE) {
         // adjust for folding
         lnum = fpos.getLine();
         MutableInt mi = new MutableInt(lnum);
@@ -1403,7 +1378,7 @@ public static void do_put(int regname_, int dir, int count, int flags)
     lnum = fpos.getLine();
     
     // block mode
-    if (l_y_type == MBLOCK) {
+    if (yreg.y_type == MBLOCK) {
         cursor.set(fpos); // NEEDSWORK: do the blockmode with shadowCursor
         int finishPositionColumn = cursor.getColumn();
         
@@ -1429,7 +1404,7 @@ public static void do_put(int regname_, int dir, int count, int flags)
         bd = new block_def();
         bd.textcol = 0;
         int line = cursor.getLine();
-        for (int i = 0; i < l_y_size; ++i, ++line) {
+        for (int i = 0; i < yreg.getSize(); ++i, ++line) {
             int spaces;
             boolean shortline;
             
@@ -1474,12 +1449,12 @@ public static void do_put(int regname_, int dir, int count, int flags)
                 }
             }
             
-            yanklen = l_y_array.get(i).length();//STRLEN(y_array[i]);
+            yanklen = yreg.y_array.get(i).length();//STRLEN(y_array[i]);
             
             // calculate number of spaces required to fill right side of block
-            spaces = l_y_width + 1;
+            spaces = yreg.y_width + 1;
             for (j = 0; j < yanklen; j++)
-                spaces -= lbr_chartabsize(l_y_array.get(i).charAt(j), 0);
+                spaces -= lbr_chartabsize(yreg.y_array.get(i).charAt(j), 0);
             if (spaces < 0)
                 spaces = 0;
             
@@ -1498,7 +1473,7 @@ public static void do_put(int regname_, int dir, int count, int flags)
             ptr_idx += bd.startspaces;
             // insert the new text
             for (j = 0; j < count; ++j) {
-                mch_memmove(newp, ptr_idx, l_y_array.get(i), 0, yanklen);
+                mch_memmove(newp, ptr_idx, yreg.y_array.get(i), 0, yanklen);
                 ptr_idx += yanklen;
                 
                 // insert block's trailing spaces only if there's text behind
@@ -1536,19 +1511,19 @@ public static void do_put(int regname_, int dir, int count, int flags)
         //curbuf->b_op_end.col = bd.textcol + totlen - 1;
         ViFPOS op_end = cursor.copy(); // to get something to work with
         {
-        int len;
-        int li = line - 1;
-        int co = bd.textcol + totlen - 1;
-        
-        /* in Insert mode we might be after the NUL, correct for that */
-        //len = (colnr_T)STRLEN(ml_get_curline());
-        //if (curwin.w_cursor.col > len)
-        //  curwin.w_cursor.col = len;
-        len = Util.ml_get(li).length() - 1;
-        if(co > len)
-            co = len;
-        op_end.set(li, co);
-    }
+            int len;
+            int li = line - 1;
+            int co = bd.textcol + totlen - 1;
+            
+            /* in Insert mode we might be after the NUL, correct for that */
+            //len = (colnr_T)STRLEN(ml_get_curline());
+            //if (curwin.w_cursor.col > len)
+            //  curwin.w_cursor.col = len;
+            len = Util.ml_get(li).length() - 1;
+            if(co > len)
+                co = len;
+            op_end.set(li, co);
+        }
         G.curbuf.b_op_end.setMark(op_end);
         
         if ((flags & PUT_CURSEND) != 0) {
@@ -1567,10 +1542,12 @@ public static void do_put(int regname_, int dir, int count, int flags)
 //            update_screen(VALID_TO_CURSCHAR);
 
     } else { // not block mode, fpos still in efect
-        String s = l_y_array.get(0);
+        // Use getAll
+        //String s = yreg.y_array.get(0);
+        String s = yreg.getAll();
         // NEEDSWORK: HACK for PUT_LINE flag, NOTE: should not need to do
         // (flags&PUT_LINE)!=0 since all MLINE should be terminated by \n
-        if(l_y_type == MLINE // && (flags & PUT_LINE) != 0
+        if(yreg.y_type == MLINE // && (flags & PUT_LINE) != 0
                 && s.length() != 0 && s.charAt(s.length()-1) != '\n') // DONE
             s += '\n'; // DONE
         if(count > 1) {
@@ -1589,16 +1566,17 @@ public static void do_put(int regname_, int dir, int count, int flags)
         G.curbuf.b_op_end.setMark(endFpos);
         
         // now figure out cursor position
-        if(l_y_type == MCHAR && l_y_size == 1) {
+        // TODO: IS THIS CORRECT? DOESN't LOOK LIKE IT
+        if(yreg.y_type == MCHAR && yreg.getSize() == 1) {
             G.curwin.w_cursor.set(endFpos);
         } else {
             if((flags & PUT_CURSEND) != 0) {
                 endFpos.set(endFpos.getOffset()+1);
                 G.curwin.w_cursor.set(endFpos);
-                if(l_y_type == MLINE) {
+                if(yreg.y_type == MLINE) {
                 } else {
                 }
-            } else if (l_y_type == MLINE) {
+            } else if (yreg.y_type == MLINE) {
                 beginline(startFpos, BL_WHITE | BL_FIX).copyTo(G.curwin.w_cursor);
             } else {
                 G.curwin.w_cursor.set(startFpos);

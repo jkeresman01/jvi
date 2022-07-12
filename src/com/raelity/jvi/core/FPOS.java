@@ -151,15 +151,18 @@ class FPOS extends ViFPOS.abstractFPOS
     public void set(Buffer buf, int line, int column, boolean wantAdjust)
     {
         verify(buf);
-        if(line > buf.getLineCount()) {
+        if(line > buf.getLineCount() || line < 1) {
             if(!wantAdjust) {
                 Throwable t = new Throwable(sf("FPOS.set(%s, %d, %d, %b) nLine: %d",
                                             buf, line, column, wantAdjust,
                                             buf.getLineCount()));
                 Exceptions.printStackTrace(t);
             }
-            // pin it to the last line
-            line = buf.getLineCount();
+            if(line < 1)
+                line = 1;
+            else
+                // pin it to the last line
+                line = buf.getLineCount();
         }
         int startOffset = buf.getLineStartOffset(line);
         int endOffset = buf.getLineEndOffset(line);

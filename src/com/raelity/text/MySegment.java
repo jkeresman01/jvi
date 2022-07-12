@@ -21,6 +21,7 @@ package com.raelity.text;
 
 import javax.swing.text.Segment;
 
+
 /**
  * Some "enhancements" to the standard Segment.
  * In jVi MySegment is typically represents one line of text in the document.

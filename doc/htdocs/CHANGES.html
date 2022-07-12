@@ -123,6 +123,10 @@
         <span class="tt">command</span>, or <span class="tt">selected</span>.
       </li>
       <li>
+        Appending to a yank register now handles all register modes:
+        character, line, or block.
+      </li>
+      <li>
         CommandLine <span class="tt">Ctrl-R</span> additionally handles
         <span class="tt">#</span>,
         <span class="tt">Ctrl-W</span>,
@@ -146,6 +150,10 @@
     <ul>
       <li>
         Sometimes the current directory was output as "?".
+      </li>
+      <li>
+        Fix: <span class="tt">:number</span> to goto line
+        might throw an out of bounds exception.
       </li>
     </ul>
   </dd>
