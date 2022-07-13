@@ -23,7 +23,8 @@ import java.util.logging.Logger;
 
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViMark;
-import com.raelity.jvi.lib.MutableInt;
+import com.raelity.jvi.core.lib.*;
+import com.raelity.jvi.lib.*;
 import com.raelity.text.MySegment;
 
 import static com.raelity.jvi.core.JviClipboard.*;
@@ -1876,10 +1877,553 @@ op_do_addsub(char command, int Prenum1)
     G.State = oldstate;
   }
 
-  //////////////////////////////////////////////////////////////////
-  //
-  // Clipboard stuff
-  //
+  static void do_pending_operator(CMDARG cap, int old_col, boolean gui_yank)
+        throws NotSupportedException {
+    do_pending_operator(cap, old_col, gui_yank, null, null, true);
+  }
+  /**
+   * Handle an operator after visual mode or when the movement is finished
+   */
+  @SuppressWarnings("fallthrough")
+  static void do_pending_operator(final CMDARG cap, int old_col, boolean gui_yank,
+                                  StringBuilder searchbuff,
+                                  MutableBoolean command_busy,
+                                  boolean dont_adjust_op_end)
+  throws NotSupportedException
+  {
+    final OPARG oap = cap.oap;
+
+    ViFPOS	old_cursor;
+    boolean	empty_region_error;
+    final ViFPOS cursor = G.curwin.w_cursor;
+
+
+    // The following is all about clip_auto_select I think
+    // See vim9
+//#if defined(USE_CLIPBOARD) && !defined(MSWIN)
+    /*
+     * Yank the visual area into the GUI selection register before we operate
+     * on it and lose it forever.  This could call do_pending_operator()
+     * recursively, but that's OK because gui_yank will be TRUE for the
+     * nested call.  Note also that we call clip_copy_selection() and not
+     * clip_auto_select().  This is because even when 'autoselect' is not set,
+     * if we operate on the text, eg by deleting it, then this is considered to
+     * be an explicit request for it to be put in the global cut buffer, so we
+     * always want to do it here. -- webb
+     */
+    /* MSWINDOWS: don't do this, there is no automatic copy to the clipboard */
+    /* Don't do it if a specific register was specified, so that ""x"*P works */
+//    if (clipboard.available
+//    && oap->op_type != OP_NOP
+//    && !gui_yank
+//    && VIsual_active
+//    && oap->regname == 0
+//    && !redo_VIsual_busy)
+//clip_copy_selection();
+//#endif
+    old_cursor = cursor.copy();
+
+    /*
+     * If an operation is pending, handle it...
+     */
+    if ((G.VIsual_active || G.finish_op) && oap.op_type != OP_NOP) {
+      oap.is_VIsual = G.VIsual_active;
+
+      /* only redo yank when 'y' flag is in 'cpoptions' */
+      if ((vim_strchr(G.p_cpo, 0, CPO_YANK) >= 0 || oap.op_type != OP_YANK)
+	  && !G.VIsual_active)
+      {
+	prep_redo(oap.regname, cap.count0,
+		  get_op_char(oap.op_type), get_extra_op_char(oap.op_type),
+		  cap.cmdchar, cap.nchar);
+	if (cap.cmdchar == '/' || cap.cmdchar == '?') /* was a search */
+	{
+	  /*
+	   * If 'cpoptions' does not contain 'r', insert the search
+	   * pattern to really repeat the same command.
+	   */
+	  if (vim_strchr(G.p_cpo, 0, CPO_REDO) < 0) {
+            GetChar.AppendToRedobuff(searchbuff.toString());
+          }
+	  GetChar.AppendToRedobuff(NL_STR);
+	}
+      }
+
+      if (G.redo_VIsual_busy)
+      {
+          oap.start = cursor.copy();
+          int line = oap.start.getLine()+ redo_VIsual_line_count - 1;
+          if(line > G.curbuf.getLineCount())
+              line = G.curbuf.getLineCount();
+          G.VIsual_mode = redo_VIsual_mode;
+          // TODO_VIS change this, but NEEDSWORK to step through it, REVIEW
+          //        Is redo visual busy ever true?
+          // take a shot at it
+          int col = oap.start.getColumn();
+          if (G.VIsual_mode == 'v')
+          {
+              if (redo_VIsual_line_count <= 1)
+                  col += redo_VIsual_col - 1;
+              else
+                  col = redo_VIsual_col;
+          }
+          cursor.set(line, col);
+
+          if (redo_VIsual_col == MAXCOL)
+          {
+            G.curwin.updateCurswant(null, MAXCOL);
+            coladvance(MAXCOL);
+          }
+          cap.count0 = redo_VIsual_count;
+          if (redo_VIsual_count != 0)
+              cap.count1 = redo_VIsual_count;
+          else
+              cap.count1 = 1;
+      } else if (G.VIsual_active) {
+          // Save the current VIsual area for '< and '> marks, and "gv"
+          // G.curbuf.b_visual_start.setMark(G.VIsual);
+          // G.curbuf.b_visual_end.setMark(cursor);
+          // G.curbuf.b_visual_mode = G.VIsual_mode;
+          // VISUAL FOLD HANDLING
+          G.curbuf.saveVisualMarks(G.curwin);
+
+            /* In Select mode, a linewise selection is operated upon like a
+             * characterwise selection. */
+          if (G.VIsual_select && G.VIsual_mode == 'V') {
+              if (G.VIsual.compareTo(cursor) < 0) {
+                  G.VIsual.setColumn(0);
+                  cursor.setColumn(Util.lineLength(cursor.getLine()));
+              } else {
+                  cursor.setColumn(0);
+                  G.VIsual.setColumn(Util.lineLength(G.VIsual.getLine()));
+              }
+              G.VIsual_mode = 'v';
+          }
+	    /* If 'selection' is "exclusive", backup one character for
+	     * charwise selections. */
+          else if(G.VIsual_mode == 'v') {
+//# ifdef FEAT_VIRTUALEDIT...
+		    unadjust_for_sel();
+          }
+
+          oap.start = G.VIsual;
+          if (G.VIsual_mode == 'V')
+              oap.start.setColumn(0);
+      }
+
+      //
+      // Set oap.start to the first position of the operated text, oap.end
+      // to the end of the operated text.  w_cursor is equal to oap.start.
+      //
+      // NEEDSWORK: cursor modification if folding, use shadow cursor
+      if (oap.start.compareTo(cursor) < 0) {
+        // Include folded lines completely.
+        if(!G.VIsual_active) {
+          MutableInt mi = new MutableInt();
+          if(G.curwin.hasFolding(oap.start.getLine(), mi, null))
+            oap.start.set(mi.getValue(), 0);
+          if(G.curwin.hasFolding(cursor.getLine(), null, mi))
+            cursor.set(mi.getValue(), lineLength(mi.getValue()));
+        }
+        oap.end = cursor.copy();
+        cursor.set(oap.start);
+      }
+      else
+      {
+        // Include folded lines completely.
+        if(!G.VIsual_active && oap.motion_type == MLINE) {
+          MutableInt mi = new MutableInt();
+          if(G.curwin.hasFolding(cursor.getLine(), mi, null))
+            cursor.set(mi.getValue(), 0);
+          if(G.curwin.hasFolding(oap.start.getLine(), null, mi))
+            oap.start.set(mi.getValue(), lineLength(mi.getValue()));
+        }
+        oap.end = oap.start.copy();
+        oap.start = cursor.copy();
+      }
+      if(G.VIsual_active) {
+        // VISUAL FOLD HANDLING
+        Normal.foldAdjustVisual(G.curwin, G.curbuf, oap.start, oap.end);
+      }
+      oap.line_count = oap.end.getLine() - oap.start.getLine() + 1;
+
+      if (G.VIsual_active || G.redo_VIsual_busy) {
+          if (G.VIsual_mode == CTRL_V)  /* block mode */
+          {
+              int start, end;
+              MutableInt miStart = new MutableInt(), miEnd = new MutableInt();
+
+              oap.block_mode = true;
+              getvcol(G.curwin, oap.start, miStart, null, miEnd);
+              oap.start_vcol = miStart.getValue();
+              oap.end_vcol = miEnd.getValue();
+            if (!G.redo_VIsual_busy)
+            {
+                getvcol(G.curwin, oap.end, miStart, null, miEnd);
+                start = miStart.getValue();
+                end = miEnd.getValue();
+                if (start < oap.start_vcol)
+                    oap.start_vcol = start;
+                if (end > oap.end_vcol)
+                {
+                    if (    G.p_sel.charAt(0) == 'e' && start - 1 >= oap.end_vcol)
+                        oap.end_vcol = start - 1;
+                    else
+                        oap.end_vcol = end;
+                }
+            }
+
+            /* if '$' was used, get oap->end_vcol from longest line */
+            if (    G.curwin.w_curswant == MAXCOL)
+            {
+                //curwin.w_cursor.col = MAXCOL;
+                // Can't set the cursor to MAXCOL (well you can, but...)
+                // Use an fpos and set it to the \n for the each iteration // DONE
+                ViFPOS fpos = cursor.copy(); // doesn't use cursor line/col
+                oap.end_vcol = 0;
+                for (int l = oap.start.getLine(); l <= oap.end.getLine(); l++) {
+                  fpos.set(l, Util.lineLength(l)); // DONE
+                  getvcol(G.curwin, fpos, null, null, miEnd);
+                  end = miEnd.getValue();
+                  if (end > oap.end_vcol)
+                    oap.end_vcol = end;
+                }
+            }
+            else if (G.redo_VIsual_busy)
+                oap.end_vcol = oap.start_vcol + redo_VIsual_col - 1;
+            //
+            // Correct oap->end.col and oap->start.col to be the
+            // upper-left and lower-right corner of the block area.
+            //
+            // simpler than vim since jvi has coladvance on an fpos
+            coladvance(oap.end, oap.end_vcol);
+            coladvance(oap.start, oap.start_vcol);
+            // the vim code leaves cursor on the start, so do that
+            cursor.set(oap.start);
+          }
+          if (!G.redo_VIsual_busy && !gui_yank)
+          {
+              /*
+               * Prepare to reselect and redo Visual: this is based on the
+               * size of the Visual text
+               */
+              resel_VIsual_mode = G.VIsual_mode;
+              if (  G.curwin.w_curswant == MAXCOL)
+                  resel_VIsual_col = MAXCOL;
+              else if (G.VIsual_mode == CTRL_V)
+                  resel_VIsual_col = oap.end_vcol - oap.start_vcol + 1;
+              else if (oap.line_count > 1)
+                  resel_VIsual_col = oap.end.getColumn();
+              else
+                  resel_VIsual_col = oap.end.getColumn() - oap.start.getColumn() + 1;
+              resel_VIsual_line_count = oap.line_count;
+          }
+
+          /* can't redo yank (unless 'y' is in 'cpoptions') and ":" */
+          if ((vim_strchr(G.p_cpo, 0, CPO_YANK) >= 0 || oap.op_type != OP_YANK)
+                  && oap.op_type != OP_COLON)
+          {
+              prep_redo(oap.regname, 0, NUL, 'v', get_op_char(oap.op_type),
+                      get_extra_op_char(oap.op_type));
+              redo_VIsual_mode = resel_VIsual_mode;
+              redo_VIsual_col = resel_VIsual_col;
+              redo_VIsual_line_count = resel_VIsual_line_count;
+              redo_VIsual_count = cap.count0;
+          }
+
+          /*
+           * oap->inclusive defaults to TRUE.
+           * If oap->end is on a NUL (empty line) oap->inclusive becomes
+           * FALSE.  This makes "d}P" and "v}dP" work the same.
+           */
+          oap.inclusive = true;
+          if (G.VIsual_mode == 'V')
+              oap.motion_type = MLINE;
+          else {
+              oap.motion_type = MCHAR;
+              if (G.VIsual_mode != CTRL_V
+                        && Util.ml_get_pos(oap.end).current() == '\n') { // DONE
+                  oap.inclusive = false;
+                  // Try to include the newline, unless it's an operator
+                  // that works on lines only
+                  if (  G.p_sel.charAt(0) != 'o'
+                            && !op_on_lines(oap.op_type)
+                            && oap.end.getLine() < G.curbuf.getLineCount())
+                  {
+                      oap.end.set(oap.end.getLine()+1, 0);
+                      oap.line_count++;
+                  }
+              }
+          }
+	  G.redo_VIsual_busy = false;
+            /*
+            * Switch Visual off now, so screen updating does
+            * not show inverted text when the screen is redrawn.
+            * With OP_YANK and sometimes with OP_COLON and OP_FILTER there is
+            * no screen redraw, so it is done here to remove the inverted
+            * part.
+            */
+          if (!gui_yank) {
+              G.VIsual_active = false;
+              v_updateVisualState();
+              if (  G.p_smd)
+                  G.clear_cmdline = true;   /* unshow visual mode later */
+              if (oap.op_type == OP_YANK || oap.op_type == OP_COLON ||
+                      oap.op_type == OP_FILTER)
+                  update_curbuf(NOT_VALID);
+            }
+      }
+
+
+      G.curwin.w_set_curswant = true;
+
+      /*
+       * oap.empty is set when start and end are the same.  The inclusive
+       * flag affects this too, unless yanking and the end is on a NUL.
+       */
+      oap.empty = (oap.motion_type == MCHAR
+	       && (!oap.inclusive
+		   || (oap.op_type == OP_YANK
+		       && gchar_pos(oap.end) == '\n')) // DONE
+	       && oap.start.equals(oap.end));
+      /*
+       * For delete, change and yank, it's an error to operate on an
+       * empty region, when 'E' inclucded in 'cpoptions' (Vi compatible).
+       */
+      empty_region_error = (oap.empty
+			    && vim_strchr(G.p_cpo, 0, CPO_EMPTYREGION) >= 0);
+
+      /* Force a redraw when operating on an empty Visual region */
+//       if (oap.is_VIsual && oap.empty)
+// 	redraw_curbuf_later(NOT_VALID);
+
+      /*
+       * If the end of an operator is in column one while oap.motion_type
+       * is MCHAR and oap.inclusive is FALSE, we put op_end after the last
+       * character in the previous line. If op_start is on or before the
+       * first non-blank in the line, the operator becomes linewise
+       * (strange, but that's the way vi does it).
+       */
+      if (	   oap.motion_type == MCHAR
+		   && oap.inclusive == false
+		   && !dont_adjust_op_end
+		   && oap.end.getColumn() == 0
+		   && (!oap.is_VIsual || G.p_sel.charAt(0) == 'o')
+		   && oap.line_count > 1)
+      {
+	oap.end_adjusted = true;	    /* remember that we did this */
+	--oap.line_count;
+	int new_line = oap.end.getLine() - 1;
+        int new_col = 0;
+	if (inindent(0))
+	  oap.motion_type = MLINE;
+	else
+	{
+          new_col = Util.lineLength(new_line);
+	  if (new_col != 0)
+	  {
+            --new_col;
+	    oap.inclusive = true;
+	  }
+	}
+        oap.end.set(new_line, new_col);
+      }
+      else
+	oap.end_adjusted = false;
+
+      switch (oap.op_type)
+      {
+	case OP_LSHIFT:
+        case OP_RSHIFT:
+          runUndoable(() -> {
+            op_shift(oap, true, oap.is_VIsual ? cap.count1 : 1);
+      });
+	  break;
+
+	case OP_JOIN_NS:
+	case OP_JOIN:
+	  if (oap.line_count < 2) {
+	    oap.line_count = 2;
+	  }
+	      // .... -1 > curbuf.b_ml.ml_line_count...
+	  if (  G.curwin.w_cursor.getLine() + oap.line_count - 1 >
+	      G.curbuf.getLineCount()) {
+	    Util.beep_flush();
+	  } else {
+            runUndoable(() -> {
+              do_do_join(oap.line_count, oap.op_type == OP_JOIN, true);
+            });
+	  }
+	  break;
+
+	case OP_DELETE:
+	  G.VIsual_reselect = false;	    /* don't reselect now */
+	  if (empty_region_error)
+	    Util.vim_beep();
+	  else {
+            runUndoable(() -> {
+              op_delete(oap);
+            });
+	  }
+	  break;
+
+	case OP_YANK:
+	  if (empty_region_error)
+	  {
+	    if (!gui_yank)
+	      Util.vim_beep();
+	  }
+	  else
+	    op_yank(oap, false, !gui_yank);
+	  check_cursor_col();
+	  break;
+
+	case OP_CHANGE:
+	  G.VIsual_reselect = false;	    /* don't reselect now */
+	  if (empty_region_error)
+	    Util.vim_beep();
+	  else
+	  {
+	    // don't restart edit after typing <Esc> in edit()
+	    G.restart_edit = 0;
+            beginInsertUndo();
+            try {
+              op_change(oap); // will call edit()
+            } finally {
+              if(editBusy) {
+                opInsertBusy = true;
+              } else {
+                endInsertUndo();
+              }
+            }
+	  }
+	  break;
+
+	case OP_FILTER:
+	  if (vim_strchr(G.p_cpo, 0, CPO_FILTER) >= 0)
+	    GetChar.AppendToRedobuff("!\r");  /* use any last used !cmd */
+	  else
+	    bangredo = true;    /* do_bang() will put cmd in redo buffer */
+
+	case OP_INDENT:
+	case OP_COLON:
+
+          // If 'equalprg' is empty, do the indenting internally.
+          if(oap.op_type == OP_INDENT && G.p_ep.isEmpty()) {
+            runUndoable(() -> {
+              // Seems like NB changes VpTopViewLine, so save/restore
+              // back in '%' command discussion there's talk of moving
+              // some of this stuff into platform...
+              int vpTopViewLine = G.curwin.getVpTopViewLine();
+              G.curbuf.reindent(G.curwin.w_cursor.getLine(),
+                      oap.line_count);
+              G.curwin.setVpTopViewLine(vpTopViewLine);
+            });
+            break;
+          }
+	  op_colon(oap);
+	  break;
+
+	case OP_TILDE:
+	case OP_UPPER:
+	case OP_LOWER:
+	case OP_ROT13:
+	  if (empty_region_error)
+	    Util.vim_beep();
+	  else {
+            runUndoable(() -> {
+              op_tilde(oap);
+              check_cursor_col();
+            });
+          }
+	  break;
+
+	case OP_FORMAT:
+	  if (!G.p_fp.isEmpty())
+	    op_colon(oap);		/* use external command */
+	  else
+	    op_format(oap);		/* use internal function */
+	  break;
+
+	case OP_INSERT:
+	case OP_APPEND:
+	  G.VIsual_reselect = false;	/* don't reselect now */
+          if (empty_region_error)
+            Util.vim_beep();
+          else {
+            /* This is a new edit command, not a restart.  We don't edit
+             * recursively. */
+            G.restart_edit = 0;
+            beginInsertUndo();
+            try {
+              op_insert(oap, cap.count1);/* handles insert & append
+                                          * will call edit() */
+            } finally {
+              if(editBusy) {
+                opInsertBusy = true;
+              } else {
+                endInsertUndo();
+              }
+            }
+          }
+	  break;
+
+	case OP_REPLACE:
+	  G.VIsual_reselect = false;	/* don't reselect now */
+          if (empty_region_error)
+            Util.vim_beep();
+          else 
+            op_replace(oap, cap.nchar);
+	  break;
+
+//
+// there are several places in this method that might need to consider OP_FOLD*
+//	case OP_FOLDOPEN:
+//	case OP_FOLDOPENREC:
+//	case OP_FOLDCLOSE:
+//	case OP_FOLDCLOSEREC:
+//	    G.VIsual_reselect = false;	/* don't reselect now */
+//	    opFoldRange(oap->start.lnum, oap->end.lnum,
+//		    oap->op_type == OP_FOLDOPEN
+//					    || oap->op_type == OP_FOLDOPENREC,
+//		    oap->op_type == OP_FOLDOPENREC
+//					  || oap->op_type == OP_FOLDCLOSEREC,
+//					  oap->is_VIsual);
+//	    break;
+//
+//	case OP_FOLDDEL:
+//	case OP_FOLDDELREC:
+//	    VIsual_reselect = FALSE;	/* don't reselect now */
+//	    deleteFold(oap->start.lnum, oap->end.lnum,
+//			       oap->op_type == OP_FOLDDELREC, oap->is_VIsual);
+//	    break;
+
+	default:
+	  clearopbeep(oap);
+      }
+      if (!gui_yank)
+      {
+	/*
+	 * if 'sol' not set, go back to old column for some commands
+	 */
+	if (    !G.p_sol && oap.motion_type == MLINE
+            && !oap.end_adjusted
+	    && (oap.op_type == OP_LSHIFT || oap.op_type == OP_RSHIFT
+		|| oap.op_type == OP_DELETE)) {
+          G.curwin.updateCurswant(null, old_col);
+	  coladvance(old_col);
+	}
+	oap.op_type = OP_NOP;
+      }
+      else {
+        cursor.set(old_cursor);
+      }
+      oap.block_mode = false;
+      oap.regname = 0;
+      cursorShapeHACK = true;
+    }
+  }
+
 }
 
 // vi: sw=2 ts=8
