@@ -4862,7 +4862,7 @@ nv_brackets(CMDARG cap, int dir)
                     || (cbOptHasUnnamed() && isCbName(regname))) {
               // the delete is going to overwrite the register we want to
               // put, save it first.
-              reg1 = get_register(regname, true);
+              reg1 = get_register(regname, Register.Access.COPY);
             }
             
             /* Now delete the selected text. */
@@ -4883,7 +4883,7 @@ nv_brackets(CMDARG cap, int dir)
             if (reg1 != null) {
               // Delete probably changed the register we want to put, save
               // it first. Then put back what was there before the delete.
-              reg2 = get_register(regname, false);
+              reg2 = get_register(regname, Register.Access.CLEAR_ORIG);
               put_register(regname, reg1);
             }
             

@@ -66,6 +66,13 @@ import static com.raelity.text.TextUtil.sf;
  */
 public class Register
 {
+    /** How to make a copy of a yank register */
+    enum Access {
+    CLEAR_ORIG,
+    COPY,
+    READ_ONLY
+    }
+
 private static final String PREF_REGISTERS = "registers";
 private static PreferencesImportMonitor registersImportCheck;
 
@@ -329,46 +336,39 @@ final static boolean isPlusRegister(Yankreg yreg)
      * <p>
      * readOnly has meaning only if fCopy is true.
      */
-    private Yankreg copy(boolean fCopy, boolean readOnly) {
+    private Yankreg copy(Access access)
+    {
         Yankreg reg = new Yankreg();
-        reg.set(this, fCopy, readOnly);
+        reg.set(this, access);
         return reg;
     }
-    
-    /**
-     * Move the contents of the argument Yankreg into this and clear the
-     * argument reg's data if keepSourceData is false.
-     */
-    private void set(Yankreg reg, boolean keepSourceData) {
-        set(reg, keepSourceData, false);
-    }
 
     /**
-     * Move the contents of the argument Yankreg into this and clear the
-     * argument reg's data.
-     * <p>
-     * readOnly has meaning only if fCopy is true.
+     * Move the contents of the argument Yankreg into this and clear/copy the
+     * argument reg's data as specified by Access.
      */
-    private void set(Yankreg reg, boolean keepSourceData, boolean readOnly) {
+    private void set(Yankreg reg, Access access)
+    {
+        if(reg.isEmpty()) {
+            clear();
+            return;
+        }
         y_type = reg.y_type;
         y_width = reg.y_width;
-
-        assert reg.y_array != null;
-        if(keepSourceData) {
-            List<String> t;
-            if(readOnly)
-                t = Collections.<String>unmodifiableList(reg.y_array);
-            else {
-                // copy the stuff
-                @SuppressWarnings("unchecked")
-                List<String> t1 = (List<String>)
-                        ((ArrayList<String>)reg.y_array).clone();
-                t = t1;
-            }
-            y_array = t;
-        } else {
+        switch(access) {
+        case CLEAR_ORIG:
             y_array = reg.y_array;
             reg.clear();
+            break;
+        case READ_ONLY:
+            y_array = Collections.<String>unmodifiableList(reg.y_array);
+            break;
+        case COPY:
+            @SuppressWarnings("unchecked")
+            List<String> t
+                    = (List<String>)((ArrayList<String>)reg.y_array).clone();
+            y_array = t;
+            break;
         }
     }
 
@@ -603,10 +603,10 @@ static void get_yank_register(char regname, boolean writing)
  * @param copy make a copy, if FALSE make register empty.
  * @return the register copy
  */
-static Yankreg get_register(char name, boolean copy)
+static Yankreg get_register(char name, Access access)
 {
-// When Visual area changed, may have to update selection.  Obtain the
-//selection too.
+    // When Visual area changed, may have to update selection.  Obtain the
+    //selection too.
     if (name == '*' && clip_star.avail)
     {
         //if (clip_autoselect_star)
@@ -622,7 +622,7 @@ static Yankreg get_register(char name, boolean copy)
     
     get_yank_register(name, false);
     // readonly for following?
-    Yankreg reg = y_current.copy(copy, false);
+    Yankreg reg = y_current.copy(access);
     return reg;
 }
 
@@ -639,7 +639,7 @@ static String get_register_value(char regname)
         regname = may_get_selection(regname);
     
     if(regname >= 'a' && regname <= 'z' || "\"-+*\000".indexOf(regname) >= 0) {
-        Yankreg reg = get_register(regname, true);
+        Yankreg reg = get_register(regname, Access.READ_ONLY);
         if (!reg.isEmpty())
             val = reg.getAll();
     } else {
@@ -657,7 +657,7 @@ static String get_register_value(char regname)
 static void put_register(char name, Yankreg reg)
 {
     get_yank_register(name, false);
-    y_current.set(reg, false); // reg's data/pointers is cleared.
+    y_current.set(reg, Access.CLEAR_ORIG); // reg's data/pointers is cleared.
     
     /* Send text written to clipboard register to the clipboard. */
     may_set_selection();
@@ -1012,14 +1012,12 @@ static boolean get_spec_reg(char regname, Wrap<String> argp, boolean errmsg)
 static void shift_delete_registers()
 {
     for (int n = 9; n > 1; --n)
-        y_regs.get(n).set(y_regs.get(n - 1), false);
+        y_regs.get(n).set(y_regs.get(n - 1), Access.CLEAR_ORIG);
 
-    // TODO: vim9 /////////////////////////////
-    //if(!y_append)
-    //    y_previous = y_current;
-    ///////////////////////////////////////////
-
-    y_previous = y_current = y_regs.get(1);
+    y_current = y_regs.get(1);
+    // y_append check in VIM9, earlier just did the assign to y_previous
+    if(!y_append)
+        y_previous = y_current;
     y_regs.get(1).clear();
     
 }
@@ -1252,7 +1250,7 @@ public static int op_yank(OPARG oap, boolean deleting, boolean mess)
  */
 static void copy_yank_reg(Yankreg reg)
 {
-    reg.set(y_current, true);
+    reg.set(y_current, Access.COPY);
 }
 
 
@@ -1306,7 +1304,7 @@ public static void do_put(int regname_, int dir, int count, int flags)
     } else {
         get_yank_register(regname, false);
 
-        yreg = y_current.copy(true, true);
+        yreg = y_current.copy(Access.READ_ONLY);
     }
     
     assert yreg != null;
