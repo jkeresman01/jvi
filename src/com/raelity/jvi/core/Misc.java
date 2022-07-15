@@ -51,13 +51,13 @@ import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.lib.Wrap;
 import com.raelity.jvi.manager.*;
-import com.raelity.text.MySegment;
+import com.raelity.jvi.lib.MySegment;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
 import static com.raelity.jvi.manager.ViManager.eatme;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 // DONE lots of \n in this file
 public class Misc {

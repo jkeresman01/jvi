@@ -33,7 +33,7 @@ import com.raelity.jvi.*;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
-import com.raelity.text.TextUtil;
+import com.raelity.jvi.lib.TextUtil;
 
 import static com.raelity.jvi.core.Hook.setJViBusy;
 import static com.raelity.jvi.core.Misc01.*;

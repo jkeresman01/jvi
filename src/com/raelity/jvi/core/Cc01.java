@@ -63,7 +63,7 @@ import static com.raelity.jvi.core.Ops.*;
 import static com.raelity.jvi.core.Register.*;
 import static com.raelity.jvi.core.VimPath.*;
 import static com.raelity.jvi.manager.ViManager.eatme;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /**
  *

@@ -31,7 +31,7 @@ import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.lib.AbbrevLookup;
 import com.raelity.jvi.core.lib.CcFlag;
 import com.raelity.jvi.core.lib.ColonCommandItem;
-import com.raelity.text.TextUtil;
+import com.raelity.jvi.lib.TextUtil;
 
 /**
  * Data structures for defining and registering colon commands.

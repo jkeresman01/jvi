@@ -51,7 +51,7 @@ import com.raelity.jvi.options.EnumOption;
 import com.raelity.jvi.options.EnumSetOption;
 import com.raelity.jvi.options.Option;
 import com.raelity.jvi.options.VimOption;
-import com.raelity.text.XMLUtil;
+import com.raelity.jvi.lib.XMLUtil;
 
 /**
  * @author Ernie Rael <err at raelity.com>

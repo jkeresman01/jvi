@@ -26,7 +26,7 @@ import java.util.EnumSet;
 import com.raelity.jvi.*;
 import com.raelity.jvi.lib.OutputStreamAdaptor;
 
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 public class PlayOutputStream extends OutputStreamAdaptor {
   String type;

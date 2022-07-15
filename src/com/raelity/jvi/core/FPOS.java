@@ -27,7 +27,7 @@ import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.core.lib.Constants;
 import com.raelity.jvi.manager.ViManager;
 
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /**
  * Buffer position, accessable as line number, 1 based, and column, 0 based.

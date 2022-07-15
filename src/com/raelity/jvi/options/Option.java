@@ -34,7 +34,7 @@ import com.raelity.jvi.core.Options.Category;
 import static java.util.logging.Level.FINE;
 
 import static com.raelity.jvi.manager.ViManager.getFactory;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 //
 // NEEDSWORK: If returning a reference, should be readonly

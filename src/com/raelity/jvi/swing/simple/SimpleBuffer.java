@@ -39,7 +39,7 @@ import com.raelity.jvi.swing.SwingBuffer;
 import com.raelity.jvi.swing.UndoGroupManager;
 
 import static com.raelity.jvi.core.lib.Constants.*;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /**
  * Add undo group handling to basic swing buffer.

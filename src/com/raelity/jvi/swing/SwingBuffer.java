@@ -30,7 +30,7 @@ import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.*;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.DebugOption;
-import com.raelity.text.MySegment;
+import com.raelity.jvi.lib.MySegment;
 
 import static com.raelity.jvi.core.Misc01.*;
 

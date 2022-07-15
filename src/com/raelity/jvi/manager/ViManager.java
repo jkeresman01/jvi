@@ -64,13 +64,13 @@ import com.raelity.jvi.core.*;
 import com.raelity.jvi.core.Commands.AbstractColonAction;
 import com.raelity.jvi.core.Commands.ColonEvent;
 import com.raelity.jvi.options.*;
-import com.raelity.text.TextUtil;
+import com.raelity.jvi.lib.TextUtil;
 
 import static java.util.logging.Level.*;
 
 import static com.raelity.jvi.ViOutputStream.FLAGS;
 import static com.raelity.jvi.core.G.dbgEditorActivation;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /**
  * <p>

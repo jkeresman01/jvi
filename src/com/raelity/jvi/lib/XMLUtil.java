@@ -25,7 +25,7 @@
 *  DEALINGS IN THE SOFTWARE.
 */
 
-package com.raelity.text;
+package com.raelity.jvi.lib;
 //package net.sourceforge.groboutils.util.xml.v1;
 
 /**

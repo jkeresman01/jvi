@@ -42,7 +42,7 @@ import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.Wrap;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.OptUtil;
-import com.raelity.text.TextUtil;
+import com.raelity.jvi.lib.TextUtil;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;

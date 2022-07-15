@@ -22,7 +22,7 @@ import org.openide.util.Exceptions;
 import com.raelity.jvi.lib.*;
 
 import static com.raelity.jvi.manager.ViManager.eatme;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /**
  * Stabilize (do not allow scrolling) the JViewport displaying

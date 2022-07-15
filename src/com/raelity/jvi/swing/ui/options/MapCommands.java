@@ -55,7 +55,7 @@ import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.OptUtil;
 import com.raelity.jvi.options.OptionsBean;
 import com.raelity.jvi.options.StringOption;
-import com.raelity.text.XMLUtil;
+import com.raelity.jvi.lib.XMLUtil;
 
 /**
  * NEEDSWORK:

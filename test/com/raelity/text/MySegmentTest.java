@@ -19,6 +19,9 @@
 
 package com.raelity.text;
 
+import com.raelity.jvi.lib.MySegment;
+import com.raelity.jvi.lib.StringSegment;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

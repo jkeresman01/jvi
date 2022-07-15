@@ -42,7 +42,7 @@ import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
-import com.raelity.text.StringSegment;
+import com.raelity.jvi.lib.StringSegment;
 
 import static com.raelity.jvi.core.Register.get_register_value;
 import static com.raelity.jvi.core.Misc.readPrefsList;
@@ -52,7 +52,7 @@ import static com.raelity.jvi.core.Misc.writePrefsList;
 import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.lib.Constants.NUL;
 import static com.raelity.jvi.manager.ViManager.eatme;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 import static com.raelity.jvi.manager.ViManager.getFactory;
 
 /**

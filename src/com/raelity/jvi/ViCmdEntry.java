@@ -26,11 +26,11 @@ import com.google.common.eventbus.EventBus;
 import com.raelity.jvi.core.*;
 import com.raelity.jvi.core.CommandHistory.HistoryContext;
 import com.raelity.jvi.manager.ViEvent.ReportPostEventBus;
-import com.raelity.text.TextUtil;
+import com.raelity.jvi.lib.TextUtil;
 
 import static java.util.logging.Level.CONFIG;
 
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /** This is used by vi to get command line input.
  * An LRU history of commands should be maintained, though this history

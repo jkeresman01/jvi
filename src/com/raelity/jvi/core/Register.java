@@ -41,8 +41,8 @@ import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.core.lib.Constants.CBU;
 import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.*;
-import com.raelity.text.MySegment;
-import com.raelity.text.TextUtil;
+import com.raelity.jvi.lib.MySegment;
+import com.raelity.jvi.lib.TextUtil;
 
 import static com.raelity.jvi.core.Edit.*;
 import static com.raelity.jvi.core.ExCommands.getaltfname;
@@ -57,8 +57,8 @@ import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.manager.ViManager.eatme;
-import static com.raelity.text.TextUtil.debugString;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.debugString;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /**
  *

@@ -1,4 +1,4 @@
-package com.raelity.text;
+package com.raelity.jvi.lib;
 
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;

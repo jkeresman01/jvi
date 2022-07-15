@@ -75,7 +75,7 @@ import static java.util.logging.Level.*;
 import static com.raelity.jvi.core.G.p_sicl;
 import static com.raelity.jvi.core.Misc01.beep_flush;
 import static com.raelity.jvi.manager.ViManager.eatme;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /**
  * This class presents a editable text field for picking up command entry

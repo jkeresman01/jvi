@@ -19,7 +19,7 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
-package com.raelity.text;
+package com.raelity.jvi.lib;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -245,7 +245,7 @@ public class RegExpFactory {
     Class<?> cls = Class.forName(reClassName);  // may throw
 
     // Must be a subclass of RegExp
-    if (!com.raelity.text.RegExp.class.isAssignableFrom(cls)) {
+    if (!com.raelity.jvi.lib.RegExp.class.isAssignableFrom(cls)) {
       throw new ClassCastException(reClassName + " does not extend "
 				   + "com.raelity.text.RegExp");
     }

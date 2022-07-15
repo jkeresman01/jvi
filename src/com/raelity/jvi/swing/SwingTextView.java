@@ -78,7 +78,7 @@ import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
-import com.raelity.text.MySegment;
+import com.raelity.jvi.lib.MySegment;
 
 import static java.awt.event.ActionEvent.ACTION_PERFORMED;
 import static java.lang.Math.abs;
@@ -87,7 +87,7 @@ import static java.lang.Math.round;
 import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.manager.ViManager.eatme;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /**
  *  Presents a swing editor interface for use with vi. There is

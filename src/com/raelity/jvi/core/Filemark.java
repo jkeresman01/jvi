@@ -44,7 +44,7 @@ import static java.util.logging.Level.*;
 import static com.raelity.jvi.manager.ViManager.dialogEx;
 import static com.raelity.jvi.manager.ViManager.getFS;
 import static com.raelity.jvi.manager.ViManager.getFactory;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /** A mark that can be persisted. The mark is not fully functional if
  * the associated file is not opened in a window.

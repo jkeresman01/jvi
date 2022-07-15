@@ -25,9 +25,9 @@ import com.raelity.jvi.lib.CharTab;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.*;
-import com.raelity.text.RegExp;
-import com.raelity.text.RegExpJava;
-import com.raelity.text.MySegment;
+import com.raelity.jvi.lib.RegExp;
+import com.raelity.jvi.lib.RegExpJava;
+import com.raelity.jvi.lib.MySegment;
 
 import static java.lang.Math.min;
 
@@ -39,7 +39,7 @@ import static com.raelity.jvi.core.G.curwin;
 import static com.raelity.jvi.core.G.drawSavedVisualBounds;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /**
  * Buffer: structure that holds information about one file, primarily

@@ -33,7 +33,7 @@ import com.raelity.jvi.core.Options;
 
 import org.netbeans.api.annotations.common.NonNull;
 
-import com.raelity.text.TextUtil;
+import com.raelity.jvi.lib.TextUtil;
 
 /**
  *

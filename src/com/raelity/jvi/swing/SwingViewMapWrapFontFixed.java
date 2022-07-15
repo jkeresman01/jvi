@@ -29,7 +29,7 @@ import javax.swing.text.BadLocationException;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.core.G;
 
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /**
  *

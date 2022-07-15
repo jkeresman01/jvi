@@ -27,11 +27,11 @@ import com.raelity.jvi.ViBuffer.BIAS;
 import com.raelity.jvi.*;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.manager.*;
-import com.raelity.text.TextUtil;
+import com.raelity.jvi.lib.TextUtil;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /**
  * See MagicRedoOriginal for introductory comments and discussion of issues.

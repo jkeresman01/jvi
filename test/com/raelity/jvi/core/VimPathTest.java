@@ -35,7 +35,7 @@ import org.junit.Test;
 import org.openide.util.Exceptions;
 
 import com.raelity.jvi.lib.*;
-import com.raelity.text.StringSegment;
+import com.raelity.jvi.lib.StringSegment;
 
 import static org.junit.Assert.*;
 //import static org.junit.jupiter.api.Assertions.*;

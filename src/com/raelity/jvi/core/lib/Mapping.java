@@ -19,7 +19,7 @@
  */
 package com.raelity.jvi.core.lib;
 
-import com.raelity.text.TextUtil;
+import com.raelity.jvi.lib.TextUtil;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 

@@ -50,14 +50,14 @@ import com.raelity.jvi.*;
 import com.raelity.jvi.core.lib.Constants.CBU;
 import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
-import com.raelity.text.TextUtil;
+import com.raelity.jvi.lib.TextUtil;
 
 import static java.util.logging.Level.*;
 
 import static com.raelity.jvi.core.Ops.LOG;
 import static com.raelity.jvi.core.Register.*;
-import static com.raelity.jvi.lib.LibUtil.assignContents;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.Util.assignContents;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /** return clipboard for idx, else null if not valid idx
  * or clipboard is not available. */

@@ -17,7 +17,7 @@
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.text;
+package com.raelity.jvi.lib;
 
 // - VERIFY NEW MATCH IS NON DESTRUCTIVE OF RESULT CLASS
 // - DETERMINE behavior when something like ...(...)|(...) is

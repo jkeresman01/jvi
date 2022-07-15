@@ -30,7 +30,7 @@ import com.raelity.jvi.core.lib.NotSupportedException;
 import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.ViManager;
-import com.raelity.text.MySegment;
+import com.raelity.jvi.lib.MySegment;
 
 import static com.raelity.jvi.core.GetChar.*;
 import static com.raelity.jvi.core.Misc.*;

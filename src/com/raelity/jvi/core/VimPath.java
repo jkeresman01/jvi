@@ -35,7 +35,7 @@ import com.raelity.jvi.core.Commands.AbstractColonAction;
 import com.raelity.jvi.core.Commands.ColonEvent;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.*;
-import com.raelity.text.StringSegment;
+import com.raelity.jvi.lib.StringSegment;
 
 import static java.nio.file.Files.isDirectory;
 import static java.nio.file.Files.isExecutable;

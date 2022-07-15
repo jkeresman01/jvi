@@ -18,7 +18,7 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
-package com.raelity.text;
+package com.raelity.jvi.lib;
 
 import java.text.CharacterIterator;
 import java.util.Arrays;

@@ -45,7 +45,7 @@ import com.raelity.jvi.core.Commands.AbstractColonAction;
 import com.raelity.jvi.core.Commands.ColonEvent;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.manager.*;
-import com.raelity.text.MySegment;
+import com.raelity.jvi.lib.MySegment;
 
 import static java.util.logging.Level.*;
 
@@ -57,7 +57,7 @@ import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Messages.*;
 import static com.raelity.jvi.manager.ViManager.eatme;
 import static com.raelity.jvi.manager.ViManager.getFactory;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /**
  * Keep track of vi marks.

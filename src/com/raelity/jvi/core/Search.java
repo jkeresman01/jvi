@@ -28,10 +28,10 @@ import com.raelity.jvi.core.lib.Messages;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.manager.ViManager;
-import com.raelity.text.RegExp;
-import com.raelity.text.RegExpFactory;
-import com.raelity.text.RegExpPatternError;
-import com.raelity.text.MySegment;
+import com.raelity.jvi.lib.RegExp;
+import com.raelity.jvi.lib.RegExpFactory;
+import com.raelity.jvi.lib.RegExpPatternError;
+import com.raelity.jvi.lib.MySegment;
 
 import static java.util.logging.Level.*;
 
@@ -48,7 +48,7 @@ import com.google.common.eventbus.Subscribe;
 import com.raelity.jvi.options.*;
 
 import static com.raelity.jvi.manager.ViManager.eatme;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /**
  * Searching, regexp and substitution.

@@ -17,7 +17,7 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
-package com.raelity.text;
+package com.raelity.jvi.lib;
 
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;

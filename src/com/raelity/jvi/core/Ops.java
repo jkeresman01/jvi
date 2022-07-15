@@ -25,7 +25,7 @@ import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.*;
-import com.raelity.text.MySegment;
+import com.raelity.jvi.lib.MySegment;
 
 import static com.raelity.jvi.core.JviClipboard.*;
 import static com.raelity.jvi.core.Misc.*;

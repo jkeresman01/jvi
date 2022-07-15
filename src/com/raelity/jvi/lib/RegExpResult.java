@@ -19,7 +19,7 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
-package com.raelity.text;
+package com.raelity.jvi.lib;
 
 /**
  * This class hold the results of a regular expression pattern against

@@ -42,12 +42,12 @@ import com.raelity.jvi.options.OptUtil;
 import com.raelity.jvi.options.Option;
 import com.raelity.jvi.options.SetColonCommand;
 import com.raelity.jvi.options.Validator;
-import com.raelity.text.MySegment;
+import com.raelity.jvi.lib.MySegment;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Constants.FDO.*;
 import static com.raelity.jvi.core.lib.Constants.NF.*;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 import com.google.common.eventbus.Subscribe;
 

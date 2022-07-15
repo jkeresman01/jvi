@@ -17,7 +17,7 @@
  * 
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
-package com.raelity.text;
+package com.raelity.jvi.lib;
 
 /**
  * This exception occurs when a regular expression pattern

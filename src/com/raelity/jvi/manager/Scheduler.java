@@ -44,7 +44,7 @@ import static java.util.logging.Level.*;
 
 import static com.raelity.jvi.core.G.dbgEditorActivation;
 import static com.raelity.jvi.manager.ViManager.*;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /**
  *

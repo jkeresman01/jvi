@@ -43,7 +43,7 @@ import com.raelity.jvi.manager.*;
 
 import static java.util.logging.Level.*;
 
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /**
  * static methods to create options and populate option categories.

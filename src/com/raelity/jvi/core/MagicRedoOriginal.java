@@ -25,11 +25,11 @@ import java.util.logging.Logger;
 
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.manager.*;
-import com.raelity.text.TextUtil;
+import com.raelity.jvi.lib.TextUtil;
 
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 /**
  *
  * @author Ernie Rael <err at raelity.com>

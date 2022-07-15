@@ -52,7 +52,7 @@ import com.raelity.jvi.options.*;
 import static java.util.logging.Level.*;
 
 import static com.raelity.jvi.core.lib.Constants.ESC_STR;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 // inner classes ...........................................................
 

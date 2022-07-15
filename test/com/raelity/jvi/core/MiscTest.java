@@ -30,8 +30,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.raelity.text.MySegment;
-import com.raelity.text.StringSegment;
+import com.raelity.jvi.lib.MySegment;
+import com.raelity.jvi.lib.StringSegment;
 
 import static java.text.CharacterIterator.DONE;
 import static org.junit.Assert.*;

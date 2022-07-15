@@ -37,15 +37,15 @@ import com.raelity.jvi.ViTextView.Orientation;
 import com.raelity.jvi.ViTextView.SIZOP;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.*;
-import com.raelity.text.MySegment;
-import com.raelity.text.StringSegment;
+import com.raelity.jvi.lib.MySegment;
+import com.raelity.jvi.lib.StringSegment;
 
 import static com.raelity.jvi.core.Edit.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /**
  * do_window is some stuff from window.c and related.

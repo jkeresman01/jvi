@@ -19,6 +19,10 @@
 
 package com.raelity.text;
 
+import com.raelity.jvi.lib.MySegment;
+import com.raelity.jvi.lib.TextUtil;
+import com.raelity.jvi.lib.StringSegment;
+
 import java.text.StringCharacterIterator;
 import java.util.List;
 

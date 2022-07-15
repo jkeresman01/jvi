@@ -34,7 +34,7 @@ import java.util.prefs.Preferences;
 
 import com.raelity.jvi.core.G;
 
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /**
  * Monitor preferences subtrees for creation and/or changes.

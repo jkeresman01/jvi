@@ -26,7 +26,7 @@ import com.raelity.jvi.options.VimOption.F;
 import static java.util.logging.Level.CONFIG;
 import static java.util.logging.Level.FINE;
 
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /**
  * Implement ":se[t]".

@@ -61,7 +61,7 @@ import java.util.logging.Level;
 
 import com.raelity.jvi.core.*;
 
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /**
  * The vim algorithm for traversing windows with the ^W_^W style commands is

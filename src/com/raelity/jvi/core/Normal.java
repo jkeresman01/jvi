@@ -45,8 +45,8 @@ import com.raelity.jvi.core.lib.NotSupportedException;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.*;
 import com.raelity.jvi.swing.KeyBinding;
-import com.raelity.text.TextUtil;
-import com.raelity.text.MySegment;
+import com.raelity.jvi.lib.TextUtil;
+import com.raelity.jvi.lib.MySegment;
 
 import static java.text.CharacterIterator.DONE;
 

@@ -6,7 +6,7 @@ import java.util.Set;
 
 import com.raelity.jvi.core.Commands.ColonAction;
 
-import static com.raelity.text.TextUtil.sf;
+import static com.raelity.jvi.lib.TextUtil.sf;
 
 /**
  * A registered command is represented by this class.
