@@ -36,7 +36,7 @@ import com.raelity.jvi.options.*;
 import com.raelity.text.TextUtil;
 
 import static com.raelity.jvi.core.Hook.setJViBusy;
-import static com.raelity.jvi.core.Util.*;
+import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Constants.FDO.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
@@ -817,7 +817,7 @@ public class GetChar {
 
         // try to enter the count (in place of a previous count)
         if (count != 0) {
-            while (Util.isdigit(c)) {	// skip "old" count
+            while (Misc01.isdigit(c)) {	// skip "old" count
                 c = read_redo(false, old_redo);
             }
             stuffbuff.append(count);

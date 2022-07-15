@@ -31,7 +31,7 @@ import static com.raelity.jvi.core.JviClipboard.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Normal.*;
 import static com.raelity.jvi.core.Register.*;
-import static com.raelity.jvi.core.Util.*;
+import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Constants.NF.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
@@ -226,7 +226,7 @@ public class Ops
 	    && oap.line_count == 1
 	    && oap.op_type == OP_DELETE
 	  //&& *ml_get(oap.start.lnum) == NUL
-	    && Util.getCharAt(G.curbuf.getLineStartOffset(
+	    && getCharAt(G.curbuf.getLineStartOffset(
                                             oap.start.getLine())) == '\n') // DONE
     {
       //
@@ -234,7 +234,7 @@ public class Ops
       // 'cpoptions' (Vi compatible).
       //
       if (vim_strchr(G.p_cpo, 0, CPO_EMPTYREGION) >= 0) {
-	Util.beep_flush();
+	beep_flush();
         return false;
       }
       return true;
@@ -252,7 +252,7 @@ public class Ops
       if (oap.regname != 0) {
 	// check for read-only register
 	if (!valid_yank_reg(oap.regname, true)) {
-	  Util.beep_flush();
+	  beep_flush();
 	  return false;
 	}
 	get_yank_register(oap.regname, true); // yank into specif'd reg.
@@ -411,7 +411,7 @@ public class Ops
       MySegment oldp;
       block_prep(oap, bd, lnum, true);
 
-      oldp = Util.ml_get(lnum);
+      oldp = ml_get(lnum);
       if (bd.textlen == 0) {       /* nothing to delete */
         sb.append(oldp);
         continue;
@@ -497,7 +497,7 @@ public class Ops
         G.curwin.deleteChar(lineStart + bd.textcol,
                             lineStart + bd.textcol + bd.textlen);
       } else {
-        oldp = Util.ml_get(lnum);
+        oldp = ml_get(lnum);
         newp = new StringBuilder();
         //newp = alloc_check((unsigned)STRLEN(oldp) + 1 - n);
         newp.setLength(oldp.length() - 1 - n); // -1 '\n', no +1 for '\n' // DONE
@@ -512,7 +512,7 @@ public class Ops
                     (oldp.length()-1) - oldp_idx); // STRLEN(oldp) + 1)
         // replace the line
         newp.setLength(STRLEN(newp));
-        Util.ml_replace(lnum, newp);
+        ml_replace(lnum, newp);
       }
     }
     return finishPositionColumn;
@@ -598,7 +598,7 @@ public class Ops
       if (oap.motion_type == MLINE) {
         oap.start.setColumn(0);
         fpos = oap.start.copy();
-        int col = Util.lineLength(oap.end.getLine());
+        int col = lineLength(oap.end.getLine());
         if (col != 0)
           --col;
         oap.end.setColumn(col);
@@ -656,7 +656,7 @@ public class Ops
       //fpos.set(lnum, 0);
       block_prep(oap, bd, lnum, true);
 
-      oldBuf = Util.ml_get(lnum);
+      oldBuf = ml_get(lnum);
 
       if (bd.textlen == 0 /* && (!virtual_op || bd.is_MAX)*/)
       {
@@ -759,7 +759,7 @@ public class Ops
       } else {
         //oldp = ml_get_curline();
         //oldBuf = Util.ml_get(fpos.getLine());
-        oldBuf = Util.ml_get(lnum);
+        oldBuf = ml_get(lnum);
         oldp = 0;
         oldlen = oldBuf.length() - 1; //excluce the \n // DONE
         //newp = alloc_check((unsigned)STRLEN(oldp) + 1 + n);
@@ -788,7 +788,7 @@ public class Ops
         // delete trailing nulls, vim alloc extra when tabs (seen with gdb)
         newBuf.setLength(STRLEN(newBuf));
         // replace the line
-        Util.ml_replace(lnum, newBuf);
+        ml_replace(lnum, newBuf);
       }
     }
   }
@@ -825,7 +825,7 @@ public class Ops
     } else {				    // not block mode
       if (oap.motion_type == MLINE) {
         pos.setColumn(0);      // this is start
-        int col = Util.lineLength(oap.end.getLine());
+        int col = lineLength(oap.end.getLine());
         if (col != 0) {
           --col;
         }
@@ -884,14 +884,14 @@ public class Ops
     char    nc;
 
     nc = c;
-    if (Util.islower(c)) {
+    if (islower(c)) {
       if (op_type != OP_LOWER)
-        nc = Util.toupper(c);
+        nc = toupper(c);
     }
-    else if (Util.isupper(c))
+    else if (isupper(c))
     {
       if (op_type != OP_UPPER)
-        nc = Util.tolower(c);
+        nc = tolower(c);
     }
     return nc;
   }
@@ -948,7 +948,7 @@ public class Ops
       return;
     
     final ViFPOS cursor = G.curwin.w_cursor;
-    if ((l > cursor.getColumn()) && !Util.lineempty(cursor.getLine())) //&& !virtual_op
+    if ((l > cursor.getColumn()) && !lineempty(cursor.getLine())) //&& !virtual_op
       inc_cursor();
     
     // check for still on same line (<CR> in inserted text meaningless)
@@ -958,7 +958,7 @@ public class Ops
       stateOpSplit.oap = oap.copy();
       stateOpSplit.bd = new block_def();
                                     //(long)STRLEN(ml_get(oap.start.lnum));
-      stateOpSplit.pre_textlen = Util.lineLength(oap.start.getLine());
+      stateOpSplit.pre_textlen = lineLength(oap.start.getLine());
       stateOpSplit.bd.textcol = cursor.getColumn();
     }
     
@@ -986,11 +986,11 @@ public class Ops
     // block.
     //
     if (oap.block_mode && oap.start.getLine() != oap.end.getLine()) {
-      firstline = Util.ml_get(oap.start.getLine());
+      firstline = ml_get(oap.start.getLine());
         //
         // take a copy of the required bit.
         //
-      if ((ins_len = Util.lineLength(oap.start.getLine()) - pre_textlen) > 0) {
+      if ((ins_len = lineLength(oap.start.getLine()) - pre_textlen) > 0) {
         //vim_strncpy(ins_text, firstline + bd.textcol, ins_len);
         ins_text = firstline.subSequence(bd.textcol,
                                          bd.textcol + ins_len).toString();
@@ -998,7 +998,7 @@ public class Ops
                                                                     linenr++) {
           block_prep(oap, bd, linenr, true);
           if (!bd.is_short /*|| virtual_op*/) {
-            oldp = Util.ml_get(linenr);
+            oldp = ml_get(linenr);
             int oldp_idx = 0;
             // newp = alloc_check((unsigned)(STRLEN(oldp) + ins_len + 1));
             newp = new StringBuilder();
@@ -1011,7 +1011,7 @@ public class Ops
             oldp_idx += bd.textcol;
             mch_memmove(newp, offset, oldp, oldp_idx, 
                         oldp.length() - 1 - oldp_idx); // STRLEN(oldp) + 1);
-            Util.ml_replace(linenr, newp);
+            ml_replace(linenr, newp);
           }
         }
         adjust_cursor();
@@ -1032,7 +1032,7 @@ public class Ops
     while (--count > 0) {
       line_breakcheck();
       if (/*got_int ||*/ do_join(insert_space, redraw) == FAIL) {
-	Util.beep_flush();
+	beep_flush();
 	break;
       }
     }
@@ -1066,12 +1066,12 @@ public class Ops
 
       MySegment seg = G.curbuf.getLineSegment(nextline);
       int offset02 = offset00 + skipwhite(seg, 0);
-      int nextc = Util.getCharAt(offset02);
+      int nextc = getCharAt(offset02);
 
       if(insert_space) {
 	if(offset01 > 0) {
 	  // there's a char before first line's '\n'
-	  lastc = Util.getCharAt(offset01 - 1); // last char of line // DONE
+	  lastc = getCharAt(offset01 - 1); // last char of line // DONE
 	} else {
 	  // at begin file, say lastc is a newline
 	  lastc = '\n'; // DONE
@@ -1130,7 +1130,7 @@ static void block_prep(OPARG oap, block_def bdp, int lnum, boolean is_del) {
   bdp.start_char_vcols = 0;
 
   eatme(bdp.is_EOL, bdp.pre_whitesp);
-  pstart = Util.truncateNewline(Util.ml_get(lnum));
+  pstart = truncateNewline(Misc01.ml_get(lnum));
 
   pstart_idx = 0;
   prev_pstart_idx = 0;
@@ -1526,8 +1526,8 @@ op_do_addsub(char command, int Prenum1)
         /* Get the info about the block before entering the text */
         block_prep(oap, bd, oap.start.getLine(), true);
         //(long)STRLEN(ml_get(oap.start.lnum));
-        CharSequence firstline = Util.ml_get(oap.start.getLine())
-                .subSequence(bd.textcol, Util.lineLength(oap.start.getLine()));
+        CharSequence firstline = ml_get(oap.start.getLine())
+                .subSequence(bd.textcol, lineLength(oap.start.getLine()));
         
         if (oap.op_type == OP_APPEND)
           firstline = firstline.subSequence(bd.textlen, firstline.length());
@@ -1544,7 +1544,7 @@ op_do_addsub(char command, int Prenum1)
           /* Move the cursor to the character right of the block. */
           G.curwin.w_set_curswant = true;
           int tcol = cursor.getColumn();
-          MySegment seg = Util.ml_get_curline();
+          MySegment seg = ml_get_curline();
           while (seg.fetch(tcol) != '\n' // DONE
                   && (tcol < bd.textcol + bd.textlen))
             tcol++;
@@ -1562,7 +1562,7 @@ op_do_addsub(char command, int Prenum1)
           cursor.set(oap.end);//.w_cursor = oap.end;
           check_cursor_col();
           /* Works just like an 'i'nsert on the next character. */
-          if (!Util.lineempty(cursor.getLine())
+          if (!lineempty(cursor.getLine())
                   && oap.start_vcol != oap.end_vcol)
             inc_cursor();
         }
@@ -1616,8 +1616,8 @@ op_do_addsub(char command, int Prenum1)
      * Subsequent calls to ml_get() flush the firstline data - take a
      * copy of the required string.
      */
-        firstline = Util.ml_get(oap.start.getLine())
-                .subSequence(bd.textcol, Util.lineLength(oap.start.getLine()));
+        firstline = ml_get(oap.start.getLine())
+                .subSequence(bd.textcol, lineLength(oap.start.getLine()));
         
         if (oap.op_type == OP_APPEND)
           firstline = firstline.subSequence(bd.textlen, firstline.length());
@@ -1681,7 +1681,7 @@ op_do_addsub(char command, int Prenum1)
     for (; lnum <= endLine; lnum++) {
       block_prep(oap, bdp, lnum, true);
 
-      oldp = Util.ml_get(lnum);
+      oldp = ml_get(lnum);
 
       if (bdp.is_short && b_insert) {
         sb.append(oldp);
@@ -1788,7 +1788,7 @@ op_do_addsub(char command, int Prenum1)
       if (bdp.is_short && b_insert)
         continue;	// OP_INSERT, line ends before block start
       
-      oldp = Util.ml_get(lnum);
+      oldp = ml_get(lnum);
       
       count = 0;
       if (b_insert) {
@@ -1860,7 +1860,7 @@ op_do_addsub(char command, int Prenum1)
                     (oldp.length() - 1) - oldp_idx);
         
         newp.setLength(STRLEN(newp));
-        Util.ml_replace(lnum, newp);
+        ml_replace(lnum, newp);
       }
       
       if (lnum == oap.end.getLine()) {
@@ -1992,10 +1992,10 @@ op_do_addsub(char command, int Prenum1)
           if (G.VIsual_select && G.VIsual_mode == 'V') {
               if (G.VIsual.compareTo(cursor) < 0) {
                   G.VIsual.setColumn(0);
-                  cursor.setColumn(Util.lineLength(cursor.getLine()));
+                  cursor.setColumn(lineLength(cursor.getLine()));
               } else {
                   cursor.setColumn(0);
-                  G.VIsual.setColumn(Util.lineLength(G.VIsual.getLine()));
+                  G.VIsual.setColumn(lineLength(G.VIsual.getLine()));
               }
               G.VIsual_mode = 'v';
           }
@@ -2082,7 +2082,7 @@ op_do_addsub(char command, int Prenum1)
                 ViFPOS fpos = cursor.copy(); // doesn't use cursor line/col
                 oap.end_vcol = 0;
                 for (int l = oap.start.getLine(); l <= oap.end.getLine(); l++) {
-                  fpos.set(l, Util.lineLength(l)); // DONE
+                  fpos.set(l, lineLength(l)); // DONE
                   getvcol(G.curwin, fpos, null, null, miEnd);
                   end = miEnd.getValue();
                   if (end > oap.end_vcol)
@@ -2142,7 +2142,7 @@ op_do_addsub(char command, int Prenum1)
           else {
               oap.motion_type = MCHAR;
               if (G.VIsual_mode != CTRL_V
-                        && Util.ml_get_pos(oap.end).current() == '\n') { // DONE
+                        && ml_get_pos(oap.end).current() == '\n') { // DONE
                   oap.inclusive = false;
                   // Try to include the newline, unless it's an operator
                   // that works on lines only
@@ -2219,7 +2219,7 @@ op_do_addsub(char command, int Prenum1)
 	  oap.motion_type = MLINE;
 	else
 	{
-          new_col = Util.lineLength(new_line);
+          new_col = lineLength(new_line);
 	  if (new_col != 0)
 	  {
             --new_col;
@@ -2248,7 +2248,7 @@ op_do_addsub(char command, int Prenum1)
 	      // .... -1 > curbuf.b_ml.ml_line_count...
 	  if (  G.curwin.w_cursor.getLine() + oap.line_count - 1 >
 	      G.curbuf.getLineCount()) {
-	    Util.beep_flush();
+	    beep_flush();
 	  } else {
             runUndoable(() -> {
               do_do_join(oap.line_count, oap.op_type == OP_JOIN, true);
@@ -2259,7 +2259,7 @@ op_do_addsub(char command, int Prenum1)
 	case OP_DELETE:
 	  G.VIsual_reselect = false;	    /* don't reselect now */
 	  if (empty_region_error)
-	    Util.vim_beep();
+	    vim_beep();
 	  else {
             runUndoable(() -> {
               op_delete(oap);
@@ -2271,7 +2271,7 @@ op_do_addsub(char command, int Prenum1)
 	  if (empty_region_error)
 	  {
 	    if (!gui_yank)
-	      Util.vim_beep();
+	      vim_beep();
 	  }
 	  else
 	    op_yank(oap, false, !gui_yank);
@@ -2281,7 +2281,7 @@ op_do_addsub(char command, int Prenum1)
 	case OP_CHANGE:
 	  G.VIsual_reselect = false;	    /* don't reselect now */
 	  if (empty_region_error)
-	    Util.vim_beep();
+	    vim_beep();
 	  else
 	  {
 	    // don't restart edit after typing <Esc> in edit()
@@ -2329,7 +2329,7 @@ op_do_addsub(char command, int Prenum1)
 	case OP_LOWER:
 	case OP_ROT13:
 	  if (empty_region_error)
-	    Util.vim_beep();
+	    vim_beep();
 	  else {
             runUndoable(() -> {
               op_tilde(oap);
@@ -2349,7 +2349,7 @@ op_do_addsub(char command, int Prenum1)
 	case OP_APPEND:
 	  G.VIsual_reselect = false;	/* don't reselect now */
           if (empty_region_error)
-            Util.vim_beep();
+            vim_beep();
           else {
             /* This is a new edit command, not a restart.  We don't edit
              * recursively. */
@@ -2371,7 +2371,7 @@ op_do_addsub(char command, int Prenum1)
 	case OP_REPLACE:
 	  G.VIsual_reselect = false;	/* don't reselect now */
           if (empty_region_error)
-            Util.vim_beep();
+            vim_beep();
           else 
             op_replace(oap, cap.nchar);
 	  break;

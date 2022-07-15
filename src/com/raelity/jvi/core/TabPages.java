@@ -31,7 +31,7 @@ import com.raelity.jvi.core.Commands.ColonEvent;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.*;
 
-import static com.raelity.jvi.core.Util.beep_flush;
+import static com.raelity.jvi.core.Misc01.beep_flush;
 
 /**
  *

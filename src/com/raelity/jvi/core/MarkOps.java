@@ -52,7 +52,7 @@ import static java.util.logging.Level.*;
 import static com.raelity.jvi.ViTextView.MARKOP.NEXT;
 import static com.raelity.jvi.ViTextView.MARKOP.PREV;
 import static com.raelity.jvi.ViTextView.MARKOP.TOGGLE;
-import static com.raelity.jvi.core.Util.*;
+import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Messages.*;
 import static com.raelity.jvi.manager.ViManager.eatme;
@@ -156,7 +156,7 @@ class MarkOps
             return OK;
         }
 
-        if (Util.islower(c)) {
+        if (islower(c)) {
             int i;
             i = c - 'a';
             G.curbuf.b_namedm[i].setMark(G.curwin.w_cursor);
@@ -164,7 +164,7 @@ class MarkOps
             return OK;
         }
 
-        if (Util.isupper(c)) {
+        if (isupper(c)) {
             if(G.curwin.getAppView().isNomad()) {
                 Msg.emsg("Can not 'mark' a nomadic editor");
                 return FAIL;
@@ -325,10 +325,10 @@ class MarkOps
                 ViFPOS fpos = G.curbuf.createFPOS(lineoff + col);
                 m.setMark(fpos);
             }
-        } else if (Util.islower(c)) {
+        } else if (islower(c)) {
             int i = c - 'a';
             m = G.curbuf.b_namedm[i];
-        } else if(Util.isupper(c) /* || Util.isdigit(c) */) { // named file mark
+        } else if(isupper(c) /* || Util.isdigit(c) */) { // named file mark
             Filemark fm = Filemark.get(String.valueOf(c));
             File f = G.curbuf.getFile();
             if(fm != null && f != null) {
@@ -656,9 +656,9 @@ class MarkOps
             // clear specified marks only
             String arg = cev.getArgString();
             for (int p = 0; p < arg.length(); p++) {
-                boolean lower = Util.islower(arg.charAt(p));
-                boolean digit = Util.isdigit(arg.charAt(p));
-                if (lower || digit || Util.isupper(arg.charAt(p)))
+                boolean lower = islower(arg.charAt(p));
+                boolean digit = isdigit(arg.charAt(p));
+                if (lower || digit || isupper(arg.charAt(p)))
                 {
                     char from;
                     char to = 0;
@@ -668,9 +668,9 @@ class MarkOps
                         from = arg.charAt(p);
                         if(p + 2 < arg.length())
                             to = arg.charAt(p + 2);
-                        if (!(lower ? Util.islower(to)
-                                    : (digit ? Util.isdigit(to)
-                                        : Util.isupper(to)))
+                        if (!(lower ? islower(to)
+                                    : (digit ? isdigit(to)
+                                        : isupper(to)))
                                 || to < from)
                         {
                             Msg.emsg(e_invarg2 + arg.substring(p));
@@ -922,7 +922,7 @@ class MarkOps
                         continue;
                     }
                     char c = mName.charAt(0);
-                    if (!Util.islower(c)) {
+                    if (!islower(c)) {
                         continue;
                     }
                     FPOS fpos = new FPOS(buf);

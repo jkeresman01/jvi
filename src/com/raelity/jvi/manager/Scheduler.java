@@ -292,7 +292,7 @@ public class Scheduler
             // If modal, and everything went well, then activeCommandEntry is
             // already NULL. But not modal, then it isn't null.
             Options.kd().println("startCommandEntry: exception"); //REROUTE
-            Util.vim_beep();
+            Misc01.vim_beep();
             LOG.log(Level.SEVERE, null, ex);
             activeCommandEntry = null;
             getCore().resetCommand(false);

@@ -39,7 +39,6 @@ import static com.raelity.jvi.core.Normal.*;
 import static com.raelity.jvi.core.Ops.*;
 import static com.raelity.jvi.core.Options.*;
 import static com.raelity.jvi.core.Register.*;
-import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Constants.FDO.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
@@ -210,7 +209,7 @@ public class Edit {
       if(startln)
         Insstart.setColumn(0);
 
-      Insstart_textlen = Misc.linetabsize(Util.ml_get_curline());
+      Insstart_textlen = Misc.linetabsize(ml_get_curline());
       Insstart_blank_vcol = MAXCOL;
 
       if (!G.did_ai)
@@ -728,7 +727,7 @@ private static void edit_clearPutchar()
 }
 
   private static void removeUnusedWhiteSpace() {
-    if (Util.ml_get_curline().toString().trim().isEmpty()) {
+    if (ml_get_curline().toString().trim().isEmpty()) {
       int startOffset =
         G.curbuf.getLineStartOffset(G.curwin.w_cursor.getLine());
       int endOffset = G.curbuf.getLineEndOffsetFromOffset(startOffset) - 1;
@@ -1268,7 +1267,7 @@ private static class GetLiteral implements HandleNextChar
         Normal.u_save_cursor();    // errors are ignored!
         //Insstart = G.curwin.w_cursor.copy();    // new insertion starts here
         Insstart.set(G.curwin.w_cursor);
-        Insstart_textlen = Misc.linetabsize(Util.ml_get_curline());
+        Insstart_textlen = Misc.linetabsize(ml_get_curline());
        //ai_col = 0;
         assert(G.State != VREPLACE);
         if (G.State == VREPLACE) {
@@ -2015,13 +2014,13 @@ private static class GetLiteral implements HandleNextChar
       temp = G.curwin.w_cursor.getOffset();
       if (!Options.can_bs(BS_EOL)		// only if "eol" included
               || do_join(false, true) == FAIL) {
-        Util.vim_beep();
+        vim_beep();
       } else {
         G.curwin.w_cursor.set(temp);
       }
     }
     else if (Misc.del_char(false) == FAIL)// delete char under cursor
-	Util.vim_beep();
+	vim_beep();
     G.did_ai = false;
     // #ifdef SMARTINDENT ... #endif
     GetChar.AppendCharToRedobuff(K_DEL);
@@ -2589,7 +2588,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
         G.curwin.w_set_curswant = true;	// so we stay at the end
     }
     else
-	Util.vim_beep();
+	vim_beep();
   }
   
   private static void ins_home() throws NotSupportedException {
@@ -2637,7 +2636,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
         G.curwin.w_set_curswant = true;
     }
     else
-	Util.vim_beep();
+	vim_beep();
   }
   
   private static void ins_right() throws NotSupportedException {
@@ -2664,7 +2663,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
       G.curwin.w_cursor.set(cursor.getLine() +1, 0);
     }
     else
-      Util.vim_beep();
+      vim_beep();
   }
   
   private static void ins_s_right() throws NotSupportedException {
@@ -2680,7 +2679,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
         G.curwin.w_set_curswant = true;
     }
     else
-	Util.vim_beep();
+	vim_beep();
   }
   
   private static void ins_up() throws NotSupportedException {
@@ -2698,7 +2697,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
                                 //#ifdef CINDENT............#endif
     }
     else
-	Util.vim_beep();
+	vim_beep();
   }
   
   private static void ins_pageup() throws NotSupportedException {
@@ -2732,7 +2731,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
                                 //#ifdef CINDENT............#endif
     }
     else
-	Util.vim_beep();
+	vim_beep();
   }
   
   private static void ins_pagedown() throws NotSupportedException {
@@ -2763,13 +2762,13 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
     int ptr;
     
     if (lnum < 1 || lnum > G.curbuf.getLineCount()) {
-      Util.vim_beep();
+      vim_beep();
       return NUL;
     }
     
     /* try to advance to the cursor column */
     temp = 0;
-    seg = Util.ml_get(lnum);
+    seg = ml_get(lnum);
     ptr = seg.offset;
     //validate_virtcol();
     MutableInt mi = new MutableInt();
@@ -2781,7 +2780,7 @@ ins_bs(char c, int mode, MutableBoolean inserted_space_p)
     if (temp > virtcol)
       --ptr;
     if ((c = seg.r(ptr)) == '\n') {
-      Util.vim_beep();
+      vim_beep();
       c = 0;
     }
     return c;

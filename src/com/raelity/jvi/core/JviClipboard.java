@@ -519,7 +519,7 @@ private Object[] getClipboardData(Clipboard cb)
             if(type != null && stringData != null)
                 return new Object[]{type, stringData};
         } catch(UnsupportedFlavorException | IOException ex) {
-            Util.beep_flush();
+            Misc01.beep_flush();
             LOG.warning(() ->
                     TextUtil.sf("Clipboard-%s: getClipboardData: %s",
                                ex.getMessage()));

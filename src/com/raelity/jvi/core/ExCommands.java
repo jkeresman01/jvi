@@ -50,8 +50,6 @@ import static com.raelity.jvi.core.Edit.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.Register.*;
-import static com.raelity.jvi.core.Util.isdigit;
-import static com.raelity.jvi.core.Util.vim_str2nr;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.manager.ViManager.eatme;
 
@@ -337,7 +335,7 @@ private static Commands.ColonEvent parseCommandGuts(String commandLine,
                                 modalResponse = 'n';
                                 break;
                             default:
-                                Util.beep_flush();
+                                beep_flush();
                                 break;
                         }
                         if(modalResponse != 0) {
@@ -382,7 +380,7 @@ private static Commands.ColonEvent parseCommandGuts(String commandLine,
         //            for now just hack in the two non-alpha commands we've got
         //if( ! Util.isalpha(commandLine.charAt(sidx)))
         //NOTE: might use vim_strchr("&<>")
-        if( ! (Util.isalpha(commandLine.charAt(sidx))
+        if( ! (isalpha(commandLine.charAt(sidx))
                 || "&".equals(String.valueOf(commandLine.charAt(sidx)))
                 || "<".equals(String.valueOf(commandLine.charAt(sidx)))
                 || ">".equals(String.valueOf(commandLine.charAt(sidx)))))
@@ -397,7 +395,7 @@ private static Commands.ColonEvent parseCommandGuts(String commandLine,
             // Thus a string ending in a single digit might be a command
 
             char c01 = commandLine.charAt(sidx);
-            if(Util.isdigit(c01)) {
+            if(isdigit(c01)) {
                 String t = commandLine.substring(sidx01, sidx+1);
                 if(Commands.hasExactCommand(t))
                     sidx++;
@@ -423,7 +421,7 @@ private static Commands.ColonEvent parseCommandGuts(String commandLine,
         cci = Commands.lookupCommand(command);
         if(cci == null) {
             Msg.emsg("Not an editor command: " + command);
-            Util.beep_flush();
+            beep_flush();
             return null;
         }
     } else {
@@ -510,8 +508,7 @@ static String getaltfname(boolean errmsg)
     ViAppView av = AppViews.getAppView(-1);
     String fname = "";
     if(av != null) {
-        Path path = null;
-        path = av.getPath();
+        Path path = av.getPath();
         if(path != null)
             fname = VimPath.getVimDisplayPath(path);
     }
@@ -673,7 +670,7 @@ static int get_address(
             case '\\':      // "\?", "\/" or "\&", repeat search
             *******************************/
             default:
-                if(Util.isdigit(c)) {
+                if(isdigit(c)) {
                     sidx = getdigits(s, sidx, lnum);
                 }
         }
@@ -686,14 +683,14 @@ static int get_address(
                 break;
             }
             c = s.charAt(sidx);
-            if (c != '-' && c != '+' && !Util.isdigit(c)) {
+            if (c != '-' && c != '+' && !isdigit(c)) {
                 break;
             }
             if (lnum.getValue() == MAXLNUM) {
                 // "+1" is same as ".+1"
                 lnum.setValue(G.curwin.w_cursor.getLine());
             }
-            if (Util.isdigit(c)) {
+            if (isdigit(c)) {
                 i = '+';        // "number" is same as "+number"
             } else {
                 i = c;
@@ -704,7 +701,7 @@ static int get_address(
                 c = s.charAt(sidx);
             }
 
-            if (!Util.isdigit(c)) {  // '+' is '+1', but '+0' is not '+1'
+            if (!isdigit(c)) {  // '+' is '+1', but '+0' is not '+1'
                 n = 1;
             } else {
                 MutableInt mi = new MutableInt(0);
@@ -752,7 +749,7 @@ static public String getFullCommandName(String cmd)
             // Note a more restrictive validity test may occur later
             if(r.length() == 1
                     && valid_yank_reg(r.charAt(0), false)
-                    && !Util.isdigit(r.charAt(0))) {
+                    && !isdigit(r.charAt(0))) {
                 oa.regname = r.charAt(0);
                 nextArg++;
             }

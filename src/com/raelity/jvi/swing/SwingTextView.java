@@ -30,7 +30,6 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
@@ -85,6 +84,7 @@ import static java.awt.event.ActionEvent.ACTION_PERFORMED;
 import static java.lang.Math.abs;
 import static java.lang.Math.round;
 
+import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.manager.ViManager.eatme;
 import static com.raelity.text.TextUtil.sf;
@@ -535,7 +535,7 @@ public abstract class SwingTextView extends TextView
     public void insertNewLine()
     {
         if ( ! isEditable() ) {
-            Util.beep_flush();
+            beep_flush();
             return;
         }
         xact(DefaultEditorKit.insertBreakAction);
@@ -545,7 +545,7 @@ public abstract class SwingTextView extends TextView
     public void insertTab()
     {
         if ( ! isEditable() ) {
-            Util.beep_flush();
+            beep_flush();
             return;
         }
         xact(DefaultEditorKit.insertTabAction);
@@ -556,7 +556,7 @@ public abstract class SwingTextView extends TextView
     public void replaceChar( char c, boolean advanceCursor )
     {
         if ( !isEditable() ) {
-            Util.beep_flush();
+            beep_flush();
             return;
         }
         ViMark pos = getBuffer().createMark(w_cursor.getOffset(),
@@ -575,7 +575,7 @@ public abstract class SwingTextView extends TextView
     public void deletePreviousChar()
     {
         if ( !isEditable() ) {
-            Util.beep_flush();
+            beep_flush();
             return;
         }
         xact(DefaultEditorKit.deletePrevCharAction);
@@ -591,7 +591,7 @@ public abstract class SwingTextView extends TextView
     public void insertChar( char c )
     {
         if ( !isEditable() ) {
-            Util.beep_flush();
+            beep_flush();
             return;
         }
         if ( c == '\t' ) {
@@ -613,7 +613,7 @@ public abstract class SwingTextView extends TextView
     public void insertTypedChar( char c )
     {
         if ( !isEditable() ) {
-            Util.vim_beep();
+            vim_beep();
             return;
         }
         xact(DefaultEditorKit.defaultKeyTypedAction, String.valueOf(c));
@@ -631,7 +631,7 @@ public abstract class SwingTextView extends TextView
     public void replaceString( int start, int end, String s )
     {
         if ( !isEditable() ) {
-            Util.beep_flush();
+            beep_flush();
             return;
         }
         getBuffer().replaceString(start, end, s);
@@ -642,7 +642,7 @@ public abstract class SwingTextView extends TextView
     public void deleteChar( int start, int end )
     {
         if ( !isEditable() ) {
-            Util.beep_flush();
+            beep_flush();
             return;
         }
         getBuffer().deleteChar(start, end);
@@ -653,7 +653,7 @@ public abstract class SwingTextView extends TextView
     public void insertText( int offset, String s )
     {
         if ( !isEditable() ) {
-            Util.beep_flush();
+            beep_flush();
             return;
         }
         getBuffer().insertText(offset, s);
@@ -684,7 +684,7 @@ public abstract class SwingTextView extends TextView
     public boolean openNewLine( DIR op )
     {
         if ( !isEditable() ) {
-            Util.beep_flush();
+            beep_flush();
             return false;
         }
         if ( op == DIR.BACKWARD && w_cursor.getLine() == 1 ) {
@@ -768,35 +768,35 @@ public abstract class SwingTextView extends TextView
     @Override
     public void findMatch()
     {
-        Util.beep_flush();
+        beep_flush();
     }
 
 
     @Override
     public void jumpDefinition( String ident )
     {
-        Util.beep_flush();
+        beep_flush();
     }
 
 
     @Override
     public void anonymousMark( MARKOP op, int count )
     {
-        Util.beep_flush();
+        beep_flush();
     }
 
 
     @Override
     public void jumpList( JLOP op, int count )
     {
-        Util.beep_flush();
+        beep_flush();
     }
 
 
     @Override
     public void foldOperation( FOLDOP op, int start, int end, boolean isVisual )
     {
-        Util.beep_flush();
+        beep_flush();
     }
 
     @Override
@@ -815,7 +815,7 @@ public abstract class SwingTextView extends TextView
     @Override
     public void wordMatchOperation( WMOP op )
     {
-        Util.beep_flush();
+        beep_flush();
     }
 
 
@@ -1732,7 +1732,7 @@ public abstract class SwingTextView extends TextView
         try {
             r = modelToView(offset);
         } catch (BadLocationException e) {
-            Util.beep_flush();
+            beep_flush();
             return;
         }
         setVpTopPoint(getLocation(r));

@@ -33,11 +33,7 @@ import javax.swing.undo.UndoableEdit;
 
 import com.raelity.jvi.ViBadLocationException;
 import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.core.Edit;
-import com.raelity.jvi.core.G;
-import com.raelity.jvi.core.Misc;
-import com.raelity.jvi.core.TextView;
-import com.raelity.jvi.core.Util;
+import com.raelity.jvi.core.*;
 import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.swing.SwingBuffer;
 import com.raelity.jvi.swing.UndoGroupManager;
@@ -93,7 +89,7 @@ abstract public class SimpleBuffer extends SwingBuffer
         if(undoMan.canUndo()) {
             doUndoRedo(true);
         } else
-            Util.beep_flush();
+            Misc01.beep_flush();
     }
 
     @Override
@@ -101,7 +97,7 @@ abstract public class SimpleBuffer extends SwingBuffer
         if(undoMan.canRedo()) {
             doUndoRedo(false);
         } else
-            Util.beep_flush();
+            Misc01.beep_flush();
     }
 
     private void doUndoRedo(boolean isUndo)

@@ -51,7 +51,7 @@ import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
 
-import static com.raelity.jvi.core.Util.*;
+import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.manager.ViManager.eatme;
 import static com.raelity.text.TextUtil.*;
 

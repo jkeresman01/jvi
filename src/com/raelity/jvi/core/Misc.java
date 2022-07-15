@@ -24,7 +24,6 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.text.CharacterIterator;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -388,7 +387,7 @@ public class Misc {
 
   /** @return character at the position */
   static char gchar_pos(ViFPOS pos) {
-    return Util.getCharAt(pos.getOffset());
+    return Misc01.getCharAt(pos.getOffset());
   }
 
   /** @return character at the position */
@@ -451,7 +450,7 @@ public class Misc {
     int extra;
     char curChar = 0;
 
-    if (G.State != REPLACE || (curChar = Util.getChar()) == '\n') // DONE
+    if (G.State != REPLACE || (curChar = Misc01.getChar()) == '\n') // DONE
 	extra = 1;
     else
 	extra = 0;
@@ -508,7 +507,7 @@ public class Misc {
     ViFPOS fpos = G.curwin.w_cursor;
 
     // Can't do anything when the cursor is on the NUL after the line.
-    if(Util.getChar() == '\n') { // DONE
+    if(Misc01.getChar() == '\n') { // DONE
       return FAIL;
     }
 
@@ -521,7 +520,7 @@ public class Misc {
   static int del_chars(int count, boolean fixpos) {
     final ViFPOS cursor = G.curwin.w_cursor;
     int col = cursor.getColumn();
-    MySegment oldp = Util.ml_get(cursor.getLine());
+    MySegment oldp = Misc01.ml_get(cursor.getLine());
     int oldlen = oldp.count -1; // exclude the newline
 
     // Can't do anything when the cursor is on the NUL after the line.
@@ -819,7 +818,7 @@ public class Misc {
     }
     if (currLine > 1) {                              // there is a prior line
       int newLine = currLine - 1;
-      lp.set(newLine, Util.lineLength(newLine));
+      lp.set(newLine, Misc01.lineLength(newLine));
 
       // #ifdef FEAT_MBYTE ... #endif
 
@@ -1429,7 +1428,7 @@ public class Misc {
           break;
         }
         v = s.charAt(sidx);
-        if( ! Util.isdigit(v)) {
+        if( ! Misc01.isdigit(v)) {
           break;
         }
         rval = 10 * rval + v - '0';

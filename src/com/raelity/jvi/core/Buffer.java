@@ -182,7 +182,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag
     @Override
     public ViMark getMark(char c) {
         // NEEDSWORK: buf.getMark, handle all per buf marks
-        if (Util.islower(c)) {
+        if (Misc01.islower(c)) {
             int i = c - 'a';
             return b_namedm[i];
         }
@@ -245,7 +245,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag
     @Override
     public void readOnlyError(final ViTextView tv)
     {
-        Util.beep_flush();
+        Misc01.beep_flush();
         EventQueue.invokeLater(() -> {
             tv.getStatusDisplay().displayErrorMessage(
                     "Can not modify write protected area or file."

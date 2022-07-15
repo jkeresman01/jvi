@@ -49,12 +49,7 @@ import static com.raelity.jvi.core.Misc.readPrefsList;
 import static com.raelity.jvi.core.Msg.*;
 import static com.raelity.jvi.core.Misc.skipwhite;
 import static com.raelity.jvi.core.Misc.writePrefsList;
-import static com.raelity.jvi.core.Util.beep_flush;
-import static com.raelity.jvi.core.Util.isalpha;
-import static com.raelity.jvi.core.Util.isdigit;
-import static com.raelity.jvi.core.Util.strnicmp;
-import static com.raelity.jvi.core.Util.vim_str2nr;
-import static com.raelity.jvi.core.Util.vim_strchr;
+import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.lib.Constants.NUL;
 import static com.raelity.jvi.manager.ViManager.eatme;
 import static com.raelity.text.TextUtil.sf;
@@ -225,7 +220,7 @@ private static boolean get_list_range(StringSegment str,
     MutableInt p_num = new MutableInt();
     
     skipwhite(str);
-    if(str.current() == '-' || isdigit(str.current())) { // parse "from" part of range
+    if(str.current() == '-' || Misc01.isdigit(str.current())) { // parse "from" part of range
         int tidx = str.getIndex();
         vim_str2nr(str, tidx, null, p_len, 0, 0, p_num, null);
         str.setIndex(tidx + p_len.getValue());
@@ -267,9 +262,9 @@ private static void processHistoryCommand(String command,
     MutableInt p_hisidx2 = new MutableInt(-1);
     skipwhite(arg);
     int argStartIdx = arg.getIndex();
-    if(!(isdigit(arg.current())
+    if(!(Misc01.isdigit(arg.current())
             || arg.current() == '-' || arg.current() == ',')) {
-        while(isalpha(arg.current())
+        while(Misc01.isalpha(arg.current())
                 || vim_strchr(":/?", arg.current()) != null) {  // ":=@>/?"
             arg.next();
         }

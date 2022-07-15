@@ -42,7 +42,6 @@ import com.raelity.jvi.ViTextView.HSCROLL;
 import com.raelity.jvi.ViTextView.TAGOP;
 import com.raelity.jvi.core.Register.Yankreg;
 import com.raelity.jvi.core.lib.NotSupportedException;
-import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.*;
 import com.raelity.jvi.swing.KeyBinding;
@@ -69,7 +68,6 @@ import static com.raelity.jvi.core.Search01.*;
 import static com.raelity.jvi.core.Search02.*;
 import static com.raelity.jvi.core.Search03.*;
 import static com.raelity.jvi.core.TabPages.gotoTabpage;
-import static com.raelity.jvi.core.Util.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.core.lib.Constants.FDO.*;
@@ -198,7 +196,7 @@ public class Normal
     } catch(Throwable e) {
       if(!G.curwin.isShutdown()) {
         LOG.log(Level.SEVERE, null, e);
-        Util.beep_flush();
+        beep_flush();
         resetCommand(false);
       }
     }
@@ -1228,7 +1226,7 @@ normal_end: {
 
 	  case CTRL_W:
 	    if (!checkclearop(oap))
-	      Misc01.do_window(ca.nchar, ca.count0); // everything is in window.c
+	      do_window(ca.nchar, ca.count0); // everything is in window.c
 	    break;
 
 	    /*
@@ -1451,7 +1449,7 @@ normal_end: {
       v_updateVisualState();
 
     /* Don't leave the cursor past the end of the line */
-    if (G.curwin.w_cursor.getColumn() > 0 && Util.getChar() == '\n') // DONE
+    if (G.curwin.w_cursor.getColumn() > 0 && getChar() == '\n') // DONE
         G.curwin.w_cursor.set(G.curwin.getCaretPosition() -1);
     ui_cursor_shape();
   }
@@ -1480,7 +1478,7 @@ normal_end: {
     // if i == 0: try to find an identifier
     // if i == 1: try to find any string
     //
-    MySegment seg = Util.ml_get_curline();
+    MySegment seg = ml_get_curline();
     for (i = ((find_type & FIND_IDENT) != 0) ? 0 : 1;	i < 2; ++i)
     {
       //
@@ -1609,7 +1607,7 @@ normal_end: {
 
   static void clearopbeep(OPARG oap) {
     clearop(oap);
-    Util.beep_flush();
+    beep_flush();
   }
 
   //
@@ -2094,12 +2092,12 @@ normal_end: {
         }
         if( G.curwin.w_cursor.compareTo(G.VIsual) < 0)
         {
-          ptrSeg = Util.ml_get_pos(G.curwin.w_cursor);
+          ptrSeg = ml_get_pos(G.curwin.w_cursor);
           n = G.VIsual.getColumn() - G.curwin.w_cursor.getColumn() + 1;
         }
         else
         {
-          ptrSeg = Util.ml_get_pos(G.VIsual);
+          ptrSeg = ml_get_pos(G.VIsual);
           n = G.curwin.w_cursor.getColumn() - G.VIsual.getColumn() + 1;
         }
         end_visual_mode();
@@ -2326,7 +2324,7 @@ normal_end: {
 	  if (	   (cap.oap.op_type == OP_DELETE
 		    || cap.oap.op_type == OP_CHANGE)
 		   && !cap.oap.inclusive
-		   && !Util.lineempty(cursor.getLine())) {
+		   && !lineempty(cursor.getLine())) {
 	    cap.oap.inclusive = true;
 	  } else {
             G.curwin.w_cursor.set(cursor.getLine() + 1, 0);
@@ -2338,9 +2336,9 @@ normal_end: {
 	if (cap.oap.op_type == OP_NOP) {
 	  // Only beep and flush if not moved at all
 	  if (n == cap.count1)
-	    Util.beep_flush();
+	    beep_flush();
 	} else {
-	  if (!Util.lineempty(cursor.getLine())) {
+	  if (!lineempty(cursor.getLine())) {
 	    cap.oap.inclusive = true;
 	  }
 	}
@@ -2400,7 +2398,7 @@ normal_end: {
 	  // don't adjust op_end now, otherwise it won't work
 	  if (	   (cap.oap.op_type == OP_DELETE
 		    || cap.oap.op_type == OP_CHANGE)
-		   && !Util.lineempty(cursor.getLine()))
+		   && !lineempty(cursor.getLine()))
 	  {
 	    G.curwin.w_cursor.set(cursor.getOffset() + 1);
 	    retval = true;
@@ -2409,7 +2407,7 @@ normal_end: {
 	}
 	// Only beep and flush if not moved at all
 	else if (cap.oap.op_type == OP_NOP && n == cap.count1) {
-	  Util.beep_flush();
+	  beep_flush();
 	}
 	break;
       }
@@ -3096,7 +3094,7 @@ nv_brackets(CMDARG cap, int dir)
     if (checkclearopq(cap.oap))
       return;
 
-    if (Util.lineempty(G.curwin.w_cursor.getLine())
+    if (lineempty(G.curwin.w_cursor.getLine())
                 && G.p_ww_tilde) {
       clearopbeep(cap.oap);
       return;
@@ -3168,7 +3166,7 @@ nv_brackets(CMDARG cap, int dir)
        else if (cap.cmdchar == 'C' || cap.cmdchar == 'D')
             G.curwin.updateCurswant(null, MAXCOL);
     }
-    cap.cmdchar = Util.vim_strchr(trans, cap.cmdchar).charAt(1);
+    cap.cmdchar = vim_strchr(trans, cap.cmdchar).charAt(1);
     nv_operator(cap);
   }
 
@@ -3316,7 +3314,7 @@ nv_brackets(CMDARG cap, int dir)
           if (cap.count0 > 0) { /*use previously selected part */
               if (resel_VIsual_mode == NUL)   /* there is none */
               {
-                  Util.beep_flush();
+                  beep_flush();
                   return;
               }
               G.VIsual = G.curwin.w_cursor.copy();
@@ -3534,7 +3532,7 @@ nv_brackets(CMDARG cap, int dir)
               || G.curbuf.b_visual_start.getLine() > G.curbuf.getLineCount()
               // || ! G.curbuf.b_visual_end.isValid()
             )
-            Util.beep_flush();
+            beep_flush();
         else
         {
             final ViFPOS cursor = G.curwin.w_cursor;
@@ -4031,7 +4029,7 @@ nv_brackets(CMDARG cap, int dir)
           else if(pp.getLine() > 1)
           {
             int line = pp.getLine() - 1;
-            pp.set(line, Util.lineLength(line));
+            pp.set(line, lineLength(line));
           }
       }
   }
@@ -4050,7 +4048,7 @@ nv_brackets(CMDARG cap, int dir)
       G.curwin.clearSelection();
     } else if (cap.oap.op_type == OP_NOP && opnum == 0
 	     && cap.count0 == 0 && cap.oap.regname == 0 && !p_im) {
-      Util.vim_beep();
+      vim_beep();
     }
     clearop(cap.oap);
     if (p_im && G.restart_edit == 0) {
@@ -4110,7 +4108,7 @@ nv_brackets(CMDARG cap, int dir)
     switch (cap.cmdchar) {
       case 'A':	/* "A"ppend after the line */
         G.curwin.w_set_curswant = true;
-        Util.endLine();
+        Misc01.endLine();
         // G.op.xop(ViOp.THIS_END_LINE, this);
         break;
 
@@ -4120,7 +4118,7 @@ nv_brackets(CMDARG cap, int dir)
 
       case 'a':	/* "a"ppend is like "i"nsert on the next character. */
         int offset = G.curwin.w_cursor.getOffset();
-        int c = Util.getCharAt(offset);
+        int c = getCharAt(offset);
         if(c != '\n') { // DONE
           G.curwin.w_cursor.set(offset+1);
         }
@@ -4311,7 +4309,7 @@ nv_brackets(CMDARG cap, int dir)
             was_visual = true;
             regname = cap.oap.regname;
             regname = adjust_clip_reg(regname);
-            if (regname == 0 || regname == '"' || Util.isdigit(regname)
+            if (regname == 0 || regname == '"' || isdigit(regname)
                     || (cbOptHasUnnamed() && isCbName(regname))) {
               // the delete is going to overwrite the register we want to
               // put, save it first.

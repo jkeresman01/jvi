@@ -53,7 +53,7 @@ import static com.raelity.jvi.core.Normal.find_ident_under_cursor;
 import static com.raelity.jvi.core.Ops.*;
 import static com.raelity.jvi.core.Ops.LOG;
 import static com.raelity.jvi.core.Search.last_search_pat;
-import static com.raelity.jvi.core.Util.*;
+import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.manager.ViManager.eatme;
@@ -547,7 +547,7 @@ public static boolean valid_yank_reg(char regname, boolean writing)
 {
     if (regname > '~')
         return false;
-    return Util.isalnum(regname)
+    return Misc01.isalnum(regname)
             || (!writing && vim_strchr("/.%#:", 0, regname) >= 0)
             || regname == '"'
             || regname == '-'
@@ -573,11 +573,11 @@ static boolean get_yank_register(char regname, boolean writing)
         return ret;
     }
     i = regname;
-    if (Util.isdigit(i))
+    if (isdigit(i))
         i -= '0';
-    else if (Util.islower(i))
+    else if (islower(i))
         i -= 'a' - 10;
-    else if (Util.isupper(i)) {
+    else if (isupper(i)) {
         i -= 'A' - 10;
         y_append = true;
     } else if (regname == '-')
@@ -677,7 +677,7 @@ static int do_record(char c)
     
     if ( ! G.Recording) {	    // start recording
         // registers 0-9, a-z and " are allowed
-        if (c > '~' || (!Util.isalnum(c) && c != '"'))
+        if (c > '~' || (!Misc01.isalnum(c) && c != '"'))
             retval = FAIL;
         else {
             G.Recording = true;
@@ -1059,7 +1059,7 @@ public static int op_yank(OPARG oap, boolean deleting, boolean mess)
     // check for read-only register
     if (oap.regname != 0 && !valid_yank_reg(oap.regname, true))
     {
-        Util.beep_flush();
+        beep_flush();
         return FAIL;
     }
     if (oap.regname == '_')	    // black hole: nothing to do
@@ -1121,7 +1121,7 @@ public static int op_yank(OPARG oap, boolean deleting, boolean mess)
             copy_spaces(pnew, pnew_idx, bd.startspaces);
             pnew_idx += bd.startspaces;
             
-            mch_memmove(pnew, pnew_idx, Util.ml_get(lnum), bd.textstart,
+            mch_memmove(pnew, pnew_idx, ml_get(lnum), bd.textstart,
                                                          bd.textlen);
             pnew_idx += bd.textlen;
             
@@ -1197,7 +1197,7 @@ public static int op_yank(OPARG oap, boolean deleting, boolean mess)
         op_start.setColumn(0);
         // op_end.setColumn(MAXCOL); NEEDSWORK: need way to set ViMark to MAXCOL
         // put it on the newline
-        op_end.setColumn(Util.lineLength(op_end.getLine()));
+        op_end.setColumn(lineLength(op_end.getLine()));
     }
     G.curbuf.b_op_start.setMark(op_start);
     G.curbuf.b_op_end.setMark(op_end);
@@ -1344,7 +1344,7 @@ public static void do_put(int regname_, int dir, int count, int flags)
     if(yreg.y_type == MCHAR) {
         if(dir == FORWARD) {
             // increment position, unless pointing at new line
-            if(Util.getCharAt(offset) != '\n') { // DONE
+            if(getCharAt(offset) != '\n') { // DONE
                 offset++;
             }
         }
@@ -1417,7 +1417,7 @@ public static void do_put(int regname_, int dir, int count, int flags)
                         G.curbuf.getLineEndOffset(G.curbuf.getLineCount()), "\n"); // DONE
             }
             // get the old line and advance to the position to insert at
-            oldp = Util.ml_get(line);
+            oldp = ml_get(line);
             oldlen = oldp.length() - 1; // -1 to ignore '\n' // DONE
             
             for (ptr_idx = 0; vcol < col && (c = oldp.charAt(ptr_idx)) != '\n'; ) { // DONE
@@ -1488,7 +1488,7 @@ public static void do_put(int regname_, int dir, int count, int flags)
             mch_memmove(newp, ptr_idx, oldp, bd.textcol + delcount,
                         (oldlen - bd.textcol - delcount + 1 - 1));
             newp.setLength(STRLEN(newp));
-            Util.ml_replace(line, newp);
+            ml_replace(line, newp);
             
             //++curwin.w_cursor.lnum;
             //if (i == 0)
@@ -1517,7 +1517,7 @@ public static void do_put(int regname_, int dir, int count, int flags)
             //len = (colnr_T)STRLEN(ml_get_curline());
             //if (curwin.w_cursor.col > len)
             //  curwin.w_cursor.col = len;
-            len = Util.ml_get(li).length() - 1;
+            len = ml_get(li).length() - 1;
             if(co > len)
                 co = len;
             op_end.set(li, co);

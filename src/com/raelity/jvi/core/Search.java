@@ -37,7 +37,7 @@ import static java.util.logging.Level.*;
 
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc.*;
-import static com.raelity.jvi.core.Util.*;
+import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
 
@@ -613,7 +613,7 @@ finished_block:
 	  // Stop on an empty line.
 	  //
 	  while (cls(fpos) == 0) {
-	    if (fpos.getColumn() == 0 && lineempty(fpos.getLine()))
+	    if (fpos.getColumn() == 0 && Misc01.lineempty(fpos.getLine()))
 	      break finished_block;
 	    if (dec(fpos) == -1)   // hit start of file, stop here
 	      return OK;
@@ -684,7 +684,7 @@ finished_block:
 	  //
 	  while (cls(fpos) == 0) {
 	    if (empty && fpos.getColumn() == 0
-		&& lineempty(fpos.getLine()))
+		&& Misc01.lineempty(fpos.getLine()))
 	      break finished_block;
 	    if (inc(fpos) == -1)    // hit end of file, stop here
 	      return FAIL;
@@ -742,7 +742,7 @@ finished:
       // Move backward to end of the previous word
       //
       while (cls(fpos) == 0) {
-	if (fpos.getColumn() == 0 && lineempty(fpos.getLine()))
+	if (fpos.getColumn() == 0 && Misc01.lineempty(fpos.getLine()))
 	  break;
 	if ((i = dec(fpos)) == -1 || (eol && i == 1))
 	  return OK;

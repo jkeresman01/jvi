@@ -27,12 +27,12 @@ import com.raelity.jvi.ViBadLocationException;
 import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViTextView;
-import com.raelity.jvi.core.Buffer;
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.core.Util;
+import com.raelity.jvi.core.*;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.DebugOption;
 import com.raelity.text.MySegment;
+
+import static com.raelity.jvi.core.Misc01.*;
 
 /**
  * The swing implementation of jVi's ViBuffer.
@@ -191,7 +191,7 @@ abstract public class SwingBuffer extends Buffer
     @Override
     public void replaceString(int start, int end, String s) {
         if( ! isEditable()) {
-            Util.beep_flush();
+            beep_flush();
             return;
         }
         try {
@@ -207,7 +207,7 @@ abstract public class SwingBuffer extends Buffer
     @Override
     public void deleteChar(int start, int end) {
         if( ! isEditable()) {
-            Util.beep_flush();
+            beep_flush();
             return;
         }
         try {
@@ -220,7 +220,7 @@ abstract public class SwingBuffer extends Buffer
     @Override
     public void insertText(int offset, String s) {
         if( ! isEditable()) {
-            Util.beep_flush();
+            beep_flush();
             return;
         }
     /* ******************************************
@@ -260,7 +260,7 @@ abstract public class SwingBuffer extends Buffer
     @Override
     public void replaceChar(ViMark pos, char c) {
         if( ! isEditable()) {
-            Util.beep_flush();
+            beep_flush();
             return;
         }
         String s = String.valueOf(c);
@@ -284,20 +284,20 @@ abstract public class SwingBuffer extends Buffer
     }
     
     protected void processTextException(BadLocationException ex) {
-        Util.beep_flush();
+        beep_flush();
     }
 
 
     @Override
     public void reindent(int line, int count) {
         ViManager.printf("reindent line %d, count %d", line, count);
-        Util.beep_flush();
+        beep_flush();
     }
 
     @Override
     public void reformat(int line, int count) {
         ViManager.printf("reformat line %d, count %d", line, count);
-        Util.beep_flush();
+        beep_flush();
     }
 
 
@@ -492,7 +492,7 @@ abstract public class SwingBuffer extends Buffer
             }
             
             // If not in insert mode, then no magic redo tracking
-            if(!Util.isInsertMode())
+            if(!isInsertMode())
                 return;
             String s;
 
@@ -519,7 +519,7 @@ abstract public class SwingBuffer extends Buffer
             }
 
             // If not in insert mode, then no magic redo tracking
-            if(!Util.isInsertMode())
+            if(!isInsertMode())
                 return;
 
             if(ViManager.getFactory().isEnabled()) {

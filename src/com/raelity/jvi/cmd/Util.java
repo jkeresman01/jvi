@@ -23,16 +23,20 @@ import com.raelity.jvi.ViWindowNavigator;
 import com.raelity.jvi.ViWindowNavigator.SplitterNode;
 import com.raelity.jvi.manager.AppViews;
 import com.raelity.jvi.manager.ViManager;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FontMetrics;
 import java.awt.event.ActionEvent;
+
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.TabSet;
 import javax.swing.text.TabStop;
+
+import com.raelity.jvi.core.*;
 
 /**
  *
@@ -94,7 +98,7 @@ public class Util
 
         } else {
             // don't let the last editor close
-            com.raelity.jvi.core.Util.beep_flush();
+            Misc01.beep_flush();
         }
         av = (PlayAppView) AppViews.getMruAppView(0);
         if(av != null)

@@ -31,7 +31,7 @@ import com.raelity.jvi.core.Options;
 import com.raelity.jvi.lib.MutableBoolean;
 import com.raelity.text.TextUtil;
 
-import static com.raelity.jvi.core.Util.*;
+import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
 import static com.raelity.text.TextUtil.sf;

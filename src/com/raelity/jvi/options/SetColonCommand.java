@@ -129,7 +129,7 @@ public class SetColonCommand extends AbstractColonAction
     private static void setCommandError(String msg) throws SetCommandException
     {
         Msg.emsg(msg);
-        Util.beep_flush();
+        Misc01.beep_flush();
         throw new SetCommandException(msg);
     }
     
@@ -527,7 +527,7 @@ public class SetColonCommand extends AbstractColonAction
             StringBuilder sb = new StringBuilder(newval);
             for(s = 0; s < sb.length(); s++) {
                 if((!vopt.f(F.COMMA) || sb.charAt(s) != ',')
-                    && Util.vim_strchr(sb, s + 1, sb.charAt(s)) >= 0)
+                    && Misc01.vim_strchr(sb, s + 1, sb.charAt(s)) >= 0)
                 {
                     sb.deleteCharAt(s);
                     --s; // since it is about to be incremented

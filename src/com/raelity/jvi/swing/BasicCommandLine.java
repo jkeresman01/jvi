@@ -60,8 +60,7 @@ import javax.swing.text.StyleContext;
 import javax.swing.text.TextAction;
 
 import com.raelity.jvi.*;
-import com.raelity.jvi.core.Options;
-import com.raelity.jvi.core.Util;
+import com.raelity.jvi.core.*;
 import com.raelity.jvi.options.DebugOption;
 
 
@@ -74,7 +73,7 @@ import com.raelity.jvi.manager.*;
 import static java.util.logging.Level.*;
 
 import static com.raelity.jvi.core.G.p_sicl;
-import static com.raelity.jvi.core.Util.beep_flush;
+import static com.raelity.jvi.core.Misc01.beep_flush;
 import static com.raelity.jvi.manager.ViManager.eatme;
 import static com.raelity.text.TextUtil.sf;
 
@@ -637,7 +636,7 @@ implements SwingCommandLine
                         setText(val);
                         return;
                     }
-                    SwingUtilities.invokeLater(() -> Util.beep_flush());
+                    SwingUtilities.invokeLater(() -> Misc01.beep_flush());
                     return;
                 } finally {
                     inUpDown = false;

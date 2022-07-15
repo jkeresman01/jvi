@@ -1,0 +1,31 @@
+<?
+import com.raelity.jvi.core.Misc01;
+import com.raelity.jvi.core.Util;
+?>
+
+"util2misc":
+Util.beep_flush($args$) => Misc01.beep_flush($args$);;
+Util.isalpha($args$) => Misc01.isalpha($args$);;
+
+Util.isdigit($args$) => Misc01.isdigit($args$);;
+Util.strnicmp($args$) => Misc01.strnicmp($args$);;
+Util.vim_str2nr($args$) => Misc01.vim_str2nr($args$);;
+Util.ml_get_curline($args$) => Misc01.ml_get_curline($args$);;
+Util.beep($args$) => Misc01.beep($args$);;
+Util.ml_get($args$) => Misc01.ml_get($args$);;
+Util.islower($args$) => Misc01.islower($args$);;
+Util.isupper($args$) => Misc01.isupper($args$);;
+Util.getCharAt($args$) => Misc01.getCharAt($args$);;
+Util.getChar($args$) => Misc01.getChar($args$);;
+Util.lineLength($args$) => Misc01.lineLength($args$);;
+Util.ml_get_pos($args$) => Misc01.ml_get_pos($args$);;
+Util.getLine($args$) => Misc01.getLine($args$);;
+
+Util.lineempty($args$) => Misc01.lineempty($args$);;
+Util.vim_strchr($args$) => Misc01.vim_strchr($args$);;
+Util.ml_replace($args$) => Misc01.ml_replace($args$);;
+Util.toupper($args$) => Misc01.toupper($args$);;
+Util.tolower($args$) => Misc01.tolower($args$);;
+Util.truncateNewline($args$) => Misc01.truncateNewline($args$);;
+Util.isInsertMode($args$) => Misc01.isInsertMode($args$);;
+Util.vim_beep($args$) => Misc01.vim_beep($args$);;

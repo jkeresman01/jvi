@@ -57,7 +57,7 @@ import com.raelity.jvi.options.*;
 
 import static java.lang.Math.min;
 
-import static com.raelity.jvi.core.Util.beep_flush;
+import static com.raelity.jvi.core.Misc01.beep_flush;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.Ops.*;
 import static com.raelity.jvi.core.Register.*;
