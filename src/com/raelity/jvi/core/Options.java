@@ -740,7 +740,7 @@ public final class Options {
             + " that is checked for set commands.  If 'modeline' is off"
             + " or 'modelines' is zero no lines are checked.");
 
-    createEnumSetOption(clipboard, EnumSet.noneOf(CB.class), CB.class, null);
+    createEnumSetOption(clipboard, EnumSet.noneOf(CBU.class), CBU.class, null);
     setupOptionDesc(Category.GENERAL, clipboard,
                "'clipboard' 'cb'",
                "use unnamed/unnamedplus clipboard for yank, delete, put");

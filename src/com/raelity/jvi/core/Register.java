@@ -38,7 +38,7 @@ import org.openide.util.lookup.ServiceProvider;
 import com.raelity.jvi.*;
 import com.raelity.jvi.core.Ops.block_def;
 import com.raelity.jvi.core.lib.*;
-import com.raelity.jvi.core.lib.Constants.CB;
+import com.raelity.jvi.core.lib.Constants.CBU;
 import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.*;
 import com.raelity.text.MySegment;
@@ -562,15 +562,15 @@ public static boolean valid_yank_reg(char regname, boolean writing)
  * If regname is 0 and writing, use register 0
  * If regname is 0 and reading, use previous register
  */
-// IN VIM9 THIS RETURNS A BOOLEAN
-static void get_yank_register(char regname, boolean writing)
+static boolean get_yank_register(char regname, boolean writing)
 {
-    char	    i;
+    char    i;
+    boolean ret = false;
     
     y_append = false;
     if (((regname == 0 && !writing) || regname == '"') && y_previous != null) {
         y_current = y_previous;
-        return;
+        return ret;
     }
     i = regname;
     if (Util.isdigit(i))
@@ -583,13 +583,15 @@ static void get_yank_register(char regname, boolean writing)
     } else if (regname == '-')
         i = DELETION_REGISTER;
     // When clipboard is not available, use register 0 instead of '*'/'+'
-    else if(isValidCb(name2Cb(regname)))
+    else if(isValidCb(name2Cb(regname))) {
         i = (char)name2CbIdx(regname);
-    else		/* not 0-9, a-z, A-Z or '-': use register 0 */
+        ret = true;
+    } else		/* not 0-9, a-z, A-Z or '-': use register 0 */
         i = 0;
     y_current = y_regs.get(i);
     if (writing)	/* remember the register we write into for do_put() */
         y_previous = y_current;
+    return ret;
 }
 
 /**
@@ -635,8 +637,7 @@ static Yankreg get_register(char name, Access access)
 static String get_register_value(char regname)
 {
     String val = null;
-    if(isCbName(regname))
-        regname = may_get_selection(regname);
+    regname = may_get_selection(regname);
     
     if(regname >= 'a' && regname <= 'z' || "\"-+*\000".indexOf(regname) >= 0) {
         Yankreg reg = get_register(regname, Access.READ_ONLY);
@@ -870,8 +871,7 @@ static int insert_reg(char regname, boolean literally)
     if (regname != NUL && !valid_yank_reg(regname, false))
         return FAIL;
     
-    if(isCbName(regname))
-        regname = may_get_selection(regname);
+    regname = may_get_selection(regname);
     
     Wrap<String> pArg = new Wrap<>();
     if (regname == '.')                 // insert last inserted text
@@ -890,8 +890,8 @@ static int insert_reg(char regname, boolean literally)
     }
     else				// name or number register
     {
-        // IN VIM9 THIS RETURNS A BOOLEAN USED TO SET LITERALLY
-        get_yank_register(regname, false);
+        if(get_yank_register(regname, false))
+            literally = true;
         if(y_current.isEmpty())
             retval = FAIL;
         else
@@ -1205,11 +1205,11 @@ public static int op_yank(OPARG oap, boolean deleting, boolean mess)
     // If we were yanking to the '*' register, send result to clipboard.
     // If no register was specified, and "unnamed" in 'clipboard', make a copy
     // to the '*' register.
-    
+    // v7.4.396 added unnamed|unnamed_saved
     boolean did_star = false;
     if(clip_star.avail && (isStarRegister(curr)
             || (!deleting && oap.regname == 0
-                && clip_unnamed_union.contains(CB.UNNAMED))))
+                && clip_unnamed_union.contains(CBU.UNNAMED))))
     {
         if(!isStarRegister(curr))
             // Copy the text from register 0 to the clipboard register.
@@ -1224,7 +1224,7 @@ public static int op_yank(OPARG oap, boolean deleting, boolean mess)
     // deleting and both "unnamedplus" and "unnamed".
     if(clip_plus.avail && (isPlusRegister(curr)
             || (!deleting && oap.regname == 0
-                && clip_unnamed_union.contains(CB.UNNAMED_PLUS))))
+                && clip_unnamed_union.contains(CBU.UNNAMED_PLUS))))
     {
         if(!isPlusRegister(curr))
             copy_yank_reg(y_regs.get(PLUS_REGISTER));
@@ -1232,7 +1232,7 @@ public static int op_yank(OPARG oap, boolean deleting, boolean mess)
         
         if(!clip_autoselect_star
                 && !clip_autoselect_plus
-                && !(clip_unnamed_union.contains(CB.UNNAMED_PLUS)
+                && !(clip_unnamed_union.contains(CBU.UNNAMED_PLUS)
                 && clip_unnamed_union.size() == 1)
                 && !(deleting && clip_unnamed_union.equals(unnamed_all))
                 && !did_star

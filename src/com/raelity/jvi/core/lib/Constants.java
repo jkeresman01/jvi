@@ -351,12 +351,12 @@ public interface Constants {
         public String toString() { return opt; }
     }
 
-    public enum CB {
+    public enum CBU {
         UNNAMED("unnamed"),
         UNNAMED_PLUS("unnamedplus");
 
         private final String opt;
-        private CB(String opt) {
+        private CBU(String opt) {
             this.opt = opt;
         }
 

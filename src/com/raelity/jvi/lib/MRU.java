@@ -33,6 +33,10 @@ import java.util.function.Supplier;
 /**
  * Most recently used collection.
  * With bulk operations the most recent is first in the Collection.
+ * <p>
+ * This could extend {@literal Iterable<T>}, with a big caveat
+ * once iterator() method is used, the class is otherwise rendered
+ * inoperable.
  * <pre>
  * performance for available implementations
  * 
@@ -73,10 +77,10 @@ void removeItem(T key);
 
 void trim();
 
-void forEach(Consumer<T> action);
+void forEach(Consumer<? super T> action);
 
 /** This iterator does not allow modification; may reference the collection. */
-Iterator<T> closingIterator();
+Iterable<T> closingIterable();
 
 /** return copy, most recently added is first in iteration */
 Collection<T> copy();
@@ -120,7 +124,7 @@ synchronized public List<T> copy()
 }
 
 @Override
-synchronized public void forEach(Consumer<T> action)
+synchronized public void forEach(Consumer<? super T> action)
 {
     if(closing)
         throw new IllegalStateException("Closing");
@@ -128,7 +132,13 @@ synchronized public void forEach(Consumer<T> action)
 }
 
 @Override
-synchronized public Iterator<T> closingIterator()
+public Iterable<T> closingIterable()
+{
+    return this::closingIterator;
+    //return () -> closingIteratorXXX();
+}
+
+synchronized private Iterator<T> closingIterator()
 {
     closing = true;
     ListIterator<T> it = delegate.listIterator(delegate.size());
@@ -179,7 +189,7 @@ synchronized public void trim()
     while(delegate.size() > iLimit)
         delegate.removeLast();
 }
-} // END CLASS ClosedfilesListMRU ////////////////////////////////////////
+    } // END CLASS ClosedfilesListMRU ////////////////////////////////////////
 
 
 /**
@@ -225,7 +235,7 @@ synchronized public List<T> copy()
 }
 
 @Override
-synchronized public void forEach(Consumer<T> action)
+synchronized public void forEach(Consumer<? super T> action)
 {
     if(closing)
         throw new IllegalStateException("Closing");
@@ -236,7 +246,13 @@ synchronized public void forEach(Consumer<T> action)
 }
 
 @Override
-synchronized public Iterator<T> closingIterator()
+public Iterable<T> closingIterable()
+{
+    return this::closingIterator;
+    //return () -> closingIteratorXXX();
+}
+
+synchronized private Iterator<T> closingIterator()
 {
     closing = true;
     ArrayList<T> l = new ArrayList<>(delegate);

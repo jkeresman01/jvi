@@ -135,7 +135,7 @@ public enum AppViews
                 avsClosedMRU.initialize(l);
                 avsClosedMRU.trim();
                 if(!l.isEmpty())
-                    new Thread(new CheckExists(l)).start();
+                    new Thread(new CheckClosedfileExists(l)).start();
             }
             @Subscribe
             public void writeClosedMRU(ViEvent.Shutdown ev)
@@ -143,7 +143,7 @@ public enum AppViews
                 avsClosedMRU.trim();
                 Hook hook = ViManager.getCore();
                 hook.writePrefsList(PREF_CLOSEDFILES,
-                                    avsClosedMRU.closingIterator(),
+                                    avsClosedMRU.closingIterable(),
                                     pClosedfilesImportCheck.getValue());
             }
         });
@@ -152,11 +152,11 @@ public enum AppViews
     /**
      * Remove items from the closed files list if they no longer exist.
      */
-    private static class CheckExists implements Runnable
+    private static class CheckClosedfileExists implements Runnable
     {
     private final Collection<String> fnames;
     
-    public CheckExists(Collection<String> fnames)
+    public CheckClosedfileExists(Collection<String> fnames)
     {
         this.fnames = fnames;
     }

@@ -41,6 +41,8 @@ import com.raelity.text.RegExp;
 import com.raelity.text.MySegment;
 
 import static com.raelity.jvi.core.Edit.*;
+import static com.raelity.jvi.core.JviClipboard.end_global_changes;
+import static com.raelity.jvi.core.JviClipboard.start_global_changes;
 import static com.raelity.jvi.core.MarkOps.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.Misc01.*;
@@ -509,14 +511,16 @@ public class Search01 {
    * <br>
    * Only do print for now.
    */
-
   static void global(ColonEvent cev) {
     G.global_busy = true;
+    // v7.4.396
+    start_global_changes();
     try {
       doGlobal(cev);
     }
     finally {
       G.global_busy = false;
+      end_global_changes();
     }
   }
   

@@ -47,6 +47,7 @@ import com.raelity.jvi.manager.ViManager;
  *
  * // NEEDSWORK: cache the current font metric, listen to font property changes
  */
+@SuppressWarnings({"serial", "CloneableImplementsClone"})
 public class SwingCaret extends DefaultCaret implements ViCaret
 {
     SwingPaintCaret viDelegate;

@@ -76,16 +76,10 @@ public class Hook
         return Misc.readPrefsList(nodeName, pImportMonitor);
     }
 
-    public void writePrefsList(String nodeName, Collection<String> l,
+    public void writePrefsList(String nodeName, Iterable<String> l,
                                PreferencesImportMonitor importMonitor)
     {
         Misc.writePrefsList(nodeName, l, importMonitor);
-    }
-
-    public void writePrefsList(String nodeName, Iterator<String> it,
-                               PreferencesImportMonitor importMonitor)
-    {
-        Misc.writePrefsList(nodeName, it, importMonitor);
     }
 
     public void abortVisualMode()

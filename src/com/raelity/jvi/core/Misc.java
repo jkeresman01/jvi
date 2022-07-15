@@ -107,20 +107,14 @@ public class Misc {
       return l;
     }
 
-    static void writePrefsList(String nodeName, Iterator<String> it,
+    static void writePrefsList(String nodeName, Iterable<String> iterable,
                                PreferencesImportMonitor importMonitor)
     {
       if(!importMonitor.isChange()) {
-        writeList(nodeName, it);
+        writeList(nodeName, iterable);
       } else {
         LOG.info(sf("jVi %s imported", nodeName));
       }
-    }
-
-    static void writePrefsList(String nodeName, Collection<String> l,
-                               PreferencesImportMonitor importMonitor)
-    {
-      writePrefsList(nodeName, l.iterator(), importMonitor);
     }
 
   /**
@@ -1040,8 +1034,9 @@ public class Misc {
     }
 
   /** Write an ordered list to prefs. */
-  private static void writeList(String nodeName, Iterator<String> it)
+  private static void writeList(String nodeName, Iterable<String> iterable)
   {
+    Iterator<String> it = iterable.iterator();
     try {
       Preferences prefs = ViManager.getFactory().getPreferences().node(nodeName);
       prefs.removeNode();

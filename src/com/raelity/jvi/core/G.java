@@ -26,7 +26,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 import com.raelity.jvi.*;
-import com.raelity.jvi.core.lib.Constants.CB;
+import com.raelity.jvi.core.lib.Constants.CBU;
 import com.raelity.jvi.core.lib.Constants.FDO;
 import com.raelity.jvi.core.lib.Constants.SICL;
 import com.raelity.jvi.manager.*;
@@ -300,7 +300,7 @@ public class G implements ViOptionBag
     // backspace over start of insert, and more
     static int p_bs;
     // clipboard, treat as boolean for 'unnamed'
-    static EnumSet<CB> p_cb;
+    static EnumSet<CBU> p_cb;
     //static boolean p_cb;
     // sentence search two spaces
     static boolean p_cpo_j;

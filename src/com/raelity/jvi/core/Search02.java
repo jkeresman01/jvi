@@ -243,7 +243,9 @@ public class Search02 {
                     for (;;)
                     {
                         initc = linep.charAt(pos_col);
-                        if (initc == NUL)
+                        if(initc == '\n')
+                            initc = NUL;
+                        if (initc == NUL) // DONE
                             break;
 
                         ptr = 0;

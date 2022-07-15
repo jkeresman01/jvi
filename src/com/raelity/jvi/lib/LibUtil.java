@@ -20,6 +20,7 @@
 package com.raelity.jvi.lib;
 
 import java.awt.event.ActionEvent;
+import java.util.Collection;
 
 import javax.swing.event.ChangeEvent;
 
@@ -34,6 +35,14 @@ import static com.raelity.text.TextUtil.sf;
 public class LibUtil
 {
 private LibUtil() {}
+
+// was assignment(Set<CBU> dst, Set<CBU> src)
+static public <T> void assignContents(Collection<? super T> dst,
+                                       Collection<? extends T> src)
+{
+    dst.clear();
+    dst.addAll(src);
+}
 
 public static String dumpEvent(ActionEvent e)
 {
