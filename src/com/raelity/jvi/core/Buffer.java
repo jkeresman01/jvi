@@ -26,7 +26,6 @@ import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.*;
 import com.raelity.jvi.lib.RegExp;
-import com.raelity.jvi.lib.RegExpJava;
 import com.raelity.jvi.lib.MySegment;
 
 import static java.lang.Math.min;
@@ -681,11 +680,8 @@ public abstract class Buffer implements ViBuffer, ViOptionBag
         }
         
         private int[] get() {
-            Pattern pattern = null;
             RegExp re = Search.getLastMatchingRegExp();
-            if(re instanceof RegExpJava) {
-                pattern = ((RegExpJava)re).getPattern();
-            }
+            Pattern pattern = re != null ? re.getPattern() : null;
 
             if(pattern != null && Options.doHighlightSearch()) {
                 int len = getLength();

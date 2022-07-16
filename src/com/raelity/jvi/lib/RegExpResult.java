@@ -21,6 +21,9 @@
 
 package com.raelity.jvi.lib;
 
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+
 /**
  * This class hold the results of a regular expression pattern against
  * an input. It is useful for saving the result of <i>RegExp.search</i>
@@ -32,55 +35,85 @@ package com.raelity.jvi.lib;
  * implications on performance depending on the regular expression
  * implementation.
  */
-public abstract class RegExpResult {
+public class RegExpResult
+{
+private MatchResult result;
+boolean matches;
 
-  /**
-   * Check if the associated search produced a match.
-   * @return True if the input matched. Otherwise false.
-   */
-  public abstract boolean isMatch();
+public RegExpResult(Matcher m, boolean matches) {
+    if(m == null) {
+        return;
+    }
+    this.result = m.toMatchResult();
+    this.matches = matches;
+}
+
+/**
+ * Check if the associated search produced a match.
+ * @return True if the input matched. Otherwise false.
+ */
+public boolean isMatch()
+{
+    return result != null && matches;
+}
 
   /**
    * Return the number of backreferences.
    */
-  public abstract int nGroup();
+  public int groupCount()
+  {
+      return result.groupCount();
+  }
 
-  /**
-   * Retrive backreference (matching string in the input) for the <i>i</i>th
-   * set of parenthesis in the pattern.
-   * The backreference groups
-   * are numbered starting with 1. If i == 0 then return the
-   * part of the input string that matched the pattern.
-   * @return The specified backreference or null if backreference
-   * did not match.
-   */
-  public abstract String group(int i);
-
-  /**
-   * The length of the of corresponding backreference. If i == 0
-   * then the length of the entire match is returned.
-   * @return The length of the specified backreference.
-   */
-  public abstract int length(int i);
-
-  /**
-   * The returned value is the offset from the beginning of the
-   * input to where the <i>i</i>th backreference starts.
-   * If i == 0 then the value is the offset in the input where
-   * entire match starts.
-   */
-  public abstract int start(int i);
-
-  /**
-   * The returned value is the offset from the beginning of the
-   * input to where the <i>i</i>th backreference ends.
-   * If i == 0 then the value is the offset in the input where
-   * entire match ends.
-   */
-  public abstract int stop(int i);
+/**
+ * Retrive backreference (matching string in the input) for the <i>i</i>th
+ * set of parenthesis in the pattern.
+ * The backreference groups
+ * are numbered starting with 1. If i == 0 then return the
+ * part of the input string that matched the pattern.
+ * @return The specified backreference or null if backreference
+ * did not match.
+ */
+public String group(int i)
+{
+    if(!matches)
+        return null;
+    return result.group(i);
 }
 
+/**
+ * The length of the of corresponding backreference. If i == 0
+ * then the length of the entire match is returned.
+ * @return The length of the specified backreference.
+ */
+public int length(int i)
+{
+    if(!matches || i > groupCount() || result.end(i) < 0)
+        return -1;
+    return result.end(i) - result.start(i);
+}
 
+/**
+ * The returned value is the offset from the beginning of the
+ * input to where the <i>i</i>th backreference starts.
+ * If i == 0 then the value is the offset in the input where
+ * entire match starts.
+ */
+public int start(int i) {
+    if(!matches)
+        return -1;
+    return result.start(i);
+}
 
-/*--- formatting done in "Sun Java Convention" style on 02-25-2000 ---*/
-
+/**
+ * The returned value is the offset from the beginning of the
+ * input to where the <i>i</i>th backreference ends.
+ * If i == 0 then the value is the offset in the input where
+ * entire match ends.
+ */
+public int end(int i) {
+    if(!matches)
+        return -1;
+    return result.end(i);
+}
+}

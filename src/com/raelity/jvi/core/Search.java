@@ -29,8 +29,6 @@ import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.Scheduler;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.lib.RegExp;
-import com.raelity.jvi.lib.RegExpFactory;
-import com.raelity.jvi.lib.RegExpPatternError;
 import com.raelity.jvi.lib.MySegment;
 
 import static java.util.logging.Level.*;
@@ -42,6 +40,8 @@ import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
 
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import com.google.common.eventbus.Subscribe;
 
@@ -922,10 +922,10 @@ finished:
       re = get_spat_cache(cleanPattern, ic);
       if(re == null) {
         try {
-          int flags = ic ? RegExp.IGNORE_CASE : 0;
-          re = RegExpFactory.create();
+          int flags = ic ? Pattern.CASE_INSENSITIVE : 0;
+          re = RegExp.create();
           re.compile(cleanPattern, flags);
-        } catch(RegExpPatternError ex) {
+        } catch(PatternSyntaxException ex) {
           Msg.emsg(ex.getMessage() + " [" + ex.getIndex() + "]" + pattern);
           re = null;
         }
@@ -1235,7 +1235,7 @@ finished:
           if(prog.search(seg.array, seg.offset, seg.count)) {
             lastMatchingRE = prog;
             match = prog.start(0) - seg.offset; // column index
-            matchend = prog.stop(0) - seg.offset;
+            matchend = prog.end(0) - seg.offset;
             submatch = first_submatch(prog);
             int eolColumn = G.curbuf.getLineEndOffset(lnum) -
                              G.curbuf.getLineStartOffset(lnum) - 1;
@@ -1274,7 +1274,7 @@ finished:
                                                 // NEEDSWORK: AT_BOL == FALSE
                     && prog.search(seg.array, seg.offset + p, seg.count - p)) {
                   match = prog.start(0) - seg.offset; // column index
-                  matchend = prog.stop(0) - seg.offset;
+                  matchend = prog.end(0) - seg.offset;
                   submatch = first_submatch(prog);
                 } else {
                   match_ok = false;
@@ -1297,7 +1297,7 @@ finished:
               for (;;)
               {
                 int colIdx = prog.start(0) - seg.offset;
-                int matchend01 = prog.stop(0) - seg.offset;
+                int matchend01 = prog.end(0) - seg.offset;
                 if (!at_first_line
                     || (((options & SEARCH_END) != 0)
                         ? (matchend01 - 1 + extra_col

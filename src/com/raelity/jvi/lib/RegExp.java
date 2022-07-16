@@ -20,6 +20,11 @@
 package com.raelity.jvi.lib;
 
 // - VERIFY NEW MATCH IS NON DESTRUCTIVE OF RESULT CLASS
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
 // - DETERMINE behavior when something like ...(...)|(...) is
 //   encountered, Should be numbered 1,2 is the non-matched
 //   null or empty? how many matches?
@@ -101,216 +106,196 @@ package com.raelity.jvi.lib;
  * </p>
  * @see RegExpFactory
  */
-public abstract class RegExp {
-  /** A compile option */
-  public static final int IGNORE_CASE = 0x01;
+public class RegExp
+{
+/**
+ * Create a new instance of a regular expression handler.
+ * <br>A NoClassDefFoundError is thrown if the factory
+ * is inoperable.
+ * @return An instance of a regular expression handler.
+ * @see RegExp
+ */
+public static RegExp create()
+{
+    return new RegExp();
+}
 
-  /** simple pattern matching only */
-  public static final int PATTERN_NONE = 0;
+/** A compile option */
+public static final int IGNORE_CASE = 0x01;
 
-  /** simple pattern matching only */
-  public static final int PATTERN_SIMPLE = 1;
+private RegExpResult result;
+private Pattern pat;
+    
+/**
+ * The escape character.
+ */
+protected char escape = '\\';
 
-  /** perl5 patterns */
-  public static final int PATTERN_PERL5 = 2;
+/**
+ * Records if the last call to search returned true.
+ */
+protected boolean matched = false;
 
-  /**
-   * The escape character.
-   */
-  protected char escape = '\\';
+/** Pick up the underlying java.util.regex.Pattern */
+public Pattern getPattern() {
+    return pat;
+}
 
-  /**
-   * Records if the last call to search returned true.
-   */
-  protected boolean matched = false;
+/**
+ * Prepare this regular expression to use <i>pattern</i>
+ * for matching.
+ * @param pattern The regular expression.
+ * @exception RegExpPatternError This is thrown if there
+ * is a syntax error detected in the regular expression.
+ */
+public void compile(String patternString, int compileFlags) 
+        throws PatternSyntaxException
+{
+    
+    int flags = Pattern.MULTILINE; // also treats end of string as newline
+    flags |= (compileFlags & Pattern.CASE_INSENSITIVE);
+    char fixupBuffer[];
+    if(patternString.startsWith("(?e=")
+            && patternString.length() >= 6
+            && patternString.charAt(5) == ')') {
+        // change the escape character
+        fixupBuffer = patternString.toCharArray();
+        patternString = fixupEscape(fixupBuffer, 6, fixupBuffer[4]);
+    } else if(escape != '\\') {
+        // change the escape character
+        patternString = fixupEscape(patternString.toCharArray(), 0, escape);
+    }
+    pat = Pattern.compile(patternString, flags);
+}
 
-  /**
-   * When true do max optimization.
-   */
-  protected boolean optim = false;
-
-  public static String getDisplayName() {
-    return "unnamed";
-  }
-
-  /**
-   * This method returns the type of pattern that is handled.
-   */
-  public static int patternType() {
-    return PATTERN_NONE;
-  }
-
-  /**
-   * This is used internally to determine if an underlying
-   * regular expression implementation is available.
-   * A direct implementation of RegExp always returns true.
-   * <p>Since this is usually accessed by a <b>Method</b>,
-   * it is declared public to reduce the security requirements.
-   * </p>
-   * @return True if the underlying regular expression
-   * implementation is available, otherwise false.
-   */
-  public static boolean canInstantiate() {
-    return false;
-  }
-
-  /**
-   * @return The name of the regular expression class that this
-   * class is adapting is returned.
-   */
-  public static String getAdaptedName() {
-    return null;
-  }
-
-  /**
-   * Use the specified char as the escape character.
-   * The escape character defaults to '\'.
-   * To have an effect this must be done before the <i>compile</i>
-   * method is invoked.
-   */
-  public void setEscape(char escape) {
-    this.escape = escape;
-  }
-
-  /**
-   * Use this before <i>compile</i> is called. When true
-   * the pattern parser is optimized for speed. Note this is
-   * called before compile. Not all regular expression
-   * packages have optional optimization. Optimization defaults
-   * to false.
-   */
-  public void enableOptimize(boolean state) {
-    optim = state;
-  }
-
-  /**
-   * Prepare this regular expression to use <i>pattern</i>
-   * for matching.
-   * @param pattern The regular expression.
-   * @exception RegExpPatternError This is thrown if there
-   * is a syntax error detected in the regular expression.
-   */
-  public void compile(String pattern)
-            throws RegExpPatternError {
-       compile(pattern, 0);
-   }
-
-  /**
-   * Prepare this regular expression to use <i>pattern</i>
-   * for matching.
-   * @param pattern The regular expression.
-   * @exception RegExpPatternError This is thrown if there
-   * is a syntax error detected in the regular expression.
-   */
-  public abstract void compile(String pattern, int compileFlags)
-            throws RegExpPatternError;
-
-  /**
-   * Search for match.
-   * @return true if <i>input</i> matches this regular expression.
-   */
-  public abstract boolean search(String input);
-
-  /**
-   * Search for a match in string starting at char position <i>start</i>
-   * @return true if <i>input</i> matches this regular expression.
-   */
-  public abstract boolean search(String input, int start);
-
-  /**
-   * Search for a match in char array starting at char position <i>start</i>
-   * with the indicated <i>length</i>.
-   * @return true if <i>input</i> matches this regular expression.
-   */
-  public abstract boolean search(char input[], int start, int length);
-
-  /**
-   * Check if the last call to <i>search</i> matched.
-   * @return True if the match succeeded. False if it failed
-   * or if no match has been attempted.
-   */
-  public boolean isMatch() {
+/**
+ * Search for a match in char array starting at char position <i>start</i>
+ * with the indicated <i>length</i>.
+ * @return true if <i>input</i> matches this regular expression.
+ */
+public boolean search(char[] input, int start, int len)
+{
+    MySegment s = new MySegment(input, 0, input.length, -1);
+    //System.err.print("\tstart: " + start + ", len: " + len);
+    Matcher m = pat.matcher(s).region(start, start+len);
+    m.useAnchoringBounds(false); //so /^ only matches beginning of line
+    //m.useTransparentBounds(true);
+    matched = m.find();
+    result = new RegExpResult(m, matched);
+    //System.err.println(matched ? " FOUND: " + start(0) + "," + stop(0):"");
+    if(start(0) >= start + len) {
+        //System.err.println("OUCH");
+        // Given a line 'xy\n', with start: 1, len: 3
+        // search the entire line
+        //     search(input, 1, 3) returns true with start(0) == 1 (CORRECT)
+        // search after the previous match, starting at the 'y'
+        //     search(input, 2, 2) return true with start(0) == 4 (WRONG)
+        // note that the start of the match is after the end of the input
+        // pattern (end is "exclusive")
+        matched = false;
+    }
     return matched;
-  }
+}
 
-  /**
-   * Returns a result object for the last call that used this
-   * RegExp for searching an input, for example <i>match</i>.
-   * Further calls to match do not change the RegExpResult
-   * that is returned.
-   * @return The results of the match or null if the match failed.
-   * @see RegExpResult
-   */
-  public abstract RegExpResult getResult();
+/**
+ * Check if the last call to <i>search</i> matched.
+ * @return True if the match succeeded. False if it failed
+ * or if no match has been attempted.
+ */
+public boolean isMatch()
+{
+    return matched;
+}
 
-  /**
-   * Return the number of backreferences; this is the number
-   * of parenthes pairs.
-   * @see RegExpResult#nGroup()
-   */
-  public abstract int nGroup();
+/**
+ * Returns a result object for the last call that used this
+ * RegExp for searching an input, for example <i>match</i>.
+ * Further calls to match do not change the RegExpResult
+ * that is returned.
+ * @return The results of the match or null if the match failed.
+ * @see RegExpResult
+ */
+public RegExpResult getResult()
+{
+    return result;
+}
 
-  /**
-   * Get the <i>i</i>th backreference.
-   * @see RegExpResult#group(int)
-   */
-  public abstract String group(int i);
+/**
+ * Return the number of backreferences; this is the number
+ * of parenthes pairs.
+ * @see RegExpResult#nGroup()
+ */
+public int nGroup() {
+    return result.groupCount();
+}
 
-  /**
-   * The length of the corresponding backreference.
-   @ see RegExpResult#length(int)
-   */
-  public abstract int length(int i);
+/**
+ * Get the <i>i</i>th backreference.
+ * @see RegExpResult#group(int)
+ */
+public String group(int i) {
+    return result.group(i);
+}
 
-  /**
-   * The offset from the beginning of the input to
-   * the start of the specified group.
-   * @see com.raelity.text.RegExpResult#start(int)
-   */
-  public abstract int start(int i);
+/**
+ * The length of the corresponding backreference.
+ * @ see RegExpResult#length(int)
+ */
+public int length(int i) {
+    return result.length(i);
+}
 
-  /**
-   * The offset from the beginning of the input to
-   * the end of the specified group.
-   * @see com.raelity.text.RegExpResult#stop(int)
-   */
-  public abstract int stop(int i);
+/**
+ * The offset from the beginning of the input to
+ * the start of the specified group.
+ * @see com.raelity.text.RegExpResult#start(int)
+ */
+public int start(int i) {
+    return result.start(i);
+}
 
-  // public abstract String[] split(String input);
+/**
+ * The offset from the beginning of the input to
+ * the end of the specified group.
+ * @see com.raelity.text.RegExpResult#stop(int)
+ */
+public int end(int i) {
+    return result.end(i);
+}
 
-  /**
-   * This function is provided for use by an adaptor
-   * when a reg exp implementation does not
-   * allow an alternate escape character to be specified.
-   * So we search the char array and substitute each <i>escape</i>
-   * with a '\'. Also a pair of escape characters in a row is
-   * replaced by a single character. And a '\' is replaced by two
-   * of them.
-   * @param escape is the character that was used as the escape character
-   * in <i>pattern</i>
-   */
-  static String fixupEscape(char[] pattern, int offset, char escape) {
+/**
+ * This function is provided for use by an adaptor
+ * when a reg exp implementation does not
+ * allow an alternate escape character to be specified.
+ * So we search the char array and substitute each <i>escape</i>
+ * with a '\'. Also a pair of escape characters in a row is
+ * replaced by a single character. And a '\' is replaced by two
+ * of them.
+ * @param escape is the character that was used as the escape character
+ * in <i>pattern</i>
+ */
+static String fixupEscape(char[] pattern, int offset, char escape) {
     StringBuilder outpattern = new StringBuilder(2*pattern.length);
     int in;
     char c;
     for(in = offset; in < pattern.length; in++) {
-      c = pattern[in];
-      if(c == escape) {
-        if(in < pattern.length-1 && pattern[in+1] == escape) {
-          // two escapes in a row, replace by single escape char
-          in++; // skip the second escape
-          outpattern.append(escape);
+        c = pattern[in];
+        if(c == escape) {
+            if(in < pattern.length-1 && pattern[in+1] == escape) {
+                // two escapes in a row, replace by single escape char
+                in++; // skip the second escape
+                outpattern.append(escape);
+            } else {
+                // replace escape char
+                outpattern.append('\\');
+            }
+        } else if(c == '\\') {
+            outpattern.append('\\');
+            outpattern.append('\\');
         } else {
-          // replace escape char
-          outpattern.append('\\');
+            outpattern.append(c);
         }
-      } else if(c == '\\') {
-        outpattern.append('\\');
-        outpattern.append('\\');
-      } else {
-        outpattern.append(c);
-      }
     }
     return outpattern.toString();
-  }
+}
 }

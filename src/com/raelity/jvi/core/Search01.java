@@ -354,7 +354,7 @@ public class Search01 {
       if(flags.testAnyBits(SUBST_CONFIRM)
               && ! flags.testAnyBits(SUBST_DID_ACK)) {
         G.curwin.setSelection(segOffsetToDoc + prog.start(0),
-                           segOffsetToDoc + prog.stop(0)
+                           segOffsetToDoc + prog.end(0)
                             + (prog.length(0) == 0 ? 1 : 0));
 
         Msg.wmsg("replace with '" + subs + "' (y/n/a/q/l)");
@@ -384,7 +384,7 @@ public class Search01 {
       }
 
       // advance past matched characters
-      lookColumnOffset = prog.stop(0) - seg.offset;
+      lookColumnOffset = prog.end(0) - seg.offset;
       if(modalResponse != 'n' && modalResponse != 'q') {
         if(sb == null) { // match and do substitute, make sure there's a buffer
           sb = new StringBuilder();
@@ -402,7 +402,7 @@ public class Search01 {
         // apply the change to the document
         countChanges++;
         G.curwin.replaceString(segOffsetToDoc + prog.start(0),
-                               segOffsetToDoc + prog.stop(0),
+                               segOffsetToDoc + prog.end(0),
                                changedData.toString());
 
         // the line has changed, fetch changed line
