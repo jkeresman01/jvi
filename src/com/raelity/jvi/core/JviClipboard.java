@@ -59,16 +59,6 @@ import static com.raelity.jvi.core.Register.*;
 import static com.raelity.jvi.lib.Util.assignContents;
 import static com.raelity.jvi.lib.TextUtil.sf;
 
-/** return clipboard for idx, else null if not valid idx
- * or clipboard is not available. */
-// static JviClipboard idx2Cb(int idx)
-// {
-//   return JviClipboard.STAR.idx2cbCheck(idx) ? JviClipboard.STAR
-//          : JviClipboard.PLUS.idx2cbCheck(idx) ? JviClipboard.PLUS
-//          : JviClipboard.NO_CB;
-// }
-//private static final Permission PERM_CLIP = new AWTPermission("accessClipboard");
-
 /** either systemClipboard or systemSelection */
 enum JviClipboard implements ClipboardOwner
 {
@@ -210,23 +200,19 @@ static public boolean isUnnamed(char name)
             || name == '+' && clip_unnamed.contains(CBU.UNNAMED_PLUS);
 }
 
-static public boolean isUnnamedOrUnnamedSaved()
-{
-    return clip_unnamed_union.contains(CBU.UNNAMED)
-            || clip_unnamed_union.contains(CBU.UNNAMED_PLUS);
-}
-
-/*
+/**
  * When "regname" is a clipboard register, obtain the selection.  If it's not
  * available return zero, otherwise return "regname".
+ * If the regname is not for a clipboard, then return the name.
  */
-// return zero if specified yankreg name is not a usable clipboard
 static char may_get_selection(char c)
 {
     JviClipboard cb = name2Cb(c);
-    if(!isValidCb(cb))
-        return 0;
-    cb.clip_get_selection();
+    if(isCbName(cb)) {
+        if(!cb.avail)
+            return 0;
+        cb.clip_get_selection();
+    }
     return c;
 }
 
@@ -252,6 +238,12 @@ static boolean isCbName(char c)
             || c == JviClipboard.PLUS.regname;
 }
 
+/** is the the specified a clipboard name */
+static boolean isCbName(JviClipboard cb)
+{
+    return cb != null && cb != JviClipboard.NO_CB;
+}
+
 /** convert clipboard yankreg idx to yankreg name */
 static char idx2CbName(int idx)
 {
@@ -271,6 +263,16 @@ static int name2CbIdx(char c)
             ? JviClipboard.PLUS.yank_reg_idx
             : 0;
 }
+
+// /** return clipboard for idx, else null if not valid idx
+//  * or clipboard is not available. */
+// static JviClipboard idx2Cb(int idx)
+// {
+//   return JviClipboard.STAR.idx2cbCheck(idx) ? JviClipboard.STAR
+//          : JviClipboard.PLUS.idx2cbCheck(idx) ? JviClipboard.PLUS
+//          : JviClipboard.NO_CB;
+// }
+//private static final Permission PERM_CLIP = new AWTPermission("accessClipboard");
 
 //////////////////////////////////////////////////////////////////////
 //
