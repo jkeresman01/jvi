@@ -25,7 +25,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
 
 /**
- *
+ * Constants for CommandLine KeyMap
  * @author err
  */
 public interface CommandLineKeys
@@ -33,7 +33,7 @@ public interface CommandLineKeys
     public static String COMMAND_LINE_KEYMAP = "viCommandLine";
     /**
      *  This is not intended to match an actual keystroke, it is used
-     *  to register an action that can be used externally.
+     *  to register an action that can be used/accessed externally.
      */
     public static KeyStroke EXECUTE_KEY
             = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,

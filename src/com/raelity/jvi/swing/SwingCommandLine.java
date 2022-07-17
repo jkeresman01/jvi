@@ -92,6 +92,11 @@ interface SwingCommandLine extends CommandLineKeys
     // following for a mac bug fixup
     int[] getMacFixupDotMark();
 
+
+        //////////////////////////////////////////////////////////////////////
+        //
+        // CLASS CommandLineComplete
+        //
         /** CommandLineComplete; post this when command line is finished.
          * Could use ViCmdEntry.Complete and depend on target
          * using source to figure things out. But that might be
@@ -110,5 +115,5 @@ interface SwingCommandLine extends CommandLineKeys
             return (SwingCommandLine)super.getSource();
         }
         
-        } // END CLASS
+        } // END CLASS CommandLineComplete ///////////////////////////////////
 }

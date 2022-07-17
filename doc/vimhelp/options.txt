@@ -627,25 +627,40 @@ START-DOC-DEL
 STOP-DOC-DEL
 
 						*'clipboard'* *'cb'*
+'clipboard' 'cb'	string	(default "")
+START-DOC-DEL
 'clipboard' 'cb'	string	(default "autoselect,exclude:cons\|linux"
 						  for X-windows, "" otherwise)
 			global
-START-DOC-DEL
 			{not in Vi}
 			{only in GUI versions or when the |+xterm_clipboard|
 			feature is included}
+STOP-DOC-DEL
 	This option is a list of comma separated names.
 	These names are recognized:
-STOP-DOC-DEL
 
+						*clipboard-unnamed*
 	unnamed		When included, Vim will use the clipboard register '*'
 			for all yank, delete, change and put operations which
 			would normally go to the unnamed register.  When a
 			register is explicitly specified, it will always be
 			used regardless of whether "unnamed" is in 'clipboard'
 			or not.  The clipboard register can always be
+			explicitly accessed using the "* notation.
+START-DOC-DEL
 			explicitly accessed using the "* notation.  Also see
 			|gui-clipboard|.
+STOP-DOC-DEL
+
+						*clipboard-unnamedplus*
+	unnamedplus	A variant of the "unnamed" flag which uses the
+			clipboard register '+' (|quoteplus|) instead of
+			register '*' for all yank, delete, change and put
+			operations which would normally go to the unnamed
+			register.  When "unnamed" is also included to the
+			option, yank operations (but not delete, change or
+			put) will additionally copy the text into register
+			'*'.
 START-DOC-DEL
 
 	autoselect	Works like the 'a' flag in 'guioptions': If present,

@@ -79,12 +79,14 @@ import static com.raelity.jvi.lib.TextUtil.sf;
 
 /**
  * This class presents a editable text field for picking up command entry
- * data. A mode, usually a single character like "?" or ":", can be
- * set for display. This UI supports the maintenance of a history of commands.
+ * data. A mode, usually a single character like "/", "?", or ":" can be
+ * set for label. Support history of commands traversed by UP/DOWN and
+ * displayed in the text field. See {@link HistoryContext}. ^R in the
+ * command line is handled.
  * This component builds a keymap through which the action events are
- * delivered. When an event is delivered, the history list is updated.
- * The command line has a label that can be set with {@link #setMode}.
- * <p>Take steps to prevent this component from taking focus
+ * delivered.
+ * <p>
+ * Take steps to prevent this component from taking focus
  * through the focus manager. But ultimately need to subclass the
  * editor component to handle it.
  */
@@ -93,19 +95,6 @@ final class BasicCommandLine
 extends JPanel
 implements SwingCommandLine
 {
-    //public static String COMMAND_LINE_KEYMAP = "viCommandLine";
-    ///**
-    // *  This is not intended to match an actual keystroke, it is used
-    // *  to register an action that can be used externally.
-    // */
-    //public static KeyStroke EXECUTE_KEY
-    //        = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,
-    //                                 InputEvent.SHIFT_DOWN_MASK |
-    //        InputEvent.ALT_DOWN_MASK | InputEvent.META_DOWN_MASK |
-    //        InputEvent.CTRL_DOWN_MASK | InputEvent.BUTTON1_DOWN_MASK |
-    //        InputEvent.BUTTON2_DOWN_MASK | InputEvent.BUTTON3_DOWN_MASK);
-
-
     static final Logger LOG
             = Logger.getLogger(BasicCommandLine.class.getName());
     private static final DebugOption dbg = Options.getDebugOption(Options.dbgSearch);
@@ -377,7 +366,7 @@ implements SwingCommandLine
     {
         JTextComponent.KeyBinding[] bindings = {
             new JTextComponent.KeyBinding(
-                    EXECUTE_KEY,
+                    EXECUTE_KEY, // This is a "super keycombo", never typed
                     ACT_FINISH),
             new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(
                     KeyEvent.VK_ENTER, 0),
@@ -496,8 +485,6 @@ implements SwingCommandLine
         dbg.printf(FINE, "CLINE: commandLineFiringEvents false until next time\n");
     }
 
-// inner classes ...........................................................
-
     private CommandLineTextField getNewTextField()
     {
         CommandLineTextField ed = new CommandLineTextField("",9);
@@ -533,6 +520,12 @@ implements SwingCommandLine
         });
         return ed;
     }
+
+
+    //////////////////////////////////////////////////////////////////////
+    //
+    // CLASS commandLineTextField
+    //
 
     final static StyleContext context = StyleContext.getDefaultStyleContext();
     final static AttributeSet attrRed = context.addAttribute(
@@ -571,80 +564,82 @@ implements SwingCommandLine
         super.fireCaretUpdate(e);
     }
 
+    /**
+     * Handle KEY_TYPED Ctrl_R for yankreg insertion,
+     * and KEY_PRESSED UP/DOWN for history traversal.
+     */
     @Override
     protected void processKeyEvent(KeyEvent e)
     {
-        if(!ViManager.getFactory().commandEntryAssistBusy(null)) {
-            if(e.getID() == KeyEvent.KEY_TYPED) {
-                if(gotCtrlR >= 0) {
-                    Document doc = getDocument();
-                    if(doc != null) {
-                        try {
-                            restorFg();
-                            doc.remove(gotCtrlR, 1);
-                            String s = ctx.get_register(e.getKeyChar());
-                            if(s != null && !s.isEmpty()) {
-                                sb.setLength(0);
-                                for(int i = 0; i < s.length(); i++) {
-                                    char c = s.charAt(i);
-                                    if(c >= ' ')
-                                        sb.append(c);
-                                }
-                                doc.insertString(gotCtrlR, sb.toString() , null);
-                            } else
-                                EventQueue.invokeLater(() -> beep_flush());
-                        } catch(BadLocationException ex) {
-                                EventQueue.invokeLater(() -> beep_flush());
-                        }
-                    }
-                    gotCtrlR = -1;
-                    return;
-                }
-                if(e.getKeyChar() == CtrlChars.CTRL_R) {
-                    Document doc = getDocument();
-                    if(doc != null) {
-                        try {
-                            int temp = getCaretPosition();
-                            saveColorFg();
-                            doc.insertString(temp, "\"", attrRed);
-                            setCaretPosition(temp);
-                            gotCtrlR = temp;
-                        } catch(BadLocationException ex) {
+        if(e.getID() == KeyEvent.KEY_TYPED) {
+            if(gotCtrlR >= 0) {
+                Document doc = getDocument();
+                if(doc != null) {
+                    try {
+                        restorFg();
+                        doc.remove(gotCtrlR, 1);
+                        String s = ctx.get_register(e.getKeyChar());
+                        if(s != null && !s.isEmpty()) {
+                            sb.setLength(0);
+                            for(int i = 0; i < s.length(); i++) {
+                                char c = s.charAt(i);
+                                if(c >= ' ')
+                                    sb.append(c);
+                            }
+                            doc.insertString(gotCtrlR, sb.toString() , null);
+                        } else
                             EventQueue.invokeLater(() -> beep_flush());
-                        }
+                    } catch(BadLocationException ex) {
+                            EventQueue.invokeLater(() -> beep_flush());
                     }
-                    return;
                 }
-            }
-            if(gotCtrlR >= 0)
+                gotCtrlR = -1;
                 return;
-            if (e.getID() == KeyEvent.KEY_PRESSED
-                    && (e.getKeyCode() == KeyEvent.VK_UP
-                        || e.getKeyCode() == KeyEvent.VK_DOWN)) {
-                try {
-                    inUpDown = true;
-                    String val;
-                    if(e.getKeyCode() == KeyEvent.VK_UP) {
-                        val = ctx.next();
-                    } else {
-                        val = ctx.prev();
+            }
+            if(e.getKeyChar() == CtrlChars.CTRL_R) {
+                Document doc = getDocument();
+                if(doc != null) {
+                    try {
+                        int temp = getCaretPosition();
+                        saveColorFg();
+                        doc.insertString(temp, "\"", attrRed);
+                        setCaretPosition(temp);
+                        gotCtrlR = temp;
+                    } catch(BadLocationException ex) {
+                        EventQueue.invokeLater(() -> beep_flush());
                     }
-                    
-                    // there's only one shot at using a selection, to late now...
-                    setCaretPosition(getCaretPosition()); // clear any selection
-                    if(val != null) {
-                        setText(val);
-                        return;
-                    }
-                    SwingUtilities.invokeLater(() -> Misc01.beep_flush());
-                    return;
-                } finally {
-                    inUpDown = false;
                 }
+                return;
+            }
+        }
+        if(gotCtrlR >= 0)
+            return;
+        if (e.getID() == KeyEvent.KEY_PRESSED
+                && (e.getKeyCode() == KeyEvent.VK_UP
+                    || e.getKeyCode() == KeyEvent.VK_DOWN)) {
+            try {
+                inUpDown = true;
+                String val;
+                if(e.getKeyCode() == KeyEvent.VK_UP) {
+                    val = ctx.next();
+                } else {
+                    val = ctx.prev();
+                }
+                
+                // there's only one shot at using a selection, to late now...
+                setCaretPosition(getCaretPosition()); // clear any selection
+                if(val != null) {
+                    setText(val);
+                    return;
+                }
+                SwingUtilities.invokeLater(() -> Misc01.beep_flush());
+                return;
+            } finally {
+                inUpDown = false;
             }
         }
         super.processKeyEvent(e);
     }
-    } // END CLASS commandLineTextField
+    } // END CLASS commandLineTextField /////////////////////////////////////
 
 }

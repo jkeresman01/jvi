@@ -54,12 +54,10 @@ import static java.util.logging.Level.*;
 import static com.raelity.jvi.core.lib.Constants.ESC_STR;
 import static com.raelity.jvi.lib.TextUtil.sf;
 
-// inner classes ...........................................................
-
 /**
- * The CommandLine JPanel may be embedded in a Dialog or put on a glass
- * pane; CommandLineEntry is some common handling particularly for
- * the ViCmdEntry interface.
+ * CommandLineEntry is a swing ViCmdEntry; it creates a commandLine (JPanel
+ * with embedded JTextComponent) adds document listeners; fires events.
+ * The CommandLine may be embedded in a Dialog or put on a glass pane.
  */
 public abstract class CommandLineEntry implements ViCmdEntry
 {
@@ -350,6 +348,10 @@ public abstract class CommandLineEntry implements ViCmdEntry
     }
     private final DocumentListener dl = new DocListener();
 
+        /////////////////////////////////////////////////////////////////////
+        //
+        // CLASS DocListener
+        //
         private class DocListener implements DocumentListener
         {
 
@@ -371,13 +373,18 @@ public abstract class CommandLineEntry implements ViCmdEntry
         public void changedUpdate(DocumentEvent e)
         {
         }
-        } // END CLASS
+        } // END CLASS DocListener ///////////////////////////////////////////
 
+
+        /////////////////////////////////////////////////////////////////////
+        //
+        // CLASS CmdEntryCompleteImpl
+        //
         private class CmdEntryCompleteImpl extends CmdEntryComplete
         {
         public CmdEntryCompleteImpl(String actionCommand, String tag)
         {
             super(CommandLineEntry.this, actionCommand, tag);
         }
-        } // END CLASS
-} // end inner CommandLineEntry
+        } // END CLASS CmdEntryCompleteImpl //////////////////////////////////
+}

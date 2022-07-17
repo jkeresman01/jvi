@@ -101,6 +101,13 @@ public interface ViCmdEntry {
     /** the current entry */
     public String getCurrentEntry();
 
+    //////////////////////////////////////////////////////////////////////
+    //
+    // EventBus and API command entry events.
+    //
+    // Implementations may define and post their own events.
+    //
+
     /**
      * Command lines share an event bus.
      * @return event bus for command lines
@@ -120,6 +127,10 @@ public interface ViCmdEntry {
         return eventBus;
     }
 
+        //////////////////////////////////////////////////////////////////////
+        //
+        // CLASS CmdEntryComplete
+        //
         /**
          * Post this when CmdEntry is finished.
          */
@@ -135,8 +146,13 @@ public interface ViCmdEntry {
         {
             return (ViCmdEntry)super.getSource();
         }
-        } // END CLASS
+        } // END CLASS CmdEntryComplete //////////////////////////////////////
 
+
+        //////////////////////////////////////////////////////////////////////
+        //
+        // CLASS CmdEntryChange
+        //
         /** Post when text of the command line changes;
          *  event source is {@link #getTextComponent() }.
          */
@@ -146,8 +162,13 @@ public interface ViCmdEntry {
         {
             super(source);
         }
-        } // END CLASS
+        } // END CLASS CmdEntryChange ////////////////////////////////////////
 
+
+        //////////////////////////////////////////////////////////////////////
+        //
+        // CLASS AbstractComplete
+        //
         public abstract static class AbstractComplete extends Event
         {
         private final String actionCommand;
@@ -174,8 +195,13 @@ public interface ViCmdEntry {
                       TextUtil.debugString(actionCommand));
         }
 
-        } // END CLASS
+        } // END CLASS AbstractComplete //////////////////////////////////////
 
+
+        //////////////////////////////////////////////////////////////////////
+        //
+        // CLASS Event
+        //
         public static class Event
         {
         private final Object source;
@@ -189,5 +215,5 @@ public interface ViCmdEntry {
         {
             return source;
         }
-        } // END CLASS
+        } // END CLASS Event /////////////////////////////////////////////////
 }

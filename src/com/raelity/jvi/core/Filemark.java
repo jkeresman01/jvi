@@ -59,25 +59,29 @@ import static com.raelity.jvi.lib.TextUtil.sf;
  */
 public class Filemark implements ViMark { // NEEDSWORK: extends File
     private static final Logger LOG = Logger.getLogger(MarkOps.class.getName());
+    private static DebugOption dbg = Options.getDebugOption(Options.dbgMarks);
 
     @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=7)
     public static class Init implements ViInitialization
     {
-        private static boolean didInit;
         @Override
         public void init()
         {
-            if(didInit)
-                return;
-            didInit = true;
-            dbg = Options.getDebugOption(Options.dbgMarks);
-            ViEvent.getBus().register(new EventHandlers());
+            Filemark.init();
         }
+    }
+
+    private static boolean didInit;
+    private static void init()
+    {
+        if(didInit)
+            return;
+        didInit = true;
+        ViEvent.getBus().register(new EventHandlers());
     }
 
     private static final String PREF_FILEMARKS = "filemarks";
     private static PreferencesImportMonitor filemarksImportCheck;
-    private static DebugOption dbg;
     private static Preferences prefsFM;
     private static final ValueMap<String, Filemark> map
             = new ValueHashMap<>((Filemark fm) -> fm.getMarkName(), 26);
@@ -100,9 +104,7 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
     }
 
     static Filemark get(String markName) {
-        Filemark fm = map.get(markName);
-        checkFM(markName, fm);
-        return fm;
+        return map.get(markName);
     }
 
     static void deleteMark(String markName) {
@@ -196,7 +198,6 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
             String key = entry.getKey();
             Filemark fm = entry.getValue();
             assert key.equals(fm.markName);
-            checkFM(key, fm);
             if(!fm.isActiveFilemark() && fm.f.equals(file)) {
                 Filemark newFm = new Filemark(fm.markName, hookupMark(fm, buf));
                 entry.setValue(newFm);
@@ -207,7 +208,6 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
                                                  dump(fm)));
                 dbg.printf(CONFIG, () -> sf("FM: hookup buf %s\n", dump(newFm)));
             }
-            checkFM(key, entry.getValue());
         }
     }
 
@@ -263,7 +263,6 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
             String key = entry.getKey();
             Filemark fm = entry.getValue();
             assert key.equals(fm.markName);
-            checkFM(key, fm);
 
             if(ViManager.isDebugAtHome()) {
                 if(!buf.isActive() && !(ev instanceof ViEvent.CloseBuf))
@@ -302,11 +301,10 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
                 }
                 entry.getValue().persist();
             }
-            checkFM(key, fm);
         }
     }
 
-    } // EventHandler
+    } // END CLASS EventHandlers /////////////////////////////////////////////
 
     private static Filemark read_viminfo_filemark(String markName)
     throws BackingStoreException {
@@ -328,7 +326,6 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
         }
         File f = new File(fName);
         Filemark fm = new Filemark(markName, f, l, c, o);
-        checkFM(markName, fm);
         dbg.printf(CONFIG, () -> sf("FM: Read viminfo %s\n", dump(fm)));
         return fm;
     }
@@ -414,7 +411,7 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
         return sf("(%d,%d,%d)", line, col, offset);
     }
 
-    static void reportIssueFM(String tag, Filemark fm, Throwable t) {
+    private static void reportIssueFM(String tag, Filemark fm, Throwable t) {
         if(t != null)
             Exceptions.printStackTrace(dialogEx(t));
         Preferences prefs = prefsFM.node(fm.markName);
@@ -427,7 +424,7 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
     }
 
     /** debug ... */
-    static void checkFM(String markName, Filemark fm) {
+    private static void checkFM(String markName, Filemark fm) {
         if(fm == null)
             return;
         if(!ViManager.isDebugAtHome() || !dbg.getBoolean())

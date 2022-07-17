@@ -763,7 +763,13 @@ private static HistoryActionArgs getHistoryActionArgs()
             l.add(iter.previous().getCmd());
     }
 
-    // side affect set's lastIndex
+    /**
+     * Using the user's edited input, provide the next/previous
+     * prefix match from the history.
+     * Side affect set's lastIndex which is current position in history.
+     * @param direction
+     * @return 
+     */
     private String fetch(int direction)
     {
         if(history.isEmpty())
