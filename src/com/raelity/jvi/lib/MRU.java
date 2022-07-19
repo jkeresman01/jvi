@@ -19,6 +19,7 @@
 
 package com.raelity.jvi.lib;
 
+import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,14 +30,12 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
- * Most recently used collection.
- * With bulk operations the most recent is first in the Collection.
- * <p>
- * This could extend {@literal Iterable<T>}, with a big caveat
- * once iterator() method is used, the class is otherwise rendered
- * inoperable.
+ * Most recently used collection, the only method that modifies this
+ * collecion is {@code addItem}; other methods throw.
+ * The iteration order is most recent first.
  * <pre>
  * performance for available implementations
  * 
@@ -55,7 +54,8 @@ import java.util.function.Supplier;
  * iterator     direct                      create array list
  * </pre>
  */
-public interface MRU<T>
+// TODO: could make this a collection with lots of stuff throw exception
+public interface MRU<E> extends Collection<E>
 {
 
 public static <T>MRU<T> getSetMRU(Supplier<Integer> limit)
@@ -68,113 +68,110 @@ public static <T>MRU<T> getListMRU(Supplier<Integer> limit)
     return new LinkedListMRU<>(limit);
 }
 
+boolean isReady();
+
 /** Must be the first call; otherwise errors. */
-void initialize(Collection<T> l);
+void initialize(Collection<E> l);
 
-void addItem(T key);
+void addItem(E key);
 
-void removeItem(T key);
+void removeItem(E key);
 
 void trim();
 
-void forEach(Consumer<? super T> action);
+/** This iterator does not allow modification; may reference the collection
+ * directly. Once it is called, no other operations are allowed.
+ */
+Iterable<E> closingIterable();
 
-/** This iterator does not allow modification; may reference the collection. */
-Iterable<T> closingIterable();
+Stream<E> closingStream();
 
-/** return copy, most recently added is first in iteration */
-Collection<T> copy();
 
 //////////////////////////////////////////////////////////////////////
 //
 // Implementations
 //
 
-/** Simpler implementation, if mostly accessing mru,
- * then this is probably the best.
- */
-@SuppressWarnings({"serial", "CloneableImplementsClone"})
-public static class LinkedListMRU<T>
-        implements MRU<T>
+public abstract static class AbstractMRU<E> extends AbstractCollection<E>
+        implements MRU<E>
 {
-private LinkedList<T> delegate;
-private final Supplier<Integer> limit;
-private boolean closing;
+protected Collection<E> delegate;
+protected final Supplier<Integer> limit;
+protected boolean closing;
 
-public LinkedListMRU(Supplier<Integer> limit)
+public AbstractMRU(Supplier<Integer> limit)
 {
     this.limit = limit;
 }
 
 @Override
-synchronized public void initialize(Collection<T> l)
+public boolean isReady()
 {
-    if(delegate != null)
-        throw new IllegalStateException("Allready initialized");
-    delegate = new LinkedList<>(l);
-}
-
-/** copy */
-@Override
-synchronized public List<T> copy()
-{
-    if(closing)
-        throw new IllegalStateException("Closing");
-    return new ArrayList<>(delegate);
+    return delegate != null;
 }
 
 @Override
-synchronized public void forEach(Consumer<? super T> action)
+abstract public void initialize(Collection<E> l);
+
+@Override
+synchronized public void forEach(Consumer<? super E> action)
 {
     if(closing)
         throw new IllegalStateException("Closing");
-    delegate.iterator().forEachRemaining(action);
+    super.forEach(action);
+}
+
+//////////////////////////////////////////////////
+// TODO: get rid of the closingXxx
+@Override
+synchronized public Stream<E> closingStream()
+{
+    closing = true;
+    return stream();
 }
 
 @Override
-public Iterable<T> closingIterable()
+public Iterable<E> closingIterable()
 {
     return this::closingIterator;
     //return () -> closingIteratorXXX();
 }
 
-synchronized private Iterator<T> closingIterator()
+synchronized private Iterator<E> closingIterator()
 {
     closing = true;
-    ListIterator<T> it = delegate.listIterator(delegate.size());
-    return new Iterator<T>()
-    {
-        @Override
-        public boolean hasNext()
-        {
-            return it.hasNext();
-        }
-        
-        @Override
-        public T next()
-        {
-            return it.next();
-        }
-    };
+    return iterator();
 }
+// TODO: get rid of the closingXxx
+//////////////////////////////////////////////////
+
+abstract protected void insert(E key);
 
 @Override
-synchronized public void addItem(T key)
+synchronized public void addItem(E key)
 {
     if(closing)
         throw new IllegalStateException("Closing");
     delegate.remove(key);
-    delegate.addFirst(key);
+    insert(key);
     trim();
 }
 
 @Override
-synchronized public void removeItem(T key)
+synchronized public void removeItem(E key)
 {
     if(closing)
         throw new IllegalStateException("Closing");
     delegate.remove(key);
 }
+
+@Override
+public int size()
+{
+    return delegate.size();
+}
+
+protected abstract void doTrim(int iLimit);
 
 @Override
 synchronized public void trim()
@@ -186,78 +183,48 @@ synchronized public void trim()
     int iLimit = limit.get();
     if(iLimit < 0)
         iLimit = 0;
-    while(delegate.size() > iLimit)
-        delegate.removeLast();
+    doTrim(iLimit);
 }
-    } // END CLASS ClosedfilesListMRU ////////////////////////////////////////
+} // END CLASS AbstractMRU ////////////////////////////////////////
 
-
-/**
- * This is best if random lookup is most important.
- * But probably most lookup/remove is recent.
+/** Simpler implementation, if mostly accessing mru,
+ * then this is probably the best.
  */
 @SuppressWarnings({"serial", "CloneableImplementsClone"})
-public static class LinkedHashSetMRU<T>
-        implements MRU<T>
+public static class LinkedListMRU<E> extends AbstractMRU<E>
+        implements MRU<E>
 {
-private LinkedHashSet<T> delegate;
-private final Supplier<Integer> limit;
-private boolean closing;
 
-public LinkedHashSetMRU(Supplier<Integer> limit)
+public LinkedListMRU(Supplier<Integer> limit)
 {
-    this.limit = limit;
+    super(limit);
+    //this.limit = limit;
 }
 
 @Override
-synchronized public void initialize(Collection<T> l)
+synchronized public void initialize(Collection<E> l)
 {
     if(delegate != null)
         throw new IllegalStateException("Allready initialized");
-    List<T> t;
-    if(l instanceof List)
-        t = (List<T>)l;
-    else
-        t = new ArrayList<>(l);
-    
-    Collections.reverse(t);
-    delegate = new LinkedHashSet<>(t);
+    delegate = new LinkedList<>(l);
+}
+
+private LinkedList<E> getDelegate()
+{
+    return (LinkedList<E>)delegate;
 }
 
 @Override
-synchronized public List<T> copy()
+protected void insert(E key)
 {
-    if(closing)
-        throw new IllegalStateException("Closing");
-    ArrayList<T> l = new ArrayList<>(delegate);
-    Collections.reverse(l);
-    return l;
+    getDelegate().addFirst(key);
 }
 
 @Override
-synchronized public void forEach(Consumer<? super T> action)
+public Iterator<E> iterator()
 {
-    if(closing)
-        throw new IllegalStateException("Closing");
-    ArrayList<T> l = new ArrayList<>(delegate);
-    ListIterator<T> it = l.listIterator(l.size());
-    while(it.hasPrevious())
-        action.accept(it.previous());
-}
-
-@Override
-public Iterable<T> closingIterable()
-{
-    return this::closingIterator;
-    //return () -> closingIteratorXXX();
-}
-
-synchronized private Iterator<T> closingIterator()
-{
-    closing = true;
-    ArrayList<T> l = new ArrayList<>(delegate);
-    ListIterator<T> it = l.listIterator(l.size());
-    return new Iterator<T>()
+    ListIterator<E> it = getDelegate().listIterator(delegate.size());
+    return new Iterator<E>()
     {
         @Override
         public boolean hasNext()
@@ -266,7 +233,7 @@ synchronized private Iterator<T> closingIterator()
         }
         
         @Override
-        public T next()
+        public E next()
         {
             return it.previous();
         }
@@ -274,36 +241,81 @@ synchronized private Iterator<T> closingIterator()
 }
 
 @Override
-synchronized public void addItem(T key)
+protected void doTrim(int iLimit)
 {
-    if(closing)
-        throw new IllegalStateException("Closing");
-    // need to remove first, otherwise won't change list position
-    removeItem(key);
-    delegate.add(key);
-    trim();
+    while(delegate.size() > iLimit)
+        getDelegate().removeLast();
+}
+} // END CLASS ClosedfilesListMRU ////////////////////////////////////////
+
+
+/**
+ * This is best if random lookup is most important
+ * or large datasets.
+ * But probably most lookup/remove is recent.
+ */
+@SuppressWarnings({"serial", "CloneableImplementsClone"})
+public static class LinkedHashSetMRU<E> extends AbstractMRU<E>
+        implements MRU<E>
+{
+
+public LinkedHashSetMRU(Supplier<Integer> limit)
+{
+    super(limit);
+    //this.limit = limit;
 }
 
 @Override
-synchronized public void removeItem(T key)
+synchronized public void initialize(Collection<E> l)
 {
-    if(closing)
-        throw new IllegalStateException("Closing");
-    delegate.remove(key);
-}
-
-@Override
-synchronized public void trim()
-{
-    if(closing)
-        throw new IllegalStateException("Closing");
-    if(limit == null || delegate.size() <= limit.get())
-        return;
+    if(delegate != null)
+        throw new IllegalStateException("Allready initialized");
+    List<E> t;
+    if(l instanceof List)
+        t = (List<E>)l;
+    else
+        t = new ArrayList<>(l);
     
-    Iterator<T> it = delegate.iterator();
-    int iLimit = limit.get();
-    if(iLimit < 0)
-        iLimit = 0;
+    Collections.reverse(t);
+    delegate = new LinkedHashSet<>(t);
+}
+
+private LinkedHashSet<E> getDelegate()
+{
+    return (LinkedHashSet<E>)delegate;
+}
+
+@Override
+protected void insert(E key)
+{
+    getDelegate().add(key);
+}
+
+@Override
+public Iterator<E> iterator()
+{
+    ArrayList<E> l = new ArrayList<>(delegate);
+    ListIterator<E> it = l.listIterator(l.size());
+    return new Iterator<E>()
+    {
+        @Override
+        public boolean hasNext()
+        {
+            return it.hasPrevious();
+        }
+        
+        @Override
+        public E next()
+        {
+            return it.previous();
+        }
+    };
+}
+
+@Override
+protected void doTrim(int iLimit)
+{
+    Iterator<E> it = delegate.iterator();
     while(delegate.size() > iLimit) {
         //System.err.println("CLOSED: trim: curlen " + size());
         it.next();

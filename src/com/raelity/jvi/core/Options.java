@@ -760,10 +760,10 @@ public final class Options {
                );
 
     createIntegerOption(
-            persistedBufMarks, 25, new Validator<Integer>() {
+            persistedBufMarks, 100, new Validator<Integer>() {
               @Override
               public void validate(Integer val) throws PropertyVetoException {
-                  if(val < 0 || val > 100) {
+                  if(val < 0 || val > 500) {
                     reportPropertyVetoException(
 		         "Only 0 - 100 allowed. Not '" + val + "'.",
                          val);

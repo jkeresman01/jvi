@@ -156,8 +156,8 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
     @Subscribe
     public void shutdown(ViEvent.Shutdown ev) {
         dbg.println(INFO, () -> "FM: " + ev);
-        if(getFactory().hasPreShutdown())
-            return;
+        //if(getFactory().hasPreShutdown())
+        //    return;
         write_viminfo_filemarks(null);
     }
 
@@ -254,9 +254,9 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
         dbg.println(INFO, () -> sf("FM: (act:%s) %s",
                                    buf != null ? buf.isActive() : "NONE",
                                    ev));
-        if(buf == null)
+        if(buf == null || !buf.isActive())
             return;
-        if(buf.getFile() == null) // something in a zip file
+        if(buf.getFile() == null) // something in a zip file perhaps
             return;
 
         for(Entry<String, Filemark> entry : map.entrySet()) {

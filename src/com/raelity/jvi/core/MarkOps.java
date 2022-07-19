@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -37,6 +36,7 @@ import java.util.prefs.Preferences;
 
 import com.google.common.eventbus.Subscribe;
 
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.*;
@@ -44,8 +44,9 @@ import com.raelity.jvi.ViTextView.MARKOP;
 import com.raelity.jvi.core.Commands.AbstractColonAction;
 import com.raelity.jvi.core.Commands.ColonEvent;
 import com.raelity.jvi.core.lib.*;
+import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.*;
-import com.raelity.jvi.lib.MySegment;
+import com.raelity.jvi.options.*;
 
 import static java.util.logging.Level.*;
 
@@ -67,6 +68,7 @@ class MarkOps
 {
     private static final Logger LOG = Logger.getLogger(MarkOps.class.getName());
     private static final Logger CARET_OFFSET_LOG = Logger.getLogger("org.netbeans.editor.caret.offset");
+    private static DebugOption dbg = Options.getDebugOption(Options.dbgMarks);
     //static { LOG.setLevel(ALL); }
 
     private static final String PREF_MARKS = "marks";
@@ -122,7 +124,7 @@ class MarkOps
         try {
             getFactory().getPreferences().flush();
         } catch(BackingStoreException ex) {
-            LOG.log(SEVERE, null, ex);
+            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -421,7 +423,7 @@ class MarkOps
                 if(check_mark(mark, false) == OK) {
                     MySegment seg = G.curbuf.getLineSegment(mark.getLine());
                     String lineText = seg.subSequence(0, seg.length()-1).toString();
-                    vios.println(String.format("%c %2d %5d %4d %s",
+                    vios.println(sf("%c %2d %5d %4d %s",
                             i == G.curwin.w_jumplistidx ? '>' : ' ',
                             i > G.curwin.w_jumplistidx ? i - G.curwin.w_jumplistidx
                                     :  G.curwin.w_jumplistidx -i,
@@ -732,19 +734,19 @@ class MarkOps
      * are persisted in an MRU fashion.
      */
     private static class BufferMarksPersist {
-        // NEEDSWORK: BufferMarksPersist easier using google collections
-        // Data structure, on/off disk, notes
-        // The pref node for a buffer is an arbitrary name starting with "BUF"
+        // The pref node for a buffer is an arbitrary name starting with "buf"
         // and the MRU index is a property of that node.
 
         private static final String INDEX = "index";
 
-        /** All the BufferMarks being tracked. Key'd by file name. */
+        /** All the BufferMarks being tracked; read from prefs
+         * or opened in this session. Key'd by file name. */
+        //static ValueMap<String, BufferMarksHeader> all
+        //        = new ValueHashMap<>((bmh) -> bmh.fname);
         static Map<String, BufferMarksHeader> all = new HashMap<>();
-        /** The BufferMarks read during startup in MRU order */
-        static List<String> prev = new LinkedList<>();
-        /** The BufferMarks to persist from this session in MRU order */
-        static List<String> next = new LinkedList<>();
+        /** The BufferMarks read during startup in MRU order.
+         * File open makes a buf mru. */
+        static MRU<String> bufsMRU = MRU.getSetMRU(null);
         static List<String> cleanup = new ArrayList<>();
 
         static Preferences prefs = getFactory().getPreferences().node(PREF_MARKS);
@@ -762,6 +764,7 @@ class MarkOps
                 this.offset = offset;
                 this.line = line;
                 this.col = col;
+                if(Boolean.FALSE) eatme(this.offset);
             }
         }
 
@@ -800,6 +803,12 @@ class MarkOps
 
             public String getBufTag() {
                 return tag;
+            }
+
+            @Override
+            public String toString()
+            {
+                return sf("BufferMarksHeader: %s:%d %s", tag, index, fname);
             }
         }
 
@@ -845,18 +854,19 @@ class MarkOps
 
         private void persist(ViBuffer buf, ViEvent ev, Character markName)
         {
-        if(marksImportCheck.isChange()) {
-            LOG.info(() -> sf("jVi marks imported: %s", ev));
+            if(marksImportCheck.isChange()) {
+                dbg.println(INFO, () -> sf("MarkOps: jVi marks imported: %s", ev));
                 return;
             }
-
+            
             if(buf.getFile() == null || !buf.isActive())
                 return;
-            LOG.log(FINE, "persist {0}", buf.getFile().getAbsolutePath());
+            dbg.println(FINE, () -> sf("MarkOps: persist %s",
+                                      buf.getFile().getAbsolutePath()));
             try {
                 BufferMarksHeader bmh;
                 String fname = buf.getFile().getAbsolutePath();
-
+                
                 hasMarks:
                 if(markName == null || !isValidMark(markName, buf)) {
                     for(char c = 'a'; c <= 'z'; c++) {
@@ -871,17 +881,18 @@ class MarkOps
                         all.remove(fname);
                     }
                     return;
-                } // hasMarks
+                } // hasMarks:
                 bmh = all.get(fname);
                 if(bmh == null) {
                     String bufTag = createBufTag();
+                    if(bufTag == null) {
+                        Exceptions.printStackTrace(new Exception(
+                                sf("MarkOps: persist: null bufTag %s", fname)));
+                        return;
+                    }
                     bmh = new BufferMarksHeader(bufTag, fname);
                     all.put(fname, bmh);
                 }
-                // make this buf's marks the most recently used
-                next.remove(fname);
-                next.add(0, fname);
-                prev.remove(fname); // shouldn't be in prev list anymore
                 writeBufferMarks(bmh, buf, markName);
             } catch(BackingStoreException ex) {
                 LOG.log(SEVERE, null, ex);
@@ -901,24 +912,27 @@ class MarkOps
             if(buf.getFile() == null)
                 return;
             try {
-                String name = buf.getFile().getAbsolutePath();
-                BufferMarksHeader bmh = all.get(name);
-                LOG.log(FINE, "restore {0}{1}", new Object[]{bmh == null
-                        ? "NOT " : "", buf.getFile().getAbsolutePath()});
+                String fname = buf.getFile().getAbsolutePath();
+                bufsMRU.addItem(fname);
+                BufferMarksHeader bmh = all.get(fname);
+                dbg.println(FINE, () -> sf("MarkOps: restore %s%s",
+                                          bmh == null ? "NOT " : "",
+                                          buf.getFile().getAbsolutePath()));
                 if (bmh == null) {
                     return;
                 }
                 Preferences bufData = prefs.node(bmh.getBufTag());
                 String[] marks = bufData.childrenNames();
-                LOG.log(FINER, "restoring {0} marks from {1}",
-                        new Object[]{marks.length, bufData.absolutePath()});
+                dbg.println(FINER, () -> sf("MarkOps: restoring %d marks from %s",
+                        marks.length, bufData.absolutePath()));
                 for (String mName : marks) {
                     MarkInfo mi = readMark(bufData.node(mName));
                     if (mi == null) {
                         // following was warning, but it fires too much
                         // wonder why...., but its ignored.
-                        LOG.config(String.format("restore: "
-                                + "bad mark: %s, name: %s", mName, name));
+                        dbg.println(FINE, () -> sf(
+                                "MarkOps: restore: bad mark: %s, name: %s",
+                                mName, fname));
                         continue;
                     }
                     char c = mName.charAt(0);
@@ -934,25 +948,35 @@ class MarkOps
             }
         }
 
-        /** read all the buffer mark stuff */
+        /** Read all the buffer mark stuff from prefs.
+         * - bufsMRU: MRU from prefs; updated in a buf open.
+         * - all:  {@literal ValueMap<bmh>} as read from prefs.
+         * - cleanup: any buffer that had a problem, prefs will be deleted
+         */
         private void read_viminfo()
         {
-            if(!prev.isEmpty())
+            if(bufsMRU.isReady())
                 return; // only do it once
-            // If all is correct, then the indexes for the bm are in the
+            // If all is correct, then the mru indexes for the bm are in the
             // range 1-n. If not then MRU info is lost.
             // Simply toss out any bufs that cause issues.
             try {
                 String[] bufTags = prefs.childrenNames(); // existing bufs
                 Set<String> fnames = new HashSet<>();
-                // following holds bufs in MRU order
+                // This array holds bufs in MRU order.
+                // Items assigned to bmHeaders by prefs' saved index.
                 BufferMarksHeader[] bmHeaders = new BufferMarksHeader[bufTags.length];
-                LOG.log(FINER, "persisted file count: {0}",
-                        bufTags.length);
+                dbg.println(FINER, () -> sf(
+                        "MarkOps: read_viminfo: persisted file count: %d",
+                        bufTags.length));
+                // Shouldn't see more bmh than bufTags.length,
+                // add small pad for circumstances beyond our control.
+                ArrayList<String> tMru = new ArrayList<>(bufTags.length + 10);
                 for (String bufTag : bufTags) {
                     if (!bufTag.startsWith(BUF)) {
-                        LOG.log(WARNING, "read_viminfo: "
-                                + "invalid buffer tag ''{0}''", bufTag);
+                        dbg.println(WARNING, () -> sf(
+                                "MarkOps: read_viminfo: invalid buffer tag '%s'",
+                                bufTag));
                         cleanup.add(bufTag);
                         continue;
                     }
@@ -961,16 +985,18 @@ class MarkOps
                     int index = bufData.getInt(INDEX, -1);
                     if (fname == null || !fnames.add(fname)) {
                         bufData.removeNode();
-                        LOG.log(WARNING, "read_viminfo: "
-                                + "ignoring duplicate ''{0}''", fname);
+                        dbg.println(WARNING, () -> sf(
+                                "MarkOps: read_viminfo: ignoring duplicate '%s'",
+                                fname));
                         cleanup.add(bufTag);
                         continue;
                     }
-                    LOG.log(FINER, "Node: {0} name: {1} index: {2}",
-                            new Object[]{bufTag, fname, index});
+                    dbg.println(FINER, () -> sf(
+                            "MarkOps: read_viminfo: %d %s %s",
+                            index, bufTag, fname));
                     if (index <= 0 || index > bmHeaders.length) {
-                        LOG.warning(String.format("read_viminfo: "
-                                + "(expect 1-%d) bad index: %d, name: %s",
+                        dbg.println(WARNING, () -> sf(
+                                "MarkOps: read_viminfo: (expect 1-%d) bad index: %d, name: %s",
                                 bmHeaders.length, index, fname));
                         // Shouldn't cleanup if not way too big, maybe shutdown issues,
                         // but if not, then what? Maybe add to all and continue?
@@ -980,8 +1006,9 @@ class MarkOps
                     }
                     if (bmHeaders[index - 1] != null) {
                         if(index != 1) {
-                            LOG.warning(String.format("read_viminfo: "
-                                    + "duplicate index: %d, name: %s", index, fname));
+                            dbg.println(WARNING, () -> sf(
+                                    "MarkOps: read_viminfo: duplicate idx: %d %s",
+                                    index, fname));
                             cleanup.add(bufTag);
                             continue;
                         }
@@ -989,8 +1016,8 @@ class MarkOps
                     }
                     // Duplicates of index 1 are allowed.
                     // They can arise in this scenario:
-                    // - First mark created in buffer persists
-                    //   and gives buf index 1
+                    // - mark created in buffer persists
+                    //   and given buf index 1
                     // - shutdown/crash without marks being persisted
                     // So treat something with index == 1 as most MRU
                     // And make sure not to replace and existing entry
@@ -999,52 +1026,49 @@ class MarkOps
                     if(bmHeaders[index - 1] == null)
                         bmHeaders[index - 1] = bmh;
                     else
-                        prev.add(fname);
+                        tMru.add(fname);
                     all.put(fname, bmh);
                 }
-                // establish the MRU list as read
+                // finish the prev MRU list by copying from array.
                 for (BufferMarksHeader bmh : bmHeaders) {
                     if (bmh == null) {
                         continue;
                     }
-                    prev.add(bmh.getFname());
+                    tMru.add(bmh.getFname());
                 }
+                bufsMRU.initialize(tMru);
             } catch (BackingStoreException ex) {
                 LOG.log(SEVERE, null, ex);
             }
         }
 
         /**
-         * Update all the indexes for any buffers that have been persisted.
-         * First persist buffers that are still be open.
+         * Update all the BufferMarksHeader that have been persisted;
+         * the marks have already been persisted.
+         * Persist buffers that are still open, if possible, just in case.
          */
         @Subscribe
         public void write_viminfo(ViEvent.Shutdown ev)
         {
             try {
-                LOG.fine("write_viminfo entry");
+                dbg.println(FINE, "MarkOps: write_viminfo entry");
                 for (Buffer buf : getFactory().getBufferSet()) {
                     persist(buf, ev, null);
                 }
                 int max = G.viminfoMaxBuf;
                 int index = 1;
-                // first handle all buffers that were open this session.
-                LOG.log(FINE, "write_viminfo next count {0}", next.size());
-                for (String name : next) {
-                    writeBufferMarksHeader(name, index);
-                    index++;
-                }
-                // now put out buffers from previous sessions
-                LOG.log(FINE, "write_viminfo prev count {0}", prev.size());
-                for (String name : prev) {
+                dbg.println(FINE, () -> sf("MarkOps: write_viminfo: %d",
+                                          bufsMRU.size()));
+                for(String fname : bufsMRU.closingIterable()) {
                     // 2nd arg of 0 will cause removal
-                    writeBufferMarksHeader(name, index <= max ? index : 0);
+                    writeBufferMarksHeader(fname, index <= max ? index : 0);
                     index++;
                 }
                 for (String x : cleanup) {
                     Preferences p = prefs.node(x);
                     p.removeNode();
-                    LOG.log(FINE, "cleanup {0}", x);
+                    dbg.println(FINE, () -> sf("MarkOps: write_viminfo cleanup %s",
+                                              x));
                 }
 
                 prefs.flush();
@@ -1060,13 +1084,14 @@ class MarkOps
         private static void writeBufferMarksHeader(String name, int index)
                 throws BackingStoreException
         {
-                LOG.log(FINER, "write next {0} index {1}",
-                        new Object[]{name, index});
+                dbg.println(FINER, () -> sf("MarkOps: writeBMH %d %s",
+                                           index, name));
                 BufferMarksHeader bmh = all.get(name);
                 if(bmh == null) {
-                    LOG.warning(String.format(
-                            "writeBufferMarksHeader: "
-                            + "prev name: %s but no Buffermarks", index, name));
+                    // Get here if no marks for buffer
+                    dbg.println(FINE, () -> sf(
+                            "MarkOps: writeBMH: %d:%s no BMH",
+                            index, name));
                 } else {
                     Preferences bufData = prefs.node(bmh.getBufTag());
                     if(index > 0) {
@@ -1083,8 +1108,9 @@ class MarkOps
             o = p.getInt(OFFSET, -1);
             l = p.getInt(LINE, -1);
             c = p.getInt(COL, -1);
-            LOG.log(FINER, "{3}: offset: {0} line: {1} col: {2}",
-                    new Object[]{o, l, c, p.name()});
+            dbg.println(FINER, () -> sf(
+                    "MarkOps: readMark: %s: off %d, line %d, col %d",
+                    p.name(), o, l, c));
             if(o < 0 || l < 0 || c < 0) {
                 return null;
             }
@@ -1121,8 +1147,9 @@ class MarkOps
         /** Create a buf name that does not currently exist. */
         private static String createBufTag() {
 
-            // So I guess 400 is the max persistable files
-            // assuming tryId does not repeat (which is not the case)
+            // So I guess 400 is the max persistable files (just some
+            // random number to limit the tries)
+            // assuming tryId does not repeat (which is not the case).
             for(int i = 0; i < 400; i++) {
                 int tryId = random.nextInt(1_000_000_000);
                 String tag = BUF + tryId;
