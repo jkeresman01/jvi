@@ -19,6 +19,7 @@
 
 package com.raelity.jvi.lib;
 
+import java.util.HashMap;
 import java.util.function.Function;
 
 import org.junit.After;
@@ -53,7 +54,7 @@ public static void tearDownClass()
 @Before
 public void setUp()
 {
-    map = new ValueHashMap<>((val) -> val.theKey);
+    map = new ValueHashMap<>(keyFunc);
     map.put(v1);
     map.put(v2);
 }
@@ -63,6 +64,8 @@ public void tearDown()
 {
     map = null;
 }
+
+Function<Val, Integer> keyFunc = (val) -> val.theKey;
 
 ValueMap<Integer, Val> map;
 
@@ -94,6 +97,7 @@ public String toString()
  * Test of put method, of class ValueHashMap.
  */
 @Test
+@SuppressWarnings({"UseOfSystemOutOrSystemErr", "ThrowableResultIgnored"})
 public void testPut_AnyType()
 {
     System.out.println("put");
@@ -109,6 +113,7 @@ public void testPut_AnyType()
  * Test of getKeyFunction method, of class ValueHashMap.
  */
 @Test
+@SuppressWarnings({"UseOfSystemOutOrSystemErr"})
 public void testGetKeyFunction()
 {
     System.out.println("getKeyFunction");
@@ -131,6 +136,7 @@ public void testGetKeyFunction()
  * Test of replace method, of class ValueHashMap.
  */
 @Test
+@SuppressWarnings({"UseOfSystemOutOrSystemErr", "ThrowableResultIgnored"})
 public void testReplace_GenericType_GenericType()
 {
     System.out.println("replace");
@@ -156,6 +162,7 @@ public void testReplace_GenericType_GenericType()
  * Test of replace method, of class ValueHashMap.
  */
 @Test
+@SuppressWarnings({"UseOfSystemOutOrSystemErr", "ThrowableResultIgnored"})
 public void testReplace_3args()
 {
     System.out.println("replace");
@@ -179,9 +186,40 @@ public void testReplace_3args()
 }
 
 /**
+ * Test of putAll method, of class ValueHashMap; AND constructor.
+ */
+@Test
+@SuppressWarnings({"UseOfSystemOutOrSystemErr", "ThrowableResultIgnored", "CallToPrintStackTrace"})
+public void testPutAll()
+{
+    System.out.println("putAll");
+    ValueMap<Integer, Val> nmap = new ValueHashMap<>(
+            (val) -> val.theKey, map);
+    assertEquals(map, nmap);
+
+    nmap.clear();
+    nmap.putAll(map);
+    assertEquals(map, nmap);
+
+    var hmap = new HashMap<Integer, Val>(map);
+    hmap.put(10, v3);
+    nmap.clear();
+    assertThrows(IllegalArgumentException.class, () -> nmap.putAll(hmap));
+
+    nmap.clear();
+    try {
+        nmap.putAll(hmap);
+    } catch(IllegalArgumentException ex) {
+        System.err.println(""+ex.getMessage());
+        //ex.printStackTrace();
+    }
+}
+
+/**
  * Test of replaceAll method, of class ValueHashMap.
  */
 @Test
+@SuppressWarnings("ThrowableResultIgnored")
 public void testReplaceAll()
 {
     assertThrows(UnsupportedOperationException.class,
@@ -192,6 +230,7 @@ public void testReplaceAll()
  * Test of merge method, of class ValueHashMap.
  */
 @Test
+@SuppressWarnings("ThrowableResultIgnored")
 public void testMerge()
 {
     assertThrows(UnsupportedOperationException.class,
@@ -202,6 +241,7 @@ public void testMerge()
  * Test of compute method, of class ValueHashMap.
  */
 @Test
+@SuppressWarnings("ThrowableResultIgnored")
 public void testCompute()
 {
     assertThrows(UnsupportedOperationException.class,
@@ -212,6 +252,7 @@ public void testCompute()
  * Test of computeIfPresent method, of class ValueHashMap.
  */
 @Test
+@SuppressWarnings("ThrowableResultIgnored")
 public void testComputeIfPresent()
 {
     assertThrows(UnsupportedOperationException.class,
@@ -222,6 +263,7 @@ public void testComputeIfPresent()
  * Test of computeIfAbsent method, of class ValueHashMap.
  */
 @Test
+@SuppressWarnings("ThrowableResultIgnored")
 public void testComputeIfAbsent()
 {
     assertThrows(UnsupportedOperationException.class,
@@ -232,6 +274,7 @@ public void testComputeIfAbsent()
  * Test of putIfAbsent method, of class ValueHashMap.
  */
 @Test
+@SuppressWarnings("ThrowableResultIgnored")
 public void testPutIfAbsent()
 {
     assertThrows(UnsupportedOperationException.class,
@@ -242,20 +285,11 @@ public void testPutIfAbsent()
  * Test of getOrDefault method, of class ValueHashMap.
  */
 @Test
+@SuppressWarnings("ThrowableResultIgnored")
 public void testGetOrDefault()
 {
     assertThrows(UnsupportedOperationException.class,
                  () -> map.getOrDefault(null, null));
-}
-
-/**
- * Test of putAll method, of class ValueHashMap.
- */
-@Test
-public void testPutAll()
-{
-    assertThrows(UnsupportedOperationException.class,
-                 () -> map.putAll(null));
 }
 
 }

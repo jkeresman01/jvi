@@ -29,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -91,11 +92,17 @@ public enum AppViews
 
     private static final List<ViAppView> avs = new LinkedList<>();
     private static final List<ViAppView> avsMRU = new LinkedList<>();
-    private static final MRU<String> avsClosedMRU
-            = com.raelity.jvi.lib.MRU.getSetMRU(() -> G.p_closedfiles());
+    private static final MRU<String> avsClosedMRU = getMRU();
     private static final Set<ViAppView> avsNomads = new WeakSet<>();
     private static ViAppView avCurrentlyActive;
     private static ViAppView keepMru;
+
+    private static MRU<String> getMRU()
+    {
+        MRU<String> mru = com.raelity.jvi.lib.MRU.getSetMRU(() -> G.p_closedfiles());
+        Collections.synchronizedCollection(mru);
+        return mru;
+    }
 
     @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=10)
     public static class Init implements ViInitialization
@@ -132,8 +139,7 @@ public enum AppViews
                 Hook hook = ViManager.getCore();
                 List<String> l = hook.readPrefsList(PREF_CLOSEDFILES,
                                                     pClosedfilesImportCheck);
-                avsClosedMRU.initialize(l);
-                avsClosedMRU.trim();
+                avsClosedMRU.addAll(l);
                 if(!l.isEmpty())
                     new Thread(new CheckClosedfileExists(l)).start();
             }
@@ -142,9 +148,11 @@ public enum AppViews
             {
                 avsClosedMRU.trim();
                 Hook hook = ViManager.getCore();
-                hook.writePrefsList(PREF_CLOSEDFILES,
-                                    avsClosedMRU.closingIterable(),
-                                    pClosedfilesImportCheck.getValue());
+                synchronized(avsClosedMRU) {
+                    hook.writePrefsList(PREF_CLOSEDFILES,
+                                        avsClosedMRU,
+                                        pClosedfilesImportCheck.getValue());
+                }
             }
         });
     }

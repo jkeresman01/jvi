@@ -741,9 +741,8 @@ class MarkOps
 
         /** All the BufferMarks being tracked; read from prefs
          * or opened in this session. Key'd by file name. */
-        //static ValueMap<String, BufferMarksHeader> all
-        //        = new ValueHashMap<>((bmh) -> bmh.fname);
-        static Map<String, BufferMarksHeader> all = new HashMap<>();
+        static ValueMap<String, BufferMarksHeader> all
+                = new ValueHashMap<>((bmh) -> bmh.fname);
         /** The BufferMarks read during startup in MRU order.
          * File open makes a buf mru. */
         static MRU<String> bufsMRU = MRU.getSetMRU(null);
@@ -861,8 +860,8 @@ class MarkOps
             
             if(buf.getFile() == null || !buf.isActive())
                 return;
-            dbg.println(FINE, () -> sf("MarkOps: persist %s",
-                                      buf.getFile().getAbsolutePath()));
+            dbg.println(FINE, () -> sf("MarkOps: persist %s mark %s",
+                                      buf.getFile().getAbsolutePath(), markName));
             try {
                 BufferMarksHeader bmh;
                 String fname = buf.getFile().getAbsolutePath();
@@ -955,8 +954,6 @@ class MarkOps
          */
         private void read_viminfo()
         {
-            if(bufsMRU.isReady())
-                return; // only do it once
             // If all is correct, then the mru indexes for the bm are in the
             // range 1-n. If not then MRU info is lost.
             // Simply toss out any bufs that cause issues.
@@ -965,13 +962,16 @@ class MarkOps
                 Set<String> fnames = new HashSet<>();
                 // This array holds bufs in MRU order.
                 // Items assigned to bmHeaders by prefs' saved index.
-                BufferMarksHeader[] bmHeaders = new BufferMarksHeader[bufTags.length];
+                // Have a little extra room for potential shutdown issues.
+                //int space = Math.min(bufTags.length + 10, G.viminfoMaxBuf);
+                int space = bufTags.length + 10;
+                BufferMarksHeader[] bmHeaders = new BufferMarksHeader[space];
                 dbg.println(FINER, () -> sf(
                         "MarkOps: read_viminfo: persisted file count: %d",
                         bufTags.length));
                 // Shouldn't see more bmh than bufTags.length,
                 // add small pad for circumstances beyond our control.
-                ArrayList<String> tMru = new ArrayList<>(bufTags.length + 10);
+                ArrayList<String> tMru = new ArrayList<>(space);
                 for (String bufTag : bufTags) {
                     if (!bufTag.startsWith(BUF)) {
                         dbg.println(WARNING, () -> sf(
@@ -986,8 +986,8 @@ class MarkOps
                     if (fname == null || !fnames.add(fname)) {
                         bufData.removeNode();
                         dbg.println(WARNING, () -> sf(
-                                "MarkOps: read_viminfo: ignoring duplicate '%s'",
-                                fname));
+                                "MarkOps: read_viminfo: ignoring '%s'/%s",
+                                fname, bufTag));
                         cleanup.add(bufTag);
                         continue;
                     }
@@ -1036,7 +1036,7 @@ class MarkOps
                     }
                     tMru.add(bmh.getFname());
                 }
-                bufsMRU.initialize(tMru);
+                bufsMRU.addAll(tMru);
             } catch (BackingStoreException ex) {
                 LOG.log(SEVERE, null, ex);
             }
@@ -1051,19 +1051,16 @@ class MarkOps
         public void write_viminfo(ViEvent.Shutdown ev)
         {
             try {
-                dbg.println(FINE, "MarkOps: write_viminfo entry");
+                dbg.println(FINE, () -> sf("MarkOps: write_viminfo: %d/%d",
+                                          bufsMRU.size(), G.viminfoMaxBuf));
                 for (Buffer buf : getFactory().getBufferSet()) {
                     persist(buf, ev, null);
                 }
                 int max = G.viminfoMaxBuf;
-                int index = 1;
-                dbg.println(FINE, () -> sf("MarkOps: write_viminfo: %d",
-                                          bufsMRU.size()));
-                for(String fname : bufsMRU.closingIterable()) {
-                    // 2nd arg of 0 will cause removal
-                    writeBufferMarksHeader(fname, index <= max ? index : 0);
-                    index++;
-                }
+                MutableInt pIndex = new MutableInt(1);
+                for(String fname : bufsMRU)
+                    // remove an existing node if index more than max
+                    writeBufferMarksHeader(fname, pIndex, max);
                 for (String x : cleanup) {
                     Preferences p = prefs.node(x);
                     p.removeNode();
@@ -1080,26 +1077,32 @@ class MarkOps
         } // EventHandlers
 
         // NOTE: index <= 0 means remove the associated data.
-        /** write the header for this buffer's marks. */
-        private static void writeBufferMarksHeader(String name, int index)
+        /** write the header for this buffer's marks.
+         * Increment index if written; remove the node if
+         * index past max
+         */
+        private static void writeBufferMarksHeader(
+                String name, MutableInt pIndex, int max)
                 throws BackingStoreException
         {
-                dbg.println(FINER, () -> sf("MarkOps: writeBMH %d %s",
-                                           index, name));
-                BufferMarksHeader bmh = all.get(name);
-                if(bmh == null) {
-                    // Get here if no marks for buffer
-                    dbg.println(FINE, () -> sf(
-                            "MarkOps: writeBMH: %d:%s no BMH",
+            int index = pIndex.getValue();
+            dbg.println(FINER, () -> sf("MarkOps: writeBMH %d/%d %s",
+                                            index, max, name));
+            BufferMarksHeader bmh = all.get(name);
+            if(bmh == null) {
+                // Get here if no marks for buffer
+                dbg.println(FINE, () -> sf(
+                        "MarkOps: writeBMH: %d:%s no BMH",
                             index, name));
+            } else {
+                Preferences bufData = prefs.node(bmh.getBufTag());
+                if(index <= max) {
+                    bufData.putInt(INDEX, index);
+                    pIndex.setValue(index + 1);
                 } else {
-                    Preferences bufData = prefs.node(bmh.getBufTag());
-                    if(index > 0) {
-                        bufData.putInt(INDEX, index);
-                    } else {
-                        bufData.removeNode();
-                    }
+                    bufData.removeNode();
                 }
+            }
         }
 
         private static MarkInfo readMark(Preferences p)
@@ -1108,7 +1111,7 @@ class MarkOps
             o = p.getInt(OFFSET, -1);
             l = p.getInt(LINE, -1);
             c = p.getInt(COL, -1);
-            dbg.println(FINER, () -> sf(
+            dbg.println(FINEST, () -> sf(
                     "MarkOps: readMark: %s: off %d, line %d, col %d",
                     p.name(), o, l, c));
             if(o < 0 || l < 0 || c < 0) {
@@ -1124,6 +1127,9 @@ class MarkOps
             p.putInt(OFFSET, m.getOffset());
             p.putInt(LINE, m.getLine());
             p.putInt(COL, m.getColumn());
+            dbg.println(FINEST, () -> sf(
+                    "MarkOps: writeMark: %s: off %d, line %d, col %d",
+                    p.name(), m.getOffset(), m.getLine(), m.getColumn()));
         }
 
         private static void writeBufferMarks(BufferMarksHeader bmh,

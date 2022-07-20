@@ -24,15 +24,17 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import static com.raelity.jvi.lib.ValueMap.checkMap;
+
 /**
  *
  * @author err
  */
+@SuppressWarnings("serial")
 public class ValueHashMap<K, V>
 extends HashMap<K, V>
 implements ValueMap<K, V>
 {
-    private static final long serialVersionUID = 1L;
     private final Function<V,K> keyFunction;
 
     public ValueHashMap(Function<V, K> keyFunction, int initialCapacity)
@@ -46,13 +48,12 @@ implements ValueMap<K, V>
         this.keyFunction = keyFunction;
     }
 
-    // FIX
-    // private ValueHashMap(Function<V, K> keyFunction,
-    //                     Map<? extends K, ? extends V> map)
-    // {
-    //     super(map);
-    //     this.keyFunction = keyFunction;
-    // }
+    public ValueHashMap(Function<V, K> keyFunction,
+                        Map<? extends K, ? extends V> map)
+    {
+        super(checkMap(keyFunction, map));
+        this.keyFunction = keyFunction;
+    }
 
     @Override
     public V put(V value)
@@ -67,20 +68,25 @@ implements ValueMap<K, V>
     }
 
 
-
     @Override
     public V put(K key, V value)
     {
         if(!key.equals(keyFunction.apply(value)))
-            throw new IllegalArgumentException("key/value miss-match");
+            throw kvex(key, value);
         return super.put(key, value);
+    }
+
+    @Override
+    public void putAll(Map<? extends K, ? extends V> m)
+    {
+        super.putAll(checkMap(keyFunction, m));
     }
 
     @Override
     public V replace(K key, V value)
     {
         if(!key.equals(keyFunction.apply(value)))
-            throw new IllegalArgumentException("key/value miss-match");
+            throw kvex(key, value);
         return super.replace(key, value);
     }
 
@@ -88,11 +94,26 @@ implements ValueMap<K, V>
     public boolean replace(K key, V oldValue, V newValue)
     {
         if(!key.equals(keyFunction.apply(newValue)))
-            throw new IllegalArgumentException("key/newValue miss-match");
+            throw kvex(key, newValue);
         return super.replace(key, oldValue, newValue);
     }
 
-    // === LATER...
+    @Override
+    public Object clone()
+    {
+        return super.clone();
+    }
+
+    private static <K,V>IllegalArgumentException kvex(K k, V v)
+    {
+        return new IllegalArgumentException(
+                String.format("K/V miss-match: %s/%s", k, v));
+    }
+
+    ///////////////////////////////////////////////////////////////////////
+    //
+    // LATER...
+    //
 
     @Override
     public void replaceAll(BiFunction<? super K, ? super V, ? extends V> function)
@@ -146,13 +167,4 @@ implements ValueMap<K, V>
         if(true) throw new UnsupportedOperationException("yet");
         return super.getOrDefault(key, defaultValue);
     }
-
-    @Override
-    public void putAll(
-                       Map<? extends K, ? extends V> m)
-    {
-        if(true) throw new UnsupportedOperationException("yet");
-        super.putAll(m);
-    }
-
 }

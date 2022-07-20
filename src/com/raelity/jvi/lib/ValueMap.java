@@ -25,8 +25,9 @@ import java.util.function.Function;
 /**
  * Map that takes it key from the value, see getKeyFunction.
  * The KeyFunction is typically set in a constructor.
- * <p/>
- * Could have a setFunction method which makes sure things are consistent.
+ * If an operation is attempted and key != func(val),
+ * an IllegalArgumentException is thrown.
+ * 
  * @author err
  */
 public interface ValueMap<K, V> extends Map<K, V>
@@ -39,5 +40,28 @@ public interface ValueMap<K, V> extends Map<K, V>
  */
 V put(V value);
 
+/**
+ * Function used by map to generate keys.
+ * @return mapping function
+ */
 Function<V,K> getKeyFunction();
+
+/**
+ * Verify that the argument map has valid K/V entries according
+ * to argument keyFunction.
+ * @return the map
+ * @throws IllegalArgumentException
+ */
+public static <K,V>Map<K,V> checkMap(Function<V, K> keyFunction,
+                                     Map<? extends K, ? extends V> map)
+{
+    @SuppressWarnings("unchecked")
+            Map<K, V> tmap = (Map<K, V>)map;
+    for(Entry<K, V> entry : tmap.entrySet())
+        if(!entry.getKey().equals(keyFunction.apply(entry.getValue())))
+            throw new IllegalArgumentException(
+                    String.format("K/V miss-match: %s/%s",
+                                      entry.getKey(), entry.getValue()));
+    return tmap;
+}
 }
