@@ -614,28 +614,31 @@ implements SwingCommandLine
         }
         if(gotCtrlR >= 0)
             return;
-        if (e.getID() == KeyEvent.KEY_PRESSED
-                && (e.getKeyCode() == KeyEvent.VK_UP
+        // during commandEntryAssist (like NB code completion)
+        if(!ViManager.getFactory().commandEntryAssistBusy(null)) {
+            if (e.getID() == KeyEvent.KEY_PRESSED
+                    && (e.getKeyCode() == KeyEvent.VK_UP
                     || e.getKeyCode() == KeyEvent.VK_DOWN)) {
-            try {
-                inUpDown = true;
-                String val;
-                if(e.getKeyCode() == KeyEvent.VK_UP) {
-                    val = ctx.next();
-                } else {
-                    val = ctx.prev();
-                }
-                
-                // there's only one shot at using a selection, to late now...
-                setCaretPosition(getCaretPosition()); // clear any selection
-                if(val != null) {
-                    setText(val);
+                try {
+                    inUpDown = true;
+                    String val;
+                    if(e.getKeyCode() == KeyEvent.VK_UP) {
+                        val = ctx.next();
+                    } else {
+                        val = ctx.prev();
+                    }
+                    
+                    // there's only one shot at using a selection, to late now...
+                    setCaretPosition(getCaretPosition()); // clear any selection
+                    if(val != null) {
+                        setText(val);
+                        return;
+                    }
+                    SwingUtilities.invokeLater(() -> Misc01.beep_flush());
                     return;
+                } finally {
+                    inUpDown = false;
                 }
-                SwingUtilities.invokeLater(() -> Misc01.beep_flush());
-                return;
-            } finally {
-                inUpDown = false;
             }
         }
         super.processKeyEvent(e);
