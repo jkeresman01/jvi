@@ -21,6 +21,7 @@
 package com.raelity.jvi.options;
 
 import java.awt.Color;
+import java.beans.PropertyVetoException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,6 +40,7 @@ import java.util.prefs.Preferences;
 
 import com.raelity.jvi.core.*;
 import com.raelity.jvi.core.Options.Category;
+import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.*;
 
 import static java.util.logging.Level.*;
@@ -355,7 +357,7 @@ public class OptUtil {
     }
   }
 
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
+  @SuppressWarnings("UseOfSystemOutOrSystemErr")
   public static void checkAllForSetCommand() {
     Set<String> hasSetCommand = new HashSet<>();
     for(VimOption vopt : VimOption.getAll()) {
@@ -370,6 +372,20 @@ public class OptUtil {
                            + (opt.isHidden() ? " (HIDDEN)" : ""));
       }
     }
+  }
+
+  /** Return the first Veto found in the exception, ex.getCause()
+   * chain. return null if none found. Arbitrary depth limit. */
+  public static PropertyVetoException getVeto(Throwable ex)
+  {
+    int i = 0;
+    Throwable checkEx = ex;
+    while(checkEx != null && i++ < 10) {
+      if(checkEx instanceof PropertyVetoException)
+        return (PropertyVetoException)checkEx;
+      checkEx = checkEx.getCause();
+    }
+    return null;
   }
 
   private OptUtil()
@@ -411,6 +427,16 @@ public class OptUtil {
       Change ch = map.computeIfAbsent(name, (k) -> new Change(oldVal));
       ch.newVal = newVal;
     }
+
+    boolean getCurrentValue(String option, Wrap<Object> pObject)
+    {
+        Change change = map.get(option);
+        if(change == null)
+          return false;
+        pObject.setValue(change.newVal);
+        return true;
+    }
+    
 
     /**
      * The pending changes are accepted, change the options,

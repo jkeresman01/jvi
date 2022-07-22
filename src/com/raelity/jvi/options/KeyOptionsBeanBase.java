@@ -26,6 +26,7 @@ import java.beans.SimpleBeanInfo;
 import java.util.prefs.Preferences;
 
 import com.raelity.jvi.core.Options;
+import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.OptUtil.OptionChangeHandler;
 import com.raelity.jvi.swing.KeyBinding;
@@ -69,6 +70,15 @@ implements Options.EditControl
     public void start()
     {
         optionChangeHandler.clear();
+    }
+
+    @Override
+    public Object getCurrentValue(String name)
+    {
+        Wrap<Object> pObject = new Wrap<>();
+        if(optionChangeHandler.getCurrentValue(name, pObject))
+            return pObject.getValue();
+        return Options.getOption(name).getValue();
     }
 
     protected void put(String name, boolean val) {

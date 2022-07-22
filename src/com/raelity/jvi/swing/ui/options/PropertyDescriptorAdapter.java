@@ -27,6 +27,8 @@ import java.lang.reflect.Method;
 import com.l2fprod.common.beans.ExtendedPropertyDescriptor;
 import com.l2fprod.common.propertysheet.AbstractProperty;
 
+import com.raelity.jvi.options.*;
+
 /**
  * L2FProd's PropertyDescriptorAdapter is not public, so copy it here
  * and change descriptor field to protected
@@ -119,18 +121,16 @@ class PropertyDescriptorAdapter extends AbstractProperty {
                 | IllegalArgumentException
                 | InvocationTargetException e) {
             // let PropertyVetoException go to the upper level without logging
-            if(e instanceof InvocationTargetException
-                    && ((InvocationTargetException)e).getTargetException()
-                            instanceof PropertyVetoException) {
-                throw new RuntimeException(((InvocationTargetException)e)
-                        .getTargetException());
-            }
+            PropertyVetoException veto = OptUtil.getVeto(e);
+            if(veto != null)
+                throw new RuntimeException(e);
             String message = "Got exception when writing property " + getName();
             if(object == null) {
                 message += ", object was 'null'";
             } else {
                 message += ", object was " + String.valueOf(object);
             }
+            // TODO: not Runtime?
             throw new RuntimeException(message, e);
         }
     }

@@ -23,11 +23,9 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -893,10 +891,7 @@ class MarkOps
                     all.put(fname, bmh);
                 }
                 writeBufferMarks(bmh, buf, markName);
-            } catch(BackingStoreException ex) {
-                LOG.log(SEVERE, null, ex);
-            }
-            try {
+
                 prefs.flush();
             } catch(BackingStoreException ex) {
                 LOG.log(SEVERE, null, ex);
@@ -927,11 +922,10 @@ class MarkOps
                 for (String mName : marks) {
                     MarkInfo mi = readMark(bufData.node(mName));
                     if (mi == null) {
-                        // following was warning, but it fires too much
-                        // wonder why...., but its ignored.
-                        dbg.println(FINE, () -> sf(
-                                "MarkOps: restore: bad mark: %s, name: %s",
+                        dbg.println(WARNING, () -> sf(
+                                "MarkOps: removing bad mark: %s, name: %s",
                                 mName, fname));
+                        bufData.node(mName).removeNode();
                         continue;
                     }
                     char c = mName.charAt(0);
@@ -1121,9 +1115,17 @@ class MarkOps
             return new MarkInfo(o, l, c);
         }
 
-        private static void writeMark(Preferences p, ViMark m) {
-            if(m == null || !m.isValid())
+        private static void writeMark(
+                Preferences bufMarks, char name, ViMark m)
+                throws BackingStoreException
+        {
+            String markName = String.valueOf(name);
+            if(m == null || !m.isValid()) {
+                if (bufMarks.nodeExists(markName))
+                    bufMarks.node(markName).removeNode();
                 return;
+            }
+            Preferences p = bufMarks.node(markName);
             p.putInt(OFFSET, m.getOffset());
             p.putInt(LINE, m.getLine());
             p.putInt(COL, m.getColumn());
@@ -1137,16 +1139,15 @@ class MarkOps
                                              Character markName)
                 throws BackingStoreException
         {
-            Preferences bufData = prefs.node(bmh.getBufTag());
-            bufData.put(FNAME, bmh.getFname());
-            bufData.putInt(INDEX, bmh.getIndex());
+            Preferences bufMarks = prefs.node(bmh.getBufTag());
+            bufMarks.put(FNAME, bmh.getFname());
+            bufMarks.putInt(INDEX, bmh.getIndex());
             if(markName != null)
-                writeMark(bufData.node(String.valueOf(markName)),
-                          buf.getMark(markName));
+                writeMark(bufMarks, markName, buf.getMark(markName));
             else
                 for(char c = 'a'; c <= 'z'; c++) {
                     ViMark m = buf.getMark(c);
-                    writeMark(bufData.node(String.valueOf(c)), m);
+                    writeMark(bufMarks, c, m);
                 }
         }
 

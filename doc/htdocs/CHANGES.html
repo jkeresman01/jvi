@@ -118,15 +118,18 @@
             clipboard</a> documentation.
       </li>
       <li>
+        Appending to a yank register now handles all register modes:
+        character, line, or block.
+      </li>
+      <li>
+        Visual blockmode copy/paste between jVi and Vim.
+      </li>
+      <li>
         Add <span class="tt">Select Initial Command line</span>
         or <span class="tt">'sicl'</span> option. This specifies
         the initial contents of the colon command line window when
         it comes up: <span class="tt">empty</span>,
         <span class="tt">command</span>, or <span class="tt">selected</span>.
-      </li>
-      <li>
-        Appending to a yank register now handles all register modes:
-        character, line, or block.
       </li>
       <li>
         CommandLine <span class="tt">Ctrl-R</span> additionally handles
@@ -145,6 +148,11 @@
         Stretch command line to width of it's editor;
         but always at least 80 characters.
       </li>
+      <li>
+        Add options <span class="tt">viminfo: max reg-lines</span> and
+        <span class="tt">viminfo: max size</span>; they control the
+        register persistence.
+      </li>
     </ul>
   </dd>
   <dt>Bug fixes</dt>
@@ -154,8 +162,24 @@
         Sometimes the current directory was output as "?".
       </li>
       <li>
-        Fix: <span class="tt">:number</span> to goto line
+        <span class="tt">:number</span>, used to goto line,
         might throw an out of bounds exception.
+      </li>
+      <li>
+        Fix buffer mark persistence to correctly use
+        <span class="tt">viminfo: max buf-marks</span>.
+      </li>
+      <li>
+        Fix an obscure problem where persisted marks
+        might not be restored.
+      </li>
+      <li>
+        Clean up bad marks found in Preferences data base.
+      </li>
+      <li>
+        Fix an option dialog display problem. A bad value in setting an
+        option in the dialog could cause an exception and the displayed value
+        is not properly restored to the value before the exception.
       </li>
     </ul>
   </dd>

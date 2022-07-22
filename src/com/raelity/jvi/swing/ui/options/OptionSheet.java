@@ -45,17 +45,19 @@ import com.l2fprod.common.propertysheet.PropertySheetTableModel.NaturalOrderStri
 import com.l2fprod.common.swing.LookAndFeelTweaks;
 
 import com.raelity.jvi.core.Options;
+import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.ColorOption;
 import com.raelity.jvi.options.EnumOption;
 import com.raelity.jvi.options.EnumSetOption;
 import com.raelity.jvi.options.Option;
 import com.raelity.jvi.options.VimOption;
-import com.raelity.jvi.lib.XMLUtil;
+import com.raelity.jvi.options.*;
 
 /**
  * @author Ernie Rael <err at raelity.com>
  */
+@SuppressWarnings("serial")
 class OptionSheet extends JPanel implements Options.EditControl {
     // NOTE: bean/beanInfo are same class
     final BeanInfo bean; // keep a reference,
@@ -122,15 +124,20 @@ class OptionSheet extends JPanel implements Options.EditControl {
                 prop.writeToObject(bean);
                 change = true;
             } catch(RuntimeException ex) {
-                if(!(ex.getCause() instanceof PropertyVetoException)) {
+                PropertyVetoException veto = OptUtil.getVeto(ex);
+                if(veto == null) {
                     throw ex;
                 }
+
+                Option<?> option = Options.getOption(prop.getName());
                 JOptionPane.showMessageDialog(
                         ViManager.getFactory().getMainWindow(),
-                        ex.getCause().getMessage(),
+                        option.getCategory() + "\n"
+                                + option.getDisplayName() + ":\n"
+                                + "    " + veto.getMessage(),
                         "jVi Option Error",
                         JOptionPane.ERROR_MESSAGE);
-                prop.setValue(Options.getOption(prop.getName()).getString());
+                prop.setValue(getCurrentValue(prop.getName()));
             }
             if(change && optionsPanel.changeNotify != null) {
                 optionsPanel.changeNotify.change();
@@ -160,6 +167,12 @@ class OptionSheet extends JPanel implements Options.EditControl {
     public void cancel()
     {
         ((Options.EditControl)bean).cancel();
+    }
+
+    @Override
+    public Object getCurrentValue(String name)
+    {
+        return ((Options.EditControl)bean).getCurrentValue(name);
     }
 
     //

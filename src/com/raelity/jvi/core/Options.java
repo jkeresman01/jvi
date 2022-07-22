@@ -86,6 +86,8 @@ public final class Options {
         public void ok();
         /** cancel an in progress edit */
         public void cancel();
+        /** current cached value, possibly from cache */
+        public Object getCurrentValue(String name);
     }
 
     @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=2)
@@ -106,8 +108,9 @@ public final class Options {
    * Options are grouped into categories. Typically a UI groups the options
    * by category when presenting an options editor.
    */
-  public enum Category { PLATFORM, GENERAL, WINDOW, COLORS, SEARCH, MODIFY, CURSOR_WRAP,
-                         PROCESS, DEBUG, NONE }
+  public enum Category { PLATFORM, GENERAL, WINDOW, COLORS, SEARCH,
+                         MODIFY, CURSOR_WRAP, PROCESS, DEBUG,
+                         NONE }
 
   public static final String perProjectSupport = "viPerProjectSupport";
   
@@ -217,6 +220,8 @@ public final class Options {
   public static final String mapCommands = "viMapCommands";
 
   public static final String persistedBufMarks = "viPersistedBufMarks";
+  public static final String persistedRegLines = "viPersistedRegLines";
+  public static final String persistedSize = "viPersistedSize";
   
   public static final String readOnlyHack = "viReadOnlyHack";
   public static final String classicUndoOption = "viClassicUndo";
@@ -655,12 +660,12 @@ public final class Options {
     //
     //
 
-    createIntegerOption(history, 50, new Validator<Integer>() {
+    createIntegerOption(history, 200, new Validator<Integer>() {
               @Override
               public void validate(Integer val) throws PropertyVetoException {
-                  if(val < 0 || val > 1000) {
+                  if(val < 0 || val > 10000) {
                     reportPropertyVetoException(
-		         "Only 0 - 1000 allowed. Not '" + val + "'.", val);
+		         "Only 0 - 10000 allowed. Not '" + val + "'.", val);
                   }
               }
             });
@@ -759,20 +764,35 @@ public final class Options {
 	+ "where it was the last time the buffer was edited."
                );
 
+    createIntegerOption(persistedBufMarks, 100);
+    setupOptionDesc(Category.GENERAL, persistedBufMarks, "viminfo: max buf-marks",
+            "Maximum number of previously edited files for which the marks"
+	  + " are remembered."
+          + " Set to 0 and no marks are persisted.");
+
     createIntegerOption(
-            persistedBufMarks, 100, new Validator<Integer>() {
+            persistedRegLines, 50, new Validator<Integer>() {
               @Override
               public void validate(Integer val) throws PropertyVetoException {
-                  if(val < 0 || val > 500) {
+                  if(val < -1) {
                     reportPropertyVetoException(
-		         "Only 0 - 100 allowed. Not '" + val + "'.",
+		         "Only >= -1 allowed. Not '" + val + "'.",
                          val);
                   }
               }
             });
-    setupOptionDesc(Category.GENERAL, persistedBufMarks, "max persisted buf-marks",
-            "Maximum number of previously edited files for which the marks"
-	  + " are remembered. Set to 0 and no marks are persisted.");
+    setupOptionDesc(Category.GENERAL, persistedRegLines, "viminfo: max reg-lines",
+            "Maximum number of lines saved for each regster."
+          + " If zero then registers are not saved."
+          + " When -1, all lines are saved."
+          + " Also see the 'viminfo: max size': limit in Kbyte.");
+
+    createIntegerOption(persistedSize, 10);
+    setupOptionDesc(Category.GENERAL, persistedSize, "viminfo: max size",
+            "Maximum size of an item in Kbyte. If zero then"
+          + " registers are not saved. Currently only applies to registers."
+          + " The default, '10' excludes registers with more that 10 Kbyte"
+          + " of text. Also see 'viminfo: max reg-lines': line count limit.");
 
     createEnumStringOption(selection, "inclusive",
             new String[] {"old", "inclusive", "exclusive"});

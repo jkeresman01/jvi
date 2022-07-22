@@ -130,11 +130,10 @@ private static void read_viminfo_registers() {
                     get_yank_register(regname.charAt(0), false);
                     Yankreg reg = y_current;
                     reg.setData(regval, type);
-                    //System.err.println("\t" + type);
                 }
             }
         } catch (BackingStoreException ex) {
-            //Logger.getLogger(Misc.class.getName()).log(Level.SEVERE, null, ex);
+            Exceptions.printStackTrace(ex);
         }
     }
 }
@@ -142,30 +141,43 @@ private static void read_viminfo_registers() {
 private static void write_viminfo_registers() {
     Preferences prefsRegs = ViManager.getFactory()
             .getPreferences().node(PREF_REGISTERS);
+    int maxRegLines = Options.getOption(Options.persistedRegLines).getInteger();
+    int maxSize = Options.getOption(Options.persistedSize).getInteger() * 1024;
+    boolean saveOK = maxSize != 0 && maxRegLines != 0;
     for(int i = 0; i < y_regs.size(); i++) {
-        String regname = String.valueOf(get_register_name(i));
-        if(regname.equals("-") || isCbName(regname.charAt(0)))
-            continue;
-        Yankreg reg = y_regs.get(i);
-        String regval = "";
-        if(reg != null) {
-            regval = reg.getAll();
-        }
         try {
-            if(regval.isEmpty() || regval.length() > 1024) {
-                if (prefsRegs.nodeExists(regname)) {
+            String regname = String.valueOf(get_register_name(i));
+            if(regname.equals("-") || isCbName(regname.charAt(0))) {
+                if (prefsRegs.nodeExists(regname)) // clean up prev releases
                     prefsRegs.node(regname).removeNode();
-                }
+                continue;
+            }
+            Yankreg reg = y_regs.get(i);
+            String regval = "";
+            int regSize = 0;
+            if(saveOK && reg != null) {
+                regSize = reg.getByteSize();
+                if(regSize <= maxSize)
+                    regval = reg.getAll(maxRegLines);
+            }
+            if(!saveOK || regval.isEmpty() || regSize > maxSize) {
+                if (prefsRegs.nodeExists(regname))
+                    prefsRegs.node(regname).removeNode();
             } else {
-                assert reg != null;  // since regval != null
                 Preferences prefs = prefsRegs.node(regname);
                 prefs.put(DATA, regval);
+                assert reg != null;
                 prefs.putInt(TYPE, reg.y_type);
             }
             prefsRegs.flush();
         } catch (BackingStoreException ex) {
-            //Logger.getLogger(Misc.class.getName()).log(Level.SEVERE, null, ex);
+            Exceptions.printStackTrace(ex);
         }
+    }
+    try {
+        prefsRegs.flush();
+    } catch(BackingStoreException ex) {
+        Exceptions.printStackTrace(ex);
     }
 }
     
@@ -293,27 +305,48 @@ final static boolean isPlusRegister(Yankreg yreg)
     boolean isEmpty() {
         return y_array == null || y_array.isEmpty();
     }
+
+    int getByteSize()
+    {
+        int size = 0;
+        if(y_array != null)
+            for(String line : y_array) {
+                size += line.length() + 1;
+            }
+        return size;
+    }
+
+    String getAll()
+    {
+        return getAll(Integer.MAX_VALUE);
+    }
+    
     
     /**
      * Append '\n' to each line, except the last; if not MCHAR
      * then also append '\n' at the end.
      * @return all the contents as a single string, empty string if empty.
      */
-    String getAll()
+    String getAll(int nLines)
     {
         if(isEmpty())
             return "";
 
+        if(nLines < 0)
+            nLines = Integer.MAX_VALUE;
+
         ListIterator<String> it = y_array.listIterator();
         StringBuilder sb = new StringBuilder();
 
-        while(it.hasNext()) {
+        int count = 0;
+        while(it.hasNext() && count++ < nLines) {
             sb.append(it.next());
-            if(it.hasNext())
-                sb.append('\n'); // DONE
+            sb.append('\n'); // DONE
         }
-        if(y_type != MCHAR)
-                sb.append('\n'); // DONE
+        // MCHAR should not have an appended '\n', take it out.
+        if(y_type == MCHAR && sb.length() > 0)
+            sb.setLength(sb.length() - 1);
+
         return sb.toString();
     }
 

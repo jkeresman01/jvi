@@ -261,7 +261,7 @@ public abstract class Option<T> {
         {
             if(val == null || val < 0) {
                 reportPropertyVetoException(
-                        "Value must be >= 0: " + val, val);
+                        "Value must be >= 0: not " + val, val);
           }
         }
     }

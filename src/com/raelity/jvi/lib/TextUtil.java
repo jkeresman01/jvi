@@ -124,13 +124,18 @@ public class TextUtil {
             return sb.toString();
         }
     }
+
+    public static String debugString(CharSequence s) {
+        return debugString(s, 120);
+    }
     
     /** replace control characters with something visible */
-    public static String debugString(CharSequence s) {
+    public static String debugString(CharSequence s, int max) {
         if(s == null)
             return "(null)";
         StringBuilder sb = new StringBuilder();
-        for(int i = 0; i < s.length(); i++) {
+        int i;
+        for(i = 0; i < s.length() && sb.length() < max; i++) {
             char c = s.charAt(i);
             char t = 0;
             String esc = null;
@@ -159,6 +164,8 @@ public class TextUtil {
                 sb.append(t);
             }
         }
+        if(i < s.length())
+            sb.append(" ...");
         return sb.toString();
     }
     

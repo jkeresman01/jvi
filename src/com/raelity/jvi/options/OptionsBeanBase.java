@@ -42,6 +42,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.raelity.jvi.core.Options;
+import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.OptUtil.OptionChangeHandler;
 
@@ -95,6 +96,15 @@ implements Options.EditControl
     public void cancel()
     {
         optionChangeHandler.clear();
+    }
+
+    @Override
+    public Object getCurrentValue(String name)
+    {
+        Wrap<Object> pObject = new Wrap<>();
+        if(optionChangeHandler.getCurrentValue(name, pObject))
+            return pObject.getValue();
+        return Options.getOption(name).getValue();
     }
     
     @Override
@@ -247,6 +257,22 @@ implements Options.EditControl
     /** this read-only option is special cased */
     public String getJViVersion() {
         return ViManager.getReleaseString();
+    }
+
+    public void setViPersistedSize(int arg)  throws PropertyVetoException {
+        put(Options.persistedSize, arg);
+    }
+
+    public int getViPersistedSize() {
+	    return getint(Options.persistedSize);
+    }
+
+    public void setViPersistedRegLines(int arg)  throws PropertyVetoException {
+        put(Options.persistedRegLines, arg);
+    }
+
+    public int getViPersistedRegLines() {
+	    return getint(Options.persistedRegLines);
     }
 
     public void setViDbgOps(String arg)  throws PropertyVetoException {

@@ -51,11 +51,11 @@ import com.raelity.jvi.ViOutputStream.COLOR;
 import com.raelity.jvi.ViOutputStream.FLAGS;
 import com.raelity.jvi.core.Options;
 import com.raelity.jvi.core.lib.Mappings;
+import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.OptUtil;
 import com.raelity.jvi.options.OptionsBean;
 import com.raelity.jvi.options.StringOption;
-import com.raelity.jvi.lib.XMLUtil;
 
 /**
  * NEEDSWORK:
@@ -154,8 +154,6 @@ implements Options.EditControl
         XMLUtil xmlFix = new XMLUtil(OptionSheet.IN_RANGE_INVALID_CR,
                                      OptionSheet.IN_RANGE_VALID_CR);
 
-        StringBuilder sb = new StringBuilder();
-
         description.setText("<html>"
                 + "<b>"
                 + opt.getDisplayName()
@@ -168,6 +166,7 @@ implements Options.EditControl
         description.setCaretPosition(0);
     }
 
+    @SuppressWarnings("ThrowableResultIgnored")
     private void setOption()
     {
         lastSetMappings = mappings.getText();
@@ -205,6 +204,13 @@ implements Options.EditControl
     public void cancel()
     {
         bean.cancel();
+    }
+
+    @Override
+    public Object getCurrentValue(String name)
+    {
+        // this isn't used gets used
+        return ((Options.EditControl)bean).getCurrentValue(name);
     }
 
     private void setStatus(boolean defaultError)
