@@ -27,6 +27,13 @@ public class OptionsBean {
         }
     }
     
+    static public class Viminfo extends OptionsBeanBase {
+	public Viminfo() {
+	    super(Viminfo.class, "Viminfo Persistence Options",
+                                 Options.Category.VIMINFO);
+        }
+    }
+    
     static public class Windows extends OptionsBeanBase {
 	public Windows() {
 	    super(Windows.class, "Window Options and Display",

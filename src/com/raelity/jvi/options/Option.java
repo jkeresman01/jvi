@@ -82,20 +82,71 @@ public abstract class Option<T> {
     //       color allows null.
 
     @SuppressWarnings({"LeakingThisInConstructor", "OverridableMethodCallInConstructor"})
-    /*package*/ Option(Class<T> optionType, String key, T defaultValue,
-                          Validator<T> validator) {
+    Option(Class<T> optionType, String key, T defaultValue,
+                          FValidator<T> fvalidator) {
         this.optionType = optionType;
 	name = key;
 	this.defaultValue = defaultValue;
-        this.validator = validator;
-        assert validator.opt == null;
-        validator.opt = this;
+
+        if(fvalidator instanceof Validator) {
+            @SuppressWarnings("unchecked")
+            Validator<T> tvalidator = (Validator<T>)fvalidator;
+            this.validator = tvalidator;
+        } else {
+            this.validator = new Validator<T>() {
+                @Override
+                public void validate(T val) throws PropertyVetoException
+                {
+                    try {
+                        fvalidator.validate(val);
+                    } catch(FailedValidation ex) {
+                        ex.evt = new PropertyChangeEvent(opt, opt.getName(),
+                                                         opt.getValue(), val);
+                        throw ex;
+                    }
+                }
+            };
+        }
+
+        assert this.validator.opt == null;
+        this.validator.opt = this;
 
 	fExpert = false;
         fHidden = false;
 
         initialize(); // overridableMethodCallInConstructor
     }
+
+    //////////////////////////////////////////////////////////////////////
+    //
+    // CLASS FailedValidation
+    //
+    @SuppressWarnings("serial")
+    /** A propertyVetoException that allows the change event to get
+     * plugged in later */
+    public static class FailedValidation extends PropertyVetoException
+    {
+    private PropertyChangeEvent evt;
+    
+    public FailedValidation(String message)
+    {
+        super(message, null);
+    }
+    
+    @Override
+    public PropertyChangeEvent getPropertyChangeEvent()
+    {
+        return evt;
+    }
+    
+    
+    } // END CLASS FailedValidation /////////////////////////////////////////
+
+    static public void failedValidation(String msg) throws FailedValidation
+    {
+        throw new FailedValidation(msg);
+    }
+
 
     void initialize() {
         preferenceChange(OptUtil.getPrefs().get(name, getValueAsString(defaultValue)));

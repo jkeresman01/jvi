@@ -149,9 +149,14 @@
         but always at least 80 characters.
       </li>
       <li>
-        Add options <span class="tt">viminfo: max reg-lines</span> and
-        <span class="tt">viminfo: max size</span>; they control the
-        register persistence.
+        Add Viminfo option dialog category tab.<br>
+        Add options <span class="tt">max reg-lines</span>,
+        <span class="tt">max size</span>; they control the
+        register persistence. Add options
+        <span class="tt">max Search Patterns</span> and
+        <span class="tt">max CommandLine</span>; they may
+        override <span class="tt">'history'</span>
+        for persistence.
       </li>
     </ul>
   </dd>
@@ -167,7 +172,7 @@
       </li>
       <li>
         Fix buffer mark persistence to correctly use
-        <span class="tt">viminfo: max buf-marks</span>.
+        <span class="tt">max buf-marks</span>.
       </li>
       <li>
         Fix an obscure problem where persisted marks

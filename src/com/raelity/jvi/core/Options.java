@@ -41,7 +41,6 @@ import com.raelity.jvi.options.DebugOption;
 import com.raelity.jvi.options.OptUtil;
 import com.raelity.jvi.options.Option;
 import com.raelity.jvi.options.SetColonCommand;
-import com.raelity.jvi.options.Validator;
 import com.raelity.jvi.lib.MySegment;
 
 import static com.raelity.jvi.core.lib.Constants.*;
@@ -64,6 +63,7 @@ import static com.raelity.jvi.options.OptUtil.createIntegerOption;
 import static com.raelity.jvi.options.OptUtil.createStringOption;
 import static com.raelity.jvi.options.OptUtil.setupOptionDesc;
 import static com.raelity.jvi.options.OptUtil.setExpertHidden;
+import static com.raelity.jvi.options.Option.failedValidation;
 
 /**
  * Option handling from external sources.
@@ -108,7 +108,8 @@ public final class Options {
    * Options are grouped into categories. Typically a UI groups the options
    * by category when presenting an options editor.
    */
-  public enum Category { PLATFORM, GENERAL, WINDOW, COLORS, SEARCH,
+  public enum Category { PLATFORM, GENERAL, VIMINFO,
+                         WINDOW, COLORS, SEARCH,
                          MODIFY, CURSOR_WRAP, PROCESS, DEBUG,
                          NONE }
 
@@ -185,8 +186,6 @@ public final class Options {
   public static final String visualBellColor = "viVisualBellColor";
   public static final String cursorInView = "viCursorInView";
 
-  public static final String history = "viHistory";
-
   public static final String wrap = "viWrap";
   public static final String list = "viList";
   public static final String lineBreak = "viLineBreak";
@@ -219,6 +218,10 @@ public final class Options {
 
   public static final String mapCommands = "viMapCommands";
 
+  public static final String history = "viHistory";
+
+  public static final String persistedSearch = "viPersistedSearch";
+  public static final String persistedColon = "viPersistedColon";
   public static final String persistedBufMarks = "viPersistedBufMarks";
   public static final String persistedRegLines = "viPersistedRegLines";
   public static final String persistedSize = "viPersistedSize";
@@ -284,6 +287,9 @@ public final class Options {
     }
     didInit = true;
 
+    String MinMinus1 = "Only '-1 <= val' allowed. Not '%d'.";
+    String ToTenK = "Only '0 <= val <= 10000' allowed. Not '%d'.";
+
     // Since this is used to debug options, put it first
 
     G.dbgOptions = createDebugOption(dbgOptions);
@@ -318,16 +324,11 @@ public final class Options {
             + "\n\" map 0 g0"
             + "\n\" map ^ g^"
             + "",
-            new Validator<String>() {
-            @Override
-              public void validate(String val) throws PropertyVetoException {
-
+            (val) -> {
                 Wrap<String> emsg = new Wrap<>("");
                 if(null == Mappings.parseMapCommands(val, emsg)) {
-                  reportPropertyVetoException(emsg.getValue(), val);
-                }
-              }
-            });
+                  failedValidation(emsg.getValue());
+                }});
     setupOptionDesc(Category.GENERAL, mapCommands, "Map Commands",
             "map-cmd {lhs} {rhs}"
             + "\n[nvop]map, [nvop]noremap and [nvop]unmap commands supported"
@@ -606,6 +607,74 @@ public final class Options {
     /////////////////////////////////////////////////////////////////////
     //
     //
+    // Viminfo Options
+    //
+    //
+
+    createIntegerOption(history, 200, (val) -> {
+                          if(val < 0 || val > 10000) {
+                            failedValidation(sf(ToTenK, val));
+                          }});
+    setupOptionDesc(Category.VIMINFO, history, "'history' 'hi'",
+            "A history of ':' commands, and a history of previous search"
+          + " patterns is remembered.  This option decides how many entries"
+          + " may be stored in each of these histories (see |cmdline-editing|)."
+          + "\n\nThe maximum value is 10000.");
+
+    createIntegerOption(persistedSearch, -1, (val) -> {
+                          if(val < -1) {
+                            failedValidation(sf(MinMinus1, val));
+                          }});
+    setupOptionDesc(Category.VIMINFO, persistedSearch, "max Search Patterns",
+            "Maximum number of items in the search pattern history to save.\n"
+          + "When set to '-1', the value of 'history' is used.");
+
+    createIntegerOption(persistedColon, -1, (val) -> {
+                          if(val < -1) {
+                            failedValidation(sf(MinMinus1, val));
+                          }});
+    setupOptionDesc(Category.VIMINFO, persistedColon, "max CommandLine",
+            "Maximum number of items in the command-line history to save.\n"
+          + "When set to '-1', the value of 'history' is used.");
+
+    createIntegerOption(closedFiles, 200, (val) -> {
+                          if(val < 0 || val > 10000) {
+                            failedValidation(sf(ToTenK, val));
+                          }});
+    setupOptionDesc(Category.VIMINFO, closedFiles, "'closedfiles'",
+            "An MRU sorted list of closed files, used by the 'e*' command,"
+          + " is remembered between sessions."
+          + "  This option determines how many entries"
+          + " to persist to/from backing store."
+          + "\n\nThe maximum value is 10000.");
+
+    createIntegerOption(persistedBufMarks, 100);
+    setupOptionDesc(Category.VIMINFO, persistedBufMarks, "max buf-marks",
+            "Maximum number of previously edited files for which the marks"
+	  + " are remembered."
+          + " Set to 0 and no marks are persisted.");
+
+    createIntegerOption(persistedRegLines, 50, (val) -> {
+                          if(val < -1) {
+                            failedValidation(sf(MinMinus1, val));
+                          }});
+    setupOptionDesc(Category.VIMINFO, persistedRegLines, "max reg-lines",
+            "Maximum number of lines saved for each regster."
+          + " If zero then registers are not saved."
+          + " When -1, all lines are saved."
+          + " Also see the 'viminfo: max size': limit in Kbyte.");
+
+    createIntegerOption(persistedSize, 10);
+    setupOptionDesc(Category.VIMINFO, persistedSize, "max size",
+            "Maximum size of an item in Kbyte. If zero then"
+          + " registers are not saved. Currently only applies to registers."
+          + " The default, '10' excludes registers with more that 10 Kbyte"
+          + " of text. Also see 'viminfo: max reg-lines': line count limit.");
+
+
+    /////////////////////////////////////////////////////////////////////
+    //
+    //
     // Colors Options
     //
     //
@@ -659,37 +728,6 @@ public final class Options {
     // General Options
     //
     //
-
-    createIntegerOption(history, 200, new Validator<Integer>() {
-              @Override
-              public void validate(Integer val) throws PropertyVetoException {
-                  if(val < 0 || val > 10000) {
-                    reportPropertyVetoException(
-		         "Only 0 - 10000 allowed. Not '" + val + "'.", val);
-                  }
-              }
-            });
-    setupOptionDesc(Category.GENERAL, history, "'history' 'hi'",
-            "A history of ':' commands, and a history of previous search"
-          + " patterns is remembered.  This option decides how many entries"
-          + " may be stored in each of these histories (see |cmdline-editing|)."
-          + "\n\nThe maximum value is 1000.");
-
-    createIntegerOption(closedFiles, 200, new Validator<Integer>() {
-              @Override
-              public void validate(Integer val) throws PropertyVetoException {
-                  if(val < 0 || val > 1000) {
-                    reportPropertyVetoException(
-		         "Only 0 - 1000 allowed. Not '" + val + "'.", val);
-                  }
-              }
-            });
-    setupOptionDesc(Category.GENERAL, closedFiles, "'closedfiles'",
-            "An MRU sorted list of closed files, used by the 'e*' command,"
-          + " is remembered between sessions."
-          + "  This option determines how many entries"
-          + " to persist to/from backing store."
-          + "\n\nThe maximum value is 1000.");
 
     createIntegerOption(scrollOff, 0);
     setupOptionDesc(Category.GENERAL, scrollOff, "'scrolloff' 'so'",
@@ -763,36 +801,6 @@ public final class Options {
 	+ "In case of buffer changing commands the cursor is placed at the column"
 	+ "where it was the last time the buffer was edited."
                );
-
-    createIntegerOption(persistedBufMarks, 100);
-    setupOptionDesc(Category.GENERAL, persistedBufMarks, "viminfo: max buf-marks",
-            "Maximum number of previously edited files for which the marks"
-	  + " are remembered."
-          + " Set to 0 and no marks are persisted.");
-
-    createIntegerOption(
-            persistedRegLines, 50, new Validator<Integer>() {
-              @Override
-              public void validate(Integer val) throws PropertyVetoException {
-                  if(val < -1) {
-                    reportPropertyVetoException(
-		         "Only >= -1 allowed. Not '" + val + "'.",
-                         val);
-                  }
-              }
-            });
-    setupOptionDesc(Category.GENERAL, persistedRegLines, "viminfo: max reg-lines",
-            "Maximum number of lines saved for each regster."
-          + " If zero then registers are not saved."
-          + " When -1, all lines are saved."
-          + " Also see the 'viminfo: max size': limit in Kbyte.");
-
-    createIntegerOption(persistedSize, 10);
-    setupOptionDesc(Category.GENERAL, persistedSize, "viminfo: max size",
-            "Maximum size of an item in Kbyte. If zero then"
-          + " registers are not saved. Currently only applies to registers."
-          + " The default, '10' excludes registers with more that 10 Kbyte"
-          + " of text. Also see 'viminfo: max reg-lines': line count limit.");
 
     createEnumStringOption(selection, "inclusive",
             new String[] {"old", "inclusive", "exclusive"});
@@ -1053,17 +1061,11 @@ public final class Options {
                   + " match characters, words and features.");
     setExpertHidden(platformBraceMatch, true, false);
     
-    createStringOption(isKeyWord, "@,48-57,_,192-255",
-            new Validator<String>() {
-            @Override
-              public void validate(String val) throws PropertyVetoException {
-                CharTab ct = new CharTab();
-                if(!ct.init(val)) {
-                  reportPropertyVetoException("parse of '" + val + "' failed.",
-                                              val);
-                }
-              }
-            });
+    createStringOption(isKeyWord, "@,48-57,_,192-255", (val) -> {
+                         CharTab ct = new CharTab();
+                         if(!ct.init(val)) {
+                           failedValidation("parse of '" + val + "' failed.");
+                         }});
     setupOptionDesc(Category.SEARCH, isKeyWord, "'iskeyword' 'isk'",
               "Keywords are used in searching and recognizing with many commands:"
             + " \"w\", \"*\", etc. See vim docs for more info."

@@ -112,10 +112,18 @@ private static void init() {
         {
             handleHistorySizeChange(); // Just in case
             List<String> l = SEARCH.getHistory();
-            writePrefsList(PREF_SEARCH, l, pSearchImportCheck.getValue());
+            int optMax = Options.getOption(Options.persistedSearch).getInteger();
+            int outMax = optMax >= 0 && optMax <= l.size() ? optMax : l.size();
+            writePrefsList(PREF_SEARCH,
+                           l.subList(0, outMax),
+                           pSearchImportCheck.getValue());
 
             l = COLON.getHistory();
-            writePrefsList(PREF_COMMANDS, l, pCommandsImportCheck.getValue());
+            optMax = Options.getOption(Options.persistedColon).getInteger();
+            outMax = optMax >= 0 && optMax <= l.size() ? optMax : l.size();
+            writePrefsList(PREF_COMMANDS,
+                           l.subList(0, outMax),
+                           pCommandsImportCheck.getValue());
         }
     });
 }
@@ -127,6 +135,7 @@ public void eatmeTest1(HistoryContext hc)
     hc.test_prev();
 }
 
+@SuppressWarnings("NonPublicExported")
 public void eatmeTest2(HistoryContextArrayList hc)
 {
     hc.test_current();
@@ -149,9 +158,7 @@ HistoryContext initHistory(List<String> l)
     if(history != null)
         return null;
     history = HistoryContext.create(this);
-    ListIterator<String> iter = l.listIterator(l.size());
-    while(iter.hasPrevious())
-        history.push(iter.previous());
+    history.initHistory(l);
     return history;
 }
 
@@ -167,7 +174,6 @@ private static void handleHistorySizeChange()
     COLON.history.trim();
     SEARCH.history.trim();
 }
-
 
 /**
  * Translate a history character to the associated history.
@@ -437,8 +443,8 @@ private static HistoryActionArgs getHistoryActionArgs()
 
     final public static class HistEntry
     {
-    String hisstr;
-    int hisnum;
+    final String hisstr;
+    final int hisnum;
     
     public HistEntry(String hisstr, int hisnum)
     {
@@ -490,6 +496,11 @@ private static HistoryActionArgs getHistoryActionArgs()
     
     }
 
+    //////////////////////////////////////////////////////////////////////
+    //
+    // CLASS HistoryContext
+    //
+
     abstract static public class HistoryContext
     {
     final CommandHistory which;
@@ -513,6 +524,19 @@ private static HistoryActionArgs getHistoryActionArgs()
      * return false.
      */
     abstract public InitialHistoryItem init();
+
+    /**
+     * Initialize history. Default implementation.
+     * Note that this implementation traverses the list in
+     * reverse order, calling push. The result is that the
+     * items end up in the same order.
+     */
+    void initHistory(List<String> l)
+    {
+        ListIterator<String> iter = l.listIterator(l.size());
+        while(iter.hasPrevious())
+            push(iter.previous());
+    }
     
     /**
      * Set the most recent item.
@@ -556,7 +580,7 @@ private static HistoryActionArgs getHistoryActionArgs()
     public String get_register(char regname) {
         return get_register_value(regname);
     }
-    }
+    } // END CLASS HistoryContext ///////////////////////////////////////////
 
     /**
      * Access to command line history. A filter can be specified and any
@@ -659,7 +683,14 @@ private static HistoryActionArgs getHistoryActionArgs()
         }
         return new InitialHistoryItem(atBeginning, he.hisstr);
     }
-
+    
+    /** */
+    @Override
+    void initHistory(List<String> l)
+    {
+        super.initHistory(l);
+    }
+                        
     /**
      * Set the most recent item.
      * @param cmd put this at the top of stack
@@ -725,23 +756,19 @@ private static HistoryActionArgs getHistoryActionArgs()
         return filter;
     }
 
-    // TODO: REMOVE ???
-    @Override
-    void trim()
-    {
-        trim(G.p_hi);
-    }
-
     @Override
     int size()
     {
         return history.size();
     }
 
-    // remove oldest items until length
-    private void trim(int len)
+    // remove oldest items until limit
+    @Override
+    void trim()
     {
-        while(history.size() > len) {
+        // G.p_hi is used for in memory limit
+        int limit = G.p_hi;
+        while(history.size() > limit) {
             history.remove(0);
         }
     }

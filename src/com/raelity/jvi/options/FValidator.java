@@ -1,4 +1,7 @@
 /*
+ * Portions created by Ernie Rael are
+ * Copyright (C) 2022 Ernie Rael.  All Rights Reserved.
+ *
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of
@@ -11,22 +14,18 @@
  *
  * The Original Code is jvi - vi editor clone.
  *
- * The Initial Developer of the Original Code is Ernie Rael.
- * Portions created by Ernie Rael are
- * Copyright (C) 2000-2010 Ernie Rael.  All Rights Reserved.
- *
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
+
 package com.raelity.jvi.options;
 
-/**
- *
- * @author Ernie Rael <err at raelity.com>
- */
-public class StringOption extends Option<String> {
+import java.beans.PropertyVetoException;
 
-    StringOption(String key, String defaultValue,
-                            FValidator<String> validator) {
-        super(String.class, key, defaultValue, validator);
-    }
+/**
+ * Function Validator
+ * @author err
+ */
+public interface FValidator<T>
+{
+    void validate(T val) throws PropertyVetoException;
 }

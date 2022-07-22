@@ -109,7 +109,7 @@ public class OptUtil {
 
   static public StringOption createStringOption(String name,
                                                 String defaultValue,
-                                                Validator<String> valid) {
+                                                FValidator<String> valid) {
     if(optionsMap.get(name) != null)
         throw new IllegalArgumentException("Option " + name + "already exists");
     if(valid == null)
@@ -170,7 +170,7 @@ public class OptUtil {
   }
 
   static public IntegerOption createIntegerOption(
-          String name, int defaultValue, Validator<Integer> valid)
+          String name, int defaultValue, FValidator<Integer> valid)
   {
     if(optionsMap.get(name) != null)
         throw new IllegalArgumentException("Option " + name + "already exists");

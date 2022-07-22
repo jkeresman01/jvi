@@ -26,7 +26,7 @@ package com.raelity.jvi.options;
 public class IntegerOption extends Option<Integer> {
 
     IntegerOption(String key, int defaultValue,
-                            Validator<Integer> validator) {
+                            FValidator<Integer> validator) {
         super(Integer.class, key, defaultValue, validator);
     }
 }

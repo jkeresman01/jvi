@@ -27,9 +27,10 @@ import java.beans.PropertyVetoException;
  * @author Ernie Rael <err at raelity.com>
  */
 // NEEDSWORK: make this a subclass of Option with reference to it's option
-public abstract class Validator<T> {
+public abstract class Validator<T> implements FValidator<T> {
     protected Option<T> opt;
 
+    @Override
     public abstract void validate(T val) throws PropertyVetoException;
 
     // val was "T val" before EnumSet

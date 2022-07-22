@@ -259,6 +259,22 @@ implements Options.EditControl
         return ViManager.getReleaseString();
     }
 
+    public void setViPersistedSearch(int arg)  throws PropertyVetoException {
+        put(Options.persistedSearch, arg);
+    }
+
+    public int getViPersistedSearch() {
+	    return getint(Options.persistedSearch);
+    }
+
+    public void setViPersistedColon(int arg)  throws PropertyVetoException {
+        put(Options.persistedColon, arg);
+    }
+
+    public int getViPersistedColon() {
+	    return getint(Options.persistedColon);
+    }
+
     public void setViPersistedSize(int arg)  throws PropertyVetoException {
         put(Options.persistedSize, arg);
     }
