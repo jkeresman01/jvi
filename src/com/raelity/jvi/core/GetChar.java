@@ -35,6 +35,9 @@ import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
 import com.raelity.jvi.lib.TextUtil;
 
+import static java.util.logging.Level.*;
+
+import static com.raelity.jvi.core.G.dbgUndo;
 import static com.raelity.jvi.core.Hook.setJViBusy;
 import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.lib.Constants.*;
@@ -347,7 +350,7 @@ public class GetChar {
                 if(!collectingGroupUndo
                         && (typebuf.length() > 1 // && isInsertMode()
                             || handle_redo)) {
-                    G.dbgUndo.println("pumpAllChars: switch 1 to group undo");
+                    dbgUndo.println(CONFIG, "pumpAllChars: switch 1 to group undo");
                     startPump(NO_CHAR, true);
                     return;
                 }
@@ -366,7 +369,7 @@ public class GetChar {
                 if(!collectingGroupUndo
                         && (typebuf.length() > 1 // && isInsertMode()
                             || handle_redo)) {
-                    G.dbgUndo.println("pumpAllChars: switch 2 to group undo");
+                    dbgUndo.println(CONFIG, "pumpAllChars: switch 2 to group undo");
                     startPump(c, true);
                     return;
                 }

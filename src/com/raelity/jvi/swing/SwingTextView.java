@@ -30,6 +30,7 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
@@ -419,9 +420,18 @@ public abstract class SwingTextView extends TextView
         return editorPane;
     }
 
-    private Timer bellTimer;
     @Override
-    public void visual_bell()
+    public void bell()
+    {
+        if(!G.p_vb()) {
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+        visual_bell();
+    }
+
+    private Timer bellTimer;
+    private void visual_bell()
     {
         // visual bell and time is zero means do nothing.
         // Also don't start up another bell, if one is in progress.

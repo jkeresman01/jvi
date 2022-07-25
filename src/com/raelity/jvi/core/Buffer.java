@@ -29,13 +29,9 @@ import com.raelity.jvi.lib.RegExp;
 import com.raelity.jvi.lib.MySegment;
 
 import static java.lang.Math.min;
+import static java.util.logging.Level.*;
 
-import static com.raelity.jvi.core.G.VIsual;
-import static com.raelity.jvi.core.G.VIsual_active;
-import static com.raelity.jvi.core.G.VIsual_mode;
-import static com.raelity.jvi.core.G.curbuf;
-import static com.raelity.jvi.core.G.curwin;
-import static com.raelity.jvi.core.G.drawSavedVisualBounds;
+import static com.raelity.jvi.core.G.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.lib.TextUtil.sf;
@@ -236,9 +232,9 @@ public abstract class Buffer implements ViBuffer, ViOptionBag
     // be overriden to use the simpler interface.
     //
     protected void do_runUndoable(Runnable r) {
-        G.dbgUndo.printf("{Buffer:RunUndoable: \n");
+        dbgUndo.printf(CONFIG, "{Buffer:RunUndoable: \n");
         r.run();
-        G.dbgUndo.printf("}Buffer:RunUndoable: \n");
+        dbgUndo.printf(CONFIG, "}Buffer:RunUndoable: \n");
     }
 
     @Override
@@ -257,7 +253,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag
 
     @Override
     public void do_beginUndo() {
-        G.dbgUndo.printf("{Buffer:do_beginUndo: \n");
+        dbgUndo.printf(CONFIG, "{Buffer:do_beginUndo: \n");
         // NEEDSWORK: standalone like: ((AbstractDocument)doc).writeLock();
         assert !fCommandUndo;
         fCommandUndo = true;
@@ -270,12 +266,12 @@ public abstract class Buffer implements ViBuffer, ViOptionBag
         assert fCommandUndo;
         checkEndAnyUndo();
         fCommandUndo = false;
-        G.dbgUndo.printf("}Buffer:do_endUndo: \n");
+        dbgUndo.printf(CONFIG, "}Buffer:do_endUndo: \n");
     }
 
     @Override
     public void do_beginInsertUndo() {
-        G.dbgUndo.printf("{Buffer:do_beginInsertUndo: \n");
+        dbgUndo.printf(CONFIG, "{Buffer:do_beginInsertUndo: \n");
         assert !fInsertUndo;
         fInsertUndo = true;
         checkBeginAnyUndo();
@@ -286,7 +282,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag
         assert fInsertUndo;
         checkEndAnyUndo();
         fInsertUndo = false;
-        G.dbgUndo.printf("}Buffer:do_endInsertUndo: \n");
+        dbgUndo.printf(CONFIG, "}Buffer:do_endInsertUndo: \n");
     }
 
     private void checkBeginAnyUndo() {

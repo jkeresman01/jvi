@@ -25,11 +25,8 @@ import java.io.File;
 import java.text.CharacterIterator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 
 import com.google.common.eventbus.Subscribe;
-
-import org.openide.util.Exceptions;
 
 import com.raelity.jvi.*;
 import com.raelity.jvi.ViTextView.Direction;
@@ -40,12 +37,15 @@ import com.raelity.jvi.manager.*;
 import com.raelity.jvi.lib.MySegment;
 import com.raelity.jvi.lib.StringSegment;
 
+import static java.util.logging.Level.*;
+
 import static com.raelity.jvi.core.Edit.*;
 import static com.raelity.jvi.core.Misc.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
 import static com.raelity.jvi.lib.TextUtil.sf;
+import static com.raelity.jvi.manager.ViManager.dumpFrames;
 
 /**
  * do_window is some stuff from window.c and related.
@@ -173,7 +173,7 @@ public class Misc01
     private static void scrollToLogicalLine(int logicalLine)
     {
       int logicalLineF = logicalLine;
-      G.dbgCoordSkip.println(Level.FINE, () ->
+      G.dbgCoordSkip.println(FINE, () ->
               sf("gotoLogicalLine: logicalLine %d", logicalLineF));
       if(logicalLine < 1)
         logicalLine = 1;
@@ -897,18 +897,18 @@ public class Misc01
     
     /**
      * "ring the bell", if the G.p_vb is set then visual bell.
-     * <p/>
+     * <p>
      * Note: if there's an error and the typeahead buffer should be flushed
      * then use beep_flush().
      */
     public static void vim_beep() {
-        if(Options.getDebugOption(Options.dbgBeep).getBoolean())
-            Exceptions.printStackTrace(new Exception("BEEP"));
-        if(!G.p_vb() || G.curwin == null) {
+        G.dbgBeep.printf(FINE, () -> sf("vim_beep === BEEP ===\n%s",
+                                        dumpFrames(7)));
+        if(G.curwin == null) {
             Toolkit.getDefaultToolkit().beep();
             return;
         }
-        G.curwin.visual_bell();
+        G.curwin.bell();
     }
     
     /**

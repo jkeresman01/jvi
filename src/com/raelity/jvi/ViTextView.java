@@ -149,7 +149,7 @@ public interface ViTextView extends ViOptionBag {
   public Component getEditor();
 
   /** ring the bell, take visual bell options into account */
-  public void visual_bell();
+  public void bell();
 
   /** @return tab info for container holding this text editor */
   default public ViTabInfo getTabInfo() {

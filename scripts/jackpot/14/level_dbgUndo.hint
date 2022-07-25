@@ -1,0 +1,26 @@
+<?
+    import static java.util.logging.Level.*;
+    import static com.raelity.jvi.core.G.dbgUndo;
+?>
+
+<!description="Add Level.CONFIG for dbgUndo usage without a Level">
+
+    com.raelity.jvi.core.G.dbgUndo.printf($arg, $args$)
+ :: !$arg instanceof java.util.logging.Level
+ => dbgUndo.printf(CONFIG, $arg, $args$)
+ ;;
+
+    com.raelity.jvi.core.G.dbgUndo.println($arg, $args$)
+ :: !$arg instanceof java.util.logging.Level
+ => dbgUndo.println(CONFIG, $arg, $args$)
+ ;;
+
+    com.raelity.jvi.core.G.dbgUndo().printf($arg, $args$)
+ :: !$arg instanceof java.util.logging.Level
+ => dbgUndo().printf(CONFIG, $arg, $args$)
+ ;;
+
+    com.raelity.jvi.core.G.dbgUndo().println($arg, $args$)
+ :: !$arg instanceof java.util.logging.Level
+ => dbgUndo().println(CONFIG, $arg, $args$)
+ ;;

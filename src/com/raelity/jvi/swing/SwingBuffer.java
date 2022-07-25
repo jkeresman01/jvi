@@ -28,11 +28,16 @@ import com.raelity.jvi.ViFPOS;
 import com.raelity.jvi.ViMark;
 import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.core.*;
+import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.DebugOption;
-import com.raelity.jvi.lib.MySegment;
+
+import static java.util.logging.Level.*;
 
 import static com.raelity.jvi.core.Misc01.*;
+import static com.raelity.jvi.lib.TextUtil.sf;
+import static com.raelity.jvi.manager.ViManager.eatme;
+import static com.raelity.jvi.manager.ViManager.dumpFrames;
 
 /**
  * The swing implementation of jVi's ViBuffer.
@@ -556,6 +561,20 @@ abstract public class SwingBuffer extends Buffer
             // ElementChange change
             //         = e.getChange(e.getDocument().getDefaultRootElement());
         }
+
+        @Override
+        public String toString() {
+            String text = "";
+            try {
+                if(isInsert)
+                    text = ", text='" + TextUtil.debugString(
+                            getDocument().getText(offset, length)) + "'";
+            } catch(BadLocationException ex) { }
+            String s = sf("DocChangeInfo{change=%b, insert=%b, off=%d, len=%d%s}",
+                          isChange, isInsert, offset, length, text);
+            return s;
+        }
+
     }
 
     protected void filterInsertString(int offset, String string,
@@ -575,6 +594,7 @@ abstract public class SwingBuffer extends Buffer
     //
     // CURRENTLY NOT USED
     //
+    static { if(Boolean.FALSE) eatme(SwingBuffer.FilterListen.class); }
     class FilterListen extends DocumentFilter {
 
         @Override
@@ -653,6 +673,8 @@ abstract public class SwingBuffer extends Buffer
     protected DocChangeInfo getDocChangeInfo()
     {
         DocChangeInfo t = docChangeInfo;
+        G.dbgUndo().printf(FINE, () -> sf("getDocChangeInfo: %s\n%s", t,
+                                          dumpFrames(5)));
         docChangeInfo = null;
         return t;
     }

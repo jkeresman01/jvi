@@ -53,6 +53,9 @@ import com.raelity.jvi.lib.Wrap;
 import com.raelity.jvi.manager.*;
 import com.raelity.jvi.lib.MySegment;
 
+import static java.util.logging.Level.*;
+
+import static com.raelity.jvi.core.G.dbgUndo;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.CtrlChars.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
@@ -1500,7 +1503,7 @@ public class Misc {
     }
 
     private static void debugUndo(String tag) {
-      G.dbgUndo.printf(() -> sf("%s: nesting: %d, inInsert: %d\n",
+      dbgUndo.printf(CONFIG, () -> sf("%s: nesting: %d, inInsert: %d\n",
                                 tag, undoNesting, insertUndoNesting));
     }
 

@@ -23,8 +23,11 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.StackWalker.StackFrame;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -52,6 +55,7 @@ import com.raelity.jvi.core.lib.CcFlag;
 
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.swing.JOptionPane;
 
@@ -63,8 +67,8 @@ import com.raelity.jvi.ViOutputStream.COLOR;
 import com.raelity.jvi.core.*;
 import com.raelity.jvi.core.Commands.AbstractColonAction;
 import com.raelity.jvi.core.Commands.ColonEvent;
+import com.raelity.jvi.lib.*;
 import com.raelity.jvi.options.*;
-import com.raelity.jvi.lib.TextUtil;
 
 import static java.util.logging.Level.*;
 
@@ -768,6 +772,152 @@ final public class ViManager
     static public void warning(String s)
     {
         LOG.warning(s);
+    }
+
+    static public DumpFramesBuilder dumpFrames() {
+        return new DumpFramesBuilder();
+    }
+
+    static public String dumpFrames(int nFrames) {
+        return new DumpFramesBuilder().frames(nFrames).build();
+    }
+
+    /**
+     * A builder to produce stack frames of interest, it is typically used
+     * in a DebugOption print statement; by default the
+     * first frame is the method that inovkes the DebugOption print and the
+     * last frame is Normal.normal_cmd.
+     */
+    // compact builder pattern
+    static public class DumpFramesBuilder {
+        private int nFrames = 0;
+        private int indent = 4;
+        private boolean nl = true;
+        private Class<?> skipClass = DebugOption.class;
+        private String skipMethod = null;
+        private Class<?> endClass = Normal.class;
+        private String endMethod = "normal_cmd";
+
+        /** Clear all parameters, all stack frames would be produced. */
+        public DumpFramesBuilder clear() {
+            nFrames = 0;
+            indent = 0;
+            nl = false;
+            skipClass = null;
+            skipMethod = null;
+            endClass = null;
+            endMethod = null;
+            return this;
+        }
+
+        /** This is the maximum number of frames to be produced.
+         * Default 0, no limit.
+         */
+        public DumpFramesBuilder frames(int nFrames) {
+            this.nFrames = nFrames;
+            return this;
+        }
+
+        /** Number of spaces before each frame output. Default 4. */
+        public DumpFramesBuilder indent(int indent) {
+            this.indent = indent;
+            return this;
+        }
+
+        /** Each frame line has a NewLine appended by default,
+         * this controls if the the last frame should have a NewLine appended.
+         * Default true. */
+        public DumpFramesBuilder nl(boolean nl) {
+            this.nl = nl;
+            return this;
+        }
+
+        /** Default DebugOption.class. */
+        public DumpFramesBuilder skipClass( Class<?> skipClass) {
+            this.skipClass = skipClass;
+            return this;
+        }
+
+        /** Ignored if skipClass is null; default null */
+        public DumpFramesBuilder skipMethod(String skipMethod) {
+            this.skipMethod = skipMethod;
+            return this;
+        }
+
+        /** Default Normal.class. */
+        public DumpFramesBuilder endClass( Class<?> endClass) {
+            this.endClass = endClass;
+            return this;
+        }
+
+        /** Ignored if endClass is null; default normal_cmd. */
+        public DumpFramesBuilder endMethod(String endMethod) {
+            this.endMethod = endMethod;
+            return this;
+        }
+
+        public List<StackFrame> buildFrames() {
+            return doBuildFrames(nFrames,
+                                 skipClass, skipMethod,
+                                 endClass, endMethod);
+        }
+
+        public String build() {
+            return doDumpFrames(buildFrames(), indent, nl);
+        }
+    }
+
+    static boolean findFrame(List<StackFrame> stack, MutableInt mi,
+                             int start, Class<?> clazz, String method)
+    {
+        if(clazz != null) for(int i = 0; i < stack.size(); i++) {
+            StackFrame f = stack.get(i);
+            if(f.getDeclaringClass().isAssignableFrom(clazz)
+                    && (method == null || f.getMethodName().equals(method))) {
+                mi.setValue(i + 1);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static public List<StackFrame> doBuildFrames(
+            int _nFrames,
+            Class<?> skipClass, String skipMethod,
+            Class<?> endClass, String endMethod)
+    {
+        int nFrames = _nFrames <= 0 ? Integer.MAX_VALUE - 100 : _nFrames;
+        MutableInt mi = new MutableInt();
+        // The plus 10 in the walker is to account for skipping debug option
+        List<StackFrame> stack = StackWalker
+                .getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
+                .walk(s -> s.limit(nFrames+10)
+                        .collect(Collectors.toCollection(ArrayList::new)));
+
+        // start trace after skipClass, typically DebugOption
+        mi.setValue(0);
+        findFrame(stack, mi, 0, skipClass, skipMethod);
+        int startStack = mi.getValue();
+
+        mi.setValue(Integer.MAX_VALUE);
+        findFrame(stack, mi, startStack, endClass, endMethod);
+        int endStack = mi.getValue();
+
+        endStack = Math.min(endStack, startStack + nFrames);
+        return stack.subList(startStack, Math.min(endStack, stack.size()));
+    }
+
+    static public String doDumpFrames(List<StackFrame> stack, int indent, boolean nl)
+    {
+        StringBuilder sb = new StringBuilder(100);
+        for(StackFrame f : stack) {
+            sb.append(" ".repeat(indent))
+                    .append(f.toString())
+                    .append('\n');
+        }
+        if(!nl && sb.length() > 0)
+            sb.setLength(sb.length() - 1);
+        return sb.toString();
     }
 
     static public void dumpStack(String msg, boolean supressIfNotBusy)
