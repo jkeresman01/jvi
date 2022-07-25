@@ -68,8 +68,10 @@ public class Scheduler
 
     static void switchTo(Component editor) // NEEDSWORK: make sure appview sync
     {
+        // NOTE: focusGained bypasses switchTo if ed == cur
         if (editor == currentEditorPane)
             return;
+
         motdOutputOnce();
         if (!started) {
             started = true;
@@ -139,8 +141,18 @@ public class Scheduler
             Component c = e.getComponent();
             if(c != null) {
                 // Bug 181490 -  JEditorPane gets focus after TC is closed
-                if(c.isDisplayable()) // insure component has a peer
-                    switchTo(c);
+                if(c.isDisplayable()) {// insure component has a peer
+                    // Part of 'undo/redo broken' workaround for
+                    //     undo/redo buttons/actions don't work while editing
+                    //     https://github.com/apache/netbeans/issues/4437
+                    if (c == currentEditorPane) { // nothing to do (in theory)
+                        // NOTE the first lines in switchto
+                        ViAppView av = fact().getAppView(c);
+                        if(av != null)
+                            av.requestPlatformActivation();
+                    } else
+                        switchTo(c);
+                }
             }
         }
     };

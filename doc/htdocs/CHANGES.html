@@ -94,14 +94,14 @@
   Since I was running on windows I didn't realize the clipboard handling was
   not right on unix.
   jVi now matches vim, handling both
-  <span class="tt">"*</span> and <span class="tt">"+</span>.
-  That is incompatible with how it used to be.
+  <span class="tt">"*</span> and <span class="tt">"+</span>;
+  and the <span class="tt">'clipboard'</span> options,
+  <span class="tt">unnamed</span>, <span class="tt">unnamedplus</span>
+  in all combinations.
+<p>
+  It is incompatible with how jVi used to be; I find the change OK to use.
   It seems more like a bug fix, but
   an Option could be added if this change is too much of a problem.
-</p>
-<p>
-  In addition, <span class="tt">clipboard=unnamed</span>
-  should work as expected.
 </p>
 <dl>
   <dt>jVi Core</dt>
@@ -149,7 +149,7 @@
         but always at least 80 characters.
       </li>
       <li>
-        Add Viminfo option dialog category tab.<br>
+        Add Viminfo category tab in option dialog.<br>
         Add options <span class="tt">max reg-lines</span>,
         <span class="tt">max size</span>; they control the
         register persistence. Add options
@@ -168,7 +168,7 @@
       </li>
       <li>
         <span class="tt">:number</span>, used to goto line,
-        might throw an out of bounds exception.
+        might throw an out of bounds exception. (ancient bug)
       </li>
       <li>
         Fix buffer mark persistence to correctly use
@@ -185,6 +185,12 @@
         Fix an option dialog display problem. A bad value in setting an
         option in the dialog could cause an exception and the displayed value
         is not properly restored to the value before the exception.
+      </li>
+      <li>
+        Workaround NetBeans bug where undo/redo would not work when there
+        was a detached window.
+        <a target="_top" href="https://github.com/apache/netbeans/issues/4437">
+           undo/redo buttons/actions don't work while editing</a>.
       </li>
     </ul>
   </dd>
