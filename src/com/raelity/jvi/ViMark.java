@@ -46,15 +46,49 @@ public interface ViMark extends ViFPOS {
      */
     public int getOriginalColumnDelta();
     
+    @SuppressWarnings("serial")
     public class MarkException extends RuntimeException {
         public MarkException(String msg) {
             super(msg);
         }
     }
     
+    @SuppressWarnings("serial")
     public class MarkOrphanException extends MarkException {
         public MarkOrphanException(String msg) {
             super(msg);
         }
+    }
+
+    public static class ReadOnlyMark extends ReadOnlyFPOS implements ViMark
+    {
+        public ReadOnlyMark(ViFPOS fpos)
+        {
+            super(fpos);
+        }
+
+        public ReadOnlyMark(int line, int column, int offset)
+        {
+            super(line, column, offset);
+        }
+
+        @Override
+        public void setMark(ViFPOS fpos)
+        {
+            throw new UnsupportedOperationException("ReadOnly");
+        }
+
+        @Override
+        public void invalidate()
+        {
+            throw new UnsupportedOperationException("ReadOnly");
+        }
+
+        @Override
+        public int getOriginalColumnDelta()
+        {
+            throw new UnsupportedOperationException("ReadOnly");
+        }
+
     }
 }

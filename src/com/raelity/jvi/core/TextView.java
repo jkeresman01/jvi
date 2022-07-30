@@ -34,6 +34,8 @@ import static com.raelity.jvi.core.lib.Constants.*;
 
 import static java.util.logging.Level.*;
 
+import static com.raelity.jvi.lib.TextUtil.sf;
+
 /**
  * This represents the core functionality of a vim window.
  * <p>
@@ -141,8 +143,21 @@ public abstract class TextView implements ViTextView
     @Override
     public void shutdown()
     {
+        recordLastFPOS();
         if(w_buffer.getShare() == 1) {
             dbgEditorActivation.println(INFO, "TV.shutdown: LAST CLOSE");
+        }
+    }
+
+    @Override
+    public void recordLastFPOS()
+    {
+        if(w_cursor.isValid()) {
+            w_buffer.saving_fpos = new ViFPOS.ReadOnlyFPOS(w_cursor);
+            dbgEditorActivation.println(INFO, () ->
+                    sf("LFP: recordLastFPOS: saving_fpos: %s %s",
+                       w_buffer.saving_fpos.toString(), toString()));
+            MarkOps.setmark('"', 0);
         }
     }
 
@@ -174,6 +189,14 @@ public abstract class TextView implements ViTextView
      */
     protected void firstGo()
     {
+        if(w_cursor.getOffset() == 0 && w_buffer.previous_close_fpos != null) {
+            dbgEditorActivation.println(INFO, () -> sf("LFP: TextView: firstGo: %s %s",
+                       w_buffer.previous_close_fpos.toString(),
+                       w_buffer.getFile().toString()));
+            int lino = w_buffer.previous_close_fpos.getLine();
+            lino = lino <= w_buffer.getLineCount() ? lino : w_buffer.getLineCount();
+            w_cursor.set(lino, w_buffer.previous_close_fpos.getColumn());
+        }
         w_p_wrap = Options.getOption(Options.wrap).getBoolean();
         w_p_lbr = Options.getOption(Options.lineBreak).getBoolean();
         w_p_list = Options.getOption(Options.list).getBoolean();

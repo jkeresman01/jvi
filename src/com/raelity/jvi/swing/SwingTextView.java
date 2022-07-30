@@ -1407,7 +1407,7 @@ public abstract class SwingTextView extends TextView
 
         @Override
         final public boolean isValid() {
-            return true;
+            return editorPane.getCaret() != null;
         }
 
         @Override

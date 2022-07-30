@@ -446,6 +446,10 @@ public interface ViTextView extends ViOptionBag {
   /** going away, do any remaining cleanup */
   public void shutdown();
 
+  /** used when re-opening, shutdown time may be too late to record.
+   * This should only be called, when about to shutdown. */
+  public void recordLastFPOS();
+
   /** @return true if this text view is shutdown */
   public boolean isShutdown();
 

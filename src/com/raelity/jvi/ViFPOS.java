@@ -95,6 +95,12 @@ public interface ViFPOS extends Comparable<ViFPOS>
     /** the associated buffer */
     public Buffer getBuffer();
 
+    static public String toString(ViFPOS fpos)
+    {
+        return "lnum=" + fpos.getLine() + " col=" + fpos.getColumn()
+                + " offset=" + fpos.getOffset();
+    }
+
     public static abstract class abstractFPOS implements ViFPOS
     {
         @Override
@@ -178,8 +184,7 @@ public interface ViFPOS extends Comparable<ViFPOS>
         @Override
         public String toString()
         {
-            return "offset=" + getOffset()
-                    + " lnum=" + getLine() + " col=" + getColumn();
+            return ViFPOS.toString(this);
         }
 
         @Override
@@ -210,5 +215,140 @@ public interface ViFPOS extends Comparable<ViFPOS>
             hash = 79 * hash + this.getOffset();
             return hash;
         }
+    }
+
+    /** Three arbitrary numbers, not directly associated with a buffer */
+    public static class ReadOnlyFPOS implements ViFPOS
+    {
+    private final int line;
+    private final int column;
+    private  final int offset;
+    
+    public ReadOnlyFPOS(ViFPOS fpos)
+    {
+        this(fpos.getLine(), fpos.getColumn(), fpos.getOffset());
+    }
+
+    public ReadOnlyFPOS(int line, int column, int offset)
+    {
+        this.line = line;
+        this.column = column;
+        this.offset = offset;
+    }
+    
+    @Override
+    public boolean isValid()
+    {
+        return true;
+    }
+    
+    @Override
+    public int getLine()
+    {
+        return line;
+    }
+    
+    @Override
+    public int getColumn()
+    {
+        return column;
+    }
+    
+    @Override
+    public int getOffset()
+    {
+        return offset;
+    }
+    
+    @Override
+    public String toString()
+    {
+        return ViFPOS.toString(this);
+    }
+    
+    @Override
+    public void set(int line, int column)
+    {
+        throw new UnsupportedOperationException("ReadOnly");
+    }
+    
+    @Override
+    public void set(int offset)
+    {
+        throw new UnsupportedOperationException("ReadOnly");
+    }
+    
+    @Override
+    public void set(ViFPOS fpos)
+    {
+        throw new UnsupportedOperationException("ReadOnly");
+    }
+    
+    @Override
+    public ViFPOS copyTo(ViFPOS target)
+    {
+        throw new UnsupportedOperationException("ReadOnly");
+    }
+    
+    @Override
+    public void setColumn(int col)
+    {
+        throw new UnsupportedOperationException("ReadOnly");
+    }
+    
+    @Override
+    public void incColumn()
+    {
+        throw new UnsupportedOperationException("ReadOnly");
+    }
+    
+    @Override
+    public void decColumn()
+    {
+        throw new UnsupportedOperationException("ReadOnly");
+    }
+    
+    @Override
+    public void incLine()
+    {
+        throw new UnsupportedOperationException("ReadOnly");
+    }
+    
+    @Override
+    public void decLine()
+    {
+        throw new UnsupportedOperationException("ReadOnly");
+    }
+    
+    @Override
+    public void setLine(int line)
+    {
+        throw new UnsupportedOperationException("ReadOnly");
+    }
+    
+    @Override
+    public ViFPOS copy()
+    {
+        throw new UnsupportedOperationException("ReadOnly");
+    }
+    
+    @Override
+    public void verify(Buffer buf)
+    {
+        throw new UnsupportedOperationException("ReadOnly");
+    }
+    
+    @Override
+    public Buffer getBuffer()
+    {
+        throw new UnsupportedOperationException("ReadOnly");
+    }
+    
+    @Override
+    public int compareTo(ViFPOS o)
+    {
+        throw new UnsupportedOperationException("ReadOnly");
+    }
+    
     }
 }

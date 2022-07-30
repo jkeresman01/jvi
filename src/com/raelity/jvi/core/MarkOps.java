@@ -51,6 +51,7 @@ import static java.util.logging.Level.*;
 import static com.raelity.jvi.ViTextView.MARKOP.NEXT;
 import static com.raelity.jvi.ViTextView.MARKOP.PREV;
 import static com.raelity.jvi.ViTextView.MARKOP.TOGGLE;
+import static com.raelity.jvi.core.G.dbgEditorActivation;
 import static com.raelity.jvi.core.Misc01.*;
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.Messages.*;
@@ -88,6 +89,8 @@ class MarkOps
         @Override public void invalidate() { }
         @Override public int getOriginalColumnDelta() { return 0; }
         }
+
+    private static final char MQUOTE = '"';
 
     private static PreferencesImportMonitor marksImportCheck;
     private static BufferMarksPersist.EventHandlers bufferMarkPersistINSTANCE;
@@ -153,6 +156,11 @@ class MarkOps
             setpcmark();
             /* keep it even when the cursor doesn't move */
             G.curwin.w_prev_pcmark.setMark(G.curwin.w_pcmark);
+            return OK;
+        }
+        if(c == MQUOTE) {
+            // This goes straight to backing store.
+            BufferMarksPersist.persistMark(c, G.curbuf);
             return OK;
         }
 
@@ -360,10 +368,21 @@ class MarkOps
         return m;
     }
 
+    /**
+     * This is intended for a subset of the marks, currently '".
+     * @return ViFPOS for the persisted location, null if not available
+     */
+    static ViMark getPersistedMark(String fname, char c)
+    {
+        return BufferMarksPersist.getPersistedMark(fname, c);
+    }
+
     static boolean isValidMark(char c, ViBuffer buf)
     {
         if(buf == null || (buf = G.curbuf) == null)
                 return false;
+        if(c == MQUOTE)
+            return true;
         ViMark mark = buf.getMark(c);
         return mark != null ? mark.isValid() : false;
     }
@@ -515,7 +534,7 @@ class MarkOps
                             fm.getBuffer() == G.curbuf);
                 }
             }
-            //show_one_mark('"', arg, G.curbuf.b_last_cursor, null, true);
+            //show_one_mark(MQUOTE, arg, G.curbuf.b_last_cursor, null, true);
             show_one_mark('[', arg, G.curbuf.b_op_start, null, true);
             show_one_mark(']', arg, G.curbuf.b_op_end, null, true);
             show_one_mark('^', arg, G.curbuf.b_last_insert, null, true);
@@ -701,7 +720,7 @@ class MarkOps
                 else
                     switch (arg.charAt(p))
                     {
-                        //case '"': G.curbuf.b_last_cursor.invalidate(); break;
+                        //case MQUOTE: G.curbuf.b_last_cursor.invalidate(); break;
                         case '^': G.curbuf.b_last_insert.invalidate(); break;
                         //case '.': G.curbuf.b_last_change.invalidate(); break;
                         case '[': G.curbuf.b_op_start.invalidate(); break;
@@ -750,6 +769,30 @@ class MarkOps
 
         private BufferMarksPersist()
         {
+        }
+
+        /**
+         * @return ReadOnlyFPOS for the persisted location
+         */
+        static ViMark getPersistedMark(String fname, char c)
+        {
+            BufferMarksHeader bmh = all.get(fname);
+            if(bmh != null) {
+                try {
+                    Preferences bufData = prefs.node(bmh.getBufTag());
+                    String mName = String.valueOf(c);
+                    if(bufData.nodeExists(String.valueOf(c))) {
+                    MarkInfo mi = readMark(bufData.node(mName));
+                    if(mi != null)
+                        return new ViMark.ReadOnlyMark(
+                                mi.line, mi.col, mi.offset);
+                    }
+                } catch(BackingStoreException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+
+            return null;
         }
 
         static Random random = new Random();
@@ -874,6 +917,8 @@ class MarkOps
                     bmh = all.get(fname);
                     if(bmh != null) {
                         Preferences bufData = prefs.node(bmh.getBufTag());
+                        if (bufData.nodeExists(String.valueOf(MQUOTE)))
+                            break hasMarks;
                         bufData.removeNode();
                         all.remove(fname);
                     }
@@ -1036,6 +1081,24 @@ class MarkOps
             }
         }
 
+        public void persistLastPos(ViEvent ev)
+        {
+            Set<ViTextView> tvs = ViManager.getFactory().getViTextViewSet();
+            for(ViTextView _tv : tvs) {
+                TextView tv = (TextView)_tv;
+                dbgEditorActivation.println(FINE, () ->
+                        sf("LFP: MarkOps: persistLastPos: check: %s %s",
+                           ev.getClass().getSimpleName(), tv.toString()));
+                tv.recordLastFPOS();
+            }
+        }
+
+        @Subscribe
+        public void preShutdown(ViEvent.PreShutdown ev)
+        {
+            persistLastPos(ev);
+        }
+
         /**
          * Update all the BufferMarksHeader that have been persisted;
          * the marks have already been persisted.
@@ -1044,6 +1107,7 @@ class MarkOps
         @Subscribe
         public void write_viminfo(ViEvent.Shutdown ev)
         {
+            persistLastPos(ev);
             try {
                 dbg.println(FINE, () -> sf("MarkOps: write_viminfo: %d/%d",
                                           bufsMRU.size(), G.viminfoMaxBuf));
@@ -1116,10 +1180,12 @@ class MarkOps
         }
 
         private static void writeMark(
-                Preferences bufMarks, char name, ViMark m)
+                Preferences bufMarks, char name, ViMark _m, Buffer buf)
                 throws BackingStoreException
         {
             String markName = String.valueOf(name);
+            // special case '"
+            ViFPOS m = _m == null && name == MQUOTE ? buf.saving_fpos : _m;
             if(m == null || !m.isValid()) {
                 if (bufMarks.nodeExists(markName))
                     bufMarks.node(markName).removeNode();
@@ -1135,19 +1201,20 @@ class MarkOps
         }
 
         private static void writeBufferMarks(BufferMarksHeader bmh,
-                                             ViBuffer buf,
+                                             ViBuffer _buf,
                                              Character markName)
                 throws BackingStoreException
         {
+            Buffer buf = (Buffer)_buf;
             Preferences bufMarks = prefs.node(bmh.getBufTag());
             bufMarks.put(FNAME, bmh.getFname());
             bufMarks.putInt(INDEX, bmh.getIndex());
             if(markName != null)
-                writeMark(bufMarks, markName, buf.getMark(markName));
+                writeMark(bufMarks, markName, buf.getMark(markName), buf);
             else
                 for(char c = 'a'; c <= 'z'; c++) {
                     ViMark m = buf.getMark(c);
-                    writeMark(bufMarks, c, m);
+                    writeMark(bufMarks, c, m, buf);
                 }
         }
 

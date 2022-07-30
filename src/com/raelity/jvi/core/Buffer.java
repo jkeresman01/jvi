@@ -10,6 +10,7 @@
 package com.raelity.jvi.core;
 
 import java.awt.EventQueue;
+import java.io.File;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.logging.Logger;
@@ -95,6 +96,13 @@ public abstract class Buffer implements ViBuffer, ViOptionBag
      */
     protected void firstGo()
     {
+        File f = getFile();
+        if(f != null) {
+            previous_close_fpos = MarkOps.getPersistedMark(f.toString(), '"');
+            dbgEditorActivation.println(FINE, () -> sf("LFP: Buffer: firstGo: %s %s",
+                                        previous_close_fpos, f));
+        }
+
         //
         // init options
         //
@@ -155,6 +163,7 @@ public abstract class Buffer implements ViBuffer, ViOptionBag
     ViMark b_namedm[] = new ViMark[26];
     
     // Save the current VIsual area for '< and '> marks, and "gv"
+    // TODO: Why are these public?
     public final ViMark b_visual_start;
     public final ViMark b_visual_end;
     public final ViMark b_last_insert;
@@ -168,6 +177,8 @@ public abstract class Buffer implements ViBuffer, ViOptionBag
     // start and end of an operator, also used for '[ and ']
     public final ViMark b_op_start;
     public final ViMark b_op_end;
+    ViFPOS saving_fpos;
+    ViMark previous_close_fpos;
 
     //////////////////////////////////////////////////////////////////////
     //
