@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,11 +48,9 @@ import com.raelity.jvi.ViTextView;
 import com.raelity.jvi.ViTextView.DIR;
 import com.raelity.jvi.ViXlateKey;
 import com.raelity.jvi.core.lib.*;
-import com.raelity.jvi.lib.MutableBoolean;
-import com.raelity.jvi.lib.MutableInt;
-import com.raelity.jvi.lib.Wrap;
+import com.raelity.jvi.lib.*;
+import com.raelity.jvi.lib.MRU.IndexedEntry;
 import com.raelity.jvi.manager.*;
-import com.raelity.jvi.lib.MySegment;
 
 import static java.util.logging.Level.*;
 
@@ -1038,15 +1037,24 @@ public class Misc {
   /** Write an ordered list to prefs. */
   private static void writeList(String nodeName, Iterable<String> iterable)
   {
-    Iterator<String> it = iterable.iterator();
+    assert iterable != null;
     try {
       Preferences prefs = ViManager.getFactory().getPreferences().node(nodeName);
       prefs.removeNode();
       prefs = ViManager.getFactory().getPreferences().node(nodeName);
-      int i = 1;
-      while(it.hasNext()) {
-        prefs.put("" + i, it.next());
-        i++;
+
+      if(!(iterable instanceof MRU.IndexedIterable)) {
+        int i = 1;
+        for(String val : iterable) {
+          prefs.put(String.valueOf(i), val);
+          i++;
+        }
+      } else {
+        @SuppressWarnings("unchecked")
+        MRU<String> mru = (MRU<String>)iterable;
+        for(IndexedEntry<String> ie : mru.indexedIterable()) {
+          prefs.put(String.valueOf(ie.getIndex() + 1), ie.getItem());
+        }
       }
       prefs.flush();
     } catch(IllegalStateException ex) {

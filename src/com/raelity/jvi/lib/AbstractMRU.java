@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Spliterator;
@@ -53,12 +54,15 @@ protected abstract void insert(E key);
 @Override
 public boolean addItem(E key)
 {
+    // no change if current MRU is what is added
     if(Objects.equals(key, itemMRU()))
         return false;
+    // remove key
     delegate.remove(key);
+    // and insert as MRU
     insert(key);
     trim();
-    return true; // since insert always does
+    return true; // since insert always does if not eary return
 }
 
 @Override
@@ -77,13 +81,28 @@ public int size()
 public boolean addAll(Collection<? extends E> c)
 {
     boolean modified = false;
-    for(E e : c) {
-        if(addItem(e))
+    // add stuff in reverse order, since mru is first in arg collection
+    List<E> l;
+    if(c instanceof List) {
+        @SuppressWarnings("unchecked")
+        List<E> tmp = (List<E>)c;
+        l = tmp;
+    } else {
+        l = new ArrayList<>(c);
+    }
+    for(ListIterator<E> it = l.listIterator(l.size()); it.hasPrevious();) {
+        if(addItem(it.previous()))
             modified = true;
     }
     if(trim())
         modified = true;
     return modified;
+}
+
+@Override
+public void clear()
+{
+    delegate.clear();
 }
 
 protected abstract void doTrim(int iLimit);
@@ -101,6 +120,16 @@ public boolean trim()
     return size != size();
 }
 
+/** This should not be overriden if IndexedIterable is not implemented;
+ * so a null return can be used rather than instanceof.
+ */
+@Override
+public Iterable<IndexedEntry<E>> indexedIterable()
+{
+    return null;
+}
+
+/** itemMRU() is used to determine if addItem would change the list. */
 abstract protected E itemMRU();
 
 //////////////////////////////////////////////////////////////////////
@@ -108,6 +137,8 @@ abstract protected E itemMRU();
 // Implementations
 //
 
+
+// CLASS LinkedListMRU ///////////////////////////////////////////////;
 /** Simple implementation, if mostly accessing mru,
  * then this is probably the best.
  */
@@ -142,19 +173,19 @@ protected void insert(E key)
 @Override
 public Iterator<E> iterator()
 {
-    ListIterator<E> it = getDelegate().listIterator(delegate.size());
+    Iterator<E> it = getDelegate().iterator();
     return new Iterator<E>()
     {
         @Override
         public boolean hasNext()
         {
-            return it.hasPrevious();
+            return it.hasNext();
         }
         
         @Override
         public E next()
         {
-            return it.previous();
+            return it.next();
         }
     };
 }
@@ -165,9 +196,10 @@ protected void doTrim(int iLimit)
     while(delegate.size() > iLimit)
         getDelegate().removeLast();
 }
-} // END CLASS ClosedfilesListMRU ////////////////////////////////////////
+} // END CLASS LinkedListMRU //////////////////////////////////////////////
 
 
+// CLASS LinkedHashSetMRU ////////////////////////////////////////////////
 /**
  * This is best if random lookup is most important
  * or large datasets.
@@ -175,8 +207,9 @@ protected void doTrim(int iLimit)
  */
 @SuppressWarnings({"serial", "CloneableImplementsClone"})
 public static class LinkedHashSetMRU<E> extends AbstractMRU<E>
-        implements MRU<E>
+        implements MRU<E>, IndexedIterable<E>
 {
+/** cache the MRU item, since it's expensive to get at. */
 private E itemMRU;
 
 public LinkedHashSetMRU(Supplier<Integer> limit)
@@ -187,6 +220,14 @@ public LinkedHashSetMRU(Supplier<Integer> limit)
 private LinkedHashSet<E> getDelegate()
 {
     return (LinkedHashSet<E>)delegate;
+}
+
+@Override
+public boolean removeItem(E key)
+{
+    if(Objects.equals(key, itemMRU))
+        itemMRU = null;
+    return super.removeItem(key);
 }
 
 @Override
@@ -224,6 +265,30 @@ public Iterator<E> iterator()
 }
 
 @Override
+public Iterable<IndexedEntry<E>> indexedIterable()
+{
+    IndexedEntry<E> ie = new IndexedEntry<>();
+    ie.index = delegate.size();
+    Iterator<E> it = delegate.iterator();
+    Iterator<IndexedEntry<E>> iit = new Iterator<IndexedEntry<E>>() {
+        @Override
+        public boolean hasNext()
+        {
+            return it.hasNext();
+        }
+
+        @Override
+        public IndexedEntry<E> next()
+        {
+            ie.index--;
+            ie.item = it.next();
+            return ie;
+        }
+    };
+    return () -> iit;
+}
+
+@Override
 protected void doTrim(int iLimit)
 {
     Iterator<E> it = delegate.iterator();
@@ -236,7 +301,7 @@ protected void doTrim(int iLimit)
 
 } // END CLASS LinkedHashSetMRU ////////////////////////////////////////
 
-
+// CLASS SynchronizedMRU ////////////////////////////////////////////////
 @SuppressWarnings("serial")
 static class SynchronizedMRU<E>
         extends SynchronizedCollection<E>
@@ -266,8 +331,19 @@ public boolean removeItem(E key) {
 public boolean trim() {
     synchronized (mutex) {return getMRU().trim();}
 }
-}
 
+
+@Override
+public Iterable<IndexedEntry<E>> indexedIterable()
+{
+    return getMRU().indexedIterable(); // Must be manually synched by user!
+}
+}
+// END CLASS SynchronizedMRU ///////////////////////////////////////////
+
+
+
+// CLASS SynchronizedCollection ////////////////////////////////////////
 /**
  * @serial include
  */
@@ -366,6 +442,7 @@ public Stream<E> parallelStream() {
 private void writeObject(ObjectOutputStream s) throws IOException {
     synchronized (mutex) {s.defaultWriteObject();}
 }
-    }
+}
+// END CLASS SynchronizedCollection ////////////////////////////////////
 
 } // END CLASS AbstractMRU ////////////////////////////////////////

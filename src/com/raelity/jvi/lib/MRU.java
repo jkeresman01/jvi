@@ -20,6 +20,7 @@
 package com.raelity.jvi.lib;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.function.Supplier;
 
 /**
@@ -83,6 +84,55 @@ boolean removeItem(E key);
 /** Remove LRU items until within limit. return true if modified */
 boolean trim();
 
+/** This should not be overriden if IndexedIterable is not implemented;
+ * then a null return can be used instead of instanceof.
+ */
+default Iterable<IndexedEntry<E>> indexedIterable()
+{
+    return null;
+}
+
+    /**
+     * Return an iterator over the elements in this MRU; the IndexEntry are in
+     * no guaranteed order; this is an optional interface. 
+     * This avoid implementation dependent overhead in particular with
+     * iterable of LinkedHashSet.
+     * This is useful for persistence when both the index and the item are needed.
+     * <p>
+     * WARNING: the implementation may return the same {@code IndexedEntry},
+     * but with different values, on each call to {@code iterator.next()}.
+     * Since this is a preformance iterator, might as well go all the way.
+     * <p>
+     * An MRU implementation may implement this interface if iterator() has
+     * performance issues.
+     */
+    interface IndexedIterable<E>
+    {
+    Iterable<IndexedEntry<E>> indexedIterable();
+    }
+
+    /** An mru item and with its index in the mru list.
+     * The mru item has index 0, and the lru item has index size()-1.
+     */ 
+    static public class IndexedEntry<E>
+    {
+    protected int index;
+    protected E item;
+    
+    public IndexedEntry()
+    {
+    }
+    
+    public IndexedEntry(int index, E item)
+    {
+        this.index = index;
+        this.item = item;
+    }
+    
+    public final E getItem() { return item; }
+    public final int getIndex() { return index; }
+    }
+
 /**
  * The limitations/restrictions specified in 
  * {@code Collections.synchronizedCollection}
@@ -94,3 +144,6 @@ public static <E> MRU<E> synchronizedMRU(MRU<E> mru)
 }
 
 } // END INTERFACE MRU ////////////////////////////////////////
+
+
+// vi: sw=4 ts=8
