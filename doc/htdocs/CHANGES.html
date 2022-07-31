@@ -118,7 +118,16 @@
             clipboard</a> documentation.
       </li>
       <li>
-        Appending to a yank register now handles all register modes:
+        When a closed file is opened, set the caret position to
+        the location when it was closed. The previous location is
+        saved as a buffer mark;
+        see <span class="tt">Viminfo</span>'s
+        <span class="tt">max buf-marks</span>
+        which controls how many are saved.
+      </li>
+      <li>
+        Appending to a yank register,
+        upper case name, now handles all register modes:
         character, line, or block.
       </li>
       <li>
@@ -149,14 +158,24 @@
         but always at least 80 characters.
       </li>
       <li>
-        Add Viminfo category tab in option dialog.<br>
+        Add <span class="tt">Viminfo</span>
+        category tab in option dialog.<br>
         Add options <span class="tt">max reg-lines</span>,
         <span class="tt">max size</span>; they control the
         register persistence. Add options
         <span class="tt">max Search Patterns</span> and
         <span class="tt">max CommandLine</span>; they may
         override <span class="tt">'history'</span>
-        for persistence.
+        for persistence. Add <span class="tt">save Filemarks</span>
+        option.
+      </li>
+    </ul>
+  </dd>
+  <dt>jVi NetBeans KeyBindings</dt>
+  <dd>
+    <ul>
+      <li>
+        Add NetBeans activation events to debug activation (NbFactory).
       </li>
     </ul>
   </dd>
@@ -187,10 +206,11 @@
         is not properly restored to the value before the exception.
       </li>
       <li>
-        Workaround NetBeans bug where undo/redo would not work when there
-        was a detached window.
+        Workaround NetBeans bug where undo/redo would not work in some
+        situations when there was a detached window.
         <a target="_top" href="https://github.com/apache/netbeans/issues/4437">
-           undo/redo buttons/actions don't work while editing</a>.
+           Editor with Keyboard focus is not active TopComponent
+           (undo/redo don't work while editing)</a>.
       </li>
     </ul>
   </dd>

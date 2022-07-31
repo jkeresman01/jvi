@@ -20,7 +20,6 @@
 package com.raelity.jvi.core;
 
 import java.awt.Color;
-import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -225,6 +224,7 @@ public final class Options {
   public static final String persistedBufMarks = "viPersistedBufMarks";
   public static final String persistedRegLines = "viPersistedRegLines";
   public static final String persistedSize = "viPersistedSize";
+  public static final String persistFilemarks = "viPersistFilemarks";
   
   public static final String readOnlyHack = "viReadOnlyHack";
   public static final String classicUndoOption = "viClassicUndo";
@@ -670,6 +670,10 @@ public final class Options {
           + " registers are not saved. Currently only applies to registers."
           + " The default, '10' excludes registers with more that 10 Kbyte"
           + " of text. Also see 'viminfo: max reg-lines': line count limit.");
+
+    createBooleanOption(persistFilemarks, true);
+    setupOptionDesc(Category.VIMINFO, persistFilemarks, "save Filemarks",
+            "Whether to save Filemarks.");
 
 
     /////////////////////////////////////////////////////////////////////

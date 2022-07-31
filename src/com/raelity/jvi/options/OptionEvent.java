@@ -118,11 +118,12 @@ public static EventBus getEventBus()
     }
     } // END CLASS OptionChangeDialogEvent
 
-    /** option is changed in memory, G.xxx.
-     * <p>
-     * ?????????????????????
-     * What about non global options, win/buf, see SetColonCommand.
-     * 
+    //
+    //?????????????????????
+    //What about non global options, win/buf, see SetColonCommand.
+    //
+
+    /** option is changed in memory, G.xxx. From set command.
      */
     static public class Global extends AbstractChange
     {
@@ -132,7 +133,7 @@ public static EventBus getEventBus()
     }
     } // END CLASS OptionChangeSetEvent
 
-    /** {@literal Option<>} changed value. */
+    /** {@literal Option<>} changed value. From dialog. */
     static public class Option extends AbstractChange
     {
     public Option(String name, Object oldValue, Object newValue)
@@ -141,6 +142,7 @@ public static EventBus getEventBus()
     }
     } // END CLASS OptionChangeSetEvent
 
+    /** Option initialization is complete */
     static public class Initialized implements Change
     {
     @Override

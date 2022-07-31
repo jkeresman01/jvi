@@ -259,6 +259,14 @@ implements Options.EditControl
         return ViManager.getReleaseString();
     }
 
+    public void setViPersistFilemarks(boolean arg) {
+        put(Options.persistFilemarks, arg);
+    }
+
+    public boolean getViPersistFilemarks() {
+	return getboolean(Options.persistFilemarks);
+    }
+
     public void setViPersistedSearch(int arg)  throws PropertyVetoException {
         put(Options.persistedSearch, arg);
     }

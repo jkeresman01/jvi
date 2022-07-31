@@ -41,6 +41,7 @@ import com.raelity.jvi.options.*;
 
 import static java.util.logging.Level.*;
 
+import static com.raelity.jvi.core.Options.getOption;
 import static com.raelity.jvi.manager.ViManager.dialogEx;
 import static com.raelity.jvi.manager.ViManager.getFS;
 import static com.raelity.jvi.manager.ViManager.getFactory;
@@ -169,7 +170,15 @@ public class Filemark implements ViMark { // NEEDSWORK: extends File
             return;
         }
 
-        dbg.printf(INFO, "FM: write filemarks\n");
+        Boolean persist = getOption(Options.persistFilemarks).getBoolean();
+        dbg.printf(INFO, () -> sf("FM: write filemarks: persist %s\n", persist));
+        if(!persist) {
+            try {
+                prefsFM.removeNode();
+            } catch(BackingStoreException ex) {
+            }
+            return;
+        }
         // could delete stuff that isn't in the map
         for(Filemark tfm : map.values()) {
             Filemark fm = tfm;
