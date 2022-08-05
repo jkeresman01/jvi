@@ -20,7 +20,7 @@
 
 package com.raelity.jvi.manager;
 
-import com.raelity.jvi.lib.MRU;
+import com.raelity.lib.MRU;
 
 import java.awt.Component;
 import java.awt.Point;
@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -99,8 +100,8 @@ public enum AppViews
 
     private static MRU<String> getMRU()
     {
-        MRU<String> mru = com.raelity.jvi.lib.MRU.getSetMRU(() -> G.p_closedfiles());
-        Collections.synchronizedCollection(mru);
+        MRU<String> mru = com.raelity.lib.MRU.getSetMRU(() -> G.p_closedfiles());
+        mru = com.raelity.lib.MRU.synchronizedMRU(mru);
         return mru;
     }
 
@@ -205,6 +206,7 @@ public enum AppViews
         // Only do anything if this av is already first in MRU list
         if (fact() != null
                 && Scheduler.getCurrentEditor() == av.getEditor()
+                // && Objects.equals(avsMRU.peekMRU()), av)
                 && !avsMRU.isEmpty() && avsMRU.get(0).equals(av)
                 && avCurrentlyActive == null)
             avCurrentlyActive = av;

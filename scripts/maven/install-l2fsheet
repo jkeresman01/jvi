@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# 7.3 is l2f; add .0 for out first try
+
+# TODO: take the jar from l2f-sheet build
+
+# wonder why the alias doesn't work
+mvn=/ref/nb/NetBeans/current/netbeans/java/maven/bin/mvn
+
+$mvn install:install-file \
+   -Dfile=/src/jvi-dev/jvi/lib/l2f-sheet.jar \
+   -DgroupId=com.raelity.3rdparty \
+   -DartifactId=l2fprod-sheet \
+   -Dversion=7.3.0 \
+   -Dpackaging=jar \
+   -DgeneratePom=true

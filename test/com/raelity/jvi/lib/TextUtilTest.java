@@ -17,11 +17,7 @@
  * Contributor(s): Ernie Rael <err@raelity.com>
  */
 
-package com.raelity.text;
-
-import com.raelity.jvi.lib.MySegment;
-import com.raelity.jvi.lib.TextUtil;
-import com.raelity.jvi.lib.StringSegment;
+package com.raelity.jvi.lib;
 
 import java.text.StringCharacterIterator;
 import java.util.List;

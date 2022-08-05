@@ -20,7 +20,7 @@
 
 package com.raelity.jvi.cmd;
 
-import com.raelity.jvi.lib.UIUtil;
+import com.raelity.lib.Screens;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -120,7 +120,7 @@ public class Jvi
             frame.validate();
         }
 
-        Dimension screenSize = UIUtil.getPrefScreenBounds().getSize();
+        Dimension screenSize = Screens.getPrefScreenBounds().getSize();
         Dimension frameSize = frame.getSize();
         if (frameSize.height > screenSize.height) {
             frameSize.height = screenSize.height;
@@ -132,7 +132,7 @@ public class Jvi
         // looks like this is centering more or less
         frame.setLocation((screenSize.width - frameSize.width) / 2 + offset,
                          (screenSize.height - frameSize.height) / 2 + offset);
-        UIUtil.translateToPrefScreen(frame);
+        Screens.translateToPrefScreen(frame);
         frame.setVisible(true);
         return frame;
     }
@@ -148,10 +148,10 @@ public class Jvi
             System.err.println("L&F: " + lookAndFeel.getName());
         }
 
-        if(null == UIUtil.setPrefGraphicsDev("foobar")
-                && null == UIUtil.setPrefGraphicsDev("jvi")
-                && null == UIUtil.setPrefGraphicsDev("NETBEANS_PREFERRED_SCREEN"))
-            UIUtil.setPrefGraphicsDev("JAVA_PREFERRED_SCREEN");
+        if(null == Screens.setPrefGraphicsDev("foobar")
+                && null == Screens.setPrefGraphicsDev("jvi")
+                && null == Screens.setPrefGraphicsDev("NETBEANS_PREFERRED_SCREEN"))
+            Screens.setPrefGraphicsDev("JAVA_PREFERRED_SCREEN");
         // java.awt.Window.locationByPlatform
         // "true"
         // Window.setLocationRelativeTo
@@ -257,7 +257,7 @@ public class Jvi
             //dialog = getL2fDialog(owner);
             dialog = getOkApplyCancelDialog(owner);
         }
-        UIUtil.translateToPrefScreen(dialog, target);
+        Screens.translateToPrefScreen(dialog, target);
         // TODO: what is the following about?
         if(!dialog.isVisible()) {
             optionsPanel.load();

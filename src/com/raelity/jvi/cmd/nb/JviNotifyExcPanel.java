@@ -19,6 +19,8 @@
 
 package com.raelity.jvi.cmd.nb;
 
+import com.raelity.lib.Screens;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -245,7 +247,7 @@ public class JviNotifyExcPanel extends JPanel
             JDialog dialog = optPane.createDialog(null, "Exception");
             if(!dialog.isResizable())
                 dialog.setResizable(true);
-            UIUtil.translateToPrefScreen(dialog);
+            Screens.translateToPrefScreen(dialog);
             dialog.setVisible(true);
         } else {
             JOptionPane.showMessageDialog(null, INSTANCE);

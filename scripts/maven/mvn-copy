@@ -1,0 +1,9 @@
+#!/bin/bash
+
+src=$1
+dst=$2
+
+$MVN dependency:copy \
+    -Dartifact=$src \
+    -DoutputDirectory=$dst
+

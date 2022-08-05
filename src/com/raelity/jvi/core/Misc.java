@@ -19,6 +19,8 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.lib.MRU;
+
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -49,7 +51,7 @@ import com.raelity.jvi.ViTextView.DIR;
 import com.raelity.jvi.ViXlateKey;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.*;
-import com.raelity.jvi.lib.MRU.IndexedEntry;
+import com.raelity.lib.MRU.IndexedEntry;
 import com.raelity.jvi.manager.*;
 
 import static java.util.logging.Level.*;

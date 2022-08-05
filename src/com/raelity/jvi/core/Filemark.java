@@ -19,6 +19,9 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.lib.ValueMap;
+import com.raelity.lib.ValueHashMap;
+
 import java.io.File;
 import java.util.logging.Logger;
 import java.util.Map.Entry;

@@ -19,6 +19,10 @@
  */
 package com.raelity.jvi.core;
 
+import com.raelity.lib.ValueMap;
+import com.raelity.lib.ValueHashMap;
+import com.raelity.lib.MRU;
+
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
