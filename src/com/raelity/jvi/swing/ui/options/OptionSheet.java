@@ -20,6 +20,8 @@
 package com.raelity.jvi.swing.ui.options;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
@@ -30,9 +32,14 @@ import java.util.Comparator;
 import java.util.EnumSet;
 
 import javax.swing.JComboBox;
+import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.StyleSheet;
 
 import com.l2fprod.common.beans.editor.ComboBoxPropertyEditor;
 import com.l2fprod.common.propertysheet.Property;
@@ -92,6 +99,7 @@ class OptionSheet extends JPanel implements Options.EditControl {
                 .setPropertySortingComparator(propertyNameCompare);
         sheet.setMode(PropertySheet.VIEW_AS_CATEGORIES);
         sheet.setDescriptionVisible(true);
+        fixupDescriptionForeground(sheet);
         sheet.setSortingCategories(true);
         sheet.setSortingProperties(true);
         sheet.setRestoreToggleStates(false);
@@ -144,6 +152,46 @@ class OptionSheet extends JPanel implements Options.EditControl {
             }
         };
         sheet.addPropertySheetChangeListener(pcl);
+    }
+
+    private Component getComp(Component c, int idx, Class<?> clazz)
+    {
+        Component[] comps = ((Container)c).getComponents();
+        return comps.length >= idx+1 && clazz.isInstance(comps[idx])
+                ? comps[idx]
+                : null;
+    }
+
+    /**
+     * l2f doesn't set the forground color of the html doc for
+     * the description; set it here.
+     * Could patch the l2f code, but this is less support,
+     * assuming l2f doesn't change.
+     */
+    private void fixupDescriptionForeground(PropertySheetPanel psp)
+    {
+        //sheet.getComponents()[1]
+        //  .getComponents()[2]
+        //  .getViewport().getView()
+        //  .getDocument().getStyleSheet().addRule(fgColorStyle)
+        Component c;
+        JScrollPane sp;
+        JEditorPane ep;
+        StyleSheet ss;
+
+        if((c = getComp(psp, 1, JSplitPane.class)) == null
+                || (c = getComp(c, 2, JScrollPane.class)) == null)
+            return;
+        sp = (JScrollPane)c;
+        if(!((c = sp.getViewport().getView()) instanceof JEditorPane))
+            return;
+        ep = (JEditorPane)c;
+        if(!(ep.getDocument() instanceof HTMLDocument))
+            return;
+        ss = ((HTMLDocument)ep.getDocument()).getStyleSheet();
+
+        int fgRGB = ep.getForeground().getRGB() & 0xffffff;
+        ss.addRule(String.format("body { color: #%06x; }", fgRGB));
     }
 
     // read property values from backing store
@@ -290,6 +338,12 @@ class OptionSheet extends JPanel implements Options.EditControl {
         {
             return descriptor.isExpert() ? "Expert" : "Properties";
         }
+
+        @Override
+        public Object clone()
+        {
+            return super.clone();
+        }
     }
 
     private static PropertyEditorRegistry propertyEditors;
@@ -315,34 +369,31 @@ class OptionSheet extends JPanel implements Options.EditControl {
         }
     }
 
-    private static final Comparator STRING_COMPARATOR =
+    @SuppressWarnings("unchecked")
+    private static final Comparator<String> STRING_COMPARATOR =
             new NaturalOrderStringComparator();
 
     // STRING_COMPARATOR
-    static Comparator reverseStringCompare = (Comparator)
-            (Object o1, Object o2) -> - STRING_COMPARATOR.compare(o1, o2);
+    static Comparator<String> reverseStringCompare
+            = (String o1, String o2) -> - STRING_COMPARATOR.compare(o1, o2);
 
     // STRING_COMPARATOR
-    static Comparator propertyNameCompare = (Comparator)
+    static Comparator<Object> propertyNameCompare = (Comparator<Object>)
             (Object o1, Object o2) -> {
-        if (o1 instanceof Property && o2 instanceof Property) {
-            Property prop1 = (Property) o1;
-            Property prop2 = (Property) o2;
-            if (prop1 == null) {
-                return prop2==null ? 0 : -1;
-            } else {
-                return STRING_COMPARATOR.compare(
-                        prop1.getName(), prop2.getName());
-                // prop1.getDisplayName()==null
-                //     ? null
-                //     : prop1.getDisplayName().toLowerCase(),
-                // prop2.getDisplayName() == null
-                //     ? null
-                //     : prop2.getDisplayName().toLowerCase());
-            }
-        } else {
-            return 0;
-        }
-    };
+                if (o1 instanceof Property && o2 instanceof Property) {
+                    Property prop1 = (Property) o1;
+                    Property prop2 = (Property) o2;
+                    return STRING_COMPARATOR.compare(
+                            prop1.getName(), prop2.getName());
+                    // prop1.getDisplayName()==null
+                    //     ? null
+                    //     : prop1.getDisplayName().toLowerCase(),
+                    // prop2.getDisplayName() == null
+                    //     ? null
+                    //     : prop2.getDisplayName().toLowerCase());
+                } else {
+                    return 0;
+                }
+            };
     
 }
