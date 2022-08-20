@@ -252,7 +252,7 @@ public class SetColonCommand extends AbstractColonAction
             if (vopt.isLocal()) {
                 voptState.bag.viOptionSet(G.curwin(), vopt);
             } else if(vopt.isGlobal()) {
-                OptionEvent.firePropertyChange(new OptionEvent.Global(
+                OptionEvent.fireOptionEvent(new OptionEvent.Global(
                         vopt.getOptName(), oldValue, newValue));
             }
         }

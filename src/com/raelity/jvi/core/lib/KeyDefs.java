@@ -19,6 +19,13 @@
  */
 package com.raelity.jvi.core.lib;
 
+import java.awt.event.KeyEvent;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import static java.util.Map.entry;
+
 /**
  * The vim code uses character constants and key constants.
  * Characters are unicode characters. Keys are keystrokes that
@@ -259,6 +266,177 @@ public class KeyDefs {
     public static final char K_X_IM_INS_REP = MAP_K_X_IM_INS_REP + VIRT;
     public static final char K_X_IM_LITERAL = MAP_K_X_IM_LITERAL + VIRT;
 
+    //
+    // KeyBindingPrefs
+    //
+
+    private static final Map<String,Integer> keypadNameKeyMap = Map.ofEntries(
+            entry("Enter",      KeyEvent.VK_ENTER),
+            entry("Escape",     KeyEvent.VK_ESCAPE),
+            entry("Back_space", KeyEvent.VK_BACK_SPACE),
+            entry("Tab",        KeyEvent.VK_TAB),
+            
+            entry("Up",         KeyEvent.VK_UP),
+            entry("Down",       KeyEvent.VK_DOWN),
+            entry("Left",       KeyEvent.VK_LEFT),
+            entry("Right",      KeyEvent.VK_RIGHT),
+            
+            entry("Insert",     KeyEvent.VK_INSERT),
+            entry("Delete",     KeyEvent.VK_DELETE),
+            entry("Home",       KeyEvent.VK_HOME),
+            entry("End",        KeyEvent.VK_END),
+            entry("Undo",       KeyEvent.VK_UNDO),
+            entry("PageUp",     KeyEvent.VK_PAGE_UP),
+            entry("PageDown",   KeyEvent.VK_PAGE_DOWN)
+    );
+
+    // NOTE: DO NOT CHANGE THESE.
+    // These are the Preferences defaults,
+    // if they are changed, then they might change the user's bindings.
+
+    /** These keys are not caught by jVi by default */
+    private static final Set<String> defaultKeysFalse = Set.of(
+            "Ctrl-[",
+            
+            "Ctrl-@",
+            "Ctrl-A",
+            "Ctrl-C",
+            "Ctrl-I",
+            "Ctrl-J",
+            "Ctrl-K",
+            "Ctrl-Q",
+            "Ctrl-V",
+            "Ctrl-X",
+            "Ctrl-Z",
+            
+            "Shift-Enter",
+            "Ctrl-Enter",
+            "Shift-Escape",
+            "Ctrl-Escape",
+            "Shift-Back_space",
+            "Ctrl-Back_space",
+            "Shift-Tab",
+            "Ctrl-Tab",
+
+            "Shift-Space",
+            "Ctrl-Space",
+            
+            "Shift-Undo",
+            "Ctrl-Undo",
+            "Shift-Insert",
+            "Ctrl-Insert",
+            "Shift-Delete",
+            "Ctrl-Delete"
+    );
+
+    private static final Map<String,Character> nameKeyMap = Map.ofEntries(
+            entry("Up",         K_UP),
+            entry("Down",       K_DOWN),
+            entry("Left",       K_LEFT),
+            entry("Right",      K_RIGHT),
+            entry("Insert",     K_INS),
+            entry("Delete",     K_DEL),
+            entry("Tab",        K_TAB),
+            entry("Home",       K_HOME),
+            entry("End",        K_END),
+            entry("Help",       K_HELP),
+            entry("Undo",       K_UNDO),
+            entry("Back_space", (char)KeyEvent.VK_BACK_SPACE),
+
+            entry("PageUp",   K_PAGEUP),
+            entry("PageDown", K_PAGEDOWN),
+            entry("Plus",     K_KPLUS),
+            entry("Minus",    K_KMINUS),
+            entry("Divide",   K_KDIVIDE),
+            entry("Multiply", K_KMULTIPLY),
+            entry("Enter",    K_KENTER),
+
+            entry("PeriodCloseAngle", K_X_PERIOD),
+            entry("CommaOpenAngle",   K_X_COMMA),
+            
+            entry("Ctrl-@", (char)0),
+            entry("Ctrl-A", (char)1),
+            entry("Ctrl-B", (char)2),
+            entry("Ctrl-C", (char)3),
+            entry("Ctrl-D", (char)4),
+            entry("Ctrl-E", (char)5),
+            entry("Ctrl-F", (char)6),
+            entry("Ctrl-G", (char)7),
+            entry("Ctrl-H", (char)8),
+            entry("Ctrl-I", (char)9),
+            entry("Ctrl-J", (char)10),
+            entry("Ctrl-K", (char)11),
+            entry("Ctrl-L", (char)12),
+            entry("Ctrl-M", (char)13),
+            entry("Ctrl-N", (char)14),
+            entry("Ctrl-O", (char)15),
+            entry("Ctrl-P", (char)16),
+            entry("Ctrl-Q", (char)17),
+            entry("Ctrl-R", (char)18),
+            entry("Ctrl-S", (char)19),
+            entry("Ctrl-T", (char)20),
+            entry("Ctrl-U", (char)21),
+            entry("Ctrl-V", (char)22),
+            entry("Ctrl-W", (char)23),
+            entry("Ctrl-X", (char)24),
+            entry("Ctrl-Y", (char)25),
+            entry("Ctrl-Z", (char)26),
+            entry("Escape", (char)KeyEvent.VK_ESCAPE), // 27
+            entry("Ctrl-Backslash", (char)28),
+            entry("CloseBracket",   (char)29),
+            //actionsList.add(createKeyAction("Ctrl-Circumflex", (char)30));
+            //actionsList.add(createKeyAction("Ctrl-Underscore", (char)31));
+            entry("Space", K_SPACE),
+
+            entry("F1",  K_F1),
+            entry("F2",  K_F2),
+            entry("F3",  K_F3),
+            entry("F4",  K_F4),
+            entry("F5",  K_F5),
+            entry("F6",  K_F6),
+            entry("F7",  K_F7),
+            entry("F8",  K_F8),
+            entry("F9",  K_F9),
+            entry("F10", K_F10),
+            entry("F11", K_F11),
+            entry("F12", K_F12)
+    );
+
+    private static Set<String> knownKeys;
+
+    public static Map<String, Character> getNameKeyMap() {
+        return nameKeyMap;
+    }
+
+    public static Map<String, Integer> getKeypadNameKeyMap() {
+        return keypadNameKeyMap;
+    }
+    public static Set<String> getKeypadNames() {
+        return keypadNameKeyMap.keySet();
+    }
+
+    public static boolean getCatchKeyDefault(String keyName) {
+        return ! defaultKeysFalse.contains(keyName);
+    }
+
+    // TODO: HMM, maybe it is needed, see OptUtil use of isKnownKey.
+    // This whole known keys thing isn't really needed anymore.
+    // It comes from CopyPreferences.java which really shouldn't
+    // be needed at all any more.
+    static public boolean isKnownKey(String prefName) {
+        return knownKeys.contains(prefName);
+    }
+
+    /**
+     * HACK tet the known keys.
+     * TODO: get rid of this. The known keys should come from here,
+     * not the swing specific code. Maybe createKeyBinding is in factory.
+     */
+    public static void setKnownKeys(Set<String> keyNames) {
+        if(knownKeys != null)
+            throw new IllegalStateException("known keys already set");
+        knownKeys = new HashSet<>(keyNames);
+    }
 }
 
 

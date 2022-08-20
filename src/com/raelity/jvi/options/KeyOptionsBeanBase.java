@@ -26,10 +26,10 @@ import java.beans.SimpleBeanInfo;
 import java.util.prefs.Preferences;
 
 import com.raelity.jvi.core.Options;
+import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.OptUtil.OptionChangeHandler;
-import com.raelity.jvi.swing.KeyBinding;
 
 import static com.raelity.jvi.manager.ViManager.getFactory;
 
@@ -86,7 +86,7 @@ implements Options.EditControl
     }
 
     protected boolean get(String name) {
-        return prefs.getBoolean(name, KeyBinding.getCatchKeyDefault(name));
+        return prefs.getBoolean(name, KeyDefs.getCatchKeyDefault(name));
     }
 
     private static Image icon, icon32;

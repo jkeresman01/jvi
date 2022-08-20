@@ -107,7 +107,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("2.0.8.x4");
+    public static final jViVersion version = new jViVersion("2.0.9");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -304,7 +304,7 @@ final public class ViManager
                           new DebugDebug(), null);
 
 
-        OptionEvent.firePropertyChange(new OptionEvent.Initialized());
+        OptionEvent.fireOptionEvent(new OptionEvent.Initialized());
         firePropertyChange(P_BOOT, null, null);
 
         // Add the vim clipboards

@@ -44,7 +44,6 @@ import com.raelity.jvi.core.Register.Yankreg;
 import com.raelity.jvi.core.lib.NotSupportedException;
 import com.raelity.jvi.lib.MutableInt;
 import com.raelity.jvi.manager.*;
-import com.raelity.jvi.swing.KeyBinding;
 import com.raelity.jvi.lib.TextUtil;
 import com.raelity.jvi.lib.MySegment;
 
@@ -93,6 +92,8 @@ import static com.raelity.jvi.manager.ViManager.getFactory;
 public class Normal
 {
   private static final Logger LOG = Logger.getLogger(Normal.class.getName());
+  
+  public static boolean notImpDebug = false;
 
   // for normal_cmd() use, stuff that was declared static in the function
   static int	opnum = 0;		    /* count before an operator */
@@ -4540,7 +4541,7 @@ nv_brackets(CMDARG cap, int dir)
    */
   static void notImp(String op) throws NotSupportedException {
     // setGeneralStatus
-    if(KeyBinding.notImpDebug) ViManager.println("Not Implemented: "
+    if(notImpDebug) ViManager.println("Not Implemented: "
                       + op + ": " + "\"" + getCmdChars() + "\"");
     throw new NotSupportedException(op, getCmdChars());
   }
@@ -4569,7 +4570,7 @@ nv_brackets(CMDARG cap, int dir)
    */
   static void notSup(String op) throws NotSupportedException {
     // setGeneralStatus
-    if(KeyBinding.notImpDebug) ViManager.println("Not supported: "
+    if(notImpDebug) ViManager.println("Not supported: "
                        + op + ": " + "\"" + getCmdChars() + "\"");
     throw new NotSupportedException(op, getCmdChars());
   }

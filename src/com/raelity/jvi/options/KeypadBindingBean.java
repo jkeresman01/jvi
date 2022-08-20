@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.raelity.jvi.swing.KeyBinding;
+import com.raelity.jvi.core.lib.*;
 
 /**
  * Use this class to programmatically enable/disable jVi catching particular
@@ -63,7 +63,7 @@ public BeanDescriptor getBeanDescriptor() {
     public PropertyDescriptor[] getPropertyDescriptors()
     {
         final List<PropertyDescriptor> vD = new ArrayList<>();
-        for (String key : KeyBinding.getKeypadNames()) {
+        for (String key : KeyDefs.getKeypadNames()) {
             addDesc(vD, key, "");
             addDesc(vD, key, "Ctrl");
             addDesc(vD, key, "Shift");

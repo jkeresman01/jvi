@@ -35,17 +35,22 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.Preferences;
 
+import org.openide.util.Exceptions;
+
 import com.raelity.jvi.core.*;
 import com.raelity.jvi.core.Options.Category;
+import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.*;
 
 import static java.util.logging.Level.*;
 
 import static com.raelity.jvi.lib.TextUtil.sf;
+import static com.raelity.jvi.manager.ViManager.PREFS_KEYS;
 
 /**
  * static methods to create options and populate option categories.
@@ -444,16 +449,32 @@ public class OptUtil {
      */
     void applyChanges()
     {
+      boolean keyChange = false;
       for(Entry<String, Change> entry : map.entrySet()) {
         String key = entry.getKey();
         Change ch = entry.getValue();
 
         Option<?> opt = Options.getOption(key);
-        opt.castSetValue(ch.newVal);
+        if(opt != null)
+          opt.castSetValue(ch.newVal);
+        else if(KeyDefs.isKnownKey(key)) {
+          // keys go directly to prefs, no option involved
+          prefs.node(PREFS_KEYS).putBoolean(key, (boolean)ch.newVal);
+          keyChange = true;
+        } else
+          Exceptions.printStackTrace(new RuntimeException("Unknown option"));
         
-        // This is probably not used
-        OptionEvent.getEventBus().post(new OptionEvent.Dialog(key, ch.oldVal, ch.newVal));
+        // OptionEvent.getEventBus().post(new OptionEvent.Dialog(key, ch.oldVal, ch.newVal));
       }
+      if(keyChange) {
+        try {
+          prefs.flush();
+          OptionEvent.fireOptionEvent(new OptionEvent.KeyOptions());
+        } catch(BackingStoreException ex) {
+          Exceptions.printStackTrace(ex);
+        }
+      }
+      
       clear();
     }
     } // END CLASS OptionChangeHandler

@@ -19,20 +19,17 @@
  */
 package com.raelity.jvi.swing;
 
-import java.awt.EventQueue;
 import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.Preferences;
 
 import javax.swing.Action;
@@ -41,11 +38,14 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import javax.swing.text.TextAction;
 
+import com.google.common.eventbus.Subscribe;
+
 import org.openide.util.lookup.ServiceProvider;
 
-import com.raelity.jvi.ViFactory;
-import com.raelity.jvi.ViInitialization;
+import com.raelity.jvi.*;
+import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.manager.ViManager;
+import com.raelity.jvi.options.*;
 
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 import static java.awt.event.InputEvent.SHIFT_DOWN_MASK;
@@ -70,15 +70,6 @@ public class KeyBinding {
       }
     }
 
-  //
-  // Set up a private INSTANCE of KeyBinding for use with propertyChange
-  //
-  private static KeyBinding INSTANCE;
-  private static KeyBinding getInstance() {
-      if(INSTANCE == null)
-          INSTANCE = new KeyBinding();
-      return INSTANCE;
-  }
   private KeyBinding() {
   }
 
@@ -87,30 +78,26 @@ private static Action createKeyAction( String name, char key ) {
             .createKeyAction(name, key);
 
 }
-  
-  public static boolean notImpDebug = false;
 
   //static final String enqueKeyAction = "enque-key";
 
   private static void init() {
       createSubKeymaps();
-      prefs.addPreferenceChangeListener((PreferenceChangeEvent evt) -> {
-          if(EventQueue.isDispatchThread())
-              updateKeymap.run();
-          else
-              EventQueue.invokeLater(updateKeymap);
+      OptionEvent.getEventBus().register(new Object() {
+          @Subscribe public void keys(OptionEvent.KeyOptions  evt) {
+              // assert EventQueus.isEventDispatch();
+              // some key options have changed
+              bindingList = null; // force recalculation
+              OptionEvent.fireOptionEvent(new OptionEvent.KeyBindings());
+          }
       });
+
       // make sure "knownKeys" is filled in
       getBindingsListInternal();
+      // TODO: FIX: The knownKeys is a HACK.
+      setKnownKeys(tmpKnownKeys);
+      tmpKnownKeys = null;
   }
-  
-    private static final Runnable updateKeymap = new Runnable() {
-        @Override
-        public void run() {
-            bindingList = null; // force recalculation
-            firePropertyChange(KEY_BINDINGS, null, null);
-        }
-    };
   
   /**
    * Return a keymap for a standard swing text component.
@@ -195,10 +182,11 @@ private static Action createKeyAction( String name, char key ) {
         checkUseKey(bl, name, name, c, CTRL_DOWN_MASK);
     }
     
-    //
-    // Add the keypad characters,
-    // Check the preference for each one.
-    //
+      //
+      // Add the keypad characters,
+      // Check the preference for each one.
+      //
+    Map<String, Integer> keypadNameMap = getKeypadNameKeyMap();
     for (String key : keypadNameMap.keySet()) {
         checkUseKey(bl, key, keypadNameMap.get(key), 0);
         checkUseKey(bl, key, keypadNameMap.get(key), CTRL_DOWN_MASK);
@@ -243,18 +231,21 @@ private static Action createKeyAction( String name, char key ) {
       checkUseKey(bl, prefName, key, code, mod);
  }
   
+  private static Set<String> tmpKnownKeys = new HashSet<>();
   private static void checkUseKey(List<JTextComponent.KeyBinding> bl,
                                   String prefName,
                                   String actionName,
                                   int code,
                                   int mod) {
-      keyBindingPrefs.addKnownKey(prefName);
+      if(tmpKnownKeys != null)
+          tmpKnownKeys.add(prefName);
       if(prefs.getBoolean(prefName, getCatchKeyDefault(prefName))) {
           bl.add(createKeyBinding(code, mod, "Vi"+actionName+"Key"));
       }
   }
 
-  private static List NOT_USED_getExtraBindingsList() {
+  static { if(Boolean.FALSE) NOT_USED_getExtraBindingsList(); }
+  private static List<JTextComponent.KeyBinding> NOT_USED_getExtraBindingsList() {
     List<JTextComponent.KeyBinding> bl = new ArrayList<>();
     // NEEDSWORK: for now just stuff all the extra bindings here
 
@@ -281,7 +272,8 @@ private static Action createKeyAction( String name, char key ) {
     return bl;
   }
 
-  public static List<JTextComponent.KeyBinding> getFunctionKeyBindingsList() {
+  static { if(Boolean.FALSE) NOT_USED_getFunctionKeyBindingsList(); }
+  private static List<JTextComponent.KeyBinding> NOT_USED_getFunctionKeyBindingsList() {
     List<JTextComponent.KeyBinding> bl = new ArrayList<>();
 
     //
@@ -372,80 +364,11 @@ private static Action createKeyAction( String name, char key ) {
     private static List<Action> createActionList() {
         List<Action> actionsList = new ArrayList<>();
         try {
-            actionsList.add(createKeyAction("ViUpKey", K_UP));
-            actionsList.add(createKeyAction("ViDownKey", K_DOWN));
-            actionsList.add(createKeyAction("ViLeftKey", K_LEFT));
-            actionsList.add(createKeyAction("ViRightKey", K_RIGHT));
-            actionsList.add(createKeyAction("ViInsertKey", K_INS));
-            actionsList.add(createKeyAction("ViDeleteKey", K_DEL));
-            actionsList.add(createKeyAction("ViTabKey", K_TAB));
-            actionsList.add(createKeyAction("ViHomeKey", K_HOME));
-            actionsList.add(createKeyAction("ViEndKey", K_END));
-            actionsList.add(createKeyAction("ViHelpKey", K_HELP));
-            actionsList.add(createKeyAction("ViUndoKey", K_UNDO));
-            actionsList.add(createKeyAction("ViBack_spaceKey",
-                                                    (char)KeyEvent.VK_BACK_SPACE));
-
-            actionsList.add(createKeyAction("ViPageUpKey", K_PAGEUP));
-            actionsList.add(createKeyAction("ViPageDownKey", K_PAGEDOWN));
-            actionsList.add(createKeyAction("ViPlusKey", K_KPLUS));
-            actionsList.add(createKeyAction("ViMinusKey", K_KMINUS));
-            actionsList.add(createKeyAction("ViDivideKey", K_KDIVIDE));
-            actionsList.add(createKeyAction("ViMultiplyKey", K_KMULTIPLY));
-            actionsList.add(createKeyAction("ViEnterKey", K_KENTER));
-
-            actionsList.add(createKeyAction("ViPeriodCloseAngleKey",
-                                                    K_X_PERIOD));
-            actionsList.add(createKeyAction("ViCommaOpenAngleKey",
-                                                    K_X_COMMA));
-            
-            actionsList.add(createKeyAction("ViCtrl-@Key", (char)0));
-            actionsList.add(createKeyAction("ViCtrl-AKey", (char)1));
-            actionsList.add(createKeyAction("ViCtrl-BKey", (char)2));
-            actionsList.add(createKeyAction("ViCtrl-CKey", (char)3));
-            actionsList.add(createKeyAction("ViCtrl-DKey", (char)4));
-            actionsList.add(createKeyAction("ViCtrl-EKey", (char)5));
-            actionsList.add(createKeyAction("ViCtrl-FKey", (char)6));
-            actionsList.add(createKeyAction("ViCtrl-GKey", (char)7));
-            actionsList.add(createKeyAction("ViCtrl-HKey", (char)8));
-            actionsList.add(createKeyAction("ViCtrl-IKey", (char)9));
-            actionsList.add(createKeyAction("ViCtrl-JKey", (char)10));
-            actionsList.add(createKeyAction("ViCtrl-KKey", (char)11));
-            actionsList.add(createKeyAction("ViCtrl-LKey", (char)12));
-            actionsList.add(createKeyAction("ViCtrl-MKey", (char)13));
-            actionsList.add(createKeyAction("ViCtrl-NKey", (char)14));
-            actionsList.add(createKeyAction("ViCtrl-OKey", (char)15));
-            actionsList.add(createKeyAction("ViCtrl-PKey", (char)16));
-            actionsList.add(createKeyAction("ViCtrl-QKey", (char)17));
-            actionsList.add(createKeyAction("ViCtrl-RKey", (char)18));
-            actionsList.add(createKeyAction("ViCtrl-SKey", (char)19));
-            actionsList.add(createKeyAction("ViCtrl-TKey", (char)20));
-            actionsList.add(createKeyAction("ViCtrl-UKey", (char)21));
-            actionsList.add(createKeyAction("ViCtrl-VKey", (char)22));
-            actionsList.add(createKeyAction("ViCtrl-WKey", (char)23));
-            actionsList.add(createKeyAction("ViCtrl-XKey", (char)24));
-            actionsList.add(createKeyAction("ViCtrl-YKey", (char)25));
-            actionsList.add(createKeyAction("ViCtrl-ZKey", (char)26));
-            actionsList.add(createKeyAction("ViEscapeKey",
-                                                    (char)KeyEvent.VK_ESCAPE)); // 27
-            actionsList.add(createKeyAction("ViCtrl-BackslashKey", (char)28));
-            actionsList.add(createKeyAction("ViCloseBracketKey", (char)29));
-            //actionsList.add(createKeyAction("ViCtrl-CircumflexKey", (char)30));
-            //actionsList.add(createKeyAction("ViCtrl-UnderscoreKey", (char)31));
-            actionsList.add(createKeyAction("ViSpaceKey", K_SPACE));
-
-            actionsList.add(createKeyAction("ViF1Key", K_F1));
-            actionsList.add(createKeyAction("ViF2Key", K_F2));
-            actionsList.add(createKeyAction("ViF3Key", K_F3));
-            actionsList.add(createKeyAction("ViF4Key", K_F4));
-            actionsList.add(createKeyAction("ViF5Key", K_F5));
-            actionsList.add(createKeyAction("ViF6Key", K_F6));
-            actionsList.add(createKeyAction("ViF7Key", K_F7));
-            actionsList.add(createKeyAction("ViF8Key", K_F8));
-            actionsList.add(createKeyAction("ViF9Key", K_F9));
-            actionsList.add(createKeyAction("ViF10Key", K_F10));
-            actionsList.add(createKeyAction("ViF11Key", K_F11));
-            actionsList.add(createKeyAction("ViF12Key", K_F12));
+            for(Entry<String, Character> entry : KeyDefs.getNameKeyMap().entrySet()) {
+                String keyName = entry.getKey();
+                char keyVal = entry.getValue();
+                actionsList.add(createKeyAction("Vi" + keyName + "Key", keyVal));
+            }
         } catch(Throwable e) {
             LOG.log(Level.SEVERE, null, e);
         }
@@ -529,134 +452,5 @@ private static Action createKeyAction( String name, char key ) {
 		   bindKeyName);
     return kb;
   }
-  //
-  // Handle the preferences for which keys to catch
-  //
   
-  static public boolean getCatchKeyDefault(String prefName) {
-      return keyBindingPrefs.getCatchKeyDefault(prefName);
-  }
-  
-  static public boolean isKnownKey(String prefName) {
-      return keyBindingPrefs.isKnownKey(prefName);
-  }
-  
-    public static Set<String> getKeypadNames() {
-        return Collections.unmodifiableSet(keypadNameMap.keySet());
-    }
-    private static final HashMap<String,Integer> keypadNameMap = new HashMap<>();
-    
-    private static final KeyBindingPrefs keyBindingPrefs = new KeyBindingPrefs();
-    //
-    // NOTE: DO NOT CHANGE THESE.
-    // Since these are the Preferences defaults,
-    // if they are changed, then they might change the user's bindings.
-    //
-    static private class KeyBindingPrefs {
-        private final Set<String> defaultKeysFalse = new HashSet<>();
-        private final Set<String> knownKeys = new HashSet<>();
-        KeyBindingPrefs() {
-            defaultKeysFalse.add("Ctrl-[");
-            
-            defaultKeysFalse.add("Ctrl-@");
-            defaultKeysFalse.add("Ctrl-A");
-            defaultKeysFalse.add("Ctrl-C");
-            defaultKeysFalse.add("Ctrl-I");
-            defaultKeysFalse.add("Ctrl-J");
-            defaultKeysFalse.add("Ctrl-K");
-            defaultKeysFalse.add("Ctrl-Q");
-            defaultKeysFalse.add("Ctrl-V");
-            defaultKeysFalse.add("Ctrl-X");
-            defaultKeysFalse.add("Ctrl-Z");
-            
-            defaultKeysFalse.add("Shift-Enter");
-            defaultKeysFalse.add("Ctrl-Enter");
-            defaultKeysFalse.add("Shift-Escape");
-            defaultKeysFalse.add("Ctrl-Escape");
-            defaultKeysFalse.add("Shift-Back_space");
-            defaultKeysFalse.add("Ctrl-Back_space");
-            defaultKeysFalse.add("Shift-Tab");
-            defaultKeysFalse.add("Ctrl-Tab");
-
-            defaultKeysFalse.add("Shift-Space");
-            defaultKeysFalse.add("Ctrl-Space");
-            
-            defaultKeysFalse.add("Shift-Undo");
-            defaultKeysFalse.add("Ctrl-Undo");
-            defaultKeysFalse.add("Shift-Insert");
-            defaultKeysFalse.add("Ctrl-Insert");
-            defaultKeysFalse.add("Shift-Delete");
-            defaultKeysFalse.add("Ctrl-Delete");
-            
-            //
-            // Set up the names of the special/keypad keys.
-            // This list is used to set up plain/Shift/Ctrl versions
-            // of the indicated keys, as constrained by "defaultKeysFalse"
-            //
-            keypadNameMap.put("Enter", KeyEvent.VK_ENTER);
-            keypadNameMap.put("Escape", KeyEvent.VK_ESCAPE);
-            keypadNameMap.put("Back_space", KeyEvent.VK_BACK_SPACE);
-            keypadNameMap.put("Tab", KeyEvent.VK_TAB);
-            
-            keypadNameMap.put("Up", KeyEvent.VK_UP);
-            keypadNameMap.put("Down", KeyEvent.VK_DOWN);
-            keypadNameMap.put("Left", KeyEvent.VK_LEFT);
-            keypadNameMap.put("Right", KeyEvent.VK_RIGHT);
-            
-            keypadNameMap.put("Insert", KeyEvent.VK_INSERT);
-            keypadNameMap.put("Delete", KeyEvent.VK_DELETE);
-            keypadNameMap.put("Home", KeyEvent.VK_HOME);
-            keypadNameMap.put("End", KeyEvent.VK_END);
-            keypadNameMap.put("Undo", KeyEvent.VK_UNDO);
-            keypadNameMap.put("PageUp", KeyEvent.VK_PAGE_UP);
-            keypadNameMap.put("PageDown", KeyEvent.VK_PAGE_DOWN);
-        }
-
-        public void addKnownKey(String key) {
-            knownKeys.add(key);
-        }
-
-        public Boolean isKnownKey(String key) {
-            return knownKeys.contains(key);
-        }
-      
-      public Boolean getCatchKeyDefault(String keyName) {
-          return ! defaultKeysFalse.contains(keyName);
-      }
-  }
-  
-  //
-  // Look like a good bean
-  // But they're static!
-  //
-
-  private static final PropertyChangeSupport pcs
-                        = new PropertyChangeSupport(getInstance());
-  
-  public static void addPropertyChangeListener( PropertyChangeListener listener )
-  {
-    pcs.addPropertyChangeListener( listener );
-  }
-
-  public static void removePropertyChangeListener( PropertyChangeListener listener )
-  {
-    pcs.removePropertyChangeListener( listener );
-  }
-  
-  public static void addPropertyChangeListener(String p,
-                                               PropertyChangeListener l)
-  {
-    pcs.addPropertyChangeListener(p, l);
-  }
-
-  public static void removePropertyChangeListener(String p,
-                                                  PropertyChangeListener l)
-  {
-    pcs.removePropertyChangeListener(p, l);
-  }
-  
-  /** This should only be used from Option and its subclasses */
-  private static void firePropertyChange(String name, Object oldValue, Object newValue) {
-    pcs.firePropertyChange(name, oldValue, newValue);
-  }
 }

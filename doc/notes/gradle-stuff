@@ -1,4 +1,32 @@
 
+===========================================================================
+
+FAT JAR
+
+https://www.baeldung.com/gradle-fat-jar
+
+===========================================================================
+
+TASK GRAPH
+
+-------
+
+https://tomgregory.com/all-about-the-gradle-task-graph/
+id 'org.barfuin.gradle.taskinfo' version '1.0.5'
+
+-------
+
+https://github.com/dorongold/gradle-task-tree
+id "com.dorongold.task-tree" version "2.1.0"
+
+-------
+
+https://github.com/mmalohlava/gradle-visteg
+id 'cz.malohlava.visteg' version '1.0.5'
+generate a .dot file in the directory build/reports
+Use 'dot' command (guess it's default installed)
+
+===========================================================================
 
 gradle.taskGraph.whenReady { ->
     {
@@ -8,18 +36,19 @@ gradle.taskGraph.whenReady { ->
 }
 
 =========================================================================
+There is a plugin:
+        id 'com.coditory.manifest' version '0.2.0'
+or roll your own in initscript
 
 //initscript {
 
 allprojects {
-tasks.withType(Jar) {
+    tasks.withType(Jar) {
 
-    //jar {
         manifest {
             attributes(
-                //'Artifact'       : getProject().propVersionInManifest,
-                //'Artifact'       : getProject().name,
-                //'Artifact'       : getProject().getProperties(),
+                // BINGO - use closure to delay interpolation (until toString()?)
+                'Artifact'       : "${ -> project.propVersionInManifest}",
                 'Built-By'       : System.properties['user.name'],
                 'Build-Timestamp': new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
                 //'Build-Revision' : versioning.info.commit,
@@ -28,10 +57,8 @@ tasks.withType(Jar) {
                 'Build-OS'       : "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}"
             )
         }
-    //}
 
-
-}
+    }
 }
 
 //}

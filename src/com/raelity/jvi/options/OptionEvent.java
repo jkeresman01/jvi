@@ -38,33 +38,19 @@ import static com.raelity.jvi.lib.TextUtil.sf;
  */
 public class OptionEvent
 {
-    //private static class ReportPostEventBus extends EventBus
-    //{
-    //private final Consumer<Object> reportPost;
-    //
-    //public ReportPostEventBus(SubscriberExceptionHandler exceptionHandler,
-    //                          Consumer<Object> reportPost)
-    //{
-    //  super(exceptionHandler);
-    //  this.reportPost = reportPost;
-    //}
-    //
-    //@Override
-    //public void post(Object ev)
-    //{
-    //  if(!OptUtil.isStarted())
-    //    return;
-    //  reportPost.accept(ev);
-    //  runInDispatch(false, () -> super.post(ev));
-    //}
-    //} // END CLASS ReportPostEventBus
 
-public static void firePropertyChange(Change ev)
+public static void fireOptionEvent(Change ev)
 {
     OptionEvent.getEventBus().post(ev);
 }
 
 private static final Queue<Runnable> toRun = new ConcurrentLinkedQueue<>();
+
+//
+// The qPut, qRun methods are used by Option to order events
+// and actions. They are run on the EventQueue
+// after the syncronization is released.
+//
 
 static void qPut(Runnable r)
 {
@@ -75,7 +61,7 @@ static void qPut(Runnable r)
 static void qPut(Change ev)
 {
     if(OptUtil.isStarted() && ev != null)
-        qPut(() -> firePropertyChange(ev));
+        qPut(() -> fireOptionEvent(ev));
 }
 
 static void qRun()
@@ -108,31 +94,37 @@ public static EventBus getEventBus()
 }
 // TODO: event for buf/win local? See SetColonCommand
 
-    /** not used 
-     * Maybe should call it apply/Change/prefs or something; see applyChanges. */
+
+    // CLASS Dialog ////////////////////////////////////////////////////////
+    /** NOT USED
+     * Could call it applyOptionChanges/prefs or something; see applyChanges. */
     static public class Dialog extends AbstractChange
     {
     public Dialog(String name, Object oldValue, Object newValue)
     {
       super(name, oldValue, newValue);
     }
-    } // END CLASS OptionChangeDialogEvent
+    } // END CLASS Dialog //////////////////////////////////////////////////
 
     //
     //?????????????????????
     //What about non global options, win/buf, see SetColonCommand.
     //
 
+
+     // CLASS Global ///////////////////////////////////////////////////
     /** option is changed in memory, G.xxx. From set command.
      */
     static public class Global extends AbstractChange
     {
     public Global(String name, Object oldValue, Object newValue)
     {
-      super(name, oldValue, newValue);
+        super(name, oldValue, newValue);
     }
-    } // END CLASS OptionChangeSetEvent
+    } // END CLASS Global ///////////////////////////////////////////////////
 
+
+    // CLASS Option /////////////////////////////////////////////////////////
     /** {@literal Option<>} changed value. From dialog. */
     static public class Option extends AbstractChange
     {
@@ -140,23 +132,51 @@ public static EventBus getEventBus()
     {
       super(name, oldValue, newValue);
     }
-    } // END CLASS OptionChangeSetEvent
+    } // END CLASS Option //////////////////////////////////////////////////
 
+
+    // CLASS KeyOptions /////////////////////////////////////////////////////
+    /** One or more key options changed from dialog.
+     *  Setup some stuff and fire KeyBindings*/
+    static public class KeyOptions extends NoArgChange
+    {
+    } // END CLASS KeyOptions ///////////////////////////////////////////////
+
+
+    // CLASS KeyBindings /////////////////////////////////////////////////////
+    /** Keybinds should be re-calculated. Typically done by KeyOptions handler */
+    static public class KeyBindings extends NoArgChange
+    {
+    } // END CLASS KeyBindings ///////////////////////////////////////////////
+
+
+    // CLASS Initialized ///////////////////////////////////////////////////
     /** Option initialization is complete */
-    static public class Initialized implements Change
+    static public class Initialized extends NoArgChange
+    {
+    } // END CLASS Initialized ////////////////////////////////////////////
+
+
+    // CLASS Initialized ///////////////////////////////////////////////////
+    /** Option initialization is complete */
+    static public class NoArgChange implements Change
     {
     @Override
     public String toString()
     {
       return sf("Option{%s:}", this.getClass().getSimpleName());
     }
-    } // END CLASS OptionsInitializedEvent 
+    } // END CLASS NoArgChange ////////////////////////////////////////////
+
+
 
     /** Tag for option related events. */
     static public interface Change
     {
     }
 
+
+    // CLASS AbstractChange ////////////////////////////////////////////////
     /** base class for option change events */
     public static class AbstractChange implements Change
     {
@@ -197,7 +217,7 @@ public static EventBus getEventBus()
                 name, oldValue, newValue);
     }
     
-    } // END CLASS AbstractOptionChangeEvent
+    } // END CLASS AbstractChange /////////////////////////////////////////
 
     private OptionEvent()
     {

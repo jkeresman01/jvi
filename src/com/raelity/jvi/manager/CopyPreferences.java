@@ -6,8 +6,8 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import com.raelity.jvi.core.Options;
+import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.options.Option;
-import com.raelity.jvi.swing.KeyBinding;
 
 class CopyPreferences
 {
@@ -91,9 +91,9 @@ class CopyPreferences
             children = srcRoot.node(dir).childrenNames();
             options = srcRoot.node(dir).keys();
             for (String optionName : options) {
-                if (KeyBinding.isKnownKey(optionName)) {
+                if (KeyDefs.isKnownKey(optionName)) {
                     boolean val;
-                    boolean sDefault = KeyBinding.getCatchKeyDefault(optionName);
+                    boolean sDefault = KeyDefs.getCatchKeyDefault(optionName);
                     val = srcNode.getBoolean(optionName, sDefault);
                     if (val != sDefault) {
                         LOG.log(Level.CONFIG, "ADD: {0}:{1}", new Object[]{optionName, val});
