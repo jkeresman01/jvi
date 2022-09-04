@@ -1,0 +1,16 @@
+/*
+ * java swing conventions
+ */
+
+plugins {
+}
+
+dependencies {
+    implementation "$a_l2f_sheet"
+}
+
+// dependencies {
+//     //implementation libs.bundles.netbeans
+//     //implementation libs.guava
+//     //implementation libs.raelity.lib
+// }

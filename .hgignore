@@ -6,3 +6,7 @@
 (^|/)test/(coverage|lib|results|work)$
 \.DS_Store$
 /gensrc$
+
+syntax: glob
+.gradle
+build

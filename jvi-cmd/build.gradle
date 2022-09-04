@@ -1,0 +1,49 @@
+/*
+ * Executable jar for debug/demo.
+ *
+ * Not sure why need to include 'core' in dependencies
+ * since it is included in swing jar.
+ * How to include swing jar and not core?
+ */
+
+plugins {
+    id 'com.raelity.jvi.java-common-conventions'
+    id 'org.frgaal.compiler'
+    id 'com.raelity.jvi.java-swing-conventions'
+    id 'com.raelity.jvi.java-application-conventions'
+}
+
+def input_projects = [ project(':jvi-core'), project(':jvi-swing') ]
+def main_class = 'com.raelity.jvi.cmd.Jvi'
+
+tasks.run {
+    if(findProperty('JviDebugSettings')) {
+        systemProperties['com.raelity.jvi.DEBUG'] = 'true'
+        enableAssertions = true
+    }
+}
+
+dependencies {
+    implementation input_projects
+}
+
+namedservicesMerge {
+    inputLocations project.buildDir.toPath().resolve('classes'),
+                   { input_projects.collect { it.jar.archiveFile.getAsFile() } }
+}
+
+application {  
+    mainClass = main_class
+}  
+
+jar {
+    manifest {
+        attributes "Main-Class" : main_class
+    }
+
+    // wouldn't need this if could simply use jvi-swing's jar
+    duplicatesStrategy = 'exclude'
+
+    from {configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it)} }
+}
+

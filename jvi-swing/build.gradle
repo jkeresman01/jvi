@@ -1,0 +1,39 @@
+/*
+ * Swing for jVi. Includes l2f property sheet display, raelity-lib.
+ * Copied to jvi-swing/build/dist/jvi-swing.jar, used in NetBeans.
+ */
+
+plugins {
+    id 'com.raelity.jvi.java-library-conventions'
+    id 'org.frgaal.compiler'
+    id 'com.raelity.jvi.java-swing-conventions'
+}
+
+// FYI: configurations.add_to_jar.files is a LinkedHashSet of java.io.File
+configurations {
+    add_to_jar
+}
+
+def input_projects = [ project(':jvi-core') ]
+
+dependencies {
+    implementation input_projects
+    add_to_jar "$a_l2f_sheet"
+}
+
+assemble.dependsOn('distJar')
+tasks.register('distJar', Copy) {
+    from jar.archiveFile
+    into "$buildDir/dist"
+    rename { 'jvi-swing.jar' }
+}
+
+namedservicesMerge {
+    inputLocations project.buildDir.toPath().resolve('classes'),
+                   { input_projects.collect { it.jar.archiveFile.getAsFile() } }
+}
+
+jar {
+    from { input_projects.collect { zipTree(it.jar.archiveFile.getAsFile()) } }
+    from { configurations.add_to_jar.files.collect { it.isDirectory() ? it : zipTree(it) } }
+}

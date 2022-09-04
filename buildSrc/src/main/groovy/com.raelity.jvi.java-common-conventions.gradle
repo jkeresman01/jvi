@@ -1,0 +1,60 @@
+/*
+ * java common conventions
+ */
+
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+    // maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+}
+
+ext {
+    v_guava = '27.0-jre'
+    v_netbeans = 'RELEASE120'
+    v_raelity_lib = '1.0.0'
+    v_l2f_sheet = '7.3.1'
+
+    a_guava = "com.google.guava:guava:$v_guava"
+    a_nb_annot = "org.netbeans.api:org-netbeans-api-annotations-common:$v_netbeans"
+    a_nb_util = "org.netbeans.api:org-openide-util:$v_netbeans"
+    a_nb_look = "org.netbeans.api:org-openide-util-lookup:$v_netbeans"
+    a_raelity_lib = "com.raelity:raelity-lib:$v_raelity_lib"
+    a_l2f_sheet = "com.raelity.3rdparty.com.l2fprod.common:l2f-sheet:$v_l2f_sheet"
+}
+
+dependencies {
+    implementation "$a_guava"
+    implementation "$a_nb_annot"
+    implementation "$a_nb_util"
+    implementation "$a_nb_look"
+    implementation "$a_raelity_lib"
+
+    annotationProcessor "$a_nb_look"
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+}
+
+//dependencies {
+//    implementation libs.bundles.netbeans
+//    implementation libs.guava
+//    implementation libs.raelity.lib
+//
+//    //constraints {
+//    //    // Define dependency versions as constraints
+//    //    implementation 'org.apache.commons:commons-text:1.9'
+//    //}
+//}
+
+//testing {
+//    suites {
+//        // Configure the built-in test suite
+//        test {
+//            // Use JUnit Jupiter test framework
+//            useJUnitJupiter('5.8.2')
+//        }
+//    }
+//}
+

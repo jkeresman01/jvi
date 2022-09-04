@@ -1,0 +1,24 @@
+/*
+ * jVi core, window toolkit independent.
+ */
+
+plugins {
+    id 'com.raelity.jvi.java-library-conventions'
+    id 'org.frgaal.compiler'
+}
+
+configurations {
+    add_to_jar
+}
+dependencies {
+    add_to_jar "$a_raelity_lib"
+}
+
+namedservicesMerge {
+    // core is the first, don't need to merge
+    serviceProviderPath null
+}
+
+jar {
+    from { configurations.add_to_jar.files.collect { it.isDirectory() ? it : zipTree(it) } }
+}

@@ -1,0 +1,33 @@
+
+[versions]
+guava = "27.0-jre"
+netbeans = "RELEASE120"
+l2f-sheet = "7.3.1"
+raelity-lib = "1.0.0"
+
+[libraries]
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
+
+netbeans-annotations = { module = "org.netbeans.api:org-netbeans-api-annotations-common", version.ref = "netbeans" }
+netbeans-util = { module = "org.netbeans.api:org-openide-util", version.ref = "netbeans" }
+netbeans-utilLookup = { module = "org.netbeans.api:org-openide-util-lookup", version.ref = "netbeans" }
+
+l2f-sheet = { module = "com.raelity.3rdparty.com.l2fprod.common:l2f-sheet", version.ref = "l2f-sheet" }
+
+raelity-lib = { module = "com.raelity:raelity-lib", version.ref = "raelity-lib" }
+
+[bundles]
+# use: implementation libs.bundles.netbeans
+netbeans = ["netbeans-annotations", "netbeans-util", "netbeans-utilLookup"]
+
+
+
+#for buildSrc/settings.gradle
+#dependencyResolutionManagement {
+#    versionCatalogs {
+#        libs {
+#            from(files("../gradle/libs.versions.toml"))
+#        }
+#    }
+#}
+

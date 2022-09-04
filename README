@@ -1,7 +1,25 @@
-jVi can be compiled standalone with the simple build.xml included. It can
-also be opened as a netbeans project. Executing jVi brings up a standalone
-swing app that is useful for debugging jVi internals.
+Post nbvi-2.0.9 jVi's build system is converted to gradle.
+And NetBeans' jvi-wrapper build script does ant exec of gradle
+then grabs the jar.
 
-If you want to work on the NetBeans plugin, see nbvi/README.
+Note that frgall is used: target 11, source 19.
 
+The root project can be opened in NetBeans. Sub projects are jvi-core,
+jvi-swing and jvi-cmd. Set jvi-cmd as the main project and the debug and run
+buttons work.
+
+Doing "./gradlew build" creates two jars of particular interest
+    jvi-swing/build/dist/jvi-swing.jar
+        The jvi-swing.jar is a chubby jar and a copy of jvi-swing-<version>.jar.
+        Look in META-INF/MANIFEST.MF see the verion information. For example:
+            Artifact: com.raelity.jvi:jvi-swing
+            ArtifactVersion: 2.1.0-SNAPSHOT
+        For NetBeans, jvi-swing.jar is a wrapped jar, with no additional jars.
+        jvi-swing.jar has additional dependencies that are satisfied by
+        NetBeans runtime.
+    jvi-cmd/build/libs/jvi-cmd-<version>.jar
+        This is an uber-jar use: "java -jar jvi-cmd-<version>.jar". Several
+        netbeans jar files and guava are included.
+
+In addition "./gradlew run" works.
 
