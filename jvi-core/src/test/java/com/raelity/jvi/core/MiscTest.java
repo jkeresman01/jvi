@@ -20,27 +20,37 @@
 package com.raelity.jvi.core;
 
 
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
+//import junitparams.JUnitParamsRunner;
+//import junitparams.Parameters;
+//
+//import org.junit.After;
+//import org.junit.AfterClass;
+//import org.junit.Before;
+//import org.junit.BeforeClass;
+//import org.junit.Test;
+//import org.junit.runner.RunWith;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.raelity.jvi.lib.MySegment;
 import com.raelity.jvi.lib.StringSegment;
 
 import static java.text.CharacterIterator.DONE;
-import static org.junit.Assert.*;
+//import static org.junit.Assert.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 /**
  *
  * @author err
  */
-@RunWith(JUnitParamsRunner.class)
+//@RunWith(JUnitParamsRunner.class)
 public class MiscTest
 {
 
@@ -67,22 +77,22 @@ public MiscTest()
     subseq = "normal";
 }
 
-@BeforeClass
+@BeforeAll
 public static void setUpClass()
 {
 }
 
-@AfterClass
+@AfterAll
 public static void tearDownClass()
 {
 }
 
-@Before
+@BeforeEach
 public void setUp()
 {
 }
 
-@After
+@AfterEach
 public void tearDown()
 {
 }
@@ -132,14 +142,13 @@ MySegment getSegment(String testChars)
     return seg;
 }
 
-private Object[] stringNonWhite() {
-    // the array is the position of non-white, last is the "terminator"
-    return new Object[] {
-        new Object[]{"a b"       , new int[]{0,2,3}},
-        new Object[]{" a b "     , new int[]{1,3,5}},
-        new Object[]{"  a   b   ", new int[]{2,6,10}},
-        //            0123456789
-    };
+static Stream<Arguments> stringNonWhite()
+{
+    return Stream.of(
+        arguments("a b"       , new int[]{0,2,3}),
+        arguments(" a b "     , new int[]{1,3,5}),
+        arguments("  a   b   ", new int[]{2,6,10})
+    );
 }
 
 // position of non-white characters/end; offsets into stop
@@ -150,8 +159,8 @@ private static final int POS3 = 2;
 /**
  * Test of skipwhite method, of class Misc.
  */
-@Test
-@Parameters(method = "stringNonWhite")
+@ParameterizedTest
+@MethodSource("stringNonWhite")
 @SuppressWarnings("UseOfSystemOutOrSystemErr")
 public void testSkipwhite_CharacterIterator(String input, int[] stop)
 {
@@ -194,8 +203,8 @@ public void testSkipwhite_CharacterIterator(String input, int[] stop)
 /**
  * Test of skipwhite method, of class Misc.
  */
-@Test
-@Parameters(method = "stringNonWhite")
+@ParameterizedTest
+@MethodSource("stringNonWhite")
 @SuppressWarnings("UseOfSystemOutOrSystemErr")
 public void testSkipwhite_CharSequence_int(String input, int[] stop)
 {

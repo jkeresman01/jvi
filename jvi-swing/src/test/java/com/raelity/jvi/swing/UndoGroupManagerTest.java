@@ -31,13 +31,8 @@ import javax.swing.text.StyledDocument;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -50,28 +45,32 @@ public class UndoGroupManagerTest {
     {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception
     {
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Exception
     {
     }
 
     Support support;
 
-    @Before
+    @BeforeEach
     public void setUp()
     {
         support = new Support();
         enableWarning();
     }
 
-    @After
+    @AfterEach
     public void tearDown()
     {
+    }
+
+    void assertEqualsX(String msg, String expect, String result) {
+        assertEquals(expect, result, msg);
     }
 
     // could install a logger "Handler" and test the warning only when
@@ -129,6 +128,10 @@ public class UndoGroupManagerTest {
         return support.getUndoRedo();
     }
 
+    //private void assertFalse(String s, Object o1, Object o2) {}
+    //private void assertFalse(Object o1, String s) {}
+    //private void assertTrue(Object o1, String s) {}
+    //private void assertFalse(String s, boolean o1, boolean o2) {}
 
     @Test
     public void testTrivialChunk() throws Exception {
@@ -143,13 +146,13 @@ public class UndoGroupManagerTest {
         d.insertString(d.getLength(), "b", null);
         endChunk(d);
 
-        assertEquals("data", "ab", d.getText(0, d.getLength()));
+        assertEqualsX("data", "ab", d.getText(0, d.getLength()));
 
         ur().undo();
-        assertEquals("after undo data", "", d.getText(0, d.getLength()));
+        assertEqualsX("after undo data", "", d.getText(0, d.getLength()));
 
         ur().redo();
-        assertEquals("after redo data", "ab", d.getText(0, d.getLength()));
+        assertEqualsX("after redo data", "ab", d.getText(0, d.getLength()));
     }
 
     @Test
@@ -157,37 +160,37 @@ public class UndoGroupManagerTest {
         content = "";
         StyledDocument d = support.openDocument();
         ///// assertFalse("initially: not modified", support.isModified());
-        assertFalse("initially: no undo", ur().canUndo());
-        assertFalse("initially: no redo", ur().canRedo());
+        assertFalse(ur().canUndo(), "initially: no undo");
+        assertFalse(ur().canRedo(), "initially: no redo");
 
         beginChunk(d);
         ///// assertFalse("start chunk: not modified", support.isModified());
-        assertFalse("start chunk: no undo", ur().canUndo());
-        assertFalse("start chunk: no redo", ur().canRedo());
+        assertFalse(ur().canUndo(), "start chunk: no undo");
+        assertFalse(ur().canRedo(), "start chunk: no redo");
 
         d.insertString(d.getLength(), "a", null);
         ///// assertTrue("insert: modified", support.isModified());
-        assertTrue("insert: can undo", ur().canUndo());
-        assertFalse("insert: no redo", ur().canRedo());
+        assertTrue(ur().canUndo(), "insert: can undo");
+        assertFalse(ur().canRedo(), "insert: no redo");
 
         d.insertString(d.getLength(), "b", null);
         endChunk(d);
-        assertEquals("chunk: data", "ab", d.getText(0, d.getLength()));
+        assertEqualsX("chunk: data", "ab", d.getText(0, d.getLength()));
         ///// assertTrue("endChunk: modified", support.isModified());
-        assertTrue("endChunk: can undo", ur().canUndo());
-        assertFalse("endChunk: no redo", ur().canRedo());
+        assertTrue(ur().canUndo(), "endChunk: can undo");
+        assertFalse(ur().canRedo(), "endChunk: no redo");
 
         ur().undo();
-        assertEquals("after undo: data", "", d.getText(0, d.getLength()));
+        assertEqualsX("after undo: data", "", d.getText(0, d.getLength()));
         ///// assertFalse("undo: not modified", support.isModified());
-        assertFalse("undo: no undo", ur().canUndo());
-        assertTrue("undo: can redo", ur().canRedo());
+        assertFalse(ur().canUndo(), "undo: no undo");
+        assertTrue(ur().canRedo(), "undo: can redo");
 
         ur().redo();
-        assertEquals("after redo: data", "ab", d.getText(0, d.getLength()));
+        assertEqualsX("after redo: data", "ab", d.getText(0, d.getLength()));
         ///// assertTrue("redo: modified", support.isModified());
-        assertTrue("redo: can undo", ur().canUndo());
-        assertFalse("redo: no redo", ur().canRedo());
+        assertTrue(ur().canUndo(), "redo: can undo");
+        assertFalse(ur().canRedo(), "redo: no redo");
     }
 
     /** this also tests mixing regular and chunks */
@@ -202,36 +205,36 @@ public class UndoGroupManagerTest {
         d.insertString(d.getLength(), "b", null);
 
         endChunk(d);
-        assertEquals("chunk: data", "ab", d.getText(0, d.getLength()));
+        assertEqualsX("chunk: data", "ab", d.getText(0, d.getLength()));
 
         disableWarning();
         endChunk(d);
         endChunk(d);
 
-        assertEquals("extraEnd: data", "ab", d.getText(0, d.getLength()));
+        assertEqualsX("extraEnd: data", "ab", d.getText(0, d.getLength()));
         ///// assertTrue("extraEnd: modified", support.isModified());
-        assertTrue("extraEnd: can undo", ur().canUndo());
-        assertFalse("extraEnd: no redo", ur().canRedo());
+        assertTrue(ur().canUndo(), "extraEnd: can undo");
+        assertFalse(ur().canRedo(), "extraEnd: no redo");
 
         d.insertString(d.getLength(), "c", null);
         d.insertString(d.getLength(), "d", null);
         endChunk(d);
-        assertEquals("extraEnd2: data", "abcd", d.getText(0, d.getLength()));
+        assertEqualsX("extraEnd2: data", "abcd", d.getText(0, d.getLength()));
         ur().undo();
         endChunk(d);
-        assertEquals("undo1: data", "abc", d.getText(0, d.getLength()));
+        assertEqualsX("undo1: data", "abc", d.getText(0, d.getLength()));
         ur().undo();
-        assertEquals("undo2: data", "ab", d.getText(0, d.getLength()));
+        assertEqualsX("undo2: data", "ab", d.getText(0, d.getLength()));
         ur().undo();
         endChunk(d);
-        assertEquals("undo3: data", "", d.getText(0, d.getLength()));
+        assertEqualsX("undo3: data", "", d.getText(0, d.getLength()));
         ur().redo();
-        assertEquals("redo1: data", "ab", d.getText(0, d.getLength()));
+        assertEqualsX("redo1: data", "ab", d.getText(0, d.getLength()));
         ur().redo();
         endChunk(d);
-        assertEquals("redo2: data", "abc", d.getText(0, d.getLength()));
+        assertEqualsX("redo2: data", "abc", d.getText(0, d.getLength()));
         ur().redo();
-        assertEquals("redo3: data", "abcd", d.getText(0, d.getLength()));
+        assertEqualsX("redo3: data", "abcd", d.getText(0, d.getLength()));
         enableWarning();
     }
 
@@ -243,28 +246,28 @@ public class UndoGroupManagerTest {
         d.insertString(d.getLength(), "a", null);
         d.insertString(d.getLength(), "b", null);
 
-        assertEquals("before undo: data", "ab", d.getText(0, d.getLength()));
+        assertEqualsX("before undo: data", "ab", d.getText(0, d.getLength()));
 
         ur().undo();
 
         // These asserts assume that an undo in the middle of a chunk
         // is an undo on the whole chunk so far.
 
-        assertEquals("after undo: data", "", d.getText(0, d.getLength()));
+        assertEqualsX("after undo: data", "", d.getText(0, d.getLength()));
         ///// assertFalse("after undo: not modified", support.isModified());
-        assertFalse("after undo: no undo", ur().canUndo());
-        assertTrue("after undo: can redo", ur().canRedo());
+        assertFalse(ur().canUndo(), "after undo: no undo");
+        assertTrue(ur().canRedo(), "after undo: can redo");
 
         // note still in the chunk.
 
         ur().redo();
-        assertEquals("after redo: data", "ab", d.getText(0, d.getLength()));
+        assertEqualsX("after redo: data", "ab", d.getText(0, d.getLength()));
         ///// assertTrue("after redo: modified", support.isModified());
-        assertTrue("after redo: can undo", ur().canUndo());
-        assertFalse("after redo: no redo", ur().canRedo());
+        assertTrue(ur().canUndo(), "after redo: can undo");
+        assertFalse(ur().canRedo(), "after redo: no redo");
 
         ur().undo();
-        assertEquals("after undo: data", "", d.getText(0, d.getLength()));
+        assertEqualsX("after undo: data", "", d.getText(0, d.getLength()));
 
         // note still in the chunk.
 
@@ -272,17 +275,17 @@ public class UndoGroupManagerTest {
         d.insertString(d.getLength(), "d", null);
         endChunk(d);
 
-        assertEquals("after endChunk: data", "cd", d.getText(0, d.getLength()));
+        assertEqualsX("after endChunk: data", "cd", d.getText(0, d.getLength()));
         ///// assertTrue("after endChunk: modified", support.isModified());
-        assertTrue("after endChunk: can undo", ur().canUndo());
-        assertFalse("after endChunk: no redo", ur().canRedo());
+        assertTrue(ur().canUndo(), "after endChunk: can undo");
+        assertFalse(ur().canRedo(), "after endChunk: no redo");
 
 
         ur().undo();
-        assertEquals("undo after endChunk: data", "", d.getText(0, d.getLength()));
+        assertEqualsX("undo after endChunk: data", "", d.getText(0, d.getLength()));
         ///// assertFalse("undo after endChunk: not modified", support.isModified());
-        assertFalse("undo after endChunk: no undo", ur().canUndo());
-        assertTrue("undo after endChunk: can redo", ur().canRedo());
+        assertFalse(ur().canUndo(), "undo after endChunk: no undo");
+        assertTrue(ur().canRedo(), "undo after endChunk: can redo");
     }
 
     // saveDocument NOT IMPLEMENTED
@@ -295,26 +298,26 @@ public class UndoGroupManagerTest {
 
         support.saveDocument (); // creates a separate undoable chunk
         ///// assertFalse("save: not modified", support.isModified());
-        assertTrue("save: can undo", ur().canUndo());
-        assertFalse("save: no redo", ur().canRedo());
+        assertTrue(ur().canUndo(), "save: can undo");
+        assertFalse(ur().canRedo(), "save: no redo");
 
         d.insertString(d.getLength(), "c", null);
         d.insertString(d.getLength(), "d", null);
         endChunk(d);
 
-        assertEquals("insert, after save: data", "abcd", d.getText(0, d.getLength()));
+        assertEqualsX("insert, after save: data", "abcd", d.getText(0, d.getLength()));
         ///// assertTrue("insert, after save: modified", support.isModified());
-        assertTrue("insert, after save: can undo", ur().canUndo());
-        assertFalse("insert, after save: no redo", ur().canRedo());
+        assertTrue(ur().canUndo(), "insert, after save: can undo");
+        assertFalse(ur().canRedo(), "insert, after save: no redo");
 
         ur().undo();
-        assertEquals("undo, at save: data", "ab", d.getText(0, d.getLength()));
+        assertEqualsX("undo, at save: data", "ab", d.getText(0, d.getLength()));
         ///// assertFalse("undo, at save: not modified", support.isModified());
-        assertTrue("undo, at save: can undo", ur().canUndo());
-        assertTrue("undo, at save: can redo", ur().canRedo());
+        assertTrue(ur().canUndo(), "undo, at save: can undo");
+        assertTrue(ur().canRedo(), "undo, at save: can redo");
 
         ur().undo();
-        assertEquals("undo, before save: data", "", d.getText(0, d.getLength()));
+        assertEqualsX("undo, before save: data", "", d.getText(0, d.getLength()));
 
         if(doFailCase) {
             // ****************************************************************
@@ -323,14 +326,14 @@ public class UndoGroupManagerTest {
             // ****************************************************************
         }
 
-        assertFalse("undo, before save: can undo", ur().canUndo());
-        assertTrue("undo, before save: can redo", ur().canRedo());
+        assertFalse(ur().canUndo(), "undo, before save: can undo");
+        assertTrue(ur().canRedo(), "undo, before save: can redo");
 
         ur().redo();
-        assertEquals("redo, at save: data", "ab", d.getText(0, d.getLength()));
+        assertEqualsX("redo, at save: data", "ab", d.getText(0, d.getLength()));
         ///// assertFalse("redo, at save: not modified", support.isModified());
-        assertTrue("redo, at save: can undo", ur().canUndo());
-        assertTrue("redo, at save: can redo", ur().canRedo());
+        assertTrue(ur().canUndo(), "redo, at save: can undo");
+        assertTrue(ur().canRedo(), "redo, at save: can redo");
     }
 
     // saveDocument NOT IMPLEMENTED
@@ -364,17 +367,17 @@ public class UndoGroupManagerTest {
 
         endChunk(d);
 
-        assertEquals("data", "abcdef", d.getText(0, d.getLength()));
+        assertEqualsX("data", "abcdef", d.getText(0, d.getLength()));
 
         // following fails if nesting not supported
         ur().undo();
-        assertEquals("undo1", "abcd", d.getText(0, d.getLength()));
+        assertEqualsX("undo1", "abcd", d.getText(0, d.getLength()));
 
         ur().undo();
-        assertEquals("undo2", "ab", d.getText(0, d.getLength()));
+        assertEqualsX("undo2", "ab", d.getText(0, d.getLength()));
 
         ur().undo();
-        assertEquals("undo3", "", d.getText(0, d.getLength()));
+        assertEqualsX("undo3", "", d.getText(0, d.getLength()));
     }
 
     @Test
@@ -394,10 +397,10 @@ public class UndoGroupManagerTest {
 
         endChunk(d);
 
-        assertEquals("data", "abef", d.getText(0, d.getLength()));
+        assertEqualsX("data", "abef", d.getText(0, d.getLength()));
 
         ur().undo();
-        assertEquals("undo3", "", d.getText(0, d.getLength()));
+        assertEqualsX("undo3", "", d.getText(0, d.getLength()));
     }
 
     @Test
@@ -421,10 +424,10 @@ public class UndoGroupManagerTest {
 
         endChunk(d);
 
-        assertEquals("data", "abef", d.getText(0, d.getLength()));
+        assertEqualsX("data", "abef", d.getText(0, d.getLength()));
 
         ur().undo();
-        assertEquals("undo3", "", d.getText(0, d.getLength()));
+        assertEqualsX("undo3", "", d.getText(0, d.getLength()));
     }
 
     @Test
@@ -465,17 +468,17 @@ public class UndoGroupManagerTest {
 
         endChunk(d);
 
-        assertEquals("data", "abcdefg", d.getText(0, d.getLength()));
+        assertEqualsX("data", "abcdefg", d.getText(0, d.getLength()));
 
         // following fails if nesting not supported
         ur().undo();
-        assertEquals("undo1", "abcd", d.getText(0, d.getLength()));
+        assertEqualsX("undo1", "abcd", d.getText(0, d.getLength()));
 
         ur().undo();
-        assertEquals("undo2", "ab", d.getText(0, d.getLength()));
+        assertEqualsX("undo2", "ab", d.getText(0, d.getLength()));
 
         ur().undo();
-        assertEquals("undo3", "", d.getText(0, d.getLength()));
+        assertEqualsX("undo3", "", d.getText(0, d.getLength()));
     }
 
     @Test
@@ -498,17 +501,17 @@ public class UndoGroupManagerTest {
 
         endChunk(d);
 
-        assertEquals("data", "abcdef", d.getText(0, d.getLength()));
+        assertEqualsX("data", "abcdef", d.getText(0, d.getLength()));
 
         // following fails if nesting not supported
         ur().undo();
-        assertEquals("undo1", "abcd", d.getText(0, d.getLength()));
+        assertEqualsX("undo1", "abcd", d.getText(0, d.getLength()));
 
         ur().undo();
-        assertEquals("undo2", "ab", d.getText(0, d.getLength()));
+        assertEqualsX("undo2", "ab", d.getText(0, d.getLength()));
 
         ur().undo();
-        assertEquals("undo3", "", d.getText(0, d.getLength()));
+        assertEqualsX("undo3", "", d.getText(0, d.getLength()));
     }
 
     @Test
@@ -522,11 +525,11 @@ public class UndoGroupManagerTest {
         d.insertString(d.getLength(), "b", null);
         endChunk(d);
 
-        assertEquals("data", "ab", d.getText(0, d.getLength()));
+        assertEqualsX("data", "ab", d.getText(0, d.getLength()));
 
         ur().undo();
         ur().undo();
-        assertEquals("after undo data", "", d.getText(0, d.getLength()));
+        assertEqualsX("after undo data", "", d.getText(0, d.getLength()));
 
         // do the same steps, this tests that the CommitGroupEdit,
         // e.g. BEGIN_COMMIT_GROUP, can be reused. The re-use is
@@ -537,11 +540,11 @@ public class UndoGroupManagerTest {
         d.insertString(d.getLength(), "b", null);
         endChunk(d);
 
-        assertEquals("data", "ab", d.getText(0, d.getLength()));
+        assertEqualsX("data", "ab", d.getText(0, d.getLength()));
 
         ur().undo();
         ur().undo();
-        assertEquals("after undo data", "", d.getText(0, d.getLength()));
+        assertEqualsX("after undo data", "", d.getText(0, d.getLength()));
     }
 
     static class Support {

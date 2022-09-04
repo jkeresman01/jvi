@@ -19,61 +19,70 @@
 
 package com.raelity.jvi.lib;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
-
 import static java.text.CharacterIterator.DONE;
-import static org.junit.Assert.*;
+
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
  * @author err
  */
-@RunWith(Parameterized.class)
+//@RunWith(Parameterized.class)
+@Disabled("")
 public class MySegmentTest
 {
 
 String testType;
 String subseq;
-private static final String  MY_SEG = "MySegment";
-private static final String  STR_SEG = "StringSegment";
+static final String  MY_SEG = "MySegment";
+static final String  STR_SEG = "StringSegment";
 private static final String DEF = "0123456789";
 
-@Parameters(name = "{0}/{1}")
+//@Parameters(name = "{0}/{1}")
 public static Object[][] data() {
     return new Object[][] {
-        {MY_SEG, "normal"}, {STR_SEG, "normal"},
-        {MY_SEG, "subseq"}, {STR_SEG, "subseq"},
+        {MY_SEG, "normal"},
+        {STR_SEG, "normal"},
+        {MY_SEG, "subseq"},
+        {STR_SEG, "subseq"},
     };
 }
+
+void reportTest(String test)
+{
+    System.out.println(testType + "-" + subseq + ": " + test);
+}
+
+@SuppressWarnings("UseOfSystemOutOrSystemErr")
+//public MySegmentTest()
+//{
+//    this.testType = MY_SEG;
+//    this.subseq = "normal";
+//    System.err.println(testType + ", " + subseq);
+//}
 public MySegmentTest(String testType, String subseq)
 {
     this.testType = testType;
     this.subseq = subseq;
 }
 
-@BeforeClass
+@BeforeAll
 public static void setUpClass()
 {
 }
 
-@AfterClass
+@AfterAll
 public static void tearDownClass()
 {
 }
 
-@Before
+@BeforeEach
 public void setUp()
 {
 }
 
-@After
+@AfterEach
 public void tearDown()
 {
 }
@@ -123,7 +132,7 @@ MySegment getSegment()
 @Test
 public void testToString()
 {
-    System.out.println("toString");
+    reportTest("toString");
     MySegment instance = getSegment();
     String expResult = base;
     String result = instance.toString();
@@ -136,7 +145,7 @@ public void testToString()
 @Test
 public void testSubstring()
 {
-    System.out.println("substring");
+    reportTest("substring");
     int start = 2;
     int end = 4;
     MySegment instance = getSegment();
@@ -151,7 +160,7 @@ public void testSubstring()
 @Test
 public void testFirst()
 {
-    System.out.println("first");
+    reportTest("first");
     MySegment instance = getSegment();
     char expResult = base.charAt(0);
     char result = instance.first();
@@ -167,7 +176,7 @@ public void testFirst()
 @Test
 public void testLast()
 {
-    System.out.println("last");
+    reportTest("last");
     MySegment instance = getSegment();
     char expResult = base.charAt(base.length() - 1);
     char result = instance.last();
@@ -191,7 +200,7 @@ public void testLast()
 @Test
 public void testCurrent()
 {
-    System.out.println("current");
+    reportTest("current");
     MySegment instance = getSegment();
     char expResult = base.charAt(0);
     char result = instance.current();
@@ -214,7 +223,7 @@ public void testCurrent()
 @Test
 public void testNext()
 {
-    System.out.println("next");
+    reportTest("next");
     MySegment instance = getSegment();
     char expResult = base.charAt(1);
     char result = instance.next();
@@ -235,7 +244,7 @@ public void testNext()
 @Test
 public void testPrevious()
 {
-    System.out.println("previous");
+    reportTest("previous");
     MySegment instance = getSegment();
     char expResult = doneChar;
     char result = instance.previous();
@@ -261,7 +270,7 @@ public void testPrevious()
 @Test
 public void testSetIndex()
 {
-    System.out.println("setIndex");
+    reportTest("setIndex");
     MySegment instance = getSegment();
 
     char expResult = doneChar;
@@ -280,7 +289,7 @@ public void testSetIndex()
 @Test
 public void testGetEndIndex()
 {
-    System.out.println("getEndIndex");
+    reportTest("getEndIndex");
     MySegment instance = getSegment();
     int expResult =  offset + count;
     int result = instance.getEndIndex();
@@ -295,7 +304,7 @@ public void testGetEndIndex()
 @Test
 public void testCharAt()
 {
-    System.out.println("charAt");
+    reportTest("charAt");
     int index = 0;
     MySegment instance = getSegment();
     char expResult = base.charAt(0);
@@ -334,7 +343,7 @@ public void testCharAt()
 @Test
 public void testLength()
 {
-    System.out.println("length");
+    reportTest("length");
     MySegment instance = getSegment();
     int expResult = base.length();
     int result = instance.length();
@@ -347,7 +356,7 @@ public void testLength()
 @Test
 public void testAtEnd()
 {
-    System.out.println("atEnd");
+    reportTest("atEnd");
     MySegment instance = getSegment();
     boolean expResult = false;
     boolean result = instance.atEnd();
@@ -372,7 +381,7 @@ public void testAtEnd()
 @Test
 public void testGetIndex()
 {
-    System.out.println("getIndex");
+    reportTest("getIndex");
     MySegment instance = getSegment();
     int expResult = offset;
     int result = instance.getIndex();
@@ -405,7 +414,7 @@ public void testGetIndex()
 @Test
 public void testGetPtr()
 {
-    System.out.println("getPtr");
+    reportTest("getPtr");
     MySegment instance = getSegment();
     int ptr = instance.getBeginIndex();
 
@@ -443,7 +452,7 @@ public void testGetPtr()
 @Test
 public void testFetch()
 {
-    System.out.println("fetch");
+    reportTest("fetch");
     MySegment instance = getSegment();
 
     // first char
@@ -486,7 +495,7 @@ public void testFetch()
 // @Test
 // public void testGetBeginIndex()
 // {
-//     System.out.println("getBeginIndex");
+//     reportTest("getBeginIndex");
 //     MySegment instance = getSegment();
 //     int expResult = 0;
 //     int result = instance.getBeginIndex();
@@ -501,7 +510,7 @@ public void testFetch()
 // @Test
 // public void testClone()
 // {
-//     System.out.println("clone");
+//     reportTest("clone");
 //     MySegment instance = getSegment();
 //     Object expResult = null;
 //     Object result = instance.clone();

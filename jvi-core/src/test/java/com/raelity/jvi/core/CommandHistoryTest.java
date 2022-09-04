@@ -23,28 +23,36 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.stream.Stream;
 
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
+//import junitparams.JUnitParamsRunner;
+//import junitparams.Parameters;
+//
+//import org.junit.After;
+//import org.junit.AfterClass;
+//import org.junit.Before;
+//import org.junit.BeforeClass;
+//import org.junit.Test;
+//import org.junit.runner.RunWith;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.raelity.jvi.core.CommandHistory.HistEntry;
 import com.raelity.jvi.core.CommandHistory.HistoryContext;
 import com.raelity.jvi.core.CommandHistory.InitialHistoryItem;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
+
+//import static org.junit.Assert.*;
 
 /**
  *
  * @author err
  */
-@RunWith(JUnitParamsRunner.class)
 public class CommandHistoryTest
 {
 
@@ -52,22 +60,25 @@ public CommandHistoryTest()
 {
 }
 
-@BeforeClass
+@BeforeAll
 public static void setUpClass()
 {
 }
 
-@AfterClass
+@AfterAll
 public static void tearDownClass()
 {
 }
 
-@Before
+@BeforeEach
 public void setUp()
 {
+    S0 = _S0.clone();
+    S1 = _S1.clone();
+    S2 = _S2.clone();
 }
 
-@After
+@AfterEach
 public void tearDown()
 {
 }
@@ -100,31 +111,35 @@ HistoryContext getHistoryContext(String[] l)
     return getHistoryContext(Arrays.asList(l));
 }
 
-String[] S0 = new String[] {
+String[] S0;
+String[] S1;
+String[] S2;
+
+static String[] _S0 = new String[] {
     ""
 };
 
-String[] S1 = new String[] {
+static String[] _S1 = new String[] {
     "one"
 };
 
-String[] S2 = new String[] {
+static String[] _S2 = new String[] {
     "one",
     "two",
     "three",
     "four",
 };
-Object[] initialHistory()
+static Stream<Arguments> initialHistory()
 {
-    return new Object[] {
-        S0,
-        S1,
-        S2,
-    };
+    return Stream.of(
+        arguments((Object)_S0),
+        arguments((Object)_S1),
+        arguments((Object)_S2)
+    );
 }
 
-@Test
-@Parameters(method = "initialHistory")
+@ParameterizedTest
+@MethodSource("initialHistory")
 public void testHistoryContext1(String[] l)
 {
     if(l[0].isEmpty())
@@ -182,8 +197,8 @@ public void testHistoryContext1(String[] l)
     }
 }
 
-@Test
-@Parameters(method = "initialHistory")
+@ParameterizedTest
+@MethodSource("initialHistory")
 public void testHistoryContextIndex(String[] l)
 {
     if(l[0].isEmpty())
@@ -267,7 +282,7 @@ public void testHistoryContextIndex(String[] l)
 public void testHistoryContextPush()
 {
     String[] l = S2;
-    assertEquals("Wrong Size Initialization", S2.length >= 4, true);
+    assertEquals(S2.length >= 4, true, "Wrong Size Initialization");
     HistoryContext ctx = getHistoryContext(l);
     ctx.init();
     int lastPushCount = ctx.test_next().getIndex();
@@ -295,7 +310,7 @@ public void testHistoryContextPush()
 public void testHistoryContextPushNew()
 {
     String[] l = S2;
-    assertEquals("Wrong Size Initialization", S2.length >= 4, true);
+    assertEquals(S2.length >= 4, true, "Wrong Size Initialization");
     HistoryContext ctx = getHistoryContext(l);
     ctx.init();
     int lastPushCount = ctx.test_next().getIndex();
@@ -327,7 +342,7 @@ public void testHistoryContextPushNew()
     assertEquals(expResult, result);
 }
 
-List<String> F1_INIT_HIST = Arrays.asList(new String[] {
+static List<String> F1_INIT_HIST = Arrays.asList(new String[] {
     "one",
     "two",
     "pat1",
@@ -336,14 +351,14 @@ List<String> F1_INIT_HIST = Arrays.asList(new String[] {
     "four",
 });
 
-String F1_FILTER = "pat";
+static String F1_FILTER = "pat";
 
-List<String> F1_FILT_HIST = Arrays.asList(new String[] {
+static List<String> F1_FILT_HIST = Arrays.asList(new String[] {
     "pat1",
     "pat2",
 });
 
-List<String> F2_INIT_HIST = Arrays.asList(new String[] {
+static List<String> F2_INIT_HIST = Arrays.asList(new String[] {
     "pat0",
     "one",
     "two",
@@ -355,9 +370,9 @@ List<String> F2_INIT_HIST = Arrays.asList(new String[] {
     "pat3",
 });
 
-String F2_FILTER = "pa";
+static String F2_FILTER = "pa";
 
-List<String> F2_FILT_HIST = Arrays.asList(new String[] {
+static List<String> F2_FILT_HIST = Arrays.asList(new String[] {
     "pat0",
     "pat1",
     "pat2",
@@ -368,16 +383,16 @@ List<String> F2_FILT_HIST = Arrays.asList(new String[] {
 // _FILT_HIST is the filtered list
 // _FILTER is the filter,
 
-Object[] filterHistory()
+static Stream<Arguments> filterHistory()
 {
-    return new Object[] {
-        new Object[] {F1_INIT_HIST, F1_FILT_HIST, F1_FILTER},
-        new Object[] {F2_INIT_HIST, F2_FILT_HIST, F2_FILTER},
-    };
+    return Stream.of(
+        arguments(F1_INIT_HIST, F1_FILT_HIST, F1_FILTER),
+        arguments(F2_INIT_HIST, F2_FILT_HIST, F2_FILTER)
+    );
 }
 
-@Test
-@Parameters(method = "filterHistory")
+@ParameterizedTest
+@MethodSource("filterHistory")
 public void testFilter(List<String> initHist, List<String> filtHist, String filter)
 {
     String expResult, result;

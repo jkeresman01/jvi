@@ -25,20 +25,13 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-//import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.*;
 import org.openide.util.Exceptions;
 
 import com.raelity.jvi.lib.*;
 import com.raelity.jvi.lib.StringSegment;
 
-import static org.junit.Assert.*;
-//import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import static com.raelity.jvi.core.VimPath.*;
 
@@ -54,15 +47,13 @@ public VimPathTest()
     //System.err.println("THIS IS A TEST IN FILEPATHTEST");
 }
 
-//@BeforeAll
-@BeforeClass
+@BeforeAll
 public static void setUpClass()
 {
     //System.err.println("THIS IS A TEST IN SETUPCLASS");
 }
 
-//@AfterAll
-@AfterClass
+@AfterAll
 public static void tearDownClass()
 {
 }
@@ -81,8 +72,7 @@ String initCurDir = "/tmp/xxx/randomdirTEST";
 String initHomeDir = "/tmp/roothome/homedirTEST";
 
 String saved_home_dir;
-//@BeforeEach
-@Before
+@BeforeEach
 public void setUp()
 {
     try {
@@ -102,8 +92,7 @@ public void setUp()
     }
 }
 
-//@AfterEach
-@After
+@AfterEach
 public void tearDown()
 {
     System.setProperty("user.home", saved_home_dir);
@@ -309,8 +298,7 @@ public void testModify_fname()
     if (curdir.equals(homedir)) {
         System.err.println("CWD equals HOME. Some things not tested");
     }
-    //assertNotEquals(curdir, homedir, "CWD equals HOME. Some things not tested");
-    assertNotEquals("CWD equals HOME. Some things not tested", curdir, homedir);
+    assertNotEquals(curdir, homedir, "CWD equals HOME. Some things not tested");
     
     path = getPath("a/b/c/d");
 
@@ -361,8 +349,7 @@ public void testModifyFilename_p()
     if (curdir.equals(homedir)) {
         System.err.println("CWD equals HOME. Some things not tested");
     }
-    //assertNotEquals(curdir, homedir, "CWD equals HOME. Some things not tested");
-    assertNotEquals("CWD equals HOME. Some things not tested", curdir, homedir);
+    assertNotEquals(curdir, homedir, "CWD equals HOME. Some things not tested");
     
     path = getPath("a/b/c/d");
 

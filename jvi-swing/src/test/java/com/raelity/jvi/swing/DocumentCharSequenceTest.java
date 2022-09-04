@@ -25,13 +25,8 @@ import java.util.logging.Logger;
 
 import javax.swing.text.BadLocationException;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -44,13 +39,13 @@ public class DocumentCharSequenceTest {
     public DocumentCharSequenceTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception
     {
         LOG.setLevel(Level.FINE);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Exception
     {
     }
@@ -75,12 +70,12 @@ public class DocumentCharSequenceTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         setUpDocument(true);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
     }
 
@@ -106,8 +101,7 @@ public class DocumentCharSequenceTest {
         for(int i = 0; i < len; i++) {
             sb.append(cs.charAt(i));
         }
-        assertEquals(String.format("(%d,%d)", offset, len),
-                     expRes, sb.toString());
+        assertEquals(expRes, sb.toString(), String.format("(%d,%d)", offset, len));
     }
 
     @Test
@@ -130,10 +124,8 @@ public class DocumentCharSequenceTest {
         for(int i = 0; i < len; i++) {
             sb.append(sub.charAt(i));
         }
-        assertEquals(String.format("(%d,%d)", start, len),
-                     expRes, sb.toString());
-        assertEquals(String.format("(%d,%d)", start, len),
-                     expRes, sub.toString());
+        assertEquals(expRes, sb.toString(), String.format("(%d,%d)", start, len));
+        assertEquals(expRes, sub.toString(), String.format("(%d,%d)", start, len));
         return sub;
     }
 
@@ -145,8 +137,8 @@ public class DocumentCharSequenceTest {
         int end = 0;
         CharSequence cs = new DocumentCharSequence(
                 doc, 0, doc.getLength());
-        assertEquals(String.format("(%d,%d)", 0, doc.getLength()),
-                     baseString, cs.toString());
+        assertEquals(baseString, cs.toString(),
+                     String.format("(%d,%d)", 0, doc.getLength()));
         cs = testSubSeq(cs.toString(), cs, 6, 24);
         cs = testSubSeq(cs.toString(), cs, 1, 17);
     }

@@ -22,13 +22,8 @@ package com.raelity.jvi.lib;
 import java.text.StringCharacterIterator;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -41,22 +36,22 @@ public TextUtilTest()
 {
 }
 
-@BeforeClass
+@BeforeAll
 public static void setUpClass()
 {
 }
 
-@AfterClass
+@AfterAll
 public static void tearDownClass()
 {
 }
 
-@Before
+@BeforeEach
 public void setUp()
 {
 }
 
-@After
+@AfterEach
 public void tearDown()
 {
 }

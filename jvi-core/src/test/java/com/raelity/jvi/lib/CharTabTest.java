@@ -20,14 +20,8 @@
 
 package com.raelity.jvi.lib;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 /**
  *
  * @author Ernie Rael <err at raelity.com>
@@ -37,22 +31,22 @@ public class CharTabTest {
     public CharTabTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception
     {
         // setup the default IsWordC
     }
     
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Exception
     {
     }
     
-    @Before
+    @BeforeEach
     public void setUp() {
     }
     
-    @After
+    @AfterEach
     public void tearDown() {
     }
 
@@ -232,7 +226,7 @@ public class CharTabTest {
         CharTab ct = new CharTab();
         ct.init(t.getSpec());
         byte[] result = asArray(ct);
-        assertArrayEquals(t.getSpec(), expResult, result);
+        assertArrayEquals(expResult, result, t.getSpec());
     }
     
     @Test
