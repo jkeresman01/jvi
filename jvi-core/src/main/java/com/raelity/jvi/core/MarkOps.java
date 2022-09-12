@@ -94,7 +94,7 @@ class MarkOps
         @Override public int getOriginalColumnDelta() { return 0; }
         }
 
-    private static final char MQUOTE = '"';
+    public static final char MQUOTE = '"';
 
     private static PreferencesImportMonitor marksImportCheck;
     private static BufferMarksPersist.EventHandlers bufferMarkPersistINSTANCE;

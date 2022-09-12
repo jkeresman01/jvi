@@ -1,7 +1,7 @@
 
 === netbeans.conf
 
- -J-Dnetbeans.logger.console=true -J-Dcom.raelity.jvi.DEBUG=true -J-Dorg.netbeans.editor.caret.offset.level=FINE -J-Dorg.netbeans.modules.editor.completion.noTabCompletion=true -J-Dnb.FileChooser.useShellFolder=false -J-Dfile.encoding=UTF-8
+ -J-Dnetbeans.logger.console=true -J-Dcom.raelity.jvi.DEBUG=true -J-Dorg.netbeans.editor.caret.offset.level=FINE -J-Dorg.netbeans.modules.editor.completion.noTabCompletion=true -J-Dnb.FileChooser.useShellFolder=false -J-Dfile.encoding=UTF-8 -J-DNETBEANS_PREFERRED_SCREEN=2
 
 #####
  -J-Djava.awt.Window.locationByPlatform=true
@@ -20,3 +20,4 @@ ant -Dcluster.config=basic build-nozip
 
 
 ant -Dcluster.config=full -Dpermit.jdk9.builds=true
+vi: set tw=0:

@@ -329,7 +329,7 @@ public class OptUtil {
       else
         throw new IllegalArgumentException("option " + opt.getName());
 
-      G.dbgOptions().printf(() ->
+      G.dbgOptions().printf(FINE, () ->
               sf("Init G.%s to '%s'\n", vopt.getVarName(), opt.getValue()));
       return new OptionEvent.Global(opt.getName(), oldValue, opt.getValue());
     } catch(IllegalArgumentException | IllegalAccessException
@@ -348,7 +348,8 @@ public class OptUtil {
         // G should have something with the var name
         // and the types should match
         Option<?> opt = OptUtil.getOption(vopt.getOptName());
-        G.dbgOptions().println(() -> "VERIFY: " + vopt.getOptName());
+        G.dbgOptions().println(FINE, () -> "VERIFY: " + vopt.getOptName());
+        // TODO: check all the option types
         Field f = G.class.getDeclaredField(vopt.getVarName());
         if(f.getType() == int.class)
           opt.getInteger();
@@ -356,6 +357,8 @@ public class OptUtil {
           opt.getBoolean();
         else if(f.getType() == String.class)
           opt.getString();
+        else
+          G.dbgOptions().println(INFO, () -> "VERIFY: NOT CHECKED: " + vopt.getOptName());
       } catch(NoSuchFieldException | SecurityException ex) {
         Logger.getLogger(VimOption.class.getName()).log(SEVERE, null, ex);
       }
@@ -368,13 +371,13 @@ public class OptUtil {
     for(VimOption vopt : VimOption.getAll()) {
       hasSetCommand.add(vopt.getOptName());
     }
-    System.err.println("Checking for options without set command");
+    G.dbgOptions().println(CONFIG, "Checking for options without set command");
     for(Option<?> opt : getOptions()) {
       if(opt.getName().startsWith("viDbg"))
         continue;
       if(!hasSetCommand.contains(opt.getName())) {
-        System.err.println("    Option " + opt.getName() + ": NO SET COMMAND"
-                           + (opt.isHidden() ? " (HIDDEN)" : ""));
+        G.dbgOptions().println(CONFIG, () -> "    Option " + opt.getName()
+                + ": NO SET COMMAND" + (opt.isHidden() ? " (HIDDEN)" : ""));
       }
     }
   }
@@ -386,8 +389,8 @@ public class OptUtil {
     int i = 0;
     Throwable checkEx = ex;
     while(checkEx != null && i++ < 10) {
-      if(checkEx instanceof PropertyVetoException)
-        return (PropertyVetoException)checkEx;
+      if(checkEx instanceof PropertyVetoException cex)
+        return cex;
       checkEx = checkEx.getCause();
     }
     return null;

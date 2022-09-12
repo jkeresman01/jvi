@@ -278,6 +278,12 @@ public final class Options {
   }
 
   private static final String space4 = "\u00a0\u00a0\u00a0\u00a0";
+  /** work around frgaal bug: https://github.com/eppleton/frgaal/issues/8.
+   * Note this fails if line ended with '...\\', ie. wanted a '\' at the end.
+   */
+  private static String x(String s) {
+    return s.replace("\\\n", "");
+  }
 
   private static boolean ready = false;
   private static boolean didInit = false;
@@ -480,35 +486,34 @@ public final class Options {
     createEnumStringOption(commandEntryFrame , CEF_APP_MODAL,
             new String[] {CEF_APP_MODAL, CEF_DOC_MODAL, CEF_GLASS_PANE});
     setupOptionDesc(Category.PLATFORM, commandEntryFrame,
-            "command line modality",
-            "Modality for command/search entry windows.\n"
-            + "APPLICATION MODAL is recommended.\n"
-            + "NOTE: change takes affect after restart.\n\n"
-            + "This option is provided due to problems with"
-            + " dialog modality on some OS. The third option"
-            + " uses a non modal command line on a glass pane.");
+            "command line modality", x("""
+                Modality for command/search entry windows.
+                APPLICATION MODAL is recommended.
+                NOTE: change takes affect after restart.
+                
+                This option is provided due to problems with dialog \
+                modality on some OS. The third option uses a non modal \
+                command line on a glass pane."""));
     setExpertHidden(commandEntryFrame, true, false);
     
     createBooleanOption(autoPopupFN, true);
     setupOptionDesc(Category.PLATFORM, autoPopupFN,
-                            "\":e [#|fname]\" Completion Auto Popup",
-                "When doing \":\" command line entry, if \"e#\""
-                + " or \"e fNameChar\" is"
-                + " entered then automatically popup a file"
-                + " name completion window."
-                + "\n\nNOTE: Otherwise use Ctrl-D, and/or platform specific"
-                + " key sequence, to pop up the completion window."
-    );
+                    "\":e [#|fname]\" Completion Auto Popup", x("""
+              When doing ":" command line entry, if "e#" \
+              or "e fNameChar" is entered then automatically \
+              popup a file name completion window.
+
+              NOTE: Otherwise use Ctrl-D, and/or platform specific \
+              key sequence, to pop up the completion window."""));
     
     createBooleanOption(autoPopupCcName, true);
     setupOptionDesc(Category.PLATFORM, autoPopupCcName,
-                            "\":\" Command Completion Auto Popup",
-                "After doing \":\" for command line entry,"
-                + " automatically popup command"
-                + " name completion."
-                + "\n\nNOTE: Otherwise use Ctrl-D, and/or platform specific"
-                + " key sequence, to pop up the completion window."
-    );
+                            "\":\" Command Completion Auto Popup", x("""
+              After doing ":" for command line entry, automatically \
+              popup command name completion.
+
+              NOTE: Otherwise use Ctrl-D, and/or platform specific \
+              key sequence, to pop up the completion window."""));
     setExpertHidden(autoPopupCcName, false, false);
 
     createBooleanOption(coordSkip, true);

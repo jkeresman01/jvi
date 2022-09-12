@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,8 +43,11 @@ import com.raelity.jvi.manager.ViManager;
 import com.raelity.jvi.options.OptUtil;
 import com.raelity.jvi.lib.TextUtil;
 
+import static java.util.logging.Level.*;
+
 import static com.raelity.jvi.core.lib.Constants.*;
 import static com.raelity.jvi.core.lib.KeyDefs.*;
+import static com.raelity.jvi.lib.TextUtil.sf;
 import static com.raelity.jvi.manager.ViManager.eatme;
 
 /**
@@ -97,7 +99,7 @@ public final class Mappings {
             saveMappings(mapCommands);
         else
             Logger.getLogger(GetChar.class.getName())
-                    .log(Level.SEVERE, null, new Exception(emsg.getValue()));
+                    .log(SEVERE, null, new Exception(emsg.getValue()));
     }
 
     private void registerCommands()
@@ -195,19 +197,10 @@ public final class Mappings {
 
             if(s != null) {
                 switch (s) {
-                case "C":
-                case "c":
-                    modifiers |= CTRL;
-                    break;
-                case "S":
-                case "s":
-                    modifiers |= SHFT;
-                    break;
-                default:
-                    Logger.getLogger(GetChar.class.getName())
-                            .log(Level.SEVERE, null,
-                                    new Exception("unknown modifier: " + s));
-                    break;
+                case "C", "c" -> modifiers |= CTRL;
+                case "S", "s" -> modifiers |= SHFT;
+                default -> Logger.getLogger(GetChar.class.getName())
+                        .log(SEVERE, null, new Exception("unknown modifier: " + s));
                 }
                 if(isVIRT(c)) {
                     c |= (modifiers << MODIFIER_POSITION_SHIFT);
@@ -415,11 +408,11 @@ public final class Mappings {
 
         if(emsg.length() == initialEmsgs) {
             Mapping mapping = new Mapping(lhs, rhs, mode, maptype == 2);
-            Options.kd().println(() ->
+            Options.kd().println(CONFIG, () ->
                     "parseMapCommand: " + line + ": " + mapping);
             return mapping;
         } else {
-            Options.kd().printf("parseMapCommand: %s: error\n", line);
+            Options.kd().printf(SEVERE, "parseMapCommand: %s: error\n", line);
             return null;
         }
     }
@@ -596,7 +589,7 @@ public final class Mappings {
     private void putMapping(Mapping newMapping)
     {
         boolean unmap = newMapping.isUnmap;
-        Options.kd().printf(Level.FINER,
+        Options.kd().printf(FINER,
                       "putMapping(unmap %b): %s\n", unmap, newMapping);
 
         Character c = newMapping.lhs.charAt(0);
@@ -631,12 +624,13 @@ public final class Mappings {
                 int oldMode = oldMapping.mode;
                 int newMode = oldMapping.mode & ~newMapping.mode;
                 if(newMode == 0) {
-                    Options.kd().printf("putMapping: remove %s\n", oldMapping);
+                    Options.kd().printf(INFO, "putMapping: remove %s\n", oldMapping);
                     it.remove();
                 } else if(oldMode != newMode) {
                     oldMapping.mode = newMode;
-                    Options.kd().printf("putMapping: mode change:"
-                            + " %s (was %d)\n", oldMapping, oldMode);
+                    Options.kd().printf(INFO, () -> sf(
+                            "putMapping: mode change: %s (was %d)\n",
+                            oldMapping, oldMode));
                 }
             }
         }

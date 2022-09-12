@@ -107,7 +107,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("2.0.9");
+    public static final jViVersion version = new jViVersion("2.1.0.x1");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -157,6 +157,32 @@ final public class ViManager
 
     private static Boolean isDebugAtHome;
     public static boolean isDebugAtHome() {
+
+        // int i1 = 3;
+        // int a = switch (i1) {
+        // case 1 -> { yield 3; }
+        //   case 2 -> 4;
+        //     // negative integers
+        //   default -> 2;
+        // };
+
+        // Object o1 = 3;
+        // int b = switch (o1) {
+        //   case Integer i -> 3;
+        //   case String s -> 4;
+        //     // negative integers
+        //   default -> 2;
+        // };
+
+        //Object o2 = 3;
+        //int a = switch (o2) {
+        //  case Integer i when i >= 0 -> yield 3;
+        //    // positive integers
+        //  case Integer i -> yield 4;
+        //    // negative integers
+        //  default -> yield 2;
+        //};
+    
         if(isDebugAtHome == null) {
             isDebugAtHome = Boolean.getBoolean(DEBUG_AT_HOME);
             if(isDebugAtHome) {
@@ -274,10 +300,13 @@ final public class ViManager
         //100 - 
         //      GetChar - mappings
         //
+        G.dbg.println("jVi INIT: isDebugAtHome: " + isDebugAtHome());
+        int nInit = 0;
         for (ViInitialization i : Lookups.forPath("jVi/init")
                                         .lookupAll(ViInitialization.class)) {
-            if(isDebugAtHome())
-                G.dbg.println("INIT: " + i.getClass().getName());
+            //if(isDebugAtHome())
+                //G.dbg.println("INIT: " + i.getClass().getName());
+            G.dbg.println("jVi INIT: %2d - %s", ++nInit, i.getClass().getName());
             i.init();
         }
         if(isDebugAtHome()) {
