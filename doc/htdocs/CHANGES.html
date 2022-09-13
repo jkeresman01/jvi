@@ -73,6 +73,7 @@
    2.0.x: :cd, :pwd for :!cmd and :e ~/d/f. :e %:h:h/fname. All filename-modifiers.
           :cd and :e have Ctrl-D for path completion popup. :messages. 
           :e* Ctrl-D for closed files, repeat Ctrl-D for different sorting.
+          2 clipboards. clipboard option: unnamed,unnamedplus. viminfo options.
    1.6.x: Ctrl-R on command line. Visual mode and multiple views of a file.
           :tab* commands; magic option and \v,\m... for searching
           :history clickable output, 'history', history up/down arrows and matching
@@ -113,6 +114,11 @@
 </dl>
 -->
 
+<b>Version 2.0.11 - 2022/09/14</b><br/>
+Windows fixes: clipboard, :e*, :cd path handling<br/>
+<b>Version 2.0.10 - 2022/09/12</b><br/>
+Fix an exception on windows when closing a file.<br/>
+All Systems: make sure lastFPOS uses corect buffer.<br/>
 <b>Version 2.0.9 - 2022/09/03</b>
 <p>
   Since I was running on windows I didn't realize the clipboard handling was
@@ -206,6 +212,11 @@
   <dt>Bug fixes</dt>
   <dd>
     <ul>
+      <li>
+        <a target="_top" href="https://sourceforge.net/p/jvi/bugs/199/">
+        [#199] Error when closing editor window</a>
+        Windows only. Fixed in nbvi-2.0.10.
+      </li>
       <li>
         Sometimes the current directory was output as "?".
       </li>

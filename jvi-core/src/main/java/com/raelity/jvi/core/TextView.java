@@ -157,7 +157,7 @@ public abstract class TextView implements ViTextView
             dbgEditorActivation.println(INFO, () ->
                     sf("LFP: recordLastFPOS: saving_fpos: %s %s",
                        w_buffer.saving_fpos.toString(), toString()));
-            MarkOps.setmark(MarkOps.MQUOTE, 0);
+            MarkOps.setMarkLastFPOS(getBuffer());
         }
     }
 

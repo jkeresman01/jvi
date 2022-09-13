@@ -19,6 +19,7 @@
 
 package com.raelity.jvi.core;
 
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.text.CharacterIterator;
 import java.util.ArrayList;
@@ -110,6 +111,9 @@ private static PreferencesImportMonitor registersImportCheck;
       }
     }
     }
+
+
+static final boolean noStar = noStar();
     
 private static final String DATA = "data";
 private static final String TYPE = "type";
@@ -187,13 +191,16 @@ private static void write_viminfo_registers() {
 //   1..9 = number registers, for deletes
 // 10..35 = named registers
 //     36 = delete register (-)
-//     37 = Selection register (*).
-//     38 = Clipboard register (+).
+//     37 = Clipboard register (+).
+//     38 = Selection register (*).
 //
 static final int DELETION_REGISTER = 36;   // array index to yankreg
-static final int STAR_REGISTER = 37;  // array index to yankreg
-static final int PLUS_REGISTER = 38;  // array index to yankreg
-static final int LAST_REGISTER = PLUS_REGISTER;
+// NOTE: the following values come from JviClipboard
+static final int PLUS_REGISTER = PLUS.yank_reg_idx; // array index to yankreg
+static final int STAR_REGISTER = STAR.yank_reg_idx; // same as plus if no '*'
+
+static final int LAST_REGISTER = STAR_REGISTER;
+
 private static Yankreg y_current = null;
 private static Yankreg y_previous = null;
 private static boolean y_append;
@@ -1255,23 +1262,25 @@ public static int op_yank(OPARG oap, boolean deleting, boolean mess)
     // Also copy to the '*' register, in case auto-select is off.  But not when
     // 'clipboard' has "unnamedplus" and not "unnamed"; and not when
     // deleting and both "unnamedplus" and "unnamed".
-    if(clip_plus.avail && (isPlusRegister(curr)
-            || (!deleting && oap.regname == 0
-                && clip_unnamed_union.contains(CBU.UNNAMED_PLUS))))
-    {
-        if(!isPlusRegister(curr))
-            copy_yank_reg(y_regs.get(PLUS_REGISTER));
-        clip_plus.clip_gen_set_selection();
-        
-        if(!clip_autoselect_star
-                && !clip_autoselect_plus
-                && !(clip_unnamed_union.contains(CBU.UNNAMED_PLUS)
-                && clip_unnamed_union.size() == 1)
-                && !(deleting && clip_unnamed_union.equals(unnamed_all))
-                && !did_star
-                && isPlusRegister(curr)) {
-            copy_yank_reg(y_regs.get(STAR_REGISTER));
-            clip_star.clip_gen_set_selection();
+    if(!noStar) {
+        if(clip_plus.avail && (isPlusRegister(curr)
+                || (!deleting && oap.regname == 0
+                    && clip_unnamed_union.contains(CBU.UNNAMED_PLUS))))
+        {
+            if(!isPlusRegister(curr))
+                copy_yank_reg(y_regs.get(PLUS_REGISTER));
+            clip_plus.clip_gen_set_selection();
+            
+            if(!clip_autoselect_star
+                    && !clip_autoselect_plus
+                    && !(clip_unnamed_union.contains(CBU.UNNAMED_PLUS)
+                    && clip_unnamed_union.size() == 1)
+                    && !(deleting && clip_unnamed_union.equals(unnamed_all))
+                    && !did_star
+                    && isPlusRegister(curr)) {
+                copy_yank_reg(y_regs.get(STAR_REGISTER));
+                clip_star.clip_gen_set_selection();
+            }
         }
     }
     return OK;

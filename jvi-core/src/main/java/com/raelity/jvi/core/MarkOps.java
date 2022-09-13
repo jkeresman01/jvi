@@ -94,7 +94,11 @@ class MarkOps
         @Override public int getOriginalColumnDelta() { return 0; }
         }
 
-    public static final char MQUOTE = '"';
+    // '"' is not legal in a filename on windows, so use "@"
+    // This name translation is at the lowest level, so almost
+    // all the code uses MQUOTE which is Vim's name.
+    private static final char MQUOTE = '"';
+    private static final String PREFQUOTE = "@";
 
     private static PreferencesImportMonitor marksImportCheck;
     private static BufferMarksPersist.EventHandlers bufferMarkPersistINSTANCE;
@@ -133,6 +137,14 @@ class MarkOps
         }
     }
 
+    static int setMarkLastFPOS(ViBuffer buf)
+    {
+        // This goes straight to backing store.
+        BufferMarksPersist.persistMark(MQUOTE, (Buffer)buf);
+        return OK;
+
+    }
+
     /** Set the indicated mark to the current cursor position;
      * if anonymous mark characters, then handle that.
      */
@@ -160,11 +172,6 @@ class MarkOps
             setpcmark();
             /* keep it even when the cursor doesn't move */
             G.curwin.w_prev_pcmark.setMark(G.curwin.w_pcmark);
-            return OK;
-        }
-        if(c == MQUOTE) {
-            // This goes straight to backing store.
-            BufferMarksPersist.persistMark(c, G.curbuf);
             return OK;
         }
 
@@ -784,9 +791,8 @@ class MarkOps
             if(bmh != null) {
                 try {
                     Preferences bufData = prefs.node(bmh.getBufTag());
-                    String mName = String.valueOf(c);
                     if(bufData.nodeExists(String.valueOf(c))) {
-                    MarkInfo mi = readMark(bufData.node(mName));
+                        MarkInfo mi = readMark(bufData, c);
                     if(mi != null)
                         return new ViMark.ReadOnlyMark(
                                 mi.line, mi.col, mi.offset);
@@ -921,9 +927,10 @@ class MarkOps
                     bmh = all.get(fname);
                     if(bmh != null) {
                         Preferences bufData = prefs.node(bmh.getBufTag());
-                        if (bufData.nodeExists(String.valueOf(MQUOTE)))
+                        if (bufData.nodeExists(PREFQUOTE))
                             break hasMarks;
                         bufData.removeNode();
+                        dbg.println(FINE, () -> sf("MarkOps: persist: removing: no marks %s ", fname));
                         all.remove(fname);
                     }
                     return;
@@ -969,7 +976,7 @@ class MarkOps
                 dbg.println(FINER, () -> sf("MarkOps: restoring %d marks from %s",
                         marks.length, bufData.absolutePath()));
                 for (String mName : marks) {
-                    MarkInfo mi = readMark(bufData.node(mName));
+                    MarkInfo mi = readMark(bufData, mName.charAt(0));
                     if (mi == null) {
                         dbg.println(WARNING, () -> sf(
                                 "MarkOps: removing bad mark: %s, name: %s",
@@ -1124,10 +1131,14 @@ class MarkOps
                     // remove an existing node if index more than max
                     writeBufferMarksHeader(fname, pIndex, max);
                 for (String x : cleanup) {
-                    Preferences p = prefs.node(x);
-                    p.removeNode();
-                    dbg.println(FINE, () -> sf("MarkOps: write_viminfo cleanup %s",
-                                              x));
+                    if(prefs.nodeExists(x)) {
+                        Preferences p = prefs.node(x);
+                        p.removeNode();
+                        dbg.println(FINE, () -> sf(
+                                    "MarkOps: write_viminfo cleanup %s", x));
+                    } else
+                        dbg.println(FINE, () -> sf(
+                                    "MarkOps: write_viminfo cleanup not exist %s", x));
                 }
 
                 prefs.flush();
@@ -1167,8 +1178,11 @@ class MarkOps
             }
         }
 
-        private static MarkInfo readMark(Preferences p)
+        private static MarkInfo readMark(Preferences bufMarks, char name)
         {
+            // NOTE that if PREFQUOTE is requested, then that's what you get
+            Preferences p = bufMarks.node(
+                    name == MQUOTE ? PREFQUOTE : String.valueOf(name));
             int o, l, c;
             o = p.getInt(OFFSET, -1);
             l = p.getInt(LINE, -1);
@@ -1187,9 +1201,11 @@ class MarkOps
                 Preferences bufMarks, char name, ViMark _m, Buffer buf)
                 throws BackingStoreException
         {
-            String markName = String.valueOf(name);
             // special case '"
+            // if no value supplied then pick it up from buf
             ViFPOS m = _m == null && name == MQUOTE ? buf.saving_fpos : _m;
+            String markName =
+                    name == MQUOTE ? PREFQUOTE : String.valueOf(name);
             if(m == null || !m.isValid()) {
                 if (bufMarks.nodeExists(markName))
                     bufMarks.node(markName).removeNode();
@@ -1213,9 +1229,10 @@ class MarkOps
             Preferences bufMarks = prefs.node(bmh.getBufTag());
             bufMarks.put(FNAME, bmh.getFname());
             bufMarks.putInt(INDEX, bmh.getIndex());
-            if(markName != null)
-                writeMark(bufMarks, markName, buf.getMark(markName), buf);
-            else
+            if(markName != null) {
+                ViMark m = markName == MQUOTE ? null : buf.getMark(markName);
+                writeMark(bufMarks, markName, m, buf);
+            } else
                 for(char c = 'a'; c <= 'z'; c++) {
                     ViMark m = buf.getMark(c);
                     writeMark(bufMarks, c, m, buf);

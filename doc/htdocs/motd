@@ -6,7 +6,7 @@
 #       -Dcom.raelity.jvi.motd=file:///c:/a/src/jvi-dev/jvi/doc/htdocs/motd
 
 motd-version: 1
-jVi-release: 2.0.9
+jVi-release: 2.0.11
 #jVi-release-link:  https://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-11-and-later/nbvi-1.6.0.zip/download
 
 #jVi-beta: 1.6.1.beta3
@@ -35,6 +35,7 @@ motd-message:
 *     2.0.x: :cd, :pwd for :!cmd and :e ~/d/f. :e %:h:h/fname. All filename-modifiers.
 *            :cd and :e have Ctrl-D for path completion popup. :messages. 
 *            :e* Ctrl-D for closed files, repeat Ctrl-D for different sorting.
+*            2 clipboards. clipboard option: unnamed,unnamedplus. viminfo options.
 *     1.6.x: Ctrl-R on command line. Visual mode and multiple views of a file.
 *            :tab* commands; magic option and \v,\m... for searching
 *            :history clickable output, 'history', history up/down arrows and matching

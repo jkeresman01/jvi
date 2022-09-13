@@ -62,9 +62,21 @@ import static com.raelity.jvi.lib.TextUtil.sf;
 /** either systemClipboard or systemSelection */
 enum JviClipboard implements ClipboardOwner
 {
-STAR(STAR_REGISTER, '*', CBU.UNNAMED, tk -> tk.getSystemSelection()),
-PLUS(PLUS_REGISTER, '+', CBU.UNNAMED_PLUS, tk -> tk.getSystemClipboard()),
+// If there is no '*' register, then the parameters for '*' and '+'
+// are identical, except for the ascii register name.
+// The idea is that if no selection register, then  '*' uses the clipboard
+STAR(noStar() ? DELETION_REGISTER + 1 : DELETION_REGISTER + 2,
+     '*',
+     CBU.UNNAMED,
+     noStar() ? tk -> tk.getSystemClipboard() : tk -> tk.getSystemSelection()),
+
+PLUS(DELETION_REGISTER + 1,
+     '+',
+     !noStar() ? CBU.UNNAMED_PLUS : CBU.UNNAMED,
+     tk -> tk.getSystemClipboard()),
+
 NO_CB(-1, '\uffff', null, tk -> null);
+
 
     @ServiceProvider(service=ViInitialization.class, path="jVi/init", position=10)
     public static class Init implements ViInitialization
@@ -75,6 +87,11 @@ NO_CB(-1, '\uffff', null, tk -> null);
         JviClipboard.init();
     }
     }
+
+static boolean noStar()
+{
+    return Toolkit.getDefaultToolkit().getSystemSelection() == null;
+}
 
 private static void init()
 {
@@ -176,6 +193,10 @@ static void end_global_changes()
 private static final DebugOption dbg = G.dbgOps;
 
 private static final String UTF8 = "utf-8";
+static void checkIdx(int idx) {
+    if(idx > Register.STAR_REGISTER)
+        Exceptions.printStackTrace(new Exception("Clipboard idx out of range"));
+}
 
 static final JviClipboard clip_star = JviClipboard.STAR;
 static final JviClipboard clip_plus = JviClipboard.PLUS;
@@ -227,6 +248,7 @@ static void may_set_selection()
 /** is the the specified yankreg index a usable clipboard */
 static boolean isCbIdx(int idx)
 {
+    checkIdx(idx);
     return idx == JviClipboard.STAR.yank_reg_idx
             || idx == JviClipboard.PLUS.yank_reg_idx;
 }
@@ -247,6 +269,7 @@ static boolean isCbName(JviClipboard cb)
 /** convert clipboard yankreg idx to yankreg name */
 static char idx2CbName(int idx)
 {
+    checkIdx(idx);
     return idx == JviClipboard.STAR.yank_reg_idx
           ? JviClipboard.STAR.regname
           : idx == JviClipboard.PLUS.yank_reg_idx

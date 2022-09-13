@@ -547,8 +547,10 @@ final public class ViManager
 
     }
 
-    static { if(Boolean.FALSE) MessageDialog(); /* eatme */ }
-    static int MessageDialog() {
+    static { if(Boolean.FALSE) messageDialog("", "", 0); /* eatme */ }
+    /** TODO: this should be in factory */
+    public static int messageDialog(String msg, String title, int type) {
+        JOptionPane.showMessageDialog(getFactory().getMainWindow(), msg, title, type);
         //JOptionPane pane = new JOptionPane(arguments);
         //pane.set.Xxxx(...); // Configure
         //JDialog dialog = pane.createDialog(parentComponent, title);

@@ -21,6 +21,9 @@ package com.raelity.jvi.core;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
 import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
@@ -36,6 +39,7 @@ import com.raelity.jvi.core.Commands.ColonEvent;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.*;
 import com.raelity.jvi.lib.StringSegment;
+import com.raelity.jvi.manager.*;
 
 import static java.nio.file.Files.isDirectory;
 import static java.nio.file.Files.isExecutable;
@@ -135,13 +139,26 @@ public static Path getCwd() {
     throw new IllegalStateException("cwd is not set");
 }
 
+// TODO: dialog if error
 private static Path getCheckPathFS(String s)
 {
-    Path path;
+    Path path = null;
+    URI uri;
+    try {
+        uri = new URI(s);
+        if("file".equals(uri.getScheme())) {
+            path = Path.of(uri);
+        }
+    } catch(URISyntaxException|IllegalArgumentException
+            |SecurityException|FileSystemNotFoundException ex) {
+        Exceptions.printStackTrace(ex);
+    }
+    if(path != null)
+        return path;
     try {
         path = FileSystems.getDefault().getPath(s);
     } catch (InvalidPathException ex) {
-        Exceptions.printStackTrace(ex);
+        ViManager.messageDialog("Invalid Path: " + ex.getMessage(), "Path Error", 0);
         path = FileSystems.getDefault().getPath("/tmp");
     }
     return path;
