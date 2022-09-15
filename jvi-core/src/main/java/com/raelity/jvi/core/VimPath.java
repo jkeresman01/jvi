@@ -143,18 +143,17 @@ public static Path getCwd() {
 private static Path getCheckPathFS(String s)
 {
     Path path = null;
-    URI uri;
-    try {
-        uri = new URI(s);
-        if("file".equals(uri.getScheme())) {
+    if(s.startsWith("file:")) {
+        try {
+            URI uri = new URI(s);
             path = Path.of(uri);
+        } catch(URISyntaxException|IllegalArgumentException
+                |SecurityException|FileSystemNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
         }
-    } catch(URISyntaxException|IllegalArgumentException
-            |SecurityException|FileSystemNotFoundException ex) {
-        Exceptions.printStackTrace(ex);
+        if(path != null)
+            return path;
     }
-    if(path != null)
-        return path;
     try {
         path = FileSystems.getDefault().getPath(s);
     } catch (InvalidPathException ex) {

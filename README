@@ -2,7 +2,9 @@ Post nbvi-2.0.9 jVi's build system is converted to gradle.
 And NetBeans' jvi-wrapper build script does ant exec of gradle
 then grabs the jar.
 
-Note that frgall is used: target 11, source 19.
+Note that frgall is used: target 11, source 19,
+fraagl needs gradle 6.8.x, which means jdk-11 to jdk-15.
+
 
 The root project can be opened in NetBeans. Sub projects are jvi-core,
 jvi-swing and jvi-cmd. Set jvi-cmd as the main project and the debug and run
