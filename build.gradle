@@ -2,11 +2,8 @@
  * Set up the compiler.
  */
 
-buildscript {
-    dependencies {
-        classpath files(rootDir.toPath().resolve(
-                        '../namedservices-merge-1.0.0.jar'))
-    }
+plugins {
+    id 'com.raelity.namedservices-merge' version '0.5.0' apply false
 }
 
 allprojects {
@@ -14,15 +11,6 @@ allprojects {
     def isSnapshot = true
     group = 'com.raelity.jvi'
     version = "2.1.0${isSnapshot ? "-SNAPSHOT" : ""}"
-
-    if(project.name.startsWith('jvi-')) {
-        // the equivelent of this, when buildSrc had plugin, was in common
-        apply plugin: 'com.raelity.namedservices-merge'
-
-        namedservicesMerge {
-            serviceProviderPath 'jVi/init/com.raelity.jvi.ViInitialization'
-        }
-    }
 
     afterEvaluate {
         if(project.hasProperty('java')) {

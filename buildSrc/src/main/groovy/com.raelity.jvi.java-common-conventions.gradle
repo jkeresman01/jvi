@@ -4,6 +4,11 @@
 
 plugins {
     id 'java'
+    id 'com.raelity.namedservices-merge'
+}
+
+namedservicesMerge {
+    serviceProviderPath 'jVi/init/com.raelity.jvi.ViInitialization'
 }
 
 repositories {
