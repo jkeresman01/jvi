@@ -91,14 +91,14 @@ public abstract class Buffer implements ViBuffer, ViOptionBag
     /**
      * Put stuff here that should run once
      * after after construction and every things is setup (curbuf, curwin).
-     * <br/>initOptions
-     * <br/>modeline
+     * <br>initOptions
+     * <br>modeline
      */
     protected void firstGo()
     {
         File f = getFile();
         if(f != null) {
-            previous_close_fpos = MarkOps.getPersistedMark(f.toString(), '"');
+            previous_close_fpos = MarkOps.getMarkLastFPOS(this);
             dbgEditorActivation.println(FINE, () -> sf("LFP: Buffer: firstGo: %s %s",
                                         previous_close_fpos, f));
         }
@@ -535,15 +535,9 @@ public abstract class Buffer implements ViBuffer, ViOptionBag
         String s = null;
         char visMode = vb.getVisMode();
         switch (visMode) {
-        case 'v': // char mode
-            s = "" + (nLine == 1 ? nCol : nLine);
-            break;
-        case 'V': // line mode
-            s = "" + nLine;
-            break;
-        case CTRL_V: // block mode
-            s = "" + nLine + "x" + nCol;
-            break;
+        case 'v' -> s = "" + (nLine == 1 ? nCol : nLine); // char mode
+        case 'V' -> s = "" + nLine; // line mode
+        case CTRL_V -> s = "" + nLine + "x" + nCol; // block mode
         }
 
         return s;

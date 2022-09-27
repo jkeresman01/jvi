@@ -97,7 +97,7 @@ class MarkOps
     // '"' is not legal in a filename on windows, so use "@"
     // This name translation is at the lowest level, so almost
     // all the code uses MQUOTE which is Vim's name.
-    private static final char MQUOTE = '"';
+    public static final char MQUOTE = '"';
     private static final String PREFQUOTE = "@";
 
     private static PreferencesImportMonitor marksImportCheck;
@@ -140,9 +140,14 @@ class MarkOps
     static int setMarkLastFPOS(ViBuffer buf)
     {
         // This goes straight to backing store.
-        BufferMarksPersist.persistMark(MQUOTE, (Buffer)buf);
+        BufferMarksPersist.persistMark(buf, MQUOTE);
         return OK;
 
+    }
+
+    static ViMark getMarkLastFPOS(ViBuffer buf)
+    {
+        return BufferMarksPersist.getPersistedMark(buf, MQUOTE);
     }
 
     /** Set the indicated mark to the current cursor position;
@@ -179,7 +184,7 @@ class MarkOps
             int i;
             i = c - 'a';
             G.curbuf.b_namedm[i].setMark(G.curwin.w_cursor);
-            BufferMarksPersist.persistMark(c, G.curbuf);
+            BufferMarksPersist.persistMark(G.curbuf, c);
             return OK;
         }
 
@@ -377,15 +382,6 @@ class MarkOps
             }
         }
         return m;
-    }
-
-    /**
-     * This is intended for a subset of the marks, currently '".
-     * @return ViFPOS for the persisted location, null if not available
-     */
-    static ViMark getPersistedMark(String fname, char c)
-    {
-        return BufferMarksPersist.getPersistedMark(fname, c);
     }
 
     static boolean isValidMark(char c, ViBuffer buf)
@@ -783,13 +779,16 @@ class MarkOps
         }
 
         /**
+         * TODO: if the persisted mark is magic, then only MQUOTE
          * @return ReadOnlyFPOS for the persisted location
          */
-        static ViMark getPersistedMark(String fname, char c)
+        static ViMark getPersistedMark(ViBuffer buf, char _c)
         {
+            String fname = buf.getFile().toString();
             BufferMarksHeader bmh = all.get(fname);
             if(bmh != null) {
                 try {
+                    char c = _c == MQUOTE ? PREFQUOTE.charAt(0) : _c;
                     Preferences bufData = prefs.node(bmh.getBufTag());
                     if(bufData.nodeExists(String.valueOf(c))) {
                         MarkInfo mi = readMark(bufData, c);
@@ -862,7 +861,7 @@ class MarkOps
             }
         }
 
-        static void persistMark(char markName, Buffer buf)
+        static void persistMark(ViBuffer buf, char markName)
         {
             bufferMarkPersistINSTANCE.persist(buf, null, markName);
         }
