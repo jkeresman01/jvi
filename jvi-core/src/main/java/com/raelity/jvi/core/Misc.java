@@ -19,7 +19,6 @@
  */
 package com.raelity.jvi.core;
 
-import com.raelity.lib.MRU;
 
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -27,9 +26,7 @@ import java.io.File;
 import java.text.CharacterIterator;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,7 +48,6 @@ import com.raelity.jvi.ViTextView.DIR;
 import com.raelity.jvi.ViXlateKey;
 import com.raelity.jvi.core.lib.*;
 import com.raelity.jvi.lib.*;
-import com.raelity.lib.MRU.IndexedEntry;
 import com.raelity.jvi.manager.*;
 
 import static java.util.logging.Level.*;
@@ -1045,18 +1041,10 @@ public class Misc {
       prefs.removeNode();
       prefs = ViManager.getFactory().getPreferences().node(nodeName);
 
-      if(!(iterable instanceof MRU.IndexedIterable)) {
-        int i = 1;
-        for(String val : iterable) {
-          prefs.put(String.valueOf(i), val);
-          i++;
-        }
-      } else {
-        @SuppressWarnings("unchecked")
-        MRU<String> mru = (MRU<String>)iterable;
-        for(IndexedEntry<String> ie : mru.indexedIterable()) {
-          prefs.put(String.valueOf(ie.getIndex() + 1), ie.getItem());
-        }
+      int i = 1;
+      for(String val : iterable) {
+        prefs.put(String.valueOf(i), val);
+        i++;
       }
       prefs.flush();
     } catch(IllegalStateException ex) {

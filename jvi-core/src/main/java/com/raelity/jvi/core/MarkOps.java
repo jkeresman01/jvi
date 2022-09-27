@@ -155,9 +155,9 @@ class MarkOps
 
             MARKOP op = null;
             switch (c) {
-                case '.': op = TOGGLE; break;
-                case '<': op = PREV;   break; // Nothing to do with visual mode
-                case '>': op = NEXT;   break; // Nothing to do with visual mode
+                case '.' -> op = TOGGLE;
+                case '<' -> op = PREV;
+                case '>' -> op = NEXT;
             }
             if (op != null) {
                 if (op != TOGGLE)
@@ -732,15 +732,15 @@ class MarkOps
                     switch (arg.charAt(p))
                     {
                         //case MQUOTE: G.curbuf.b_last_cursor.invalidate(); break;
-                        case '^': G.curbuf.b_last_insert.invalidate(); break;
+                        case '^' -> G.curbuf.b_last_insert.invalidate();
                         //case '.': G.curbuf.b_last_change.invalidate(); break;
-                        case '[': G.curbuf.b_op_start.invalidate(); break;
-                        case ']': G.curbuf.b_op_end.invalidate(); break;
-                        case '<': G.curbuf.b_visual_start.invalidate(); break;
-                        case '>': G.curbuf.b_visual_end.invalidate(); break;
-                        case ' ': break;
-                        default:  Msg.emsg(e_invarg2 + arg.substring(p));
-                                  return;
+                        case '[' -> G.curbuf.b_op_start.invalidate();
+                        case ']' -> G.curbuf.b_op_end.invalidate();
+                        case '<' -> G.curbuf.b_visual_start.invalidate();
+                        case '>' -> G.curbuf.b_visual_end.invalidate();
+                        case ' ' -> { }
+                        default -> { Msg.emsg(e_invarg2 + arg.substring(p));
+                            return; }
                     }
             }
         }
@@ -773,7 +773,7 @@ class MarkOps
                 = new ValueHashMap<>((bmh) -> bmh.fname);
         /** The BufferMarks read during startup in MRU order.
          * File open makes a buf mru. */
-        static MRU<String> bufsMRU = MRU.getSetMRU(null);
+        static MRU<String> bufsMRU = MRU.getSetMRU(Integer.MAX_VALUE);
         static List<String> cleanup = new ArrayList<>();
 
         static Preferences prefs = getFactory().getPreferences().node(PREF_MARKS);

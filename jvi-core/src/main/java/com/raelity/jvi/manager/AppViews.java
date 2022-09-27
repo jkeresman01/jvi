@@ -98,7 +98,7 @@ public enum AppViews
 
     private static MRU<String> getMRU()
     {
-        MRU<String> mru = com.raelity.lib.MRU.getSetMRU(() -> G.p_closedfiles());
+        MRU<String> mru = com.raelity.lib.MRU.getSetMRU(G.p_closedfiles());
         mru = com.raelity.lib.MRU.synchronizedMRU(mru);
         return mru;
     }
@@ -128,7 +128,7 @@ public enum AppViews
         OptionEvent.getEventBus().register(new Object() {
             @Subscribe public void closedfiles(OptionEvent.Global ev) {
                 if(Options.closedFiles.equals(ev.getName()))
-                    avsClosedMRU.trim();
+                    avsClosedMRU.setCapacity(G.p_closedfiles());
             } });
 
         ViEvent.getBus().register(new Object() {
@@ -145,7 +145,7 @@ public enum AppViews
             @Subscribe
             public void writeClosedMRU(ViEvent.Shutdown ev)
             {
-                avsClosedMRU.trim();
+                avsClosedMRU.setCapacity(G.p_closedfiles());
                 Hook hook = ViManager.getCore();
                 synchronized(avsClosedMRU) {
                     hook.writePrefsList(PREF_CLOSEDFILES,
@@ -431,24 +431,16 @@ public enum AppViews
      */
     public static List<ViAppView> getList(AppViews which)
     {
-        List<ViAppView> l = null;
-        switch (which) {
-            case ACTIVE:
-                l = new ArrayList<>(avs);
-                break;
-            case MRU:
-                l = new ArrayList<>(avsMRU);
-                break;
-            case NOMAD:
-                l = new ArrayList<>(avsNomads);
-                break;
-            case ALL:
-                l = new ArrayList<>();
-                l.addAll(getList(ACTIVE));
-                l.addAll(getList(NOMAD));
-                break;
-        }
-        return l;
+        return switch (which) {
+            case ACTIVE -> new ArrayList<>(avs);
+            case MRU    -> new ArrayList<>(avsMRU);
+            case NOMAD  -> new ArrayList<>(avsNomads);
+            case ALL -> { // ACTIVE + NOMAD
+                List<ViAppView> l = new ArrayList<>(avs);
+                l.addAll(avsNomads);
+                yield l;
+            }
+        };
     }
 
     /**

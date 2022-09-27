@@ -157,7 +157,6 @@ final public class ViManager
 
     private static Boolean isDebugAtHome;
     public static boolean isDebugAtHome() {
-
         // int i1 = 3;
         // int a = switch (i1) {
         // case 1 -> { yield 3; }
@@ -1192,14 +1191,11 @@ final public class ViManager
     // creating the command line window. But this
     // is extensible and guarenteed to preserve semantics.
     public static Object getStartupOnlyOption(String optName) {
-        switch(optName) {
-        case Options.commandEntryFrame:
-            return useFrame_StartupOnlyOption;
-        //case Options.tabCompletionPrefix:
-        //    return tabCompletionPrefix_ValueAtBoot;
-        default:
-            return null;
-        }
+        return switch(optName) {
+        case Options.commandEntryFrame -> useFrame_StartupOnlyOption;
+        //case Options.tabCompletionPrefix -> tabCompletionPrefix_ValueAtBoot;
+        case default,null -> null;
+        };
     }
         
 }

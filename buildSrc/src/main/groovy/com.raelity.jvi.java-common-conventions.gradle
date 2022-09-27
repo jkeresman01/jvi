@@ -13,13 +13,14 @@ namedservicesMerge {
 
 repositories {
     mavenCentral()
+    mavenLocal()
     // maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
 }
 
 ext {
     v_guava = '27.0-jre'
     v_netbeans = 'RELEASE120'
-    v_raelity_lib = '1.0.0'
+    v_raelity_lib = '1.1.0'
     v_l2f_sheet = '7.3.1'
 
     a_guava = "com.google.guava:guava:$v_guava"

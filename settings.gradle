@@ -3,7 +3,7 @@ pluginManagement {
     resolutionStrategy {
         eachPlugin {
             if (requested.id.namespace == 'org.frgaal') {
-                useModule('org.frgaal:compiler-gradle-plugin:19.0.0-RC1')
+                useModule('org.frgaal:compiler-gradle-plugin:19.0.0')
             }
         }
     }
