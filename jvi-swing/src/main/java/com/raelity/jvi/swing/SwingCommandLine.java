@@ -90,7 +90,8 @@ interface SwingCommandLine extends CommandLineKeys
     void takeFocus(boolean flag);
 
     // following for a mac bug fixup
-    int[] getMacFixupDotMark();
+    record DotMark(int dot, int mark){};
+    DotMark getMacFixupDotMark();
 
 
         //////////////////////////////////////////////////////////////////////

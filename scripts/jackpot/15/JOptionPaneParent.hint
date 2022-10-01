@@ -1,0 +1,11 @@
+<?
+import org.openide.windows.WindowManager;
+?>
+
+"JOptionPane null parent":
+    $jop.showConfirmDialog($parent, $rest$)
+::  isNullLiteral($parent)
+    && $jop instanceof javax.swing.JOptionPane
+=>  $jop.showConfirmDialog(WindowManager.getDefault().getMainWindow(), $rest$)
+;;
+

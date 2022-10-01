@@ -169,13 +169,13 @@ public class SetColonCommand extends AbstractColonAction
      */
     private static class VimOptionState
     {
-        Class type;
+        Class<?> type;
         Object curValue;
         // used if type.isLocal()
         Field f;
         ViOptionBag bag;
         // used if regular option is provided
-        Option opt;
+        Option<?> opt;
         // Following not really option state, they are the
         // parse results when settigns options
         OP op;
@@ -187,12 +187,12 @@ public class SetColonCommand extends AbstractColonAction
     throws IllegalAccessException, SetCommandException
     {
         VimOptionState voptState = new VimOptionState();
-        String voptName = arg; // assume split does nothing
-        Object[] split = splitAssignment(arg);
-        if(split != null) {
-            voptName = (String)split[0];
-            voptState.op = (OP)split[1];
-            voptState.inputValue = (String)split[2];
+        String voptName = arg; // assume splitAssignment does nothing
+        var assignOp = splitAssignment(arg);
+        if(assignOp != null) {
+            voptName = assignOp.left;
+            voptState.op = assignOp.op;
+            voptState.inputValue = assignOp.right;
         }
         if (voptName.startsWith("no")) {
             voptState.op = OP.NO;
@@ -259,26 +259,20 @@ public class SetColonCommand extends AbstractColonAction
     }
 
     // Split on '=', '+=', '-=', '^='
-    private static Object[] splitAssignment(String arg)
+    private record AssignOp(String left, String right, OP op){};
+    private static AssignOp splitAssignment(String arg)
     {
         Pattern p = Pattern.compile("^([a-z]+)(=|\\+=|\\^=|-=)(.*)$");
         Matcher m = p.matcher(arg);
         if(m.matches()) {
-            Object[] split = new Object[3];
-            split[0] = m.group(1);
-            split[2] = m.group(3);
-            OP op = null;
-            String sop = m.group(2);
-            if(null != sop) switch (sop) {
-            case "=": op = OP.ASS; break;
-            case "+=": op = OP.ADD; break;
-            case "-=": op = OP.SUB; break;
-            case "^=": op = OP.PRE; break;
-            default: break;
-            }
-            split[1] = op;
-
-            return split;
+            OP op = switch (m.group(2)) {
+            case "="  -> OP.ASS;
+            case "+=" -> OP.ADD;
+            case "-=" -> OP.SUB;
+            case "^=" -> OP.PRE;
+            case default,null -> null;
+            };
+            return new AssignOp(m.group(1), m.group(3), op);
         }
 
         return null;
@@ -370,10 +364,10 @@ public class SetColonCommand extends AbstractColonAction
                         int oldValue = (Integer)voptState.curValue;
                         int val = Integer.parseInt(voptState.inputValue);
                         switch(voptState.op) {
-                            case ASS: break; // val = val
-                            case ADD: val = oldValue + val; break;
-                            case SUB: val = oldValue - val; break;
-                            case PRE: val = oldValue * val; break;
+                            case ASS -> { } // val = val
+                            case ADD -> val = oldValue + val;
+                            case SUB -> val = oldValue - val;
+                            case PRE -> val = oldValue * val;
                         }
                         newValue = (Integer)val;
                     } catch (NumberFormatException ex) {
@@ -417,8 +411,8 @@ public class SetColonCommand extends AbstractColonAction
                         newValue = voptState.inputValue;
                     else {
                         // pretend the curValue is a string...
-                        EnumSet oldCurValue = (EnumSet)voptState.curValue;
-                        EnumSetOption esOpt = (EnumSetOption)voptState.opt;
+                        var oldCurValue = (EnumSet)voptState.curValue;
+                        var esOpt = (EnumSetOption)voptState.opt;
                         voptState.curValue = EnumSetOption.encode(oldCurValue);
                         newValue = doStringAssignOp(arg, vopt, voptState);
                         voptState.curValue = oldCurValue;
@@ -561,14 +555,15 @@ public class SetColonCommand extends AbstractColonAction
                 || String.class == voptState.type) {
                 sb.append(value);
             } else if(Color.class == voptState.type) {
-                sb.append(voptState.opt.getValueAsString(value)); // unchecked
-                if(value != null) {
-                    Color c = (Color)value;
+                Color val = (Color)value;
+                sb.append(((ColorOption)voptState.opt).getValueAsString(val));
+                if(val != null) {
+                    Color c = val;
                     sb.append(String.format("[r=%x,g=%x,b=%x]",
                                         c.getRed(), c.getGreen(), c.getBlue()));
                 }
             } else if(EnumSet.class == voptState.type) {
-                sb.append(voptState.opt.getValueAsString(value)); // unchecked
+                sb.append(((EnumSetOption)voptState.opt).getValueAsString((EnumSet)value));
             } else {
                 assert false : value.getClass().getSimpleName() + " not handled";
             }

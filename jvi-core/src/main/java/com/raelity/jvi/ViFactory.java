@@ -34,7 +34,6 @@ import javax.swing.Action;
 
 import com.raelity.jvi.ViTextView.TAGOP;
 import com.raelity.jvi.core.Buffer;
-import com.raelity.jvi.core.ExCommands;
 import com.raelity.jvi.core.Commands.ColonEvent;
 
 /**
@@ -136,6 +135,8 @@ public interface ViFactory
      */
     public ViOutputStream createOutputStream(ViTextView tv,
             Object type, Object info, EnumSet<ViOutputStream.FLAGS> flags);
+
+    public Component findDialogParent();
 
     public void startGlassKeyCatch(KeyListener kl);
     public void stopGlassKeyCatch();

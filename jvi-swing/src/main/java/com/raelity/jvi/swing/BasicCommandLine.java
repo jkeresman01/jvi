@@ -178,9 +178,9 @@ implements SwingCommandLine
 
     /** mac bug fixup */
     @Override
-    public int[] getMacFixupDotMark()
+    public DotMark getMacFixupDotMark()
     {
-        return new int[] { dot, mark };
+        return new DotMark(dot, mark);
     }
 
     /** Label with single character: ":", "/", "?" */

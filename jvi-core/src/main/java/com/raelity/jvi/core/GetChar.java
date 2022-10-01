@@ -610,16 +610,10 @@ public class GetChar {
             currentMagicRedoAlgo = magicRedoAlgo.getString();
             G.dbgRedo.printf("Switching redo to %s\n", currentMagicRedoAlgo);
             switch (currentMagicRedoAlgo) {
-            case "anal":
-                magicRedo = new MagicRedoOriginal(redobuff);
-                break;
-            case "guard":
-                magicRedo = new MagicRedo(redobuff);
-                break;
-            default:
-                ViManager.warning("WHAT?! magic redo algo: "
+            case "anal"  -> magicRedo = new MagicRedoOriginal(redobuff);
+            case "guard" -> magicRedo = new MagicRedo(redobuff);
+            default -> ViManager.warning("WHAT?! magic redo algo: "
                         + currentMagicRedoAlgo);
-                break;
             }
         }
         magicRedo.charTyped(NUL);

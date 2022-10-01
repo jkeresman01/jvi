@@ -173,14 +173,14 @@ final public class ViManager
         //   default -> 2;
         // };
 
-        //Object o2 = 3;
-        //int a = switch (o2) {
-        //  case Integer i when i >= 0 -> yield 3;
-        //    // positive integers
-        //  case Integer i -> yield 4;
-        //    // negative integers
-        //  default -> yield 2;
-        //};
+        // Object o2 = 3;
+        // int a = switch (o2) {
+        //   case Integer i when i >= 0 -> 3;
+        //     // positive integers
+        //   case Integer i -> 4;
+        //     // negative integers
+        //   case default,null -> 2;
+        // };
     
         if(isDebugAtHome == null) {
             isDebugAtHome = Boolean.getBoolean(DEBUG_AT_HOME);
@@ -527,7 +527,7 @@ final public class ViManager
                 LOG.log(Level.SEVERE, "don't leave me here");
                 break;
             case 3:
-                JOptionPane.showMessageDialog(getFactory().getMainWindow(),
+                JOptionPane.showMessageDialog(getFactory().findDialogParent(),
                                               "random message...",
                                               "Random Title",
                                               JOptionPane.ERROR_MESSAGE);
@@ -549,7 +549,7 @@ final public class ViManager
     static { if(Boolean.FALSE) messageDialog("", "", 0); /* eatme */ }
     /** TODO: this should be in factory */
     public static int messageDialog(String msg, String title, int type) {
-        JOptionPane.showMessageDialog(getFactory().getMainWindow(), msg, title, type);
+        JOptionPane.showMessageDialog(getFactory().findDialogParent(), msg, title, type);
         //JOptionPane pane = new JOptionPane(arguments);
         //pane.set.Xxxx(...); // Configure
         //JDialog dialog = pane.createDialog(parentComponent, title);

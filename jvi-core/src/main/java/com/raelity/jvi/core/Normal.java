@@ -345,16 +345,11 @@ public class Normal
       * ...... REMOVED, put old_mapped_len = 0 above
       */
       switch (c) {
-      case NUL:
-        c = K_ZERO; break;
-      case K_KMULTIPLY: /* K_KMULTIPLY is same as '*' */
-        c = '*'; break;
-      case K_KMINUS: /* K_KMINUS is same as '-' */
-        c = '-'; break;
-      case K_KPLUS: /* K_KPLUS is same as '+' */
-        c = '+'; break;
-      case K_KDIVIDE: /* K_KDIVIDE is same as '/' */
-        c = '/'; break;
+      case NUL         -> c = K_ZERO;
+      case K_KMULTIPLY -> c = '*';   // K_KMULTIPLY is same as '*'
+      case K_KMINUS    -> c = '-';   // K_KMINUS is same as '-'
+      case K_KPLUS     -> c = '+';   // K_KPLUS is same as '+'
+      case K_KDIVIDE   -> c = '/';   // K_KDIVIDE is same as '/'
       }
 
       /*

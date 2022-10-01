@@ -231,7 +231,7 @@ public abstract class Option<T> {
         Object o = sVal;
         if(optionType == Integer.class) {
             try {
-                o = Integer.parseInt(sVal);
+                o = Integer.valueOf(sVal);
             } catch(NumberFormatException ex) {
                 // NEEDSWORK: log sever
                 Logger.getLogger(Option.class.getName()).log(
@@ -239,7 +239,7 @@ public abstract class Option<T> {
                 o = 0;
             }
         } else if(optionType == Boolean.class)
-            o = Boolean.parseBoolean(sVal);
+            o = Boolean.valueOf(sVal);
 
         return optionType.cast(o);
     }

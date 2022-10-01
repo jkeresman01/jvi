@@ -468,10 +468,10 @@ void clip_get_selection()
         stringData = "";
     } else {
         if(hasVimFlavor(cb)) {
-            Object[] data = getClipboardData(cb);
+            var data = getClipboardData(cb);
             if(data != null) {
-                type = (Integer)data[0];
-                stringData = (String)data[1];
+                type = data.type;
+                stringData = data.stringData;
             }
         }
         if(stringData == null) {
@@ -492,9 +492,9 @@ void clip_get_selection()
     }
 }
 
-// return[0]:type, return[1]:string
+record ClipData(Integer type, String stringData) {}
 @SuppressWarnings(value = "empty-statement")
-private Object[] getClipboardData(Clipboard cb)
+private ClipData getClipboardData(Clipboard cb)
 {
     if(!avail)
         return null;
@@ -536,13 +536,13 @@ private Object[] getClipboardData(Clipboard cb)
                         // at least one byte after mark
                         // use utf-8 in following by assumption/definition
                         String charsetName = new String(data, 1, pos - 1, "utf-8");
-                        pos++; // first char of string data;
+                        pos++; // first char of stringData data;
                         stringData = new String(data, pos, data.length - pos, charsetName);
                     }
                 }
             }
             if(type != null && stringData != null)
-                return new Object[]{type, stringData};
+                return new ClipData(type, stringData);
         } catch(UnsupportedFlavorException | IOException ex) {
             Misc01.beep_flush();
             LOG.warning(() ->

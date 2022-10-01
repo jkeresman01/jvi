@@ -1,0 +1,35 @@
+<?
+import org.openide.DialogDisplayer;
+?>
+
+"chooser dialog null":
+$jfc.showOpenDialog(null) :: $jfc instanceof javax.swing.JFileChooser
+=> $jfc.showOpenDialog(DialogDisplayer.findDialogParent())
+;;
+
+"chooser dialog null":
+$jfc.showSaveDialog(null) :: $jfc instanceof javax.swing.JFileChooser
+=> $jfc.showSaveDialog(DialogDisplayer.findDialogParent())
+;;
+
+"JOptionPane-2a null parent":
+    $jop.showConfirmDialog($parent, $rest$)
+::  isNullLiteral($parent)
+    && $jop instanceof javax.swing.JOptionPane
+=>  $jop.showConfirmDialog(DialogDisplayer.findDialogParent(), $rest$)
+;;
+
+"JOptionPane-2b null parent":
+    $jop.showMessageDialog($parent, $rest$)
+::  isNullLiteral($parent)
+    && $jop instanceof javax.swing.JOptionPane
+=>  $jop.showMessageDialog(DialogDisplayer.findDialogParent(), $rest$)
+;;
+
+"JOptionPane-2c null parent":
+    $jop.showOptionDialog($parent, $rest$)
+::  isNullLiteral($parent)
+    && $jop instanceof javax.swing.JOptionPane
+=>  $jop.showOptionDialog(DialogDisplayer.findDialogParent(), $rest$)
+;;
+

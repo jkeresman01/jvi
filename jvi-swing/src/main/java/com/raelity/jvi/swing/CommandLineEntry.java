@@ -48,6 +48,7 @@ import com.google.common.eventbus.Subscribe;
 
 import com.raelity.jvi.core.CommandHistory.HistoryContext;
 import com.raelity.jvi.options.*;
+import com.raelity.jvi.swing.SwingCommandLine.DotMark;
 
 import static java.util.logging.Level.*;
 
@@ -106,9 +107,9 @@ public abstract class CommandLineEntry implements ViCmdEntry
                     JTextComponent tc = (JTextComponent) e.getSource();
                     tc.removeFocusListener(focusSetSelection);
                     Caret c = tc.getCaret();
-                    int[] macFixup = commandLine.getMacFixupDotMark();
-                    int dot = macFixup[0];
-                    int mark = macFixup[1];
+                    DotMark macFixup = commandLine.getMacFixupDotMark();
+                    int dot = macFixup.dot();
+                    int mark = macFixup.mark();
                     try {
                         tc.setCaretPosition(mark);
                         tc.moveCaretPosition(dot);

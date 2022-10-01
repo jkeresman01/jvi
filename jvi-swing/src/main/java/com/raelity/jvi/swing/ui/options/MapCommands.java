@@ -263,7 +263,7 @@ implements Options.EditControl
             setStatus(true);
         } else {
             JOptionPane.showMessageDialog(
-                    ViManager.getFactory().getMainWindow(),
+                    ViManager.getFactory().findDialogParent(),
                     "Parse succeeded",
                     DIALOG_TITLE,
                     JOptionPane.INFORMATION_MESSAGE);

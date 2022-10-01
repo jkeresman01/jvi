@@ -183,6 +183,19 @@ abstract public class SwingFactory implements ViFactory
     //
     // ViFactory for swing
     //
+
+    @Override
+    public Component findDialogParent() {
+        Component parent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        if (parent == null) {
+            parent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+        }
+        if (parent == null) {
+            Frame[] f = Frame.getFrames();
+            parent = f.length == 0 ? null : f[f.length - 1];
+        }
+        return parent;
+    }
     
     @Override
     public Class<?> loadClass( String name ) throws ClassNotFoundException
@@ -270,12 +283,12 @@ abstract public class SwingFactory implements ViFactory
         if(obj == null)
             return null;
         Document doc;
-        if(obj instanceof JTextComponent)
-            doc = ((JTextComponent)obj).getDocument();
-        else if(obj instanceof Document)
-            doc = (Document)obj;
-        else
-            return null;
+        switch(obj) {
+        case JTextComponent text -> doc = text.getDocument();
+        case Document docu -> doc = docu;
+        case default,null -> { return null; }
+        }
+
         return (Buffer)doc.getProperty(PROP_BUF);
     }
     
@@ -770,10 +783,10 @@ abstract public class SwingFactory implements ViFactory
         Set<Entry<Object, Object>> entries = UIManager.getDefaults().entrySet();
         for (Entry<Object, Object> entry : entries)
         {
-            if (entry.getValue() instanceof Color)
+            if (entry.getValue() instanceof Color color)
             {
                 rval.add(new AbstractMap.SimpleEntry<>(
-                         (String)entry.getKey(), (Color)entry.getValue()));
+                         (String)entry.getKey(), color));
             }
         }
         return rval;

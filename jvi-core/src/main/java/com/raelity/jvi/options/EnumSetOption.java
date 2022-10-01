@@ -35,6 +35,8 @@ import org.netbeans.api.annotations.common.NonNull;
 
 import com.raelity.jvi.lib.TextUtil;
 
+import static com.raelity.jvi.manager.ViManager.eatme;
+
 /**
  *
  * @author Ernie Rael <err at raelity.com>
@@ -63,6 +65,7 @@ extends Option<EnumSet<S>>
             initialize();
             getValueFromString("");
             getValueAsString(null);
+            eatme((Object)getAllStringValues());
         }
     }
 
@@ -92,7 +95,7 @@ extends Option<EnumSet<S>>
     }
 
     @Override
-    final String getValueAsString(EnumSet val)
+    final String getValueAsString(EnumSet<S> val)
     {
         return encode(val);
     }
@@ -166,8 +169,8 @@ extends Option<EnumSet<S>>
 
     @Override
     public void validate(Object val) throws PropertyVetoException {
-        if(validator instanceof DefaultEnumSetValidator)
-            ((DefaultEnumSetValidator)validator).validateAnyType(val);
+        if(validator instanceof DefaultEnumSetValidator<S> v)
+            v.validateAnyType(val);
         else
             super.validate(val);
     }
@@ -204,9 +207,9 @@ extends Option<EnumSet<S>>
                     reportPropertyVetoException(
                             "Invalid EnumSet class: "
                             + opt.getClass().getSimpleName(), val);
-            } else if(val instanceof String) {
+            } else if(val instanceof String string) {
                 Map<String, S> map = esOpt.getNameEnumMap();
-                List<String>vals = TextUtil.tokens((String)val, "[,\\s]+");
+                List<String>vals = TextUtil.tokens(string, "[,\\s]+");
                 for(String s : vals) {
                     Enum<?> e = map.get(s);
                     if(e == null) {

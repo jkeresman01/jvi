@@ -1,0 +1,10 @@
+
+"chooser dialog null":
+$jfc.showOpenDialog(null) :: $jfc instanceof javax.swing.JFileChooser
+=> $jfc.showOpenDialog(org.openide.windows.WindowManager.getDefault().getMainWindow())
+;;
+
+"chooser dialog null":
+$jfc.showSaveDialog(null) :: $jfc instanceof javax.swing.JFileChooser
+=> $jfc.showSaveDialog(org.openide.windows.WindowManager.getDefault().getMainWindow())
+;;

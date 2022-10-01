@@ -328,15 +328,9 @@ private static Commands.ColonEvent parseCommandGuts(String commandLine,
                         e.consume();
                         char c = e.getKeyChar();
                         switch(c) {
-                            case 'y': case 'n':
-                                modalResponse = c;
-                                break;
-                            case KeyEvent.VK_ESCAPE:
-                                modalResponse = 'n';
-                                break;
-                            default:
-                                beep_flush();
-                                break;
+                            case 'y', 'n' -> modalResponse = c;
+                            case KeyEvent.VK_ESCAPE -> modalResponse = 'n';
+                            default -> beep_flush();
                         }
                         if(modalResponse != 0) {
                             ViManager.getFactory().stopModalKeyCatch();
@@ -536,7 +530,7 @@ static StringBuilder expand_filename(StringSegment cmd,
             }
         }
         switch(c) {
-        case '!':
+        case '!' -> {
             if (is_escaped) {
                 break;
             } else {
@@ -549,10 +543,8 @@ static StringBuilder expand_filename(StringSegment cmd,
                     return null;
                 }
             }
-            break;
-            
-        case '%':
-        case '#':
+        }
+        case '%', '#' -> {
             if(is_escaped){
                 break;
             }
@@ -597,11 +589,8 @@ static StringBuilder expand_filename(StringSegment cmd,
             VimPath.modify_fname(cmd, path, fnamep);
             cmd.previous(); // the last char handled
             sb.append(fnamep.getValue().toString());
-            break;
-
-
-        default:
-                break;
+        }
+        default -> { }
         } // end switch
         if(appendit)
             sb.append(c);
@@ -634,45 +623,45 @@ static int get_address(
     if(sidx == s.length())
         return sidx;
     do {
+        /* ******************************
+        // NEEDSWORK: get_address: These are big cases....
+        case '/':
+        case '?':         // '/' or '?' - search
+
+        case '\\':      // "\?", "\/" or "\&", repeat search
+        *******************************/
         char c = s.charAt(sidx);
         switch(c) {
-            case '.':         // '.' - Cursor position
+        case '.' -> { // '.' - Cursor position
+            ++sidx;
+            lnum.setValue(G.curwin.w_cursor.getLine());
+        }
+        case '$' -> { // '$' - last line
+            ++sidx;
+            lnum.setValue(G.curbuf.getLineCount());
+        }
+        case '\'' -> { // ''' - mark
+            ++sidx;
+            if(sidx >= s.length()) {
+                return -1;
+            }
+            c = s.charAt(sidx);
+            if(skip) {
                 ++sidx;
-                lnum.setValue(G.curwin.w_cursor.getLine());
-                break;
-            case '$':         // '$' - last line
+            } else {
+                ViMark fp = MarkOps.getmark(c, false);
                 ++sidx;
-                lnum.setValue(G.curbuf.getLineCount());
-                break;
-            case '\'':        // ''' - mark
-                ++sidx;
-                if(sidx >= s.length()) {
+                if(MarkOps.check_mark(fp) == FAIL) {
                     return -1;
                 }
-                c = s.charAt(sidx);
-                if(skip) {
-                    ++sidx;
-                } else {
-                    ViMark fp = MarkOps.getmark(c, false);
-                    ++sidx;
-                    if(MarkOps.check_mark(fp) == FAIL) {
-                        return -1;
-                    }
-                    lnum.setValue(fp.getLine());
-                }
-                break;
-
-            /* ******************************
-            // NEEDSWORK: get_address: These are big cases....
-            case '/':
-            case '?':         // '/' or '?' - search
-
-            case '\\':      // "\?", "\/" or "\&", repeat search
-            *******************************/
-            default:
-                if(isdigit(c)) {
-                    sidx = getdigits(s, sidx, lnum);
-                }
+                lnum.setValue(fp.getLine());
+            }
+        }
+        default -> {
+            if(isdigit(c)) {
+                sidx = getdigits(s, sidx, lnum);
+            }
+        }
         }
 
         int i;

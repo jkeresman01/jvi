@@ -145,17 +145,12 @@ public class Misc {
       OUTER:
       for (; ptr < seg.offset + seg.count; ++ptr) {
         switch (seg.r(ptr)) {
-        // count a tab for what it is worth
-        case TAB:
-          count += G.curbuf.b_p_ts - (count % G.curbuf.b_p_ts);
-          break;
-        case ' ':
-          ++count;		// count a space for one
-          break;
-        default:
-          break OUTER;
+                    // count a tab for what it is worth
+        case TAB -> count += G.curbuf.b_p_ts - (count % G.curbuf.b_p_ts);
+        case ' ' -> ++count;		// count a space for one
+        default -> { break OUTER; }
         }
-      }
+              }
       return count;
   }
   
@@ -213,21 +208,15 @@ public class Misc {
     
     // ptr = seg.offset;
     //ptr++;
-      OUTER:
-      for (; ptr < seg.offset + seg.count; ++ptr) {
-        switch (seg.r(ptr)) {
-        case '(':
-          found = true;
-          break OUTER;
-        case TAB:
-          // count a tab for what it is worth
-          count += G.curbuf.b_p_ts - (count % G.curbuf.b_p_ts);
-          break;
-        default:
-          ++count;
-          break;
-        }
+    // count a tab for what it is worth
+    OUTER:
+    for (; ptr < seg.offset + seg.count; ++ptr) {
+      switch (seg.r(ptr)) {
+      case '(' -> { found = true; break OUTER; }
+      case TAB -> count += G.curbuf.b_p_ts - (count % G.curbuf.b_p_ts);
+      default -> ++count;
       }
+    }
     return found ? count : -1;
   }
   
@@ -483,17 +472,9 @@ public class Misc {
       // change an input F1 key to "<F1>"
       // Doesn't look like you can put a '\r' into a document?
       switch (c) {
-      case K_TAB:
-      case K_S_TAB:
-        c = '\t';
-        break;
-      case K_KENTER:
-      case CR:
-        c = 13;  // carriage return
-        break;
-      case NL:
-        c = 10; // newline
-        break;
+      case K_TAB, K_S_TAB -> c = '\t';
+      case K_KENTER, CR -> c = 13;  // carriage return
+      case NL -> c = 10; // newline
       }
 
     return String.valueOf(c);

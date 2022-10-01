@@ -1,0 +1,27 @@
+
+/*
+ * skip: showInputDialog(Component, Object)
+ * skip: showInputDialog(Object, Object)
+ */
+
+"JOptionPane-2a null parent":
+    $jop.showInputDialog($parent, $arg2, $arg3, $rest$)
+::  isNullLiteral($parent)
+    && $jop instanceof javax.swing.JOptionPane
+=>  $jop.showInputDialog(WindowManager.getDefault().getMainWindow(), $arg2, $arg3, $rest$)
+;;
+
+"JOptionPane-2b null parent":
+    $jop.showMessageDialog($parent, $rest$)
+::  isNullLiteral($parent)
+    && $jop instanceof javax.swing.JOptionPane
+=>  $jop.showMessageDialog(WindowManager.getDefault().getMainWindow(), $rest$)
+;;
+
+"JOptionPane-2c null parent":
+    $jop.showOptionDialog($parent, $rest$)
+::  isNullLiteral($parent)
+    && $jop instanceof javax.swing.JOptionPane
+=>  $jop.showOptionDialog(WindowManager.getDefault().getMainWindow(), $rest$)
+;;
+

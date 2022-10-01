@@ -39,6 +39,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import com.raelity.jvi.lib.*;
+import com.raelity.jvi.manager.*;
 
 
 /**
@@ -250,7 +251,7 @@ public class JviNotifyExcPanel extends JPanel
             Screens.translateToPrefScreen(dialog);
             dialog.setVisible(true);
         } else {
-            JOptionPane.showMessageDialog(null, INSTANCE);
+            JOptionPane.showMessageDialog(ViManager.getFactory().findDialogParent(), INSTANCE);
         }
         msg = null;
         // In NB the dialog can have a whole bunch of exceptions

@@ -38,7 +38,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 import com.raelity.jvi.*;
 import com.raelity.jvi.core.lib.*;
-import com.raelity.jvi.lib.*;
 import com.raelity.jvi.manager.*;
 import com.raelity.jvi.options.*;
 

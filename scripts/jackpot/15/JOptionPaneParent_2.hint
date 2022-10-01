@@ -1,0 +1,17 @@
+<?
+import org.openide.windows.WindowManager;
+?>
+
+"JOptionPane-2a null parent":
+    $jop.showMessageDialog($parent, $rest$)
+::  isNullLiteral($parent)
+    && $jop instanceof javax.swing.JOptionPane
+=>  $jop.showMessageDialog(WindowManager.getDefault().getMainWindow(), $rest$)
+;;
+
+"JOptionPane-2b null parent":
+    $jop.showOptionDialog($parent, $rest$)
+::  isNullLiteral($parent)
+    && $jop instanceof javax.swing.JOptionPane
+=>  $jop.showOptionDialog(WindowManager.getDefault().getMainWindow(), $rest$)
+;;
