@@ -141,6 +141,9 @@ final public class ViManager
     private static final EnumSet<ViFeature> features
             = EnumSet.allOf(ViFeature.class);
 
+
+    public static final String HACK_ACTIVATE_ON_FOCUS_GAINED = "ActivateOnFocusGained";
+
     private static final Map<Object,Object> hackMap = new HashMap<>();
     public static void putHackMap(Object key, Object val) {
         hackMap.put(key, val);

@@ -145,7 +145,8 @@ public class Scheduler
                     // Part of 'undo/redo broken' workaround for
                     //     undo/redo buttons/actions don't work while editing
                     //     https://github.com/apache/netbeans/issues/4437
-                    if (c == currentEditorPane) { // nothing to do (in theory)
+                    if (getHackFlag(HACK_ACTIVATE_ON_FOCUS_GAINED)
+                            && c == currentEditorPane) { // nothing to do (in theory)
                         // NOTE the first lines in switchto
                         ViAppView av = fact().getAppView(c);
                         if(av != null)
