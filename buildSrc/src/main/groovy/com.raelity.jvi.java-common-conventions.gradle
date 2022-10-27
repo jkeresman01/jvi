@@ -20,8 +20,8 @@ repositories {
 ext {
     v_guava = '27.0-jre'
     v_netbeans = 'RELEASE120'
-    v_raelity_lib = '1.1.0'
-    v_l2f_sheet = '7.3.1'
+    v_raelity_lib = '1.2.0'
+    v_l2f_sheet = '7.3.2'
 
     a_guava = "com.google.guava:guava:$v_guava"
     a_nb_annot = "org.netbeans.api:org-netbeans-api-annotations-common:$v_netbeans"

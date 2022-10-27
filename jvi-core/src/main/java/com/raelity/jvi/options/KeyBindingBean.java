@@ -77,7 +77,10 @@ public class KeyBindingBean  extends KeyOptionsBeanBase {
         addDesc(vD, "CdPeriodCloseAngle", "Ctrl-> or Ctrl-.");
         addDesc(vD, "DeCtrl_AT", "Ctrl-@");
         
-	return vD.toArray(PropertyDescriptor[]::new);
+        // JDK-8
+        // return vD.toArray(new PropertyDescriptor[vD.size()]);
+        // JDK-11
+        return vD.toArray(PropertyDescriptor[]::new);
     }
     
     private void addDesc(List<PropertyDescriptor> vD,

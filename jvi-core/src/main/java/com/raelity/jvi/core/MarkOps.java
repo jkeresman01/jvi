@@ -19,9 +19,9 @@
  */
 package com.raelity.jvi.core;
 
-import com.raelity.lib.ValueMap;
-import com.raelity.lib.ValueHashMap;
-import com.raelity.lib.MRU;
+import com.raelity.lib.collect.ValueMap;
+import com.raelity.lib.collect.ValueHashMap;
+import com.raelity.lib.collect.MRU;
 
 import java.awt.event.ActionEvent;
 import java.io.File;

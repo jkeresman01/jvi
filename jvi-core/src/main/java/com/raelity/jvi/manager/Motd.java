@@ -1,6 +1,5 @@
 package com.raelity.jvi.manager;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -27,6 +26,8 @@ import com.raelity.jvi.ViOutputStream;
 import com.raelity.jvi.ViOutputStream.COLOR;
 import com.raelity.jvi.ViOutputStream.FLAGS;
 import com.raelity.jvi.core.G;
+
+import static com.raelity.jvi.manager.ViManager.eatme;
 
 /**
  * Parse and output the jVi motd data.
@@ -74,9 +75,10 @@ class Motd
 
     Motd()
     {
+        if(Boolean.FALSE) getValid();
     }
 
-    boolean getValid()
+    final boolean getValid()
     {
         return valid;
     }
@@ -96,6 +98,7 @@ class Motd
         // NOT USED downloadTarget
         downloadTarget = find("^jVi-download-target:\\s*(\\S+)",
                               Pattern.MULTILINE, s);
+        eatme(downloadTarget);
         linkRelease = find("^jVi-release-link:\\s*(\\S+)",
                               Pattern.MULTILINE, s);
         linkBeta = find("^jVi-beta-link:\\s*(\\S+)",
@@ -255,7 +258,7 @@ class Motd
     private static class GetMotd extends Thread
     {
         private static final int BUF_LEN = 1024;
-        private static final int MAX_MSG = 8 * 1024;
+        private static final int MAX_MSG = 16 * 1024;
         private final ChangeListener change;
 
         GetMotd(ChangeListener change) {
@@ -263,42 +266,53 @@ class Motd
         }
 
         @Override
+        @SuppressWarnings("UseOfSystemOutOrSystemErr")
         public void run()
         {
-            URL url = null;
-            try {
-                // URI uri = new URI("file:///C:/other/mydir/myfile.txt");
-                String s = System.getProperty("com.raelity.jvi.motd");
-                if(s != null) {
-                    System.err.println("DEBUG MOTD: " + s);
-                    File file = new File(new URI(s));
-                    System.err.println("DEBUG MOTD: " + file);
-                    if(!file.canRead())
-                        s = null;
+            List<String> uris = new ArrayList<>();
+            // URI uri = new URI("file:///C:/other/mydir/myfile.txt");
+            String s = System.getProperty("com.raelity.jvi.motd");
+            if(s != null) {
+                uris.add(s);
+            }
+            uris.add("https://jvi.sourceforge.net/motd");
+            uris.add("https://raelity.com/jvi/motd");
+            uris.add("http://raelity.com/jvi/motd");
+            uris.add("http://jvi.sourceforge.net/motd");
+            for(String suri : uris) {
+                StringBuilder sb = read(suri);
+                if(sb.length() > 0) {
+                    System.err.println("jVi_MOTD: " + suri);
+                    change.stateChanged(new ChangeEvent(new Motd(sb.toString())));
+                    break;
                 }
-                if(s == null)
-                    s = "http://jvi.sourceforge.net/motd";
-                URI uri = new URI(s);
-                url = uri.toURL();
+            }
+        }
+        
+        private StringBuilder read(String suri)
+        {
+            StringBuilder sb = new StringBuilder();
+            URL url;
+
+            try {
+                url = new URI(suri).toURL();
             } catch (MalformedURLException | URISyntaxException ex) {
                 LOG.log(Level.SEVERE, null, ex);
+                return sb;
             }
-            if(url == null)
-                return;
 
             // Read the remote file into a string
             // We *know* that the decoder will never have unprocessed
             // bytes in it, US-ASCII ==> 1 byte per char.
             // So use a simple algorithm.
+
             try {
                 URLConnection c = url.openConnection();
-                StringBuilder sb;
                 try (InputStream in = c.getInputStream()) {
                     byte b[] = new byte[BUF_LEN];
                     // workaround jdk 9+ compiler issue, call it a Buffer
                     // https://github.com/apache/felix/pull/114
                     Buffer bb = ByteBuffer.wrap(b);
-                    sb = new StringBuilder();
                     Charset cset = Charset.forName("US-ASCII");
                     int n;
                     int total = 0;
@@ -310,12 +324,11 @@ class Motd
                         total += n;
                     }
                 }
-
-                change.stateChanged(new ChangeEvent(new Motd(sb.toString())));
             } catch (IOException ex) {
                 if(ViManager.isDebugAtHome())
                     LOG.log(Level.SEVERE, null, ex);
             }
+            return sb;
         }
     }
 }

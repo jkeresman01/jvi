@@ -82,45 +82,72 @@
           multi-char {lhs} mappings, including insert mode, w/timeout options
 </pre>
 
-<h2>jVi-2.0 Release, NB-12/JDK-11 and later</h2>
 <p>
-  jVi is compiled with JDK-11. As good an excuse as any to bump major.
-  <br/>Visit <a target="_top" href="https://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-11-and-later/"> NB-11 JDK-8 and later</a>
+  Lucky 13, jVi-2.0.13, NetBeans-13.<br/>
+  Use jVi-2.0.13 with NetBeans-13 and later.
+  <!--
+  Built with NetBeans-13; 
+  This is probably the last jVi release through an
+  update center, at least for a while.
+  -->
+</p> <p>
+  Traditionally each jVi release runs on a range of NetBeans versions;
+  jVi being compiled against the latest version of
+  NetBeans.
+  For example jVi-1.5.4, compiled with NetBeans-8.2, ran on
+  NetBans 7.2 through 8.2. The release adjusted itself to take
+  advantage of available NetBeans features.
+  But jVi compiled on NetBeans-16 doesn&#39;t run on NetBeans-15.
+  <!--
+  and can not expect a version of jVi compiled
+  against a given version to run on an earlier version. I found out the
+  hard way when jVi compiled on NetBeans-16 will not run on NetBeans-15.
+  20 years, hard to believe, I am not that lucky.
+  -->
+  <!--
+  I guessing that the approach of the previous
+  NetBeans development team might have had something to do with 
+  my <em>luck</em>. Maybe when there was a sigtest failure
+  the old team fixed the cause rather than the test.
+  -->
+</p> <p>
+  <!--
+  This makes it difficult to add features to jVi standalone and features
+  to nbvi that depend on new features
+  in NetBeans and expect the same binary to run on earlier versions of NetBeans.
+  There would have to be a different release
+  -->
+  So there would have to be a different jVi release
+  for each supported NetBeans version.
+  Conceivably the NetBeans plugin portal could help,
+  since it has versioning; but it
+  has been in a coma for over a year.
+</p> <p>
+  <!-- Zip file releases continue to be available. -->
+  This won't be an issue until there is some newer NetBeans feature 
+  that jVi would have to directly access.
+  Techniques, akin to multi-release jar, are under consideration, but not soon.
+</p>
+
+<h2>jVi-2.0 Release, NB-13/JDK-11 and later</h2>
+<p>
+  :cd, :pwd, :e, with commandline completion, as good an excuse as any to bump major.
+  <br/>Visit <a target="_top" href="https://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-11-and-later/">NB-11 JDK-8 and later</a>
   for older releases.
 </p>
 
-<!--
-<b>Version 2.1.1+ - 2022/12/??</b>
-<dl>
-  <dt>jVi Core</dt>
-  <dd>
-    <ul>
-      <li></li>
-    </ul>
-  </dd>
-  <dt>jVi NetBeans KeyBindings</dt>
-  <dd>
-    <ul>
-      <li></li>
-    </ul>
-  </dd>
-  <dt>Bug fixes</dt>
-  <dd>
-    <ul>
-      <li></li>
-    </ul>
-  </dd>
-</dl>
--->
-
-<b>Version 2.0.13 - 2022/09/14</b>
+<b>Version 2.0.13 - 2022/11/??</b><br/>
+<b>Built with NetBeans-13; use with NetBeans-13 and later.</b>
 <p>
 There's hidden big changes. Standalone jVi, which is used in nbvi, is now built with gradle and
-<a target="_top" href="https://github.com/eppleton/frgaal">
-frgaal</a>. The compiler args include
+<a target="_top" href="https://github.com/eppleton/frgaal"> frgaal</a>.
+The compiler args include
 <span class="tt">-target 11</span> and <span class="tt">-source 19</span>;
 java 19 language features are slowly working their way into the jVi source
-while still being able to run on jdk-11.
+while still being able to run on jdk-11. The source for standalone jVi
+now builds out of the box, thanks to now publishing maven artifacts
+from jVi related projects;
+similarly with nbvi.
 </p>
 <dl>
   <!--

@@ -20,7 +20,7 @@
 
 package com.raelity.jvi.manager;
 
-import com.raelity.lib.MRU;
+import com.raelity.lib.collect.MRU;
 
 import java.awt.Component;
 import java.awt.Point;
@@ -98,8 +98,8 @@ public enum AppViews
 
     private static MRU<String> getMRU()
     {
-        MRU<String> mru = com.raelity.lib.MRU.getSetMRU(G.p_closedfiles());
-        mru = com.raelity.lib.MRU.synchronizedMRU(mru);
+        MRU<String> mru = com.raelity.lib.collect.MRU.getSetMRU(G.p_closedfiles());
+        mru = com.raelity.lib.collect.MRU.synchronizedMRU(mru);
         return mru;
     }
 

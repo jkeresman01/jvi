@@ -8,6 +8,8 @@ If needed, manually install a jVi update center into NetBeans with Plugins>Setti
 
 https://sourceforge.net/projects/jvi/files/jVi-for-NetBeans/NetBeans-12_JDK-11/UC/catalog.xml.gz
 
+| **nbvi-2.0.13**
+|     - fix open file cursor position at previous close.
 | **nbvi-2.0.11**
 |     - 2 clipboards. clipboard option: unnamed,unnamedplus. viminfo options.
 | **nbvi-2.0.6**

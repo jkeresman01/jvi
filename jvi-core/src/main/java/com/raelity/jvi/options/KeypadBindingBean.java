@@ -69,7 +69,10 @@ public BeanDescriptor getBeanDescriptor() {
             addDesc(vD, key, "Shift");
         }
         
-	return vD.toArray(PropertyDescriptor[]::new);
+        // JDK-8
+        //return vD.toArray(new PropertyDescriptor[vD.size()]);
+        // JDK-11
+        return vD.toArray(PropertyDescriptor[]::new);
     }
     
     private void addDesc(List<PropertyDescriptor> vD, String key, String mod)

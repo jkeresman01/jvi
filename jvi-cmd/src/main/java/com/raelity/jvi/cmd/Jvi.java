@@ -20,7 +20,7 @@
 
 package com.raelity.jvi.cmd;
 
-import com.raelity.lib.Screens;
+import com.raelity.lib.ui.Screens;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
