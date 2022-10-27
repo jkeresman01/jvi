@@ -82,7 +82,6 @@
           multi-char {lhs} mappings, including insert mode, w/timeout options
 </pre>
 
-
 <h2>jVi-2.0 Release, NB-12/JDK-11 and later</h2>
 <p>
   jVi is compiled with JDK-11. As good an excuse as any to bump major.
@@ -113,6 +112,42 @@
   </dd>
 </dl>
 -->
+
+<b>Version 2.0.13 - 2022/09/14</b>
+<p>
+There's hidden big changes. Standalone jVi, which is used in nbvi, is now built with gradle and
+<a target="_top" href="https://github.com/eppleton/frgaal">
+frgaal</a>. The compiler args include
+<span class="tt">-target 11</span> and <span class="tt">-source 19</span>;
+java 19 language features are slowly working their way into the jVi source
+while still being able to run on jdk-11.
+</p>
+<dl>
+  <!--
+  <dt>jVi Core</dt>
+  <dd>
+    <ul>
+      <li></li>
+    </ul>
+  </dd>
+  <dt>jVi NetBeans KeyBindings</dt>
+  <dd>
+    <ul>
+      <li></li>
+    </ul>
+  </dd>
+  -->
+  <dt>Bug fixes</dt>
+  <dd>
+    <ul>
+      <li>
+        Fix: when a file is opened place the caret at the spot from where
+        it was closed.
+        Some last minute fixes for windows in v2.0.11 broke this new feature.
+      </li>
+    </ul>
+  </dd>
+</dl>
 
 <b>Version 2.0.11 - 2022/09/14</b><br/>
 Windows fixes: clipboard, :e*, :cd path handling<br/>

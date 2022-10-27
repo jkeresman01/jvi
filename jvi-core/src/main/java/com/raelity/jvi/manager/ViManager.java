@@ -107,7 +107,7 @@ final public class ViManager
     // 1.4.0 is module rev 1.4.9
     // 1.4.1.x2 is module rev 1.4.12
     //
-    public static final jViVersion version = new jViVersion("2.1.0.x1");
+    public static final jViVersion version = new jViVersion("2.0.13.x1");
 
     private static com.raelity.jvi.core.Hook core;
 
@@ -192,7 +192,6 @@ final public class ViManager
                     System.setProperty("com.raelity.jvi.motd",
                                        "file:///src/jvi-dev/work/motd");
                 }
-
             }
         }
         return isDebugAtHome;
@@ -499,7 +498,7 @@ final public class ViManager
             boolean local = Boolean.parseBoolean((String)debugDebugDiddling.get("local"));
 
             switch(which) {
-            case 0: 
+            case 0 -> { 
                 Throwable t = new Throwable("some throwable");
                 Throwable t1 = Exceptions.attachSeverity(t, level);
                 Throwable t2;
@@ -514,10 +513,9 @@ final public class ViManager
                 Exceptions.printStackTrace(t);
                 // Dialog d = new Dialog((Frame)null);
                 // d.show();
-                break;
-            case 1:
-                throw new RuntimeException("runtime exception");
-            case 2:
+            }
+            case 1 -> throw new RuntimeException("runtime exception");
+            case 2 -> {
                 DebugOption x = Options.getDebugOption(Options.dbgBang);
                 x.println("one");
                 x.println("%s %s %s", "one", "two", "three");
@@ -528,14 +526,12 @@ final public class ViManager
                 x.printf(Level.INFO, "oneNL\n");
                 x.printf(Level.INFO, "%s %s %sNL\n", "one", "two", "three");
                 LOG.log(Level.SEVERE, "don't leave me here");
-                break;
-            case 3:
-                JOptionPane.showMessageDialog(getFactory().findDialogParent(),
+            }
+            case 3 -> JOptionPane.showMessageDialog(getFactory().findDialogParent(),
                                               "random message...",
                                               "Random Title",
                                               JOptionPane.ERROR_MESSAGE);
-                break;
-            case 4:
+            case 4 -> {
                 // exception in EventBus handler
                 ViEvent.getBus().register(new Object() {
                 @Subscribe public void doit(ViEvent.ProcessInput ev) {
@@ -543,7 +539,7 @@ final public class ViManager
                     Objects.requireNonNull(null); }}
                 );
                 firePropertyChange(new ViEvent.ProcessInput());
-                break;
+            }
             }
         }
 
@@ -1175,9 +1171,10 @@ final public class ViManager
             throw new RuntimeException("setupOptionAtBoot already set");
         }
         // Get the boot value of certain Options
-        useFrame_StartupOnlyOption = Options.getOption(Options.commandEntryFrame)
-                .getString();
+        useFrame_StartupOnlyOption
+                = Options.getOption(Options.commandEntryFrame).getString();
 
+        eatme(tabCompletionPrefix_StartupOnlyOption);
         // tabCompletionPrefix_ValueAtBoot = Options.getOption(
         //         Options.tabCompletionPrefix).getBoolean();
         // if(tabCompletionPrefix_ValueAtBoot) {
