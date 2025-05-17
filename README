@@ -1,3 +1,68 @@
+# jVi – Vim Emulation Plugin for NetBeans
+
+**jVi** is a Vim emulation layer for NetBeans IDE and other Java-based editors. This repository is a **mirror** of the original jVi project hosted on [SourceForge](https://jvi.sourceforge.net/).
+
+> ⚠️ **Disclaimer**: This is **not** the official repository. It is a personal mirror for experimentation, preservation and enhancements.  
+> The original project and documentation can be found at [https://jvi.sourceforge.net](https://jvi.sourceforge.net).
+
+---
+
+## 📦 Features
+
+- Modal editing: Normal, Insert, Visual, and Command-line modes
+- Vim-style keybindings and motion commands
+- Register, mark, and macro support
+- Search and substitute (`/`, `:s`)
+- Compatible with multiple file types and Java-based editors
+
+---
+
+## 📁 Project Structure
+
+- `jvi/` – Core Vim emulation logic
+- `nbvi/` – NetBeans-specific integration
+- `raelity-lib/` – Shared utility libraries
+- `netbeans-editor-pin/` – Optional editor enhancements
+
+---
+
+## 🛠️ Building From Source
+
+This project was originally built using **Mercurial** and the **NetBeans Platform**. See the original SourceForge instructions for setup.
+
+---
+
+## 📜 License
+
+This project is licensed under the **Mozilla Public License Version 1.1 (MPL 1.1)**.
+
+You may obtain a copy of the license at:  
+[https://www.mozilla.org/MPL/1.1/](https://www.mozilla.org/MPL/1.1/)
+
+All source files must retain their original MPL license headers.  
+Modifications to MPL-covered files must also be made available in source form under the same license.
+
+---
+
+## 🙏 Acknowledgements
+
+jVi was originally developed and maintained by:
+
+- **errael** (SourceForge username) and contributors
+
+Special thanks to the Vim and NetBeans communities.
+
+---
+
+
+## 🔗 Original Resources
+
+- [Official Website](https://jvi.sourceforge.net/)
+- [SourceForge Repository](https://sourceforge.net/p/jvi/code/ci/default/tree/)
+- [Downloads](https://sourceforge.net/projects/jvi/files/)
+
+## Build ##
+
 Post nbvi-2.0.9 jVi's build system is converted to gradle.
 And NetBeans' jvi-wrapper build script does ant exec of gradle
 then grabs the jar.
